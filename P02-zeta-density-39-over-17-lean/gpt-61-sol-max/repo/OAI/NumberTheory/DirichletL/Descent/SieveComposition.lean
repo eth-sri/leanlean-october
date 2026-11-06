@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.Fibers
 public import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
 
@@ -9,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 
 open scoped BigOperators
-noncomputable section
+
 
 theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)
     (b f : C → ℂ) (hb : ∀ c ∈ s, ‖b c‖ ≤ 1) :
@@ -63,7 +64,7 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
         Q * ∑ y ∈ target, ‖f y‖ ^ 2) :
     (∑ k ∈ rows, ‖∑ x ∈ source, q k (φ x) * a x‖ ^ 2) ≤
       Q * D * ∑ x ∈ source, ‖a x‖ ^ 2 := by
-  let f : Y → ℂ := fun y => ∑ x ∈ source with φ x = y, a x
+  let f := fun y => ∑ x ∈ source with φ x = y, a x
   have he (k : K) : (∑ x ∈ source, q k (φ x) * a x) =
       ∑ y ∈ target, q k y * f y := by
     rw [← Finset.sum_fiberwise_of_maps_to hφ]
@@ -92,7 +93,7 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
       _ ≤ Q * (D * ∑ x ∈ source, ‖a x‖ ^ 2) := mul_le_mul_of_nonneg_left hf' hQ
       _ = _ := by ring)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

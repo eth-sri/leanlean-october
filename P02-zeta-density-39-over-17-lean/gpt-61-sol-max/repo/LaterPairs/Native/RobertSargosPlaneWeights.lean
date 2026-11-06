@@ -6,9 +6,8 @@ public import LaterPairs.Native.DoubleShiftWeights
 public import LaterPairs.Native.RobertSargosPlaneCorrelation
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                  
                                                                   
@@ -21,14 +20,16 @@ def robertSargosWeightedCorrelations (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
   ∑ q ∈ Finset.Ioo (-(Q:ℤ)) Q, ∑ r ∈ Finset.Ioo (-(R:ℤ)) R,
     (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*robertSargosPlaneCorrelation a M H q r
 
-theorem robertSargos_plane_weighted_gram (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
-    (hQ : 0 < Q) (hR : 0 < R) :
+section
+variable (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
+    (hQ : 0 < Q) (hR : 0 < R)
+include a M H Q R hQ hR
+
+theorem robertSargos_plane_weighted_gram  :
     (∑ x ∈ Finset.Ico (-(Q:ℤ)) M ×ˢ Finset.Ico (-(R:ℤ)) H,
       ‖∑ t ∈ Finset.range Q ×ˢ Finset.range R,
         robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)‖^2) =
       (Q:ℝ)*R*robertSargosWeightedCorrelations a M H Q R := by
-  have hQp : 0 < (Q:ℝ) := by exact_mod_cast hQ
-  have hRp : 0 < (R:ℝ) := by exact_mod_cast hR
   calc
     _ = ∑ s ∈ Finset.range Q ×ˢ Finset.range R,
         ∑ t ∈ Finset.range Q ×ˢ Finset.range R,
@@ -54,12 +55,13 @@ theorem robertSargos_plane_weighted_gram (a : ℤ → ℤ → ℂ) (M H Q R : �
       rw [signed_shift_weight_real hq,signed_shift_weight_real hr]
       field_simp
 
-theorem robertSargos_weighted_correlations_nonneg (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
-    (hQ : 0 < Q) (hR : 0 < R) :
+theorem robertSargos_weighted_correlations_nonneg  :
     0 ≤ robertSargosWeightedCorrelations a M H Q R := by
   have hp : 0 < (Q:ℝ)*R := by positivity
   apply nonneg_of_mul_nonneg_right _ hp
   rw [← robertSargos_plane_weighted_gram a M H Q R hQ hR]
   exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+end
 
-end TaoTrudgianYang2025
+
+

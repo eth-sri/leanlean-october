@@ -11,16 +11,16 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceRobustOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError
-open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
+
+open CenteredMomentEnergyReferenceChild
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
+open CenteredMomentCommonMaskEnergy
+
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -45,13 +45,13 @@ theorem original_reference_from_low_robust
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi+11*defect/7≤s.width/14 →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi+11*defect/7≤ s.width/14 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
       5*s.width/6-defect≤Real.logb Z (X₁*X₂)+(∑i,w i) →
-      Real.logb Z (X₁*X₂)+(∑i,w i)+(6*κ-1)*(∑i,w i)≤s.width →
+      Real.logb Z (X₁*X₂)+(∑i,w i)+(6*κ-1)*(∑i,w i)≤ s.width →
       energy s.character s.mask 1 t W₁ W₂
         (fun i=>primePool M H bslot (Z^(w i)))
         (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -117,8 +117,8 @@ theorem original_reference_from_low_robust
       θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ s hQ hs hxiM
       W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hlarge hcap D₁ hD₁ D₂ hD₂ (Finset.univ\J)
 
-end SevenEighths.CenteredMomentEnergyReferenceRobustOriginal
 
-end
 
-end OAI
+
+
+

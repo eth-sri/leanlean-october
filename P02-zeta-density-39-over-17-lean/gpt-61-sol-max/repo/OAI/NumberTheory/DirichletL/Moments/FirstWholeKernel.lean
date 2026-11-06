@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstFrequency
 public import OAI.NumberTheory.DirichletL.Moments.Scale
 
@@ -11,9 +12,9 @@ open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstWholeKernel
 open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson
-open CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentFirstAssembly
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstReduced
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstFrequency CenteredMomentGaussEnergy CenteredMomentFirstAssembly
+open CenteredMomentSupportedCorrelation CenteredMomentScale CenteredMomentSmooth
+open scoped EisensteinO
 
 def windows (V : Fin 4 → ℝ → ℂ) (K H A B K₀ H₀ A₀ B₀ : ℝ) : ℂ :=
   V 0 (Real.log (K/K₀))*V 1 (Real.log (H/H₀))*
@@ -62,11 +63,11 @@ theorem dilated_frequency_whole_kernel {ι : Type*} [Fintype ι]
   rw [harg]
   simp only [windows,Real.sqrt_sq haN.le,Real.sqrt_sq hbN.le,
     Complex.star_def,map_div₀,Complex.conj_ofReal]
-  have hA : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hB : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
-  have hr : (‖eisEmbedding (finitePrimeModulus P)‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hrN.ne'
-  have ha' : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr haN.ne'
-  have hb' : (‖eisEmbedding b‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hbN.ne'
+  have hA := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
+  have hB := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  have hr := Complex.ofReal_ne_zero.mpr hrN.ne'
+  have ha' := Complex.ofReal_ne_zero.mpr haN.ne'
+  have hb' := Complex.ofReal_ne_zero.mpr hbN.ne'
   have alg (c r a b A B x y u v : ℂ) (hr : r≠0) (ha : a≠0) (hb : b≠0)
       (hA : A≠0) (hB : B≠0) :
       (c/r*x*(u/a*(v/b)))*y=c/(r*A*B)*x*(u*v)*((A*B/(a*b))*y) := by
@@ -82,8 +83,8 @@ theorem dilated_frequency_whole_kernel {ι : Type*} [Fintype ι]
     (gaussRow a ha h) (star (gaussRow b hb (-h))) hr ha' hb' hA hB using 1 <;>
     simp only [windows,Complex.star_def] <;> ring
 
-end SevenEighths.CenteredMomentFirstWholeKernel
 
-end
 
-end OAI
+
+
+

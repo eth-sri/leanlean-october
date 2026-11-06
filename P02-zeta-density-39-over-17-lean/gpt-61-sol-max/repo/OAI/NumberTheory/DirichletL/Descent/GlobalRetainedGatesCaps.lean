@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 
 @[expose] public section
@@ -8,12 +9,12 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
+open InverseMoment InverseFirstPriorityParents
+open InverseWholePriorityRetainedSource
 open InverseSecondUniformCutoff
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -37,7 +38,6 @@ lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
       rw [mul_one,←Real.rpow_mul_natCast hZ.le]
       repeat rw [←Real.rpow_add hZ]
       congr 1
-      norm_num
       ring
 
 lemma bare_frequency_norm_le (a k : O) (ha : a≠0) :
@@ -76,7 +76,7 @@ theorem supported_outer_caps
         (zero_lt_one.trans_le hZ) hL hY hLc hYi).trans
         (Real.rpow_le_rpow_of_exponent_le hZ hphysical)))
 
-end SevenEighths.InverseMomentGlobalRetainedGates
-end
 
-end OAI
+
+
+

@@ -17,17 +17,16 @@ open Filter
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSourceBounded
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLiveBounded CenteredMomentEnergyOriginalSource
+open CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLiveBounded
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+open CenteredMomentCommonRadialData
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+
+open CenteredMomentNaturalFixedRaySource
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -39,6 +38,8 @@ variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 
 open CenteredMomentEnergyPositiveHighSource
+
+local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 
 theorem actual_positive_source_entry
     (Wslot:ℝ→ ℂ)(aslot bslot lo hi:ℝ)
@@ -58,10 +59,10 @@ theorem actual_positive_source_entry
       ∀(θ:α→ RayQuotient.Characters M H)(w σ freq:α→ ℝ)(t height:ℝ),
       (∀i,0≤w i)→ (∀i,w i≤Lslot)→ ∀hσlo:(∀i,lo≤σ i),∀hσhi:(∀i,σ i≤hi),
       0≤height→ (∀i,|freq i|≤height)→ 3/4≤κ→
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤s.width→ s.width≤Mcap→
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤ s.width→ s.width≤Mcap→
       ∀(p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂),
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i)→
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
       let inp:=balancedInput M H hH η₀ θ Wslot hcSlot aslot bslot lo hi haslot hsSlot
         w σ freq (fun i=>⟨hσlo i,hσhi i⟩) s p ha t X₁ X₂ hX₁ hX₂;
       energy s.character s.mask 1 t (p.profile 0) (p.profile 1) inp.slots inp.toData.coefficient inp.P
@@ -116,8 +117,8 @@ theorem actual_positive_source_entry
         Ctail*(plainControl inp (p.profile 0) (p.profile 1))^2*
           Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^(-saving)))
     convert hh using 1 <;> ring
-end SevenEighths.CenteredMomentEnergyPositiveHighSourceBounded
 
-end
 
-end OAI
+
+
+

@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallPartition
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
     (f : FreeRow→ℂ) (hf : Summable f) :
@@ -55,8 +55,8 @@ theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
   simp_rw [hpoint]
   rw [(hg1.add hg2).tsum_add hg3,hg1.tsum_add hg2,hsum1,hsum2,hsum3,sum_small_dyadicRows]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowGramApplied
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -22,7 +23,7 @@ lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   intro v
   apply CubicReflectionKernel.weighted_two_to_cauchy (by positivity) v
   have hp : 1≤(1+|v|)^J := one_le_pow₀ (by linarith [abs_nonneg v])
-  have hs : Real.sqrt ((1+|v|)^J)≤(1+|v|)^J := Real.sqrt_le_self_iff.mpr (Or.inr hp)
+  have hs := Real.sqrt_le_self_iff.mpr (Or.inr hp)
   have hb' := hb 0 (by simp) v
   simp only [Complex.ofReal_zero,zero_add] at hb'
   calc
@@ -77,7 +78,7 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hi
   convert hi using 1 ;ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

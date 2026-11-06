@@ -10,7 +10,7 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} (p : ι→O) (hp : ∀i,p i≠0)
 
 variable [DecidableEq ι]
@@ -57,7 +57,7 @@ theorem first_source_scalar_caps (b : CubeCoordinates ι) (C D : Finset ι)
       _ ≤ Z^(r+eta) := div_le_self (Real.rpow_pos_of_pos hz _).le (one_le_mul_of_one_le_of_one_le ha hc)
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

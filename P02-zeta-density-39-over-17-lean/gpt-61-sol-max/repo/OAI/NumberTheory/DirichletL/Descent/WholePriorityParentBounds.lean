@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Descent.WholePriorityMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -109,8 +109,8 @@ theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:
     (slots\assigned) _ a hpair hcoeff om rowMajorant lo hi hlo hs negative t X M Y Z R
     hX hhi hZ hY hscale hy hyi hx hR
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

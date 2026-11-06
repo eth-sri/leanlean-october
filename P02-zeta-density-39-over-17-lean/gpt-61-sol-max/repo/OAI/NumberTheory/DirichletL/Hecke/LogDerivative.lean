@@ -19,8 +19,8 @@ theorem coeff_LSeries_eq (χ : Character) {s : ℂ} (hs : 1 < s.re) :
   IdealLogDerivative.coeff_LSeries_eq_neg_logDeriv_of_eq _ (idealCoeff_norm_le_one χ)
     (LFunction χ) (fun _ hz => LFunction_eq_series χ hz) s hs
 
-end SevenEighths.HeckeLogDerivative
 
-end
 
-end OAI
+
+
+

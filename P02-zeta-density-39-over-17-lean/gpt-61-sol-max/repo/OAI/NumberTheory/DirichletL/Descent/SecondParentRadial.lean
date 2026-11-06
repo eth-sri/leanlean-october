@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.SecondFreshTruncation
+public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
+public import OAI.NumberTheory.DirichletL.Descent.SecondParentInput
 
 @[expose] public section
 
@@ -7,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 open InversePrincipalEnergy InverseSecondPrincipalCaller
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -64,7 +65,7 @@ theorem first_fresh_parent_radial_truncated
   exact inputConjugateRow_eq_truncated_add_tail p hp hg hinj hc F Ψ₀ (secondParentPuncture p m parent)
     (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y hY K
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

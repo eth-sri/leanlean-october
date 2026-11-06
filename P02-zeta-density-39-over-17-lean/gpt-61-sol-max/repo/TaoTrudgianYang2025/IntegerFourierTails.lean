@@ -12,13 +12,13 @@ The frequency cutoff is a positive natural number. Both signs are
 counted, and the actual omitted series is bounded, not just declared summable.
 -/
 
-noncomputable section
 
-open Set
+
+
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Fourth
 
 theorem tsum_nat_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
     (∑' n : ℕ, if R < n then 1/(n : ℝ)^2 else 0) ≤ 1/(R : ℝ) := by
@@ -163,4 +163,4 @@ theorem tsum_int_eq_sum_Icc_add_far {f : ℤ → ℂ}
     apply Finset.mem_Icc.mpr
     omega
 
-end TaoTrudgianYang2025
+

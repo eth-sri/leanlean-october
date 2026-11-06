@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstColumns
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstFamily
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentPrimaryCharacter CenteredMomentSupportedCorrelation
 open CenteredMomentFixedRay CenteredMomentCommonSupport RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem exists_supported_row_presentation (η : Character) (m z : O)
@@ -86,8 +86,8 @@ theorem exists_first_character (η : Character) (m e r : O)
     simp only [one_pow,one_mul]
     rfl
 
-end SevenEighths.CenteredMomentFirstFamily
 
-end
 
-end OAI
+
+
+

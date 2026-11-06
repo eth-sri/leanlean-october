@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannSchlafliEntry.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -19,8 +20,7 @@ real-axis segment becomes the actual sine integral, with the
 endpoint singularity handled by a nonsingular angular parameter.
 -/
 
-set_option autoImplicit false
-noncomputable section
+
 
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval ComplexConjugate
@@ -50,7 +50,7 @@ theorem neumannContourHalfPowers_imaginary_axis (t : ℝ) :
     (1 - (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) *
       (1 + (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) =
         ((Real.sqrt (1 + t ^ 2))⁻¹ : ℝ) := by
-  let z : ℂ := 1 + (t : ℂ) * I
+  let z := 1 + (t : ℂ) * I
   have hz : z ∈ slitPlane := Or.inl (by simp [z])
   have hc : (1 - (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) =
       conj (z ^ (-(1 / 2 : ℂ))) := by
@@ -81,8 +81,7 @@ theorem neumannContourKernel_imaginary_axis (x t : ℝ) :
       _ = _ := by rw [I_mul_I]; ring
   unfold neumannContourKernel
   rw [mul_assoc, neumannContourHalfPowers_imaginary_axis, he, ← Complex.ofReal_exp]
-  push_cast
-  ring
+  aesop
 
 theorem neumannVerticalIntegral_zero_eq_tail (x : ℝ) :
     neumannVerticalIntegral x 0 = (dfiBesselY0Tail x : ℂ) := by
@@ -135,10 +134,6 @@ theorem neumannContourKernel_angular_change (x : ℝ) {a : ℝ}
   rw [uIcc_of_le ha] at hu
   have hp := neumannContourHalfPowers_sine hu.1 (lt_of_le_of_lt hu.2 ha1)
   simp only [Function.comp_apply, neumannContourKernel, real_smul]
-  calc
-    _ = Complex.exp (I * (x : ℂ) * Real.sin u) *
-        ((Real.cos u : ℂ) * ((1 - (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ)) *
-          (1 + (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ)))) := by ring
-    _ = _ := by rw [hp, mul_one]
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

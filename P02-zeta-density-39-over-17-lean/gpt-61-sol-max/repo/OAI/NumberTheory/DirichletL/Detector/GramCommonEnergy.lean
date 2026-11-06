@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT RayFourExpansion
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma gcdCommon_product_coprime (C I J : SupportedIdeal) (h : IsCoprime I.val J.val) :
@@ -19,14 +19,21 @@ lemma gcdCommon_product_coprime (C I J : SupportedIdeal) (h : IsCoprime I.val J.
   have hh:=congrArg (fun t : CoprimeTriple=>t.val.1) (gcdTriple_multiply ⟨(C,I,J),h⟩)
   exact hh
 
-def originalPairWeight (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (Y v : ℝ) (I J : SupportedIdeal) : ℂ :=
+section
+variable (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
+    (W : ℝ→ℂ)
+include S hS σ W
+
+def originalPairWeight  (Y v : ℝ) (I J : SupportedIdeal) : ℂ :=
   (lowGramCoefficient (calibrationForSet S hS) σ I*lowGramProfile W v ((Ideal.absNorm I.val:ℝ)/Y))*
     star (lowGramCoefficient (calibrationForSet S hS) σ J*lowGramProfile W v ((Ideal.absNorm J.val:ℝ)/Y))
 
-theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (U : SchwartzMap ℝ ℂ) (v : ℝ) :
+section
+variable (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
+    (U : SchwartzMap ℝ ℂ) (v : ℝ)
+include hW Y Q hY hQ U v
+
+theorem original_nonzero_common_sum  :
     (∑I∈lowGaussColumns W hW Y hY,∑J∈lowGaussColumns W hW Y hY,
       originalPairWeight S hS σ W Y v I J*
       ∑'h : GramFrequency,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
@@ -74,9 +81,7 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
     ring
   · simp only [hij,ite_false,f,tsum_zero]
 
-theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (U : SchwartzMap ℝ ℂ) (v : ℝ) :
+theorem original_energy_common_blocks  :
     gaussEnergy (lowGaussColumns W hW Y hY) (fun I=>primaryGenerator I.val)
       (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
       (lowGaussColumn (calibrationForSet S hS) W Y σ v) U Q=
@@ -87,8 +92,11 @@ theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
   congr 1
   congr 1
   exact original_nonzero_common_sum S hS σ W hW Y Q hY hQ U v
-
-end SevenEighths.ProbeGramCommon
+end
 end
 
-end OAI
+
+
+
+
+

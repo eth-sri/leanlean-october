@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthBounded
 public import OAI.NumberTheory.DirichletL.Energy.ZeroRetainedError
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
@@ -15,14 +16,14 @@ open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
 open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
+open CenteredMomentEnergyState CenteredMomentEnergyZeroGrowth
 open CenteredMomentEnergyZeroGrowthBounded CenteredMomentEnergyZeroRetainedError
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentEnergyReferenceProfileBudget
 open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentInductionEnergy CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def swapProfiles {a b:ℝ}(p:Profiles a b):Profiles a b where
   profile := ![p.profile 1,p.profile 0]
@@ -103,9 +104,9 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     let E:=(K+1)*diagonalControl s.radial.profile*A
     have hA:0≤A:=by dsimp only [A];positivity
     have hE:0≤E:=by dsimp only [E];positivity
-    have hSl:sourceControl Slive (p.profile 1)≤sourceControl (Slive∪Sdead) (p.profile 1):=
+    have hSl:sourceControl Slive (p.profile 1)≤ sourceControl (Slive∪Sdead) (p.profile 1):=
       control_mono Finset.subset_union_left _
-    have hSd:sourceControl Sdead (p.profile 1)≤sourceControl (Slive∪Sdead) (p.profile 1):=
+    have hSd:sourceControl Sdead (p.profile 1)≤ sourceControl (Slive∪Sdead) (p.profile 1):=
       control_mono Finset.subset_union_right _
     have hSl0:=sourceControl_nonneg Slive (p.profile 1)
     have hSd0:=sourceControl_nonneg Sdead (p.profile 1)
@@ -184,7 +185,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
               (Xlong/((∏P∈Dl,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 0)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t) by funext z;exact mul_comm _ _]
-        by_cases hl:0≤s.width-Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ))+xi
+        by_cases hl:0≤ s.width-Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ))+xi
         · have hh:=hZ.2 Bmask L Mcap loss Q degree K hK hgrowth hBmask hL hLreflect
             s hQ hs (p.profile 1) (p.profile 0) (p.support 1) (p.support 0)
             t Xshort Xlong hXs horder hcap hsupport Ds Dl hDs hDl' hl
@@ -228,7 +229,6 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
             _ ≤ E*Perror := hc
             _ ≤ _ := hf
     apply hresult.trans_eq
-    dsimp only [E,A]
     ring
   intro p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
   by_cases hzero:s.plainEnergy p t X₁ X₂=0
@@ -244,8 +244,8 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     · have hh:=hordered (swapProfiles p) t X₂ X₁ hX₂ (le_of_not_ge horder) hc₂ hs₁
       simpa only [plainEnergy_swap,swapProfiles_control] using hh
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
 
-end
 
-end OAI
+
+
+

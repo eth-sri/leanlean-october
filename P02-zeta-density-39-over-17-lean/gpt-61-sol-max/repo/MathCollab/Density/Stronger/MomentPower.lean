@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -11,10 +12,9 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open MeasureTheory Filter Set
+open MeasureTheory Filter
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- Young's inequality in the exact polynomial form used for weighted
@@ -27,13 +27,7 @@ theorem twelfth_tangent_bound {a x : ℝ} (ha : 0 ≤ a) (hx : 0 ≤ x) :
   have hp : (a ^ 11) ^ (12 / 11 : ℝ) = a ^ 12 := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul ha]
     norm_num
-  rw [hp] at h
-  norm_num at h
-  calc
-    12 * a ^ 11 * x = 12 * (x * a ^ 11) := by ring
-    _ ≤ 12 * (x ^ 12 / 12 + a ^ 12 / (12 / 11)) :=
-      mul_le_mul_of_nonneg_left h (by norm_num)
-    _ = x ^ 12 + 11 * a ^ 12 := by ring
+  simp_all <;> nlinarith
 
 
 /-- Weighted twelfth-power Hölder with the exact eleventh power of the
@@ -66,4 +60,4 @@ theorem integral_weighted_twelfth
     _ ≤ _ := mul_le_mul_of_nonneg_left hsmall (pow_nonneg hMass.le 11)
 
 
-end MathCollab.Density.Stronger
+

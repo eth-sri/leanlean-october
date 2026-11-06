@@ -12,14 +12,14 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondCapacitySourceShift
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondPhysicalBlock
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondPhysicalLedger
 open CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows
-open CenteredMomentSecondPhysicalCost CenteredMomentSecondRadicalBudget
-open CenteredMomentSupport CenteredMomentSecondWholeKernel ConcretePrimeRowBridge CenteredMomentSourceRow
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSecondRadicalBudget
+open CenteredMomentSecondWholeKernel CenteredMomentSourceRow
+open scoped HeckeO
 
 theorem effective_upper (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
@@ -60,7 +60,7 @@ lemma scalar_capacity_shift (Z F q U V H K a c d k h x y:ℝ)
   have hu':0≤Real.logb Z U:=Real.logb_nonneg hZ hU
   have hrow:=Real.logb_le_logb_of_le hZ (div_pos (mul_pos hx hy) hk)
     (adjusted_row_lower k h x y hk hh hx hy)
-  have hm:0<max 1 (1/(k*h/(x*y))):=lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  have hm:0< max 1 (1/(k*h/(x*y))):=lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   simp (disch := positivity) only [Real.logb_mul,Real.logb_div,Real.logb_pow] at hl hr hs hrow ⊢
   linarith
 
@@ -73,13 +73,17 @@ def adjustedEnvelopeRef (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fi
     (Ideal.span {nonunitFrequencyGenerator C D U}).absNorm*dyadicScale (n 1)*
     max 1 (1/(dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))))
 
-theorem actual_capacity_shift_reference (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
+section
+variable (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(U:Finset (CommonIndex C D))
     (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K H a Z qref:ℝ)(n:Fin 4→ℤ)
     (hq:0<qref)(hK:0<K)(hH:0<H)(ha:0<a)(hZ:1<Z)
     (hlower:∀I:Ideal O,β I≠0→a*H≤(I.absNorm:ℝ))
-    (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0):
+    (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
+include η t S β C D hC hD hCD U R rows W K H a Z qref n hq hK hH ha hZ hlower hne
+
+theorem actual_capacity_shift_reference :
     Real.logb Z (H/(C.absNorm:ℝ))-Real.logb Z (adjustedEnvelopeRef qref C D U n)≤
       Real.logb Z K-Real.logb Z qref-Real.logb Z H+
         Real.logb Z (4/((fixedFactor:ℝ)*a^2)):=by
@@ -118,13 +122,7 @@ theorem actual_capacity_shift_reference (η:Character)(t:ℝ)(S:Finset (Ideal O)
     (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _)
     ((Ideal.span {commonFrequencyGenerator C D}).absNorm:ℝ) hg hgc hs hl hr
 
-theorem actual_capacity_shift_reference_right (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K H a Z qref:ℝ)(n:Fin 4→ℤ)
-    (hq:0<qref)(hK:0<K)(hH:0<H)(ha:0<a)(hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(I.absNorm:ℝ))
-    (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0):
+theorem actual_capacity_shift_reference_right :
     Real.logb Z (H/(D.absNorm:ℝ))-Real.logb Z (adjustedEnvelopeRef qref C D U n)≤
       Real.logb Z K-Real.logb Z qref-Real.logb Z H+
         Real.logb Z (4/((fixedFactor:ℝ)*a^2)):=by
@@ -166,9 +164,11 @@ theorem actual_capacity_shift_reference_right (η:Character)(t:ℝ)(S:Finset (Id
     (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _)
     ((Ideal.span {commonFrequencyGenerator C D}).absNorm:ℝ) hg hgc hs' hr hl
   simpa only [adjustedEnvelopeRef,mul_comm (dyadicScale (n 3)) (dyadicScale (n 2))] using hh'
-
-end SevenEighths.CenteredMomentSecondCapacitySourceShift
-
 end
 
-end OAI
+
+
+
+
+
+

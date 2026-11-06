@@ -12,7 +12,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseMomentWholeRetainedSource
 open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic
 open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -21,8 +21,12 @@ def deleted (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
   extra x.cube∪(((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪
     quotientSupport p (secondParentOf x))
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
+
 theorem retained_deleted_support
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    
     (extra : CubeCoordinates ι→Finset ι)
     (source : Finset (Source ι Jo)) (hs : ∀ x∈source,SourceValid p x)
     (hextra : ∀ x∈source,extra x.cube⊆x.cube.support)
@@ -60,7 +64,7 @@ theorem retained_deleted_support
       exact source_prime_dvd p _ i hi
 
 theorem whole_coefficient_norm
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    
     (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
     (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (B : ℝ)
@@ -72,9 +76,11 @@ theorem whole_coefficient_norm
   rw [coefficient_attach p hinj,norm_mul]
   exact (mul_le_of_le_one_right (norm_nonneg _) (pairedSlotWeight_norm_le_one J J lists lists a a
     _ q hq ha ha)).trans (hw x hx)
-
-end SevenEighths.InverseMomentWholeRetainedSource
-
 end
 
-end OAI
+
+
+
+
+
+

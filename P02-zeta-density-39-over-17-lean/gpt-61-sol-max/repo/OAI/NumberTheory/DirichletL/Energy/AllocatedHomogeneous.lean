@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedClipped
 
 @[expose] public section
@@ -11,15 +12,15 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyAllocatedClipped
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyAllocatedProfiles
+open CenteredMomentEnergyAllocatedChildren
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
+open CenteredMomentAllocatedNaturalSource
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 variable (M:Ideal O)[NeZero M]
@@ -39,7 +40,7 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
@@ -96,16 +97,10 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (Profiles.control_nonneg _ _) hp 2)
         (mul_nonneg (mul_nonneg hCc.le (add_nonneg hC₀ hC₁)) (diagonalControl_nonneg _))
-    _=_:=by
-      have hpow:(1+|v|+height)^(4*n)=((1+|v|+height)^(2*n))^2:=by
-        rw [←pow_mul]
-        congr 1
-        omega
-      simp only [←add_assoc,mul_pow,pow_add,hpow]
-      ring
+    _=_:=by ring
 
-end SevenEighths.CenteredMomentEnergyAllocatedHomogeneous
 
-end
 
-end OAI
+
+
+

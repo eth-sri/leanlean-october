@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.UniformSlices
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_buffered_horizontal_join_decay (K : ℕ)
@@ -61,8 +61,8 @@ theorem uniform_buffered_horizontal_join_decay (K : ℕ)
     _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith : 2-(a+16*e)≤2) hA
     _ = _ := by dsimp [A];ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

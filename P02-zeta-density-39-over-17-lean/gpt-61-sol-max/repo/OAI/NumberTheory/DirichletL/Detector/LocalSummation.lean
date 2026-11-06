@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LocalSeries
 public import OAI.NumberTheory.DirichletL.Detector.Euler
 
@@ -9,8 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 
 lemma hasSum_geometric_tail (f : ℕ → ℂ) (a : ℕ) (B V : ℂ) (hV : ‖V‖<1)
     (hz : ∀ m, m<a → f m=0) (hf : ∀ n, f (n+a)=B*V^n) :
@@ -38,7 +39,11 @@ def principalInner (eta a X W V : ℂ) (e l : ℕ) : ℂ :=
 
 include hc
 
-lemma squarefree_boundary_hasSum (eta a X W V : ℂ) (r : ℕ) :
+section
+variable (eta a X W V : ℂ)
+include eta a X W V
+
+lemma squarefree_boundary_hasSum  (r : ℕ) :
     HasSum (fun m => principalMarkedTerm p hp hg eta a X W V 1 (2*r) 0 m)
       (evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r * (-eta*X)) := by
   apply (hasSum_ite_eq r _).congr
@@ -51,7 +56,7 @@ lemma squarefree_boundary_hasSum (eta a X W V : ℂ) (r : ℕ) :
     rw [ite_eq_left rfl, markedTerm_squarefree_boundary p hp hg hc]
   · rw [ite_eq_right hm, markedTerm_squarefree_boundary_off p hp hg hc _ _ _ _ _ _ _ hm]
 
-lemma even_kone_hasSum (eta a X W V : ℂ) (r : ℕ) :
+lemma even_kone_hasSum  (r : ℕ) :
     HasSum (fun m => principalMarkedTerm p hp hg eta a X W V 0 (2*r+2) 1 m)
       (evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r *
         (W*evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
@@ -65,7 +70,7 @@ lemma even_kone_hasSum (eta a X W V : ℂ) (r : ℕ) :
     rw [ite_eq_left rfl, markedTerm_even_kone p hp hg hc]
   · rw [ite_eq_right hm, markedTerm_even_kone_off p hp hg hc _ _ _ _ _ _ _ hm]
 
-lemma even_bulk_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1) (r : ℕ) :
+lemma even_bulk_hasSum  (hV : ‖V‖<1) (r : ℕ) :
     HasSum (fun m => principalMarkedTerm p hp hg eta a X W V 0 (2*r+2) 0 m)
       (evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r *
         (evenRatio (Ideal.absNorm (Ideal.span {p})) a X V *
@@ -76,7 +81,7 @@ lemma even_bulk_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1) (r : ℕ) :
     rw [Nat.add_comm n (r+1), markedTerm_even_bulk p hp hg hc]
     ring
 
-lemma squarefree_bulk_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1) (r : ℕ) :
+lemma squarefree_bulk_hasSum  (hV : ‖V‖<1) (r : ℕ) :
     HasSum (fun m => principalMarkedTerm p hp hg eta a X W V 1 (2*r) 1 m)
       (evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r *
         (-eta*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)*X*W*V) / (1-V)) := by
@@ -85,6 +90,8 @@ lemma squarefree_bulk_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1) (r : ℕ) :
   · intro n
     rw [Nat.add_comm n (r+1), markedTerm_squarefree_bulk p hp hg hc, pow_succ]
     ring
+end
+
 
 omit hc in
 lemma principalInner_two (eta a X W V : ℂ) (e l : ℕ) :
@@ -122,8 +129,12 @@ omit hc in
     principalInner p hp hg eta a X W V 0 0 = 0 := by
   simp only [principalInner, markedTerm_zero_index p hp hg, tsum_zero]
 
-lemma principalInner_squarefree_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
-    (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1) :
+section
+variable (eta a X W V : ℂ) (hV : ‖V‖<1)
+    (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1)
+include eta a X W V hV hR
+
+lemma principalInner_squarefree_hasSum  :
     HasSum (fun l => principalInner p hp hg eta a X W V 1 l)
       ((-eta*X-eta*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)*X*W*V/(1-V)) /
         (1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
@@ -136,11 +147,9 @@ lemma principalInner_squarefree_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
     simp only [principalInner_odd p hp hg hc eta a X W V 1 _ (by omega)]
     exact hasSum_zero
   convert he.even_add_odd ho using 1
-  simp only [add_zero, div_eq_mul_inv, B]
   ring
 
-lemma principalInner_even_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
-    (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1) :
+lemma principalInner_even_hasSum  :
     HasSum (fun l => principalInner p hp hg eta a X W V 0 l)
       ((evenRatio (Ideal.absNorm (Ideal.span {p})) a X V *
           (1-(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹)/(1-V) +
@@ -162,6 +171,8 @@ lemma principalInner_even_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
     simp only [principalInner_odd p hp hg hc eta a X W V 0 _ (by omega)]
     exact hasSum_zero
   simpa only [add_zero, B] using he.even_add_odd ho
+end
+
 
 def principalMarkedSeries (eta a X W V : ℂ) : ℂ :=
   ∑ e : Fin 2, ∑' l : ℕ, principalInner p hp hg eta a X W V e.val l
@@ -178,10 +189,9 @@ theorem principalMarkedSeries_eq (eta a X W V : ℂ) (hV : ‖V‖<1)
   rw [(principalInner_even_hasSum p hp hg hc eta a X W V hV hR).tsum_eq,
     (principalInner_squarefree_hasSum p hp hg hc eta a X W V hV hR).tsum_eq]
   unfold markedFactor
-  simp only [pow_one]
   ring
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

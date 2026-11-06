@@ -6,20 +6,18 @@ public import LaterPairs.Native.IntegerBlockPartition
 public import LaterPairs.Native.SquareRootBlockBudget
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem euclidean_block_count_of_half_scale {N L : ℕ} {M R : ℝ}
     (hR : 0 < R) (hL : R/2 ≤ L) (hN : (N:ℝ) ≤ M) (hM : R ≤ M) :
     ((N/L:ℕ)+1:ℝ) ≤ 3*M/R := by
   have hd : ((N/L:ℕ):ℝ)*L ≤ N := by exact_mod_cast Nat.div_mul_le_self N L
-  have hprod := mul_le_mul_of_nonneg_left hL (Nat.cast_nonneg (N/L))
   apply (le_div_iff₀ hR).mpr
   nlinarith
 
@@ -38,8 +36,7 @@ theorem norm_range_from_square_root_blocks
       have hk1 : k+1 ≤ N/L := by omega
       have hm := Nat.mul_le_mul_right L hk1
       have hd := Nat.div_mul_le_self N L
-      rw [Nat.add_mul,Nat.one_mul] at hm
-      omega) le_rfl)
+      grind) le_rfl)
     (hb ((N/L)*L) (N%L) (by rw [Nat.div_add_mod'])
       (Nat.le_of_lt (Nat.mod_lt N hLp)))
   have hc := euclidean_block_count_of_half_scale
@@ -55,4 +52,4 @@ theorem norm_range_from_square_root_blocks
     _ = 120*C*(1+2*Real.pi*D)*M*(μ^(-(5:ℝ)/12)/μ^(-(1:ℝ)/2)) := by ring
     _ = _ := by rw [hp]
 
-end TaoTrudgianYang2025
+

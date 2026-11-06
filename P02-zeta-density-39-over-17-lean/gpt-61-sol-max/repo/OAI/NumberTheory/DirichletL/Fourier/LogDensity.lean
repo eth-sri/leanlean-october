@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.TruncatedSecondTransfer
 
 @[expose] public section
@@ -8,96 +9,78 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
+                                  
+                                  
+                          
+                        
 
-section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-namespace JointLogSeparation
-open FirstPassCubeLabels
 
-end JointLogSeparation
-
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
-
-end SecondPassIntegration
-
-namespace JointLogSeparation
-open FirstPassCubeLabels
-
-end JointLogSeparation
-end
-
-open scoped BigOperators Classical
+                                  
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open ActualEisensteinCubic IdealMobiusDivisorSum
 
 theorem ideals_coprime_of_relprime (A B : Ideal O) (h : IsRelPrime A B) : IsCoprime A B := by
   apply Ideal.isCoprime_iff_gcd.mpr
@@ -109,7 +92,7 @@ theorem squarefree_quotient_gcd_coprime (B G : Ideal O) (hB : Squarefree B) :
   have hDB : D ∣ B := GCDMonoid.gcd_dvd_left B G
   have hDG : D ∣ G := GCDMonoid.gcd_dvd_right B G
   have hD : D ≠ 0 := ne_zero_of_dvd_ne_zero hB.ne_zero hDB
-  have hc : IsCoprime (idealQuotient D B) (idealQuotient D G) :=
+  have hc :=
     (gcd_eq_iff_quotient_coprime D B G hD hDB hDG).mp rfl
   have hmul : Squarefree (D * idealQuotient D B) := by rw [idealQuotient_mul hDB]; exact hB
   have hdq : IsCoprime D (idealQuotient D B) :=
@@ -121,12 +104,16 @@ theorem squarefree_quotient_gcd_coprime (B G : Ideal O) (hB : Squarefree B) :
 theorem gcd_mul_of_coprime_divisor (D H G : Ideal O) (hDG : D ∣ G) (hHG : IsCoprime H G) :
     gcd (D * H) G = D := by
   have hleft : D ∣ gcd (D * H) G := GCDMonoid.dvd_gcd (dvd_mul_right D H) hDG
-  have hcop : IsCoprime (gcd (D * H) G) H :=
+  have hcop :=
     (hHG.mono (dvd_refl H) (GCDMonoid.gcd_dvd_right (D * H) G)).symm
   have hright : gcd (D * H) G ∣ D := hcop.dvd_of_dvd_mul_right (GCDMonoid.gcd_dvd_left _ _)
   exact associated_iff_eq.mp (associated_of_dvd_dvd hright hleft)
 
-def squarefreeGcdEquiv (G : Ideal O) (hG : Squarefree G) :
+section
+variable (G : Ideal O)
+include G
+
+def squarefreeGcdEquiv  (hG : Squarefree G) :
     {B : Ideal O // Squarefree B} ≃
       (idealDivisors G) × {H : Ideal O // Squarefree H ∧ IsCoprime H G} where
   toFun B := (⟨gcd B.val G, (mem_idealDivisors hG.ne_zero).mpr (GCDMonoid.gcd_dvd_right _ _)⟩,
@@ -150,8 +137,10 @@ def squarefreeGcdEquiv (G : Ideal O) (hG : Squarefree G) :
         ((mem_idealDivisors hG.ne_zero).mp p.1.property)
       exact mul_left_cancel₀ hD (idealQuotient_mul (dvd_mul_right p.1.val p.2.val))
 
-def coprimeSquarefreeRange (G : Ideal O) (K : ℝ) : Finset (Ideal O) :=
+def coprimeSquarefreeRange  (K : ℝ) : Finset (Ideal O) :=
   (squarefreeIdealRange K).filter (fun H => IsCoprime H G)
+end
+
 
 theorem squarefree_cutoff_summable (K : ℝ) (f : Ideal O → ℂ) :
     Summable (fun B : {B : Ideal O // Squarefree B} =>
@@ -191,7 +180,7 @@ theorem coprime_squarefree_cutoff (G D : Ideal O) (hD : D ≠ 0) (K : ℝ) (f : 
     have hN : (Ideal.absNorm (D * H.val) : ℝ) ≤ K := by
       by_contra hn
       exact hH (ite_eq_right hn)
-    have hHN : (Ideal.absNorm H.val : ℝ) ≤ K :=
+    have hHN :=
       (Nat.cast_le.mpr (norm_le_mul_of_ne_zero D H.val hD)).trans hN
     exact ⟨⟨H.val, Finset.mem_filter.mpr
       ⟨mem_squarefreeIdealRange.mpr ⟨H.property.1, hHN⟩, H.property.2⟩⟩, Subtype.ext rfl⟩
@@ -223,7 +212,7 @@ theorem squarefree_gcd_finite_sum (G : Ideal O) (hG : Squarefree G) (K : ℝ) (f
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open IdealMobiusDivisorSum
 
 theorem canonical_quadraticRow_one (I : Ideal O) (hI : Admissible I) : quadraticRow I 1 = 1 := by
@@ -239,21 +228,29 @@ theorem unrestrictedPairCharacter_one (I J : Ideal O) (hI : Admissible I) (hJ : 
 def normalizedIdealPair (I J lengthScale : Ideal O) : ℂ :=
   unrestrictedPairCharacter I J lengthScale / (Real.sqrt (Ideal.absNorm lengthScale : ℝ) : ℂ)
 
-theorem normalizedIdealPair_mul (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (A B : Ideal O) :
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+include I J hI hJ
+
+section
+variable (hray : columnRay I = columnRay J)
+include hray
+
+theorem normalizedIdealPair_mul  (A B : Ideal O) :
     normalizedIdealPair I J (A * B) = normalizedIdealPair I J A * normalizedIdealPair I J B := by
   simp only [normalizedIdealPair, unrestrictedPairCharacter_mul I J hI hJ hray,
     map_mul, Nat.cast_mul, Real.sqrt_mul (Nat.cast_nonneg _), Complex.ofReal_mul, div_mul_div_comm]
 
-def normalizedIdealPairHom (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) : Ideal O →* ℂ where
+def normalizedIdealPairHom  : Ideal O →* ℂ where
   toFun := normalizedIdealPair I J
   map_one' := by
     rw [normalizedIdealPair, unrestrictedPairCharacter_one I J hI hJ hray, map_one]
     norm_num
   map_mul' := normalizedIdealPair_mul I J hI hJ hray
+end
 
-theorem normalizedIdealPair_square (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (lengthScale : Ideal O) :
+
+theorem normalizedIdealPair_square  (lengthScale : Ideal O) :
     normalizedIdealPair I J lengthScale ^ 2 =
       (idealZeroMask I (idealGenerator lengthScale) * idealZeroMask J (idealGenerator lengthScale)) / (Ideal.absNorm lengthScale : ℂ) := by
   have hc : unrestrictedPairCharacter I J lengthScale ^ 2 =
@@ -266,6 +263,8 @@ theorem normalizedIdealPair_square (I J : Ideal O) (hI : Admissible I) (hJ : Adm
   have hn : (Real.sqrt (Ideal.absNorm lengthScale : ℝ) : ℂ) ^ 2 = (Ideal.absNorm lengthScale : ℂ) := by
     exact_mod_cast Real.sq_sqrt (Nat.cast_nonneg (Ideal.absNorm lengthScale) : (0 : ℝ) ≤ _)
   rw [normalizedIdealPair, div_pow, hc, hn]
+end
+
 
 theorem squarefree_divisor_sum_eq_support (G : Ideal O) (hG : Squarefree G) (f : Ideal O → ℂ) :
     (∑ D ∈ idealDivisors G, f D) =
@@ -317,7 +316,7 @@ theorem normalizedIdealPair_double_divisor
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open ActualEisensteinCubic
 open IdealMobiusDivisorSum QuadraticMainBoundary
 
 def idealNormCutoff (K : ℝ) (H : Ideal O) : ℂ := if (Ideal.absNorm H : ℝ) ≤ K then 1 else 0
@@ -325,19 +324,29 @@ def idealNormCutoff (K : ℝ) (H : Ideal O) : ℂ := if (Ideal.absNorm H : ℝ) 
 def normalizedPairPartial (I J : Ideal O) (K : ℝ) : ℂ :=
   ∑ B : squarefreeIdealRange K, normalizedIdealPair I J B.val
 
-def normalizedPairCoprimePartial (I J G : Ideal O) (K : ℝ) : ℂ :=
+section
+variable (I J G : Ideal O)
+include I J G
+
+def normalizedPairCoprimePartial  (K : ℝ) : ℂ :=
   ∑ H : coprimeSquarefreeRange G K, normalizedIdealPair I J H.val
 
-def normalizedPairDivisors (I J G : Ideal O) : ℂ :=
+def normalizedPairDivisors  : ℂ :=
   ∑ E ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius E : ℂ) * normalizedIdealPair I J E
 
-def normalizedPairDensity (I J G : Ideal O) : ℂ :=
+def normalizedPairDensity  : ℂ :=
   ∏ P ∈ IdealMobiusDivisorSum.primeSupport G,
     (1 - (idealZeroMask I (ConcretePrimeRowBridge.idealGenerator P) *
       idealZeroMask J (ConcretePrimeRowBridge.idealGenerator P)) / (Ideal.absNorm P : ℂ))
+end
 
-theorem normalizedPairPartial_split (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (G : Ideal O) (hG : Squarefree G) (K : ℝ) :
+
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+    (hray : columnRay I = columnRay J) (G : Ideal O) (hG : Squarefree G) (K : ℝ)
+include I J hI hJ hray G hG K
+
+theorem normalizedPairPartial_split  :
     normalizedPairPartial I J K =
       ∑ H : coprimeSquarefreeRange G K, ∑ D ∈ idealDivisors G,
         normalizedIdealPair I J H.val * normalizedIdealPair I J D * idealNormCutoff K (H.val * D) := by
@@ -355,8 +364,7 @@ theorem normalizedPairPartial_split (I J : Ideal O) (hI : Admissible I) (hJ : Ad
   split_ifs <;> ring
 
 theorem normalizedPair_main_difference
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hray : columnRay I = columnRay J)
-    (G : Ideal O) (hG : Squarefree G) (K : ℝ) :
+     :
     normalizedPairPartial I J K * normalizedPairDivisors I J G -
       normalizedPairCoprimePartial I J G K * normalizedPairDensity I J G =
       ∑ H : coprimeSquarefreeRange G K, ∑ D ∈ idealDivisors G, ∑ E ∈ idealDivisors G,
@@ -381,7 +389,7 @@ theorem normalizedPair_main_difference
   rw [← Finset.sum_sub_distrib]
   apply Finset.sum_congr rfl
   intro E hE
-  have hHN : (Ideal.absNorm H.val : ℝ) ≤ K :=
+  have hHN :=
     (mem_squarefreeIdealRange.mp (Finset.mem_filter.mp H.property).1).2
   have hc : (cutoffDifference K H.val D : ℂ) = idealNormCutoff K (H.val * D) - 1 := by
     unfold cutoffDifference idealNormCutoff
@@ -390,14 +398,20 @@ theorem normalizedPair_main_difference
   rw [hc, normalizedIdealPair_mul I J hI hJ hray,
     normalizedIdealPair_mul I J hI hJ hray]
   ring
+end
+
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
 
-def commonMaskIdeal (D : Ideal O) : Ideal O := ∏ P ∈ gcdMaskPrimes D, P
+section
+variable (D : Ideal O)
+include D
 
-theorem commonMaskIdeal_squarefree (D : Ideal O) : Squarefree (commonMaskIdeal D) := by
+def commonMaskIdeal  : Ideal O := ∏ P ∈ gcdMaskPrimes D, P
+
+theorem commonMaskIdeal_squarefree  : Squarefree (commonMaskIdeal D) := by
   have hp (P : Ideal O) (hP : P ∈ gcdMaskPrimes D) : Prime P := by
     let : P.IsMaximal := gcdMaskPrimes_maximal D ⟨P, hP⟩
     exact Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
@@ -408,6 +422,8 @@ theorem commonMaskIdeal_squarefree (D : Ideal O) : Squarefree (commonMaskIdeal D
     exact (Ideal.isCoprime_of_isMaximal hne).isRelPrime
   · intro P hP
     exact (hp P hP).squarefree
+end
+
 
 theorem fixedBadPrimes_dvd_commonMaskIdeal (D P : Ideal O) (hP : P ∈ fixedBadPrimes) :
     P ∣ commonMaskIdeal D := by
@@ -419,7 +435,7 @@ theorem admissible_of_squarefree_coprime_bad
     (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G) : Admissible H := by
   refine ⟨hH.ne_zero, hH, ?_⟩
   intro P hP
-  have hp : Prime P := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
+  have hp := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
   let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
   apply (prime_good_iff_not_bad P).mpr
   intro hb
@@ -433,7 +449,11 @@ theorem coprimeSquarefreeRange_subset_idealRange (G : Ideal O)
   obtain ⟨hsf, hN⟩ := mem_squarefreeIdealRange.mp hHs
   exact mem_idealRange.mpr ⟨admissible_of_squarefree_coprime_bad H G hsf hc hbad, hN⟩
 
-theorem commonMaskIdeal_eq_fixed_mul (D : Ideal O) (hD : Admissible D) :
+section
+variable (D : Ideal O) (hD : Admissible D)
+include D hD
+
+theorem commonMaskIdeal_eq_fixed_mul  :
     commonMaskIdeal D = (∏ P ∈ fixedBadPrimes, P) * D := by
   have hd : Disjoint fixedBadPrimes (IdealMobiusDivisorSum.primeSupport D) := by
     apply Finset.disjoint_left.mpr
@@ -445,12 +465,14 @@ theorem commonMaskIdeal_eq_fixed_mul (D : Ideal O) (hD : Admissible D) :
   change (∏ P ∈ fixedBadPrimes ∪ IdealMobiusDivisorSum.primeSupport D, P) = _
   rw [Finset.prod_union hd, squarefree_support_product_self hD.2.1]
 
-theorem commonMaskIdeal_norm (D : Ideal O) (hD : Admissible D) :
+theorem commonMaskIdeal_norm  :
     Ideal.absNorm (commonMaskIdeal D) = Ideal.absNorm (∏ P ∈ fixedBadPrimes, P) * Ideal.absNorm D := by
   rw [commonMaskIdeal_eq_fixed_mul D hD, map_mul]
-
-end CanonicalQuadraticSieve
-
 end
 
-end OAI
+
+
+
+
+
+

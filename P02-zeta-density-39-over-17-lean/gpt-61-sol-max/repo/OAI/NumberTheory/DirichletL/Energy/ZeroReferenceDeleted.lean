@@ -7,20 +7,20 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily HeckeDyadic QuadraticInitialBound
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceChild
 open CenteredMomentEnergyZeroReferenceGeometry CenteredMomentEnergyZeroReferenceReflection
 open CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional
+open scoped HeckeO
 
 theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
@@ -30,7 +30,7 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤ s.width/6 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
@@ -105,8 +105,8 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
             · exact hg.2.2.1)
         _=_:=by ring
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceDeleted
 
-end
 
-end OAI
+
+
+

@@ -157,10 +157,10 @@ theorem logPhase_norm_ratio (q X θ : ℝ) (hq : 0 < q) (hX : 0 < X) :
   push_cast
   ring
 
-open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
 
-end SevenEighths.CenteredMomentSmooth
-end
+open scoped EisensteinO
 
-end OAI
+
+
+
+

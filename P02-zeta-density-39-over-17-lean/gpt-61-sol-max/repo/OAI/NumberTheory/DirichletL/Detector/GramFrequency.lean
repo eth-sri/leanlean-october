@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramGcd
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open CanonicalQuadraticSieve ConcreteTraceCRT
 open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma actual_common_frequency_zero (C n₁ n₂ j : O)
     (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))
@@ -53,7 +53,7 @@ theorem actual_common_frequency_tsum (C n₁ n₂ : O)
   · rw [ite_eq_left hj]
   · rw [ite_eq_right hj,actual_common_frequency_zero C n₁ n₂ j hC h₁ h₂ hj,zero_mul]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

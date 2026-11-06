@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalTail
 
 @[expose] public section
@@ -7,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open SecondPassArithmetic
-noncomputable section
+
 
 lemma first_tail_fixed_cap (K D E U₁ U₂ B G₁ G₂ P H : ℝ) (A : ℕ)
     (hK : 0<K) (hD : 0<D) (hE : 0<E) (hU₁ : 0<U₁) (hU₂ : 0<U₂) (hB : 1≤B)
@@ -52,7 +53,6 @@ theorem choose_first_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau : 
       _ = Z^(19*Lcap-tau*(A:ℝ)) := by
         rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le,←Real.rpow_sub hz]
         congr 1
-        norm_num
         ring
       _ ≤ _ := by
         apply Real.rpow_le_rpow_of_exponent_le hZ
@@ -63,7 +63,7 @@ theorem choose_first_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau : 
     _ = (65536*G₁*G₂*P)*((Z^Lcap)^19/(1+Z^tau)^A) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hdecay (by positivity)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

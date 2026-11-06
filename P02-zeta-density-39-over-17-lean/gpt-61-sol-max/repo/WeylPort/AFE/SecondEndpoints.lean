@@ -74,4 +74,4 @@ theorem norm_negativeTail_le_four {M : ℕ} {y : ℝ} (hy : 0 < y) (hyhalf : y �
   have hsum : (∑' n : ℕ, 1 / ((n : ℝ) + 1) ^ 2) ≤ 2 := by simpa only [one_pow, div_one, one_add_one_eq_two] using hs.2.2
   exact hb.trans (by linarith)
 
-end DhimanKadiriQuesadaHerrera2026
+

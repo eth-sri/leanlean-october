@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -38,8 +39,7 @@ def fresnelGaussianValue (c : ℝ) : ℂ :=
 
 theorem fresnelGaussianBase {c : ℝ} (hc : 0 < c) :
     (Real.pi : ℂ) / (2 * Real.pi * c * I) = -I / ((2 * c : ℝ) : ℂ) := by
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
-  have hpiC : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hcC := Complex.ofReal_ne_zero.mpr hc.ne'
   push_cast
   field_simp
   simp [Complex.I_sq]
@@ -47,11 +47,9 @@ theorem fresnelGaussianBase {c : ℝ} (hc : 0 < c) :
 theorem continuousAt_fresnelGaussianValue_damping {c : ℝ} (hc : 0 < c) :
     ContinuousAt (fun ε : ℝ =>
       ((Real.pi : ℂ) / ((ε : ℂ) + 2 * Real.pi * c * I)) ^ (1 / 2 : ℂ)) 0 := by
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
-  have hpiC : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hden : ((0 : ℝ) : ℂ) + 2 * Real.pi * c * I ≠ 0 := by
-    simpa only [Complex.ofReal_zero, zero_add] using
-      mul_ne_zero (mul_ne_zero (mul_ne_zero (by norm_num : (2 : ℂ) ≠ 0) hpiC) hcC) I_ne_zero
+  have hcC := Complex.ofReal_ne_zero.mpr hc.ne'
+  have hpiC := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hden : ((0 : ℝ) : ℂ) + 2 * Real.pi * c * I ≠ 0 := by simp_all
   have hbase : (Real.pi : ℂ) / (2 * Real.pi * c * I) ∈ slitPlane := by
     rw [fresnelGaussianBase hc]
     apply Or.inr
@@ -96,4 +94,4 @@ theorem norm_atkinsonQuadraticWindow_sub_gaussianValue_le {c H : ℝ}
   filter_upwards [self_mem_nhdsWithin] with ε hε
   exact norm_gaussianValue_sub_fresnelDampedWindow_le hε hc hH
 
-end MathCollab.Density.Stronger.Atkinson
+

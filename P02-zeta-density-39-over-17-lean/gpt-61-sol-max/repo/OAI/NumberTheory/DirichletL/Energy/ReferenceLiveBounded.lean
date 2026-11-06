@@ -10,15 +10,15 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLiveBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceRobustOriginal CenteredMomentEnergyReferenceScalarReserve
-open CenteredMomentEnergyReferenceProfileBudget
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
+
+
+open CenteredMomentNaturalFixedRaySource
+
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -40,11 +40,11 @@ theorem original_reference_power_live
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → rho≤s.width → s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → rho≤ s.width → s.width≤Mcap →
       ∀p:Profiles a b,
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i) →
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width →
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width →
       energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
         (fun i=>primePool M H bslot (Z^(w i)))
         (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -87,8 +87,8 @@ theorem original_reference_power_live
       s hQ hslo hs (p.profile 0) (p.profile 1) (p.support 0) (p.support 1)
       X₁ X₂ hX₁ hX₂ hg.1 hg.2
 
-end SevenEighths.CenteredMomentEnergyReferenceLiveBounded
 
-end
 
-end OAI
+
+
+

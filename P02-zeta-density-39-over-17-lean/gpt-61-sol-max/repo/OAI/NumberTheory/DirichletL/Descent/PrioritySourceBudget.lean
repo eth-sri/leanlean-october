@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.PriorityCellBudget
 
 @[expose] public section
@@ -10,7 +11,7 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def priorityCellScalar (Z Y L X ell Ractive j t eta eps epsmass B:ℝ) (ray:ℂ) (d:BlockIndex):ℝ :=
   (Real.exp (6*L)*‖(Y:ℂ)*ray*((scales d 1*scales d 2*Z^(secondCellColumnExponent Z X d):ℝ):ℂ)⁻¹‖)*
@@ -51,7 +52,6 @@ theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i)
   intro ι _ p hp _ Jo Jn source Z M r ell V delta A B Ractive j t eta tau pi eps epsmass b C
     ray hZ hC hb hthreshold hk hnorm hgeom hmass
   have hZ':1<Z:=lt_of_lt_of_le (by norm_num) hZ
-  have hz:0<Z:=zero_lt_one.trans hZ'
   have hcard:((keys p source).card:ℝ)≤(1+capConstant caps*Real.log Z)^4:=by
     have h:=keys_card_le_product p hp source hk caps Z hnorm
     have hr:((keys p source).card:ℝ)≤∏i:Fin 4,((dyadIndex (Z^(caps i)):ℝ)+1):=by exact_mod_cast h
@@ -73,8 +73,8 @@ theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i)
       mul_le_mul_of_nonneg_right hcard (by positivity)
     _= _:=by ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

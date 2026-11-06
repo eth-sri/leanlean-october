@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorPolynomialJets
 
@@ -12,13 +13,13 @@ Taylor's theorem on the genuine segment gives a bound involving only
 the original highest derivative on that segment, for either orientation.
 -/
 
-noncomputable section
+
 
 open Set
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem taylorWithinEval_uIcc_eq_finiteTaylorPolynomial
     {f : ℝ → ℝ} {a x : ℝ} (hax : a ≠ x)
@@ -67,7 +68,7 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le
     |iteratedDeriv j (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
       M*|x-a|^(Q+1-j) := by
   have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
-  have hN : (j : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl j
   rw [iteratedDeriv_fun_sub ((hf x right_mem_uIcc).of_le hN)
     ((finiteTaylorPolynomial_contDiff f Q a).contDiffAt.of_le hN),
@@ -83,4 +84,4 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le
     rw [iteratedDeriv_real_comp_order,show Q-j+1+j = Q+1 by omega]
     exact hb y hy
 
-end TaoTrudgianYang2025
+

@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels
+open InversePrincipalEnergy
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ Cm : ℝ, 0 < Cm ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -39,7 +39,7 @@ theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
       (V.norm_le_seminorm ℝ _) (norm_nonneg _) (by positivity)).trans
     gcongr
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

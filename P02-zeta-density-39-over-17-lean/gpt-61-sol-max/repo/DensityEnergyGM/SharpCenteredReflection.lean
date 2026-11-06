@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpReflectionSecond
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
@@ -44,9 +44,7 @@ theorem reflection_local_energy_sharp {η : ℝ} (hη : 0 < η) :
       nlinarith [Real.pi_gt_three,mul_pos hH hLp]
     have hMT : (M:ℝ)≤4*Real.sqrt T := by linarith
     have h := hBound T t₀ hT M hM0 hMT W hW hSep
-    have hSq : (M:ℝ)^2≤4*X^2 := by
-      have hh := pow_le_pow_left₀ (Nat.cast_nonneg M : (0:ℝ)≤M) hMU 2
-      nlinarith
+    have hSq : (M:ℝ)^2≤4*X^2 := by nlinarith
     have hPow (q : ℝ) (hq : 0≤q) (hq2 : q≤2) : (M:ℝ)^q≤4*X^q := by
       calc
         _ ≤ (2*X)^q := Real.rpow_le_rpow (Nat.cast_nonneg M) hMU hq
@@ -80,4 +78,4 @@ theorem reflection_local_energy_sharp {η : ℝ} (hη : 0 < η) :
       exact_mod_cast reflectionBlocks_card_le hLp hH
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

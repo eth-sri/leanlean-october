@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import DensityEnergyGM.FiniteRatioSecond
 public import DensityEnergyGM.DifferenceEnergyGeometry
 public import GuthMaynard.Improvement.SourceRatioAssembly
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
@@ -61,14 +61,12 @@ theorem real_scale_ratio_second_sharp_native (ε : ℝ) (hε : 0 < ε) :
   have hS0 : 0 ≤ S M := by dsimp only [S, R, E]; positivity
   have hEndpoint : R ^ 2 ≤ 4 * L := by
     have h := card_sq_le_four_quarter_height_energy hTtwo hBase
-    dsimp only [R, L, E]
-    nlinarith
+    grind
   have hLast : L * M ^ (6 / 5 : ℝ) ≤ S M := by
     have hFirst : 0 ≤ M ^ 2 * E ^ (1 / 2 : ℝ) := by positivity
     have hOther : 0 ≤ R * E ^ (1 / 4 : ℝ) * M ^ (9 / 5 : ℝ) := by
       dsimp only [R, E]; positivity
-    dsimp only [L, S]
-    nlinarith
+    grind
   have hSgrow : S M ≤ T ^ ε * S M := by nlinarith
   by_cases hMone : 1 ≤ M
   · let N : ℕ := ⌊M⌋₊
@@ -128,4 +126,4 @@ theorem real_scale_ratio_second_sharp_native (ε : ℝ) (hε : 0 < ε) :
       simp only [finiteRatioSecond, Finset.sum_empty]
       positivity
 
-end Montgomery.RationalMoment
+

@@ -10,8 +10,8 @@ noncomputable section
 open scoped Classical ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def lowGramFactor (C : CalibrationData) (X Y δ : ℝ) : ℝ :=
@@ -92,7 +92,7 @@ theorem compensation_tuple_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       mul_le_mul_of_nonneg_left hh (by positivity)
     _=_ := by ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

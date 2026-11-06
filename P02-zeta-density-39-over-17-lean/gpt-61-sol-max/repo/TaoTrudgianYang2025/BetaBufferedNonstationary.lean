@@ -13,13 +13,13 @@ The cutoff variation is proved, the monotone slope comes from the original
 model, and the normalized-to-physical factor N is retained.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem modelPhaseBufferedCutoff_support_open {l r η : ℝ} (hη : 0 < η) :
     Function.support (modelPhaseBufferedCutoff l r η) ⊆ Ioo (l+η) (r-η) := by
@@ -117,4 +117,4 @@ theorem norm_modelPhaseBufferedFourierMode_nonstationary
     (norm_modelPhaseBufferedNormalizedMode_nonstationary hσ hδ hF hT hη hl hr hlam hgap)
     hN.le).trans_eq (by ring)
 
-end TaoTrudgianYang2025
+

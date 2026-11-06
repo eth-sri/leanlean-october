@@ -8,8 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve UniqueFactorizationMonoid ProbeEuler
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve UniqueFactorizationMonoid
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma outside_prime_supported (S : Finset Id) (hbad : fixedBadPrimes⊆S)
@@ -37,7 +37,7 @@ theorem source_principalHigh_L_factorization (S : Finset Id) (hS : SourceExclusi
         HeckeFamily.LFunction (η.excludePrimes S hS.prime) x * globalClosedCorrection η S x w z :=
   principalHigh_L_factorization S hS.prime (outside_prime_supported S hS.bad) hS.tail η x w z hx hw hz
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

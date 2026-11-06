@@ -11,12 +11,12 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplifiedRetainedRadius
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy
 open CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy
 open CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem ballProfile_support_upper (x : ℝ) (hx : 0≤x) (h : ballProfile x≠0) : x<2 := by
   have hb : x∈Function.support QuadraticInitialBound.sieveBump := by
@@ -151,11 +151,11 @@ theorem retained_nominal_upper (I J E : Ideal O) (hE : E≠0)
     (firstNominalScale_pos I J E hE K X hK hX)]
   exact hsec
 
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationGlobal
 
-end SevenEighths.CenteredMomentAmplifiedRetainedRadius
 
-end
 
-end OAI
+
+
+
+
+

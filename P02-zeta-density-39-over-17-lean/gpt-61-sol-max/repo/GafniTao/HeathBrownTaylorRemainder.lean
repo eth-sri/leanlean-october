@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownPolynomialPhase
 public import Mathlib.Analysis.Calculus.Taylor
 
@@ -13,11 +14,11 @@ factorial.  A later entry bridge supplies these local regularity hypotheses
 from the source assumptions after the two endpoint ranges are separated.
 -/
 
-open Set
+
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem iteratedDeriv_pred_deriv
     {k : ℕ} (hk : 1 ≤ k) (f : ℝ → ℝ) :
@@ -26,9 +27,13 @@ theorem iteratedDeriv_pred_deriv
   congr 1
   omega
 
+section
+variable {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ}
+include k hk f
+
 /-- Exact Taylor--Lagrange identity for `f'` on `[n,n+x]`. -/
 theorem exists_heathBrown_deriv_taylor_remainder
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x : ℝ}
+     {n x : ℝ}
     (hx : 0 < x)
     (hf : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) (Set.Icc n (n + x))) :
     ∃ ξ ∈ Set.Ioo n (n + x),
@@ -60,7 +65,7 @@ theorem exists_heathBrown_deriv_taylor_remainder
 
 /-- Norm form of the preceding exact remainder identity. -/
 theorem norm_heathBrown_deriv_taylor_remainder_le
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x A lambda : ℝ}
+     {n x A lambda : ℝ}
     (hx : 0 < x)
     (hf : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) (Set.Icc n (n + x)))
     (hderiv : ∀ ξ ∈ Set.Ioo n (n + x),
@@ -74,14 +79,12 @@ theorem norm_heathBrown_deriv_taylor_remainder_le
   rw [hrem]
   simp only [norm_div, norm_mul, norm_pow, Real.norm_eq_abs,
     abs_of_pos hx, abs_of_pos hfac]
-  have hpow : 0 ≤ x ^ (k - 1) := pow_nonneg hx.le _
-  exact div_le_div_of_nonneg_right
-    (mul_le_mul_of_nonneg_right (hderiv ξ hξ) hpow) hfac.le
+  bound
 
 /-- Uniform source form on `0 < x ≤ H`; discarding the positive factorial
 only weakens the exact Lagrange bound. -/
 theorem norm_heathBrown_deriv_taylor_remainder_le_scale
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x A lambda H : ℝ}
+     {n x A lambda H : ℝ}
     (hx : 0 < x) (hxH : x ≤ H)
     (hf : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) (Set.Icc n (n + x)))
     (hderiv : ∀ ξ ∈ Set.Ioo n (n + x),
@@ -111,8 +114,10 @@ theorem norm_heathBrown_deriv_taylor_remainder_le_scale
       A * lambda * x ^ (k - 1) := hraw.trans hdiv
     _ ≤ A * lambda * H ^ (k - 1) := by
       gcongr
-
-
 end
 
-end GafniTao
+
+
+
+
+

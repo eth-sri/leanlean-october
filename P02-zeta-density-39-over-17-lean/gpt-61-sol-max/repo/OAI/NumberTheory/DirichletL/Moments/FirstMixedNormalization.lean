@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalization
 open CenteredMomentDescentLedger CenteredMomentSectorLocalization
 open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
     (hZ:1<Z)(hV:0<V)(hC:0<C)(hD:0<D)(hE:0<NE)(hR:0<NR)(hK:0<K)(hQ:0<Q):
@@ -25,7 +26,7 @@ theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
       (Q*(V/C)^2*Z^B)=
       Z^(Real.logb Z V-5*M/6-firstSaving c (d+K0-j) w q wo B g ell):=by
   have hz:0<Z:=zero_lt_one.trans hZ
-  have hzlog:Real.log Z≠0:=ne_of_gt (Real.log_pos hZ)
+  have hzlog :=ne_of_gt (Real.log_pos hZ)
   dsimp only
   apply Real.log_injOn_pos
   · simp only [Set.mem_Ioi];positivity
@@ -40,8 +41,8 @@ theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
 theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
     (hk:k=1 ∨ k=6 ∨ k=7):
     localErrorCost p (k-1)≤Z^(-errorMoving p Z k):=by
-  have hn:1≤normValue p:=normValue_ge_one p hp
-  have hnpos:0<normValue p:=normValue_pos p hp
+  have hn :=normValue_ge_one p hp
+  have hnpos :=normValue_pos p hp
   have he:Z^(-(Real.logb Z (normValue p)))=(normValue p)⁻¹:=by
     rw [Real.rpow_neg (zero_lt_one.trans hZ).le,
       Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hnpos]
@@ -54,8 +55,8 @@ theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
     nlinarith
   · simpa [localErrorCost,errorMoving,normValue] using he.ge
 
-end SevenEighths.CenteredMomentFirstMixedNormalization
 
-end
 
-end OAI
+
+
+

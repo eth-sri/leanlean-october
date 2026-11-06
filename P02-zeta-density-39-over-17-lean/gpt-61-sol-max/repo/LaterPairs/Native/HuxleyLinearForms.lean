@@ -1,14 +1,15 @@
 module
+import LaterPairs.Native.ZetaSourceLogScales
+import Mathlib
 public import LaterPairs.Native.HuxleyCore
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
 open Filter Polynomial Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.PointMean
 open scoped BigOperators FourierTransform ContDiff Classical NNReal Topology
-noncomputable section
+
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 open Set Expdb TaoTrudgianYang2025
 open scoped BigOperators FourierTransform ContDiff Classical NNReal
@@ -40,9 +41,7 @@ private theorem uniform_model_sum_of_beta_interval
   have hcover : Icc lo hi⊆⋃ α,U α := by
     intro x hx
     refine mem_iUnion.mpr ⟨⟨x,hx⟩,?_⟩
-    have hh := hrad ⟨x,hx⟩
-    change x-radius ⟨x,hx⟩<x ∧ x<x+radius ⟨x,hx⟩
-    constructor <;> linarith only [hh]
+    grind
   obtain ⟨s,hs⟩ := isCompact_Icc.elim_finite_subcover U (fun _ => isOpen_Ioo) hcover
   have hsne : s.Nonempty := by
     have hz := hs (show lo∈Icc lo hi from ⟨le_rfl,hlohi⟩)
@@ -72,10 +71,7 @@ private theorem uniform_model_sum_of_beta_interval
       (Real.le_logb_iff_rpow_le hT hN).mp (by linarith only [hu.1,hrδ]),
       (Real.logb_le_iff_le_rpow hT hN).mp (by linarith only [hu.2,hrδ]),
       approximateModelPhase_mono hF hPle hδle,ha,hzend⟩
-  have hexp : b+c*α+ε/2≤b+c*Real.logb T N+ε := by
-    nlinarith only [hc,hc₁,hε,hu.1,hrε,
-      mul_nonneg hc (show 0≤Real.logb T N+ε/16-(α:ℝ) by
-        linarith only [hu.1,hrε])]
+  have hexp : b+c*α+ε/2≤b+c*Real.logb T N+ε := by nlinarith
   exact hpoint.trans (mul_le_mul hCle
     (Real.rpow_le_rpow_of_exponent_le hT.le hexp)
     (Real.rpow_nonneg (zero_lt_one.trans hT).le _) (zero_le_one.trans hCall))
@@ -163,14 +159,15 @@ private theorem middle_source_beta_tail
       linarith only [hh,hB,hρμ]
   have hh := CubicJointCount.exponentSumGrowthExponent_le_sargosD_bourgain (α:=μ) hμ
   by_cases hρ : ρ≤12/31
-  · have hB := hfirst hρ
-    linarith only [hh,hB,hρ,lt_of_not_ge h11]
-  · have hB := hsecond (le_of_not_ge hρ)
-    linarith only [hh,hB,hρhi,lt_of_not_ge h11]
+  all_goals (grind)
 
+
+section
+variable {α : ℝ} (hα : (391838:ℝ)/1377271≤α) (hα₁ : α≤(754:ℝ)/2579)
+include α hα hα₁
 
 private theorem third_pair_parent_geometry
-    {α : ℝ} (hα : (391838:ℝ)/1377271≤α) (hα₁ : α≤(754:ℝ)/2579) :
+     :
     let β := 10769/351096+(587779/702192)*α
     let η := 2*(α-β)
     let ρ := α/(1+α-2*β)
@@ -203,21 +200,15 @@ private theorem third_pair_parent_geometry
     rw [hρdiv]
     apply (le_sub_iff_add_le).mpr
     apply (le_div_iff₀ hden).mpr
-    have he : den=1+α-2*(10769/351096+(587779/702192)*α) := rfl
-    nlinarith only [hρden,he,hα]
-  have hsecond : (4+103*ρ)/128≤ρ/α-1 := by
-    rw [hρdiv]
-    apply (le_sub_iff_add_le).mpr
-    apply (le_div_iff₀ hden).mpr
-    have he : den=1+α-2*(10769/351096+(587779/702192)*α) := rfl
-    nlinarith only [hρden,he,hα₁]
+    grind
+  have hsecond : (4+103*ρ)/128≤ρ/α-1 := by grind
   exact ⟨hαp,hαhalf,hηp,hηα,hρp,hρlo,hρhi,
     (div_pos zero_lt_one hαp).le,
     (div_le_iff₀ hαp).mpr (by linarith only [hαquarter]),hfirst,hsecond⟩
 
 
 private theorem third_pair_parent_beta
-    {α : ℝ} (hα : (391838:ℝ)/1377271≤α) (hα₁ : α≤(754:ℝ)/2579) :
+     :
     let β := 10769/351096+(587779/702192)*α
     let ρ := α/(1+α-2*β)
     ∀ μ : ℝ≥0, (μ:ℝ)∈Icc ρ 1 →
@@ -231,10 +222,9 @@ private theorem third_pair_parent_beta
     apply (le_div_iff₀ hαp).mpr
     exact mul_le_of_le_one_right (sub_nonneg.mpr hμ.1)
       (by linarith only [hαhalf] : α≤1)
-  rw [sub_div] at hdifference
-  have hm : (1/α)*(μ:ℝ)=(μ:ℝ)/α := by ring
-  rw [hm]
-  linarith only [hh,hdifference]
+  grind
+end
+
 
 
 private theorem third_pair_capped_lower_full_window_margins
@@ -325,8 +315,7 @@ private theorem eventually_local_A_physical_window
   have hHup : (H:ℝ)≤X^h := Nat.floor_le (Real.rpow_nonneg hXp.le h)
   have hHlo : X^h/2≤(H:ℝ) := by
     have hz := Nat.lt_floor_add_one (X^h)
-    change X^h<(H:ℝ)+1 at hz
-    linarith only [hz,hHBaseX]
+    grind
   have hHE : (H:ℝ)≤η*M := by
     have he : X^h≤X^ℓ*η := (div_le_iff₀ hη).mp
       (by simpa only [div_eq_mul_inv,one_mul,mul_one,mul_comm] using hEX)
@@ -374,7 +363,6 @@ private theorem eventually_local_A_physical_window
         have he : X^d*X*X^h=X^(d+1+h) := by
           rw [Real.rpow_add hXp,Real.rpow_add hXp,Real.rpow_one]
         rw [he,← Real.rpow_sub hXp]
-        congr 1
         ring
   have hLogLo : ρ≤Real.logb (σ*X*r/M) (M-r) := by
     apply (Real.le_logb_iff_rpow_le hYgt hNr).mpr
@@ -447,16 +435,12 @@ private theorem source_weyl_harmonic_bound
     linarith only [ha,hb,hM]
   have hw := source_exponentialSum_weyl F X M a L H
   simp only [Nat.cast_add,Nat.cast_one] at hw
-  have hmajor : S≤1*((H:ℝ)*(A*(1+Real.log X)/(H:ℝ))+(M^2/M)*1) := by
-    have he : (H:ℝ)*(A*(1+Real.log X)/(H:ℝ))=A*(1+Real.log X) := by field_simp
-    rw [one_mul,he,mul_one]
-    exact hsum.trans (le_add_of_nonneg_right (div_nonneg (sq_nonneg M) hMp.le))
+  have hmajor : S≤1*((H:ℝ)*(A*(1+Real.log X)/(H:ℝ))+(M^2/M)*1) := by field_simp <;> nlinarith
   have hm := weyl_correlation_sum_majorant hS
     (div_nonneg (mul_nonneg hA hB) hHp.le) hMp hHp
     (by positivity : 0≤(L:ℝ)+1) hL hHM (le_refl M) (le_refl (1:ℝ))
     (le_refl (1:ℝ)) hw hmajor
-  convert hm using 1
-  ring
+  grind
 
 
 private theorem local_A_power_ratio
@@ -472,8 +456,12 @@ private theorem local_A_power_ratio
       ring
 
 
+section
+variable {α : ℝ≥0}
+include α
+
 private theorem third_pair_local_A_nonAsymptotic
-    {α : ℝ≥0} (hα : (391838:ℝ)/1377271≤(α:ℝ))
+     (hα : (391838:ℝ)/1377271≤(α:ℝ))
     (hα₁ : (α:ℝ)≤(754:ℝ)/2579) :
     IsExponentSumBoundNonAsymptotic α
       (10769/351096+(587779/702192)*(α:ℝ)) := by
@@ -493,12 +481,7 @@ private theorem third_pair_local_A_nonAsymptotic
   have hρquarter : 1/4≤ρ := by linarith only [hρlo]
   have hρone : ρ≤1 := by linarith only [hρhi]
   have hαc : (α:ℝ)*c=1 := by dsimp only [c]; field_simp
-  have hρbase : ρ*(1+η₀-(α:ℝ))=(α:ℝ) := by
-    have hden : 0<1+(α:ℝ)-2*β := by
-      dsimp only [β]
-      linarith only [hα₁]
-    dsimp only [ρ,η₀]
-    convert div_mul_cancel₀ (α:ℝ) hden.ne' using 1; ring
+  have hρbase : ρ*(1+η₀-(α:ℝ))=(α:ℝ) := by grind
   intro ε hε σ hσ
   let d := min (η₀/2) (ε/4)
   let w := min (d/100) ((1-2*(α:ℝ))/100)
@@ -527,8 +510,7 @@ private theorem third_pair_local_A_nonAsymptotic
     have hρd : d/4≤ρ*d := by
       nlinarith only [mul_nonneg (sub_nonneg.mpr hρquarter) hd.le]
     have hρw : ρ*w≤w := mul_le_of_le_one_left hw.le hρone
-    dsimp only [h,ℓ]
-    nlinarith only [hρbase,hρd,hρw,hwd]
+    grind
   have hDiagExp : 2*v-h≤E := by
     dsimp only [E,v,h,η₀,εs]
     nlinarith only [mul_nonneg hw.le hc,hd.le]
@@ -537,8 +519,7 @@ private theorem third_pair_local_A_nonAsymptotic
     nlinarith only [hαc]
   have hFinalExp : E+ε/4≤2*(β+ε) := by
     have hwc : w*(c+2)≤6*w := by nlinarith only [mul_nonneg hw.le (sub_nonneg.mpr hc₁)]
-    dsimp only [E,εs]
-    linarith only [hwc,hwd,hdε,hε]
+    grind
   obtain ⟨δsrc,hδsrc,P,hP,η,hη,hηhalf,Csrc,hCsrc,hSource⟩ :=
     source_correlation_of_local_beta hρp.le hρone hc hc₁
       (third_pair_parent_beta hα hα₁) hσ hεs
@@ -580,7 +561,7 @@ private theorem third_pair_local_A_nonAsymptotic
   by_cases hba : b<a
   · rw [exponentialSumAt_of_lt hba,norm_zero]
     exact Real.rpow_nonneg hXp.le _
-  have hab : a≤b := Nat.le_of_not_gt hba
+  have hab := Nat.le_of_not_gt hba
   let L := b-a
   have hEnd : a+L=b := Nat.add_sub_of_le hab
   have ha := setup.scale_le_start
@@ -631,7 +612,7 @@ private theorem third_pair_local_A_nonAsymptotic
       _ ≤ 12*(2*X^E+2*(Csrc/σ)*(1+Real.log X)*X^E) :=
         mul_le_mul_of_nonneg_left (add_le_add hDiag hCross) (by norm_num)
       _ ≤ D*(1+Real.log X)*X^E := by
-        have hLog0 : 0≤Real.log X := Real.log_nonneg hX
+        have hLog0 := Real.log_nonneg hX
         have hExtra := mul_nonneg hLog0 (Real.rpow_nonneg hXp.le E)
         dsimp only [D]
         nlinarith only [hExtra]
@@ -654,7 +635,7 @@ private theorem third_pair_local_A_nonAsymptotic
 
 
 private theorem third_pair_capped_lower_nonAsymptotic
-    {α : ℝ≥0} {t : ℝ} (ht : t∈Icc (0:ℝ) 1)
+     {t : ℝ} (ht : t∈Icc (0:ℝ) 1)
     (hα : (α:ℝ)=(1-t)*(890/3277)+t*(391838/1377271)) :
     Expdb.IsExponentSumBoundNonAsymptotic α (10769/351096+(587779/702192)*(α:ℝ)) := by
   let h := ((1-t)*2719220+t*3138145)/100000000
@@ -700,7 +681,6 @@ private theorem third_pair_capped_lower_nonAsymptotic
         72*(g u)-216*h+284*v-24*(ν u)+μ≤288*β ∧
         504*v-72-216*h+72*(ν u)+μ≤288*β := by
     have hh := third_pair_capped_lower_full_window_margins ht hu
-    dsimp only at hh
     rw [←hα] at hh
     exact hh
   exact nativeHuxleyCore_capped_short_nonAsymptotic_of_window_margins hδw hμ hMargins
@@ -710,14 +690,11 @@ private theorem third_pair_capped_lower_nonAsymptotic
                                                                      
 
 theorem exponentSumGrowthExponent_le_huxley_thirdPair_lowerRange
-    {α : ℝ≥0} (hα : (890:ℝ)/3277≤(α:ℝ))
+     (hα : (890:ℝ)/3277≤(α:ℝ))
     (hα₁ : (α:ℝ)≤(391838:ℝ)/1377271) :
     Expdb.exponentSumGrowthExponent α≤10769/351096+(587779/702192)*(α:ℝ) := by
   let t := ((α:ℝ)-(890:ℝ)/3277)/((391838:ℝ)/1377271-(890:ℝ)/3277)
-  have hden : 0<(391838:ℝ)/1377271-(890:ℝ)/3277 := by norm_num
-  have ht : t∈Icc (0:ℝ) 1 := by
-    refine ⟨div_nonneg (sub_nonneg.mpr hα) hden.le,?_⟩
-    exact (div_le_one hden).mpr (by linarith only [hα₁])
+  have ht : t∈Icc (0:ℝ) 1 := by grind
   have hαeq : (α:ℝ)=(1-t)*(890/3277)+t*(391838/1377271) := by
     dsimp only [t]
     ring
@@ -729,11 +706,13 @@ theorem exponentSumGrowthExponent_le_huxley_thirdPair_lowerRange
                                                                  
 
 theorem exponentSumGrowthExponent_le_huxley_thirdPair_upperRange
-    {α : ℝ≥0} (hα : (391838:ℝ)/1377271≤(α:ℝ))
+     (hα : (391838:ℝ)/1377271≤(α:ℝ))
     (hα₁ : (α:ℝ)≤(754:ℝ)/2579) :
     exponentSumGrowthExponent α≤10769/351096+(587779/702192)*(α:ℝ) := by
   exact exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (third_pair_local_A_nonAsymptotic hα hα₁)
+end
 
 
-end TaoTrudgianYang2025.HuxleyRationalPhase
+
+

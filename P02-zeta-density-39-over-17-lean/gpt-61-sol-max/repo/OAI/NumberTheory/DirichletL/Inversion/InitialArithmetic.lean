@@ -13,26 +13,31 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
 open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers
 open CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → O) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, λ₀∉Ideal.span {p i})
 
-def initialColumn (Ψ : O →* ℂ) (j C d h : O)
-    (H : Finset ι→ℂ) (S : Finset ι) : ℂ :=
+section
+variable (Ψ : O →* ℂ) (j C d h : O)
+    (H : Finset ι→ℂ) (S : Finset ι)
+include Ψ j C d h H S
+
+def initialColumn  : ℂ :=
   columnCoefficient p hp hcop hg S * Ψ (∏ i∈S,p i) *
     rowCoprimeMask (fun i=>Ideal.span {p i}) S (j*C) *
     star (finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S d) *
     finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S h * H S
 
-theorem initialColumn_eq_secondPre (Ψ : O →* ℂ) (j C d h : O)
-    (H : Finset ι→ℂ) (S : Finset ι) :
+theorem initialColumn_eq_secondPre  :
     initialColumn p hp hcop hg Ψ j C d h H S =
       secondPreColumn p hp hcop hg Ψ (j*C) 1 1 d h H S := by
   have hone := ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S
   simp only [initialColumn,secondPreColumn,hone,one_pow,mul_one]
+end
+
 
 theorem initial_common_extraction (hpr : ∀ i,λ₀^2∣p i-1)
     (Ψ : O →* ℂ) (j t d h : O) (H : Finset ι→ℂ)
@@ -217,8 +222,8 @@ theorem initial_poisson_child_normalized
   rw [mul_assoc (u:O)]
   exact secondChildColumn_generator_unit p hp hcop hg Ψ u _ _ _ h H N
 
-end SevenEighths.InverseInitialArithmetic
 
-end
 
-end OAI
+
+
+

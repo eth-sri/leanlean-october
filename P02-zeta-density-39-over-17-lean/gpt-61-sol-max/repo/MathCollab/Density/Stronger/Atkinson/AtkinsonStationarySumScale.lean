@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -10,9 +11,9 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteStationaryError
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-noncomputable section
+
 open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
@@ -28,8 +29,7 @@ theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
   have he : 36*T*(L/G)^2 = 36*(T*L^2/G^2) := by ring
   rw [he] at hceil
   have he' : 37*T*L^2/G^2 = 37*(T*L^2/G^2) := by ring
-  rw [he']
-  linarith
+  grind
 
 theorem atkinsonStationary_scale_identity {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (q : ℝ) :
@@ -77,4 +77,4 @@ theorem atkinsonStationary_cutoff_scale_le {T G L q : ℝ}
     _ ≤ 37*T^(q-1/2)*L^2*1 := by gcongr
     _ = _ := mul_one _
 
-end MathCollab.Density.Stronger.Atkinson
+

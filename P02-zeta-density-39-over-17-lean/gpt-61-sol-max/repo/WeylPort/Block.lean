@@ -45,4 +45,4 @@ theorem norm_criticalLine_cpow_block_le
   rw [RiemannZeta.GuthMaynard.criticalLineWeylBlock_eq_cpow Y A N hA] at hb
   simpa only [← Complex.ofReal_pow, hcube, hsqrt] using hb
 
-end WeylPort
+

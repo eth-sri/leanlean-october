@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalDyad
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 
 theorem large_original_physical_tail (K : ℕ) (δ a b B ζ saving : ℝ)
     (hδ : 0<δ) (hδ' : δ≤1) (hζ : 0<ζ)
@@ -59,7 +59,7 @@ theorem large_original_physical_tail (K : ℕ) (δ a b B ζ saving : ℝ)
       mul_le_mul_of_nonneg_right (by linarith : N≤1+N) (by positivity)
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

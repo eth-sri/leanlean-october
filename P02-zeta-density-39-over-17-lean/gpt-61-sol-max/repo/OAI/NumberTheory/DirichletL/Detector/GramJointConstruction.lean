@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeDecay
 public import OAI.NumberTheory.DirichletL.Detector.GramAnnularLattice
@@ -110,7 +111,6 @@ lemma annulus_subset_sourceCompact (a b : ℝ) (ha : 0<a) (hab : a<b) :
   change dist z 0≤1+2*b
   rw [dist_zero_right]
   have hn := norm_sq_eq z
-  have hb : 0<b := ha.trans hab
   nlinarith [norm_nonneg z, sq_nonneg (‖z‖-1),hz.2.1,hz.2.2.2]
 
 lemma tsupport_amplitude_subset (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
@@ -137,7 +137,6 @@ lemma norm_power_pair (v x y : ℝ) (hx : 0<x) (hy : 0<y) :
   rw [←Complex.exp_add,←Complex.exp_add]
   congr 1
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   ring
 
@@ -186,14 +185,12 @@ def amplitudeSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) : 𝓢(Joint,ℂ) :=
   (amplitude_hasCompactSupport W a b ha hab hs).toSchwartzMap (amplitude_smooth W hW a b ha)
 
-@[simp] lemma amplitudeSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (z : Joint) :
-    amplitudeSchwartz W a b ha hab hs hW z=amplitude W a b ha z := rfl
+
 
 lemma rawProfile_smooth (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (v T : ℝ) (hT : 0≤T) : ContDiff ℝ ∞ (rawProfile W U v T) := by
-  have he : rawProfile W U v T=patchedProfile W U a b ha v T :=
+  have he :=
     funext (rawProfile_eq_patchedProfile W U a b ha hs v T hT)
   rw [he]
   exact patchedProfile_smooth W hW U a b ha v T
@@ -239,8 +236,8 @@ theorem jointProfile_annularSupport (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
     ProbeGramAnnularLattice.AnnularSupport a b (jointProfile W U a b ha hab hs hW v T hT) :=
   support_rawProfile W U a b hs v T
 
-end ProbeGramJointConstruction
 
-end
 
-end OAI
+
+
+

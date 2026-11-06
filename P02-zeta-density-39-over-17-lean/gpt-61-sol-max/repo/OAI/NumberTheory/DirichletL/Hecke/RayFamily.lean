@@ -39,8 +39,8 @@ theorem character_boundary_ne_zero (χ : RayOrthogonality.rayCharacters M)
 theorem principal_pole_ne_zero : HeckeOrigin.poleRemoved (character M 1) 1 ≠ 0 :=
   HeckeOrigin.poleRemoved_one_ne_zero _ rfl
 
-end SevenEighths.HeckeRayFamily
 
-end
 
-end OAI
+
+
+

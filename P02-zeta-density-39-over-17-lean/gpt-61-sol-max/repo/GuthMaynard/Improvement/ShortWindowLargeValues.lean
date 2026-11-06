@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDensityHeight
 
 @[expose] public section
 
-open Finset Set
-set_option autoImplicit false
-noncomputable section
+open Finset
+
 namespace GuthMaynard.Improvement
 
 /-- Actual large values throughout the powered detector window. Constants are
@@ -22,9 +22,7 @@ theorem short_window_large_values {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1/100
       (W.card:ℝ) ≤ C*H^(shortDensityExponent σ+10*δ) := by
   obtain ⟨C,hC,hmid⟩ := middle_range_large_values δ hδ
   let D : ℝ := Real.log 2+1/δ
-  have hD : 0 < D := by
-    dsimp [D]
-    exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hδ)
+  have hD : 0 < D := by positivity
   refine ⟨2*C+102*(1+D),by positivity,?_⟩
   intro σ H N t₀ a W hσ hσ' hH hN hlo hhi ha hloc hsep hlarge
   have hH1 : 1 ≤ H := by linarith
@@ -102,4 +100,4 @@ theorem short_window_large_values {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1/100
     exact (hc.trans hbudget).trans
       (mul_le_mul_of_nonneg_right (by linarith : 102*(1+D) ≤ 2*C+102*(1+D)) hp)
 
-end GuthMaynard.Improvement
+

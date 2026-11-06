@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
+open CenteredMomentSectorLocalization
+open CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
@@ -27,7 +27,11 @@ lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
   apply (mul_le_mul_of_nonneg_left
     (mul_le_of_le_one_left (norm_nonneg _) (hw x).2) (sq_nonneg x)).trans (hb x hx)
 
-lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
+section
+variable (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
+include η F hF
+
+lemma column_retained_discarded 
     (R Y : ℝ) (hY : 0<Y) :
     HeckeDyadic.polynomial η false F Y 0 0=
       HeckeDyadic.polynomial η false (fun x=>(retainedWeight R x:ℂ)*F x) Y 0 0+
@@ -44,7 +48,7 @@ lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo 
   simp only [CenteredMomentReflectionDeletion.norm] at hp ⊢
   rw [←mul_add,←add_mul,←Complex.ofReal_add,hp,Complex.ofReal_one,one_mul]
 
-lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
+lemma bounded_columns  :
     ∃C : ℝ,0≤C ∧ ∀Y U : ℝ,0<Y → Y≤U →
       ‖HeckeDyadic.polynomial η false F Y 0 0‖≤C*U^(3/2:ℝ) := by
   obtain ⟨D,hD,hF⟩ := hF
@@ -55,6 +59,8 @@ lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
   rw [normalized_power_eq Y hY 2]
   norm_num only [Nat.cast_ofNat,show (2:ℝ)-1/2=3/2 by norm_num]
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hY.le hYU (by norm_num)) (by positivity)
+end
+
 
 lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (η ηi χ : Character) (F : ℝ→ℂ) (hF : DecayTwo F) (Q X : ℝ)
@@ -116,8 +122,8 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
     (paperRadialFourier W) _ 0 0=_
   rw [column_retained_discarded χ.inverse _ hF R _ hY,mul_add]
 
-end SevenEighths.CenteredMomentRetainedReflection
 
-end
 
-end OAI
+
+
+

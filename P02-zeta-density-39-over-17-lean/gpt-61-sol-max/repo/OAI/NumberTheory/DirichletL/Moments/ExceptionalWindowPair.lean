@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWindowPair
-open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+
+
+open scoped EisensteinO
 
 theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
     (hf:∀z∈rows,Integrable (f z))(hg:∀z∈rows,Integrable (g z))
@@ -46,8 +46,8 @@ theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
       ((ha.const_mul E).mul_const _) hinner
     _=E*(∫u,a u)*(∫v,b v):=by rw [integral_mul_const,integral_const_mul]
 
-end SevenEighths.CenteredMomentExceptionalWindowPair
 
-end
 
-end OAI
+
+
+

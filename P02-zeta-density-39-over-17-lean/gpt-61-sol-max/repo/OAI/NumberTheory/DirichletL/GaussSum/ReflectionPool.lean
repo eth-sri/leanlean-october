@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.RowCompletion.PeriodicRows
 
 @[expose] public section
@@ -8,84 +9,84 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinEis
 local instance poolMaximalCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : P.val.IsMaximal :=
   completedReflectionPool_maximal I Q P
-noncomputable local instance poolFieldCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Field (Eis⧸P.val) :=
+local instance poolFieldCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Field (Eis⧸P.val) :=
   Ideal.Quotient.field P.val
-noncomputable local instance poolFintypeCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Fintype (Eis⧸P.val) :=
+local instance poolFintypeCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Fintype (Eis⧸P.val) :=
   Fintype.ofFinite _
 
 end CompletedGauss
@@ -94,9 +95,13 @@ namespace CanonicalRowCompletion
 
 section
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-lemma actualSextic_sixth_one (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P) :
+section
+variable (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P)
+include P hg
+
+lemma actualSextic_sixth_one  :
     actualSextic P hg^6=1 := by
   apply MulChar.ext
   intro t
@@ -111,11 +116,13 @@ lemma actualSextic_sixth_one (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P) :
   rw [MulChar.pow_apply_coe,MulChar.one_apply_coe,←hn]
   exact h
 
-lemma actualSextic_power_mod_six (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P)
+lemma actualSextic_power_mod_six 
     (k:ℕ) (hk:k≠0) (n:Eis) :
     actualSextic P hg (Ideal.Quotient.mk P n)^k=
       (actualSextic P hg^(k%6)) (Ideal.Quotient.mk P n) := by
   rw [←MulChar.pow_apply' _ hk,pow_eq_pow_mod _ (actualSextic_sixth_one P hg)]
+end
+
 
 lemma idealRowHom_eq_prime_count_product (I:Ideal Eis) (hI:Supported I) (n:Eis) :
     idealRowHom n I=∏P:PrimeIndex I,
@@ -145,13 +152,13 @@ lemma primeIndex_pairwise_coprime (I:Ideal Eis) :
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped EisensteinEis
 
 lemma coprimalityMask_good_part (u:Eisˣ) (a b:ℕ) (r n:Eis)
     (hn:Supported (Ideal.span {n})) :
     coprimalityMask (u.val*lambda^a*(2:Eis)^b*r) n=coprimalityMask r n := by
-  have hl:IsCoprime lambda n:=
+  have hl :=
     PrimaryIdealUnitReindex.lambda_prime_actual.irreducible.coprime_iff_not_dvd.mpr ((supported_span_iff n).mp hn).1
   have hneg2:IsCoprime (-2:Eis) n:=negative_two_prime.irreducible.coprime_iff_not_dvd.mpr
     (by simpa only [neg_dvd] using ((supported_span_iff n).mp hn).2)
@@ -212,8 +219,8 @@ end CanonicalRowCompletion
 
 namespace ShortDraftCusp
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance A4unitsField (P:Ideal Eis) [P.IsMaximal] :
+open scoped EisensteinEis
+local instance A4unitsField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
 
 theorem exists_A4_local_units {ι:Type*} [Fintype ι]
@@ -273,18 +280,18 @@ open scoped BigOperators Classical MatrixGroups Matrix
 
 namespace ShortDraftCusp
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance principalStratumField (P:Ideal Eis) [P.IsMaximal] :
+open CompletedGauss
+open scoped EisensteinEis
+local instance principalStratumField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance principalStratumFintype (P:Ideal Eis) [P.IsMaximal] :
+local instance principalStratumFintype (P:Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
 end ShortDraftCusp
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CubicKubota EisensteinCuspModThree ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT
+open scoped EisensteinEis
 
 end CubicEisenstein
 end
@@ -292,12 +299,12 @@ end
 namespace CubicEisenstein
 open scoped BigOperators Classical ContDiff MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
-open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance smoothingField (P:Ideal Eis) [P.IsMaximal] :
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open FiniteGaussPhase
+open scoped EisensteinEis
+local instance smoothingField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance smoothingFintype (P:Ideal Eis) [P.IsMaximal] :
+local instance smoothingFintype (P:Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
 end CubicEisenstein
@@ -306,13 +313,13 @@ open scoped Classical BigOperators MatrixGroups
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT PrimaryIdealUnitReindex
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma exists_primary_unit_multiple (x:Eis) (hx:¬lambda∣x) :
     ∃u:Eisˣ,lambda^2∣u.val*x-1 := by
-  have hg:primaryGenerator (Ideal.span {x})≠0:=primaryGenerator_span_ne_zero_iff x |>.mpr hx
+  have hg :=primaryGenerator_span_ne_zero_iff x |>.mpr hx
   have hspec:=primaryGenerator_spec (Ideal.span {x}) hg
-  have ha:Associated x (primaryGenerator (Ideal.span {x})):=
+  have ha :=
     Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
   obtain ⟨u,hu⟩:=ha
   refine ⟨u,?_⟩
@@ -329,13 +336,7 @@ lemma normalize_coprime_pair (a c:Eis) (hcop:IsCoprime a c) :
     calc
       _=((↑u⁻¹:Eis)*u.val)*(r*a+s*c):=by ring
       _=1:=by rw [Units.inv_mul,hrs,mul_one]
-  have hd (u:Eisˣ):lambda∣u.val*c↔lambda∣c := by
-    constructor
-    · intro h
-      have hh:=dvd_mul_of_dvd_right h (↑u⁻¹:Eis)
-      simpa only [←mul_assoc,Units.inv_mul,one_mul] using hh
-    · intro h
-      exact dvd_mul_of_dvd_right h u.val
+  have hd (u:Eisˣ):lambda∣u.val*c↔lambda∣c := by simp
   by_cases hc:lambda∣c
   · have ha:¬lambda∣a:=fun h=>lambda_prime_actual.not_isUnit (hcop.isUnit_of_dvd' h hc)
     obtain ⟨u,hu⟩:=exists_primary_unit_multiple a ha
@@ -347,7 +348,7 @@ theorem exists_normalized_rational_cusp (a c:Eis) (hc:c≠0) :
     ∃a0 c0:Eis,c0≠0 ∧ c0∣c ∧ IsCoprime a0 c0 ∧
       eisEmbedding a0/eisEmbedding c0=eisEmbedding a/eisEmbedding c ∧
       (lambda∣c0→lambda^2∣a0-1) ∧ (¬lambda∣c0→lambda^2∣c0-1) := by
-  let d:Eis:=IsBezout.gcd a c
+  let d :=IsBezout.gcd a c
   obtain ⟨a',ha⟩:=IsBezout.gcd_dvd_left a c
   obtain ⟨c',hc'⟩:=IsBezout.gcd_dvd_right a c
   change a=d*a' at ha
@@ -376,8 +377,8 @@ theorem exists_normalized_rational_cusp (a c:Eis) (hc:c≠0) :
     have hu0:=eisEmbedding_ne_zero u.ne_zero
     field_simp
 
-end ShortDraftCRT
 
-end
 
-end OAI
+
+
+

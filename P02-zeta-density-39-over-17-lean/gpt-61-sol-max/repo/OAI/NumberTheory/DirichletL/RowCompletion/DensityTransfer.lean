@@ -6,134 +6,83 @@ public import OAI.NumberTheory.DirichletL.RowCompletion.CompletedEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalRowCompletion
-
-section
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open ConcreteTraceCRT (eisEmbedding)
-
-end
-
-section
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
-open ConcreteTraceCRT (eisEmbedding)
-
-end
-
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation
-open ConcreteTraceCRT (eisEmbedding)
-
-end CanonicalRowCompletion
-
-section
-
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open FirstPassCubeLabels (primeProductNorm)
-open InitialMeanSquare hiding O
-open CanonicalCoefficientClass (IsBaseRayTwist)
-open ConcreteTraceCRT (eisEmbedding)
+                        
+                                  
+                                  
+                          
+                        
+                        
+open scoped BigOperators Classical SchwartzMap
+                                  
 
-end CanonicalRowCompletion
+                                                       
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
 
-end SecondPassIntegration
-end
 
-open scoped BigOperators Classical
+
+                                  
 namespace QuadraticAllOddCRT
 open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
@@ -184,8 +133,8 @@ theorem quadraticRayValue_ne_zero_of_odd (r : EisensteinEPrimaryPhase.Coord)
       zpow_neg,Complex.I_sq,Complex.I_pow_three,Complex.inv_I,ZMod.val] at * <;>
       intro h <;> solve | (have hh:=congrArg Complex.re h; norm_num at hh) | (have hh:=congrArg Complex.im h; norm_num at hh)
 
-end QuadraticAllOddCRT
 
-end
 
-end OAI
+
+
+

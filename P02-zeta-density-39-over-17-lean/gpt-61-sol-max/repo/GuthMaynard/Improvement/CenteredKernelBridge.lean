@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CenteredTruncation
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -26,9 +26,13 @@ theorem logModulated_fourier_integral (a : ℝ → ℂ) (s ξ : ℝ) :
     _ = a x*(phase (-ξ*x)*phase (s*mellinFrequency x)) := by ring
     _ = _ := by rw [← phase_add]; congr 2; ring
 
+section
+variable {a : ℝ → ℂ}
+include a
+
 /-- The actual retained kernel on the cutoff interval is the finite Fourier
 sum used by centeredKernel_truncation, including its exact L factor. -/
-theorem retainedPoissonKernel_fourier {a : ℝ → ℂ} {l u : ℝ}
+theorem retainedPoissonKernel_fourier  {l u : ℝ}
     (ha : Measurable a) {B : ℝ} (hb : ∀ x, ‖a x‖ ≤ B)
     (hs : ∀ x, x ∉ Icc l u → a x = 0) (L : ℝ) (S : Finset ℤ) (s : ℝ) :
     retainedPoissonKernel (volume.restrict (Icc l u)) a L S s =
@@ -39,16 +43,15 @@ theorem retainedPoissonKernel_fourier {a : ℝ → ℂ} {l u : ℝ}
   intro m _
   rw [logModulated_fourier_integral]
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
-  intro x hx
-  simp [hs x hx]
+  simp_all
 
 /-- Joint measurability before integrating the continuous centered term. -/
-theorem logModulated_measurable {a : ℝ → ℂ} (ha : Measurable a) :
+theorem logModulated_measurable  (ha : Measurable a) :
     Measurable (fun z : ℝ × ℝ => logModulated a z.1 z.2) := by
   unfold logModulated
   fun_prop
 
-theorem centeredKernel_measurable {a : ℝ → ℂ} (ha : Measurable a) (l u L : ℝ) :
+theorem centeredKernel_measurable  (ha : Measurable a) (l u L : ℝ) :
     Measurable (centeredKernel a l u L) := by
   have hi : Measurable (fun s : ℝ => ∫ x, logModulated a s x) :=
     (logModulated_measurable ha).stronglyMeasurable.integral_prod_right'.measurable
@@ -58,6 +61,8 @@ theorem centeredKernel_measurable {a : ℝ → ℂ} (ha : Measurable a) (l u L :
     fun_prop
   unfold centeredKernel
   fun_prop
+end
+
 
 theorem centeredKernel_count {l u L : ℝ} (hl : 0 < l) (hL : 1 ≤ L) :
     ((Finset.Icc ⌈l*L⌉ ⌊u*L⌋).card:ℝ) ≤ (max 0 u+1)*L := by
@@ -116,4 +121,4 @@ theorem centeredKernel_uniform_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       exact centeredKernel_count hl hL
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

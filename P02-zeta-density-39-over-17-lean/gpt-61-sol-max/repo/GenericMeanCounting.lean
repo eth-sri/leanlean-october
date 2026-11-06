@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GenericPacketCounting
 public import MathCollab.Density.Stronger.Peaks.ClusterCount
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.CriticalPeak
@@ -60,9 +60,8 @@ theorem localMeanCount_of_pair_packet {k l : ℝ} (hk : 0 < k)
         (hlocal u hu).1,(hlocal u hu).2]
     have hs := hsource H G (absorptionLength k l (D*H^(ν/(1+1/k))) H G Y)
       U hH hG hL hsepU (fun t ht => hrange t (hsub ht)) hdiam
-    convert hs using 1
-    ring
+    grind
   have hc := card_le_two_powers hk hA hH0 hG hY
     (fun t ht => ⟨(hrange t ht).1,(hrange t ht).2.1⟩) hlarge hpacket
   exact hc.trans (count_exponent_budget hk hD.le hH1 hG hY hν.le)
-end Montgomery.CriticalPeak
+

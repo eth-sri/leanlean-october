@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Expdb
 open scoped NNReal
 namespace TaoTrudgianYang2025
@@ -12,19 +12,14 @@ theorem heathBrownBetaBound_five_first {α : ℝ}
     heathBrownBetaBound 5 α = 1/20+3/4*α := by
   rw [heathBrownBetaBound_eq_max (by norm_num : 3 ≤ (5 : ℕ))]
   norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-  have hfirst : max (α*(19/20)) (α-1/50) ≤ 1/20+α*(3/4) :=
-    max_le (by linarith) (by linarith)
-  rw [max_eq_left hfirst]
-  ring
+  grind
 
 theorem heathBrownBetaBound_five_second {α : ℝ}
     (hα : 1/4 ≤ α) (hα₁ : α ≤ 2/5) :
     heathBrownBetaBound 5 α = 19/20*α := by
   rw [heathBrownBetaBound_eq_max (by norm_num : 3 ≤ (5 : ℕ))]
   norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-  rw [max_eq_left (by linarith : α-1/50 ≤ α*(19/20))]
-  rw [max_eq_right (by linarith : 1/20+α*(3/4) ≤ α*(19/20))]
-  ring
+  grind
 
 theorem exponentSumGrowthExponent_le_heathBrown_firstRow
     {α : ℝ≥0} (hα : (α : ℝ) ≤ 1/4) :
@@ -40,8 +35,12 @@ theorem exponentSumGrowthExponent_le_heathBrown_firstRow
     rw [exponentSumGrowthExponent_zero]
     norm_num
 
+section
+variable {α : ℝ≥0} (hα : 1/4 ≤ (α : ℝ))
+include α hα
+
 theorem exponentSumGrowthExponent_le_heathBrown_secondSegment
-    {α : ℝ≥0} (hα : 1/4 ≤ (α : ℝ)) (hα₁ : (α : ℝ) ≤ 2/5) :
+     (hα₁ : (α : ℝ) ≤ 2/5) :
     exponentSumGrowthExponent α ≤ 19/20*(α : ℝ) := by
   have h := exponentSumGrowthExponent_le_heathBrown_of_derivative
     GafniTao.heathBrownKthDerivativeTheorem_native
@@ -50,7 +49,9 @@ theorem exponentSumGrowthExponent_le_heathBrown_secondSegment
   exact h
 
 theorem exponentSumGrowthExponent_le_heathBrown_secondRow
-    {α : ℝ≥0} (hα : 1/4 ≤ (α : ℝ)) (hα₁ : (α : ℝ) ≤ 890/3277) :
+     (hα₁ : (α : ℝ) ≤ 890/3277) :
     exponentSumGrowthExponent α ≤ 19/20*(α : ℝ) :=
   exponentSumGrowthExponent_le_heathBrown_secondSegment hα (by linarith)
-end TaoTrudgianYang2025
+end
+
+

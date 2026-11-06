@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers SecondPassArithmetic
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open SecondPassArithmetic
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -92,7 +92,7 @@ theorem actual_second_supported_varying_lists_energy
   exact mul_le_mul (Real.sqrt_le_sqrt (hsum F)) (Real.sqrt_le_sqrt (hsum G))
     (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -70,7 +70,7 @@ theorem truncated_second_attached_variable [Fintype κ]
     (fun x hx => (second_variable_original_support p parent pool residual R label j x hx).2.1)
     pool Ψ m z slots slots lists lists a a W W Φ X Y
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

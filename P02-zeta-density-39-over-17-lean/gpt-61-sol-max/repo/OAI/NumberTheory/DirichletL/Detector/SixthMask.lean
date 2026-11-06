@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.SixthDecomposition
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSupport
 
@@ -9,11 +10,15 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein
+open ActualEisensteinCubic ConcretePrimeRowBridge CubicEisenstein
 open HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
+include S hS
+
+lemma calibration_sixth_ideal_mask 
     (L : Ideal O) :
     (calibrationForSet S hS).residueMonoid (idealGenerator L)^6=
       if ∀P∈S,¬P∣L then 1 else 0 := by
@@ -37,12 +42,14 @@ lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMax
       exact hm
     rw [hz,zero_pow (by decide : 6≠0)]
 
-lemma calibration_sixth_frequency_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
+lemma calibration_sixth_frequency_mask 
     (u : O) (L : Ideal O) :
     star ((calibrationForSet S hS).residueMonoid (u*idealGenerator L^6))=
       star ((calibrationForSet S hS).residueMonoid u)*(if ∀P∈S,¬P∣L then 1 else 0) := by
   rw [map_mul,map_pow,calibration_sixth_ideal_mask]
   split_ifs <;> simp only [mul_one,mul_zero,star_zero]
+end
+
 
 lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal) (z : ℂ) :
     frequencyWeight z (sixthFrequencyEquiv p)=
@@ -61,10 +68,9 @@ lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal)
   simp only [Real.rpow_ofNat,Complex.ofReal_pow,Complex.ofReal_ofNat,Complex.ofReal_natCast] at he
   simp only [Complex.ofReal_pow,Complex.ofReal_natCast]
   rw [←he]
-  congr 1
-  ring
+  simp
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

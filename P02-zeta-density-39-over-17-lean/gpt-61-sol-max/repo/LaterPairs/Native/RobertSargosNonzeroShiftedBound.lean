@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNonzeroShiftReorder
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -51,4 +50,4 @@ theorem robertSargos_nonzero_weighted_shifted_re_le (f : ℝ → ℝ) (M H Q R N
       (by simpa only [one_mul] using (mul_le_mul_of_nonneg_right hw
         (norm_nonneg (robertSargosNonzeroShiftedTriple f H Q N r m))))
 
-end TaoTrudgianYang2025
+

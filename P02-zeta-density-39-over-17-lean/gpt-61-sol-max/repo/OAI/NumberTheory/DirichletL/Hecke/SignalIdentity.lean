@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Analytic.IsolatedZeros
 namespace OAI
 
 noncomputable section
-open MeasureTheory Set Filter Asymptotics Complex
+open MeasureTheory Filter Asymptotics Complex
 open scoped Topology Classical
 namespace SevenEighths.HeckeSignal
 open HeckeFamily Continuation
@@ -53,7 +53,11 @@ def targetRegularizer (χ : Character) (s : ℂ) : ℂ :=
 def regularL (χ : Character) (s : ℂ) : ℂ :=
   if χ.residue = 1 then HeckeOrigin.poleRemoved χ s else LFunction χ s
 
-theorem targetRegularizer_entire (χ : Character) : Differentiable ℂ (targetRegularizer χ) := by
+section
+variable (χ : Character)
+include χ
+
+theorem targetRegularizer_entire  : Differentiable ℂ (targetRegularizer χ) := by
   by_cases h : χ.residue = 1
   · have he : targetRegularizer χ = fun z : ℂ => z-1 := by funext z; simp [targetRegularizer, h]
     rw [he]
@@ -62,7 +66,7 @@ theorem targetRegularizer_entire (χ : Character) : Differentiable ℂ (targetRe
     rw [he]
     exact differentiable_const 1
 
-theorem regularL_entire (χ : Character) : Differentiable ℂ (regularL χ) := by
+theorem regularL_entire  : Differentiable ℂ (regularL χ) := by
   by_cases h : χ.residue = 1
   · have he : regularL χ = HeckeOrigin.poleRemoved χ := by funext z; simp [regularL, h]
     rw [he]
@@ -71,7 +75,7 @@ theorem regularL_entire (χ : Character) : Differentiable ℂ (regularL χ) := b
     rw [he]
     exact LFunction_entire_nonprincipal χ h
 
-theorem regularL_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0)
+theorem regularL_eq  {s : ℂ} (h0 : s ≠ 0)
     (hpole : s ≠ 1 ∨ χ.residue ≠ 1) :
     regularL χ s = targetRegularizer χ s * LFunction χ s := by
   by_cases h : χ.residue = 1
@@ -79,14 +83,14 @@ theorem regularL_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0)
     exact HeckeOrigin.poleRemoved_eq χ h0 (hpole.resolve_right (not_not.mpr h))
   · simp [regularL, targetRegularizer, h]
 
-theorem targetRegularizer_ne_zero (χ : Character) {s : ℂ}
+theorem targetRegularizer_ne_zero  {s : ℂ}
     (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : targetRegularizer χ s ≠ 0 := by
   by_cases h : χ.residue = 1
   · simpa only [targetRegularizer, h, ite_true, sub_ne_zero] using
       hpole.resolve_right (not_not.mpr h)
   · simp [targetRegularizer, h]
 
-theorem nonzero_of_probe_bounds (χ : Character) (H : ℂ → ℂ) (J : ℝ → ℂ)
+theorem nonzero_of_probe_bounds  (H : ℂ → ℂ) (J : ℝ → ℂ)
     (β ω σ c : ℝ) (hβ : β ≤ 1) (hω0 : 0 < ω) (hω : ω < β-7/8) (hσ : 0 < σ)
     (hH : AnalyticOnNhd ℂ H {s : ℂ | 7/8 < s.re})
     (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
@@ -125,9 +129,11 @@ theorem nonzero_of_probe_bounds (χ : Character) (H : ℂ → ℂ) (J : ℝ → 
     rw [h] at hρ
     norm_num at hρ
     linarith
-
-end SevenEighths.HeckeSignal
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.ResidueCharacter
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeLocalRamification
 open CenteredMomentCorrelation CenteredMomentCanonical
@@ -42,8 +42,8 @@ theorem canonicalPrimePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
   rw [canonicalPrimePowerCharacter, primePowerCharacter_eq_one_iff,
     ← orderOf_dvd_iff_pow_eq_one, actualSextic_order_six P hg hchar]
 
-end SevenEighths.HeckeLocalRamification
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceQuotient
 
 @[expose] public section
@@ -10,80 +11,80 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 section
 
 open scoped BigOperators Classical MatrixGroups Matrix
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 abbrev PrimaryLower:={c:Eis//(3:Eis)∣c-1}
 abbrev OppositeData:=Σc:PrimaryLower,{x:Eis//IsCoprime c.val x}
@@ -184,7 +185,7 @@ lemma opposite_summand (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OppositeData):
     intro hh
     have he:=congrFun hh 0
     exact eisEmbedding_ne_zero (primaryLower_ne_zero p.1) he
-  have hp:0<heightDenominator z v r:=heightDenominator_pos z v hv r hr0
+  have hp :=heightDenominator_pos z v hv r hr0
   have hphase:(cosetCharacter (primitiveRowEquiv.symm (oppositeDataEquiv p)))⁻¹=
       eisEmbedding (symbol (3*p.2.val) p.1.val):=by
     rw [inverse_cosetCharacter_eq_row_symbol,primitiveRowEquiv_symm_row]
@@ -211,7 +212,7 @@ section
 open scoped BigOperators Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 abbrev CoprimeElement (c:Eis):={x:Eis//IsCoprime c x}
 
@@ -286,7 +287,6 @@ theorem oppositeGaussSum_eq (h:Eis) (c:PrimaryLower):
         residueAdditive (3*h) c.val (GaussianShiftedPartition.representative c.val r.val):=by
       unfold residueAdditive cuspFrequency
       simp only [map_mul,map_ofNat]
-      congr 1
       ring
     rw [hadd]
     ring
@@ -313,7 +313,7 @@ end
 
 section
 
-open MeasureTheory Set Filter Module
+open MeasureTheory Filter Module
 open scoped BigOperators Classical ENNReal MatrixGroups Matrix
 open ActualEisensteinCubic ConcreteTraceCRT
 
@@ -330,7 +330,7 @@ lemma exists_fixed_left_rowBound (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
     ∃C:ℝ,0<C ∧ ∀z∈periodDomain,rowBound (a*upperSection z v hv)≤C:=by
   have hc:Continuous (fun z:ℂ=>rowBound (a*upperSection z v hv)):=
     continuous_const.mul (continuous_const.add (continuous_inverse_fixed_left_operator a v hv).norm)
-  let R:ℝ:=∑i:Fin 2,‖periodBasis i‖
+  let R :=∑i:Fin 2,‖periodBasis i‖
   obtain ⟨C,hC⟩:=(isCompact_closedBall (0:ℂ) R).bddAbove_image hc.continuousOn
   refine ⟨max 1 C,lt_of_lt_of_le (by norm_num) (le_max_left _ _),?_⟩
   intro z hz
@@ -374,7 +374,6 @@ theorem hasSum_integral_fixed_left_Eisenstein (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
     HasSum (fun x:CuspCosets=>∫z in periodDomain,
       summand (a*upperSection z v hv) s x*ShortDraftTrace.breveE (-freq*z))
       (∫z in periodDomain,eisenstein (a*upperSection z v hv) s*ShortDraftTrace.breveE (-freq*z)):=by
-  let:Countable CuspCosets:=(rowCoordinates_injective.comp cosetRow_injective).countable
   let:=periodDomain_finiteMeasure
   obtain ⟨M,hM,hMnonneg,hbound⟩:=fixed_left_summable_majorant a v hv s hs
   have hchar:Continuous (fun z:ℂ=>ShortDraftTrace.breveE (-freq*z)):=by
@@ -395,10 +394,10 @@ end
 
 section
 
-open MeasureTheory Set Filter
+open MeasureTheory Filter
 open scoped BigOperators Classical ENNReal
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def oppositeIntegral (v:ℝ) (s freq:ℂ) (c x:Eis):ℂ:=
   ∫z in periodDomain,oppositeTerm z v s c x*ShortDraftTrace.breveE (-freq*z)
@@ -474,7 +473,7 @@ lemma unramifiedCubicGaussSeries_twentySeven (s:ℂ) (h:Eis):
   apply tsum_congr
   intro I
   congr 1
-  have hp:lambda^2∣primaryGenerator I.val-1:=(primaryGenerator_spec I.val I.2).2
+  have hp :=(primaryGenerator_spec I.val I.2).2
   simpa only [show (3:Eis)^3=27 by norm_num,mul_comm h 27] using
     cubicUnitGaussSum_cube_shift h (primaryGenerator I.val) 3 I.2 hp
       (primary_coprime_three _ hp)
@@ -588,9 +587,7 @@ lemma periodTorusL2Lift_pullback (f : ℂ→ℂ) (hf : MemLp f 2 (volume.restric
   have he := periodTorus_measurePreserving.quasiMeasurePreserving.ae_eq_comp (periodTorusL2Lift_ae f hf)
   have he' := (Measure.ae_ennreal_smul_measure_iff periodCovolumeDensity_ne_zero).mp he
   filter_upwards [he',periodSection_torus_ae] with z hz hsec
-  change periodTorusL2Lift f hf (periodTorus z)=f (periodSection (periodTorus z)) at hz
-  rw [hsec] at hz
-  exact hz
+  simp_all
 
 lemma periodTorusL2Lift_frequency_integral (f : ℂ→ℂ)
     (hf : MemLp f 2 (volume.restrict periodDomain)) (h : ActualEisensteinCubic.O) :
@@ -615,8 +612,8 @@ theorem periodDomain_L2_ext (f g : ℂ→ℂ)
   filter_upwards [periodTorusL2Lift_pullback f hf,periodTorusL2Lift_pullback g hg] with z hz hz'
   rw [←hz,←hz',he]
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss SmoothMobiusCorrection
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SmoothMobiusCorrection
+open scoped EisensteinO
 
 def primeDefectBound (P : PrimeIdeal) : ℝ :=
   240 * (Ideal.absNorm P.val : ℝ) ^ (-(363/200:ℝ))
@@ -22,7 +22,7 @@ lemma mem_smallPrimeSet (N : ℕ) (P : PrimeIdeal) :
     P.val ∈ smallPrimeSet N ↔ Ideal.absNorm P.val ≤ N := by
   simp [smallPrimeSet, P.property]
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

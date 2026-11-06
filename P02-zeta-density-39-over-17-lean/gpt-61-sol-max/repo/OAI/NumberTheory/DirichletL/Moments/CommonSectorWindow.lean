@@ -1,5 +1,7 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.CommonSectorColumn
+public import OAI.NumberTheory.DirichletL.Moments.CommonLinearSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.SecondMaskedWindow
 public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
@@ -16,11 +18,11 @@ open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
 open CenteredMomentSecondMaskedWindow CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns
 open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
+open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
 open CenteredMomentExceptionalWholeWindow CenteredMomentSmooth CenteredMomentSecondWindowSource
 open RayFourExpansion CenteredMomentLogDyadic
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
@@ -83,8 +85,8 @@ theorem actual_reflected_sector_window (s:Input ι)(η τ:Character)(χ:RayChara
   simp only [star_logAnnulus_column]
   rw [actual_sector_window s η τ χ A C hC R seed L t (-θ) X logAnnulus (-z) hτ,window_neg]
 
-end SevenEighths.CenteredMomentCommonSectorWindow
 
-end
 
-end OAI
+
+
+

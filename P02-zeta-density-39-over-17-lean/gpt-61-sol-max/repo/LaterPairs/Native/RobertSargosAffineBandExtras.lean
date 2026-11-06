@@ -2,8 +2,7 @@ module
 public import LaterPairs.Native.RobertSargosPrimitiveSystem
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_affine_residual_identity {r q₁ q₂ h₁ h₂ d : ℝ}
@@ -70,4 +69,4 @@ theorem RobertSargosPrimitiveSystem.affine_band {R H Q δ : ℝ} {p : RobertSarg
   robertSargos_affine_band hH hQ hδ h.r_bound h.h₁_support h.h₂_support
     h.q₁_support h.q₂_support (by exact_mod_cast h.same_sign) h.linear_real h.near
 
-end TaoTrudgianYang2025
+

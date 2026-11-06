@@ -3,9 +3,8 @@ public import TraceAlternatives.CubeCountBudgets
 public import DensityEnergyGM.SharpCountMonomials
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- A nonnegative exact zero-loss margin controls the perturbed amplitude;
@@ -42,4 +41,4 @@ theorem cubeExpandedTerm_budget {T R σ a x δ ell : ℝ}
     repeat rw [← Real.rpow_add hTp]
     norm_num
 
-end Montgomery.RationalMoment
+

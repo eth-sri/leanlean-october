@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTails
 
 @[expose] public section
@@ -9,8 +10,8 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem full_first_supported_remainder (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
@@ -44,14 +45,14 @@ theorem full_first_supported_remainder (A : ℕ) :
   let U₂:=X₂*Real.exp M₂
   let S:=cubeActiveSupport B v ε₁ ε₂
   let slow:=K/(‖eisEmbedding d‖^2*primeProductNorm p S*U₁*U₂)
-  let tail:ℝ:=(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
+  let tail :=(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
     ((min 1 slow)^2*(1+P)^A)
-  let Q:ℝ:=G₁*G₂*K*tail
+  let Q :=G₁*G₂*K*tail
   have hU₁:0<U₁:=mul_pos hX₁ (Real.exp_pos _)
   have hU₂:0<U₂:=mul_pos hX₂ (Real.exp_pos _)
   have hNd:0<‖eisEmbedding d‖^2:=sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))
   have hslow:0<slow:=div_pos hK (mul_pos (mul_pos (mul_pos hNd (primeProductNorm_pos p hp S)) hU₁) hU₂)
-  have hH:0≤P:=hP
+  have hH :=hP
   have htail:0≤tail:=by dsimp [tail]; positivity
   have hQ:0≤Q:=mul_nonneg (mul_nonneg (mul_nonneg hG₁ hG₂) hK.le) htail
   let rem (N R:Finset ι):ℂ:=if Disjoint N R then
@@ -84,8 +85,8 @@ theorem full_first_supported_remainder (A : ℕ) :
           exact hr (Finset.mem_filter.mpr ⟨hR,columnLog_norm_upper p hp X₂ M₂ hX₂ R (hS₂ R hR h)⟩)
         exact hrzero N R hz
   have hrem (N:Finset ι) (hN:N∈boundedPrimeSupports p F U₁) (R:Finset ι) (hR:R∈boundedPrimeSupports p F U₂):‖rem N R‖≤Q:=by
-    have hNF: N∈F.powerset:=(Finset.mem_filter.mp hN).1
-    have hRF: R∈F.powerset:=(Finset.mem_filter.mp hR).1
+    have hNF :=(Finset.mem_filter.mp hN).1
+    have hRF :=(Finset.mem_filter.mp hR).1
     by_cases hn:C₁ N=0
     · rw [hnzero N R hn,norm_zero]; exact hQ
     by_cases hr:C₂ R=0
@@ -141,7 +142,7 @@ theorem full_first_supported_remainder (A : ℕ) :
         (boundedPrimeSupports_card_positive p hp hinj F U₂ hU₂) (Nat.cast_nonneg _) (by positivity)) hQ
     _ = _ := by dsimp [Q,tail,slow,U₁,U₂,S];ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

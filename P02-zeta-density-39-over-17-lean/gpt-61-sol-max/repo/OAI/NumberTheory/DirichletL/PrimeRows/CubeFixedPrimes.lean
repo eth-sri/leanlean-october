@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 
@@ -11,8 +12,8 @@ open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
-local notation "O" => HeckeFamily.O
+open ProbeRaySlots HeckePrimeAmplitudeBins
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -25,8 +26,8 @@ theorem fixedPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N
 theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (_hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hδ : 0<δ)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -76,12 +77,12 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
   have heq (j : Fin N) : (Z^d)^(ell j/d)=Z^(ell j) := by
     rw [←Real.rpow_mul hZp.le,mul_div_cancel₀ _ hd0.ne']
   have hb := hbound d hd hd' u hu hulo hcal huhi a i hi ha ha1 hbin (fun j=>ell j/d) hr hr'
-  have hfun : (fun j : Fin N => (Z^d)^(ell j/d)) = (fun j => Z^(ell j)) := funext heq
+  have hfun := funext heq
   rw [hfun] at hb
   exact hb hdis t ht
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

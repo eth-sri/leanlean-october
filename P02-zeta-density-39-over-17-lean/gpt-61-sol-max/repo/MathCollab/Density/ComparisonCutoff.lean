@@ -1,4 +1,6 @@
 module
+public import Mathlib.LinearAlgebra.RootSystem.Defs
+import Mathlib
 public import MathCollab.Density.LargeValueDefinitions
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 
@@ -7,7 +9,6 @@ public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 open Real Complex Set MeasureTheory
 open scoped ContDiff FourierTransform SchwartzMap
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -45,14 +46,14 @@ def comparisonCutoff : ComparisonCutoff := by
 /-- Uniform quadratic decay of the continuous cutoff term, internalized from Mellin decay. -/
 theorem cutoffIntegral_quadratic_decay (w : ReflectionCutoff) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ v : ℝ, ‖cutoffIntegral w v‖ ≤ C/(1+|v|)^2 := by
-  let f : ℝ → ℂ := fun x => (w x : ℂ)
+  let f := fun x => (w x : ℂ)
   have hs : ∀ x, x ∉ Icc (1/2 : ℝ) 5 → f x = 0 :=
     fun x hx => image_eq_zero_of_notMem_tsupport (fun hh => hx (w.complex_support hh))
   let ψ := Transforms.mellinLogLiftSchwartz f
     (Transforms.mellinLogLift_hasCompactSupport (by norm_num) (by norm_num) hs)
     (Transforms.mellinLogLift_contDiff w.complex_smooth)
-  let C₀ : ℝ := SchwartzMap.seminorm ℂ 0 0 (𝓕 ψ)
-  let C₂ : ℝ := SchwartzMap.seminorm ℂ 2 0 (𝓕 ψ)
+  let C₀ := SchwartzMap.seminorm ℂ 0 0 (𝓕 ψ)
+  let C₂ := SchwartzMap.seminorm ℂ 2 0 (𝓕 ψ)
   have hC₀ : 0 ≤ C₀ := apply_nonneg _ _
   have hC₂ : 0 ≤ C₂ := apply_nonneg _ _
   refine ⟨2*C₀ + 2*(2*Real.pi)^2*C₂, by positivity, ?_⟩
@@ -69,11 +70,10 @@ theorem cutoffIntegral_quadratic_decay (w : ReflectionCutoff) :
     have hh := mul_le_mul_of_nonneg_left h₂ (sq_nonneg (2*Real.pi))
     have he : (2*Real.pi)^2 * (|v/(2*Real.pi)|^2 * ‖cutoffIntegral w v‖) =
         v^2 * ‖cutoffIntegral w v‖ := by rw [sq_abs, div_pow]; field_simp
-    rw [he] at hh
-    exact hh
+    grind
   have hv : (1+|v|)^2 ≤ 2+2*v^2 := by nlinarith [sq_abs v, sq_nonneg (|v|-1)]
   have hh := mul_le_mul_of_nonneg_right hv (norm_nonneg (cutoffIntegral w v))
   apply (le_div_iff₀ (by positivity : (0 : ℝ) < (1+|v|)^2)).2
   nlinarith
 
-end MathCollab.Density
+

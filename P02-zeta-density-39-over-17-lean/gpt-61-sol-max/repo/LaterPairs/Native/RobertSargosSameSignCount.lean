@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSignedCoefficientCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
                                                                      
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_primitive_fixed_coeff_card_le
@@ -77,12 +76,7 @@ theorem robertSargos_primitive_fixed_coeff_card_le
     intro p hp
     obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
     simpa only [f,Int.neg_gcd,Int.gcd_neg] using hpp q (Finset.mem_filter.mp hq).1
-  have hMline : ∀ p ∈ M, r*p.2.2+h₁*p.2.1-h₂*p.1 = 0 := by
-    intro p hp
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
-    have hl := hline q (Finset.mem_filter.mp hq).1
-    dsimp [f]
-    nlinarith only [hl]
+  have hMline : ∀ p ∈ M, r*p.2.2+h₁*p.2.1-h₂*p.1 = 0 := by grind
   have hMnear : ∀ p ∈ M,
       |robertSargosReduced r p.2.1 p.1 h₁ h₂ p.2.2| ≤ δ*H*Q^2 := by
     intro p hp
@@ -93,8 +87,7 @@ theorem robertSargos_primitive_fixed_coeff_card_le
     hrH hh₁ hh₂ hMden hMnum hMprim hMline hMnear
   have hinj : Function.Injective f := by
     intro p q he
-    have he' := congrArg f he
-    simpa only [f,neg_neg,Prod.mk.eta] using he'
+    grind
   have hcardM : M.card = N.card := Finset.card_image_of_injective N hinj
   have hcard : P.card+N.card = S.card := Finset.card_filter_add_card_filter_not _
   have hcardR : (P.card:ℝ)+(N.card:ℝ) = (S.card:ℝ) := by exact_mod_cast hcard
@@ -104,4 +97,4 @@ theorem robertSargos_primitive_fixed_coeff_card_le
     _ ≤ _ := add_le_add hbP hbM
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

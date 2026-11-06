@@ -16,11 +16,11 @@ are derived from the original model and controlled cutoff.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseCoreLower (σ δ T N : ℝ) : ℤ :=
   ⌊(T/N)*((2 : ℝ)^(-σ)-δ)⌋
@@ -129,4 +129,4 @@ theorem modelPhase_buffered_poisson_core_precision
   exact (hcore N η a b hN hη hη₁ ha hb F δ T hδ hF hT R hR hRA hBR).trans
     (add_le_add (add_le_add le_rfl hbudget) le_rfl)
 
-end TaoTrudgianYang2025
+

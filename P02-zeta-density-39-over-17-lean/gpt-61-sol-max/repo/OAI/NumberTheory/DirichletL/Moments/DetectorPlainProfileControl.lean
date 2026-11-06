@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorEnergyInitialState
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainProfileControl
@@ -48,8 +48,8 @@ theorem source_height_factor (S:Finset (ℕ×ℕ)):
   simpa only [abs_zero,add_zero,pow_add,mul_assoc] using
     mul_le_mul_of_nonneg_right hb (pow_nonneg (by linarith:0≤1+height) degree)
 
-end SevenEighths.CenteredMomentDetectorPlainProfileControl
 
-end
 
-end OAI
+
+
+

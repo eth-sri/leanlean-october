@@ -3,7 +3,6 @@ public import TraceAlternatives.UniversalCenteredReflection
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -66,4 +65,4 @@ theorem universal_shell_budget_le {T L H R E : ℝ}
   unfold universalLocalReflectionBudget universalShortProfile universalShortSublinearProfile universalCenteredBudget
   nlinarith only [ha,hb,hc,hd]
 
-end Montgomery.RationalMoment
+

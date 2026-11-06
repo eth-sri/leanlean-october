@@ -11,20 +11,30 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def rowAmplitudeOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (σ υ r : ℝ) (t : HeightSpace) : ℂ :=
+section
+variable {K : ℕ}
+include K
+
+section
+variable (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    (hmax : ∀P∈S,P.IsMaximal)
+include S hS hmax
+
+section
+variable (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
+    (η : Character) (u : FreeRow)
+include P hPS η u
+
+def rowAmplitudeOnLines  (σ υ r : ℝ) (t : HeightSpace) : ℂ :=
   (∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(((r:ℂ)+t.1.2*I)-1))*
     frequencyWeight ((r:ℂ)+t.1.2*I) ⟨u.val,u.property.1⟩*
     (star ((calibrationForSet S hmax).residueMonoid u.val)*
       physicalCompensatedRow S hS (Finset.univ.image P) (contourTupleOutside S P hPS) η u
         ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I))
 
-lemma continuedRowOnLines_eq_amplitude {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
+lemma continuedRowOnLines_eq_amplitude 
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) :
     continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ r t=
       sourceMellinWeight W0 W1 X Y Z ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)*
@@ -32,9 +42,7 @@ lemma continuedRowOnLines_eq_amplitude {K : ℕ}
   unfold continuedRowOnLines continuedPhysicalRowKernel rowAmplitudeOnLines
   ring
 
-lemma rowAmplitudeOnLines_measurable {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
+lemma rowAmplitudeOnLines_measurable 
     (σ υ r : ℝ) : Measurable (rowAmplitudeOnLines S hS hmax P hPS η u σ υ r) := by
   have hp (i : Fin K) : 0<elementNorm (CompletedGauss.primaryGenerator (P i).val) :=
     elementNorm_pos _ (supported_primeGenerator_prime (P i) (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero
@@ -51,9 +59,10 @@ lemma rowAmplitudeOnLines_measurable {K : ℕ}
     · unfold frequencyWeight
       exact measurable_const_cpow _ hN _ (by fun_prop)
   · exact hphys.const_mul _
+end
 
-lemma rowAmplitudeOnLines_first_bound {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+
+lemma rowAmplitudeOnLines_first_bound 
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (υ r : ℝ)
     (hυ : -(1/100:ℝ)≤υ) (hr : (17/50:ℝ)≤r) :
@@ -84,8 +93,10 @@ lemma rowAmplitudeOnLines_first_bound {K : ℕ}
   rw [norm_mul,norm_mul,norm_prod]
   simp_rw [hn,hf]
   exact (mul_le_mul_of_nonneg_left hh hB).trans_eq (by ring)
+end
 
-theorem continuedPhysicalRowKernel_first_integrable {K : ℕ}
+
+theorem continuedPhysicalRowKernel_first_integrable 
     (υ r : ℝ) (hυ : -(1/100:ℝ)≤υ) (hr : (17/50:ℝ)≤r)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
@@ -113,9 +124,11 @@ theorem continuedPhysicalRowKernel_first_integrable {K : ℕ}
     rw [heq]
     exact hs.aestronglyMeasurable.mul hm.aestronglyMeasurable
   exact hi.mono' hk (Filter.Eventually.of_forall fun t=>by rw [continuedRowOnLines_eq_amplitude,norm_mul])
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

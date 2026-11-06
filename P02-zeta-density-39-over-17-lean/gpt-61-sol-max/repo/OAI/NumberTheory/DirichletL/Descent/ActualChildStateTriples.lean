@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateLabels
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open InverseSecondFibers
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 include hp
@@ -47,7 +47,7 @@ theorem actual_cell_triple_margins
       Z r ell V M Q z c A B t j eta hZ hparent hA ht hV hj heta hbin hQ
       (h1 x hxs) (h2 x hxs) (hT x hxs)
 
-end SevenEighths.InverseMoment
-end
 
-end OAI
+
+
+

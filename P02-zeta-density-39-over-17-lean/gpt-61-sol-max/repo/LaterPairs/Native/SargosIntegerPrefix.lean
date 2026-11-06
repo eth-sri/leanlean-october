@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPrefixFourthMajorant
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                       
 
-noncomputable section
+
 
 open scoped BigOperators
 
@@ -22,4 +21,4 @@ theorem sargos_sum_Icc_eq_range {A : Type*} [AddCommMonoid A] (a b : â„¤) (f : â
   rw [Int.Icc_eq_finset_map,Finset.sum_map]
   rfl
 
-end TaoTrudgianYang2025
+

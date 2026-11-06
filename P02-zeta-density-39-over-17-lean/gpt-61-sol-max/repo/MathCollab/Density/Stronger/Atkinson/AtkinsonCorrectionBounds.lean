@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -15,7 +16,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
+open Complex MeasureTheory
 open MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -125,8 +126,7 @@ theorem exists_norm_atkinsonCorrectionTerm_le :
     _ = (2 * Real.pi * q * (4 * Real.pi) ^ (-(3 / 2 : ℝ)) / 8 * C) * G *
         (‖divisorWeight n‖ * ((n : ℝ) ^ (-(3 / 4 : ℝ)) / Real.sqrt n)) := by
       unfold atkinsonBesselScale
-      norm_num only [show (-2 : ℝ) * (3 / 4) = -(3 / 2) by norm_num]
       ring
     _ = _ := by rw [hpow]
 
-end MathCollab.Density.Stronger.Atkinson
+

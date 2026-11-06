@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import AdjacentMomentEnvelope
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -79,8 +79,7 @@ theorem rational_energy_adjacent_second {η : ℝ} (hη : 0 < η) :
   · let Z : ℝ := D*(2*T)^η
     have hZ : 1 ≤ Z := by
       have hp := Real.one_le_rpow (show 1 ≤ 2*T by linarith) hη.le
-      dsimp [Z]
-      nlinarith
+      bound
     have hZ0 : 0 < Z := by linarith
     have hc (B : ℝ) (hB : B ≤ D) (hB0 : 0 ≤ B) : B*(H:ℝ)^η ≤ Z := by
       dsimp [Z]
@@ -124,4 +123,4 @@ theorem rational_energy_adjacent_second {η : ℝ} (hη : 0 < η) :
           linarith
         gcongr
 
-end Montgomery.RationalMoment
+

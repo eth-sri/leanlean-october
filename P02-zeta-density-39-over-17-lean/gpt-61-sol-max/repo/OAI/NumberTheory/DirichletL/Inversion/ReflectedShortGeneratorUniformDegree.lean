@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedShortPowerUniformDe
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion
+open InverseMoment InverseTerminalWidths CompletedHeight
+open scoped EisensteinEis
 universe u v
 
 theorem canonical_short_normalized_generator_energy_uniform_degree
@@ -23,7 +23,7 @@ theorem canonical_short_normalized_generator_energy_uniform_degree
     ∀ (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hcut d : ℝ),
       Z₀≤Z → 0≤N → 0≤V → 0≤M → M≤L → V≤L → z₀≤L → 0≤hcut → hcut≤L →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hcut≤d+eta → d≤cstar/200 →
     ∀ (labels : Finset (Ideal Eis)),
       (∀ f∈labels,Squarefree f ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
@@ -103,8 +103,8 @@ theorem canonical_short_normalized_generator_energy_uniform_degree
         _ = (D*(6*C))*(1+‖θ‖)^degree*(Z^(V+cstar/256)*Z^(-V)*Z^(N+V-cstar/128)) := by ring
         _ = _ := by rw [hr]
 
-end SevenEighths.InverseShortCanonicalNormalization
 
-end
 
-end OAI
+
+
+

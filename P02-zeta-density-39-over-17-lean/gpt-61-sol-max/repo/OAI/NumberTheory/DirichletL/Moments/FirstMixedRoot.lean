@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedAllowance
 public import OAI.NumberTheory.DirichletL.Moments.FirstExceptionalPrefactorActual
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedFamily
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedRoot
@@ -15,9 +16,9 @@ open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstNonexceptionalPrefactor
 open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily
 open CenteredMomentFirstScale CenteredMomentSupportedCorrelation
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 lemma active_span_swap (C D:Ideal O):
     Ideal.span {activeConductor D C}=Ideal.span {activeConductor C D}:=by
@@ -42,7 +43,7 @@ lemma allowance_root (Z C D P R b:ℝ)(hZ:1<Z)(hC:0<C)(hD:0<D)(hP:0<P)(hR:0<R)
     (hb:b≤Real.logb Z C+Real.logb Z D-2*Real.logb Z P-Real.logb Z R):
     Real.sqrt R/Real.sqrt (C*D)*Z^(b/2)≤1/P:=by
   have hz:0<Z:=zero_lt_one.trans hZ
-  have hlz:0<Real.log Z:=Real.log_pos hZ
+  have hlz :=Real.log_pos hZ
   have hb':b≤(Real.log C+Real.log D-2*Real.log P-Real.log R)/Real.log Z:=by
     convert hb using 1 ; simp only [Real.logb] ; ring
   have hh: b*Real.log Z≤Real.log C+Real.log D-2*Real.log P-Real.log R:=
@@ -82,10 +83,10 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
         ((F.right.modulus.absNorm:ℝ)*(T/(D.absNorm:ℝ))^2*Z^(allowance D C Z)*ER))≤
       ‖inactiveWeight C D E‖*(Real.exp M/a)*fixedPresentationCost*K*(η.modulus.absNorm:ℝ)/
         (commonRadical C D).absNorm*Real.sqrt (EL*ER):=by
-  have hF:0<fixedPresentationCost:=fixedPresentationCost_pos
+  have hF :=fixedPresentationCost_pos
   have hNC:0<(C.absNorm:ℝ):=norm_pos C hC.1
   have hND:0<(D.absNorm:ℝ):=norm_pos D hD.1
-  have hNR:0<((Ideal.span {activeConductor C D}).absNorm:ℝ):=active_norm_pos C D
+  have hNR :=active_norm_pos C D
   have hP:0<((commonRadical C D).absNorm:ℝ):=norm_pos _ (commonRadical_ne_zero C D)
   have hqL:0<(F.left.modulus.absNorm:ℝ):=norm_pos _ F.left.modulus_ne_bot
   have hqR:0<(F.right.modulus.absNorm:ℝ):=norm_pos _ F.right.modulus_ne_bot
@@ -155,8 +156,8 @@ theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
   exact actual_fixed_reference_pair C D hC hD hCD E s.η ξ₁ ξ₂ F
     K A₀ B₀ _ _ M Z EL ER hK hA hB ha (volume_pos s.toData) hZ hEL hER hl hr
 
-end SevenEighths.CenteredMomentFirstMixedRoot
 
-end
 
-end OAI
+
+
+

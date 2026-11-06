@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Basic.Complex.Basic
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Data.Finset.Basic
@@ -36,7 +37,6 @@ theorem halasz_montgomery_lemma_of_mean_value
   have h_bound_sq : ∀ t ∈ W, V^2 ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := by
     intro t ht
     have ht_bound := hBound t ht
-    have hV_nonneg : 0 ≤ V := le_of_lt hV
     nlinarith
   have h_sum_V2 : (W.card : ℝ) * V^2 ≤ ∑ t ∈ W, ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := by
     calc (W.card : ℝ) * V^2 = ∑ t ∈ W, V^2 := by
@@ -63,4 +63,4 @@ mean-value premise discharged by the project theorem. -/
 theorem halasz_montgomery_lemma_native : HalaszMontgomeryLemma :=
   halasz_montgomery_lemma_of_mean_value montgomery_mean_value_native
 
-end GuthMaynard.NativeMoment
+

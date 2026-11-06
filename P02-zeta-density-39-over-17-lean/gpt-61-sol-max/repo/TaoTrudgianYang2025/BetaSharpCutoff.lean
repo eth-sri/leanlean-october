@@ -13,13 +13,13 @@ indicator. No smoothing error or replacement-sum assumption is introduced.
 Derivative bounds uniform in the margins remain a separate obligation.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped ContDiff FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem exponentialSumAt_eq_int_sum (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) :
     exponentialSumAt F T N a b =
@@ -41,4 +41,4 @@ theorem exponentialSumAt_eq_int_sum (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) :
   · intro n _
     simp only [Int.cast_natCast]
 
-end TaoTrudgianYang2025
+

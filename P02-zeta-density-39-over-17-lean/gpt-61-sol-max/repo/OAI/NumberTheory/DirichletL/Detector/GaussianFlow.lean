@@ -7,7 +7,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology
-open Filter Set Metric
+open Filter
 namespace SevenEighths.ProbePhysical
 
 def gaussianFlow (R : ℝ) (z : ℂ) : ℂ :=
@@ -84,7 +84,7 @@ lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L) (n : ℕ) :
     (fun z hz=>hbound R hR y hy z (Metric.sphere_subset_closedBall hz))
   simpa only [one_pow,div_one,mul_assoc] using h
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,26 +11,31 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightReflection
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-def zetaDivisorWeightArgument (t : ℝ) (n : ℕ) : ℂ :=
+section
+variable (t : ℝ) (n : ℕ)
+include t n
+
+def zetaDivisorWeightArgument  : ℂ :=
   (Real.log (n : ℝ) : ℂ) - zetaGammaLeadingLog t
 
-theorem zetaDivisorWeightArgument_re (t : ℝ) (n : ℕ) :
+theorem zetaDivisorWeightArgument_re  :
     (zetaDivisorWeightArgument t n).re = Real.log (n : ℝ) - Real.log (t / (2 * Real.pi)) := by
   simp only [zetaDivisorWeightArgument, zetaGammaLeadingLog, sub_re, ofReal_re,
     mul_re, ofReal_im, I_re, I_im, zero_mul, mul_zero, sub_zero]
 
-theorem zetaDivisorWeightArgument_im (t : ℝ) (n : ℕ) :
+theorem zetaDivisorWeightArgument_im  :
     (zetaDivisorWeightArgument t n).im = Real.pi / 2 := by
   simp only [zetaDivisorWeightArgument, zetaGammaLeadingLog, sub_im, ofReal_im,
     mul_im, ofReal_re, I_re, I_im, zero_mul, mul_one, add_zero, zero_sub, neg_neg]
+end
+
 
 theorem divisorDirichletTerm_add_eq_mul_exp (s w : ℂ) (n : ℕ) :
     divisorDirichletTerm (s + w) n =
@@ -43,10 +49,13 @@ theorem divisorDirichletTerm_add_eq_mul_exp (s w : ℂ) (n : ℕ) :
   rw [divisorDirichletTerm_eq_divisorWeight_mul_cpow,
     divisorDirichletTerm_eq_divisorWeight_mul_cpow, neg_add,
     Complex.cpow_add _ _ hne, Complex.cpow_def_of_ne_zero hne (-w), hlog]
-  rw [show ((Real.log (n : ℝ) : ℂ)) * -w = -((Real.log (n : ℝ) : ℂ)) * w by ring]
   ring
 
-theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (t : ℝ) (n : ℕ) (u : ℝ) :
+section
+variable (t : ℝ) (n : ℕ)
+include t n
+
+theorem zetaSquareLeadingDivisorTerm_eq_weightKernel  (u : ℝ) :
     zetaSquareLeadingDivisorTerm t n u =
       (divisorDirichletTerm (afeCriticalPoint (-t)) n * zetaSquareReflectedGammaPhase t) *
         zetaDivisorWeightKernel (zetaDivisorWeightArgument t n) (1 + (u : ℂ) * I) := by
@@ -60,13 +69,15 @@ theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (t : ℝ) (n : ℕ) (u : �
         (1 + (u : ℂ) * I) * zetaGammaLeadingLog t by ring, Complex.exp_add]
   ring
 
-theorem zetaSquareLeadingDivisorContribution_eq_weight (t : ℝ) (n : ℕ) :
+theorem zetaSquareLeadingDivisorContribution_eq_weight  :
     zetaSquareLeadingDivisorContribution t n =
       divisorDirichletTerm (afeCriticalPoint (-t)) n * zetaSquareReflectedGammaPhase t *
         zetaDivisorWeight (zetaDivisorWeightArgument t n) := by
   unfold zetaSquareLeadingDivisorContribution zetaDivisorWeight
   simp_rw [zetaSquareLeadingDivisorTerm_eq_weightKernel, integral_const_mul]
   ring
+end
+
 
 theorem exp_neg_zetaDivisorWeightArgument_re {t : ℝ} (ht : 0 < t)
     {n : ℕ} (hn : 0 < n) :
@@ -89,4 +100,4 @@ theorem exists_norm_source_zetaDivisorWeight_min_le :
     (by rw [zetaDivisorWeightArgument_im, abs_of_pos (by positivity)])
   rwa [exp_neg_zetaDivisorWeightArgument_re ht hn] at h
 
-end MathCollab.Density.Stronger.Atkinson
+

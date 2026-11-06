@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -14,7 +15,6 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -133,8 +133,7 @@ theorem norm_zetaSquareReflectedGammaPhase_sub_quadratic_le {T r x : ℝ}
           Complex.exp (-I * (zetaSquareGammaQuadraticAngle T x : ℂ)) := by
       simp only [demodulatedGammaPhase, zetaSquareGammaQuadraticAngle, zero_mul, add_zero]
       rw [sub_mul, mul_assoc, ← Complex.exp_add]
-      ring_nf
-      simp
+      simp_all
     rw [heq, norm_mul]
     have he : ‖Complex.exp (-I * (zetaSquareGammaQuadraticAngle T x : ℂ))‖ = 1 := by
       simp [Complex.norm_exp]
@@ -156,7 +155,6 @@ theorem zetaSquareGammaQuadratic_gaussian_identity (T G v x : ℝ) :
   congr 1
   unfold zetaSquareGammaQuadraticAngle zetaGaussianQuadraticCoefficient
   push_cast
-  field_simp
   ring
 
 /-- Integrated phase replacement on the actual closed physical window.
@@ -170,7 +168,7 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
         ∫ x in -r..r, Complex.exp (I * ((v - Real.log (T / (2 * Real.pi)) : ℝ) : ℂ) * x) *
           Complex.exp (-zetaGaussianQuadraticCoefficient T G * (x : ℂ) ^ 2)‖ ≤
       2 * r ^ 2 * (18 / T + 2 * r ^ 2 / T ^ 2) := by
-  let C : ℝ := 18 / T + 2 * r ^ 2 / T ^ 2
+  let C := 18 / T + 2 * r ^ 2 / T ^ 2
   have hT0 : 0 < T := by linarith
   have hC : 0 ≤ C := by dsimp [C]; positivity
   have hphase : Continuous zetaSquareReflectedGammaPhase :=
@@ -194,9 +192,7 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
     rw [← intervalIntegral.integral_const_mul,
       ← intervalIntegral.integral_sub (hleft.intervalIntegrable _ _)
         ((hright.const_mul _).intervalIntegrable _ _)]
-    apply intervalIntegral.integral_congr
-    intro x _
-    ring
+    grind
   rw [heq]
   have hbound := intervalIntegral.norm_integral_le_of_norm_le_const
     (a := -r) (b := r) (C := C * r)
@@ -223,4 +219,4 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
       mul_le_mul_of_nonneg_left hw (norm_nonneg _)
     _ ≤ C * r := by rw [mul_one]; exact hp.trans (mul_le_mul_of_nonneg_left hxr hC)
 
-end MathCollab.Density.Stronger.Atkinson
+

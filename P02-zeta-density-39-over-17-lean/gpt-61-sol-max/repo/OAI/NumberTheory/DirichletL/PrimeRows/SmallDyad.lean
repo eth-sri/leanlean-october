@@ -7,10 +7,10 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators
-open MeasureTheory Set
+open MeasureTheory
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def absolutePhysicalDyadIntegral {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -22,7 +22,7 @@ def absolutePhysicalDyadIntegral {K : ℕ}
       physicalDyadNorm S hS hmax η R T hT W Yp ((σ:ℂ)+p.1.1*Complex.I)
         ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I) ∂heightMeasure
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

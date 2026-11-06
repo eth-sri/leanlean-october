@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.VariationalLaplacian
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopenedFibers
 
@@ -9,73 +10,73 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
@@ -93,11 +94,10 @@ lemma compact_of_norm_le_compact {E F G : Type*}
   let S := (LinearMap.range g.toLinearMap).topologicalClosure
   have hS : IsClosed (S : Set G) := (LinearMap.range g.toLinearMap).isClosed_topologicalClosure
   have hmem : ∀x,g x∈S := fun x => (LinearMap.range g.toLinearMap).le_topologicalClosure ⟨x,rfl⟩
-  let e : E→L[ℂ]S := g.codRestrict S hmem
+  let e := g.codRestrict S hmem
   have he : DenseRange e := by
     rw [DenseRange,Subtype.dense_iff,←Set.range_comp]
-    change closure (Set.range g)⊆closure (Set.range g)
-    exact Set.Subset.rfl
+    rfl
   have hec : IsCompactOperator e := hg.codRestrict hmem hS
   let q : S→L[ℂ]F := f.toLinearMap.extendOfNorm e.toLinearMap
   have hfq : f=q.comp e := by
@@ -111,7 +111,7 @@ lemma compact_finite_pi {E G ι : Type*} [Fintype ι]
     [NormedAddCommGroup G] [NormedSpace ℂ G]
     (T : ι→E→L[ℂ]G) (hT : ∀i,IsCompactOperator (T i)) :
     IsCompactOperator (ContinuousLinearMap.pi T) := by
-  let K : ι→Set G := fun i => closure ((T i) '' Metric.ball (0 : E) 1)
+  let K := fun i => closure ((T i) '' Metric.ball (0 : E) 1)
   have hK : ∀i,IsCompact (K i) := fun i => (hT i).isCompact_closure_image_ball 1
   refine ⟨Set.pi Set.univ K,isCompact_univ_pi hK,?_⟩
   apply Filter.mem_of_superset (Metric.ball_mem_nhds (0 : E) (by norm_num : (0 : ℝ)<1))
@@ -121,23 +121,27 @@ lemma compact_finite_pi {E G ι : Type*} [Fintype ι]
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff SchwartzMap
 
-def kernelChartCore (χ : PositiveChartCutoff) : Set EuclideanSpatial :=
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+def kernelChartCore  : Set EuclideanSpatial :=
   {p | (1/2 : ℝ)<χ.func p}
 
-def kernelChartCoreImage (χ : PositiveChartCutoff) : Set KernelQuotient :=
+def kernelChartCoreImage  : Set KernelQuotient :=
   kernelEuclideanProjection '' kernelChartCore χ
 
-lemma kernelChartCore_open (χ : PositiveChartCutoff) : IsOpen (kernelChartCore χ) :=
+lemma kernelChartCore_open  : IsOpen (kernelChartCore χ) :=
   isOpen_lt continuous_const χ.smooth.continuous
 
-lemma kernelChartCore_subset (χ : PositiveChartCutoff) : kernelChartCore χ⊆tsupport χ.func := by
+lemma kernelChartCore_subset  : kernelChartCore χ⊆tsupport χ.func := by
   intro p hp
   apply subset_tsupport
   change χ.func p≠0
   have hh : (1/2 : ℝ)<χ.func p := hp
   linarith
 
-lemma kernelChartCoreImage_open (χ : PositiveChartCutoff) : IsOpen (kernelChartCoreImage χ) := by
+lemma kernelChartCoreImage_open  : IsOpen (kernelChartCoreImage χ) := by
   have hp : kernelChartCore χ⊆euclideanUpperHalf := (kernelChartCore_subset χ).trans χ.positive
   have he : kernelChartCoreImage χ=integralOrbitProjection globalKubotaKernel ''
       (hyperbolicEuclideanCoordinates ⁻¹' kernelChartCore χ) := by
@@ -147,6 +151,8 @@ lemma kernelChartCoreImage_open (χ : PositiveChartCutoff) : IsOpen (kernelChart
   exact (integralOrbitProjection_openQuotient globalKubotaKernel
     globalKubotaKernel_le_levelThree).isOpenMap _
       ((kernelChartCore_open χ).preimage hyperbolicEuclideanCoordinates_continuous)
+end
+
 
 abbrev KernelGoodCutoff := {χ : PositiveChartCutoff //
   Set.InjOn kernelEuclideanProjection (tsupport χ.func)}
@@ -234,16 +240,20 @@ end
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
 
-def kernelMassRestriction (K : Set KernelQuotient) (hK : MeasurableSet K)
+section
+variable (K : Set KernelQuotient) (hK : MeasurableSet K)
+include K hK
+
+def kernelMassRestriction 
     (f : KernelQuotientL2) : KernelQuotientL2 :=
   ((Lp.memLp f).indicator hK).toLp (K.indicator f)
 
-lemma kernelMassRestriction_coe (K : Set KernelQuotient) (hK : MeasurableSet K)
+lemma kernelMassRestriction_coe 
     (f : KernelQuotientL2) :
     (kernelMassRestriction K hK f : KernelQuotient→ℂ)=ᵐ[integralQuotientVolume globalKubotaKernel]
       K.indicator f := ((Lp.memLp f).indicator hK).coeFn_toLp
 
-def kernelMassRestrictionLinear (K : Set KernelQuotient) (hK : MeasurableSet K) :
+def kernelMassRestrictionLinear  :
     KernelQuotientL2→ₗ[ℂ]KernelQuotientL2 where
   toFun := kernelMassRestriction K hK
   map_add' f g := by
@@ -265,23 +275,22 @@ def kernelMassRestrictionLinear (K : Set KernelQuotient) (hK : MeasurableSet K) 
     · simp only [Set.indicator_of_mem hq,ha,Pi.smul_apply]
     · simp only [Set.indicator_of_notMem hq,smul_zero]
 
-lemma kernelMassRestriction_norm_le (K : Set KernelQuotient) (hK : MeasurableSet K)
+lemma kernelMassRestriction_norm_le 
     (f : KernelQuotientL2) : ‖kernelMassRestriction K hK f‖≤‖f‖ := by
   apply Lp.norm_le_norm_of_ae_le
   filter_upwards [kernelMassRestriction_coe K hK f] with q hq
   rw [hq]
   by_cases hm : q∈K
-  · simp only [Set.indicator_of_mem hm,le_refl]
-  · simp only [Set.indicator_of_notMem hm,norm_zero,norm_nonneg]
+  all_goals (simp_all)
 
-def kernelMassRestrictionCLM (K : Set KernelQuotient) (hK : MeasurableSet K) :
+def kernelMassRestrictionCLM  :
     KernelQuotientL2→L[ℂ]KernelQuotientL2 :=
   (kernelMassRestrictionLinear K hK).mkContinuous 1 (by
     intro f
     change ‖kernelMassRestriction K hK f‖≤1*‖f‖
     simpa only [one_mul] using kernelMassRestriction_norm_le K hK f)
 
-lemma kernelMassRestriction_norm_sq (K : Set KernelQuotient) (hK : MeasurableSet K)
+lemma kernelMassRestriction_norm_sq 
     (f : KernelQuotientL2) :
     ‖kernelMassRestrictionCLM K hK f‖^2=
       ∫q in K,‖f q‖^2∂integralQuotientVolume globalKubotaKernel := by
@@ -296,10 +305,9 @@ lemma kernelMassRestriction_norm_sq (K : Set KernelQuotient) (hK : MeasurableSet
       filter_upwards [kernelMassRestriction_coe K hK f] with q hq
       rw [hq,real_inner_self_eq_norm_sq]
       by_cases hqK : q∈K
-      · simp only [Set.indicator_of_mem hqK]
-      · simp only [Set.indicator_of_notMem hqK,norm_zero,zero_pow (by decide : 2≠0)]
+      all_goals (simp_all)
 
-lemma kernelMassRestriction_smooth_norm_sq (K : Set KernelQuotient) (hK : MeasurableSet K)
+lemma kernelMassRestriction_smooth_norm_sq 
     (f : kernelSmoothTests) :
     ‖kernelMassRestrictionCLM K hK (kernelSmoothTestsToL2 f)‖^2=
       ∫q in K,‖f.1 q‖^2∂integralQuotientVolume globalKubotaKernel := by
@@ -309,9 +317,11 @@ lemma kernelMassRestriction_smooth_norm_sq (K : Set KernelQuotient) (hK : Measur
   change ‖((kernelSmoothTests_memLp f).toLp f.1) q‖^2=‖f.1 q‖^2
   rw [hq]
 
-def kernelEnergyMassRestriction (K : Set KernelQuotient) (hK : MeasurableSet K) :
+def kernelEnergyMassRestriction  :
     KernelEnergyGraph→L[ℂ]KernelQuotientL2 :=
   (kernelMassRestrictionCLM K hK).comp kernelEnergyMass
+end
+
 
 lemma integral_le_finite_cover {X ι : Type*} [MeasurableSpace X] [Fintype ι]
     (ν : Measure X) (K : Set X) (hK : MeasurableSet K) (U : ι→Set X)
@@ -339,13 +349,19 @@ lemma integral_le_finite_cover {X ι : Type*} [MeasurableSpace X] [Fintype ι]
       intro i hi
       exact integral_indicator (hU i)
 
-def kernelEnergyChartFamily (t : Finset KernelGoodCutoff) :
+section
+variable (t : Finset KernelGoodCutoff)
+include t
+
+def kernelEnergyChartFamily  :
     KernelEnergyGraph→L[ℂ](t→EuclideanL2) :=
   ContinuousLinearMap.pi (fun χ : t => kernelEnergyLocalizeL2 χ.1.1)
 
-lemma kernelEnergyChartFamily_isCompact (t : Finset KernelGoodCutoff) :
+lemma kernelEnergyChartFamily_isCompact  :
     IsCompactOperator (kernelEnergyChartFamily t) :=
   compact_finite_pi _ (fun χ => kernelEnergyLocalizeL2_isCompact χ.1.1 χ.1.2)
+end
+
 
 lemma finite_sum_weighted_norm_sq_le {G ι : Type*} [Fintype ι]
     [NormedAddCommGroup G] (C : ι→ℝ) (hC : ∀i,0≤C i) (x : ι→G) :
@@ -359,11 +375,13 @@ lemma finite_sum_weighted_norm_sq_le {G ι : Type*} [Fintype ι]
 lemma kernelEnergyChartFamily_core_apply (t : Finset KernelGoodCutoff)
     (f : kernelSmoothTests) (χ : t) :
     kernelEnergyChartFamily t (kernelEnergyGraphCore f) χ=
-      kernelL2Localize χ.1.1 (kernelSmoothTestsToL2 f) := by
-  change kernelL2Localize χ.1.1 (kernelEnergyMass (kernelEnergyGraphCore f))=_
-  rw [kernelEnergyMass_core]
+      kernelL2Localize χ.1.1 (kernelSmoothTestsToL2 f) := by rfl
 
-lemma kernelCompact_mass_bound (K : Set KernelQuotient) (hK : IsCompact K) :
+section
+variable (K : Set KernelQuotient) (hK : IsCompact K)
+include K hK
+
+lemma kernelCompact_mass_bound  :
     ∃t : Finset KernelGoodCutoff,∃C : ℝ,0≤C ∧ ∀f : kernelSmoothTests,
       (∫q in K,‖f.1 q‖^2∂integralQuotientVolume globalKubotaKernel)≤
         C*‖kernelEnergyChartFamily t (kernelEnergyGraphCore f)‖^2 := by
@@ -385,7 +403,7 @@ lemma kernelCompact_mass_bound (K : Set KernelQuotient) (hK : IsCompact K) :
       simp only [kernelEnergyChartFamily_core_apply]
     _ ≤ _ := finite_sum_weighted_norm_sq_le C hC _
 
-theorem kernelEnergyMassRestriction_isCompact (K : Set KernelQuotient) (hK : IsCompact K) :
+theorem kernelEnergyMassRestriction_isCompact  :
     IsCompactOperator (kernelEnergyMassRestriction K hK.measurableSet) := by
   obtain ⟨t,C,hC,hbound⟩ := kernelCompact_mass_bound K hK
   have hsq : ∀u : KernelEnergyGraph,
@@ -409,6 +427,8 @@ theorem kernelEnergyMassRestriction_isCompact (K : Set KernelQuotient) (hK : IsC
   have he : (Real.sqrt C*‖kernelEnergyChartFamily t u‖)^2=C*‖kernelEnergyChartFamily t u‖^2 := by
     rw [mul_pow,Real.sq_sqrt hC]
   nlinarith [norm_nonneg (kernelEnergyMassRestriction K hK.measurableSet u)]
+end
+
 
 end CubicEisenstein
 
@@ -419,28 +439,28 @@ section
 open ActualEisensteinCubic
 open CompletedGauss (actualSextic)
 
-def primeValueHom (w : Ideal ActualEisensteinCubic.O → ℂ) : Ideal ActualEisensteinCubic.O →*₀ ℂ where
+section
+variable (w : Ideal ActualEisensteinCubic.O → ℂ)
+include w
+
+def primeValueHom  : Ideal ActualEisensteinCubic.O →*₀ ℂ where
   toFun I := if I=0 then 0 else ((UniqueFactorizationMonoid.normalizedFactors I).map w).prod
   map_zero' := by simp
-  map_one' := by
-    rw [ite_eq_right one_ne_zero,UniqueFactorizationMonoid.normalizedFactors_one]
-    rfl
+  map_one' := by norm_num
   map_mul' I J := by
     by_cases hI : I=0
     · simp [hI]
     by_cases hJ : J=0
-    · simp [hJ]
-    simp only [ite_eq_right hI,ite_eq_right hJ,ite_eq_right (mul_ne_zero hI hJ),
-      UniqueFactorizationMonoid.normalizedFactors_mul hI hJ,Multiset.map_add,Multiset.prod_add]
+    all_goals (simp_all <;> nlinarith)
 
-theorem primeValueHom_prime (w : Ideal ActualEisensteinCubic.O → ℂ) (P : Ideal ActualEisensteinCubic.O) (hP : Prime P) :
+theorem primeValueHom_prime  (P : Ideal ActualEisensteinCubic.O) (hP : Prime P) :
     primeValueHom w P = w P := by
   change (if P=0 then 0 else _) = w P
   rw [ite_eq_right hP.ne_zero,
     UniqueFactorizationMonoid.normalizedFactors_irreducible hP.irreducible]
-  simp only [normalize_eq,Multiset.map_singleton,Multiset.prod_singleton]
+  simp
 
-theorem primeValueHom_norm_le_one (w : Ideal ActualEisensteinCubic.O → ℂ) (hw : ∀ P,‖w P‖≤1)
+theorem primeValueHom_norm_le_one  (hw : ∀ P,‖w P‖≤1)
     (I : Ideal ActualEisensteinCubic.O) : ‖primeValueHom w I‖≤1 := by
   by_cases hI : I=0
   · rw [hI,map_zero,norm_zero]
@@ -454,6 +474,8 @@ theorem primeValueHom_norm_le_one (w : Ideal ActualEisensteinCubic.O → ℂ) (h
       simp only [Multiset.map_cons,Multiset.prod_cons,norm_mul]
       exact (mul_le_of_le_one_left (norm_nonneg _) (hw P)).trans ih
   exact hprod _
+end
+
 
 def principalIdealHom : ActualEisensteinCubic.O →*₀ Ideal ActualEisensteinCubic.O where
   toFun n := Ideal.span {n}
@@ -461,36 +483,54 @@ def principalIdealHom : ActualEisensteinCubic.O →*₀ Ideal ActualEisensteinCu
   map_one' := by simp
   map_mul' a b := (Ideal.span_singleton_mul_span_singleton a b).symm
 
-def localRowValue (x : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) : ℂ :=
+section
+variable (x : ActualEisensteinCubic.O)
+include x
+
+section
+variable (P : Ideal ActualEisensteinCubic.O)
+include P
+
+def localRowValue  : ℂ :=
   if h : P.IsMaximal ∧ lambda∉P then
     letI : P.IsMaximal := h.1
     actualSextic P h.2 (Ideal.Quotient.mk P x)
   else 0
 
-theorem localRowValue_good (x : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : lambda∉P) :
+theorem localRowValue_good  [P.IsMaximal] (hg : lambda∉P) :
     localRowValue x P = actualSextic P hg (Ideal.Quotient.mk P x) := by
   simp only [localRowValue,dite_eq_left (show P.IsMaximal ∧ lambda∉P from ⟨inferInstance,hg⟩)]
 
-theorem localRowValue_norm (x : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) : ‖localRowValue x P‖≤1 := by
+theorem localRowValue_norm  : ‖localRowValue x P‖≤1 := by
   unfold localRowValue
   split_ifs with h
   · let : P.IsMaximal := h.1
     let : Fintype (ActualEisensteinCubic.O⧸P) := Fintype.ofFinite _
     exact FiniteRayExpansion.norm_char_le_one _ _
   · simp
+end
 
-def idealRowHom (x : ActualEisensteinCubic.O) : Ideal ActualEisensteinCubic.O →*₀ ℂ := primeValueHom (localRowValue x)
+
+def idealRowHom  : Ideal ActualEisensteinCubic.O →*₀ ℂ := primeValueHom (localRowValue x)
+end
+
 
 def rowTwist (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) : ActualEisensteinCubic.O →* ℂ :=
   Ψ * (idealRowHom (m^6*f^4*z)).toMonoidHom.comp principalIdealHom.toMonoidHom
 
-theorem idealRowHom_prime (x : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : lambda∉P) :
+section
+variable (x : ActualEisensteinCubic.O)
+include x
+
+theorem idealRowHom_prime  (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : lambda∉P) :
     idealRowHom x P = actualSextic P hg (Ideal.Quotient.mk P x) := by
   rw [idealRowHom,primeValueHom_prime _ P
     (Ideal.prime_of_isPrime (NeZero.ne P) inferInstance),localRowValue_good]
 
-theorem idealRowHom_norm (x : ActualEisensteinCubic.O) (I : Ideal ActualEisensteinCubic.O) : ‖idealRowHom x I‖≤1 :=
+theorem idealRowHom_norm  (I : Ideal ActualEisensteinCubic.O) : ‖idealRowHom x I‖≤1 :=
   primeValueHom_norm_le_one _ (localRowValue_norm x) I
+end
+
 
 theorem rowTwist_norm (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (m f z n : ActualEisensteinCubic.O) :
     ‖rowTwist Ψ m f z n‖≤1 := by
@@ -498,9 +538,13 @@ theorem rowTwist_norm (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀n,‖Ψ 
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (hΨ n)).trans (idealRowHom_norm _ _)
 
-theorem idealRowHom_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
+section
+variable {ι : Type*} (p : ι → ActualEisensteinCubic.O)
     [∀i,(Ideal.span {p i}).IsMaximal] (hg : ∀i,lambda∉Ideal.span {p i})
-    (S : Finset ι) (x : ActualEisensteinCubic.O) :
+    (S : Finset ι)
+include ι p hg S
+
+theorem idealRowHom_product  (x : ActualEisensteinCubic.O) :
     idealRowHom x (Ideal.span {∏i∈S,p i}) =
       finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S x := by
   rw [FiniteGaussPhase.span_finset_prod,map_prod]
@@ -509,9 +553,7 @@ theorem idealRowHom_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
   intro i hi
   exact idealRowHom_prime x _ (hg i)
 
-theorem rowTwist_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hg : ∀i,lambda∉Ideal.span {p i})
-    (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) :
+theorem rowTwist_product  (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) :
     rowTwist Ψ m f z (∏i∈S,p i) =
       Ψ (∏i∈S,p i)*rowCoprimeMask (fun i=>Ideal.span {p i}) S m*
         finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S f^4*
@@ -520,6 +562,8 @@ theorem rowTwist_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
   rw [idealRowHom_product p hg S,finiteSquarefreeRow_mul,finiteSquarefreeRow_mul,
     FirstPassCubeLabels.row_pow,FirstPassCubeLabels.row_pow,FirstPassCubeLabels.row_sixth]
   ring
+end
+
 
 end
 
@@ -527,13 +571,17 @@ open ActualEisensteinCubic
 open CompletedGauss hiding O
 open SecondPassArithmetic hiding O
 
-section
+
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
 
-theorem squarefreeGaussCoefficient_finset (hpr : ∀i,lambda^2∣p i-1) (S : Finset ι) :
+section
+variable (hpr : ∀i,lambda^2∣p i-1) (S : Finset ι)
+include hpr S
+
+theorem squarefreeGaussCoefficient_finset  :
     squarefreeGaussCoefficient (Ideal.span {∏i∈S,p i}) =
       MixedCrossSeparation.columnCoefficient p hp hcop hg S := by
   have h := squarefreeGaussCoefficient_eq_canonicalProductCoefficient
@@ -542,8 +590,7 @@ theorem squarefreeGaussCoefficient_finset (hpr : ∀i,lambda^2∣p i-1) (S : Fin
     (fun i=>hpr i.val)
   simpa only [Finset.prod_coe_sort,MixedCrossSeparation.columnCoefficient] using h
 
-theorem columnWeight_finset (hpr : ∀i,lambda^2∣p i-1)
-    (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (H : Finset ι → ℂ) :
+theorem columnWeight_finset  (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (H : Finset ι → ℂ) :
     columnWeight (rowTwist Ψ m f z) (Ideal.span {∏i∈S,p i}) * H S =
       canonicalSourceCoefficient p hp hcop hg Ψ m f H S *
         finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S z := by
@@ -555,11 +602,13 @@ theorem columnWeight_finset (hpr : ∀i,lambda^2∣p i-1)
     primaryGenerator_span _ hn hprimary,rowTwist_product p hg S]
   simp only [canonicalSourceCoefficient]
   ring
-
 end
 
-end CanonicalRowCompletion
 
-end
 
-end OAI
+
+
+
+
+
+

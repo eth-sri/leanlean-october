@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -22,7 +23,7 @@ in the real frequency. This is the scale needed to freeze the actual
 amplitude near its saddle; the coarser height-scale bounds are not used.
 -/
 
-noncomputable section
+
 
 open Complex Set
 open scoped ContDiff
@@ -34,8 +35,7 @@ theorem sq_mul_gaussian_eighth_le (x : ℝ) : x ^ 2 * Real.exp (-x ^ 2 / 8) ≤ 
   have hm := mul_le_mul_of_nonneg_right h (Real.exp_pos (-x ^ 2 / 8)).le
   have he : Real.exp (x ^ 2 / 8) * Real.exp (-x ^ 2 / 8) = 1 := by
     rw [← Real.exp_add, show x ^ 2 / 8 + -x ^ 2 / 8 = 0 by ring, Real.exp_zero]
-  rw [he] at hm
-  nlinarith [Real.exp_pos (-x ^ 2 / 8)]
+  nlinarith
 
 theorem abs_mul_gaussian_eighth_le (x : ℝ) : |x| * Real.exp (-x ^ 2 / 8) ≤ 9 := by
   have hs := sq_mul_gaussian_eighth_le x
@@ -44,8 +44,12 @@ theorem abs_mul_gaussian_eighth_le (x : ℝ) : |x| * Real.exp (-x ^ 2 / 8) ≤ 9
   have h := mul_le_mul_of_nonneg_right hx (Real.exp_pos (-x ^ 2 / 8)).le
   nlinarith
 
-theorem norm_deriv_zetaGaussianQuadraticIntegral_le_natural {T G : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
+section
+variable {T G : ℝ}
+    (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ)
+include T G hT hG hGT v
+
+theorem norm_deriv_zetaGaussianQuadraticIntegral_le_natural  :
     ‖deriv (zetaGaussianQuadraticIntegral T G) v‖ ≤ 5 * Real.sqrt Real.pi * G ^ 2 := by
   apply (norm_deriv_zetaGaussianQuadraticIntegral_le hT hG hGT v).trans
   calc
@@ -57,8 +61,7 @@ theorem norm_deriv_zetaGaussianQuadraticIntegral_le_natural {T G : ℝ}
       mul_le_mul_of_nonneg_left (abs_mul_gaussian_eighth_le (G * v)) (by positivity)
     _ ≤ _ := by nlinarith [Real.sqrt_nonneg Real.pi, sq_nonneg G]
 
-theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le_natural {T G : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
+theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le_natural  :
     ‖iteratedDeriv 2 (zetaGaussianQuadraticIntegral T G) v‖ ≤
       3 * Real.sqrt Real.pi * G ^ 3 := by
   have hs := sq_mul_gaussian_eighth_le (G * v)
@@ -73,6 +76,8 @@ theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le_natural {T G : �
           Real.exp (-(G * v) ^ 2 / 8) / 2) := by ring
     _ ≤ (Real.sqrt Real.pi * G ^ 3) * 3 := mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by ring
+end
+
 
 theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → ℝ} {a b : ℝ}
     (hv : ∀ u ∈ Icc a b, ContDiffAt ℝ 2 v u) :
@@ -106,9 +111,7 @@ theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → �
         mul_le_mul (hprofile u hu).2.1
           (norm_deriv_zetaGaussianQuadraticIntegral_le_natural hT hG0 hGT (v u))
           (norm_nonneg _) hM.le
-      _ ≤ _ := by
-        have h := mul_le_mul_of_nonneg_right hA1 (show 0 ≤ Real.sqrt Real.pi * G ^ 2 by positivity)
-        nlinarith
+      _ ≤ _ := by field_simp <;> nlinarith
   · intro u hu
     rw [iteratedDeriv_two_comp_real hQ.contDiffAt (hv u hu)]
     apply (norm_add_le _ _).trans
@@ -122,12 +125,7 @@ theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → �
             (norm_nonneg _) (sq_nonneg M))
           (mul_le_mul (hprofile u hu).2.2 (norm_deriv_zetaGaussianQuadraticIntegral_le_natural hT hG0 hGT (v u))
             (norm_nonneg _) hM.le)
-      _ ≤ (3 * M ^ 2 + 5 * M) * (Real.sqrt Real.pi * G ^ 3) := by
-        have h := mul_le_mul_of_nonneg_left (show G ^ 2 ≤ G ^ 3 by nlinarith [sq_nonneg (G - 1)])
-          (show 0 ≤ 5 * M * Real.sqrt Real.pi by positivity)
-        nlinarith
-      _ ≤ _ := by
-        have h := mul_le_mul_of_nonneg_right hA2 (show 0 ≤ Real.sqrt Real.pi * G ^ 3 by positivity)
-        nlinarith
+      _ ≤ (3 * M ^ 2 + 5 * M) * (Real.sqrt Real.pi * G ^ 3) := by field_simp <;> nlinarith
+      _ ≤ _ := by field_simp <;> nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

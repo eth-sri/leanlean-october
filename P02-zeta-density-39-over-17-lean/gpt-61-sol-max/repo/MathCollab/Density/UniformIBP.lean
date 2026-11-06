@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Oscillatory
 public import Mathlib.Analysis.Calculus.ContDiff.Deriv
 public import Mathlib.Analysis.Calculus.Deriv.Support
@@ -166,23 +167,28 @@ theorem normalized_offBand_mem {H v k : ℝ} (hH : 0 < H)
 def logOscillation (R : ℝ) (p : ℝ × ℝ) (x : ℝ) : ℂ :=
   Complex.exp (((R * (p.1 * Real.log x - p.2 * x) : ℝ) : ℂ) * Complex.I)
 
-theorem norm_logOscillation (R : ℝ) (p : ℝ × ℝ) (x : ℝ) :
+section
+variable (R : ℝ) (p : ℝ × ℝ)
+include R p
+
+theorem norm_logOscillation  (x : ℝ) :
     ‖logOscillation R p x‖ = 1 := by
   simp [logOscillation, Complex.norm_exp]
 
-theorem hasDerivAt_logOscillation (R : ℝ) (p : ℝ × ℝ) {x : ℝ} (hx : x ≠ 0) :
+theorem hasDerivAt_logOscillation  {x : ℝ} (hx : x ≠ 0) :
     HasDerivAt (logOscillation R p)
       (((R * (p.1 / x - p.2) : ℝ) : ℂ) * Complex.I * logOscillation R p x) x := by
   have hr : HasDerivAt (fun y : ℝ => R * (p.1 * Real.log y - p.2 * y))
       (R * (p.1 / x - p.2)) x := by
     convert (((Real.hasDerivAt_log hx).const_mul p.1).sub
       ((hasDerivAt_id x).const_mul p.2)).const_mul R using 1
-    · rfl
-    · simp only [div_eq_mul_inv, mul_one]
+    all_goals (aesop)
   convert (hr.ofReal_comp.mul_const Complex.I).cexp using 1
   · rfl
   · dsimp [logOscillation]
     ring
+end
+
 
 theorem ibpAmplitude_contDiffAt_slice {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (n : ℕ) {p : ℝ × ℝ} {x : ℝ} (h : p.1 - p.2 * x ≠ 0) :
@@ -191,26 +197,39 @@ theorem ibpAmplitude_contDiffAt_slice {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w
     (contDiffAt_const.prodMk contDiffAt_id) using 1
   rfl
 
-theorem phaseQuotient_contDiffAt_slice {p : ℝ × ℝ} {x : ℝ}
+section
+variable {p : ℝ × ℝ}
+include p
+
+theorem phaseQuotient_contDiffAt_slice  {x : ℝ}
     (h : p.1 - p.2 * x ≠ 0) : ContDiffAt ℝ ∞ (phaseQuotient p) x := by
   convert (phaseQuotient_contDiffAt h).comp x
     (contDiffAt_const.prodMk contDiffAt_id) using 1
   rfl
 
-theorem offBandParameters_ne {p : ℝ × ℝ} (hp : p ∈ offBandParameters)
+theorem offBandParameters_ne  (hp : p ∈ offBandParameters)
     {x : ℝ} (hx : x ∈ Icc (1 / 3 : ℝ) 6) : p.1 - p.2 * x ≠ 0 := by
   have hh := hp.2.2 x hx
   intro hzero
   rw [hzero, abs_zero] at hh
   norm_num at hh
+end
+
 
 def ibpIntegral (w : ℝ → ℂ) (R : ℝ) (p : ℝ × ℝ) (n : ℕ) : ℂ :=
   ∫ x in (1 / 3 : ℝ)..6, ibpAmplitude w n p x * logOscillation R p x
 
-/-- Exact one-step integration by parts, with vanishing endpoint amplitudes. -/
-theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
-    {p : ℝ × ℝ} (hp : p ∈ offBandParameters) (R : ℝ) (n : ℕ) :
+include w hw hws
+
+section
+variable {p : ℝ × ℝ} (hp : p ∈ offBandParameters)
+include p hp
+
+/-- Exact one-step integration by parts, with vanishing endpoint amplitudes. -/
+theorem ibpIntegral_recurrence  (R : ℝ) (n : ℕ) :
     ((R : ℂ) * Complex.I) * ibpIntegral w R p n = -ibpIntegral w R p (n + 1) := by
   let g : ℝ → ℂ := fun x => ibpAmplitude w n p x * phaseQuotient p x
   have hg : ∀ x ∈ uIcc (1 / 3 : ℝ) 6,
@@ -268,17 +287,16 @@ theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       field_simp [hx0, hd, hd']
     _ = -ibpIntegral w R p (n + 1) := hparts
 
-theorem ibpIntegral_norm_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
-    {p : ℝ × ℝ} (hp : p ∈ offBandParameters) {R : ℝ} (hR : 0 < R) (n : ℕ) :
+theorem ibpIntegral_norm_recurrence  {R : ℝ} (hR : 0 < R) (n : ℕ) :
     R * ‖ibpIntegral w R p n‖ = ‖ibpIntegral w R p (n+1)‖ := by
   have hh := congrArg norm (ibpIntegral_recurrence hw hws hp R n)
   simpa only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hR,
     Complex.norm_I, mul_one, norm_neg] using hh
+end
+
 
 /-- Arbitrary-order uniform decay on the fixed compact parameter set. -/
-theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (A : ℕ) :
+theorem uniform_normalized_decay  (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ offBandParameters, ∀ R : ℝ, 0 < R →
       ‖ibpIntegral w R p 0‖ ≤ C / R ^ A := by
   obtain ⟨C, hC, hbound⟩ := ibpAmplitude_uniform_bound hw A
@@ -300,12 +318,10 @@ theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     exact hbound p hp x ⟨hx.1.le, hx.2⟩
   apply (le_div_iff₀ (pow_pos hR A)).2
   rw [mul_comm, hpower]
-  norm_num at hnorm
-  nlinarith
+  bound
 
 /-- The off-band estimate with the constant chosen before H, v, and k. -/
-theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (A : ℕ) :
+theorem uniform_offBand_decay  (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ H v k : ℝ, 0 < H → H ≤ v → v ≤ 2 * H →
       (k < H / (20 * Real.pi) ∨ 4 * H / Real.pi < k) →
       ‖∫ x in (1 / 3 : ℝ)..6, w x *
@@ -323,9 +339,9 @@ theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     apply intervalIntegral.integral_congr
     intro x _
     simp only [ibpAmplitude, logOscillation]
-    congr 3
-    congr 1
-    field_simp [hR.ne']
+    grind
   rwa [heq] at hh
+end
 
-end MathCollab.Density
+
+

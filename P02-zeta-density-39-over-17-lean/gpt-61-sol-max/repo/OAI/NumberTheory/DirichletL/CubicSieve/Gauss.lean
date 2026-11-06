@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
 
 @[expose] public section
@@ -7,11 +8,15 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def cubicQuotientCharacter (I : Ideal O) (hI : Admissible I) : MulChar (O ⧸ I) ℂ where
+section
+variable (I : Ideal O) (hI : Admissible I)
+include I hI
+
+def cubicQuotientCharacter  : MulChar (O ⧸ I) ℂ where
   toFun := CompletedGauss.cubicRow I hI.2
   map_one' := by simp [CompletedGauss.cubicRow]
   map_mul' x y := by simp only [CompletedGauss.cubicRow, map_mul, Finset.prod_mul_distrib]
@@ -21,14 +26,13 @@ def cubicQuotientCharacter (I : Ideal O) (hI : Admissible I) : MulChar (O ⧸ I)
     have hcop : ¬ IsCoprime I (Ideal.span {z}) := by
       simpa only [CubicEisenstein.isUnit_quotient_iff_sup, Ideal.isCoprime_iff_sup_eq] using hx
     have hc := idealSymbol_cube_mask I z hI.2
-    rw [ite_eq_right hcop] at hc
-    exact (eq_zero_of_pow_eq_zero hc)
+    simp_all
 
-@[simp] lemma cubicQuotientCharacter_mk (I : Ideal O) (hI : Admissible I) (z : O) :
+@[simp] lemma cubicQuotientCharacter_mk  (z : O) :
     cubicQuotientCharacter I hI (Ideal.Quotient.mk I z) = cubicRow I z :=
   CubicEisenstein.cubicRow_eq_idealSymbol I hI.2 hI.1 z
 
-lemma cubicQuotientCharacter_cube (I : Ideal O) (hI : Admissible I) :
+lemma cubicQuotientCharacter_cube  :
     cubicQuotientCharacter I hI ^ 3 = 1 := by
   apply DFunLike.ext
   intro x
@@ -41,7 +45,7 @@ lemma cubicQuotientCharacter_cube (I : Ideal O) (hI : Admissible I) :
   · rw [ite_eq_left (hu.mp h), MulChar.one_apply h]
   · rw [ite_eq_right (fun hcop => h (hu.mpr hcop)), MulChar.map_nonunit _ h]
 
-lemma cubicQuotientCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
+lemma cubicQuotientCharacter_neg_one  :
     cubicQuotientCharacter I hI (-1) = 1 := by
   have h3 := congrArg (fun χ : MulChar (O ⧸ I) ℂ => χ (-1)) (cubicQuotientCharacter_cube I hI)
   rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), MulChar.one_apply (isUnit_neg_one)] at h3
@@ -50,6 +54,8 @@ lemma cubicQuotientCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
     _ = cubicQuotientCharacter I hI (-1) ^ 2 * cubicQuotientCharacter I hI (-1) := by rw [h2, one_mul]
     _ = cubicQuotientCharacter I hI (-1) ^ 3 := by ring
     _ = 1 := h3
+end
+
 
 def quotientCharacterTransport {R S : Type*} [CommRing R] [CommRing S]
     (e : R ≃+* S) (χ : MulChar S ℂ) : MulChar R ℂ where
@@ -58,29 +64,33 @@ def quotientCharacterTransport {R S : Type*} [CommRing R] [CommRing S]
   map_mul' x y := by simp only [map_mul]
   map_nonunit' x hx := MulChar.map_nonunit χ (fun h => hx (by simpa using h.map e.symm.toMonoidHom))
 
-def principalCubicCharacter (I : Ideal O) (hI : Admissible I) :
+section
+variable (I : Ideal O) (hI : Admissible I)
+include I hI
+
+def principalCubicCharacter  :
     MulChar (O ⧸ Ideal.span {primaryGenerator I}) ℂ :=
   quotientCharacterTransport (Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1)
     (cubicQuotientCharacter I hI)
 
-@[simp] lemma principalCubicCharacter_mk (I : Ideal O) (hI : Admissible I) (z : O) :
+@[simp] lemma principalCubicCharacter_mk  (z : O) :
     principalCubicCharacter I hI (Ideal.Quotient.mk _ z) = cubicRow I z := by
   change cubicQuotientCharacter I hI ((Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1) (Ideal.Quotient.mk _ z)) = _
   rw [Ideal.quotEquivOfEq_mk, cubicQuotientCharacter_mk]
 
-lemma principalCubicCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
+lemma principalCubicCharacter_neg_one  :
     principalCubicCharacter I hI (-1) = 1 := by
   change cubicQuotientCharacter I hI ((Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1) (-1)) = 1
   rw [map_neg, map_one, cubicQuotientCharacter_neg_one]
 
-lemma gaussTwo_eq_gaussSum (I : Ideal O) (hI : Admissible I) :
+lemma gaussTwo_eq_gaussSum  :
     let : Finite (O ⧸ Ideal.span {primaryGenerator I}) := finite_quotient_span hI.2
     let : Fintype (O ⧸ Ideal.span {primaryGenerator I}) := Fintype.ofFinite _
     gaussTwo I hI.2 = gaussSum (principalCubicCharacter I hI)
       (eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates
-        (primaryGenerator I) hI.2) / (‖eisEmbedding (primaryGenerator I)‖ : ℂ) := by
-  dsimp only [gaussTwo, gaussSum, principalCubicCharacter, quotientCharacterTransport, cubicQuotientCharacter]
-  congr 1
+        (primaryGenerator I) hI.2) / (‖eisEmbedding (primaryGenerator I)‖ : ℂ) := by rfl
+end
+
 
 lemma gaussSum_inverse_of_even {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (heven : χ (-1) = 1) :
@@ -91,7 +101,11 @@ lemma gaussSum_inverse_of_even {R : Type*} [CommRing R] [Fintype R]
   rw [Units.coe_neg_one, ← ψ.inv_mulShift, hh, one_mul] at h
   exact h.symm
 
-lemma cubic_pair_cross_phase (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+include I J hI hJ
+
+lemma cubic_pair_cross_phase 
     (hcop : IsCoprime I J) :
     (principalCubicCharacter I hI)⁻¹ (Ideal.Quotient.mk _ (primaryGenerator J)) *
       principalCubicCharacter J hJ (Ideal.Quotient.mk _ (primaryGenerator I)) = 1 := by
@@ -102,7 +116,7 @@ lemma cubic_pair_cross_phase (I J : Ideal O) (hI : Admissible I) (hJ : Admissibl
   change star (cubicRow I (primaryGenerator J)) * cubicRow I (primaryGenerator J) = 1
   rw [cubicRow_common_mask I hI.2, (primaryGenerator_spec J hJ.2).1, ite_eq_left hcop]
 
-def cubicPairGauss (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) : ℂ := by
+def cubicPairGauss  : ℂ := by
   let a := primaryGenerator I
   let b := primaryGenerator J
   let : Finite (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := finite_quotient_product hI.2 hJ.2
@@ -113,7 +127,7 @@ def cubicPairGauss (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) : ℂ
       eisTraceProdChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates a b hI.2 hJ.2 x) /
       ((‖eisEmbedding a‖ : ℂ) * (‖eisEmbedding b‖ : ℂ))
 
-theorem cubicPairGauss_separation (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+theorem cubicPairGauss_separation 
     (hcop : IsCoprime I J) :
     cubicPairGauss I J hI hJ = star (gaussTwo I hI.2) * gaussTwo J hJ.2 := by
   let : Finite (O ⧸ Ideal.span {primaryGenerator I}) := finite_quotient_span hI.2
@@ -136,8 +150,10 @@ theorem cubicPairGauss_separation (I J : Ideal O) (hI : Admissible I) (hJ : Admi
     simp only [star_div₀, Complex.star_def, Complex.conj_ofReal]
     ring
   exact halg _ _ _ _
-
 end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+
+
+

@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ReducedRatioGeometry
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -13,9 +13,13 @@ def sourceReducedPair (p : ℕ × ℕ) : ℕ × ℕ :=
 def sourceRatioFiber (P : Finset (ℕ × ℕ)) (q : ℕ × ℕ) : Finset (ℕ × ℕ) :=
   P.filter (fun p => p.1*q.2=q.1*p.2)
 
+section
+variable {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2)
+include p hp
+
 /-- The actual gcd normalization is positive, primitive, and never increases
 height. -/
-theorem sourceReducedPair_properties {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2) :
+theorem sourceReducedPair_properties  :
     0 < (sourceReducedPair p).1 ∧ 0 < (sourceReducedPair p).2 ∧
     (sourceReducedPair p).1.Coprime (sourceReducedPair p).2 ∧
     (sourceReducedPair p).1 ≤ p.1 ∧ (sourceReducedPair p).2 ≤ p.2 := by
@@ -25,19 +29,17 @@ theorem sourceReducedPair_properties {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2)
     Nat.div_le_self _ _,Nat.div_le_self _ _⟩
   simpa only [Nat.gcd_comm] using Nat.div_gcd_pos_of_pos_left p.1 hp.2
 
-theorem sourceReducedPair_ratio {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2) :
+theorem sourceReducedPair_ratio  :
     ((sourceReducedPair p).1:ℝ)/(sourceReducedPair p).2 = (p.1:ℝ)/p.2 := by
   have hq := sourceReducedPair_properties hp
   have hleft : (sourceReducedPair p).1 * Nat.gcd p.1 p.2 = p.1 := Nat.div_mul_cancel (Nat.gcd_dvd_left _ _)
   have hright : (sourceReducedPair p).2 * Nat.gcd p.1 p.2 = p.2 := Nat.div_mul_cancel (Nat.gcd_dvd_right _ _)
   apply (div_eq_div_iff (by exact_mod_cast (Nat.ne_of_gt hq.2.1) : ((sourceReducedPair p).2:ℝ) ≠ 0)
     (by exact_mod_cast (Nat.ne_of_gt hp.2) : (p.2:ℝ) ≠ 0)).mpr
-  have he : (sourceReducedPair p).1*p.2 = p.1*(sourceReducedPair p).2 := by
-    calc
-      _ = (sourceReducedPair p).1*((sourceReducedPair p).2*Nat.gcd p.1 p.2) := congrArg ((sourceReducedPair p).1 * ·) hright.symm
-      _ = ((sourceReducedPair p).1*Nat.gcd p.1 p.2)*(sourceReducedPair p).2 := by ring
-      _ = _ := congrArg (· * (sourceReducedPair p).2) hleft
+  have he : (sourceReducedPair p).1*p.2 = p.1*(sourceReducedPair p).2 := by nlinarith
   exact_mod_cast he
+end
+
 
 /-- A gcd fiber is exactly the primitive cross-product fiber, with no
 missing or duplicated source pairs. -/
@@ -130,15 +132,9 @@ theorem source_height_dyadic_prefix {ι : Type*} [DecidableEq ι]
   induction J with
   | zero => simp
   | succ J ih =>
-    have hstep : (2:ℝ)^J*Y ≤ (2:ℝ)^(J+1)*Y := by
-      rw [pow_succ]; nlinarith [mul_nonneg (pow_nonneg (by norm_num : (0:ℝ) ≤ 2) J) hY]
+    have hstep : (2:ℝ)^J*Y ≤ (2:ℝ)^(J+1)*Y := by bound
     have hlo : (S.filter (fun q => height q ≤ (2:ℝ)^(J+1)*Y)).filter
-        (fun q => height q ≤ (2:ℝ)^J*Y) = S.filter (fun q => height q ≤ (2:ℝ)^J*Y) := by
-      ext q
-      simp only [mem_filter]
-      constructor
-      · rintro ⟨⟨hq,_⟩,hh⟩; exact ⟨hq,hh⟩
-      · rintro ⟨hq,hh⟩; exact ⟨⟨hq,hh.trans hstep⟩,hh⟩
+        (fun q => height q ≤ (2:ℝ)^J*Y) = S.filter (fun q => height q ≤ (2:ℝ)^J*Y) := by grind
     have hhi : (S.filter (fun q => height q ≤ (2:ℝ)^(J+1)*Y)).filter
         (fun q => ¬height q ≤ (2:ℝ)^J*Y) = S.filter
         (fun q => (2:ℝ)^J*Y < height q ∧ height q ≤ (2:ℝ)^(J+1)*Y) := by
@@ -195,4 +191,4 @@ theorem source_ratio_log_band {N : ℝ} (hN : 0 ≤ N) {n m : ℕ}
   rw [Real.log_div hn0.ne' hm0.ne']
   linarith
 
-end GuthMaynard.Improvement
+

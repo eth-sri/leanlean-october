@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.UniformSieve
 public import OAI.NumberTheory.DirichletL.Reflection.FilteredMeasure
 
@@ -9,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
@@ -114,7 +115,7 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   intro φ σ _ _ X Y B L hX hY hB hL F jF s hc hN hbase hac hF hNF hcharF hj
     ι _ G0 D0 u m rows nset bset Pset S branches μ density scalar r aw w
     hrows hrowcop hproducts hScop hSN hSchar hn hb hP hdensity hrM hawM hwM hr haw hw
-  let E : ℝ := (branches.card:ℝ)*∑ e∈branches,
+  let E := (branches.card:ℝ)*∑ e∈branches,
           let Yq := extractedDualScale (frozenExtracted F jF e 1) Y
           let Bq := extractedDualScale (frozenExtracted F jF e 2) B
           (frozenBranchScale F jF e)^2*
@@ -150,9 +151,7 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
     hdensity.mul_bdd (hψM K) (Filter.Eventually.of_forall (hpoint K))
   have hh := mul_le_mul_of_nonneg_left
     (common_measure_energy μ density ψ E hE hdensity.norm hint hbound) (sq_nonneg ‖scalar‖)
-  have hsum : (∑ K : rows, ‖∫ t, density t*ψ K t ∂μ‖^2) =
-      ∑ K ∈ rows, ‖∫ t, density t*(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
-      (actualCuspColumn D0 s hc u m) (r t) (aw t) (w t) u m Pset nset bset K) ∂μ‖^2 :=
+  have hsum :=
     Finset.sum_coe_sort rows (fun K : Ideal Eis =>
       ‖∫ t, density t*(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
       (actualCuspColumn D0 s hc u m) (r t) (aw t) (w t) u m Pset nset bset K) ∂μ‖^2)
@@ -160,7 +159,7 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   simp only [norm_mul,mul_pow,← Finset.mul_sum]
   simpa only [E,mul_assoc] using hh
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

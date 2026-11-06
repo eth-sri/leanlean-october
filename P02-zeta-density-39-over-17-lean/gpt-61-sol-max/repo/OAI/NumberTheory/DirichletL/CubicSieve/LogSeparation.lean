@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.RowCompletion.SupportBounds
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopeningSeparation
 
@@ -9,79 +10,79 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CanonicalCubeSeparation
 
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open FourierBridge JointLogSeparation
+open JointLogSeparation
 
 lemma cube_log_bin (B n : ℝ) (hB : 0 < B) (hn : B ≤ n)
     (hn' : n ≤ Real.exp 1 * B) : Real.log (n/B) ∈ Set.Icc (0:ℝ) 1 := by
@@ -101,15 +102,16 @@ lemma cube_log_argument (B ell n q : ℝ) (hB : 0 < B) (hell : 0 < ell)
       Real.log (n/B)+Real.log (n/B)+Real.log (n/B) by ring]
     rw [Real.exp_add, Real.exp_add, Real.exp_log (div_pos hn hB)]
     ring
-  rw [he]
-  field_simp
+  grind
 
-lemma cube_half_normalization (B ell n : ℝ) (hB : 0 < B) (hell : 0 < ell)
-    (hn : 0 < n) :
+section
+variable (B ell n : ℝ) (hB : 0 < B) (hell : 0 < ell)
+    (hn : 0 < n)
+include B ell n hB hell hn
+
+lemma cube_half_normalization  :
     (Real.sqrt (B^3*ell))⁻¹ * Real.sqrt n =
       (B*Real.sqrt ell)⁻¹ * Real.exp (Real.log (n/B)/2) := by
-  have hb0 := (Real.sqrt_pos.mpr hB).ne'
-  have he0 := (Real.sqrt_pos.mpr hell).ne'
   have hs : Real.sqrt (B^3*ell) = B*Real.sqrt B*Real.sqrt ell := by
     rw [show B^3*ell=B^2*(B*ell) by ring,
       Real.sqrt_mul (sq_nonneg B), Real.sqrt_sq hB.le, Real.sqrt_mul hB.le]
@@ -119,11 +121,12 @@ lemma cube_half_normalization (B ell n : ℝ) (hB : 0 < B) (hell : 0 < ell)
   rw [hs, hnexp]
   field_simp
 
-lemma cube_half_normalization_complex (B ell n : ℝ) (hB : 0 < B) (hell : 0 < ell)
-    (hn : 0 < n) :
+lemma cube_half_normalization_complex  :
     (Real.sqrt (B^3*ell) : ℂ)⁻¹ * (Real.sqrt n : ℂ) =
       ((B*Real.sqrt ell : ℝ) : ℂ)⁻¹ * (Real.exp (Real.log (n/B)/2) : ℂ) := by
   exact_mod_cast cube_half_normalization B ell n hB hell hn
+end
+
 
 theorem reopening_norm_separation (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -140,17 +143,23 @@ theorem reopening_norm_separation (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   rw [cube_log_argument B ell n q hB hell hn0 hq] at hsep
   rw [hX, cube_half_normalization_complex B ell n hB hell hn0, mul_assoc, hsep]
 
-lemma completed_cube_half_weight (X n : ℝ) (hX : 0 < X) (hn : 0 < n) :
+section
+variable (X n : ℝ) (hX : 0 < X) (hn : 0 < n)
+include X n hX hn
+
+lemma completed_cube_half_weight  :
     n⁻¹ * (Real.sqrt (X/n^3))⁻¹ = (Real.sqrt X)⁻¹ * Real.sqrt n := by
   have hs : Real.sqrt (n^3) = n*Real.sqrt n := by
     rw [show n^3=n^2*n by ring, Real.sqrt_mul (sq_nonneg n), Real.sqrt_sq hn.le]
   rw [Real.sqrt_div hX.le, hs, inv_div]
   field_simp
 
-lemma completed_cube_half_weight_complex (X n : ℝ) (hX : 0 < X) (hn : 0 < n) :
+lemma completed_cube_half_weight_complex  :
     (n : ℂ)⁻¹ * (Real.sqrt (X/n^3) : ℂ)⁻¹ =
       (Real.sqrt X : ℂ)⁻¹ * (Real.sqrt n : ℂ) := by
   exact_mod_cast completed_cube_half_weight X n hX hn
+end
+
 
 theorem completed_cube_norm_separation (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -165,10 +174,14 @@ theorem completed_cube_norm_separation (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a
   rw [completed_cube_half_weight_complex X n hXp (lt_of_lt_of_le hB hn), div_div_eq_mul_div]
   exact reopening_norm_separation W a b ha hs hW V hV B ell X n q hB hell hX hn hn' hq
 
-def separatedCubeCoefficient {κ : Type*} (β : κ → ℂ) (n : κ → ℝ)
+section
+variable {κ : Type*} (β : κ → ℂ) (n : κ → ℝ)
+include κ β n
+
+def separatedCubeCoefficient 
     (B ξ : ℝ) (v : κ) : ℂ := β v * cubeFrequencyFactor (Real.log (n v/B)) ξ
 
-lemma separatedCubeCoefficient_bound {κ : Type*} (β : κ → ℂ) (n : κ → ℝ)
+lemma separatedCubeCoefficient_bound 
     (B ξ Γ : ℝ) (hB : 0 < B) (hΓ : 0 ≤ Γ) (v : κ)
     (hn : B ≤ n v) (hn' : n v ≤ Real.exp 1*B) (hβ : ‖β v‖ ≤ Γ) :
     ‖separatedCubeCoefficient β n B ξ v‖ ≤ Γ*Real.exp (1/2) := by
@@ -176,8 +189,14 @@ lemma separatedCubeCoefficient_bound {κ : Type*} (β : κ → ℂ) (n : κ → 
   rw [norm_mul]
   exact mul_le_mul hβ (cubeFrequencyFactor_bound _ ξ (cube_log_bin B _ hB hn hn').2)
     (norm_nonneg _) hΓ
+end
 
-theorem reopening_finite_sum_integrable {κ τ : Type*}
+
+section
+variable {κ τ : Type*}
+include κ τ
+
+theorem reopening_finite_sum_integrable 
     (Q : Finset κ) (S : Finset τ) (β : κ → ℂ) (A : κ → τ → ℂ)
     (n : κ → ℝ) (q : τ → ℝ) (B ell : ℝ) (b V : 𝓢(ℝ,ℂ)) :
     Integrable (fun ξ : ℝ => b ξ * ∑v∈Q,∑j∈S,
@@ -193,13 +212,9 @@ theorem reopening_finite_sum_integrable {κ τ : Type*}
   convert hi using 1
   funext ξ
   simp only [Finset.mul_sum, separatedCubeCoefficient]
-  apply Finset.sum_congr rfl
-  intro v hv
-  apply Finset.sum_congr rfl
-  intro j hj
-  ring
+  grind
 
-theorem reopening_finite_sum {κ τ : Type*}
+theorem reopening_finite_sum 
     (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (V : 𝓢(ℝ,ℂ)) (hV : ∀ u, |u| ≤ columnWindowRadius a b → V u = 1)
@@ -214,7 +229,7 @@ theorem reopening_finite_sum {κ τ : Type*}
       ∫ ξ : ℝ, reopeningCoefficient W a b ha hs hW ξ * ∑v∈Q,∑j∈S,
         separatedCubeCoefficient β n B ξ v * A v j *
           frequencyTwist V ξ (Real.log (q j/ell)) := by
-  let G : ℝ → κ → τ → ℂ := fun ξ v j => (β v*A v j)*
+  let G := fun ξ v j => (β v*A v j)*
     (reopeningCoefficient W a b ha hs hW ξ * cubeFrequencyFactor (Real.log (n v/B)) ξ *
       frequencyTwist V ξ (Real.log (q j/ell)))
   have hi (v : κ) (j : τ) : Integrable (fun ξ => G ξ v j) :=
@@ -247,11 +262,9 @@ theorem reopening_finite_sum {κ τ : Type*}
       filter_upwards [] with ξ
       simp only [Finset.mul_sum, separatedCubeCoefficient]
       apply Finset.sum_congr rfl
-      intro v hv
-      apply Finset.sum_congr rfl
-      intro j hj
-      dsimp [G]
-      ring
+      grind
+end
+
 
 end CanonicalCubeSeparation
 
@@ -263,8 +276,12 @@ open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 
-theorem rowTwist_primary_zero_of_mask (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) {P B : Ideal ActualEisensteinCubic.O}
-    (hP : Prime P) (hPB : P∣B) (hm : m∈P) :
+section
+variable (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) {P B : Ideal ActualEisensteinCubic.O}
+    (hP : Prime P) (hPB : P∣B) (hm : m∈P)
+include Ψ m f z P B hP hPB hm
+
+theorem rowTwist_primary_zero_of_mask  :
     rowTwist Ψ m f z (primaryGenerator B) = 0 := by
   have hx : m^6*f^4*z∈P := by
     have hm6 : m^6∈P := by
@@ -280,10 +297,11 @@ theorem rowTwist_primary_zero_of_mask (Ψ : ActualEisensteinCubic.O →* ℂ) (m
   · change Ψ (primaryGenerator B) * idealRowHom _ (Ideal.span {primaryGenerator B}) = 0
     rw [(primaryGenerator_spec B hg).1,idealRowHom_zero_of_dvd _ hP hPB hx,mul_zero]
 
-theorem cubeWeight_zero_of_prime_mask (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) {P B : Ideal ActualEisensteinCubic.O}
-    (hP : Prime P) (hPB : P∣B) (hm : m∈P) :
+theorem cubeWeight_zero_of_prime_mask  :
     cubeWeight (rowTwist Ψ m f z) B = 0 :=
   cubeWeight_zero_of_mask _ B (rowTwist_primary_zero_of_mask Ψ m f z hP hPB hm)
+end
+
 
 theorem summand_cube_support (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
     (hSp : ∀P∈S,Prime P) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (hm : ∀P∈S,m∈P)
@@ -317,7 +335,11 @@ end
 open ActualEisensteinCubic
 open CompletedGauss hiding O
 
-theorem cubeWeight_norm_le (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀z,‖Ψ z‖≤1) (B : Ideal ActualEisensteinCubic.O) :
+section
+variable (Ψ : ActualEisensteinCubic.O →* ℂ)
+include Ψ
+
+theorem cubeWeight_norm_le  (hΨ : ∀z,‖Ψ z‖≤1) (B : Ideal ActualEisensteinCubic.O) :
     ‖cubeWeight Ψ B‖ ≤ 1/(Ideal.absNorm B:ℝ) := by
   have hang : ‖FiniteGaussPhase.angularFactor (primaryGenerator B)‖ ≤ 1 := by
     by_cases hz : primaryGenerator B=0
@@ -330,10 +352,10 @@ theorem cubeWeight_norm_le (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀z,�
   exact (mul_le_of_le_one_left (by positivity)
     (pow_le_one₀ (norm_nonneg _) hang)).trans (pow_le_one₀ (norm_nonneg _) (hΨ _))
 
-def cubePhase (Ψ : ActualEisensteinCubic.O →* ℂ) (B : Ideal ActualEisensteinCubic.O) : ℂ :=
+def cubePhase  (B : Ideal ActualEisensteinCubic.O) : ℂ :=
   (Ideal.absNorm B:ℂ)*cubeWeight Ψ B
 
-theorem cubePhase_norm_le (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀z,‖Ψ z‖≤1) (B : Ideal ActualEisensteinCubic.O) :
+theorem cubePhase_norm_le  (hΨ : ∀z,‖Ψ z‖≤1) (B : Ideal ActualEisensteinCubic.O) :
     ‖cubePhase Ψ B‖ ≤ 1 := by
   by_cases hB : B=0
   · simp [hB,cubePhase]
@@ -343,6 +365,8 @@ theorem cubePhase_norm_le (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀z,�
     _ ≤ (Ideal.absNorm B:ℝ)*(1/(Ideal.absNorm B:ℝ)) :=
       mul_le_mul_of_nonneg_left (cubeWeight_norm_le Ψ hΨ B) hN.le
     _ = 1 := by field_simp
+end
+
 
 def reopenedCubeCoefficient (H₀ : ℝ) (Ψ : ActualEisensteinCubic.O →* ℂ) (B : Ideal ActualEisensteinCubic.O) : ℂ :=
   largeCubeCoefficient H₀ B * cubePhase Ψ B
@@ -362,21 +386,8 @@ theorem reopenedCubeCoefficient_small_power (ε : ℝ) (hε : 0<ε) :
 end CanonicalRowCompletion
 
 open scoped BigOperators Classical
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-open FirstPassCubeLabels
 
-section
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
 
-end
 
-end SecondPassArithmetic
 
-end
 
-end OAI

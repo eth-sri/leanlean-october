@@ -1,17 +1,21 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CenteredKernelBridge
 public import MathCollab.Density.Reflection
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
 
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+include w
+
 /-- Exact identification with the independently audited density mode integral.
 No reflection estimate is assumed by this change of normalization. -/
-theorem reflection_mode_fourier (w : MathCollab.Density.ReflectionCutoff) (s ξ : ℝ) :
+theorem reflection_mode_fourier  (s ξ : ℝ) :
     MathCollab.Density.modeIntegral (fun x => (w x:ℂ)) s ξ =
       𝓕 (logModulated (fun x => (w x:ℂ)) s) ξ := by
   rw [MathCollab.Density.modeIntegral,logModulated_fourier_integral]
@@ -25,13 +29,11 @@ theorem reflection_mode_fourier (w : MathCollab.Density.ReflectionCutoff) (s ξ 
   congr 1
   unfold phase mellinFrequency
   congr 1
-  have he : 2*Real.pi*(s*(Real.log x/(2*Real.pi))-ξ*x) = s*Real.log x-2*Real.pi*ξ*x := by
-    field_simp
-  rw [he]
+  field_simp <;> ring
 
 /-- The new actual centered kernel is literally the audited density hKernel,
 with the same cutoff and scale; this is not a bound imported as a premise. -/
-theorem centeredKernel_eq_density_hKernel (w : MathCollab.Density.ReflectionCutoff)
+theorem centeredKernel_eq_density_hKernel 
     {L : ℝ} (hL : 0 < L) (s : ℝ) :
     centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L s = MathCollab.Density.hKernel w L s := by
   have hs : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ) = 0 := by
@@ -49,7 +51,7 @@ theorem centeredKernel_eq_density_hKernel (w : MathCollab.Density.ReflectionCuto
 
 /-- Reflection controls the true centered kernel on each positive shell.
 The scalar error constant is fixed before all scales and frequencies. -/
-theorem centeredKernel_reflection_shell (w : MathCollab.Density.ReflectionCutoff)
+theorem centeredKernel_reflection_shell 
     {A : ℕ} (hA : 1 < A) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ L H v : ℝ, 0 < L → 0 < H → H ≤ v → v ≤ 2*H →
       ‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L v‖^2 ≤
@@ -70,5 +72,7 @@ theorem centeredKernel_reflection_shell (w : MathCollab.Density.ReflectionCutoff
           ‖MathCollab.Density.bandPhaseSum L H v r‖^2))+2*(K*L/L^A)^2 :=
       add_le_add (mul_le_mul_of_nonneg_left hb (by norm_num)) le_rfl
     _ = _ := by ring
+end
 
-end GuthMaynard.Improvement
+
+

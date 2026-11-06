@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.Tactic
@@ -13,7 +14,6 @@ The localized packet bound remains an explicit theorem hypothesis.
 No physical Atkinson estimate or point-mean theorem is imported or asserted.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Cardinality absorption at an explicit physical length
@@ -30,27 +30,29 @@ namespace MathCollab.Density.Stronger
 def atkinsonAbsorptionLength (A G Y : ℝ) : ℝ :=
   (Y^2/(4*A))^2/G
 
-theorem atkinsonAbsorptionLength_pos {A G Y : ℝ}
-    (hA : 0 < A) (hG : 0 < G) (hY : 0 < Y) :
+section
+variable {A G Y : ℝ}
+    (hA : 0 < A) (hG : 0 < G)
+include A G Y hA hG
+
+theorem atkinsonAbsorptionLength_pos  (hY : 0 < Y) :
     0 < atkinsonAbsorptionLength A G Y := by
   unfold atkinsonAbsorptionLength
   positivity
 
-theorem atkinsonAbsorptionLength_radical {A G Y : ℝ}
-    (hA : 0 < A) (hG : 0 < G) :
+theorem atkinsonAbsorptionLength_radical  :
     Real.sqrt (G*atkinsonAbsorptionLength A G Y) = Y^2/(4*A) := by
   have he : G*atkinsonAbsorptionLength A G Y = (Y^2/(4*A))^2 := by
     unfold atkinsonAbsorptionLength
     field_simp
   rw [he,Real.sqrt_sq (by positivity)]
 
-theorem atkinsonAbsorptionLength_absorbs {A G Y : ℝ}
-    (hA : 0 < A) (hG : 0 < G) :
+theorem atkinsonAbsorptionLength_absorbs  :
     2*A*Real.sqrt (G*atkinsonAbsorptionLength A G Y) ≤ Y^2 := by
   rw [atkinsonAbsorptionLength_radical hA hG]
-  have he : 2*A*(Y^2/(4*A)) = Y^2/2 := by field_simp; ring
-  rw [he]
-  nlinarith [sq_nonneg Y]
+  field_simp <;> nlinarith
+end
+
 
 theorem atkinson_card_le_of_packet {A H G L Y : ℝ} {W : Finset ℝ} {f : ℝ → ℝ}
     (hA : 0 < A) (hH : 0 ≤ H) (hG : 0 < G) (hY : 0 < Y)
@@ -98,4 +100,4 @@ theorem atkinson_covered_card_budget {A H G Y : ℝ}
       field_simp
       ring
 
-end MathCollab.Density.Stronger
+

@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssignedP
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
@@ -13,7 +13,7 @@ namespace SevenEighths.InverseInitialEnergyCallerAssignedCanonical
 open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
 open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -72,8 +72,8 @@ theorem original_assigned_canonical_pair
         (Finset.sum_nonneg fun t ht=>by positivity))]
       ring
 
-end SevenEighths.InverseInitialEnergyCallerAssignedCanonical
 
-end
 
-end OAI
+
+
+

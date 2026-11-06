@@ -11,7 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSharpTruncation
 
 @[expose] public section
 
-noncomputable section
+
 open Complex
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -26,4 +26,4 @@ theorem exists_norm_tsum_zetaAtkinsonTwoTerm_sub_leading_le :
   exact hbound T G L hT (by linarith) hGT (by linarith) hwidth
     (summable_atkinsonLeadingTerm_of_band hT hG hGT hL hwidth)
 
-end MathCollab.Density.Stronger.Atkinson
+

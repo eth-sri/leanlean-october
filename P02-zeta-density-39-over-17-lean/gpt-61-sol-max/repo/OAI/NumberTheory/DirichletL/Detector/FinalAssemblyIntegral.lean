@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorIntegral
+import Mathlib
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorArithmetic
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyArithmetic
 
 @[expose] public section
@@ -12,8 +13,8 @@ open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
+open ProbeRaySlots
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -21,8 +22,8 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 theorem actual_nonfloor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -86,9 +87,9 @@ theorem actual_nonfloor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin τ �
   dsimp only
   intro hmom
   have hZp : 0<Z := zero_lt_one.trans hZ
-  let Y : Fin N→ℝ := fun j=>Z^(ell j)
-  let T : Fin N→Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-  let A : ℝ := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
+  let Y := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+  let A := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
     Z^(3/16+Δ-saving-((25/48)*a-181/300+(105/8)*e))
   have hA : 0≤A := by dsimp [A];positivity
   have hp := hprofile e a (Z^τ) ((3*i+1:ℕ)*Z^τ) i he he1 ha.le ha' hT
@@ -105,8 +106,8 @@ theorem actual_nonfloor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin τ �
         (Z^((25/48)*a-181/300+(105/8)*e)*Z^(3/16+Δ-saving-((25/48)*a-181/300+(105/8)*e))) := by ring
     _ = _ := by rw [←Real.rpow_add hZp];congr 2;ring
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

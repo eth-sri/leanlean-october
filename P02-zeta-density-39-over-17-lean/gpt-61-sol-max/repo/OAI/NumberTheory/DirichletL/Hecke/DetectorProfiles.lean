@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
@@ -64,13 +65,9 @@ def logSource (Ω V T : ℝ → ℂ) (hΩc : HasCompactSupport Ω)
     (A B C : ℝ) : SchwartzMap ℝ ℂ :=
   (logSource_compact Ω V T hΩc A B C).toSchwartzMap (logSource_smooth Ω V T hΩ hV hT A B C)
 
-@[simp] lemma logSource_apply (Ω V T : ℝ → ℂ) (hΩc : HasCompactSupport Ω)
-    (hΩ : ContDiff ℝ ∞ Ω) (hV : ContDiff ℝ ∞ V) (hT : ContDiff ℝ ∞ T)
-    (A B C y : ℝ) :
-    logSource Ω V T hΩc hΩ hV hT A B C y =
-      Ω y*(1-V (A*Real.exp y))*expNeg (B*Real.exp y)*T (C*Real.exp y) := rfl
 
-end
-end SevenEighths.HeckeDetectorProfiles
 
-end OAI
+
+
+
+

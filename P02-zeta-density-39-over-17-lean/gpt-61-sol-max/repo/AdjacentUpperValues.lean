@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import AdjacentWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 open Finset
@@ -19,9 +19,7 @@ theorem adjacent_upper_large_values {σ a p α δ : ℝ}
       (∀ t ∈ W, N^σ*H^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
       (W.card:ℝ) ≤ C*H^(p+18*δ) := by
   let D : ℝ := Real.log 2+1/δ
-  have hD : 0 < D := by
-    dsimp [D]
-    exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hδ)
+  have hD : 0 < D := by positivity
   refine ⟨102*(1+D),by positivity,?_⟩
   intro H N t₀ b W hH hN hlo hhi hb hloc hsep hlarge
   have hH1 : 1 ≤ H := by linarith
@@ -61,10 +59,7 @@ theorem adjacent_upper_large_values {σ a p α δ : ℝ}
       _ ≤ _ := hmean
   have hc : (W.card:ℝ) ≤ 102*((H*N^(1-2*σ)+N^(2-2*σ)*Real.log (2*N))*H^(4*δ)) := by
     have hh := (le_div_iff₀ (sq_pos_of_pos hV)).mpr hcard
-    have he : 102*N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2 =
-        102*(N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2) := by ring
-    rw [he,hdivM] at hh
-    exact hh
+    grind
   have hlog : Real.log (2*N) ≤ D*H^(2*δ) :=
     (classical_log_budget (by linarith : 1 ≤ N) hδ).trans
       (mul_le_mul_of_nonneg_left hsmall hD.le)
@@ -91,4 +86,4 @@ theorem adjacent_upper_large_values {σ a p α δ : ℝ}
 
 
 
-end Montgomery.RationalMoment
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedSource
 public import OAI.NumberTheory.DirichletL.Inversion.InitialRawDictionary
 public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedPolynomial
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
 open InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem prime_product_squarefree (S:Finset (Ideal O))(hS:∀P∈S,Prime P):
     Squarefree (∏P∈S,P) := by
@@ -30,7 +31,11 @@ theorem deleted_coefficient_product (χ:Character)(S:Finset (Ideal O))
   rw [idealCoeff_excludePrimes,IsCoprime.prod_right_iff]
   congr 1
 
-theorem residual_source (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Prime P)
+section
+variable (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Prime P)
+include χ S A hS
+
+theorem residual_source 
     {j:Ideal O}(hj:j∣∏P∈S,P)(W:ℝ→ℂ)(X:ℝ)
     (hcover:∀I:Ideal O,I≠0→W ((I.absNorm:ℝ)/X)≠0→I∈A):
     (∑c∈columns A (∏P∈S,P) j,(moebius c:ℂ)*idealCoeff χ c*
@@ -61,7 +66,7 @@ theorem residual_source (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Prime P
       intro c hc
       rw [deleted_coefficient_product,ite_eq_left ((mem_columns hP hj).mp hc).2.1]
 
-theorem source_decomposition (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Prime P)
+theorem source_decomposition 
     (W:ℝ→ℂ)(X:ℝ)(hcover:∀I:Ideal O,I≠0→W ((I.absNorm:ℝ)/X)≠0→I∈A):
     (∑I∈A,(moebius I:ℂ)*idealCoeff χ I*W ((I.absNorm:ℝ)/X))=
     ∑j∈idealDivisors (∏P∈S,P),((moebius j:ℂ)*idealCoeff χ j)*
@@ -77,6 +82,8 @@ theorem source_decomposition (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Pr
   apply Finset.sum_congr rfl
   intro j hj
   rw [residual_source χ S A hS ((mem_idealDivisors (prime_product_squarefree S hS).ne_zero).mp hj) W X hcover]
+end
+
 
 theorem polynomial_all_ideals (χ:Character)(W:ℝ→ℂ)(X σ t:ℝ):
     polynomial χ true W X σ t=(X:ℂ)^(-(1/2:ℂ))*
@@ -84,7 +91,7 @@ theorem polynomial_all_ideals (χ:Character)(W:ℝ→ℂ)(X σ t:ℝ):
         (W ((I.absNorm:ℝ)/X)*(((I.absNorm:ℝ)/X:ℝ):ℂ)^(-shift σ t)) := by
   unfold polynomial
   congr 1
-  let f:Ideal O→ℂ:=fun I=>(moebius I:ℂ)*idealCoeff χ I*
+  let f :=fun I=>(moebius I:ℂ)*idealCoeff χ I*
     (W ((I.absNorm:ℝ)/X)*(((I.absNorm:ℝ)/X:ℝ):ℂ)^(-shift σ t))
   have hf:Function.support f⊆{I:Ideal O|I≠0}:=by
     intro I hi hz
@@ -112,7 +119,7 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
       ((moebius j:ℂ)*idealCoeff χ j*(j.absNorm:ℂ)^(-(1/2:ℂ)))*
         polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t := by
   let A:=ConcretePrimeRowBridge.idealsUpTo ⌈X*b⌉₊
-  let V:ℝ→ℂ:=fun x=>W x*(x:ℂ)^(-shift σ t)
+  let V :=fun x=>W x*(x:ℂ)^(-shift σ t)
   have hc:∀I:Ideal O,I≠0→W ((I.absNorm:ℝ)/X)≠0→I∈A:=
     InverseInitialRawDictionary.finite_source_cover W X b hX hW
   have hcv:∀I:Ideal O,I≠0→V ((I.absNorm:ℝ)/X)≠0→I∈A:=by
@@ -143,8 +150,8 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
   rw [←hn]
   ring
 
-end SevenEighths.InverseInitialExcludedPolynomial
 
-end
 
-end OAI
+
+
+

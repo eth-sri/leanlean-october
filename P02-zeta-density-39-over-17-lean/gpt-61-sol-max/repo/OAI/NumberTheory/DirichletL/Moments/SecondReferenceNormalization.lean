@@ -14,7 +14,7 @@ open HeckeFamily CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonun
 open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondRadicalBudget
 open CenteredMomentSectorLocalization CenteredMomentSecondSourcePowerDescent
 open CenteredMomentSecondSourceSeededPowerDescent
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def referenceEnvelope (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
   (fixedFactor:ℝ)*qref*(∏P∈U,P.val).absNorm*
@@ -64,8 +64,8 @@ lemma seededFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q qr
   rw [physicalFactors_rescale Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q qref E₁ E₂ r
     loProduct wlo J₁ J₂ SΦ W hq hr]
 
-end SevenEighths.CenteredMomentSecondReferenceNormalization
 
-end
 
-end OAI
+
+
+

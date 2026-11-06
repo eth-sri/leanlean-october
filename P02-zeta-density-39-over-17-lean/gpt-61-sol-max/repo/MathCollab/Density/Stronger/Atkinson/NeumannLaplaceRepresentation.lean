@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannLaplaceRepresentation.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -20,10 +21,9 @@ a new definition of Y0. All principal-power branches and limiting
 integrals enter through the proved contour and angular bridges.
 -/
 
-set_option autoImplicit false
-noncomputable section
 
-open Complex Filter MeasureTheory Set Topology
+
+open Complex Filter MeasureTheory Topology
 open scoped Interval
 
 namespace MathCollab.Density.Stronger.Atkinson
@@ -39,7 +39,7 @@ theorem neumann_sine_integral_eq_cosine (x : ℝ) :
 theorem neumann_schlafli_complex_identity {x : ℝ} (hx : 0 < x) :
     (∫ u in (0 : ℝ)..Real.pi / 2, Complex.exp (I * (x : ℂ) * Real.cos u)) =
       I * neumannVerticalIntegral x 0 - I * neumannVerticalIntegral x 1 := by
-  let a : ℝ → ℝ := fun H => Real.pi / 2 - H⁻¹
+  let a := fun H => Real.pi / 2 - H⁻¹
   have ha : Tendsto a atTop (𝓝 (Real.pi / 2)) := by
     simpa only [sub_zero] using
       (tendsto_const_nhds (x := Real.pi / 2)).sub tendsto_inv_atTop_zero
@@ -82,8 +82,8 @@ theorem dfiBesselY0_eq_neumannVerticalIntegral {x : ℝ} (hx : 0 < x) :
     push_cast
     ring
   rw [he] at h
-  simp only [sub_im, mul_im, I_re, I_im, ofReal_im, ofReal_re, zero_mul, one_mul, zero_add] at h
+  simp at h
   rw [dfiBesselY0, h]
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

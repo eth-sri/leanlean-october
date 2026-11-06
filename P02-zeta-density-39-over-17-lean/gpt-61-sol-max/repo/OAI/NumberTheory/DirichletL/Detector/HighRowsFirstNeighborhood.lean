@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRegion
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 
 theorem unramifiedClosed_first_neighborhood_bound (Q : ℝ) (A eta v x w z : ℂ) (eps : ℝ)
@@ -81,7 +81,7 @@ theorem unramifiedClosed_first_neighborhood_bound (Q : ℝ) (A eta v x w z : ℂ
   change ‖ProbeLocal.continuedCorrection V W D P-1‖≤240*T
   nlinarith
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

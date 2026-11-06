@@ -10,9 +10,9 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyChildEnvelopeFitting
 open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
+open QuadraticInitialBound
 open CenteredMomentSecondNonexceptionalChosenBlock
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma radical_product_power (R C:Ideal O)(hR:R≠0)(hC:C≠0)
     (Z BR BC ε:ℝ)(hZ:0<Z)(hε:0≤ε)
@@ -39,19 +39,27 @@ lemma independent_height (v height:ℝ)(hheight:0≤height)(degree:ℕ):
   exact hp.trans (mul_le_mul_of_nonneg_left
     (pow_le_pow_right₀ (by linarith [norm_nonneg v]:1≤1+‖v‖) (by omega:degree≤2*degree)) (by positivity))
 
-def coefficient {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×ℕ))
-    (height:ℝ)(degree:ℕ)(Z exponent:ℝ):ℝ:=
+section
+variable {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×ℕ))
+include a b Cc C₀ C₁ p T
+
+section
+variable (height:ℝ)(degree:ℕ)(Z exponent:ℝ)
+include height degree Z exponent
+
+def coefficient :ℝ:=
   Cc*(C₀+C₁)*diagonalControl CenteredMomentFirstAmplificationChoice.ballProfile*
     (p.control T)^2*(1+height)^degree*Z^exponent
 
-lemma coefficient_nonneg {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×ℕ))
-    (height:ℝ)(degree:ℕ)(Z exponent:ℝ)(hC:0≤Cc)(h₀:0≤C₀)(h₁:0≤C₁)
+lemma coefficient_nonneg (hC:0≤Cc)(h₀:0≤C₀)(h₁:0≤C₁)
     (hH:0≤height)(hZ:0≤Z):0≤coefficient Cc C₀ C₁ p T height degree Z exponent:=by
   unfold coefficient
   have hd:=diagonalControl_nonneg CenteredMomentFirstAmplificationChoice.ballProfile
   positivity
+end
 
-theorem paid_rhs_fit {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×ℕ))
+
+theorem paid_rhs_fit 
     (R C:Ideal O)(hR:R≠0)(hC:C≠0)(τ:Character)(Q:Ideal O)(dyad:Fin 4→ℤ)
     (v height:ℝ)(degree:ℕ)(Z BR BC εmask exponent loss reference ratio:ℝ)
     (hCc:0≤Cc)(h₀:0≤C₀)(h₁:0≤C₁)(hH:0≤height)(hZ:1≤Z)(hε:0≤εmask)
@@ -80,9 +88,11 @@ theorem paid_rhs_fit {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×
       unfold coefficient
       rw [Real.rpow_add hZ0]
       ring
-
-end SevenEighths.CenteredMomentEnergyChildEnvelopeFitting
-
 end
 
-end OAI
+
+
+
+
+
+

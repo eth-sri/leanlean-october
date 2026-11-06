@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under the MIT-0 license. See ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -14,25 +15,25 @@ public import MathCollab.Density.Stronger.Fourth.DigammaLog
 open Complex Set MeasureTheory
 open MathCollab.Density.Stronger
 open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
+section
+variable {z : ℂ} (hz : 0 < z.re)
+include z hz
+
 theorem hasDerivAt_Gamma_eq_mul_digamma_of_re_pos
-    {z : ℂ} (hz : 0 < z.re) :
+     :
     HasDerivAt Complex.Gamma (Complex.Gamma z * Complex.digamma z) z := by
   have hpoles : ∀ n : ℕ, z ≠ -(n : ℂ) := by
     intro n hn
-    have hre := congrArg Complex.re hn
-    simp only [neg_re, natCast_re] at hre
-    have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-    linarith
+    simp_all <;> nlinarith
   have hdiff := (Complex.differentiableAt_Gamma z hpoles).hasDerivAt
   convert hdiff using 1
   rw [Complex.digamma_def, logDeriv_apply]
   field_simp [Complex.Gamma_ne_zero hpoles]
 
-theorem hasDerivAt_gammaReal {z : ℂ} (hz : 0 < z.re) :
+theorem hasDerivAt_gammaReal  :
     HasDerivAt Complex.Gammaℝ
       (Complex.Gammaℝ z * ((-Complex.log (Real.pi : ℂ) + Complex.digamma (z / 2)) / 2)) z := by
   have hpow : HasDerivAt (fun w : ℂ => (Real.pi : ℂ) ^ (-w / 2))
@@ -48,6 +49,8 @@ theorem hasDerivAt_gammaReal {z : ℂ} (hz : 0 < z.re) :
   unfold Complex.Gammaℝ
   convert hpow.mul hgamma using 1
   ring
+end
+
 
 /-- The principal logarithm is uniformly Lipschitz in a lower half-plane
 separated from its branch cut by the positive vertical distance `Y`. -/
@@ -57,10 +60,7 @@ theorem norm_log_sub_le_of_im_le_neg {a b : ℂ} {Y : ℝ} (hY : 0 < Y)
   let p : ℝ → ℂ := fun v => a + (v : ℂ) * (b - a)
   have him (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 1) : (p v).im ≤ -Y := by
     dsimp [p]
-    simp only [mul_im, ofReal_re, ofReal_im, sub_im, zero_mul, add_zero]
-    have hv1 : 0 ≤ 1 - v := by linarith [hv.2]
-    nlinarith [mul_nonpos_of_nonneg_of_nonpos hv.1 (sub_nonpos.mpr hb),
-      mul_nonpos_of_nonneg_of_nonpos hv1 (sub_nonpos.mpr ha)]
+    simp_all <;> nlinarith
   have hd (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 1) :
       HasDerivAt (fun u : ℝ => Complex.log (p u)) ((p v)⁻¹ * (b - a)) v := by
     have hslit : p v ∈ Complex.slitPlane := Complex.mem_slitPlane_iff.mpr
@@ -82,20 +82,29 @@ theorem norm_log_sub_le_of_im_le_neg {a b : ℂ} {Y : ℝ} (hY : 0 < Y)
     (x := 0) (y := 1) (by constructor <;> norm_num) (by constructor <;> norm_num)
   simpa [p] using h
 
-def zetaGammaLeadingLog (t : ℝ) : ℂ :=
+section
+variable (t : ℝ)
+include t
+
+def zetaGammaLeadingLog  : ℂ :=
   (Real.log (t / (2 * Real.pi)) : ℂ) - ((Real.pi / 2 : ℝ) : ℂ) * I
 
-def zetaGammaHalfShift (t : ℝ) (w : ℂ) (v : ℝ) : ℂ :=
+def zetaGammaHalfShift  (w : ℂ) (v : ℝ) : ℂ :=
   (afeCriticalPoint (-t) + (v : ℂ) * w) / 2
 
-theorem zetaGammaHalfShift_re_pos (t : ℝ) {w : ℂ} (hw : 0 ≤ w.re)
+theorem zetaGammaHalfShift_re_pos  {w : ℂ} (hw : 0 ≤ w.re)
     {v : ℝ} (hv : 0 ≤ v) : 0 < (zetaGammaHalfShift t w v).re := by
-  simp only [zetaGammaHalfShift, Complex.div_ofNat_re, add_re, mul_re,
-    ofReal_re, ofReal_im, zero_mul, sub_zero]
+  simp only [zetaGammaHalfShift, div_ofNat_re, add_re, mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero]
   norm_num [afeCriticalPoint]
   positivity
+end
 
-theorem zetaGammaHalfShift_im_le {t : ℝ} (ht : 0 < t) {w : ℂ} (hw : ‖w‖ ≤ t / 2)
+
+section
+variable {t : ℝ} (ht : 0 < t)
+include t ht
+
+theorem zetaGammaHalfShift_im_le  {w : ℂ} (hw : ‖w‖ ≤ t / 2)
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) : (zetaGammaHalfShift t w v).im ≤ -t / 4 := by
   have hwi : w.im ≤ t / 2 := (Complex.im_le_norm w).trans hw
   have hvwi : v * w.im ≤ t / 2 := by
@@ -104,7 +113,7 @@ theorem zetaGammaHalfShift_im_le {t : ℝ} (ht : 0 < t) {w : ℂ} (hw : ‖w‖ 
   simp [zetaGammaHalfShift, afeCriticalPoint, Complex.mul_im]
   linarith
 
-theorem log_negative_height_eq {t : ℝ} (ht : 0 < t) :
+theorem log_negative_height_eq  :
     Complex.log (-((t / 2 : ℝ) : ℂ) * I) =
       zetaGammaLeadingLog t + Complex.log (Real.pi : ℂ) := by
   rw [show -((t / 2 : ℝ) : ℂ) * I = ((t / 2 : ℝ) : ℂ) * (-I) by ring,
@@ -115,6 +124,8 @@ theorem log_negative_height_eq {t : ℝ} (ht : 0 < t) :
     Real.log_div ht.ne' two_ne_zero, ← Complex.ofReal_log Real.pi_pos.le]
   push_cast
   ring
+end
+
 
 theorem norm_zetaGammaHalfShift_sub_negative_height_le (t : ℝ) (w : ℂ)
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) :
@@ -126,8 +137,7 @@ theorem norm_zetaGammaHalfShift_sub_negative_height_le (t : ℝ) (w : ℂ)
     ring
   rw [heq]
   refine (norm_add_le _ _).trans ?_
-  simp only [norm_div, norm_mul, norm_one, Complex.norm_ofNat,
-    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hv.1]
+  simp only [norm_div, norm_one, norm_ofNat, norm_mul, norm_real, Real.norm_eq_abs, abs_of_nonneg hv.1]
   nlinarith [norm_nonneg w, hv.2]
 
 /-- The actual digamma argument along the shift path is within an explicit
@@ -159,4 +169,4 @@ theorem norm_zetaGammaHalfShift_digamma_sub_le {t : ℝ} (ht : 4 ≤ t)
     _ = _ := by field_simp; ring
 
 
-end MathCollab.Density.Stronger.Fourth
+

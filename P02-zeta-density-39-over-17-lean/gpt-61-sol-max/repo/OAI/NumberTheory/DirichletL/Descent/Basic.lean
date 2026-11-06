@@ -24,10 +24,14 @@ def childF (F ell A t g theta V j delta : ℝ) : ℝ :=
 def childM (M ell A t g theta V j eta : ℝ) : ℝ :=
   M - 2 * decrease ell A t g theta V - 2 * ell + j + eta
 
-theorem child_margins_sharp {F M Q Q' z c ell A t g theta V j delta eta : ℝ}
+section
+variable {F M Q Q' z c ell A t g theta V j delta eta : ℝ}
     (h : CanonicalMargins F M Q z c)
     (hA : 0 ≤ A) (ht : 0 ≤ t) (hV : 0 ≤ V) (hj : 0 ≤ j)
     (hgt : -2 * eta ≤ g - theta)
+include F M Q Q' z c ell A t g theta V j delta eta h hA ht hV hj hgt
+
+theorem child_margins_sharp 
     (hQ : Q' ≤ Q + decrease ell A t g theta V + 4 * eta) :
     c + delta - 5 * eta ≤
       childF F ell A t g theta V j delta -
@@ -39,15 +43,14 @@ theorem child_margins_sharp {F M Q Q' z c ell A t g theta V j delta eta : ℝ}
   unfold childF childM decrease at *
   constructor <;> linarith
 
-theorem child_margins {F M Q Q' z c ell A t g theta V j delta eta : ℝ}
-    (h : CanonicalMargins F M Q z c)
-    (hA : 0 ≤ A) (ht : 0 ≤ t) (hV : 0 ≤ V) (hj : 0 ≤ j)
-    (hgt : -2 * eta ≤ g - theta) (hdelta : 0 ≤ delta) (heta : 0 ≤ eta)
+theorem child_margins  (hdelta : 0 ≤ delta) (heta : 0 ≤ eta)
     (hQ : Q' ≤ Q + decrease ell A t g theta V + 4 * eta) :
     CanonicalMargins (childF F ell A t g theta V j delta)
       (childM M ell A t g theta V j eta) Q' z (c - 7 * eta) := by
   obtain ⟨h₁, h₂⟩ := child_margins_sharp (delta := delta) h hA ht hV hj hgt hQ
   constructor <;> linarith
+end
+
 
 theorem child_row_decrease {M ell A t g theta V j eta d : ℝ}
     (hA : 0 ≤ A) (ht : 0 ≤ t) (hgt : -2 * eta ≤ g - theta)
@@ -70,9 +73,13 @@ def initialF (r z G P delta : ℝ) : ℝ := r + z - 2 * G - P + delta
 def initialM (m r z G P eta tau : ℝ) : ℝ :=
   2 * (r + z - 2 * G) - m - 2 * P + 6 * eta + tau
 
-theorem initial_margins_sharp {m r z G P delta eta tau Q c₁ c₂ : ℝ}
+section
+variable {m r z G P delta eta tau Q c₁ c₂ : ℝ}
     (h₁ : r + 2 * z ≤ m - c₁) (h₂ : 2 * r + 8 * z ≤ 3 * m - c₂)
-    (hG : 0 ≤ G) (hP : -2 * eta ≤ P) (hQ : Q ≤ P + G + 3 * eta) :
+    (hG : 0 ≤ G) (hP : -2 * eta ≤ P) (hQ : Q ≤ P + G + 3 * eta)
+include m r z G P delta eta tau Q c₁ c₂ h₁ h₂ hG hP hQ
+
+theorem initial_margins_sharp  :
     c₁ + delta - 9 * eta - tau ≤
       initialF r z G P delta - initialM m r z G P eta tau - Q - (z - G) ∧
     c₂ + 4 * delta - 22 * eta - 3 * tau ≤
@@ -81,9 +88,7 @@ theorem initial_margins_sharp {m r z G P delta eta tau Q c₁ c₂ : ℝ}
   unfold initialF initialM
   constructor <;> linarith
 
-theorem initial_margins {m r z G P delta eta tau Q c₁ c₂ : ℝ}
-    (h₁ : r + 2 * z ≤ m - c₁) (h₂ : 2 * r + 8 * z ≤ 3 * m - c₂)
-    (hG : 0 ≤ G) (hP : -2 * eta ≤ P) (hQ : Q ≤ P + G + 3 * eta)
+theorem initial_margins 
     (hc : 0 ≤ min c₁ c₂) (hdelta : 0 ≤ delta) (heta : eta ≤ min c₁ c₂ / 100)
     (htau : tau ≤ min c₁ c₂ / 100) :
     CanonicalMargins (initialF r z G P delta)
@@ -92,7 +97,9 @@ theorem initial_margins {m r z G P delta eta tau Q c₁ c₂ : ℝ}
   have hc₁ := min_le_left c₁ c₂
   have hc₂ := min_le_right c₁ c₂
   constructor <;> linarith
+end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

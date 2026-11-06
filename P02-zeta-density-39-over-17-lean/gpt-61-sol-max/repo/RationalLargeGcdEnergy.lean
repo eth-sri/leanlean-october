@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import RationalDyadicDifference
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -14,10 +14,14 @@ theorem rational_phase_sum_norm_le_card (r : ℚ) (W : Finset ℝ) :
     rw [← exponentialPhase_log, exponentialPhase_norm]
   exact (norm_sum_le _ _).trans_eq (by simp only [hp, sum_const, nsmul_eq_mul, mul_one])
 
+section
+variable {K : ℕ} (hK : 1 ≤ K)
+    {η : ℝ} (hη : 0 < η)
+include K hK η hη
+
 /-- The second-moment estimate for only the large-gcd part of a longer
 dyadic interval. The short-range condition is imposed on X/D, not X. -/
-theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+theorem large_gcd_pair_energy  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ X D : ℝ), 1 < T → 0 ≤ X → X ≤ T → 0 < D →
       ∀ (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -30,7 +34,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
       (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖^2) ≤
         C*T^η*X*(W.card : ℝ)^2 := by
   obtain ⟨C, hC, hbound⟩ := coprime_dyadic_short_range hK (show 0 < η/2 by positivity)
-  let L : ℝ := 1+4^(η/2)/(η/2)
+  let L := 1+4^(η/2)/(η/2)
   have hL : 0 < L := by dsimp [L]; positivity
   refine ⟨C*L, by positivity, ?_⟩
   intro T t₀ X D hT hX hXT hD P hP W hR hXR hW hsep
@@ -44,7 +48,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
         (C*T^(η/2)*(W.card : ℝ)^2)*(X/d) := by
     intro d hd
     obtain ⟨p, hp, he⟩ := mem_image.mp hd
-    have hdD : D ≤ (d : ℝ) := he ▸ (hP p hp).2.2.2.2.2.2
+    have hdD := he ▸ (hP p hp).2.2.2.2.2.2
     have hdiv : X/(d : ℝ) ≤ X/D := div_le_div_of_nonneg_left hX hD hdD
     have hQ : ∀ q ∈ reducedFiber P d,
         0 < q.1 ∧ 0 < q.2 ∧ Nat.Coprime q.1 q.2 ∧
@@ -77,8 +81,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
 
 /-- The large-gcd cubic contribution used in the proposed two-term additive
 energy argument is bounded without any unproved analytic input. -/
-theorem large_gcd_cubic_energy {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+theorem large_gcd_cubic_energy  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ X D : ℝ), 1 < T → 0 ≤ X → X ≤ T → 0 < D →
       ∀ (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -107,8 +110,7 @@ theorem large_gcd_cubic_energy {K : ℕ} (hK : 1 ≤ K)
 /-- The large-gcd half of the proposed additive-energy split, at the
 actual cutoff D=X^2/T. This does not assert the still-open low-gcd or
 reproducing-kernel bounds for the discrete additive energy. -/
-theorem large_gcd_cubic_at_transition {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+theorem large_gcd_cubic_at_transition  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ X : ℝ), 1 < T → 0 < X → X ≤ T →
       ∀ (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -130,5 +132,7 @@ theorem large_gcd_cubic_at_transition {K : ℕ} (hK : 1 ≤ K)
   obtain ⟨hp, hd⟩ := mem_filter.mp hp
   obtain ⟨h1,h2,hl1,hu1,hl2,hu2⟩ := hP p hp
   exact ⟨h1,h2,hl1,hu1,hl2,hu2,hd⟩
+end
 
-end Montgomery.RationalMoment
+
+

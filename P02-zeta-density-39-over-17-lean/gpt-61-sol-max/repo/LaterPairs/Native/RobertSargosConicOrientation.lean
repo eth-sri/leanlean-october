@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCoefficientGeometry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargosReduced_swap {r q₁ q₂ h₁ h₂ d : ℝ}
@@ -27,12 +26,8 @@ theorem robertSargos_safe_pivot {q₁ q₂ d : ℝ} (hsign : 0 < q₁*q₂) :
   by_cases h : 0 ≤ q₁*d
   · exact Or.inl h
   right
-  have hn : q₁*d < 0 := lt_of_not_ge h
   rcases mul_pos_iff.mp hsign with hp | hm
-  · have hd : d ≤ 0 := by nlinarith [hp.1]
-    exact mul_nonneg hp.2.le (neg_nonneg.mpr hd)
-  · have hd : 0 ≤ d := by nlinarith [hm.1]
-    exact mul_nonneg_of_nonpos_of_nonpos hm.2.le (neg_nonpos.mpr hd)
+  all_goals (nlinarith)
 
 theorem robertSargos_coefficient_linear_source_gap {r q₁ q₂ h₁ h₂ d R H Q δ : ℝ}
     (hH : 0 < H) (hQ : 0 < Q) (hδ : δ ≤ 1) (hr : |r| ≤ R)
@@ -50,5 +45,5 @@ theorem robertSargos_coefficient_linear_source_gap {r q₁ q₂ h₁ h₂ d R H 
     _ ≤ R*(9*Q)/(H*Q) := hb
     _ = _ := by field_simp
 
-end TaoTrudgianYang2025
+
 

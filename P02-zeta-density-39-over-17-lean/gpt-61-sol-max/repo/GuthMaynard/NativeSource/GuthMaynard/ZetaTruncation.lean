@@ -1,21 +1,26 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ZetaBounds
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroCount
 public import GuthMaynard.NativeSource.GuthMaynardExternal.PNT.ZetaAppendix
 
 @[expose] public section
 
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 
 namespace GuthMaynard.NativeMoment
 
+section
+variable (s : ℂ) (a : ℝ)
+include s a
+
 /-- The normalized ordinate in the sharp Poisson--Euler--Maclaurin truncation. -/
-noncomputable def sharpZetaTheta (s : ℂ) (a : ℝ) : ℝ :=
+noncomputable def sharpZetaTheta  : ℝ :=
   s.im / (2 * Real.pi * a)
 
 /-- The explicit coefficient of the `a ^ (-s)` boundary correction in the
 sharp Poisson--Euler--Maclaurin truncation. -/
-noncomputable def sharpZetaBoundaryCoeff (s : ℂ) (a : ℝ) : ℂ :=
+noncomputable def sharpZetaBoundaryCoeff  : ℂ :=
   let ϑ := sharpZetaTheta s a
   if ϑ ≠ 0 then
     Complex.I / 2 *
@@ -25,7 +30,7 @@ noncomputable def sharpZetaBoundaryCoeff (s : ℂ) (a : ℝ) : ℂ :=
 
 /-- The explicit coefficient in the order-`a ^ (-Re(s)-1)` remainder of the
 sharp Poisson--Euler--Maclaurin truncation. -/
-noncomputable def sharpZetaErrorCoeff (s : ℂ) (a : ℝ) : ℝ :=
+noncomputable def sharpZetaErrorCoeff  : ℝ :=
   let ϑ := sharpZetaTheta s a
   if ϑ ≠ 0 then
     s.re / 2 *
@@ -35,31 +40,39 @@ noncomputable def sharpZetaErrorCoeff (s : ℂ) (a : ℝ) : ℝ :=
         (1 / (1 - |ϑ|) ^ 3 + 2 * (riemannZeta 3).re - 1)
   else
     s.re / 6
+end
+
+
+section
+variable (T : ℝ)
+include T
 
 /-- A half-integral truncation length comparable to a positive slab height.
 The additive `3/2` keeps the cutoff strictly beyond `4T`, which makes the
 Poisson parameter uniformly separated from both `0` and `1`. -/
-noncomputable def sharpZetaCutoff (T : ℝ) : ℝ :=
+noncomputable def sharpZetaCutoff  : ℝ :=
   (⌊4 * T⌋ : ℝ) + 3 / 2
 
-theorem sharpZetaCutoff_isHalfInteger (T : ℝ) :
+theorem sharpZetaCutoff_isHalfInteger  :
     (sharpZetaCutoff T).IsHalfInteger := by
   refine ⟨⌊4 * T⌋ + 1, ?_⟩
   simp only [sharpZetaCutoff]
   push_cast
   ring
 
-theorem four_mul_lt_sharpZetaCutoff (T : ℝ) :
+theorem four_mul_lt_sharpZetaCutoff  :
     4 * T < sharpZetaCutoff T := by
   have h := Int.lt_floor_add_one (4 * T)
   simp only [sharpZetaCutoff]
   linarith
 
-theorem sharpZetaCutoff_le_add (T : ℝ) :
+theorem sharpZetaCutoff_le_add  :
     sharpZetaCutoff T ≤ 4 * T + 3 / 2 := by
   have h := Int.floor_le (4 * T)
   simp only [sharpZetaCutoff]
   linarith
+end
+
 
 theorem sharpZetaCutoff_le_six_mul {T : ℝ} (hT : 3 / 4 ≤ T) :
     sharpZetaCutoff T ≤ 6 * T := by
@@ -140,7 +153,7 @@ theorem sharpZetaBoundaryCoeff_le_fourteen {σ T : ℝ} {ρ : ℂ}
   let x := Real.pi * θ
   have hx : x ∈ Set.Icc (1 / 12 : ℝ) (1 / 4 : ℝ) := by
     simpa [x, θ] using sharpZetaPhase_mem_Icc_of_mem hT hρ
-  have hsinLower : 1 / 16 ≤ Real.sin x := one_sixteenth_le_sin_of_mem_Icc hx
+  have hsinLower := one_sixteenth_le_sin_of_mem_Icc hx
   have hsinPos : 0 < Real.sin x := by linarith
   have hxPos : 0 < x := by linarith [hx.1]
   have hθ : θ ≠ 0 := by
@@ -150,7 +163,7 @@ theorem sharpZetaBoundaryCoeff_le_fourteen {σ T : ℝ} {ρ : ℂ}
   have hθ' : sharpZetaTheta ρ (sharpZetaCutoff T) ≠ 0 := by
     simpa [θ] using hθ
   have hsinNorm : ‖Complex.sin (x : ℂ)‖ = Real.sin x := by
-    have hs : Complex.sin (x : ℂ) = (Real.sin x : ℂ) :=
+    have hs :=
       (Complex.ofReal_sin x).symm
     rw [hs, norm_real, Real.norm_eq_abs, abs_of_pos hsinPos]
   have hxNorm : ‖(x : ℂ)‖ = x := by simp [abs_of_pos hxPos]
@@ -197,8 +210,8 @@ theorem sharpZetaErrorCoeff_le_129 {σ T : ℝ} {ρ : ℂ} (hT : 3 / 4 ≤ T)
     have hpi := Real.pi_gt_three
     dsimp [x] at hx
     nlinarith [hx.2]
-  have hθAbs : |θ| = θ := abs_of_pos hθPos
-  have hsinLower : 1 / 16 ≤ Real.sin x := one_sixteenth_le_sin_of_mem_Icc hx
+  have hθAbs := abs_of_pos hθPos
+  have hsinLower := one_sixteenth_le_sin_of_mem_Icc hx
   have hsinPos : 0 < Real.sin x := by linarith
   have hsComplex :
       Complex.sin ((Real.pi : ℂ) * (θ : ℂ)) = (Real.sin x : ℂ) := by
@@ -234,19 +247,12 @@ theorem sharpZetaErrorCoeff_le_129 {σ T : ℝ} {ρ : ℂ} (hT : 3 / 4 ≤ T)
     (Complex.re_le_norm _).trans hzetaNorm
   have hFirst : ρ.re / 2 *
         ((1 / (Complex.sin ((Real.pi : ℂ) * (θ : ℂ)) ^ 2 : ℂ)).re -
-          (1 / (((Real.pi : ℂ) * (θ : ℂ)) ^ 2 : ℂ)).re) ≤ 128 := by
-    have hhalf : 0 ≤ ρ.re / 2 := by positivity
-    calc
-      _ ≤ ρ.re / 2 * 256 := by gcongr; linarith
-      _ ≤ 128 := by nlinarith
+          (1 / (((Real.pi : ℂ) * (θ : ℂ)) ^ 2 : ℂ)).re) ≤ 128 := by nlinarith
   have hDen : 18 ≤ 2 * Real.pi ^ 2 := by nlinarith [Real.pi_gt_three]
   have hSecond : |θ| / (2 * Real.pi ^ 2) *
         (1 / (1 - |θ|) ^ 3 + 2 * (riemannZeta 3).re - 1) ≤ 1 := by
     have hCoeffNonneg : 0 ≤ |θ| / (2 * Real.pi ^ 2) := by positivity
-    have hCoeff : |θ| / (2 * Real.pi ^ 2) ≤ 1 / 72 := by
-      rw [div_le_iff₀ (by positivity : 0 < 2 * Real.pi ^ 2)]
-      rw [hθAbs]
-      nlinarith [hθUpper, hDen]
+    have hCoeff : |θ| / (2 * Real.pi ^ 2) ≤ 1 / 72 := by field_simp <;> nlinarith
     have hBracket :
         1 / (1 - |θ|) ^ 3 + 2 * (riemannZeta 3).re - 1 ≤ 7 := by
       linarith
@@ -260,8 +266,7 @@ theorem sharpZetaErrorCoeff_le_129 {σ T : ℝ} {ρ : ℂ} (hT : 3 / 4 ≤ T)
       linarith
   rw [sharpZetaErrorCoeff, ite_eq_left hθPos.ne']
   have hNum : (128 : ℝ) + 1 ≤ 129 := by norm_num
-  have hTotal := (add_le_add hFirst hSecond).trans hNum
-  simpa only [θ] using hTotal
+  grind
 
 /-- PNT+'s kernel-checked sharp truncation theorem, exposed through the
 project's #15 interface.  Unlike the absolute Abel-tail estimate below, its
@@ -275,14 +280,17 @@ theorem riemannZeta_sharp_halfInteger_truncation {s : ℂ}
             (a ^ (1 - s) : ℂ) / (1 - s) -
             sharpZetaBoundaryCoeff s a * (a ^ (-s) : ℂ) + E ∧
         ‖E‖ ≤ sharpZetaErrorCoeff s a / a ^ (s.re + 1) := by
-  simpa [sharpZetaTheta, sharpZetaBoundaryCoeff, sharpZetaErrorCoeff] using
-    ZetaAppendix.proposition_dadaro hs1 hsigma ha haHalf haIm
+  exact ZetaAppendix.proposition_dadaro hs1 hsigma ha haHalf haIm
 
-/-- Sharp truncation specialized at a genuine zeta zero. -/
-theorem zeta_zero_sharp_halfInteger_truncation {ρ : ℂ}
+section
+variable {ρ : ℂ}
     (hρre : 0 < ρ.re) (hρim : ρ.im ≠ 0) (hρzero : riemannZeta ρ = 0)
     {a : ℝ} (ha : 0 < a) (haHalf : a.IsHalfInteger)
-    (haIm : a > |ρ.im| / (2 * Real.pi)) :
+    (haIm : a > |ρ.im| / (2 * Real.pi))
+include ρ hρre hρim hρzero a ha haHalf haIm
+
+/-- Sharp truncation specialized at a genuine zeta zero. -/
+theorem zeta_zero_sharp_halfInteger_truncation  :
     ∃ E : ℂ,
       (∑ n ∈ Finset.Icc 1 ⌊a⌋₊, (n : ℂ) ^ (-ρ)) =
           (a ^ (1 - ρ) : ℂ) / (1 - ρ) +
@@ -291,17 +299,12 @@ theorem zeta_zero_sharp_halfInteger_truncation {ρ : ℂ}
   have hρ1 : ρ ≠ 1 := ne_of_apply_ne im (by simpa using hρim)
   obtain ⟨E, hEq, hE⟩ :=
     riemannZeta_sharp_halfInteger_truncation hρ1 hρre.le ha haHalf haIm
-  refine ⟨E, ?_, hE⟩
-  rw [hρzero] at hEq
-  linear_combination -hEq
+  grind
 
 /-- Norm form of the sharp zero truncation.  The three terms are respectively
 the pole boundary, the bounded Poisson boundary correction, and the
 order-`a ^ (-Re(ρ)-1)` remainder. -/
-theorem norm_zeta_zero_sharp_sum_le {ρ : ℂ}
-    (hρre : 0 < ρ.re) (hρim : ρ.im ≠ 0) (hρzero : riemannZeta ρ = 0)
-    {a : ℝ} (ha : 0 < a) (haHalf : a.IsHalfInteger)
-    (haIm : a > |ρ.im| / (2 * Real.pi)) :
+theorem norm_zeta_zero_sharp_sum_le  :
     ‖∑ n ∈ Finset.Icc 1 ⌊a⌋₊, (n : ℂ) ^ (-ρ)‖ ≤
       ‖(a ^ (1 - ρ) : ℂ) / (1 - ρ)‖ +
         ‖sharpZetaBoundaryCoeff ρ a * (a ^ (-ρ) : ℂ)‖ +
@@ -322,6 +325,8 @@ theorem norm_zeta_zero_sharp_sum_le {ρ : ℂ}
         ‖sharpZetaBoundaryCoeff ρ a * (a ^ (-ρ) : ℂ)‖ +
           sharpZetaErrorCoeff ρ a / a ^ (ρ.re + 1) := by
       gcongr
+end
+
 
 set_option maxHeartbeats 800000 in
 /-- Detector-strength sharp truncation on a positive dyadic zero slab. The
@@ -337,7 +342,7 @@ theorem norm_zeta_zero_sharp_cutoff_sum_le {σ T : ℝ} {ρ : ℂ} (hT : 3 / 4 �
   rw [mem_ZeroRectangle] at hRect
   have hTpos : 0 < T := by linarith
   have hρrePos : 0 < ρ.re := hσ.trans_le hRect.1
-  have hρreOne : ρ.re ≤ 1 := hRect.2.1
+  have hρreOne := hRect.2.1
   have hρimPos : 0 < ρ.im := hTpos.trans_le hRect.2.2.1
   have hAdmissible := sharpZetaCutoff_admissible_of_mem hT hρmem
   rcases hAdmissible with ⟨hCutPos, hCutHalf, hCutIm⟩
@@ -407,4 +412,4 @@ theorem norm_zeta_zero_sharp_cutoff_sum_le {σ T : ℝ} {ρ : ℂ} (hT : 3 / 4 �
             129 * sharpZetaCutoff T ^ (-ρ.re) := by gcongr
     _ = 149 * sharpZetaCutoff T ^ (-ρ.re) := by ring
 
-end GuthMaynard.NativeMoment
+

@@ -2,9 +2,8 @@ module
 public import MathCollab.Density.Stronger.DyadicMoment
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Filter Set
+
+open MeasureTheory Filter
 open scoped Interval
 namespace Montgomery.CriticalPeak
 open MathCollab.Density.Stronger
@@ -72,4 +71,4 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
       rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hTp.le,
         Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hTp.le]
       ring
-end Montgomery.CriticalPeak
+

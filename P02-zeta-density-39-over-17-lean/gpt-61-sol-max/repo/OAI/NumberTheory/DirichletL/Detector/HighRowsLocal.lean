@@ -9,25 +9,33 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def rowHighPrimeTerm (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+section
+variable (η : HeckeFamily.Character) (u : O)
+include η u
+
+def rowHighPrimeTerm  (x w z : ℂ)
     (P : PrimeIdeal) (b : HighValuation) : ℂ :=
   bareIdealHighSummand η u x w z (P.val^b.1.1) (P.val^b.1.2) (P.val^b.2.1) (P.val^b.2.2)
 
-def idealRowHighLocalFactor (η : HeckeFamily.Character) (u : O) (P : Id) (x w z : ℂ) : ℂ :=
+def idealRowHighLocalFactor  (P : Id) (x w z : ℂ) : ℂ :=
   ∑ e : Fin 2, ∑' l : ℕ, ∑' k : ℕ, ∑' m : ℕ,
     bareIdealHighSummand η u x w z (P^e.val) (P^l) (P^k) (P^m)
 
-lemma rowHighPrimeTerm_summable_norm (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+section
+variable (x w z : ℂ)
+include x w z
+
+lemma rowHighPrimeTerm_summable_norm 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
     Summable (fun b : HighValuation=>‖rowHighPrimeTerm η u x w z P b‖) := by
   have hs := ((bareIdealHighSummand_summable η u x w z hx hw hz).norm.comp_injective
     highIdeals_injective).comp_injective (Finsupp.single_injective P)
   simpa only [Function.comp_def,highIdeals_single,rowHighPrimeTerm] using hs
 
-lemma rowHighPrimeTerm_zero_of_two_le (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+lemma rowHighPrimeTerm_zero_of_two_le 
     (P : PrimeIdeal) (e l k m : ℕ) (he : 2≤e) :
     rowHighPrimeTerm η u x w z P ((e,l),(k,m))=0 := by
   by_contra hn
@@ -35,7 +43,7 @@ lemma rowHighPrimeTerm_zero_of_two_le (η : HeckeFamily.Character) (u : O) (x w 
   have hc := hs.1.eq_zero_or_one_of_pow_of_not_isUnit P.property.not_isUnit
   omega
 
-theorem rowHighPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+theorem rowHighPrimeTerm_tsum_eq_localFactor 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
     (∑' b : HighValuation,rowHighPrimeTerm η u x w z P b)=
       idealRowHighLocalFactor η u P.val x w z := by
@@ -51,10 +59,17 @@ theorem rowHighPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (u : O
     simp only [rowHighPrimeTerm_zero_of_two_le η u x w z P e _ _ _ hh,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
+end
+end
 
-theorem excludedRowHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
+
+section
+variable (S : Finset Id) (hS : ∀P∈S,Prime P)
     (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
+    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re)
+include S hS η u x w z hx hw hz
+
+theorem excludedRowHighLocalFactor  (P : PrimeIdeal) :
     (∑' b : HighValuation,markedIdealHighSummand S 1 η u x w z
       (P.val^b.1.1) (P.val^b.1.2) (P.val^b.2.1) (P.val^b.2.2)) =
       if P.val∈S then 1 else idealRowHighLocalFactor η u P.val x w z := by
@@ -72,9 +87,7 @@ theorem excludedRowHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
     simp only [markedIdealHighSummand,highIdealMask_prime_outside S hS P hP,one_mul]
     exact rowHighPrimeTerm_tsum_eq_localFactor η u x w z hx hw hz P
 
-theorem excludedIdealHighSeries_row_hasProd_outside (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+theorem excludedIdealHighSeries_row_hasProd_outside  :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S}=>idealRowHighLocalFactor η u P.val.val x w z)
       (markedIdealHighSeries S 1 η u x w z) := by
   have h := excludedIdealHighSeries_row_hasProd S hS η u x w z hx hw hz
@@ -86,8 +99,10 @@ theorem excludedIdealHighSeries_row_hasProd_outside (S : Finset Id) (hS : ∀P�
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
   split_ifs <;> simp_all
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

@@ -5,17 +5,21 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Selected
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open scoped HeckeO
 
-theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (x w z : ℂ)
     (hV : ‖coordV P.val.absNorm z‖<1)
-    (hR : ‖coordR P.val.absNorm (actualAPhase η (primaryGenerator P.val)) x z‖<1) :
+    (hR : ‖coordR P.val.absNorm (actualAPhase η (primaryGenerator P.val)) x z‖<1)
+include η u P hs hn x w z hV hR
+
+theorem continuedMarkedLocal_unramified  :
     continuedMarkedLocal η u P hs x w z=
       unramifiedMarked P.val.absNorm (actualAPhase η (primaryGenerator P.val))
         (idealCoeff η P.val) (idealRowHom u.val P.val) x w z := by
@@ -69,19 +73,18 @@ theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : Prim
   simp only [unramifiedMarked,coordD,coordW,div_eq_mul_inv,hi,Complex.ofReal_natCast]
   congr 1; ring
 
-theorem continuedCompensatedLocal_unramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (x w z : ℂ)
-    (hV : ‖coordV P.val.absNorm z‖<1)
-    (hR : ‖coordR P.val.absNorm (actualAPhase η (primaryGenerator P.val)) x z‖<1) :
+theorem continuedCompensatedLocal_unramified  :
     continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))=
       unramifiedSelected P.val.absNorm (actualAPhase η (primaryGenerator P.val))
         (idealCoeff η P.val) (idealRowHom u.val P.val) x w z := by
   rw [continuedCompensatedLocal,continuedMarkedLocal_unramified η u P hs hn x w z hV hR]
   rfl
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

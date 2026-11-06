@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import MathCollab.Density.Packing
 
 @[expose] public section
 
-open Real Set
+open Real
 open scoped BigOperators
 
-set_option autoImplicit false
 
-noncomputable section
+
 namespace MathCollab.Density
 
 theorem localSet_localDiameter_le {H : ℝ} (hH : 1 ≤ H) (U : Finset ℝ) (j : ℤ) :
@@ -31,9 +31,7 @@ theorem reflection_recursive_scale {N : ℕ} {T L H : ℝ}
   have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hMp
   refine ⟨by nlinarith, ?_⟩
   have hh := (le_div_iff₀ (by positivity : 0 < Real.pi*L)).1 hMhi
-  have hi : (N : ℝ)*M*Real.pi ≤ 4*T := by
-    have hc := mul_le_mul_of_nonneg_right hNL (show 0 ≤ (M : ℝ)*Real.pi by positivity)
-    nlinarith
+  have hi : (N : ℝ)*M*Real.pi ≤ 4*T := by nlinarith
   have hpi : 1 ≤ Real.pi := by linarith [Real.pi_gt_three]
   have hnm : 0 ≤ (N : ℝ)*M := by positivity
   have hc := mul_le_mul_of_nonneg_left hpi hnm
@@ -101,10 +99,7 @@ theorem uniform_reflection_application (w : ReflectionCutoff) :
     Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
   have hpow₁ : T^(-105 : ℝ) ≤ T^(-100 : ℝ) :=
     Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
-  have he₂ : 4*K^2*(U.card : ℝ)^2*L^(-318 : ℝ) ≤ 9*K^2*T^(-100 : ℝ) := by
-    have hh := mul_le_mul_of_nonneg_left he.1 (show 0 ≤ 4*K^2 by positivity)
-    have hi := mul_le_mul_of_nonneg_left hpow₂ (show 0 ≤ 9*K^2 by positivity)
-    nlinarith
+  have he₂ : 4*K^2*(U.card : ℝ)^2*L^(-318 : ℝ) ≤ 9*K^2*T^(-100 : ℝ) := by field_simp <;> nlinarith
   have he₁ : K^2*(U.card : ℝ)*L^(-318 : ℝ) ≤ 9*K^2*T^(-100 : ℝ) := by
     have hh := mul_le_mul_of_nonneg_left he.2 (sq_nonneg K)
     have hi := mul_le_mul_of_nonneg_left hpow₁ (show 0 ≤ (3/2)*K^2 by positivity)
@@ -112,4 +107,4 @@ theorem uniform_reflection_application (w : ReflectionCutoff) :
     nlinarith [mul_nonneg (sq_nonneg K) hn]
   exact ⟨hb.1.trans (add_le_add le_rfl he₂), hb.2.trans he₁⟩
 
-end MathCollab.Density
+

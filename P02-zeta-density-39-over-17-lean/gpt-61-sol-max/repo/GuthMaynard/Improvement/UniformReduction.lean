@@ -7,7 +7,6 @@ public import Mathlib
 The two analytic estimates are explicit premises. This file does NOT prove
 the Poisson truncation, divisor bound, or published affine theorem.
 -/
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -56,4 +55,4 @@ theorem unequal_reduction_of_estimates {J Q E H R K m n : ℝ}
   convert mul_le_mul_of_nonneg_left hsum hE using 1
   ring
 
-end GuthMaynard.Improvement
+

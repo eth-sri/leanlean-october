@@ -5,15 +5,15 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicTailGates
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
+open InverseInitialEnergyCallerSource InverseInitialDyadicAssembly
 open InverseInitialRetainedSupport InverseInitialHighFrequencyTail
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -118,8 +118,8 @@ theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
     exact live_mass_radial_gate p hp a b Z D m η τ bW hZ hη hbW hfixed x
       (hvalid x hx) (hgeometry x hx).2.1.1 (hgeometry x hx).2.1.2 (hgeometry x hx).2.2
 
-end SevenEighths.InverseInitialDyadicTailBound
 
-end
 
-end OAI
+
+
+

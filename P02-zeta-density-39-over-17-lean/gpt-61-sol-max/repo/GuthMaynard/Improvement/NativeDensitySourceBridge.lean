@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.NativeDensityConventionBridge
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroCount
 public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
@@ -6,8 +7,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
 @[expose] public section
 
 open Complex Filter MathCollab.Density
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Literal shared native count equals the audited actual count, including
@@ -26,10 +26,9 @@ theorem native_N_eq_zetaDensityCount {σ : ℝ} (hσ : 0 < σ) (T : ℝ) :
 theorem native_density_epsilon_bound {σ p : ℝ} (hσ : 0 < σ) (hp : 0 ≤ p)
     (hb : NativeMoment.EpsilonPowerBound (fun T => (NativeMoment.N σ T:ℝ))
       (fun T => T^p)) {ε : ℝ} (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(p+ε) := by
+    MathCollab.Density.ZetaBound σ ((p+ε)) := by
   have hh := hb ε hε
   simp only [native_N_eq_zetaDensityCount hσ] at hh
   exact zetaDensityCount_bound_of_native_bigO hp hε hh
 
-end GuthMaynard.Improvement
+

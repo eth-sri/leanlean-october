@@ -12,24 +12,33 @@ namespace SevenEighths.CenteredMomentRestrictedEnergy
 open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm
 open CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth
 open ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def restrictedEnergy {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)
+section
+variable {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)
+include α keep S a
+
+def restrictedEnergy 
     (c : α → ℂ) (W : 𝓢(ℝ, ℂ)) (K : ℝ) : ℝ :=
   ∑' z : O, if keep z then ‖rowPolynomial S a c z‖^2*(W (‖eisEmbedding z‖^2/K)).re else 0
 
-theorem restricted_summable {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+section
+variable (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K)
+include ha c W K hK
+
+theorem restricted_summable  :
     Summable (fun z : O => if keep z then
       ‖rowPolynomial S a c z‖^2*(W (‖eisEmbedding z‖^2/K)).re else 0) := by
   have hs := Complex.hasSum_re (rowEnergy_summable S a ha c W K hK).hasSum
   simp only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero] at hs
   exact hs.summable.indicator {z | keep z}
 
-theorem finite_energy_le_restricted {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) (rows : Finset O)
+section
+variable (rows : Finset O)
+include rows
+
+theorem finite_energy_le_restricted 
     (hkeep : ∀ z ∈ rows, keep z)
     (hW : ∀ z : O, 0 ≤ (W (‖eisEmbedding z‖^2/K)).re)
     (hmajor : ∀ z ∈ rows, 1 ≤ (W (‖eisEmbedding z‖^2/K)).re) :
@@ -45,9 +54,7 @@ theorem finite_energy_le_restricted {α : Type*} (keep : O → Prop) (S : Finset
       (by intro z hz; split_ifs; exact mul_nonneg (sq_nonneg _) (hW z); exact le_rfl)
       (restricted_summable keep S a ha c W K hK).hasSum
 
-theorem finite_negative_energy_le_restricted {α : Type*} (keep : O → Prop)
-    (S : Finset α) (a : α → O) (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) (rows : Finset O)
+theorem finite_negative_energy_le_restricted 
     (hkeep : ∀ z ∈ rows, keep (-z))
     (hW : ∀ z : O, 0 ≤ (W (‖eisEmbedding z‖^2/K)).re)
     (hmajor : ∀ z ∈ rows, 1 ≤ (W (‖eisEmbedding z‖^2/K)).re) :
@@ -57,30 +64,41 @@ theorem finite_negative_energy_le_restricted {α : Type*} (keep : O → Prop)
     (by intro z hz; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hz
         simpa only [map_neg,norm_neg] using hmajor w hw)
   rwa [Finset.sum_image (fun x hx y hy hxy => neg_injective hxy)] at he
+end
+end
+end
 
-def nonexceptional (η : HeckeFamily.Character) (χ : RayFourExpansion.RayCharacter)
+
+section
+variable (η : HeckeFamily.Character)
+include η
+
+def nonexceptional  (χ : RayFourExpansion.RayCharacter)
     (Q : Ideal O) (m A₀ z : O) : Prop :=
   z ≠ 0 ∧ ¬CenteredExceptionalProfile.FixedInducingRow
     (CenteredMomentChildRows.childCharacter η χ) Q m A₀ z
 
-theorem nonexceptional_reflection (η : HeckeFamily.Character)
-    (χ ξ : RayFourExpansion.RayCharacter) (Q : Ideal O)
+section
+variable (χ ξ : RayFourExpansion.RayCharacter) (Q : Ideal O)
     (hQ : Q ≤ Ideal.span {(72:O)}) (m A₀ z : O)
-    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m)
+include χ ξ Q hQ m A₀ z hmLam hm2
+
+theorem nonexceptional_reflection  :
     nonexceptional η χ Q m A₀ z ↔ nonexceptional η ξ Q m A₀ (-z) := by
   unfold nonexceptional
   rw [neg_ne_zero]
   exact and_congr Iff.rfl (CenteredMomentExceptionalReflection.not_fixedInducingRow_reflection_iff
     η χ ξ Q hQ m A₀ z hmLam hm2)
 
-theorem nonexceptional_ray_independent (η : HeckeFamily.Character)
-    (χ ξ : RayFourExpansion.RayCharacter) (Q : Ideal O)
-    (hQ : Q ≤ Ideal.span {(72:O)}) (m A₀ z : O)
-    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
+theorem nonexceptional_ray_independent  :
     nonexceptional η χ Q m A₀ z ↔ nonexceptional η ξ Q m A₀ z := by
   have h₁ := nonexceptional_reflection η χ ξ Q hQ m A₀ z hmLam hm2
   have h₂ := nonexceptional_reflection η ξ ξ Q hQ m A₀ (-z) hmLam hm2
   simpa only [neg_neg] using h₁.trans h₂
+end
+end
+
 
 theorem whole_kernel_restricted_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
@@ -132,8 +150,8 @@ theorem whole_kernel_restricted_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → 
       mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
     _ = _ := by rw [pow_add]; ring
 
-end SevenEighths.CenteredMomentRestrictedEnergy
 
-end
 
-end OAI
+
+
+

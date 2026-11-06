@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstNominal
 public import OAI.NumberTheory.DirichletL.Descent.FirstCoupledReindex
 
@@ -10,7 +11,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem firstNormProfile_common_support (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (A₁ A₂ C D R T H X₁ X₂ K : ℝ) (hT : 0 ≤ T) :
@@ -37,9 +38,7 @@ theorem firstNormProfile_common_support (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ
     show K*H/(D*R*(T*X₁)*(T*X₂)) = K*H/(D*R*T^2*X₁*X₂) from by ring]
   have hc : (Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ) =
       (T:ℂ)*(Real.sqrt X₁:ℂ)*(Real.sqrt X₂:ℂ) := by exact_mod_cast hroot
-  rw [show (D:ℂ)*(Real.sqrt R:ℂ)*(Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ) =
-    (D:ℂ)*(Real.sqrt R:ℂ)*((Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ)) from by ring,hc]
-  ring
+  grind
 
 theorem firstNormProfile_actual_common {ι : Type*} [DecidableEq ι]
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) (D U V : Finset ι)
@@ -95,7 +94,7 @@ theorem actual_first_gauss_coupled_reindex
     ring
   · simp [hd]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

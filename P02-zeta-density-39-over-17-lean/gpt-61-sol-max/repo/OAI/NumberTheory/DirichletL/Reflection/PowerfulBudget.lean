@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Descent.Dyadic
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseReflectedPhasePowerfulBudget
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem powerful_half_norm_sum (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (S : Finset (Ideal O)) (X : ℝ),1≤X →
@@ -111,8 +111,8 @@ theorem row_mask_powerful_budget (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le (by linarith) he) (mul_pos hCd hCp).le
 
-end SevenEighths.InverseReflectedPhasePowerfulBudget
 
-end
 
-end OAI
+
+
+

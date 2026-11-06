@@ -10,8 +10,8 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -78,7 +78,7 @@ theorem first_fresh_priority_energy
       intro z hz
       ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

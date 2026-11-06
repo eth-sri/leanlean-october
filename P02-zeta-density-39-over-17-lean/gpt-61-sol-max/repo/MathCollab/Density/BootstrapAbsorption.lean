@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import MathCollab.Density.BootstrapShells
 
 @[expose] public section
 
-open Real Set
+open Real
 open scoped BigOperators
 
-set_option autoImplicit false
 
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- Uniform shell summation, retaining the local diameter and the logarithmic shell count. -/
@@ -31,7 +31,7 @@ theorem bootstrap_preabsorption (w : ComparisonCutoff) :
   have hT : 0 < d.T := by linarith [d.T_ge_two]
   have hT1 : 1 ≤ d.T := by linarith [d.T_ge_two]
   have hsep := oneSeparated_subset d.separated hU
-  have hd : localDiameter U ≤ d.T+1 := (d.local_card_le hU).2
+  have hd := (d.local_card_le hU).2
   have hdiam : intervalSpan U ≤ d.T := by dsimp [localDiameter] at hd; linarith
   have hQ := kernelEnergy_le_dyadic_shells w.toReflectionCutoff L hsep
   have hdi := (hdiag d.T L 1 U d.T_ge_two (d.scale_lower.trans hL) (by norm_num) hsep hdiam).2
@@ -74,8 +74,7 @@ theorem bootstrap_preabsorption (w : ComparisonCutoff) :
       _ = 2*E*(d.T*d.T^(-100 : ℝ)) := by ring
       _ ≤ _ := by rw [he]; exact mul_le_mul_of_nonneg_left hpow (by positivity)
   have herr₂ := mul_le_mul_of_nonneg_left hpow' hF
-  dsimp [b, B] at hs
-  linarith
+  grind
 
 /-- Scalar absorption with the precise Nb² log(2T) coefficient and constants before all data. -/
 theorem bootstrap_absorption_inequality (w : ComparisonCutoff) :
@@ -102,8 +101,7 @@ theorem bootstrap_absorption_inequality (w : ComparisonCutoff) :
   have hp := hpre d hW U L (mem_bootstrapFamily.mp hU).1 hL.1
   have hlead : 2*C*b*(d.N : ℝ)*localDiameter U*U.card ≤ 2*C*D := by
     have hh := mul_nonneg (show 0 ≤ 2*C*b*U.card by positivity) (sq_nonneg L)
-    dsimp [D]
-    nlinarith
+    grind
   have hinner : 2*(d.N : ℝ)^2*localDiameter U+(d.N : ℝ)*L^2*ℓ ≤
       2*ℓ*(d.N : ℝ)*(L^2+(d.N : ℝ)*localDiameter U) := by
     have hd := localDiameter_ge_one U
@@ -127,8 +125,7 @@ theorem bootstrap_absorption_inequality (w : ComparisonCutoff) :
   dsimp [b, B, ℓ] at hrewrite hlead hrec he
   rw [add_mul]
   rw [hrewrite]
-  dsimp [D, b] at he hlead ⊢
-  nlinarith
+  grind
 
 /-- The remaining arithmetic threshold is exposed; no large-values conclusion is assumed. -/
 theorem bootstrap_absorbed (w : ComparisonCutoff) :
@@ -140,7 +137,6 @@ theorem bootstrap_absorbed (w : ComparisonCutoff) :
   intro κ d hW hsmall
   have hB := bootstrapBound_nonneg w.toReflectionCutoff d hW
   have hh := hbound d hW
-  have hi := mul_le_mul_of_nonneg_right hsmall hB
   nlinarith
 
-end MathCollab.Density
+

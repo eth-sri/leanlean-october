@@ -9,14 +9,20 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators Topology
-open MeasureTheory Set Filter Complex
+open MeasureTheory Filter Complex
 namespace SevenEighths.GammaDetectorExpansion
 open GammaZeroDetector HeckeFamily
 
-def line (t : ℝ) : ℂ := 2+t*I
+section
+variable (t : ℝ)
+include t
 
-@[simp] theorem line_re (t : ℝ) : (line t).re = 2 := by simp [line]
-@[simp] theorem line_im (t : ℝ) : (line t).im = t := by simp [line]
+def line  : ℂ := 2+t*I
+
+@[simp] theorem line_re  : (line t).re = 2 := by simp [line]
+@[simp] theorem line_im  : (line t).im = t := by simp [line]
+end
+
 
 theorem gamma_line_integrable : Integrable (fun t : ℝ => Gamma (line t)) := by
   obtain ⟨C,hC,hbound⟩ := gamma_rapid_bound 2 2 (by norm_num) 2
@@ -52,18 +58,26 @@ theorem gamma_mellin_inverse {x : ℝ} (hx : 0 < x) :
   simp only [smul_eq_mul, f, ofReal_exp, ofReal_neg] at hi
   convert hi using 1; simp [one_div, Complex.real_smul]
 
-def gammaTerm (a : ℂ) (N : ℝ) (ρ : ℂ) (Y : ℝ) (t : ℝ) : ℂ :=
+section
+variable (a : ℂ)
+include a
+
+def gammaTerm  (N : ℝ) (ρ : ℂ) (Y : ℝ) (t : ℝ) : ℂ :=
   (Y : ℂ)^(line t)*Gamma (line t)*a*(N : ℂ)^(-(ρ+line t))
 
-theorem gammaTerm_separate (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y)
-    (ρ : ℂ) (t : ℝ) :
+section
+variable {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y)
+    (ρ : ℂ)
+include N Y hN hY ρ
+
+theorem gammaTerm_separate  (t : ℝ) :
     gammaTerm a N ρ Y t = (a*(N : ℂ)^(-ρ))*
       (((N/Y : ℝ) : ℂ)^(-line t)*Gamma (line t)) := by
   rw [gammaTerm, neg_add, cpow_add _ _ (ofReal_ne_zero.mpr hN.ne'),
     ofReal_div, div_cpow_ofReal_nonneg hN.le hY.le, cpow_neg (Y : ℂ), div_inv_eq_mul]
   ring
 
-theorem gammaTerm_integral (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ : ℂ) :
+theorem gammaTerm_integral  :
     ((2*Real.pi : ℝ) : ℂ)⁻¹ * (∫ t : ℝ, gammaTerm a N ρ Y t) =
       a*(N : ℂ)^(-ρ)*Complex.exp (-(N : ℂ)/(Y : ℂ)) := by
   simp_rw [gammaTerm_separate a hN hY ρ]
@@ -72,18 +86,25 @@ theorem gammaTerm_integral (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ :
     _ = (a*(N : ℂ)^(-ρ))*(((2*Real.pi : ℝ) : ℂ)⁻¹ *
       ∫ t : ℝ, ((N/Y : ℝ) : ℂ)^(-line t)*Gamma (line t)) := by ring
     _ = _ := by rw [gamma_mellin_inverse (div_pos hN hY)]; push_cast; rw [neg_div]
+end
+end
+
 
 @[simp] theorem gammaTerm_zero (N : ℝ) (ρ : ℂ) (Y t : ℝ) : gammaTerm 0 N ρ Y t = 0 := by
   simp [gammaTerm]
 
-theorem gammaTerm_norm (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y)
-    (ρ : ℂ) (t : ℝ) :
+section
+variable (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y)
+    (ρ : ℂ)
+include a N Y hN hY ρ
+
+theorem gammaTerm_norm  (t : ℝ) :
     ‖gammaTerm a N ρ Y t‖ = (Y^2 * (‖a‖*N^(-(ρ.re+2)))) * ‖Gamma (line t)‖ := by
   simp only [gammaTerm, norm_mul, norm_cpow_eq_rpow_re_of_pos hY,
     norm_cpow_eq_rpow_re_of_pos hN, neg_re, add_re, line_re, Real.rpow_two]
   ring
 
-theorem gammaTerm_integrable (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ : ℂ) :
+theorem gammaTerm_integrable  :
     Integrable (gammaTerm a N ρ Y) := by
   apply (gamma_line_integrable.norm.const_mul (Y^2*(‖a‖*N^(-(ρ.re+2))))).mono'
   · apply Continuous.aestronglyMeasurable
@@ -97,6 +118,8 @@ theorem gammaTerm_integrable (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ
       (Or.inl (ofReal_ne_zero.mpr hN.ne'))).continuous.comp hl
     exact ((hy.mul hg).mul continuous_const).mul hn
   · exact ae_of_all _ (fun t => (gammaTerm_norm a hN hY ρ t).le)
+end
+
 
 theorem gamma_expansion {ι : Type*} [Countable ι] (a : ι → ℂ) (N : ι → ℝ)
     (hN : ∀ i, 0 ≤ N i) (hzero : ∀ i, N i = 0 → a i = 0)
@@ -134,15 +157,23 @@ theorem gamma_expansion {ι : Type*} [Countable ι] (a : ι → ℂ) (N : ι →
 private instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
-theorem cutoffTerm_weighted (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Ideal O) (s : ℂ) :
+section
+variable (χ : Character) (V : ℝ → ℂ)
+include χ V
+
+theorem cutoffTerm_weighted  (D : ℝ) (J : Ideal O) (s : ℂ) :
     cutoffTerm χ V D J s = (UniqueFactorizationMonoid.moebius J : ℂ) *
       V ((J.absNorm : ℝ)/D) * IdealEuler.weighted (idealCoeff χ) s J := by
   simp only [cutoffTerm, HeckeDyadic.coefficient, ite_true,
     IdealEuler.weighted, IdealEuler.normWeight, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
   ring
 
-theorem cutoffTerm_outside (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (J : Ideal O)
+section
+variable {D : ℝ} (hD : 0 < D)
+    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ)
+include D hD hV s
+
+theorem cutoffTerm_outside  (J : Ideal O)
     (hJ : J ∉ cutoffSet D) : cutoffTerm χ V D J s = 0 := by
   by_cases hzero : J = 0
   · subst J; exact cutoffTerm_zero χ V D s
@@ -152,25 +183,32 @@ theorem cutoffTerm_outside (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 
     have hv := hV ((J.absNorm : ℝ)/D) ((le_div_iff₀ hD).mpr hn.le)
     simp [cutoffTerm, hv]
 
-theorem cutoffTerm_hasSum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) :
+theorem cutoffTerm_hasSum  :
     HasSum (fun J : Ideal O => cutoffTerm χ V D J s) (cutoff χ V D s) :=
   hasSum_sum_of_ne_finset_zero (cutoffTerm_outside χ V hD hV s)
+end
 
-def pairCoefficient (χ : Character) (V : ℝ → ℂ) (D : ℝ) (p : Ideal O × Ideal O) : ℂ :=
+
+def pairCoefficient  (D : ℝ) (p : Ideal O × Ideal O) : ℂ :=
   (UniqueFactorizationMonoid.moebius p.1 : ℂ) * V ((p.1.absNorm : ℝ)/D) *
     idealCoeff χ (p.1*p.2)
+end
+
 
 def pairNorm (p : Ideal O × Ideal O) : ℝ := (p.1*p.2).absNorm
 
-theorem pairCoefficient_zero_norm (χ : Character) (V : ℝ → ℂ) (D : ℝ)
+section
+variable (χ : Character) (V : ℝ → ℂ)
+include χ V
+
+theorem pairCoefficient_zero_norm  (D : ℝ)
     (p : Ideal O × Ideal O) (hp : pairNorm p = 0) : pairCoefficient χ V D p = 0 := by
   have hn : (p.1*p.2).absNorm = 0 := by unfold pairNorm at hp; exact_mod_cast hp
   have hzero := Ideal.absNorm_eq_zero_iff.mp hn
   rw [pairCoefficient, hzero]
   rw [show (⊥ : Ideal O) = 0 from rfl, HeckeFamily.idealCoeff_zero, mul_zero]
 
-theorem pairTerm_eq (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ)
+theorem pairTerm_eq  (D : ℝ) (s : ℂ)
     (p : Ideal O × Ideal O) :
     pairCoefficient χ V D p * (pairNorm p : ℂ)^(-s) =
       cutoffTerm χ V D p.1 s * IdealEuler.weighted (idealCoeff χ) s p.2 := by
@@ -185,16 +223,23 @@ theorem pairTerm_eq (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ)
       CubicEisenstein.fullIdealWeight, ite_eq_right hp]
     ring
 
-theorem pairTerm_summable_norm (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (hs : 1 < s.re) :
+section
+variable {D : ℝ} (hD : 0 < D)
+    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0)
+include D hD hV
+
+section
+variable (s : ℂ) (hs : 1 < s.re)
+include s hs
+
+theorem pairTerm_summable_norm  :
     Summable (fun p : Ideal O × Ideal O =>
       ‖pairCoefficient χ V D p * (pairNorm p : ℂ)^(-s)‖) := by
   simpa only [pairTerm_eq] using
     (cutoffTerm_hasSum χ V hD hV s).summable.norm.mul_norm
       (IdealEuler.weighted_summable_norm _ (idealCoeff_norm_le_one χ) s hs)
 
-theorem pairSeries_eq (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (hs : 1 < s.re) :
+theorem pairSeries_eq  :
     (∑' p : Ideal O × Ideal O, pairCoefficient χ V D p * (pairNorm p : ℂ)^(-s)) =
       cutoff χ V D s * LFunction χ s := by
   simp_rw [pairTerm_eq]
@@ -202,9 +247,14 @@ theorem pairSeries_eq (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
     (IdealEuler.weighted_summable_norm _ (idealCoeff_norm_le_one χ) s hs)]
   rw [(cutoffTerm_hasSum χ V hD hV s).tsum_eq, LFunction_eq_series χ hs]
   rfl
+end
 
-theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re) :
+
+section
+variable {ρ : ℂ} (hρ : -1 < ρ.re)
+include ρ hρ
+
+theorem pairMajorant_summable  :
     Summable (fun p : Ideal O × Ideal O =>
       ‖pairCoefficient χ V D p‖*(pairNorm p)^(-(ρ.re+2))) := by
   have h := pairTerm_summable_norm χ V hD hV (ρ+2) (by norm_num; linarith)
@@ -217,8 +267,7 @@ theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD :
     simp only [neg_re, add_re]
     norm_num
 
-theorem pairGamma_tsum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re)
+theorem pairGamma_tsum 
     (Y t : ℝ) :
     (∑' p : Ideal O × Ideal O, gammaTerm (pairCoefficient χ V D p) (pairNorm p) ρ Y t) =
       detectorIntegrand χ V D Y ρ (line t) := by
@@ -232,12 +281,15 @@ theorem pairGamma_tsum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
       unfold gammaTerm
       ring
     _ = _ := by rw [pairSeries_eq χ V hD hV _ hs]; unfold detectorIntegrand; ring
+end
+end
 
-def pairExponential (χ : Character) (V : ℝ → ℂ) (D : ℝ) (ρ : ℂ) (Y : ℝ)
+
+def pairExponential  (D : ℝ) (ρ : ℂ) (Y : ℝ)
     (p : Ideal O × Ideal O) : ℂ :=
   pairCoefficient χ V D p*(pairNorm p : ℂ)^(-ρ)*Complex.exp (-(pairNorm p : ℂ)/(Y : ℂ))
 
-theorem detector_hasSum_pairs (χ : Character) (V : ℝ → ℂ) {D Y : ℝ}
+theorem detector_hasSum_pairs  {D Y : ℝ}
     (hD : 0 < D) (hY : 0 < Y) (hV : ∀ x : ℝ, 2 ≤ x → V x = 0)
     {ρ : ℂ} (hρ : -1 < ρ.re) :
     HasSum (pairExponential χ V D ρ Y) (detectorIntegral χ V D Y ρ) := by
@@ -247,7 +299,7 @@ theorem detector_hasSum_pairs (χ : Character) (V : ℝ → ℂ) {D Y : ℝ}
   unfold pairExponential detectorIntegral
   simpa only [pairGamma_tsum χ V hD hV hρ, line] using h
 
-theorem pairExponential_fiber (χ : Character) (V : ℝ → ℂ) (D : ℝ)
+theorem pairExponential_fiber  (D : ℝ)
     (ρ : ℂ) (Y : ℝ) (J : Ideal O) :
     (∑' p : CompletedGauss.MulFiber J, pairExponential χ V D ρ Y p.val) =
       HeckeDetectorWitnessArithmetic.exponentialTerm χ V D ρ Y J := by
@@ -264,7 +316,7 @@ theorem pairExponential_fiber (χ : Character) (V : ℝ → ℂ) (D : ℝ)
   rw [tsum_mul_right, HeckeDetectorWitnessArithmetic.weighted_fiber]
   rfl
 
-theorem detector_hasSum_convolution (χ : Character) (V : ℝ → ℂ) {D Y : ℝ}
+theorem detector_hasSum_convolution  {D Y : ℝ}
     (hD : 0 < D) (hY : 0 < Y) (hV : ∀ x : ℝ, 2 ≤ x → V x = 0)
     {ρ : ℂ} (hρ : -1 < ρ.re) :
     HasSum (HeckeDetectorWitnessArithmetic.exponentialTerm χ V D ρ Y)
@@ -274,9 +326,11 @@ theorem detector_hasSum_convolution (χ : Character) (V : ℝ → ℂ) {D Y : �
   change HasSum (fun J : Ideal O => ∑' p : CompletedGauss.MulFiber J,
     pairExponential χ V D ρ Y p.val) _ at h
   simpa only [pairExponential_fiber] using h
-
-end SevenEighths.GammaDetectorExpansion
-
 end
 
-end OAI
+
+
+
+
+
+

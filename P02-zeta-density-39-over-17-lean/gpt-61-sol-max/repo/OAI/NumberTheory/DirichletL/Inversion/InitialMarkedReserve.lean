@@ -41,6 +41,6 @@ theorem shifted_capacity (ρ gap η r r' ell G:ℝ)
   · linarith
   · linarith
 
-end SevenEighths.InverseInitialMarkedReserve
 
-end OAI
+
+

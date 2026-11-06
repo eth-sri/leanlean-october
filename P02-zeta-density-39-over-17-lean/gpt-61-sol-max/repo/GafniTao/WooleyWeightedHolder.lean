@@ -16,7 +16,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_weighted_rpow_sum_le
     {ι : Type*} (t : Finset ι) (w f : ι → ℝ) {p : ℝ}
@@ -49,12 +49,11 @@ theorem wooley_weighted_rpow_sum_le
         ← Real.rpow_mul hW, ← Real.rpow_mul hD]
       have hpNe : p ≠ 0 := ne_of_gt hpPos
       rw [inv_mul_cancel₀ hpNe, Real.rpow_one]
-      congr 1
-      field_simp
+      grind
     _ = (∑ i ∈ t, w i) ^ (p - 1) *
         ∑ i ∈ t, w i * f i ^ p := by rfl
 
 
-end
 
-end GafniTao
+
+

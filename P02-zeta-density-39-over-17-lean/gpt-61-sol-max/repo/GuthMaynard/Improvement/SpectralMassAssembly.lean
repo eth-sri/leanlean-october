@@ -1,20 +1,24 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.AmplifierQuantitative
 public import GuthMaynard.Improvement.OperatorNuclearSpectral
 public import GuthMaynard.Improvement.OperatorSchur
 public import GuthMaynard.Improvement.SourceDirichletPairing
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory InnerProductSpace Set
 open scoped InnerProductSpace ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable (N : ℝ) (a : ℕ → ℂ)
+    {μ : ℝ → ℝ} (hi : Integrable μ)
+include N a μ hi
+
 /-- The original polynomial is globally bounded, so ordinary L1 of mu
 supplies integrability of its actual weighted square. -/
-theorem spectral_weighted_polynomial_integrable (N : ℝ) (a : ℕ → ℂ)
-    {μ : ℝ → ℝ} (hi : Integrable μ) :
+theorem spectral_weighted_polynomial_integrable  :
     Integrable (fun t => μ t*‖boundedPolynomial N a t‖^2) := by
   obtain ⟨hc,hb⟩ := boundedPolynomial_regular N a
   apply hi.mul_bdd (hc.norm.pow 2).aestronglyMeasurable
@@ -24,13 +28,14 @@ theorem spectral_weighted_polynomial_integrable (N : ℝ) (a : ℕ → ℂ)
 
 /-- The genuine fourth-moment mass is below the actual amplifier column
 mass, from the pointwise density domination, with both integrals justified. -/
-theorem spectral_mass_le_polynomial_mass (N : ℝ) (a : ℕ → ℂ)
-    {μ : ℝ → ℝ} (hi : Integrable μ) (h2 : Integrable (fun t => μ t^2))
+theorem spectral_mass_le_polynomial_mass  (h2 : Integrable (fun t => μ t^2))
     (h0 : ∀ t, 0 ≤ μ t) (hD : ∀ t, μ t ≤ ‖boundedPolynomial N a t‖^2) :
     (∫ t, μ t^2) ≤ ∫ t, μ t*‖boundedPolynomial N a t‖^2 := by
   apply integral_mono h2 (spectral_weighted_polynomial_integrable N a hi)
   intro t
   simpa only [pow_two] using mul_le_mul_of_nonneg_left (hD t) (h0 t)
+end
+
 
 /-- Elementary conversion of the positive-part spectral bound, retaining
 all divisor and cardinality factors explicitly. -/
@@ -47,8 +52,7 @@ theorem spectral_mass_scalar {M P S k Z : ℝ} (hM : 0 ≤ M) (hP : 0 < P)
   have hall : (M/P)^3 ≤ 4*(S^3+Z/k) := hpow.trans (hfour.trans (by linarith))
   have hm := mul_le_mul_of_nonneg_left hall (pow_nonneg hP.le 3)
   have he : P^3*(M/P)^3=M^3 := by rw [← mul_pow,mul_div_cancel₀ _ hP.ne']
-  rw [he] at hm
-  nlinarith
+  grind
 
 set_option maxHeartbeats 2400000 in
 /-- Quantitative actual spectral comparison with the amplifier and Schur
@@ -121,4 +125,4 @@ theorem actual_spectral_mass_bound {w : ℝ → ℝ} (hw : ContDiff ℝ ∞ w)
   have he (Z : ℝ) : Z/(L/(2*N))=(2*N/L)*Z := by field_simp
   simpa only [he] using hfinal
 
-end GuthMaynard.Improvement
+

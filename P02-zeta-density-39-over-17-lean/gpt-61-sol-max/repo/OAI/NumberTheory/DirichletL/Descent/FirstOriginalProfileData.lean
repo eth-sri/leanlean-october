@@ -12,8 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-open CompletedHeight FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open CompletedHeight
+open scoped EisensteinO
 abbrev OriginalIndex (ι : Type*) := Σ _ : FirstOriginalOuter ι,Ideal O×O
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -83,7 +83,7 @@ theorem actual_old_profile (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
       SecondPassIntegration.conjugateProfile_apply,CubicReflectionKernel.logSchwartz_apply,
       Real.exp_log hx,normTwistedSource,SecondPassIntegration.logPhase_conjugate]
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

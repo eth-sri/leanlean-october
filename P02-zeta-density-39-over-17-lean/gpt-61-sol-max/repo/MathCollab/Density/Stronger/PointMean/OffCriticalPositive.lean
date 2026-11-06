@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected actual positive off-critical estimate adapted from Scott McColm,
 PointMeanOffCriticalStrong.lean, exact revision
@@ -13,8 +14,7 @@ public import MathCollab.Density.Stronger.PointMean.ExponentialMoments
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-set_option autoImplicit false
+open Complex MeasureTheory
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
@@ -29,7 +29,7 @@ theorem exists_heathBrown_Gamma_shift_kernel_strong_bound :
   intro delta v hdelta hdelta'
   exact heathBrown_Gamma_shift_kernel_strong_bound hdelta (by linarith)
 
-noncomputable def heathBrownStrongMellinCriticalMoment
+def heathBrownStrongMellinCriticalMoment
     (delta t : ℝ) : ℝ :=
   ∫ u : ℝ, Real.exp (-(4 / 3 : ℝ) * |u|) / (delta + |u|) *
     zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
@@ -111,22 +111,19 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
         C * heathBrownStrongMellinCriticalMoment delta t := by
   obtain ⟨B, hB, hPoint⟩ :=
     exists_norm_heathBrown_leftMellinIntegrand_strong_le
-  let D : ℝ := ‖(1 / (2 * Real.pi * I) : ℂ)‖
-  let C : ℝ := D * B
+  let D := ‖(1 / (2 * Real.pi * I) : ℂ)‖
+  let C := D * B
   have hD : 0 < D := by
     dsimp only [D]
     rw [norm_pos_iff]
-    apply one_div_ne_zero
-    exact mul_ne_zero
-      (mul_ne_zero (by norm_num)
-        (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
+    norm_num at * <;> nlinarith
   refine ⟨C, mul_pos hD hB, ?_⟩
   intro delta t hdelta hdeltaUpper
-  let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  let s := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
   let f : ℝ → ℂ := fun u =>
     heathBrownZetaSquareMellinIntegrand s
       (((-delta : ℝ) : ℂ) + (u : ℂ) * I)
-  let g : ℝ → ℝ := fun u => Real.exp (-(4 / 3 : ℝ) * |u|) /
+  let g := fun u => Real.exp (-(4 / 3 : ℝ) * |u|) /
     (delta + |u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
   have hf : Integrable f := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_minus
@@ -137,15 +134,14 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
     · dsimp only [s]
       simp
   have hg : Integrable g := by
-    simpa only [g] using
-      integrable_heathBrownStrongMellinCriticalMoment
+    exact integrable_heathBrownStrongMellinCriticalMoment
         (delta := delta) (t := t) hdelta
   have hIntegral : (∫ u : ℝ, ‖f u‖) ≤ B * ∫ u : ℝ, g u := by
     calc
       (∫ u : ℝ, ‖f u‖) ≤ ∫ u : ℝ, B * g u := by
         apply integral_mono hf.norm (hg.const_mul B)
         intro u
-        simpa only [f, g, s] using hPoint delta t u hdelta hdeltaUpper
+        exact hPoint delta t u hdelta hdeltaUpper
       _ = B * ∫ u : ℝ, g u := integral_const_mul B g
   unfold VerticalIntegral' VerticalIntegral
   rw [norm_smul, norm_smul]
@@ -161,7 +157,6 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
     _ = C * heathBrownStrongMellinCriticalMoment delta t := by
       dsimp only [C, D]
       unfold heathBrownStrongMellinCriticalMoment
-      change _ = (_ * B) * ∫ u : ℝ, g u
       ring
 
 theorem exists_heathBrown_offCritical_plus_strong_le :
@@ -174,14 +169,14 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
     exists_norm_heathBrownMovingPoleResidue_le
   obtain ⟨V, hV, hVertical⟩ :=
     exists_norm_heathBrown_leftVertical_strong_le
-  let S : ℝ := heathBrownSmoothedDivisorMajorant
-  let C : ℝ := S + R + V + 1
+  let S := heathBrownSmoothedDivisorMajorant
+  let C := S + R + V + 1
   have hS : 0 ≤ S := heathBrownSmoothedDivisorMajorant_nonneg
   have hC : 0 < C := by dsimp only [C]; linarith
   refine ⟨C, hC, ?_⟩
   intro delta t hdelta hdeltaUpper ht
-  let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
-  let m : ℝ := heathBrownStrongMellinCriticalMoment delta t
+  let s := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  let m := heathBrownStrongMellinCriticalMoment delta t
   have hsRe : s.re = 1 / 2 + delta := by simp [s]
   have hEq := heathBrown_zetaSquare_eq_smoothed_sub_residue_sub_leftVertical
     (s := s) hdelta hdeltaUpper hsRe
@@ -209,9 +204,7 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
         (heathBrownSmoothedDivisorSeries s) (heathBrownMovingPoleResidue s)
       linarith
     _ ≤ S + R + V * m := by linarith
-    _ ≤ C * (1 + m) := by
-      dsimp only [C]
-      nlinarith [mul_nonneg hS hm, mul_nonneg hR.le hm, mul_nonneg hV.le hm]
+    _ ≤ C * (1 + m) := by nlinarith
 
 
-end MathCollab.Density.Stronger.PointMean
+

@@ -3,8 +3,7 @@ public import RationalUniformShortRange
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -40,4 +39,4 @@ theorem dyadic_pair_log {M : ℝ} {q : ℕ × ℕ}
   rw [Real.log_div h1.ne' h2.ne']
   linarith
 
-end Montgomery.RationalMoment
+

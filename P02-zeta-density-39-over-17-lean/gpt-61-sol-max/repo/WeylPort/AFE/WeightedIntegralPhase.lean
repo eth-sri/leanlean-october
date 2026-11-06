@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.WeightedIntegrals
 
@@ -67,9 +68,13 @@ theorem abs_weightedIntegralPhase_deriv_antitone {t m a b : ℝ}
     simp only [neg_div] at hq
     linarith
 
+section
+variable {r t m a b : ℝ}
+    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a)
+include r t m a b hr hm ha
+
 /-- The actual nonnegative power amplitude satisfies the increasing quotient condition. -/
-theorem weightedIntegralPhase_quotient_monotone {r t m a b : ℝ}
-    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a) (hcut : 2 * Real.pi * m * b < |t|) :
+theorem weightedIntegralPhase_quotient_monotone  (hcut : 2 * Real.pi * m * b < |t|) :
     MonotoneOn (fun u => |u ^ r / (2 * Real.pi * m - t / u)|) (Set.Icc a b) := by
   intro x hx y hy hxy
   have hxpos : 0 < x := ha.trans_le hx.1
@@ -84,10 +89,13 @@ theorem weightedIntegralPhase_quotient_monotone {r t m a b : ℝ}
       (abs_pos.mpr (weightedIntegralPhase_deriv_ne_zero hm hypos hy.2 hcut))
       (abs_weightedIntegralPhase_deriv_antitone hm ha hcut hx hy hxy)
 
+section
+variable (hab : a < b)
+    (hcut : 2 * Real.pi * m * b < |t|)
+include hab hcut
+
 /-- The exact first-derivative bound for the source phase on every truncated lower interval. -/
-theorem norm_integral_power_log_phase_le {r t m a b : ℝ}
-    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a) (hab : a < b)
-    (hcut : 2 * Real.pi * m * b < |t|) :
+theorem norm_integral_power_log_phase_le  :
     ‖∫ u in a..b, ((u ^ r : ℝ) : ℂ) *
       Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ))‖ ≤
       2 * b ^ r / |2 * Real.pi * m - t / b| := by
@@ -103,9 +111,7 @@ theorem norm_integral_power_log_phase_le {r t m a b : ℝ}
   simpa only [mul_div_assoc] using h
 
 /-- The physical distance from the cutoff gives the source's uniform endpoint bound. -/
-theorem norm_integral_power_log_phase_distance_le {r t m a b : ℝ}
-    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a) (hab : a < b)
-    (hcut : 2 * Real.pi * m * b < |t|) :
+theorem norm_integral_power_log_phase_distance_le  :
     ‖∫ u in a..b, ((u ^ r : ℝ) : ℂ) *
       Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ))‖ ≤
       2 * b ^ (r + 1) / (|t| - 2 * Real.pi * m * b) := by
@@ -125,6 +131,9 @@ theorem norm_integral_power_log_phase_distance_le {r t m a b : ℝ}
     _ ≤ 2 * b ^ r / ((|t| - 2 * Real.pi * m * b) / b) :=
       div_le_div_of_nonneg_left (by positivity) (div_pos hd hb) hl
     _ = _ := by rw [div_div_eq_mul_div, Real.rpow_add_one hb.ne']; ring
+end
+end
+
 
 /-- The phase/amplitude representation agrees with the actual principal complex-power integrand. -/
 theorem cpow_linear_wave_eq_power_log_phase (r t m : ℝ) {u : ℝ} (hu : 0 < u) :
@@ -171,8 +180,7 @@ theorem norm_weightedIntegral_shift_two_zero_le {σ t m b : ℝ}
     ‖weightedIntegral (((σ : ℂ) + (t : ℂ) * Complex.I) - 2) 0 b m‖ ≤
       2 * b ^ (3 - σ) / (|t| - 2 * Real.pi * m * b) := by
   have hs : (((σ : ℂ) + (t : ℂ) * Complex.I) - 2).re < 1 := by
-    simp only [Complex.sub_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
-      Complex.ofReal_im, Complex.I_re, Complex.I_im]
+    simp
     norm_num
     linarith
   have ht := ((continuous_weightedIntegral_left hs b m).tendsto 0).norm.mono_left
@@ -198,4 +206,4 @@ theorem norm_weightedIntegral_shift_two_source {σ t m x y : ℝ}
     field_simp
   rwa [he] at h
 
-end DhimanKadiriQuesadaHerrera2026
+

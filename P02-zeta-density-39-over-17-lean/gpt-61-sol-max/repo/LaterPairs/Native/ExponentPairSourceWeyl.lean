@@ -6,9 +6,8 @@ public import LaterPairs.Native.ExponentPairSourceCorrelation
 public import LaterPairs.Native.ExponentPairWeylSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                
@@ -24,10 +23,14 @@ open scoped BigOperators
 
 namespace TaoTrudgianYang2025
 
-def sourceOscillatorySequence (F : ℝ → ℝ) (T N : ℝ) (a : ℕ) (n : ℤ) : ℂ :=
+section
+variable (F : ℝ → ℝ) (T N : ℝ)
+include F T N
+
+def sourceOscillatorySequence  (a : ℕ) (n : ℤ) : ℂ :=
   oscillatory F T N ((a : ℝ)+n)
 
-theorem sum_sourceOscillatorySequence (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
+theorem sum_sourceOscillatorySequence  (a L : ℕ) :
     (∑ n ∈ Finset.Ico (0 : ℤ) ((L+1 : ℕ) : ℤ), sourceOscillatorySequence F T N a n) =
       exponentialSumAt F T N a (a+L) := by
   unfold exponentialSumAt
@@ -58,8 +61,12 @@ theorem sum_sourceOscillatorySequence (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) 
       exact_mod_cast (Int.toNat_of_nonneg hn0 : (n.toNat : ℤ) = n)
     simp only [sourceOscillatorySequence,Nat.cast_add,hto]
 
-theorem padded_source_correlation_eq (F : ℝ → ℝ) (T N : ℝ) (a L H h k : ℕ)
-    (hh : h < H) (hk : k < H) (hhk : h < k) :
+section
+variable (a L H h k : ℕ)
+    (hh : h < H) (hk : k < H)
+include a L H h k hh hk
+
+theorem padded_source_correlation_eq  (hhk : h < k) :
     (∑ n ∈ Finset.Ico (-(H : ℤ)) ((L+1 : ℕ) : ℤ),
       star (paddedShift (sourceOscillatorySequence F T N a) (L+1) n h)*
         paddedShift (sourceOscillatorySequence F T N a) (L+1) n k) =
@@ -70,8 +77,7 @@ theorem padded_source_correlation_eq (F : ℝ → ℝ) (T N : ℝ) (a L H h k : 
   intro j _
   simp only [Int.cast_add,Int.cast_sub,Int.cast_natCast,Nat.cast_sub hhk.le,add_assoc,starRingEnd_apply]
 
-theorem norm_padded_source_correlation (F : ℝ → ℝ) (T N : ℝ) (a L H h k : ℕ)
-    (hh : h < H) (hk : k < H) (hne : h ≠ k) :
+theorem norm_padded_source_correlation  (hne : h ≠ k) :
     ‖∑ n ∈ Finset.Ico (-(H : ℤ)) ((L+1 : ℕ) : ℤ),
       star (paddedShift (sourceOscillatorySequence F T N a) (L+1) n h)*
         paddedShift (sourceOscillatorySequence F T N a) (L+1) n k‖ =
@@ -83,8 +89,10 @@ theorem norm_padded_source_correlation (F : ℝ → ℝ) (T N : ℝ) (a L H h k 
     rw [padded_sequence_correlation_reverse _ (L+1) H h k,norm_star,
       padded_source_correlation_eq F T N a L H k h hk hh hkh]
     simp only [shiftDistance,Nat.sub_eq_zero_of_le hkh.le,add_zero]
+end
 
-theorem source_exponentialSum_weyl (F : ℝ → ℝ) (T N : ℝ) (a L H : ℕ) :
+
+theorem source_exponentialSum_weyl  (a L H : ℕ) :
     (H : ℝ)^2*‖exponentialSumAt F T N a (a+L)‖^2 ≤
       ((L+1+H : ℕ) : ℝ)*((H : ℝ)*(L+1)+
         2*H*∑ r ∈ Finset.Icc 1 (H-1), ‖sourceShiftCorrelation F T N a L r‖) := by
@@ -97,5 +105,7 @@ theorem source_exponentialSum_weyl (F : ℝ → ℝ) (T N : ℝ) (a L H : ℕ) :
       (Finset.mem_range.mp hh) (Finset.mem_range.mp hk) hne).le)
   rw [sum_sourceOscillatorySequence] at h
   simpa only [Nat.cast_add,Nat.cast_one] using h
+end
 
-end TaoTrudgianYang2025
+
+

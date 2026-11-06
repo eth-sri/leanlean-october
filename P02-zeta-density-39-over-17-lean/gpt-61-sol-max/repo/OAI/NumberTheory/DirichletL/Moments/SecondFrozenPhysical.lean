@@ -13,18 +13,18 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondFrozenPhysical
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+
+open CenteredMomentRestrictedEnergy
+open CenteredMomentMobiusRegroup
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
+open CenteredMomentSecondWindowBudget
+
+
 open CenteredMomentSecondNonexceptionalPhysical CenteredMomentSourceLiveColumn
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 open Filter
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
@@ -33,10 +33,10 @@ open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentSecondOriginalChildren CenteredMomentSecondSupportedChildren
+open CenteredMomentSecondOriginalChildren
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentSecondPhysicalCost CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSecondWholeKernel
+open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
 theorem actual_physical_from_supported_children (lo hi:ι→ℝ) (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C0 Ce:ℝ,0<C0 ∧ 0<Ce ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Kphys:ℝ,0<Kphys → ∀n:Fin 4→ℤ,
       let r:=dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))
@@ -114,8 +114,8 @@ theorem actual_physical_from_supported_children (lo hi:ι→ℝ) (W : 𝓢(ℝ,�
   rw [hzz]
   convert hp using 1 <;> ring
 
-end SevenEighths.CenteredMomentSecondFrozenPhysical
 
-end
 
-end OAI
+
+
+

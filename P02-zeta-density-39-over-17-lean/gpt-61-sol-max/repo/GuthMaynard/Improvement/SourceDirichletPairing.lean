@@ -1,22 +1,25 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceRatioAssembly
 public import GuthMaynard.Improvement.Target
 public import GuthMaynard.Improvement.OperatorPhase
 public import GuthMaynard.Improvement.CenteredKernelBridge
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped FourierTransform ComplexConjugate
 namespace GuthMaynard.Improvement
 
-def sourcePhasePolynomial {ι : Type*} (S : Finset ι) (a : ι → ℂ) (ξ : ι → ℝ) (t : ℝ) : ℂ :=
+section
+variable {ι : Type*} (S : Finset ι) (a : ι → ℂ) (ξ : ι → ℝ)
+include ι S a ξ
+
+def sourcePhasePolynomial  (t : ℝ) : ℂ :=
   ∑ n ∈ S, a n*phase (ξ n*t)
 
 /-- Literal finite polynomial pairing with the actual ordinary Fourier transform. -/
-theorem source_phase_polynomial_pairing {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (ξ : ι → ℝ) {f : ℝ → ℂ} (hf : Integrable f) :
+theorem source_phase_polynomial_pairing  {f : ℝ → ℂ} (hf : Integrable f) :
     (∫ t, (‖sourcePhasePolynomial S a ξ t‖^2:ℂ)*f t) =
       ∑ n ∈ S, ∑ m ∈ S, a n*conj (a m)*𝓕 f (ξ m-ξ n) := by
   have he (t : ℝ) : (‖sourcePhasePolynomial S a ξ t‖^2:ℂ)*f t =
@@ -44,8 +47,7 @@ theorem source_phase_polynomial_pairing {ι : Type*} (S : Finset ι)
   rw [integral_const_mul,fourier_eq_phase_integral]
 
 /-- Bounded coefficients give exactly the unweighted ratio-sampling consumer. -/
-theorem source_phase_polynomial_pairing_bound {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (ξ : ι → ℝ) (ha : ∀ n ∈ S, ‖a n‖ ≤ 1)
+theorem source_phase_polynomial_pairing_bound  (ha : ∀ n ∈ S, ‖a n‖ ≤ 1)
     {f : ℝ → ℂ} (hf : Integrable f) :
     ‖∫ t, (‖sourcePhasePolynomial S a ξ t‖^2:ℂ)*f t‖ ≤
       ∑ n ∈ S, ∑ m ∈ S, ‖𝓕 f (ξ m-ξ n)‖ := by
@@ -59,8 +61,14 @@ theorem source_phase_polynomial_pairing_bound {ι : Type*} (S : Finset ι)
   rw [norm_mul,norm_mul,RCLike.norm_conj]
   have hh : ‖a n‖*‖a m‖ ≤ 1 := by nlinarith [ha n hn,ha m hm,norm_nonneg (a n),norm_nonneg (a m)]
   simpa using mul_le_mul_of_nonneg_right hh (norm_nonneg _)
+end
 
-theorem boundedPolynomial_phase (N : ℝ) (a : ℕ → ℂ) (t : ℝ) :
+
+section
+variable (N : ℝ) (a : ℕ → ℂ)
+include N a
+
+theorem boundedPolynomial_phase  (t : ℝ) :
     boundedPolynomial N a t = sourcePhasePolynomial (Finset.Ioc ⌊N⌋₊ ⌊2*N⌋₊) a
       (fun n => mellinFrequency ((n:ℝ)/N)) t := by
   unfold boundedPolynomial sourcePhasePolynomial
@@ -69,7 +77,7 @@ theorem boundedPolynomial_phase (N : ℝ) (a : ℕ → ℂ) (t : ℝ) :
   rw [mul_comm (mellinFrequency _) t,mellinFrequency_phase]
 
 /-- The literal target polynomial is measurable and bounded independently of time. -/
-theorem boundedPolynomial_regular (N : ℝ) (a : ℕ → ℂ) :
+theorem boundedPolynomial_regular  :
     Continuous (boundedPolynomial N a) ∧
     ∀ t, ‖boundedPolynomial N a t‖ ≤ ∑ n ∈ Finset.Ioc ⌊N⌋₊ ⌊2*N⌋₊, ‖a n‖ := by
   constructor
@@ -79,6 +87,8 @@ theorem boundedPolynomial_regular (N : ℝ) (a : ℕ → ℂ) :
     rw [boundedPolynomial_phase]
     unfold sourcePhasePolynomial
     exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun n _ => by rw [norm_mul,phase_norm,mul_one])
+end
+
 
 /-- The literal bounded-coefficient target polynomial is controlled by the
 actual normalized logarithmic ratio samples, for every real positive N. -/
@@ -106,7 +116,6 @@ theorem boundedPolynomial_pairing_ratio_bound {N : ℝ} (hN : 0 < N)
   apply Finset.sum_congr rfl
   intro n hn
   apply Finset.sum_congr rfl
-  intro m hm
-  rw [he n m hn hm]
+  grind
 
-end GuthMaynard.Improvement
+

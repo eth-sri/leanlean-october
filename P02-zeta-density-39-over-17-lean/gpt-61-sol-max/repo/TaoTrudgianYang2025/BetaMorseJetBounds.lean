@@ -17,7 +17,7 @@ open Set Expdb
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def morseJetMagnitude (σ : ℝ) : ℕ → ℝ
   | 0 => 1
@@ -54,9 +54,13 @@ theorem morseCoordinateDerivativeBound_nonneg (σ : ℝ) (n : ℕ) :
     0 ≤ morseCoordinateDerivativeBound σ n :=
   inversePhaseMagnitude_nonneg _ (Finset.sum_nonneg fun j _ => morseJetMagnitude_nonneg σ j)
 
-theorem modelPhaseMorseJet_abs_le
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+section
+variable {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
+include F σ δ v u P hσ hδ
+
+theorem modelPhaseMorseJet_abs_le
+    
     (hP : 1 ≤ P) (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
     (j : ℕ) (hj : j ≤ P) :
@@ -87,8 +91,7 @@ theorem modelPhaseMorseJet_abs_le
       exact h.trans (by dsimp [morseJetMagnitude]; linarith)
 
 theorem modelPhaseMorseCoordinate_iteratedDeriv_bound
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
+    
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
     (n : ℕ) (hP : morseCoordinateDerivativeOrder n ≤ P) :
@@ -104,5 +107,7 @@ theorem modelPhaseMorseCoordinate_iteratedDeriv_bound
   exact (modelPhaseMorseJet_abs_le hσ hδ hP₁ hF hv hu j
     (by unfold morseCoordinateDerivativeOrder at hP; omega)).trans
       (morseJetMagnitude_le_budget σ hj)
+end
 
-end TaoTrudgianYang2025
+
+

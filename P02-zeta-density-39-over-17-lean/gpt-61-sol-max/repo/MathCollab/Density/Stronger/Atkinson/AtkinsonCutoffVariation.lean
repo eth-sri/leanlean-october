@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -14,15 +15,14 @@ public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem intervalC1Bound_zetaBandCutoff {a b c d A B : ℝ}
     (hab : a < b) (hcd : c < d) (hAB : A ≤ B) :
     IntervalC1Bound (fun x => (zetaBandCutoff a b c d x : ℂ)) A B 2 := by
-  let u : ℝ → ℝ := fun x => Real.smoothTransition ((x - a) / (b - a))
-  let v : ℝ → ℝ := fun x => Real.smoothTransition ((d - x) / (d - c))
+  let u := fun x => Real.smoothTransition ((x - a) / (b - a))
+  let v := fun x => Real.smoothTransition ((d - x) / (d - c))
   have hu : Monotone u := Real.smoothTransition.monotone.comp
     (fun x y hxy => div_le_div_of_nonneg_right (sub_le_sub_right hxy a) (sub_pos.mpr hab).le)
   have hv : Antitone v := Real.smoothTransition.monotone.comp_antitone
@@ -49,8 +49,8 @@ theorem finiteVariationBound_zetaBandCutoff_sample {a b c d : ℝ}
     (hab : a < b) (hcd : c < d) (u : ℕ → ℝ) (N : ℕ)
     (hu : MonotoneOn u (Iic N) ∨ AntitoneOn u (Iic N)) :
     FiniteVariationBound (fun i => (zetaBandCutoff a b c d (u i) : ℂ)) N 2 := by
-  let p : ℝ → ℝ := fun x => Real.smoothTransition ((x-a)/(b-a))
-  let q : ℝ → ℝ := fun x => Real.smoothTransition ((d-x)/(d-c))
+  let p := fun x => Real.smoothTransition ((x-a)/(b-a))
+  let q := fun x => Real.smoothTransition ((d-x)/(d-c))
   have hp : Monotone p := fun x y hxy =>
     Real.smoothTransition.monotone (div_le_div_of_nonneg_right (sub_le_sub_right hxy a) (sub_pos.mpr hab).le)
   have hq : Antitone q := fun x y hxy =>
@@ -71,4 +71,4 @@ theorem finiteVariationBound_zetaBandCutoff_sample {a b c d : ℝ}
   have h₂ := hbnd q (fun _ => ⟨Real.smoothTransition.nonneg _,Real.smoothTransition.le_one _⟩) (Or.inr hq)
   simpa only [p,q,zetaBandCutoff,Complex.ofReal_mul,mul_one] using h₁.mul h₂
 
-end MathCollab.Density.Stronger.Atkinson
+

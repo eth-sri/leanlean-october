@@ -10,11 +10,15 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def continuedCompensatedRow (S : Finset (Ideal O)) (hS : SourceExclusions S)
+section
+variable (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
+    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
+include S hS T hT η u x w z B q
+
+def continuedCompensatedRow  : ℂ :=
   (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
     HeckeOrigin.continued (rowCharacter S hS.prime u) w*
     HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x)*
@@ -22,9 +26,7 @@ def continuedCompensatedRow (S : Finset (Ideal O)) (hS : SourceExclusions S)
     ∏P∈T.attach,continuedCompensatedLocal η u P.val
       (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z (B P.val) (q P.val))
 
-theorem continuedCompensatedRow_eq_initial (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
+theorem continuedCompensatedRow_eq_initial 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     continuedCompensatedRow S hS T hT η u x w z B q=spectralCompensatedRow S T η u.val x w z B q := by
   have hx0 : x≠0 := by intro h; simp only [h,Complex.zero_re] at hx;linarith
@@ -37,6 +39,8 @@ theorem continuedCompensatedRow_eq_initial (S : Finset (Ideal O)) (hS : SourceEx
   simp_rw [continuedCompensatedLocal_eq_initial η u _ _ x w z _ _ hx hw hz]
   rw [Finset.prod_attach T (fun P=>compensatedLocalCorrection η u P x w z (B P) (q P)),spectralCompensatedRow_original_L_factorization S hS.prime hS.bad T hT η u x w z B q hx hw hz,
     div_eq_mul_inv]
+end
+
 
 theorem continuedCompensatedRow_eq_indexed {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -56,8 +60,8 @@ theorem continuedCompensatedRow_eq_indexed {K : ℕ}
     indexedCompensatedHigh_eq_spectral η S P hP
       (fun i=>outside_prime_supported S hS.bad (P i) (hPS i)) u.val x w z]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

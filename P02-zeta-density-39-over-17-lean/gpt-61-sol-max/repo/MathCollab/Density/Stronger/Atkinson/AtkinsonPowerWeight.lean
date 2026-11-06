@@ -15,7 +15,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 noncomputable section
-open Complex Set
+open Complex
 open scoped ContDiff
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -45,4 +45,4 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight (α : ℝ) :
   · rfl
   · ring
 
-end MathCollab.Density.Stronger.Atkinson
+

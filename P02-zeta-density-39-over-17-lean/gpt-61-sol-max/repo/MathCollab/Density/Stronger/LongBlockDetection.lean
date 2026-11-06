@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.WeightedCriticalMean
 public import MathCollab.Density.Stronger.SmallResidue
 
@@ -6,8 +7,7 @@ public import MathCollab.Density.Stronger.SmallResidue
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 theorem negligible_residue_le_detector_height :
@@ -46,7 +46,6 @@ theorem smoothMollifierBlock_eventually_detects_mean {ψ : ℝ → ℝ} {a b : �
   have hh : C*Real.sqrt X*N^(1/2-ρ.re)*weightedCriticalMean A ρ.im ≤
       (C+1)*Real.sqrt X*N^(1/2-ρ.re)*weightedCriticalMean A ρ.im := by gcongr; linarith
   have he : 1/(24*Real.log T) = 2*(1/(48*Real.log T)) := by ring
-  rw [he] at hlarge
-  linarith
+  grind
 
-end MathCollab.Density.Stronger
+

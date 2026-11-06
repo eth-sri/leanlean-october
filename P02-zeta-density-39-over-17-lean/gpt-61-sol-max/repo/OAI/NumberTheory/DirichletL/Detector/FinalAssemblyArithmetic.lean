@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorArithmetic
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyClass
 
@@ -12,8 +13,8 @@ open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
+open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -21,8 +22,8 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -74,7 +75,7 @@ theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmi
       hdtop hε1 hκ1 hτzero hτheight hwbudget
       φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB
       εm Δ ν logCost heightCost momentCost hεm hΔ hΔ1 hν hlog hMomentHeight counts
-  let cardCost : ℝ := (HeckeDetectorClassBudget.alphabetBound mesh:ℝ)^N
+  let cardCost := (HeckeDetectorClassBudget.alphabetBound mesh:ℝ)^N
   have hcardCost : 0≤cardCost := by dsimp [cardCost];positivity
   refine ⟨(cardCost+1)*C,by positivity,?_⟩
   intro η
@@ -82,11 +83,11 @@ theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmi
   intro d hd hd' v a C0 hv hv' hdv ha ha' hC0 rows hrows hnorm i hi hnext hcurrent
   dsimp only
   intro t ht hmom
-  let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
-  let Y : Fin N→ℝ := fun j=>Z^(ell j)
-  let T : Fin N→Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+  let z := (17/50:ℂ)+t.1.2*Complex.I
+  let Y := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
   let Q := physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z^d)
-  let bound : ℝ := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
+  let bound := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
     Z^(3/16+Δ-saving-((25/48)*a-181/300+(105/8)*e))
   have hb : 0≤bound := by dsimp [bound];positivity
   have hpart := cubeArithmeticSum_class_uniform S hS hmax η rows T
@@ -111,8 +112,8 @@ theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmi
     _ ≤ (cardCost+1)*bound := mul_le_mul_of_nonneg_right (by linarith) hb
     _ = _ := by dsimp [bound];ring
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

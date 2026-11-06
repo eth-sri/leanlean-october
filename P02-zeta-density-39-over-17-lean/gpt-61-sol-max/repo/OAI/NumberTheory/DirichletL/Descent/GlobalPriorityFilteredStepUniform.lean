@@ -8,17 +8,17 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseFirstPriorityParents InverseMomentGlobalPriorityTail
+open InverseWholePriorityRetainedSource RayFourExpansion
+open scoped EisensteinEis
 theorem global_priority_filtered_physical_step_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -167,8 +167,8 @@ theorem global_priority_filtered_physical_step_uniform_types
   have hb':=mul_le_mul_of_nonneg_left hb hP
   simp only [mul_add] at hb'
   exact hb'.trans (add_le_add (add_le_add hzbound hrbound) htbound)
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.GlobalDensityConditional
 public import Mathlib.Analysis.Asymptotics.Basic
 
@@ -6,8 +7,7 @@ public import Mathlib.Analysis.Asymptotics.Basic
 
 open Complex Filter MathCollab.Density
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- A literal native closed rectangle zero set has exactly the audited count.
@@ -28,8 +28,7 @@ theorem native_rectangle_sum_eq_zetaSlabCount {σ a b : ℝ} (hσ : 0 < σ)
       exact ⟨⟨hzero,lt_of_lt_of_le hσ hlo,hstrict⟩,hlo,ha,hb⟩
     · rintro ⟨hz,hlo,ha,hb⟩
       exact ⟨hlo,hz.2.2.le,ha,hb,hz.1⟩
-  rw [he]
-  rfl
+  bound
 
 /-- The native both-sign closed rectangle convention preserves analytic multiplicity. -/
 theorem native_rectangle_sum_eq_zetaDensityCount {σ T : ℝ} (hσ : 0 < σ)
@@ -67,8 +66,7 @@ theorem zetaDensityCount_bound_of_native_bigO {σ p ε : ℝ}
     (hp : 0 ≤ p) (hε : 0 < ε)
     (hb : (fun T : ℝ => |(zetaDensityCount σ T:ℝ)|) =O[atTop]
       (fun T : ℝ => T^ε*|T^p|)) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(p+ε) := by
+    MathCollab.Density.ZetaBound σ ((p+ε)) := by
   obtain ⟨C,hC,hbound⟩ := hb.exists_pos
   apply zetaDensityCount_all_height_of_eventual (by linarith : 0 ≤ p+ε) hC
   filter_upwards [eventually_ge_atTop (2:ℝ),hbound.bound] with T hT hh
@@ -78,4 +76,4 @@ theorem zetaDensityCount_bound_of_native_bigO {σ p ε : ℝ}
     abs_of_nonneg (mul_nonneg (Real.rpow_nonneg ht.le ε) (Real.rpow_nonneg ht.le p)),
     ← Real.rpow_add ht,add_comm ε p,abs_of_nonneg (Real.rpow_nonneg ht.le (p+ε))] using hh
 
-end GuthMaynard.Improvement
+

@@ -6,11 +6,10 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 
 @[expose] public section
 
-open Real Set
+open Real
 open scoped BigOperators
 
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- A geometric majorant bounds every prime-power exponent uniformly. -/
@@ -125,4 +124,4 @@ theorem divisorMaximum_subpower {η : ℝ} (hη : 0 < η) :
   exact (by exact_mod_cast hle : (divisorMaximum T : ℝ) ≤ (⌊C*49^η*T^η⌋₊ : ℝ)).trans
     (Nat.floor_le (by positivity))
 
-end MathCollab.Density
+

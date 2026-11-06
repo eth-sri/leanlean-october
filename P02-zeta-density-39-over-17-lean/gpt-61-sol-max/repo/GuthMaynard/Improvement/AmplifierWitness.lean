@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.AmplifierOperator
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open InnerProductSpace
 open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
@@ -49,4 +48,4 @@ theorem amplifier_range_witness
   rw [hg,← mul_pow]
   exact (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg A) (norm_nonneg _))).mpr hn
 
-end GuthMaynard.Improvement
+

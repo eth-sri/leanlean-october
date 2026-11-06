@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected horizontal-edge proofs adapted from Scott McColm,
 PointMeanLemmaThreeEdges.lean, exact revision
@@ -15,18 +16,17 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter
+open Complex MeasureTheory Filter
 open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 open scoped Topology Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem eventually_log_sq_le_rpow {q : ℝ} (hq : 0 < q) :
     ∀ᶠ X : ℝ in atTop, (Real.log X) ^ 2 ≤ X ^ q := by
   have hLittle := isLittleO_log_rpow_rpow_atTop (2 : ℝ) hq
   filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop (1 : ℝ)] with X hBound hX
-  have hLogNonneg : 0 ≤ Real.log X := Real.log_nonneg hX
+  have hLogNonneg := Real.log_nonneg hX
   have hXNonneg : 0 ≤ X := by linarith
   rw [Real.norm_eq_abs,
     abs_of_nonneg (Real.rpow_nonneg hLogNonneg 2),
@@ -38,9 +38,9 @@ theorem eventually_const_mul_rpow_le_rpow
     {D a b : Real} (hab : a < b) :
     ∀ᶠ U : Real in atTop, D * U ^ a <= U ^ b := by
   have hgap : 0 < b - a := sub_pos.mpr hab
-  have hTend : Tendsto (fun U : Real => U ^ (b - a)) atTop atTop :=
+  have hTend :=
     tendsto_rpow_atTop hgap
-  have hEventually : ∀ᶠ U : Real in atTop, D <= U ^ (b - a) :=
+  have hEventually :=
     (tendsto_atTop.1 hTend) D
   filter_upwards [hEventually, eventually_gt_atTop (0 : Real)] with U hU hUpos
   calc
@@ -77,14 +77,13 @@ theorem exists_norm_Gamma_heathBrown_small_horizontal_strong_le :
     norm_Gamma_positive_strip_strong ha ha'
   refine ⟨B, by norm_num [B], ?_⟩
   intro delta x R hdelta hdeltaUpper hx hR
-  let z : ℂ := (x : ℂ) + (R : ℂ) * I
+  let z := (x : ℂ) + (R : ℂ) * I
   have hz : z ≠ 0 := by
     intro hz0
     have him := congrArg Complex.im hz0
     dsimp only [z] at him
     simp at him
-    rw [him, abs_zero] at hR
-    norm_num at hR
+    grind
   have hrec := Complex.Gamma_add_one z hz
   have harg : z + 1 = ((1 + x : ℝ) : ℂ) + (R : ℂ) * I := by
     apply Complex.ext
@@ -137,12 +136,7 @@ theorem exists_norm_heathBrownLemmaThree_horizontal_integrand_le :
             ((((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) +
               (((x : ℝ) : ℂ) + (R : ℂ) * I))
           simpa using h
-      _ ≤ (1 / 2 + |x|) + (|t| + |R|) := by
-        gcongr
-        · calc
-            |1 / 2 + x| ≤ |(1 / 2 : ℝ)| + |x| := abs_add_le _ _
-            _ = 1 / 2 + |x| := by norm_num
-        · exact abs_add_le _ _
+      _ ≤ (1 / 2 + |x|) + (|t| + |R|) := by grind
       _ ≤ 1 + |t| + |R| := by
         have hxAbs : |x| ≤ delta := abs_le.mpr hx
         linarith
@@ -162,21 +156,17 @@ theorem exists_norm_heathBrownLemmaThree_horizontalEdge_le :
           (5 * (1 + |t| + |R|)) ^ (2 : ℕ) := by
   obtain ⟨B, hB, hPoint⟩ :=
     exists_norm_heathBrownLemmaThree_horizontal_integrand_le
-  let C : ℝ := B
+  let C := B
   refine ⟨C, hB, ?_⟩
   intro delta t R hdelta hdeltaUpper hheight hR
-  let F : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand
+  let F := heathBrownZetaSquareMellinIntegrand
     (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I)
-  let M : ℝ := B * Real.exp (-(4 / 3 : ℝ) * |R|) *
+  let M := B * Real.exp (-(4 / 3 : ℝ) * |R|) *
     (5 * (1 + |t| + |R|)) ^ (2 : ℕ)
   have hbase : ‖HIntegral F (-delta) delta R‖ ≤ M * |delta - (-delta)| := by
     unfold HIntegral
     apply intervalIntegral.norm_integral_le_of_norm_le_const
-    intro x hx
-    have hx' : x ∈ Set.Icc (-delta) delta := by
-      rw [← Set.uIcc_of_le (by linarith : -delta ≤ delta)]
-      exact Set.uIoc_subset_uIcc hx
-    simpa only [F, M] using hPoint delta t x R hdelta hdeltaUpper hx' hheight hR
+    grind
   have hwidth : |delta - (-delta)| ≤ 1 := by
     rw [abs_of_nonneg (by linarith)]
     linarith
@@ -185,10 +175,7 @@ theorem exists_norm_heathBrownLemmaThree_horizontalEdge_le :
       Complex.norm_I]
     norm_num
     have hpi : (1 : ℝ) ≤ Real.pi := by nlinarith [Real.pi_gt_three]
-    have hpiInv : Real.pi⁻¹ ≤ (1 : ℝ) :=
-      (inv_le_one₀ Real.pi_pos).2 hpi
-    nlinarith [mul_le_mul_of_nonneg_right hpiInv
-      (show (0 : ℝ) ≤ 1 / 2 by norm_num)]
+    bound
   have hM : 0 ≤ M := by dsimp only [M]; positivity
   unfold HIntegral'
   rw [norm_smul]
@@ -205,12 +192,10 @@ theorem heathBrown_logSquare_exponential_absorption
     (hlog : 9 / 4 ≤ Real.log t) :
     D * t ^ (2 : ℕ) *
       Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) ≤ 1 := by
-  let L : ℝ := Real.log t
-  have hlog' : 9 / 4 ≤ L := by simpa only [L] using hlog
+  let L := Real.log t
   have htEq : t = Real.exp L := by
     dsimp only [L]
     exact (Real.exp_log ht).symm
-  have hpow : D * t ^ (2 : ℕ) ≤ t * t ^ (2 : ℕ) := by gcongr
   calc
     D * t ^ (2 : ℕ) *
         Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) ≤
@@ -221,7 +206,6 @@ theorem heathBrown_logSquare_exponential_absorption
         Real.exp (-(4 / 3 : ℝ) * L ^ (2 : ℕ)) = _
       rw [htEq, pow_two]
       rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
-      congr 1
       ring
     _ ≤ Real.exp 0 := by
       apply Real.exp_le_exp.mpr
@@ -250,7 +234,6 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
   have ht : 0 < t := by linarith
   have hdelta : 0 < heathBrownLemmaThreeDelta t := by
     unfold heathBrownLemmaThreeDelta
-    have : 0 < Real.log t := by linarith
     positivity
   have hdeltaUpper : heathBrownLemmaThreeDelta t ≤ 1 / 4 := by
     unfold heathBrownLemmaThreeDelta
@@ -290,8 +273,7 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
         have hSize' :
             5 * (1 + |t| + heathBrownLemmaThreeRadius t) ≤ 10 * t := by
           simpa only [abs_of_nonneg hHNonneg] using hSize
-        exact mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (by positivity) hSize' 2) (by positivity)
+        gcongr
       _ = (100 * B) * t ^ (2 : ℕ) *
           Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) := by
         unfold heathBrownLemmaThreeRadius
@@ -314,8 +296,7 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
         have hSize' :
             5 * (1 + |t| + heathBrownLemmaThreeRadius t) ≤ 10 * t := by
           simpa only [abs_of_nonneg hHNonneg] using hSize
-        exact mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (by positivity) hSize' 2) (by positivity)
+        gcongr
       _ = (100 * B) * t ^ (2 : ℕ) *
           Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) := by
         unfold heathBrownLemmaThreeRadius
@@ -323,4 +304,4 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
       _ ≤ 1 := hAbsorb
 
 
-end MathCollab.Density.Stronger.PointMean
+

@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorNormalized
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorArithmetic
+public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorDyadic
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeBinPartition
 
@@ -11,7 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 def sourceDyadExponent (Z : ℝ) (k : ℕ) : ℝ := Real.logb Z ((2:ℝ)^k)
 def sourceDyadConductor (Z margin : ℝ) (k : ℕ) : ℝ := sourceDyadExponent Z k+2*margin
@@ -40,13 +41,13 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
       exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
 
 lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
-    (_hdmin : 0<dmin) (hdmin1 : dmin<1/100) (hmargin : 0<margin)
+    (_hdmin : 0<dmin) (hdmin1 : dmin<1/100) (hmargin : 0< margin)
     (hdmax : vmax+2*margin≤dmax) :
     ∀ᶠZ : ℝ in atTop,∀rows : Finset FreeRow,
       (∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧ rowNorm u≤Z^vmax) →
       ∀k : ℕ,(rows∩dyadicRows 1 k).Nonempty →
-        0≤sourceDyadExponent Z k ∧ sourceDyadExponent Z k≤vmax ∧
-        dmin≤sourceDyadConductor Z margin k ∧ sourceDyadConductor Z margin k≤dmax ∧
+        0≤ sourceDyadExponent Z k ∧ sourceDyadExponent Z k≤vmax ∧
+        dmin≤ sourceDyadConductor Z margin k ∧ sourceDyadConductor Z margin k≤dmax ∧
         (∀u∈rows∩dyadicRows 1 k,
           Z^(sourceDyadExponent Z k)≤rowNorm u ∧ rowNorm u≤2*Z^(sourceDyadExponent Z k)) ∧
         (∀u∈rows∩dyadicRows 1 k,rowNorm u≤Z^(sourceDyadConductor Z margin k-margin)) := by
@@ -60,7 +61,7 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
   have hud := mem_dyadicRows.mp (Finset.mem_inter.mp hu).2
   have hlow : (2:ℝ)^k≤rowNorm u := by simpa only [one_mul] using hud.2.1
   have hhigh : rowNorm u<2*(2:ℝ)^k := by simpa only [one_mul] using hud.2.2
-  have hv0 : 0≤sourceDyadExponent Z k := by
+  have hv0 : 0≤ sourceDyadExponent Z k := by
     apply (Real.rpow_le_rpow_left_iff hZ).mp
     rw [sourceDyad_scale hZ,Real.rpow_zero]
     exact one_le_pow₀ (by norm_num)
@@ -68,7 +69,7 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
     apply (Real.rpow_le_rpow_left_iff hZ).mp
     rw [sourceDyad_scale hZ]
     exact hlow.trans (hrows u hur).2.2
-  have hvmin : dmin≤sourceDyadExponent Z k := by
+  have hvmin : dmin≤ sourceDyadExponent Z k := by
     apply (Real.rpow_le_rpow_left_iff hZ).mp
     rw [sourceDyad_scale hZ]
     have hh : 2*Z^dmin≤Z^(1/100:ℝ) := by
@@ -87,8 +88,8 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
   · unfold sourceDyadConductor;linarith
   · exact dyad_conductor_margin Z (sourceDyadExponent Z k) margin hZp hmarginZ _ (fun u hu=>(hnorm u hu).2)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

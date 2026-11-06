@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein
+
+open scoped EisensteinEis
 
 theorem actual_finite_source_tail_budget_uniform_degree
     (Lcap δ saving : ℝ) (hδ : 0<δ) :
@@ -33,7 +33,7 @@ theorem actual_finite_source_tail_budget_uniform_degree
     (Nat.cast_nonneg _) (Nat.cast_nonneg _) hF hK hP hXi
     (finite_ideal_count_polynomial rows Z QK Lcap hZ hQK (fun K hK => (hrows K hK).1) (fun K hK => (hrows K hK).2) hK)
     (finite_ideal_count_polynomial Pset Z QP Lcap hZ hQP (fun P hP => (hPs P hP).1) (fun P hP => (hPs P hP).2) hP)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

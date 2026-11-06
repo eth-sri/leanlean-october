@@ -3,8 +3,7 @@ public import MathCollab.Density.Stronger.Parameters
 
 @[expose] public section
 open Filter
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- All scalar loss choices precede the height and the zero. This statement
@@ -21,4 +20,4 @@ theorem exists_stronger_loss_parameters {σ ε : ℝ} (hσ : 3/4 < σ) (hε : 0 
   have hc := smoothingExponent_lt_one hσ
   refine ⟨δ,η,(1-smoothingExponent σ)/16,hδ,hδ'.le,hδ'',hη,?_,?_,?_,?_⟩ <;> linarith
 
-end MathCollab.Density.Stronger
+

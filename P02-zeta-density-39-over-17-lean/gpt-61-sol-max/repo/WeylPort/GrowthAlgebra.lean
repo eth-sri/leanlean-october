@@ -11,7 +11,7 @@ PointValueGrowth: its first four theorems.
 The actual-zeta theorem is deliberately absent: its analytic input is not ported.
 -/
 
-noncomputable section
+
 open Filter
 namespace TaoTrudgianYang2025
 
@@ -94,4 +94,4 @@ theorem eventually_pointValue_sixth_power_source_range
         have hh := mul_le_mul_of_nonneg_right hKL2 (by positivity : 0 ≤ H^r)
         simpa only [one_mul] using hh
 
-end TaoTrudgianYang2025
+

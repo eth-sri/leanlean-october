@@ -35,13 +35,19 @@ def markedActiveEquiv (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) :
     (selectedActiveEquiv (joinedFiberEquiv e) (B.disjSum T))).trans
     (Equiv.subtypeEquivRight (fun x => by rw [complete_marked_set e B T]))
 
-lemma markedActiveEquiv_frozen (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (b : B) :
+section
+variable (e : α⊕β≃γ) (B : Finset β) (T : Finset σ)
+include e B T
+
+lemma markedActiveEquiv_frozen  (b : B) :
     (markedActiveEquiv e B T (Sum.inl b)).val=Sum.inl (e (Sum.inr b.val)) := rfl
-lemma markedActiveEquiv_residual (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (a : α) :
+lemma markedActiveEquiv_residual  (a : α) :
     (markedActiveEquiv e B T (Sum.inr (Sum.inl a))).val=Sum.inl (e (Sum.inl a)) := rfl
-lemma markedActiveEquiv_slot (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (t : T) :
+lemma markedActiveEquiv_slot  (t : T) :
     (markedActiveEquiv e B T (Sum.inr (Sum.inr t))).val=Sum.inr t.val := rfl
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

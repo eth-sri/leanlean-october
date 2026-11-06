@@ -6,17 +6,21 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentPlainWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentPlainEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
+open CanonicalQuadraticSieve CenteredMomentRowNorm
+open CenteredMomentHeckeColumnWindow
 open HeckeFamily FourierBridge CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem plain_column_integral {α : Type*} (S : Finset α) (a : α → O)
+section
+variable {α : Type*} (S : Finset α) (a : α → O)
+include α S a
+
+theorem plain_column_integral 
     (ha : ∀ i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
     (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : O) :
@@ -46,7 +50,7 @@ theorem plain_column_integral {α : Type*} (S : Finset α) (a : α → O)
       intro i hi
       ring
 
-theorem plain_column_integrable {α : Type*} (S : Finset α) (a : α → O)
+theorem plain_column_integrable 
     (ha : ∀ i,Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
     (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : O) :
@@ -60,9 +64,11 @@ theorem plain_column_integrable {α : Type*} (S : Finset α) (a : α → O)
   apply Finset.sum_congr rfl
   intro i hi
   ring
-
-end SevenEighths.CenteredMomentPlainWindowEnergy
-
 end
 
-end OAI
+
+
+
+
+
+

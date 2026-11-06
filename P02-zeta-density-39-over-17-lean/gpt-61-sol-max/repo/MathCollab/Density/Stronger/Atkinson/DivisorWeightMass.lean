@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,12 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightVariation
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -50,16 +50,19 @@ theorem norm_divisorCritical_mul_min_le {A θ : ℝ} (hA : 0 < A)
       mul_le_mul_of_nonneg_left (min_one_le_rpow (by positivity) hθ hθ1) (norm_nonneg _)
     _ = _ := norm_divisorCritical_mul_ratio_rpow hA t θ (Nat.pos_of_ne_zero hn)
 
-theorem summable_divisorCritical_min {A θ : ℝ} (hA : 0 < A)
-    (hθ : 1 / 2 < θ) (hθ1 : θ ≤ 1) (t : ℝ) :
+section
+variable {A θ : ℝ} (hA : 0 < A)
+    (hθ : 1 / 2 < θ) (hθ1 : θ ≤ 1) (t : ℝ)
+include A θ hA hθ hθ1 t
+
+theorem summable_divisorCritical_min  :
     Summable (fun n : ℕ => ‖divisorDirichletTerm (afeCriticalPoint t) n‖ * min 1 (A / (n : ℝ))) := by
   have hs := (summable_divisorDirichletTerm (s := ((1 / 2 + θ : ℝ) : ℂ))
     (by simp only [ofReal_re]; linarith)).norm
   exact Summable.of_nonneg_of_le (fun n => by positivity)
     (norm_divisorCritical_mul_min_le hA (by linarith) hθ1 t) (hs.mul_left (A ^ θ))
 
-theorem tsum_divisorCritical_min_le {A θ : ℝ} (hA : 0 < A)
-    (hθ : 1 / 2 < θ) (hθ1 : θ ≤ 1) (t : ℝ) :
+theorem tsum_divisorCritical_min_le  :
     (∑' n : ℕ, ‖divisorDirichletTerm (afeCriticalPoint t) n‖ * min 1 (A / (n : ℝ))) ≤
       A ^ θ * ∑' n : ℕ, ‖divisorDirichletTerm ((1 / 2 + θ : ℝ) : ℂ) n‖ := by
   have hs := (summable_divisorDirichletTerm (s := ((1 / 2 + θ : ℝ) : ℂ))
@@ -67,6 +70,8 @@ theorem tsum_divisorCritical_min_le {A θ : ℝ} (hA : 0 < A)
   rw [← tsum_mul_left]
   exact Summable.tsum_le_tsum (norm_divisorCritical_mul_min_le hA (by linarith) hθ1 t)
     (summable_divisorCritical_min hA hθ hθ1 t) (hs.mul_left (A ^ θ))
+end
+
 
 theorem summable_norm_source_divisor_weight {T : ℝ} (hT : 0 < T) (t : ℝ) :
     Summable (fun n : ℕ => ‖divisorDirichletTerm (afeCriticalPoint t) n‖ *
@@ -90,10 +95,7 @@ theorem exists_tsum_norm_source_divisor_weight_le (ε : ℝ) (hε : 0 < ε) :
         ‖zetaDivisorWeight (zetaDivisorWeightArgument T n)‖) ≤ C * T ^ (1 / 2 + ε) := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_source_zetaDivisorWeight_min_le
   let θ : ℝ := 1 / 2 + min (ε / 2) (1 / 4)
-  have hθ : 1 / 2 < θ := by
-    have hm : 0 < min (ε / 2) (1 / 4 : ℝ) := lt_min (by positivity) (by norm_num)
-    dsimp [θ]
-    linarith
+  have hθ : 1 / 2 < θ := by aesop
   have hθ1 : θ ≤ 1 := by dsimp [θ]; linarith [min_le_right (ε / 2) (1 / 4)]
   have hθε : θ ≤ 1 / 2 + ε := by dsimp [θ]; linarith [min_le_left (ε / 2) (1 / 4)]
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm ((1 / 2 + θ : ℝ) : ℂ) n‖
@@ -132,10 +134,7 @@ theorem exists_tsum_divisorCritical_min_height_le (ε : ℝ) (hε : 0 < ε) :
       (∑' n : ℕ, ‖divisorDirichletTerm (afeCriticalPoint t) n‖ *
         min 1 (T / (2 * Real.pi * (n : ℝ)))) ≤ C * T ^ (1 / 2 + ε) := by
   let θ : ℝ := 1 / 2 + min (ε / 2) (1 / 4)
-  have hθ : 1 / 2 < θ := by
-    have hm : 0 < min (ε / 2) (1 / 4 : ℝ) := lt_min (by positivity) (by norm_num)
-    dsimp [θ]
-    linarith
+  have hθ : 1 / 2 < θ := by aesop
   have hθ1 : θ ≤ 1 := by dsimp [θ]; linarith [min_le_right (ε / 2) (1 / 4)]
   have hθε : θ ≤ 1 / 2 + ε := by dsimp [θ]; linarith [min_le_left (ε / 2) (1 / 4)]
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm ((1 / 2 + θ : ℝ) : ℂ) n‖
@@ -155,4 +154,4 @@ theorem exists_tsum_divisorCritical_min_height_le (ε : ℝ) (hε : 0 < ε) :
     _ ≤ T ^ (1 / 2 + ε) * S := mul_le_mul_of_nonneg_right hpow hS
     _ ≤ _ := by nlinarith [Real.rpow_nonneg hT0.le (1 / 2 + ε)]
 
-end MathCollab.Density.Stronger.Atkinson
+

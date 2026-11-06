@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosTentIntegral
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                     
@@ -16,7 +15,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                           
 
 
-noncomputable section
+
 
 open MeasureTheory Set GafniTao
 open scoped FourierTransform
@@ -38,10 +37,14 @@ theorem sargos_fourier_eq_character (f : ℝ → ℂ) (ξ : ℝ) :
       ring
     rw [he,mul_comm])
 
-theorem fourier_sargosRealTent {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+section
+variable {w : ℝ} (hw : 0 < w) (ξ : ℝ)
+include w hw ξ
+
+theorem fourier_sargosRealTent  :
     𝓕 (fun x : ℝ => (sargosRealTent w x : ℂ)) ξ = (sargosSincKernel w ξ : ℂ) := by
   rw [sargos_fourier_eq_character]
-  let f : ℝ → ℂ := fun x => (sargosRealTent w x : ℂ)*fordAdditiveCharacter (-(ξ*x))
+  let f := fun x => (sargosRealTent w x : ℂ)*fordAdditiveCharacter (-(ξ*x))
   have hs : Function.support f ⊆ Ioc (-w) w := by
     intro x hx
     have ht : sargosRealTent w x ≠ 0 := by
@@ -59,20 +62,18 @@ theorem fourier_sargosRealTent {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
       intro x hx
       have hxabs : |x| ≤ w := by
         rcases Set.mem_uIcc.mp hx with h | h
-        · exact abs_le.mpr h
-        · linarith
+        all_goals (grind)
       dsimp only [f]
       rw [sargosRealTent_eq_of_abs_le hw hxabs]
     _ = _ := sargos_integral_symmetric_tent_character_eq_kernel hw ξ
 
-theorem fourier_sargosSincKernel {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+theorem fourier_sargosSincKernel  :
     𝓕 (fun x : ℝ => (sargosSincKernel w x : ℂ)) ξ = (sargosRealTent w ξ : ℂ) := by
   have ht : Integrable (fun x : ℝ => (sargosRealTent w x : ℂ)) :=
     (integrable_sargosRealTent hw).ofReal
   have hk : Integrable (fun x : ℝ => (sargosSincKernel w x : ℂ)) :=
     (integrable_sargosSincKernel hw).ofReal
-  have he : 𝓕 (fun x : ℝ => (sargosRealTent w x : ℂ)) =
-      (fun x : ℝ => (sargosSincKernel w x : ℂ)) :=
+  have he :=
     funext (fourier_sargosRealTent hw)
   have hft : Integrable (𝓕 (fun x : ℝ => (sargosRealTent w x : ℂ))) := by
     rwa [he]
@@ -82,10 +83,12 @@ theorem fourier_sargosSincKernel {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
   rw [he,Real.fourierInv_eq_fourier_neg,neg_neg] at hi
   simpa only [sargosRealTent,abs_neg] using hi
 
-theorem integral_sargosSincKernel_character {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+theorem integral_sargosSincKernel_character  :
     (∫ x : ℝ, (sargosSincKernel w x : ℂ)*fordAdditiveCharacter (-(ξ*x))) =
       (sargosRealTent w ξ : ℂ) := by
   rw [← sargos_fourier_eq_character]
   exact fourier_sargosSincKernel hw ξ
+end
 
-end TaoTrudgianYang2025
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.FiniteExponentialSums
 public import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
@@ -142,19 +143,22 @@ theorem continuous_positivePhase : Continuous positivePhase := by
   unfold positivePhase
   fun_prop
 
+section
+variable {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1)
+include r hr0 hr1
+
 /-- Inside the unit disk, every logarithm argument lies in the open right half-plane. -/
-theorem radial_phase_mem_slitPlane {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
+theorem radial_phase_mem_slitPlane  (x : ℝ) :
     1 - (r : ℂ) * positivePhase x ∈ Complex.slitPlane := by
   apply Complex.mem_slitPlane_iff.mpr
   left
   have hre : (positivePhase x).re ≤ 1 := by
     simpa only [norm_positivePhase] using Complex.re_le_norm (positivePhase x)
-  simp only [Complex.sub_re, Complex.one_re, Complex.mul_re, Complex.ofReal_re,
-    Complex.ofReal_im, zero_mul, sub_zero]
+  simp
   nlinarith [mul_nonneg hr0 (sub_nonneg.mpr hre)]
 
 /-- Every damped kernel is continuous, including at integer points. -/
-theorem continuous_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
+theorem continuous_abelSawtooth  :
     Continuous (abelSawtooth r) := by
   unfold abelSawtooth
   exact (Complex.continuous_im.comp
@@ -162,7 +166,7 @@ theorem continuous_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
       (radial_phase_mem_slitPlane hr0 hr1))).div_const Real.pi
 
 /-- The damped logarithm has its actual absolutely convergent Fourier expansion. -/
-theorem hasSum_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
+theorem hasSum_abelSawtooth  (x : ℝ) :
     HasSum (fun n : ℕ => -(((r : ℂ) * positivePhase x) ^ n / (n : ℂ)).im / Real.pi)
       (abelSawtooth r x) := by
   have hz : ‖(r : ℂ) * positivePhase x‖ < 1 := by
@@ -171,6 +175,8 @@ theorem hasSum_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
     exact hr1
   have h := (Complex.hasSum_im (Complex.hasSum_taylorSeries_neg_log hz)).neg.div_const Real.pi
   simpa only [Complex.neg_im, neg_neg, abelSawtooth] using h
+end
+
 
 /-- Integer points form a null set for every atomless measure on the real line. -/
 theorem ae_noninteger (μ : Measure ℝ) [NullSingletonClass μ] :
@@ -251,15 +257,18 @@ theorem norm_sawtoothMode_le (n : ℕ) (x : ℝ) : ‖sawtoothMode n x‖ ≤ 1 
       linarith
 
 
+section
+variable {μ : Measure ℝ} {h : ℝ → ℂ}
+    (hh : Integrable h μ)
+include μ h hh
+
 /-- Multiplying an integrable amplitude by a Fourier coefficient preserves integrability. -/
-theorem integrable_mul_sawtoothMode {μ : Measure ℝ} {h : ℝ → ℂ}
-    (hh : Integrable h μ) (n : ℕ) : Integrable (fun x => h x * sawtoothMode n x) μ :=
+theorem integrable_mul_sawtoothMode  (n : ℕ) : Integrable (fun x => h x * sawtoothMode n x) μ :=
   hh.mul_bdd (continuous_sawtoothMode n).aestronglyMeasurable
     (Filter.Eventually.of_forall (norm_sawtoothMode_le n))
 
 /-- Absolute geometric domination justifies the damped Fourier series under the integral. -/
-theorem hasSum_integral_abelSawtooth {μ : Measure ℝ} {h : ℝ → ℂ}
-    (hh : Integrable h μ) {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
+theorem hasSum_integral_abelSawtooth  {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
     HasSum (fun n : ℕ => (r : ℂ) ^ n * ∫ x, h x * sawtoothMode n x ∂μ)
       (∫ x, h x * (abelSawtooth r x : ℂ) ∂μ) := by
   let F : ℕ → ℝ → ℂ := fun n x => (r : ℂ) ^ n * (h x * sawtoothMode n x)
@@ -292,6 +301,8 @@ theorem hasSum_integral_abelSawtooth {μ : Measure ℝ} {h : ℝ → ℂ}
   have hi := hasSum_integral_of_summable_integral_norm hFi hsum
   simp_rw [hpoint] at hi
   simpa only [F, integral_const_mul] using hi
+end
+
 
 
 /-- Abel damping tends to the sum of an absolutely convergent complex series. -/
@@ -329,4 +340,4 @@ theorem integral_mul_sawtooth_eq_tsum {μ : Measure ℝ} [NullSingletonClass μ]
   simp_rw [he] at ht
   exact tendsto_nhds_unique hi ht
 
-end DhimanKadiriQuesadaHerrera2026
+

@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSupport
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseSecondSourceBlocks
+open InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma liveNormCap_power_bound (b Lcap Z r ell F eta tau : ℝ)
     (_hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hZ : 2 ≤ Z)
@@ -102,11 +103,14 @@ lemma log_eighth_small_power (ε : ℝ) (hε : 0<ε) :
       have he : (Z^δ)^8=Z^ε := by
         rw [←Real.rpow_natCast,←Real.rpow_mul hz.le]
         congr 1
-        dsimp [δ]
         ring
       rw [mul_pow,he]
 
-theorem live_joint_scalar_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε) :
+section
+variable (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε)
+include b Lcap ε hb hcap hε
+
+theorem live_joint_scalar_small_power  :
     ∃ C : ℝ,0<C ∧ ∀ Z r ell F eta tau : ℝ,2 ≤ Z → r ≤ Lcap → ell ≤ Lcap →
       0 ≤ F → F ≤ Lcap → 0 ≤ eta → eta ≤ 1 → 0 ≤ tau → tau ≤ 1 →
       ((dyadIndex (liveNormCap (b*Z^r) (Z^(ell+eta)) (Z^(2*F+15*eta+tau)))+1:ℕ):ℝ)^8 ≤ C*Z^ε := by
@@ -117,7 +121,7 @@ theorem live_joint_scalar_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0
   exact (h₁ Z r ell F eta tau hZ hr hell hF hFcap heta heta1 htau htau1).trans
     ((mul_le_mul_of_nonneg_left (h₂ Z (by linarith)) hC₁.le).trans_eq (mul_assoc _ _ _).symm)
 
-theorem original_live_joint_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε) :
+theorem original_live_joint_small_power  :
     ∃ C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι → O)(hp : ∀i,p i≠0)
       [∀i,(Ideal.span {p i}).IsMaximal]
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -149,8 +153,10 @@ theorem original_live_joint_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap :
           (fun y=>CompletedHeight.normTwistedSource W theta (y/Z^r)) Φ K)).card:ℝ) ≤
       (((dyadIndex (liveNormCap (b*Z^r) (Z^(ell+eta)) (Z^(2*F+15*eta+tau))))+1:ℕ):ℝ)^8 := by exact_mod_cast he
   exact he'.trans (hcount Z r ell F eta tau hZ hr hell hF hFcap heta heta1 htau htau1)
-
-end SevenEighths.InverseMomentFirstOriginalProfile
 end
 
-end OAI
+
+
+
+
+

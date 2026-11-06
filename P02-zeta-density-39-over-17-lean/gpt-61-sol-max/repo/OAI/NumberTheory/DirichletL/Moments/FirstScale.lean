@@ -10,8 +10,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
+open scoped EisensteinO
 
 def firstNominalScale (I J E : Ideal O) (K X : ℝ) : ℝ :=
   (Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*X^2 /
@@ -31,7 +31,11 @@ theorem firstNominalScale_pos (I J E : Ideal O) (hE : E≠0) (K X : ℝ)
   exact div_pos (mul_pos (mul_pos (norm_pos E hE) (active_norm_pos I J)) (sq_pos_of_pos hX))
     (mul_pos (mul_pos hK (norm_pos _ (commonPart_ne_zero I J))) (norm_pos _ (commonPart_ne_zero J I)))
 
-theorem first_kernel_ratio (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
+section
+variable (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
+include I J E hI hJ hE
+
+theorem first_kernel_ratio 
     (K X H : ℝ) (hK : 0<K) (hX : 0<X) :
     K*H/((Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
       (Ideal.absNorm (residualPart I J):ℝ)*(Ideal.absNorm (residualPart J I):ℝ)) =
@@ -50,7 +54,7 @@ theorem first_kernel_ratio (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E�
   unfold firstNominalScale
   field_simp
 
-theorem first_kernel_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
+theorem first_kernel_lower 
     (K X H HN : ℝ) (hK : 0<K) (hX : 0<X) (hH : 0≤H)
     (hi : (Ideal.absNorm I:ℝ)≤Real.exp HN*X)
     (hj : (Ideal.absNorm J:ℝ)≤Real.exp HN*X) :
@@ -72,7 +76,7 @@ theorem first_kernel_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E�
     _ = (H/firstNominalScale I J E K X)*(1/Real.exp (2*HN)) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hr (div_nonneg hH hT.le)
 
-theorem first_kernel_sector_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
+theorem first_kernel_sector_lower 
     (K X H HN Tsec : ℝ) (hK : 0<K) (hX : 0<X) (hH : 0≤H)
     (hi : (Ideal.absNorm I:ℝ)≤Real.exp HN*X)
     (hj : (Ideal.absNorm J:ℝ)≤Real.exp HN*X)
@@ -87,9 +91,11 @@ theorem first_kernel_sector_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (h
       div_le_div_of_nonneg_left hH (mul_pos (Real.exp_pos _) hT)
         (mul_le_mul_of_nonneg_left hsec (Real.exp_pos _).le)
     _ ≤ _ := first_kernel_lower I J E hI hJ hE K X H HN hK hX hH hi hj
-
-end SevenEighths.CenteredMomentFirstScale
-
 end
 
-end OAI
+
+
+
+
+
+

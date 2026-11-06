@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
 @[expose] public section
@@ -21,9 +22,9 @@ theorem overlap_column_interval (I : Finset σ) (lo hi y : σ→ℝ)
   have hyp : ∀i∈I,0<y i := fun i hi=>(hlo i hi).trans_le (hy i hi).1
   have hip : ∀i∈I,0<hi i := fun i hi=>(hyp i hi).trans_le (hy i hi).2
   have hprod : 0<∏i∈I,y i := Finset.prod_pos hyp
-  have hloP : (∏i∈I,lo i)≤∏i∈I,y i :=
+  have hloP :=
     Finset.prod_le_prod₀ (fun i hi=>(hlo i hi).le) (fun i hi=>(hy i hi).1)
-  have hhiP : (∏i∈I,y i)≤∏i∈I,hi i :=
+  have hhiP :=
     Finset.prod_le_prod₀ (fun i hi=>(hyp i hi).le) (fun i hi=>(hy i hi).2)
   have hyj : 0<yj := hjlo.trans_le hj.1
   have hjhip : 0<jhi := hyj.trans_le hj.2
@@ -43,8 +44,8 @@ theorem overlap_column_interval (I : Finset σ) (lo hi y : σ→ℝ)
       _≤b*(∏i∈I,y i) := hsourceHi
       _≤b*(∏i∈I,hi i) := mul_le_mul_of_nonneg_left hhiP (ha.le.trans hab)
 
-end SevenEighths.InverseInitialOverlapFresh
 
-end
 
-end OAI
+
+
+

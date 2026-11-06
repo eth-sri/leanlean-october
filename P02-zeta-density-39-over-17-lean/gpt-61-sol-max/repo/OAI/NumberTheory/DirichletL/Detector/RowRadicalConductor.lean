@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.Conductor
 public import OAI.NumberTheory.DirichletL.Hecke.LocalRamification
 
@@ -11,7 +12,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.ProbeRowRadicalConductor
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
 open UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem idealRowHom_congr_radical (I : Ideal O) (x y : O)
@@ -220,8 +221,7 @@ theorem equal_elements_excludePrimes (χ θ : Character)
       MulChar.apply_ne_zero_iff.trans (IdealCharacter.isUnit_mk_iff_isCoprime _ _)
     have huθ : elementCoeff θ n ≠ 0 ↔ IsCoprime (Ideal.span {n}) θ.modulus :=
       MulChar.apply_ne_zero_iff.trans (IdealCharacter.isUnit_mk_iff_isCoprime _ _)
-    rw [he n] at huχ
-    exact huχ.symm.trans huθ
+    simp_all
   simp only [Character.excludePrimes, elementCoeff_refineModulus,
     IdealCharacter.isUnit_mk_iff_isCoprime, IsCoprime.mul_right_iff, hc, he n]
 
@@ -301,8 +301,12 @@ theorem radical_norm_selected_deficit {ι : Type*} [Fintype ι]
             ((∏ i, P i) * (∏ i, P i ^ (e i-1))) * B := by ring
         _ = I := by rw [hprod, ← hB]
 
-theorem rowCharacter_primitive_selected_deficit (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : HeckeInverseAmplification.FreeRow) :
+section
+variable (S : Finset (Ideal O))
+    (hS : ∀ P ∈ S, Prime P)
+include S hS
+
+theorem rowCharacter_primitive_selected_deficit  (u : HeckeInverseAmplification.FreeRow) :
     ∃ ψ : Character, (ProbeHighRowFamily.rowCharacter S hS u).modulus ≤ ψ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       (∀ I : Ideal O, idealCoeff (ProbeHighRowFamily.rowCharacter S hS u) I =
@@ -324,8 +328,7 @@ theorem rowCharacter_primitive_selected_deficit (S : Finset (Ideal O))
         ∏ i, (P i).absNorm ^ (e i-1) := Nat.mul_le_mul_right _ hn
     _ ≤ _ := by simpa only [mul_assoc] using Nat.mul_le_mul_left (fixedConductorConstant S) hb
 
-theorem fixedConductorConstant_pos (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) : 0 < fixedConductorConstant S := by
+theorem fixedConductorConstant_pos  : 0 < fixedConductorConstant S := by
   have hnorm (I : Ideal O) (hI : I ≠ 0) : 0 < I.absNorm :=
     Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   unfold fixedConductorConstant ProbeHighRowFamily.conductorConstant
@@ -333,9 +336,11 @@ theorem fixedConductorConstant_pos (S : Finset (Ideal O))
     (hnorm _ (Ideal.span_singleton_eq_bot.not.mpr ProbeHighRowFamily.rowMaskElement_ne_zero))
     (hnorm _ (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))))
     (hnorm _ (Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero)))
-
-end SevenEighths.ProbeRowRadicalConductor
-
 end
 
-end OAI
+
+
+
+
+
+

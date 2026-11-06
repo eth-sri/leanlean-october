@@ -2,8 +2,7 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -33,7 +32,7 @@ theorem fourth_moment_level_split {F : ℝ → ℝ} {Λ B : ℝ}
         intro x hx
         change F x ≤ Λ at hx
         have hh : F x^2 ≤ Λ^2 := by nlinarith [hF0 x]
-        nlinarith [mul_le_mul_of_nonneg_right hh (sq_nonneg (F x))]
+        nlinarith
       _ ≤ ∫ x, Λ^2*F x^2 := setIntegral_le_integral (h2.const_mul _)
         (Filter.Eventually.of_forall (fun _ => mul_nonneg (sq_nonneg _) (sq_nonneg _)))
       _ = _ := integral_const_mul _ _
@@ -100,4 +99,4 @@ theorem restricted_cubic_of_masked {H Q T L M M₁ A E E₀ Λ c : ℝ}
     mul_nonneg (show 0 ≤ 2*c by positivity) (show 0 ≤ T*L*M₁*A by positivity),
     show 0 ≤ T*L*Λ*M by positivity]
 
-end GuthMaynard.Improvement
+

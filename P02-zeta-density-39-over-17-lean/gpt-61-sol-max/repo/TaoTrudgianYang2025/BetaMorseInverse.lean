@@ -18,7 +18,7 @@ open Set Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseMorseRange (F : ℝ → ℝ) (v : ℝ) : Set ℝ :=
   modelPhaseMorseCoordinate F v '' Ioo (1 : ℝ) 2
@@ -26,32 +26,41 @@ def modelPhaseMorseRange (F : ℝ → ℝ) (v : ℝ) : Set ℝ :=
 def modelPhaseMorseInverse (F : ℝ → ℝ) (v : ℝ) : ℝ → ℝ :=
   Function.invFunOn (modelPhaseMorseCoordinate F v) (Ioo (1 : ℝ) 2)
 
-theorem modelPhaseMorseInverse_mem {F : ℝ → ℝ} {v z : ℝ}
-    (hz : z ∈ modelPhaseMorseRange F v) :
+section
+variable {F : ℝ → ℝ} {v z : ℝ}
+    (hz : z ∈ modelPhaseMorseRange F v)
+include F v z hz
+
+theorem modelPhaseMorseInverse_mem  :
     modelPhaseMorseInverse F v z ∈ Ioo (1 : ℝ) 2 :=
   Function.invFunOn_mem hz
 
-theorem modelPhaseMorseCoordinate_inverse {F : ℝ → ℝ} {v z : ℝ}
-    (hz : z ∈ modelPhaseMorseRange F v) :
+theorem modelPhaseMorseCoordinate_inverse  :
     modelPhaseMorseCoordinate F v (modelPhaseMorseInverse F v z) = z :=
   Function.invFunOn_eq hz
+end
+
+
+section
+variable {F : ℝ → ℝ}
+include F
 
 theorem modelPhaseMorseInverse_coordinate
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
+     {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseMorseInverse F v (modelPhaseMorseCoordinate F v u) = u :=
   (modelPhaseMorseCoordinate_strictMonoOn hσ hδ hF hv).injOn.leftInvOn_invFunOn hu
 
-theorem zero_mem_modelPhaseMorseRange {F : ℝ → ℝ} {v : ℝ}
+theorem zero_mem_modelPhaseMorseRange  {v : ℝ}
     (hv : v ∈ modelPhaseSlopeRange F) :
     0 ∈ modelPhaseMorseRange F v :=
   ⟨modelPhaseInverseSlope F v,modelPhaseInverseSlope_mem hv,
     modelPhaseMorseCoordinate_at_inverse F v⟩
 
 theorem modelPhaseMorseInverse_zero
-    {F : ℝ → ℝ} {σ δ v : ℝ}
+     {σ δ v : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
@@ -60,7 +69,7 @@ theorem modelPhaseMorseInverse_zero
     modelPhaseMorseInverse_coordinate hσ hδ hF hv (modelPhaseInverseSlope_mem hv)
 
 theorem modelPhaseMorseInverse_hasStrictDerivAt
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
+     {σ δ v z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) :
@@ -75,7 +84,7 @@ theorem modelPhaseMorseInverse_hasStrictDerivAt
   exact modelPhaseMorseInverse_coordinate hσ hδ hF hv hx
 
 theorem modelPhaseMorseRange_isOpen
-    {F : ℝ → ℝ} {σ δ v : ℝ}
+     {σ δ v : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
@@ -88,7 +97,7 @@ theorem modelPhaseMorseRange_isOpen
   rwa [hd.map_nhds_eq (modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv hu).ne'] at hi
 
 theorem modelPhaseMorseInverse_contDiffAt
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
+     {σ δ v z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) :
@@ -105,7 +114,7 @@ theorem modelPhaseMorseInverse_contDiffAt
     (he.localInverse_unique hg)
 
 theorem modelPhaseMorseInverse_hasDerivAt_zero
-    {F : ℝ → ℝ} {σ δ v : ℝ}
+     {σ δ v : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
@@ -116,7 +125,7 @@ theorem modelPhaseMorseInverse_hasDerivAt_zero
     modelPhaseMorseCoordinate_reciprocal_derivative_amplitude hF hv] at h
 
 theorem modelPhaseMorseInverse_quadratic
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
+     {σ δ v z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) :
@@ -124,5 +133,7 @@ theorem modelPhaseMorseInverse_quadratic
       -modelPhaseLegendreDual F v-z^2/2 := by
   simpa only [modelPhaseMorseCoordinate_inverse hz] using
     modelPhaseMorseCoordinate_normalForm hσ hδ hF hv (modelPhaseMorseInverse_mem hz)
+end
 
-end TaoTrudgianYang2025
+
+

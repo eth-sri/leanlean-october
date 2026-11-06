@@ -12,7 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentDetectorPlainRelativeClass
 open HeckeFamily CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 open CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 local instance:IsPrincipalIdealRing O:=IsCyclotomicExtension.Rat.three_pid K
@@ -64,8 +64,8 @@ theorem energy_eq (η η₀:Character)(θ:ι→RayQuotient.Characters M H)(m A:O
   intro z
   rw [positive_row M H hH η η₀ θ m A z W₁ W₂ b P β t X₁ X₂]
 
-end SevenEighths.CenteredMomentDetectorPlainRelativeClass
 
-end
 
-end OAI
+
+
+

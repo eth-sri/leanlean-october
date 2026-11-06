@@ -13,12 +13,16 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 open Complex MeasureTheory Set
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem norm_atkinsonRootPhase_integral_right {T b a c : ℝ}
+section
+variable {T b a c : ℝ}
     (hT : 0 < T) (ha : 0 < a) (hac : a ≤ c)
+include T b a c hT ha hac
+
+theorem norm_atkinsonRootPhase_integral_right 
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + 1 ≤ a) :
     ‖∫ y in a..c, Complex.exp (2 * Real.pi * I * (atkinsonRootPhase T b y : ℂ))‖ ≤
       1 / (2 * Real.pi) := by
@@ -35,8 +39,7 @@ theorem norm_atkinsonRootPhase_integral_right {T b a c : ℝ}
     exact (atkinsonRootSlope_strictAnti hT.le b).antitoneOn
       (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
 
-theorem norm_atkinsonRootPhase_integral_left {T b a c : ℝ}
-    (hT : 0 < T) (ha : 0 < a) (hac : a ≤ c)
+theorem norm_atkinsonRootPhase_integral_left 
     (hr : c ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - 1) :
     ‖∫ y in a..c, Complex.exp (2 * Real.pi * I * (atkinsonRootPhase T b y : ℂ))‖ ≤
       1 / (2 * Real.pi) := by
@@ -52,5 +55,7 @@ theorem norm_atkinsonRootPhase_integral_left {T b a c : ℝ}
     rw [hd x hx, hd y hy]
     exact (atkinsonRootSlope_strictAnti hT.le b).antitoneOn
       (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

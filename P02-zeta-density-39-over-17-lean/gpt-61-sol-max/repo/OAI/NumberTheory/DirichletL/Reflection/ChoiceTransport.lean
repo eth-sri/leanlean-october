@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ φ τ : Type*} [Fintype σ] [DecidableEq σ] [Fintype τ]
 
 def fixedTupleCoefficient (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ) (p : σ→Ideal Eis) : ℂ :=
@@ -38,7 +38,7 @@ variable (G : PrimeFamily τ) (K : Ideal Eis) (hK : Admissible K)
     (hL : Pairwise (fun i j => Disjoint (L i) (L j))) (hprime : ∀ i,∀ P∈L i,Prime P)
     (p : supportedSlotChoices L F K)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

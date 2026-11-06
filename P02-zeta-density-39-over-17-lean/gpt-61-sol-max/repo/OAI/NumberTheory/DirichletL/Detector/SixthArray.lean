@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeCompleted
-open HeckeInverseAmplification ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open HeckeInverseAmplification CubicEisenstein
+open scoped EisensteinO
 
 lemma bareIdealHighCoefficient_sixth (η : HeckeFamily.Character)
     (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal) (hL : Supported p.2.val)
@@ -57,7 +57,7 @@ lemma rawHighCoefficient_sixth (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal
     ring
   · simp only [ite_eq_right hL,mul_zero,zero_mul,markedIdealHighSummand,highIdealMask]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

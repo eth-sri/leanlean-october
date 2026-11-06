@@ -1,17 +1,21 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MixedMaskedInput
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
 open RiemannZeta.GuthMaynard
 
+section
+variable (a b C₀ : ℝ) (ha : 0 < a) (hab : a ≤ b) (hC₀ : 0 ≤ C₀)
+include a b C₀ ha hab hC₀
+
 /-- Ordinary smooth compact inputs with independent affine shells. -/
 theorem mixed_compact_affine
-    (a b C₀ : ℝ) (ha : 0 < a) (hab : a ≤ b) (hC₀ : 0 ≤ C₀)
+    
     (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T R K B Q : ℝ) (f : ℝ → ℝ) (S : Finset (ℤ × (ℤ × ℤ))),
@@ -26,13 +30,12 @@ theorem mixed_compact_affine
   obtain ⟨C,hC,h⟩ := mixed_affine_full_finite D hD L hL C₀ hC₀ hε
   refine ⟨C,hC,?_⟩
   intro T R K B Q f S hT hK hKR hB hBR hQ hQK hRT hfd hf hs hp hbox
-  have hc : HasCompactSupport f := HasCompactSupport.intro isCompact_Icc hs
-  let fs : 𝓢(ℝ, ℝ) := hc.toSchwartzMap hfd
+  have hc := HasCompactSupport.intro isCompact_Icc hs
+  let fs := hc.toSchwartzMap hfd
   have hfs : GMAffineSupportedOn 0 L fs := by
     intro x hx
     apply hs
-    intro habx
-    exact hx ⟨ha.le.trans habx.1,habx.2.trans hbL⟩
+    grind
   have hfp : FourierSupFamily D T fs := by
     intro β hβ n ξ hξ
     have hh := hp β hβ n ξ hξ
@@ -40,8 +43,7 @@ theorem mixed_compact_affine
     exact hh
   exact h T R K B Q fs S hT hK hKR hB hBR hQ hQK hRT hf hfs hfp hbox
 
-theorem compact_smoothed_mixed_affine (a b C₀ : ℝ)
-    (ha : 0 < a) (hab : a ≤ b) (hC₀ : 0 ≤ C₀) {ε : ℝ} (hε : 0 < ε) :
+theorem compact_smoothed_mixed_affine  {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T R K B Q δ : ℝ) (g : ℝ → ℝ) (S : Finset (ℤ × (ℤ × ℤ))),
       2 ≤ T → 1 ≤ K → K ≤ R → 1 ≤ B → B ≤ R → 1 ≤ Q → Q ≤ K → R ≤ T^4 →
       0 < δ → δ ≤ 1 → δ ≤ a/4 → δ⁻¹ ≤ T →
@@ -77,8 +79,7 @@ theorem compact_smoothed_mixed_affine (a b C₀ : ℝ)
 
 /-- The masked affine consumer retains the literal restricted square mass
 and restricted fourth moment. The constant precedes the measurable set. -/
-theorem masked_mixed_affine (a b C₀ : ℝ)
-    (ha : 0 < a) (hab : a ≤ b) (hC₀ : 0 ≤ C₀) {ε : ℝ} (hε : 0 < ε) :
+theorem masked_mixed_affine  {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T R K B Q δ : ℝ) (A : Set ℝ) (r : ℝ → ℝ) (S : Finset (ℤ × (ℤ × ℤ))),
       2 ≤ T → 1 ≤ K → K ≤ R → 1 ≤ B → B ≤ R → 1 ≤ Q → Q ≤ K → R ≤ T^4 →
       0 < δ → δ ≤ 1 → δ ≤ a/4 → δ⁻¹ ≤ T →
@@ -112,5 +113,7 @@ theorem masked_mixed_affine (a b C₀ : ℝ)
     ((hr.pow_const 2).indicator hA) (hr2.indicator hA) hgi2 hg0 hgs hbox
   rw [heq]
   simpa only [hg2, g, integral_indicator hA] using hh
+end
 
-end GuthMaynard.Improvement
+
+

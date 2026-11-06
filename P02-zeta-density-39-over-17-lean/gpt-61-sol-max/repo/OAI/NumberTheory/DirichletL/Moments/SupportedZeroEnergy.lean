@@ -10,13 +10,17 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSupportedZeroEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve IdealMobiusDivisorSum
 open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode
 open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization
 open CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported I)
+section
+variable (S : Finset (Ideal O))
+include S
+
+theorem idealZeroEnergy_filter  (hS : ∀ I∈S,Supported I)
     (c : Ideal O → ℂ) (K : ℝ) (p : Ideal O → Prop) [DecidablePred p]
     (hc : ∀ I∈S, ¬p I → c I=0) :
     idealZeroEnergy S hS c K =
@@ -47,12 +51,19 @@ theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported 
   have ht := hep.tsum_eq hs
   simpa only [tsum_fintype,Fintype.sum_prod_type,f,ep,e,idealZeroEnergy,idealColumn] using ht.symm
 
-def activeColumns (S : Finset (Ideal O)) (c : Ideal O → ℂ) : Finset (Ideal O) :=
+section
+variable (c : Ideal O → ℂ)
+include c
+
+def activeColumns  : Finset (Ideal O) :=
   (supportedColumns S).filter (fun I => c I≠0)
 
-lemma activeColumns_supported (S : Finset (Ideal O)) (c : Ideal O → ℂ)
+lemma activeColumns_supported 
     (I : Ideal O) (hI : I∈activeColumns S c) : Supported I :=
   (Finset.mem_filter.mp (Finset.mem_filter.mp hI).1).2
+end
+end
+
 
 theorem zeroEnergy_eq_active_original (η : Character) (m A : O) (t : ℝ)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
@@ -65,15 +76,18 @@ theorem zeroEnergy_eq_active_original (η : Character) (m A : O) (t : ℝ)
     (fun I => c I*rowWeight η m A 1 t I) K (fun I => c I≠0)
     (fun I _ h => by simp only [not_not] at h; rw [h,zero_mul])
 
-theorem finiteColumnCoefficient_witness {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (I : Ideal O)
+section
+variable {ι : Type*} [Fintype ι]
+    (S : Finset (Tuple ι))
+include ι S
+
+theorem finiteColumnCoefficient_witness  (β : Tuple ι → ℂ) (I : Ideal O)
     (hI : finiteColumnCoefficient S β I≠0) :
     ∃ v∈S, β v≠0 ∧ finiteTupleProduct v=I := by
   obtain ⟨v,hv,hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hI
   exact ⟨v,(Finset.mem_filter.mp hv).1,hne,(Finset.mem_filter.mp hv).2⟩
 
-theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (I : Ideal O) (hI : I≠0) :
+theorem finite_tuple_fiber_card  (I : Ideal O) (hI : I≠0) :
     (S.filter (fun v => finiteTupleProduct v=I)).card ≤
       (idealDivisors I).card^(Fintype.card ι+2) := by
   let T := S.filter (fun v => finiteTupleProduct v=I)
@@ -89,8 +103,7 @@ theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
   simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_sum,Fintype.card_fin,T]
     using Fintype.card_le_of_injective f hf
 
-theorem finiteColumnCoefficient_norm_le {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (B : ℝ) (hB : 0≤B)
+theorem finiteColumnCoefficient_norm_le  (β : Tuple ι → ℂ) (B : ℝ) (hB : 0≤B)
     (hβ : ∀ v∈S, finiteTupleProduct v≠0 → ‖β v‖≤B) (I : Ideal O) (hI : I≠0) :
     ‖finiteColumnCoefficient S β I‖ ≤ B*((idealDivisors I).card:ℝ)^(Fintype.card ι+2) := by
   calc
@@ -103,6 +116,8 @@ theorem finiteColumnCoefficient_norm_le {ι : Type*} [Fintype ι]
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ hB
       exact_mod_cast finite_tuple_fiber_card S I hI
+end
+
 
 theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι], Fintype.card ι≤N →
@@ -164,8 +179,8 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       ((X^(ε/4))^2*X^(1+ε/2)) := by ring
     _ = _ := by rw [hxpow]
 
-end SevenEighths.CenteredMomentSupportedZeroEnergy
 
-end
 
-end OAI
+
+
+

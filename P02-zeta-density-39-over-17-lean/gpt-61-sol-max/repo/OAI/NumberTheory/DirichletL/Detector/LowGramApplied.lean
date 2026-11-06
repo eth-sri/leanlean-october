@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSlotPolynomial
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
@@ -54,7 +54,7 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       Finset.sum_le_sum (fun σ _=>mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt (hbound σ)) (Real.sqrt_nonneg _))
     _=_ := (Finset.mul_sum ..).symm
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

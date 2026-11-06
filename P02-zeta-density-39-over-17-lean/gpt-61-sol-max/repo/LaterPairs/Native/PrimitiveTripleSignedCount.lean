@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem primitive_linear_triple_card_le_abs_modulus
@@ -40,4 +39,4 @@ theorem primitive_linear_triple_card_le_abs_modulus
     intro p hp
     simpa only [hcn] using hline p hp
 
-end TaoTrudgianYang2025
+

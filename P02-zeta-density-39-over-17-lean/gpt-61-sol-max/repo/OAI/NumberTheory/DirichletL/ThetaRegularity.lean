@@ -17,7 +17,7 @@ namespace SevenEighths.ThetaRegularity
 
 abbrev O := ActualEisensteinCubic.O
 
-open ActualEisensteinCubic ConcreteTraceCRT GaussianTheta
+open ActualEisensteinCubic ConcreteTraceCRT
 
 theorem lattice_gap (z : O) (hz : z ≠ 0) : 1 ≤ ‖eisEmbedding z‖ ^ 2 := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span]
@@ -30,8 +30,8 @@ variable (c : O) [NeZero c]
 local instance residueFinite : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span (NeZero.ne c)
 local instance residueFintype : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
 
-end SevenEighths.ThetaRegularity
 
-end
 
-end OAI
+
+
+

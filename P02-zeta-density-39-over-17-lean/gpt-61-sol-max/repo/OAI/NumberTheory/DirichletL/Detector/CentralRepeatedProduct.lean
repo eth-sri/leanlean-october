@@ -12,18 +12,23 @@ namespace SevenEighths.ProbeCentralRepeatedProduct
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation
 open HeckeDeletionBounds HeckeReciprocalGrowth
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def rowCost (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
-    (a e eps T : ℝ) : ℝ :=
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
+    (a e eps T : ℝ)
+include S hS u a e eps T
+
+def rowCost  : ℝ :=
   ((ProbeRowRadicalConductor.fixedConductorConstant S:ℝ)*(Ideal.span {u.val}:Ideal O).absNorm)^(a-1/2+6*e)*
     ((radical (rowCharacter S hS u).modulus).absNorm:ℝ)^(6*e+2*eps)*
     (3+T)^2*(presentationComplexity (rowCharacter S hS u) T)^eps
 
-lemma rowCost_nonneg (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
-    (a e eps T : ℝ) : 0≤rowCost S hS u a e eps T := by
+lemma rowCost_nonneg  : 0≤rowCost S hS u a e eps T := by
   unfold rowCost presentationComplexity HeckeLogarithmic.complexity
   positivity
+end
+
 
 lemma repeated_weight_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hη : IsCoprime P.val η.modulus)
@@ -109,8 +114,8 @@ theorem selected_repeated_product (e eps : ℝ) (he : 0<e) (he1 : e<1/1000)
       mul_le_mul_of_nonneg_left hbc (by positivity)
     _ = _ := by rw [show ((812*B)^k*(∏j,q j^z.re))*(C*rowCost S hS u a e eps ((3*i+2:ℕ)*T)*∏j,q j^(-(1/2:ℝ)))=
       C*(812*B)^k*rowCost S hS u a e eps ((3*i+2:ℕ)*T)*((∏j,q j^z.re)*(∏j,q j^(-(1/2:ℝ)))) by ring,heq]
-end SevenEighths.ProbeCentralRepeatedProduct
 
-end
 
-end OAI
+
+
+

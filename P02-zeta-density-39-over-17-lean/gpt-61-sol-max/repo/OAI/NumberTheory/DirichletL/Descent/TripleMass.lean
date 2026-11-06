@@ -9,7 +9,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open SevenEighths.InverseSecondFibers IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def tripleDivisorWeight (K : ℕ) (γ : OuterTriple) : ℝ :=
   ((idealDivisors γ.q0).card : ℝ)^(5+2*K) *
@@ -107,7 +107,7 @@ theorem triple_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
   apply (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr hpos.le)).trans_eq
   field_simp
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators SchwartzMap ContDiff
 
@@ -23,7 +24,7 @@ theorem exists_canonical_reference_cutoff (lo hi : ℝ) :
     FourierBridge.exists_complex_smooth_cutoff
       (CanonicalCubeSeparation.columnWindowRadius lo hi)
       (CanonicalCubeSeparation.columnWindowRadius_nonneg lo hi)
-  let Vlog : SchwartzMap ℝ ℂ := hvc.toSchwartzMap hvs
+  let Vlog := hvc.toSchwartzMap hvs
   refine ⟨Vlog, CanonicalCubeSeparation.columnWindowRadius lo hi + 1,
     by linarith [CanonicalCubeSeparation.columnWindowRadius_nonneg lo hi],
     rfl, hvc, hvbox, ?_, hvone, hvzero⟩
@@ -36,7 +37,7 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
       2 ≤ Z ∧ 2 ≤ Z ^ eta ∧ Real.exp 1 ≤ Z ^ eta ∧
       1 ≤ eta * Real.log Z ∧ hi ≤ Z ^ eta ∧
       Real.exp Alog ≤ Z ^ eta ∧ Real.exp window ≤ Z ^ eta := by
-  let R : ℝ := 2 + |hi| + |Alog| + |window|
+  let R := 2 + |hi| + |Alog| + |window|
   have hR : 1 ≤ R := by
     dsimp [R]
     linarith [abs_nonneg hi, abs_nonneg Alog, abs_nonneg window]
@@ -66,8 +67,8 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
     dsimp [R]
     linarith [le_abs_self window, abs_nonneg hi, abs_nonneg Alog]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

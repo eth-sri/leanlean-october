@@ -8,25 +8,29 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 lemma supportedIdealProduct_injective (C : SupportedIdeal) : Function.Injective (supportedIdealProduct C) := by
   intro I J h
   apply Subtype.ext
   exact mul_left_cancel₀ C.property.1 (congrArg Subtype.val h)
 
-def commonPool (F : Finset SupportedIdeal) : Finset SupportedIdeal :=
+section
+variable (F : Finset SupportedIdeal)
+include F
+
+def commonPool  : Finset SupportedIdeal :=
   (F×ˢF).image (fun p=>gcdCommon p.1 p.2)
-def commonColumns (F : Finset SupportedIdeal) (C : SupportedIdeal) : Finset SupportedIdeal :=
+def commonColumns  (C : SupportedIdeal) : Finset SupportedIdeal :=
   F.preimage (supportedIdealProduct C) (supportedIdealProduct_injective C).injOn
-lemma commonColumns_mem (F : Finset SupportedIdeal) (C I : SupportedIdeal) :
+lemma commonColumns_mem  (C I : SupportedIdeal) :
     I∈commonColumns F C ↔ supportedIdealProduct C I∈F := Finset.mem_preimage
 
-def commonTriples (F : Finset SupportedIdeal) : Finset ((_C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)) :=
+def commonTriples  : Finset ((_C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)) :=
   (commonPool F).sigma (fun C=>(commonColumns F C×ˢcommonColumns F C).filter (fun p=>IsCoprime p.1.val p.2.val))
 
-theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→SupportedIdeal→ℂ) :
+theorem finite_pair_gcd  (f : SupportedIdeal→SupportedIdeal→ℂ) :
     (∑I∈F,∑J∈F,f I J)=
       ∑C∈commonPool F,∑I∈commonColumns F C,∑J∈commonColumns F C,
         if IsCoprime I.val J.val then f (supportedIdealProduct C I) (supportedIdealProduct C J) else 0 := by
@@ -64,8 +68,10 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
   apply Finset.sum_congr rfl
   intro C hC
   rw [Finset.sum_filter,Finset.sum_product]
-
-end SevenEighths.ProbeGramCommon
 end
 
-end OAI
+
+
+
+
+

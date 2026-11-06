@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GramCommonActual
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcreteTraceCRT
+open scoped EisensteinO
 
 lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
     (hab : a*n+b*m=1) :
@@ -23,7 +24,6 @@ lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
     linear_combination hab
   rw [idealRowHom_argument_mul] at he
   let := finite_quotient_span (supported_element_ne_zero n hn)
-  let : Fintype (ResidueQ n) := Fintype.ofFinite _
   change supportedModulusCharacter n hn (Ideal.Quotient.mk _ b)=
     star (supportedModulusCharacter n hn (Ideal.Quotient.mk _ m))
   rw [MulChar.star_apply',MulChar.inv_apply_eq_inv']
@@ -54,7 +54,7 @@ theorem actual_common_lift (C n₁ n₂ k : O)
         (idealRowHom n₁ (Ideal.span {n₂})*star (idealRowHom n₂ (Ideal.span {n₁})))*actualCommon C hC n₁ n₂ k := by ring
     _ = _ := by rw [hphase]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

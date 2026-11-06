@@ -5,16 +5,16 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSourceMas
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerRanges
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
+open InverseMoment InverseInitialArithmetic
+
 open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
-local notation "Eis"=>ActualEisensteinCubic.O
+open ConcreteTraceCRT CanonicalQuadraticSieve
+open scoped EisensteinEis
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -87,8 +87,8 @@ theorem canonical_child_domains
       (hd x hx) (hv x hx) (hh x hx)).2
     rwa [initial_child_row_norm p hp hpr] at he
 
-end SevenEighths.InverseInitialEnergyCallerRanges
 
-end
 
-end OAI
+
+
+

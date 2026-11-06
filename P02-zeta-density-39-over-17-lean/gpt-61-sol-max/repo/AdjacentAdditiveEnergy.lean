@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import AdjacentLargeGcd
 public import DiscreteAdditiveEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -44,18 +44,9 @@ theorem discrete_energy_adjacent_band {η : ℝ} (hη : 0 < η) :
     obtain ⟨hl2,hu2⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.2).mp hp2
     exact ⟨by exact_mod_cast hN.trans hl1,by exact_mod_cast hN.trans hl2,hl1,hu1,hl2,hu2⟩
   have hsmall' := hsmall T t₀ N hT hN
-    (P.filter (fun p => (pairGcd p:ℝ) < N^2/T)) (by
-      intro p hp
-      exact ⟨(hP p (mem_filter.mp hp).1).1,
-        (hP p (mem_filter.mp hp).1).2.1,(hP p (mem_filter.mp hp).1).2.2.1,
-        (hP p (mem_filter.mp hp).1).2.2.2.1,(hP p (mem_filter.mp hp).1).2.2.2.2.1,
-        (hP p (mem_filter.mp hp).1).2.2.2.2.2,(mem_filter.mp hp).2⟩) W hW hsep
+    (P.filter (fun p => (pairGcd p:ℝ) < N^2/T)) (by grind) W hW hsep
   let Q := P.filter (fun p => N^2/T ≤ (pairGcd p:ℝ))
-  have hlarge' := hlarge T t₀ N hT hN hNT Q (by
-    intro p hp
-    obtain ⟨hp,hd⟩ := mem_filter.mp hp
-    obtain ⟨h1,h2,hl1,hu1,hl2,hu2⟩ := hP p hp
-    exact ⟨h1,h2,hl1,hu1,hl2,hu2,hd⟩) W hR hRT hW hsep
+  have hlarge' := hlarge T t₀ N hT hN hNT Q (by grind) W hR hRT hW hsep
   have hp5 : (W.card:ℝ)^((5:ℝ)/2)=(W.card:ℝ)*(W.card:ℝ)^((3:ℝ)/2) := by
     convert Real.rpow_add hr (1:ℝ) ((3:ℝ)/2) using 1 <;> norm_num
   have hp31 : (W.card:ℝ)^((31:ℝ)/12)=(W.card:ℝ)*(W.card:ℝ)^((19:ℝ)/12) := by
@@ -97,7 +88,7 @@ theorem discrete_energy_adjacent_band {η : ℝ} (hη : 0 < η) :
     rw [mul_pow,mul_pow,Real.sq_sqrt hr.le]
     ring
   rw [hsq] at habs
-  have hpow : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hpow := Real.one_le_rpow hT.le hη.le
   have h₁ : 0 ≤ N^4*(W.card:ℝ)/V^4 := by positivity
   have h₂ : 0 ≤ B/V^2 := by positivity
   calc
@@ -134,9 +125,7 @@ theorem discrete_additive_energy_adjacent {η : ℝ} (hη : 0 < η) :
   have hRn : (0:ℝ) ≤ W.card := Nat.cast_nonneg _
   by_cases hcap : (W.card:ℝ)^3 ≤ T^2
   · exact (hb T t₀ N hT hn hNT a W V hR hcap ha hV hl hW hsep).trans
-      (mul_le_mul_of_nonneg_right (by
-        have hh : C ≤ C+D := by linarith
-        exact mul_le_mul_of_nonneg_right hh (by positivity)) (by positivity))
+      (mul_le_mul_of_nonneg_right (by field_simp <;> nlinarith) (by positivity))
   · have hrange : T^((2:ℝ)/3) ≤ W.card := by
       apply (pow_le_pow_iff_left₀ (by positivity) hRn (by norm_num : (3:ℕ) ≠ 0)).mp
       rw [adjacent_rpow_nat ht.le]
@@ -150,8 +139,7 @@ theorem discrete_additive_energy_adjacent {η : ℝ} (hη : 0 < η) :
         _ = T^((1:ℝ)/3) := by
           nth_rw 1 [← Real.rpow_one T]
           rw [← Real.rpow_sub ht]
-          congr 1
-          norm_num
+          bound
     have hlen : (T/N)^2 ≤ W.card := by
       calc
         _ ≤ (T^((1:ℝ)/3))^2 := pow_le_pow_left₀ (by positivity) hdiv 2
@@ -171,4 +159,4 @@ theorem discrete_additive_energy_adjacent {η : ℝ} (hη : 0 < η) :
         have hh := div_le_div_of_nonneg_right hx (sq_nonneg V)
         linarith only [hh]
 
-end Montgomery.RationalMoment
+

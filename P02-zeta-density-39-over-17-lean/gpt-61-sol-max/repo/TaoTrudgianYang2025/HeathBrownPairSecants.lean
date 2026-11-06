@@ -7,19 +7,23 @@ public import TaoTrudgianYang2025.HeathBrownPairParameters
 
 /-! Ordered adjacent secants and an actual natural derivative-order choice. -/
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem heathBrownPairSecant_adjacent_identity {r τ : ℝ} (hr : 3 ≤ r) :
+
+section
+variable {r τ : ℝ} (hr : 3 ≤ r)
+include r τ hr
+
+theorem heathBrownPairSecant_adjacent_identity  :
     heathBrownPairSecant (r+1) τ-heathBrownPairSecant r τ =
       (heathBrownPairK (r+1)-heathBrownPairK r)*(τ-heathBrownPairRight r) := by
   have hj := heathBrownPairSecant_join hr
   unfold heathBrownPairSecant at hj ⊢
   nlinarith only [hj]
 
-theorem heathBrownPairSecant_next_le {r τ : ℝ} (hr : 3 ≤ r)
+theorem heathBrownPairSecant_next_le 
     (hτ : heathBrownPairRight r ≤ τ) :
     heathBrownPairSecant (r+1) τ ≤ heathBrownPairSecant r τ := by
   have hd := heathBrownPairSecant_adjacent_identity (τ:=τ) hr
@@ -27,13 +31,15 @@ theorem heathBrownPairSecant_next_le {r τ : ℝ} (hr : 3 ≤ r)
   have hm := mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hp) (sub_nonneg.mpr hτ)
   linarith
 
-theorem heathBrownPairSecant_le_next {r τ : ℝ} (hr : 3 ≤ r)
+theorem heathBrownPairSecant_le_next 
     (hτ : τ ≤ heathBrownPairRight r) :
     heathBrownPairSecant r τ ≤ heathBrownPairSecant (r+1) τ := by
   have hd := heathBrownPairSecant_adjacent_identity (τ:=τ) hr
   have hp := heathBrownPairK_antitone hr (show r ≤ r+1 by linarith)
   have hm := mul_nonneg_of_nonpos_of_nonpos (sub_nonpos.mpr hp) (sub_nonpos.mpr hτ)
   linarith
+end
+
 
 theorem heathBrownPairSecant_le_later {j k : ℕ} (hj : 3 ≤ j) (hjk : j ≤ k)
     {τ : ℝ} (hτ : τ ≤ heathBrownPairRight j) :
@@ -95,4 +101,4 @@ theorem exists_heathBrownPair_segment {τ : ℝ} (hτ : 2 ≤ τ) :
     rw [heq,heathBrownPairLeft_succ]
     exact hlt.le
 
-end TaoTrudgianYang2025
+

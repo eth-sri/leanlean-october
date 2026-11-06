@@ -5,13 +5,17 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalAnnularCommonBoun
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstWindowBudgets
 open CenteredMomentSecondWindowBudget
 
-lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
+section
+variable {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i)
+include α s E hE
+
+lemma sqrt_sum_le :
     Real.sqrt (∑i∈s,E i)≤∑i∈s,Real.sqrt (E i):=by
   induction s using Finset.induction_on with
   | empty => simp
@@ -27,7 +31,7 @@ lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
           mul_nonneg (Real.sqrt_nonneg (E a)) (Real.sqrt_nonneg (∑i∈s,E i))]
     exact hadd.trans (add_le_add le_rfl (ih (fun i hi=>hE i (Finset.mem_insert_of_mem hi))))
 
-lemma windowBudget_sum {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i)
+lemma windowBudget_sum 
     (J:ℕ)(t:ℝ):
     windowBudget J t (∑i∈s,E i)≤∑i∈s,windowBudget J t (E i):=by
   unfold windowBudget
@@ -35,6 +39,8 @@ lemma windowBudget_sum {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i)
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (sqrt_sum_le s E hE) (pow_nonneg (heightEnvelope_pos t).le _))
     (profileMoment_nonneg J)
+end
+
 
 theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
     (E:α→ℝ)(F:β→ℝ)(hE:∀i∈s,0≤E i)(hF:∀j∈u,0≤F j)
@@ -49,17 +55,17 @@ theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
   intro i hi
   rw [Finset.mul_sum]
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
-open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+
+
+
+open CenteredMomentSecondWindowBudget
+
+open scoped HeckeO
 universe u
 
-end SevenEighths.CenteredMomentFirstWindowBudgets
 
-end
 
-end OAI
+
+
+

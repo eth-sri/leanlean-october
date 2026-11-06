@@ -9,37 +9,43 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
 open InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance coefficientFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+local instance coefficientFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
-def sourceRowPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (R F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+include s hp hg j
+
+def sourceRowPhase  (R F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   residualWithFrozen hp hg c R F * ramifiedBlock hg (fun _ => 1) R
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m) * frozenArgument hg j F (∏ i ∈ R, p i)
 
-def sourceSlotPhase [∀ i, (Ideal.span {p i}).IsMaximal]
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+def sourceSlotPhase  (S F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   markedWithFrozen hp hg c S F * ramifiedBlock hg (fun _ => 0) S
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m) * frozenArgument hg j F (∏ i ∈ S, p i)
+end
 
-def sourceFrozenPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+include D s
+
+def sourceFrozenPhase 
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
     (j : ι → ℕ) (F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   star D.fixedFactor * frozenCore hp hg c j F * ramifiedBlock hg j F
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m)
 
-def sourceColumn [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
+def sourceColumn  (hc : c ≠ 0)
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι)
     (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
   fixedCuspArrayWithPhase s.index u
@@ -48,9 +54,7 @@ def sourceColumn [∀ i, (Ideal.span {p i}).IsMaximal]
   ∏ i ∈ F, bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i)
     (Ideal.Quotient.mk _ (primaryGenerator n*(primaryGenerator b)^3))
 
-theorem mixed_coefficient_hybrid [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+theorem mixed_coefficient_hybrid 
     (hp : ∀ i, p i ≠ 0) (hc : c ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R S F : Finset ι)
@@ -90,8 +94,10 @@ theorem mixed_coefficient_hybrid [∀ i, (Ideal.span {p i}).IsMaximal]
       (markedActiveExponent S j) hrj hsj hR n b hb,ite_eq_left hmask,mul_one]
   unfold sourceRowPhase sourceSlotPhase sourceFrozenPhase sourceColumn
   ring
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

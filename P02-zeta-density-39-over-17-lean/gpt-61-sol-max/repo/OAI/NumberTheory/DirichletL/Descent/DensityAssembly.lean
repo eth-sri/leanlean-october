@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 
 @[expose] public section
@@ -8,7 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge JointLogSeparation
-noncomputable section
+
 
 theorem integrable_density_mode {ι : Type*} [Fintype ι]
     (D : Frequency × (ι → ℝ) → ℂ) (hD : Integrable D) (a₁ a₂ ak y : ι → ℝ) :
@@ -31,10 +32,9 @@ theorem density_finite_sum {ι κ : Type*} [Fintype ι] (s : Finset κ)
   filter_upwards with z
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  grind
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Transform
 
 @[expose] public section
@@ -17,7 +18,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyIntegerTupleDisplacement_add
     {I : Type*} (R : ℕ) (f g : I → ℤ)
@@ -50,8 +51,12 @@ theorem wooleyIntegerTupleDisplacement_sum
         ∑ j : J, ∑ i : Fin R, f j (xy.2 i) := Finset.sum_comm
   rw [hleft, hright, Finset.sum_sub_distrib]
 
+section
+variable {I : Type*}
+include I
+
 theorem wooleyIntegerTupleDisplacement_polynomial_add
-    {I : Type*} (R : ℕ) (f g : Polynomial ℤ) (point : I → ℤ)
+     (R : ℕ) (f g : Polynomial ℤ) (point : I → ℤ)
     (xy : WooleyFiniteTuple R I × WooleyFiniteTuple R I) :
     wooleyIntegerTupleDisplacement R
         (fun x => (f + g).eval (point x)) xy =
@@ -62,7 +67,7 @@ theorem wooleyIntegerTupleDisplacement_polynomial_add
       (fun x => f.eval (point x)) (fun x => g.eval (point x)) xy
 
 theorem wooleyIntegerTupleDisplacement_polynomial_C_mul
-    {I : Type*} (R : ℕ) (z : ℤ) (f : Polynomial ℤ)
+     (R : ℕ) (z : ℤ) (f : Polynomial ℤ)
     (point : I → ℤ)
     (xy : WooleyFiniteTuple R I × WooleyFiniteTuple R I) :
     wooleyIntegerTupleDisplacement R
@@ -76,7 +81,7 @@ theorem wooleyIntegerTupleDisplacement_polynomial_C_mul
 /-- A top-row congruence yields a normalized-column congruence at the weakest
 common column modulus. -/
 theorem wooleySection7_top_implies_normalized_column
-    {I : Type*} {k r p c a gamma M R : ℕ}
+     {k r p c a gamma M R : ℕ}
     (hp : p ≠ 0) (hrk : r ≤ k) (hgamma : gamma ≤ a)
     (hgammaM : gamma * k ≤ M) (omega h : ℤ)
     (hsep : h = omega * (p : ℤ) ^ gamma)
@@ -111,7 +116,7 @@ theorem wooleySection7_top_implies_normalized_column
     exact wooleyIntegerTupleDisplacement_polynomial_C_mul
       R ((p : ℤ) ^ (gamma * j)) qpoly point xy
   have hjk : j ≤ k := wooleySection7Node_succ_le hrk l
-  have he : gamma * j ≤ gamma * k := Nat.mul_le_mul_left gamma hjk
+  have he := Nat.mul_le_mul_left gamma hjk
   have hdiv : (p : ℤ) ^ M ∣
       (p : ℤ) ^ (gamma * j) * 1 *
         wooleyIntegerTupleDisplacement R
@@ -124,7 +129,7 @@ theorem wooleySection7_top_implies_normalized_column
 /-- Linear combinations used by the inverse matrix preserve the common
 normalized-column modulus. -/
 theorem wooleySection7_normalized_columns_imply_transformed
-    {I : Type*} {k r p c a gamma L R : ℕ}
+     {k r p c a gamma L R : ℕ}
     (omega h omegaInv : ℤ) (psi : Fin r → Polynomial ℤ)
     (G : Matrix (Fin r) (Fin r) (ZMod (p ^ L))) (i : Fin r)
     (point : I → ℤ)
@@ -183,7 +188,7 @@ theorem wooleySection7_normalized_columns_imply_transformed
 equation at the common residual modulus.  The `p^L` lift error vanishes
 exactly and costs no additional depth. -/
 theorem wooleySection7_transformed_implies_lower_displacement
-    {I : Type*} {p r a gamma L R : ℕ}
+     {p r a gamma L R : ℕ}
     (hp : p ≠ 0) (hcommon : r * (a - gamma) ≤ L)
     (i : Fin r) (W Psi Error : Polynomial ℤ)
     (point : I → ℤ)
@@ -214,10 +219,7 @@ theorem wooleySection7_transformed_implies_lower_displacement
   have hrowDiv : (p : ℤ) ^ L ∣
       (p : ℤ) ^ ((a - gamma) * ((i : ℕ) + 1)) *
         wooleyIntegerTupleDisplacement R
-          (fun x => Psi.eval (point x)) xy := by
-    have hsub := dvd_sub hWdiv hErrorDiv
-    rw [hdisp] at hsub
-    simpa only [add_sub_cancel_right] using hsub
+          (fun x => Psi.eval (point x)) xy := by simp_all
   have hi : (i : ℕ) + 1 ≤ r := i.isLt
   have he : (a - gamma) * ((i : ℕ) + 1) ≤
       r * (a - gamma) := by
@@ -229,6 +231,8 @@ theorem wooleySection7_transformed_implies_lower_displacement
     simpa only [mul_one] using hrowDiv
   exact wooleySection7_primePower_unit_cancel_to_common
     hp (by simp) he hcommon hrowDiv'
+end
+
 
 /-- Complete algebraic passage from the top congruences (7.10) to a spaced
 lower system.  The conclusion records the exact residual depth before the
@@ -328,25 +332,15 @@ theorem wooley_section7_common_depth_eq_BPrimeNat
   have hgammaR : gamma * r + (a - gamma) * r = a * r := by
     rw [← Nat.add_mul, Nat.add_sub_of_le hgamma]
   have hsplit : gamma * k = gamma * (k - r) + gamma * r := by
-    have hkr : (k - r) + r = k := Nat.sub_add_cancel hrk.le
+    have hkr := Nat.sub_add_cancel hrk.le
     calc
       gamma * k = gamma * ((k - r) + r) := by rw [hkr]
       _ = _ := Nat.mul_add _ _ _
   have hdecomp :
-      M = gamma * k + r * (a - gamma) + bp := by
-    rw [hsplit]
-    calc
-      M = bp + r * a + (k - r) * gamma := hsum.symm
-      _ = gamma * (k - r) + gamma * r +
-          r * (a - gamma) + bp := by
-        rw [Nat.mul_comm (k - r) gamma]
-        have hgammaR' : gamma * r + r * (a - gamma) = r * a := by
-          simpa [Nat.mul_comm] using hgammaR
-        omega
+      M = gamma * k + r * (a - gamma) + bp := by linarith
   dsimp only [M, bp] at hdecomp ⊢
-  rw [hdecomp]
   omega
 
-end
 
-end GafniTao
+
+

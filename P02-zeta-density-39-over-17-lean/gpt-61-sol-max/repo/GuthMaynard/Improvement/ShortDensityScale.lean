@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MiddleLargeValues
 public import GuthMaynard.Improvement.SeparatedSecondMoment
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -12,9 +12,13 @@ def shortDensityA (σ : ℝ) : ℝ := 6/(7*σ+3)
 def shortDensityB (σ : ℝ) : ℝ := 3*shortDensityA σ/2
 def shortDensityExponent (σ : ℝ) : ℝ := 18*(1-σ)/(7*σ+3)
 
+section
+variable {σ : ℝ} (hσ : 9/13 ≤ σ)
+include σ hσ
+
 /-- Exact scale margins and the mean-value comparison throughout the compact
 sigma range. The final inequality is sharp at sigma=5/7. -/
-theorem short_density_scale_bounds {σ : ℝ} (hσ : 9/13 ≤ σ) (hσ' : σ ≤ 5/7) :
+theorem short_density_scale_bounds  (hσ' : σ ≤ 5/7) :
     3/4 ≤ shortDensityA σ ∧ shortDensityA σ ≤ 4/5 ∧
     0 ≤ shortDensityB σ ∧ shortDensityB σ ≤ 6/5 ∧
     0 < shortDensityExponent σ ∧
@@ -39,12 +43,14 @@ theorem short_density_scale_bounds {σ : ℝ} (hσ : 9/13 ≤ σ) (hσ' : σ ≤
       (show 0 ≤ 3/2-σ by linarith)]
 
 /-- The two large-value budgets meet at the intended density exponent. -/
-theorem short_density_scale_identities {σ : ℝ} (hσ : 9/13 ≤ σ) :
+theorem short_density_scale_identities  :
     2*shortDensityB σ*(1-σ) = shortDensityExponent σ ∧
     shortDensityA σ*(18/7-4*σ)+6/7 = shortDensityExponent σ := by
   have hd : 7*σ+3 ≠ 0 := by linarith
   simp only [shortDensityB, shortDensityA, shortDensityExponent]
   constructor <;> field_simp [hd] <;> ring
+end
+
 
 /-- The length split at H^(5/6) respects both exact middle-range endpoints. -/
 theorem short_density_middle_time {σ H N : ℝ} (hσ : 9/13 ≤ σ)
@@ -81,8 +87,12 @@ theorem short_density_positive_budget {σ H N δ : ℝ} (hσ : 9/13 ≤ σ)
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH (by
       nlinarith [mul_nonneg hδ (show 0 ≤ σ by linarith)])
 
+section
+variable {σ H N : ℝ} (hσ : 9/13 ≤ σ)
+include σ H N hσ
+
 /-- The decreasing middle-range term uses the lower length endpoint. -/
-theorem short_density_middle_budget {σ H N : ℝ} (hσ : 9/13 ≤ σ)
+theorem short_density_middle_budget 
     (hH : 0 < H) (hlo : H^(shortDensityA σ) ≤ N) :
     N^(18/7-4*σ)*H^(6/7:ℝ) ≤ H^(shortDensityExponent σ) := by
   have hm := Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hH _) hlo
@@ -94,7 +104,7 @@ theorem short_density_middle_budget {σ H N : ℝ} (hσ : 9/13 ≤ σ)
     _ = _ := by rw [← Real.rpow_mul hH.le, ← Real.rpow_add hH, hid]
 
 /-- Above H^(5/6), the first mean-value term is no larger than the target. -/
-theorem short_density_mean_budget {σ H N : ℝ} (hσ : 9/13 ≤ σ)
+theorem short_density_mean_budget 
     (hσ' : σ ≤ 5/7) (hH : 1 ≤ H) (hlo : H^(5/6:ℝ) ≤ N) :
     H*N^(1-2*σ) ≤ H^(shortDensityExponent σ) := by
   have hH0 : 0 < H := by linarith
@@ -107,7 +117,9 @@ theorem short_density_mean_budget {σ H N : ℝ} (hσ : 9/13 ≤ σ)
       rw [← Real.rpow_mul hH0.le]
       nth_rw 1 [← Real.rpow_one H]
       rw [← Real.rpow_add hH0]
-      congr 1; ring
+      ring
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH he
+end
 
-end GuthMaynard.Improvement
+
+

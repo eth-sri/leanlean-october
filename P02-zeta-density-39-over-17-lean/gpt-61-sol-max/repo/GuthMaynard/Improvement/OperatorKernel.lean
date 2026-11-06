@@ -1,44 +1,54 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.OperatorPhase
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
 open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
+section
+variable (ν : Measure ℝ) [IsFiniteMeasure ν]
+include ν
+
+section
+variable (a : ℝ → ℝ)
+include a
+
 /-- Actual finite integer cutoff operator. The phase orientation gives
 kernel phase((t-u)*mellinFrequency(m/L)). -/
-def operatorDiscrete (ν : Measure ℝ) [IsFiniteMeasure ν]
-    (a : ℝ → ℝ) (L l u : ℝ) : Lp ℂ 2 ν →L[ℂ] Lp ℂ 2 ν :=
+def operatorDiscrete  (L l u : ℝ) : Lp ℂ 2 ν →L[ℂ] Lp ℂ 2 ν :=
   ∑ m ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, (a ((m:ℝ)/L):ℂ) •
     rankOne ℂ (operatorPhase ν (mellinFrequency ((m:ℝ)/L)))
       (operatorPhase ν (mellinFrequency ((m:ℝ)/L)))
 
 /-- Actual continuous cutoff operator, with the full outside L incorporated
 in the signed weight. All integrability is proved below from ordinary L1. -/
-def operatorContinuous (ν : Measure ℝ) [IsFiniteMeasure ν]
-    (a : ℝ → ℝ) (L : ℝ) : Lp ℂ 2 ν →L[ℂ] Lp ℂ 2 ν :=
+def operatorContinuous  (L : ℝ) : Lp ℂ 2 ν →L[ℂ] Lp ℂ 2 ν :=
   operatorIntegral volume
     (fun x => ((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x))
     (fun x => operatorPhase ν (mellinFrequency x))
+end
 
-theorem operator_mellin_phase_measurable (ν : Measure ℝ) [IsFiniteMeasure ν] :
+
+theorem operator_mellin_phase_measurable  :
     AEStronglyMeasurable (fun x => operatorPhase ν (mellinFrequency x)) volume := by
   apply (operator_phase_continuous ν).comp_aestronglyMeasurable
   have hm : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
   exact hm.aestronglyMeasurable
 
-theorem operator_weighted_phase_measurable (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
+section
+variable {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ)
+include a hi L
+
+theorem operator_weighted_phase_measurable  :
     AEStronglyMeasurable (fun x => ((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)) volume := by
   exact ((Complex.continuous_ofReal.comp_aestronglyMeasurable
     (hi.aestronglyMeasurable.const_mul L))).smul (operator_mellin_phase_measurable ν)
 
 /-- The nuclear norm-product condition is derived, not assumed. -/
-theorem operator_continuous_norm_product (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
+theorem operator_continuous_norm_product  :
     Integrable (fun x => ‖((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)‖ *
       ‖operatorPhase ν (mellinFrequency x)‖) := by
   have he (x : ℝ) : ‖((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)‖ *
@@ -48,8 +58,7 @@ theorem operator_continuous_norm_product (ν : Measure ℝ) [IsFiniteMeasure ν]
   simp_rw [he]
   exact (hi.const_mul L).norm.mul_const _
 
-theorem operator_continuous_integrable (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
+theorem operator_continuous_integrable  :
     Integrable (fun x => rankOne ℂ
       (((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x))
       (operatorPhase ν (mellinFrequency x))) :=
@@ -57,16 +66,16 @@ theorem operator_continuous_integrable (ν : Measure ℝ) [IsFiniteMeasure ν]
     (operator_mellin_phase_measurable ν) (operator_continuous_norm_product ν hi L)
 
 /-- Matrix coefficients of the constructed continuous operator. -/
-theorem operator_continuous_pairing (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) (z w : Lp ℂ 2 ν) :
+theorem operator_continuous_pairing  (z w : Lp ℂ 2 ν) :
     inner ℂ z (operatorContinuous ν a L w) =
       ∫ x, ((L*a x:ℝ):ℂ)*inner ℂ z (operatorPhase ν (mellinFrequency x))*
         inner ℂ (operatorPhase ν (mellinFrequency x)) w := by
   rw [operatorContinuous,operatorIntegral_pairing volume
     (operator_weighted_phase_measurable ν hi L) (operator_mellin_phase_measurable ν)
     (operator_continuous_norm_product ν hi L)]
-  apply integral_congr_ae
-  filter_upwards with x
-  rw [inner_smul_right]
+  simp_all <;> nlinarith
+end
+end
 
-end GuthMaynard.Improvement
+
+

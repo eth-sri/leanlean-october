@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected horizontal-limit proofs adapted from Scott McColm,
 PointMeanMellinHorizontal.lean, exact revision
@@ -15,19 +16,22 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
+open Complex MeasureTheory Filter Topology
 open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
+section
+variable {a t : ℝ} (haLower : -(1 / 4 : ℝ) ≤ a) (haUpper : a ≤ 2)
+include a t haLower haUpper
+
 theorem heathBrown_Gamma_wide_strip_decay
-    {a t : ℝ} (haLower : -(1 / 4 : ℝ) ≤ a) (haUpper : a ≤ 2) :
+     :
     |t| ^ 3 * ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * I)‖ ≤ 24 := by
   by_cases ht : t = 0
   · subst t
     norm_num
-  let z : ℂ := (a : ℂ) + (t : ℂ) * I
+  let z := (a : ℂ) + (t : ℂ) * I
   have hz (j : ℝ) : z + (j : ℂ) ≠ 0 := by
     intro h
     have hi := congrArg Complex.im h
@@ -66,18 +70,24 @@ theorem heathBrown_Gamma_wide_strip_decay
     _ ≤ 24 := hnorm.trans (hreal.trans_eq hfive)
 
 theorem heathBrown_Gamma_wide_strip_norm_le
-    {a t : ℝ} (haLower : -(1 / 4 : ℝ) ≤ a) (haUpper : a ≤ 2)
+    
     (ht : 1 ≤ |t|) :
     ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * I)‖ ≤ 24 / |t| ^ 3 := by
   have htPos : 0 < |t| := zero_lt_one.trans_le ht
   apply (le_div_iff₀ (pow_pos htPos 3)).2
   simpa [mul_comm] using heathBrown_Gamma_wide_strip_decay haLower haUpper
+end
 
-noncomputable def heathBrownMellinHorizontalSize (s : ℂ) (R : ℝ) : ℝ :=
+
+def heathBrownMellinHorizontalSize (s : ℂ) (R : ℝ) : ℝ :=
   |s.re| + 2 + |s.im| + |R|
 
+section
+variable {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
+include s hsLower
+
 theorem norm_heathBrownZetaSquareMellinIntegrand_horizontal_le
-    {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
+    
     {x R : ℝ} (hxLower : -(1 / 4 : ℝ) ≤ x) (hxUpper : x ≤ 2)
     (hR : 1 ≤ |R|) (hheight : 1 ≤ |s.im + R|) :
     ‖heathBrownZetaSquareMellinIntegrand s
@@ -88,8 +98,7 @@ theorem norm_heathBrownZetaSquareMellinIntegrand_horizontal_le
   have hGamma := heathBrown_Gamma_wide_strip_norm_le hxLower hxUpper hR
   have hzetaRe : (1 / 4 : ℝ) ≤
       (s + ((x : ℂ) + (R : ℂ) * I)).re := by
-    simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-      mul_zero, zero_mul, sub_self, add_zero]
+    simp
     linarith
   have hzetaIm : 1 ≤ |(s + ((x : ℂ) + (R : ℂ) * I)).im| := by
     simpa using hheight
@@ -115,17 +124,16 @@ theorem norm_heathBrownZetaSquareMellinIntegrand_horizontal_le
       (s + ((x : ℂ) + (R : ℂ) * I))‖ ≤
         5 * heathBrownMellinHorizontalSize s R :=
     hzeta.trans (mul_le_mul_of_nonneg_left hnorm (by norm_num))
-  exact mul_le_mul hGamma (pow_le_pow_left₀ (norm_nonneg _) hzeta' 2)
-    (by positivity) (by positivity)
+  gcongr
 
 theorem norm_heathBrownMellin_HIntegral'_le
-    {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
+    
     {a b R : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b)
     (hR : 1 ≤ |R|) (hheight : 1 ≤ |s.im + R|) :
     ‖HIntegral' (heathBrownZetaSquareMellinIntegrand s) a b R‖ ≤
       (9 / 4 : ℝ) * ((24 / |R| ^ 3) *
         (5 * heathBrownMellinHorizontalSize s R) ^ 2) := by
-  let M : ℝ := (24 / |R| ^ 3) *
+  let M := (24 / |R| ^ 3) *
     (5 * heathBrownMellinHorizontalSize s R) ^ 2
   have hbase :
       ‖HIntegral (heathBrownZetaSquareMellinIntegrand s) a b R‖ ≤
@@ -161,14 +169,17 @@ theorem norm_heathBrownMellin_HIntegral'_le
       nlinarith [mul_le_mul_of_nonneg_left hwidth (by positivity : 0 ≤ M)]
     _ = _ := by rfl
 
+section
+variable {a b : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b)
+include a b ha hb hab
+
 theorem tendsto_heathBrownMellin_HIntegral'_zero
-    {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
-    {a b : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b) :
+     :
     Tendsto (fun R : ℝ =>
       HIntegral' (heathBrownZetaSquareMellinIntegrand s) a b R)
       atTop (nhds 0) := by
-  let D : ℝ := |s.re| + 2 + |s.im|
-  let C : ℝ := (9 / 4 : ℝ) * 24 * (5 * 2) ^ 2
+  let D := |s.re| + 2 + |s.im|
+  let C := (9 / 4 : ℝ) * 24 * (5 * 2) ^ 2
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
   apply squeeze_zero' (g := fun R : ℝ => C * R⁻¹)
     (Eventually.of_forall fun _ => norm_nonneg _)
@@ -179,14 +190,10 @@ theorem tendsto_heathBrownMellin_HIntegral'_zero
     have hHeightR : |s.im| + 1 ≤ R :=
       (le_max_right D (|s.im| + 1)).trans ((le_max_right 1 _).trans hR)
     have hRpos : 0 < R := zero_lt_one.trans_le hRone
-    have hheight : 1 ≤ |s.im + R| := by
-      rw [abs_of_nonneg (by linarith [neg_abs_le s.im])]
-      linarith [neg_abs_le s.im]
+    have hheight : 1 ≤ |s.im + R| := by grind
     have hsize : heathBrownMellinHorizontalSize s R ≤ 2 * R := by
       unfold heathBrownMellinHorizontalSize
-      rw [abs_of_pos hRpos]
-      dsimp only [D] at hDR
-      linarith
+      grind
     have hsizeNonneg : 0 ≤ heathBrownMellinHorizontalSize s R := by
       unfold heathBrownMellinHorizontalSize
       positivity
@@ -206,13 +213,12 @@ theorem tendsto_heathBrownMellin_HIntegral'_zero
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
 
 theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
-    {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
-    {a b : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b) :
+     :
     Tendsto (fun R : ℝ =>
       HIntegral' (heathBrownZetaSquareMellinIntegrand s) a b (-R))
       atTop (nhds 0) := by
-  let D : ℝ := |s.re| + 2 + |s.im|
-  let C : ℝ := (9 / 4 : ℝ) * 24 * (5 * 2) ^ 2
+  let D := |s.re| + 2 + |s.im|
+  let C := (9 / 4 : ℝ) * 24 * (5 * 2) ^ 2
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
   apply squeeze_zero' (g := fun R : ℝ => C * R⁻¹)
     (Eventually.of_forall fun _ => norm_nonneg _)
@@ -223,18 +229,10 @@ theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
     have hHeightR : |s.im| + 1 ≤ R :=
       (le_max_right D (|s.im| + 1)).trans ((le_max_right 1 _).trans hR)
     have hRpos : 0 < R := zero_lt_one.trans_le hRone
-    have hheight : 1 ≤ |s.im - R| := by
-      have habsRaw := abs_sub_abs_le_abs_sub R s.im
-      rw [abs_of_pos hRpos] at habsRaw
-      have habs : R - |s.im| ≤ |s.im - R| := by
-        rw [abs_sub_comm]
-        linarith
-      linarith
+    have hheight : 1 ≤ |s.im - R| := by grind
     have hsize : heathBrownMellinHorizontalSize s (-R) ≤ 2 * R := by
       unfold heathBrownMellinHorizontalSize
-      rw [abs_neg, abs_of_pos hRpos]
-      dsimp only [D] at hDR
-      linarith
+      grind
     have hsizeNonneg : 0 ≤ heathBrownMellinHorizontalSize s (-R) := by
       unfold heathBrownMellinHorizontalSize
       positivity
@@ -254,5 +252,8 @@ theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
         field_simp
   · simpa using (tendsto_const_nhds.mul tendsto_inv_atTop_zero :
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
+end
+end
 
-end MathCollab.Density.Stronger.PointMean
+
+

@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss
+
+open scoped EisensteinO
 
 theorem extracted_parts_ne_zero (I : Ideal O) (hI : I ≠ 0) :
     firstPart I ≠ 0 ∧ secondPart I ≠ 0 ∧ cubePart I ≠ 0 := by
@@ -146,7 +146,7 @@ theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
   rw [hm]
   ring
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

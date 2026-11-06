@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreCorrection
 
@@ -18,7 +19,7 @@ open Set Expdb
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def rescaledPhaseCorrection (H : ℝ → ℝ) (s A u : ℝ) : ℝ :=
   A^(s-1) * H (A*u)
@@ -26,21 +27,26 @@ def rescaledPhaseCorrection (H : ℝ → ℝ) (s A u : ℝ) : ℝ :=
 def phaseRescalingBudget (s A : ℝ) (Q : ℕ) : ℝ :=
   1 + ∑ n ∈ Finset.range (Q+1), |A^(s-1)| * |A|^n
 
-theorem rescaledPhaseCorrection_contDiff {H : ℝ → ℝ}
-    (hH : ContDiff ℝ ∞ H) (s A : ℝ) :
+section
+variable {H : ℝ → ℝ}
+    (hH : ContDiff ℝ ∞ H)
+include H hH
+
+theorem rescaledPhaseCorrection_contDiff  (s A : ℝ) :
     ContDiff ℝ ∞ (rescaledPhaseCorrection H s A) :=
   contDiff_const.mul (hH.comp (contDiff_const.mul contDiff_id))
 
-theorem rescaledPhaseCorrection_iteratedDeriv {H : ℝ → ℝ}
-    (hH : ContDiff ℝ ∞ H) (s A u : ℝ) (n : ℕ) :
+theorem rescaledPhaseCorrection_iteratedDeriv  (s A u : ℝ) (n : ℕ) :
     iteratedDeriv n (rescaledPhaseCorrection H s A) u =
       A^(s-1) * A^n * iteratedDeriv n H (A*u) := by
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   unfold rescaledPhaseCorrection
   rw [iteratedDeriv_const_mul_field,
     iteratedDeriv_comp_const_mul (hH.of_le hN) A]
   simp only [mul_assoc]
+end
+
 
 theorem phaseRescalingBudget_pos (s A : ℝ) (Q : ℕ) :
     0 < phaseRescalingBudget s A Q := by
@@ -58,7 +64,7 @@ theorem referencePlusCorrection_approximate {H : ℝ → ℝ}
     (zero_lt_one.trans_le hu.1)).add hH.contDiffAt).contDiffWithinAt,?_⟩
   intro n hn u
   have hu : 0 < (u : ℝ) := zero_lt_one.trans_le u.property.1
-  have hN : ((n+1 : ℕ) : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl (n+1)
   have hR := (referenceModelPrimitive_contDiffAt s hu).of_le hN
   have hC : ContDiffAt ℝ (n+1) H u := hH.contDiffAt.of_le hN
@@ -88,4 +94,4 @@ theorem referenceModelPrimitive_scaling_difference
         (A^(s-1)*A^(1-s))*(u^(1-s)/(1-s)-v^(1-s)/(1-s)) := by ring
       _ = _ := by rw [hp,one_mul]
 
-end TaoTrudgianYang2025
+

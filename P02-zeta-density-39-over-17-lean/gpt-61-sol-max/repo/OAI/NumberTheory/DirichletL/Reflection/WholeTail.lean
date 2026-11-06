@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+
+open scoped EisensteinEis
 universe u v
 variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
@@ -72,7 +72,7 @@ theorem original_family_whole_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     _ ≤ (‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*∑ _v : Eisˣ,Pset.card*E := by
       exact mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun v _ => hb v)) (by positivity)
     _ = _ := by simp only [Finset.sum_const,Finset.card_univ,hcard,nsmul_eq_mul]; dsimp only [E]; ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

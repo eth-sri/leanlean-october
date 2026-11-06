@@ -14,7 +14,7 @@ open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot QuadraticInitialBound
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
@@ -36,7 +36,7 @@ def PositiveLowAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:�
     0≤height→(∀i,|v i|≤height)→
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=internalQ Q η₀→s.width≤Mcap→
   ∀p:Profiles a b,∀X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
-    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
     length Z X₁+length Z X₂+(∑i,w i)≤5*s.width/6→
     energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
       (fun i=>primePool M H bslot (Z^(w i)))
@@ -46,8 +46,8 @@ def PositiveLowAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:�
       C*diagonalControl s.radial.profile*(p.control S)^2*
         (1+|t|+height)^degree*Z^(s.width+ε)
 
-end SevenEighths.CenteredMomentEnergyReferenceLowBands
 
-end
 
-end OAI
+
+
+

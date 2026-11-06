@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairDifferenceError
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                       
@@ -17,7 +16,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                   
 
 
-noncomputable section
+
 
 open Set Expdb
 open scoped ContDiff BigOperators
@@ -29,8 +28,7 @@ theorem abs_compression_pow_sub_one {η : ℝ}
     |(1-η)^n-1| ≤ (n : ℝ)*η := by
   have hp : (1-η)^n ≤ 1 := pow_le_one₀ (by linarith) (by linarith)
   have hl := one_add_mul_sub_le_pow (a := 1-η) (by linarith) n
-  rw [abs_of_nonpos (sub_nonpos.mpr hp)]
-  nlinarith
+  grind
 
 theorem aProcessShiftPhase_jet_error
     {F : ℝ → ℝ} {σ δ η u : ℝ} {P : ℕ}
@@ -64,8 +62,7 @@ theorem aProcessShiftPhase_jet_error
     have hleft : D/(σ*η)-R = (D-σ*η*R)/(σ*η) := by field_simp
     rw [hleft,abs_div,abs_of_pos hden]
     convert hq using 1
-    dsimp [C]
-    field_simp
+    grind
   have ha0 : 0 ≤ a := pow_nonneg (by linarith) _
   have ha1 : a ≤ 1 := pow_le_one₀ (by linarith) (by linarith)
   have hscale : |a-1| ≤ (p+1 : ℕ)*η := abs_compression_pow_sub_one hη.le hη₁.le _
@@ -82,4 +79,4 @@ theorem aProcessShiftPhase_jet_error
       · exact mul_le_mul hscale hR (abs_nonneg _) (by positivity)
     _ = _ := by dsimp [C,J]; ring
 
-end TaoTrudgianYang2025
+

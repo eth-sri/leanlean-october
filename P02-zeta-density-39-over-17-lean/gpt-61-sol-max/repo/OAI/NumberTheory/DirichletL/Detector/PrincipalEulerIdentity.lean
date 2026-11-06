@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LocalSummation
 public import OAI.NumberTheory.DirichletL.Detector.EulerCoordinates
 
@@ -9,8 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 
 lemma evenRatio_eq_coordR (Q : ℝ) (hQ : 0<Q) (a x z : ℂ) :
     evenRatio Q a ((Q:ℂ)^(-x)) (coordV Q z) = coordR Q (a^2) x z := by
@@ -37,8 +38,7 @@ lemma coordK_eq_geometric (Q : ℝ) (hQ : 0<Q) (eta x w : ℂ) :
 lemma one_sub_ne_zero_of_norm_lt_one (a : ℂ) (ha : ‖a‖<1) : 1-a ≠ 0 := by
   intro h
   have he : a=1 := by linear_combination -h
-  rw [he, norm_one] at ha
-  exact lt_irrefl _ ha
+  simp_all
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -91,7 +91,7 @@ lemma actualACube_sq (eta : HeckeFamily.Character) (p : O) :
   unfold actualACube actualAPhase
   ring
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

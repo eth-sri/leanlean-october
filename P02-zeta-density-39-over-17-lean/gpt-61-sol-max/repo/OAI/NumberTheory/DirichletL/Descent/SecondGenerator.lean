@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def secondUnitFrequency (u v : Eisˣ) (k : Eis) : Eis := ((u^4*v:Eisˣ):Eis)*k
 
@@ -61,7 +61,7 @@ theorem exists_second_generator_sectors (label d e : Eis) (L D E : Ideal Eis)
     (by rw [primaryGenerator_mul]; exact mul_ne_zero hD hE)
   exact ⟨u,v,hu,by simpa only [primaryGenerator_mul] using hv⟩
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

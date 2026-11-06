@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import RationalFiniteHeight
 public import IntegerFourthMoment
 public import MathCollab.Density.DivisorGrowth
@@ -6,7 +7,6 @@ public import Mathlib.NumberTheory.Padics.PadicVal.Basic
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -31,8 +31,8 @@ theorem rationalExponent_mul {r s : ℚ} (hr : r ≠ 0) (hs : s ≠ 0) (p : ℕ)
 /-- Positive rationals are determined by all their signed prime exponents. -/
 theorem rationalExponent_injective {r s : ℚ} (hr : 0 < r) (hs : 0 < s)
     (h : ∀ p, rationalExponent r p = rationalExponent s p) : r = s := by
-  have hrn : r.num.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hr.ne')
-  have hsn : s.num.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hs.ne')
+  have hrn := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hr.ne')
+  have hsn := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hs.ne')
   have hc : r.num.natAbs*s.den = s.num.natAbs*r.den := by
     apply Nat.eq_of_factorization_eq (mul_ne_zero hrn s.den_nz) (mul_ne_zero hsn r.den_nz)
     intro p
@@ -94,8 +94,7 @@ theorem rationalExponent_weight_le (r : ℚ) (p : ℕ) :
     apply abs_le.mpr
     constructor <;> linarith [Nat.cast_nonneg (α := ℝ) (r.num.natAbs.factorization p),
       Nat.cast_nonneg (α := ℝ) (r.den.factorization p)]
-  nlinarith [mul_nonneg (Nat.cast_nonneg (α := ℝ) (r.num.natAbs.factorization p))
-    (Nat.cast_nonneg (α := ℝ) (r.den.factorization p))]
+  nlinarith
 
 theorem divisor_product_over_superset (n : ℕ) (hn : n ≠ 0) (P : Finset ℕ)
     (hP : n.primeFactors ⊆ P) :
@@ -128,4 +127,4 @@ theorem rational_prime_weight_bound {r : ℚ} (hr : 0 < r) (P : Finset ℕ)
         (subset_union_left.trans hP),
         divisor_product_over_superset _ r.den_nz P (subset_union_right.trans hP)]
 
-end Montgomery.RationalMoment
+

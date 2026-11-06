@@ -9,10 +9,14 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
+section
+variable (p : O) (hp : Prime p)
+    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ)
+include p hp χ
+
+theorem primePowerGauss_lift_add  (n k : ℕ) (h : O) :
     primePowerGauss p hp.ne_zero χ (n+k) (p^k*h) =
       (Ideal.absNorm (Ideal.span {p}):ℂ)^k * primePowerGauss p hp.ne_zero χ n h := by
   by_cases hd : p^n ∣ h
@@ -26,8 +30,7 @@ theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
     rw [primePowerGauss_zero_off_support _ _ _ _ _ hbig,
       primePowerGauss_zero_off_support _ _ _ _ _ hd, mul_zero]
 
-theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
+theorem gauss_exactQuotient_lift  (n k : ℕ) (h : O) :
     (if hd : p^k ∣ h then primePowerGauss p hp.ne_zero χ n (exactQuotient h (p^k) hd) else 0) =
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^k)⁻¹ * primePowerGauss p hp.ne_zero χ (n+k) h := by
   have hq : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
@@ -42,8 +45,7 @@ theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
       exact hd ((show p^k ∣ p^(n+k) from ⟨p^n, by rw [pow_add]; ring⟩).trans he)
     rw [primePowerGauss_zero_off_support _ _ _ _ _ hnd, mul_zero]
 
-theorem positiveScalar_full_lift (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k j : ℕ) (hk : k ≠ 0) :
+theorem positiveScalar_full_lift  (n k j : ℕ) (hk : k ≠ 0) :
     positiveScalar p hp.ne_zero χ n k j =
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^k)⁻¹ *
         ∑' d : O ⧸ Ideal.span {p^k},
@@ -61,6 +63,8 @@ theorem positiveScalar_full_lift (p : O) (hp : Prime p)
     ring
   · rw [dite_eq_right hd] at he ⊢
     linear_combination (χ^k) (Ideal.Quotient.mk _ (representative (p^k) d)) * he
+end
+
 
 lemma quotientTrace_split_frequency (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (H d v : O) :
@@ -97,7 +101,7 @@ lemma primePowerGauss_eq_quotientFourier (p : O) (hp : p ≠ 0)
       Ideal.Quotient.mk _ H*d := by rw [map_mul, representative_spec]
   rw [hr, hm]
 
-end SevenEighths.ProbePrimePower
-end
 
-end OAI
+
+
+

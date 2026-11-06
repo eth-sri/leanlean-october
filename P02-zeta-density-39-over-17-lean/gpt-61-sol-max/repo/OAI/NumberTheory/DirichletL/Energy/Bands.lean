@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.Floor
 public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorState
 
@@ -13,7 +14,7 @@ namespace SevenEighths.CenteredMomentEnergyBands
 open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)
 
@@ -39,7 +40,7 @@ def PositiveAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
     0≤height→(∀i,|v i|≤height)→
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=internalQ Q η₀→s.width≤Mcap→
   ∀p:Profiles a b,∀X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
-    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
     energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
       (fun i=>primePool M H bslot (Z^(w i)))
       (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -61,18 +62,18 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
     M H hH W aslot bslot haslot hWs hW a b bΦ Bmask ε Lslot lo hi κ
     ha hb hbΦ hmask hε hLs hbeta hκ
   choose J S C hC hbound using hs
-  let S₀:Finset (ℕ×ℕ):=Finset.univ.biUnion S
-  let C₀:ℝ:=1+∑T:Finset α,C T
+  let S₀ :=Finset.univ.biUnion S
+  let C₀ :=1+∑T:Finset α,C T
   have hC₀:0<C₀:=by
     have hh:=Finset.sum_nonneg (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hC T).le)
-    dsimp [C₀];linarith
+    positivity
   refine ⟨∑T:Finset α,J T,S₀,C₀,hC₀,?_⟩
   intro η₀
   have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr (fun T=>hbound T η₀)
   filter_upwards [hall,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   refine ⟨hZ1,?_⟩
   intro Q hQM T θ w σ v t height hw hwL hσlo hσhi hheight hv s hQ hs p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂ hcapacity
-  have hslots:6*κ*(∑i,w i)≤s.width:=by
+  have hslots:6*κ*(∑i,w i)≤ s.width:=by
     linarith [length_nonneg Z X₁ hZ1,length_nonneg Z X₂ hZ1]
   have hh:=hZ T θ w σ v t height hw hwL hσlo hσhi hheight hv Q hQM s hQ hs hslots p X₁ X₂ hX₁ hX₂
   have hsub:S T⊆S₀:=by
@@ -95,8 +96,8 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
   have hpt:=p.control_nonneg (S T)
   apply hh.trans
   gcongr
-end SevenEighths.CenteredMomentEnergyBands
 
-end
 
-end OAI
+
+
+

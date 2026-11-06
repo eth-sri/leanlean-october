@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedBins
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 
 theorem markedShortCompletedSum_eq (Ψ : O →* ℂ) (W : ℝ → ℂ) (X H₀ : ℝ) (mark : Ideal O→ℂ) :
     markedShortCompletedSum Ψ W X H₀ mark = ∑H∈shortCubeRange H₀,
@@ -69,7 +69,7 @@ theorem marked_short_completed_energy {κ : Type*} [Fintype κ]
     finite_inverse_norm_sum S H₀ hS (fun H hH => ((mem_shortCubeRange H₀ H).mp hH).2.le)
   exact hsum.trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hL hbound 2) hA)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

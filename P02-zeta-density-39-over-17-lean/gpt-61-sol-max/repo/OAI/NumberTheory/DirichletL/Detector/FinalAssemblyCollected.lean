@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorCollected
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorDyadic
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyNormalized
 
 @[expose] public section
@@ -12,8 +12,8 @@ open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
+open ProbeRaySlots
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -21,8 +21,8 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -60,7 +60,7 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
       (∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧
         (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ rowNorm u≤Z^(13/16+ζ)) →
       ∀idx grid : FreeRow→ℕ,
-      (∀u∈rows,idx u≤n ∧ grid u≤m ∧ grid u≠0 ∧ 51/100+e*grid u≤1) →
+      (∀u∈rows,idx u≤n ∧ grid u≤ m ∧ grid u≠0 ∧ 51/100+e*grid u≤1) →
       (∀u∈rows,detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
         (3*(idx u+1:ℕ)*Z^τ)<51/100+e*grid u+2*e) →
       (∀u∈rows,51/100+e*grid u≤detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
@@ -192,8 +192,8 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
       mul_le_mul_of_nonneg_right (hdyad Z (13/16+ζ) hZ.le (by linarith)) (by positivity)
     _ = _ := by dsimp [D];rw [Real.rpow_add hZp (3/16+Δ-saving+nu) dyadCost];ring
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

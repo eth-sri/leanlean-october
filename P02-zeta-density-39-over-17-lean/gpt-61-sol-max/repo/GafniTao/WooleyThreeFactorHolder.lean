@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.MeasureTheory.Integral.MeanInequalities
 public import Mathlib.MeasureTheory.Integral.Lebesgue.Countable
 
@@ -19,12 +20,16 @@ open MeasureTheory
 
 namespace GafniTao
 
-noncomputable section
+
+
+section
+variable {ι : Type*} (t : Finset ι)
+include ι t
 
 /-- Finite three-factor Hölder, stated in the exact weighted-power form used
 in Wooley (6.8). -/
 theorem wooley_three_factor_holder_ennreal
-    {ι : Type*} (t : Finset ι) (f₀ f₁ f₂ : ι → ℝ≥0∞)
+     (f₀ f₁ f₂ : ι → ℝ≥0∞)
     (a₀ a₁ a₂ : ℝ) (ha₀ : 0 ≤ a₀) (ha₁ : 0 ≤ a₁) (ha₂ : 0 ≤ a₂)
     (hsum : a₀ + a₁ + a₂ = 1) :
     (∑ i ∈ t, f₀ i ^ a₀ * f₁ i ^ a₁ * f₂ i ^ a₂) ≤
@@ -66,7 +71,7 @@ theorem wooley_three_factor_holder_ennreal
 factors receive exponent `1/s`, while the mass factor receives
 `(s-2)/s`; raising to `s` gives exactly the exponents in (6.8). -/
 theorem wooley_three_factor_holder_critical_ennreal
-    {ι : Type*} (t : Finset ι) (f₀ f₁ f₂ : ι → ℝ≥0∞)
+     (f₀ f₁ f₂ : ι → ℝ≥0∞)
     {s : ℕ} (hs : 2 ≤ s) :
     (∑ i ∈ t,
         f₀ i ^ (((s : ℝ) - 2) / (s : ℝ)) *
@@ -103,7 +108,6 @@ theorem wooley_three_factor_holder_critical_ennreal
       rw [ENNReal.mul_rpow_of_nonneg _ _ hsReal.le,
         ENNReal.mul_rpow_of_nonneg _ _ hsReal.le]
       simp only [← ENNReal.rpow_mul]
-      have hsNe : (s : ℝ) ≠ 0 := ne_of_gt hsReal
       congr 1
       · congr 1
         · congr 1
@@ -118,7 +122,7 @@ the factors nonnegative is exactly what permits a lossless passage through
 `ENNReal.ofReal`; this is the form used for the norms and residue masses in
 Wooley (6.8). -/
 theorem wooley_three_factor_holder_critical_real
-    {ι : Type*} (t : Finset ι) (f₀ f₁ f₂ : ι → ℝ)
+     (f₀ f₁ f₂ : ι → ℝ)
     (hf₀ : ∀ i ∈ t, 0 ≤ f₀ i)
     (hf₁ : ∀ i ∈ t, 0 ≤ f₁ i)
     (hf₂ : ∀ i ∈ t, 0 ≤ f₂ i)
@@ -136,9 +140,9 @@ theorem wooley_three_factor_holder_critical_real
   have ha₀ : 0 ≤ ((s : ℝ) - 2) / (s : ℝ) :=
     div_nonneg (sub_nonneg.mpr hsTwo) hsReal.le
   have ha₁ : 0 ≤ 1 / (s : ℝ) := by positivity
-  let F₀ : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f₀ i)
-  let F₁ : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f₁ i)
-  let F₂ : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f₂ i)
+  let F₀ := fun i => ENNReal.ofReal (f₀ i)
+  let F₁ := fun i => ENNReal.ofReal (f₁ i)
+  let F₂ := fun i => ENNReal.ofReal (f₂ i)
   have hholder := wooley_three_factor_holder_critical_ennreal
     t F₀ F₁ F₂ hs
   have hterm (i : ι) (hi : i ∈ t) :
@@ -208,10 +212,12 @@ theorem wooley_three_factor_holder_critical_real
       (Finset.sum_nonneg fun i hi => hf₀ i hi)
       (sub_nonneg.mpr hsTwo), hsum f₀ hf₀, hsum f₁ hf₁, hsum f₂ hf₂]
   exact hholder
-
-
-
-
 end
 
-end GafniTao
+
+
+
+
+
+
+

@@ -5,9 +5,8 @@ public import GuthMaynard.NativeSource.GuthMaynard.MeanValueProof
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 open Complex Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.NativeMoment
@@ -123,4 +122,4 @@ theorem short_polynomial_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
         ((M : ℝ) ^ 6 + T * (M : ℝ) ^ 3) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

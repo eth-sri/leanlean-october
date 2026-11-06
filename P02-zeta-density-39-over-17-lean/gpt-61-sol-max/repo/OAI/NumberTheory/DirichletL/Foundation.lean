@@ -1,6 +1,5 @@
 module
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
-public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
 public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.AdditiveCharacters
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
@@ -28,10 +27,8 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.NormFiberMellin
 public import OAI.NumberTheory.DirichletL.Hecke.NormFiberCharacters
 public import OAI.NumberTheory.DirichletL.Hecke.LocalEulerIdentities
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeExtraction
-public import OAI.NumberTheory.DirichletL.Mellin.FiniteEulerRestoration
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormFiberExtraction
 public import OAI.NumberTheory.DirichletL.Hecke.FiniteEulerFactors
-public import OAI.NumberTheory.DirichletL.Mellin.CompactScale
 public import OAI.NumberTheory.DirichletL.Mellin.CompactWeights
 public import OAI.NumberTheory.DirichletL.Fourier.PositiveLogProfiles
 public import OAI.NumberTheory.DirichletL.GaussSum.SecondPoissonScale
@@ -113,7 +110,6 @@ public import OAI.NumberTheory.DirichletL.Eisenstein.CuspIntegration
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.DualMiddleExpansion
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.MaskedPrincipalBounds
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.LogarithmicSectors
-public import OAI.NumberTheory.DirichletL.CubicSieve.SquarefreeTransfer
 public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothCuspCutoffs
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
 public import OAI.NumberTheory.DirichletL.CubicSieve.GlobalEncoding
@@ -129,7 +125,6 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ScaleCaps
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PoissonComparison
 public import OAI.NumberTheory.DirichletL.CubicSieve.ArithmeticBins
 public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
-public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GlobalBinLoss
 public import OAI.NumberTheory.DirichletL.Eisenstein.FundamentalDomain
 public import OAI.NumberTheory.DirichletL.GaussSum.GlobalScales
@@ -181,7 +176,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.LogSeparation
 public import OAI.NumberTheory.DirichletL.CubicSieve.CanonicalLogEnergy
 public import OAI.NumberTheory.DirichletL.CubicSieve.RadialProfiles
 public import OAI.NumberTheory.DirichletL.RowCompletion.PolynomialHeight
-public import OAI.NumberTheory.DirichletL.MeanSquare.PolynomialHeight
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.CoordinateLaplacian
 public import OAI.NumberTheory.DirichletL.CubicSieve.DensityBudgets
 public import OAI.NumberTheory.DirichletL.CubicSieve.RankMargins
@@ -282,8 +277,3 @@ public import OAI.NumberTheory.DirichletL.RowCompletion.FreePrimePools
 public import OAI.NumberTheory.DirichletL.GaussSum.ResidualEquivalence
 public import OAI.NumberTheory.DirichletL.RowCompletion.RowAmplitudes
 public import OAI.NumberTheory.DirichletL.GaussSum.ActiveReindexing
-public import OAI.NumberTheory.DirichletL.RowCompletion.ReflectedFibers
-public import OAI.NumberTheory.DirichletL.RowCompletion.BranchDecoding
-public import OAI.NumberTheory.DirichletL.RowCompletion.ZeroFreeRegion
-
-@[expose] public section

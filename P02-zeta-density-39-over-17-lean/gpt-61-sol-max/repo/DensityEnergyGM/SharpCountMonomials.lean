@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCountEnergyExpansion
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Real power substitution, retaining every amplitude-loss factor. -/
@@ -28,7 +28,6 @@ theorem gmExpandedTerm_log_identity {T R : ℝ} (hT : 0 < T) (hR : 0 < R)
   rw [he]
   repeat rw [← Real.rpow_add hT]
   rw [← Real.rpow_add hR]
-  congr 2
   ring
 
 /-- A nonnegative exact zero-loss margin controls the perturbed amplitude;
@@ -65,4 +64,4 @@ theorem gmExpandedTerm_budget {T R σ a x δ ell : ℝ}
     repeat rw [← Real.rpow_add hTp]
     norm_num
 
-end Montgomery.RationalMoment
+

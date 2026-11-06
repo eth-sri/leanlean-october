@@ -1,20 +1,21 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTail
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseSecondPrincipalCaller
+
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
@@ -55,7 +56,6 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
         (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-saving) := by
   obtain ⟨s,C,hC,hbound⟩ := global_parent_tail_rapid Jmax Lcap tau saving hLcap htau
   let N : ℝ := (Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)
-  have hN : 0<N := by dsimp [N];positivity
   refine ⟨s,(32*512)*N*C,by positivity,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a
     hslots ha hΨ hw om lo hi hlo hs X M Y Z height R hX hhi hZ hY hscale hy hyi hXcap
@@ -82,7 +82,6 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
           hX hhi hZ hY hscale hy hyi hXcap hsource hextra hb₁ hb₂ hactive hcommon hquot hR
       _ = _ := by
         simp only [Finset.sum_const,Finset.card_powerset,Finset.card_univ,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
-        dsimp [N]
         ring
   apply (mul_le_mul_of_nonneg_left hsum (by positivity : 0≤(32*512)*(2:ℝ)^slots.card)).trans_eq
   have he : ((2:ℝ)^slots.card)^2=(4:ℝ)^slots.card := by
@@ -94,7 +93,7 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
       (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-saving) := by ring
     _ = _ := by rw [he]
 
-end SevenEighths.InverseMomentGlobalPriorityTail
-end
 
-end OAI
+
+
+

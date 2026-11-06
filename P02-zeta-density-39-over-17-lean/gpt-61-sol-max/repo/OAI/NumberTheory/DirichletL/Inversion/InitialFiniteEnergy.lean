@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialProfileBounds
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialFiniteEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
+open InverseInitialEnergyCallerSource
+open InverseInitialQuotientGeometry
 open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem finite_physical_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -49,11 +49,11 @@ theorem finite_physical_bound
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
       (∀x∈S,x.common⊆Finset.univ)→(∀x∈S,x.overlap⊆Finset.univ)→
-    ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
+    ∀(D m r:ℝ),0≤ m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
       D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
     ∀(c₁ c₂ θ₁ θ₂:ℝ),1≤c₁→c₁≤bcap→1≤c₂→c₂≤bcap→
@@ -148,8 +148,8 @@ theorem finite_physical_bound
     ((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
       (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J))) using 1 <;> dsimp [tailC] <;> ring
 
-end SevenEighths.InverseInitialFiniteEnergy
 
-end
 
-end OAI
+
+
+

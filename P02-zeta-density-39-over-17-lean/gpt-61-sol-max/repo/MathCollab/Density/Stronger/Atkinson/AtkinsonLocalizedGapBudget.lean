@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -11,15 +12,18 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFarGap
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinson_far_gap_row_le {H L : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
+section
+variable {H L : ℝ} {M : ℕ} {W : Finset ℝ}
+include H L M W
+
+theorem atkinson_far_gap_row_le  {t : ℝ}
     (hH : 0 < H) (hM : 0 < M) (ht : t ∈ W)
     (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H)
     (hdiam : ∀ u ∈ W, |u-t| ≤ L) :
@@ -49,7 +53,7 @@ theorem atkinson_far_gap_row_le {H L : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
       (by exact_mod_cast Finset.card_le_card (Finset.filter_subset (s := W) _))
       (by positivity)
 
-theorem atkinson_far_gap_double_sum_le {H L : ℝ} {M : ℕ} {W : Finset ℝ}
+theorem atkinson_far_gap_double_sum_le 
     (hH : 0 < H) (hM : 0 < M)
     (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H)
     (hdiam : ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L) :
@@ -59,6 +63,8 @@ theorem atkinson_far_gap_double_sum_le {H L : ℝ} {M : ℕ} {W : Finset ℝ}
     _ ≤ ∑ t ∈ W, (W.card:ℝ)*(2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ)))) :=
       Finset.sum_le_sum (fun t ht => atkinson_far_gap_row_le hH hM ht hrange (hdiam t ht))
     _ = _ := by simp; ring
+end
+
 
 def atkinsonLocalizedGapBudget (η H G L : ℝ) (N R : ℕ) : ℝ :=
   (Nat.clog 2 N:ℝ)*∑ j ∈ Finset.range (Nat.clog 2 N),
@@ -81,8 +87,5 @@ theorem atkinsonSeparatedGapBudget_le_localized {H G L η : ℝ} {N : ℕ} {W : 
 
 theorem atkinson_height_interval_diameter {A L : ℝ} {W : Finset ℝ}
     (hlocal : ∀ t ∈ W, A ≤ t ∧ t ≤ A+L) :
-    ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L := by
-  intro t ht u hu
-  rw [abs_le]
-  constructor <;> linarith [(hlocal t ht).1,(hlocal t ht).2,(hlocal u hu).1,(hlocal u hu).2]
-end MathCollab.Density.Stronger.Atkinson
+    ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L := by grind
+

@@ -4,8 +4,7 @@ public import RationalDifferenceEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -37,4 +36,4 @@ theorem logarithmic_height_loss {T δ : ℝ} (hT : 1 ≤ T) (hδ : 0 < δ)
     _ ≤ T^δ+(4^δ*T^δ)/δ := add_le_add hpow hlog
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

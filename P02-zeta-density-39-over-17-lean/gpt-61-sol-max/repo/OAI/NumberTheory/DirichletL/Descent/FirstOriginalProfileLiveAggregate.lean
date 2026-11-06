@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileScales
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment ActualEisensteinCubic SecondPassArithmetic
+open InverseMomentFirstProfileUniform CompletedHeight
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -43,7 +43,7 @@ theorem original_retained_joint_profile_bound (pool : Finset ι) (Q : Finset (ι
   rw [original_refined_cell_profile_identity p hp hcop hg pool Q labels β cutoff Ψ m mark om a b ha hsom
     Φ K Y X theta hX k.1 k.2.1 (labelGate p k.2.2) (physicalScales X k.1 k.2.1) (physicalScales_pos X hX k.1 k.2.1) hp₁ hp₂]
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

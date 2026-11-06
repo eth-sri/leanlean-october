@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
-public import OAI.NumberTheory.DirichletL.Descent.SecondInheritedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 
 @[expose] public section
 
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseSecondFibers JointLogSeparation
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -22,28 +23,36 @@ def secondInheritedProfile {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) : SecondProfileData ι :=
   actualMarkedSecondProfileData p x Ψ (m*ConcretePrimeRowBridge.idealGenerator x.quotient) z ∅ ∅
 
-def secondModeLeft (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+section
+variable (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (ω : ℝ → ℂ) (X : ℝ) (t : Frequency × (Fin 6 → ℝ)) : SecondChild → ℂ :=
+    (ω : ℝ → ℂ) (X : ℝ) (t : Frequency × (Fin 6 → ℝ))
+include pool Ψ m z slots lists a ω X t
+
+def secondModeLeft  : SecondChild → ℂ :=
   secondCanonicalPolynomial p hp hcop hg pool (fun _ => secondRayMinus Ψ z)
     (actualSecondInheritedPuncture m) slots lists a
     (fun _ => childLogTest ω (-(profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2) 4)) X
 
-def secondModeRight (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (ω : ℝ → ℂ) (X : ℝ) (t : Frequency × (Fin 6 → ℝ)) (c : SecondChild) : ℂ :=
+def secondModeRight  (c : SecondChild) : ℂ :=
   secondCanonicalPolynomial p hp hcop hg pool (fun _ => secondRayPlus Ψ z)
     (actualSecondInheritedPuncture m) slots lists a
     (fun _ => childLogTest ω ((profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2) 5)) X
     (c.1,c.2.1,-c.2.2)
+end
 
-def secondModeOuter {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+
+section
+variable {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+include Jo Jn x
+
+def secondModeOuter 
     (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (G E V B X : ℝ) (t : Frequency × (Fin 6 → ℝ)) : ℂ :=
   secondOuterPhase (profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2)
     (secondRelativeLog (secondActualNorms p (secondInheritedProfile p x Ψ m z) ∅ ∅) G E V B X)
 
-def secondModeBranch {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ)
+def secondModeBranch  (u v : Eisˣ)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ J₁ J₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (ω₁ ω₂ : ℝ → ℂ) (G E V B X : ℝ) (t : Frequency × (Fin 6 → ℝ)) : ℂ :=
@@ -53,8 +62,7 @@ def secondModeBranch {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eis�
     star (secondModeLeft p hp hcop hg pool Ψ m z (slots₁\J₁) lists₁ a₁ ω₁ X t (actualSecondChild p u v x)) *
     secondModeRight p hp hcop hg pool Ψ m z (slots₂\J₂) lists₂ a₂ ω₂ X t (actualSecondChild p u v x)
 
-theorem second_inherited_mode_canonical {Jo Jn : ℕ}
-    (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ)
+theorem second_inherited_mode_canonical  (u v : Eisˣ)
     (hx : SecondPairCanonicalAt (σ:=σ) p hp hcop hg x u v)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -71,8 +79,10 @@ theorem second_inherited_mode_canonical {Jo Jn : ℕ}
   simpa only [secondInheritedProfile,secondModeBranch,secondModeOuter,secondModeLeft,secondModeRight,
     secondCanonicalPolynomial,actualSecondInheritedPuncture,actualSecondChild_neg_frequency,
     Finset.empty_union,Finset.mul_sum,mul_assoc,hq] using he
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

@@ -10,12 +10,10 @@ public import LaterPairs.Native.ExponentPairAProcess
 public import LaterPairs.Native.RobertSargosPhysicalSieve
 public import LaterPairs.Native.SargosQuarticPoisson
 public import LaterPairs.Native.ZetaMomentKernel
-public import LaterPairs.Native.ZetaSourceLogScales
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.PointMean
 
  
                                                                 
@@ -27,7 +25,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                        
 
 
-noncomputable section
+
 open Expdb Set GafniTao Filter
 open scoped FourierTransform BigOperators ContDiff NNReal
 namespace TaoTrudgianYang2025
@@ -179,13 +177,11 @@ theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 
     have hua : N ≤ ((u-1:ℕ):ℝ) := by
       have hcast : (A:ℝ) ≤ u := by exact_mod_cast hu
       rw [Nat.cast_sub hu1]
-      push_cast
-      linarith
+      grind
     have huvReal : ((u-1:ℕ):ℝ)+((v-u:ℕ):ℝ) < 2*N := by
       have hvReal : (v:ℝ) ≤ B := by exact_mod_cast hv
       rw [Nat.cast_sub hu1,Nat.cast_sub huv]
-      push_cast
-      linarith
+      grind
     have hlReal : ((B-A:ℕ):ℝ) ≤ 2*((v-u:ℕ):ℝ) := by exact_mod_cast hl
     have hlen' : (modelPhaseJetLower σ 3*T/N^4)^(-(8:ℝ)/13) ≤ (v-u:ℕ) := by
       linarith
@@ -219,14 +215,13 @@ theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 
     (Finset.card_le_card hsmall).trans Finset.card_le_two
   have hboundary : ‖∑ n ∈ S \ I, oscillatory F T N n‖ ≤ 2 := by
     apply (norm_sum_le _ _).trans
-    simp only [norm_oscillatory,Finset.sum_const,nsmul_eq_mul,mul_one]
+    simp
     exact_mod_cast hcard
   have he := Finset.sum_inter_add_sum_sdiff S I (fun n => oscillatory F T N n)
   change ‖∑ n ∈ S, oscillatory F T N n‖ ≤ _
   rw [← he]
   have hn := (norm_add_le _ _).trans (add_le_add hcore hboundary)
-  dsimp only [U] at hn
-  nlinarith only [hn]
+  grind
 
 theorem robertSargos_model_main_power {c T N η : ℝ}
     (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) :
@@ -235,7 +230,6 @@ theorem robertSargos_model_main_power {c T N η : ℝ}
   rw [Real.div_rpow (mul_nonneg hc.le hT.le) (pow_nonneg hN.le _),
     Real.mul_rpow hc.le hT.le,← Real.rpow_natCast N 4,
     ← Real.rpow_mul hN.le]
-  norm_num only [Nat.cast_ofNat]
   rw [div_eq_mul_inv,← Real.rpow_neg hN.le]
   calc
     _ = c^((1:ℝ)/13)*T^((1:ℝ)/13)*(N^(1+η)*N^(-((4:ℝ)*(1/13)))) := by ring_nf
@@ -248,7 +242,6 @@ theorem robertSargos_model_length_power {c T N : ℝ}
   rw [Real.div_rpow (mul_nonneg hc.le hT.le) (pow_nonneg hN.le _),
     Real.mul_rpow hc.le hT.le,← Real.rpow_natCast N 4,
     ← Real.rpow_mul hN.le]
-  norm_num only [Nat.cast_ofNat]
   rw [div_eq_mul_inv,div_eq_mul_inv,← Real.rpow_neg hN.le,
     ← Real.rpow_neg_one]
   calc
@@ -341,8 +334,7 @@ theorem isExponentSumBoundNonAsymptotic_robertSargos
   have hscaled := mul_le_mul_of_nonneg_left hpower (show 0 ≤ 4*K by positivity)
   have hconstant := mul_le_mul_of_nonneg_right hKC
     (Real.rpow_nonneg hTp.le ((1:ℝ)/13+(9/13)*(α:ℝ)+ε))
-  dsimp only [c] at hscaled hconstant
-  nlinarith only [hbound,hscaled,hconstant,hone]
+  grind
 
 theorem exponentPair_robertSargos : ExponentPair (1/13) (10/13) := by
   apply exponentPair_of_beta_bound_half (by norm_num [InExponentPairTriangle])
@@ -374,6 +366,6 @@ theorem exponentSumGrowthExponent_le_bourgain_short_of_robertSargos
   have hb := exponentSumGrowthExponent_le_exponentPairLine_closed
     exponentPair_robertSargos alpha (by linarith only [halpha] : (alpha:ℝ) ≤ 1)
   unfold exponentPairLine at hb
-  linarith only [hb,halpha]
+  linarith
 
-end TaoTrudgianYang2025
+

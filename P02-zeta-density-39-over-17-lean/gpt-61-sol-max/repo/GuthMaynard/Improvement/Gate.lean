@@ -10,7 +10,6 @@ In particular the finite Cauchy–Schwarz result does not stand for its Lebesgue
 integral analogue, Poisson summation, or the measurable-mask smoothing step.
 -/
 
-set_option autoImplicit false
 
 namespace GuthMaynard.Improvement
 
@@ -21,4 +20,4 @@ theorem inner_sum_bound {ι : Type*} (s : Finset ι) (f g : ι → ℝ)
       Real.sqrt (∑ i ∈ s, f i) * Real.sqrt (∑ i ∈ s, g i) :=
   Real.sum_sqrt_mul_sqrt_le s hf hg
 
-end GuthMaynard.Improvement
+

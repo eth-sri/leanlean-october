@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSevenSystem
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                            
                                                                
@@ -41,4 +40,4 @@ theorem robertSargos_reverseR_involution (p : RobertSargosSevenPoint) :
 theorem robertSargos_reverseR_injective : Function.Injective robertSargosReverseR :=
   Function.LeftInverse.injective robertSargos_reverseR_involution
 
-end TaoTrudgianYang2025
+

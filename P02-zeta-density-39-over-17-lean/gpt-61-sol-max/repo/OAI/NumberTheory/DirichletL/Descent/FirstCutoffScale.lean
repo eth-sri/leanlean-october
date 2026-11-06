@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstRowGeometry
 
 @[expose] public section
@@ -9,8 +10,8 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem first_physical_row_scale_bound
     (Z M r ell V delta B j eta tau dn cn jn : ℝ) (hZ : 0<Z)
@@ -26,14 +27,11 @@ theorem first_physical_row_scale_bound
       apply div_le_div₀ (by positivity)
       · exact mul_le_mul_of_nonneg_left hd (by positivity)
       · positivity
-      · exact mul_le_mul (mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (Real.rpow_pos_of_pos hZ _).le hc 2) (Real.rpow_pos_of_pos hZ _).le)
-          hj (Real.rpow_pos_of_pos hZ _).le (by positivity)
+      gcongr
     _ = _ := by
       simp only [hpow,←Real.rpow_add hZ,←Real.rpow_sub hZ]
       congr 1
       unfold firstPhysicalHeight
-      norm_num
       ring
 
 theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
@@ -66,7 +64,7 @@ theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
     (primeProductNorm_pos p hp _).le (primeProductNorm_pos p hp _)
     (SecondPassIntegration.elementNorm_pos _ (primeProduct_ne_zero p hp _ _)) hd hc hj)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

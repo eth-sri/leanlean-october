@@ -6,15 +6,19 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsRegion
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-theorem localCorrection_coordinates (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (x w z : ℂ) :
+section
+variable (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+include η u p hp hg
+
+theorem localCorrection_coordinates  (x w z : ℂ) :
     let Q : ℝ := Ideal.absNorm (Ideal.span {p})
     let rho := actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ u.val)
     localCorrection η u ⟨Ideal.span {p},Ideal.prime_span_singleton_iff.mpr hp⟩ x w z=
@@ -28,8 +32,7 @@ theorem localCorrection_coordinates (η : Character) (u : FreeRow) (p : O) (hp :
   rw [show -(6*z)=(-6 : ℂ)*z by ring]
   rfl
 
-theorem localCorrection_unramified (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+theorem localCorrection_unramified 
     (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : CanonicalQuadraticSieve.Supported (Ideal.span {p})) (hu : IsCoprime u.val p)
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
@@ -45,9 +48,11 @@ theorem localCorrection_unramified (η : Character) (u : FreeRow) (p : O) (hp : 
   unfold actualUnramifiedClosed
   change _=unramifiedClosed _ _ (targetMonoid η p) _ x w z
   field_simp
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

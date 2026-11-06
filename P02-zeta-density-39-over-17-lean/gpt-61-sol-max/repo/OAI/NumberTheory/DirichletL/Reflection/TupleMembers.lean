@@ -11,7 +11,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
 variable (tuples : Finset (σ→Ideal Eis))
     (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
@@ -34,13 +34,17 @@ variable {N a c : Eis} {mode : Bool}
     (D : ∀ P : tuples.image slotTupleProduct,IsCoprime K P.val→
       ControlledStratumArithmetic (F.reflected K hK (tuplePrimeFamily tuples hne hmax hgood P.val)).generator N a c mode)
 
-def memberTupleControlled (p : tuples) (hp : IsCoprime K (slotTupleProduct p.val)) :
+section
+variable (p : tuples) (hp : IsCoprime K (slotTupleProduct p.val))
+include p hp
+
+def memberTupleControlled  :
     ControlledStratumArithmetic (F.reflected K hK (memberTupleFamily tuples hmax hgood p)).generator N a c mode :=
   castControlled (congrArg (fun S => (F.reflected K hK S).generator)
     (tuplePrimeFamily_at_member tuples hmax hgood hne hinj p))
     (D ⟨slotTupleProduct p.val,Finset.mem_image.mpr ⟨p.val,p.property,rfl⟩⟩ hp)
 
-lemma memberTupleControlled_value (p : tuples) (hp : IsCoprime K (slotTupleProduct p.val))
+lemma memberTupleControlled_value 
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (j : φ→ℕ) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue (memberTupleControlled tuples hmax hgood F K hK hne hinj D p hp) s
@@ -52,10 +56,16 @@ lemma memberTupleControlled_value (p : tuples) (hp : IsCoprime K (slotTupleProdu
       (F.reflected K hK (tuplePrimeFamily tuples hne hmax hgood (slotTupleProduct p.val))).generator_good
       (reflectedExponent j) (slotIndices φ (PrimeIndex K) σ) W X :=
   mixedReflectedValue_cast _ _ s _ _ hc _ _ _ _ W X
+end
+
+
+section
+variable (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+    (j : φ→ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ)
+include s hc j W θ X r aw
 
 def memberTupleRow
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (j : φ→ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ) : ℂ :=
+     : ℂ :=
     ∑ p : tuples,if hp:IsCoprime K (slotTupleProduct p.val) then
       r K*aw p.val*mixedReflectedValue (memberTupleControlled tuples hmax hgood F K hK hne hinj D p hp) s
         (F.reflected K hK (memberTupleFamily tuples hmax hgood p)).generator_ne_zero hc
@@ -63,8 +73,7 @@ def memberTupleRow
         (reflectedExponent j) (slotIndices φ (PrimeIndex K) σ) (CompletedHeight.normTwistedSource W θ) X else 0
 
 theorem literalWholeRow_eq_member_tuples
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (j : φ→ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ) :
+     :
     literalWholeRow F K hK (tuplePrimeFamily tuples hne hmax hgood) j
       (tuples.image slotTupleProduct) D s hc W θ X r (slotProductCoefficient tuples aw)=
     ∑ p : tuples,if hp:IsCoprime K (slotTupleProduct p.val) then
@@ -91,6 +100,8 @@ theorem literalWholeRow_eq_member_tuples
     rw [memberTupleControlled_value]
   · simp only [dite_eq_right hk]
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

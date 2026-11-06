@@ -4,8 +4,7 @@ public import TraceAlternatives.UniversalCountBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -33,4 +32,4 @@ theorem universalTraceExpression_eq {T N L R E : ℝ} (hL : 0<L) :
   simp only [Real.rpow_neg_one]
   ring
 
-end Montgomery.RationalMoment
+

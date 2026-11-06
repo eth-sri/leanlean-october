@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.XBoundary
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open MeasureTheory Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem first_x_integral_eq {K : ℕ}
     (e eps : ℝ) (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
@@ -33,8 +33,8 @@ theorem first_x_integral_eq {K : ℕ}
   intro hpole
   exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt _ (by linarith [hx.1]) (by tauto)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

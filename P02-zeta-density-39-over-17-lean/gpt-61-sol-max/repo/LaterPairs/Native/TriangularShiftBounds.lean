@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.DoubleShiftWeights
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -29,7 +28,6 @@ theorem signed_triangular_weight_nonneg {N : ℕ} (hN : 0 < N) {q : ℤ}
 
 theorem sum_signed_triangular_weights (N : ℕ) (hN : 0 < N) :
     (∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (1-|(q:ℝ)|/N)) = N := by
-  have hp : (N:ℝ) ≠ 0 := by positivity
   have ht := sum_signed_shift_differences N (fun _ => (1:ℝ))
   simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul,mul_one] at ht
   calc
@@ -56,4 +54,4 @@ theorem signed_triangular_first_moment (N : ℕ) (hN : 0 < N) :
       rw [← Finset.sum_mul,sum_signed_triangular_weights N hN]
       ring
 
-end TaoTrudgianYang2025
+

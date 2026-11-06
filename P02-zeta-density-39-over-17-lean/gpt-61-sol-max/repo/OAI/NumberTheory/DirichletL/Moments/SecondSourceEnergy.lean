@@ -11,11 +11,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentLiveDomain
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors CenteredMomentCommonSectors IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily
+open CenteredMomentLiveDomain
+open CenteredMomentHeckeColumnWindow
+
+open scoped EisensteinO
 
 def secondSourceKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
   ∑' h : O,(primaryGaussRow I h*star (primaryGaussRow J h))*
@@ -31,8 +31,8 @@ theorem heightCoeff_mul (τ : Character) (t : ℝ) (I J : Ideal O) :
   simp only [heightCoeff,map_mul,Nat.cast_mul,hpow]
   ring
 
-end SevenEighths.CenteredMomentSecondSourceEnergy
 
-end
 
-end OAI
+
+
+

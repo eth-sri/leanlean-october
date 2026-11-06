@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
+open HeckeFamily ConcreteTraceCRT
+open CenteredMomentCommonMaskExpansion
+open CenteredMomentCounting CenteredMomentComparisonReflection
 open CenteredMomentOriginalReflectionErrorMass
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem naturalSlot_ideal_bound (χ : Character) (pool : Finset (Ideal O))
     (β : Ideal O→ℂ) (b M P : ℝ) (hM : 0≤M) (hP : 0<P)
@@ -29,7 +29,7 @@ theorem naturalSlot_ideal_bound (χ : Character) (pool : Finset (Ideal O))
     · simp only [f,ite_eq_left hi,norm_mul]
       exact (mul_le_mul (idealCoeff_norm_le_one χ I) (hβ I hi) (norm_nonneg _) zero_le_one).trans_eq (one_mul M)
     · simpa only [f,ite_eq_right hi,norm_zero] using hM
-  have hsup : ∀I,f I≠0 → (I.absNorm:ℝ)≤max 1 b*P := by
+  have hsup : ∀I,f I≠0 → (I.absNorm:ℝ)≤ max 1 b*P := by
     intro I hi
     have hm : I∈pool:=by by_contra hn;exact hi (by simp only [f,ite_eq_right hn])
     have hb : β I≠0:=by intro hz;exact hi (by simp only [f,ite_eq_left hm,hz,mul_zero])
@@ -58,8 +58,8 @@ theorem radialEnergy_le_absolute_mass (R : O→ℂ) (keep : O→Prop)
     · positivity
   exact (Summable.of_nonneg_of_le hn hb hs).tsum_le_tsum hb hs
 
-end SevenEighths.CenteredMomentNaturalFixedRaySource
 
-end
 
-end OAI
+
+
+

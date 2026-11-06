@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def frozenInactiveWeight (J F Q Q₀ : Ideal Eis) (A : Finset (FreeReflection.pool J Q Q₀)) : ℂ :=
   ∏ b∈(Finset.univ:Finset (FreeReflection.pool J Q Q₀))\A,
@@ -38,7 +38,7 @@ lemma frozenInactiveWeight_norm (J F Q Q₀ : Ideal Eis) (A : Finset (FreeReflec
         (NeZero.ne ((poolPrimeFamily J Q Q₀).ideal b))
     · simp
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

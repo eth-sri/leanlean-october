@@ -15,28 +15,29 @@ This does not yet prove the B-process exponential-sum transformation.
 
 noncomputable section
 
-open Set Expdb Filter
+open Expdb Filter
 open scoped Topology ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseLegendreDual (F : ℝ → ℝ) (v : ℝ) : ℝ :=
   v * modelPhaseInverseSlope F v - F (modelPhaseInverseSlope F v)
 
-theorem modelPhaseLegendreDual_contDiffAt {σ δ : ℝ} {F : ℝ → ℝ}
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F)
+include σ δ F hσ hδ hF v hv
+
+theorem modelPhaseLegendreDual_contDiffAt  :
     ContDiffAt ℝ ∞ (modelPhaseLegendreDual F) v := by
   have hi := modelPhaseInverseSlope_contDiffAt hσ hδ hF hv
   exact (contDiffAt_id.mul hi).sub
     ((approximateModelPhase_contDiffAt hF (modelPhaseInverseSlope_mem hv)).comp v hi)
 
-theorem modelPhaseLegendreDual_hasDerivAt {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseLegendreDual_hasDerivAt  :
     HasDerivAt (modelPhaseLegendreDual F) (modelPhaseInverseSlope F v) v := by
   have hi := (modelPhaseInverseSlope_hasStrictDerivAt hσ hδ hF hv).hasDerivAt
   have hf := (approximateModelPhase_contDiffAt hF (modelPhaseInverseSlope_mem hv)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
@@ -45,11 +46,10 @@ theorem modelPhaseLegendreDual_hasDerivAt {σ δ : ℝ} {F : ℝ → ℝ}
   · rw [deriv_modelPhaseInverseSlope_apply hv, id_eq]
     ring
 
-theorem deriv_modelPhaseLegendreDual {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+theorem deriv_modelPhaseLegendreDual  :
     deriv (modelPhaseLegendreDual F) v = modelPhaseInverseSlope F v :=
   (modelPhaseLegendreDual_hasDerivAt hσ hδ hF hv).deriv
+end
 
-end TaoTrudgianYang2025
+
+

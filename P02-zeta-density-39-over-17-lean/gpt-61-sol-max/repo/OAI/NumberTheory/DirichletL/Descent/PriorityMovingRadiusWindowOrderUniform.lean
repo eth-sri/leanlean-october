@@ -9,15 +9,15 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open scoped EisensteinEis
 theorem actual_priority_source_moving_radius_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -107,7 +107,7 @@ theorem actual_priority_source_moving_radius_window_order_uniform_types
       (div_le_iff₀ (dyadScale_pos _)).mp (cell_ratios p hp source hk d x hx 0).2.le
     apply hr.trans
     rw [Real.rpow_add hz,second_cell_scale_rpow Z d 0 hZ]
-    simpa only [mul_comm] using mul_le_mul_of_nonneg_left hbin (show 0≤scales d 0 from (dyadScale_pos _).le)
+    simpa only [mul_comm] using mul_le_mul_of_nonneg_left hbin (show 0≤ scales d 0 from (dyadScale_pos _).le)
   have hdiv:∀x∈cell p source d,Z^(secondCellExponent Z d 1-eta)≤primeProductNorm p x.second.divisor:=by
     intro x hx
     have hr:scales d 1≤primeProductNorm p x.second.divisor:=by
@@ -126,8 +126,8 @@ theorem actual_priority_source_moving_radius_window_order_uniform_types
     hcommon hdiv hΨ (fun x hx=>hw x (hin hx)) ha₁ ha₂ (hlabels d hd) ho hslots₁ hslots₂ hA
     (hleft d hd) (hright d hd)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

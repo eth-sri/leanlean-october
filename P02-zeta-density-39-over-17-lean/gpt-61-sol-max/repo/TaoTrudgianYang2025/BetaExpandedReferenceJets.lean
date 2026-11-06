@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedModelJets
 
@@ -14,14 +15,18 @@ differentiation recurrence is proved before they enter any error estimate.
 
 noncomputable section
 
-open Set Expdb Filter
+open Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
+
+section
+variable {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v)
+include σ v hσ hv
 
 theorem reciprocalModel_hasDerivAt_inverse_curvature
-    {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) :
+     :
     HasDerivAt (fun w : ℝ => w^(-σ⁻¹))
       (deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹ v := by
   have hu : 0 < v^(-σ⁻¹) := Real.rpow_pos_of_pos hv _
@@ -34,8 +39,7 @@ theorem reciprocalModel_hasDerivAt_inverse_curvature
     rw [(referenceModelPrimitive_hasDerivAt σ (Real.rpow_pos_of_pos hw _)).deriv,
       reciprocal_modelPhase_identity hσ hw.le]
     rfl
-  have hprod : deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹))*
-      ((-σ⁻¹)*v^(-σ⁻¹-1)) = 1 :=
+  have hprod :=
     hc.unique ((hasDerivAt_id v).congr_of_eventuallyEq he)
   have hne : deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)) ≠ 0 := by
     intro h
@@ -49,7 +53,7 @@ theorem reciprocalModel_hasDerivAt_inverse_curvature
   rwa [hcoef] at hp
 
 theorem referenceModelPrimitive_secondDeriv_reciprocal_ne_zero
-    {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) :
+     :
     deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)) ≠ 0 := by
   have hi := reciprocalModel_hasDerivAt_inverse_curvature hσ hv
   have hp := Real.hasDerivAt_rpow_const (p := -σ⁻¹) (Or.inl hv.ne')
@@ -59,14 +63,20 @@ theorem referenceModelPrimitive_secondDeriv_reciprocal_ne_zero
   have hn : (-σ⁻¹)*v^(-σ⁻¹-1) ≠ 0 :=
     mul_ne_zero (neg_ne_zero.mpr (inv_ne_zero hσ.ne')) (Real.rpow_pos_of_pos hv _).ne'
   exact hn he.symm
+end
+
 
 def expandedReferenceInverseJet (σ v : ℝ) : ℕ → ℝ
   | 0 => v^(-σ⁻¹)
   | 1 => (deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹
   | n+2 => iteratedDeriv (n+2) (referenceModelPrimitive σ) (v^(-σ⁻¹))
 
+section
+variable {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v)
+include σ v hσ hv
+
 theorem expandedReferenceInverseJet_hasDerivAt
-    {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) (j : ℕ) :
+     (j : ℕ) :
     HasDerivAt (fun w => expandedReferenceInverseJet σ w j)
       (inversePhaseEval (inversePhaseAtomDerivative j) (expandedReferenceInverseJet σ v)) v := by
   have hi := reciprocalModel_hasDerivAt_inverse_curvature hσ hv
@@ -106,7 +116,7 @@ theorem expandedReferenceInverseJet_hasDerivAt
           iteratedDeriv_succ]
 
 theorem inversePhaseEval_expandedReferenceInverseJet_hasDerivAt
-    {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) (e : InversePhaseExpression) :
+     (e : InversePhaseExpression) :
     HasDerivAt (fun w => inversePhaseEval e (expandedReferenceInverseJet σ w))
       (inversePhaseEval (inversePhaseDifferentiate e) (expandedReferenceInverseJet σ v)) v := by
   induction e with
@@ -116,7 +126,7 @@ theorem inversePhaseEval_expandedReferenceInverseJet_hasDerivAt
   | mul e f he hf => exact he.mul hf
 
 theorem iteratedDeriv_modelPhase_expanded_inverseJet_formula
-    {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) (n : ℕ) :
+     (n : ℕ) :
     iteratedDeriv n (modelPhase σ⁻¹) v =
       inversePhaseEval (inversePhaseDerivativeExpression n) (expandedReferenceInverseJet σ v) := by
   induction n generalizing v with
@@ -132,5 +142,7 @@ theorem iteratedDeriv_modelPhase_expanded_inverseJet_formula
         (inversePhaseEval_expandedReferenceInverseJet_hasDerivAt hσ hv
           (inversePhaseDerivativeExpression n)).deriv]
       rfl
+end
 
-end TaoTrudgianYang2025
+
+

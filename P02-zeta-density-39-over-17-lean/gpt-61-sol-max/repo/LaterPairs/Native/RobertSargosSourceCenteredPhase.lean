@@ -6,9 +6,8 @@ public import LaterPairs.Native.RobertSargosConjugateAveraging
 public import LaterPairs.Native.RobertSargosCorrelationSupport
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                   
 
@@ -17,7 +16,11 @@ open GafniTao
 open scoped BigOperators InnerProductSpace ComplexConjugate
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_centered_phase_inner (f : ℝ → ℝ) (M : ℕ) (m h : ℤ)
+section
+variable (f : ℝ → ℝ) (M : ℕ)
+include f M
+
+theorem robertSargos_centered_phase_inner  (m h : ℤ)
     (hh : 0 ≤ h) :
     ⟪sargosPaddedSequence (fun n => fordAdditiveCharacter (f (n+1))) M (m+h),
       sargosPaddedSequence (fun n => fordAdditiveCharacter (f (n+1))) M (m-h)⟫_ℝ =
@@ -25,14 +28,8 @@ theorem robertSargos_centered_phase_inner (f : ℝ → ℝ) (M : ℕ) (m h : ℤ
         (fordAdditiveCharacter (robertSargosSymmetricDifference f (m+1) h)).re
       else 0 := by
   by_cases hm : m ∈ Finset.Icc h ((M:ℤ)-h-1)
-  · have hp : m+h ∈ Finset.Ico (0:ℤ) M := by
-      simp only [Finset.mem_Icc] at hm
-      simp only [Finset.mem_Ico]
-      constructor <;> omega
-    have hn : m-h ∈ Finset.Ico (0:ℤ) M := by
-      simp only [Finset.mem_Icc] at hm
-      simp only [Finset.mem_Ico]
-      constructor <;> omega
+  · have hp : m+h ∈ Finset.Ico (0:ℤ) M := by grind
+    have hn : m-h ∈ Finset.Ico (0:ℤ) M := by grind
     rw [ite_eq_left hm,sargosPaddedSequence_eq _ _ hp,sargosPaddedSequence_eq _ _ hn,
       real_inner_comm,real_inner_eq_re_inner ℂ,RCLike.inner_apply]
     change (fordAdditiveCharacter (f ((m+h:ℤ)+1)) *
@@ -46,18 +43,15 @@ theorem robertSargos_centered_phase_inner (f : ℝ → ℝ) (M : ℕ) (m h : ℤ
     simp only [sub_eq_add_neg]
   · rw [ite_eq_right hm]
     by_cases hp : m+h ∈ Finset.Ico (0:ℤ) M
-    · have hn : m-h ∉ Finset.Ico (0:ℤ) M := by
-        simp only [Finset.mem_Icc] at hm
-        simp only [Finset.mem_Ico] at hp ⊢
-        omega
+    · have hn : m-h ∉ Finset.Ico (0:ℤ) M := by grind
       rw [sargosPaddedSequence_zero _ _ hn,inner_zero_right]
     · rw [sargosPaddedSequence_zero _ _ hp,inner_zero_left]
 
-def robertSargosSourceCenteredPhase (f : ℝ → ℝ) (M : ℕ) (h : ℤ) : ℂ :=
+def robertSargosSourceCenteredPhase  (h : ℤ) : ℂ :=
   ∑ m ∈ Finset.Icc (h+1) ((M:ℤ)-h),
     fordAdditiveCharacter (robertSargosSymmetricDifference f m h)
 
-theorem robertSargos_centered_phase_sum (f : ℝ → ℝ) (M : ℕ) (h : ℤ)
+theorem robertSargos_centered_phase_sum  (h : ℤ)
     (hh : 0 ≤ h) :
     robertSargosCenteredCorrelation (fun n => fordAdditiveCharacter (f (n+1))) M h =
       (robertSargosSourceCenteredPhase f M h).re := by
@@ -66,12 +60,7 @@ theorem robertSargos_centered_phase_sum (f : ℝ → ℝ) (M : ℕ) (h : ℤ)
   simp only [robertSargos_centered_phase_inner f M _ h hh,Complex.re_sum]
   rw [← Finset.sum_filter]
   have he : (Finset.Ico (0:ℤ) M).filter
-      (fun m => m ∈ Finset.Icc h ((M:ℤ)-h-1)) = Finset.Icc h ((M:ℤ)-h-1) := by
-    apply Finset.filter_mem_eq_of_subset
-    intro m hm
-    simp only [Finset.mem_Icc] at hm
-    simp only [Finset.mem_Ico]
-    constructor <;> omega
+      (fun m => m ∈ Finset.Icc h ((M:ℤ)-h-1)) = Finset.Icc h ((M:ℤ)-h-1) := by grind
   rw [he]
   apply Finset.sum_bij (fun m _ => m+1)
   · intro m hm
@@ -85,5 +74,7 @@ theorem robertSargos_centered_phase_sum (f : ℝ → ℝ) (M : ℕ) (h : ℤ)
     constructor <;> omega
   · intro m _
     simp only [Int.cast_add,Int.cast_one]
+end
 
-end TaoTrudgianYang2025
+
+

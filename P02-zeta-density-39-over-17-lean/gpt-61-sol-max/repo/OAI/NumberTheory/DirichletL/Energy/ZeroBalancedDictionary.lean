@@ -11,13 +11,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+open HeckeFamily
+open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentCommonRadialData
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentAmplificationChildInput CenteredMomentFirstSourceReduction
-local notation "O"=>HeckeFamily.O
+open CenteredMomentAmplificationChildInput
+open scoped HeckeO
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -47,7 +47,7 @@ local notation "positiveInput"=>positiveEmptyInput M H hH s p ha t X₁ X₂ hX�
 theorem declared_capacity (hZ:1<Z):
     let Mdecl:=max s.width (length Z X₁+length Z X₂);
     Real.logb Z (volume zeroInput)≤Mdecl ∧
-    Real.logb Z s.radial.scale+Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.width ∧
+    Real.logb Z s.radial.scale+Real.logb Z (s.character.modulus.absNorm:ℝ)≤ s.width ∧
     s.radial.scale*(s.character.modulus.absNorm:ℝ)≤Z^s.width ∧
     volume zeroInput≤Z^Mdecl:=by
   have hlog (X:ℝ)(hX:0<X):Real.logb Z X≤length Z X:=by
@@ -64,15 +64,15 @@ theorem declared_capacity (hZ:1<Z):
 
 lemma declared_capacity_upper (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     (hs:s.width≤Mcap)(hc₁:X₁≤Z^Lgoal)(hc₂:X₂≤Z^Lgoal):
-    max s.width (length Z X₁+length Z X₂)≤max Mcap (2*Lgoal):=by
+    max s.width (length Z X₁+length Z X₂)≤ max Mcap (2*Lgoal):=by
   have hlen (X:ℝ)(hcap:X≤Z^Lgoal):length Z X≤Lgoal:=by
     unfold length
     exact (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le (le_max_left 1 X))).mpr
       (max_le (Real.one_le_rpow hZ.le hL) hcap)
   exact max_le_max hs (by linarith [hlen X₁ hc₁,hlen X₂ hc₂])
 
-end SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
 
-end
 
-end OAI
+
+
+

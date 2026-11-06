@@ -1,19 +1,20 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveStepScalars
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
+open InverseFirstGlobalCaps
 open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem actual_live_label_step
     (old:ℝ → ℂ)(oldb:ℝ)(hsold:∀y,old y≠0 → y≤oldb)
@@ -91,11 +92,10 @@ theorem actual_live_label_step
   · exact hellcap
   · exact hactivecap
   · exact hcommoncap
-  · exact hquotcap
-  · exact hchild
+  all_goals (assumption)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

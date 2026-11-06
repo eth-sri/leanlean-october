@@ -9,7 +9,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
 variable {a c : Eis} {mode : Bool}
@@ -88,7 +88,7 @@ theorem sourceSlotPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
   simpa only [actualSlotPhase,slotIndices,frozenIndices,Finset.image_image,
     Function.comp_def,f,Sum.elim_inl,Sum.elim_inr] using hh
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

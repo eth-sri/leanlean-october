@@ -13,13 +13,13 @@ The only supplied sum estimate is the upstream nonasymptotic beta bound.
 Physical dual power windows remain explicit for later scale transfer.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped BigOperators NNReal
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem sourceStationaryChart_bound_of_exponentSumBound
     {α : ℝ≥0} {β σ : ℝ}
@@ -156,4 +156,4 @@ theorem sourceStationaryChart_bound_of_exponentSumBound
     rw [hempty,Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025
+

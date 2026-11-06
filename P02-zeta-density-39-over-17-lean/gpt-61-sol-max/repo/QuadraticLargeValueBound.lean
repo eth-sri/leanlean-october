@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import QuadraticAmplifiedMoment
 public import GeneralCenteredTrace
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -38,7 +38,7 @@ theorem finite_quadratic_large_value_general (w : MathCollab.Density.ComparisonC
   have ht' : (Matrix.trace (cutoffCenteredMatrix w.toReflectionCutoff L W^2)).re ≤
       B*T^(η/2)*adjacentCenteredBudget K T L W.card := by
     exact (Complex.re_le_norm _).trans (by simpa only [pow_two] using ht)
-  have hp : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
+  have hp := Real.one_le_rpow hT.le hδ.le
   have he : T^(η/2)*T^(η/2)=T^η := by rw [← Real.rpow_add hTp]; congr 1; ring
   let X := (N*L)^2+(N^3/L)*adjacentCenteredBudget K T L W.card
   have hbudget : (N*L)^2+(N^3/L)*
@@ -86,4 +86,4 @@ theorem finite_quadratic_large_value_second (w : MathCollab.Density.ComparisonCu
   norm_num [adjacentCenteredBudget] at hh
   convert hh using 1; field_simp; ring
 
-end Montgomery.RationalMoment
+

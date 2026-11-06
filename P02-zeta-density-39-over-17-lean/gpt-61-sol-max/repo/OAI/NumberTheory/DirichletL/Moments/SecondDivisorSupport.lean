@@ -9,12 +9,12 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSecondDivisorSupport
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly
-open CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
+open CenteredMomentRowNorm CenteredMomentHeckeColumnWindow
 open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentSecondExceptionalPairBound RayFourExpansion
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem live_right_divisor_norm (D I L:Ideal O)(hD:D≠0)(hI:I≠0)
@@ -32,10 +32,14 @@ theorem live_right_divisor_norm (D I L:Ideal O)(hD:D≠0)(hI:I≠0)
   apply (le_div_iff₀ hDpos).mpr
   simpa only [mul_comm] using hb
 
-theorem right_divisor_coefficient_zero
-    (D:Ideal O)(hD:Supported D)(S:Finset (Ideal O))(β:Ideal O→ℂ)(H:ℝ)
+section
+variable (D:Ideal O)(hD:Supported D)(S:Finset (Ideal O))(β:Ideal O→ℂ)(H:ℝ)
     (hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)(L:Ideal O)(hL:H/(D.absNorm:ℝ)<L.absNorm)
-    (η:Character)(t:ℝ)(A:O)(ξ:RayCharacter)(I:sectorPool D hD.1 S):
+    (η:Character)(t:ℝ)(A:O)(ξ:RayCharacter)
+include D hD S β H hβ L hL η t A ξ
+
+theorem right_divisor_coefficient_zero
+    (I:sectorPool D hD.1 S):
     divisorCoefficient L (sectorElement D hD.1 S)
       (movingCoefficient A (sectorElement D hD.1 S)
         (fun I:sectorPool D hD.1 S=>β (D*I)*heightCoeff η t I)) ξ I=0:=by
@@ -50,9 +54,7 @@ theorem right_divisor_coefficient_zero
   · rfl
 
 theorem right_divisor_row_zero
-    (D:Ideal O)(hD:Supported D)(S:Finset (Ideal O))(β:Ideal O→ℂ)(H:ℝ)
-    (hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)(L:Ideal O)(hL:H/(D.absNorm:ℝ)<L.absNorm)
-    (η:Character)(t:ℝ)(A:O)(ξ:RayCharacter)(v:sectorPool D hD.1 S→ℂ)(z:O):
+    (v:sectorPool D hD.1 S→ℂ)(z:O):
     rowPolynomial Finset.univ (sectorElement D hD.1 S)
       (fun I=>divisorCoefficient L (sectorElement D hD.1 S)
         (movingCoefficient A (sectorElement D hD.1 S)
@@ -62,6 +64,8 @@ theorem right_divisor_row_zero
   intro I hI
   exact mul_eq_zero_of_left
     (mul_eq_zero_of_left (right_divisor_coefficient_zero D hD S β H hβ L hL η t A ξ I) _) _
+end
+
 
 theorem originalPair_filter_right {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(η:Character)(χ ξ:RayCharacter)(A:O)
@@ -90,8 +94,8 @@ theorem originalPair_filter_right {ι:Type*}[Fintype ι][DecidableEq ι]
     apply mul_eq_zero_of_right
     exact norm_eq_zero.mpr (hz _ _)
 
-end SevenEighths.CenteredMomentSecondDivisorSupport
 
-end
 
-end OAI
+
+
+

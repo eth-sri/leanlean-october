@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LocalUnitFrequency
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSeries
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsLocal
@@ -11,17 +12,20 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def sourceRowTerm (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-    (hg : goodLambda∉Ideal.span {p}) (eta a rho x w z : ℂ) (j e l k m : ℕ) : ℂ :=
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
+    (hg : goodLambda∉Ideal.span {p}) (eta a rho x w z : ℂ) (j e l k m : ℕ)
+include p hp hg eta a rho x w z j e l k m
+
+def sourceRowTerm  : ℂ :=
   (rho^k/rho^(e+3*l))*sourceWeightedScalar (Ideal.absNorm (Ideal.span {p})) eta a
     (localGamma p hp.ne_zero hg 1) (star (localGamma p hp.ne_zero hg 3))
     (actualSextic (Ideal.span {p}) hg (-1)) x w z
     (sourceScalar p hp hg (e+3*l) k (j+6*m)) e l k m
 
-theorem sourceRowTerm_pos (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-    (hg : goodLambda∉Ideal.span {p}) (eta a rho x w z : ℂ) (j e l k m : ℕ)
+theorem sourceRowTerm_pos 
     (ht : e+3*l≠0) :
     sourceRowTerm p hp hg eta a rho x w z j e l k m=
       rowMarkedTerm p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
@@ -30,14 +34,20 @@ theorem sourceRowTerm_pos (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMax
   unfold sourceRowTerm
   rw [sourceWeightedScalar_actual p hp hg]
   simp only [rowMarkedTerm,rowWeightedScalar,sourceScalar,ite_eq_right ht,coordV,Complex.ofReal_natCast]
+end
+
 
 end SevenEighths.ProbeEuler
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
+open scoped EisensteinO
 
-theorem bareSourceCoefficient_unit_frequency (η : HeckeFamily.Character)
+section
+variable (η : HeckeFamily.Character)
+include η
+
+theorem bareSourceCoefficient_unit_frequency 
     (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O)
     (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
     (b H : O) (hcop : IsCoprime b (A*s)) :
@@ -48,10 +58,18 @@ theorem bareSourceCoefficient_unit_frequency (η : HeckeFamily.Character)
   rw [bareCongruenceCoefficient_unit_frequency A s hA hs b H hcop]
   ring
 
-theorem bareSourceCoefficient_row_prime_formula (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+section
+variable (p : O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal O).IsMaximal]
+include p hp
+
+section
+variable (hg : goodLambda∉Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (b : O) (hb : IsCoprime b p)
+include hg hchar hprimary hs b hb
+
+theorem bareSourceCoefficient_row_prime_formula 
     (e l k j : ℕ) (he : e≤1) (hI : primaryGenerator (Ideal.span {p^e})≠0) :
     bareSourceCoefficient η (Ideal.span {p^e}) hI (p^(e+3*l)) (p^k)
       (pow_ne_zero _ hp.ne_zero) (b*p^j)=
@@ -67,13 +85,9 @@ theorem bareSourceCoefficient_row_prime_formula (η : HeckeFamily.Character) (p 
     (hb.pow_right.mul_right hb.pow_right),
     bareSourceCoefficient_prime_formula η p hp hg hchar hprimary hs e l k j he hI,
     idealRowHom_prime_power_value p b hg,idealRowHom_prime_power_value p b hg]
-  simp only [div_eq_mul_inv]
-  ac_rfl
+  ring
 
-theorem bareSourceCoefficient_row_weighted_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (b : O) (hb : IsCoprime b p) (j e l k m : ℕ) (he : e≤1)
+theorem bareSourceCoefficient_row_weighted_prime  (j e l k m : ℕ) (he : e≤1)
     (hI : primaryGenerator (Ideal.span {p^e})≠0) (x w z : ℂ) :
     bareSourceCoefficient η (Ideal.span {p^e}) hI (p^(e+3*l)) (p^k)
       (pow_ne_zero _ hp.ne_zero) (b*p^(j+6*m)) *
@@ -95,9 +109,10 @@ theorem bareSourceCoefficient_row_weighted_prime (η : HeckeFamily.Character) (p
     ((-1:ℂ)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
     sourceScalar p hp hg (e+3*l) k (j+6*m) *
     (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(x+1/2)*(e:ℂ)-(1+3*x)*(l:ℂ)-w*(k:ℂ)-6*z*(m:ℂ)) * hpdiag
+end
 
-theorem bareIdealHighCoefficient_row_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hprimary : goodLambda^2∣p-1)
+
+theorem bareIdealHighCoefficient_row_at_prime  (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (u : O) (e l k m : ℕ) (he : e≤1) :
     bareIdealHighCoefficient η u ((Ideal.span {p})^e) ((Ideal.span {p})^l)
       ((Ideal.span {p})^k) ((Ideal.span {p})^m) =
@@ -115,10 +130,13 @@ theorem bareIdealHighCoefficient_row_at_prime (η : HeckeFamily.Character) (p : 
   have hH : (p^m)^6=p^(6*m) := by rw [←pow_mul,Nat.mul_comm m 6]
   simp only [hA,hH,Ideal.span_singleton_pow]
 
-theorem bareIdealHighSummand_row_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+section
+variable (hg : goodLambda∉Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (b : O) (hb : IsCoprime b p)
+include hg hchar hprimary hs b hb
+
+theorem bareIdealHighSummand_row_at_prime 
     (j e l k m : ℕ) (he : e≤1) (x w z : ℂ) :
     bareIdealHighSummand η (b*p^j) x w z ((Ideal.span {p})^e) ((Ideal.span {p})^l)
       ((Ideal.span {p})^k) ((Ideal.span {p})^m)=
@@ -133,10 +151,7 @@ theorem bareIdealHighSummand_row_at_prime (η : HeckeFamily.Character) (p : O) (
   simpa only [mul_assoc] using
     bareSourceCoefficient_row_weighted_prime η p hp hg hchar hprimary hs b hb j e l k m he _ x w z
 
-theorem idealRowHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (b : O) (hb : IsCoprime b p) (j : ℕ) (x w z : ℂ) :
+theorem idealRowHighLocalFactor_eq_source  (j : ℕ) (x w z : ℂ) :
     idealRowHighLocalFactor η (b*p^j) (Ideal.span {p}) x w z=
       ∑ e : Fin 2,∑' l,∑' k,∑' m,sourceRowTerm p hp hg (targetMonoid η p) (actualACube η p)
         (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)) x w z j e.val l k m := by
@@ -150,8 +165,12 @@ theorem idealRowHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (
   apply tsum_congr
   intro m
   exact bareIdealHighSummand_row_at_prime η p hp hg hchar hprimary hs b hb j e.val l k m (by omega) x w z
-
-end SevenEighths.ProbePhysical
+end
+end
 end
 
-end OAI
+
+
+
+
+

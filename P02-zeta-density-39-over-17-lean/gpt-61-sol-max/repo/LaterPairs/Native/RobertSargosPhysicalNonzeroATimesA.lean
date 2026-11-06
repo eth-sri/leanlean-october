@@ -9,13 +9,12 @@ public import LaterPairs.Native.RobertSargosZeroRPhysical
 public import LaterPairs.Native.RobertSargosZeroZero
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                       
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -55,4 +54,4 @@ theorem robertSargos_physical_nonzero_a_times_a
   have h1M := mul_le_mul_of_nonneg_right h1F (sq_nonneg (M:ℝ))
   nlinarith
 
-end TaoTrudgianYang2025
+

@@ -17,14 +17,18 @@ open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def quadraticRemainderConstant (H M₀ M₂ M₃ : ℝ) : ℝ :=
   4*M₀/(H*Real.pi)+(2*H*M₂+2*H*(M₂+H*M₃))/(2*Real.pi)
 
-theorem norm_quadratic_window_remainder_le
-    {W : ℝ → ℝ} {T H M₀ M₂ M₃ : ℝ}
+section
+variable {W : ℝ → ℝ} {T H M₀ M₂ M₃ : ℝ}
     (hW : ContDiff ℝ ∞ W) (hT : 0 < T) (hH : 0 < H)
+include W T H M₀ M₂ M₃ hW hT hH
+
+theorem norm_quadratic_window_remainder_le
+    
     (h₀ : |W 0| ≤ M₀)
     (h₂ : ∀ z : ℝ, |iteratedDeriv 2 W z| ≤ M₂)
     (h₃ : ∀ z : ℝ, |iteratedDeriv 3 W z| ≤ M₃) :
@@ -58,8 +62,7 @@ theorem norm_quadratic_window_remainder_le
   field_simp
 
 theorem norm_quadratic_global_remainder_le
-    {W : ℝ → ℝ} {T H M₀ M₂ M₃ : ℝ}
-    (hW : ContDiff ℝ ∞ W) (hT : 0 < T) (hH : 0 < H)
+    
     (hs : Function.support W ⊆ Ioc (-H) H)
     (h₀ : |W 0| ≤ M₀)
     (h₂ : ∀ z : ℝ, |iteratedDeriv 2 W z| ≤ M₂)
@@ -74,5 +77,7 @@ theorem norm_quadratic_global_remainder_le
     exact hz (by simp only [hzero,Complex.ofReal_zero,zero_mul])
   rw [← intervalIntegral.integral_eq_integral_of_support_subset hs']
   exact norm_quadratic_window_remainder_le hW hT hH h₀ h₂ h₃
+end
 
-end TaoTrudgianYang2025
+
+

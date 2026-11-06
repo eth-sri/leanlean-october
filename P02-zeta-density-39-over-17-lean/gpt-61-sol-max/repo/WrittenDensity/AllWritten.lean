@@ -3,32 +3,11 @@ public import WrittenDensity.Common
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.WrittenDensity
-open MathCollab.Density
-/-- Exact full written-source conclusion, proved here by checked native density and strict actual zero-freeness. This does not certify the original analytic route. -/
-theorem source_v7_A_1 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
-    (_hhi : σ ≤ (12/17)) (_hε : 0 < ε) :
-    DensityBound σ ((6 + (-6 * σ)) / (-3 + (8 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
-  have hl : (7/10) ≤ σ := by linarith
-  have hh : σ ≤ (12/17) := by linarith
-  apply density_weaken (Montgomery.Refined.refined_density_middle (by linarith) (by linarith) _hε)
-  have hd1 : 0 < (3 + (7 * σ)) := by linarith
-  have hd2 : (0:ℝ) < (-3 + (8 * σ)) := by linarith
-  have hA : (18:ℝ)/(3 + (7 * σ)) ≤ 6/(-3 + (8 * σ)) := by
-    apply (div_le_div_iff₀ hd1 hd2).2
-    have hc : 0 ≤ (72 + (-102 * σ)) := by
-      calc
-        0 ≤ 102*((12/17)-σ) := by positivity
-        _ = (72 + (-102 * σ)) := by ring
-    nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
-  convert hp using 1 <;> ring
-/-- Exact full written-source conclusion, proved here by checked native density and strict actual zero-freeness. This does not certify the original analytic route. -/
+
+
+/- Exact full written-source conclusion, proved here by checked native density and strict actual zero-freeness. This does not certify the original analytic route. -/
 theorem source_oct2_mixed_4 {σ ε : ℝ} (_hlo : (19/22) ≤ σ)
     (_hhi : σ ≤ (23/26)) (_hε : 0 < ε) :
     DensityBound σ ((24 + (-24 * σ)) / (-11 + (30 * σ))) ε := by
@@ -65,12 +44,5 @@ theorem source_oct2_mixed_4 {σ ε : ℝ} (_hlo : (19/22) ≤ σ)
     nlinarith only [hc]
   have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
   convert hp using 1 <;> ring
-/-- Exact full written-source conclusion, proved here by checked native density and strict actual zero-freeness. This does not certify the original analytic route. -/
-theorem source_oct2_mixed_5 {σ ε : ℝ} (_hlo : (23/26) ≤ σ)
-    (_hhi : σ < 1) (_hε : 0 < ε) :
-    DensityBound σ ((6 + (-6 * σ)) / (3 + σ)) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
-  linarith
-end Montgomery.WrittenDensity
+
+

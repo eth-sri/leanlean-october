@@ -10,13 +10,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialEntry
-open ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSourceMass CenteredMomentSourceRectangleMask
+open ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSourceMass
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
 open CenteredMomentEnergyFixedRadialSource CenteredMomentSourceRow
 open CenteredMomentSecondHeightFamily CenteredMomentAmplificationChildInput
 open CenteredMomentOriginalCommonHarmonic CenteredMomentRadialEligibleEnergy
-open CenteredMomentEnergyZeroComparison CanonicalQuadraticSieve
-local notation "O"=>HeckeFamily.O
+
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -43,8 +43,8 @@ theorem original_comparison (b:ℝ)(hb:0<b):
     (by norm_num : (0:ℝ)≤2)
   simpa only [mul_assoc] using h
 
-end SevenEighths.CenteredMomentEnergyFixedRadialEntry
 
-end
 
-end OAI
+
+
+

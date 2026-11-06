@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open FirstCauchyArithmetic RayFourExpansion
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -46,7 +46,7 @@ theorem firstCoreInputRow_marked_priority
   intro J hJ
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

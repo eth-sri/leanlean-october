@@ -10,8 +10,8 @@ noncomputable section
 open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-local notation "O" => HeckeFamily.O
+open HeckeFamily ProbePhysical ProbeEuler
+open scoped HeckeO
 
 def firstPrimeDefectBound (eps : ℝ) (P : PrimeIdeal) : ℝ :=
   240*(P.val.absNorm : ℝ)^(-1-min eps (1/50:ℝ))
@@ -23,7 +23,7 @@ theorem firstPrimeDefectBound_summable (eps : ℝ) (heps : 0<eps) :
     Summable (firstPrimeDefectBound eps) := by
   have ht : 1<(1+min eps (1/50:ℝ) : ℂ).re := by
     simp only [Complex.add_re,Complex.one_re,Complex.ofReal_re]
-    have hm : 0<min eps (1/50:ℝ) := lt_min heps (by norm_num)
+    have hm : 0< min eps (1/50:ℝ) := lt_min heps (by norm_num)
     linarith
   have h := (CubicEisenstein.fullIdealWeight_summable_norm
     (1+min eps (1/50:ℝ) : ℂ) ht).comp_injective
@@ -44,14 +44,20 @@ structure FirstTail (eps : ℝ) (S : Finset (Ideal O)) : Prop where
   norm_four : ∀P : PrimeIdeal,P.val∉S → 4≤P.val.absNorm
   small : (∑' P : {P : PrimeIdeal // P.val∉S},firstPrimeDefectBound eps P.val)≤1/6
 
-theorem FirstTail.summable {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S) :
+section
+variable {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S)
+include eps S h
+
+theorem FirstTail.summable  :
     Summable (fun P : {P : PrimeIdeal // P.val∉S}=>firstPrimeDefectBound eps P.val) :=
   (firstPrimeDefectBound_summable eps h.positive).subtype _
 
-theorem FirstTail.half {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S)
+theorem FirstTail.half 
     (P : {P : PrimeIdeal // P.val∉S}) : firstPrimeDefectBound eps P.val≤1/2 := by
   have hh := Summable.le_tsum h.summable P (fun Q _=>firstPrimeDefectBound_nonneg eps Q.val)
   linarith [h.small]
+end
+
 
 theorem exists_first_cutoff (eps : ℝ) (heps : 0<eps) :
     ∃N : ℕ,4≤N ∧ ∀S : Finset (Ideal O),
@@ -101,8 +107,8 @@ theorem exists_both_source_exclusions (eps : ℝ) (heps : 0<eps)
   · exact hcut₁ S (fun P hP=>hcut P (hP.trans (le_max_left _ _)))
   · exact hcut₂ S (fun P hP=>hcut P (hP.trans (le_max_right _ _)))
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

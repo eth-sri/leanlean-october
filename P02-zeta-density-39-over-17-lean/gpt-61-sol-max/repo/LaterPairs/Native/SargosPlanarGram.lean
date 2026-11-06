@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarKernel
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
 
@@ -18,21 +17,27 @@ open scoped BigOperators ComplexConjugate
 
 namespace TaoTrudgianYang2025
 
-def sargosPlanarSum {ι : Type*} (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ)
+section
+variable {ι : Type*} (S : Finset ι)
+include ι S
+
+def sargosPlanarSum  (z : ι → ℂ) (u v : ι → ℝ)
     (α γ : ℝ) : ℂ :=
   ∑ i ∈ S, z i*fordAdditiveCharacter (u i*α+v i*γ)
 
-def sargosNearPairs {ι : Type*} (S : Finset ι) (u v : ι → ℝ)
+def sargosNearPairs  (u v : ι → ℝ)
     (a b : ℝ) : Finset (ι × ι) := by
   classical
   exact (S ×ˢ S).filter (fun p => |u p.1-u p.2| ≤ a ∧ |v p.1-v p.2| ≤ b)
 
-def sargosWeightedPlanarIntegrand {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (a b c d α γ : ℝ) : ℝ :=
+section
+variable (z : ι → ℂ) (u v : ι → ℝ)
+include z u v
+
+def sargosWeightedPlanarIntegrand  (a b c d α γ : ℝ) : ℝ :=
   sargosSincKernel a (α-c)*sargosSincKernel b (γ-d)*‖sargosPlanarSum S z u v α γ‖^2
 
-theorem sargosPlanarSum_norm_sq {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (α γ : ℝ) :
+theorem sargosPlanarSum_norm_sq  (α γ : ℝ) :
     ((‖sargosPlanarSum S z u v α γ‖^2 : ℝ) : ℂ) =
       ∑ p ∈ S ×ˢ S, z p.1*conj (z p.2)*
         fordAdditiveCharacter ((u p.1-u p.2)*α+(v p.1-v p.2)*γ) := by
@@ -57,8 +62,7 @@ theorem sargosPlanarSum_norm_sq {ι : Type*} (S : Finset ι)
           congr 2
           ring
 
-theorem sargosWeightedPlanarIntegrand_eq_gram {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (a b c d α γ : ℝ) :
+theorem sargosWeightedPlanarIntegrand_eq_gram  (a b c d α γ : ℝ) :
     (sargosWeightedPlanarIntegrand S z u v a b c d α γ : ℂ) =
       ∑ p ∈ S ×ˢ S, (z p.1*conj (z p.2))*
         sargosPlanarKernelTerm a b c d (u p.1-u p.2) (v p.1-v p.2) α γ := by
@@ -69,11 +73,13 @@ theorem sargosWeightedPlanarIntegrand_eq_gram {ι : Type*} (S : Finset ι)
   unfold sargosPlanarKernelTerm
   ring
 
-theorem sargosWeightedPlanarIntegrand_nonneg {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) {a b : ℝ}
+theorem sargosWeightedPlanarIntegrand_nonneg  {a b : ℝ}
     (ha : 0 ≤ a) (hb : 0 ≤ b) (c d α γ : ℝ) :
     0 ≤ sargosWeightedPlanarIntegrand S z u v a b c d α γ :=
   mul_nonneg (mul_nonneg (sargosSincKernel_nonneg ha _) (sargosSincKernel_nonneg hb _))
     (sq_nonneg _)
+end
+end
 
-end TaoTrudgianYang2025
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicTailBudget
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeDeletionBounds HeckeReciprocalGrowth HeckeLogarithmic
 
@@ -77,9 +77,13 @@ theorem reflected_central_cost (χ : Character) (U H a e ε η m : ℝ)
           rw [←Real.rpow_add hU,←Real.rpow_add hU]
         _ = _ := by congr 2; ring
 
-theorem direct_external_cost (χ : Character) (U H κ η r R : ℝ)
+section
+variable (χ : Character) (U H κ η r R : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hκ : 0≤κ) (hκ' : κ≤1)
-    (hr : 0≤r) (hrR : r≤R) (hheight : (3+H)^4≤U^η) :
+    (hr : 0≤r) (hrR : r≤R) (hheight : (3+H)^4≤U^η)
+include χ U H κ η r R hQ hH hκ hκ' hr hrR hheight
+
+theorem direct_external_cost  :
     (U^r)^(3/2 : ℝ)*(presentationComplexity χ H)^κ≤2*U^(2*R+2+η) := by
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
   have h := positive_central_cost χ U H 2 0 κ η r hQ hH hκ hκ' hheight
@@ -89,9 +93,7 @@ theorem direct_external_cost (χ : Character) (U H κ η r R : ℝ)
   apply Real.rpow_le_rpow_of_exponent_le hU
   nlinarith
 
-theorem reflected_external_cost (χ : Character) (U H κ η r R : ℝ)
-    (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hκ : 0≤κ) (hκ' : κ≤1)
-    (hr : 0≤r) (hrR : r≤R) (hheight : (3+H)^4≤U^η) :
+theorem reflected_external_cost  :
     (U^r)^(3/2 : ℝ)*(χ.modulus.absNorm : ℝ)^(3/5 : ℝ)*
       ((radical χ.modulus).absNorm : ℝ)^(1/10+κ)*(3+H)^2≤U^(2*R+2+η) := by
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
@@ -105,9 +107,11 @@ theorem reflected_external_cost (χ : Character) (U H κ η r R : ℝ)
     _ = U^(r*(3/2)+(3/5)+(1/10+κ)+η) := by
       rw [←Real.rpow_mul hUp.le,←Real.rpow_add hUp,←Real.rpow_add hUp,←Real.rpow_add hUp]
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hU (by nlinarith)
-
-end SevenEighths.HeckeDyadic
-
 end
 
-end OAI
+
+
+
+
+
+

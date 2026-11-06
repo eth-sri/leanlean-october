@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -12,14 +13,13 @@ public import MathCollab.Density.Stronger.Peaks.ClusterCount
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Topology Finset
 open scoped Interval
 open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Peaks
 
 
@@ -44,19 +44,11 @@ theorem eventually_pointValue_log_scales {P K q : ℝ}
   have hPmul := (div_le_iff₀ hK).mp hP
   have hp := pow_le_pow_left₀
     (Real.log_nonneg (by linarith : 1 ≤ 3*H)) hupper 2
-  refine ⟨hH,((le_max_left _ _).trans hl).trans hmono,by nlinarith,?_⟩
-  nlinarith
+  grind
 
 theorem pointValueWidth_error_absorption {P C K L V : ℝ}
     (hP : 0 < P) (hK : 0 < K) (hL : 0 < L) (hKsize : 16*P*C ≤ K) :
-    C*(V^2/(K*L^2))*L ≤ V^2/(16*P*L) := by
-  have hc : C/K ≤ 1/(16*P) :=
-    (div_le_div_iff₀ hK (by positivity)).mpr (by nlinarith)
-  calc
-    C*(V^2/(K*L^2))*L = (C/K)*(V^2/L) := by field_simp
-    _ ≤ (1/(16*P))*(V^2/L) :=
-      mul_le_mul_of_nonneg_right hc (by positivity)
-    _ = V^2/(16*P*L) := by field_simp
+    C*(V^2/(K*L^2))*L ≤ V^2/(16*P*L) := by field_simp <;> nlinarith
 
 theorem pointValueWidth_count_identity {P K L V H : ℝ}
     (hP : 0 < P) (hL : 0 < L) (hV : 0 < V) :
@@ -81,13 +73,13 @@ theorem exists_pointValue_card_le_source_range
           (H*(Real.log (3*H))^4/V^6 + H^2*(Real.log (3*H))^6/V^12) := by
   obtain ⟨P,C,D,B,hP,hC,hD,hB,hcount⟩ :=
     (exists_pointValue_card_le_with_width hPointMean hPacket) hδ hκ hν
-  let K : ℝ := 16*P*C+1
+  let K := 16*P*C+1
   have hK : 0 < K := by dsimp only [K]; positivity
   have hKsize : 16*P*C ≤ K := by dsimp only [K]; linarith
   have hq : 0 < (1/4:ℝ)+κ := by linarith
   obtain ⟨B₁,hB₁⟩ := eventually_atTop.mp
     (eventually_pointValue_log_scales (P := P) hK hq)
-  let D₁ : ℝ := D*(K*(16*P)^2+(16*P)^6)
+  let D₁ := D*(K*(16*P)^2+(16*P)^6)
   have hD₁ : 0 < D₁ := by dsimp only [D₁]; positivity
   refine ⟨K,D₁,max B B₁,hK,hD₁,le_max_of_le_left hB,?_⟩
   intro H V W hH hV hLower hUpper hsep hrange hlarge
@@ -95,8 +87,8 @@ theorem exists_pointValue_card_le_source_range
   obtain ⟨hH20,hL1,hPL,hlogFit⟩ := hB₁ H ((le_max_right _ _).trans hH)
   have hH0 : 0 < H := by linarith
   have hH1 : 1 ≤ H := by linarith
-  let L : ℝ := Real.log (3*H)
-  let G : ℝ := V^2/(K*L^2)
+  let L := Real.log (3*H)
+  let G := V^2/(K*L^2)
   have hL : 0 < L := by dsimp only [L]; linarith
   have hDen : 0 < K*L^2 := by positivity
   have hG : 0 < G := by dsimp only [G]; positivity
@@ -192,15 +184,9 @@ theorem pointValue_count_mul_twelfth_le_growth {D H L V η : ℝ}
   have hp : V^6 ≤ H^(1+6*η) := by
     have hh := pow_le_pow_left₀ hV hGrowth 6
     rw [← Real.rpow_mul_natCast hH.le] at hh
-    convert hh using 1
-    congr 1
-    norm_num
-    ring
+    grind
   calc
-    _ ≤ D*H^η*(H*L^4*H^(1+6*η)+H^2*L^6) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      have hm := mul_le_mul_of_nonneg_left hp (show 0 ≤ H*L^4 by positivity)
-      linarith
+    _ ≤ D*H^η*(H*L^4*H^(1+6*η)+H^2*L^6) := by gcongr
     _ = D*L^4*H^(2+7*η)+D*L^6*H^(2+η) := by
       have h1 : H^η*H*H^(1+6*η) = H^(2+7*η) := by
         calc
@@ -214,9 +200,7 @@ theorem pointValue_count_mul_twelfth_le_growth {D H L V η : ℝ}
         rw [← Real.rpow_two,← Real.rpow_add hH]
         congr 1
         ring
-      calc
-        _ = D*L^4*(H^η*H*H^(1+6*η))+D*L^6*(H^η*H^2) := by ring
-        _ = _ := by rw [h1,h2]
+      grind
 
 theorem eventually_pointValue_high_budget {D η : ℝ}
     (hD : 0 < D) (hη : 0 < η) :
@@ -307,4 +291,4 @@ theorem pointValue_peak_card_of_inputs
     (fun t ht => ⟨(hW t ht).1,(hW t ht).2.1⟩)
     (fun t ht => (hW t ht).2.2)
 
-end MathCollab.Density.Stronger.Peaks
+

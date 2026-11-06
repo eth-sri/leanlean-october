@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Weyl
 public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace RiemannZeta.GuthMaynard
@@ -29,16 +30,8 @@ theorem vdc_product_bound
     rw [div_eq_iff hx.ne', one_div]
     field_simp [hs.ne']
     nlinarith
-  have hxs : x <= Real.sqrt x := by
-    have hs1 : Real.sqrt x <= 1 := (Real.sqrt_le_iff).2 ⟨by norm_num, by simpa using hx1⟩
-    calc
-      x = Real.sqrt x * Real.sqrt x := by nlinarith
-      _ <= Real.sqrt x * 1 := mul_le_mul_of_nonneg_left hs1 hs.le
-      _ = Real.sqrt x := mul_one _
-  have hone : 1 <= 1 / Real.sqrt x := by
-    rw [le_div_iff₀ hs]
-    have hs1 : Real.sqrt x <= 1 := by nlinarith [Real.sqrt_nonneg x]
-    simpa using hs1
+  have hxs : x <= Real.sqrt x := by simp_all
+  have hone : 1 <= 1 / Real.sqrt x := by field_simp <;> nlinarith
   have hpi3 : (3 : Real) < Real.pi := Real.pi_gt_three
   have hpi4 : Real.pi < 4 := Real.pi_lt_four
   have hinvpi : 32 / Real.pi <= (11 : Real) := by
@@ -77,20 +70,19 @@ theorem vdc_product_bound
       _ = 11 * n * Real.sqrt x := by ring
   have hterm4 : 4 * Real.pi / Real.sqrt x <= 16 / Real.sqrt x := by
     exact (div_le_div_iff_of_pos_right hs).2 (by nlinarith)
-  have hfour : (4 : Real) <= 4 / Real.sqrt x := by
-    calc
-      (4 : Real) = 4 * 1 := by ring
-      _ <= 4 * (1 / Real.sqrt x) := mul_le_mul_of_nonneg_left hone (by norm_num)
-      _ = 4 / Real.sqrt x := by ring
+  have hfour : (4 : Real) <= 4 / Real.sqrt x := by grind
   rw [hxdiv]
   have hns : 0 <= n * Real.sqrt x := mul_nonneg hn hs.le
   have hinvs : 0 <= 1 / Real.sqrt x := by positivity
   simp only [div_eq_mul_inv, one_mul] at hterm2 hterm3 hterm4 hfour hinvs ⊢
-  ring_nf at hterm2 hterm3 hterm4 hfour hns hinvs ⊢
-  linarith
+  grind
+
+section
+variable (t A : Real)
+include t A
 
 theorem logarithmicCorrelationBound_le_simple
-    (t A : Real) (N r : Nat) (ht : 0 < t) (hA : 0 < A)
+     (N r : Nat) (ht : 0 < t) (hA : 0 < A)
     (hr : 0 < r) (hsmall : t * r / (8 * A ^ 3) <= 1) :
     logarithmicCorrelationBound t A N r <=
       100 * ((N : Real) * Real.sqrt (t * r / (8 * A ^ 3)) +
@@ -123,12 +115,12 @@ theorem logarithmicCorrelationBound_le_simple
 
 /-- Uniform correlation majorant on shifts below `H`. -/
 noncomputable def simpleLogarithmicCorrelationBound
-    (t A : Real) (N H : Nat) : Real :=
+     (N H : Nat) : Real :=
   let q := t / (8 * A ^ 3)
   100 * ((N : Real) * Real.sqrt (q * H) + 1 / Real.sqrt q)
 
 theorem logarithmicCorrelationBound_le_uniform
-    (t A : Real) (N H r : Nat) (ht : 0 < t) (hA : 0 < A)
+     (N H r : Nat) (ht : 0 < t) (hA : 0 < A)
     (hr : 0 < r) (hrH : r <= H)
     (hsmall : t * H / (8 * A ^ 3) <= 1) :
     logarithmicCorrelationBound t A N r <=
@@ -164,7 +156,7 @@ theorem logarithmicCorrelationBound_le_uniform
 /-- A-after-B estimate with a genuine uniform, rather than summed,
 correlation majorant. -/
 theorem logarithmic_weyl_AB_process_simple
-    (t A : Real) (N H : Nat) (ht : 0 < t) (hA : 0 < A)
+     (N H : Nat) (ht : 0 < t) (hA : 0 < A)
     (hH : H <= N) (hNA : (N : Real) <= A)
     (hsmall : t * H / (8 * A ^ 3) <= 1) :
     (H : Real) ^ 2 *
@@ -187,28 +179,25 @@ theorem logarithmic_weyl_AB_process_simple
       omega
     have hdistHigh : shiftDistance h k <= H := by
       unfold shiftDistance
-      by_cases hle : h <= k
-      · rw [Nat.sub_eq_zero_of_le hle, zero_add]
-        exact (Nat.sub_le k h).trans (Nat.le_of_lt (Finset.mem_range.mp hk))
-      · have kle : k <= h := Nat.le_of_not_ge hle
-        rw [Nat.sub_eq_zero_of_le kle, add_zero]
-        exact (Nat.sub_le h k).trans (Nat.le_of_lt (Finset.mem_range.mp hh))
+      grind
     exact hbase.trans (logarithmicCorrelationBound_le_uniform
       t A N H (shiftDistance h k) ht hA hdistPos hdistHigh hsmall)
+end
+
+
+section
+variable (Y : Real)
+include Y
 
 theorem simpleLogarithmicCorrelationBound_le_four_hundred
-    (Y : Real) (A H : Nat) (hY : 1 <= Y) (hA : 0 < A)
+     (A H : Nat) (hY : 1 <= Y) (hA : 0 < A)
     (hHY : (H : Real) * Y <= A) (hAY : (A : Real) ^ 2 <= Y ^ 3) :
     simpleLogarithmicCorrelationBound (Y ^ 3) A A H <= 400 * Y := by
   have hYpos : 0 < Y := lt_of_lt_of_le zero_lt_one hY
   have hAreal : 0 < (A : Real) := Nat.cast_pos.mpr hA
   let q : Real := Y ^ 3 / (8 * (A : Real) ^ 3)
   have hq : 0 < q := by dsimp only [q]; positivity
-  have hA_le_Y_sq : (A : Real) <= Y ^ 2 := by
-    have hY3_le_Y4 : Y ^ 3 <= Y ^ 4 := by
-      have := mul_le_mul_of_nonneg_left hY (pow_nonneg hYpos.le 3)
-      nlinarith
-    nlinarith [sq_nonneg ((A : Real) - Y ^ 2)]
+  have hA_le_Y_sq : (A : Real) <= Y ^ 2 := by nlinarith
   have hqH_le : q * H <= (Y / (A : Real)) ^ 2 := by
     dsimp only [q]
     rw [show Y ^ 3 / (8 * (A : Real) ^ 3) * (H : Real) =
@@ -235,12 +224,7 @@ theorem simpleLogarithmicCorrelationBound_le_four_hundred
       (A : Real) * Real.sqrt (q * H) <= (A : Real) * (Y / (A : Real)) :=
         mul_le_mul_of_nonneg_left hsqrtHigh hAreal.le
       _ = Y := by field_simp
-  have hA3_le_Y5 : (A : Real) ^ 3 <= Y ^ 5 := by
-    calc
-      (A : Real) ^ 3 = (A : Real) ^ 2 * A := by ring
-      _ <= Y ^ 3 * Y ^ 2 := mul_le_mul hAY hA_le_Y_sq
-        (Nat.cast_nonneg A) (pow_nonneg hYpos.le 3)
-      _ = Y ^ 5 := by ring
+  have hA3_le_Y5 : (A : Real) ^ 3 <= Y ^ 5 := by nlinarith
   have hsquareLow : (1 / (3 * Y)) ^ 2 <= q := by
     dsimp only [q]
     rw [div_pow]
@@ -252,19 +236,17 @@ theorem simpleLogarithmicCorrelationBound_le_four_hundred
   have hsecond : 1 / Real.sqrt q <= 3 * Y := by
     rw [div_le_iff₀ (Real.sqrt_pos.2 hq)]
     have hmul := mul_le_mul_of_nonneg_left hsqrtLow (by positivity : 0 <= 3 * Y)
-    field_simp [hYpos.ne'] at hmul
-    nlinarith
+    grind
   unfold simpleLogarithmicCorrelationBound
   dsimp only
-  change 100 * ((A : Real) * Real.sqrt (q * H) + 1 / Real.sqrt q) <= 400 * Y
-  nlinarith
+  grind
 
 /-- Integer shift realizing the classical choice `A / Y` when `t = Y^3`. -/
-noncomputable def classicalWeylShiftLength (Y : Real) (A : Nat) : Nat :=
+noncomputable def classicalWeylShiftLength  (A : Nat) : Nat :=
   Nat.floor ((A : Real) / Y)
 
 theorem classicalWeylShiftLength_spec
-    (Y : Real) (A : Nat) (hY : 1 <= Y) (hA : 0 < A) (hYA : Y <= A) :
+     (A : Nat) (hY : 1 <= Y) (hA : 0 < A) (hYA : Y <= A) :
     let H := classicalWeylShiftLength Y A
     0 < H ∧ H <= A ∧ (H : Real) * Y <= A ∧ (A : Real) <= 2 * H * Y := by
   dsimp only [classicalWeylShiftLength]
@@ -281,15 +263,7 @@ theorem classicalWeylShiftLength_spec
         mul_le_mul_of_nonneg_right hfloor hYpos.le
       _ = A := by field_simp
   have hHle : Nat.floor ((A : Real) / Y) <= A := by
-    have hcast : ((Nat.floor ((A : Real) / Y) : Nat) : Real) <= A := by
-      calc
-        ((Nat.floor ((A : Real) / Y) : Nat) : Real) <=
-            ((Nat.floor ((A : Real) / Y) : Nat) : Real) * Y := by
-          calc
-            ((Nat.floor ((A : Real) / Y) : Nat) : Real) =
-                ((Nat.floor ((A : Real) / Y) : Nat) : Real) * 1 := by ring
-            _ <= _ := mul_le_mul_of_nonneg_left hY (Nat.cast_nonneg _)
-        _ <= A := hHY
+    have hcast : ((Nat.floor ((A : Real) / Y) : Nat) : Real) <= A := by nlinarith
     exact_mod_cast hcast
   have hxLt : (A : Real) / Y <
       ((Nat.floor ((A : Real) / Y) + 1 : Nat) : Real) :=
@@ -310,7 +284,7 @@ theorem classicalWeylShiftLength_spec
 /-- Uniform prefix form of the `(1/6, 2/3)` bound, needed for Abel
 summation of the critical-line weight. -/
 theorem logarithmic_weyl_exponent_pair_prefix
-    (Y : Real) (A N : Nat) (hY : 1 <= Y) (hA : 0 < A)
+     (A N : Nat) (hY : 1 <= Y) (hA : 0 < A)
     (hYA : Y <= A) (hAY : (A : Real) ^ 2 <= Y ^ 3) (hNA : N <= A) :
     ‖logarithmicSum (Y ^ 3) A (A + N)‖ <=
       30 * Real.sqrt ((A : Real) * Y) := by
@@ -330,10 +304,7 @@ theorem logarithmic_weyl_exponent_pair_prefix
         Y ^ 3 * (H : Real) = ((H : Real) * Y) * Y ^ 2 := by ring
         _ <= (A : Real) * Y ^ 2 :=
           mul_le_mul_of_nonneg_right hHY (pow_nonneg hYpos.le 2)
-        _ <= (A : Real) * (A : Real) ^ 2 := by
-          apply mul_le_mul_of_nonneg_left
-          · nlinarith
-          · exact hAreal.le
+        _ <= (A : Real) * (A : Real) ^ 2 := by nlinarith
         _ <= 8 * (A : Real) ^ 3 := by nlinarith [pow_pos hAreal 3]
     have hab := logarithmic_weyl_AB_process_simple
       (Y ^ 3) A N H (pow_pos hYpos 3) hAreal hHN hNreal hsmall
@@ -362,12 +333,7 @@ theorem logarithmic_weyl_exponent_pair_prefix
       have hHcast : (H : Real) <= A := by exact_mod_cast hHle
       nlinarith
     have hinner : (H : Real) * N + (H : Real) ^ 2 * (400 * Y) <=
-        402 * (H : Real) ^ 2 * Y := by
-      have hHA : (H : Real) * N <= 2 * (H : Real) ^ 2 * Y := by
-        have hNAH := hNreal.trans hAH
-        have := mul_le_mul_of_nonneg_left hNAH (Nat.cast_nonneg H)
-        nlinarith
-      nlinarith [mul_nonneg (sq_nonneg (H : Real)) hYpos.le]
+        402 * (H : Real) ^ 2 * Y := by field_simp <;> nlinarith
     have hrightNonneg : 0 <=
         (H : Real) * N + (H : Real) ^ 2 * (400 * Y) := by positivity
     have hbound :
@@ -381,9 +347,7 @@ theorem logarithmic_weyl_exponent_pair_prefix
           mul_le_mul_of_nonneg_right houter hrightNonneg
         _ <= (2 * A) * (402 * (H : Real) ^ 2 * Y) :=
           mul_le_mul_of_nonneg_left hinner (by positivity)
-        _ <= 900 * (H : Real) ^ 2 * A * Y := by
-          have hnonneg := mul_nonneg (mul_nonneg (sq_nonneg (H : Real)) hAreal.le) hYpos.le
-          nlinarith
+        _ <= 900 * (H : Real) ^ 2 * A * Y := by field_simp <;> nlinarith
     have hsq : ‖logarithmicSum (Y ^ 3) A (A + N)‖ ^ 2 <=
         900 * (A : Real) * Y := by
       have := hab'.trans hbound
@@ -396,26 +360,15 @@ theorem logarithmic_weyl_exponent_pair_prefix
     have hHYsq : ((H : Real) * Y) ^ 2 <= (A : Real) ^ 2 := by
       nlinarith [sq_nonneg ((A : Real) - (H : Real) * Y)]
     have hHsqY : (H : Real) ^ 2 <= Y := by
-      have hmul : Y ^ 2 * (H : Real) ^ 2 <= Y ^ 2 * Y := by
-        calc
-          Y ^ 2 * (H : Real) ^ 2 = ((H : Real) * Y) ^ 2 := by ring
-          _ <= (A : Real) ^ 2 := hHYsq
-          _ <= Y ^ 3 := hAY
-          _ = Y ^ 2 * Y := by ring
-      by_contra hnot
-      have hlt : Y < (H : Real) ^ 2 := lt_of_not_ge hnot
-      have hcontra := mul_lt_mul_of_pos_left hlt (sq_pos_of_pos hYpos)
-      exact (not_lt_of_ge hmul) hcontra
-    have hHsqAY : (H : Real) ^ 2 <= (A : Real) * Y := by
-      calc
-        (H : Real) ^ 2 <= Y := hHsqY
-        _ <= (A : Real) * Y := by
-          have hAone : (1 : Real) <= A := by exact_mod_cast hA
-          nlinarith
+      have hmul : Y ^ 2 * (H : Real) ^ 2 <= Y ^ 2 * Y := by linarith
+      simp_all <;> nlinarith
+    have hHsqAY : (H : Real) ^ 2 <= (A : Real) * Y := by nlinarith
     have hNlt : (N : Real) < H := by exact_mod_cast hNH
     have hnorm : ‖logarithmicSum (Y ^ 3) A (A + N)‖ <= H := htrivial.trans hNlt.le
     have hnormSq : ‖logarithmicSum (Y ^ 3) A (A + N)‖ ^ 2 <= (A : Real) * Y := by
       nlinarith [norm_nonneg (logarithmicSum (Y ^ 3) A (A + N))]
     nlinarith [norm_nonneg (logarithmicSum (Y ^ 3) A (A + N))]
+end
 
-end RiemannZeta.GuthMaynard
+
+

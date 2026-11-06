@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRayNormalization
-open HeckeFamily ProbePhysical ProbeRaySlots
+open HeckeFamily ProbeRaySlots
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem log_power_absorption (c ell d : ℝ) (hc : 0<c) (hell : 0<ell) (hd : 0<d) :
@@ -38,10 +38,10 @@ theorem log_power_absorption (c ell d : ℝ) (hc : 0<c) (hell : 0<ell) (hd : 0<d
 
 theorem principalScalar_inverse_of_slot_bounds {ι : Type*} (J : Finset ι)
     (ell mass : ι→ℝ) (Z d eps : ℝ) (hZ : 1≤Z) (_hd : 0≤d)
-    (hbudget : d*J.card≤eps) (hm : ∀i∈J,Z^(ell i/6-d)≤mass i) :
+    (hbudget : d*J.card≤eps) (hm : ∀i∈J,Z^(ell i/6-d)≤ mass i) :
     |(Probe.principalScalar J Z (∑i∈J,ell i) mass)⁻¹|≤Z^eps := by
   have hZ0 : 0<Z := by linarith
-  have hm0 : ∀i∈J,0≤mass i := fun i hi=>(Real.rpow_nonneg hZ0.le _).trans (hm i hi)
+  have hm0 : ∀i∈J,0≤ mass i := fun i hi=>(Real.rpow_nonneg hZ0.le _).trans (hm i hi)
   have hprod : Z^(∑i∈J,(ell i/6-d))≤∏i∈J,mass i := by
     rw [Real.rpow_sum_of_pos hZ0]
     exact Finset.prod_le_prod₀ (fun i _=>Real.rpow_nonneg hZ0.le _) hm
@@ -110,7 +110,7 @@ theorem ray_principalScalar_inverse_subpower {ι : Type*} (J : Finset ι)
   filter_upwards [hm,eventually_ge_atTop (1:ℝ)] with Z hmass hZ
   exact principalScalar_inverse_of_slot_bounds J ell _ Z d eps hZ hd.le hb hmass
 
-end SevenEighths.ProbeRayNormalization
-end
 
-end OAI
+
+
+

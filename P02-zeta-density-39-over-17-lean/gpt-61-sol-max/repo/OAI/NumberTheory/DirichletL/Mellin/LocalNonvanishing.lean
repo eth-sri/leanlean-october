@@ -9,48 +9,42 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+                    
 
 open Filter Asymptotics
 
-namespace TargetLocalReduction
 
-end TargetLocalReduction
 
-namespace ActualEisensteinCubic
 
-open AddChar MulChar
-
-end ActualEisensteinCubic
 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
+           
 
 namespace ShortDraftHeckeBridge
 
 abbrev O := ActualEisensteinSieve.O
 
-noncomputable def normFiberCoeff (weight : Ideal O → ℂ) (n : ℕ) : ℂ := by
+def normFiberCoeff (weight : Ideal O → ℂ) (n : ℕ) : ℂ := by
   classical
   exact ∑ I ∈ (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset, weight I
 
-noncomputable def pairInverseCoeff
+def pairInverseCoeff
     {q r : ℕ} (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) : ℕ → ℂ :=
   (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) ⍟
     (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ))
@@ -132,13 +126,17 @@ private theorem pairing_algebra
   exact ⟨by rw [hA], by rw [hB], by rw [hC], by rw [hD]⟩
 
 namespace ActualEisensteinCubic
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open ConcreteTraceCRT PrimitiveTrace
 open scoped ComplexConjugate
 
-private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
+section
+variable (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
     (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
-    (hprimary : lambda ^ 2 ∣ p - 1) :
+    (hprimary : lambda ^ 2 ∣ p - 1)
+include P hgood hchar p hP hp hprimary
+
+private theorem breveGamma1_mul_star_one  :
     breveGamma1 P hgood p hP hp * star (breveGamma1 P hgood p hP hp) = 1 := by
   subst P
   let χ := canonicalSextic (Ideal.span {p}) hgood
@@ -177,10 +175,7 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
   norm_num
 
 theorem first_poisson_prime_sign_pairing
-    (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
-    (hprimary : lambda ^ 2 ∣ p - 1) (h : O) :
+     (h : O) :
     let alpha : ℂ := eisEmbedding p / (‖eisEmbedding p‖ : ℂ)
     let g1 := breveGamma1 P hgood p hP hp
     let g2 := breveGamma2 P hgood p hP hp
@@ -223,17 +218,15 @@ theorem first_poisson_prime_sign_pairing
     (canonicalSextic P hgood (Ideal.Quotient.mk P (-1 : O)))
     (canonicalSextic P hgood (Ideal.Quotient.mk P h))
     ha hg1 hprod' hpair
+end
+
 
 end ActualEisensteinCubic
 
 open MulChar AddChar
 
-namespace ShortDraftLocal
 
-variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
-end ShortDraftLocal
 
-end
 
-end OAI
+

@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScaled
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology ContDiff
 open Set Complex
@@ -36,11 +37,11 @@ theorem scaled_reflected_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   refine ⟨C,hC,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j W A B hA hWs hW
     U r R η σ freq V C₂ Cn n hQ hr hrR hη hV hfreq hheight hC₂ hCn hm₂ hmn
-  let H : ℝ := (3*i+2 : ℕ)*T
+  let H := (3*i+2 : ℕ)*T
   have hH : 0≤H := by dsimp [H]; positivity
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one (χ j)).trans hQ
   have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
-  have hD : 1≤U^r := Real.one_le_rpow hU hr
+  have hD := Real.one_le_rpow hU hr
   have hb := hbound χ hχ T a i hT ha ha' hmax j W A B hA hWs hW
     (U^r) σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
   dsimp only at hb
@@ -90,8 +91,8 @@ theorem scaled_reflected_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
         (6*Cg+E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by ring
     _ ≤ _ := by gcongr
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

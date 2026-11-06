@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection4Lemma42
 public import GafniTao.WooleySection10Bound
 
@@ -14,7 +15,7 @@ keeps the exponent `(k-1)/(r(k-r))` visible throughout.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The sharp Lemma-4.2 estimate at normalization zero implies the terminal
 `p^(H epsilon)` estimate used after (10.9). -/
@@ -56,7 +57,7 @@ theorem wooleySourceNormalizedMixedMean_terminal
     exact mul_nonneg hD (Real.rpow_nonneg (by positivity) _)
   have hZpos : 0 < Z := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
   have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
-  let P : ℝ := (p : ℝ) ^ (Lambda * (H : ℝ))
+  let P := (p : ℝ) ^ (Lambda * (H : ℝ))
   have hPpos : 0 < P := Real.rpow_pos_of_pos hpR _
   have hbase : K / (P * Z) = (K / Z) / P := by
     field_simp
@@ -95,13 +96,13 @@ theorem wooleySourceNormalizedMixedMean_terminal
   rw [hexact]
   have hHepsilon : 0 ≤ (H : ℝ) * epsilon :=
     mul_nonneg (Nat.cast_nonneg _) hepsilon
-  have hexponent : ((H : ℝ) * epsilon) * e ≤ (H : ℝ) * epsilon :=
+  have hexponent :=
     mul_le_of_le_one_right hHepsilon he1
   exact mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le
       (by exact_mod_cast (show 1 ≤ p by omega)) hexponent) hD
 
 
-end
 
-end GafniTao
+
+

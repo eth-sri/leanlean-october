@@ -6,9 +6,9 @@ public import TaoTrudgianYang2025.AtkinsonPairPowerAlgebra
 
 /-! Physical cutoff cancellation for a general exponent pair. -/
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonPhysical_pair_scale_identity {H G ℓ L : ℝ}
     (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) (k l : ℝ) :
@@ -68,4 +68,4 @@ theorem atkinson_pair_harmonic_le_height_log {H G L : ℝ}
   have hb := harmonic_le_one_add_log (Nat.ceil H)
   linarith
 
-end TaoTrudgianYang2025
+

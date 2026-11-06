@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 The termwise Mellin proof is adapted from McColm TypeIICoverage at
 2ace9e7c09a69fdcd1edae1ab6deb7cb3b4df1be, MIT. The cutoff X and smoothing
@@ -10,9 +11,8 @@ public import Mathlib.NumberTheory.LSeries.MellinEqDirichlet
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
+open Complex MeasureTheory Filter
 open scoped ArithmeticFunction.Moebius BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
@@ -73,10 +73,14 @@ theorem norm_mollifier_LSeries_term_le_cutoff {ρ : ℂ} (X : ℝ) (n : ℕ)
       ((norm_mollifierDirichletCoeff_le_cutoff X n).trans
         (by nlinarith [show (0 : ℝ) ≤ ⌊X⌋₊ by positivity]))
 
+section
+variable {ρ : ℂ} {X x : ℝ}
+    (hx : 0 < x) (hρ : 0 ≤ ρ.re)
+include ρ X x hx hρ
+
 /-- Absolute convergence of the smoothed detector at every positive smoothing
 parameter, uniformly for `Re ρ ≥ 0`. -/
-theorem summable_smoothedDetector {ρ : ℂ} {X x : ℝ}
-    (hx : 0 < x) (hρ : 0 ≤ ρ.re) :
+theorem summable_smoothedDetector  :
     Summable (fun n : ℕ =>
       LSeries.term (mollifierDirichletCoeff X) ρ n *
         Complex.exp (-((n : ℝ) * x))) := by
@@ -99,15 +103,20 @@ theorem summable_smoothedDetector {ρ : ℂ} {X x : ℝ}
     (norm_mollifier_LSeries_term_le_cutoff X n hρ)
   exact (Real.exp_pos (-((n : ℝ) * x))).le
 
-theorem hasSum_smoothedDetector {ρ : ℂ} {X x : ℝ}
-    (hx : 0 < x) (hρ : 0 ≤ ρ.re) :
+theorem hasSum_smoothedDetector  :
     HasSum (fun n : ℕ =>
       LSeries.term (mollifierDirichletCoeff X) ρ n *
         Complex.exp (-((n : ℝ) * x)))
       (smoothedDetector ρ X x) := by
   exact (summable_smoothedDetector (X := X) hx hρ).hasSum
+end
 
-theorem norm_LSeries_term_div_rpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) :
+
+section
+variable (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ)
+include f ρ s n
+
+theorem norm_LSeries_term_div_rpow_eq_add  :
     ‖LSeries.term f ρ n‖ / (n : ℝ) ^ s.re =
       ‖LSeries.term f (ρ + s) n‖ := by
   rcases eq_or_ne n 0 with rfl | hn
@@ -118,7 +127,7 @@ theorem norm_LSeries_term_div_rpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : �
     field_simp [ne_of_gt (Real.rpow_pos_of_pos hnPos ρ.re),
       ne_of_gt (Real.rpow_pos_of_pos hnPos s.re)]
 
-theorem Gamma_mul_term_div_cpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) :
+theorem Gamma_mul_term_div_cpow_eq_add  :
     Complex.Gamma s * LSeries.term f ρ n / (n : ℝ) ^ s =
       Complex.Gamma s * LSeries.term f (ρ + s) n := by
   rcases eq_or_ne n 0 with rfl | hn
@@ -127,6 +136,8 @@ theorem Gamma_mul_term_div_cpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) 
     rw [LSeries.term_of_ne_zero hn, LSeries.term_of_ne_zero hn]
     rw [Complex.ofReal_natCast, Complex.cpow_add _ _ hnC]
     field_simp [Complex.cpow_ne_zero_iff.mpr (Or.inl hnC)]
+end
+
 
 set_option maxHeartbeats 800000 in
 /-- Mellin transformation of the smoothed detector on every line where the
@@ -137,7 +148,7 @@ theorem mellin_smoothedDetector_eq {ρ s : ℂ} {X : ℝ}
     mellin (smoothedDetector ρ X) s =
       Complex.Gamma s * LSeries (mollifierDirichletCoeff X)
         (ρ + s) := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
+  let f := mollifierDirichletCoeff X
   have hLS : LSeriesSummable f (ρ + s) :=
     mollifierDirichletCoeff_LSeriesSummable X hAbs
   have hSumNorm : Summable (fun n : ℕ =>
@@ -160,9 +171,7 @@ theorem mellin_smoothedDetector_eq {ρ s : ℂ} {X : ℝ}
       have hSeries := hasSum_smoothedDetector (X := X) hx hρ
       simpa [f, Complex.ofReal_exp] using hSeries
     · exact hSumNorm
-  have hMellin' : HasSum (fun n : ℕ =>
-      Complex.Gamma s * LSeries.term f (ρ + s) n)
-      (mellin (smoothedDetector ρ X) s) :=
+  have hMellin' :=
     hMellin.congr_fun (fun n => (Gamma_mul_term_div_cpow_eq_add f ρ s n).symm)
   have hProduct : HasSum (fun n : ℕ =>
       Complex.Gamma s * LSeries.term f (ρ + s) n)
@@ -183,7 +192,7 @@ theorem norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
     (hz : 6 / 5 ≤ z.re) :
     ‖LSeries (mollifierDirichletCoeff X) z‖ ≤
       (⌊X⌋₊ : ℝ) * detectorPSeries := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
+  let f := mollifierDirichletCoeff X
   have hAbs : 1 < z.re := by linarith
   have hLS : LSeriesSummable f z :=
     mollifierDirichletCoeff_LSeriesSummable X hAbs
@@ -204,9 +213,7 @@ theorem norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
           (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re := by
         exact div_le_div_of_nonneg_right hCoeff (Real.rpow_nonneg hnPos.le _)
       have hRight : (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re ≤
-          (⌊X⌋₊ : ℝ) / (n : ℝ) ^ (6 / 5 : ℝ) := by
-        exact div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hnPos _)
-          hDen
+          (⌊X⌋₊ : ℝ) / (n : ℝ) ^ (6 / 5 : ℝ) := by field_simp <;> nlinarith
       exact hLeft.trans hRight
   calc
     ‖LSeries f z‖ ≤ ∑' n : ℕ, ‖LSeries.term f z n‖ :=
@@ -225,7 +232,7 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
     (hρ : 3 / 4 ≤ ρ.re) :
     VerticalIntegrable (mellin (smoothedDetector ρ X)) (1 / 2 : ℝ) := by
   let line : ℝ → ℂ := fun u => ((1 / 2 : ℝ) : ℂ) + (u : ℂ) * I
-  let g : ℝ → ℂ := fun u => Complex.Gamma (line u) *
+  let g := fun u => Complex.Gamma (line u) *
     (riemannZeta (ρ + line u) *
       zetaMollifier X (ρ + line u))
   have hGammaCont : Continuous (fun u : ℝ => Complex.Gamma (line u)) := by
@@ -234,7 +241,6 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
     have hNoPole : ∀ m : ℕ, line u ≠ -m := by
       intro m hm
       have hRe := congrArg Complex.re hm
-      have hmNonneg : (0 : ℝ) ≤ m := by positivity
       simp [line] at hRe
       linarith
     exact ContinuousAt.comp' (Complex.differentiableAt_Gamma _ hNoPole).continuousAt
@@ -242,7 +248,6 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
   have hZetaCont : Continuous (fun u : ℝ => riemannZeta (ρ + line u)) := by
     apply continuous_iff_continuousAt.2
     intro u
-    have hzRe : 1 < (ρ + line u).re := by simp [line]; linarith
     have hzNe : ρ + line u ≠ 1 := by
       intro hz
       have hRe := congrArg Complex.re hz
@@ -257,7 +262,7 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
       dsimp [line]; fun_prop)
   have hgCont : Continuous g := by
     exact hGammaCont.mul (hZetaCont.mul hMollCont)
-  let C : ℝ := (⌊X⌋₊ : ℝ) * detectorPSeries
+  let C := (⌊X⌋₊ : ℝ) * detectorPSeries
   have hDom : MeasureTheory.Integrable (fun u : ℝ =>
       C * ‖Complex.Gamma (line u)‖) := by
     have hGammaInt : MeasureTheory.Integrable
@@ -294,7 +299,7 @@ from the same geometric majorant used for absolute convergence. -/
 theorem continuousAt_smoothedDetector {ρ : ℂ} {X x : ℝ}
     (hx : 0 < x) (hρ : 0 ≤ ρ.re) :
     ContinuousAt (smoothedDetector ρ X) x := by
-  let x₀ : ℝ := x / 2
+  let x₀ := x / 2
   let term : ℕ → ℝ → ℂ := fun n y =>
     LSeries.term (mollifierDirichletCoeff X) ρ n *
       Complex.exp (-((n : ℝ) * y))
@@ -312,13 +317,11 @@ theorem continuousAt_smoothedDetector {ρ : ℂ} {X x : ℝ}
     fun_prop
   have hBound (n : ℕ) (y : ℝ) (hy : y ∈ Set.Ici x₀) :
       ‖term n y‖ ≤ majorant n := by
-    have hnNonneg : (0 : ℝ) ≤ n := by positivity
     have hArg : -((n : ℝ) * y) ≤ -((n : ℝ) * x₀) := by
       have := hy
       simp only [Set.mem_Ici] at this
       nlinarith
-    have hExp : Real.exp (-((n : ℝ) * y)) ≤
-        Real.exp (-((n : ℝ) * x₀)) := Real.exp_le_exp.mpr hArg
+    have hExp := Real.exp_le_exp.mpr hArg
     dsimp [term, majorant]
     rw [norm_mul, Complex.norm_exp]
     have hRe : (-((n : ℂ) * (y : ℂ))).re = -((n : ℝ) * y) := by
@@ -349,9 +352,9 @@ works uniformly in the repaired zero-density range `Re ρ ≥ 3/4`. -/
 theorem mellinConvergent_smoothedDetector {ρ : ℂ} {X : ℝ}
     (hρ : 3 / 4 ≤ ρ.re) :
     MellinConvergent (smoothedDetector ρ X) ((1 / 2 : ℝ) : ℂ) := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
-  let s : ℂ := ((1 / 2 : ℝ) : ℂ)
-  let a : ℕ → ℂ := fun n => LSeries.term f ρ n
+  let f := mollifierDirichletCoeff X
+  let s := ((1 / 2 : ℝ) : ℂ)
+  let a := fun n => LSeries.term f ρ n
   let term : ℕ → ℝ → ℂ := fun n t =>
     a n * ((t : ℂ) ^ (s - 1) * Real.exp (-(n : ℝ) * t))
   have hs : 0 < s.re := by simp [s]
@@ -454,7 +457,7 @@ theorem smoothedDetector_eq_rightContour {ρ : ℂ} {X Y : ℝ}
   congr 1
   apply integral_congr_ae
   filter_upwards with u
-  let s : ℂ := ((1/2 : ℝ) : ℂ)+(u : ℂ)*I
+  let s := ((1/2 : ℝ) : ℂ)+(u : ℂ)*I
   have hAbs : 1 < (ρ+s).re := by simp [s]; linarith
   have hPow : ((1/Y : ℝ) : ℂ)^(-s) = (Y : ℂ)^s := by
     simpa using GammaMellin.cpow_neg_div_eq_reverse_cpow (x := 1) (by norm_num) hY s
@@ -464,4 +467,4 @@ theorem smoothedDetector_eq_rightContour {ρ : ℂ} {X Y : ℝ}
   unfold detectorKernel
   ring
 
-end MathCollab.Density
+

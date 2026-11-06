@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalDyad
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 theorem compensatedPhysicalProbe_canonical_slots {K : ℕ} (η : HeckeFamily.Character)
@@ -52,7 +52,7 @@ theorem compensatedPhysicalProbe_eq_canonical_rows {K : ℕ} (η : HeckeFamily.C
         exact tsum_mul_left.symm
     _ = _ := (Summable.tsum_finsetSum (fun P _=>hs P)).symm
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

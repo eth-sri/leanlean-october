@@ -7,28 +7,27 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-def literalDyadicRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+section
+variable (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
     (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) : ℂ :=
+    (u : Eisˣ) (i : ℕ×ℕ×ℕ)
+include F K hK S jF Pset D s hc u i
+
+def literalDyadicRow  (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) : ℂ :=
   ∑ P : {P : Pset // IsCoprime K P.val}, r K*aw P.val.val*
     literalDyadicBlock (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc
       (reflectedExponent jF) (slotIndices φ (PrimeIndex K) σ)
       (CompletedHeight.normTwistedSource W θ) X u i
 
-theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
-    (D : ∀ P : Pset, IsCoprime K P.val →
-      ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
+theorem literalDyadicRow_eq_physical  (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
     (hKr : QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK)
     (hprod : ∀ P∈Pset, (∏ j,(S P).ideal j)=P)
     (hPr : ∀ P∈Pset, QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP)
@@ -49,6 +48,8 @@ theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal Eis) (hK : 
     s hc u i QK QP hQK hQP hKr hp W θ X]
   simp only [Finset.mul_sum]
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

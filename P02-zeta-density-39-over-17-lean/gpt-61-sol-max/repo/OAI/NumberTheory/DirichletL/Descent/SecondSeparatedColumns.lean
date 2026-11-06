@@ -10,7 +10,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def secondOuterPhase (h y : Fin 6 → ℝ) : ℂ :=
   logPhase (h 0) (y 0) * logPhase (h 1) (y 1) *
@@ -77,7 +77,7 @@ theorem actual_second_columns_separated {ι σ : Type*} [DecidableEq ι] [Decida
     star_mul,SecondPassIntegration.logPhase_conjugate,neg_neg,mul_one]
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

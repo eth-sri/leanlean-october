@@ -2,16 +2,19 @@ module
 public import GuthMaynard.Improvement.ReflectionNear
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 /-- The continuous spatial kernel without its outside L. -/
 def mixedCutoffKernel (w : MathCollab.Density.ReflectionCutoff) (s : ℝ) : ℂ :=
   ∫ x, logModulated (fun x => (w x:ℂ)) s x
 
-theorem mixedCutoffKernel_eq (w : MathCollab.Density.ReflectionCutoff) (s : ℝ) :
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+include w
+
+theorem mixedCutoffKernel_eq  (s : ℝ) :
     mixedCutoffKernel w s = MathCollab.Density.cutoffIntegral w s := by
   unfold mixedCutoffKernel MathCollab.Density.cutoffIntegral
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => by
@@ -27,18 +30,18 @@ theorem mixedCutoffKernel_eq (w : MathCollab.Density.ReflectionCutoff) (s : ℝ)
   ring
 
 /-- This actual fixed-cutoff envelope is integrable, not an analytic premise. -/
-theorem mixedCutoffKernel_integrable (w : MathCollab.Density.ReflectionCutoff) :
+theorem mixedCutoffKernel_integrable  :
     Integrable (mixedCutoffKernel w) := by
   have hi := MathCollab.Density.integrable_mellin_line_one w.complex_smooth w.complex_support
   change Integrable (MathCollab.Density.mellinLine (fun x => (w x:ℂ))) at hi
   exact hi.congr (Filter.Eventually.of_forall (fun s =>
     (MathCollab.Density.mellinLine_eq_cutoffIntegral w s).trans (mixedCutoffKernel_eq w s).symm))
 
-theorem mixedCutoffKernel_measurable (w : MathCollab.Density.ReflectionCutoff) :
+theorem mixedCutoffKernel_measurable  :
     Measurable (mixedCutoffKernel w) := by
   exact (logModulated_measurable w.complex_smooth.continuous.measurable).stronglyMeasurable.integral_prod_right'.measurable
 
-theorem mixedCutoffKernel_bound (w : MathCollab.Density.ReflectionCutoff) (s : ℝ) :
+theorem mixedCutoffKernel_bound  (s : ℝ) :
     ‖mixedCutoffKernel w s‖ ≤ ∫ x, ‖(w x:ℂ)‖ := by
   have hi : Integrable (fun x => (w x:ℂ)) := w.complex_smooth.continuous.integrable_of_hasCompactSupport
     (MathCollab.Density.compactSupport_of_cutoff_support w.complex_support)
@@ -46,5 +49,7 @@ theorem mixedCutoffKernel_bound (w : MathCollab.Density.ReflectionCutoff) (s : �
   filter_upwards with x
   simp only [logModulated_eq_phase,norm_mul,phase_norm,mul_one]
   exact le_rfl
+end
 
-end GuthMaynard.Improvement
+
+

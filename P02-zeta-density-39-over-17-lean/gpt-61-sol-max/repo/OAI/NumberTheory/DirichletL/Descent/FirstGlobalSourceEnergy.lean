@@ -12,7 +12,7 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -70,7 +70,7 @@ theorem original_global_physical_energy
   rw [original_retained_global_family p hp hcop hg pool Q labels hlabels β Ψ m mark W rowMajorant K Y R hRY s hs] at he
   simpa only [originalRetainedFamily,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hK] using he
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

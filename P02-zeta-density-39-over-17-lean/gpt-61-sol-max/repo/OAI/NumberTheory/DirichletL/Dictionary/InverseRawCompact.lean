@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawEnergy
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 
@@ -6,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawCompact
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular
 open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting
-open ActualEisensteinCubic ConcreteTraceCRT
+open ActualEisensteinCubic
 
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma inverse_polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
     polynomial χ true W D 0 freq =
@@ -25,8 +26,7 @@ lemma inverse_polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : �
     apply tsum_subtype_eq_of_support_subset (s:={I:Ideal O|I≠0})
       (f:=fun I:Ideal O=>coefficient χ true I*annularWeight W D 0 freq I)
     intro I hI hz
-    subst I
-    exact hI (by simp only [coefficient_zero,zero_mul])
+    bound
   simpa only [summand,HeckeDyadic.norm,annularWeight,mul_assoc] using he
 
 theorem inverse_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : ℝ)
@@ -54,7 +54,7 @@ theorem inverse_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : 
         exact hne (by simp only [annularWeight,hz,zero_mul,mul_zero])
       exact ((div_le_iff₀ hD).mp (hs hw)).trans
         (mul_le_mul_of_nonneg_right (le_max_right 1 b) hD.le))
-  convert hh using 1; ring
+  linarith
 
 lemma childLogTest_norm (W : ℝ→ℂ) (s x : ℝ) :
     ‖childLogTest W s x‖=‖W x‖ := by
@@ -123,7 +123,7 @@ lemma raw_majorant_ge_linear (C C0 H D κ s : ℝ) (J : ℕ)
   have ht : 1≤(1+‖s‖)^(2*J) := one_le_pow₀ (by linarith [norm_nonneg s])
   have hb : 1≤H*max 1 D := hH.trans
     (le_mul_of_one_le_right (by positivity) (le_max_left _ _))
-  have hp : 1≤(H*max 1 D)^κ := Real.one_le_rpow hb hκ
+  have hp := Real.one_le_rpow hb hκ
   calc
     C0*H≤(C+C0)*H := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
     _≤((C+C0)*(1+‖s‖)^(2*J))*H := mul_le_mul_of_nonneg_right
@@ -159,8 +159,8 @@ theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha
     gcongr
     exact le_add_of_nonneg_right (by positivity)
 
-end SevenEighths.DetectorDictionaryInverseRawCompact
 
-end
 
-end OAI
+
+
+

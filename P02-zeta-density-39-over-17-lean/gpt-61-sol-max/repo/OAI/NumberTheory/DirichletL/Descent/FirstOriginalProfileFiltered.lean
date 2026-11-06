@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation MeasureTheory
+
+open scoped EisensteinEis
+open InverseMomentFirstProfileUniform
 theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -120,7 +120,7 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
     apply (hm2.trans he).trans
     simpa only [mul_assoc,ite_true,ite_false,Bool.false_eq_true] using mul_le_mul_of_nonneg_left (hright z) hweight
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

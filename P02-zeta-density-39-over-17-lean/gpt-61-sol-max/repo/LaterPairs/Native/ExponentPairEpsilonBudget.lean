@@ -5,26 +5,19 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairOptimizationScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
 
 theorem aProcess_first_exponent_loss {k ε : ℝ} (hk : 0 ≤ k) (hε : 0 ≤ ε) :
     (k+ε)/(k+ε+1) ≤ k/(k+1)+ε := by
-  have hd₁ : 0 < k+1 := by linarith
-  have hd₂ : 0 < k+ε+1 := by linarith
   have hprod : 1 ≤ (k+1)*(k+ε+1) := by nlinarith
-  have heq : (k+ε)/(k+ε+1) = k/(k+1)+ε/((k+1)*(k+ε+1)) := by
-    field_simp
-    ring
-  rw [heq]
-  exact add_le_add le_rfl (div_le_self hε hprod)
+  field_simp <;> nlinarith
 
 theorem aProcess_second_exponent_loss {k l ε : ℝ}
     (hk : 0 ≤ k) (hl : 0 ≤ l) (hε : 0 ≤ ε) :
@@ -40,8 +33,7 @@ theorem one_add_log_le_rpow_budget {N ε : ℝ} (hN : 1 ≤ N) (hε : 0 < ε) :
     1+Real.log N ≤ (1+1/ε)*N^ε := by
   have hp := Real.one_le_rpow hN hε.le
   have hl := Real.log_le_rpow_div (zero_le_one.trans hN) hε
-  ring_nf at hl ⊢
-  linarith
+  grind
 
 theorem aProcess_power_budget {k l ε U N : ℝ}
     (hk : 0 ≤ k) (hl : 0 ≤ l) (hε : 0 < ε) (hU : 1 ≤ U) (hN : 1 ≤ N) :
@@ -72,4 +64,4 @@ theorem aProcess_power_budget {k l ε U N : ℝ}
       mul_le_mul (mul_le_mul hp₁ hp₂ (by positivity) (by positivity)) hlog hlogpos (by positivity)
     _ = _ := heq
 
-end TaoTrudgianYang2025
+

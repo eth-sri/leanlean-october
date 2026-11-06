@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannSourceBounds.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -20,8 +21,7 @@ The actual Bessel argument is linked to height and divisor index;
 its quadratic expansion error has the summable n^(-5/4) weight.
 -/
 
-set_option autoImplicit false
-noncomputable section
+
 
 open Complex Filter MeasureTheory Set
 
@@ -31,13 +31,7 @@ theorem measurable_dfiBesselY0 : Measurable dfiBesselY0 := by
   have ho : StronglyMeasurable (fun p : ℝ × ℝ =>
       Complex.exp (I * (p.1 * Real.cos p.2))) := (by fun_prop : Continuous _).stronglyMeasurable
   have ht : StronglyMeasurable (fun p : ℝ × ℝ =>
-      Real.exp (-p.1 * p.2) / Real.sqrt (1 + p.2 ^ 2)) := by
-    apply Continuous.stronglyMeasurable
-    apply Continuous.div
-    · fun_prop
-    · fun_prop
-    · intro p
-      exact ne_of_gt (Real.sqrt_pos.2 (by positivity))
+      Real.exp (-p.1 * p.2) / Real.sqrt (1 + p.2 ^ 2)) := by fun_prop
   have hos : Measurable dfiBesselY0Osc := by
     have h := Complex.measurable_im.comp
       (ho.integral_prod_right' (ν := volume.restrict (Ioc (0 : ℝ) (Real.pi / 2)))).measurable
@@ -52,8 +46,12 @@ theorem measurable_neumannTwoTerm : Measurable neumannTwoTerm := by
   unfold neumannTwoTerm
   fun_prop
 
-theorem neumann_source_argument_bounds {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+section
+variable {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
+    {n : ℕ} (hn : 0 < n)
+include T x hT hx n hn
+
+theorem neumann_source_argument_bounds  :
     T * n ≤ (4 * Real.pi * Real.sqrt (x * n)) ^ 2 ∧
       1 ≤ 4 * Real.pi * Real.sqrt (x * n) := by
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
@@ -72,8 +70,7 @@ theorem neumann_source_argument_bounds {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 
   have hy0 : 0 ≤ 4 * Real.pi * Real.sqrt (x * n) := by positivity
   nlinarith [mul_le_mul_of_nonneg_left hn1 (show 0 ≤ T by linarith)]
 
-theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+theorem abs_neumann_source_remainder_le  :
     |dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n)) -
       neumannTwoTerm (4 * Real.pi * Real.sqrt (x * n))| ≤
         neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ)) := by
@@ -92,13 +89,14 @@ theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16
   have h := mul_le_mul_of_nonneg_left hp neumannTwoTermErrorConstant_pos.le
   simpa only [mul_assoc] using h
 
-theorem abs_dfiBesselY0_source_le_seven {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+theorem abs_dfiBesselY0_source_le_seven  :
     |dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n))| ≤ 7 := by
   have hy := (neumann_source_argument_bounds hT hx hn).2
   have hy0 : 0 < 4 * Real.pi * Real.sqrt (x * n) := by linarith
   exact (abs_dfiBesselY0_le_seven_div_sqrt hy0).trans
     (div_le_self (by norm_num) (Real.one_le_sqrt.2 hy))
+end
+
 
 theorem neumann_source_height_absorb {T : ℝ} (hT : 1 ≤ T) :
     T * T ^ (-(5 / 4 : ℝ)) ≤ 1 := by
@@ -107,4 +105,4 @@ theorem neumann_source_height_absorb {T : ℝ} (hT : 1 ≤ T) :
   have hh := mul_le_mul_of_nonneg_left h ht0.le
   simpa only [Real.rpow_neg_one, mul_inv_cancel₀ ht0.ne'] using hh
 
-end MathCollab.Density.Stronger.Atkinson
+

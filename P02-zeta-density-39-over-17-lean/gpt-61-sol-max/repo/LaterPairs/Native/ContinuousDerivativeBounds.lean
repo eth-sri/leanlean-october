@@ -4,13 +4,12 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
-noncomputable section
+
 
 open Set RiemannZeta.GuthMaynard
 
@@ -48,8 +47,6 @@ theorem continuous_second_difference_bounds
   obtain ⟨y,hy,he⟩ := second_order_mean_value F F' F'' x
     (fun y hy => hF y (hin y hy))
     (fun y hy => hF' y (hin y hy))
-  have hlow := hlo y (hin y ⟨hy.1.le,hy.2.le⟩)
-  have hupp := hhi y (hin y ⟨hy.1.le,hy.2.le⟩)
-  constructor <;> linarith
+  grind
 
-end TaoTrudgianYang2025
+

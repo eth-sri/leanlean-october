@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondAdmissible
 
 @[expose] public section
@@ -7,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -34,8 +35,7 @@ theorem actual_second_radical_puncture_q0_norm
   rw [eisEmbedding_norm_sq_eq_absNorm_span]
   simp only [actualSecondRadicalPuncture,ConcretePrimeRowBridge.span_idealGenerator,hspan]
   have hn (S : Finset ι) : (Ideal.absNorm (sourceIdeal p S) : ℝ)=primeProductNorm p S := by
-    simpa only [sourceIdeal,primeProductNorm,map_prod] using
-      (eisEmbedding_norm_sq_eq_absNorm_span (∏ i ∈ S,p i)).symm
+    exact (eisEmbedding_norm_sq_eq_absNorm_span (∏ i ∈ S,p i)).symm
   rw [←hn (x.second.sourceCommon\x.second.divisor)]
   exact radical_product_norm_le _ _ _ _ (Ideal.span_singleton_eq_bot.not.mpr hm)
     (Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _))
@@ -152,7 +152,7 @@ theorem actual_second_child_margins_from_cubes
   unfold decrease
   linarith
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

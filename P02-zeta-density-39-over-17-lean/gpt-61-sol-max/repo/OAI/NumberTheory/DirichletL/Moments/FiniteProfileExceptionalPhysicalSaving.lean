@@ -7,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum
+open HeckeFamily CanonicalQuadraticSieve IdealMobiusDivisorSum
 open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
 open CenteredMomentSecondExceptionalPhysicalSaving
 open CenteredMomentFiniteProfileExceptional
 open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
 open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
 open CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
@@ -72,8 +72,8 @@ theorem original_budget_physical_saving_full
       nlinarith
     _= _:=by dsimp [A,E];ring
 
-end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 
-end
 
-end OAI
+
+
+

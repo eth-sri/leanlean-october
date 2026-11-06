@@ -12,14 +12,14 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open CenteredMomentOriginalRadialComparison
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -93,8 +93,8 @@ theorem masked_natural_pair_slots {α : Type*} [DecidableEq α]
       W₁ W₂ hs₁ hs₂ _ _ (div_pos hX₁ (hn D₁ hD₁)) (div_pos hX₂ (hn D₂ hD₂))
       (F\A) Finset.sdiff_subset
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

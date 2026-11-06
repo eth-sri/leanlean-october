@@ -42,36 +42,40 @@ theorem dualScalar_ne_zero (N : ℕ) [NeZero N] : HeckeTheta.dualScalar N ≠ 0 
   · exact (Real.rpow_pos_of_pos (sq_pos_of_pos hN) _).ne'
   · exact (Real.rpow_pos_of_pos (mul_pos (by norm_num) (sq_pos_of_pos hN)) _).ne'
 
-theorem principal_dual_constant_ne_zero (χ : Character) (hχ : χ.residue = 1) :
+section
+variable (χ : Character)
+include χ
+
+theorem principal_dual_constant_ne_zero  (hχ : χ.residue = 1) :
     (HeckeTheta.pair (coefficients χ)).g₀ ≠ 0 := by
   rw [HeckeTheta.pair_g₀]
   exact mul_ne_zero (mul_ne_zero (by norm_num) (dualScalar_ne_zero χ.period))
     (coefficients_sum_ne_zero_of_principal χ hχ)
 
-def regularizedL (χ : Character) (s : ℂ) : ℂ :=
+def regularizedL  (s : ℂ) : ℂ :=
   HeckeTheta.regularizedLatticeL (coefficients χ) s / 6
 
-theorem regularizedL_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem regularizedL_eq  {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
     regularizedL χ s = (s - 1) * LFunction χ s := by
   unfold regularizedL LFunction continuedLattice
   rw [HeckeTheta.regularizedLatticeL_eq _ h0 h1]
   ring
 
-theorem regularizedL_at_one (χ : Character) :
+theorem regularizedL_at_one  :
     regularizedL χ 1 = (Real.pi : ℂ) * (HeckeTheta.pair (coefficients χ)).g₀ / 6 := by
   simp [regularizedL, HeckeTheta.regularizedLatticeL, HeckeTheta.regularizedCompleted]
 
-theorem regularizedL_ne_zero_at_one (χ : Character) (hχ : χ.residue = 1) :
+theorem regularizedL_ne_zero_at_one  (hχ : χ.residue = 1) :
     regularizedL χ 1 ≠ 0 := by
   rw [regularizedL_at_one]
   exact div_ne_zero (mul_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
     (principal_dual_constant_ne_zero χ hχ)) (by norm_num)
 
-theorem regularizedL_differentiableAt (χ : Character) {s : ℂ} (h0 : s ≠ 0) :
+theorem regularizedL_differentiableAt  {s : ℂ} (h0 : s ≠ 0) :
     DifferentiableAt ℂ (regularizedL χ) s :=
   (HeckeTheta.regularizedLatticeL_differentiableAt _ h0).div_const 6
 
-theorem regularizedL_ne_zero (χ : Character) (hχ : χ.residue = 1) {s : ℂ}
+theorem regularizedL_ne_zero  (hχ : χ.residue = 1) {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) : regularizedL χ s ≠ 0 := by
   by_cases h1 : s = 1
   · subst s
@@ -84,10 +88,10 @@ theorem regularizedL_ne_zero (χ : Character) (hχ : χ.residue = 1) {s : ℂ}
   exact mul_ne_zero (sub_ne_zero.mpr h1)
     (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt χ hs (Or.inl h1))
 
-def reciprocal (χ : Character) (s : ℂ) : ℂ :=
+def reciprocal  (s : ℂ) : ℂ :=
   if χ.residue = 1 then (s - 1) / regularizedL χ s else (LFunction χ s)⁻¹
 
-theorem reciprocal_eq_inv (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem reciprocal_eq_inv  {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
     reciprocal χ s = (LFunction χ s)⁻¹ := by
   unfold reciprocal
   split_ifs
@@ -95,10 +99,10 @@ theorem reciprocal_eq_inv (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 
       div_self (sub_ne_zero.mpr h1), one_div]
   · rfl
 
-theorem reciprocal_principal_one (χ : Character) (hχ : χ.residue = 1) :
+theorem reciprocal_principal_one  (hχ : χ.residue = 1) :
     reciprocal χ 1 = 0 := by simp [reciprocal, hχ]
 
-theorem reciprocal_differentiableAt (χ : Character) {s : ℂ}
+theorem reciprocal_differentiableAt  {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) : DifferentiableAt ℂ (reciprocal χ) s := by
   have h0 : s ≠ 0 := by
     intro h
@@ -117,9 +121,11 @@ theorem reciprocal_differentiableAt (χ : Character) {s : ℂ}
     rw [heq]
     exact (LFunction_differentiableAt χ h0 (Or.inr hχ)).inv
       (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt χ hs (Or.inr hχ))
-
-end SevenEighths.HeckeReciprocal
-
 end
 
-end OAI
+
+
+
+
+
+

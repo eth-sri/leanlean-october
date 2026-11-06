@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.Target
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -49,17 +49,8 @@ theorem source_large_values_translation {N T V B : ℝ}
   have hcard : W₀.card=W.card := Finset.card_image_of_injective W hinj
   have hh := horigin (translatedSourceCoefficient N t₀ a) W₀
     (fun n hn => by rw [translatedSourceCoefficient_norm]; exact ha n hn)
-    (by
-      intro t ht
-      obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp ht
-      obtain ⟨hlo,hhi⟩ := hW s hs
-      exact ⟨by linarith,by linarith⟩)
-    (by
-      intro t ht u hu hne
-      obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp ht
-      obtain ⟨r,hr,rfl⟩ := Finset.mem_image.mp hu
-      have hsr : s ≠ r := by intro he; subst r; exact hne rfl
-      simpa only [sub_sub_sub_cancel_right] using hsep s hs r hr hsr)
+    (by grind)
+    (by grind)
     (by
       intro t ht
       obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp ht
@@ -67,4 +58,4 @@ theorem source_large_values_translation {N T V B : ℝ}
       exact hlarge s hs)
   simpa only [hcard] using hh
 
-end GuthMaynard.Improvement
+

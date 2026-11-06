@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def pairedSlotAssignment (J₁ J₂ : Finset σ)
@@ -33,8 +33,12 @@ def pairedSlotWeight (J₁ J₂ : Finset σ) (a₁ a₂ : σ → ι → ℂ)
     (q : (∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι)) : ℂ :=
   star (slotAssignmentWeight J₁ a₁ q.1)*slotAssignmentWeight J₂ a₂ q.2
 
-theorem paired_primeMark_assignments (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (A : Finset ι) :
+section
+variable (J₁ J₂ : Finset σ)
+    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (A : Finset ι)
+include J₁ J₂ L₁ L₂ a₁ a₂ A
+
+theorem paired_primeMark_assignments  :
     star (primeMark J₁ L₁ a₁ A)*primeMark J₂ L₂ a₂ A =
       ∑ q ∈ (J₁.pi (fun i => L₁ i∩A)) ×ˢ (J₂.pi (fun i => L₂ i∩A)),
         pairedSlotWeight J₁ J₂ a₁ a₂ q := by
@@ -42,8 +46,7 @@ theorem paired_primeMark_assignments (J₁ J₂ : Finset σ)
   simp only [star_sum,Finset.sum_product,pairedSlotWeight,Finset.sum_mul,Finset.mul_sum]
   exact Finset.sum_comm
 
-theorem pairedSlotWeight_norm_le_one (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (A : Finset ι)
+theorem pairedSlotWeight_norm_le_one 
     (q : (∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι))
     (hq : q ∈ (J₁.pi (fun i => L₁ i∩A)) ×ˢ (J₂.pi (fun i => L₂ i∩A)))
     (ha₁ : ∀ i ∈ J₁, ∀ p ∈ L₁ i, ‖a₁ i p‖ ≤ 1)
@@ -53,6 +56,8 @@ theorem pairedSlotWeight_norm_le_one (J₁ J₂ : Finset σ)
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (slotAssignmentWeight_norm_le_one J₁ L₁ a₁ A q.1 (Finset.mem_product.mp hq).1 ha₁)).trans
     (slotAssignmentWeight_norm_le_one J₂ L₂ a₂ A q.2 (Finset.mem_product.mp hq).2 ha₂)
+end
+
 
 def attachSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo 0)
     (newAssigned : Fin Jn → ι) : MarkedSecondSource ι Jo Jn where
@@ -157,7 +162,7 @@ theorem assignedSecondSource_conditions (p : ι → Eis) [∀ i, (Ideal.span {p 
   · exact hq
   · exact hs.quotient_nonzero y hy
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

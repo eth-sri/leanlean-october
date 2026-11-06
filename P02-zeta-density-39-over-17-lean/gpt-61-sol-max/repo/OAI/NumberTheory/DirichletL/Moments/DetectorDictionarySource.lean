@@ -12,9 +12,9 @@ open scoped Classical BigOperators Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
+open HeckeFamily ProbeHighRowFamily
 open ProbePhysical CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma source_product_le_rowMask (S : Finset (Ideal O))
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) :
@@ -76,8 +76,8 @@ theorem eventually_source_slots_coprime {N : ℕ}
   rw [heq]
   exact hz j i W b hs
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

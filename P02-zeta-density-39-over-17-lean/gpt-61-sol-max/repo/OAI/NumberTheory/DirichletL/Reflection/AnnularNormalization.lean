@@ -6,8 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.SurvivingEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open InverseReflectedNormalization InverseKernelSourceUniform
-noncomputable section
+open InverseKernelSourceUniform
+
 variable {φ : Type*} [Fintype φ]
 
 lemma reciprocal_annulus_normalization (r Qn Qb kn kb : ℝ)
@@ -55,7 +55,7 @@ theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
     Real.logb_mul hv.ne' (pow_ne_zero _ hl.ne'),Real.logb_pow,Real.logb_pow]
   norm_num
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

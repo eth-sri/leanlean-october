@@ -10,7 +10,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -45,4 +44,4 @@ theorem atkinsonPrefixGramMax_swap (m N : ℕ) (t u : ℝ) :
   simp_rw [atkinsonPrefixGram_swap m _ u t,Complex.norm_conj]
 
 
-end MathCollab.Density.Stronger.Atkinson
+

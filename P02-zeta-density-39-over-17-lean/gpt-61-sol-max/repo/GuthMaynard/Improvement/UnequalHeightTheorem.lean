@@ -4,8 +4,7 @@ public import GuthMaynard.Improvement.SparseAffineInput
 public import GuthMaynard.Improvement.UniformReduction
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
@@ -44,4 +43,4 @@ theorem adaptive_sparse_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   have hb := hmain.trans (mul_le_mul_of_nonneg_left hw (by positivity))
   simpa only [ft,S,Q,unequalAdaptive,mul_assoc,mul_left_comm,mul_comm] using hb
 
-end GuthMaynard.Improvement
+

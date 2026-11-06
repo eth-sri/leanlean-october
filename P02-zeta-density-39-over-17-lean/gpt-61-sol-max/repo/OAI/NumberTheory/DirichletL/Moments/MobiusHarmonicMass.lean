@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorBoundary
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentMobiusHarmonicMass
 open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization
-open CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorBoundary UniqueFactorizationMonoid
+open scoped EisensteinO
 
 lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
     (∑D∈shell Ds n,‖(moebius D:ℂ)‖/(Ideal.absNorm D:ℝ))≤256 := by
@@ -51,8 +51,8 @@ lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
     _≤(C*Z^δ)*256:=mul_le_mul_of_nonneg_right (hZ.2 Ds hn) (by norm_num)
     _=_:=by ring
 
-end SevenEighths.CenteredMomentMobiusHarmonicMass
 
-end
 
-end OAI
+
+
+

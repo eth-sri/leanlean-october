@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import RationalMomentDuality
 public import Mathlib.Analysis.MeanInequalities
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 800000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -40,7 +40,7 @@ theorem weighted_cube_holder {ι : Type*} (S : Finset ι) (r v : ι → ℝ)
       (∑ i ∈ S, r i) ^ (1 / 2 : ℝ) * (∑ i ∈ S, r i ^ 2) ^ (1 / 2 : ℝ) := by
     simp only [Real.rpow_two] at hCauchy
     rw [sum_congr rfl hProd] at hCauchy
-    have hSqrt : (∑ i ∈ S, Real.sqrt (r i) ^ 2) = ∑ i ∈ S, r i :=
+    have hSqrt :=
       sum_congr rfl (fun i hi => Real.sq_sqrt (hr i hi))
     rw [hSqrt] at hCauchy
     exact hCauchy
@@ -62,4 +62,4 @@ theorem weighted_cube_holder {ι : Type*} (S : Finset ι) (r v : ι → ℝ)
   exact hH.trans (mul_le_mul_of_nonneg_right hRoot
     (Real.rpow_nonneg (sum_nonneg (fun i _ => pow_nonneg (hv i ‹_›) _)) _))
 
-end Montgomery.RationalMoment
+

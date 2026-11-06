@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalEulerIdentity
 
 @[expose] public section
@@ -11,13 +12,11 @@ namespace SevenEighths.ProbeEuler
 lemma signed_diagonal_phase (omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
     omega^(((e+3*l)*k:ℕ):ℤ) * omega^(-((e*l+l.choose 2:ℕ):ℤ)) =
       omega^((e+3*l)*k+e*l+l.choose 2) := by
-  have hn : omega≠0 := by intro h; simp [h] at ho
   have hi : omega⁻¹=omega := by
     apply inv_eq_of_mul_eq_one_left
     simpa only [pow_two] using ho
   rw [zpow_neg, zpow_natCast, zpow_natCast, ← inv_pow, hi, ← pow_add]
-  congr 1
-  omega
+  ring
 
 lemma source_signed_phase (C omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
     C^l * omega^((((e+3*l)*k:ℕ):ℤ)-(e*l+l.choose 2:ℕ)) =
@@ -69,20 +68,20 @@ theorem sourceWeightedScalar_eq (Q : ℝ) (hQ : 0<Q)
   simp only [localCubePhase, one_pow, one_mul] at hphase
   unfold localCubePhase
   rw [hphase, mul_pow a C, hG]
-  simp only [mul_pow, div_pow]
-
   ring
 
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-lemma firstGauss_eq_gamma_sqrt (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) :
+section
+variable (p : O) (hp : Prime p)
+    [(Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p})
+include p hp hg
+
+lemma firstGauss_eq_gamma_sqrt  :
     primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 =
       localGamma p hp.ne_zero hg 1 *
         (Real.sqrt (Ideal.absNorm (Ideal.span {p})):ℂ) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
@@ -95,8 +94,7 @@ lemma firstGauss_eq_gamma_sqrt (p : O) (hp : Prime p)
   rw [div_mul_cancel₀ _ hs]
   simp only [primeGauss, map_one, one_mul, tsum_fintype, gaussSum]
 
-theorem sourceWeightedScalar_actual (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p})
+theorem sourceWeightedScalar_actual 
     (eta a x w z scalar : ℂ) (e l k m : ℕ) :
     sourceWeightedScalar (Ideal.absNorm (Ideal.span {p})) eta a
       (localGamma p hp.ne_zero hg 1) (star (localGamma p hp.ne_zero hg 3))
@@ -109,13 +107,14 @@ theorem sourceWeightedScalar_actual (p : O) (hp : Prime p)
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
-  simpa only [Complex.ofReal_natCast] using
-    sourceWeightedScalar_eq _ hQ eta a (localGamma p hp.ne_zero hg 1) _
+  exact sourceWeightedScalar_eq _ hQ eta a (localGamma p hp.ne_zero hg 1) _
       (star (localGamma p hp.ne_zero hg 3)) (actualSextic (Ideal.span {p}) hg (-1))
       x w z scalar (firstGauss_eq_gamma_sqrt p hp hg)
       (actualSextic_neg_one_sq _ hg) e l k m
-
-end SevenEighths.ProbeEuler
 end
 
-end OAI
+
+
+
+
+

@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosSevenNonzeroCount
 public import LaterPairs.Native.RobertSargosSevenZeroCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                    
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_seven_count (ε : ℝ) (hε : 0 < ε) :
@@ -46,5 +45,5 @@ theorem exists_robertSargos_seven_count (ε : ℝ) (hε : 0 < ε) :
       add_le_add hz' hu
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

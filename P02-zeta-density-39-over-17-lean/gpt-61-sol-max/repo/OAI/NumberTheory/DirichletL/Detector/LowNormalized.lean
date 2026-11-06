@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.ProbePhysical
 open ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
     (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
@@ -49,7 +49,7 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
   have hW1' : Function.support W1⊆Set.Icc a1 (max b1 (a1+1)) := by
     intro y hy
     exact ⟨(hW1 hy).1,(hW1 hy).2.trans (le_max_left _ _)⟩
-  have hab1 : a1<max b1 (a1+1) := lt_of_lt_of_le (by linarith) (le_max_right _ _)
+  have hab1 : a1< max b1 (a1+1) := lt_of_lt_of_le (by linarith) (le_max_right _ _)
   obtain ⟨Cn,hCn,hnorm⟩ := ProbeHighRowFamily.actual_ray_normalizer_inverse M H hH S hS a b ha hab
     ell hell hsum W hW hcompact hsupp (fun j y=>(hWB j y).1) hne W0 W1 a0 b0 a1 b1 ha0 ha1
     hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 (loss/2) (by positivity)
@@ -73,7 +73,7 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
       congr 2
       ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

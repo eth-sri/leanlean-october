@@ -12,7 +12,7 @@ the actual phase and the analytic exponent-pair predicate. Constants and
 finite model order precede every source datum.
 -/
 
-noncomputable section
+
 
 open Expdb
 
@@ -98,4 +98,4 @@ theorem ExponentPair.allPositiveHeight_bound
           hcard.trans (by linarith)
         exact hsmall.trans (le_mul_of_one_le_right (zero_le_one.trans hC) (by linarith))
 
-end TaoTrudgianYang2025
+

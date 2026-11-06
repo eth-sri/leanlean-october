@@ -18,7 +18,11 @@ private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_
 def twistedCoefficient (χ : Character) (inverse : Bool) (σ freq : ℝ) (I : NonzeroIdeal) : ℂ :=
   coefficient χ inverse I.val * (norm I : ℂ)^(-shift σ freq)
 
-theorem twisted_coefficient_summable (χ : Character) (inverse : Bool) (c σ freq : ℝ)
+section
+variable (χ : Character) (inverse : Bool)
+include χ inverse
+
+theorem twisted_coefficient_summable  (c σ freq : ℝ)
     (hc : 1 < c+σ) :
     Summable (fun I : NonzeroIdeal => ‖twistedCoefficient χ inverse σ freq I‖*(norm I)^(-c)) := by
   have hf := (CubicEisenstein.fullIdealWeight_summable_norm ((c+σ : ℝ) : ℂ)
@@ -44,7 +48,7 @@ theorem twisted_coefficient_summable (χ : Character) (inverse : Bool) (c σ fre
     _ ≤ _ := mul_le_of_le_one_left (Real.rpow_nonneg (norm_pos I).le _)
       (coefficient_norm_le χ inverse I.val)
 
-theorem twisted_series_eq (χ : Character) (inverse : Bool) (σ freq : ℝ)
+theorem twisted_series_eq  (σ freq : ℝ)
     {s : ℂ} (hs : 1 < (s+shift σ freq).re) :
     (∑' I : NonzeroIdeal, twistedCoefficient χ inverse σ freq I*(norm I : ℂ)^(-s)) =
       series χ inverse (s+shift σ freq) := by
@@ -56,7 +60,7 @@ theorem twisted_series_eq (χ : Character) (inverse : Bool) (σ freq : ℝ)
   congr 2
   ring
 
-theorem polynomial_eq_weighted (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
+theorem polynomial_eq_weighted  (W : ℝ → ℂ)
     (D σ freq : ℝ) (hD : 0 < D) :
     polynomial χ inverse W D σ freq =
       (D : ℂ)^(shift σ freq-(1/2 : ℂ)) *
@@ -72,7 +76,7 @@ theorem polynomial_eq_weighted (χ : Character) (inverse : Bool) (W : ℝ → �
   congr 2
   ring
 
-theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
+theorem polynomial_mellin  (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Icc a b)
     (hW : ContDiff ℝ ∞ W) (D c σ freq : ℝ) (hD : 0 < D) (hc : 1 < c+σ) :
     polynomial χ inverse W D σ freq = (1/(2*Real.pi) : ℂ)*∫ t : ℝ,
@@ -98,9 +102,11 @@ theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
         ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
           series χ inverse (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
     _ = _ := by rw [he]
-
-end SevenEighths.HeckeDyadic
-
 end
 
-end OAI
+
+
+
+
+
+

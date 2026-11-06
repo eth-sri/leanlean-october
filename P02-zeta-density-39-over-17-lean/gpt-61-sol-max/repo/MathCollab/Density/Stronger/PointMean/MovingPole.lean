@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected moving-pole proofs from Scott McColm, PointMeanMovingPole.lean,
 exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0,
@@ -17,7 +18,6 @@ open Complex Set
 open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 open MathCollab.Density.Stronger.Fourth
 open scoped Topology
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -38,10 +38,10 @@ theorem differentiable_riemannZetaPoleRemoved : Differentiable ℂ riemannZetaPo
   exact (differentiableAt_regularizedRiemannZeta (1 + u)).comp u
     (differentiableAt_const (c := (1 : ℂ)) |>.add differentiableAt_id)
 
-noncomputable def heathBrownMovingPole (s : ℂ) : ℂ := 1 - s
+def heathBrownMovingPole (s : ℂ) : ℂ := 1 - s
 
 /-- Holomorphic numerator obtained by clearing the moving double zeta pole. -/
-noncomputable def heathBrownMovingPoleNumerator (s w : ℂ) : ℂ :=
+def heathBrownMovingPoleNumerator (s w : ℂ) : ℂ :=
   Complex.Gamma w *
     riemannZetaPoleRemoved (w - heathBrownMovingPole s) ^ 2
 
@@ -52,8 +52,8 @@ theorem heathBrownZetaSquareMellinIntegrand_eq_poleCleared
     heathBrownZetaSquareMellinIntegrand s w =
       heathBrownMovingPoleNumerator s w /
         (w - heathBrownMovingPole s) ^ 2 := by
-  let p : ℂ := heathBrownMovingPole s
-  let u : ℂ := w - p
+  let p := heathBrownMovingPole s
+  let u := w - p
   have hu : u ≠ 0 := sub_ne_zero.mpr hw
   have haffine : s + w = 1 + u := by
     dsimp only [u, p, heathBrownMovingPole]
@@ -63,8 +63,7 @@ theorem heathBrownZetaSquareMellinIntegrand_eq_poleCleared
   rw [haffine]
   change Complex.Gamma w * riemannZeta (1 + u) ^ 2 =
     Complex.Gamma w * riemannZetaPoleRemoved u ^ 2 / u ^ 2
-  rw [hpole]
-  field_simp [hu]
+  grind
 
 theorem differentiableOn_heathBrownMovingPoleNumerator
     (s : ℂ) :
@@ -74,10 +73,7 @@ theorem differentiableOn_heathBrownMovingPoleNumerator
   have hGamma : DifferentiableAt ℂ Complex.Gamma w := by
     apply Complex.differentiableAt_Gamma
     intro m hm
-    have hre := congrArg Complex.re hm
-    simp at hre
-    change 0 < w.re at hw
-    linarith
+    simp_all <;> nlinarith
   have hRemoved : DifferentiableAt ℂ
       (fun z : ℂ => riemannZetaPoleRemoved
         (z - heathBrownMovingPole s)) w :=
@@ -86,7 +82,7 @@ theorem differentiableOn_heathBrownMovingPoleNumerator
 
 /-- Exact coefficient of the order-one term created by the moving double
 pole.  This is the residue which must later be bounded uniformly. -/
-noncomputable def heathBrownMovingPoleResidue (s : ℂ) : ℂ :=
+def heathBrownMovingPoleResidue (s : ℂ) : ℂ :=
   deriv (heathBrownMovingPoleNumerator s) (heathBrownMovingPole s)
 
 /-- Explicit Gamma--digamma form of the moving residue. -/
@@ -97,7 +93,7 @@ theorem heathBrownMovingPoleResidue_eq
           Complex.digamma (heathBrownMovingPole s) +
         2 * Complex.Gamma (heathBrownMovingPole s) *
           deriv riemannZetaPoleRemoved 0 := by
-  let p : ℂ := heathBrownMovingPole s
+  let p := heathBrownMovingPole s
   have hGamma := hasDerivAt_Gamma_eq_mul_digamma_of_re_pos hp
   have hRemoved0 : HasDerivAt riemannZetaPoleRemoved
       (deriv riemannZetaPoleRemoved 0) 0 :=
@@ -149,10 +145,10 @@ theorem heathBrown_movingPole_finite_rectangle
     RectangleIntegral' (heathBrownZetaSquareMellinIntegrand s)
         ((d : ℂ) - (H : ℂ) * I) ((c : ℂ) + (H : ℂ) * I) =
       heathBrownMovingPoleResidue s := by
-  let z : ℂ := (d : ℂ) - (H : ℂ) * I
-  let w : ℂ := (c : ℂ) + (H : ℂ) * I
-  let p : ℂ := heathBrownMovingPole s
-  let N : ℂ → ℂ := heathBrownMovingPoleNumerator s
+  let z := (d : ℂ) - (H : ℂ) * I
+  let w := (c : ℂ) + (H : ℂ) * I
+  let p := heathBrownMovingPole s
+  let N := heathBrownMovingPoleNumerator s
   have hzre : z.re ≤ w.re := by
     simp [z, w]
     linarith
@@ -170,21 +166,20 @@ theorem heathBrown_movingPole_finite_rectangle
     have huBounds := (mem_Rect hzre hzim u).mp hu
     change 0 < u.re
     have hzReal : z.re = d := by simp [z]
-    linarith [huBounds.1]
-  have hN : DifferentiableOn ℂ N (Rectangle z w) :=
+    linarith
+  have hN :=
     (differentiableOn_heathBrownMovingPoleNumerator s).mono hRectPositive
   have hPoleCleared := rectangleIntegral'_div_sq_eq_deriv
     hzre hzim hpInterior hN
-  have hpNotBorder : p ∉ RectangleBorder z w :=
+  have hpNotBorder :=
     not_mem_rectangleBorder_of_rectangle_mem_nhds hpInterior
   have hCongr : Set.EqOn
       (heathBrownZetaSquareMellinIntegrand s)
       (fun u : ℂ => N u / (u - p) ^ 2) (RectangleBorder z w) := by
     intro u hu
     have hup : u ≠ p := fun h => hpNotBorder (h ▸ hu)
-    simpa only [N, p] using
-      heathBrownZetaSquareMellinIntegrand_eq_poleCleared hup
+    exact heathBrownZetaSquareMellinIntegrand_eq_poleCleared hup
   rw [RectangleIntegral'_congr hCongr]
-  simpa only [N, p, heathBrownMovingPoleResidue] using hPoleCleared
+  exact hPoleCleared
 
-end MathCollab.Density.Stronger.PointMean
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -10,15 +11,14 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-noncomputable def phaseAlign (z : ℂ) : ℂ := if z = 0 then 1 else conj z / ‖z‖
+def phaseAlign (z : ℂ) : ℂ := if z = 0 then 1 else conj z / ‖z‖
 
 theorem norm_conj_eq (z : ℂ) : ‖conj z‖ = ‖z‖ := by
   change ‖star z‖ = ‖z‖
@@ -42,7 +42,6 @@ theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
         rw [← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
       _ = (‖z‖ : ℂ) := by
         push_cast
-        have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
         field_simp
 
 /-- Coordinate Cauchy--Schwarz for a finite complex sum. -/
@@ -57,9 +56,13 @@ theorem norm_sum_mul_sq_le {ι : Type*} [DecidableEq ι]
     _ ≤ (∑ i ∈ s, ‖a i‖ ^ 2) * (∑ i ∈ s, ‖b i‖ ^ 2) :=
       sum_mul_sq_le_sq_mul_sq s (fun i => ‖a i‖) (fun i => ‖b i‖)
 
+section
+variable {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
+    (s : Finset ι) (W : Finset κ)
+include ι κ s W
+
 /-- The finite Gram-matrix bound underlying Halász--Montgomery duality. -/
-theorem sum_norm_sq_sum_le_gram {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (s : Finset ι) (W : Finset κ) (c : κ → ℂ) (y : κ → ι → ℂ)
+theorem sum_norm_sq_sum_le_gram  (c : κ → ℂ) (y : κ → ι → ℂ)
     (hc : ∀ t ∈ W, ‖c t‖ ≤ 1) :
     (∑ n ∈ s, ‖∑ t ∈ W, c t * y t n‖ ^ 2) ≤
       ∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ s, conj (y t n) * y u n‖ := by
@@ -88,8 +91,7 @@ theorem sum_norm_sq_sum_le_gram {ι κ : Type*} [DecidableEq ι] [DecidableEq κ
     apply Finset.sum_congr rfl
     intro u hu
     apply Finset.sum_congr rfl
-    intro n hn
-    ring
+    grind
   have hre := congrArg Complex.re hexpand
   simp only [ofReal_re] at hre
   rw [hre]
@@ -121,8 +123,7 @@ theorem sum_norm_sq_sum_le_gram {ι κ : Type*} [DecidableEq ι] [DecidableEq κ
         (norm_nonneg (∑ n ∈ s, conj (y t n) * y u n))).trans_eq (one_mul _)
 
 theorem sum_norm_coefficient_vector_sq_le_gram
-    {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (s : Finset ι) (W : Finset κ) (d : ι → ℂ) (e : κ → ι → ℂ) :
+     (d : ι → ℂ) (e : κ → ι → ℂ) :
     (∑ t ∈ W, ‖∑ n ∈ s, d n*e t n‖)^2 ≤
       (∑ n ∈ s, ‖d n‖^2)*
         ∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ s, conj (e t n)*e u n‖ := by
@@ -138,14 +139,12 @@ theorem sum_norm_coefficient_vector_sq_le_gram
       ∑ n ∈ s, d n*(∑ t ∈ W, c t*e t n) := by
     simp only [D,Finset.mul_sum]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro n _
-    apply Finset.sum_congr rfl
-    intro t _
-    ring
+    grind
   have hcs := norm_sum_mul_sq_le s d (fun n => ∑ t ∈ W, c t*e t n)
   rw [← hexpand,halign] at hcs
   exact hcs.trans (mul_le_mul_of_nonneg_left
     (sum_norm_sq_sum_le_gram s W c e hc) (by positivity))
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

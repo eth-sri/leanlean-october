@@ -8,9 +8,8 @@ public import MathCollab.Density.ZeroSeparation
 
 open Complex Filter Set MathCollab.Density
 open scoped Topology BigOperators
-set_option autoImplicit false
 set_option maxRecDepth 2000
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Actual Type-I detection of an ordinate-injective separated finite family.
@@ -124,4 +123,4 @@ theorem short_typeI_zero_slab_count {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨hz,hβ,hγ,hγ'⟩ := mem_zetaZeroFinset.mp (hR hρ)
   exact ⟨hβ,hz.2.2.le,⟨hγ,by linarith⟩,hlarge ρ hρ⟩
 
-end GuthMaynard.Improvement
+

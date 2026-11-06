@@ -4,8 +4,7 @@ public import DensityEnergyGM.DifferenceEnergyGeometry
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -79,4 +78,4 @@ theorem centered_shell_universal (w : MathCollab.Density.ReflectionCutoff)
     linarith
   exact hReflected.trans (add_le_add (hMain.trans hCoeff) le_rfl)
 
-end Montgomery.RationalMoment
+

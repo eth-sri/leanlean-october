@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Source-scale algebra adapted from AtkinsonLeadingSource at exact revision
@@ -13,7 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-noncomputable section
+
 open Complex Filter
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -30,12 +31,7 @@ theorem exists_tsum_zetaAtkinsonTwoTerm_sub_leading_bound {δ : ℝ} (hδ : 0 < 
         atkinsonLeadingSum T G (Real.log T)‖ ≤ C * G := by
     filter_upwards [eventually_zetaSmoothDivisorTest_support_physical hδ,
       eventually_zeta_source_log_window_scales hδ] with T hsupport hscale
-    intro G hlower hupper
-    obtain ⟨hG, _, hwidth, _⟩ := hsupport.2 G hlower
-    have hT1 : 1 ≤ T := by linarith [hsupport.1]
-    have hG1 : 1 ≤ G := (Real.one_le_rpow hT1 hδ.le).trans hlower
-    exact hbound T G (Real.log T) hT1 hG1
-      (hscale.2.2 G hG hupper).1 hscale.2.1 hwidth
+    grind
   obtain ⟨B, hB⟩ := eventually_atTop.mp hev
   refine ⟨C, hC, max 16 B, le_max_left _ _, ?_⟩
   intro T G hT hlower hupper
@@ -61,4 +57,4 @@ theorem exists_tsum_zetaAtkinsonTwoTerm_sub_stationary_above_fourthRoot
     _ ≤ C * G + D * G := add_le_add hc hs
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson
+

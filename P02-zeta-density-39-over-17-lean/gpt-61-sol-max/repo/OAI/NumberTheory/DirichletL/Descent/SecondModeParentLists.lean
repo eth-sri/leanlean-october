@@ -6,22 +6,26 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic
+open CompletedGauss InverseSecondFibers JointLogSeparation
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 include hp in
+section
+variable (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+include hpr Jo Jn x
+
 theorem actual_second_canonical_label_span
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Oˣ) :
+     (u v : Oˣ) :
     Ideal.span {actualSecondRawLabel p x}=
       Ideal.span {primaryGenerator (actualSecondChild p u v x).2.1} := by
   obtain ⟨u₀,v₀,hl,hv⟩ := actual_second_generator_sectors p hp hpr x
@@ -29,10 +33,13 @@ theorem actual_second_canonical_label_span
   simp only [Ideal.span_singleton_eq_top.mpr (Units.isUnit u₀),Ideal.top_mul]
   rfl
 
-theorem secondCanonicalPolynomial_parent_lists_restore
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hb : x.cube.Admissible)
+section
+variable (hb : x.cube.Admissible)
     (hE : x.second.divisor⊆x.second.sourceCommon) (u v : Oˣ)
+include hb hE u v
+
+theorem secondCanonicalPolynomial_parent_lists_restore
+    
     (deleted : Finset ι)
     (hdeleted : ∀ i∈deleted,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient)
     (pool : Finset ι) (Ψ : OuterTriple→O→*ℂ) (m : O)
@@ -60,9 +67,7 @@ theorem secondCanonicalPolynomial_parent_lists_restore
   exact hk' (Ideal.subset_span (by simp))
 
 theorem secondModeBranch_parent_lists_restore
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hb : x.cube.Admissible)
-    (hE : x.second.divisor⊆x.second.sourceCommon) (u v : Oˣ)
+    
     (deleted₁ deleted₂ : Finset ι)
     (hd₁ : ∀ i∈deleted₁,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient)
     (hd₂ : ∀ i∈deleted₂,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient)
@@ -79,9 +84,12 @@ theorem secondModeBranch_parent_lists_restore
   unfold secondModeBranch secondModeLeft secondModeRight
   rw [secondCanonicalPolynomial_parent_lists_restore p hp hcop hg hpr x hb hE u v deleted₁ hd₁,
     secondCanonicalPolynomial_parent_lists_restore p hp hcop hg hpr x hb hE u v deleted₂ hd₂]
-
-end SevenEighths.InverseMoment
-
+end
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected actual contour convergence proofs adapted from Scott McColm,
 PointMeanMellinVertical.lean and PointMeanContourBasic.lean, exact revision
@@ -16,10 +17,9 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 @[expose] public section
 
 open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
+open MathCollab.Density.ZetaGrowth
 open scoped ComplexOrder
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem exists_heathBrown_Gamma_shift_kernel_bound :
@@ -92,14 +92,8 @@ theorem continuous_heathBrownZetaSquareMellinIntegrand_vertical
       (a : ℂ) + (v : ℂ) * I ≠ -(m : ℂ) := by
     intro m hm
     have hre := congrArg Complex.re hm
-    simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-      mul_zero, zero_mul, sub_self, add_zero, neg_re, natCast_re] at hre
-    by_cases hm0 : m = 0
-    · subst m
-      norm_num at hre
-      exact ha0 hre
-    · have hmOne : (1 : ℝ) ≤ m := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hm0)
-      linarith
+    simp at hre
+    simp_all
   have hGammaAt :=
     (Complex.differentiableAt_Gamma _ hwNoPole).continuousAt
   have hGamma : ContinuousAt
@@ -110,8 +104,7 @@ theorem continuous_heathBrownZetaSquareMellinIntegrand_vertical
   have hzetaPoint : s + ((a : ℂ) + (v : ℂ) * I) ≠ 1 := by
     intro heq
     have hre := congrArg Complex.re heq
-    simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-      mul_zero, zero_mul, sub_self, add_zero, one_re] at hre
+    simp at hre
     exact hpole hre
   have hZetaAt :=
     (differentiableAt_riemannZeta hzetaPoint).continuousAt
@@ -148,8 +141,7 @@ theorem integrable_abs_sq_mul_exp_neg_abs :
       (fun x : ℝ => |x| ^ 2 * Real.exp (-|x|)) (Iic 0) :=
     (integrableOn_Iic_iff_integrableOn_Iio).2 hneg
   have hall := hleft.union hpos
-  rw [Iic_union_Ioi] at hall
-  exact integrableOn_univ.mp hall
+  simp_all
 
 private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     {s : ℂ} {a G : ℝ}
@@ -172,8 +164,7 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     linarith [abs_nonneg (s.re + a), abs_nonneg s.im]
   have hBpos : 0 < B := zero_lt_one.trans_le hBone
   have hCont : Continuous f := by
-    simpa [f] using
-      continuous_heathBrownZetaSquareMellinIntegrand_vertical
+    exact continuous_heathBrownZetaSquareMellinIntegrand_vertical
         haLower ha0 hpole
   have hg : Integrable g := integrable_abs_sq_mul_exp_neg_abs.const_mul M
   have hPos : IntegrableOn f (Ioi B) := by
@@ -183,16 +174,9 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     have hfar : |s.re + a| + |s.im| + 2 ≤ |v| := by
       rw [abs_of_pos hvPos]
       exact hv.le
-    have hheight : 1 ≤ |s.im + v| := by
-      have htri := abs_sub_abs_le_abs_sub v (-s.im)
-      rw [abs_neg, sub_neg_eq_add] at htri
-      rw [add_comm]
-      linarith [abs_nonneg (s.re + a)]
+    have hheight : 1 ≤ |s.im + v| := by grind
     have hzetaRe : (1 / 4 : ℝ) ≤
-        (s + ((a : ℂ) + (v : ℂ) * I)).re := by
-      simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-        mul_zero, zero_mul, sub_self, add_zero]
-      exact hsRe
+        (s + ((a : ℂ) + (v : ℂ) * I)).re := by simp_all
     have hzeta := norm_riemannZeta_le_five_mul_norm hzetaRe
       (by simpa using hheight)
     have hnorm :
@@ -227,21 +211,10 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     apply hg.integrableOn.mono' hCont.aestronglyMeasurable
     filter_upwards [ae_restrict_mem measurableSet_Iio] with v hv
     have hvNeg : v < 0 := hv.trans_le (neg_nonpos.mpr hBpos.le)
-    have hfar : |s.re + a| + |s.im| + 2 ≤ |v| := by
-      rw [abs_of_neg hvNeg]
-      change v < -(|s.re + a| + |s.im| + 2) at hv
-      linarith
-    have hheight : 1 ≤ |s.im + v| := by
-      have htri := abs_sub_abs_le_abs_sub v (-s.im)
-      rw [abs_neg, sub_neg_eq_add] at htri
-      have hlower : |v| - |s.im| ≤ |v + s.im| := htri
-      rw [add_comm] at hlower
-      linarith [abs_nonneg (s.re + a)]
+    have hfar : |s.re + a| + |s.im| + 2 ≤ |v| := by grind
+    have hheight : 1 ≤ |s.im + v| := by grind
     have hzetaRe : (1 / 4 : ℝ) ≤
-        (s + ((a : ℂ) + (v : ℂ) * I)).re := by
-      simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-        mul_zero, zero_mul, sub_self, add_zero]
-      exact hsRe
+        (s + ((a : ℂ) + (v : ℂ) * I)).re := by simp_all
     have hzeta := norm_riemannZeta_le_five_mul_norm hzetaRe
       (by simpa using hheight)
     have hnorm :
@@ -277,27 +250,20 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
   have hNegClosed : IntegrableOn f (Iic (-B)) :=
     (integrableOn_Iic_iff_integrableOn_Iio).2 hNeg
   have hLeft := hNegClosed.union hMid
-  have hLeftSet : Iic (-B) ∪ Icc (-B) B = Iic B := by
-    ext v
-    simp only [mem_union, mem_Iic, mem_Icc]
-    constructor
-    · rintro (h | h) <;> linarith
-    · intro h
-      by_cases hv : v ≤ -B
-      · exact Or.inl hv
-      · exact Or.inr ⟨by linarith, h⟩
+  have hLeftSet : Iic (-B) ∪ Icc (-B) B = Iic B := by grind
   rw [hLeftSet] at hLeft
   rw [← integrableOn_univ]
   have hAll := hLeft.union hPos
-  have hAllSet : Iic B ∪ Ioi B = Set.univ := by
-    ext v
-    simp only [mem_union, mem_Iic, mem_Ioi, mem_univ, iff_true]
-    exact le_or_gt v B
+  have hAllSet : Iic B ∪ Ioi B = Set.univ := by simp_all
   rwa [hAllSet] at hAll
 
+section
+variable {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
+    (hdeltaUpper : delta ≤ 1 / 4)
+include s delta hdelta hdeltaUpper
+
 theorem integrable_heathBrownZetaSquareMellinIntegrand_plus
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4) (hsRe : 1 / 4 ≤ s.re + delta)
+     (hsRe : 1 / 4 ≤ s.re + delta)
     (hpole : s.re + delta ≠ 1) :
     Integrable (fun v : ℝ =>
       heathBrownZetaSquareMellinIntegrand s
@@ -318,17 +284,14 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_plus
           delta * ‖Complex.Gamma ((delta : ℂ) + (v : ℂ) * I)‖ := by ring
       _ ≤
           (delta + |v|) * ‖Complex.Gamma
-            ((delta : ℂ) + (v : ℂ) * I)‖ := by
-        exact mul_le_mul_of_nonneg_right
-          (by linarith [abs_nonneg v]) (norm_nonneg _)
+            ((delta : ℂ) + (v : ℂ) * I)‖ := by bound
       _ ≤ C * Real.exp (-|v|) := hk
   apply integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     (s := s) (a := delta) (G := G) (by linarith) hdelta.ne'
     hsRe hpole hG hGamma
 
 theorem integrable_heathBrownZetaSquareMellinIntegrand_minus
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4) (hsRe : 1 / 4 ≤ s.re - delta)
+     (hsRe : 1 / 4 ≤ s.re - delta)
     (hpole : s.re - delta ≠ 1) :
     Integrable (fun v : ℝ =>
       heathBrownZetaSquareMellinIntegrand s
@@ -349,14 +312,14 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_minus
           delta * ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ := by ring
       _ ≤
           (delta + |v|) * ‖Complex.Gamma
-            (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ := by
-        exact mul_le_mul_of_nonneg_right
-          (by linarith [abs_nonneg v]) (norm_nonneg _)
+            (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ := by bound
       _ ≤ C * Real.exp (-|v|) := hk
   apply integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     (s := s) (a := -delta) (G := G) (by linarith) (by linarith)
     (by simpa [sub_eq_add_neg] using hsRe)
     (by simpa [sub_eq_add_neg] using hpole) hG hGamma
+end
+
 
 theorem integrable_heathBrownZetaSquareMellinIntegrand_right
     {s : ℂ} (hs : 0 ≤ s.re) :
@@ -369,9 +332,7 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_right
       heathBrownZetaSquareMellinIntegrand s
         (((2 : ℝ) : ℂ) + (v : ℂ) * I)) := by
     apply continuous_heathBrownZetaSquareMellinIntegrand_vertical
-    · norm_num
-    · norm_num
-    · linarith
+    all_goals (bound)
   have hMajorant : Integrable (fun v : ℝ =>
       M * ‖Complex.Gamma (((2 : ℝ) : ℂ) + (v : ℂ) * I)‖) :=
     integrable_Gamma_two_vertical_for_zetaSquare.norm.const_mul M
@@ -385,8 +346,7 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_right
     have heq : s + (((2 : ℝ) : ℂ) + (v : ℂ) * I) =
         (((s.re + 2 : ℝ) : ℂ) + I * (s.im + v)) := by
       apply Complex.ext <;> simp [mul_comm]
-    rw [heq]
-    simpa using hraw
+    simp_all
   rw [heathBrownZetaSquareMellinIntegrand, norm_mul, norm_pow]
   change _ ≤ M * _
   dsimp only [M, Z]
@@ -394,4 +354,4 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_right
     (pow_le_pow_left₀ (norm_nonneg _) hzeta 2)
     (norm_nonneg (Complex.Gamma (((2 : ℝ) : ℂ) + (v : ℂ) * I)))]
 
-end MathCollab.Density.Stronger.PointMean
+

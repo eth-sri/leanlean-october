@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.GammaStrip
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.Tactic
@@ -8,7 +9,6 @@ public import Mathlib.Tactic
 open Set MeasureTheory
 open scoped Topology
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -26,8 +26,7 @@ theorem norm_Gamma_detector_strip {a t : ℝ} (ha : -(1/2 : ℝ) ≤ a) (ha' : a
   have hlower : (1/4 : ℝ) ≤ ‖z‖ := by
     have h := Complex.abs_re_le_norm z
     have hre : z.re = a := by simp [z]
-    rw [hre, abs_of_neg (show a < 0 by linarith)] at h
-    linarith
+    grind
   have hrec := congrArg norm (Complex.Gamma_add_one z hz)
   rw [norm_mul] at hrec
   have hshift := GammaBounds.norm_Gamma_positive_strip_le_exp
@@ -48,9 +47,7 @@ theorem continuous_Gamma_detector_strip {a : ℝ} (ha : -(1/2 : ℝ) ≤ a)
   apply (Complex.continuousAt_Gamma _ ?_).comp (by fun_prop)
   intro m he
   have hre := congrArg Complex.re he
-  simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re,
-    Complex.ofReal_im, Complex.I_im, mul_zero, zero_mul, sub_self, add_zero,
-    Complex.neg_re, Complex.natCast_re] at hre
+  simp at hre
   by_cases hm : m = 0
   · subst m
     norm_num at hre
@@ -121,8 +118,7 @@ theorem integrable_detectorGammaMajorant : Integrable detectorGammaMajorant := b
   have hp : IntegrableOn (fun t : ℝ => 48*(1+t)^2*Real.exp (-t)) (Ioi 0) := by
     apply (((h0.add (h1.const_mul 2)).add h2).const_mul 48).congr
     filter_upwards with t
-    change 48*((Real.exp (-t)+2*(Real.exp (-t)*t))+Real.exp (-t)*t^2) = _
-    ring
+    simp_all <;> nlinarith
   have hpabs : IntegrableOn detectorGammaMajorant (Ioi 0) := by
     apply hp.congr_fun _ measurableSet_Ioi
     intro t ht
@@ -169,4 +165,4 @@ theorem uniform_detector_gamma_mass :
   refine ⟨hgint, hw, ?_⟩
   exact (integral_mono hw integrable_detectorGammaMajorant hbound).trans (by linarith)
 
-end MathCollab.Density
+

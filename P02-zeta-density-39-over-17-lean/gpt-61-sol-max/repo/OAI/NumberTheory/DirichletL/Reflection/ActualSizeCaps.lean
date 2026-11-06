@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss
+
+open scoped EisensteinEis
 
 lemma finite_ideal_count_polynomial (rows : Finset (Ideal Eis)) (Z H Lcap : ℝ)
     (hZ : 128≤Z) (hH : 1≤H) (hn : ∀ I∈rows,I≠0)
@@ -22,23 +22,27 @@ lemma finite_ideal_count_polynomial (rows : Finset (Ideal Eis)) (Z H Lcap : ℝ)
     _ ≤ Z*Z^Lcap := mul_le_mul hZ hcap (by linarith) hz.le
     _ = _ := by rw [Real.rpow_add hz,Real.rpow_one];ring
 
-lemma original_pool_restricted_norm (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
+section
+variable (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)
-    (A : Finset (FreeReflection.pool J Q Q₀)) :
+    (A : Finset (FreeReflection.pool J Q Q₀))
+include J I Q Q₀ hJ hI hQ hpower hmask A
+
+lemma original_pool_restricted_norm  :
     (Ideal.absNorm (∏ b : A,((poolPrimeFamily J Q Q₀).restrict A).ideal b):ℝ)≤
       (Ideal.absNorm I:ℝ)*(Ideal.absNorm Q:ℝ) := by
   exact completed_conductor_norm_bound I Q hI hQ ((poolPrimeFamily J Q Q₀).restrict A).ideal
     ((poolPrimeFamily J Q Q₀).restrict_pairwise (poolPrimeFamily_pairwise J Q Q₀) A)
     (fun b => poolPrimeFamily_fiber_divides J I Q Q₀ hJ hI hQ hpower hmask b.val)
 
-lemma original_pool_restricted_cap (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
-    (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)
-    (A : Finset (FreeReflection.pool J Q Q₀)) (Z Li Lq : ℝ) (hZ : 0<Z)
+lemma original_pool_restricted_cap  (Z Li Lq : ℝ) (hZ : 0<Z)
     (hi : (Ideal.absNorm I:ℝ)≤Z^Li) (hq : (Ideal.absNorm Q:ℝ)≤Z^Lq) :
     (Ideal.absNorm (∏ b : A,((poolPrimeFamily J Q Q₀).restrict A).ideal b):ℝ)≤Z^(Li+Lq) := by
   apply (original_pool_restricted_norm J I Q Q₀ hJ hI hQ hpower hmask A).trans
   rw [Real.rpow_add hZ]
   exact mul_le_mul hi hq (Nat.cast_nonneg _) (Real.rpow_nonneg hZ.le _)
+end
+
 
 theorem actual_finite_source_tail_budget {a c : Eis} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -61,7 +65,7 @@ theorem actual_finite_source_tail_budget {a c : Eis} {mode : Bool}
     (Nat.cast_nonneg _) (Nat.cast_nonneg _) hF hK hP hXi
     (finite_ideal_count_polynomial rows Z QK Lcap hZ hQK (fun K hK => (hrows K hK).1) (fun K hK => (hrows K hK).2) hK)
     (finite_ideal_count_polynomial Pset Z QP Lcap hZ hQP (fun P hP => (hPs P hP).1) (fun P hP => (hPs P hP).2) hP)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

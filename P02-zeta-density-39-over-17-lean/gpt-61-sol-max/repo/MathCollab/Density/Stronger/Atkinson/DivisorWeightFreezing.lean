@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,11 +11,10 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightMass
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -111,8 +111,7 @@ theorem exists_norm_zetaSquareLeadingDivisor_sub_frozen_le (ε : ℝ) (hε : 0 <
         calc
           _ = T ^ ((-1 / 2 + ε) + 1) := by congr 1; ring
           _ = _ := by rw [Real.rpow_add hT0, Real.rpow_one]
-      rw [hp]
-      field_simp
+      grind
 
 /-- The preceding weight freeze also consumes the already proved actual
 reflected source remainder. This is still a complete series, not yet a
@@ -130,4 +129,4 @@ theorem exists_norm_zetaSquareSource_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
   apply (add_le_add (hsource (T + x) hTx) (hfreeze T hT x hx)).trans
   nlinarith [mul_nonneg (abs_nonneg x) (Real.rpow_nonneg (by linarith : 0 ≤ T) (-1 / 2 + ε))]
 
-end MathCollab.Density.Stronger.Atkinson
+

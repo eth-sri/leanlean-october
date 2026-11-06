@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFourthGeometry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargosReduced_neg (r q₁ q₂ h₁ h₂ d : ℝ) :
@@ -20,9 +19,13 @@ theorem robertSargosReduced_neg (r q₁ q₂ h₁ h₂ d : ℝ) :
   unfold robertSargosReduced
   ring
 
-theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
+section
+variable {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
     (hH : 0 < H) (hQ : 0 < Q)
     (hh₁ : h₁ ∈ Set.Icc H (2*H)) (hh₂ : h₂ ∈ Set.Icc H (2*H))
+include r q₁ q₂ h₁ h₂ d H Q δ hH hQ hh₁ hh₂
+
+theorem robertSargos_displacement_positive 
     (hq₁ : q₁ ∈ Set.Icc Q (2*Q)) (hq₂ : q₂ ∈ Set.Icc Q (2*Q))
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
@@ -46,9 +49,7 @@ theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ
   have htail : |h₁*q₁^2-h₂*q₂^2| ≤ 8*H*Q^2 := by
     apply abs_le.mpr
     constructor <;> linarith [hb₁.1,hb₁.2,hb₂.1,hb₂.2]
-  have hsum : H*Q ≤ h₁*q₁+h₂*q₂ := by
-    have hm := mul_le_mul hh₁.1 hq₁.1 hQ.le hhp₁
-    nlinarith [mul_nonneg hhp₂ hqp₂]
+  have hsum : H*Q ≤ h₁*q₁+h₂*q₂ := by simp_all <;> nlinarith
   have hspos : 0 ≤ h₁*q₁+h₂*q₂ := by positivity
   have hprod : (h₁*q₁+h₂*q₂)*|d| ≤ (δ+8)*H*Q^2 := by
     calc
@@ -67,9 +68,7 @@ theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ
     _ ≤ (δ+8)*H*Q^2 := hprod
     _ = ((δ+8)*Q)*(H*Q) := by ring
 
-theorem robertSargos_displacement_same_sign {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
-    (hH : 0 < H) (hQ : 0 < Q)
-    (hh₁ : h₁ ∈ Set.Icc H (2*H)) (hh₂ : h₂ ∈ Set.Icc H (2*H))
+theorem robertSargos_displacement_same_sign 
     (hq₁ : |q₁| ∈ Set.Icc Q (2*Q)) (hq₂ : |q₂| ∈ Set.Icc Q (2*Q))
     (hsign : 0 < q₁*q₂)
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
@@ -86,5 +85,7 @@ theorem robertSargos_displacement_same_sign {r q₁ q₂ h₁ h₂ d H Q δ : �
       rwa [robertSargosReduced_neg]
     simpa only [abs_neg] using
       robertSargos_displacement_positive hH hQ hh₁ hh₂ hq₁ hq₂ hl he
+end
 
-end TaoTrudgianYang2025
+
+

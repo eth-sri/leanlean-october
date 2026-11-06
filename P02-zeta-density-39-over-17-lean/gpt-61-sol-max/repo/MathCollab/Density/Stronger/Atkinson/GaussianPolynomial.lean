@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see third_party/twelfth/LICENSE-MIT-0.
@@ -12,8 +13,7 @@ public import Mathlib.Tactic
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 /-- Gaussian integrability with an arbitrary natural absolute-value moment. -/
@@ -48,17 +48,13 @@ theorem integrable_exp_sub_mul_sq_mul_add_abs_pow
     intro i _hi
     exact (integrable_abs_pow_mul_exp_neg_mul_sq hB (j - i)).const_mul
       (Real.exp A * (j.choose i : ℝ) * C ^ i)
-  have hsum : Integrable (fun u : ℝ =>
-      ∑ i ∈ Finset.range (j + 1),
-        (Real.exp A * (j.choose i : ℝ) * C ^ i) *
-          (|u| ^ (j - i) * Real.exp (-B * u ^ 2))) :=
+  have hsum :=
     integrable_finsetSum (Finset.range (j + 1)) hterm
   apply hsum.congr
   filter_upwards with u
   rw [sub_eq_add_neg, Real.exp_add, add_pow]
   simp_rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro i _hi
-  ring_nf
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

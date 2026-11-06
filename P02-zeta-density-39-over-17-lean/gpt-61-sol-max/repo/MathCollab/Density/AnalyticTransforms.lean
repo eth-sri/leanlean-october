@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proofs adapted from Conor Grogan's prime-minor-arcs-2-15,
 commit f369f267b4dcfebf010c8e7baa2c9602e2960eba, Apache-2.0.
@@ -13,7 +14,7 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Real Complex Set MeasureTheory
+open Real Complex MeasureTheory
 open scoped BigOperators FourierTransform SchwartzMap ContDiff
 
 noncomputable section
@@ -39,7 +40,6 @@ theorem fourier_scaled_modulated
         (fun t : ℝ =>
           Complex.exp ((-2 * Real.pi * t * ((w - y) / A) : ℝ) * Complex.I) •
             psi t) (A * v) := by
-    simp only [sourcePhase, smul_eq_mul]
     calc
       Complex.exp ((-(2 * Real.pi * v * w) : ℝ) * Complex.I) *
           (psi (A * v) * Complex.exp ((2 * Real.pi * (y * v) : ℝ) * Complex.I)) =
@@ -58,11 +58,7 @@ theorem fourier_scaled_modulated
         (psi (A * v) * sourcePhase (y * v))) =
         ∫ v : ℝ, (fun t : ℝ =>
           Complex.exp ((-2 * Real.pi * t * ((w - y) / A) : ℝ) * Complex.I) •
-            psi t) (A * v) := by
-      apply integral_congr_ae
-      filter_upwards with v
-      convert hpoint v using 1
-      ring_nf
+            psi t) (A * v) := by simp_all
     _ = (A⁻¹ : ℝ) • ∫ t : ℝ,
         Complex.exp ((-2 * Real.pi * t * ((w - y) / A) : ℝ) * Complex.I) •
           psi t := by
@@ -96,7 +92,7 @@ theorem scaled_modulated_poisson
           Complex.ofRealCLM.contDiff.comp
             (show ContDiff ℝ ∞ (fun x : ℝ => 2 * Real.pi * (y * x)) by fun_prop)
       · exact contDiff_const
-  let h : SchwartzMap ℝ ℂ := hcompact.toSchwartzMap hsmooth
+  let h := hcompact.toSchwartzMap hsmooth
   calc
     ∑' ell : ℤ, psi (A * ell) * sourcePhase (y * ell) =
         ∑' ell : ℤ, h ell := by rfl
@@ -121,10 +117,7 @@ theorem mellinConvergent_one_of_compactSupport
   unfold MellinConvergent
   have hi : IntegrableOn f (Set.Ioi 0) :=
     (hf.integrable_of_hasCompactSupport hcompact).integrableOn
-  apply hi.congr_fun
-  intro x hx
-  simp
-  exact measurableSet_Ioi
+  simp_all
 
 /-- Mathlib's Mellin inversion theorem written on the literal source line
 `Re(s)=1`, with `s=1+ir`. -/
@@ -140,7 +133,7 @@ theorem mellin_inversion_line_one
             mellin f ((1 : ℂ) + r * Complex.I) := by
   have h := mellinInv_mellin_eq 1 f hx hconv hvertical hcontinuous
   rw [mellinInv] at h
-  simpa only [Complex.real_smul, Complex.ofReal_one, smul_eq_mul] using h.symm
+  exact h.symm
 
 def mellinLogLift (f : ℝ → ℂ) (u : ℝ) : ℂ :=
   (Real.exp (-u) : ℂ) * f (Real.exp (-u))
@@ -149,7 +142,7 @@ theorem mellinLogLift_contDiff
     {f : ℝ → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (mellinLogLift f) := by
   have hneg : ContDiff ℝ (⊤ : ℕ∞) (fun u : ℝ => -u) := contDiff_neg
-  have hexpR : ContDiff ℝ (⊤ : ℕ∞) (fun u : ℝ => Real.exp (-u)) :=
+  have hexpR :=
     Real.contDiff_exp.comp hneg
   have hexpC : ContDiff ℝ (⊤ : ℕ∞)
       (fun u : ℝ => (Real.exp (-u) : ℂ)) := by
@@ -200,12 +193,8 @@ theorem mellin_line_one_eq_fourier_logLift (f : ℝ → ℂ) (r : ℝ) :
           f (Real.exp (-u))) = mellinLogLift f := by
     funext u
     unfold mellinLogLift
-    simp only [add_re, one_re, mul_re, ofReal_re, I_re, mul_zero,
-      ofReal_im, I_im, zero_mul, sub_zero, neg_mul]
-    rw [Complex.ofReal_exp]
     simp
-  rw [hfun]
-  simp
+  simp_all
 
 /-- Literal arbitrary-order Mellin decay.  For every natural `k`, the
 scaled `k`th power times the Mellin transform is bounded by one explicit
@@ -222,7 +211,7 @@ theorem scaledPower_mul_norm_mellin_line_one_le_seminorm
           (mellinLogLift_hasCompactSupport ha hb hsupport)
           (mellinLogLift_contDiff hf)) : 𝓢(ℝ, ℂ)) := by
   rw [mellin_line_one_eq_fourier_logLift]
-  let psi : 𝓢(ℝ, ℂ) := mellinLogLiftSchwartz f
+  let psi := mellinLogLiftSchwartz f
     (mellinLogLift_hasCompactSupport ha hb hsupport)
     (mellinLogLift_contDiff hf)
   have hFourier :
@@ -235,4 +224,4 @@ theorem scaledPower_mul_norm_mellin_line_one_le_seminorm
   simpa only [psi, mellinLogLiftSchwartz, norm_iteratedFDeriv_zero,
     Real.norm_eq_abs] using h
 
-end MathCollab.Density.Transforms
+

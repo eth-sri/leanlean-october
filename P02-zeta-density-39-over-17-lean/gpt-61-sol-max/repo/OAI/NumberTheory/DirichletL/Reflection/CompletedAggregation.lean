@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss
+
+open scoped EisensteinEis
 
 theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (Z : ℝ),2≤Z → ∀ (parents : Finset (Ideal Eis)) (Q : Ideal Eis),
@@ -46,7 +46,7 @@ theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<
       intro A hA
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right hb hE
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

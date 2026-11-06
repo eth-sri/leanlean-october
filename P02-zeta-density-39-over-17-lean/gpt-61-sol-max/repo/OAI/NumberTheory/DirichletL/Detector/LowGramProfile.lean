@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
 
 @[expose] public section
@@ -7,10 +8,10 @@ namespace OAI
 
 noncomputable section
 open scoped Classical SchwartzMap
-open CompletedGauss
+
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def lowGramCoefficient (C : CalibrationData) (σ : RayRing)
@@ -31,13 +32,12 @@ lemma lowGramProfile_norm (W1 : ℝ→ℂ) (v r : ℝ) (hr : 0<r) :
 
 lemma lowGramScale_mul_star (Y : ℝ) (hY : 0<Y) :
     lowGramScale Y*star (lowGramScale Y)=((Y^3:ℝ):ℂ)⁻¹ := by
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hs : (Real.sqrt Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hY).ne'
+  have hy := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hs := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hY).ne'
   have hsquare : (Real.sqrt Y:ℂ)^2=(Y:ℂ) := by exact_mod_cast Real.sq_sqrt hY.le
   simp only [lowGramScale,map_mul,map_inv₀,Complex.star_def,Complex.conj_ofReal,Complex.ofReal_pow]
   field_simp
-  ring_nf
-  rw [hsquare]
+  simp_all
 
 theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) :
@@ -47,7 +47,7 @@ theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
   have hq : (0:ℝ)<Ideal.absNorm s.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
   have hr : 0<(Ideal.absNorm s.val:ℝ)/Y := div_pos hq hY
-  have hrc : (((Ideal.absNorm s.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr.ne'
+  have hrc := Complex.ofReal_ne_zero.mpr hr.ne'
   have hsqrt : Real.sqrt (Ideal.absNorm s.val:ℝ)=
       Real.sqrt Y*Real.sqrt ((Ideal.absNorm s.val:ℝ)/Y) := by
     rw [←Real.sqrt_mul hY.le,mul_div_cancel₀ _ hY.ne']
@@ -68,7 +68,7 @@ theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
       _ = _ := by rw [hp];unfold lowGramScale lowGramProfile;ring_nf
   · simp
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

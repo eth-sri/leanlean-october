@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped EisensteinO
 
 def radialMellinPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
     (D : Ideal O) (W0 : SchwartzMap ℝ ℂ) (W1 : ℝ→ℂ) (X Y Z σ : ℝ) : ℂ :=
@@ -63,7 +63,7 @@ theorem markedPhysicalProbe_eq_radial_mellin (η : HeckeFamily.Character)
       W0 a b ha hW _ σ hK hσ _ p.1 p.2
   · rfl
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

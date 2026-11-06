@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginal
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferencePhysicalBounded
 public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionSymmetric
@@ -15,16 +16,17 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthHighBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
 open CenteredMomentEnergyOriginalHighReflectionSymmetric (balanced_four_scale_gates)
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyOriginalProfileControl
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
+
 local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 lemma low_restrict (Q:Ideal O)(a b bΦ Bmask L L' Mcap e Z:ℝ)
@@ -47,7 +49,7 @@ theorem actual_high_from_physical
       ∀(e emass efinal:ℝ)(Q:Ideal O)(K Cmass:ℝ),
       0≤e→0≤K→0≤Cmass→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       ZeroLowAt Q a b bΦ Bmask (Mcap+Bmask+rho/100) Mcap e Z degree S K→
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q→ rho≤s.width→s.width≤Mcap→
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q→ rho≤ s.width→s.width≤Mcap→
       ∀(p:Profiles a b)(t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂),X₁*X₂≤Z^B→
       5*s.width/6≤length Z X₁+length Z X₂→
       let inp:=balancedInput s p ha t X₁ X₂ hX₁ hX₂;
@@ -69,15 +71,15 @@ theorem actual_high_from_physical
   intro degree S Jmass Smass
   obtain ⟨Ju,Uu,Cu,hCu,huBound⟩:=huStage S
   obtain ⟨Jr,Ur,Cr,hCr,hrBound⟩:=hrStage S
-  let U:Finset (ℕ×ℕ):=insert (0,0) (Smass∪Uu∪Ur)
-  let Jout:ℕ:=Jmass+Ju+Jr
+  let U :=insert (0,0) (Smass∪Uu∪Ur)
+  let Jout :=Jmass+Ju+Jr
   let P:ℝ:=1
-  let D:ℝ:=Cdiag*P*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
-  let T:ℝ:=Ctail*P*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
+  let D :=Cdiag*P*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
+  let T :=Ctail*P*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
   have hP:0≤P:=by norm_num [P]
   have hD:0≤D:=by dsimp [D];positivity
   have hT:0≤T:=by dsimp [T];positivity
-  let Cfixed:ℝ:=Cu+2*Cr+2*D+2*T+2
+  let Cfixed :=Cu+2*Cr+2*D+2*T+2
   have hCfixed:0<Cfixed:=by dsimp [Cfixed];positivity
   refine ⟨Jout,U,Cfixed,hCfixed,?_⟩
   filter_upwards [huBound,hrBound] with Z hZu hZ
@@ -90,12 +92,12 @@ theorem actual_high_from_physical
   have hlowU:=low_restrict Q a b bΦ Bmask _ Lu Mcap e Z degree S K hZ.1.le hLuCap hlow
   have hlowR:=low_restrict Q a b bΦ Bmask _ Lr Mcap e Z degree S K hZ.1.le hLrCap hlow
   have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hscale:0≤s.radial.scale:=s.radial.scale_pos.le
+  have hscale:0≤ s.radial.scale:=s.radial.scale_pos.le
   have hdg:=diagonalControl_nonneg s.radial.profile
   have hbase:1≤1+|t|:=by exact le_add_of_nonneg_right (abs_nonneg t)
-  let Mout:ℝ:=max s.width (length Z X₁+length Z X₂)
+  let Mout :=max s.width (length Z X₁+length Z X₂)
   have hwm:s.width≤Mout:=le_max_left _ _
-  let F:ℝ:=(p.control U)^2*(1+|t|)^Jout*Z^(Mout+efinal)
+  let F :=(p.control U)^2*(1+|t|)^Jout*Z^(Mout+efinal)
   have hF:0≤F:=by dsimp [F];positivity
   have henv (Sj:Finset (ℕ×ℕ))(jj:ℕ)(ej:ℝ)(hSj:Sj⊆U)(hjj:jj≤Jout)(hej:ej≤efinal):
       (p.control Sj)^2*(1+|t|)^jj*Z^(s.width+ej)≤F:=by
@@ -117,7 +119,7 @@ theorem actual_high_from_physical
       linarith only [hCr, hD, hT]
     exact mul_le_mul hCuC (by linarith only [hCmass])
       (by linarith only [hK]) hCfixed.le
-  by_cases hshort:min (length Z X₁) (length Z X₂)≤s.width/4
+  by_cases hshort:min (length Z X₁) (length Z X₂)≤ s.width/4
   · have hunbalanced:=hZu.2 e Q degree K he hK hlowU s hQ hwidthLo hwidth
       p t X₁ X₂ hX₁ hX₂ hshort hlarge
     have heq:=henv Uu Ju (e+ε) hu hju hefinal
@@ -190,8 +192,8 @@ theorem actual_high_from_physical
     rw [hex]
     nlinarith only [hsum,href,hfinish]
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthHighBound
 
-end
 
-end OAI
+
+
+

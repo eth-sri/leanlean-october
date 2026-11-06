@@ -12,12 +12,12 @@ two source indices whose coefficient cells meet satisfy every simultaneous
 distance-to-an-integer condition in the concrete finite count `mathcal N`.
 -/
 
-open Finset Set MeasureTheory Metric
+open Finset Set MeasureTheory
 open scoped BigOperators ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem unitAddCircle_dist_real_coe
     (a b : ℝ) :
@@ -121,6 +121,6 @@ theorem integral_heathBrownNu_sq_le_pairCount
   · exact measureReal_nonneg
 
 
-end
 
-end GafniTao
+
+

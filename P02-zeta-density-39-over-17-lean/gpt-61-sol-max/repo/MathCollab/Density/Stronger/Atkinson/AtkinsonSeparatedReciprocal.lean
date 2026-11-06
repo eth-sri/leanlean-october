@@ -10,12 +10,11 @@ public import MathCollab.Density.Stronger.Atkinson.SeparatedReciprocal
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
-noncomputable section
+
+
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinson_isSeparated_div {G : ℝ} {W : Finset ℝ}
@@ -76,4 +75,4 @@ theorem atkinson_sum_inv_gap_le_harmonic_ceil {G L : ℝ} {W S : Finset ℝ} {t 
   have hm := mul_le_mul_of_nonneg_left h hG.le
   field_simp at hm
   exact hm
-end MathCollab.Density.Stronger.Atkinson
+

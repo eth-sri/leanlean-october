@@ -4,9 +4,8 @@ public import GuthMaynard.Improvement.SpectralMassAssembly
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory InnerProductSpace Filter Set
+
+open MeasureTheory InnerProductSpace Filter
 open scoped InnerProductSpace Topology
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -58,4 +57,4 @@ theorem operator_finite_signed_spectral_comparison [FiniteDimensional ℂ E]
   rw [hcubes.1, hcubes.2, Complex.ofReal_re]
   exact hp.trans hd
 
-end Montgomery.RationalMoment
+

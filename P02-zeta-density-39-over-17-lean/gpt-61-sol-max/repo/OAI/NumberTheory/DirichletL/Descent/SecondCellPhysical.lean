@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.PriorityProfile
 public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 
@@ -10,23 +11,29 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic
+open InverseSecondSourceBlocks
+
+open scoped EisensteinO
 
 def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=
   Real.logb Z (X/(scales d 0*scales d 2))
 
-theorem second_cell_column_scale (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X) :
+section
+variable (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
+include Z X d hZ hX
+
+theorem second_cell_column_scale  :
     Z^(secondCellColumnExponent Z X d)=X/(scales d 0*scales d 2) := by
   exact Real.rpow_logb (by linarith) (ne_of_gt hZ)
     (div_pos hX (mul_pos (dyadScale_pos _) (dyadScale_pos _)))
 
-theorem second_cell_physical_scale (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X) :
+theorem second_cell_physical_scale  :
     scales d 0*scales d 2*Z^(secondCellColumnExponent Z X d)=X := by
   rw [second_cell_column_scale Z X d hZ hX]
   field_simp [scales,ne_of_gt (dyadScale_pos (d 0)),ne_of_gt (dyadScale_pos (d 2))]
+end
+
 
 theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
     (hb:1≤b) (hsource:scales d 0*scales d 2≤b*X) :
@@ -34,7 +41,7 @@ theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
     Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d)≤b := by
   let N:=secondCellColumnExponent Z X d
   have hz:0<Z:=lt_trans zero_lt_one hZ
-  have hn:Z^N=X/(scales d 0*scales d 2):=second_cell_column_scale Z X d hZ hX
+  have hn :=second_cell_column_scale Z X d hZ hX
   constructor
   · exact Real.one_le_rpow hZ.le (sub_nonneg.mpr (le_max_right _ _))
   · by_cases hN:0≤N
@@ -50,7 +57,7 @@ theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
     ∀x∈source,∀i,InverseSecondChildWindows.actualOuterRatios p x
       (scales d 0) (scales d 1) (scales d 2) (scales d 3) i∈Set.Icc 1 2 := by
   intro x hx i
-  have hxcell:x∈cell p source d:=(mem_cell p source d x).mpr ⟨hx,hcell x hx⟩
+  have hxcell :=(mem_cell p source d x).mpr ⟨hx,hcell x hx⟩
   have hr:=cell_ratios p hp source hk d x hxcell i
   have he:InverseSecondChildWindows.actualOuterRatios p x
       (scales d 0) (scales d 1) (scales d 2) (scales d 3) i=outerNorms p x i/scales d i := by
@@ -59,8 +66,8 @@ theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
   rw [he]
   exact ⟨hr.1,hr.2.le⟩
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

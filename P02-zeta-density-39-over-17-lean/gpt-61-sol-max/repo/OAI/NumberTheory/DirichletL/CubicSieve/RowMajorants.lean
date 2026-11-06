@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.IntegratedTransfer
 
 @[expose] public section
@@ -9,79 +10,74 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
 
-end
 section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
@@ -96,7 +92,7 @@ theorem exists_rowMajorant : ∃ W : 𝓢(ℝ, ℂ),
     (∀ s : ℝ, 2 < s → W s = 0) := by
   obtain ⟨U, hUc, hUs, hUone, hUts, hUzero⟩ :=
     FourierBridge.exists_complex_smooth_cutoff 1 (by norm_num)
-  let f : ℝ → ℂ := fun s => U s * star (U s)
+  let f := fun s => U s * star (U s)
   have hfc : HasCompactSupport f := hUc.mul_right
   have hfs : ContDiff ℝ ∞ f := hUs.mul (Complex.conjCLE.contDiff.comp hUs)
   refine ⟨hfc.toSchwartzMap hfs, ?_, ?_, ?_⟩
@@ -113,20 +109,25 @@ theorem exists_rowMajorant : ∃ W : 𝓢(ℝ, ℂ),
     have hUz : U s = 0 := by
       by_contra hne
       have hu := hUts (subset_tsupport U (by exact hne))
-      norm_num at hu
-      linarith [hu.2]
+      grind
     simp [hUz]
 
 def rowMajorant : 𝓢(ℝ, ℂ) := Classical.choose exists_rowMajorant
 
-lemma rowMajorant_nonneg (s : ℝ) : 0 ≤ (rowMajorant s).re :=
+section
+variable (s : ℝ)
+include s
+
+lemma rowMajorant_nonneg  : 0 ≤ (rowMajorant s).re :=
   (Classical.choose_spec exists_rowMajorant).1 s
 
-lemma rowMajorant_one (s : ℝ) (hs : |s| ≤ 1) : rowMajorant s = 1 :=
+lemma rowMajorant_one  (hs : |s| ≤ 1) : rowMajorant s = 1 :=
   (Classical.choose_spec exists_rowMajorant).2.1 s hs
 
-lemma rowMajorant_zero (s : ℝ) (hs : 2 < s) : rowMajorant s = 0 :=
+lemma rowMajorant_zero  (hs : 2 < s) : rowMajorant s = 0 :=
   (Classical.choose_spec exists_rowMajorant).2.2 s hs
+end
+
 
 def rowMajorantBall (Y : ℝ) : Finset O := ShortDraftLatticeCount.rowNormBall (Nat.ceil (2 * Y))
 
@@ -142,20 +143,30 @@ lemma rowMajorant_zero_outside (Y : ℝ) (hY : 0 < Y) (z : O)
   apply (lt_div_iff₀ hY).2
   linarith [Nat.le_ceil (2 * Y)]
 
-lemma rowMajorant_tsum_eq_sum (P : O → ℂ) (Y : ℝ) (hY : 0 < Y) :
+section
+variable (P : O → ℂ)
+include P
+
+section
+variable (Y : ℝ) (hY : 0 < Y)
+include Y hY
+
+lemma rowMajorant_tsum_eq_sum  :
     (∑' z : O, rowMajorant (‖eisEmbedding z‖ ^ 2 / Y) * (↑(‖P z‖ ^ 2) : ℂ)) =
       ∑ z ∈ rowMajorantBall Y, rowMajorant (‖eisEmbedding z‖ ^ 2 / Y) * (↑(‖P z‖ ^ 2) : ℂ) := by
   apply tsum_eq_sum
   intro z hz
   rw [rowMajorant_zero_outside Y hY z hz, zero_mul]
 
-lemma rowMajorant_summable (P : O → ℂ) (Y : ℝ) (hY : 0 < Y) :
+lemma rowMajorant_summable  :
     Summable (fun z : O => rowMajorant (‖eisEmbedding z‖ ^ 2 / Y) * (↑(‖P z‖ ^ 2) : ℂ)) := by
   apply (hasSum_sum_of_ne_finset_zero (s := rowMajorantBall Y) ?_).summable
   intro z hz
   rw [rowMajorant_zero_outside Y hY z hz, zero_mul]
+end
 
-theorem finite_row_energy_le_rowMajorant (P : O → ℂ) (T : Finset O)
+
+theorem finite_row_energy_le_rowMajorant  (T : Finset O)
     (Y : ℝ) (hY : 0 < Y)
     (hT : ∀ z ∈ T, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ Y) :
     (∑ z ∈ T, ‖P z‖ ^ 2) ≤
@@ -175,8 +186,10 @@ theorem finite_row_energy_le_rowMajorant (P : O → ℂ) (T : Finset O)
     _ ≤ _ := by
       apply (Complex.hasSum_re hs.hasSum).summable.sum_le_tsum
       intro z hz
-      simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+      simp only [mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero]
       exact mul_nonneg (rowMajorant_nonneg _) (sq_nonneg _)
+end
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -228,8 +241,12 @@ def secondChildKernelPair (F V : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
     secondChildColumn p hp hcop hg Ψ₂ (m * r) (c * e * ∏ i ∈ V, p i)
       (d * e * k₂) (fun _ => 1) M * K (V ∪ N) (V ∪ M)
 
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hinj
+
 theorem secondPreKernelPair_eq_children
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k₁ k₂ : O)
     (K : Finset ι → Finset ι → ℂ) :
@@ -248,26 +265,29 @@ theorem secondPreKernelPair_eq_children
   intro N hN
   apply Finset.sum_congr rfl
   intro M hM
-  have hdN : Disjoint V N := Finset.disjoint_of_subset_right
+  have hdN := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hN) disjoint_sdiff_self_right
-  have hdM : Disjoint V M := Finset.disjoint_of_subset_right
+  have hdM := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hM) disjoint_sdiff_self_right
   rw [secondPreColumn_union p hp hcop hg hpr Ψ₁ m r c d e k₁ (fun _ => 1) V N hdN,
     secondPreColumn_union p hp hcop hg hpr Ψ₂ m r c d e k₂ (fun _ => 1) V M hdM, star_mul]
   ring
 
-def secondKernelPair (hinj : Function.Injective (fun i => Ideal.span {p i}))
+def secondKernelPair 
     (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
     (K : Finset ι → Finset ι → ℂ) : ℂ :=
   ∑ S ∈ F.powerset, ∑ T ∈ F.powerset, if Disjoint S T then
     secondGaussTerm p hp hg hinj Ψ₁ Ψ₂ m r c d e k (fun _ => 1) (fun _ => 1) S T * K S T else 0
 
-theorem secondKernelPair_eq_pre
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+section
+variable (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
-    (K : Finset ι → Finset ι → ℂ) :
+    (K : Finset ι → Finset ι → ℂ)
+include hc hpr F Ψ₁ Ψ₂ m r c d e k K
+
+theorem secondKernelPair_eq_pre
+     :
     secondKernelPair p hp hg hinj F Ψ₁ Ψ₂ m r c d e k K =
       ∑ z : SecondRayIndex, secondRayCoefficient z *
         secondPreKernelPair p hp hcop hg F (secondRayMinus Ψ₁ z) (secondRayPlus Ψ₂ z)
@@ -301,19 +321,17 @@ theorem secondKernelPair_eq_pre
       simp only [secondPreKernelPair, Finset.mul_sum]
 
 theorem secondKernelPair_eq_children
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
-    (K : Finset ι → Finset ι → ℂ) :
+     :
     secondKernelPair p hp hg hinj F Ψ₁ Ψ₂ m r c d e k K =
       ∑ z : SecondRayIndex, ∑ V ∈ F.powerset,
         secondTotalWeight p hp hcop hg Ψ₁ Ψ₂ m r c d e k (z,V) *
           secondChildKernelPair p hp hcop hg F V (secondRayMinus Ψ₁ z) (secondRayPlus Ψ₂ z)
             m r c d e k (-k) K := by
   rw [secondKernelPair_eq_pre p hp hcop hg hinj hc hpr]
-  simp only [secondPreKernelPair_eq_children p hp hcop hg hinj hpr,
-    secondTotalWeight, Finset.mul_sum, mul_assoc]
+  simp only [secondPreKernelPair_eq_children p hp hcop hg hinj hpr, mul_sum, secondTotalWeight, mul_assoc]
+end
+end
+
 
 end SecondPassArithmetic
 
@@ -358,23 +376,37 @@ def primitiveSigmaEquiv : PrimitiveRow ≃ Σ c : LevelLower, AdmissibleDenomina
     fin_cases i <;> rfl
   right_inv p := by rfl
 
-abbrev DenominatorResidue (c : O) := O ⧸ Ideal.span {3*c}
-def denominatorRep (c : O) (r : DenominatorResidue c) : O :=
+section
+variable (c : O)
+include c
+
+abbrev DenominatorResidue  := O ⧸ Ideal.span {3*c}
+section
+variable (r : DenominatorResidue c)
+include r
+
+def denominatorRep  : O :=
   GaussianShiftedPartition.representative (3*c) r
-lemma denominatorRep_spec (c : O) (r : DenominatorResidue c) :
+lemma denominatorRep_spec  :
     Ideal.Quotient.mk (Ideal.span {3*c}) (denominatorRep c r)=r :=
   GaussianShiftedPartition.representative_spec (3*c) r
-abbrev AdmissibleResidue (c : O) :=
+end
+
+abbrev AdmissibleResidue  :=
   {r : DenominatorResidue c // denominatorCondition c (denominatorRep c r)}
 
-lemma finite_admissibleResidue (c : O) (hc : c ≠ 0) : Finite (AdmissibleResidue c) := by
+lemma finite_admissibleResidue  (hc : c ≠ 0) : Finite (AdmissibleResidue c) := by
   let : Finite (DenominatorResidue c) := finite_quotient_span (mul_ne_zero (by norm_num) hc)
   infer_instance
 
-def residueDenominatorMap (c : O) (p : AdmissibleResidue c × O) : AdmissibleDenominator c :=
+def residueDenominatorMap  (p : AdmissibleResidue c × O) : AdmissibleDenominator c :=
   ⟨denominatorRep c p.1.1+3*c*p.2,(denominatorCondition_shift c _ _).2 p.1.2⟩
 
-lemma residueDenominatorMap_bijective (c : O) (hc : c ≠ 0) :
+section
+variable (hc : c ≠ 0)
+include hc
+
+lemma residueDenominatorMap_bijective  :
     Function.Bijective (residueDenominatorMap c) := by
   have h3c : 3*c ≠ 0 := mul_ne_zero (by norm_num) hc
   have hq (r : DenominatorResidue c) (n : O) :
@@ -410,9 +442,12 @@ lemma residueDenominatorMap_bijective (c : O) (hc : c ≠ 0) :
     apply Subtype.ext
     exact hd.symm
 
-def residueDenominatorEquiv (c : O) (hc : c ≠ 0) :
+def residueDenominatorEquiv  :
     AdmissibleResidue c × O ≃ AdmissibleDenominator c :=
   Equiv.ofBijective (residueDenominatorMap c) (residueDenominatorMap_bijective c hc)
+end
+end
+
 
 def primitiveTerm (z : ℂ) (v : ℝ) (s : ℂ) (c d : O) : ℂ :=
   eisEmbedding (symbol c d) *
@@ -449,7 +484,7 @@ open scoped BigOperators Classical ENNReal
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinEmbedding EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def periodBasis : Basis (Fin 2) ℝ ℂ :=
   Complex.basisOneI.map (eisensteinLatticeMap 3 (by norm_num)).toLinearEquiv
@@ -479,7 +514,6 @@ lemma three_embedding_mem (n : O) : 3*eisEmbedding n ∈ periodLattice := by
   rw [periodBasis_zero,periodBasis_one] at h
   convert h using 1
   conv_lhs => rw [← ActualEisensteinCoordinates.eval_coords n,eisEmbedding_eval]
-  simp only [zsmul_eq_mul,]
   ring
 
 def periodPoint (n : O) : periodLattice := ⟨3*eisEmbedding n,three_embedding_mem n⟩
@@ -538,8 +572,8 @@ lemma periodDomain_volume : volume periodDomain=ENNReal.ofReal (9*Real.sqrt 3/2)
   rw [abs_of_nonneg (by positivity)]
   ring
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

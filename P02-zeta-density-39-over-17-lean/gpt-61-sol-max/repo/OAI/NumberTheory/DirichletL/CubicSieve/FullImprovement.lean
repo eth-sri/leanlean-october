@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.AnnularImprovement
 
 @[expose] public section
@@ -7,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open ActualEisensteinCubic
 open CanonicalQuadraticSieve (columnDyadicLength)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 lemma improved_shape_shell (M N Y ξ : ℝ) (hM : 0 < M) (hN : 0 < N) (hY : 0 ≤ Y)
     (hYN : Y ≤ 2*N) (hξ : 1 ≤ ξ) (hξ2 : ξ ≤ 2) :
@@ -19,13 +20,11 @@ lemma improved_shape_shell (M N Y ξ : ℝ) (hM : 0 < M) (hN : 0 < N) (hY : 0 �
   have hp : (2:ℝ)^(2/3 : ℝ) ≤ 8 := by
     have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2)
       (by norm_num : (2/3 : ℝ)≤3)
-    norm_num at hh ⊢
-    exact hh
+    bound
   have hq : (2:ℝ)^(2*ξ-1) ≤ 8 := by
     have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2)
       (show 2*ξ-1 ≤ 3 by linarith)
-    norm_num at hh
-    exact hh
+    bound
   have hcross := Real.rpow_le_rpow (mul_nonneg hM.le hY)
     (mul_le_mul_of_nonneg_left hYN hM.le) (by norm_num : (0:ℝ)≤2/3)
   have hsec := Real.rpow_le_rpow hY hYN (show 0 ≤ 2*ξ-1 by linarith)
@@ -44,8 +43,7 @@ lemma improved_loss_shell (N Y θ : ℝ) (hN : 0 ≤ N) (hY : 0 ≤ Y) (hYN : Y 
   have hp : (2:ℝ)^(6*θ) ≤ 8 := by
     have he := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2)
       (show 6*θ ≤ 3 by linarith)
-    norm_num at he
-    exact he
+    bound
   exact hh.trans (mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg hN _))
 
 theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
@@ -114,7 +112,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = (64*K*D)*(N^θ*N^(6*θ))*S*∑ j, ‖a j‖^2 := by dsimp [D]; ring
     _ = _ := by rw [hp]
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,11 +11,10 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorMass
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -37,7 +37,6 @@ theorem zetaDivisorLatticePhase_nat (n : ℕ) : zetaDivisorLatticePhase n = 1 :=
 theorem contDiff_zetaDivisorLatticePhase : ContDiff ℝ ∞ zetaDivisorLatticePhase := by
   have hcast : ContDiff ℝ ∞ (fun x : ℝ => (x : ℂ)) := Complex.ofRealCLM.contDiff
   unfold zetaDivisorLatticePhase
-  push_cast
   fun_prop
 
 theorem norm_zetaAtkinsonDivisorTest (T G L x : ℝ) :
@@ -55,12 +54,15 @@ theorem support_zetaAtkinsonDivisorTest (T G L : ℝ) :
   rw [← norm_ne_zero_iff, norm_zetaAtkinsonDivisorTest]
   exact norm_ne_zero_iff
 
-theorem contDiff_zetaAtkinsonDivisorTest {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) : ContDiff ℝ ∞ (zetaAtkinsonDivisorTest T G L) :=
+section
+variable {T G L : ℝ}
+    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
+include T G L hT hG hL
+
+theorem contDiff_zetaAtkinsonDivisorTest  : ContDiff ℝ ∞ (zetaAtkinsonDivisorTest T G L) :=
   contDiff_zetaDivisorLatticePhase.mul (contDiff_zetaSmoothDivisorTest hT hG hL)
 
-def zetaAtkinsonDivisorVoronoiTest {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) :
+def zetaAtkinsonDivisorVoronoiTest  :
     DFIVoronoiTestFunction (zetaAtkinsonDivisorTest T G L) where
   lower := zetaDivisorBandEdge T G (-2 * L)
   upper := zetaDivisorBandEdge T G (2 * L)
@@ -70,6 +72,8 @@ def zetaAtkinsonDivisorVoronoiTest {T G L : ℝ}
   support_subset := by
     rw [support_zetaAtkinsonDivisorTest]
     exact support_zetaSmoothDivisorTest hT hG hL
+end
+
 
 theorem zetaSmoothDivisorSum_eq_atkinson_test (T G L : ℝ) :
     zetaSmoothDivisorSum T G L = ∑' n : ℕ, divisorWeight n * zetaAtkinsonDivisorTest T G L n := by
@@ -77,4 +81,4 @@ theorem zetaSmoothDivisorSum_eq_atkinson_test (T G L : ℝ) :
   intro n
   rw [zetaAtkinsonDivisorTest_nat]
 
-end MathCollab.Density.Stronger.Atkinson
+

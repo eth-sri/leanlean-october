@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedSource
 
 @[expose] public section
@@ -9,7 +10,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
   (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -32,8 +33,7 @@ theorem prime_dvd_reopened_index (S : Finset ι) (v : ι→₀ℕ) (i : ι) :
   simp only [primeProduct,pow_one,Nat.zero_lt_one,and_true] at hs
   rw [hi.dvd_mul,hi.dvd_pow_iff_dvd (by decide : (3:ℕ)≠0),hs,
     prime_dvd_span_primeProduct p hinj v.support v i,Finset.mem_union]
-  have hv : i∈v.support ↔ 0<v i := by rw [Finsupp.mem_support_iff]; omega
-  tauto
+  grind
 
 include hinj in
 
@@ -46,7 +46,7 @@ theorem reopened_whole_mark_divisibility (slots : Finset σ) (lists : σ→Finse
   unfold primeMark primeSlot
   simp_rw [prime_dvd_reopened_index p hinj]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

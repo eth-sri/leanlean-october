@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassWeighted
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
+open InverseFirstPriorityParents
 open InverseMomentGlobalPrincipalMass
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_tail_mass (Jmax : ℕ) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
@@ -47,7 +47,7 @@ theorem original_tail_mass (Jmax : ℕ) :
   norm_num
   ring
 
-end SevenEighths.InverseMomentGlobalPriorityTail
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownInteriorShift
 
 @[expose] public section
@@ -12,14 +13,14 @@ the result back to the literal nonnegative real expression, retaining every
 factor before the source exponent algebra is applied.
 -/
 
-open Set
+
 open scoped ENNReal
 
 namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownLemmaOneExpandedRealBound
+def heathBrownLemmaOneExpandedRealBound
     (N k : ℕ) (A lambda epsilon C : ℝ) : ℝ :=
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
@@ -128,10 +129,9 @@ theorem norm_heathBrownExponentialSum_le_expanded_of_source
     finiteness
   have htoReal := ENNReal.toReal_mono hfinite hraw
   rw [heathBrownLemmaOneRawBound_toReal hk hN hA hlambda hsmall hC] at htoReal
-  rw [ENNReal.toReal_ofReal (norm_nonneg _)] at htoReal
-  exact htoReal
+  simp_all
 
 
-end
 
-end GafniTao
+
+

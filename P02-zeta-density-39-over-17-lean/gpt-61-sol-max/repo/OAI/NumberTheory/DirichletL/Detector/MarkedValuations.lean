@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma prime_dvd_iff_valuation (P : PrimeIdeal) (I : Id) (hI : I≠0) :
@@ -71,7 +71,7 @@ lemma markedIdealHighSummand_mark (S : Finset Id) (D : Id) (η : HeckeFamily.Cha
       (if D∣I*J^3 then 1 else 0)*markedIdealHighSummand S 1 η u x w z I J K L := by
   rw [markedIdealHighSummand,highIdealMask_mark,markedIdealHighSummand,mul_assoc]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

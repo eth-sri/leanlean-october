@@ -14,14 +14,20 @@ namespace SevenEighths.HeckeFamily
 
 private instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
-def idealCoeff (χ : Character) : Ideal O →*₀ ℂ :=
+section
+variable (χ : Character)
+include χ
+
+def idealCoeff  : Ideal O →*₀ ℂ :=
   IdealCharacter.ofResidue χ.modulus χ.residue χ.unit_trivial
 
-@[simp] theorem idealCoeff_zero (χ : Character) : idealCoeff χ 0 = 0 := map_zero _
+@[simp] theorem idealCoeff_zero  : idealCoeff χ 0 = 0 := map_zero _
 
-theorem idealCoeff_span (χ : Character) {z : O} (hz : z ≠ 0) :
+theorem idealCoeff_span  {z : O} (hz : z ≠ 0) :
     idealCoeff χ (Ideal.span {z}) = elementCoeff χ z :=
   IdealCharacter.ofResidue_span χ.modulus χ.residue χ.unit_trivial hz
+end
+
 
 theorem coordinateElement_eq_baseline (a b : ℤ) :
     coordinateElement a b = ActualEisensteinCoordinates.eval a b := rfl
@@ -41,13 +47,21 @@ theorem normForm_eq_absNorm_span (n : ℤ × ℤ) :
     ActualEisensteinCubic.eisEmbedding_eval_norm_sq]
   simp only [EisensteinTheta.normForm, Int.cast_add, Int.cast_sub, Int.cast_mul, pow_two]
 
-def elementTerm (χ : Character) (s : ℂ) (z : O) : ℂ :=
+section
+variable (χ : Character)
+include χ
+
+section
+variable (s : ℂ)
+include s
+
+def elementTerm  (z : O) : ℂ :=
   elementCoeff χ z / (Ideal.absNorm (Ideal.span {z}) : ℂ) ^ s
 
-def idealTerm (χ : Character) (s : ℂ) (I : Ideal O) : ℂ :=
+def idealTerm  (I : Ideal O) : ℂ :=
   idealCoeff χ I / (Ideal.absNorm I : ℂ) ^ s
 
-theorem elementTerm_coordinate (χ : Character) (s : ℂ) (n : ℤ × ℤ) :
+theorem elementTerm_coordinate  (n : ℤ × ℤ) :
     elementTerm χ s (coordinateEquiv n) =
       elementCoeff χ (coordinateElement n.1 n.2) /
         (EisensteinTheta.normForm n.1 n.2 : ℂ) ^ s := by
@@ -55,23 +69,25 @@ theorem elementTerm_coordinate (χ : Character) (s : ℂ) (n : ℤ × ℤ) :
     (Ideal.absNorm (Ideal.span {coordinateElement n.1 n.2}) : ℂ) ^ s = _
   rw [normForm_eq_absNorm_span]
   rw [Complex.ofReal_natCast]
+end
 
-theorem elementTerm_hasSum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
+
+theorem elementTerm_hasSum  {s : ℂ} (hs : 1 < s.re) :
     HasSum (elementTerm χ s) (continuedLattice χ s) := by
   apply coordinateEquiv.hasSum_iff.mp
   change HasSum (fun n => elementTerm χ s (coordinateEquiv n)) _
   simpa only [elementTerm_coordinate] using continuedLattice_hasSum χ hs
 
-theorem elementTerm_zero (χ : Character) {s : ℂ} (hs : s ≠ 0) :
+theorem elementTerm_zero  {s : ℂ} (hs : s ≠ 0) :
     elementTerm χ s 0 = 0 := by
   simp [elementTerm, Complex.zero_cpow hs]
 
-theorem elementTerm_unit_mul (χ : Character) (s : ℂ) (u : Oˣ) (z : O) :
+theorem elementTerm_unit_mul  (s : ℂ) (u : Oˣ) (z : O) :
     elementTerm χ s ((u : O) * z) = elementTerm χ s z := by
   unfold elementTerm
   rw [elementCoeff_unit_mul, Ideal.span_singleton_mul_left_unit u.isUnit]
 
-theorem elementTerm_idealGenerator (χ : Character) (s : ℂ)
+theorem elementTerm_idealGenerator  (s : ℂ)
     (I : UnrestrictedIdealReindex.NonzeroIdeal) :
     elementTerm χ s (ConcretePrimeRowBridge.idealGenerator I.val) = idealTerm χ s I.val := by
   unfold elementTerm idealTerm
@@ -80,7 +96,7 @@ theorem elementTerm_idealGenerator (χ : Character) (s : ℂ)
   exact (IdealCharacter.ofResidue_of_generator χ.modulus χ.residue χ.unit_trivial
     I.property (ConcretePrimeRowBridge.span_idealGenerator I.val)).symm
 
-theorem continuedLattice_eq_six_ideal_tsum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
+theorem continuedLattice_eq_six_ideal_tsum  {s : ℂ} (hs : 1 < s.re) :
     continuedLattice χ s = 6 * ∑' I : Ideal O, idealTerm χ s I := by
   have hs₀ : s ≠ 0 := by intro h; norm_num [h] at hs
   have h := UnrestrictedIdealReindex.tsum_unit_invariant_of_zero (elementTerm χ s)
@@ -95,14 +111,14 @@ theorem continuedLattice_eq_six_ideal_tsum (χ : Character) {s : ℂ} (hs : 1 < 
     exact hI (by rw [hzero]; unfold idealTerm; rw [map_zero]; exact zero_div _)
   rwa [hsum] at h
 
-def LFunction (χ : Character) (s : ℂ) : ℂ := continuedLattice χ s / 6
+def LFunction  (s : ℂ) : ℂ := continuedLattice χ s / 6
 
-theorem LFunction_eq_ideal_tsum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
+theorem LFunction_eq_ideal_tsum  {s : ℂ} (hs : 1 < s.re) :
     LFunction χ s = ∑' I : Ideal O, idealTerm χ s I := by
   rw [LFunction, continuedLattice_eq_six_ideal_tsum χ hs]
   ring
 
-theorem LFunction_differentiableAt (χ : Character) {s : ℂ}
+theorem LFunction_differentiableAt  {s : ℂ}
     (hs₀ : s ≠ 0) (hs₁ : s ≠ 1 ∨ χ.residue ≠ 1) :
     DifferentiableAt ℂ (LFunction χ) s := by
   apply DifferentiableAt.div_const
@@ -110,12 +126,14 @@ theorem LFunction_differentiableAt (χ : Character) {s : ℂ}
   · exact continuedLattice_differentiableAt χ hs₀ (Or.inl hs₁)
   · exact HeckeCharacterAnalytic.continuedLattice_differentiableAt_nonprincipal χ hχ hs₀
 
-theorem LFunction_entire_nonprincipal (χ : Character) (hχ : χ.residue ≠ 1) :
+theorem LFunction_entire_nonprincipal  (hχ : χ.residue ≠ 1) :
     Differentiable ℂ (LFunction χ) :=
   (HeckeCharacterAnalytic.continuedLattice_entire_nonprincipal χ hχ).div_const 6
-
-end SevenEighths.HeckeFamily
-
 end
 
-end OAI
+
+
+
+
+
+

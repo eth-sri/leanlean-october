@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseChain
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwiseMarked
@@ -56,8 +56,8 @@ theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     · simpa [M] using h2 x hx y hy
   exact chain_rowwise rows M cm dx dy a b c d E hab hcd σ freq hσ hf he
 
-end SevenEighths.HeckeDetectorRowwiseMarked
 
-end
 
-end OAI
+
+
+

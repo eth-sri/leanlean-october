@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowSeparated
 public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 
@@ -8,10 +9,10 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff
-open MeasureTheory CompletedGauss
+open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 def lowNumeratorWeight (C : CalibrationData) (Ω : ℝ→ℂ) (X Y : ℝ) (m : O) (v : ℝ) : ℂ :=
   Ω (elementNorm m/lowPhysicalScale C X Y)*C.residueMonoid m*
@@ -30,13 +31,13 @@ lemma lowNumeratorWeight_norm (C : CalibrationData) (Ω : ℝ→ℂ)
   · simp [lowNumeratorWeight,hm,elementNorm,hΩ0]
   have hmpos : 0<elementNorm m := by
     unfold elementNorm
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hm))
+    simp_all
   have he : -((v:ℂ)*Complex.I)=((-v:ℝ):ℂ)*Complex.I := by simp
   rw [lowNumeratorWeight,norm_mul,norm_mul,he,
     low_mellin_phase_norm _ (-v) (div_pos hmpos (lowPhysicalScale_pos C X Y hX hY)),mul_one]
   exact (mul_le_of_le_one_left (norm_nonneg _) (hΩ _)).trans (C.residueMonoid_norm_le_one m)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

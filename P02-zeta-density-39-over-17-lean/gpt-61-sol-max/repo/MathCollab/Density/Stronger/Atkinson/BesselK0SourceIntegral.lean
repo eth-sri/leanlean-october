@@ -10,10 +10,9 @@ public import Mathlib.MeasureTheory.Integral.Prod
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory
+
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -37,4 +36,4 @@ theorem norm_zetaBesselK0SourceIntegrand_le {T G L : ℝ}
       mul_le_mul_of_nonneg_left (abs_dfiBesselK0_source_le hT hs.1 hn k) (norm_nonneg _)
     _ = _ := mul_comm _ _
 
-end MathCollab.Density.Stronger.Atkinson
+

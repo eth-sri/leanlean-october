@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -13,27 +14,19 @@ public import MathCollab.Density.Stronger.FiniteOccupancy
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Topology Finset
 open scoped Interval
 open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Peaks
 theorem atkinsonLocalMeanExcess_threshold_iff {G t error Y : ℝ} (hY : 0 < Y) :
     Y ≤ atkinsonLocalMeanExcess G t error ↔
       error+Y ≤ ∫ u in t-G..t+G, zetaMomentCriticalNorm u^2 := by
   unfold atkinsonLocalMeanExcess
-  rw [le_max_iff]
-  constructor
-  · rintro (h | h)
-    · linarith
-    · linarith
-  · intro h
-    right
-    linarith
+  grind
 theorem exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot
     (hPacket : LocalMeanPacketInput)
     {δ κ ν : ℝ} (hδ : 0 < δ) (hκ : 0 < κ) (hν : 0 < ν) :
@@ -105,13 +98,7 @@ theorem localMean_lower_bound_of_peak_mass
     {P L V R I : ℝ} (hP : 0 < P) (hL : 0 < L) (hR : 0 ≤ R)
     (hV : 2*P*L ≤ V^2)
     (hsource : V^2*R ≤ P*L*(R+4*I)) :
-    2*R*(V^2/(16*P*L)) ≤ I := by
-  have hmul := mul_le_mul_of_nonneg_right hV hR
-  have hm : V^2*R ≤ 8*P*L*I := by nlinarith
-  have hden : 0 < 8*P*L := by positivity
-  calc
-    2*R*(V^2/(16*P*L)) = (V^2*R)/(8*P*L) := by field_simp; ring
-    _ ≤ I := (div_le_iff₀ hden).mpr (by nlinarith [hm])
+    2*R*(V^2/(16*P*L)) ≤ I := by field_simp <;> nlinarith
 
 theorem exists_pointCluster_superlevel_entry
     (hPointMean : PointMeanInput) :
@@ -170,9 +157,9 @@ theorem exists_pointCluster_superlevel_count
     (exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot hPacket) hδ hκ hν
   refine ⟨P,C,D,H₀,hP,hC,hD,hH₀,?_⟩
   intro H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
-  let A : ℝ := V^2/(16*P*Real.log (3*H))
-  let Y : ℝ := (m:ℝ)*A
-  let S : Finset ℕ := pointClusterSuperlevel H G W m
+  let A := V^2/(16*P*Real.log (3*H))
+  let Y := (m:ℝ)*A
+  let S := pointClusterSuperlevel H G W m
   have hHlarge : 20 ≤ H := by linarith [hH₀.trans hH]
   have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith)
   have hA : 0 < A := by dsimp only [A]; positivity
@@ -198,8 +185,8 @@ theorem exists_pointCluster_superlevel_count
       intro t ht
       obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp ht
       have hc := pointClusterCenter_range hG hrange (hbase n hn)
-      have hnS : n ∈ S := (Finset.mem_filter.mp hn).1
-      have hocc : m ≤ (pointCluster H G W n).card := (Finset.mem_filter.mp hnS).2
+      have hnS := (Finset.mem_filter.mp hn).1
+      have hocc := (Finset.mem_filter.mp hnS).2
       have hlog : Real.log (pointClusterCenter H G n) ≤ Real.log (3*H) :=
         Real.log_le_log (by linarith [hc.1]) (by linarith [hc.2])
       have herror : C*G*Real.log (pointClusterCenter H G n) ≤ A :=
@@ -224,15 +211,11 @@ theorem occupancy_inverse_power_budget {H G A m : ℝ}
     (hG : 0 < G) (hA : 0 < A) (hm : 1 ≤ m) :
     H/(G*(m*A)^2)+H^2/(m*A)^6 ≤
       (H/(G*A^2)+H^2/A^6)/m^2 := by
-  have hm0 : 0 < m := by linarith
   have hp : m^2 ≤ m^6 := pow_le_pow_right₀ hm (by omega)
   rw [mul_pow, mul_pow]
   calc
     H/(G*(m^2*A^2))+H^2/(m^6*A^6) ≤
-        H/(G*(m^2*A^2))+H^2/(m^2*A^6) := by
-      exact add_le_add le_rfl
-        (div_le_div_of_nonneg_left (sq_nonneg H) (by positivity)
-          (mul_le_mul_of_nonneg_right hp (by positivity)))
+        H/(G*(m^2*A^2))+H^2/(m^2*A^6) := by gcongr
     _ = (H/(G*A^2)+H^2/A^6)/m^2 := by field_simp
 
 theorem exists_pointValue_card_le_with_width
@@ -256,8 +239,8 @@ theorem exists_pointValue_card_le_with_width
     (exists_pointCluster_superlevel_count hPointMean hPacket) hδ hκ hν
   refine ⟨P,C,4*D,H₀,hP,hC,by positivity,hH₀,?_⟩
   intro H G V W hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge
-  let A : ℝ := V^2/(16*P*Real.log (3*H))
-  let B : ℝ := 2*D*H^ν*(H/(G*A^2)+H^2/A^6)
+  let A := V^2/(16*P*Real.log (3*H))
+  let B := 2*D*H^ν*(H/(G*A^2)+H^2/A^6)
   have hHpos : 0 < H := by linarith [hH₀.trans hH]
   have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith [hH₀.trans hH])
   have hA : 0 < A := by dsimp only [A]; positivity
@@ -280,9 +263,7 @@ theorem exists_pointValue_card_le_with_width
       ((pointCluster H G W n).card:ℝ) := by
     exact_mod_cast pointCluster_card_partition H G W
   rw [← hpartition] at hsum
-  calc
-    (W.card:ℝ) ≤ 2*B := hsum
-    _ = (4*D)*H^ν*(H/(G*A^2)+H^2/A^6) := by dsimp only [B]; ring
+  grind
 
 
-end MathCollab.Density.Stronger.Peaks
+

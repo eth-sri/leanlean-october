@@ -5,18 +5,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentFirstReduced
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
+open ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentCanonicalFirst
+
+open CenteredMomentFirstColumns CenteredMomentGaussEnergy
 open CenteredMomentFirstChildBound CenteredMomentChildAssembly CenteredMomentMobiusRegroup
 open CenteredMomentSmooth RayFourExpansion IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     (M:Fin 4→ℝ)(hM:∀i,0≤M i)(hV:∀i y,V i y≠0→|y|≤M i)(A J₁ J₂:ℕ):
@@ -83,8 +83,8 @@ theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     norm_mul]
   convert mul_le_mul_of_nonneg_left hh (norm_nonneg (scalar C D hC E K A₀ B₀)) using 1 <;> ring
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

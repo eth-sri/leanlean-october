@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Adapted from the verified MathCollab.Density.DetectorEstimates and DetectorGamma.
 The literal kernel and horizontal majorant are reused unchanged. The left-line
@@ -10,9 +11,8 @@ public import GuthMaynard.Improvement.ShortDetectorMellin
 public import MathCollab.Density.DetectorEstimates
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -26,9 +26,7 @@ theorem short_continuous_Gamma_detector_strip {a : ℝ} (ha : -(1/2 : ℝ) ≤ a
   apply (Complex.continuousAt_Gamma _ ?_).comp (by fun_prop)
   intro m he
   have hre := congrArg Complex.re he
-  simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re,
-    Complex.ofReal_im, Complex.I_im, mul_zero, zero_mul, sub_self, add_zero,
-    Complex.neg_re, Complex.natCast_re] at hre
+  simp at hre
   by_cases hm : m = 0
   · subst m
     norm_num at hre
@@ -65,7 +63,7 @@ theorem short_uniform_detector_gamma_mass :
         (mul_le_mul_of_nonneg_right hc (by positivity)) (by positivity))
     have hm := mul_le_mul_of_nonneg_left hh (show 0 ≤ 1+|t| by positivity)
     dsimp [detectorGammaMajorant]
-    convert hm using 1; ring
+    grind
   have hwcont : Continuous (fun t : ℝ => (1+|t|)*‖g t‖) := by fun_prop
   have hw : Integrable (fun t : ℝ => (1+|t|)*‖g t‖) :=
     hmajor.mono' hwcont.aestronglyMeasurable
@@ -77,9 +75,13 @@ theorem short_uniform_detector_gamma_mass :
   refine ⟨hgint, hw, ?_⟩
   exact (integral_mono hw hmajor hbound).trans (by linarith)
 
+section
+variable {ρ : ℂ} {X Y : ℝ}
+    (hY : 0 < Y)
+include ρ X Y hY
+
 /-- The right contour is absolutely integrable for independent X and Y. -/
-theorem short_integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hρ : 9/13 ≤ ρ.re) :
+theorem short_integrable_detectorKernel_right  (hρ : 9/13 ≤ ρ.re) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)) := by
   let line := fun t : ℝ => ((1/2 : ℝ) : ℂ)+(t : ℂ)*I
   have hg : Integrable (fun t : ℝ => Complex.Gamma (line t) *
@@ -91,8 +93,7 @@ theorem short_integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
       (by simp) (by simp; linarith)
   have hp : Continuous (fun t : ℝ => (Y : ℂ)^(line t)) := by
     apply Continuous.cpow continuous_const (by dsimp [line]; fun_prop)
-    intro t
-    left; simpa using hY
+    simp_all
   have hb : ∀ t : ℝ, ‖(Y : ℂ)^(line t)‖ ≤ Y^(1/2 : ℝ) := by
     intro t
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hY]
@@ -102,14 +103,12 @@ theorem short_integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
   filter_upwards with t
   dsimp [detectorKernel]
   rw [← riemannZeta_mul_zetaMollifier_eq_LSeries X (by simp [line]; linarith)]
-  dsimp [line]
   ring
 
 /-- The shifted contour is absolutely integrable using only linear zeta growth. -/
-theorem short_integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+theorem short_integrable_detectorKernel_left  (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
-  let a : ℝ := 1/2-ρ.re
+  let a := 1/2-ρ.re
   let line := fun t : ℝ => (a : ℂ)+(t : ℂ)*I
   have he : ∀ t : ℝ, ρ+line t = (1/2 : ℂ)+((ρ.im+t : ℝ) : ℂ)*I := by
     intro t
@@ -136,7 +135,7 @@ theorem short_integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
       intro h
       have hr := congrArg Complex.re h
       norm_num at hr
-  let C : ℝ := Y^a*(⌊X⌋₊ : ℝ)*4*(1+|ρ.im|)
+  let C := Y^a*(⌊X⌋₊ : ℝ)*4*(1+|ρ.im|)
   have hbound : ∀ t : ℝ, ‖detectorKernel ρ X Y (line t)‖ ≤
       C*((1+|t|)*‖Complex.Gamma (line t)‖) := by
     intro t
@@ -155,21 +154,20 @@ theorem short_integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
         mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hzt (norm_nonneg _) (by positivity)
       _ = _ := by dsimp [C]; ring
   exact (hg.const_mul C).mono' hc.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
+end
+
 
 /-- Both horizontal integrals vanish as the independent rectangle height grows. -/
 theorem short_tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
     (hY : 1 ≤ Y) (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
     Tendsto (fun R : ℝ => ∫ u in (1/2-ρ.re)..(1/2 : ℝ),
       detectorKernel ρ X Y ((u : ℂ)+((ε*R : ℝ) : ℂ)*I)) atTop (𝓝 0) := by
-  let C : ℝ := 60*Y^(1/2 : ℝ)*(⌊X⌋₊ : ℝ)*(2+|ρ.im|)
+  let C := 60*Y^(1/2 : ℝ)*(⌊X⌋₊ : ℝ)*(2+|ρ.im|)
   apply squeeze_zero_norm' _ (tendsto_detector_horizontal_majorant C)
   filter_upwards [eventually_ge_atTop (|ρ.im|+1)] with R hR
   have hRpos : 0 < R := by linarith [abs_nonneg ρ.im]
   have he : |ε*R| = R := by rw [abs_mul, hε, one_mul, abs_of_pos hRpos]
-  have hlength : |(1/2 : ℝ)-(1/2-ρ.re)| ≤ 1 := by
-    rw [show (1/2 : ℝ)-(1/2-ρ.re) = ρ.re by ring,
-      abs_of_nonneg (show 0 ≤ ρ.re by linarith)]
-    exact hβ'
+  have hlength : |(1/2 : ℝ)-(1/2-ρ.re)| ≤ 1 := by grind
   have hpoint : ∀ u ∈ Set.uIoc (1/2-ρ.re) (1/2 : ℝ),
       ‖detectorKernel ρ X Y ((u : ℂ)+((ε*R : ℝ) : ℂ)*I)‖ ≤
         C*(1+R)^3*Real.exp (-R) := by
@@ -177,10 +175,9 @@ theorem short_tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
     rw [Set.uIoc_of_le (by linarith : 1/2-ρ.re ≤ (1/2 : ℝ))] at hu
     have h := norm_detectorKernel_horizontal (ρ := ρ) (X := X) (Y := Y)
       (u := u) (t := ε*R) hY hβ' hu.1.le hu.2 (by rw [he]; exact hR)
-    rw [he] at h
-    exact h
+    grind
   have hnonneg : 0 ≤ C*(1+R)^3*Real.exp (-R) := by dsimp [C]; positivity
   have hmul := mul_le_mul_of_nonneg_left hlength hnonneg
   exact (intervalIntegral.norm_integral_le_of_norm_le_const hpoint).trans (by simpa using hmul)
 
-end GuthMaynard.Improvement
+

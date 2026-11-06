@@ -13,7 +13,7 @@ This file records that replacement with its exact finite endpoint behavior.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem harmonic_cast_le_one_add_log_of_le
     {D N : ℕ} (hDN : D ≤ N) (hN : 1 ≤ N) :
@@ -40,6 +40,6 @@ theorem heathBrownShiftBound_harmonic_le
     (heathBrownShiftBound_le_N N k H lambda) hN
 
 
-end
 
-end GafniTao
+
+

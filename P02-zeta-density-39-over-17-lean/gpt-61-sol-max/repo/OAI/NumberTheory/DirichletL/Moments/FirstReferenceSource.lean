@@ -12,27 +12,31 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceSource
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstRetainedNorm
+open CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
 open CenteredMomentFirstPhysicalActiveDictionary CenteredMomentFirstSourceReduction
 open CenteredMomentFirstInactiveRadicalMass CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
+open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource
+open CenteredMomentSourceMass CenteredMomentCanonicalFirst
 open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
 open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-abbrev SourceBlocks (s:Input ι)(R seed:Ideal O)(K Z ξ:ℝ)(p:Labels s R seed)
+section
+variable (s:Input ι)(R seed:Ideal O)
+include s R seed
+
+abbrev SourceBlocks (K Z ξ:ℝ)(p:Labels s R seed)
     (E:Finset (CommonIndex p.val.1 p.val.2)):=
   Blocks (effectiveScale p.val.1 p.val.2 E K) (localRadius s R seed K Z ξ p E)
     (sourceRadius s/p.val.1.absNorm) (sourceRadius s/p.val.2.absNorm)
 
-def originalBlock (s:Input ι)(R seed:Ideal O)(W:𝓢(ℝ,ℂ))(K Z ξ:ℝ)
+def originalBlock (W:𝓢(ℝ,ℂ))(K Z ξ:ℝ)
     (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))
     (n:SourceBlocks s R seed K Z ξ p E):ℂ:=
   block s.η (CenteredMomentSecondHeightFamily.fixedBadMask*idealGenerator R) 1 s.t
@@ -45,10 +49,12 @@ def originalBlock (s:Input ι)(R seed:Ideal O)(W:𝓢(ℝ,ℂ))(K Z ξ:ℝ)
     (retainedRows (localRadius s R seed K Z ξ p E) 1) W (fun _=>logAnnulus)
     K (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3))
 
-def radicalWeight (s:Input ι)(R seed:Ideal O)(p:Labels s R seed)
+def radicalWeight (p:Labels s R seed)
     (E:Finset (CommonIndex p.val.1 p.val.2)):ℝ:=
   CenteredMomentFirstInactiveRadicalMass.inactiveWeight p.val.1 p.val.2 E 0/
     ((commonRadical p.val.1 p.val.2).absNorm:ℝ)
+end
+
 
 omit [DecidableEq ι] in
 lemma radicalWeight_nonneg (s:Input ι)(R seed:Ideal O)(p:Labels s R seed)
@@ -116,8 +122,8 @@ theorem original_block_sum (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
       rw [show Z^ε=Z^(ε/2)*Z^(ε/2) by rw [←Real.rpow_add (by linarith : 0<Z)];congr 1;ring]
       ring
 
-end SevenEighths.CenteredMomentFirstReferenceSource
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualCoefficients
 
 @[expose] public section
@@ -7,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
 open EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma cubicRow_norm_le_one (I : Ideal O) (hI : Admissible I) (z : O) : ‖cubicRow I z‖ ≤ 1 :=
   elementCharacter_norm_le_one I hI.2 z
@@ -40,9 +41,13 @@ lemma pair_modulus_norm_sq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
       (Ideal.absNorm I : ℝ) * (Ideal.absNorm J : ℝ) := by
   rw [map_mul, norm_mul, mul_pow, primaryGenerator_norm_sq I hI.2, primaryGenerator_norm_sq J hJ.2]
 
-lemma cubicDualRow_summable {n : Type*} [Fintype n]
+section
+variable {n : Type*} [Fintype n]
     (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M)
+include n cols hc a W M hM
+
+lemma cubicDualRow_summable  :
     Summable (cubicDualRow cols hc a W M) := by
   apply summable_sum
   intro j hj
@@ -70,9 +75,7 @@ lemma cubicDualRow_summable {n : Type*} [Fintype n]
   · simp only [ite_eq_right hcop]
     exact summable_zero
 
-lemma cubicDualRow_tsum {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+lemma cubicDualRow_tsum  :
     (∑' h : O, cubicDualRow cols hc a W M h) =
       ∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
         (star (a j) * a k * (star (gaussTwo (cols j) (hc j).2) * gaussTwo (cols k) (hc k).2) /
@@ -93,10 +96,7 @@ lemma cubicDualRow_tsum {n : Type*} [Fintype n]
       (M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ))) (by positivity) using 1
     ext z
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    rw [show M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) *
-      (Ideal.absNorm (Ideal.span {z}) : ℝ) = M * (Ideal.absNorm (Ideal.span {z}) : ℝ) /
-        ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) by ring]
-    try simp only [mul_assoc]
+    grind
   unfold cubicDualRow
   rw [Summable.tsum_finsetSum (fun j hj => summable_sum (fun k hk => by
     split_ifs
@@ -116,9 +116,7 @@ lemma cubicDualRow_tsum {n : Type*} [Fintype n]
   intro k hk
   split_ifs <;> simp only [tsum_zero, mul_assoc, tsum_mul_left]
 
-theorem cubicSmoothedCoprime_poisson {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+theorem cubicSmoothedCoprime_poisson  :
     cubicSmoothedCoprime cols a W M =
       (M : ℂ) * ∑' h : O, cubicDualRow cols hc a W M h := by
   rw [cubicDualRow_tsum cols hc a W M hM]
@@ -136,8 +134,10 @@ theorem cubicSmoothedCoprime_poisson {n : Type*} [Fintype n]
     rw [map_mul, norm_mul, Complex.ofReal_mul]
     ring
   · simp only [ite_eq_right hcop, mul_zero]
-
 end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+
+
+

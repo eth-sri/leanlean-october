@@ -11,16 +11,19 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTest
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open MathCollab.Density.Stronger
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
-theorem zetaDivisorBandEdge_outer_bounds {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 ≤ L) (hwidth : 8 * L ≤ G) :
+section
+variable {T G L : ℝ}
+    (hT : 0 < T) (hG : 0 < G)
+include T G L hT hG
+
+theorem zetaDivisorBandEdge_outer_bounds  (hL : 0 ≤ L) (hwidth : 8 * L ≤ G) :
     T / (4 * Real.pi) ≤ zetaDivisorBandEdge T G (-2 * L) ∧
       zetaDivisorBandEdge T G (2 * L) ≤ T / Real.pi := by
   have hr0 : 0 ≤ 2 * L / G := by positivity
@@ -39,8 +42,7 @@ theorem zetaDivisorBandEdge_outer_bounds {T G L : ℝ}
   rw [hhalfeq, hdouble]
   constructor <;> nlinarith
 
-theorem support_zetaSmoothDivisorTest_physical {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
+theorem support_zetaSmoothDivisorTest_physical  (hL : 0 < L) (hwidth : 8 * L ≤ G) :
     Function.support (zetaSmoothDivisorTest T G L) ⊆ Icc (T / 16) T := by
   intro x hx
   have hs := support_zetaSmoothDivisorTest hT hG hL hx
@@ -52,6 +54,8 @@ theorem support_zetaSmoothDivisorTest_physical {T G L : ℝ}
     apply (div_le_iff₀ Real.pi_pos).mpr
     nlinarith [Real.pi_gt_three]
   exact ⟨hlow.trans (hb.1.trans hs.1), (hs.2.trans hb.2).trans hhigh⟩
+end
+
 
 theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < δ) :
     ∀ᶠ T : ℝ in atTop, 16 ≤ T ∧ ∀ G : ℝ, T ^ δ ≤ G →
@@ -67,4 +71,4 @@ theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < 
   have hwidth : 8 * Real.log T ≤ G := by simpa only [pow_one] using hlog.trans hG
   exact ⟨hG0, hlog0, hwidth, support_zetaSmoothDivisorTest_physical hT0 hG0 hlog0 hwidth⟩
 
-end MathCollab.Density.Stronger.Atkinson
+

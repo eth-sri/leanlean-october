@@ -5,9 +5,8 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                 
@@ -16,7 +15,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                      
 
 
-noncomputable section
+
 
 open Complex Finset
 open RiemannZeta.GuthMaynard
@@ -42,13 +41,7 @@ theorem padded_sequence_correlation_eq (a : ℤ → ℂ) (N H h k : ℕ)
       ∑ n ∈ s, star (a (n + h)) *
         a (n + k) := by
     simp only [s, Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro n _hn
-    by_cases hhmem : n + (h : Int) ∈ Finset.Ico (0 : Int) N
-    · by_cases hkmem : n + (k : Int) ∈ Finset.Ico (0 : Int) N
-      · simp [hhmem, hkmem]
-      · simp [hhmem, hkmem]
-    · simp [hhmem]
+    grind
   rw [hrestrict]
   have hsum :
       (∑ n ∈ s,
@@ -67,14 +60,7 @@ theorem padded_sequence_correlation_eq (a : ℤ → ℂ) (N H h k : ℕ)
       have heq : n + (k : Int) = (n + h) + (k - h : Nat) := by
         omega
       rw [heq] at hnk
-      have hcast : Int.toNat (n + h) + (k - h) < N := by
-        have hto : ((Int.toNat (n + h) : Nat) : Int) = n + h :=
-          Int.toNat_of_nonneg hnh.1
-        have hcastInt : ((Int.toNat (n + h) + (k - h) : Nat) : Int) < (N : Int) := by
-          push_cast
-          rw [hto]
-          exact hnk.2
-        exact_mod_cast hcastInt
+      have hcast : Int.toNat (n + h) + (k - h) < N := by omega
       omega
     case i_inj =>
       intro n₁ hn₁ n₂ hn₂ heq
@@ -132,4 +118,4 @@ theorem padded_sequence_correlation_reverse (a : ℤ → ℂ) (N H h k : ℕ) :
   rw [star_mul',star_star]
   ring
 
-end TaoTrudgianYang2025
+

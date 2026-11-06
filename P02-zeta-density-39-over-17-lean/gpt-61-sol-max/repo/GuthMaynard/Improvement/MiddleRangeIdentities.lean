@@ -2,11 +2,14 @@ module
 public import GuthMaynard.Improvement.MiddleRangeScales
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
-private theorem middle_logs {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
+section
+variable {N T : ℝ} (hn : 0 < N) (ht : 0 < T)
+include N T hn ht
+
+private theorem middle_logs  :
     Real.log (middleLength N T) = (1/7:ℝ)*Real.log N+(5/7:ℝ)*Real.log T ∧
     Real.log (middleThreshold N T) = (5/7:ℝ)*Real.log N+(1/14:ℝ)*Real.log T ∧
     Real.log (middleMoment N T) = (18/7:ℝ)*Real.log N+(6/7:ℝ)*Real.log T := by
@@ -17,7 +20,7 @@ private theorem middle_logs {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
   · rw [Real.log_mul (by positivity) (by positivity),Real.log_rpow hn,Real.log_rpow ht]
   · rw [Real.log_mul (by positivity) (by positivity),Real.log_rpow hn,Real.log_rpow ht]
 
-theorem middle_length_threshold_identity {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
+theorem middle_length_threshold_identity  :
     N*middleLength N T*(middleThreshold N T)^2 = middleMoment N T := by
   have hl : 0 < middleLength N T := by unfold middleLength; positivity
   have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
@@ -27,7 +30,7 @@ theorem middle_length_threshold_identity {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
   rw [Real.log_mul (by positivity) (by positivity),Real.log_mul hn.ne' hl.ne',Real.log_pow,hll,hlu,hlp]
   ring
 
-theorem middle_moment_three_halves {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
+theorem middle_moment_three_halves  :
     N^4*T^2/middleLength N T = (middleMoment N T)^((3:ℝ)/2) ∧
       (middleMoment N T)^((3:ℝ)/2) = middleMoment N T*Real.sqrt (middleMoment N T) := by
   have hl : 0 < middleLength N T := by unfold middleLength; positivity
@@ -42,7 +45,7 @@ theorem middle_moment_three_halves {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
     rw [Real.log_rpow hp,Real.log_mul hp.ne' (by positivity),Real.log_sqrt hp.le]
     ring
 
-theorem middle_length_moment_square {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
+theorem middle_length_moment_square  :
     N^5*middleLength N T*T = (middleMoment N T)^2 := by
   have hl : 0 < middleLength N T := by unfold middleLength; positivity
   have hp : 0 < middleMoment N T := by unfold middleMoment; positivity
@@ -52,7 +55,7 @@ theorem middle_length_moment_square {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
     Real.log_pow,Real.log_pow,hll,hlp]
   ring
 
-theorem middle_threshold_square_quotient {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
+theorem middle_threshold_square_quotient  :
     T*N^4/(middleThreshold N T)^2 = middleMoment N T := by
   have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
   have hp : 0 < middleMoment N T := by unfold middleMoment; positivity
@@ -62,7 +65,7 @@ theorem middle_threshold_square_quotient {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
     Real.log_pow,Real.log_pow,hlu,hlp]
   ring
 
-theorem middle_threshold_fourth_quotient {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
+theorem middle_threshold_fourth_quotient  :
     T*N^4/(middleThreshold N T)^4 = N*middleLength N T := by
   have hl : 0 < middleLength N T := by unfold middleLength; positivity
   have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
@@ -72,7 +75,7 @@ theorem middle_threshold_fourth_quotient {N T : ℝ} (hn : 0 < N) (ht : 0 < T) :
     Real.log_mul hn.ne' hl.ne',Real.log_pow,Real.log_pow,hlu,hll]
   ring
 
-theorem middle_cubic_budget {N T : ℝ} (hn : 0 < N) (ht : 0 < T)
+theorem middle_cubic_budget 
     (hhi : T ≤ N^((5:ℝ)/3)) : N^7*T^3 ≤ (middleMoment N T)^3 := by
   have hp : 0 < middleMoment N T := by unfold middleMoment; positivity
   have hh := Real.log_le_log ht hhi
@@ -81,5 +84,7 @@ theorem middle_cubic_budget {N T : ℝ} (hn : 0 < N) (ht : 0 < T)
   rw [Real.log_mul (by positivity) (by positivity),Real.log_pow,Real.log_pow,
     Real.log_pow,(middle_logs hn ht).2.2]
   linarith
+end
 
-end GuthMaynard.Improvement
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.UniformTailBounds
 
 @[expose] public section
@@ -8,83 +9,74 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 namespace SecondPassArithmetic
 
-section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open RayFourExpansion (RayCharacter)
-
-end
 section
 
 open scoped BigOperators Classical SchwartzMap
@@ -100,15 +92,14 @@ open RayFourExpansion (RayCharacter crossCoeff)
 
 namespace GlobalCubeBlock
 variable {ι : Type*}
-def withCommon (b : GlobalCubeBlock ι) (A : Finset ι) : GlobalFirstData ι :=
-  ⟨b.cube,A,b.common,b.firstDivisor⟩
+
 end GlobalCubeBlock
 
 namespace GlobalFirstData
 variable {ι : Type*}
-def block (b : GlobalFirstData ι) : GlobalCubeBlock ι := ⟨b.cube,b.common,b.firstDivisor⟩
-@[simp] theorem block_withCommon (b : GlobalCubeBlock ι) (A : Finset ι) : (b.withCommon A).block=b := rfl
-@[simp] theorem withCommon_block (b : GlobalFirstData ι) : b.block.withCommon b.firstCommon=b := by cases b; rfl
+
+
+
 end GlobalFirstData
 
 variable {ι : Type*} [DecidableEq ι]
@@ -151,10 +142,18 @@ namespace CompletedGauss
 section
 open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel UniqueFactorizationMonoid
 
-def PowerfulIdeal (I : Ideal O) : Prop :=
+section
+variable (I : Ideal O)
+include I
+
+def PowerfulIdeal  : Prop :=
   I≠0 ∧ ∀P∈normalizedFactors I, 2≤(normalizedFactors I).count P
 
-theorem powerful_squarefree_dvd_squarePart (I : Ideal O) (hI : PowerfulIdeal I) :
+section
+variable (hI : PowerfulIdeal I)
+include hI
+
+theorem powerful_squarefree_dvd_squarePart  :
     squarefreePart I ∣ squarePart I := by
   have ha := squarePart_ne_zero hI.1
   have hb := (squarefree_squarefreePart I).ne_zero
@@ -173,8 +172,8 @@ theorem powerful_squarefree_dvd_squarePart (I : Ideal O) (hI : PowerfulIdeal I) 
     have hp := hI.2 P hm
     omega
 
-theorem powerful_exists_square_cube (I : Ideal O) (hI : PowerfulIdeal I) :
-    ∃A : Ideal O, A≠0 ∧ A^2*squarefreePart I^3=I := by
+theorem powerful_exists_square_cube  :
+    ∃A : Ideal O, A≠0 ∧ A^2*squarefreePart I ^3=I := by
   obtain ⟨A,hA⟩ := powerful_squarefree_dvd_squarePart I hI
   have ha : A≠0 := by
     intro hz
@@ -184,16 +183,20 @@ theorem powerful_exists_square_cube (I : Ideal O) (hI : PowerfulIdeal I) :
   refine ⟨A,ha,?_⟩
   calc
     _ = (squarefreePart I*A)^2*squarefreePart I := by ring
-    _ = squarePart I^2*squarefreePart I := by rw [←hA]
+    _ = squarePart I ^2*squarefreePart I := by rw [←hA]
     _ = I := squarePart_sq_mul_squarefreePart I
+end
 
-def powerfulBase (I : Ideal O) : Ideal O :=
+
+def powerfulBase  : Ideal O :=
   if hI : PowerfulIdeal I then (powerful_exists_square_cube I hI).choose else 0
 
-theorem powerfulBase_spec (I : Ideal O) (hI : PowerfulIdeal I) :
-    powerfulBase I≠0 ∧ powerfulBase I^2*squarefreePart I^3=I := by
+theorem powerfulBase_spec  (hI : PowerfulIdeal I) :
+    powerfulBase I≠0 ∧ powerfulBase I ^2*squarefreePart I ^3=I := by
   rw [powerfulBase,dite_eq_left hI]
   exact (powerful_exists_square_cube I hI).choose_spec
+end
+
 
 theorem powerfulBase_injective_on_fiber (I J : Ideal O)
     (hI : PowerfulIdeal I) (hJ : PowerfulIdeal J)
@@ -217,12 +220,7 @@ theorem powerfulBase_norm_bound (I : Ideal O) (hI : PowerfulIdeal I) (X : ℝ)
   have hX0 : 0≤X := (Nat.cast_nonneg _).trans hX
   have hb2 : (Ideal.absNorm (squarefreePart I):ℝ)≤(Ideal.absNorm (squarefreePart I):ℝ)^3 := by
     simpa only [pow_one] using pow_le_pow_right₀ hb1 (show (1:ℕ)≤3 by decide)
-  have hab : ((Ideal.absNorm (powerfulBase I):ℝ)*(Ideal.absNorm (squarefreePart I):ℝ))^2≤X := by
-    calc
-      _ = (Ideal.absNorm (powerfulBase I):ℝ)^2*(Ideal.absNorm (squarefreePart I):ℝ)^2 := by ring
-      _ ≤ (Ideal.absNorm (powerfulBase I):ℝ)^2*(Ideal.absNorm (squarefreePart I):ℝ)^3 :=
-        mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hb1 (by decide)) (sq_nonneg _)
-      _ ≤ X := hnorm.trans_le hX
+  have hab : ((Ideal.absNorm (powerfulBase I):ℝ)*(Ideal.absNorm (squarefreePart I):ℝ))^2≤X := by nlinarith
   have hbX : (Ideal.absNorm (squarefreePart I):ℝ)≤X := by
     calc
       _ ≤ (Ideal.absNorm (squarefreePart I):ℝ)^3 := hb2
@@ -237,7 +235,11 @@ end
 
 open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
-theorem powerful_fiber_count (S : Finset (Ideal O)) (X : ℝ)
+section
+variable (S : Finset (Ideal O)) (X : ℝ)
+include S X
+
+theorem powerful_fiber_count 
     (hS : ∀I∈S,PowerfulIdeal I ∧ (Ideal.absNorm I:ℝ)≤X)
     (B : Ideal O) (hB : B∈S.image squarefreePart) :
     ((S.filter (fun I => squarefreePart I=B)).card:ℝ)≤128*Real.sqrt X/(Ideal.absNorm B:ℝ) := by
@@ -254,7 +256,7 @@ theorem powerful_fiber_count (S : Finset (Ideal O)) (X : ℝ)
     exact powerfulBase_injective_on_fiber J lengthScale (hS J (Finset.mem_filter.mp hJ).1).1
       (hS lengthScale (Finset.mem_filter.mp hL).1).1
       ((Finset.mem_filter.mp hJ).2.trans (Finset.mem_filter.mp hL).2.symm) he
-  have hcard : (T.image powerfulBase).card=T.card := Finset.card_image_iff.mpr hinj
+  have hcard := Finset.card_image_iff.mpr hinj
   have hcount := DescentFiberCost.finite_ideal_count_real (T.image powerfulBase)
     (Real.sqrt X/(Ideal.absNorm B:ℝ)) hscale (fun J hJ => by
       obtain ⟨lengthScale,hL,rfl⟩ := Finset.mem_image.mp hJ
@@ -263,10 +265,9 @@ theorem powerful_fiber_count (S : Finset (Ideal O)) (X : ℝ)
       have hp := powerfulBase_norm_bound lengthScale (hS lengthScale (Finset.mem_filter.mp hL).1).1 X
         (hS lengthScale (Finset.mem_filter.mp hL).1).2
       simpa only [(Finset.mem_filter.mp hL).2] using hp.2.2)
-  rw [hcard] at hcount
-  simpa only [mul_div_assoc] using hcount
+  grind
 
-theorem powerful_ideal_count_log (S : Finset (Ideal O)) (X : ℝ) (hX : 1≤X)
+theorem powerful_ideal_count_log  (hX : 1≤X)
     (hS : ∀I∈S,PowerfulIdeal I ∧ (Ideal.absNorm I:ℝ)≤X) :
     (S.card:ℝ)≤32768*Real.sqrt X*(columnDyadicLength X+1:ℝ) := by
   let B := S.image squarefreePart
@@ -287,6 +288,8 @@ theorem powerful_ideal_count_log (S : Finset (Ideal O)) (X : ℝ) (hX : 1≤X)
       mul_le_mul_of_nonneg_left (finite_inverse_norm_sum B X (fun J hJ => (hBn J hJ).1)
         (fun J hJ => (hBn J hJ).2)) (by positivity)
     _ = _ := by ring
+end
+
 
 theorem powerful_ideal_count (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀ (S : Finset (Ideal O)) (X : ℝ), 1≤X →
@@ -302,11 +305,10 @@ theorem powerful_ideal_count (ε : ℝ) (hε : 0<ε) :
       mul_le_mul_of_nonneg_left (columnDyadicLength_small_power ε hε X hX) (by positivity)
     _ = C*X^(1/2+ε) := by
       rw [Real.rpow_add (by linarith : 0<X),←Real.sqrt_eq_rpow]
-      dsimp [C]
       ring
 
-end CompletedGauss
 
-end
 
-end OAI
+
+
+

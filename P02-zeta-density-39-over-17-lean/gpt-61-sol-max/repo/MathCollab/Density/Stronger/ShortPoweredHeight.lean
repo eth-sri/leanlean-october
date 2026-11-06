@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.ShortTaylorCover
 
 @[expose] public section
 
-open Real Complex Set Filter
+open Real Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -78,13 +78,15 @@ theorem detectingPolynomial_normalizedSmoothPowered (η T X Y t : ℝ) (j : ℤ)
     detectingPolynomial L (normalizedSmoothPoweredCoefficient η T X Y j e r k) t =
       detectingPolynomial L (smoothPoweredCoefficient X Y j e r k) t/((T^η : ℝ) : ℂ) := by
   simp only [detectingPolynomial, normalizedSmoothPoweredCoefficient, Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro n _
-  ring
+  grind
+
+section
+variable {η : ℝ} (hη : 0 < η) (K : ℕ)
+include η hη K
 
 /-- One threshold normalizes every actual smooth Taylor coefficient family
 and every power k<=K whose entire product support lies below T squared. -/
-theorem normalizedSmoothPoweredCoefficient_eventually {η : ℝ} (hη : 0 < η) (K : ℕ) :
+theorem normalizedSmoothPoweredCoefficient_eventually  :
     ∀ᶠ T : ℝ in atTop, ∀ (X Y : ℝ) (j : ℤ) (e r k : ℕ),
       0 < Y → k ≤ K → (2*(smoothHalfScale j e : ℝ))^k ≤ T^2 →
       ∀ n : ℕ, ‖normalizedSmoothPoweredCoefficient η T X Y j e r k n‖ ≤ 1 := by
@@ -105,7 +107,7 @@ theorem normalizedSmoothPoweredCoefficient_eventually {η : ℝ} (hη : 0 < η) 
 
 /-- Height after a genuine bounded power, its k-piece split, and normalization.
 The threshold precedes every original smooth scale and all coefficient indices. -/
-theorem exists_normalizedSmoothPowered_height {η : ℝ} (hη : 0 < η) (K : ℕ) :
+theorem exists_normalizedSmoothPowered_height  :
     ∀ᶠ T : ℝ in atTop, ∀ (σ X Y t : ℝ) (j : ℤ) (e r k : ℕ),
       σ ≤ 1 → 0 < k → k ≤ K →
       (smoothHalfScale j e : ℝ)^σ/(192*Real.log T) ≤
@@ -127,11 +129,11 @@ theorem exists_normalizedSmoothPowered_height {η : ℝ} (hη : 0 < η) (K : ℕ
   calc
     _ = (((2^l*(smoothHalfScale j e)^k : ℕ) : ℝ)^σ)/T^η/T^η := by
       rw [div_div, ← Real.rpow_add hTpos, div_eq_mul_inv, ← Real.rpow_neg hTpos.le]
-      congr 1
-      congr 1
       ring
     _ ≤ ((((2^l*(smoothHalfScale j e)^k : ℕ) : ℝ)^σ)/(smoothHeightConstant K*(Real.log T)^K))/T^η :=
       div_le_div_of_nonneg_right (div_le_div_of_nonneg_left (by positivity) hden hc) (by positivity)
     _ ≤ _ := div_le_div_of_nonneg_right hh (by positivity)
+end
 
-end MathCollab.Density.Stronger
+
+

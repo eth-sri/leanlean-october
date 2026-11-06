@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -18,7 +19,7 @@ source scales and no assumed tail estimate or endpoint condition.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 
@@ -30,7 +31,6 @@ theorem atkinsonRootBand_derivative_bracket {T G L : ℝ}
       (32 * (G / Real.sqrt T)) ^ 2 ≤ 4128 * L * (G / Real.sqrt T) := by
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
   have hlen := atkinsonRootBand_length_le hT hG0 hL0 hwidth
   calc
     _ ≤ 32 * (G / Real.sqrt T) + (4 * Real.sqrt T * (L / G)) *
@@ -130,4 +130,4 @@ theorem exists_norm_atkinsonPowerPair_band_secondOrder_le (α : ℝ) (cPlus cMin
     _ ≤ (1 + ‖cPlus‖ + ‖cMinus‖) * (C * G ^ 2 * T ^ (-α) * L / (Real.sqrt T * n)) := by nlinarith
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson
+

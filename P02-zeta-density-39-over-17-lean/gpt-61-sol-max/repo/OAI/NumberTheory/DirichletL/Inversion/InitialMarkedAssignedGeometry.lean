@@ -12,7 +12,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialMarkedAssignedGeometry
 open HeckeFamily ConcretePrimeRowBridge
 open DetectorDictionaryInverseMarkedReference InverseInitialQuotientGeometry
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
  def assignedGenerator (L:ι→Finset (Ideal O))(J:Finset ι)(x:Assigned L J)(i:ι):O:=
@@ -78,8 +78,8 @@ omit [Fintype ι] [DecidableEq ι] in
       _=(2:ℝ)^J.card:=by simp
       _≤(2:ℝ)^K:=pow_le_pow_right₀ (by norm_num) hK
 
-end SevenEighths.InverseInitialMarkedAssignedGeometry
 
-end
 
-end OAI
+
+
+

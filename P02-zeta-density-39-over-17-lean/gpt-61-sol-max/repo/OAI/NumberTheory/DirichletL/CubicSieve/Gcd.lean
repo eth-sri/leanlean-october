@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Dyadic
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
 open CanonicalQuadraticSieve (idealQuotient totalQuotient gcdPool)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def cubicRow (I : Ideal O) (z : O) : ℂ :=
   eisEmbedding (CubicJacobiGlobal.idealSymbol I z)
@@ -24,7 +25,11 @@ lemma cubicRow_square_eq_star (I : Ideal O) (z : O) :
     cubicRow I z ^ 2 = star (cubicRow I z) :=
   square_eq_star_of_fourth_eq _ (idealSymbol_fourth I z)
 
-lemma cubicRow_common_mask (D : Ideal O) (hD : primaryGenerator D ≠ 0) (z : O) :
+section
+variable (D : Ideal O) (hD : primaryGenerator D ≠ 0) (z : O)
+include D hD z
+
+lemma cubicRow_common_mask  :
     star (cubicRow D z) * cubicRow D z =
       if IsCoprime D (Ideal.span {z}) then 1 else 0 := by
   rw [← cubicRow_square_eq_star]
@@ -32,14 +37,20 @@ lemma cubicRow_common_mask (D : Ideal O) (hD : primaryGenerator D ≠ 0) (z : O)
     _ = cubicRow D z ^ 3 := by ring
     _ = _ := idealSymbol_cube_mask D z hD
 
-lemma cubicRow_common_mobius (D : Ideal O) (hD : primaryGenerator D ≠ 0) (z : O) :
+lemma cubicRow_common_mobius  :
     star (cubicRow D z) * cubicRow D z =
       ∑ E ∈ IdealMobiusDivisorSum.idealDivisors D,
         if E ∣ Ideal.span {z} then (UniqueFactorizationMonoid.moebius E : ℂ) else 0 := by
   rw [cubicRow_common_mask D hD z]
   exact SevenEighths.InverseMoment.ideal_coprime_mobius D _ (primaryGenerator_ne_zero_ideal D hD)
+end
 
-lemma cubic_admissible_of_dvd {I D : Ideal O} (hI : Admissible I) (hD : D ∣ I) :
+
+section
+variable {I D : Ideal O} (hI : Admissible I) (hD : D ∣ I)
+include I D hI hD
+
+lemma cubic_admissible_of_dvd  :
     Admissible D := by
   refine ⟨hI.1.squarefree_of_dvd hD, ?_⟩
   obtain ⟨J, he⟩ := hD
@@ -47,9 +58,11 @@ lemma cubic_admissible_of_dvd {I D : Ideal O} (hI : Admissible I) (hD : D ∣ I)
   rw [he, primaryGenerator_mul] at hp
   exact (mul_ne_zero_iff.mp hp).1
 
-lemma cubic_admissible_quotient {I D : Ideal O} (hI : Admissible I) (hD : D ∣ I) :
+lemma cubic_admissible_quotient  :
     Admissible (idealQuotient D I) :=
   cubic_admissible_of_dvd hI (CanonicalQuadraticSieve.idealQuotient_dvd hD)
+end
+
 
 lemma cubicRow_divisor_factor (D I : Ideal O) (hDI : D ∣ I) (z : O) :
     cubicRow I z = cubicRow D z * cubicRow (idealQuotient D I) z := by
@@ -110,10 +123,10 @@ theorem cubic_weighted_energy_eq_gcd_blocks {n : Type*} [Fintype n]
   rw [Finset.sum_comm]
   conv_rhs => arg 2; ext j; rw [Finset.sum_comm]
   simp_rw [hp]
-  simpa only [Complex.ofReal_pow] using CoprimeSieveOperator.square_norm_sum
+  exact CoprimeSieveOperator.square_norm_sum
     (fun j => cubicRow (cols j) z * a j)
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

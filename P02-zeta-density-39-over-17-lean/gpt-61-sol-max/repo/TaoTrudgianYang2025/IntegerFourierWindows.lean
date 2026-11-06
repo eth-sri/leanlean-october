@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.IntegerFourierTails
 
@@ -12,12 +13,12 @@ left enumeration and forward right enumeration each include every
 frequency once and retain the nearest exterior integer.
 -/
 
-noncomputable section
+
 
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem sum_int_interval_three_parts (f : ℤ → ℂ)
     {a b c d : ℤ} (hab : a ≤ b) (hbc : b ≤ c) (hcd : c ≤ d) :
@@ -27,7 +28,7 @@ theorem sum_int_interval_three_parts (f : ℤ → ℂ)
   have hs : Finset.Icc a d =
       (Finset.Ico a b ∪ Finset.Icc b c) ∪ Finset.Ioc c d := by
     ext q
-    simp only [Finset.mem_Icc,Finset.mem_Ico,Finset.mem_Ioc,Finset.mem_union]
+    simp
     omega
   have hd₁ : Disjoint (Finset.Ico a b) (Finset.Icc b c) := by
     rw [Finset.disjoint_left]
@@ -37,11 +38,15 @@ theorem sum_int_interval_three_parts (f : ℤ → ℂ)
   have hd₂ : Disjoint (Finset.Ico a b ∪ Finset.Icc b c) (Finset.Ioc c d) := by
     rw [Finset.disjoint_left]
     intro q hq hq'
-    simp only [Finset.mem_union,Finset.mem_Ico,Finset.mem_Icc,Finset.mem_Ioc] at hq hq'
+    simp at hq hq'
     omega
   rw [hs,Finset.sum_union hd₂,Finset.sum_union hd₁]
 
-theorem sum_int_Ico_eq_reverse_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ b) :
+section
+variable (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ b)
+include f a b hab
+
+theorem sum_int_Ico_eq_reverse_range  :
     (∑ q ∈ Finset.Ico a b, f q) =
       ∑ n ∈ Finset.range (b-a).toNat, f (b-((n+1 : ℕ) : ℤ)) := by
   have hlen : ((b-a).toNat : ℤ) = b-a := Int.toNat_of_nonneg (by omega)
@@ -65,7 +70,7 @@ theorem sum_int_Ico_eq_reverse_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ 
   · intro n hn
     rfl
 
-theorem sum_int_Ioc_eq_forward_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ b) :
+theorem sum_int_Ioc_eq_forward_range  :
     (∑ q ∈ Finset.Ioc a b, f q) =
       ∑ n ∈ Finset.range (b-a).toNat, f (a+((n+1 : ℕ) : ℤ)) := by
   have hlen : ((b-a).toNat : ℤ) = b-a := Int.toNat_of_nonneg (by omega)
@@ -88,5 +93,7 @@ theorem sum_int_Ioc_eq_forward_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ 
       omega
   · intro n hn
     rfl
+end
 
-end TaoTrudgianYang2025
+
+

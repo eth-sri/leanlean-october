@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleGcd
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem primitive_linear_triple_gcd_fiber_card_le
@@ -97,4 +96,4 @@ theorem primitive_linear_triple_gcd_fiber_card_le
     (S.card:ℝ) ≤ 1+4*(V/(g:ℝ))^2*(β-α)/((c:ℝ)/g) := hb
     _ = 1+4*V^2*(β-α)/((c:ℝ)*g) := by field_simp
 
-end TaoTrudgianYang2025
+

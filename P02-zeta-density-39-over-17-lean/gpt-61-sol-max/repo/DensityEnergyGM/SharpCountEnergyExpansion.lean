@@ -3,7 +3,6 @@ public import DensityEnergyGM.SharpCountBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -36,4 +35,4 @@ theorem gmEnergy_fractional_expansion {T N V R E C η d : ℝ}
     (finite_sum_rpow_le_sum_rpow univ (gmEnergyTerm T N V R)
       (fun i _ => gmEnergyTerm_nonneg hT hN hV hR i) hd hd1) (by positivity))
 
-end Montgomery.RationalMoment
+

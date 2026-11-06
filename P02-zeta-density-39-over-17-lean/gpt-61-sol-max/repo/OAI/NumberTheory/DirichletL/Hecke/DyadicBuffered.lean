@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Set Metric Complex
 namespace SevenEighths.HeckeDyadic
@@ -70,8 +70,8 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
     rw [hi]
     exact (abs_sub _ _).trans (by linarith)
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

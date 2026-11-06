@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 
@@ -11,20 +12,27 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def firstBlockedPhysicalRows (F : Finset ι) (selector : Finset ι → ℂ)
-    (C₁ C₂ : Finset ι → ℂ) (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
+section
+variable (F : Finset ι) (selector : Finset ι → ℂ)
+    (C₁ C₂ : Finset ι → ℂ)
+include F selector C₁ C₂
+
+def firstBlockedPhysicalRows  (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (A₁ A₂ C R K : ℝ) (d h : Eis) : ℂ :=
   ∑ j ∈ firstCommonIndices F, selector j.2.1 * firstCommonWeight p hg C₁ C₂ h j *
     firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K (firstCommonNorms p A₁ A₂ C R d h j)
 
-def firstBlockedSeparatedRow (F : Finset ι) (selector : Finset ι → ℂ)
-    (C₁ C₂ : Finset ι → ℂ) (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : ℝ)
-    (d h : Eis) (s : Fin 9 → ℝ) (z : Frequency × (Fin 9 → ℝ)) : ℂ :=
+section
+variable (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : ℝ)
+    (d h : Eis) (s : Fin 9 → ℝ) (z : Frequency × (Fin 9 → ℝ))
+include ω₁ ω₂ A₁ A₂ C R d h s z
+
+def firstBlockedSeparatedRow  : ℂ :=
   let H := profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2
   ∑ r : RayCharacter × RayCharacter, crossCoeff r.1 r.2 *
     ∑ D ∈ F.powerset, selector D * supportMobius (fun i => Ideal.span {p i}) D *
@@ -33,9 +41,7 @@ def firstBlockedSeparatedRow (F : Finset ι) (selector : Finset ι → ℂ)
       star (firstCommonColumn p hg F D C₁ true r.1 ω₁ (s 7) (H 7) h) *
       firstCommonColumn p hg F D C₂ false r.2 ω₂ (s 8) (H 8) h
 
-theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → ℂ) (C₁ C₂ : Finset ι → ℂ)
-    (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : ℝ) (d h : Eis) (s : Fin 9 → ℝ)
-    (z : Frequency × (Fin 9 → ℝ)) :
+theorem first_block_modes_eq_columns  :
     (∑ j ∈ firstCommonIndices F,(selector j.2.1 * firstCommonWeight p hg C₁ C₂ h j) *
       (ω₁ (primeProductNorm p j.2.2.1/s 7)*ω₂ (primeProductNorm p j.2.2.2/s 8)) *
       pureProfileMode firstLeftSlope firstRightSlope firstKernelSlope
@@ -63,15 +69,15 @@ theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → �
       apply Finset.sum_congr rfl
       intro V hV
       rw [first_common_source_mode]
-      dsimp only [H]
       ring
     _ = _ := by
       rw [firstCommonColumn_pair]
       dsimp only [H]
       ring
+end
 
-theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι → ℂ)
-    (C₁ C₂ : Finset ι → ℂ) (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
+
+theorem first_block_normalized_density  (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (A₁ A₂ C R K : ℝ) (d h : Eis) (s : Fin 9 → ℝ)
     (density : Frequency × (Fin 9 → ℝ) → ℂ) (hDensity : Integrable density)
     (normalization : ℂ)
@@ -99,8 +105,10 @@ theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι →
           (normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K
             (firstCommonNorms p A₁ A₂ C R d h j)) := by ring
       _ = _ := by rw [he j hj hz]; ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

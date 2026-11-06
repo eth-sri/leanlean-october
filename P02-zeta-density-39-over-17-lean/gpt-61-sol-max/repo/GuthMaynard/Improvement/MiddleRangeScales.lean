@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -10,8 +9,12 @@ def middleLength (N T : ℝ) : ℝ := N^((1:ℝ)/7)*T^((5:ℝ)/7)
 def middleThreshold (N T : ℝ) : ℝ := N^((5:ℝ)/7)*T^((1:ℝ)/14)
 def middleMoment (N T : ℝ) : ℝ := N^((18:ℝ)/7)*T^((6:ℝ)/7)
 
-theorem middle_time_bounds {N T : ℝ} (hN : 2 ≤ N)
-    (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3)) :
+section
+variable {N T : ℝ} (hN : 2 ≤ N)
+    (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3))
+include N T hN hlo hhi
+
+theorem middle_time_bounds  :
     N ≤ T ∧ T ≤ N^2 := by
   have hn : 1 ≤ N := by linarith
   constructor
@@ -22,8 +25,7 @@ theorem middle_time_bounds {N T : ℝ} (hN : 2 ≤ N)
     rw [Real.rpow_ofNat] at hh
     exact hhi.trans hh
 
-theorem middle_length_bounds {N T : ℝ} (hN : 2 ≤ N)
-    (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3)) :
+theorem middle_length_bounds  :
     N ≤ middleLength N T ∧ T^((4:ℝ)/5) ≤ middleLength N T ∧
       middleLength N T ≤ T := by
   have hnt := (middle_time_bounds hN hlo hhi).1
@@ -53,8 +55,7 @@ theorem middle_length_bounds {N T : ℝ} (hN : 2 ≤ N)
       _ = T := Real.rpow_one _
 
 /-- The factor-five rescaling matches the actual time support of the source. -/
-theorem middle_rescaled_length_bounds {N T : ℝ} (hN : 2 ≤ N)
-    (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3)) :
+theorem middle_rescaled_length_bounds  :
     N ≤ 5*middleLength N T ∧ (5*T)^((4:ℝ)/5) ≤ 5*middleLength N T ∧
       5*middleLength N T ≤ 5*T ∧ 5*middleLength N T ≤ 5*N^2 := by
   obtain ⟨hnl,htl,hlt⟩ := middle_length_bounds hN hlo hhi
@@ -68,10 +69,12 @@ theorem middle_rescaled_length_bounds {N T : ℝ} (hN : 2 ≤ N)
   rw [Real.mul_rpow (by norm_num : (0:ℝ)≤5) ht]
   exact (mul_le_mul_of_nonneg_right hfive (Real.rpow_nonneg ht _)).trans
     (mul_le_mul_of_nonneg_left htl (by norm_num))
+end
+
 
 theorem middle_threshold_ge_one {N T : ℝ} (hN : 1 ≤ N) (hT : 1 ≤ T) :
     1 ≤ middleThreshold N T := by
   exact one_le_mul_of_one_le_of_one_le
     (Real.one_le_rpow hN (by norm_num)) (Real.one_le_rpow hT (by norm_num))
 
-end GuthMaynard.Improvement
+

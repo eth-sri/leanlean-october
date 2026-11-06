@@ -2,8 +2,7 @@ module
 public import GenericPeakClusters
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.CriticalPeak
 
 /-- The first physical width term is exactly sixth-power decay. -/
@@ -38,4 +37,4 @@ theorem width_second_term {a g b K P L V H : ℝ}
   have hLb : L^b ≠ 0 := (Real.rpow_pos_of_pos hL _).ne'
   have hPb : (16*P)^b ≠ 0 := (Real.rpow_pos_of_pos (by positivity) _).ne'
   field_simp
-end Montgomery.CriticalPeak
+

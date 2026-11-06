@@ -9,11 +9,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstSecondCapacityLedger
-open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentEligibleEnergy CenteredMomentLiveCapacity
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-local notation "O"=>ActualEisensteinCubic.O
+
+
+
+
+open scoped EisensteinO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 lemma width_defect_cost (x B δ:ℝ)(hB:0≤B)(hδ:0≤δ)(hx:x≤δ):
@@ -22,8 +22,8 @@ lemma width_defect_cost (x B δ:ℝ)(hB:0≤B)(hδ:0≤δ)(hx:x≤δ):
   · rw [max_eq_left h];linarith
   · rw [max_eq_right (le_of_not_ge h)];linarith
 
-end SevenEighths.CenteredMomentFirstSecondCapacityLedger
 
-end
 
-end OAI
+
+
+

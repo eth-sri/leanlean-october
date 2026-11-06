@@ -16,24 +16,35 @@ open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
 open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
 open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
+
+section
+variable (D : OriginalData ι)
+include D
+
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-def commonEnergy (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
+def commonEnergy  (C : Ideal O) (hC : Supported C)
     (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
   ∑' z : O, ‖commonGauss D C hC τ t L z‖^2 *
     (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re
 
-def allocatedEnergy (D : OriginalData ι) (C L : Ideal O)
+section
+variable (C L : Ideal O)
     (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
+    (W : 𝓢(ℝ,ℂ)) (K : ℝ)
+include C L B τ t W K
+
+def allocatedEnergy  : ℝ :=
   (sourceGaussEnergy (allocatedData D C L B).columns
     (allocatedData D C L B).beta (heightCoeff τ t) W K).re
 
-lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (hK : 0<K)
+include hK
+
+lemma allocated_hasSum  :
     HasSum (fun z : O =>
       ‖gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
         (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
@@ -41,15 +52,16 @@ lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal O)
       (allocatedEnergy D C L B τ t W K) :=
   gaussEnergy_hasSum_re _ _ _ _ W K hK
 
-lemma allocated_nonneg (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+lemma allocated_nonneg 
     (hW : ∀ z : O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     0≤allocatedEnergy D C L B τ t W K := by
   rw [← (allocated_hasSum D C L B τ t W K hK).tsum_eq]
   exact tsum_nonneg (fun z => mul_nonneg (sq_nonneg _) (hW z))
+end
+end
 
-theorem common_energy_allocation (D : OriginalData ι)
+
+theorem common_energy_allocation 
     (hS : ∀ i, ∀ I∈D.S i, I≠0) (hp : ∀ i, ∀ I∈D.S (Sum.inl i), Prime I)
     (C : Ideal O) (hC : Supported C) (hseed : D.s∣C)
     (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
@@ -92,17 +104,21 @@ theorem common_energy_allocation (D : OriginalData ι)
       exact sum_le_hasSum rows (fun z _ => mul_nonneg (sq_nonneg _) (hW z))
         (allocated_hasSum D C L B τ t W K hK)
 
-def rawVolume (D : OriginalData ι) : ℝ :=
+def rawVolume  : ℝ :=
   (D.X₁*D.X₂/((Ideal.absNorm D.B₁:ℝ)*Ideal.absNorm D.B₂)) * ∏ i,D.lengths i
 
-lemma rawVolume_pos (D : OriginalData ι) (hX₁ : 0<D.X₁) (hX₂ : 0<D.X₂)
+lemma rawVolume_pos  (hX₁ : 0<D.X₁) (hX₂ : 0<D.X₂)
     (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) (hP : ∀ i,0<D.lengths i) : 0<rawVolume D := by
   apply mul_pos (div_pos (mul_pos hX₁ hX₂) _)
     (Finset.prod_pos (fun i _ => hP i))
   exact mul_pos (CenteredMomentFirstScale.norm_pos _ hB₁) (CenteredMomentFirstScale.norm_pos _ hB₂)
 
-lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) :
+section
+variable (C L : Ideal O)
+    (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0)
+include C L B hB₁ hB₂
+
+lemma allocated_rawVolume_mul  :
     rawVolume (allocatedData D C L B) * rawReduction B.val D.lengths = rawVolume D := by
   have hB := (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1
   have hv := remainingRaw_source B.val hB D.B₁ D.B₂ hB₁ hB₂ (D.X₁*D.X₂) D.lengths
@@ -110,13 +126,15 @@ lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
   rw [← hv]
   exact raw_scale_identity B.val hB _ D.lengths
 
-lemma allocated_rawVolume (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0)
+lemma allocated_rawVolume 
     (hP : ∀ i,0<D.lengths i) :
     rawVolume (allocatedData D C L B) = rawVolume D / rawReduction B.val D.lengths := by
   have hr := rawReduction_pos B.val
     (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1 D.lengths hP
   exact (eq_div_iff hr.ne').mpr (allocated_rawVolume_mul D C L B hB₁ hB₂)
+end
+end
+
 
 def frozenControl (B : Tuple ι) (M : ι → ℝ) : ℝ :=
   ∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),M i
@@ -189,8 +207,8 @@ theorem normalized_common_energy_allocation (D : OriginalData ι)
   rw [allocated_rawVolume D C L B hB₁ hB₂ hP]
   field_simp
 
-end SevenEighths.CenteredMomentFirstAllocationGaussEnergy
 
-end
 
-end OAI
+
+
+

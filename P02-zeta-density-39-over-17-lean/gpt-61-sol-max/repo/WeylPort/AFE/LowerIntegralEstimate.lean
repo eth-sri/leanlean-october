@@ -50,8 +50,12 @@ theorem sum_weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1)
   rw [weightedIntegral_parts_twice_half_integer hs hx k hxk m]
   ring
 
+section
+variable {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0)
+include σ t x hx ht
+
 /-- The first exact boundary coefficient has its physical-height majorant. -/
-theorem norm_lower_boundary_one_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
+theorem norm_lower_boundary_one_le  :
     ‖(x : ℂ) ^ (1 - ((σ : ℂ) + (t : ℂ) * I)) /
       (1 - ((σ : ℂ) + (t : ℂ) * I))‖ ≤ x ^ (1 - σ) / |t| := by
   rw [norm_div, norm_cpow_eq_rpow_re_of_pos hx]
@@ -61,7 +65,7 @@ theorem norm_lower_boundary_one_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
   simpa only [ofReal_one] using abs_height_le_norm_real_sub 1 σ t
 
 /-- The second exact boundary coefficient has its squared-height majorant. -/
-theorem norm_lower_boundary_two_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
+theorem norm_lower_boundary_two_le  :
     ‖((2 * (Real.pi : ℂ) * I) * (x : ℂ) ^ (2 - ((σ : ℂ) + (t : ℂ) * I))) /
       ((1 - ((σ : ℂ) + (t : ℂ) * I)) * (2 - ((σ : ℂ) + (t : ℂ) * I)))‖ ≤
       (2 * Real.pi * x ^ (2 - σ)) / |t| ^ 2 := by
@@ -71,6 +75,8 @@ theorem norm_lower_boundary_two_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
   rw [hr]
   exact div_le_div_of_nonneg_left (by positivity) (sq_pos_of_pos (abs_pos.mpr ht))
     (height_sq_le_norm_boundary_denominator σ t)
+end
+
 
 /-- The exact twice-integrated remainder coefficient has its squared-height majorant. -/
 theorem norm_lower_remainder_coefficient_le {σ t : ℝ} (ht : t ≠ 0) :
@@ -139,4 +145,4 @@ theorem norm_sum_lower_integral_le_arithmetic {σ t x y : ℝ} (hσ : σ < 1)
     exact mul_le_mul (norm_lower_boundary_two_le hx ht) (norm_alternating_linear_sum_le N)
       (norm_nonneg _) (by positivity)
 
-end DhimanKadiriQuesadaHerrera2026
+

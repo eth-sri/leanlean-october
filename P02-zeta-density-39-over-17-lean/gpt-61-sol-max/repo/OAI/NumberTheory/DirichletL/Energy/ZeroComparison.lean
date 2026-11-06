@@ -14,11 +14,11 @@ namespace SevenEighths.CenteredMomentEnergyZeroComparison
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
 open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
 open CenteredMomentRetainedProfile CenteredMomentRetainedEnergy
-open CenteredMomentHeckeExpansion CenteredMomentOriginalCommonHarmonic
-open CenteredMomentAmplificationChildInput CenteredMomentSourceRow
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceProfileMass CenteredMomentHeckeHeight CenteredMomentSourceMass
-local notation "O" => HeckeFamily.O
+
+open CenteredMomentAmplificationChildInput
+open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
+open CenteredMomentHeckeHeight
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -32,7 +32,7 @@ lemma smallScale_le_one (b:ℝ):smallScale b≤1:=by
   linarith [le_max_left (1:ℝ) b]
 
 lemma smallScale_strict (b:ℝ):smallScale b*b<1:=by
-  have hm:0<max 1 b:=zero_lt_one.trans_le (le_max_left _ _)
+  have hm:0< max 1 b:=zero_lt_one.trans_le (le_max_left _ _)
   unfold smallScale
   have hb:=le_max_right (1:ℝ) b
   rw [div_mul_eq_mul_div,one_mul]
@@ -74,8 +74,8 @@ lemma comparison_energy_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
   simp only [comparison_row_zero s hz₁ hz₂ R, norm_zero, zero_pow (by decide : (2:ℕ)≠0),
     zero_mul, ite_self, tsum_zero]
 
-end SevenEighths.CenteredMomentEnergyZeroComparison
 
-end
 
-end OAI
+
+
+

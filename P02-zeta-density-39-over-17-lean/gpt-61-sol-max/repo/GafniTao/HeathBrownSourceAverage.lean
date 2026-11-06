@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownShiftAverage
 
 @[expose] public section
@@ -21,7 +22,7 @@ namespace GafniTao
 noncomputable section
 
 /-- The common inner range in equation `(Σ1)` of Heath-Brown's paper. -/
-noncomputable def heathBrownSourceShiftSum
+def heathBrownSourceShiftSum
     (N H : ℕ) (f : ℝ → ℝ) (h : ℕ) : ℂ :=
   ∑ n ∈ Finset.Icc 1 (N - H),
     heathBrownPhase (f ((n + h : ℕ) : ℝ))
@@ -33,11 +34,14 @@ theorem heathBrownSourceShiftSum_eq_interval
         heathBrownPhase (f (m : ℝ)) := by
   unfold heathBrownSourceShiftSum
   rw [← Finset.image_add_right_Icc 1 (N - H) h, Finset.sum_image]
-  intro a ha b hb hab
-  exact Nat.add_right_cancel hab
+  simp_all
+
+section
+variable {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H)
+include N H h hHN hh
 
 theorem heathBrown_source_shift_interval_subset
-    {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) :
+     :
     Finset.Icc (1 + h) (N - H + h) ⊆ Finset.Icc 1 N := by
   intro m hm
   simp only [Finset.mem_Icc] at hm ⊢
@@ -46,13 +50,13 @@ theorem heathBrown_source_shift_interval_subset
   · omega
 
 theorem heathBrown_source_shift_omitted_card
-    {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) :
+     :
     (Finset.Icc 1 N \ Finset.Icc (1 + h) (N - H + h)).card = H := by
   let S := Finset.Icc 1 N
   let T := Finset.Icc (1 + h) (N - H + h)
   have hTS : T ⊆ S := by
     exact heathBrown_source_shift_interval_subset hHN hh
-  have hinter : T ∩ S = T := Finset.inter_eq_left.mpr hTS
+  have hinter := Finset.inter_eq_left.mpr hTS
   have hcardS : S.card = N := by
     dsimp only [S]
     simp [Nat.card_Icc]
@@ -60,12 +64,11 @@ theorem heathBrown_source_shift_omitted_card
     dsimp only [T]
     simp [Nat.card_Icc]
     omega
-  rw [Finset.card_sdiff, hinter, hcardS, hcardT]
-  omega
+  grind
 
 /-- A fixed source shift omits at most `H` unit-modulus summands. -/
 theorem norm_heathBrownExponentialSum_sub_sourceShift_le
-    {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) (f : ℝ → ℝ) :
+     (f : ℝ → ℝ) :
     ‖heathBrownExponentialSum N f -
         heathBrownSourceShiftSum N H f h‖ ≤ H := by
   rw [heathBrownSourceShiftSum_eq_interval]
@@ -87,6 +90,8 @@ theorem norm_heathBrownExponentialSum_sub_sourceShift_le
       simp
     _ = H := by
       exact_mod_cast heathBrown_source_shift_omitted_card hHN hh
+end
+
 
 /-- Exact finite identity behind the `O(H^2)` term. -/
 theorem heathBrown_source_average_sub_eq
@@ -95,11 +100,7 @@ theorem heathBrown_source_average_sub_eq
         ∑ h ∈ Finset.Icc 1 H, heathBrownSourceShiftSum N H f h =
       ∑ h ∈ Finset.Icc 1 H,
         (heathBrownExponentialSum N f -
-          heathBrownSourceShiftSum N H f h) := by
-  rw [Finset.sum_sub_distrib]
-  have hcard : (Finset.Icc 1 H).card = H := by
-    simp [Nat.card_Icc]
-  rw [Finset.sum_const, nsmul_eq_mul, hcard]
+          heathBrownSourceShiftSum N H f h) := by simp_all
 
 /-- Heath-Brown equation `(Σ1)` before division by `H`, with the complete
 endpoint error and no unspecified big-O constant. -/
@@ -125,6 +126,6 @@ theorem norm_heathBrown_source_average_sub_le
       simp [Nat.card_Icc, pow_two]
 
 
-end
 
-end GafniTao
+
+

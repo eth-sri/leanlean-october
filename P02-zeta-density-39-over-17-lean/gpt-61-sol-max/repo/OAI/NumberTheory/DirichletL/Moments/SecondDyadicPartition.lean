@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalWindow
 public import OAI.NumberTheory.DirichletL.Moments.DyadicCount
 
@@ -10,11 +11,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicPartition
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
+open CanonicalQuadraticSieve
 open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
+open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
 open CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))
 
@@ -48,7 +49,7 @@ theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
               (Real.log ((Ideal.absNorm J:ℝ)/dyadicScale (n 3))) := by
   let q : Fin 4→ℝ := ![secondEffectiveScale C D A K,normValue h,
     (Ideal.absNorm I:ℝ),(Ideal.absNorm J:ℝ)]
-  have he : (∑ n : Blocks a b,((∏i : Fin 4,dyadicWeight (n i) (q i)):ℝ):ℝ)=1 :=
+  have he :=
     dyadic_product_partition a b q ha hband
   calc
     _ = physicalKernel C D W K R (A*h) I J*(1:ℂ) := (mul_one _).symm
@@ -61,8 +62,8 @@ theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
       rw [Fin.prod_univ_four]
       exact physical_kernel_dyadic C D I J hC hD hI hJ A h hA hh W K R hK (fun i=>n i)
 
-end SevenEighths.CenteredMomentSecondDyadicPartition
 
-end
 
-end OAI
+
+
+

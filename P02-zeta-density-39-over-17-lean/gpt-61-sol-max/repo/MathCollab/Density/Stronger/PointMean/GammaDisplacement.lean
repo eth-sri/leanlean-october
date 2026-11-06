@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected horizontal Gamma-norm differential inequality adapted from Scott
 McColm, PointMeanGammaShift.lean, exact revision
@@ -12,10 +13,9 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set
+open Complex
 open MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem re_digamma_le_log_height_add_four {z : ℂ}
@@ -24,8 +24,7 @@ theorem re_digamma_le_log_height_add_four {z : ℂ}
   have hn : 1 ≤ ‖z‖ := hy.trans (Complex.abs_im_le_norm z)
   have hnorm : ‖z‖ ≤ |z.im| + 2 := by
     have h := Complex.norm_le_abs_re_add_abs_im z
-    rw [abs_of_pos hz] at h
-    linarith
+    grind
   have hlog := Real.log_le_log (by linarith : 0 < ‖z‖) hnorm
   have hd := norm_digamma_sub_log_le hz hy
   have he : 4 / |z.im| ≤ (4 : ℝ) :=
@@ -43,10 +42,14 @@ private theorem real_inner_self_mul (x y : ℂ) :
   change (((↑‖x‖ : ℂ) ^ 2) * y).re = ‖x‖ ^ 2 * y.re
   rw [← Complex.ofReal_pow, Complex.re_ofReal_mul]
 
+section
+variable {a b : ℝ} (ha : 0 < a) (hb : b ≤ 1)
+include a b ha hb
+
 /-- Squared-norm form of the sharp horizontal Gamma estimate.  Unlike a
 bound obtained from `‖digamma‖`, the logarithmic height occurs with coefficient
 exactly `2*d` before taking the square root. -/
-theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b ≤ 1) :
+theorem exists_norm_Gamma_sq_right_displacement_le  :
     ∃ D : ℝ, 0 < D ∧ ∀ (z : ℂ) (d : ℝ),
       a ≤ z.re → z.re + d ≤ b → 0 ≤ d → 1 ≤ |z.im| →
       ‖Complex.Gamma (z + (d : ℂ))‖ ^ 2 ≤
@@ -58,10 +61,10 @@ theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb 
   let f : ℝ → ℂ := fun x => Complex.Gamma (z + (x : ℂ))
   let f' : ℝ → ℂ := fun x =>
     Complex.Gamma (z + (x : ℂ)) * Complex.digamma (z + (x : ℂ))
-  let g : ℝ → ℝ := fun x => ‖f x‖ ^ 2
-  let g' : ℝ → ℝ := fun x =>
+  let g := fun x => ‖f x‖ ^ 2
+  let g' := fun x =>
     2 * ‖f x‖ ^ 2 * (Complex.digamma (z + (x : ℂ))).re
-  let K : ℝ := 2 * (Real.log (|z.im| + 2) + D)
+  let K := 2 * (Real.log (|z.im| + 2) + D)
   have hlog : 0 ≤ Real.log (|z.im| + 2) :=
     Real.log_nonneg (by linarith [abs_nonneg z.im])
   have hK : 0 ≤ K := by dsimp only [K]; positivity
@@ -74,7 +77,7 @@ theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb 
     have houter :=
       hasDerivAt_Gamma_eq_mul_digamma_of_re_pos
         (hzpos x hx)
-    have hshift : HasDerivAt (fun w : ℂ => z + w) 1 (x : ℂ) :=
+    have hshift :=
       (hasDerivAt_id (x : ℂ)).const_add z
     simpa only [f, f', Function.comp_def, mul_one] using!
       (houter.comp (x : ℂ) hshift).comp_ofReal
@@ -121,7 +124,7 @@ theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb 
 
 
 /-- Norm form of the sharp horizontal Gamma estimate. -/
-theorem exists_norm_Gamma_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b ≤ 1) :
+theorem exists_norm_Gamma_right_displacement_le  :
     ∃ D : ℝ, 0 < D ∧ ∀ (z : ℂ) (d : ℝ),
       a ≤ z.re → z.re + d ≤ b → 0 ≤ d → 1 ≤ |z.im| →
       ‖Complex.Gamma (z + (d : ℂ))‖ ≤
@@ -143,7 +146,8 @@ theorem exists_norm_Gamma_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b
       rw [mul_pow]
       congr 1
       rw [pow_two, ← Real.exp_add]
-      congr 1
       ring
+end
 
-end MathCollab.Density.Stronger.PointMean
+
+

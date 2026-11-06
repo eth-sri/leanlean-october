@@ -14,10 +14,14 @@ derivative bound then forces the two source indices to be close.
 
 namespace GafniTao
 
-noncomputable section
+
+
+section
+variable {N k H K : ℕ} {f : ℝ → ℝ} {m n : ℕ}
+include N k H K f m n
 
 theorem heathBrownPairCountTwo_last_coordinate_abs_le
-    {N k H K : ℕ} {f : ℝ → ℝ} {m n : ℕ}
+    
     (hp : (m, n) ∈ heathBrownPairCountTwo N k H K f)
     (hspread :
       |heathBrownDerivativeCoordinate f (k - 1) m -
@@ -33,7 +37,7 @@ theorem heathBrownPairCountTwo_last_coordinate_abs_le
 pair.  Instantiating `mu = lambda/(k-1)!` gives the displayed source range for
 the difference `d`. -/
 theorem heathBrownPairCountTwo_index_separation
-    {N k H K : ℕ} {f : ℝ → ℝ} {m n : ℕ} {mu : ℝ}
+     {mu : ℝ}
     (hmuPos : 0 < mu)
     (hg : ContinuousOn
       (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
@@ -97,8 +101,10 @@ theorem heathBrownPairCountTwo_index_separation
     have hmuInv : mu * mu⁻¹ = 1 := by field_simp
     have hinvPos : 0 < mu⁻¹ := inv_pos.mpr hmuPos
     nlinarith [mul_le_mul_of_nonneg_right hslope hinvPos.le]
-
-
 end
 
-end GafniTao
+
+
+
+
+

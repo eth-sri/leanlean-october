@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 
 @[expose] public section
@@ -9,21 +10,25 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarBounds
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
+open CenteredMomentEnergyState CenteredMomentNaturalRowSource
 
-lemma radical_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)(d:ℝ)(hd:0≤d):
+section
+variable {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
+include Z Bmask bΦ s
+
+lemma radical_power (d:ℝ)(hd:0≤d):
     (s.puncture.radical.absNorm:ℝ)^d≤Z^(Bmask*d):=by
   have hh:=Real.rpow_le_rpow (Nat.cast_nonneg _) s.radical_bound hd
   simpa only [←Real.rpow_mul (zero_lt_one.trans_le s.base_ge_one).le] using hh
 
-lemma conductor_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
+lemma conductor_power 
     (Mcap d:ℝ)(hs:s.width≤Mcap)(hd:0≤d):
     (max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d≤
       (max 1 ((fixedConductorFactor:ℝ)*bΦ))^d*Z^(Mcap*d):=by
   have hZ:0<Z:=zero_lt_one.trans_le s.base_ge_one
   have hM:0≤Mcap:=s.width_nonneg.trans hs
-  have hz:1≤Z^Mcap:=Real.one_le_rpow s.base_ge_one hM
-  have hc:1≤max 1 ((fixedConductorFactor:ℝ)*bΦ):=le_max_left _ _
+  have hz :=Real.one_le_rpow s.base_ge_one hM
+  have hc:1≤ max 1 ((fixedConductorFactor:ℝ)*bΦ):=le_max_left _ _
   have hbase:max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)≤
       (max 1 ((fixedConductorFactor:ℝ)*bΦ))*Z^Mcap:=by
     apply max_le
@@ -35,12 +40,14 @@ lemma conductor_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   rw [Real.mul_rpow (zero_le_one.trans hc) (Real.rpow_nonneg hZ.le _),←Real.rpow_mul hZ.le] at hh
   exact hh
 
-lemma radial_scale {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ):
+lemma radial_scale :
     max 1 s.radial.scale≤Z^s.width:=by
   rw [s.scale_eq]
   apply max_le (Real.one_le_rpow s.base_ge_one s.width_nonneg)
   apply Real.rpow_le_rpow_of_exponent_le s.base_ge_one
   exact le_add_of_nonneg_right s.character_nonneg
+end
+
 
 lemma physical_slot_product {α:Type*}[Fintype α](Z:ℝ)(hZ:1≤Z)(w:α→ℝ)(Mcap:ℝ)
     (hwidth:(∑i,w i)≤Mcap): (∏i,Z^(w i))≤Z^Mcap:=by
@@ -64,13 +71,12 @@ lemma log_interval (Z L d:ℝ)(hZ:1≤Z)(hL:0≤L)(hd:0<d):
     1+2*(L*Real.log Z)≤(1+2*L/d)*Z^d:=by
   have hlog:=Real.log_le_rpow_div (zero_le_one.trans hZ) hd
   have hone:=Real.one_le_rpow hZ hd.le
-  have hh:=mul_le_mul_of_nonneg_left hlog (show 0≤2*L by positivity)
   calc
     _≤Z^d+2*L*(Z^d/d):=by nlinarith
     _=(1+2*L/d)*Z^d:=by ring
 
-end SevenEighths.CenteredMomentEnergyReferenceScalarBounds
 
-end
 
-end OAI
+
+
+

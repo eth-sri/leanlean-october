@@ -34,4 +34,4 @@ theorem atkinsonBesselScale_nonneg (α : ℝ) (n : ℕ) : 0 ≤ atkinsonBesselSc
   unfold atkinsonBesselScale
   positivity
 
-end MathCollab.Density.Stronger.Atkinson
+

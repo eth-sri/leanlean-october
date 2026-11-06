@@ -10,8 +10,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentForcing
-open UniqueFactorizationMonoid CenteredExceptionalCount CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open UniqueFactorizationMonoid CenteredExceptionalCount
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def movingIdeal (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Ideal O :=
@@ -65,20 +65,24 @@ theorem movingIdeal_ne_zero (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
   exact mul_ne_zero (Finset.prod_ne_zero_iff.mpr (fun i _ => pow_ne_zero _ (hp i).ne_zero))
     (Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero))
 
-theorem movingIdeal_valuation (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
-    (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) (i : ι) :
+section
+variable (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+    (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) (i : ι)
+include P hp hinj c d V i
+
+theorem movingIdeal_valuation  :
     valuation (movingIdeal P c d V) (P i) = min (c i) (d i) + if i ∈ V then 1 else 0 := by
   rw [movingIdeal,valuation_mul _ _ _
     (Finset.prod_ne_zero_iff.mpr (fun i _ => pow_ne_zero _ (hp i).ne_zero))
     (Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)),
     valuation_prime_power_product P hp hinj, valuation_prime_product P hp hinj]
 
-theorem forcing_valuation_two (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
-    (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι)
-    (i : ι) (hi : i ∈ forcingSet c d V) : valuation (movingIdeal P c d V) (P i) = 2 := by
+theorem forcing_valuation_two  (hi : i ∈ forcingSet c d V) : valuation (movingIdeal P c d V) (P i) = 2 := by
   obtain ⟨hiV,hc,hd⟩ := Finset.mem_filter.mp hi
   rw [movingIdeal_valuation P hp hinj c d V i,hc,hd,ite_eq_left hiV]
   norm_num
+end
+
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem forcingIdeal_squarefree (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
@@ -116,8 +120,8 @@ theorem movingElement_span (p : ι → O) (c d : ι → ℕ) (V : Finset ι) :
   simp only [movingElement,movingIdeal,Ideal.span_singleton_pow,
     Ideal.prod_span_singleton,Ideal.span_singleton_mul_span_singleton]
 
-end SevenEighths.CenteredMomentForcing
 
-end
 
-end OAI
+
+
+

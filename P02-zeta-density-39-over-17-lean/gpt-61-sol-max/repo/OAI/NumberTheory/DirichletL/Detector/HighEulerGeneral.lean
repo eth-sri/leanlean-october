@@ -5,16 +5,20 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEuler
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-lemma highArray_val_prod (F : HighIdeal→ℂ) (h1 : F 1=1)
+section
+variable (F : HighIdeal→ℂ) (h1 : F 1=1)
     (hmul : ∀ a b : HighIdeal,
       IsCoprime (a.1.1*a.1.2*a.2.1*a.2.2) (b.1.1*b.1.2*b.2.1*b.2.2) → F (a*b)=F a*F b)
+include F h1 hmul
+
+lemma highArray_val_prod 
     (v : PrimeIdeal→₀HighValuation) :
     F (highIdeals v)=v.prod (fun P b=>F ((P.val^b.1.1,P.val^b.1.2),(P.val^b.2.1,P.val^b.2.2))) := by
   have hzero (P : PrimeIdeal) : F ((P.val^0,P.val^0),(P.val^0,P.val^0))=1 := by
@@ -35,9 +39,7 @@ lemma highArray_val_prod (F : HighIdeal→ℂ) (h1 : F 1=1)
       highIdeals_add,highIdeals_single]
     exact hmul _ _ hpow
 
-theorem highArray_hasProd (F : HighIdeal→ℂ) (h1 : F 1=1)
-    (hmul : ∀ a b : HighIdeal,
-      IsCoprime (a.1.1*a.1.2*a.2.1*a.2.2) (b.1.1*b.1.2*b.2.1*b.2.2) → F (a*b)=F a*F b)
+theorem highArray_hasProd 
     (hzero : ∀ a : HighIdeal,F a≠0 → a.1.1≠0 ∧ a.1.2≠0 ∧ a.2.1≠0 ∧ a.2.2≠0)
     (hs : Summable (fun a=>‖F a‖)) :
     HasProd (fun P : PrimeIdeal=>∑' b : HighValuation,
@@ -60,8 +62,10 @@ theorem highArray_hasProd (F : HighIdeal→ℂ) (h1 : F 1=1)
     refine ⟨highValuationEquiv b,?_⟩
     rw [highIdeals_eq_equiv,highValuationEquiv.symm_apply_apply]
   simpa only [←hp,hsum] using he
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

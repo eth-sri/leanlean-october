@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -20,7 +21,6 @@ open MathCollab.Density.Contour MathCollab.Density.Stronger
 open MathCollab.Density.Stronger.Fourth
 open scoped ArithmeticFunction.zeta ArithmeticFunction.sigma BigOperators Interval
   LSeries.notation ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -31,26 +31,23 @@ theorem arithmeticZeta_mul_self_eq_sigma_zero :
     ArithmeticFunction.sigma_apply, mul_ite,
     mul_zero, mul_one, pow_zero, Finset.sum_const, smul_eq_mul]
   have key : ∀ x ∈ n.divisorsAntidiagonal,
-      (if x.2 = 0 then 0 else if x.1 = 0 then 0 else 1) = 1 := by
-    intro ⟨a, b⟩ hx
-    have h := Nat.mem_divisorsAntidiagonal.mp hx
-    simp [mul_ne_zero_iff.mp (h.1 ▸ h.2)]
+      (if x.2 = 0 then 0 else if x.1 = 0 then 0 else 1) = 1 := by aesop
   simp_rw [Finset.sum_congr rfl key, Finset.card_eq_sum_ones, Finset.sum_const]
   simp only [smul_eq_mul, mul_one, ← Nat.map_div_right_divisors]
-  exact Finset.card_map
-    { toFun := fun d => (d, n / d), inj' := fun x y h => congrArg Prod.fst h }
+  bound
+
+section
+variable {s : ℂ} (hs : 1 < s.re)
+include s hs
 
 /-- The exact divisor-series expansion needed when the right AFE contour is
 opened.  It is proved locally so the result does not import unrelated admitted
 declarations from the newer PNT+ development. -/
-theorem riemannZeta_sq_eq_divisorLSeries {s : ℂ} (hs : 1 < s.re) :
+theorem riemannZeta_sq_eq_divisorLSeries  :
     riemannZeta s ^ 2 =
       LSeries (fun n : ℕ => (n.divisors.card : ℂ)) s := by
   have hNat : LSeries (↗((ζ : ArithmeticFunction ℕ) * ζ)) s =
-      LSeries (↗((ζ : ArithmeticFunction ℂ) * ζ)) s := by
-    congr 1
-    ext n
-    simp only [← ArithmeticFunction.natCoe_mul, ArithmeticFunction.natCoe_apply]
+      LSeries (↗((ζ : ArithmeticFunction ℂ) * ζ)) s := by norm_num at * <;> nlinarith
   have hMul : LSeries (↗((ζ : ArithmeticFunction ℂ) * ζ)) s =
       LSeries (↗ζ) s * LSeries (↗ζ) s :=
     ArithmeticFunction.LSeries_mul'
@@ -72,9 +69,9 @@ theorem riemannZeta_sq_eq_divisorLSeries {s : ℂ} (hs : 1 < s.re) :
 half-plane on which `riemannZeta_sq_eq_divisorLSeries` opens the zeta square.
 This is the convergence datum needed for the Hughes--Young Fubini steps; the
 value identity alone is not enough to justify rearranging the two series. -/
-theorem divisorLSeries_summable {s : ℂ} (hs : 1 < s.re) :
+theorem divisorLSeries_summable  :
     LSeriesSummable (fun n : ℕ => (n.divisors.card : ℂ)) s := by
-  have hz : LSeriesSummable (⇑(ζ : ArithmeticFunction ℂ)) s :=
+  have hz :=
     ArithmeticFunction.LSeriesSummable_zeta_iff.mpr hs
   have hconv : LSeriesSummable (⇑((ζ : ArithmeticFunction ℂ) * ζ)) s :=
     ArithmeticFunction.LSeriesSummable_mul hz hz
@@ -85,23 +82,29 @@ theorem divisorLSeries_summable {s : ℂ} (hs : 1 < s.re) :
   change (((((ζ : ArithmeticFunction ℕ) * ζ) n : ℕ) : ℂ)) = _
   rw [arithmeticZeta_mul_self_eq_sigma_zero]
   simp [ArithmeticFunction.sigma_zero_apply]
+end
 
-noncomputable def completedXiNumerator (s : ℂ) : ℂ :=
+
+section
+variable (s : ℂ)
+include s
+
+def completedXiNumerator  : ℂ :=
   s * (1 - s) * completedRiemannZeta₀ s - 1
 
-theorem completedXiNumerator_eq (s : ℂ) (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
+theorem completedXiNumerator_eq  (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
     completedXiNumerator s = s * (1 - s) * completedRiemannZeta s := by
   rw [completedRiemannZeta_eq]
   unfold completedXiNumerator
-  have h1m : 1 - s ≠ 0 := sub_ne_zero.mpr hs1.symm
-  field_simp [hs0, h1m]
-  ring
+  grind
 
-theorem completedXiNumerator_one_sub (s : ℂ) :
+theorem completedXiNumerator_one_sub  :
     completedXiNumerator (1 - s) = completedXiNumerator s := by
   unfold completedXiNumerator
   rw [completedRiemannZeta₀_one_sub]
   ring
+end
+
 
 theorem differentiable_completedXiNumerator :
     Differentiable ℂ completedXiNumerator := by
@@ -110,23 +113,29 @@ theorem differentiable_completedXiNumerator :
   exact (hpoly.mul differentiable_completedZeta₀).sub
     (differentiable_const (c := (1 : ℂ)))
 
-@[simp] theorem one_sub_afeCriticalPoint (t : ℝ) :
+section
+variable (t : ℝ)
+include t
+
+@[simp] theorem one_sub_afeCriticalPoint  :
     1 - afeCriticalPoint t = afeCriticalPoint (-t) := by
   unfold afeCriticalPoint
   push_cast
   ring
 
-theorem afeCriticalPoint_ne_zero (t : ℝ) : afeCriticalPoint t ≠ 0 := by
+theorem afeCriticalPoint_ne_zero  : afeCriticalPoint t ≠ 0 := by
   intro h
   have := congrArg Complex.re h
   norm_num [afeCriticalPoint] at this
 
-theorem afeCriticalPoint_ne_one (t : ℝ) : afeCriticalPoint t ≠ 1 := by
+theorem afeCriticalPoint_ne_one  : afeCriticalPoint t ≠ 1 := by
   intro h
   have := congrArg Complex.re h
   norm_num [afeCriticalPoint] at this
+end
 
-noncomputable def hughesYoungAuxiliaryZero (w : ℂ) : ℂ :=
+
+def hughesYoungAuxiliaryZero (w : ℂ) : ℂ :=
   (1 - 4 * w ^ 2) ^ 4
 
 @[simp]
@@ -154,29 +163,33 @@ theorem completedRiemannZeta_eq_zeta_mul_GammaR {s : ℂ}
   rw [riemannZeta_def_of_ne_zero hs0]
   field_simp [Complex.Gammaℝ_ne_zero_of_re_pos hs]
 
-theorem afeCriticalPoint_neg_eq_star (t : ℝ) :
+section
+variable (t : ℝ)
+include t
+
+theorem afeCriticalPoint_neg_eq_star  :
     afeCriticalPoint (-t) = star (afeCriticalPoint t) := by
   simp [afeCriticalPoint]
 
 /-- Zeta at the lower critical point is the conjugate of zeta at the upper
 critical point. -/
-theorem riemannZeta_afeCriticalPoint_neg_eq_star (t : ℝ) :
+theorem riemannZeta_afeCriticalPoint_neg_eq_star  :
     riemannZeta (afeCriticalPoint (-t)) =
       star (riemannZeta (afeCriticalPoint t)) := by
   rw [afeCriticalPoint_neg_eq_star]
   exact riemannZeta_conj _
 
 /-- Pole normalization for one squared completed zeta factor. -/
-noncomputable def zetaSquarePoleNormalization (t : ℝ) : ℂ :=
+def zetaSquarePoleNormalization  : ℂ :=
   (afeCriticalPoint t * (1 - afeCriticalPoint t)) ^ 2
 
-theorem zetaSquarePoleNormalization_ne_zero (t : ℝ) :
+theorem zetaSquarePoleNormalization_ne_zero  :
     zetaSquarePoleNormalization t ≠ 0 := by
   unfold zetaSquarePoleNormalization
   exact pow_ne_zero 2 (mul_ne_zero (afeCriticalPoint_ne_zero t)
     (sub_ne_zero.mpr (afeCriticalPoint_ne_one t).symm))
 
-theorem zetaSquarePoleNormalization_neg (t : ℝ) :
+theorem zetaSquarePoleNormalization_neg  :
     zetaSquarePoleNormalization (-t) =
       zetaSquarePoleNormalization t := by
   unfold zetaSquarePoleNormalization
@@ -185,25 +198,25 @@ theorem zetaSquarePoleNormalization_neg (t : ℝ) :
     exact one_sub_afeCriticalPoint t]
   ring
 
-theorem zetaSquarePoleNormalization_eq (t : ℝ) :
+theorem zetaSquarePoleNormalization_eq  :
     zetaSquarePoleNormalization t = (((1 / 4 + t ^ 2) ^ 2 : ℝ) : ℂ) := by
   unfold zetaSquarePoleNormalization afeCriticalPoint
   apply Complex.ext <;> norm_num [Complex.mul_re, Complex.mul_im, pow_two] <;> ring
 
-theorem zetaSquarePoleNormalization_norm_lower (t : ℝ) :
+theorem zetaSquarePoleNormalization_norm_lower  :
     1 / 16 ≤ ‖zetaSquarePoleNormalization t‖ := by
   rw [zetaSquarePoleNormalization_eq, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (sq_nonneg _)]
-  nlinarith [sq_nonneg t, sq_nonneg (t ^ 2)]
+  nlinarith
 
 /-- Entire numerator for the one-sided squared-zeta AFE. -/
-noncomputable def zetaSquareContourNumerator
-    (t : ℝ) (w : ℂ) : ℂ :=
+def zetaSquareContourNumerator
+     (w : ℂ) : ℂ :=
   Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w *
     completedXiNumerator (afeCriticalPoint t + w) ^ 2 /
       zetaSquarePoleNormalization t
 
-theorem differentiable_zetaSquareContourNumerator (t : ℝ) :
+theorem differentiable_zetaSquareContourNumerator  :
     Differentiable ℂ (zetaSquareContourNumerator t) := by
   unfold zetaSquareContourNumerator
   have hshift : Differentiable ℂ (fun w : ℂ => afeCriticalPoint t + w) := by
@@ -212,12 +225,12 @@ theorem differentiable_zetaSquareContourNumerator (t : ℝ) :
       (fun w : ℂ => completedXiNumerator (afeCriticalPoint t + w)) :=
     fun w => differentiable_completedXiNumerator.differentiableAt.comp w
       (hshift w)
-  have haux : Differentiable ℂ hughesYoungAuxiliaryZero :=
+  have haux :=
     differentiable_hughesYoungAuxiliaryZero
   fun_prop (disch := assumption)
 
 /-- Functional-equation reflection of the one-sided numerator. -/
-theorem zetaSquareContourNumerator_neg (t : ℝ) (w : ℂ) :
+theorem zetaSquareContourNumerator_neg  (w : ℂ) :
     zetaSquareContourNumerator t (-w) =
       zetaSquareContourNumerator (-t) w := by
   unfold zetaSquareContourNumerator
@@ -231,7 +244,7 @@ theorem zetaSquareContourNumerator_neg (t : ℝ) (w : ℂ) :
   simp only [neg_sq]
 
 /-- The residue is the literal square of the completed zeta value. -/
-theorem zetaSquareContourNumerator_zero (t : ℝ) :
+theorem zetaSquareContourNumerator_zero  :
     zetaSquareContourNumerator t 0 =
       completedRiemannZeta (afeCriticalPoint t) ^ 2 := by
   simp only [zetaSquareContourNumerator,
@@ -243,30 +256,28 @@ theorem zetaSquareContourNumerator_zero (t : ℝ) :
   unfold zetaSquarePoleNormalization
   ring
 
-noncomputable def zetaSquareContourIntegrand
-    (t : ℝ) (w : ℂ) : ℂ :=
+def zetaSquareContourIntegrand
+     (w : ℂ) : ℂ :=
   zetaSquareContourNumerator t w / w
 
 /-- Reflection changes the sign of the Cauchy kernel and the height. -/
-theorem zetaSquareContourIntegrand_neg (t : ℝ) (w : ℂ) :
+theorem zetaSquareContourIntegrand_neg  (w : ℂ) :
     zetaSquareContourIntegrand t (-w) =
       -zetaSquareContourIntegrand (-t) w := by
   unfold zetaSquareContourIntegrand
   rw [zetaSquareContourNumerator_neg]
-  by_cases hw : w = 0
-  · simp [hw]
-  · field_simp
+  ring
 
 /-- Exact residue theorem for the one-sided square. -/
 theorem zetaSquare_finiteRectangle
-    (t : ℝ) {c H : ℝ} (hc : 0 < c) (hH : 0 < H) :
+     {c H : ℝ} (hc : 0 < c) (hH : 0 < H) :
     RectangleIntegral'
         (fun w : ℂ => zetaSquareContourNumerator t w / w)
         ((-c : ℂ) - (H : ℂ) * I) ((c : ℂ) + (H : ℂ) * I) =
       completedRiemannZeta (afeCriticalPoint t) ^ 2 := by
-  let F : ℂ → ℂ := zetaSquareContourNumerator t
-  let z : ℂ := (-c : ℂ) - (H : ℂ) * I
-  let w : ℂ := (c : ℂ) + (H : ℂ) * I
+  let F := zetaSquareContourNumerator t
+  let z := (-c : ℂ) - (H : ℂ) * I
+  let w := (c : ℂ) + (H : ℂ) * I
   have hF : Differentiable ℂ F :=
     differentiable_zetaSquareContourNumerator t
   have hzero : Rectangle z w ∈ 𝓝 (0 : ℂ) := by
@@ -294,6 +305,8 @@ theorem zetaSquare_finiteRectangle
     (zIm_le_wIm := by simp [z, w]; linarith)
     hzero hdslope hprincipal
   simpa [F, z, w, zetaSquareContourNumerator_zero] using hrect
+end
+
 
 theorem hIntegral_zetaSquare_bottom (t c H : ℝ) :
     HIntegral (zetaSquareContourIntegrand t) (-c) c (-H) =
@@ -314,14 +327,7 @@ theorem hIntegral_zetaSquare_bottom (t c H : ℝ) :
   simp only [neg_neg] at hcomp
   change (∫ x in -c..c, f ((x : ℂ) + ((-H : ℝ) : ℂ) * I)) =
     -(∫ x in -c..c, g ((x : ℂ) + (H : ℂ) * I))
-  calc
-    _ = -∫ x in -c..c, g (((-x : ℝ) : ℂ) + (H : ℂ) * I) := by
-      rw [← intervalIntegral.integral_neg]
-      apply intervalIntegral.integral_congr
-      intro x _hx
-      simpa only [ofReal_neg] using hpoint x
-    _ = _ := by
-      rw [hcomp]
+  simp_all
 
 theorem vIntegral_zetaSquare_left (t c H : ℝ) :
     VIntegral (zetaSquareContourIntegrand t) (-c) (-H) H =
@@ -342,25 +348,22 @@ theorem vIntegral_zetaSquare_left (t c H : ℝ) :
   simp only [neg_neg] at hcomp
   have hraw :
     (∫ y in -H..H, f (((-c : ℝ) : ℂ) + (y : ℂ) * I)) =
-        -∫ y in -H..H, g ((c : ℂ) + ((-y : ℝ) : ℂ) * I) := by
-      rw [← intervalIntegral.integral_neg]
-      apply intervalIntegral.integral_congr
-      intro y _hy
-      simpa only [ofReal_neg] using hpoint y
+        -∫ y in -H..H, g ((c : ℂ) + ((-y : ℝ) : ℂ) * I) := by simp_all
   have hraw' :
       (∫ y in -H..H, f (((-c : ℝ) : ℂ) + (y : ℂ) * I)) =
-        -(∫ y in -H..H, g ((c : ℂ) + (y : ℂ) * I)) := by
-    calc
-      _ = -∫ y in -H..H, g ((c : ℂ) + ((-y : ℝ) : ℂ) * I) := hraw
-      _ = _ := by rw [hcomp]
+        -(∫ y in -H..H, g ((c : ℂ) + (y : ℂ) * I)) := by simp_all
   unfold VIntegral
   rw [hraw']
   simp [g]
 
+section
+variable (t : ℝ)
+include t
+
 /-- Finite-height one-sided AFE with both reflected right contours and both
 horizontal errors displayed. -/
 theorem zetaSquareAFE_truncated_native
-    (t : ℝ) {c H : ℝ} (hc : 0 < c) (hH : 0 < H) :
+     {c H : ℝ} (hc : 0 < c) (hH : 0 < H) :
     completedRiemannZeta (afeCriticalPoint t) ^ 2 =
       VIntegral' (zetaSquareContourIntegrand t) c (-H) H +
       VIntegral' (zetaSquareContourIntegrand (-t)) c (-H) H -
@@ -384,16 +387,16 @@ theorem zetaSquareAFE_truncated_native
     ring] at hrect
   exact hrect.symm
 
-def zetaSquareGammaNormalization (t : ℝ) : ℂ :=
+def zetaSquareGammaNormalization  : ℂ :=
   Gammaℝ (afeCriticalPoint t) * Gammaℝ (afeCriticalPoint (-t))
 
-theorem zetaSquareGammaNormalization_ne_zero (t : ℝ) :
+theorem zetaSquareGammaNormalization_ne_zero  :
     zetaSquareGammaNormalization t ≠ 0 := by
   exact mul_ne_zero
     (Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint]))
     (Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint]))
 
-theorem completedZeta_square_eq_norm_mul_gamma (t : ℝ) :
+theorem completedZeta_square_eq_norm_mul_gamma  :
     completedRiemannZeta (afeCriticalPoint t) ^ 2 =
       (zetaMomentCriticalNorm t ^ 2 : ℝ) * zetaSquareGammaNormalization t := by
   have hreflection : completedRiemannZeta (afeCriticalPoint (-t)) =
@@ -413,5 +416,7 @@ theorem completedZeta_square_eq_norm_mul_gamma (t : ℝ) :
       rw [completedRiemannZeta_eq_zeta_mul_GammaR (by norm_num [afeCriticalPoint]),
         completedRiemannZeta_eq_zeta_mul_GammaR (by norm_num [afeCriticalPoint])]
     _ = _ := by rw [hnorm]; unfold zetaSquareGammaNormalization; ring
+end
 
-end MathCollab.Density.Stronger.Fourth
+
+

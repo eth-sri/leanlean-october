@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ExponentArithmetic
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 
@@ -40,8 +41,7 @@ lemma dyadicHeightIndex_spec (T : ℝ) (hT : 1 ≤ T) :
       _ = 2 * T := by
         rw [Real.rpow_add (by norm_num : (0 : ℝ) < 2), hRpowLogb, Real.rpow_one]
         ring
-  refine ⟨hCover, hUpper, ?_⟩
-  simpa [Real.logb] using hUpperExp
+  bound
 
 /-- An epsilon-power bound on every positive dyadic slab implies the same
 bound for the full symmetric zero count. The proof includes the fixed
@@ -71,7 +71,7 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
     have hRaw := hC x hx₀
     have hxNonneg : 0 ≤ x := hx.le
     have hCountNonneg : 0 ≤ (zeroCountRect σ 1 x (2 * x) : ℝ) := Nat.cast_nonneg _
-    have hqa : x ^ q * x ^ a = x ^ (q + a) := (Real.rpow_add hx q a).symm
+    have hqa := (Real.rpow_add hx q a).symm
     rw [Real.norm_eq_abs, abs_abs, abs_of_nonneg hCountNonneg,
       Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (Real.rpow_nonneg hxNonneg _)
         (abs_nonneg (x ^ a))), abs_of_nonneg (Real.rpow_nonneg hxNonneg _)] at hRaw
@@ -87,11 +87,7 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
   filter_upwards [eventually_ge_atTop (max (Real.exp 1) X)] with T hT
   have hTExp : Real.exp 1 ≤ T := le_trans (le_max_left _ _) hT
   have hTX : X ≤ T := le_trans (le_max_right _ _) hT
-  have hTOne : 1 ≤ T := by
-    have : (1 : ℝ) < Real.exp 1 := by
-      rw [← Real.exp_zero]
-      exact Real.exp_lt_exp.mpr (by norm_num)
-    exact (this.trans_le hTExp).le
+  have hTOne : 1 ≤ T := by linarith
   have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTOne
   let m := dyadicHeightIndex T
   have hmSpec := dyadicHeightIndex_spec T hTOne
@@ -102,12 +98,8 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
     have := Real.log_le_log (Real.exp_pos 1) hTExp
     simpa using this
   have hLogTwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hmBound : (m : ℝ) ≤ (1 / Real.log 2 + 1) * Real.log T := by
-    calc
-      (m : ℝ) ≤ Real.log T / Real.log 2 + 1 := hmLog.le
-      _ ≤ Real.log T / Real.log 2 + Real.log T := by linarith
-      _ = (1 / Real.log 2 + 1) * Real.log T := by ring
-  have hLogPower : Real.log T ≤ T ^ q / q :=
+  have hmBound : (m : ℝ) ≤ (1 / Real.log 2 + 1) * Real.log T := by grind
+  have hLogPower :=
     Real.log_le_rpow_div hTpos.le hq
   have hmPower : (m : ℝ) ≤ ((1 / Real.log 2 + 1) / q) * T ^ q := by
     calc
@@ -120,7 +112,7 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
         (((2 : ℕ) ^ (i + 1) : ℕ) : ℝ) : ℝ) ≤
         B + |C| * (2 * T) ^ (q + a) := by
     intro i hi
-    have hiLt : i < m := Finset.mem_range.mp hi
+    have hiLt := Finset.mem_range.mp hi
     by_cases hiJ : i < J
     · have hiSucc : i + 1 ≤ J := by omega
       have hMono := zeroCountRect_mono σ 1
@@ -205,7 +197,7 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
     rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hTpos.le]
   have hTargetNonneg : 0 ≤ T ^ ε * |T ^ a| := by positivity
   have hqaNonneg : 0 ≤ q + a := add_nonneg hq.le ha
-  have hPowOne : 1 ≤ T ^ (q + a) := Real.one_le_rpow hTOne hqaNonneg
+  have hPowOne := Real.one_le_rpow hTOne hqaNonneg
   have hExponent : q + (q + a) ≤ ε + a := by dsimp [q]; linarith
   have hPowCombine : T ^ q * T ^ (q + a) ≤ T ^ (ε + a) := by
     rw [← Real.rpow_add hTpos]
@@ -256,4 +248,4 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
         nlinarith [hBTarget, hScaled]
   exact hGlobal.trans hMain
 
-end GuthMaynard.NativeMoment
+

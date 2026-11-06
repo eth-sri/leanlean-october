@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected finite exponential-overlap/point-mean consumer proofs adapted from
 Scott McColm, PointMeanExponentialOverlap.lean, exact revision
@@ -15,8 +16,7 @@ public import Mathlib.Analysis.SpecificLimits.Normed
 
 open Finset
 open scoped BigOperators
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- Exponential decay is bounded by the dyadic geometric weight attached to
@@ -106,8 +106,7 @@ theorem separated_distance_shell_card_le_two
     have hlarge := hSep a haS.1 b hbS.1 hab
     exact (not_lt_of_ge hlarge) habs
   have hsplit := Finset.card_filter_add_card_filter_not (s := S) P
-  change S.card ≤ 2
-  omega
+  grind
 
 /-- The source exponential kernels have a uniform overlap bound. -/
 theorem sum_exp_neg_abs_sub_le_four
@@ -138,8 +137,7 @@ theorem sum_exp_neg_abs_sub_le_four
           rw [Finset.sum_mul]
           apply Finset.sum_congr rfl
           intro u hu
-          rw [(Finset.mem_filter.mp hu).2]
-          simp
+          simp_all
         _ ≤ 2 * (1 / 2 : ℝ) ^ k := by
           gcongr
           exact_mod_cast separated_distance_shell_card_le_two W x k hSep
@@ -151,4 +149,4 @@ theorem sum_exp_neg_abs_sub_le_four
       · norm_num
       · norm_num
 
-end MathCollab.Density.Stronger.PointMean
+

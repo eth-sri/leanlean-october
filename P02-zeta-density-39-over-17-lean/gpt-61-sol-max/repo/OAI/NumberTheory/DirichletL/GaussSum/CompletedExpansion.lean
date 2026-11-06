@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Arithmetic.IdealMobius
 
 @[expose] public section
@@ -8,71 +9,71 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                        
+                                  
+                                  
+                          
 
-open scoped BigOperators Classical
+                                  
 
 namespace CompletedGauss
 
@@ -138,7 +139,6 @@ theorem vstar_source_normalization (Ψ : O →* ℂ) (W : ℝ → ℂ)
   have hN : (0 : ℝ) < Ideal.absNorm I := lt_of_lt_of_le zero_lt_one (norm_at_least_one I hI)
   have hsN : (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.2 hN).ne'
-  have hsX : (Real.sqrt X : ℂ) ≠ 0 := by exact_mod_cast (Real.sqrt_pos.2 hX).ne'
   rw [Vstar, Real.sqrt_div hN.le, Complex.ofReal_div]
   field_simp
 
@@ -272,7 +272,7 @@ end CompletedGauss
 namespace FiniteRayExpansion
 
 variable {R : Type*} [CommRing R] [Fintype R]
-noncomputable local instance : Fintype (MulChar R ℂ) := Fintype.ofFinite _
+local instance : Fintype (MulChar R ℂ) := Fintype.ofFinite _
 
 def unitFourierCoeff (f : Rˣ → ℂ) (χ : MulChar R ℂ) : ℂ :=
   (∑ u : Rˣ, f u * star (χ (u : R))) / (Fintype.card Rˣ : ℂ)
@@ -283,12 +283,10 @@ theorem unit_fourier_inversion (f : Rˣ → ℂ) (v : Rˣ) :
   simp_rw [unitFourierCoeff, div_mul_eq_mul_div, Finset.sum_mul, mul_assoc]
   rw [← Finset.sum_div, Finset.sum_comm]
   simp_rw [← Finset.mul_sum, FiniteRingSieve.unit_char_orthogonal]
-  simp only [mul_ite, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
-  exact mul_div_cancel_right₀ (f v) hN
+  simp
 
 theorem norm_char_unit (χ : MulChar R ℂ) (u : Rˣ) : ‖χ (u : R)‖ = 1 := by
-  simpa only [MulChar.coe_equivToUnitHom] using
-    Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
+  exact Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
 
 theorem norm_char_le_one (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
   by_cases hr : IsUnit r
@@ -307,7 +305,6 @@ theorem unitFourierCoeff_norm_le_average (f : Rˣ → ℂ) (χ : MulChar R ℂ) 
 
 theorem unitFourierCoeff_norm_le (f : Rˣ → ℂ) (B : ℝ)
     (hf : ∀ u, ‖f u‖ ≤ B) (χ : MulChar R ℂ) : ‖unitFourierCoeff f χ‖ ≤ B := by
-  have hN : (Fintype.card Rˣ : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
   calc
     _ ≤ (∑ u : Rˣ, ‖f u‖) / (Fintype.card Rˣ : ℝ) := unitFourierCoeff_norm_le_average f χ
     _ ≤ (∑ _u : Rˣ, B) / (Fintype.card Rˣ : ℝ) :=
@@ -332,8 +329,7 @@ def zeroExtendUnits (f : Rˣ → ℂ) (r : R) : ℂ :=
 @[simp] theorem zeroExtendUnits_unit (f : Rˣ → ℂ) (u : Rˣ) :
     zeroExtendUnits f (u : R) = f u := by
   rw [zeroExtendUnits, dite_eq_left u.isUnit]
-  congr 1
-  exact Units.ext u.isUnit.unit_spec
+  simp
 
 @[simp] theorem zeroExtendUnits_nonunit (f : Rˣ → ℂ) (r : R) (hr : ¬ IsUnit r) :
     zeroExtendUnits f r = 0 := dite_eq_right hr
@@ -344,8 +340,7 @@ theorem zeroExtendUnits_fourier (f : Rˣ → ℂ) (r : R) :
   · obtain ⟨u, rfl⟩ := hr
     rw [zeroExtendUnits_unit]
     exact (unit_fourier_inversion f u).symm
-  · rw [zeroExtendUnits_nonunit f r hr]
-    simp only [MulChar.map_nonunit _ hr, mul_zero, Finset.sum_const_zero]
+  simp_all
 
 theorem zeroExtendUnits_restrict (f : R → ℂ) (r : R) :
     zeroExtendUnits (fun u : Rˣ => f (u : R)) r = (if IsUnit r then 1 else 0) * f r := by
@@ -426,12 +421,12 @@ open FiniteRayExpansion
 
 abbrev RayRing := O ⧸ Ideal.span {(4 : O)}
 
-noncomputable instance rayRingFintype : Fintype RayRing := by
+instance rayRingFintype : Fintype RayRing := by
   letI : Finite RayRing := finite_quotient_span (by norm_num : (4 : O) ≠ 0)
   exact Fintype.ofFinite _
 
 abbrev RayCharacter := MulChar RayRing ℂ
-noncomputable instance rayCharacterFintype : Fintype RayCharacter := Fintype.ofFinite _
+instance rayCharacterFintype : Fintype RayCharacter := Fintype.ofFinite _
 
 def rayCharacter (χ : RayCharacter) (a : O) : ℂ :=
   χ (Ideal.Quotient.mk (Ideal.span {(4 : O)}) a)
@@ -451,7 +446,7 @@ def rayMask (a : O) : ℂ :=
 
 theorem rayRing_card : Fintype.card RayRing = 16 := by
   have h := rational_modulus_card 4 (by decide)
-  simpa only [Nat.card_eq_fintype_card, Nat.cast_ofNat, show (4 : ℕ) ^ 2 = 16 by decide] using h
+  simp_all
 
 theorem rayUnit_card_le : Fintype.card RayRingˣ ≤ 16 := by
   calc
@@ -500,7 +495,7 @@ theorem pairCoeff_sum_norm_le (f : RayRing → RayRing → ℂ) (B : ℝ)
   have hB : 0 ≤ B := (norm_nonneg _).trans (hf 1 1)
   have hcard : (Fintype.card RayRingˣ : ℝ) ^ 2 ≤ 256 := by
     have h : (Fintype.card RayRingˣ : ℝ) ≤ 16 := by exact_mod_cast rayUnit_card_le
-    nlinarith [Nat.cast_nonneg (α := ℝ) (Fintype.card RayRingˣ)]
+    nlinarith
   exact (unitTensorCoeff_sum_norm_le _ B hf).trans (mul_le_mul_of_nonneg_right hcard hB)
 
 theorem quadraticRayValue_bounds (r : EisensteinEPrimaryPhase.Coord) :
@@ -513,7 +508,6 @@ theorem quadraticRayValue_bounds (r : EisensteinEPrimaryPhase.Coord) :
     ring_nf <;> norm_num [Complex.I_sq, Complex.inv_I]
 
 theorem fixedGQuotientValue_norm_le_two (r : RayRing) : ‖fixedGQuotientValue r‖ ≤ 2 := by
-  let : Fintype (O ⧸ cubicTwoIdeal) := Fintype.ofFinite _
   let χ : MulChar (O ⧸ cubicTwoIdeal) ℂ :=
     (cubicChar cubicTwoIdeal cubicTwoIdeal_good).ringHomComp eisEmbedding
   let x := Ideal.Quotient.mk cubicTwoIdeal (lift (residueQuotientFour r))
@@ -558,11 +552,10 @@ theorem quadraticRayPair_character_expansion (a b : O) :
     rayMask a * rayMask b * MixedCrossSeparation.quadraticRayPair (residue a) (residue b) =
       ∑ χ : RayCharacter, ∑ η : RayCharacter,
         crossCoeff χ η * rayCharacter χ a * rayCharacter η b := by
-  simpa only [crossCoeff, crossQuotientPhase, residueQuotientFour_mk] using
-    pair_phase_expansion crossQuotientPhase a b
+  exact pair_phase_expansion crossQuotientPhase a b
 
-end RayFourExpansion
 
-end
 
-end OAI
+
+
+

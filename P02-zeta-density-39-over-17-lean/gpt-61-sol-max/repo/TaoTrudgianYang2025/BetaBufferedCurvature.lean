@@ -14,13 +14,13 @@ The cutoff has total variation at most two, independent of its width.
 The original model supplies curvature before any physical parameters are chosen.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem norm_modelPhaseBufferedNormalizedMode_curvature
     {F : ℝ → ℝ} {σ δ T q l r η : ℝ}
@@ -104,4 +104,4 @@ theorem modelPhaseBufferedFourierMode_uniform_curvature {σ : ℝ} (hσ : 0 < σ
   rw [Real.sqrt_mul hT.le] at h
   exact h.trans_eq (by dsimp [C]; ring)
 
-end TaoTrudgianYang2025
+

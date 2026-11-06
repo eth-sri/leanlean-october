@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMonotone
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CanonicalCoefficientClass InverseTerminalWidths
-open ConcretePrimeRowBridge CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open ConcretePrimeRowBridge
+open scoped EisensteinO
 
 theorem actual_rank_family_period (q:ℕ)(base Ψ:O→*ℂ)
     (hbase:FactorsModulo (fixedBaseConductor q) base)
@@ -71,22 +71,27 @@ theorem canonical_rank_subslots {ι σ:Type}[DecidableEq ι][DecidableEq σ]
   exact h Ψ hΨ m hm N V Mr Qwidth hN hV hM hQ hMc hFc hmargin hnorm ss
     (hss.trans hsub) labels hlabels s
 
-theorem canonical_rank_subslot_product {σ:Type*}[DecidableEq σ]
-    (slots subslots:Finset σ)(H:σ→ℝ)(hsub:subslots⊆slots)
+section
+variable {σ:Type*}[DecidableEq σ]
+    (slots subslots:Finset σ)(H:σ→ℝ)
+include σ slots subslots H
+
+theorem canonical_rank_subslot_product (hsub:subslots⊆slots)
     (hH:∀i∈slots,1≤H i):
     (∏i∈subslots,H i)≤∏i∈slots,H i :=
   Finset.prod_le_prod_of_subset_of_one_le₀ hsub
     (fun i hi=>(zero_le_one: (0:ℝ)≤1).trans (hH i (hsub hi)))
     (fun i hi _=>hH i hi)
 
-theorem canonical_rank_subslot_cap {σ:Type*}[DecidableEq σ]
-    (slots subslots:Finset σ)(H:σ→ℝ)(Z z:ℝ)(hsub:subslots⊆slots)
+theorem canonical_rank_subslot_cap (Z z:ℝ)(hsub:subslots⊆slots)
     (hH:∀i∈slots,1≤H i)(hcap:(∏i∈slots,H i)≤Z^z):
     (∏i∈subslots,H i)≤Z^z :=
   (canonical_rank_subslot_product slots subslots H hsub hH).trans hcap
-
-end SevenEighths.InverseMoment
-
 end
 
-end OAI
+
+
+
+
+
+

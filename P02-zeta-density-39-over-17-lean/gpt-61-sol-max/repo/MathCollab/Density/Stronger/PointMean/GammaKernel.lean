@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Native point-mean Gamma-kernel slice, inspired by Scott McColm's
 PointMeanGammaKernel.lean, exact revision
@@ -15,8 +16,7 @@ public import Mathlib.Tactic
 
 open Complex
 open MathCollab.Density.GammaBounds
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- Retain the full pi/2 exponential rate in the exact half-line formula. -/
@@ -33,10 +33,7 @@ theorem norm_Gamma_half_vertical_le_exp (t : ℝ) :
   have hsq_le : ‖Complex.Gamma ((1 / 2 : ℂ) + (t : ℂ) * I)‖ ^ 2 ≤
       2 * Real.pi * Real.exp (-(Real.pi * |t|)) := by
     rw [hsq, Real.exp_neg]
-    change Real.pi / Real.cosh (Real.pi * t) ≤
-      (2 * Real.pi) / Real.exp (Real.pi * |t|)
-    apply (div_le_div_iff₀ (Real.cosh_pos _) (Real.exp_pos _)).2
-    nlinarith [Real.pi_pos]
+    field_simp <;> nlinarith
   have hsq_final : ‖Complex.Gamma ((1 / 2 : ℂ) + (t : ℂ) * I)‖ ^ 2 ≤
       (3 * Real.exp (-(Real.pi * |t|) / 2)) ^ 2 := by
     calc
@@ -144,4 +141,4 @@ theorem heathBrown_Gamma_shift_kernel_strong_bound {δ v : ℝ}
   · simpa only [abs_neg, abs_of_pos hδ] using Gamma_displaced_strong_bound
       (a := -δ) (v := v) (by linarith) (by linarith) (neg_ne_zero.mpr hδ.ne')
 
-end MathCollab.Density.Stronger.PointMean
+

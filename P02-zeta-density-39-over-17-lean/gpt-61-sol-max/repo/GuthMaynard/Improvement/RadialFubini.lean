@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.RadialCoordinates
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff
@@ -44,13 +43,17 @@ theorem radialIntegrand_measurable {a : ℝ → ℂ} {μ : ℝ → ℝ}
   unfold radialIntegrand radialAmplitude
   fun_prop
 
-/-- Absolute integrability on the full radial/ratio space is proved from
-actual compact support and Fourier mass bounds, with no Fubini premise. -/
-theorem radialIntegrand_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
+section
+variable {a : ℝ → ℂ} {μ : ℝ → ℝ}
     (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
     (hs : ∀ x, x ∉ Icc l u → a x = 0)
     (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ)
-    (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
+    (L : ℝ) (m : ℤ × (ℤ × ℤ))
+include a μ ha l u hl hlu hs hm h0 hi L m
+
+/-- Absolute integrability on the full radial/ratio space is proved from
+actual compact support and Fourier mass bounds, with no Fubini premise. -/
+theorem radialIntegrand_integrable  :
     Integrable (fun z : ℝ × (ℝ × ℝ) => radialIntegrand a μ L m z.1 z.2) := by
   let Q := Icc (l/u) (u/l) ×ˢ Icc (l/u) (u/l)
   let E := Icc l u ×ˢ Q
@@ -73,11 +76,7 @@ theorem radialIntegrand_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
 
 /-- Fubini moves the actual radial integral inside the ratio integral.
 The original three Fourier factors and the exact Jacobian are preserved. -/
-theorem spatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ)
-    (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
+theorem spatialCubicMode_radial_fubini  :
     (∫ r, ∫ x₁, ∫ x₂, spatialCubicMode a μ L m x₁ x₂ r) =
       ∫ p in Icc (l/u) (u/l) ×ˢ Icc (l/u) (u/l),
         radialKernel a L m p * ratioFourierProduct μ p := by
@@ -108,5 +107,7 @@ theorem spatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ}
     by_contra hn
     exact hp (radialAmplitude_support hl hlu hs hn).2
   simp [radialKernel,hz]
+end
 
-end GuthMaynard.Improvement
+
+

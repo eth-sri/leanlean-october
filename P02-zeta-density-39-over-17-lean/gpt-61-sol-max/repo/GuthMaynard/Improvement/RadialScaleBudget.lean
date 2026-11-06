@@ -2,9 +2,8 @@ module
 public import GuthMaynard.Improvement.CubicModeCount
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+
+open MeasureTheory
 open scoped ContDiff
 namespace GuthMaynard.Improvement
 
@@ -20,4 +19,4 @@ theorem choose_radial_discard_order {η : ℝ} (hη : 0 < η) :
   rw [← Real.rpow_natCast (T^η) n, ← Real.rpow_mul hTp.le, ← Real.rpow_sub hTp]
   exact Real.rpow_le_rpow_of_exponent_le hT (by nlinarith)
 
-end GuthMaynard.Improvement
+

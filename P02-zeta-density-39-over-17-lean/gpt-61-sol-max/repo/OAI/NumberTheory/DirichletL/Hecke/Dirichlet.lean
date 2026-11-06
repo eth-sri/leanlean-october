@@ -45,7 +45,11 @@ theorem quotient_unit_of_norm_unit (z : O)
   rw [hn] at hi
   exact isUnit_of_mul_isUnit_left hi
 
-def residue (χ : DirichletCharacter ℂ q) : MulChar (O ⧸ modulus q) ℂ where
+section
+variable (χ : DirichletCharacter ℂ q)
+include χ
+
+def residue  : MulChar (O ⧸ modulus q) ℂ where
   toFun x := Quotient.liftOn' x (InitialMeanSquare.normCharacter χ) (by
     intro a b hab
     exact CanonicalCoefficientClass.normCharacter_factorsModulo χ a b
@@ -61,29 +65,39 @@ def residue (χ : DirichletCharacter ℂ q) : MulChar (O ⧸ modulus q) ℂ wher
     apply MulChar.map_nonunit
     exact fun h => hz (quotient_unit_of_norm_unit z h)
 
-@[simp] theorem residue_mk (χ : DirichletCharacter ℂ q) (z : O) :
+@[simp] theorem residue_mk  (z : O) :
     residue χ (Ideal.Quotient.mk (modulus q) z) = χ (Ideal.absNorm (Ideal.span {z})) := rfl
 
-theorem residue_unit_trivial (χ : DirichletCharacter ℂ q) (u : Oˣ) :
+theorem residue_unit_trivial  (u : Oˣ) :
     residue χ (Ideal.Quotient.mk (modulus q) (u : O)) = 1 := by
   rw [residue_mk, Ideal.span_singleton_eq_top.mpr u.isUnit, Ideal.absNorm_top]
   simp
+end
+
 
 variable [NeZero q]
 
-def character (χ : DirichletCharacter ℂ q) : Character :=
+section
+variable (χ : DirichletCharacter ℂ q)
+include χ
+
+def character  : Character :=
   Character.ofResidue (modulus q) modulus_ne_bot (residue χ) (residue_unit_trivial χ)
 
-@[simp] theorem elementCoeff_character (χ : DirichletCharacter ℂ q) (z : O) :
+@[simp] theorem elementCoeff_character  (z : O) :
     elementCoeff (character χ) z = χ (Ideal.absNorm (Ideal.span {z})) := rfl
 
-theorem idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal O) (hI : I ≠ 0) :
+section
+variable (I : Ideal O)
+include I
+
+theorem idealCoeff_character  (hI : I ≠ 0) :
     idealCoeff (character χ) I = χ (Ideal.absNorm I) := by
   rw [← ConcretePrimeRowBridge.span_idealGenerator I]
   rw [idealCoeff_span _ (ConcretePrimeRowBridge.idealGenerator_ne_zero I hI),
     elementCoeff_character, ConcretePrimeRowBridge.span_idealGenerator]
 
-theorem moebius_idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal O) :
+theorem moebius_idealCoeff_character  :
     (UniqueFactorizationMonoid.moebius I : ℂ) * idealCoeff (character χ) I =
       ShortDraftHeckeBridge.baseChangeWeight χ I := by
   by_cases hI : I = 0
@@ -93,9 +107,18 @@ theorem moebius_idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal 
     simp
   · rw [idealCoeff_character χ I hI]
     rfl
+end
 
-theorem inverseSeries_eq_pairInverse_LSeries (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (hs : 1 < s.re) :
+
+section
+variable {s : ℂ}
+include s
+
+section
+variable (hs : 1 < s.re)
+include hs
+
+theorem inverseSeries_eq_pairInverse_LSeries  :
     IdealEuler.inverseSeries (idealCoeff (character χ)) s =
       LSeries (ShortDraftHeckeBridge.pairInverseCoeff χ (ShortDraftHeckeBridge.baseChangeChar χ)) s := by
   rw [IdealEuler.inverseSeries]
@@ -112,8 +135,7 @@ theorem inverseSeries_eq_pairInverse_LSeries (χ : DirichletCharacter ℂ q)
     (ShortDraftHeckeBridge.baseChangeChar χ) _
     (ShortDraftHeckeBridge.normFiberCoeff_baseChange_eq_pairInverseCoeff χ) s
 
-theorem LFunction_eq_dirichlet_product_right (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (hs : 1 < s.re) :
+theorem LFunction_eq_dirichlet_product_right  :
     LFunction (character χ) s = χ.LFunction s *
       (ShortDraftHeckeBridge.baseChangeChar χ).LFunction s := by
   have hH := inverseSeries_mul_LFunction (character χ) hs
@@ -127,9 +149,10 @@ theorem LFunction_eq_dirichlet_product_right (χ : DirichletCharacter ℂ q)
     exact zero_ne_one hH
   apply mul_left_cancel₀ hne
   rw [hH, mul_comm, hD]
+end
 
-theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+
+theorem LFunction_eq_dirichlet_product  (h0 : s ≠ 0) (h1 : s ≠ 1) :
     LFunction (character χ) s = χ.LFunction s *
       (ShortDraftHeckeBridge.baseChangeChar χ).LFunction s := by
   let U : Set ℂ := {0,1}ᶜ
@@ -157,10 +180,17 @@ theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
   · filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds
       (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
     exact LFunction_eq_dirichlet_product_right χ hz
+end
+end
+
+
+section
+variable (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
+      (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
+include hH
 
 theorem dirichlet_seven_eighths_of_hecke
-    (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
-      (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
+    
     (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
     (hexc : ¬ (χ = 1 ∧ s = 1)) : χ.LFunction s ≠ 0 := by
   by_cases hge : 1 ≤ s.re
@@ -172,17 +202,18 @@ theorem dirichlet_seven_eighths_of_hecke
   exact (mul_ne_zero_iff.mp h).1
 
 theorem zeta_seven_eighths_of_hecke
-    (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
-      (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
+    
     (s : ℂ) (hs : (7/8 : ℝ) < s.re) : riemannZeta s ≠ 0 := by
   by_cases h1 : s = 1
   · simpa [h1] using riemannZeta_one_ne_zero
   have h := dirichlet_seven_eighths_of_hecke hH (1 : DirichletCharacter ℂ 1) s hs
     (by simp [h1])
   simpa only [DirichletCharacter.LFunction_modOne_eq] using h
-
-end SevenEighths.HeckeDirichlet
-
 end
 
-end OAI
+
+
+
+
+
+

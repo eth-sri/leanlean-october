@@ -15,7 +15,7 @@ requested `Q^epsilon` loss, with every fixed factor retained in the constant.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem fordLambda34_critical (k : ℕ) (epsilon : ℝ) :
     fordLambda34 (fordVinogradovKappa k) k epsilon =
@@ -114,6 +114,6 @@ theorem heathBrownVMVTMainConjecture_of_wooleyPadic
     (vinogradovCriticalEndpoint_of_wooleyPadic hconc)
 
 
-end
 
-end GafniTao
+
+

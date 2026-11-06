@@ -61,4 +61,4 @@ theorem VariableFunction.isChoicewiseInfinitesimal_iff_forall_pos_uniform
     filter_upwards [h ε hε] with i hi
     exact hi (x i)
 
-end Expdb
+

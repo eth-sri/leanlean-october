@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftChoice
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
 
@@ -31,20 +30,12 @@ theorem integer_shift_optimization
   have hproduct : 0 ≤ (N^2/R)*B := by positivity
   have hlargeC : 18/η ≤ 20*C/η :=
     div_le_div_of_nonneg_right (by linarith) hη.le
-  have hlargeC' : C*(2/η+1) ≤ 20*C/η := by
-    apply (le_div_iff₀ hη).mpr
-    have he : C*(2/η+1)*η = C*(2+η) := by field_simp
-    rw [he]
-    nlinarith
+  have hlargeC' : C*(2/η+1) ≤ 20*C/η := by field_simp <;> nlinarith
   by_cases hlarge : 2 ≤ η*R
   · obtain ⟨H,hH,hHN,hlower,hupper⟩ :=
       exists_comparable_source_shift hη hη₁ hRN hlarge
     have hHpos : 0 < (H : ℝ) := by exact_mod_cast (show 0 < H by omega)
-    have hinv : N^2/(H : ℝ) ≤ (2/η)*(N^2/R) := by
-      calc
-        _ ≤ N^2/(η*R/2) :=
-          div_le_div_of_nonneg_left (sq_nonneg N) (by positivity) hlower
-        _ = _ := by field_simp
+    have hinv : N^2/(H : ℝ) ≤ (2/η)*(N^2/R) := by field_simp <;> nlinarith
     have hMR : M*R^q = N/R := by
       apply (eq_div_iff hR.ne').mpr
       calc
@@ -69,15 +60,11 @@ theorem integer_shift_optimization
         have hh := mul_le_mul_of_nonneg_right hlargeC' hproduct
         nlinarith
   · have hsmall : η*R ≤ 2 := le_of_not_ge hlarge
-    have hinv : 9*N^2 ≤ (18/η)*(N^2/R) := by
-      have hh := mul_le_mul_of_nonneg_left hsmall (show 0 ≤ 9*N^2 by positivity)
-      rw [show (18/η)*(N^2/R) = 18*N^2/(η*R) by ring]
-      apply (le_div_iff₀ (mul_pos hη hR)).mpr
-      nlinarith
+    have hinv : 9*N^2 ≤ (18/η)*(N^2/R) := by field_simp <;> nlinarith
     calc
       _ ≤ 9*N^2 := htrivial
       _ ≤ (18/η)*(N^2/R) := hinv
       _ ≤ (20*C/η)*(N^2/R) := mul_le_mul_of_nonneg_right hlargeC hbase.le
       _ ≤ _ := le_mul_of_one_le_right (by positivity) hB
 
-end TaoTrudgianYang2025
+

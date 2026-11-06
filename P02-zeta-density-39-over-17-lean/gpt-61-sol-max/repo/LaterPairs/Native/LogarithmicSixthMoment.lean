@@ -6,9 +6,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ParabolaBilinearLocalization
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
@@ -160,12 +159,16 @@ private theorem logRemainderCutoff_joint_smooth :
   unfold logRemainderCutoff fordAdditiveCharacter
   exact hcut.mul ((contDiff_const.mul (Complex.ofRealCLM.contDiff.comp hphase)).cexp)
 
-private theorem logRemainderCutoff_smooth (p : ℝ × ℝ) :
+section
+variable (p : ℝ × ℝ)
+include p
+
+private theorem logRemainderCutoff_smooth  :
     ContDiff ℝ ∞ (logRemainderCutoff p) := by
   have hm : ContDiff ℝ ∞ (fun s : ℝ => (p,s)) := contDiff_const.prodMk contDiff_id
   simpa only [Function.comp_def] using logRemainderCutoff_joint_smooth.comp hm
 
-private theorem logRemainderCutoff_support (p : ℝ × ℝ) :
+private theorem logRemainderCutoff_support  :
     tsupport (logRemainderCutoff p) ⊆ Icc (-2:ℝ) 2 := by
   apply closure_minimal _ isClosed_Icc
   intro s hs
@@ -175,6 +178,8 @@ private theorem logRemainderCutoff_support (p : ℝ × ℝ) :
     exact hs (by rw [logRemainderCutoff,hz,Complex.ofReal_zero,zero_mul])
   have hb := modelPhaseBufferedCutoff_tsupport (by norm_num : (0:ℝ)<1/2) hk
   constructor <;> linarith [hb.1,hb.2]
+end
+
 
 private theorem norm_slice_iteratedFDeriv
     (F : (ℝ × ℝ) × ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
@@ -804,7 +809,11 @@ private def logCurveRescaling (κ a σ : ℝ) (hσ : σ≠0) (hA : 1+κ*a≠0) :
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
-private theorem logCurve_haar_factor (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ)) :
+section
+variable (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ))
+include e
+
+private theorem logCurve_haar_factor  :
     ∃ c : ℝ≥0, 0<c ∧ Measure.map e (volume : Measure (ℝ × ℝ))=(c : ℝ≥0∞) • volume := by
   have : (Measure.map e (volume : Measure (ℝ × ℝ))).IsAddHaarMeasure :=
     e.isAddHaarMeasure_map volume
@@ -813,13 +822,15 @@ private theorem logCurve_haar_factor (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ)) :
     Measure.isAddLeftInvariant_eq_smul _ _⟩
 
 private theorem logCurve_rescaling_integrable
-    (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ)) {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
+     {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
     Integrable (fun p => W (e p)) := by
   obtain ⟨c,hc,he⟩ := logCurve_haar_factor e
   apply (integrable_map_equiv e.toHomeomorph.toMeasurableEquiv W).mp
   change Integrable W (Measure.map e volume)
   rw [he]
   exact hW.smul_measure ENNReal.coe_ne_top
+end
+
 
 private theorem logCurve_rescaling_integral {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
     (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ)) :
@@ -920,12 +931,16 @@ theorem exists_logCurveWeightedBilinearMoment_rescale (κ a σ : ℝ)
       rfl
     _ = _ := by simpa only [f,logCurveWeightedBilinearMoment,smul_eq_mul] using hint f
 
-def logCurveWeightedSixNorm {ι : Type*} (κ : ℝ) (W : ℝ × ℝ → ℝ)
+section
+variable {ι : Type*} (κ : ℝ)
+include ι κ
+
+def logCurveWeightedSixNorm  (W : ℝ × ℝ → ℝ)
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) : ℝ :=
   lpNorm (fun p : ℝ × ℝ => sargosPlanarSum S z x (fun i => logCurve κ (x i)) p.1 p.2)
     6 (volume.withDensity (fun p => ENNReal.ofReal (W p)))
 
-private theorem logCurveWeighted_memLp {ι : Type*} (κ : ℝ) {W : ℝ × ℝ → ℝ}
+private theorem logCurveWeighted_memLp  {W : ℝ × ℝ → ℝ}
     (hW : Integrable W) (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     MemLp (fun p : ℝ × ℝ => sargosPlanarSum S z x (fun i => logCurve κ (x i)) p.1 p.2)
       6 (volume.withDensity (fun p => ENNReal.ofReal (W p))) := by
@@ -938,11 +953,15 @@ private theorem logCurveWeighted_memLp {ι : Type*} (κ : ℝ) {W : ℝ × ℝ �
     (Filter.Eventually.of_forall fun p =>
       norm_sargosPlanarSum_le_sum_norm S z x (fun i => logCurve κ (x i)) p.1 p.2)
 
-theorem logCurveWeightedSixNorm_nonneg {ι : Type*} (κ : ℝ) (W : ℝ × ℝ → ℝ)
+section
+variable (W : ℝ × ℝ → ℝ)
+include W
+
+theorem logCurveWeightedSixNorm_nonneg 
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     0≤logCurveWeightedSixNorm κ W S z x := lpNorm_nonneg
 
-theorem logCurveWeightedSixNorm_pow_six {ι : Type*} (κ : ℝ) (W : ℝ × ℝ → ℝ)
+theorem logCurveWeightedSixNorm_pow_six 
     (hW₀ : ∀ p, 0≤W p) (hW : Integrable W)
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     (logCurveWeightedSixNorm κ W S z x)^6=logCurveWeightedBilinearMoment κ W S S z z x x := by
@@ -963,10 +982,17 @@ theorem logCurveWeightedSixNorm_pow_six {ι : Type*} (κ : ℝ) (W : ℝ × ℝ 
   dsimp only [smul_eq_mul]
   norm_num only [Real.rpow_ofNat]
   ring
+end
+end
 
-theorem logCurveWeightedSixNorm_sum_le {τ ι : Type*} (κ : ℝ) (J : Finset τ)
+
+section
+variable {τ ι : Type*} (κ : ℝ) (J : Finset τ)
     (S : τ → Finset ι) (z : τ → ι → ℂ) (x : τ → ι → ℝ)
-    (W : ℝ × ℝ → ℝ) (hW : Integrable W) :
+    (W : ℝ × ℝ → ℝ) (hW : Integrable W)
+include τ ι κ J S z x W hW
+
+theorem logCurveWeightedSixNorm_sum_le  :
     logCurveWeightedSixNorm κ W (J.sigma S) (fun ij => z ij.1 ij.2)
       (fun ij => x ij.1 ij.2)≤∑ i∈J, logCurveWeightedSixNorm κ W (S i) (z i) (x i) := by
   unfold logCurveWeightedSixNorm
@@ -980,14 +1006,14 @@ theorem logCurveWeightedSixNorm_sum_le {τ ι : Type*} (κ : ℝ) (J : Finset τ
   rw [he]
   exact lpNorm_sum_le (fun i _ => logCurveWeighted_memLp κ hW (S i) (z i) (x i)) (by norm_num)
 
-theorem logCurveWeightedSixNorm_sq_le_card {τ ι : Type*} (κ : ℝ) (J : Finset τ)
-    (S : τ → Finset ι) (z : τ → ι → ℂ) (x : τ → ι → ℝ)
-    (W : ℝ × ℝ → ℝ) (hW : Integrable W) :
+theorem logCurveWeightedSixNorm_sq_le_card  :
     (logCurveWeightedSixNorm κ W (J.sigma S) (fun ij => z ij.1 ij.2)
       (fun ij => x ij.1 ij.2))^2≤
       (J.card:ℝ)*∑ i∈J, (logCurveWeightedSixNorm κ W (S i) (z i) (x i))^2 :=
   (pow_le_pow_left₀ (logCurveWeightedSixNorm_nonneg _ _ _ _ _)
     (logCurveWeightedSixNorm_sum_le κ J S z x W hW) 2).trans sq_sum_le_card_mul_sum_sq
+end
+
 
 theorem exists_logCurveWeightedSixNorm_rescale (κ a σ : ℝ)
     (hσ : σ≠0) (hA : 0<1+κ*a) :
@@ -1017,8 +1043,12 @@ theorem exists_logCurveWeightedSixNorm_rescale (κ a σ : ℝ)
     logCurveWeightedSixNorm_pow_six _ W hW₀ hW]
   exact hscale W S S z z x x hx hx
 
-private theorem logCurveMoment_integrable {ι τ : Type*}
-    (κ : ℝ) (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
+section
+variable {ι τ : Type*}
+    (κ : ℝ)
+include ι τ κ
+
+private theorem logCurveMoment_integrable  (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
     (x : ι → ℝ) (y : τ → ℝ) {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
     Integrable (fun p : ℝ × ℝ => W p*
       ‖sargosPlanarSum S z x (fun i => logCurve κ (x i)) p.1 p.2‖^2*
@@ -1041,10 +1071,13 @@ private theorem logCurveMoment_integrable {ι τ : Type*}
 
                                                                        
                                                                             
-theorem logCurveWeightedBilinearMoment_holder_swap {ι τ : Type*}
-    (κ : ℝ) (W : ℝ × ℝ → ℝ) (hW₀ : ∀ p, 0≤W p) (hW : Integrable W)
+section
+variable (W : ℝ × ℝ → ℝ) (hW₀ : ∀ p, 0≤W p) (hW : Integrable W)
     (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) :
+    (x : ι → ℝ) (y : τ → ℝ)
+include W hW₀ hW S V z c x y
+
+theorem logCurveWeightedBilinearMoment_holder_swap  :
     (logCurveWeightedBilinearMoment κ W S V z c x y)^2≤
       logCurveWeightedBilinearMoment κ W V S c z y x*
         logCurveWeightedBilinearMoment κ W V V c c y y := by
@@ -1078,10 +1111,7 @@ theorem logCurveWeightedBilinearMoment_holder_swap {ι τ : Type*}
   change M^2≤N*E
   nlinarith only [hdisc]
 
-theorem logCurveWeightedBilinearMoment_le_sixNorm {ι τ : Type*}
-    (κ : ℝ) (W : ℝ × ℝ → ℝ) (hW₀ : ∀ p, 0≤W p) (hW : Integrable W)
-    (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) :
+theorem logCurveWeightedBilinearMoment_le_sixNorm  :
     logCurveWeightedBilinearMoment κ W S V z c x y≤
       (logCurveWeightedSixNorm κ W S z x)^2*(logCurveWeightedSixNorm κ W V c y)^4 := by
   let M := logCurveWeightedBilinearMoment κ W S V z c x y
@@ -1113,6 +1143,9 @@ theorem logCurveWeightedBilinearMoment_le_sixNorm {ι τ : Type*}
     apply (mul_le_mul_iff_right₀ hMp).mp
     nlinarith only [hfour]
   exact (pow_le_pow_iff_left₀ hM (by positivity) (by norm_num : (3:ℕ)≠0)).mp hcube
+end
+end
+
 
                                                                            
                                                                               
@@ -1272,8 +1305,12 @@ theorem LogCurveBilinearSixBound.holder_swap {p q : ℕ} {δ ν K B : ℝ}
   rw [he]
   exact hMN.trans hprod
 
-private theorem logCurve_product_sum {ι τ : Type*}
-    (κ : ℝ) (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
+section
+variable {ι τ : Type*}
+    (κ : ℝ)
+include ι τ κ
+
+private theorem logCurve_product_sum  (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
     (x : ι → ℝ) (y : τ → ℝ) (α γ : ℝ) :
     sargosPlanarSum ((S ×ˢ V) ×ˢ V)
       (fun ij => z ij.1.1*c ij.1.2*c ij.2)
@@ -1288,8 +1325,7 @@ private theorem logCurve_product_sum {ι τ : Type*}
       (fun k => logCurve κ (y k)) α γ]
   ring
 
-private theorem logCurve_family_product_sum {ι τ : Type*}
-    (κ : ℝ) (J : Finset ℤ) (S : ℤ → Finset ι) (V : Finset τ)
+private theorem logCurve_family_product_sum  (J : Finset ℤ) (S : ℤ → Finset ι) (V : Finset τ)
     (z : ℤ → ι → ℂ) (c : τ → ℂ)
     (x : ℤ → ι → ℝ) (y : τ → ℝ) (α γ : ℝ) :
     sargosPlanarSum (J.sigma (fun i => (S i ×ˢ V) ×ˢ V))
@@ -1310,6 +1346,8 @@ private theorem logCurve_family_product_sum {ι τ : Type*}
   rw [←Finset.sum_mul]
   congr 1
   simp only [sargosPlanarSum,Finset.sum_sigma]
+end
+
 
 private theorem logCurve_block_gap {i j : ℤ} {m : ℕ} {x x' d w ν : ℝ}
     (hm : 2/ν≤(m : ℝ))
@@ -1414,19 +1452,23 @@ private theorem logCurve_finGrid_sum {k l : ℕ} {A : Type*} [AddCommMonoid A]
 private def logCurveIntGridIndex (k : ℕ) (hk : 0 < k) (i : ℤ) : Fin k :=
   ⟨i.toNat % k,Nat.mod_lt _ hk⟩
 
-private theorem logCurveIntGridIndex_cast {k : ℕ} (hk : 0 < k) (i : Fin k) :
+section
+variable {k : ℕ} (hk : 0 < k)
+include k hk
+
+private theorem logCurveIntGridIndex_cast  (i : Fin k) :
     logCurveIntGridIndex k hk (i:ℕ) = i := by
   apply Fin.ext
   simp [logCurveIntGridIndex,Nat.mod_eq_of_lt i.isLt]
 
-private theorem logCurveIntGridIndex_val {k : ℕ} (hk : 0 < k) {i : ℤ}
+private theorem logCurveIntGridIndex_val  {i : ℤ}
     (hi : i ∈ Finset.Ico 0 (k:ℤ)) :
     ((logCurveIntGridIndex k hk i : Fin k):ℕ) = i.toNat := by
   have hh := Finset.mem_Ico.mp hi
   simp only [logCurveIntGridIndex]
   exact Nat.mod_eq_of_lt (by omega)
 
-private theorem logCurve_intGrid_sum {k : ℕ} (hk : 0 < k)
+private theorem logCurve_intGrid_sum 
     {A : Type*} [AddCommMonoid A] (f : Fin k → A) :
     ∑ i ∈ Finset.Ico 0 (k:ℤ), f (logCurveIntGridIndex k hk i) = ∑ j, f j := by
   classical
@@ -1448,8 +1490,7 @@ private theorem logCurve_intGrid_sum {k : ℕ} (hk : 0 < k)
   · intro i _
     rw [logCurveIntGridIndex_cast]
 
-private theorem logCurveWeightedBilinearMoment_fin_localization {k : ℕ}
-    (hk : 0 < k) {ι τ : Type*}
+private theorem logCurveWeightedBilinearMoment_fin_localization  {ι τ : Type*}
     (S : Fin k → Finset ι) (V : Finset τ)
     (z : Fin k → ι → ℂ) (c : τ → ℂ) (x : Fin k → ι → ℝ) (y : τ → ℝ)
     {κ w a β u ν δ : ℝ} {W : ℝ × ℝ → ℝ}
@@ -1498,6 +1539,8 @@ private theorem logCurveWeightedBilinearMoment_fin_localization {k : ℕ}
   change (∑ i ∈ J, logCurveWeightedBilinearMoment κ W (S (R i)) V (z (R i)) c (x (R i)) y) = _ at hsum
   rw [hsum] at h
   exact h
+end
+
 
                                                                            
                                                                                  
@@ -1766,7 +1809,11 @@ private theorem logCurve_finGrid_cell {k l : ℕ} (hk : 0 < k) (hl : 0 < l)
   simp only [finProdFinEquiv,Equiv.coe_fn_mk,Nat.cast_add,Nat.cast_mul]
   constructor <;> field_simp <;> ring
 
-private theorem logCurve_sum_nonneg_powers_le {ι : Type*} (J : Finset ι) (E : ι → ℝ)
+section
+variable {ι : Type*}
+include ι
+
+private theorem logCurve_sum_nonneg_powers_le  (J : Finset ι) (E : ι → ℝ)
     (hE : ∀ i ∈ J, 0 ≤ E i) {n : ℕ} (hn : n ≠ 0) :
     ∑ i ∈ J, (E i)^n ≤ (∑ i ∈ J, E i)^n := by
   classical
@@ -1781,7 +1828,7 @@ private theorem logCurve_sum_nonneg_powers_le {ι : Type*} (J : Finset ι) (E : 
       _ ≤ _ := pow_add_pow_le (hE a (Finset.mem_insert_self a J))
         (Finset.sum_nonneg hJ) hn
 
-private theorem logCurveWeightedSixNorm_bilinear_budget {ι : Type*}
+private theorem logCurveWeightedSixNorm_bilinear_budget 
     (κ : ℝ)
     (J : Finset ℤ) (S : ℤ → Finset ι) (z : ℤ → ι → ℂ) (x : ℤ → ι → ℝ)
     (W : ℝ × ℝ → ℝ) (hW₀ : ∀ p, 0 ≤ W p) (hW : Integrable W)
@@ -1830,6 +1877,8 @@ private theorem logCurveWeightedSixNorm_bilinear_budget {ι : Type*}
   have hd := mul_le_mul_of_nonneg_left hds (by positivity : (0:ℝ) ≤ 64*7^6)
   have hf := mul_le_mul_of_nonneg_left hcs (by positivity : (0:ℝ) ≤ 64*(J.card:ℝ)^5)
   nlinarith only [hmain,hd,hf]
+end
+
 
 private theorem logCurve_sixth_budget_to_square {L E A K k : ℝ}
     (hE : 0 ≤ E) (hA : 0 ≤ A) (hK : 0 ≤ K) (hk : 1 ≤ k)
@@ -2018,8 +2067,12 @@ theorem LogCurveDecouplingBound.mono {n : ℕ} {A B : ℝ}
     (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hA.1 hAB 2)
       (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))
 
-private theorem logCurve_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
-    {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n) :
+section
+variable {C ε : ℝ} (hC : 0 ≤ C)
+    {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n)
+include C ε hC n r t ht hn
+
+private theorem logCurve_dyadic_exponential_root  :
     (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
       2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3) := by
   have hbudget : 0 ≤
@@ -2041,8 +2094,7 @@ private theorem logCurve_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
   rw [hroot,hpower]
   exact hmajor.trans (by gcongr; norm_num)
 
-private theorem logCurve_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C)
-    {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n)
+private theorem logCurve_dyadic_exponential_iteration 
     (hεt : 8 ≤ (3*(t:ℝ)-1)*ε) :
     14*(C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)))+2*(2:ℝ)^r*
       (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
@@ -2069,6 +2121,8 @@ private theorem logCurve_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp) (by positivity)
   have h := mul_le_mul_of_nonneg_left hroot (show 0 ≤ 2*(2:ℝ)^r by positivity)
   linarith
+end
+
 
 
 
@@ -2143,7 +2197,11 @@ theorem exists_logCurveDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
 
                                                                      
                                                                
-private theorem logSix_periodic_unit_shift (f : ℝ → ℝ)
+section
+variable (f : ℝ → ℝ)
+include f
+
+private theorem logSix_periodic_unit_shift 
     (hp : Function.Periodic f 1) (a : ℝ) :
     (∫ v : ℝ in Icc (0:ℝ) 1, f (v+a))=∫ v : ℝ in Icc (0:ℝ) 1, f v := by
   rw [integral_Icc_eq_integral_Ioc,integral_Icc_eq_integral_Ioc,
@@ -2152,7 +2210,7 @@ private theorem logSix_periodic_unit_shift (f : ℝ → ℝ)
     intervalIntegral.integral_comp_add_right]
   simpa only [zero_add,add_zero,add_comm] using hp.intervalIntegral_add_eq a 0
 
-private theorem logSix_periodic_physical_window (f : ℝ → ℝ)
+private theorem logSix_periodic_physical_window 
     (hf : Continuous f) (hp : Function.Periodic f 1) {A : ℝ} (hA : 0 < A) (η : ℝ) :
     (∫ t : ℝ in Icc (-A) A, f (2*t/A+η)) =
       2*A*(∫ u : ℝ in Icc (0:ℝ) 1, f u) := by
@@ -2173,6 +2231,8 @@ private theorem logSix_periodic_physical_window (f : ℝ → ℝ)
   rw [hh,smul_eq_mul,intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1),
     ←integral_Icc_eq_integral_Ioc]
   ring
+end
+
 
 private theorem logSix_integer_character (k : ℤ) :
     fordAdditiveCharacter (k:ℝ)=1 := by
@@ -2182,18 +2242,24 @@ private theorem logSix_integer_character (k : ℤ) :
     ring
   rw [he,Complex.exp_int_mul_two_pi_mul_I]
 
-private def integerQuadraticSix {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (u v : ℝ) : ℝ :=
+section
+variable {ι : Type*}
+    (S : Finset ι) (z : ι → ℂ)
+include ι S z
+
+section
+variable (m : ι → ℤ)
+include m
+
+private def integerQuadraticSix  (u v : ℝ) : ℝ :=
   ‖∑ i∈S, z i*fordAdditiveCharacter ((m i:ℝ)*u+(m i:ℝ)^2*v)‖^6
 
-private theorem integerQuadraticSix_continuous {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) :
+private theorem integerQuadraticSix_continuous  :
     Continuous (fun p : ℝ × ℝ => integerQuadraticSix S z m p.1 p.2) := by
   unfold integerQuadraticSix fordAdditiveCharacter
   fun_prop
 
-private theorem integerQuadraticSix_periodic {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) :
+private theorem integerQuadraticSix_periodic  :
     (∀ v, Function.Periodic (fun u => integerQuadraticSix S z m u v) 1) ∧
       (∀ u, Function.Periodic (fun v => integerQuadraticSix S z m u v) 1) := by
   constructor
@@ -2213,12 +2279,17 @@ private theorem integerQuadraticSix_periodic {ι : Type*}
     rw [show (m i:ℝ)*u+(m i:ℝ)^2*(v+1) =
       ((m i:ℝ)*u+(m i:ℝ)^2*v)+((m i)^2:ℤ) by push_cast; ring,
       fordAdditiveCharacter_add,logSix_integer_character,mul_one]
+end
+
 
                                                                   
                                                                     
-theorem logarithmic_quadratic_shear {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ) (m : ι → ℤ)
-    {A δ : ℝ} (hA : A ≠ 0) (hδ : δ ≠ 0)
+section
+variable (s : ι → ℝ) (m : ι → ℤ)
+    {A δ : ℝ}
+include s m A δ
+
+theorem logarithmic_quadratic_shear  (hA : A ≠ 0) (hδ : δ ≠ 0)
     (hm : ∀ i∈S, δ*s i=(m i:ℝ)-A) (α t ξ : ℝ) :
     ‖∑ i∈S, z i*fordAdditiveCharacter
       ((2*A*δ*α+δ*t/A+ξ)*s i+(δ^2*α-δ^2*t/(2*A^2))*(s i)^2)‖^6 =
@@ -2248,9 +2319,7 @@ theorem logarithmic_quadratic_shear {ι : Type*}
 
                                                                  
                                                                       
-theorem logarithmic_quadratic_short_box {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ) (m : ι → ℤ)
-    {A δ : ℝ} (hA : 0 < A) (hδ : δ ≠ 0)
+theorem logarithmic_quadratic_short_box  (hA : 0 < A) (hδ : δ ≠ 0)
     (hm : ∀ i∈S, δ*s i=(m i:ℝ)-A) (ξ : ℝ) :
     (∫ t : ℝ in Icc (-A) A, ∫ α : ℝ in Icc (0:ℝ) 1,
       ‖∑ i∈S, z i*fordAdditiveCharacter
@@ -2288,6 +2357,9 @@ theorem logarithmic_quadratic_short_box {ι : Type*}
   have hswap := integral_integral_swap (μ:=volume.restrict (Icc (0:ℝ) 1))
     (ν:=volume.restrict (Icc (0:ℝ) 1)) (f:=P) hi
   exact congrArg (fun q : ℝ => 2*A*q) hswap
+end
+end
+
 
 private theorem logSix_envelope_integrable :
     Integrable (fun ξ : ℝ => ((1+|ξ|)^102)⁻¹) ∧
@@ -2410,7 +2482,11 @@ theorem exists_logarithmic_short_cell_quadratic :
 
                                                                   
                                                                               
-theorem exists_logarithmic_short_cell_sixth {ε : ℝ} (hε : 0 < ε) :
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+
+theorem exists_logarithmic_short_cell_sixth  :
     ∃ C > (0:ℝ), ∀ (Q : ℕ), 1 ≤ Q →
       ∀ (ι : Type) (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ)
         (m : ι → ℤ) (A δ B : ℝ) (L : ℤ), 0 < A → δ ≠ 0 → 0 ≤ B →
@@ -2433,7 +2509,7 @@ theorem exists_logarithmic_short_cell_sixth {ε : ℝ} (hε : 0 < ε) :
 
                                                                     
                                                                         
-theorem exists_logarithmic_short_cell_sixth_translated {ε : ℝ} (hε : 0 < ε) :
+theorem exists_logarithmic_short_cell_sixth_translated  :
     ∃ C > (0:ℝ), ∀ (Q : ℕ), 1 ≤ Q →
       ∀ (ι : Type) (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ)
         (m : ι → ℤ) (A δ B t₀ : ℝ) (L : ℤ), 0 < A → δ ≠ 0 → 0 ≤ B →
@@ -2463,6 +2539,8 @@ theorem exists_logarithmic_short_cell_sixth_translated {ε : ℝ} (hε : 0 < ε)
     congr 2
     ring
   simpa only [he] using hh
+end
+
 
                                                                     
                                                                       
@@ -2742,7 +2820,11 @@ theorem logarithmic_physical_band_gap {X δ ξ η : ℝ}
   have hd := (div_le_iff₀ hX₀).mp hδ
   nlinarith only [hg,hd,hξ,hη]
 
-private def logarithmicPhysicalCoordinates (X : ℝ) (hX : X ≠ 0) :
+section
+variable (X : ℝ)
+include X
+
+private def logarithmicPhysicalCoordinates  (hX : X ≠ 0) :
     (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ) where
   toFun p := (X^2*p.1/4+p.2/8,-p.2/64)
   invFun p := ((4*p.1+32*p.2)/X^2,-64*p.2)
@@ -2757,12 +2839,19 @@ private def logarithmicPhysicalCoordinates (X : ℝ) (hX : X ≠ 0) :
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
-def logarithmicPhysicalWeight (X : ℝ) (p : ℝ × ℝ) : ℝ :=
+section
+variable (p : ℝ × ℝ)
+include p
+
+def logarithmicPhysicalWeight  : ℝ :=
   parabolaRapidKernel 1 0 p.1*parabolaRapidKernel X 0 p.2
 
-theorem logarithmicPhysicalWeight_nonneg (X : ℝ) (p : ℝ × ℝ) :
+theorem logarithmicPhysicalWeight_nonneg  :
     0 ≤ logarithmicPhysicalWeight X p :=
   mul_nonneg (parabolaRapidKernel_nonneg _ _ _) (parabolaRapidKernel_nonneg _ _ _)
+end
+end
+
 
 theorem logarithmicPhysicalWeight_integrable {X : ℝ} (hX : 0 < X) :
     Integrable (logarithmicPhysicalWeight X) :=
@@ -2841,7 +2930,11 @@ theorem logarithmicPhysicalWeight_one_le {X : ℝ} (hX : 0 < X)
 
                                                                           
                                                                            
-theorem logarithmic_physical_sum_norm {ι : Type*}
+section
+variable {ι : Type*}
+include ι
+
+theorem logarithmic_physical_sum_norm 
     (S : Finset ι) (z : ι → ℂ) (m x : ι → ℝ)
     {X : ℝ} (hX : 0 < X) (hm : ∀ i∈S, 0 < m i)
     (hx : ∀ i∈S, (m i)^2=X^2*(1+(1/4)*x i)) (α t : ℝ) :
@@ -2868,10 +2961,12 @@ theorem logarithmic_physical_sum_norm {ι : Type*}
     ring
   rw [hsum,norm_mul,sargos_character_norm,one_mul]
 
-def logarithmicPhysicalSixMoment {ι : Type*} (X : ℝ)
+def logarithmicPhysicalSixMoment  (X : ℝ)
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℝ) : ℝ :=
   ∫ p : ℝ × ℝ, logarithmicPhysicalWeight X p*
     ‖∑ i∈S, z i*fordAdditiveCharacter (p.1*(m i)^2+p.2*Real.log (m i))‖^6
+end
+
 
                                                                       
                                                    
@@ -3528,13 +3623,20 @@ theorem exists_logarithmic_block_sixth {ε : ℝ} (hε : 0 < ε) :
     field_simp
   exact hh.trans_eq he
 
-def logarithmicSixMoment {ι : Type*} (T : ℝ)
-    (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) : ℝ :=
+section
+variable {ι : Type*}
+include ι
+
+section
+variable (T : ℝ)
+    (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ)
+include T S z m
+
+def logarithmicSixMoment  : ℝ :=
   ∫ t : ℝ in Icc (-T) T, ∫ α : ℝ in Icc (0:ℝ) 1,
     ‖∑ i∈S, z i*fordAdditiveCharacter (α*(m i:ℝ)^2+t*Real.log (m i:ℝ))‖^6
 
-private theorem logarithmicSixMoment_eq_prod {ι : Type*} (T : ℝ)
-    (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) :
+private theorem logarithmicSixMoment_eq_prod  :
     logarithmicSixMoment T S z m =
       ∫ p : ℝ × ℝ in Icc (0:ℝ) 1 ×ˢ Icc (-T) T,
         ‖∑ i∈S, z i*fordAdditiveCharacter (p.1*(m i:ℝ)^2+p.2*Real.log (m i:ℝ))‖^6 := by
@@ -3547,8 +3649,10 @@ private theorem logarithmicSixMoment_eq_prod {ι : Type*} (T : ℝ)
   have hh := integral_prod_symm P hi
   rw [Measure.prod_restrict,←Measure.volume_eq_prod] at hh
   exact hh.symm
+end
 
-private theorem logarithmicSixMoment_fiberwise {ι : Type*} {K : ℕ}
+
+private theorem logarithmicSixMoment_fiberwise  {K : ℕ}
     (T : ℝ) (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (g : ι → Fin K) :
     logarithmicSixMoment T S z m ≤
       (K:ℝ)^5*∑ j, logarithmicSixMoment T (S.filter (fun i => g i=j)) z m := by
@@ -3582,6 +3686,8 @@ private theorem logarithmicSixMoment_fiberwise {ι : Type*} {K : ℕ}
   rw [integral_const_mul,integral_finsetSum _ (fun j _ => hiA j)] at hmain
   simp only [logarithmicSixMoment_eq_prod]
   exact hmain
+end
+
 
                                                                        
                                                    
@@ -3850,4 +3956,4 @@ theorem exists_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
 
                                                                     
                                                                    
-end TaoTrudgianYang2025.LogarithmicSixth
+

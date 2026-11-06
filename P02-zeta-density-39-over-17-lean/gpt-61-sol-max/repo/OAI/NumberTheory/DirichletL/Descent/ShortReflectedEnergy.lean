@@ -10,17 +10,20 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic
+
+open scoped EisensteinEis
 universe v
 
-def tupleDivisibilityMark {σ:Type v} [Fintype σ] [DecidableEq σ]
-    (lists:σ→Finset (Ideal Eis)) (w:∀i,lists i→ℂ) (A:Ideal Eis):ℂ :=
+section
+variable {σ:Type v} [Fintype σ] [DecidableEq σ]
+    (lists:σ→Finset (Ideal Eis)) (w:∀i,lists i→ℂ)
+include σ lists w
+
+def tupleDivisibilityMark  (A:Ideal Eis):ℂ :=
   ∑p:∀i,lists i,(∏i,w i (p i))*∏i,if (p i).val∣A then (1:ℂ) else 0
 
-theorem completed_tuple_mark {σ:Type v} [Fintype σ] [DecidableEq σ]
-    (lists:σ→Finset (Ideal Eis)) (w:∀i,lists i→ℂ)
+theorem completed_tuple_mark 
     (Ψ:Eis→*ℂ) (W:ℝ→ℂ) (hW:HasCompactSupport W)
     (X:ℝ) (hX:0<X) (H:Ideal Eis):
     markedCompletedT Ψ W X (fun A=>tupleDivisibilityMark lists w (H^3*A))=
@@ -29,6 +32,8 @@ theorem completed_tuple_mark {σ:Type v} [Fintype σ] [DecidableEq σ]
   unfold tupleDivisibilityMark
   rw [markedCompletedT_finset_sum Finset.univ Ψ W hW X hX]
   simp only [markedCompletedT_const_mul]
+end
+
 
 theorem short_cube_exact_scale (Z N:ℝ) (hZ:1<Z) (H:Ideal Eis) (hH:H≠0):
     Z^(N-3*Real.logb Z (Ideal.absNorm H:ℝ))=Z^N/(Ideal.absNorm H:ℝ)^3 := by
@@ -38,8 +43,8 @@ theorem short_cube_exact_scale (Z N:ℝ) (hZ:1<Z) (H:Ideal Eis) (hH:H≠0):
     show Z^(Real.logb Z (Ideal.absNorm H:ℝ)*3)=(Z^(Real.logb Z (Ideal.absNorm H:ℝ)))^3 from
       Real.rpow_mul_natCast hz.le _ 3,Real.rpow_logb hz (ne_of_gt hZ) hn]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

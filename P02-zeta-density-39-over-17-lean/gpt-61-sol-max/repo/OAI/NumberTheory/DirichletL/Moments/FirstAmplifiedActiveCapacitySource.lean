@@ -13,24 +13,25 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveCapacitySource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentAmplifiedRetainedRadius
-local notation "O"=>HeckeFamily.O
-variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
+open HeckeFamily
 
-open CenteredMomentFirstAmplifiedCapacitySource CenteredMomentFirstSecondActiveErrorGates
+
+open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
+open CenteredMomentCommonRawScale
+open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
+
+
+
+
+
+
+open scoped HeckeO
+variable {ι:Type*}[Fintype ι]
+
+open CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstAnnularInput
+
+local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 theorem active_error_volume (s : Input ι) (C R : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
@@ -43,8 +44,8 @@ theorem active_error_volume (s : Input ι) (C R : Ideal O)
   rw [errorInput,child_volume _ Q hQ k hslot,active_volume,common_volume]
   ring
 
-end SevenEighths.CenteredMomentFirstAmplifiedActiveCapacitySource
 
-end
 
-end OAI
+
+
+

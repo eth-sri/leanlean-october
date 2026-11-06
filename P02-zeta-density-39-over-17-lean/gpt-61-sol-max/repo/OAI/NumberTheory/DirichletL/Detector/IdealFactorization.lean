@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.IdealMultiplicative
 public import Mathlib.RingTheory.UniqueFactorizationDomain.Finsupp
 
@@ -10,7 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 abbrev PrimeIdeal := {P : Id // Prime P}
@@ -48,10 +49,9 @@ lemma primeValuations_mul (I J : Id) (hI : I≠0) (hJ : J≠0) :
     simp [Ne.symm h,hv]
 
 lemma primeValuations_pow (I : Id) (n : ℕ) :
-    primeValuations (I^n)=n • primeValuations I := by
+    primeValuations (I ^n)=n • primeValuations I := by
   ext P
-  simp only [primeValuations_apply,normalizedFactors_pow,Multiset.count_nsmul,
-    Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
+  simp
 
 @[simp] lemma idealFromValuations_zero : idealFromValuations 0=1 := by
   simp [idealFromValuations]
@@ -105,8 +105,7 @@ lemma prime_coprime_idealFromValuations (P : PrimeIdeal) (v : PrimeIdeal →₀ 
   apply IsCoprime.pow_right
   apply primeIdeal_coprime
   intro hh
-  subst Q
-  exact Finsupp.mem_support_iff.mp hQ hP
+  simp_all
 
 def finsuppPairEquiv {α β γ : Type*} [Zero β] [Zero γ] :
     ((α→₀β)×(α→₀γ)) ≃ (α→₀(β×γ)) where
@@ -129,13 +128,9 @@ def highValuationEquiv : ((NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroId
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)).trans
       ((Equiv.prodCongr finsuppPairEquiv finsuppPairEquiv).trans finsuppPairEquiv)
 
-@[simp] lemma highValuationEquiv_apply
-    (a : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) (P : PrimeIdeal) :
-    highValuationEquiv a P =
-      ((primeValuations a.1.1.val P,primeValuations a.1.2.val P),
-        (primeValuations a.2.1.val P,primeValuations a.2.2.val P)) := rfl
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+
+

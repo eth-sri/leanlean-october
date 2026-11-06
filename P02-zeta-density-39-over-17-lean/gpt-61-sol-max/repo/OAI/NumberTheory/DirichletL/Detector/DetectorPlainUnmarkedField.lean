@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainMomentParameters
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainProfileControl
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
@@ -12,16 +13,16 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
+
 open CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
+open HeckeFamily HeckeDetectorRawFiber
+
+open CenteredMomentDetectorEnergyInitialState
 open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
+open CenteredMomentDetectorPlainMomentParameters
+open CenteredMomentEnergyState CenteredMomentEnergyBands
 open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def radialSupportUpper : ℝ := Classical.choose radialMajorant_support_bound
 
@@ -36,8 +37,6 @@ lemma unmarked_power_eq (U m e:ℝ)(hU:1≤U):
   congr 1
   have hs:(U^m)^2=U^(2*m):=by
     rw [←Real.rpow_natCast,←Real.rpow_mul hpos.le]
-    congr 1
-    norm_num
     ring
   rw [hs]
   by_cases hm:1≤2*m
@@ -78,8 +77,8 @@ theorem retained_unmarked_bound (D:Parameters.HighData Δ)
   have hrad:s.radial.profile=radialMajorant:=rfl
   simpa only [hwidth,hrad,norm_zero,add_zero,one_pow,mul_one] using hz
 
-end SevenEighths.ProbeDetectorPlainUnmarkedField
 
-end
 
-end OAI
+
+
+

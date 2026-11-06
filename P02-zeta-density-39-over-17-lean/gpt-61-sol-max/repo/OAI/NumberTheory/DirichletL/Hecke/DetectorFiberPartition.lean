@@ -16,14 +16,14 @@ abbrev BinLabel {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ) :=
   slots → ↥(HeckePrimeAmplitudeBins.labels cap mesh)
 
 def amplitudeLabel {Row Slot : Type*} (slots : Finset Slot) (U cap mesh : ℝ)
-    (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ) (u : Row) : BinLabel slots cap mesh :=
+    (hm : 0< mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ) (u : Row) : BinLabel slots cap mesh :=
   fun s => ⟨HeckePrimeAmplitudeBins.amplitude (U^(widths s)) cap mesh (physical u s),
     HeckePrimeAmplitudeBins.amplitude_mem_labels _ _ _ _ hm⟩
 
 def fiber {Row Label Slot : Type*} (rows : Finset Row) (χ : Row→Label→Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ)
     (w : ∀ u,SupportedWitness (χ u) U a ε tstar T allowance i)
-    (slots : Finset Slot) (mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ)
+    (slots : Finset Slot) (mesh : ℝ) (hm : 0< mesh) (widths : Slot→ℝ)
     (physical : Row→Slot→ℂ) (bin : BinLabel slots ((2*a-1)/2) mesh)
     (label : Label) (J K : Fin (dyadicLength U)) : Finset Row :=
   rows.filter (fun u => amplitudeLabel slots U ((2*a-1)/2) mesh hm widths physical u=bin ∧
@@ -33,7 +33,7 @@ theorem card_eq_sum_fibers {Row Label Slot : Type*} [Fintype Label]
     (rows : Finset Row) (χ : Row→Label→Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ)
     (w : ∀ u,SupportedWitness (χ u) U a ε tstar T allowance i)
-    (slots : Finset Slot) (mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ)
+    (slots : Finset Slot) (mesh : ℝ) (hm : 0< mesh) (widths : Slot→ℝ)
     (physical : Row→Slot→ℂ) :
     rows.card=∑ bin : BinLabel slots ((2*a-1)/2) mesh, ∑ label : Label,
       ∑ J : Fin (dyadicLength U), ∑ K : Fin (dyadicLength U),
@@ -51,7 +51,7 @@ theorem fixed_bin {Row Label Slot : Type*}
     (rows : Finset Row) (χ : Row→Label→Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ)
     (w : ∀ u,SupportedWitness (χ u) U a ε tstar T allowance i)
-    (slots : Finset Slot) (mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ)
+    (slots : Finset Slot) (mesh : ℝ) (hm : 0< mesh) (widths : Slot→ℝ)
     (physical : Row→Slot→ℂ) (bin : BinLabel slots ((2*a-1)/2) mesh)
     (label : Label) (J K : Fin (dyadicLength U)) (u : Row)
     (hu : u∈fiber rows χ U a ε tstar T allowance i w slots mesh hm widths physical bin label J K)
@@ -72,8 +72,8 @@ def toFiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) {Label Slot : Type*}
       if reverse j then starRingEnd ℂ (idealCoeff ((data j).character ⟨u.val,u.property.1⟩) I)
       else idealCoeff ((data j).character ⟨u.val,u.property.1⟩) I)
     (slots : Finset Slot) (profile : Slot→ℝ→ℂ) (upper widths : Slot→ℝ) (external : Slot→ℂ)
-    (mesh binWidth : ℝ) (hmesh : 0≤mesh) (hbw : 0<binWidth)
-    (hw : ∀ s∈slots,0<widths s) (hwmesh : ∀ s∈slots,widths s≤mesh)
+    (mesh binWidth : ℝ) (hmesh : 0≤ mesh) (hbw : 0<binWidth)
+    (hw : ∀ s∈slots,0<widths s) (hwmesh : ∀ s∈slots,widths s≤ mesh)
     (hsupply : 7/37≤∑ s∈slots,widths s)
     (bin : BinLabel slots ((2*a-1)/2) binWidth) (label : Label)
     (J K : Fin (dyadicLength U))
@@ -111,8 +111,8 @@ def toFiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) {Label Slot : Type*}
   fixed_bin := fun u hu s hs => fixed_bin rows χ U a ε tstar T allowance i w slots binWidth hbw widths
     (physical M H (fun u : FreeRow => u.val) profile upper widths external U) bin label J K u hu s hs
 
-end SevenEighths.HeckeDetectorFiberPartition
 
-end
 
-end OAI
+
+
+

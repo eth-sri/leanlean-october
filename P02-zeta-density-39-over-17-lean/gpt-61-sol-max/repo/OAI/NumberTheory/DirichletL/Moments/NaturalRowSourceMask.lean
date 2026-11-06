@@ -11,7 +11,7 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily CompletedGauss UniqueFactorizationMonoid ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma support_prime (R P : Ideal O) (hP : P∈primeSupport R) : Prime P :=
   prime_of_normalized_factor P (Multiset.mem_toFinset.mp hP)
@@ -41,8 +41,12 @@ lemma excluded_ideal (χ : Character) (R : Ideal O) (hR : R≠0) (I : Ideal O) :
     idealCoeff (excluded χ R) I=if IsCoprime I R then idealCoeff χ I else 0 := by
   simp only [excluded,idealCoeff_excludePrimes,coprime_support_iff I R hR]
 
-lemma excluded_element (χ : Character) (hχ0 : elementCoeff χ 0=0)
-    (R : Ideal O) (hR : R≠0) (n : O) :
+section
+variable (χ : Character) (hχ0 : elementCoeff χ 0=0)
+    (R : Ideal O) (hR : R≠0) (n : O)
+include χ hχ0 R hR n
+
+lemma excluded_element  :
     elementCoeff (excluded χ R) n=
       if IsCoprime (Ideal.span {n}) R then elementCoeff χ n else 0 := by
   by_cases hn : n=0
@@ -54,15 +58,16 @@ lemma excluded_element (χ : Character) (hχ0 : elementCoeff χ 0=0)
     split_ifs <;> rfl
   · rw [←idealCoeff_span _ hn,excluded_ideal χ R hR,idealCoeff_span χ hn]
 
-lemma excluded_element_generator (χ : Character) (hχ0 : elementCoeff χ 0=0)
-    (R : Ideal O) (hR : R≠0) (n : O) :
+lemma excluded_element_generator  :
     elementCoeff (excluded χ R) n=
       if IsCoprime n (idealGenerator R) then elementCoeff χ n else 0 := by
   rw [excluded_element χ hχ0 R hR]
   conv_lhs => rw [←span_idealGenerator R,Ideal.isCoprime_span_singleton_iff]
-
-end SevenEighths.CenteredMomentNaturalRowSource
-
 end
 
-end OAI
+
+
+
+
+
+

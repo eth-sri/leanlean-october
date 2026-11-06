@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -19,29 +20,25 @@ The positive real part identifies the principal square root. This yields
 both the Cartesian value and its source-facing minus-pi/4 phase.
 -/
 
-noncomputable section
 
-open Complex MeasureTheory Set Filter
+
+open Complex MeasureTheory Filter
 open scoped Topology
 
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem fresnelGaussianValue_eq_cartesian {c : ℝ} (hc : 0 < c) :
     fresnelGaussianValue c = (1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ) := by
-  have hs : 0 < Real.sqrt c := Real.sqrt_pos.2 hc
-  have hsC : (Real.sqrt c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hs.ne'
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
   have hsq : ((1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ)) ^ 2 =
       -I / ((2 * c : ℝ) : ℂ) := by
     push_cast
     field_simp
     rw [← Complex.ofReal_pow, Real.sq_sqrt hc.le]
     ring_nf
-    norm_num [Complex.I_sq]
+    norm_num
   have hre : 0 < ((1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ)).re := by
     rw [Complex.div_ofReal_re]
-    simp only [Complex.sub_re, Complex.one_re, Complex.I_re, sub_zero]
-    positivity
+    simp_all
   rw [fresnelGaussianValue, fresnelGaussianBase hc, ← hsq,
     show (1 / 2 : ℂ) = (2 : ℂ)⁻¹ by ring]
   exact Complex.sq_cpow_two_inv hre
@@ -53,8 +50,6 @@ theorem fresnelGaussianValue_eq_phase {c : ℝ} (hc : 0 < c) :
     show -Real.pi / 4 = -(Real.pi / 4) by ring,
     Real.cos_neg, Real.sin_neg, Real.cos_pi_div_four, Real.sin_pi_div_four,
     Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
-  have hs : (Real.sqrt c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.2 hc).ne'
-  have htwo : (Real.sqrt 2 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by positivity)
   push_cast
   field_simp
   ring
@@ -67,4 +62,4 @@ theorem norm_atkinsonQuadraticWindow_sub_fresnel_le {c H : ℝ}
   rw [← fresnelGaussianValue_eq_phase hc]
   exact norm_atkinsonQuadraticWindow_sub_gaussianValue_le hc hH
 
-end MathCollab.Density.Stronger.Atkinson
+

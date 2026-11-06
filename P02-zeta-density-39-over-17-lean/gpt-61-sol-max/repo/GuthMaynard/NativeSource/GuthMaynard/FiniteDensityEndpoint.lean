@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteDensityTransfer
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalPowering
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
@@ -36,14 +37,10 @@ theorem powered_unit_block_large_values_bound_bounded_uniform
               ((Q : ℝ) ^ 2 / V ^ 2 +
                 H * min ((Q : ℝ) / V ^ 2)
                   ((Q : ℝ) ^ 4 / V ^ 6)) := by
-  have hEach : ∀ k : ℕ, ∃ c : ℝ, 0 < c ∧
-      ∀ (N : ℕ) (a : ℕ → ℂ),
-        (∀ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ≤ 1) →
-        ∀ m : ℕ, 0 < m →
-          ‖finitePowCoeff N k a m‖ ≤ c * (m : ℝ) ^ eta :=
+  have hEach :=
     fun k => finitePowCoeff_bound_uniform k eta heta
   choose c hc hCoeff using hEach
-  let C : ℝ := 1 + ∑ k ∈ Finset.range (B + 1), c k
+  let C := 1 + ∑ k ∈ Finset.range (B + 1), c k
   have hC : 0 < C := by
     dsimp only [C]
     have hsum : 0 ≤ ∑ k ∈ Finset.range (B + 1), c k := by
@@ -59,8 +56,7 @@ theorem powered_unit_block_large_values_bound_bounded_uniform
     have hkMem : k ∈ Finset.range (B + 1) := Finset.mem_range.mpr (by omega)
     have hsingle : c k ≤ ∑ j ∈ Finset.range (B + 1), c j :=
       Finset.single_le_sum (fun j _ => (hc j).le) hkMem
-    dsimp only [C]
-    linarith
+    bound
   obtain ⟨K, hK, hMHH⟩ := classical_large_values_with_harmonic_unrestricted
   refine ⟨C, hCOne, K, hK, ?_⟩
   intro k N a sigma H L W hk hkB hN hsigma hH hL ha hSep hBase hLarge
@@ -69,10 +65,7 @@ theorem powered_unit_block_large_values_bound_bounded_uniform
     intro m hm
     exact (hCoeff k N a ha m hm).trans
       (mul_le_mul_of_nonneg_right (hcC hkB) (Real.rpow_nonneg (by positivity) _))
-  have hDenom : 0 < C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ eta := by
-    have hUpper : 0 < 2 ^ k * N ^ k :=
-      mul_pos (pow_pos (by omega) k) (pow_pos hN k)
-    exact mul_pos hC (Real.rpow_pos_of_pos (by exact_mod_cast hUpper) _)
+  have hDenom : 0 < C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ eta := by positivity
   obtain ⟨r, hr, W', hWsub, hCard, hLarge'⟩ :=
     extract_normalized_finite_powered_block N k a sigma C eta L W
       hN hk hL.le hDenom hLarge
@@ -148,7 +141,7 @@ theorem actual_typeII_powered_mhh_bounded_uniform_native
                 H * min ((Q : ℝ) / V ^ 2)
                   ((Q : ℝ) ^ 4 / V ^ 6)) := by
   obtain ⟨Craw, hCraw, hCoeffRaw⟩ := sharpMollifiedCoeff_bound η₀ hη₀
-  let C₀ : ℝ := max 1 Craw
+  let C₀ := max 1 Craw
   have hC₀One : 1 ≤ C₀ := le_max_left _ _
   have hCrawC₀ : Craw ≤ C₀ := le_max_right _ _
   have hC₀ : 0 < C₀ := zero_lt_one.trans_le hC₀One
@@ -161,8 +154,8 @@ theorem actual_typeII_powered_mhh_bounded_uniform_native
     powered_unit_block_large_values_bound_bounded_uniform B η hη
   refine ⟨C₀, hC₀One, C, hC, K, hK, ?_⟩
   intro k A X N σ H L W hk hkB hN hσ hH hL hSep hBase hLarge
-  let D : ℝ := C₀ * (2 * N : ℝ) ^ η₀ * (N : ℝ) ^ (-σ)
-  let a : ℕ → ℂ := normalizedSharpMollifiedLineCoeff A X N σ η₀ C₀
+  let D := C₀ * (2 * N : ℝ) ^ η₀ * (N : ℝ) ^ (-σ)
+  let a := normalizedSharpMollifiedLineCoeff A X N σ η₀ C₀
   have hD : 0 < D := by dsimp only [D]; positivity
   have ha : ∀ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ≤ 1 := by
     intro n hn
@@ -178,10 +171,6 @@ theorem actual_typeII_powered_mhh_bounded_uniform_native
             a n * (n : ℂ) ^ (-(0 + I * t)) =
           dirichletPoly N a t := by
       unfold dirichletPoly dyadicInterval
-      apply Finset.sum_congr rfl
-      intro n _
-      simp only [zero_add]
-      congr 2
       ring
     rw [hEq]
     change L / D ≤
@@ -198,4 +187,4 @@ theorem actual_typeII_powered_mhh_bounded_uniform_native
     And.intro hCard (And.intro hSep' (And.intro hBase'
       (And.intro hLarge' hBound)))
 
-end GuthMaynard.NativeMoment
+

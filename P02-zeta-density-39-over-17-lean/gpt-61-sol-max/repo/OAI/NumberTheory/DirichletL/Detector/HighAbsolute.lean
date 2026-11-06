@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighDeletion
 
 @[expose] public section
@@ -8,38 +9,53 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CubicEisenstein ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT
+open scoped EisensteinO
 local notation "Id" => Ideal O
 abbrev NonzeroFrequency := {u : O // u≠0}
 
-def frequencyWeight (z : ℂ) (u : NonzeroFrequency) : ℂ := (elementNorm u.val:ℂ)^(-z)
+section
+variable (z : ℂ)
+include z
 
-lemma frequencyWeight_norm (z : ℂ) (u : NonzeroFrequency) :
+def frequencyWeight  (u : NonzeroFrequency) : ℂ := (elementNorm u.val:ℂ)^(-z)
+
+lemma frequencyWeight_norm  (u : NonzeroFrequency) :
     ‖frequencyWeight z u‖=‖eisEmbedding u.val‖^(-2*z.re) := by
-  have hn : 0<‖eisEmbedding u.val‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero u.property)
+  have hn := norm_pos_iff.mpr (eisEmbedding_ne_zero u.property)
   unfold frequencyWeight elementNorm
-  have hN : (Ideal.absNorm (Ideal.span {u.val}):ℝ)=‖eisEmbedding u.val‖^2 :=
+  have hN :=
     (eisEmbedding_norm_sq_eq_absNorm_span u.val).symm
   rw [hN,
     Complex.norm_cpow_eq_rpow_re_of_pos (sq_pos_of_pos hn), Complex.neg_re,
     ← Real.rpow_natCast_mul hn.le 2]
-  congr 1
-  ring
+  simp
 
-theorem frequencyWeight_summable_norm (z : ℂ) (hz : 1<z.re) :
+theorem frequencyWeight_summable_norm  (hz : 1<z.re) :
     Summable (fun u : NonzeroFrequency => ‖frequencyWeight z u‖) := by
   simp only [frequencyWeight_norm]
   exact (summable_embedding_rpow (-2*z.re) (by linarith)).subtype _
+end
 
-def highAbsoluteMajorant (x w z : ℂ) (p : (Id×Id)×(Id×Id)) : ℝ :=
+
+section
+variable (x w z : ℂ)
+include x w z
+
+section
+variable (p : (Id×Id)×(Id×Id))
+include p
+
+def highAbsoluteMajorant  : ℝ :=
   ‖fullIdealWeight (x-1/2) p.1.1‖ * ‖fullIdealWeight (3*x-2) p.1.2‖ *
   ‖fullIdealWeight (w-1) p.2.1‖ * ‖fullIdealWeight (6*z) p.2.2‖
 
-lemma highAbsoluteMajorant_nonneg (x w z : ℂ) (p : (Id×Id)×(Id×Id)) :
+lemma highAbsoluteMajorant_nonneg  :
     0≤highAbsoluteMajorant x w z p := by unfold highAbsoluteMajorant; positivity
+end
 
-lemma highAbsoluteMajorant_summable (x w z : ℂ)
+
+lemma highAbsoluteMajorant_summable 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) : Summable (highAbsoluteMajorant x w z) := by
   have h1 := fullIdealWeight_summable_norm (x-1/2) (by norm_num [Complex.sub_re,Complex.div_re]; linarith)
   have h2 := fullIdealWeight_summable_norm (3*x-2) (by norm_num [Complex.sub_re,Complex.mul_re]; linarith)
@@ -52,6 +68,8 @@ lemma highAbsoluteMajorant_summable (x w z : ℂ)
     (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
   unfold highAbsoluteMajorant
   simpa only [mul_assoc] using hall
+end
+
 
 theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1<z.re)
@@ -75,11 +93,10 @@ theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Char
       apply mul_le_mul
       · exact mul_le_mul_of_nonneg_right (hmask p.1) (norm_nonneg _)
       · exact hcoeff
-      · exact norm_nonneg _
-      · positivity
+      all_goals (simp)
     _ = _ := by rw [one_mul]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

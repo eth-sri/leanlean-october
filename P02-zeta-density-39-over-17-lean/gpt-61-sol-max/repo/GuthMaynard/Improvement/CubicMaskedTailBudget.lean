@@ -1,20 +1,24 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMaskedStrip
 public import GuthMaynard.Improvement.RadialScaleBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
 
-/-- Actual complex masked far sum; all three measurable masks vary after
-the constant. The full L cubed and exact integer mode count are retained. -/
-theorem masked_radial_truncated_discard_bound {a : ℝ → ℂ}
+section
+variable {a : ℝ → ℂ}
     (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hlu : l ≤ u)
     (hs : ∀ r, r ∉ Icc l u → a r = 0)
-    (v₀ v₁ y₀ y₁ : ℝ) (hv : v₀ ≤ v₁) (hy : y₀ ≤ y₁) (n : ℕ) :
+    (v₀ v₁ y₀ y₁ : ℝ) (hv : v₀ ≤ v₁) (hy : y₀ ≤ y₁)
+include a ha l u hlu hs v₀ v₁ y₀ y₁ hv hy
+
+/-- Actual complex masked far sum; all three measurable masks vary after
+the constant. The full L cubed and exact integer mode count are retained. -/
+theorem masked_radial_truncated_discard_bound  (n : ℕ) :
     ∃ D : ℝ, 0 < D ∧ ∀ (L H U : ℝ) (S : Finset (ℤ × (ℤ × ℤ)))
       (μ : ℝ → ℝ) (A B C : Set ℝ),
       0 < H → 1 ≤ U → S ⊆ cubicModes U →
@@ -39,10 +43,7 @@ theorem masked_radial_truncated_discard_bound {a : ℝ → ℂ}
 /-- The actual masked discarded complex sum is uniformly negligible.
 The decay order is fixed from eta before the constant and before every
 scale, mode set, measurable mask, support interval, and time density. -/
-theorem masked_radial_discard_negligible {a : ℝ → ℂ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hlu : l ≤ u)
-    (hs : ∀ r, r ∉ Icc l u → a r = 0)
-    (v₀ v₁ y₀ y₁ : ℝ) (hv : v₀ ≤ v₁) (hy : y₀ ≤ y₁)
+theorem masked_radial_discard_negligible 
     {η : ℝ} (hη : 0 < η) :
     ∃ D : ℝ, 0 < D ∧ ∀ (T L t₀ t₁ : ℝ) (S : Finset (ℤ × (ℤ × ℤ)))
       (μ : ℝ → ℝ) (A B C : Set ℝ),
@@ -70,8 +71,6 @@ theorem masked_radial_discard_negligible {a : ℝ → ℂ}
     have hh : L^3*((T^(1+η))^(3:ℕ)/L^3)*T^3 = (T^(1+η))^(3:ℕ)*T^3 := by field_simp
     rw [hh,← Real.rpow_natCast (T^(1+η)) 3,← Real.rpow_mul hTp.le,
       ← Real.rpow_natCast T 3,← Real.rpow_add hTp]
-    congr 1
-    norm_num
     ring
   calc
     _ ≤ D*|L|^3*(T^(1+η)/L)^3/(T^η)^n*(∫ t, μ t)^3*((v₁-v₀)*(y₁-y₀)) :=
@@ -82,5 +81,7 @@ theorem masked_radial_discard_negligible {a : ℝ → ℂ}
       rw [← he]
       ring
     _ ≤ _ := by gcongr; exact hn T hT
+end
 
-end GuthMaynard.Improvement
+
+

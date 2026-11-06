@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownLemmaOneFinite
 public import GafniTao.HeathBrownRefinedCountFinal
 
@@ -19,7 +20,7 @@ open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Insert a concrete critical VMVT estimate and a concrete bound for
 `mathcal N` into the literal majorant produced by the coefficient-cell
@@ -57,16 +58,6 @@ theorem heathBrownIntegratedMajorant_le_of_bounds
     gcongr
   have hInterior : ((N - H : ℕ) : ℝ) ≤ N := by
     exact_mod_cast Nat.sub_le N H
-  have hInteriorE :
-      ENNReal.ofReal
-          (((N - H : ℕ) : ℝ) *
-            ((2 : ℝ) ^ (k - 1) *
-              (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))) ≤
-        ENNReal.ofReal
-          ((N : ℝ) * ((2 : ℝ) ^ (k - 1) *
-            (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))) := by
-    apply ENNReal.ofReal_le_ofReal
-    gcongr
   have hsReal : (1 : ℝ) ≤ s := by exact_mod_cast hs
   have hLastExponent : 0 ≤ 1 - 1 / (s : ℝ) := by
     rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < s)]
@@ -88,15 +79,19 @@ theorem heathBrownCriticalMoment_bound
   rw [heathBrownCriticalMoment_lambda (by omega) epsilon] at h
   exact h
 
+section
+variable {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
+    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
+    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
+    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
+include N k f A lambda epsilon C hk hN hA hlambda hlambdaOne hsmall hlargeH
+
 /-- Fully source-linked insertion at Heath-Brown's critical moment.  The
 right side still displays the exact VMVT coefficient, Lemma 2 coefficient,
 cell volume, and endpoint count; subsequent algebra may absorb only these
 visible factors. -/
 theorem heathBrownIntegratedMajorant_le_critical
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
+    
     (hVMVT : FordVinogradovMomentBound
       (heathBrownCriticalMoment k) (k - 1) C epsilon)
     (hcoordLow : ContinuousOn
@@ -146,10 +141,7 @@ coefficient-cell volume, and the common-range endpoint error separate.  Thus
 the subsequent source-scale algebra cannot accidentally absorb a term that
 has not first been bounded. -/
 theorem heathBrown_lemma_one_assembled_critical
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
+    
     (hHN : heathBrownHChoice k A lambda ≤ N)
     (hVMVT : FordVinogradovMomentBound
       (heathBrownCriticalMoment k) (k - 1) C epsilon)
@@ -235,8 +227,10 @@ theorem heathBrown_lemma_one_assembled_critical
                 heathBrownCriticalMoment k)⁻¹)) *
           ENNReal.ofReal ((heathBrownHChoice k A lambda : ℝ) ^ 2) := hpre
     _ ≤ _ := by gcongr
-
-
 end
 
-end GafniTao
+
+
+
+
+

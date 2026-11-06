@@ -3,7 +3,6 @@ public import AtomicRadialCoordinates
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff
@@ -22,13 +21,17 @@ theorem radialIntegrand_measurable {a : ℝ → ℂ} {F : ℝ → ℂ}
   unfold radialIntegrand radialAmplitude
   fun_prop
 
-/-- Absolute integrability on the full radial/ratio space is proved from
-actual compact support and Fourier mass bounds, with no Fubini premise. -/
-theorem radialIntegrand_integrable {a : ℝ → ℂ} {F : ℝ → ℂ}
+section
+variable {a : ℝ → ℂ} {F : ℝ → ℂ}
     (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
     (hs : ∀ x, x ∉ Icc l u → a x = 0)
     (hF : Continuous F) {M : ℝ} (hM : 0 ≤ M) (hbF : ∀ ξ, ‖F ξ‖ ≤ M)
-    (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
+    (L : ℝ) (m : ℤ × (ℤ × ℤ))
+include a F ha l u hl hlu hs hF M hM hbF L m
+
+/-- Absolute integrability on the full radial/ratio space is proved from
+actual compact support and Fourier mass bounds, with no Fubini premise. -/
+theorem radialIntegrand_integrable  :
     Integrable (fun z : ℝ × (ℝ × ℝ) => radialIntegrand a F L m z.1 z.2) := by
   let Q := Icc (l/u) (u/l) ×ˢ Icc (l/u) (u/l)
   let E := Icc l u ×ˢ Q
@@ -51,11 +54,7 @@ theorem radialIntegrand_integrable {a : ℝ → ℂ} {F : ℝ → ℂ}
 
 /-- Fubini moves the actual radial integral inside the ratio integral.
 The original three Fourier factors and the exact Jacobian are preserved. -/
-theorem spatialCubicMode_radial_fubini {a : ℝ → ℂ} {F : ℝ → ℂ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    (hF : Continuous F) {M : ℝ} (hM : 0 ≤ M) (hbF : ∀ ξ, ‖F ξ‖ ≤ M)
-    (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
+theorem spatialCubicMode_radial_fubini  :
     (∫ r, ∫ x₁, ∫ x₂, spatialCubicMode a F L m x₁ x₂ r) =
       ∫ p in Icc (l/u) (u/l) ×ˢ Icc (l/u) (u/l),
         radialKernel a L m p * ratioFourierProduct F p := by
@@ -86,5 +85,7 @@ theorem spatialCubicMode_radial_fubini {a : ℝ → ℂ} {F : ℝ → ℂ}
     by_contra hn
     exact hp (radialAmplitude_support hl hlu hs hn).2
   simp [radialKernel,hz]
+end
 
-end GuthMaynard.Improvement.AtomicCubic
+
+

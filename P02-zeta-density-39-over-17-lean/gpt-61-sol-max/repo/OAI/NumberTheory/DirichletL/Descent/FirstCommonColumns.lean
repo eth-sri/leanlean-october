@@ -11,7 +11,7 @@ open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpa
 open JointLogSeparation FourierBridge MeasureTheory
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -64,7 +64,7 @@ theorem first_common_source_mode (A₁ A₂ C R : ℝ) (d h : Eis) (s : Fin 9 �
     fin_cases i <;> rfl
   rw [hy,first_mode_split]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge ProbePhase
+open scoped EisensteinO
 
 def reciprocityCoefficient (A s : O) (hA : A≠0) (H : O) : ℂ :=
   reciprocitySign A s * bareCongruenceCoefficient A s hA H
@@ -61,7 +61,7 @@ theorem reciprocityCoefficient_product (A B s r : O)
         bareCongruenceCoefficient B r (supportedElement_ne_zero B hB) H := by ring
     _ = _ := by rw [hsign]; ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

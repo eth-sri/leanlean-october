@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.ShortPoweredFamily
 public import MathCollab.Density.DensityExponentAccounting
 
 @[expose] public section
 
-open Real Set Filter
+open Real Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- The stronger lower scale still exceeds sqrt(T), preserving the original
@@ -146,7 +146,7 @@ theorem smooth_family_sum_eventually {η σ : ℝ}
   have hHpow : (densityAmbient T)^η ≤ T^(2*η) := by
     have hh := Real.rpow_le_rpow (show 0 ≤ densityAmbient T by unfold densityAmbient; positivity) hH hη.le
     rw [← Real.rpow_natCast_mul hTpos.le] at hh
-    simpa only [Nat.cast_ofNat] using hh
+    exact hh
   have hlogs : Real.log (2*T) ≤ 2*Real.log T := by
     rw [Real.log_mul (by norm_num) hTpos.ne']
     have hh := Real.log_le_log (by norm_num : (0 : ℝ) < 2) hT
@@ -163,8 +163,6 @@ theorem smooth_family_sum_eventually {η σ : ℝ}
         (T^(2*η)*T^(densityExponent σ+8*η)) := by gcongr
     _ = _ := by
       rw [mul_assoc (288*(K : ℝ)^2*((2 : ℝ)^K+32)), ← Real.rpow_add hTpos, ← Real.rpow_add hTpos]
-      congr 1
-      congr 1
-      ring
+      grind
 
-end MathCollab.Density.Stronger
+

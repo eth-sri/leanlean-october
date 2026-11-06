@@ -8,8 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
+
+
 
 lemma retained_count_le_box (scale B : ℝ) :
     (retainedDyads scale B).card≤(retainedDyadicBox scale B).card :=
@@ -47,7 +47,7 @@ theorem retained_count_budget (ε δ Lscale : ℝ) (hε : 0<ε) (hδL : 0≤δ+L
     _ = (C*16^α)*Z^((δ+Lscale)*α) := by rw [Real.mul_rpow (by norm_num) (Real.rpow_nonneg hz.le _),←Real.rpow_mul hz.le];ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)) (by positivity)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

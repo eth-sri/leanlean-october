@@ -14,16 +14,22 @@ namespace SevenEighths.TraceCharacter
 
 abbrev O := ActualEisensteinCubic.O
 
-open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT
+open ActualEisensteinCubic ConcreteTraceCRT
 open EisensteinSchwartzPoisson FiniteFourier
 
-def traceCharacter (c : O) (hc : c ≠ 0) : AddChar (O ⧸ Ideal.span {c}) ℂ :=
+section
+variable (c : O) (hc : c ≠ 0)
+include c hc
+
+def traceCharacter  : AddChar (O ⧸ Ideal.span {c}) ℂ :=
   eisTraceModChar ShortDraftTrace.breveE
     ConcreteBreveE.breveE_period_coordinates c hc
 
-theorem traceCharacter_isPrimitive (c : O) (hc : c ≠ 0) :
+theorem traceCharacter_isPrimitive  :
     (traceCharacter c hc).IsPrimitive :=
   GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive c hc
+end
+
 
 variable (c : O) [NeZero c]
 
@@ -34,45 +40,57 @@ theorem residue_card :
     Fintype.card (O ⧸ Ideal.span {c}) = Ideal.absNorm (Ideal.span {c}) := by
   simp only [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
 
-def gaussScalar (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) : ℂ :=
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
+include χ
+
+def gaussScalar  : ℂ :=
   gaussSum χ (traceCharacter c (NeZero.ne c))
 
-theorem transform_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (a : O ⧸ Ideal.span {c}) :
+section
+variable (hχ : IsPrimitiveOnIdeals χ)
+include hχ
+
+theorem transform_eq  (a : O ⧸ Ideal.span {c}) :
     (∑ x : O ⧸ Ideal.span {c}, χ x * traceCharacter c (NeZero.ne c) (a * x)) =
       χ⁻¹ a * gaussScalar c χ :=
   transform_primitive_character χ hχ (traceCharacter c (NeZero.ne c)) a
 
-theorem gaussScalar_norm_sq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem gaussScalar_norm_sq  :
     ‖gaussScalar c χ‖ ^ 2 = (Ideal.absNorm (Ideal.span {c}) : ℝ) := by
   simpa only [gaussScalar, residue_card c] using
     primitive_gaussSum_norm_sq χ hχ (traceCharacter c (NeZero.ne c))
       (traceCharacter_isPrimitive c (NeZero.ne c))
 
-theorem gaussScalar_norm (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem gaussScalar_norm  :
     ‖gaussScalar c χ‖ = Real.sqrt (Ideal.absNorm (Ideal.span {c}) : ℝ) := by
   rw [← gaussScalar_norm_sq c χ hχ, Real.sqrt_sq (norm_nonneg _)]
 
-theorem gaussScalar_norm_embedding (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem gaussScalar_norm_embedding  :
     ‖gaussScalar c χ‖ = ‖eisEmbedding c‖ := by
   rw [gaussScalar_norm c χ hχ, ← eisEmbedding_norm_sq_eq_absNorm_span,
     Real.sqrt_sq (norm_nonneg _)]
+end
 
-def normalizedGauss (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) : ℂ :=
+
+def normalizedGauss  : ℂ :=
   gaussScalar c χ / (‖eisEmbedding c‖ : ℂ)
 
-theorem normalizedGauss_norm (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
+theorem normalizedGauss_norm 
     (hχ : IsPrimitiveOnIdeals χ) : ‖normalizedGauss c χ‖ = 1 := by
   rw [normalizedGauss, norm_div, gaussScalar_norm_embedding c χ hχ,
     Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _),
     div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c)))]
+end
 
-theorem primitive_radial_paper_poisson (W : 𝓢(ℝ, ℂ)) (scale : ℝ)
+
+section
+variable (W : 𝓢(ℝ, ℂ)) (scale : ℝ)
     (hscale : 0 < scale) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+    (hχ : IsPrimitiveOnIdeals χ)
+include W scale hscale χ hχ
+
+theorem primitive_radial_paper_poisson  :
     (∑' z : O, χ (Ideal.Quotient.mk (Ideal.span {c}) z) *
       W (‖eisEmbedding z‖ ^ 2 / scale)) =
       ((scale : ℂ) * gaussScalar c χ / (Ideal.absNorm (Ideal.span {c}) : ℂ)) *
@@ -93,9 +111,7 @@ theorem primitive_radial_paper_poisson (W : 𝓢(ℝ, ℂ)) (scale : ℝ)
   intro h
   ring
 
-theorem primitive_radial_paper_poisson_normalized (W : 𝓢(ℝ, ℂ)) (scale : ℝ)
-    (hscale : 0 < scale) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem primitive_radial_paper_poisson_normalized  :
     (∑' z : O, χ (Ideal.Quotient.mk (Ideal.span {c}) z) *
       W (‖eisEmbedding z‖ ^ 2 / scale)) =
       ((scale : ℂ) * normalizedGauss c χ / (‖eisEmbedding c‖ : ℂ)) *
@@ -112,9 +128,11 @@ theorem primitive_radial_paper_poisson_normalized (W : 𝓢(ℝ, ℂ)) (scale : 
   have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c)))
   field_simp
-
-end SevenEighths.TraceCharacter
-
 end
 
-end OAI
+
+
+
+
+
+

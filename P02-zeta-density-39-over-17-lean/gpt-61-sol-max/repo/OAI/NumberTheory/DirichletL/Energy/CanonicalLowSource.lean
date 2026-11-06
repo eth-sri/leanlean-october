@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.FirstTwoSeedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalLowColumn
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalAnnularPower
@@ -38,71 +39,71 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalLowSource
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily
+
+
+
+
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
-open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+
+
+open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
+
+
+open HeckeFamily CenteredMomentEnergyBands
+
+
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
+
+
+
+open CenteredMomentAllocatedRayDictionary
+
+open CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
+
+open CenteredMomentFirstAmplifiedCapacityCommon
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentCanonicalFirst
+open CanonicalQuadraticSieve CompletedGauss
+open ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstScale
 
-open RayFourExpansion CenteredMomentSourceMass CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondEnergySplit CenteredMomentGaussNormalization
+open RayFourExpansion CenteredMomentSourceMass
+
 open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentActiveSource
-open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondWindowSource
-open CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondReferenceNormalization
-open CenteredMomentFirstSeededGaussianPower CenteredMomentFirstSecondInputGates
 
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentFirstAmplifiedFourCoefficients
+
+
+open CenteredMomentFirstSecondInputGates
+
+open CenteredMomentFirstAmplifiedFourCoefficients
 
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
 
 open CenteredMomentEnergyAmplifiedChildWidth
-open CenteredMomentEnergyCanonicalAmplifiedUniform CenteredMomentEnergyAmplifierFamilyAdmission
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyFirstAnnularAdmission
-open CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyInputParentCapacity
-open CenteredMomentFirstReferenceSource CenteredMomentFirstNonexceptionalWeightSum
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationEligibility
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedPowerBudget CenteredMomentFirstAmplificationChoice
-open CenteredMomentSecondRetainedRows CenteredMomentLogDyadic
 
-open CenteredMomentEnergyCanonicalAnnularPower CenteredMomentEnergyCanonicalAmplifiedColumn
-open CenteredMomentFirstCommonReferencePower CenteredMomentEnergyFirstLowHomogeneousPowers
+open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyFirstAnnularAdmission
+open CenteredMomentEnergyInputParentCapacity
+open CenteredMomentFirstReferenceSource
+open CenteredMomentPrimeElements
+
+open CenteredMomentFirstPhysicalSource
+open CenteredMomentFirstAmplificationChoice
+open CenteredMomentSecondRetainedRows
+
+
+
 open CenteredMomentEnergyCanonicalLowColumn CenteredMomentFirstNonexceptionalLocalWeightSum
 
 theorem actual_original_left_low_column
@@ -118,7 +119,7 @@ theorem actual_original_left_low_column
     (lows highs:α→ℝ)(hhighs:∀i,0≤highs i)
     (εsrc δsrc θsrc Bseed ξ saving:ℝ)
     (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hξ:0<ξ)
-    (sigma:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(A Pcap eta primeLoss reserve:ℝ)
+    (sigma:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤ sigma/4)(A Pcap eta primeLoss reserve:ℝ)
     (hA:0≤A)(hPcap:0≤Pcap)(heta:eta<sigma/6)(hPrimeLoss:0<primeLoss)
     (hsigma1:sigma≤1)(hξ1:ξ≤1)(hreserve:0<reserve)
     (heps1:εsrc≤1)(hBseed:A+1≤Bseed):
@@ -131,13 +132,13 @@ theorem actual_original_left_low_column
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤eta) →
+    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤eta) →
     (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input Aorig,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     (∀i,src.lo i=lows i.val) → (∀i,src.hi i=highs i.val) →
-    Fintype.card Aorig≤N → lower≤src.lower → src.upper≤upper →
-    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
+    Fintype.card Aorig≤N → lower≤ src.lower → src.upper≤upper →
+    0≤ src.b₁ → 0≤ src.b₂ → src.b₁≤ max 1 b → src.b₂≤ max 1 b →
     ∀(R0 seed0:Ideal O),R0≠0 → (R0.absNorm:ℝ)≤Z^Pcap → Squarefree seed0 →
     ∀(C D:Ideal O),∀hC:Supported C,∀_hD:Supported D,
     ∀hlabel:(C,D)∈CenteredMomentFirstSectors.commonLabels
@@ -151,7 +152,7 @@ theorem actual_original_left_low_column
     ∀K:ℝ,1≤K →
     ∀Wphysical:𝓢(ℝ,ℂ),∀n:SourceBlocks src R0 seed0 K Z ξ ⟨(C,D),hlabel⟩ E,
     originalBlock src R0 seed0 Wphysical K Z ξ ⟨(C,D),hlabel⟩ E n≠0 →
-    ∀(seed:Ideal O),Squarefree seed → (seed.absNorm:ℝ)≤sourceRadius src/(D.absNorm:ℝ) →
+    ∀(seed:Ideal O),Squarefree seed → (seed.absNorm:ℝ)≤ sourceRadius src/(D.absNorm:ℝ) →
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
     src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
     ∀Mdecl Mwidth θclip:ℝ,0≤θclip → Mdecl≤A →
@@ -206,13 +207,13 @@ theorem actual_original_left_low_column
   have hZ:1<Z:=hZbase.trans_le hZbaseLe
   have hZpos:0<Z:=zero_lt_one.trans hZ
   have hK:0<K:=zero_lt_one.trans_le hK1
-  have hPs:∀i,1≤src.P i:=by
+  have hPs:∀i,1≤ src.P i:=by
     intro i;rw [hmatch.scale];exact Real.one_le_rpow hZ.le (hw i)
   have hlogs:∀i,Real.logb Z (src.P i)=w i:=by
     intro i;rw [hmatch.scale,Real.logb_rpow hZpos hZ.ne']
   have hcapacity:length Z src.X₁+length Z src.X₂+6*κ*(∑i,Real.logb Z (src.P i))≤A:=by
     simpa only [hlogs] using hcap.trans hMA
-  have hV:volume src≤Z^A:=original_volume_cap src Z κ A hZ hκsmall hPs hcapacity
+  have hV :=original_volume_cap src Z κ A hZ hκsmall hPs hcapacity
   have hηcap:(src.η.modulus.absNorm:ℝ)≤Z^A:=by
     have hlogK:=Real.logb_nonneg hZ hK1
     have hηpos:=CenteredMomentFirstScale.norm_pos _ src.η.modulus_ne_bot
@@ -236,7 +237,7 @@ theorem actual_original_left_low_column
     exact (p.support 1 hh).1
   have hcols:=actual_common_gates src R0 seed0 hseed0
     (lower_profile_zero src.W₁ a haPlain hW₁) (lower_profile_zero src.W₂ a haPlain hW₂) C D hlabel
-  have hCD:primeSupport C=primeSupport D:=hcols.2.2.1
+  have hCD :=hcols.2.2.1
   have hseedC:seed0∣C:=hcols.2.2.2.1
   have hDnorm:1≤(D.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)
@@ -249,8 +250,8 @@ theorem actual_original_left_low_column
   have hseedne:seed≠0:=hseed.ne_zero
   have hseedCap:(seed.absNorm:ℝ)≤Z^Bseed:=by
     calc
-      _≤sourceRadius src/(D.absNorm:ℝ):=hseedcap
-      _≤sourceRadius src:=div_le_self ((Nat.cast_nonneg C.absNorm).trans hcols.2.2.2.2.2.1) hDnorm
+      _≤ sourceRadius src/(D.absNorm:ℝ):=hseedcap
+      _≤ sourceRadius src:=div_le_self ((Nat.cast_nonneg C.absNorm).trans hcols.2.2.2.2.2.1) hDnorm
       _≤Z^(A+1):=hradius.1
       _≤Z^Bseed:=Real.rpow_le_rpow_of_exponent_le hZ.le hBseed
   have hamp:=(hradius.2 ⟨(C,D),hlabel⟩ E n)
@@ -321,8 +322,8 @@ theorem actual_original_left_low_column
           Z ξ (readyBudget A Pcap):=hlive.1
       exact Or.inr (by simpa only [mul_one] using hr)
 
-end SevenEighths.CenteredMomentEnergyCanonicalLowSource
 
-end
 
-end OAI
+
+
+

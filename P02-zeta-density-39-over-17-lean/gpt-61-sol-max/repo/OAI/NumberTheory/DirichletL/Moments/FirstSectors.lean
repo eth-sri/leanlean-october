@@ -10,25 +10,42 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstSectors
 open CenteredMomentCompleteCommon CenteredMomentCommonSectors IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def residualPool (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) : Finset (Ideal O) :=
+section
+variable (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
+include C hC S
+
+def residualPool  : Finset (Ideal O) :=
   S.preimage (fun a => C*a) (by intro a ha b hb he;exact mul_left_cancel₀ hC he)
 
-@[simp] theorem mem_residualPool (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) (a : Ideal O) :
+@[simp] theorem mem_residualPool  (a : Ideal O) :
     a∈residualPool C hC S ↔ C*a∈S := Finset.mem_preimage
+end
 
-def pairSector (C D : Ideal O) (S T : Finset (Ideal O)) : Finset (Ideal O × Ideal O) :=
+
+section
+variable (C D : Ideal O)
+include C D
+
+def pairSector  (S T : Finset (Ideal O)) : Finset (Ideal O × Ideal O) :=
   (S.product T).filter (fun p => commonPart p.1 p.2=C ∧ commonPart p.2 p.1=D)
 
-def residualPairDomain (C D : Ideal O) (hC : C≠0) (hD : D≠0) (S T : Finset (Ideal O)) :
+section
+variable (hC : C≠0) (hD : D≠0)
+include hC hD
+
+def residualPairDomain  (S T : Finset (Ideal O)) :
     Finset (Ideal O × Ideal O) :=
   ((residualPool C hC S).product (residualPool D hD T)).filter
     (fun p => IsCoprime C p.1 ∧ IsCoprime C p.2 ∧ IsCoprime p.1 p.2)
 
-theorem residualPair_image (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
-    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0) :
+section
+variable (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
+    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0)
+include hCD S T hS hT
+
+theorem residualPair_image  :
     (residualPairDomain C D hC hD S T).image (fun p => (C*p.1,D*p.2))=pairSector C D S T := by
   ext p
   rcases p with ⟨I,J⟩
@@ -60,9 +77,11 @@ theorem residualPair_image (C D : Ideal O) (hC : C≠0) (hD : D≠0)
     · rw [← hCI]
       exact commonPart_residualPart_coprime I J
 
-theorem pairSector_sum (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
-    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0) (F : Ideal O → Ideal O → ℂ) :
+section
+variable (F : Ideal O → Ideal O → ℂ)
+include F
+
+theorem pairSector_sum  :
     (∑ p∈pairSector C D S T,F p.1 p.2)=
       ∑ p∈residualPairDomain C D hC hD S T,F (C*p.1) (D*p.2) := by
   rw [← residualPair_image C D hC hD hCD S T hS hT,Finset.sum_image]
@@ -70,26 +89,33 @@ theorem pairSector_sum (C D : Ideal O) (hC : C≠0) (hD : D≠0)
   exact Prod.ext (mul_left_cancel₀ hC (congrArg Prod.fst he))
     (mul_left_cancel₀ hD (congrArg Prod.snd he))
 
-theorem pairSector_double_sum (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
-    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0) (F : Ideal O → Ideal O → ℂ) :
+theorem pairSector_double_sum  :
     (∑ p∈pairSector C D S T,F p.1 p.2)=
       ∑ a∈residualPool C hC S,∑ b∈residualPool D hD T,
         if IsCoprime C a ∧ IsCoprime C b ∧ IsCoprime a b then F (C*a) (D*b) else 0 := by
   rw [pairSector_sum C D hC hD hCD S T hS hT,residualPairDomain,Finset.sum_filter]
   exact Finset.sum_product _ _ _
+end
+end
+end
+end
 
-def commonLabels (S T : Finset (Ideal O)) : Finset (Ideal O × Ideal O) :=
+
+section
+variable (S T : Finset (Ideal O))
+include S T
+
+def commonLabels  : Finset (Ideal O × Ideal O) :=
   (S.product T).image (fun p => (commonPart p.1 p.2,commonPart p.2 p.1))
 
-theorem commonLabels_data (S T : Finset (Ideal O)) (C D : Ideal O)
+theorem commonLabels_data  (C D : Ideal O)
     (h : (C,D)∈commonLabels S T) :
     C≠0 ∧ D≠0 ∧ primeSupport C=primeSupport D := by
   obtain ⟨p,hp,he⟩ := Finset.mem_image.mp h
   rcases Prod.mk.inj he with ⟨rfl,rfl⟩
   exact ⟨commonPart_ne_zero _ _,commonPart_ne_zero _ _,commonParts_equal_support _ _⟩
 
-theorem sum_common_sectors (S T : Finset (Ideal O)) (F : Ideal O → Ideal O → ℂ) :
+theorem sum_common_sectors  (F : Ideal O → Ideal O → ℂ) :
     (∑ I∈S,∑ J∈T,F I J)=
       ∑ p∈commonLabels S T,∑ q∈pairSector p.1 p.2 S T,F q.1 q.2 := by
   have hh := Finset.sum_fiberwise_of_maps_to
@@ -104,9 +130,11 @@ theorem sum_common_sectors (S T : Finset (Ideal O)) (F : Ideal O → Ideal O →
     rcases p with ⟨C,D⟩
     congr 1
   · exact (Finset.sum_product S T (fun p : Ideal O × Ideal O => F p.1 p.2)).symm
-
-end SevenEighths.CenteredMomentFirstSectors
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssignedP
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open ActualEisensteinCubic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerMass
-open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
+open InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerAssigned
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem assigned_quotient_subset {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
     (p:ι→Eis)(S:Finset (Source (ι:=ι) 0))(J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι) :
@@ -62,8 +62,8 @@ theorem assigned_quotient_mass (K:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     _≤Z^R*(C*Z^π) := by simpa only [mul_assoc] using hs
     _=C*Z^(R+π) := by rw [Real.rpow_add hZp];ring
 
-end SevenEighths.InverseInitialEnergyCallerMass
 
-end
 
-end OAI
+
+
+

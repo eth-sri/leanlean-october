@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.Analytic.DigammaSeries
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -89,7 +90,7 @@ theorem reciprocal_le_chord {u t : ℝ} (hu : 0 < u) (ht : t ∈ Set.Icc (0 : �
   have hut : 0 < u + t := by positivity
   have hu1 : 0 < u + 1 := by positivity
   field_simp
-  nlinarith [mul_nonneg ht0 (sub_nonneg.mpr ht1)]
+  nlinarith
 
 /-- Trapezoidal upper bound for the logarithm on a positive unit interval. -/
 theorem log_succ_sub_le {u : ℝ} (hu : 0 < u) :
@@ -197,7 +198,7 @@ private theorem sum_bounds_from_differences (f F : ℕ → ℝ)
   have hd : HasSum (fun n => F n - F (n + 1)) (F 0) := by
     apply (hasSum_iff_tendsto_nat_of_nonneg (fun n => (hf (n + 1)).trans (hhi n)) _).mpr
     simpa only [Finset.sum_range_sub', sub_zero] using tendsto_const_nhds.sub hF
-  have ht : Summable (fun n => f (n + 1)) :=
+  have ht :=
     Summable.of_nonneg_of_le (fun n => hf (n + 1)) hhi hd.summable
   have hs : Summable f := (summable_nat_add_iff 1).mp ht
   refine ⟨hs, ?_, ?_⟩
@@ -206,8 +207,12 @@ private theorem sum_bounds_from_differences (f F : ℕ → ℝ)
   · rw [hs.tsum_eq_zero_add, ← hd.tsum_eq]
     exact add_le_add_right (ht.tsum_le_tsum hhi hd.summable) _
 
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+
 /-- Convergence and integral bounds for reciprocal squares on any positive translate. -/
-theorem reciprocal_square_series_bounds {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_square_series_bounds  :
     Summable (fun n : ℕ => 1 / ((n : ℝ) + x) ^ 2) ∧
       1 / x ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2) ≤ 1 / x ^ 2 + 1 / x := by
@@ -234,7 +239,7 @@ theorem reciprocal_square_series_bounds {x : ℝ} (hx : 0 < x) :
     nlinarith
 
 /-- Convergence and integral bounds for reciprocal cubes on any positive translate. -/
-theorem reciprocal_cube_series_bounds {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_cube_series_bounds  :
     Summable (fun n : ℕ => 1 / ((n : ℝ) + x) ^ 3) ∧
       1 / (2 * x ^ 2) ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3) ≤ 1 / x ^ 3 + 1 / (2 * x ^ 2) := by
@@ -267,7 +272,7 @@ theorem reciprocal_cube_series_bounds {x : ℝ} (hx : 0 < x) :
     nlinarith [sq_pos_of_pos hu, pow_pos hu 3]
 
 /-- The sharpened reciprocal-square bounds after retaining the first term. -/
-theorem reciprocal_square_series_sharp {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_square_series_sharp  :
     1 / x ^ 2 + 1 / (x + 1) ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2) ≤
         1 / x ^ 2 + 1 / (x + 1) ^ 2 + 1 / (x + 1) := by
@@ -280,7 +285,7 @@ theorem reciprocal_square_series_sharp {x : ℝ} (hx : 0 < x) :
   constructor <;> linarith [h.1, h.2]
 
 /-- The sharpened reciprocal-cube bounds after retaining the first term. -/
-theorem reciprocal_cube_series_sharp {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_cube_series_sharp  :
     1 / x ^ 3 + 1 / (2 * (x + 1) ^ 2) ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3) ≤
         1 / x ^ 3 + 1 / (x + 1) ^ 3 + 1 / (2 * (x + 1) ^ 2) := by
@@ -291,10 +296,16 @@ theorem reciprocal_cube_series_sharp {x : ℝ} (hx : 0 < x) :
   rw [he]
   have h := (reciprocal_cube_series_bounds (by positivity : 0 < x + 1)).2
   constructor <;> linarith [h.1, h.2]
+end
+
+
+section
+variable {N : ℕ} {y : ℝ} (hy : 0 < y)
+    (hNy : y < (N : ℝ) + 1)
+include N y hy hNy
 
 /-- Convergent partial-fraction decomposition for the second negative-shift power. -/
-theorem hasSum_harmonic_tail_square {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem hasSum_harmonic_tail_square  :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 2))
       ((∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 2) / y -
         ((Complex.digamma ((N : ℝ) + 1 : ℝ)).re -
@@ -313,8 +324,7 @@ theorem hasSum_harmonic_tail_square {N : ℕ} {y : ℝ} (hy : 0 < y)
   · ring
 
 /-- Convergent partial-fraction decomposition for the third negative-shift power. -/
-theorem hasSum_harmonic_tail_cube {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem hasSum_harmonic_tail_cube  :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 3))
       ((∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 3) / y -
         (∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 2) / y ^ 2 +
@@ -335,8 +345,7 @@ theorem hasSum_harmonic_tail_cube {N : ℕ} {y : ℝ} (hy : 0 < y)
   · ring
 
 /-- The complete second negative-shift estimate of Lemma 1. -/
-theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem harmonic_tail_square_bound  :
     let δ : ℝ := (N : ℝ) + 1 - y
     (∑' n : ℕ, 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 2)) ≤
       (1 / δ ^ 2 + 1 / (δ + 1) ^ 2 + 1 / (δ + 1)) / y -
@@ -352,8 +361,7 @@ theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
       (sq_nonneg y))
 
 /-- The complete third negative-shift estimate of Lemma 1. -/
-theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem harmonic_tail_cube_bound  :
     let δ : ℝ := (N : ℝ) + 1 - y
     (∑' n : ℕ, 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 3)) ≤
       (1 / δ ^ 3 + 1 / (δ + 1) ^ 3 + 1 / (2 * (δ + 1) ^ 2)) / y -
@@ -370,9 +378,15 @@ theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
     (div_le_div_of_nonneg_right
       (sub_le_sub_right (real_digamma_bounds (by positivity : 0 < (N : ℝ) + 1)).2 _)
       (by positivity))
+end
+
+
+section
+variable {y : ℝ} (hy : 0 < y)
+include y hy
 
 /-- Convergent partial fractions for the second positive-shift power. -/
-theorem hasSum_harmonic_plus_square {y : ℝ} (hy : 0 < y) :
+theorem hasSum_harmonic_plus_square  :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 2))
       (((Complex.digamma (y + 1 : ℝ)).re + Real.eulerMascheroniConstant) / y ^ 2 -
         (∑' n : ℕ, 1 / ((n : ℝ) + (y + 1)) ^ 2) / y) := by
@@ -388,7 +402,7 @@ theorem hasSum_harmonic_plus_square {y : ℝ} (hy : 0 < y) :
   · ring
 
 /-- Convergent partial fractions for the third positive-shift power. -/
-theorem hasSum_harmonic_plus_cube {y : ℝ} (hy : 0 < y) :
+theorem hasSum_harmonic_plus_cube  :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 3))
       (((Complex.digamma (y + 1 : ℝ)).re + Real.eulerMascheroniConstant) / y ^ 3 -
         (∑' n : ℕ, 1 / ((n : ℝ) + (y + 1)) ^ 2) / y ^ 2 -
@@ -407,7 +421,7 @@ theorem hasSum_harmonic_plus_cube {y : ℝ} (hy : 0 < y) :
   · ring
 
 /-- The positive-shift estimate of Lemma 1 for the second power. -/
-theorem harmonic_plus_square_bound {y : ℝ} (hy : 0 < y) :
+theorem harmonic_plus_square_bound  :
     (∑' n : ℕ, 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 2)) ≤
       (Real.log (y + 1) + Real.eulerMascheroniConstant) / y ^ 2 -
         (1 + 2 * y) / (2 * y ^ 2 * (y + 1)) := by
@@ -421,7 +435,7 @@ theorem harmonic_plus_square_bound {y : ℝ} (hy : 0 < y) :
   convert h using 1 <;> field_simp <;> ring
 
 /-- The positive-shift estimate of Lemma 1 for the third power. -/
-theorem harmonic_plus_cube_bound {y : ℝ} (hy : 0 < y) :
+theorem harmonic_plus_cube_bound  :
     (∑' n : ℕ, 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 3)) ≤
       (Real.log (y + 1) + Real.eulerMascheroniConstant) / y ^ 3 -
         (1 + 3 * y + 3 * y ^ 2) / (2 * y ^ 3 * (y + 1) ^ 2) := by
@@ -436,12 +450,14 @@ theorem harmonic_plus_cube_bound {y : ℝ} (hy : 0 < y) :
     (div_le_div_of_nonneg_right
       (reciprocal_cube_series_bounds (by positivity : 0 < y + 1)).2.1 hy.le)
   convert h using 1 <;> field_simp <;> ring
+end
+
 
 /-- Reindex an actual natural-number tail by its first included integer. -/
 theorem tsum_nat_tail_eq {F : ℕ → ℝ} (N : ℕ)
     (hF : Summable (fun n : ℕ => F (n + N + 1))) :
     (∑' ν : ℕ, if N < ν then F ν else 0) = ∑' n : ℕ, F (n + N + 1) := by
-  let f : ℕ → ℝ := fun ν => if N < ν then F ν else 0
+  let f := fun ν => if N < ν then F ν else 0
   have htail : (fun n => f (n + (N + 1))) = (fun n => F (n + N + 1)) := by
     funext n
     simp only [f, show N < n + (N + 1) by omega, ite_true, Nat.add_assoc]
@@ -455,4 +471,4 @@ theorem tsum_nat_tail_eq {F : ℕ → ℝ} (N : ℕ)
   rw [hhead, zero_add, htail] at he
   exact he.symm
 
-end DhimanKadiriQuesadaHerrera2026
+

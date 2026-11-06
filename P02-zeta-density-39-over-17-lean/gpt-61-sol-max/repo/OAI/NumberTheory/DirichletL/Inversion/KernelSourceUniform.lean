@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
@@ -83,7 +84,7 @@ private theorem localized_source_seminorm
     (SchwartzMap.seminorm ℝ k n) (positiveLogProfile V F R hVc hVs hF hR) ≤
       L ^ k * derivativeConstant n CW CF := by
   let g := positiveLogProfile V F R hVc hVs hF hR
-  let G : ℝ → ℂ := fun z => F (R * Real.exp z)
+  let G := fun z => F (R * Real.exp z)
   have hG : ContDiff ℝ ∞ G := by
     apply hF.comp_contDiff (by fun_prop)
     intro z
@@ -103,7 +104,7 @@ private theorem localized_source_seminorm
       unfold derivativeConstant
       apply Finset.sum_le_sum
       intro i hi
-      have hi' : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+      have hi' := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
       have hGi : ‖iteratedFDeriv ℝ (n - i) G s‖ ≤ CF := by
         rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, show (G : ℝ → ℂ) = fun z => F (R * Real.exp z) from rfl,
           iteratedDeriv_log_eq_euler]
@@ -330,8 +331,8 @@ theorem paperKernel_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
     (hf : StronglyMeasurable (fun p : α × ℝ => V p.1 (Real.exp p.2))) :
     StronglyMeasurable (fun p : α × Set.Ioi (0 : ℝ) =>
       CubicReflectionKernel.paperKernel (V p.1) p.2) := by
-  let f : α → ℝ → ℂ := fun θ s => V θ (Real.exp s)
-  let g : α → ℝ → ℂ := fun θ u => CubicReflectionKernel.axisMultiplier u * (𝓕 (f θ)) u
+  let f := fun θ s => V θ (Real.exp s)
+  let g := fun θ u => CubicReflectionKernel.axisMultiplier u * (𝓕 (f θ)) u
   have hfF := fourier_joint_stronglyMeasurable f hf
   have hg : StronglyMeasurable (Function.uncurry g) :=
     (CubicReflectionKernel.axisMultiplier_continuous.stronglyMeasurable.comp_measurable
@@ -416,7 +417,7 @@ theorem twistedDensity_joint_stronglyMeasurable
       (hlink p.1).symm)
   exact twistedDensity_measurable_of_profile U W R hprofile
 
-end
-end SevenEighths.InverseKernelSourceUniform
 
-end OAI
+
+
+

@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationMask
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Complex
 namespace SevenEighths.HeckeInverseAmplification
@@ -43,8 +43,8 @@ theorem prime_column_energy (χ ψ : Character) (P : SmoothMobiusCorrection.Prim
     sq_nonneg (‖polynomial ψ true W D σ freq‖-
       ‖polynomial ψ true W (D/(P.val.absNorm : ℝ)) σ freq‖)]
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 public import Mathlib.Algebra.Order.Chebyshev
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
@@ -31,16 +32,22 @@ to a one-variable Dirichlet polynomial, not for the finite algebra below. -/
 noncomputable def heathBrownPhase (n : ℕ) (t : ℝ) : ℂ :=
   (n : ℂ) ^ (-t * I)
 
+section
+variable (s : Finset ℕ)
+include s
+
 /-- The two-ordinate polynomial before replacing the pair by its difference.
 This is the form whose square expands into a positive majorant kernel. -/
-noncomputable def heathBrownDifferencePolynomial (s : Finset ℕ)
+noncomputable def heathBrownDifferencePolynomial 
     (a : ℕ → ℂ) (t u : ℝ) : ℂ :=
   ∑ n ∈ s, a n * heathBrownPhase n t * star (heathBrownPhase n u)
 
 /-- Heath--Brown's finite mean square over the ordered difference set. -/
-noncomputable def heathBrownDifferenceMoment (s : Finset ℕ)
+noncomputable def heathBrownDifferenceMoment 
     (W : Finset ℝ) (a : ℕ → ℂ) : ℝ :=
   ∑ t ∈ W, ∑ u ∈ W, ‖heathBrownDifferencePolynomial s a t u‖ ^ 2
+end
+
 
 /-- The positive kernel which occurs after expanding the difference-set
 mean square and interchanging its four finite sums. -/
@@ -121,36 +128,50 @@ def HeathBrownWeightedMeanSquare : Prop :=
               ((W.card : ℝ) ^ (5 / 4 : ℝ) *
                 T ^ (1 / 2 : ℝ)))
 
+section
+variable (P : Finset ℕ)
+include P
+
 /-- Auxiliary-factor/source-index pairs used in the exact product
 collection of Montgomery--Vaughan Lemma 29.7. -/
-def heathBrownTransferTuples (P : Finset ℕ) (N : ℕ) : Finset (ℕ × ℕ) :=
+def heathBrownTransferTuples  (N : ℕ) : Finset (ℕ × ℕ) :=
   P ×ˢ dyadicInterval N
 
 /-- All products `p*n` arising from the auxiliary and source intervals. -/
-def heathBrownTransferSupport (P : Finset ℕ) (N : ℕ) : Finset ℕ :=
+def heathBrownTransferSupport  (N : ℕ) : Finset ℕ :=
   (heathBrownTransferTuples P N).image (fun x => x.1 * x.2)
 
 /-- The grouped nonnegative critical-line coefficient at a product `l`.
 It is the literal sum of `(pn)^{-1/2}` over all representations `pn=l`. -/
 noncomputable def heathBrownTransferCoeff
-    (P : Finset ℕ) (N l : ℕ) : ℝ :=
+     (N l : ℕ) : ℝ :=
   ∑ x ∈ (heathBrownTransferTuples P N).filter (fun x => x.1 * x.2 = l),
     heathBrownHalfWeight (x.1 * x.2)
+end
+
 
 /-- The auxiliary dyadic interval used in the transfer principle. -/
 def heathBrownTransferAuxiliary (J : ℕ) : Finset ℕ :=
   Finset.Ioc J (2 * J)
 
+section
+variable (P : Finset ℕ) (N : ℕ)
+include P N
+
 /-- The ungrouped auxiliary-times-source difference polynomial. -/
 noncomputable def heathBrownTransferredDifferencePolynomial
-    (P : Finset ℕ) (N : ℕ) (t u : ℝ) : ℂ :=
+     (t u : ℝ) : ℂ :=
   ∑ p ∈ P, ∑ n ∈ dyadicInterval N,
     (heathBrownHalfWeight (p * n) : ℂ) *
       heathBrownPhase (p * n) t * star (heathBrownPhase (p * n) u)
 
+section
+variable (W : Finset ℝ)
+include W
+
 /-- The ordered-pair second moment of the ungrouped transferred polynomial. -/
 noncomputable def heathBrownTransferredDifferenceMoment
-    (P : Finset ℕ) (N : ℕ) (W : Finset ℝ) : ℝ :=
+     : ℝ :=
   ∑ t ∈ W, ∑ u ∈ W,
     ‖heathBrownTransferredDifferencePolynomial P N t u‖ ^ 2
 
@@ -159,11 +180,14 @@ block by a finite auxiliary Dirichlet polynomial.  Keeping the prime/factor
 indices ungrouped makes the diagonal `p = q` in Montgomery--Vaughan Lemma
 29.7 literal; grouping equal products is performed by a later bridge. -/
 noncomputable def heathBrownTransferredKernelMoment
-    (P : Finset ℕ) (N : ℕ) (W : Finset ℝ) : ℝ :=
+     : ℝ :=
   ∑ p ∈ P, ∑ q ∈ P,
     ∑ n ∈ dyadicInterval N, ∑ m ∈ dyadicInterval N,
       heathBrownHalfWeight (p * n) * heathBrownHalfWeight (q * m) *
         heathBrownMajorantKernel W (p * n) (q * m)
+end
+end
+
 
 theorem heathBrownDifferenceMoment_nonneg (s : Finset ℕ)
     (W : Finset ℝ) (a : ℕ → ℂ) :
@@ -211,7 +235,7 @@ theorem heathBrownWeightedMoment_pow_le
   have hCard :
       (W.card : ℝ) * (W.card : ℝ) = (W.card : ℝ) ^ 2 := by ring
   rw [hCard] at h
-  simpa only [heathBrownWeightedMoment] using h
+  exact h
 
 /-- On a positive integer, the real Heath--Brown weight and the positive
 imaginary phase combine to the critical-line monomial.  This is the exact
@@ -286,14 +310,18 @@ theorem dirichletPoly_neg_eq_sourceDirichletPoly
   push_cast
   ring
 
+section
+variable (T u : ℝ) (W : Finset ℝ)
+include T u W
+
 /-- For fixed `u`, translate the difference ordinates `t-u` into the base
 interval `[0,2T]` on which the Montgomery mean-value theorem is stated. -/
 noncomputable def heathBrownDifferenceTranslateSet
-    (T u : ℝ) (W : Finset ℝ) : Finset ℝ :=
+     : Finset ℝ :=
   W.image (fun t => t - u + T)
 
 theorem heathBrownDifferenceTranslateSet_separated
-    (T u : ℝ) (W : Finset ℝ) (hSep : IsSeparated 1 W) :
+     (hSep : IsSeparated 1 W) :
     IsSeparated 1 (heathBrownDifferenceTranslateSet T u W) := by
   intro x hx y hy hxy
   rw [heathBrownDifferenceTranslateSet, Finset.mem_image] at hx hy
@@ -309,6 +337,8 @@ theorem heathBrownDifferenceTranslateSet_separated
     ring_nf
   rw [hd]
   exact hSep x' hx' y' hy' hxy'
+end
+
 
 theorem heathBrownDifferenceTranslateSet_mem_base
     {T u : ℝ} {W : Finset ℝ}
@@ -322,10 +352,18 @@ theorem heathBrownDifferenceTranslateSet_mem_base
   rw [Set.mem_Icc] at htBounds huBounds ⊢
   constructor <;> linarith
 
+section
+variable (N : ℕ)
+include N
+
+section
+variable (a : ℕ → ℂ)
+include a
+
 /-- Exact phase identity used before applying Montgomery mean value on the
 translated difference set. -/
 theorem dirichletPoly_difference_eq_translated
-    (N : ℕ) (a : ℕ → ℂ) (T t u : ℝ) :
+     (T t u : ℝ) :
     dirichletPoly N a (t - u) =
       dirichletPoly N (phaseShiftCoeffs (-T) a) (t - u + T) := by
   have h := dirichletPoly_translate N a (-T) (t - u + T)
@@ -334,7 +372,7 @@ theorem dirichletPoly_difference_eq_translated
 
 /-- Reindex one row of the ordered difference moment onto `[0,2T]`. -/
 theorem sum_difference_eq_sum_differenceTranslateSet
-    (N : ℕ) (a : ℕ → ℂ) (T u : ℝ) (W : Finset ℝ) :
+     (T u : ℝ) (W : Finset ℝ) :
     (∑ t ∈ W, ‖dirichletPoly N a (t - u)‖ ^ 2) =
       ∑ x ∈ heathBrownDifferenceTranslateSet T u W,
         ‖dirichletPoly N (phaseShiftCoeffs (-T) a) x‖ ^ 2 := by
@@ -345,12 +383,14 @@ theorem sum_difference_eq_sum_differenceTranslateSet
     rw [dirichletPoly_difference_eq_translated]
   · intro x hx y hy hxy
     linarith
+end
+
 
 /-- Direct Montgomery mean value on every row of the ordered difference
 set.  This is the elementary `R(T+N)` bound for the weighted moments; the
 Heath--Brown powering and reflection steps improve its `RT` term. -/
 theorem sourceDirichletPoly_orderedDifference_meanValue
-    (N : ℕ) (T : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
+     (T : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
     (hN : 0 < N) (hT : 1 ≤ T)
     (hSep : IsSeparated 1 W) (hBase : InBaseInterval T W) :
     (∑ t ∈ W, ∑ u ∈ W,
@@ -358,8 +398,8 @@ theorem sourceDirichletPoly_orderedDifference_meanValue
       (3 * (2 + 2 * (5 * Real.pi + 1))) * (W.card : ℝ) *
         (2 * T + (N : ℝ)) *
           ∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2 := by
-  let a' : ℕ → ℂ := conjugateCoeffs a
-  let C : ℝ := 3 * (2 + 2 * (5 * Real.pi + 1))
+  let a' := conjugateCoeffs a
+  let C := 3 * (2 + 2 * (5 * Real.pi + 1))
   have hRow : ∀ u ∈ W,
       (∑ t ∈ W, ‖dirichletPoly N a' (t - u)‖ ^ 2) ≤
         C * (2 * T + (N : ℝ)) *
@@ -399,12 +439,7 @@ theorem sourceDirichletPoly_orderedDifference_meanValue
     (∑ t ∈ W, ∑ u ∈ W,
         ‖sourceDirichletPoly N a (t - u)‖ ^ 2) =
         ∑ t ∈ W, ∑ u ∈ W,
-          ‖dirichletPoly N a' (t - u)‖ ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro t ht
-      apply Finset.sum_congr rfl
-      intro u hu
-      rw [hSign]
+          ‖dirichletPoly N a' (t - u)‖ ^ 2 := by simp_all
     _ = ∑ u ∈ W, ∑ t ∈ W,
           ‖dirichletPoly N a' (t - u)‖ ^ 2 := by
       rw [Finset.sum_comm]
@@ -422,7 +457,7 @@ theorem sourceDirichletPoly_orderedDifference_meanValue
 elementary normalization is what removes the polynomial length from the
 direct ordered-difference mean-value bound. -/
 theorem sum_heathBrownHalfWeight_sq_le_one
-    (N : ℕ) (hN : 0 < N) :
+     (hN : 0 < N) :
     (∑ n ∈ Ioc N (2 * N), ‖(heathBrownHalfWeight n : ℂ)‖ ^ 2) ≤ 1 := by
   have hTerm : ∀ n ∈ Ioc N (2 * N),
       ‖(heathBrownHalfWeight n : ℂ)‖ ^ 2 ≤ 1 / (N : ℝ) := by
@@ -450,7 +485,7 @@ theorem sum_heathBrownHalfWeight_sq_le_one
 /-- The direct (unreflected) weighted ordered-difference estimate.  This is
 the base case inserted into Heath--Brown's powering/reflection recurrence. -/
 theorem heathBrownWeightedMoment_direct_meanValue
-    (N : ℕ) (T : ℝ) (W : Finset ℝ)
+     (T : ℝ) (W : Finset ℝ)
     (hN : 0 < N) (hT : 1 ≤ T)
     (hSep : IsSeparated 1 W) (hBase : InBaseInterval T W) :
     heathBrownWeightedMoment N W ≤
@@ -472,6 +507,8 @@ theorem heathBrownWeightedMoment_direct_meanValue
     _ ≤ (3 * (2 + 2 * (5 * Real.pi + 1))) * (W.card : ℝ) *
         (2 * T + (N : ℝ)) := by
       simpa only [mul_one] using mul_le_mul_of_nonneg_left hL2 hFactor
+end
+
 
 /-- Three-term Cauchy--Schwarz in the exact norm form used to pass from the
 sharp source block to the three smooth localization pieces. -/
@@ -489,11 +526,15 @@ theorem norm_add_add_sq_le_three (a b c : ℂ) :
       sq_nonneg (‖b‖ - ‖c‖)]
   exact hSquare.trans hCS
 
+section
+variable (s : Finset ℕ) (W : Finset ℝ)
+include s W
+
 /-- Exact finite expansion underlying the Heath--Brown majorant principle.
 This is equation (3) in the standard difference-set proof, before taking the
 coefficient majorant. -/
 theorem ofReal_heathBrownDifferenceMoment_eq_kernel_sum
-    (s : Finset ℕ) (W : Finset ℝ) (a : ℕ → ℂ) :
+     (a : ℕ → ℂ) :
     ((heathBrownDifferenceMoment s W a : ℝ) : ℂ) =
       ∑ n ∈ s, ∑ m ∈ s,
         star (a n) * a m * (heathBrownMajorantKernel W n m : ℂ) := by
@@ -511,7 +552,7 @@ theorem ofReal_heathBrownDifferenceMoment_eq_kernel_sum
   unfold heathBrownDifferencePolynomial
   simp only [map_sum, map_mul]
   simp_rw [Finset.sum_mul, Finset.mul_sum]
-  let F : ℝ → ℝ → ℕ → ℕ → ℂ := fun y x n m =>
+  let F := fun y x n m =>
     star (a n) * star (heathBrownPhase n y) *
         star (star (heathBrownPhase n x)) *
       (a m * heathBrownPhase m y * star (heathBrownPhase m x))
@@ -564,7 +605,7 @@ theorem ofReal_heathBrownDifferenceMoment_eq_kernel_sum
 /-- For nonnegative real coefficients, the positive-kernel expansion is
 itself real and has the expected coefficient product. -/
 theorem heathBrownDifferenceMoment_ofReal_eq_kernel_sum
-    (s : Finset ℕ) (W : Finset ℝ) (b : ℕ → ℝ) :
+     (b : ℕ → ℝ) :
     heathBrownDifferenceMoment s W (fun n => (b n : ℂ)) =
       ∑ n ∈ s, ∑ m ∈ s,
         b n * b m * heathBrownMajorantKernel W n m := by
@@ -577,7 +618,7 @@ theorem heathBrownDifferenceMoment_ofReal_eq_kernel_sum
 difference-set second moment.  This is the exact finite inequality used
 before the analytic treatment of the nonnegative envelope. -/
 theorem heathBrownDifferenceMoment_le_of_norm_le
-    (s : Finset ℕ) (W : Finset ℝ) (a : ℕ → ℂ) (b : ℕ → ℝ)
+     (a : ℕ → ℂ) (b : ℕ → ℝ)
     (hb : ∀ n ∈ s, 0 ≤ b n)
     (hab : ∀ n ∈ s, ‖a n‖ ≤ b n) :
     heathBrownDifferenceMoment s W a ≤
@@ -611,6 +652,8 @@ theorem heathBrownDifferenceMoment_le_of_norm_le
         (mul_le_mul (hab n hn) (hab m hm) (norm_nonneg _) (hb n hn))
         (le_refl _) (heathBrownMajorantKernel_nonneg W n m)
         (mul_nonneg (hb n hn) (hb m hm))
+end
+
 
 /-- The two Heath--Brown phases combine to the negative-sign Dirichlet
 phase at the ordinate difference. -/
@@ -675,10 +718,14 @@ theorem star_heathBrownPhase_mul_eq_ratio_cpow
     _ = (((n : ℝ) / m : ℝ) : ℂ) ^ ((t : ℂ) * I) := by
       rw [div_eq_mul_inv]
 
+section
+variable (W : Finset ℝ)
+include W
+
 /-- The positive majorant kernel is exactly the squared norm of the
 Guth--Maynard ratio sum `R(n/m)`. -/
 theorem heathBrownMajorantKernel_eq_norm_gmR_ratio
-    (W : Finset ℝ) (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+     (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
     heathBrownMajorantKernel W n m =
       ‖gmR W ((n : ℝ) / m)‖ ^ 2 := by
   unfold heathBrownMajorantKernel gmR
@@ -693,7 +740,7 @@ theorem heathBrownMajorantKernel_eq_norm_gmR_ratio
 /-- A common positive dilation leaves the Heath--Brown ratio kernel
 unchanged.  This is the exact invariance used in Lemma 29.8. -/
 theorem heathBrownMajorantKernel_mul_left_right
-    (W : Finset ℝ) (q n m : ℕ)
+     (q n m : ℕ)
     (hq : 0 < q) (hn : 0 < n) (hm : 0 < m) :
     heathBrownMajorantKernel W (q * n) (q * m) =
       heathBrownMajorantKernel W n m := by
@@ -703,11 +750,17 @@ theorem heathBrownMajorantKernel_mul_left_right
   congr 3
   push_cast
   field_simp
+end
+
+
+section
+variable (N : ℕ)
+include N
 
 /-- The ordered difference polynomial is the project's actual dyadic
 negative-sign Dirichlet polynomial evaluated at `t - u`. -/
 theorem heathBrownDifferencePolynomial_dyadic_eq_dirichletPoly
-    (N : ℕ) (a : ℕ → ℂ) (t u : ℝ) :
+     (a : ℕ → ℂ) (t u : ℝ) :
     heathBrownDifferencePolynomial (dyadicInterval N) a t u =
       dirichletPoly N a (t - u) := by
   unfold heathBrownDifferencePolynomial dirichletPoly
@@ -718,10 +771,14 @@ theorem heathBrownDifferencePolynomial_dyadic_eq_dirichletPoly
   · rw [dyadicInterval, Finset.mem_Ioc] at hn
     omega
 
+section
+variable (W : Finset ℝ) (a : ℕ → ℂ)
+include W a
+
 /-- Consequently the ordered difference moment is exactly the finite
 second moment of the actual dyadic polynomial over all ordinate pairs. -/
 theorem heathBrownDifferenceMoment_dyadic_eq_dirichletPoly
-    (N : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) :
+     :
     heathBrownDifferenceMoment (dyadicInterval N) W a =
       ∑ t ∈ W, ∑ u ∈ W, ‖dirichletPoly N a (t - u)‖ ^ 2 := by
   unfold heathBrownDifferenceMoment
@@ -730,7 +787,7 @@ theorem heathBrownDifferenceMoment_dyadic_eq_dirichletPoly
 /-- Unit-bounded coefficients are dominated by the coefficient-one
 difference moment on the actual dyadic interval. -/
 theorem dirichletPoly_differenceMoment_le_one
-    (N : ℕ) (W : Finset ℝ) (a : ℕ → ℂ)
+    
     (ha : ∀ n ∈ dyadicInterval N, ‖a n‖ ≤ 1) :
     (∑ t ∈ W, ∑ u ∈ W, ‖dirichletPoly N a (t - u)‖ ^ 2) ≤
       ∑ t ∈ W, ∑ u ∈ W,
@@ -740,11 +797,13 @@ theorem dirichletPoly_differenceMoment_le_one
   exact heathBrownDifferenceMoment_le_of_norm_le
     (dyadicInterval N) W a (fun _ => 1)
     (by intro n hn; positivity) ha
+end
+
 
 /-- The source positive-sign convention is the negative-sign convention
 with pointwise conjugated coefficients, at the level of norms. -/
 theorem norm_sourceDirichletPoly_eq_dirichletPoly_conjugateCoeffs
-    (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+     (a : ℕ → ℂ) (t : ℝ) :
     ‖sourceDirichletPoly N a t‖ =
       ‖dirichletPoly N (conjugateCoeffs a) t‖ := by
   have h := norm_sourceDirichletPoly_conjugateCoeffs
@@ -756,10 +815,18 @@ theorem norm_sourceDirichletPoly_eq_dirichletPoly_conjugateCoeffs
   rw [hcc] at h
   exact h
 
+section
+variable (W : Finset ℝ)
+include W
+
+section
+variable (a : ℕ → ℂ)
+include a
+
 /-- Source-facing form of the coefficient-one majorant, with the sign and
 interval conventions used in Guth--Maynard Theorem 1.1 and Section 6. -/
 theorem sourceDirichletPoly_differenceMoment_le_one
-    (N : ℕ) (W : Finset ℝ) (a : ℕ → ℂ)
+    
     (ha : ∀ n ∈ dyadicInterval N, ‖a n‖ ≤ 1) :
     (∑ t ∈ W, ∑ u ∈ W,
         ‖sourceDirichletPoly N a (t - u)‖ ^ 2) ≤
@@ -781,7 +848,7 @@ theorem sourceDirichletPoly_differenceMoment_le_one
 the positive-kernel identity, so it loses only the displayed pointwise
 majorant and no cardinality or scale factor. -/
 theorem sourceDirichletPoly_differenceMoment_le_of_norm_le
-    (N : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) (b : ℕ → ℝ)
+     (b : ℕ → ℝ)
     (hb : ∀ n ∈ dyadicInterval N, 0 ≤ b n)
     (hab : ∀ n ∈ dyadicInterval N, ‖a n‖ ≤ b n) :
     (∑ t ∈ W, ∑ u ∈ W,
@@ -803,10 +870,12 @@ theorem sourceDirichletPoly_differenceMoment_le_of_norm_le
       intro n hn
       rw [norm_conjugateCoeffs]
       exact hab n hn)
+end
+
 
 /-- Kernel form of Jutila's weighted moment.  This is equation (29.34)
 expanded before any reflection or powering argument. -/
-theorem heathBrownWeightedMoment_eq_kernel_sum (N : ℕ) (W : Finset ℝ) :
+theorem heathBrownWeightedMoment_eq_kernel_sum  :
     heathBrownWeightedMoment N W =
       ∑ n ∈ dyadicInterval N, ∑ m ∈ dyadicInterval N,
         heathBrownHalfWeight n * heathBrownHalfWeight m *
@@ -822,6 +891,9 @@ theorem heathBrownWeightedMoment_eq_kernel_sum (N : ℕ) (W : Finset ℝ) :
   rw [hconj, ← heathBrownDifferenceMoment_dyadic_eq_dirichletPoly]
   exact heathBrownDifferenceMoment_ofReal_eq_kernel_sum
     (dyadicInterval N) W heathBrownHalfWeight
+end
+end
+
 
 theorem heathBrownHalfWeight_nonneg (n : ℕ) :
     0 ≤ heathBrownHalfWeight n := by
@@ -839,20 +911,28 @@ theorem natCast_mul_heathBrownHalfWeight_mul
   have hqR : (0 : ℝ) < q := by exact_mod_cast hq
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
   have hmR : (0 : ℝ) < m := by exact_mod_cast hm
-  have hqRoot : 0 < Real.sqrt (q : ℝ) := Real.sqrt_pos.2 hqR
-  have hnRoot : 0 < Real.sqrt (n : ℝ) := Real.sqrt_pos.2 hnR
-  have hmRoot : 0 < Real.sqrt (m : ℝ) := Real.sqrt_pos.2 hmR
+  have hqRoot := Real.sqrt_pos.2 hqR
+  have hnRoot := Real.sqrt_pos.2 hnR
+  have hmRoot := Real.sqrt_pos.2 hmR
   unfold heathBrownHalfWeight
   push_cast
   rw [Real.sqrt_mul (le_of_lt hqR), Real.sqrt_mul (le_of_lt hqR)]
   field_simp [hqRoot.ne', hnRoot.ne', hmRoot.ne']
   rw [Real.sq_sqrt hqR.le]
 
+section
+variable (P : Finset ℕ)
+include P
+
+section
+variable (N : ℕ)
+include N
+
 /-- Exact finite collection of the product of the auxiliary polynomial and
 the critical-line source block.  This is the coefficient identity `A(l)` in
 Montgomery--Vaughan Lemma 29.7, including collisions of distinct products. -/
 theorem heathBrownTransfer_polynomial_identity
-    (P : Finset ℕ) (N : ℕ) (t u : ℝ) :
+     (t u : ℝ) :
     (∑ p ∈ P, ∑ n ∈ dyadicInterval N,
         (heathBrownHalfWeight (p * n) : ℂ) *
           heathBrownPhase (p * n) t * star (heathBrownPhase (p * n) u)) =
@@ -916,7 +996,7 @@ theorem heathBrownTransfer_polynomial_identity
 /-- The grouped coefficient really represents the ungrouped transferred
 difference polynomial, not merely a coefficient-wise majorant. -/
 theorem heathBrownTransferredDifferencePolynomial_eq_grouped
-    (P : Finset ℕ) (N : ℕ) (t u : ℝ) :
+     (t u : ℝ) :
     heathBrownTransferredDifferencePolynomial P N t u =
       heathBrownDifferencePolynomial (heathBrownTransferSupport P N)
         (fun l => (heathBrownTransferCoeff P N l : ℂ)) t u := by
@@ -926,16 +1006,22 @@ theorem heathBrownTransferredDifferencePolynomial_eq_grouped
 
 /-- Exact moment-level grouping of all colliding products. -/
 theorem heathBrownTransferredDifferenceMoment_eq_grouped
-    (P : Finset ℕ) (N : ℕ) (W : Finset ℝ) :
+     (W : Finset ℝ) :
     heathBrownTransferredDifferenceMoment P N W =
       heathBrownDifferenceMoment (heathBrownTransferSupport P N) W
         (fun l => (heathBrownTransferCoeff P N l : ℂ)) := by
   unfold heathBrownTransferredDifferenceMoment heathBrownDifferenceMoment
   simp_rw [heathBrownTransferredDifferencePolynomial_eq_grouped]
+end
+
+
+section
+variable (N l : ℕ)
+include N l
 
 /-- The grouped transfer coefficient is nonnegative. -/
 theorem heathBrownTransferCoeff_nonneg
-    (P : Finset ℕ) (N l : ℕ) :
+     :
     0 ≤ heathBrownTransferCoeff P N l := by
   unfold heathBrownTransferCoeff
   exact Finset.sum_nonneg fun x hx =>
@@ -945,7 +1031,7 @@ theorem heathBrownTransferCoeff_nonneg
 positive divisors of its product.  This is the exact arithmetic content of
 the coefficient bound in Montgomery--Vaughan Lemma 29.7. -/
 theorem heathBrownTransfer_fiber_card_le_divisors
-    (P : Finset ℕ) (N l : ℕ) (hl : 0 < l)
+     (hl : 0 < l)
     (hP : ∀ p ∈ P, 0 < p) :
     ((heathBrownTransferTuples P N).filter
       (fun x => x.1 * x.2 = l)).card ≤ l.divisors.card := by
@@ -977,7 +1063,7 @@ theorem heathBrownTransfer_fiber_card_le_divisors
 so the grouped coefficient is exactly the fiber cardinality times
 `l⁻¹ᐟ²`. -/
 theorem heathBrownTransferCoeff_eq_card_mul_halfWeight
-    (P : Finset ℕ) (N l : ℕ) :
+     :
     heathBrownTransferCoeff P N l =
       (((heathBrownTransferTuples P N).filter
         (fun x => x.1 * x.2 = l)).card : ℝ) * heathBrownHalfWeight l := by
@@ -994,6 +1080,9 @@ theorem heathBrownTransferCoeff_eq_card_mul_halfWeight
     _ = (((heathBrownTransferTuples P N).filter
         (fun x => x.1 * x.2 = l)).card : ℝ) * heathBrownHalfWeight l := by
       simp
+end
+end
+
 
 /-- Uniform divisor bound for the grouped transfer coefficient.  The
 The constant depends only on the requested epsilon and is independent of both
@@ -1063,17 +1152,8 @@ theorem heathBrownTransferSupport_subset_two_dyadic
   have hxTuple := Finset.mem_product.mp hx
   have hpBounds := Finset.mem_Ioc.mp hxTuple.1
   have hnBounds := Finset.mem_Ioc.mp hxTuple.2
-  have hLower : J * N < x.1 * x.2 := by
-    calc
-      J * N < x.1 * N := Nat.mul_lt_mul_of_pos_right hpBounds.1 hN
-      _ < x.1 * x.2 :=
-        Nat.mul_lt_mul_of_pos_left hnBounds.1
-          (lt_of_lt_of_le hJ hpBounds.1.le)
-  have hUpper : x.1 * x.2 ≤ 4 * (J * N) := by
-    calc
-      x.1 * x.2 ≤ (2 * J) * (2 * N) :=
-        Nat.mul_le_mul hpBounds.2 hnBounds.2
-      _ = 4 * (J * N) := by ring
+  have hLower : J * N < x.1 * x.2 := by nlinarith
+  have hUpper : x.1 * x.2 ≤ 4 * (J * N) := by nlinarith
   by_cases hMid : x.1 * x.2 ≤ 2 * (J * N)
   · apply Finset.mem_union.mpr
     exact Or.inl (by
@@ -1247,11 +1327,11 @@ theorem exists_heathBrownTransferredDifferenceMoment_two_dyadic_bound
   refine ⟨C, hC, ?_⟩
   intro J N W hJ hN
   let S := heathBrownTransferSupport (heathBrownTransferAuxiliary J) N
-  let a : ℕ → ℂ := fun l =>
+  let a := fun l =>
     if l ∈ S then
       (heathBrownTransferCoeff (heathBrownTransferAuxiliary J) N l : ℂ)
     else 0
-  let B : ℝ := C * (4 * (J * N) : ℝ) ^ η
+  let B := C * (4 * (J * N) : ℝ) ^ η
   have hB : 0 ≤ B := by
     exact mul_nonneg hC.le (Real.rpow_nonneg (by positivity) _)
   have ha₁ : ∀ l ∈ dyadicInterval (J * N),
@@ -1342,11 +1422,15 @@ theorem exists_heathBrownTransferredDifferenceMoment_two_dyadic_bound
       dsimp only [B]
       ring
 
+section
+variable (P : Finset ℕ) (N : ℕ) (W : Finset ℝ)
+include P N W
+
 /-- Expanding the exact grouped product moment recovers the positive
 fourfold transferred kernel.  Thus the diagonal lower bound below applies
 to the actual collected Dirichlet polynomial, including product collisions. -/
 theorem heathBrownTransferredDifferenceMoment_eq_kernel
-    (P : Finset ℕ) (N : ℕ) (W : Finset ℝ) :
+     :
     heathBrownTransferredDifferenceMoment P N W =
       heathBrownTransferredKernelMoment P N W := by
   classical
@@ -1408,12 +1492,15 @@ theorem heathBrownTransferredDifferenceMoment_eq_kernel
       intro p hp
       exact Finset.sum_comm
 
+section
+variable (hP : ∀ p ∈ P, 0 < p)
+include hP
+
 /-- On the common-factor diagonal, dilation invariance of the majorant
 kernel and the critical-line weight identity leave exactly the harmonic
 factor `1/p`. -/
 theorem heathBrownTransferredKernel_diagonal_eq
-    (P : Finset ℕ) (N : ℕ) (W : Finset ℝ)
-    (hP : ∀ p ∈ P, 0 < p) :
+     :
     (∑ p ∈ P,
         ∑ n ∈ dyadicInterval N, ∑ m ∈ dyadicInterval N,
           heathBrownHalfWeight (p * n) * heathBrownHalfWeight (p * m) *
@@ -1455,8 +1542,7 @@ theorem heathBrownTransferredKernel_diagonal_eq
 positive-kernel form of the Parseval step in Montgomery--Vaughan Lemma 29.7.
 No cancellation or asymptotic estimate is used. -/
 theorem harmonic_mul_heathBrownWeightedMoment_le_transferred
-    (P : Finset ℕ) (N : ℕ) (W : Finset ℝ)
-    (hP : ∀ p ∈ P, 0 < p) :
+     :
     (∑ p ∈ P, (p : ℝ)⁻¹) * heathBrownWeightedMoment N W ≤
       heathBrownTransferredKernelMoment P N W := by
   rw [← heathBrownTransferredKernel_diagonal_eq P N W hP]
@@ -1477,6 +1563,9 @@ theorem harmonic_mul_heathBrownWeightedMoment_le_transferred
         (heathBrownHalfWeight_nonneg (q * m)))
       (heathBrownMajorantKernel_nonneg W (p * n) (q * m))
   exact Finset.single_le_sum hnonneg hp
+end
+end
+
 
 /-- Complete auxiliary transfer principle (Montgomery--Vaughan Lemma
 29.7): after choosing the whole auxiliary interval `(J,2J]`, the harmonic
@@ -1494,7 +1583,7 @@ theorem exists_heathBrownWeightedMoment_transfer
     exists_heathBrownTransferredDifferenceMoment_two_dyadic_bound η hη
   refine ⟨C, hC, ?_⟩
   intro J N W hJ hN
-  let H : ℝ := ∑ p ∈ heathBrownTransferAuxiliary J, (p : ℝ)⁻¹
+  let H := ∑ p ∈ heathBrownTransferAuxiliary J, (p : ℝ)⁻¹
   have hH : (1 / 2 : ℝ) ≤ H :=
     one_half_le_heathBrownTransferAuxiliary_harmonic J hJ
   have hMomentNonneg : 0 ≤ heathBrownWeightedMoment N W := by
@@ -1505,11 +1594,7 @@ theorem exists_heathBrownWeightedMoment_transfer
     mul_le_mul_of_nonneg_right hH hMomentNonneg
   have hDiagonal : H * heathBrownWeightedMoment N W ≤
       heathBrownTransferredDifferenceMoment
-        (heathBrownTransferAuxiliary J) N W := by
-    rw [heathBrownTransferredDifferenceMoment_eq_kernel]
-    exact harmonic_mul_heathBrownWeightedMoment_le_transferred
-      (heathBrownTransferAuxiliary J) N W
-      (heathBrownTransferAuxiliary_pos J)
+        (heathBrownTransferAuxiliary J) N W := by grind [heathBrownTransferredDifferenceMoment_eq_kernel, harmonic_mul_heathBrownWeightedMoment_le_transferred, heathBrownTransferAuxiliary_pos]
   have hTransfer := hUpper J N W hJ hN
   calc
     heathBrownWeightedMoment N W ≤
@@ -1536,9 +1621,9 @@ theorem one_le_sqrt_two_mul_mul_heathBrownHalfWeight
     simpa [dyadicInterval] using (Finset.mem_Ioc.mp hn)
   have hnPosNat : 0 < n := lt_of_le_of_lt (Nat.zero_le N) hnBounds.1
   have hnPos : (0 : ℝ) < n := by exact_mod_cast hnPosNat
-  have hrootPos : 0 < Real.sqrt n := Real.sqrt_pos.2 hnPos
+  have hrootPos := Real.sqrt_pos.2 hnPos
   have hcastLe : (n : ℝ) ≤ 2 * N := by exact_mod_cast hnBounds.2
-  have hrootLe : Real.sqrt n ≤ Real.sqrt (2 * N) :=
+  have hrootLe :=
     Real.sqrt_le_sqrt hcastLe
   unfold heathBrownHalfWeight
   rw [one_div, ← div_eq_mul_inv]
@@ -1563,8 +1648,8 @@ theorem sourceCoefficientOne_differenceMoment_le_two_mul_weighted
     (∑ t ∈ W, ∑ u ∈ W,
         ‖sourceDirichletPoly N (fun _ => (1 : ℂ)) (t - u)‖ ^ 2) ≤
       (2 * N : ℝ) * heathBrownWeightedMoment N W := by
-  let B : ℝ := Real.sqrt (2 * N)
-  let b : ℕ → ℝ := fun n => B * heathBrownHalfWeight n
+  let B := Real.sqrt (2 * N)
+  let b := fun n => B * heathBrownHalfWeight n
   have hMajorant := sourceDirichletPoly_differenceMoment_le_of_norm_le
     N W (fun _ => (1 : ℂ)) b
     (by
@@ -1666,7 +1751,7 @@ theorem sourceCoefficientOne_differenceMoment_eq_gmR_ratioMoment
     heathBrownDifferenceMoment (dyadicInterval N) W (fun _ => (1 : ℂ)) =
         ∑ n ∈ dyadicInterval N, ∑ m ∈ dyadicInterval N,
           (1 : ℝ) * 1 * heathBrownMajorantKernel W n m := by
-      simpa using heathBrownDifferenceMoment_ofReal_eq_kernel_sum
+      exact heathBrownDifferenceMoment_ofReal_eq_kernel_sum
         (dyadicInterval N) W (fun _ => (1 : ℝ))
     _ = _ := by
       simp only [one_mul]
@@ -1686,11 +1771,7 @@ theorem orderedPairSum_eq_diagonal_add_offDiagonal
     {α : Type} [DecidableEq α] (W : Finset α) (f : α → α → ℝ) :
     (∑ t ∈ W, ∑ u ∈ W, f t u) =
       (∑ t ∈ W, f t t) +
-        ∑ t ∈ W, ∑ u ∈ W.erase t, f t u := by
-  rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro t ht
-  exact (Finset.add_sum_erase W (fun u => f t u) ht).symm
+        ∑ t ∈ W, ∑ u ∈ W.erase t, f t u := by simp_all
 
 /-- Ordinates in `[0,T]` have pairwise difference at most `T`. -/
 theorem abs_sub_le_height_of_mem_baseInterval
@@ -1726,4 +1807,4 @@ theorem heathBrownDifferenceSetMeanSquare_of_coefficientOne
               T ^ (1 / 2 : ℝ) * N)) :=
       hOneBound N T W hN hT hSep hInterval
 
-end GuthMaynard.NativeMoment
+

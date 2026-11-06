@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 
@@ -10,18 +11,19 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationChildInput
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion
+open HeckeFamily ConcretePrimeRowBridge RayFourExpansion
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CenteredMomentSourceRectangle CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentRemainingBox
-open CenteredMomentAmplificationAllocationCost CenteredMomentAmplificationAllocationScale
+open CenteredMomentAmplificationAllocationScale
 open CenteredMomentHeckeColumnWindow CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationShortening
+
 open CenteredMomentAmplificationLiveMask CenteredMomentFirstAmplificationChoice
 open CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentFirstSectors CenteredMomentRectangle CenteredMomentExtraction
-local notation "O" => HeckeFamily.O
+open CenteredMomentFirstSectors CenteredMomentExtraction
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
+
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 def original (s : Input ι) (R seed : Ideal O) : OriginalData ι where
@@ -45,23 +47,29 @@ def volume (s : Input ι) : ℝ := s.X₁*s.X₂*∏i,s.P i
 theorem volume_pos (s : Input ι) : 0<volume s :=
   mul_pos (mul_pos s.X₁_pos s.X₂_pos) (Finset.prod_pos (fun i _=>s.P_pos i))
 
-theorem residual_ne (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
+section
+variable (S : Finset (Ideal O))
+include S
+
+theorem residual_ne  (hS : ∀I∈S,I≠0)
     (B : Ideal O) (hB : B≠0) : ∀I∈residualPool B hB S,I≠0 := by
   intro I hI
   exact right_ne_zero_of_mul (hS (B*I) ((mem_residualPool B hB S I).mp hI))
 
-theorem residual_one (S : Finset (Ideal O)) (h : (1:Ideal O)≠0) :
+theorem residual_one  (h : (1:Ideal O)≠0) :
     residualPool 1 h S=S := by
   ext I
   simp only [mem_residualPool,one_mul]
 
-theorem residual_coverage (S : Finset (Ideal O)) (W : ℝ→ℂ)
+theorem residual_coverage  (W : ℝ→ℂ)
     (B : Ideal O) (hB : B≠0) (X Y : ℝ) (h : PlainCoverage S W 1 X Y) :
     PlainCoverage (residualPool B hB S) W 1 (X/B.absNorm) (Y/B.absNorm) := by
   have he := plainCoverage_residualPool S W 1 B hB X Y h
   intro I hi
   apply he I
   simpa only [one_mul,map_mul,map_one,Nat.cast_mul,Nat.cast_one,mul_one,div_div_eq_mul_div,mul_comm] using hi
+end
+
 
 def child (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
     (τ : Character) (t : ℝ) : Input (liveIndices B.val) where
@@ -80,14 +88,11 @@ def child (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
   lower_le := fun i=>s.lower_le i.val
   upper_ge := fun i=>s.upper_ge i.val
 
-@[simp] theorem child_modulus (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).m=fixedBadMask*idealGenerator (R*C) := rfl
 
-@[simp] theorem child_character (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).η=τ := rfl
 
-@[simp] theorem child_height (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).t=t := rfl
+
+
+
 
 theorem live_slot_one (B : Tuple ι) (i : liveIndices B) : B (Sum.inl i.val)=1 :=
   (Finset.mem_filter.mp i.property).2
@@ -119,13 +124,16 @@ theorem child_profile (s : Input ι) (C R seed : Ideal O) (B : actualAllocations
     profileCoefficient,one_mul,idealRectangle_extract]
   rfl
 
-theorem prime_slots_live (s : Input ι) (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
+section
+variable (s : Input ι) (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
     (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I)
+include s Q hQ k hslot
+
+theorem prime_slots_live 
     (B : actualAllocations s.pools (Q^k)) : liveIndices B.val=Finset.univ :=
   all_slots_live s.pools Q hQ k (fun i I hI=>⟨(s.prime i I hI).ne_zero,hslot i I hI⟩) B
 
-theorem child_volume (s : Input ι) (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
-    (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I) (R : Ideal O)
+theorem child_volume  (R : Ideal O)
     (B : actualAllocations s.pools (Q^k)) (τ : Character) (t : ℝ) :
     volume (child s (Q^k) R B τ t)=volume s/(Q.absNorm:ℝ)^k := by
   change (s.X₁/(B.val (Sum.inr 0)).absNorm)*(s.X₂/(B.val (Sum.inr 1)).absNorm)*
@@ -133,9 +141,15 @@ theorem child_volume (s : Input ι) (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
   rw [div_mul_div_comm]
   exact remainingRaw_exact s.pools Q hQ k
     (fun i I hI=>⟨(s.prime i I hI).ne_zero,hslot i I hI⟩) B s.P (s.X₁*s.X₂)
+end
 
-theorem child_columns (s : Input ι) (C R seed : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) :
+
+section
+variable (s : Input ι) (C R seed : Ideal O) (B : actualAllocations s.pools C)
+    (τ : Character) (t : ℝ)
+include s C R seed B τ t
+
+theorem child_columns  :
     finiteColumns (liveBox s.pools B (allocation_data s.pools C B (Finset.mem_filter.mp B.property).1).1)=
       (original (child s C R B τ t) (R*C) seed).columns ∧
     finiteColumnCoefficient
@@ -153,8 +167,7 @@ theorem child_columns (s : Input ι) (C R seed : Ideal O) (B : actualAllocations
     ext v
     simp only [Fintype.mem_piFinset]
 
-theorem child_gauss_source (s : Input ι) (C R seed : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+theorem child_gauss_source  (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     sourceGaussEnergy
       (finiteColumns (liveBox s.pools B (allocation_data s.pools C B (Finset.mem_filter.mp B.property).1).1))
       (finiteColumnCoefficient
@@ -167,6 +180,8 @@ theorem child_gauss_source (s : Input ι) (C R seed : Ideal O) (B : actualAlloca
   obtain ⟨hcols,hcoeff⟩ := child_columns s C R seed B τ t
   rw [hcols,hcoeff]
   rfl
+end
+
 
 def normalizedGaussSource (s : Input ι) (R seed : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
   (sourceGaussEnergy (original s R seed).columns (original s R seed).beta
@@ -196,8 +211,8 @@ theorem original_childEnergy_eq_inputs (s : Input ι) (R seed : Ideal O)
   rw [child_volume s (Ideal.span {p}) hQ (n+1) hslot R B (τ χ) t,
     child_gauss_source s ((Ideal.span {p})^(n+1)) R seed B (τ χ) t ballProfile K]
 
-end SevenEighths.CenteredMomentAmplificationChildInput
 
-end
 
-end OAI
+
+
+

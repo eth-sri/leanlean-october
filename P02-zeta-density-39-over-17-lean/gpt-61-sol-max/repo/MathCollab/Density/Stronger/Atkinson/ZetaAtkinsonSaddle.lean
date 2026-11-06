@@ -29,24 +29,30 @@ def atkinsonSaddleRoot (A b : ℝ) : ℝ := (b + Real.sqrt (b ^ 2 + 4 * A)) / 2
 
 def zetaAtkinsonSaddle (T b : ℝ) : ℝ := (atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 2
 
-theorem atkinsonSaddleRoot_pos {A : ℝ} (hA : 0 < A) (b : ℝ) :
+section
+variable {A : ℝ} (hA : 0 < A) (b : ℝ)
+include A hA b
+
+theorem atkinsonSaddleRoot_pos  :
     0 < atkinsonSaddleRoot A b := by
   have h := Real.sqrt_lt_sqrt (sq_nonneg b) (show b ^ 2 < b ^ 2 + 4 * A by linarith)
   rw [Real.sqrt_sq_eq_abs] at h
   unfold atkinsonSaddleRoot
   linarith [neg_abs_le b]
 
-theorem atkinsonSaddleRoot_equation {A : ℝ} (hA : 0 < A) (b : ℝ) :
+theorem atkinsonSaddleRoot_equation  :
     (atkinsonSaddleRoot A b) ^ 2 - b * atkinsonSaddleRoot A b = A := by
   have hs := Real.sq_sqrt (show 0 ≤ b ^ 2 + 4 * A by positivity)
   unfold atkinsonSaddleRoot
   nlinarith
 
-theorem atkinsonSaddleRoot_sub_pos {A : ℝ} (hA : 0 < A) (b : ℝ) :
+theorem atkinsonSaddleRoot_sub_pos  :
     0 < atkinsonSaddleRoot A b - b := by
   have hmul : 0 < atkinsonSaddleRoot A b * (atkinsonSaddleRoot A b - b) := by
     nlinarith [atkinsonSaddleRoot_equation hA b]
   exact (mul_pos_iff.mp hmul).resolve_right (fun h => (atkinsonSaddleRoot_pos hA b).not_gt h.1) |>.2
+end
+
 
 theorem atkinson_saddle_equation_iff {A x : ℝ} (hA : 0 < A) (hx : 0 < x) (b : ℝ) :
     x - b * Real.sqrt x = A ↔ x = (atkinsonSaddleRoot A b) ^ 2 := by
@@ -65,4 +71,4 @@ theorem atkinson_saddle_equation_iff {A x : ℝ} (hA : 0 < A) (hx : 0 < x) (b : 
     rw [Real.sqrt_sq hr.le]
     exact he
 
-end MathCollab.Density.Stronger.Atkinson
+

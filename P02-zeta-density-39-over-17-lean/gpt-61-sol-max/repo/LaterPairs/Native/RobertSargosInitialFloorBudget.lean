@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPhysicalShift
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_initial_floor_budget
@@ -39,13 +38,11 @@ theorem robertSargos_initial_floor_budget
       dsimp [H]
       linarith
     have he := mul_le_mul_of_nonneg_left hi (sq_nonneg (M:ℝ))
-    rw [div_eq_mul_one_div 2,hrec] at he
-    simpa only [div_eq_mul_inv,one_mul,mul_assoc,mul_comm,mul_left_comm] using he
+    grind
   have hlogdiv := div_le_div_of_nonneg_right hlog hlog2.le
   have hprod := mul_le_mul hlogdiv hbound
     (by positivity : 0 ≤ (M:ℝ)^2/(H:ℝ)) (div_nonneg hlogM hlog2.le)
   have hall := mul_le_mul_of_nonneg_left hprod (show 0 ≤ 930*C by positivity)
-  dsimp [H] at hall
-  convert hall using 1 <;> ring
+  grind
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.AdditiveCharacters
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
 
@@ -8,7 +9,7 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -19,16 +20,13 @@ namespace ShortDraftCusp
 
 variable {R : Type*} [CommRing R]
 
-def U (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,t;0,1]
-def L (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,0;t,1]
-def E : Matrix (Fin 2) (Fin 2) R := !![0,-1;1,0]
+
+
+
 
 end ShortDraftCusp
 
-namespace ShortDraftConcretePhase
-open ShortDraftTrace
 
-end ShortDraftConcretePhase
 
 namespace ShortDraftGauss
 
@@ -37,14 +35,18 @@ open scoped ComplexConjugate
 
 variable {F : Type*} [Field F] [Fintype F]
 
-theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+    (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive)
+include χ ψ hχ hψ
+
+theorem norm_gaussSum_eq_sqrt_card  :
     ‖gaussSum χ ψ‖ = Real.sqrt (Fintype.card F) := by
   let g := gaussSum χ ψ
   have hprod : g * conj g = (Fintype.card F : ℂ) := by
     have h := gaussSum_mul_gaussSum_eq_card hχ hψ
     rw [← star_gaussSum_eq] at h
-    simpa only [g, Complex.star_def] using h
+    exact h
   have hnorm : ‖g‖ ^ 2 = (Fintype.card F : ℝ) := by
     apply Complex.ofReal_injective
     calc
@@ -56,25 +58,25 @@ theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   have hsqrt := Real.sq_sqrt hcard
   nlinarith [norm_nonneg g, Real.sqrt_nonneg (Fintype.card F)]
 
-theorem norm_normalized_gaussSum (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
+theorem norm_normalized_gaussSum  :
     ‖((Real.sqrt (Fintype.card F) : ℝ) : ℂ)⁻¹ * gaussSum χ ψ‖ = 1 := by
   have hcard : (0 : ℝ) < Fintype.card F := by
     exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
-  have hsqrt : Real.sqrt (Fintype.card F) ≠ 0 :=
+  have hsqrt :=
     ne_of_gt (Real.sqrt_pos.2 hcard)
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (Real.sqrt_pos.2 hcard), norm_gaussSum_eq_sqrt_card χ ψ hχ hψ]
   exact inv_mul_cancel₀ hsqrt
+end
+
 
 end ShortDraftGauss
 
 namespace EisensteinRayPhase
 
-abbrev SquareClass := ZMod 2 × ZMod 2
 
-def R (a b : SquareClass) : ℤ :=
-  (-1) ^ (a.1.val * b.2.val + a.2.val * b.1.val + a.2.val * b.2.val)
+
+
 
 end EisensteinRayPhase
 
@@ -93,12 +95,7 @@ theorem sextic_power_is_unit_mask (χ : MulChar R ℂ)
 
 end ShortDraftSextic
 
-namespace ShortDraftGaussJacobi
-open Finset
 
-variable {F : Type*} [Field F] [Fintype F]
-
-end ShortDraftGaussJacobi
 
 namespace ShortDraftQuadraticGauss
 open Finset
@@ -134,10 +131,7 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
 
 end ShortDraftQuadraticGauss
 
-namespace ShortDraftQuotientPhase
-variable {A B : Type*} [CommGroup A] [CommGroup B]
 
-end ShortDraftQuotientPhase
 
 namespace EisensteinEPrimaryPhase
 
@@ -157,8 +151,7 @@ def rep (e f : Bit) : Coord :=
   if f = 0 then (if e = 0 then (1, 0) else (-1, 0))
   else (if e = 0 then (1, 2) else (-1, -2))
 
-def norm (x : Coord) : ZMod 4 :=
-  x.1 * x.1 - x.1 * x.2 + x.2 * x.2
+
 
 def ePrimary (x : Coord) : Prop :=
   let cube := mul (mul x x) x
@@ -173,9 +166,7 @@ theorem odd_mul (x y : Coord) (hx : odd x) (hy : odd y) : odd (mul x y) := by
 
 end EisensteinEPrimaryPhase
 
-namespace ShortDraftGaussianPhaseTable
 
-end ShortDraftGaussianPhaseTable
 
 namespace ActualEisensteinCoordinates
 abbrev K := CyclotomicField 3 ℚ
@@ -196,18 +187,14 @@ theorem exists_coordinates (x : O) :
     ∃ a b : ℤ, x = (a : O) + (b : O) * omega := by
   let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
   let i1 : Fin pb.dim := ⟨1, by rw [pb_dim]; decide⟩
-  let a : ℤ := (pb.basis.repr x) i0
-  let b : ℤ := (pb.basis.repr x) i1
+  let a := (pb.basis.repr x) i0
+  let b := (pb.basis.repr x) i1
   refine ⟨a, b, ?_⟩
   have hsum := pb.basis.sum_repr x
   have huniv : (Finset.univ : Finset (Fin pb.dim)) = {i0, i1} := by
     ext i
     have hi : i.val < 2 := by simpa only [pb_dim] using i.isLt
-    have hv : i.val = 0 ∨ i.val = 1 := by omega
-    simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_singleton, true_iff]
-    rcases hv with h | h
-    · left; exact Fin.ext h
-    · right; exact Fin.ext h
+    grind
   rw [huniv] at hsum
   have hne : i0 ≠ i1 := by decide
   have hnot : i0 ∉ ({i1} : Finset (Fin pb.dim)) := by
@@ -266,8 +253,7 @@ theorem eval_congr_mod_four {a b c d : ℤ}
   refine ⟨(u : O) + (v : O) * omega, ?_⟩
   dsimp [eval]
   rw [show a = c + 4*u by omega, show b = d + 4*v by omega]
-  push_cast
-  ring
+  grind
 
 theorem exists_pair (x : O) :
     ∃ p : ℤ × ℤ, eval p.1 p.2 = x := by
@@ -351,8 +337,8 @@ theorem odd_residue_iff_not_two_dvd (x : O) :
     push_cast
     ring
 
-end ActualEisensteinCoordinates
 
-end
 
-end OAI
+
+
+

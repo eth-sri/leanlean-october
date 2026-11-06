@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import DensityEnergyGM.RealScaleSecondMoment
 public import DensityEnergyGM.FiveTermEnergyUniform
 public import DensityEnergyGM.EnergyCenteredReflection
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
@@ -47,12 +47,12 @@ theorem real_scale_ratio_second_sharp_uniform_translate (ε B : ℝ)
             (W.card:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/4:ℝ)*
               (M^(9/5:ℝ)+T^(1/4:ℝ)*M^(6/5:ℝ))) := by
   obtain ⟨C,T₀,hC,hT₀,hBound⟩ := real_scale_ratio_second_sharp_native ε hε
-  let D : ℝ := max B (max 1 (T₀/2))
+  let D := max B (max 1 (T₀/2))
   have hBD : B ≤ D := le_max_left _ _
   have hD1 : 1 ≤ D := (le_max_left _ _).trans (le_max_right _ _)
   have hTD : T₀/2 ≤ D := (le_max_right _ _).trans (le_max_right _ _)
   have hD : 0 < D := by linarith
-  let q : ℝ := D^(1/4:ℝ)
+  let q := D^(1/4:ℝ)
   have hq : 1 ≤ q := Real.one_le_rpow hD1 (by norm_num)
   refine ⟨C*D^ε*q,by positivity,?_⟩
   intro T t₀ M hT hM hMB W hSep hW
@@ -89,9 +89,13 @@ theorem real_scale_ratio_second_sharp_uniform_translate (ε B : ℝ)
   exact hm.trans_eq (by dsimp [U,V]; ring)
 
 
+section
+variable {M : ℕ} (hM : 0 < M) (W : Finset ℝ)
+include M hM W
+
 /-- The reflected dyadic polynomial differs from the positive-frequency sum
 only by a common unit phase; the complete W x W energy is unchanged. -/
-theorem completePairEnergy_eq_phase_difference {M : ℕ} (hM : 0 < M) (W : Finset ℝ) :
+theorem completePairEnergy_eq_phase_difference  :
     MathCollab.Density.completePairEnergy M W =
       ∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ Ico M (2*M), phase n (t-u)‖^2 := by
   have hNorm (v : ℝ) : ‖MathCollab.Density.dyadicPolynomial M v‖ =
@@ -112,7 +116,7 @@ theorem completePairEnergy_eq_phase_difference {M : ℕ} (hM : 0 < M) (W : Finse
 
 /-- Every reflected half-open integer block is bounded by the full sharp
 real-scale ratio moment, with its exact half-unit endpoint shift. -/
-theorem completePairEnergy_le_half_shift_second {M : ℕ} (hM : 0 < M) (W : Finset ℝ) :
+theorem completePairEnergy_le_half_shift_second  :
     MathCollab.Density.completePairEnergy M W ≤
       finiteRatioSecond (sourceRatioIndices ((M:ℝ)-1/2)) W := by
   have hM1 : (1:ℝ) ≤ M := by exact_mod_cast hM
@@ -138,6 +142,8 @@ theorem completePairEnergy_le_half_shift_second {M : ℕ} (hM : 0 < M) (W : Fins
       (by exact_mod_cast hA n hn) (by exact_mod_cast hA m hm))]
   rw [he]
   exact finiteRatioSecond_mono hSubset W
+end
+
 
 /-- The sharp reflected complete-pair energy at all heights and translates.
 No polynomial, moment, support or energy estimate remains as a premise. -/
@@ -167,4 +173,4 @@ theorem reflection_complete_pair_energy_sharp {η : ℝ} (hη : 0 < η) :
   apply (completePairEnergy_le_half_shift_second hM W).trans (h.trans ?_)
   gcongr <;> linarith
 
-end Montgomery.RationalMoment
+

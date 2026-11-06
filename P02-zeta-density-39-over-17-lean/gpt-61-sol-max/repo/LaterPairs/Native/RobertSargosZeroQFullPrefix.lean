@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosZeroQPerturbedPrefix
 public import LaterPairs.Native.SquareRootBlockAssembly
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -53,4 +52,4 @@ theorem robertSargos_zero_q_full_prefix
     (zero_le_one.trans hC) hD hμ hscale hnc hslow)
   simpa only [Nat.cast_add,add_assoc] using hb'
 
-end TaoTrudgianYang2025
+

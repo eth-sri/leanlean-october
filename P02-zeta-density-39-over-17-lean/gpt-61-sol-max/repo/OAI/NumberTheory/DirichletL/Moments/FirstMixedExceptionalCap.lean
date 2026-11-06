@@ -1,5 +1,9 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.FirstMixedChild
+public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
+import Mathlib
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondPaidLedger
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondLossParameters
+public import OAI.NumberTheory.DirichletL.Moments.FirstChildLower
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 
 @[expose] public section
@@ -10,19 +14,20 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedExceptionalCap
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedChild
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstExceptionalChildPaid
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstScale
-open CenteredMomentCommonRadiusSaving CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentDescentLedger CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentRankinRadical
-open CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CompletedGauss
+
+
+open CenteredMomentFirstMixedAllowance
+
+open CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor
+
+
+
+
+open CenteredMomentSecondHeightFamily
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι]
+
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 lemma fixed_presentation_log_nonneg (Z:ℝ)(hZ:1<Z):0≤Real.logb Z fixedPresentationCost:=by
@@ -41,8 +46,8 @@ lemma extracted_allowance_eq (C D:Ideal O)(hC:C≠0)(hD:D≠0)
   simp only [extractedAllowance,allowance,commonPart_of_equal_support C D hC hCD,
     commonPart_of_equal_support D C hD hCD.symm]
 
-end SevenEighths.CenteredMomentFirstMixedExceptionalCap
 
-end
 
-end OAI
+
+
+

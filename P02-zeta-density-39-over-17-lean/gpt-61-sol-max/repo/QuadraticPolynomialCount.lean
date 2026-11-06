@@ -5,9 +5,8 @@ public import QuadraticHeightBudget
 
 open Filter Finset
 open scoped Topology
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 
@@ -63,4 +62,4 @@ theorem quadratic_polynomial_count_loss {σ a δ : ℝ}
       _ = (1+6*A)^3*T^(p+51*δ) := by rw [← he]; ring
       _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyConditioningTower
 
 @[expose] public section
@@ -49,11 +50,7 @@ theorem wooley_section4_depth_margin
     exact_mod_cast hceilNat
   have hk0 : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
   have hH0 : (0 : ℝ) ≤ (B ⌈/⌉ k : ℕ) := by positivity
-  have hkhReal : (k : ℝ) * h ≤ B := by
-    have : (k : ℝ) * h ≤ (1 - delta) *
-        ((k : ℝ) * (B ⌈/⌉ k : ℕ)) := by
-      nlinarith
-    nlinarith
+  have hkhReal : (k : ℝ) * h ≤ B := by nlinarith
   have hkhB : k * h ≤ B := by
     exact_mod_cast hkhReal
   refine ⟨hkhB, ?_⟩
@@ -65,4 +62,4 @@ theorem wooley_section4_depth_margin
   nlinarith
 
 
-end GafniTao
+

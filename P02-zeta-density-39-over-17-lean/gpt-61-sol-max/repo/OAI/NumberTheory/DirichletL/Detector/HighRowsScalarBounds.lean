@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsRegion
 
 @[expose] public section
@@ -9,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma primeGauss_norm_le (p : O) (hp : p≠0)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (h : O) :
@@ -28,8 +29,6 @@ lemma primeGauss_actual_norm (p : O) (hp : p≠0) [(Ideal.span {p}:Ideal O).IsMa
     (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2) :
     ‖primeGauss p hp (actualSextic (Ideal.span {p}) hg) 1‖=
       Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have hn := localGamma_norm_one p hp hg hc 1 (by decide) (by decide)
   rw [localGamma,ProbePhase.normalizedTraceGauss_eq_normalizedGauss] at hn
   simp only [pow_one,ProbeGauss.normalizedGauss,norm_div,Complex.norm_real,
@@ -93,7 +92,7 @@ lemma positiveScalar_norm_le (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).Is
     · simp only [norm_zero,pow_one]
       positivity
 
-end SevenEighths.ProbePrimePower
-end
 
-end OAI
+
+
+

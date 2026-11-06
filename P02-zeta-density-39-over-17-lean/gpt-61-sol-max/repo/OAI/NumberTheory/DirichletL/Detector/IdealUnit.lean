@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.IdealMultiplicative
 public import OAI.NumberTheory.DirichletL.Detector.SourcePrime
 
@@ -6,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Detector.SourcePrime
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CubicEisenstein ProbePhase
+open scoped EisensteinO
 
 lemma supported_one_ideal : Supported (1 : Ideal O) := by
   refine ⟨one_ne_zero,?_⟩
-  intro P hP
-  simp only [UniqueFactorizationMonoid.normalizedFactors_one,Multiset.notMem_zero] at hP
+  norm_num
 
 lemma G_one : G (1:O)=1 := by
   have hs : Supported (Ideal.span {(1:O)}) := by
@@ -25,8 +25,7 @@ lemma G_one : G (1:O)=1 := by
   have hn : G (1:O)≠0 := by
     intro hz
     have hh := G_norm_one_of_odd (1:O) ho
-    rw [hz,norm_zero] at hh
-    norm_num at hh
+    simp_all
   have he := G_mul (1:O) 1 ho ho
   rw [one_mul,reciprocitySign_one_left (1:O) ho,mul_one] at he
   exact mul_left_cancel₀ hn (by simpa only [mul_one] using he.symm)
@@ -55,7 +54,7 @@ lemma angularFactor_one : FiniteGaussPhase.angularFactor (1:O)=1 := by
   have hw (t : ℂ) : fullIdealWeight t (1:Ideal O)=1 := (IdealEuler.normWeight t).map_one
   simp only [bareIdealHighSummand,bareIdealHighCoefficient_one,hw,one_mul]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

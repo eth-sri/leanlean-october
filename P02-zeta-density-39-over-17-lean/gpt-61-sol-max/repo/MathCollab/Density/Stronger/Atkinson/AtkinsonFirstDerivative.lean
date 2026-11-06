@@ -20,16 +20,20 @@ test. Positive slopes are reflected with the exact interval change
 of variables. The actual root-phase consumers derive all hypotheses.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 open scoped ContDiff
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem norm_phaseIntegral_le_of_negative_slope {φ : ℝ → ℝ} {a b lam : ℝ}
+section
+variable {φ : ℝ → ℝ} {a b lam : ℝ}
     (hab : a ≤ b) (hlam : 0 < lam)
     (hφ : ∀ x ∈ Icc a b, ContDiffAt ℝ 2 φ x)
+include φ a b lam hab hlam hφ
+
+theorem norm_phaseIntegral_le_of_negative_slope 
     (hslope : ∀ x ∈ Icc a b, deriv φ x ≤ -lam)
     (hmono : AntitoneOn (deriv φ) (Icc a b)) :
     ‖∫ x in a..b, Complex.exp (2 * Real.pi * I * (φ x : ℂ))‖ ≤ 1 / (lam * Real.pi) := by
@@ -66,9 +70,7 @@ theorem norm_phaseIntegral_le_of_negative_slope {φ : ℝ → ℝ} {a b lam : �
   convert hfin using 1
   ring
 
-theorem norm_phaseIntegral_le_of_positive_slope {φ : ℝ → ℝ} {a b lam : ℝ}
-    (hab : a ≤ b) (hlam : 0 < lam)
-    (hφ : ∀ x ∈ Icc a b, ContDiffAt ℝ 2 φ x)
+theorem norm_phaseIntegral_le_of_positive_slope 
     (hslope : ∀ x ∈ Icc a b, lam ≤ deriv φ x)
     (hmono : AntitoneOn (deriv φ) (Icc a b)) :
     ‖∫ x in a..b, Complex.exp (2 * Real.pi * I * (φ x : ℂ))‖ ≤ 1 / (lam * Real.pi) := by
@@ -90,6 +92,8 @@ theorem norm_phaseIntegral_le_of_positive_slope {φ : ℝ → ℝ} {a b lam : �
   rw [intervalIntegral.integral_comp_neg
     (f := fun x => Complex.exp (2 * Real.pi * I * (φ x : ℂ)))] at h
   simpa only [neg_neg] using h
+end
 
 
-end MathCollab.Density.Stronger.Atkinson
+
+

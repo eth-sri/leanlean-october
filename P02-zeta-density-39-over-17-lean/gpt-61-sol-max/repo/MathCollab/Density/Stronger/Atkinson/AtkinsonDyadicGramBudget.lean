@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -11,11 +12,10 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalCutoff
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -52,7 +52,7 @@ theorem sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget (N : ℕ) (W : Finset 
     exact (Finset.mul_sum _ _ _).symm
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq (Finset.range (Nat.clog 2 N))
     (fun _ => (1:ℝ)) (fun j => w j*S j)
-  simp only [one_mul,one_pow,Finset.sum_const,Finset.card_range,nsmul_eq_mul,mul_one] at hcs
+  simp at hcs
   rw [he]
   apply hcs.trans
   apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
@@ -61,6 +61,5 @@ theorem sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget (N : ℕ) (W : Finset 
   rw [mul_pow]
   apply (mul_le_mul_of_nonneg_left (sum_atkinsonPhaseBlockMax_sq_le_gramMax (2^j) (2^j) W)
     (sq_nonneg (w j))).trans_eq
-  dsimp [w]
   ring
-end MathCollab.Density.Stronger.Atkinson
+

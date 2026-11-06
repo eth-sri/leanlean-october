@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.HybridReduction
 public import OAI.NumberTheory.DirichletL.Descent.Quotients
 
@@ -9,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X N L A H : ℝ,
@@ -44,7 +45,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
     hrows hn hP ha hpairs hhs hcs hbeta
   let Hset := pairs.image Prod.snd
   let mc := (pairs.image Prod.fst).biUnion fun m => (cset m).image fun c => (m, c)
-  have hRr : R * r ≠ 0 := mul_ne_zero hR hr
+  have hRr := mul_ne_zero hR hr
   have hn0 : ∀ n ∈ nset, n ≠ 0 := fun n hn' => (hn n hn').1.1.ne_zero
   have hP0 : ∀ P ∈ Pset, P ≠ 0 := fun P hP' => (hP P hP').1.1.ne_zero
   have hHcount : (Hset.card : ℝ) ≤ 128 * H := by
@@ -89,9 +90,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
       (fun P hP' => (hP P hP').2) a ha)
   simp only [one_mul] at he
   have hsqrt : ‖(Real.sqrt (Ideal.absNorm R : ℝ) : ℂ)⁻¹‖ ^ 2 =
-      (Ideal.absNorm R : ℝ)⁻¹ := by
-    rw [norm_inv, inv_pow, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (Real.sqrt_nonneg _), Real.sq_sqrt (Nat.cast_nonneg _)]
+      (Ideal.absNorm R : ℝ)⁻¹ := by simp
   simp_rw [norm_mul, mul_pow, hsqrt]
   rw [← Finset.mul_sum]
   apply (mul_le_mul_of_nonneg_left he (inv_nonneg.mpr (Nat.cast_nonneg _))).trans
@@ -103,7 +102,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
       exact sq_nonneg _
     _ = _ := by ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

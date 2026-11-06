@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
 
@@ -17,9 +18,10 @@ open CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
 open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
 open CenteredMomentRadialEligibleEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-local notation "O"=>HeckeFamily.O
+
+open scoped HeckeO
 variable {α:Type*}[Fintype α]
+
 local instance {β:Type*}:DecidableEq β:=Classical.decEq _
 
 theorem allocated_row_active (s:Input α)(C R:Ideal O)
@@ -31,8 +33,7 @@ theorem allocated_row_active (s:Input α)(C R:Ideal O)
         ⟨B.val, by simpa only [withHeight, Input.pools] using B.property⟩
     let e : CenteredMomentEligibleEnergy.Data (CenteredMomentCommonProfile.liveIndices B.val) :=
       commonData (withHeight s τ v) C R
-        ⟨B.val, by simpa only [withHeight, Input.pools, restoreAllocation_val]
-          using (restoreAllocation s C B).property⟩
+        ⟨B.val, by exact (restoreAllocation s C B).property⟩
     allocatedPositiveRow d.η d.m d.A z d.t d.slots d.coefficient d.P D a W₁ W₂ X₁ X₂=
       allocatedPositiveRow e.η e.m e.A z e.t e.slots e.coefficient e.P D a W₁ W₂ X₁ X₂ := by
   change positiveSlotRow τ
@@ -68,8 +69,7 @@ theorem child_energy_active (s:Input α)(C R:Ideal O)
         ⟨B.val, by simpa only [withHeight, Input.pools] using B.property⟩
     let e : CenteredMomentEligibleEnergy.Data (CenteredMomentCommonProfile.liveIndices B.val) :=
       commonData (withHeight s τ v) C R
-        ⟨B.val, by simpa only [withHeight, Input.pools, restoreAllocation_val]
-          using (restoreAllocation s C B).property⟩
+        ⟨B.val, by exact (restoreAllocation s C B).property⟩
     childEnergy d rad D a = childEnergy e rad D a := by
   dsimp only
   unfold childEnergy
@@ -83,8 +83,8 @@ theorem child_energy_active (s:Input α)(C R:Ideal O)
       (s.Y₁ / Ideal.absNorm (B.val (Sum.inr 0)))
       (s.Y₂ / Ideal.absNorm (B.val (Sum.inr 1))))
 
-end SevenEighths.CenteredMomentEnergyActiveChildRestoration
 
-end
 
-end OAI
+
+
+

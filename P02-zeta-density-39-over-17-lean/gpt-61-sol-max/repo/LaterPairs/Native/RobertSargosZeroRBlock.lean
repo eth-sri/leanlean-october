@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRSignedBound
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                 
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -65,4 +64,4 @@ theorem robertSargos_zero_r_trimmed_correlation_bound
       exact mul_le_mul_of_nonneg_right
         (by exact_mod_cast robertSargos_h_overlap_card H 0) (by positivity)
 
-end TaoTrudgianYang2025
+

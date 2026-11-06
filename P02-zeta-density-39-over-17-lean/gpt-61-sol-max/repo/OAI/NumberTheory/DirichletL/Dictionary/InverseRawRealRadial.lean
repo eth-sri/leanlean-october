@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRadial
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRealRadial
 open InverseInitialConjugateEnergy ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem exists_real_raw_radial_majorant:
     ∃Φ:𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧
@@ -52,8 +52,8 @@ theorem smoothedEnergy_eq_complex_norm (Φ:𝓢(ℝ,ℂ))
     Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (smoothedEnergy_nonneg Φ (fun x _=>hΦ x) hH f)]
 
-end SevenEighths.DetectorDictionaryInverseRawRealRadial
 
-end
 
-end OAI
+
+
+

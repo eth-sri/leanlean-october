@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.CompactTransverse
 public import GuthMaynard.Improvement.CubicStripGeometry
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -171,4 +170,4 @@ theorem cubic_strip_integral (a b : ℝ) (ha : 0 < a) (_hab : a ≤ b) :
         exact hpoint v hv)
     _ = _ := integral_const_mul _ _
 
-end GuthMaynard.Improvement
+

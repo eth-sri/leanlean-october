@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDetectorBlockExpansion
 public import GuthMaynard.Improvement.ShortDetectorFamilyScales
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
+open Complex Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -25,17 +25,19 @@ theorem fixedShortDetectorIndices_card_le {T : ℝ}
     _ ≤ (5*Real.log T)*(12*Real.log T) := h
     _ = _ := by ring
 
-/-- Quantitative tail control at the actual family cutoff. -/
-theorem norm_fixedShortDetector_tail_le {T : ℝ} {N : ℕ} {ρ : ℂ}
+section
+variable {T : ℝ} {N : ℕ} {ρ : ℂ}
     (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+include T N ρ hT hN hN' hβ hβ'
+
+/-- Quantitative tail control at the actual family cutoff. -/
+theorem norm_fixedShortDetector_tail_le  :
     ‖∑' j : ℕ, (detectorTaylorWeight ρ.re (j+(detectorTaylorCutoff T+1)) : ℂ)*
       shortDetectorTaylorPolynomial T N (j+(detectorTaylorCutoff T+1)) ρ.im‖ ≤ 3*T^(-1 : ℝ) := by
   have hTpos : 0 < T := by linarith
   have hp : (1/3 : ℝ)^(detectorTaylorCutoff T+1) ≤ T^(-5 : ℝ) := by
-    have hh : (1/3 : ℝ)^(detectorTaylorCutoff T+1) ≤ (1/3 : ℝ)^(detectorTaylorCutoff T) := by
-      rw [pow_succ]
-      nlinarith [pow_nonneg (show (0 : ℝ) ≤ 1/3 by norm_num) (detectorTaylorCutoff T)]
+    have hh : (1/3 : ℝ)^(detectorTaylorCutoff T+1) ≤ (1/3 : ℝ)^(detectorTaylorCutoff T) := by bound
     exact hh.trans (detectorTaylorCutoff_geometric_le hT)
   calc
     _ ≤ 3*(N : ℝ)^2*(1/3 : ℝ)^(detectorTaylorCutoff T+1) :=
@@ -46,9 +48,7 @@ theorem norm_fixedShortDetector_tail_le {T : ℝ} {N : ℕ} {ρ : ℂ}
       norm_num
 
 /-- The fixed family has the full block height, up to an absolute constant. -/
-theorem exists_fixedShortDetector_component {T : ℝ} {N : ℕ} {ρ : ℂ}
-    (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+theorem exists_fixedShortDetector_component 
     (hsmall : 3*T^(-1 : ℝ) ≤ 1/(6*(shortDetectorDyadicCount T : ℝ)))
     (hblock : 1/(3*(shortDetectorDyadicCount T : ℝ)) ≤ ‖shortDetectorBlock ρ T N‖) :
     ∃ j ∈ Finset.range (detectorTaylorCutoff T+1),
@@ -72,13 +72,14 @@ theorem exists_fixedShortDetector_component {T : ℝ} {N : ℕ} {ρ : ℂ}
     change (N : ℝ)^ρ.re*‖shortDetectorBlock ρ T N‖ ≤ ‖∑' j, W j‖ at hfull
     change (N : ℝ)^ρ.re*(1/(3*D)) ≤ _ at hb
     have halg : (N : ℝ)^ρ.re*(1/(3*D)) = 2*((N : ℝ)^ρ.re/(6*D)) := by ring
-    rw [halg] at hb
-    linarith
+    grind
   obtain ⟨j, hj, hlarge⟩ := exists_large_taylor_component hβ hβ' J (shortDetectorTaylorPolynomial T N · ρ.im)
   refine ⟨j, hj, ?_⟩
   have hh := div_le_div_of_nonneg_right hpartial (by norm_num : (0 : ℝ) ≤ 2)
   change ‖∑ j ∈ Finset.range (J+1), W j‖/2 ≤ _ at hlarge
   exact (show (N : ℝ)^ρ.re/(12*D) = ((N : ℝ)^ρ.re/(6*D))/2 by ring).trans_le (hh.trans hlarge)
+end
+
 
 /-- Actual short finite detection gives a member of a fixed coefficient family.
 The family and its logarithmic size are chosen before beta or gamma. -/
@@ -115,4 +116,4 @@ theorem shortFiniteDetector_fixed_family_eventually :
   exact (div_le_div_of_nonneg_left (by positivity) (by positivity) hden).trans
     ((div_le_div_of_nonneg_right hp (by positivity)).trans hdetect)
 
-end GuthMaynard.Improvement
+

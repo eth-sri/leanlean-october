@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
 def slotChoiceSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) :
@@ -54,7 +54,7 @@ lemma slot_choice_coprime_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
       exact ha ⟨i,hi⟩
     · rw [slotChoiceSplit_inactive L T a b ⟨i,hi⟩]
       exact hb ⟨i,hi⟩
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

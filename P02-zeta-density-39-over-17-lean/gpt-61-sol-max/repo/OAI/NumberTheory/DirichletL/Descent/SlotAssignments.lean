@@ -14,20 +14,25 @@ variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 def slotAssignmentWeight (I : Finset σ) (a : σ → ι → ℂ)
     (q : ∀ i ∈ I, ι) : ℂ := ∏ i ∈ I.attach, a i.val (q i.val i.property)
 
-theorem primeMark_supported_assignments (I : Finset σ) (L : σ → Finset ι)
-    (a : σ → ι → ℂ) (A : Finset ι) :
+section
+variable (I : Finset σ) (L : σ → Finset ι)
+    (a : σ → ι → ℂ) (A : Finset ι)
+include I L a A
+
+theorem primeMark_supported_assignments  :
     primeMark I L a A = ∑ q ∈ I.pi (fun i => L i ∩ A), slotAssignmentWeight I a q := by
   simp only [primeMark,primeSlot,Finset.sum_ite_mem,slotAssignmentWeight]
   exact Finset.prod_sum I (fun i => L i ∩ A) a
 
-theorem slotAssignmentWeight_norm_le_one (I : Finset σ) (L : σ → Finset ι)
-    (a : σ → ι → ℂ) (A : Finset ι) (q : ∀ i ∈ I, ι)
+theorem slotAssignmentWeight_norm_le_one  (q : ∀ i ∈ I, ι)
     (hq : q ∈ I.pi (fun i => L i ∩ A))
     (ha : ∀ i ∈ I, ∀ p ∈ L i, ‖a i p‖ ≤ 1) : ‖slotAssignmentWeight I a q‖ ≤ 1 := by
   rw [slotAssignmentWeight,norm_prod]
   apply Finset.prod_le_one₀ (fun _ _ => norm_nonneg _)
   intro i _
   exact ha i.val i.property _ (Finset.mem_inter.mp (Finset.mem_pi.mp hq i.val i.property)).1
+end
+
 
 def indexedSlotAssignment (I : Finset σ) (q : ∀ i ∈ I, ι) : Fin I.card → ι :=
   fun j => q ((I.equivFin).symm j).val ((I.equivFin).symm j).property
@@ -46,7 +51,7 @@ theorem indexedSlotAssignment_support (I : Finset σ) (L : σ → Finset ι)
     indexedSlotAssignment I q j ∈ L ((I.equivFin).symm j).val ∩ A :=
   Finset.mem_pi.mp hq _ _
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

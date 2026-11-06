@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,9 +14,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonResidualVariation
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
-noncomputable section
+open Complex
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonSaddle_quarter_power_curvature {T : ℝ} (hT : 0 < T) (b : ℝ) :
@@ -23,8 +23,6 @@ theorem atkinsonSaddle_quarter_power_curvature {T : ℝ} (hT : 0 < T) (b : ℝ) 
       Real.sqrt (2*atkinsonSaddleCurvature T b) = atkinsonCommonSaddleFactor T b := by
   let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
   have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
-  have hc : 0 < atkinsonSaddleCurvature T b := by
-    linarith [one_lt_atkinsonSaddleCurvature hT b]
   have hp : T^(-(1/4 : ℝ)) * (zetaAtkinsonSaddle T b/T)^(-(1/4 : ℝ)) =
       (Real.sqrt r)⁻¹ := by
     rw [← Real.mul_rpow hT.le (by unfold zetaAtkinsonSaddle; positivity),
@@ -61,4 +59,4 @@ theorem atkinsonSaddleProfile_div_curvature {T : ℝ} (hT : 0 < T) (G L b : ℝ)
           zetaSquareReflectedGammaPhase T := by ring
     _ = _ := by rw [he]
 
-end MathCollab.Density.Stronger.Atkinson
+

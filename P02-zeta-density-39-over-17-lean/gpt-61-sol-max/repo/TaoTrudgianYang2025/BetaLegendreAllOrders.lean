@@ -14,11 +14,11 @@ are arbitrary within the original model assumptions and common slope domain.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def inverseJetMagnitudeBudget (σ : ℝ) (K : ℕ) : ℝ :=
   ∑ j ∈ Finset.range (K+1), inverseJetMagnitude σ j
@@ -38,4 +38,4 @@ theorem approximateModelPhase_tolerance_nonneg
     0 ≤ δ :=
   (norm_nonneg _).trans (hF.2 0 (Nat.zero_le P) ⟨1, by norm_num [phaseInterval]⟩)
 
-end TaoTrudgianYang2025
+

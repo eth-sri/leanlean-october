@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseMoment
 
@@ -64,8 +64,8 @@ theorem first_step_scalar_losses (A r ell aa bb rr t eta pi em ed:ℝ)
   have h2:=mul_le_mul_of_nonneg_left (show 3*ell+bb+t+5*eta≤20*A+30 by linarith) hd
   constructor <;> nlinarith
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

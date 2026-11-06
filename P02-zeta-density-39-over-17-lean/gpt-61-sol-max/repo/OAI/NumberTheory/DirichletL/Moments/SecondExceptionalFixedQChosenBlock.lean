@@ -4,14 +4,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalFixedQ
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaved
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
-public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalKernel
 public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
+public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
 
 @[expose] public section
 
@@ -22,29 +23,29 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFixedQChosenBlock
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicRowSupport
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open CenteredMomentCommonRadialData CenteredMomentReflectedSource
 
-open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCommonSaving
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
+
+
+open CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
+open RayFourExpansion
+
+
+
+open CenteredMomentFiniteProfileExceptional
+
+open CenteredMomentCanonicalFirst
+
+open CenteredMomentSecondPhysicalBlock
+
+
+
+open CenteredMomentRankinRadical
+
+open ConcretePrimeRowBridge
+
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -60,11 +61,11 @@ theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
       ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
       ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
+      (∀i,1≤ s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
       ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R0 seed:Ideal O),
       R0≠0 → seed∣C → seed∣D → (C.absNorm:ℝ)≤Z^B → (D.absNorm:ℝ)≤Z^B →
       primeSupport C=primeSupport D → ∀U:Finset (CommonIndex C D),
-      ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
+      ∀r:ℝ,Z^r≤ s.X₁ → Z^r≤ s.X₂ → Z^r≤ s.Y₁ → Z^r≤ s.Y₂ →
       ∀χ₀:RayCharacter,idealCoeff s.η C≠0 →
       ∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
       sourceRadius s≤Z^Lbound → ∀(R Kphys:ℝ),0<Kphys →
@@ -99,12 +100,12 @@ theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
     linarith
   have hz1:s.W₁ 0=0:=by rw [hW1];exact hprofile0 0
   have hz2:s.W₂ 0=0:=by rw [hW2];exact hprofile0 1
-  have hβ:∀I:Ideal O,β I≠0→(I.absNorm:ℝ)≤sourceRadius s:=
+  have hβ:∀I:Ideal O,β I≠0→(I.absNorm:ℝ)≤ sourceRadius s:=
     fun I hI=>(original_column_norm s R0 seed I hz1 hz2 hI).2
   have hD1:1≤(D.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)
   have hHD:sourceRadius s/(D.absNorm:ℝ)≤Z^Lbound:=by
-    by_cases hh:0≤sourceRadius s
+    by_cases hh:0≤ sourceRadius s
     · exact (div_le_self hh hD1).trans hsource
     · exact (div_nonpos_of_nonpos_of_nonneg (le_of_not_ge hh) (Nat.cast_nonneg _)).trans
         (Real.rpow_nonneg (zero_lt_one.trans hZ.1).le _)
@@ -155,8 +156,8 @@ theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
     χ₀ hη m hm hml hm2 hex (sourceRadius s) hβ hHD
     ((∏i,s.lo i)*wlo*wlo) ha hlower R Kphys hKphys n
 
-end SevenEighths.CenteredMomentSecondExceptionalFixedQChosenBlock
 
-end
 
-end OAI
+
+
+

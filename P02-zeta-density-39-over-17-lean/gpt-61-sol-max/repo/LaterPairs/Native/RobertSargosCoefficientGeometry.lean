@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosDisplacement
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                       
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_reduced_coefficient_factor {r q₁ q₂ h₁ h₂ d : ℝ}
@@ -69,4 +68,4 @@ theorem robertSargos_coefficient_conic_ratio_gap {r q₁ q₂ h₁ h₂ d H Q δ
     _ ≤ δ*(h₂*(q₁*(q₁+d))) := by
       simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hden hδ
 
-end TaoTrudgianYang2025
+

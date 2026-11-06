@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosGcdFiberCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_gcd_scale_bound {R H Q δ η j k : ℝ}
@@ -56,5 +55,5 @@ theorem robertSargos_gcd_scale_bound {R H Q δ η j k : ℝ}
         Real.rpow_add hBp,Real.rpow_one]
       ring
 
-end TaoTrudgianYang2025
+
 

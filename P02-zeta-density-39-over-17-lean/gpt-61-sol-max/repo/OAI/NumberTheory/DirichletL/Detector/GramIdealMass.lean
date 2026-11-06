@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPrefactor
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma normalized_double_sum_bound (F G : Finset SupportedIdeal) (α V : SupportedIdeal→SupportedIdeal→ℂ)
@@ -134,7 +134,7 @@ theorem canonical_exceptional_ideal_sum (ε : ℝ) (hε : 0<ε) (hε1 : ε<1/6)
     _≤B*L := mul_le_mul_of_nonneg_left (hideal F G) hB
     _=_ := by dsimp [B,M];ring
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

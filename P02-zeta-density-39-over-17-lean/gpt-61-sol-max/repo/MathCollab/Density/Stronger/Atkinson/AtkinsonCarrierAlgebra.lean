@@ -13,9 +13,9 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+
+open Complex MeasureTheory
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem neumannTwoTerm_complex_exp (z : ℝ) :
@@ -42,8 +42,12 @@ theorem atkinson_bessel_argument_rpow {x : ℝ} (hx : 0 < x) {n : ℕ} (hn : 0 <
   unfold atkinsonBesselScale
   ring
 
-theorem atkinsonPowerIntegrand_bessel {T G L x : ℝ} (hx : 0 < x)
-    {n : ℕ} (hn : 0 < n) (α s : ℝ) :
+section
+variable {T G L x : ℝ} (hx : 0 < x)
+    {n : ℕ} (hn : 0 < n)
+include T G L x hx n hn
+
+theorem atkinsonPowerIntegrand_bessel  (α s : ℝ) :
     zetaAtkinsonDivisorTest T G L x *
       (((4 * Real.pi * Real.sqrt (x * n)) ^ (-2 * α) : ℝ) : ℂ) *
         Complex.exp (((s * (4 * Real.pi * Real.sqrt (x * n)) : ℝ) : ℂ) * I) =
@@ -59,8 +63,7 @@ theorem atkinsonPowerIntegrand_bessel {T G L x : ℝ} (hx : 0 < x)
   push_cast
   ring
 
-theorem zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L x : ℝ} (hx : 0 < x)
-    {n : ℕ} (hn : 0 < n) :
+theorem zetaAtkinsonTwoTermIntegrand_eq_carriers  :
     zetaAtkinsonTwoTermIntegrand T G L n x =
       (Real.sqrt Real.pi / Real.pi : ℂ) *
         ((atkinsonBesselScale (1 / 4) n : ℂ) *
@@ -80,5 +83,7 @@ theorem zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L x : ℝ} (hx : 0 < x)
   linear_combination (Real.sqrt Real.pi / Real.pi : ℂ) *
     (neumannLeadingPlus * hp + neumannLeadingMinus * hm -
       neumannCorrectionPlus / 8 * hcp - neumannCorrectionMinus / 8 * hcm)
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

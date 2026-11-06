@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -26,12 +26,16 @@ def actualMarkedSecondProfileData {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit*d)
     c d z A₁ A₂ x.second
 
-theorem actual_second_split_child_uniform
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+section
+variable (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
-    (hE : x.second.divisor ⊆ x.second.sourceCommon) :
+    (hE : x.second.divisor ⊆ x.second.sourceCommon)
+include hpr Jo Jn x hCB hD hE
+
+theorem actual_second_split_child_uniform
+     :
     ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m k : Eis)
       (A : Finset ι), A ⊆ (x.cube.support∪x.firstCommon)∪x.second.sourceCommon →
       ∀ (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ),
@@ -64,11 +68,7 @@ theorem actual_second_split_child_uniform
     hchild F Ψ m k (slots\J) lists a W X
 
 theorem actual_second_separated_pair_canonical
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
-    (hCB : Disjoint x.firstCommon x.cube.support)
-    (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
-    (hE : x.second.divisor ⊆ x.second.sourceCommon) :
+     :
     ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
       (A₁ A₂ : Finset ι), A₁ ⊆ x.cube.support∪x.firstCommon → A₂ ⊆ x.cube.support∪x.firstCommon →
       ∀ (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -104,8 +104,10 @@ theorem actual_second_separated_pair_canonical
   apply Finset.sum_congr rfl
   intro J₂ hJ₂
   ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

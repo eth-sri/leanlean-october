@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstStageLossBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
@@ -26,13 +26,13 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
     let es:=r/(4*(Bcommon+A+1))
     let em:=r/(Bcap+Bcap+1)
     0<es ∧ es≤1 ∧ 0<em ∧ es*A≤r/4 ∧ es*Bcommon≤r/4 ∧
-    ∀(k:ℕ)(ell highReflection zeroReflection:ℝ),ell≤stageLoss M Bcap ε k→
+    ∀(k:ℕ)(ell highReflection zeroReflection:ℝ),ell≤ stageLoss M Bcap ε k→
       highReflection≤r→zeroReflection≤r→∀j:Fin 4,
       losses es (r/4) (r/4) Bcap j+
         lossVector (amplification ε) (r/4) (r/4)
           (sourcePaid Bcap em ell (r/4) (r/4) (r/4) (r/4) (r/4) κ (mesh M Bcap κ ε))
           es A (2*amplification ε+1) j+
-        es*Bcommon+r/4+r/4+highReflection+zeroReflection≤stageLoss M Bcap ε (k+1):=by
+        es*Bcommon+r/4+r/4+highReflection+zeroReflection≤ stageLoss M Bcap ε (k+1):=by
   dsimp only
   let r:=reserve M Bcap ε
   let es:=r/(4*(Bcommon+A+1))
@@ -80,8 +80,8 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
   change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_
   linarith only [hj,hc]
 
-end SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
 
-end
 
-end OAI
+
+
+

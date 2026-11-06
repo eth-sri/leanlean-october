@@ -14,9 +14,8 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiTest
 
 open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -35,8 +34,12 @@ theorem zetaSmoothDivisorTest_eq_zero_left {T G L x : ℝ}
     zetaBandCutoff_eq_zero_left (hm (by linarith)) hx
   simp only [zetaSmoothDivisorTest, hcut, Complex.ofReal_zero, zero_mul]
 
-theorem support_zetaSmoothDivisorTest {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) :
+section
+variable {T G L : ℝ}
+    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
+include T G L hT hG hL
+
+theorem support_zetaSmoothDivisorTest  :
     Function.support (zetaSmoothDivisorTest T G L) ⊆
       Icc (zetaDivisorBandEdge T G (-2 * L)) (zetaDivisorBandEdge T G (2 * L)) := by
   intro x hx
@@ -44,8 +47,7 @@ theorem support_zetaSmoothDivisorTest {T G L : ℝ}
   intro hzero
   exact hx (by simp only [zetaSmoothDivisorTest, hzero, Complex.ofReal_zero, zero_mul])
 
-theorem contDiff_zetaSmoothDivisorTest {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) :
+theorem contDiff_zetaSmoothDivisorTest  :
     ContDiff ℝ ∞ (zetaSmoothDivisorTest T G L) := by
   rw [contDiff_iff_contDiffAt]
   intro x
@@ -58,8 +60,7 @@ theorem contDiff_zetaSmoothDivisorTest {T G L : ℝ}
     filter_upwards [isOpen_Iio.mem_nhds hxa] with y hy
     exact zetaSmoothDivisorTest_eq_zero_left hT hG hL hy.le
 
-def zetaSmoothDivisorVoronoiTest {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) :
+def zetaSmoothDivisorVoronoiTest  :
     DFIVoronoiTestFunction (zetaSmoothDivisorTest T G L) where
   lower := zetaDivisorBandEdge T G (-2 * L)
   upper := zetaDivisorBandEdge T G (2 * L)
@@ -67,8 +68,14 @@ def zetaSmoothDivisorVoronoiTest {T G L : ℝ}
   lower_le_upper := (zetaDivisorBandEdge_strictMono hT hG).monotone (by linarith)
   smooth := contDiff_zetaSmoothDivisorTest hT hG hL
   support_subset := support_zetaSmoothDivisorTest hT hG hL
+end
 
-theorem zetaSmoothDivisorTerm_eq_cutoff (T G L : ℝ) (n : ℕ) :
+
+section
+variable (T G L : ℝ) (n : ℕ)
+include T G L n
+
+theorem zetaSmoothDivisorTerm_eq_cutoff  :
     divisorWeight n * zetaSmoothDivisorTest T G L n =
       (zetaDivisorBandCutoff T G L n : ℂ) *
         (zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
@@ -77,13 +84,15 @@ theorem zetaSmoothDivisorTerm_eq_cutoff (T G L : ℝ) (n : ℕ) :
   unfold zetaSmoothDivisorTest
   ring
 
-theorem norm_zetaSmoothDivisorTerm_le (T G L : ℝ) (n : ℕ) :
+theorem norm_zetaSmoothDivisorTerm_le  :
     ‖divisorWeight n * zetaSmoothDivisorTest T G L n‖ ≤
       ‖zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
         zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))‖ := by
   rw [zetaSmoothDivisorTerm_eq_cutoff, norm_mul, Complex.norm_real, Real.norm_eq_abs, zetaDivisorBandCutoff,
     abs_of_nonneg (zetaBandCutoff_nonneg _ _ _ _ _)]
   exact mul_le_of_le_one_left (norm_nonneg _) (zetaBandCutoff_le_one _ _ _ _ _)
+end
+
 
 theorem summable_zetaSmoothDivisorTerm {T G : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (L : ℝ) :
@@ -100,4 +109,4 @@ theorem zetaSmoothDivisorTerm_eq_on_band {T G L : ℝ}
   rw [zetaSmoothDivisorTerm_eq_cutoff, zetaDivisorBandCutoff_eq_one hT hG hL hn,
     Complex.ofReal_one, one_mul]
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.AmplifiedChildWidth
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedSource
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicRows
@@ -17,10 +18,10 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstLiveAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
@@ -29,13 +30,13 @@ open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadiu
 open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
+open CenteredMomentSecondHeightFamily
 open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+
+
+open RayFourExpansion
+open CenteredMomentLogDyadic
+open scoped HeckeO
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem first_block_active_rows_nonempty
@@ -53,23 +54,33 @@ theorem first_block_active_rows_nonempty
   rw [block_activeRows, he]
   simp only [block, Finset.sum_empty, mul_zero]
 
-def columnIdeal (C D : Ideal O) (right : Bool) : Ideal O := if right then D else C
+section
+variable (C D : Ideal O)
+include C D
 
-def oppositeIdeal (C D : Ideal O) (right : Bool) : Ideal O := if right then C else D
+def columnIdeal  (right : Bool) : Ideal O := if right then D else C
 
-def columnMainRadius (C D : Ideal O) (E : Finset (CommonIndex C D))
-    (K V Z σ δ reserve : ℝ) (right : Bool) : ℝ :=
+def oppositeIdeal  (right : Bool) : Ideal O := if right then C else D
+
+section
+variable (E : Finset (CommonIndex C D))
+    (K V Z σ δ reserve : ℝ) (right : Bool)
+include E K V Z σ δ reserve right
+
+def columnMainRadius  : ℝ :=
   mainCommonRadius Z (Real.logb Z ((oppositeIdeal C D right).absNorm : ℝ))
     (Real.logb Z (firstNominalScale C D
       (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K V))
     (Real.logb Z ((columnIdeal C D right).absNorm : ℝ)) σ δ reserve
 
-def columnErrorRadius (C D : Ideal O) (E : Finset (CommonIndex C D))
-    (K V Z σ δ reserve : ℝ) (right : Bool) (p : O) (k : ℕ) : ℝ :=
+def columnErrorRadius  (p : O) (k : ℕ) : ℝ :=
   errorCommonRadius Z (Real.logb Z ((oppositeIdeal C D right).absNorm : ℝ))
     (Real.logb Z (firstNominalScale C D
       (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K V))
     (Real.logb Z ((columnIdeal C D right).absNorm : ℝ)) σ δ reserve p k
+end
+end
+
 
 def readyBudget (A P : ℝ) : ℝ := 4*A + P + 10
 
@@ -100,22 +111,22 @@ lemma lower_profile_zero (W : ℝ → ℂ) (a : ℝ) (ha : 0 < a)
   by_contra hn
   exact (not_le_of_gt ha) (h 0 hn)
 
-theorem main_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
     (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a)
     (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower)
     (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x)
-    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
+    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+include ι N l a hl ha s hc hs hW₁ hW₂ C R seed B τ t
+
+theorem main_lower_support  :
     ∀ I : Ideal O, coefficient (child s C R B τ t) (R*C) seed I ≠ 0 →
       lowerFactor N l a * volume (child s C R B τ t) ≤ (I.absNorm : ℝ) := by
   intro I hI
   exact actual_lower_support N l a hl ha (child s C R B τ t)
     ((live_card_le B.val).trans hc) hs hW₁ hW₂ (R*C) seed I hI
 
-theorem error_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a)
-    (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower)
-    (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x)
-    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+theorem error_lower_support 
     (Q : Ideal O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) :
@@ -125,6 +136,8 @@ theorem error_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
   exact actual_lower_support N l a hl ha (errorInput s C R B τ t Q k Bp υ v)
     ((live_card_le Bp.val).trans ((live_card_le B.val).trans hc))
     hs hW₁ hW₂ ((R*C)*(Q^k)) seed I hI
+end
+
 
 theorem eventual_parent_radius (N : ℕ) (b b₁ b₂ : ℝ)
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂) :
@@ -132,10 +145,7 @@ theorem eventual_parent_radius (N : ℕ) (b b₁ b₂ : ℝ)
       ∀ s : Input ι, Fintype.card ι ≤ N → Endpoints b b₁ b₂ s →
       ∀ A : ℝ, volume s ≤ Z^A → sourceRadius s ≤ Z^(A+1) := by
   let G := b^N*b₁*b₂
-  have hG : 1 ≤ G := by
-    have hp : 1 ≤ b^N := one_le_pow₀ hb
-    dsimp [G]
-    exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hp hb₁) hb₂
+  have hG : 1 ≤ G := by bound
   filter_upwards [eventual_geometry G 1 hG (by norm_num)] with Z hZ
   refine ⟨hZ.1, ?_⟩
   intro ι _ _ s hc he A hV
@@ -225,8 +235,8 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   exact ⟨ready_mono _ _ _ Z ξ _ _ hz.le (common_exponent_le A P ξ hA hP hξ1) hr,
     main_lower_support N l a hl ha s hc hs hW₁ hW₂ (columnIdeal C D side) R seed B τ t⟩
 
-end SevenEighths.CenteredMomentEnergyFirstLiveAdmission
 
-end
 
-end OAI
+
+
+

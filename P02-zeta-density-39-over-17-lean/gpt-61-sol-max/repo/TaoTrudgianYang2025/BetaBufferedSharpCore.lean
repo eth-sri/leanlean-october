@@ -13,13 +13,13 @@ logarithmic stationary error, and the remaining support-exterior modes
 use reciprocal slope gaps. No inverse cutoff-width power remains.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseBufferedSupport_inside_core
     {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
@@ -38,7 +38,11 @@ theorem modelPhaseBufferedSupport_inside_core
     (modelPhaseClosedSlope_deriv_bounds hσ hδ hF ha).2 (div_pos hT hN).le
   exact ⟨he.1.trans (Int.floor_mono hL),(Int.ceil_mono hU).trans he.2⟩
 
-theorem modelPhaseBufferedTransition_error {σ : ℝ} (hσ : 0 < σ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+
+theorem modelPhaseBufferedTransition_error  :
     ∃ C : ℝ, 0 < C ∧ ∀ (l r η : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → l+4*η < r →
       ∀ (F : ℝ → ℝ) (δ T N : ℝ),
         δ ≤ min (modelPhaseCurvatureLower σ) 1 →
@@ -64,7 +68,7 @@ theorem modelPhaseBufferedTransition_error {σ : ℝ} (hσ : 0 < σ) :
       rw [Finset.sum_const,nsmul_eq_mul]
       exact (mul_le_mul_of_nonneg_right hc (by positivity)).trans_eq (by ring)
 
-theorem modelPhaseBufferedSupportCore_error {σ : ℝ} (hσ : 0 < σ) :
+theorem modelPhaseBufferedSupportCore_error  :
     ∃ C : ℝ, 1 ≤ C ∧ ∃ D : ℝ, 0 < D ∧
       ∀ (l r η : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → l+4*η < r →
       ∀ (F : ℝ → ℝ) (δ T N : ℝ),
@@ -104,7 +108,7 @@ theorem modelPhaseBufferedSupportCore_error {σ : ℝ} (hσ : 0 < σ) :
   rw [hsplit]
   exact (norm_add_le _ _).trans (add_le_add hi ht)
 
-theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
+theorem modelPhaseBufferedSharpCore_error  :
     ∃ C : ℝ, 1 ≤ C ∧ ∃ D : ℝ, 0 < D ∧
       ∀ (l r η : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → l+4*η < r →
       ∀ (F : ℝ → ℝ) (δ T N : ℝ),
@@ -149,5 +153,7 @@ theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
   change ‖(∑ q ∈ Finset.Icc A B, f q)-main‖ ≤ _
   rw [heq]
   exact (norm_add_le _ _).trans (add_le_add hc hext)
+end
 
-end TaoTrudgianYang2025
+
+

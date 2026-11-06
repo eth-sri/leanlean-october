@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFourier
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
@@ -54,7 +55,6 @@ theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
       ←integral_mul_const]
     apply integral_congr_ae
     filter_upwards with v
-    dsimp [B,φ,g]
     ring
   simp_rw [heq] at hh
   rw [Finset.sum_coe_sort rows (fun i=>‖polynomial (χ i) inv (clippedTest W c θ) D 0 0*A i‖^2)] at hh
@@ -82,8 +82,8 @@ theorem rawMoment_reference (data : RowData)
   rw [heq] at hh
   simpa only [mul_one,one_mul,norm_zero,add_zero,one_pow,mul_assoc,mul_left_comm,mul_comm] using hh
 
-end SevenEighths.DetectorDictionaryInverseRawFourier
 
-end
 
-end OAI
+
+
+

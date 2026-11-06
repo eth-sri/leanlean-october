@@ -5,8 +5,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonDyadicGramBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
@@ -108,4 +107,4 @@ theorem ExponentPair.localMeanPacket_native {k l : ℝ} (hpair : ExponentPair k 
       _ = _ := by ring
   · rw [Finset.not_nonempty_iff_eq_empty.mp hW]
     simp
-end TaoTrudgianYang2025
+

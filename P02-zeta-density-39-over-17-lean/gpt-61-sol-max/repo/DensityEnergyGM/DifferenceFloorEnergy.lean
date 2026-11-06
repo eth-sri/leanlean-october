@@ -1,40 +1,44 @@
 module
+import Mathlib
 public import DiscreteEnergyReproduction
 public import DensityEnergyGM.LargeValuesS3
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
 /-- Ordered pairs of source ordinates. -/
-noncomputable def differenceOrdinatePairs (W : Finset ℝ) : Finset (ℝ × ℝ) :=
+def differenceOrdinatePairs (W : Finset ℝ) : Finset (ℝ × ℝ) :=
   W ×ˢ W
 
 /-- The unit-bin label of an ordered difference. -/
-noncomputable def differenceFloor (p : ℝ × ℝ) : ℤ :=
+def differenceFloor (p : ℝ × ℝ) : ℤ :=
   ⌊p.1 - p.2⌋
 
+section
+variable (W : Finset ℝ)
+include W
+
 /-- The finite support of the difference floor multiplicity function. -/
-noncomputable def differenceFloorSupport (W : Finset ℝ) : Finset ℤ :=
+def differenceFloorSupport  : Finset ℤ :=
   (differenceOrdinatePairs W).image differenceFloor
 
 /-- Number of ordered pairs whose difference lies in one unit floor bin. -/
-noncomputable def differenceFloorCount (W : Finset ℝ) (j : ℤ) : ℕ :=
+def differenceFloorCount  (j : ℤ) : ℕ :=
   ((differenceOrdinatePairs W).filter fun p => differenceFloor p = j).card
 
 /-- Pair-pairs lying in the same unit floor bin. -/
-noncomputable def floorMatchedDifferences (W : Finset ℝ) :
+def floorMatchedDifferences  :
     Finset ((ℝ × ℝ) × (ℝ × ℝ)) :=
   ((differenceOrdinatePairs W) ×ˢ (differenceOrdinatePairs W)).filter fun q =>
     differenceFloor q.1 = differenceFloor q.2
 
 /-- The exact floor-bin square sum is the cardinality of the matched
 pair-pair set. -/
-theorem sum_differenceFloorCount_sq (W : Finset ℝ) :
+theorem sum_differenceFloorCount_sq  :
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j ^ 2 =
       (floorMatchedDifferences W).card := by
   classical
@@ -62,6 +66,8 @@ theorem sum_differenceFloorCount_sq (W : Finset ℝ) :
     have hiq := Finset.mem_filter.mp (Finset.mem_product.mp hqi).1 |>.2
     have hjq := Finset.mem_filter.mp (Finset.mem_product.mp hqj).1 |>.2
     exact hij (hiq.symm.trans hjq)
+end
+
 
 
 /-- Equal difference floors force the corresponding additive defect below
@@ -75,12 +81,15 @@ theorem abs_difference_defect_lt_one_of_floor_eq {p q : ℝ × ℝ}
   have hqLower := Int.floor_le (q.1 - q.2)
   have hqUpper := Int.lt_floor_add_one (q.1 - q.2)
   rw [h] at hpLower hpUpper
-  rw [abs_lt]
-  constructor <;> linarith
+  grind
+
+section
+variable (W : Finset ℝ)
+include W
 
 /-- The literal unit-difference occupancies have square sum bounded by the
 same tolerance-one ordered additive energy used in the zero-density proof. -/
-theorem differenceFloor_energy_le (W : Finset ℝ) :
+theorem differenceFloor_energy_le  :
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j ^ 2 ≤
       discreteAdditiveEnergy W := by
   rw [sum_differenceFloorCount_sq]
@@ -107,7 +116,7 @@ theorem differenceFloor_energy_le (W : Finset ℝ) :
 
 /-- Mass of any finite family of occupied difference cells. The count of
 cells and the original energy enter through ordinary finite Cauchy--Schwarz. -/
-theorem differenceFloor_subset_mass_sq (W : Finset ℝ) (J : Finset ℤ)
+theorem differenceFloor_subset_mass_sq  (J : Finset ℤ)
     (hJ : J ⊆ differenceFloorSupport W) :
     (∑ j ∈ J, (differenceFloorCount W j : ℝ)) ^ 2 ≤
       (J.card : ℝ) * (discreteAdditiveEnergy W : ℝ) := by
@@ -120,12 +129,10 @@ theorem differenceFloor_subset_mass_sq (W : Finset ℝ) (J : Finset ℤ)
       (fun j hj hnot => Nat.zero_le (differenceFloorCount W j ^ 2))
     have hNat := hsub.trans (differenceFloor_energy_le W)
     exact_mod_cast hNat
-  have hcard : 0 ≤ (J.card : ℝ) := Nat.cast_nonneg _
-  have h := mul_le_mul_of_nonneg_left hEnergy hcard
-  exact hCS.trans (by nlinarith)
+  nlinarith
 
 /-- Unit difference cells retain exactly all ordered pairs. -/
-theorem sum_differenceFloorCount (W : Finset ℝ) :
+theorem sum_differenceFloorCount  :
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j = W.card ^ 2 := by
   have hmaps : ∀ p ∈ differenceOrdinatePairs W,
       differenceFloor p ∈ differenceFloorSupport W := by
@@ -136,5 +143,7 @@ theorem sum_differenceFloorCount (W : Finset ℝ) :
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j at h
   rw [← h]
   simp only [differenceOrdinatePairs, Finset.card_product, pow_two]
+end
 
-end Montgomery.RationalMoment
+
+

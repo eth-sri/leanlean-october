@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstSourceTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem first_whole_cube_rapid_physical_tail (ε:ℝ) (hε:0<ε)
     (Mmax Fmax eta tau saving:ℝ) (hMm:0≤Mmax) (hFm:0≤Fmax)
@@ -72,8 +72,8 @@ theorem first_whole_cube_rapid_physical_tail (ε:ℝ) (hε:0<ε)
     (Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)
     hZ hM hMmax hell hV hr hwhole (by positivity) (by positivity) (by positivity) hb₁ hb₂ hC
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

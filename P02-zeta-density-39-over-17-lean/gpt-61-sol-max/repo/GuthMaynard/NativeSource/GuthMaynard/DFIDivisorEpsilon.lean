@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.DFIEquation26
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.NumberTheory.Harmonic.Bounds
@@ -32,9 +33,7 @@ theorem harmonic_le_epsilon_rpow
   have hlogPower := Real.log_le_sub_one_of_pos
     (Real.rpow_pos_of_pos hLPos ε)
   rw [Real.log_rpow hLPos] at hlogPower
-  have hlog : Real.log L ≤ ε⁻¹ * ((L : ℝ) ^ ε - 1) := by
-    rw [inv_mul_eq_div]
-    exact (le_div_iff₀ hε).2 (by simpa [mul_comm] using hlogPower)
+  have hlog : Real.log L ≤ ε⁻¹ * ((L : ℝ) ^ ε - 1) := by field_simp <;> nlinarith
   calc
     ((harmonic L : ℚ) : ℝ) ≤ 1 + Real.log L := harmonic_le_one_add_log L
     _ ≤ 1 + ε⁻¹ * ((L : ℝ) ^ ε - 1) := by linarith
@@ -44,4 +43,4 @@ theorem harmonic_le_epsilon_rpow
     _ ≤ (1 + ε⁻¹) * max 1 ((L : ℝ) ^ ε) := by
       exact mul_le_mul_of_nonneg_left (le_max_right _ _) (by positivity)
 
-end GuthMaynard.NativeMoment
+

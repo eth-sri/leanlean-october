@@ -13,7 +13,6 @@ public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonPhase
 
 open Complex
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -58,4 +57,4 @@ theorem zetaAtkinsonDivisorTest_eq_amplitude_phase (T G L : ℝ) {x : ℝ} (hx :
     zetaAtkinsonDivisorTest_mul_carrier T G L 0 hx
 
 
-end MathCollab.Density.Stronger.Atkinson
+

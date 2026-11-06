@@ -14,22 +14,26 @@ or uniform inverse estimate is assumed.
 
 noncomputable section
 
-open Set Expdb Filter
+open Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseMorseInverseJet (F : ℝ → ℝ) (v z : ℝ) : ℕ → ℝ
   | 0 => modelPhaseMorseInverse F v z
   | 1 => (deriv (modelPhaseMorseCoordinate F v) (modelPhaseMorseInverse F v z))⁻¹
   | n+2 => iteratedDeriv (n+1) (modelPhaseMorseCoordinate F v) (modelPhaseMorseInverse F v z)
 
-theorem modelPhaseMorseInverseJet_hasDerivAt
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
+section
+variable {F : ℝ → ℝ} {σ δ v z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) (j : ℕ) :
+    (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
+include F σ δ v z hσ hδ hF hv hz
+
+theorem modelPhaseMorseInverseJet_hasDerivAt
+     (j : ℕ) :
     HasDerivAt (fun x => modelPhaseMorseInverseJet F v x j)
       (inversePhaseEval (inversePhaseAtomDerivative j) (modelPhaseMorseInverseJet F v z)) z := by
   have hi := (modelPhaseMorseInverse_hasStrictDerivAt hσ hδ hF hv hz).hasDerivAt
@@ -60,10 +64,7 @@ theorem modelPhaseMorseInverseJet_hasDerivAt
           iteratedDeriv_succ]
 
 theorem morseInverseEval_hasDerivAt
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
+    
     (e : InversePhaseExpression) :
     HasDerivAt (fun x => inversePhaseEval e (modelPhaseMorseInverseJet F v x))
       (inversePhaseEval (inversePhaseDifferentiate e) (modelPhaseMorseInverseJet F v z)) z := by
@@ -74,10 +75,7 @@ theorem morseInverseEval_hasDerivAt
   | mul e f he hf => exact he.mul hf
 
 theorem iteratedDeriv_modelPhaseMorseInverse_formula
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) (n : ℕ) :
+     (n : ℕ) :
     iteratedDeriv n (modelPhaseMorseInverse F v) z =
       inversePhaseEval (inversePhaseDerivativeExpression n) (modelPhaseMorseInverseJet F v z) := by
   induction n generalizing z with
@@ -92,5 +90,7 @@ theorem iteratedDeriv_modelPhaseMorseInverse_formula
       rw [he.deriv_eq,
         (morseInverseEval_hasDerivAt hσ hδ hF hv hz (inversePhaseDerivativeExpression n)).deriv]
       rfl
+end
 
-end TaoTrudgianYang2025
+
+

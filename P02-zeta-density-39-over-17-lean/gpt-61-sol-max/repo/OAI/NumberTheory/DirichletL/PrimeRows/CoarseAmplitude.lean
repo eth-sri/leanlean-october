@@ -11,17 +11,21 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
-lemma coarsePrimeCost_image {K : ℕ} (P : Fin K→PrimeIdeal) (hP : Function.Injective P) :
+section
+variable {K : ℕ}
+include K
+
+lemma coarsePrimeCost_image  (P : Fin K→PrimeIdeal) (hP : Function.Injective P) :
     coarsePrimeCost (Finset.univ.image P)=(8192:ℝ)^K*(∏i,(P i).val.absNorm:ℝ)^3 := by
   unfold coarsePrimeCost
   rw [Finset.prod_image (by intro a ha b hb hab;exact hP hab)]
   rw [Finset.prod_mul_distrib,←Finset.prod_pow]
   simp
 
-lemma prime_frequency_amplitude_le_one {K : ℕ}
+lemma prime_frequency_amplitude_le_one 
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
     (hPS : ∀i,(P i).val∉S) (u : FreeRow) (r : ℝ) (hr : 0≤r) (hr1 : r≤1) (t : ℝ) :
     ‖(∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(((r:ℂ)+t*I)-1))*
@@ -47,11 +51,18 @@ lemma prime_frequency_amplitude_le_one {K : ℕ}
     simp only [neg_re,add_re,ofReal_re,mul_re,I_re,I_im,ofReal_im,mul_zero,zero_mul,sub_zero,add_zero]
     simpa using Real.rpow_le_rpow_of_exponent_le hu (by linarith : -r≤0)
 
-def contourArithmeticCost {K : ℕ} (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal) : ℝ :=
+section
+variable (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal)
+include η u P
+
+def contourArithmeticCost  : ℝ :=
   (η.modulus.absNorm:ℝ)^2*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^6*(∏i,(P i).val.absNorm:ℝ)^3
 
-lemma contourArithmeticCost_nonneg {K : ℕ} (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal) :
+lemma contourArithmeticCost_nonneg  :
     0≤contourArithmeticCost η u P := by unfold contourArithmeticCost;positivity
+end
+end
+
 
 theorem rowAmplitudeOnLines_buffered_polynomial (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
@@ -121,8 +132,8 @@ theorem rowAmplitudeOnLines_first_polynomial (K : ℕ)
         (pow_nonneg (Finset.prod_nonneg (fun i _ => Nat.cast_nonneg (P i).val.absNorm)) _)) (sq_nonneg _)
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

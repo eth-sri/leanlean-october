@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyRefinementTower
 
 @[expose] public section
@@ -17,7 +18,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_equation_7_23_native
     {k r p c a b B nu s : ℕ}
@@ -83,8 +84,8 @@ theorem wooley_equation_7_23_native
   let hAb : a + H ≤ bPrime :=
     wooley_section7_a_add_HPrime_le_nextB hr (hBPrime gammaVal hgammaVal)
   let haB : a ≤ bPrime := (Nat.le_add_right a H).trans hAb
-  let factor : ℝ := (p ^ (bPrime - (a + H)) : ℝ) ^ wooleyTriangular r
-  let F : ZMod (p ^ bPrime) → ℝ := fun xiPrime =>
+  let factor := (p ^ (bPrime - (a + H)) : ℝ) ^ wooleyTriangular r
+  let F := fun xiPrime =>
     wooleySourceResidueMassSq gamma (p ^ bPrime) xiPrime *
       wooleySourcePolynomialMixedResidueMoment phi s r p B
         bPrime b gamma xiPrime eta
@@ -109,8 +110,7 @@ theorem wooley_equation_7_23_native
               F xiPrime := by
       apply Finset.sum_le_sum
       intro zeta hzeta
-      simpa only [H, bPrime, hAb, factor, F] using
-        (wooley_equation_7_22_integrated_native
+      exact (wooley_equation_7_22_integrated_native
           (k := k) (p := p) (r := r) (a := a) (b := b) (nu := nu)
           (gammaVal := gammaVal) (B := B) (s := s) hr
           (hBPrime gammaVal hgammaVal) phi gamma
@@ -164,6 +164,6 @@ theorem wooley_equation_7_23_native
       rfl
 
 
-end
 
-end GafniTao
+
+

@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowInverseNormalize
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset Id)
@@ -103,7 +103,7 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
         _=((Fintype.card RayRing:ℝ)*Real.sqrt (C*B^2/q)/(2*Real.pi))*(1+|t|)^degree*Z^(507*ε/2) := by ring
         _≤_ := by gcongr ; linarith
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.RadialRemainder
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
 
@@ -52,7 +52,6 @@ theorem spatialCubicMode_radial {a : ℝ → ℂ} (ha : ∀ x, x ≤ 0 → a x =
       -L*((m.1:ℝ)*v+(m.2.1:ℝ)*y+(m.2.2:ℝ))*r := by ring
   rw [hp]
   unfold radialAmplitude ratioFourierProduct
-  rw [mul_comm v r,mul_comm y r]
   ring
 
 /-- Actual two-dimensional scaling identity with the exact r^2 Jacobian. -/
@@ -87,4 +86,4 @@ theorem spatialCubicMode_radial_integrals {a : ℝ → ℂ} (ha : ∀ x, x ≤ 0
   · rw [← two_coordinate_scaling (fun x₁ x₂ => spatialCubicMode a μ L m x₁ x₂ r) hr]
     simp_rw [spatialCubicMode_radial ha]
 
-end GuthMaynard.Improvement
+

@@ -1,19 +1,23 @@
 module
+import Mathlib
 public import AdjacentAbsorption
 public import AdjacentMonomialBudgets
 public import AdjacentUpperValues
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 
-theorem adjacent_lower_large_values {σ a p α δ : ℝ}
-    (hw : AdjacentWindow σ a p α) (hδ : 0 < δ) :
+section
+variable {σ a p α δ : ℝ}
+    (hw : AdjacentWindow σ a p α) (hδ : 0 < δ)
+include σ a p α δ hw hδ
+
+theorem adjacent_lower_large_values  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → T^a ≤ N → N ≤ T^α →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -41,7 +45,6 @@ theorem adjacent_lower_large_values {σ a p α δ : ℝ}
   · calc
       _ ≤ T^p := hr
       _ ≤ (1+A*(4+4*B))*(T^(18*δ)*T^p) := by
-        have hh : 1 ≤ 1+A*(4+4*B) := by nlinarith [mul_nonneg hA.le (show 0 ≤ 4+4*B by linarith)]
         nlinarith only [mul_le_mul_of_nonneg_right hpow hp.le,mul_nonneg (by positivity : 0 ≤ A*(4+4*B)) (by positivity : 0 ≤ T^(18*δ)*T^p)]
       _ = _ := by rw [← Real.rpow_add htp]; congr 2; ring
   · have hrs : T^p ≤ (W.card:ℝ) := (lt_of_not_ge hr).le
@@ -63,8 +66,6 @@ theorem adjacent_lower_large_values {σ a p α δ : ℝ}
     have heq : (T^δ)^2*T^(16*δ)*T^p = T^(p+18*δ) := by
       rw [← Real.rpow_natCast (T^δ) 2,← Real.rpow_mul htp.le,
         ← Real.rpow_add htp,← Real.rpow_add htp]
-      congr 1
-      norm_num
       ring
     calc
       _ ≤ A*(4+4*B)*(T^δ)^2*T^(16*δ)*T^p := hh
@@ -73,8 +74,7 @@ theorem adjacent_lower_large_values {σ a p α δ : ℝ}
 
 
 
-theorem adjacent_full_window_large_values {σ a p α δ : ℝ}
-    (hw : AdjacentWindow σ a p α) (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
+theorem adjacent_full_window_large_values  (hδ' : δ ≤ 1/100) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → 2 ≤ N → T^a ≤ N → N ≤ T^(3*a/2+δ) →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -91,5 +91,7 @@ theorem adjacent_full_window_large_values {σ a p α δ : ℝ}
       (mul_le_mul_of_nonneg_right (by linarith : C ≤ C+D) (by positivity))
   · exact (hhi T N t₀ b W hT hN (le_of_not_ge hm) hu hb hloc hsep hlarge).trans
       (mul_le_mul_of_nonneg_right (by linarith : D ≤ C+D) (by positivity))
+end
 
-end Montgomery.RationalMoment
+
+

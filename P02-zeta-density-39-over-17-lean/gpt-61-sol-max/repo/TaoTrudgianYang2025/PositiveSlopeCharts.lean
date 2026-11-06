@@ -17,7 +17,7 @@ noncomputable section
 open Set Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def positiveSlopeChartIndex (d v : ℝ) : ℕ := ⌊v/d⌋₊
 
@@ -75,4 +75,4 @@ theorem positiveSlopeChart_coordinate {d v : ℝ} {j : ℕ}
     unfold positiveSlopeChartScale
     nlinarith [hv.2,mul_le_mul_of_nonneg_right hjreal hd.le]
 
-end TaoTrudgianYang2025
+

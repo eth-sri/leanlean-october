@@ -10,8 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonCoefficientVariation
 
 @[expose] public section
 
-open Complex Set Filter
-set_option autoImplicit false
+open Complex Filter
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -33,4 +32,4 @@ theorem atkinsonBesselScale_quarter_normalization (n : ℕ) :
   rw [Real.rpow_neg (by positivity),← Real.sqrt_eq_rpow,hp]
   field_simp
 
-end MathCollab.Density.Stronger.Atkinson
+

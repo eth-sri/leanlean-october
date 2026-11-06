@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownRefinedCount
 
 @[expose] public section
@@ -19,11 +20,11 @@ namespace GafniTao
 noncomputable section
 
 /-- The one-dimensional periodic triangular weight. -/
-noncomputable def heathBrownHat (B x : ℝ) : ℝ :=
+def heathBrownHat (B x : ℝ) : ℝ :=
   max (1 - B⁻¹ * heathBrownDistanceToInteger x) 0
 
 /-- The source two-dimensional weight `phi(x,y)`. -/
-noncomputable def heathBrownTriangularKernel
+def heathBrownTriangularKernel
     (B C x y : ℝ) : ℝ :=
   heathBrownHat B x * heathBrownHat C y
 
@@ -47,11 +48,7 @@ theorem heathBrownHat_eq_zero_of_le_distance
     heathBrownHat B x = 0 := by
   unfold heathBrownHat
   rw [max_eq_right]
-  rw [sub_nonpos]
-  calc
-    1 = B⁻¹ * B := by field_simp
-    _ ≤ B⁻¹ * heathBrownDistanceToInteger x :=
-      mul_le_mul_of_nonneg_left hx (inv_nonneg.mpr hB.le)
+  field_simp <;> nlinarith
 
 /-- A sharp condition at half the kernel width receives weight at least
 `1/2`; this is the exact one-dimensional loss in the source majorant. -/
@@ -61,11 +58,7 @@ theorem one_half_le_heathBrownHat
     (1 : ℝ) / 2 ≤ heathBrownHat B x := by
   unfold heathBrownHat
   apply (show (1 : ℝ) / 2 ≤ 1 - B⁻¹ * heathBrownDistanceToInteger x by
-    have hprod : B⁻¹ * heathBrownDistanceToInteger x ≤ (1 : ℝ) / 2 := by
-      calc
-        B⁻¹ * heathBrownDistanceToInteger x ≤ B⁻¹ * (B / 2) :=
-          mul_le_mul_of_nonneg_left hx (inv_nonneg.mpr hB.le)
-        _ = 1 / 2 := by field_simp
+    have hprod : B⁻¹ * heathBrownDistanceToInteger x ≤ (1 : ℝ) / 2 := by field_simp <;> nlinarith
     linarith).trans
   exact le_max_left _ _
 
@@ -91,19 +84,19 @@ theorem heathBrownTriangularKernel_le_one
     heathBrownHat_le_one (x := x) hB, heathBrownHat_le_one (x := y) hC]
 
 /-- Removable-singularity version of `sin(pi r B)/(pi r B)`. -/
-noncomputable def heathBrownSincCoefficient (B : ℝ) (r : ℤ) : ℝ :=
+def heathBrownSincCoefficient (B : ℝ) (r : ℤ) : ℝ :=
   if r = 0 then 1
   else Real.sin (Real.pi * (r : ℝ) * B) /
     (Real.pi * (r : ℝ) * B)
 
 /-- The nonnegative one-dimensional coefficient appearing in the Fourier
 series of the periodic triangular weight. -/
-noncomputable def heathBrownHatFourierCoefficient
+def heathBrownHatFourierCoefficient
     (B : ℝ) (r : ℤ) : ℝ :=
   B * (heathBrownSincCoefficient B r) ^ 2
 
 /-- The source coefficient `c_{r,s}`. -/
-noncomputable def heathBrownTriangularFourierCoefficient
+def heathBrownTriangularFourierCoefficient
     (B C : ℝ) (r s : ℤ) : ℝ :=
   heathBrownHatFourierCoefficient B r *
     heathBrownHatFourierCoefficient C s
@@ -124,7 +117,7 @@ theorem heathBrownTriangularFourierCoefficient_nonneg
     (heathBrownHatFourierCoefficient_nonneg hC s)
 
 /-- The literal triangular weight attached to a pair of source indices. -/
-noncomputable def heathBrownPairKernel
+def heathBrownPairKernel
     (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) : ℝ :=
   heathBrownTriangularKernel
     (4 * (((H : ℝ) ^ (k - 2))⁻¹))
@@ -140,20 +133,10 @@ theorem one_quarter_le_heathBrownPairKernel_of_mem
     (1 : ℝ) / 4 ≤ heathBrownPairKernel k H f p := by
   rw [mem_heathBrownPairCountOne] at hp
   unfold heathBrownPairKernel
-  have hpowPos (j : ℕ) : 0 < (((H : ℝ) ^ j)⁻¹) := by positivity
   apply one_quarter_le_heathBrownTriangularKernel
     (by positivity : 0 < 4 * (((H : ℝ) ^ (k - 2))⁻¹))
     (by positivity : 0 < 4 * (((H : ℝ) ^ (k - 1))⁻¹))
-  · have hwidth :
-        (4 * (((H : ℝ) ^ (k - 2))⁻¹)) / 2 =
-          2 * (((H : ℝ) ^ (k - 2))⁻¹) := by ring
-    rw [hwidth]
-    exact hp.2.2.2.2.1
-  · have hwidth :
-        (4 * (((H : ℝ) ^ (k - 1))⁻¹)) / 2 =
-          2 * (((H : ℝ) ^ (k - 1))⁻¹) := by ring
-    rw [hwidth]
-    exact hp.2.2.2.2.2
+  all_goals (grind)
 
 theorem heathBrownPairKernel_nonneg
     (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) :
@@ -187,6 +170,6 @@ theorem heathBrownPairCountOne_quarter_le_kernel_sum
       · intro p hp _
         exact heathBrownPairKernel_nonneg k H f p
 
-end
 
-end GafniTao
+
+

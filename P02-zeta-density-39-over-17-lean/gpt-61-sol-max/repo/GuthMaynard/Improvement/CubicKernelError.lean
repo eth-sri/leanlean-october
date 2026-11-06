@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicKernel
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 namespace GuthMaynard.Improvement
 
@@ -12,8 +12,7 @@ theorem tripleMeasure_mass (μ : Measure ℝ) [SFinite μ] :
     (tripleMeasure μ).real Set.univ = (μ.real Set.univ)^3 := by
   simp only [tripleMeasure,Measure.real]
   rw [← Set.univ_prod_univ,Measure.prod_prod,← Set.univ_prod_univ,Measure.prod_prod]
-  rw [ENNReal.toReal_mul,ENNReal.toReal_mul]
-  ring
+  simp_all <;> nlinarith
 
 theorem kernelCubic_integrable (μ : Measure ℝ) [IsFiniteMeasure μ]
     {K : ℝ → ℂ} {B : ℝ} (hK : Measurable K) (hB : 0 ≤ B) (hb : ∀ s, ‖K s‖ ≤ B) :
@@ -62,11 +61,10 @@ theorem kernelCubic_perturbation (μ : Measure ℝ) [IsFiniteMeasure μ]
         · exact herr b
         · exact hbK c
         · exact hbJ a
-        · exact hbJ b
-        · exact herr c
+        all_goals (simp_all)
       _ = _ := by ring
   have hh := norm_integral_le_of_norm_le_const (μ := tripleMeasure μ) (Filter.Eventually.of_forall hp)
   rw [tripleMeasure_mass] at hh
   exact hh
 
-end GuthMaynard.Improvement
+

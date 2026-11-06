@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialSource
 open HeckeFamily CenteredMomentSourceRow CenteredMomentAbsoluteEnergy CenteredMomentHeckeExpansion
 open QuadraticInitialBound ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 lemma norm_le_diagonalControl (Φ:𝓢(ℝ,ℂ))(x:ℝ):‖Φ x‖≤diagonalControl Φ:=by
   have hs:SchwartzMap.seminorm ℝ 0 0 Φ≤
@@ -98,8 +98,8 @@ theorem fixed_source (b:ℝ)(hb:0<b):
   obtain ⟨Ψ,hs,hn,_,hone⟩:=exists_fixed_bump b hb
   exact ⟨Ψ,hs,hn,fun Φ hΦ η m A t S c K hK=>finite_energy_domination b Ψ hn hone Φ hΦ η m A t S c K hK⟩
 
-end SevenEighths.CenteredMomentEnergyFixedRadialSource
 
-end
 
-end OAI
+
+
+

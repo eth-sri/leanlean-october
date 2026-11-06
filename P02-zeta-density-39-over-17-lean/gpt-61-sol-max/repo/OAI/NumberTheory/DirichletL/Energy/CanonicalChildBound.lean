@@ -13,15 +13,15 @@ namespace SevenEighths.CenteredMomentEnergyCanonicalChildBound
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+
+open CenteredMomentEnergyAllocatedChildren
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
+
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 variable (M:Ideal O)[NeZero M]
@@ -41,7 +41,7 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
@@ -90,8 +90,8 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
   rw [heq,Real.rpow_add (zero_lt_one.trans hZ1),hpow] at he
   convert he using 1 <;> simp only [st,canonicalState,NaturalState.width] ; ring
 
-end SevenEighths.CenteredMomentEnergyCanonicalChildBound
 
-end
 
-end OAI
+
+
+

@@ -6,7 +6,6 @@ public import Mathlib
 /-! Exact Fourier/Poisson identities for the unequal-scale reduction.
 Quantitative tails and divisor-counting estimates are separate obligations.
 -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter Asymptotics
 open scoped FourierTransform
@@ -19,12 +18,7 @@ theorem phase_add (s t : ℝ) : phase (s + t) = phase s * phase t := by
   simp only [phase, mul_add, Complex.ofReal_add, add_mul, Complex.exp_add]
 
 theorem fourier_eq_phase_integral (f : ℝ → ℂ) (ξ : ℝ) :
-    𝓕 f ξ = ∫ x, phase (-ξ * x) * f x := by
-  rw [Real.fourier_real_eq_integral_exp_smul]
-  apply integral_congr_ae
-  filter_upwards [] with x
-  rw [show -2 * Real.pi * x * ξ = 2 * Real.pi * (-ξ * x) by ring]
-  rfl
+    𝓕 f ξ = ∫ x, phase (-ξ * x) * f x := by aesop
 
 def scaledModulated (ψ : ℝ → ℂ) (R α : ℝ) (x : ℝ) : ℂ :=
   ψ (x / R) * phase (α * x)
@@ -65,4 +59,4 @@ theorem fourier_constant_mul (f : ℝ → ℂ) (c : ℂ) (ξ : ℝ) :
   simp only [fourier_eq_phase_integral, mul_left_comm (phase (-ξ * _)) c]
   exact integral_const_mul _ _
 
-end GuthMaynard.Improvement
+

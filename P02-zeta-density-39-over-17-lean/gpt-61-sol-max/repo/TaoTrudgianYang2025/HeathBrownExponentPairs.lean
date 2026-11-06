@@ -14,13 +14,13 @@ The integer derivative order is selected from the physical logarithmic ratio
 tau = 1/alpha, not supplied as an optimization certificate.
 -/
 
-noncomputable section
+
 
 open Expdb
 open scoped NNReal
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem heathBrownBetaBound_reciprocal_scale {j : ℕ} (hj : 3 ≤ j)
     {α τ : ℝ} (hτ : 0 < τ) (hτα : τ*α = 1) :
@@ -92,4 +92,4 @@ theorem exponentPair_heathBrown {k : ℕ} (hk : 3 ≤ k) :
   exact exponentPair_of_beta_bound_half (heathBrownPair_inTriangle hkr)
     (heathBrownPair_slope hkr) (fun _ hα => exponentSumGrowthExponent_le_heathBrownPair_half hk hα)
 
-end TaoTrudgianYang2025
+

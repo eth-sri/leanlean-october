@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,16 +14,14 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonAmplitude
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
-open Complex Set
+
+open Complex
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem sqrt_mul_exp_neg_half_log {x : ℝ} (hx : 0 < x) :
     Real.sqrt x * Real.exp (-Real.log x / 2) = 1 := by
   rw [Real.sqrt_eq_rpow, Real.rpow_def_of_pos hx, ← Real.exp_add]
-  convert Real.exp_zero using 1
-  congr 1
-  ring
+  simp_all <;> nlinarith
 
 theorem atkinsonPowerWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
     (G L α : ℝ) :
@@ -41,11 +40,7 @@ theorem atkinsonPowerWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
       (zetaMainMellinProfile (x / T) * (zetaDivisorBandCutoff T G L x : ℂ) *
         zetaSquareReflectedGammaPhase T *
           zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi)))) := by ring
-    _ = _ := by
-      rw [heC]
-      linear_combination -((x ^ (-α) : ℝ) : ℂ) * zetaMainMellinProfile (x / T) *
-        (zetaDivisorBandCutoff T G L x : ℂ) * zetaSquareReflectedGammaPhase T *
-          zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi))) * hs
+    _ = _ := by grind
 
 
-end MathCollab.Density.Stronger.Atkinson
+

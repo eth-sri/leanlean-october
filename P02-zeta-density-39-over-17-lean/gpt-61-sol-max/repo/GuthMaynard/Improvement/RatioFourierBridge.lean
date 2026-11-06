@@ -1,16 +1,20 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.RadialRemainder
 public import GuthMaynard.Improvement.LogMask
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform ComplexConjugate
 namespace GuthMaynard.Improvement
 
+section
+variable (μ : ℝ → ℝ)
+include μ
+
 /-- Reflection symmetry for the literal Fourier integral of a real density. -/
-theorem realDensity_fourier_conj (μ : ℝ → ℝ) (ξ : ℝ) :
+theorem realDensity_fourier_conj  (ξ : ℝ) :
     𝓕 (fun t => (μ t:ℂ)) (-ξ) = conj (𝓕 (fun t => (μ t:ℂ)) ξ) := by
   have hp : ∀ s : ℝ, conj (phase s) = phase (-s) := by
     intro s
@@ -18,22 +22,17 @@ theorem realDensity_fourier_conj (μ : ℝ → ℝ) (ξ : ℝ) :
     rw [← Complex.exp_conj]
     congr 1
     simp only [map_mul,Complex.conj_ofReal,Complex.conj_I]
-    push_cast
-    ring
+    simp_all
   rw [fourier_eq_phase_integral,fourier_eq_phase_integral,← integral_conj]
-  apply integral_congr_ae
-  filter_upwards with t
-  simp only [map_mul,Complex.conj_ofReal,hp]
-  congr 2
-  ring
+  simp_all
 
-theorem realDensity_fourier_norm_neg (μ : ℝ → ℝ) (ξ : ℝ) :
+theorem realDensity_fourier_norm_neg  (ξ : ℝ) :
     ‖𝓕 (fun t => (μ t:ℂ)) (-ξ)‖ = ‖𝓕 (fun t => (μ t:ℂ)) ξ‖ := by
   rw [realDensity_fourier_conj,RCLike.norm_conj]
 
 /-- Exact normalization of the three magnitudes used in the transverse
 argument. Neither the first Fourier factor nor its mask is enlarged. -/
-theorem ratioFourierProduct_norm (μ : ℝ → ℝ) {v y : ℝ} (hv : 0 < v) (hy : 0 < y) :
+theorem ratioFourierProduct_norm  {v y : ℝ} (hv : 0 < v) (hy : 0 < y) :
     ‖ratioFourierProduct μ (v,y)‖ =
       ‖𝓕 (fun t => (μ t:ℂ)) (mellinFrequency v)‖ *
       ‖𝓕 (fun t => (μ t:ℂ)) (mellinFrequency (y/v))‖ *
@@ -46,10 +45,12 @@ theorem ratioFourierProduct_norm (μ : ℝ → ℝ) {v y : ℝ} (hv : 0 < v) (hy
 
 /-- The exceptional Fourier set is symmetric without assumptions on its
 boundary or positive measure. -/
-theorem realDensity_level_symmetry (μ : ℝ → ℝ) (Λ ξ : ℝ) :
+theorem realDensity_level_symmetry  (Λ ξ : ℝ) :
     (Λ < ‖𝓕 (fun t => (μ t:ℂ)) (-ξ)‖) ↔
       (Λ < ‖𝓕 (fun t => (μ t:ℂ)) ξ‖) := by
   rw [realDensity_fourier_norm_neg]
+end
+
 
 /-- Logarithmic mask transfer in the exact mathlib Fourier normalization.
 The original measurable Fourier mask A is retained on the right. -/
@@ -62,7 +63,7 @@ theorem mellin_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set 
       (∫ v, w v*A.indicator h (mellinFrequency v)) ≤
         (b*W*(2*Real.pi))*(∫ ξ in A, h ξ) := by
   have hpi : (2*Real.pi) ≠ 0 := by positivity
-  have hi : Integrable (fun u : ℝ => A.indicator h (u/(2*Real.pi))) :=
+  have hi :=
     (hh.indicator hA).comp_div hpi
   have h0 : ∀ u : ℝ, 0 ≤ A.indicator h (u/(2*Real.pi)) := by
     intro u
@@ -77,4 +78,4 @@ theorem mellin_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set 
   rw [he] at hp
   simpa only [mellinFrequency,mul_assoc] using hp.2
 
-end GuthMaynard.Improvement
+

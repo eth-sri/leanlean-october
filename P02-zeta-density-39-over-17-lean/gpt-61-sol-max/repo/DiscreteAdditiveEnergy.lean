@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import SmallGcdCubicEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -18,11 +18,7 @@ theorem discrete_energy_absorb {E A B V : ℝ} (hE : 0 ≤ E) (hV : 0 < V)
   have hy : 2*A*Real.sqrt E*V^2 ≤ E*V^4+A^2 := by
     have hh := sq_nonneg (V^2*Real.sqrt E-A)
     nlinarith [he]
-  have hh := mul_le_mul_of_nonneg_right h (sq_nonneg V)
-  have hb : E*V^4 ≤ A^2+2*B*V^2 := by nlinarith
-  calc
-    E ≤ (A^2+2*B*V^2)/V^4 := (le_div_iff₀ (pow_pos hV 4)).mpr hb
-    _ = _ := by field_simp
+  field_simp <;> nlinarith
 
 /-- The full two-term additive-energy theorem for the actual detecting
 polynomial and the literal quadruple count. All Fourier, gcd, moment and
@@ -69,4 +65,4 @@ theorem discrete_additive_energy_two_term {K : ℕ} (hK : 1 ≤ K)
       nlinarith [mul_nonneg (sq_nonneg (C₀*C₁)) h2,mul_nonneg hC₀.le h1]
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

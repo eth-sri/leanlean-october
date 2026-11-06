@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialTotalEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawInputBound
-open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion
-open CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment
+open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion
+open CanonicalCoefficientClass InverseMoment InverseInitialRayAttachment
 open InverseInitialQuotientGeometry InverseInitialProfileBounds
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem raw_input_bound
     (W:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support W⊆Set.Icc a b)
@@ -65,8 +65,8 @@ theorem raw_input_bound
   simpa only [
     Real.rpow_one,←childLogTest_eq_clipped] using h
 
-end SevenEighths.DetectorDictionaryInverseRawInputBound
 
-end
 
-end OAI
+
+
+

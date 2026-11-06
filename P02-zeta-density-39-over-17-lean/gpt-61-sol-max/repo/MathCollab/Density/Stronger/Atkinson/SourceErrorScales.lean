@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,12 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Topology
+open MathCollab.Density.Stronger
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -32,9 +32,13 @@ theorem source_log_monomial_le_one {T G δ : ℝ} (hT : 1 ≤ T)
     _ ≤ T ^ (0 : ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
     _ = _ := Real.rpow_zero T
 
-theorem source_scaled_window_square_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
+section
+variable {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
     (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
-    (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
+    (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2))
+include T G δ hT hG hδ hwidth hlog hlog4
+
+theorem source_scaled_window_square_le  :
     T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 2 / T ≤ G := by
   have hT0 : 0 < T := by linarith
   have h := mul_le_mul_of_nonneg_left
@@ -43,12 +47,9 @@ theorem source_scaled_window_square_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
     rw [show (-1 / 2 + δ / 4) = (1 / 2 + δ / 4) - 1 by ring,
       Real.rpow_sub_one hT0.ne']
   rw [hp, mul_one] at h
-  convert h using 1
-  ring
+  grind
 
-theorem source_window_square_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
-    (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
-    (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) : (G * Real.log T) ^ 2 ≤ T := by
+theorem source_window_square_le_height  : (G * Real.log T) ^ 2 ≤ T := by
   have hT0 : 0 < T := by linarith
   have hsq := (div_le_iff₀ hT0).mp (source_scaled_window_square_le hT hG hδ hwidth hlog hlog4)
   have hGpow : G ≤ T ^ (1 / 2 + δ / 4) :=
@@ -56,9 +57,7 @@ theorem source_window_square_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
   have hprod := mul_le_mul_of_nonneg_right hGpow hT0.le
   nlinarith [Real.rpow_pos_of_pos hT0 (1 / 2 + δ / 4)]
 
-theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
-    (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
-    (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
+theorem source_scaled_window_fourth_le  :
     T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 4 / T ^ 2 ≤ G := by
   have hT0 : 0 < T := by linarith
   have hratio : (G * Real.log T) ^ 2 / T ≤ 1 :=
@@ -70,17 +69,14 @@ theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
       hratio (by positivity) hG
     _ = _ := mul_one G
 
-theorem source_scaled_quadratic_phase_error_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
-    (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
-    (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
+theorem source_scaled_quadratic_phase_error_le  :
     T ^ (1 / 2 + δ / 4) *
       (4 * (G * Real.log T) ^ 2 * (18 / T + 2 * (G * Real.log T) ^ 2 / T ^ 2)) ≤ 80 * G := by
   have h2 := source_scaled_window_square_le hT hG hδ hwidth hlog hlog4
   have h4 := source_scaled_window_fourth_le hT hG hδ hwidth hlog hlog4
-  calc
-    _ = 72 * (T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 2 / T) +
-        8 * (T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 4 / T ^ 2) := by ring
-    _ ≤ _ := by linarith
+  grind
+end
+
 
 /-- On every sub-square-root width, the actual Gaussian zeta window is
 the complete quadratic divisor source up to `Oδ(G log T)`. -/
@@ -118,8 +114,7 @@ theorem exists_zetaSquareGaussianWindow_log_error {δ : ℝ} (hδ : 0 < δ) :
       simp only [pow_one] at h
       have hm := mul_le_mul_of_nonneg_left (show 1 + G * Real.log T * T ^ (-1 / 2 + δ / 4) ≤ 2 by linarith)
         (show 0 ≤ C * (G * Real.log T) by positivity)
-      convert hm using 1
-      ring
+      grind
     have hphase : M * (4 * (G * Real.log T) ^ 2 *
         (18 / T + 2 * (G * Real.log T) ^ 2 / T ^ 2)) ≤ 80 * D * G := by
       calc
@@ -138,9 +133,7 @@ theorem exists_zetaSquareGaussianWindow_log_error {δ : ℝ} (hδ : 0 < δ) :
             (6 * Real.sqrt (2 * Real.pi) * G * Real.exp (-(Real.log T) ^ 2 / 2)) :=
           mul_le_mul_of_nonneg_right hM (by positivity)
         _ = G * ((6 * D * Real.sqrt (2 * Real.pi)) * T ^ (1 / 2 + δ / 4) *
-            Real.exp (-(1 / 2) * (Real.log T) ^ 2)) := by
-          rw [show -(Real.log T) ^ 2 / 2 = -(1 / 2) * (Real.log T) ^ 2 by ring]
-          ring
+            Real.exp (-(1 / 2) * (Real.log T) ^ 2)) := by ring
         _ ≤ G * 1 := mul_le_mul_of_nonneg_left ht hG.le
         _ = G := mul_one G
     have hGlog : G ≤ G * Real.log T := by nlinarith
@@ -151,4 +144,4 @@ theorem exists_zetaSquareGaussianWindow_log_error {δ : ℝ} (hδ : 0 < δ) :
   intro T G hT hG hwidth
   exact hT₁ T ((le_max_right _ _).trans hT) G hG hwidth
 
-end MathCollab.Density.Stronger.Atkinson
+

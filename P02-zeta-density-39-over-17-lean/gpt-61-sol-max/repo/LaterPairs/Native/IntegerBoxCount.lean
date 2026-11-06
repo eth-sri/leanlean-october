@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem integer_box_triples_card_le
@@ -37,11 +36,7 @@ theorem integer_box_triples_card_le
     integer_card_le_interval_length_add_one Z h₃ (fun z hz' => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hz'
       exact hz p hp)
-  have hsub : S ⊆ X ×ˢ (Y ×ˢ Z) := by
-    intro p hp
-    exact Finset.mem_product.mpr ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,
-      Finset.mem_product.mpr ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,
-        Finset.mem_image.mpr ⟨p,hp,rfl⟩⟩⟩
+  have hsub : S ⊆ X ×ˢ (Y ×ˢ Z) := by grind
   have hc : S.card ≤ X.card*(Y.card*Z.card) := by
     simpa only [Finset.card_product] using Finset.card_le_card hsub
   have hcR : (S.card:ℝ) ≤ (X.card:ℝ)*((Y.card:ℝ)*(Z.card:ℝ)) := by exact_mod_cast hc
@@ -52,5 +47,5 @@ theorem integer_box_triples_card_le
         (by positivity) (by linarith)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

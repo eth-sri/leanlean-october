@@ -13,7 +13,7 @@ open HeckeFamily CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
 open CenteredMomentFiniteProfileExceptional
 open CenteredMomentInductionEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 structure NaturalState (Z Bmask bΦ:ℝ) where
   character : Character
@@ -37,31 +37,42 @@ structure NaturalState (Z Bmask bΦ:ℝ) where
 
 namespace NaturalState
 variable {Z Bmask bΦ:ℝ}
-def width (s:NaturalState Z Bmask bΦ):ℝ := s.rowWidth+s.characterWidth
-lemma width_nonneg (s:NaturalState Z Bmask bΦ):0≤s.width :=
+section
+variable (s:NaturalState Z Bmask bΦ)
+include s
+
+def width :ℝ := s.rowWidth+s.characterWidth
+lemma width_nonneg :0≤ s.width :=
   add_nonneg s.row_nonneg s.character_nonneg
 
-def mask (s:NaturalState Z Bmask bΦ):O :=
+def mask :O :=
   fixedBadMask*ConcretePrimeRowBridge.idealGenerator s.puncture
 
-def plainEnergy (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
-    (t X₁ X₂:ℝ):ℝ :=
+section
+variable {a b:ℝ} (p:Profiles a b)
+    (t X₁ X₂:ℝ)
+include a b p t X₁ X₂
+
+def plainEnergy :ℝ :=
   energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
     (fun _:Fin 0=>∅) (fun _:Fin 0=>0) (fun _:Fin 0=>1)
     X₁ X₂ s.radial.keep s.radial.profile s.radial.scale
 
-lemma plainEnergy_eq_zero (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
-    (t X₁ X₂:ℝ):
+lemma plainEnergy_eq_zero :
     s.plainEnergy p t X₁ X₂=CenteredMomentCoreFloor.zeroEnergy s.character s.mask 1 t
       (p.profile 0) (p.profile 1) X₁ X₂ s.radial :=
   (CenteredMomentCoreFloor.zero_energy_eq _ _ _ _ _ _ _ _ _).symm
+end
 
-lemma radical_bound (s:NaturalState Z Bmask bΦ):
+
+lemma radical_bound :
     (s.puncture.radical.absNorm:ℝ)≤Z^Bmask :=by
   apply le_trans _ s.puncture_bound
   exact_mod_cast Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.puncture_ne_zero))
     (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr (Ideal.le_radical (I:=s.puncture))))
+end
+
 end NaturalState
 
 def ZeroBound (Q:Ideal O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×ℕ))(C Z₀:ℝ):Prop :=
@@ -71,8 +82,8 @@ def ZeroBound (Q:Ideal O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×�
       C*diagonalControl s.radial.profile*(p.control S)^2*(1+‖t‖)^degree*
         Z^(s.width+ε)
 
-end SevenEighths.CenteredMomentEnergyState
 
-end
 
-end OAI
+
+
+

@@ -11,28 +11,42 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseMoment
+open scoped EisensteinEis
 universe u v
 
-def idealLists {σ : Type u} (F : Finset (Ideal Eis))
+section
+variable {σ : Type u}
+include σ
+
+section
+variable (F : Finset (Ideal Eis))
+include F
+
+def idealLists 
     (lists : σ→Finset (primePool F)) (j : σ) : Finset (Ideal Eis) :=
   (lists j).image Subtype.val
 
-def transportCoeff {σ : Type u} (F : Finset (Ideal Eis))
-    (a : σ→primePool F→ℂ) (j : σ) (P : Ideal Eis) : ℂ :=
+section
+variable (a : σ→primePool F→ℂ) (j : σ)
+include a j
+
+def transportCoeff  (P : Ideal Eis) : ℂ :=
   if h:P∈primePool F then a j ⟨P,h⟩ else 0
 
-@[simp] theorem transportCoeff_val {σ : Type u} (F : Finset (Ideal Eis))
-    (a : σ→primePool F→ℂ) (j : σ) (i : primePool F) :
+@[simp] theorem transportCoeff_val  (i : primePool F) :
     transportCoeff F a j i.val=a j i := by simp [transportCoeff]
+end
 
-def idealWeights {σ : Type u} (F : Finset (Ideal Eis))
+
+def idealWeights 
     (lists : σ→Finset (primePool F)) (a : σ→primePool F→ℂ)
     (j : σ) (P : idealLists F lists j) : ℂ := transportCoeff F a j P.val
+end
 
-lemma tuple_mark_product {σ : Type u} [Fintype σ] [DecidableEq σ]
+
+lemma tuple_mark_product  [Fintype σ] [DecidableEq σ]
     (lists : σ→Finset (Ideal Eis)) (w : ∀j,lists j→ℂ) (A : Ideal Eis) :
     tupleDivisibilityMark lists w A=
       ∏j,∑P:lists j,if P.val∣A then w j P else 0 := by
@@ -47,8 +61,12 @@ lemma tuple_mark_product {σ : Type u} [Fintype σ] [DecidableEq σ]
       split_ifs <;> simp
     _ = _ := (Fintype.prod_sum (fun j (P : lists j)=>if P.val∣A then w j P else 0)).symm
 
-theorem indexed_mark_eq_tuple {σ : Type u} [DecidableEq σ]
+section
+variable [DecidableEq σ]
     (F : Finset (Ideal Eis)) (slots : Finset σ) (lists : σ→Finset (primePool F))
+include F slots lists
+
+theorem indexed_mark_eq_tuple 
     (a : σ→primePool F→ℂ) (A : Ideal Eis) :
     indexedIdealMark (fun i:primePool F=>i.val) slots lists a A=
       tupleDivisibilityMark (fun j:slots=>idealLists F lists j.val)
@@ -65,8 +83,7 @@ theorem indexed_mark_eq_tuple {σ : Type u} [DecidableEq σ]
   rw [Finset.sum_image (fun i hi k hk h=>Subtype.ext h)]
   simp only [transportCoeff_val]
 
-lemma idealLists_disjoint {σ : Type u} [DecidableEq σ]
-    (F : Finset (Ideal Eis)) (slots : Finset σ) (lists : σ→Finset (primePool F))
+lemma idealLists_disjoint 
     (h : (slots:Set σ).Pairwise (fun j k=>Disjoint (lists j) (lists k))) :
     Pairwise (fun j k:slots=>Disjoint (idealLists F lists j.val) (idealLists F lists k.val)) := by
   intro j k hjk
@@ -77,17 +94,21 @@ lemma idealLists_disjoint {σ : Type u} [DecidableEq σ]
   have hii : i=i' := Subtype.ext (he.trans he'.symm)
   have hjk' : j.val≠k.val := fun he=>hjk (Subtype.ext he)
   exact Finset.disjoint_left.mp (h j.property k.property hjk') hi (hii.symm ▸ hi')
+end
 
-lemma idealLists_prime_data {σ : Type u} (F : Finset (Ideal Eis))
+
+lemma idealLists_prime_data  (F : Finset (Ideal Eis))
     (hF : ∀I∈F,Admissible I) (lists : σ→Finset (primePool F))
     (j : σ) (P : Ideal Eis) (hP : P∈idealLists F lists j) :
     P.IsMaximal ∧ goodLambda∉P ∧ Prime P ∧ ringChar (Eis⧸P)≠2 := by
   obtain ⟨i,hi,rfl⟩:=Finset.mem_image.mp hP
   refine ⟨inferInstance,poolGood F hF i,?_,poolOdd F hF i⟩
   exact Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
-
-end SevenEighths.InverseCanonicalShortAttachment
-
 end
 
-end OAI
+
+
+
+
+
+

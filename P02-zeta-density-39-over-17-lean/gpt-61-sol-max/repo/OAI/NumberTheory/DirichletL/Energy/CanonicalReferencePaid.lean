@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalCommonPaid
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedCapacityCommon
 
@@ -10,30 +11,30 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalReferencePaid
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open HeckeFamily
+
+
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
+
+open CenteredMomentEnergyCanonicalCommonPaid
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+
+open CenteredMomentSecondNonexceptionalChosenBlock
+open HeckeFamily CenteredMomentEnergyBands
+
+
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
+
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+open CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -51,7 +52,7 @@ theorem actual_reference_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
@@ -93,7 +94,7 @@ theorem actual_reference_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
   have hz0:0<Z:=zero_lt_one.trans hz
   have hr:1≤ratioPenalty dyad:=le_max_left _ _
   have hr0:0<ratioPenalty dyad:=zero_lt_one.trans_le hr
-  have hlog:0≤Real.logb Z (ratioPenalty dyad):=Real.logb_nonneg hz hr
+  have hlog :=Real.logb_nonneg hz hr
   have hh:=hbound Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch hhi hMs C R B D alloc hR τ dyad hn hwidth p hp₁ hp₂
@@ -113,8 +114,8 @@ theorem actual_reference_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
   rw [hpow] at hh
   convert hh using 1 ; ring
 
-end SevenEighths.CenteredMomentEnergyCanonicalReferencePaid
 
-end
 
-end OAI
+
+
+

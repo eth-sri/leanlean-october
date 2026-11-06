@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.MixedSourceScales
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
@@ -93,4 +92,4 @@ theorem mixed_two_poisson_raw {ε : ℝ} (hε : 0 < ε) :
   unfold gmAffineRegionIIIRawBound
   linarith
 
-end GuthMaynard.Improvement
+

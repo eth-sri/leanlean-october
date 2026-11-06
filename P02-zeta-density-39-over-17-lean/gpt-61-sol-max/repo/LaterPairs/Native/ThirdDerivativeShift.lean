@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ContinuousDerivativeBounds
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 open Set
 namespace TaoTrudgianYang2025
 
@@ -38,4 +37,4 @@ theorem hasDerivAt_shift_difference
   have he := hxh.comp x ((hasDerivAt_id x).add_const h)
   convert he.sub hx using 1 <;> first | rfl | ring
 
-end TaoTrudgianYang2025
+

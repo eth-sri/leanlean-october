@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceProfileMassUniform
 open ActualEisensteinCubic CenteredMomentAddedZeroUniform CenteredMomentSourceMass
 open CenteredMomentSourceProfileMass
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem profile_mass_explicit {ι : Type*} [Fintype ι]
     (Wslot : ι → ℝ → ℂ) (W₁ W₂ : ℝ → ℂ)
@@ -37,7 +37,7 @@ theorem profile_mass_explicit {ι : Type*} [Fintype ι]
       Fin.forall_fin_two,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
       using And.intro (fun j => hzSlot (e.symm j)) (And.intro hz₁ hz₂)
   have hs : ∀ i x,sourceProfiles (fun j => Wslot (e.symm j)) W₁ W₂ i x≠0→
-      x≤sourceBounds (fun j => b (e.symm j)) b₁ b₂ i := by
+      x≤ sourceBounds (fun j => b (e.symm j)) b₁ b₂ i := by
     simpa only [Fin.forall_fin_add,sourceProfiles,sourceBounds,Fin.append_left,Fin.append_right,
       Fin.forall_fin_two,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
       using And.intro (fun j => hsSlot (e.symm j)) (And.intro hs₁ hs₂)
@@ -58,8 +58,8 @@ theorem profile_mass_explicit {ι : Type*} [Fintype ι]
   simp_rw [profileCoefficient_eq_original]
   simpa only [sourceMassConstant,e.symm.prod_comp D,e.symm.prod_comp b,e.symm.prod_comp P] using hm
 
-end SevenEighths.CenteredMomentSourceProfileMassUniform
 
-end
 
-end OAI
+
+
+

@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerClipping
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerState
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
+open InverseInitialArithmetic
+
 open InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
@@ -39,8 +39,8 @@ theorem window_quotient_subset_retained
 variable (hp:∀i,p i≠0)
 include hp
 
-end SevenEighths.InverseInitialEnergyCallerState
 
-end
 
-end OAI
+
+
+

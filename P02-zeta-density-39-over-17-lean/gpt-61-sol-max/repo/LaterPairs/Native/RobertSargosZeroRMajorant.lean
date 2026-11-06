@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SignedSquareRootSums
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem sum_robertSargos_zero_r_majorant
@@ -51,4 +50,4 @@ theorem sum_robertSargos_zero_r_majorant
       add_le_add (add_le_add hc hs) hi
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

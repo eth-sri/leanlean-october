@@ -5,16 +5,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstRetainedPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedBlock
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CompletedGauss CanonicalQuadraticSieve
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstRetainedPhysical CenteredMomentFirstCommonFourierTransport
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentCanonicalFirst CenteredMomentFirstReduced
+open CenteredMomentCommonSupport CenteredMomentSectorLocalization CenteredMomentFirstScale
+open scoped EisensteinO
 
 lemma retained_tsum (R:ℝ)(f:O→ℂ):
     (∑'h:O,(retainedWeight R (normValue h):ℂ)*f h)=
@@ -74,9 +74,13 @@ lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
       exact Finset.sum_comm
     _=_:=Finset.sum_comm
 
+section
+variable (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
+    (C D:Ideal O)(hC:Supported C)(hD:Supported D)
+include η m A t S c C D hC hD
+
 theorem fixed_sector_term_block
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+    (E:Finset (CommonIndex C D))
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     (∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
       if IsCoprime (a:Ideal O) (b:Ideal O) then
@@ -104,8 +108,7 @@ theorem fixed_sector_term_block
   split_ifs <;> ring
 
 theorem fixed_sector_blocks
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
+    (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     fixedRetainedSector η m A t S c C D hC hD W K X Z ξ=
       ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets C D,
         retainedInfiniteBlock η m A t S c C D hC hD E W K
@@ -114,9 +117,11 @@ theorem fixed_sector_blocks
   apply Finset.sum_congr rfl
   intro E hE
   exact fixed_sector_term_block η m A t S c C D hC hD E W K X Z ξ
-
-end SevenEighths.CenteredMomentFirstRetainedBlock
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,8 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalCutoff
 @[expose] public section
 
 open Complex Set Filter
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem log_zetaDivisorBandEdge {T : ℝ} (hT : 0 < T) (G v : ℝ) :
@@ -29,8 +29,7 @@ theorem zetaDivisorBand_log_bound {T G L x : ℝ} (hT : 0 < T)
   have hhi := Real.log_le_log hxp hs.2
   rw [log_zetaDivisorBandEdge hT] at hlo hhi
   rw [show -2 * L / G = -(2 * L / G) by ring] at hlo
-  apply abs_le.mpr
-  constructor <;> linarith
+  grind
 
 theorem zetaDivisorBandCutoff_log_bound {T G L x : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
@@ -56,8 +55,12 @@ theorem abs_le_three_mul_of_arsinh_bound {x a : ℝ} (ha : a ≤ 1 / 8)
   rw [arsinh_abs] at hl
   linarith
 
-theorem abs_frequency_le_of_saddle_log_bound {T G L b : ℝ}
+section
+variable {T G L b : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+include T G L b hT hG hL hwidth
+
+theorem abs_frequency_le_of_saddle_log_bound 
     (hlog : |Real.log (zetaAtkinsonSaddle T b) - Real.log (T / (2 * Real.pi))| ≤ 2 * L / G) :
     |b| ≤ 3 * Real.sqrt T * (L / G) := by
   rw [zetaAtkinsonSaddle_log_argument hT, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)] at hlog
@@ -79,26 +82,30 @@ theorem abs_frequency_le_of_saddle_log_bound {T G L b : ℝ}
   have hmul := mul_le_mul_of_nonneg_right hsqrt (by positivity : 0 ≤ 3 * (L / G))
   nlinarith
 
-theorem abs_frequency_le_of_saddle_cutoff {T G L b : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+theorem abs_frequency_le_of_saddle_cutoff 
     (hb : zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) ≠ 0) :
     |b| ≤ 3 * Real.sqrt T * (L / G) :=
   abs_frequency_le_of_saddle_log_bound hT hG hL hwidth
     (zetaDivisorBandCutoff_log_bound hT hG hL hb)
 
-theorem atkinsonStationaryMain_eq_zero_of_frequency {T G L b : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+theorem atkinsonStationaryMain_eq_zero_of_frequency 
     (hb : 3 * Real.sqrt T * (L / G) < |b|) (α : ℝ) :
     atkinsonStationaryMain T G L α b = 0 := by
   have hc : zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) = 0 := by
     by_contra h
     exact (not_lt_of_ge (abs_frequency_le_of_saddle_cutoff hT hG hL hwidth h)) hb
   change zetaDivisorBandCutoff T G L ((atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 2) = 0 at hc
-  simp only [atkinsonStationaryMain, atkinsonPowerWeight, hc, Complex.ofReal_zero, mul_zero, zero_mul]
+  simp only [atkinsonStationaryMain, atkinsonPowerWeight, hc, ofReal_zero, mul_zero, zero_mul]
+end
 
-theorem atkinsonStationaryMain_pair_eq_zero_of_index {T G L : ℝ}
+
+section
+variable {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
-    (α : ℝ) (n : ℕ) (hn : 9 * T * (L / G) ^ 2 < (n : ℝ)) :
+    (α : ℝ) (n : ℕ)
+include T G L hT hG hL hwidth α n
+
+theorem atkinsonStationaryMain_pair_eq_zero_of_index  (hn : 9 * T * (L / G) ^ 2 < (n : ℝ)) :
     atkinsonStationaryMain T G L α (Real.sqrt n) = 0 ∧
       atkinsonStationaryMain T G L α (-Real.sqrt n) = 0 := by
   have hb : 3 * Real.sqrt T * (L / G) < |Real.sqrt (n : ℝ)| := by
@@ -111,9 +118,7 @@ theorem atkinsonStationaryMain_pair_eq_zero_of_index {T G L : ℝ}
   exact ⟨atkinsonStationaryMain_eq_zero_of_frequency hT hG hL hwidth hb α,
     atkinsonStationaryMain_eq_zero_of_frequency hT hG hL hwidth (by simpa only [abs_neg]) α⟩
 
-theorem atkinsonStationaryMain_pair_eq_zero_after_cutoff {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
-    (α : ℝ) (n : ℕ) (hn : atkinsonSourceCutoff T G L ≤ n) :
+theorem atkinsonStationaryMain_pair_eq_zero_after_cutoff  (hn : atkinsonSourceCutoff T G L ≤ n) :
     atkinsonStationaryMain T G L α (Real.sqrt n) = 0 ∧
       atkinsonStationaryMain T G L α (-Real.sqrt n) = 0 := by
   apply atkinsonStationaryMain_pair_eq_zero_of_index hT hG hL hwidth α n
@@ -121,5 +126,7 @@ theorem atkinsonStationaryMain_pair_eq_zero_after_cutoff {T G L : ℝ}
     (atkinsonSourceCutoff_lower T G L).trans (by exact_mod_cast hn)
   have hp : 0 < T * (L / G) ^ 2 := by positivity
   nlinarith
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

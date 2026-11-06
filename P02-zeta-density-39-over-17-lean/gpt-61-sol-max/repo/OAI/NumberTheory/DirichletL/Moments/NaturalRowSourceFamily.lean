@@ -12,7 +12,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
 open CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 structure NaturalRow (η : Character) (z : O) where
   character : Character
@@ -24,11 +24,15 @@ def naturalRow (η : Character) (z : O) (hz : z≠0) : NaturalRow η z := by
     fixedBadMask_ne_zero one_ne_zero hz (dvd_mul_right _ _) (dvd_mul_left _ _)
   exact ⟨Classical.choose e,(Classical.choose_spec e).1,(Classical.choose_spec e).2⟩
 
-lemma NaturalRow.ideal {η : Character} {z : O} (F : NaturalRow η z) (I : Ideal O) :
+section
+variable {η : Character} {z : O} (F : NaturalRow η z)
+include η z F
+
+lemma NaturalRow.ideal  (I : Ideal O) :
     idealCoeff F.character I=idealCoeff η I*idealRowHom (fixedBadMask^6*z) I := by
   simpa only [one_pow,mul_one] using idealCoeff_eq_row η F.character fixedBadMask 1 z F.element I
 
-lemma NaturalRow.element_zero {η : Character} {z : O} (F : NaturalRow η z) :
+lemma NaturalRow.element_zero  :
     elementCoeff F.character 0=0 := by
   rw [F.element]
   change elementHom η 0*idealRowHom (fixedBadMask^6*1^4*z) (Ideal.span {(0:O)})=0
@@ -36,7 +40,7 @@ lemma NaturalRow.element_zero {η : Character} {z : O} (F : NaturalRow η z) :
   change elementHom η 0*idealRowHom (fixedBadMask^6*1^4*z) (0:Ideal O)=0
   rw [(idealRowHom (fixedBadMask^6*1^4*z)).map_zero,mul_zero]
 
-lemma NaturalRow.masked_element {η : Character} {z : O} (F : NaturalRow η z)
+lemma NaturalRow.masked_element 
     (R : Ideal O) (hR : R≠0) (n : O) :
     elementCoeff (excluded F.character R) n=
       rowTwist (elementHom η) (fixedBadMask*idealGenerator R) 1 z n := by
@@ -45,14 +49,14 @@ lemma NaturalRow.masked_element {η : Character} {z : O} (F : NaturalRow η z)
     (row_mask_mul η fixedBadMask (idealGenerator R) 1 z n
       (dvd_mul_right _ _) (dvd_mul_left _ _)).symm
 
-lemma NaturalRow.masked_ideal {η : Character} {z : O} (F : NaturalRow η z)
+lemma NaturalRow.masked_ideal 
     (R : Ideal O) (hR : R≠0) (I : Ideal O) :
     idealCoeff (excluded F.character R) I=
       idealCoeff η I*idealRowHom ((fixedBadMask*idealGenerator R)^6*z) I := by
   simpa only [one_pow,mul_one] using idealCoeff_eq_row η (excluded F.character R)
     (fixedBadMask*idealGenerator R) 1 z (F.masked_element R hR) I
 
-theorem NaturalRow.nonprincipal {η : Character} {z : O} (F : NaturalRow η z)
+theorem NaturalRow.nonprincipal 
     (hz : z≠0) (Q R : Ideal O) (hR : R≠0)
     (hex : ¬FixedInducingRow η Q (fixedBadMask*idealGenerator R) 1 z) :
     F.character.residue≠1 := by
@@ -63,15 +67,21 @@ theorem NaturalRow.nonprincipal {η : Character} {z : O} (F : NaturalRow η z)
       (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr h)
   exact CenteredMomentNonprincipalGate.actual_row_nonprincipal η F.character Q fixedBadMask 1 z
     (by simpa only [one_mul] using F.element) hbase
+end
+
 
 def fixedConductorFactor : ℕ := (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm
 
-lemma NaturalRow.natural_modulus_bound {η : Character} {z : O} (F : NaturalRow η z) :
+section
+variable {η : Character} {z : O} (F : NaturalRow η z)
+include η z F
+
+lemma NaturalRow.natural_modulus_bound  :
     F.character.modulus.absNorm≤η.modulus.absNorm*fixedConductorFactor*(Ideal.span {z}).absNorm := by
   have hh:=F.modulus_bound
   simpa [rowConductorBound,fixedConductorFactor,Ideal.span_singleton_one,mul_assoc] using hh
 
-theorem NaturalRow.modulus_power_bound {η : Character} {z : O} (F : NaturalRow η z)
+theorem NaturalRow.modulus_power_bound 
     (Z m q Cz : ℝ) (hZ : 0<Z) (_hCz : 0≤Cz)
     (hη : (η.modulus.absNorm:ℝ)≤Z^m)
     (hz : ((Ideal.span {z}).absNorm:ℝ)≤Cz*Z^q) :
@@ -85,9 +95,11 @@ theorem NaturalRow.modulus_power_bound {η : Character} {z : O} (F : NaturalRow 
       mul_le_mul (mul_le_mul_of_nonneg_right hη (Nat.cast_nonneg _)) hz
         (Nat.cast_nonneg _) (mul_nonneg (Real.rpow_nonneg hZ.le _) (Nat.cast_nonneg _))
     _=(fixedConductorFactor:ℝ)*Cz*Z^(m+q) := by rw [Real.rpow_add hZ]; ring
-
-end SevenEighths.CenteredMomentNaturalRowSource
-
 end
 
-end OAI
+
+
+
+
+
+

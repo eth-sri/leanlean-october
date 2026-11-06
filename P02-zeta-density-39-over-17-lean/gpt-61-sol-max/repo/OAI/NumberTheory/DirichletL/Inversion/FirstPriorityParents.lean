@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentAssembly
 
@@ -11,9 +11,9 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseFirstPriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 @[ext] structure Source (ι : Type*) (Jo : ℕ) where
   cube : CubeCoordinates ι
@@ -147,8 +147,8 @@ def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m 
     ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i)
       b.leftBit b.rightBit negative Ψ m D core‖
 
-end SevenEighths.InverseFirstPriorityParents
 
-end
 
-end OAI
+
+
+

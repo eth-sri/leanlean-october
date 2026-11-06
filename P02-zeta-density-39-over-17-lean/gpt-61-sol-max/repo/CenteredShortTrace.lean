@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import CenteredDilatedReflection
 public import GuthMaynard.Improvement.SourceRatioHeightBudget
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
@@ -19,16 +19,9 @@ theorem strict_dyadic_prefix {ι : Type*} [DecidableEq ι]
   induction J with
   | zero => simp
   | succ J ih =>
-    have hstep : (2:ℝ)^J*Y ≤ (2:ℝ)^(J+1)*Y := by
-      rw [pow_succ]
-      nlinarith [mul_nonneg (pow_nonneg (by norm_num : (0:ℝ) ≤ 2) J) hY]
+    have hstep : (2:ℝ)^J*Y ≤ (2:ℝ)^(J+1)*Y := by bound
     have hlo : (S.filter (fun q => height q < (2:ℝ)^(J+1)*Y)).filter
-        (fun q => height q < (2:ℝ)^J*Y) = S.filter (fun q => height q < (2:ℝ)^J*Y) := by
-      ext q
-      simp only [mem_filter]
-      constructor
-      · rintro ⟨⟨hq,_⟩,hh⟩; exact ⟨hq,hh⟩
-      · rintro ⟨hq,hh⟩; exact ⟨⟨hq,hh.trans_le hstep⟩,hh⟩
+        (fun q => height q < (2:ℝ)^J*Y) = S.filter (fun q => height q < (2:ℝ)^J*Y) := by grind
     have hhi : (S.filter (fun q => height q < (2:ℝ)^(J+1)*Y)).filter
         (fun q => ¬height q < (2:ℝ)^J*Y) = S.filter
         (fun q => (2:ℝ)^J*Y ≤ height q ∧ height q < (2:ℝ)^(J+1)*Y) := by
@@ -73,47 +66,48 @@ theorem reflection_shell_count {T L : ℝ} (hT : 1 < T) (hL : 1 ≤ L)
     simp only [Nat.cast_add,Nat.cast_one]
     linarith
 
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+include w
+
 /-- A squared cutoff is still an actual smooth reflection cutoff. -/
-def reflectionSquare (w : MathCollab.Density.ReflectionCutoff) :
+def reflectionSquare  :
     MathCollab.Density.ReflectionCutoff where
   toFun x := (w x)^2
   smooth := w.smooth.pow 2
   support := by
     apply subset_trans (closure_mono ?_) w.support
-    intro x hx
-    change (w x)^2 ≠ 0 at hx
-    change w x ≠ 0
-    intro hz
-    exact hx (by rw [hz]; norm_num)
+    simp_all
+
+section
+variable (L : ℝ) (W : Finset ℝ)
+include L W
 
 /-- The literal discrete Gram matrix with the published squared cutoff. -/
-def cutoffGramMatrix (w : MathCollab.Density.ReflectionCutoff) (L : ℝ) (W : Finset ℝ) :
+def cutoffGramMatrix  :
     Matrix W W ℂ := fun t u => ∑' n : ℕ,
       (((w ((n:ℝ)/L))^2:ℝ):ℂ)*MathCollab.Density.dirichletPhase ((n:ℝ)/L) (t-u)
 
 /-- The continuous term is kept independently of the discrete Gram sum. -/
-def cutoffContinuousMatrix (w : MathCollab.Density.ReflectionCutoff) (L : ℝ) (W : Finset ℝ) :
+def cutoffContinuousMatrix  :
     Matrix W W ℂ := fun t u => (L:ℂ)*
       MathCollab.Density.cutoffIntegral (reflectionSquare w) (t-u)
 
-def cutoffCenteredMatrix (w : MathCollab.Density.ReflectionCutoff) (L : ℝ) (W : Finset ℝ) :
+def cutoffCenteredMatrix  :
     Matrix W W ℂ := cutoffGramMatrix w L W-cutoffContinuousMatrix w L W
 
-theorem cutoff_centered_entry (w : MathCollab.Density.ReflectionCutoff) (L : ℝ)
-    (W : Finset ℝ) (t u : W) :
+theorem cutoff_centered_entry  (t u : W) :
     cutoffCenteredMatrix w L W t u =
       MathCollab.Density.hKernel (reflectionSquare w) L (t-u) := rfl
 
-theorem cutoff_centered_hermitian (w : MathCollab.Density.ReflectionCutoff) (L : ℝ)
-    (W : Finset ℝ) : (cutoffCenteredMatrix w L W).IsHermitian := by
+theorem cutoff_centered_hermitian  : (cutoffCenteredMatrix w L W).IsHermitian := by
   ext t u
   simp only [Matrix.conjTranspose_apply,cutoff_centered_entry]
   rw [show (u:ℝ)-t = -((t:ℝ)-u) by ring,MathCollab.Density.hKernel_neg]
   simp
 
 /-- The signed second trace is exactly the finite centered-kernel energy. -/
-theorem cutoff_centered_trace_identity (w : MathCollab.Density.ReflectionCutoff) (L : ℝ)
-    (W : Finset ℝ) :
+theorem cutoff_centered_trace_identity  :
     Matrix.trace (cutoffCenteredMatrix w L W*cutoffCenteredMatrix w L W) =
       ((∑ t ∈ W, ∑ u ∈ W,
         ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2:ℝ):ℂ) := by
@@ -132,11 +126,13 @@ theorem cutoff_centered_trace_identity (w : MathCollab.Density.ReflectionCutoff)
   intro t _
   exact Finset.sum_coe_sort W (fun u =>
     ((‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2:ℝ):ℂ))
+end
+
 
 /-- The full discrete centered energy; near-diagonal terms and shell-count
 losses have been discharged. Fixed reflected-length factors are absorbed
 in the constant; the exact undilated length T/L governs the hypothesis. -/
-theorem centered_energy_short_range (w : MathCollab.Density.ReflectionCutoff)
+theorem centered_energy_short_range 
     {K : ℕ} (hK : 1 ≤ K) {η : ℝ} (hη : 0 < η) :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 1 < T → 1 ≤ L → ∀ W : Finset ℝ,
       T^(((K : ℝ)+1)/(2*K+1)) ≤ W.card →
@@ -148,32 +144,26 @@ theorem centered_energy_short_range (w : MathCollab.Density.ReflectionCutoff)
   have hδ : 0 < η/2 := by positivity
   obtain ⟨C,B,hC,hB,hshell⟩ := centered_shell_dilated_short_range w hK (A := 2) (by norm_num) hδ (D := 2) (by norm_num)
   obtain ⟨B₀,hB₀,hnear⟩ := GuthMaynard.Improvement.centeredKernel_near w (A := 2) (by norm_num)
-  let D : ℝ := 4+1/((η/2)*Real.log 2)
+  let D := 4+1/((η/2)*Real.log 2)
   have htwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
   have hD : 0 < D := by dsimp [D]; positivity
   refine ⟨1+B₀^2+D*(C+B),by positivity,?_⟩
   intro T t₀ L hT hL W hR hlen hW hsep
   have hTp : 0 < T := by linarith
   have hLp : 0 < L := by linarith
-  let Y : ℝ := Real.pi*L/8
+  let Y := Real.pi*L/8
   have hYp : 0 < Y := by dsimp [Y]; positivity
-  have hd1 : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
-  have hη1 : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hd1 := Real.one_le_rpow hT.le hδ.le
+  have hη1 := Real.one_le_rpow hT.le hη.le
   have hpow : T^(η/2)*T^(η/2)=T^η := by
     rw [← Real.rpow_add hTp]
     congr 1
     ring
-  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by
-    obtain ⟨ht1,ht2⟩ := hW t ht
-    obtain ⟨hu1,hu2⟩ := hW u hu
-    exact abs_le.mpr ⟨by linarith,by linarith⟩
+  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by grind
   have hn (v : ℝ) (hv : |v| ≤ Y) : ‖MathCollab.Density.hKernel w L v‖^2 ≤ B₀^2 := by
     have hh := hnear L v hLp hv
     rw [GuthMaynard.Improvement.centeredKernel_eq_density_hKernel w hLp] at hh
-    have hfrac : B₀*L/L^2 ≤ B₀ := by
-      have he : B₀*L/L^2=B₀/L := by field_simp
-      rw [he]
-      exact (div_le_iff₀ hLp).mpr (by nlinarith)
+    have hfrac : B₀*L/L^2 ≤ B₀ := by field_simp <;> nlinarith
     exact pow_le_pow_left₀ (norm_nonneg _) (hh.trans hfrac) 2
   have hnearSum : (∑ p ∈ (W ×ˢ W).filter (fun p => |p.1-p.2| < Y),
       ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) ≤ B₀^2*(W.card:ℝ)^2 := by
@@ -215,11 +205,7 @@ theorem centered_energy_short_range (w : MathCollab.Density.ReflectionCutoff)
           ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) =
           MathCollab.Density.shellEnergy w L H W := by
         simp only [sum_filter,sum_product,MathCollab.Density.shellEnergy,H,pow_succ]
-        congr 1
-        funext t
-        congr 1
-        funext u
-        congr 3; ring
+        ring
       rw [heq]
       calc
         _ ≤ C*T^(η/2)*L*(W.card:ℝ)^2+B*(W.card:ℝ)^2*L^(2-2*(2:ℝ)) := hh
@@ -248,9 +234,10 @@ theorem centered_energy_short_range (w : MathCollab.Density.ReflectionCutoff)
           apply sum_le_sum
           intro t ht
           apply sum_le_sum
-          intro u hu
-          exact hn _ ((hdist t ht u hu).trans (le_of_not_ge hYT))
+          grind
         _ = _ := by simp; ring
     exact hfull.trans (hbase.trans (by gcongr; nlinarith))
+end
 
-end Montgomery.RationalMoment
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.PrincipalDensity
 
 @[expose] public section
@@ -9,71 +10,71 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
-open scoped BigOperators Classical
+                                  
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
 
@@ -116,8 +117,12 @@ theorem densityPairSum_weighted_sum {n : Type} [Fintype n]
     ring
   · simp only [hc,ite_false,mul_zero,Finset.sum_const_zero]
 
-theorem summed_dual_density {n : Type} [Fintype n] [DecidableEq n]
-    (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (M K : ℝ) (hM : 0 ≤ M)
+section
+variable {n : Type} [Fintype n] [DecidableEq n]
+    (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O)
+include n cols a G
+
+theorem summed_dual_density  (M K : ℝ) (hM : 0 ≤ M)
     (hcols : ∀ j, Admissible (cols j)) :
     (∑ q ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*
       unrestrictedPrincipalDensity (fun I : squarefreeIdealRange K => I.val) cols cols
@@ -137,8 +142,7 @@ theorem summed_dual_density {n : Type} [Fintype n] [DecidableEq n]
       rw [densityPairSum_weighted_sum]
       rfl
 
-theorem actual_source_dual_density_cancellation {n : Type} [Fintype n] [DecidableEq n]
-    (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (hG : G ≠ 0)
+theorem actual_source_dual_density_cancellation  (hG : G ≠ 0)
     (M K : ℝ) (hM : 0 ≤ M) (hcols : ∀ j, Admissible (cols j))
     (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
     (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G) :
@@ -156,6 +160,8 @@ theorem actual_source_dual_density_cancellation {n : Type} [Fintype n] [Decidabl
     (fun I J => normalizedPairPartial I J K*normalizedPairDivisors I J G) -
     primePoolDensity G*densityPairSum cols a (fun I J => normalizedPairCoprimePartial I J G K))
   ring
+end
+
 
 end CanonicalQuadraticSieve
 
@@ -190,8 +196,7 @@ lemma cusp_height_volume (a : ℝ) (ha : 0<a) :
   congr 1
   have he := integral_Ioi_rpow_of_lt (by norm_num : (-3:ℝ) < -1) ha
   norm_num only at he
-  simp only [show (-3:ℝ)=-(3:ℕ) by norm_num,Real.rpow_neg_natCast,zpow_neg,
-    zpow_natCast] at he
+  simp at he
   rw [he]
   norm_num [show (-3:ℝ)+1=-2 by norm_num]
   ring
@@ -241,9 +246,13 @@ def maskedPairIdealDualKernel (G I J : Ideal O) (W : ℝ → ℂ) (M : ℝ) : �
       ∑' B : NonzeroIdeal, unrestrictedPairCharacter I J B.val*paperRadialFourier W
         ((M/((Ideal.absNorm q:ℝ)*(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)))*(Ideal.absNorm B.val:ℝ))
 
+section
+variable (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+    (hDI : D ∣ I) (hDJ : D ∣ J)
+include D I J hI hJ hDI hDJ
+
 theorem originalPairIdealDualKernel_eq_divisors
-    (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hDI : D ∣ I) (hDJ : D ∣ J) (W : ℝ → ℂ) (M : ℝ) :
+     (W : ℝ → ℂ) (M : ℝ) :
     originalPairIdealDualKernel D I J W M =
       maskedPairIdealDualKernel (commonMaskIdeal D) (idealQuotient D I) (idealQuotient D J) W M := by
   let Q := idealQuotient D I
@@ -260,8 +269,7 @@ theorem originalPairIdealDualKernel_eq_divisors
   rw [← commonMask_subset_sum_eq_divisors D]
   apply Finset.sum_congr rfl
   intro E hE
-  simp only [Real.sq_sqrt hnonneg,primeSubsetGenerator,unrestrictedPairCharacter,
-    idealGenerator_norm_sq,Complex.ofReal_natCast]
+  simp only [primeSubsetGenerator, idealGenerator_norm_sq, ofReal_natCast, unrestrictedPairCharacter, Real.sq_sqrt hnonneg]
   congr 1
   apply tsum_congr
   intro B
@@ -269,16 +277,17 @@ theorem originalPairIdealDualKernel_eq_divisors
   ring
 
 theorem originalPairDualKernel_eq_divisors
-    (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hDI : D ∣ I) (hDJ : D ∣ J) (hIJ : I ≠ J) (hray : columnRay I=columnRay J)
+     (hIJ : I ≠ J) (hray : columnRay I=columnRay J)
     (W : 𝓢(ℝ,ℂ)) (M : ℝ) (hM : 0<M) :
     originalPairDualKernel D I J W M =
       maskedPairIdealDualKernel (commonMaskIdeal D) (idealQuotient D I) (idealQuotient D J) W M := by
   rw [originalPairDualKernel_eq_ideal D I J hI hJ hDI hDJ hIJ hray W M hM]
   exact originalPairIdealDualKernel_eq_divisors D I J hI hJ hDI hDJ W M
-
-end CanonicalQuadraticSieve
-
 end
 
-end OAI
+
+
+
+
+
+

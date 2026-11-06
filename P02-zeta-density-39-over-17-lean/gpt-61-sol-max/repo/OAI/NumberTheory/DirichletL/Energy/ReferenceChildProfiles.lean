@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceChild
 
 @[expose] public section
@@ -9,15 +10,15 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChildProfiles
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyProfiles
 open CenteredMomentAllocatedNaturalRadial CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentLattice CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open CenteredMomentLattice
+open scoped HeckeO
 
 def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (W:𝓢(ℝ,ℂ))(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
@@ -77,7 +78,6 @@ theorem independent_profile_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
   simp only [Profiles.control,independentProfiles,show (1:Fin 2)≠0 by decide,ite_true,ite_false]
   apply (mul_le_mul h₁' h₂' (apply_nonneg _ _)
     (mul_nonneg (mul_nonneg hC.le (sourceControl_nonneg _ _)) (by positivity))).trans_eq
-  rw [show (1+‖t₁‖+‖t₂‖)^(2*n)=((1+‖t₁‖+‖t₂‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 lemma derivative_choice_control (S:Finset (ℕ×ℕ)):
@@ -86,9 +86,9 @@ lemma derivative_choice_control (S:Finset (ℕ×ℕ)):
   obtain ⟨T,C,hC,hc⟩:=scale_source_control S
   refine ⟨S∪T,1+C,by positivity,?_⟩
   intro W j
-  have h₁:sourceControl S W≤sourceControl (S∪T) W:=
+  have h₁:sourceControl S W≤ sourceControl (S∪T) W:=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:S⊆S∪T)) W
-  have h₂:sourceControl T W≤sourceControl (S∪T) W:=
+  have h₂:sourceControl T W≤ sourceControl (S∪T) W:=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_right:T⊆S∪T)) W
   by_cases hj:j=0
   · simp only [derivativeChoice,ite_eq_left hj]
@@ -105,17 +105,17 @@ theorem reflected_profile_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
         C*sourceControl T W*(1+‖v‖+‖t‖)^n:=by
   obtain ⟨n,T,C,hC,hc⟩:=independent_profile_control a b ha S
   obtain ⟨U,D,hD,hd⟩:=derivative_choice_control T
-  let A:ℝ:=1+∑j:Fin 2,sourceControl T (derivativeChoice (annulusSeed a b hlo hhi).profile j)
+  let A :=1+∑j:Fin 2,sourceControl T (derivativeChoice (annulusSeed a b hlo hhi).profile j)
   have hA:0<A:=by
     have hh:=Finset.sum_nonneg (fun (j:Fin 2) (_:j∈Finset.univ)=>
       sourceControl_nonneg T (derivativeChoice (annulusSeed a b hlo hhi).profile j))
-    dsimp [A];linarith
+    positivity
   refine ⟨2*n,U,C*A*D*(1+2*Real.pi)^(2*n),by positivity,?_⟩
   intro W hs j k v t
   have haSeed:sourceControl T (derivativeChoice (annulusSeed a b hlo hhi).profile j)≤A:=by
     have hh:=Finset.single_le_sum (fun (j:Fin 2) (_:j∈Finset.univ)=>
       sourceControl_nonneg T (derivativeChoice (annulusSeed a b hlo hhi).profile j)) (Finset.mem_univ j)
-    dsimp [A];linarith
+    linarith
   have hheight:1+‖-2*Real.pi*v‖+‖t‖≤(1+2*Real.pi)*(1+‖v‖+‖t‖):=by
     rw [norm_mul,norm_mul,Real.norm_of_nonneg Real.pi_pos.le]
     norm_num only [norm_neg,Real.norm_of_nonneg (by norm_num:0≤(2:ℝ))]
@@ -134,8 +134,8 @@ theorem reflected_profile_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
       · exact mul_nonneg hC.le (mul_nonneg hA.le (mul_nonneg hD.le (sourceControl_nonneg _ _)))
     _=_:=by rw [mul_pow];ring
 
-end SevenEighths.CenteredMomentEnergyReferenceChildProfiles
 
-end
 
-end OAI
+
+
+

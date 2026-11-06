@@ -8,10 +8,10 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialCommonRatios
 open InverseInitialOverlap InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ:Type*} [DecidableEq σ]
 
 def survivingProduct (I:Finset σ)(q:∀i∈I,Ideal Eis) : Ideal Eis :=
@@ -47,8 +47,8 @@ theorem original_residual_window (I:Finset σ)(q:∀i∈I,Ideal Eis)
   unfold residualOverlapWindow
   rw [residual_ratio_product I q j hj ell Z z G hZ hell]
 
-end SevenEighths.InverseInitialCommonRatios
 
-end
 
-end OAI
+
+
+

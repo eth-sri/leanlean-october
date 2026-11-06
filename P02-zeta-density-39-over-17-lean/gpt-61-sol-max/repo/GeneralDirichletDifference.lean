@@ -1,19 +1,23 @@
 module
+import Mathlib
 public import GeneralCoprimeEnergy
 public import RationalDifferenceEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
+section
+variable {K : ℕ} (hK : 1 ≤ K)
+    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B)
+include K hK η B hη hB
+
 /-- Exact gcd multiplicities are summed after the unrestricted coprime
 estimate; the harmonic loss is absorbed uniformly before any data vary. -/
-theorem general_pair_energy {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem general_pair_energy  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ X : ℝ, 1 < T → 0 ≤ X → X ≤ B*T →
       ∀ P : Finset (ℕ × ℕ),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -25,7 +29,7 @@ theorem general_pair_energy {K : ℕ} (hK : 1 ≤ K)
         C*T^η*X*((W.card:ℝ)^2+X*(W.card:ℝ)^(2-1/(K:ℝ))+
           T^(1/(2*(K:ℝ)))*(W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) := by
   obtain ⟨C,hC,hb⟩ := coprime_dyadic_adjacent_general hK (show 0 < η/2 by positivity) hB
-  let L : ℝ := 1+4^(η/2)/(η/2)
+  let L := 1+4^(η/2)/(η/2)
   have hL : 0 < L := by dsimp [L]; positivity
   refine ⟨C*L*B^(η/2),by positivity,?_⟩
   intro T t₀ X hT hX hXT P hP W hW hsep
@@ -45,9 +49,7 @@ theorem general_pair_energy {K : ℕ} (hK : 1 ≤ K)
       fun q hq => (reduced_fiber_bounds hP hq).2
     have hh := hb T t₀ (X/d) hT (by positivity) (hdiv.trans hXT)
       (reducedFiber P d) hQ W hW hsep
-    have hm : (X/(d:ℝ))^2 ≤ X*(X/d) := by
-      have hh := mul_le_mul_of_nonneg_right hdiv (show 0 ≤ X/(d:ℝ) by positivity)
-      nlinarith only [hh]
+    have hm : (X/(d:ℝ))^2 ≤ X*(X/d) := by field_simp <;> nlinarith
     apply hh.trans
     have hm' := mul_le_mul_of_nonneg_right hm
       (show 0 ≤ (W.card:ℝ)^(2-1/(K:ℝ)) by positivity)
@@ -82,8 +84,7 @@ theorem general_pair_energy {K : ℕ} (hK : 1 ≤ K)
 
 /-- The literal Dirichlet difference sum, with arbitrary bounded complex
 coefficients, real dyadic length, bounded reflected heights and no R floor. -/
-theorem general_dirichlet_difference {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem general_dirichlet_difference  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ X : ℝ, 1 < T → 0 ≤ X → X ≤ B*T →
       ∀ A : Finset ℕ,
       (∀ n ∈ A, 0 < n ∧ X < n ∧ (n:ℝ) ≤ 2*X) →
@@ -97,13 +98,10 @@ theorem general_dirichlet_difference {K : ℕ} (hK : 1 ≤ K)
   obtain ⟨C,hC,hb⟩ := general_pair_energy hK hη hB
   refine ⟨C,hC,?_⟩
   intro T t₀ X hT hX hXT A hA W hW hsep a ha
-  have hh := hb T t₀ X hT hX hXT (A ×ˢ A) (by
-    intro p hp
-    obtain ⟨hp1,hp2⟩ := mem_product.mp hp
-    obtain ⟨h1,hl1,hu1⟩ := hA p.1 hp1
-    obtain ⟨h2,hl2,hu2⟩ := hA p.2 hp2
-    exact ⟨h1,h2,hl1,hu1,hl2,hu2⟩) W hW hsep
+  have hh := hb T t₀ X hT hX hXT (A ×ˢ A) (by grind) W hW hsep
   simp only [sum_product,pairRatio,Rat.cast_div,Rat.cast_natCast] at hh
   exact (dirichlet_difference_energy_le A (fun n hn => (hA n hn).1) W a ha).trans hh
+end
 
-end Montgomery.RationalMoment
+
+

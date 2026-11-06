@@ -10,17 +10,21 @@ open scoped Classical BigOperators Topology
 open Filter UniqueFactorizationMonoid
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def targetPrincipalSupport (η : Character) : Finset (Ideal O) :=
   (normalizedFactors (η.modulus*Ideal.span {rowMaskElement}*Ideal.span {(72:O)})).toFinset
 
-lemma targetPrincipalSupport_prime (η : Character) : ∀P∈targetPrincipalSupport η,Prime P := by
+section
+variable (η : Character)
+include η
+
+lemma targetPrincipalSupport_prime  : ∀P∈targetPrincipalSupport η,Prime P := by
   intro P hP
   exact prime_of_normalized_factor P (Multiset.mem_toFinset.mp hP)
 
-lemma inverse_target_elementCoeff (η : Character) (u : FreeRow) (n : O) :
+lemma inverse_target_elementCoeff  (u : FreeRow) (n : O) :
     elementCoeff (targetRow η u).inverse n=
       rowTwist (HeckeRowClosure.elementHom ((fixedSourcePrincipal ∅ (by simp)).product η.inverse))
         rowMaskElement 1 u.val n := by
@@ -34,7 +38,7 @@ lemma inverse_target_elementCoeff (η : Character) (u : FreeRow) (n : O) :
   rw [elementCoeff_product,elementCoeff_inverse]
   ring
 
-theorem principal_target_row_norm_bound (η : Character) (u : FreeRow)
+theorem principal_target_row_norm_bound  (u : FreeRow)
     (hs : Supported (Ideal.span {u.val})) (hp : (targetRow η u).residue=1) :
     rowNorm u≤(HeckeExceptionalRows.bound (targetPrincipalSupport η):ℝ) := by
   obtain ⟨v,hv⟩ := exists_supported_primary_unit u.val hs
@@ -59,7 +63,7 @@ theorem principal_target_row_norm_bound (η : Character) (u : FreeRow)
   unfold rowNorm
   exact_mod_cast hn
 
-theorem excluded_target_nonprincipal_eventually (η : Character) (d : ℝ) (hd : 0<d) :
+theorem excluded_target_nonprincipal_eventually  (d : ℝ) (hd : 0<d) :
     ∀ᶠ Z : ℝ in atTop,∀u : FreeRow,Z^d≤rowNorm u →
       Supported (Ideal.span {u.val}) → ∀S : Finset (Ideal O),∀hS : ∀P∈S,Prime P,
       ((targetRow η u).excludePrimes S hS).residue≠1 := by
@@ -69,9 +73,11 @@ theorem excluded_target_nonprincipal_eventually (η : Character) (d : ℝ) (hd :
   intro hp
   have hp' := (HeckeFiniteDeletion.principal_iff_of_mask _ _ (excludePrimes_mask (targetRow η u) S hS)).mp hp
   exact not_lt_of_ge (principal_target_row_norm_bound η u hs hp') (hZ.trans_le hu)
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

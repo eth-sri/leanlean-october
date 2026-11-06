@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPhysicalATimesAParameters
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_physical_common_shift_budget (M H : ℕ) {lam : ℝ}
@@ -48,4 +47,4 @@ theorem robertSargos_physical_common_shift_budget (M H : ℕ) {lam : ℝ}
   have hm := mul_le_mul_of_nonneg_left hprod (show 0 ≤ 8*(M:ℝ) by positivity)
   nlinarith
 
-end TaoTrudgianYang2025
+

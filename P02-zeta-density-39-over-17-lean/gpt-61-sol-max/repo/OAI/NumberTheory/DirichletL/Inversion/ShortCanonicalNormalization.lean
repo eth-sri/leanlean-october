@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedPower
 public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 
@@ -9,9 +10,9 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic IdealMobiusDivisorSum CanonicalRowCompletion
+
+open scoped EisensteinEis
 lemma normalization_norm_sq (Z N V : ℝ) (hZ : 0<Z) (x : ℂ) :
     ‖((Z^(-(N+V)/2):ℝ):ℂ)*((Real.sqrt (Z^N):ℝ):ℂ)*x‖^2 =
       Z^(-V)*‖x‖^2 := by
@@ -28,9 +29,9 @@ lemma divisor_weight_sum (K : ℕ) (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
       ∀ labels : Finset (Ideal Eis),
       (∀ f∈labels,f≠0 ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
       (∑ f∈labels,((idealDivisors f).card:ℝ)^(9+4*K))≤C*Z^(V+ε) := by
-  let n : ℕ := 9+4*K
+  let n := 9+4*K
   have hn : (0:ℝ)<n := by dsimp [n]; positivity
-  let δ : ℝ := ε/((L+1)*(n:ℝ))
+  let δ := ε/((L+1)*(n:ℝ))
   have hδ : 0<δ := by dsimp [δ]; positivity
   obtain ⟨D,hD,hd⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨128*D^n,by positivity,?_⟩
@@ -80,8 +81,8 @@ lemma label_eq_rowUnit_generator (f : Ideal Eis) (hf : f≠0) (g : Eis)
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 universe v
 
-end SevenEighths.InverseShortCanonicalNormalization
 
-end
 
-end OAI
+
+
+

@@ -12,7 +12,7 @@ open Filter Set
 namespace SevenEighths.ProbeRayPhaseBins
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily
 open HeckePrimeAmplitudeBins ProbeRaySlots
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -24,7 +24,7 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (R dmin dmax rmin τ ε e κ cost mesh σmin σmax δ : ℝ)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hrmin : 0<rmin)
     (hτ : 0<τ) (hε : 0<ε) (he : 0<e) (he' : e<1/1000)
-    (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
+    (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hδ : 0<δ)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) :
     ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → d≤dmax → 2≤Z^d → 2<Z^τ →
     ∀(η : Character) (u : FreeRow),Z^δ≤rowNorm u →
@@ -76,8 +76,8 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     _ ≤ ((Z^d)^r)^(z.re-1/2)*((Z^d)^r)^(_+mesh) :=
       mul_le_mul_of_nonneg_left hbins.2.2.2.1 (Real.rpow_nonneg hD.le _)
     _ = _ := by rw [←Real.rpow_add hD];congr 1;ring
-end SevenEighths.ProbeRayPhaseBins
 
-end
 
-end OAI
+
+
+

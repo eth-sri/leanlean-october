@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReflectionSupport
 public import OAI.NumberTheory.DirichletL.Moments.UniformOriginalEnergy
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -19,11 +20,15 @@ open CenteredMomentEnergyZeroReflectionSupport CenteredMomentOriginalRadialCompa
 open CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
 open CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
-local notation "O" => HeckeFamily.O
+open CenteredMomentEnergyReferenceReflection
+open scoped HeckeO
 
-theorem finite_original_error (xi saving Cscale epsilon : ℝ)
-    (hxi : 0<xi)(hscale : 0<Cscale)(hepsilon : 0<epsilon) :
+section
+variable (xi saving Cscale epsilon : ℝ)
+    (hxi : 0<xi)(hscale : 0<Cscale)(hepsilon : 0<epsilon)
+include xi saving Cscale epsilon hxi hscale hepsilon
+
+theorem finite_original_error  :
     ∃H : Finset (ℕ×ℕ),∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧
       ∀{ι : Type}[Fintype ι],∀χ : ι→Character,(∀i,(χ i).residue≠1) →
       ∃ψ : ι→Character,
@@ -60,8 +65,7 @@ theorem finite_original_error (xi saving Cscale epsilon : ℝ)
     mul_zero,zero_add] at hh
   exact ⟨hzero,hh⟩
 
-theorem radial_original_error (xi saving Cscale epsilon : ℝ)
-    (hxi : 0<xi)(hscale : 0<Cscale)(hepsilon : 0<epsilon) :
+theorem radial_original_error  :
     ∃H : Finset (ℕ×ℕ),∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧
       ∀(G:O→𝓢(ℝ,ℂ))(χ:O→Character)(P:O→ℂ)(omega:O→ℝ)
         (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K Pbound:ℝ)(Wshort:ℝ→ℂ)
@@ -104,6 +108,8 @@ theorem radial_original_error (xi saving Cscale epsilon : ℝ)
   exact hh.trans (mul_le_mul_of_nonneg_left
     (hshortsum.sum_le_tsum rows (fun z _=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl))
     (by positivity))
+end
+
 
 theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
     (ha:0<a)(hb:0≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi):
@@ -138,7 +144,7 @@ theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
   let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
   let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
   have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
-  have hcontrol:sourceControl T Wlong≤sourceControl S Wlong:=
+  have hcontrol:sourceControl T Wlong≤ sourceControl S Wlong:=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong
   have hnorm:H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤Src:=
     (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
@@ -155,7 +161,6 @@ theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
   simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t,mul_one] at hh
   apply hh.trans_eq
   dsimp only [Src]
-  rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
@@ -187,7 +192,6 @@ theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
     · exact mul_nonneg (norm_nonneg _) hV
   apply (hh.trans (mul_le_mul_of_nonneg_right
     (CenteredMomentAbsoluteEnergy.radial_weight_lattice_bound_all Φ K hK) hV)).trans_eq
-  dsimp [V,A]
   ring
 
 theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)
@@ -223,8 +227,8 @@ theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)
   apply (hh.trans (mul_le_mul_of_nonneg_left hm (by positivity))).trans_eq
   ring
 
-end SevenEighths.CenteredMomentEnergyZeroRetainedError
 
-end
 
-end OAI
+
+
+

@@ -1,5 +1,7 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 
 @[expose] public section
@@ -11,8 +13,8 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseSecondChildWindows
 open InverseMoment InverseSecondProfileUniform
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped EisensteinO
 
 theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
     ∃ w : 𝓢(ℝ,ℂ), HasCompactSupport (w : ℝ→ℂ) ∧
@@ -36,10 +38,14 @@ theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
   rw [(hone x).mp hx]
   rfl
 
-theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
-    (_hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
+section
+variable (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
+include g m bcap c θ x
+
+theorem positiveSource_log_bound 
+    (_hm : 0≤ m) (hs : Function.support g⊆Set.Icc (-m) m)
     (hc : 1≤c) (hcb : c≤bcap) (_hx : 0<x)
-    (hn : positiveSource g c θ x≠0) : |Real.log x|≤m+Real.log bcap := by
+    (hn : positiveSource g c θ x≠0) : |Real.log x|≤ m+Real.log bcap := by
   have hc0 : 0<c := zero_lt_one.trans_le hc
   have hgn : g (Real.log x+Real.log c)≠0 := (mul_ne_zero_iff.mp hn).2
   have hh := hs hgn
@@ -48,13 +54,15 @@ theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
   rw [abs_le]
   constructor <;> linarith [hh.1,hh.2]
 
-theorem positiveSource_ratio_support (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
-    (hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
+theorem positiveSource_ratio_support 
+    (hm : 0≤ m) (hs : Function.support g⊆Set.Icc (-m) m)
     (hc : 1≤c) (hcb : c≤bcap) (hx : 0<x)
     (hn : positiveSource g c θ x≠0) :
     x∈Set.Icc (Real.exp (-(m+Real.log bcap))) (Real.exp (m+Real.log bcap)) := by
   have hh := (abs_le.mp (positiveSource_log_bound g m bcap c θ x hm hs hc hcb hx hn))
   exact ⟨(Real.le_log_iff_exp_le hx).mp hh.1,(Real.log_le_iff_le_exp hx).mp hh.2⟩
+end
+
 
 theorem translated_log_bound (a b x ρ B : ℝ) (ha : 0<a)
     (hx : x∈Set.Icc a b) (hρ : |ρ|≤B) :
@@ -72,7 +80,7 @@ theorem translated_log_bound (a b x ρ B : ℝ) (ha : 0<a)
 def outerIndex (i : Fin 4) : Fin 6 := i.castLE (by decide)
 
 theorem fixed_windows (m bcap : ℝ) (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
-    (hm : 0≤m) (_hcap : 1≤bcap) (hlo : ∀ i,0<lo i)
+    (hm : 0≤ m) (_hcap : 1≤bcap) (hlo : ∀ i,0<lo i)
     (hhi : ∀ i,lo i≤hi i) (hBρ : ∀ i,0≤Bρ i) :
     ∃ (w : 𝓢(ℝ,ℂ)) (U : Fin 6→𝓢(ℝ,ℂ)) (M : Fin 6→ℝ) (a b : ℝ),
       0<a ∧ a≤b ∧ HasCompactSupport (w : ℝ→ℂ) ∧
@@ -158,7 +166,7 @@ lemma actualRelativeNorm_outer {ι : Type*} [DecidableEq ι] (p : ι→O)
 
 theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
-    (hm₁ : 0≤m₁) (_hm₂ : 0≤m₂) (hcap : 1≤bcap)
+    (hm₁ : 0≤ m₁) (_hm₂ : 0≤ m₂) (hcap : 1≤bcap)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂)
     (hlo : ∀ i,0<lo i) (hhi : ∀ i,lo i≤hi i) (hBρ : ∀ i,0≤Bρ i) :
@@ -188,7 +196,7 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
         U₀ i (secondRelativeLog
           (secondActualNorms p (secondInheritedProfile p j.1 Ψ m z) j.2.1 j.2.2) G E V B X i+ρ i)=1) := by
   let mmax := max m₁ m₂
-  have hmmax : 0≤mmax := hm₁.trans (le_max_left _ _)
+  have hmmax : 0≤ mmax := hm₁.trans (le_max_left _ _)
   have hg₁' : Function.support g₁⊆Set.Icc (-mmax) mmax := by
     intro x hx
     have h := hg₁ hx
@@ -227,8 +235,8 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
     rw [actualRelativeNorm_outer]
     exact hblock j.1 ((mem_secondProfileIndices source pool _ j).mp hj).1 k
 
-end SevenEighths.InverseSecondChildWindows
 
-end
 
-end OAI
+
+
+

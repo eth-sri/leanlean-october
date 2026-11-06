@@ -9,7 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma tuple_norm_cpow {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0)
     (J : Finset (Fin K)) (s : ℂ) :
@@ -21,14 +21,18 @@ lemma tuple_norm_cpow {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0)
       Complex.mul_cpow_ofReal_nonneg (elementNorm_pos _ (hp i)).le (tuple_norm_pos p hp J).le,
       ih,Finset.prod_insert hi]
 
-lemma tuple_target_star {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
+include K η p
+
+lemma tuple_target_star 
     (J : Finset (Fin K)) :
     star (HeckeFamily.elementCoeff η (∏i∈J,p i))=∏i∈J,star (HeckeFamily.elementCoeff η (p i)) := by
   change star (ProbeRow.targetMonoid η (∏i∈J,p i))=_
   rw [map_prod,star_prod]
   rfl
 
-lemma tuple_source_scalar {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
+lemma tuple_source_scalar 
     (hp : ∀i,p i≠0) (J : Finset (Fin K)) (x w z : ℂ) :
     (elementNorm (∏i∈J,p i):ℂ)^(z-w-1)*
       star (HeckeFamily.elementCoeff η (∏i∈Finset.univ\J,p i))*
@@ -51,8 +55,10 @@ lemma tuple_source_scalar {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
   have hc := Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i : Fin K=>(elementNorm (p i):ℂ)^(z-1))
   rw [←hc]
   ring
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

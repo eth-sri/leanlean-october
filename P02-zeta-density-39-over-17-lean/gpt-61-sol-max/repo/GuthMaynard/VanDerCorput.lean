@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 public import Mathlib.Analysis.SpecialFunctions.Complex.Log
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
@@ -22,14 +23,20 @@ project.  Angles in `unitaryPhase` are measured in radians; this avoids a
 pervasive factor `2 * pi` when the phase is `-t * log x`.
 -/
 
+section
+variable (x : ℝ)
+include x
+
 /-- The standard additive character with its argument measured in radians. -/
-noncomputable def unitaryPhase (x : ℝ) : ℂ := Complex.exp (Complex.I * x)
+noncomputable def unitaryPhase  : ℂ := Complex.exp (Complex.I * x)
 
 /-- The resolvent appearing in summation by parts for a unitary phase. -/
-noncomputable def phaseResolvent (x : ℝ) : ℂ := (1 - unitaryPhase x)⁻¹
+noncomputable def phaseResolvent  : ℂ := (1 - unitaryPhase x)⁻¹
 
-@[simp] theorem norm_unitaryPhase (x : ℝ) : ‖unitaryPhase x‖ = 1 := by
+@[simp] theorem norm_unitaryPhase  : ‖unitaryPhase x‖ = 1 := by
   simp [unitaryPhase]
+end
+
 
 theorem unitaryPhase_add (x y : ℝ) :
     unitaryPhase (x + y) = unitaryPhase x * unitaryPhase y := by
@@ -40,8 +47,7 @@ theorem unitaryPhase_sub (x y : ℝ) :
   rw [sub_eq_add_neg, unitaryPhase_add]
   simp only [unitaryPhase, ofReal_neg, mul_neg]
   rw [← Complex.exp_conj]
-  congr 1
-  simp
+  simp_all
 
 /-- A finite exponential sum on the half-open integer interval `[A, B)`. -/
 noncomputable def phaseSum (f : ℝ → ℝ) (A B : ℕ) : ℂ :=
@@ -57,9 +63,7 @@ noncomputable def logarithmicSum (t : ℝ) (A B : ℕ) : ℂ :=
 theorem unitaryPhase_logarithmicPhase_eq_cpow (t : ℝ) (n : ℕ) (hn : 0 < n) :
     unitaryPhase (logarithmicPhase t n) = (n : ℂ) ^ (-(t : ℂ) * I) := by
   rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast Nat.ne_of_gt hn)]
-  simp only [unitaryPhase, logarithmicPhase, Complex.natCast_log, ofReal_neg,
-    ofReal_mul]
-  congr 1
+  simp only [unitaryPhase, logarithmicPhase, ofReal_mul, ofReal_neg, natCast_log]
   ring
 
 theorem norm_phaseSum_le_card (f : ℝ → ℝ) (A B : ℕ) :
@@ -76,7 +80,7 @@ theorem norm_logarithmicSum_le_length (t : ℝ) (A B : ℕ) :
 theorem hasDerivAt_logarithmicPhase (t : ℝ) {x : ℝ} (hx : x ≠ 0) :
     HasDerivAt (logarithmicPhase t) (-t / x) x := by
   change HasDerivAt (fun y => -t * Real.log y) (-t / x) x
-  simpa only [neg_mul, div_eq_mul_inv] using (Real.hasDerivAt_log hx).const_mul (-t)
+  exact (Real.hasDerivAt_log hx).const_mul (-t)
 
 /-! ## Kusmin--Landau cancellation -/
 
@@ -88,9 +92,7 @@ theorem phaseResolvent_eq (x : ℝ) (hs : Real.sin (x / 2) ≠ 0) :
     have hn : ‖(1 - unitaryPhase x : ℂ)‖ = ‖(2 * Real.sin (x / 2) : ℝ)‖ := by
       rw [← norm_neg, neg_sub]
       exact Complex.norm_exp_I_mul_ofReal_sub_one x
-    rw [h, norm_zero] at hn
-    have : (2 * Real.sin (x / 2) : ℝ) = 0 := norm_eq_zero.mp hn.symm
-    exact hs (by linarith)
+    simp_all
   rw [phaseResolvent]
   apply (mul_eq_one_iff_inv_eq₀ hden).mp
   have hcot := Complex.cot_eq_exp_ratio ((x / 2 : ℝ) : ℂ)
@@ -102,13 +104,12 @@ theorem phaseResolvent_eq (x : ℝ) (hs : Real.sin (x / 2) ≠ 0) :
   rw [eq_div_iff (mul_ne_zero Complex.I_ne_zero hdenexp)] at hcot
   rw [unitaryPhase]
   push_cast at hcot ⊢
-  ring_nf at hcot ⊢
-  linear_combination (1 / 2 : ℂ) * hcot
+  grind
 
 /-- Derivative of real cotangent on its fundamental open interval. -/
 theorem hasDerivAt_real_cot {x : ℝ} (hx : x ∈ Set.Ioo 0 Real.pi) :
     HasDerivAt Real.cot (-(1 / Real.sin x ^ 2)) x := by
-  have hsin : Real.sin x ≠ 0 := (Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2).ne'
+  have hsin := (Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2).ne'
   have hquot := (Real.hasDerivAt_cos x).div (Real.hasDerivAt_sin x) hsin
   convert hquot using 1
   · funext y
@@ -164,8 +165,7 @@ theorem norm_phaseResolvent_le {δ θ : ℝ} (hδ : 0 < δ) (hθlow : δ ≤ θ)
     rw [← norm_neg, neg_sub, unitaryPhase,
       Complex.norm_exp_I_mul_ofReal_sub_one, Real.norm_eq_abs,
       abs_of_pos (mul_pos zero_lt_two hsinPos)]
-    convert mul_le_mul_of_nonneg_left hsin zero_le_two using 1
-    ring_nf
+    grind
   rw [phaseResolvent, norm_inv, ← one_div]
   calc
     1 / ‖(1 - unitaryPhase θ : ℂ)‖ ≤ 1 / (2 * δ / Real.pi) :=
@@ -179,9 +179,9 @@ theorem norm_phaseResolvent_sub_eq {x y : ℝ}
       (Real.cot (x / 2) - Real.cot (y / 2)) / 2 := by
   have hxmem : x / 2 ∈ Set.Ioo (0 : ℝ) Real.pi := by constructor <;> linarith
   have hymem : y / 2 ∈ Set.Ioo (0 : ℝ) Real.pi := by constructor <;> linarith
-  have hsinx : Real.sin (x / 2) ≠ 0 :=
+  have hsinx :=
     (Real.sin_pos_of_pos_of_lt_pi hxmem.1 hxmem.2).ne'
-  have hsiny : Real.sin (y / 2) ≠ 0 :=
+  have hsiny :=
     (Real.sin_pos_of_pos_of_lt_pi hymem.1 hymem.2).ne'
   have hcot : Real.cot (y / 2) ≤ Real.cot (x / 2) :=
     strictAntiOn_real_cot.antitoneOn hxmem hymem (by linarith)
@@ -213,8 +213,7 @@ theorem phaseResolvent_variation (θ : ℕ → ℝ) (N : ℕ) (δ : ℝ)
       have hnlt := Finset.mem_range.mp hn
       apply norm_phaseResolvent_sub_eq
       · exact hδ.trans_le (hlow n (by omega))
-      · linarith [hhigh (n + 1) (by omega)]
-      · exact hmono n hnlt
+      all_goals (grind)
     _ = (Real.cot (θ 0 / 2) - Real.cot (θ N / 2)) / 2 := by
       rw [← Finset.sum_div, Finset.sum_range_sub']
 
@@ -223,15 +222,14 @@ theorem abs_cot_half_le_norm_phaseResolvent {θ : ℝ}
     (hθ0 : 0 < θ) (hθ2pi : θ < 2 * Real.pi) :
     |Real.cot (θ / 2) / 2| ≤ ‖phaseResolvent θ‖ := by
   have hmem : θ / 2 ∈ Set.Ioo (0 : ℝ) Real.pi := by constructor <;> linarith
-  have hsin : Real.sin (θ / 2) ≠ 0 :=
+  have hsin :=
     (Real.sin_pos_of_pos_of_lt_pi hmem.1 hmem.2).ne'
   rw [phaseResolvent_eq θ hsin]
-  let z : ℂ := (1 : ℂ) / 2 + Complex.I * (Real.cot (θ / 2) / 2 : ℝ)
+  let z := (1 : ℂ) / 2 + Complex.I * (Real.cot (θ / 2) / 2 : ℝ)
   have him : z.im = Real.cot (θ / 2) / 2 := by
     dsimp only [z]
     rw [show (1 : ℂ) / 2 = ((1 / 2 : ℝ) : ℂ) by norm_num]
-    simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_re,
-      Complex.I_im, zero_mul, one_mul, zero_add, Complex.ofReal_re]
+    simp only [add_im, ofReal_im, mul_im, I_re, zero_mul, I_im, ofReal_re, one_mul, zero_add]
   calc
     |Real.cot (θ / 2) / 2| = |z.im| := congrArg abs him.symm
     _ ≤ ‖z‖ := Complex.abs_im_le_norm z
@@ -247,17 +245,17 @@ theorem unitaryPhase_resolvent_step (f : ℕ → ℝ) (n : ℕ)
         ‖(2 * Real.sin ((f (n + 1) - f n) / 2) : ℝ)‖ := by
       rw [← norm_neg, neg_sub]
       exact Complex.norm_exp_I_mul_ofReal_sub_one (f (n + 1) - f n)
-    rw [h, norm_zero] at hn
-    have hz : (2 * Real.sin ((f (n + 1) - f n) / 2) : ℝ) = 0 :=
-      norm_eq_zero.mp hn.symm
-    exact hsin (by linarith)
+    simp_all
   rw [show f (n + 1) = f n + (f (n + 1) - f n) by ring_nf,
     unitaryPhase_add, phaseResolvent]
-  field_simp [hden]
-  ring_nf
+  grind
+
+section
+variable (z q : ℕ → ℂ) (N : ℕ)
+include z q N
 
 /-- Exact finite summation by parts for resolvents. -/
-theorem finite_resolvent_telescoping (z q : ℕ → ℂ) (N : ℕ)
+theorem finite_resolvent_telescoping 
     (hrec : ∀ n ≤ N, z n = q n * (z n - z (n + 1))) :
     ∑ n ∈ Finset.range (N + 1), z n =
       q 0 * z 0 - q N * z (N + 1) +
@@ -280,7 +278,7 @@ theorem finite_resolvent_telescoping (z q : ℕ → ℂ) (N : ℕ)
                 linear_combination hrec (N + 1) le_rfl
 
 /-- Norm form of finite resolvent summation by parts. -/
-theorem norm_sum_le_resolvent_variation (z q : ℕ → ℂ) (N : ℕ)
+theorem norm_sum_le_resolvent_variation 
     (hz : ∀ n ≤ N + 1, ‖z n‖ = 1)
     (hrec : ∀ n ≤ N, z n = q n * (z n - z (n + 1))) :
     ‖∑ n ∈ Finset.range (N + 1), z n‖ ≤
@@ -301,8 +299,9 @@ theorem norm_sum_le_resolvent_variation (z q : ℕ → ℂ) (N : ℕ)
       rw [hz 0 (by omega), hz (N + 1) (by omega), mul_one, mul_one]
       congr 1
       apply Finset.sum_congr rfl
-      intro n hn
-      rw [hz (n + 1) (by have := Finset.mem_range.mp hn; omega), mul_one]
+      grind
+end
+
 
 /-- Kusmin--Landau cancellation while all phase increments remain in one
 period and a fixed positive distance from its endpoints. -/
@@ -313,7 +312,7 @@ theorem kusminLandau_one_period (f : ℕ → ℝ) (N : ℕ) (δ : ℝ)
     (hmono : ∀ n < N, f (n + 1) - f n ≤ f (n + 2) - f (n + 1)) :
     ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)‖ ≤
       2 * Real.pi / δ := by
-  let θ : ℕ → ℝ := fun n => f (n + 1) - f n
+  let θ := fun n => f (n + 1) - f n
   have hθlow : ∀ n ≤ N, δ ≤ θ n := hlow
   have hθhigh : ∀ n ≤ N, θ n ≤ 2 * Real.pi - δ := hhigh
   have hθmono : ∀ n < N, θ n ≤ θ (n + 1) := hmono
@@ -367,15 +366,19 @@ theorem unitaryPhase_sub_int_mul_two_pi (x : ℝ) (k : ℤ) :
   rw [unitaryPhase_sub, unitaryPhase_int_mul_two_pi]
   simp
 
+section
+variable (f : ℕ → ℝ)
+include f
+
 /-- Decreasing-increment form of one-period Kusmin--Landau cancellation. -/
-theorem kusminLandau_one_period_decreasing (f : ℕ → ℝ) (N : ℕ) (δ : ℝ)
+theorem kusminLandau_one_period_decreasing  (N : ℕ) (δ : ℝ)
     (hδ : 0 < δ)
     (hlow : ∀ n ≤ N, δ ≤ f (n + 1) - f n)
     (hhigh : ∀ n ≤ N, f (n + 1) - f n ≤ 2 * Real.pi - δ)
     (hmono : ∀ n < N, f (n + 2) - f (n + 1) ≤ f (n + 1) - f n) :
     ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)‖ ≤
       2 * Real.pi / δ := by
-  let g : ℕ → ℝ := fun n => -f n + (n : ℝ) * (2 * Real.pi)
+  let g := fun n => -f n + (n : ℝ) * (2 * Real.pi)
   have hdiff (n : ℕ) :
       g (n + 1) - g n = 2 * Real.pi - (f (n + 1) - f n) := by
     dsimp only [g]
@@ -403,7 +406,7 @@ theorem kusminLandau_one_period_decreasing (f : ℕ → ℝ) (N : ℕ) (δ : ℝ
   exact hKL
 
 /-- Shifted-index and shifted-period form of Kusmin--Landau cancellation. -/
-theorem kusminLandau_interval (f : ℕ → ℝ) (A N : ℕ) (k : ℤ) (δ : ℝ)
+theorem kusminLandau_interval  (A N : ℕ) (k : ℤ) (δ : ℝ)
     (hδ : 0 < δ)
     (hlow : ∀ n ≤ N, δ ≤
       f (A + n + 1) - f (A + n) - (k : ℝ) * (2 * Real.pi))
@@ -414,27 +417,21 @@ theorem kusminLandau_interval (f : ℕ → ℝ) (A N : ℕ) (k : ℤ) (δ : ℝ)
       f (A + n + 1) - f (A + n) ≤ f (A + n + 2) - f (A + n + 1)) :
     ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f (A + n))‖ ≤
       2 * Real.pi / δ := by
-  let g : ℕ → ℝ := fun n =>
+  let g := fun n =>
     f (A + n) - (((k * (n : ℤ) : ℤ) : ℝ) * (2 * Real.pi))
   have hdiff (n : ℕ) :
       g (n + 1) - g n =
-        f (A + n + 1) - f (A + n) - (k : ℝ) * (2 * Real.pi) := by
-    dsimp only [g]
-    push_cast
-    rw [show A + (n + 1) = A + n + 1 by omega]
-    ring_nf
+        f (A + n + 1) - f (A + n) - (k : ℝ) * (2 * Real.pi) := by grind
   have hphase (n : ℕ) : unitaryPhase (g n) = unitaryPhase (f (A + n)) := by
     dsimp only [g]
-    simpa only [Int.cast_mul, Int.cast_natCast] using
-      unitaryPhase_sub_int_mul_two_pi (f (A + n)) (k * (n : ℤ))
+    exact unitaryPhase_sub_int_mul_two_pi (f (A + n)) (k * (n : ℤ))
   have hKL := kusminLandau_one_period g N δ hδ
     (fun n hn => by rw [hdiff]; exact hlow n hn)
     (fun n hn => by rw [hdiff]; exact hhigh n hn)
-    (fun n hn => by
-      rw [hdiff, hdiff]
-      simpa only [Nat.add_assoc] using
-        sub_le_sub_right (hmono n hn) ((k : ℝ) * (2 * Real.pi)))
+    (fun n hn => by grind)
   simpa only [hphase] using hKL
+end
+
 
 /-! ## Finite Weyl differencing -/
 
@@ -466,7 +463,7 @@ theorem finite_weyl_differencing
       abs (∑ n ∈ s, ⟪b n h, b n k⟫_ℝ) ≤ B) :
     (r.card : ℝ) ^ 2 * ‖S‖ ^ 2 ≤
       (s.card : ℝ) * ((r.card : ℝ) * A + (r.card : ℝ) ^ 2 * B) := by
-  let u : ι → ℂ := fun n => ∑ h ∈ r, b n h
+  let u := fun n => ∑ h ∈ r, b n h
   have hsum : ∑ n ∈ s, u n = r.card • S := by
     calc
       ∑ n ∈ s, u n = ∑ h ∈ r, ∑ n ∈ s, b n h := by
@@ -498,10 +495,7 @@ theorem finite_weyl_differencing
     · subst k
       simp only [ite_eq_left]
       calc
-        ∑ n ∈ s, ⟪b n h, b n h⟫_ℝ = ∑ n ∈ s, ‖b n h‖ ^ 2 := by
-          apply Finset.sum_congr rfl
-          intro n _hn
-          exact real_inner_self_eq_norm_sq (b n h)
+        ∑ n ∈ s, ⟪b n h, b n h⟫_ℝ = ∑ n ∈ s, ‖b n h‖ ^ 2 := by bound
         _ ≤ A := hdiag h hh
         _ ≤ A + B := le_add_of_nonneg_right hB
     · simp only [ite_eq_right heq, zero_add]
@@ -524,13 +518,21 @@ theorem finite_weyl_differencing
     _ ≤ (s.card : ℝ) * ((r.card : ℝ) * A + (r.card : ℝ) ^ 2 * B) := by
       exact mul_le_mul_of_nonneg_left hcorrelation (Nat.cast_nonneg s.card)
 
+section
+variable (a : ℤ → ℂ)
+include a
+
 /-- A zero-padded translate of an integer-indexed sequence. -/
-noncomputable def paddedShift (a : ℤ → ℂ) (N : ℕ) (n : ℤ) (h : ℕ) : ℂ :=
+noncomputable def paddedShift  (N : ℕ) (n : ℤ) (h : ℕ) : ℂ :=
   if n + h ∈ Finset.Ico (0 : ℤ) N then a (n + h) else 0
+
+section
+variable (N H h : ℕ) (hh : h < H)
+include N H h hh
 
 /-- Summing a zero-padded translate over the common ambient interval recovers
 the original sum. -/
-theorem sum_paddedShift_eq (a : ℤ → ℂ) (N H h : ℕ) (hh : h < H) :
+theorem sum_paddedShift_eq  :
     ∑ n ∈ Finset.Ico (-(H : ℤ)) N, paddedShift a N n h =
       ∑ m ∈ Finset.Ico (0 : ℤ) N, a m := by
   unfold paddedShift
@@ -556,7 +558,7 @@ theorem sum_paddedShift_eq (a : ℤ → ℂ) (N H h : ℕ) (hh : h < H) :
     · simpa using hm
 
 /-- The diagonal energy of a padded translate is independent of the shift. -/
-theorem sum_norm_sq_paddedShift_eq (a : ℤ → ℂ) (N H h : ℕ) (hh : h < H) :
+theorem sum_norm_sq_paddedShift_eq  :
     ∑ n ∈ Finset.Ico (-(H : ℤ)) N, ‖paddedShift a N n h‖ ^ 2 =
       ∑ m ∈ Finset.Ico (0 : ℤ) N, ‖a m‖ ^ 2 := by
   let q : ℤ → ℂ := fun m => (‖a m‖ ^ 2 : ℝ)
@@ -574,16 +576,14 @@ theorem sum_norm_sq_paddedShift_eq (a : ℤ → ℂ) (N H h : ℕ) (hh : h < H) 
         rfl
       · simp
     _ = ∑ m ∈ Finset.Ico (0 : ℤ) N, (q m).re := hre
-    _ = ∑ m ∈ Finset.Ico (0 : ℤ) N, ‖a m‖ ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro m _hm
-      change ‖a m‖ ^ 2 = ‖a m‖ ^ 2
-      rfl
+    _ = ∑ m ∈ Finset.Ico (0 : ℤ) N, ‖a m‖ ^ 2 := by rfl
+end
+
 
 /-- Interval form of Weyl differencing.  Its only analytic input is a uniform
 bound for the correlations of two distinct zero-padded shifts. -/
 theorem interval_weyl_differencing
-    (a : ℤ → ℂ) (N H : ℕ) (C : ℝ)
+     (N H : ℕ) (C : ℝ)
     (ha : ∀ n ∈ Finset.Ico (0 : ℤ) N, ‖a n‖ ≤ 1)
     (hC : 0 ≤ C)
     (hcorr : ∀ h ∈ Finset.range H, ∀ k ∈ Finset.range H, h ≠ k →
@@ -597,10 +597,7 @@ theorem interval_weyl_differencing
     rw [sum_norm_sq_paddedShift_eq a N H h (Finset.mem_range.mp hh)]
     calc
       ∑ m ∈ Finset.Ico (0 : ℤ) N, ‖a m‖ ^ 2 ≤
-          ∑ _m ∈ Finset.Ico (0 : ℤ) N, (1 : ℝ) := by
-        apply Finset.sum_le_sum
-        intro m hm
-        nlinarith [norm_nonneg (a m), ha m hm]
+          ∑ _m ∈ Finset.Ico (0 : ℤ) N, (1 : ℝ) := by bound
       _ = (N : ℝ) := by simp [Int.card_Ico]
   have hraw := finite_weyl_differencing
     (Finset.Ico (-(H : ℤ)) (N : ℤ)) (Finset.range H)
@@ -611,5 +608,7 @@ theorem interval_weyl_differencing
     norm_num [Int.card_Ico]
     norm_cast
   simpa only [Finset.card_range, Nat.cast_add, hcard] using hraw
+end
 
-end RiemannZeta.GuthMaynard
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -18,7 +19,7 @@ larger height-sized interval. Both signed carriers consume that geometry.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 
@@ -36,8 +37,7 @@ theorem atkinsonRootSlope_outside_band {T G L b y : ℝ}
   have hn : atkinsonRootSlope T (-b) y = atkinsonRootSlope T 0 y - 2 * b := by
     unfold atkinsonRootSlope
     ring
-  rw [hp, hn]
-  constructor <;> linarith [h.1, h.2]
+  grind
 
 theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
@@ -74,4 +74,4 @@ theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
         exact (atkinsonRootSlope_outside_band hT hG hL hwidth (hmem y hy) hb).2)
       (hmono (-b))
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformLog
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeInverseAmplification HeckeDyadic JointLogSeparation
+open JointLogSeparation
 
  theorem interpolatedProfile_uniform (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (S : Finset (ℕ×ℕ)) :
@@ -38,8 +38,8 @@ open HeckeInverseAmplification HeckeDyadic JointLogSeparation
     (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) n) hB.le)
   exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

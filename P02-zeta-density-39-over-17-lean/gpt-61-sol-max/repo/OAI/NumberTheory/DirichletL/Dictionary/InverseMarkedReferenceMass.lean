@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseAssignedCount
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily DetectorDictionaryInverseAssignedCount
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 private theorem sum_tuple_real {ι:Type*}[Fintype ι](L:ι→Finset (Ideal O))
     (f:(ι→Ideal O)→ℝ) :
@@ -89,8 +89,8 @@ theorem original_energy_with_assigned_count (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
       (fun x _=>assignedMass_nonneg L J x coeff U (∑i∈J,ell i) hU0)))
   exact all_assignedMass_sum_le K hb hU hK L ell hL coeff hc
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

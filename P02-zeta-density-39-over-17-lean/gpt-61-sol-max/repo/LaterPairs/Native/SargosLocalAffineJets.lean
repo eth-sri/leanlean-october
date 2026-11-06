@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosSourceDifferencing
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
-noncomputable section
+
 
 open Set Filter
 open scoped ContDiff Topology
@@ -38,4 +37,4 @@ theorem sargos_iteratedDeriv_comp_affine_local {f : ℝ → ℝ} {l r c d x : �
       rw [iteratedDeriv_succ,he.deriv_eq,hh.deriv,iteratedDeriv_succ,pow_succ]
       ring
 
-end TaoTrudgianYang2025
+

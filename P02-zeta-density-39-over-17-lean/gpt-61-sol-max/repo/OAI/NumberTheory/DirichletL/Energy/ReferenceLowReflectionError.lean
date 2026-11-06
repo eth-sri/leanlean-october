@@ -11,17 +11,17 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowReflectionError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
+
+open CenteredMomentNaturalRowSource
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -51,7 +51,7 @@ theorem reference_from_low_with_error
       Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b →
       ∀(along bshort:ℝ),s.width≤Lreflect+along →
       max 0 (s.width-along+xi)≤L → bshort≤L →
-      max 0 (s.width-along+xi)+length Z (Z^bshort)+6*κ*(∑i∈F,w i)≤s.width →
+      max 0 (s.width-along+xi)+length Z (Z^bshort)+6*κ*(∑i∈F,w i)≤ s.width →
       max 0 (s.width-along+xi)+length Z (Z^bshort)+(∑i∈F,w i)≤5*s.width/6 →
       let E:=K*diagonalControl s.radial.profile*Dchild*(sourceControl T Wshort)^2*
         (1+|t|+height)^(degree+2*n)*Z^(s.width+ε);
@@ -97,8 +97,8 @@ theorem reference_from_low_with_error
   apply add_le_add le_rfl
   convert mul_le_mul_of_nonneg_left he hcoeff using 1 ; ring
 
-end SevenEighths.CenteredMomentEnergyReferenceLowReflectionError
 
-end
 
-end OAI
+
+
+

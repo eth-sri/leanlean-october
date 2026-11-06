@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                              
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem third_derivative_floor_shift {R μ : ℝ} (N : ℕ)
@@ -28,4 +27,4 @@ theorem third_derivative_floor_shift {R μ : ℝ} (N : ℕ)
   exact ⟨hpos,Nat.floor_le_of_le hRN,by linarith,hfloor,
     (mul_le_mul_of_nonneg_right hfloor hμ.le).trans hscale1⟩
 
-end TaoTrudgianYang2025
+

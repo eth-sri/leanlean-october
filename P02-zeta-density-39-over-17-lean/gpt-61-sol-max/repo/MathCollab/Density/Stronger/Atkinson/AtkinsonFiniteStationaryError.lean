@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,7 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorQuarterPrefix
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-noncomputable section
+
 open Complex Filter
 open MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
@@ -70,7 +71,6 @@ theorem exists_norm_atkinsonLeadingTerm_sub_stationary_le :
   apply (mul_le_mul_of_nonneg_left hpair (by
     exact mul_nonneg (by positivity) (atkinsonBesselScale_nonneg _ _))).trans_eq
   dsimp [E,atkinsonBesselScale]
-  norm_num only [show (-2 : ℝ)*(1/4) = -(1/2) by norm_num]
   ring
 
 theorem exists_norm_atkinsonLeadingFiniteSum_sub_stationary_mass_le :
@@ -109,4 +109,4 @@ theorem exists_norm_atkinsonLeadingFiniteSum_sub_stationary_le {ε : ℝ} (hε :
   apply (mul_le_mul_of_nonneg_left (hprefix N) (by positivity)).trans_eq
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

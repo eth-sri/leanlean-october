@@ -7,13 +7,12 @@ public import LaterPairs.Native.ThirdDerivativeCorrelation
 public import LaterPairs.Native.ThirdDerivativeCorrelationSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                     
 
-noncomputable section
+
 open Set GafniTao
 namespace TaoTrudgianYang2025
 
@@ -51,4 +50,4 @@ theorem continuous_third_derivative_weyl
         (Nat.cast_nonneg _)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

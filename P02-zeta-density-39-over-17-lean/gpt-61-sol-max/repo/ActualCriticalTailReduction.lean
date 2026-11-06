@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import RetunedLongMultiplicity
 
 @[expose] public section
 
 open MeasureTheory Set Filter
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density
@@ -59,8 +59,7 @@ theorem weightedCriticalMean_tail_pointwise {T u t : ℝ}
     _ = _ := by
       rw [Real.rpow_neg hTp.le,show (125:ℝ)=((125:ℕ):ℝ) by norm_num,Real.rpow_natCast]
       unfold momentDecay
-      simp only [div_eq_mul_inv,mul_inv_rev]
-      ring
+      field_simp <;> ring
 
 theorem weightedCriticalMean_physical_tail {T u : ℝ} (hT : 1 ≤ T)
     (hu : u ∈ Icc T (2*T)) :
@@ -69,7 +68,7 @@ theorem weightedCriticalMean_physical_tail {T u : ℝ} (hT : 1 ≤ T)
   have hi := integrable_translated_critical_mean u
   have hw : Integrable (fun t : ℝ => momentDecay 2 (t-u)) :=
     (integrable_momentDecay (by norm_num : 2 ≤ 2)).comp_sub_right u
-  let C : ℝ := 12*T^(-125 : ℝ)
+  let C := 12*T^(-125 : ℝ)
   have hC : 0 ≤ C := by dsimp [C]; positivity
   calc
     _ ≤ ∫ t in (Icc 0 (3*T))ᶜ, C*momentDecay 2 (t-u) := by
@@ -128,7 +127,7 @@ theorem separated_weightedCriticalMean_excess_count {T B : ℝ}
     (hmean : ∀ u ∈ U,B ≤ weightedCriticalMean 128 u) :
     (U.card:ℝ)*B ≤ 2*separationMass*
       ∫ t in Icc 0 (3*T),criticalExcess (B/(4*Real.pi)) t := by
-  let v : ℝ := B/(4*Real.pi)
+  let v := B/(4*Real.pi)
   have hv : 0 ≤ v := by dsimp [v]; positivity
   have hvB : Real.pi*v=B/4 := by dsimp [v]; field_simp
   have he : IntegrableOn (criticalExcess v) (Icc 0 (3*T)) :=
@@ -136,13 +135,11 @@ theorem separated_weightedCriticalMean_excess_count {T B : ℝ}
   have hp (u : ℝ) (hu : u ∈ U) : B/2 ≤
       ∫ t in Icc 0 (3*T),momentDecay 128 (t-u)*criticalExcess v t := by
     have hh := (hmean u hu).trans (weightedCriticalMean_le_threshold_excess hT (hslab u hu) hv)
-    rw [hvB] at hh
-    nlinarith only [hh,htail]
+    nlinarith
   have hs := Finset.sum_le_sum hp
   simp only [Finset.sum_const,nsmul_eq_mul] at hs
   have hi := separated_momentDecay_integral_le he
     (criticalExcess_nonneg v) (by norm_num : 2 ≤ 128) hU
-  dsimp only [v] at hs hi
-  nlinarith only [hs,hi]
+  nlinarith
 
-end Montgomery.RationalMoment.RightDetector
+

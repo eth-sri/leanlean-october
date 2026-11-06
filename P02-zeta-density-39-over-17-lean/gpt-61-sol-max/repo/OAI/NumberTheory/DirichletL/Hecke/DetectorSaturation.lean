@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorSaturation
@@ -32,7 +32,7 @@ lemma logarithmic_cost_eventually (C ε : ℝ) (hε : 0<ε) :
   simpa only [one_mul,mul_one,mul_pow] using hh
 
 lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
-    (hU : 1<U) (hr : 0≤r) (hm : 0≤m) (hσ : a≤σ)
+    (hU : 1<U) (hr : 0≤r) (hm : 0≤ m) (hσ : a≤σ)
     (_hK : 0≤K) (_hA : 0≤A) (_hB : 0≤B)
     (hcost : K^2≤U^ε)
     (hprod : 1≤K*(U^r)^(1/2-σ)*(U^m)^(1/2-σ)*(A*B)) :
@@ -85,7 +85,7 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
         HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z^τ))<a+2*e →
         ∀ j : ι, ∀ Dstar r m σ freq : ℝ,
         (χ j).modulus.absNorm≤Z^d → 0<Dstar →
-        0≤r → r≤R → 0≤m → m≤R → (Z^d)^r≤4*Dstar →
+        0≤r → r≤R → 0≤ m → m≤R → (Z^d)^r≤4*Dstar →
         a≤σ → σ≤1 → |freq|+(Z^τ)/2≤(3*i+2 : ℕ)*(Z^τ) →
         (3+(3*i+2 : ℕ)*(Z^τ))^4≤(Z^d)^η →
         let M := polynomial (χ j) true
@@ -118,8 +118,8 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
   exact Detector.simultaneous_saturation hU (by linarith) hε.le (sq_nonneg _) (sq_nonneg _)
     hp (hMu.trans (hbound _)) (hSu.trans (hbound _))
 
-end SevenEighths.HeckeDetectorSaturation
 
-end
 
-end OAI
+
+
+

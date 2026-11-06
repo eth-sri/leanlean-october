@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.LogSeparation
 
 @[expose] public section
@@ -8,84 +9,76 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
 
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end SecondPassIntegration
 
 namespace CanonicalRowCompletion
 
@@ -98,7 +91,7 @@ section
 open ActualEisensteinCubic
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
-open CanonicalCubeSeparation JointLogSeparation
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -125,7 +118,7 @@ open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
-open CanonicalCubeSeparation JointLogSeparation
+
 
 theorem cube_coefficient_restore (H₀ : ℝ) (Ψ : ActualEisensteinCubic.O →* ℂ) (I : Ideal ActualEisensteinCubic.O)
     (hI : I ≠ 0) :
@@ -171,14 +164,18 @@ open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
 
-def activeCubeExponents (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ) :
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ)
+include S D b X
+
+def activeCubeExponents  :
     Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ) :=
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   ((outsideIdealsUpTo S D).image (cubeIndex F)).filter
     (fun v => (Ideal.absNorm (cubeIdeal F v) : ℝ)^3 ≤ b*X)
 
 theorem activeCubeExponents_norm_bound
-    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ)
+    
     (v : primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ)
     (hv : v ∈ activeCubeExponents S D b X) :
     (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ) ≤ max 1 (b*X) := by
@@ -189,6 +186,8 @@ theorem activeCubeExponents_norm_bound
   have hnn : n ≤ n^3 := by
     nlinarith [mul_nonneg (sub_nonneg.mpr hone) (show 0 ≤ n^2+n by positivity)]
   exact (hnn.trans hcube).trans (le_max_right _ _)
+end
+
 
 end
 
@@ -205,11 +204,15 @@ def cubeLogIndex (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
 def cubeLogRange (b X : ℝ) : Finset ℕ :=
   Finset.range (normLogBin (max 1 (b*X)) + 1)
 
-def activeCubeLogBin (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ) (j : ℕ) :
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ)
+include S D b X
+
+def activeCubeLogBin  (j : ℕ) :
     Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ) :=
   (activeCubeExponents S D b X).filter (fun v => cubeLogIndex S D v = j)
 
-theorem activeCubeLogIndex_mem (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ)
+theorem activeCubeLogIndex_mem 
     (v : primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ)
     (hv : v ∈ activeCubeExponents S D b X) : cubeLogIndex S D v ∈ cubeLogRange b X := by
   apply Finset.mem_range.mpr
@@ -218,7 +221,7 @@ theorem activeCubeLogIndex_mem (S : Finset (Ideal ActualEisensteinCubic.O)) (D :
     (lt_of_lt_of_le zero_lt_one (norm_at_least_one _ (cubeIdeal_ne_zero _ v)))
     (activeCubeExponents_norm_bound S D b X v hv)
 
-theorem activeCubeLogBin_norms (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ) (j : ℕ)
+theorem activeCubeLogBin_norms  (j : ℕ)
     (v : primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ)
     (hv : v ∈ activeCubeLogBin S D b X j) :
     normLogScale j ≤ (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ) ∧
@@ -229,6 +232,8 @@ theorem activeCubeLogBin_norms (S : Finset (Ideal ActualEisensteinCubic.O)) (D :
     (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ)
     (norm_at_least_one _ (cubeIdeal_ne_zero _ v))
   exact ⟨hh.1,by simpa only [mul_comm,cubeLogIndex] using hh.2⟩
+end
+
 
 theorem cubeLogRange_card (b X : ℝ) :
     (cubeLogRange b X).card = normLogBin (max 1 (b*X)) + 1 := by
@@ -268,16 +273,15 @@ theorem nonzeroRowMajorantSum_exact_disk (P : ActualEisensteinCubic.O → ℂ) (
     rw [ite_eq_right hzero,rowMajorant_zero _ hlarge,zero_mul]
   rw [tsum_eq_sum hz]
   apply Finset.sum_congr rfl
-  intro z hz
-  rw [ite_eq_right (Finset.mem_erase.mp hz).1]
+  grind
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

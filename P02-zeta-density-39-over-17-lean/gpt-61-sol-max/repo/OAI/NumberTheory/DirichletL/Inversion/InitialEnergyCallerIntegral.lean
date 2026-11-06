@@ -9,14 +9,14 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerIntegral
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialProfile
+
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
+open scoped EisensteinEis
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -80,8 +80,8 @@ theorem actual_common_integral_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
       exact (mul_le_mul_of_nonneg_left (hb z) (norm_nonneg _)).trans_eq (by ring)
     _=_ := integral_const_mul _ _
 
-end SevenEighths.InverseInitialEnergyCallerIntegral
 
-end
 
-end OAI
+
+
+

@@ -7,9 +7,8 @@ public import DensityEnergyGM.SharpPolynomialCountWindows
 
 open Real Complex Filter MeasureTheory Finset Set
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger MathCollab.Density GuthMaynard.Improvement
 
@@ -103,4 +102,4 @@ theorem smoothShortZeroCount_sharp_bound {σ a η : ℝ}
     _ = (4*Cb*D*C)*T^(3*a*(1-σ)+73*η) := by rw [← Real.rpow_add hTp]; congr 2; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

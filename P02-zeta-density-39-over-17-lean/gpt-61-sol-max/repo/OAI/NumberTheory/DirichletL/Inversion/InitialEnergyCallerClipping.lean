@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerPhysical
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerClipping
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -38,12 +38,12 @@ theorem initial_scalar_identity (m D B _v θ η δ π ε:ℝ) :
 
 theorem initial_scalar_le (m D B v θ η δ π ε:ℝ)(hδ:δ≤3*η) :
     prefactorCenter m D B θ+3*η+(D-B+θ+δ)+(B-θ+2*η)+π+
-      ((D-B+θ+δ)+ε)≤m+11*η+π+ε := by
+      ((D-B+θ+δ)+ε)≤ m+11*η+π+ε := by
   rw [initial_scalar_identity m D B v θ η δ π ε]
   linarith
 
-end SevenEighths.InverseInitialEnergyCallerClipping
 
-end
 
-end OAI
+
+
+

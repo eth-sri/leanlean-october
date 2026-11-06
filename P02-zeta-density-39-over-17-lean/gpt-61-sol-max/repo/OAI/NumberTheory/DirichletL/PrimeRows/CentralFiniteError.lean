@@ -8,10 +8,10 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open MeasureTheory Complex
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily ProbePhysical
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 lemma central_prime_tuple_count {K : ℕ} (T : Fin K→Finset PrimeIdeal)
@@ -30,8 +30,8 @@ lemma central_prime_tuple_count {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     _ ≤ ∏j,128*b*Z^(length j) := Finset.prod_le_prod₀ (fun j _=>Nat.cast_nonneg _) (fun j _=>hc j)
     _ = _ := by rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin,←Real.rpow_sum_of_pos hZ,hl]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

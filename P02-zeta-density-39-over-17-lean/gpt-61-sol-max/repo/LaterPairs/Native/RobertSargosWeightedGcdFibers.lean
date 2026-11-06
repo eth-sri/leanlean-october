@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosGcdScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_weighted_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
@@ -35,4 +34,4 @@ theorem exists_robertSargos_weighted_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left ha hC.le
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

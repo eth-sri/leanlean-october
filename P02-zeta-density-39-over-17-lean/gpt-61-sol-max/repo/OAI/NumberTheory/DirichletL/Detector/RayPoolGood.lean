@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical CanonicalQuadraticSieve PrincipalSignalComparison
+open HeckeFamily ProbePhysical CanonicalQuadraticSieve
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
@@ -28,7 +28,7 @@ theorem pool_supported (C : Set Id) (S : Finset Id) (hS : SourceExclusions S)
     (a b x : ℝ) (P : PrimeIdeal) (hP : P∈pool C S a b x) : Supported P.val :=
   outside_prime_supported S hS.bad P ((mem_pool C S a b x P).mp hP).2.2.2
 
-end SevenEighths.ProbeRaySlots
-end
 
-end OAI
+
+
+

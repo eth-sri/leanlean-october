@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstTailAggregate
-open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentFirstDiscardedEnergy CenteredMomentFirstScale CenteredMomentSectorLocalization
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentTwist
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion
+open CenteredMomentFirstScale
+open CenteredMomentHeckeExpansion CenteredMomentTwist
+open scoped EisensteinO
 
 theorem rowWeight_norm_le_one (η : Character) (m A z : O) (t : ℝ)
     (I : Ideal O) (hI : I≠0) : ‖rowWeight η m A z t I‖≤1 := by
@@ -24,8 +24,8 @@ theorem rowWeight_norm_le_one (η : Character) (m A z : O) (t : ℝ)
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (idealCoeff_norm_le_one η I)).trans (idealRowHom_norm _ _)
 
-end SevenEighths.CenteredMomentFirstTailAggregate
 
-end
 
-end OAI
+
+
+

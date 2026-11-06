@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.ExtractionBounds
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma extracted_norm_bounds (I : Ideal O) (hI : I ≠ 0) :
     (1 ≤ (Ideal.absNorm (firstPart I) : ℝ) ∧
@@ -46,14 +47,16 @@ lemma sum_extractionBins {A : Type*} [AddCommMonoid A] (R : Finset O) (M : ℝ) 
     (∑ z ∈ R, f z) = ∑ j, ∑ z ∈ extractionBin R M j, f z := by
   simp only [extractionBin, Finset.sum_filter]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro z hz
   simp
 
-lemma extractionBin_bounds (R : Finset O) (M : ℝ)
+section
+variable (R : Finset O) (M : ℝ)
     (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
     (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
       Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+include R M hR j
+
+lemma extractionBin_bounds 
     (z : O) (hz : z ∈ extractionBin R M j) :
     (CanonicalQuadraticSieve.divisorDyadicScale j.1.val ≤
         (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ∧
@@ -84,10 +87,7 @@ lemma extractionBin_bounds (R : Finset O) (M : ℝ)
     change _ ≤ 2 * max 1 _
     linarith [hy.2]
 
-lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
-    (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
-      Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+lemma extractionBin_scale_product 
     (hj : (extractionBin R M j).Nonempty) :
     CanonicalQuadraticSieve.divisorDyadicScale j.1.val *
       CanonicalQuadraticSieve.divisorDyadicScale j.2.val ^ 2 ≤ M := by
@@ -111,6 +111,8 @@ lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
       le_mul_of_one_le_right (by positivity) (one_le_pow₀ hcube)
     _ = Ideal.absNorm (Ideal.span {z}) := (extracted_norm_product _ hI).symm
     _ ≤ M := (hR z hzR).2
+end
+
 
 theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
     (R : Finset O) (hRne : R.Nonempty) (M N : ℝ)
@@ -128,14 +130,14 @@ theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
   let J := Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
     Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1)
   let active : Finset J := Finset.univ.filter (fun j => (extractionBin R M j).Nonempty)
-  let E : O → ℝ := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2
+  let E := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2
   let b : J → ℝ := fun j => ∑ z ∈ extractionBin R M j, E z
   have hactive : active.Nonempty := by
     obtain ⟨z, hz⟩ := hRne
     refine ⟨extractionLabel M z, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩⟩
     exact ⟨z, Finset.mem_filter.mpr ⟨hz, rfl⟩⟩
   obtain ⟨j, hj, hmax⟩ := Finset.exists_max_image active b hactive
-  have hjne : (extractionBin R M j).Nonempty := (Finset.mem_filter.mp hj).2
+  have hjne := (Finset.mem_filter.mp hj).2
   have hbnonneg : 0 ≤ b j := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hsum : (∑ z ∈ R, E z) ≤ (Fintype.card J : ℝ) * b j := by
     rw [sum_extractionBins R M E]
@@ -169,7 +171,7 @@ theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
       simp only [J, Fintype.card_prod, Fintype.card_fin, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
       ring
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

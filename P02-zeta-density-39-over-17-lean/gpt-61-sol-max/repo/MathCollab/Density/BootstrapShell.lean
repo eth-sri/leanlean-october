@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import MathCollab.Density.BootstrapSupremum
 public import MathCollab.Density.Comparison
 
 @[expose] public section
 
-open Real Set
+open Real
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -97,8 +97,7 @@ theorem localReflectionEnergy_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d
       (show 0 ≤ B*b^3*(localSet U H j).card*(d.N : ℝ)^2 by positivity)
     have he : (L^2/H)*H = L^2 := by field_simp
     have hz := congrArg (fun x : ℝ => B*b^3*(localSet U H j).card*4*(d.N : ℝ)*x) he
-    dsimp [C, b, B, F] at *
-    nlinarith
+    grind
   have hjcard : (∑ j ∈ localIndices U H, ((localSet U H j).card : ℝ)) = 3*(U.card : ℝ) := by
     exact_mod_cast (sum_card_localSet (U := U) hHp)
   calc
@@ -151,4 +150,4 @@ theorem bootstrap_one_shell (w : ComparisonCutoff) :
   dsimp [C₀] at *
   nlinarith [mul_nonneg hC₀ hx]
 
-end MathCollab.Density
+

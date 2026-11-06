@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Algebra.Order.Chebyshev
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesMatrix
 
@@ -17,27 +18,25 @@ Guth--Maynard Lemma 4.2.  It is a direct finite Jensen inequality, proved here
 over the reals before the spectral specialization.
 -/
 
-theorem sixthMoment_dispersion_nonneg {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (hs : s.Nonempty) :
+section
+variable {ι : Type*} [DecidableEq ι]
+    (s : Finset ι) (x : ι → ℝ)
+include ι s x
+
+theorem sixthMoment_dispersion_nonneg  (hs : s.Nonempty) :
     0 ≤ (∑ i ∈ s, x i ^ 6) -
       (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 2 := by
   have hJensen := pow_sum_le_card_mul_sum_pow
     (s := s) (f := fun i => x i ^ 2) (fun i hi => sq_nonneg (x i)) 2
   have hcard : 0 < (s.card : ℝ) ^ 2 := by
     positivity
-  have hpow : ∑ i ∈ s, (x i ^ 2) ^ 3 = ∑ i ∈ s, x i ^ 6 := by
-    apply Finset.sum_congr rfl
-    intro i hi
-    ring
   rw [sub_nonneg]
   rw [div_le_iff₀ hcard]
-  rw [hpow] at hJensen
-  simpa only [mul_comm] using hJensen
+  grind
 
 /-- Jensen on the complement of one selected coordinate, with the ambient
 cardinality in the denominator. -/
-theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (j : ι) :
+theorem sixthMoment_tail_lower  (j : ι) :
     (∑ i ∈ s.erase j, x i ^ 2) ^ 3 ≤
       (s.card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 := by
   have hJensen := pow_sum_le_card_mul_sum_pow
@@ -63,19 +62,18 @@ theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
 /-- The sixth-power form of Guth--Maynard equation (4.3).  Taking sixth and
 square roots of its two branches gives the scalar inequality used in Lemma
 4.2. -/
-theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (j : ι) (hj : j ∈ s) :
+theorem coordinate_sixth_le_trace_dispersion_max  (j : ι) (hj : j ∈ s) :
     x j ^ 6 ≤ max
       (4 * ((∑ i ∈ s, x i ^ 6) -
         (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 2))
       (8 * (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 3) := by
   let K : ℝ := s.card
-  let S : ℝ := ∑ i ∈ s, x i ^ 2
-  let Q : ℝ := ∑ i ∈ s, x i ^ 6
-  let y : ℝ := x j ^ 2
-  let B : ℝ := ∑ i ∈ s.erase j, x i ^ 2
-  let R : ℝ := ∑ i ∈ s.erase j, x i ^ 6
-  let A : ℝ := Q - S ^ 3 / K ^ 2
+  let S := ∑ i ∈ s, x i ^ 2
+  let Q := ∑ i ∈ s, x i ^ 6
+  let y := x j ^ 2
+  let B := ∑ i ∈ s.erase j, x i ^ 2
+  let R := ∑ i ∈ s.erase j, x i ^ 6
+  let A := Q - S ^ 3 / K ^ 2
   have hs : s.Nonempty := ⟨j, hj⟩
   have hK : 0 < K := by
     dsimp [K]
@@ -107,11 +105,7 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
     exact hbranch.trans (le_max_right _ _)
   · have hdiv : 2 * S / K < y := lt_of_not_ge hAverage
     have hmul : 2 * S < y * K := (div_lt_iff₀ hK).mp hdiv
-    have hyPos : 0 < y := by
-      by_contra hyNot
-      have hyZero : y = 0 := le_antisymm (le_of_not_gt hyNot) hy
-      rw [hyZero] at hmul
-      nlinarith
+    have hyPos : 0 < y := by nlinarith
     have hsquare : (2 * S) ^ 2 < (y * K) ^ 2 :=
       (sq_lt_sq₀ (by positivity) (by positivity)).2 hmul
     have hstrong : 4 * S ^ 2 * y < K ^ 2 * y ^ 3 := by
@@ -124,20 +118,17 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
       have hid : S ^ 3 - B ^ 3 = 3 * S ^ 2 * y - 3 * S * y ^ 2 + y ^ 3 := by
         rw [← hsumTwo]
         ring
-      rw [hid]
-      nlinarith
+      grind
     have hscaled : K ^ 2 * y ^ 3 ≤ 4 * (K ^ 2 * Q - S ^ 3) := by
       nlinarith
     have hAeq : K ^ 2 * A = K ^ 2 * Q - S ^ 3 := by
       dsimp [A]
       field_simp
-    have hbranchY : y ^ 3 ≤ 4 * A := by
-      apply le_of_mul_le_mul_of_pos_left _ hKsq
-      calc
-        K ^ 2 * y ^ 3 ≤ 4 * (K ^ 2 * Q - S ^ 3) := hscaled
-        _ = K ^ 2 * (4 * A) := by rw [← hAeq]; ring
+    have hbranchY : y ^ 3 ≤ 4 * A := by field_simp <;> nlinarith
     have hbranch : x j ^ 6 ≤ 4 * A := by simpa only [hyCube] using hbranchY
     exact hbranch.trans (le_max_left _ _)
+end
+
 
 /-- Sampling-matrix specialization of the sixth-power form of
 Guth--Maynard Lemma 4.2.  The two sums are respectively the first and cubic
@@ -155,7 +146,7 @@ theorem gmMatrix_singularValue_sixth_le_dispersion_max
             (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i) ^ 3 /
             (W.card : ℝ) ^ 3) := by
   let s : Finset (GMRow W) := Finset.univ
-  let x : GMRow W → ℝ := gmMatrixSingularValue cutoff N W
+  let x := gmMatrixSingularValue cutoff N W
   have hj : j ∈ s := Finset.mem_univ j
   have hbound := coordinate_sixth_le_trace_dispersion_max s x j hj
   have hsquare : ∀ i : GMRow W, x i ^ 2 =
@@ -170,4 +161,4 @@ theorem gmMatrix_singularValue_sixth_le_dispersion_max
     Finset.sum_filter, Finset.card_univ, Fintype.card_coe,
     hsquare, hsixth] using hbound
 
-end GuthMaynard.NativeMoment
+

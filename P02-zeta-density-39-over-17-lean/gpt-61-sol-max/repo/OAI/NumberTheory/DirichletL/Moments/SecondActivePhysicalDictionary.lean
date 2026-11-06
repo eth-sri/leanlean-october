@@ -6,28 +6,32 @@ public import OAI.NumberTheory.DirichletL.Moments.ActiveSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActivePhysicalDictionary
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
 open CenteredMomentSecondSectorFrequency CenteredMomentActiveSource
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentSupport
+open CenteredMomentFirstSectors CenteredMomentSupport
 open CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
+open CenteredMomentSecondCanonical
 open CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization
-open CenteredMomentSecondWholeKernel CenteredMomentLogDyadic
-open CenteredMomentSecondSectorRetained CenteredMomentSmooth
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSecondWholeKernel
+open CenteredMomentSecondSectorRetained
+open scoped HeckeO
 
- theorem sectorPool_active (C:Ideal O)(hC:C≠0)(S:Finset (Ideal O))(β:Ideal O→ℂ):
+ section
+variable (C:Ideal O)(hC:C≠0)(S:Finset (Ideal O))
+include C hC S
+
+theorem sectorPool_active (β:Ideal O→ℂ):
     sectorPool C hC (activeSource S β)=(sectorPool C hC S).filter (fun I=>β (C*I)≠0):=by
   ext I
   simp only [sectorPool,Finset.mem_filter,mem_residualPool,supportedColumns_active]
   tauto
 
- theorem sector_sum_active (C:Ideal O)(hC:C≠0)(S:Finset (Ideal O))(β f:Ideal O→ℂ)
+ theorem sector_sum_active (β f:Ideal O→ℂ)
     (hf:∀I,β (C*I)=0→f I=0):
     (∑I∈sectorPool C hC (activeSource S β),f I)=∑I∈sectorPool C hC S,f I:=by
   rw [sectorPool_active,Finset.sum_filter]
@@ -36,6 +40,8 @@ local notation "O"=>HeckeFamily.O
   by_cases h:β (C*I)=0
   · simp only [h,ne_eq,not_true_eq_false,ite_false,hf I h]
   · simp only [h,ne_eq,not_false_eq_true,ite_true]
+end
+
 
  theorem sector_pair_sum_active (C D:Ideal O)(hC:C≠0)(hD:D≠0)
     (S:Finset (Ideal O))(β:Ideal O→ℂ)(f:Ideal O→Ideal O→ℂ)
@@ -47,8 +53,12 @@ local notation "O"=>HeckeFamily.O
   intro I h
   exact Finset.sum_eq_zero (fun J hJ=>hleft I J h)
 
- theorem sectorFrequency_active (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(F:O→Ideal O→Ideal O→ℂ)(z:O):
+ section
+variable (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
+    (C D:Ideal O)(hC:Supported C)(hD:Supported D)
+include η t S β C D hC hD
+
+theorem sectorFrequency_active (F:O→Ideal O→Ideal O→ℂ)(z:O):
     sectorFrequency η t S β C D hC hD F z=
       sectorFrequency η t (activeSource S β) β C D hC hD F z:=by
   let f:Ideal O→Ideal O→ℂ:=fun I J=>
@@ -83,8 +93,7 @@ local notation "O"=>HeckeFamily.O
     simp only [f,h,zero_mul,star_zero,mul_zero]
     split_ifs <;> rfl
 
- theorem physicalBlock_active (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
+ theorem physicalBlock_active (U:Finset (CommonIndex C D))
     (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(n:Fin 4→ℤ):
     physicalBlock η t S β C D hC hD U R rows W K n=
       physicalBlock η t (activeSource S β) β C D hC hD U R rows W K n:=by
@@ -98,9 +107,11 @@ local notation "O"=>HeckeFamily.O
         (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K)*
         dyadicWeight (n 1) (normValue z)*dyadicWeight (n 2) (I.absNorm:ℝ)*
         dyadicWeight (n 3) (J.absNorm:ℝ):ℝ):ℂ)) _
-
-end SevenEighths.CenteredMomentSecondActivePhysicalDictionary
-
 end
 
-end OAI
+
+
+
+
+
+

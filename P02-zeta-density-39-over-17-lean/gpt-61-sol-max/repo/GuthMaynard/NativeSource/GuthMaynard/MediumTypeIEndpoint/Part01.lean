@@ -5,7 +5,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.WeylExplicit
 @[expose] public section
 
 open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Complex Finset MeasureTheory Real
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
@@ -332,10 +332,14 @@ theorem exists_large_typeIReflectedFixedPolynomial_of_integral
     exact (norm_add_le _ _).trans (add_le_add hCentral' hTail)
   linarith
 
+section
+variable {sigma t : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma)
+    (hQ : 0 < Q) (hM : 1 ≤ M)
+include sigma t Q M hsigma hQ hM
+
 /-- Norm form of the exact negative-mode Mellin identity. -/
 theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes
-    {sigma t : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma)
-    (hQ : 0 < Q) (hM : 1 ≤ M) :
+     :
     ‖∫ r : ℝ,
         typeIReflectedMellinPolynomial sigma t (Q : ℝ) M r *
           typeIDyadicCutoffMellin r *
@@ -357,8 +361,7 @@ theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes
 changes neither side's norm, so the same `2π` normalization as in the
 negative half is retained. -/
 theorem norm_typeIReflectedPositiveMellinIntegral_eq_two_pi_mul_positiveModes
-    {sigma t : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma)
-    (hQ : 0 < Q) (hM : 1 ≤ M) :
+     :
     ‖∫ r : ℝ,
         typeIReflectedMellinPolynomial sigma (-t) (Q : ℝ) M r *
           typeIDyadicCutoffMellin r *
@@ -374,13 +377,19 @@ theorem norm_typeIReflectedPositiveMellinIntegral_eq_two_pi_mul_positiveModes
     abs_of_pos (by positivity : 0 < 1 / (2 * Real.pi))] at hNorm
   rw [hNorm]
   field_simp [Real.pi_ne_zero]
+end
+
+
+section
+variable {sigma t H L R K E : ℝ} {Q M : ℕ}
+    (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M)
+    (hH : 0 ≤ H) (hR : 0 ≤ R)
+include sigma t H L R K E Q M hsigma hQ hM hH hR
 
 /-- A large retained negative half forces a large value of the common
 fixed reflected polynomial at a bounded Mellin displacement. -/
 theorem exists_large_reflectedFixedPolynomial_of_negativeModes
-    {sigma t H L R K E : ℝ} {Q M : ℕ}
-    (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M)
-    (hH : 0 ≤ H) (hR : 0 ≤ R)
+    
     (hLarge : L ≤
       ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
         typeINormalizedNegativeModes sigma t Q M‖)
@@ -414,9 +423,7 @@ theorem exists_large_reflectedFixedPolynomial_of_negativeModes
 fixed polynomial occurs at the reversed source ordinate, exactly as in the
 proved conjugation identity. -/
 theorem exists_large_reflectedFixedPolynomial_of_positiveModes
-    {sigma t H L R K E : ℝ} {Q M : ℕ}
-    (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M)
-    (hH : 0 ≤ H) (hR : 0 ≤ R)
+    
     (hLarge : L ≤
       ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
         typeINormalizedPositiveModes sigma t Q M‖)
@@ -446,6 +453,8 @@ theorem exists_large_reflectedFixedPolynomial_of_positiveModes
     exact mul_le_mul_of_nonneg_left hLarge (by positivity)
   exact exists_large_typeIReflectedFixedPolynomial_of_integral
     hsigma (by exact_mod_cast hQ) hM hH hR hKernel hIntegralLarge hTail hGap
+end
+
 
 /-- Zero-mode decay after restoring the exact source normalization. -/
 theorem exists_sourceScalar_zeroMode_decay (sigma : ℝ) (j : ℕ) :
@@ -769,17 +778,25 @@ theorem exists_separated_bounded_shift_image_medium
   rw [← hTotal]
   simpa only [mul_assoc] using hWeight
 
+section
+variable {M : ℕ}
+include M
+
+section
+variable {sigma T D H S : ℝ} (W : Finset ℝ)
+    (hM : 1 < M) (hH : 0 ≤ H) (hT : 0 ≤ T)
+    (hDH : D + H ≤ T / 2)
+    (hSeparated : IsSeparated 1 W)
+    (hRange : ∀ t ∈ W, T - D ≤ t ∧ t ≤ 2 * T + D)
+include sigma T D H S W hM hH hT hDH hSeparated hRange
+
 /-- Family form of the reflected extraction.  Each source ordinate may
 choose its own bounded Mellin displacement, but the output is reseparated,
 translated to one positive base interval, and pigeonholed onto one common
 ordinary dyadic block.  The displayed cardinality loss keeps every fibre of
 the displacement map. -/
 theorem extract_common_reflected_mhh_block
-    {M : ℕ} {sigma T D H S : ℝ} (W : Finset ℝ)
-    (hM : 1 < M) (hH : 0 ≤ H) (hT : 0 ≤ T)
-    (hDH : D + H ≤ T / 2)
-    (hSeparated : IsSeparated 1 W)
-    (hRange : ∀ t ∈ W, T - D ≤ t ∧ t ≤ 2 * T + D)
+    
     (hEach : ∀ t ∈ W, ∃ u ∈ Set.Icc (-H) H,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M) (-(t + u))‖) :
@@ -911,11 +928,7 @@ theorem extract_common_reflected_mhh_block
 The positive Poisson half already lands at the positive ordinate `t - u`,
 so no reflection about `3T/2` and no coefficient phase shift are needed. -/
 theorem extract_common_positive_reflected_mhh_block
-    {M : ℕ} {sigma T D H S : ℝ} (W : Finset ℝ)
-    (hM : 1 < M) (hH : 0 ≤ H) (hT : 0 ≤ T)
-    (hDH : D + H ≤ T / 2)
-    (hSeparated : IsSeparated 1 W)
-    (hRange : ∀ t ∈ W, T - D ≤ t ∧ t ≤ 2 * T + D)
+    
     (hEach : ∀ t ∈ W, ∃ u ∈ Set.Icc (-H) H,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M) (t - u)‖) :
@@ -994,12 +1007,14 @@ theorem extract_common_positive_reflected_mhh_block
       _ = (2 * (2 * ⌈H⌉₊ + 1)) * (Nat.clog 2 M) * U.card := by ring
   · intro v hv
     simpa only [mul_one] using hLargeDyadic v hv
+end
+
 
 /-- A cancellation-safe family pigeonhole for the two retained Poisson
 signs.  No point is discarded before the signed alternative is known; the
 only loss is the explicit factor two. -/
 theorem select_common_signed_reflected_family
-    {M : ℕ} {sigma H S : ℝ} (W : Finset ℝ)
+     {sigma H S : ℝ} (W : Finset ℝ)
     (hEach : ∀ t ∈ W,
       (∃ u ∈ Set.Icc (-H) H,
         S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
@@ -1038,6 +1053,8 @@ theorem select_common_signed_reflected_family
     rcases hEach t htData.1 with hNeg | hPos
     · exact False.elim (htData.2 hNeg)
     · exact hPos
+end
+
 
 /-
 /-- One cancellation-safe interface for the two retained Poisson signs.
@@ -1144,14 +1161,18 @@ positive exponent margin.  The dedicated term in
 noncomputable def reflectedEndpointScaleSlack (σ d : ℝ) : ℝ :=
   100 * d / (σ - 1 / 2)
 
+section
+variable {σ d : ℝ} (hσ : 1 / 2 < σ)
+include σ d hσ
+
 theorem reflectedEndpointScaleSlack_pos
-    {σ d : ℝ} (hσ : 1 / 2 < σ) (hd : 0 < d) :
+     (hd : 0 < d) :
     0 < reflectedEndpointScaleSlack σ d := by
   unfold reflectedEndpointScaleSlack
   positivity
 
 theorem four_mul_le_reflectedEndpointScaleSlack
-    {σ d : ℝ} (hσ : 1 / 2 < σ) (hσUpper : σ < 1) (hd : 0 ≤ d) :
+     (hσUpper : σ < 1) (hd : 0 ≤ d) :
     4 * d ≤ reflectedEndpointScaleSlack σ d := by
   unfold reflectedEndpointScaleSlack
   by_cases hdz : d = 0
@@ -1160,6 +1181,8 @@ theorem four_mul_le_reflectedEndpointScaleSlack
     have hgap : 0 < σ - 1 / 2 := by linarith
     rw [le_div_iff₀ hgap]
     nlinarith
+end
+
 
 /-- Both critical-strip side-gap terms in the global loss parameter make the
 reflected transition width smaller than one sixth of the endpoint scale. -/
@@ -1556,18 +1579,22 @@ theorem typeISourceSmoothWeight_support
       exact hnLower
     exact hCut (typeIDyadicCutoff_eq_zero_of_two_le hRatio)
 
+section
+variable (Y A r : ℕ)
+include Y A r
+
 /-- Source normalization at the lower edge of its fixed annulus.  This is the
 finite analogue of multiplying a smooth zeta block by `Q^σ`; the harmless
 factor two makes the coefficient bound literal even at the left edge. -/
 noncomputable def normalizedTypeISourceDirichletCoeff
-    (Y A r : ℕ) (σ : ℝ) (n : ℕ) : ℂ :=
+     (σ : ℝ) (n : ℕ) : ℂ :=
   ((((((2 ^ r * Y : ℕ) : ℝ) / 2) ^ σ : ℝ) : ℂ)) *
     typeISourceDirichletCoeff Y A r σ n
 
 /-- The normalized coefficients of the actual source-smooth block are bounded
 by one on the entire natural line. -/
 theorem norm_normalizedTypeISourceDirichletCoeff_le_one
-    (Y A r : ℕ) (σ : ℝ) (hσ : 0 ≤ σ) :
+     (σ : ℝ) (hσ : 0 ≤ σ) :
     ∀ n : ℕ, ‖normalizedTypeISourceDirichletCoeff Y A r σ n‖ ≤ 1 := by
   intro n
   by_cases hw : typeISourceSmoothWeight Y A r n = 0
@@ -1606,11 +1633,15 @@ theorem norm_normalizedTypeISourceDirichletCoeff_le_one
             (Real.rpow_nonneg (by positivity) _) zero_le_one
       _ = 1 := by ring
 
+section
+variable (σ t : ℝ) (hY : 1 ≤ Y)
+include σ t hY
+
 /-- A source-smooth block is exactly one finite wide Dirichlet polynomial.
 The two apparent endpoint discrepancies are genuine zero terms: the left
 endpoint is killed by `typeITailBoundary`, and so is `A + 1`. -/
 theorem typeISourceSmoothBlock_eq_wideDirichletPoly
-    (Y A r : ℕ) (σ t : ℝ) (hY : 1 ≤ Y) :
+     :
     typeISourceSmoothBlock Y A r σ t =
       wideDirichletPoly 1 (Nat.clog 2 (A + 1))
         (typeISourceDirichletCoeff Y A r σ) t := by
@@ -1676,7 +1707,7 @@ theorem typeISourceSmoothBlock_eq_wideDirichletPoly
 /-- Normalizing the source coefficients scales the complete source block by
 the same positive real scalar. -/
 theorem wideDirichletPoly_normalizedTypeISourceDirichletCoeff
-    (Y A r : ℕ) (σ t : ℝ) (hY : 1 ≤ Y) :
+     :
     wideDirichletPoly 1 (Nat.clog 2 (A + 1))
         (normalizedTypeISourceDirichletCoeff Y A r σ) t =
       (((((2 ^ r * Y : ℕ) : ℝ) / 2) ^ σ : ℝ) : ℂ) *
@@ -1687,6 +1718,9 @@ theorem wideDirichletPoly_normalizedTypeISourceDirichletCoeff
   apply Finset.sum_congr rfl
   intro n _hn
   ring
+end
+end
+
 
 /-- A large actual source-smooth block yields one common nonzero dyadic
 block with unit-bounded coefficients.  The selected dyadic length remains
@@ -2854,11 +2888,15 @@ theorem norm_smoothStep_weighted_Ioc_le_div
       exact mul_le_of_le_one_left hPowNonneg hStepOne
     _ = (L + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (L : ℝ) / t) := by norm_num
 
+section
+variable {L U : ℕ} {σ t : ℝ}
+    (hσ : 0 ≤ σ)
+include L U σ t hσ
+
 /-- First-derivative terminal estimate for the coefficient-one member of the
 three-sum source decomposition. -/
 theorem norm_plain_weighted_Ioc_le_div
-    {L U : ℕ} {σ t : ℝ}
-    (hσ : 0 ≤ σ) (hLU : L < U) (hL : 0 < L)
+     (hLU : L < U) (hL : 0 < L)
     (hLength : U - L ≤ L) (htOne : 1 ≤ t)
     (htL : t ≤ (L : ℝ)) :
     ‖∑ n ∈ Finset.Ioc L U,
@@ -2890,8 +2928,7 @@ theorem norm_plain_weighted_Ioc_le_div
 `t ≤ L`.  Keeping both nonnegative majorants makes the later terminal source
 assembly independent of that case split. -/
 theorem norm_plain_weighted_Ioc_le_sqrt_add_div
-    {L U : ℕ} {σ t : ℝ}
-    (hσ : 0 ≤ σ) (hL : 0 < L) (hLength : U - L ≤ L)
+     (hL : 0 < L) (hLength : U - L ≤ L)
     (htOne : 1 ≤ t) (htSq : t ≤ (L : ℝ) ^ 2) :
     ‖∑ n ∈ Finset.Ioc L U,
         ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
@@ -2914,6 +2951,8 @@ theorem norm_plain_weighted_Ioc_le_sqrt_add_div
       omega
     rw [hEmpty, Finset.sum_empty, norm_zero]
     positivity
+end
+
 
 /-- Smooth-cutoff counterpart of
 `norm_plain_weighted_Ioc_le_sqrt_add_div`. -/
@@ -3093,13 +3132,21 @@ theorem source_upper_smooth_sum_eq_min_two_mul
     exact_mod_cast hnTwo
   rw [typeISmoothStep_eq_zero hRatio, zero_mul, zero_smul]
 
+section
+variable {Y A r : ℕ}
+include Y A r
+
+section
+variable {σ t : ℝ}
+    (hY : 0 < Y) (hr : 2 ≤ r)
+include σ t hY hr
+
 /-- Uniform square-root cancellation bound for every classified source
 block, with no upper-edge assumption.  The proof uses the exact support at
 `2Q`; consequently the ambient sharp cutoff never appears in an interval
 length estimate. -/
 theorem norm_typeISourceSmoothBlock_le_sqrt
-    {Y A r : ℕ} {σ t : ℝ}
-    (hY : 0 < Y) (hr : 2 ≤ r) (hσ : 0 ≤ σ)
+     (hσ : 0 ≤ σ)
     (htOne : 1 ≤ t)
     (htSq : t ≤ (((2 ^ r * Y) / 2 : ℕ) : ℝ) ^ 2) :
     ‖typeISourceSmoothBlock Y A r σ t‖ ≤
@@ -3219,8 +3266,7 @@ range `Q^2 \lesssim t \lesssim Q^3`.  This theorem consumes the exact
 three-sum expansion of the source block, including both smooth boundary
 pieces, rather than replacing it by a coefficient-free model. -/
 theorem norm_typeISourceSmoothBlock_le_weyl
-    {Y A r : ℕ} {σ t : ℝ}
-    (hY : 0 < Y) (hr : 2 ≤ r)
+    
     (hInterior : 2 * (2 ^ r * Y) ≤ A) (hσ : 0 ≤ σ)
     (htOne : 1 ≤ t)
     (hSquare : ((((2 ^ r * Y) + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ 8 * t)
@@ -3346,12 +3392,14 @@ theorem norm_typeISourceSmoothBlock_le_weyl
         Real.sqrt (8 * (((2 ^ r * Y + 1 : ℕ) : ℝ)) * t ^ (1 / 3 : ℝ)) := by
       dsimp only [L, Q, R]
       ring
+end
+
 
 /-- Physical form of the preceding source-block Weyl estimate.  The source
 length is kept as the actual natural `Q = 2^r Y`, and the identity
 `Q^tau = T` is used only at the final exponent conversion. -/
 theorem norm_typeISourceSmoothBlock_le_physical_weyl
-    {Y A r : ℕ} {σ T t tau : ℝ}
+     {σ T t tau : ℝ}
     (hY : 0 < Y) (hr : 2 ≤ r)
     (hInterior : 2 * (2 ^ r * Y) ≤ A)
     (hσ : 0 ≤ σ) (hσUpper : σ ≤ 1)
@@ -3459,6 +3507,8 @@ theorem norm_typeISourceSmoothBlock_le_physical_weyl
     _ = (180 * Real.sqrt 48) *
           T ^ ((1 / 2 - σ) / tau + 1 / 6) := by
       rw [hQPower, Real.rpow_add hTPos]
+end
+
 
 /-- Uniform physical side conditions for the complete source-block Weyl
 estimate.  The factor eight in the quadratic condition is exactly what
@@ -4428,5 +4478,5 @@ theorem eventually_lower_source_logarithmic_scale_bounds
   exact ⟨hNOne, hTauLower, hTauUpper⟩
 
 -- Generated closures: source context is replayed in the next part.
-end GuthMaynard.NativeMoment
-end
+
+

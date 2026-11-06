@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection4Dilation
 public import GafniTao.WooleySection7Congruence
 public import GafniTao.WooleyTranslationDilation
@@ -21,7 +22,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyIntegerTupleDisplacement_polynomial_C
     {I : Type*} (R : ℕ) (z : ℤ) (point : I → ℤ)
@@ -122,14 +123,7 @@ theorem wooleySection4_exists_dilated_system
       wooleyIntegerTupleDisplacement R
         (fun x =>
           (wooleySection7NormalSystem k p c psi i).eval
-            (dilatedPoint x)) xy := by
-    have herr : (p : ℤ) ^ B ∣
-        (p : ℤ) ^ B *
-          wooleyIntegerTupleDisplacement R
-            (fun x => (Error i).eval (dilatedPoint x)) xy := dvd_mul_right _ _
-    have hsub := dvd_sub hcomb herr
-    rw [hdisp] at hsub
-    simpa only [add_sub_cancel_right] using hsub
+            (dilatedPoint x)) xy := by simp_all
   have hdilation :
       wooleyIntegerTupleDisplacement R
           (fun x =>
@@ -149,18 +143,13 @@ theorem wooleySection4_exists_dilated_system
       wooleyIntegerTupleDisplacement R
         (fun x => (Psi i).eval (point x)) xy := by
     apply pow_dvd_of_mul_pow_dvd hpPrime.ne_zero hiB
-    have hnormal' : (p : ℤ) ^ B ∣
-        (p : ℤ) ^ (h * ((i : ℕ) + 1)) *
-          wooleyIntegerTupleDisplacement R
-            (fun x => (Psi i).eval (point x)) xy := by
-      rwa [hdilation] at hnormal
-    simpa only [Nat.mul_comm h ((i : ℕ) + 1)] using hnormal'
+    grind
   have hexp : B - k * h ≤ B - ((i : ℕ) + 1) * h := by
     have hil : ((i : ℕ) + 1) * h ≤ k * h := Nat.mul_le_mul_right h hi
     omega
   exact (pow_dvd_pow (p : ℤ) hexp).trans hcancel
 
 
-end
 
-end GafniTao
+
+

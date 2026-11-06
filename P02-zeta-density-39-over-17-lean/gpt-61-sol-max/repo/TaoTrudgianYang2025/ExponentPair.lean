@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.AsymptoticBridge
 
 @[expose] public section
@@ -138,18 +139,17 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
     linarith
   choose T N F a b hdata using fun i ↦
     hfailure (δ i) (hδpos i) (P i) (hPone i) (C i) (hCone i)
-  have hCT : ∀ i, C i ≤ T i :=
+  have hCT :=
     fun i ↦ (hdata i).1.threshold_le_param
-  have hNone : ∀ i, 1 ≤ N i :=
+  have hNone :=
     fun i ↦ (hdata i).1.one_le_scale
-  have hNT : ∀ i, N i ≤ T i :=
+  have hNT :=
     fun i ↦ (hdata i).1.scale_le_param
-  have happrox : ∀ i,
-      IsApproximateModelPhaseFunction (F i) σ (P i) (δ i) :=
+  have happrox :=
     fun i ↦ (hdata i).1.isApproximateModelPhase
-  have ha : ∀ i, N i ≤ (a i : ℝ) :=
+  have ha :=
     fun i ↦ (hdata i).1.scale_le_start
-  have hb : ∀ i, (b i : ℝ) ≤ 2 * N i :=
+  have hb :=
     fun i ↦ (hdata i).1.end_le_two_mul_scale
   have hviolate : ∀ i,
       C i * (T i / N i) ^ (k + ε) * N i ^ (l + ε) <
@@ -181,7 +181,7 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
     filter_upwards [eventually_ge_atTop p] with i hi
     dsimp [P]
     omega
-  have hF : IsModelPhaseFunction F :=
+  have hF :=
     isModelPhaseFunction_of_approximations hσ hPtop
       hδinfinitesimal happrox
   have hasymptotic :=
@@ -247,4 +247,4 @@ theorem ExponentPair.estimate {k l : ℝ} (h : ExponentPair k l) :
     IsExponentPairEstimate k l :=
   h.2
 
-end TaoTrudgianYang2025
+

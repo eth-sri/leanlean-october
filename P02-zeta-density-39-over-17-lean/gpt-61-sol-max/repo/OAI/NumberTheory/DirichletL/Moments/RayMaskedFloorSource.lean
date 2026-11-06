@@ -11,14 +11,14 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
+open CenteredMomentOriginalRadialComparison
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -130,8 +130,8 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
       (1+|t|+T)^J*Z^(loss+κ*(∑i,w i)) := by gcongr
     _ = _ := by rw [pow_add]; ring
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

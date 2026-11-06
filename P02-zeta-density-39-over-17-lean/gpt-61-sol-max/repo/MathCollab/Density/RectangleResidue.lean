@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected rectangle geometry and single-pole residue proofs from McColm's
 External/PNT/{Rectangle,ResidueCalcOnRectangles}.lean at exact revision
@@ -17,7 +18,6 @@ public import Mathlib.Tactic
 open Complex BigOperators Nat Classical Real Topology Filter
 open Set MeasureTheory intervalIntegral
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Contour
 
@@ -95,28 +95,28 @@ theorem not_mem_rectangleBorder_of_rectangle_mem_nhds {z w p : ℂ}
   exact ⟨Set.ne_left_of_mem_uIoo h1.1, Set.ne_right_of_mem_uIoo h1.1,
     Set.ne_left_of_mem_uIoo h1.2, Set.ne_right_of_mem_uIoo h1.2⟩
 
-noncomputable def HIntegral (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
+def HIntegral (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
     ∫ x in x₁..x₂, f (x + y * I)
 
 /-- The `VIntegral` definition used by the source-facing construction in `ResidueCalcOnRectangles`. -/
-noncomputable def VIntegral (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
+def VIntegral (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
     I • ∫ y in y₁..y₂, f (x + y * I)
 
 /-- The `HIntegral'` definition used by the source-facing construction in `ResidueCalcOnRectangles`. -/
-noncomputable def HIntegral' (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
+def HIntegral' (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
     (1 / (2 * π * I)) • HIntegral f x₁ x₂ y
 
 /-- The `VIntegral'` definition used by the source-facing construction in `ResidueCalcOnRectangles`. -/
-noncomputable def VIntegral' (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
+def VIntegral' (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
     (1 / (2 * π * I)) • VIntegral f x y₁ y₂
 
-noncomputable def RectangleIntegral (f : ℂ → E) (z w : ℂ) : E :=
+def RectangleIntegral (f : ℂ → E) (z w : ℂ) : E :=
     HIntegral f z.re w.re z.im - HIntegral f z.re w.re w.im +
     VIntegral f w.re z.im w.im - VIntegral f z.re z.im w.im
 
 /-- A `RectangleIntegral'` of a function `f` is one over a rectangle
   determined by `z` and `w` in `ℂ`, divided by `2 * π * I`. -/
-noncomputable abbrev RectangleIntegral' (f : ℂ → E) (z w : ℂ) : E :=
+abbrev RectangleIntegral' (f : ℂ → E) (z w : ℂ) : E :=
     (1 / (2 * π * I)) • RectangleIntegral f z w
 
 abbrev HolomorphicOn (f : ℂ → E) (s : Set ℂ) : Prop :=
@@ -129,7 +129,11 @@ theorem HolomorphicOn.vanishesOnRectangle [CompleteSpace E]
   integral_boundary_rect_eq_zero_of_differentiableOn f z w
     (f_holo.mono hU)
 
-theorem RectangleIntegral_congr (h : Set.EqOn f g (RectangleBorder z w)) :
+section
+variable (h : Set.EqOn f g (RectangleBorder z w))
+include h
+
+theorem RectangleIntegral_congr  :
     RectangleIntegral f z w = RectangleIntegral g z w := by
   unfold RectangleIntegral VIntegral
   congrm ?_ - ?_ + I • ?_ - I • ?_
@@ -139,9 +143,11 @@ theorem RectangleIntegral_congr (h : Set.EqOn f g (RectangleBorder z w)) :
   · exact Or.inr ⟨by simp, by simpa⟩
   · exact Or.inl <| Or.inl <| Or.inr ⟨by simp, by simpa⟩
 
-theorem RectangleIntegral'_congr (h : Set.EqOn f g (RectangleBorder z w)) :
+theorem RectangleIntegral'_congr  :
     RectangleIntegral' f z w = RectangleIntegral' g z w := by
   rw [RectangleIntegral', RectangleIntegral_congr h]
+end
+
 
 def RectangleBorderIntegrable (f : ℂ → E) (z w : ℂ) : Prop :=
     IntervalIntegrable (fun x => f (x + z.im * I)) volume z.re w.re ∧
@@ -202,14 +208,18 @@ theorem Complex.inv_re_add_im : (x + y * I)⁻¹ = (x - I * y) / (x ^ 2 + y ^ 2)
   rw [Complex.inv_def, div_eq_mul_inv]
   congr <;> simp [conj_ofReal, normSq] <;> ring
 
-theorem sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by
+section
+variable (hy : y ≠ 0)
+include hy
+
+theorem sq_add_sq_ne_zero  : x ^ 2 + y ^ 2 ≠ 0 := by
   linarith [sq_nonneg x, sq_pos_iff.mpr hy]
 
-theorem continuous_self_div_sq_add_sq (hy : y ≠ 0) :
+theorem continuous_self_div_sq_add_sq  :
     Continuous fun x => x / (x ^ 2 + y ^ 2) :=
   continuous_id.div (continuous_id.pow 2 |>.add continuous_const) (fun _ => sq_add_sq_ne_zero hy)
 
-theorem integral_self_div_sq_add_sq (hy : y ≠ 0) :
+theorem integral_self_div_sq_add_sq  :
     ∫ x in x₁..x₂, x / (x ^ 2 + y ^ 2) =
     Real.log (x₂ ^ 2 + y ^ 2) / 2 - Real.log (x₁ ^ 2 + y ^ 2) / 2 := by
   let f (x : ℝ) : ℝ := Real.log (x ^ 2 + y ^ 2) / 2
@@ -222,7 +232,7 @@ theorem integral_self_div_sq_add_sq (hy : y ≠ 0) :
   simp_rw [← e2.deriv]
   exact integral_deriv_eq_sub (fun _ _ => e2.differentiableAt) (e4.intervalIntegrable _ _)
 
-theorem integral_const_div_sq_add_sq (hy : y ≠ 0) :
+theorem integral_const_div_sq_add_sq  :
     ∫ x in x₁..x₂, y / (x ^ 2 + y ^ 2) =
       Real.arctan (x₂ / y) - Real.arctan (x₁ / y) := by
   nth_rewrite 1 [← div_mul_cancel₀ x₁ hy, ← div_mul_cancel₀ x₂ hy]
@@ -231,6 +241,8 @@ theorem integral_const_div_sq_add_sq (hy : y ≠ 0) :
   exact integral_congr fun x _ => by
     field_simp
     ring
+end
+
 
 set_option backward.isDefEq.respectTransparency false in
 theorem integral_const_div_self_add_im (hy : y ≠ 0) :
@@ -293,7 +305,7 @@ theorem ResidueTheoremAtOrigin' {z w c : ℂ}
     sub_neg_eq_add]
   rw [l1, l3, l4, l6, r1, r3, r4, r6]
   ring_nf
-  simp only [I_sq, ofReal_sub, ofReal_mul, ofReal_ofNat, ofReal_div, ofReal_neg, ofReal_one]
+  simp
   ring_nf
 
 theorem ResidueTheoremInRectangle
@@ -321,7 +333,7 @@ theorem ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : �
         disjoint_singleton_right.mpr
           (not_mem_rectangleBorder_of_rectangle_mem_nhds pInRectInterior)⟩
   rw [RectangleIntegral'_congr this]
-  have t1 : RectangleBorderIntegrable g z w :=
+  have t1 :=
     gHolo.rectangleBorderIntegrable
   have t2 : HolomorphicOn (fun s ↦ A / (s - p)) (Rectangle z w \ {p}) := by
     apply DifferentiableOn.mono (t := {p}ᶜ)
@@ -333,11 +345,11 @@ theorem ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : �
           exact hx
     · rintro s ⟨_, hs⟩
       exact hs
-  have t3 : RectangleBorderIntegrable (fun s ↦ A / (s - p)) z w :=
+  have t3 :=
     HolomorphicOn.rectangleBorderIntegrable' t2 pInRectInterior
   rw [RectangleIntegral', RectangleBorderIntegrable.add t1 t3, smul_add]
   rw [gHolo.vanishesOnRectangle (by rfl), smul_zero, zero_add]
   exact ResidueTheoremInRectangle zRe_le_wRe zIm_le_wIm pInRectInterior
 
 
-end MathCollab.Density.Contour
+

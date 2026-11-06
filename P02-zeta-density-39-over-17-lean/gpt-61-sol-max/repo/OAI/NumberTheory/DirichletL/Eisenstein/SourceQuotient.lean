@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceProjection
 
 @[expose] public section
@@ -9,79 +10,79 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CubicEisenstein
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
 
 open CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 abbrev SourceKernelQuotient := IntegralOrbitQuotient globalKubotaKernel
 
@@ -222,7 +223,7 @@ lemma kernelSourcePullback_surjective (M : levelTwo) : Function.Surjective (kern
 def kernelSourceUnitary (M : levelTwo) : KernelQuotientL2 ≃ₗᵢ[ℂ] KernelQuotientL2 :=
   LinearIsometryEquiv.ofSurjective (kernelSourcePullback M) (kernelSourcePullback_surjective M)
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def kernelSourceProjection : KernelQuotientL2 →L[ℂ] KernelQuotientL2 :=
   (24:ℂ)⁻¹ • ∑q : levelTwo ⧸ levelThreeInTwo,
@@ -279,10 +280,7 @@ end
 
 open scoped Classical
 
-namespace CubicEisenstein
-open CubicKubota
 
-end CubicEisenstein
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ENNReal
@@ -311,10 +309,14 @@ lemma periodTorus_periodVector (x : Fin 2 → ℝ) :
 def periodFrequencyEquiv : (Fin 2 → ℤ) ≃ ActualEisensteinCubic.O :=
   (finTwoArrowEquiv ℤ).trans dualFrequencyEquiv
 
-lemma periodFrequencyEquiv_apply (n : Fin 2 → ℤ) :
+section
+variable (n : Fin 2 → ℤ)
+include n
+
+lemma periodFrequencyEquiv_apply  :
     periodFrequencyEquiv n = dualFrequencyEquiv (n 0, n 1) := rfl
 
-lemma periodVector_character (n : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
+lemma periodVector_character  (x : Fin 2 → ℝ) :
     ShortDraftTrace.breveE (cuspFrequency (periodFrequencyEquiv n) * periodVector x) =
       Complex.exp (2 * Real.pi * Complex.I *
         ((n 0 : ℂ) * (x 0 : ℂ) + (n 1 : ℂ) * (x 1 : ℂ))) := by
@@ -329,24 +331,21 @@ lemma periodVector_character (n : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
   have hs : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
   have hw : omega3.re = -(1/2:ℝ) := by norm_num [omega3]
   congr 1
-  simp only [complexPoint, Complex.mul_im, Complex.add_re, Complex.add_im,
-    Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re, hw, omega3_im]
+  simp only [complexPoint, mul_im, add_im, ofReal_im, ofReal_re, omega3_im, hw, add_re, mul_re]
   push_cast
   field_simp
   ring
 
-lemma periodTorus_mFourier (n : Fin 2 → ℤ) (z : ℂ) :
+lemma periodTorus_mFourier  (z : ℂ) :
     UnitAddTorus.mFourier n (periodTorus z) =
       ShortDraftTrace.breveE (cuspFrequency (periodFrequencyEquiv n) * z) := by
   obtain ⟨x, rfl⟩ := periodVector.surjective z
   rw [periodTorus_periodVector, periodVector_character]
-  simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, Fin.prod_univ_two,
-    fourier_coe_apply, Complex.ofReal_one, div_one]
+  simp only [UnitAddTorus.mFourier, Fin.prod_univ_two, ContinuousMap.coe_mk, fourier_coe_apply, ofReal_one, div_one]
   rw [←Complex.exp_add]
-  congr 1
   ring
 
-lemma periodFrequencyEquiv_neg (n : Fin 2 → ℤ) :
+lemma periodFrequencyEquiv_neg  :
     periodFrequencyEquiv (-n) = -periodFrequencyEquiv n := by
   apply eisEmbedding_injective
   change eisEmbedding (ActualEisensteinCoordinates.eval (-n 0 + -n 1) (-n 0)) =
@@ -354,14 +353,14 @@ lemma periodFrequencyEquiv_neg (n : Fin 2 → ℤ) :
   rw [map_neg, eisEmbedding_eval, eisEmbedding_eval]
   push_cast
   ring
+end
+
 
 lemma cuspFrequency_neg (h : ActualEisensteinCubic.O) : cuspFrequency (-h) = -cuspFrequency h := by
   simp only [cuspFrequency, map_neg, neg_div]
 
 lemma periodVector_eq_lattice (x : Fin 2 → ℝ) :
-    periodVector x = eisensteinLatticeMap 3 (by norm_num) (Complex.measurableEquivPi.symm x) := by
-  rw [periodVector_apply]
-  simp [eisensteinLatticeMap, Complex.measurableEquivPi_symm_apply, mul_comm]
+    periodVector x = eisensteinLatticeMap 3 (by norm_num) (Complex.measurableEquivPi.symm x) := by rfl
 
 lemma periodVector_map_volume :
     Measure.map periodVector volume = ENNReal.ofReal (2/(9*Real.sqrt 3)) • volume := by
@@ -437,8 +436,8 @@ lemma periodTorus_L2_ext (F G : Lp ℂ 2 (volume : Measure (UnitAddTorus (Fin 2)
   rw [UnitAddTorus.mFourierBasis_repr, UnitAddTorus.mFourierBasis_repr,
     periodTorus_fourierCoeff, periodTorus_fourierCoeff, h]
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

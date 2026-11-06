@@ -9,12 +9,16 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def originalResidualRows (rows : Finset (Ideal Eis)) (R Q : Ideal Eis) : Finset (Ideal Eis) :=
+section
+variable (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
+include rows R Q
+
+def originalResidualRows  : Finset (Ideal Eis) :=
   (representativeRowFiber rows R Q).image (fun I => rowResidualPart I Q)
 
-lemma originalResidualRows_reconstruct (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
+lemma originalResidualRows_reconstruct 
     (hrows : ∀ I∈rows, I≠0) (K : Ideal Eis) (hK : K∈originalResidualRows rows R Q) :
     reconstructFiberRow R Q K∈representativeRowFiber rows R Q ∧
       rowResidualPart (reconstructFiberRow R Q K) Q=K := by
@@ -23,7 +27,7 @@ lemma originalResidualRows_reconstruct (rows : Finset (Ideal Eis)) (R Q : Ideal 
   rw [he]
   exact ⟨hI,rfl⟩
 
-lemma originalResidualRows_range (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
+lemma originalResidualRows_range 
     (hbad : ∀ P∈fixedBadPrimes, P∣Q) (X : ℝ)
     (hrows : ∀ I∈rows, I≠0 ∧ (Ideal.absNorm I:ℝ)≤X)
     (K : Ideal Eis) (hK : K∈originalResidualRows rows R Q) :
@@ -32,6 +36,8 @@ lemma originalResidualRows_range (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
   obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
   exact mem_idealRange.mp (completedRowFiber_residual_range rows Q (rowPowerfulPart R)
     (rowMaskPart R Q) hbad X hrows I hI)
+end
+
 
 theorem original_fiber_sum_reindex {M : Type*} [AddCommMonoid M]
     (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
@@ -49,7 +55,7 @@ theorem original_fiber_energy_reindex (rows : Finset (Ideal Eis)) (R Q : Ideal E
       ∑ K∈originalResidualRows rows R Q,‖f (reconstructFiberRow R Q K)‖^2 :=
   original_fiber_sum_reindex rows R Q hrows (fun I => ‖f I‖^2)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

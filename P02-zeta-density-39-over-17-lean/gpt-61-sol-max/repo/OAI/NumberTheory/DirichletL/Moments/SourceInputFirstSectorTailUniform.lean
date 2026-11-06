@@ -12,15 +12,15 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
+open HeckeFamily CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+
+
+open CenteredMomentSectorLocalization
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSourceInputTailUniform
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -72,7 +72,7 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
     hnom (by simpa using hZ.2)
   simp only [Real.rpow_one] at ht
   have hsquare:=pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>norm_nonneg _)) hm 2
-  have hp:0<min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
+  have hp:0< min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
   have hzpos:0<Z:=zero_lt_one.trans hZ.1
   have hzpower:0<Z^(ξ/4):=Real.rpow_pos_of_pos hzpos _
   have hden:0<(min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^Adec:=by positivity
@@ -98,8 +98,8 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
       mul_le_mul_of_nonneg_left hb (by positivity)
     _=_:=by dsimp [C];ring
 
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 
-end
 
-end OAI
+
+
+

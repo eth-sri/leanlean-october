@@ -10,11 +10,11 @@ open scoped Classical BigOperators ContDiff Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckeZeroSupremum
+open HeckeFamily HeckePrimeRay HeckeZeroSupremum
 open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
+open CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 open CenteredMomentFixedRayInducingTransport CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -35,10 +35,14 @@ lemma natural_relative_twists {η : Character} {z : O} (F : NaturalRow η z) (hz
 
 include hH
 
-theorem natural_relative_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
+section
+variable (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
-    (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
+    (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ)
+include W a b ha hWs hW Lmod Lslot loss lo hi κ hLm hLs hloss hbeta hκ
+
+theorem natural_relative_slot_bound  :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀η₀ : Character,∀ᶠZ : ℝ in atTop,
       ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : O,z≠0 →
       ∀F : NaturalRow η z,(F.character.modulus.absNorm:ℝ)≤Z^Lmod →
@@ -73,10 +77,7 @@ theorem natural_relative_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   apply mul_le_mul_of_nonneg_left _ hC.le
   exact pow_le_pow_left₀ (by positivity) (by linarith [abs_add_le t v]) degree
 
-theorem natural_character_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
-    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
-    (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
+theorem natural_character_slot_bound  :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀ν : Character,∀ᶠZ : ℝ in atTop,
       ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : O,z≠0 →
       ∀F : NaturalRow η z,(F.character.modulus.absNorm:ℝ)≤Z^Lmod →
@@ -94,9 +95,11 @@ theorem natural_character_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   have hQeq : internalQ Q ν.inverse=Q := inf_eq_left.mpr hQν
   have he:=hz P hP hPcap η z hz0 F hcond Q hQM (by simpa only [hQeq] using hex) σ t v hσ hσhi
   simpa only [idealCoeff_inverse_conj,starRingEnd_self_apply] using he
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
 end
 
-end OAI
+
+
+
+
+
+

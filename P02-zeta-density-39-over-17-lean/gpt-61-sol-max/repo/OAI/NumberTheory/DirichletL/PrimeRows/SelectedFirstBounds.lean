@@ -38,7 +38,7 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
 def selectedFirstBound (Q R : ℝ) : ℝ :=
   2*((Q^R+Q^(1/100:ℝ))*2*(1+Q^(1/100:ℝ))*388+Q^(1/100:ℝ)*(1+Q^(1/100:ℝ)))
 
-lemma selectedFirstBound_nonneg (Q R : ℝ) (hQ : 0≤Q) : 0≤selectedFirstBound Q R := by
+lemma selectedFirstBound_nonneg (Q R : ℝ) (hQ : 0≤Q) : 0≤ selectedFirstBound Q R := by
   unfold selectedFirstBound
   positivity
 
@@ -80,8 +80,8 @@ theorem continuedCompensatedLocal_first_bound (η : Character) (u : FreeRow) (P 
   exact compensatedReplacement_crude _ _ _ _ _ _ _ _ (by positivity) (by positivity)
     (hV.trans (by norm_num)) hW hD hM hB hq
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CompletePool
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedMarks
 
@@ -10,8 +11,8 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels
+open scoped EisensteinO
 
 def indexedIdealMark {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     (primes : ι→Ideal O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
@@ -57,8 +58,6 @@ theorem finiteCanonicalMarkedRow_complete_global {σ : Type*} [DecidableEq σ]
       indexedIdealMark (fun i:primePool F=>i.val) slots lists a I*W ((Ideal.absNorm I:ℝ)/X) := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
   dsimp only
   have he := marked_complete_pool_eq_global S D hbad hSp Ψ m f z W b X hX hW hD
     (indexedIdealMark (fun i:primePool F=>i.val) slots lists a)
@@ -74,7 +73,7 @@ theorem finiteCanonicalMarkedRow_complete_global {σ : Type*} [DecidableEq σ]
     _ = _ := he
     _ = _ := tsum_congr (fun I=>by ring)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

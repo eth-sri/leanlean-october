@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexFirstDerivative
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 
@@ -13,7 +14,7 @@ This is an entry bridge, not yet the general exponent-pair sum estimate.
 -/
 
 noncomputable section
-open Set
+
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson
@@ -79,7 +80,7 @@ theorem hasDerivAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
     atkinsonIndexRealSlope_scaled hM hu hu hx]
   rw [div_self hu.ne']
   have hS : 0 < Real.sqrt (2*Real.pi*u/M) := by positivity
-  have hX : 0 < Real.sqrt x := Real.sqrt_pos.mpr hx
+  have hX := Real.sqrt_pos.mpr hx
   have hSum : 0 < Real.sqrt (t/u+(Real.pi*M/(2*u))*x)+
       Real.sqrt (1+(Real.pi*M/(2*u))*x) := by positivity
   have hGap : t-u ≠ 0 := sub_ne_zero.mpr htu.ne'
@@ -99,4 +100,4 @@ theorem contDiffAt_atkinsonGapSlopeProfile
     positivity
   fun_prop (disch := positivity)
 
-end TaoTrudgianYang2025
+

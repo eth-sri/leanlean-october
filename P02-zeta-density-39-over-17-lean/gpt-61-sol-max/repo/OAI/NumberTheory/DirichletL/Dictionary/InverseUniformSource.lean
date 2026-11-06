@@ -12,7 +12,7 @@ open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
 open HeckeInverseAmplification HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial
+open HeckeDetectorCoefficientTransfer
 
 lemma positiveAnnular_support_sharp : Function.support positiveAnnular⊆Ioo (1/2) 2 := by
   intro x hx
@@ -72,8 +72,8 @@ theorem inverseSourceSchwartz_uniform (S : Finset (ℕ×ℕ)) :
   intro scaled reverse n hn U hU tstar r σ hσ t
   exact hb scaled reverse n hn (U^r/U^tstar) (by positivity) σ hσ t
 
-end SevenEighths.DetectorDictionaryInverseUniform
 
-end
 
-end OAI
+
+
+

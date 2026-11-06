@@ -7,32 +7,39 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance threeBlockFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+local instance threeBlockFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
-def residualWithFrozen [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis) (R F : Finset ι) : ℂ :=
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis)
+include hp hg c
+
+def residualWithFrozen  (R F : Finset ι) : ℂ :=
   ∏ i ∈ R, (∏ k ∈ R.erase i, MixedCrossSeparation.crossSymbol p hg i k^4)*
     (residualPrimeScalar (p i) c (hp i) (hg i)*∏ k ∈ F, MixedCrossSeparation.crossSymbol p hg i k^4)
 
-def markedWithFrozen [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis) (P F : Finset ι) : ℂ :=
+def markedWithFrozen  (P F : Finset ι) : ℂ :=
   ∏ i ∈ P, (∏ k ∈ P.erase i, MixedCrossSeparation.crossSymbol p hg i k^2)*
     (markedPrimeScalar (p i) c (hp i) (hg i)*∏ k ∈ F, MixedCrossSeparation.crossSymbol p hg i k^2)
+end
 
-def frozenPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+include D hp hg
+
+def frozenPhase  (j : ι → ℕ) (F : Finset ι) : ℂ :=
   ∏ i ∈ F, (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
     phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) (j i) (D.epsilon i)
 
-theorem activePhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+theorem activePhase_three_blocks 
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
@@ -69,8 +76,10 @@ theorem activePhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
     intro i hi
     have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
     simp [l,hn]
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

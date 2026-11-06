@@ -29,11 +29,15 @@ theorem contDiffOn_one_of_continuous_derivative {a b : ℝ} (hab : a < b)
     intro x hx
     exact (hd x hx).hasDerivWithinAt.derivWithin (uniqueDiffOn_Icc hab x hx)
 
-/-- Source exponential normalization and constant 2 for a decreasing absolute quotient. -/
-theorem first_derivative_test_antitone {a b : ℝ} (hab : a < b)
+section
+variable {a b : ℝ} (hab : a < b)
     {f f' g : ℝ → ℝ} (hd : ∀ x ∈ Set.Icc a b, HasDerivAt f (f' x) x)
     (hc : ContinuousOn f' (Set.Icc a b)) (hg : ContinuousOn g (Set.Icc a b))
     (hn : ∀ x ∈ Set.Icc a b, f' x ≠ 0)
+include a b hab f f' g hd hc hg hn
+
+/-- Source exponential normalization and constant 2 for a decreasing absolute quotient. -/
+theorem first_derivative_test_antitone 
     (hm : AntitoneOn (fun x => |g x / f' x|) (Set.Icc a b)) :
     ‖∫ x in a..b, (g x : ℂ) * Complex.exp (Complex.I * (f x : ℂ))‖ ≤
       2 * |g a / f' a| := by
@@ -66,10 +70,7 @@ theorem first_derivative_test_antitone {a b : ℝ} (hab : a < b)
   field_simp
 
 /-- Reflection gives the sharp endpoint bound for an increasing absolute quotient. -/
-theorem first_derivative_test_monotone {a b : ℝ} (hab : a < b)
-    {f f' g : ℝ → ℝ} (hd : ∀ x ∈ Set.Icc a b, HasDerivAt f (f' x) x)
-    (hc : ContinuousOn f' (Set.Icc a b)) (hg : ContinuousOn g (Set.Icc a b))
-    (hn : ∀ x ∈ Set.Icc a b, f' x ≠ 0)
+theorem first_derivative_test_monotone 
     (hm : MonotoneOn (fun x => |g x / f' x|) (Set.Icc a b)) :
     ‖∫ x in a..b, (g x : ℂ) * Complex.exp (Complex.I * (f x : ℂ))‖ ≤
       2 * |g b / f' b| := by
@@ -91,6 +92,8 @@ theorem first_derivative_test_monotone {a b : ℝ} (hab : a < b)
   rw [intervalIntegral.integral_comp_neg (fun x =>
     (g x : ℂ) * Complex.exp (Complex.I * (f x : ℂ))), neg_neg, neg_neg] at h
   exact h
+end
+
 
 /-- Lemma 4 for either monotonicity direction, with the maximum realized at an endpoint.
 The proof also permits vanishing weights, a stronger conclusion than the printed nonzero condition. -/
@@ -110,4 +113,4 @@ theorem first_derivative_test {a b : ℝ} (hab : a ≤ b)
   · exact (first_derivative_test_antitone hab hd hc hg hn hm).trans
       (mul_le_mul_of_nonneg_left (le_max_left _ _) (by norm_num))
 
-end DhimanKadiriQuesadaHerrera2026
+

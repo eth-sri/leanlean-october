@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCenteredReflection
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -31,8 +31,7 @@ theorem sharp_small_height_rpow {T H a : ℝ} (hT : 0<T) (hH : 0≤H)
     _ ≤ 2*T^a := by
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       have h := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2) ha1
-      norm_num at h
-      exact h
+      simp_all
 
 /-- Exact scale conversion from the sharp short-polynomial profile to the
 three physical centered-trace powers. -/
@@ -70,4 +69,4 @@ theorem sharp_shell_budget_le {T L H R E : ℝ}
       unfold sharpCenteredBudget
       ring
 
-end Montgomery.RationalMoment
+

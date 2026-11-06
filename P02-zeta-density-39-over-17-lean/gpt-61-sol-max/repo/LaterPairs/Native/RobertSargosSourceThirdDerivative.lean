@@ -7,14 +7,13 @@ public import LaterPairs.Native.RobertSargosSourceCenteredPhase
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                         
                                                                           
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -63,4 +62,4 @@ theorem robertSargos_source_centered_third_derivative_bound
     rw [robertSargosSourceCenteredPhase,he,Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025
+

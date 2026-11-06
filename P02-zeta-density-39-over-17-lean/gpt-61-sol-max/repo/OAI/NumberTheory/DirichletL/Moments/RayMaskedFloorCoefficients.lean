@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSlots
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeDyadic HeckePrimeAnnular CenteredMomentCommonMaskEnergy
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
  theorem slot_coefficient_bounds (W : ℝ→ℂ) (a b lo hi : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : Continuous W) :
@@ -36,8 +36,8 @@ local notation "O" => HeckeFamily.O
       exact hn (by simp [heightCoefficient,annularWeight,hh])
     exact (div_le_iff₀ hP).mp (hWs hw).2
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

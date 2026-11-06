@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowNormalized
 public import OAI.NumberTheory.DirichletL.Hecke.CommonProbe
 public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
@@ -13,7 +14,7 @@ open Filter Asymptotics
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues
 open ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def normalizedProbe {K : ℕ} (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
     (H : Subgroup (O ⧸ M)ˣ) (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
@@ -50,7 +51,6 @@ theorem normalizedProbe_low {K : ℕ}
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0) :
     letI : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∀η : Character,normalizedProbe M H S hmax ell a b W W0 W1 η=O[atTop](fun Z : ℝ=>Z^(3/16+loss)) := by
-  let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
   intro η
   obtain ⟨C,hC,hb⟩ := original_normalized_compensatedPhysicalProbe_low M H hH S hS hmax
     a b B loss ha hab hloss ell hell hinj hsum W hW hcompact hsupp hWB hne
@@ -67,7 +67,7 @@ theorem actual_source_analytic (S : Finset (Ideal O)) (hS : SourceExclusions S) 
     (sourceCorrection_differentiable η S hS).analyticOnNhd (Complex.isOpen_re_gt _),
     sourceCorrection_bound η S hS⟩
 
-end SevenEighths.ProbeFinalAssembly
-end
 
-end OAI
+
+
+

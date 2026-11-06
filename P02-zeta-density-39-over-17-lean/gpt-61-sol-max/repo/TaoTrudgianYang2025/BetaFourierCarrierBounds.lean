@@ -12,13 +12,13 @@ Only the first two derivatives of the actual phase are used. The constant
 is computed from their displayed bound, never chosen separately for each phase.
 -/
 
-noncomputable section
+
 
 open Complex Set
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem intervalC2Bound_fourierChar_of_derivative_bounds
     {F : ℝ → ℝ} {a b K : ℝ} (hK : 1 ≤ K)
@@ -115,4 +115,4 @@ theorem modelPhaseBufferedCutoff_uniform_c2 :
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)),Complex.norm_real,Real.norm_eq_abs]
     exact hjets l r η x hη 2 le_rfl
 
-end TaoTrudgianYang2025
+

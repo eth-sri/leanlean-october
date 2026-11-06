@@ -12,10 +12,11 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstCommonReferencePower
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
+open CenteredMomentCommonAllocationSum
+open CenteredMomentSourceLiveColumn
 open CenteredMomentFirstCommonSourcePowerBudget
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
+
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):ℝ:=
@@ -39,7 +40,7 @@ lemma reference_power_identity (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ)
 
 theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
-    Fintype.card ι≤N→a≤s.lower→s.upper≤b→
+    Fintype.card ι≤N→a≤ s.lower→s.upper≤b→
     ∀(C R seed:Ideal O)(hC:Supported C),seed∣C→
     ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K Z allowance:ℝ),0<K→0<Z→
     (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
@@ -78,8 +79,8 @@ theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε
         Z allowance ε (E j) N (α j) (zero_lt_one.trans_le hb) hV hNC hq hZ).symm
     _ = _:=by rw [←Finset.mul_sum];ring
 
-end SevenEighths.CenteredMomentFirstCommonReferencePower
 
-end
 
-end OAI
+
+
+

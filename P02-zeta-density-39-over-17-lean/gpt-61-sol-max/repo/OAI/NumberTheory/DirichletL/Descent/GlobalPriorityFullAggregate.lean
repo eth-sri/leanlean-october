@@ -9,15 +9,23 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic RayFourExpansion
 open InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InverseMomentGlobalPriorityTail
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMomentGlobalPriorityTail
+open scoped EisensteinO
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-def globalPriorityOriginalEnergy (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
+section
+variable (hp:∀i,p i≠0)
+include hp
+
+section
+variable (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+include hinj extra pool original w negative Ψ m slots lists a
+
+def globalPriorityOriginalEnergy 
     (om:ℝ→ℂ)(X t Y:ℝ):ℝ:=
   (32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
     (∑x∈original,globalPriorityOuter p hg negative Ψ m ray core w x*
@@ -25,9 +33,7 @@ def globalPriorityOriginalEnergy (hp:∀i,p i≠0)(hinj:Function.Injective (fun 
       parentPoisson p hp hg hinj pool negative Ψ m slots J (fun i=>lists i\extra x.cube)
         a om X t Y ray core (parent p x)).re
 
-def globalPriorityTailAggregate (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+def globalPriorityTailAggregate 
     (V:𝓢(ℝ,ℂ))(X Y:ℝ)(R:Finset ι→Finset ι→ℝ):ℝ:=
   (32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
     ‖∑y∈wholeAssignedParents p (fun x=>extra x.cube) original negative J lists,
@@ -35,9 +41,11 @@ def globalPriorityTailAggregate (hp:∀i,p i≠0)(hinj:Function.Injective (fun i
       priorityTailParent p hg hp hinj extra pool negative
         (firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core)
         m slots J lists a V X Y R y‖
+end
+
 
 theorem global_priority_three_branches
-    (hp:∀i,p i≠0)(hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)(hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
@@ -65,8 +73,10 @@ theorem global_priority_three_branches
   dsimp only at hb
   rw [original_paired_tail p hg hp hinj]
   exact (Complex.re_le_norm _).trans hb
-end SevenEighths.InverseMoment
-
 end
 
-end OAI
+
+
+
+
+

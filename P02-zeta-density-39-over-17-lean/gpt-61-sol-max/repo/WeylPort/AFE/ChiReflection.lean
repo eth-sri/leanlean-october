@@ -37,4 +37,4 @@ theorem chi_eq_two_mul (s : ℂ) :
   simp only [chi, htwo]
   ring
 
-end DhimanKadiriQuesadaHerrera2026
+

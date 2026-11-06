@@ -59,6 +59,6 @@ def wooleyPolynomialSystemLowMatrixMod {k : ℕ}
     Matrix (Fin k) (Fin k) (ZMod q) :=
   fun i j => (wooleyPolynomialSystemLowMatrix phi i j : ZMod q)
 
-end
 
-end GafniTao
+
+

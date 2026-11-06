@@ -13,13 +13,13 @@ reference interval (2^(-sigma),1). No exterior regularity of the original
 phase is required or asserted.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem real_rpow_lipschitz_on_positive_compact
     {l r : ℝ} (hl : 0 < l) (p : ℝ) :
@@ -64,4 +64,4 @@ theorem modelPhaseInverseSlope_expanded_model_error
   rw [← Real.rpow_mul hu0.le,neg_mul_neg,mul_inv_cancel₀ hσ.ne',Real.rpow_one] at h
   exact h.trans (mul_le_mul_of_nonneg_left he (zero_le_one.trans hC))
 
-end TaoTrudgianYang2025
+

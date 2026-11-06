@@ -67,4 +67,4 @@ theorem betaBProcess_majorant {m N T c C : ℝ}
     _ = (C/(2*Real.pi)+2)*((2*Real.pi+2)/d+2)*((T/N+1)*(N/y)) := by ring
     _ = _ := by rw [heq]
 
-end TaoTrudgianYang2025
+

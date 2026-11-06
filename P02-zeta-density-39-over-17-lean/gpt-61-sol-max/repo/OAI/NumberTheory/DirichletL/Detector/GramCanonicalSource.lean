@@ -8,10 +8,10 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def originalCommonBlock (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
@@ -58,7 +58,7 @@ theorem originalCommonBlock_eq_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   exact (shell_lattice_summable W hW _ hN U v (frequencyScale C k.val Y Q)
     (fun n m=>canonicalJoint S hS σ C k (primaryGenerator D*n) (primaryGenerator D*m))).tsum_prod.symm
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

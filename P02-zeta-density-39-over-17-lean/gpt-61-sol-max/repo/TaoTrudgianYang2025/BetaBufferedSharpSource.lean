@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedSharpCore
 
@@ -13,13 +14,13 @@ Every omitted mode is estimated, and no eta^-3 stationary loss remains.
 The far-tail radius and all finite harmonic lengths remain explicit.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhase_buffered_source_sharp_expansion
     {σ : ℝ} (hσ : 0 < σ) :
@@ -76,7 +77,7 @@ theorem bufferedTransitionCost_inverse_sqrt {T N : ℝ} (hT : 0 < T) (hN : 0 < N
     (2*(T/N)*(σ+1)*(Real.sqrt T)⁻¹+6)*D*N/Real.sqrt T =
       2*D*(σ+1)+6*D*N/Real.sqrt T := by
   rw [bufferedTransitionCost_eq hN]
-  have hs : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
+  have hs := (Real.sqrt_pos.mpr hT).ne'
   field_simp
 
 theorem modelPhase_buffered_source_inverse_sqrt_expansion
@@ -107,7 +108,7 @@ theorem modelPhase_buffered_source_inverse_sqrt_expansion
   refine ⟨C,hC,D,hD,E,hE,?_⟩
   intro N T a b hN hT ha hb hflat F δ hδ hF η A B L U P Q R
   have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hTpos
+  have hs := Real.sqrt_pos.mpr hTpos
   have hs₁ : 1 ≤ Real.sqrt T := by simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hT
   have hη : 0 < (Real.sqrt T)⁻¹ := inv_pos.mpr hs
   have hη₁ : (Real.sqrt T)⁻¹ ≤ 1 := (inv_le_one₀ hs).mpr hs₁
@@ -137,4 +138,4 @@ theorem norm_exponentialSumAt_le_buffered_short
     rw [hs,Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
+

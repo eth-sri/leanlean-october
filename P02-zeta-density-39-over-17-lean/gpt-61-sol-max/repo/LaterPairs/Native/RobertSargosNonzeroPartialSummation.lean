@@ -9,9 +9,8 @@ public import LaterPairs.Native.RobertSargosWeightRemoval
 public import LaterPairs.Native.SargosIntegerPrefix
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
@@ -26,20 +25,13 @@ theorem robertSargos_nonzero_q_split {A : Type*} [AddCommMonoid A]
       (∑ x ∈ Finset.range (Q-1), v (1+x)) +
       ∑ x ∈ Finset.range (Q-1), v (1-(Q:ℤ)+x) := by
   have he : (Finset.Ioo (-(Q:ℤ)) Q).erase 0 =
-      Finset.Icc (1:ℤ) (Q-1) ∪ Finset.Icc (1-(Q:ℤ)) (-1) := by
-    ext q
-    simp only [Finset.mem_erase,Finset.mem_Ioo,Finset.mem_union,Finset.mem_Icc]
-    omega
+      Finset.Icc (1:ℤ) (Q-1) ∪ Finset.Icc (1-(Q:ℤ)) (-1) := by grind
   have hd : Disjoint (Finset.Icc (1:ℤ) (Q-1))
       (Finset.Icc (1-(Q:ℤ)) (-1)) := by
     apply Finset.disjoint_left.mpr
-    intro q hq hq'
-    simp only [Finset.mem_Icc] at hq hq'
-    omega
+    grind
   rw [he,Finset.sum_union hd,sargos_sum_Icc_eq_range,sargos_sum_Icc_eq_range]
-  have hpos : ((Q:ℤ)-1+1-1).toNat = Q-1 := by omega
-  have hneg : ((-1:ℤ)+1-(1-Q)).toNat = Q-1 := by omega
-  rw [hpos,hneg]
+  bound
 
 theorem robertSargos_overlap_sum_range {A : Type*} [AddCommMonoid A]
     (H : ℕ) (r : ℤ) (v : ℤ → A) :
@@ -102,8 +94,7 @@ theorem robertSargos_overlap_rectangle_bounds (H : ℕ) (r : ℤ)
   constructor
   · exact hBlo'
   constructor
-  · linarith
-  constructor <;> linarith
+  all_goals (grind)
 
 
                                                                                          
@@ -131,7 +122,7 @@ theorem robertSargos_physical_nonzero_common_prefix
         ∑ m ∈ robertSargosCommonMInterval M H Q Q,
           ‖robertSargosSignedPolynomialPrefix f H Q r m positive X Y N‖ := by
   let S := robertSargosCommonMInterval M H Q Q
-  let B : ℝ := ((max (H:ℤ) (H-r):ℤ):ℝ)
+  let B := ((max (H:ℤ) (H-r):ℤ):ℝ)
   let Y := (robertSargosHOverlap H r).card
   let D := 16*(1+648*Real.pi*C)^3
   let W := fun (positive : Bool) (m : ℤ) =>
@@ -143,8 +134,7 @@ theorem robertSargos_physical_nonzero_common_prefix
            robertSargosSymmetricDifference f ((m:ℝ)+(1+z)) (B+y+r))
   have hsplit (m : ℤ) :
       robertSargosNonzeroShiftedTriple f H Q Q r m = W true m+W false m := by
-    simpa only [W,B,Y,Bool.false_eq_true,ite_true,ite_false] using
-      robertSargos_nonzero_triple_rectangles f H Q Q r m
+    exact robertSargos_nonzero_triple_rectangles f H Q Q r m
   by_cases he : Q-1 = 0 ∨ Y = 0
   · refine ⟨false,0,0,0,Nat.zero_le _,Nat.zero_le _,Nat.zero_le _,?_⟩
     have hz (m : ℤ) : robertSargosNonzeroShiftedTriple f H Q Q r m = 0 := by
@@ -156,7 +146,7 @@ theorem robertSargos_physical_nonzero_common_prefix
   have hXp : 0 < Q-1 := by omega
   have hYp : 0 < Y := by omega
   have hQp : 0 < Q := by omega
-  have hne : (robertSargosHOverlap H r).Nonempty := Finset.card_pos.mp hYp
+  have hne := Finset.card_pos.mp hYp
   obtain ⟨hBlo,hBhi,hBrlo,hBrhi⟩ := robertSargos_overlap_rectangle_bounds H r hne
   have hHQ : H ≤ Q := by
     have h := robertSargos_floor_half_height hlam hsmall hH
@@ -182,7 +172,7 @@ theorem robertSargos_physical_nonzero_common_prefix
         hQeq hC hlam hsmall hH hXp hYp hQp (by omega) hYQ le_rfl hs hq
         hBlo hBhi hBrlo hBrhi hf hlo hhi
     refine ⟨i+1,by omega,j+1,by omega,k+1,by omega,?_⟩
-    simpa only [S,W,D,A,B,Y,robertSargosSignedPolynomialPrefix] using hbound
+    exact hbound
   obtain ⟨Xp,hXp',Yp,hYp',Np,hNp',hp⟩ := hrect true
   obtain ⟨Xm,hXm',Ym,hYm',Nm,hNm',hm⟩ := hrect false
   let P := ∑ m ∈ S, ‖robertSargosSignedPolynomialPrefix f H Q r m true Xp Yp Np‖
@@ -261,8 +251,7 @@ theorem robertSargos_physical_polynomial_reduction
     (mul_le_mul_of_nonneg_left hsum hcoeff) _)
   convert hbound using 1
   dsimp only [Q,R]
-  simp only [div_eq_mul_inv]
   ring
 
 
-end TaoTrudgianYang2025
+

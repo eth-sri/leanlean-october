@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDivisors
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState
+open scoped HeckeO
 
 lemma divisor_norm {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (D:Finset (Ideal O))(hD:D∈(CompletedGauss.primeSupport s.puncture).powerset):
@@ -38,14 +39,14 @@ theorem divisor_reflection_range {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       Z^a=Y/((∏P∈D,P).absNorm:ℝ):=by
   dsimp only
   obtain ⟨hn,hcap⟩:=divisor_norm s D hD
-  have hp:0<((∏P∈D,P).absNorm:ℝ):=zero_lt_one.trans_le hn
-  have hlogN:Real.logb Z ((∏P∈D,P).absNorm:ℝ)≤Bmask:=
+  have hp :=zero_lt_one.trans_le hn
+  have hlogN :=
     (Real.logb_le_iff_le_rpow hZ hp).mpr hcap
   have hlogY:=Real.logb_nonneg hZ hY
   refine ⟨by linarith,by linarith,divided_scale_power Z Y _ hZ (zero_lt_one.trans_le hY) hp⟩
 
-end SevenEighths.CenteredMomentEnergyReferenceDivisors
 
-end
 
-end OAI
+
+
+

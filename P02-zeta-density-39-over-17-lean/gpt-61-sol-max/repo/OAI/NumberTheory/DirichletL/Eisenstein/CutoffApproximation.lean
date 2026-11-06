@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.RowCompletion.ThetaNonvanishing
 
 @[expose] public section
@@ -10,73 +11,73 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff Manifold
@@ -98,8 +99,7 @@ lemma l2_toLp_sub_norm_sq (f g : α→E) (hf : MemLp f 2 «μ») (hg : MemLp g 2
   rw [l2_norm_sq_integral]
   apply integral_congr_ae
   filter_upwards [Lp.coeFn_sub (hf.toLp f) (hg.toLp g),hf.coeFn_toLp,hg.coeFn_toLp] with a ha hf hg
-  rw [ha]
-  simp only [Pi.sub_apply,hf,hg]
+  simp_all
 
 omit [CompleteSpace E] in
 theorem l2_tendsto_of_bounded_eventuallyEq [IsFiniteMeasure «μ»]
@@ -138,21 +138,25 @@ instance kernelFundamentalVolume_finite : IsFiniteMeasure KernelFundamentalVolum
   let : globalKubotaKernel.FiniteIndex := globalKubotaKernel_finiteIndex
   exact hyperbolicFundamentalSet_volume_lt_top globalKubotaKernel globalKubotaKernel_le_levelThree
 
-def kernelFunctionField (f : KernelQuotient→ℂ) (p : EuclideanSpatial) : ℂ :=
+section
+variable (f : KernelQuotient→ℂ)
+include f
+
+def kernelFunctionField  (p : EuclideanSpatial) : ℂ :=
   f (kernelEuclideanProjection p)
 
-lemma kernelFunctionField_smooth (f : KernelQuotient→ℂ)
+lemma kernelFunctionField_smooth 
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
     (p : EuclideanSpatial) (hp : 0<p 2) :
     ContDiffAt ℝ ∞ (kernelFunctionField f) p :=
   (((hf.comp kernelProjection_contMDiff) (euclideanToHyperbolic p)).comp p
     (euclideanToHyperbolic_contMDiffAt p hp)).contDiffAt
 
-def kernelFunctionGradient (f : KernelQuotient→ℂ) (w : HyperbolicSpace) : EuclideanSpace ℂ (Fin 3) :=
+def kernelFunctionGradient  (w : HyperbolicSpace) : EuclideanSpace ℂ (Fin 3) :=
   WithLp.toLp 2 (fun j => (hyperbolicHeight w:ℂ)*
     fderiv ℝ (kernelFunctionField f) (hyperbolicEuclideanCoordinates w) (euclideanCoordinateVector j))
 
-lemma kernelFunctionGradient_continuous (f : KernelQuotient→ℂ)
+lemma kernelFunctionGradient_continuous 
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) :
     Continuous (kernelFunctionGradient f) := by
   apply (PiLp.continuousLinearEquiv 2 ℂ (fun _ : Fin 3 => ℂ)).symm.continuous.comp
@@ -163,6 +167,8 @@ lemma kernelFunctionGradient_continuous (f : KernelQuotient→ℂ)
   intro w
   exact (((kernelFunctionField_smooth f hf _ (hyperbolicHeight_pos w)).continuousAt_fderiv
     (by simp)).clm_apply continuousAt_const).comp hyperbolicEuclideanCoordinates_continuous.continuousAt
+end
+
 
 lemma norm_three_vector_bound (v : EuclideanSpace ℂ (Fin 3)) (B : ℝ) (hB : 0≤B)
     (hv : ∀j,‖v j‖≤B) : ‖v‖≤3*B := by
@@ -172,9 +178,13 @@ lemma norm_three_vector_bound (v : EuclideanSpace ℂ (Fin 3)) (B : ℝ) (hB : 0
       _ ≤ ∑j : Fin 3,B^2 := Finset.sum_le_sum (fun j hj =>
         (sq_le_sq₀ (norm_nonneg _) hB).mpr (hv j))
       _ = _ := by simp
-  nlinarith [norm_nonneg v,sq_nonneg B]
+  nlinarith
 
-lemma kernelFunctionGradient_bound (f : KernelQuotient→ℂ) (B : ℝ) (hB : 0≤B)
+section
+variable (f : KernelQuotient→ℂ)
+include f
+
+lemma kernelFunctionGradient_bound  (B : ℝ) (hB : 0≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
       ‖(p 2:ℂ)*fderiv ℝ (kernelFunctionField f) p (euclideanCoordinateVector j)‖≤B)
     (w : HyperbolicSpace) : ‖kernelFunctionGradient f w‖≤3*B := by
@@ -182,7 +192,7 @@ lemma kernelFunctionGradient_bound (f : KernelQuotient→ℂ) (B : ℝ) (hB : 0�
   intro j
   exact hgrad (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w) j
 
-lemma kernelFunctionGradient_memLp (f : KernelQuotient→ℂ)
+lemma kernelFunctionGradient_memLp 
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
     (B : ℝ) (hB : 0≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -190,9 +200,15 @@ lemma kernelFunctionGradient_memLp (f : KernelQuotient→ℂ)
     MemLp (kernelFunctionGradient f) 2 KernelFundamentalVolume :=
   MemLp.of_bound (kernelFunctionGradient_continuous f hf).aestronglyMeasurable (3*B)
     (Eventually.of_forall (kernelFunctionGradient_bound f B hB hgrad))
+end
 
-def kernelFunctionCutoff (n : ℕ) (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) : kernelSmoothTests := by
+
+section
+variable (n : ℕ) (f : KernelQuotient→ℂ)
+    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+include n f hf
+
+def kernelFunctionCutoff  : kernelSmoothTests := by
   refine ⟨fun q => (kernelExhaustionCutoff n q:ℂ)*f q,?_,?_⟩
   · have hm : ContDiff ℝ ∞ (fun z : ℂ × ℂ => z.1*z.2) := contDiff_fst.mul contDiff_snd
     exact hm.contMDiff.comp
@@ -203,20 +219,24 @@ def kernelFunctionCutoff (n : ℕ) (f : KernelQuotient→ℂ)
     have hz : kernelExhaustionCutoff n q=0 := image_eq_zero_of_notMem_tsupport hn
     exact hq (by simp [hz])
 
-lemma kernelFunctionCutoff_apply (n : ℕ) (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) (q : KernelQuotient) :
+lemma kernelFunctionCutoff_apply  (q : KernelQuotient) :
     (kernelFunctionCutoff n f hf).1 q=(kernelExhaustionCutoff n q:ℂ)*f q := rfl
 
-lemma kernelFunctionCutoff_field (n : ℕ) (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) :
+lemma kernelFunctionCutoff_field  :
     kernelTestField (kernelFunctionCutoff n f hf)=
       fun p => (kernelExhaustionCutoff n (kernelEuclideanProjection p):ℂ)*kernelFunctionField f p := rfl
+end
 
-lemma kernelFunctionCutoff_field_eventually (f : KernelQuotient→ℂ)
+
+section
+variable (f : KernelQuotient→ℂ)
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+include f hf
+
+lemma kernelFunctionCutoff_field_eventually 
     (p : EuclideanSpatial) (hp : 0<p 2) :
     ∀ᶠn : ℕ in atTop,kernelTestField (kernelFunctionCutoff n f hf)=ᶠ[𝓝 p]kernelFunctionField f := by
-  have hc : ContinuousAt kernelEuclideanProjection p :=
+  have hc :=
     (continuous_integralOrbitProjection globalKubotaKernel).continuousAt.comp
       (euclideanToHyperbolic_contMDiffAt p hp).continuousAt
   filter_upwards [kernelExhaustionCutoff_eventually_one_near (kernelEuclideanProjection p)] with n hn
@@ -226,8 +246,7 @@ lemma kernelFunctionCutoff_field_eventually (f : KernelQuotient→ℂ)
   rw [hq]
   simp
 
-lemma kernelFunctionCutoff_gradient_eventually (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) (w : HyperbolicSpace) :
+lemma kernelFunctionCutoff_gradient_eventually  (w : HyperbolicSpace) :
     ∀ᶠn : ℕ in atTop,kernelGradientAt w (kernelFunctionCutoff n f hf)=kernelFunctionGradient f w := by
   filter_upwards [kernelFunctionCutoff_field_eventually f hf
     (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w)] with n hn
@@ -237,15 +256,13 @@ lemma kernelFunctionCutoff_gradient_eventually (f : KernelQuotient→ℂ)
     (hyperbolicHeight w:ℂ)*fderiv ℝ (kernelFunctionField f) _ _
   rw [hn.fderiv_eq,euclideanCoordinateVector_eq_basis]
 
-lemma kernelFunctionCutoff_mass_bound (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+lemma kernelFunctionCutoff_mass_bound 
     (B : ℝ) (_hB : 0≤B) (hbound : ∀q,‖f q‖≤B) (n : ℕ) (q : KernelQuotient) :
     ‖(kernelFunctionCutoff n f hf).1 q‖≤B := by
   rw [kernelFunctionCutoff_apply,norm_mul,Complex.norm_of_nonneg (kernelExhaustionCutoff_bounds n q).1]
   exact (mul_le_mul (kernelExhaustionCutoff_bounds n q).2 (hbound q) (norm_nonneg _) zero_le_one).trans_eq (one_mul B)
 
-lemma kernelFunctionCutoff_scaled_deriv_bound (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+lemma kernelFunctionCutoff_scaled_deriv_bound 
     (B G D : ℝ) (hB : 0≤B) (hfB : ∀q,‖f q‖≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
       ‖(p 2:ℂ)*fderiv ℝ (kernelFunctionField f) p (euclideanCoordinateVector j)‖≤G)
@@ -254,7 +271,7 @@ lemma kernelFunctionCutoff_scaled_deriv_bound (f : KernelQuotient→ℂ)
         (euclideanCoordinateVector j)‖≤D)
     (n : ℕ) (p : EuclideanSpatial) (hp : 0<p 2) (j : Fin 3) :
     ‖(p 2:ℂ)*fderiv ℝ (kernelTestField (kernelFunctionCutoff n f hf)) p (euclideanCoordinateVector j)‖≤G+B*D := by
-  let c : EuclideanSpatial→ℂ:=fun q => (kernelExhaustionCutoff n (kernelEuclideanProjection q):ℂ)
+  let c :=fun q => (kernelExhaustionCutoff n (kernelEuclideanProjection q):ℂ)
   have hc : DifferentiableAt ℝ c p :=
     (kernelFunctionField_smooth (fun q => (kernelExhaustionCutoff n q:ℂ))
       (Complex.ofRealCLM.contDiff.contMDiff.comp (kernelExhaustionCutoff_smooth n)) p hp).differentiableAt (by simp)
@@ -279,8 +296,7 @@ lemma kernelFunctionCutoff_scaled_deriv_bound (f : KernelQuotient→ℂ)
     mul_le_mul (hfB (kernelEuclideanProjection p)) (hcut n p hp j) (norm_nonneg _) hB
   simpa only [norm_mul] using add_le_add hleft hright
 
-lemma kernelFunctionCutoff_gradient_bound (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+lemma kernelFunctionCutoff_gradient_bound 
     (B G : ℝ) (hB : 0≤B) (hG : 0≤G) (hfB : ∀q,‖f q‖≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
       ‖(p 2:ℂ)*fderiv ℝ (kernelFunctionField f) p (euclideanCoordinateVector j)‖≤G) :
@@ -296,8 +312,7 @@ lemma kernelFunctionCutoff_gradient_bound (f : KernelQuotient→ℂ)
   exact kernelFunctionCutoff_scaled_deriv_bound f hf B G D hB hfB hgrad hcut n
     (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w) j
 
-theorem kernelFunctionCutoff_mass_tendsto (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+theorem kernelFunctionCutoff_mass_tendsto 
     (hfL : MemLp f 2 (integralQuotientVolume globalKubotaKernel))
     (B : ℝ) (hB : 0≤B) (hbound : ∀q,‖f q‖≤B) :
     Tendsto (fun n => kernelSmoothTestsToL2 (kernelFunctionCutoff n f hf)) atTop (𝓝 (hfL.toLp f)) := by
@@ -310,8 +325,7 @@ theorem kernelFunctionCutoff_mass_tendsto (f : KernelQuotient→ℂ)
   rw [kernelFunctionCutoff_apply,hn]
   simp
 
-theorem kernelFunctionCutoff_gradient_tendsto (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+theorem kernelFunctionCutoff_gradient_tendsto 
     (hgL : MemLp (kernelFunctionGradient f) 2 KernelFundamentalVolume)
     (B G : ℝ) (hB : 0≤B) (hG : 0≤G) (hfB : ∀q,‖f q‖≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -325,8 +339,7 @@ theorem kernelFunctionCutoff_gradient_tendsto (f : KernelQuotient→ℂ)
     hbound (kernelFunctionGradient_bound f G hG hgrad)
   exact kernelFunctionCutoff_gradient_eventually f hf
 
-theorem kernel_bounded_smooth_energy_exists (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+theorem kernel_bounded_smooth_energy_exists 
     (hfL : MemLp f 2 (integralQuotientVolume globalKubotaKernel))
     (hgL : MemLp (kernelFunctionGradient f) 2 KernelFundamentalVolume)
     (B G : ℝ) (hB : 0≤B) (hG : 0≤G) (hfB : ∀q,‖f q‖≤B)
@@ -345,17 +358,24 @@ theorem kernel_bounded_smooth_energy_exists (f : KernelQuotient→ℂ)
     change x∈closure (Set.range kernelEnergyCore)
     exact mem_closure_of_tendsto ht (Eventually.of_forall (fun n => ⟨kernelFunctionCutoff n f hf,rfl⟩))
   exact ⟨⟨x,hx⟩,rfl,rfl⟩
+end
 
-def kernelEisensteinRemainderL2 (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) : KernelQuotientL2 :=
+
+section
+variable (a b : ℝ) (ha : 1<a) (hab : a<b)
+    (s : ℂ) (hs : 4<s.re)
+include a b ha hab s hs
+
+def kernelEisensteinRemainderL2  : KernelQuotientL2 :=
   (kernel_eisenstein_sub_seed_memLp a b ha.le hab s hs).toLp
     (kernelEisensteinRemainder a b s (by linarith))
 
-lemma kernelEisensteinRemainderL2_ae (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) :
+lemma kernelEisensteinRemainderL2_ae  :
     kernelEisensteinRemainderL2 a b ha hab s hs=ᵐ[integralQuotientVolume globalKubotaKernel]
       kernelEisensteinRemainder a b s (by linarith) :=
   (kernel_eisenstein_sub_seed_memLp a b ha.le hab s hs).coeFn_toLp
+end
+
 
 section
 open Filter MeasureTheory
@@ -371,7 +391,7 @@ lemma axis_update_contDiff (p : SpatialCoordinates) (j : Fin 3) :
   · simpa only [Function.update_of_ne h] using (contDiff_const : ContDiff ℝ ∞ (fun _ : ℝ => p k))
 
 lemma smooth_positive_axis_regular (f : SpatialCoordinates→ℂ)
-    (hf : ∀p,0<p 2→ContDiffAt ℝ ∞ f p) (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
+    (hf : ∀p,0<p 2→ ContDiffAt ℝ ∞ f p) (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     DifferentiableAt ℝ (axisSlice f p j) (p j) ∧
       DifferentiableAt ℝ (deriv (axisSlice f p j)) (p j) := by
   have hh : ContDiffAt ℝ ∞ (axisSlice f p j) (p j) := by
@@ -382,11 +402,11 @@ lemma smooth_positive_axis_regular (f : SpatialCoordinates→ℂ)
   exact ⟨hh.differentiableAt (by simp),(hh.derivWithin (m := ∞) (by simp)).differentiableAt (by simp)⟩
 
 lemma axisLaplacian_sub_smooth (f g : SpatialCoordinates→ℂ)
-    (hf : ∀p,0<p 2→ContDiffAt ℝ ∞ f p) (hg : ∀p,0<p 2→ContDiffAt ℝ ∞ g p)
+    (hf : ∀p,0<p 2→ ContDiffAt ℝ ∞ f p) (hg : ∀p,0<p 2→ ContDiffAt ℝ ∞ g p)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     axisLaplacian (fun q => f q-g q) p=axisLaplacian f p-axisLaplacian g p := by
   let F : Fin 2→SpatialCoordinates→ℂ:=![f,fun q => (-1:ℂ)*g q]
-  have hF : ∀i : Fin 2,∀q,0<q 2→ContDiffAt ℝ ∞ (F i) q := by
+  have hF : ∀i : Fin 2,∀q,0<q 2→ ContDiffAt ℝ ∞ (F i) q := by
     intro i q hq
     fin_cases i
     · exact hf q hq
@@ -401,7 +421,11 @@ lemma axisLaplacian_sub_smooth (f g : SpatialCoordinates→ℂ)
   rw [axisLaplacian_const_mul] at hh
   simpa only [neg_one_mul,sub_eq_add_neg] using hh
 
-lemma eisensteinRemainder_coordinate_equation (a b : ℝ) (ha : 1<a) (hab : a<b)
+section
+variable (a b : ℝ)
+include a b
+
+lemma eisensteinRemainder_coordinate_equation  (ha : 1<a) (hab : a<b)
     (s : ℂ) (hs : 2<s.re) (p : SpatialCoordinates) (hp : 0<p 2) :
     -axisLaplacian (eisensteinRemainderField a b s) p=
       smoothCuspSeedDefectField a b s p+s*(2-s)*eisensteinRemainderField a b s p := by
@@ -411,7 +435,7 @@ lemma eisensteinRemainder_coordinate_equation (a b : ℝ) (ha : 1<a) (hab : a<b)
     (actual_smoothCuspSeed_contDiffAt a b s ha hab) p hp,smoothEisenstein_eigenfunction s hs p hp]
   linear_combination hD
 
-lemma kernelQuotientDefect_euclidean_eq (a b : ℝ) (s : ℂ)
+lemma kernelQuotientDefect_euclidean_eq  (s : ℂ)
     (p : EuclideanSpatial) (hp : 0<p 2) :
     kernelQuotientDefect a b s (kernelEuclideanProjection p)=smoothCuspSeedDefectField a b s p.ofLp := by
   unfold kernelEuclideanProjection
@@ -421,13 +445,13 @@ lemma kernelQuotientDefect_euclidean_eq (a b : ℝ) (s : ℂ)
   rw [smoothCuspSeedDefectField,dite_eq_left hp]
   simp only [mul_comm Complex.I]
 
-theorem kernelEisensteinRemainder_operator_equation (a b : ℝ) (ha : 1<a) (hab : a<b)
+theorem kernelEisensteinRemainder_operator_equation  (ha : 1<a) (hab : a<b)
     (s : ℂ) (hs : 2<s.re) (p : EuclideanSpatial) (hp : 0<p 2) :
     positiveEuclideanLaplacian (kernelFunctionField (kernelEisensteinRemainder a b s hs)) p=
       kernelQuotientDefect a b s (kernelEuclideanProjection p)+
         kernelEisensteinSpectralParameter s*kernelEisensteinRemainder a b s hs (kernelEuclideanProjection p) := by
   let f := kernelFunctionField (kernelEisensteinRemainder a b s hs)
-  have hf : ∀q,0<q 2→ContDiffAt ℝ ∞ f q := kernelEisensteinRemainder_euclidean_smooth a b ha hab s hs
+  have hf := kernelEisensteinRemainder_euclidean_smooth a b ha hab s hs
   have he : ∀q : SpatialCoordinates,0<q 2→f (WithLp.toLp 2 q)=eisensteinRemainderField a b s q := by
     intro q hq
     exact kernelEisensteinRemainder_euclidean_eq a b s hs (WithLp.toLp 2 q) hq
@@ -436,14 +460,20 @@ theorem kernelEisensteinRemainder_operator_equation (a b : ℝ) (ha : 1<a) (hab 
     eisensteinRemainder_coordinate_equation a b ha hab s hs p.ofLp hp,
     kernelQuotientDefect_euclidean_eq a b s p hp,kernelEisensteinRemainder_euclidean_eq a b s hs p hp]
   rfl
+end
+
 
 end
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff Manifold
 
-lemma kernelFunctionCutoff_uniform_near (f : KernelQuotient→ℂ)
+section
+variable (f : KernelQuotient→ℂ)
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+include f hf
+
+lemma kernelFunctionCutoff_uniform_near 
     (K : Set KernelQuotient) (hK : IsCompact K) :
     ∃N : ℕ,∀n≥N,∀p : EuclideanSpatial,0<p 2→kernelEuclideanProjection p∈K→
       kernelTestField (kernelFunctionCutoff n f hf)=ᶠ[𝓝 p]kernelFunctionField f := by
@@ -466,8 +496,7 @@ lemma kernelFunctionCutoff_uniform_near (f : KernelQuotient→ℂ)
   rw [kernelExhaustionProfile_one n _ hq.le]
   simp
 
-lemma kernelBoundedFunction_form_equation (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+lemma kernelBoundedFunction_form_equation 
     (hgL : MemLp (kernelFunctionGradient f) 2 KernelFundamentalVolume)
     (B G : ℝ) (hB : 0≤B) (hG : 0≤G) (hfB : ∀q,‖f q‖≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -495,8 +524,7 @@ lemma kernelBoundedFunction_form_equation (f : KernelQuotient→ℂ)
       (tendsto_const_nhds (x := kernelGradientToL2 g))
   exact tendsto_nhds_unique hlim (tendsto_const_nhds.congr' (hconstant.mono (fun n hn => hn.symm)))
 
-theorem kernel_bounded_smooth_operator_graph (f : KernelQuotient→ℂ)
-    (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f)
+theorem kernel_bounded_smooth_operator_graph 
     (hfL : MemLp f 2 (integralQuotientVolume globalKubotaKernel))
     (B G : ℝ) (hB : 0≤B) (hG : 0≤G) (hfB : ∀q,‖f q‖≤B)
     (hgrad : ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -524,12 +552,18 @@ theorem kernel_bounded_smooth_operator_graph (f : KernelQuotient→ℂ)
   rw [hum] at hm
   rw [kernelEnergyLaplacian_graph,mem_kernelLaplacianGraph]
   exact hm.symm
+end
+
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff Manifold
 
-theorem kernelEisensteinRemainderL2_graph (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) :
+section
+variable (a b : ℝ) (ha : 1<a) (hab : a<b)
+    (s : ℂ) (hs : 4<s.re)
+include a b ha hab s hs
+
+theorem kernelEisensteinRemainderL2_graph  :
     (kernelEisensteinRemainderL2 a b ha hab s hs,
       kernelL2Defect a b (by linarith) hab s+kernelEisensteinSpectralParameter s •
         kernelEisensteinRemainderL2 a b ha hab s hs)∈kernelEnergyLaplacian.graph := by
@@ -554,15 +588,14 @@ theorem kernelEisensteinRemainderL2_graph (a b : ℝ) (ha : 1<a) (hab : a<b)
   have hgraph := kernel_bounded_smooth_operator_graph f hf hfL
     (eisensteinRemainderBound b s) G (eisensteinRemainderBound_nonneg b s) hG hfB hgrad A hA hEq
   have hAL : hA.toLp A=kernelL2Defect a b (by linarith) hab s+
-      kernelEisensteinSpectralParameter s • kernelEisensteinRemainderL2 a b ha hab s hs := by
-    exact (hD.toLp_add (hfL.const_smul (kernelEisensteinSpectralParameter s))).trans
-      (congrArg (fun x => hD.toLp (kernelQuotientDefect a b s)+x)
-        (hfL.toLp_const_smul (kernelEisensteinSpectralParameter s)))
-  rw [hAL] at hgraph
-  exact hgraph
+      kernelEisensteinSpectralParameter s • kernelEisensteinRemainderL2 a b ha hab s hs := by rfl
+  assumption
 
-theorem kernelEisensteinL2Correction_eq_remainder (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
+section
+variable (hi : 0<s.im)
+include hi
+
+theorem kernelEisensteinL2Correction_eq_remainder  :
     kernelEisensteinL2Correction a b (by linarith) hab s=
       kernelEisensteinRemainderL2 a b ha hab s hs := by
   exact kernelEisensteinL2Correction_unique a b (by linarith) hab s
@@ -570,15 +603,17 @@ theorem kernelEisensteinL2Correction_eq_remainder (a b : ℝ) (ha : 1<a) (hab : 
       (kernelEisensteinSpectralParameter_nonreal s (by linarith) (by linarith)))
     _ (kernelEisensteinRemainderL2_graph a b ha hab s hs)
 
-theorem kernelEisensteinL2Correction_initial_overlap (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
+theorem kernelEisensteinL2Correction_initial_overlap  :
     kernelEisensteinL2Correction a b (by linarith) hab s=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => kernelQuotientEisenstein s (by linarith) q-kernelQuotientSeed a b s q := by
   rw [kernelEisensteinL2Correction_eq_remainder a b ha hab s hs hi]
   exact kernelEisensteinRemainderL2_ae a b ha hab s hs
-
-end CubicEisenstein
-
+end
 end
 
-end OAI
+
+
+
+
+
+

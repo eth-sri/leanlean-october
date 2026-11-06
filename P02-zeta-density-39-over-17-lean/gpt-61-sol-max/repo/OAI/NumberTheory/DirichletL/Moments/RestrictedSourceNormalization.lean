@@ -10,11 +10,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedSourceNormalization
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRestrictedSource
+open CanonicalQuadraticSieve CenteredMomentRestrictedSource
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentRestrictedEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
+open CenteredMomentCommonRawScale
+open scoped EisensteinO
 
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -57,8 +57,8 @@ theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal
     field_simp [hr.ne',hl.ne']
   exact alg _ _ _ _ _ hpR hpL hr
 
-end SevenEighths.CenteredMomentRestrictedSourceNormalization
 
-end
 
-end OAI
+
+
+

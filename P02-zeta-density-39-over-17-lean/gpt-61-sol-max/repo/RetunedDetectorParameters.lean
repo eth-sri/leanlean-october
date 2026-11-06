@@ -6,7 +6,6 @@ public import MathCollab.Density.Stronger.InitialDetector
 
 open Filter
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
@@ -44,4 +43,4 @@ theorem detector_error_scale {σ a δ T β η : ℝ}
   apply Real.rpow_le_rpow_of_exponent_le hT
   nlinarith only [hproduct,hδ]
 
-end Montgomery.RationalMoment.RightDetector
+

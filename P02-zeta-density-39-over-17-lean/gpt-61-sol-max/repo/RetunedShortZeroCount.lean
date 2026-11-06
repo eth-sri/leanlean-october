@@ -8,7 +8,6 @@ public import MathCollab.Density.Stronger.ConditionalDensity
 
 open Real Complex Filter MeasureTheory Finset Set
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
@@ -121,4 +120,4 @@ theorem smoothShortZeroCount_bound {σ a η : ℝ}
     _ = (4*Cb*D*C)*T^(3*a*(1-σ)+52*η) := by rw [← Real.rpow_add hTp]; congr 2; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment.RightDetector
+

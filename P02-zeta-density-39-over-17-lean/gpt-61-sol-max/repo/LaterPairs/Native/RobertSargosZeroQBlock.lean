@@ -6,25 +6,28 @@ public import LaterPairs.Native.RobertSargosZeroQParameters
 public import LaterPairs.Native.RobertSargosZeroQSource
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                       
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_zero_q_mixed_correlation_bound
-    (f : ℝ → ℝ) (M H : ℕ) (r : ℤ) {C lam : ℝ}
+section
+variable (f : ℝ → ℝ) (M H : ℕ) (r : ℤ) {C lam : ℝ}
     (hr : r ≠ 0) (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
     (hM : lam^(-(8:ℝ)/13) ≤ M) (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
     (hrmax : |(r:ℝ)| ≤ lam^(-(1:ℝ)/13))
     (hf : ∀ x ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f x)
     (hlo : ∀ x ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f x)
-    (hhi : ∀ x ∈ Icc (1:ℝ) M, iteratedDeriv 4 f x ≤ C*lam) :
+    (hhi : ∀ x ∈ Icc (1:ℝ) M, iteratedDeriv 4 f x ≤ C*lam)
+include f M H r C lam hr hC hlam hsmall hM hH hrmax hf hlo hhi
+
+theorem robertSargos_zero_q_mixed_correlation_bound
+     :
     ‖robertSargosMixedCorrelation f M H 0 r‖ ≤
       (H:ℝ)*(1+120*C*(1+2*Real.pi*C)*M*(2*|(r:ℝ)| *lam)^((1:ℝ)/12)) := by
   have hCp : 0 ≤ C := zero_le_one.trans hC
@@ -63,13 +66,7 @@ theorem robertSargos_zero_q_mixed_correlation_bound
         (by exact_mod_cast robertSargos_h_overlap_card H r) (by positivity)
 
 theorem robertSargos_zero_q_trimmed_correlation_bound
-    (f : ℝ → ℝ) (M H : ℕ) (r : ℤ) {C lam : ℝ}
-    (hr : r ≠ 0) (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
-    (hM : lam^(-(8:ℝ)/13) ≤ M) (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
-    (hrmax : |(r:ℝ)| ≤ lam^(-(1:ℝ)/13))
-    (hf : ∀ x ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f x)
-    (hlo : ∀ x ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f x)
-    (hhi : ∀ x ∈ Icc (1:ℝ) M, iteratedDeriv 4 f x ≤ C*lam) :
+     :
     ‖robertSargosTrimmedCorrelation f M H 0 r‖ ≤
       (H:ℝ)*(1+120*C*(1+2*Real.pi*C)*M*(2*|(r:ℝ)| *lam)^((1:ℝ)/12))+
         2*H*|(r:ℝ)| := by
@@ -84,5 +81,7 @@ theorem robertSargos_zero_q_trimmed_correlation_bound
     _ ≤ _ := add_le_add
       (robertSargos_zero_q_mixed_correlation_bound f M H r hr hC hlam hsmall hM hH hrmax hf hlo hhi)
       (norm_robertSargos_correlation_endpoint_error f M H 0 r)
+end
 
-end TaoTrudgianYang2025
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownShiftScale
 
 @[expose] public section
@@ -16,7 +17,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownChosenShiftFactor
+def heathBrownChosenShiftFactor
     (N k : ℕ) (A lambda : ℝ) : ℝ :=
   (12 * ((k - 1).factorial : ℝ) / lambda *
       ((2 : ℝ) ^ (k - 2) *
@@ -132,10 +133,10 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
   let H := heathBrownHChoice k A lambda
   let K := heathBrownBlockParameter A lambda N
   let D := heathBrownShiftBound N k H lambda
-  let c : ℝ := 8 * ((k - 2).factorial : ℝ) *
+  let c := 8 * ((k - 2).factorial : ℝ) *
     (((H : ℝ) ^ (k - 2))⁻¹) / lambda
-  let b : ℝ := 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3
-  let a : ℝ := A * lambda * N / ((k - 2).factorial : ℝ)
+  let b := 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3
+  let a := A * lambda * N / ((k - 2).factorial : ℝ)
   have hcount := heathBrownPairCount_card_cast_le_at_chosen_scale
     (N := N) (k := k) (f := f) (A := A) (lambda := lambda)
     hk hN hA hlambda hsmall hlargeH hcoordLow hcoordLowD hcoordLast
@@ -153,16 +154,11 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
       (N : ℝ) + 2 * (((D : ℝ) + c) * (b + a * D) *
           (1 + Real.log N)) ≤
         N + 2 * heathBrownChosenShiftFactor N k A lambda *
-          (1 + Real.log N) := by
-    have hmul := mul_le_mul_of_nonneg_right hfactor hlog
-    have hmul' := mul_le_mul_of_nonneg_left hmul
-      (by norm_num : (0 : ℝ) ≤ 2)
-    simpa only [D, c, b, a, H, mul_assoc] using
-      (add_le_add_right hmul' (N : ℝ))
+          (1 + Real.log N) := by nlinarith
   exact hcount.trans
     (mul_le_mul_of_nonneg_left hinside (by positivity))
 
 
-end
 
-end GafniTao
+
+

@@ -19,7 +19,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyNormalFormCombination_high_coeff_dvd_of_each
     {k p c q : ℕ} (theta : WooleyPolynomialSystem k)
@@ -116,6 +116,6 @@ theorem WooleyPolynomialSystem.Spaced.exists_translated_tail_normal_change
   exact ⟨G, psi, Error, hchange⟩
 
 
-end
 
-end GafniTao
+
+

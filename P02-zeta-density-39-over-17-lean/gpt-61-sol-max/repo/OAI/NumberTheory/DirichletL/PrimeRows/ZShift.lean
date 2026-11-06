@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ZBoundary
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem first_z_integral_eq {K : ℕ}
     (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -31,8 +31,8 @@ theorem first_z_integral_eq {K : ℕ}
   exact (continuedPhysicalRowKernel_differentiableAt_z eps heps S hS hfirst hmax P hPS η u
     W0 W1 X Y Z hX hZ x w z hx hw (hl.trans hz.1) hxw).differentiableWithinAt
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

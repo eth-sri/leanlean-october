@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Congruence
 
 @[expose] public section
@@ -59,8 +60,7 @@ theorem wooleySection7NormalSystem_eval_progression_dvd
       ((p : ℤ) ^ b * t) ^ (k + 1) := by
     have hle : b * d ≤ b * (k + 1) :=
       Nat.mul_le_mul_left b (hjk.trans (Nat.le_succ k))
-    have hpowers : (p : ℤ) ^ (b * d) ∣
-        (p : ℤ) ^ (b * (k + 1)) := pow_dvd_pow (p : ℤ) hle
+    have hpowers := pow_dvd_pow (p : ℤ) hle
     have hproduct : (p : ℤ) ^ (b * d) ∣
         (p : ℤ) ^ (b * (k + 1)) * t ^ (k + 1) :=
       dvd_mul_of_dvd_left hpowers _
@@ -71,8 +71,7 @@ theorem wooleySection7NormalSystem_eval_progression_dvd
     obtain ⟨z, hz⟩ := htailPow
     refine ⟨(p : ℤ) ^ c * z *
       (psi j).eval ((p : ℤ) ^ b * t), ?_⟩
-    rw [hz]
-    ring
+    grind
   unfold wooleySection7NormalSystem
   simp only [eval_add, eval_pow, eval_X, eval_mul, eval_C]
   dsimp only [d] at hfirst htail ⊢
@@ -127,10 +126,10 @@ theorem wooleySection7_original_implies_top_congruences
   let j : Fin k :=
     ⟨wooleySection7Node k r l, wooleySection7Node_succ_le hrk l⟩
   let M := (k - r + 1) * b
-  let leftDisp : ℤ := wooleyIntegerTupleDisplacement R
+  let leftDisp := wooleyIntegerTupleDisplacement R
     (fun x => (wooleySection7NormalSystem k p c psi j).eval
       ((p : ℤ) ^ a * leftPoint x + h)) leftXY
-  let rightDisp : ℤ := wooleyIntegerTupleDisplacement S
+  let rightDisp := wooleyIntegerTupleDisplacement S
     (fun x => (wooleySection7NormalSystem k p c psi j).eval
       ((p : ℤ) ^ b * rightPoint x)) rightXY
   have hcombined : (p : ℤ) ^ M ∣ leftDisp - rightDisp :=
@@ -162,9 +161,8 @@ theorem wooleySection7_original_implies_top_congruences
   dsimp only [leftDisp] at hleft
   rw [hnormal] at hleft htranslate
   dsimp only [M] at hleft ⊢
-  rw [htranslate] at hleft
-  exact hleft
+  grind
 
-end
 
-end GafniTao
+
+

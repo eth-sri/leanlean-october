@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.AmplifierArithmetic
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -64,8 +64,7 @@ theorem amplifier_fiber_subpower {η : ℝ} (hη : 0 < η) :
       apply product_fiber_card_le_divisors _ (by omega)
       intro r hr
       have he := (mem_filter.mp hr).2
-      have hh := congrArg Int.natAbs he
-      simpa only [Int.natCast_mul,Int.natAbs_mul,Int.natAbs_natCast] using hh
+      omega
     have hsize : (m.natAbs:ℝ) ≤ 4*L := by
       have hb := (amplifier_product_plateau hN hNL hq hn).2
       have he : (m.natAbs:ℝ)=((p.1*p.2:ℕ):ℝ) := by
@@ -120,4 +119,4 @@ theorem amplifier_matrix_energy {η : ℝ} (hη : 0 < η) :
         (mul_le_mul_of_nonneg_left (amplifier_source_card hN.le) hD)
         (sum_nonneg (fun _ _ => sq_nonneg _))
 
-end GuthMaynard.Improvement
+

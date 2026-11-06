@@ -83,8 +83,8 @@ theorem no_slot_rowwise_endpoint
   have hE : 0≤C*K*U^(sourceExponent r+ε) := by positivity
   nlinarith
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

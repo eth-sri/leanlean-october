@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.SpectralPoisson
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ProbeRow CanonicalQuadraticSieve
+open scoped EisensteinO
 
 lemma finiteSupport_verticalIntegral {α : Type*} (c : α → ℂ)
     (hc : (Function.support c).Finite) (F : α → ℂ → ℂ) (σ : ℝ)
@@ -63,10 +64,9 @@ theorem inner_mellin_poisson (η : HeckeFamily.Character) (C : CalibrationData)
     ← tsum_mul_left]
   apply tsum_congr
   intro m
-  dsimp only [c]
   ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

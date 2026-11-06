@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.FirstGaussianCoefficients
 
 @[expose] public section
@@ -13,7 +14,7 @@ open HeckeFamily CenteredMomentFiniteProfileExceptional
 open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
 open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget
 open QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def losses (epsilon delta theta B:ℝ):Fin 4→ℝ:=
   ![2*delta+epsilon,2*epsilon+2*delta+2*(5*B+1)*theta,0,0]
@@ -39,7 +40,7 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
     (hCm:0≤Cm)(hCe:0≤Ce)(hCd:0≤Cd)(hCt:0≤Ct)(hCc:0≤Cc)(hcost:0≤cost):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,∀Q:Ideal O,∀Kfix:ℝ,0≤Kfix→∃C:ℝ,0<C ∧
     ∀p:Profiles a b,∀Z t height A seed C0 C1:ℝ,
-      0<Z→0≤height→0≤A→A≤Amax→1≤seed→0≤C0→0≤C1→
+      0<Z→0≤height→0≤A→A≤Amax→1≤ seed→0≤C0→0≤C1→
     let Ebase:=Cc*(C0+C1)*diagonalControl W*(p.control Tchild)^2*(1+height)^degree;
     ∀j:Fin 4,
       coefficients N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed
@@ -49,7 +50,7 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
   let J:=degree+(Jchild+Jchild)+2*Jprofile
   refine ⟨U,J,?_⟩
   intro Q Kfix hK
-  let Hconst:ℝ:=(1+2*Real.pi)^2
+  let Hconst :=(1+2*Real.pi)^2
   let D0:=Cm*cost*Cc*diagonalControl W*(profileMoment Jchild)^2*
     Hconst^(Jchild+Jchild)*(2*(b1*b2)*upper^N*Amax^2)*(upper^N*b1*b2)
   let D1:=Ce*loFloor^(-2/3:ℝ)*exceptionalConstant N upper Jprofile Q Kfix*Amax^4
@@ -73,7 +74,7 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
   let H:=1+|t|+height
   have hH:1≤H:=by dsimp [H];linarith [abs_nonneg t]
   have hH0:0≤H:=zero_le_one.trans hH
-  have hseed0:0≤seed:=zero_le_one.trans hseed
+  have hseed0:0≤ seed:=zero_le_one.trans hseed
   have hS:Sp⊆U:=by intro x hx;simp [U,hx]
   have hT:Tchild⊆U:=by intro x hx;simp [U,hx]
   have h00:(0,0)∈U:=by simp [U]
@@ -174,8 +175,8 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
             (le_mul_of_one_le_right hD3 (le_add_of_nonneg_left hC01)) (sq_nonneg _)
           _≤_:=le_mul_of_one_le_right (by positivity) hHone
 
-end SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
 
-end
 
-end OAI
+
+
+

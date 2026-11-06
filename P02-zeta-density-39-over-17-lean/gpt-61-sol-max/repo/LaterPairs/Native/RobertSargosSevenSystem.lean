@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosReducedSystem
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                         
                                                                         
@@ -59,4 +58,4 @@ theorem robertSargos_displacement_joint_injective {p q : RobertSargosSevenPoint}
     _ = robertSargosSevenRestore (robertSargosDisplacementPoint q) q.n₂ := by rw [hd,hn]
     _ = q := robertSargos_seven_restore q
 
-end TaoTrudgianYang2025
+

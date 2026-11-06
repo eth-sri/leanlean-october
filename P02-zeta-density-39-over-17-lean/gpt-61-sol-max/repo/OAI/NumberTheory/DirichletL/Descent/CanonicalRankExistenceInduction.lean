@@ -56,8 +56,8 @@ theorem canonical_energy_exists_of_references
   exact canonical_energy_of_rank n (Fcap+1) c cutoff eta Mcap Fcap c eps K W
     hrow hcap hmargin hloss.le he
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

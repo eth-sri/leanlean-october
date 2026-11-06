@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveNorms
 public import OAI.NumberTheory.DirichletL.Descent.FirstFullRapidTail
@@ -14,7 +15,7 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps
 open InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*}[DecidableEq ι]
 
 def firstDyadicExponent (Z x:ℝ):ℝ:=dyadicExponent Z (dyadIndex x)
@@ -68,15 +69,14 @@ theorem first_dyadic_radius_global_cap
       _=_:=by
         rw [←Real.rpow_natCast,←Real.rpow_mul hz.le,←Real.rpow_add hz]
         congr 1
-        norm_num
         ring
   have hde:= (Real.rpow_le_rpow_left_iff hZ).mp (hd.2.1.trans hn)
   unfold firstDyadicRadius firstPhysicalHeight
   apply Real.rpow_le_rpow_of_exponent_le hZ.le
   linarith [hC.1,hj.1]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

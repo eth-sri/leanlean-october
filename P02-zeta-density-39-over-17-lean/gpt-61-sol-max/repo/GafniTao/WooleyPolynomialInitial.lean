@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPolynomialRefinement
 
 @[expose] public section
@@ -19,20 +20,25 @@ namespace GafniTao
 
 noncomputable section
 
-def wooleyPolynomialInitialDiagonal {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu : ℕ)
+section
+variable {Q k : ℕ}
+    (phi : WooleyPolynomialSystem k)
+include Q k phi
+
+section
+variable (p B nu : ℕ)
     [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) : ℝ :=
+    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B))
+include p B nu gamma alpha
+
+def wooleyPolynomialInitialDiagonal  : ℝ :=
   (wooleyWeightedMassSq gamma)⁻¹ *
     ∑ xi : ZMod (p ^ nu),
       wooleyWeightedResidueMassSq gamma xi *
         ‖wooleyPolynomialNormalizedResidueGridSum
           phi (p ^ B) gamma alpha xi‖ ^ 2
 
-def wooleyPolynomialInitialOffDiagonal {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu : ℕ)
-    [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) : ℝ :=
+def wooleyPolynomialInitialOffDiagonal  : ℝ :=
   (wooleyWeightedMassSq gamma)⁻¹ *
     ∑ xi : ZMod (p ^ nu),
       ∑ eta : ZMod (p ^ nu) with wooleyResiduesSeparated nu xi eta,
@@ -42,9 +48,10 @@ def wooleyPolynomialInitialOffDiagonal {Q k : ℕ}
             phi (p ^ B) gamma alpha xi‖ *
           ‖wooleyPolynomialNormalizedResidueGridSum
             phi (p ^ B) gamma alpha eta‖
+end
 
-def wooleyPolynomialInitialMixedForward {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
+
+def wooleyPolynomialInitialMixedForward  (p B nu s : ℕ)
     [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) : ℝ :=
   ∑ xi : ZMod (p ^ nu),
@@ -56,10 +63,13 @@ def wooleyPolynomialInitialMixedForward {Q k : ℕ}
         ‖wooleyPolynomialNormalizedResidueGridSum
           phi (p ^ B) gamma alpha eta‖ ^ (2 * (s - 1))
 
-theorem wooleyPolynomialInitialDiagonal_nonneg {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu : ℕ)
+section
+variable (p B nu : ℕ)
     [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) :
+    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B))
+include p B nu gamma alpha
+
+theorem wooleyPolynomialInitialDiagonal_nonneg  :
     0 ≤ wooleyPolynomialInitialDiagonal phi p B nu gamma alpha := by
   unfold wooleyPolynomialInitialDiagonal
   exact mul_nonneg
@@ -68,19 +78,17 @@ theorem wooleyPolynomialInitialDiagonal_nonneg {Q k : ℕ}
       mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi)
         (sq_nonneg _))
 
-theorem wooleyPolynomialInitialOffDiagonal_nonneg {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu : ℕ)
-    [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) :
+theorem wooleyPolynomialInitialOffDiagonal_nonneg  :
     0 ≤ wooleyPolynomialInitialOffDiagonal phi p B nu gamma alpha := by
   unfold wooleyPolynomialInitialOffDiagonal
   exact mul_nonneg
     (inv_nonneg.mpr (wooleyWeightedMassSq_nonneg gamma))
     (Finset.sum_nonneg fun xi hxi =>
       Finset.sum_nonneg fun eta heta => by positivity)
+end
 
-theorem wooleyPolynomialInitialMixedReverse_eq_forward {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
+
+theorem wooleyPolynomialInitialMixedReverse_eq_forward  (p B nu s : ℕ)
     [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) :
     (∑ xi : ZMod (p ^ nu),
@@ -101,20 +109,12 @@ theorem wooleyPolynomialInitialMixedReverse_eq_forward {Q k : ℕ}
   intro eta heta
   have hsep : wooleyResiduesSeparated nu eta xi ↔
       wooleyResiduesSeparated nu xi eta := by
-    rw [wooleyResiduesSeparated_same_iff_ne,
-      wooleyResiduesSeparated_same_iff_ne]
     exact ne_comm
   by_cases h : wooleyResiduesSeparated nu eta xi
-  · have h' := hsep.mp h
-    rw [ite_eq_left h, ite_eq_left h']
-    ring
-  · have h' : ¬ wooleyResiduesSeparated nu xi eta :=
-      fun hxiEta => h (hsep.mpr hxiEta)
-    rw [ite_eq_right h, ite_eq_right h']
+  all_goals (grind)
 
 /-- Polynomial-system equation (6.6). -/
-theorem wooleyPolynomial_equation_6_6 {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu : ℕ)
+theorem wooleyPolynomial_equation_6_6  (p B nu : ℕ)
     [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B)) :
     ‖wooleyPolynomialNormalizedGridSum phi (p ^ B) gamma alpha‖ ^ 2 ≤
@@ -153,9 +153,7 @@ theorem wooleyPolynomial_equation_6_6 {Q k : ℕ}
             ‖a xi‖ =
               Real.sqrt (wooleyWeightedResidueMassSq gamma xi) *
                 ‖wooleyPolynomialNormalizedResidueGridSum
-                  phi (p ^ B) gamma alpha xi‖ := by
-          simp [a, Complex.norm_real, Real.norm_eq_abs,
-            abs_of_nonneg (Real.sqrt_nonneg _)]
+                  phi (p ^ B) gamma alpha xi‖ := by aesop
         simp_rw [hnormA]
         unfold wooleyPolynomialInitialDiagonal
           wooleyPolynomialInitialOffDiagonal
@@ -177,11 +175,17 @@ theorem wooleyPolynomial_equation_6_6 {Q k : ℕ}
           · intro eta heta
             ring
 
-/-- Polynomial-system equation (6.7). -/
-theorem wooleyPolynomial_equation_6_7 {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
+section
+variable (p B nu s : ℕ)
     [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B))
+include p B nu s
+
+section
+variable (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B))
+include gamma alpha
+
+/-- Polynomial-system equation (6.7). -/
+theorem wooleyPolynomial_equation_6_7 
     (hs : 1 ≤ s) :
     wooleyPolynomialInitialDiagonal phi p B nu gamma alpha ^ s ≤
       (wooleyWeightedMassSq gamma)⁻¹ *
@@ -220,7 +224,6 @@ theorem wooleyPolynomial_equation_6_7 {Q k : ℕ}
             (∑ xi : ZMod (p ^ nu), w xi) ^ ((s : ℝ) - 1) *
               ∑ xi : ZMod (p ^ nu), w xi * f xi ^ (s : ℝ) := hholder
         _ = M ^ (s - 1) * R := by
-          dsimp [w, f, M, R]
           rw [wooley_sum_weightedResidueMassSq, hsub,
             Real.rpow_natCast]
           apply congrArg (wooleyWeightedMassSq gamma ^ (s - 1) * ·)
@@ -237,12 +240,12 @@ theorem wooleyPolynomial_equation_6_7 {Q k : ℕ}
       _ = M⁻¹ * R := by
         rw [← mul_assoc, wooley_inv_pow_mul_pow_pred hM hs]
 
+section
+variable (hs : 2 ≤ s)
+include hs
+
 /-- Polynomial-system equation (6.8). -/
-theorem wooleyPolynomial_equation_6_8 {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
-    [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B))
-    (hs : 2 ≤ s) :
+theorem wooleyPolynomial_equation_6_8  :
     wooleyPolynomialInitialOffDiagonal phi p B nu gamma alpha ^ s ≤
       (wooleyWeightedMassSq gamma)⁻¹ ^ 2 *
         (p ^ nu : ℝ) ^ s *
@@ -281,7 +284,6 @@ theorem wooleyPolynomial_equation_6_8 {Q k : ℕ}
       dsimp [t, q]
       exact_mod_cast wooleySeparatedResiduePairs_card_le p nu
     have hpairMass : (∑ xy ∈ t, w xy) ≤ M ^ 2 := by
-      dsimp [t, w, M]
       rw [wooley_sum_separatedResiduePairs_apply]
       exact wooley_separated_pair_mass_le_square p nu gamma
     have hF : F = wooleyPolynomialInitialMixedForward
@@ -292,7 +294,6 @@ theorem wooleyPolynomial_equation_6_8 {Q k : ℕ}
     have hsym :
         (∑ xy ∈ t,
           w xy * v xy ^ 2 * u xy ^ (2 * (s - 1))) = F := by
-      dsimp [t, w, u, v]
       rw [wooley_sum_separatedResiduePairs_apply]
       calc
         (∑ xi : ZMod (p ^ nu),
@@ -360,11 +361,7 @@ theorem wooleyPolynomial_equation_6_8 {Q k : ℕ}
             rw [wooley_inv_pow_mul_pow_sub_two hMpos hs]
 
 /-- The polynomial-system pointwise form of equation (6.9). -/
-theorem wooleyPolynomial_equation_6_9_pointwise {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
-    [NeZero p] [NeZero (p ^ B)]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod (p ^ B))
-    (hs : 2 ≤ s) :
+theorem wooleyPolynomial_equation_6_9_pointwise  :
     ‖wooleyPolynomialNormalizedGridSum phi (p ^ B) gamma alpha‖ ^
         (2 * s) ≤
       2 ^ (s - 1) *
@@ -403,10 +400,11 @@ theorem wooleyPolynomial_equation_6_9_pointwise {Q k : ℕ}
     _ ≤ (D + O) ^ s := hpow
     _ ≤ 2 ^ (s - 1) * (D ^ s + O ^ s) := hconv
     _ ≤ _ := by gcongr
+end
+end
 
-theorem wooleyPolynomial_initial_diagonal_average {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
-    [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)]
+
+theorem wooleyPolynomial_initial_diagonal_average  [NeZero (p ^ nu)]
     (gamma : Fin Q → ℂ) :
     ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹ *
         ∑ alpha : Fin k → ZMod (p ^ B),
@@ -428,9 +426,7 @@ theorem wooleyPolynomial_initial_diagonal_average {Q k : ℕ}
     intro alpha halpha
     ac_rfl
 
-theorem wooleyPolynomial_initial_mixed_average {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
-    [NeZero p] [NeZero (p ^ B)]
+theorem wooleyPolynomial_initial_mixed_average 
     (gamma : Fin Q → ℂ) :
     ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹ *
         ∑ alpha : Fin k → ZMod (p ^ B),
@@ -482,9 +478,7 @@ theorem wooleyPolynomial_initial_mixed_average {Q k : ℕ}
     ac_rfl
 
 /-- Polynomial-system equation (6.9), on the exact finite grid. -/
-theorem wooleyPolynomial_equation_6_9 {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu s : ℕ)
-    [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)]
+theorem wooleyPolynomial_equation_6_9  [NeZero (p ^ nu)]
     (gamma : Fin Q → ℂ) (hs : 2 ≤ s) :
     wooleyPolynomialWeightedGridMean phi s (p ^ B) gamma ≤
       2 ^ (s - 1) *
@@ -494,7 +488,7 @@ theorem wooleyPolynomial_equation_6_9 {Q k : ℕ}
             wooleyPolynomialMixedGridMean
               phi s 1 p B nu nu nu gamma) := by
   let c : ℝ := 2 ^ (s - 1)
-  let scale : ℝ := ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹
+  let scale := ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹
   have hscale : 0 ≤ scale := by positivity
   have hsum :
       scale *
@@ -544,13 +538,13 @@ theorem wooleyPolynomial_equation_6_9 {Q k : ℕ}
           (p ^ nu : ℝ) ^ s *
             wooleyPolynomialMixedGridMean
               phi s 1 p B nu nu nu gamma) := by
-      let A : (Fin k → ZMod (p ^ B)) → ℝ := fun alpha =>
+      let A := fun alpha =>
         (wooleyWeightedMassSq gamma)⁻¹ *
           ∑ xi : ZMod (p ^ nu),
             wooleyWeightedResidueMassSq gamma xi *
               ‖wooleyPolynomialNormalizedResidueGridSum
                 phi (p ^ B) gamma alpha xi‖ ^ (2 * s)
-      let F : (Fin k → ZMod (p ^ B)) → ℝ := fun alpha =>
+      let F := fun alpha =>
         (wooleyWeightedMassSq gamma)⁻¹ ^ 2 *
           wooleyPolynomialInitialMixedForward
             phi p B nu s gamma alpha
@@ -558,9 +552,7 @@ theorem wooleyPolynomial_equation_6_9 {Q k : ℕ}
           wooleyPolynomialConditionedGridMean
             phi s (p ^ B) (p ^ nu) gamma :=
         wooleyPolynomial_initial_diagonal_average phi p B nu s gamma
-      have hF : scale * ∑ alpha, F alpha =
-          wooleyPolynomialMixedGridMean
-            phi s 1 p B nu nu nu gamma :=
+      have hF :=
         wooleyPolynomial_initial_mixed_average phi p B nu s gamma
       have hsumF :
           (∑ alpha, (p ^ nu : ℝ) ^ s * F alpha) =
@@ -583,15 +575,12 @@ theorem wooleyPolynomial_equation_6_9 {Q k : ℕ}
       change scale * ∑ alpha, c *
           (A alpha + (p ^ nu : ℝ) ^ s * F alpha) = _
       rw [← Finset.mul_sum, Finset.sum_add_distrib, hsumF]
-      rw [mul_add]
-      calc
-        scale * (c * (∑ x, A x) +
-            c * ((p ^ nu : ℝ) ^ s * ∑ x, F x)) =
-            c * (scale * ∑ x, A x) +
-              c * ((p ^ nu : ℝ) ^ s * (scale * ∑ x, F x)) := by ring
-        _ = _ := by rw [hA, hF]; ring
+      grind
     _ = _ := by rfl
-
+end
 end
 
-end GafniTao
+
+
+
+

@@ -10,8 +10,8 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeExpansion
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentRectangle CenteredMomentMask
+open scoped EisensteinO
 
 def rowWeight (η : Character) (m A z : O) (t : ℝ) : Ideal O →*₀ ℂ where
   toFun I := (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A*z)) I)*
@@ -27,11 +27,15 @@ def rowWeight (η : Character) (m A z : O) (t : ℝ) : Ideal O →*₀ ℂ where
     simp only [map_mul,Nat.cast_mul,hpow]
     ring
 
-theorem rowTwistedSum_eq_weight (η : Character) (m A z : O) (t : ℝ) (W : ℝ → ℂ) (X : ℝ) :
+section
+variable (η : Character) (m A z : O)
+include η m A z
+
+theorem rowTwistedSum_eq_weight  (t : ℝ) (W : ℝ → ℂ) (X : ℝ) :
     rowTwistedSum η m A z W t X =
       ∑' I : Ideal O, rowWeight η m A z t I*W ((Ideal.absNorm I:ℝ)/X) := rfl
 
-theorem rowSlot_eq_weight (η : Character) (m A z : O) (S : Finset (Ideal O))
+theorem rowSlot_eq_weight  (S : Finset (Ideal O))
     (β : Ideal O → ℂ) (t : ℝ) :
     rowSlot η m A z S β t = ∑ P ∈ S, β P*rowWeight η m A z t P := by
   unfold rowSlot
@@ -41,7 +45,7 @@ theorem rowSlot_eq_weight (η : Character) (m A z : O) (S : Finset (Ideal O))
   ring
 
 theorem actual_hecke_rectangle_sum
-    (η : Character) (m A z : O) (t : ℝ)
+     (t : ℝ)
     (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
     (hs₁ : Function.support W₁ ⊆ Set.Iic b₁)
     (hs₂ : Function.support W₂ ⊆ Set.Iic b₂)
@@ -73,11 +77,17 @@ theorem actual_hecke_rectangle_sum
   rw [Summable.tsum_sub (hf₁.mul_right _) (hg₁.mul_right _), tsum_mul_right, tsum_mul_right]
   simp only [rowTwistedSum_eq_weight]
   rfl
+end
+
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem live_slot_product (η : Character) (m A z : O) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (t : ℝ) :
+section
+variable (η : Character) (m A z : O) (S : ι → Finset (Ideal O))
+    (β : ι → Ideal O → ℂ) (t : ℝ)
+include η m A z S β t
+
+theorem live_slot_product  :
     (∏ i,rowSlot η m A z (S i) (β i) t) =
       ∑ v : (i : ι) → S i, (∏ i,β i (v i))*rowWeight η m A z t (∏ i,(v i:Ideal O)) := by
   have hs (i : ι) : rowSlot η m A z (S i) (β i) t =
@@ -90,8 +100,7 @@ theorem live_slot_product (η : Character) (m A z : O) (S : ι → Finset (Ideal
   intro v hv
   rw [map_prod,← Finset.prod_mul_distrib]
 
-theorem actual_slot_rectangle_sum (η : Character) (m A z : O)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (t : ℝ)
+theorem actual_slot_rectangle_sum 
     (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
     (hs₁ : Function.support W₁ ⊆ Set.Iic b₁)
     (hs₂ : Function.support W₂ ⊆ Set.Iic b₂)
@@ -117,8 +126,7 @@ theorem actual_slot_rectangle_sum (η : Character) (m A z : O)
   intro v hv
   ring
 
-theorem common_extracted_slot_rectangle (η : Character) (m A z : O)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (t : ℝ)
+theorem common_extracted_slot_rectangle 
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
     (∑ v : (i : ι) → S i, (∏ i,β i (v i))*
       ∑' I : Ideal O, ∑' J : Ideal O,
@@ -145,9 +153,11 @@ theorem common_extracted_slot_rectangle (η : Character) (m A z : O)
   apply Finset.sum_congr rfl
   intro v hv
   ring
-
-end SevenEighths.CenteredMomentHeckeExpansion
-
 end
 
-end OAI
+
+
+
+
+
+

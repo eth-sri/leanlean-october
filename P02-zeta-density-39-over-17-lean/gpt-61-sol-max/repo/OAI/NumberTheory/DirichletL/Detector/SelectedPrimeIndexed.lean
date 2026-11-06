@@ -8,7 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeSelectedPrimeSums
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma weighted_slot_bound_indexed (eps a b r d B K : ℝ) (heps : 0<eps)
     (ha : 0<a) (hb : 0<b) (hd : d≤1) (hB : 0≤B) (hK : 0≤K) :
@@ -37,7 +37,7 @@ lemma weighted_slot_bound_indexed (eps a b r d B K : ℝ) (heps : 0<eps)
   rw [Finset.sum_image hf.injOn] at hh
   simpa only [he] using hh
 
-end SevenEighths.ProbeSelectedPrimeSums
-end
 
-end OAI
+
+
+

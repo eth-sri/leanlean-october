@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityZeroPhysical
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityAggregate
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailPhysical
@@ -7,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic
+open InverseFirstPriorityParents InverseMomentWholePriorityParents
+open InverseWholePriorityRetainedSource RayFourExpansion
+open InversePrioritySecondSource InverseSecondPrincipalCaller
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
 variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -56,13 +57,11 @@ theorem global_priority_slice_full_tail
       ∑x∈original,‖globalPriorityOuter p hg negative Ψ m ray core w x‖*
         ‖primeMark assigned lists a (wholeExtractedSupport (fun x=>extra x.cube) negative x)‖^2*‖H x‖:=by
     apply (norm_sum_le _ _).trans
-    apply Finset.sum_le_sum
-    intro x hx
-    rw [norm_mul,norm_mul,Complex.norm_real,Real.norm_of_nonneg (sq_nonneg _)]
+    simp
   exact (norm_add_le _ _).trans (add_le_add ((norm_add_le _ _).trans (add_le_add (hn _) (le_refl _))) (le_refl _))
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

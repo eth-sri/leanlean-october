@@ -12,7 +12,7 @@ open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassAri
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -63,7 +63,7 @@ theorem actual_second_row_decrease
   child_row_decrease hA ht (actual_second_common_center p hp x hE Z g theta eta hZ hG hD)
     (actual_second_label_center p hp x Z ell j eta hZ h1 h2 hJ) hterminal heta
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -15,8 +16,7 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Fourth
 
 
@@ -71,15 +71,12 @@ theorem tsum_fourth_divisorWeight_tail_le {b : ℝ} (hb : 3/2 < b)
       Summable.tsum_le_tsum (fun n => fourth_divisorWeight_le_rpow b n)
         ((summable_fourth_divisorWeight hb).subtype _) hs
     _ = ∑' j : ℕ, ((j+N+1:ℕ):ℝ)^(1/2-b) := by
-      simpa only [coe_notMemRangeEquiv_symm,Nat.add_assoc] using
-        ((notMemRangeEquiv (N+1)).symm.tsum_eq
+      exact ((notMemRangeEquiv (N+1)).symm.tsum_eq
           (fun n : {n : ℕ // n ∉ Finset.range (N+1)} =>
             ((n:ℕ):ℝ)^(1/2-b))).symm
     _ ≤ _ := by
       have h := tsum_nat_rpow_tail_le hp hN
-      have hnum : (1/2-b)+1 = 3/2-b := by ring
-      have hden : -(1/2-b)-1 = b-3/2 := by ring
-      simpa only [hnum,hden] using h
+      grind
 
 theorem exists_norm_zetaFourthTail_cutoff_le {b : ℝ} (hb : 3/2 < b) :
     ∃ K : ℝ, 0 < K ∧ ∀ t : ℝ, 4 ≤ t → 4*b ≤ t →
@@ -133,13 +130,7 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
     have h := div_pos (by norm_num : (0:ℝ)<2) hδ
     dsimp [b]
     linarith
-  have hbudget : b+(1+δ)*(3/2-b) ≤ 0 := by
-    have heq : b+(1+δ)*(3/2-b) = -(1+δ)/2 := by
-      dsimp [b]
-      field_simp [hδ.ne']
-      ring
-    rw [heq]
-    linarith
+  have hbudget : b+(1+δ)*(3/2-b) ≤ 0 := by grind
   obtain ⟨A,hA,hbound⟩ := exists_norm_zetaFourthTail_cutoff_le hb
   refine ⟨A*2^b,by positivity,max 4 (4*b),le_max_left _ _,?_⟩
   intro H hH t ht htH N hN a ha
@@ -162,4 +153,4 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
 
 
 
-end MathCollab.Density.Stronger.Fourth
+

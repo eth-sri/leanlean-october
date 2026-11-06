@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reciprocity.RamifiedCuspPhases
 
 @[expose] public section
@@ -11,82 +12,86 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
-lemma affineLowerTerm_eq_shifted (q r:Eis) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
+section
+variable (q r:Eis)
+include q r
+
+lemma affineLowerTerm_eq_shifted  (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
     (a d:Eis) (ha:a≠0) (hq:q≠0) :
     affineLowerTerm q r z v s a d=
       (eisEmbedding (symbol r d)*eisEmbedding (symbol d a)*
@@ -95,13 +100,17 @@ lemma affineLowerTerm_eq_shifted (q r:Eis) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
   rw [affineLowerTerm,rowHeight_eq_shiftedHeightKernel z v hv s (q*a) d (mul_ne_zero hq ha)]
   ring
 
-lemma affineLowerTerm_integrable (q r:Eis) (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
+section
+variable (v:ℝ) (hv:0<v)
+include v hv
+
+lemma affineLowerTerm_integrable  (s:ℂ) (hs:1<s.re)
     (a d:Eis) (ha:a≠0) (hq:q≠0) :
     Integrable (fun z=>affineLowerTerm q r z v s a d) := by
   simp_rw [affineLowerTerm_eq_shifted q r _ v hv s a d ha hq]
   exact (shiftedHeightKernel_integrable v hv s _ hs).const_mul _
 
-lemma affineLowerTerm_fourier_integral (q r:Eis) (v:ℝ) (hv:0<v) (s freq:ℂ)
+lemma affineLowerTerm_fourier_integral  (s freq:ℂ)
     (a d:Eis) (ha:a≠0) (hq:q≠0) :
     (∫z:ℂ,affineLowerTerm q r z v s a d*ShortDraftTrace.breveE (-freq*z))=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (freq*v))*
@@ -112,6 +121,9 @@ lemma affineLowerTerm_fourier_integral (q r:Eis) (v:ℝ) (hv:0<v) (s freq:ℂ)
   rw [integral_const_mul,integral_const_mul,integral_const_mul,
     traceIntegral_shiftedHeightKernel v hv s (eisEmbedding d/eisEmbedding (q*a)) freq]
   ring_nf
+end
+end
+
 
 lemma affineCuspGaussTerm_factor (h h1 q r a k x:Eis) (j n:ℕ)
     (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)
@@ -132,10 +144,14 @@ lemma affineCuspGaussTerm_factor (h h1 q r a k x:Eis) (j n:ℕ)
         ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*x)/eisEmbedding (q*a))) := by ring
     _ = _ := by rw [hp];ring
 
-lemma affineCuspTwistedCoefficient_add (h h1 q r a k x m:Eis) (j n:ℕ)
+section
+variable (h h1 q r a k x m:Eis) (j n:ℕ)
     (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)
     (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hh:h=q*h1) (hk:3*k=h1+ramifiedAffineParameter j n*a) :
+    (hh:h=q*h1) (hk:3*k=h1+ramifiedAffineParameter j n*a)
+include h h1 q r a k x m j n ha hprimary hq hr hh hk
+
+lemma affineCuspTwistedCoefficient_add  :
     (eisEmbedding (symbol r (a+3*(x+a*m)))*eisEmbedding (symbol (a+3*(x+a*m)) a))*
       ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*(x+a*m))/eisEmbedding (q*a))=
     (eisEmbedding (symbol r (a+3*x))*eisEmbedding (symbol (a+3*x) a))*
@@ -145,10 +161,7 @@ lemma affineCuspTwistedCoefficient_add (h h1 q r a k x m:Eis) (j n:ℕ)
   rw [symbol_congr (show a∣x+a*m-x from ⟨m,by ring⟩),
     residueAdditive_three_congr k a (x+a*m) x ha ⟨m,by ring⟩]
 
-lemma affineLowerTerm_weighted_translate (h h1 q r a k x m:Eis) (j n:ℕ)
-    (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)
-    (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hh:h=q*h1) (hk:3*k=h1+ramifiedAffineParameter j n*a)
+lemma affineLowerTerm_weighted_translate 
     (z:ℂ) (v:ℝ) (s:ℂ) :
     affineLowerTerm q r z v s a (a+3*(x+a*m))*ShortDraftTrace.breveE (-ninthCuspFrequency h*z)=
       affineLowerTerm q r (z+3*eisEmbedding m/eisEmbedding q) v s a (a+3*x)*
@@ -191,8 +204,9 @@ lemma affineLowerTerm_weighted_translate (h h1 q r a k x m:Eis) (j n:ℕ)
   have hphase:-ninthCuspFrequency h*(z+3*eisEmbedding m/eisEmbedding q)=(-Q)+(-ninthCuspFrequency h*z):=by
     dsimp [Q];ring
   rw [hphase,AddChar.map_add_eq_mul]
-  dsimp only [c0]
   ring
+end
+
 
 lemma affineLowerIntegral_sum_translate (h h1 q r a k x:Eis) (j n:ℕ)
     (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)
@@ -214,8 +228,8 @@ lemma affineLowerIntegral_sum_translate (h h1 q r a k x:Eis) (j n:ℕ)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
 lemma affineDenominator_integral_formula (h h1 q r k:Eis) (j n:ℕ) (a:PrimaryLower)
     (hq:q≠0) (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
@@ -315,8 +329,8 @@ section
 open MeasureTheory Filter
 open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
 lemma hasSum_diagonal_unit_integrals (u t:Eisˣ) (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re) :
     HasSum (fun p:UnitLowerData=>∫z in periodDomain,
@@ -351,7 +365,11 @@ theorem diagonal_unit_eisenstein_fourier (u t:Eisˣ) (j:ℕ) (h h1:Eis)
   simpa only [GaussGeneratorTransport.norm_eisEmbedding_unit,one_pow,Complex.ofReal_one,
     Complex.one_cpow,Ideal.span_singleton_eq_top.mpr t.isUnit,Ideal.absNorm_top,map_one,Nat.cast_one,one_mul] using h
 
-lemma onceCusp_q_norm (t:Eisˣ) (j:Fin 3) :
+section
+variable (t:Eisˣ) (j:Fin 3)
+include t j
+
+lemma onceCusp_q_norm  :
     ‖eisEmbedding (onceCuspScale t*omega^j.val)‖^2=3 := by
   have hw:‖eisEmbedding omega‖=1:=by
     let w:Eisˣ:=(omega_primitive.isUnit (by decide)).unit
@@ -363,11 +381,13 @@ lemma onceCusp_q_norm (t:Eisˣ) (j:Fin 3) :
   rw [←ramifiedEmbedding_traceLambda,←norm_pow,←map_pow,ramifiedTraceLambda_square]
   norm_num [map_ofNat]
 
-lemma onceCusp_q_absNorm (t:Eisˣ) (j:Fin 3) :
+lemma onceCusp_q_absNorm  :
     Ideal.absNorm (Ideal.span {onceCuspScale t*omega^j.val})=3 := by
   have h:=onceCusp_q_norm t j
   rw [eisEmbedding_norm_sq_eq_absNorm_span] at h
   exact_mod_cast h
+end
+
 
 end
 
@@ -376,9 +396,13 @@ open MeasureTheory Filter
 open scoped BigOperators Classical ENNReal
 
 open ActualEisensteinCubic ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-theorem quotient_weighted_period_unfold (q:Eis) (hq:q≠0)
+section
+variable (q:Eis) (hq:q≠0)
+include q hq
+
+theorem quotient_weighted_period_unfold 
     (ψ:(Eis⧸Ideal.span {q})→ℂ) (f:ℂ→ℂ) (hf:Integrable f) :
     (∑'n:Eis,ψ (Ideal.Quotient.mk (Ideal.span {q}) n)*
       ∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
@@ -419,7 +443,7 @@ theorem quotient_weighted_period_unfold (q:Eis) (hq:q≠0)
   simp_rw [hinner]
   exact tsum_mul_right
 
-theorem character_weighted_period_unfold (q:Eis) (hq:q≠0)
+theorem character_weighted_period_unfold 
     (ψ:AddChar (Eis⧸Ideal.span {q}) ℂ) (f:ℂ→ℂ) (hf:Integrable f) :
     (∑'n:Eis,ψ (Ideal.Quotient.mk (Ideal.span {q}) n)*
       ∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
@@ -433,6 +457,8 @@ theorem character_weighted_period_unfold (q:Eis) (hq:q≠0)
     change (Fintype.card (Eis⧸Ideal.span {q}):ℂ)=(Nat.card (Eis⧸Ideal.span {q}):ℂ)
     rw [Nat.card_eq_fintype_card]
   · rw [AddChar.sum_eq_zero_of_ne_one hψ,zero_mul]
+end
+
 
 end
 
@@ -440,20 +466,22 @@ section
 open Filter MeasureTheory
 open scoped BigOperators Classical
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
 def affinePeriodChar (q:Eis) (hq:q≠0) (ell:Eis) : AddChar (Eis⧸Ideal.span {q}) ℂ :=
   (eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates q hq).mulShift
     (Ideal.Quotient.mk (Ideal.span {q}) ell)
 
-lemma affinePeriodChar_mk (q:Eis) (hq:q≠0) (ell x:Eis) :
-    affinePeriodChar q hq ell (Ideal.Quotient.mk (Ideal.span {q}) x)=
-      ShortDraftTrace.breveE (eisEmbedding (ell*x)/(eisEmbedding q*eisLam)) := by
-  simp only [affinePeriodChar,AddChar.mulShift_apply,←map_mul,eisTraceModChar,
-    IdealGaussCRT.traceModChar_mk]
+section
+variable (q:Eis) (hq:q≠0)
+include q hq
 
-lemma affinePeriodChar_eq_one (q:Eis) (hq:q≠0) (ell:Eis) :
+lemma affinePeriodChar_mk  (ell x:Eis) :
+    affinePeriodChar q hq ell (Ideal.Quotient.mk (Ideal.span {q}) x)=
+      ShortDraftTrace.breveE (eisEmbedding (ell*x)/(eisEmbedding q*eisLam)) := by rfl
+
+lemma affinePeriodChar_eq_one  (ell:Eis) :
     affinePeriodChar q hq ell=1 ↔ q∣ell := by
   constructor
   · intro h
@@ -466,6 +494,8 @@ lemma affinePeriodChar_eq_one (q:Eis) (hq:q≠0) (ell:Eis) :
     have hz:Ideal.Quotient.mk (Ideal.span {q}) ell=0:=
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hd)
     simp [affinePeriodChar,hz]
+end
+
 
 lemma affineCusp_general_weighted_translate (h q r a ell x m:Eis) (j n:ℕ)
     (hprimary:lambda^2∣a-1) (hq:q≠0)
@@ -480,7 +510,7 @@ lemma affineCusp_general_weighted_translate (h q r a ell x m:Eis) (j n:ℕ)
   let delta:=3*eisEmbedding m/eisEmbedding q
   have hchar:eisEmbedding (symbol r (a+3*(x+a*m)))=
       eisEmbedding (symbol r (a+3*x))*ShortDraftTrace.breveE A:=by
-    have hd:lambda^2∣a+3*x-1:=primary_add_three a x hprimary
+    have hd :=primary_add_three a x hprimary
     have h:=ramified_symbol_primary_shift_signed j n r (a+3*x) (a*m) hr hd
     convert h using 1 ; congr 2 ;ring
   have hden:symbol (a+3*(x+a*m)) a=symbol (a+3*x) a:=
@@ -506,7 +536,6 @@ lemma affineCusp_general_weighted_translate (h q r a ell x m:Eis) (j n:ℕ)
       affinePeriodChar q hq ell (Ideal.Quotient.mk (Ideal.span {q}) m)*
         ShortDraftTrace.breveE (-ninthCuspFrequency h*(z+delta)):=by
     rw [affinePeriodChar_mk,←harg,←AddChar.map_add_eq_mul,←AddChar.map_add_eq_mul]
-    congr 1
     ring
   unfold affineLowerTerm
   rw [hchar,hden,hrow]
@@ -543,10 +572,14 @@ end
 open Filter MeasureTheory
 open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
-lemma affineDenominator_zero (h h1 q r:Eis) (j n:ℕ) (a:PrimaryLower)
+section
+variable (h h1 q r:Eis) (j n:ℕ)
+include h h1 q r j n
+
+lemma affineDenominator_zero  (a:PrimaryLower)
     (hq:q≠0) (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
     (hh:h=q*h1) (hbase:(3:Eis)∣h+ramifiedAffineParameter j n*q)
     (hfreq:¬(3:Eis)∣h1+ramifiedAffineParameter j n)
@@ -588,7 +621,7 @@ lemma affineDenominator_zero (h h1 q r:Eis) (j n:ℕ) (a:PrimaryLower)
       (primaryLower_primary a) hq hr hell' v hv s hs,ite_eq_right hne]
   simp only [hinner,tsum_zero]
 
-theorem affineCusp_branch_fourier_masked (h h1 q r:Eis) (j n:ℕ)
+theorem affineCusp_branch_fourier_masked 
     (hq:q≠0) (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
     (hh:h=q*h1) (hbase:(3:Eis)∣h+ramifiedAffineParameter j n*q)
     (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
@@ -606,6 +639,8 @@ theorem affineCusp_branch_fourier_masked (h h1 q r:Eis) (j n:ℕ)
   · rw [hsum.tsum_sigma]
     simp only [affineDenominator_zero h h1 q r j n _ hq hr hh hbase hfreq v hv s hs
       (hsum.sigma_factor _),tsum_zero]
+end
+
 
 theorem diagonal_once_eisenstein_fourier (u t:Eisˣ) (j:Fin 3→ℕ) (h:Eis) (h1:Fin 3→Eis)
     (hr:∀l,(↑u⁻¹:Eis)^2*(onceCuspScale t*omega^l.val)=omega^(j l)*ramifiedTraceLambda ∨
@@ -633,8 +668,8 @@ theorem diagonal_once_eisenstein_fourier (u t:Eisˣ) (j:Fin 3→ℕ) (h:Eis) (h1
         (hsum.summable.prod_factor l)
   simpa only [onceCusp_q_norm,onceCusp_q_absNorm,Nat.cast_ofNat,Complex.ofReal_ofNat] using h
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

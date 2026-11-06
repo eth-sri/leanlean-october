@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceCommonBound
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalAnnularCommonBound
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
+open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
+open CenteredMomentCanonicalFirst
 open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
+open scoped HeckeO
 universe u
 
 theorem actual_annular_block_from_common_energy (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
@@ -65,8 +65,8 @@ theorem actual_annular_block_from_common_energy (W : 𝓢(ℝ,ℂ)) (decay J₁ 
       simpa only [normValue_eq_embedding] using hm.ge)
     E₁ E₂ hE₁ hE₂ hleft hright
 
-end SevenEighths.CenteredMomentFirstPhysicalAnnularCommonBound
 
-end
 
-end OAI
+
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortGammaPacking
 public import MathCollab.Density.DetectorError
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
@@ -40,11 +40,7 @@ theorem short_detector_window_fourth :
     unfold detectorIntegral
     rw [norm_mul]
     exact (mul_le_mul hc (norm_integral_le_integral_norm K) (norm_nonneg _) (by norm_num)).trans_eq (one_mul _)
-  have hcomp : Sᶜ = {t : ℝ | H/2 < |t|} := by
-    ext t
-    change (¬ t ∈ Icc (-(H/2)) (H/2)) ↔ H/2 < |t|
-    rw [← not_le,abs_le]
-    rfl
+  have hcomp : Sᶜ = {t : ℝ | H/2 < |t|} := by grind
   have hsplit := integral_add_compl (show MeasurableSet S from measurableSet_Icc) hi.norm
   have hsmall : (∫ t in Sᶜ, ‖K t‖) < 1/6 := by
     rw [hcomp]
@@ -55,7 +51,6 @@ theorem short_detector_window_fourth :
     apply integral_congr_ae
     filter_upwards with t
     rw [short_detector_kernel_norm hy]
-    dsimp only [g,F]
     ring
   rw [heq] at hnear
   have hh := hholder ρ.re H ρ.im (H/2) hβ hβ'
@@ -71,8 +66,6 @@ theorem short_detector_window_fourth :
   have hscale := mul_le_mul_of_nonneg_right hYpow (show 0 ≤ G^3*(∫ t in S,g t*(F t)^4) by positivity)
   change (1:ℝ) ≤ 6^4*G^3*H^(1-2*σ)*(∫ t in S,g t*(F t)^4)
   change (∫ t in S,g t*F t)^4 ≤ G^3*(∫ t in S,g t*(F t)^4) at hh
-  change (Y^(1/2-ρ.re))^4*(∫ t in S,g t*F t)^4 ≤
-    (Y^(1/2-ρ.re))^4*(G^3*(∫ t in S,g t*(F t)^4)) at hmul
-  nlinarith
+  grind
 
-end GuthMaynard.Improvement
+

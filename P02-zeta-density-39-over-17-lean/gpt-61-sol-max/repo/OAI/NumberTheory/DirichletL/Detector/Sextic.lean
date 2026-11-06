@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Canonical
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePrimePower
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CubicEisenstein
+open scoped EisensteinO
 
 theorem actualSextic_pow_eq_one_iff (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) (n : ℕ) :
@@ -36,7 +36,7 @@ theorem actualSextic_primePowerGauss_at_pow (p : O) (hp : Prime p)
     exact primePowerGauss_at_pow_nonprincipal p hp _
       (fun h => hr ((actualSextic_pow_eq_one_iff _ hg hc r).mp h)) n j
 
-end SevenEighths.ProbePrimePower
-end
 
-end OAI
+
+
+

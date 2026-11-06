@@ -68,8 +68,8 @@ theorem polynomial_reciprocal_bound (χ : Character) (a : ℝ)
     _ ≤ K*(18*(1+|s.im|^2)) := mul_le_mul_of_nonneg_left hheight hK
     _ = _ := by ring
 
-end SevenEighths.HeckeReciprocalGrowth
 
-end
 
-end OAI
+
+
+

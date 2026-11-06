@@ -7,21 +7,24 @@ public import LaterPairs.Native.SargosQuarticPhase
 public import LaterPairs.Native.SargosQuarticPoisson
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
                                                                              
 
-noncomputable section
+
 
 open Set Filter
 open scoped ContDiff Topology FourierTransform
 
 namespace TaoTrudgianYang2025
 
-theorem sargosQuartic_normalized_slope_bound {ε u : ℝ}
-    (hε : |ε| ≤ 1/96) (hu : u ∈ Icc (1:ℝ) 2) :
+section
+variable {ε u : ℝ}
+    (hε : |ε| ≤ 1/96) (hu : u ∈ Icc (1:ℝ) 2)
+include ε u hε hu
+
+theorem sargosQuartic_normalized_slope_bound  :
     |sargosQuarticSlope 1 ε u| ≤ 6 := by
   have hu₀ : 0 ≤ u := by linarith [hu.1]
   have hc := pow_le_pow_left₀ hu₀ hu.2 3
@@ -37,8 +40,7 @@ theorem sargosQuartic_normalized_slope_bound {ε u : ℝ}
       linarith [hu.2]
     _ ≤ 6 := by norm_num
 
-theorem sargosQuartic_normalized_secondDeriv_bound {ε u : ℝ}
-    (hε : |ε| ≤ 1/96) (hu : u ∈ Icc (1:ℝ) 2) :
+theorem sargosQuartic_normalized_secondDeriv_bound  :
     |iteratedDeriv 2 (sargosQuarticPhase 1 ε) u| ≤ 6 := by
   have he : deriv (sargosQuarticPhase 1 ε) = sargosQuarticSlope 1 ε :=
     funext fun x => (sargosQuarticPhase_hasDerivAt 1 ε x).deriv
@@ -48,6 +50,8 @@ theorem sargosQuartic_normalized_secondDeriv_bound {ε u : ℝ}
     (by norm_num : (0:ℝ) < 1) (by norm_num : (0:ℝ) < 1)
     (by simpa using hε) (by simpa only [mul_one] using hu)
   exact abs_le.mpr ⟨by linarith [hc.1],by linarith [hc.2]⟩
+end
+
 
 theorem sargosQuarticWeightedKernel_normalized (χ : ℝ → ℝ) (T ε u : ℝ) :
     sargosQuarticWeightedKernel χ 1 T (T*ε) u =
@@ -71,16 +75,12 @@ theorem sargosQuarticBufferedKernel_uniform_second_derivative :
         ‖iteratedDeriv 2 (sargosQuarticWeightedKernel
           (modelPhaseBufferedCutoff l b η) 1 T (T*ε)) u‖ ≤ C*(η⁻¹)^2*(1+|T|)^2 := by
   obtain ⟨M,hM,hcut⟩ := modelPhaseBufferedCutoff_uniform_c2
-  let D : ℝ := (2*Real.pi)^2*6^2+2*Real.pi*6+1
-  have hD : 1 ≤ D := by
-    have hh : 0 ≤ (2*Real.pi)^2*6^2+2*Real.pi*6 := by positivity
-    dsimp [D]
-    linarith
+  let D := (2*Real.pi)^2*6^2+2*Real.pi*6+1
+  have hD : 1 ≤ D := by bound
   refine ⟨4*M*D,by nlinarith [mul_le_mul hM hD (by norm_num) (by linarith : 0 ≤ M)],?_⟩
   intro l b η hl hb hη hη₁ ε T hε u
   let χ := modelPhaseBufferedCutoff l b η
-  have heq : sargosQuarticWeightedKernel χ 1 T (T*ε) =
-      fun x => (χ x : ℂ)*(𝐞 (T*sargosQuarticPhase 1 ε x) : ℂ) :=
+  have heq :=
     funext fun x => sargosQuarticWeightedKernel_normalized χ T ε x
   by_cases hu : u ∈ tsupport χ
   · have hu' : u ∈ Ioo (1:ℝ) 2 := modelPhaseBufferedCutoff_tsupport_model hη hl hb hu
@@ -90,12 +90,12 @@ theorem sargosQuarticBufferedKernel_uniform_second_derivative :
       (fun _ _ => (contDiff_sargosQuarticPhase 1 ε).contDiffAt.of_le
         (by decide : (2 : WithTop ℕ∞) ≤ ∞))
       (fun x hx => by
-        have hx' : x = u := le_antisymm hx.2 hx.1
+        have hx' := le_antisymm hx.2 hx.1
         subst x
         rw [(sargosQuarticPhase_hasDerivAt 1 ε u).deriv]
         exact sargosQuartic_normalized_slope_bound hε huc)
       (fun x hx => by
-        have hx' : x = u := le_antisymm hx.2 hx.1
+        have hx' := le_antisymm hx.2 hx.1
         subst x
         exact sargosQuartic_normalized_secondDeriv_bound hε huc) T
     have hA : 1 ≤ η⁻¹ := (one_le_inv₀ hη).mpr hη₁
@@ -117,4 +117,4 @@ theorem sargosQuarticBufferedKernel_uniform_second_derivative :
     have hD₀ : 0 ≤ D := by linarith
     positivity
 
-end TaoTrudgianYang2025
+

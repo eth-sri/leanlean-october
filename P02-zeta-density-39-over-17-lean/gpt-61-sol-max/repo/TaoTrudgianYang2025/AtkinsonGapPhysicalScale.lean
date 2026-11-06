@@ -5,13 +5,17 @@ public import TaoTrudgianYang2025.AtkinsonGapExponentPair
 
 /-! The true Atkinson gap frequency has uniform physical square-root scales. -/
 
-noncomputable section
-namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
 
-theorem atkinsonGap_denominator_bounds {H M t u : ℝ}
+namespace TaoTrudgianYang2025
+
+
+section
+variable {H M t u : ℝ}
     (hH : 0 < H) (hM : 0 < M) (hu : H ≤ u) (hu2 : u ≤ 2*H)
-    (ht : u < t) (ht2 : t ≤ 2*u) :
+    (ht : u < t) (ht2 : t ≤ 2*u)
+include H M t u hH hM hu hu2 ht ht2
+
+theorem atkinsonGap_denominator_bounds  :
     Real.sqrt (H*M) ≤
         M*Real.sqrt (2*Real.pi*u/M)*(Real.sqrt (t/u)+1) ∧
       M*Real.sqrt (2*Real.pi*u/M)*(Real.sqrt (t/u)+1) ≤
@@ -50,9 +54,7 @@ theorem atkinsonGap_denominator_bounds {H M t u : ℝ}
           (by positivity) (by positivity)
       _ = _ := by ring
 
-theorem atkinsonGap_frequency_physical_bounds {H M t u : ℝ}
-    (hH : 0 < H) (hM : 0 < M) (hu : H ≤ u) (hu2 : u ≤ 2*H)
-    (ht : u < t) (ht2 : t ≤ 2*u) :
+theorem atkinsonGap_frequency_physical_bounds  :
     atkinsonGapFrequency M t u/(2*Real.pi*M) ≤ (t-u)/Real.sqrt (H*M) ∧
       2*Real.pi*M/atkinsonGapFrequency M t u ≤
         12*Real.sqrt (H*M)/(t-u) := by
@@ -72,5 +74,7 @@ theorem atkinsonGap_frequency_physical_bounds {H M t u : ℝ}
   rw [he,he']
   exact ⟨div_le_div_of_nonneg_left hgap.le hR hl,
     div_le_div_of_nonneg_right hh hgap.le⟩
+end
 
-end TaoTrudgianYang2025
+
+

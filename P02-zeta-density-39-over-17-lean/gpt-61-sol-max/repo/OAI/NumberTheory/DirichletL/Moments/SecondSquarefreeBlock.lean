@@ -10,21 +10,21 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondSquarefreeBlock
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
 open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
+open CenteredMomentRestrictedEnergy
+open CenteredMomentMobiusRegroup
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSecondWindowBudget
+open CenteredMomentRestrictedSource CenteredMomentFirstSectors
+
+open scoped EisensteinO
 
 theorem actual_block_from_squarefree_source (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
     ∃B:ℝ,0≤B ∧ ∀r:ℝ,0<r →
@@ -106,8 +106,8 @@ theorem actual_block_from_squarefree_source (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂
   · have hs:=CenteredMomentWholeDivisorShell.squarefree_of_moebius_ne_zero L hμ
     simp only [F₁,F₂,ite_eq_left hs]
 
-end SevenEighths.CenteredMomentSecondSquarefreeBlock
 
-end
 
-end OAI
+
+
+

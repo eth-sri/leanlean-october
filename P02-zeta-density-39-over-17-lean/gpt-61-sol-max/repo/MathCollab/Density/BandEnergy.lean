@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import MathCollab.Density.WeightedSquare
 
 @[expose] public section
 
-open Real Complex Set MeasureTheory
+open Real Complex MeasureTheory
 open scoped BigOperators ContDiff
 
 noncomputable section
@@ -26,9 +27,13 @@ theorem norm_bandPhaseSum_le (L H v r : ℝ) :
   exact (norm_sum_le _ _).trans_eq (by simp only [norm_dirichletPhase, Finset.sum_const,
     nsmul_eq_mul, mul_one])
 
+section
+variable (w : ReflectionCutoff) {L H : ℝ}
+    (hL : 0 < L) (hH : 0 < H) (v : ℝ)
+include w L H hL hH v
+
 /-- Interchange of the finite retained-mode sum with the full Mellin integral. -/
-theorem bandContribution_mellin (w : ReflectionCutoff) {L H : ℝ}
-    (hL : 0 < L) (hH : 0 < H) (v : ℝ) :
+theorem bandContribution_mellin  :
     bandContribution w L H v = ((L/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       mellinLine (fun x => (w x : ℂ)) r *
         (reflectionKernel H v r * bandPhaseSum L H v r) := by
@@ -56,12 +61,10 @@ theorem bandContribution_mellin (w : ReflectionCutoff) {L H : ℝ}
   filter_upwards with r
   simp only [bandPhaseSum, Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro m _
-  ring
+  grind
 
 /-- Full-line weighted estimate for the retained band, uniform in the phase. -/
-theorem norm_bandContribution_sq_le (w : ReflectionCutoff) {L H : ℝ}
-    (hL : 0 < L) (hH : 0 < H) (v : ℝ) :
+theorem norm_bandContribution_sq_le  :
     ‖bandContribution w L H v‖ ^ 2 ≤
       (500 / Real.pi^2) * mellinMass w * (L^2/H) *
         ∫ r, ‖mellinLine (fun x => (w x : ℂ)) r‖ * ‖bandPhaseSum L H v r‖ ^ 2 := by
@@ -89,8 +92,7 @@ theorem norm_bandContribution_sq_le (w : ReflectionCutoff) {L H : ℝ}
     apply integral_mono_ae hig (hiB.const_mul (2000/H))
     filter_upwards with r
     simpa only [mul_left_comm] using mul_le_mul_of_nonneg_left (hp r) (norm_nonneg (W r))
-  have hs' : ‖∫ r, W r * g r‖ ^ 2 ≤
-      mellinMass w * ((2000/H) * ∫ r, ‖W r‖ * ‖B r‖ ^ 2) :=
+  have hs' :=
     hs.trans (mul_le_mul_of_nonneg_left hint (mellinMass_nonneg w))
   rw [bandContribution_mellin w hL hH, norm_mul, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos (show 0 < L/(2*Real.pi) by positivity), mul_pow]
@@ -99,5 +101,7 @@ theorem norm_bandContribution_sq_le (w : ReflectionCutoff) {L H : ℝ}
         (mellinMass w * ((2000/H) * ∫ r, ‖W r‖ * ‖B r‖ ^ 2)) :=
       mul_le_mul_of_nonneg_left hs' (sq_nonneg _)
     _ = _ := by dsimp [W, B]; ring
+end
 
-end MathCollab.Density
+
+

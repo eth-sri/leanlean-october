@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Native modulus-one adaptation of selected McColm divisor Voronoi residues,
 source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0,
@@ -11,12 +12,11 @@ public import MathCollab.Density.Stronger.Atkinson.OrdinaryDivisorMellin
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
+open Complex MeasureTheory Filter Topology
 open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
 open MathCollab.Density.Stronger.Fourth
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 private theorem voronoi_tendsto_rectangleIntegral'_vertical_sub
@@ -29,7 +29,7 @@ private theorem voronoi_tendsto_rectangleIntegral'_vertical_sub
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
       (nhds (VerticalIntegral' f b - VerticalIntegral' f a)) := by
-  let c : ℂ := (((1 / (2 * Real.pi) : ℝ) : ℂ))
+  let c := (((1 / (2 * Real.pi) : ℝ) : ℂ))
   have hRight : Tendsto (fun R : ℝ =>
       c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) atTop
       (nhds (c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I))) :=
@@ -56,7 +56,6 @@ private theorem voronoi_tendsto_rectangleIntegral'_vertical_sub
     refine hExpanded.congr' ?_
     filter_upwards with R
     rw [pintz2023_RectangleIntegral'_eq_edges]
-    dsimp only [c]
     ring
   have hVerticalB : VerticalIntegral' f b =
       c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I) := by
@@ -64,16 +63,14 @@ private theorem voronoi_tendsto_rectangleIntegral'_vertical_sub
     dsimp only [c]
     simp [smul_eq_mul]
     ring_nf
-    rw [Complex.I_sq]
-    ring
+    bound
   have hVerticalA : VerticalIntegral' f a =
       c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
     unfold VerticalIntegral' VerticalIntegral
     dsimp only [c]
     simp [smul_eq_mul]
     ring_nf
-    rw [Complex.I_sq]
-    ring
+    bound
   simpa only [hVerticalB, hVerticalA] using hRectangle
 
 private theorem voronoi_verticalIntegral'_sub_eq_of_eventual_rectangle
@@ -93,9 +90,13 @@ private theorem voronoi_verticalIntegral'_sub_eq_of_eventual_rectangle
   exact tendsto_nhds_unique hLimit hLimitA
 
 
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+
 /-- Actual q=1 contour shift, with both vertical integrals and both edges proved. -/
 theorem DFIVoronoiTestFunction.ordinaryDivisor_vertical_shift
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+     :
     VerticalIntegral' (ordinaryDivisorMellinIntegrand g) (3/2) -
       VerticalIntegral' (ordinaryDivisorMellinIntegrand g) (-1/2) =
         ordinaryDivisorVoronoiMain g := by
@@ -117,7 +118,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_vertical_shift
 
 /-- Exact native ordinary-divisor Mellin-Barnes formula before the functional equation. -/
 theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_main_add_left
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+     :
     (∑' n : ℕ, divisorWeight n * g n) = ordinaryDivisorVoronoiMain g +
       VerticalIntegral' (ordinaryDivisorMellinIntegrand g) (-1/2) := by
   have hr : (∑' n : ℕ, divisorWeight n * g n) =
@@ -129,7 +130,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_main_add_left
 
 /-- Exact native FE split, retaining both original Mellin multipliers. -/
 theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_main_add_reflected
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+     :
     (∑' n : ℕ, divisorWeight n * g n) = ordinaryDivisorVoronoiMain g +
       VerticalIntegral' (fun z : ℂ =>
         (dfiVoronoiMinusMultiplier 1 z + dfiVoronoiPlusMultiplier 1 z) *
@@ -143,5 +144,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_main_add_reflected
   unfold ordinaryDivisorMellinIntegrand
   rw [riemannZeta_sq_eq_voronoiMultipliers (by norm_num)
     (by intro h; have := congrArg Complex.re h; norm_num at this)]
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

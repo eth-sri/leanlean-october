@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -85,22 +85,27 @@ lemma low_element_rowTwist_energy (R : Finset O) (hR : ∀z∈R,z≠0)
   intro I hI
   exact low_units_label_one_sum (fun Ψ=>‖F Ψ‖^2) Ψ m I
 
-lemma lowNumeratorRows_nonzero (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
-    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : z≠0 := by
+section
+variable (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
+    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ)
+include a b ha hb Q hQ z hz
+
+lemma lowNumeratorRows_nonzero  : z≠0 := by
   intro he
   have hh := (lowNumeratorRows_mem a b ha hb Q hQ z).mp hz
   rw [he,elementNorm,Ideal.span_singleton_zero,Ideal.absNorm_bot,Nat.cast_zero,zero_div] at hh
   exact hh (lowOuterCutoff_small a b ha 0 (by positivity))
 
-lemma lowNumeratorRows_norm_bound (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
-    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : elementNorm z≤2*b*Q := by
+lemma lowNumeratorRows_norm_bound  : elementNorm z≤2*b*Q := by
   have hh := (lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ z).mp hz)).2
   exact (div_le_iff₀ hQ).mp hh
+end
+
 
 lemma low_unit_card : Fintype.card Oˣ=6 := by
   simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

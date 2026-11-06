@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection10Theorem
 public import GafniTao.WooleySourceBoxing
 
@@ -89,10 +90,14 @@ theorem wooley_spaced_degree_one_value_eq_iff
       (Int.modEq_iff_dvd.mpr
         (dvd_trans hmod.dvd (Polynomial.sub_dvd_eval_sub m n (phi 0))))
 
+section
+variable {q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem 1)
+include q phi
+
 /-- The product of two degree-one source phases is the character of the
 difference of their polynomial values. -/
 theorem wooley_degree_one_phase_mul_conj
-    {q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem 1)
+    
     (alpha : Fin 1 → ZMod q) (n m : ℤ) :
     wooleySourcePolynomialPhase phi alpha n *
         conj (wooleySourcePolynomialPhase phi alpha m) =
@@ -103,13 +108,12 @@ theorem wooley_degree_one_phase_mul_conj
   unfold wooleySourcePolynomialPhase
   simp only [Fin.sum_univ_one]
   rw [← AddChar.map_neg_eq_conj, ← AddChar.map_add_eq_mul]
-  congr 1
   ring
 
 /-- Exact degree-one Fourier orthogonality for an arbitrary finitely
 supported source sequence. -/
 theorem wooley_degree_one_raw_average_eq_collision
-    {q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem 1)
+    
     (gamma : WooleySourceSequence) :
     ((q : ℂ)⁻¹) *
         ∑ alpha : Fin 1 → ZMod q,
@@ -228,6 +232,8 @@ theorem wooley_degree_one_raw_average_eq_collision
               exact hsum
           rw [hsum']
           split_ifs <;> simp
+end
+
 
 /-- The residue collision energy to which both degree-one means reduce. -/
 def wooleyDegreeOneResidueCollision (q : ℕ)
@@ -279,8 +285,6 @@ theorem wooley_degree_one_sourceMean_eq_residueCollision
               wooleySourcePolynomialSum phi gamma alpha *
                 conj (wooleySourcePolynomialSum phi gamma alpha)) := by
           rw [Finset.mul_sum, Finset.mul_sum, Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro alpha halpha
           ring
       _ = _ := by rw [hraw']
 
@@ -301,16 +305,11 @@ theorem wooleyDegreeOneResidueCollision_residueSequence
         ∑ m ∈ gamma.support.filter (fun m : ℤ => (m : ZMod q) = xi),
           gamma n * conj (gamma m) := by
   unfold wooleyDegreeOneResidueCollision
-  rw [wooleySourceResidueSequence_support]
   apply Finset.sum_congr rfl
   intro n hn
-  simp only [Finset.mem_filter] at hn
-  rw [wooleySourceResidueSequence_apply, ite_eq_left hn.2]
   apply Finset.sum_congr rfl
   intro m hm
-  simp only [Finset.mem_filter] at hm
-  rw [wooleySourceResidueSequence_apply, ite_eq_left hm.2]
-  rw [ite_eq_left (hn.2.trans hm.2.symm)]
+  simp_all
 
 theorem wooley_sum_residueCollision_residueSequence
     (q : ℕ) [NeZero q] (gamma : WooleySourceSequence) :
@@ -338,8 +337,7 @@ theorem wooley_sum_residueCollision_residueSequence
       simp only [Finset.mem_filter] at hn
       rw [← Finset.sum_filter]
       congr 1
-      ext m
-      simp [hn.2, eq_comm]
+      grind
     _ = ∑ n ∈ gamma.support, ∑ m ∈ gamma.support,
         if (n : ZMod q) = (m : ZMod q) then
           gamma n * conj (gamma m)
@@ -353,12 +351,16 @@ theorem wooley_sum_residueCollision_residueSequence
               gamma n * conj (gamma m)
             else 0)
 
+section
+variable {p c B : ℕ} [NeZero p] {phi : WooleyPolynomialSystem 1}
+    (hphi : phi.Spaced p c) (hc : 1 ≤ c)
+    (gamma : WooleySourceSequence)
+include p c B phi hphi hc gamma
+
 /-- The fully conditioned degree-one source mean has the same normalized
 residue collision expansion as the global mean. -/
 theorem wooley_degree_one_conditionedMean_eq_residueCollision
-    {p c B : ℕ} [NeZero p] {phi : WooleyPolynomialSystem 1}
-    (hphi : phi.Spaced p c) (hc : 1 ≤ c)
-    (gamma : WooleySourceSequence) :
+     :
     ((wooleySourcePolynomialConditionedMean 1 (p ^ B) (p ^ B)
         phi gamma : ℝ) : ℂ) =
       ((wooleySourceMassSq gamma : ℂ)⁻¹) *
@@ -391,11 +393,7 @@ theorem wooley_degree_one_conditionedMean_eq_residueCollision
                 phi gamma xi : ℝ) : ℂ) =
           ∑ xi : ZMod (p ^ B),
               wooleyDegreeOneResidueCollision (p ^ B)
-              (wooleySourceResidueSequence gamma (p ^ B) xi) := by
-      push_cast
-      apply Finset.sum_congr rfl
-      intro xi hxi
-      exact hterm xi
+              (wooleySourceResidueSequence gamma (p ^ B) xi) := by simp_all
     have hweightedC :
         (wooleySourceMassSq gamma : ℂ) *
             (wooleySourcePolynomialConditionedMean 1 (p ^ B) (p ^ B)
@@ -432,9 +430,7 @@ theorem wooley_degree_one_conditionedMean_eq_residueCollision
 /-- At degree one, full conditioning loses nothing: both sides are the same
 normalized residue collision energy. -/
 theorem wooley_degree_one_sourceMean_eq_conditionedMean
-    {p c B : ℕ} [NeZero p] {phi : WooleyPolynomialSystem 1}
-    (hphi : phi.Spaced p c) (hc : 1 ≤ c)
-    (gamma : WooleySourceSequence) :
+     :
     wooleySourcePolynomialMean (wooleyTriangular 1) (p ^ B) phi gamma =
       wooleySourcePolynomialConditionedMean (wooleyTriangular 1)
         (p ^ B) (p ^ (B ⌈/⌉ 1)) phi gamma := by
@@ -444,6 +440,8 @@ theorem wooley_degree_one_sourceMean_eq_conditionedMean
   apply Complex.ofReal_injective
   rw [wooley_degree_one_sourceMean_eq_residueCollision hphi hc,
     wooley_degree_one_conditionedMean_eq_residueCollision hphi hc]
+end
+
 
 /-- The exact source-level `k=1` base case of Wooley Corollary 3.2. -/
 theorem wooleyPolynomialCorollary32At_degree_one
@@ -466,7 +464,7 @@ theorem wooleyPolynomialCorollary32At_degree_one
   simp only [one_mul]
   have hpOne : (1 : ℝ) ≤ (p : ℝ) ^ B := by
     exact one_le_pow₀ (by exact_mod_cast hpPrime.one_le)
-  have hloss : (1 : ℝ) ≤ (p ^ B : ℝ) ^ epsilon :=
+  have hloss :=
     Real.one_le_rpow hpOne hepsilon.le
   have hcond : 0 ≤ wooleySourcePolynomialConditionedMean
       (wooleyTriangular 1) (p ^ B) (p ^ (B ⌈/⌉ 1)) phi gamma :=
@@ -492,15 +490,13 @@ theorem wooleyPolynomialCorollary32At_of_criticalExponent_eq_zero
   have hceil : B ⌈/⌉ k ≤ B := by
     rw [ceilDiv_le_iff_le_mul (by omega : 0 < k)]
     exact Nat.le_mul_of_pos_left B (by omega : 0 < k)
-  have hpowNat : p ^ (B ⌈/⌉ k) ≤ p ^ B :=
+  have hpowNat :=
     Nat.pow_le_pow_right (NeZero.pos p) hceil
   have hpowReal :
       ((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ≤ (p ^ B : ℕ) := by
     exact_mod_cast hpowNat
   have hbase : (0 : ℝ) ≤ ((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) := by positivity
-  have hloss :
-      (((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ^ epsilon) ≤
-        ((p ^ B : ℕ) : ℝ) ^ epsilon :=
+  have hloss :=
     Real.rpow_le_rpow hbase hpowReal hepsilon.le
   have hcond : 0 ≤ wooleySourcePolynomialConditionedMean
       (wooleyTriangular k) (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma :=
@@ -531,6 +527,6 @@ theorem wooleyPolynomialCorollary32_native :
           (wooleyCriticalExponent_eq_zero_of_lower hpPrime hkTwo hkp hlower)
 
 
-end
 
-end GafniTao
+
+

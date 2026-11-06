@@ -4,8 +4,7 @@ public import TraceAlternatives.CubeCenteredTrace
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -85,4 +84,4 @@ theorem finite_quadratic_large_value_cube_native
   have h := hBound T t₀ N L hT hN hNL hLs hLT a ha W V hV hW hLarge hSep
   exact h.trans_eq (by unfold cubeCenteredBudget; field_simp; ring)
 
-end Montgomery.RationalMoment
+

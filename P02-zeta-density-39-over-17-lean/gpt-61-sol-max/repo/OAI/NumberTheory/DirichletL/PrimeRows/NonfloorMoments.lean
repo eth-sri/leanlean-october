@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch HeckeDetectorRawFiber
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -29,8 +29,8 @@ def SourceMomentsAt {N : ℕ} (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     ∀bin j J K,∀hne : (B.fiberRows bin j J K).Nonempty,
       Moments (B.fiber bin j J K hne) Δ c κ C height εm
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -12,16 +12,24 @@ namespace SevenEighths.ProbeGauss
 open scoped BigOperators Classical
 noncomputable section
 
-def frequencyGauss {F : Type*} [Field F] [Fintype F]
-    (ξ : MulChar F ℂ) (ψ : AddChar F ℂ) (h : F) : ℂ :=
+section
+variable {F : Type*} [Field F] [Fintype F]
+include F
+
+section
+variable (ξ : MulChar F ℂ) (ψ : AddChar F ℂ)
+include ξ ψ
+
+def frequencyGauss  (h : F) : ℂ :=
   ∑ v : F, ξ v * ψ (h * v)
 
-theorem frequencyGauss_nonzero {F : Type*} [Field F] [Fintype F]
-    (ξ : MulChar F ℂ) (ψ : AddChar F ℂ) {h : F} (hh : h ≠ 0) :
+theorem frequencyGauss_nonzero  {h : F} (hh : h ≠ 0) :
     frequencyGauss ξ ψ h = ξ⁻¹ h * gaussSum ξ ψ := by
   exact gaussSum_mulShift_eq ξ ψ (Units.mk0 h hh)
+end
 
-theorem frequencyGauss_principal {F : Type*} [Field F] [Fintype F]
+
+theorem frequencyGauss_principal 
     (ψ : AddChar F ℂ) (hψ : ψ ≠ 1) (h : F) :
     frequencyGauss 1 ψ h = if h = 0 then (Nat.card Fˣ : ℂ) else -1 := by
   classical
@@ -33,18 +41,19 @@ theorem frequencyGauss_principal {F : Type*} [Field F] [Fintype F]
       MulChar.one_apply (isUnit_iff_ne_zero.mpr hh), one_mul]
     exact gaussSum_one_left hψ
 
-theorem gauss_inverse_pair {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+include χ ψ
+
+theorem gauss_inverse_pair  (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ * gaussSum χ⁻¹ ψ = χ (-1) * (Fintype.card F : ℂ) := by
   rw [← mul_gaussSum_inv_eq_gaussSum χ⁻¹, mul_left_comm,
     gaussSum_mul_gaussSum_eq_card hχ hψ, MulChar.inv_apply', inv_neg_one]
 
-def normalizedGauss {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) : ℂ :=
+def normalizedGauss  : ℂ :=
   gaussSum χ ψ / (Real.sqrt (Fintype.card F) : ℂ)
 
-theorem normalizedGauss_inverse_pair {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
+theorem normalizedGauss_inverse_pair  (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     normalizedGauss χ ψ * normalizedGauss χ⁻¹ ψ = χ (-1) := by
   have hq : (Fintype.card F : ℂ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
   have hs : (Real.sqrt (Fintype.card F) : ℂ) ^ 2 = (Fintype.card F : ℂ) := by
@@ -52,8 +61,10 @@ theorem normalizedGauss_inverse_pair {F : Type*} [Field F] [Fintype F]
   unfold normalizedGauss
   rw [div_mul_div_comm, ← pow_two, hs, gauss_inverse_pair χ ψ hχ hψ]
   exact mul_div_cancel_right₀ _ hq
+end
 
-theorem finite_gauss_convolution {F : Type*} [Field F] [Fintype F]
+
+theorem finite_gauss_convolution 
     (χ ξ : MulChar F ℂ) (ψ : AddChar F ℂ) (h : F) :
     (∑ d : F, χ d * frequencyGauss ξ ψ (h - d)) =
       χ⁻¹ (-1) * gaussSum χ ψ * frequencyGauss (ξ * χ⁻¹) ψ h := by
@@ -94,8 +105,10 @@ theorem finite_gauss_convolution {F : Type*} [Field F] [Fintype F]
       intro v _
       rw [MulChar.mul_apply]
       ring
-
 end
-end SevenEighths.ProbeGauss
 
-end OAI
+
+
+
+
+

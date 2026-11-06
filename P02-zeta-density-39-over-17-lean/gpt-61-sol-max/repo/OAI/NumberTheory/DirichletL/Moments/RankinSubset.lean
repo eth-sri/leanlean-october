@@ -5,13 +5,17 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinSubset
 open IdealMobiusDivisorSum CenteredMomentRankinCount
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
+section
+variable (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε)
+include a ε ha hε
+
+theorem supported_power_count  :
     ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal O),Q ≠ 0 → ∀ S : Finset (Ideal O),
       (∀ I ∈ S,I ≠ 0) → (∀ I ∈ S,primeSupport I ⊆ primeSupport Q) →
       ∀ X : ℝ,0 < X → (∀ I ∈ S,(Ideal.absNorm I:ℝ) ≤ X) →
@@ -38,7 +42,7 @@ theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right (hsub Q hQ) (mul_nonneg hC.le (Real.rpow_nonneg hX.le _))
     _ = _ := by ring
 
-theorem supported_power_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
+theorem supported_power_pair_count  :
     ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal O),Q ≠ 0 → ∀ S : Finset (Ideal O × Ideal O),
       (∀ v ∈ S,v.1 ≠ 0 ∧ v.2 ≠ 0) →
       (∀ v ∈ S,primeSupport v.1 ⊆ primeSupport Q ∧ primeSupport v.2 ⊆ primeSupport Q) →
@@ -82,9 +86,11 @@ theorem supported_power_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul hfst hsnd (Nat.cast_nonneg _) (by positivity)
     _ = C^2*X^a*Y^a*((Ideal.absNorm Q:ℝ)^(ε/2)*(Ideal.absNorm Q:ℝ)^(ε/2)) := by ring
     _ = _ := by rw [← Real.rpow_add hn]; congr 2; ring
-
-end SevenEighths.CenteredMomentRankinSubset
-
 end
 
-end OAI
+
+
+
+
+
+

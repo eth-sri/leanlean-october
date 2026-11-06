@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import PairSlabExcess
 public import TwoTermDyadic
 public import ExcessCompactPrefix
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
-open MathCollab.Density MathCollab.Density.Stronger
+
 open Montgomery.CriticalPeak Montgomery.RationalMoment.RightDetector
 
 /-- Both physical excess terms, with constants uniform before height and amplitude. -/
@@ -24,12 +24,12 @@ theorem ExponentPair.critical_physical_excess {k l η ε : ℝ}
   have hp : 1 ≤ 1+ε := by linarith
   have hr : 1 ≤ 1+l/k+ε := by have hh := div_pos hl hk; linarith
   obtain ⟨B₀,hB₀⟩ := eventually_atTop.mp (hpair.critical_slab_excess hk hlog hη hε)
-  let B : ℝ := max B₀ 1
+  let B := max B₀ 1
   have hB : 1 ≤ B := le_max_right _ _
   have hB0 : 0 ≤ B := by linarith
   obtain ⟨M,hM⟩ := criticalExcess_compact_prefix hB0
-  let C₁ : ℝ := (2/5)*(6:ℝ)^(1+ε)
-  let C₂ : ℝ := (2/(3+(2+4*l)/k))*(6:ℝ)^(1+l/k+ε)
+  let C₁ := (2/5)*(6:ℝ)^(1+ε)
+  let C₂ := (2/(3+(2+4*l)/k))*(6:ℝ)^(1+l/k+ε)
   have hC₁ : 0 < C₁ := by dsimp [C₁]; positivity
   have hC₂ : 0 < C₂ := by dsimp [C₂]; positivity
   refine ⟨C₁+C₂,by positivity,?_⟩
@@ -82,4 +82,4 @@ theorem ExponentPair.critical_physical_excess {k l η ε : ℝ}
       have hxy := mul_nonneg (mul_nonneg hC₁.le (Real.rpow_pos_of_pos hT0 ε).le) hy
       have hyx := mul_nonneg (mul_nonneg hC₂.le (Real.rpow_pos_of_pos hT0 ε).le) hx
       nlinarith
-end TaoTrudgianYang2025
+

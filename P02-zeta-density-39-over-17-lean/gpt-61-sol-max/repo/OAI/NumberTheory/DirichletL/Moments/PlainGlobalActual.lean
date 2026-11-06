@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalBound
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.CenteredMomentPlainGlobalActual
@@ -23,14 +24,14 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
   obtain ⟨Cg,hCg,hg⟩:=original_upper_strip (3/10) (by norm_num)
   let E:=HeckeReciprocalBound.bound 2
   have hE:0≤E:=tsum_nonneg (fun _=>norm_nonneg _)
-  let C:ℝ:=Cm*(Cg*(Real.pi+3)+E*Real.pi)/(2*Real.pi)
+  let C :=Cm*(Cg*(Real.pi+3)+E*Real.pi)/(2*Real.pi)
   have hC:0<C:=div_pos (mul_pos hCm (add_pos_of_pos_of_nonneg
     (mul_pos hCg (by positivity)) (mul_nonneg hE Real.pi_pos.le))) (by positivity)
   refine ⟨S,C,hC,?_⟩
   intro W hWs χ hχ D freq hD
   let Q:ℝ:=χ.modulus.absNorm
-  let V:ℝ:=3+|freq|
-  let B:ℝ:=S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
+  let V :=3+|freq|
+  let B :=S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   have hB:0≤B:=apply_nonneg _ _
   have hQ:1≤Q:=by
     dsimp [Q]
@@ -76,8 +77,8 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
       mul_le_mul_of_nonneg_left (add_le_add_right hCe _) (by positivity)
     _=_:=by ring
 
-end SevenEighths.CenteredMomentPlainGlobalActual
 
-end
 
-end OAI
+
+
+

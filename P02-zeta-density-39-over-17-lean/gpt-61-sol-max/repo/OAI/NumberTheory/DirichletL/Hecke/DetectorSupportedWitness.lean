@@ -14,7 +14,7 @@ open HeckeFamily HeckeDetectorWitnessRows
 structure SupportedWitness {Label : Type*} (χ : Label→Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ)
     extends Witness χ U a ε tstar T allowance i where
-  product_length_lower : tstar-r-ε≤m
+  product_length_lower : tstar-r-ε≤ m
 
 theorem actual_supported_witness_family (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
@@ -48,7 +48,7 @@ theorem fiber_lengths {Row Label : Type*} (rows : Finset Row) (hne : rows.Nonemp
     (hJ : ∀ u∈rows,(w u).left=J) (hK : ∀ u∈rows,(w u).right=K) :
     let r := Real.logb U ((2 : ℝ)^J.val)
     let m := Real.logb U ((2 : ℝ)^K.val)
-    tstar-r-ε≤m ∧ r≤tstar+ε ∧ m≤1/2+75*ε ∧ tstar-1/2-76*ε≤r ∧ 0≤m := by
+    tstar-r-ε≤ m ∧ r≤tstar+ε ∧ m≤1/2+75*ε ∧ tstar-1/2-76*ε≤r ∧ 0≤ m := by
   obtain ⟨u,hu⟩ := hne
   have hr : (w u).r=Real.logb U ((2 : ℝ)^J.val) := by
     rw [(w u).toWitness.left_exponent hU,hJ u hu]
@@ -57,8 +57,8 @@ theorem fiber_lengths {Row Label : Type*} (rows : Finset Row) (hne : rows.Nonemp
   exact hr ▸ hm ▸ ⟨(w u).product_length_lower,(w u).inverse_length_upper,
     (w u).plain_length_upper,(w u).inverse_length_lower,(w u).plain_length_lower⟩
 
-end SevenEighths.HeckeDetectorSupportedWitness
 
-end
 
-end OAI
+
+
+

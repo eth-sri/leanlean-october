@@ -71,9 +71,13 @@ theorem afeWeight_phaseProduct_hasDerivAt (σ c : ℝ) {u : ℝ} (hu : 0 < u) :
   field_simp
   ring
 
+section
+variable {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c)
+    (hν : 0 < ν) (hu : 0 < u)
+include σ c ν u hσ hc hν hu
+
 /-- The first positive-frequency derivative quotient has an explicit decreasing normal form. -/
-theorem afe_second_derivative_quotient {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c)
-    (hν : 0 < ν) (hu : 0 < u) :
+theorem afe_second_derivative_quotient  :
     |deriv (deriv (afeWeight σ)) u| / (ν + deriv (afePhase c) u) ^ 2 =
       σ * (σ + 1) * (u ^ (-σ) / (ν * u + c) ^ 2) := by
   rw [(afeWeight_deriv_hasDerivAt σ hu).deriv, (afePhase_hasDerivAt c hu).deriv,
@@ -81,8 +85,7 @@ theorem afe_second_derivative_quotient {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc : 
     (show u ^ (-σ - 2) / (ν + c / u) ^ 2 = u ^ (-σ) / (ν * u + c) ^ 2 by simpa only [Nat.cast_ofNat] using afe_power_quotient_normalize (σ := σ) hc hν hu 2)]
 
 /-- The first positive-frequency curvature quotient has its exact normal form. -/
-theorem afe_derivative_curvature_quotient {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c)
-    (hν : 0 < ν) (hu : 0 < u) :
+theorem afe_derivative_curvature_quotient  :
     |deriv (afeWeight σ) u * deriv (deriv (afePhase c)) u| /
         (ν + deriv (afePhase c) u) ^ 3 =
       σ * c * (u ^ (-σ) / (ν * u + c) ^ 3) := by
@@ -95,8 +98,7 @@ theorem afe_derivative_curvature_quotient {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc
     (show u ^ (-σ - 3) / (ν + c / u) ^ 3 = u ^ (-σ) / (ν * u + c) ^ 3 by simpa only [Nat.cast_ofNat] using afe_power_quotient_normalize (σ := σ) hc hν hu 3)]
 
 /-- The product-amplitude derivative quotient has its exact normal form. -/
-theorem afe_product_derivative_quotient {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c)
-    (hν : 0 < ν) (hu : 0 < u) :
+theorem afe_product_derivative_quotient  :
     |deriv (fun v => afeWeight σ v * deriv (afePhase c) v) u| /
         (ν + deriv (afePhase c) u) ^ 2 =
       c * (σ + 1) * (u ^ (-σ) / (ν * u + c) ^ 2) := by
@@ -107,6 +109,8 @@ theorem afe_product_derivative_quotient {σ c ν u : ℝ} (hσ : 0 ≤ σ) (hc :
         (Real.rpow_nonneg hu.le _))]
   rw [show -(-c * (σ + 1) * u ^ (-σ - 2)) = c * (σ + 1) * u ^ (-σ - 2) by ring,
     mul_div_assoc, (show u ^ (-σ - 2) / (ν + c / u) ^ 2 = u ^ (-σ) / (ν * u + c) ^ 2 by simpa only [Nat.cast_ofNat] using afe_power_quotient_normalize (σ := σ) hc hν hu 2)]
+end
+
 
 /-- The product-amplitude curvature quotient has its exact normal form. -/
 theorem afe_product_curvature_quotient {σ c ν u : ℝ} (hc : 0 ≤ c)
@@ -233,4 +237,4 @@ theorem afe_second_amplitudes_antitone {σ c : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤
     exact mul_le_mul (afeWeight_antitone hσ hu hv huv) (hp hu hv huv)
       (by rw [(afePhase_hasDerivAt c hv).deriv]; exact div_nonneg hc hv.le) (afeWeight_pos σ hu).le
 
-end DhimanKadiriQuesadaHerrera2026
+

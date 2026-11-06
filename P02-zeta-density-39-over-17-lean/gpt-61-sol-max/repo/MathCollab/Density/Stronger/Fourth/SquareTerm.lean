@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -15,7 +16,6 @@ public import MathCollab.Density.Stronger.Fourth.Coefficients
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 def zetaFourthTerm (t : ℝ) (n : ℕ) (w : ℂ) : ℂ :=
@@ -101,20 +101,20 @@ theorem exists_norm_zetaFourthKernel_strip_le
     ∃ K : ℝ, 0 < K ∧ ∀ c ∈ Icc a b, ∀ u : ℝ,
       ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ ≤ K*Real.exp (-99*u^2) := by
   obtain ⟨G,hG,hGamma⟩ := exists_norm_GammaR_strip_le (a := 1/2+a) (b := 1/2+b) (by linarith : (0:ℝ) < 1/2+a)
-  let D : ℝ := ‖(zetaSquareGammaNormalization t)⁻¹‖
+  let D := ‖(zetaSquareGammaNormalization t)⁻¹‖
   have hD : 0 < D := norm_pos_iff.mpr
     (inv_ne_zero (zetaSquareGammaNormalization_ne_zero t))
-  let A : ℝ := 10000*G^2*D/a
-  let Q : ℝ := 12*(3+b+t)+36
-  let K : ℝ := A*Real.exp (100*b^2)*Real.exp Q
+  let A := 10000*G^2*D/a
+  let Q := 12*(3+b+t)+36
+  let K := A*Real.exp (100*b^2)*Real.exp Q
   have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨K,by dsimp [K]; positivity,?_⟩
   intro c hc u
   have hc0 : 0 < c := ha.trans_le hc.1
   have hb : 0 < b := ha.trans_le hab
-  let w : ℂ := (c:ℂ)+(u:ℂ)*I
-  let R : ℝ := 3+c+t+|u|
-  let B : ℝ := 3+b+t+|u|
+  let w := (c:ℂ)+(u:ℂ)*I
+  let R := 3+c+t+|u|
+  let B := 3+b+t+|u|
   have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
   have hw := norm_vertical_shift_le hc0.le u
   have hwlower : a ≤ ‖w‖ := hc.1.trans (vertical_shift_re_le_norm hc0.le u)
@@ -131,16 +131,14 @@ theorem exists_norm_zetaFourthKernel_strip_le
       ring
     rw [heq]
     apply hGamma
-    simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re,
-      Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero]
+    simp
     exact ⟨by linarith [hc.1], by linarith [hc.2]⟩
   have hgamma :
       ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
         Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖ ≤ G^2*D := by
     rw [← norm_gammaSquare_div_zetaSquareGammaNormalization,
       div_eq_mul_inv, norm_mul, norm_pow]
-    exact mul_le_mul_of_nonneg_right
-      (pow_le_pow_left₀ (norm_nonneg _) hg 2) (norm_nonneg _)
+    bound
   have hRB : R ≤ B := by dsimp [R,B]; linarith [hc.2]
   have hpoly : B^12 ≤ Real.exp Q*Real.exp (u^2) := by
     have hp := abs_polynomial_mul_exp_le_gaussian
@@ -226,11 +224,7 @@ theorem tendsto_zetaFourthTerm_horizontal_of_sq_eq
         (K*Real.exp (-99*H^2))*|b-a| := by
     intro H
     apply intervalIntegral.norm_integral_le_of_norm_le_const
-    intro x hx
-    have hx' : x ∈ Icc a b := by
-      rw [← uIcc_of_le hab]
-      exact uIoc_subset_uIcc hx
-    simpa only [hv H] using hK x hx' (v H)
+    grind
   have hp : Tendsto (fun H : ℝ => H^2) atTop atTop :=
     tendsto_pow_atTop (by decide : 2 ≠ 0)
   have hm : Tendsto (fun H : ℝ => 99*H^2) atTop atTop :=
@@ -245,4 +239,4 @@ theorem tendsto_zetaFourthTerm_horizontal_of_sq_eq
 
 
 
-end MathCollab.Density.Stronger.Fourth
+

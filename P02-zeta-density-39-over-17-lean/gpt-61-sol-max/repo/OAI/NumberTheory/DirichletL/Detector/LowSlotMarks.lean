@@ -10,29 +10,36 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-lemma lowSelectedIdeal_eq_product {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
-    (b : LowSelectedTuple slots J) :
+section
+variable {K : ℕ}
+include K
+
+section
+variable (slots : Fin K→Finset O) (J : Finset (Fin K))
+    (b : LowSelectedTuple slots J)
+include slots J b
+
+lemma lowSelectedIdeal_eq_product  :
     lowSelectedIdeal slots J b=∏i : SelectedSlot J,Ideal.span {(b i).val} := by
   change CanonicalRowCompletion.principalIdealHom (∏i : SelectedSlot J,(b i).val)=_
   exact map_prod CanonicalRowCompletion.principalIdealHom _ _
 
-lemma lowSelectedIdeal_dvd_iff {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
-    (b : LowSelectedTuple slots J)
-    (hcop : Pairwise (fun i j : SelectedSlot J=>IsCoprime (Ideal.span {(b i).val}) (Ideal.span {(b j).val})))
-    (A : Id) : lowSelectedIdeal slots J b∣A ↔ ∀i : SelectedSlot J,Ideal.span {(b i).val}∣A := by
+section
+variable (hcop : Pairwise (fun i j : SelectedSlot J=>IsCoprime (Ideal.span {(b i).val}) (Ideal.span {(b j).val})))
+    (A : Id)
+include hcop A
+
+lemma lowSelectedIdeal_dvd_iff  : lowSelectedIdeal slots J b∣A ↔ ∀i : SelectedSlot J,Ideal.span {(b i).val}∣A := by
   rw [lowSelectedIdeal_eq_product]
   constructor
   · intro h i
     exact (Finset.dvd_prod_of_mem (fun i : SelectedSlot J=>Ideal.span {(b i).val}) (Finset.mem_univ i)).trans h
   · exact Fintype.prod_dvd_of_coprime hcop
 
-lemma lowSelectedIdeal_mark {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
-    (b : LowSelectedTuple slots J)
-    (hcop : Pairwise (fun i j : SelectedSlot J=>IsCoprime (Ideal.span {(b i).val}) (Ideal.span {(b j).val})))
-    (A : Id) :
+lemma lowSelectedIdeal_mark  :
     (if lowSelectedIdeal slots J b∣A then (1:ℂ) else 0)=
       ∏i : SelectedSlot J,if Ideal.span {(b i).val}∣A then (1:ℂ) else 0 := by
   rw [lowSelectedIdeal_dvd_iff slots J b hcop]
@@ -41,29 +48,41 @@ lemma lowSelectedIdeal_mark {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fi
   · obtain ⟨i,hi⟩ := not_forall.mp h
     rw [ite_eq_right (fun hall=>hi (hall i))]
     exact (Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)).symm
+end
+end
 
-def lowCanonicalSelectedPrime {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (J : Finset (Fin K))
-    (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J) (i : SelectedSlot J) : PrimeIdeal :=
+
+section
+variable (T : Fin K→Finset PrimeIdeal)
+    (hT : ∀i P,P∈T i→Supported P.val)
+include T hT
+
+section
+variable (J : Finset (Fin K))
+    (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J) (i : SelectedSlot J)
+include J b i
+
+def lowCanonicalSelectedPrime  : PrimeIdeal :=
   ((canonicalSlotEquiv (T i.val) (hT i.val)).symm (b i)).val
 
-lemma lowCanonicalSelectedPrime_mem {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (J : Finset (Fin K))
-    (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J) (i : SelectedSlot J) :
+lemma lowCanonicalSelectedPrime_mem  :
     lowCanonicalSelectedPrime T hT J b i∈T i.val :=
   ((canonicalSlotEquiv (T i.val) (hT i.val)).symm (b i)).property
 
-lemma lowCanonicalSelectedPrime_span {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (J : Finset (Fin K))
-    (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J) (i : SelectedSlot J) :
+lemma lowCanonicalSelectedPrime_span  :
     Ideal.span {(b i).val}=(lowCanonicalSelectedPrime T hT J b i).val := by
   have hh := canonicalSlotEquiv_span (T i.val) (hT i.val)
     ((canonicalSlotEquiv (T i.val) (hT i.val)).symm (b i))
   simpa only [Equiv.apply_symm_apply,lowCanonicalSelectedPrime] using hh
+end
 
-lemma lowCanonicalSelectedPrime_injective {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
-    (J : Finset (Fin K)) (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J) :
+
+section
+variable (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
+    (J : Finset (Fin K)) (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J)
+include hdis J b
+
+lemma lowCanonicalSelectedPrime_injective  :
     Function.Injective (lowCanonicalSelectedPrime T hT J b) := by
   intro i j hij
   apply Subtype.ext
@@ -71,15 +90,17 @@ lemma lowCanonicalSelectedPrime_injective {K : ℕ} (T : Fin K→Finset PrimeIde
   exact Finset.disjoint_left.mp (hdis hne) (lowCanonicalSelectedPrime_mem T hT J b i)
     (hij.symm ▸ lowCanonicalSelectedPrime_mem T hT J b j)
 
-lemma lowCanonicalSelected_coprime {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
-    (J : Finset (Fin K)) (b : LowSelectedTuple (fun i=>canonicalSlotSupport (T i)) J) :
+lemma lowCanonicalSelected_coprime  :
     Pairwise (fun i j : SelectedSlot J=>IsCoprime (Ideal.span {(b i).val}) (Ideal.span {(b j).val})) := by
   intro i j hij
   rw [lowCanonicalSelectedPrime_span T hT J b i,lowCanonicalSelectedPrime_span T hT J b j]
   exact primeIdeal_coprime _ _ (fun h=>hij (lowCanonicalSelectedPrime_injective T hT hdis J b h))
-
-end SevenEighths.ProbePhysical
+end
+end
 end
 
-end OAI
+
+
+
+
+

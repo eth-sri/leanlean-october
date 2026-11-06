@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyWeightedComplexHolder
 public import GafniTao.WooleyWeightedMean
 
@@ -46,18 +47,7 @@ theorem wooleyResidueRefinementFiber_card
     simp
   have hmul : p ^ a *
       (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card =
-      p ^ b := by
-    calc
-      p ^ a *
-          (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card =
-          Fintype.card (ZMod (p ^ a)) *
-            (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card := by
-        rw [ZMod.card]
-      _ = ∑ y : ZMod (p ^ a),
-          (Finset.univ.filter fun z : ZMod (p ^ b) => f z = y).card := by
-        simp_rw [hfiber]
-        simp
-      _ = p ^ b := htotal
+      p ^ b := by simp_all
   have hpPow : 0 < p ^ a := pow_pos (NeZero.pos p) a
   have hcanonical : p ^ a * p ^ (b - a) = p ^ b := by
     rw [Nat.mul_comm, Nat.pow_sub_mul_pow p hab]
@@ -65,7 +55,7 @@ theorem wooleyResidueRefinementFiber_card
       (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card =
         p ^ (b - a) := by
     exact Nat.eq_of_mul_eq_mul_left (by omega) (hmul.trans hcanonical.symm)
-  simpa [wooleyResidueRefinementFiber, f] using hcard
+  exact hcard
 
 theorem wooley_sum_refined_residue_mass
     {Q p a b : ℕ} [NeZero p] (hab : a ≤ b)
@@ -86,9 +76,7 @@ theorem wooley_sum_refined_residue_mass
           if ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a)) z = xi then
             (if ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))) = z then
               ‖gamma n‖ ^ 2 else 0)
-          else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp [hz]
+          else 0 := by simp_all
   simp_rw [hdistribute]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -109,6 +97,6 @@ theorem wooley_sum_refined_residue_mass
     · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
     · rw [ite_eq_right hzxi]
 
-end
 
-end GafniTao
+
+

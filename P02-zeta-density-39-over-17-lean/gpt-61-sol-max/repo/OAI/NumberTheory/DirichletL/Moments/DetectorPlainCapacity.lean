@@ -10,11 +10,11 @@ noncomputable section
 
 open scoped Classical BigOperators ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorPlainCapacity
-open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSlotProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily
+open HeckePrimeAnnular
+
+open CenteredMomentDetectorDictionary
+open scoped HeckeO
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
 theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character)
@@ -35,8 +35,8 @@ local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 include hH
 
-end SevenEighths.CenteredMomentDetectorPlainCapacity
 
-end
 
-end OAI
+
+
+

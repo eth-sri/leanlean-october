@@ -10,26 +10,26 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstTwoSeedAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
 open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
+open CenteredMomentSecondHeightFamily
 open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
 open CenteredMomentPrimePool CenteredMomentPrimeElements
 open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
+open CenteredMomentChildRows RayFourExpansion
+open CenteredMomentLogDyadic
 open CenteredMomentEnergyFirstLiveAdmission
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem eventually_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
@@ -137,8 +137,8 @@ theorem eventually_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   exact ⟨ready_mono _ _ Ke Z ξ _ _ hz.le (error_exponent_le A P σ ξ hA hP hσ1 hξ1) hr,
     error_lower_support N l a hl ha s hc hs hW₁ hW₂ (columnIdeal C D side) R innerL B τ t _ k Bp υ v⟩
 
-end SevenEighths.CenteredMomentEnergyFirstTwoSeedAdmission
 
-end
 
-end OAI
+
+
+

@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedUniform
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic CompletedGauss
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerUniform
-open InverseMoment InverseInitialClippedColumns InverseInitialProfile
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialClippedColumns
+open scoped EisensteinEis
 
 theorem initial_height_bound (J:ℕ)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))
     (h:ℝ)(hh:h = -leftHeight z ∨ h=rightHeight z) :
@@ -65,8 +65,8 @@ theorem initial_raw_uniform
     dsimp [tripleHeight,coordinateHeight]
     positivity
 
-end SevenEighths.InverseInitialEnergyCallerUniform
 
-end
 
-end OAI
+
+
+

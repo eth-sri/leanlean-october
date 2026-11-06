@@ -12,15 +12,19 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalCaps
 open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InverseMomentFirstChildWindows
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
+open InverseMomentFirstChildWindows
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
-def outerNorms (p : ι→O) (x : FirstOriginalOuter ι) : Fin 5→ℝ :=
+section
+variable (p : ι→O)
+include p
+
+def outerNorms  (x : FirstOriginalOuter ι) : Fin 5→ℝ :=
   ![‖eisEmbedding (aLabel p x.1.support x.1.rightBit)‖^2,
     ‖eisEmbedding (aLabel p x.1.support x.1.leftBit)‖^2,
     primeProductNorm p x.2.1,
@@ -28,19 +32,25 @@ def outerNorms (p : ι→O) (x : FirstOriginalOuter ι) : Fin 5→ℝ :=
     primeProductNorm p (cubeActiveSupport x.1.support
       (fun i=>x.1.leftExponent i+x.1.rightExponent i) x.1.leftBit x.1.rightBit)]
 
-def outerGate (p : ι→O) (k : SourceIndex) (x : FirstOriginalOuter ι) : Prop :=
+def outerGate  (k : SourceIndex) (x : FirstOriginalOuter ι) : Prop :=
   ∀i : Fin 5,dyadIndex (outerNorms p x i)=k i.castSucc
 
-def outerCell (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) :=
+section
+variable (pool : Finset ι) (Q : Finset (ι→₀ℕ))
+include pool Q
+
+def outerCell  (k : SourceIndex) :=
   (firstOriginalOuter pool Q).filter (outerGate p k)
 
-def parentCell (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ) :=
+section
+variable (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ)
+include selector k l
+
+def parentCell  :=
   (originalParentSource pool Q (fun x=>commonSelector p (selector x) l)).filter
     (fun x=>outerGate p k (toOriginal x))
 
-theorem mem_parentCell (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ)
+theorem mem_parentCell 
     (x : Source ι 0) : x∈parentCell p pool Q selector k l ↔
     ∃o∈outerCell p pool Q k,∃D∈pool.powerset,
       commonSelector p (selector o) l D≠0 ∧ fillFirstQuotient (ofOriginal o) D=x := by
@@ -50,18 +60,27 @@ theorem mem_parentCell (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ)
     exact ⟨o,⟨ho,by simpa using hg⟩,D,hD,hs,rfl⟩
   · rintro ⟨o,⟨ho,hg⟩,D,hD,hs,rfl⟩
     exact ⟨⟨o,ho,D,hD,hs,rfl⟩,by simpa using hg⟩
+end
+end
 
-def originalNorms (p : ι→O) (x : Σ _ : FirstOriginalOuter ι,Ideal O×O) : Fin 6→ℝ :=
+
+section
+variable (x : Σ _ : FirstOriginalOuter ι,Ideal O×O)
+include x
+
+def originalNorms  : Fin 6→ℝ :=
   sourceNorms (fun y=>outerNorms p y.1 0) (fun y=>outerNorms p y.1 1)
     (fun y=>outerNorms p y.1 2) (fun y=>outerNorms p y.1 4)
     (fun y=>primeSubsetGenerator (fun i=>Ideal.span {p i}) y.1.2.2)
     (fun y=>y.2.2) x
 
-lemma originalNorms_outer (p : ι→O) (x : Σ _ : FirstOriginalOuter ι,Ideal O×O)
+lemma originalNorms_outer 
     (i : Fin 5) : originalNorms p x i.castSucc=outerNorms p x.1 i := by
   fin_cases i <;> rfl
+end
 
-theorem sourceCell_outer (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
+
+theorem sourceCell_outer  (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (Y : ℝ) (k : SourceIndex)
     (x : Σ _ : FirstOriginalOuter ι,Ideal O×O)
     (hx : x∈sourceCell (originalNorms p)
@@ -71,6 +90,8 @@ theorem sourceCell_outer (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀�
   refine Finset.mem_filter.mpr ⟨(Finset.mem_sigma.mp hs).1,?_⟩
   intro i
   simpa only [sourceIndex,originalNorms_outer] using congrFun hk i.castSucc
+end
+
 
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -186,13 +207,19 @@ theorem parentCell_ideal_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   · simpa [sourceIdeal_norm,outerNorms,toOriginal,primeSubsetGenerator_norm_eq_productNorm] using h 3
   · simpa [sourceIdeal_norm,outerNorms,toOriginal] using h 4
 
-def jNorm (p : ι→O) (x : FirstOriginalOuter ι) : ℝ :=
+section
+variable (p : ι→O)
+include p
+
+def jNorm  (x : FirstOriginalOuter ι) : ℝ :=
   ‖eisEmbedding (jLabel p x.1.support (fun i=>x.1.leftExponent i+x.1.rightExponent i)
     x.1.leftBit x.1.rightBit)‖^2
 
-def labelParentCell (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
+def labelParentCell  (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l j : ℕ) :=
   (parentCell p pool Q selector k l).filter (fun x=>dyadIndex (jNorm p (toOriginal x))=j)
+end
+
 
 include hp in
 omit [∀i,(Ideal.span {p i}).IsMaximal] in
@@ -210,8 +237,8 @@ theorem labelParentCell_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   rw [hj] at hd
   exact ⟨hm,dyad_power_bounds Z eta _ hZ h2 j ⟨hd.1,hd.2.le⟩⟩
 
-end SevenEighths.InverseFirstGlobalCaps
 
-end
 
-end OAI
+
+
+

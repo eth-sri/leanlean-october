@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.LowFrozenEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.PunctureAbsorption
@@ -11,9 +12,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
@@ -46,7 +47,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
           (Z^(1+ell0+shift)) (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)≤
       C*(1+‖θ‖)^degree*Z^((5/6-2*d)+506*η)*(Ideal.absNorm (rowPowerfulPart J):ℝ)^(-(1/2:ℝ)) := by
   let Q₀ := Q*Ideal.span {(72:Eis)}
-  let c : Eis := (9:Eis)*(ConcretePrimeRowBridge.idealGenerator Q)*(72:Eis)
+  let c := (9:Eis)*(ConcretePrimeRowBridge.idealGenerator Q)*(72:Eis)
   have hc : c≠0 := mul_ne_zero (mul_ne_zero (by norm_num)
     (ConcretePrimeRowBridge.idealGenerator_ne_zero Q hQ)) (by norm_num)
   have hcQ : Ideal.span {c}=Ideal.span {(9:Eis)}*Q₀ := by
@@ -62,7 +63,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
   let mask := Ideal.span {m}*F
   have hmask0 : mask≠0 := mul_ne_zero (Ideal.span_singleton_eq_bot.not.mpr hm) hF.ne_zero
   let E := fixedFourierGeometry c hc
-  have hEc : ∀ h,(E h).c0≠0 := fun h => (E h).denominator_ne_zero
+  have hEc := fun h => (E h).denominator_ne_zero
   have hEN : ∀ h,(9:Eis)*(E h).c0∣(9:Eis)*c := fun h => mul_dvd_mul_left (9:Eis) (E h).denominator_dvd
   obtain ⟨degree,C,Z₀,hC,hZ₀,he⟩ := low_original_frozen_energy
     (fun h => (E h).a0) (fun h => (E h).c0) (fun h => (E h).mode) lo hi hlo W hWs hW
@@ -72,13 +73,13 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
   intro σ _ _ J hJ Z d ell0 shift hZ hd hd1 hell hellcap hshift hJn
     parents hparents hcard lists H hdis hmax hgood hprime hodd hLP hH1 hH hprod Ψ hΨnorm hΨperiod u θ w hw
   let rows := originalResidualRows parents J mask
-  have hparents0 : ∀ I∈parents,I≠0 := fun I hI => (hparents I hI).1
+  have hparents0 := fun I hI => (hparents I hI).1
   let hrows : ∀ K∈rows,Admissible K := originalResidualAdmissible parents J F m hbad
   have hcop : ∀ K∈rows,IsCoprime Q₀ K := by
     intro K hK
     obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
     exact rowResidualPart_coprime_period I F Q₀ m hperiod
-  have hGN : ∀ f,IsCoprime (Ideal.span {(9:Eis)*c}) ((poolPrimeFamily J mask Q₀).ideal f) :=
+  have hGN :=
     (poolPrimeFamily J mask Q₀).level_coprime Q₀ c hcQ (poolPrimeFamily_period J mask Q₀)
   have hrowcop : ∀ K∈rows,(∀ f,IsCoprime ((poolPrimeFamily J mask Q₀).ideal f) K) ∧ IsCoprime (Ideal.span {(9:Eis)*c}) K := by
     intro K hK
@@ -86,7 +87,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
     obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
     obtain ⟨hIp,hpow,hmask'⟩ := Finset.mem_filter.mp hI
     exact poolPrimeFamily_fiber_row_coprime J I mask Q₀ hJ (hparents0 I hIp) hmask0 hpow.symm hmask'.symm
-  have hLN : ∀ i,∀ P∈lists i,IsCoprime (Ideal.span {(9:Eis)*c}) P :=
+  have hLN :=
     fun i P hP => maximal_prime_level_coprime P (hmax i P hP) (hgood i P hP) Q₀ c hcQ (hLP i P hP)
   have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
   have hzp : 0<Z := lt_trans zero_lt_one hz
@@ -104,7 +105,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
   have hscalar : ∀ h K,‖scalar h K‖≤1 := fun h K =>
     (residualOriginalData parents J F hF m hm hparents0 u K).fixedCoefficient_norm Ψ Q hΨnorm c hc h
   have henergy := hD θ w scalar hw hscalar
-  have hTw : ContDiff ℝ ∞ (CompletedHeight.normTwistedSource W θ) :=
+  have hTw :=
     CanonicalRowCompletion.normTwistedSource_contDiff W lo hi hlo hWs hW θ
   have hTs := (CompletedHeight.normTwistedSource_support W θ).trans hWs
   have hTc : HasCompactSupport (CompletedHeight.normTwistedSource W θ) :=
@@ -149,7 +150,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
       (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift))
       (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)
   exact hs.symm.trans_le (hbound.trans_eq hR)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

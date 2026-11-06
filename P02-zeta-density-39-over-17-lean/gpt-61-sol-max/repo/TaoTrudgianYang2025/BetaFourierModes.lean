@@ -19,7 +19,7 @@ open Set Expdb Filter MeasureTheory
 open scoped FourierTransform ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseNormalizedMode (χ F : ℝ → ℝ) (T q : ℝ) : ℂ :=
   ∫ u : ℝ, (χ u : ℂ)*(𝐞 (T*F u-q*u) : ℂ)
@@ -39,10 +39,14 @@ theorem modelPhaseFourierMode_eq_normalized
   rw [← he,Measure.integral_comp_div
     (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-(r*N)*u) : ℂ)) N,abs_of_pos hN]
 
-theorem summable_modelPhaseFourierMode
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
+section
+variable {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
     (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
+    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ)
+include χ F σ δ N P hχ hs hF hN T
+
+theorem summable_modelPhaseFourierMode
+     :
     Summable (fun r : ℤ => modelPhaseFourierMode χ F T N r) := by
   let f := modelPhaseWeightedSchwartz hχ hs hF hN T
   have hdecay := (𝓕 f).isBigO_cocompact_rpow (-(2 : ℝ))
@@ -52,10 +56,10 @@ theorem summable_modelPhaseFourierMode
   simpa only [f,Function.comp_def,Real.norm_eq_abs,modelPhaseWeightedSchwartz_fourier] using hsum
 
 theorem summable_norm_modelPhaseFourierMode
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
+     :
     Summable (fun r : ℤ => ‖modelPhaseFourierMode χ F T N r‖) :=
   (summable_modelPhaseFourierMode hχ hs hF hN T).norm
+end
 
-end TaoTrudgianYang2025
+
+

@@ -3,7 +3,9 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
 public import OAI.NumberTheory.DirichletL.Moments.FirstScale
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationSlotGap
-public import OAI.NumberTheory.DirichletL.Moments.AmplificationOriginalErrors
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationActiveFamily
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildEnergy
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationAllocationScale
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
@@ -21,9 +23,9 @@ open CenteredMomentSectorLocalization CenteredMomentPrimePool
 open CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
 open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
 open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentAmplificationErrorEnergy
+open CenteredMomentAmplificationSlotGap
+open scoped EisensteinO
 
 abbrev ballProfile : 𝓢(ℝ,ℂ) := QuadraticInitialBound.sieveCutoff
 
@@ -220,14 +222,14 @@ def errorMoving (p : O) (Z : ℝ) (k : ℕ) : ℝ :=
 def errorGain (D0 c sigma Z : ℝ) (p : O) (k : ℕ) : ℝ :=
   max (D0-c-2*errorRemoval p Z k+errorMoving p Z k) 0+sigma
 
-theorem mainGain_bounds (D0 c sigma : ℝ) (hs : 0≤sigma) :
-    2*sigma≤mainGain D0 c sigma ∧ D0-c+sigma≤mainGain D0 c sigma := by
+theorem mainGain_bounds (D0 c sigma : ℝ) (hs : 0≤ sigma) :
+    2*sigma≤ mainGain D0 c sigma ∧ D0-c+sigma≤ mainGain D0 c sigma := by
   have h0 := le_max_right (D0-c) (0:ℝ)
   have h1 := le_max_left (D0-c) (0:ℝ)
   unfold mainGain
   constructor <;> linarith
 
-theorem errorGain_bounds (D0 c sigma Z : ℝ) (p : O) (k : ℕ) (hs : 0≤sigma) :
+theorem errorGain_bounds (D0 c sigma Z : ℝ) (p : O) (k : ℕ) (hs : 0≤ sigma) :
     sigma≤errorGain D0 c sigma Z p k ∧
     D0-c-2*errorRemoval p Z k+errorMoving p Z k+sigma≤errorGain D0 c sigma Z p k ∧
     errorGain D0 c sigma Z p k≤
@@ -252,7 +254,7 @@ theorem dyad_ball_majorant (Z : ℝ) (hZ : 1<Z) (n : ℤ) (g : ℝ) (hg : 0≤g)
   exact (dyadRows_norm_power Z hZ n h hh).trans
     (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith))
 
-theorem amplified_ball_majorant (Z sigma D0 c : ℝ) (hZ : 1<Z) (hs : 0≤sigma)
+theorem amplified_ball_majorant (Z sigma D0 c : ℝ) (hZ : 1<Z) (hs : 0≤ sigma)
     (n : ℤ) (h p : O) (hh : h∈dyadRows n)
     (hp : normValue p≤Z^(sigma/3)) :
     1≤(ballProfile (‖eisEmbedding (p^6*h)‖^2/
@@ -381,9 +383,10 @@ open CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion
-open ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion
-open HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
+open RayFourExpansion
+open CenteredMomentHeckeColumnWindow
+
+
 
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -553,10 +556,10 @@ theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
 
 end OriginalData
 
-open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger
-open CenteredMomentDescentLedger CenteredMomentCommonSupport
-open CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst
+
+
+open ActualEisensteinCubic
 
 def nominalLog (I J E : Ideal O) (K X Z : ℝ) : ℝ :=
   Real.logb Z (firstNominalScale I J E K X)
@@ -582,7 +585,7 @@ theorem pool_prime_log_range (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
     (Z sigma : ℝ) (hZ : 1<Z) (p : O)
     (hp : p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3)))) :
-    0≤Real.logb Z (normValue p) ∧ Real.logb Z (normValue p)≤sigma/3 := by
+    0≤Real.logb Z (normValue p) ∧ Real.logb Z (normValue p)≤ sigma/3 := by
   have hd := elementPool_data _
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(sigma/3)) Q hQ).1)
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(sigma/3)) Q hQ).2) p hp
@@ -600,8 +603,8 @@ theorem errorRemoval_power (p : O) (hp : p≠0) (Z : ℝ) (hZ : 1<Z) (k : ℕ) :
   rw [mul_comm,Real.rpow_mul_natCast (zero_lt_one.trans hZ).le,
     Real.rpow_logb (zero_lt_one.trans hZ) (ne_of_gt hZ) (normValue_pos p hp)]
 
-end SevenEighths.CenteredMomentFirstAmplificationChoice
 
-end
 
-end OAI
+
+
+

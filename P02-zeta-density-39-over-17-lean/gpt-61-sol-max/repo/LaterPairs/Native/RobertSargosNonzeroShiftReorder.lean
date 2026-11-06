@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosShiftReorder
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
@@ -39,13 +38,6 @@ theorem robertSargos_nonzero_weighted_shifted_reorder (f : ℝ → ℝ) (M H Q R
   intro r _
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
-  intro m _
-  apply Finset.sum_congr rfl
-  intro q _
-  apply Finset.sum_congr rfl
-  intro h _
-  apply Finset.sum_congr rfl
-  intro n _
-  ring
+  grind
 
-end TaoTrudgianYang2025
+

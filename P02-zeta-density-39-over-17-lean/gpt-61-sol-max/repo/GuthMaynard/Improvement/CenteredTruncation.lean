@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CenteredPoisson
 public import GuthMaynard.Improvement.LogPoissonBudget
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
@@ -42,8 +42,12 @@ theorem poisson_mode_partition (f : ℝ → ℂ) {L U : ℝ}
     · simp [mem_poissonModes,hm,hu,not_lt.mpr hu]
     · simp [mem_poissonModes,hm,hu,lt_of_not_ge hu]
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+include a ha
+
 /-- Exact finite truncation error for the literal centered kernel. -/
-theorem centeredKernel_truncation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+theorem centeredKernel_truncation 
     {l u L U : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hL : 0 < L) (hU : 0 ≤ U)
     (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
     centeredKernel a l u L s -
@@ -62,12 +66,11 @@ theorem centeredKernel_truncation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       ∑ m ∈ poissonModes U, 𝓕 (logModulated a s) (L*(m:ℝ)) := by
     rw [tsum_eq_sum (s := poissonModes U) (fun m hm => by simp [hm])]
     exact Finset.sum_congr rfl (fun m hm => by simp [hm])
-  rw [he]
-  ring
+  grind
 
 /-- Uniform approximation of the actual centered finite kernel by its
 finite nonzero Fourier modes, with no Poisson identity premise. -/
-theorem centeredKernel_truncation_negligible {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+theorem centeredKernel_truncation_negligible 
     {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
     {η c : ℝ} (hη : 0 < η) (hc : 0 ≤ c) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ T L s : ℝ,
@@ -79,9 +82,9 @@ theorem centeredKernel_truncation_negligible {a : ℝ → ℂ} (ha : ContDiff �
   refine ⟨C,hC,?_⟩
   intro T L s hT hL hLT hst
   have hLp : 0 < L := by linarith
-  have hTp : 0 < T := by linarith
   rw [centeredKernel_truncation ha hl hlu hLp (by positivity) hs s]
-  rw [mul_div_cancel₀ _ hLp.ne']
-  exact (h T L s 0 hT hL hLT hst).2
+  grind
+end
 
-end GuthMaynard.Improvement
+
+

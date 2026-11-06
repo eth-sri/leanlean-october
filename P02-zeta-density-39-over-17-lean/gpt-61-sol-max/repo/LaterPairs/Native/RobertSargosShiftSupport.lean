@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
@@ -21,10 +20,14 @@ def robertSargosShiftedMInterval (M : ℕ) (h q n : ℤ) : Finset ℤ :=
 def robertSargosCommonMInterval (M H Q N : ℕ) : Finset ℤ :=
   Finset.Icc (2*(H:ℤ)+Q) ((M:ℤ)-2*H-Q-N)
 
-theorem robertSargos_common_interval_subset (M H Q N : ℕ) (h q n : ℤ)
+section
+variable (M H Q N : ℕ) (h q n : ℤ)
     (hh : h ∈ Finset.Ico (H:ℤ) (2*H))
     (hq : q ∈ Finset.Ioo (-(Q:ℤ)) Q)
-    (hn : n ∈ Finset.Icc (1:ℤ) N) :
+    (hn : n ∈ Finset.Icc (1:ℤ) N)
+include M H Q N h q n hh hq hn
+
+theorem robertSargos_common_interval_subset  :
     robertSargosCommonMInterval M H Q N ⊆ robertSargosShiftedMInterval M h q n := by
   intro m hm
   simp only [Finset.mem_Ico] at hh
@@ -34,10 +37,7 @@ theorem robertSargos_common_interval_subset (M H Q N : ℕ) (h q n : ℤ)
   simp only [robertSargosShiftedMInterval,Finset.mem_Icc]
   omega
 
-theorem robertSargos_shifted_interval_outer (M H Q N : ℕ) (h q n : ℤ)
-    (hh : h ∈ Finset.Ico (H:ℤ) (2*H))
-    (hq : q ∈ Finset.Ioo (-(Q:ℤ)) Q)
-    (hn : n ∈ Finset.Icc (1:ℤ) N) :
+theorem robertSargos_shifted_interval_outer  :
     robertSargosShiftedMInterval M h q n ⊆ Finset.Icc (-(Q:ℤ)-N) ((M:ℤ)+Q) := by
   intro m hm
   simp only [Finset.mem_Ico] at hh
@@ -46,10 +46,7 @@ theorem robertSargos_shifted_interval_outer (M H Q N : ℕ) (h q n : ℤ)
   simp only [robertSargosShiftedMInterval,Finset.mem_Icc] at hm
   omega
 
-theorem robertSargos_shifted_boundary_card (M H Q N : ℕ) (h q n : ℤ)
-    (hh : h ∈ Finset.Ico (H:ℤ) (2*H))
-    (hq : q ∈ Finset.Ioo (-(Q:ℤ)) Q)
-    (hn : n ∈ Finset.Icc (1:ℤ) N) :
+theorem robertSargos_shifted_boundary_card  :
     ((robertSargosShiftedMInterval M h q n \ robertSargosCommonMInterval M H Q N).card:ℝ)
       ≤ 4*(H:ℝ)+4*Q+2*N := by
   have hs : robertSargosShiftedMInterval M h q n \ robertSargosCommonMInterval M H Q N ⊆
@@ -60,8 +57,7 @@ theorem robertSargos_shifted_boundary_card (M H Q N : ℕ) (h q n : ℤ)
     have ho := robertSargos_shifted_interval_outer M H Q N h q n hh hq hn ht.1
     simp only [robertSargosCommonMInterval,Finset.mem_Icc] at ht
     simp only [Finset.mem_Icc] at ho
-    simp only [Finset.mem_union,Finset.mem_Icc]
-    omega
+    grind
   have hc := (Finset.card_le_card hs).trans (Finset.card_union_le _ _)
   have hl : (Finset.Icc (-(Q:ℤ)-N) (2*(H:ℤ)+Q-1)).card = 2*H+2*Q+N := by
     rw [Int.card_Icc]
@@ -74,5 +70,7 @@ theorem robertSargos_shifted_boundary_card (M H Q N : ℕ) (h q n : ℤ)
       robertSargosCommonMInterval M H Q N).card:ℝ) ≤
       (2*(H:ℝ)+2*Q+N)+(2*(H:ℝ)+2*Q+N) := by exact_mod_cast hc
   linarith
+end
 
-end TaoTrudgianYang2025
+
+

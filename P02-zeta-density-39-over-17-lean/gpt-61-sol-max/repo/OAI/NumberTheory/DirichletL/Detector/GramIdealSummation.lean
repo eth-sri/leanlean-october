@@ -10,7 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "SupportedIdeal" => {I : Ideal O // Supported I}
 
 def gramIdealNorm (I : SupportedIdeal) : ℝ := Ideal.absNorm I.val
@@ -56,7 +56,7 @@ lemma gram_ideal_term_bound (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
     (hΛ : 0 < Λ) (A : ℕ) (hA : 1 ≤ A) (I J : SupportedIdeal) :
     gramIdealNorm I ^ (-2:ℝ) * gramIdealNorm J ^ (-2:ℝ) *
       min 1 ((gramIdealNorm I*gramIdealNorm J/Λ)^A) ≤
-      Λ^(-1+δ) * (gramIdealNorm I^(-1-δ) * gramIdealNorm J^(-1-δ)) := by
+      Λ^(-1+δ) * (gramIdealNorm I ^(-1-δ) * gramIdealNorm J^(-1-δ)) := by
   have hi := gramIdealNorm_pos I
   have hj := gramIdealNorm_pos J
   have ha : (1-δ:ℝ) ≤ A := by
@@ -67,7 +67,7 @@ lemma gram_ideal_term_bound (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
   apply (mul_le_mul_of_nonneg_left hm (by positivity)).trans_eq
   rw [Real.div_rpow (by positivity) hΛ.le,Real.mul_rpow hi.le hj.le,
     div_eq_mul_inv,← Real.rpow_neg hΛ.le]
-  have hi' : gramIdealNorm I^(-2:ℝ)*gramIdealNorm I^(1-δ)=gramIdealNorm I^(-1-δ) := by
+  have hi' : gramIdealNorm I ^(-2:ℝ)*gramIdealNorm I ^(1-δ)=gramIdealNorm I ^(-1-δ) := by
     rw [←Real.rpow_add hi]
     congr 1
     ring
@@ -77,14 +77,14 @@ lemma gram_ideal_term_bound (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
     ring
   rw [show -(1-δ) = -1+δ by ring]
   calc
-    _ = Λ^(-1+δ)*((gramIdealNorm I^(-2:ℝ)*gramIdealNorm I^(1-δ))*
+    _ = Λ^(-1+δ)*((gramIdealNorm I ^(-2:ℝ)*gramIdealNorm I ^(1-δ))*
         (gramIdealNorm J^(-2:ℝ)*gramIdealNorm J^(1-δ))) := by ring
     _ = _ := by rw [hi',hj']
 
 theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
     ∃ K : ℝ, 0 < K ∧ ∀ (A : ℕ), 1 ≤ A → ∀ (Λ : ℝ), 0 < Λ →
       ∀ (F G : Finset SupportedIdeal),
-      (∑ I ∈ F, ∑ J ∈ G, gramIdealNorm I^(-2:ℝ) * gramIdealNorm J^(-2:ℝ) *
+      (∑ I ∈ F, ∑ J ∈ G, gramIdealNorm I ^(-2:ℝ) * gramIdealNorm J^(-2:ℝ) *
         min 1 ((gramIdealNorm I*gramIdealNorm J/Λ)^A)) ≤ K*Λ^(-1+δ) := by
   obtain ⟨C,hC,hb⟩ := supportedIdeal_rpow_finite_bound (-1-δ) (by linarith)
   refine ⟨C^2, by positivity, ?_⟩
@@ -95,10 +95,10 @@ theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
     Finset.sum_nonneg (fun J _ => Real.rpow_nonneg (gramIdealNorm_pos J).le _)
   calc
     _ ≤ ∑ I ∈ F, ∑ J ∈ G, Λ^(-1+δ)*
-        (gramIdealNorm I^(-1-δ)*gramIdealNorm J^(-1-δ)) :=
+        (gramIdealNorm I ^(-1-δ)*gramIdealNorm J^(-1-δ)) :=
       Finset.sum_le_sum (fun I _ => Finset.sum_le_sum
         (fun J _ => gram_ideal_term_bound δ Λ hδ hδ1 hΛ A hA I J))
-    _ = Λ^(-1+δ)*((∑ I ∈ F, gramIdealNorm I^(-1-δ))*
+    _ = Λ^(-1+δ)*((∑ I ∈ F, gramIdealNorm I ^(-1-δ))*
         (∑ J ∈ G, gramIdealNorm J^(-1-δ))) := by
       simp only [Finset.mul_sum,Finset.sum_mul]
       rw [Finset.sum_comm]
@@ -110,7 +110,7 @@ theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
 theorem gram_supported_exceptional_sum (ε : ℝ) (_hε : 0 ≤ ε) (hε1 : ε < 1/6) :
     ∃ K : ℝ, 0 < K ∧ ∀ (F G : Finset SupportedIdeal),
       (∑ I ∈ F, ∑ J ∈ G,
-        gramIdealNorm I^(-7/6+ε:ℝ)*gramIdealNorm J^(-2:ℝ)) ≤ K := by
+        gramIdealNorm I ^(-7/6+ε:ℝ)*gramIdealNorm J^(-2:ℝ)) ≤ K := by
   obtain ⟨C,hC,hb⟩ := supportedIdeal_rpow_finite_bound (-7/6+ε) (by linarith)
   obtain ⟨D,hD,hd⟩ := supportedIdeal_rpow_finite_bound (-2) (by norm_num)
   refine ⟨C*D, by positivity, ?_⟩
@@ -119,8 +119,8 @@ theorem gram_supported_exceptional_sum (ε : ℝ) (_hε : 0 ≤ ε) (hε1 : ε <
   exact mul_le_mul (hb F) (hd G)
     (Finset.sum_nonneg (fun J _ => Real.rpow_nonneg (gramIdealNorm_pos J).le _)) hC.le
 
-end SevenEighths.ProbeGramCommon
 
-end
 
-end OAI
+
+
+

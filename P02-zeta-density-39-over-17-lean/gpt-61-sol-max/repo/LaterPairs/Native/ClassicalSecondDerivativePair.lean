@@ -4,15 +4,14 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
                                                                    
                              
 
-noncomputable section
+
 
 open Expdb
 open scoped NNReal
@@ -35,9 +34,9 @@ theorem isExponentPairEstimateNonAsymptotic_half_half :
   have hT : 1 ≤ T := hC.trans h.threshold_le_param
   have hTp : 0 < T := lt_of_lt_of_le zero_lt_one hT
   have hNp : 0 < N := lt_of_lt_of_le zero_lt_one h.one_le_scale
-  have hspos : 0 < Real.sqrt T := Real.sqrt_pos.mpr hTp
+  have hspos := Real.sqrt_pos.mpr hTp
   have hsone : 1 ≤ Real.sqrt T := by simpa using Real.sqrt_le_sqrt hT
-  have hsquare : (Real.sqrt T)^2 = T := Real.sq_sqrt hTp.le
+  have hsquare := Real.sq_sqrt hTp.le
   have hbound : ‖exponentialSumAt F T N a b‖ ≤ C*Real.sqrt T := by
     by_cases hscale : T ≤ N^2
     · have hf := norm_exponentialSumAt_le_secondDerivative hσ hT h.one_le_scale
@@ -72,4 +71,4 @@ theorem exponentPair_half_half : ExponentPair ((1 : ℝ)/2) ((1 : ℝ)/2) :=
     isExponentPairEstimate_iff_nonAsymptotic.mpr
       isExponentPairEstimateNonAsymptotic_half_half⟩
 
-end TaoTrudgianYang2025
+

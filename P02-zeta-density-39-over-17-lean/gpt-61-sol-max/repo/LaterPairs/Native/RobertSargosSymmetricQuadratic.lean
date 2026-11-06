@@ -6,13 +6,12 @@ public import LaterPairs.Native.FiniteSmoothTaylor
 public import LaterPairs.Native.RobertSargosCubicPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -24,9 +23,13 @@ theorem robertSargos_quadratic_polynomial (f : ℝ → ℝ) (x h : ℝ) :
     iteratedDerivWithin_univ,iteratedDeriv_zero,iteratedDeriv_one,smul_eq_mul]
   ring_nf
 
-theorem abs_symmetric_linear_remainder_le
-    {f : ℝ → ℝ} {a b x h B : ℝ} (hh : 0 ≤ h)
+section
+variable {f : ℝ → ℝ} {a b x h B : ℝ} (hh : 0 ≤ h)
     (ha : a ≤ x-h) (hb : x+h ≤ b)
+include f a b x h B hh ha hb
+
+theorem abs_symmetric_linear_remainder_le
+    
     (hf : ∀ y ∈ Icc a b, ContDiffAt ℝ 3 f y)
     (hd : ∀ y ∈ Icc a b, |iteratedDeriv 3 f y| ≤ B) :
     |robertSargosSymmetricDifference f x h-2*h*deriv f x| ≤ B*h^3/3 := by
@@ -62,8 +65,7 @@ theorem abs_symmetric_linear_remainder_le
   linarith
 
 theorem abs_symmetric_first_jet_remainder_le
-    {f : ℝ → ℝ} {a b x h B : ℝ} (hh : 0 ≤ h)
-    (ha : a ≤ x-h) (hb : x+h ≤ b)
+    
     (hf : ∀ y ∈ Icc a b, ContDiffAt ℝ 4 f y)
     (hd : ∀ y ∈ Icc a b, |iteratedDeriv 4 f y| ≤ B) :
     |robertSargosSymmetricDifference (iteratedDeriv 1 f) x h -
@@ -76,5 +78,7 @@ theorem abs_symmetric_first_jet_remainder_le
     rw [iteratedDeriv_real_comp_order]
     exact hd y hy
   simpa only [← iteratedDeriv_succ] using abs_symmetric_linear_remainder_le hh ha hb hg hgd
+end
 
-end TaoTrudgianYang2025
+
+

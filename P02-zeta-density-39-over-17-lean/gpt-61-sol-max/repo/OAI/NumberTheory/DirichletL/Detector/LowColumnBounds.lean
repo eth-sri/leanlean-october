@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussEnergy
 
 @[expose] public section
@@ -10,18 +11,24 @@ open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowGaussColumns (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) :
+section
+variable (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y)
+include W1 hW1 Y hY
+
+def lowGaussColumns  :
     Finset {I : Id // Supported I} :=
   ((idealWindow_finite_support W1 hW1 Y hY).preimage
     (f:=fun s : {I : Id // Supported I}=>s.val) Subtype.val_injective.injOn).toFinset
 
-lemma lowGaussColumns_mem (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y)
+lemma lowGaussColumns_mem 
     (s : {I : Id // Supported I}) :
     s∈lowGaussColumns W1 hW1 Y hY ↔ W1 ((Ideal.absNorm s.val:ℝ)/Y)≠0 := by
   simp only [lowGaussColumns,Set.Finite.mem_toFinset,Set.mem_preimage,Function.mem_support]
+end
+
 
 lemma lowRayAmplitude_source_columns (C : CalibrationData) (W1 : ℝ→ℂ)
     (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (m : O) :
@@ -42,14 +49,14 @@ lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : �
     (a b : ℝ) (hW : Function.support W1⊆Set.Icc a b) :
     ((lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)).card:ℝ)≤128*max 1 b*Y := by
   let F := lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)
-  have hH : 1≤max 1 b*Y := one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY
+  have hH : 1≤ max 1 b*Y := one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY
   have hh := DescentFiberCost.finite_ideal_count_real (F.image Subtype.val) (max 1 b*Y) hH
     (by intro I hI;obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI;exact s.property.1)
     (by
       intro I hI
       obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI
       have hw := (hW ((lowGaussColumns_mem W1 hW1 Y _ s).mp hs)).2
-      have hn : (Ideal.absNorm s.val:ℝ)≤b*Y := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
+      have hn := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
       exact hn.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (le_trans zero_le_one hY)))
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
   simpa only [mul_assoc,F] using hh
@@ -109,7 +116,7 @@ theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
     _ = (128*max 1 b*(B*a^(-(1/2:ℝ)))^2)/Y := by field_simp
     _ ≤ C/Y := div_le_div_of_nonneg_right (by dsimp only [C];linarith) hy.le
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

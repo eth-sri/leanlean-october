@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -11,11 +12,10 @@ public import Mathlib.NumberTheory.Harmonic.Bounds
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -38,38 +38,15 @@ theorem separated_annulus_card_le_two
     (W : Finset ℝ) (t : ℝ) (k : ℕ) (hSep : IsSeparated 1 W) :
     ({u ∈ W | u ≠ t ∧ (k : ℝ) ≤ |u - t| ∧ |u - t| < (k : ℝ) + 1}).card ≤ 2 := by
   let S := {u ∈ W | u ≠ t ∧ (k : ℝ) ≤ |u - t| ∧ |u - t| < (k : ℝ) + 1}
-  let P : ℝ → Prop := fun u => t ≤ u
+  let P := fun u => t ≤ u
   have hpos : (S.filter P).card ≤ 1 := by
     apply separated_subset_card_le_one_of_diameter W (S.filter P) hSep
-    · intro u hu
-      exact (Finset.mem_filter.mp hu).1 |> Finset.mem_filter.mp |>.1
-    · intro x hx y hy
-      have hxData := Finset.mem_filter.mp hx
-      have hyData := Finset.mem_filter.mp hy
-      have hxS := Finset.mem_filter.mp hxData.1
-      have hyS := Finset.mem_filter.mp hyData.1
-      rw [abs_of_nonneg (sub_nonneg.mpr hxData.2)] at hxS
-      rw [abs_of_nonneg (sub_nonneg.mpr hyData.2)] at hyS
-      rw [abs_lt]
-      constructor <;> linarith [hxS.2.2, hyS.2.2]
+    all_goals (grind)
   have hneg : (S.filter (fun u => ¬ P u)).card ≤ 1 := by
     apply separated_subset_card_le_one_of_diameter W (S.filter (fun u => ¬ P u)) hSep
-    · intro u hu
-      exact (Finset.mem_filter.mp hu).1 |> Finset.mem_filter.mp |>.1
-    · intro x hx y hy
-      have hxData := Finset.mem_filter.mp hx
-      have hyData := Finset.mem_filter.mp hy
-      have hxS := Finset.mem_filter.mp hxData.1
-      have hyS := Finset.mem_filter.mp hyData.1
-      have hxt : x - t ≤ 0 := by linarith
-      have hyt : y - t ≤ 0 := by linarith
-      rw [abs_of_nonpos hxt] at hxS
-      rw [abs_of_nonpos hyt] at hyS
-      rw [abs_lt]
-      constructor <;> linarith [hxS.2.2, hyS.2.2]
+    all_goals (grind)
   have hsplit := Finset.card_filter_add_card_filter_not (s := S) P
-  change S.card ≤ 2
-  omega
+  nlinarith
 
 /-- The reciprocal distances from one point to the other separated points in
 its `N`-neighborhood have harmonic, rather than linear, total mass. -/
@@ -78,7 +55,7 @@ theorem sum_inv_distance_near_le_harmonic
     (∑ u ∈ {u ∈ W | u ≠ t ∧ |u - t| ≤ (N : ℝ)}, 1 / |u - t|) ≤
       2 * (((harmonic N : ℚ) : ℝ)) := by
   let S := {u ∈ W | u ≠ t ∧ |u - t| ≤ (N : ℝ)}
-  let shell : ℝ → ℕ := fun u => Nat.floor |u - t|
+  let shell := fun u => Nat.floor |u - t|
   have hmaps : ∀ u ∈ S, shell u ∈ Finset.Icc 1 N := by
     intro u hu
     have huData := Finset.mem_filter.mp hu
@@ -125,7 +102,6 @@ theorem sum_inv_distance_near_le_harmonic
           apply Finset.sum_le_sum
           intro u hu
           have huData := Finset.mem_filter.mp hu
-          have huS := Finset.mem_filter.mp huData.1
           have hfloor := huData.2
           have hqNonneg : 0 ≤ |u - t| := abs_nonneg _
           have hkq : (k : ℝ) ≤ |u - t| := by
@@ -143,4 +119,4 @@ theorem sum_inv_distance_near_le_harmonic
       rw [Finset.mul_sum]
 
 
-end MathCollab.Density.Stronger.Atkinson
+

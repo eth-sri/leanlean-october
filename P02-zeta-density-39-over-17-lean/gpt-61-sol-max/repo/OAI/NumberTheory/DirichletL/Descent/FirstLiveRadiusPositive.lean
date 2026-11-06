@@ -5,15 +5,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicLiveRadius
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem first_live_cell_radius_one {ι:Type}[DecidableEq ι]
     (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -51,8 +51,8 @@ theorem first_live_cell_radius_one {ι:Type}[DecidableEq ι]
   rw [←first_dyadic_radius_cell p pool Q _ _ x.1 href]
   exact hone.trans hn
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

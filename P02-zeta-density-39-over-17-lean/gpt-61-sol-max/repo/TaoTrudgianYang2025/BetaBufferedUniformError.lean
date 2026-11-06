@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedLogBudget
 
@@ -12,13 +13,13 @@ are consumed explicitly. Constants precede the phase and physical scales.
 A separate faithful short-interval bound handles the complementary case.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhase_buffered_source_uniform_error
     {σ : ℝ} (hσ : 0 < σ) :
@@ -57,7 +58,7 @@ theorem modelPhase_buffered_source_uniform_error
   let U := modelPhaseBufferedSupportUpper F ((a : ℝ)/N) ((Real.sqrt T)⁻¹) T N
   let P := modelPhaseBufferedPlateauLower F ((b : ℝ)/N) ((Real.sqrt T)⁻¹) T N
   let Q := modelPhaseBufferedPlateauUpper F ((a : ℝ)/N) ((Real.sqrt T)⁻¹) T N
-  let R : ℕ := ⌈C*T*(1+T)^2/N⌉₊+A.natAbs+B.natAbs+1
+  let R := ⌈C*T*(1+T)^2/N⌉₊+A.natAbs+B.natAbs+1
   let G := Real.log K+3*Real.log (T+1)
   have hK : 1 ≤ K := by dsimp [K]; linarith
   have hfar := modelPhaseSharpFarLengths_le_polynomial hσ.le
@@ -110,4 +111,4 @@ theorem modelPhase_buffered_source_uniform_error
         (mul_le_mul_of_nonneg_right hMF hy)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

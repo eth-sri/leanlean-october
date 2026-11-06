@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicAssemblyRetaine
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedSum
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseSecondChildWindows Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialArithmetic InverseInitialProfile
+open InverseInitialEnergyCallerWindows
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
+open InverseInitialDyadicAssembly Filter
+open scoped EisensteinO
 
 theorem retained_sum_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -46,11 +46,11 @@ theorem retained_sum_bound
     ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
-    ∀(D m r T:ℝ),0≤m→0<T→
+    ∀(D m r T:ℝ),0≤ m→0<T→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
       D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
     ∀(c₁ c₂ θ₁ θ₂:ℝ),1≤c₁→c₁≤bcap→1≤c₂→c₂≤bcap→
@@ -63,7 +63,7 @@ theorem retained_sum_bound
         C*Z^(m+15*η+π+eps+loss)*
           ((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*degree)*
             (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*degree)) := by
-  have hb:0<max 1 b₀:=zero_lt_one.trans_le (le_max_left _ _)
+  have hb:0< max 1 b₀:=zero_lt_one.trans_le (le_max_left _ _)
   obtain ⟨J,Btree,Tclip,hBtree,hTclip,hwindow⟩:=
     InverseInitialRetainedWindow.retained_window_bound W₁ W₂ a₀ b₀ bcap ha₀ hbcap hs₁ hs₂ hW₁ hW₂ Φ
       (fun _=>1/4) (fun _=>1) (by intros;norm_num) (by intros;norm_num)
@@ -105,7 +105,7 @@ theorem retained_sum_bound
         (clippedSource W₂ c₂ θ₂) Φ Z D m (fun i=>(k i).val)‖≤
         C*Z^(m+15*η+π+eps)*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)):=by
-    have hsize:0<max 1 b₀*Z^D:=mul_pos hb (Real.rpow_pos_of_pos (zero_lt_one.trans hZp) D)
+    have hsize:0< max 1 b₀*Z^D:=mul_pos hb (Real.rpow_pos_of_pos (zero_lt_one.trans hZp) D)
     have h0:=hexp.2 (max 1 b₀*Z^D) D hsize le_rfl (k 0).val (k 0).property
     have h1:=hexp.2 (max 1 b₀*Z^D) D hsize le_rfl (k 1).val (k 1).property
     apply hw Z hZq' Dpool hD all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
@@ -136,8 +136,8 @@ theorem retained_sum_bound
       mul_le_mul_of_nonneg_right (hcZ D m (4*η+τ) T hDcap hm le_rfl hT) (by positivity)
     _=_:=by rw [Real.rpow_add (zero_lt_one.trans hZp) (m+15*η+π+eps) loss];ring
 
-end SevenEighths.InverseInitialRetainedSum
 
-end
 
-end OAI
+
+
+

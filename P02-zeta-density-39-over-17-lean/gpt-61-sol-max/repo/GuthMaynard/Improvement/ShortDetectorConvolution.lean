@@ -5,9 +5,8 @@ public import GuthMaynard.Improvement.ShortFixedDetectorFamily
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
+open Complex Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -107,4 +106,4 @@ theorem shortDetectorBlockCoefficients_LSeries_pow (T : ℝ) (N j k : ℕ) (s : 
       (shortDetectorBlockCoefficients_pow_LSeriesSummable T N j k s)
       (by simpa using shortDetectorBlockCoefficients_pow_LSeriesSummable T N j 1 s), ih, pow_succ]
 
-end GuthMaynard.Improvement
+

@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open CompletedDyadic CompletedGauss
-noncomputable section
+
 
 lemma literal_ramified_log_width (Z : ℝ) (m : ℕ) :
     3*Real.logb Z (ramifiedScale 1 completedRamifiedStep m) =
@@ -43,7 +43,7 @@ theorem literal_reflectedExponent_le_signed (Z : ℝ) (hZ : 1<Z) (m : ℕ)
   rw [add_sub_cancel_right]
   linarith
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedIntegralEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion
+open ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem markedReopenedCubeBin_energy
     {σ : Type*} [DecidableEq σ]
@@ -69,7 +69,7 @@ theorem markedReopenedCubeBin_energy
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Q labels β n (fun v T=>primeMark slots lists weights (T∪v.support)) Ψ m
     (reopeningCoefficient W a b ha hs hW) V B ell K E d hB hell hK hE hbound
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

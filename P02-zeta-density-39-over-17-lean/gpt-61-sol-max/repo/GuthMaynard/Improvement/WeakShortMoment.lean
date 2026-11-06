@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- A weak actual mollified fourth moment from the ordinary fourth moment.
 The fixed power loss 1/25 is intentional; this does not assert
 ShortMobiusFourthMoment. -/
@@ -6,8 +7,7 @@ public import GuthMaynard.Improvement.ShortDetectorLocalMass
 public import MathCollab.Density.Stronger.Fourth.FourthMoment
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
 namespace GuthMaynard.Improvement
@@ -40,7 +40,7 @@ theorem weak_short_moment {ε : ℝ} (hε : 0 < ε) :
   have hH2 : 2 ≤ H := (le_max_left _ _).trans hH
   have hHb : 2*Hb ≤ H := (le_max_right _ _).trans hH
   have hpos : 0 < H := by linarith
-  let f : ℝ → ℝ := fun t => (zetaMomentCriticalNorm t)^4
+  let f := fun t => (zetaMomentCriticalNorm t)^4
   have hc : Continuous f := continuous_zetaMomentCriticalNorm.pow 4
   have hf0 (t : ℝ) : 0 ≤ f t := by exact pow_nonneg (norm_nonneg _) _
   have hbound (x : ℝ) (hx : Hb ≤ x) (hx0 : 0 < x) (hxH : x ≤ 2*H) :
@@ -58,11 +58,7 @@ theorem weak_short_moment {ε : ℝ} (hε : 0 < ε) :
       (hc.intervalIntegrable (μ := volume) (a := H/2) (b := H)) (hc.intervalIntegrable (μ := volume) (a := H) (b := 2*H))
     have hsplit2 := intervalIntegral.integral_add_adjacent_intervals
       (hc.intervalIntegrable (μ := volume) (a := H/2) (b := 2*H)) (hc.intervalIntegrable (μ := volume) (a := 2*H) (b := 4*H))
-    have hhalf : 2*(H/2)=H := by ring
-    have hdouble : 2*(2*H)=4*H := by ring
-    rw [hhalf] at h1
-    rw [hdouble] at h3
-    linarith
+    grind
   have hi : (∫ t in Icc (H/2) (3*H),f t) ≤ 3*(B+1)*(2*H)^(1+ε) := by
     rw [integral_Icc_eq_integral_Ioc,← intervalIntegral.integral_of_le (by linarith : H/2 ≤ 3*H)]
     exact (intervalIntegral.integral_mono_interval le_rfl (by linarith) (by linarith)
@@ -83,4 +79,4 @@ theorem weak_short_moment {ε : ℝ} (hε : 0 < ε) :
         _ = (48*(B+1)*2^(1+ε))*(H^((1:ℝ)/25)*H^(1+ε)) := by ring
         _ = _ := by rw [he]
 
-end GuthMaynard.Improvement
+

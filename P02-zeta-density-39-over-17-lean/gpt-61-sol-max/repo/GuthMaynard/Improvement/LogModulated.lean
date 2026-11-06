@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.RadialDecay
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Filter
 open scoped ContDiff Topology
@@ -11,8 +10,12 @@ namespace GuthMaynard.Improvement
 def logModulated (a : ℝ → ℂ) (s x : ℝ) : ℂ :=
   a x * Complex.exp ((s:ℂ)*Complex.I*(Real.log x:ℂ))
 
-theorem logModulated_smoothOn {a : ℝ → ℂ}
-    (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ) :
+section
+variable {a : ℝ → ℂ}
+    (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ)
+include a ha s
+
+theorem logModulated_smoothOn  :
     ContDiffOn ℝ ∞ (logModulated a s) (Ioi 0) := by
   apply ha.mul
   apply ContDiffOn.cexp
@@ -20,8 +23,7 @@ theorem logModulated_smoothOn {a : ℝ → ℂ}
   exact Complex.ofRealCLM.contDiff.comp_contDiffOn
     (Real.contDiffOn_log.mono (fun x hx => ne_of_gt hx))
 
-theorem logModulated_deriv {a : ℝ → ℂ}
-    (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem logModulated_deriv  {x : ℝ} (hx : 0 < x) :
     deriv (logModulated a s) x =
       logModulated (deriv a) s x + (s:ℂ)*Complex.I*logModulated (fun x => a x/(x:ℂ)) s x := by
   have hd : HasDerivAt a (deriv a x) x :=
@@ -33,6 +35,8 @@ theorem logModulated_deriv {a : ℝ → ℂ}
   unfold logModulated
   push_cast
   ring
+end
+
 
 /-- Derivatives of the actual logarithmically modulated amplitude have
 polynomial time growth. The constant precedes every real time parameter. -/
@@ -82,9 +86,13 @@ theorem logModulated_uniform_deriv (n : ℕ) {l u : ℝ} (hl : 0 < l)
         nlinarith [mul_nonneg (mul_nonneg hC.le (abs_nonneg s)) (pow_nonneg (by positivity : 0 ≤ 1+|s|) n),
           mul_nonneg hD.le (pow_nonneg (by positivity : 0 ≤ 1+|s|) n)]
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0)
+include a ha l u hl hs
+
 /-- A cutoff supported away from zero removes the logarithm's singularity. -/
-theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+theorem logModulated_smooth  (s : ℝ) :
     ContDiff ℝ ∞ (logModulated a s) := by
   rw [contDiff_iff_contDiffAt]
   intro x
@@ -97,8 +105,7 @@ theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     simp [logModulated,haz]
 
 /-- A global uniform derivative bound for the genuine compact cutoff. -/
-theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0) (n : ℕ) :
+theorem logModulated_global_deriv  (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ s x : ℝ,
       ‖iteratedDeriv n (logModulated a s) x‖ ≤ C*(1+|s|)^n := by
   obtain ⟨C,hC,hb⟩ := logModulated_uniform_deriv n (u := u) hl a ha.contDiffOn
@@ -110,5 +117,7 @@ theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       intro z hz; simp [logModulated,hs z hz]
     rw [iteratedDeriv_zero_off_interval hz n hx,norm_zero]
     positivity
+end
 
-end GuthMaynard.Improvement
+
+

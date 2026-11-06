@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [Fintype ι] [Fintype σ]
 
 def joinedInactiveCoefficient (P : PrimeFamily ι) (S : PrimeFamily σ) (j : ι→ℕ) : ι⊕σ→ℂ :=
@@ -62,7 +62,7 @@ theorem joined_inactive_three_blocks {α β : Type*} [Fintype α] [Fintype β]
   intro A hA
   congr 1
   exact joined_inactive_weight P S hP hS j hj A
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

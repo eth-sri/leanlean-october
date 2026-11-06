@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.UpperIntegralEstimate
 public import WeylPort.AFE.ChiGammaFactor
@@ -51,9 +52,13 @@ theorem dampedWeightedKernel_eq_laplace (s : ℂ) (ε m u : ℝ) :
   congr 2
   ring
 
+section
+variable {s : ℂ} (hs : s.re < 1)
+    {ε : ℝ} (hε : 0 < ε) (m : ℝ)
+include s hs ε hε m
+
 /-- Positive damping gives absolute integrability on the positive half-line. -/
-theorem integrableOn_dampedWeightedKernel {s : ℂ} (hs : s.re < 1)
-    {ε : ℝ} (hε : 0 < ε) (m : ℝ) :
+theorem integrableOn_dampedWeightedKernel  :
     IntegrableOn (dampedWeightedKernel s ε m) (Set.Ioi 0) := by
   have hz : 0 < (1 - s).re := by simp; linarith
   have ha : 0 < ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)).re := by simpa using hε
@@ -61,14 +66,15 @@ theorem integrableOn_dampedWeightedKernel {s : ℂ} (hs : s.re < 1)
     (fun u _ => (dampedWeightedKernel_eq_laplace s ε m u).symm) measurableSet_Ioi
 
 /-- The already proved foundation Laplace theorem evaluates the actual damped integral. -/
-theorem integral_dampedWeightedKernel_Ioi {s : ℂ} (hs : s.re < 1)
-    {ε : ℝ} (hε : 0 < ε) (m : ℝ) :
+theorem integral_dampedWeightedKernel_Ioi  :
     (∫ u in Set.Ioi 0, dampedWeightedKernel s ε m u) =
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)) ^ (s - 1) * Gamma (1 - s) := by
   have hz : 0 < (1 - s).re := by simp; linarith
   have ha : 0 < ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)).re := by simpa using hε
   simp_rw [dampedWeightedKernel_eq_laplace]
   simpa only [neg_sub, RiemannZeta.GuthMaynard.dfiComplexLaplace] using RiemannZeta.GuthMaynard.dfiComplexLaplace_eq hz ha
+end
+
 
 /-- The zero-damping value uses the actual principal branch at the negative imaginary axis. -/
 theorem continuousAt_dampedGamma_factor (s : ℂ) {m : ℝ} (hm : 0 < m) :
@@ -76,7 +82,7 @@ theorem continuousAt_dampedGamma_factor (s : ℂ) {m : ℝ} (hm : 0 < m) :
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)) ^ (s - 1) * Gamma (1 - s)) 0 := by
   have hi : (0 : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ) ∈ Complex.slitPlane := by
     apply Or.inr
-    have hp : Real.pi * m ≠ 0 := mul_ne_zero Real.pi_ne_zero hm.ne'
+    have hp := mul_ne_zero Real.pi_ne_zero hm.ne'
     simp only [sub_im, zero_im, mul_im, mul_re, ofReal_im, ofReal_re, I_im, I_re]
     norm_num
     positivity
@@ -130,8 +136,8 @@ theorem norm_integral_dampedWeightedKernel_le {σ t ε m a b : ℝ} (hσ : 0 ≤
     ‖∫ u in a..b, dampedWeightedKernel ((σ : ℂ) + (t : ℂ) * I) ε m u‖ ≤
       2 * a ^ (-σ) / (Real.pi * m) := by
   have hp (u : ℝ) (hu : u ∈ Set.Icc a b) : 0 < u := ha.trans_le hu.1
-  let g : ℝ → ℝ := fun u => u ^ (-σ) * Real.exp (-ε * u)
-  let g' : ℝ → ℝ := fun u =>
+  let g := fun u => u ^ (-σ) * Real.exp (-ε * u)
+  let g' := fun u =>
     (-σ * u ^ (-σ - 1)) * Real.exp (-ε * u) +
       u ^ (-σ) * (Real.exp (-ε * u) * (-ε))
   have hd (u : ℝ) (hu : u ∈ Set.Icc a b) : HasDerivAt g (g' u) u := by
@@ -165,7 +171,7 @@ theorem norm_integral_dampedWeightedKernel_le {σ t ε m a b : ℝ} (hσ : 0 ≤
       ∫ u in a..b, (g u : ℂ) * exp (I * (weightedIntegralPhase t m u : ℂ)) := by
     apply intervalIntegral.integral_congr
     intro u hu
-    have hup : 0 < u := hp u (Set.uIcc_of_le hab ▸ hu)
+    have hup := hp u (Set.uIcc_of_le hab ▸ hu)
     unfold dampedWeightedKernel
     rw [show -((σ : ℂ) + (t : ℂ) * I) =
       (((-σ : ℝ) : ℂ) - (t : ℂ) * I) by push_cast; ring]
@@ -267,7 +273,7 @@ theorem cpow_negative_imaginary_frequency (s : ℂ) {m : ℝ} (hm : 0 < m) :
       (2 * (Real.pi : ℂ) / I) ^ (s - 1) * (m : ℂ) ^ (s - 1) := by
   have hb : 2 * (Real.pi : ℂ) / I ≠ 0 :=
     div_ne_zero (mul_ne_zero (by norm_num) (ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
-  have hm' : (m : ℂ) ≠ 0 := ofReal_ne_zero.mpr hm.ne'
+  have hm' := ofReal_ne_zero.mpr hm.ne'
   have he : -(2 * (Real.pi : ℂ) * I * (m : ℂ)) = (2 * (Real.pi : ℂ) / I) * m := by
     rw [div_eq_mul_inv, inv_I]
     ring
@@ -307,4 +313,4 @@ theorem weightedIntegralTail_eq_sub {σ t m : ℝ} (hσ : σ ∈ Set.Ioo 0 1)
     (weightedIntegral ((σ : ℂ) + (t : ℂ) * I) 0 a m)
   simpa only [weightedIntegral_sub hs] using h
 
-end DhimanKadiriQuesadaHerrera2026
+

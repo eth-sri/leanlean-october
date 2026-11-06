@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7ConditionedExpansion
 
 @[expose] public section
@@ -18,7 +19,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_equations_7_18_to_7_21_local_bound
     {k r p c a b B nu s : ℕ}
@@ -78,10 +79,7 @@ theorem wooley_equations_7_18_to_7_21_local_bound
   have hdiff : (xi.val : ℤ) - (eta.val : ℤ) ≠ 0 := by
     simpa only [wooleyResidueDifference] using
       (wooleyResidueDifference_ne_zero_of_separated hseparated)
-  have homega : omegaVal ≠ 0 := by
-    intro hw
-    rw [hw, zero_mul] at hfactor
-    exact hdiff (by simpa only [wooleyResidueDifference] using hfactor)
+  have homega : omegaVal ≠ 0 := by aesop
   let H := wooleySection7HPrime k r a b gammaVal
   let qPrime := p ^ wooleySection7BPrimeNat k r a b gammaVal
   let left := wooleyAffinePullback gamma (p ^ a)
@@ -192,6 +190,6 @@ theorem wooley_equations_7_18_to_7_21_local_bound
       · rw [hmass, hreverse zeta hkappa, hetaInt]
   
 
-end
 
-end GafniTao
+
+

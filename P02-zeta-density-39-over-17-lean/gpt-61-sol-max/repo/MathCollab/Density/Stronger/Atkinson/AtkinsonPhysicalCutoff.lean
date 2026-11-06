@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -13,7 +14,6 @@ public import Mathlib.Data.Nat.Log
 @[expose] public section
 
 open Filter
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -84,8 +84,7 @@ theorem exists_atkinsonPhysicalCutoff_prefix_geometry {δ : ℝ} (hδ : 0 < δ) 
   have hlarge : 40000 ≤ H := (le_max_left _ _).trans hH
   have hAH : A ≤ H := (le_max_right _ _).trans hH
   have hwidth := (atkinson_doubled_height_half_power (by linarith : 2 ≤ H) hδ).trans hG
-  have hcut := hA (2*H) (by linarith) G hwidth
-  linarith
+  grind
 
 theorem atkinson_dyadic_prefix_geometry {H G : ℝ} {j : ℕ}
     (hcut : 2*(atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ)+2 ≤ H)
@@ -94,8 +93,7 @@ theorem atkinson_dyadic_prefix_geometry {H G : ℝ} {j : ℕ}
   have hjN := Nat.pow_lt_of_lt_clog hj
   have hcast : (((2^j):ℕ):ℝ) ≤
       (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) := by exact_mod_cast hjN.le
-  push_cast at hcast ⊢
-  linarith
+  grind
 
 theorem exists_atkinsonPhysicalPrefixGramMax_le_gap {δ : ℝ} (hδ : 0 < δ) :
     ∃ H₀ : ℝ, 40000 ≤ H₀ ∧ ∀ H G : ℝ, H₀ ≤ H → H^δ ≤ G →
@@ -111,4 +109,4 @@ theorem exists_atkinsonPhysicalPrefixGramMax_le_gap {δ : ℝ} (hδ : 0 < δ) :
     (pow_pos (by norm_num) _) (le_min (hend.trans ht) (hend.trans hu))
     (max_le (by linarith [le_min ht hu]) (by linarith [le_min ht hu]))
 
-end MathCollab.Density.Stronger.Atkinson
+

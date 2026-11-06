@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Calculus.ContDiff.Defs
 public import Mathlib.Analysis.Calculus.ContDiff.FTaylorSeries
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
@@ -9,7 +10,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators ContDiff
 
 namespace GuthMaynard.NativeMoment
@@ -59,8 +60,7 @@ theorem exists_gmSmoothCutoff : Nonempty GMSmoothCutoff := by
   · intro x
     exact (hwUpper x).trans (by
       by_cases hx : x ∈ Set.Ioo (1 : ℝ) 2
-      · simp [Set.indicator_of_mem hx]
-      · simp [Set.indicator, hx])
+      all_goals (simp_all <;> nlinarith))
   · rw [hwSupport]
     exact Set.Ioo_subset_Icc_self
   · intro x hx
@@ -80,23 +80,33 @@ abbrev GMRow (W : Finset ℝ) := {t : ℝ // t ∈ W}
 /-- Columns of the sampling matrix are the integers in `(N,2N]`. -/
 abbrev GMColumn (N : ℕ) := {n : ℕ // n ∈ dyadicInterval N}
 
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ)
+include cutoff N
+
 /-- The smoothed sampling-matrix entry from Section 4. -/
-noncomputable def gmMatrixEntry (cutoff : GMSmoothCutoff) (N : ℕ)
+noncomputable def gmMatrixEntry 
     {W : Finset ℝ} (t : GMRow W) (n : GMColumn N) : ℂ :=
   cutoff ((n : ℝ) / N) * (n : ℂ) ^ ((t : ℂ) * I)
 
 /-- The smoothed positive-phase Dirichlet polynomial sampled by the matrix. -/
-noncomputable def gmSmoothDirichletPoly (cutoff : GMSmoothCutoff) (N : ℕ)
+noncomputable def gmSmoothDirichletPoly 
     (b : ℕ → ℂ) (t : ℝ) : ℂ :=
   ∑ n ∈ dyadicInterval N,
     cutoff ((n : ℝ) / N) * b n * (n : ℂ) ^ ((t : ℂ) * I)
+end
+
 
 /-- Guth--Maynard's exponential sum `R(v) = ∑_{t∈W} |v|^{it}`. -/
 noncomputable def gmR (W : Finset ℝ) (v : ℝ) : ℂ :=
   ∑ t ∈ W, ((|v| : ℝ) : ℂ) ^ ((t : ℂ) * I)
 
+section
+variable (η : ℝ) (W : Finset ℝ)
+include η W
+
 /-- Ordered additive quadruples whose additive defect is at most `η`. -/
-noncomputable def approximateAdditiveQuadruples (η : ℝ) (W : Finset ℝ) :
+noncomputable def approximateAdditiveQuadruples  :
     Finset ((ℝ × ℝ) × (ℝ × ℝ)) :=
   ((W ×ˢ W) ×ˢ (W ×ˢ W)).filter fun q =>
     |q.1.1 + q.1.2 - q.2.1 - q.2.2| ≤ η
@@ -104,10 +114,10 @@ noncomputable def approximateAdditiveQuadruples (η : ℝ) (W : Finset ℝ) :
 /-- Tolerance-`η` additive energy of a finite real set.  The source energy is
 `ApproxAddEnergy 1 W`; unlike `Finset.addEnergy`, this counts approximate real
 equalities. -/
-noncomputable def ApproxAddEnergy (η : ℝ) (W : Finset ℝ) : ℕ :=
+noncomputable def ApproxAddEnergy  : ℕ :=
   (approximateAdditiveQuadruples η W).card
 
-theorem approxAddEnergy_le_card_pow_four (η : ℝ) (W : Finset ℝ) :
+theorem approxAddEnergy_le_card_pow_four  :
     ApproxAddEnergy η W ≤ W.card ^ 4 := by
   unfold ApproxAddEnergy approximateAdditiveQuadruples
   calc
@@ -115,6 +125,8 @@ theorem approxAddEnergy_le_card_pow_four (η : ℝ) (W : Finset ℝ) :
         |q.1.1 + q.1.2 - q.2.1 - q.2.2| ≤ η).card
         ≤ ((W ×ˢ W) ×ˢ (W ×ˢ W)).card := Finset.card_filter_le _ _
     _ = W.card ^ 4 := by simp only [Finset.card_product]; ring
+end
+
 
 theorem card_sq_le_approxAddEnergy {η : ℝ} (hη : 0 ≤ η) (W : Finset ℝ) :
     W.card ^ 2 ≤ ApproxAddEnergy η W := by
@@ -122,7 +134,6 @@ theorem card_sq_le_approxAddEnergy {η : ℝ} (hη : 0 ≤ η) (W : Finset ℝ) 
   let diagonal : Finset ((ℝ × ℝ) × (ℝ × ℝ)) :=
     (W ×ˢ W).image fun p => (p, p)
   have hDiagonalCard : diagonal.card = (W ×ˢ W).card := by
-    dsimp [diagonal]
     apply Finset.card_image_of_injective
     intro p q hpq
     exact congrArg Prod.fst hpq
@@ -140,13 +151,20 @@ theorem card_sq_le_approxAddEnergy {η : ℝ} (hη : 0 ≤ η) (W : Finset ℝ) 
     _ ≤ (approximateAdditiveQuadruples η W).card := Finset.card_le_card hSubset
     _ = ApproxAddEnergy η W := rfl
 
-theorem gmR_one (W : Finset ℝ) : gmR W 1 = W.card := by
+section
+variable (W : Finset ℝ)
+include W
+
+theorem gmR_one  : gmR W 1 = W.card := by
   simp [gmR]
 
+section
+variable (v : ℝ) (hv : v ≠ 0)
+include v hv
+
 /-- The trivial pointwise estimate for the source exponential sum. -/
-theorem norm_gmR_le_card (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
+theorem norm_gmR_le_card  :
     ‖gmR W v‖ ≤ W.card := by
-  rw [gmR]
   calc
     ‖∑ t ∈ W, ((|v| : ℝ) : ℂ) ^ ((t : ℂ) * I)‖ ≤
         ∑ t ∈ W, ‖((|v| : ℝ) : ℂ) ^ ((t : ℂ) * I)‖ :=
@@ -159,7 +177,7 @@ theorem norm_gmR_le_card (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
     _ = W.card := by simp
 
 /-- Reciprocal arguments conjugate the source exponential sum. -/
-theorem gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
+theorem gmR_reciprocal  :
     gmR W (1 / v) = star (gmR W v) := by
   rw [gmR, gmR, star_sum]
   apply Finset.sum_congr rfl
@@ -176,12 +194,13 @@ theorem gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
     norm_num
   rw [abs_div, abs_one, one_div, hcast, hInv]
   rw [← Complex.cpow_neg]
-  simp only [map_mul, Complex.conj_ofReal, Complex.conj_I] at hConj
-  convert hConj using 1
-  all_goals first | rfl | ring
+  simp_all
 
-theorem norm_gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
+theorem norm_gmR_reciprocal  :
     ‖gmR W (1 / v)‖ = ‖gmR W v‖ := by
   rw [gmR_reciprocal W v hv, norm_star]
+end
+end
 
-end GuthMaynard.NativeMoment
+
+

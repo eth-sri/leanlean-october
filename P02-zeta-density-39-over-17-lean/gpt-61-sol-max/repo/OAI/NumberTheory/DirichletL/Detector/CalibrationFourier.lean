@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.Calibration
 
 @[expose] public section
@@ -9,7 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def calibrationGauss (C : CalibrationData) (h : O) : ℂ :=
   ∑' d : O ⧸ Ideal.span {C.generator}, C.residue d *
@@ -38,8 +39,6 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
   have hb : b ≠ 0 := finitePrimeModulus_ne_zero P
   let : Finite (O ⧸ Ideal.span {b}) := ConcreteTraceCRT.finite_quotient_span hb
   let : Fintype (O ⧸ Ideal.span {b}) := Fintype.ofFinite _
-  let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
-  let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
   let e : (O ⧸ Ideal.span {b}) ≃+* ∀ i, O ⧸ P i :=
     (Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
       (IdealGaussCRT.quotientProdEquivPi P hcop)
@@ -54,7 +53,11 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
         ψ (Ideal.Quotient.mk (Ideal.span {b}) 1 * d)
   simpa only [tsum_fintype, map_one, one_mul] using ht
 
-theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+include S hS
+
+theorem calibrationForSet_gauss 
     (h : O) :
     calibrationGauss (calibrationForSet S hS) h =
       star ((calibrationForSet S hS).residueMonoid h) *
@@ -73,7 +76,7 @@ theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMa
   rw [he, calibrationGauss_one, ← hc]
   ring
 
-theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+theorem calibrationForSet_residue_sixth 
     (a : O) (ha : IsCoprime (calibrationForSet S hS).generator a) :
     (calibrationForSet S hS).residueMonoid a ^ 6 = 1 := by
   let C := calibrationForSet S hS
@@ -82,8 +85,10 @@ theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S
     χ (Ideal.Quotient.mk _ a)) (calibrationForSet_pow_six S hS)
   change C.residue (Ideal.Quotient.mk _ a) ^ 6 = 1
   simpa only [MulChar.pow_apply' _ (by decide : (6 : ℕ) ≠ 0), MulChar.one_apply hu] using h6
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

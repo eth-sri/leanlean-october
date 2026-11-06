@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import MathCollab.Density.UniformThreshold
 
 @[expose] public section
 
-open Real Set
+open Real
 open scoped BigOperators
 
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- Cardinality at an arbitrary admissible positive integer auxiliary scale. -/
@@ -43,8 +43,7 @@ theorem cardinality_at_length (w : ComparisonCutoff) {κ : ℝ} (d : LargeValueD
     nlinarith
   have hs := mul_le_mul_of_nonneg_left hsmall
     (show 0 ≤ K*b*(d.N : ℝ)*M by positivity)
-  dsimp [C, b, r] at *
-  nlinarith
+  grind
 
 /-- Integer rounding of the optimal scale is permitted because comparison holds for every M>0. -/
 theorem optimal_integer_scale {κ : ℝ} (d : LargeValueData κ) (hW : d.W.Nonempty)
@@ -127,4 +126,4 @@ theorem large_values_with_divisors {κ : ℝ} (hκ : 0 < κ) :
     rw [hz, Finset.card_empty, Nat.cast_zero]
     positivity
 
-end MathCollab.Density
+

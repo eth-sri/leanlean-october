@@ -7,17 +7,21 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff MatrixGroups
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicEisenstein CubicKubota CompletedDyadic
+open ShortDraftCusp
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance dualQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
+local instance dualQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
-def mixedSmoothedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
+section
+variable (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
+include D
+
+def mixedSmoothedValue 
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
@@ -27,8 +31,7 @@ def mixedSmoothedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
     fullLocalFourierWeight hp (mixedPrimeFunction p hg j S) v *
       (D.datum hN hr hbase s hp hc0 v).smoothedKernel W X
 
-def mixedReflectedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+def mixedReflectedValue 
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
     (j : ι → ℕ) (S : Finset ι) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
@@ -46,8 +49,7 @@ def mixedReflectedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
         ∏ i, mixedActiveBracket hp hg j S D i
           (sourceCuspPhaseNumerator s.index (s.upper 0 0) (thetaFullFrequency t)))
 
-theorem mixed_smoothed_eq_reflected (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem mixed_smoothed_eq_reflected 
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
@@ -85,8 +87,10 @@ theorem mixed_smoothed_eq_reflected (D : ControlledStratumArithmetic p N a0 c0 m
   simpa only [hchar, hmat, map_mul] using
     controlled_mixed_multiplier D hN hr hbase hp hc0 hcop hg hc j hj S
       (sourceCuspPhaseNumerator s.index (s.upper 0 0) (thetaFullFrequency t))
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

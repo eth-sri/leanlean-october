@@ -13,17 +13,21 @@ it is nonnegative. No lower bound needed to remove that maximum is
 silently assumed in the unconditional statement.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped NNReal
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
+
+section
+variable {α : ℝ≥0} {β : ℝ} (hα : (α : ℝ) ≤ 1)
+    (hβ : IsExponentSumBoundNonAsymptotic α β)
+include α β hα hβ
 
 theorem isExponentSumBoundNonAsymptotic_reflect_max
-    {α : ℝ≥0} {β : ℝ} (hα : (α : ℝ) ≤ 1)
-    (hβ : IsExponentSumBoundNonAsymptotic α β) :
+     :
     IsExponentSumBoundNonAsymptotic (1-α) (max 0 (β+1/2-(α : ℝ))) := by
   have hβnonneg : 0 ≤ β :=
     (isExponentSumBound_exponentSumGrowthExponent α).nonneg.trans
@@ -95,11 +99,12 @@ theorem isExponentSumBoundNonAsymptotic_reflect_max
     nlinarith
 
 theorem isExponentSumBoundNonAsymptotic_reflect_nonnegative
-    {α : ℝ≥0} {β : ℝ} (hα : (α : ℝ) ≤ 1)
-    (hβ : IsExponentSumBoundNonAsymptotic α β)
+    
     (hreflect : 0 ≤ β+1/2-(α : ℝ)) :
     IsExponentSumBoundNonAsymptotic (1-α) (β+1/2-(α : ℝ)) := by
   simpa only [max_eq_right hreflect] using
     isExponentSumBoundNonAsymptotic_reflect_max hα hβ
+end
 
-end TaoTrudgianYang2025
+
+

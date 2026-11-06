@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedLocalNonstationary
 
@@ -12,13 +13,13 @@ Their slope gaps and the width-independent cutoff variation bound the
 difference between the whole original integral and its central piece.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem norm_bufferedNormalizedMode_sub_window_le
     {F : ℝ → ℝ} {σ δ T v l r η H : ℝ}
@@ -36,7 +37,7 @@ theorem norm_bufferedNormalizedMode_sub_window_le
   let a := modelPhaseMorseInverse F v (-H)
   let b := modelPhaseMorseInverse F v H
   let lam := T*(H*modelPhaseCurvatureLower σ/Real.sqrt (σ+1))
-  let g : ℝ → ℂ := fun u => (modelPhaseBufferedCutoff l r η u : ℂ)*
+  let g := fun u => (modelPhaseBufferedCutoff l r η u : ℂ)*
     (𝐞 (T*F u-(T*v)*u) : ℂ)
   have ha : a ∈ Ioo (1 : ℝ) 2 := modelPhaseMorseInverse_mem hleft
   have hb : b ∈ Ioo (1 : ℝ) 2 := modelPhaseMorseInverse_mem hright
@@ -97,4 +98,4 @@ theorem norm_bufferedNormalizedMode_sub_window_le
       field_simp
       ring
 
-end TaoTrudgianYang2025
+

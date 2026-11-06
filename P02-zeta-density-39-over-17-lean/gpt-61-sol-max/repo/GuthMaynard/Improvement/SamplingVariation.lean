@@ -2,8 +2,7 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
@@ -58,7 +57,7 @@ theorem sampling_disjoint_intervals {ι : Type*} [Fintype ι]
   have hsum := Finset.sum_le_sum (s := Finset.univ) (fun i _ =>
     sampling_interval_average hδ hd (hf.mono_set (hsub i)) (hi.mono_set (hsub i)))
   rw [← Finset.mul_sum, Finset.sum_add_distrib, ← Finset.mul_sum] at hsum
-  have hu : (⋃ i, Ioc (x i) (x i+δ)) ⊆ A := iUnion_subset hsub
+  have hu := iUnion_subset hsub
   have hnorm (g : ℝ → E) (hg : IntegrableOn g A) :
       (∑ i, ∫ t in Ioc (x i) (x i+δ), ‖g t‖) ≤ ∫ t in A, ‖g t‖ := by
     rw [← integral_iUnion_fintype (fun _ => measurableSet_Ioc) hs
@@ -76,10 +75,7 @@ theorem sampling_intervals_disjoint {ι : Type*} (x : ι → ℝ) (δ : ℝ)
   intro t hti htj
   have hh : δ ≤ |x i-x j| := hsep hij
   by_cases hx : x i ≤ x j
-  · rw [abs_of_nonpos (sub_nonpos.mpr hx)] at hh
-    linarith [hti.2, htj.1]
-  · rw [abs_of_nonneg (by linarith : 0 ≤ x i-x j)] at hh
-    linarith [htj.2, hti.1]
+  all_goals (grind)
 
 /-- First-variation point sampling on any ambient set containing the
 separated sampling intervals; all costs are ordinary integrals. -/
@@ -91,8 +87,6 @@ theorem sampling_separated_norm {ι : Type*} [Fintype ι]
     (hf : IntegrableOn f A) (hi : IntegrableOn f' A) :
     (∑ i, ‖f (x i)‖) ≤ δ⁻¹*(∫ t in A, ‖f t‖)+(∫ t in A, ‖f' t‖) := by
   have hh := sampling_disjoint_intervals x hδ hd (sampling_intervals_disjoint x δ hsep) hsub hf hi
-  apply (mul_le_mul_iff_right₀ hδ).mp
-  convert hh using 1
-  field_simp
+  field_simp <;> nlinarith
 
-end GuthMaynard.Improvement
+

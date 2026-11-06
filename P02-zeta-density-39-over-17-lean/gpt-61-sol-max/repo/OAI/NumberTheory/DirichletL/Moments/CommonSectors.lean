@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonSectors
 open CenteredMomentCompleteCommon CenteredMomentSupport IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem primeSupport_mul (I J : Ideal O) (hI : I≠0) (hJ : J≠0) :
     primeSupport (I*J)=primeSupport I∪primeSupport J := by
@@ -28,10 +28,14 @@ theorem supportExtract_of_disjoint (I : Ideal O) (S : Finset (Ideal O))
   rw [Multiset.filter_eq_nil.mpr (fun P hP => Finset.disjoint_left.mp hS (Multiset.mem_toFinset.mpr hP))]
   rfl
 
-theorem reconstructed_commonSupport (C D a b : Ideal O)
+section
+variable (C D a b : Ideal O)
     (hC : C≠0) (hD : D≠0) (ha : a≠0) (hb : b≠0)
     (hCD : primeSupport C=primeSupport D)
-    (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b) :
+    (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b)
+include C D a b hC hD ha hb hCD hCa hCb hab
+
+theorem reconstructed_commonSupport  :
     commonSupport (C*a) (D*b)=primeSupport C := by
   unfold commonSupport
   rw [primeSupport_mul C a hC ha,primeSupport_mul D b hD hb,← hCD]
@@ -48,10 +52,7 @@ theorem reconstructed_commonSupport (C D a b : Ideal O)
     · exact False.elim (Finset.disjoint_left.mp h₃ ha' hb')
   · exact fun hp => ⟨Or.inl hp,Or.inl hp⟩
 
-theorem reconstructed_commonParts (C D a b : Ideal O)
-    (hC : C≠0) (hD : D≠0) (ha : a≠0) (hb : b≠0)
-    (hCD : primeSupport C=primeSupport D)
-    (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b) :
+theorem reconstructed_commonParts  :
     commonPart (C*a) (D*b)=C ∧ commonPart (D*b) (C*a)=D := by
   have hs := reconstructed_commonSupport C D a b hC hD ha hb hCD hCa hCb hab
   have h₁ := (IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC ha).mpr hCa
@@ -62,9 +63,11 @@ theorem reconstructed_commonParts (C D a b : Ideal O)
   · rw [commonPart_eq_supportExtract,commonSupport_comm (D*b) (C*a),hs,
       supportExtract_mul D b hD hb,
       supportExtract_of_subset D hD _ (by rw [hCD]),supportExtract_of_disjoint b _ h₂.symm,mul_one]
-
-end SevenEighths.CenteredMomentCommonSectors
-
 end
 
-end OAI
+
+
+
+
+
+

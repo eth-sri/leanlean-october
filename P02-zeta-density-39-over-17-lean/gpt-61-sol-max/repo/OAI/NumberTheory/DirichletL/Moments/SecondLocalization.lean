@@ -15,10 +15,14 @@ open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecon
 open CenteredMomentSecondSourcePoisson CenteredMomentSecondWholeKernel CenteredMomentSecondTail
 open CenteredMomentFirstLocalization CenteredMomentSectorLocalization CenteredMomentSupportedCorrelation
 open CenteredMomentSupportedTailAggregate CenteredMomentSourceSecondZeroEnergy CenteredMomentSecondDiagonal
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def secondRetainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+section
+variable (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ)
+include I J hI hJ W K Tsec Z ξ
+
+def secondRetainedPair  : ℂ :=
   (K:ℂ)/((Real.sqrt (Ideal.absNorm I:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm J:ℝ):ℂ))*
     ∑' h : O,(retainedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
       actualCorrelation (primaryGenerator I) (primaryGenerator J)
@@ -26,8 +30,7 @@ def secondRetainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
       paperRadialFourier W (K*‖eisEmbedding h‖^2/
         ‖eisEmbedding (primaryGenerator I*primaryGenerator J)‖^2)
 
-theorem secondSourceKernel_split (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) (hK : 0<K) :
+theorem secondSourceKernel_split  (hK : 0<K) :
     secondSourceKernel I J W K=
       (K:ℂ)/((Real.sqrt (Ideal.absNorm I:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm J:ℝ):ℂ))*
         actualCorrelation (primaryGenerator I) (primaryGenerator J)
@@ -53,16 +56,21 @@ theorem secondSourceKernel_split (I J : Ideal O) (hI : Supported I) (hJ : Suppor
   rw [hs]
   simp only [neg_zero]
   ring
+end
 
-def secondRetainedEnergy (η : Character) (t : ℝ) (S : Finset (Ideal O))
+
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal O))
+include η t S
+
+def secondRetainedEnergy 
     (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*heightCoeff η t I)*star (c J*heightCoeff η t J))*
       secondRetainedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K Tsec Z ξ
 
-theorem sourceGaussEnergy_localized (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) (hK : 0<K) :
+theorem sourceGaussEnergy_localized  (β : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) (hK : 0<K) :
     CenteredMomentOriginalChildEnergy.sourceGaussEnergy S β (heightCoeff η t) W K=
       ((K:ℂ)*paperRadialFourier W 0)*sourceSecondZero S β η t+
       secondRetainedEnergy η t S β W K Tsec Z ξ+
@@ -81,9 +89,11 @@ theorem sourceGaussEnergy_localized (η : Character) (t : ℝ)
   simp only [sourceGenerator,primary_span_supported I (Finset.mem_filter.mp I.property).2,
     primary_span_supported J (Finset.mem_filter.mp J.property).2]
   convert congrArg (fun x : ℂ => ((β I*heightCoeff η t I)*star (β J*heightCoeff η t J))*x) he using 1 <;> ring
-
-end SevenEighths.CenteredMomentSecondLocalization
-
 end
 
-end OAI
+
+
+
+
+
+

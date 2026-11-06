@@ -4,7 +4,6 @@ public import DensityEnergyGM.SharpCountTraceExpansion
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1800000
 noncomputable section
 namespace Montgomery.RationalMoment
@@ -104,4 +103,4 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
     nlinarith only [hSq,lt_of_not_ge h1,lt_of_not_ge h2]
   exact hCase3 h3
 
-end Montgomery.RationalMoment
+

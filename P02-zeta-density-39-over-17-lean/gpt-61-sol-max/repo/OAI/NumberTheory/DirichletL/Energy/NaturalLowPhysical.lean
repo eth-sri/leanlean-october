@@ -13,23 +13,24 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open HeckeFamily
+open CenteredMomentEnergyState CenteredMomentEnergyBands
+
+open CenteredMomentAmplificationChildInput
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource
 open CenteredMomentEnergyNaturalSourceAdmission
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
+open CenteredMomentEnergyPositiveHighParameters
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem actual_natural_low_physical
     (W:ℝ→ℂ)(hW:ContDiff ℝ ∞ W)(aslot bslot lo hi a b bΦ:ℝ)
@@ -41,14 +42,14 @@ theorem actual_natural_low_physical
     (hMA:Mparent≤A)(hready:readyBudget A Bmask≤B)
     (hκ:(3/4:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(hε:0<ε)
-    (hslot:Lslot≤mesh Mglobal B κ ε)
+    (hslot:Lslot≤ mesh Mglobal B κ ε)
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,
     ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
+    ∀εchild C₀ C₁:ℝ,εchild≤ stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 (2*max Lgoal Mparent+reserve Mglobal B ε/4)
         Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 (2*max Lgoal Mparent+reserve Mglobal B ε/4)
@@ -68,7 +69,7 @@ theorem actual_natural_low_physical
     parameter_gates Mglobal A B κ ε hMg hA hB hκ hε
   have hrpos:0<r/4:=hr
   have hκsmall:(1/6:ℝ)≤κ:=by linarith
-  have hLbase:0≤max Lgoal Mparent:=hL.trans (le_max_left _ _)
+  have hLbase:0≤ max Lgoal Mparent:=hL.trans (le_max_left _ _)
   have hLphys:0≤2*max Lgoal Mparent+r/4:=by positivity
   obtain ⟨U,J,hphysical⟩:=CenteredMomentEnergyCanonicalLowPhysical.actual_low_physical (α:=α)
     M H hH W aslot bslot Mchild Lslot (r/4) lo hi κ a b Mslot (maskEpsilon Mglobal B ε)
@@ -89,7 +90,7 @@ theorem actual_natural_low_physical
     with Z hZZ hfit hclipPow hscale
   have hZ:1<Z:=hZ₀.trans_le hZZ
   have hclip:Real.logb Z (max 1 b*max 1 b)≤2*(r/4):=by
-    have hh:=Real.logb_le_logb_of_le hZ (by positivity:0<max 1 b*max 1 b) hclipPow
+    have hh:=Real.logb_le_logb_of_le hZ (by positivity:0< max 1 b*max 1 b) hclipPow
     simpa only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using hh
   refine ⟨hZ,?_⟩
   intro εchild C₀ C₁ hell hC₀ hC₁ hzero hpos T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hrho hstate
@@ -133,8 +134,8 @@ theorem actual_natural_low_physical
   rw [ht,hv0] at hh
   simpa only [map_one,Nat.cast_one,div_one,mul_assoc] using hh
 
-end SevenEighths.CenteredMomentEnergyNaturalLowPhysical
 
-end
 
-end OAI
+
+
+

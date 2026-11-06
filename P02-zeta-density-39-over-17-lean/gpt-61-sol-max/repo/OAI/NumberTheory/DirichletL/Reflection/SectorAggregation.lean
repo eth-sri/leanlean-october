@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.FixedLevel
 
@@ -8,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def fullRaySector (N : Eis) (rows : Finset (Ideal Eis)) (r : Eis⧸Ideal.span {N^2}) : Finset (Ideal Eis) :=
   rows.filter (fun K => Ideal.Quotient.mk (Ideal.span {N^2}) (primaryGenerator K)=r)
@@ -33,7 +34,7 @@ theorem full_ray_sector_energy (N : Eis) [Fintype (Eis⧸Ideal.span {N^2})]
       have hh := weighted_finite_row_energy_uniform (Finset.univ : Finset (Eis⧸Ideal.span {N^2}))
         (fullRaySector N rows r) (fun _ => (1:ℂ))
         (fun p K => ∑ P∈fullRaySector N Pset p,f K P) E (fun p _ => hE r p)
-      simp only [one_mul,norm_one,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one] at hh
+      simp at hh
       have he : (∑ K∈fullRaySector N rows r, ‖∑ P∈Pset,f K P‖^2)=
           ∑ K∈fullRaySector N rows r, ‖∑ p : Eis⧸Ideal.span {N^2},∑ P∈fullRaySector N Pset p,f K P‖^2 := by
         apply Finset.sum_congr rfl
@@ -42,7 +43,7 @@ theorem full_ray_sector_energy (N : Eis) [Fintype (Eis⧸Ideal.span {N^2})]
       rw [he]
       exact hh
     _ = _ := by simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul];ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

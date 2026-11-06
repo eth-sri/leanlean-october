@@ -65,8 +65,12 @@ def atkinsonTwoTermCarrierIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
       (neumannCorrectionPlus * atkinsonPowerIntegral T G L (3 / 4) (Real.sqrt n) +
        neumannCorrectionMinus * atkinsonPowerIntegral T G L (3 / 4) (-Real.sqrt n)))
 
-theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L : ℝ}
+section
+variable {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+include T G L hT hG hL hwidth
+
+theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers 
     {n : ℕ} (hn : 0 < n) :
     (∫ x : ℝ in Ioi 0, zetaAtkinsonTwoTermIntegrand T G L n x) =
       atkinsonTwoTermCarrierIntegral T G L n := by
@@ -96,13 +100,14 @@ theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L : ℝ}
     integral_add (h3p.const_mul neumannCorrectionPlus) (h3m.const_mul neumannCorrectionMinus)]
   simp only [integral_const_mul, atkinsonTwoTermCarrierIntegral, atkinsonPowerIntegral]
 
-theorem zetaAtkinsonTwoTerm_eq_carrierIntegral {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) (n : ℕ) :
+theorem zetaAtkinsonTwoTerm_eq_carrierIntegral  (n : ℕ) :
     zetaAtkinsonTwoTerm T G L n =
       divisorWeight n * (-(2 * Real.pi) : ℂ) * atkinsonTwoTermCarrierIntegral T G L n := by
   by_cases hn : n = 0
   · simp [hn, zetaAtkinsonTwoTerm, divisorWeight]
   rw [zetaAtkinsonTwoTerm,
     integral_zetaAtkinsonTwoTermIntegrand_eq_carriers hT hG hL hwidth (Nat.pos_of_ne_zero hn)]
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

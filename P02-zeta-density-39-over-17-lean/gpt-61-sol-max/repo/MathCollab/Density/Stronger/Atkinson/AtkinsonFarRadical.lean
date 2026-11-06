@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -18,13 +19,16 @@ the triangle bound M is stronger. This keeps the square-root growth
 without imposing an artificial upper bound on the height gap.
 -/
 
-set_option autoImplicit false
-noncomputable section
+
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinson_far_inverse_sqrt {Q d lam : ℝ}
-    (hQ : 0 < Q) (hd : 0 < d) (hlam : d/(320*Q) ≤ lam) :
+section
+variable {Q d lam : ℝ}
+    (hQ : 0 < Q) (hd : 0 < d)
+include Q d lam hQ hd
+
+theorem atkinson_far_inverse_sqrt  (hlam : d/(320*Q) ≤ lam) :
     1/Real.sqrt lam ≤ 20*Real.sqrt (Q/d) := by
   have hi := one_div_le_one_div_of_le (by positivity : 0 < d/(320*Q)) hlam
   have hi' : 1/lam ≤ 400*(Q/d) := by
@@ -36,8 +40,7 @@ theorem atkinson_far_inverse_sqrt {Q d lam : ℝ}
     _ ≤ Real.sqrt (400*(Q/d)) := Real.sqrt_le_sqrt hi'
     _ = _ := by rw [Real.sqrt_mul (by norm_num)]; norm_num
 
-theorem atkinson_far_second_factor {Q d lam : ℝ}
-    (hQ : 0 < Q) (hd : 0 < d) (hdQ : d ≤ Q) (hlam : d/(320*Q) ≤ lam) :
+theorem atkinson_far_second_factor  (hdQ : d ≤ Q) (hlam : d/(320*Q) ≤ lam) :
     2*Real.pi/Real.sqrt lam+2*(Real.sqrt lam/lam+1) ≤
       202*Real.sqrt (Q/d) := by
   have hi := atkinson_far_inverse_sqrt hQ hd hlam
@@ -49,6 +52,8 @@ theorem atkinson_far_second_factor {Q d lam : ℝ}
     _ = (2*Real.pi+2)*(1/Real.sqrt lam)+2 := by rw [Real.sqrt_div_self']; ring
     _ ≤ 10*(20*Real.sqrt (Q/d))+2 := by linarith
     _ ≤ _ := by linarith
+end
+
 
 theorem atkinson_far_radical_identity {M R d : ℝ}
     (hR : 0 < R) (hd : 0 < d) :
@@ -87,8 +92,7 @@ theorem atkinson_far_min_bProcess {M R d lam upper : ℝ}
   · have hMd : M*R ≤ d := le_of_not_ge hdQ
     have hroot : M ≤ Real.sqrt (M*d/R) := by
       apply Real.le_sqrt_of_sq_le
-      rw [le_div_iff₀ hR]
-      nlinarith [mul_le_mul_of_nonneg_left hMd hM.le]
+      field_simp <;> nlinarith
     exact (min_le_left _ _).trans (hroot.trans (by nlinarith [Real.sqrt_nonneg (M*d/R)]))
 
-end MathCollab.Density.Stronger.Atkinson
+

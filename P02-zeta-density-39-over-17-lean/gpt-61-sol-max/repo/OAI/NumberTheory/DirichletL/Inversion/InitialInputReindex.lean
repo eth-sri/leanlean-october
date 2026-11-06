@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialTotalFourier
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialInputReindex
-open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic InverseMoment
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
 open InverseInitialArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem input_puncture_span {ι:Type*}[DecidableEq ι](p:ι→O)
     [∀i,(Ideal.span {p i}).IsMaximal]
@@ -27,8 +27,8 @@ theorem input_puncture_span {ι:Type*}[DecidableEq ι](p:ι→O)
   dsimp only
   rw [rowCoprimeMask_eq_of_span_eq (fun i=>Ideal.span {p i}) A hspan]
 
-end SevenEighths.InverseInitialInputReindex
 
-end
 
-end OAI
+
+
+

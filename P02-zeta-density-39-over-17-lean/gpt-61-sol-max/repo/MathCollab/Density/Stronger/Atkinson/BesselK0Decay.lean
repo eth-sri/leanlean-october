@@ -11,7 +11,6 @@ public import MathCollab.Density.Stronger.Atkinson.BesselK0
 
 open Complex Filter MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -100,4 +99,4 @@ theorem abs_dfiBesselK0_source_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x
     (pow_pos (by positivity : 0 < T * n) k)
     (pow_le_pow_left₀ (by positivity) hbase k)
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -4,8 +4,7 @@ public import DensityEnergyGM.SharpCountScale
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- The retained quadratic-cardinality term has a genuine uniform height
@@ -39,4 +38,4 @@ theorem universal_low_coefficient_small {A T : ℝ} (hA : 0<A)
   change A/T^(1/200:ℝ)≤1/2
   exact (div_le_iff₀ (by positivity : 0<T^(1/200:ℝ))).mpr (by linarith)
 
-end Montgomery.RationalMoment
+

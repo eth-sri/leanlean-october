@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -16,8 +17,7 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -25,9 +25,7 @@ theorem norm_zetaSquareFrozenDivisorContribution (T x : ℝ) (n : ℕ) :
     ‖zetaSquareFrozenDivisorContribution T x n‖ = ‖zetaFrozenDivisorCoefficient T n‖ := by
   rw [zetaSquareFrozenDivisorContribution_eq_phase, norm_mul, norm_mul,
     norm_zetaSquareReflectedGammaPhase]
-  simp only [Complex.norm_exp, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
-    Complex.ofReal_re, Complex.ofReal_im, zero_mul, mul_zero, sub_zero,
-    mul_one, one_mul, Real.exp_zero]
+  simp only [mul_one, norm_exp, mul_re, I_re, ofReal_re, zero_mul, I_im, ofReal_im, mul_zero, sub_zero, mul_im, one_mul, Real.exp_zero]
 
 theorem continuous_zetaSquareFrozenDivisorIntegral {T : ℝ} (hT : 0 < T) :
     Continuous (zetaSquareFrozenDivisorIntegral T) := by
@@ -97,7 +95,7 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_frozen_window_le (ε : ℝ) (hε
   refine ⟨2 * C, by positivity, ?_⟩
   intro T G r hT hG hr hrT
   have hT0 : 0 < T := by linarith
-  let F : ℝ → ℝ := fun x => Real.exp (-(x / G) ^ 2) *
+  let F := fun x => Real.exp (-(x / G) ^ 2) *
     (zetaMomentCriticalNorm (T + x) ^ 2 - 2 * (zetaSquareFrozenDivisorIntegral T x).re)
   have hz : Continuous (fun x : ℝ => Real.exp (-(x / G) ^ 2) * zetaMomentCriticalNorm (T + x) ^ 2) := by
     have hc := continuous_zetaMomentCriticalNorm
@@ -111,8 +109,7 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_frozen_window_le (ε : ℝ) (hε
     exact (integral_re (hf.intervalIntegrable (-r) r).1).symm
   have hfi : IntervalIntegrable (fun x : ℝ => 2 *
       (zetaSquareFrozenDivisorIntegral T x * (Real.exp (-(x / G) ^ 2) : ℂ)).re) volume (-r) r := by
-    simpa only [Function.comp_apply] using
-      (((Complex.continuous_re.comp hf).intervalIntegrable (-r) r).const_mul 2)
+    exact (((Complex.continuous_re.comp hf).intervalIntegrable (-r) r).const_mul 2)
   have heq : zetaSquareGaussianWindow T G (r / G) - 2 *
       (∫ x in -r..r, zetaSquareFrozenDivisorIntegral T x * (Real.exp (-(x / G) ^ 2) : ℂ)).re =
       ∫ x in -r..r, F x := by
@@ -122,15 +119,13 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_frozen_window_le (ε : ℝ) (hε
     congr 1
     funext x
     dsimp only [F]
-    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+    simp only [mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero]
     ring
   rw [heq, ← Real.norm_eq_abs]
   have h := intervalIntegral.norm_integral_le_of_norm_le_const
     (a := -r) (b := r) (C := C * (1 + r * T ^ (-1 / 2 + ε))) (f := F) (by
       intro x hx
-      have hxabs : |x| ≤ r := by
-        rw [uIoc_of_le (by linarith)] at hx
-        exact abs_le.mpr ⟨hx.1.le, hx.2⟩
+      have hxabs : |x| ≤ r := by grind
       dsimp only [F]
       rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
       calc
@@ -157,7 +152,7 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_quadratic_le (ε : ℝ) (hε : 0
   obtain ⟨C, hC, hbound⟩ := exists_abs_zetaSquareGaussianWindow_sub_frozen_window_le ε hε
   refine ⟨C, hC, ?_⟩
   intro T G r hT hG hGT hr hrT
-  let F : ℂ := ∫ x in -r..r, zetaSquareFrozenDivisorIntegral T x * (Real.exp (-(x / G) ^ 2) : ℂ)
+  let F := ∫ x in -r..r, zetaSquareFrozenDivisorIntegral T x * (Real.exp (-(x / G) ^ 2) : ℂ)
   have hfinite := hbound T G r hT hG hr hrT
   change |zetaSquareGaussianWindow T G (r / G) - 2 * F.re| ≤ _ at hfinite
   have htail := norm_zetaFrozenDivisorGaussianMean_sub_window_le (by linarith : 0 < T) hG hr
@@ -168,7 +163,7 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_quadratic_le (ε : ℝ) (hε : 0
       2 * ‖F - zetaFrozenDivisorQuadraticSum T G‖ := by
     rw [← mul_sub, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
     exact mul_le_mul_of_nonneg_left
-      (by simpa only [Complex.sub_re] using Complex.abs_re_le_norm (F - zetaFrozenDivisorQuadraticSum T G))
+      (by exact Complex.abs_re_le_norm (F - zetaFrozenDivisorQuadraticSum T G))
       (by norm_num)
   have hreal := abs_sub_le (zetaSquareGaussianWindow T G (r / G)) (2 * F.re)
     (2 * (zetaFrozenDivisorQuadraticSum T G).re)
@@ -176,4 +171,4 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_quadratic_le (ε : ℝ) (hε : 0
   rw [norm_sub_rev] at htail
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

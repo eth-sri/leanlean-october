@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -11,11 +12,10 @@ public import MathCollab.Density.Stronger.Fourth.GaussianProducer
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Fourth
 
 
@@ -25,10 +25,10 @@ theorem integral_weighted_sq_le
     (hgf2 : Integrable (fun x => g x*(f x)^2))
     (hmass : 0 < ∫ x : ℝ, g x) :
     (∫ x : ℝ, g x*f x)^2 ≤ (∫ x : ℝ, g x)*(∫ x : ℝ, g x*(f x)^2) := by
-  let G : ℝ := ∫ x : ℝ, g x
-  let F : ℝ := ∫ x : ℝ, g x*f x
-  let Q : ℝ := ∫ x : ℝ, g x*(f x)^2
-  let r : ℝ := F/G
+  let G := ∫ x : ℝ, g x
+  let F := ∫ x : ℝ, g x*f x
+  let Q := ∫ x : ℝ, g x*(f x)^2
+  let r := F/G
   have hnonneg : 0 ≤ ∫ x : ℝ, g x*(f x-r)^2 :=
     integral_nonneg (fun x => mul_nonneg (hg x) (sq_nonneg _))
   have heq : (fun x : ℝ => g x*(f x-r)^2) =
@@ -48,8 +48,7 @@ theorem integral_weighted_sq_le
     ring
   have h := mul_nonneg hnonneg hG.le
   rw [halgebra] at h
-  change F^2 ≤ G*Q
-  nlinarith
+  bound
 
 
 
@@ -60,17 +59,16 @@ theorem exists_norm_sq_fourthPrefix_le_gaussian {c : ℝ} (hc : 0 < c) :
         ∫ u : ℝ, Real.exp (-98*u^2)*
           ‖dirichletPrefix N (zetaFourthCoeff c) (u-t)‖^2 := by
   obtain ⟨A,hA,hkernel⟩ := exists_norm_zetaFourthKernel_le hc
-  let B : ℝ := ‖(1/(2*Real.pi):ℂ)‖
+  let B := ‖(1/(2*Real.pi):ℂ)‖
   have hB : 0 < B := by
     apply norm_pos_iff.mpr
-    exact one_div_ne_zero (mul_ne_zero (by norm_num)
-      (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
-  let G : ℝ := Real.sqrt (Real.pi/98)
+    simp_all <;> nlinarith
+  let G := Real.sqrt (Real.pi/98)
   have hG : 0 < G := by dsimp [G]; positivity
   refine ⟨(B*A)^2*G,by positivity,?_⟩
   intro t ht hct N
-  let p : ℝ → ℂ := fun u => dirichletPrefix N (zetaFourthCoeff c) (u-t)
-  let g : ℝ → ℝ := fun u => Real.exp (-98*u^2)
+  let p := fun u => dirichletPrefix N (zetaFourthCoeff c) (u-t)
+  let g := fun u => Real.exp (-98*u^2)
   have hg : Integrable g := integrable_exp_neg_mul_sq (by norm_num : (0:ℝ)<98)
   have hgp : Integrable (fun u => g u*‖p u‖) := by
     simpa only [pow_one] using
@@ -120,12 +118,8 @@ theorem exists_norm_sq_fourthPrefix_le_gaussian {c : ℝ} (hc : 0 < c) :
       mul_le_mul_of_nonneg_left hcs (by positivity)
     _ = _ := by
       rw [← Real.rpow_mul_natCast (by linarith : 0 ≤ t)]
-      have heq : c*(2:ℝ) = 2*c := by ring
-      norm_num only [Nat.cast_ofNat]
-      rw [heq]
-      dsimp [p,g]
-      ring
+      grind
 
 
 
-end MathCollab.Density.Stronger.Fourth
+

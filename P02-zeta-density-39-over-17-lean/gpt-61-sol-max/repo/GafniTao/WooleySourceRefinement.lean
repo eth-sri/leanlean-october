@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Reverse
 public import GafniTao.WooleySection7HardArithmetic
 public import GafniTao.WooleyWeightedComplexHolder
@@ -20,7 +21,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleySource_sum_refined_residue_mass
     {p a b : ℕ} [NeZero p] (hab : a ≤ b)
@@ -38,9 +39,7 @@ theorem wooleySource_sum_refined_residue_mass
         ∑ n ∈ gamma.support,
           if ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a)) z = xi then
             (if (n : ZMod (p ^ b)) = z then ‖gamma n‖ ^ 2 else 0)
-          else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp only [hz, ite_true, ite_false, Finset.sum_const_zero]
+          else 0 := by bound
   simp_rw [hdistribute]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -78,9 +77,7 @@ theorem wooleySource_sum_refined_polynomialResidueSum
           if ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a)) z = xi then
             (if (n : ZMod (p ^ b)) = z then
               gamma n * wooleySourcePolynomialPhase phi alpha n else 0)
-          else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp only [hz, ite_true, ite_false, Finset.sum_const_zero]
+          else 0 := by bound
   simp_rw [hdistribute]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -98,10 +95,14 @@ theorem wooleySource_sum_refined_polynomialResidueSum
     · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
     · rw [ite_eq_right hzxi]
 
-theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
-    {k qH qB : ℕ} [NeZero qB]
+section
+variable {k qH qB : ℕ} [NeZero qB]
     (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
     (alpha : Fin k → ZMod qB) (xi : ZMod qH)
+include k qH qB phi gamma alpha xi
+
+theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
+    
     (hmass : wooleySourceResidueMassSq gamma qH xi = 0) :
     wooleySourcePolynomialResidueSum phi gamma alpha xi = 0 := by
   have hterm : ∀ n ∈ gamma.support.filter
@@ -111,15 +112,10 @@ theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
     simpa [wooleySourceResidueMassSq] using hmass
   unfold wooleySourcePolynomialResidueSum
   apply Finset.sum_eq_zero
-  intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
-  rw [norm_eq_zero] at hnzero
-  simp [hnzero]
+  simp_all <;> nlinarith
 
 theorem wooleySource_sqrt_mass_mul_normalizedResidueSum
-    {k qH qB : ℕ} [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+     :
     (Real.sqrt (wooleySourceResidueMassSq gamma qH xi) : ℂ) *
         wooleySourceNormalizedPolynomialResidueSum phi gamma alpha xi =
       wooleySourcePolynomialResidueSum phi gamma alpha xi := by
@@ -132,6 +128,8 @@ theorem wooleySource_sqrt_mass_mul_normalizedResidueSum
         (Ne.symm hmass)
     simp [wooleySourceNormalizedPolynomialResidueSum, hmass,
       Real.sqrt_ne_zero'.mpr hmassPos]
+end
+
 
 theorem wooleySource_refined_normalized_residue_decomposition
     {k p a b qB : ℕ} [NeZero p] [NeZero qB]
@@ -143,7 +141,6 @@ theorem wooleySource_refined_normalized_residue_decomposition
       ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
         (Real.sqrt (wooleySourceResidueMassSq gamma (p ^ b) z) : ℂ) *
           wooleySourceNormalizedPolynomialResidueSum phi gamma alpha z := by
-  rw [wooleySource_sqrt_mass_mul_normalizedResidueSum phi gamma alpha]
   simp_rw [wooleySource_sqrt_mass_mul_normalizedResidueSum phi gamma alpha]
   exact (wooleySource_sum_refined_polynomialResidueSum
     phi hab gamma alpha xi).symm
@@ -170,7 +167,6 @@ theorem wooleySourcePolynomial_lemma_6_2
           phi gamma alpha z‖ ^ (2 * w)
   by_cases hMzero : M = 0
   · have hR : 0 ≤ R := by
-      dsimp [R]
       exact Finset.sum_nonneg fun z hz => mul_nonneg
         (wooleySourceResidueMassSq_nonneg gamma (p ^ b) z) (by positivity)
     dsimp [M] at hMzero
@@ -246,6 +242,6 @@ theorem wooley_equation_7_22_native
       nlinarith) gamma alpha kappa
 
 
-end
 
-end GafniTao
+
+

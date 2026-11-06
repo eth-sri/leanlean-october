@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GramScaleLoss
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open CenteredMomentGaussEnergy EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
@@ -49,16 +50,13 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   have hn := hbound S hS hbad σ U v Y Q hy hQ
   have hz : ‖Z‖≤A₀*(Q/Y) := by
     have hh := hzero S hS W hcompact hs hWM Y hY σ v U Q hQ.le
-    convert hh using 1 ; dsimp [Z,A₀] ; ring
+    convert hh using 1 ; ring
   have hgood : K₁*H₁.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*(Q/Y)*P*
       (Y/(M*P))^(-1+δ)≤A₁*(1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ := by
     have hh := mul_le_mul_of_nonneg_left (nonexceptional_scale_loss M P Y δ hM hp hy hδ.le)
       (show 0≤K₁*H₁.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*(Q/Y) by positivity)
     convert hh using 1 <;> (try dsimp [A₁]) <;> ring
   have henergy : ‖E‖≤A₀*(Q/Y)+A₁*(1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ+A₂*(Q/Y)*P^(1/6:ℝ) := by
-    have hn' : ‖E-Z‖≤A₁*(1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ+A₂*(Q/Y)*P^(1/6:ℝ) := by
-      apply hn.trans
-      exact add_le_add hgood (by dsimp [A₂,M,P];ring_nf;exact le_rfl)
     calc
       ‖E‖=‖(E-Z)+Z‖ := by congr 1;ring
       _≤‖E-Z‖+‖Z‖ := norm_add_le _ _
@@ -66,7 +64,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   let B := (1+|v|)^J*(Q/Y)*(1+P^(1/6:ℝ)+P^2/Y)*Y^δ
   have hb : 0≤B := by dsimp [B];positivity
   have hh : 1≤(1+|v|)^J := one_le_pow₀ (by linarith [abs_nonneg v])
-  have hyd : 1≤Y^δ := Real.one_le_rpow hY hδ.le
+  have hyd := Real.one_le_rpow hY hδ.le
   have hshape : 1≤1+P^(1/6:ℝ)+P^2/Y := by
     have hpow : 0≤P^(1/6:ℝ) := by positivity
     have hratio : 0≤P^2/Y := by positivity
@@ -96,7 +94,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _≤(1+A₀+A₁+A₂)*B := by nlinarith
     _=_ := by dsimp [B,P];ring
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

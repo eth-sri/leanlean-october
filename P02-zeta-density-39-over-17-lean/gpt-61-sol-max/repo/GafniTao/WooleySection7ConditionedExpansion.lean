@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceRefinement
 
 @[expose] public section
@@ -16,7 +17,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
     {k r q qPrime qH R : ℕ}
@@ -63,9 +64,7 @@ theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
       wooleySourceResidueSequence_twist]
   unfold wooleySourcePolynomialConditionedMean
     wooleySourcePolynomialMean
-  rw [hmassTwist, ite_eq_right hleft]
-  simp_rw [hresidue, hsum]
-  rw [← mul_assoc, mul_inv_cancel₀ hleft, one_mul]
+  grind
 
 /-- Exact equation (7.20) before the lower-degree loss factor is inserted.
 The right side is a literal finite sum of the inserted averages attached to
@@ -119,9 +118,7 @@ theorem wooley_equation_7_20_expansion
                 rightPhi right alpha‖ ^ (2 * S) := by
       apply congrArg (fun x : ℝ => ((((q ^ k : ℕ) : ℝ))⁻¹) * x)
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      ring_nf
+      ring
     _ = ((((q ^ k : ℕ) : ℝ))⁻¹) *
         ∑ alpha : Fin k → ZMod q,
           (∑ zeta : ZMod qH,
@@ -131,11 +128,7 @@ theorem wooley_equation_7_20_expansion
                   (wooleySourceResidueSequence left qH zeta)
                   (fun n => wooleySourcePolynomialPhase leftPhi alpha n))) *
             ‖wooleySourceNormalizedPolynomialSum
-                rightPhi right alpha‖ ^ (2 * S) := by
-      apply congrArg (fun x : ℝ => ((((q ^ k : ℕ) : ℝ))⁻¹) * x)
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      rw [hexpand alpha]
+                rightPhi right alpha‖ ^ (2 * S) := by simp_all
     _ = ∑ zeta : ZMod qH,
         wooleySourceResidueMassSq left qH zeta *
           (((((q ^ k : ℕ) : ℝ))⁻¹) *
@@ -148,11 +141,9 @@ theorem wooley_equation_7_20_expansion
                     rightPhi right alpha‖ ^ (2 * S)) := by
       simp_rw [Finset.sum_mul, Finset.mul_sum]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro zeta hzeta
-      ring_nf
+      ring
 
 
-end
 
-end GafniTao
+
+

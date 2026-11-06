@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSectorLocalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy
-open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentSourceRow
+open CenteredMomentFirstTailAggregate
+open CenteredMomentSectorLocalization CenteredMomentHeckeExpansion
+open scoped EisensteinO
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)
     (hw : ∀ i,‖w i‖≤1) (B : ℝ) (_hB : 0≤B)
@@ -73,8 +73,8 @@ theorem local_discarded_energy_bound (Adec : ℕ) (ε : ℝ) (hε : 0<ε) :
     (pow_le_pow_left₀ (show 0 ≤ ∑ I : supportedColumns S, ‖c I‖ from
       Finset.sum_nonneg (fun I _ => norm_nonneg (c I))) hm 2) hB using 1 ; dsimp only [B];ring
 
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 
-end
 
-end OAI
+
+
+

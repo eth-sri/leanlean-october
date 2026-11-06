@@ -8,15 +8,14 @@ public import LaterPairs.Native.SargosLocalAffineJets
 public import LaterPairs.Native.SargosSourceDifferencing
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                        
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
@@ -37,4 +36,4 @@ theorem sargos_contDiffOn_iteratedDerivWithin {f : ℝ → ℝ} {s : Set ℝ}
       rw [iteratedDerivWithin_succ]
       exact hn.derivWithin hs (by simp)
 
-end TaoTrudgianYang2025
+

@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem canonical_cube_shifted_completed_energy_uniform_degree
@@ -23,7 +23,7 @@ theorem canonical_cube_shifted_completed_energy_uniform_degree
       (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hhat d : ℝ),
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hhat≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
     ∀ (parents : Finset (Ideal Eis)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
       Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ),
@@ -97,7 +97,7 @@ theorem canonical_cube_shifted_completed_energy_uniform_degree
     _ ≤ D*Z^(cstar/64)*(C*(1+‖θ‖)^degree*Z^(N+V-cstar/32)) := by gcongr
     _ = (D*C)*(1+‖θ‖)^degree*(Z^(cstar/64)*Z^(N+V-cstar/32)) := by ring
     _ = _ := by rw [←Real.rpow_add hz];congr 2;ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

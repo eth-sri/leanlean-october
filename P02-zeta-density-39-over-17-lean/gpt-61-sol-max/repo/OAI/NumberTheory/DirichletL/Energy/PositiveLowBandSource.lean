@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.NaturalLowSourceBound
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
@@ -12,17 +13,18 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowBandSource
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
 open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def PhysicalLowAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
@@ -32,10 +34,10 @@ def PhysicalLowAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ freq:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→∀hσlo:∀i,lo≤σ i,∀hσhi:∀i,σ i≤hi,
     0≤height→(∀i,|freq i|≤height)→
-  ∀state:NaturalState Z Bmask bΦ,state.fixedModulus=internalQ Q η₀→ rho≤state.width→state.width≤Mcap→
+  ∀state:NaturalState Z Bmask bΦ,state.fixedModulus=internalQ Q η₀→ rho≤ state.width→state.width≤Mcap→
   ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,
     X₁≤Z^L→X₂≤Z^L→
-    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤state.width→
+    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ state.width→
     length Z X₁+length Z X₂+(∑i,w i)≤5*state.width/6→
     physicalMass (zeroSourceInput M H hH η₀ θ W hW aslot bslot lo hi haslot hWs
       w σ freq (fun i=>⟨hσlo i,hσhi i⟩) state p ha t X₁ X₂ hX₁ hX₂)
@@ -66,14 +68,14 @@ theorem actual_low_stages_from_physical
   have hfixed (T:Finset α):=natural_low_source_bound (ι:=T) W hW aslot bslot lo hi
     a b bΦ Mcap εdiag ξ saving haslot hWs hbslot ha hb hbΦ hMcap hεdiag hξ
   choose Ψ hΨs hΨn Cj hCj hbound using hfixed
-  let Cfixed:ℝ:=1+∑T:Finset α,Cj T
+  let Cfixed :=1+∑T:Finset α,Cj T
   have hCfixed:0<Cfixed:=by
     have hh:=Finset.sum_nonneg (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hCj T).le)
-    dsimp [Cfixed];linarith
+    positivity
   have hCC (T:Finset α):Cj T≤Cfixed:=by
     have hh:=Finset.single_le_sum (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hCj T).le)
       (Finset.mem_univ T)
-    dsimp [Cfixed];linarith
+    linarith
   refine ⟨Ψ,hΨs,hΨn,Cfixed,hCfixed,?_⟩
   have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr hbound
   filter_upwards [hall,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
@@ -100,8 +102,8 @@ theorem actual_low_stages_from_physical
     W bslot a b bΦ Bmask L Lslot lo hi Mcap e κ Z η₀ Q J (insert (0,0) S)
     (Cfixed*(Cphysical+1)) hpositive⟩
 
-end SevenEighths.CenteredMomentEnergyPositiveLowBandSource
 
-end
 
-end OAI
+
+
+

@@ -18,7 +18,6 @@ the first-derivative alternative where its exact half-period condition
 holds. The diagonal is the literal prefix length.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex
@@ -35,7 +34,11 @@ theorem norm_atkinsonPrefixGram_le_length (M j : ℕ) (t u : ℝ) :
       norm_sum_le _ _
     _ = _ := by simp
 
-theorem atkinsonPrefixGramMax_le_length (M N : ℕ) (t u : ℝ) :
+section
+variable (M N : ℕ) (t u : ℝ)
+include M N t u
+
+theorem atkinsonPrefixGramMax_le_length  :
     atkinsonPrefixGramMax M N t u ≤ (N:ℝ) := by
   unfold atkinsonPrefixGramMax
   apply Finset.sup'_le
@@ -43,16 +46,18 @@ theorem atkinsonPrefixGramMax_le_length (M N : ℕ) (t u : ℝ) :
   exact (norm_atkinsonPrefixGram_le_length M j t u).trans
     (by exact_mod_cast Nat.le_of_lt_succ (Finset.mem_range.mp hj))
 
-def atkinsonOrderedPrefixGapMajorant (M N : ℕ) (t u : ℝ) : ℝ :=
+def atkinsonOrderedPrefixGapMajorant  : ℝ :=
   min (N:ℝ)
     (if atkinsonIndexFirstDerivativeUpper u t M ((M:ℝ)+(N:ℝ)+1) ≤ Real.pi then
       min (atkinsonPrefixBProcessMajorant M N t u)
         (atkinsonPrefixFirstDerivativeMajorant M N t u)
     else atkinsonPrefixBProcessMajorant M N t u)
 
-def atkinsonPrefixGapMajorant (M N : ℕ) (t u : ℝ) : ℝ :=
+def atkinsonPrefixGapMajorant  : ℝ :=
   if t = u then (N:ℝ)
   else atkinsonOrderedPrefixGapMajorant M N (max t u) (min t u)
+end
+
 
 theorem atkinsonPrefixGramMax_le_orderedGap {M N : ℕ} {t u : ℝ}
     (hu : 0 < u) (htu : u < t) (hM : 0 < M)
@@ -86,4 +91,4 @@ theorem atkinsonPrefixGramMax_le_gap {M N : ℕ} {t u : ℝ}
     · simp only [max_eq_left hut.le,min_eq_right hut.le] at hu hblock htUpper ⊢
       exact atkinsonPrefixGramMax_le_orderedGap hu hut hM hblock htUpper
 
-end MathCollab.Density.Stronger.Atkinson
+

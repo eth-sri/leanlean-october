@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.ComparisonReflection
 public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 
@@ -11,61 +12,75 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectionDeletion
 open HeckeFamily CenteredMomentComparisonReflection UniqueFactorizationMonoid
 open IdealMobiusDivisorSum EisensteinSchwartzPoisson ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 def norm (I : NI) : ℝ := I.val.absNorm
 lemma norm_pos (I : NI) : 0 < norm I := CompletedGauss.nonzeroIdeal_norm_pos I
 
-def outside (S : Finset (Ideal O)) (I : Ideal O) : Prop := ∀ P ∈ S, ¬ P ∣ I
-abbrev SmoothIdeal (S : Finset (Ideal O)) := {I : NI // primeSupport I.val ⊆ S}
-abbrev OutsideIdeal (S : Finset (Ideal O)) := {I : NI // outside S I.val}
+section
+variable (S : Finset (Ideal O))
+include S
 
-def extract (S : Finset (Ideal O)) (I : Ideal O) : Ideal O :=
+def outside  (I : Ideal O) : Prop := ∀ P ∈ S, ¬ P ∣ I
+abbrev SmoothIdeal  := {I : NI // primeSupport I.val ⊆ S}
+abbrev OutsideIdeal  := {I : NI // outside S I.val}
+
+section
+variable (I : Ideal O)
+include I
+
+def extract  : Ideal O :=
   ((normalizedFactors I).filter (· ∈ S)).prod
-def residual (S : Finset (Ideal O)) (I : Ideal O) : Ideal O :=
+def residual  : Ideal O :=
   ((normalizedFactors I).filter (· ∉ S)).prod
-lemma extract_factors (S : Finset (Ideal O)) (I : Ideal O) :
+lemma extract_factors  :
     normalizedFactors (extract S I) = (normalizedFactors I).filter (· ∈ S) :=
   normalizedFactors_prod_eq_self_of_subset
     (fun _ h => (Multiset.mem_filter.mp h).1)
-lemma residual_factors (S : Finset (Ideal O)) (I : Ideal O) :
+lemma residual_factors  :
     normalizedFactors (residual S I) = (normalizedFactors I).filter (· ∉ S) :=
   normalizedFactors_prod_eq_self_of_subset
     (fun _ h => (Multiset.mem_filter.mp h).1)
-lemma extract_ne_zero (S : Finset (Ideal O)) (I : Ideal O) : extract S I ≠ 0 :=
+lemma extract_ne_zero  : extract S I ≠ 0 :=
   prod_ne_zero_of_subset_normalizedFactors
     (fun _ h => (Multiset.mem_filter.mp h).1)
-lemma residual_ne_zero (S : Finset (Ideal O)) (I : Ideal O) : residual S I ≠ 0 :=
+lemma residual_ne_zero  : residual S I ≠ 0 :=
   prod_ne_zero_of_subset_normalizedFactors
     (fun _ h => (Multiset.mem_filter.mp h).1)
-lemma reconstruct (S : Finset (Ideal O)) (I : NI) :
+end
+
+lemma reconstruct  (I : NI) :
     extract S I.val * residual S I.val = I.val := by
   rw [extract, residual, ← Multiset.prod_add, Multiset.filter_add_not]
   exact Ideal.prod_normalizedFactors_eq_self I.property
-lemma extract_smooth (S : Finset (Ideal O)) (I : Ideal O) :
+lemma extract_smooth  (I : Ideal O) :
     primeSupport (extract S I) ⊆ S := by
   intro P hP
   have hh : P ∈ normalizedFactors I ∧ P ∈ S := by
     simpa only [primeSupport, extract_factors, Multiset.mem_toFinset, Multiset.mem_filter] using hP
   exact hh.2
-lemma outside_iff_factors (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I : NI) :
+section
+variable (hS : ∀ P ∈ S, Prime P)
+include hS
+
+lemma outside_iff_factors  (I : NI) :
     outside S I.val ↔ ∀ P ∈ normalizedFactors I.val, P ∉ S := by
   constructor
   · intro h P hP hPS
     exact h P hPS (dvd_of_mem_normalizedFactors hP)
   · intro h P hPS hd
     exact h P ((mem_normalizedFactors_iff I.property).mpr ⟨hS P hPS, hd⟩) hPS
-lemma residual_outside (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I : Ideal O) :
+lemma residual_outside  (I : Ideal O) :
     outside S (residual S I) := by
   rw [outside_iff_factors S hS ⟨_, residual_ne_zero S I⟩, residual_factors]
   intro P hP
   exact (Multiset.mem_filter.mp hP).2
-lemma split_product (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
+lemma split_product 
     (D : SmoothIdeal S) (J : OutsideIdeal S) :
     extract S (D.val.val * J.val.val) = D.val.val ∧
       residual S (D.val.val * J.val.val) = J.val.val := by
-  have hd : (normalizedFactors D.val.val).filter (· ∈ S) = normalizedFactors D.val.val :=
+  have hd :=
     Multiset.filter_eq_self.mpr (fun P hP => D.property (Multiset.mem_toFinset.mpr hP))
   have hj : (normalizedFactors J.val.val).filter (· ∈ S) = 0 := by
     apply Multiset.filter_eq_nil.mpr
@@ -75,14 +90,14 @@ lemma split_product (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
     apply Multiset.filter_eq_nil.mpr
     intro P hP
     exact not_not.mpr (D.property (Multiset.mem_toFinset.mpr hP))
-  have hj' : (normalizedFactors J.val.val).filter (· ∉ S) = normalizedFactors J.val.val :=
+  have hj' :=
     Multiset.filter_eq_self.mpr ((outside_iff_factors S hS J.val).mp J.property)
   simp only [extract, residual, normalizedFactors_mul D.val.property J.val.property,
     Multiset.filter_add, hd, hj, hd', hj', add_zero, zero_add,
     Ideal.prod_normalizedFactors_eq_self D.val.property,
     Ideal.prod_normalizedFactors_eq_self J.val.property, and_self]
 
-def splitEquiv (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) :
+def splitEquiv  :
     NI ≃ SmoothIdeal S × OutsideIdeal S where
   toFun I := (⟨⟨extract S I.val, extract_ne_zero S I.val⟩, extract_smooth S I.val⟩,
     ⟨⟨residual S I.val, residual_ne_zero S I.val⟩, residual_outside S hS I.val⟩)
@@ -92,7 +107,7 @@ def splitEquiv (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) :
     obtain ⟨hd, hj⟩ := split_product S hS p.1 p.2
     exact Prod.ext (Subtype.ext (Subtype.ext hd)) (Subtype.ext (Subtype.ext hj))
 
-lemma outside_iff_coprime (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I : NI) :
+lemma outside_iff_coprime  (I : NI) :
     outside S I.val ↔ ∀ P ∈ S, IsCoprime I.val P := by
   have he (P : Ideal O) (hP : Prime P) : primeSupport P = {P} := by
     simp only [primeSupport]
@@ -109,6 +124,9 @@ lemma outside_iff_coprime (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I 
     he P (hS P hP), Finset.disjoint_singleton_right]
   simp only [primeSupport, Multiset.mem_toFinset,
     mem_normalizedFactors_iff I.property, hS P hP, true_and]
+end
+end
+
 
 lemma deleted_coefficient (η : Character) (S : Finset (Ideal O))
     (hS : ∀ P ∈ S, Prime P) (I : NI) :
@@ -119,18 +137,24 @@ lemma deleted_coefficient (η : Character) (S : Finset (Ideal O))
 
 def DecayTwo (F : ℝ → ℂ) : Prop := ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 < x → x^2 * ‖F x‖ ≤ C
 
-lemma schwartz_decayTwo (W : 𝓢(ℝ,ℂ)) : DecayTwo W := by
+section
+variable (W : 𝓢(ℝ,ℂ))
+include W
+
+lemma schwartz_decayTwo  : DecayTwo W := by
   refine ⟨SchwartzMap.seminorm ℝ 2 0 W, apply_nonneg _ _, ?_⟩
   intro x hx
   simpa only [Real.norm_eq_abs, abs_of_pos hx] using
     SchwartzMap.norm_pow_mul_le_seminorm ℝ W 2 x
 
-lemma reflected_decayTwo (W : 𝓢(ℝ,ℂ)) : DecayTwo (paperRadialFourier W) := by
+lemma reflected_decayTwo  : DecayTwo (paperRadialFourier W) := by
   obtain ⟨s,C,hC,hb⟩ := paperRadialFourier_source_weighted_bound 2
   refine ⟨C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, by positivity, ?_⟩
   intro x hx
   exact (mul_le_mul_of_nonneg_right (by nlinarith : x^2 ≤ (1+x)^2)
     (norm_nonneg _)).trans (hb W x hx.le)
+end
+
 
 lemma inverse_norm_sq_summable : Summable (fun I : NI => (norm I ^ 2)⁻¹) := by
   have h := CompletedGauss.nonzeroIdeal_norm_rpow_summable 2 (by norm_num)
@@ -169,7 +193,11 @@ lemma pair_radial_summable_norm (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (h
     (le_div_iff₀ (sq_pos_of_pos hx)).mpr (by nlinarith [hb _ hx])
   exact h.trans_eq (by field_simp)
 
-lemma restricted_pair_summable (η : Character) (S : Finset (Ideal O))
+section
+variable (η : Character) (S : Finset (Ideal O))
+include η S
+
+lemma restricted_pair_summable 
     (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0 < X) :
     Summable (fun p : SmoothIdeal S × OutsideIdeal S =>
       idealCoeff η (p.1.val.val * p.2.val.val) * F (norm p.1.val * norm p.2.val / X)) := by
@@ -181,8 +209,11 @@ lemma restricted_pair_summable (η : Character) (S : Finset (Ideal O))
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η _)
 
-lemma outside_plain_tsum (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (X : ℝ) :
+section
+variable (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ)
+include hS F
+
+lemma outside_plain_tsum  (X : ℝ) :
     (∑' I : OutsideIdeal S, idealCoeff η I.val.val * F (norm I.val / X)) =
       ∑' I : NI, idealCoeff (η.excludePrimes S hS) I.val * F (norm I / X) := by
   have he := tsum_subtype {I : NI | outside S I.val}
@@ -194,8 +225,7 @@ lemma outside_plain_tsum (η : Character) (S : Finset (Ideal O))
   rw [deleted_coefficient]
   by_cases hI : outside S I.val <;> simp [Set.indicator, hI]
 
-lemma restoration_inner (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (X : ℝ) (D : SmoothIdeal S) :
+lemma restoration_inner  (X : ℝ) (D : SmoothIdeal S) :
     (∑' J : OutsideIdeal S, idealCoeff η (D.val.val * J.val.val) *
       F (norm D.val * norm J.val / X)) =
     idealCoeff η D.val.val *
@@ -207,15 +237,17 @@ lemma restoration_inner (η : Character) (S : Finset (Ideal O))
   congr 2
   field_simp
 
-lemma restoration_plain_summable (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0 < X) :
+section
+variable (hF : DecayTwo F) (X : ℝ) (hX : 0 < X)
+include hF X hX
+
+lemma restoration_plain_summable  :
     Summable (fun D : SmoothIdeal S => idealCoeff η D.val.val *
       ∑' I : NI, idealCoeff (η.excludePrimes S hS) I.val * F (norm I / (X / norm D.val))) := by
   exact (restricted_pair_summable η S F hF X hX).prod.congr
     (fun D => restoration_inner η S hS F X D)
 
-theorem restoration_plain (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0 < X) :
+theorem restoration_plain  :
     (∑' I : NI, idealCoeff η I.val * F (norm I / X)) =
       ∑' D : SmoothIdeal S, idealCoeff η D.val.val *
         ∑' I : NI, idealCoeff (η.excludePrimes S hS) I.val * F (norm I / (X / norm D.val)) := by
@@ -233,15 +265,26 @@ theorem restoration_plain (η : Character) (S : Finset (Ideal O))
     idealCoeff η (p.1.val.val * p.2.val.val) * F (norm p.1.val * norm p.2.val / X)) = _
   rw [hp]
   exact tsum_congr (fun D => restoration_inner η S hS F X D)
+end
+end
+end
+
 
 lemma normalization_factor (X N : ℝ) (hX : 0<X) (hN : 0<N) :
     (Real.sqrt N : ℂ)⁻¹ * (Real.sqrt (X/N) : ℂ)⁻¹ = (Real.sqrt X : ℂ)⁻¹ := by
   rw [Real.sqrt_div hX.le, Complex.ofReal_div]
-  have hn : (Real.sqrt N : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hN).ne'
+  have hn := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hN).ne'
   field_simp
 
-lemma normalized_restoration_term (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (X : ℝ) (hX : 0<X) (D : SmoothIdeal S) :
+section
+variable (η : Character) (S : Finset (Ideal O))
+include η S
+
+section
+variable (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ)
+include hS F
+
+lemma normalized_restoration_term  (X : ℝ) (hX : 0<X) (D : SmoothIdeal S) :
     idealCoeff η D.val.val / (Real.sqrt (norm D.val) : ℂ) *
       HeckeDyadic.polynomial (η.excludePrimes S hS) false F (X / norm D.val) 0 0 =
     (Real.sqrt X : ℂ)⁻¹ * (idealCoeff η D.val.val *
@@ -255,8 +298,7 @@ lemma normalized_restoration_term (η : Character) (S : Finset (Ideal O))
   linear_combination (idealCoeff η D.val.val *
     ∑' I : NI, idealCoeff (η.excludePrimes S hS) I.val * F (norm I / (X / norm D.val))) * h
 
-theorem normalized_restoration (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
+theorem normalized_restoration  (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
     Summable (fun D : SmoothIdeal S => idealCoeff η D.val.val / (Real.sqrt (norm D.val) : ℂ) *
       HeckeDyadic.polynomial (η.excludePrimes S hS) false F (X / norm D.val) 0 0) ∧
     HeckeDyadic.polynomial η false F X 0 0 =
@@ -272,12 +314,17 @@ theorem normalized_restoration (η : Character) (S : Finset (Ideal O))
     apply tsum_congr
     intro D
     exact (normalized_restoration_term η S hS F X hX D).symm
+end
 
-def outsideSum (η : Character) (S : Finset (Ideal O)) (F : ℝ → ℂ) (X : ℝ) : ℂ :=
+
+section
+variable (F : ℝ → ℂ)
+include F
+
+def outsideSum  (X : ℝ) : ℂ :=
   ∑' I : NI, (if outside S I.val then idealCoeff η I.val else 0) * F (norm I / X)
 
-lemma outsideSum_summable (η : Character) (S : Finset (Ideal O))
-    (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
+lemma outsideSum_summable  (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
     Summable (fun I : NI => (if outside S I.val then idealCoeff η I.val else 0) * F (norm I / X)) := by
   apply (radial_summable_norm F hF X hX).of_norm_bounded
   intro I
@@ -285,13 +332,16 @@ lemma outsideSum_summable (η : Character) (S : Finset (Ideal O))
   · rw [norm_mul]
     exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η I.val)
   · simp
+end
+end
+
 
 lemma outside_mul_prime (S : Finset (Ideal O)) (hS : ∀ Q ∈ S, Prime Q)
     (P : Ideal O) (hP : Prime P) (hPS : P ∉ S) (I : Ideal O) :
     outside S (P*I) ↔ outside S I := by
   have hn (Q : Ideal O) (hQ : Q ∈ S) : ¬ Q ∣ P := by
     intro hd
-    have he : Q = P := associated_iff_eq.mp (((hS Q hQ).dvd_prime_iff_associated hP).mp hd)
+    have he := associated_iff_eq.mp (((hS Q hQ).dvd_prime_iff_associated hP).mp hd)
     exact hPS (he ▸ hQ)
   simp only [outside]
   apply forall_congr'
@@ -300,15 +350,19 @@ lemma outside_mul_prime (S : Finset (Ideal O)) (hS : ∀ Q ∈ S, Prime Q)
   intro hQ
   rw [(hS Q hQ).dvd_mul, not_or, and_iff_right (hn Q hQ)]
 
-lemma prime_shift_tsum (η : Character) (S : Finset (Ideal O))
+section
+variable (η : Character) (S : Finset (Ideal O))
     (hS : ∀ Q ∈ S, Prime Q) (P : Ideal O) (hP : Prime P) (hPS : P ∉ S)
-    (F : ℝ → ℂ) (X : ℝ) :
+    (F : ℝ → ℂ)
+include η S hS P hP hPS F
+
+lemma prime_shift_tsum  (X : ℝ) :
     (∑' I : NI, if P ∣ I.val then
       (if outside S I.val then idealCoeff η I.val else 0) * F (norm I / X) else 0) =
     idealCoeff η P * outsideSum η S F (X / (P.absNorm : ℝ)) := by
-  let f : NI → ℂ := fun I => if P ∣ I.val then
+  let f := fun I => if P ∣ I.val then
     (if outside S I.val then idealCoeff η I.val else 0) * F (norm I / X) else 0
-  let g : NI → ℂ := fun I => idealCoeff η P *
+  let g := fun I => idealCoeff η P *
     ((if outside S I.val then idealCoeff η I.val else 0) * F (norm I / (X / (P.absNorm : ℝ))))
   let e : NI → NI := fun I => ⟨P*I.val, mul_ne_zero hP.ne_zero I.property⟩
   have he (I : NI) : f (e I) = g I := by
@@ -344,9 +398,7 @@ lemma prime_shift_tsum (η : Character) (S : Finset (Ideal O))
   rw [hsum, tsum_mul_left]
   rfl
 
-lemma outsideSum_insert (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ Q ∈ S, Prime Q) (P : Ideal O) (hP : Prime P) (hPS : P ∉ S)
-    (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
+lemma outsideSum_insert  (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
     outsideSum η (insert P S) F X = outsideSum η S F X -
       idealCoeff η P * outsideSum η S F (X / (P.absNorm : ℝ)) := by
   have hs := outsideSum_summable η S F hF X hX
@@ -363,14 +415,26 @@ lemma outsideSum_insert (η : Character) (S : Finset (Ideal O))
   rw [hi]
   by_cases hp : P ∣ I.val <;> by_cases ho : outside S I.val <;>
     simp [hp, ho]
+end
 
-lemma subset_product_nonzero (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) :
+
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
+include S hS
+
+lemma subset_product_nonzero  :
     (∏ P ∈ S, P) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero)
-lemma subset_product_norm_pos (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) :
+lemma subset_product_norm_pos  :
     0 < (Ideal.absNorm (∏ P ∈ S, P) : ℝ) := by
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (subset_product_nonzero S hS))
+end
 
-theorem finite_deletion_plain (η : Character) (S : Finset (Ideal O))
+
+section
+variable (η : Character)
+include η
+
+theorem finite_deletion_plain  (S : Finset (Ideal O))
     (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
     outsideSum η S F X = ∑ D ∈ S.powerset, (-1 : ℂ)^D.card * idealCoeff η (∏ P ∈ D, P) *
       (∑' I : NI, idealCoeff η I.val * F (norm I / (X / (Ideal.absNorm (∏ P ∈ D, P) : ℝ)))) := by
@@ -396,7 +460,7 @@ theorem finite_deletion_plain (η : Character) (S : Finset (Ideal O))
     rw [hh]
     ring
 
-lemma normalized_dilation_term (η : Character) (F : ℝ → ℂ) (X : ℝ)
+lemma normalized_dilation_term  (F : ℝ → ℂ) (X : ℝ)
     (hX : 0<X) (D : NI) :
     idealCoeff η D.val / (Real.sqrt (norm D) : ℂ) *
       HeckeDyadic.polynomial η false F (X / norm D) 0 0 =
@@ -411,7 +475,7 @@ lemma normalized_dilation_term (η : Character) (F : ℝ → ℂ) (X : ℝ)
   linear_combination (idealCoeff η D.val *
     ∑' I : NI, idealCoeff η I.val * F (norm I / (X / norm D))) * h
 
-theorem normalized_finite_deletion (η : Character) (S : Finset (Ideal O))
+theorem normalized_finite_deletion  (S : Finset (Ideal O))
     (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
     HeckeDyadic.polynomial (η.excludePrimes S hS) false F X 0 0 =
       ∑ D ∈ S.powerset, (-1 : ℂ)^D.card *
@@ -427,11 +491,13 @@ theorem normalized_finite_deletion (η : Character) (S : Finset (Ideal O))
   rw [he, finite_deletion_plain η S hS F hF X hX, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro D hD
-  have hDS : ∀ P ∈ D, Prime P := fun P hP => hS P ((Finset.mem_powerset.mp hD) hP)
+  have hDS := fun P hP => hS P ((Finset.mem_powerset.mp hD) hP)
   have ht := normalized_dilation_term η F X hX ⟨∏P∈D,P, subset_product_nonzero D hDS⟩
   dsimp only [norm] at ht
   dsimp only [norm]
   linear_combination -(-1 : ℂ)^D.card * ht
+end
+
 
 lemma subset_product_moebius (D : Finset (Ideal O)) (hD : ∀ P ∈ D, Prime P) :
     (moebius (∏ P ∈ D,P) : ℂ) = (-1 : ℂ)^D.card := by
@@ -454,17 +520,23 @@ theorem normalized_finite_deletion_moebius (η : Character) (S : Finset (Ideal O
   intro D hD
   rw [subset_product_moebius D (fun P hP => hS P ((Finset.mem_powerset.mp hD) hP))]
 
-def reflectedTerm (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (X Q : ℝ)
-    (D : Finset (Ideal O)) (H : SmoothIdeal S) : ℂ :=
+section
+variable (η ηi : Character) (S : Finset (Ideal O))
+    (hS : ∀ P ∈ S, Prime P)
+include η ηi S hS
+
+section
+variable (F : ℝ → ℂ) (X Q : ℝ)
+    (D : Finset (Ideal O)) (H : SmoothIdeal S)
+include F X Q D H
+
+def reflectedTerm  : ℂ :=
   (moebius (∏ P ∈ D,P) : ℂ) * idealCoeff η (∏ P ∈ D,P) * idealCoeff ηi H.val.val /
     (Real.sqrt ((Ideal.absNorm (∏ P ∈ D,P) : ℝ) * norm H.val) : ℂ) *
     HeckeDyadic.polynomial (ηi.excludePrimes S hS) false F
       (Q * (Ideal.absNorm (∏ P ∈ D,P) : ℝ) / (X * norm H.val)) 0 0
 
-lemma reflectedTerm_eq (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (X Q : ℝ)
-    (D : Finset (Ideal O)) (H : SmoothIdeal S) :
+lemma reflectedTerm_eq  :
     reflectedTerm η ηi S hS F X Q D H =
       ((moebius (∏ P ∈ D,P) : ℂ) *
         (idealCoeff η (∏ P ∈ D,P) / (Real.sqrt (Ideal.absNorm (∏ P ∈ D,P) : ℝ) : ℂ))) *
@@ -477,9 +549,10 @@ lemma reflectedTerm_eq (η ηi : Character) (S : Finset (Ideal O))
   unfold reflectedTerm
   rw [hs, Real.sqrt_mul (Nat.cast_nonneg _), Complex.ofReal_mul]
   ring
+end
 
-theorem deletion_reflection (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (W F : ℝ → ℂ) (hW : DecayTwo W) (hF : DecayTwo F)
+
+theorem deletion_reflection  (W F : ℝ → ℂ) (hW : DecayTwo W) (hF : DecayTwo F)
     (G : ℂ) (Q : ℝ) (hQ : 0<Q)
     (hreflect : ∀ Y : ℝ, 0<Y → HeckeDyadic.polynomial η false W Y 0 0 =
       G * HeckeDyadic.polynomial ηi false F (Q/Y) 0 0)
@@ -509,6 +582,8 @@ theorem deletion_reflection (η ηi : Character) (S : Finset (Ideal O))
     apply tsum_congr
     intro H
     rw [reflectedTerm_eq]
+end
+
 
 theorem primitive_deleted_reflection (c : O) [NeZero c]
     (χ : MulChar (O⧸Ideal.span {c}) ℂ)
@@ -530,8 +605,8 @@ theorem primitive_deleted_reflection (c : O) [NeZero c]
     (fun Y hY => primitive_normalized_reflection c χ hu hp hχ W Y hY) X hX
   exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c)))
 
-end SevenEighths.CenteredMomentReflectionDeletion
 
-end
 
-end OAI
+
+
+

@@ -14,7 +14,7 @@ open HeckeFamily HeckeZeroSupremum QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 open CenteredMomentPrimeSlot CenteredMomentInductionEnergy
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -32,7 +32,7 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤T → (∀i,|v i|≤T) →
     ∀(Q : Ideal O),Q≤M → ∀s : NaturalState Z Bmask bΦ,
-      s.fixedModulus=internalQ Q η₀ → s.width≤ε/16 → 6*κ*(∑i,w i)≤s.width →
+      s.fixedModulus=internalQ Q η₀ → s.width≤ε/16 → 6*κ*(∑i,w i)≤ s.width →
     ∀p : Profiles a₀ b₀,∀X₁ X₂ : ℝ,0<X₁ → 0<X₂ →
       energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
         (fun i=>primePool M H b (Z^(w i)))
@@ -68,8 +68,8 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     s.puncture_ne_zero hQM s.row_ne_zero hex s.radial_support s.rowWidth s.characterWidth
     (ε/16) s.row_nonneg s.character_nonneg hs le_rfl s.scale_eq s.modulus_bound
     (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) X₁ X₂ hX₁ hX₂
-  have hwidth : s.rowWidth≤s.width := by dsimp [NaturalState.width]; linarith [s.character_nonneg]
-  have hbudget : Bmask*e+(s.rowWidth+4*(ε/16)+ε/4+κ*(∑i,w i))≤s.width+ε := by
+  have hwidth : s.rowWidth≤ s.width := by dsimp [NaturalState.width]; linarith [s.character_nonneg]
+  have hbudget : Bmask*e+(s.rowWidth+4*(ε/16)+ε/4+κ*(∑i,w i))≤ s.width+ε := by
     linarith
   have hpow : Z^(Bmask*e)*Z^(s.rowWidth+4*(ε/16)+ε/4+κ*(∑i,w i))≤Z^(s.width+ε) := by
     rw [←Real.rpow_add hZ0]
@@ -86,8 +86,8 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
       (Z^(Bmask*e)*Z^(s.rowWidth+4*(ε/16)+ε/4+κ*(∑i,w i))) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow (by positivity)
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

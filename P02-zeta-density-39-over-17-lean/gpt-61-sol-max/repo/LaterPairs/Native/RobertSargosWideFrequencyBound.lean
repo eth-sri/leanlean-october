@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosWideFrequencyCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_wide_frequency_loss_algebra {R H Q δ ε : ℝ}
@@ -24,9 +23,7 @@ theorem robertSargos_wide_frequency_loss_algebra {R H Q δ ε : ℝ}
     (le_mul_of_one_le_left hHp.le hR).trans
       (le_mul_of_one_le_right (by positivity : 0 ≤ R*H) hQ)
   have hp := Real.rpow_le_rpow hHp.le hHB hε
-  have hs : R*H^2+δ*R*H*Q^2 ≤ (R*H*Q)*(1+δ*Q) := by
-    have hm := mul_le_mul_of_nonneg_left hHQ (by positivity : 0 ≤ R*H)
-    nlinarith only [hm]
+  have hs : R*H^2+δ*R*H*Q^2 ≤ (R*H*Q)*(1+δ*Q) := by nlinarith
   calc
     _ ≤ (R*H*Q)^ε*((R*H*Q)*(1+δ*Q)) :=
       mul_le_mul hp hs (by positivity) (Real.rpow_nonneg hB.le _)
@@ -49,5 +46,5 @@ theorem exists_robertSargos_primitive_count_wide_frequency (ε : ℝ) (hε : 0 <
         hR hH hQ hδ hε.le hHQ) hC.le
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

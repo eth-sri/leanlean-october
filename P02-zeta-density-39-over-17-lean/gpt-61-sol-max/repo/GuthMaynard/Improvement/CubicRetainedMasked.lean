@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMaskedEstimate
 public import GuthMaynard.Improvement.CubicRetainedPartition
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
@@ -53,8 +53,7 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
       _ = _ := ordinary_real_fourier_integral_square hi h2
   have hAc : ∀ ξ, -ξ ∈ Aᶜ ↔ ξ ∈ Aᶜ := fun ξ => not_congr (hAsym ξ)
   have hUniv : ∀ ξ : ℝ, -ξ ∈ (univ : Set ℝ) ↔ ξ ∈ (univ : Set ℝ) := by simp
-  have hS : ∀ m ∈ retainedCubicModes U, m.1 ∈ poissonModes U ∧
-      m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U :=
+  have hS :=
     fun m hm => (retainedCubicModes_mem U m).mp hm
   have hlow := h T L t₀ t₁ μ Aᶜ Aᶜ Aᶜ Aᶜ (retainedCubicModes U)
     hT hLl hLu ht hlen hm h0 hi h2 hsup hA.compl hA.compl hA.compl hA.compl
@@ -114,4 +113,4 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
         mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTp.le ε)) hX,
         mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTp.le ε)) hY]
 
-end GuthMaynard.Improvement
+

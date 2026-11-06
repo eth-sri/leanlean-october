@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferencePaddedEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferencePrimeGates
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceShift
@@ -7,18 +8,18 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceShift
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve
-open CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT
+open HeckeFamily HeckeInverseAmplification HeckeDyadic
+open ConcreteTraceCRT
 open InverseInitialDetectorSource
-open InverseMoment InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots
+open InverseMoment InverseInitialRawDictionary InverseInitialPhysicalSlots
 open InverseInitialConjugateEnergy InverseInitialEnergyCallerWindow InverseInitialExcludedPeriod
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawConjugateGates
 open IdealMobiusDivisorSum Filter
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem deletedSelectedSource_tuple {ι:Type*}[Fintype ι](data:RowData)
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
@@ -74,11 +75,11 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   have hU0:U₀≤U:=(le_max_left _ _).trans hU
   have hUone:1<U:=hU₀.trans_le hU0
   have hUp:0<U:=zero_lt_one.trans hUone
-  have hjshift: r-eta≤shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧
+  have hjshift: r-eta≤ shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧
       U^(shiftedExponent data U r j)=U^r/(j.absNorm:ℝ):=
     (hshift U ((le_max_right _ _).trans hU)).2 j hj r
-  let L:ι→Finset (Ideal O):=fun i=>livePrimes M H F.W 2 (U^(ell i))
-  let coeff:ι→Ideal O→ℂ:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
+  let L :=fun i=>livePrimes M H F.W 2 (U^(ell i))
+  let coeff :=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
     idealCoeff (deletedBase data) P
   have hg (i:ι)(P:Ideal O)(hP:P∈L i):
       Prime P ∧ InverseInitialExcludedPool.outside (excluded data) P ∧
@@ -99,8 +100,8 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     r (shiftedExponent data U r j) hr hjshift.1 hjshift.2.1 hfirst hsecond rows hrows θ
   simpa only [deletedSelectedSource_tuple,L,coeff] using hh
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

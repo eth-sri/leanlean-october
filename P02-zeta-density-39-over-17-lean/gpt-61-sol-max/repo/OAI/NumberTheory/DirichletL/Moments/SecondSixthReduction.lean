@@ -10,19 +10,27 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthReduction
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask
 open CenteredExceptionalProfile CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def reducedNumerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
+section
+variable (C D : Ideal O)
+include C D
+
+section
+variable (U : Finset (CommonIndex C D))
+include U
+
+def reducedNumerator  : O :=
   ∏ P : CommonIndex C D,commonPrime C D P^(fixedExponent C D U P%6)
 
-def sixthFactor (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
+def sixthFactor  : O :=
   ∏ P : CommonIndex C D,commonPrime C D P^(fixedExponent C D U P/6)
 
-theorem fixed_numerator_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
+theorem fixed_numerator_product  :
     commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U=
       ∏ P : CommonIndex C D,commonPrime C D P^fixedExponent C D U P := by
   have hv : nonunitFrequencyGenerator C D U=
@@ -34,7 +42,7 @@ theorem fixed_numerator_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
   simp only [fixedExponent,pow_add]
   split_ifs <;> simp
 
-theorem fixed_sixth_factorization (C D : Ideal O) (U : Finset (CommonIndex C D)) :
+theorem fixed_sixth_factorization  :
     commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U=
       reducedNumerator C D U*(sixthFactor C D U)^6 := by
   rw [fixed_numerator_product,reducedNumerator,sixthFactor,←Finset.prod_pow,←Finset.prod_mul_distrib]
@@ -43,16 +51,25 @@ theorem fixed_sixth_factorization (C D : Ideal O) (U : Finset (CommonIndex C D))
   rw [←pow_mul,←pow_add]
   congr 1
   omega
+end
 
-theorem reducedNumerator_ne_zero (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+
+section
+variable (hC : Supported C) (U : Finset (CommonIndex C D))
+include hC U
+
+theorem reducedNumerator_ne_zero  :
     reducedNumerator C D U≠0 :=
   Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
     (supported_element_ne_zero _ (commonPrime_supported C D hC P)))
 
-theorem sixthFactor_ne_zero (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+theorem sixthFactor_ne_zero  :
     sixthFactor C D U≠0 :=
   Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
     (supported_element_ne_zero _ (commonPrime_supported C D hC P)))
+end
+end
+
 
 theorem fixed_sixth_row (η : Character) (m h n : O) (C D : Ideal O)
     (U : Finset (CommonIndex C D)) :
@@ -80,8 +97,8 @@ theorem fixed_sixth_inducing_iff (η : Character) (Q : Ideal O) (m h : O)
     (reducedNumerator C D U) h hm (sixthFactor_ne_zero C D hC U)
     (reducedNumerator_ne_zero C D hC U) hh hmLam hm2)
 
-end SevenEighths.CenteredMomentSecondSixthReduction
 
-end
 
-end OAI
+
+
+

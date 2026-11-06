@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergy
 public import OAI.NumberTheory.DirichletL.Descent.PriorityRetainedMovingRadiusWindowOrderUniform
 public import OAI.NumberTheory.DirichletL.Descent.PriorityRetainedMovingRadiusWindowOrder
@@ -10,16 +11,16 @@ public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseWholePriorityRetainedSource RayFourExpansion
+open scoped EisensteinEis
 theorem global_priority_filtered_moving_radius_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -110,12 +111,11 @@ theorem global_priority_filtered_moving_radius_uniform_types
     haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
     ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass hleft hright
   have hsub:source⊆originalSource:=InverseMomentGlobalRetainedGates.geometrySource_subset p originalSource b X
-  have hsource:ActualSecondSourceConditions p source:=
+  have hsource :=
     ActualSecondSourceConditions.mono p (unified_conditions p hp extra original hvalid hextra negative assigned lists pool cutoff) hsub
-  have hd:∀x∈source,∀i∈InverseMomentWholeRetainedSource.deleted p extra negative x,
-      i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient:=
+  have hd :=
     fun x hx=>unified_deleted_support p hinj extra original hvalid hextra negative assigned lists pool cutoff x (hsub hx)
-  have hw:∀x∈source,‖normalizedGlobalPriorityWeight p hg negative Ψ m ray core w assigned a x‖≤1:=
+  have hw :=
     fun x hx=>normalizedGlobalPriorityWeight_norm p hg hinj extra original pool negative Ψ m ray core w hwOriginal hΨ
       assigned lists a haassigned cutoff x (hsub hx)
   have hΨ₀:∀n,‖Ψ₀ n‖≤1:=fun n=>(firstCoreTwist_norm_le negative (if negative then ray.1 else ray.2)
@@ -158,8 +158,8 @@ theorem global_priority_filtered_moving_radius_uniform_types
   simp_rw [hrow,←mul_assoc]
   convert mul_le_mul_of_nonneg_left he₀ coefficientBound_pos.le using 1 <;> ring_nf
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

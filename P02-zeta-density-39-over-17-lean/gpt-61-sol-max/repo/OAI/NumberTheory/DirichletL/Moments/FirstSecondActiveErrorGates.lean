@@ -11,14 +11,15 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondActiveErrorGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
-local instance {α : Type*} : DecidableEq α := Classical.decEq _
+open CenteredMomentOriginalCommonHarmonic
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
+
+local instance {α : Type*} : DecidableEq α := Classical.decEq _
 
 def errorInput (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
     (τ : Character) (t : ℝ) (Q : Ideal O) (k : ℕ)
@@ -39,7 +40,7 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
     (υ : Character) (v : ℝ) :
     let d := errorInput s C R B τ t Q k Bp υ v;
     let H := volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k);
-    0<H ∧ 0≤sourceRadius d ∧ volume d≤geometry N b b₁ b₂*H ∧
+    0<H ∧ 0≤ sourceRadius d ∧ volume d≤geometry N b b₁ b₂*H ∧
       sourceRadius d≤geometry N b b₁ b₂*H := by
   dsimp only
   have hC := norm_ge_one C (allocation_ne s C B)
@@ -134,8 +135,8 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     hpoly.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
     hpoly.2.2.2.1,hpoly.2.2.2.2.trans (hpow h₂)⟩
 
-end SevenEighths.CenteredMomentFirstSecondActiveErrorGates
 
-end
 
-end OAI
+
+
+

@@ -7,25 +7,43 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
- def cubeDivList (H : Ideal Eis) (L : Finset (Ideal Eis)) : Finset (Ideal Eis) := L.filter (fun P => P∣H)
- def cubeAwayList (H : Ideal Eis) (L : Finset (Ideal Eis)) : Finset (Ideal Eis) := L.filter (fun P => ¬P∣H)
- def cubeChoiceActive (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) (p : ∀ i,L i) : Finset σ :=
+ section
+variable (H : Ideal Eis)
+include H
+
+section
+variable (L : Finset (Ideal Eis))
+include L
+
+def cubeDivList  : Finset (Ideal Eis) := L.filter (fun P => P∣H)
+ def cubeAwayList  : Finset (Ideal Eis) := L.filter (fun P => ¬P∣H)
+end
+
+ section
+variable (L : σ→Finset (Ideal Eis))
+include L
+
+def cubeChoiceActive  (p : ∀ i,L i) : Finset σ :=
   Finset.univ.filter (fun i => ¬(p i).val∣H)
 
-abbrev CubeSlotChoices (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :=
+abbrev CubeSlotChoices  :=
   Σ T : Finset σ,(∀ i : {i // i∉T},cubeDivList H (L i.val))×(∀ i : T,cubeAwayList H (L i.val))
 
-def cubeChoicesJoin (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) (x : CubeSlotChoices H L) : ∀ i,L i :=
+section
+variable (x : CubeSlotChoices H L)
+include x
+
+def cubeChoicesJoin  : ∀ i,L i :=
   (slotChoiceSplit L x.1).symm
     (fun i => ⟨(x.2.2 i).val,(Finset.mem_filter.mp (x.2.2 i).property).1⟩,
      fun i => ⟨(x.2.1 i).val,(Finset.mem_filter.mp (x.2.1 i).property).1⟩)
 
-lemma cubeChoicesJoin_label (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) (x : CubeSlotChoices H L) :
+lemma cubeChoicesJoin_label  :
     cubeChoiceActive H L (cubeChoicesJoin H L x)=x.1 := by
   rcases x with ⟨T,b,a⟩
   ext i
@@ -45,8 +63,10 @@ lemma cubeChoicesJoin_label (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) (x : C
     dsimp only [cubeChoicesJoin]
     rw [he]
     exact iff_of_false (not_not_intro hb) hi
+end
 
-lemma cubeChoicesJoin_injective (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
+
+lemma cubeChoicesJoin_injective  :
     Function.Injective (cubeChoicesJoin H L) := by
   rintro ⟨T,b,a⟩ ⟨U,d,c⟩ he
   have ht := congrArg (cubeChoiceActive H L) he
@@ -64,7 +84,7 @@ lemma cubeChoicesJoin_injective (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
     apply Subtype.ext
     exact congrArg (fun q => (q.1 i).val) hx
 
-lemma cubeChoicesJoin_surjective (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
+lemma cubeChoicesJoin_surjective  :
     Function.Surjective (cubeChoicesJoin H L) := by
   intro p
   let T := cubeChoiceActive H L p
@@ -80,11 +100,14 @@ lemma cubeChoicesJoin_surjective (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
   simp only [cubeChoicesJoin,Equiv.apply_symm_apply]
   apply Prod.ext <;> funext i <;> apply Subtype.ext <;> rfl
 
-def cubeSlotChoiceEquiv (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
+def cubeSlotChoiceEquiv  :
     CubeSlotChoices H L ≃ (∀ i,L i) :=
   Equiv.ofBijective (cubeChoicesJoin H L) ⟨cubeChoicesJoin_injective H L,cubeChoicesJoin_surjective H L⟩
-
 end
-end SevenEighths.InverseReflectedPhase
+end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.PolynomialPowers
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.NumberTheory.SmoothNumbers
@@ -22,7 +23,7 @@ namespace GuthMaynard.NativeMoment
 lemma exponent_succ_le_const_mul_two_rpow (eps : ℝ) (heps : 0 < eps) :
     ∃ K : ℝ, 1 ≤ K ∧ ∀ a : ℕ,
       ((a + 1 : ℕ) : ℝ) ≤ K * (2 : ℝ) ^ (eps * (a : ℝ)) := by
-  let c : ℝ := eps * Real.log 2
+  let c := eps * Real.log 2
   have hc : 0 < c := mul_pos heps (Real.log_pos one_lt_two)
   refine ⟨c⁻¹ + 1, by
     have : 0 ≤ c⁻¹ := inv_nonneg.mpr hc.le
@@ -34,7 +35,7 @@ lemma exponent_succ_le_const_mul_two_rpow (eps : ℝ) (heps : 0 < eps) :
   have ha : (a : ℝ) ≤ c⁻¹ * Real.exp (c * (a : ℝ)) := by
     rw [inv_mul_eq_div, le_div_iff₀ hc]
     simpa [mul_comm] using hmul
-  have hone : (1 : ℝ) ≤ Real.exp (c * (a : ℝ)) := Real.one_le_exp hca
+  have hone := Real.one_le_exp hca
   have hsum : (a : ℝ) + 1 ≤ (c⁻¹ + 1) * Real.exp (c * (a : ℝ)) := by
     nlinarith
   calc
@@ -43,17 +44,14 @@ lemma exponent_succ_le_const_mul_two_rpow (eps : ℝ) (heps : 0 < eps) :
     _ = (c⁻¹ + 1) * (2 : ℝ) ^ (eps * (a : ℝ)) := by
       congr 1
       rw [Real.rpow_def_of_pos zero_lt_two]
-      congr 1
-      dsimp [c]
-      ring
+      grind
 
 lemma exponent_succ_le_large_prime_rpow (eps : ℝ) (p a : ℕ)
     (hlarge : (2 : ℝ) ≤ (p : ℝ) ^ eps) :
     ((a + 1 : ℕ) : ℝ) ≤ (p : ℝ) ^ (eps * (a : ℝ)) := by
   have htwo : ((a + 1 : ℕ) : ℝ) ≤ (2 : ℝ) ^ a := by
     have h := one_add_mul_le_pow (a := (1 : ℝ)) (by norm_num) a
-    norm_num at h
-    simpa [add_comm] using h
+    grind
   calc
     ((a + 1 : ℕ) : ℝ) ≤ (2 : ℝ) ^ a := htwo
     _ ≤ ((p : ℝ) ^ eps) ^ a := by gcongr
@@ -71,7 +69,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
   obtain ⟨B, hB⟩ := (eventually_atTop.1 hevent)
   refine ⟨K ^ B, pow_pos (lt_of_lt_of_le zero_lt_one hK) B, ?_⟩
   intro n hn
-  have hn0 : n ≠ 0 := Nat.ne_of_gt hn
+  have hn0 := Nat.ne_of_gt hn
   let smallFactors := n.primeFactors.filter (fun p => p < B)
   have hsmall_card : smallFactors.card ≤ B := by
     have hsubset : smallFactors ⊆ Finset.range B := by
@@ -84,7 +82,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
       (n.factorization p : ℝ) + 1 ≤
         (if p < B then K else 1) *
           (p : ℝ) ^ (eps * (n.factorization p : ℝ)) := by
-    have hpPrime : p.Prime := Nat.prime_of_mem_primeFactors hp
+    have hpPrime := Nat.prime_of_mem_primeFactors hp
     split_ifs with hpB
     · have hpTwo : (2 : ℝ) ≤ p := by exact_mod_cast hpPrime.two_le
       have hexp : 0 ≤ eps * (n.factorization p : ℝ) :=
@@ -116,8 +114,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
           simp [smallFactors]
         · have hreconstruct :
               (∏ p ∈ n.primeFactors, p ^ n.factorization p) = n := by
-            simpa [Nat.prod_factorization_eq_prod_primeFactors] using
-              Nat.prod_factorization_pow_eq_self hn0
+            exact Nat.prod_factorization_pow_eq_self hn0
           calc
             (∏ p ∈ n.primeFactors,
                 (p : ℝ) ^ (eps * (n.factorization p : ℝ))) =
@@ -134,8 +131,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
                           rw [Real.rpow_natCast]
             _ = (∏ p ∈ n.primeFactors, (p : ℝ) ^ n.factorization p) ^ eps := by
                   rw [Real.finsetProd_rpow]
-                  intro p hp
-                  positivity
+                  bound
             _ = (n : ℝ) ^ eps := by
                   have hreconstructReal :
                       (∏ p ∈ n.primeFactors, (p : ℝ) ^ n.factorization p) = (n : ℝ) := by
@@ -147,7 +143,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
 
 theorem factorizationCountBound_native : FactorizationCountBoundProp := by
   intro k eps heps
-  let delta : ℝ := eps / (k + 1 : ℕ)
+  let delta := eps / (k + 1 : ℕ)
   have hkOnePos : (0 : ℝ) < (k + 1 : ℕ) := by positivity
   have hdelta : 0 < delta := by
     dsimp [delta]
@@ -176,7 +172,7 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
       _ = m.divisors.card ^ k := Fintype.card_piFinset_const m.divisors k
   have hcardReal : (tuples.card : ℝ) ≤ (m.divisors.card : ℝ) ^ k := by
     exact_mod_cast hcardNat
-  have hdivisorReal : (m.divisors.card : ℝ) ≤ C * (m : ℝ) ^ delta :=
+  have hdivisorReal :=
     hDivisor m hm
   have hpowBound : (m.divisors.card : ℝ) ^ k ≤
       (C * (m : ℝ) ^ delta) ^ k := by
@@ -192,7 +188,7 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
       _ ≤ eps * 1 := mul_le_mul_of_nonneg_left hratio heps.le
       _ = eps := mul_one eps
   have hmOne : (1 : ℝ) ≤ m := by exact_mod_cast hm
-  have hrpow : (m : ℝ) ^ (delta * (k : ℝ)) ≤ (m : ℝ) ^ eps :=
+  have hrpow :=
     Real.rpow_le_rpow_of_exponent_le hmOne hdeltaK
   change (tuples.card : ℝ) ≤ C ^ k * (m : ℝ) ^ eps
   calc
@@ -203,4 +199,4 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
     _ ≤ C ^ k * (m : ℝ) ^ eps :=
       mul_le_mul_of_nonneg_left hrpow (pow_nonneg hC.le k)
 
-end GuthMaynard.NativeMoment
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.CompactEnergyFamilies
 
 @[expose] public section
@@ -9,83 +10,91 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace SecondPassArithmetic
 
 open scoped BigOperators Classical SchwartzMap ContDiff Topology
 open Filter
 
-def positiveRadialProfile (V : ℝ → ℂ) (x : ℝ) : ℂ :=
+section
+variable (V : ℝ → ℂ)
+include V
+
+def positiveRadialProfile  (x : ℝ) : ℂ :=
   if 0<x then V (Real.log x) else 0
 
-theorem positiveRadialProfile_support (V : ℝ → ℂ) (A : ℝ)
-    (hV : ∀s,V s≠0→|s|≤A) (x : ℝ) (hx : positiveRadialProfile V x≠0) :
+section
+variable (A : ℝ)
+    (hV : ∀s,V s≠0→|s|≤A)
+include A hV
+
+theorem positiveRadialProfile_support  (x : ℝ) (hx : positiveRadialProfile V x≠0) :
     x∈Set.Icc (Real.exp (-A)) (Real.exp A) := by
   have hpos : 0<x := by
     by_contra hn
@@ -99,13 +108,18 @@ theorem positiveRadialProfile_support (V : ℝ → ℂ) (A : ℝ)
       x = Real.exp (Real.log x) := (Real.exp_log hpos).symm
       _ ≤ Real.exp A := Real.exp_le_exp.mpr (abs_le.mp hlog).2
 
-theorem positiveRadialProfile_compact (V : ℝ → ℂ) (A : ℝ)
-    (hV : ∀s,V s≠0→|s|≤A) : HasCompactSupport (positiveRadialProfile V) :=
+theorem positiveRadialProfile_compact  : HasCompactSupport (positiveRadialProfile V) :=
   HasCompactSupport.of_support_subset_isCompact isCompact_Icc
     (fun x hx=>positiveRadialProfile_support V A hV x hx)
+end
 
-theorem positiveRadialProfile_smooth (V : ℝ → ℂ) (hVs : ContDiff ℝ ∞ V)
-    (A : ℝ) (hV : ∀s,V s≠0→|s|≤A) : ContDiff ℝ ∞ (positiveRadialProfile V) := by
+
+section
+variable (hVs : ContDiff ℝ ∞ V)
+    (A : ℝ) (hV : ∀s,V s≠0→|s|≤A)
+include hVs A hV
+
+theorem positiveRadialProfile_smooth  : ContDiff ℝ ∞ (positiveRadialProfile V) := by
   apply contDiff_iff_contDiffAt.mpr
   intro x
   by_cases hpos : 0<x
@@ -122,19 +136,19 @@ theorem positiveRadialProfile_smooth (V : ℝ → ℂ) (hVs : ContDiff ℝ ∞ V
       exact (not_le_of_gt hy) hb
     exact (contDiffAt_const (c:=(0:ℂ))).congr_of_eventuallyEq he
 
-def radialFromLog (V : ℝ → ℂ) (hVs : ContDiff ℝ ∞ V) (A : ℝ)
-    (hV : ∀s,V s≠0→|s|≤A) : 𝓢(ℝ,ℂ) :=
+def radialFromLog  : 𝓢(ℝ,ℂ) :=
   (positiveRadialProfile_compact V A hV).toSchwartzMap (positiveRadialProfile_smooth V hVs A hV)
 
-@[simp] theorem radialFromLog_apply_pos (V : ℝ → ℂ) (hVs : ContDiff ℝ ∞ V) (A : ℝ)
-    (hV : ∀s,V s≠0→|s|≤A) (x : ℝ) (hx : 0<x) :
+@[simp] theorem radialFromLog_apply_pos  (x : ℝ) (hx : 0<x) :
     radialFromLog V hVs A hV x=V (Real.log x) := by
   change positiveRadialProfile V x=_
   simp only [positiveRadialProfile,ite_eq_left hx]
 
-theorem radialFromLog_support (V : ℝ → ℂ) (hVs : ContDiff ℝ ∞ V) (A : ℝ)
-    (hV : ∀s,V s≠0→|s|≤A) (x : ℝ) (hx : radialFromLog V hVs A hV x≠0) :
+theorem radialFromLog_support  (x : ℝ) (hx : radialFromLog V hVs A hV x≠0) :
     Real.exp (-A)≤x ∧ x≤Real.exp A := positiveRadialProfile_support V A hV x hx
+end
+end
+
 
 theorem radialFromLog_column {ι : Type*} (p : ι → ActualEisensteinCubic.O)
     (hp : ∀i,p i≠0) (V : ℝ → ℂ) (hVs : ContDiff ℝ ∞ V) (A : ℝ)
@@ -149,19 +163,27 @@ namespace CubicEisenstein
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff Manifold
 
-def kernelTestPartitionTerm {ι : Type*} {S : Set KernelQuotient}
+section
+variable {ι : Type*}
+include ι
+
+section
+variable {S : Set KernelQuotient}
     (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ,SpatialCoordinates) KernelQuotient S)
-    (f : kernelSmoothTests) (i : ι) : kernelSmoothTests :=
+    (f : kernelSmoothTests) (i : ι)
+include S ρ f i
+
+def kernelTestPartitionTerm  : kernelSmoothTests :=
   ⟨fun q => ρ i q • f.1 q,(ρ i).contMDiff.smul f.2.1,
     HasCompactSupport.smul_left (f := fun q => ρ i q) (f' := f.1) f.2.2⟩
 
-lemma kernelTestPartitionTerm_tsupport {ι : Type*} {S : Set KernelQuotient}
-    (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ,SpatialCoordinates) KernelQuotient S)
-    (f : kernelSmoothTests) (i : ι) :
+lemma kernelTestPartitionTerm_tsupport  :
     tsupport (kernelTestPartitionTerm ρ f i).1⊆tsupport (ρ i) :=
   tsupport_smul_subset_left _ _
+end
 
-lemma kernelTestPartition_sum {ι : Type*} [Fintype ι]
+
+lemma kernelTestPartition_sum  [Fintype ι]
     (f : kernelSmoothTests)
     (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ,SpatialCoordinates) KernelQuotient (tsupport f.1)) :
     ∑i,kernelTestPartitionTerm ρ f i=f := by
@@ -175,6 +197,8 @@ lemma kernelTestPartition_sum {ι : Type*} [Fintype ι]
     rw [hs,one_smul]
   · have hz : f.1 q=0 := image_eq_zero_of_notMem_tsupport hq
     rw [hz,smul_zero]
+end
+
 
 end CubicEisenstein
 
@@ -183,14 +207,18 @@ open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
 
 namespace CubicEisenstein
 
-def kernelFullCutoffFun (χ : PositiveChartCutoff) (p : EuclideanSpatial) : ℝ :=
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+def kernelFullCutoffFun  (p : EuclideanSpatial) : ℝ :=
   Real.smoothTransition (4*χ.func p-1)
 
-lemma kernelFullCutoffFun_smooth (χ : PositiveChartCutoff) :
+lemma kernelFullCutoffFun_smooth  :
     ContDiff ℝ ∞ (kernelFullCutoffFun χ) :=
   Real.smoothTransition.contDiff.comp ((contDiff_const.mul χ.smooth).sub contDiff_const)
 
-lemma kernelFullCutoffFun_tsupport (χ : PositiveChartCutoff) :
+lemma kernelFullCutoffFun_tsupport  :
     tsupport (kernelFullCutoffFun χ)⊆tsupport χ.func := by
   apply closure_mono
   intro p hp
@@ -201,44 +229,58 @@ lemma kernelFullCutoffFun_tsupport (χ : PositiveChartCutoff) :
   simp only [kernelFullCutoffFun,hz,mul_zero,zero_sub]
   exact Real.smoothTransition.zero_of_nonpos (by norm_num)
 
-lemma kernelFullCutoffFun_compact (χ : PositiveChartCutoff) :
+lemma kernelFullCutoffFun_compact  :
     HasCompactSupport (kernelFullCutoffFun χ) :=
   χ.compact.of_isClosed_subset (isClosed_tsupport _) (kernelFullCutoffFun_tsupport χ)
 
-def kernelFullCutoff (χ : PositiveChartCutoff) : PositiveChartCutoff where
+def kernelFullCutoff  : PositiveChartCutoff where
   func := kernelFullCutoffFun χ
   smooth := kernelFullCutoffFun_smooth χ
   compact := kernelFullCutoffFun_compact χ
   positive := (kernelFullCutoffFun_tsupport χ).trans χ.positive
 
-lemma kernelFullCutoff_one (χ : PositiveChartCutoff) (p : EuclideanSpatial)
-    (hp : p∈kernelChartCore χ) : (kernelFullCutoff χ).func p=1 := by
+section
+variable (p : EuclideanSpatial)
+    (hp : p∈kernelChartCore χ)
+include p hp
+
+lemma kernelFullCutoff_one  : (kernelFullCutoff χ).func p=1 := by
   apply Real.smoothTransition.one_of_one_le
   change (1/2 : ℝ)<χ.func p at hp
   linarith
 
-lemma kernelFullCutoff_eventually_one (χ : PositiveChartCutoff) (p : EuclideanSpatial)
-    (hp : p∈kernelChartCore χ) : (kernelFullCutoff χ).func =ᶠ[𝓝 p] fun _ => 1 := by
+lemma kernelFullCutoff_eventually_one  : (kernelFullCutoff χ).func =ᶠ[𝓝 p] fun _ => 1 := by
   filter_upwards [(kernelChartCore_open χ).mem_nhds hp] with q hq
   exact kernelFullCutoff_one χ q hq
+end
 
-def kernelCoreLift (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+
+section
+variable (f : kernelSmoothTests)
+include f
+
+def kernelCoreLift  :
     𝓢(EuclideanSpatial,ℂ) := kernelLocalizedSchwartz (kernelFullCutoff χ) f
 
-lemma kernelCoreLift_eventually_eq (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+lemma kernelCoreLift_eventually_eq 
     (p : EuclideanSpatial) (hp : p∈kernelChartCore χ) :
     (kernelCoreLift χ f : EuclideanSpatial→ℂ)=ᶠ[𝓝 p] kernelTestField f := by
   filter_upwards [kernelFullCutoff_eventually_one χ p hp] with q hq
   change (kernelFullCutoff χ).func q • kernelTestField f q=kernelTestField f q
   rw [hq,one_smul]
 
-lemma kernelCoreLift_tsupport_outer (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelCoreLift_tsupport_outer  :
     tsupport (kernelCoreLift χ f)⊆tsupport χ.func :=
   (kernelLocalizedField_tsupport (kernelFullCutoff χ) f).trans (kernelFullCutoffFun_tsupport χ)
+end
 
-lemma kernelCoreLift_tsupport (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (f : kernelSmoothTests) (hf : tsupport f.1⊆kernelChartCoreImage χ) :
+
+section
+variable (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+    (f : kernelSmoothTests) (hf : tsupport f.1⊆kernelChartCoreImage χ)
+include hinj f hf
+
+lemma kernelCoreLift_tsupport  :
     tsupport (kernelCoreLift χ f)⊆kernelChartCore χ := by
   intro p hp
   have houter := kernelCoreLift_tsupport_outer χ f hp
@@ -248,20 +290,17 @@ lemma kernelCoreLift_tsupport (χ : PositiveChartCutoff)
     obtain ⟨q,hq,heq⟩ := hf hfp
     have hqp := hinj (kernelChartCore_subset χ hq) houter heq
     exact hn (hqp ▸ hq)
-  have hc : ContinuousAt kernelEuclideanProjection p :=
+  have hc :=
     (continuous_integralOrbitProjection globalKubotaKernel).continuousAt.comp
       (euclideanToHyperbolic_contMDiffAt p (χ.positive houter)).continuousAt
   have hz := (notMem_tsupport_iff_eventuallyEq.mp hfp).comp_tendsto hc
   have hzero : (kernelCoreLift χ f : EuclideanSpatial→ℂ)=ᶠ[𝓝 p] 0 := by
     filter_upwards [hz] with q hq
     change (kernelFullCutoff χ).func q • f.1 (kernelEuclideanProjection q)=0
-    change f.1 (kernelEuclideanProjection q)=0 at hq
-    rw [hq,smul_zero]
+    simp_all [kernelEuclideanProjection]
   exact (notMem_tsupport_iff_eventuallyEq.mpr hzero) hp
 
-lemma kernelCoreLift_eq_on_outer (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (f : kernelSmoothTests) (hf : tsupport f.1⊆kernelChartCoreImage χ) :
+lemma kernelCoreLift_eq_on_outer  :
     Set.EqOn (kernelCoreLift χ f) (kernelTestField f) (tsupport χ.func) := by
   intro p hp
   by_cases hc : p∈kernelChartCore χ
@@ -275,13 +314,20 @@ lemma kernelCoreLift_eq_on_outer (χ : PositiveChartCutoff)
       exact hc (hqp ▸ hq)
     change (kernelFullCutoff χ).func p • kernelTestField f p=kernelTestField f p
     rw [hz,smul_zero]
+end
+end
+
 
 def euclideanHeightCLM : EuclideanSpatial→L[ℝ]ℂ :=
   Complex.ofRealCLM.comp (PiLp.proj 2 (fun _ : Fin 3 => ℝ) 2)
 
 lemma euclideanHeightCLM_apply (p : EuclideanSpatial) : euclideanHeightCLM p=(p 2:ℂ) := rfl
 
-lemma upperHeightDivide_smooth (f : 𝓢(EuclideanSpatial,ℂ))
+section
+variable (f : 𝓢(EuclideanSpatial,ℂ))
+include f
+
+lemma upperHeightDivide_smooth 
     (hpos : tsupport f⊆euclideanUpperHalf) :
     ContDiff ℝ ∞ (fun p : EuclideanSpatial => f p/(p 2:ℂ)) := by
   rw [contDiff_iff_contDiffAt]
@@ -300,32 +346,34 @@ lemma upperHeightDivide_smooth (f : 𝓢(EuclideanSpatial,ℂ))
       (f.smooth ⊤).contDiffAt.mul (euclideanHeightCLM.contDiff.contDiffAt.fun_inv
         (Complex.ofReal_ne_zero.mpr hp))
 
-lemma upperHeightDivide_compact (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) :
+section
+variable (hcompact : HasCompactSupport f)
+include hcompact
+
+lemma upperHeightDivide_compact  :
     HasCompactSupport (fun p : EuclideanSpatial => f p/(p 2:ℂ)) := by
   rw [hasCompactSupport_iff_eventuallyEq] at hcompact ⊢
   exact hcompact.mono (fun p hp => by simp only [hp,Pi.zero_apply,zero_div])
 
-def upperHeightDivide (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf) :
+section
+variable (hpos : tsupport f⊆euclideanUpperHalf)
+include hpos
+
+def upperHeightDivide  :
     𝓢(EuclideanSpatial,ℂ) :=
   (upperHeightDivide_compact f hcompact).toSchwartzMap (upperHeightDivide_smooth f hpos)
 
-lemma upperHeightDivide_apply (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf)
+lemma upperHeightDivide_apply 
     (p : EuclideanSpatial) : upperHeightDivide f hcompact hpos p=f p/(p 2:ℂ) := rfl
 
-lemma upperHeightDivide_tsupport (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf) :
+lemma upperHeightDivide_tsupport  :
     tsupport (upperHeightDivide f hcompact hpos)⊆tsupport f := by
   apply closure_mono
   intro p hp
   change f p/(p 2:ℂ)≠0 at hp
-  change f p≠0
-  exact fun hz => hp (by rw [hz,zero_div])
+  simp_all
 
-lemma upperHeightDivide_lineDeriv (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf)
+lemma upperHeightDivide_lineDeriv 
     (p u : EuclideanSpatial) (hp : p 2≠0) :
     (∂_{u} (upperHeightDivide f hcompact hpos)) p=
       ((∂_{u} f) p*(p 2:ℂ)-f p*(u 2:ℂ))/(p 2:ℂ)^2 := by
@@ -338,36 +386,47 @@ lemma upperHeightDivide_lineDeriv (f : 𝓢(EuclideanSpatial,ℂ))
       (((∂_{u} f) p*(p 2:ℂ)-f p*(u 2:ℂ))/(p 2:ℂ)^2) p u := by
     simpa only [HasLineDerivAt,upperHeightDivide_apply,Pi.div_apply,zero_smul,add_zero] using! hd
   exact ((upperHeightDivide f hcompact hpos).hasFDerivAt p).hasLineDerivAt u |>.unique hline
+end
 
-lemma upperSchwartz_derivative_compact (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (u : EuclideanSpatial) :
+
+lemma upperSchwartz_derivative_compact  (u : EuclideanSpatial) :
     HasCompactSupport (∂_{u} f : 𝓢(EuclideanSpatial,ℂ)) :=
   hcompact.fderiv_apply ℝ u
 
-def upperWeightedPartial (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf) (j : Fin 3) :
+section
+variable (hpos : tsupport f⊆euclideanUpperHalf)
+include hpos
+
+def upperWeightedPartial  (j : Fin 3) :
     𝓢(EuclideanSpatial,ℂ) :=
   upperHeightDivide (∂_{euclideanCoordinateVector j} f)
     (upperSchwartz_derivative_compact f hcompact _)
     ((SchwartzMap.tsupport_lineDerivOp_subset _ f).trans hpos)
 
-def upperWeightedDivergence (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf) :
+def upperWeightedDivergence  :
     𝓢(EuclideanSpatial,ℂ) :=
   -∑j : Fin 3,∂_{euclideanCoordinateVector j} (upperWeightedPartial f hcompact hpos j)
+end
+end
+end
+
 
 def complexHermitianBilin : ℂ→L[ℝ]ℂ→L[ℝ]ℂ :=
   (ContinuousLinearMap.mul ℝ ℂ).comp Complex.conjCLE.toContinuousLinearMap
 
-lemma schwartz_hermitian_integrable (f g : 𝓢(EuclideanSpatial,ℂ)) :
+section
+variable (f g : 𝓢(EuclideanSpatial,ℂ))
+include f g
+
+lemma schwartz_hermitian_integrable  :
     Integrable (fun p => star (f p)*g p) volume :=
   (SchwartzMap.bilinLeftCLM complexHermitianBilin g.hasTemperateGrowth f).integrable
 
-lemma schwartz_hermitian_lineGreen (f g : 𝓢(EuclideanSpatial,ℂ)) (u : EuclideanSpatial) :
+lemma schwartz_hermitian_lineGreen  (u : EuclideanSpatial) :
     (∫p,star (f p)*(∂_{u} g) p)=-∫p,star ((∂_{u} f) p)*g p :=
   SchwartzMap.integral_bilinear_lineDerivOp_right_eq_neg_left f g complexHermitianBilin u
 
-lemma upperWeighted_green (f g : 𝓢(EuclideanSpatial,ℂ))
+lemma upperWeighted_green 
     (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf) :
     (∫p,∑j : Fin 3,star (upperWeightedPartial f hcompact hpos j p)*
       (∂_{euclideanCoordinateVector j} g) p)=
@@ -385,14 +444,23 @@ lemma upperWeighted_green (f g : 𝓢(EuclideanSpatial,ℂ))
       exact Eventually.of_forall (fun p => by
         simp only [upperWeightedDivergence,_root_.neg_apply,_root_.sum_apply,star_neg,star_sum,
           Finset.sum_mul,neg_mul])
+end
 
-def upperPositiveLaplacian (f : 𝓢(EuclideanSpatial,ℂ)) (p : EuclideanSpatial) : ℂ :=
+
+section
+variable (f : 𝓢(EuclideanSpatial,ℂ))
+include f
+
+def upperPositiveLaplacian  (p : EuclideanSpatial) : ℂ :=
   -(p 2:ℂ)^2*(∑j : Fin 3,(∂_{euclideanCoordinateVector j} (∂_{euclideanCoordinateVector j} f)) p)+
     (p 2:ℂ)*(∂_{euclideanCoordinateVector 2} f) p
 
-lemma upperWeightedDivergence_apply_ne_zero (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf)
-    (p : EuclideanSpatial) (hp : p 2≠0) :
+section
+variable (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf)
+    (p : EuclideanSpatial)
+include hcompact hpos p
+
+lemma upperWeightedDivergence_apply_ne_zero  (hp : p 2≠0) :
     upperWeightedDivergence f hcompact hpos p=upperPositiveLaplacian f p/(p 2:ℂ)^3 := by
   have hd (j : Fin 3) : (∂_{euclideanCoordinateVector j} (upperWeightedPartial f hcompact hpos j)) p=
       ((∂_{euclideanCoordinateVector j} (∂_{euclideanCoordinateVector j} f)) p*(p 2:ℂ)-
@@ -402,12 +470,9 @@ lemma upperWeightedDivergence_apply_ne_zero (f : 𝓢(EuclideanSpatial,ℂ))
   rw [hd 0,hd 1,hd 2]
   simp only [upperPositiveLaplacian,Fin.sum_univ_three]
   norm_num [euclideanCoordinateVector]
-  field_simp [Complex.ofReal_ne_zero.mpr hp]
-  ring
+  field_simp <;> ring
 
-lemma upperWeightedDivergence_apply (f : 𝓢(EuclideanSpatial,ℂ))
-    (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf)
-    (p : EuclideanSpatial) :
+lemma upperWeightedDivergence_apply  :
     upperWeightedDivergence f hcompact hpos p=upperPositiveLaplacian f p/(p 2:ℂ)^3 := by
   by_cases hp : p 2=0
   · have hz : ∀j : Fin 3,(∂_{euclideanCoordinateVector j}
@@ -425,6 +490,9 @@ lemma upperWeightedDivergence_apply (f : 𝓢(EuclideanSpatial,ℂ))
       upperPositiveLaplacian,hp,Complex.ofReal_zero,zero_pow (by decide : 2≠0),
       zero_pow (by decide : 3≠0),zero_mul,zero_add,zero_div]
   · exact upperWeightedDivergence_apply_ne_zero f hcompact hpos p hp
+end
+end
+
 
 theorem upperHyperbolic_green (f g : 𝓢(EuclideanSpatial,ℂ))
     (hcompact : HasCompactSupport f) (hpos : tsupport f⊆euclideanUpperHalf) :
@@ -442,8 +510,12 @@ open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
 
 namespace CubicEisenstein
 
-lemma kernelEuclideanProjection_integral_complex (S : Set EuclideanSpatial)
+section
+variable (S : Set EuclideanSpatial)
     (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
+include S hS hpos
+
+lemma kernelEuclideanProjection_integral_complex 
     (hinj : Set.InjOn kernelEuclideanProjection S) (g : KernelQuotient→ℂ)
     (hg : AEStronglyMeasurable g (integralQuotientVolume globalKubotaKernel)) :
     (∫p in S,g (kernelEuclideanProjection p)∂hyperbolicEuclideanVolume)=
@@ -453,8 +525,7 @@ lemma kernelEuclideanProjection_integral_complex (S : Set EuclideanSpatial)
   rw [←hm.map_eq] at hh ⊢
   exact (integral_map hm.measurable.aemeasurable hh).symm
 
-lemma hyperbolicEuclidean_setIntegral_complex (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf) (g : EuclideanSpatial→ℂ) :
+lemma hyperbolicEuclidean_setIntegral_complex  (g : EuclideanSpatial→ℂ) :
     (∫p in S,g p∂hyperbolicEuclideanVolume)=∫p in S,g p/(p 2:ℂ)^3 := by
   rw [hyperbolicEuclideanVolume,MeasureTheory.restrict_withDensity hS,
     Measure.restrict_restrict hS,Set.inter_eq_left.mpr hpos,
@@ -466,7 +537,9 @@ lemma hyperbolicEuclidean_setIntegral_complex (S : Set EuclideanSpatial)
   rw [hyperbolicDensity,ENNReal.toReal_ofReal (by positivity)]
   rw [Complex.real_smul]
   change (↑(((p 2)^3)⁻¹) : ℂ)*g p=g p/(p 2:ℂ)^3
-  simp only [Complex.ofReal_inv,Complex.ofReal_pow,div_eq_mul_inv,mul_comm]
+  simp only [ofReal_inv, ofReal_pow, mul_comm, div_eq_mul_inv]
+end
+
 
 lemma kernelDirichletPairDensity_zero_of_notMem (f g : kernelSmoothTests) (q : KernelQuotient)
     (hq : q∉tsupport g.1) : kernelDirichletPairDensity f g q=0 := by
@@ -481,8 +554,7 @@ lemma kernelDirichletPairDensity_zero_of_notMem (f g : kernelSmoothTests) (q : K
       apply norm_eq_zero.mp
       have h := kernelGradientAt_norm_sq w g
       change kernelTestEnergyDensity g w=0 at hz
-      rw [hz] at h
-      nlinarith [norm_nonneg (kernelGradientAt w g)]
+      nlinarith
     rw [hg,inner_zero_right]
 
 lemma kernelDirichletPairDensity_euclidean (f g : kernelSmoothTests)
@@ -499,12 +571,15 @@ lemma kernelDirichletPairDensity_euclidean (f g : kernelSmoothTests)
   rw [hv,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro j hj
-  simp only [kernelTestPartial,hc,←euclideanCoordinateVector_eq_basis,RCLike.inner_apply,
-    map_mul,Complex.conj_ofReal,Complex.star_def]
+  simp only [kernelTestPartial, hc, ← euclideanCoordinateVector_eq_basis, RCLike.inner_apply, map_mul, conj_ofReal, star_def]
   ring
 
-lemma kernelCoreLift_fderiv_eq_on_outer (χ : PositiveChartCutoff)
+section
+variable (χ : PositiveChartCutoff)
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+include χ hinj
+
+lemma kernelCoreLift_fderiv_eq_on_outer 
     (f : kernelSmoothTests) (hf : tsupport f.1⊆kernelChartCoreImage χ)
     (p : EuclideanSpatial) (hp : p∈tsupport χ.func) :
     fderiv ℝ (kernelCoreLift χ f) p=fderiv ℝ (kernelTestField f) p := by
@@ -522,9 +597,11 @@ lemma kernelCoreLift_fderiv_eq_on_outer (χ : PositiveChartCutoff)
     rw [fderiv_of_notMem_tsupport ℝ hl,hz.fderiv_eq,fderiv_zero]
     rfl
 
-lemma kernelCoreLift_pair_on_outer (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (f g : kernelSmoothTests) (hg : tsupport g.1⊆kernelChartCoreImage χ)
+section
+variable (f g : kernelSmoothTests) (hg : tsupport g.1⊆kernelChartCoreImage χ)
+include f g hg
+
+lemma kernelCoreLift_pair_on_outer 
     (p : EuclideanSpatial) (hp : p∈tsupport χ.func) :
     kernelDirichletPairDensity f g (kernelEuclideanProjection p)=
       (p 2:ℂ)^2*∑j : Fin 3,star ((∂_{euclideanCoordinateVector j} (kernelCoreLift χ f)) p)*
@@ -538,9 +615,7 @@ lemma kernelCoreLift_pair_on_outer (χ : PositiveChartCutoff)
     rw [fderiv_of_notMem_tsupport ℝ hn]
     simp only [_root_.zero_apply,mul_zero,Finset.sum_const_zero]
 
-theorem kernelDirichletForm_eq_chart_pairing (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (f g : kernelSmoothTests) (hg : tsupport g.1⊆kernelChartCoreImage χ) :
+theorem kernelDirichletForm_eq_chart_pairing  :
     kernelDirichletForm f g=
       ∫p,∑j : Fin 3,star ((∂_{euclideanCoordinateVector j} (kernelCoreLift χ f)) p)*
         (∂_{euclideanCoordinateVector j} (kernelCoreLift χ g)) p/(p 2:ℂ) := by
@@ -567,26 +642,25 @@ theorem kernelDirichletForm_eq_chart_pairing (χ : PositiveChartCutoff)
       intro p hp
       dsimp only
       rw [kernelCoreLift_pair_on_outer χ hinj f g hg p hp,←Finset.sum_div]
-      have hv : (p 2:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (χ.positive hp).ne'
-      field_simp [hv]
+      field_simp <;> ring
     _ = _ := by
       apply setIntegral_eq_integral_of_forall_compl_eq_zero
       intro p hp
-      have hn : p∉tsupport (kernelCoreLift χ g) := fun h => hp (kernelCoreLift_tsupport_outer χ g h)
-      simp only [SchwartzMap.lineDerivOp_apply_eq_fderiv,fderiv_of_notMem_tsupport ℝ hn,
-        _root_.zero_apply,mul_zero,zero_div,Finset.sum_const_zero]
+      have hn := fun h => hp (kernelCoreLift_tsupport_outer χ g h)
+      simp only [SchwartzMap.lineDerivOp_apply_eq_fderiv, fderiv_of_notMem_tsupport ℝ hn, _root_.zero_apply, mul_zero, zero_div, sum_const_zero]
 
-theorem kernelDirichletForm_eq_chart_laplacian (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (f g : kernelSmoothTests) (hg : tsupport g.1⊆kernelChartCoreImage χ) :
+theorem kernelDirichletForm_eq_chart_laplacian  :
     kernelDirichletForm f g=
       ∫p,star (upperPositiveLaplacian (kernelCoreLift χ f) p)*kernelCoreLift χ g p/(p 2:ℂ)^3 := by
   rw [kernelDirichletForm_eq_chart_pairing χ hinj f g hg]
   exact upperHyperbolic_green _ _ (kernelLocalizedField_compact (kernelFullCutoff χ) f)
     ((kernelCoreLift_tsupport_outer χ f).trans χ.positive)
-
-end CubicEisenstein
-
+end
 end
 
-end OAI
+
+
+
+
+
+

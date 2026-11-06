@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeLocal
 theorem compensated_phase_error_bound (V W D P B q vInv : ℂ) (T : ℝ)
     (_hT : 0 ≤ T) (hV : ‖V‖ ≤ 1 / 2) (hW : ‖W‖ ≤ 1)
@@ -61,7 +61,7 @@ theorem compensated_phase_error_bound (V W D P B q vInv : ℂ) (T : ℝ)
       exact norm_add_le _ _
     _ ≤ 720 * T := by linarith
 
-end SevenEighths.ProbeLocal
-end
 
-end OAI
+
+
+

@@ -11,10 +11,10 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSupportedTailAggregate
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondTail CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy
-open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentSecondHeightFamily
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentSourceRow CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondTail CenteredMomentFirstTailAggregate
+open CenteredMomentSectorLocalization CenteredMomentSecondHeightFamily
+open scoped EisensteinO
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)
     (hw : ∀ i,‖w i‖≤1) (B : ℝ) (_hB : 0≤B)
@@ -74,8 +74,8 @@ theorem second_discarded_energy_bound (Adec : ℕ) :
     (pow_le_pow_left₀ (show 0 ≤ ∑ I : supportedColumns S, ‖c I‖ from
       Finset.sum_nonneg (fun I _ => norm_nonneg (c I))) hm 2) hB using 1 ; dsimp only [B];ring
 
-end SevenEighths.CenteredMomentSupportedTailAggregate
 
-end
 
-end OAI
+
+
+

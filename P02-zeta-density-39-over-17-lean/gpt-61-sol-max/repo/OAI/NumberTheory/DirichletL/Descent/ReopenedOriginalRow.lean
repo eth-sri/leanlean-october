@@ -9,11 +9,15 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge CanonicalQuadraticSieve
+open scoped EisensteinO
 
-def markedReopenedCubeBin {σ : Type*} [DecidableEq σ]
+section
+variable {σ : Type*} [DecidableEq σ]
     (S : Finset (Ideal O)) (D : ℕ)
+include σ S D
+
+def markedReopenedCubeBin 
     (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ))
     (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ) (X H₀ : ℝ)
     (slots : Finset σ)
@@ -26,8 +30,7 @@ def markedReopenedCubeBin {σ : Type*} [DecidableEq σ]
     ∑' I:Ideal O,columnWeight Ψrow I*W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm (cubeIdeal F v):ℝ)^3))*
       indexedIdealMark (fun i:primePool F=>i.val) slots lists a (I*cubeIdeal F v^3)
 
-theorem original_marked_split_to_bins {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
+theorem original_marked_split_to_bins  (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
     (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ) (hWc : HasCompactSupport W)
     (b X H₀ : ℝ) (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D)
     (slots : Finset σ)
@@ -45,8 +48,10 @@ theorem original_marked_split_to_bins {σ : Type*} [DecidableEq σ]
   dsimp only
   rw [sum_outside_cubeIndex S D]
   rfl
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

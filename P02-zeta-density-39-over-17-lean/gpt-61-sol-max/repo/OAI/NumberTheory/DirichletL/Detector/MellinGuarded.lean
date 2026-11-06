@@ -12,10 +12,18 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def physicalMellinCoefficientTerm (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D I J : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
+section
+variable (η : HeckeFamily.Character)
+include η
+
+section
+variable (C : CalibrationData)
+    (S : Finset (Ideal O)) (D I J : Ideal O) (s : O)
+include C S D I J s
+
+def physicalMellinCoefficientTerm  (hs : Supported (Ideal.span {s}))
     (X : ℝ) (H : O) (t z : ℂ) : ℂ :=
   if hA : completedIndex I J≠0 then
     let K := elementNorm C.generator*elementNorm s*X
@@ -27,8 +35,7 @@ def physicalMellinCoefficientTerm (η : HeckeFamily.Character) (C : CalibrationD
       ((K*elementNorm H/elementNorm ((C.generator*completedIndex I J)*s)):ℂ)^(-z)
   else 0
 
-def guardedHighMellinCoefficient (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D I J : Ideal O) (s : O) (X : ℝ) (H : O) (x z : ℂ) : ℂ :=
+def guardedHighMellinCoefficient  (X : ℝ) (H : O) (x z : ℂ) : ℂ :=
   if h : Squarefree I ∧ Supported I ∧ Supported J then
     (X:ℂ)^(1/2-z)*(elementNorm H:ℂ)^(-z)*completedMask S D I J*star (C.residueMonoid H)*
       bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I h.2.1)
@@ -37,8 +44,10 @@ def guardedHighMellinCoefficient (η : HeckeFamily.Character) (C : CalibrationDa
           ((supported_span_primaryGenerator_iff J).mpr h.2.2))) H *
       (fullIdealWeight (x+1/2) I*fullIdealWeight (1+3*x) J)
   else 0
+end
 
-theorem physicalMellinCoefficientTerm_eq_guarded (η : HeckeFamily.Character)
+
+theorem physicalMellinCoefficientTerm_eq_guarded 
     (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
     (D I J : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
     (hcs : IsCoprime (calibrationForSet S hS).generator s)
@@ -70,7 +79,7 @@ theorem physicalMellinCoefficientTerm_eq_guarded (η : HeckeFamily.Character)
     unfold physicalMellinCoefficientTerm
     split_ifs <;> simp only [hz,mul_zero,zero_mul]
 
-theorem guardedHighMellinCoefficient_eq_high (η : HeckeFamily.Character) (C : CalibrationData)
+theorem guardedHighMellinCoefficient_eq_high  (C : CalibrationData)
     (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (D I J K : Ideal O)
     (hK : Supported K) (hKS : ∀P∈S,¬P∣K) (X : ℝ) (H : O) (x w z : ℂ) :
     guardedHighMellinCoefficient η C S D I J (primaryGenerator K) X H x z *
@@ -94,8 +103,10 @@ theorem guardedHighMellinCoefficient_eq_high (η : HeckeFamily.Character) (C : C
       fun h=>hg ⟨h.1,h.2.1,h.2.2.1⟩
     rw [dite_eq_right hg,dite_eq_right hfull]
     simp only [mul_zero,zero_mul]
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

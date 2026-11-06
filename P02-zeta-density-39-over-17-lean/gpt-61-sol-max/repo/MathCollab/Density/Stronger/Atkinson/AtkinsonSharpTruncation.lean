@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -20,7 +21,7 @@ The cutoff is of size T(L/G)^2, not the previous coarse polynomial cutoff.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex
 open MathCollab.Density.Stronger.Fourth
@@ -70,7 +71,6 @@ theorem exists_norm_atkinsonLeadingTerm_band_le :
         (T ^ (-(1 / 4 : ℝ)) / Real.sqrt T) *
           (‖divisorWeight n‖ * ((n : ℝ) ^ (-(1 / 4 : ℝ)) / n)) := by
       unfold atkinsonBesselScale
-      norm_num only [show (-2 : ℝ) * (1 / 4) = -(1 / 2) by norm_num]
       ring
     _ = _ := by rw [hnPow, hTPow]
 
@@ -113,8 +113,7 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
     have h := hd.sum_add_tsum_nat_add N
     have hpos : 0 ≤ ∑ n ∈ Finset.range N, ‖divisorDirichletTerm (5 / 4) n‖ :=
       Finset.sum_nonneg (fun _ _ => norm_nonneg _)
-    dsimp [S]
-    linarith
+    grind
   let K : ℝ := C * G ^ 2 * L * T ^ (-(3 / 4 : ℝ))
   have hK : 0 ≤ K := by dsimp [K]; positivity
   rw [he]
@@ -146,4 +145,4 @@ theorem atkinsonBand_tail_scale_le {T G L : ℝ}
     _ = 2 * G * (Real.sqrt T * T ^ (1 / 4 : ℝ) * T ^ (-(3 / 4 : ℝ))) := by ring
     _ = _ := by rw [hp, mul_one]
 
-end MathCollab.Density.Stronger.Atkinson
+

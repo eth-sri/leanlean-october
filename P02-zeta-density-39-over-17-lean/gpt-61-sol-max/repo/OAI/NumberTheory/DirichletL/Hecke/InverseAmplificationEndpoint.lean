@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeInverseAmplification
@@ -94,8 +94,8 @@ theorem no_slot_endpoint
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow (mul_nonneg hC hK)
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

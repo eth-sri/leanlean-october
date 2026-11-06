@@ -9,8 +9,8 @@ noncomputable section
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 def finiteCentralCubeRows {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -101,8 +101,8 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
         _ = (128*(128*b)^K*A^K*C*(η.modulus.absNorm:ℝ)^2)*(Z^2*Z^(-(saving+2))) := by ring
         _ = _ := by rw [hz]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

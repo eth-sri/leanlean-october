@@ -11,16 +11,16 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile
-open InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
+open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment
+open InverseInitialConjugateEnergy InverseInitialQuotientGeometry
+open InverseInitialEnergyCallerWindow
 open InverseInitialMarkedAssignedGeometry DetectorDictionaryInverseRawConjugateGates
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 private theorem assigned_admissible {ι:Type}[Fintype ι][DecidableEq ι]
     (L:ι→Finset (Ideal O))(hp:∀i,∀P∈L i,Prime P)
@@ -56,9 +56,9 @@ theorem original_source_energy
       FactorsModulo (fixedBaseConductor q) (elementCharacter (conjugateIdealCharacter χ))→
       (∀I,¬InverseInitialExcludedPool.outside (reflectionExcludedPrimes q) I→
         conjugateIdealCharacter χ I=0)→
-    ∀m r:ℝ,0≤m→m≤2→
+    ∀m r:ℝ,0≤ m→m≤2→
       (∀J:Finset ι,-2≤r+(∑i,ell i)-2*(∑i∈J,ell i))→
-      r+2*(∑i,ell i)≤m-2*gap→2*r+8*(∑i,ell i)≤3*m-2*gap→
+      r+2*(∑i,ell i)≤ m-2*gap→2*r+8*(∑i,ell i)≤3*m-2*gap→
       r+(∑i,ell i)+7*eta≤2→
     ∀rows:Finset O,(∀u∈rows,‖eisEmbedding u‖^2≤U^m)→∀θ:ℝ,
       (∑u∈rows,‖∑x:Tuple L,(∏i,coeff i (x i).val)*
@@ -135,8 +135,8 @@ theorem original_source_energy
     (childLogTest W θ) r (∑i,ell i) rows (fun _=>1) (fun _=>zero_le_one) E hE hres
   simpa only [one_mul,E,A,mul_assoc] using hb
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

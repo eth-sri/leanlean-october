@@ -8,21 +8,27 @@ public import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeLocal
 
-lemma one_sub_ne_zero_of_norm_le_half (a : ℂ) (ha : ‖a‖ ≤ 1/2) : 1 - a ≠ 0 := by
+section
+variable (a : ℂ) (ha : ‖a‖ ≤ 1/2)
+include a ha
+
+lemma one_sub_ne_zero_of_norm_le_half  : 1 - a ≠ 0 := by
   intro h
   have : a = 1 := by linear_combination -h
   rw [this, norm_one] at ha
   norm_num at ha
 
-lemma inv_one_sub_norm_le_two (a : ℂ) (ha : ‖a‖ ≤ 1/2) : ‖(1-a)⁻¹‖ ≤ 2 := by
+lemma inv_one_sub_norm_le_two  : ‖(1-a)⁻¹‖ ≤ 2 := by
   have hl := norm_sub_norm_le (1 : ℂ) a
   simp only [norm_one] at hl
   have hd : 0 < ‖1-a‖ := by linarith
   rw [norm_inv, ← one_div, div_le_iff₀ hd]
   linarith
+end
+
 
 theorem unramified_marked_error_bound (R V qInv K W D : ℂ)
     (hR : ‖R‖ ≤ 1/2) (hV : ‖V‖ ≤ 1/2) (hq : ‖qInv‖ ≤ 1) (hD : ‖D‖ ≤ 1/2) :
@@ -84,7 +90,7 @@ theorem continuedCorrection_defect_bound (V W D Pstar : ℂ)
       exact inv_one_sub_norm_le_two D hD
     _ = _ := by ring
 
-end SevenEighths.ProbeLocal
-end
 
-end OAI
+
+
+

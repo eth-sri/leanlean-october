@@ -7,7 +7,7 @@ public import DensityEnergyGM.DFIEquation12
 
 @[expose] public section
 
-open Set Filter Function MeasureTheory
+open Filter Function MeasureTheory
 open scoped BigOperators ContDiff FourierTransform Interval Topology
 
 namespace GuthMaynard.NativeMoment
@@ -29,4 +29,4 @@ theorem setIntegral_le_integral_of_nonneg
   exact MeasureTheory.integral_mono_measure Measure.restrict_le_self
     (Filter.Eventually.of_forall hgnonneg) hg
 
-end GuthMaynard.NativeMoment
+

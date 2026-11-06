@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import DensityWindowBudgets
 public import AdjacentAdditiveEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 structure AdjacentWindow (σ a p α : ℝ) : Prop where
@@ -72,8 +72,7 @@ theorem adjacent_amplifier_budgets {σ a p α T N : ℝ}
         rw [← Real.rpow_natCast (T/(T^(1-p/4))) 4,
           Real.div_rpow hTp.le (Real.rpow_nonneg hTp.le _),
           ← Real.rpow_mul hTp.le,← Real.rpow_sub hTp]
-        congr 1
         ring
       _ = _ := by congr 1; ring
 
-end Montgomery.RationalMoment
+

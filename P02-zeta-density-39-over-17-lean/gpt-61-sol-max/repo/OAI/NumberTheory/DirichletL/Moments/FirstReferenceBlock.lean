@@ -6,24 +6,24 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedWindow
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
 open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
+
+
+open CenteredMomentCanonicalFirst RayFourExpansion
+open CenteredMomentSecondWindowBudget
 open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
-open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
+open CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets
-open CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+open CenteredMomentRankinRadical
+open scoped HeckeO
 
 theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
     (B δ:ℝ)(hB:0≤B)(hδ:0<δ):
@@ -40,13 +40,13 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
     let refR:=(F.right.modulus.absNorm:ℝ)*(V/(D.absNorm:ℝ))^2*Z^(allowance D C Z);
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 (original s R seed).columns))
       (fun b=>Ideal.span {element C D hD.1 (original s R seed).columns b}),
-      (L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
+      (L.absNorm:ℝ)≤ sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
       (commonEnergy (original s R seed) C hC (fixedPair s.η C D hC E χ χ).left v L
         CenteredMomentFirstAnnularMajorant.profile (dyadicScale (n 1))).re≤
         ((∑i,refL*EL i)/(L.absNorm:ℝ))*(1+‖v‖)^(2*J₁))→
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 (original s R seed).columns))
       (fun b=>Ideal.span {element C D hD.1 (original s R seed).columns b}),
-      (L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
+      (L.absNorm:ℝ)≤ sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
       (commonEnergy (original s R seed) D hD (fixedPair s.η C D hC E χ χ).right v L
         CenteredMomentFirstAnnularMajorant.profile (dyadicScale (n 1))).re≤
         ((∑i,refR*ER i)/(L.absNorm:ℝ))*(1+‖v‖)^(2*J₂))→
@@ -107,8 +107,8 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
           (∑i:Fin 4,∑j:Fin 4,windowBudget J₁ s.t (refL*EL i)*windowBudget J₂ s.t (refR*ER j))) := by ring
       _ ≤ _ := by convert hmul using 1 <;> (try dsimp [refL,refR,V,volume,CenteredMomentExceptionalAmplitudePair.volume]) ; ring
 
-end SevenEighths.CenteredMomentFirstReferenceBlock
 
-end
 
-end OAI
+
+
+

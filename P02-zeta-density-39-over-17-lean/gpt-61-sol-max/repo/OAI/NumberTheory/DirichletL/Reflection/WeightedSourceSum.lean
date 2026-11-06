@@ -9,12 +9,16 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ σ ι : Type*} [Fintype φ] [Fintype σ] [Fintype ι]
 variable {N a c : Eis} {mode : Bool}
 
-def weightedPhysicalReflectedRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+section
+variable (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
     (S : Ideal Eis → PrimeFamily σ) (jF : φ → ℕ) (Pset nset bset : Finset (Ideal Eis))
+include F K hK S jF Pset nset bset
+
+def weightedPhysicalReflectedRow 
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
@@ -23,8 +27,7 @@ def weightedPhysicalReflectedRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admi
     r K*aw P.val*w n b*(if h : IsCoprime K P.val then
       actualMixedCoefficient F K hK (S P.val) jF (D P h) s hc u m n b else 0)
 
-theorem weightedPhysicalReflectedRow_eq_branches (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis → PrimeFamily σ) (jF : φ → ℕ) (Pset nset bset : Finset (Ideal Eis))
+theorem weightedPhysicalReflectedRow_eq_branches 
     (hprod : ∀ P ∈ Pset, (∏ i, (S P).ideal i)=P)
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
@@ -59,8 +62,10 @@ theorem weightedPhysicalReflectedRow_eq_branches (F : PrimeFamily φ) (K : Ideal
   intro e he'
   unfold frozenBranchColumn
   ring
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPolynomialBasic
 public import GafniTao.WooleyResidueRefinement
 
@@ -17,13 +18,17 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
-theorem wooleyPolynomial_sum_refined_residue_grid
-    {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
+
+section
+variable {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
     (phi : WooleyPolynomialSystem k) (hab : a ≤ b)
     (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
-    (xi : ZMod (p ^ a)) :
+    (xi : ZMod (p ^ a))
+include Q p a b qB k phi hab gamma alpha xi
+
+theorem wooleyPolynomial_sum_refined_residue_grid
+     :
     ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
         wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha z =
       wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi := by
@@ -40,9 +45,7 @@ theorem wooleyPolynomial_sum_refined_residue_grid
           if ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a)) z = xi then
             (if ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))) = z then
               gamma n * wooleyPolynomialGridPhase phi qB Q alpha n else 0)
-          else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp [hz]
+          else 0 := by simp_all
   simp_rw [hdistribute]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -64,10 +67,7 @@ theorem wooleyPolynomial_sum_refined_residue_grid
     · rw [ite_eq_right hzxi]
 
 theorem wooleyPolynomial_refined_normalized_residue_decomposition
-    {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (hab : a ≤ b)
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
-    (xi : ZMod (p ^ a)) :
+     :
     (Real.sqrt (wooleyWeightedResidueMassSq gamma xi) : ℂ) *
         wooleyPolynomialNormalizedResidueGridSum phi qB gamma alpha xi =
       ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
@@ -79,6 +79,8 @@ theorem wooleyPolynomial_refined_normalized_residue_decomposition
     phi gamma alpha]
   exact (wooleyPolynomial_sum_refined_residue_grid
     phi hab gamma alpha xi).symm
+end
+
 
 /-- Polynomial-system form of Wooley Lemma 6.2. -/
 theorem wooleyPolynomial_lemma_6_2
@@ -148,6 +150,6 @@ theorem wooleyPolynomial_lemma_6_2
     exact le_of_mul_le_mul_left hfactored hfactorPos
 
 
-end
 
-end GafniTao
+
+

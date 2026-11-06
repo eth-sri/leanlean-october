@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimeSlotShift
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergySlotHeight
 open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
 open CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy
 open HeckePrimeAnnular CenteredMomentPrimeSlotShift
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 variable {α:Type*}[Fintype α]
 
@@ -52,8 +52,12 @@ lemma positive_row_phase (η:Character)(m A z:O)(W₁ W₂:ℝ→ℂ)
   rw [Finset.prod_mul_distrib]
   ring
 
-theorem energy_phase (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(β γ:α→Ideal O→ℂ)(phase:α→ℂ)(P:α→ℝ)
+section
+variable (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
+    (pool:α→Finset (Ideal O))
+include η m A W₁ W₂ pool
+
+theorem energy_phase (β γ:α→Ideal O→ℂ)(phase:α→ℂ)(P:α→ℝ)
     (t X₁ X₂:ℝ)(keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ)
     (he:∀i I,I∈pool i→β i I=phase i*γ i I)(hp:∀i,‖phase i‖=1):
     energy η m A t W₁ W₂ pool β P X₁ X₂ keep Φ K=
@@ -65,8 +69,7 @@ theorem energy_phase (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
   rw [positive_row_phase η m A z W₁ W₂ pool β γ phase P t X₁ X₂ he]
   simp only [norm_mul,hprod,one_mul]
 
-theorem inherited_height_energy (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(ν:α→Ideal O→ℂ)(W:α→ℝ→ℂ)
+theorem inherited_height_energy (ν:α→Ideal O→ℂ)(W:α→ℝ→ℂ)
     (P σ freq:α→ℝ)(hP:∀i,0<P i)(hpool:∀i I,I∈pool i→I≠0)
     (t rowt X₁ X₂:ℝ)(keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ):
     energy η m A rowt W₁ W₂ pool
@@ -80,9 +83,11 @@ theorem inherited_height_energy (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
     exact height_coefficient (ν i) (W i) (P i) (σ i) (freq i) t (hP i) I (hpool i I hi)
   · intro i
     simpa using Complex.norm_cpow_eq_rpow_re_of_pos (hP i) (Complex.I*t)
-
-end SevenEighths.CenteredMomentEnergySlotHeight
-
 end
 
-end OAI
+
+
+
+
+
+

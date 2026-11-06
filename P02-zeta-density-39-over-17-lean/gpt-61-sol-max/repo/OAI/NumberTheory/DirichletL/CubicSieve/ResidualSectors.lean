@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SquareParts
 
 @[expose] public section
@@ -8,78 +9,78 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
 
-open scoped BigOperators Classical
+                                  
 namespace SecondPassArithmetic
 
 section
 open ActualEisensteinCubic
 
-open ActualEisensteinCubic
+                          
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstPassCubeLabels (primeProductNorm)
@@ -134,8 +135,12 @@ def secondSourceCommonCoefficient (Ψ : O →* ℂ) (m c d : O) (G E : Finset ι
     ((UniqueFactorizationMonoid.moebius (∏ i ∈ E, Ideal.span {p i}) : ℂ) /
       (‖eisEmbedding (primeSubsetGenerator (fun i => Ideal.span {p i}) E)‖ ^ 2 : ℝ))
 
-def truncatedSecondSource (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O) : ℂ :=
+section
+variable (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
+    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O)
+include F Ψ m c d H W Y K
+
+def truncatedSecondSource  : ℂ :=
   ∑ G ∈ F.powerset, ∑ E : G.powerset, ∑ k ∈ K G E.val,
     secondSourceCommonCoefficient p hg Ψ m c d G E.val *
       secondFrequencyKernel p hp hg hinj F Ψ Ψ m
@@ -143,8 +148,7 @@ def truncatedSecondSource (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
         (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) k
         (fun U => H (G ∪ U)) (fun U => H (G ∪ U)) W Y
 
-def secondSourceTail (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O) : ℂ :=
+def secondSourceTail  : ℂ :=
   ∑ G ∈ F.powerset, ∑ E : G.powerset,
     secondSourceCommonCoefficient p hg Ψ m c d G E.val *
       ∑' k : {k : O // k ∉ K G E.val},
@@ -152,6 +156,8 @@ def secondSourceTail (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
           (secondMaskQuotient p E.val G (Finset.mem_powerset.mp E.property)) c d
           (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) k.val
           (fun U => H (G ∪ U)) (fun U => H (G ∪ U)) W Y
+end
+
 
 theorem inputConjugateRow_eq_truncated_add_tail
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
@@ -216,8 +222,7 @@ theorem truncatedSecondSource_eq_child_sectors
   apply Finset.sum_congr rfl
   intro V hV
   apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  grind
 
 end
 
@@ -232,69 +237,39 @@ open ConcreteTraceCRT (eisEmbedding)
   frequency : O
   deriving DecidableEq
 
+
+
 section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+variable {ι : Type*} (P : ι → Ideal O)
+    (S : Finset ι)
+include ι P S
 
-end
-
-theorem rowCoprimeMask_eq_of_span_eq {ι : Type*} (P : ι → Ideal O)
-    (S : Finset ι) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
+theorem rowCoprimeMask_eq_of_span_eq  {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
     rowCoprimeMask P S a = rowCoprimeMask P S b := by
   have hm (i : ι) : a ∈ P i ↔ b ∈ P i := by
     rw [← Ideal.span_singleton_le_iff_mem, ← Ideal.span_singleton_le_iff_mem, hab]
   simp only [rowCoprimeMask, hm]
 
-theorem rowCoprimeMask_mul_eq_of_span_eq {ι : Type*} (P : ι → Ideal O)
-    (S : Finset ι) (m : O) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
+theorem rowCoprimeMask_mul_eq_of_span_eq  (m : O) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
     rowCoprimeMask P S (m*a) = rowCoprimeMask P S (m*b) := by
   apply rowCoprimeMask_eq_of_span_eq P S
   rw [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_mul_span_singleton, hab]
+end
+
 
 end SecondPassArithmetic
 
 open scoped BigOperators Classical SchwartzMap
-namespace SecondPassIntegration
-open ActualEisensteinCubic FirstPassCubeLabels
-open SecondPassArithmetic (SecondSupportData)
 
-end SecondPassIntegration
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (jLabel)
-open SecondPassIntegration (elementNorm)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
-open FirstPassCubeLabels (b0Label)
-open JointLogSeparation
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-open SecondPassIntegration (conjugateProfile)
-
-end SecondPassArithmetic
 
 open scoped BigOperators Classical
 namespace UnrestrictedIdealReindex
 abbrev O := ActualEisensteinCubic.O
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open PrimaryIdealUnitReindex CanonicalQuadraticSieve
+open PrimaryIdealUnitReindex
 
 abbrev NonzeroIdeal := {I : Ideal O // I ≠ 0}
 abbrev NonzeroElement := {z : O // z ≠ 0}
@@ -330,7 +305,11 @@ theorem unitIdealToElement_bijective : Function.Bijective unitIdealToElement := 
 def unitIdealEquiv : Oˣ × NonzeroIdeal ≃ NonzeroElement :=
   Equiv.ofBijective unitIdealToElement unitIdealToElement_bijective
 
-theorem tsum_nonzero_unit_invariant (f : O → ℂ) (hf : Summable f)
+section
+variable (f : O → ℂ) (hf : Summable f)
+include f hf
+
+theorem tsum_nonzero_unit_invariant 
     (hu : ∀ (u : Oˣ) (z : O), f (u.val * z) = f z) :
     (∑' z : NonzeroElement, f z.val) = (6 : ℂ) * ∑' I : NonzeroIdeal, f (idealGenerator I.val) := by
   let : Finite Oˣ := finite_units
@@ -346,7 +325,7 @@ theorem tsum_nonzero_unit_invariant (f : O → ℂ) (hf : Summable f)
   rw [hc]
   norm_num
 
-theorem tsum_unit_invariant_of_zero (f : O → ℂ) (hf : Summable f) (h0 : f 0 = 0)
+theorem tsum_unit_invariant_of_zero  (h0 : f 0 = 0)
     (hu : ∀ (u : Oˣ) (z : O), f (u.val * z) = f z) :
     (∑' z : O, f z) = (6 : ℂ) * ∑' I : NonzeroIdeal, f (idealGenerator I.val) := by
   have he : (∑' z : NonzeroElement, f z.val) = ∑' z : O, f z := by
@@ -355,9 +334,11 @@ theorem tsum_unit_invariant_of_zero (f : O → ℂ) (hf : Summable f) (h0 : f 0 
     exact fun hz0 => hz (hz0 ▸ h0)
   rw [← he]
   exact tsum_nonzero_unit_invariant f hf hu
-
-end UnrestrictedIdealReindex
-
 end
 
-end OAI
+
+
+
+
+
+

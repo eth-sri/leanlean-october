@@ -10,12 +10,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstLabelCell
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers InverseInitialClippedColumns RayFourExpansion FirstCauchyArithmetic
-open InverseWholePriorityRetainedSource
+open InverseMomentFirstChildWindows InverseFirstPriorityParents
+open InverseSecondSourceBlocks
+open InverseInitialClippedColumns RayFourExpansion
+
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def ChildBounds {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
     (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -164,7 +164,7 @@ theorem actual_label_cell_step (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
   · exact fun G E=>secondCutoff_nonneg p Z M r ell V eta tau window k l j negative hz G E
   · exact fun y hy G hG E=>secondCutoff_dominates p hp pool Q k l j negative Z M r ell V eta tau window hZ hbin y hy G E.val
 
-end SevenEighths.InverseMomentFirstLabelCell
-end
 
-end OAI
+
+
+

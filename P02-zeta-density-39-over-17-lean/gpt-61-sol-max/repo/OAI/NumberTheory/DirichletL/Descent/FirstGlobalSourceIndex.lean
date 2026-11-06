@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalSplit
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
 
@@ -10,7 +11,7 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
 abbrev FirstOriginalOuter (ι : Type*) := Σ _ : CubeCoordinates ι,Σ _ : Finset ι,Finset ι
@@ -33,15 +34,11 @@ lemma retained_cutoff_enlargement (E : O) (hE : E≠0) (R Y : ℝ) (hRY : R≤Y)
     exact Finset.mem_erase.mpr ⟨hn,(mem_childFrequencyBall E hE Y h).mpr
       (((mem_childFrequencyBall E hE R h).mp hm).trans hRY)⟩
   calc
-    _=∑h∈(childFrequencyBall E R).erase 0,(if h∈childFrequencyBall E R then (1:ℂ) else 0)*f h := by
-      apply Finset.sum_congr rfl
-      intro h hh
-      simp [(Finset.mem_erase.mp hh).2]
+    _=∑h∈(childFrequencyBall E R).erase 0,(if h∈childFrequencyBall E R then (1:ℂ) else 0)*f h := by simp
     _=_ := Finset.sum_subset hsub (by
       intro h hh hn
       have hne := (Finset.mem_erase.mp hh).1
-      have hout : h∉childFrequencyBall E R := fun hm=>hn (Finset.mem_erase.mpr ⟨hne,hm⟩)
-      simp [hout])
+      simp_all)
 
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -103,7 +100,7 @@ theorem original_retained_global_index
   simp only [firstOriginalWeight,reopenedPhysicalCutoff]
   ac_rfl
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

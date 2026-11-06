@@ -19,7 +19,7 @@ Integration by parts consumes the actual C1 amplitude and the literal
 primitive integral. The Fresnel application constructs the primitive bound.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 
@@ -67,4 +67,4 @@ theorem IntervalC1Bound.continuousKernel_of_primitive_bound {f K : ℝ → ℂ}
       (norm_nonneg _) hf.nonneg
   linarith
 
-end MathCollab.Density.Stronger.Atkinson
+

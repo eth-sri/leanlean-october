@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownShiftFibers
 public import Mathlib.Data.Finset.Sigma
 
@@ -19,31 +20,43 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownPairCountTwoDiagonal
-    (N k H K : ℕ) (f : ℝ → ℝ) : Finset (ℕ × ℕ) := by
+section
+variable (N k H K : ℕ) (f : ℝ → ℝ)
+include N k H K f
+
+def heathBrownPairCountTwoDiagonal
+     : Finset (ℕ × ℕ) := by
   classical
   exact (heathBrownPairCountTwo N k H K f).filter fun p => p.1 = p.2
 
-noncomputable def heathBrownPairCountTwoPositive
-    (N k H K : ℕ) (f : ℝ → ℝ) : Finset (ℕ × ℕ) := by
+def heathBrownPairCountTwoPositive
+     : Finset (ℕ × ℕ) := by
   classical
   exact (heathBrownPairCountTwo N k H K f).filter fun p => p.2 < p.1
 
-noncomputable def heathBrownPairCountTwoNegative
-    (N k H K : ℕ) (f : ℝ → ℝ) : Finset (ℕ × ℕ) := by
+def heathBrownPairCountTwoNegative
+     : Finset (ℕ × ℕ) := by
   classical
   exact (heathBrownPairCountTwo N k H K f).filter fun p => p.1 < p.2
 
-noncomputable def heathBrownAllPositiveShiftFibers
-    (N k H K : ℕ) (f : ℝ → ℝ) : Finset (Σ _d : ℕ, ℕ) :=
+def heathBrownAllPositiveShiftFibers
+     : Finset (Σ _d : ℕ, ℕ) :=
   (Finset.Icc 1 N).sigma fun d =>
     heathBrownPositiveShiftFiber N k H K f d
+end
 
-def heathBrownPairOfPositiveShift (q : Σ _d : ℕ, ℕ) : ℕ × ℕ :=
+
+section
+variable (q : Σ _d : ℕ, ℕ)
+include q
+
+def heathBrownPairOfPositiveShift  : ℕ × ℕ :=
   (q.2 + q.1, q.2)
 
-def heathBrownPairOfNegativeShift (q : Σ _d : ℕ, ℕ) : ℕ × ℕ :=
+def heathBrownPairOfNegativeShift  : ℕ × ℕ :=
   (q.2, q.2 + q.1)
+end
+
 
 theorem heathBrownDistanceToInteger_neg (x : ℝ) :
     heathBrownDistanceToInteger (-x) = heathBrownDistanceToInteger x := by
@@ -51,8 +64,12 @@ theorem heathBrownDistanceToInteger_neg (x : ℝ) :
     heathBrownDistanceToInteger_eq_unitAddCircle_norm]
   simp
 
+section
+variable {N k H K : ℕ} {f : ℝ → ℝ}
+include N k H K f
+
 theorem heathBrownPairCountTwo_subset_three_parts
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+     :
     heathBrownPairCountTwo N k H K f ⊆
       heathBrownPairCountTwoDiagonal N k H K f ∪
         (heathBrownPairCountTwoPositive N k H K f ∪
@@ -64,7 +81,7 @@ theorem heathBrownPairCountTwo_subset_three_parts
   · simp [heathBrownPairCountTwoPositive, hp, hgt]
 
 theorem heathBrownPairCountTwoDiagonal_card_le
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+     :
     (heathBrownPairCountTwoDiagonal N k H K f).card ≤ N := by
   classical
   let s := heathBrownPairCountTwoDiagonal N k H K f
@@ -72,9 +89,7 @@ theorem heathBrownPairCountTwoDiagonal_card_le
     intro p hp q hq hpq
     have hpd : p.1 = p.2 := (Finset.mem_filter.mp hp).2
     have hqd : q.1 = q.2 := (Finset.mem_filter.mp hq).2
-    apply Prod.ext
-    · exact hpq
-    · simpa [← hpd, ← hqd] using hpq
+    grind
   have himage : s.image Prod.fst ⊆ Finset.Icc 1 N := by
     intro n hn
     rw [Finset.mem_image] at hn
@@ -90,7 +105,7 @@ theorem heathBrownPairCountTwoDiagonal_card_le
     _ ≤ N := by simp [Nat.card_Icc]
 
 theorem heathBrownPairCountTwoPositive_subset_shiftImage
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+     :
     heathBrownPairCountTwoPositive N k H K f ⊆
       (heathBrownAllPositiveShiftFibers N k H K f).image
         heathBrownPairOfPositiveShift := by
@@ -117,7 +132,7 @@ theorem heathBrownPairCountTwoPositive_subset_shiftImage
     · rfl
 
 theorem heathBrownPairCountTwoNegative_subset_shiftImage
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+     :
     heathBrownPairCountTwoNegative N k H K f ⊆
       (heathBrownAllPositiveShiftFibers N k H K f).image
         heathBrownPairOfNegativeShift := by
@@ -161,16 +176,22 @@ theorem heathBrownPairCountTwoNegative_subset_shiftImage
   · apply Prod.ext
     · rfl
     · simp [heathBrownPairOfNegativeShift, d, Nat.add_sub_of_le hlt.le]
+end
+
+
+section
+variable (N k H K : ℕ) (f : ℝ → ℝ)
+include N k H K f
 
 theorem heathBrownAllPositiveShiftFibers_card
-    (N k H K : ℕ) (f : ℝ → ℝ) :
+     :
     (heathBrownAllPositiveShiftFibers N k H K f).card =
       ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by
   simp [heathBrownAllPositiveShiftFibers]
 
 theorem heathBrownPairCountTwo_card_le_shift_sum
-    (N k H K : ℕ) (f : ℝ → ℝ) :
+     :
     (heathBrownPairCountTwo N k H K f).card ≤
       N + 2 * ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by
@@ -194,20 +215,16 @@ theorem heathBrownPairCountTwo_card_le_shift_sum
     (heathBrownPairCountTwo N k H K f).card ≤
         (dset ∪ (pset ∪ nset)).card :=
       Finset.card_le_card heathBrownPairCountTwo_subset_three_parts
-    _ ≤ dset.card + (pset.card + nset.card) := by
-      calc
-        (dset ∪ (pset ∪ nset)).card ≤
-            dset.card + (pset ∪ nset).card :=
-          Finset.card_union_le dset (pset ∪ nset)
-        _ ≤ dset.card + (pset.card + nset.card) :=
-          Nat.add_le_add_left (Finset.card_union_le pset nset) _
+    _ ≤ dset.card + (pset.card + nset.card) := by grind
     _ ≤ N + (fibers.card + fibers.card) := by omega
     _ = N + 2 * ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by
       rw [heathBrownAllPositiveShiftFibers_card]
       omega
-
-
 end
 
-end GafniTao
+
+
+
+
+

@@ -10,7 +10,7 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 def cubeWeightedRow {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -114,8 +114,8 @@ lemma cube_buffered_heights (t : HeightSpace) (H B : ℝ) (i : ℕ)
   · linarith [ht.1.2]
   · linarith [ht.2]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

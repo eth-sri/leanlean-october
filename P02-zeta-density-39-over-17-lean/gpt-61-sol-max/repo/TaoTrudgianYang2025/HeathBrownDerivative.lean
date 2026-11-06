@@ -12,7 +12,7 @@ dependency, not a theorem parameter. The public beta theorem displays
 the exact formula in the Tao--Trudgian--Yang source.
 -/
 
-noncomputable section
+
 
 open Expdb
 open scoped NNReal
@@ -25,4 +25,4 @@ theorem isExponentSumBoundNonAsymptotic_heathBrown
   isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
     GafniTao.heathBrownKthDerivativeTheorem_native hk hα
 
-end TaoTrudgianYang2025
+

@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem physicalRow_first_z_bounded (eps : ℝ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -53,8 +53,8 @@ theorem physicalRow_first_z_bounded (eps : ℝ)
     (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hL
   exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hl (norm_nonneg _)) (norm_nonneg _)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

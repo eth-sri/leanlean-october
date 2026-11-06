@@ -10,15 +10,18 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinKernel
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Filter Topology MeasureTheory
 open scoped BigOperators ContDiff FourierTransform SchwartzMap Topology
 open Classical
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+
 theorem DFIVoronoiTestFunction.eventuallyEq_zero_atTop
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+     :
     g =ᶠ[atTop] 0 := by
   filter_upwards [eventually_gt_atTop hg.upper] with x hx
   by_contra hne
@@ -26,7 +29,7 @@ theorem DFIVoronoiTestFunction.eventuallyEq_zero_atTop
   exact (not_lt_of_ge hs.2) hx
 
 theorem DFIVoronoiTestFunction.eventuallyEq_zero_atZero
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+     :
     EventuallyEq (nhdsWithin (0 : ℝ) (Set.Ioi 0)) g 0 := by
   have hnear : ∀ᶠ x : ℝ in nhds (0 : ℝ), x < hg.lower :=
     isOpen_Iio.mem_nhds hg.lower_pos
@@ -38,13 +41,13 @@ theorem DFIVoronoiTestFunction.eventuallyEq_zero_atZero
   exact (not_lt_of_ge hs.1) hx
 
 theorem DFIVoronoiTestFunction.isBigO_atTop
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (a : ℝ) :
+     (a : ℝ) :
     g =O[atTop] (fun x : ℝ => x ^ (-a)) := by
   exact (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-a)) atTop).congr'
     hg.eventuallyEq_zero_atTop.symm EventuallyEq.rfl
 
 theorem DFIVoronoiTestFunction.isBigO_atZero
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (b : ℝ) :
+     (b : ℝ) :
     Asymptotics.IsBigO (nhdsWithin (0 : ℝ) (Set.Ioi 0)) g
       (fun x : ℝ => x ^ (-b)) := by
   exact (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-b))
@@ -52,7 +55,7 @@ theorem DFIVoronoiTestFunction.isBigO_atZero
     hg.eventuallyEq_zero_atZero.symm EventuallyEq.rfl
 
 theorem DFIVoronoiTestFunction.mellinConvergent
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
+     (σ : ℝ) :
     MellinConvergent g (σ : ℂ) := by
   exact mellinConvergent_of_isBigO_rpow
     (hg.continuous.locallyIntegrable.locallyIntegrableOn (Set.Ioi 0))
@@ -62,7 +65,7 @@ theorem DFIVoronoiTestFunction.mellinConvergent
 /-- Pointwise Mellin inversion for the exact DFI source test class, with
 all convergence and vertical-integrability hypotheses discharged. -/
 theorem DFIVoronoiTestFunction.mellinInversion
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ)
+     (σ : ℝ)
     {x : ℝ} (hx : 0 < x) :
     mellinInv σ (mellin g) x = g x := by
   exact mellinInv_mellin_eq σ g hx (hg.mellinConvergent σ)
@@ -72,13 +75,15 @@ theorem DFIVoronoiTestFunction.mellinInversion
 /-- For the source test class, Mellin differentiation at one has no
 remaining convergence premise. -/
 theorem DFIVoronoiTestFunction.mellin_hasDerivAt_one
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+     :
     HasDerivAt (mellin g) (mellin (fun x : ℝ => Real.log x • g x) 1) 1 := by
   exact (mellin_hasDerivAt_of_isBigO_rpow (s := (1 : ℂ)) (a := (2 : ℝ))
     (b := (0 : ℝ))
     (hg.continuous.locallyIntegrable.locallyIntegrableOn (Set.Ioi 0))
     (hg.isBigO_atTop (2 : ℝ)) (by norm_num)
     (hg.isBigO_atZero (0 : ℝ)) (by norm_num)).2
+end
+
 
 theorem mellin_apply_one (g : ℝ → ℂ) :
     mellin g 1 = ∫ x : ℝ in Set.Ioi 0, g x := by
@@ -90,4 +95,4 @@ theorem mellin_log_smul_apply_one (g : ℝ → ℂ) :
   simp [mellin, smul_eq_mul]
 
 
-end MathCollab.Density.Stronger.Atkinson
+

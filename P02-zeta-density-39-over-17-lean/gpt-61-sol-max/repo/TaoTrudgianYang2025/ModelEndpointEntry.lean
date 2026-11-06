@@ -3,8 +3,7 @@ public import Mathlib
 public import Expdb.ExponentialSums.PhaseFunctions
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Set Filter Expdb
 open scoped Topology ContDiff
 namespace TaoTrudgianYang2025
@@ -44,4 +43,4 @@ theorem approximateModelPhase_of_interior_bounds
     (by simpa only [hcl] using u.property)
 
 
-end TaoTrudgianYang2025
+

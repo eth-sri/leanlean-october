@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCentralGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
@@ -44,7 +44,7 @@ theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
     (fun i=>le_max_left _ _)
     (fun i P hP=>(hnorm i.val P hP).trans (le_max_right _ _)) (hc.2 J) W hW Y t σ
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

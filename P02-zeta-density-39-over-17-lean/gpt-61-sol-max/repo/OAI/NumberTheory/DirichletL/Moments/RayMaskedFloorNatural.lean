@@ -18,7 +18,7 @@ open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
 open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
 open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -110,8 +110,8 @@ theorem natural_pair_slots {α : Type*} [DecidableEq α]
   rw [mul_pow,mul_pow,mul_pow,mul_pow,Real.sq_sqrt hE]
   ring
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

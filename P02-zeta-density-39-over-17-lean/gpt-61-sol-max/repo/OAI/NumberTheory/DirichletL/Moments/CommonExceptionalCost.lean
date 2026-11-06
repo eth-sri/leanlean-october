@@ -11,9 +11,9 @@ open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentCommonExceptionalCost
 open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale
-open CenteredMomentCommonRawCost CenteredMomentExceptionalAmplitudePair
+open CenteredMomentExceptionalAmplitudePair
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentAllocationCost CenteredMomentCommonProfile
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def frozenProfile (s:Input ι):ℝ:=(∏i,s.M i)*(max 1 s.upper)^Fintype.card ι
@@ -72,7 +72,7 @@ theorem scalar_volume_bound (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
 
 omit [DecidableEq ι] in
 theorem common_slotControl (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):
-    slotControl (commonData s C R B)≤slotControl s.toData:=by
+    slotControl (commonData s C R B)≤ slotControl s.toData:=by
   unfold slotControl
   change (∏i:liveIndices B.val,s.M i.val)*
     (∏i:liveIndices B.val,max 1 (128*max 0 (s.hi i.val)*s.M i.val))≤_
@@ -86,8 +86,8 @@ theorem common_slotControl (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools
   · exact Finset.prod_nonneg (fun i _=>zero_le_one.trans (le_max_left _ _))
   · exact Finset.prod_nonneg (fun i _=>zero_le_one.trans (s.M_ge_one i))
 
-end SevenEighths.CenteredMomentCommonExceptionalCost
 
-end
 
-end OAI
+
+
+

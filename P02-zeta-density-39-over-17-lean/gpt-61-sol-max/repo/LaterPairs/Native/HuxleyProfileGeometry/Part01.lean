@@ -15,10 +15,11 @@ public import LaterPairs.Native.ReciprocalSecondDerivativeBounds
 public import LaterPairs.Native.RobertSargosInitialDyadicLog
 public import LaterPairs.Native.SargosLocalAffineJets
 public import LaterPairs.Native.SecondDerivativeComposition
-public import LaterPairs.Native.ZetaSourceLogScales
-public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
+public import LaterPairs.Native.ZetaMomentKernel
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
 public import TaoTrudgianYang2025.BetaAmplitudeMonotonicity
 public import TaoTrudgianYang2025.BetaExpandedModelJets
 public import TaoTrudgianYang2025.BetaInverseJets
@@ -27,16 +28,14 @@ public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
 public import TaoTrudgianYang2025.BetaStationaryMain
 public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
 public import TaoTrudgianYang2025.BetaUniformity
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import TaoTrudgianYang2025.HeathBrownModelJetCore
 public import TaoTrudgianYang2025.HeathBrownPhysicalPhase
 public import TaoTrudgianYang2025.ModelEndpointEntry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                     
@@ -212,17 +211,18 @@ theorem small_denominator_integer_identity
     rw [hident]
     calc
       _ ≤ |(q:ℝ)*((n:ℝ)*α-b)|+|(n:ℝ)*((q:ℝ)*α-a)| := abs_sub _ _
-      _ = (q:ℝ)*|(n:ℝ)*α-b|+(n:ℝ)*|(q:ℝ)*α-a| := by
-        simp only [abs_mul,abs_of_pos hqR,
-          abs_of_nonneg (show (0:ℝ) ≤ n from Nat.cast_nonneg n)]
+      _ = (q:ℝ)*|(n:ℝ)*α-b|+(n:ℝ)*|(q:ℝ)*α-a| := by simp_all
       _ ≤ (q:ℝ)*δ+1/2 := add_le_add (mul_le_mul_of_nonneg_left hnear hqR.le) hterm
       _ < 1 := by linarith
   have he' : |(n:ℤ)*a-(q:ℤ)*b| < 1 := by exact_mod_cast he
-  have hab := abs_lt.mp he'
-  omega
+  grind
+
+section
+variable (S : Finset ℕ)
+include S
 
 theorem card_mul_le_of_dvd
-    (S : Finset ℕ) {q N : ℕ} (hq : 0 < q)
+     {q N : ℕ} (hq : 0 < q)
     (hS : ∀ n ∈ S, 1 ≤ n ∧ n ≤ N)
     (hdvd : ∀ n ∈ S, q ∣ n) : q*S.card ≤ N := by
   have hmap : Set.MapsTo (fun n : ℕ => n/q) S (Finset.Icc 1 (N/q)) := by
@@ -234,18 +234,14 @@ theorem card_mul_le_of_dvd
     · exact Nat.div_le_div_right (hS n hn).2
   have hinj : Set.InjOn (fun n : ℕ => n/q) S := by
     intro n hn m hm he
-    change n/q=m/q at he
-    calc
-      n = (n/q)*q := (Nat.div_mul_cancel (hdvd n hn)).symm
-      _ = (m/q)*q := by rw [he]
-      _ = m := Nat.div_mul_cancel (hdvd m hm)
+    simp_all
   have hc : S.card ≤ N/q := by
     have h := Finset.card_le_card_of_injOn (fun n : ℕ => n/q) hmap hinj
     simpa using h
   exact (Nat.mul_le_mul_left q hc).trans (by simpa [Nat.mul_comm] using Nat.div_mul_le_self N q)
 
 theorem small_denominator_branch
-    (S : Finset ℕ) {N q : ℕ} {a : ℤ} {α δ : ℝ}
+     {N q : ℕ} {a : ℤ} {α δ : ℝ}
     (hN : 0 < N) (hq : 0 < q) (hδ : 0 ≤ δ)
     (hcop : IsCoprime a (q:ℤ))
     (hS : ∀ n ∈ S, 1 ≤ n ∧ n ≤ N)
@@ -283,6 +279,8 @@ theorem small_denominator_branch
   have hm := mul_le_mul_of_nonneg_right hcardR (abs_nonneg ((q:ℝ)*α-a))
   have hqR : (0:ℝ) < q := Nat.cast_pos.mpr hq
   nlinarith only [hbound,hm,hqR]
+end
+
 
                                                                              
 theorem exists_reduced_approximation (α : ℝ) {N : ℕ} (hN : 0 < N) :
@@ -315,17 +313,17 @@ theorem fixed_residual_separated {q n m : ℕ} {a e : ℤ}
   have hdiv : (q:ℤ) ∣ a*((n:ℤ)-(m:ℤ)) :=
     ⟨b n-b m,by nlinarith only [hn,hm]⟩
   obtain ⟨k,hk⟩ := hcop.symm.dvd_of_dvd_mul_left hdiv
-  have hk0 : k ≠ 0 := by
-    intro he
-    rw [he,mul_zero] at hk
-    exact hne (by exact_mod_cast sub_eq_zero.mp hk)
+  have hk0 : k ≠ 0 := by bound
   have hk1 : (1:ℤ) ≤ |k| := by have h := abs_pos.mpr hk0; omega
   have hkr : (1:ℝ) ≤ |(k:ℝ)| := by exact_mod_cast hk1
   have he : (n:ℝ)-(m:ℝ) = (q:ℝ)*(k:ℝ) := by exact_mod_cast hk
-  rw [he,abs_mul,abs_of_pos (show (0:ℝ) < q from Nat.cast_pos.mpr hq)]
-  exact le_mul_of_one_le_right (Nat.cast_nonneg q) hkr
+  simp_all <;> nlinarith
 
-theorem fixed_residual_card_bound (S : Finset ℕ) (b : ℕ → ℤ)
+section
+variable (S : Finset ℕ)
+include S
+
+theorem fixed_residual_card_bound  (b : ℕ → ℤ)
     {N q : ℕ} {a e : ℤ} (hN : 0 < N) (hq : 0 < q)
     (hcop : IsCoprime a (q:ℤ)) (hS : ∀ n ∈ S, 1 ≤ n ∧ n ≤ N)
     (he : ∀ n ∈ S, a*(n:ℤ)-(q:ℤ)*b n=e) :
@@ -355,7 +353,7 @@ theorem fixed_residual_card_bound (S : Finset ℕ) (b : ℕ → ℤ)
   exact hc
 
 theorem large_denominator_branch
-    (S : Finset ℕ) {N q : ℕ} {a : ℤ} {α δ : ℝ}
+     {N q : ℕ} {a : ℤ} {α δ : ℝ}
     (hN : 0 < N) (hq : 0 < q) (hqN : q ≤ 2*N) (hδ : 0 ≤ δ)
     (hcop : IsCoprime a (q:ℤ))
     (hS : ∀ n ∈ S, 1 ≤ n ∧ n ≤ N)
@@ -385,16 +383,12 @@ theorem large_denominator_branch
     rw [hid]
     calc
       _ ≤ |(q:ℝ)*((n:ℝ)*α-b n)|+|(n:ℝ)*((q:ℝ)*α-a)| := abs_sub _ _
-      _ = (q:ℝ)*|(n:ℝ)*α-b n|+(n:ℝ)*|(q:ℝ)*α-a| := by
-        simp only [abs_mul,abs_of_pos hqR,
-          abs_of_nonneg (show (0:ℝ) ≤ n from Nat.cast_nonneg n)]
+      _ = (q:ℝ)*|(n:ℝ)*α-b n|+(n:ℝ)*|(q:ℝ)*α-a| := by simp_all
       _ ≤ (q:ℝ)*δ+1/2 := add_le_add (mul_le_mul_of_nonneg_left (hb n hn) hqR.le) hterm
       _ ≤ _ := by linarith
   have hE : (E.card:ℝ) ≤ 6*(q:ℝ)*δ := by
     have hcount := integer_card_le_of_abs_sub_le E (a := 0)
-      (by positivity : 0 ≤ 2*(q:ℝ)*δ) (fun z hz => by
-        obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp hz
-        simpa only [sub_zero] using he n hn)
+      (by positivity : 0 ≤ 2*(q:ℝ)*δ) (fun z hz => by aesop)
     linarith
   let B : ℝ := if q ≤ N then 2*(N:ℝ)/q else 1
   have hB : 0 ≤ B := by dsimp only [B]; split <;> positivity
@@ -407,10 +401,7 @@ theorem large_denominator_branch
     · dsimp only [B]
       rw [ite_eq_left hqN']
       have hqr : (q:ℝ) ≤ N := by exact_mod_cast hqN'
-      have hcomp : ((N:ℝ)-1)/q+1 ≤ 2*(N:ℝ)/q := by
-        apply (le_div_iff₀ hqR).mpr
-        rw [add_mul,div_mul_cancel₀ _ hqR.ne']
-        linarith
+      have hcomp : ((N:ℝ)-1)/q+1 ≤ 2*(N:ℝ)/q := by field_simp <;> nlinarith
       exact hc.trans hcomp
     · dsimp only [B]
       rw [ite_eq_right hqN']
@@ -439,7 +430,7 @@ theorem large_denominator_branch
                                                                      
                                                         
 theorem linear_form_dichotomy
-    (S : Finset ℕ) {N : ℕ} {α δ : ℝ}
+     {N : ℕ} {α δ : ℝ}
     (hN : 0 < N) (hδ : 0 ≤ δ)
     (hS : ∀ n ∈ S, 1 ≤ n ∧ n ≤ N)
     (hnear : ∀ n ∈ S, ∃ b : ℤ, |(n:ℝ)*α-b| ≤ δ) :
@@ -453,6 +444,8 @@ theorem linear_form_dichotomy
     exact Or.inr ⟨q,hq,hcard,hdvd,a,hclose⟩
   · exact Or.inl (large_denominator_branch S hN hq (by omega) hδ hcop
       hS happrox (le_of_not_gt hsmall) hnear)
+end
+
 
                                                                         
 theorem maximal_denominator_determinant_injective
@@ -462,14 +455,9 @@ theorem maximal_denominator_determinant_injective
   intro p hp q hq he
   have hdiv : n₀ ∣ m₀*(p.2-q.2) := ⟨p.1-q.1,by dsimp at he; nlinarith only [he]⟩
   obtain ⟨k,hk⟩ := hcop.symm.dvd_of_dvd_mul_left hdiv
-  have hk0 : k=0 := by
-    by_contra hne
-    have hd : k ≤ -1 ∨ 1 ≤ k := by omega
-    rcases hd with hd | hd <;> nlinarith [hp.1,hp.2,hq.1,hq.2]
+  have hk0 : k=0 := by simp_all <;> nlinarith
   have hden : p.2=q.2 := by rw [hk0,mul_zero] at hk; exact sub_eq_zero.mp hk
-  have hnum : p.1=q.1 := by
-    have he' : n₀*(p.1-q.1)=0 := by dsimp at he; rw [hden] at he; nlinarith only [he]
-    exact sub_eq_zero.mp ((mul_eq_zero.mp he').resolve_left hn₀.ne')
+  have hnum : p.1=q.1 := by aesop
   exact Prod.ext hnum hden
 
                                                                     
@@ -504,34 +492,31 @@ theorem determinant_beta_near
   have h := determinant_alpha_near n₀ m₀ n m b₀ b hm hm₀
     (α := β) (β := α) (by simpa only [add_comm] using hzero)
     (by simpa only [add_comm] using hpoint)
-  have he : ((m₀*n-n₀*m:ℤ):ℝ)*β-((m₀*b-m*b₀:ℤ):ℝ) =
-      -(((n₀*m-m₀*n:ℤ):ℝ)*β-((m*b₀-m₀*b:ℤ):ℝ)) := by
-    push_cast
-    ring
-  rw [he,abs_neg]
-  exact h
+  grind
 
                                                                        
                                                                        
                                                                    
-theorem exists_right_neighbor {m₀ n₀ : ℤ}
-    (hn₀ : 0 < n₀) (hcop : IsCoprime m₀ n₀) :
+section
+variable {m₀ n₀ : ℤ}
+    (hn₀ : 0 < n₀) (hcop : IsCoprime m₀ n₀)
+include m₀ n₀ hn₀ hcop
+
+theorem exists_right_neighbor  :
     ∃ a b : ℤ, 1 ≤ b ∧ b ≤ n₀ ∧ IsCoprime a b ∧
       m₀*b-n₀*a = -1 ∧
       ∀ m n : ℤ, 1 ≤ n → n ≤ n₀ → m₀*n < n₀*m → a*n ≤ m*b := by
   obtain ⟨u,v,huv⟩ := hcop
-  let k : ℤ := (-u-1)/n₀
-  let b : ℤ := (-u-1)%n₀+1
-  let a : ℤ := v-k*m₀
+  let k := (-u-1)/n₀
+  let b := (-u-1)%n₀+1
+  let a := v-k*m₀
   have hb : 1 ≤ b ∧ b ≤ n₀ := by
     have hlow := Int.emod_nonneg (-u-1) hn₀.ne'
     have hhigh := Int.emod_lt_of_pos (-u-1) hn₀
-    dsimp [b]
-    omega
+    bound
   have hbform : b = -u-k*n₀ := by
     have he := Int.emod_add_mul_ediv (-u-1) n₀
-    dsimp [b,k]
-    nlinarith only [he]
+    bound
   have hdet : m₀*b-n₀*a = -1 := by
     dsimp [a]
     rw [hbform]
@@ -548,16 +533,16 @@ theorem exists_right_neighbor {m₀ n₀ : ℤ}
   have hlarge := mul_le_mul_of_nonneg_left hc hn₀.le
   nlinarith only [he,hprod,hnmax,hlarge]
 
-theorem exists_left_neighbor {m₀ n₀ : ℤ}
-    (hn₀ : 0 < n₀) (hcop : IsCoprime m₀ n₀) :
+theorem exists_left_neighbor  :
     ∃ a b : ℤ, 1 ≤ b ∧ b ≤ n₀ ∧ IsCoprime a b ∧
       m₀*b-n₀*a = 1 ∧
       ∀ m n : ℤ, 1 ≤ n → n ≤ n₀ → n₀*m < m₀*n → m*b ≤ a*n := by
   obtain ⟨a,b,hb,hbmax,hcop',hdet,hclose⟩ := exists_right_neighbor hn₀ hcop.neg_left
   refine ⟨-a,b,hb,hbmax,hcop'.neg_left,by nlinarith only [hdet],?_⟩
   intro m n hn hnmax hleft
-  have h := hclose (-m) n hn hnmax (by nlinarith only [hleft])
-  nlinarith only [h]
+  nlinarith
+end
+
 
                                                                    
                                                                        
@@ -566,7 +551,11 @@ def fareySector (N : ℕ) (l μ : ℝ) : Finset (ℤ × ℤ) := by
   exact ((Finset.Icc 1 ⌊μ*(N:ℝ)⌋) ×ˢ (Finset.Icc 1 (N:ℤ))).filter
     (fun p => IsCoprime p.1 p.2 ∧ l*(p.2:ℝ) ≤ p.1 ∧ (p.1:ℝ) ≤ μ*p.2)
 
-theorem mem_fareySector_iff {N : ℕ} {l μ : ℝ} {p : ℤ × ℤ}
+section
+variable {N : ℕ} {l μ : ℝ}
+include N l μ
+
+theorem mem_fareySector_iff  {p : ℤ × ℤ}
     (hl : 0 < l) (hμ : 0 ≤ μ) :
     p ∈ fareySector N l μ ↔ 1 ≤ p.2 ∧ p.2 ≤ N ∧
       IsCoprime p.1 p.2 ∧ l*(p.2:ℝ) ≤ p.1 ∧ (p.1:ℝ) ≤ μ*p.2 := by
@@ -589,7 +578,7 @@ theorem mem_fareySector_iff {N : ℕ} {l μ : ℝ} {p : ℤ × ℤ}
                                                                          
                                                         
 theorem fareySector_exists_unit_determinant
-    {N : ℕ} {l μ : ℝ} {p₀ p : ℤ × ℤ}
+     {p₀ p : ℤ × ℤ}
     (hl : 0 < l) (hμ : 0 ≤ μ)
     (hp₀ : p₀ ∈ fareySector N l μ) (hp : p ∈ fareySector N l μ)
     (hne : p ≠ p₀) (hmax : p.2 ≤ p₀.2) :
@@ -629,9 +618,15 @@ theorem fareySector_exists_unit_determinant
     · apply (mul_le_mul_iff_right₀ hn₀R).mp
       nlinarith only [mul_le_mul_of_nonneg_right hu₀ hbR,hdetR]
     · simp only [hdet,abs_one]
+end
+
 
                                                                       
-theorem card_le_two_mul_nonzero_abs_card_add_one (D : Finset ℤ) :
+section
+variable (D : Finset ℤ)
+include D
+
+theorem card_le_two_mul_nonzero_abs_card_add_one  :
     D.card ≤ 2*((D.erase 0).image Int.natAbs).card+1 := by
   classical
   let P := (D.erase 0).image Int.natAbs
@@ -639,20 +634,14 @@ theorem card_le_two_mul_nonzero_abs_card_add_one (D : Finset ℤ) :
       (P.image (fun n : ℕ => -(n:ℤ))) := by
     intro d hd
     have habs : d.natAbs ∈ P := Finset.mem_image.mpr ⟨d,hd,rfl⟩
-    rcases Int.natAbs_eq d with he | he
-    · exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨d.natAbs,habs,he.symm⟩)
-    · exact Finset.mem_union_right _ (Finset.mem_image.mpr ⟨d.natAbs,habs,he.symm⟩)
+    grind
   have hc : (D.erase 0).card ≤ 2*P.card := by
     calc
       _ ≤ _ := Finset.card_le_card hsub
       _ ≤ _ := Finset.card_union_le _ _
       _ ≤ P.card+P.card := add_le_add (Finset.card_image_le) (Finset.card_image_le)
       _ = _ := by omega
-  have hD : D ⊆ insert 0 (D.erase 0) := by
-    intro d hd
-    by_cases he : d=0
-    · simp only [he,Finset.mem_insert_self]
-    · exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨he,hd⟩)
+  have hD : D ⊆ insert 0 (D.erase 0) := by simp_all
   change D.card ≤ 2*P.card+1
   exact (Finset.card_le_card hD).trans ((Finset.card_insert_le _ _).trans (by omega))
 
@@ -660,7 +649,7 @@ theorem card_le_two_mul_nonzero_abs_card_add_one (D : Finset ℤ) :
                                                                        
                                
 theorem small_error_integer_of_unit_determinant
-    (D : Finset ℤ) {B ε α : ℝ}
+     {B ε α : ℝ}
     (hε : 0 ≤ ε) (hunit : ∃ d ∈ D, d.natAbs=1)
     (hsize : ∀ d ∈ D, (d.natAbs:ℝ) ≤ B*(D.card:ℝ))
     (hsmall : 36*B*ε < 1)
@@ -685,12 +674,8 @@ theorem small_error_integer_of_unit_determinant
     intro n hn
     refine ⟨?_,Finset.le_max' P n hn⟩
     obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hn
-    have hdne := (Finset.mem_erase.mp hd).1
-    exact Nat.pos_of_ne_zero (by simpa using hdne)
-  have hLsize : (L:ℝ) ≤ B*(D.card:ℝ) := by
-    obtain ⟨d,hd,he⟩ := Finset.mem_image.mp hL
-    rw [← he]
-    exact hsize d (Finset.mem_erase.mp hd).2
+    grind
+  have hLsize : (L:ℝ) ≤ B*(D.card:ℝ) := by grind
   have hPnear : ∀ n ∈ P, ∃ b : ℤ, |(n:ℝ)*α-b| ≤ ε := by
     intro n hn
     obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hn
@@ -701,8 +686,7 @@ theorem small_error_integer_of_unit_determinant
         simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z:ℝ)) he
       rwa [← heR]
     · refine ⟨-b,?_⟩
-      have heR : (d:ℝ) = -(d.natAbs:ℝ) := by
-        simpa only [Int.cast_natCast,Int.cast_neg] using congrArg (fun z : ℤ => (z:ℝ)) he
+      have heR : (d:ℝ) = -(d.natAbs:ℝ) := by norm_cast at * <;> omega
       have hid : (d.natAbs:ℝ)*α-((-b:ℤ):ℝ) = -((d:ℝ)*α-b) := by
         rw [heR,Int.cast_neg]
         ring
@@ -718,9 +702,15 @@ theorem small_error_integer_of_unit_determinant
     have hbound := mul_le_mul_of_nonneg_right hcard (abs_nonneg (α-(a:ℝ)))
     have hfinal : |α-(a:ℝ)| * (D.card:ℝ) ≤ 3*ε := by nlinarith only [hbound,ha]
     exact hr.trans ((le_div_iff₀ hDR).mpr hfinal)
+end
+
+
+section
+variable {N : ℕ}
+include N
 
 theorem fareySector_determinant_bound
-    {N : ℕ} {l μ : ℝ} {p₀ p : ℤ × ℤ}
+     {l μ : ℝ} {p₀ p : ℤ × ℤ}
     (hl : 0 < l) (hμ : 0 ≤ μ)
     (hp₀ : p₀ ∈ fareySector N l μ) (hp : p ∈ fareySector N l μ) :
     |((p₀.1*p.2-p₀.2*p.1:ℤ):ℝ)| ≤ (μ-l)*(N:ℝ)^2 := by
@@ -748,7 +738,7 @@ theorem fareySector_determinant_bound
                                                                     
                                                                         
 theorem fareySector_small_error_bounds
-    {N : ℕ} {l μ B α β δ : ℝ}
+     {l μ B α β δ : ℝ}
     (hl : 0 < l) (hμ : 1 ≤ μ) (hB : 1 ≤ B) (hδ : 0 ≤ δ)
     (hR : max ((μ-l)*(N:ℝ)^2/B) 2 ≤ (fareySector N l μ).card)
     (hsmall : (μ*(N:ℝ))*δ ≤ 1/(96*B))
@@ -778,8 +768,7 @@ theorem fareySector_small_error_bounds
   have hDcard : D.card=S.card := Finset.card_image_of_injOn hinj
   have hunit : ∃ d ∈ D, d.natAbs=1 := by
     refine ⟨f r,Finset.mem_image.mpr ⟨r,hr,rfl⟩,?_⟩
-    have h : |f r|=1 := hrunit
-    exact Int.ofNat_inj.mp ((Int.natCast_natAbs (f r)).trans h)
+    grind
   have hsize : ∀ d ∈ D, (d.natAbs:ℝ) ≤ B*(D.card:ℝ) := by
     intro d hd
     obtain ⟨t,ht,rfl⟩ := Finset.mem_image.mp hd
@@ -794,9 +783,7 @@ theorem fareySector_small_error_bounds
   have hbase : 96*B*(μ*(N:ℝ))*δ ≤ 1 := by
     have h := (le_div_iff₀ (by positivity : 0 < 96*B)).mp hsmall
     nlinarith only [h]
-  have hsmallα : 36*B*(2*(N:ℝ)*δ) < 1 := by
-    have h := mul_le_mul_of_nonneg_left hNleM (by positivity : 0 ≤ B*δ)
-    nlinarith only [h,hbase]
+  have hsmallα : 36*B*(2*(N:ℝ)*δ) < 1 := by nlinarith
   have hsmallβ : 36*B*(2*(μ*(N:ℝ))*δ) < 1 := by nlinarith only [hbase]
   obtain ⟨b₀,hb₀⟩ := hnear p₀ hp₀
   have hnearα : ∀ d ∈ D, ∃ b : ℤ, |(d:ℝ)*α-b| ≤ 2*(N:ℝ)*δ := by
@@ -836,7 +823,7 @@ theorem fareySector_small_error_bounds
     nlinarith only [mul_nonneg (mul_nonneg hμ0 (Nat.cast_nonneg N)) hδ]
 
 theorem denominator_fiber_card
-    {N : ℕ} {l μ : ℝ} (hl : 0 < l) (hlμ : l ≤ μ)
+     {l μ : ℝ} (hl : 0 < l) (hlμ : l ≤ μ)
     {n : ℤ} (hn : 0 ≤ n) :
     (((fareySector N l μ).filter (fun p => p.2=n)).card:ℝ) ≤ (μ-l)*(n:ℝ)+1 := by
   classical
@@ -853,12 +840,13 @@ theorem denominator_fiber_card
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hm
     obtain ⟨hpS,hpn⟩ := Finset.mem_filter.mp hp
     obtain ⟨_hpn,_hpN,_hc,hlower,hupper⟩ := (mem_fareySector_iff hl hμ).mp hpS
-    rw [hpn] at hlower hupper
-    exact abs_le.mpr ⟨by linarith,by linarith⟩
+    grind
   have h := integer_card_le_of_abs_sub_le A hrad hnear
   rw [hcard] at h
   change (T.card:ℝ) ≤ _
   linarith
+end
+
 
 
                                                                     
@@ -873,7 +861,6 @@ theorem fareySector_card_le (N : ℕ) {l μ : ℝ} (hl : 0 < l) (hlμ : l ≤ μ
       apply Finset.eq_empty_iff_forall_notMem.mpr
       intro p hp
       have h := (mem_fareySector_iff hl hμ).mp hp
-      norm_num at h
       omega
     simp [hS]
   | succ N ih =>
@@ -929,8 +916,16 @@ theorem prime_coprime_consecutive {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p) (a : 
                                                                     
                                                                        
                                                                       
-theorem large_sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
-    (hl : 0 < l) (hlμ : l ≤ μ) (hN : 4 ≤ N)
+section
+variable {N : ℕ}
+include N
+
+section
+variable {l μ : ℝ}
+    (hl : 0 < l) (hlμ : l ≤ μ)
+include l μ hl hlμ
+
+theorem large_sector_consecutive_numerators  (hN : 4 ≤ N)
     (hR : 16*(N:ℝ) ≤ (fareySector N l μ).card) :
     ∃ m n : ℤ, (m,n) ∈ fareySector N l μ ∧ (m+1,n) ∈ fareySector N l μ := by
   have hμ : 0 ≤ μ := hl.le.trans hlμ
@@ -943,9 +938,7 @@ theorem large_sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
   have hwN : 24 ≤ (μ-l)*(N:ℝ) := by
     apply (mul_le_mul_iff_right₀ hNR).mp
     nlinarith only [hw,hR]
-  have hwp : 4 ≤ (μ-l)*(p:ℝ) := by
-    have h := mul_le_mul_of_nonneg_left hNp (sub_nonneg.mpr hlμ)
-    nlinarith only [hwN,h]
+  have hwp : 4 ≤ (μ-l)*(p:ℝ) := by nlinarith
   let a := ⌊l*(p:ℝ)⌋₊+1
   obtain ⟨m,ham,hma,hcm,hcm1⟩ := prime_coprime_consecutive hp hp3 a
   have hlow : l*(p:ℝ) ≤ (m:ℝ) := by
@@ -971,8 +964,7 @@ theorem large_sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
 
                                                                     
                                                                                
-theorem sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
-    (hl : 0 < l) (hlμ : l ≤ μ) (hN : 0 < N)
+theorem sector_consecutive_numerators  (hN : 0 < N)
     (hR : 16*(N:ℝ) ≤ (fareySector N l μ).card) :
     ∃ m n : ℤ, (m,n) ∈ fareySector N l μ ∧ (m+1,n) ∈ fareySector N l μ := by
   by_cases hN4 : 4 ≤ N
@@ -984,7 +976,7 @@ theorem sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
     have hh := mul_nonneg (mul_nonneg (sub_nonneg.mpr hlμ) hNR.le) (sub_nonneg.mpr hN3)
     apply (mul_le_mul_iff_right₀ hNR).mp
     nlinarith only [hupper,hR,hh]
-  let m : ℤ := ⌊l⌋+1
+  let m := ⌊l⌋+1
   have hlow : l ≤ (m:ℝ) := by
     have hh := Int.lt_floor_add_one l
     simpa only [m,Int.cast_add,Int.cast_one] using hh.le
@@ -1004,12 +996,14 @@ theorem sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
     refine ⟨le_rfl,hN1,isCoprime_one_right,?_,?_⟩
     · simp only [Int.cast_one,Int.cast_add,mul_one]; linarith
     · simpa only [Int.cast_one,Int.cast_add,mul_one] using hupp
+end
+
 
 
                                                                       
                                                                         
                                          
-theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
+theorem large_sector_alpha_bound  {l μ α β δ : ℝ}
     (hl : 0 < l) (hμ : 1 ≤ μ) (hlμ : l ≤ μ) (hN : 0 < N)
     (hR : 16*(N:ℝ) ≤ (fareySector N l μ).card) (hδ : 0 ≤ δ)
     (hnear : ∀ p ∈ fareySector N l μ,
@@ -1026,8 +1020,7 @@ theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
     have h := (mem_fareySector_iff hl hμ0).mp hp
     exact Finset.mem_Icc.mpr ⟨h.1,h.2.1⟩
   have hI : (Finset.Icc (1:ℤ) N).card=N := by simp
-  have hIne : (Finset.Icc (1:ℤ) N).Nonempty := by
-    exact ⟨1,Finset.mem_Icc.mpr ⟨le_rfl,by exact_mod_cast (show 1 ≤ N by omega)⟩⟩
+  have hIne : (Finset.Icc (1:ℤ) N).Nonempty := by bound
   obtain ⟨n,_hn,hcount⟩ := Finset.exists_le_card_fiber_of_nsmul_le_card_of_maps_to
     hmaps hIne (b := (S.card:ℝ)/(N:ℝ)) (by rw [hI,nsmul_eq_mul]; exact le_of_eq (mul_div_cancel₀ _ hNR.ne'))
   let T := S.filter (fun p => p.2=n)
@@ -1038,8 +1031,7 @@ theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
   let P := insert 1 ((D.erase 0).image Int.natAbs)
   have hDcard : D.card=T.card := Finset.card_image_of_injOn (by
     intro p hp q hq he
-    apply Prod.ext (by dsimp at he; omega)
-    exact (Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hq).2.symm)
+    grind)
   have hTP : (T.card:ℝ) ≤ 2*(P.card:ℝ)+1 := by
     have hc := card_le_two_mul_nonzero_abs_card_add_one D
     have hsub : (D.erase 0).image Int.natAbs ⊆ P := Finset.subset_insert _ _
@@ -1049,8 +1041,7 @@ theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
   have hcard : (S.card:ℝ) ≤ 4*(N:ℝ)*(P.card:ℝ) := by
     have hc := (div_le_iff₀ hNR).mp hcount
     have ht := mul_le_mul_of_nonneg_left hTP hNR.le
-    change 16*(N:ℝ) ≤ (S.card:ℝ) at hR
-    nlinarith only [hc,ht,hR]
+    grind
   have hPne : P.Nonempty := ⟨1,Finset.mem_insert_self _ _⟩
   let L := P.max' hPne
   have hL : L ∈ P := Finset.max'_mem _ _
@@ -1100,8 +1091,7 @@ theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
           simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z:ℝ)) he
         rwa [← heR]
       · refine ⟨-b,?_⟩
-        have heR : ((p.1-p₀.1:ℤ):ℝ) = -((p.1-p₀.1).natAbs:ℝ) := by
-          simpa only [Int.cast_natCast,Int.cast_neg] using congrArg (fun z : ℤ => (z:ℝ)) he
+        have heR : ((p.1-p₀.1:ℤ):ℝ) = -((p.1-p₀.1).natAbs:ℝ) := by norm_cast at * <;> omega
         have hid : ((p.1-p₀.1).natAbs:ℝ)*α-((-b:ℤ):ℝ) = -(((p.1-p₀.1:ℤ):ℝ)*α-b) := by
           rw [heR,Int.cast_neg]; ring
         rwa [hid,abs_neg]
@@ -1124,7 +1114,7 @@ theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
     nlinarith only [ht,hh]
 
 
-theorem sector_denominator_card_lower {N : ℕ} {l μ B : ℝ}
+theorem sector_denominator_card_lower  {l μ B : ℝ}
     (hl : 0 < l) (hlμ : l ≤ μ) (hN : 0 < N)
     (hR : (N:ℝ) ≤ (fareySector N l μ).card)
     (hdensity : (μ-l)*(N:ℝ)^2 ≤ B*(fareySector N l μ).card) :
@@ -1154,6 +1144,8 @@ theorem sector_denominator_card_lower {N : ℕ} {l μ B : ℝ}
       ((E.card:ℝ)*((B+1)*(S.card:ℝ)))/(N:ℝ) by simpa only [mul_div_assoc] using hsum)
   apply (mul_le_mul_iff_right₀ hSR).mp
   nlinarith only [hprod]
+end
+
 
 theorem sector_denominator_common_divisor {N q : ℕ} {l μ : ℝ}
     (hl : 0 < l) (hμ : 0 ≤ μ) (hR : 2 ≤ (fareySector N l μ).card)
@@ -1175,7 +1167,11 @@ theorem sector_denominator_common_divisor {N q : ℕ} {l μ : ℝ}
   exact Nat.dvd_one.mp hh
 
 
-theorem sector_card_le_twice_rectangle {N : ℕ} {l μ : ℝ}
+section
+variable {N : ℕ}
+include N
+
+theorem sector_card_le_twice_rectangle  {l μ : ℝ}
     (hl : 0 < l) (hμ : 1 ≤ μ) (hlμ : l ≤ μ) (hN : 0 < N) :
     ((fareySector N l μ).card:ℝ) ≤ 2*μ*(N:ℝ)^2 := by
   have hu := fareySector_card_le N hl hlμ
@@ -1190,8 +1186,12 @@ theorem sector_card_le_twice_rectangle {N : ℕ} {l μ : ℝ}
 
                                                                         
                                                                         
-theorem sector_beta_bound {N : ℕ} {l μ B α β δ : ℝ}
-    (hl : 0 < l) (hμ : 1 ≤ μ) (hlμ : l ≤ μ) (hB : 1 ≤ B) (hN : 0 < N)
+section
+variable {l μ B α β δ : ℝ}
+    (hl : 0 < l) (hμ : 1 ≤ μ)
+include l μ B α β δ hl hμ
+
+theorem sector_beta_bound  (hlμ : l ≤ μ) (hB : 1 ≤ B) (hN : 0 < N)
     (hR : (N:ℝ) ≤ (fareySector N l μ).card) (hR2 : 2 ≤ (fareySector N l μ).card)
     (hdensity : (μ-l)*(N:ℝ)^2 ≤ B*(fareySector N l μ).card) (hδ : 0 ≤ δ)
     (hα : |α-(round α:ℤ)| ≤ 8*(N:ℝ)*δ/(fareySector N l μ).card)
@@ -1220,12 +1220,7 @@ theorem sector_beta_bound {N : ℕ} {l μ B α β δ : ℝ}
   have hdens := sector_denominator_card_lower hl hlμ hN hR hdensity
   change (N:ℝ) ≤ (B+1)*(E.card:ℝ) at hdens
   rw [← hDcard] at hdens
-  have hDsize : ∀ n ∈ D, 1 ≤ n ∧ n ≤ N := by
-    intro n hn
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hn
-    have hh := hden m hm
-    have he : (m.natAbs:ℤ)=m := (Int.natCast_natAbs m).trans (abs_of_nonneg (by omega))
-    constructor <;> exact_mod_cast (show _ by omega)
+  have hDsize : ∀ n ∈ D, 1 ≤ n ∧ n ≤ N := by grind
   have hDnear : ∀ n ∈ D, ∃ b : ℤ, |(n:ℝ)*β-b| ≤ ε := by
     intro n hn
     obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hn
@@ -1288,8 +1283,7 @@ theorem sector_beta_bound {N : ℕ} {l μ B α β δ : ℝ}
                                                                         
                                                                         
 theorem fareySector_bounded_density_dichotomy
-    {N : ℕ} {l μ B α β δ : ℝ}
-    (hl : 0 < l) (hμ : 1 ≤ μ) (hB : 1 ≤ B) (hδ : 0 ≤ δ)
+     (hB : 1 ≤ B) (hδ : 0 ≤ δ)
     (hR : max ((μ-l)*(N:ℝ)^2/B) 2 ≤ (fareySector N l μ).card)
     (hnear : ∀ p ∈ fareySector N l μ,
       ∃ b : ℤ, |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ) :
@@ -1320,9 +1314,7 @@ theorem fareySector_bounded_density_dichotomy
   have hbase : 1 < 96*B*((μ*(N:ℝ))*δ) := by
     have hh := (div_lt_iff₀ (show 0 < 96*B by positivity)).mp (lt_of_not_ge hsmall)
     nlinarith only [hh]
-  have hlarge : 16*(N:ℝ) ≤ (fareySector N l μ).card := by
-    have hh := mul_le_mul_of_nonneg_right hbase.le (show 0 ≤ 16*(N:ℝ) by positivity)
-    nlinarith only [hh,lt_of_not_ge hsize]
+  have hlarge : 16*(N:ℝ) ≤ (fareySector N l μ).card := by nlinarith
   have hRgeN : (N:ℝ) ≤ (fareySector N l μ).card := by
     nlinarith only [hlarge,(Nat.cast_nonneg N : (0:ℝ) ≤ N)]
   have hprod : 0 ≤ δ*(μ*(N:ℝ))*(N:ℝ) := by positivity
@@ -1332,6 +1324,9 @@ theorem fareySector_bounded_density_dichotomy
     · have hh : 0 ≤ B*(δ*(μ*(N:ℝ))*(N:ℝ)) := mul_nonneg hB0.le hprod
       exact (hsize (by nlinarith only [hbad,hh])).elim
     · exact Or.inr ⟨ha,hb⟩
+end
+end
+
 
 
                                                                             
@@ -1339,12 +1334,12 @@ theorem fareySector_bounded_density_dichotomy
                                                                            
 end TaoTrudgianYang2025.HuxleyLinearForm
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
-noncomputable def rationalBranch (μ r s x : ℝ) : ℝ := 1/(3*μ*r^2*(r*x+s))
+def rationalBranch (μ r s x : ℝ) : ℝ := 1/(3*μ*r^2*(r*x+s))
 
 theorem rationalBranch_second {μ r s x : ℝ}
     (hμ : μ ≠ 0) (hr : r ≠ 0) (hx : r*x+s ≠ 0) :
     iteratedDeriv 2 (rationalBranch μ r s) x = 2/(3*μ*(r*x+s)^3) := by
-  let f : ℝ → ℝ := fun y => 3*μ*r^2*(r*y+s)
+  let f := fun y => 3*μ*r^2*(r*y+s)
   have hd : deriv f = fun _ => 3*μ*r^3 := by
     funext y
     have hh := (((hasDerivAt_id y).const_mul r).add_const s).const_mul (3*μ*r^2)
@@ -1363,7 +1358,7 @@ theorem rationalBranch_second {μ r s x : ℝ}
   simp only [deriv_const,zero_div,sub_zero,f]
   field_simp
 
-noncomputable def rationalPhase (μ r s μ₁ r₁ s₁ x : ℝ) : ℝ :=
+def rationalPhase (μ r s μ₁ r₁ s₁ x : ℝ) : ℝ :=
   rationalBranch μ r s x-rationalBranch μ₁ r₁ s₁ x
 
                                                                    
@@ -1405,7 +1400,7 @@ theorem rationalPhase_curvature_of_cubic_ratio
                                                                  
                                                                      
                                               
-noncomputable def minorArcCoordinate (μ r s x : ℝ) : ℝ := 1/(3*μ*r*(r*x+s))
+def minorArcCoordinate (μ r s x : ℝ) : ℝ := 1/(3*μ*r*(r*x+s))
 
                                                                 
                                                                    
@@ -1421,10 +1416,7 @@ theorem exists_small_deriv_of_two_values {f f' : ℝ → ℝ} {a b h E : ℝ}
     (fun x hx => hf x ⟨hx.1.le,hx.2.le⟩)
   refine ⟨y,hy,?_⟩
   rw [he,abs_div,abs_of_pos (sub_pos.mpr hab)]
-  have hsum : |f b-f a| ≤ 2*E := by
-    have ht : |f b-f a| ≤ |f b|+|f a| := by
-      simpa only [sub_zero,zero_sub,abs_neg] using abs_sub_le (f b) 0 (f a)
-    linarith only [ht,ha,hb]
+  have hsum : |f b-f a| ≤ 2*E := by grind
   exact (div_le_div_of_nonneg_right hsum (sub_pos.mpr hab).le).trans
     (div_le_div_of_nonneg_left (by positivity) hh hgap)
 
@@ -1568,8 +1560,7 @@ theorem ratio_relative_perturbation {a u v ε η : ℝ}
     rw [abs_neg] at h₂
     rw [abs_mul] at h₁
     have hp := mul_le_mul hubound ha (abs_nonneg _) (by norm_num : (0:ℝ) ≤ 3/2)
-    change |u*(a-1)+(u-1)-(v-1)| ≤ _ at h₂
-    linarith only [h₁,h₂,hp,hu,hv]
+    grind
   rw [hid,abs_div,abs_of_pos hvpos]
   calc
     _ ≤ ((3/2:ℝ)*ε+2*η)/v := div_le_div_of_nonneg_right hnum hvpos.le
@@ -1616,9 +1607,7 @@ theorem approximateModelPhase_cubicCoefficient_relative_variation
         TaoTrudgianYang2025.modelPhaseThirdLower σ := by
   have hseg (y : ℝ) (hy : y ∈ Set.uIcc a b) : y ∈ Set.Ioo (1:ℝ) 2 := by
     rw [Set.mem_uIcc] at hy
-    rcases hy with hy | hy
-    · exact ⟨ha.1.trans_le hy.1,hy.2.trans_lt hb.2⟩
-    · exact ⟨hb.1.trans_le hy.1,hy.2.trans_lt ha.2⟩
+    grind
   have hc (y : ℝ) (hy : y ∈ Set.uIcc a b) : ContDiffAt ℝ 4 F y :=
     (TaoTrudgianYang2025.approximateModelPhase_contDiffAt hF (hseg y hy)).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 4)
@@ -1626,10 +1615,7 @@ theorem approximateModelPhase_cubicCoefficient_relative_variation
       |iteratedDeriv 4 F y| ≤ TaoTrudgianYang2025.modelPhaseJetCoefficient σ 3+δ := by
     have he := TaoTrudgianYang2025.approximateModelPhase_iteratedDeriv_error hF (hseg y hy) 3 le_rfl
     have hr := TaoTrudgianYang2025.iteratedDeriv_modelPhase_abs_le hσ.le (hseg y hy) 3
-    have ht := abs_add_le (iteratedDeriv 4 F y-iteratedDeriv 3 (Expdb.modelPhase σ) y)
-      (iteratedDeriv 3 (Expdb.modelPhase σ) y)
-    rw [sub_add_cancel] at ht
-    linarith only [he,hr,ht]
+    grind
   have hlo := (TaoTrudgianYang2025.approximateModelPhase_thirdDeriv_bounds hσ hδ
     (TaoTrudgianYang2025.approximateModelPhase_mono hF (by norm_num : 2 ≤ 3) le_rfl) ha).1
   have hlo' : TaoTrudgianYang2025.modelPhaseThirdLower σ ≤ |iteratedDeriv 3 F a| := by
@@ -1697,8 +1683,7 @@ theorem halfCurvature_first_order_remainder
       (iteratedDeriv 2 f b-(iteratedDeriv 2 f a+iteratedDeriv 3 f a*(b-a)))/2 := by ring
   rw [hid,abs_div,abs_of_pos (by norm_num : (0:ℝ) < 2)]
   have hh := div_le_div_of_nonneg_right he (by norm_num : (0:ℝ) ≤ 2)
-  convert hh using 1
-  ring
+  grind
 
 
                                                                
@@ -1707,16 +1692,10 @@ theorem farey_curvature_coordinate_identity {μ e r v s u t : ℝ}
     (hμ : μ ≠ 0) (hr : r ≠ 0) (ht : t ≠ 0) (hq : r*u+s*t ≠ 0)
     (hdet : v*r-e*s=1) :
     (e*u+v*t)/(r*u+s*t)-e/r = 3*μ*minorArcCoordinate μ r s (u/t) := by
-  have hleft : (e*u+v*t)/(r*u+s*t)-e/r = t/(r*(r*u+s*t)) := by
-    apply (div_sub_div _ _ hq hr).trans
-    rw [mul_comm (r*u+s*t) r]
-    congr 1
-    linear_combination t*hdet
+  have hleft : (e*u+v*t)/(r*u+s*t)-e/r = t/(r*(r*u+s*t)) := by grind
   rw [hleft]
   dsimp [minorArcCoordinate]
-  have hden : r*(u/t)+s = (r*u+s*t)/t := by field_simp
-  rw [hden]
-  field_simp
+  grind
 
                                                                     
                                                                         
@@ -1739,10 +1718,7 @@ theorem minorArcCoordinate_taylor_entry
   rw [hbase,hpoint] at he
   change |(e*u+v*t)/(r*u+s*t)+δ₁-(e/r+δ₀)-3*μ*(b-a)| ≤ U*|b-a|^2/4 at he
   have hnum : (e*u+v*t)/(r*u+s*t)+δ₁-(e/r+δ₀)-3*μ*(b-a) =
-      -(3*μ*((b-a)-minorArcCoordinate μ r s (u/t)-(δ₁-δ₀)/(3*μ))) := by
-    have hc : (3*μ)*((δ₁-δ₀)/(3*μ)) = δ₁-δ₀ :=
-      mul_div_cancel₀ _ (mul_ne_zero (by norm_num) hμ)
-    linear_combination hg-hc
+      -(3*μ*((b-a)-minorArcCoordinate μ r s (u/t)-(δ₁-δ₀)/(3*μ))) := by grind
   rw [hnum,abs_neg,abs_mul] at he
   change |(b-a)-minorArcCoordinate μ r s (u/t)-(δ₁-δ₀)/(3*μ)| ≤ _
   have hpos : 0 < |3*μ| := abs_pos.mpr (mul_ne_zero (by norm_num) hμ)
@@ -1780,8 +1756,7 @@ theorem physicalModelPhase_minorArcCoordinate_taylor_entry
   have hκ : 0 < κ := TaoTrudgianYang2025.modelPhaseThirdLower_pos hσ
   have hseg (y : ℝ) (hy : y ∈ Set.uIcc a b) : y ∈ Set.Ioo 0 W := by
     rcases Set.mem_uIcc.mp hy with hy | hy
-    · exact ⟨ha.1.trans_le hy.1,hy.2.trans_lt hb.2⟩
-    · exact ⟨hb.1.trans_le hy.1,hy.2.trans_lt ha.2⟩
+    all_goals (grind)
   have hc (y : ℝ) (hy : y ∈ Set.uIcc a b) : ContDiffAt ℝ 4 f y := by
     have hcf := TaoTrudgianYang2025.heathBrownPhysicalPhase_contDiffOn hF.1 hM hA hW T 1
     exact ((hcf y (Set.Ioo_subset_Icc_self (hseg y hy))).contDiffAt
@@ -1912,8 +1887,7 @@ theorem physicalModelPhase_exists_rounded_halfCurvature_center
   intro hq
   have hseg (y : ℝ) (hy : y ∈ Set.uIcc l v) : y ∈ Set.Ioo (1/2:ℝ) (W-1/2) := by
     rcases Set.mem_uIcc.mp hy with hy | hy
-    · exact ⟨hl.1.trans_le hy.1,hy.2.trans_lt hv.2⟩
-    · exact ⟨hv.1.trans_le hy.1,hy.2.trans_lt hl.2⟩
+    all_goals (grind)
   have hc : ContinuousOn (fun y => iteratedDeriv 2 f y/2) (Set.uIcc l v) := by
     intro y hy
     have hy0 : y ∈ Set.Ioo 0 W := by
@@ -1929,8 +1903,7 @@ theorem physicalModelPhase_exists_rounded_halfCurvature_center
   obtain ⟨x,hx,hfx⟩ := intermediate_value_uIcc hc hq
   have he := physicalModelPhase_halfCurvature_round_error hσ hF hT hM hA hW (hseg x hx)
   refine ⟨x,hx,hfx,he.1,?_⟩
-  rw [← hfx]
-  exact he.2
+  bound
 
 
                                                                      
@@ -2003,8 +1976,7 @@ theorem physicalModelPhase_rounded_minorArcCoordinate_entry
   have htri := abs_add_le ((b-a)-minorArcCoordinate μ r s (u/t)-(δ₁-δ₀)/(3*μ))
     ((δ₁-δ₀)/(3*μ))
   rw [sub_add_cancel] at htri
-  apply htri.trans
-  linarith only [he,hpert]
+  grind
 
                                                                      
                                                                       
@@ -2058,8 +2030,7 @@ theorem physicalModelPhase_firstDerivative_halfCurvature_remainder
   let f := TaoTrudgianYang2025.heathBrownPhysicalPhase F T M A 1
   have hseg (y : ℝ) (hy : y ∈ Set.uIcc a b) : y ∈ Set.Ioo 0 W := by
     rcases Set.mem_uIcc.mp hy with hy | hy
-    · exact ⟨ha.1.trans_le hy.1,hy.2.trans_lt hb.2⟩
-    · exact ⟨hb.1.trans_le hy.1,hy.2.trans_lt ha.2⟩
+    all_goals (grind)
   have hc (y : ℝ) (hy : y ∈ Set.uIcc a b) : ContDiffAt ℝ 4 f y := by
     have hcf := TaoTrudgianYang2025.heathBrownPhysicalPhase_contDiffOn hF.1 hM hA hW T 1
     exact ((hcf y (Set.Ioo_subset_Icc_self (hseg y hy))).contDiffAt
@@ -2115,11 +2086,7 @@ theorem physicalModelPhase_rounded_firstDerivative_residual
   have herr₁ : |iteratedDeriv 2 f b/2-(e*u+v*t)/q| ≤
       T*(TaoTrudgianYang2025.modelPhaseJetCoefficient σ 2+δ)/(4*M^3) := by
     simpa only [hpoint] using hround₁.2
-  have hrat : (e*u+v*t)/q-e/r = t/(r*q) := by
-    apply (div_sub_div _ _ hq hr).trans
-    rw [mul_comm q r]
-    congr 1
-    linear_combination t*hdet
+  have hrat : (e*u+v*t)/q-e/r = t/(r*q) := by grind
   have hcurv : |iteratedDeriv 2 f a/2+iteratedDeriv 2 f b/2-(2*e/r+t/(r*q))| ≤
       T*(TaoTrudgianYang2025.modelPhaseJetCoefficient σ 2+δ)/(2*M^3) := by
     have hid : iteratedDeriv 2 f a/2+iteratedDeriv 2 f b/2-(2*e/r+t/(r*q)) =
@@ -2151,17 +2118,12 @@ theorem farey_firstDerivative_residual_identity
     (hd₀ : r*d₀=c+θ) :
     let q := r*u+s*t
     let γ := q*(d₁-d₀-2*e*n/r-n*t/(r*q))
-    q*d₁ = c*u+2*n*(e*u+v*t)+(c*s-n)*t/r+θ*q/r+γ := by
-  dsimp only
-  have hfrac : (r*u+s*t)*(n*t/(r*(r*u+s*t)))=n*t/r := by field_simp
-  rw [mul_sub,mul_sub,mul_sub,hfrac]
-  field_simp
-  linear_combination (r*u+s*t)*hd₀-2*n*t*hdet
+    q*d₁ = c*u+2*n*(e*u+v*t)+(c*s-n)*t/r+θ*q/r+γ := by grind
 
 
                                                                  
                                                 
-noncomputable def roundedMinorArcLinearForm (f : ℝ → ℝ) (x₀ e r s u t : ℝ) : ℝ :=
+def roundedMinorArcLinearForm (f : ℝ → ℝ) (x₀ e r s u t : ℝ) : ℝ :=
   let a : ℝ := round x₀
   let d₀ := iteratedDeriv 1 f a
   let μ := iteratedDeriv 3 f a/6
@@ -2248,9 +2210,7 @@ theorem sum_nonunit_inverse_square_le (N : ℕ) :
       calc
         _ = ∑ d ∈ Finset.Icc 3 N, f d := by
           apply Finset.sum_congr rfl
-          intro d hd
-          have hd2 : 2 < d := by have h := (Finset.mem_Icc.mp hd).1; omega
-          simp only [f,ite_eq_left hd2]
+          grind
         _ ≤ _ := hs.sum_le_tsum _ (fun _ _ => by dsimp [f]; split <;> positivity)
     have ht := tsum_nat_inverse_square_tail_le (R := 2) (by norm_num)
     change (∑' d, f d) ≤ 1/(2:ℝ) at ht
@@ -2292,10 +2252,7 @@ theorem fareySector_curvature_targets {K : ℕ} {l w : ℝ} {e r v s : ℤ}
     rwa [hid] at hh
   refine ⟨hq,?_⟩
   have hh := affine_ratio_mem_endpoint_interval (r₁ := (e:ℝ)) (s₁ := (v:ℝ)) hx hdenl hdenw hden
-  have hid : ((e:ℝ)*((p.1:ℝ)/(p.2:ℝ))+v)/((r:ℝ)*((p.1:ℝ)/(p.2:ℝ))+s) =
-      ((e:ℝ)*p.1+v*p.2)/((r:ℝ)*p.1+s*p.2) := by
-    field_simp
-  rwa [hid] at hh
+  grind
 
 
                                                                 
@@ -2303,12 +2260,7 @@ theorem rounded_displacement_bound (x y : ℝ) :
     |(round x:ℝ)-(round y:ℝ)| ≤ |x-y|+1 := by
   have hx := abs_sub_round x
   have hy := abs_sub_round y
-  have ht := abs_add_le ((round x:ℝ)-x) ((x-y)+(y-(round y:ℝ)))
-  have hs := abs_add_le (x-y) (y-(round y:ℝ))
-  rw [abs_sub_comm (round x:ℝ) x] at ht
-  have hid : (round x:ℝ)-x+((x-y)+(y-(round y:ℝ)))=(round x:ℝ)-(round y:ℝ) := by ring
-  rw [hid] at ht
-  linarith only [ht,hs,hx,hy]
+  grind
 
 
                                                                      
@@ -2359,7 +2311,6 @@ theorem coprime_rectangle_card_lower (M N : ℕ) :
     obtain ⟨hp₂pos,hp₂N⟩ := Finset.mem_Icc.mp hp₂
     let d := Nat.gcd p.1 p.2
     have hdpos : 0 < d := Nat.gcd_pos_of_pos_left p.2 hp₁pos
-    have hdne : d ≠ 1 := hbad
     have hdM : d ≤ M := (Nat.gcd_le_left p.2 hp₁pos).trans hp₁M
     have hd₁ : d ∣ p.1 := Nat.gcd_dvd_left _ _
     have hd₂ : d ∣ p.2 := Nat.gcd_dvd_right _ _
@@ -2391,9 +2342,7 @@ theorem coprime_rectangle_card_lower (M N : ℕ) :
         exact mul_le_mul Nat.cast_div_le Nat.cast_div_le (Nat.cast_nonneg _) (by positivity)
       _ = (M:ℝ)*N * ∑ d ∈ Finset.Icc 2 M, 1/(d:ℝ)^2 := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro d _hd
-        ring
+        grind
       _ ≤ (M:ℝ)*N*(3/4) := mul_le_mul_of_nonneg_left
         (sum_nonunit_inverse_square_le M) (by positivity)
       _ = _ := by ring
@@ -2415,16 +2364,7 @@ theorem isCoprime_unimodular_image {a b c d m n : ℤ}
 
 
                                                                 
-theorem unimodular_image_injective {a b c d : ℤ} (hdet : a*d-b*c=1) :
-    Function.Injective (fun p : ℤ × ℤ => (a*p.1+b*p.2,c*p.1+d*p.2)) := by
-  intro p q hpq
-  have h₁ := congrArg Prod.fst hpq
-  have h₂ := congrArg Prod.snd hpq
-  apply Prod.ext
-  · dsimp only at h₁ h₂
-    linear_combination d*h₁-b*h₂-(p.1-q.1)*hdet
-  · dsimp only at h₁ h₂
-    linear_combination a*h₂-c*h₁-(p.2-q.2)*hdet
+
 
 
                                                                
@@ -2443,12 +2383,7 @@ theorem unimodular_rectangle_fareySector_interior_card_lower
   let f : ℕ × ℕ → ℤ × ℤ := fun p => (a*p.1+b*p.2,c*p.1+d*p.2)
   have hfi : Function.Injective f := by
     intro p q hpq
-    have hh : ((p.1:ℤ),(p.2:ℤ))=((q.1:ℤ),(q.2:ℤ)) := unimodular_image_injective hdet hpq
-    apply Prod.ext
-    · have h₁ : (p.1:ℤ)=q.1 := congrArg Prod.fst hh
-      exact_mod_cast h₁
-    · have h₂ : (p.2:ℤ)=q.2 := congrArg Prod.snd hh
-      exact_mod_cast h₂
+    grind
   have hsub : S.image f ⊆ (TaoTrudgianYang2025.HuxleyLinearForm.fareySector K l w).filter
       (fun p => b*p.2 < d*p.1 ∧ c*p.1 < a*p.2) := by
     intro y hy
@@ -2553,13 +2488,8 @@ theorem rational_interval_determinant_split {a b c d : ℤ}
       have hdvd : d ∣ n := hb.symm.dvd_of_dvd_mul_left
         (show d ∣ b*n from he ▸ dvd_mul_left d m)
       have hdn : d ≤ n := Int.le_of_dvd (by omega) hdvd
-      have hh := mul_le_mul_of_nonneg_left hdn (show 0 ≤ a*d-b*c by omega)
-      rw [he,sub_self,mul_zero] at hid
-      have hh' := mul_lt_mul_of_pos_right hdet hd
-      nlinarith only [hid,hh,hh']
-    have hless : m*d-b*n < a*d-b*c := by
-      have hh := mul_le_mul_of_nonneg_right hnc (show 0 ≤ a*d-b*c by omega)
-      nlinarith only [hid,hh,hd,hc]
+      nlinarith
+    have hless : m*d-b*n < a*d-b*c := by nlinarith
     exact ⟨m,n,by omega,hnc.trans (le_max_left _ _),hcop,
       by nlinarith only [hunit],by nlinarith only [hunit,hdet],hstrict,hless⟩
   · obtain ⟨m,n,hn,hnd,hcop,hunit,hclose⟩ :=
@@ -2573,13 +2503,8 @@ theorem rational_interval_determinant_split {a b c d : ℤ}
       have hcvd : c ∣ n := ha.symm.dvd_of_dvd_mul_left
         (show c ∣ a*n from he ▸ dvd_mul_left c m)
       have hcn : c ≤ n := Int.le_of_dvd (by omega) hcvd
-      have hh := mul_le_mul_of_nonneg_left hcn (show 0 ≤ a*d-b*c by omega)
-      rw [he,sub_self,mul_zero] at hid
-      have hh' := mul_lt_mul_of_pos_right hdet hc
-      nlinarith only [hid,hh,hh']
-    have hless : a*n-m*c < a*d-b*c := by
-      have hh := mul_le_mul_of_nonneg_right hnd (show 0 ≤ a*d-b*c by omega)
-      nlinarith only [hid,hh,hd,hc]
+      nlinarith
+    have hless : a*n-m*c < a*d-b*c := by nlinarith
     exact ⟨m,n,by omega,hnd.trans (le_max_right _ _),hcop,hstrict,hless,
       by nlinarith only [hunit],by nlinarith only [hunit,hdet]⟩
 
@@ -2593,22 +2518,18 @@ theorem interval_filter_split_card {ι : Type*} (S : Finset ι) (f : ι → ℝ)
   classical
   let A := S.filter (fun p => x < f p ∧ f p < y)
   let B := S.filter (fun p => y < f p ∧ f p < z)
-  have hd : Disjoint A B := Finset.disjoint_left.mpr (by
-    intro p hp hq
-    exact (Finset.mem_filter.mp hp).2.2.not_gt (Finset.mem_filter.mp hq).2.1)
-  have hs : A ∪ B ⊆ S.filter (fun p => x < f p ∧ f p < z) := by
-    intro p hp
-    rcases Finset.mem_union.mp hp with hp | hp
-    · obtain ⟨hp,hlo,hhi⟩ := Finset.mem_filter.mp hp
-      exact Finset.mem_filter.mpr ⟨hp,hlo,hhi.trans_le hyz⟩
-    · obtain ⟨hp,hlo,hhi⟩ := Finset.mem_filter.mp hp
-      exact Finset.mem_filter.mpr ⟨hp,hxy.trans_lt hlo,hhi⟩
+  have hd : Disjoint A B := Finset.disjoint_left.mpr (by grind)
+  have hs : A ∪ B ⊆ S.filter (fun p => x < f p ∧ f p < z) := by grind
   rw [← Finset.card_union_of_disjoint hd]
   exact Finset.card_le_card hs
 
 
-theorem rational_interior_filter_eq {K : ℕ} {a b c d : ℤ} {l w : ℝ}
-    (hc : 0 < c) (hd : 0 < d) (hl : 0 < l) (hlw : l ≤ w) :
+section
+variable {K : ℕ} {a b c d : ℤ} {l w : ℝ}
+    (hc : 0 < c) (hd : 0 < d)
+include K a b c d l w hc hd
+
+theorem rational_interior_filter_eq  (hl : 0 < l) (hlw : l ≤ w) :
     (TaoTrudgianYang2025.HuxleyLinearForm.fareySector K l w).filter
         (fun p => b*p.2 < d*p.1 ∧ c*p.1 < a*p.2) =
       (TaoTrudgianYang2025.HuxleyLinearForm.fareySector K l w).filter
@@ -2637,8 +2558,7 @@ theorem rational_interior_filter_eq {K : ℕ} {a b c d : ℤ} {l w : ℝ}
                                                                        
                                                                  
 theorem rational_interval_fareySector_interior_card_lower
-    {K : ℕ} {a b c d : ℤ} {l w : ℝ}
-    (hc : 0 < c) (hd : 0 < d) (ha : IsCoprime a c) (hb : IsCoprime b d)
+     (ha : IsCoprime a c) (hb : IsCoprime b d)
     (hdet : 0 < a*d-b*c) (hcK : 4*c ≤ (K:ℤ)) (hdK : 4*d ≤ (K:ℤ))
     (hl : 0 < l) (hlw : l ≤ w)
     (hsa : l ≤ (a:ℝ)/c ∧ (a:ℝ)/c ≤ w)
@@ -2694,6 +2614,8 @@ theorem rational_interval_fareySector_interior_card_lower
         _ = ((m:ℝ)/n-(b:ℝ)/d)*(K:ℝ)^2/64 +
             ((a:ℝ)/c-(m:ℝ)/n)*(K:ℝ)^2/64 := by ring
         _ ≤ _ := (add_le_add hlower hupper).trans hcountR
+end
+
 
 
                                                                    
@@ -2713,21 +2635,13 @@ theorem rational_separation_scaled {q r : ℚ} (hne : q ≠ r) :
     field_simp
   have hneI : q.num*(r.den:ℤ)-r.num*(q.den:ℤ) ≠ 0 := by
     intro he
-    have hh : (q:ℝ)=(r:ℝ) := by
-      have hz : ((q:ℝ)-(r:ℝ))*(q.den:ℝ)*r.den=0 := by rw [← hid,he]; simp
-      rcases mul_eq_zero.mp hz with hz | hz
-      · rcases mul_eq_zero.mp hz with hz | hz
-        · exact sub_eq_zero.mp hz
-        · exact (hq hz).elim
-      · exact (hr hz).elim
+    have hh : (q:ℝ)=(r:ℝ) := by simp_all <;> nlinarith
     exact hne (Rat.cast_injective hh)
   have hsep : (1:ℝ) ≤ |((q.num*(r.den:ℤ)-r.num*(q.den:ℤ):ℤ):ℝ)| := by
     exact_mod_cast (show (1:ℤ) ≤ |q.num*(r.den:ℤ)-r.num*(q.den:ℤ)| by
       have hh := abs_pos.mpr hneI
       omega)
-  rw [hid,abs_mul,abs_mul,abs_of_nonneg (Nat.cast_nonneg q.den : (0:ℝ) ≤ q.den),
-    abs_of_nonneg (Nat.cast_nonneg r.den : (0:ℝ) ≤ r.den)] at hsep
-  exact hsep
+  simp_all
 
 
                                                                     
@@ -2755,16 +2669,10 @@ theorem exists_rational_near_anchor {H : ℕ} {x Δ : ℝ} {r : ℚ}
     have hh := mul_le_mul_of_nonneg_right herr hΔ.le
     nlinarith only [hm,hh]
   · have hsep := rational_separation_scaled heq
-    have htri : |(q:ℝ)-(r:ℝ)| ≤ |x-(q:ℝ)|+Δ := by
-      have hh := abs_sub_le (q:ℝ) x (r:ℝ)
-      rw [abs_sub_comm (q:ℝ) x] at hh
-      exact hh.trans (add_le_add le_rfl hx)
+    have htri : |(q:ℝ)-(r:ℝ)| ≤ |x-(q:ℝ)|+Δ := by grind
     have hsep' := hsep.trans
       (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right htri hd.le) hr.le)
-    have he : |x-(q:ℝ)| * (q.den:ℝ)*r.den ≤ 1/16 := by
-      have hh := mul_le_mul_of_nonneg_left hHRbound
-        (mul_nonneg (abs_nonneg (x-(q:ℝ))) hd.le)
-      nlinarith only [hh,herr]
+    have he : |x-(q:ℝ)| * (q.den:ℝ)*r.den ≤ 1/16 := by nlinarith
     have hlo : 1/2 ≤ Δ*(q.den:ℝ)*r.den := by nlinarith only [hsep',he]
     have hh := mul_le_mul_of_nonneg_left hlo (abs_nonneg (x-(q:ℝ)))
     have hh' := mul_le_mul_of_nonneg_right he hΔ.le
@@ -2784,9 +2692,7 @@ theorem exists_rational_inner_endpoints {H : ℕ} {l w : ℝ} {r : ℚ}
     (show |l+(w-l)/8-(r:ℝ)| ≤ w-l from abs_le.mpr ⟨by linarith [hr.2],by linarith [hr.1]⟩)
   obtain ⟨a,haH,ha⟩ := exists_rational_near_anchor hΔ hH hscale
     (show |w-(w-l)/8-(r:ℝ)| ≤ w-l from abs_le.mpr ⟨by linarith [hr.2],by linarith [hr.1]⟩)
-  obtain ⟨halo,hahi⟩ := abs_le.mp ha
-  obtain ⟨hblo,hbhi⟩ := abs_le.mp hb
-  exact ⟨a,b,haH,hbH,by linarith,by linarith,by linarith,by linarith⟩
+  grind
 
 
                                                                       
@@ -2835,10 +2741,14 @@ theorem fareySector_card_lower_of_rational_anchor
                                                                    
                                                        
                                                                        
-theorem fareySector_card_lower_source_scale
-    {K : ℕ} {l w : ℝ} {r : ℚ}
+section
+variable {K : ℕ} {l w : ℝ} {r : ℚ}
     (hl : 0 < l) (hlw : l < w) (hr : (r:ℝ) ∈ Set.Icc l w)
-    (hden : 64*r.den ≤ K) (hscale : 64 ≤ (w-l)*(K:ℝ)*r.den) :
+    (hden : 64*r.den ≤ K) (hscale : 64 ≤ (w-l)*(K:ℝ)*r.den)
+include K l w r hl hlw hr hden hscale
+
+theorem fareySector_card_lower_source_scale
+     :
     (w-l)*(K:ℝ)^2/128 ≤
       (TaoTrudgianYang2025.HuxleyLinearForm.fareySector K l w).card := by
   let H := K/4
@@ -2856,18 +2766,16 @@ theorem fareySector_card_lower_source_scale
                                                                     
                                                          
 theorem fareySector_source_density_gate
-    {K : ℕ} {l w : ℝ} {r : ℚ}
-    (hl : 0 < l) (hlw : l < w) (hr : (r:ℝ) ∈ Set.Icc l w)
-    (hden : 64*r.den ≤ K) (hscale : 64 ≤ (w-l)*(K:ℝ)*r.den) :
+     :
     max ((w-l)*(K:ℝ)^2/128:ℝ) 2 ≤
       (TaoTrudgianYang2025.HuxleyLinearForm.fareySector K l w).card := by
   have he := fareySector_card_lower_source_scale hl hlw hr hden hscale
   have hh := mul_le_mul_of_nonneg_left
     (show 64*(r.den:ℝ) ≤ K by exact_mod_cast hden)
     (mul_nonneg (sub_nonneg.mpr hlw.le) (Nat.cast_nonneg K))
-  apply max_le he
-  have hbig : 4096 ≤ (w-l)*(K:ℝ)^2 := by nlinarith only [hh,hscale]
-  linarith only [hbig,he]
+  grind
+end
+
 
 
                                                                   
@@ -2899,10 +2807,7 @@ theorem physicalModelPhase_halfCurvature_growth
       have hh := (approximateModelPhase_thirdDeriv_bounds hσ hδ hF
         (heathBrownPhysicalPoint_mem_interior hM hA hW hz)).1
       simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using hh
-    have hh := div_le_div_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hlo (by positivity : 0 ≤ T/M^3)) (by norm_num : (0:ℝ) ≤ 2)
-    convert hh using 1
-    ring
+    field_simp <;> nlinarith
   exact (convex_Ioo (0:ℝ) W).mul_sub_le_image_sub_of_le_deriv
     (fun z hz => (hd z hz).continuousAt.continuousWithinAt)
     (fun z hz => (hd z (by simpa only [interior_Ioo] using hz)).differentiableAt.differentiableWithinAt)
@@ -2957,8 +2862,8 @@ theorem inverseFarey_rational_anchor {e r v s : ℤ} {a : ℚ}
     let b : ℚ := ((v*a.den-s*a.num:ℤ):ℚ)/((r*a.num-e*a.den:ℤ):ℚ)
     (b.den:ℤ)=r*a.num-e*a.den ∧
       (b:ℝ)=((v:ℝ)-s*(a:ℝ))/((r:ℝ)*(a:ℝ)-e) := by
-  let u : ℤ := v*a.den-s*a.num
-  let t : ℤ := r*a.num-e*a.den
+  let u := v*a.den-s*a.num
+  let t := r*a.num-e*a.den
   have ht : 0 < t := hpos
   have hc := isCoprime_unimodular_image (a := r) (b := -e) (c := -s) (d := v)
     (by nlinarith only [hdet]) (Rat.isCoprime_num_den a)
@@ -2970,8 +2875,7 @@ theorem inverseFarey_rational_anchor {e r v s : ℤ} {a : ℚ}
   have hq : (a.den:ℝ) ≠ 0 := by exact_mod_cast a.den_nz
   have ha : (a:ℝ)=(a.num:ℝ)/a.den := by exact_mod_cast (Rat.num_div_den a).symm
   push_cast
-  rw [ha]
-  field_simp [hq]
+  grind
 
 
                                                                        
@@ -2984,8 +2888,6 @@ theorem exists_eight_block_indices {B : ℕ} (hB : 32 ≤ B) :
   let k := B/8
   have hk : 4 ≤ k := by dsimp [k]; omega
   have hkpos : 0 < k := by omega
-  have hb : 8*k ≤ B := by dsimp [k]; omega
-  have hbhi : B < 8*k+8 := by dsimp [k]; omega
   let j : Fin 8 → Fin B := fun i => ⟨i.val*k,by
     have hh := Nat.mul_lt_mul_of_pos_right i.isLt hkpos
     omega⟩
@@ -2998,8 +2900,7 @@ theorem exists_eight_block_indices {B : ℕ} (hB : 32 ≤ B) :
   have hBR : (B:ℝ) ≤ 8*(k:ℝ)+7 := by exact_mod_cast (show B ≤ 8*k+7 by omega)
   have hkR : (4:ℝ) ≤ k := by exact_mod_cast hk
   change (B:ℝ)/16 ≤ (((i.val+1)*k:ℕ):ℝ)-(i.val*k:ℕ)-1
-  push_cast
-  nlinarith only [hBR,hkR]
+  grind
 
 
                                                               
@@ -3053,12 +2954,7 @@ theorem physicalModelPhase_cubicCoefficient_source_scale
   have hhim := (le_div_iff₀ (show 0 < 6*M^3 by positivity)).mp hhi
   refine ⟨hμ,?_,?_⟩
   · have hh := mul_le_mul_of_nonneg_right hlom (show 0 ≤ N*R^2 by positivity)
-    have hc : modelPhaseThirdLower σ ≤ 6*μ*N*R^2 := by
-      have hid : modelPhaseThirdLower σ*T*(N*R^2)=modelPhaseThirdLower σ*M^3 := by
-        linear_combination modelPhaseThirdLower σ*hscale
-      rw [hid] at hh
-      apply (mul_le_mul_iff_of_pos_right (show 0 < M^3 by positivity)).mp
-      nlinarith only [hh]
+    have hc : modelPhaseThirdLower σ ≤ 6*μ*N*R^2 := by nlinarith
     have hh' : (1:ℝ) ≤ (6*μ*N*R^2)/modelPhaseThirdLower σ :=
       (le_div_iff₀ hκ).mpr (by nlinarith only [hc])
     convert hh' using 1
@@ -3072,7 +2968,7 @@ theorem physicalModelPhase_cubicCoefficient_source_scale
                                                                     
                                                                       
                                                                             
-noncomputable def minorArcCenterLabels (x ε : ℝ) : Finset ℤ :=
+def minorArcCenterLabels (x ε : ℝ) : Finset ℤ :=
   ({round x, if 0 ≤ x-round x then round x+1 else round x-1} : Finset ℤ).filter
     (fun c => |x-c| ≤ 1/2+ε)
 
@@ -3096,16 +2992,10 @@ theorem mem_minorArcCenterLabels_iff {x ε : ℝ} {n : ℤ} (hε : ε < 1/2) :
     rcases hcases with rfl | rfl | rfl
     · exact Or.inl rfl
     · right
-      have hx : 0 ≤ x-round x := by
-        have hh := (abs_le.mp hn).1
-        push_cast at hh
-        linarith only [hh,hε]
+      have hx : 0 ≤ x-round x := by grind
       simp only [ite_eq_left hx]
     · right
-      have hx : ¬ 0 ≤ x-round x := by
-        have hh := (abs_le.mp hn).2
-        push_cast at hh
-        linarith only [hh,hε]
+      have hx : ¬ 0 ≤ x-round x := by grind
       simp only [ite_eq_right hx]
 
 
@@ -3133,15 +3023,7 @@ theorem exists_compatible_center_labels {x y ε : ℝ}
 theorem linearization_pair_bound_with_labels {z z₁ L L₁ E E₁ Δ : ℝ} {j j₁ c c₁ : ℤ}
     (hL : |z-j-L| ≤ E) (hL₁ : |z₁-j₁-L₁| ≤ E₁)
     (hfourth : |(z-c)-(z₁-c₁)| ≤ Δ) :
-    |(L-L₁)-((c-j)-(c₁-j₁):ℤ)| ≤ Δ+E+E₁ := by
-  have hid : (L-L₁)-((c-j)-(c₁-j₁):ℤ) =
-      ((z-c)-(z₁-c₁))-(z-j-L)+(z₁-j₁-L₁) := by
-    push_cast
-    ring
-  rw [hid]
-  have ht := abs_add_le ((z-c)-(z₁-c₁)) (-(z-j-L))
-  rw [abs_neg,← sub_eq_add_neg] at ht
-  exact (abs_add_le _ _).trans (add_le_add (ht.trans (add_le_add hfourth hL)) hL₁)
+    |(L-L₁)-((c-j)-(c₁-j₁):ℤ)| ≤ Δ+E+E₁ := by grind
 
 
                                                                       
@@ -3151,10 +3033,7 @@ theorem linearization_pair_bound_with_labels {z z₁ L L₁ E E₁ Δ : ℝ} {j 
 theorem second_condition_taylor_source_scale {T M N R C₂ C₃ n : ℝ}
     (hM : M ≠ 0) (hN : N ≠ 0) (hR : R ≠ 0) (hscale : T*N*R^2=M^3) :
     T*C₂*n/(2*M^3)+5*T*C₃*n^3/(12*M^4) =
-      C₂*n/(2*N*R^2)+5*C₃*n^3/(12*M*N*R^2) := by
-  have hT : T=M^3/(N*R^2) := (eq_div_iff (by positivity)).mpr (by nlinarith only [hscale])
-  rw [hT]
-  field_simp
+      C₂*n/(2*N*R^2)+5*C₃*n^3/(12*M*N*R^2) := by grind
 
                                                                       
                                                                           
@@ -3185,11 +3064,7 @@ theorem rationalPhase_bound_from_base_coincidences
   have hX : X ≠ 0 := hx
   have hε0 : 0 ≤ ε := (abs_nonneg _).trans hthird
   have hoff : |Y/X-1| ≤ η := by
-    have hi : Y/X-1=(s₁/r₁-s/r)/X := by
-      calc
-        Y/X-1=Y/X-X/X := by rw [div_self hX]
-        _ = (Y-X)/X := by rw [sub_div]
-        _ = (s₁/r₁-s/r)/X := by congr 1; dsimp [Y,X]; ring
+    have hi : Y/X-1=(s₁/r₁-s/r)/X := by grind
     rw [hi,abs_div]
     exact (div_le_iff₀ (abs_pos.mpr hX)).mpr hfirst
   have hη0 : 0 ≤ η := (abs_nonneg _).trans hoff
@@ -3341,10 +3216,7 @@ theorem actual_derivative_base_centered_bound
     have hh := farey_firstDerivative_residual_identity hr' hq' hdet'
       (n := (n i:ℝ)) (c := (c i:ℝ)) (θ := θ i) (d₀ := d₀ i) (d₁ := d₁ i)
       (by dsimp [θ]; ring)
-    dsimp only at hh
-    dsimp only [z,j,H]
-    push_cast
-    linear_combination hh
+    grind
   have heq : (z 0-z 1)-((j 0-j 1+b*t:ℤ):ℝ)=H 0-H 1-(b:ℝ)*t := by
     rw [hid 0,hid 1]
     push_cast
@@ -3432,11 +3304,7 @@ theorem physicalModelPhase_base_residual_difference_bound
   have hμ (i) : μ i ≠ 0 := (physicalModelPhase_rounded_cubicCoefficient_pos hσ hδ
     (TaoTrudgianYang2025.approximateModelPhase_mono (hF i) (by norm_num : 2 ≤ 3) le_rfl)
     hT hM (hA i) (hW i) (hx₀ i)).ne'
-  have hU : U ≠ 0 := by
-    have hid : U*((r 0:ℝ)*t)=q 0 := by dsimp [U,q]; field_simp [ht',hr' 0]
-    intro hz
-    rw [hz,zero_mul] at hid
-    exact hq' 0 hid.symm
+  have hU : U ≠ 0 := by grind
   have hG (i) : |(n i:ℝ)-minorArcCoordinate (μ i) (r i) (s i) ((u:ℝ)/t)| ≤ V i := by
     have hh := physicalModelPhase_rounded_minorArcCoordinate_entry hσ hδ (hF i)
       hT hM (hA i) (hW i) (hx₀ i) (hx₁ i) (hr' i) ht' (hq' i) (hdet' i)
@@ -3474,16 +3342,9 @@ theorem short_block_taylor_budget {C₂ C₃ n M N R : ℝ}
     C₂*n/(2*N*R^2)+5*C₃*n^3/(12*M*N*R^2) ≤ (C₂/2+5*C₃/12)/N := by
   have hnR : n ≤ R^2 := hnN.trans hNR
   have hn3 : n^3 ≤ M*R^2 := (pow_le_pow_left₀ hn hnN 3).trans hcube
-  have h1 : C₂*n/(2*N*R^2) ≤ (C₂/2)/N := by
-    apply (div_le_iff₀ (by positivity : 0 < 2*N*R^2)).mpr
-    rw [show (C₂/2/N)*(2*N*R^2)=C₂*R^2 by field_simp]
-    exact mul_le_mul_of_nonneg_left hnR hC₂
-  have h2 : 5*C₃*n^3/(12*M*N*R^2) ≤ (5*C₃/12)/N := by
-    apply (div_le_iff₀ (by positivity : 0 < 12*M*N*R^2)).mpr
-    rw [show (5*C₃/12/N)*(12*M*N*R^2)=5*C₃*(M*R^2) by field_simp]
-    exact mul_le_mul_of_nonneg_left hn3 (by positivity)
-  rw [add_div]
-  exact add_le_add h1 h2
+  have h1 : C₂*n/(2*N*R^2) ≤ (C₂/2)/N := by field_simp <;> nlinarith
+  have h2 : 5*C₃*n^3/(12*M*N*R^2) ≤ (5*C₃/12)/N := by field_simp <;> nlinarith
+  grind
 
                                                                  
                                                                            
@@ -3509,8 +3370,7 @@ theorem short_block_coordinate_budget {C₂ C₃ κ n M N R Q L : ℝ}
         apply (mul_le_mul_iff_of_pos_right (show 0 < 2*κ*M*N*R^2 by positivity)).mp
         field_simp
         nlinarith only [mul_le_mul_of_nonneg_left hNn2 (show 0 ≤ Q*C₃ by positivity)]
-  rw [mul_add]
-  exact (add_le_add h1 h2).trans_eq (by ring)
+  grind
 
 
 
@@ -3535,10 +3395,7 @@ theorem short_block_phase_budget {C₂ C₃ κ n M N R Q L G : ℝ}
     calc
       _ ≤ (R^2/N^2)*(Q/R^2)*n := by gcongr
       _ = Q*n/N^2 := by field_simp
-      _ ≤ Q/N := by
-        apply (div_le_iff₀ (by positivity : 0 < N^2)).mpr
-        rw [show Q/N*N^2=Q*N by field_simp]
-        exact mul_le_mul_of_nonneg_left hnN hQ
+      _ ≤ Q/N := by field_simp <;> nlinarith
   have herr : (R^2/N^2)*(L*V) ≤ K*Q/N := by
     calc
       _ ≤ L*V := by simpa using mul_le_mul_of_nonneg_right hfrac (mul_nonneg hL hV)
@@ -3546,9 +3403,7 @@ theorem short_block_phase_budget {C₂ C₃ κ n M N R Q L G : ℝ}
   have hscaled := mul_le_mul_of_nonneg_left hG
     (show 0 ≤ (R^2/N^2)*L by positivity)
   change (R^2/N^2)*L*|G| ≤ (R^2/N^2)*L*(n+V) at hscaled
-  have hh : (R^2/N^2)*L*|G| ≤ Q/N+K*Q/N := by
-    nlinarith only [hscaled,hmain,herr]
-  exact hh.trans_eq (by dsimp [K]; ring)
+  grind
 
 
 
@@ -3620,11 +3475,7 @@ theorem short_block_fourth_budget
     rw [mul_comm]
     exact short_block_coordinate_budget hC₂ hC₃ hκ hn₁ hM hN hR hQ hn₁N hNR hcube hgeom₁
   change _ ≤ (37*K/2+16*K*Cc+2*Ct+2*Cc)*Q/N
-  change (K*R^2/(r*N))*t+(16*K*R^2/N^2)*|G/r| * t+
-      (K*r/N)*(q/r)+(K*R^2/(2*N^2))*(q/r)+
-      q*D n+q₁*D n₁+V n*(t/r)+V n₁*(t/r₁) ≤ _
-  exact (add_le_add (add_le_add (add_le_add (add_le_add (add_le_add
-    (add_le_add (add_le_add h1 h2) h3) h4) h5) h6) h7) h8).trans_eq (by ring)
+  grind
 
 
 
@@ -3645,8 +3496,7 @@ theorem physicalModelPhase_halfCurvature_lipschitz
   have hκ := modelPhaseThirdLower_pos hσ
   have hseg (z : ℝ) (hz : z ∈ Set.uIcc x y) : z ∈ Set.Ioo 0 W := by
     rcases Set.mem_uIcc.mp hz with hz | hz
-    · exact ⟨hx.1.trans_le hz.1,hz.2.trans_lt hy.2⟩
-    · exact ⟨hy.1.trans_le hz.1,hz.2.trans_lt hx.2⟩
+    all_goals (grind)
   have hd (z : ℝ) (hz : z ∈ Set.uIcc x y) :
       HasDerivAt (fun w => iteratedDeriv 2 f w/2) (iteratedDeriv 3 f z/2) z := by
     have hcf := heathBrownPhysicalPhase_contDiffOn hF.1 hM hA hW T 1
@@ -3661,7 +3511,7 @@ theorem physicalModelPhase_halfCurvature_lipschitz
       iteratedDeriv 3 f z/6 ≤ C*T/(6*M^3) at hh
     have hlo : 0 ≤ iteratedDeriv 3 f z/2 := by
       have hpos : 0 ≤ modelPhaseThirdLower σ*T/(6*M^3) := by positivity
-      linarith only [hh.1,hpos]
+      linarith
     rw [abs_of_nonneg hlo]
     calc
       _ = 3*(iteratedDeriv 3 f z/6) := by ring
@@ -3690,8 +3540,7 @@ theorem physicalModelPhase_quartic_cubicCoefficient_remainder
   let f := heathBrownPhysicalPhase F T M A 1
   have hseg (y : ℝ) (hy : y ∈ Set.uIcc a b) : y ∈ Set.Ioo 0 W := by
     rcases Set.mem_uIcc.mp hy with hy | hy
-    · exact ⟨ha.1.trans_le hy.1,hy.2.trans_lt hb.2⟩
-    · exact ⟨hb.1.trans_le hy.1,hy.2.trans_lt ha.2⟩
+    all_goals (grind)
   have hc (y : ℝ) (hy : y ∈ Set.uIcc a b) : ContDiffAt ℝ 5 f y := by
     have hcf := heathBrownPhysicalPhase_contDiffOn hF.1 hM hA hW T 1
     exact ((hcf y (Set.Ioo_subset_Icc_self (hseg y hy))).contDiffAt
@@ -3736,11 +3585,15 @@ open scoped Topology
 
                                                           
                                                               
-noncomputable def quarticBranch (μ ν r s x : ℝ) : ℝ :=
+def quarticBranch (μ ν r s x : ℝ) : ℝ :=
   4*ν/(27*μ^3*r^3*(r*x+s)^2)
 
-theorem quarticBranch_hasDerivAt {μ ν r s x : ℝ}
-    (hμ : μ ≠ 0) (hr : r ≠ 0) (hx : r*x+s ≠ 0) :
+section
+variable {μ ν r s x : ℝ}
+    (hμ : μ ≠ 0) (hr : r ≠ 0) (hx : r*x+s ≠ 0)
+include μ ν r s x hμ hr hx
+
+theorem quarticBranch_hasDerivAt  :
     HasDerivAt (quarticBranch μ ν r s) (-8*ν/(27*μ^3*r^2*(r*x+s)^3)) x := by
   have hd := ((((hasDerivAt_id x).const_mul r).add_const s).pow 2).inv
     (pow_ne_zero 2 hx)
@@ -3753,8 +3606,7 @@ theorem quarticBranch_hasDerivAt {μ ν r s x : ℝ}
     field_simp
     ring
 
-theorem quarticBranch_second {μ ν r s x : ℝ}
-    (hμ : μ ≠ 0) (hr : r ≠ 0) (hx : r*x+s ≠ 0) :
+theorem quarticBranch_second  :
     iteratedDeriv 2 (quarticBranch μ ν r s) x =
       8*ν/(9*μ^3*r*(r*x+s)^4) := by
   have hd := ((((hasDerivAt_id x).const_mul r).add_const s).pow 3).inv
@@ -3769,7 +3621,7 @@ theorem quarticBranch_second {μ ν r s x : ℝ}
     · dsimp
       field_simp
       ring
-  have hnear : ∀ᶠ y in 𝓝 x, r*y+s ≠ 0 :=
+  have hnear :=
     (show ContinuousAt (fun y : ℝ => r*y+s) x by fun_prop).eventually_ne hx
   have heq : deriv (quarticBranch μ ν r s) =ᶠ[𝓝 x]
       (fun y : ℝ => -8*ν/(27*μ^3*r^2*(r*y+s)^3)) := by
@@ -3777,9 +3629,11 @@ theorem quarticBranch_second {μ ν r s x : ℝ}
     exact (quarticBranch_hasDerivAt hμ hr hy).deriv
   simpa only [iteratedDeriv_succ,iteratedDeriv_one,iteratedDeriv_zero] using
     (hformula.congr_of_eventuallyEq heq).deriv
+end
+
 
                                                                    
-noncomputable def quarticPhase (μ ν r s μ₁ ν₁ r₁ s₁ x : ℝ) : ℝ :=
+def quarticPhase (μ ν r s μ₁ ν₁ r₁ s₁ x : ℝ) : ℝ :=
   quarticBranch μ ν r s x-quarticBranch μ₁ ν₁ r₁ s₁ x
 
 theorem quarticPhase_second {μ ν r s μ₁ ν₁ r₁ s₁ x : ℝ}
@@ -3857,9 +3711,7 @@ theorem quartic_corrected_nonlinear_residual_identity
       q*(E+(n-G)*(3*μ*(n-G)+2*δ)+4*ν*(n^3-G^3)) := by
   have hG : minorArcCoordinate μ r s (u/t) = t/(3*μ*r*(r*u+s*t)) := by
     dsimp [minorArcCoordinate]
-    have hden : r*(u/t)+s=(r*u+s*t)/t := by field_simp
-    rw [hden]
-    field_simp
+    grind
   have hH : t*quarticBranch μ ν r s (u/t) =
       (r*u+s*t)*4*ν*(minorArcCoordinate μ r s (u/t))^3 := by
     rw [hG]
@@ -3910,8 +3762,7 @@ theorem firstDerivative_quartic_corrected_nonlinear_residual_bound
       simp [finiteTaylorPolynomial,taylor_within_apply,iteratedDeriv_succ]
       ring
     rw [hpoly] at he
-    norm_num only [Nat.reduceAdd,Nat.factorial,Nat.cast_ofNat] at he
-    exact he
+    assumption
   have hid : q*(iteratedDeriv 1 f b-iteratedDeriv 1 f a-2*e*n/r-n*t/(r*q)) =
       q*(E+2*δ*n+3*μ*n^2+4*ν*n^3-n*t/(r*q)) := by dsimp [E,δ]; ring
   have hc := quartic_corrected_nonlinear_residual_identity
@@ -3930,9 +3781,7 @@ theorem firstDerivative_quartic_corrected_nonlinear_residual_bound
       apply add_le_add hE
       apply mul_le_mul_of_nonneg_left _ (abs_nonneg (n-G))
       apply (abs_add_le _ _).trans
-      simp only [abs_mul,abs_of_pos (by norm_num : (0:ℝ) < 3),
-        abs_of_pos (by norm_num : (0:ℝ) < 2)]
-      exact le_rfl
+      norm_num at * <;> nlinarith
 
 
                                                                     
@@ -3940,11 +3789,7 @@ theorem firstDerivative_quartic_corrected_nonlinear_residual_bound
 theorem coordinate_cube_difference_bound {n G D : ℝ} (hn : |n-G| ≤ D) :
     |n^3-G^3| ≤ D*(3*|n|^2+3*|n| * D+D^2) := by
   have hD : 0 ≤ D := (abs_nonneg _).trans hn
-  have hG : |G| ≤ |n|+D := by
-    calc
-      _ = |n-(n-G)| := by ring_nf
-      _ ≤ |n|+|n-G| := abs_sub _ _
-      _ ≤ _ := add_le_add_right hn _
+  have hG : |G| ≤ |n|+D := by grind
   calc
     _ = |n-G| * |n^2+n*G+G^2| := by rw [← abs_mul]; congr 1; ring
     _ ≤ D*(|n|^2+|n| * |G|+|G|^2) := by
@@ -4040,14 +3885,8 @@ theorem physicalModelPhase_quartic_nonlinear_residual_bound
     rw [heathBrownPhysicalPhase_iteratedDeriv hF.1 hM hA hW hy,
       one_mul,abs_mul,abs_of_pos (by positivity : 0 < T/M^(p+1))]
     exact mul_le_mul_of_nonneg_left hu (by positivity)
-  have hμhi : |μ| ≤ T/M^3*C₂/6 := by
-    dsimp only [μ]
-    rw [abs_div,abs_of_pos (by norm_num : (0:ℝ) < 6)]
-    exact div_le_div_of_nonneg_right (hjet 2 (by norm_num) a hround₀.1) (by norm_num)
-  have hνhi : |ν| ≤ T/M^4*C₃/24 := by
-    dsimp only [ν]
-    rw [abs_div,abs_of_pos (by norm_num : (0:ℝ) < 24)]
-    exact div_le_div_of_nonneg_right (hjet 3 (by norm_num) a hround₀.1) (by norm_num)
+  have hμhi : |μ| ≤ T/M^3*C₂/6 := by grind
+  have hνhi : |ν| ≤ T/M^4*C₃/24 := by grind
   have he := firstDerivative_quartic_corrected_nonlinear_residual_bound hc
     (fun y hy => hjet 4 le_rfl y (hseg y hy)) hμ hr ht hq (e := e)
   have hcubes := coordinate_cube_difference_bound hcoord
@@ -4094,20 +3933,10 @@ theorem quartic_residual_source_scale_budget
       D = A+B*(n^2/M) := by dsimp [D]; ring
       _ ≤ A*R+B*R := add_le_add (by simpa only [mul_one] using ha) hb
       _ = K*R := by dsimp [K]; ring
-  have hquartic : n^4/M^2 ≤ R^2 := by
-    have hh := pow_le_pow_left₀ (by positivity : 0 ≤ n^2/M) hx 2
-    convert hh using 1
-    ring
-  have hquad : D*(D+1) ≤ K*(K+1)*R^2 := by
-    calc
-      _ ≤ (K*R)*(K*R+R) :=
-        mul_le_mul hDb (add_le_add hDb hR) (by positivity) (by positivity)
-      _ = _ := by ring
+  have hquartic : n^4/M^2 ≤ R^2 := by field_simp <;> nlinarith
+  have hquad : D*(D+1) ≤ K*(K+1)*R^2 := by field_simp <;> nlinarith
   have hcube : D*(3*n^2+3*n*D+D^2)/M ≤ (3*K+3*K^2+K^3)*R^2 := by
-    have hrr : R^3/M ≤ R^2 := by
-      apply (div_le_iff₀ hM).mpr
-      have hh := mul_le_mul_of_nonneg_right hRM (sq_nonneg R)
-      nlinarith only [hh]
+    have hrr : R^3/M ≤ R^2 := by field_simp <;> nlinarith
     calc
       _ ≤ (K*R)*(3*(M*R)+3*M*(K*R)+(K*R)^2)/M := by gcongr
       _ = (3*K+3*K^2)*R^2+K^3*(R^3/M) := by field_simp
@@ -4128,17 +3957,11 @@ theorem quartic_residual_source_scale_budget
   calc
     _ ≤ (T/M^3)*((C₄/24+C₂/2*K*(K+1)+C₃/6*(3*K+3*K^2+K^3))*R^2) :=
       mul_le_mul_of_nonneg_left htotal (by positivity)
-    _ = _ := by
-      apply (eq_div_iff hN.ne').mpr
-      rw [show (T/M^3)*((C₄/24+C₂/2*K*(K+1)+C₃/6*(3*K+3*K^2+K^3))*R^2)*N =
-        (C₄/24+C₂/2*K*(K+1)+C₃/6*(3*K+3*K^2+K^3))*(T*N*R^2)/M^3 by ring,hscale]
-      field_simp
-      dsimp only [K]
-      ring
+    _ = _ := by grind
 
 
                                                           
-noncomputable def quarticNonlinearResidualConstant (σ δ : ℝ) : ℝ :=
+def quarticNonlinearResidualConstant (σ δ : ℝ) : ℝ :=
   let C₂ := modelPhaseJetCoefficient σ 2+δ
   let C₃ := modelPhaseJetCoefficient σ 3+δ
   let C₄ := modelPhaseJetCoefficient σ 4+δ
@@ -4185,11 +4008,7 @@ theorem physicalModelPhase_quartic_residual_le_fourth_scale
   have hF₂ := approximateModelPhase_mono hF (by norm_num : 2 ≤ 4) le_rfl
   have hround₀ := physicalModelPhase_halfCurvature_round_error hσ.le hF₂ hT hM0 hA hW hx₀
   have hround₁ := physicalModelPhase_halfCurvature_round_error hσ.le hF₂ hT hM0 hA hW hx₁
-  have hnM : |n| ≤ M := by
-    have hWM : W ≤ M := by linarith only [hA,hW]
-    apply abs_le.mpr
-    dsimp [n,a,b]
-    constructor <;> linarith only [hround₀.1.1,hround₀.1.2,hround₁.1.1,hround₁.1.2,hWM]
+  have hnM : |n| ≤ M := by nlinarith
   have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
     (approximateModelPhase_iteratedDeriv_error hF
       (heathBrownPhysicalPoint_mem_interior hM0 hA hW hround₀.1) 4 le_rfl)
@@ -4206,7 +4025,7 @@ theorem physicalModelPhase_quartic_residual_le_fourth_scale
   convert hh using 1 <;> dsimp [quarticNonlinearResidualConstant,C₂,C₃,C₄,κ,n,a,b] <;> ring
 
                                                                
-noncomputable def roundedMinorArcQuarticLinearForm
+def roundedMinorArcQuarticLinearForm
     (f : ℝ → ℝ) (x₀ e r s u t : ℝ) : ℝ :=
   let a : ℝ := round x₀
   roundedMinorArcLinearForm f x₀ e r s u t+
@@ -4380,10 +4199,7 @@ theorem physicalModelPhase_quartic_reciprocal_remainder
   have hL : 0 ≤ L := by dsimp [L]; positivity
   have hV : 0 ≤ V := by dsimp [V]; positivity
   have hU : 0 < U := by dsimp [U]; positivity
-  have hnM : |n| ≤ M := by
-    apply abs_le.mpr
-    dsimp only [n]
-    constructor <;> linarith only [ha.1,ha.2,hb.1,hb.2,hA,hW]
+  have hnM : |n| ≤ M := by grind
   have hratio : μ/μ₁ ≤ U/κ := by
     calc
       _ ≤ (U*T/(6*M^3))/(κ*T/(6*M^3)) :=
@@ -4392,14 +4208,10 @@ theorem physicalModelPhase_quartic_reciprocal_remainder
   have hν := physicalModelPhase_quartic_cubic_ratio_bound hσ hδ hF₃ hT hM hA hW ha
   have hd : |4*ν*n/μ| ≤ L*(|n|/M) := by
     calc
-      _ = 2*|2*ν/μ| * |n| := by
-        rw [show 4*ν*n/μ=2*(2*ν/μ)*n by ring,abs_mul,abs_mul,
-          abs_of_nonneg (by norm_num : (0:ℝ) ≤ 2)]
+      _ = 2*|2*ν/μ| * |n| := by grind
       _ ≤ 2*(C₃/(2*κ*M))*|n| := by gcongr
       _ = _ := by dsimp [L]; ring
-  have hdL : |4*ν*n/μ| ≤ L := hd.trans (by
-    have hh := (div_le_one hM).mpr hnM
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hh hL)
+  have hdL : |4*ν*n/μ| ≤ L := hd.trans (by bound)
   have hd2 : (4*ν*n/μ)^2 ≤ L^2*(|n|^2/M^2) := by
     have hh := pow_le_pow_left₀ (abs_nonneg _) hd 2
     simpa only [sq_abs,mul_pow,div_pow] using hh
@@ -4422,7 +4234,7 @@ theorem physicalModelPhase_quartic_reciprocal_remainder
 
 
                                                                     
-noncomputable def quarticReciprocalConstant (σ δ : ℝ) : ℝ :=
+def quarticReciprocalConstant (σ δ : ℝ) : ℝ :=
   let κ := modelPhaseThirdLower σ
   let C₂ := modelPhaseJetCoefficient σ 2+δ
   let C₃ := modelPhaseJetCoefficient σ 3+δ
@@ -4492,10 +4304,7 @@ theorem physicalModelPhase_quartic_reciprocal_coordinate_source_scale
     have hn2 : |n|^2/M ≤ R := (div_le_iff₀ hM).mpr (by simpa only [mul_comm] using hsquare)
     calc
       C₂/κ+C₃*|n|^2/(2*κ*M) = C₂/κ+(C₃/(2*κ))*(|n|^2/M) := by ring
-      _ ≤ (C₂/κ)*R+(C₃/(2*κ))*R := by
-        apply add_le_add
-        · simpa only [mul_one] using mul_le_mul_of_nonneg_left hR (show 0 ≤ C₂/κ by positivity)
-        · exact mul_le_mul_of_nonneg_left hn2 (by positivity)
+      _ ≤ (C₂/κ)*R+(C₃/(2*κ))*R := by bound
       _ = D*R := by dsimp [D]; ring
   have hrec := physicalModelPhase_quartic_reciprocal_remainder
     hσ hδ hF hT hM hA hW ha.1 hb.1
@@ -4573,12 +4382,7 @@ theorem quarticPhase_curvature_of_reciprocal_errors
   rw [rationalPhase_second hμ.ne' hr hμ₁.ne' hr₁ hx.ne' hx₁.ne',
     quarticPhase_second hμ.ne' hr hμ₁.ne' hr₁ hx.ne' hx₁.ne']
   have hsplit : ∀ a b c d e f : ℝ,
-      |(a-b)-(c-d)| ≤ |e-f|+|a-c-e|+|b-d-f| := by
-    intro a b c d e f
-    calc
-      _ = |(e-f)+(a-c-e)-(b-d-f)| := by congr 1; ring
-      _ ≤ |(e-f)+(a-c-e)|+|b-d-f| := abs_sub _ _
-      _ ≤ |e-f|+|a-c-e|+|b-d-f| := add_le_add_left (abs_add_le _ _) _
+      |(a-b)-(c-d)| ≤ |e-f|+|a-c-e|+|b-d-f| := by grind
   exact (hsplit _ _ _ _ _ _).trans ((add_le_add (add_le_add ht h0) h1).trans_eq (by ring))
 
                                                                
@@ -4740,19 +4544,16 @@ theorem physicalModelPhase_quartic_curvature_source_scale
                                                                         
 open Set
 open Polynomial
-open Set
+        
 open scoped Classical
-noncomputable def quarticCurvatureNumerator
+def quarticCurvatureNumerator
     (μ ν r s μ₁ ν₁ r₁ s₁ : ℝ) : Polynomial ℝ :=
   (C (2/(3*μ))*(C r*X+C s)-C (8*ν/(9*μ^3*r)))*(C r₁*X+C s₁)^4-
   (C (2/(3*μ₁))*(C r₁*X+C s₁)-C (8*ν₁/(9*μ₁^3*r₁)))*(C r*X+C s)^4
 
 theorem quarticCurvatureNumerator_degree (μ ν r s μ₁ ν₁ r₁ s₁ : ℝ) :
     (quarticCurvatureNumerator μ ν r s μ₁ ν₁ r₁ s₁).natDegree ≤ 5 := by
-  have ha (a b : ℝ) : (C a*X+C b).natDegree ≤ 1 := by
-    apply natDegree_add_le_of_degree_le
-    · simpa using (natDegree_mul_le (p := C a) (q := X))
-    · simp
+  have ha (a b : ℝ) : (C a*X+C b).natDegree ≤ 1 := by grind
   have hb (c d a b : ℝ) : (C c*(C a*X+C b)-C d).natDegree ≤ 1 := by
     apply (natDegree_sub_le _ _).trans
     apply max_le
@@ -4782,11 +4583,10 @@ theorem quarticCurvatureNumerator_eval
     quarticPhase_second hμ hr hμ₁ hr₁ hx hx₁]
   simp only [quarticCurvatureNumerator,eval_sub,eval_mul,eval_add,eval_C,eval_X,eval_pow]
   have hx₁' : x*r₁+s₁ ≠ 0 := by simpa only [mul_comm] using hx₁
-  field_simp [hx₁']
-  ring
+  field_simp <;> ring
 
                                                                 
-noncomputable def quarticCurvatureBoundaryPolynomial
+def quarticCurvatureBoundaryPolynomial
     (μ ν r s μ₁ ν₁ r₁ s₁ c : ℝ) : Polynomial ℝ :=
   quarticCurvatureNumerator μ ν r s μ₁ ν₁ r₁ s₁-
     C c*((C r*X+C s)^4*(C r₁*X+C s₁)^4)
@@ -4794,10 +4594,7 @@ noncomputable def quarticCurvatureBoundaryPolynomial
 theorem quarticCurvatureBoundaryPolynomial_degree
     (μ ν r s μ₁ ν₁ r₁ s₁ c : ℝ) :
     (quarticCurvatureBoundaryPolynomial μ ν r s μ₁ ν₁ r₁ s₁ c).natDegree ≤ 8 := by
-  have ha (a b : ℝ) : (C a*X+C b).natDegree ≤ 1 := by
-    apply natDegree_add_le_of_degree_le
-    · simpa using (natDegree_mul_le (p := C a) (q := X))
-    · simp
+  have ha (a b : ℝ) : (C a*X+C b).natDegree ≤ 1 := by grind
   have hd : ((C r*X+C s)^4*(C r₁*X+C s₁)^4).natDegree ≤ 8 :=
     natDegree_mul_le.trans (by
       have h0 := natDegree_pow_le_of_le 4 (ha r s)
@@ -4808,10 +4605,14 @@ theorem quarticCurvatureBoundaryPolynomial_degree
   · exact (quarticCurvatureNumerator_degree μ ν r s μ₁ ν₁ r₁ s₁).trans (by norm_num)
   · exact natDegree_mul_le.trans (by simpa using hd)
 
-theorem quarticCurvatureBoundaryPolynomial_eval
-    {μ ν r s μ₁ ν₁ r₁ s₁ c x : ℝ}
+section
+variable {μ ν r s μ₁ ν₁ r₁ s₁ c x : ℝ}
     (hμ : μ ≠ 0) (hμ₁ : μ₁ ≠ 0) (hr : r ≠ 0) (hr₁ : r₁ ≠ 0)
-    (hx : r*x+s ≠ 0) (hx₁ : r₁*x+s₁ ≠ 0) :
+    (hx : r*x+s ≠ 0) (hx₁ : r₁*x+s₁ ≠ 0)
+include μ ν r s μ₁ ν₁ r₁ s₁ c x hμ hμ₁ hr hr₁ hx hx₁
+
+theorem quarticCurvatureBoundaryPolynomial_eval
+     :
     (quarticCurvatureBoundaryPolynomial μ ν r s μ₁ ν₁ r₁ s₁ c).eval x =
       ((r*x+s)^4*(r₁*x+s₁)^4)*
         (iteratedDeriv 2 (rationalPhase μ r s μ₁ r₁ s₁) x-
@@ -4829,20 +4630,18 @@ theorem quarticCurvatureBoundaryPolynomial_eval
                                                                  
                              
 theorem quarticCurvatureBoundaryPolynomial_isRoot_iff
-    {μ ν r s μ₁ ν₁ r₁ s₁ c x : ℝ}
-    (hμ : μ ≠ 0) (hμ₁ : μ₁ ≠ 0) (hr : r ≠ 0) (hr₁ : r₁ ≠ 0)
-    (hx : r*x+s ≠ 0) (hx₁ : r₁*x+s₁ ≠ 0) :
+     :
     (quarticCurvatureBoundaryPolynomial μ ν r s μ₁ ν₁ r₁ s₁ c).IsRoot x ↔
       iteratedDeriv 2 (rationalPhase μ r s μ₁ r₁ s₁) x-
         iteratedDeriv 2 (quarticPhase μ ν r s μ₁ ν₁ r₁ s₁) x=c := by
   rw [Polynomial.IsRoot,quarticCurvatureBoundaryPolynomial_eval hμ hμ₁ hr hr₁ hx hx₁]
-  have hd : (r*x+s)^4*(r₁*x+s₁)^4 ≠ 0 :=
-    mul_ne_zero (pow_ne_zero 4 hx) (pow_ne_zero 4 hx₁)
-  rw [mul_eq_zero,or_iff_right hd,sub_eq_zero]
+  grind
+end
+
 
                                                                         
                                                                       
-noncomputable def quarticCurvatureBoundaryRoots
+def quarticCurvatureBoundaryRoots
     (μ ν r s μ₁ ν₁ r₁ s₁ U : ℝ) : Finset ℝ :=
   (quarticCurvatureBoundaryPolynomial μ ν r s μ₁ ν₁ r₁ s₁ U).roots.toFinset ∪
   (quarticCurvatureBoundaryPolynomial μ ν r s μ₁ ν₁ r₁ s₁ (-U)).roots.toFinset
@@ -4882,19 +4681,15 @@ theorem finite_boundary_rank_interval {S : Finset ℝ} {x y : ℝ}
   have hordered {a b : ℝ} (hab : a ≤ b) (hb : b ∉ S)
       (he : (S.filter (fun z => z<a)).card=(S.filter (fun z => z<b)).card) :
       ∀ z ∈ Set.Icc a b, z ∉ S := by
-    have hsub : S.filter (fun z => z<a) ⊆ S.filter (fun z => z<b) := by
-      intro z hz
-      obtain ⟨hzS,hza⟩ := Finset.mem_filter.mp hz
-      exact Finset.mem_filter.mpr ⟨hzS,hza.trans_le hab⟩
-    have hsets : S.filter (fun z => z<a)=S.filter (fun z => z<b) :=
+    have hsub : S.filter (fun z => z<a) ⊆ S.filter (fun z => z<b) := by gcongr
+    have hsets :=
       Finset.eq_of_subset_of_card_le hsub he.ge
     intro z hz hzS
     have hzb : z<b := lt_of_le_of_ne hz.2 (by
       intro hzb
       exact hb (hzb ▸ hzS))
     have hm : z ∈ S.filter (fun w => w<b) := Finset.mem_filter.mpr ⟨hzS,hzb⟩
-    rw [← hsets] at hm
-    exact (not_lt_of_ge hz.1) (Finset.mem_filter.mp hm).2
+    grind
   rcases le_total x y with hxy | hyx
   · simpa only [Set.uIcc_of_le hxy] using hordered hxy hy heq
   · simpa only [Set.uIcc_of_ge hyx] using hordered hyx hx heq.symm
@@ -4986,7 +4781,7 @@ theorem quartic_curvature_band_rank_partition
 
 
                                                            
-noncomputable def finiteBoundaryCell (S : Finset ℝ) (l w : ℝ) (k : ℕ) : Set ℝ :=
+def finiteBoundaryCell (S : Finset ℝ) (l w : ℝ) (k : ℕ) : Set ℝ :=
   {x | x ∈ Set.Icc l w ∧ x ∉ S ∧ (S.filter (fun z => z<x)).card=k}
 
 theorem finiteBoundaryCell_ordConnected (S : Finset ℝ) (l w : ℝ) (k : ℕ) :
@@ -4994,19 +4789,14 @@ theorem finiteBoundaryCell_ordConnected (S : Finset ℝ) (l w : ℝ) (k : ℕ) :
   constructor
   intro x hx y hy z hz
   have hmon {a b : ℝ} (hab : a ≤ b) :
-      (S.filter (fun v => v<a)).card ≤ (S.filter (fun v => v<b)).card := by
-    apply Finset.card_le_card
-    intro v hv
-    obtain ⟨hvS,hva⟩ := Finset.mem_filter.mp hv
-    exact Finset.mem_filter.mpr ⟨hvS,hva.trans_le hab⟩
+      (S.filter (fun v => v<a)).card ≤ (S.filter (fun v => v<b)).card := by gcongr
   have hx' : x ∈ Set.Icc l w ∧ x ∉ S ∧ (S.filter (fun v => v<x)).card=k := hx
   have hy' : y ∈ Set.Icc l w ∧ y ∉ S ∧ (S.filter (fun v => v<y)).card=k := hy
   have hno := finite_boundary_rank_interval hx'.2.1 hy'.2.1 (hx'.2.2.trans hy'.2.2.symm)
-  have hzI : z ∈ Set.uIcc x y := Set.Icc_subset_uIcc hz
+  have hzI := Set.Icc_subset_uIcc hz
   refine ⟨⟨hx'.1.1.trans hz.1,hz.2.trans hy'.1.2⟩,hno z hzI,?_⟩
   have hleft := hmon hz.1
-  have hright := hmon hz.2
-  omega
+  grind
 
                                                                     
                                                                      
@@ -5098,7 +4888,6 @@ theorem quartic_phase_taylor_on_boundary_cell
   change |φ x-φ x₀-deriv φ x₀*(x-x₀)| ≤ U*|x-x₀|^2/2
   change |φ x-(φ x₀+deriv φ x₀*(x-x₀))| ≤ U*|x-x₀|^2/2 at he
   convert he using 1
-  congr 1
   ring
 
 
@@ -5224,7 +5013,7 @@ theorem quartic_phase_derivative_variation_on_boundary_cell
                                                                   
                                                                        
 open scoped Classical
-open scoped Classical
+                     
 theorem quarticPhase_four_point_curvature
     {μ ν r s μ₁ ν₁ r₁ s₁ a b c d h E A B : ℝ}
     (hμ : μ ≠ 0) (hr : r ≠ 0) (hμ₁ : μ₁ ≠ 0) (hr₁ : r₁ ≠ 0)
@@ -5262,14 +5051,11 @@ theorem quarticPhase_four_point_curvature
     rw [iteratedDeriv_fun_add
       ((show ContDiffAt ℝ 2 (fun y => A*y+B) z by fun_prop).sub (hg z hz')) (hH z hz'),
       iteratedDeriv_fun_sub (by fun_prop) (hg z hz')]
-    have hdlin : deriv (fun y : ℝ => A*y+B)=fun _ => A := by
-      funext y
-      simpa only [mul_one,id_eq] using (((hasDerivAt_id y).const_mul A).add_const B).deriv
+    have hdlin : deriv (fun y : ℝ => A*y+B)=fun _ => A := by simp_all
     rw [iteratedDeriv_succ,iteratedDeriv_one,hdlin]
     simp only [deriv_const]
     ring
-  rw [hid,abs_neg] at hez
-  exact ⟨z,hz,hez⟩
+  grind
 
 
                                                                     
@@ -5293,13 +5079,7 @@ theorem quarticPhase_cubic_ratio_of_curvature
   rw [rationalPhase_second hμ.ne' hr hμ₁.ne' hr₁ hx.ne' hx₁.ne',
     quarticPhase_second hμ.ne' hr hμ₁.ne' hr₁ hx.ne' hx₁.ne'] at hcurv
   have hsplit : ∀ a b c d e f : ℝ,
-      |e-f| ≤ |(a-b)-(c-d)|+|a-c-e|+|b-d-f| := by
-    intro a b c d e f
-    calc
-      _ = |((a-b)-(c-d))-(a-c-e)+(b-d-f)| := by congr 1; ring
-      _ ≤ |((a-b)-(c-d))-(a-c-e)|+|b-d-f| := abs_add_le _ _
-      _ ≤ |(a-b)-(c-d)|+|a-c-e|+|b-d-f| :=
-        add_le_add (abs_sub _ _) le_rfl
+      |e-f| ≤ |(a-b)-(c-d)|+|a-c-e|+|b-d-f| := by grind
   have hb := (hsplit _ _ _ _ _ _).trans (add_le_add (add_le_add hcurv h0) h1)
   rw [rationalPhase_cubic_ratio_abs_eq hμnew.ne' hr hμnew₁.ne' hr₁ hx.ne' hx₁.ne',
     abs_of_pos hμnew₁,abs_of_pos hx₁,
@@ -5552,18 +5332,11 @@ theorem ratio_relative_perturbation_of_inverse_bound
     |a*u/v-1| ≤ Γ^2*ε+2*Γ*η := by
   have hε : 0 ≤ ε := (abs_nonneg _).trans ha
   have hη : 0 ≤ η := (abs_nonneg _).trans hu
-  have hdiff : |u-v| ≤ 2*η := by
-    calc
-      _ = |(u-1)-(v-1)| := by congr 1; ring
-      _ ≤ |u-1|+|v-1| := abs_sub _ _
-      _ ≤ _ := by linarith only [hu,hvv]
+  have hdiff : |u-v| ≤ 2*η := by grind
   calc
     _ = |(u/v)*(a-1)+(1/v)*(u-v)| := by congr 1; field_simp; ring
     _ ≤ |(u/v)*(a-1)|+|(1/v)*(u-v)| := abs_add_le _ _
-    _ = |u| * (1/v)*|a-1|+(1/v)*|u-v| := by
-      rw [abs_mul,abs_div,abs_of_pos hv,abs_mul,
-        abs_of_pos (one_div_pos.mpr hv)]
-      ring
+    _ = |u| * (1/v)*|a-1|+(1/v)*|u-v| := by grind
     _ ≤ Γ*Γ*ε+Γ*(2*η) := by gcongr
     _ = _ := by ring
 
@@ -5726,8 +5499,7 @@ theorem physicalModelPhase_interval_root_family
         hσ hF hT hM hA hW hL hU htarget
       have hbuf : z ∈ Set.Ioo (1/2:ℝ) (W-1/2) := by
         rcases Set.mem_uIcc.mp hz with hh | hh
-        · exact ⟨hL.1.trans_le hh.1,hh.2.trans_lt hU.2⟩
-        · exact ⟨hU.1.trans_le hh.1,hh.2.trans_lt hL.2⟩
+        all_goals (grind)
       have hdist : |z-x₀| ≤ H := by
         have hl := abs_le.mp hLdist
         have hu := abs_le.mp hUdist
@@ -5774,9 +5546,9 @@ theorem scaled_paired_C4_nontriangular_resonance_compression
     |(iteratedDeriv 3 f₁ yr/6)*t (h xr)^3-iteratedDeriv 3 f xr/6| ≤ E →
     h xr-h xl ≤ 48*E/(|(c:ℝ)| *L) := by
   intro h h₁ t hlr hmapl hmapr htl htr hel her
-  let k : ℝ := |(c:ℝ)|
-  let fs : ℝ → ℝ := fun z => k*f z
-  let fs₁ : ℝ → ℝ := fun z => k*f₁ z
+  let k := |(c:ℝ)|
+  let fs := fun z => k*f z
+  let fs₁ := fun z => k*f₁ z
   have hk : 0 < k := abs_pos.mpr (by exact_mod_cast hc)
   have hsign : (c.sign:ℝ)*k=(c:ℝ) := by
     dsimp only [k]
@@ -5786,9 +5558,7 @@ theorem scaled_paired_C4_nontriangular_resonance_compression
     intro hh
     rw [hh,Int.cast_zero,abs_zero] at hsignabs
     norm_num at hsignabs
-  have hdet' : a*d-(|c| *b)*c.sign=1 := by
-    have hh := congrArg (fun z : ℤ => b*z) (Int.sign_mul_abs c)
-    nlinarith only [hdet,hh]
+  have hdet' : a*d-(|c| *b)*c.sign=1 := by grind
   have hjet (n : ℕ) (z : ℝ) : iteratedDeriv n fs z=k*iteratedDeriv n f z :=
     iteratedDeriv_const_mul_field k f
   have hjet₁ (n : ℕ) (z : ℝ) : iteratedDeriv n fs₁ z=k*iteratedDeriv n f₁ z :=
@@ -5871,7 +5641,7 @@ theorem curvature_fiber_hasDerivAt
     (hroot : ∀ᶠ w in 𝓝 z, ρ w ∈ I ∧ H w (ρ w)=H z (ρ z))
     (huniq : ∀ᶠ w in 𝓝 z, Set.InjOn (H w) I) :
     HasDerivAt ρ (-hy/hx) z := by
-  let L : ℝ × ℝ →L[ℝ] ℝ :=
+  let L :=
     hy • ContinuousLinearMap.fst ℝ ℝ ℝ + hx • ContinuousLinearMap.snd ℝ ℝ ℝ
   have hleft : L.comp (ContinuousLinearMap.inl ℝ ℝ ℝ)=hy • ContinuousLinearMap.id ℝ ℝ := by
     ext
@@ -5889,10 +5659,9 @@ theorem curvature_fiber_hasDerivAt
     rw [hright]
     ext
     simp [hx0]
-  have hinv : (L.comp (ContinuousLinearMap.inr ℝ ℝ ℝ)).IsInvertible :=
+  have hinv :=
     ContinuousLinearMap.IsInvertible.of_inverse hcomp₁ hcomp₂
-  have hinveq : (L.comp (ContinuousLinearMap.inr ℝ ℝ ℝ)).inverse=
-      hx⁻¹ • ContinuousLinearMap.id ℝ ℝ :=
+  have hinveq :=
     ContinuousLinearMap.inverse_eq hcomp₁ hcomp₂
   change HasStrictFDerivAt (fun p : ℝ × ℝ => H p.1 p.2) L (z,ρ z) at hH
   let ψ := hH.implicitFunctionOfProdDomain hinv
@@ -5904,7 +5673,7 @@ theorem curvature_fiber_hasDerivAt
     simp only [ContinuousLinearMap.comp_apply,neg_apply,
       smul_apply,ContinuousLinearMap.id_apply,smul_eq_mul]
     ring
-  have hψin : ∀ᶠ w in 𝓝 z, ψ w ∈ I :=
+  have hψin :=
     (hH.tendsto_implicitFunctionOfProdDomain hinv) (hI.mem_nhds hbase)
   have hψroot := hH.eventually_apply_implicitFunctionOfProdDomain hinv
   have heq : ρ =ᶠ[𝓝 z] ψ := by
@@ -5917,8 +5686,12 @@ theorem curvature_fiber_hasDerivAt
                                                                       
                                                                        
                                                                          
+section
+variable (H : ℝ × ℝ → ℝ) (ρ : ℝ → ℝ)
+include H ρ
+
 theorem curvature_fiber_vertical_profile_hasDerivAt
-    (H : ℝ × ℝ → ℝ) (ρ : ℝ → ℝ) {z : ℝ} {I : Set ℝ}
+     {z : ℝ} {I : Set ℝ}
     (hI : IsOpen I) (hbase : ρ z ∈ I)
     (hH : ContDiffAt ℝ 2 H (z,ρ z))
     (hx0 : fderiv ℝ H (z,ρ z) (0,1) ≠ 0)
@@ -5929,28 +5702,18 @@ theorem curvature_fiber_vertical_profile_hasDerivAt
     HasDerivAt (fun w => G (w,ρ w))
       (G (z,ρ z)*deriv (fun u => B (z,u)/G (z,u)) (ρ z)) z := by
   intro G B
-  let p : ℝ × ℝ := (z,ρ z)
+  let p := (z,ρ z)
   let vx : ℝ × ℝ := (0,1)
   let vy : ℝ × ℝ := (1,0)
   let D₂ := fderiv ℝ (fderiv ℝ H) p
   have hsplit : fderiv ℝ H p =
-      B p • ContinuousLinearMap.fst ℝ ℝ ℝ + G p • ContinuousLinearMap.snd ℝ ℝ ℝ := by
-    apply ContinuousLinearMap.ext
-    intro v
-    have hv : v=v.1 • vy+v.2 • vx := by dsimp [vx,vy]; ext <;> simp
-    calc
-      _ = fderiv ℝ H p (v.1 • vy+v.2 • vx) := congrArg (fderiv ℝ H p) hv
-      _ = _ := by
-        rw [map_add,map_smul,map_smul]
-        change v.1*B p+v.2*G p=B p*v.1+G p*v.2
-        ring
+      B p • ContinuousLinearMap.fst ℝ ℝ ℝ + G p • ContinuousLinearMap.snd ℝ ℝ ℝ := by ext <;> aesop
   have hstrict := hH.hasStrictFDerivAt (by norm_num : (2:WithTop ℕ∞) ≠ 0)
   have hstrict' : HasStrictFDerivAt (fun q : ℝ × ℝ => H (q.1,q.2))
       (B p • ContinuousLinearMap.fst ℝ ℝ ℝ + G p • ContinuousLinearMap.snd ℝ ℝ ℝ)
       (z,ρ z) := by
     change HasStrictFDerivAt H (fderiv ℝ H p) (z,ρ z) at hstrict
-    rw [hsplit] at hstrict
-    exact hstrict
+    simp_all
   have hρ := curvature_fiber_hasDerivAt (fun w u => H (w,u)) ρ hI hbase hx0
     hstrict' hroot huniq
   change HasDerivAt ρ (-B p/G p) z at hρ
@@ -6003,7 +5766,7 @@ theorem curvature_fiber_vertical_profile_hasDerivAt
                                                                       
                                                       
 theorem curvature_fiber_parameter_compression
-    (H : ℝ × ℝ → ℝ) (ρ : ℝ → ℝ)
+    
     {a b A B s t q L K E : ℝ}
     (hL : 0 < L) (hK : 0 < K) (hst : s ≤ t)
     (hs : s ∈ Set.Ioo a b) (ht : t ∈ Set.Ioo a b)
@@ -6036,7 +5799,7 @@ theorem curvature_fiber_parameter_compression
       have hh := hG y hy w (hsub ⟨hw.1.le,hw.2.le⟩)
       rw [he,sub_self,zero_div] at hd
       rw [hd,abs_zero] at hh
-      linarith only [hh,hL]
+      linarith
     intro x hx v hv he
     by_contra hne
     rcases lt_or_gt_of_ne hne with hlt | hgt
@@ -6070,8 +5833,9 @@ theorem curvature_fiber_parameter_compression
   rw [hd,abs_div,abs_of_pos (sub_pos.mpr hlt)] at hb
   have hh := (le_div_iff₀ (sub_pos.mpr hlt)).mp hb
   apply (le_div_iff₀ hLK).mpr
-  change |F t-F s| ≤ E at hE
-  nlinarith only [hh,hE]
+  bound
+end
+
 
 
 
@@ -6141,8 +5905,12 @@ theorem curvature_fiber_parameter_count
                                                                      
                                                                              
 open scoped ContDiff
+section
+variable (f : ℝ → ℝ)
+include f
+
 theorem difference_logarithmic_ratio_lower
-    (f : ℝ → ℝ) {x z η y l c U V : ℝ}
+     {x z η y l c U V : ℝ}
     (hη : 0 < η) (hy : 1 ≤ y) (hy' : y ≤ 2) (hz : z=x+η*y)
     (hl : 0 < l) (hc : 0 < c) (hU : 0 < U) (hV : 0 < V)
     (hf : ∀ w ∈ Set.Icc x z, ContDiffAt ℝ 2 f w)
@@ -6169,13 +5937,7 @@ theorem difference_logarithmic_ratio_lower
     (fun w hw => (hd w hw).continuousAt.continuousWithinAt)
     (fun w hw => hd w ⟨hw.1.le,hw.2.le⟩)
   have huI : u ∈ Set.Icc x z := ⟨hu.1.le,hu.2.le⟩
-  have hDne : f x-f z ≠ 0 := by
-    intro hh
-    have heq : f z=f x := by linarith only [hh]
-    rw [heq,sub_self,zero_div] at he
-    have hb := (hder u huI).1
-    rw [he,abs_zero] at hb
-    linarith only [hb,hc]
+  have hDne : f x-f z ≠ 0 := by grind
   have hD : |f x-f z| ≤ U*(z-x) := by
     have hb := (hder u huI).2
     rw [he,abs_div,abs_of_pos (sub_pos.mpr hxz)] at hb
@@ -6186,7 +5948,6 @@ theorem difference_logarithmic_ratio_lower
   have hgd w (hw : w ∈ Set.Icc x z) : HasDerivAt g (gp w) w := by
     have hh := (hdd w hw).div (hd w hw) (hn w hw)
     convert hh using 1
-    dsimp only [gp]
     ring
   have hgp w (hw : w ∈ Set.Icc x z) : c/V^2 ≤ |gp w| := by
     dsimp only [gp]
@@ -6253,7 +6014,7 @@ theorem difference_logarithmic_ratio_lower
                                                                        
                                                                             
 theorem difference_curvature_mixed_jets
-    (f : ℝ → ℝ) {σ η y x : ℝ}
+     {σ η y x : ℝ}
     (hσ : σ ≠ 0) (hη : η ≠ 0)
     (hx : ContDiffAt ℝ 2 f x) (hz : ContDiffAt ℝ 2 f (x+η*y))
     (hd : deriv f x-deriv f (x+η*y) ≠ 0) :
@@ -6323,8 +6084,7 @@ theorem difference_curvature_mixed_jets
       simpa only [iteratedDeriv_succ,iteratedDeriv_one,iteratedDeriv_zero] using
         (contDiffAt_iteratedDeriv_finite (n:=1) (j:=1) hz).differentiableAt_one.hasDerivAt
     convert hh.comp x ((hasDerivAt_id x).add_const (η*y)) using 1
-    · rfl
-    · simp only [mul_one]
+    all_goals (bound)
   rw [heq.deriv_eq]
   calc
     _ = ((-η*iteratedDeriv 2 f (x+η*y))*(deriv f x-deriv f (x+η*y))-
@@ -6332,6 +6092,8 @@ theorem difference_curvature_mixed_jets
         (deriv f x-deriv f (x+η*y))^2 :=
       ((hdz.const_mul (-η)).div (hdx.sub hdz) hd).deriv
     _ = _ := by ring
+end
+
 
 
                                                                         
@@ -6451,7 +6213,7 @@ theorem buffered_phase_sharp_sum_comparison
     (∑' n : ℤ, modelPhaseWeightedKernel χ Fext T N n)
     (Expdb.exponentialSumAt Fext T N a b)
   rw [norm_sub_rev (∑' n : ℤ, modelPhaseWeightedKernel χ Fext T N n)] at ht
-  linarith only [h₁,h₂,ht]
+  linarith
 
 
                                                                      
@@ -6473,24 +6235,24 @@ theorem approximateModelPhase_enlarged_sharp_transport (Q : ℕ) :
   have hNpos : 0 < N := zero_lt_one.trans_le hN
   let h := 1/(8*N)
   have hh : 0 < h := by dsimp only [h]; positivity
-  have hhmax : h < 1/4 := by
-    dsimp only [h]
-    apply (div_lt_iff₀ (by positivity : 0 < 8*N)).mpr
-    linarith only [hN]
+  have hhmax : h < 1/4 := by bound
   obtain ⟨Fext,hreg,hagree,hjets⟩ := hbuild σ δ h F hδ hh hhmax hF
   refine ⟨Fext,hreg,hjets,?_⟩
   intro T a b ha hb
   have hh' := buffered_phase_sharp_sum_comparison F Fext hNpos hh hagree T a b ha hb
-  have he : 16*N*h+4=6 := by dsimp only [h]; field_simp; ring
-  rwa [he] at hh'
+  grind
 
 
 
                                                                     
                                                                    
                                                                      
+section
+variable (F : ℝ → ℝ)
+include F
+
 theorem positive_jets_difference_curvature_entry
-    (F : ℝ → ℝ) {σ c U η x y : ℝ}
+     {σ c U η x y : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
     (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hx : x ∈ Set.Icc (3/4:ℝ) (9/4)) (hy : y ∈ Set.Icc (1/2:ℝ) 3)
@@ -6606,7 +6368,7 @@ theorem positive_jets_difference_curvature_entry
                                                                          
                                                                          
 theorem positive_difference_mixed_derivative
-    (F : ℝ → ℝ) {σ η x y : ℝ}
+     {σ η x y : ℝ}
     (hσ : σ ≠ 0) (hη : 0 < η) (hx : 0 < x) (hy : 0 < y)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
     (r s : ℕ) (hs : 0 < s) :
@@ -6636,7 +6398,7 @@ theorem positive_difference_mixed_derivative
                                                               
                                                                       
 theorem positive_jets_difference_mixed_upper
-    (F : ℝ → ℝ) {σ U η x y : ℝ}
+     {σ U η x y : ℝ}
     (hσ : 0 < σ) (hU : 0 < U) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hx : x ∈ Icc (3/4:ℝ) (9/4)) (hy : y ∈ Icc (1/2:ℝ) 3)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
@@ -6700,7 +6462,7 @@ theorem positive_jets_difference_mixed_upper
                                                                       
                                                                        
 theorem positive_jets_difference_spatial_lower
-    (F : ℝ → ℝ) {σ c η x y : ℝ}
+     {σ c η x y : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hx : x ∈ Icc (3/4:ℝ) (9/4)) (hy : y ∈ Icc (1/2:ℝ) 3)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
@@ -6733,7 +6495,7 @@ theorem positive_jets_difference_spatial_lower
   rw [he,abs_div,abs_of_pos (sub_pos.mpr hxz)] at hlo
   have hprod := (le_div_iff₀ (sub_pos.mpr hxz)).mp hlo
   rw [abs_sub_comm] at hprod
-  have hFx : ContDiffAt ℝ r F x :=
+  have hFx :=
     (hf x hx0).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl r)
   have hFz : ContDiffAt ℝ r (fun u => F (u+η*y)) x :=
     ((hf _ (add_pos hx0 hp)).of_le
@@ -6751,7 +6513,7 @@ theorem positive_jets_difference_spatial_lower
                                                                        
                                                                       
 theorem positive_difference_curvature_directions
-    (F : ℝ → ℝ) {σ η x y : ℝ}
+     {σ η x y : ℝ}
     (hx : 0 < x) (hz : 0 < x+η*y)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w) (r : ℕ) :
     let H := fun p : ℝ × ℝ =>
@@ -6800,7 +6562,7 @@ theorem positive_difference_curvature_directions
                                                                     
                                                                            
 theorem positive_difference_jet_small_shift
-    (F : ℝ → ℝ) {σ U η x y : ℝ}
+     {σ U η x y : ℝ}
     (hσ : 0 < σ) (hU : 0 < U) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hx : x ∈ Icc (3/4:ℝ) (9/4)) (hy : y ∈ Icc (1:ℝ) 2)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
@@ -6830,8 +6592,7 @@ theorem positive_difference_jet_small_shift
         ‖deriv (iteratedDeriv (r+1) F) w‖ ≤ U := by
       rw [←iteratedDeriv_succ,Real.norm_eq_abs]
       exact hbound w (hI w hw) (r+1) (by omega)
-    simpa only [Real.norm_eq_abs] using
-      Convex.norm_image_sub_le_of_norm_deriv_le hd hbnd (convex_Icc x (x+η*y)) hb ha
+    exact Convex.norm_image_sub_le_of_norm_deriv_le hd hbnd (convex_Icc x (x+η*y)) hb ha
   have hd w (hw : w ∈ Icc x (x+η*y)) :
       HasDerivAt (iteratedDeriv r F) (iteratedDeriv (r+1) F w) w :=
     hasDerivAt_iteratedDeriv_finite (show r < r+1 by omega)
@@ -6840,7 +6601,7 @@ theorem positive_difference_jet_small_shift
     (iteratedDeriv (r+1) F) hxz
     (fun w hw => (hd w hw).continuousAt.continuousWithinAt)
     (fun w hw => hd w ⟨hw.1.le,hw.2.le⟩)
-  have hFx : ContDiffAt ℝ r F x :=
+  have hFx :=
     (hf x hx0).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl r)
   have hFz : ContDiffAt ℝ r (fun t => F (t+η*y)) x :=
     ((hf _ (add_pos hx0 hp)).of_le
@@ -6849,9 +6610,7 @@ theorem positive_difference_jet_small_shift
   have hjet : iteratedDeriv r (fun t => (F t-F (t+η*y))/(σ*η)) x =
       -(y/σ)*iteratedDeriv (r+1) F u := by
     rw [iteratedDeriv_div_const,iteratedDeriv_fun_sub hFx hFz,iteratedDeriv_comp_add_const,he]
-    rw [show x+η*y-x=η*y by ring]
-    field_simp
-    ring
+    field_simp <;> ring
   constructor
   · rw [hjet,show -(y/σ)*iteratedDeriv (r+1) F u+y/σ*iteratedDeriv (r+1) F x =
       -(y/σ)*(iteratedDeriv (r+1) F u-iteratedDeriv (r+1) F x) by ring,
@@ -6882,6 +6641,8 @@ theorem positive_difference_jet_small_shift
       _ = U*η*y/σ := by ring
       _ ≤ _ := div_le_div_of_nonneg_right
         (by nlinarith only [mul_le_mul_of_nonneg_left hy.2 (mul_pos hU hη).le]) hσ.le
+end
+
 
 
                                                                   
@@ -6911,10 +6672,7 @@ theorem positive_jets_difference_case_two_tests {σ c U : ℝ}
     apply (div_le_iff₀ hσ).mpr
     have hh := (le_div_iff₀ (by positivity : 0 < 4*U)).mp hcap
     nlinarith only [hh]
-  have hbudget' : 2*U*η/σ ≤ ε := by
-    apply le_trans ?_ hbudget
-    apply div_le_div_of_nonneg_right _ hσ.le
-    nlinarith only [mul_pos hU hη]
+  have hbudget' : 2*U*η/σ ≤ ε := by grind
   let v := fun i : Fin 4 => iteratedDeriv (i.val+3) F x
   let w : Fin 7 → ℝ := ![D 2,D 3,D 4,D 5,B 2,B 3,B 4]
   have hxI : x ∈ Icc (1/2:ℝ) 3 := ⟨by linarith only [hx.1],by linarith only [hx.2]⟩
@@ -6963,6 +6721,6 @@ theorem difference_family_dyadic_parameter_geometry {H : ℝ} (hH : 0 < H) :
 open scoped FourierTransform BigOperators
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025.HuxleyRationalPhase
-end
-end
+
+
+

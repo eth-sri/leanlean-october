@@ -3,9 +3,8 @@ public import GuthMaynard.Improvement.OperatorFiniteTrace
 public import GuthMaynard.Improvement.FiniteOperatorWitness
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory InnerProductSpace Filter Set
+
+open MeasureTheory InnerProductSpace Filter
 open scoped InnerProductSpace Topology
 namespace GuthMaynard.Improvement
 variable {E ι κ : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
@@ -114,4 +113,4 @@ theorem operator_subspace_spectral_comparison [CompleteSpace E]
   rw [operator_subspace_cubic_trace b U d, operator_subspace_mixed_trace b U d]
   simpa only [operator_subspace_compression_sub] using hh
 
-end GuthMaynard.Improvement
+

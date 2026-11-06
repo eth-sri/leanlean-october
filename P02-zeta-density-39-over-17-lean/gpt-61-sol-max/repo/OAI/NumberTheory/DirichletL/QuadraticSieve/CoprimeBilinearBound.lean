@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.CrossFactorization
 
 @[expose] public section
@@ -8,71 +9,71 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
 
-open scoped BigOperators Classical
+                                  
 namespace CoprimeBilinearSieve
 open FiniteSieveOperator CoprimeSieveOperator CoprimeMobiusExtension
 
@@ -254,11 +255,17 @@ theorem divisor_mask_energy {n : Type*} [Fintype n]
   rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
   exact mul_le_mul_of_nonneg_right (by exact_mod_cast Finset.card_le_card hsub) (sq_nonneg _)
 
-def divisorConstant (ε : ℝ) (hε : 0 < ε) : ℝ :=
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+def divisorConstant  : ℝ :=
   (IdealDivisorBound.ideal_divisor_small_power ε hε).choose
 
-theorem divisorConstant_pos (ε : ℝ) (hε : 0 < ε) : 0 < divisorConstant ε hε :=
+theorem divisorConstant_pos  : 0 < divisorConstant ε hε :=
   (IdealDivisorBound.ideal_divisor_small_power ε hε).choose_spec.1
+end
+
 
 theorem divisor_mask_energy_small_power {n : Type*} [Fintype n]
     (ε : ℝ) (hε : 0 < ε) (S : Finset (Ideal O))
@@ -304,23 +311,28 @@ namespace IdealDivisorBilinearBlocks
 abbrev O := ActualEisensteinCubic.O
 open FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
 
-def blockValue {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
-    (left : n → Ideal O) (right : p → Ideal O)
+section
+variable {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
+include m n p
+
+section
+variable (left : n → Ideal O) (right : p → Ideal O)
     (A : Ideal O → Matrix m n ℂ) (B : Ideal O → Matrix m p ℂ)
-    (a : n → ℂ) (b : p → ℂ) (D E : Ideal O) : ℝ :=
+    (a : n → ℂ) (b : p → ℂ) (D E : Ideal O)
+include left right A B a b D E
+
+def blockValue  : ℝ :=
   ∑ i, ‖∑ j, ∑ k, if IsCoprime (left j) (right k) then
     star (A D i j * (if D ∣ left j then a j else 0)) *
       (B E i k * (if E ∣ right k then b k else 0)) else 0‖
 
-theorem blockValue_nonneg {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
-    (left : n → Ideal O) (right : p → Ideal O)
-    (A : Ideal O → Matrix m n ℂ) (B : Ideal O → Matrix m p ℂ)
-    (a : n → ℂ) (b : p → ℂ) (D E : Ideal O) :
+theorem blockValue_nonneg  :
     0 ≤ blockValue left right A B a b D E :=
   Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+end
 
-theorem divisor_block_bound {m n p : Type*}
-    [Fintype m] [Fintype n] [Fintype p]
+
+theorem divisor_block_bound 
     [DecidableEq m] [DecidableEq n] [DecidableEq p]
     (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
     (left : n → Ideal O) (right : p → Ideal O)
@@ -340,7 +352,7 @@ theorem divisor_block_bound {m n p : Type*}
         ((divisorConstant ε hε * N₂ ^ ε) * ∑ k, ‖b k‖ ^ 2) := by
   let EL (D : Ideal O) : ℝ := ∑ j, ‖if D ∣ left j then a j else 0‖ ^ 2
   let ER (E : Ideal O) : ℝ := ∑ k, ‖if E ∣ right k then b k else 0‖ ^ 2
-  let C : ℝ := UA * UB * (supportConstant ε hε * N₁ ^ ε) *
+  let C := UA * UB * (supportConstant ε hε * N₁ ^ ε) *
     (supportConstant ε hε * N₂ ^ ε)
   have hs := (supportConstant_pos ε hε).le
   have hd := (divisorConstant_pos ε hε).le
@@ -373,6 +385,8 @@ theorem divisor_block_bound {m n p : Type*}
   change (∑ E ∈ T, ER E) ≤ _ at he2
   dsimp only [C]
   gcongr
+end
+
 
 end IdealDivisorBilinearBlocks
 
@@ -430,7 +444,11 @@ theorem extendByZero_matrix {m : Type*} (S : Finset n) (f : n → p)
     simp [Ne.symm hkj]
   · simp
 
-theorem masked_column_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m]
+section
+variable {m : Type*} [Fintype m] [DecidableEq m]
+include m
+
+theorem masked_column_restriction_norm_le 
     (S : Finset n) (f : n → p) (hf : Set.InjOn f S) (A : Matrix m p ℂ) :
     ‖operator (fun i j => if j ∈ S then A i (f j) else 0)‖ ≤ ‖operator A‖ := by
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
@@ -452,20 +470,25 @@ theorem masked_column_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m
   rw [heq]
   exact ((operator A).le_opNorm v).trans (mul_le_mul_of_nonneg_left hv (norm_nonneg _))
 
-theorem column_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m]
-    (f : n → p) (hf : Function.Injective f) (A : Matrix m p ℂ) :
+section
+variable (f : n → p) (hf : Function.Injective f)
+include f hf
+
+theorem column_restriction_norm_le  (A : Matrix m p ℂ) :
     ‖operator (fun i j => A i (f j))‖ ≤ ‖operator A‖ := by
   simpa only [Finset.mem_univ, ite_true] using
     masked_column_restriction_norm_le Finset.univ f hf.injOn A
 
-theorem row_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m]
-    (f : n → p) (hf : Function.Injective f) (A : Matrix p m ℂ) :
+theorem row_restriction_norm_le  (A : Matrix p m ℂ) :
     ‖operator (fun i j => A (f i) j)‖ ≤ ‖operator A‖ := by
   let B : Matrix n m ℂ := fun i j => A (f i) j
   have h := column_restriction_norm_le f hf A.conjTranspose
   change ‖operator B.conjTranspose‖ ≤ ‖operator A.conjTranspose‖ at h
   rw [operator_conjTranspose_norm B, operator_conjTranspose_norm A] at h
   exact h
+end
+end
+
 
 theorem submatrix_norm_le {m q : Type*} [Fintype m] [Fintype q]
     [DecidableEq m] [DecidableEq q]
@@ -522,26 +545,38 @@ theorem idealSexticRow_ambient
   · intro i hi
     rfl
 
-def Admissible (I : Ideal O) : Prop :=
+section
+variable (I : Ideal O)
+include I
+
+def Admissible  : Prop :=
   I ≠ 0 ∧ Squarefree I ∧ ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
     lambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2
 
-theorem singletonPositive (I : Ideal O) (h : Admissible I) : ∀ J ∈ ({I} : Finset (Ideal O)), J ≠ ⊥ := by
+section
+variable (h : Admissible I)
+include h
+
+theorem singletonPositive  : ∀ J ∈ ({I} : Finset (Ideal O)), J ≠ ⊥ := by
   intro J hJ
   rcases Finset.mem_singleton.mp hJ with rfl
   exact h.1
 
-theorem singletonGood (I : Ideal O) (h : Admissible I) :
+theorem singletonGood  :
     ∀ J ∈ ({I} : Finset (Ideal O)), ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors J,
       goodLambda ∉ P := by
   intro J hJ P hP
   rcases Finset.mem_singleton.mp hJ with rfl
   exact (h.2.2 P hP).1
+end
 
-def quadraticRow (I : Ideal O) (z : O) : ℂ :=
+
+def quadraticRow  (z : O) : ℂ :=
   if h : Admissible I then
     (idealSexticRow {I} (singletonPositive I h) (singletonGood I h) I z) ^ 3
   else 0
+end
+
 
 theorem quadraticRow_eq (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hI : I ∈ F) (z : O) :
@@ -576,20 +611,32 @@ theorem idealRange_mono {X Y : ℝ} (h : X ≤ Y) : idealRange X ⊆ idealRange 
   rcases mem_idealRange.mp hI with ⟨ha, hN⟩
   exact mem_idealRange.mpr ⟨ha, hN.trans h⟩
 
-def matrix (M N : ℝ) : Matrix (idealRange M) (idealRange N) ℂ :=
+section
+variable (M N : ℝ)
+include M N
+
+def matrix  : Matrix (idealRange M) (idealRange N) ℂ :=
   fun I J => quadraticRow J.val (primaryGenerator I.val)
 
-def sieveNorm (M N : ℝ) : ℝ := ‖FiniteSieveOperator.operator (matrix M N)‖ ^ 2
+def sieveNorm  : ℝ := ‖FiniteSieveOperator.operator (matrix M N)‖ ^ 2
 
-theorem sieveNorm_nonneg (M N : ℝ) : 0 ≤ sieveNorm M N := sq_nonneg _
+theorem sieveNorm_nonneg  : 0 ≤ sieveNorm M N := sq_nonneg _
+end
 
-def rangeInclusion {X Y : ℝ} (h : X ≤ Y) (I : idealRange X) : idealRange Y :=
+
+section
+variable {X Y : ℝ} (h : X ≤ Y)
+include X Y h
+
+def rangeInclusion  (I : idealRange X) : idealRange Y :=
   ⟨I.val, idealRange_mono h I.property⟩
 
-theorem rangeInclusion_injective {X Y : ℝ} (h : X ≤ Y) :
+theorem rangeInclusion_injective  :
     Function.Injective (rangeInclusion h) := by
   intro I J heq
   exact Subtype.ext (congrArg (fun x : idealRange Y => x.val) heq)
+end
+
 
 theorem sieveNorm_mono {M N M' N' : ℝ} (hM : M ≤ M') (hN : N ≤ N') :
     sieveNorm M N ≤ sieveNorm M' N' := by
@@ -615,8 +662,8 @@ theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (matrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 
-end CanonicalQuadraticSieve
 
-end
 
-end OAI
+
+
+

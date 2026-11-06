@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic
 open EisensteinSchwartzPoisson
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 @[simp] lemma cubicRow_one (z : O) : cubicRow 1 z = 1 := by
   simp only [cubicRow, CubicJacobiGlobal.idealSymbol_one, map_one]
@@ -50,7 +50,7 @@ theorem cubicDualRow_zero_bound {n : Type*} [Fintype n] [DecidableEq n]
     rw [cubicDualRow_zero cols hc hz a W M, norm_zero]
     positivity
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

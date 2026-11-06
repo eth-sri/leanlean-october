@@ -8,13 +8,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerAllocation
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
 open InverseInitialEnergyCallerSector
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -72,8 +72,8 @@ theorem modeCoefficient_norm_le
   simp only [modeCoefficient,norm_mul,secondOuterPhase_norm,mul_one]
   exact InverseInitialEnergyCallerWeights.outerCoefficient_norm_le p hp hcop hg hc Ψ hΨ j _ ρ
 
-end SevenEighths.InverseInitialEnergyCallerAllocation
 
-end
 
-end OAI
+
+
+

@@ -5,8 +5,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointDensity
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Actual Ingham estimate on the complementary lower strip. The native
@@ -24,4 +23,4 @@ theorem ingham_lower_density : InghamLowerDensity := by
   · exact NativeMoment.dyadicToGlobalZeroCount σ (3 * (1 - σ) / (2 - σ)) hp
       (NativeMoment.ingham_endpoint_positive_slab_native hInterior (by linarith))
 
-end GuthMaynard.Improvement
+

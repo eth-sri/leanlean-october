@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairWeylSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
                                                                 
@@ -23,7 +22,11 @@ def robertSargosPaddedPlane (a : ℤ → ℤ → ℂ) (M H : ℕ) (m h : ℤ) : 
     if h ∈ Finset.Ico (0:ℤ) H then a m h else 0
   else 0
 
-theorem robertSargos_plane_shift_sum (a : ℤ → ℤ → ℂ) (M H Q R q r : ℕ)
+section
+variable (a : ℤ → ℤ → ℂ)
+include a
+
+theorem robertSargos_plane_shift_sum  (M H Q R q r : ℕ)
     (hq : q < Q) (hr : r < R) :
     (∑ m ∈ Finset.Ico (-(Q:ℤ)) M, ∑ h ∈ Finset.Ico (-(R:ℤ)) H,
       robertSargosPaddedPlane a M H (m+q) (h+r)) =
@@ -38,7 +41,7 @@ theorem robertSargos_plane_shift_sum (a : ℤ → ℤ → ℂ) (M H Q R q r : �
   simp only [hi]
   exact sum_paddedShift_eq (fun n => ∑ h ∈ Finset.Ico (0:ℤ) H, a n h) M Q q hq
 
-theorem robertSargos_plane_averaging (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
+theorem robertSargos_plane_averaging  (M H Q R : ℕ) :
     ((Q*R:ℕ):ℝ)^2*
       ‖∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h‖^2 ≤
       (((M+Q)*(H+R):ℕ):ℝ)*
@@ -76,7 +79,7 @@ theorem robertSargos_plane_averaging (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
   rw [hs,hc,RCLike.norm_nsmul ℂ,nsmul_eq_mul] at ht
   simpa only [mul_pow] using ht
 
-theorem robertSargos_plane_gram (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
+theorem robertSargos_plane_gram  (M H Q R : ℕ) :
     (∑ x ∈ Finset.Ico (-(Q:ℤ)) M ×ˢ Finset.Ico (-(R:ℤ)) H,
       ‖∑ t ∈ Finset.range Q ×ˢ Finset.range R,
         robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)‖^2) =
@@ -95,5 +98,7 @@ theorem robertSargos_plane_gram (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
   apply Finset.sum_congr rfl
   intro x _
   exact real_inner_comm _ _
+end
 
-end TaoTrudgianYang2025
+
+

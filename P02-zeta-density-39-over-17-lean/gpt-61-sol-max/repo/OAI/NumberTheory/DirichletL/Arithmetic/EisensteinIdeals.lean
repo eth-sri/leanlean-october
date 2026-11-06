@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 @[expose] public section
@@ -6,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -34,7 +35,6 @@ def lambda : O := omega - 1
 def lambdaIdeal : Ideal O := Ideal.span {lambda}
 
 private theorem lambda_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
   exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
 
 theorem lambda_maximal : lambdaIdeal.IsMaximal := by
@@ -45,7 +45,6 @@ theorem lambda_maximal : lambdaIdeal.IsMaximal := by
   exact hp.isMaximal hne
 
 theorem lambda_card : Nat.card (O ⧸ lambdaIdeal) = 3 := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
   rw [lambdaIdeal, lambda, omega,
     (IsCyclotomicExtension.zeta_spec 3 ℚ K).card_quotient_toInteger_sub_one,
     (IsCyclotomicExtension.zeta_spec 3 ℚ K).norm_toInteger_sub_one_of_prime_ne_two'
@@ -63,8 +62,8 @@ theorem lambda_residue_odd : ringChar (O ⧸ lambdaIdeal) ≠ 2 := by
   rw [← Nat.card_eq_fintype_card, lambda_card] at hcard
   norm_num at hcard
 
-end ActualEisensteinSieve
 
-end
 
-end OAI
+
+
+

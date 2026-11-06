@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem canonical_member_geometry_uniform_uniform_degree
@@ -43,7 +43,7 @@ theorem canonical_member_geometry_uniform_uniform_degree
       0≤O₀ → O₀≤M → Z^O₀≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
       QK/2≤(Ideal.absNorm (rowResidualPart I (B*F*R)):ℝ) →
       1≤QK → QK≤2*Z^M → 2≤QP → QP/2≤Z^z₀ →
-      CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤ margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
       let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
       let j := fun b : A => completedLocalExponent J F b.val.val
@@ -129,7 +129,7 @@ theorem canonical_member_geometry_uniform_uniform_degree
     (hlog Z (hz4.trans hZ)) hbudget hXi hKcap hPcap (by linarith : -1≤N+V-3*cstar/16-O₀/2)
     hFc hsc hFc hsmall
   exact hc
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

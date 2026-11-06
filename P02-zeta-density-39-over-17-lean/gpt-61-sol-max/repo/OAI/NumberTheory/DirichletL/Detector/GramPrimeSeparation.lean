@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointPeriod
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma maximal_coprime_of_not_dvd (p J : Id) [p.IsMaximal] (h : ¬p∣J) : IsCoprime J p := by
@@ -42,7 +42,7 @@ theorem exists_nonexceptional_separation (L R I p : Id) (hI : I≠0)
   exact ⟨J,hJ,((maximal_coprime_of_not_dvd p L hL).mul_left
     (maximal_coprime_of_not_dvd p R hR)).mul_left hcop |>.pow_right,hJ0⟩
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

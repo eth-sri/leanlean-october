@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyEquation723
 
 @[expose] public section
@@ -16,7 +17,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_equation_7_24_of_local
     {k p B s r a b nu bPrime : ℕ}
@@ -120,13 +121,7 @@ theorem wooley_equation_7_24_of_local
                   wooleySourcePolynomialMixedResidueMoment
                     phi s r p B bPrime b gamma xiPrime eta)]
           simp_rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro xi hxi
-          apply Finset.sum_congr rfl
-          intro eta heta
-          apply Finset.sum_congr rfl
-          intro xiPrime hxiPrime
-          ring
+          grind
     have hinv : 0 ≤ (wooleySourceMassSq gamma)⁻¹ ^ 2 := sq_nonneg _
     calc
       (wooleySourceMassSq gamma)⁻¹ ^ 2 * _ ≤
@@ -135,6 +130,6 @@ theorem wooley_equation_7_24_of_local
       _ = D * ((wooleySourceMassSq gamma)⁻¹ ^ 2 * _) := by ring
 
 
-end
 
-end GafniTao
+
+

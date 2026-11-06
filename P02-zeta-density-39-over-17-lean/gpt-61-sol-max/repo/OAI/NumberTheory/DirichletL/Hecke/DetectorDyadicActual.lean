@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical ContDiff
 open Set
@@ -34,7 +34,7 @@ theorem simultaneous_upper (R dmax τ ε e κ η : ℝ)
         HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z^τ))<a+2*e →
         ∀ j : ι, ∀ Dstar r m σ freq : ℝ,
         (χ j).modulus.absNorm≤Z^d → 0<Dstar →
-        0≤r → r≤R → 0≤m → m≤R → (Z^d)^r≤4*Dstar →
+        0≤r → r≤R → 0≤ m → m≤R → (Z^d)^r≤4*Dstar →
         51/100≤σ → σ≤1 → |freq|+(Z^τ)/2≤(3*i+2 : ℕ)*(Z^τ) →
         (3+(3*i+2 : ℕ)*(Z^τ))^4≤(Z^d)^η →
         ‖polynomial (χ j) true
@@ -66,8 +66,8 @@ theorem simultaneous_upper (R dmax τ ε e κ η : ℝ)
     (fun x hx t => hplain (n+2) x (hstrip hx) t)
   exact ⟨hInv.1,hPlain.2⟩
 
-end SevenEighths.HeckeDetectorDyadicActual
 
-end
 
-end OAI
+
+
+

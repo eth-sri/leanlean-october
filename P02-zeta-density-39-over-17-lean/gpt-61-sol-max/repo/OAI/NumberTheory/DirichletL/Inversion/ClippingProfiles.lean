@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
 public import OAI.NumberTheory.DirichletL.CompactProfileFamily
@@ -57,10 +58,7 @@ def rootSchwartz (v : 𝓢(ℝ, ℂ)) (M B L ρ a H : ℝ)
   (rootedWindow_compact v M B L ρ a H hL hρ hv).toSchwartzMap
     (rootedWindow_contDiff v (v.smooth ⊤) L ρ a H)
 
-@[simp] lemma rootSchwartz_apply (v : 𝓢(ℝ, ℂ)) (M B L ρ a H y : ℝ)
-    (hL : 0 < L) (hρ : |ρ| ≤ B * L)
-    (hv : Function.support v ⊆ Set.Icc (-M) M) :
-    rootSchwartz v M B L ρ a H hL hρ hv y = rootedWindow v L ρ a H y := rfl
+
 
 def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
   ∑ i ∈ Finset.range (n+1), (2:ℝ)^i * (1+|a|)^i * derivativeSeminormSum v 0 i
@@ -96,15 +94,21 @@ def secondRootExponent (y : Fin 6 → ℝ) : ℝ :=
 def firstRootSlope : Fin 9 → ℝ := ![0,0,0,-1,-(1/2),-1,0,-(1/2),-(1/2)]
 def secondRootSlope : Fin 6 → ℝ := ![0,-1,-1,0,-(1/2),-(1/2)]
 
-lemma inverseNormWindow_exp (V : ℝ → ℂ) (y : ℝ) :
+section
+variable (V : ℝ → ℂ) (y : ℝ)
+include V y
+
+lemma inverseNormWindow_exp  :
     inverseNormWindow V y = (Real.exp (-y) : ℂ)*V y := by
   simp only [inverseNormWindow, Real.exp_neg, Complex.ofReal_inv, div_eq_mul_inv]
   ring
 
-lemma inverseRootWindow_exp (V : ℝ → ℂ) (y : ℝ) :
+lemma inverseRootWindow_exp  :
     inverseRootWindow V y = (Real.exp (-(y/2)) : ℂ)*V y := by
   rw [inverseRootWindow, ← Real.exp_half, Real.exp_neg, Complex.ofReal_inv]
   ring
+end
+
 
 theorem firstRootWindows_exp (V : Fin 9 → ℝ → ℂ) (i : Fin 9) (y : ℝ) :
     firstRootWindows V i y = (Real.exp (firstRootSlope i*y) : ℂ)*V i y := by
@@ -140,7 +144,11 @@ theorem secondRootWindows_prod (V : Fin 6 → ℝ → ℂ) (y : Fin 6 → ℝ) :
   norm_num
   ring
 
-theorem fourier_phase_shift (f : ℝ → ℂ) (θ t : ℝ) :
+section
+variable (f : ℝ → ℂ)
+include f
+
+theorem fourier_phase_shift  (θ t : ℝ) :
     (𝓕 (fun y => logPhase θ y * f y)) t = (𝓕 f) (t-θ) := by
   simp only [Real.fourier_eq', logPhase, smul_eq_mul]
   apply integral_congr_ae
@@ -151,7 +159,7 @@ theorem fourier_phase_shift (f : ℝ → ℂ) (θ t : ℝ) :
   push_cast
   ring
 
-theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
+theorem fourier_translate  (ρ t : ℝ) :
     (𝓕 (fun y => f (y+ρ))) t = logPhase t ρ * (𝓕 f) t := by
   have h := congrFun
     (VectorFourier.fourierIntegral_comp_add_right Real.fourierChar
@@ -166,14 +174,16 @@ theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
   push_cast
   ring
 
-theorem fourier_translated_twist (f : ℝ → ℂ) (ρ θ t : ℝ) :
+theorem fourier_translated_twist  (ρ θ t : ℝ) :
     (𝓕 (fun y => logPhase θ y * f (y+ρ))) t =
       logPhase (t-θ) ρ * (𝓕 f) (t-θ) := by
   rw [fourier_phase_shift, fourier_translate]
 
-theorem norm_fourier_translated_twist (f : ℝ → ℂ) (ρ θ t : ℝ) :
+theorem norm_fourier_translated_twist  (ρ θ t : ℝ) :
     ‖(𝓕 (fun y => logPhase θ y * f (y+ρ))) t‖ = ‖(𝓕 f) (t-θ)‖ := by
   rw [fourier_translated_twist, norm_mul, logPhase_norm, one_mul]
+end
+
 
 theorem translated_twist_moment_uniform (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ρ θ : ℝ,
@@ -197,8 +207,8 @@ theorem translated_twist_moment_uniform (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
 def firstBalancedSlope : Fin 9 → ℝ := ![1/2,1/2,1,-1,-(1/2),0,0,0,0]
 def secondBalancedSlope : Fin 6 → ℝ := ![1,-1,0,0,0,0]
 
-end SevenEighths.InverseClippingProfiles
 
-end
 
-end OAI
+
+
+

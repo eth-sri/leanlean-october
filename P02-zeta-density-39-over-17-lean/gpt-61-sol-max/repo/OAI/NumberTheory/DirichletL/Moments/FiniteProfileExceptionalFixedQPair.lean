@@ -16,33 +16,34 @@ open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
+open CenteredMomentCommonRadialData CenteredMomentReflectedSource
+
+
+open CenteredMomentHeckeColumnWindow
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentLogDyadic RayFourExpansion
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 open CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
+open CenteredMomentSecondHeightFamily
 open CenteredMomentSecondExceptionalPairDictionary CenteredMomentSecondExceptionalPairBound
 open CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
+open CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
 open ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+open scoped HeckeO
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem actual_canonical_original_pair (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(ε δ θ B Lbound:ℝ)
     (hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤Lbound):
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
+      (∀i,1≤ s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
       ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O),R≠0 → seed∣C → seed∣D →
-      ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
+      ∀r:ℝ,Z^r≤ s.X₁ → Z^r≤ s.X₂ → Z^r≤ s.Y₁ → Z^r≤ s.Y₂ →
       ∀(τ₁ τ₂:Character)(χ ξ:RayCharacter)(A:O),
       (∀I:Ideal O,Supported I → IsCoprime C I → ∀v:ℝ,
         heightCoeff τ₁ v I=heightCoeff s.η v I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) →
@@ -114,8 +115,8 @@ theorem actual_canonical_original_pair (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
       mul_le_mul_of_nonneg_left hm hF
     _=_:=by dsimp only [F];ring
 
-end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 
-end
 
-end OAI
+
+
+

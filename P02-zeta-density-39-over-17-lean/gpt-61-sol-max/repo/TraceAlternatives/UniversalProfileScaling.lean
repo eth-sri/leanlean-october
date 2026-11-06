@@ -3,8 +3,7 @@ public import TraceAlternatives.UniversalSecondMoment
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem universalShortProfile_mono {T T' M M' R E : ℝ}
@@ -35,4 +34,4 @@ theorem universalShortProfile_scale {D T M R E : ℝ}
   norm_num only [Real.rpow_ofNat] at hb
   nlinarith only [ha,hb,hc,hd]
 
-end Montgomery.RationalMoment
+

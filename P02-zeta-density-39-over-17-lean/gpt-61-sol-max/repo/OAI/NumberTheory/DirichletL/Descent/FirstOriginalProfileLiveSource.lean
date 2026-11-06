@@ -8,9 +8,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment ActualEisensteinCubic SecondPassArithmetic
 open InverseMomentFirstChildWindows
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -77,7 +77,7 @@ lemma refinedOuter_label (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
   ext x
   simp [labelGate]
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

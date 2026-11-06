@@ -1,6 +1,7 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormFiberExtraction
-public import OAI.NumberTheory.DirichletL.Mellin.FiniteEulerRestoration
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeExtraction
 
 @[expose] public section
 
@@ -9,48 +10,46 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                                                 
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 
 open Filter Asymptotics Ideal NumberField
-namespace FiniteSFactor
 
-end FiniteSFactor
 
-open Filter
+           
 
 namespace CompactScaleBridge
 
@@ -86,16 +85,10 @@ theorem idealsUpTo_card_le (N : ℕ) :
     exact_mod_cast hqNat
   simpa only [hcast] using hqInt
 
-noncomputable def fixedTestWeight (W : ℝ → ℂ) (m n : ℕ) : ℂ :=
+def fixedTestWeight (W : ℝ → ℂ) (m n : ℕ) : ℂ :=
   W (2 * ((n : ℝ) / (2 * m : ℕ)))
 
-theorem fixedTestWeight_eq (W : ℝ → ℂ) {m : ℕ} (hm : 0 < m) (n : ℕ) :
-    fixedTestWeight W m n = W ((n : ℝ) / (m : ℝ)) := by
-  unfold fixedTestWeight
-  congr 1
-  have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast Nat.ne_of_gt hm
-  push_cast
-  field_simp
+
 
 structure FixedTestPrimeMS
     {q : ℕ} (χ : DirichletCharacter ℂ q) (S : Finset (Ideal O))
@@ -123,28 +116,10 @@ structure FixedTestPrimeMS
           χ (fixedTestWeight W m) u‖ ^ 2) ≤
       ((2 * m : ℕ) : ℝ) ^ ((21 / 10 : ℝ) + ε)
 
-theorem FixedTestPrimeMS.bound
-    {q : ℕ} (χ : DirichletCharacter ℂ q) (S : Finset (Ideal O))
-    (hSbad : ∀ P : Ideal O, P.IsMaximal → goodLambda ∈ P → P ∈ S)
-    (W : ℝ → ℂ) (m : ℕ) (ε : ℝ)
-    (h : FixedTestPrimeMS χ S hSbad W m ε)
-    (hm : 0 < m) (hε : 0 ≤ ε) (hW : ∀ y : ℝ, ‖W y‖ ≤ 1) :
-    ‖∑ I ∈ outsideIdealsUpTo S (2 * m),
-      baseChangeWeight χ I * W ((Ideal.absNorm I : ℝ) / (m : ℝ))‖ ≤
-      384 * ((2 * m : ℕ) : ℝ) ^ ((23 / 24 : ℝ) + ε) := by
-  have hWeight : ∀ n : ℕ, ‖fixedTestWeight W m n‖ ≤ 1 := by
-    intro n
-    exact hW _
-  have hD : 1 ≤ 2 * m := by omega
-  have hbound := outsideCoeff_prime_extraction_from_MS χ
-    (fixedTestWeight W m) S hSbad hWeight h.selected (fun p : O => p)
-    (2 * m) h.H ε hD hε h.hp h.hprime h.hinj h.hnormlower
-    h.hnormupper h.hH h.hcount h.hmean
-  rw [← outsideIdealSum_eq_outsideCoeff_sum] at hbound
-  simpa only [fixedTestWeight_eq W hm] using hbound
 
-end CompactScaleBridge
 
-end
 
-end OAI
+
+
+
+

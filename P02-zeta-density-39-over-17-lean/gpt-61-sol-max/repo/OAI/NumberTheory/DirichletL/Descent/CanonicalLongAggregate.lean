@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCaller
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open SecondPassArithmetic
+open scoped EisensteinO
 
 theorem actual_large_bins_aggregate
     {σ:Type*}[DecidableEq σ](S:Finset (Ideal O))(D:ℕ)
@@ -49,8 +49,8 @@ theorem actual_large_bins_aggregate
       exact hj _ ‹_›
     _=_ := by rw [Finset.sum_const,nsmul_eq_mul];ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

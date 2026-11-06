@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SquareRootShiftSums
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem sum_third_derivative_correlation_majorant
@@ -36,4 +35,4 @@ theorem sum_third_derivative_correlation_majorant
       mul_le_mul_of_nonneg_left (add_le_add hs hi) (by norm_num)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

@@ -7,7 +7,6 @@ public import MathCollab.Density.Stronger.CriticalMoment
 
 open MeasureTheory Set Filter
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -82,4 +81,4 @@ theorem separated_critical_twelfth_on_interval {A : ℕ} (hA : 2 ≤ A)
     ((continuous_zetaMomentCriticalNorm.pow 12).continuousOn.integrableOn_Icc)
     (fun t => pow_nonneg (zetaMomentCriticalNorm_nonneg t) 12) hA hU
 
-end MathCollab.Density.Stronger
+

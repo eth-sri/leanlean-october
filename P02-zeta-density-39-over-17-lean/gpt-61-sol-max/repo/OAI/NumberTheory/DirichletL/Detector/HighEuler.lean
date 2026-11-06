@@ -10,8 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma bareIdealHighSummand_support (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
@@ -22,7 +22,7 @@ lemma bareIdealHighSummand_support (η : HeckeFamily.Character) (u : O) (x w z :
   unfold highSupport at hn
   simp only [bareIdealHighSummand,bareIdealHighCoefficient,dite_eq_right hn,zero_mul]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

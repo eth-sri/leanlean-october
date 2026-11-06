@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.PrimeGlobal
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
 
@@ -11,7 +12,7 @@ open scoped Classical BigOperators ContDiff
 open Set
 namespace SevenEighths.CenteredMomentPrimeHeight
 open HeckeFamily HeckePrimeRay HeckePrimeAnnular HeckeDyadic HeckeZeroSupremum
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -174,10 +175,10 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   intro Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi
   have hz1 : 1≤Z := hZ₀.le.trans hZ
   have hκ0 : 0≤κ := by linarith
-  have hpκ : 1≤P^κ := Real.one_le_rpow hP hκ0
-  have hzloss : 1≤Z^loss := Real.one_le_rpow hz1 hloss.le
+  have hpκ := Real.one_le_rpow hP hκ0
+  have hzloss := Real.one_le_rpow hz1 hloss.le
   have htbase : 1≤3+|freq| := by linarith [abs_nonneg freq]
-  have htloss : 1≤(3+|freq|)^loss := Real.one_le_rpow htbase hloss.le
+  have htloss := Real.one_le_rpow htbase hloss.le
   have hbase : ‖rayPrimePolynomial M H χ W B P σ freq‖^2≤C0*P^κ*Z^loss*(3+|freq|)^loss := by
     by_cases hlarge : K≤Real.log P
     · exact (hbig Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi hlarge).trans
@@ -204,7 +205,7 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       mul_le_mul_of_nonneg_left hheight (by positivity)
     _ = _ := by ring
 
-end SevenEighths.CenteredMomentPrimeHeight
-end
 
-end OAI
+
+
+

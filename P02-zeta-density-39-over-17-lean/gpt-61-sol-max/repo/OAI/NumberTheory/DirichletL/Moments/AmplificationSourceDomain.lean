@@ -9,23 +9,33 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourceDomain
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
+open CenteredMomentAmplificationGlobal
+open CenteredMomentAmplificationAllocation
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
+open scoped EisensteinO
 
-def residualIdeal (p : O) (hp : Prime p) (I : Ideal O) : Ideal O :=
+section
+variable (p : O) (hp : Prime p)
+include p hp
+
+section
+variable (I : Ideal O)
+include I
+
+def residualIdeal  : Ideal O :=
   if hI : Supported I then Ideal.span {(primeRemainder p hp (primaryGenerator I)
     (supported_primaryGenerator_ne_zero I hI))} else 0
 
-theorem residualIdeal_supported (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :
+theorem residualIdeal_supported  (hI : Supported I) :
     Supported (residualIdeal p hp I) := by
   rw [residualIdeal,dite_eq_left hI]
   exact primeRemainder_supported p hp (primaryGenerator I)
     (by rw [primary_span_supported I hI];exact hI)
+end
 
-theorem residualIdeal_generator (p : O) (hp : Prime p) (hpp : goodLambda^2 ∣ p-1)
+
+theorem residualIdeal_generator  (hpp : goodLambda^2 ∣ p-1)
     (I : Ideal O) (hI : Supported I) :
     primaryGenerator (residualIdeal p hp I) =
       primeRemainder p hp (primaryGenerator I) (supported_primaryGenerator_ne_zero I hI) := by
@@ -37,24 +47,34 @@ theorem residualIdeal_generator (p : O) (hp : Prime p) (hpp : goodLambda^2 ∣ p
       (by rw [primary_span_supported I hI];exact hI)
       (primaryGenerator_spec I (supported_primaryGenerator_ne_zero I hI)).2
 
-theorem residualIdeal_reconstruct (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :
+theorem residualIdeal_reconstruct  (I : Ideal O) (hI : Supported I) :
     (Ideal.span {p})^(multiplicity p (primaryGenerator I))*residualIdeal p hp I=I := by
   rw [residualIdeal,dite_eq_left hI,Ideal.span_singleton_pow,
     Ideal.span_singleton_mul_span_singleton,
     ← (primeRemainder_spec p hp (primaryGenerator I) (supported_primaryGenerator_ne_zero I hI)).1]
   exact primary_span_supported I hI
+end
 
-def valuationColumns (S : Finset (Ideal O)) (p : O) (k : ℕ) : Finset (Ideal O) :=
+
+section
+variable (S : Finset (Ideal O)) (p : O)
+include S p
+
+def valuationColumns  (k : ℕ) : Finset (Ideal O) :=
   (supportedColumns S).filter (fun I => multiplicity p (primaryGenerator I)=k)
 
-def residualColumns (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : ℕ) : Finset (Ideal O) :=
+def residualColumns  (hp : Prime p) (k : ℕ) : Finset (Ideal O) :=
   (valuationColumns S p k).image (residualIdeal p hp)
 
-theorem valuationColumns_supported (S : Finset (Ideal O)) (p : O) (k : ℕ)
+theorem valuationColumns_supported  (k : ℕ)
     (I : Ideal O) (hI : I∈valuationColumns S p k) : Supported I :=
   (Finset.mem_filter.mp (Finset.mem_filter.mp hI).1).2
 
-theorem residualIdeal_injOn (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : ℕ) :
+section
+variable (hp : Prime p) (k : ℕ)
+include hp k
+
+theorem residualIdeal_injOn  :
     Set.InjOn (residualIdeal p hp) (valuationColumns S p k) := by
   intro I hI J hJ he
   have hi := residualIdeal_reconstruct p hp I (valuationColumns_supported S p k I hI)
@@ -63,12 +83,12 @@ theorem residualIdeal_injOn (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : �
   rw [(Finset.mem_filter.mp hJ).2] at hj
   exact hi.symm.trans ((congrArg (fun x => (Ideal.span {p})^k*x) he).trans hj)
 
-theorem residualColumns_supported (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : ℕ)
+theorem residualColumns_supported 
     (I : Ideal O) (hI : I∈residualColumns S p hp k) : Supported I := by
   obtain ⟨J,hJ,rfl⟩ := Finset.mem_image.mp hI
   exact residualIdeal_supported p hp J (valuationColumns_supported S p k J hJ)
 
-theorem residual_column_sum (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : ℕ)
+theorem residual_column_sum 
     (c f : Ideal O → ℂ) :
     (∑ I∈valuationColumns S p k,c I*f (residualIdeal p hp I))=
       ∑ I∈residualColumns S p hp k,c ((Ideal.span {p})^k*I)*f I := by
@@ -78,9 +98,12 @@ theorem residual_column_sum (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : �
   have hi := residualIdeal_reconstruct p hp I (valuationColumns_supported S p k I hI)
   rw [(Finset.mem_filter.mp hI).2] at hi
   rw [hi]
-
-end SevenEighths.CenteredMomentAmplificationSourceDomain
-
+end
 end
 
-end OAI
+
+
+
+
+
+

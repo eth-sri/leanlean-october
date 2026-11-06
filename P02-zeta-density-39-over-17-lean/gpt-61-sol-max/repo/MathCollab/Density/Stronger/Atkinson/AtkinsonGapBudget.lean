@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -10,11 +11,10 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonDyadicGramBudget
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -36,7 +36,6 @@ theorem atkinsonDyadicGramBudget_le_gapBudget (N : ℕ) (W : Finset ℝ)
   apply Finset.sum_le_sum
   intro t ht
   apply Finset.sum_le_sum
-  intro u hu
-  exact hgap j (Finset.mem_range.mp hj) t ht u hu
+  simp_all
 
-end MathCollab.Density.Stronger.Atkinson
+

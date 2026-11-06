@@ -20,7 +20,7 @@ open Set Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseCurvatureAt (F : ℝ → ℝ) (v : ℝ) : ℝ :=
   -deriv (deriv F) (modelPhaseInverseSlope F v)
@@ -28,32 +28,27 @@ def modelPhaseCurvatureAt (F : ℝ → ℝ) (v : ℝ) : ℝ :=
 def modelPhaseStationaryAmplitude (F : ℝ → ℝ) (v : ℝ) : ℝ :=
   (Real.sqrt (modelPhaseCurvatureAt F v))⁻¹
 
-theorem modelPhaseCurvatureAt_bounds {σ δ : ℝ} {F : ℝ → ℝ}
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F)
+include σ δ F hσ hδ hF v hv
+
+theorem modelPhaseCurvatureAt_bounds  :
     modelPhaseCurvatureLower σ ≤ modelPhaseCurvatureAt F v ∧
       modelPhaseCurvatureAt F v ≤ σ+1 :=
   approximateModelPhase_curvature_deriv_bounds hσ hδ hF (modelPhaseInverseSlope_mem hv)
 
-theorem modelPhaseCurvatureAt_pos {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseCurvatureAt_pos  :
     0 < modelPhaseCurvatureAt F v :=
   (modelPhaseCurvatureLower_pos hσ).trans_le (modelPhaseCurvatureAt_bounds hσ hδ hF hv).1
 
-theorem modelPhaseStationaryAmplitude_pos {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseStationaryAmplitude_pos  :
     0 < modelPhaseStationaryAmplitude F v :=
   inv_pos.mpr (Real.sqrt_pos.mpr (modelPhaseCurvatureAt_pos hσ hδ hF hv))
 
-theorem modelPhaseStationaryAmplitude_bounds {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseStationaryAmplitude_bounds  :
     (Real.sqrt (σ+1))⁻¹ ≤ modelPhaseStationaryAmplitude F v ∧
       modelPhaseStationaryAmplitude F v ≤ (Real.sqrt (modelPhaseCurvatureLower σ))⁻¹ := by
   have hb := modelPhaseCurvatureAt_bounds hσ hδ hF hv
@@ -61,6 +56,8 @@ theorem modelPhaseStationaryAmplitude_bounds {σ δ : ℝ} {F : ℝ → ℝ}
     (Real.sqrt_le_sqrt hb.2),
     inv_anti₀ (Real.sqrt_pos.mpr (modelPhaseCurvatureLower_pos hσ))
       (Real.sqrt_le_sqrt hb.1)⟩
+end
+
 
 theorem modelPhaseStationaryPoint_amplitude_scale
     {σ δ T N r : ℝ} {P : ℕ} {F : ℝ → ℝ}
@@ -81,4 +78,4 @@ theorem modelPhaseStationaryPoint_amplitude_scale
   unfold modelPhaseStationaryAmplitude
   field_simp
 
-end TaoTrudgianYang2025
+

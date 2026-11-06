@@ -10,16 +10,21 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open SevenEighths.InverseSecondFibers IdealMobiusDivisorSum CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def secondLabelEnergy (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (F : SecondChild → ℂ) (γ : OuterTriple) : ℝ :=
+section
+variable (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis)
+    (F : SecondChild → ℂ) (γ : OuterTriple)
+include K labels rows F γ
+
+def secondLabelEnergy  : ℝ :=
   ∑ f ∈ labels, ((idealDivisors f).card : ℝ)^(9+4*K) *
     ∑ k ∈ rows, ‖F (γ,f,k)‖^2
 
-lemma secondLabelEnergy_nonneg (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (F : SecondChild → ℂ) (γ : OuterTriple) : 0 ≤ secondLabelEnergy K labels rows F γ := by
+lemma secondLabelEnergy_nonneg  : 0 ≤ secondLabelEnergy K labels rows F γ := by
   unfold secondLabelEnergy; positivity
+end
+
 
 def secondCanonicalPolynomial {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -31,7 +36,7 @@ def secondCanonicalPolynomial {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   finiteCanonicalMarkedRow p hp hcop hg pool (Ψ c.1) (puncture c.1)
     (primaryGenerator c.2.1) c.2.2 slots lists a (W c.1) X
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

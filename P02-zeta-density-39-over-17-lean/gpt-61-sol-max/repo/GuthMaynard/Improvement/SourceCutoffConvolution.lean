@@ -1,20 +1,24 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceFourierCutoff
 public import GuthMaynard.Improvement.SecondKernelError
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+
+open MeasureTheory
 open scoped FourierTransform Convolution ContDiff SchwartzMap
 namespace GuthMaynard.Improvement
 
+section
+variable {χ f : ℝ → ℂ}
+    (hχ : Integrable χ) (hf : Integrable f)
+include χ f hχ hf
+
 /-- Multiplication by an ordinary integrable function and a literal inverse
 L1 Fourier integral has the expected convolution transform, pointwise. -/
-theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
-    (hχ : Integrable χ) (hf : Integrable f) (ξ : ℝ) :
+theorem source_cutoff_fourier_convolution  (ξ : ℝ) :
     𝓕 (fun t => χ t * 𝓕⁻ f t) ξ = ∫ η, f η * 𝓕 χ (ξ-η) := by
-  let q : ℝ → ℂ := fun t => phase (-ξ*t)*χ t
+  let q := fun t => phase (-ξ*t)*χ t
   have hq : Integrable q := by
     apply hχ.norm.mono' ((show Continuous (fun t : ℝ => phase (-ξ*t)) by
       unfold phase; fun_prop).aestronglyMeasurable.mul hχ.aestronglyMeasurable)
@@ -35,15 +39,11 @@ theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
     filter_upwards [] with t
     dsimp [q]
     rw [← mul_assoc,← phase_add]
-    congr 2
     ring
   calc
     _ = ∫ t, q t * 𝓕⁻ f t := by
       rw [fourier_eq_phase_integral]
-      apply integral_congr_ae
-      filter_upwards [] with t
-      dsimp [q]
-      ring
+      grind
     _ = ∫ η, 𝓕 q η * f (-η) := hpair.symm
     _ = ∫ η, 𝓕 χ (ξ+η) * f (-η) := by simp_rw [hshift]
     _ = ∫ η, 𝓕 χ (ξ-η) * f η := by
@@ -52,8 +52,7 @@ theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
     _ = _ := by apply integral_congr_ae; filter_upwards [] with η; ring
 
 /-- L1 norm bound for the actual cutoff convolution. -/
-theorem source_cutoff_fourier_l1 {χ f : ℝ → ℂ}
-    (hχ : Integrable χ) (hf : Integrable f) (hFχ : Integrable (𝓕 χ)) :
+theorem source_cutoff_fourier_l1  (hFχ : Integrable (𝓕 χ)) :
     Integrable (𝓕 (fun t => χ t * 𝓕⁻ f t)) ∧
       (∫ ξ, ‖𝓕 (fun t => χ t * 𝓕⁻ f t) ξ‖) ≤
         (∫ ξ, ‖𝓕 χ ξ‖) * (∫ η, ‖f η‖) := by
@@ -71,6 +70,8 @@ theorem source_cutoff_fourier_l1 {χ f : ℝ → ℂ}
       simpa [convolution_def,norm_mul] using
         norm_integral_le_integral_norm (fun η => f η * 𝓕 χ (ξ-η))
     _ = _ := by rw [integral_convolution _ hf.norm hFχ.norm]; simp [mul_comm]
+end
+
 
 /-- Spatial cutoff of the actual exceptional signal: L1, L2 contraction,
 and exact retained frequency mass in both Fourier estimates. -/
@@ -95,12 +96,10 @@ theorem source_cutoff_signal_bounds {μ : ℝ → ℝ} (h1 : Integrable μ)
   have hp : ∀ t, ‖χ t * sourceFourierSignal μ Λ t‖^2 ≤ ‖sourceFourierSignal μ Λ t‖^2 := by
     intro t
     apply pow_le_pow_left₀ (norm_nonneg _)
-    rw [norm_mul]
     simpa using mul_le_mul_of_nonneg_right (hχb t) (norm_nonneg (sourceFourierSignal μ Λ t))
   have hi2 : Integrable (fun t => ‖χ t * sourceFourierSignal μ Λ t‖^2) := by
     apply hgi.mono' (hms.norm.pow 2)
-    filter_upwards [] with t
-    simpa only [Pi.pow_apply,Pi.mul_apply,Real.norm_eq_abs,abs_pow,abs_norm] using hp t
+    simp_all
   obtain ⟨hFi,hFb⟩ := source_cutoff_fourier_l1 hχ
     (sourceFourierCut_integrability h1 h2 hΛ).1 hFχ
   refine ⟨hi1,(memLp_two_iff_integrable_sq_norm hms).mpr hi2,?_,hFi,?_⟩
@@ -135,7 +134,7 @@ theorem source_smooth_scaled_cutoff_bounds {μ : ℝ → ℝ} (h1 : Integrable �
     Integrable (𝓕 (fun t => (χ (t/T):ℂ) * sourceFourierSignal μ Λ t)) ∧
     (∫ ξ, ‖𝓕 (fun t => (χ (t/T):ℂ) * sourceFourierSignal μ Λ t) ξ‖) ≤
       (∫ ξ, ‖𝓕 (fun t => (χ t:ℂ)) ξ‖) * (sourceFourierMass μ Λ/Λ) := by
-  let ψ : 𝓢(ℝ,ℂ) := (hχc.comp_left
+  let ψ := (hχc.comp_left
     (show (Complex.ofRealCLM : ℝ → ℂ) 0 = 0 by rfl)).toSchwartzMap
       (show ContDiff ℝ ∞ (Complex.ofRealCLM ∘ χ) by fun_prop)
   have hχi : Integrable (fun t => (χ t:ℂ)) := ψ.integrable
@@ -159,4 +158,4 @@ theorem source_smooth_scaled_cutoff_bounds {μ : ℝ → ℝ} (h1 : Integrable �
   rw [source_cutoff_scaled_fourier_l1 (fun t => (χ t:ℂ)) hT] at hout
   exact hout
 
-end GuthMaynard.Improvement
+

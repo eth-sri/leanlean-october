@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.DualMiddleExpansion
 public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothCuspCutoffs
 
@@ -10,75 +11,79 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 namespace CubicEisenstein
 open Filter
 open scoped BigOperators Classical Topology ContDiff
 
-lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
+section
+variable (a b : ℝ)
+include a b
+
+lemma cuspSeed_row_defect  (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     axisLaplacian (fun q => c*cuspSeedProfile a b s (rowHeight u q)) p-
       s*(s-2)*(c*cuspSeedProfile a b s (rowHeight u p))=
@@ -87,13 +92,17 @@ lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠
   have h := cuspSeedProfile_laplace_defect a b s (rowHeight u p) (rowHeight_pos u hu p hp).ne'
   linear_combination c*h
 
-theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
+section
+variable (s : ℂ)
+include s
+
+theorem heightPoincare_cuspSeed_laplace_defect  (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     axisLaplacian (heightPoincareField (cuspSeedProfile a b s)) p-
       s*(s-2)*heightPoincareField (cuspSeedProfile a b s) p=
         heightPoincareField (cuspSeedDefectProfile a b s) p := by
   obtain ⟨U,hU,hpU,S,hrows⟩ := locally_finite_high_rows p hp
-  let f : CuspCosets → SpatialCoordinates → ℂ :=
+  let f :=
     fun r q => (cosetCharacter r)⁻¹*cuspSeedProfile a b s (rowHeight (embeddedRow r) q)
   have heq : heightPoincareField (cuspSeedProfile a b s) =ᶠ[𝓝 p] (fun q => ∑r∈S,f r q) := by
     filter_upwards [hU.mem_nhds hpU] with q hq
@@ -109,7 +118,7 @@ theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) 
       DifferentiableAt ℝ (axisSlice (f r) q j) (q j) ∧
       DifferentiableAt ℝ (deriv (axisSlice (f r) q j)) (q j) := by
     intro r hr q hq j
-    have hc : ∀v,0<v→ContDiffAt ℝ ∞ (fun v => (cosetCharacter r)⁻¹*cuspSeedProfile a b s v) v :=
+    have hc : ∀v,0<v→ ContDiffAt ℝ ∞ (fun v => (cosetCharacter r)⁻¹*cuspSeedProfile a b s v) v :=
       fun v hv => contDiffAt_const.mul (cuspSeedProfile_contDiffAt a b s v hv)
     have h := rowProfile_axis_derivatives _ hc (embeddedRow r) (embeddedRow_ne_zero r) q hq j
     exact ⟨h.1.differentiableAt,h.2.differentiableAt⟩
@@ -119,37 +128,42 @@ theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) 
   intro r hr
   exact cuspSeed_row_defect a b s (cosetCharacter r)⁻¹ (embeddedRow r) (embeddedRow_ne_zero r) p hp
 
-def smoothCuspSeedField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates) : ℂ :=
+def smoothCuspSeedField  (p : SpatialCoordinates) : ℂ :=
   if hp : 0<p 2 then smoothCuspSeed a b s
     (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) else 0
 
-def smoothCuspSeedDefectField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates) : ℂ :=
+def smoothCuspSeedDefectField  (p : SpatialCoordinates) : ℂ :=
   if hp : 0<p 2 then smoothCuspSeedDefect a b s
     (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) else 0
 
-lemma smoothCuspSeedField_eq (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (ha : 1<a) (hab : a<b)
+    (p : SpatialCoordinates) (hp : 0<p 2)
+include ha hab p hp
+
+lemma smoothCuspSeedField_eq  :
     smoothCuspSeedField a b s p=heightPoincareField (cuspSeedProfile a b s) p := by
   rw [smoothCuspSeedField,dite_eq_left hp,smoothCuspSeed_coordinate a b s ha hab p hp]
-lemma smoothCuspSeedDefectField_eq (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma smoothCuspSeedDefectField_eq  :
     smoothCuspSeedDefectField a b s p=heightPoincareField (cuspSeedDefectProfile a b s) p := by
   rw [smoothCuspSeedDefectField,dite_eq_left hp,smoothCuspSeedDefect_coordinate a b s ha hab p hp]
 
-lemma actual_smoothCuspSeed_contDiffAt (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) : ContDiffAt ℝ ∞ (smoothCuspSeedField a b s) p := by
+lemma actual_smoothCuspSeed_contDiffAt  : ContDiffAt ℝ ∞ (smoothCuspSeedField a b s) p := by
   have heq : smoothCuspSeedField a b s =ᶠ[𝓝 p] heightPoincareField (cuspSeedProfile a b s) := by
     filter_upwards [(continuous_apply 2).continuousAt.eventually_const_lt hp] with q hq
     exact smoothCuspSeedField_eq a b s ha hab q hq
   exact (smoothCuspSeed_contDiffAt a b s ha hab p hp).congr_of_eventuallyEq heq
 
-theorem actual_smoothCuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+theorem actual_smoothCuspSeed_laplace_defect  :
     axisLaplacian (smoothCuspSeedField a b s) p-s*(s-2)*smoothCuspSeedField a b s p=
       smoothCuspSeedDefectField a b s p := by
   rw [axisLaplacian_congr_positive _ _ (fun q hq => smoothCuspSeedField_eq a b s ha hab q hq) p hp,
     smoothCuspSeedField_eq a b s ha hab p hp,smoothCuspSeedDefectField_eq a b s ha hab p hp]
   exact heightPoincare_cuspSeed_laplace_defect a b s ha hab p hp
+end
+end
+end
+
 
 end CubicEisenstein
 
@@ -162,18 +176,23 @@ open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 def sectorBadIdeal (E : fixedBadPrimes.powerset) : Ideal O := ∏ P ∈ E.val, P
 
-theorem sector_bad_good_product (I : Ideal O) (hI : Squarefree I)
-    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E) :
+section
+variable (I : Ideal O) (hI : Squarefree I)
+    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E)
+include I hI E hE
+
+theorem sector_bad_good_product  :
     sectorBadIdeal E * goodSquarefreePart I = I := by
   have hs : badPrimeSupport I = E.val := congrArg Subtype.val hE
   simpa only [hs, sectorBadIdeal] using squarefree_bad_good_product I hI
 
-theorem sectorBadIdeal_ne_zero_of_row (I : Ideal O) (hI : Squarefree I)
-    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E) : sectorBadIdeal E ≠ 0 := by
+theorem sectorBadIdeal_ne_zero_of_row  : sectorBadIdeal E ≠ 0 := by
   intro hz
   have hp := sector_bad_good_product I hI E hE
   rw [hz, zero_mul] at hp
   exact hI.ne_zero hp.symm
+end
+
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -288,32 +307,30 @@ lemma dual_bad_sector_scale (M F B Q U α : ℝ)
   have hQp : 0 < Q := by linarith
   have hpow : (B / Q) ^ (α - 1 / 2) ≤ B ^ (α - 1 / 2) :=
     Real.rpow_le_rpow (by positivity) (div_le_self hB hQ) (by linarith)
-  have hsQ : Real.sqrt Q ≤ Q := Real.sqrt_le_self_iff.mpr (Or.inr hQ)
+  have hsQ := Real.sqrt_le_self_iff.mpr (Or.inr hQ)
   have hs : (1 / Q) * Real.sqrt (M * Q / F) ≤ Real.sqrt (M / F) := by
     have he : M * Q / F = (M / F) * Q := by ring
     rw [he, Real.sqrt_mul (by positivity)]
-    have ht : Real.sqrt Q / Q ≤ 1 := (div_le_one hQp).mpr hsQ
-    calc
-      _ = Real.sqrt (M / F) * (Real.sqrt Q / Q) := by ring
-      _ ≤ Real.sqrt (M / F) * 1 := mul_le_mul_of_nonneg_left ht (Real.sqrt_nonneg _)
-      _ = _ := mul_one _
+    field_simp <;> nlinarith
   calc
     _ = M / F + (2 * U) * ((1 / Q) * Real.sqrt (M * Q / F)) * (B / Q) ^ (α - 1 / 2) := by
       field_simp
 
     _ ≤ _ := by gcongr
 
-def dualMiddleMajorant {n p : Type} [Fintype n] [Fintype p]
+section
+variable {n p : Type} [Fintype n] [Fintype p]
     {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
-    (ε : ℝ) (hε : 0 < ε) (B N M F U : ℝ) (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ)) : ℝ :=
+    (ε : ℝ) (hε : 0 < ε) (B N M F U : ℝ) (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ))
+include n p α hexp deltaLoss hδ ε hε B N M F U a b W
+
+def dualMiddleMajorant  : ℝ :=
   ((columnDyadicLength N + 1 : ℕ) : ℝ) ^ 2 *
     ((2 * nonzeroLatticeEnvelopeConstant * dualMiddleDecayConstant W) *
       divisorEnergyFactor ε hε N a b * (divisorExponentConstant hexp deltaLoss hδ * (B * N) ^ deltaLoss) *
         (M / F + (2 * U) * Real.sqrt (M / F) * B ^ (α - 1 / 2)))
 
-lemma dualMiddleMajorant_nonneg {n p : Type} [Fintype n] [Fintype p]
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
-    (ε : ℝ) (hε : 0 < ε) (B N M F U : ℝ) (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ))
+lemma dualMiddleMajorant_nonneg 
     (hB : 0 ≤ B) (hN : 0 ≤ N) (hM : 0 ≤ M) (hF : 0 ≤ F) (hU : 0 ≤ U) :
     0 ≤ dualMiddleMajorant hexp deltaLoss hδ ε hε B N M F U a b W := by
   have hc := nonzeroLatticeEnvelopeConstant_nonneg
@@ -322,6 +339,8 @@ lemma dualMiddleMajorant_nonneg {n p : Type} [Fintype n] [Fintype p]
   have hd := (divisorExponentConstant_pos hexp deltaLoss hδ).le
   unfold dualMiddleMajorant
   positivity
+end
+
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -460,41 +479,17 @@ theorem HasSieveExponent.unrestricted_dual_truncated_middle {α : ℝ} (hexp : H
     _ ≤ ∑ _E : fixedBadPrimes.powerset, dualMiddleMajorant hexp deltaLoss hδ ε hε B N M F U a b W :=
       Finset.sum_le_sum (fun E _ => hb E)
     _ = _ := by
-      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_coe,
-        fixedBadPrimes_powerset_card]
+      simp only [sum_const, card_univ, Fintype.card_coe, fixedBadPrimes_powerset_card, nsmul_eq_mul]
       norm_num
 
 end CanonicalQuadraticSieve
 
 open scoped BigOperators Classical
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-end SecondPassArithmetic
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
-include hinj
 
-end
-
-open ConcreteTraceCRT (eisEmbedding)
-open FirstPassCubeLabels (primeProductNorm)
-
-end SecondPassIntegration
-
-open scoped BigOperators Classical
+                                  
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct primeProductNorm squarefreeLabel jLabel j2Label b0Label
@@ -504,7 +499,7 @@ open ConcreteTraceCRT (eisEmbedding)
 lemma element_norm_le_of_dvd {a b : O} (hb : b ≠ 0) (h : a ∣ b) :
     ‖eisEmbedding a‖^2 ≤ ‖eisEmbedding b‖^2 := by
   obtain ⟨c,rfl⟩ := h
-  have hc : c ≠ 0 := (mul_ne_zero_iff.mp hb).2
+  have hc := (mul_ne_zero_iff.mp hb).2
   rw [map_mul, norm_mul, mul_pow]
   exact le_mul_of_one_le_right (sq_nonneg _) (element_norm_ge_one c hc)
 
@@ -602,11 +597,10 @@ theorem cube_label_norm_bounds (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ �
   apply (le_div_iff₀ hjpos).mpr
   apply (sq_le_sq₀ (mul_nonneg (sq_nonneg _) (sq_nonneg _))
     (mul_nonneg hB (norm_nonneg _))).mp
-  simp only [mul_pow]
-  exact heq.trans_le hmul
+  linarith
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

@@ -4,8 +4,7 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyUnconditional
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open scoped BigOperators
 
 namespace Montgomery.ZeroFreeHatching
@@ -17,16 +16,22 @@ theorem actual_zeta_nonzero (s : ℂ) (hs : (7/8:ℝ)<s.re) :
     _root_.riemannZeta s ≠ 0 :=
   OAI.SevenEighths.ProbeFinalAssemblyUnconditional.zeta_nonzero s hs
 
-theorem actual_zero_region_empty {σ a b : ℝ} (hσ : (7/8:ℝ)<σ) :
+section
+variable {σ a b : ℝ} (hσ : (7/8:ℝ)<σ)
+include σ a b hσ
+
+theorem actual_zero_region_empty  :
     zetaZeroFinset σ a b = ∅ := by
   apply Finset.eq_empty_iff_forall_notMem.mpr
   intro ρ hρ
   obtain ⟨hz, hreal, _⟩ := mem_zetaZeroFinset.mp hρ
   exact actual_zeta_nonzero ρ (hσ.trans_le hreal) hz.1
 
-theorem actual_slab_count_zero {σ a b : ℝ} (hσ : (7/8:ℝ)<σ) :
+theorem actual_slab_count_zero  :
     zetaSlabCount σ a b = 0 := by
   simp only [zetaSlabCount, actual_zero_region_empty hσ, Finset.sum_empty]
+end
+
 
 /-- Every real height and closed cutoff, with the existing actual analytic
 multiplicity count. The line sigma=7/8 is not included. -/
@@ -34,4 +39,4 @@ theorem actual_density_count_zero {σ T : ℝ} (hσ : (7/8:ℝ)<σ) :
     zetaDensityCount σ T = 0 :=
   actual_slab_count_zero hσ
 
-end Montgomery.ZeroFreeHatching
+

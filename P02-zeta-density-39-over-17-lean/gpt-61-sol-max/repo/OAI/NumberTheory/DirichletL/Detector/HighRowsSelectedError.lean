@@ -68,7 +68,7 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
     change ‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤28
     nlinarith
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.OperatorMixedBound
 public import GuthMaynard.Improvement.ReflectionSourceRow
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -39,4 +38,4 @@ theorem operator_source_mixed (w : MathCollab.Density.ReflectionCutoff)
     _ ≤ D*L*(R*N^ε*L*N*T)*(∫ t, μ t^2) := hh
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

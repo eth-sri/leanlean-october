@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_reopened_marked_zero_bound (ε : ℝ) (hε : 0<ε) :
     ∃ C:ℝ,0<C ∧ ∀ {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
@@ -56,8 +56,8 @@ theorem original_reopened_marked_zero_bound (ε : ℝ) (hε : 0<ε) :
     (fun _ _=>hW) (fun _ _=>hW) (fun _ _=>hs) (fun _ _=>hs)
   simpa only [reopenedPhysicalSourceSum,Finset.union_comm,pow_two] using hh
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- Generalized from the attributed verified physical-width argument. -/
 public import PeakWidthPowers
 public import MathCollab.Density.Stronger.Peaks.WidthRanges
@@ -6,8 +7,7 @@ public import MathCollab.Density.Stronger.Peaks.WidthRanges
 @[expose] public section
 open Filter Finset
 open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.CriticalPeak
 theorem exists_pointValue_card_le_source_range
     {a g b : ℝ} (hb : 2 ≤ b) (hCount : LocalMeanCount a g b)
@@ -25,13 +25,13 @@ theorem exists_pointValue_card_le_source_range
           (H*(Real.log (3*H))^4/V^6 + H^a*(Real.log (3*H))^(2*g+b)/V^(2*g+2*b)) := by
   obtain ⟨P,C,D,B,hP,hC,hD,hB,hcount⟩ :=
     (exists_pointValue_card_le_with_width hb hCount) hδ hκ hν
-  let K : ℝ := 16*P*C+1
+  let K := 16*P*C+1
   have hK : 0 < K := by dsimp only [K]; positivity
   have hKsize : 16*P*C ≤ K := by dsimp only [K]; linarith
   have hq : 0 < (1/4:ℝ)+κ := by linarith
   obtain ⟨B₁,hB₁⟩ := eventually_atTop.mp
     (eventually_pointValue_log_scales (P := P) hK hq)
-  let D₁ : ℝ := D*(K*(16*P)^2+K^g*(16*P)^b)
+  let D₁ := D*(K*(16*P)^2+K^g*(16*P)^b)
   have hD₁ : 0 < D₁ := by dsimp only [D₁]; positivity
   refine ⟨K,D₁,max B B₁,hK,hD₁,le_max_of_le_left hB,?_⟩
   intro H V W hH hV hLower hUpper hsep hrange hlarge
@@ -39,8 +39,8 @@ theorem exists_pointValue_card_le_source_range
   obtain ⟨hH20,hL1,hPL,hlogFit⟩ := hB₁ H ((le_max_right _ _).trans hH)
   have hH0 : 0 < H := by linarith
   have hH1 : 1 ≤ H := by linarith
-  let L : ℝ := Real.log (3*H)
-  let G : ℝ := V^2/(K*L^2)
+  let L := Real.log (3*H)
+  let G := V^2/(K*L^2)
   have hL : 0 < L := by dsimp only [L]; linarith
   have hDen : 0 < K*L^2 := by positivity
   have hG : 0 < G := by dsimp only [G]; positivity
@@ -109,4 +109,4 @@ theorem exists_pointValue_card_le_source_range
 
 
 
-end Montgomery.CriticalPeak
+

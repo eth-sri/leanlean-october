@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.UniformDivisorShell
 
 @[expose] public section
@@ -12,7 +13,7 @@ namespace SevenEighths.CenteredMomentExceptionalAllocationShell
 open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
 open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
 open CenteredMomentUniformDivisorShell
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma exact_max_cancellation (r r₁ : ℝ) :
     -r₁-max (r-r₁) 0 = -max r r₁ := by
@@ -22,18 +23,23 @@ lemma exact_max_cancellation (r r₁ : ℝ) :
   · rw [max_eq_left (by linarith : 0≤r-r₁),max_eq_left (le_of_not_ge h)]
     ring
 
-def exceptionalWeight {ι κ : Type*} [Fintype ι] [Fintype κ]
+section
+variable {ι κ : Type*} [Fintype ι] [Fintype κ]
     [DecidableEq ι] [DecidableEq κ]
-    (s : Source ι) (v : Source κ) (D : Ideal O)
+include ι κ
+
+section
+variable (s : Source ι) (v : Source κ) (D : Ideal O)
+include s v D
+
+def exceptionalWeight 
     (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
     (b : Allocation D (Finset.univ : Finset (κ⊕Fin 2))) (Z r : ℝ) : ℝ :=
   Z^(-Real.logb Z (formalReductionFactor D a s.P)-
     Real.logb Z (formalReductionFactor D b v.P)-
     max (r-Real.logb Z (formalReductionFactor D a s.P)) 0)
 
-theorem active_exceptional_weight {ι κ : Type*} [Fintype ι] [Fintype κ]
-    [DecidableEq ι] [DecidableEq κ]
-    (s : Source ι) (v : Source κ) (D : Ideal O) (hD : Squarefree D)
+theorem active_exceptional_weight  (hD : Squarefree D)
     (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
     (b : Allocation D (Finset.univ : Finset (κ⊕Fin 2)))
     (_ha : a∈s.active D) (hb : b∈v.active D) (Z r : ℝ) (hZ : 1<Z) :
@@ -51,9 +57,10 @@ theorem active_exceptional_weight {ι κ : Type*} [Fintype ι] [Fintype κ]
   unfold exceptionalWeight
   apply (Real.rpow_le_rpow_of_exponent_le hZ.le he).trans_eq
   rw [Real.rpow_sub hz,Real.rpow_logb hz hZ.ne' hn]
+end
 
-theorem actual_exceptional_shell {ι κ : Type*} [Fintype ι] [Fintype κ]
-    [DecidableEq ι] [DecidableEq κ]
+
+theorem actual_exceptional_shell 
     (N : ℕ) (hι : Fintype.card ι≤N) (hκ : Fintype.card κ≤N) (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀(s : Source ι) (v : Source κ) (Ds : Finset (Ideal O)),
       (∀D∈Ds,Squarefree D) → ∀T Z r : ℝ,1≤T → 1<Z →
@@ -105,6 +112,8 @@ theorem actual_exceptional_shell {ι κ : Type*} [Fintype ι] [Fintype κ]
     _ ≤ (256*T)*((C₁*C₂)*(2*T)^(2*ε)*(Z^(v.allowance Z-r)/T)) :=
       mul_le_mul_of_nonneg_right (divisor_dyad_card Ds T hT (fun D hd=>(hD D hd).ne_zero) hhi) (by positivity)
     _ = (256*C₁*C₂)*(2*T)^(2*ε)*Z^(v.allowance Z-r) := by field_simp
+end
+
 
 def ShellBound (ι κ : Type*) [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
     (C ε : ℝ) : Prop := ∀(s : Source ι) (v : Source κ) (Ds : Finset (Ideal O)),
@@ -113,13 +122,17 @@ def ShellBound (ι κ : Type*) [Fintype ι] [Fintype κ] [DecidableEq ι] [Decid
       (∑D∈Ds,∑a∈s.active D,∑b∈v.active D,exceptionalWeight s v D a b Z r) ≤
         C*(2*T)^(2*ε)*Z^(v.allowance Z-r)
 
-theorem uniform_subset_shell {ι : Type*} [Fintype ι] [DecidableEq ι]
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+include ι
+
+theorem uniform_subset_shell 
     (ε : ℝ) (hε : 0<ε) : ∃C : ℝ,0<C ∧ ∀J L : Finset ι,ShellBound J L C ε := by
   have he (p : Finset ι×Finset ι) : ∃C : ℝ,0<C ∧ ShellBound p.1 p.2 C ε :=
     actual_exceptional_shell (ι:=p.1) (κ:=p.2) (Fintype.card ι)
       (by simpa using Finset.card_le_univ p.1) (by simpa using Finset.card_le_univ p.2) ε hε
   choose C hC hbound using he
-  let B : ℝ := 1+∑p : Finset ι×Finset ι,C p
+  let B := 1+∑p : Finset ι×Finset ι,C p
   have hs : 0≤∑p : Finset ι×Finset ι,C p := Finset.sum_nonneg (fun p _=>(hC p).le)
   refine ⟨B,by dsimp [B]; linarith,?_⟩
   intro J L s v Ds hD T Z r hT hZ hlo hhi
@@ -130,7 +143,7 @@ theorem uniform_subset_shell {ι : Type*} [Fintype ι] [DecidableEq ι]
     (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg (by linarith) _)) (Real.rpow_nonneg (by linarith) _))
 
-theorem exceptional_shell_subpower {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem exceptional_shell_subpower 
     (lo hi : ι→ℝ) (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     ∃C : ℝ,0<C ∧ ∀(J L : Finset ι) (s : Source J) (v : Source L),
       (∀i:L,v.lo i=lo i) → (∀i:L,v.hi i=hi i) →
@@ -138,13 +151,13 @@ theorem exceptional_shell_subpower {ι : Type*} [Fintype ι] [DecidableEq ι]
       1≤T → 1<Z → T≤Z^B →
       (∀D∈Ds,T≤(Ideal.absNorm D:ℝ)) → (∀D∈Ds,(Ideal.absNorm D:ℝ)<2*T) →
       (∑D∈Ds,∑a∈s.active D,∑b∈v.active D,exceptionalWeight s v D a b Z r)≤C*Z^(δ-r) := by
-  let ε : ℝ := δ/(2*(B+1))
+  let ε := δ/(2*(B+1))
   have hε : 0<ε := div_pos hδ (by positivity)
   have he : 2*B*ε≤δ := by
     have hh : ε*(2*(B+1))=δ := div_mul_cancel₀ δ (by positivity)
     nlinarith
   obtain ⟨C,hC,hbound⟩ := uniform_subset_shell (ι:=ι) ε hε
-  let E : ℝ := Real.exp (∑i,logWindow (lo i) (hi i))
+  let E := Real.exp (∑i,logWindow (lo i) (hi i))
   refine ⟨C*2^(2*ε)*E,by dsimp [E]; positivity,?_⟩
   intro J L s v hvlo hvhi Ds hD T Z r hT hZ hTZ hlo hhi
   have ht : 0<T := zero_lt_one.trans_le hT
@@ -168,9 +181,11 @@ theorem exceptional_shell_subpower {ι : Type*} [Fintype ι] [DecidableEq ι]
     _≤(C*2^(2*ε)*E)*Z^δ*Z^(-r) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow (by dsimp [E]; positivity)) (by positivity)
     _=(C*2^(2*ε)*E)*Z^(δ-r) := by rw [mul_assoc,←Real.rpow_add hz]; rfl
-
-end SevenEighths.CenteredMomentExceptionalAllocationShell
-
 end
 
-end OAI
+
+
+
+
+
+

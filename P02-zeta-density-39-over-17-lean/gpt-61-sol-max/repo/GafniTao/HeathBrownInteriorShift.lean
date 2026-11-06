@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownLemmaOneDivision
 public import Mathlib.Analysis.Calculus.ContDiff.Comp
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
@@ -14,14 +15,14 @@ argument is applied here to `x ↦ f (x + 1)` on the compact interval
 sum by precisely its two endpoint phases, whose total norm is at most two.
 -/
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownInteriorShift (f : ℝ → ℝ) (x : ℝ) : ℝ :=
+def heathBrownInteriorShift (f : ℝ → ℝ) (x : ℝ) : ℝ :=
   f (x + 1)
 
 theorem iteratedDeriv_heathBrownInteriorShift
@@ -43,8 +44,7 @@ theorem heathBrownInteriorShift_contDiffOn
       (Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)) :=
     (contDiff_id.add contDiff_const).contDiffOn
   unfold heathBrownInteriorShift
-  simpa only [Function.comp_def] using
-    hf.comp hshift hmap
+  exact hf.comp hshift hmap
 
 theorem heathBrownInteriorCompact_subset
     {N : ℕ} (hN : 2 ≤ N) :
@@ -95,8 +95,12 @@ theorem sum_Icc_two_sub_one_eq_shifted
   · intro _ _
     rfl
 
+section
+variable {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ)
+include N hN f
+
 theorem heathBrownExponentialSum_interior_identity
-    {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ) :
+     :
     heathBrownExponentialSum N f =
       heathBrownPhase (f 1) +
         heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f) +
@@ -137,7 +141,7 @@ theorem heathBrownExponentialSum_interior_identity
       simp only [Nat.cast_add, Nat.cast_one]
 
 theorem norm_heathBrownExponentialSum_le_interior_add_two
-    {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ) :
+     :
     ‖heathBrownExponentialSum N f‖ ≤
       ‖heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ + 2 := by
   rw [heathBrownExponentialSum_interior_identity hN]
@@ -158,8 +162,10 @@ theorem norm_heathBrownExponentialSum_le_interior_add_two
     _ = ‖heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ + 2 := by
       rw [norm_heathBrownPhase, norm_heathBrownPhase]
       ring
-
-
 end
 
-end GafniTao
+
+
+
+
+

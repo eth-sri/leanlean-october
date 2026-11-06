@@ -9,10 +9,10 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
@@ -93,7 +93,7 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
     ring
   · rfl
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

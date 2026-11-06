@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open JointLogSeparation InverseAmbientProfileTower
+open InverseAmbientProfileTower
 
 theorem first_left_height_budget (J:ℕ)(p:Ambient (Fin 9)):
     (1+‖profileHeight firstLeftSlope firstRightSlope firstKernelSlope p.1 p.2 7‖)^J≤
@@ -41,8 +41,8 @@ theorem first_unequal_prefactor (Z:ℝ)(hZ:0<Z)
   convert Real.rpow_zero Z using 1
   congr 1
   ring
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

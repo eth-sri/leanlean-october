@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassCount
 
 @[expose] public section
@@ -8,10 +9,10 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
+open InverseMoment InverseFirstPriorityParents
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def principalSupport {ι : Type*} [DecidableEq ι] {Jo : ℕ}
     (extra : CubeCoordinates ι→Finset ι) (negative : Bool) (x : Source ι Jo) : Finset ι :=
@@ -72,10 +73,9 @@ lemma weighted_mass_power (Z ell R Bfirst t eta eps a : ℝ) (hZ : 0<Z) :
   repeat rw [←Real.rpow_add hZ]
   rw [←Real.rpow_mul hZ.le,←Real.rpow_add hZ]
   congr 1
-  norm_num
   ring
 
-end SevenEighths.InverseMomentGlobalPrincipalMass
-end
 
-end OAI
+
+
+

@@ -30,6 +30,6 @@ variable {β Γ : Type*} [DecidableEq β] [AddCommGroup Γ] [DecidableEq Γ]
 def fordRepresentationCount (B : Finset β) (F : β → Γ) (w : Γ) : ℕ :=
   ((B ×ˢ B).filter fun xy => F xy.1 - F xy.2 = w).card
 
-end
 
-end GafniTao
+
+

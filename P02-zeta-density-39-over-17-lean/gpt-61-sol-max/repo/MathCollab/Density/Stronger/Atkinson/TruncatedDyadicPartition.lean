@@ -12,8 +12,7 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
+open Complex
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -22,17 +21,27 @@ def truncatedDyadicLength (N j : ℕ) : ℕ := min (2^j) (N-2^j)
 theorem truncatedDyadicLength_le_width (N j : ℕ) :
     truncatedDyadicLength N j ≤ 2^j := min_le_left _ _
 
-theorem truncatedDyadic_start_lt {N j : ℕ} (hj : j < Nat.clog 2 N) :
+section
+variable {N j : ℕ} (hj : j < Nat.clog 2 N)
+include N j hj
+
+theorem truncatedDyadic_start_lt  :
     2^j < N := Nat.pow_lt_of_lt_clog hj
 
-theorem truncatedDyadic_endpoint_le {N j : ℕ} (hj : j < Nat.clog 2 N) :
+theorem truncatedDyadic_endpoint_le  :
     2^j+truncatedDyadicLength N j ≤ N := by
   have hs := truncatedDyadic_start_lt hj
   have hl : truncatedDyadicLength N j ≤ N-2^j := min_le_right _ _
   omega
+end
 
-theorem sum_range_min_pow_eq_truncatedDyadic {α : Type*} [AddCommMonoid α]
-    (f : ℕ → α) {N : ℕ} (hN : 0 < N) (J : ℕ) :
+
+section
+variable {α : Type*} [AddCommMonoid α]
+    (f : ℕ → α)
+include α f
+
+theorem sum_range_min_pow_eq_truncatedDyadic  {N : ℕ} (hN : 0 < N) (J : ℕ) :
     (∑ i ∈ Finset.range (min N (2^J)), f i) =
       f 0+∑ j ∈ Finset.range J, ∑ i ∈ Finset.range (truncatedDyadicLength N j), f (2^j+i) := by
   induction J with
@@ -55,8 +64,7 @@ theorem sum_range_min_pow_eq_truncatedDyadic {α : Type*} [AddCommMonoid α]
       rw [min_eq_left hlt.le,min_eq_left hnext,hz]
       simp
 
-theorem sum_range_eq_truncatedDyadic {α : Type*} [AddCommMonoid α]
-    (f : ℕ → α) (hf : f 0 = 0) (N : ℕ) :
+theorem sum_range_eq_truncatedDyadic  (hf : f 0 = 0) (N : ℕ) :
     (∑ i ∈ Finset.range N, f i) =
       ∑ j ∈ Finset.range (Nat.clog 2 N),
         ∑ i ∈ Finset.range (truncatedDyadicLength N j), f (2^j+i) := by
@@ -65,5 +73,7 @@ theorem sum_range_eq_truncatedDyadic {α : Type*} [AddCommMonoid α]
     simp
   · have h := sum_range_min_pow_eq_truncatedDyadic f (Nat.pos_of_ne_zero hN) (Nat.clog 2 N)
     simpa only [min_eq_left (Nat.le_pow_clog (by norm_num : 1 < (2:ℕ)) N),hf,zero_add] using h
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

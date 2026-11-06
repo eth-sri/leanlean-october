@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume
-open CenteredMomentHeckeCancellation CenteredMomentHeckeHeight
+open CenteredMomentHeckeCancellation
 open CenteredMomentMask
-open QuadraticInitialBound EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open QuadraticInitialBound
+open scoped HeckeO
 
 theorem volumeControl_source_control (a b ε B : ℝ)
     (ha : 0 < a) (hε : 0 < ε) (hB : 0 ≤ B) :
@@ -59,8 +59,8 @@ theorem volumeControl_source_control (a b ε B : ℝ)
       gcongr
       linarith
 
-end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
 
-end OAI
+
+
+

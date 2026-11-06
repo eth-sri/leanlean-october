@@ -6,9 +6,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalGrowth
 
 namespace OAI
 
-noncomputable section
+
 open scoped Topology
-open MeasureTheory Set Filter Asymptotics
+open MeasureTheory Filter Asymptotics
 namespace SevenEighths.HeckeSignalBounds
 open HeckeFamily HeckeSignal Continuation
 
@@ -23,8 +23,8 @@ theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
   exact HeckeSignalShift.contour_shift_left χ H hH hb c a C 2 ha ha2 hβ hC
     (fun s hs _ => hbound s hs) hx
 
-end SevenEighths.HeckeSignalBounds
 
-end
 
-end OAI
+
+
+

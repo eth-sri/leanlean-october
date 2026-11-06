@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -11,9 +10,9 @@ namespace GuthMaynard.Improvement
 theorem primitive_ratio_cross_unique {a b c d : ℕ}
     (ha : 0 < a) (hab : a.Coprime b) (hcd : c.Coprime d)
     (he : a*d=c*b) : a=c ∧ b=d := by
-  have hac : a ∣ c := hab.dvd_of_dvd_mul_right ⟨d,he.symm⟩
-  have hca : c ∣ a := hcd.dvd_of_dvd_mul_right ⟨b,he⟩
-  have hac' : a=c := Nat.dvd_antisymm hac hca
+  have hac := hab.dvd_of_dvd_mul_right ⟨d,he.symm⟩
+  have hca := hcd.dvd_of_dvd_mul_right ⟨b,he⟩
+  have hac' := Nat.dvd_antisymm hac hca
   refine ⟨hac',?_⟩
   apply Nat.eq_of_mul_eq_mul_left ha
   simpa only [← hac'] using he.symm
@@ -23,7 +22,7 @@ scale. This is the actual source of ratio multiplicities. -/
 theorem primitive_ratio_fiber_scale {a b n m : ℕ} (ha : 0 < a)
     (hn : 0 < n) (hab : a.Coprime b) (he : n*b=a*m) :
     ∃ k : ℕ, 0 < k ∧ n=a*k ∧ m=b*k := by
-  have han : a ∣ n := hab.dvd_of_dvd_mul_right ⟨m,he⟩
+  have han := hab.dvd_of_dvd_mul_right ⟨m,he⟩
   obtain ⟨k,hk⟩ := han
   refine ⟨k,?_,hk,?_⟩
   · by_contra h
@@ -55,10 +54,7 @@ theorem reducedRatioFiber_card {X a b : ℕ} (ha : 0 < a) (_hb : 0 < b)
     refine ⟨hk,?_⟩
     apply (Nat.le_div_iff_mul_le (lt_of_lt_of_le ha (le_max_left _ _))).mpr
     by_cases hh : a ≤ b
-    · rw [max_eq_right hh,mul_comm]
-      simpa only [← hmk] using (mem_Icc.mp hm).2
-    · rw [max_eq_left (by omega),mul_comm]
-      simpa only [← hnk] using (mem_Icc.mp hn).2
+    all_goals (grind)
   have hinj : Set.InjOn (fun p : ℕ × ℕ => p.1/a) (reducedRatioFiber X a b : Set (ℕ × ℕ)) := by
     intro p hp q hq he
     obtain ⟨hp,hpc⟩ := mem_filter.mp hp
@@ -79,10 +75,7 @@ theorem log_cross_gap {p q Y : ℝ} (hq : 0 < q) (hgap : q+1 ≤ p)
   have hp : 0 < p := by linarith
   have hlog := Real.log_le_sub_one_of_pos (div_pos hq hp)
   rw [Real.log_div hq.ne' hp.ne'] at hlog
-  have hgap' : p⁻¹ ≤ 1-q/p := by
-    have hh : 1 ≤ p-q := by linarith
-    have hd : 1/p ≤ (p-q)/p := (div_le_div_iff_of_pos_right hp).mpr hh
-    simpa only [one_div,sub_div,div_self hp.ne'] using hd
+  have hgap' : p⁻¹ ≤ 1-q/p := by field_simp <;> nlinarith
   calc
     (Y^2)⁻¹ ≤ p⁻¹ := by simpa only [one_div] using one_div_le_one_div_of_le hp hpY
     _ ≤ _ := hgap'.trans (by linarith)
@@ -120,29 +113,22 @@ theorem positive_height_shell_card (S : Finset (ℕ × ℕ))
     (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2) (q : ℕ) :
     (S.filter (fun p => max p.1 p.2=q)).card ≤ 2*q := by
   have hsub : S.filter (fun p => max p.1 p.2=q) ⊆
-      ({q} ×ˢ Icc 1 q) ∪ (Icc 1 q ×ˢ {q}) := by
-    intro p hp
-    obtain ⟨hp,hpq⟩ := mem_filter.mp hp
-    obtain ⟨hp1,hp2⟩ := hpos p hp
-    have hp1q : p.1 ≤ q := (le_max_left _ _).trans_eq hpq
-    have hp2q : p.2 ≤ q := (le_max_right _ _).trans_eq hpq
-    by_cases he : p.1=q
-    · exact mem_union_left _ (mem_product.mpr ⟨mem_singleton.mpr he,mem_Icc.mpr ⟨hp2,hp2q⟩⟩)
-    · have he' : p.2=q := by omega
-      exact mem_union_right _ (mem_product.mpr ⟨mem_Icc.mpr ⟨hp1,hp1q⟩,mem_singleton.mpr he'⟩)
+      ({q} ×ˢ Icc 1 q) ∪ (Icc 1 q ×ˢ {q}) := by grind
   exact (card_le_card hsub).trans ((card_union_le _ _).trans_eq (by simp; omega))
 
-/-- The actual squared ratio-weight budget follows just from the integral
-ray multiplicity upper bound; no coprime counting asymptotic is needed. -/
-theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
+section
+variable (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
     (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2)
     (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ)
     (hw0 : ∀ p ∈ S, 0 ≤ w p)
-    (hw : ∀ p ∈ S, w p ≤ X/(max p.1 p.2:ℕ)) :
+    (hw : ∀ p ∈ S, w p ≤ X/(max p.1 p.2:ℕ))
+include S Y X hX hpos hY w hw0 hw
+
+/-- The actual squared ratio-weight budget follows just from the integral
+ray multiplicity upper bound; no coprime counting asymptotic is needed. -/
+theorem positive_ratio_square_weight  :
     (∑ p ∈ S, (w p)^2) ≤ 2*X^2*(harmonic Y:ℝ) := by
-  have hmap : ∀ p ∈ S, max p.1 p.2 ∈ Icc 1 Y := by
-    intro p hp
-    exact mem_Icc.mpr ⟨(hpos p hp).1.trans_le (le_max_left _ _),hY p hp⟩
+  have hmap : ∀ p ∈ S, max p.1 p.2 ∈ Icc 1 Y := by grind
   rw [← sum_fiberwise_of_maps_to hmap (fun p => (w p)^2)]
   calc
     _ ≤ ∑ q ∈ Icc 1 Y, 2*X^2/(q:ℝ) := by
@@ -164,18 +150,14 @@ theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : �
       rw [harmonic_eq_sum_Icc]
       push_cast
       rw [mul_sum]
-      apply sum_congr rfl
-      intro q _
-      simp only [div_eq_mul_inv]
+      rfl
 
 /-- Explicit logarithmic form of the square multiplicity budget. -/
-theorem positive_ratio_square_weight_log (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
-    (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2)
-    (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ)
-    (hw0 : ∀ p ∈ S, 0 ≤ w p)
-    (hw : ∀ p ∈ S, w p ≤ X/(max p.1 p.2:ℕ)) :
+theorem positive_ratio_square_weight_log  :
     (∑ p ∈ S, (w p)^2) ≤ 2*X^2*(1+Real.log Y) :=
   (positive_ratio_square_weight S hX hpos hY w hw0 hw).trans
     (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Y) (by positivity))
+end
 
-end GuthMaynard.Improvement
+
+

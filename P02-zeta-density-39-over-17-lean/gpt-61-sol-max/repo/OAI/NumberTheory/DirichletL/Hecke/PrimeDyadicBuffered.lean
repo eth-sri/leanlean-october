@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical Topology ContDiff
-open Set Metric MeasureTheory Complex
+open Set MeasureTheory Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeLogarithmic HeckeDeletionBounds
 
@@ -59,8 +59,8 @@ theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
       simpa only [series, neg_div, norm_neg, logDeriv_apply, binCost] using (hs s h).2)
   convert hh using 1 ; congr 1 ; ring_nf
 
-end SevenEighths.HeckePrimeDyadic
 
-end
 
-end OAI
+
+
+

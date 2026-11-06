@@ -9,11 +9,15 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeCompleted CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ProbeCompleted
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-lemma outside_mul (S : Finset Id) (hS : ∀P∈S,Prime P) (A B : Id) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,Prime P)
+include S hS
+
+lemma outside_mul  (A B : Id) :
     (∀P∈S,¬P∣A*B) ↔ (∀P∈S,¬P∣A) ∧ (∀P∈S,¬P∣B) := by
   constructor
   · intro h
@@ -25,7 +29,7 @@ lemma outside_mul (S : Finset Id) (hS : ∀P∈S,Prime P) (A B : Id) :
   · rintro ⟨hA,hB⟩ P hP hd
     exact ((hS P hP).dvd_mul.mp hd).elim (hA P hP) (hB P hP)
 
-lemma outside_cube (S : Finset Id) (hS : ∀P∈S,Prime P) (A : Id) :
+lemma outside_cube  (A : Id) :
     (∀P∈S,¬P∣A^3) ↔ ∀P∈S,¬P∣A := by
   constructor
   · intro h P hP hd
@@ -33,7 +37,7 @@ lemma outside_cube (S : Finset Id) (hS : ∀P∈S,Prime P) (A : Id) :
   · intro h P hP hd
     exact h P hP ((hS P hP).dvd_of_dvd_pow hd)
 
-def highExclusion (S : Finset Id) (hS : ∀P∈S,Prime P) : Id→*ℂ where
+def highExclusion  : Id→*ℂ where
   toFun A := if ∀P∈S,¬P∣A then 1 else 0
   map_one' := by
     rw [ite_eq_left]
@@ -43,13 +47,13 @@ def highExclusion (S : Finset Id) (hS : ∀P∈S,Prime P) : Id→*ℂ where
     simp only [outside_mul S hS A B]
     split_ifs <;> simp_all
 
-lemma highExclusion_cube (S : Finset Id) (hS : ∀P∈S,Prime P) (A : Id) :
+lemma highExclusion_cube  (A : Id) :
     highExclusion S hS (A^3)=highExclusion S hS A := by
   change (if ∀P∈S,¬P∣A^3 then (1:ℂ) else 0)=_
   simp only [outside_cube S hS]
   rfl
 
-theorem highIdealMask_unmarked (S : Finset Id) (hS : ∀P∈S,Prime P) (I J K L : Id) :
+theorem highIdealMask_unmarked  (I J K L : Id) :
     highIdealMask S 1 I J K L =
       highExclusion S hS I*highExclusion S hS J*highExclusion S hS K*highExclusion S hS L := by
   have he : completedMask S 1 I J=highExclusion S hS (I*J^3) := by
@@ -59,19 +63,19 @@ theorem highIdealMask_unmarked (S : Finset Id) (hS : ∀P∈S,Prime P) (I J K L 
   rw [he,map_mul,highExclusion_cube]
   rfl
 
-lemma highIdealMask_unmarked_one (S : Finset Id) (hS : ∀P∈S,Prime P) :
+lemma highIdealMask_unmarked_one  :
     highIdealMask S 1 1 1 1 1=1 := by
   rw [highIdealMask_unmarked S hS]
   simp only [map_one,one_mul]
 
-lemma highIdealMask_unmarked_mul (S : Finset Id) (hS : ∀P∈S,Prime P)
+lemma highIdealMask_unmarked_mul 
     (a b : HighIdeal) :
     highIdealMask S 1 (a.1.1*b.1.1) (a.1.2*b.1.2) (a.2.1*b.2.1) (a.2.2*b.2.2)=
       highIdealMask S 1 a.1.1 a.1.2 a.2.1 a.2.2 * highIdealMask S 1 b.1.1 b.1.2 b.2.1 b.2.2 := by
   simp only [highIdealMask_unmarked S hS,map_mul]
   ring
 
-theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
+theorem excludedIdealHighSeries_hasProd 
     (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     HasProd (fun P : PrimeIdeal=>∑' b : HighValuation,
@@ -91,8 +95,10 @@ theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     have hs := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
   · exact (markedIdealHighSummand_summable S 1 η 1 x w z hx hw hz).norm
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

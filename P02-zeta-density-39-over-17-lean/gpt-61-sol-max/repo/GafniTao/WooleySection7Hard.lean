@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyEquation724
 public import GafniTao.WooleySection7HardPower
 
@@ -18,7 +19,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleySourcePolynomial_section7_hard_of_lower_bound
     {k r p B s a b nu c : ℕ}
@@ -122,7 +123,7 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
       hBPrime phi hphi gamma xi eta hseparated hxiMass hetaMass
       C ((p ^ wooleySection7BPrimeNat k r a b 0 : ℝ) ^
         (epsilon ^ 2)) (by positivity) hpoint
-  let fiberSum : ℝ :=
+  let fiberSum :=
     ∑ xiPrime ∈ wooleyResidueRefinementFiber p a
         (wooleySection7NextB k r b)
         ((Nat.le_add_right a (wooleySection7HPrime k r a b gammaVal)).trans
@@ -141,13 +142,7 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
       (wooleySourceResidueMassSq_nonneg gamma _ _)
       (wooleySourcePolynomialMixedResidueMoment_nonneg
         phi s r p B (wooleySection7NextB k r b) b gamma _ eta)
-  have hcoeff :
-      C * ((p ^ wooleySection7BPrimeNat k r a b 0 : ℝ) ^
-          (epsilon ^ 2) *
-        (p ^ (wooleySection7NextB k r b -
-          (a + wooleySection7HPrime k r a b gammaVal)) : ℝ) ^
-            wooleyTriangular r) ≤
-        C * (p : ℝ) ^ (k ^ 2 * nu) :=
+  have hcoeff :=
     mul_le_mul_of_nonneg_left hpower hC.le
   have hscaled := mul_le_mul_of_nonneg_right hcoeff hsum
   calc
@@ -163,6 +158,6 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
     _ ≤ (C * (p : ℝ) ^ (k ^ 2 * nu)) * fiberSum := by
       simpa only [mul_assoc] using hscaled
 
-end
 
-end GafniTao
+
+

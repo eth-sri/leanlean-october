@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 public import Mathlib.Algebra.BigOperators.Group.Finset.Preimage
 
@@ -9,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 structure HybridColumnData where
   common : Ideal Eis
@@ -24,20 +25,24 @@ structure HybridColumnData where
 def HybridColumnData.reconstruct (d : HybridColumnData) : Ideal Eis × Ideal Eis :=
   (d.common * d.residualN, (d.common * d.residualB) * d.square ^ 2)
 
-theorem HybridColumnData.common_ne_zero (d : HybridColumnData) : d.common ≠ 0 :=
+section
+variable (d : HybridColumnData)
+include d
+
+theorem HybridColumnData.common_ne_zero  : d.common ≠ 0 :=
   ne_zero_of_dvd_ne_zero d.n_squarefree.ne_zero (dvd_mul_right _ _)
 
-theorem HybridColumnData.common_eq_gcd (d : HybridColumnData) :
+theorem HybridColumnData.common_eq_gcd  :
     d.common = gcd (d.common * d.residualN) (d.common * d.residualB) := by
   rw [gcd_mul_left, normalize_eq, Ideal.isCoprime_iff_gcd.mp d.residual_coprime, mul_one]
 
-theorem HybridColumnData.residual_product_squarefree (d : HybridColumnData) :
+theorem HybridColumnData.residual_product_squarefree  :
     Squarefree (d.residualN * d.residualB) := by
   have hm := (squarefree_mul_iff.mp d.n_squarefree).2.2
   have hh := (squarefree_mul_iff.mp d.g_squarefree).2.2
   exact squarefree_mul_iff.mpr ⟨d.residual_coprime.isRelPrime, hm, hh⟩
 
-theorem HybridColumnData.primary_factors (d : HybridColumnData)
+theorem HybridColumnData.primary_factors 
     (hn : CompletedGauss.primaryGenerator (d.common * d.residualN) ≠ 0)
     (hb : CompletedGauss.primaryGenerator ((d.common * d.residualB) * d.square ^ 2) ≠ 0) :
     CompletedGauss.primaryGenerator d.common ≠ 0 ∧
@@ -62,7 +67,7 @@ theorem HybridColumnData.primary_factors (d : HybridColumnData)
   rw [CompletedGauss.primaryGenerator_mul]
   exact mul_ne_zero hc ht
 
-theorem HybridColumnData.residual_norm_bounds (d : HybridColumnData)
+theorem HybridColumnData.residual_norm_bounds 
     (N B C T : ℝ) (hN : 0 ≤ N) (_hB : 0 ≤ B) (hC : 0 < C) (hT : 0 < T)
     (hn : (Ideal.absNorm (d.common * d.residualN) : ℝ) ≤ N)
     (hb : (Ideal.absNorm ((d.common * d.residualB) * d.square ^ 2) : ℝ) ≤ B)
@@ -97,6 +102,8 @@ theorem HybridColumnData.residual_norm_bounds (d : HybridColumnData)
     _ ≤ (N / C) * (B / (C * T ^ 2)) :=
       mul_le_mul hm hh (Nat.cast_nonneg _) (div_nonneg hN hC.le)
     _ = N * B / (C ^ 2 * T ^ 2) := by ring
+end
+
 
 theorem HybridColumnData.reconstruct_injective :
     Function.Injective HybridColumnData.reconstruct := by
@@ -120,8 +127,7 @@ theorem HybridColumnData.reconstruct_injective :
   cases hc
   cases hm
   cases hh
-  cases ht
-  rfl
+  bound
 
 def HybridColumnData.toOriginal (d : HybridColumnData) :
     {p : Ideal Eis × Ideal Eis // Squarefree p.1 ∧ p.2 ≠ 0} :=
@@ -159,7 +165,7 @@ theorem hybrid_finite_column_reindex {A : Type*} [AddCommMonoid A]
   obtain ⟨d, hd⟩ := HybridColumnData.toOriginal_bijective.surjective ⟨p, hS p hp⟩
   exact (hn ⟨d, congrArg Subtype.val hd⟩).elim
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

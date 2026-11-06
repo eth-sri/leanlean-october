@@ -7,7 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
+open MeasureTheory
 noncomputable section
 
 def secondRelativeNorm (q : Fin 6 → ℝ) (G E V K X : ℝ) : Fin 6 → ℝ :=
@@ -36,7 +36,7 @@ lemma secondNormProfile_eq_full_of_windows (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(
   rw [secondPoissonProfile_log W₁ W₂ Φ V R q hq]
   simp only [secondNormProfile, hV, Finset.prod_const_one]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

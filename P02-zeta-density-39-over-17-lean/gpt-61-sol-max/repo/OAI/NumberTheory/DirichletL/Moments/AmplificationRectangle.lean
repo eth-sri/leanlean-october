@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationShortening
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentAmplificationRectangle
-open CenteredMomentRectangle CenteredMomentExtraction CenteredMomentAmplificationShortening
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentAmplificationShortening
+open scoped EisensteinO
 
 theorem centralRoot_extract (p : O) (hp : p ≠ 0) (k : ℕ) (T : ℝ) (hT : 0 < T) :
     (Real.sqrt T : ℂ)⁻¹ = (primeRoot p k)⁻¹ *
@@ -24,8 +24,8 @@ theorem centralRoot_extract (p : O) (hp : p ≠ 0) (k : ℕ) (T : ℝ) (hT : 0 <
     field_simp
   rw [hroot,Complex.ofReal_mul,mul_inv,primeRoot]
 
-end SevenEighths.CenteredMomentAmplificationRectangle
 
-end
 
-end OAI
+
+
+

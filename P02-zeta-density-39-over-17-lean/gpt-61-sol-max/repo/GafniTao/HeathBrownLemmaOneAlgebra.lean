@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownLemmaOneReal
 
 @[expose] public section
@@ -17,7 +18,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownLemmaOneNormalizedRealBound
+def heathBrownLemmaOneNormalizedRealBound
     (N k : ℕ) (A lambda epsilon C : ℝ) : ℝ :=
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
@@ -47,12 +48,10 @@ theorem heathBrown_normalization_algebra
           (C ^ r * P ^ r * X ^ q * D ^ (-r) * H ^ (epsilon * r)) +
         H := by
   dsimp only
-  let r : ℝ := 1 / (2 * S)
-  let q : ℝ := 1 - 1 / S
-  let V : ℝ := D * H ^ (-S)
+  let r := 1 / (2 * S)
+  let q := 1 - 1 / S
+  let V := D * H ^ (-S)
   have hV : 0 < V := by dsimp only [V]; positivity
-  have hr : r = 1 / (2 * S) := rfl
-  have hq : q = 1 - 1 / S := rfl
   rw [Real.mul_rpow hC.le (Real.rpow_nonneg hH.le _),
     ← Real.rpow_mul hH.le,
     Real.mul_rpow hP.le hV.le,
@@ -69,7 +68,7 @@ theorem heathBrown_normalization_algebra
   repeat' rw [← Real.rpow_mul hH.le]
   rw [div_eq_iff (mul_ne_zero (mul_ne_zero hD.ne'
     (Real.rpow_pos_of_pos hH _).ne') hH.ne')]
-  have hS0 : S ≠ 0 := hS.ne'
+  have hS0 := hS.ne'
   have hTwoS0 : 2 * S ≠ 0 := by positivity
   have hDexp : r + q = 1 - r := by
     dsimp only [r, q]
@@ -104,8 +103,7 @@ theorem heathBrown_normalization_algebra
           Real.rpow_add hD, Real.rpow_one,
           Real.rpow_add hH, Real.rpow_add hH, Real.rpow_one]
         ring
-  rw [hmain]
-  ring
+  grind
 
 theorem heathBrownLemmaOneExpanded_eq_normalized
     {N k : ℕ} {A lambda epsilon C : ℝ}
@@ -116,7 +114,6 @@ theorem heathBrownLemmaOneExpanded_eq_normalized
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
   let D := (2 : ℝ) ^ (k - 1)
-  let r := 1 / (2 * (s : ℝ))
   let P := heathBrownLemmaTwoConstant k A *
     (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
     (1 + Real.log N)
@@ -145,6 +142,6 @@ theorem heathBrownLemmaOneExpanded_eq_normalized
   exact heathBrown_normalization_algebra hH hs hD hC hP hNreal
 
 
-end
 
-end GafniTao
+
+

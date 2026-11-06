@@ -15,11 +15,11 @@ when an endpoint slope is exactly an integer physical frequency.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseEndpointLower (F : ℝ → ℝ) (T N : ℝ) : ℤ :=
   ⌊(T/N)*modelPhaseClosedSlope F 2⌋
@@ -42,4 +42,4 @@ theorem modelPhaseEndpoints_inside_core {σ δ T N : ℝ} {F : ℝ → ℝ}
   · exact Int.ceil_mono (mul_le_mul_of_nonneg_left (by linarith : modelPhaseClosedSlope F 1 ≤
       1+δ) (div_nonneg hT hN.le))
 
-end TaoTrudgianYang2025
+

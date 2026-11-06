@@ -7,23 +7,27 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def reflectedExponent {φ ρ σ : Type*} (jF : φ → ℕ) : φ ⊕ (ρ ⊕ σ) → ℕ :=
   Sum.elim jF (Sum.elim (fun _ => 1) (fun _ => 0))
 
-def frozenIndices (φ ρ σ : Type*) [Fintype φ] : Finset (φ ⊕ (ρ ⊕ σ)) :=
+section
+variable (φ ρ σ : Type*)
+include φ ρ σ
+
+def frozenIndices  [Fintype φ] : Finset (φ ⊕ (ρ ⊕ σ)) :=
   @Finset.image φ (φ ⊕ (ρ ⊕ σ)) (Classical.decEq _) Sum.inl Finset.univ
 
-def residualIndices (φ ρ σ : Type*) [Fintype ρ] : Finset (φ ⊕ (ρ ⊕ σ)) :=
+def residualIndices  [Fintype ρ] : Finset (φ ⊕ (ρ ⊕ σ)) :=
   @Finset.image ρ (φ ⊕ (ρ ⊕ σ)) (Classical.decEq _) (Sum.inr ∘ Sum.inl) Finset.univ
 
-def slotIndices (φ ρ σ : Type*) [Fintype σ] : Finset (φ ⊕ (ρ ⊕ σ)) :=
+def slotIndices  [Fintype σ] : Finset (φ ⊕ (ρ ⊕ σ)) :=
   @Finset.image σ (φ ⊕ (ρ ⊕ σ)) (Classical.decEq _) (Sum.inr ∘ Sum.inr) Finset.univ
 
-lemma reflected_indices_partition (φ ρ σ : Type*) [Fintype φ] [Fintype ρ] [Fintype σ] :
+lemma reflected_indices_partition  [Fintype φ] [Fintype ρ] [Fintype σ] :
     Disjoint (residualIndices φ ρ σ) (slotIndices φ ρ σ) ∧
     Disjoint (residualIndices φ ρ σ ∪ slotIndices φ ρ σ) (frozenIndices φ ρ σ) ∧
     (residualIndices φ ρ σ ∪ slotIndices φ ρ σ) ∪ frozenIndices φ ρ σ = Finset.univ := by
@@ -41,6 +45,8 @@ lemma reflected_indices_partition (φ ρ σ : Type*) [Fintype φ] [Fintype ρ] [
     | inr i => cases i with
       | inl r => simp
       | inr s => simp
+end
+
 
 lemma reflected_residual_exponent {φ ρ σ : Type*} [Fintype ρ] (jF : φ → ℕ) :
     ∀ i ∈ residualIndices φ ρ σ, reflectedExponent jF i = 1 := by
@@ -50,8 +56,12 @@ lemma reflected_residual_exponent {φ ρ σ : Type*} [Fintype ρ] (jF : φ → �
   rfl
 
 namespace PrimeFamily
-lemma reflected_residual_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+section
+variable {φ σ : Type*} [Fintype φ] [Fintype σ]
+    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
+include φ σ F K hK S
+
+lemma reflected_residual_product  :
     (∏ i ∈ residualIndices φ (PrimeIndex K) σ,
       Ideal.span {(F.reflected K hK S).generator i}) = K := by
   classical
@@ -60,8 +70,7 @@ lemma reflected_residual_product {φ σ : Type*} [Fintype φ] [Fintype σ]
   rw [Finset.prod_image (Sum.inr_injective.comp Sum.inl_injective).injOn]
   exact residual_product K hK
 
-lemma reflected_slot_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+lemma reflected_slot_product  :
     (∏ i ∈ slotIndices φ (PrimeIndex K) σ,
       Ideal.span {(F.reflected K hK S).generator i}) = ∏ i, S.ideal i := by
   classical
@@ -69,9 +78,11 @@ lemma reflected_slot_product {φ σ : Type*} [Fintype φ] [Fintype σ]
   simp only [generator_span, slotIndices]
   rw [Finset.prod_image (Sum.inr_injective.comp Sum.inr_injective).injOn]
   rfl
-end PrimeFamily
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+
+

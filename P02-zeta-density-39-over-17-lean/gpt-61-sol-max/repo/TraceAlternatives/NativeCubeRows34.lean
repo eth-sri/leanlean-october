@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TraceAlternatives.PhysicalCubeActualDensity
 public import LaterPairs.NativeTTY3
 public import LaterPairs.TTY4TargetParameters
@@ -8,8 +9,7 @@ public import RightSolidTailBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Exact pair-tail budgets for original row4; the prefix restriction in the
@@ -47,11 +47,10 @@ open MathCollab.Density
 multiplicity at every real T>=2. All analytic inputs are proved internally. -/
 theorem density_cube_row3 {σ ε : ℝ}
     (hlo : 163/198 ≤ σ) (hhi : σ ≤ 7873/9370) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(31544*(1-σ)/(35670*σ-11203)+ε) := by
+    MathCollab.Density.ZetaBound σ ((31544*(1-σ)/(35670*σ-11203)+ε)) := by
   obtain ⟨_,hf,hs⟩ := tty4_full_target_tail_budgets hlo hhi
   simpa only [tty4_prefix_density_exponent] using
     density_of_pair_cube_window TaoTrudgianYang2025.exponentPair_BTTY4 (by norm_num)
       (physicalDetectorWindow_row3 hlo hhi) (cubeCountWindow_row3 hlo hhi) hf hs hε
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

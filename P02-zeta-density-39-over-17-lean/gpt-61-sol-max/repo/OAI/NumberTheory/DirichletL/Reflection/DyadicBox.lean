@@ -18,7 +18,7 @@ lemma ramifiedScale_one_cube (m : ℕ) : (ramifiedScale 1 completedRamifiedStep 
   simp only [ramifiedScale,one_mul]
   rw [← pow_mul,Nat.mul_comm m 3,pow_mul,hs]
 
-lemma rawDyadicCenter_pow_lower (scale : ℝ) (hs : 0≤scale) (i : ℕ×ℕ×ℕ) :
+lemma rawDyadicCenter_pow_lower (scale : ℝ) (hs : 0≤ scale) (i : ℕ×ℕ×ℕ) :
     scale*(2:ℝ)^(i.1+i.2.2+3*i.2.1)≤rawDyadicCenter scale i := by
   unfold rawDyadicCenter
   rw [ramifiedScale_one_cube,pow_add,pow_add,Nat.mul_comm 3 i.2.1,pow_mul]
@@ -56,8 +56,8 @@ theorem retainedDyadicBox_count_small_power (ε : ℝ) (hε : 0<ε) :
       ((retainedDyadicBox scale B).card:ℝ)^2≤C*(max 1 (B/scale))^ε := by
   refine ⟨(2+1/((ε/6)*Real.log 2))^6,by positivity,?_⟩
   intro scale B
-  have hR : 1≤max 1 (B/scale) := le_max_left _ _
-  have hp : 0<max 1 (B/scale) := lt_of_lt_of_le zero_lt_one hR
+  have hR : 1≤ max 1 (B/scale) := le_max_left _ _
+  have hp : 0< max 1 (B/scale) := lt_of_lt_of_le zero_lt_one hR
   have hh := columnDyadicLength_small_power (ε/6) (by positivity) _ hR
   rw [retainedDyadicBox_card]
   push_cast
@@ -67,7 +67,7 @@ theorem retainedDyadicBox_count_small_power (ε : ℝ) (hε : 0<ε) :
   rw [mul_pow,← Real.rpow_mul_natCast hp.le]
   congr 2
   ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

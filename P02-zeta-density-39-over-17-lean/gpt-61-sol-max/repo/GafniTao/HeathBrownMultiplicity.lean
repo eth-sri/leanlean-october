@@ -18,7 +18,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownCoefficientMeasure (k : ℕ) :
+def heathBrownCoefficientMeasure (k : ℕ) :
     Measure (HeathBrownCoefficientTorus k) :=
   Measure.pi (fun _ : Fin (k - 1) => AddCircle.haarAddCircle)
 
@@ -29,12 +29,12 @@ theorem card_heathBrownInteriorIndices (N H : ℕ) :
     (heathBrownInteriorIndices N H).card = N - H := by
   simp [heathBrownInteriorIndices]
 
-noncomputable def heathBrownCellIndicator
+def heathBrownCellIndicator
     (k H : ℕ) (f : ℝ → ℝ) (n : ℕ) :
     HeathBrownCoefficientTorus k → ℝ :=
   (heathBrownCoefficientCell k H f n).indicator (fun _ => 1)
 
-noncomputable def heathBrownNu
+def heathBrownNu
     (N k H : ℕ) (f : ℝ → ℝ) (α : HeathBrownCoefficientTorus k) : ℝ :=
   ∑ n ∈ heathBrownInteriorIndices N H,
     heathBrownCellIndicator k H f n α
@@ -101,6 +101,6 @@ theorem integral_heathBrownNu
   rw [Finset.sum_const, card_heathBrownInteriorIndices]
   simp [nsmul_eq_mul]
 
-end
 
-end GafniTao
+
+

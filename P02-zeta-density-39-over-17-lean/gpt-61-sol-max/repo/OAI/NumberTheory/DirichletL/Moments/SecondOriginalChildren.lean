@@ -15,23 +15,24 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondOriginalChildren
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
+
+
+
+
+
+
+open CenteredMomentSectorLocalization
+
+
+
+open scoped EisensteinO
 
 open Filter
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
+open CenteredMomentRadialEligibleEnergy
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def core (s:Input ι) (C:Ideal O) (C0 Z δ E:ℝ) : ℝ :=
@@ -46,8 +47,8 @@ def sourceRadial (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (H:ℝ) (hH:0<H)
     (hΦ:∀z:O,0≤(Φ (normValue z/H)).re) : Radial :=
   ⟨keep,Φ,H,hH,fun z=>by simpa only [normValue_eq_embedding] using hΦ z⟩
 
-end SevenEighths.CenteredMomentSecondOriginalChildren
 
-end
 
-end OAI
+
+
+

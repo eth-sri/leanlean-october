@@ -1,15 +1,16 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalEnergy
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentPlainPositiveScale
 open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalActual CenteredMomentPlainGlobalEnergy
-open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
+open CenteredMomentHeckeTwist
 
  theorem small_polynomial (χ:Character)(W:SchwartzMap ℝ ℂ)(a b:ℝ)(ha:0<a)
     (hWs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)(D freq:ℝ)(hD:0<D)(hD1:D≤1):
@@ -25,8 +26,8 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
   rw [←plain_height_norm χ W a b ha hWs (W.smooth ⊤) freq D hD,norm_mul,norm_inv,
     Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)]
   apply (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr (Real.sqrt_nonneg _))).trans
-  have hsq:(Real.sqrt D)^2=D:=Real.sq_sqrt hD.le
-  have hroot:0<Real.sqrt D:=Real.sqrt_pos.mpr hD
+  have hsq :=Real.sq_sqrt hD.le
+  have hroot :=Real.sqrt_pos.mpr hD
   have hle:Real.sqrt D≤1:=by exact (Real.sqrt_le_one).mpr hD1
   have he:(Real.sqrt D)⁻¹*((128*max 0 b*B)*D)=(128*max 0 b*B)*Real.sqrt D:=by
     calc
@@ -43,8 +44,8 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
         C*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)*
           (χ.modulus.absNorm:ℝ)*(3+|freq|)^2:=by
   obtain ⟨S,C,hC,hg⟩:=global_polynomial_bound a b ha
-  let S':Finset (ℕ×ℕ):=insert (0,0) S
-  let C':ℝ:=C+128*max 0 b
+  let S' :=insert (0,0) S
+  let C' :=C+128*max 0 b
   have hC':0<C':=add_pos_of_pos_of_nonneg hC (by positivity)
   refine ⟨S',C',hC',?_⟩
   intro W hWs χ hχ D freq hD
@@ -71,8 +72,8 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
         le_mul_of_one_le_right (mul_nonneg hC'.le hB) (one_le_mul_of_one_le_of_one_le hQ hV)
       _=_:=by ring
 
-end SevenEighths.CenteredMomentPlainPositiveScale
 
-end
 
-end OAI
+
+
+

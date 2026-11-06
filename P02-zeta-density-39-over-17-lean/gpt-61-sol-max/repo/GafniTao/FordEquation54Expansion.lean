@@ -1,8 +1,9 @@
 module
+import Mathlib
 public import GafniTao.FordLemma51Fibers
 
 @[expose] public section
-noncomputable section
+
 open scoped ComplexConjugate
 namespace GafniTao
 theorem conj_fordAdditiveCharacter (x : ℝ) :
@@ -16,8 +17,7 @@ theorem conj_fordAdditiveCharacter (x : ℝ) :
       congr 1
       rw [map_mul, map_mul, map_mul]
       simp only [map_ofNat, Complex.conj_ofReal, Complex.conj_I]
-      push_cast
-      ring
+      simp_all
 
 
-end GafniTao
+

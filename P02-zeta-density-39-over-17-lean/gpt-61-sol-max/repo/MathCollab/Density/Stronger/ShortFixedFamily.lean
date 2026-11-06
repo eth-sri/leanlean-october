@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.SmoothDetector
 public import MathCollab.Density.Stronger.SmoothShortBlock
 public import MathCollab.Density.Stronger.FiniteConvolution
@@ -6,9 +7,8 @@ public import MathCollab.Density.Stronger.PowerScales
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -27,7 +27,6 @@ theorem smoothDetectorBlock_index_pos {ρ : ℂ} {X Y : ℝ} {j : ℤ}
 
 theorem smoothHalfScale_zero_eq {j : ℤ} (hj : 0 < j) :
     (2 : ℝ)^j = 2*(smoothHalfScale j 0 : ℝ) := by
-  have hjn : 1 ≤ j.toNat := by omega
   have he : j = (j.toNat : ℤ) := (Int.toNat_of_nonneg hj.le).symm
   simp only [smoothHalfScale, add_zero, Nat.cast_pow, Nat.cast_ofNat]
   conv_lhs => rw [he, zpow_natCast, show j.toNat = j.toNat-1+1 by omega, pow_succ]
@@ -43,7 +42,6 @@ theorem smoothHalfScale_bounds {j : ℤ} (hj : 0 < j) {e : ℕ} (he : e < 2) :
       (smoothHalfScale j e : ℝ) ≤ (2 : ℝ)^j := by
   have hz := smoothHalfScale_zero_eq hj
   have h1 := smoothHalfScale_one_eq j
-  have hp : (0 : ℝ) < smoothHalfScale j 0 := by exact_mod_cast smoothHalfScale_pos j 0
   have hh : e = 0 ∨ e = 1 := by omega
   rcases hh with rfl | rfl
   · constructor <;> linarith
@@ -70,11 +68,7 @@ theorem exists_smoothBlock_Taylor_member {ρ : ℂ} {X Y T D : ℝ} {j : ℤ}
   rw [← smoothHalfScale_zero_eq hj] at hb
   rw [← smoothHalfScale_one_eq] at hL
   change L ∈ ({smoothHalfScale j 0, smoothHalfScale j 1} : Finset ℕ) at hL
-  have he : ∃ e ∈ Finset.range 2, L = smoothHalfScale j e := by
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hL
-    rcases hL with hL | hL
-    · exact ⟨0, by simp, hL⟩
-    · exact ⟨1, by simp, hL⟩
+  have he : ∃ e ∈ Finset.range 2, L = smoothHalfScale j e := by aesop
   obtain ⟨e, he, rfl⟩ := he
   have hhalf : 1/(2*D) ≤
       ‖genericBlock ρ (smoothShortCoefficient X Y ((2 : ℝ)^j)) (smoothHalfScale j e)‖ := by
@@ -145,4 +139,4 @@ theorem exists_smoothTaylor_powered_piece (X Y t : ℝ) (j : ℤ) (e r : ℕ) {k
   exact exists_finiteBlock_powered_piece (smoothHalfScale_pos j e) hk
     (smoothTaylorArithmetic_support X Y j e r) t
 
-end MathCollab.Density.Stronger
+

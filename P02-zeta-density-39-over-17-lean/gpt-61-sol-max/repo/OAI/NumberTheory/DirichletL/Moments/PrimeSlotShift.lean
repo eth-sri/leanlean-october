@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimeSlot
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentPrimeSlotShift
 open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
+open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion
 open CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma norm_height_split (N D σ t v:ℝ) (hN:0<N) (hD:0<D) :
     (((N/D:ℝ):ℂ)^(-shift σ v))*(N:ℂ)^(Complex.I*t)=
@@ -53,8 +53,8 @@ theorem normalizedSlot_eq_ray (M:Ideal O) (H:Subgroup (O⧸M)ˣ)
       ((((I.absNorm:ℝ)/D:ℝ):ℂ)^(-shift σ v)*(I.absNorm:ℂ)^(Complex.I*t)) := by ring
     _=_ := by rw [hn]; unfold annularWeight; ring
 
-end SevenEighths.CenteredMomentPrimeSlotShift
 
-end
 
-end OAI
+
+
+

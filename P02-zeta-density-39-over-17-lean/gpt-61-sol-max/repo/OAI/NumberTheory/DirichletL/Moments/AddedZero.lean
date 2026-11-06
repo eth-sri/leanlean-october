@@ -11,12 +11,12 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentAddedZero
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentRowNorm CenteredMomentFourier CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentGaussEnergy CenteredMomentZeroMode
-open CenteredExceptionalCount CenteredMomentRectangle CenteredMomentExtraction
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+
+
+open CenteredMomentRectangle
+open UniqueFactorizationMonoid
+open scoped EisensteinO
 
 lemma supported_one_ideal : Supported (1 : Ideal O) := by
   refine ⟨one_ne_zero, ?_⟩
@@ -39,8 +39,8 @@ def originalCoefficient (N : ℕ) (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) �
       (b₁ * v ⟨N, by omega⟩) (b₂ * v ⟨N + 1, by omega⟩) *
     (if s ∣ tupleProduct v then 1 else 0)
 
-end SevenEighths.CenteredMomentAddedZero
 
-end
 
-end OAI
+
+
+

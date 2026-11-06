@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.BesselReflection
 
 @[expose] public section
@@ -9,83 +10,87 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 
 namespace CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-lemma cubeWeight_zero_of_primaryGenerator_zero (Ψ:Eis→*ℂ) (I:Ideal Eis)
+section
+variable (Ψ:Eis→*ℂ)
+include Ψ
+
+lemma cubeWeight_zero_of_primaryGenerator_zero  (I:Ideal Eis)
     (h:primaryGenerator I=0) : cubeWeight Ψ I=0 := by
   simp [cubeWeight,h,FiniteGaussPhase.angularFactor]
 
-lemma completedMellinCoefficient_support (Ψ:Eis→*ℂ) (p:CompletedMellinIndex)
+lemma completedMellinCoefficient_support  (p:CompletedMellinIndex)
     (hp:completedMellinCoefficient Ψ p≠0) :
     Squarefree p.1.val ∧ primaryGenerator p.1.val≠0 ∧ primaryGenerator p.2.val≠0 := by
   have hleft:Squarefree p.1.val ∧ primaryGenerator p.1.val≠0 := by
@@ -97,6 +102,8 @@ lemma completedMellinCoefficient_support (Ψ:Eis→*ℂ) (p:CompletedMellinIndex
   intro hright
   apply hp
   rw [completedMellinCoefficient,cubeWeight_zero_of_primaryGenerator_zero Ψ _ hright,mul_zero]
+end
+
 
 def primaryCubePairToMellinIndex
     (p:({I:Ideal Eis // Squarefree I ∧ primaryGenerator I≠0} ×
@@ -110,7 +117,11 @@ lemma primaryCubePairToMellinIndex_injective : Function.Injective primaryCubePai
     (Subtype.ext (congrArg (fun x:CompletedMellinIndex=>x.1.val) hpq))
     (Subtype.ext (congrArg (fun x:CompletedMellinIndex=>x.2.val) hpq))
 
-theorem completedMellinCoefficient_tsum_primary_pairs (Ψ:Eis→*ℂ)
+section
+variable (Ψ:Eis→*ℂ)
+include Ψ
+
+theorem completedMellinCoefficient_tsum_primary_pairs 
     (w:CompletedMellinIndex→ℂ) :
     (∑'p:CompletedMellinIndex,completedMellinCoefficient Ψ p*w p)=
       ∑'p:({I:Ideal Eis // Squarefree I ∧ primaryGenerator I≠0} ×
@@ -137,7 +148,7 @@ theorem completedMellinCoefficient_tsum_primary_pairs (Ψ:Eis→*ℂ)
   · intro p
     rfl
 
-theorem completedBesselProfile_primary_pairs (Ψ:Eis→*ℂ) (q v:ℝ) :
+theorem completedBesselProfile_primary_pairs  (q v:ℝ) :
     completedBesselProfile Ψ q v=
       ∑'p:({I:Ideal Eis // Squarefree I ∧ primaryGenerator I≠0} ×
         {J:Ideal Eis // primaryGenerator J≠0}),
@@ -149,6 +160,8 @@ theorem completedBesselProfile_primary_pairs (Ψ:Eis→*ℂ) (q v:ℝ) :
   simpa only [mul_assoc] using completedMellinCoefficient_tsum_primary_pairs Ψ
     (fun p=>(completedMellinLength p:ℂ)*(v:ℂ)*CubicEisenstein.schlafliBesselK (1/3)
       (4*Real.pi*q*Real.sqrt (completedMellinLength p)*v))
+end
+
 
 end CompletedGauss
 
@@ -158,17 +171,24 @@ open scoped BigOperators Classical Topology MatrixGroups
 
 section
 open CubicKubota EisensteinCuspModThree
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-lemma cubicSourceConjugateFunction_levelTwo (G:levelTwo) (w:HyperbolicSpace) :
+section
+variable (G:levelTwo)
+include G
+
+lemma cubicSourceConjugateFunction_levelTwo  (w:HyperbolicSpace) :
     cubicSourceConjugateFunction (integralComplexMatrix (G:SL(2,Eis)) • w)=
       star (levelTwoComplexCharacter G)*cubicSourceConjugateFunction w := by
   simp only [cubicSourceConjugateFunction,cubicSourceResidualFunction_automorphy,star_mul]
   ring
 
-theorem cubicSourceConjugateFunction_cuspDerivative_levelTwo (G:levelTwo)
-    (g H:SL(2,ℂ)) (hfactor:g=integralComplexMatrix (G:SL(2,Eis))*H)
-    (hc:g 1 0≠0) (v:ℝ) (hv:0<v) :
+section
+variable (g H:SL(2,ℂ)) (hfactor:g=integralComplexMatrix (G:SL(2,Eis))*H)
+    (hc:g 1 0≠0) (v:ℝ) (hv:0<v)
+include g H hfactor hc v hv
+
+theorem cubicSourceConjugateFunction_cuspDerivative_levelTwo  :
     horizontalWirtingerBar (fun z=>cubicSourceConjugateFunction (upperPoint z v hv)) (g 0 0/g 1 0)=
       (star (levelTwoComplexCharacter G)*(-1/((g 1 0)^2*(v:ℂ)^2)))*
         horizontalWirtingerZ
@@ -180,9 +200,7 @@ theorem cubicSourceConjugateFunction_cuspDerivative_levelTwo (G:levelTwo)
     rw [hfactor,mul_smul,cubicSourceConjugateFunction_levelTwo]
   · exact cubicSourceConjugateFunction_translate_split_differentiableAt H _ (by positivity)
 
-lemma cuspBarProfile_conjugate_reflection_levelTwo (G:levelTwo)
-    (g H:SL(2,ℂ)) (hfactor:g=integralComplexMatrix (G:SL(2,Eis))*H)
-    (hc:g 1 0≠0) (v:ℝ) (hv:0<v) :
+lemma cuspBarProfile_conjugate_reflection_levelTwo  :
     cuspBarProfile cubicSourceConjugateFunction (g 0 0/g 1 0) v=
       reflectedCuspProfile (-star (levelTwoComplexCharacter G)/(g 1 0)^2)
         (‖g 1 0‖^2)
@@ -196,6 +214,9 @@ lemma cuspBarProfile_conjugate_reflection_levelTwo (G:levelTwo)
   simp only [one_div] at he
   rw [he]
   ring
+end
+end
+
 
 lemma conjugateSource_cuspRepresentative_zProfile_decay (j:Fin 3) (z:ℂ) :
     ∃deltaLoss:ℝ,0<deltaLoss ∧ cuspZProfile (fun w=>cubicSourceConjugateFunction
@@ -246,7 +267,7 @@ theorem conjugateSource_levelTwo_three_cusp_mellin_entire (G:levelTwo)
 end
 
 open CubicKubota EisensteinCuspModThree ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma upper_triangular_right_cusp_ratio (g T:SL(2,ℂ)) (hT:T 1 0=0)
     (hc:(g*T) 1 0≠0) :
@@ -268,7 +289,7 @@ theorem conjugateSource_integral_cusp_mellin_entire (M:SL(2,Eis)) (hc:M 1 0≠0)
     Differentiable ℂ (mellin (cuspBarProfile cubicSourceConjugateFunction
       (eisEmbedding (M 0 0)/eisEmbedding (M 1 0)))) := by
   obtain ⟨G,j,T,hT,_,_,hM⟩:=three_cusp_decomposition M
-  let g:SL(2,ℂ):=integralComplexMatrix (G:SL(2,Eis))*integralComplexMatrix (cuspRepresentative j)
+  let g :=integralComplexMatrix (G:SL(2,Eis))*integralComplexMatrix (cuspRepresentative j)
   have he:integralComplexMatrix M=g*integralComplexMatrix T:=by
     rw [hM,map_mul,map_mul]
   have ht:integralComplexMatrix T 1 0=0:=by
@@ -279,12 +300,16 @@ theorem conjugateSource_integral_cusp_mellin_entire (M:SL(2,Eis)) (hc:M 1 0≠0)
   obtain ⟨hg,hratio⟩:=upper_triangular_right_cusp_ratio g (integralComplexMatrix T) ht hmc
   have hresult:=(conjugateSource_levelTwo_three_cusp_mellin_entire G j g rfl hg).1
   rw [←hratio,←he] at hresult
-  simpa only [integralComplexMatrix_apply] using hresult
+  exact hresult
 
-lemma exists_integral_matrix_cusp_ratio (a c:Eis) (hc:c≠0) :
+section
+variable (a c:Eis) (hc:c≠0)
+include a c hc
+
+lemma exists_integral_matrix_cusp_ratio  :
     ∃M:SL(2,Eis),M 1 0≠0 ∧
       eisEmbedding (M 0 0)/eisEmbedding (M 1 0)=eisEmbedding a/eisEmbedding c := by
-  let d:Eis:=IsBezout.gcd a c
+  let d :=IsBezout.gcd a c
   obtain ⟨a',ha⟩:=IsBezout.gcd_dvd_left a c
   obtain ⟨c',hc'⟩:=IsBezout.gcd_dvd_right a c
   change a=d*a' at ha
@@ -309,17 +334,19 @@ lemma exists_integral_matrix_cusp_ratio (a c:Eis) (hc:c≠0) :
   refine ⟨M,hcp,?_⟩
   change eisEmbedding a'/eisEmbedding c'=eisEmbedding a/eisEmbedding c
   rw [ha,hc',map_mul,map_mul]
-  have hde:eisEmbedding d≠0:=eisEmbedding_ne_zero hd
-  have hce:eisEmbedding c'≠0:=eisEmbedding_ne_zero hcp
+  have hde :=eisEmbedding_ne_zero hd
+  have hce :=eisEmbedding_ne_zero hcp
   field_simp
 
-theorem conjugateSource_rational_cusp_mellin_entire (a c:Eis) (hc:c≠0) :
+theorem conjugateSource_rational_cusp_mellin_entire  :
     (∀s:ℂ,MellinConvergent
       (cuspBarProfile cubicSourceConjugateFunction (eisEmbedding a/eisEmbedding c)) s) ∧
     Differentiable ℂ (mellin
       (cuspBarProfile cubicSourceConjugateFunction (eisEmbedding a/eisEmbedding c))) := by
   obtain ⟨M,hM,hratio⟩:=exists_integral_matrix_cusp_ratio a c hc
   simpa only [hratio] using conjugateSource_integral_cusp_mellin_entire M hM
+end
+
 
 theorem conjugateSource_finite_twist_cusp_mellin_entire (h c:Eis) (hc:c≠0) :
     (∀s:ℂ,MellinConvergent
@@ -338,15 +365,21 @@ namespace CubicEisenstein
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance signedOmegaUnitsFintype : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-def signedOmegaUnit (s:Bool) (j:Fin 3) :Eisˣ :=
+section
+variable (s:Bool) (j:Fin 3)
+include s j
+
+def signedOmegaUnit  :Eisˣ :=
   if s then -(ramifiedOmegaUnit^j.val) else ramifiedOmegaUnit^j.val
 
-lemma signedOmegaUnit_val (s:Bool) (j:Fin 3) :
+lemma signedOmegaUnit_val  :
     (signedOmegaUnit s j:Eis)=if s then -(omega^j.val) else omega^j.val := by
   cases s <;> simp [signedOmegaUnit,ramifiedOmegaUnit_val]
+end
+
 
 lemma signedOmegaUnit_surjective : Function.Surjective (fun p:Bool×Fin 3=>signedOmegaUnit p.1 p.2) := by
   intro u
@@ -374,45 +407,48 @@ lemma arithmeticResidueSum_norm_mul_primary (h n:Eis) (hn:lambda^2∣n-1)
     (u:Eisˣ) (r:ℕ) (hr:2≤r) :
     ‖arithmeticResidueSum (h*n) (u.val*lambda^r)‖=
       ‖arithmeticResidueSum h (u.val*lambda^r)‖ := by
-  have hc: IsCoprime (u.val*lambda^r) n :=
+  have hc :=
     (ramified_primary_coprime u r n hn).of_mul_left_right
   have he:=congrArg norm (arithmeticResidueSum_frequency_twist h (u.val*lambda^r) n
     (ramifiedElement_ne_zero u r) (ramifiedElement_level u r hr)
     ⟨hc,three_dvd_lambda_sq.trans hn⟩)
   simpa only [norm_mul,cubicSymbol_norm_one _ n hn hc,one_mul] using he
 
-def lowRamifiedFrequency (a r:Fin 3) : Eis := omega^a.val*lambda^(r.val+2)
+section
+variable (a r:Fin 3)
+include a r
 
-lemma lowRamifiedFrequency_ne_zero (a r:Fin 3) : lowRamifiedFrequency a r≠0 := by
-  simpa only [lowRamifiedFrequency,←ramifiedOmegaUnit_val,←Units.val_pow_eq_pow_val] using
-    ramifiedElement_ne_zero (ramifiedOmegaUnit^a.val) (r.val+2)
+def lowRamifiedFrequency  : Eis := omega^a.val*lambda^(r.val+2)
 
-lemma lowRamifiedFrequency_absNorm (a r:Fin 3) :
+lemma lowRamifiedFrequency_ne_zero  : lowRamifiedFrequency a r≠0 := by
+  exact ramifiedElement_ne_zero (ramifiedOmegaUnit^a.val) (r.val+2)
+
+lemma lowRamifiedFrequency_absNorm  :
     Ideal.absNorm (Ideal.span {lowRamifiedFrequency a r})=3^(r.val+2) := by
-  simpa only [lowRamifiedFrequency,←ramifiedOmegaUnit_val,←Units.val_pow_eq_pow_val] using
-    ramifiedElement_absNorm (ramifiedOmegaUnit^a.val) (r.val+2)
+  exact ramifiedElement_absNorm (ramifiedOmegaUnit^a.val) (r.val+2)
 
-lemma lowRamifiedFrequency_arithmetic_vanish (a r:Fin 3) (u:Eisˣ) (k:ℕ) (hk:5≤k) :
+lemma lowRamifiedFrequency_arithmetic_vanish  (u:Eisˣ) (k:ℕ) (hk:5≤k) :
     arithmeticResidueSum (lowRamifiedFrequency a r) (u.val*lambda^(k+2))=0 := by
   by_contra hA
   have hb:=ramified_arithmetic_norm_bound _ (lowRamifiedFrequency_ne_zero a r) u (k+2) (by omega) hA
   rw [lowRamifiedFrequency_absNorm] at hb
   have hlo:(3:ℕ)^7≤3^(k+2):=Nat.pow_le_pow_right (by decide) (by omega)
   have hhi:(3:ℕ)^(r.val+2)≤3^4:=Nat.pow_le_pow_right (by decide) (by omega)
-  norm_num at hlo hhi
   omega
 
-lemma lowRamifiedFrequency_primary_vanish (a r:Fin 3) (n:Eis) (hn:lambda^2∣n-1)
+lemma lowRamifiedFrequency_primary_vanish  (n:Eis) (hn:lambda^2∣n-1)
     (u:Eisˣ) (k:ℕ) (hk:5≤k) :
     arithmeticResidueSum (lowRamifiedFrequency a r*n) (u.val*lambda^(k+2))=0 := by
   apply norm_eq_zero.mp
   rw [arithmeticResidueSum_norm_mul_primary _ n hn u (k+2) (by omega),
     lowRamifiedFrequency_arithmetic_vanish a r u k hk,norm_zero]
+end
+
 
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance ramifiedCoordinateUnitsFintype : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 def ramifiedCoordMul (x y:ℤ×ℤ) :ℤ×ℤ := (x.1*y.1-x.2*y.2,x.1*y.2+x.2*y.1-x.2*y.2)
@@ -420,16 +456,22 @@ def ramifiedCoordPow (x:ℤ×ℤ) :ℕ→ℤ×ℤ
   | 0=>(1,0)
   | n+1=>ramifiedCoordMul (ramifiedCoordPow x n) x
 
-def lowRamifiedQuotientCoord (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5) :ℤ×ℤ :=
+section
+variable (a r:Fin 3)
+include a r
+
+def lowRamifiedQuotientCoord  (s:Bool) (j:Fin 3) (n:Fin 5) :ℤ×ℤ :=
   let z:=ramifiedCoordMul (ramifiedCoordPow (0,1) (a.val+5-j.val))
     (ramifiedCoordPow (-1,1) (r.val+2-n.val))
   if s then z else (-z.1,-z.2)
 
-def lowRamifiedSupport (a r:Fin 3) (p:Bool×Fin 3×Fin 5) :Prop :=
+def lowRamifiedSupport  (p:Bool×Fin 3×Fin 5) :Prop :=
   p.2.2.val≤r.val+2 ∧
   let z:=lowRamifiedQuotientCoord a r p.1 p.2.1 p.2.2
   (3:ℤ)∣2*(p.2.1.val:ℤ)+(p.2.2.val+2:ℕ)+z.2 ∧
   (3:ℤ)∣2*(p.2.1.val:ℤ)+z.1-z.2
+end
+
 
 instance lowRamifiedSupport_decidable (a r:Fin 3) (p:Bool×Fin 3×Fin 5) :
     Decidable (lowRamifiedSupport a r p) :=
@@ -438,15 +480,21 @@ instance lowRamifiedSupport_decidable (a r:Fin 3) (p:Bool×Fin 3×Fin 5) :
     (3:ℤ)∣2*(p.2.1.val:ℤ)+(lowRamifiedQuotientCoord a r p.1 p.2.1 p.2.2).1-
       (lowRamifiedQuotientCoord a r p.1 p.2.1 p.2.2).2))
 
-def lowRamifiedSupportSet (a r:Fin 3) :Finset (Bool×Fin 3×Fin 5) :=
+section
+variable (a r:Fin 3)
+include a r
+
+def lowRamifiedSupportSet  :Finset (Bool×Fin 3×Fin 5) :=
   Finset.univ.filter (lowRamifiedSupport a r)
 
-lemma lowRamifiedSupport_card (a r:Fin 3) : (lowRamifiedSupportSet a r).card≤5 := by
+lemma lowRamifiedSupport_card  : (lowRamifiedSupportSet a r).card≤5 := by
   decide +revert
 
-lemma lowRamifiedSupport_exponent (a r:Fin 3) (p:Bool×Fin 3×Fin 5)
+lemma lowRamifiedSupport_exponent  (p:Bool×Fin 3×Fin 5)
     (hp:lowRamifiedSupport a r p) : 1≤p.2.2.val := by
   decide +revert
+end
+
 
 lemma ramifiedCoordMul_eval (x y:ℤ×ℤ) :
     ActualEisensteinCoordinates.eval (ramifiedCoordMul x y).1 (ramifiedCoordMul x y).2=
@@ -460,7 +508,11 @@ lemma ramifiedCoordPow_eval (x:ℤ×ℤ) (n:ℕ) :
   | zero => simp [ramifiedCoordPow,ActualEisensteinCoordinates.eval]
   | succ n ih => rw [ramifiedCoordPow,ramifiedCoordMul_eval,ih,pow_succ]
 
-lemma lowRamifiedQuotientCoord_eval (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5) :
+section
+variable (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
+include a r s j n
+
+lemma lowRamifiedQuotientCoord_eval  :
     ActualEisensteinCoordinates.eval (lowRamifiedQuotientCoord a r s j n).1
       (lowRamifiedQuotientCoord a r s j n).2=
       if s then omega^(a.val+5-j.val)*lambda^(r.val+2-n.val)
@@ -481,7 +533,7 @@ lemma lowRamifiedQuotientCoord_eval (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5) :
   cases s <;> simp only [lowRamifiedQuotientCoord,Bool.false_eq_true,ite_false,ite_true,
     he,ramifiedCoordMul_eval,ramifiedCoordPow_eval,ho,hl]
 
-lemma lowRamifiedQuotientCoord_relation (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
+lemma lowRamifiedQuotientCoord_relation 
     (hn:n.val≤r.val+2) :
     3*lowRamifiedFrequency a r=
       ((signedOmegaUnit s j:Eis)*lambda^(n.val+2))*
@@ -507,12 +559,11 @@ lemma lowRamifiedQuotientCoord_relation (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
       -(omega^j.val*omega^(a.val+5-j.val))*(lambda^(n.val+2)*lambda^(r.val+2-n.val)):=by
     rw [ho,hp,lowRamifiedFrequency]
     conv_lhs => rw [h3]
-    rw [show r.val+4=2+(r.val+2) by omega,pow_add,pow_add]
     ring
   rw [lowRamifiedQuotientCoord_eval,signedOmegaUnit_val]
   cases s <;> simp only [Bool.false_eq_true,ite_false,ite_true] <;> linear_combination he
 
-lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
+lemma lowRamifiedSupport_of_ne_zero 
     (hA:arithmeticResidueSum (lowRamifiedFrequency a r)
       ((signedOmegaUnit s j:Eis)*lambda^(n.val+2))≠0) :
     lowRamifiedSupport a r (s,j,n) := by
@@ -538,6 +589,8 @@ lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
     rw [ite_eq_right hc] at he
     exact hA he
   exact ⟨hn,by simpa only [ramifiedCongruence,ShortDraftLatticeCount.coords_eval] using hz⟩
+end
+
 
 end CubicEisenstein
 
@@ -546,18 +599,24 @@ open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance ramifiedRawWeightUnitsFintype : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-def ramifiedRawWeight (h:Eis) (u:Eisˣ) (k:ℕ) :ℂ :=
+section
+variable (h:Eis) (u:Eisˣ) (k:ℕ)
+include h u k
+
+def ramifiedRawWeight  :ℂ :=
   ((3^(k+2):ℕ):ℂ)^(-(4/3:ℂ))*arithmeticResidueSum h (u.val*lambda^(k+2))
 
-lemma ramifiedRawWeight_norm_le (h:Eis) (u:Eisˣ) (k:ℕ) :
+lemma ramifiedRawWeight_norm_le  :
     ‖ramifiedRawWeight h u k‖≤ramifiedDecayRatio^(k+2) := by
   rw [ramifiedRawWeight,norm_mul,
     arithmeticResidueSum_eq_explicitRamifiedCoefficient h u (k+2) (by omega)]
   exact (mul_le_mul_of_nonneg_left (explicitRamifiedCoefficient_norm_le h u (k+2))
     (norm_nonneg _)).trans_eq (ramifiedWeight_norm_scalar _)
+end
+
 
 lemma ramifiedRawWeight_norm_mul_primary (h n:Eis) (hn:lambda^2∣n-1) (u:Eisˣ) (k:ℕ) :
     ‖ramifiedRawWeight (h*n) u k‖=‖ramifiedRawWeight h u k‖ := by
@@ -568,7 +627,11 @@ lemma ramifiedDecayRatio_cube : ramifiedDecayRatio^3=(1/3:ℝ) := by
   rw [ramifiedDecayRatio,←Real.rpow_natCast,←Real.rpow_mul (by norm_num : (0:ℝ)≤3)]
   norm_num
 
-lemma lowRamifiedRawWeight_bound (a r:Fin 3) (s:Bool) (j:Fin 3) (k:Fin 5) :
+section
+variable (a r:Fin 3)
+include a r
+
+lemma lowRamifiedRawWeight_bound  (s:Bool) (j:Fin 3) (k:Fin 5) :
     ‖ramifiedRawWeight (lowRamifiedFrequency a r) (signedOmegaUnit s j) k.val‖≤
       if lowRamifiedSupport a r (s,j,k) then (1/3:ℝ) else 0 := by
   split_ifs with hs
@@ -583,7 +646,7 @@ lemma lowRamifiedRawWeight_bound (a r:Fin 3) (s:Bool) (j:Fin 3) (k:Fin 5) :
       exact hs (lowRamifiedSupport_of_ne_zero a r s j k hne)
     simp only [ramifiedRawWeight,hz,mul_zero,norm_zero,le_refl]
 
-theorem lowRamifiedRawWeight_sum (a r:Fin 3) (n:Eis) (hn:lambda^2∣n-1) :
+theorem lowRamifiedRawWeight_sum  (n:Eis) (hn:lambda^2∣n-1) :
     (∑u:Eisˣ,∑k:Fin 5,‖ramifiedRawWeight (lowRamifiedFrequency a r*n) u k.val‖)≤5/3 := by
   simp_rw [ramifiedRawWeight_norm_mul_primary _ n hn]
   have hu:(∑u:Eisˣ,∑k:Fin 5,‖ramifiedRawWeight (lowRamifiedFrequency a r) u k.val‖)=
@@ -602,15 +665,17 @@ theorem lowRamifiedRawWeight_sum (a r:Fin 3) (n:Eis) (hn:lambda^2∣n-1) :
       simp only [Fintype.sum_prod_type]
     _=(lowRamifiedSupportSet a r).card*(1/3:ℝ):=by
       rw [←Finset.sum_filter]
-      simp only [Finset.sum_const,nsmul_eq_mul,lowRamifiedSupportSet]
+      simp only [sum_const, nsmul_eq_mul, lowRamifiedSupportSet]
     _≤5/3:=by
-      have hc:(lowRamifiedSupportSet a r).card≤5:=lowRamifiedSupport_card a r
+      have hc :=lowRamifiedSupport_card a r
       exact_mod_cast (show ((lowRamifiedSupportSet a r).card:ℝ)*(1/3:ℝ)≤5/3 by
         have hcr:((lowRamifiedSupportSet a r).card:ℝ)≤5:=by exact_mod_cast hc
         linarith)
-
-end CubicEisenstein
-
 end
 
-end OAI
+
+
+
+
+
+

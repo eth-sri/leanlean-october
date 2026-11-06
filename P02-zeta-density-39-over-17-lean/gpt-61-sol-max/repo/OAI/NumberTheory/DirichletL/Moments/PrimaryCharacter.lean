@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FixedRay
 
 @[expose] public section
@@ -9,27 +10,35 @@ noncomputable section
 open scoped Classical
 
 namespace SevenEighths.CenteredMomentPrimaryCharacter
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 open CenteredMomentPrimary CenteredMomentCommonSupport
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def rawPrimaryHom (r : O) (χ : MulChar (Residue r) ℂ) : O →* ℂ where
+section
+variable (r : O)
+include r
+
+section
+variable (χ : MulChar (Residue r) ℂ)
+include χ
+
+def rawPrimaryHom  : O →* ℂ where
   toFun n := primaryIdealCharacter r χ (Ideal.span {n})
   map_one' := by simp [← Ideal.one_eq_top]
   map_mul' x y := by rw [← Ideal.span_singleton_mul_span_singleton,map_mul]
 
-def maskedPrimaryHom (r : O) (χ : MulChar (Residue r) ℂ) : O →* ℂ :=
+def maskedPrimaryHom  : O →* ℂ :=
   coprimalityMask (3:O)*rawPrimaryHom r χ
 
-theorem maskedPrimaryHom_unit_mul (r : O) (χ : MulChar (Residue r) ℂ) (u : Oˣ) (n : O) :
+theorem maskedPrimaryHom_unit_mul  (u : Oˣ) (n : O) :
     maskedPrimaryHom r χ ((u:O)*n)=maskedPrimaryHom r χ n := by
   change (if IsCoprime (3:O) ((u:O)*n) then (1:ℂ) else 0)*
       primaryIdealCharacter r χ (Ideal.span {(u:O)*n}) =
     (if IsCoprime (3:O) n then (1:ℂ) else 0)*primaryIdealCharacter r χ (Ideal.span {n})
   rw [isCoprime_mul_unit_left_right u.isUnit,Ideal.span_singleton_mul_left_unit u.isUnit]
 
-theorem maskedPrimaryHom_ramified (r : O) (χ : MulChar (Residue r) ℂ) (n : O) (hn : λ₀∣n) :
+theorem maskedPrimaryHom_ramified  (n : O) (hn : λ₀∣n) :
     maskedPrimaryHom r χ n=0 := by
   have h3 : λ₀∣(3:O) := (dvd_pow_self λ₀ (by decide : 2≠0)).trans ActualEisensteinCubic.lambda_sq_dvd_three
   have hc : ¬IsCoprime (3:O) n := fun hc =>
@@ -37,14 +46,14 @@ theorem maskedPrimaryHom_ramified (r : O) (χ : MulChar (Residue r) ℂ) (n : O)
   change (if IsCoprime (3:O) n then (1:ℂ) else 0)*_=0
   rw [ite_eq_right hc,zero_mul]
 
-theorem maskedPrimaryHom_primary (r : O) (χ : MulChar (Residue r) ℂ) (n : O)
+theorem maskedPrimaryHom_primary  (n : O)
     (hn : λ₀^2∣n-1) : maskedPrimaryHom r χ n=χ (Ideal.Quotient.mk _ n) := by
   change (if IsCoprime (3:O) n then (1:ℂ) else 0)*
     χ (Ideal.Quotient.mk _ (CompletedGauss.primaryGenerator (Ideal.span {n})))=_
   rw [ite_eq_left (CubicEisenstein.primary_coprime_three n hn).symm,one_mul,
     CompletedGauss.primaryGenerator_span n (CubicJacobiGlobal.primary_ne_zero n hn) hn]
 
-theorem maskedPrimaryHom_periodic (r : O) (χ : MulChar (Residue r) ℂ) :
+theorem maskedPrimaryHom_periodic  :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {3*r}) (maskedPrimaryHom r χ) := by
   let F : O →* ℂ := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {r})).toMonoidHom
   apply periodic_of_primary _ _ _ F _ (maskedPrimaryHom_unit_mul r χ)
@@ -55,17 +64,23 @@ theorem maskedPrimaryHom_periodic (r : O) (χ : MulChar (Residue r) ℂ) :
     apply congrArg χ
     apply Ideal.Quotient.eq.mpr
     exact Ideal.mem_span_singleton.mpr ((dvd_mul_left r 3).trans (Ideal.mem_span_singleton.mp hxy))
+end
 
-def primaryCharacter (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ) : Character :=
+
+section
+variable (hr : r≠0) (χ : MulChar (Residue r) ℂ)
+include hr χ
+
+def primaryCharacter  : Character :=
   rowCharacter (Ideal.span {3*r})
     (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (by norm_num) hr))
     (maskedPrimaryHom r χ) (maskedPrimaryHom_periodic r χ)
     (fun u => by simpa only [mul_one,map_one] using maskedPrimaryHom_unit_mul r χ u 1)
 
-@[simp] theorem primaryCharacter_modulus (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ) :
+@[simp] theorem primaryCharacter_modulus  :
     (primaryCharacter r hr χ).modulus=Ideal.span {3*r} := rfl
 
-theorem primaryCharacter_primary (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ) (n : O)
+theorem primaryCharacter_primary  (n : O)
     (hn : λ₀^2∣n-1) : elementCoeff (primaryCharacter r hr χ) n=χ (Ideal.Quotient.mk _ n) := by
   rw [primaryCharacter,elementCoeff_rowCharacter,maskedPrimaryHom_primary r χ n hn]
   split_ifs with hc
@@ -78,7 +93,7 @@ theorem primaryCharacter_primary (r : O) (hr : r≠0) (χ : MulChar (Residue r) 
     apply (CubicEisenstein.primary_coprime_three n hn).symm.mul_left
     exact (CubicEisenstein.isUnit_quotient_span_iff r n).mp hu
 
-theorem primaryCharacter_all (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ) (n : O) :
+theorem primaryCharacter_all  (n : O) :
     elementCoeff (primaryCharacter r hr χ) n=maskedPrimaryHom r χ n := by
   by_cases hn : λ₀∣n
   · rw [primaryCharacter,elementCoeff_rowCharacter,maskedPrimaryHom_ramified r χ n hn]
@@ -87,14 +102,17 @@ theorem primaryCharacter_all (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ)
     have hs := CompletedGauss.primaryGenerator_spec (Ideal.span {n}) hg
     obtain ⟨u,hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs.1.symm
     have hp : λ₀^2∣(u:O)*n-1 := by
-      have hp' : λ₀^2∣CompletedGauss.primaryGenerator (Ideal.span {n})-1 := hs.2
+      have hp' := hs.2
       rwa [mul_comm,hu]
     rw [← elementCoeff_unit_mul (primaryCharacter r hr χ) u n,
       ← maskedPrimaryHom_unit_mul r χ u n,primaryCharacter_primary r hr χ _ hp,
       maskedPrimaryHom_primary r χ _ hp]
-
-end SevenEighths.CenteredMomentPrimaryCharacter
-
+end
 end
 
-end OAI
+
+
+
+
+
+

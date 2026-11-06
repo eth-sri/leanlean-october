@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma elementNorm_pos (a : O) (ha : a≠0) : 0<elementNorm a := by
@@ -73,7 +73,7 @@ theorem actualFrequency_mellin (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hSne
     exact hH (by dsimp only; rw [actualCongruenceCoefficient_zero_frequency S hS hSne A s hA hs hcop,zero_mul])
   exact ⟨⟨H,hn⟩,rfl⟩
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

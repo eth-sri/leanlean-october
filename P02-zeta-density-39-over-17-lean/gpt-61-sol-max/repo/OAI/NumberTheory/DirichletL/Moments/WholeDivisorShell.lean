@@ -11,31 +11,52 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentWholeDivisorShell
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open UniqueFactorizationMonoid
+open CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open scoped EisensteinO
 
-lemma moebius_norm_le_one (D : Ideal O) : ‖(moebius D:ℂ)‖≤1 := by
+section
+variable (D : Ideal O)
+include D
+
+lemma moebius_norm_le_one  : ‖(moebius D:ℂ)‖≤1 := by
   by_cases hD : Squarefree D
   · simp only [hD.moebius_eq,Int.cast_pow,Int.cast_neg,Int.cast_one,norm_pow,norm_neg,norm_one,one_pow,le_refl]
   · simp only [moebius_of_not_squarefree hD,Int.cast_zero,norm_zero,zero_le_one]
 
-lemma squarefree_of_moebius_ne_zero (D : Ideal O) (hD : (moebius D:ℂ)≠0) : Squarefree D := by
+lemma squarefree_of_moebius_ne_zero  (hD : (moebius D:ℂ)≠0) : Squarefree D := by
   by_contra hn
   exact hD (by rw [moebius_of_not_squarefree hn,Int.cast_zero])
+end
 
-def live (Ds : Finset (Ideal O)) : Finset (Ideal O) := Ds.filter (fun D=>(moebius D:ℂ)≠0)
 
-lemma mem_live (Ds : Finset (Ideal O)) (D : Ideal O) :
+section
+variable (Ds : Finset (Ideal O))
+include Ds
+
+def live  : Finset (Ideal O) := Ds.filter (fun D=>(moebius D:ℂ)≠0)
+
+section
+variable (D : Ideal O)
+include D
+
+lemma mem_live  :
     D∈live Ds ↔ D∈Ds ∧ (moebius D:ℂ)≠0 := Finset.mem_filter
 
-lemma live_squarefree (Ds : Finset (Ideal O)) (D : Ideal O) (hD : D∈live Ds) : Squarefree D :=
+section
+variable (hD : D∈live Ds)
+include hD
+
+lemma live_squarefree  : Squarefree D :=
   squarefree_of_moebius_ne_zero D ((mem_live Ds D).mp hD).2
 
-lemma live_norm_one (Ds : Finset (Ideal O)) (D : Ideal O) (hD : D∈live Ds) : 1≤(D.absNorm:ℝ) := by
+lemma live_norm_one  : 1≤(D.absNorm:ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (live_squarefree Ds D hD).ne_zero)
+end
+end
 
-theorem sum_norm_moebius_live (Ds : Finset (Ideal O)) (f : Ideal O→ℝ) :
+
+theorem sum_norm_moebius_live  (f : Ideal O→ℝ) :
     (∑D∈Ds,‖(moebius D:ℂ)‖*f D)=∑D∈live Ds,‖(moebius D:ℂ)‖*f D := by
   symm
   apply Finset.sum_subset (Finset.filter_subset _ _)
@@ -44,10 +65,18 @@ theorem sum_norm_moebius_live (Ds : Finset (Ideal O)) (f : Ideal O→ℝ) :
     by_contra hne
     exact hn ((mem_live Ds D).mpr ⟨hD,hne⟩)
   rw [hz,norm_zero,zero_mul]
+end
+
 
 def normKey (D : Ideal O) : ℤ := ⌊Real.logb 2 (D.absNorm:ℝ)⌋
-def shell (Ds : Finset (Ideal O)) (n : ℤ) : Finset (Ideal O) := (live Ds).filter (fun D=>normKey D=n)
-def selectedShells (Ds : Finset (Ideal O)) : Finset ℤ := (live Ds).image normKey
+section
+variable (Ds : Finset (Ideal O))
+include Ds
+
+def shell  (n : ℤ) : Finset (Ideal O) := (live Ds).filter (fun D=>normKey D=n)
+def selectedShells  : Finset ℤ := (live Ds).image normKey
+end
+
 
 lemma normKey_eq_iff (D : Ideal O) (hD : D≠0) (n : ℤ) :
     normKey D=n ↔ dyadicScale n≤(D.absNorm:ℝ) ∧ (D.absNorm:ℝ)<2*dyadicScale n := by
@@ -58,7 +87,11 @@ lemma normKey_eq_iff (D : Ideal O) (hD : D≠0) (n : ℤ) :
   simp only [logb_dyadicScale,Int.cast_add,Int.cast_one] at hl hu
   rw [normKey,Int.floor_eq_iff,←hl,←dyadicScale_add,←hu]
 
-lemma mem_shell_iff (Ds : Finset (Ideal O)) (n : ℤ) (D : Ideal O) :
+section
+variable (Ds : Finset (Ideal O))
+include Ds
+
+lemma mem_shell_iff  (n : ℤ) (D : Ideal O) :
     D∈shell Ds n ↔ D∈Ds ∧ (moebius D:ℂ)≠0 ∧
       dyadicScale n≤(D.absNorm:ℝ) ∧ (D.absNorm:ℝ)<2*dyadicScale n := by
   rw [shell,Finset.mem_filter]
@@ -70,13 +103,13 @@ lemma mem_shell_iff (Ds : Finset (Ideal O)) (n : ℤ) (D : Ideal O) :
     exact ⟨(mem_live Ds D).mpr ⟨hd,hm⟩,
       (normKey_eq_iff D (squarefree_of_moebius_ne_zero D hm).ne_zero n).mpr ⟨hlo,hhi⟩⟩
 
-theorem sum_norm_moebius_shells (Ds : Finset (Ideal O)) (f : Ideal O→ℝ) :
+theorem sum_norm_moebius_shells  (f : Ideal O→ℝ) :
     (∑D∈Ds,‖(moebius D:ℂ)‖*f D)=
       ∑n∈selectedShells Ds,∑D∈shell Ds n,‖(moebius D:ℂ)‖*f D := by
   rw [sum_norm_moebius_live]
   exact (Finset.sum_fiberwise_of_maps_to (fun D hD=>Finset.mem_image.mpr ⟨D,hD,rfl⟩) _).symm
 
-lemma selected_scale_bounds (Ds : Finset (Ideal O)) (Y : ℝ)
+lemma selected_scale_bounds  (Y : ℝ)
     (hY : ∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Y)
     (n : ℤ) (hn : n∈selectedShells Ds) :
     1≤dyadicScale n ∧ dyadicScale n≤Y := by
@@ -91,13 +124,15 @@ lemma selected_scale_bounds (Ds : Finset (Ideal O)) (Y : ℝ)
   exact ⟨hscale,((normKey_eq_iff D hd.ne_zero _).mp rfl).1.trans
     (hY D ((mem_live Ds D).mp hD).1 ((mem_live Ds D).mp hD).2)⟩
 
-lemma selected_subset_indices (Ds : Finset (Ideal O)) (Y : ℝ) (hY : 1≤Y)
+lemma selected_subset_indices  (Y : ℝ) (hY : 1≤Y)
     (hbound : ∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Y) :
     selectedShells Ds⊆indices 1 Y := by
   intro n hn
   have hh:=selected_scale_bounds Ds Y hbound n hn
   exact (mem_indices_iff_scale 1 Y (by norm_num) (zero_lt_one.trans_le hY) n).mpr
     ⟨hh.1,hh.2.trans (by linarith)⟩
+end
+
 
 theorem selected_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z)
     (Ds : Finset (Ideal O))
@@ -142,8 +177,8 @@ lemma shell_member_data (Ds : Finset (Ideal O)) (n : ℤ) (D : Ideal O)
   have hs:=squarefree_of_moebius_ne_zero D hh.2.1
   exact ⟨hh.1,hh.2.1,hs,hs.ne_zero,hh.2.2⟩
 
-end SevenEighths.CenteredMomentWholeDivisorShell
 
-end
 
-end OAI
+
+
+

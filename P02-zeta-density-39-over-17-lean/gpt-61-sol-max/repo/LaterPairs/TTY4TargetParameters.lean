@@ -2,8 +2,7 @@ module
 public import DashedInitialParameters
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Exact original TTY4 target tail budgets on its full requested interval. -/
@@ -23,4 +22,4 @@ theorem tty4_full_target_tail_budgets {σ : ℝ}
   · linarith
   · nlinarith
 
-end Montgomery.RationalMoment
+

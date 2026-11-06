@@ -52,8 +52,8 @@ structure HighData (Δ : ℝ) where
   height_choice : ∀J : ℝ,0≤J → ∃τ : ℝ,0<τ ∧ τ<(1/200)/2 ∧
     4*τ<(1/200)*cost ∧ τ<t ∧ 2*τ*(1+J)≤t ∧ τ*(2+4*eps)<t
 
-end SevenEighths.Parameters
 
-end
 
-end OAI
+
+
+

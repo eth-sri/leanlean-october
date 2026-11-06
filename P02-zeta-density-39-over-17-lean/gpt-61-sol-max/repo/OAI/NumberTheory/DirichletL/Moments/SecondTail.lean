@@ -13,7 +13,7 @@ namespace SevenEighths.CenteredMomentSecondTail
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization
 open CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
     (K X H Tsec : ℝ) (hK : 0<K) (hX : 0<X)
@@ -88,8 +88,8 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
   have hb' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hprod hfac) hK.le
   convert hb' using 1 <;> ring
 
-end SevenEighths.CenteredMomentSecondTail
 
-end
 
-end OAI
+
+
+

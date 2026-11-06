@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalSplit
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -58,7 +58,7 @@ theorem original_reopened_physical_energy
   exact original_reopened_physical_split p hp hcop hg hinj hc hpr pool Q hQ labels hlabels
     β Ψ m mark W rowMajorant K hK R hR
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

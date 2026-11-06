@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCoefficientGeometry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                         
                                                                   
@@ -38,15 +37,20 @@ structure RobertSargosPrimitiveSystem (R H Q δ : ℝ) (p : RobertSargosPoint) :
   linear : p.r*p.d+p.h₁*p.q₁-p.h₂*p.q₂ = 0
   near : |robertSargosReduced p.r p.q₁ p.q₂ p.h₁ p.h₂ p.d| ≤ δ*H*Q^2
 
-theorem RobertSargosPrimitiveSystem.linear_real {R H Q δ : ℝ} {p : RobertSargosPoint}
-    (h : RobertSargosPrimitiveSystem R H Q δ p) :
+section
+variable {R H Q δ : ℝ} {p : RobertSargosPoint}
+    (h : RobertSargosPrimitiveSystem R H Q δ p)
+include R H Q δ p h
+
+theorem RobertSargosPrimitiveSystem.linear_real  :
     (p.r:ℝ)*p.d+(p.h₁:ℝ)*p.q₁-(p.h₂:ℝ)*p.q₂ = 0 := by
   exact_mod_cast h.linear
 
-theorem RobertSargosPrimitiveSystem.displacement_le {R H Q δ : ℝ} {p : RobertSargosPoint}
-    (h : RobertSargosPrimitiveSystem R H Q δ p) (hH : 0 < H) (hQ : 0 < Q) :
+theorem RobertSargosPrimitiveSystem.displacement_le  (hH : 0 < H) (hQ : 0 < Q) :
     |(p.d:ℝ)| ≤ (δ+8)*Q :=
   robertSargos_displacement_same_sign hH hQ h.h₁_support h.h₂_support
     h.q₁_support h.q₂_support (by exact_mod_cast h.same_sign) h.linear_real h.near
+end
 
-end TaoTrudgianYang2025
+
+

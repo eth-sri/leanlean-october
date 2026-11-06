@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerLocal
 public import OAI.NumberTheory.DirichletL.Hecke.IdealBridge
 
@@ -9,8 +10,8 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open ProbeEuler ProbeRow
+open scoped EisensteinO
 
 lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
     Prime (primaryGenerator P.val) := by
@@ -62,7 +63,7 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)
   have hD : 1-coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x≠0 := by
     intro he
-    have hh : coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x=1 := (sub_eq_zero.mp he).symm
+    have hh := (sub_eq_zero.mp he).symm
     rw [hh,norm_one] at hDnorm
     exact lt_irrefl _ hDnorm
   have he := idealHighLocalFactor_euler_identity η p hp hg.1 hg.2 hprimary hsp x w z hV hR hW hD
@@ -70,7 +71,7 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
   rw [hspan,actualACube_sq,targetMonoid_primaryGenerator η P.val hs] at he
   simpa only [coordD,coordV,coordW,star_one,mul_one,one_mul,idealClosedCorrection,p] using he
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

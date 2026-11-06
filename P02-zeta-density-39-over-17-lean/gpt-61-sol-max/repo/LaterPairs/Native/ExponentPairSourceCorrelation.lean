@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftUniformity
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                      
@@ -42,9 +41,13 @@ theorem sourceShiftCorrelation_empty (F : ℝ → ℝ) (T N : ℝ) (a L r : ℕ)
     (hr : L < r) : sourceShiftCorrelation F T N a L r = 0 := by
   simp [sourceShiftCorrelation,show L+1-r = 0 by omega]
 
-theorem sourceShiftCorrelation_compressed_sum {F : ℝ → ℝ} {σ T N : ℝ}
+section
+variable {F : ℝ → ℝ} {σ T N : ℝ}
     {a L r : ℕ} (hN : N ≠ 0) (hNr : N-(r : ℝ) ≠ 0)
-    (hσ : σ ≠ 0) (hr : 0 < r) (hra : r ≤ a) (hrL : r ≤ L) :
+    (hσ : σ ≠ 0) (hr : 0 < r) (hra : r ≤ a) (hrL : r ≤ L)
+include F σ T N a L r hN hNr hσ hr hra hrL
+
+theorem sourceShiftCorrelation_compressed_sum  :
     sourceShiftCorrelation F T N a L r =
       starRingEnd ℂ (exponentialSumAt (aProcessShiftPhase F σ ((r : ℝ)/N))
         (σ*T*r/N) (N-r) (a-r) ((a-r)+(L-r))) := by
@@ -60,14 +63,14 @@ theorem sourceShiftCorrelation_compressed_sum {F : ℝ → ℝ} {σ T N : ℝ}
     rw [Nat.cast_sub hra]; ring] at he
   exact he
 
-theorem norm_sourceShiftCorrelation_compressed_sum {F : ℝ → ℝ} {σ T N : ℝ}
-    {a L r : ℕ} (hN : N ≠ 0) (hNr : N-(r : ℝ) ≠ 0)
-    (hσ : σ ≠ 0) (hr : 0 < r) (hra : r ≤ a) (hrL : r ≤ L) :
+theorem norm_sourceShiftCorrelation_compressed_sum  :
     ‖sourceShiftCorrelation F T N a L r‖ =
       ‖exponentialSumAt (aProcessShiftPhase F σ ((r : ℝ)/N))
         (σ*T*r/N) (N-r) (a-r) ((a-r)+(L-r))‖ := by
   rw [sourceShiftCorrelation_compressed_sum hN hNr hσ hr hra hrL]
   exact norm_star _
+end
+
 
 theorem sourceShiftCorrelation_compressed_endpoints {N : ℝ} {a L r : ℕ}
     (ha : N ≤ (a : ℝ)) (hb : ((a+L : ℕ) : ℝ) ≤ 2*N)
@@ -79,4 +82,4 @@ theorem sourceShiftCorrelation_compressed_endpoints {N : ℝ} {a L r : ℕ}
   rw [Nat.cast_add,Nat.cast_sub hra,Nat.cast_sub hrL]
   constructor <;> linarith
 
-end TaoTrudgianYang2025
+

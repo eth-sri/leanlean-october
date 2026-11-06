@@ -6,18 +6,22 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedCommonMeasure
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
+section
+variable (pool : Finset ι) (Q : Finset (ι →₀ ℕ))
+include pool Q
+
 theorem varying_separated_canonical_integrable
-    (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (β : (ι →₀ ℕ) → ℂ)
+     (β : (ι →₀ ℕ) → ℂ)
     (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Ψ : O →* ℂ) (m f z : O)
     (b V : 𝓢(ℝ,ℂ)) (B ell : ℝ) :
     Integrable (fun ξ : ℝ => b ξ *
@@ -39,7 +43,7 @@ theorem varying_separated_canonical_integrable
   ring
 
 theorem varying_separated_canonical_family_energy
-    (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (labels : Finset (Ideal O))
+     (labels : Finset (Ideal O))
     (β : Ideal O → (ι →₀ ℕ) → ℂ) (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→Finset ι→ℂ)
     (Ψ : O →* ℂ) (m : O) (b V : 𝓢(ℝ,ℂ))
     (B ell K E : ℝ) (d : ℕ) (hB : 0 < B) (hell : 0 < ell) (hK : 0 < K) (hE : 0 ≤ E)
@@ -68,8 +72,10 @@ theorem varying_separated_canonical_family_energy
       abs_of_pos (mul_pos hB (Real.sqrt_pos.mpr hell)),inv_pow,mul_pow,Real.sq_sqrt hell.le]
   rw [rowFamilyEnergy_const_mul labels _ K hK, hn]
   convert mul_le_mul_of_nonneg_left hm (by positivity : 0 ≤ (B^2*ell)⁻¹) using 1 ; ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

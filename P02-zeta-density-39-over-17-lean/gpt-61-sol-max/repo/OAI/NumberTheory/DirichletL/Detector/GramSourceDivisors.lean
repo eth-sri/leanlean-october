@@ -9,31 +9,41 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def sourceDivisors (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C : SupportedIdeal) : Finset SupportedIdeal :=
+section
+variable (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y)
+include W hW Y hY
+
+def sourceDivisors  (C : SupportedIdeal) : Finset SupportedIdeal :=
   (divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val).preimage
     Subtype.val Subtype.val_injective.injOn
-lemma sourceDivisors_mem (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C D : SupportedIdeal) :
+lemma sourceDivisors_mem  (C D : SupportedIdeal) :
     D∈sourceDivisors W hW Y hY C ↔
       D.val∈divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val := Finset.mem_preimage
+end
+
 
 def sourceDivisorUnion (F : Finset SupportedIdeal) (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) : Finset SupportedIdeal :=
   F.biUnion (sourceDivisors W hW Y hY)
 
-def sourceMobiusWeight (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C D : SupportedIdeal) : ℂ :=
+section
+variable (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y)
+include W hW Y hY
+
+def sourceMobiusWeight  (C D : SupportedIdeal) : ℂ :=
   if D∈sourceDivisors W hW Y hY C then (moebius D.val:ℂ) else 0
-lemma sourceMobiusWeight_norm (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C D : SupportedIdeal) :
+lemma sourceMobiusWeight_norm  (C D : SupportedIdeal) :
     ‖sourceMobiusWeight W hW Y hY C D‖≤1 := by
   unfold sourceMobiusWeight
   split_ifs
   · exact CubicEisenstein.norm_ideal_moebius_le_one _
   · simp
 
-lemma sourceDivisors_sum (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y)
+lemma sourceDivisors_sum 
     (C : SupportedIdeal) (f : Id→ℂ) :
     (∑D∈sourceDivisors W hW Y hY C,f D.val)=
       ∑D∈divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val,f D := by
@@ -44,6 +54,8 @@ lemma sourceDivisors_sum (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (h
     refine ⟨⟨D,divisorPool_supported _ _ hD⟩,?_,rfl⟩
     exact (sourceDivisors_mem W hW Y hY C _).mpr hD
   · intro D hD;rfl
+end
+
 
 lemma sourceMobiusWeight_rectangle (F : Finset SupportedIdeal) (W : ℝ→ℂ) (hW : HasCompactSupport W)
     (Y : ℝ) (hY : 0<Y) (C : SupportedIdeal) (hC : C∈F) (f : SupportedIdeal→ℂ) :
@@ -72,7 +84,7 @@ theorem originalCommonBlock_eq_rectangle (S : Finset Id) (hS : ∀p∈S,p.IsMaxi
   congr 1
   simp only [commonResidualScale,gramIdealNorm,div_div]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

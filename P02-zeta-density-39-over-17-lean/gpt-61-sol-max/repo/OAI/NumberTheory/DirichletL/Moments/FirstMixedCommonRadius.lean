@@ -6,18 +6,18 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadiusSaving
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedCommonRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
 open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
+
+open CenteredMomentRankinRadical ActualEisensteinCubic
 open CenteredMomentFirstMixedAllowance CenteredMomentCommonRadiusSaving
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem column_saving_gates (η τ : Character) (m : O)
     (I J : Ideal O) (A : Finset (CommonIndex I J)) (Z : ℝ) (hZ : 1<Z)
@@ -41,11 +41,15 @@ theorem column_saving_gates (η τ : Character) (m : O)
   · unfold extractedAllowance; positivity
   · unfold extractedAllowance; linarith [hq.2]
 
-theorem actual_main_column_saving (η τ : Character) (m : O)
+section
+variable (η τ : Character) (m : O)
     (I J E : Ideal O) (_hI : Supported I) (_hJ : Supported J)
     (A : Finset (CommonIndex I J)) (K X Z j sigma delta reserve : ℝ) (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J}) :
+      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+include η τ m I J E _hI _hJ A K X Z j sigma delta reserve hZ hmod
+
+theorem actual_main_column_saving  :
     let c := Real.logb Z ((commonPart I J).absNorm:ℝ)
     let d := Real.logb Z ((commonPart J I).absNorm:ℝ)
     let _p := Real.logb Z ((commonRadical I J).absNorm:ℝ)
@@ -63,11 +67,7 @@ theorem actual_main_column_saving (η τ : Character) (m : O)
   congr 1
   ring
 
-theorem actual_error_column_saving (η τ : Character) (m : O)
-    (I J E : Ideal O) (_hI : Supported I) (_hJ : Supported J)
-    (A : Finset (CommonIndex I J)) (K X Z j sigma delta reserve : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+theorem actual_error_column_saving 
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
     (p0 : O) (hp0 : p0∈CenteredMomentPrimeElements.elementPool
@@ -91,9 +91,11 @@ theorem actual_error_column_saving (η τ : Character) (m : O)
     (Real.logb Z (normValue p0)) hc hq hB hallow hl hu k hk using 1
   congr 1
   ring
-
-end SevenEighths.CenteredMomentFirstMixedCommonRadius
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -7,7 +7,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap FourierTransform
-open MeasureTheory Filter Set FourierBridge CompletedGauss
+open MeasureTheory Filter FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 
 def gaussianSlotWindow {ι : Type*} (W : ι→ℝ→ℂ) : Option ι→ℝ→ℂ
@@ -92,7 +92,7 @@ theorem gaussian_selected_slot_family {ι : Type*} [Fintype ι]
   rw [gaussianFixedWindow_Vstar_twist t x hx]
   simp only [gaussianSlotSlope,one_mul,neg_one_mul,logPhase_neg_argument]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

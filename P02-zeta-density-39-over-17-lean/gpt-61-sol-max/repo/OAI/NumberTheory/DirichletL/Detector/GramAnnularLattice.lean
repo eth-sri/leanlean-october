@@ -11,7 +11,7 @@ open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProduct
 
 namespace ProbeGramAnnularLattice
 open ProbeGramLatticeDecay ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def AnnularSupport (a b : ℝ) (W : 𝓢(Joint, ℂ)) : Prop :=
   Function.support W ⊆ {z : Joint | a ≤ ‖z.fst‖^2 ∧ ‖z.fst‖^2 ≤ b ∧
@@ -51,8 +51,12 @@ theorem cauchyWeight_summable : Summable cauchyWeight := by
 theorem cauchyWeight_mass_le : (∑' m : O, cauchyWeight m) ≤ 4*(1+Real.pi)^2 := by
   simpa only [cauchyWeight, one_mul] using scaled_eisenstein_cauchy_small 1 zero_lt_one le_rfl
 
-theorem physical_subunit_majorant (W : 𝓢(Joint, ℂ))
-    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) (m : O × O) :
+section
+variable (W : 𝓢(Joint, ℂ))
+    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1)
+include W N hN hN1
+
+theorem physical_subunit_majorant  (m : O × O) :
     ‖W (physicalPoint N m)‖ ≤ (2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W *
       (cauchyWeight m.1 * cauchyWeight m.2) := by
   have hn (m : O) : ‖eisEmbedding m‖^2 ≤ ‖eisEmbedding m / (Real.sqrt N : ℂ)‖^2 := by
@@ -70,8 +74,7 @@ theorem physical_subunit_majorant (W : 𝓢(Joint, ℂ))
   rw [← mul_inv, ← div_eq_mul_inv, le_div_iff₀ (by positivity)]
   simpa only [mul_comm] using hp
 
-theorem physical_subunit_bound (W : 𝓢(Joint, ℂ))
-    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) :
+theorem physical_subunit_bound  :
     (∑' m : O × O, ‖W (physicalPoint N m)‖) ≤
       ((2:ℝ)^8*(4*(1+Real.pi)^2)^2) * sourceControl (Finset.Iic (8,0)) W := by
   have hg := cauchyWeight_summable
@@ -89,6 +92,8 @@ theorem physical_subunit_bound (W : 𝓢(Joint, ℂ))
       exact pow_le_pow_left₀ (tsum_nonneg (fun _ => by unfold cauchyWeight; positivity))
         cauchyWeight_mass_le 2
     _ = _ := by ring
+end
+
 
 theorem annular_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -165,8 +170,8 @@ theorem annular_weighted_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     _ ≤ B * (C * sourceControl S W * N^2) := mul_le_mul_of_nonneg_left (hbound W hW N hN) hB
     _ = _ := by ring
 
-end ProbeGramAnnularLattice
 
-end
 
-end OAI
+
+
+

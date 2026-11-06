@@ -13,7 +13,7 @@ namespace SevenEighths.CenteredMomentLiveSupport
 open CenteredMomentSourceLiveColumn CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox
 open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CenteredMomentSourceMass
 open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceCommonMask
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -68,8 +68,8 @@ theorem live_column_original_support (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => hS i _ (Fintype.mem_piFinset.mp hsrc i))
   exact ⟨Finset.mem_image.mpr ⟨_,hsrc,he⟩,right_ne_zero_of_mul hn,hm.1.2.symm⟩
 
-end SevenEighths.CenteredMomentLiveSupport
 
-end
 
-end OAI
+
+
+

@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFixedDisplacementSafe
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_fixed_displacement_conic_card_le
@@ -37,22 +36,14 @@ theorem robertSargos_fixed_displacement_conic_card_le
     have hc : Int.gcd (Int.gcd (-d) q₂ : ℤ) q₁ = 1 := by
       rw [Int.neg_gcd,Int.gcd_assoc,Int.gcd_comm q₂ q₁,← Int.gcd_assoc]
       exact hcoeff
-    have hden : ∀ p ∈ W, (p.2.1:ℝ) ∈ Set.Icc H (2*H) := by
-      intro p hp
-      obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
-      exact hh₁ q hq
+    have hden : ∀ p ∈ W, (p.2.1:ℝ) ∈ Set.Icc H (2*H) := by grind
     have hWp : ∀ p ∈ W, Int.gcd (Int.gcd p.2.2 p.1 : ℤ) p.2.1 = 1 := by
       intro p hp
       obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
       dsimp [f]
       rw [Int.gcd_assoc,Int.gcd_comm q.2.1 q.1,← Int.gcd_assoc]
       exact hprim q hq
-    have hWl : ∀ p ∈ W, p.2.2*(-d)+q₂*p.1-q₁*p.2.1 = 0 := by
-      intro p hp
-      obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
-      dsimp [f]
-      have hl := hline q hq
-      nlinarith only [hl]
+    have hWl : ∀ p ∈ W, p.2.2*(-d)+q₂*p.1-q₁*p.2.1 = 0 := by grind
     have hWn : ∀ p ∈ W,
         |robertSargosReduced p.2.2 q₂ q₁ p.1 p.2.1 (-d)| ≤ δ*H*Q^2 := by
       intro p hp
@@ -67,9 +58,8 @@ theorem robertSargos_fixed_displacement_conic_card_le
       (by simpa only [Int.cast_neg] using hWn)
     have hinj : Function.Injective f := by
       intro p q he
-      have he' := congrArg f he
-      simpa only [f,Prod.mk.eta] using he'
+      grind
     have hcard : W.card = S.card := Finset.card_image_of_injective S hinj
     simpa only [hcard,Int.natAbs_neg] using hb
 
-end TaoTrudgianYang2025
+

@@ -6,17 +6,20 @@ public import LaterPairs.Native.RobertSargosConjugateGram
 public import LaterPairs.Native.SignedEvenSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                  
 
-noncomputable section
+
 open scoped BigOperators InnerProductSpace
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_even_gram_positive (a : ℤ → ℂ) (M H : ℕ) (hH : 0 < H) :
+section
+variable (a : ℤ → ℂ) (M H : ℕ) (hH : 0 < H)
+include a M H hH
+
+theorem robertSargos_even_gram_positive  :
     (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M,
       ‖∑ s ∈ Finset.range H, sargosPaddedSequence a M (n+2*s)‖^2) =
       (H:ℝ)*(∑ m ∈ Finset.Ico (0:ℤ) M, ‖a m‖^2) +
@@ -37,13 +40,11 @@ theorem robertSargos_even_gram_positive (a : ℤ → ℂ) (M H : ℕ) (hH : 0 < 
     intro h hh
     have ht := Finset.mem_Ioo.mp hh
     have hi : h ∈ Finset.Ioo (-(H:ℤ)) H := Finset.mem_Ioo.mpr ⟨by omega,ht.2⟩
-    have hp : (H:ℝ) ≠ 0 := by positivity
     rw [signed_shift_weight_real hi,abs_of_nonneg (by exact_mod_cast le_of_lt ht.1)]
     field_simp
-  rw [hs]
-  ring
+  grind
 
-theorem robertSargos_conjugate_a_process (a : ℤ → ℂ) (M H : ℕ) (hH : 0 < H) :
+theorem robertSargos_conjugate_a_process  :
     ‖∑ m ∈ Finset.Ico (0:ℤ) M, a m‖^2 ≤
       (((M:ℝ)+2*H)/H)*((∑ m ∈ Finset.Ico (0:ℤ) M, ‖a m‖^2)+
         2*∑ h ∈ Finset.Ioo (0:ℤ) H,
@@ -56,5 +57,7 @@ theorem robertSargos_conjugate_a_process (a : ℤ → ℂ) (M H : ℕ) (hH : 0 <
   apply (le_div_iff₀ hp).mpr
   apply (mul_le_mul_iff_right₀ hp).mp
   convert hs using 1 <;> ring
+end
 
-end TaoTrudgianYang2025
+
+

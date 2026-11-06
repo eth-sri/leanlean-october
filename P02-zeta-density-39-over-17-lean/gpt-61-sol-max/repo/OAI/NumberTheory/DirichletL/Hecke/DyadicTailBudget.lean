@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedPointwise
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDyadic
 
 theorem exists_external_tail_order (τ B p : ℝ) (hτ : 0<τ) :
@@ -58,8 +58,8 @@ theorem uniform_external_tail_order (τ dmax B R : ℝ)
     _ ≤ (2 : ℝ)^n*Z^(-dmax*R) := mul_le_mul_of_nonneg_left (hn Z hZ) (by positivity)
     _ ≤ _ := mul_le_mul_of_nonneg_left htarget (by positivity)
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

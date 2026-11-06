@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceAffine
 public import GafniTao.WooleySourceBox
 
@@ -21,36 +22,39 @@ namespace GafniTao
 
 noncomputable section
 
+section
+variable (gamma : WooleySourceSequence)
+include gamma
+
 /-- A deliberately simple radius dominating the absolute value of every
 index in the finite support. -/
-def wooleySourceRadius (gamma : WooleySourceSequence) : ℕ :=
+def wooleySourceRadius  : ℕ :=
   ∑ n ∈ gamma.support, n.natAbs
 
+section
+variable {n : ℤ} (hn : n ∈ gamma.support)
+include n hn
+
 theorem wooleySource_natAbs_le_radius
-    (gamma : WooleySourceSequence) {n : ℤ} (hn : n ∈ gamma.support) :
+     :
     n.natAbs ≤ wooleySourceRadius gamma := by
   unfold wooleySourceRadius
   exact Finset.single_le_sum (fun m _ => Nat.zero_le m.natAbs) hn
 
 theorem wooleySource_neg_radius_le
-    (gamma : WooleySourceSequence) {n : ℤ} (hn : n ∈ gamma.support) :
+     :
     -(wooleySourceRadius gamma : ℤ) ≤ n := by
   have habs := wooleySource_natAbs_le_radius gamma hn
-  have hcast : (n.natAbs : ℤ) ≤ (wooleySourceRadius gamma : ℤ) := by
-    exact_mod_cast habs
-  have hnabs : -(n.natAbs : ℤ) ≤ n := by
-    by_cases hn0 : 0 ≤ n
-    · exact (neg_nonpos.mpr (by positivity)).trans hn0
-    · have hnonpos : n ≤ 0 := le_of_not_ge hn0
-      rw [Int.ofNat_natAbs_of_nonpos hnonpos]
-      simp
-  exact (neg_le_neg hcast).trans hnabs
+  omega
 
 theorem wooleySource_le_radius
-    (gamma : WooleySourceSequence) {n : ℤ} (hn : n ∈ gamma.support) :
+     :
     n ≤ (wooleySourceRadius gamma : ℤ) := by
   exact (Int.le_natAbs (a := n)).trans (by
     exact_mod_cast wooleySource_natAbs_le_radius gamma hn)
+end
+end
+
 
 /-- The box embedding has image exactly the integer interval `[1,Q]`. -/
 theorem mem_range_wooleyBoxIndexEmbedding_iff
@@ -73,24 +77,28 @@ theorem mem_range_wooleyBoxIndexEmbedding_iff
     rw [Nat.cast_add, Nat.cast_one, Int.toNat_of_nonneg hy0]
     omega
 
+section
+variable (gamma : WooleySourceSequence)
+include gamma
+
 /-- The translation used to move the support into positive indices. -/
-def wooleyBoxedSourceSequence (gamma : WooleySourceSequence) :
+def wooleyBoxedSourceSequence  :
     WooleySourceSequence :=
   wooleyAffinePullback gamma 1 (by norm_num)
     (-((wooleySourceRadius gamma + 1 : ℕ) : ℤ))
 
 /-- The length of the symmetric box containing the translated support. -/
-def wooleySourceBoxLength (gamma : WooleySourceSequence) : ℕ :=
+def wooleySourceBoxLength  : ℕ :=
   2 * wooleySourceRadius gamma + 1
 
 /-- The exact finite coefficient family obtained from the translated source
 sequence. -/
-def wooleySourceBoxCoefficients (gamma : WooleySourceSequence) :
+def wooleySourceBoxCoefficients  :
     Fin (wooleySourceBoxLength gamma) → ℂ :=
   fun n => wooleyBoxedSourceSequence gamma (wooleyBoxIndexEmbedding _ n)
 
 theorem wooleyBoxedSourceSequence_support_subset
-    (gamma : WooleySourceSequence) :
+     :
     (↑(wooleyBoxedSourceSequence gamma).support : Set ℤ) ⊆
       Set.range (wooleyBoxIndexEmbedding (wooleySourceBoxLength gamma)) := by
   intro y hy
@@ -100,14 +108,7 @@ theorem wooleyBoxedSourceSequence_support_subset
       y - ((wooleySourceRadius gamma + 1 : ℕ) : ℤ) ∈ gamma.support := by
     apply Finsupp.mem_support_iff.mpr
     rw [wooleyBoxedSourceSequence, wooleyAffinePullback_apply] at hyne
-    norm_num at hyne
-    have harg :
-        y + (-1 + -(wooleySourceRadius gamma : ℤ)) =
-          y - ((wooleySourceRadius gamma + 1 : ℕ) : ℤ) := by
-      push_cast
-      ring
-    rw [harg] at hyne
-    exact hyne
+    grind
   have hlo := wooleySource_neg_radius_le gamma hnmem
   have hhi := wooleySource_le_radius gamma hnmem
   rw [mem_range_wooleyBoxIndexEmbedding_iff]
@@ -116,7 +117,7 @@ theorem wooleyBoxedSourceSequence_support_subset
 
 /-- Exact recovery of the translated source sequence from its finite box. -/
 theorem wooleyBoxSourceSequence_boxCoefficients
-    (gamma : WooleySourceSequence) :
+     :
     wooleyBoxSourceSequence (wooleySourceBoxCoefficients gamma) =
       wooleyBoxedSourceSequence gamma := by
   let f := wooleyBoxIndexEmbedding (wooleySourceBoxLength gamma)
@@ -131,8 +132,9 @@ theorem wooleyBoxSourceSequence_boxCoefficients
     intro n
     simp [wooleySourceBoxCoefficients, f, beta]
   unfold wooleyBoxSourceSequence
-  rw [← hcoeff]
-  exact hrecover
+  grind
+end
+
 
 /-- Translate the polynomial system by the same amount used to box the
 coefficient sequence. -/
@@ -156,10 +158,14 @@ theorem wooleySourceNormalizedPolynomialSum_boxing_translation
   rw [wooleySourceNormalizedPolynomialResidueSum_mod_one] at h
   exact h
 
+section
+variable {k q s : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
+    (gamma : WooleySourceSequence)
+include k q s phi gamma
+
 /-- Hence the full source mean is unchanged by the boxing translation. -/
 theorem wooleySourcePolynomialMean_boxing_translation
-    {k q s : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
-    (gamma : WooleySourceSequence) :
+     :
     wooleySourcePolynomialMean s q
         (wooleyBoxedPolynomialSystem phi gamma)
         (wooleyBoxedSourceSequence gamma) =
@@ -170,8 +176,7 @@ theorem wooleySourcePolynomialMean_boxing_translation
 /-- Every source mean is exactly a finite-box polynomial mean after the
 proved translation of both coefficients and polynomials. -/
 theorem wooleySourcePolynomialMean_eq_boxed
-    {k q s : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
-    (gamma : WooleySourceSequence) :
+     :
     wooleySourcePolynomialMean s q phi gamma =
       wooleyPolynomialWeightedGridMean
         (wooleyBoxedPolynomialSystem phi gamma) s q
@@ -187,12 +192,18 @@ theorem wooleySourcePolynomialMean_eq_boxed
           (wooleyBoxSourceSequence (wooleySourceBoxCoefficients gamma)) := by
       rw [wooleyBoxSourceSequence_boxCoefficients]
     _ = _ := wooleySourcePolynomialMean_box _ _
+end
+
+
+section
+variable {k q qH s : ℕ} [NeZero q] [NeZero qH]
+    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+include k q qH s phi gamma
 
 /-- The conditioned source mean is also unchanged by the boxing
 translation; the proof uses the exact residue-class permutation. -/
 theorem wooleySourcePolynomialConditionedMean_boxing_translation
-    {k q qH s : ℕ} [NeZero q] [NeZero qH]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) :
+     :
     wooleySourcePolynomialConditionedMean s q qH
         (wooleyBoxedPolynomialSystem phi gamma)
         (wooleyBoxedSourceSequence gamma) =
@@ -203,8 +214,7 @@ theorem wooleySourcePolynomialConditionedMean_boxing_translation
 /-- Every conditioned source mean is exactly its finite-box polynomial
 realization after the same translation. -/
 theorem wooleySourcePolynomialConditionedMean_eq_boxed
-    {k q qH s : ℕ} [NeZero q] [NeZero qH]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) :
+     :
     wooleySourcePolynomialConditionedMean s q qH phi gamma =
       wooleyPolynomialConditionedGridMean
         (wooleyBoxedPolynomialSystem phi gamma) s q qH
@@ -221,7 +231,9 @@ theorem wooleySourcePolynomialConditionedMean_eq_boxed
           (wooleyBoxSourceSequence (wooleySourceBoxCoefficients gamma)) := by
       rw [wooleyBoxSourceSequence_boxCoefficients]
     _ = _ := wooleySourcePolynomialConditionedMean_box _ _
-
 end
 
-end GafniTao
+
+
+
+

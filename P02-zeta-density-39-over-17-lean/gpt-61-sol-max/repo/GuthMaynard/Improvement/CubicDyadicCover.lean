@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CenteredTruncation
 public import MathCollab.Density.DyadicBlocks
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open Set
+
 namespace GuthMaynard.Improvement
 
 def integerDyadicIndex (m : ℤ) : ℕ := m.natAbs.log2
@@ -20,7 +20,7 @@ def cubicDyadicClasses (U : ℝ) : Finset (ℕ × (ℕ × ℕ)) :=
 theorem integer_dyadic_bounds {m : ℤ} (hm : m ≠ 0) :
     (2:ℝ)^(integerDyadicIndex m) ≤ |(m:ℝ)| ∧
       |(m:ℝ)| < 2*(2:ℝ)^(integerDyadicIndex m) := by
-  have hp : 0 < m.natAbs := Int.natAbs_pos.mpr hm
+  have hp := Int.natAbs_pos.mpr hm
   have hh := MathCollab.Density.log2_block_bounds hp
   have he : (m.natAbs:ℝ) = |(m:ℝ)| := by rw [Nat.cast_natAbs,Int.cast_abs]
   rw [← he]
@@ -57,7 +57,7 @@ theorem cubicDyadicClasses_card {U : ℝ} (hU : 1 ≤ U) :
   have he : (2:ℝ)^(⌊U⌋₊.log2+1) ≤ 2*U := by rw [pow_succ]; nlinarith
   have hh := Real.log_le_log (by positivity : (0:ℝ) < (2:ℝ)^(⌊U⌋₊.log2+1)) he
   rw [Real.log_pow] at hh
-  have hb : ((⌊U⌋₊.log2+1:ℕ):ℝ) ≤ Real.log (2*U)/Real.log 2 :=
+  have hb :=
     (le_div_iff₀ hlog).mpr hh
   unfold cubicDyadicClasses
   simp only [Finset.card_product,Finset.card_range,Nat.cast_mul]
@@ -85,7 +85,7 @@ theorem cubicDyadicClasses_subpower {ε : ℝ} (hε : 0 < ε) :
   refine ⟨D^3,by positivity,?_⟩
   intro U hU
   have hUp : 0 < U := by linarith
-  have hp : 1 ≤ U^(ε/3) := Real.one_le_rpow hU he.le
+  have hp := Real.one_le_rpow hU he.le
   have hb : Real.log (2*U)/Real.log 2 ≤ D*U^(ε/3) := by
     apply (div_le_iff₀ hlog).mpr
     rw [Real.log_mul (by norm_num : (2:ℝ) ≠ 0) hUp.ne']
@@ -101,7 +101,6 @@ theorem cubicDyadicClasses_subpower {ε : ℝ} (hε : 0 < ε) :
       (div_nonneg (Real.log_nonneg (by linarith)) hlog.le) hb 3
     _ = D^3*U^ε := by
       rw [mul_pow,← Real.rpow_natCast (U^(ε/3)) 3,← Real.rpow_mul hUp.le]
-      congr 2
-      norm_num
+      simp_all
 
-end GuthMaynard.Improvement
+

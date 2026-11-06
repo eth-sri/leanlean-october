@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.LogarithmicTargets
 
 @[expose] public section
@@ -8,79 +9,79 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+open ConcreteTraceCRT
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+
+                        
 
 namespace CubicEisenstein
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
 
-def spatialTriple (x y v : ℝ) : SpatialCoordinates := ![x,y,v]
-@[simp] lemma spatialTriple_zero (x y v : ℝ) : spatialTriple x y v 0=x := rfl
-@[simp] lemma spatialTriple_one (x y v : ℝ) : spatialTriple x y v 1=y := rfl
-@[simp] lemma spatialTriple_two (x y v : ℝ) : spatialTriple x y v 2=v := rfl
+
+
+
+
 
 end CubicEisenstein
 
@@ -88,7 +89,7 @@ open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → ℂ) :
@@ -97,8 +98,7 @@ theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → �
   classical
   have hS : (Finset.univ : Finset S).image Subtype.val = S := by
     ext P
-    simp only [Finset.mem_image, Finset.mem_univ, true_and, Subtype.exists, exists_prop,
-      exists_eq_right]
+    simp
   conv_rhs => rw [← hS, Finset.powerset_image]
   rw [Finset.sum_image]
   · apply Finset.sum_congr rfl
@@ -108,18 +108,29 @@ theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → �
     exact fun _ _ _ _ h => Subtype.val_injective h
   · exact fun _ _ _ _ h => Finset.image_injective Subtype.val_injective h
 
-theorem primePool_singleton_eq_primeSupport (G : Ideal O) :
+section
+variable (G : Ideal O)
+include G
+
+theorem primePool_singleton_eq_primeSupport  :
     primePool {G} = primeSupport G := by
   simp [primePool, primeSupport]
 
-theorem primePool_subset_sum_eq_divisors (G : Ideal O) (hG : Squarefree G) (f : Ideal O → ℂ) :
+section
+variable (hG : Squarefree G)
+include hG
+
+theorem primePool_subset_sum_eq_divisors  (f : Ideal O → ℂ) :
     (∑ E ∈ (Finset.univ : Finset (primePool {G})).powerset,
       f (∏ P ∈ E, P.val)) = ∑ d ∈ idealDivisors G, f d := by
   rw [sum_subtype_powerset_products, primePool_singleton_eq_primeSupport]
   exact (squarefree_divisor_sum_eq_support G hG f).symm
 
-theorem middleTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) :
+section
+variable (W : ℝ → ℂ)
+include W
+
+theorem middleTruncation_eq_ideal_divisors  (X Y Z lengthScale : ℝ) :
     middleTruncation (fun P : primePool {G} => P.val) Finset.univ W X Y Z lengthScale =
       (X : ℂ) * ∑ d ∈ idealDivisors G,
         if Y < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z then
@@ -147,8 +158,7 @@ theorem middleTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
     by_cases hZ : (Ideal.absNorm (∏ P ∈ E, P.val) : ℝ) ≤ Z <;> simp only [hY, hZ, and_self,
       false_and, and_false, ite_true, ite_false]
 
-theorem middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) :
+theorem middleTruncation_eq_ideal_frequencies  (X Y Z lengthScale : ℝ) :
     middleTruncation (fun P : primePool {G} => P.val) Finset.univ W X Y Z lengthScale =
       ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, ∑ d ∈ idealDivisors G,
         if Y < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z then
@@ -172,8 +182,7 @@ theorem middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
     ring
   · simp only [hc, ite_false, mul_zero, Finset.sum_const_zero]
 
-theorem principalTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (X Z : ℝ) :
+theorem principalTruncation_eq_ideal_divisors  (X Z : ℝ) :
     principalTruncation (fun P : primePool {G} => P.val) Finset.univ W X Z =
       (X : ℂ) * paperRadialFourier W 0 *
         (∏ P : primePool {G}, (1 - (1 : ℂ) / Ideal.absNorm P.val)) -
@@ -190,10 +199,14 @@ theorem principalTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
     (fun d => if (Ideal.absNorm d : ℝ) ≤ Z then (UniqueFactorizationMonoid.moebius d : ℂ) else 0)]
   unfold principalTruncation largeDivisors smallDivisors
   simp only [Finset.sum_filter, subsetNorm, subsetMobius, Complex.ofReal_natCast]
+end
+end
+end
+
 
 end
 
-open ActualEisensteinCubic
+
 
 theorem finite_middle_triangle
     {m n p H D : Type*} [Fintype m] [Fintype n] [Fintype p] [Fintype H] [Fintype D]
@@ -238,7 +251,7 @@ theorem finite_nonzero_frequency_sum_le (H : Finset O) (hH : ∀ h ∈ H, h ≠ 
   rw [tsum_fintype, Finset.sum_coe_sort H f] at hb
   exact hb
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem sum_two_finite_subtypes {α β A : Type*} [AddCommMonoid A]
@@ -386,8 +399,8 @@ theorem HasSieveExponent.original_truncated_middle {α : ℝ} (hexp : HasSieveEx
         (fun h => originalProductDivisorMiddleAt_nonneg W K rows left right a b M P h) hb.1
     _ ≤ _ := hb.2
 
-end CanonicalQuadraticSieve
 
-end
 
-end OAI
+
+
+

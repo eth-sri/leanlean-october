@@ -11,13 +11,13 @@ Integration by parts consumes the uniform primitive bound on every prefix.
 The curvature bound belongs to the actual phase, not to an auxiliary carrier.
 -/
 
-noncomputable section
+
 
 open Set MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem IntervalC1Bound.fourierChar_of_negative_curvature
     {f : ℝ → ℂ} {φ : ℝ → ℝ} {a b M m : ℝ} {J : Set ℝ}
@@ -42,5 +42,5 @@ theorem IntervalC1Bound.fourierChar_of_negative_curvature
   convert h using 1
   ring
 
-end TaoTrudgianYang2025
+
 

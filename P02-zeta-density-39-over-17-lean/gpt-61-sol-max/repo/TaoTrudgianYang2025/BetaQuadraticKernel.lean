@@ -15,11 +15,11 @@ coefficient is e(-1/8)/sqrt(T), with an explicit finite-window error.
 
 noncomputable section
 
-open Set Expdb MeasureTheory
+open Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 def betaQuadraticKernel (T z : ℝ) : ℂ := (𝐞 (-(T/2)*z^2) : ℂ)
 
@@ -80,4 +80,4 @@ theorem norm_betaQuadraticWindow_sub_main {T H : ℝ} (hT : 0 < T) (hH : 0 < H) 
   convert h using 1
   ring
 
-end TaoTrudgianYang2025
+

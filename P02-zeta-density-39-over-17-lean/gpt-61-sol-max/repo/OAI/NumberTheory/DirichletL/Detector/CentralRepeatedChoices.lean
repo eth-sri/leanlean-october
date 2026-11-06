@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSplit
 public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeSums
 
@@ -10,17 +11,20 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedChoices
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def activeChoices {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
-    (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ) : Finset (∀j,T j) :=
+section
+variable {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
+    (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ)
+include k u T W Y
+
+def activeChoices  : Finset (∀j,T j) :=
   Finset.univ.filter (fun P=>∀j,repeatedRowPrime u (P j).val ∧
     W j (((P j).val.val.absNorm:ℝ)/Y j)≠0)
 
-lemma active_card_le_divisors {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
-    (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ) :
+lemma active_card_le_divisors  :
     (activeChoices u T W Y).card≤(IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card^k := by
-  let U : Ideal O := Ideal.span {u.val}
+  let U := Ideal.span {u.val}
   have hU : U≠0 := Ideal.span_singleton_eq_bot.not.mpr u.property.1
   let f : activeChoices u T W Y→(Fin k→IdealMobiusDivisorSum.idealDivisors U) :=
     fun P j=>⟨(P.val j).val.val,(IdealMobiusDivisorSum.mem_idealDivisors hU).mpr
@@ -34,6 +38,8 @@ lemma active_card_le_divisors {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeI
     exact congrArg (fun g=>(g j).val) h
   have hc := Fintype.card_le_of_injective f hf
   simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_fin] using hc
+end
+
 
 theorem active_card_subpower (N : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀k : ℕ,k≤N → ∀(u : FreeRow) (T : Fin k→Finset PrimeIdeal)
@@ -86,8 +92,8 @@ lemma sum_products_restrict {k : ℕ} (η : Character) (u : FreeRow)
   by_cases hr : repeatedRowPrime u (P j).val
   · simp [hj hr]
   · simp [centralRepeatedTerm,hr]
-end SevenEighths.ProbeCentralRepeatedChoices
 
-end
 
-end OAI
+
+
+

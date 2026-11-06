@@ -14,7 +14,7 @@ literal normalization scale is positive, and the loss
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The exact ratio estimate used between Wooley (8.7) and (8.5). -/
 theorem wooleySourcePolynomial_equation_8_7_ratio
@@ -117,6 +117,6 @@ theorem wooleySourcePolynomial_equation_8_5
       hp hbH hscale hupper hloss
 
 
-end
 
-end GafniTao
+
+

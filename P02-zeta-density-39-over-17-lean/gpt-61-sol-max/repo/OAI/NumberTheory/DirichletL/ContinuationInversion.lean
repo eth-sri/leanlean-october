@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Continuation
 public import Mathlib.Analysis.MellinInversion
 
@@ -38,7 +39,6 @@ theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
       ← Complex.ofReal_cpow (Real.exp_pos (-u)).le]
     norm_cast
     rw [Real.rpow_def_of_pos (Real.exp_pos (-u)), Real.log_exp, ← Real.exp_add]
-    congr 1
     ring
   simpa only [Function.comp_apply, integrableOn_univ, heq] using hf
 
@@ -112,10 +112,10 @@ theorem signalMellin_eq_on_line (f : ℝ → ℂ) (A : ℂ → ℂ) (c d : ℝ)
     (normalizedSignal f c) hf' hA' hcont' hrep y
   rw [harg] at hid
   rw [← mellin_normalizedSignal]
-  convert hid using 1; congr 1; push_cast; ring
+  convert hid using 1; congr 1; grind
 
-end SevenEighths.Continuation
 
-end
 
-end OAI
+
+
+

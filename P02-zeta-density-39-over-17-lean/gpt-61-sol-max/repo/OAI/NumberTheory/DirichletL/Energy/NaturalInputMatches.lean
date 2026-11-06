@@ -13,13 +13,17 @@ namespace SevenEighths.CenteredMomentEnergyNaturalInputMatches
 open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-local notation "O" => HeckeFamily.O
 
-def profile (W : ℝ → ℂ) (σ freq y : ℝ) : ℂ :=
+open scoped HeckeO
+
+section
+variable (W : ℝ → ℂ)
+include W
+
+def profile  (σ freq y : ℝ) : ℂ :=
   W y * (y : ℂ)^(-HeckeDyadic.shift σ freq)
 
-lemma profile_support (W : ℝ → ℂ) (a b : ℝ)
+lemma profile_support  (a b : ℝ)
     (hWs : Function.support W ⊆ Set.Icc a b) (σ freq : ℝ) :
     Function.support (profile W σ freq) ⊆ Set.Icc a b := by
   intro y hy
@@ -27,7 +31,7 @@ lemma profile_support (W : ℝ → ℂ) (a b : ℝ)
   intro hz
   exact hy (by simp only [profile, hz, zero_mul])
 
-lemma profile_norm (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+lemma profile_norm  (a b : ℝ) (ha : 0 < a)
     (hWs : Function.support W ⊆ Set.Icc a b) (σ freq y : ℝ) :
     ‖profile W σ freq y‖ = ‖W y‖ * y^(-σ) := by
   by_cases hz : W y = 0
@@ -36,9 +40,13 @@ lemma profile_norm (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     simp only [profile, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hy,
       Complex.neg_re, HeckeDyadic.shift_re]
 
-theorem exists_profile_bound (W : ℝ → ℂ) (hW : Continuous W)
+section
+variable (hW : Continuous W)
     (a b lo hi : ℝ) (ha : 0 < a)
-    (hWs : Function.support W ⊆ Set.Icc a b) :
+    (hWs : Function.support W ⊆ Set.Icc a b)
+include hW a b lo hi ha hWs
+
+theorem exists_profile_bound  :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ σ ∈ Set.Icc lo hi, ∀ freq y : ℝ,
       ‖profile W σ freq y‖ ≤ C := by
   obtain ⟨C, hC, hb⟩ := fixed_profile_norm_bound W hW a b lo hi ha
@@ -50,23 +58,20 @@ theorem exists_profile_bound (W : ℝ → ℂ) (hW : Continuous W)
   · rw [profile_norm W a b ha hWs]
     exact (hb σ hσ y (hWs hz)).trans (le_max_right _ _)
 
-def profileBound (W : ℝ → ℂ) (hW : Continuous W)
-    (a b lo hi : ℝ) (ha : 0 < a)
-    (hWs : Function.support W ⊆ Set.Icc a b) : ℝ :=
+def profileBound  : ℝ :=
   (exists_profile_bound W hW a b lo hi ha hWs).choose
 
-lemma profileBound_ge_one (W : ℝ → ℂ) (hW : Continuous W)
-    (a b lo hi : ℝ) (ha : 0 < a)
-    (hWs : Function.support W ⊆ Set.Icc a b) :
+lemma profileBound_ge_one  :
     1 ≤ profileBound W hW a b lo hi ha hWs :=
   (exists_profile_bound W hW a b lo hi ha hWs).choose_spec.1
 
-lemma norm_profile_le (W : ℝ → ℂ) (hW : Continuous W)
-    (a b lo hi : ℝ) (ha : 0 < a)
-    (hWs : Function.support W ⊆ Set.Icc a b)
+lemma norm_profile_le 
     (σ : ℝ) (hσ : σ ∈ Set.Icc lo hi) (freq y : ℝ) :
     ‖profile W σ freq y‖ ≤ profileBound W hW a b lo hi ha hWs :=
   (exists_profile_bound W hW a b lo hi ha hWs).choose_spec.2 σ hσ freq y
+end
+end
+
 
 section Input
 variable {ι : Type*} [Fintype ι]
@@ -99,9 +104,9 @@ def input : Input ι :=
 local notation "inp" => input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
 
-end Input
-end SevenEighths.CenteredMomentEnergyNaturalInputMatches
 
-end
 
-end OAI
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,7 +14,6 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 open Complex Set Finset MeasureTheory Filter
 open scoped BigOperators Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -29,7 +29,11 @@ theorem norm_sum_mul_sq_le {ι : Type*} [DecidableEq ι]
     _ ≤ (∑ i ∈ s, ‖a i‖ ^ 2) * (∑ i ∈ s, ‖b i‖ ^ 2) :=
       sum_mul_sq_le_sq_mul_sq s (fun i => ‖a i‖) (fun i => ‖b i‖)
 
-theorem dirichletTime_shift (N : ℕ) (a : ℕ → ℂ) (v t : ℝ) :
+section
+variable (N : ℕ) (a : ℕ → ℂ)
+include N a
+
+theorem dirichletTime_shift  (v t : ℝ) :
     dirichletTime N a (t+v) = dirichletTime N (endpointTwist v a) t := by
   unfold dirichletTime
   apply Finset.sum_congr rfl
@@ -41,7 +45,7 @@ theorem dirichletTime_shift (N : ℕ) (a : ℕ → ℂ) (v t : ℝ) :
   ring
 
 theorem integral_norm_sq_dirichletTime_interval_le
-    (N : ℕ) (a : ℕ → ℂ) {A B : ℝ} (hN : 0 < N) (hAB : A ≤ B) :
+     {A B : ℝ} (hN : 0 < N) (hAB : A ≤ B) :
     (∫ t : ℝ in A..B, ‖dirichletTime N a t‖^2) ≤
       (B-A+2*(5*Real.pi+1)*(N:ℝ)) *
         ∑ n ∈ Finset.Ioc N (2*N), ‖a n‖^2 := by
@@ -56,13 +60,15 @@ theorem integral_norm_sq_dirichletTime_interval_le
   rw [heq]
   simpa only [norm_endpointTwist] using h
 
-def dirichletPrefix (N : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
+def dirichletPrefix  (t : ℝ) : ℂ :=
   ∑ n ∈ Finset.Ioc 0 N, a n*Complex.exp (-(I*(t:ℂ)*(Real.log n:ℂ)))
 
-theorem continuous_dirichletPrefix (N : ℕ) (a : ℕ → ℂ) :
+theorem continuous_dirichletPrefix  :
     Continuous (dirichletPrefix N a) := by
   unfold dirichletPrefix
   fun_prop
+end
+
 
 theorem dirichletPrefix_one (a : ℕ → ℂ) (t : ℝ) :
     dirichletPrefix 1 a t = a 1 := by
@@ -74,7 +80,11 @@ theorem dirichletPrefix_double (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     (fun n : ℕ => a n*Complex.exp (-(I*(t:ℂ)*(Real.log n:ℂ))))
     (Nat.zero_le N) (by omega : N ≤ 2*N)).symm
 
-theorem dirichletPrefix_pow_two (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (M : ℕ) (a : ℕ → ℂ)
+include M a
+
+theorem dirichletPrefix_pow_two  (t : ℝ) :
     dirichletPrefix (2^M) a t =
       a 1+∑ j ∈ Finset.range M, dirichletTime (2^j) a t := by
   induction M with
@@ -83,11 +93,11 @@ theorem dirichletPrefix_pow_two (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     rw [pow_succ, Nat.mul_comm (2^M) 2,dirichletPrefix_double,ih,
       Finset.sum_range_succ,add_assoc]
 
-theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem norm_dirichletPrefix_pow_two_sq_le  (t : ℝ) :
     ‖dirichletPrefix (2^M) a t‖^2 ≤
       2*((M:ℝ)+1)*(‖a 1‖^2+∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2) := by
-  let S : ℂ := ∑ j ∈ Finset.range M, dirichletTime (2^j) a t
-  let Q : ℝ := ∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2
+  let S := ∑ j ∈ Finset.range M, dirichletTime (2^j) a t
+  let Q := ∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2
   have hQ : 0 ≤ Q := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hS : ‖S‖^2 ≤ (M:ℝ)*Q := by
     simpa [S,Q] using norm_sum_mul_sq_le (Finset.range M)
@@ -99,7 +109,7 @@ theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ)
   nlinarith [sq_nonneg (‖a 1‖-‖S‖),mul_nonneg hM (sq_nonneg ‖a 1‖)]
 
 theorem integral_norm_sq_dirichletPrefix_le_blocks
-    (M : ℕ) (a : ℕ → ℂ) {A B : ℝ} (hAB : A ≤ B) :
+     {A B : ℝ} (hAB : A ≤ B) :
     (∫ t : ℝ in A..B, ‖dirichletPrefix (2^M) a t‖^2) ≤
       2*((M:ℝ)+1)*((B-A)*‖a 1‖^2+
         ∑ j ∈ Finset.range M, ∫ t : ℝ in A..B, ‖dirichletTime (2^j) a t‖^2) := by
@@ -109,8 +119,7 @@ theorem integral_norm_sq_dirichletPrefix_le_blocks
   have hsum : IntervalIntegrable
       (fun t : ℝ => ∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2) volume A B := by
     convert IntervalIntegrable.sum (Finset.range M) (fun j _ => hi j) using 1
-    ext t
-    simp
+    bound
   have hconst : IntervalIntegrable (fun _ : ℝ => ‖a 1‖^2) volume A B :=
     intervalIntegrable_const
   calc
@@ -129,7 +138,7 @@ theorem integral_norm_sq_dirichletPrefix_le_blocks
       rfl
 
 theorem integral_norm_sq_dirichletPrefix_le
-    (M : ℕ) (a : ℕ → ℂ) {A B L : ℝ} (hAB : A ≤ B)
+     {A B L : ℝ} (hAB : A ≤ B)
     (hone : ‖a 1‖^2 ≤ L)
     (hcoeff : ∀ j ∈ Finset.range M,
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
@@ -137,7 +146,7 @@ theorem integral_norm_sq_dirichletPrefix_le
       2*((M:ℝ)+1)^2*(B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L := by
   have hL : 0 ≤ L := (sq_nonneg ‖a 1‖).trans hone
   have hT : 0 ≤ B-A := sub_nonneg.mpr hAB
-  let E : ℝ := (B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L
+  let E := (B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L
   have hfirst : (B-A)*‖a 1‖^2 ≤ E := by
     dsimp [E]
     apply mul_le_mul (le_add_of_nonneg_right (by positivity)) hone (sq_nonneg _)
@@ -163,14 +172,11 @@ theorem integral_norm_sq_dirichletPrefix_le
     _ ≤ 2*((M:ℝ)+1)*((B-A)*‖a 1‖^2+
         ∑ j ∈ Finset.range M, ∫ t : ℝ in A..B, ‖dirichletTime (2^j) a t‖^2) :=
       integral_norm_sq_dirichletPrefix_le_blocks M a hAB
-    _ ≤ 2*((M:ℝ)+1)*((M:ℝ)+1)*E := by
-      rw [mul_assoc (2*((M:ℝ)+1))]
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      nlinarith
+    _ ≤ 2*((M:ℝ)+1)*((M:ℝ)+1)*E := by nlinarith
     _ = _ := by dsimp [E]; ring
 
 theorem integral_norm_sq_dirichletPrefix_reflected_le
-    (M : ℕ) (a : ℕ → ℂ) (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
+     (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
     (hone : ‖a 1‖^2 ≤ L)
     (hcoeff : ∀ j ∈ Finset.range M,
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
@@ -180,8 +186,9 @@ theorem integral_norm_sq_dirichletPrefix_reflected_le
     (fun t : ℝ => ‖dirichletPrefix (2^M) a t‖^2) u]
   have h := integral_norm_sq_dirichletPrefix_le M a
     (show u-2*H ≤ u-H by linarith) hone hcoeff
-  have heq : u-H-(u-2*H) = H := by ring
-  simpa only [heq] using h
+  bound
+end
+
 
 theorem fourth_divisorTerm_eq_coeff_phase (t c u : ℝ) (n : ℕ) :
     divisorDirichletTerm (afeCriticalPoint (-t)+((c:ℂ)+(u:ℂ)*I)) n =
@@ -213,36 +220,33 @@ theorem sum_fourth_divisorTerm_eq_prefix (t c u : ℝ) (N : ℕ) :
       · intro n hn
         simp only [Finset.mem_Ioc,Finset.mem_range] at *
         omega
-      · intro n hn hnot
-        have hn0 : n = 0 := by
-          simp only [Finset.mem_Ioc,Finset.mem_range] at *
-          omega
-        subst n
-        simp [divisorDirichletTerm]
+      aesop
     _ = _ := by
       simp only [fourth_divisorTerm_eq_coeff_phase,dirichletPrefix,Complex.ofReal_sub]
 
-theorem norm_dirichletPrefix_le (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (N : ℕ) (a : ℕ → ℂ) (t : ℝ)
+include N a t
+
+theorem norm_dirichletPrefix_le  :
     ‖dirichletPrefix N a t‖ ≤ ∑ n ∈ Finset.Ioc 0 N, ‖a n‖ := by
   unfold dirichletPrefix
   apply norm_sum_le_of_le
   intro n _
   rw [norm_mul,Complex.norm_exp]
-  simp only [Complex.neg_re,Complex.mul_re,Complex.mul_im,
-    Complex.I_re,Complex.I_im,Complex.ofReal_re,Complex.ofReal_im,
-    zero_mul,mul_zero,one_mul,zero_add,sub_zero,
-    neg_zero,Real.exp_zero,mul_one]
+  simp only [neg_re, mul_re, I_re, ofReal_re, zero_mul, I_im, ofReal_im, mul_zero, sub_zero, mul_im, one_mul, zero_add, neg_zero, Real.exp_zero, mul_one]
   exact le_rfl
 
-theorem continuous_dirichletPrefix_reflected (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem continuous_dirichletPrefix_reflected  :
     Continuous (fun u : ℝ => dirichletPrefix N a (u-t)) :=
   (continuous_dirichletPrefix N a).comp (by fun_prop)
+end
+
 
 theorem integrable_gaussian_dirichletPrefix_norm_pow
     {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (t : ℝ) (k : ℕ) :
     Integrable (fun u : ℝ => Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^k) := by
-  let C : ℝ := ∑ n ∈ Finset.Ioc 0 N, ‖a n‖
-  have hC : 0 ≤ C := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  let C := ∑ n ∈ Finset.Ioc 0 N, ‖a n‖
   have hcont : Continuous (fun u : ℝ =>
       Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^k) :=
     (by fun_prop : Continuous (fun u : ℝ => Real.exp (-b*u^2))).mul
@@ -255,4 +259,4 @@ theorem integrable_gaussian_dirichletPrefix_norm_pow
     (pow_le_pow_left₀ (norm_nonneg _) (norm_dirichletPrefix_le N a (u-t)) k)
     (Real.exp_pos _).le
 
-end MathCollab.Density.Stronger.Fourth
+

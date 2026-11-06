@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileFiltered
 public import OAI.NumberTheory.DirichletL.Descent.FirstHeightBudget
 
@@ -8,11 +9,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation MeasureTheory
+
+open scoped EisensteinEis
+open InverseMomentFirstProfileUniform
 theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -90,8 +91,8 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
   have hb:=he p hp hg hinj hcop hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd H₁ H₂ selector labels a Γ Y
     hΨ₁ hΨ₂ hΓ hY hlabels hn ha ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂ A₁ A₂ C R K L hK s hs selected hselected
     hpos hρ hc₁ hc₂ hc₁b hc₂b hL hω₁ hω₂ hcut (Benergy/P₁) (Benergy/P₂) (by positivity) (by positivity)
-    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₁).mpr;convert hleft z using 1 ; dsimp only [P₁] ; ring)
-    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₂).mpr;convert hright z using 1 ; dsimp only [P₂] ; ring)
+    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₁).mpr;convert hleft z using 1 ; ring)
+    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₂).mpr;convert hright z using 1 ; ring)
   have hroot:Real.sqrt (Benergy/P₁)*Real.sqrt (Benergy/P₂)=Benergy*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹):=by
     simp only [div_eq_mul_inv,Real.sqrt_mul hBenergy]
     calc
@@ -111,7 +112,7 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
           (1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8))^Aker)):=by ring
     _= _:=by rw [hcancel,one_mul]
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

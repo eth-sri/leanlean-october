@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformOriginalEnergy
 open HeckeFamily CenteredMomentUniformReflectionApproximation CenteredMomentNaturalPrimitive
@@ -72,8 +72,8 @@ theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
   convert hh using 1
   rw [←mul_assoc,hBeq]
 
-end SevenEighths.CenteredMomentUniformOriginalEnergy
 
-end
 
-end OAI
+
+
+

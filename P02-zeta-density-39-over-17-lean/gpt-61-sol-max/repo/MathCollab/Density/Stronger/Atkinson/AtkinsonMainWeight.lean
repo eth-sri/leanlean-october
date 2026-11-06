@@ -11,10 +11,9 @@ public import MathCollab.Density.Stronger.Atkinson.ZetaQuadraticLogGaussianVaria
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory
+
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -24,7 +23,11 @@ def zetaAtkinsonMainWeight (T G L x : ℝ) : ℂ :=
       zetaMainMellinProfile (x / T) * zetaSquareReflectedGammaPhase T *
         zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi)))
 
-theorem zetaAtkinsonMainWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G L : ℝ) :
+section
+variable {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G L : ℝ)
+include T x hT hx G L
+
+theorem zetaAtkinsonMainWeight_eq_amplitude  :
     zetaAtkinsonMainWeight T G L x =
       (x : ℂ) * ((Real.log x : ℂ) + 2 * Real.eulerMascheroniConstant) *
         zetaAtkinsonAmplitude T G L x := by
@@ -33,7 +36,7 @@ theorem zetaAtkinsonMainWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x
   push_cast
   ring
 
-theorem zetaAtkinsonMainWeight_carrier {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G L : ℝ) :
+theorem zetaAtkinsonMainWeight_carrier  :
     zetaAtkinsonMainWeight T G L x * ((x : ℂ)⁻¹ *
       Complex.exp (((T * Real.log x - 2 * Real.pi * x : ℝ) : ℂ) * I)) =
         ((Real.log x : ℂ) + 2 * Real.eulerMascheroniConstant) * zetaAtkinsonDivisorTest T G L x := by
@@ -42,6 +45,8 @@ theorem zetaAtkinsonMainWeight_carrier {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G 
   simp only [zetaAtkinsonPhase, mul_zero, zero_mul, add_zero]
   have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.ne'
   field_simp
+end
+
 
 theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 1 ≤ Real.log T →
@@ -65,4 +70,4 @@ theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
   have hl := mul_le_mul_of_nonneg_left (sourceLogWeight_le_three_log hlog) hp
   convert hl using 1 <;> ring
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.SumMeasure
 
 @[expose] public section
@@ -8,8 +9,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
@@ -54,7 +55,7 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
     intro P hP'
     rw [norm_mul]
     exact (mul_le_of_le_one_left (norm_nonneg _) (ha P hP')).trans (extractedSlotFactor_norm_le_one D1 D2 P)
-  have hcolumn : ∀ n b, ‖extractedFrozenColumn F jF e A n b‖ ≤ 1 :=
+  have hcolumn :=
     extractedFrozenColumn_norm_le_one F jF e A hA
   have hh := he X Yq Bq L hX (le_max_left _ _) (le_max_left _ _) hL rows
     (quotientSupport D1 nset) (quotientSupport D2 bset) Pset
@@ -115,7 +116,7 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
   refine ⟨C,hC,?_⟩
   intro φ σ _ _ X Y B L hX _hY _hB hL F jF e s hc hN hbase hac hF hNF hcharF hj
     ι _ G0 D0 u m rows nset bset Pset S r aw w hrows hrowcop _hproducts hScop hSN hSchar hn hb hP hr haw hw
-  have hfrozen : ‖actualFrozenPhase F jF D0.fixedFactor s u m‖ ≤ 1 :=
+  have hfrozen :=
     actualFrozenPhase_norm_le_one F jF D0.fixedFactor (D0.fixedFactor_norm hN G0.generator_product_primary hbase).le
       s hc hN hbase hac hF hNF hcharF hj u m
   have hrow (K : Ideal Eis) (hK : K ∈ rows) : ‖actualRowPhaseExtension F jF s u m K‖ ≤ 1 := by
@@ -143,7 +144,7 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
   rw [weightedReflectedBranchHybridRow,norm_mul,mul_pow]
   exact (mul_le_mul_of_nonneg_right hs (sq_nonneg _)).trans_eq (one_mul _)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

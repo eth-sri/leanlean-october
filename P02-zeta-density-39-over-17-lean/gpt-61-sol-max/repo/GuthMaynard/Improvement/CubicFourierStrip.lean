@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMaskedStrip
 public import GuthMaynard.Improvement.CubicStripIntegral
 public import GuthMaynard.Improvement.RatioFourierInput
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -15,7 +15,6 @@ theorem ratio_box_input_coordinates {a b v y : ℝ} (ha : 0 < a) (ha1 : a ≤ 1)
     v ∈ Icc (a/b) (b/a) ∧ y ∈ Icc (a/b) (b/a) ∧ y/v ∈ Icc (a/b) (b/a) := by
   have hb : 0 < b := lt_of_lt_of_le zero_lt_one hb1
   have hvp : 0 < v := ha.trans_le hv.1
-  have hyp : 0 < y := ha.trans_le hy.1
   have hcover : ∀ z ∈ Icc a b, z ∈ Icc (a/b) (b/a) := by
     intro z hz
     constructor
@@ -80,22 +79,23 @@ theorem cubicStripMass_le_square {r : ℝ → ℝ} (hr : Measurable r)
     simpa only [abs_of_pos hv,smul_eq_mul] using Measure.integral_comp_div (fun y => r y^2) v
   dsimp only [Function.comp_apply,id_eq] at hcs
   rw [hchange,Real.sqrt_mul hv.le] at hcs
-  have heq : Real.sqrt (∫ y, r y^2)*(Real.sqrt v*Real.sqrt (∫ y, r y^2)) = Real.sqrt v*(∫ y, r y^2) := by
-    calc
-      _ = Real.sqrt v * (Real.sqrt (∫ y, r y^2))^2 := by ring
-      _ = _ := by rw [Real.sq_sqrt hmass]
+  have heq : Real.sqrt (∫ y, r y^2)*(Real.sqrt v*Real.sqrt (∫ y, r y^2)) = Real.sqrt v*(∫ y, r y^2) := by grind
   rw [heq] at hcs
   exact (setIntegral_le_integral hint (Filter.Eventually.of_forall (fun y => mul_nonneg (hr0 y) (hr0 _)))).trans hcs
 
-/-- Actual near-strip Fourier mass is bounded by the actual transverse
-strip integral, with all existence facts derived from the ordinary density. -/
-theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
+section
+variable {μ : ℝ → ℝ} (hm : Measurable μ)
     (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
     {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
     {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B)
     (hC : MeasurableSet C) (hD : MeasurableSet D)
     (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D)
-    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ) (m : ℤ × (ℤ × ℤ)) :
+    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ)
+include μ hm h0 h1 h2 a b ha ha1 hb1 A B C D hA hB hC hD hAsym hDsym hBD hCD L H
+
+/-- Actual near-strip Fourier mass is bounded by the actual transverse
+strip integral, with all existence facts derived from the ordinary density. -/
+theorem fourier_near_strip_integral  (m : ℤ × (ℤ × ℤ)) :
     let r₀ := ratioFourierInput μ (a/b) (b/a)
     let r := (mellinFrequency ⁻¹' D).indicator r₀
     let first := (mellinFrequency ⁻¹' A).indicator r₀
@@ -112,8 +112,8 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
   have hc : 0 < a/b := div_pos ha hb
   have hcd : a/b ≤ b/a := by apply (div_le_div_iff₀ hb ha).mpr; nlinarith
   have hfreq : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
-  have hAP : MeasurableSet (mellinFrequency ⁻¹' A) := hA.preimage hfreq
-  have hDP : MeasurableSet (mellinFrequency ⁻¹' D) := hD.preimage hfreq
+  have hAP := hA.preimage hfreq
+  have hDP := hD.preimage hfreq
   have hr₀ : Measurable r₀ := ratioFourierInput_measurable h1 _ _
   have hr : Measurable r := hr₀.indicator hDP
   have hfirst : Measurable first := hr₀.indicator hAP
@@ -207,13 +207,7 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
 
 /-- Finite actual near-mode mass transfers to the outer first-mask strip
 sum. No shell, sign, nonzero-mode, or width restriction is needed here. -/
-theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
-    {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
-    {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hC : MeasurableSet C) (hD : MeasurableSet D)
-    (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D)
-    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ) (S : Finset (ℤ × (ℤ × ℤ))) :
+theorem fourier_near_strip_sum  (S : Finset (ℤ × (ℤ × ℤ))) :
     let r₀ := ratioFourierInput μ (a/b) (b/a)
     let r := (mellinFrequency ⁻¹' D).indicator r₀
     let first := (mellinFrequency ⁻¹' A).indicator r₀
@@ -233,5 +227,7 @@ theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
       _ ≤ ∑ m ∈ S, ∫ v in Icc a b, first v*cubicStripMass r L H m v :=
         Finset.sum_le_sum (fun m _ => (hmode m).2.2)
       _ = _ := by rw [← integral_finsetSum S hi]; simp only [Finset.mul_sum, first, r, r₀]
+end
 
-end GuthMaynard.Improvement
+
+

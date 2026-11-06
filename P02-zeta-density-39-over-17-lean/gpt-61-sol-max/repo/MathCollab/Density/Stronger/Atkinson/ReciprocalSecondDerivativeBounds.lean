@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -18,7 +19,7 @@ They will be applied to the nonzero phase slope on the exact source band.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex Filter MeasureTheory Set
 open scoped Topology ContDiff
@@ -39,8 +40,7 @@ theorem iteratedDeriv_two_real_inv {g : ℝ → ℝ} {x : ℝ}
   dsimp only [Pi.neg_apply, Pi.pow_apply] at h
   rw [iteratedDeriv_succ, iteratedDeriv_one, he.deriv_eq, h]
   simp only [iteratedDeriv_succ, iteratedDeriv_zero, Nat.cast_ofNat, Nat.reduceSub, pow_one]
-  field_simp
-  ring
+  grind
 
 theorem intervalC2Bound_real_reciprocal {g : ℝ → ℝ} {a c B R : ℝ}
     (hB : 0 < B) (hR : 0 ≤ R) (hg : ∀ x ∈ Icc a c, ContDiffAt ℝ 2 g x)
@@ -66,11 +66,7 @@ theorem intervalC2Bound_real_reciprocal {g : ℝ → ℝ} {a c B R : ℝ}
       abs_div, abs_neg, abs_pow]
     calc
       _ ≤ (B * R) / B ^ 2 := by gcongr; exact hfirst x hx; exact hlo x hx
-      _ ≤ (3 / B) * R := by
-        have he : (B * R) / B ^ 2 = R / B := by field_simp
-        rw [he, show (3 / B) * R = 3 * (R / B) by ring]
-        have hp : 0 ≤ R / B := by positivity
-        nlinarith
+      _ ≤ (3 / B) * R := by field_simp <;> nlinarith
   · intro x hx
     rw [iteratedDeriv_ofReal_fun (hs x hx), Complex.norm_real, Real.norm_eq_abs,
       iteratedDeriv_two_real_inv (hg x hx) (hne x hx)]
@@ -81,8 +77,7 @@ theorem intervalC2Bound_real_reciprocal {g : ℝ → ℝ} {a c B R : ℝ}
         gcongr
         · exact hfirst x hx
         · exact hlo x hx
-        · exact hsecond x hx
-        · exact hlo x hx
+        all_goals (bound)
       _ = _ := by field_simp; ring
 
 theorem IntervalC2Bound.deriv_c1 {f : ℝ → ℂ} {a c M R : ℝ}
@@ -109,4 +104,4 @@ theorem IntervalC2Bound.deriv_c1 {f : ℝ → ℂ} {a c M R : ℝ}
         rw [intervalIntegral.integral_const, smul_eq_mul]
         nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

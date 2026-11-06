@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyAffineComposition
 
 @[expose] public section
@@ -15,7 +16,7 @@ literally the original mixed residue moment at
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Equation (7.21), with the same lower system `Psi` simultaneously for all
 refined residue classes.  Zero-mass classes are excluded here; their weighted
@@ -122,10 +123,7 @@ theorem wooley_equation_7_21_native
       wooleySourceResidueMassSq_affinePullback gamma (p ^ a) (p ^ H)
         (pow_pos hpPrime.pos a) (pow_pos hpPrime.pos H) xi (zeta.val : ℤ)]
     exact hkappaMassProd
-  have hright : wooleySourceMassSq right ≠ 0 := by
-    dsimp only [right]
-    rw [wooleySourceMassSq_affinePullback]
-    simpa using hetaMass
+  have hright : wooleySourceMassSq right ≠ 0 := by assumption
   have hid := huniform (wooleyTriangular r) (s - wooleyTriangular r)
     leftRestricted right hleft hright
   rw [← hid]
@@ -150,6 +148,6 @@ theorem wooley_equation_7_21_native
   rw [pow_add]
 
 
-end
 
-end GafniTao
+
+

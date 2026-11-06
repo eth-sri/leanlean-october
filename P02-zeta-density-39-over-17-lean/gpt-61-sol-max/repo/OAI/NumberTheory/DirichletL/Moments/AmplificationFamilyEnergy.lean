@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationFamilyEnergy
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
+open CompletedGauss RayFourExpansion
 open CenteredMomentAmplificationShortening CenteredMomentAmplificationFamily
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
-open CenteredMomentSourceRow CenteredMomentChildRows CenteredMomentOriginalChildEnergy
+open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
 open CenteredMomentGaussEnergy CenteredMomentSourceSmoothedAllocation CenteredMomentGaussNormalization
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
     (τ : RayCharacter → Character)
@@ -59,8 +59,8 @@ theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
   · exact Finset.sum_nonneg (fun χ _ => mul_nonneg (sq_nonneg _) (hd χ))
   · norm_num
 
-end SevenEighths.CenteredMomentAmplificationFamilyEnergy
 
-end
 
-end OAI
+
+
+

@@ -8,9 +8,9 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentFourier
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT
+open ActualEisensteinCubic CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 
 def frequencyReduction (d m : O) (h : d ∣ m) : Residue m →+* Residue d :=
@@ -71,7 +71,7 @@ def normalizedResidueGauss (d : O) (hd : d ≠ 0) (χ : MulChar (Residue d) ℂ)
     (h : Residue d) : ℂ :=
   residueGauss d hd χ h / (Real.sqrt (Ideal.absNorm (Ideal.span {d}) : ℝ) : ℂ)
 
-end SevenEighths.CenteredMomentFourier
-end
 
-end OAI
+
+
+

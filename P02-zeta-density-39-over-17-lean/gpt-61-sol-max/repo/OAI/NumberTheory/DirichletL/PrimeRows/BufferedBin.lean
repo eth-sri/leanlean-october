@@ -10,7 +10,7 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 def sourceDetectorFamily (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
@@ -60,8 +60,8 @@ theorem source_buffered_x_rectangle {K : ℕ}
     simpa only [uIcc_of_le (by linarith : -H≤H),Set.mem_preimage,Set.mem_Icc] using hx.2
   exact source_bin_denominator_nonzero S hS.prime η u ψ T a e i he hmax x hxr (hxi.trans hHT) hpole
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

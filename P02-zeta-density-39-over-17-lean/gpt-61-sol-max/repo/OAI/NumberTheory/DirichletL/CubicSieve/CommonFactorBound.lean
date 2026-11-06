@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 public import OAI.NumberTheory.DirichletL.CubicSieve.Recurrence
 
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def frequencyCost (C ε : ℝ) (hε : 0 < ε) (M N : ℝ) : ℝ :=
   M * (2/N) * (‖paperRadialFourier rowMajorant 0‖ +
@@ -84,14 +85,12 @@ theorem common_factor_uniform_cost {n : Type*} [Fintype n]
         ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) := by
       simp only [Finset.mul_sum]
     _ ≤ U*(∑ D ∈ columnDivisorPool cols, ∑ E ∈ idealDivisors D,
-        ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) := by
-      apply mul_le_mul_of_nonneg_left _ hU
-      exact Finset.sum_le_sum_of_subset_of_nonneg hsub (fun D hD hnot => by positivity)
+        ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) := by gcongr
     _ ≤ U*((DivisorBlockCauchy.divisorConstant ε hε*N^ε)^2*∑ j, ‖a j‖^2) :=
       mul_le_mul_of_nonneg_left he hU
     _ = _ := by ring
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

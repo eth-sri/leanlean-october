@@ -10,16 +10,16 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonLinearSource
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
 open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceLiveColumn
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+open CenteredMomentCommonAllocationSum
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentRowNorm
 open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalChildEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedDomain
-open CenteredMomentAmplificationLiveMask CenteredMomentExceptionalMaskedSource
-local notation "O" => HeckeFamily.O
+open CenteredMomentAmplificationLiveMask
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
@@ -107,8 +107,8 @@ theorem live_column_rectangle (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.
   convert he using 1 <;> simp only [maskedLiveProfile,commonData,one_mul,Input.pools,Sum.elim_inl]
   all_goals rfl
 
-end SevenEighths.CenteredMomentCommonLinearSource
 
-end
 
-end OAI
+
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
@@ -89,8 +89,8 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
       ((1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand ψ true W (D/N) σ freq (((2-σ : ℝ) : ℂ)+t*I)))
   ring
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

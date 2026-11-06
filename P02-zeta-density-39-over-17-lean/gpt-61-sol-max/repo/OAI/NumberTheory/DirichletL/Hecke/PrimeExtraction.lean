@@ -8,49 +8,47 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+            
+            
+                                                       
+                                     
+                    
+                       
 
-namespace ShortDraftHeckeBridge
 
-end ShortDraftHeckeBridge
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open NumberField
 
 namespace FiniteSFactor
 
 abbrev O := NumberField.RingOfIntegers (CyclotomicField 3 ℚ)
 
-noncomputable def outsideWeight (S : Finset (Ideal O))
+def outsideWeight (S : Finset (Ideal O))
     (w : Ideal O → ℂ) (I : Ideal O) : ℂ := by
   classical
   exact if ∀ P ∈ S, ¬ P ∣ I then w I else 0
 
-noncomputable def fiber (n : ℕ) : Finset (Ideal O) :=
+def fiber (n : ℕ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset
 
 theorem mem_fiber {n : ℕ} {I : Ideal O} : I ∈ fiber n ↔ Ideal.absNorm I = n := by
@@ -58,36 +56,38 @@ theorem mem_fiber {n : ℕ} {I : Ideal O} : I ∈ fiber n ↔ Ideal.absNorm I = 
 
 open scoped Classical
 
-open scoped Classical
+                     
 
-noncomputable def outsideCoeff (S : Finset (Ideal O))
+def outsideCoeff (S : Finset (Ideal O))
     (w : Ideal O → ℂ) (n : ℕ) : ℂ :=
   ∑ I ∈ fiber n, outsideWeight S w I
 
 end FiniteSFactor
-namespace ShortDraftHeckeBridge
 
-end ShortDraftHeckeBridge
 
 namespace DyadicTransfer
 
-noncomputable def annularCutoff (φ : ℝ → ℂ) (y : ℝ) : ℂ :=
+def annularCutoff (φ : ℝ → ℂ) (y : ℝ) : ℂ :=
   φ y - φ (2 * y)
 
-theorem annularCutoff_eq_zero_of_le_half (φ : ℝ → ℂ)
+section
+variable (φ : ℝ → ℂ)
+include φ
+
+theorem annularCutoff_eq_zero_of_le_half 
     (hsmall : ∀ y : ℝ, y ≤ 1 → φ y = 1)
     {y : ℝ} (hy : y ≤ 1 / 2) : annularCutoff φ y = 0 := by
   have hy1 : y ≤ 1 := by linarith
   have h2y : 2 * y ≤ 1 := by linarith
   simp [annularCutoff, hsmall y hy1, hsmall (2 * y) h2y]
 
-theorem annularCutoff_eq_zero_of_two_le (φ : ℝ → ℂ)
+theorem annularCutoff_eq_zero_of_two_le 
     (hlarge : ∀ y : ℝ, 2 ≤ y → φ y = 0)
     {y : ℝ} (hy : 2 ≤ y) : annularCutoff φ y = 0 := by
   have h2y : 2 ≤ 2 * y := by linarith
   simp [annularCutoff, hlarge y hy, hlarge (2 * y) h2y]
 
-theorem partial_partition (φ : ℝ → ℂ) (x : ℝ) (K : ℕ) :
+theorem partial_partition  (x : ℝ) (K : ℕ) :
     (∑ k ∈ Finset.range (K + 1),
       annularCutoff φ (x / (2 : ℝ) ^ k)) =
       φ (x / (2 : ℝ) ^ K) - φ (2 * x) := by
@@ -103,15 +103,15 @@ theorem partial_partition (φ : ℝ → ℂ) (x : ℝ) (K : ℕ) :
         field_simp
       rw [hshift]
       ring
+end
+
 
 end DyadicTransfer
 
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open NumberField
 
-namespace FiniteSFactor
 
-end FiniteSFactor
 
-end
 
-end OAI
+
+

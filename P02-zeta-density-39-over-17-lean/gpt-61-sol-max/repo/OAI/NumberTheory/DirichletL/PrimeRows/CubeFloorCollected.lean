@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorSaving
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeBinPartition
 
@@ -10,9 +11,9 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open ProbeRaySlots
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -25,8 +26,8 @@ theorem collectedFloorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (
 theorem actual_floor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hδ : 0<δ)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -71,14 +72,14 @@ theorem actual_floor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε
   filter_upwards [hbound η] with Z hb
   intro d hd hd' v hv hvhi rows hrows hnorm idx hidx hbin
   dsimp only
-  let Yp : Fin N→ℝ := fun j=>Z^(ell j)
-  let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Yp j)
+  let Yp := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S c b (Yp j)
   let hT := collectedFloorPoolOutside M H S N c b Yp
-  let WC : Fin N→ℝ→ℂ := fun j y=>(W j y:ℂ)
+  let WC := fun j y=>(W j y:ℂ)
   let normer := PrincipalMellinResidues.sourceResidueConstant W0 W1 (∏P∈S,P)*
     (Probe.principalScalar Finset.univ Z (1/6)
       (PrincipalSignalComparison.slotMass T (ProbePrincipalResidueActual.residueWeights W Yp)) : ℂ)
-  let Ri : ℕ→Finset FreeRow := fun i=>rows.filter (fun u=>idx u=i)
+  let Ri := fun i=>rows.filter (fun u=>idx u=i)
   have hnormer := (hb d hd hd' v hv hvhi ∅ (by simp) (by simp) 0 (Nat.zero_le n) (by simp)).1
   refine ⟨hnormer,?_⟩
   have hpart := finiteCentralCubeRows_bin_partition S hS hmax η rows T hT WC Yp W0 W1
@@ -108,8 +109,8 @@ theorem actual_floor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε
     _ ≤ ∑i∈Finset.range (n+1),C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(3/16-saving) := Finset.sum_le_sum hboundi
     _ = _ := by simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul];ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFrequency
 
 namespace OAI
 
-noncomputable section
+
 open scoped Topology
 open Filter
 namespace SevenEighths.HeckeDetectorFrequency
@@ -42,8 +42,8 @@ theorem exists_frequency_tail_order (τ : ℝ) (hτ : 0 < τ) :
   obtain ⟨U₀,hU₀⟩ := Filter.eventually_atTop.mp ((tendsto_order.mp ht').2 (1/4) (by norm_num))
   exact ⟨U₀,fun U hU hU1 => (hU₀ U hU).le⟩
 
-end SevenEighths.HeckeDetectorFrequency
 
-end
 
-end OAI
+
+
+

@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.SourceRatioImage
 public import GuthMaynard.Improvement.SourceRatioHeightBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set Finset
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -97,4 +96,4 @@ theorem source_ratio_sampling_global (c : ℝ) (hc : 0 ≤ c) :
     (setIntegral_le_integral hF.norm (Filter.Eventually.of_forall (fun ξ => norm_nonneg (𝓕 f ξ))))
     (sq_nonneg N)
 
-end GuthMaynard.Improvement
+

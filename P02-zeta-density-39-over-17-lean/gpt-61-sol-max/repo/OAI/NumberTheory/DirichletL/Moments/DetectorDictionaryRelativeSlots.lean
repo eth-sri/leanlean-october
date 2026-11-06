@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySlots
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma normalizedSlot_character (η ν : Character) (m A z : O)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t D : ℝ) :
@@ -45,8 +45,8 @@ theorem relative_normalizedSlot_eq_ray (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
   exact CenteredMomentPrimeSlotShift.normalizedSlot_eq_ray M H (η.product ν) (χ.product ν)
     m A z (product_row_presentation η χ ν m A z hrow) W b D σ t v hD
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

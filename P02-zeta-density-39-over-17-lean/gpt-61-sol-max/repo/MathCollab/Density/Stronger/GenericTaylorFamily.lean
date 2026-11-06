@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.DetectorBlockExpansion
 public import MathCollab.Density.DetectorFamilyScales
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -20,7 +20,11 @@ def genericTaylorPolynomial (a : ℕ → ℂ) (N j : ℕ) (t : ℝ) : ℂ :=
 def genericBlock (ρ : ℂ) (a : ℕ → ℂ) (N : ℕ) : ℂ :=
   ∑ n ∈ Finset.Ioc N (2*N), a n * (n : ℂ)^(-ρ)
 
-theorem norm_genericTaylorCoefficient_le {a : ℕ → ℂ} {N n : ℕ}
+section
+variable {a : ℕ → ℂ}
+include a
+
+theorem norm_genericTaylorCoefficient_le  {N n : ℕ}
     (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ)) (hN : 0 < N) (hn : n ∈ Finset.Ioc N (2*N)) (j : ℕ) :
     ‖genericTaylorCoefficient a N j n‖ ≤ (n.divisors.card : ℝ) := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
@@ -36,7 +40,7 @@ theorem norm_genericTaylorCoefficient_le {a : ℕ → ℂ} {N n : ℕ}
   exact (mul_le_mul (ha n hn) hp (by positivity) (by positivity)).trans_eq (mul_one _)
 
 /-- Uniform in the Taylor index and ordinate, before any beta approximation. -/
-theorem norm_genericTaylorPolynomial_le {a : ℕ → ℂ} {N : ℕ}
+theorem norm_genericTaylorPolynomial_le  {N : ℕ}
     (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ)) (hN : 0 < N) (j : ℕ) (t : ℝ) :
     ‖genericTaylorPolynomial a N j t‖ ≤ 2*(N : ℝ)^2 := by
   unfold genericTaylorPolynomial detectingPolynomial
@@ -49,14 +53,11 @@ theorem norm_genericTaylorPolynomial_le {a : ℕ → ℂ} {N : ℕ}
       have hc : (n.divisors.card : ℝ) ≤ n := by exact_mod_cast Nat.card_divisors_le_self n
       have hn' : (n : ℝ) ≤ 2*N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
       exact (norm_genericTaylorCoefficient_le ha hN hn j).trans (hc.trans hn')
-    _ = _ := by
-      simp only [Finset.sum_const, Nat.card_Ioc, nsmul_eq_mul]
-      rw [show 2*N-N = N by omega]
-      ring
+    _ = _ := by simp_all <;> nlinarith
 
 /-- The tail of the actual fixed polynomial family has geometric decay.
 Identifying its full weighted series with the beta-dependent block is separate. -/
-theorem norm_genericTaylor_tail_le {a : ℕ → ℂ} {β : ℝ} {N : ℕ}
+theorem norm_genericTaylor_tail_le  {β : ℝ} {N : ℕ}
     (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ)) (hN : 0 < N) (hβ : 0 ≤ β) (hβ' : β ≤ 1) (J : ℕ) (t : ℝ) :
     ‖∑' j : ℕ, (detectorTaylorWeight β (j+J) : ℂ)*genericTaylorPolynomial a N (j+J) t‖ ≤
       3*(N : ℝ)^2*(1/3 : ℝ)^J := by
@@ -75,13 +76,19 @@ theorem norm_genericTaylor_tail_le {a : ℕ → ℂ} {β : ℝ} {N : ℕ}
   calc
     _ ≤ ∑' j : ℕ, ‖(detectorTaylorWeight β (j+J) : ℂ)*genericTaylorPolynomial a N (j+J) t‖ := norm_tsum_le_tsum_norm hn
     _ ≤ _ := (hn.tsum_le_tsum hb hg.summable).trans_eq (by rw [hg.tsum_eq]; norm_num; ring)
+end
+
 
 def normalizedGenericBlock (ρ : ℂ) (a : ℕ → ℂ) (N : ℕ) : ℂ :=
   ∑ n ∈ Finset.Ioc N (2*N), a n *
     ((((n : ℝ)/N)^(-ρ.re) : ℝ) : ℂ)*dirichletPhase ((n : ℝ)/N) (-ρ.im)
 
+section
+variable {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ)
+include N hN ρ a
+
 /-- Exact rescaling, including the unit phase of N; no ordinate is shifted. -/
-theorem genericBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
+theorem genericBlock_eq_normalized  :
     genericBlock ρ a N = (N : ℂ)^(-ρ)*normalizedGenericBlock ρ a N := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
   rw [genericBlock, normalizedGenericBlock, Finset.mul_sum]
@@ -93,19 +100,18 @@ theorem genericBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ �
     have hm : ((N : ℝ) : ℂ)*(((n : ℝ)/N : ℝ) : ℂ) = (n : ℂ) := by
       push_cast
       field_simp [show (N : ℂ) ≠ 0 by exact_mod_cast hN.ne']
-    rw [hm, Complex.ofReal_natCast] at hh
-    exact hh
+    simp_all <;> nlinarith
   rw [hsplit, cpow_neg_eq_real_phase (div_pos hnpos hNpos)]
   ring
 
-theorem norm_normalizedGenericBlock {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
+theorem norm_normalizedGenericBlock  :
     ‖normalizedGenericBlock ρ a N‖ = (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ := by
   rw [genericBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re]
   rw [← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
   simp
 
 /-- Genuine summation and finite-sum interchange for the fixed Taylor family. -/
-theorem hasSum_genericTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
+theorem hasSum_genericTaylorPolynomial  :
     HasSum (fun j : ℕ => (detectorTaylorWeight ρ.re j : ℂ)*genericTaylorPolynomial a N j ρ.im)
       ((((3/2 : ℝ)^ρ.re : ℝ) : ℂ)*normalizedGenericBlock ρ a N) := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
@@ -138,6 +144,8 @@ theorem hasSum_genericTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : �
   · funext j
     simp [genericTaylorPolynomial, detectingPolynomial, genericTaylorCoefficient, Finset.mul_sum]
   · rw [normalizedGenericBlock, Finset.mul_sum]
+end
+
 
 /-- The full Taylor combination is at least the beta-rescaled original block. -/
 theorem norm_genericTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ : 0 ≤ ρ.re) (a : ℕ → ℂ) :
@@ -149,18 +157,20 @@ theorem norm_genericTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ : 0 �
   nlinarith [show 0 ≤ (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ by positivity]
 
 
-/-- Quantitative tail control at the actual family cutoff. -/
-theorem norm_fixedGenericTaylor_tail_le {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ : ℂ}
+section
+variable {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ : ℂ}
     (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ))
     (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+include a T N ρ ha hT hN hN' hβ hβ'
+
+/-- Quantitative tail control at the actual family cutoff. -/
+theorem norm_fixedGenericTaylor_tail_le  :
     ‖∑' j : ℕ, (detectorTaylorWeight ρ.re (j+(detectorTaylorCutoff T+1)) : ℂ)*
       genericTaylorPolynomial a N (j+(detectorTaylorCutoff T+1)) ρ.im‖ ≤ 3*T^(-1 : ℝ) := by
   have hTpos : 0 < T := by linarith
   have hp : (1/3 : ℝ)^(detectorTaylorCutoff T+1) ≤ T^(-5 : ℝ) := by
-    have hh : (1/3 : ℝ)^(detectorTaylorCutoff T+1) ≤ (1/3 : ℝ)^(detectorTaylorCutoff T) := by
-      rw [pow_succ]
-      nlinarith [pow_nonneg (show (0 : ℝ) ≤ 1/3 by norm_num) (detectorTaylorCutoff T)]
+    have hh : (1/3 : ℝ)^(detectorTaylorCutoff T+1) ≤ (1/3 : ℝ)^(detectorTaylorCutoff T) := by bound
     exact hh.trans (detectorTaylorCutoff_geometric_le hT)
   calc
     _ ≤ 3*(N : ℝ)^2*(1/3 : ℝ)^(detectorTaylorCutoff T+1) :=
@@ -171,10 +181,7 @@ theorem norm_fixedGenericTaylor_tail_le {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {�
       norm_num
 
 /-- The fixed family has the full block height, up to an absolute constant. -/
-theorem exists_genericTaylor_component {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ : ℂ}
-    (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ))
-    (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+theorem exists_genericTaylor_component 
     {D : ℝ} (hD : 0 < D)
     (hsmall : 3*T^(-1 : ℝ) ≤ 1/(4*D))
     (hblock : 1/(2*D) ≤ ‖genericBlock ρ a N‖) :
@@ -197,13 +204,14 @@ theorem exists_genericTaylor_component {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ
     change (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ ≤ ‖∑' j, W j‖ at hfull
     change (N : ℝ)^ρ.re*(1/(2*D)) ≤ _ at hb
     have halg : (N : ℝ)^ρ.re*(1/(2*D)) = 2*((N : ℝ)^ρ.re/(4*D)) := by ring
-    rw [halg] at hb
-    linarith
+    grind
   obtain ⟨j, hj, hlarge⟩ := exists_large_taylor_component hβ hβ' J (genericTaylorPolynomial a N · ρ.im)
   refine ⟨j, hj, ?_⟩
   have hh := div_le_div_of_nonneg_right hpartial (by norm_num : (0 : ℝ) ≤ 2)
   change ‖∑ j ∈ Finset.range (J+1), W j‖/2 ≤ _ at hlarge
   exact (show (N : ℝ)^ρ.re/(8*D) = ((N : ℝ)^ρ.re/(4*D))/2 by ring).trans_le (hh.trans hlarge)
+end
 
 
-end MathCollab.Density.Stronger
+
+

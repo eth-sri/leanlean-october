@@ -7,13 +7,12 @@ public import LaterPairs.Native.RobertSargosSmallBlockScale
 public import LaterPairs.Native.RobertSargosSymmetricBlockThirdDerivative
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -33,4 +32,4 @@ theorem robertSargos_small_symmetric_block
       (small_block_third_derivative_budget (Nat.cast_nonneg M)
         (by exact_mod_cast hH) hHM' hC hlam hfirst hsecond)
 
-end TaoTrudgianYang2025
+

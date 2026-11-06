@@ -4,9 +4,8 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                              
@@ -18,9 +17,13 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 namespace TaoTrudgianYang2025
 
+section
+variable (W : Finset ℝ)
+    (hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x - y|)
+include W hsep
+
 private theorem sortedList_length_le_interval
-    (W : Finset ℝ)
-    (hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x - y|) :
+     :
     ∀ (L : List ℝ), L.Pairwise (· < ·) →
       (∀ x ∈ L, x ∈ W) →
       ∀ a b : ℝ, (∀ x ∈ L, a ≤ x ∧ x ≤ b) →
@@ -67,8 +70,7 @@ private theorem sortedList_length_le_interval
           linarith
 
 theorem oneSeparated_card_cast_le_interval_length_add_one
-    (W : Finset ℝ)
-    (hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x - y|)
+    
     {a b : ℝ} (hab : 0 ≤ b - a)
     (hmem : ∀ x ∈ W, a ≤ x ∧ x ≤ b) :
     (W.card : ℝ) ≤ b - a + 1 := by
@@ -76,15 +78,14 @@ theorem oneSeparated_card_cast_le_interval_length_add_one
   have hsorted : L.Pairwise (· < ·) := by
     exact List.sortedLT_iff_pairwise.mp (by
       simpa [L] using Finset.sortedLT_sort W)
-  have hsub : ∀ x ∈ L, x ∈ W := by
-    intro x hx
-    change x ∈ W.sort at hx
-    exact (Finset.mem_sort (· ≤ ·)).mp hx
+  have hsub : ∀ x ∈ L, x ∈ W := by aesop
   have hmemL : ∀ x ∈ L, a ≤ x ∧ x ≤ b := by
     intro x hx
     exact hmem x (hsub x hx)
   simpa [L] using
     sortedList_length_le_interval W hsep L hsorted hsub a b hmemL hab
+end
+
 
                                                           
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceMean
 
 @[expose] public section
@@ -20,19 +21,23 @@ namespace GafniTao
 
 noncomputable section
 
+section
+variable (gamma : WooleySourceSequence)
+    (q : ℕ) (xi : ZMod q)
+include gamma q xi
+
 /-- The coefficient sequence restricted to the residue class `xi mod q`. -/
-def wooleySourceResidueSequence (gamma : WooleySourceSequence)
-    (q : ℕ) (xi : ZMod q) : WooleySourceSequence :=
+def wooleySourceResidueSequence  : WooleySourceSequence :=
   gamma.filter fun n : ℤ => (n : ZMod q) = xi
 
 @[simp] theorem wooleySourceResidueSequence_apply
-    (gamma : WooleySourceSequence) (q : ℕ) (xi : ZMod q) (n : ℤ) :
+     (n : ℤ) :
     wooleySourceResidueSequence gamma q xi n =
       if (n : ZMod q) = xi then gamma n else 0 :=
   rfl
 
 theorem wooleySourceResidueSequence_support
-    (gamma : WooleySourceSequence) (q : ℕ) (xi : ZMod q) :
+     :
     (wooleySourceResidueSequence gamma q xi).support =
       gamma.support.filter fun n : ℤ => (n : ZMod q) = xi :=
   rfl
@@ -40,38 +45,38 @@ theorem wooleySourceResidueSequence_support
 /-- Equation (4.3) at the coefficient-mass level, before the harmless affine
 reindexing of the selected progression. -/
 theorem wooleySourceMassSq_residueSequence
-    (gamma : WooleySourceSequence) (q : ℕ) (xi : ZMod q) :
+     :
     wooleySourceMassSq (wooleySourceResidueSequence gamma q xi) =
       wooleySourceResidueMassSq gamma q xi := by
   unfold wooleySourceMassSq wooleySourceResidueMassSq
   rw [wooleySourceResidueSequence_support]
   apply Finset.sum_congr rfl
-  intro n hn
-  simp only [Finset.mem_filter] at hn
-  rw [wooleySourceResidueSequence_apply, ite_eq_left hn.2]
+  simp_all
+end
+
+
+section
+variable {k q qH : ℕ} [NeZero q]
+    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+    (alpha : Fin k → ZMod q) (xi : ZMod qH)
+include k q qH phi gamma alpha xi
 
 /-- The global polynomial sum of the restricted sequence is the source
 residue-class polynomial sum, with no error or change of normalization. -/
 theorem wooleySourcePolynomialSum_residueSequence
-    {k q qH : ℕ} [NeZero q]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod q) (xi : ZMod qH) :
+     :
     wooleySourcePolynomialSum phi
         (wooleySourceResidueSequence gamma qH xi) alpha =
       wooleySourcePolynomialResidueSum phi gamma alpha xi := by
   unfold wooleySourcePolynomialSum wooleySourcePolynomialResidueSum
   rw [wooleySourceResidueSequence_support]
   apply Finset.sum_congr rfl
-  intro n hn
-  simp only [Finset.mem_filter] at hn
-  rw [wooleySourceResidueSequence_apply, ite_eq_left hn.2]
+  simp_all
 
 /-- Consequently the normalized global sum of a residue restriction is
 literally the normalized residue sum in (3.4). -/
 theorem wooleySourceNormalizedPolynomialSum_residueSequence
-    {k q qH : ℕ} [NeZero q]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod q) (xi : ZMod qH) :
+     :
     wooleySourceNormalizedPolynomialSum phi
         (wooleySourceResidueSequence gamma qH xi) alpha =
       wooleySourceNormalizedPolynomialResidueSum phi gamma alpha xi := by
@@ -79,6 +84,8 @@ theorem wooleySourceNormalizedPolynomialSum_residueSequence
     wooleySourceNormalizedPolynomialResidueSum
   rw [wooleySourceMassSq_residueSequence,
     wooleySourcePolynomialSum_residueSequence]
+end
+
 
 /-- A residue-class sequence is zero precisely when its source residue mass
 is zero.  This makes the zero branch in (3.4) explicit. -/
@@ -121,11 +128,15 @@ theorem wooleySourceResidueMassSq_mod_one
     exact Finset.filter_eq_self.mpr fun n hn => Subsingleton.elim _ _
   rw [hf]
 
+section
+variable {k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
+    (gamma : WooleySourceSequence) (alpha : Fin k → ZMod q)
+    (xi : ZMod 1)
+include k q phi gamma alpha xi
+
 /-- Modulo one the residue sum is the global sum. -/
 theorem wooleySourcePolynomialResidueSum_mod_one
-    {k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
-    (gamma : WooleySourceSequence) (alpha : Fin k → ZMod q)
-    (xi : ZMod 1) :
+     :
     wooleySourcePolynomialResidueSum phi gamma alpha xi =
       wooleySourcePolynomialSum phi gamma alpha := by
   have hxi : xi = 0 := Subsingleton.elim _ _
@@ -138,16 +149,16 @@ theorem wooleySourcePolynomialResidueSum_mod_one
 
 /-- Modulo one the normalized residue sum is the normalized global sum. -/
 theorem wooleySourceNormalizedPolynomialResidueSum_mod_one
-    {k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
-    (gamma : WooleySourceSequence) (alpha : Fin k → ZMod q)
-    (xi : ZMod 1) :
+     :
     wooleySourceNormalizedPolynomialResidueSum phi gamma alpha xi =
       wooleySourceNormalizedPolynomialSum phi gamma alpha := by
   unfold wooleySourceNormalizedPolynomialResidueSum
     wooleySourceNormalizedPolynomialSum
   rw [wooleySourceResidueMassSq_mod_one,
     wooleySourcePolynomialResidueSum_mod_one]
-
 end
 
-end GafniTao
+
+
+
+

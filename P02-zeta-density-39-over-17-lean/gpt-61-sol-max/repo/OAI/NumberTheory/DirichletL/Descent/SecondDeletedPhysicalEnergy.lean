@@ -9,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance inverseSecondDeletedPhysicalEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -108,7 +108,7 @@ theorem actual_second_deleted_physical_energy
   rw [hn']
   exact mul_le_mul_of_nonneg_left hb (by positivity)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

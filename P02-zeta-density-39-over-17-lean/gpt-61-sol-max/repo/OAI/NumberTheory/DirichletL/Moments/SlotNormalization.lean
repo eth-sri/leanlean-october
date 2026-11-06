@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Moments.WholeSlotDeletion
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSlotNormalization
 open HeckeFamily CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
 open CenteredMomentWholeSlotDeletion CenteredMomentHeckeHeight
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma sqrt_product_normalizer {ι:Type*} [Fintype ι] (X:ℝ) (P:ι→ℝ)
     (hX:0≤X) (hP:∀i,0≤P i) :
@@ -35,8 +35,8 @@ theorem selectedProduct_univ {ι:Type*} [Fintype ι] [DecidableEq ι]
         ∏i,rowSlot η m A z (S i) (β i) t) := by ring
     _=_ := by rw [he]
 
-end SevenEighths.CenteredMomentSlotNormalization
 
-end
 
-end OAI
+
+
+

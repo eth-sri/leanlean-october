@@ -3,8 +3,7 @@ public import RationalCyclicMoment
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -102,4 +101,4 @@ theorem rational_coefficient_energy_two_subpower {η : ℝ} (hη : 0 < η) :
   congr 2
   ring
 
-end Montgomery.RationalMoment
+

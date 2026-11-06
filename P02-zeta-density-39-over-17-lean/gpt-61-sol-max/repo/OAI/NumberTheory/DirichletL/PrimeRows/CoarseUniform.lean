@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.Conductor
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
@@ -7,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma selectedFirstBound_polynomial {Q : ℝ} (hQ : 1≤Q) : selectedFirstBound Q 2≤8192*Q^3 := by
   have hQ0 : 0≤Q := by linarith
@@ -28,7 +29,7 @@ lemma selectedFirstBound_polynomial {Q : ℝ} (hQ : 1≤Q) : selectedFirstBound 
     _ ≤ _ := by nlinarith
 
 theorem nonprincipal_first_uniform_growth :
-    ∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 → ∀s : ℂ,-(1/100:ℝ)≤s.re →
+    ∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 → ∀s : ℂ,-(1/100:ℝ)≤ s.re →
       ‖HeckeOrigin.continued χ s‖≤C*(χ.modulus.absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨Cd,hCd,hd⟩ := HeckeDeletionBounds.factors_any_re_subpower_bound 1 (by norm_num)
   let U := HeckeLogarithmicInput.uniformConstant
@@ -37,13 +38,13 @@ theorem nonprincipal_first_uniform_growth :
   intro χ hχ s hs
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue≠1 := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
-  have hN : (1:ℝ)≤χ.modulus.absNorm := HeckeLogarithmicInput.modulus_norm_ge_one χ
-  have hψN : (1:ℝ)≤ψ.modulus.absNorm := HeckeLogarithmicInput.modulus_norm_ge_one ψ
+  have hN := HeckeLogarithmicInput.modulus_norm_ge_one χ
+  have hψN := HeckeLogarithmicInput.modulus_norm_ge_one ψ
   have hQ' : (ψ.modulus.absNorm:ℝ)≤χ.modulus.absNorm := by exact_mod_cast hQ
   have hpow : (ψ.modulus.absNorm:ℝ)^(3/5:ℝ)≤χ.modulus.absNorm := by
     apply le_trans _ hQ'
     simpa using Real.rpow_le_rpow_of_exponent_le hψN (by norm_num : (3/5:ℝ)≤1)
-  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤s.re)
+  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤ s.re)
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
   have hl : ‖LFunction ψ s‖≤U*(χ.modulus.absNorm:ℝ)*(3+|s.im|)^2 := by
     exact hg.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hU) (sq_nonneg _))
@@ -64,12 +65,12 @@ theorem nonprincipal_first_uniform_growth :
 
 theorem calibrated_numerator_first_uniform_growth
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) :
-    ∃C : ℝ,0<C ∧ ∀u : FreeRow,u.val≠1 → ∀s : ℂ,-(1/100:ℝ)≤s.re →
+    ∃C : ℝ,0<C ∧ ∀u : FreeRow,u.val≠1 → ∀s : ℂ,-(1/100:ℝ)≤ s.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤
         C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hmain⟩ := nonprincipal_first_uniform_growth
-  let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
+  let A := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
   have hA : 0≤A := by dsimp [A];positivity
   refine ⟨C*(1+A^3),by positivity,?_⟩
   intro u hu s hs
@@ -97,8 +98,8 @@ theorem calibrated_numerator_first_uniform_growth
         nlinarith [mul_nonneg (pow_nonneg (by positivity : (0:ℝ)≤(Ideal.span {u.val}:Ideal O).absNorm) 3)
           (sq_nonneg (3+|s.im|))]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongHeightBin
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalCubeSeparation SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open InverseTerminalWidths
+open scoped EisensteinO
 
 theorem actual_complete_state_from_children
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
@@ -40,7 +40,7 @@ theorem actual_complete_state_from_children
       hi≤Z^eta → Real.exp Alog≤Z^eta → Real.exp window≤Z^eta →
       0≤cutoff → cutoff≤L → cutoff≤cstar/200 →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       0≤pi → 6*eta≤pi → em*(20*(3*L+16)+30)≤pi/4 → ed*(20*(3*L+16)+30)≤pi/4 →
       0≤epschild → -saving≤48*eta+tau+pi+epschild+epsSecond →
       48*eta+tau+pi+epschild+epsSecond≤loss →
@@ -154,8 +154,8 @@ theorem actual_complete_state_from_children
   rw [Real.rpow_add hz (N+V+lossFinal+2*L*epsFirst) eps]
   ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

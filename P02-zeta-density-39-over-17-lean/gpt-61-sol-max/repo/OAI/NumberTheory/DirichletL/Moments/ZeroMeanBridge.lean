@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstLocalization
 public import OAI.NumberTheory.DirichletL.Moments.ZeroMode
 
@@ -16,7 +17,7 @@ open CenteredMomentCommonSupport
 open CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation
 open CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst
 open CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def quotientMean (a : O) (F : Residue a → ℂ) : ℂ :=
   (normValue a : ℂ)⁻¹ * ∑' x : Residue a, F x
@@ -30,30 +31,44 @@ theorem quotientMean_pullback (a m : O) (ha : a ≠ 0) (hm : m ≠ 0)
     (h : a ∣ m) (F : Residue a → ℂ) :
     quotientMean m (fun x => F (frequencyReduction a m h x)) = quotientMean a F := by
   obtain ⟨b, rfl⟩ := h
-  have hb : b ≠ 0 := right_ne_zero_of_mul hm
+  have hb := right_ne_zero_of_mul hm
   have hh := conductorFourier_lift a b ha hb F 0
   simp only [mul_zero, conductorFourier, map_zero, zero_mul, AddChar.map_zero_eq_one,
     mul_one] at hh
   have he : frequencyReduction a (a*b) (dvd_mul_right a b) = conductorReduction a b := rfl
   unfold quotientMean
   rw [he, hh, normValue_mul, Complex.ofReal_mul]
-  have ha' : (normValue a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (normValue_ne_zero a ha)
-  have hb' : (normValue b : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (normValue_ne_zero b hb)
+  have ha' := Complex.ofReal_ne_zero.mpr (normValue_ne_zero a ha)
+  have hb' := Complex.ofReal_ne_zero.mpr (normValue_ne_zero b hb)
   change ((normValue a : ℂ) * (normValue b : ℂ))⁻¹ *
     ((normValue b : ℂ) * _) = _
   field_simp
 
-def dilationMask (e d : O) (F : Residue d → ℂ) (x : Residue (d*e)) : ℂ :=
+section
+variable (e d : O)
+include e d
+
+section
+variable (F : Residue d → ℂ)
+include F
+
+def dilationMask  (x : Residue (d*e)) : ℂ :=
   if frequencyReduction e (d*e) (dvd_mul_left e d) x = 0 then
     F (frequencyReduction d (d*e) (dvd_mul_right d e) x) else 0
 
-@[simp] theorem dilationMask_mk (e d : O) (F : Residue d → ℂ) (z : O) :
+@[simp] theorem dilationMask_mk  (z : O) :
     dilationMask e d F (Ideal.Quotient.mk _ z) =
       if e ∣ z then F (Ideal.Quotient.mk _ z) else 0 := by
   simp only [dilationMask, frequencyReduction_mk, Ideal.Quotient.eq_zero_iff_mem,
     Ideal.mem_span_singleton]
+end
 
-theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
+
+section
+variable (he : e ≠ 0)
+include he
+
+theorem dilationMask_sum  (F : Residue d → ℂ) :
     (∑' x : Residue (d*e), dilationMask e d F x) =
       ∑' y : Residue d, F (Ideal.Quotient.mk _ e * y) := by
   have hi := scaledResidue_injective d e (d*e) rfl he
@@ -75,7 +90,7 @@ theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
   obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, dilationMask_mk, ite_eq_left (dvd_mul_right e z), map_mul]
 
-theorem quotientMean_dilation (e d : O) (he : e ≠ 0) (_hd : d ≠ 0)
+theorem quotientMean_dilation  (_hd : d ≠ 0)
     (F : Residue d → ℂ) (hF : ∀ x y, F (x*y) = F x * F y) :
     quotientMean (d*e) (dilationMask e d F) =
       (normValue e : ℂ)⁻¹ * F (Ideal.Quotient.mk _ e) * quotientMean d F := by
@@ -83,8 +98,15 @@ theorem quotientMean_dilation (e d : O) (he : e ≠ 0) (_hd : d ≠ 0)
   simp_rw [hF]
   rw [tsum_mul_left, normValue_mul, Complex.ofReal_mul, quotientMean]
   ring
+end
+end
 
-theorem quotientMean_finite_sum {ι : Type*} [Fintype ι]
+
+section
+variable {ι : Type*}
+include ι
+
+theorem quotientMean_finite_sum  [Fintype ι]
     (a : O) (ha : a ≠ 0) (F : Residue a → ℂ)
     (d : ι → O) (hd : ∀ i, d i ≠ 0) (G : (i : ι) → Residue (d i) → ℂ)
     (c : ι → ℂ)
@@ -101,7 +123,7 @@ theorem quotientMean_finite_sum {ι : Type*} [Fintype ι]
   have hh (x : Residue m) : F (frequencyReduction a m haM x) =
       ∑ i, c i * G i (frequencyReduction (d i) m (hdM i) x) := by
     obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
-    simpa only [frequencyReduction_mk] using h z
+    exact h z
   simp_rw [quotientMean, hh, tsum_fintype]
   rw [Finset.sum_comm, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -111,9 +133,13 @@ theorem quotientMean_finite_sum {ι : Type*} [Fintype ι]
   rw [← Finset.mul_sum, mul_left_comm, hl]
   rfl
 
-theorem row_mask_expansion {ι : Type*} [DecidableEq ι]
+section
+variable [DecidableEq ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (z : O) (v : ℂ) :
+    (S : Finset ι)
+include P hinj S
+
+theorem row_mask_expansion  (z : O) (v : ℂ) :
     rowCoprimeMask P S z * v =
       ∑ E ∈ S.powerset, (UniqueFactorizationMonoid.moebius (∏ i∈E,P i) : ℂ) *
         (if primeSubsetGenerator P E ∣ z then v else 0) := by
@@ -128,9 +154,7 @@ theorem row_mask_expansion {ι : Type*} [DecidableEq ι]
   rw [he]
   split_ifs <;> ring
 
-theorem quotientMean_mask_expansion {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (a d : O) (ha : a ≠ 0) (hd : d ≠ 0)
+theorem quotientMean_mask_expansion  (a d : O) (ha : a ≠ 0) (hd : d ≠ 0)
     (F : Residue a → ℂ) (G : Residue d → ℂ)
     (hG : ∀ x y, G (x*y) = G x * G y)
     (hFG : ∀ z : O, F (Ideal.Quotient.mk _ z) =
@@ -154,6 +178,9 @@ theorem quotientMean_mask_expansion {ι : Type*} [DecidableEq ι]
     (UniqueFactorizationMonoid.moebius (∏ i∈E,P i) : ℂ) *
       (normValue (primeSubsetGenerator P E) : ℂ)⁻¹ *
         G (Ideal.Quotient.mk _ (primeSubsetGenerator P E)) * quotientMean d G))
+end
+end
+
 
 theorem tripleResidue_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
     (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ)
@@ -165,7 +192,11 @@ theorem tripleResidue_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
   rw [← map_mul, tripleResidue_mk, tripleResidue_mk, tripleResidue_mk]
   exact tripleRow_mul a b r χa χb G hG u v
 
-theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+section
+variable (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+include I J hI hJ
+
+theorem original_pair_reduced_mask 
     (z : O) :
     idealRowHom z I * star (idealRowHom z J) =
       rowCoprimeMask (fun P : CommonIndex I J => P.val)
@@ -192,7 +223,7 @@ theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supp
       (CenteredMomentCanonicalFirst.activeExponent I J) z) using 1
   congr 2
 
-theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
+theorem original_pair_mean  :
     let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
     let hj : Supported (Ideal.span {CompletedGauss.primaryGenerator J}) :=
@@ -227,9 +258,9 @@ theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
       rw [CenteredMomentRowNorm.pairResidue_mk, CenteredMomentSourceRow.primary_span_supported I hI,
         CenteredMomentSourceRow.primary_span_supported J hJ, tripleResidue_mk]
       exact original_pair_reduced_mask I J hI hJ z)
-  simpa only [inactiveSubsets, tripleResidue_mk] using h
+  exact h
 
-theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+theorem canonicalZeroTerm_eq_mean 
     (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     canonicalZeroTerm I J hI hJ E W K = (K : ℂ) *
       ((UniqueFactorizationMonoid.moebius (∏ P∈E,P.val) : ℂ) *
@@ -246,7 +277,7 @@ theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Suppo
     Complex.ofReal_mul, Complex.ofReal_inv]
   ring
 
-theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+theorem canonicalZeroPair_eq_original 
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
@@ -263,6 +294,8 @@ theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : S
   rw [CenteredMomentZeroMode.pairFourier_zero, quotientMean, ← normValue_eq_embedding,
     Complex.ofReal_div, div_eq_mul_inv]
   ring
+end
+
 
 theorem quotientMean_congr (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (F : Residue a → ℂ) (G : Residue b → ℂ)
@@ -323,8 +356,8 @@ theorem zeroEnergy_eq_original (η : HeckeFamily.Character) (m A : O) (t : ℝ)
     (fun _ h => (Finset.mem_filter.mp h).2)
     (fun I => c I * CenteredMomentHeckeExpansion.rowWeight η m A 1 t I) W K
 
-end SevenEighths.CenteredMomentZeroMeanBridge
 
-end
 
-end OAI
+
+
+

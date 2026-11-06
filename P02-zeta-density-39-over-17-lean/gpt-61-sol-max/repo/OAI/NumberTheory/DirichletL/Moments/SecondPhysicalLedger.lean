@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SourceBlockWindows
 
 @[expose] public section
@@ -15,11 +16,11 @@ open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
 open CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost
-open CenteredMomentSupport CenteredMomentHeckeColumnWindow
+open CenteredMomentSupport
 open CenteredMomentSecondCanonicalLedger CenteredMomentForcing
-open CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel
+open CenteredMomentSecondSectorFrequency
 open CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem physicalBlock_effective_window (η:Character) (t:ℝ)
     (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
@@ -72,11 +73,19 @@ theorem scalar_log_ledger (Z c d g u v f p K H a k₀ h₀ A B:ℝ)
     logb_sqrt Z c hc,logb_sqrt Z d hd,logb_sqrt Z A hA,logb_sqrt Z B hB]
   linarith
 
-def forcingNorm (C D:Ideal O) (U:Finset (CommonIndex C D)) : ℝ :=
+section
+variable (C D:Ideal O)
+include C D
+
+section
+variable (U:Finset (CommonIndex C D))
+include U
+
+def forcingNorm  : ℝ :=
   Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D=>P.val)
     (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U))
 
-def saving (C D:Ideal O) (U:Finset (CommonIndex C D)) (Z:ℝ) : ℝ :=
+def saving  (Z:ℝ) : ℝ :=
   Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ)-
     5*Real.logb Z (Ideal.absNorm (Ideal.span {commonFrequencyGenerator C D}):ℝ)/6-
     Real.logb Z (Ideal.absNorm (∏ P:CommonIndex C D,P.val):ℝ)+
@@ -84,15 +93,17 @@ def saving (C D:Ideal O) (U:Finset (CommonIndex C D)) (Z:ℝ) : ℝ :=
     Real.logb Z (Ideal.absNorm (Ideal.span {nonunitFrequencyGenerator C D U}):ℝ)/6+
     Real.logb Z (forcingNorm C D U)/3
 
-def centralPhysicalCost (C D:Ideal O) (U:Finset (CommonIndex C D))
+def centralPhysicalCost 
     (K H:ℝ) (n:Fin 4→ℤ) : ℝ :=
   (1/H)*outerScalar C D K n*normalizer C D U*
     (dyadicScale (n 1))^(1/6:ℝ)/
       (1+dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3)))*
     (H^2/((C.absNorm:ℝ)*D.absNorm))*(Ideal.absNorm (∏ P:CommonIndex C D,P.val):ℝ)/
     (forcingNorm C D U)^(1/3:ℝ)
+end
 
-lemma common_product_pos (C D:Ideal O) (hC:Supported C) (V:Finset (CommonIndex C D)) :
+
+lemma common_product_pos  (hC:Supported C) (V:Finset (CommonIndex C D)) :
     (0:ℝ)<Ideal.absNorm (∏P∈V,P.val) := by
   rw [map_prod,Nat.cast_prod]
   apply Finset.prod_pos
@@ -100,6 +111,8 @@ lemma common_product_pos (C D:Ideal O) (hC:Supported C) (V:Finset (CommonIndex C
   rw [←commonPrime_span C D hC P]
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
     (commonPrime_supported C D hC P).1)
+end
+
 
 theorem actual_physical_log_ledger (η:Character) (t:ℝ)
     (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
@@ -124,10 +137,10 @@ theorem actual_physical_log_ledger (η:Character) (t:ℝ)
   have hf:0<forcingNorm C D U:=common_product_pos C D hC _
   have hw:=physicalBlock_scale_lower η t S β C D hC hD U R rows W K n a H ha hlower hne
   have hl:a*H/(C.absNorm:ℝ)≤dyadicScale (n 2):=by
-    have hh: H/(C.absNorm:ℝ)*a≤dyadicScale (n 2):=(le_div_iff₀ ha).mp hw.1
+    have hh :=(le_div_iff₀ ha).mp hw.1
     convert hh using 1; ring
   have hr:a*H/(D.absNorm:ℝ)≤dyadicScale (n 3):=by
-    have hh: H/(D.absNorm:ℝ)*a≤dyadicScale (n 3):=(le_div_iff₀ ha).mp hw.2
+    have hh :=(le_div_iff₀ ha).mp hw.2
     convert hh using 1; ring
   have hk:=physicalBlock_effective_window η t S β C D hC hD U R rows W K n hne
   have he:secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K=
@@ -168,8 +181,12 @@ lemma centralPhysicalCost_pos (C D:Ideal O) (hC:Supported C) (hD:Supported D)
   unfold centralPhysicalCost outerScalar
   positivity
 
-theorem actual_physical_cost_bound (η:Character) (t:ℝ)
+section
+variable (η:Character) (t:ℝ)
     (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+include η t S β C D hC hD
+
+theorem actual_physical_cost_bound 
     (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
     (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
     (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
@@ -184,9 +201,11 @@ theorem actual_physical_cost_bound (η:Character) (t:ℝ)
     Real.logb_rpow_eq_mul_logb_of_pos ha,Real.logb_rpow (by linarith : 0<Z) hZ.ne']
   linarith
 
-theorem actual_canonical_physical_cost (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
+section
+variable (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
+include hCD U
+
+theorem actual_canonical_physical_cost 
     (w:O) (hpart:canonicalPartition C D U w)
     (hcorr:idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0)
     (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
@@ -197,15 +216,16 @@ theorem actual_canonical_physical_cost (η:Character) (t:ℝ)
       H^(1/3:ℝ)*K^(5/6:ℝ)*a^(-2/3:ℝ)*
         Z^(-(Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ))/3) := by
   have hs:=actual_second_ledger_lower C D hC hD hCD U w hpart Z hZ hcorr
-  change (Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ))/3≤saving C D U Z at hs
+  change (Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ))/3≤ saving C D U Z at hs
   exact (actual_physical_cost_bound η t S β C D hC hD U R rows W K n hK H a Z hH ha hZ hlower hne).trans
     (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)) (by positivity))
 
-theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ))
-    (K:ℝ) (hK:0<K) (n:Fin 4→ℤ)
+section
+variable (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ))
+    (K:ℝ)
+include R rows hrows W K
+
+theorem physicalBlock_canonical_witness  (hK:0<K) (n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     ∃z∈rows,canonicalPartition C D U (nonunitFrequencyGenerator C D U*z) ∧
       idealCorrelation C D hC hD
@@ -233,10 +253,7 @@ theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
     (by simpa only [mul_assoc] using hc)
   exact (right_ne_zero_of_mul hz) (by simpa only [sectorFrequency,F] using he)
 
-theorem original_block_physical_cost (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+theorem original_block_physical_cost  (n:Fin 4→ℤ)
     (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
     (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
@@ -246,9 +263,13 @@ theorem original_block_physical_cost (η:Character) (t:ℝ)
   obtain ⟨z,hz,hpart,hcorr⟩:=physicalBlock_canonical_witness η t S β C D hC hD hCD U R rows hrows W K hK n hne
   exact actual_canonical_physical_cost η t S β C D hC hD hCD U _ hpart hcorr R rows W K n
     hK H a Z hH ha hZ hlower hne
-
-end SevenEighths.CenteredMomentSecondPhysicalLedger
-
+end
+end
 end
 
-end OAI
+
+
+
+
+
+

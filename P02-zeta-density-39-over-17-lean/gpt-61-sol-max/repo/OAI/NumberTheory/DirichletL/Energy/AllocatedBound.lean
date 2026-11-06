@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Energy.AllocatedChildren
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
 open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentNaturalRowSource CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 theorem actual_common_from_energy (b M:α→ℝ)(hM:∀i,0≤M i)(ε:ℝ)(hε:0<ε):
@@ -41,8 +41,8 @@ theorem actual_common_from_energy (b M:α→ℝ)(hM:∀i,0≤M i)(ε:ℝ)(hε:0<
       (fun I hi=>(support_prime (R*C) I ((Finset.mem_powerset.mp hD₂) hi)).ne_zero)]
     exact he false D₁ hD₁ D₂ hD₂ J hJ
 
-end SevenEighths.CenteredMomentEnergyAllocatedChildren
 
-end
 
-end OAI
+
+
+

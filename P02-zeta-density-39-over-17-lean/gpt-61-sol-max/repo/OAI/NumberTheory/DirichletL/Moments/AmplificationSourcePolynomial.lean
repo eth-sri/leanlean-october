@@ -5,16 +5,16 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceDomain
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePolynomial
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
+open CenteredMomentAmplificationSourceDomain
 open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation
 open CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
  theorem residual_primaryGaussRow (p : O) (hp : Prime p)
     (hpp : goodLambda^2 ∣ p-1) (I : Ideal O) (hI : Supported I) (h : O) :
@@ -85,8 +85,8 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   dsimp only [f]
   ring
 
-end SevenEighths.CenteredMomentAmplificationSourcePolynomial
 
-end
 
-end OAI
+
+
+

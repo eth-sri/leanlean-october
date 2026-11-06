@@ -1,30 +1,30 @@
 module
+import Mathlib
 public import LaterPairs.Native.HuxleyCore.Part04
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 open Polynomial
 open Set
 open scoped Classical
 open scoped ContDiff
 open scoped FourierTransform BigOperators
 open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+           
+
+               
+        
+                     
+                    
+                                         
+                    
 universe huxleyNarrowV
-noncomputable section
+
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 open scoped BigOperators FourierTransform Classical ContDiff NNReal
 open Filter
@@ -471,8 +471,8 @@ private theorem double_difference_constructed_reference_system_bounded
   have hδ : 0 < δ := div_pos hU (sq_pos_of_pos hR)
   have hδmax : δ ≤ 1 := (div_le_one (sq_pos_of_pos hR)).mpr hUmax
   have hcurvpos : 0 ≤ curvatureScale := by dsimp only [curvatureScale]; positivity
-  let L : ℤ := Int.floor (-curvatureScale)
-  let V : ℤ := Int.floor curvatureScale
+  let L := Int.floor (-curvatureScale)
+  let V := Int.floor curvatureScale
   have hLV : L ≤ V := Int.floor_mono (by linarith only [hcurvpos])
   obtain ⟨H,hH,hHbound,hbuild⟩ := exists_source_interval_reference_system_bounded hδ hδmax
   obtain ⟨S,hseed,hpoints,hlabels,hsep,hcover,hgaps,hheight⟩ := hbuild L V hLV
@@ -538,7 +538,7 @@ private theorem double_difference_constructed_reference_system_bounded
         simp only [Rat.cast_intCast]
         have hh : (L:ℝ) ≤ V := by exact_mod_cast hLV
         exact ⟨le_rfl,by linarith only [hh]⟩)
-    simpa only [Rat.cast_intCast] using hq
+    exact hq
   have hVmem : (V:ℝ)+1 ∈ S := by
     have hq := hseed ((V+1:ℤ):ℚ) (by norm_num; omega)
       (show (((V+1:ℤ):ℚ):ℝ) ∈ Icc (L:ℝ) ((V:ℝ)+1) by
@@ -947,7 +947,7 @@ private theorem double_difference_dyadic_anchor_center
     field_simp
     ring
   rw [add_sub_cancel_left,hrate] at hinc
-  have hsub : Icc x (x+N/16) ⊆ Icc (3*M/4) (9*M/4) :=
+  have hsub :=
     Icc_subset_Icc hxwide.1 hUwide.2
   have htarget : (b:ℝ)∈Icc (g x) (g (x+N/16)) := by
     change (b:ℝ)∈Icc (iteratedDeriv 2 f x/2) (g (x+N/16))
@@ -1100,8 +1100,12 @@ private theorem double_difference_dyadic_anchor_source_fourier
   · intro b τ s K x
     simpa only [hGS,hBad,Finset.sum_empty,zero_add] using hout
 
-private theorem double_difference_minimal_anchor_roots_sharp_tail
-    (S : Finset ℤ) (F : ℝ → ℝ) (N : ℕ) (base : ℝ)
+section
+variable (S : Finset ℤ) (F : ℝ → ℝ)
+include S F
+
+section
+variable (N : ℕ) (base : ℝ)
     {r s d y w c U T M R : ℝ}
     (hr : 0 ≤ r) (hs : 0 ≤ s) (hd : 0 < d)
     (hy : y∈Icc (1:ℝ) 2) (hprod : r*s=d*y)
@@ -1113,7 +1117,11 @@ private theorem double_difference_minimal_anchor_roots_sharp_tail
     (hlower : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u)
     (hjets : ∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U)
     (hnegative : ∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c)
-    (hpoints : ∀ j∈S, base+(N:ℝ)*j∈Icc (M+(N:ℝ)/4) (2*M-(N:ℝ)/4)) :
+    (hpoints : ∀ j∈S, base+(N:ℝ)*j∈Icc (M+(N:ℝ)/4) (2*M-(N:ℝ)/4))
+include N base r s d y w c U T M R hr hs hd hy hprod hshift hw hsmall hc hU hT hM hN hR hNM hphase hf hlower hjets hnegative hpoints
+
+private theorem double_difference_minimal_anchor_roots_sharp_tail
+     :
     let Φ := fun u => (F u-F (u+r)-F (u+s)+F (u+r+s))/d
     let f := fun v => T*Φ (v/M)
     let h := fun v => iteratedDeriv 2 f v/2
@@ -1150,7 +1158,7 @@ private theorem double_difference_minimal_anchor_roots_sharp_tail
     have hh := (hdata x hx).2.1
     have he : c*T/(2*M^3)=4*L := by dsimp only [L]; ring
     rw [he] at hh
-    linarith only [hh,hL]
+    linarith
   have hcurv j (hj : j∈S) : |h (t j)| ≤ heightCap := by
     have hprodpos : 0 < r*s := by rw [hprod]; exact mul_pos hd (by linarith only [hy.1])
     have hrp : 0 < r := by nlinarith only [hr,hs,hprodpos]
@@ -1281,19 +1289,7 @@ private theorem double_difference_minimal_anchor_roots_sharp_tail
 
 private theorem double_difference_minimal_anchor_complement
 
-    (S : Finset ℤ) (F : ℝ → ℝ) (N : ℕ) (base : ℝ)
-    {r s d y w c U T M R : ℝ}
-    (hr : 0 ≤ r) (hs : 0 ≤ s) (hd : 0 < d)
-    (hy : y∈Icc (1:ℝ) 2) (hprod : r*s=d*y)
-    (hshift : r+s ≤ w) (hw : w ≤ 1/4) (hsmall : 2*U*w ≤ c/64)
-    (hc : 0 < c) (hU : 0 < U) (hT : 0 < T) (hM : 0 < M)
-    (hN : 0 < N) (hR : 0 < R) (hNM : (N:ℝ) ≤ M)
-    (hphase : T*(N:ℝ)*R^2=M^3)
-    (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ F u)
-    (hlower : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u)
-    (hjets : ∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U)
-    (hnegative : ∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c)
-    (hpoints : ∀ j∈S, base+(N:ℝ)*j∈Icc (M+(N:ℝ)/4) (2*M-(N:ℝ)/4)) :
+     :
     let Φ := fun u => (F u-F (u+r)-F (u+s)+F (u+r+s))/d
     let f := fun v => T*Φ (v/M)
     let h := fun v => iteratedDeriv 2 f v/2
@@ -1378,15 +1374,21 @@ private theorem double_difference_minimal_anchor_complement
       Nat.cast_le.mpr (hH i (Finset.mem_filter.mp hi).1))
     _ = (N:ℝ)*(Bad.card:ℝ) := by simp only [Finset.sum_const,nsmul_eq_mul,mul_comm]
     _ ≤ (N:ℝ)*Cost := mul_le_mul_of_nonneg_left hcard hNp.le
+end
 
-private theorem double_difference_two_probe_dyadic_band_card
-    (S : Finset ℤ) (F : ℝ → ℝ) (N Qbase kmax Acut : ℕ) (base : Fin 2 → ℝ) (Bmajor : ℝ)
+
+section
+variable (N Qbase kmax Acut : ℕ) (base : Fin 2 → ℝ) (Bmajor : ℝ)
     {r s d y w c U T M R : ℝ}
     (hr : 0 ≤ r) (hs : 0 ≤ s) (hd : 0 < d)
     (hy : y∈Icc (1:ℝ) 2) (hprod : r*s=d*y)
     (hshift : r+s ≤ w) (hw : w ≤ 1/4) (hsmall : 2*U*w ≤ c/64)
     (hc : 0 < c) (hU : 0 < U) (hT : 0 < T) (hM : 0 < M)
-    (hN : 0 < N) (hR : 0 < R) (hNM : (N:ℝ) ≤ M)
+    (hN : 0 < N) (hR : 0 < R)
+include N Qbase kmax Acut base Bmajor r s d y w c U T M R hr hs hd hy hprod hshift hw hsmall hc hU hT hM hN hR
+
+private theorem double_difference_two_probe_dyadic_band_card
+     (hNM : (N:ℝ) ≤ M)
     (hphase : T*(N:ℝ)*R^2=M^3)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ F u)
     (hlower : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u)
@@ -1519,13 +1521,7 @@ private theorem double_difference_two_probe_dyadic_band_card
         exact_mod_cast Finset.card_le_card hsub).trans (hbadcard kmax)
 
 private theorem double_difference_two_probe_dyadic_quadratic_density
-    (S : Finset ℤ) (F : ℝ → ℝ) (N Qbase kmax Acut : ℕ) (base : Fin 2 → ℝ) (Bmajor : ℝ)
-    {r s d y w c U T M R : ℝ}
-    (hr : 0 ≤ r) (hs : 0 ≤ s) (hd : 0 < d)
-    (hy : y∈Icc (1:ℝ) 2) (hprod : r*s=d*y)
-    (hshift : r+s ≤ w) (hw : w ≤ 1/4) (hsmall : 2*U*w ≤ c/64)
-    (hc : 0 < c) (hU : 0 < U) (hT : 0 < T) (hM : 0 < M)
-    (hN : 0 < N) (hR : 0 < R)
+    
     (hphase : T*(N:ℝ)*R^2=M^3)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ F u)
     (hlower : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u)
@@ -1606,9 +1602,16 @@ private theorem double_difference_two_probe_dyadic_quadratic_density
   intro Good
   exact ⟨hband,htransfer,fun k hk => (hcounts k).trans (hcost k hk),
     htail.trans (hcost kmax le_rfl)⟩
+end
+end
+
+
+section
+variable (F rshift sshift : ℝ → ℝ) (Y : Finset ℝ)
+include F rshift sshift Y
 
 private theorem double_difference_constructed_reference_system_charts
-    (F rshift sshift : ℝ → ℝ) (Y : Finset ℝ) {c J d w T M N R U : ℝ}
+     {c J d w T M N R U : ℝ}
     (hc : 0 < c) (hJ : 0 < J) (hd : 0 < d)
     (hw : w ≤ 1/4) (hsmallShift : 2*J*w ≤ c/64)
     (hy : ∀ y∈Y, y∈Icc (1:ℝ) 2)
@@ -1673,7 +1676,7 @@ private theorem double_difference_constructed_reference_system_charts
   · exact Or.inr ⟨m,n,u,v,hval,hcop,hn,hv,hvH,hparent,hdet⟩
 
 private theorem double_difference_constructed_reference_gap_factory
-    (F rshift sshift : ℝ → ℝ) (Y : Finset ℝ) {c J d w T M R U : ℝ}
+     {c J d w T M R U : ℝ}
     (hc : 0 < c) (hJ : 0 < J) (hd : 0 < d)
     (hw : w ≤ 1/4) (hsmallShift : 2*J*w ≤ c/64)
     (hy : ∀ y∈Y, y∈Icc (1:ℝ) 2)
@@ -1757,6 +1760,8 @@ private theorem double_difference_constructed_reference_gap_factory
         (show -curvatureScale < curvatureScale by linarith only [hscale])
         (abs_le.mp (hcurv y hyY z hz))
     exact ⟨(a,b),Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨ha,hb⟩,hab,hadj⟩,hax,hxb⟩
+end
+
 
 private theorem eventually_double_difference_constructed_reference_weighted_sieve
     {csrc Usrc E σ εloss : ℝ}
@@ -1987,13 +1992,13 @@ private theorem eventually_double_difference_constructed_reference_weighted_siev
   have hx i (hi : i∈S) : z i-(A i.1:ℝ)∈Ioo (1/2:ℝ) (W i.1-1/2) := by
     simpa only [add_zero] using hwindow i hi 0 (by rw [abs_zero]; positivity)
   have hwideL i (hi : i∈S) : z i-(A i.1:ℝ)-Dpad∈Ioo (1/2:ℝ) (W i.1-1/2) := by
-    simpa only [sub_eq_add_neg] using hwindow i hi (-Dpad)
+    exact hwindow i hi (-Dpad)
       (by rw [abs_neg,abs_of_nonneg hDpad]; linarith only [hHphys])
   have hwideU i (hi : i∈S) : z i-(A i.1:ℝ)+Dpad∈Ioo (1/2:ℝ) (W i.1-1/2) :=
     hwindow i hi Dpad (by rw [abs_of_nonneg hDpad]; linarith only [hHphys])
   have hLeft i (hi : i∈S) : z i-(A i.1:ℝ)-(N:ℝ)/(Cphys+2)∈Ioo (1/2:ℝ) (W i.1-1/2) := by
     rw [hHeq]
-    simpa only [sub_eq_add_neg] using hwindow i hi (-Hphys)
+    exact hwindow i hi (-Hphys)
       (by rw [abs_neg,abs_of_nonneg hHphys]; linarith only [hDpad])
   have hRight i (hi : i∈S) : z i-(A i.1:ℝ)+(N:ℝ)/(Cphys+2)∈Ioo (1/2:ℝ) (W i.1-1/2) := by
     rw [hHeq]
@@ -2349,8 +2354,12 @@ private theorem double_difference_uniform_source_normalization
       _ = (Tmodel*ampl)*(F (v/M)-F (v/M+r)-F (v/M+s)+F (v/M+r+s))/d := by ring
       _ = _ := by rw [hT]
 
+section
+variable {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε)
+include σ ε hσ hε
+
 private theorem double_difference_colored_common_scale_source
-    {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
+     :
     ∃ e : ℝ, 0 < e ∧
       ∀ {c U : ℝ}, 0 < c → 0 < U →
     ∃ w₀ a cnew Unew : ℝ,
@@ -2477,7 +2486,7 @@ private theorem double_difference_colored_common_scale_source
     exact hphase T Tnew d (r i) (s i) M v hTamp
 
 private theorem approximateModelPhase_enlarged_double_common_scale_source
-    {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
+     :
     ∃ δ w₀ a c U : ℝ,
       0 < δ ∧ 0 < w₀ ∧ w₀ ≤ 1/4 ∧ 0 < a ∧ 0 < c ∧ 0 < U ∧
       2*U*w₀ ≤ c/64 ∧
@@ -2532,6 +2541,8 @@ private theorem approximateModelPhase_enlarged_double_common_scale_source
     have hh := htests u hu (4:Fin 7)
     simpa [HuxleyModel.tests,abs_sub_comm] using hh
   exact ⟨Fext,hreg,hsharp,hcolors Fext hreg hjets hbound hlower hdet hnegative⟩
+end
+
 
 private theorem fourth_pair_capped_terminal_source_window_scales
     {t u : ℝ} (ht : t∈Icc (0:ℝ) 1) (hu : u∈Icc (0:ℝ) 1) :
@@ -3064,10 +3075,14 @@ private theorem eight_grid_exact_selected_transport
       ((n:ℤ)*((Point r p).2+1)),v p.1 j‖=_
     rw [he,←hstart]
 
-private theorem eventually_double_difference_direct_residue_grid_moment
-    {csrc Usrc σ εloss : ℝ}
+section
+variable {csrc Usrc σ εloss : ℝ}
     (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
-    (hσ : 0 < σ) (hεloss : 0 < εloss) :
+    (hσ : 0 < σ) (hεloss : 0 < εloss)
+include csrc Usrc σ εloss hcsrc hUsrc hσ hεloss
+
+private theorem eventually_double_difference_direct_residue_grid_moment
+     :
     let κ := modelPhaseThirdLower σ
     let L := max (32*Usrc^2/csrc^2)
       (64*(modelPhaseJetCoefficient σ 3+1)*Usrc/κ^2)
@@ -3267,9 +3282,7 @@ private theorem eventually_double_difference_direct_residue_grid_moment
     hsize hD hΔ hBsize
 
 private theorem eventually_double_difference_all_band_subinterval_moment
-    {csrc Usrc σ εloss : ℝ}
-    (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
-    (hσ : 0 < σ) (hεloss : 0 < εloss) :
+     :
     let κ := modelPhaseThirdLower σ
     let L := max (32*Usrc^2/csrc^2)
       (64*(modelPhaseJetCoefficient σ 3+1)*Usrc/κ^2)
@@ -3521,6 +3534,8 @@ private theorem eventually_double_difference_all_band_subinterval_moment
   exact hReduction.trans (mul_le_mul_of_nonneg_left
     (add_le_add (mul_le_mul_of_nonneg_left (add_le_add le_rfl hsum) (by positivity))
       le_rfl) (by norm_num))
+end
+
 
 private theorem double_difference_clamped_triangular_monomials
     {Y M N R Q Jsep c U θ D Cdelta delta : ℝ}
@@ -3699,7 +3714,7 @@ private theorem double_difference_selected_grid_family_monomials
   have hV : 0 ≤ V := zero_le_one.trans (le_max_left _ _)
   have hUref := (physical_reference_reciprocal_bound hN hQ hB hUlower).1
   have hTp := zero_lt_one.trans_le hT
-  have hTpow : 1 ≤ T^ε := Real.one_le_rpow hT hε
+  have hTpow := Real.one_le_rpow hT hε
   let Tri := V*D*(2+θ*(H+1/lambda))*Y*(M/N)*(1+delta*Jsep)
   let Pair := Y^2*(C₀*H^2*(R^8/N^4)*
     (Cmain*(Q/(H*N))^((2:ℝ)/3)+Ctail/Uref))
@@ -3745,10 +3760,14 @@ private theorem double_difference_selected_grid_family_monomials
         _ = _ := by rw [hTproduct]
     _ ≤ _ := mul_le_mul_of_nonneg_left hmonomial (by positivity)
 
-private theorem double_difference_actual_selected_grid_family_monomials
-    (Chunks : Finset (ℝ × ℤ)) (Y : Finset ℝ)
+section
+variable (Chunks : Finset (ℝ × ℤ)) (Y : Finset ℝ)
     (band : (ℝ × ℤ) → Option ℕ) (Qbase kmax : ℕ)
-    (Kmesh Usel : ℕ → ℕ) (delta : ℕ → ℝ)
+    (Kmesh Usel : ℕ → ℕ)
+include Chunks Y band Qbase kmax Kmesh Usel
+
+private theorem double_difference_actual_selected_grid_family_monomials
+     (delta : ℕ → ℝ)
     {M N R Jsep c U θ D Cdelta C₀ Cmain Ctail B Cmesh Cbase Cdensity L T ε : ℝ}
     (hQbase : 0 < Qbase) (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
     (hJ : 0 ≤ Jsep) (hc : 0 < c) (hU : 0 < U) (hθ : 0 ≤ θ)
@@ -3811,9 +3830,7 @@ private theorem double_difference_actual_selected_grid_family_monomials
     hmesh hcount hdelta hband hUlower
 
 private theorem double_difference_actual_source_grid_monomials
-    (Chunks : Finset (ℝ × ℤ)) (Y : Finset ℝ)
-    (band : (ℝ × ℤ) → Option ℕ) (Qbase kmax : ℕ)
-    (Kmesh Usel : ℕ → ℕ)
+    
     {M N R Jsep c U θ D Cmain Ctail B Cmesh Cbase Cdensity L T ε : ℝ}
     (hQbase : 0 < Qbase) (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
     (hJ : 0 ≤ Jsep) (hc : 0 < c) (hU : 0 < U) (hθ : 0 ≤ θ)
@@ -3899,6 +3916,8 @@ private theorem double_difference_actual_source_grid_monomials
     hT hε hNR hNT hbase hchunks hband' hbands hphase hvalid' k hk r
   rw [hratio]
   simpa only [←hH,←hLam] using hh
+end
+
 
 private theorem model_source_large_entry_coefficients_nonneg
     {σ δ : ℝ} (hσ : 0 < σ) (hδ₀ : 0 ≤ δ) :
@@ -4638,7 +4657,7 @@ private theorem exists_capped_source_physical_budget
   have hN7 : 6*N+1 ≤ 7*N := by linarith only [hN]
   have hpad : 7*N+2 ≤ M/4 := by
     have hh := (mul_le_mul_of_nonneg_right h36 hNp.le).trans hlength
-    linarith only [hh,hN]
+    linarith
   have hquartic : A₄*(6*N+1)^4 ≤ M*N*R^2 := by
     calc
       _ ≤ A₄*(7*N)^4 := mul_le_mul_of_nonneg_left
@@ -4759,7 +4778,7 @@ private theorem exists_capped_source_discrete_budget
     change (1/(1+H+4*Dcap))*H ≤ 1
     rw [one_div_mul_eq_div]
     apply (div_le_iff₀ hden).mpr
-    linarith only [hDcap]
+    linarith
   have hqD : 4*Dcap*qcap ≤ 1 := by
     change 4*Dcap*(1/(1+H+4*Dcap)) ≤ 1
     rw [mul_one_div]
@@ -5566,8 +5585,12 @@ private theorem approximateModelPhase_enlarged_double_capped_quantitative
       mul_le_mul_of_nonneg_right hCK (mul_nonneg (Real.rpow_nonneg hTp.le ε) hMass)
     _ = _ := (mul_assoc _ _ _).symm
 
+section
+variable (F : ℝ → ℝ) (X : ℝ) {M : ℝ}
+include F X M
+
 private theorem double_difference_actual_range_le_int_Ioc
-    (F : ℝ → ℝ) (X : ℝ) {M : ℝ} (hM : M≠0)
+     (hM : M≠0)
     (a L r s k : ℕ) (hk : 0<k) (hrs : r+s≤L) :
     ‖∑ j∈Finset.range (L+1-r-s),
       (𝐞 (X*(F (((a:ℝ)+j)/M)-F (((a:ℝ)+j+r)/M)-
@@ -5611,7 +5634,7 @@ private theorem double_difference_actual_range_le_int_Ioc
       exact (mul_div_assoc _ _ _).symm
 
 private theorem double_difference_product_dyadic_actual_family
-    (F : ℝ → ℝ) (X : ℝ) {M : ℝ} (hM : 0<M)
+     (hM : 0<M)
     (a L H K k : ℕ) (hk : 0<k) (ha : M≤(a:ℝ)) (hb : ((a+L:ℕ):ℝ)≤2*M) :
     let Pairs := (Finset.Icc 1 (H-1)) ×ˢ (Finset.Icc 1 (K-1))
     let Products := Pairs.image (fun p => p.1*p.2)
@@ -5731,6 +5754,8 @@ private theorem double_difference_product_dyadic_actual_family
         exact double_difference_actual_range_le_int_Ioc F X hM.ne'
           a L (pick l).1 (pick l).2 k hk (hKept l hl).2.2
       _ = _ := by rw [Finset.sum_add_distrib,Finset.sum_const,nsmul_eq_mul,mul_one]
+end
+
 
 public  theorem approximateModelPhase_enlarged_double_product_correlation_moment
     {σ ε : ℝ} (hσ : 0<σ) (hε : 0<ε) :
@@ -6806,6 +6831,6 @@ public  theorem double_difference_fourth_twelfth_moment_assembly
       exact heq _ _ _ _ _ _ _
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025.HuxleyRationalPhase
-end
-end
+
+
+

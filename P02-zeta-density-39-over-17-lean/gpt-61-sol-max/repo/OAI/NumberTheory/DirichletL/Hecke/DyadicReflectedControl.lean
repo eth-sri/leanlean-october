@@ -5,9 +5,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ComplexConjugate
-open Complex Set
+open Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth HeckeDeletionBounds HeckeDyadicReflection
 
@@ -56,7 +56,7 @@ theorem buffered_reflected_line_control (e ε : ℝ)
 
 theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ χ : Character, χ.residue≠1 → ∀ s : ℂ,
-      -(1/10 : ℝ)≤s.re →
+      -(1/10 : ℝ)≤ s.re →
       ‖LFunction χ s‖≤C*(χ.modulus.absNorm : ℝ)^(3/5 : ℝ)*
         ((radical χ.modulus).absNorm : ℝ)^(1/10+ε)*(3+|s.im|)^2 := by
   obtain ⟨Cd,hCd,hdel⟩ := factors_any_re_subpower_bound ε hε
@@ -88,8 +88,8 @@ theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
       linarith
     _ = _ := by ring
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

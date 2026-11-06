@@ -1,23 +1,33 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SamplingVariation
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import GuthMaynard.Improvement.SourceDirichletPairing
 public import GuthMaynard.Improvement.AmplifierArithmetic
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 namespace GuthMaynard.Improvement
 
+section
+variable (N : ℝ) (a : ℕ → ℂ) (n : ℕ)
+include N a n
+
 /-- Integer-frequency masking preserves the original real-N source interval. -/
-def sourceIntegerCoefficient (N : ℝ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
+def sourceIntegerCoefficient  : ℂ :=
   if n ∈ sourceRatioIndices N then a n else 0
 
-def sourceDerivativeCoefficient (N : ℝ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
+def sourceDerivativeCoefficient  : ℂ :=
   a n*((Real.log ((n:ℝ)/N):ℂ)*Complex.I)
+end
 
-theorem source_log_bounds {N : ℝ} (hN : 0 < N) {n : ℕ} (hn : n ∈ sourceRatioIndices N) :
+
+section
+variable {N : ℝ} (hN : 0 < N)
+include N hN
+
+theorem source_log_bounds  {n : ℕ} (hn : n ∈ sourceRatioIndices N) :
     0 ≤ Real.log ((n:ℝ)/N) ∧ Real.log ((n:ℝ)/N) ≤ 1 := by
   have hb := (sourceRatioIndices_mem hN.le n).mp hn
   have hratio : 1 ≤ (n:ℝ)/N := (le_div_iff₀ hN).mpr (by linarith)
@@ -25,7 +35,7 @@ theorem source_log_bounds {N : ℝ} (hN : 0 < N) {n : ℕ} (hn : n ∈ sourceRat
   exact ⟨Real.log_nonneg hratio,(Real.log_le_log (by positivity) hratio2).trans
     (by have hh := Real.log_le_sub_one_of_pos (by norm_num : (0:ℝ)<2); linarith)⟩
 
-theorem source_derivative_coefficient_bound {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ)
+theorem source_derivative_coefficient_bound  (a : ℕ → ℂ)
     (ha : ∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) :
     ∀ n ∈ sourceRatioIndices N, ‖sourceDerivativeCoefficient N a n‖ ≤ 1 := by
   intro n hn
@@ -33,6 +43,8 @@ theorem source_derivative_coefficient_bound {N : ℝ} (hN : 0 < N) (a : ℕ → 
   rw [sourceDerivativeCoefficient,norm_mul,norm_mul,Complex.norm_I,mul_one,
     Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hl.1]
   nlinarith [ha n hn,norm_nonneg (a n)]
+end
+
 
 theorem boundedPolynomial_hasDerivAt (N : ℝ) (a : ℕ → ℂ) (t : ℝ) :
     HasDerivAt (boundedPolynomial N a) (boundedPolynomial N (sourceDerivativeCoefficient N a) t) t := by
@@ -75,12 +87,7 @@ theorem boundedPolynomial_mean_value {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ)
         simp only [c,sourceIntegerCoefficient,ite_eq_left hn]
         nlinarith [ha n hn,norm_nonneg (a n)]
       _ ≤ _ := by simpa [sourceRatioIndices,amplifierSource] using amplifier_source_card hN.le
-  have hcoef : 0 ≤ (t-s)+4*(X:ℝ)*(1+Real.log (X:ℝ)) := by
-    by_cases hx : X=0
-    · simp only [hx,Nat.cast_zero,mul_zero,zero_mul,add_zero]; linarith
-    · have hh : 1 ≤ (X:ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hx
-      have hl := Real.log_nonneg hh
-      positivity
+  have hcoef : 0 ≤ (t-s)+4*(X:ℝ)*(1+Real.log (X:ℝ)) := by positivity
   simp_rw [hnorm]
   exact (dirichlet_mean_value X c hst).trans (mul_le_mul_of_nonneg_left henergy hcoef)
 
@@ -105,10 +112,7 @@ theorem separated_second_moment_raw {N T t₀ : ℝ} (hN : 0 < N) (hT : 0 ≤ T)
   have hs : Pairwise (fun t s : W => (1:ℝ) ≤ |(t:ℝ)-(s:ℝ)|) := by
     intro t s hne
     exact hsep t t.property s s.property (fun he => hne (Subtype.ext he))
-  have hsub : ∀ t : W, Ioc (t:ℝ) ((t:ℝ)+1) ⊆ S := by
-    intro t x hx
-    have ht := hW t t.property
-    exact ⟨by linarith [ht.1,hx.1],by linarith [ht.2,hx.2]⟩
+  have hsub : ∀ t : W, Ioc (t:ℝ) ((t:ℝ)+1) ⊆ S := by grind
   have hh := sampling_separated_norm (fun t : W => (t:ℝ)) (by norm_num : (0:ℝ)<1) hd hs hsub hf hi
   simp only [inv_one,one_mul,norm_pow] at hh
   rw [Finset.sum_coe_sort W (fun t => ‖D t‖^2)] at hh
@@ -125,7 +129,6 @@ theorem separated_second_moment_raw {N T t₀ : ℝ} (hN : 0 < N) (hT : 0 ≤ T)
   have hb' := boundedPolynomial_mean_value hN (sourceDerivativeCoefficient N a)
     (source_derivative_coefficient_bound hN a ha) (show t₀ ≤ t₀+T+1 by linarith)
   change (∑ t ∈ W, ‖D t‖^2) ≤ _
-  dsimp only [S,D,D'] at hh hiBound
   nlinarith
 
 /-- Uniform scalar simplification of the checked raw sampling cost. -/
@@ -134,21 +137,15 @@ theorem separated_second_moment_scalar {N T : ℝ} (hN : 2 ≤ N) (hT : 0 ≤ T)
       102*N*(T+N*Real.log (2*N)) := by
   have hN0 : 0 ≤ N := by linarith
   have hx : (⌊2*N⌋₊:ℝ) ≤ 2*N := Nat.floor_le (by positivity)
-  have hx1 : (1:ℝ) ≤ ⌊2*N⌋₊ := by
-    have hh : 1 ≤ ⌊2*N⌋₊ := Nat.le_floor (by norm_num; linarith)
-    exact_mod_cast hh
+  have hx1 : (1:ℝ) ≤ ⌊2*N⌋₊ := by norm_num at * <;> linarith
   have hlg : Real.log (⌊2*N⌋₊:ℝ) ≤ Real.log (2*N) := Real.log_le_log (by linarith) hx
   have hlog : 1 ≤ Real.log (2*N) := by
     have h4 := Real.log_le_log (by norm_num : (0:ℝ)<4) (show (4:ℝ) ≤ 2*N by linarith)
     have he : Real.log 4=2*Real.log 2 := by
       rw [show (4:ℝ)=2*2 by norm_num,Real.log_mul (by norm_num) (by norm_num)]
       ring
-    rw [he] at h4
     linarith [Real.log_two_gt_d9]
-  have hm : (⌊2*N⌋₊:ℝ)*(1+Real.log (⌊2*N⌋₊:ℝ)) ≤ 4*N*Real.log (2*N) := by
-    have hh := mul_le_mul hx (show 1+Real.log (⌊2*N⌋₊:ℝ) ≤ 2*Real.log (2*N) by linarith)
-      (by linarith [Real.log_nonneg hx1]) (by positivity : 0 ≤ 2*N)
-    nlinarith
+  have hm : (⌊2*N⌋₊:ℝ)*(1+Real.log (⌊2*N⌋₊:ℝ)) ≤ 4*N*Real.log (2*N) := by nlinarith
   have hfac : (T+1)+4*(⌊2*N⌋₊:ℝ)*(1+Real.log (⌊2*N⌋₊:ℝ)) ≤ T+17*N*Real.log (2*N) := by
     nlinarith
   calc
@@ -160,8 +157,12 @@ theorem separated_second_moment_scalar {N T : ℝ} (hN : 2 ≤ N) (hT : 0 ≤ T)
       · positivity
     _ ≤ _ := by nlinarith [mul_nonneg hN0 hT]
 
+section
+variable {N T t₀ : ℝ} (hN : 2 ≤ N)
+include N T t₀ hN
+
 /-- Actual separated second moment with an absolute constant and no analytic premise. -/
-theorem separated_second_moment {N T t₀ : ℝ} (hN : 2 ≤ N) (hT : 0 ≤ T)
+theorem separated_second_moment  (hT : 0 ≤ T)
     (a : ℕ → ℂ) (ha : ∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1)
     (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
     (hsep : ∀ t ∈ W, ∀ s ∈ W, t ≠ s → 1 ≤ |t-s|) :
@@ -170,7 +171,7 @@ theorem separated_second_moment {N T t₀ : ℝ} (hN : 2 ≤ N) (hT : 0 ≤ T)
     (separated_second_moment_scalar hN hT)
 
 /-- Long-interval form used by the source extraction and low-value range. -/
-theorem separated_second_moment_long {N T t₀ : ℝ} (hN : 2 ≤ N) (hNT : N ≤ T)
+theorem separated_second_moment_long  (hNT : N ≤ T)
     (a : ℕ → ℂ) (ha : ∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1)
     (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
     (hsep : ∀ t ∈ W, ∀ s ∈ W, t ≠ s → 1 ≤ |t-s|) :
@@ -185,7 +186,8 @@ theorem separated_second_moment_long {N T t₀ : ℝ} (hN : 2 ≤ N) (hNT : N �
   apply (separated_second_moment hN (by linarith) a ha W hW hsep).trans
   have hh := mul_le_mul_of_nonneg_right hNT (show 0 ≤ Real.log (2*N) by linarith)
   have ht := mul_le_mul_of_nonneg_left hlog (show 0 ≤ T by linarith)
-  nlinarith [mul_le_mul_of_nonneg_left (show T+N*Real.log (2*N) ≤ 2*T*Real.log (2*N) by linarith)
-    (show 0 ≤ 102*N by positivity)]
+  nlinarith
+end
 
-end GuthMaynard.Improvement
+
+

@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicEstimates
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
@@ -43,8 +43,8 @@ theorem profile_strip_decay (a b : ℝ) (ha : 0<a) (l r : ℝ) (n : ℕ) :
         C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W :=
   CubicReflectionKernel.mellin_strip_source_bound a b ha l r n
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

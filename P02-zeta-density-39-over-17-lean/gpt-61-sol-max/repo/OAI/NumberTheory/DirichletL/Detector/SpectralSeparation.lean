@@ -10,13 +10,17 @@ noncomputable section
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def baseRowCoefficient (η : HeckeFamily.Character) (Xi : O →* ℂ)
     (s : O) (hs : Supported (Ideal.span {s})) : O →* ℂ :=
   targetMonoid η * InitialMeanSquare.conjugateMonoid Xi * reciprocityPhaseMonoid s hs
 
-lemma spectralSummand_mul_fixed_twist (S : Finset (Ideal O)) (D I J : Ideal O)
+section
+variable (S : Finset (Ideal O)) (D I J : Ideal O)
+include S D I J
+
+lemma spectralSummand_mul_fixed_twist 
     (φ Ψ : O →* ℂ) (t : ℂ) :
     spectralSummand S D (φ*Ψ) t I J =
       φ (completedIndex I J) * spectralSummand S D Ψ t I J := by
@@ -28,7 +32,7 @@ lemma spectralSummand_mul_fixed_twist (S : Finset (Ideal O)) (D I J : Ideal O)
   simp only [columnWeight, MonoidHom.mul_apply, map_mul, map_pow, mul_pow, completedIndex]
   ring
 
-theorem spectralSummand_row_separation (S : Finset (Ideal O)) (D I J : Ideal O)
+theorem spectralSummand_row_separation 
     (η : HeckeFamily.Character) (Xi : O →* ℂ) (s : O)
     (hs : Supported (Ideal.span {s})) (m : O) (t : ℂ) :
     spectralSummand S D (rowCoefficient η Xi s hs m) t I J =
@@ -42,7 +46,7 @@ theorem spectralSummand_row_separation (S : Finset (Ideal O)) (D I J : Ideal O)
   rw [hr, spectralSummand_mul_fixed_twist]
   rfl
 
-theorem spectralSummand_zero_completedIndex (S : Finset (Ideal O)) (D I J : Ideal O)
+theorem spectralSummand_zero_completedIndex 
     (Ψ : O →* ℂ) (t : ℂ) (hz : completedIndex I J=0) :
     spectralSummand S D Ψ t I J=0 := by
   rcases mul_eq_zero.mp hz with hI | hJ
@@ -56,8 +60,10 @@ theorem spectralSummand_zero_completedIndex (S : Finset (Ideal O)) (D I J : Idea
         Ψ (primaryGenerator J)^3 / (Ideal.absNorm J:ℂ)=0
       simp [hJ', FiniteGaussPhase.angularFactor]
     simp only [spectralSummand, hc, mul_zero, zero_mul]
-
-end SevenEighths.ProbeRow
 end
 
-end OAI
+
+
+
+
+

@@ -10,16 +10,19 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion
+open HeckeFamily HeckeDyadic CanonicalRowCompletion
 open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
 open HeckeDetectorRelativePrime
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def physicalSlotCoefficient (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ) (P : Ideal O) : ℂ :=
+section
+variable (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ) (P : Ideal O)
+include η W D z P
+
+def physicalSlotCoefficient  : ℂ :=
   idealCoeff η.inverse P*conj (W ((P.absNorm:ℝ)/D)*(((P.absNorm:ℝ)/D:ℝ):ℂ)^(z-1))
 
-lemma physicalSlotCoefficient_annular (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ)
-    (P : Ideal O) (hP : P≠0) (hD : 0<D) :
+lemma physicalSlotCoefficient_annular  (hP : P≠0) (hD : 0<D) :
     physicalSlotCoefficient η W D z P=idealCoeff η.inverse P*
       HeckePrimeAnnular.annularWeight (fun y=>conj (W y)) D (1-z.re) (-z.im) P := by
   have hn : 0<(P.absNorm:ℝ) := by
@@ -29,6 +32,8 @@ lemma physicalSlotCoefficient_annular (η : Character) (W : ℝ→ℂ) (D : ℝ)
   have he : conj (z-1)= -HeckeDyadic.shift (1-z.re) (-z.im) := by
     apply Complex.ext <;> simp [HeckeDyadic.shift]
   rw [he]
+end
+
 
 theorem physical_slot_conj (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
     (η : Character) (m u : O) (hmLam : ConcretePrimeRowBridge.goodLambda∣m)
@@ -54,8 +59,8 @@ theorem physical_slot_conj (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
     simp only [physicalSlotCoefficient,HeckeDetectorRelativePrime.idealCoeff_inverse,map_mul,starRingEnd_self_apply]
     field_simp
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

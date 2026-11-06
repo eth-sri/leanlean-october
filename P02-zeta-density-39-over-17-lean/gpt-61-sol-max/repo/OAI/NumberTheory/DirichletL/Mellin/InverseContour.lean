@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.MainTermDifference
 
 @[expose] public section
@@ -8,90 +9,100 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                        
+                                  
+                                  
+                          
 
 namespace CubicReflectionKernel
 open scoped Classical FourierTransform SchwartzMap ContDiff Topology
 open MeasureTheory Filter Set
 
-def inverseMellinIntegrand (V : ℝ → ℂ) (j : ℕ) (y : ℝ) (s : ℂ) : ℂ :=
+section
+variable (V : ℝ → ℂ)
+include V
+
+def inverseMellinIntegrand  (j : ℕ) (y : ℝ) (s : ℂ) : ℂ :=
   (y : ℂ) ^ (-s) * mellinEulerData V j s
 
-theorem inverseMellinIntegrand_differentiableAt
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+section
+variable (a b : ℝ) (ha : 0 < a)
     (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
+include a b ha hsupp hV
+
+theorem inverseMellinIntegrand_differentiableAt
+    
     (j : ℕ) (y : ℝ) (hy : 0 < y) (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
     DifferentiableAt ℂ (inverseMellinIntegrand V j y) s := by
   exact (differentiableAt_id.neg.const_cpow
     (Or.inl (Complex.ofReal_ne_zero.mpr hy.ne'))).mul
     (mellinEulerData_differentiableAt V a b ha hsupp hV j s hs)
 
+section
+variable (A j : ℕ)
+include A j
+
 theorem inverseMellinIntegrand_vertical_integrable
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (A j : ℕ) (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ))
+     (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ))
     (y : ℝ) (hy : 0 < y) :
     Integrable (fun t : ℝ => inverseMellinIntegrand V j y ((σ : ℂ) + t * Complex.I)) := by
   apply (mellinEulerData_vertical_integrable V a b ha hsupp hV A j σ hσ).bdd_mul
@@ -103,9 +114,7 @@ theorem inverseMellinIntegrand_vertical_integrable
     simp
 
 theorem inverseMellinIntegrand_strip_bound
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (A j : ℕ) (y : ℝ) (hy : 0 < y) :
+     (y : ℝ) (hy : 0 < y) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ), ∀ t : ℝ,
       ‖inverseMellinIntegrand V j y ((σ : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2) := by
   obtain ⟨C, hC, hb⟩ := mellinEulerData_strip_bound V a b ha hsupp hV A j
@@ -117,17 +126,14 @@ theorem inverseMellinIntegrand_strip_bound
   have hby : y ^ (-σ) ≤ |B| + 1 :=
     (hB (Set.mem_image_of_mem _ hσ)).trans (by linarith [le_abs_self B])
   rw [inverseMellinIntegrand, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hy]
-  simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
-    Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
+  simp
   calc
     _ ≤ (|B| + 1) * (C / (1 + t ^ 2)) :=
       mul_le_mul hby (hb σ hσ t) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
 theorem mellinInv_euler_shift
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (A j : ℕ) (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ))
+     (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ))
     (y : ℝ) (hy : 0 < y) :
     mellinInv 0 (mellinEulerData V j) y = mellinInv σ (mellinEulerData V j) y := by
   obtain ⟨C, hC, hb⟩ := inverseMellinIntegrand_strip_bound V a b ha hsupp hV A j y hy
@@ -149,13 +155,10 @@ theorem mellinInv_euler_shift
     · intro r hr t
       exact hb r ⟨hr.1, hr.2.trans hρ.2⟩ t
   have heq := (hshift 0 h0).symm.trans (hshift σ hσ)
-  simpa only [mellinInv, smul_eq_mul, inverseMellinIntegrand] using
-    congrArg (fun z : ℂ => (1 / (2 * Real.pi) : ℝ) • z) heq
+  exact congrArg (fun z : ℂ => (1 / (2 * Real.pi) : ℝ) • z) heq
 
 theorem mellinInv_euler_line_bound
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (A j : ℕ) :
+     :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ),
       ∀ y : ℝ, 0 < y → ‖mellinInv σ (mellinEulerData V j) y‖ ≤ C * y ^ (-σ) := by
   obtain ⟨C, hC, hb⟩ := mellinEulerData_strip_bound V a b ha hsupp hV A j
@@ -169,8 +172,7 @@ theorem mellinInv_euler_line_bound
         apply norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul _)
         filter_upwards [] with t
         rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hy]
-        simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
-          Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
+        simp
         simpa only [div_eq_mul_inv, mul_assoc] using
           mul_le_mul_of_nonneg_left (hb σ hσ t) (Real.rpow_nonneg hy.le (-σ))
       _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
@@ -180,12 +182,19 @@ theorem mellinInv_euler_line_bound
     _ ≤ (1 / (2 * Real.pi)) * ((y ^ (-σ) * C) * Real.pi) :=
       mul_le_mul_of_nonneg_left hint (by positivity)
     _ = _ := by field_simp
+end
+end
 
-def paperEulerKernel (V : ℝ → ℂ) (j : ℕ) (x : ℝ) : ℂ :=
+
+def paperEulerKernel  (j : ℕ) (x : ℝ) : ℂ :=
   mellinInv 0 (mellinEulerData V j) (paperScale * x)
 
-theorem mellinEulerData_axis (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
-    (hlog : ∀ u, logSource u = V (Real.exp u)) (j : ℕ) (u : ℝ) :
+section
+variable (logSource : SchwartzMap ℝ ℂ)
+    (hlog : ∀ u, logSource u = V (Real.exp u)) (j : ℕ)
+include logSource hlog j
+
+theorem mellinEulerData_axis  (u : ℝ) :
     mellinEulerData V j (2 * Real.pi * u * Complex.I) =
       (-2 * Real.pi * Complex.I * u) ^ j * spectralProfile logSource u := by
   have hu : (2 * Real.pi * u * Complex.I : ℂ) =
@@ -196,8 +205,7 @@ theorem mellinEulerData_axis (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
   rw [hb, spectralProfile, axisMultiplier]
   ring
 
-theorem paperEulerKernel_eq_euler (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
-    (hlog : ∀ u, logSource u = V (Real.exp u)) (j : ℕ) (x : ℝ) (hx : 0 < x) :
+theorem paperEulerKernel_eq_euler  (x : ℝ) (hx : 0 < x) :
     paperEulerKernel V j x = LocalLogFourier.eulerDeriv (paperKernel V) j x := by
   rw [paperKernel_euler_eq V logSource hlog j x hx, reflectedLogProfile_deriv]
   unfold paperEulerKernel
@@ -209,11 +217,17 @@ theorem paperEulerKernel_eq_euler (V : ℝ → ℂ) (logSource : SchwartzMap ℝ
     funext u
     exact mellinEulerData_axis V logSource hlog j u
   rw [hfun]
+end
+
+
+section
+variable (a b : ℝ) (ha : 0 < a)
+    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
+    (A j : ℕ)
+include a b ha hsupp hV A j
 
 theorem paperKernel_euler_decay_at_line
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (A j : ℕ) (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ)) :
+     (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ)) :
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 0 < x →
       ‖LocalLogFourier.eulerDeriv (paperKernel V) j x‖ ≤ C * x ^ (-σ) := by
   obtain ⟨C, hC, hb⟩ := mellinInv_euler_line_bound V a b ha hsupp hV A j
@@ -227,9 +241,7 @@ theorem paperKernel_euler_decay_at_line
   simpa only [mul_assoc] using hbound
 
 theorem paperKernel_euler_power_decay
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (A j : ℕ) :
+     :
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 0 < x →
       (‖LocalLogFourier.eulerDeriv (paperKernel V) j x‖ ≤ C * x ^ (1 / 4 : ℝ)) ∧
       (‖LocalLogFourier.eulerDeriv (paperKernel V) j x‖ ≤ C * x ^ (-(A : ℝ))) := by
@@ -252,6 +264,9 @@ theorem paperKernel_euler_power_decay
       (mul_le_mul_of_nonneg_right (le_max_left CL CR) (Real.rpow_nonneg hx.le _))
   · exact (hR x hx).trans
       (mul_le_mul_of_nonneg_right (le_max_right CL CR) (Real.rpow_nonneg hx.le _))
+end
+end
+
 
 end CubicReflectionKernel
 
@@ -328,20 +343,23 @@ namespace EisensteinSchwartzPoisson
 open MeasureTheory Set
 open scoped FourierTransform SchwartzMap RealInnerProductSpace
 
-theorem fourier_real_line_integrable (f : 𝓢(ℂ, ℂ)) :
+section
+variable (f : 𝓢(ℂ, ℂ))
+include f
+
+theorem fourier_real_line_integrable  :
     Integrable (fun x : ℝ => 𝓕 (f : ℂ → ℂ) (x : ℂ)) := by
   have h : Integrable (fun x : ℝ => horizontalSlice (𝓕 f) 0 x) :=
     (horizontalSlice (𝓕 f) 0).integrable
-  simpa only [horizontalSlice_apply, complexPoint_eq, mul_zero, add_zero,
-    Complex.ofReal_zero, SchwartzMap.fourier_coe] using h
+  exact h
 
-theorem fourier_real_line_integral (f : 𝓢(ℂ, ℂ)) :
+theorem fourier_real_line_integral  :
     (∫ x : ℝ, 𝓕 (f : ℂ → ℂ) (x : ℂ)) =
       ∫ y : ℝ, f (Complex.I * (y : ℂ)) := by
-  let g : ℝ → ℂ := partialFourier f 0
+  let g := partialFourier f 0
   have hF : 𝓕 g = fun x : ℝ => 𝓕 (f : ℂ → ℂ) (x : ℂ) := by
     funext x
-    simpa only [g, complexPoint_eq, Complex.ofReal_zero, mul_zero, add_zero] using fourier_partialFourier f x 0
+    exact fourier_partialFourier f x 0
   have hgi : Integrable (𝓕 g) := by rw [hF]; exact fourier_real_line_integrable f
   have hinv : 𝓕⁻ (𝓕 g) (0 : ℝ) = g 0 :=
     (partialFourier_integrable f 0).fourierInv_fourier_eq hgi
@@ -351,6 +369,8 @@ theorem fourier_real_line_integral (f : 𝓢(ℂ, ℂ)) :
     _ = 𝓕⁻ (𝓕 g) 0 := by simp [Real.fourierInv_eq]
     _ = g 0 := hinv
     _ = _ := by simp [g, partialFourier_eq_integral, complexPoint_eq]
+end
+
 
 theorem paperFrequency_imaginary (x : ℝ) :
     paperFrequency ((x : ℂ) * Complex.I) = (((2 / Real.sqrt 3) * x : ℝ) : ℂ) := by
@@ -368,14 +388,18 @@ theorem paperRadialFourier_square (W : ℝ → ℂ) (x : ℝ) :
   rw [hn, paperFourier_eq_standard, paperFrequency_imaginary] at h
   exact h.symm
 
-theorem radial_square_integrable (W : 𝓢(ℝ, ℂ)) :
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
+theorem radial_square_integrable  :
     Integrable (fun x : ℝ => W (x ^ 2)) := by
   have h : Integrable (fun x : ℝ => horizontalSlice (radialTest W) 0 x) :=
     (horizontalSlice (radialTest W) 0).integrable
   simpa [horizontalSlice_apply, complexPoint_eq, radialTest_apply,
     Complex.norm_real, Real.norm_eq_abs, sq_abs] using h
 
-theorem paperRadialFourier_square_integrable (W : 𝓢(ℝ, ℂ)) :
+theorem paperRadialFourier_square_integrable  :
     Integrable (fun x : ℝ => paperRadialFourier W (x ^ 2)) := by
   have he : (radialTest W : ℂ → ℂ) = fun z : ℂ => W (‖z‖ ^ 2) := rfl
   have hc : (2 / Real.sqrt 3 : ℝ) ≠ 0 := by positivity
@@ -385,7 +409,7 @@ theorem paperRadialFourier_square_integrable (W : 𝓢(ℝ, ℂ)) :
     𝓕 (radialTest W : ℂ → ℂ) ((((2 / Real.sqrt 3) * x : ℝ) : ℂ))) at h
   simpa only [paperRadialFourier_square, he] using h
 
-theorem paperRadialFourier_square_integral (W : 𝓢(ℝ, ℂ)) :
+theorem paperRadialFourier_square_integral  :
     (∫ x : ℝ, paperRadialFourier W (x ^ 2)) = ∫ x : ℝ, W (x ^ 2) := by
   have hc : (0 : ℝ) < 2 / Real.sqrt 3 := by positivity
   have he : (radialTest W : ℂ → ℂ) = fun z : ℂ => W (‖z‖ ^ 2) := rfl
@@ -401,7 +425,9 @@ theorem paperRadialFourier_square_integral (W : 𝓢(ℝ, ℂ)) :
     _ = _ := by
       apply integral_congr_ae
       filter_upwards [] with y
-      simp [radialTest_apply,  Complex.norm_real, Real.norm_eq_abs, sq_abs]
+      simp
+end
+
 
 theorem integral_even_eq_twice_Ioi (F : ℝ → ℂ) (hF : Integrable F)
     (heven : ∀ x : ℝ, F (-x) = F x) :
@@ -428,36 +454,46 @@ open scoped Classical FourierTransform SchwartzMap ContDiff Topology
 open MeasureTheory Filter Set
 namespace CubicReflectionKernel
 
-def logRadius (a b : ℝ) : ℝ := |Real.log a| + |Real.log b| + 1
+section
+variable (a b : ℝ)
+include a b
 
-theorem logRadius_pos (a b : ℝ) : 0 < logRadius a b := by unfold logRadius; positivity
+def logRadius  : ℝ := |Real.log a| + |Real.log b| + 1
 
-def logCutoff (a b : ℝ) : ContDiffBump (0 : ℝ) where
+theorem logRadius_pos  : 0 < logRadius a b := by unfold logRadius; positivity
+
+def logCutoff  : ContDiffBump (0 : ℝ) where
   rIn := logRadius a b
   rOut := logRadius a b + 1
   rIn_pos := logRadius_pos a b
   rIn_lt_rOut := by linarith
 
-def logOuterCutoff (a b : ℝ) : ContDiffBump (0 : ℝ) where
+def logOuterCutoff  : ContDiffBump (0 : ℝ) where
   rIn := logRadius a b + 1
   rOut := logRadius a b + 2
   rIn_pos := by have := logRadius_pos a b; linarith
   rIn_lt_rOut := by linarith
+end
+
 
 def expCorrection (a b u : ℝ) : ℝ := logOuterCutoff a b u * (Real.exp u - u)
 def patchedExp (a b u : ℝ) : ℝ := u + expCorrection a b u
 
-theorem expCorrection_compact (a b : ℝ) : HasCompactSupport (expCorrection a b) :=
+section
+variable (a b : ℝ)
+include a b
+
+theorem expCorrection_compact  : HasCompactSupport (expCorrection a b) :=
   (logOuterCutoff a b).hasCompactSupport.mul_right
 
-theorem expCorrection_smooth (a b : ℝ) : ContDiff ℝ ∞ (expCorrection a b) :=
+theorem expCorrection_smooth  : ContDiff ℝ ∞ (expCorrection a b) :=
   (logOuterCutoff a b).contDiff.mul (Real.contDiff_exp.sub contDiff_id)
 
-theorem patchedExp_temperate (a b : ℝ) : Function.HasTemperateGrowth (patchedExp a b) :=
+theorem patchedExp_temperate  : Function.HasTemperateGrowth (patchedExp a b) :=
   Function.HasTemperateGrowth.id'.add ((expCorrection_compact a b).hasTemperateGrowth
     (expCorrection_smooth a b))
 
-theorem patchedExp_proper (a b : ℝ) :
+theorem patchedExp_proper  :
     ∃ (k : ℕ) (C : ℝ), ∀ u : ℝ, ‖u‖ ≤ C * (1 + ‖patchedExp a b u‖) ^ k := by
   obtain ⟨u₀, hu₀⟩ := (expCorrection_smooth a b).continuous.norm.exists_forall_ge_of_hasCompactSupport
     (expCorrection_compact a b).norm
@@ -470,17 +506,17 @@ theorem patchedExp_proper (a b : ℝ) :
   simp only [pow_one]
   nlinarith [norm_nonneg (patchedExp a b u), norm_nonneg (expCorrection a b u₀)]
 
-def logPullbackCLM (a b : ℝ) : SchwartzMap ℝ ℂ →L[ℝ] SchwartzMap ℝ ℂ :=
+def logPullbackCLM  : SchwartzMap ℝ ℂ →L[ℝ] SchwartzMap ℝ ℂ :=
   (SchwartzMap.smulLeftCLM ℂ (logCutoff a b)).comp
     (SchwartzMap.compCLM ℝ (patchedExp_temperate a b) (patchedExp_proper a b))
 
-theorem logPullbackCLM_apply (a b : ℝ) (W : SchwartzMap ℝ ℂ) (u : ℝ) :
+theorem logPullbackCLM_apply  (W : SchwartzMap ℝ ℂ) (u : ℝ) :
     logPullbackCLM a b W u = logCutoff a b u • W (patchedExp a b u) := by
   rw [logPullbackCLM, ContinuousLinearMap.comp_apply, SchwartzMap.smulLeftCLM_apply_apply
     ((logCutoff a b).hasCompactSupport.hasTemperateGrowth (logCutoff a b).contDiff)]
   rfl
 
-theorem logCutoff_eq_one_of_source (a b : ℝ) (ha : 0 < a) (u : ℝ)
+theorem logCutoff_eq_one_of_source  (ha : 0 < a) (u : ℝ)
     (hu : Real.exp u ∈ Set.Icc a b) : logCutoff a b u = 1 := by
   apply (logCutoff a b).one_of_mem_closedBall
   have hl := Real.log_le_log ha hu.1
@@ -491,6 +527,8 @@ theorem logCutoff_eq_one_of_source (a b : ℝ) (ha : 0 < a) (u : ℝ)
   apply abs_le.mpr
   constructor <;> dsimp [logRadius] <;>
     linarith [neg_abs_le (Real.log a), le_abs_self (Real.log b), abs_nonneg (Real.log a), abs_nonneg (Real.log b)]
+end
+
 
 theorem patchedExp_eq_exp_of_cutoff_ne_zero (a b u : ℝ) (hu : logCutoff a b u ≠ 0) :
     patchedExp a b u = Real.exp u := by
@@ -520,10 +558,14 @@ open scoped Classical FourierTransform SchwartzMap ContDiff Topology
 open MeasureTheory Filter Set
 namespace CubicReflectionKernel
 
-theorem compact_family_deriv_sup_bound (F : ℝ → ℝ → ℂ)
+section
+variable (F : ℝ → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
     (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set ℝ) (hJ : IsCompact J)
-    (j : ℕ) :
+    (j : ℕ)
+include F hF K hK hsupp J hJ j
+
+theorem compact_family_deriv_sup_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ J, ∀ u : ℝ, ‖iteratedFDeriv ℝ j (F σ) u‖ ≤ C := by
   have hc := (section_iteratedDeriv_smooth F hF j).continuous.norm
   obtain ⟨M, hM⟩ := (hJ.prod hK).bddAbove_image hc.continuousOn
@@ -540,10 +582,7 @@ theorem compact_family_deriv_sup_bound (F : ℝ → ℝ → ℂ)
     simp only [hz, norm_zero]
     positivity
 
-theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
-    (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
-    (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set ℝ) (hJ : IsCompact J)
-    (j : ℕ) :
+theorem compact_family_mul_deriv_L1_source_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ W : SchwartzMap ℝ ℂ, ∀ σ ∈ J,
       (∫ u : ℝ, ‖iteratedDeriv j (fun u => F σ u * W u) u‖) ≤
         C * (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
@@ -559,11 +598,11 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
     have hsum : c k ≤ ∑ l : Fin (j + 1), c l :=
       Finset.single_le_sum (fun l _ => (hc l).le) (Finset.mem_univ k)
     exact (hcb k σ hσ u).trans (by dsimp [D]; linarith)
-  let B : ℝ := ∑ i ∈ Finset.range (j + 1), (j.choose i : ℝ) * D
+  let B := ∑ i ∈ Finset.range (j + 1), (j.choose i : ℝ) * D
   have hB : 0 ≤ B := by dsimp [B]; positivity
   refine ⟨(B + 1) * (volume.real K + 1), by positivity, ?_⟩
   intro W σ hσ
-  let S : ℝ := (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
+  let S := (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   have hS : 0 ≤ S := by dsimp [S]; positivity
   have hWder (k : ℕ) (hk : k ≤ j) (u : ℝ) : ‖iteratedFDeriv ℝ k W u‖ ≤ S := by
     have hle : schwartzSeminormFamily ℝ ℝ ℂ (0, k) ≤
@@ -601,9 +640,11 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
     _ ≤ ((B + 1) * S) * volume.real K := hi
     _ ≤ ((B + 1) * S) * (volume.real K + 1) := by gcongr; linarith
     _ = _ := by dsimp [S]; ring
-
-end CubicReflectionKernel
-
 end
 
-end OAI
+
+
+
+
+
+

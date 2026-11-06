@@ -12,11 +12,11 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialProfile
+
+
+
+open scoped EisensteinO
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
 def fullPunctureWidth (Z:ℝ)(t:Ideal O)(j:O):ℝ :=
@@ -64,15 +64,15 @@ theorem physical_row_width_le (m r z G B θ H η τ:ℝ)
   linarith
 
 theorem enlarged_initial_margins (m r z G B θ v H η τ Q c₁ c₂:ℝ)
-    (h₁:r+2*z≤m-c₁)(h₂:2*r+8*z≤3*m-c₂)
+    (h₁:r+2*z≤ m-c₁)(h₂:2*r+8*z≤3*m-c₂)
     (hG:0≤G)(hP:-2*η≤B-θ)(hQ:Q≤B-θ+G+3*η)
-    (hc:0≤min c₁ c₂)(hη:0≤η)(hηsmall:η≤min c₁ c₂/100)
-    (hτ:τ≤min c₁ c₂/100)
+    (hc:0≤ min c₁ c₂)(hη:0≤η)(hηsmall:η≤ min c₁ c₂/100)
+    (hτ:τ≤ min c₁ c₂/100)
     (hcut:radialCenter m H θ (r+z-2*G) B≤4*η+τ):
     CanonicalMargins
       (max 0 (r+z-2*G-B-v)+(θ+v+2*η)) (θ+H+2*η) Q (z-G)
       (3*min c₁ c₂/4) := by
-  have hd:0≤max 0 (r+z-2*G-B-v)-(r+z-2*G-B-v):=
+  have hd:0≤ max 0 (r+z-2*G-B-v)-(r+z-2*G-B-v):=
     sub_nonneg.mpr (le_max_right _ _)
   have hh:=initial_margins (delta:=max 0 (r+z-2*G-B-v)-(r+z-2*G-B-v))
     h₁ h₂ hG hP hQ hc hd hηsmall hτ
@@ -84,7 +84,7 @@ theorem enlarged_initial_margins (m r z G B θ v H η τ Q c₁ c₂:ℝ)
 theorem assigned_label_weight_le {σ:Type*}[DecidableEq σ]
     (slots J₁ J₂:Finset σ)(K:ℕ)(hK:slots.card≤K)
     (h₁:J₁⊆slots)(h₂:J₂⊆slots)(f:Ideal O)(hf:f≠0):
-    ((IdealMobiusDivisorSum.idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1)≤secondLabelWeight K f := by
+    ((IdealMobiusDivisorSum.idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1)≤ secondLabelWeight K f := by
   have hmem:(1:Ideal O)∈IdealMobiusDivisorSum.idealDivisors f:=
     (IdealMobiusDivisorSum.mem_idealDivisors hf).mpr (one_dvd _)
   have hn:(1:ℝ)≤(IdealMobiusDivisorSum.idealDivisors f).card:=by
@@ -93,8 +93,8 @@ theorem assigned_label_weight_le {σ:Type*}[DecidableEq σ]
   have hcard2:=Finset.card_le_card h₂
   exact pow_le_pow_right₀ hn (by omega)
 
-end SevenEighths.InverseInitialCanonicalState
 
-end
 
-end OAI
+
+
+

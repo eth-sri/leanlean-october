@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicDyadicAssembly
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -66,8 +66,6 @@ theorem cubic_scaled_strip (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     have hh : L^2*T^η*U^2 = T^η*(T^(1+η))^2 := by dsimp [U]; field_simp
     rw [hh,← Real.rpow_natCast (T^(1+η)) 2,← Real.rpow_mul hTp.le,
       ← Real.rpow_add hTp,← Real.rpow_natCast T 2,← Real.rpow_add hTp]
-    congr 1
-    norm_num
     ring
   have he₂ : L^2*T^η*U = T^(2*η)*T*L := by
     have hh : L^2*T^η*U = (T^η*T^(1+η))*L := by dsimp [U]; field_simp
@@ -97,4 +95,4 @@ theorem cubic_scaled_strip (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
       exact cubic_box_epsilon_absorption hT1 hη.le hLp.le hM hbudget
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

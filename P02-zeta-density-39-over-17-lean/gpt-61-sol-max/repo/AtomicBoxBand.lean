@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import BoxTimeDensity
 public import AtomicRadialBound
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform
 namespace Montgomery.RationalMoment
@@ -24,8 +24,7 @@ theorem log_ten_le_three : Real.log 10 ≤ 3 := by
   apply (Real.log_le_iff_le_exp (by norm_num : (0:ℝ)<10)).mpr
   have hp := pow_le_pow_left₀ (by norm_num : (0:ℝ) ≤ 9/4) h1 3
   rw [he3]
-  norm_num at hp ⊢
-  linarith
+  bound
 
 /-- Every logarithmic ratio frequency used by the [1/2,5] cutoff lies
 inside the fixed box Fourier band. -/
@@ -68,4 +67,4 @@ theorem atomic_ratio_box_domination (W : Finset ℝ) {p : ℝ × ℝ}
         (2*‖𝓕 (fun t => (boxTimeDensity W t:ℂ)) (mellinFrequency p.2)‖) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

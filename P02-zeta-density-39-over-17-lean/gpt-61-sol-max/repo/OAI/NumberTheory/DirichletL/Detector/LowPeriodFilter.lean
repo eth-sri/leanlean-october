@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowPeriodSupport
 
 @[expose] public section
@@ -8,7 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
@@ -48,25 +49,34 @@ lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMax
   intro Q hQ hdiv
   rw [span_primaryGenerator_of_supported P.val hP] at hdiv
   have hpmax := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
-  have he : P.val=Q := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
+  have he := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
   exact hout (he.symm ▸ hQ)
 
-def lowPeriodPrimeList (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) : Finset PrimeIdeal :=
+section
+variable (η : HeckeFamily.Character) (S : Finset Id)
+    (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal)
+include η S hS T
+
+def lowPeriodPrimeList  : Finset PrimeIdeal :=
   T.filter (fun P=>IsCoprime P.val (lowPeriodIdeal η S hS))
 
-lemma lowPeriodPrimeList_subset (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) :
+lemma lowPeriodPrimeList_subset  :
     lowPeriodPrimeList η S hS T⊆T := Finset.filter_subset _ _
+end
 
-lemma lowPeriodPrimeList_disjoint {ι : Type*} (η : HeckeFamily.Character) (S : Finset Id)
+
+section
+variable {ι : Type*}
+include ι
+
+lemma lowPeriodPrimeList_disjoint  (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (T : ι→Finset PrimeIdeal)
     (hT : Pairwise (fun i j=>Disjoint (T i) (T j))) :
     Pairwise (fun i j=>Disjoint (lowPeriodPrimeList η S hS (T i)) (lowPeriodPrimeList η S hS (T j))) := by
   intro i j hij
   exact (hT hij).mono (lowPeriodPrimeList_subset η S hS _) (lowPeriodPrimeList_subset η S hS _)
 
-theorem low_canonical_polynomial_period_filter {ι : Type*} [Fintype ι]
+theorem low_canonical_polynomial_period_filter  [Fintype ι]
     (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (T : ι→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→CanonicalQuadraticSieve.Supported P.val)
@@ -82,8 +92,10 @@ theorem low_canonical_polynomial_period_filter {ι : Type*} [Fintype ι]
     (canonical_prime_calibration_coprime S hS P (hT i P hP) (hout i P hP))
   change ¬IsCoprime (Ideal.span {CompletedGauss.primaryGenerator P.val}) (lowPeriodIdeal η S hS)
   rwa [span_primaryGenerator_of_supported P.val (hT i P hP)]
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

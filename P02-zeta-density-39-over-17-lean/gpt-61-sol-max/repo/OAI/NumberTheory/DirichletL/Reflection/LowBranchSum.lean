@@ -9,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseTerminalWidths
+
+open scoped EisensteinEis
 variable {a c₀ : Eis} {mode : Bool}
 
 theorem original_surviving_low_energy_sum
@@ -79,7 +79,7 @@ theorem original_surviving_low_energy_sum
       simp only [Finset.sum_const,nsmul_eq_mul]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right hcbr (Real.rpow_nonneg (lt_trans zero_lt_one hz').le _)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -17,7 +17,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownPositiveShiftFiber
+def heathBrownPositiveShiftFiber
     (N k H K : ℕ) (f : ℝ → ℝ) (d : ℕ) : Finset ℕ := by
   classical
   exact (Finset.Icc 1 N).filter fun n =>
@@ -59,6 +59,6 @@ theorem heathBrownPositiveShiftFiber_card_le_spacingSet
         (4 * (((H : ℝ) ^ (k - 2))⁻¹))).card :=
   Finset.card_le_card heathBrownPositiveShiftFiber_subset_spacingSet
 
-end
 
-end GafniTao
+
+

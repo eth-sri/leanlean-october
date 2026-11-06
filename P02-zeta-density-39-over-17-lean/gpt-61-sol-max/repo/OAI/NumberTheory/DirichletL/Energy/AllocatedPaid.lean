@@ -16,7 +16,7 @@ open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -34,7 +34,7 @@ theorem actual_allocated_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εr
     PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
@@ -72,8 +72,8 @@ theorem actual_allocated_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εr
     st hunit hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂
   simpa only [abs_zero,add_zero] using he
 
-end SevenEighths.CenteredMomentEnergyAllocatedPaid
 
-end
 
-end OAI
+
+
+

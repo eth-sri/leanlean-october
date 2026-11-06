@@ -4,7 +4,6 @@ public import MathCollab.Density.Stronger.AtkinsonHeightCover
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.CriticalPeak
@@ -26,14 +25,7 @@ theorem absorptionLength_absorbs {k l A H G Y : ℝ}
   have hp : 0 ≤ Y^2/(4*A*H^(l-k)*G^(1+k-2*l)) := by positivity
   unfold absorptionLength
   rw [← Real.rpow_mul hp, one_div_mul_cancel hk.ne', Real.rpow_one]
-  have he : 2*A*((Y^2/(4*A*H^(l-k)*G^(1+k-2*l)))*H^(l-k)*G^(1+k-2*l)) =
-      Y^2/2 := by
-    have hHp : H^(l-k) ≠ 0 := (Real.rpow_pos_of_pos hH _).ne'
-    have hGp : G^(1+k-2*l) ≠ 0 := (Real.rpow_pos_of_pos hG _).ne'
-    field_simp
-    ring
-  rw [he]
-  nlinarith [sq_nonneg Y]
+  field_simp <;> nlinarith
 
 theorem card_le_of_quadratic_packet {A H G Y X : ℝ} {W : Finset ℝ} {f : ℝ → ℝ}
     (hA : 0 < A) (hH : 0 ≤ H) (hG : 0 < G) (hY : 0 < Y)
@@ -59,7 +51,11 @@ theorem card_le_of_quadratic_packet {A H G Y X : ℝ} {W : Finset ℝ} {f : ℝ 
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-theorem covered_card_budget {k l A H G Y : ℝ}
+section
+variable {k l A H G Y : ℝ}
+include k l A H G Y
+
+theorem covered_card_budget 
     (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     ((Nat.floor (H/absorptionLength k l A H G Y)+1:ℕ):ℝ)*(2*A*H/(G*Y^2)) ≤
       2*A*H/(G*Y^2)+(H/absorptionLength k l A H G Y)*(2*A*H/(G*Y^2)) := by
@@ -75,7 +71,7 @@ theorem covered_card_budget {k l A H G Y : ℝ}
     _ = _ := by ring
 
 /-- The generic subdivision lemma preserves the physical interval and packet powers. -/
-theorem card_le_of_local_packets {k l A H G Y : ℝ}
+theorem card_le_of_local_packets 
     {W : Finset ℝ} {f : ℝ → ℝ}
     (hk : 0 < k) (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y)
     (hrange : ∀ t ∈ W, H ≤ t ∧ t ≤ 2*H)
@@ -99,7 +95,7 @@ theorem card_le_of_local_packets {k l A H G Y : ℝ}
   exact hc.trans (covered_card_budget hA hH hG hY)
 
 /-- Exact dependence on all four positive physical parameters. -/
-theorem absorptionLength_eq {k l A H G Y : ℝ}
+theorem absorptionLength_eq 
     (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     absorptionLength k l A H G Y =
       Y^(2/k)/(4^(1/k)*A^(1/k)*H^((l-k)/k)*G^((1+k-2*l)/k)) := by
@@ -113,20 +109,15 @@ theorem absorptionLength_eq {k l A H G Y : ℝ}
   congr 2 <;> ring_nf
 
 /-- The subdivision term has exactly the general exponent-pair powers. -/
-theorem subdivision_term_eq {k l A H G Y : ℝ}
+theorem subdivision_term_eq 
     (hk : 0 < k) (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     (H/absorptionLength k l A H G Y)*(2*A*H/(G*Y^2)) =
       2*4^(1/k)*A^(1+1/k)*H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k)) := by
-  have hAp : A^(1/k) ≠ 0 := (Real.rpow_pos_of_pos hA _).ne'
-  have hHp : H^((l-k)/k) ≠ 0 := (Real.rpow_pos_of_pos hH _).ne'
   have hGp : G^((1+k-2*l)/k) ≠ 0 := (Real.rpow_pos_of_pos hG _).ne'
-  have hYp : Y^(2/k) ≠ 0 := (Real.rpow_pos_of_pos hY _).ne'
   have ha : A^(1+1/k) = A*A^(1/k) := by rw [Real.rpow_add hA,Real.rpow_one]
   have hh : H^(1+l/k) = H^2*H^((l-k)/k) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add hH]
-    congr 1
-    field_simp [hk.ne']
-    ring
+    grind
   have hg : G^((2*l-1)/k)*G^((1+k-2*l)/k) = G := by
     rw [← Real.rpow_add hG]
     have he : (2*l-1)/k+(1+k-2*l)/k = 1 := by
@@ -136,14 +127,12 @@ theorem subdivision_term_eq {k l A H G Y : ℝ}
   have hy : Y^(2+2/k) = Y^2*Y^(2/k) := by
     rw [Real.rpow_add hY, Real.rpow_two]
   rw [absorptionLength_eq hA hH hG hY,ha,hh,hy]
-  have h4 : (4:ℝ)^(1/k) ≠ 0 := (Real.rpow_pos_of_pos (by norm_num) _).ne'
-  have hg' : G^((2*l-1)/k) = G/G^((1+k-2*l)/k) :=
+  have hg' :=
     (eq_div_iff hGp).mpr hg
-  rw [hg']
-  field_simp
+  grind
 
 /-- The complete generic finite count, retaining both terms. -/
-theorem card_le_two_powers {k l A H G Y : ℝ}
+theorem card_le_two_powers 
     {W : Finset ℝ} {f : ℝ → ℝ}
     (hk : 0 < k) (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y)
     (hrange : ∀ t ∈ W, H ≤ t ∧ t ≤ 2*H)
@@ -156,6 +145,8 @@ theorem card_le_two_powers {k l A H G Y : ℝ}
       2*4^(1/k)*A^(1+1/k)*H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k)) := by
   have h := card_le_of_local_packets hk hA hH hG hY hrange hlarge hpacket
   rwa [subdivision_term_eq hk hA hH hG hY] at h
+end
+
 
 
 /-- Allocate the packet loss before the physical height is quantified. -/
@@ -185,7 +176,6 @@ theorem count_exponent_budget {k l D H G Y ν : ℝ}
     _ ≤ _ := by
       have hx : 0 ≤ 2*D*H^ν*(H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k))) := by positivity
       have hy : 0 ≤ 2*4^(1/k)*D^(1+1/k)*H^ν*(H/(G*Y^2)) := by positivity
-      ring_nf at hx hy ⊢
-      nlinarith
+      grind
 
-end Montgomery.CriticalPeak
+

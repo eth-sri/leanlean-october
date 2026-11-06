@@ -10,8 +10,8 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 variable {ι : Type*} [DecidableEq ι]
 
@@ -35,21 +35,26 @@ theorem cube_whole_column_norm (p : ι→O) (b : CubeCoordinates ι) (hb : b.Adm
 variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem canonical_residual_norm (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (hΨ : ∀ u,‖Ψ u‖≤1) (m f : O) (H : Finset ι→ℂ) (N : Finset ι) :
+section
+variable (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
+    (Ψ : O→*ℂ)
+include b C negative Ψ
+
+theorem canonical_residual_norm  (hΨ : ∀ u,‖Ψ u‖≤1) (m f : O) (H : Finset ι→ℂ) (N : Finset ι) :
     ‖canonicalCubeResidual p hg b C negative Ψ m f H N‖ ≤
       ‖H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪N)‖ := by
   exact originalLabelColumn_core_norm_le p hg b.support b.leftBit b.rightBit negative
     Ψ hΨ m (∏i∈C,p i) f _ N
 
-theorem canonical_residual_test_nonzero (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m f : O) (H : Finset ι→ℂ) (N : Finset ι)
+theorem canonical_residual_test_nonzero  (m f : O) (H : Finset ι→ℂ) (N : Finset ι)
     (hn : canonicalCubeResidual p hg b C negative Ψ m f H N≠0) :
     H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪N)≠0 := by
   exact originalLabelColumn_core_test_ne_zero p hg b.support b.leftBit b.rightBit negative
     Ψ m (∏i∈C,p i) f _ N hn
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

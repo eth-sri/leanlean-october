@@ -5,15 +5,15 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerEmpty
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialEnergyCallerSource
+open InverseInitialProfile InverseInitialClippedColumns
+open scoped EisensteinEis
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -74,7 +74,7 @@ theorem physical_nonzero_clipping
     (ht:Real.log b≤3*η*Real.log Z)
     (hn:physicalBlock p hp hcop hg (pointSource pool S) w Ψ j marks
       (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m≠0) :
-    0≤max 0 (columnCenter D B v)-columnCenter D B v ∧
+    0≤ max 0 (columnCenter D B v)-columnCenter D B v ∧
       max 0 (columnCenter D B v)-columnCenter D B v≤3*η := by
   apply freshColumns_initial_clipping_shift p hp pool ω₁ a b Z (columnCenter D B v) η hZ hb hω _ ht
   by_contra he
@@ -82,8 +82,8 @@ theorem physical_nonzero_clipping
   exact hn (physicalBlock_zero_of_fresh_empty p hp hcop hg hpr pool S hdiv hf w Ψ j marks
     W₁ W₂ ω₁ ω₂ V Φ Z D B v θ H m c₁ c₂ θ₁ θ₂ (zero_lt_one.trans hZ) hs he')
 
-end SevenEighths.InverseInitialEnergyCallerEmpty
 
-end
 
-end OAI
+
+
+

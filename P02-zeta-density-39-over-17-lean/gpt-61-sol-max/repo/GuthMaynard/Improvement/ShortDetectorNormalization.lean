@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDetectorPoweredPieces
 
 @[expose] public section
 
-open Real Complex Set Filter MathCollab.Density
+open Real Complex Filter MathCollab.Density
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -18,9 +18,7 @@ theorem shortPoweredDetectorCoefficient_subpower {δ : ℝ} (hδ : 0 < δ)
   obtain ⟨C, hC, hd⟩ := divisor_card_subpower (show 0 < δ/(2*K) by positivity)
   refine ⟨C^(2*K), one_le_pow₀ hC, ?_⟩
   intro T N j k n hT hN hk hn
-  have hcard : (1 : ℝ) ≤ n.divisors.card := by
-    have hc : 0 < n.divisors.card := Finset.card_pos.mpr ⟨1, Nat.one_mem_divisors.mpr hn.ne'⟩
-    exact_mod_cast hc
+  have hcard : (1 : ℝ) ≤ n.divisors.card := by aesop
   calc
     _ = ‖((shortDetectorBlockCoefficients T N j)^k) n‖ := norm_conj _
     _ ≤ (n.divisors.card : ℝ)^(2*k) := arithmeticFunction_pow_norm_le
@@ -56,9 +54,6 @@ theorem shortPoweredDetectorCoefficient_eventually_le {η : ℝ} (hη : 0 < η)
       (Real.rpow_le_rpow (Nat.cast_nonneg n) hn (by positivity)) (by linarith)
     _ = A*T^(η/2) := by
       rw [← Real.rpow_natCast_mul hTpos.le]
-      congr 1
-      congr 1
-      norm_num
       ring
     _ ≤ T^(η/2)*T^(η/2) := mul_le_mul_of_nonneg_right hlarge (by positivity)
     _ = T^η := by rw [← Real.rpow_add hTpos]; congr 1; ring
@@ -83,8 +78,6 @@ theorem detectingPolynomial_shortNormalizedPowered (η T t : ℝ) (N j k L : ℕ
     detectingPolynomial L (shortNormalizedPoweredCoefficient η T N j k) t =
       detectingPolynomial L (shortPoweredDetectorCoefficient T N j k) t/((T^η : ℝ) : ℂ) := by
   simp only [detectingPolynomial, shortNormalizedPoweredCoefficient, Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro n _
-  ring
+  grind
 
-end GuthMaynard.Improvement
+

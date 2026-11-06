@@ -25,4 +25,4 @@ theorem ingham_zeta_polynomial_range_empty
   intro hUpper
   nlinarith
 
-end GuthMaynard.NativeMoment
+

@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.OperatorPositiveCompact
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory InnerProductSpace Filter
 open scoped InnerProductSpace Topology
 namespace GuthMaynard.Improvement
@@ -11,10 +11,14 @@ variable {E α ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
   [CompleteSpace E] [MeasurableSpace α] [Countable ι]
 variable (ν : Measure α) (b : HilbertBasis ι ℂ E)
 
-/-- Right multiplication preserves the actual integral nuclear presentation. -/
-theorem operatorIntegral_comp_right (S : E →L[ℂ] E)
+section
+variable (S : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
-    (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
+    (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν)
+include S x y hx hy hxy
+
+/-- Right multiplication preserves the actual integral nuclear presentation. -/
+theorem operatorIntegral_comp_right  :
     operatorIntegral ν x y * S = operatorIntegral ν x (fun a => S.adjoint (y a)) := by
   let comp : (E →L[ℂ] E) →L[ℂ] (E →L[ℂ] E) :=
     (ContinuousLinearMap.compL ℂ E E E).flip S
@@ -23,9 +27,7 @@ theorem operatorIntegral_comp_right (S : E →L[ℂ] E)
     ContinuousLinearMap.compL_apply, rankOne_comp, ContinuousLinearMap.mul_def] using hh.symm
 
 /-- Cyclic trace movement is proved from rank-one integrals, not postulated. -/
-theorem operatorIntegral_trace_right (S : E →L[ℂ] E)
-    {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
-    (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
+theorem operatorIntegral_trace_right  :
     operatorDiagonalTrace b (operatorIntegral ν x y * S) =
       ∫ a, inner ℂ (y a) (S (x a)) ∂ν := by
   have hi : Integrable (fun a => ‖x a‖*‖S.adjoint (y a)‖) ν := by
@@ -34,6 +36,8 @@ theorem operatorIntegral_trace_right (S : E →L[ℂ] E)
   rw [operatorIntegral_comp_right ν S hx hy hxy,
     operatorIntegral_trace ν b hx (S.adjoint.continuous.comp_aestronglyMeasurable hy) hi]
   simp only [ContinuousLinearMap.adjoint_inner_left]
+end
+
 
 /-- Strong convergence, with a uniform operator norm bound, suffices for convergence
 of left nuclear traces. Operator-norm convergence is not assumed. -/
@@ -90,7 +94,7 @@ theorem operator_compression_word_tendsto {β : Type*} {l : Filter β}
   have h₂ := operator_strong_apply_tendsto hp hp' h₁
   have h₃ := H.continuous.tendsto (H v) |>.comp h₂
   have h₄ := operator_strong_apply_tendsto hp hp' h₃
-  simpa only [mul_apply_eq_comp, one_apply_eq_self, pow_two, Function.comp_apply] using h₄
+  exact h₄
 
 omit [CompleteSpace E] in
 /-- Common compression word has a uniform bound, independently of compression rank. -/
@@ -148,4 +152,4 @@ theorem operatorIntegral_compressed_trace_tendsto {β : Type*} {l : Filter β}
     (fun n => operator_compression_word_norm H (P n) (hp n))
     (operator_compression_word_tendsto H hp hP) hx hy hxy
 
-end GuthMaynard.Improvement
+

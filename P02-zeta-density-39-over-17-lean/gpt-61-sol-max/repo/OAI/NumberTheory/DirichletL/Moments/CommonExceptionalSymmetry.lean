@@ -10,15 +10,15 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentCommonExceptionalSymmetry
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonExceptionalSource
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+
+
+
+
+
+
+
+open scoped HeckeO
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
@@ -28,8 +28,8 @@ lemma same_raw_better_cap (r c d:ℝ):
   · rw [min_eq_left h,max_eq_left (max_le_max_right 0 (by linarith))]
   · rw [min_eq_right h,max_eq_right (max_le_max_right 0 (by linarith))]
 
-end SevenEighths.CenteredMomentCommonExceptionalSymmetry
 
-end
 
-end OAI
+
+
+

@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.DirichletMeanValue
 public import GuthMaynard.Improvement.SamplingVariation
 public import RationalDifferenceEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
-open Finset MeasureTheory Set
+open Finset MeasureTheory
 open scoped ComplexConjugate
 namespace Montgomery.RationalMoment
 
@@ -124,10 +124,14 @@ theorem exponentialPhase_pair (ω ν t : ℝ) :
   unfold exponentialPhase
   rw [← Complex.exp_conj, ← Complex.exp_add]
   congr 1
-  simp only [map_mul, Complex.conj_I, Complex.conj_ofReal, Complex.ofReal_sub]
+  simp
   ring
 
-theorem exponential_gram (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (a b : ℝ) :
+section
+variable (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ)
+include S ω c
+
+theorem exponential_gram  (a b : ℝ) :
     (∫ t in Set.Icc a b, (‖exponentialPolynomial S ω c t‖ ^ 2 : ℂ)) =
       ∑ n ∈ S, ∑ m ∈ S, (c n * conj (c m)) *
         (∫ t in Set.Icc a b, exponentialPhase (ω n) t * conj (exponentialPhase (ω m) t)) := by
@@ -160,7 +164,7 @@ theorem exponential_gram (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (a b
 
 /-- Actual mean-square integral for arbitrary coefficients and separated real
 frequencies. The logarithmic cost is proved; no mean-value premise is assumed. -/
-theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ)
+theorem separated_frequency_mean_value 
     {δ L a b : ℝ} (hδ : 0 < δ) (hab : a ≤ b)
     (hω : ∀ i ∈ S, |ω i| ≤ L)
     (hsep : ∀ i ∈ S, ∀ j ∈ S, i ≠ j → δ ≤ |ω i - ω j|) :
@@ -220,7 +224,7 @@ theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι
         (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ ≤ _ := GuthMaynard.Improvement.finite_symmetric_row_bound S (fun n => ‖c n‖) k hk hsym hrow
 
-theorem exponentialPolynomial_derivative (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (t : ℝ) :
+theorem exponentialPolynomial_derivative  (t : ℝ) :
     HasDerivAt (exponentialPolynomial S ω c)
       (exponentialPolynomial S ω (fun n => c n * (Complex.I * (ω n : ℂ))) t) t := by
   unfold exponentialPolynomial
@@ -232,6 +236,8 @@ theorem exponentialPolynomial_derivative (S : Finset ι) (ω : ι → ℝ) (c : 
   convert (hd.cexp).const_mul (c n) using 1
   all_goals simp only [exponentialPhase]
   all_goals ring
+end
+
 
 theorem frequency_cost_nonneg {δ D L : ℝ} (hδ : 0 < δ) (hD : 0 ≤ D) :
     0 ≤ D + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊) := by
@@ -308,4 +314,4 @@ theorem separated_frequency_discrete_mean_value (S : Finset ι) (ω : ι → ℝ
   change (∑ t ∈ W, ‖D t‖ ^ 2) ≤ (2 + L ^ 2) * C * E
   nlinarith
 
-end Montgomery.RationalMoment
+

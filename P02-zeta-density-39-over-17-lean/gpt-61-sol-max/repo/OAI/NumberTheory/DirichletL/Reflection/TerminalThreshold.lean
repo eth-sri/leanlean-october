@@ -7,16 +7,20 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein
+
+open scoped EisensteinEis
 variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
 
-lemma frozenExtracted_eq_ideal (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3) (v : Fin 3) :
+section
+variable (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
+include F jF e
+
+lemma frozenExtracted_eq_ideal  (v : Fin 3) :
     frozenExtracted F jF e v = reflectionExtractedDivisor F.ideal jF e v := by
   simp only [frozenExtracted,PrimeFamily.generator_span]
 
-theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
+theorem actual_kernel_terminal_threshold 
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (m : ℕ) (Z T QK QP Qn Qb kn kb : ℝ)
     (hT : 0<T) (hK : 0<QK) (hP : 0<QP) (hn : 0<Qn) (hb : 0<Qb)
@@ -51,8 +55,10 @@ theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e
   simp (disch := positivity) only [Real.logb_div,Real.logb_mul,Real.logb_pow]
   norm_num only [Nat.cast_ofNat]
   ring
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

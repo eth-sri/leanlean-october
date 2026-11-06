@@ -3,9 +3,8 @@ public import DensityEnergyGM.SecondMomentPowerAlgebra
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem min_le_geometric_rpow {a b w : ℝ}
@@ -63,4 +62,4 @@ theorem gcd_scale_sqrt_min {M H K q : ℝ}
   have hRight : 0 ≤ M * H ^ ((q - 1) / 2) * K ^ ((2 - q) / 2) := by positivity
   nlinarith
 
-end Montgomery.RationalMoment
+

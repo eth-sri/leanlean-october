@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,12 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightFreezing
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 /-- The actual zeta square is approximated by the complete frozen
 oscillatory source on the closed half-height window. -/
@@ -31,11 +31,11 @@ theorem exists_abs_zetaSquareNorm_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
     _ ≤ 2 * ‖zetaSquareDivisorIntegral (-(T + x)) / zetaSquareGammaNormalization (T + x) -
         zetaSquareFrozenDivisorIntegral T x‖ := by
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
-      simpa only [Complex.sub_re] using Complex.abs_re_le_norm
+      exact Complex.abs_re_le_norm
         (zetaSquareDivisorIntegral (-(T + x)) / zetaSquareGammaNormalization (T + x) -
           zetaSquareFrozenDivisorIntegral T x)
     _ ≤ 2 * (C * (1 + |x| * T ^ (-1 / 2 + ε))) :=
       mul_le_mul_of_nonneg_left (hbound T hT x hx) (by norm_num)
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson
+

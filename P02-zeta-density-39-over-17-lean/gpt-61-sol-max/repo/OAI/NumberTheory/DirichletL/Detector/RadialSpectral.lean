@@ -11,7 +11,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma spectralSummand_mask_nonzero (S : Finset Id) (D I J : Id) (Ψ : O→*ℂ) (t : ℂ)
@@ -64,7 +64,7 @@ theorem transformedSpectralTerm_radial_mellin (η : HeckeFamily.Character)
         W a b ha hW K hK σ hσ]
   · rfl
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

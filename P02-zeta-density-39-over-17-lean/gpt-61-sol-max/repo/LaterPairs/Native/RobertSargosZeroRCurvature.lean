@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -57,7 +56,6 @@ theorem robertSargos_zero_r_second_curvature
     (fun y => robertSargosSymmetricDifference (iteratedDeriv 3 f) y h)
     (show x ≤ x+q by linarith) hd
     (fun y hy => (hc y hy).1) (fun y hy => (hc y hy).2)
-  rw [show (x+q)-x = q by ring] at hb
-  simpa only [mul_assoc,mul_comm,mul_left_comm] using hb
+  grind
 
-end TaoTrudgianYang2025
+

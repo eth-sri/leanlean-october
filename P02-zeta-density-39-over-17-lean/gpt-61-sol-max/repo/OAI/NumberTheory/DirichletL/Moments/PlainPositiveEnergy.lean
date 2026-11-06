@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap BigOperators
 namespace SevenEighths.CenteredMomentPlainPositiveEnergy
 open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy
 open CenteredMomentOriginalRadialComparison
 open CenteredMomentRadialEligibleEnergy (Radial)
-open QuadraticInitialBound ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
+open QuadraticInitialBound
+open scoped HeckeO
 
  theorem actual_radial_pair_bound (a b:ℝ)(ha:0<a):
     ∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
@@ -48,8 +48,8 @@ local notation "O"=>HeckeFamily.O
   have hh:=radial_bound_on_keep _ r B hB hp
   exact hh.trans_eq (by dsimp [B];ring)
 
-end SevenEighths.CenteredMomentPlainPositiveEnergy
 
-end
 
-end OAI
+
+
+

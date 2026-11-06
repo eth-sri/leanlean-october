@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.CStarAlgebra.Matrix
 public import Mathlib.Tactic.Ring
 
@@ -39,10 +40,7 @@ theorem operator_conjugate_apply (A : Matrix m n ℂ) (x : EuclideanSpace ℂ n)
     operator (fun i j => star (A i j)) x = conjugateVector (operator A (conjugateVector x)) := by
   ext i
   change (∑ j, star (A i j) * x j) = star (∑ j, A i j * star (x j))
-  simp only [star_sum, star_mul, star_star]
-  apply Finset.sum_congr rfl
-  intro j _
-  exact mul_comm _ _
+  simp
 
 omit [DecidableEq m] in
 theorem operator_conjugate_norm_le (A : Matrix m n ℂ) :
@@ -87,7 +85,7 @@ theorem energy_le_squaredNorm (A : Matrix m n ℂ) (c : n → ℂ) :
   have hs := pow_le_pow_left₀ (norm_nonneg _) h 2
   simpa only [squaredNorm, mul_pow, EuclideanSpace.norm_sq_eq, operator_apply, x] using hs
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

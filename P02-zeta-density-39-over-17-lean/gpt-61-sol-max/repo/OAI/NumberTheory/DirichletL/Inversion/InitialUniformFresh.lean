@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapFresh
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialUniformFresh
@@ -43,8 +43,8 @@ theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
     dsimp [hi]
     linarith
 
-end SevenEighths.InverseInitialUniformFresh
 
-end
 
-end OAI
+
+
+

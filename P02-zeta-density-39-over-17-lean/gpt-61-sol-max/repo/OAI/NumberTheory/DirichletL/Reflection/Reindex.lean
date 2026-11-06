@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators MatrixGroups
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CubicJacobiGlobal FiniteGaussPhase ShortDraftCRT
+open ActualEisensteinCubic CubicEisenstein FiniteGaussPhase ShortDraftCRT
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
 
 lemma cofactor_reindex (p : ι→Eis) (e : κ≃ι) (k : κ) :
@@ -64,7 +64,7 @@ def reindexControlled {p : ι→Eis} {N a c : Eis} {mode : Bool}
   matrix_fixed v i j := by
     simpa only [unitFrequencyEquiv_one] using D.matrix_fixed (unitFrequencyEquiv p e v) i j
   conditions v := D.conditions (unitFrequencyEquiv p e v)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -24,4 +24,4 @@ namespace MathCollab.Density.Stronger.Atkinson
 def zetaAtkinsonPhase (T b x : ℝ) : ℝ :=
   T * Real.log x - 2 * Real.pi * x + 4 * Real.pi * b * Real.sqrt x
 
-end MathCollab.Density.Stronger.Atkinson
+

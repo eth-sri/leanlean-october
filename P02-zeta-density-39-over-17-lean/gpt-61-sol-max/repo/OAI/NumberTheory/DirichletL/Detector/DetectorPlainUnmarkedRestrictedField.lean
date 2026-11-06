@@ -1,25 +1,26 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainUnmarkedField
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
+open HeckeDyadic HeckeInverseAmplification
 open CenteredMomentDetectorPlainFiberSource
 open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
 open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
+open CenteredMomentDetectorPlainExceptional
 open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
+open CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
 open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 open ProbeDetectorPlainUnmarkedField
 variable {Δ:ℝ}
@@ -59,7 +60,7 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   have hAmax:0<Amax:=by dsimp [Amax];linarith
   have hA_bound (label):A label≤Amax:=by
     have hh:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hA j).le) (Finset.mem_univ label)
-    dsimp [Amax];linarith
+    linarith
   let C:=Amax*(1+diagonalControl radialMajorant)*Cp
   have hdiag:0≤diagonalControl radialMajorant:=diagonalControl_nonneg _
   have hC:0<C:=mul_pos (mul_pos hAmax (by linarith)) hCp
@@ -116,8 +117,8 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   refine ⟨hfinal,?_⟩
   simpa only [unmarked_power_eq _ _ _ hU.le,mul_assoc] using hfinal
 
-end SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
 
-end
 
-end OAI
+
+
+

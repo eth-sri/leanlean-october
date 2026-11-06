@@ -10,18 +10,21 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def firstNormProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ) : ℂ :=
+section
+variable (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
+    (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ)
+include W₁ W₂ Φ V R q
+
+def firstNormProfile  : ℂ :=
   (∏ i, V i (Real.log (q i))) * W₁ (q 0*q 2*q 5*q 7) *
     W₂ (q 1*q 2*q 5*q 8) *
     paperRadialFourier Φ (R*q 6/(q 3*q 4*(q 5)^2*q 7*q 8)) /
       ((q 3:ℂ)*(Real.sqrt (q 4):ℂ)*(q 5:ℂ)*
         (Real.sqrt (q 7):ℂ)*(Real.sqrt (q 8):ℂ))
 
-theorem firstPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ) (hq : ∀ i, 0 < q i) :
+theorem firstPoissonProfile_log  (hq : ∀ i, 0 < q i) :
     firstPoissonProfile W₁ W₂ Φ V R (fun i => Real.log (q i)) =
       firstNormProfile W₁ W₂ Φ V R q := by
   have hl : (∑ i, firstLeftSlope i * Real.log (q i)) =
@@ -45,6 +48,8 @@ theorem firstPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   simp only [Fin.succ,Fin.val_mk]
   norm_num
   ring
+end
+
 
 theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -84,7 +89,7 @@ theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
   push_cast
   ring_nf
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

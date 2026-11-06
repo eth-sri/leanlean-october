@@ -13,11 +13,11 @@ coordinate index. They are derived from the original model-phase errors.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def inverseJetMagnitude (σ : ℝ) : ℕ → ℝ
   | 0 => 2
@@ -67,4 +67,4 @@ theorem modelPhaseInverseJet_abs_le
       have hd : δ ≤ 1 := hδ.trans (min_le_right _ _)
       linarith
 
-end TaoTrudgianYang2025
+

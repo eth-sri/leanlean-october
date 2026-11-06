@@ -7,8 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform
-noncomputable section
+open MeasureTheory InverseKernelSourceUniform
+
 universe u
 
 theorem reflected_finite_source_uniform
@@ -57,7 +57,7 @@ theorem reflected_finite_source_uniform
     Complex.ofReal_mul]
   ring
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -20,15 +20,18 @@ lemma gaussianFixedWindow_support : Function.support gaussianFixedWindow⊆Set.I
   · by_contra h; exact hy (gaussianFixedWindow_small y (le_of_lt (lt_of_not_ge h)))
   · by_contra h; exact hy (gaussianFixedWindow_large y (le_of_lt (lt_of_not_ge h)))
 
-lemma lowReflectionMask_bad_ideals (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) :
+section
+variable (η : HeckeFamily.Character) (S : Finset Id)
+    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
+include η S hS hbad
+
+lemma lowReflectionMask_bad_ideals  :
     ∀P∈fixedBadPrimes,P∣Ideal.span {lowReflectionMask η S hS}*(1:Id) := by
   intro P hP
   rw [mul_one,lowReflectionMask,←Ideal.span_singleton_mul_span_singleton,calibrationForSet_span]
   exact dvd_mul_of_dvd_left (Finset.dvd_prod_of_mem (fun P : Id=>P) (hbad hP)) _
 
-theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
+theorem low_selected_physical_energy 
     (K : ℕ) (Ck ε : ℝ) (hCk : 0<Ck) (hε : 0<ε) (hε1 : ε≤1) :
     ∃degree : ℕ,∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧
     ∀(Z d ell0 shift : ℝ),Z₀≤Z→0≤d→d≤1/6→0≤ell0→ell0≤1/6-d+ε→|shift|≤ε→
@@ -107,8 +110,10 @@ theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id
     _=(lowCorrectionEnergy*(Fintype.card RayCharacter:ℝ)*6*C)*(1+|t|)^degree*
         Z^((5/6-2*d)+507*ε) := by ring
     _≤_ := by gcongr <;> linarith
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

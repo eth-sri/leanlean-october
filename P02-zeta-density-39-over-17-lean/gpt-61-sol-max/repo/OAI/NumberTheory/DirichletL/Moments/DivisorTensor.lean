@@ -9,19 +9,33 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorTensor
 open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentMask HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
-def allocationSign (D : Ideal O) (s : Finset ι) (a : Allocation D s) : ℂ :=
+section
+variable (D : Ideal O) (s : Finset ι)
+include D s
+
+section
+variable (a : Allocation D s)
+include a
+
+def allocationSign  : ℂ :=
   ∏ P : primeSupport D, (-1:ℂ)^((a P).val.card+1)
 
-theorem allocationSign_norm (D : Ideal O) (s : Finset ι) (a : Allocation D s) :
+theorem allocationSign_norm  :
     ‖allocationSign D s a‖=1 := by
   simp only [allocationSign,norm_prod,norm_pow,norm_neg,norm_one,one_pow,Finset.prod_const_one]
+end
 
-theorem allocationTerm_eq_ite (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
-    (a : Allocation D s) :
+
+section
+variable (v : ι → Ideal O)
+    (a : Allocation D s)
+include v a
+
+theorem allocationTerm_eq_ite  :
     allocationTerm D s v a =
       if ∀ i ∈ s, selectedDivisor D s a i∣v i then allocationSign D s a else 0 := by
   by_cases hh : ∀ i ∈ s, selectedDivisor D s a i∣v i
@@ -41,8 +55,7 @@ theorem allocationTerm_eq_ite (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
     by_contra hn
     exact hh (fun i _ => selectedDivisor_dvd D s v a hn i)
 
-theorem allocationTerm_eq_product (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
-    (a : Allocation D s) :
+theorem allocationTerm_eq_product  :
     allocationTerm D s v a = allocationSign D s a*
       ∏ i ∈ s, if selectedDivisor D s a i∣v i then (1:ℂ) else 0 := by
   rw [allocationTerm_eq_ite]
@@ -52,9 +65,12 @@ theorem allocationTerm_eq_product (D : Ideal O) (s : Finset ι) (v : ι → Idea
     push Not at hh
     obtain ⟨i,hi,hnd⟩ := hh
     rw [Finset.prod_eq_zero hi (by simp only [ite_eq_right hnd]),mul_zero]
-
-end SevenEighths.CenteredMomentDivisorTensor
-
+end
 end
 
-end OAI
+
+
+
+
+
+

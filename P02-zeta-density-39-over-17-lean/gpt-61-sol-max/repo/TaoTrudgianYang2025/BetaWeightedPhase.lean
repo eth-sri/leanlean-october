@@ -12,13 +12,13 @@ The sign alternatives and the Fourier normalization are explicit.
 The result consumes the actual carrier and a genuine amplitude bound.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem norm_fourierCharIntegral_le_of_slope_gap
     {φ : ℝ → ℝ} {a b lam : ℝ} (hab : a ≤ b) (hlam : 0 < lam)
@@ -67,4 +67,4 @@ theorem IntervalC1Bound.fourierChar_of_slope_gap
   convert h using 1
   ring
 
-end TaoTrudgianYang2025
+

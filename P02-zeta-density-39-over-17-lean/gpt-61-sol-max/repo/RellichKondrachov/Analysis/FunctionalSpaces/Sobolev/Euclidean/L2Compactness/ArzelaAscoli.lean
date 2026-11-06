@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 Adam Benenson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
@@ -79,8 +80,8 @@ omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
 private lemma isCompact_diffSet (hK : IsCompact K) (hψcs : HasCompactSupport ψ) :
     IsCompact
       ((fun p : E × E => p.1 - p.2) '' ((Kψ (K := K) (ψ := ψ)) ×ˢ K)) := by
-  have hKψ : IsCompact (Kψ (K := K) (ψ := ψ)) := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
-  have hprod : IsCompact ((Kψ (K := K) (ψ := ψ)) ×ˢ K) := hKψ.prod hK
+  have hKψ := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
+  have hprod := hKψ.prod hK
   refine hprod.image ?_
   exact (continuous_fst.sub continuous_snd)
 
@@ -165,7 +166,7 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
             (f := fun t : E => ψ ((x : E) - t))
             hker] with t ht hrep
         simpa [kx, hrep] using ht))
-    simpa [mK] using this
+    exact this
   -- Express the smoothing value as an `L²` inner product, then apply Cauchy–Schwarz.
   have hsmooth :
       smoothFun (E := E) (K := K) ψ u (x : E) =
@@ -302,7 +303,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       have hxy' : dist ((x : E) - t) ((y : E) - t) < deltaLoss := by
         rw [dist_sub_right]
         exact hxy
-      have hψxy : dist (ψ ((x : E) - t)) (ψ ((y : E) - t)) < ε' :=
+      have hψxy :=
         hδ (a := (x : E) - t) (b := (y : E) - t) hxy'
       have : ‖ψ ((x : E) - t) - ψ ((y : E) - t)‖ ≤ ε' := by
         simpa [dist_eq_norm, sub_eq_add_neg] using le_of_lt hψxy
@@ -316,7 +317,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
     have hkdiff : ‖kx - ky‖ ≤ mK * ε' := by
       have := (MeasureTheory.Lp.norm_le_of_ae_bound (μ := (volume.restrict K)) (p := (2 : ℝ≥0∞))
         (f := (kx - ky : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ)) (hC := le_of_lt hε'pos) h_ae)
-      simpa [mK, mul_comm, mul_left_comm, mul_assoc] using this
+      exact this
     -- Bound the difference of values using Cauchy–Schwarz.
     have hdist :
         dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x)
@@ -383,11 +384,11 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
         have this' :
             smoothFun (E := E) (K := K) ψ u (x : E) - smoothFun (E := E) (K := K) ψ u (y : E) =
               inner ℝ (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ) (kx - ky) := by
-          simpa [smoothBCF_apply (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs] using this
+          exact this
         have hCS :=
           (abs_real_inner_le_norm (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ) (kx - ky))
         simpa [this', dist_eq_norm, Real.norm_eq_abs] using hCS
-      simpa [dist_eq_norm] using this
+      exact this
     have hle :
         dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x)
             (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u y)
@@ -493,7 +494,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
                 (f := fun t : E => ψ ((x : E) - t))
                 hker] with t ht hrep
             simpa [kx, hrep] using ht))
-        simpa [mK] using this
+        exact this
       -- Express the smoothing value as an `L²` inner product, then apply Cauchy–Schwarz.
       have hsmooth :
           smoothFun (E := E) (K := K) ψ u (x : E) =
@@ -530,7 +531,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
       have : dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x) 0 ≤ R * (mK * Cψ) := by
         simpa [smoothBCF_apply (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x,
           dist_eq_norm, Real.norm_eq_abs] using habs'
-      simpa [s, Metric.mem_closedBall, dist_eq_norm] using this
+      exact this
     -- Equicontinuity for `A`.
     have H' :
         UniformEquicontinuous ((↑) : A → ↥(Kψ (K := K) (ψ := ψ)) → ℝ) :=
@@ -542,13 +543,13 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
       (BoundedContinuousFunction.arzela_ascoli (α := ↥(Kψ (K := K) (ψ := ψ))) (β := ℝ)
         (s := s) hs A (fun f x hf => in_s f x hf) H)
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov
+
+
+
+
+
+
+
+

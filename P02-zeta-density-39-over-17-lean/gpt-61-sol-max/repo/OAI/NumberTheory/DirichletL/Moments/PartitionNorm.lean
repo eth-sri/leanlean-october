@@ -10,7 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentPartitionNorm
 open CenteredMomentPartition CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def commonIdeal (p : ι → O) (c d : ι → ℕ) : Ideal O :=
@@ -58,8 +58,8 @@ theorem partitionNormalizer_eq_norm_ratio (p : ι → O)
   apply (eq_div_iff (unitIdeal_norm_pos p hp U).ne').mpr
   exact partitionNormalizer_mul_unit_norm p c d hc hd U
 
-end SevenEighths.CenteredMomentPartitionNorm
 
-end
 
-end OAI
+
+
+

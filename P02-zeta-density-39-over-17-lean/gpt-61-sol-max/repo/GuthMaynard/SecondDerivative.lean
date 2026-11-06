@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.VanDerCorput
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace RiemannZeta.GuthMaynard
@@ -16,7 +17,11 @@ This module partitions a monotone sequence of phase increments into full
 the lower second-difference bound counts the two short endpoint pieces.
 -/
 
-theorem discrete_growth_lower (theta : Nat -> Real) (lambda : Real)
+section
+variable (theta : Nat -> Real)
+include theta
+
+theorem discrete_growth_lower  (lambda : Real)
     (i d N : Nat)
     (hstep : forall n, n < N -> lambda <= theta (n + 1) - theta n)
     (hid : i + d <= N) :
@@ -31,7 +36,7 @@ theorem discrete_growth_lower (theta : Nat -> Real) (lambda : Real)
       push_cast
       linarith
 
-theorem monotone_of_step (theta : Nat -> Real) (N : Nat)
+theorem monotone_of_step  (N : Nat)
     (hstep : forall n, n < N -> theta n <= theta (n + 1)) :
     forall i j, i <= j -> j <= N -> theta i <= theta j := by
   intro i j hij hj
@@ -42,7 +47,7 @@ theorem monotone_of_step (theta : Nat -> Real) (N : Nat)
       have hprev := ih (by omega) (by omega)
       exact hprev.trans (hstep (i + d) (by omega))
 
-theorem filter_card_bound (theta : Nat -> Real) (N : Nat)
+theorem filter_card_bound  (N : Nat)
     (lambda a b : Real) (hlambda : 0 < lambda) (hab : a <= b)
     (hstep : forall n, n < N -> lambda <= theta (n + 1) - theta n) :
     (((Finset.range (N + 1)).filter fun n => a <= theta n ∧ theta n <= b).card : Real)
@@ -75,16 +80,15 @@ theorem filter_card_bound (theta : Nat -> Real) (N : Nat)
     rw [hnat] at hcast
     calc
       (s.card : Real) <= (j - i : Nat) + 1 := hcast
-      _ <= (b - a) / lambda + 1 := by
-        rw [add_le_add_iff_right]
-        rw [le_div_iff₀ hlambda]
-        exact hgap.trans hwidth
+      _ <= (b - a) / lambda + 1 := by field_simp <;> nlinarith
   · change (s.card : Real) <= _
     rw [Finset.not_nonempty_iff_eq_empty.mp hs]
     simp only [Finset.card_empty, Nat.cast_zero]
     have hnonneg : 0 <= (b - a) / lambda :=
       div_nonneg (sub_nonneg.mpr hab) hlambda.le
     linarith
+end
+
 
 theorem sum_Icc_eq_shifted_range (z : Nat -> Complex) (i j : Nat) (hij : i <= j) :
     (∑ n ∈ Finset.Icc i j, z n) = ∑ d ∈ Finset.range (j - i + 1), z (i + d) := by
@@ -195,15 +199,12 @@ theorem period_count_bound {x y : Real} (hxy : x <= y) :
     Int.card_Icc_of_le i j (by omega)
   have hcardReal : (((Finset.Icc i j).card : Nat) : Real) = (j : Real) + 1 - (i : Real) := by
     exact_mod_cast hcardInt
-  have hifloor : (i : Real) <= x / (2 * Real.pi) := by
-    exact Int.floor_le _
   have hilower : x / (2 * Real.pi) < (i : Real) + 1 := by
     exact Int.lt_floor_add_one _
   have hjfloor : (j : Real) <= y / (2 * Real.pi) := by
     exact Int.floor_le _
   rw [show Finset.Icc (periodIndex x) (periodIndex y) = Finset.Icc i j by rfl,
     hcardReal]
-  have hp : 0 < 2 * Real.pi := by positivity
   have hdiv : y / (2 * Real.pi) - x / (2 * Real.pi) =
       (y - x) / (2 * Real.pi) := by ring
   rw [← hdiv]
@@ -241,14 +242,14 @@ theorem vanDerCorput_second_derivative
     ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)‖ <=
       ((N : Real) * Lambda / (2 * Real.pi) + 2) *
         (2 * Real.pi / delta + 2 * (delta / lambda + 1)) := by
-  let theta : Nat -> Real := fun n => f (n + 1) - f n
-  let idx : Nat -> Int := fun n => periodIndex (theta n)
+  let theta := fun n => f (n + 1) - f n
+  let idx := fun n => periodIndex (theta n)
   let K := Finset.Icc (idx 0) (idx N)
   let base := Finset.range (N + 1)
   let good : Int -> Nat -> Prop := fun k n =>
     delta <= theta n - (k : Real) * (2 * Real.pi) ∧
       theta n - (k : Real) * (2 * Real.pi) <= 2 * Real.pi - delta
-  let fiber : Int -> Finset Nat := fun k => base.filter (fun n => idx n = k)
+  let fiber := fun k => base.filter (fun n => idx n = k)
   have hmono : forall i j, i <= j -> j <= N -> theta i <= theta j := by
     exact monotone_of_step theta N
       (fun n hn => by dsimp only [theta]; linarith [hlower n hn])
@@ -265,19 +266,7 @@ theorem vanDerCorput_second_derivative
         ∑ n ∈ base, unitaryPhase (f n) := by
     simp only [fiber, Finset.sum_filter]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro n hn
-    have hmem := hidx_mem n hn
-    calc
-      ∑ k ∈ K, (if idx n = k then unitaryPhase (f n) else 0) =
-          ∑ k ∈ K, (if k = idx n then unitaryPhase (f n) else 0) := by
-            apply Finset.sum_congr rfl
-            intro k _hk
-            by_cases h : k = idx n
-            · simp [h]
-            · have h' : ¬ idx n = k := fun he => h he.symm
-              simp [h, h']
-      _ = unitaryPhase (f n) := by simp [hmem]
+    simp_all
   have hgood_subset (k : Int) : base.filter (good k) ⊆ fiber k := by
     intro n hn
     have hnData := Finset.mem_filter.mp hn
@@ -358,8 +347,7 @@ theorem vanDerCorput_second_derivative
       linarith
     have hgood_bound :
         ‖∑ n ∈ base.filter (good k), unitaryPhase (f n)‖ <= 2 * Real.pi / delta := by
-      simpa only [base, good, theta] using
-        kusminLandau_good_fiber f N k delta hdelta
+      exact kusminLandau_good_fiber f N k delta hdelta
           (fun n hn => by linarith [hlower n hn])
     rw [hsplit]
     calc
@@ -412,4 +400,4 @@ theorem vanDerCorput_B_process
   exact vanDerCorput_second_derivative f N lambda Lambda (Real.sqrt lambda)
     hlambda (Real.sqrt_pos.2 hlambda) hlower hupper
 
-end RiemannZeta.GuthMaynard
+

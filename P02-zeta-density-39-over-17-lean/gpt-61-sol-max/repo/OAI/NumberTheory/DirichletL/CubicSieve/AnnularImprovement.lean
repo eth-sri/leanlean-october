@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.CostGrowth
 public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
 
@@ -8,11 +9,11 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 open SevenEighths.CubicDyadicDecay
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2)
@@ -81,15 +82,13 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     (common_factor_uniform_cost C θ U M N hθ hU hN0.le cols hc (fun j => (hcols j).2) a hcost)
   have hp : N^(4*θ)*(N^θ)^2 = N^(6*θ) := by
     rw [← Real.rpow_mul_natCast hN0.le, ← Real.rpow_add hN0]
-    congr 1
-    push_cast
     ring
   calc
     _ ≤ U*(Dv*N^θ)^2*∑ j, ‖a j‖^2 := henergy
     _ = (V*Dv^2)*(N^(4*θ)*(N^θ)^2)*S*∑ j, ‖a j‖^2 := by dsimp [U]; ring
     _ = _ := by rw [hp]
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

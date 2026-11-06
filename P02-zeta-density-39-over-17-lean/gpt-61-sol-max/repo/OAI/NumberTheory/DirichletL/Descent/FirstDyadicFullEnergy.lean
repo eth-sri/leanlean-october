@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicPriorityBudget
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
@@ -10,16 +11,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open InverseFirstGlobalCaps InverseMomentFirstChildWindows
+open InverseMomentFirstOriginalProfile
+open JointLogSeparation CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_dyadic_full_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b) (Lcap Mmax eta tau saving:ℝ)(hcap:0≤Lcap)(hMmax:0≤Mmax)(hb:0≤b)
@@ -111,8 +112,7 @@ theorem original_dyadic_full_energy
     apply le_of_eq
     rw [show Z^eta*(Ct*Γ^2*Z^(-(saving+eta)))=(Ct*Γ^2)*(Z^eta*Z^(-(saving+eta))) by ring,
       ←Real.rpow_add hz]
-    congr 2
-    ring
+    simp
   have hall:=mul_le_mul_of_nonneg_left he' (Real.rpow_nonneg hz.le (-r-2*ell-V))
   simp only [mul_add] at hall
   apply hall.trans
@@ -121,8 +121,8 @@ theorem original_dyadic_full_energy
     simpa only [mul_assoc] using hret'
   exact add_le_add (add_le_add hz' hr') htail
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

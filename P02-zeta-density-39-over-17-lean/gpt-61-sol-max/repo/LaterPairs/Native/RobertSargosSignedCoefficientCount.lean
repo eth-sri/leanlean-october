@@ -6,13 +6,12 @@ public import LaterPairs.Native.PrimitiveTripleSignedCount
 public import LaterPairs.Native.RobertSargosRatioGeometry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
@@ -30,9 +29,7 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
       32*δ*Q^2/(H*|(r:ℝ)|)*(∑ g ∈ r.natAbs.divisors, (g:ℝ)) := by
   have hrn : (r:ℝ) ≠ 0 := by exact_mod_cast hr
   have hrp : 0 < |(r:ℝ)| := abs_pos.mpr hrn
-  have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs r)
+  have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by simp_all
   let A := Real.sqrt ((h₁:ℝ)*(h₁-r)/((h₂:ℝ)*(h₂-r)))
   let e := 4*δ*|(r:ℝ)|/H
   have he : 0 ≤ e := by dsimp [e]; positivity
@@ -59,4 +56,4 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
         4*Q^2*((A+e)-(A-e))/(r.natAbs:ℝ)^2*(∑ g ∈ r.natAbs.divisors, (g:ℝ)) := hb
     _ = _ := by rw [hrc]; dsimp [e]; field_simp; ring
 
-end TaoTrudgianYang2025
+

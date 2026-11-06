@@ -1,4 +1,5 @@
 module
+import Mathlib
 
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
@@ -34,10 +35,7 @@ theorem iteratedDerivWithin_comp_affine_of_mapsTo
       have haffine : HasDerivWithinAt (fun y : ℝ ↦ c * y + d) c s x := by
         simpa using (((hasDerivAt_id x).const_mul c).add_const d |>.hasDerivWithinAt)
       have hcomp : DifferentiableWithinAt ℝ
-          (fun y ↦ iteratedDerivWithin n f t (c * y + d)) s x := by
-        change DifferentiableWithinAt ℝ
-          ((iteratedDerivWithin n f t) ∘ fun y ↦ c * y + d) s x
-        exact houter.comp x haffine.differentiableWithinAt hst
+          (fun y ↦ iteratedDerivWithin n f t (c * y + d)) s x := by fun_prop
       rw [iteratedDerivWithin_succ, derivWithin_congr heq (ih hf.of_succ hx),
         derivWithin_const_mul _ hcomp, iteratedDerivWithin_succ,
         ← Function.comp_def, derivWithin.scomp x houter
@@ -46,5 +44,5 @@ theorem iteratedDerivWithin_comp_affine_of_mapsTo
       simp only [pow_succ]
       ring
 
-end Expdb
+
 

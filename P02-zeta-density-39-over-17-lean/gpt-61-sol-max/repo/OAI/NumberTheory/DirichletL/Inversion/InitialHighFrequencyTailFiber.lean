@@ -13,7 +13,7 @@ namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialKernelBridge InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
 def keyNorms (p : ι→O) (k : Fin 5→Finset ι) : Fin 5→ℝ :=
@@ -86,8 +86,8 @@ theorem original_frequency_fiber_tail (A : ℕ) :
     _ ≤ Γ*(‖secondRayCoefficient ρ‖*(128*L)^2) := by gcongr; exact hw h hh
     _ = _ := by ring
 
-end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
-end OAI
+
+
+

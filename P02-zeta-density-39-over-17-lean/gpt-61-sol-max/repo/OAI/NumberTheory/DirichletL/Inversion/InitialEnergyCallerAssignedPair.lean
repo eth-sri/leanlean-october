@@ -9,11 +9,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open ActualEisensteinCubic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAssignedPair
 open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialEnergyCallerAssigned
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -68,8 +68,8 @@ theorem original_assigned_pair
     (fun x hx=>by simpa only [child_erase] using hchild (erase x) (hs x hx).1)
     (fun x=>c (erase x)*coefficient J₁ J₂ a₁ a₂ x) A hA hcoeff F G
 
-end SevenEighths.InverseInitialEnergyCallerAssignedPair
 
-end
 
-end OAI
+
+
+

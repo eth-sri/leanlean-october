@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.LocalCutoffs
 public import OAI.NumberTheory.DirichletL.MeanSquare.HarmonicAggregation
 
@@ -10,89 +11,88 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
 namespace SecondPassArithmetic
 
+
+
+open ActualEisensteinCubic
+open ConcreteTraceCRT (eisEmbedding)
+
 section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
+variable (R:ℝ)
+include R
 
-end
-
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-
-def firstFrequencyDisk (R:ℝ) : Finset O :=
+def firstFrequencyDisk  : Finset O :=
   (ShortDraftLatticeCount.rowNormBall ⌈R⌉₊).filter (fun h=>‖eisEmbedding h‖^2≤R)
 
-lemma mem_firstFrequencyDisk (R:ℝ) (h:O) :
+lemma mem_firstFrequencyDisk  (h:O) :
     h∈firstFrequencyDisk R ↔ ‖eisEmbedding h‖^2≤R := by
   constructor
   · exact fun hh=>(Finset.mem_filter.mp hh).2
@@ -103,8 +103,10 @@ lemma mem_firstFrequencyDisk (R:ℝ) (h:O) :
     rw [eisEmbedding_norm_sq_eq_absNorm_span] at hh
     exact_mod_cast hh.trans (Nat.le_ceil R)
 
-lemma outside_firstFrequencyDisk (R:ℝ) (h:O) (hh:h∉firstFrequencyDisk R) :
+lemma outside_firstFrequencyDisk  (h:O) (hh:h∉firstFrequencyDisk R) :
     R<‖eisEmbedding h‖^2 := lt_of_not_ge (fun hb=>hh ((mem_firstFrequencyDisk R h).mpr hb))
+end
+
 
 end SecondPassArithmetic
 
@@ -128,12 +130,16 @@ lemma schwartz_toL2_norm_sq (g : 𝓢(EuclideanSpatial,ℂ)) :
       filter_upwards [g.coeFn_toLp 2 volume] with p hp
       rw [hp,real_inner_self_eq_norm_sq]
 
-def kernelLocalizedDensity (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+section
+variable (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+include χ f
+
+def kernelLocalizedDensity 
     (p : EuclideanSpatial) : ℝ :=
   ‖kernelLocalizedField χ f p‖^2+∑j : Fin 3,‖fderiv ℝ (kernelLocalizedField χ f) p
     (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2
 
-lemma kernelLocalizedDensity_eq_schwartz (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+lemma kernelLocalizedDensity_eq_schwartz 
     (p : EuclideanSpatial) :
     kernelLocalizedDensity χ f p=‖kernelLocalizedSchwartz χ f p‖^2+
       ∑j : Fin 3,‖(∂_{euclideanCoordinateVector j} (kernelLocalizedSchwartz χ f)) p‖^2 := by
@@ -141,7 +147,7 @@ lemma kernelLocalizedDensity_eq_schwartz (χ : PositiveChartCutoff) (f : kernelS
     kernelLocalizedSchwartz_coe]
   rfl
 
-lemma kernelLocalizedDensity_integrable (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLocalizedDensity_integrable  :
     Integrable (kernelLocalizedDensity χ f) volume := by
   change Integrable (fun p => kernelLocalizedDensity χ f p) volume
   simp_rw [kernelLocalizedDensity_eq_schwartz]
@@ -149,7 +155,7 @@ lemma kernelLocalizedDensity_integrable (χ : PositiveChartCutoff) (f : kernelSm
     (integrable_finsetSum _ (fun j _ =>
       ((∂_{euclideanCoordinateVector j} (kernelLocalizedSchwartz χ f)).memLp 2 volume).norm.integrable_sq))
 
-lemma kernelLocalizedH1_norm_sq (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLocalizedH1_norm_sq  :
     ‖kernelLocalizedH1 χ f‖^2=∫p,kernelLocalizedDensity χ f p := by
   rw [euclideanH1_norm_sq,kernelLocalizedH1_embedding,PiLp.norm_sq_eq_of_L2]
   simp_rw [kernelLocalizedH1_gradient,schwartz_toL2_norm_sq,kernelLocalizedDensity_eq_schwartz]
@@ -159,15 +165,14 @@ lemma kernelLocalizedH1_norm_sq (χ : PositiveChartCutoff) (f : kernelSmoothTest
     integral_finsetSum _ (fun j _ =>
       ((∂_{euclideanCoordinateVector j} (kernelLocalizedSchwartz χ f)).memLp 2 volume).norm.integrable_sq)]
 
-lemma kernelLocalizedDensity_zero (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+lemma kernelLocalizedDensity_zero 
     (p : EuclideanSpatial) (hp : p∉tsupport χ.func) : kernelLocalizedDensity χ f p=0 := by
   have hz : kernelLocalizedField χ f=ᶠ[𝓝 p]0 := by
     filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hp] with q hq
     simp only [kernelLocalizedField,hq,Pi.zero_apply,zero_smul]
-  simp only [kernelLocalizedDensity,hz.self_of_nhds,hz.fderiv_eq,fderiv_zero,
-    Pi.zero_apply,_root_.zero_apply,norm_zero,zero_pow (by decide : 2≠0),Finset.sum_const_zero,add_zero]
+  simp only [kernelLocalizedDensity, hz.self_of_nhds, Pi.zero_apply, norm_zero, zero_pow (by decide : 2 ≠ 0), hz.fderiv_eq, fderiv_zero, _root_.zero_apply, sum_const_zero, add_zero]
 
-lemma kernelLocalizedDensity_le (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+lemma kernelLocalizedDensity_le 
     (p : EuclideanSpatial) (hp : 0<p 2) (M D A : ℝ)
     (hM : (χ.func p)^2≤M)
     (hD : (∑j : Fin 3,‖fderiv ℝ χ.func p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2)≤D)
@@ -189,10 +194,12 @@ lemma kernelLocalizedDensity_le (χ : PositiveChartCutoff) (f : kernelSmoothTest
       _ = _ := by ring
   have hs := le_of_mul_le_mul_left he' (sq_pos_of_pos hp)
   have hm : ‖kernelLocalizedField χ f p‖^2≤M*‖kernelTestField f p‖^2 := by
-    simp only [kernelLocalizedField,norm_smul,mul_pow,Real.norm_eq_abs,sq_abs]
+    simp only [kernelLocalizedField, norm_smul, norm_eq_abs, mul_pow, sq_abs]
     exact mul_le_mul_of_nonneg_right hM (sq_nonneg _)
   unfold kernelLocalizedDensity
   nlinarith
+end
+
 
 lemma kernelEuclideanProjection_volume_integrable (S : Set EuclideanSpatial)
     (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
@@ -205,8 +212,15 @@ lemma kernelEuclideanProjection_volume_integrable (S : Set EuclideanSpatial)
     (c := ENNReal.ofReal (b^3)) ENNReal.ofReal_ne_top
   exact hh.mono_measure (euclideanVolume_le_heightCube_hyperbolic S hS hpos b hb hheight)
 
-theorem kernelLocalizedH1_norm_sq_le (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+section
+variable (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+include hinj
+
+theorem kernelLocalizedH1_norm_sq_le 
     (M D A b : ℝ) (hM0 : 0≤M) (hD0 : 0≤D) (hA0 : 0≤A) (hb : 0≤b)
     (hheight : ∀p∈tsupport χ.func,p 2≤b)
     (hM : ∀p∈tsupport χ.func,(χ.func p)^2≤M)
@@ -216,7 +230,7 @@ theorem kernelLocalizedH1_norm_sq_le (χ : PositiveChartCutoff)
     (f : kernelSmoothTests) :
     ‖kernelLocalizedH1 χ f‖^2≤b^3*((M+2*D)*‖kernelSmoothTestsToL2 f‖^2+
       2*A*kernelDirichletEnergy f) := by
-  let G : KernelQuotient→ℝ := fun q =>
+  let G := fun q =>
     (M+2*D)*‖f.1 q‖^2+2*A*kernelQuotientEnergyDensity f q
   have hG : Integrable G (integralQuotientVolume globalKubotaKernel) :=
     (((kernelSmoothTests_memLp f).norm.integrable_sq).const_mul _).add
@@ -247,8 +261,7 @@ theorem kernelLocalizedH1_norm_sq_le (χ : PositiveChartCutoff)
         ←kernelSmoothTestsToL2_norm_sq]
       rfl
 
-theorem kernelLocalizedH1_bounded (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
+theorem kernelLocalizedH1_bounded  :
     ∃C : ℝ,0≤C ∧ ∀f : kernelSmoothTests,
       ‖kernelLocalizedH1 χ f‖^2≤C*(‖kernelSmoothTestsToL2 f‖^2+kernelDirichletEnergy f) := by
   have hgrad : Continuous (fun p : EuclideanSpatial =>
@@ -288,8 +301,10 @@ theorem kernelLocalizedH1_bounded (χ : PositiveChartCutoff)
   have hm0 := sq_nonneg ‖kernelSmoothTestsToL2 f‖
   have he0 := kernelDirichletEnergy_nonneg f
   nlinarith [mul_nonneg (by positivity : 0≤M+2*D) he0,mul_nonneg hA0 hm0]
+end
 
-def kernelLocalizedSchwartzLinear (χ : PositiveChartCutoff) :
+
+def kernelLocalizedSchwartzLinear  :
     kernelSmoothTests →ₗ[ℂ] 𝓢(EuclideanSpatial,ℂ) where
   toFun := kernelLocalizedSchwartz χ
   map_add' f g := by
@@ -301,7 +316,7 @@ def kernelLocalizedSchwartzLinear (χ : PositiveChartCutoff) :
     change χ.func p • (c • kernelTestField f p)=c • (χ.func p • kernelTestField f p)
     exact smul_comm _ _ _
 
-def kernelLocalizedH1Linear (χ : PositiveChartCutoff) : kernelSmoothTests →ₗ[ℂ] EuclideanH1 where
+def kernelLocalizedH1Linear  : kernelSmoothTests →ₗ[ℂ] EuclideanH1 where
   toFun := kernelLocalizedH1 χ
   map_add' f g := by
     apply euclideanH1Embedding_injective
@@ -315,6 +330,8 @@ def kernelLocalizedH1Linear (χ : PositiveChartCutoff) : kernelSmoothTests →�
     rw [show kernelLocalizedSchwartz χ (c•f)=c•kernelLocalizedSchwartz χ f
       from (kernelLocalizedSchwartzLinear χ).map_smul c f]
     rfl
+end
+
 
 end CubicEisenstein
 
@@ -343,7 +360,6 @@ def kernelEnergyGraphCore : kernelSmoothTests →ₗ[ℂ] KernelEnergyGraph :=
 
 lemma kernelEnergyGraphCore_dense : DenseRange kernelEnergyGraphCore := by
   rw [DenseRange,Subtype.dense_iff,←Set.range_comp]
-  change closure (Set.range kernelEnergyCore)⊆closure (Set.range kernelEnergyCore)
   rfl
 
 def kernelEnergyMass : KernelEnergyGraph →L[ℂ] KernelQuotientL2 :=
@@ -376,7 +392,11 @@ lemma kernelEnergyMass_dense : DenseRange kernelEnergyMass := by
   rintro _ ⟨f,rfl⟩
   exact ⟨kernelEnergyGraphCore f,rfl⟩
 
-lemma kernelLocalizedH1_graph_bound (χ : PositiveChartCutoff)
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+lemma kernelLocalizedH1_graph_bound 
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
     ∃C : ℝ,∀f : kernelSmoothTests,
       ‖kernelLocalizedH1Linear χ f‖≤C*‖kernelEnergyGraphCore f‖ := by
@@ -389,13 +409,15 @@ lemma kernelLocalizedH1_graph_bound (χ : PositiveChartCutoff)
   rw [mul_pow,Real.sq_sqrt hC]
   exact hh
 
-def kernelEnergyLocalize (χ : PositiveChartCutoff) : KernelEnergyGraph →L[ℂ] EuclideanH1 :=
+def kernelEnergyLocalize  : KernelEnergyGraph →L[ℂ] EuclideanH1 :=
   (kernelLocalizedH1Linear χ).extendOfNorm kernelEnergyGraphCore
 
-lemma kernelEnergyLocalize_core (χ : PositiveChartCutoff)
+lemma kernelEnergyLocalize_core 
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (f : kernelSmoothTests) :
     kernelEnergyLocalize χ (kernelEnergyGraphCore f)=kernelLocalizedH1 χ f :=
   LinearMap.extendOfNorm_eq kernelEnergyGraphCore_dense (kernelLocalizedH1_graph_bound χ hinj) f
+end
+
 
 end CubicEisenstein
 
@@ -404,14 +426,21 @@ open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
 
 namespace CubicEisenstein
 
-def kernelLocalizedL2Linear (χ : PositiveChartCutoff) : kernelSmoothTests →ₗ[ℂ] EuclideanL2 :=
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+def kernelLocalizedL2Linear  : kernelSmoothTests →ₗ[ℂ] EuclideanL2 :=
   euclideanH1Embedding.toLinearMap.comp (kernelLocalizedH1Linear χ)
 
-lemma kernelLocalizedL2Linear_apply (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLocalizedL2Linear_apply  (f : kernelSmoothTests) :
     kernelLocalizedL2Linear χ f=(kernelLocalizedSchwartz χ f).toLp 2 volume := rfl
 
-lemma kernelLocalizedL2_bounded (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
+section
+variable (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+include hinj
+
+lemma kernelLocalizedL2_bounded  :
     ∃C : ℝ,0≤C ∧ ∀f : kernelSmoothTests,
       ‖kernelLocalizedL2Linear χ f‖^2≤C*‖kernelSmoothTestsToL2 f‖^2 := by
   obtain ⟨m,hm⟩ := χ.compact.bddAbove_image (χ.smooth.continuous.pow 2).continuousOn
@@ -425,7 +454,7 @@ lemma kernelLocalizedL2_bounded (χ : PositiveChartCutoff)
   have hM : ∀p∈tsupport χ.func,(χ.func p)^2≤M := fun p hp =>
     (hm ⟨p,hp,rfl⟩).trans (le_max_right _ _)
   refine ⟨B^3*M,by positivity,fun f => ?_⟩
-  let G : KernelQuotient→ℝ := fun q => M*‖f.1 q‖^2
+  let G := fun q => M*‖f.1 q‖^2
   have hG : Integrable G (integralQuotientVolume globalKubotaKernel) :=
     ((kernelSmoothTests_memLp f).norm.integrable_sq).const_mul M
   have hGn : ∀q,0≤G q := fun q => mul_nonneg hM0 (sq_nonneg _)
@@ -455,8 +484,7 @@ lemma kernelLocalizedL2_bounded (χ : PositiveChartCutoff)
       dsimp only [G]
       rw [integral_const_mul,←kernelSmoothTestsToL2_norm_sq,mul_assoc]
 
-lemma kernelLocalizedL2_bound (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
+lemma kernelLocalizedL2_bound  :
     ∃C : ℝ,∀f : kernelSmoothTests,
       ‖kernelLocalizedL2Linear χ f‖≤C*‖kernelSmoothTestsToL2 f‖ := by
   obtain ⟨C,hC,hbound⟩ := kernelLocalizedL2_bounded χ hinj
@@ -464,17 +492,21 @@ lemma kernelLocalizedL2_bound (χ : PositiveChartCutoff)
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg C) (norm_nonneg _))).mp
   rw [mul_pow,Real.sq_sqrt hC]
   exact hbound f
+end
 
-def kernelL2Localize (χ : PositiveChartCutoff) : KernelQuotientL2 →L[ℂ] EuclideanL2 :=
+
+def kernelL2Localize  : KernelQuotientL2 →L[ℂ] EuclideanL2 :=
   (kernelLocalizedL2Linear χ).extendOfNorm kernelSmoothTestsToL2
 
-lemma kernelL2Localize_core (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (f : kernelSmoothTests) :
+section
+variable (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+include hinj
+
+lemma kernelL2Localize_core  (f : kernelSmoothTests) :
     kernelL2Localize χ (kernelSmoothTestsToL2 f)=(kernelLocalizedSchwartz χ f).toLp 2 volume :=
   LinearMap.extendOfNorm_eq kernelSmoothTestsToL2_dense (kernelLocalizedL2_bound χ hinj) f
 
-lemma kernelEnergyLocalize_mass (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (u : KernelEnergyGraph) :
+lemma kernelEnergyLocalize_mass  (u : KernelEnergyGraph) :
     euclideanH1Embedding (kernelEnergyLocalize χ u)=kernelL2Localize χ (kernelEnergyMass u) := by
   have heq : (fun v => euclideanH1Embedding (kernelEnergyLocalize χ v))=
       fun v => kernelL2Localize χ (kernelEnergyMass v) :=
@@ -484,14 +516,16 @@ lemma kernelEnergyLocalize_mass (χ : PositiveChartCutoff)
         kernelLocalizedH1_embedding,kernelEnergyMass_core,kernelL2Localize_core χ hinj])
   exact congrFun heq u
 
-lemma kernelEnergyLocalize_eq_zero_of_mass_zero (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (u : KernelEnergyGraph)
+lemma kernelEnergyLocalize_eq_zero_of_mass_zero  (u : KernelEnergyGraph)
     (hu : kernelEnergyMass u=0) : kernelEnergyLocalize χ u=0 := by
   apply euclideanH1Embedding_eq_zero
   rw [kernelEnergyLocalize_mass χ hinj u,hu,map_zero]
-
-end CubicEisenstein
-
+end
 end
 
-end OAI
+
+
+
+
+
+

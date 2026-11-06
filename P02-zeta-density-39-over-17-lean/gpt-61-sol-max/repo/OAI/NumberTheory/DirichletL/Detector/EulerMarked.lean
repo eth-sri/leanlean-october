@@ -93,7 +93,7 @@ theorem marked_hasProd (T : Finset α) (m f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     simp only [Set.indicator,Set.mem_ofPred_eq,Finset.coe_subset]
   · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (markedArray T m f)).symm
 
-end SevenEighths.ProbeEulerFinsupp
-end
 
-end OAI
+
+
+

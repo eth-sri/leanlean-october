@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.RingTheory.Radical.Basic
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
@@ -13,10 +14,10 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalSource
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
+
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 open CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 structure Plain where
   W : ℝ→ℂ
@@ -26,15 +27,21 @@ structure Plain where
   support : Function.support W⊆Set.Icc a b
   smooth : ContDiff ℝ ∞ W
 
-def Plain.profile (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) : 𝓢(ℝ,ℂ) :=
+section
+variable (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ)
+include V U hU t
+
+def Plain.profile  : 𝓢(ℝ,ℂ) :=
   if h : 1≤U*V.b then retainedProfile V.W V.a V.b V.a_pos V.support V.smooth U hU h t else 0
 
-lemma Plain.profile_retained (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) (h : 1≤U*V.b) :
+lemma Plain.profile_retained  (h : 1≤U*V.b) :
     V.profile U hU t=retainedProfile V.W V.a V.b V.a_pos V.support V.smooth U hU h t := by
   simp [Plain.profile,h]
 
-lemma Plain.profile_zero (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) (h : U*V.b<1) :
+lemma Plain.profile_zero  (h : U*V.b<1) :
     V.profile U hU t=0 := by simp [Plain.profile,not_le.mpr h]
+end
+
 
 lemma polynomial_zero (χ : Character) (X : ℝ) :
     HeckeDyadic.polynomial χ false (0 : 𝓢(ℝ,ℂ)) X 0 0=0 := by
@@ -68,13 +75,18 @@ theorem retained_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O) 
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
-def rawScale (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))) (X : ℝ) (j : Fin 2) : ℝ :=
+section
+variable (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))) (X : ℝ)
+include D a X
+
+def rawScale  (j : Fin 2) : ℝ :=
   X/Ideal.absNorm (selectedPlain D a j)
 
-lemma rawScale_pos (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
-    (X : ℝ) (hX : 0<X) (j : Fin 2) : 0<rawScale D a X j := by
+lemma rawScale_pos  (hX : 0<X) (j : Fin 2) : 0<rawScale D a X j := by
   apply div_pos hX
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (selectedDivisor_ne_zero D Finset.univ a _))
+end
+
 
 theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
@@ -93,10 +105,7 @@ theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O)
   have h:=retained_normalized η z hz R hR V₁ V₂
     (fun i : liveIndices D a=>pool i) (fun i : liveIndices D a=>β i) (fun i : liveIndices D a=>P i)
     (fun i=>hP i) t _ _ (rawScale_pos D a X₁ hX₁ 0) (rawScale_pos D a X₂ hX₂ 1)
-  have hp': (∏i : liveIndices D a,naturalSlot (excluded (naturalRow η z hz).character R)
-      (pool i) (heightCoefficient (β i) t) (P i))=
-      ∏i∈liveIndices D a,naturalSlot (excluded (naturalRow η z hz).character R)
-      (pool i) (heightCoefficient (β i) t) (P i) := Finset.prod_coe_sort (liveIndices D a) (fun i : α=>naturalSlot (excluded (naturalRow η z hz).character R) (pool i) (heightCoefficient (β i) t) (P i))
+  have hp' := Finset.prod_coe_sort (liveIndices D a) (fun i : α=>naturalSlot (excluded (naturalRow η z hz).character R) (pool i) (heightCoefficient (β i) t) (P i))
   rw [hp'] at h
   exact h
 
@@ -202,8 +211,8 @@ def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal O)
   W_bound:=fun i=>s.W_bound i
   support:=fun i _ hx=>(s.support i hx).2
 
-end SevenEighths.CenteredMomentAllocatedNaturalSource
 
-end
 
-end OAI
+
+
+

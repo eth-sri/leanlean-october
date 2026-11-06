@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- The exact natural lengths retain the short reflected-band scale. -/
@@ -23,8 +23,7 @@ theorem reflected_band_length_bounds {N L H : ℝ} (hN : 2 ≤ N) (hNL : N ≤ L
   have hf := Nat.floor_le (by positivity : 0 ≤ 2*N)
   have hh := mul_le_mul_of_nonneg_right hf (Nat.cast_nonneg X)
   push_cast
-  change (⌊2*N⌋₊:ℝ)*(X:ℝ) ≤ _
-  nlinarith
+  grind
 
 /-- Logarithmic loss in the actual product length, including zero length. -/
 theorem reflected_band_log_budget {A p δ N H : ℝ} (hA : 1 ≤ A) (hp : 0 < p)
@@ -105,8 +104,6 @@ theorem reflected_band_raw_budget {ε A p : ℝ} (hε : 0 < ε) (hA : 1 ≤ A) (
       · positivity
     _ = C*N^ε*L*N*H := by
       have hpow : N^δ*N^(p*η)=N^ε := by rw [← Real.rpow_add hN0,he]
-      dsimp [C]
-      field_simp
-      nlinarith [hpow]
+      grind
 
-end GuthMaynard.Improvement
+

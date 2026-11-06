@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceTuples
 
 @[expose] public section
@@ -8,10 +9,10 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -121,8 +122,7 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
     rw [sourceIdeal_gen p hp hpr]
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
   · exact hE
-  · exact hold
-  · exact hnew
+  all_goals (assumption)
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem oldSlot_dvd_reconstructed_support
@@ -151,7 +151,7 @@ theorem cubeSecondSource_valid_original_slots (hp : ∀ i, p i ≠ 0)
     oldAssigned newAssigned
     (fun i => oldSlot_dvd_reconstructed_support p B C _ ε₁ ε₂ hv _ t (hold i)) hnew
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

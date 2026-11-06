@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected singular-kernel convolution proofs adapted from Scott McColm,
 PointMeanGammaConvolution.lean, exact revision
@@ -13,23 +14,20 @@ public import Mathlib.Tactic
 @[expose] public section
 
 open MeasureTheory
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- The square-integrable reserve left after taking one unit of exponential
 decay out of the product of two strong Gamma bounds. -/
-noncomputable def heathBrownGammaReserveKernel (delta x : ℝ) : ℝ :=
+def heathBrownGammaReserveKernel (delta x : ℝ) : ℝ :=
   Real.exp (-|x| / 6) / (delta + |x|)
 
 theorem integrable_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
     Integrable (fun x : ℝ => (delta ^ 2 + x ^ 2)⁻¹) := by
-  have hbase : Integrable (fun x : ℝ => (1 + (x / delta) ^ 2)⁻¹) :=
+  have hbase :=
     integrable_inv_one_add_sq.comp_div hdelta.ne'
   have hscaled := hbase.const_mul (delta ^ 2)⁻¹
-  convert hscaled using 1
-  funext x
-  field_simp [hdelta.ne']
+  grind
 
 theorem integral_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
     (∫ x : ℝ, (delta ^ 2 + x ^ 2)⁻¹) = Real.pi / delta := by
@@ -40,8 +38,7 @@ theorem integral_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
         ∫ x : ℝ, (delta ^ 2)⁻¹ * f (x / delta) := by
           apply integral_congr_ae
           filter_upwards with x
-          dsimp only [f]
-          field_simp [hdelta.ne']
+          grind
     _ = (delta ^ 2)⁻¹ * ∫ x : ℝ, f (x / delta) :=
       integral_const_mul _ _
     _ = (delta ^ 2)⁻¹ * (|delta| * ∫ x : ℝ, f x) := by
@@ -106,7 +103,7 @@ theorem integral_heathBrownGammaReserveKernel_sq_le
     (fun x => heathBrownGammaReserveKernel_sq_le hdelta)
 
 /-- Product of the two literal strong Gamma majorants before convolution. -/
-noncomputable def heathBrownStrongGammaConvolutionIntegrand
+def heathBrownStrongGammaConvolutionIntegrand
     (delta u w : ℝ) : ℝ :=
   (Real.exp (-(4 / 3 : ℝ) * |w|) / (delta + |w|)) *
     (Real.exp (-(4 / 3 : ℝ) * |u - w|) / (delta + |u - w|))
@@ -116,10 +113,7 @@ theorem heathBrown_strong_exponential_reserve (u w : ℝ) :
         Real.exp (-(4 / 3 : ℝ) * |u - w|) ≤
       Real.exp (-|u|) * Real.exp (-|w| / 6) *
         Real.exp (-|u - w| / 6) := by
-  have htri : |u| ≤ |w| + |u - w| := by
-    calc
-      |u| = |w + (u - w)| := by ring_nf
-      _ ≤ |w| + |u - w| := abs_add_le _ _
+  have htri : |u| ≤ |w| + |u - w| := by grind
   rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
   exact Real.exp_le_exp.mpr (by nlinarith [abs_nonneg w, abs_nonneg (u - w)])
 
@@ -168,4 +162,4 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
       unfold a b
       ring
 
-end MathCollab.Density.Stronger.PointMean
+

@@ -8,17 +8,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalState
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedPhysical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase InverseMoment InverseInitialClippedColumns
-open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
+open CanonicalRowCompletion InverseMoment
+open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic IdealMobiusDivisorSum
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerModes
-open InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialQuotientGeometry InverseInitialCanonicalState
+open scoped EisensteinO
 
 theorem retained_physical_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
@@ -30,7 +30,7 @@ theorem retained_physical_bound
     (ω₁ ω₂:ℝ→ℂ)(lo b:ℝ)(hlo:0<lo)(hb:1≤b)
     (hω₁:Function.support ω₁⊆Set.Icc lo b)(hω₂:Function.support ω₂⊆Set.Icc lo b)
     (hd₁:ContDiff ℝ ∞ ω₁)(hd₂:ContDiff ℝ ∞ ω₂)
-    (cap margin eps U π:ℝ)(hcap:0≤cap)(hmargin:0<margin)(heps:0<eps)(hU:0≤U)(hπ:0<π)(K:ℕ):
+    (cap margin eps U π:ℝ)(hcap:0≤cap)(hmargin:0< margin)(heps:0<eps)(hU:0≤U)(hπ:0<π)(K:ℕ):
     ∃degree:ℕ,∃Btree:ℝ,1≤Btree ∧ ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
@@ -115,7 +115,7 @@ theorem retained_physical_bound
     ring
   · intro s ρ A₁ hA₁ A₂ hA₂ t ht
     obtain ⟨hm,hV,hM,hQ,hnorm,hMc,hFc,hmargin⟩:=hstate t ht
-    have hweight:∀f∈labels,((idealDivisors f).card:ℝ)^(A₁.card+A₂.card+1)≤secondLabelWeight K f:=by
+    have hweight:∀f∈labels,((idealDivisors f).card:ℝ)^(A₁.card+A₂.card+1)≤ secondLabelWeight K f:=by
       intro f hf
       exact assigned_label_weight_le slots A₁ A₂ K hslots (Finset.mem_powerset.mp hA₁)
         (Finset.mem_powerset.mp hA₂) f (hlabels f hf).1.1
@@ -149,8 +149,8 @@ theorem retained_physical_bound
       · linarith [norm_nonneg s]
       · dsimp [J]; omega
 
-end SevenEighths.InverseInitialRetainedPhysical
 
-end
 
-end OAI
+
+
+

@@ -14,14 +14,15 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
 open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CanonicalQuadraticSieve
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceLiveColumn
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
@@ -121,8 +122,8 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
           ((Ideal.absNorm C:ℝ)*Ideal.absNorm L):=by ring
         _=_:=by rw [hp]
 
-end SevenEighths.CenteredMomentCommonLiveFrozen
 
-end
 
-end OAI
+
+
+

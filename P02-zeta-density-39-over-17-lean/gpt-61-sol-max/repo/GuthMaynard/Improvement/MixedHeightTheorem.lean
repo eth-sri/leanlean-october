@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MixedHeightReduction
 public import GuthMaynard.Improvement.UnequalHeightTheorem
 public import GuthMaynard.Improvement.SparseAffineInput
 public import GuthMaynard.Improvement.UniformReduction
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap
@@ -60,7 +60,6 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
       rw [Real.sqrt_mul (by positivity)]
       congr 1
       rw [Real.sqrt_eq_rpow,← Real.rpow_mul hTp.le]
-      congr 1
       ring
     have hpows : T^(ε/2)*T^(ε/2) = T^ε := by
       rw [← Real.rpow_add hTp]
@@ -103,4 +102,4 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
           _ ≤ C := le_add_of_nonneg_left (by positivity)
           _ ≤ C*T^ε := le_mul_of_one_le_right hC.le hpow
 
-end GuthMaynard.Improvement
+

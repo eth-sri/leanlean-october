@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.LongMeanScale
 public import MathCollab.Density.Stronger.SeparatedCriticalSampling
 public import MathCollab.Density.Stronger.LongBlockDetection
@@ -7,8 +8,7 @@ public import MathCollab.Density.Stronger.ShortPoweredFamily
 @[expose] public section
 open Filter MeasureTheory
 open scoped BigOperators
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- The long-scale lower bound gives this finite counting inequality before
@@ -24,10 +24,7 @@ theorem long_mean_twelfth_count {A : ℕ} {U : Finset ℝ} {C X Y T σ : ℝ}
     congr 1
     norm_num
     ring
-  have hsqrt : (Real.sqrt X)^12 = X^6 := by
-    calc
-      _ = ((Real.sqrt X)^2)^6 := by ring
-      _ = _ := by rw [Real.sq_sqrt hX]
+  have hsqrt : (Real.sqrt X)^12 = X^6 := by grind
   have hh (u : ℝ) (hu : u ∈ U) :
       Y^(6*σ-3) ≤ (48*C)^12*X^6*(Real.log T)^12*(weightedCriticalMean A u)^12 := by
     have hp := pow_le_pow_left₀ (Real.rpow_nonneg hY.le ((σ-1/2)/2)) (hmean u hu) 12
@@ -85,10 +82,8 @@ theorem smooth_long_mean_or_short_powered_cover {σ δ η : ℝ}
     have hlong' : Real.sqrt (detectorY σ T) ≤ (2 : ℝ)^j := by
       have he : Real.sqrt (detectorY σ T) = T^(smoothingExponent σ/2) := by
         rw [Real.sqrt_eq_rpow,detectorY,← Real.rpow_mul hTp.le]
-        congr 1
         ring
-      rw [he]
-      exact hlong.le
+      grind
     apply weightedCriticalMean_long_scale (by linarith) (by linarith) hYp
       (by linarith : 1/2 ≤ σ) hβ hlong'
     apply hmean ρ (detectorX δ T) ((2 : ℝ)^j) ((2 : ℝ)^j/detectorY σ T)
@@ -111,4 +106,4 @@ theorem long_mean_count_le_physical_moment {U : Finset ℝ} {C X Y T σ : ℝ}
   exact mul_le_mul_of_nonneg_left (separated_weightedCriticalMean_twelfth_le hT hU hslab)
     (by positivity)
 
-end MathCollab.Density.Stronger
+

@@ -18,25 +18,36 @@ open CenteredMomentCommonLinearSource CenteredMomentExceptionalAmplitudePair
 open CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentFirstSectors CenteredMomentRowNorm CenteredMomentHeckeColumnWindow
 open CenteredMomentExceptionalWholeWindow CenteredMomentSmooth
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-def columns (s:Input ι)(C:Ideal O)(hC:Supported C):Finset (Ideal O):=
+section
+variable (s:Input ι)(C:Ideal O)(hC:Supported C)
+include s C hC
+
+def columns :Finset (Ideal O):=
   residualPool C hC.1 (finiteColumns (Fintype.piFinset s.pools))
 
-def coefficient (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
+section
+variable (R seed L:Ideal O)
+include R seed L
+
+def coefficient 
     (I:supportedColumns (columns s C hC)):ℂ:=
   (Real.sqrt (volume s.toData):ℂ)⁻¹*
     (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then
       finiteColumnCoefficient (Fintype.piFinset s.pools)
         (profileCoefficient R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed) (C*I) else 0)
 
-def windowColumn (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
+def windowColumn 
     (η:Character)(t θ X:ℝ)(V:ℝ→ℂ)(z:O):ℂ:=
   rowPolynomial Finset.univ (sourceGenerator (columns s C hC))
     (fun I=>coefficient s C hC R seed L I*heightCoeff η t I*
       columnPhase V (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ) z
+end
+end
+
 
 omit [DecidableEq ι] in
 theorem coefficient_polynomial (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
@@ -77,8 +88,8 @@ theorem whole_window_pair (s v:Input ι)(C D:Ideal O)(hC:Supported C)(hD:Support
   · intro u w
     simpa only [sourceGenerator_span,coefficient_polynomial] using hpair u w
 
-end SevenEighths.CenteredMomentCommonWindowColumn
 
-end
 
-end OAI
+
+
+

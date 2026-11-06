@@ -11,35 +11,41 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentCommonSectors
-open CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
-open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss
+open CenteredMomentSourceRow
+open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform
 
-def sectorPool (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) : Finset (Ideal O) :=
+
+open scoped EisensteinO
+
+section
+variable (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
+include C hC S
+
+def sectorPool  : Finset (Ideal O) :=
   (residualPool C hC (supportedColumns S)).filter (IsCoprime C)
 
-theorem sectorPool_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Supported (a:Ideal O) :=
+section
+variable (a : sectorPool C hC S)
+include a
+
+theorem sectorPool_supported  : Supported (a:Ideal O) :=
   residualPool_supported C hC S ⟨a,(Finset.mem_filter.mp a.property).1⟩
 
-def sectorElement (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : O := primaryGenerator a
+def sectorElement  : O := primaryGenerator a
 
-theorem sectorElement_span (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Ideal.span {sectorElement C hC S a}=a :=
+theorem sectorElement_span  : Ideal.span {sectorElement C hC S a}=a :=
   primary_span_supported a (sectorPool_supported C hC S a)
 
-theorem sectorElement_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Supported (Ideal.span {sectorElement C hC S a}) := by
+theorem sectorElement_supported  : Supported (Ideal.span {sectorElement C hC S a}) := by
   rw [sectorElement_span]
   exact sectorPool_supported C hC S a
 
-theorem sectorElement_primary (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : ConcretePrimeRowBridge.goodLambda^2∣sectorElement C hC S a-1 :=
+theorem sectorElement_primary  : ConcretePrimeRowBridge.goodLambda^2∣sectorElement C hC S a-1 :=
   (primaryGenerator_spec a (supported_primaryGenerator_ne_zero a (sectorPool_supported C hC S a))).2
+end
+end
+
 
 theorem coprime_of_same_support (C D a : Ideal O) (hC : C≠0) (hD : D≠0) (ha : a≠0)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) :
@@ -48,7 +54,11 @@ theorem coprime_of_same_support (C D a : Ideal O) (hC : C≠0) (hD : D≠0) (ha 
   rw [←IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC ha,
     ←IdealCoprimeSieveOperator.primeSupport_disjoint_iff hD ha,hCD]
 
-theorem sectorElement_coprime (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+section
+variable (C D : Ideal O)
+include C D
+
+theorem sectorElement_coprime  (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (S : Finset (Ideal O)) (a : sectorPool C hC.1 S) :
     IsCoprime (primaryGenerator C*primaryGenerator D) (sectorElement C hC.1 S a) := by
@@ -59,7 +69,7 @@ theorem sectorElement_coprime (C D : Ideal O) (hC : Supported C) (hD : Supported
   exact hc.mul_left ((coprime_of_same_support C D a hC.1 hD.1
     (sectorPool_supported C hC.1 S a).1 hCD).mp hc)
 
-theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
+theorem independent_sector_pools  (hC : C≠0) (hD : D≠0)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (S : Finset (Ideal O)) (F : Ideal O → Ideal O → ℂ) :
     (∑ a∈residualPool C hC (supportedColumns S),∑ b∈residualPool D hD (supportedColumns S),
@@ -84,9 +94,11 @@ theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
       (residualPool_supported D hD S ⟨b,hb⟩).1 hCD
     by_cases hDb : IsCoprime D b <;> simp [hcb,hDb]
   · simp only [hCa,ite_false,false_and,Finset.sum_const_zero]
-
-end SevenEighths.CenteredMomentSecondSectorColumns
-
 end
 
-end OAI
+
+
+
+
+
+

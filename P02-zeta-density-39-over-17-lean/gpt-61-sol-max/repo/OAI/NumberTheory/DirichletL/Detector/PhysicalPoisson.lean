@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
 
 @[expose] public section
@@ -10,25 +11,32 @@ open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma sexticGauss_frequency_congr (s : O) (hs : s≠0) (h k : O)
     (he : h-k ∈ (Ideal.span {s}:Ideal O)) : sexticGauss s hs h = sexticGauss s hs k := by
   have hmk := Ideal.Quotient.eq.mpr he
   simp only [sexticGauss, hmk]
 
-def physicalQuotient (C : CalibrationData) (A s : O) (hs : s≠0)
+section
+variable (C : CalibrationData) (A s : O)
+include C A s
+
+section
+variable (hs : s≠0)
+include hs
+
+def physicalQuotient 
     (m : O ⧸ Ideal.span {(C.generator*A)*s}) : ℂ :=
   calibratedNumerator C A (representative ((C.generator*A)*s) m) *
     sexticGauss s hs (-representative ((C.generator*A)*s) m)
 
-lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
+lemma physicalQuotient_mk  (m : O) :
     physicalQuotient C A s hs (Ideal.Quotient.mk _ m) =
       calibratedNumerator C A m * sexticGauss s hs (-m) := by
   have hd : (C.generator*A)*s ∣ representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m :=
     Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec _ _))
-  have hA : representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m ∈
-      (Ideal.span {C.generator*A}:Ideal O) :=
+  have hA :=
     Ideal.mem_span_singleton.mpr ((dvd_mul_right (C.generator*A) s).trans hd)
   have hs' : -representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-(-m) ∈
       (Ideal.span {s}:Ideal O) := by
@@ -38,8 +46,10 @@ lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
     exact dvd_neg.mpr ((dvd_mul_left s (C.generator*A)).trans hd)
   unfold physicalQuotient
   rw [calibratedNumerator_congr C A _ m hA, sexticGauss_frequency_congr s hs _ (-m) hs']
+end
 
-theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0)
+
+theorem physical_row_poisson  (hA : A≠0) (hs : s≠0)
     (W : ℝ → ℂ) (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
     (K : ℝ) (hK : 0<K) :
     (∑' m : O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
@@ -80,8 +90,10 @@ theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : 
   rw [hnorm, Complex.ofReal_mul]
   simp only [elementNorm, Complex.ofReal_natCast] at hn ⊢
   field_simp
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

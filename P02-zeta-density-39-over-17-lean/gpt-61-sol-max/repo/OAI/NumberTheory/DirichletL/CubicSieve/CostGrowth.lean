@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.B2Growth
 public import OAI.NumberTheory.DirichletL.CubicSieve.DescendantBounds
 public import OAI.NumberTheory.DirichletL.CubicDyadicDecay
@@ -10,7 +11,7 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
-noncomputable section
+
 
 theorem HasCubicExponent.frequencyCost_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1/2) :
@@ -97,7 +98,7 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
     calc
       _ = 2*Z*M := by ring
       _ ≤ 2*Z*S := mul_le_mul_of_nonneg_left hmS (by positivity)
-      _ ≤ _ := by nlinarith [mul_nonneg (mul_nonneg (by positivity : 0 ≤ 2*Z) hS) (sub_nonneg.mpr hloss)]
+      _ ≤ _ := by bound
   have htail : H*N^ε*(N^(3*δ)*M^(-δ)*(P*X+Q*Y)) ≤
       H*(P+Q)*N^(3*δ+ε)*S := by
     have hs : M^(-δ)*(P*X+Q*Y) ≤ (P+Q)*S :=
@@ -110,10 +111,9 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
       _ = H*(N^ε*N^(3*δ))*(M^(-δ)*(P*X+Q*Y)) := by ring
       _ ≤ H*(N^ε*N^(3*δ))*((P+Q)*S) := mul_le_mul_of_nonneg_left hs (by positivity)
       _ = _ := by rw [hpow]; ring
-  have hh := add_le_add hunit htail
-  convert hh using 1 <;> dsimp only [S,X,Y] <;> ring
+  grind
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

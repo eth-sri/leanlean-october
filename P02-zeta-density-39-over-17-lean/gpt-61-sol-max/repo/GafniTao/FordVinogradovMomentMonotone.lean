@@ -61,6 +61,6 @@ theorem fordVinogradovMomentNat_mono
     exact Prod.ext (he hF.1) (he hF.2)
 
 
-end
 
-end GafniTao
+
+

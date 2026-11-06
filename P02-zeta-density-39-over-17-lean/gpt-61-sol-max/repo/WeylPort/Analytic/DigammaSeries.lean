@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 Robby Sneiderman. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
@@ -91,7 +92,7 @@ lemma norm_inv_add_one_sub_inv_le {a R : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {z : 
     (hza : a ≤ z.re) (hzR : ‖z‖ ≤ R) (m : ℕ) :
     ‖((m : ℂ) + 1)⁻¹ - (z + m)⁻¹‖ ≤ (R + 1) / (a * ((m : ℝ) + 1) ^ 2) := by
   have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  have hR0 : (0 : ℝ) ≤ R := le_trans (norm_nonneg z) hzR
+  have hR0 := le_trans (norm_nonneg z) hzR
   have hrepos : 0 < (z + m).re := by
     rw [add_re, natCast_re]
     linarith
@@ -120,7 +121,7 @@ lemma hasSum_sub_succ_of_tendsto_zero {E : Type*} [AddCommGroup E] [TopologicalS
     (hs : Summable fun n => a n - a (n + 1)) :
     HasSum (fun n => a n - a (n + 1)) (a 0) := by
   have h1 : Tendsto (fun n => ∑ i ∈ Finset.range n, (a i - a (i + 1))) atTop (𝓝 (a 0)) := by
-    have he : ∀ n, ∑ i ∈ Finset.range n, (a i - a (i + 1)) = a 0 - a n :=
+    have he :=
       fun n => Finset.sum_range_sub' a n
     simp only [he]
     simpa using tendsto_const_nhds.sub h0
@@ -136,8 +137,12 @@ to `digamma z`. -/
 noncomputable def logGammaSeq (z : ℂ) (n : ℕ) : ℂ :=
   z * (Real.log n : ℂ) + (Real.log (n !) : ℂ) - ∑ m ∈ Finset.range (n + 1), log (z + m)
 
+section
+variable {z : ℂ} (hz : 0 < z.re)
+include z hz
+
 /-- The increment of `logGammaSeq` in closed form. -/
-lemma logGammaSeq_succ_sub {z : ℂ} (hz : 0 < z.re) (n : ℕ) :
+lemma logGammaSeq_succ_sub  (n : ℕ) :
     logGammaSeq z (n + 1) - logGammaSeq z n
       = z * ((Real.log ((n : ℝ) + 1) - Real.log n : ℝ) : ℂ) - log (1 + z / ((n : ℂ) + 1)) := by
   have hn1 : (0 : ℝ) < (n : ℝ) + 1 := by positivity
@@ -173,7 +178,7 @@ lemma logGammaSeq_succ_sub {z : ℂ} (hz : 0 < z.re) (n : ℕ) :
   ring
 
 /-- For `0 < z.re`, the sequence `logGammaSeq z` is Cauchy. -/
-lemma cauchySeq_logGammaSeq {z : ℂ} (hz : 0 < z.re) : CauchySeq (logGammaSeq z) := by
+lemma cauchySeq_logGammaSeq  : CauchySeq (logGammaSeq z) := by
   apply cauchySeq_of_summable_dist
   apply Summable.of_norm_bounded_eventually_nat
     (g := fun n => (2 * ‖z‖ + ‖z‖ ^ 2) * (1 / ((n : ℝ) + 1) ^ 2))
@@ -253,7 +258,7 @@ lemma cauchySeq_logGammaSeq {z : ℂ} (hz : 0 < z.re) : CauchySeq (logGammaSeq z
     _ = (2 * ‖z‖ + ‖z‖ ^ 2) * (1 / ((n : ℝ) + 1) ^ 2) := by ring
 
 /-- On the right half-plane, `exp (logGammaSeq z n) = GammaSeq z n` for `n ≠ 0`. -/
-lemma exp_logGammaSeq {z : ℂ} (hz : 0 < z.re) {n : ℕ} (hn : n ≠ 0) :
+lemma exp_logGammaSeq  {n : ℕ} (hn : n ≠ 0) :
     exp (logGammaSeq z n) = GammaSeq z n := by
   have hne : ∀ m : ℕ, z + (m : ℂ) ≠ 0 := by
     intro m h
@@ -269,6 +274,8 @@ lemma exp_logGammaSeq {z : ℂ} (hz : 0 < z.re) {n : ℕ} (hn : n ≠ 0) :
     · rw [natCast_log, cpow_def_of_ne_zero (Nat.cast_ne_zero.mpr hn), mul_comm z (log (n : ℂ))]
     · rw [natCast_log, exp_log (by exact_mod_cast n.factorial_ne_zero)]
   · exact Finset.prod_congr rfl fun m _ => exp_log (hne m)
+end
+
 
 /-! ## The series on the right half-plane -/
 
@@ -295,9 +302,7 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
     refine (summable_one_div_natCast_add_one_sq.mul_left ((R + 1) / a)).congr fun m => ?_
     rw [mul_one_div, div_div]
   -- uniform convergence of the partial sums of the packet series
-  have hM : TendstoUniformlyOn
-      (fun (N : ℕ) (w : ℂ) => ∑ m ∈ Finset.range N, (((m : ℂ) + 1)⁻¹ - (w + m)⁻¹))
-      (fun (w : ℂ) => ∑' m : ℕ, (((m : ℂ) + 1)⁻¹ - (w + m)⁻¹)) atTop s :=
+  have hM :=
     tendstoUniformlyOn_tsum_nat hu fun m w hw =>
       norm_inv_add_one_sub_inv_le ha ha1 (hmem w hw).1 (hmem w hw).2 m
   have hM1 : TendstoUniformlyOn
@@ -342,7 +347,7 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
       HasDerivAt (fun w => logGammaSeq w n)
         ((Real.log n : ℂ) - ∑ m ∈ Finset.range (n + 1), (x + m)⁻¹) x := by
     intro n x hx
-    have hre : 0 < x.re := hre_pos x hx
+    have hre := hre_pos x hx
     have h1 : HasDerivAt (fun w : ℂ => w * (Real.log n : ℂ) + (Real.log (n !) : ℂ))
         ((Real.log n : ℂ)) x := (hasDerivAt_mul_const _).add_const _
     have h2 : HasDerivAt (fun w : ℂ => ∑ m ∈ Finset.range (n + 1), log (w + m))
@@ -360,8 +365,7 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
       simpa only [Function.comp_def, mul_one] using (hasDerivAt_log hmem).comp x hinner
     simpa only [logGammaSeq] using h1.fun_sub h2
   -- pointwise convergence to the limit function
-  have hptw : ∀ x : ℂ, x ∈ s →
-      Tendsto (fun n => logGammaSeq x n) atTop (𝓝 (limUnder atTop (logGammaSeq x))) :=
+  have hptw :=
     fun x hx => (cauchySeq_logGammaSeq (hre_pos x hx)).tendsto_limUnder
   -- differentiate the limit
   have hkey : HasDerivAt (fun w => limUnder atTop (logGammaSeq w))
@@ -394,7 +398,7 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
   have hdig : digamma z₀ = -(Real.eulerMascheroniConstant : ℂ)
       + ∑' m : ℕ, (((m : ℂ) + 1)⁻¹ - (z₀ + m)⁻¹) := by
     rw [digamma_def, logDeriv_apply, hGd.deriv, mul_div_cancel_left₀ _ (Gamma_ne_zero hne)]
-  have hsm : Summable (fun m : ℕ => ((m : ℂ) + 1)⁻¹ - (z₀ + m)⁻¹) :=
+  have hsm :=
     Summable.of_norm_bounded hu fun m =>
       norm_inv_add_one_sub_inv_le ha ha1 haz.le hz₀R.le m
   have ht : ∑' m : ℕ, (((m : ℂ) + 1)⁻¹ - (z₀ + m)⁻¹)
@@ -460,7 +464,7 @@ theorem hasSum_digamma {z : ℂ} (hz : ∀ n : ℕ, z ≠ -n) :
           (summable_one_div_natCast_add_one_sq.mul_left _)
         filter_upwards [eventually_ge_atTop ⌈2 * ‖z‖ + 1⌉₊] with n hn
         have hnR : 2 * ‖z‖ + 1 ≤ (n : ℝ) := le_trans (Nat.le_ceil _) (by exact_mod_cast hn)
-        have hz0 : (0 : ℝ) ≤ ‖z‖ := norm_nonneg z
+        have hz0 := norm_nonneg z
         have hb1 : ((n : ℝ) + 1) / 2 ≤ ‖z + n‖ := le_trans (by linarith) (hnorm_lb n)
         have hb2 : ((n : ℝ) + 1) / 2 ≤ ‖z + ((n + 1 : ℕ) : ℂ)‖ := by
           refine le_trans ?_ (hnorm_lb (n + 1))
@@ -490,4 +494,4 @@ theorem hasSum_digamma {z : ℂ} (hz : ∀ n : ℕ, z ≠ -n) :
       convert hfin using 1
       ring
 
-end Complex
+

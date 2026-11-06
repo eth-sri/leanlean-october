@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,12 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTest
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -78,9 +78,6 @@ theorem exists_zetaSmoothDivisor_log_tail_bound (A : ℝ) :
   rw [Real.rpow_one] at he
   norm_num only [show (1 / 2 + 1 / 2 : ℝ) = 1 by norm_num, Real.rpow_one] at h
   apply h.trans
-  rw [show -(Real.log T) ^ 2 / 8 = -(1 / 8) * (Real.log T) ^ 2 by ring]
-  calc
-    _ = G * (C * T * Real.exp (-(1 / 8) * (Real.log T) ^ 2)) := by ring
-    _ ≤ _ := he
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

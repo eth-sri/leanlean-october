@@ -11,7 +11,7 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
@@ -20,21 +20,30 @@ def SourceRawIndex (S : Finset (Ideal O)) :=
 
 instance (S : Finset (Ideal O)) : Countable (SourceRawIndex S) := inferInstanceAs (Countable {_p : RawHighIndex // _})
 
-def sourceRawEmbedding (S : Finset (Ideal O)) (i : SourceRawIndex S) : FullHighIndex :=
+section
+variable (S : Finset (Ideal O))
+include S
+
+def sourceRawEmbedding  (i : SourceRawIndex S) : FullHighIndex :=
   rawHighEmbedding i.val
 
-lemma sourceRawEmbedding_injective (S : Finset (Ideal O)) : Function.Injective (sourceRawEmbedding S) :=
+lemma sourceRawEmbedding_injective  : Function.Injective (sourceRawEmbedding S) :=
   rawHighEmbedding_injective.comp Subtype.val_injective
+end
 
-def originalRawOnLines (η : HeckeFamily.Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,P.IsMaximal) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
+
+section
+variable (η : HeckeFamily.Character) (S : Finset (Ideal O))
+    (hS : ∀P∈S,P.IsMaximal)
+include η S hS
+
+def originalRawOnLines  (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
     (i : SourceRawIndex S) (p : HeightSpace) : ℂ :=
   rawPhysicalMellinTerm η (calibrationForSet S hS) S D i.val.2.1.1 i.val.2.1.2 i.val.2.2 i.property.1
     W0 W1 X Y Z i.val.1.val ((4:ℂ)+p.1.1*Complex.I)
       ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
 
-theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
+theorem originalRaw_counting_product_integrable  (hpS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
     (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
     (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Set.Icc a0 b0)
@@ -67,8 +76,10 @@ theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
   have hsh : sourceHeightShear.symm p.2=((p.2.1.1-p.2.1.2,p.2.1.2),p.2.2) := rfl
   simp only [he,initialHighOnLines,T,hsh,sourceRawEmbedding,mask,id_eq,Complex.ofReal_ofNat]
   ring
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

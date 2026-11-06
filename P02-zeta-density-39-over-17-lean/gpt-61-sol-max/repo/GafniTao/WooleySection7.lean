@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Hard
 public import GafniTao.WooleySourceSections68
 
@@ -15,7 +16,7 @@ the proved easy and hard consumers respectively.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleySourcePolynomial_lemma_7_1
     {k r p : ℕ} [NeZero p]
@@ -52,7 +53,7 @@ theorem wooleySourcePolynomial_lemma_7_1
   have haNext : a ≤ wooleySection7NextB k r b := by
     have hcover := wooley_nextB_lower (k := k) (r := r) (b := b) hr
     rw [← wooleySection7NextB_eq_wooleyNextB] at hcover
-    have hmul : r * a ≤ r * wooleySection7NextB k r b := hab.trans hcover
+    have hmul := hab.trans hcover
     exact Nat.le_of_mul_le_mul_left hmul (by omega)
   by_cases heasy : ∃ gammaVal : ℕ, gammaVal < nu ∧
       wooleySection7BPrimeInt k r a b gammaVal ≤ (nu : ℤ)
@@ -83,11 +84,7 @@ theorem wooleySourcePolynomial_lemma_7_1
             wooleySourcePolynomialMixedMean phi s r p B
               (wooleySection7NextB k r b) b nu gamma := by ring
   · have hhard : ∀ gammaVal : ℕ, gammaVal < nu →
-        (nu : ℤ) < wooleySection7BPrimeInt k r a b gammaVal := by
-      intro gammaVal hgammaVal
-      have hnot : ¬wooleySection7BPrimeInt k r a b gammaVal ≤ (nu : ℤ) :=
-        fun hle => heasy ⟨gammaVal, hgammaVal, hle⟩
-      omega
+        (nu : ℤ) < wooleySection7BPrimeInt k r a b gammaVal := by simp_all
     have hhardBound := wooleySourcePolynomial_section7_hard_of_lower_bound
       (k := k) (r := r) (p := p) (B := B) (s := s)
       (a := a) (b := b) (nu := nu) (c := c)
@@ -118,6 +115,6 @@ theorem wooleySourcePolynomial_lemma_7_1
               (wooleySection7NextB k r b) b nu gamma := by ring
 
 
-end
 
-end GafniTao
+
+

@@ -10,18 +10,19 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationRadicalChoice
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
+open ConcretePrimeRowBridge RayFourExpansion
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
 open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
 open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
+open CenteredMomentSourceRow
+
+open CenteredMomentSectorLocalization
 open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentChildRows
+open scoped EisensteinO
+
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem exists_pool_error_families {ι : Type*} [Fintype ι]
@@ -33,7 +34,7 @@ theorem exists_pool_error_families {ι : Type*} [Fintype ι]
       ∀ (D : OriginalData ι),
         (∀ i,∀ I∈D.S i,I≠0) → (∀ i,∀ I∈D.S (Sum.inl i),Prime I) →
         (∀ p∈elementPool P,∀ i,∀ I∈D.S (Sum.inl i),IsCoprime (Ideal.span {p}) I) →
-        ∀ (t T Z sigma D0 cLog : ℝ),0<T → 1<Z → 0≤sigma → ∀ (j : ℤ),
+        ∀ (t T Z sigma D0 cLog : ℝ),0<T → 1<Z → 0≤ sigma → ∀ (j : ℤ),
         (∑p∈elementPool P,∑h∈(dyadRows j).filter (fun h => eligible D.R D.s h p),
           errorEnergy Finset.univ (sourceGenerator D.columns) (sourceGenerator_supported D.columns)
             (D.coefficient η m t T) h p)≤
@@ -59,10 +60,14 @@ theorem exists_pool_error_families {ι : Type*} [Fintype ι]
     show errorIndex 0=0 from rfl,show errorIndex 1=5 from rfl,show errorIndex 2=6 from rfl,Nat.reduceAdd] using
     add_le_add (add_le_add h0 h5) h6
 
-theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+include ι M H hH Sbad hbad
+
+theorem eventually_original_source_amplification 
     (sigma loss BR Bs Mmax b eta : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6) :
     ∀ᶠ Z : ℝ in atTop, 1<Z ∧
@@ -109,10 +114,7 @@ theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
     (D.coefficient η m t T) D.R D.s hR0 hs0 hR hs j hK D0 cLog).trans
   exact mul_le_mul_of_nonneg_left (add_le_add le_rfl he) (by positivity)
 
-theorem eventually_original_amplification {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+theorem eventually_original_amplification 
     (sigma loss BR Bs Mmax b eta : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6) :
     ∀ᶠ Z : ℝ in atTop, 1<Z ∧
@@ -151,10 +153,7 @@ theorem eventually_original_amplification {ι : Type*} [Fintype ι]
     hR0 hs0 hR hs t T D0 cLog hT j hK
   simpa only [D.active_gaussPolynomial,D.active_gaussEnergy] using he
 
-theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+theorem eventually_original_amplification_common 
     (sigma loss BR Bs Mmax b eta Csec xi reserve : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6)
     (hC : 1≤Csec) (hxi : 0≤xi) (hreserve : 0<reserve) :
@@ -216,9 +215,11 @@ theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
     intro i _
     exact child_energy_common D.active (τ p i) p (errorIndex i) t T Z d K0 kdyad cLog sigma
       _ reserve hT.le hZ hδ henclose hsupport.2
-
-end SevenEighths.CenteredMomentAmplificationRadicalChoice
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -5,17 +5,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge
-open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation
-open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
-open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
-open CenteredMomentCompleteCommon IdealMobiusDivisorSum CenteredMomentFirstDiscardedEnergy
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open CenteredMomentSectorLocalization
+open CenteredMomentCanonicalFirst
+open CenteredMomentFirstScale
+open CenteredMomentFirstDiscardedEnergy
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma local_tail_denominator_mono (Tlocal Tupper H Z ξ:ℝ)(A:ℕ)(B:ℝ)
     (hT:0<Tlocal)(hupper:Tlocal≤Tupper)(hB:0≤B)(hZ:0≤Z):
@@ -24,7 +24,7 @@ lemma local_tail_denominator_mono (Tlocal Tupper H Z ξ:ℝ)(A:ℕ)(B:ℝ)
   have hu:0<Tupper:=hT.trans_le hupper
   have hk:kernelReference Tupper H≤kernelReference Tlocal H:=by
     exact div_le_div_of_nonneg_left (Real.exp_pos _).le hT hupper
-  have hm:0<min 1 (kernelReference Tupper H):=lt_min zero_lt_one (kernelReference_pos _ _ hu)
+  have hm:0< min 1 (kernelReference Tupper H):=lt_min zero_lt_one (kernelReference_pos _ _ hu)
   have hp:0≤Z^(ξ/4):=Real.rpow_nonneg hZ _
   apply div_le_div_of_nonneg_left hB (by positivity)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
@@ -76,8 +76,8 @@ theorem local_discarded_pair_bound (A : ℕ) (ε : ℝ) (hε : 0<ε) :
       mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by ring
 
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 
-end
 
-end OAI
+
+
+

@@ -5,15 +5,15 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
 open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
+open CenteredMomentAllocatedDetectorAmplitude
 open CenteredMomentCommonExceptionalMass CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι] {wlo whi:ℝ}
 lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D R:Ideal O)(hC:C≠0)(hD:D≠0)
     (B:actualAllocations s.pools C)(E:actualAllocations v.pools D)(p q:Profiles wlo whi)(J:ℕ):
@@ -61,8 +61,8 @@ theorem common_profile_mass (δ:ℝ)(hδ:0<δ):
       dsimp only [A]
       ring
 
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
-end
 
-end OAI
+
+
+

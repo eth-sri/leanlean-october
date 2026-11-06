@@ -9,7 +9,7 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
@@ -23,28 +23,30 @@ def sourceRawGrouping (S : Finset (Ideal O)) :
   left_inv _i := rfl
   right_inv _i := rfl
 
-def sourceRawGroupingMeasurable (S : Finset (Ideal O))
+section
+variable (S : Finset (Ideal O))
     [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
     [MeasurableSpace (SourceOuter S)] [MeasurableSingletonClass (SourceOuter S)]
     [MeasurableSpace CompletedPair] [MeasurableSingletonClass CompletedPair]
-    [MeasurableSpace NonzeroFrequency] [MeasurableSingletonClass NonzeroFrequency] :
+    [MeasurableSpace NonzeroFrequency] [MeasurableSingletonClass NonzeroFrequency]
+include S
+
+def sourceRawGroupingMeasurable  :
     SourceRawIndex S ≃ᵐ SourceOuter S×(CompletedPair×NonzeroFrequency) where
   toEquiv := sourceRawGrouping S
   measurable_toFun := measurable_of_countable _
   measurable_invFun := measurable_of_countable _
 
-lemma sourceRawGrouping_preserving (S : Finset (Ideal O))
-    [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
-    [MeasurableSpace (SourceOuter S)] [MeasurableSingletonClass (SourceOuter S)]
-    [MeasurableSpace CompletedPair] [MeasurableSingletonClass CompletedPair]
-    [MeasurableSpace NonzeroFrequency] [MeasurableSingletonClass NonzeroFrequency] :
+lemma sourceRawGrouping_preserving  :
     MeasurePreserving (sourceRawGroupingMeasurable S) Measure.count
       ((Measure.count:Measure (SourceOuter S)).prod
         ((Measure.count:Measure CompletedPair).prod (Measure.count:Measure NonzeroFrequency))) := by
   rw [count_product,count_product]
   exact count_equiv_preserving _
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

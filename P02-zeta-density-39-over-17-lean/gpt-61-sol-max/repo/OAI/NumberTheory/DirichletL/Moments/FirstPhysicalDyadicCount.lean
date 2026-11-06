@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicAssembly
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
@@ -44,7 +44,11 @@ lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
   apply Subtype.ext
   exact congrArg (fun z => (z i).val) hxy
 
-theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
+section
+variable (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
+include B L Cr ε hB hL
+
+theorem blocks_subpower 
     (_hCr : 0<Cr) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀K R H nC nD : ℝ,0<K → 0<H → 1≤nC → 1≤nD →
@@ -57,14 +61,14 @@ theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
   intro K R H nC nD hK hH hnC hnD hR hHcap
   have hz : 0<Z := zero_lt_one.trans_le hZ
   have hp : 1≤Z^(B+L) := Real.one_le_rpow hZ (add_nonneg hB hL)
-  have hbound : 1≤max 1 Cr*Z^(B+L) :=
+  have hbound : 1≤ max 1 Cr*Z^(B+L) :=
     one_le_mul_of_one_le_of_one_le (le_max_left _ _) hp
-  have hR' : max 1 R≤max 1 Cr*Z^(B+L) := by
+  have hR' : max 1 R≤ max 1 Cr*Z^(B+L) := by
     apply max_le hbound
     exact hR.trans (mul_le_mul (le_max_right _ _)
       (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
       (Real.rpow_nonneg hz.le _) (by positivity))
-  have hH' : max 1 H≤max 1 Cr*Z^(B+L) := by
+  have hH' : max 1 H≤ max 1 Cr*Z^(B+L) := by
     apply max_le hbound
     exact hHcap.trans ((Real.rpow_le_rpow_of_exponent_le hZ (by linarith : B≤B+L)).trans
       (le_mul_of_one_le_left (zero_le_one.trans hp) (le_max_left _ _)))
@@ -81,7 +85,7 @@ theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
       (![K,max 1 R,max 1 H,max 1 H] i))) by
       exact_mod_cast blocks_card_le K R H nC nD hH hnC hnD).trans hfour
 
-theorem original_blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
+theorem original_blocks_subpower 
     (hCr : 0<Cr) (hε : 0<ε) :
     ∃C₀ : ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀(C D : Ideal ActualEisensteinCubic.O), C≠0 → D≠0 →
@@ -98,9 +102,11 @@ theorem original_blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   exact hcount _ _ _ _ _ (effectiveScale_pos C D E K hK) hH
     (norm_one C hC) (norm_one D hD) hR hHcap
-
-end SevenEighths.CenteredMomentFirstPhysicalDyadicCount
-
 end
 
-end OAI
+
+
+
+
+
+

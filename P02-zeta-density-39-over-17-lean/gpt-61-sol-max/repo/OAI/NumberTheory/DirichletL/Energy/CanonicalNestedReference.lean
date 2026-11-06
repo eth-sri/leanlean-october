@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalReferencePaid
 public import OAI.NumberTheory.DirichletL.Energy.BandSubtypeTransport
 
@@ -10,31 +11,31 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalNestedReference
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open HeckeFamily
+
+
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
+
+
 open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+
+open CenteredMomentSecondNonexceptionalChosenBlock
+open HeckeFamily CenteredMomentEnergyBands
+
+
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
+
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+open CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -52,7 +53,7 @@ theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Ls
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:Jorig→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input Jorig,Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
@@ -88,7 +89,7 @@ theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Ls
   let Ctot:ℝ:=1+∑J:Pairs,Cc J
   have hCt:0<Ctot:=by
     have hh:=Finset.sum_nonneg (fun J (_:J∈(Finset.univ:Finset Pairs))=>(hCc J).le)
-    dsimp [Ctot];linarith
+    positivity
   refine ⟨n₀,T₀,dc₀,Ctot,hCt,?_⟩
   intro η₀
   let Choices:=ΣJ:Pairs,J.2→RayQuotient.Characters M H
@@ -99,10 +100,9 @@ theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Ls
   let Z₀:ℝ:=1+∑c:Choices,Zchoice c
   have hZ₀:1<Z₀:=by
     have hn:Nonempty Choices:=⟨⟨⟨∅,∅⟩,fun i=>False.elim (Finset.notMem_empty _ i.property)⟩⟩
-    let:Nonempty Choices:=hn
     have hh:=Finset.sum_pos (s:=Finset.univ) (fun c _=>(zero_lt_one.trans (hZchoice c)))
       Finset.univ_nonempty
-    dsimp [Z₀];linarith
+    linarith
   refine ⟨Z₀,hZ₀,?_⟩
   intro Jparent Jorig θ Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
@@ -149,8 +149,8 @@ theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Ls
   apply hh.trans
   gcongr
 
-end SevenEighths.CenteredMomentEnergyCanonicalNestedReference
 
-end
 
-end OAI
+
+
+

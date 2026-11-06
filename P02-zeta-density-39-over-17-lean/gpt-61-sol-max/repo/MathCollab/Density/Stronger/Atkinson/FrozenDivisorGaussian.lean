@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -11,11 +12,10 @@ public import MathCollab.Density.Stronger.Atkinson.GammaGaussianTransform
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -39,7 +39,6 @@ theorem divisorDirichletTerm_height_shift (T x : ℝ) (n : ℕ) :
     push_cast
     ring
   rw [hs, divisorDirichletTerm_add_eq_mul_exp]
-  congr 2
   ring
 
 theorem zetaSquareFrozenDivisorContribution_eq_phase (T x : ℝ) (n : ℕ) :
@@ -89,15 +88,18 @@ theorem hasSum_zetaFrozenDivisorGaussianMean {T G : ℝ} (hT : 0 < T) (hG : G �
   simp_rw [zetaSquareFrozenDivisorContribution_mul_gaussian, integral_const_mul] at h
   exact h
 
-theorem norm_zetaGaussianQuadraticIntegral_le_mass {T G : ℝ} (hT : 0 < T)
-    (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
+section
+variable {T G : ℝ} (hT : 0 < T)
+    (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T)
+include T G hT hG hGT
+
+theorem norm_zetaGaussianQuadraticIntegral_le_mass  (v : ℝ) :
     ‖zetaGaussianQuadraticIntegral T G v‖ ≤ Real.sqrt Real.pi * G := by
   apply (norm_zetaGaussianQuadraticIntegral_le hT hG hGT v).trans
   exact mul_le_of_le_one_right (by positivity)
     (Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg (G * v)]))
 
-theorem summable_zetaFrozenDivisorQuadraticTerm {T G : ℝ} (hT : 0 < T)
-    (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) :
+theorem summable_zetaFrozenDivisorQuadraticTerm  :
     Summable (fun n : ℕ => zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
       zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))) := by
   apply summable_norm_iff.mp
@@ -108,6 +110,8 @@ theorem summable_zetaFrozenDivisorQuadraticTerm {T G : ℝ} (hT : 0 < T)
     exact mul_le_mul_of_nonneg_left (norm_zetaGaussianQuadraticIntegral_le_mass hT hG hGT _)
       (norm_nonneg _)
   · exact (summable_norm_zetaFrozenDivisorCoefficient hT).mul_right _
+end
+
 
 /-- Uniform phase-replacement error for the actual, absolutely convergent
 divisor transform. No arithmetic cancellation is claimed by this bound. -/
@@ -146,4 +150,4 @@ theorem norm_zetaFrozenDivisorGaussianMean_sub_quadratic_le {T G r : ℝ}
       Summable.tsum_le_tsum hpoint hnorm ((summable_norm_zetaFrozenDivisorCoefficient hT0).mul_right E)
     _ = _ := tsum_mul_right
 
-end MathCollab.Density.Stronger.Atkinson
+

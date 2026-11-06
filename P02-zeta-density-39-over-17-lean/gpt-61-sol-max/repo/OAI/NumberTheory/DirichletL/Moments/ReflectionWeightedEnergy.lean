@@ -11,22 +11,33 @@ open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionWeightedEnergy
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open CenteredMomentReflectedAnnuli
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-abbrev Index (S : Finset (Ideal O)) := (S.powerset × SmoothIdeal S) × ℤ
+section
+variable (S : Finset (Ideal O))
+include S
 
-def baseIndex (S : Finset (Ideal O)) : Index S :=
+abbrev Index  := (S.powerset × SmoothIdeal S) × ℤ
+
+def baseIndex  : Index S :=
   ((⟨∅,Finset.mem_powerset.mpr (Finset.empty_subset _)⟩,unitSmooth S),0)
+end
 
-def signedWeight (η ηi : Character) (S : Finset (Ideal O)) (B : ℕ)
-    (a : Index S) : ℂ :=
+
+section
+variable (η ηi : Character) (S : Finset (Ideal O)) (B : ℕ)
+    (a : Index S)
+include η ηi S B a
+
+def signedWeight  : ℂ :=
   coefficient η ηi S a.1.1.val a.1.2 * (annularMass B a.2 : ℂ)
 
-lemma signedWeight_norm (η ηi : Character) (S : Finset (Ideal O))
-    (B : ℕ) (a : Index S) :
+lemma signedWeight_norm  :
     ‖signedWeight η ηi S B a‖ =
       ‖coefficient η ηi S a.1.1.val a.1.2‖ * annularMass B a.2 := by
   rw [signedWeight,norm_mul,Complex.norm_real,Real.norm_of_nonneg (annularMass_nonneg _ _)]
+end
+
 
 lemma annularMass_le_two (B : ℕ) (hB : 2≤B) (n : ℤ) :
     annularMass B n ≤ annularMass 2 n := by
@@ -35,44 +46,57 @@ lemma annularMass_le_two (B : ℕ) (hB : 2≤B) (n : ℤ) :
   exact div_le_div_of_nonneg_left (Real.sqrt_nonneg _) (by positivity)
     (pow_le_pow_right₀ (by linarith [CenteredMomentSectorLocalization.dyadicScale_pos n]) hB)
 
-lemma coefficient_joint_summable (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,Prime P) :
+section
+variable (η ηi : Character) (S : Finset (Ideal O))
+include η ηi S
+
+section
+variable (hS : ∀P∈S,Prime P)
+include hS
+
+lemma coefficient_joint_summable  :
     Summable (fun a : S.powerset × SmoothIdeal S =>
       ‖coefficient η ηi S a.1.val a.2‖) := by
   apply (summable_prod_of_nonneg (fun _ => norm_nonneg _)).mpr
   exact ⟨fun D => coefficient_summable_norm η ηi S hS D.val
     (Finset.mem_powerset.mp D.property),(hasSum_fintype _).summable⟩
 
-lemma coefficient_joint_mass (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,Prime P) :
+lemma coefficient_joint_mass  :
     (∑' a : S.powerset × SmoothIdeal S,‖coefficient η ηi S a.1.val a.2‖) =
       ∑D∈S.powerset,∑'H : SmoothIdeal S,‖coefficient η ηi S D H‖ := by
   rw [(coefficient_joint_summable η ηi S hS).tsum_prod,tsum_fintype]
   exact Finset.sum_coe_sort S.powerset (fun D => ∑'H : SmoothIdeal S,‖coefficient η ηi S D H‖)
 
-lemma signedWeight_summable_norm (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,Prime P) (B : ℕ) (hB : 2≤B) :
+section
+variable (B : ℕ) (hB : 2≤B)
+include B hB
+
+lemma signedWeight_summable_norm  :
     Summable (fun a : Index S => ‖signedWeight η ηi S B a‖) := by
   simp_rw [signedWeight_norm]
   exact (coefficient_joint_summable η ηi S hS).mul_of_nonneg
     (annularMass_summable B hB) (fun _ => norm_nonneg _) (annularMass_nonneg B)
 
-lemma signedWeight_mass (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,Prime P) (B : ℕ) (hB : 2≤B) :
+lemma signedWeight_mass  :
     (∑'a : Index S,‖signedWeight η ηi S B a‖) =
       (∑D∈S.powerset,∑'H : SmoothIdeal S,‖coefficient η ηi S D H‖) *
         ∑'n : ℤ,annularMass B n := by
   rw [(signedWeight_summable_norm η ηi S hS B hB).tsum_prod]
   simp_rw [signedWeight_norm,tsum_mul_left]
   rw [tsum_mul_right,coefficient_joint_mass η ηi S hS]
+end
+end
 
-lemma signed_series_reindex (η ηi : Character) (S : Finset (Ideal O)) (B : ℕ)
+
+lemma signed_series_reindex  (B : ℕ)
     (f : Index S→ℂ) (hs : Summable (fun a=>‖signedWeight η ηi S B a*f a‖)) :
     (∑'a : Index S,signedWeight η ηi S B a*f a) =
       ∑D : S.powerset,∑'H : SmoothIdeal S,∑'n : ℤ,
         coefficient η ηi S D.val H*(annularMass B n:ℂ)*f ((D,H),n) := by
   rw [hs.of_norm.tsum_prod,hs.of_norm.prod.tsum_prod,tsum_fintype]
   rfl
+end
+
 
 theorem signed_mass_subpower (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal O)),(∀P∈S,Prime P) →
@@ -113,8 +137,12 @@ theorem uniform_signed_mass (ε : ℝ) (hε : 0<ε) :
   refine ⟨(hb S hS η ηi B hB).1,(hb S hS η ηi B hB).2.trans ?_⟩
   exact (mul_le_mul_of_nonneg_left (annularMass_total_le B hB) (by positivity)).trans_eq (by ring)
 
-lemma sum_iSup_le_of_selection {ι : Type*} [Fintype ι] {α : ι→Type*}
-    (base : ∀i,α i) (g : ∀i,α i→ℝ) (E : ℝ)
+section
+variable {ι : Type*} [Fintype ι] {α : ι→Type*}
+    (base : ∀i,α i)
+include ι α base
+
+lemma sum_iSup_le_of_selection  (g : ∀i,α i→ℝ) (E : ℝ)
     (hselection : ∀a : ∀i,α i,(∑i,g i (a i))≤E) :
     (∑i,⨆a,g i a)≤E := by
   let (i : ι) : Nonempty (α i) := ⟨base i⟩
@@ -137,8 +165,7 @@ lemma sum_iSup_le_of_selection {ι : Type*} [Fintype ι] {α : ι→Type*}
   simp only [Finset.card_univ] at hh
   nlinarith
 
-lemma selection_point_bound {ι : Type*} [Fintype ι] {α : ι→Type*}
-    (base : ∀i,α i) (f : ∀i,α i→ℂ) (E : ℝ)
+lemma selection_point_bound  (f : ∀i,α i→ℂ) (E : ℝ)
     (hselection : ∀a : ∀i,α i,(∑i,‖f i (a i)‖^2)≤E) (i : ι) (a : α i) :
     ‖f i a‖^2≤E := by
   have hh := Finset.single_le_sum (s:=Finset.univ)
@@ -147,8 +174,7 @@ lemma selection_point_bound {ι : Type*} [Fintype ι] {α : ι→Type*}
   exact (by simpa using hh : ‖f i a‖^2≤∑j,‖f j (Function.update base i a j)‖^2).trans
     (hselection (Function.update base i a))
 
-theorem weighted_selection_energy {ι : Type*} [Fintype ι] {α : ι→Type*}
-    (base : ∀i,α i) (w f : ∀i,α i→ℂ) (M E : ℝ) (_hM : 0≤M)
+theorem weighted_selection_energy  (w f : ∀i,α i→ℂ) (M E : ℝ) (_hM : 0≤M)
     (hs : ∀i,Summable (fun a=>‖w i a‖))
     (hm : ∀i,(∑'a,‖w i a‖)≤M)
     (hselection : ∀a : ∀i,α i,(∑i,‖f i (a i)‖^2)≤E) :
@@ -181,27 +207,37 @@ theorem weighted_selection_energy {ι : Type*} [Fintype ι] {α : ι→Type*}
     _ = M^2*∑i,v i := by simp only [mul_pow,Real.sq_sqrt (hv0 _),Finset.mul_sum]
     _ ≤ M^2*E := mul_le_mul_of_nonneg_left
       (sum_iSup_le_of_selection base (fun i a=>‖f i a‖^2) E hselection) (sq_nonneg M)
+end
 
-lemma masked_signedWeight_summable_norm (η ηi : Character) (S : Finset (Ideal O))
+
+section
+variable (η ηi : Character) (S : Finset (Ideal O))
     (hS : ∀P∈S,Prime P) (B : ℕ) (hB : 2≤B)
-    (mask : Index S→ℂ) (hm : ∀a,‖mask a‖≤1) :
+    (mask : Index S→ℂ) (hm : ∀a,‖mask a‖≤1)
+include η ηi S hS B hB mask hm
+
+lemma masked_signedWeight_summable_norm  :
     Summable (fun a=>‖mask a*signedWeight η ηi S B a‖) := by
   apply (signedWeight_summable_norm η ηi S hS B hB).of_nonneg_of_le (fun _=>norm_nonneg _)
   intro a
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (hm a)
 
-lemma masked_signedWeight_mass_le (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,Prime P) (B : ℕ) (hB : 2≤B)
-    (mask : Index S→ℂ) (hm : ∀a,‖mask a‖≤1) :
+lemma masked_signedWeight_mass_le  :
     (∑'a,‖mask a*signedWeight η ηi S B a‖)≤∑'a,‖signedWeight η ηi S B a‖ := by
   apply (masked_signedWeight_summable_norm η ηi S hS B hB mask hm).tsum_le_tsum
     _ (signedWeight_summable_norm η ηi S hS B hB)
   intro a
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (hm a)
+end
 
-theorem actual_masked_reflection_energy (ε : ℝ) (hε : 0<ε) :
+
+section
+variable (ε : ℝ) (hε : 0<ε)
+include ε hε
+
+theorem actual_masked_reflection_energy  :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],
       ∀(S : ι→Finset (Ideal O)),(∀i P,P∈S i → Prime P) →
       ∀(η ηi : ι→Character)(B : ι→ℕ),(∀i,2≤B i) →
@@ -236,7 +272,7 @@ theorem actual_masked_reflection_energy (ε : ℝ) (hε : 0<ε) :
   dsimp [M]
   rw [mul_pow,hr]
 
-theorem actual_reflection_energy (ε : ℝ) (hε : 0<ε) :
+theorem actual_reflection_energy  :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],
       ∀(S : ι→Finset (Ideal O)),(∀i P,P∈S i → Prime P) →
       ∀(η ηi : ι→Character)(B : ι→ℕ),(∀i,2≤B i) →
@@ -250,9 +286,11 @@ theorem actual_reflection_energy (ε : ℝ) (hε : 0<ε) :
   intro ι _ S hS η ηi B hB R E hR hcap f hselection
   simpa only [norm_one,one_mul] using
     h S hS η ηi B hB R E hR hcap (fun _ _=>1) f (by intro i a;simp) hselection
-
-end SevenEighths.CenteredMomentReflectionWeightedEnergy
-
 end
 
-end OAI
+
+
+
+
+
+

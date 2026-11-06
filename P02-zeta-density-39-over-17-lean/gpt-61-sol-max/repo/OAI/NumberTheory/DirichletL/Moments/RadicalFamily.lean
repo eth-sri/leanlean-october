@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Moments.AddedZero
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRadicalFamily
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentFirstFamily CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstFamily
+open scoped EisensteinO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem elementCoeff_power_pos (χ : Character) (e : ℕ) (he : 0<e) (n : O) :
@@ -114,8 +114,8 @@ theorem exists_radical_row_presentation {ι : Type*} [Fintype ι]
     simp_rw [hc]
     exact row_product_formula Finset.univ η m p e hmLam hm2 n
 
-end SevenEighths.CenteredMomentRadicalFamily
 
-end
 
-end OAI
+
+
+

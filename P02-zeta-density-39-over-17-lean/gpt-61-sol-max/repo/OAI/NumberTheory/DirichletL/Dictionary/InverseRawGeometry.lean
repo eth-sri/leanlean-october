@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalState
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
@@ -8,7 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.DetectorDictionaryInverseRawGeometry
-open InverseMoment InverseInitialCanonicalState
+
 
 def capacityGap (c : ℝ) : ℝ:=c/(1+c)
 
@@ -25,15 +26,12 @@ theorem raw_log_capacity (H D c : ℝ) (hH : 1<H) (hD : 1≤D) (hc : 0<c)
     2*Real.logb H D≤3-capacityGap c ∧ H^(Real.logb H D)=D := by
   have hHp : 0<H:=zero_lt_one.trans hH
   have hDp : 0<D:=zero_lt_one.trans_le hD
-  have hlogH : 0<Real.log H:=Real.log_pos hH
+  have hlogH :=Real.log_pos hH
   have hh:=Real.log_le_log (Real.rpow_pos_of_pos hDp (1+c)) hcap
   rw [Real.log_rpow hDp] at hh
   have hr : Real.logb H D≤1/(1+c) := by
     unfold Real.logb
-    apply (le_div_iff₀ (by linarith : 0<1+c)).mpr
-    rw [div_mul_eq_mul_div]
-    apply (div_le_iff₀ hlogH).mpr
-    simpa only [mul_div_assoc,mul_comm,mul_left_comm,one_mul] using hh
+    field_simp <;> nlinarith
   have he : 1/(1+c)=1-capacityGap c := by
     unfold capacityGap
     field_simp
@@ -65,8 +63,8 @@ theorem raw_output_budget (H D κ e : ℝ) (hH : 1≤H) (hκ : 0≤κ) (he : e�
     H^e≤H^κ:=Real.rpow_le_rpow_of_exponent_le hH he
     _≤(H*max 1 D)^κ:=Real.rpow_le_rpow hHp.le (by nlinarith [le_max_left 1 D]) hκ
 
-end SevenEighths.DetectorDictionaryInverseRawGeometry
 
-end
 
-end OAI
+
+
+

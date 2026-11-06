@@ -16,16 +16,16 @@ open CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy
 open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
 open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
+open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
 open CenteredMomentSecondChildProfile
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy
 open CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool
 open CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentCommonAllocationSum
 open CenteredMomentFirstAmplificationChoice
 open CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 def radicalBound (η:Character)(m p:O)(k:ℕ):ℕ :=
@@ -211,7 +211,7 @@ theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
       ∀ (D : OriginalData ι),
         (∀ i,∀ I∈D.S i,I≠0) → (∀ i,∀ I∈D.S (Sum.inl i),Prime I) →
         (∀ i,∀ I∈D.S (Sum.inl i),IsCoprime (Ideal.span {p}) I) →
-        ∀ (t T Z sigma D0 cLog : ℝ),0<T → 1<Z → 0≤sigma → ∀ (j : ℤ),
+        ∀ (t T Z sigma D0 cLog : ℝ),0<T → 1<Z → 0≤ sigma → ∀ (j : ℤ),
         (∑ h∈(dyadRows j).filter (fun h => eligible D.R D.s h p),
           ‖amplificationError Finset.univ (sourceGenerator D.columns)
             (sourceGenerator_supported D.columns) (D.coefficient η m t T)
@@ -242,8 +242,8 @@ theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
   · rw [Finset.not_nonempty_iff_eq_empty.mp he,Finset.sum_empty]
     exact D.childEnergy_nonneg τ p n t T _ hT.le hK
 
-end SevenEighths.CenteredMomentAmplificationRadicalFamily
 
-end
 
-end OAI
+
+
+

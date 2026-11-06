@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialPointwise
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
@@ -13,25 +14,25 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstChildProfileControl
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile
 open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
+open CenteredMomentAmplificationChildInput
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 open CenteredMomentFiniteProfileExceptionalPhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def mass (s : Input ι) : ℝ := ∏ i,s.M i
 
 omit [DecidableEq ι] in
-lemma mass_one (s : Input ι) : 1≤mass s :=
+lemma mass_one (s : Input ι) : 1≤ mass s :=
   Finset.one_le_prod₀ (fun i _=>s.M_ge_one i)
 
 omit [DecidableEq ι] in
-lemma mass_nonneg (s : Input ι) : 0≤mass s := zero_le_one.trans (mass_one s)
+lemma mass_nonneg (s : Input ι) : 0≤ mass s := zero_le_one.trans (mass_one s)
 
 omit [DecidableEq ι] in
 lemma child_mass (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : mass (child s C R B τ t)≤mass s := by
+    (τ : Character) (t : ℝ) : mass (child s C R B τ t)≤ mass s := by
   change (∏i:liveIndices B.val,s.M i.val)≤∏i,s.M i
   rw [Finset.prod_coe_sort]
   exact Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
@@ -55,7 +56,7 @@ lemma slot_control_bound (s : Input ι) (b : ℝ) (hb : 1≤b) (hu : s.upper≤b
     (fun i (_:i∈Finset.univ)=>hpoint i)
   calc
     slotControl s.toData=mass s*(∏i,max 1 (128*max 0 (s.hi i)*s.M i)):=rfl
-    _≤mass s*(∏i,(128*b)*s.M i):=mul_le_mul_of_nonneg_left hp (mass_nonneg s)
+    _≤ mass s*(∏i,(128*b)*s.M i):=mul_le_mul_of_nonneg_left hp (mass_nonneg s)
     _=(128*b)^Fintype.card ι*mass s^2:=by
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ]
       unfold mass
@@ -86,7 +87,7 @@ lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
   have hs : slotControl s.toData≤(128*b)^N*mass s^2 :=
     (slot_control_bound s b hb hu).trans
       (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ h128 hc) (sq_nonneg _))
-  have hf : frozenProfile s≤mass s*b^N :=
+  have hf :=
     mul_le_mul_of_nonneg_left hp (mass_nonneg s)
   have h:=mul_le_mul (pow_le_pow_left₀ (slotControl_nonneg _) hs 2)
     (pow_le_pow_left₀ (frozenProfile_nonneg s) hf 2) (sq_nonneg _) (sq_nonneg _)
@@ -122,8 +123,8 @@ lemma exceptional_factor_bound {wlo whi : ℝ}
   have hh:=mul_le_mul_of_nonneg_left h hF
   convert hh using 1 <;> simp only [profileFactor,exceptionalConstant,F] <;> ring
 
-end SevenEighths.CenteredMomentFirstChildProfileControl
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.HighKernelGeometry
 
 @[expose] public section
@@ -8,78 +9,78 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
 
 namespace CubicEisenstein
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups
 
 section
-open CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 instance complexSLTopology : TopologicalSpace (SL(2,ℂ)) :=
   inferInstanceAs (TopologicalSpace {A : Matrix (Fin 2) (Fin 2) ℂ // A.det=1})
@@ -91,9 +92,7 @@ lemma continuous_complexSL_coe :
 lemma continuous_complexSL_mul (g : SL(2,ℂ)) :
     Continuous (fun h : SL(2,ℂ) => g*h) := by
   apply Continuous.subtype_mk
-  change Continuous (fun h : SL(2,ℂ) =>
-    (g : Matrix (Fin 2) (Fin 2) ℂ)*(h : Matrix (Fin 2) (Fin 2) ℂ))
-  exact continuous_const.mul continuous_complexSL_coe
+  fun_prop
 
 lemma continuous_coordinateSection : Continuous coordinateSection := by
   apply Continuous.subtype_mk
@@ -125,7 +124,11 @@ lemma continuous_translatedUpperCoordinates (g : SL(2,ℂ)) :
   exact continuous_hyperbolicProjection.comp
     ((continuous_complexSL_mul g).comp continuous_coordinateSection)
 
-def integralOrbitRel (H : Subgroup (SL(2,O))) : Setoid HyperbolicSpace where
+section
+variable (H : Subgroup (SL(2,O)))
+include H
+
+def integralOrbitRel  : Setoid HyperbolicSpace where
   r w w' := ∃h : H, integralComplexMatrix (h:SL(2,O)) • w = w'
   iseqv := ⟨by intro w; exact ⟨1,by simp⟩,
     by
@@ -138,24 +141,26 @@ def integralOrbitRel (H : Subgroup (SL(2,O))) : Setoid HyperbolicSpace where
       refine ⟨k*h,?_⟩
       simpa only [Subgroup.coe_mul,map_mul,mul_smul,hh] using hk⟩
 
-abbrev IntegralOrbitQuotient (H : Subgroup (SL(2,O))) := Quotient (integralOrbitRel H)
+abbrev IntegralOrbitQuotient  := Quotient (integralOrbitRel H)
 
-def integralOrbitProjection (H : Subgroup (SL(2,O))) :
+def integralOrbitProjection  :
     HyperbolicSpace → IntegralOrbitQuotient H := Quotient.mk _
 
-lemma continuous_integralOrbitProjection (H : Subgroup (SL(2,O))) :
+lemma continuous_integralOrbitProjection  :
     Continuous (integralOrbitProjection H) := continuous_quotient_mk'
 
-lemma integralOrbitProjection_eq (H : Subgroup (SL(2,O))) (h : H) (w : HyperbolicSpace) :
+lemma integralOrbitProjection_eq  (h : H) (w : HyperbolicSpace) :
     integralOrbitProjection H (integralComplexMatrix (h:SL(2,O)) • w)=
       integralOrbitProjection H w := by
   apply Eq.symm
   exact Quotient.sound ⟨h,rfl⟩
+end
+
 
 end
 
-open CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 def truncatedFordLift (T : ℝ) (p : truncatedFordBox T) : UpperCoordinates :=
   ⟨p.1,lt_of_lt_of_le (Real.sqrt_pos.mpr (by norm_num : (0:ℝ)<2/3)) p.2.2.1⟩
@@ -163,33 +168,49 @@ def truncatedFordLift (T : ℝ) (p : truncatedFordBox T) : UpperCoordinates :=
 lemma continuous_truncatedFordLift (T : ℝ) : Continuous (truncatedFordLift T) :=
   continuous_subtype_val.subtype_mk _
 
-def fordOrbitChart (H : Subgroup (SL(2,O))) (r : SL(2,O)) (p : UpperCoordinates) :
+section
+variable (H : Subgroup (SL(2,O)))
+include H
+
+section
+variable (r : SL(2,O))
+include r
+
+def fordOrbitChart  (p : UpperCoordinates) :
     IntegralOrbitQuotient H := integralOrbitProjection H
       (integralComplexMatrix r⁻¹ • upperPoint p.1.1 p.1.2 p.2)
 
-lemma continuous_fordOrbitChart (H : Subgroup (SL(2,O))) (r : SL(2,O)) :
+lemma continuous_fordOrbitChart  :
     Continuous (fordOrbitChart H r) :=
   (continuous_integralOrbitProjection H).comp
     (continuous_translatedUpperCoordinates (integralComplexMatrix r⁻¹))
+end
 
-def compactFordCore (H : Subgroup (SL(2,O))) (S : Finset (SL(2,O))) (T : ℝ) :
+
+section
+variable (S : Finset (SL(2,O))) (T : ℝ)
+include S T
+
+def compactFordCore  :
     Set (IntegralOrbitQuotient H) :=
   ⋃r∈S, Set.range (fun p : truncatedFordBox T => fordOrbitChart H r (truncatedFordLift T p))
 
-lemma compactFordCore_isCompact (H : Subgroup (SL(2,O))) (S : Finset (SL(2,O))) (T : ℝ) :
+lemma compactFordCore_isCompact  :
     IsCompact (compactFordCore H S T) := by
   let : CompactSpace (truncatedFordBox T) :=
     isCompact_iff_compactSpace.mp (truncatedFordBox_isCompact T)
   apply S.isCompact_biUnion
   intro r hr
   exact isCompact_range ((continuous_fordOrbitChart H r).comp (continuous_truncatedFordLift T))
+end
 
-def fordCuspTail (H : Subgroup (SL(2,O))) (r : SL(2,O)) (T : ℝ) :
+
+def fordCuspTail  (r : SL(2,O)) (T : ℝ) :
     Set (IntegralOrbitQuotient H) :=
   fordOrbitChart H r '' {p : UpperCoordinates | Complex.normSq p.1.1≤1/3 ∧
     Real.sqrt (2/3)≤p.1.2 ∧ T<p.1.2}
 
-theorem finiteIndex_compact_core_cusp_cover (H : Subgroup (SL(2,O))) [H.FiniteIndex] :
+theorem finiteIndex_compact_core_cusp_cover  [H.FiniteIndex] :
     ∃S : Finset (SL(2,O)), ∀T : ℝ,
       IsCompact (compactFordCore H S T) ∧
       Set.univ=compactFordCore H S T ∪ ⋃r∈S, fordCuspTail H r T := by
@@ -214,6 +235,8 @@ theorem finiteIndex_compact_core_cusp_cover (H : Subgroup (SL(2,O))) [H.FiniteIn
         refine ⟨r,Set.mem_iUnion.mpr ⟨hr,?_⟩⟩
         exact ⟨⟨(z,v),hv⟩,⟨hz,hfloor,lt_of_not_ge hT⟩,rfl⟩
   · exact Set.subset_univ _
+end
+
 
 theorem globalKubotaKernel_compact_core_cusp_cover :
     ∃S : Finset (SL(2,O)), ∀T : ℝ,
@@ -258,31 +281,16 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm primeProduct jLabel b0Label cubeActiveSupport)
-open ConcreteTraceCRT (eisEmbedding)
 
-namespace CubeCoordinates
-end CubeCoordinates
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection10Initial
 public import GafniTao.WooleySection10Terminal
 public import GafniTao.WooleyIterationArithmetic
@@ -15,7 +16,7 @@ are exposed until the single scale-absorption hypothesis used in the source.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The lower/iterated/terminal estimates force equation (10.10). -/
 theorem wooley_section10_force_final_bound
@@ -75,11 +76,7 @@ theorem wooley_section10_force_final_bound
         (p : ℝ) ^
           (-((N : ℝ) * theta) * Lambda / (2 * (k : ℝ))) := by
     apply Real.rpow_le_rpow_of_exponent_le hbase
-    have hkR : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
-    have := mul_le_mul_of_nonneg_right hE hLambda.le
-    have hdenK : 0 < (2 : ℝ) * k := mul_pos (by norm_num) hkR
-    rw [div_le_div_iff₀ hdenK hdenK]
-    nlinarith
+    bound
   have hupper : K0 ≤
       D ^ N * max 1 Cterm * (p : ℝ) ^ ((H : ℝ) * epsilon) *
         (p : ℝ) ^
@@ -105,7 +102,6 @@ theorem wooley_section10_force_final_bound
             (-((N : ℝ) * theta) * Lambda / (2 * (k : ℝ))) := by
     have hchain := hinitial.trans hupper
     have hC0nonneg : 0 ≤ C0 := hC0.le
-    have hrest0 : 0 ≤ D ^ N * max 1 Cterm := by positivity
     have hmul := mul_le_mul_of_nonneg_left hchain hC0nonneg
     have hcancel : C0 * (C0⁻¹ * (p : ℝ) ^
           (-((H : ℝ) * epsilon) - (s : ℝ) * theta)) =
@@ -153,7 +149,6 @@ theorem wooley_section10_force_final_bound
           symm
           exact Real.rpow_natCast p theta
         rw [hthetaPow, ← Real.rpow_add hpPos, ← Real.rpow_add hpPos]
-        congr 1
         ring
   have hthetaR : (0 : ℝ) < theta := by exact_mod_cast htheta
   have hraw :
@@ -170,6 +165,6 @@ theorem wooley_section10_force_final_bound
   have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
   linarith
 
-end
 
-end GafniTao
+
+

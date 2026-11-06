@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Tactic.NormNum
@@ -36,9 +37,7 @@ theorem primeSlot_priority (L A B : Finset ι) (a : ι → ℂ) :
     primeSlot L a (A ∪ B) = primeSlot L a A + primeSlot L a (B \ A) := by
   unfold primeSlot
   rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro p hp
-  by_cases hA : p ∈ A <;> by_cases hB : p ∈ B <;> simp [hA, hB]
+  grind
 
 theorem primeMark_priority (I : Finset σ) (L : σ → Finset ι)
     (a : σ → ι → ℂ) (A B : Finset ι) :
@@ -52,9 +51,7 @@ theorem primeSlot_residual_list (L A B : Finset ι) (a : ι → ℂ) :
     primeSlot L a (B \ A) = primeSlot (L \ A) a B := by
   simp only [primeSlot, Finset.sum_ite_mem]
   congr 1
-  ext p
-  simp only [Finset.mem_inter, Finset.mem_sdiff]
-  tauto
+  grind
 
 omit [DecidableEq σ] in
 theorem primeMark_residual_lists (I : Finset σ) (L : σ → Finset ι)
@@ -87,9 +84,7 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
   have hcard : (∑ i ∈ I, (L i ∩ A).card) ≤ A.card := by
     rw [← Finset.card_biUnion hdis]
     apply Finset.card_le_card
-    intro p hp
-    obtain ⟨i, hi, hp⟩ := Finset.mem_biUnion.mp hp
-    exact (Finset.mem_inter.mp hp).2
+    simp
   calc
     ‖primeMark I L a A‖ = ∏ i ∈ I, ‖primeSlot (L i) (a i) A‖ := by
       exact norm_prod _ _
@@ -104,8 +99,8 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
       Finset.prod_pow_eq_pow_sum _ _ _
     _ ≤ (2 : ℝ) ^ A.card := pow_le_pow_right₀ (by norm_num) hcard
 
-end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import LaterPairs.Native.HuxleyCore
 public import LaterPairs.NativeSharpRow6
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace TaoTrudgianYang2025
 open Expdb
 
@@ -85,14 +85,12 @@ theorem exponentPair_BTTY1 : ExponentPair (178/641) (365/641) := by
 end TaoTrudgianYang2025
 
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger MathCollab.Density
+open MathCollab.Density
 
 /-- Full closed later row7 for actual symmetric zeros with analytic multiplicity. -/
 theorem density_sharp_row7 {σ ε : ℝ}
     (hlo : 6482825/7570038 ≤ σ) (hhi : σ ≤ 2905/3354) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ T : ℝ,2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤
-        C*T^(16504356*(1-σ)/(20732766*σ-7623595)+ε) := by
+    MathCollab.Density.ZetaBound σ ((16504356*(1-σ)/(20732766*σ-7623595)+ε)) := by
   obtain ⟨hf,hs⟩ := sharp_row7_tail_budgets hlo hhi
   simpa only [sharp_row7_density_exponent] using
     density_of_pair_sharp_window TaoTrudgianYang2025.exponentPair_BTTY2
@@ -102,11 +100,10 @@ theorem density_sharp_row7 {σ ε : ℝ}
 /-- Full closed later row8 for actual symmetric zeros with analytic multiplicity. -/
 theorem density_sharp_row8 {σ ε : ℝ}
     (hlo : 2905/3354 ≤ σ) (hhi : σ ≤ 7/8) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ T : ℝ,2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(2172*(1-σ)/(2742*σ-1015)+ε) := by
+    MathCollab.Density.ZetaBound σ ((2172*(1-σ)/(2742*σ-1015)+ε)) := by
   obtain ⟨hf,hs⟩ := sharp_row8_tail_budgets hlo hhi
   simpa only [sharp_row8_density_exponent] using
     density_of_pair_sharp_window TaoTrudgianYang2025.exponentPair_BTTY1
       (by norm_num) (physicalDetectorWindow_row8 hlo hhi)
       (sharpCountWindow_row8 hlo hhi) hf hs hε
-end Montgomery.RationalMoment.RightDetector.Physical
+

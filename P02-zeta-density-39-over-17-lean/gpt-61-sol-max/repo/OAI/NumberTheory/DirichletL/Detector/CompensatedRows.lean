@@ -11,7 +11,7 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : MeasurableSpace FreeRow := ⊤
@@ -27,8 +27,12 @@ def compensatedRowOnLines {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
       indexedCompensatedHigh η S p u.val ((3:ℂ)+t.1.1*Complex.I)
         ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I))
 
-lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
+section
+variable {ρ : Type*} [Countable ρ]
     [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
+include ρ
+
+lemma compensatedRows_counting_product_integrable 
     (e : ρ→NonzeroFrequency) (he : Function.Injective e)
     {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData)
     (p : Fin K→O) (hp : ∀i,p i≠0) (W0 W1 : SchwartzMap ℝ ℂ)
@@ -63,8 +67,7 @@ lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     (star (C.residueMonoid (e q.1).val)*frequencyWeight ((2:ℂ)+q.2.1.2*Complex.I) (e q.1))
     W0 W1 X Y Z hX hY hZ _ _ _
 
-lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]
-    [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
+lemma counting_product_integral_tsum 
     (F : ρ×HeightSpace→ℂ)
     (hF : Integrable F ((Measure.count:Measure ρ).prod heightMeasure)) :
     (∫t,∑'r,F (r,t) ∂heightMeasure)=∑'r,∫t,F (r,t) ∂heightMeasure := by
@@ -75,6 +78,8 @@ lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]
       exact (integral_count_eq_tsum _ ht).symm
     _ = ∫q,F q ∂((Measure.count:Measure ρ).prod heightMeasure) := (integral_prod_symm F hF).symm
     _ = _ := by rw [integral_prod F hF,integral_count_eq_tsum _ hF.integral_prod_left]
+end
+
 
 theorem compensatedRowTripleIntegral_eq_tsum {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (C : CalibrationData) (p : Fin K→O) (hp : ∀i,p i≠0)
@@ -98,7 +103,7 @@ theorem compensatedRowTripleIntegral_eq_tsum {K : ℕ} (η : HeckeFamily.Charact
   dsimp only
   simp only [compensatedRowOnLines,e,tsum_mul_left,mul_assoc]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentFirstLiveCaps
 open InverseMoment InverseMomentFirstOriginalProfile ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*}[DecidableEq ι]
     (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -72,8 +72,8 @@ theorem original_live_norm_caps
   · exact hactive
   · exact hfreqnorm
 
-end SevenEighths.InverseMomentFirstLiveCaps
 
-end
 
-end OAI
+
+
+

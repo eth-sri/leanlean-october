@@ -12,12 +12,16 @@ namespace SevenEighths.CenteredMomentHeckeTwist
 open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
 open CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def twistedIdealSum (χ : Character) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
+section
+variable (χ : Character) (W : ℝ → ℂ)
+include χ W
+
+def twistedIdealSum  (t X : ℝ) : ℂ :=
   ∑' I : Ideal O, idealCoeff χ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)*W ((Ideal.absNorm I:ℝ)/X)
 
-theorem idealSum_absolute (χ : Character) (W : ℝ → ℂ) (b M X : ℝ)
+theorem idealSum_absolute  (b M X : ℝ)
     (hb : 0 ≤ b) (hM : 0 ≤ M) (hX : 0 < X)
     (hW : ∀ y, ‖W y‖ ≤ M) (hs : Function.support W ⊆ Set.Iic b) :
     ‖idealSum χ W X‖ ≤ (128*b*M)*X := by
@@ -28,7 +32,7 @@ theorem idealSum_absolute (χ : Character) (W : ℝ → ℂ) (b M X : ℝ)
   change ‖idealSum χ W X‖ ≤ _ at h
   convert h using 1 ; ring
 
-theorem twistedIdealSum_scale (χ : Character) (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+theorem twistedIdealSum_scale  (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (t X : ℝ) (hX : 0 < X) :
     twistedIdealSum χ W t X = (X : ℂ) ^ (Complex.I * t) *
@@ -48,6 +52,8 @@ theorem twistedIdealSum_scale (χ : Character) (W : ℝ → ℂ) (a b : ℝ) (ha
     exact h
   rw [hphase]
   ring
+end
+
 
 theorem twistedIdealSum_volume (η χ ψ : Character) (Q : Ideal O) (hQ : Q ≠ 0)
     (hQψ : Q ≤ ψ.modulus) (hind : CenteredExceptionalProfile.InducedBy χ ψ)
@@ -81,11 +87,15 @@ theorem twistedIdealSum_absolute (χ : Character) (W : ℝ → ℂ) (a b M : ℝ
     (fun y => (normPowerProfile_norm W a b ha hs hW t y).trans_le (hbound y))
     ((normPowerProfile_support W a b ha hs hW t).trans (fun _ hx => (hs hx).2))
 
-theorem twisted_actual_volumeCoefficient_norm_le (η χ ψ : Character) (Q : Ideal O) (hQ : Q ≠ 0)
+section
+variable (η χ ψ : Character) (Q : Ideal O) (hQ : Q ≠ 0)
     (hQψ : Q ≤ ψ.modulus) (hind : CenteredExceptionalProfile.InducedBy χ ψ)
     (m A₀ z : O) (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m)
     (hrow : ∀ n, elementCoeff χ n=CanonicalRowCompletion.rowTwist
-      (HeckeRowClosure.elementHom η) m 1 (A₀*z) n) (W : ℝ → ℂ) (a b M : ℝ)
+      (HeckeRowClosure.elementHom η) m 1 (A₀*z) n)
+include η χ ψ Q hQ hQψ hind m A₀ z hmLam hm2 hrow
+
+theorem twisted_actual_volumeCoefficient_norm_le  (W : ℝ → ℂ) (a b M : ℝ)
     (ha : 0 < a) (hb : 0 ≤ b) (hM : 0 ≤ M)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (hbound : ∀ y, ‖W y‖ ≤ M) (t : ℝ) :
@@ -101,11 +111,7 @@ theorem twisted_actual_volumeCoefficient_norm_le (η χ ψ : Character) (Q : Ide
       (fun y => (normPowerProfile_norm W a b ha hs hW t y).trans_le (hbound y)) hV)
 
 theorem actual_twisted_rectangle_saving
-    (η χ ψ : Character) (Q : Ideal O) (hQ : Q ≠ 0)
-    (hQψ : Q ≤ ψ.modulus) (hind : CenteredExceptionalProfile.InducedBy χ ψ)
-    (m A₀ z : O) (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m)
-    (hrow : ∀ n, elementCoeff χ n=CanonicalRowCompletion.rowTwist
-      (HeckeRowClosure.elementHom η) m 1 (A₀*z) n) (W₁ W₂ : ℝ → ℂ) (a₁ b₁ a₂ b₂ M₁ M₂ : ℝ)
+     (W₁ W₂ : ℝ → ℂ) (a₁ b₁ a₂ b₂ M₁ M₂ : ℝ)
     (ha₁ : 0 < a₁) (ha₂ : 0 < a₂) (hb₁ : 0 ≤ b₁) (hb₂ : 0 ≤ b₂)
     (hM₁ : 0 ≤ M₁) (hM₂ : 0 ≤ M₂)
     (hs₁ : Function.support W₁ ⊆ Set.Icc a₁ b₁)
@@ -164,9 +170,11 @@ theorem actual_twisted_rectangle_saving
     X₁ X₂ Y₁ Y₂ T L C E hmain hC hE (he₁ X₁ hX₁) (he₂ X₂ hX₂)
     (he₁ Y₁ hY₁) (he₂ Y₂ hY₂) (habs₂ X₂ hX₂) (hmain₁ X₁ hX₁)
     (habs₂ Y₂ hY₂) (hmain₁ Y₁ hY₁) hL hX₁ hX₂ hY₁ hY₂ hprodX hprodY
-
-end SevenEighths.CenteredMomentHeckeTwist
-
 end
 
-end OAI
+
+
+
+
+
+

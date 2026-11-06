@@ -3,19 +3,22 @@ public import RationalDyadicShortRange
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem adjacent_rpow_nat {x : ℝ} (hx : 0 ≤ x) (a : ℝ) (n : ℕ) :
     (x^a)^n = x^(a*(n:ℝ)) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hx]
 
+section
+variable {U T H R : ℝ}
+    (hU : 0 ≤ U) (hT : 0 ≤ T) (hH : 0 ≤ H) (hR : 0 ≤ R)
+include U T H R hU hT hH hR
+
 /-- Exact scalar interpolation of moments two and three. The hypotheses
 are scalar inequalities; this lemma alone is not a zero-density theorem. -/
-theorem adjacent_two_three {U T H R : ℝ}
-    (hU : 0 ≤ U) (hT : 0 ≤ T) (hH : 0 ≤ H) (hR : 0 ≤ R)
+theorem adjacent_two_three 
     (h2 : U^2 ≤ 2*T*R^3) (h3 : U^3 ≤ 2*H^6*R^5) :
     U ≤ 2*H*T^((1:ℝ)/4)*R^((19:ℝ)/12) := by
   have hprod := mul_le_mul
@@ -33,8 +36,7 @@ theorem adjacent_two_three {U T H R : ℝ}
 
 /-- Exact scalar interpolation of moments three and four, keeping the
 cardinality condition needed to compare it with the k=2 envelope. -/
-theorem adjacent_three_four {U T H R : ℝ}
-    (hU : 0 ≤ U) (hT : 0 ≤ T) (hH : 0 ≤ H) (hR : 0 ≤ R)
+theorem adjacent_three_four 
     (hRT : R^3 ≤ T^2)
     (h3 : U^3 ≤ 2*T*R^5) (h4 : U^4 ≤ 2*H^8*R^7) :
     U ≤ 2*H*T^((1:ℝ)/4)*R^((19:ℝ)/12) := by
@@ -59,8 +61,7 @@ theorem adjacent_three_four {U T H R : ℝ}
 
 /-- A finite three-moment envelope, on the precise range where the fourth
 moment dominates its time term. No analytic estimate is asserted here. -/
-theorem adjacent_moment_envelope {U T H R : ℝ}
-    (hU : 0 ≤ U) (hT : 0 ≤ T) (hH : 0 ≤ H) (hR : 0 ≤ R)
+theorem adjacent_moment_envelope 
     (h8 : T ≤ H^8) (hRT : R^3 ≤ T^2)
     (h2 : U^2 ≤ (T+H^4)*R^3)
     (h3 : U^3 ≤ (T+H^6)*R^5)
@@ -89,5 +90,7 @@ theorem adjacent_moment_envelope {U T H R : ℝ}
       exact hu.trans (by
         have hh : 0 ≤ H^2*R^((3:ℝ)/2) := by positivity
         nlinarith)
+end
 
-end Montgomery.RationalMoment
+
+

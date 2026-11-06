@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentConjugateWindow
@@ -24,8 +24,8 @@ theorem star_columnPhase (V : ℝ → ℂ) (u t : ℝ) :
   congr 1
   simp only [rootWindow,Complex.star_def,map_div₀,Complex.conj_ofReal]
 
-end SevenEighths.CenteredMomentConjugateWindow
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyTranslatedNormalChange
 
 @[expose] public section
@@ -85,15 +86,10 @@ theorem wooleySection7NormalSystem_eval_dilation
         (p : ℤ) ^ (h * ((i : ℕ) + 1)) *
           ((p : ℤ) ^ (c + h) *
             ((p : ℤ) ^ (h * (k - ((i : ℕ) + 1))) *
-              y ^ (k + 1) * (psi i).eval ((p : ℤ) ^ h * y))) := by
-    calc
-      _ = ((p : ℤ) ^ c * (p : ℤ) ^ (h * (k + 1))) *
-          (y ^ (k + 1) * (psi i).eval ((p : ℤ) ^ h * y)) := by ring
-      _ = _ := by rw [hpow]; ring
-  rw [htail]
-  ring
+              y ^ (k + 1) * (psi i).eval ((p : ℤ) ^ h * y))) := by grind
+  grind
 
 
-end
 
-end GafniTao
+
+

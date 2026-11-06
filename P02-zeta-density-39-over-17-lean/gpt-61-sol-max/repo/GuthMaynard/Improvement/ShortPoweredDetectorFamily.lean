@@ -3,9 +3,8 @@ public import GuthMaynard.Improvement.ShortDetectorPowerScales
 
 @[expose] public section
 
-open Real Complex Set Filter MathCollab.Density
+open Real Complex Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxRecDepth 2000
 noncomputable section
 namespace GuthMaynard.Improvement
@@ -71,4 +70,4 @@ theorem shortPoweredDetectorFamily_coefficients {η : ℝ} (hη : 0 < η) :
     exact_mod_cast (Finset.mem_Ioc.mp hn).2
   exact hT (2^p.1.1) p.1.2 p.2.1 n (by positivity) hk (hn'.trans hscale)
 
-end GuthMaynard.Improvement
+

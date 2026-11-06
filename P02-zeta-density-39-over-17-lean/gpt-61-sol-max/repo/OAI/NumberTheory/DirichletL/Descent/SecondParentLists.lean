@@ -8,9 +8,9 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -48,7 +48,7 @@ theorem actual_parent_deleted_prime_killed {Jo Jn : ℕ}
     exact Ideal.mul_mem_right _ _ (Ideal.mul_mem_right _ _
       (Ideal.mul_mem_right _ _ (Ideal.mul_mem_left _ _ hq)))
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

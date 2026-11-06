@@ -12,27 +12,25 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def physicalDyadNorm {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+section
+variable {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) : ℝ :=
+    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
+include K S hS hmax η R T hT W Y
+
+def physicalDyadNorm  (x w z : ℂ) : ℝ :=
   ∑u∈R,∑P:(∀i,T i),‖frequencyWeight z ⟨u.val,u.property.1⟩*
     calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
       (fun i=>hT i (P i).val (P i).property) W Y x w z‖
 
-lemma physicalDyadNorm_nonneg {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) :
+lemma physicalDyadNorm_nonneg  (x w z : ℂ) :
     0≤physicalDyadNorm S hS hmax η R T hT W Y x w z := by
   exact Finset.sum_nonneg fun u hu=>Finset.sum_nonneg fun P hP=>norm_nonneg _
 
-lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
+lemma physicalDyadNorm_onLines_aestronglyMeasurable 
     (σ υ r : ℝ) : AEStronglyMeasurable (fun p : HeightSpace=>physicalDyadNorm S hS hmax η R T hT W Y
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure := by
   unfold physicalDyadNorm
@@ -46,6 +44,8 @@ lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
           (((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-r)))) using 1
   ext p
   simp only [Finset.sum_apply]
+end
+
 
 theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
@@ -97,7 +97,7 @@ theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
   dsimp [A]
   ring
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

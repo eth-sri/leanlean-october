@@ -5,21 +5,24 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ContinuousThirdDerivative
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                       
 
-noncomputable section
+
 open Set GafniTao
 namespace TaoTrudgianYang2025
 
-theorem continuous_second_derivative_range_bound
-    (F F' F'' : ℝ → ℝ) (A : ℝ) (N : ℕ) {C α : ℝ}
+section
+variable (F F' F'' : ℝ → ℝ) (A : ℝ) (N : ℕ) {C α : ℝ}
     (hC : 0 ≤ C) (hα : 0 < α) (hα1 : α ≤ 1)
     (hF : ∀ x ∈ Icc A (A+N), HasDerivAt F (F' x) x)
     (hF' : ∀ x ∈ Icc A (A+N), HasDerivAt F' (F'' x) x)
+include F F' F'' A N C α hC hα hα1 hF hF'
+
+theorem continuous_second_derivative_range_bound
+    
     (hlo : ∀ x ∈ Icc A (A+N), α ≤ F'' x)
     (hhi : ∀ x ∈ Icc A (A+N), F'' x ≤ C*α) :
     ‖∑ n ∈ Finset.range N, fordAdditiveCharacter (F (A+n))‖ ≤
@@ -43,10 +46,7 @@ theorem continuous_second_derivative_range_bound
       nlinarith
 
 theorem continuous_second_derivative_negative_range_bound
-    (F F' F'' : ℝ → ℝ) (A : ℝ) (N : ℕ) {C α : ℝ}
-    (hC : 0 ≤ C) (hα : 0 < α) (hα1 : α ≤ 1)
-    (hF : ∀ x ∈ Icc A (A+N), HasDerivAt F (F' x) x)
-    (hF' : ∀ x ∈ Icc A (A+N), HasDerivAt F' (F'' x) x)
+    
     (hlo : ∀ x ∈ Icc A (A+N), -(C*α) ≤ F'' x)
     (hhi : ∀ x ∈ Icc A (A+N), F'' x ≤ -α) :
     ‖∑ n ∈ Finset.range N, fordAdditiveCharacter (F (A+n))‖ ≤
@@ -56,5 +56,7 @@ theorem continuous_second_derivative_negative_range_bound
     (fun x hx => (hF x hx).neg) (fun x hx => (hF' x hx).neg)
     (fun x hx => by linarith [hhi x hx]) (fun x hx => by linarith [hlo x hx])
   rwa [norm_sum_fordAdditiveCharacter_neg_phase] at hb
+end
 
-end TaoTrudgianYang2025
+
+

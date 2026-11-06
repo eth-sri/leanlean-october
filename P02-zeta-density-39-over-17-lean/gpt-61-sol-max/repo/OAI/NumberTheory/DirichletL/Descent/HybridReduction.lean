@@ -9,8 +9,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem finite_inverse_cubic_energy
     (Jset Pset : Finset (Ideal Eis)) (N L : ℝ)
@@ -45,7 +45,11 @@ theorem finite_inverse_cubic_energy
     Finset.sum_coe_sort Pset (fun P => ‖a P‖ ^ 2)] at he'
   exact he'
 
-theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+theorem hybrid_quadratic_reduction  :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
     ∀ (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
@@ -83,7 +87,7 @@ theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
       positivity
     _ = _ := by rw [← Finset.mul_sum]; simp only [F]; ring
 
-theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
+theorem cubic_product_row_bound_of_sieve  :
     ∃ D : ℝ, 0 < D ∧ ∀ N : ℝ, 1 ≤ N →
     ∀ (pairs : Finset (Ideal Eis × Ideal Eis)) (Jset Pset : Finset (Ideal Eis))
       (mBad : Ideal Eis) (S : ℝ),
@@ -120,7 +124,7 @@ theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left (hcubic a) (by positivity)
     _ = _ := by ring
 
-theorem cubic_product_row_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem cubic_product_row_sieve_norm  :
     ∃ D : ℝ, 0 < D ∧ ∀ N L : ℝ, 1 ≤ N →
     ∀ (pairs : Finset (Ideal Eis × Ideal Eis)) (Jset Pset : Finset (Ideal Eis))
       (mBad : Ideal Eis),
@@ -137,7 +141,7 @@ theorem cubic_product_row_sieve_norm (ε : ℝ) (hε : 0 < ε) :
   exact hb N hN pairs Jset Pset mBad (CubicSieve.sieveNorm N L) hmap hJ
     (finite_inverse_cubic_energy Jset Pset N L hJ hP) a
 
-theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem hybrid_fixed_block_sieve_norm  :
     ∃ C : ℝ, 0 < C ∧ ∀ K X N L : ℝ, 1 ≤ K → 1 ≤ X → 1 ≤ N →
     ∀ (rows : Finset (Ideal Eis)) (pairs cubicPairs : Finset (Ideal Eis × Ideal Eis))
       (Hset Jset Pset : Finset (Ideal Eis)),
@@ -192,8 +196,10 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
     _ = _ := by
       rw [Real.mul_rpow (show 0 ≤ K * X by positivity) (show 0 ≤ N by linarith)]
       ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

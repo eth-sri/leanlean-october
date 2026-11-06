@@ -10,12 +10,12 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialRayAttachment
-open InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns
-open MeasureTheory FourierBridge JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open InverseInitialKernelBridge InverseInitialProfile
+open MeasureTheory JointLogSeparation
+open scoped EisensteinO
 
 @[ext] structure Point (ι : Type*) where
   common : Finset ι
@@ -30,13 +30,19 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,goodLambda∉Ideal.span {p i})
 
-def divisor (x : Point ι) : O := primeSubsetGenerator (fun i=>Ideal.span {p i}) x.divisor
+section
+variable (x : Point ι)
+include x
 
-def quotient (x : Point ι) : O := primaryGenerator (sourceIdeal p (x.common\x.divisor))
+def divisor  : O := primeSubsetGenerator (fun i=>Ideal.span {p i}) x.divisor
 
-def coordinates (x : Point ι) : Fin 6 → ℝ :=
+def quotient  : O := primaryGenerator (sourceIdeal p (x.common\x.divisor))
+
+def coordinates  : Fin 6 → ℝ :=
   physicalCoordinates (sourceIdeal p x.common) (sourceIdeal p x.divisor)
     (sourceIdeal p x.overlap) (sourceIdeal p x.left) (sourceIdeal p x.right) x.frequency
+end
+
 
 structure Valid (x : Point ι) : Prop where
   divisor_subset : x.divisor⊆x.common
@@ -150,8 +156,12 @@ def physicalTerm (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
       (sourceIdeal p (x.overlap∪x.left)) (sourceIdeal p (x.overlap∪x.right)) x.frequency)
 
 include hp hcop hg in
-theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
+section
+variable (hpr : ∀ i,goodLambda^2∣p i-1)
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
+include hpr Ψ j σ
+
+theorem physicalTerm_extracted 
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ)
     (x : Point ι) (hx : Valid x) (ρ : SecondRayIndex) :
     physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ =
@@ -167,11 +177,12 @@ theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
   simp only [canonicalColumn,mul_one,star_mul,outerCoefficient,coordinates]
   ring
 
-def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
-    (σ : Finset ι→ℂ) (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
+def barePair  (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
   outerCoefficient p hp hcop hg Ψ j x ρ *
     star (canonicalColumn p hp hcop hg hpr (secondRayMinus Ψ ρ) j σ x x.frequency (fun _=>1) x.left) *
     canonicalColumn p hp hcop hg hpr (secondRayPlus Ψ ρ) j σ x (-x.frequency) (fun _=>1) x.right
+end
+
 
 def columnRatio (N : Finset ι) (Z D B v : ℝ) : ℝ :=
   (Ideal.absNorm (sourceIdeal p N):ℝ)/Z^(columnCenter D B v)
@@ -190,9 +201,13 @@ theorem columnRatio_actual (N : Finset ι) (Z D B v : ℝ) :
   unfold columnRatio sourceIdeal primeProductNorm
   rw [←eisEmbedding_norm_sq_eq_absNorm_span]
 
-def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+section
+variable (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
     (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
-    (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ)) : ℂ :=
+    (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ))
+include hpr Ψ j σ ω₁ ω₂ Z D B v θ H x ρ z
+
+def canonicalPairMode  : ℂ :=
   let height :=  profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
   outerCoefficient p hp hcop hg Ψ j x ρ *
     secondOuterPhase height (relativeLog (coordinates p x) Z D B v θ H) *
@@ -201,9 +216,7 @@ def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : 
     canonicalColumn p hp hcop hg hpr (secondRayPlus Ψ ρ) j σ x (-x.frequency)
       (fun A=>childLogTest ω₂ (height 5) (columnRatio p A Z D B v)) x.right
 
-theorem canonical_pair_mode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
-    (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
-    (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ)) :
+theorem canonical_pair_mode  :
     barePair p hp hcop hg hpr Ψ j σ x ρ *
       (star (ω₁ (columnRatio p x.left Z D B v))*ω₂ (columnRatio p x.right Z D B v)) *
       pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope
@@ -214,6 +227,8 @@ theorem canonical_pair_mode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ)
     star_mul,SecondPassIntegration.logPhase_conjugate,neg_neg,relativeLog,
     relative_column_left,relative_column_right,mul_one]
   ring
+end
+
 
 theorem family_density_finite_sum {κ : Type*} (s : Finset κ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ)) (c₁ c₂ θ₁ θ₂ L : ℝ)
@@ -238,13 +253,17 @@ def physicalBlock (source : Finset (Point ι)) (w : Point ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) : ℂ :=
   ∑ x∈source,∑ ρ : SecondRayIndex,w x*physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ
 
-def canonicalBlock (hpr : ∀ i,goodLambda^2∣p i-1)
+section
+variable (hpr : ∀ i,goodLambda^2∣p i-1)
+include hpr
+
+def canonicalBlock 
     (source : Finset (Point ι)) (w : Point ι→ℂ) (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ) (z : Frequency × (Fin 6→ℝ)) : ℂ :=
   ∑ x∈source,∑ ρ : SecondRayIndex,w x*canonicalPairMode p hp hcop hg hpr Ψ j σ ω₁ ω₂ Z D B v θ H x ρ z
 
 theorem physicalBlock_integral
-    (hpr : ∀ i,goodLambda^2∣p i-1)
+    
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 6→ℝ→ℂ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (Z D B v m θ H η c₁ c₂ θ₁ θ₂ : ℝ)
@@ -303,6 +322,8 @@ theorem physicalBlock_integral
   apply Finset.sum_congr rfl
   intro ρ hρ
   rw [mul_assoc (w x),mul_assoc (w x),canonical_pair_mode]
+end
+
 
 theorem original_ray_common_insertion
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -339,10 +360,10 @@ def BlockSupport (source : Finset (Point ι)) (W₁ W₂ ω₁ ω₂ : ℝ→ℂ
   (∀ x∈source,star (ω₁ (columnRatio p x.left Z D B v))≠0 →
     ω₂ (columnRatio p x.right Z D B v)≠0 → ∀ i,V i (relativeLog (coordinates p x) Z D B v θ H i)=1)
 
-open InverseInitialOverlap InverseInitialPoissonBridge CanonicalQuadraticSieve
 
-end SevenEighths.InverseInitialPhysicalMeasure
 
-end
 
-end OAI
+
+
+
+

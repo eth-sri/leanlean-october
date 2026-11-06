@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import CompactSmoothingEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform Convolution
@@ -69,7 +69,7 @@ theorem energy_box_fourier_lower {ξ : ℝ} (hξ : |ξ| ≤ 1) :
   have hb (t : ℝ) (ht : t ∈ J) : ‖(32:ℂ)*(GuthMaynard.Improvement.phase (-ξ*t)-1)‖ ≤ 16 := by
     have ht0 : |t| ≤ 1/64 := abs_le.mpr ht
     have hp : |2*Real.pi*(-ξ*t)| ≤ 1/2 := by
-      simp only [abs_mul,abs_neg,abs_of_pos Real.pi_pos,abs_of_pos (by norm_num : (0:ℝ)<2)]
+      simp
       have hprod : |ξ| * |t| ≤ 1/64 := by
         nlinarith [mul_le_mul hξ ht0 (abs_nonneg t) (by norm_num : (0:ℝ) ≤ 1)]
       calc
@@ -80,8 +80,6 @@ theorem energy_box_fourier_lower {ξ : ℝ} (hξ : |ξ| ≤ 1) :
       have heq : Complex.exp (Complex.I*((2*Real.pi*(-ξ*t):ℝ):ℂ)) =
           GuthMaynard.Improvement.phase (-ξ*t) := by
         unfold GuthMaynard.Improvement.phase
-        congr 1
-        push_cast
         ring
       rw [heq,Real.norm_eq_abs] at hn
       exact hn.trans hp
@@ -106,7 +104,6 @@ theorem energy_pair_box_integrable : Integrable energyPairBox :=
 
 theorem energy_pair_box_bound (t : ℝ) : ‖energyPairBox t‖ ≤ 32 := by
   unfold energyPairBox
-  rw [convolution_def]
   calc
     _ ≤ ∫ x, ‖energyBox x*energyBox (t-x)‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ x, ‖energyBox x‖*32 := by
@@ -127,18 +124,12 @@ theorem energy_pair_box_support (t : ℝ) (ht : (1/32:ℝ) < |t|) : energyPairBo
     funext x
     by_cases hx : (1/64:ℝ) < |x|
     · simp [energy_box_support x hx]
-    · have hh : (1/64:ℝ) < |t-x| := by
-        have hab := abs_add_le x (t-x)
-        have hn : |x| ≤ 1/64 := le_of_not_gt hx
-        rw [add_sub_cancel] at hab
-        linarith
+    · have hh : (1/64:ℝ) < |t-x| := by grind
       simp [energy_box_support (t-x) hh]
-  change (∫ x, energyBox x*energyBox (t-x))=0
-  rw [he]
-  exact integral_zero ℝ ℂ
+  simp_all
 
 theorem energy_pair_box_fourier (ξ : ℝ) :
     𝓕 energyPairBox ξ=(𝓕 energyBox ξ)^2 := by
   rw [energyPairBox,Real.fourier_mul_convolution_eq energy_box_integrable energy_box_integrable,pow_two]
 
-end Montgomery.RationalMoment
+

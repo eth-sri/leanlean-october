@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroModePhysical
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
+open ActualEisensteinCubic
+open InverseMoment
 open InverseInitialRayAttachment
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
 theorem physical_marked_zero_bound (loss L b B:ℝ)(hloss:0<loss)(hL:0≤L)
@@ -56,8 +56,8 @@ theorem physical_marked_zero_bound (loss L b B:ℝ)(hloss:0<loss)(hL:0≤L)
     nlinarith
   linarith
 
-end SevenEighths.InverseInitialZeroMode
 
-end
 
-end OAI
+
+
+

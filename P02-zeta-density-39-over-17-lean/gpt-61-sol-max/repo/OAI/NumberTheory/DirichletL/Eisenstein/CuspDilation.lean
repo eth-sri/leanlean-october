@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.ArbitraryCuspPullback
 
 @[expose] public section
@@ -8,81 +9,81 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+                          
+                          
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
 def ramifiedTraceLambda : Eis := 1+2*omega
 
@@ -99,15 +100,15 @@ lemma primary_add_three (a r : Eis) (ha : lambda^2∣a-1) :
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
 def ninthCuspFrequency (h : Eis) : ℂ := cuspFrequency h/3
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open scoped EisensteinEis
 
 end CubicEisenstein
 
@@ -260,7 +261,7 @@ theorem cubicEisensteinResidue_orthogonal_of_rapid_cusp_decay
       ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/(cosetHeight r w)^3) :
     inner ℂ F cubicEisensteinResidue=0 := by
   obtain ⟨C,hC,hbound⟩ := smoothCuspSeedDefect_dilate_bound
-  let B : ℝ := (3/2)*(K*C)*(integralQuotientVolume globalKubotaKernel).real Set.univ
+  let B := (3/2)*(K*C)*(integralQuotientVolume globalKubotaKernel).real Set.univ
   have hB : 0≤B := by dsimp [B]; positivity
   have hb (A : ℝ) (hA : 1<A) : ‖inner ℂ F cubicEisensteinResidue‖≤B/A := by
     have he : cubicEisensteinResidue=
@@ -287,7 +288,6 @@ theorem cubicEisensteinResidue_orthogonal_of_rapid_cusp_decay
     dsimp [A]
     field_simp
 
-  rw [he] at hh
   linarith
 
 lemma coset_decay_of_cusp_chart_decay
@@ -330,7 +330,7 @@ namespace CubicKubota
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
     (hxy : IsCoprime x y) (hx : (3:Eis)∣x-A 0 0) (hy : (3:Eis)∣y-A 1 0) :
@@ -394,8 +394,8 @@ lemma cusp_completion_upper_factor (A N : SL(2,Eis)) (q g x y : Eis)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
+open scoped EisensteinEis
 
 private lemma bounded_power_factor (p a : Eis) (n : ℕ) :
     ∃ j≤n,∃b,a=p^j*b ∧ (j=n ∨ ¬p∣b) := by
@@ -457,8 +457,8 @@ lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
   · exact cusp_completion_upper_factor A N q (p^j) (p^3) (p^(3-j))
       hA hC (pow_ne_zero j hp.ne_zero) (by rw [←pow_add,Nat.add_sub_of_le hj])
 
-end CubicKubota
 
-end
 
-end OAI
+
+
+

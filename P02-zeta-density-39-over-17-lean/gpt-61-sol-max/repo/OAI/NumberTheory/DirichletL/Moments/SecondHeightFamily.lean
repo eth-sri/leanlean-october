@@ -9,11 +9,11 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondHeightFamily
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
 open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredMomentSecondChildProfile CenteredMomentChildRows CenteredMomentChildAssembly
-open CenteredMomentSecondScaled RayFourExpansion ConcretePrimeRowBridge ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+
+open ConcretePrimeRowBridge ActualEisensteinCubic
+open scoped EisensteinO
 
 def fixedBadMask : O := goodLambda*2
 
@@ -41,8 +41,8 @@ theorem heightCoeff_eq_fixed_rowWeight (τ : Character) (t : ℝ)
     ((idealCoeff τ I*idealRowHom (fixedBadMask^6*(1*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t))
   simp only [mul_one,hs]
 
-end SevenEighths.CenteredMomentSecondHeightFamily
 
-end
 
-end OAI
+
+
+

@@ -96,7 +96,7 @@ theorem average_idealCharacters (I : Ideal A) :
   have hn : (classNumber M H : ℂ) ≠ 0 := by exact_mod_cast (classNumber_pos M H).ne'
   split_ifs <;> simp [hn]
 
-end
-end SevenEighths.RayQuotient
 
-end OAI
+
+
+

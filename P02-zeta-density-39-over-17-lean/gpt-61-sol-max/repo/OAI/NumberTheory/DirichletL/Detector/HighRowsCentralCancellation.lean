@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedCancellation
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeLocal
 
 theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
@@ -57,7 +57,7 @@ theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
     _ = 32*(A^2*‖V‖)+16*(A^2*‖D‖)+8*(A*‖B‖*‖P+D‖)+16*(A^2*‖P+D‖) := by ring
     _ ≤ 720*T := by linarith
 
-end SevenEighths.ProbeLocal
-end
 
-end OAI
+
+
+

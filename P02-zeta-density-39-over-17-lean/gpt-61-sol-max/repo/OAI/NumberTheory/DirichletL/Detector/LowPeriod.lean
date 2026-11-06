@@ -9,20 +9,30 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
+open ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve
 open RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def calibrationRowModulus (C : CalibrationData) (B : O) (D : GoodMaskRowData B 1 C.generator) : Id :=
+section
+variable (C : CalibrationData) (B : O)
+include C B
+
+section
+variable (D : GoodMaskRowData B 1 C.generator)
+include D
+
+def calibrationRowModulus  : Id :=
   1*Ideal.span {B}*Ideal.span {(72:O)}*Ideal.span {D.numeratorGood}
 
-def periodicCalibrationXi (C : CalibrationData) (B : O) (D : GoodMaskRowData B 1 C.generator) : O→*ℂ :=
+def periodicCalibrationXi  : O→*ℂ :=
   C.residueMonoid*actualPeriodicRow 1 B D.numeratorUnit D.numeratorLambda D.numeratorTwo
     D.numeratorGood D.numeratorSupported
+end
 
-lemma calibrationRowModulus_ne_zero (C : CalibrationData) (B : O) (hB : B≠0)
+
+lemma calibrationRowModulus_ne_zero  (hB : B≠0)
     (D : GoodMaskRowData B 1 C.generator) : calibrationRowModulus C B D≠0 := by
   unfold calibrationRowModulus
   apply mul_ne_zero
@@ -32,14 +42,16 @@ lemma calibrationRowModulus_ne_zero (C : CalibrationData) (B : O) (hB : B≠0)
       norm_num
   · exact D.numeratorSupported.1
 
-lemma periodicCalibrationXi_norm (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (a : O) : ‖periodicCalibrationXi C B D a‖≤1 := by
+section
+variable (D : GoodMaskRowData B 1 C.generator)
+include D
+
+lemma periodicCalibrationXi_norm  (a : O) : ‖periodicCalibrationXi C B D a‖≤1 := by
   rw [periodicCalibrationXi,MonoidHom.mul_apply,norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (C.residueMonoid_norm_le_one a)).trans (actualPeriodicRow_norm 1 (fun _=>by simp) B D.numeratorUnit D.numeratorLambda D.numeratorTwo
       D.numeratorGood D.numeratorSupported a)
 
-lemma periodicCalibrationXi_periodic (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) :
+lemma periodicCalibrationXi_periodic  :
     FactorsModulo (Ideal.span {C.generator}*calibrationRowModulus C B D) (periodicCalibrationXi C B D) := by
   have hp := actualPeriodicRow_periodic (1:O→*ℂ) 1 (fun _ _ _=>rfl)
     B D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported
@@ -50,8 +62,7 @@ lemma periodicCalibrationXi_periodic (C : CalibrationData) (B : O)
     exact Ideal.Quotient.eq.mpr (Ideal.mul_le_left hxy)
   · exact hp x y (Ideal.mul_le_right hxy)
 
-lemma periodicCalibrationXi_eq_primary (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
+lemma periodicCalibrationXi_eq_primary  (hBL : λ₀∣B) (hB2 : (2:O)∣B)
     (n : O) (hn : Supported (Ideal.span {n})) (hpn : λ₀^2∣n-1) (hc : IsCoprime B n) :
     periodicCalibrationXi C B D n=C.Xi n := by
   have he := rowTwist_eq_actualPeriodicRow_primary (1:O→*ℂ) B 1 C.generator hBL hB2
@@ -64,17 +75,28 @@ lemma periodicCalibrationXi_eq_primary (C : CalibrationData) (B : O)
   simp only [MonoidHom.one_apply,hmask,one_mul,one_pow] at he
   change C.residueMonoid n*_ = C.residueMonoid n*idealRowHom C.generator (Ideal.span {n})
   rw [←he]
+end
+end
 
-def lowPeriodicBase (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (s : O) (hs : Supported (Ideal.span {s}))
+
+section
+variable (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
+include η C B
+
+section
+variable (D : GoodMaskRowData B 1 C.generator)
+include D
+
+def lowPeriodicBase  (s : O) (hs : Supported (Ideal.span {s}))
     (χ : RayCharacter) : O→*ℂ :=
   rayMonoid χ*targetMonoid η*conjugateMonoid (periodicCalibrationXi C B D)*reciprocityPhaseMonoid s hs
 
-def lowBaseModulus (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) : Id :=
+def lowBaseModulus  : Id :=
   η.modulus*(Ideal.span {C.generator}*calibrationRowModulus C B D)*Ideal.span {(4:O)}
+end
 
-lemma lowBaseModulus_ne_zero (η : HeckeFamily.Character) (C : CalibrationData) (B : O) (hB : B≠0)
+
+lemma lowBaseModulus_ne_zero  (hB : B≠0)
     (D : GoodMaskRowData B 1 C.generator) : lowBaseModulus η C B D≠0 := by
   unfold lowBaseModulus
   apply mul_ne_zero
@@ -83,8 +105,15 @@ lemma lowBaseModulus_ne_zero (η : HeckeFamily.Character) (C : CalibrationData) 
   · apply Ideal.span_singleton_eq_bot.not.mpr
     norm_num
 
-lemma lowPeriodicBase_periodic (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (s : O) (hs : Supported (Ideal.span {s})) (χ : RayCharacter) :
+section
+variable (D : GoodMaskRowData B 1 C.generator)
+include D
+
+section
+variable (s : O) (hs : Supported (Ideal.span {s})) (χ : RayCharacter)
+include s hs χ
+
+lemma lowPeriodicBase_periodic  :
     FactorsModulo (lowBaseModulus η C B D) (lowPeriodicBase η C B D s hs χ) := by
   intro x y hxy
   have h4 : (4:O)∣x-y := Ideal.mem_span_singleton.mp (Ideal.mul_le_right hxy)
@@ -99,16 +128,15 @@ lemma lowPeriodicBase_periodic (η : HeckeFamily.Character) (C : CalibrationData
   have hr : rayMonoid χ x=rayMonoid χ y := rayCharacter_eq_of_mod_four χ x y h4
   rw [hr]
 
-lemma lowPeriodicBase_norm (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (s : O) (hs : Supported (Ideal.span {s}))
-    (χ : RayCharacter) (a : O) : ‖lowPeriodicBase η C B D s hs χ a‖≤1 := by
+lemma lowPeriodicBase_norm  (a : O) : ‖lowPeriodicBase η C B D s hs χ a‖≤1 := by
   have hr : ‖rayMonoid χ a‖≤1 := FiniteRayExpansion.norm_char_le_one χ _
   change ‖((rayMonoid χ a*targetMonoid η a)*star (periodicCalibrationXi C B D a))*sexticReciprocityPhase s a‖≤1
   simp only [norm_mul,norm_star]
   exact (mul_le_of_le_one_left (norm_nonneg _) ((mul_le_of_le_one_left (norm_nonneg _) ((mul_le_of_le_one_left (norm_nonneg _) hr).trans (targetMonoid_norm_le_one η a))).trans (periodicCalibrationXi_norm C B D a))).trans (sexticReciprocityPhase_norm s a)
+end
 
-lemma lowPeriodicBase_eq_primary (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
+
+lemma lowPeriodicBase_eq_primary  (hBL : λ₀∣B) (hB2 : (2:O)∣B)
     (s : O) (hs : Supported (Ideal.span {s})) (χ : RayCharacter)
     (n : O) (hn : Supported (Ideal.span {n})) (hpn : λ₀^2∣n-1) (hc : IsCoprime B n) :
     lowPeriodicBase η C B D s hs χ n=(rayMonoid χ*physicalRowBase η C.Xi s hs) n := by
@@ -116,8 +144,11 @@ lemma lowPeriodicBase_eq_primary (η : HeckeFamily.Character) (C : CalibrationDa
     rayMonoid χ n*((targetMonoid η n*star (C.Xi n))*sexticReciprocityPhase s n)
   rw [periodicCalibrationXi_eq_primary C B D hBL hB2 n hn hpn hc]
   ring
-
-end SevenEighths.ProbePhysical
+end
 end
 
-end OAI
+
+
+
+
+

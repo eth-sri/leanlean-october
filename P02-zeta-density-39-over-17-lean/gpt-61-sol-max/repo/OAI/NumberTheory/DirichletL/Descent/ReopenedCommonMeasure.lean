@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedSeparation
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
@@ -66,7 +66,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
   rw [hc']
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

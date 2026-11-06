@@ -5,20 +5,20 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommon
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CenteredMomentCommonRadialData
+open CenteredMomentCommonPairedSource
+open CenteredMomentCommonExceptionalCost
+
+
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
@@ -27,11 +27,11 @@ theorem actual_common_better_side (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s v:Input ι)(p q:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,v.lo i=lo i) → (∀i,v.hi i=hi i) →
-      (∀i,1≤s.P i) → (∀i,1≤v.P i) →
+      (∀i,1≤ s.P i) → (∀i,1≤v.P i) →
       s.W₁=p.profile 0 → s.W₂=p.profile 1 → v.W₁=q.profile 0 → v.W₂=q.profile 1 →
       ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O),R≠0 → seed∣C → seed∣D →
       ∀rLeft rRight:ℝ,
-      Z^rLeft≤s.X₁ → Z^rLeft≤s.X₂ → Z^rLeft≤s.Y₁ → Z^rLeft≤s.Y₂ →
+      Z^rLeft≤ s.X₁ → Z^rLeft≤ s.X₂ → Z^rLeft≤ s.Y₁ → Z^rLeft≤ s.Y₂ →
       Z^rRight≤v.X₁ → Z^rRight≤v.X₂ → Z^rRight≤v.Y₁ → Z^rRight≤v.Y₂ →
       ∀rows:Finset O,(∀z∈rows,z≠0) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow s.η Q fixedBadMask 1 z) →
@@ -61,7 +61,7 @@ theorem actual_common_better_side (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
     rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂ rows hn hsEx hvEx hsCond hvCond Ds hDs
   have hr:=hZ.2 v s q p hslo hshi hvP hsP hvW₁ hvW₂ hsW₁ hsW₂ D C hD hC R seed hR hsD hsC
     rRight rLeft hvX₁ hvX₂ hvY₁ hvY₂ hsX₁ hsX₂ hsY₁ hsY₂ rows hn hvEx hsEx hvCond hsCond Ds hDs
-  by_cases hc:max (rRight-Real.logb Z (D.absNorm:ℝ)) 0≤max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0
+  by_cases hc:max (rRight-Real.logb Z (D.absNorm:ℝ)) 0≤ max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0
   · rw [max_eq_left hc]
     exact hl
   · rw [max_eq_right (le_of_not_ge hc)]
@@ -79,8 +79,8 @@ theorem actual_common_better_side (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
     unfold profileMass
     ring
 
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
-end
 
-end OAI
+
+
+

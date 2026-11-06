@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedSum
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedSubset
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedSum
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
@@ -39,7 +40,7 @@ theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
   intro S hS hmax hbad u hu ι _ η twists T0 a i hT0 ha ha1 hbin T hs hdis hη hQ hsmall W Y hY hWS hW x w z hx hw hz hwi J
   let k := Fintype.card J
   let E : J≃Fin k := Fintype.equivFin J
-  let idx : Fin k→Fin N := fun j=>(E.symm j).val
+  let idx := fun j=>(E.symm j).val
   have hi : Function.Injective idx := fun j l h=>E.symm.injective (Subtype.ext h)
   have hk : k≤N := by
     dsimp [k]
@@ -64,8 +65,8 @@ theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
     Fintype.prod_equiv E.symm _ _ (fun _=>rfl)
   rw [hleft,hright] at hb
   exact hb
-end SevenEighths.ProbeCentralRepeatedSubset
 
-end
 
-end OAI
+
+
+

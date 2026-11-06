@@ -10,7 +10,7 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadialCost
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAllocationCost
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 lemma sqrt_nat_le_add_one (n:ℕ) : Real.sqrt (n:ℝ)≤(n:ℝ)+1 := by
@@ -83,8 +83,8 @@ omit [DecidableEq ι] in
     apply le_trans ?_ hh
     nlinarith [sq_nonneg ((actualAllocations s.pools C).card:ℝ)]
 
-end SevenEighths.CenteredMomentCommonRadialCost
 
-end
 
-end OAI
+
+
+

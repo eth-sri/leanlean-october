@@ -10,18 +10,19 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentFirstAnnularAmplification
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
+open ConcretePrimeRowBridge RayFourExpansion
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
+open CenteredMomentPrimePool CenteredMomentPrimeElements
+open CenteredMomentGaussEnergy
+open CenteredMomentSourceRow
+
+open CenteredMomentSectorLocalization
 open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentChildRows
+open scoped EisensteinO
+
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem eventually_annular_amplification_common {ι : Type*} [Fintype ι]
@@ -83,8 +84,8 @@ theorem eventually_annular_amplification_common {ι : Type*} [Fintype ι]
         (CenteredMomentFirstAnnularGeometry.bands_log_cap H0 Z Mmax hH0 hZ hcap j hj))
   convert hbnd using 1 ; ring
 
-end SevenEighths.CenteredMomentFirstAnnularAmplification
 
-end
 
-end OAI
+
+
+

@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import DensityEnergyGM.RatioMomentSharp
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 noncomputable section
 open Finset GuthMaynard.NativeMoment
@@ -37,11 +37,7 @@ theorem finiteRatioSecond_insert_le {A : Finset ℕ} {e : ℕ}
     (heA : e ∉ A) (he : 0 < e) (hA : ∀ n ∈ A, 0 < n) (W : Finset ℝ) :
     finiteRatioSecond (insert e A) W ≤
       2 * finiteRatioSecond A W + 2 * (W.card : ℝ) ^ 2 := by
-  rw [finiteRatioSecond_eq_difference _ _ (by
-    intro n hn
-    rcases Finset.mem_insert.mp hn with rfl | hn
-    · exact he
-    · exact hA n hn), finiteRatioSecond_eq_difference _ _ hA]
+  rw [finiteRatioSecond_eq_difference _ _ (by simp_all), finiteRatioSecond_eq_difference _ _ hA]
   have hPhase : ∀ t : ℝ, ‖heathBrownPhase e t‖ = 1 := by
     intro t
     rw [heathBrownPhase, Complex.norm_natCast_cpow_of_pos he]
@@ -67,11 +63,9 @@ theorem finiteRatioSecond_insert_le {A : Finset ℕ} {e : ℕ}
     _ ≤ ∑ t ∈ W, ∑ u ∈ W,
         (2 * ‖heathBrownDifferencePolynomial A (fun _ => 1) t u‖ ^ 2 + 2) := by
       apply Finset.sum_le_sum
-      intro t ht
-      exact Finset.sum_le_sum fun u hu => hPoint t u
+      bound
     _ = _ := by
-      simp only [Finset.sum_add_distrib, ← Finset.mul_sum,
-        Finset.sum_const, nsmul_eq_mul, heathBrownDifferenceMoment]
+      simp only [sum_add_distrib, ← mul_sum, sum_const, nsmul_eq_mul, heathBrownDifferenceMoment]
       ring
 
-end Montgomery.RationalMoment
+

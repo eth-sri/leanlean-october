@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SecondBlockRadicalHarmonicMass
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscardedEnergy
 
@@ -10,25 +11,29 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstInactiveRadicalMass
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss
+open ActualEisensteinCubic
 open CenteredMomentCanonicalFirst CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonRadialData CenteredMomentRankinRadical
-open CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation
-open ConcretePrimeRowBridge
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentSecondBlockRadicalHarmonicMass
 
-def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):ℝ:=
+open CenteredMomentRankinRadical
+open CenteredMomentSecondBlockAggregate
+open ConcretePrimeRowBridge
+open scoped EisensteinO
+
+section
+variable (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ)
+include C D E a
+
+def inactiveWeight :ℝ:=
   ‖(UniqueFactorizationMonoid.moebius (∏P∈E,P.val):ℂ)‖/
     ((Ideal.absNorm (∏P∈E,P.val):ℝ)^a)
 
-lemma inactiveWeight_nonneg (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):
+lemma inactiveWeight_nonneg :
     0 ≤ inactiveWeight C D E a:=by
   unfold inactiveWeight
   exact div_nonneg (norm_nonneg _) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
 
-lemma inactiveWeight_le_one (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ)(ha:0≤a):
+lemma inactiveWeight_le_one (ha:0≤a):
     inactiveWeight C D E a≤1:=by
   have hE:(∏P∈E,P.val)≠(0:Ideal O):=by
     have he:=primeSubsetGenerator_ne_zero (fun P:CommonIndex C D=>P.val) E
@@ -37,9 +42,11 @@ lemma inactiveWeight_le_one (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ)(ha:
       Ideal.zero_eq_bot] using hh
   have hn:1≤(Ideal.absNorm (∏P∈E,P.val):ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hE)
-  have hp:1≤(Ideal.absNorm (∏P∈E,P.val):ℝ)^a:=Real.one_le_rpow hn ha
+  have hp :=Real.one_le_rpow hn ha
   unfold inactiveWeight
   exact (div_le_self (norm_nonneg _) hp).trans (QuadraticInitialBound.norm_ideal_moebius_le_one _)
+end
+
 
 theorem actual_inactive_radical_mass (B ε:ℝ)(hB:0≤B)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀Z:ℝ,2≤Z→∀seed:Ideal O,Squarefree seed→seed≠0→
@@ -64,8 +71,8 @@ theorem actual_inactive_radical_mass (B ε:ℝ)(hB:0≤B)(hε:0<ε):
       Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
         (fun _ _ _=>radicalWeight_nonneg _ _)
 
-end SevenEighths.CenteredMomentFirstInactiveRadicalMass
 
-end
 
-end OAI
+
+
+

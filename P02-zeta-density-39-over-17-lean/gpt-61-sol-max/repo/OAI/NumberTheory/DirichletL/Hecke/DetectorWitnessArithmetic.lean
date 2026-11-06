@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeDetectorWitnessArithmetic
 open HeckeFamily UniqueFactorizationMonoid CompletedGauss
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def cutoffCoefficient (V : ℝ → ℂ) (D : ℝ) (I : Ideal O) : ℂ :=
   if I = 0 then 0 else
@@ -21,7 +21,11 @@ theorem fiber_norm_le {I : Ideal O} (hI : I ≠ 0) (p : MulFiber I) :
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
   exact map_dvd Ideal.absNorm ⟨p.val.2, p.property.symm⟩
 
-theorem cutoffCoefficient_small (V : ℝ → ℂ) (D : ℝ) (hD : 0 < D)
+section
+variable (V : ℝ → ℂ) (D : ℝ)
+include V D
+
+theorem cutoffCoefficient_small  (hD : 0 < D)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
     (I : Ideal O) (hI : (Ideal.absNorm I : ℝ) ≤ D) :
     cutoffCoefficient V D I = if I = 1 then 1 else 0 := by
@@ -36,7 +40,7 @@ theorem cutoffCoefficient_small (V : ℝ → ℂ) (D : ℝ) (hD : 0 < D)
     rw [heq]
     exact mulFiber_moebius_sum I hI0
 
-theorem cutoffCoefficient_tail (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
+theorem cutoffCoefficient_tail  (hD : 2 ≤ D)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
     (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (I : Ideal O) :
     cutoffCoefficient V D I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D)) =
@@ -59,8 +63,14 @@ theorem cutoffCoefficient_tail (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
       simp only [map_one, Nat.cast_one] at hI
       linarith
     rw [hv, sub_zero, mul_one, ite_eq_right hI1, sub_zero]
+end
 
-theorem weighted_fiber (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) (I : Ideal O) :
+
+section
+variable (χ : Character) (V : ℝ → ℂ) (D : ℝ)
+include χ V D
+
+theorem weighted_fiber  (s : ℂ) (I : Ideal O) :
     (∑' p : MulFiber I, (moebius p.val.1 : ℂ) * V ((Ideal.absNorm p.val.1 : ℝ) / D) *
       IdealEuler.weighted (idealCoeff χ) s (p.val.1 * p.val.2)) =
       cutoffCoefficient V D I * IdealEuler.weighted (idealCoeff χ) s I := by
@@ -74,13 +84,17 @@ theorem weighted_fiber (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) (I
     intro p
     rw [p.property]
 
-def exponentialTerm (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) (Y : ℝ) (I : Ideal O) : ℂ :=
+def exponentialTerm  (s : ℂ) (Y : ℝ) (I : Ideal O) : ℂ :=
   cutoffCoefficient V D I * IdealEuler.weighted (idealCoeff χ) s I *
     Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ) / (Y : ℂ))
 
-theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
+section
+variable (hD : 2 ≤ D)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ) (I : Ideal O) :
+    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ)
+include hD hV hVzero s Y
+
+theorem exponentialTerm_tail  (I : Ideal O) :
     exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D)) =
       exponentialTerm χ V D s Y I - if I = 1 then Complex.exp (-1 / (Y : ℂ)) else 0 := by
   have h := cutoffCoefficient_tail V D hD hV hVzero I
@@ -96,18 +110,19 @@ theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 
         ring
       · simp only [hI, ite_false, sub_zero]
 
-theorem exponential_sum_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
-    (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ)
+theorem exponential_sum_tail 
     (hsum : Summable (exponentialTerm χ V D s Y)) :
     (∑' I : Ideal O, exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D))) =
       (∑' I : Ideal O, exponentialTerm χ V D s Y I) - Complex.exp (-1 / (Y : ℂ)) := by
   simp_rw [exponentialTerm_tail χ V D hD hV hVzero s Y]
   rw [hsum.tsum_sub ((hasSum_ite_eq (1 : Ideal O) (Complex.exp (-1 / (Y : ℂ)))).summable)]
   simp only [tsum_ite_eq]
-
-end SevenEighths.HeckeDetectorWitnessArithmetic
-
+end
 end
 
-end OAI
+
+
+
+
+
+

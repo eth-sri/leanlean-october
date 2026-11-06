@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import LaterPairs.PhysicalLongMeanCover
 public import RetunedLongMultiplicity
 public import RetunedShortZeroCount
@@ -6,11 +7,10 @@ public import MathCollab.Density.Stronger.LongMeanCounting
 
 @[expose] public section
 
-open Real Complex Set Filter MeasureTheory
+open Real Complex Filter MeasureTheory
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger MathCollab.Density
 
@@ -39,7 +39,7 @@ theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
   intro ρ hρ
   obtain ⟨hzmem, hnot⟩ := Finset.mem_sdiff.mp hρ
   obtain ⟨hz, hβ, hγ, hγ'⟩ := mem_zetaZeroFinset.mp hzmem
-  have habs : |ρ.im| = ρ.im := abs_of_nonneg (hT.trans hγ)
+  have habs := abs_of_nonneg (hT.trans hγ)
   rcases hc ρ hβ hz.2.2 (by rwa [habs]) (by rwa [habs]) hz.1 with hmean | hshort
   · exact hmean
   · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hzmem, hshort⟩))
@@ -48,4 +48,4 @@ theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
 from separated long detectors. The right side is the literal physical twelfth
 moment, not a supplied moment bound. -/
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

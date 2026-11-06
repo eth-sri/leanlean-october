@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Basic.Complex.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -46,9 +47,6 @@ theorem norm_sourceDirichletPoly_conjugateCoeffs
     rw [star_mul, star_star,
       mul_comm (star ((n : ℂ) ^ ((t : ℂ) * I))) (a n)]
     congr 1
-    have hnPos : 0 < n := by
-      rw [dyadicInterval, Finset.mem_Ioc] at hn
-      omega
     have hnArg : ((n : ℂ)).arg ≠ Real.pi := by
       change ((((n : ℝ) : ℂ)).arg ≠ Real.pi)
       rw [Complex.arg_ofReal_of_nonneg (by positivity : (0 : ℝ) ≤ n)]
@@ -99,4 +97,4 @@ theorem norm_phaseShiftCoeffs (c : ℝ) (a : ℕ → ℂ) (n : ℕ) :
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hnPos]
     simp
 
-end GuthMaynard.NativeMoment
+

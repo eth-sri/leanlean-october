@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosZeroQLeading
 public import LaterPairs.Native.ThirteenthRootScales
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_zero_q_curvature_scale {r lam : ℝ}
@@ -71,4 +70,4 @@ theorem robertSargos_zero_q_block_length {r lam M : ℝ}
   exact (Real.rpow_le_rpow_of_nonpos hlam hmu (by norm_num : -(1:ℝ)/2 ≤ 0)).trans
     ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1 (by norm_num : -(8:ℝ)/13 ≤ -1/2)).trans hM)
 
-end TaoTrudgianYang2025
+

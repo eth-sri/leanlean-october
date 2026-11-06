@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -26,8 +27,6 @@ lemma original_exponent_identity (a d R q : ℝ) :
 lemma relative_extend (δ d R q ζ : ℝ) (hζ : 0≤ζ) (hd : d≤13/16+ζ)
     (hslo : 0≤R+δ/2-17/50) (hshi : R+δ/2-17/50≤2) :
     relativeExponent δ d R q≤relativeExponent δ (13/16) R q+2*ζ := by
-  have hh := mul_le_mul_of_nonneg_right (show d-13/16≤ζ by linarith) hslo
-  have hh' := mul_le_mul_of_nonneg_left hshi hζ
   unfold relativeExponent
   nlinarith
 
@@ -76,7 +75,6 @@ def realLoss (N : ℕ) (d e eps heightLoss mesh : ℝ) : ℝ :=
 lemma realLoss_bound (N : ℕ) (d e eps heightLoss mesh : ℝ)
     (hd : d≤1) (he : 0≤e) (heps : 0≤eps) :
     realLoss N d e eps heightLoss mesh≤26*e+(N+8)*eps+heightLoss+mesh/6 := by
-  have h1 := mul_le_mul_of_nonneg_right hd he
   have h2 := mul_le_mul_of_nonneg_right hd (show 0≤eps*(N+8) by positivity)
   unfold realLoss
   nlinarith
@@ -87,8 +85,8 @@ lemma physical_scale_identity (Z a e : ℝ) (hZ : 0<Z) :
   rw [←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
   congr 1
   ring
-end SevenEighths.ProbeCentralExponent
 
-end
 
-end OAI
+
+
+

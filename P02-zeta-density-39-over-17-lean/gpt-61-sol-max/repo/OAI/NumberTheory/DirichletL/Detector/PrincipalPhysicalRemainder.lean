@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalRemainderBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
 open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
+open PrincipalMellinResidues PrincipalSignalComparison
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem physical_principal_residue_remainder {K : ℕ}
@@ -67,7 +67,7 @@ theorem physical_principal_residue_remainder {K : ℕ}
   have htwo : (2*C)/e=2*(C/e) := by ring
   rw [htwo]
   nlinarith
-end SevenEighths.ProbePrincipalPhysical
-end
 
-end OAI
+
+
+

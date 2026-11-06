@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDichotomy
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators ContDiff
 
 namespace GuthMaynard.NativeMoment
@@ -19,27 +20,17 @@ rescalings is exactly one on the finite tail `(Y,A]`; no sharp block is
 silently substituted for the smooth source block.
 -/
 
-/-- A decreasing smooth step which is one on `(-∞,1]` and zero on `[2,∞)`. -/
+/- A decreasing smooth step which is one on `(-∞,1]` and zero on `[2,∞)`. -/
 noncomputable def typeISmoothStep (x : ℝ) : ℝ :=
   Real.smoothTransition (2 - x)
 
-/-- The fixed annular cutoff `η(x)-η(2x)` used in the dyadic partition. -/
+/- The fixed annular cutoff `η(x)-η(2x)` used in the dyadic partition. -/
 noncomputable def typeIDyadicCutoff (x : ℝ) : ℝ :=
   typeISmoothStep x - typeISmoothStep (2 * x)
 
 theorem contDiff_typeIDyadicCutoff : ContDiff ℝ ∞ typeIDyadicCutoff := by
   unfold typeIDyadicCutoff typeISmoothStep
-  have hinner₁ : ContDiff ℝ ∞ (fun x : ℝ => (2 : ℝ) - x) := by fun_prop
-  have hinner₂ : ContDiff ℝ ∞ (fun x : ℝ => (2 : ℝ) - 2 * x) := by fun_prop
-  have h₁ : ContDiff ℝ ∞ (fun x : ℝ =>
-      Real.smoothTransition ((2 : ℝ) - x)) := by
-    simpa only [Function.comp_def] using
-      (Real.smoothTransition.contDiff (n := (⊤ : ℕ∞))).comp hinner₁
-  have h₂ : ContDiff ℝ ∞ (fun x : ℝ =>
-      Real.smoothTransition ((2 : ℝ) - 2 * x)) := by
-    simpa only [Function.comp_def] using
-      (Real.smoothTransition.contDiff (n := (⊤ : ℕ∞))).comp hinner₂
-  exact h₁.sub h₂
+  fun_prop
 
 theorem typeISmoothStep_eq_one {x : ℝ} (hx : x ≤ 1) :
     typeISmoothStep x = 1 := by
@@ -84,21 +75,14 @@ theorem typeIDyadicCutoff_eq_zero_of_two_le {x : ℝ} (hx : 2 ≤ x) :
     typeISmoothStep_eq_zero (by linarith)]
   norm_num
 
-/-- Smooth boundary cutoff which is exactly the indicator of `(Y,A]` at
+/- Smooth boundary cutoff which is exactly the indicator of `(Y,A]` at
 integer arguments.  Its unit-width transition zones remove the two sharp
 edges before Poisson summation. -/
 noncomputable def typeITailBoundary (Y A : ℕ) (x : ℝ) : ℝ :=
   Real.smoothTransition (x - (Y : ℝ)) *
     Real.smoothTransition (((A + 1 : ℕ) : ℝ) - x)
 
-theorem contDiff_typeITailBoundary (Y A : ℕ) :
-    ContDiff ℝ ∞ (typeITailBoundary Y A) := by
-  unfold typeITailBoundary
-  have hleft : ContDiff ℝ ∞ (fun x : ℝ =>
-      Real.smoothTransition (x - (Y : ℝ))) := by fun_prop
-  have hright : ContDiff ℝ ∞ (fun x : ℝ =>
-      Real.smoothTransition (((A + 1 : ℕ) : ℝ) - x)) := by fun_prop
-  exact hleft.mul hright
+
 
 theorem typeITailBoundary_natCast (Y A n : ℕ) :
     typeITailBoundary Y A n = if n ∈ Finset.Ioc Y A then 1 else 0 := by
@@ -129,19 +113,14 @@ theorem typeITailBoundary_natCast (Y A n : ℕ) :
       unfold typeITailBoundary
       rw [hright, mul_zero]
 
-/-- The complete fixed smooth weight of the `r`-th source block. -/
+/- The complete fixed smooth weight of the `r`-th source block. -/
 noncomputable def typeISourceSmoothWeight (Y A r : ℕ) (x : ℝ) : ℝ :=
   typeITailBoundary Y A x *
     typeIDyadicCutoff (x / (2 ^ r * Y : ℕ))
 
-theorem contDiff_typeISourceSmoothWeight (Y A r : ℕ) :
-    ContDiff ℝ ∞ (typeISourceSmoothWeight Y A r) := by
-  unfold typeISourceSmoothWeight
-  exact (contDiff_typeITailBoundary Y A).mul
-    (contDiff_typeIDyadicCutoff.comp
-      (contDiff_id.div_const ((2 ^ r * Y : ℕ) : ℝ)))
 
-/-- Globally smooth source block; the finite index set only records a known
+
+/- Globally smooth source block; the finite index set only records a known
 compact carrier and does not create an analytic edge because the boundary
 weight already vanishes at its endpoints. -/
 noncomputable def typeISourceSmoothBlock
@@ -150,7 +129,7 @@ noncomputable def typeISourceSmoothBlock
     typeISourceSmoothWeight Y A r n *
       (n : ℂ) ^ (-(σ : ℂ)) * (n : ℂ) ^ (-(t : ℂ) * I)
 
-/-- Algebraic telescoping of the smooth dyadic weights. -/
+/- Algebraic telescoping of the smooth dyadic weights. -/
 theorem sum_typeIDyadicCutoff_eq
     (k : ℕ) (x : ℝ) :
     (∑ r ∈ Finset.range (k + 1),
@@ -167,14 +146,11 @@ theorem sum_typeIDyadicCutoff_eq
         rw [pow_succ]
         ring
       have harg : 2 * (x / ((2 ^ (k + 1) : ℕ) : ℝ)) =
-          x / ((2 ^ k : ℕ) : ℝ) := by
-        rw [hpow]
-        have hk : (0 : ℝ) < ((2 ^ k : ℕ) : ℝ) := by positivity
-        field_simp [hk.ne']
+          x / ((2 ^ k : ℕ) : ℝ) := by grind
       rw [harg]
       ring
 
-/-- On the exact tail range, the finite smooth partition sums to one. -/
+/- On the exact tail range, the finite smooth partition sums to one. -/
 theorem sum_typeIDyadicCutoff_eq_one
     {Y A n k : ℕ} (hY : 1 ≤ Y) (hn : n ∈ Finset.Ioc Y A)
     (hA : A ≤ 2 ^ k * Y) :
@@ -210,7 +186,7 @@ theorem sum_typeIDyadicCutoff_eq_one
     typeISmoothStep_eq_zero hlower]
   norm_num
 
-/-- Exact smooth decomposition of the fixed-line Type-I tail. -/
+/- Exact smooth decomposition of the fixed-line Type-I tail. -/
 theorem classicalZetaLongTail_eq_sum_smoothBlocks
     (Y A k : ℕ) (σ t : ℝ) (hY : 1 ≤ Y) (hA : A ≤ 2 ^ k * Y) :
     classicalZetaLongTail Y A ((σ : ℂ) + I * (t : ℂ)) =
@@ -218,7 +194,6 @@ theorem classicalZetaLongTail_eq_sum_smoothBlocks
         ∑ n ∈ Finset.Ioc Y A,
           typeIDyadicCutoff ((n : ℝ) / (2 ^ r * Y : ℕ)) *
             (n : ℂ) ^ (-(σ : ℂ)) * (n : ℂ) ^ (-(t : ℂ) * I) := by
-  rw [classicalZetaLongTail]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro n hn
@@ -251,10 +226,7 @@ theorem typeISourceSmoothBlock_eq_restricted
         typeIDyadicCutoff ((n : ℝ) / (2 ^ r * Y : ℕ)) *
           (n : ℂ) ^ (-(σ : ℂ)) * (n : ℂ) ^ (-(t : ℂ) * I) := by
   unfold typeISourceSmoothBlock
-  have hsubset : Finset.Ioc Y A ⊆ Finset.Icc 1 (A + 1) := by
-    intro n hn
-    have hnData := Finset.mem_Ioc.mp hn
-    exact Finset.mem_Icc.mpr ⟨by omega, by omega⟩
+  have hsubset : Finset.Ioc Y A ⊆ Finset.Icc 1 (A + 1) := by grind
   rw [← Finset.sum_subset hsubset]
   · apply Finset.sum_congr rfl
     intro n hn
@@ -265,7 +237,7 @@ theorem typeISourceSmoothBlock_eq_restricted
       ite_eq_right hnSmall]
     norm_num
 
-/-- Exact decomposition into globally smooth source blocks. -/
+/- Exact decomposition into globally smooth source blocks. -/
 theorem classicalZetaLongTail_eq_sum_sourceSmoothBlocks
     (Y A k : ℕ) (σ t : ℝ) (hY : 1 ≤ Y) (hA : A ≤ 2 ^ k * Y) :
     classicalZetaLongTail Y A ((σ : ℂ) + I * (t : ℂ)) =
@@ -276,7 +248,7 @@ theorem classicalZetaLongTail_eq_sum_sourceSmoothBlocks
   intro r _
   rw [typeISourceSmoothBlock_eq_restricted]
 
-/-- Pointwise smooth-block extraction with the exact logarithmic loss. -/
+/- Pointwise smooth-block extraction with the exact logarithmic loss. -/
 theorem exists_typeISmoothBlock_large
     (Y A k : ℕ) (σ t V : ℝ) (hY : 1 ≤ Y) (hk : 0 < k + 1)
     (hA : A ≤ 2 ^ k * Y)
@@ -294,10 +266,9 @@ theorem exists_typeISmoothBlock_large
       _ ≤ ∑ r ∈ Finset.range (k + 1), ‖block r‖ := norm_sum_le _ _
   obtain ⟨r, hr, hrLarge⟩ := pigeonhole_real_sum (k + 1)
     (fun r => ‖block r‖) V hsum hk
-  refine ⟨r, hr, ?_⟩
-  simpa only [block, Nat.cast_add, Nat.cast_one] using hrLarge
+  grind
 
-/-- A single smooth scale can be selected for a separated finite family of
+/- A single smooth scale can be selected for a separated finite family of
 Type-I ordinates.  The selected subfamily remains separated, every ordinate
 has the same source cutoff and scale, and the discarded-cardinality loss is
 exactly the number of available smooth blocks. -/
@@ -322,10 +293,7 @@ theorem exists_common_typeISmoothBlock_large
     exact exists_typeISmoothBlock_large Y A k σ t V hY hk hA (hLarge t ht)
   let scale : ℝ → ℕ := fun t =>
     if ht : t ∈ W then Classical.choose (hEach t ht) else 0
-  have hScale : ∀ t ∈ W, scale t ∈ Finset.range (k + 1) := by
-    intro t ht
-    simp only [scale, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).1
+  have hScale : ∀ t ∈ W, scale t ∈ Finset.range (k + 1) := by grind
   obtain ⟨r, hr, hcard⟩ := weighted_finite_pigeonhole W
     (Finset.range (k + 1)) (fun _ => 1) scale hW hScale
   let W' := W.filter (fun t => scale t = r)
@@ -342,4 +310,4 @@ theorem exists_common_typeISmoothBlock_large
     simpa only [hscaleEq] using hchosen
   · simpa [W'] using hcard
 
-end GuthMaynard.NativeMoment
+

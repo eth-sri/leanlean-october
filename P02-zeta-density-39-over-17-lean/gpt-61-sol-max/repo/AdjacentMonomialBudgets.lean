@@ -3,8 +3,7 @@ public import AdjacentWindow
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Real
 namespace Montgomery.RationalMoment
 
@@ -64,4 +63,4 @@ theorem adjacent_monomial_budgets {σ a p α δ T N : ℝ}
     have hb := mul_nonneg (show 0 ≤ (29/12)*p+a*(14*σ-9)-9/4 by linarith [hw.energy_adjacent_fourth]) ht
     nlinarith only [hh,hb,hd]
 
-end Montgomery.RationalMoment
+

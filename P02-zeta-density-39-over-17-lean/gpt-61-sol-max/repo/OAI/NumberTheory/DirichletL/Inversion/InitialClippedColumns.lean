@@ -14,7 +14,7 @@ open MeasureTheory FourierBridge JointLogSeparation
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialClippedColumns
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def clippedTest (w : ℝ → ℂ) (c h : ℝ) : ℝ → ℂ :=
   childLogTest (fun x => w (c*x)) h
@@ -73,10 +73,14 @@ theorem freshColumns_initial_clipping_shift (pool : Finset ι) (w : ℝ → ℂ)
   refine ⟨sub_nonneg.mpr (le_max_right _ _), ?_⟩
   exact (mul_le_mul_iff_left₀ (Real.log_pos hZ)).mp (hl.trans hthreshold)
 
-theorem canonical_row_zero_of_freshColumns_empty
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+section
+variable (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (w : ℝ → ℂ) (X h : ℝ) (he : freshColumns p pool w X = ∅) :
+    (w : ℝ → ℂ)
+include pool Ψ m f k slots lists a w
+
+theorem canonical_row_zero_of_freshColumns_empty
+     (X h : ℝ) (he : freshColumns p pool w X = ∅) :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
       (childLogTest w h) X = 0 := by
   unfold finiteCanonicalMarkedRow fixedChildRow
@@ -90,9 +94,7 @@ theorem canonical_row_zero_of_freshColumns_empty
   simp only [secondChildColumn,childLogTest,hw,zero_mul,mul_zero]
 
 theorem canonical_row_clipping
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
+     {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
       (childLogTest w h) (Z^N) =
       logPhase h (Real.log (Z^(max 0 N-N))) *
@@ -107,15 +109,15 @@ theorem canonical_row_clipping
   ring
 
 theorem canonical_row_clipping_norm
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
+     {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
     ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
       (childLogTest w h) (Z^N)‖ =
     ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
       (clippedTest w (Z^(max 0 N-N)) h) (Z^(max 0 N))‖ := by
   rw [canonical_row_clipping p hp hcop hg pool Ψ m f k slots lists a w hZ N h,
     norm_mul,logPhase_norm,one_mul]
+end
+
 
 def columnEnergy (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
@@ -146,10 +148,14 @@ def normalizedColumnEnergy (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (primaryGenerator f) k
         slots lists a W X‖^2
 
-theorem columnEnergy_normalization
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
+section
+variable (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
+include pool Ψ m slots lists a labels rows D
+
+theorem columnEnergy_normalization
+    
     (W : ℝ → ℂ) (X : ℝ) {Z : ℝ} (hZ : 0 < Z) (F : ℝ) :
     columnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D W X =
       Z^F * normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a
@@ -170,9 +176,7 @@ theorem columnEnergy_normalization
     abs_of_pos (Real.rpow_pos_of_pos hZ _),mul_pow,← mul_assoc,hr,one_mul]
 
 theorem initial_columnEnergy_clipping_normalized
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
+    
     (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N V h : ℝ) :
     columnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D
       (childLogTest w h) (Z^N) =
@@ -181,6 +185,8 @@ theorem initial_columnEnergy_clipping_normalized
   rw [columnEnergy_clipping p hp hcop hg pool Ψ m slots lists a labels rows D w hZ N h]
   exact columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows D
     _ _ hZ _
+end
+
 
 end Arithmetic
 
@@ -209,8 +215,8 @@ theorem child_height_moment_bound (K : ℕ) (z : Frequency × (Fin 6 → ℝ)) :
 def outerCutoff (ψ : Fin 4 → ℝ → ℂ) (x : Fin 6 → ℝ) : ℂ :=
   ψ 0 (x 0)*ψ 1 (x 1)*ψ 2 (x 2)*ψ 3 (x 3)
 
-end SevenEighths.InverseInitialClippedColumns
 
-end
 
-end OAI
+
+
+

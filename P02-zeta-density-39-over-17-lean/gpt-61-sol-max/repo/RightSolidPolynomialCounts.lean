@@ -5,10 +5,9 @@ public import RightQuadraticParameters
 
 open Filter Finset
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
-open GuthMaynard.Improvement
+
 
 /-- The exact five right-hand solid detecting-length exponents. -/
 def rightSolidLengthExponent (σ : ℝ) : ℝ :=
@@ -28,4 +27,4 @@ theorem right_solid_quadratic_window {σ : ℝ} (hl : 7/9 ≤ σ) (hr : σ ≤ 4
   · exact right_quadratic_window_fourth σ (by linarith) h₄
   · exact right_quadratic_window_fifth σ (by linarith) hr
 
-end Montgomery.RationalMoment
+

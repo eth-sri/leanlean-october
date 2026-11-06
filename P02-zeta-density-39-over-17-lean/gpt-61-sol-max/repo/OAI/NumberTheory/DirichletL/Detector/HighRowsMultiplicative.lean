@@ -6,15 +6,19 @@ public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : O) (I J : Ideal O)
+section
+variable (η : HeckeFamily.Character) (u : O)
+include η u
+
+theorem bareSourceCoefficient_product_row_frequency  (I J : Ideal O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hIJcop : IsCoprime I J)
     (n m s r : O)
@@ -45,7 +49,7 @@ theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character)
   rw [hi,hj] at he
   exact he
 
-theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
+theorem bareIdealHighCoefficient_row_mul 
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighCoefficient η u (I*I') (J*J') (K*K') (L*L') =
@@ -101,7 +105,7 @@ theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
     · unfold highSupport at hi
       rw [dite_eq_right hi,zero_mul]
 
-theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+theorem bareIdealHighSummand_row_mul  (x w z : ℂ)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighSummand η u x w z (I*I') (J*J') (K*K') (L*L') =
@@ -110,8 +114,10 @@ theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z
   rw [bareIdealHighCoefficient_row_mul η u I J K L I' J' K' L' hcop,
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

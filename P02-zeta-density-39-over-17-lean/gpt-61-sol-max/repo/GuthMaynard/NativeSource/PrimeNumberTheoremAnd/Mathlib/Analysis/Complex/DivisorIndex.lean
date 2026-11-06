@@ -4,9 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matteo Cipollina
 -/
 module
-
+import Mathlib
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.CanonicalProduct
-public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Meromorphic.DivisorSupport
+public import Mathlib.Analysis.Meromorphic.Divisor
+public import Mathlib.Data.Set.Countable
+public import Mathlib.Data.Set.Finite.Basic
+public import Mathlib.Topology.Compactness.Compact
+public import Mathlib.Topology.Compactness.Lindelof
+
 
 /-!
 # Indexing zeros via the divisor
@@ -26,7 +31,7 @@ canonical products.
 
 @[expose] public section
 
-open Set
+
 
 namespace Complex.Hadamard
 
@@ -34,45 +39,18 @@ namespace Complex.Hadamard
 ## Index types
 -/
 
-/-- Index type enumerating zeros (with multiplicity) via the divisor. -/
-def divisorZeroIndex (f : ℂ → ℂ) (U : Set ℂ) : Type :=
-  Σ z : ℂ, Fin (Int.toNat (MeromorphicOn.divisor f U z))
 
-/-- The nonzero part of `divisorZeroIndex`. -/
-abbrev divisorZeroIndex₀ (f : ℂ → ℂ) (U : Set ℂ) : Type :=
-  {p : divisorZeroIndex f U // p.1 ≠ 0}
 
-/-- The underlying point of a (nonzero) divisor index. -/
-abbrev divisorZeroIndex₀_val {f : ℂ → ℂ} {U : Set ℂ} (p : divisorZeroIndex₀ f U) : ℂ :=
-  p.1.1
 
-@[simp]
-lemma divisorZeroIndex₀_val_ne_zero {f : ℂ → ℂ} {U : Set ℂ} (p : divisorZeroIndex₀ f U) :
-    divisorZeroIndex₀_val p ≠ 0 := p.2
 
-/-- A (nonzero) divisor index has nonzero multiplicity at its underlying point. -/
-@[simp]
-lemma divisorZeroIndex₀_val_mem_divisor_support {f : ℂ → ℂ} {U : Set ℂ}
-    (p : divisorZeroIndex₀ f U) :
-    MeromorphicOn.divisor f U (divisorZeroIndex₀_val p) ≠ 0 := by
-  have hn :
-      Int.toNat (MeromorphicOn.divisor f U (divisorZeroIndex₀_val p)) ≠ 0 := by
-    intro h0
-    have q0 : Fin 0 := by
-      simpa [divisorZeroIndex₀_val, h0] using p.1.2
-    exact Fin.elim0 q0
-  intro hdiv
-  have : Int.toNat (MeromorphicOn.divisor f U (divisorZeroIndex₀_val p)) = 0 := by
-    simp [hdiv]
-  exact hn this
 
-/-- The canonical product attached to the (nonzero) divisor of `f` on `U`. -/
-noncomputable def divisorCanonicalProduct (m : ℕ) (f : ℂ → ℂ) (U : Set ℂ) (z : ℂ) : ℂ :=
-  ∏' p : divisorZeroIndex₀ f U, weierstrassFactor m (z / divisorZeroIndex₀_val p)
 
-@[simp]
-lemma divisorCanonicalProduct_zero (m : ℕ) (f : ℂ → ℂ) (U : Set ℂ) :
-    divisorCanonicalProduct m f U 0 = 1 := by
-  simp [divisorCanonicalProduct]
 
-end Complex.Hadamard
+
+
+
+
+
+
+
+

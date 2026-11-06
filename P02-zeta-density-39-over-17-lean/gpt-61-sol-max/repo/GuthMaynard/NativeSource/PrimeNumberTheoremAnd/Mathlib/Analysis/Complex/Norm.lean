@@ -1,4 +1,5 @@
 module
+import Mathlib
 
 public import Mathlib.Analysis.Complex.Norm
 
@@ -10,14 +11,12 @@ Elementary norm estimates used in Cartan-style product bounds and Gamma/zeta gro
 
 public section
 
-noncomputable section
+
 
 namespace Complex
 
 variable {z : ℂ}
 
-@[bound]
-theorem neg_norm_le_re (z : ℂ) : -‖z‖ ≤ z.re :=
-  neg_le_of_abs_le (abs_re_le_norm z)
 
-end Complex
+
+

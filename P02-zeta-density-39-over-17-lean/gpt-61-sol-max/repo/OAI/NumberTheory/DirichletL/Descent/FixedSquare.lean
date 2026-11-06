@@ -10,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
@@ -82,7 +82,7 @@ theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = _ := by dsimp only [E]; ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

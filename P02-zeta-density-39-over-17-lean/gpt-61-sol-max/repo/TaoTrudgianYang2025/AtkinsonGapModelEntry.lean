@@ -6,7 +6,7 @@ public import TaoTrudgianYang2025.ModelEndpointEntry
 
 /-! Every required model-phase jet is derived for the literal physical gap phase. -/
 
-noncomputable section
+
 open Set Filter Expdb
 open scoped ContDiff Topology
 namespace TaoTrudgianYang2025
@@ -53,4 +53,4 @@ theorem atkinsonNormalizedGapPhase_approximate (P : ℕ) {ε : ℝ} (hε : 0 < �
     rw [iteratedDeriv_succ',he.iteratedDeriv_eq p,← hm.iteratedDeriv_eq p]
     exact (hjets p hp (Real.pi*M/(2*u)) (t/u) x hqabs hr ⟨hx.1.le,hx.2.le⟩).le
 
-end TaoTrudgianYang2025
+

@@ -11,9 +11,9 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentExceptionalAmplitudePair
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary
-open CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+
+open CenteredMomentExceptionalAllocationShell
+open scoped HeckeO
 universe u
 
 structure Tests where
@@ -53,8 +53,8 @@ lemma reduction_cap_identity {ι κ:Type u} [Fintype ι] [Fintype κ] [Decidable
     Real.rpow_logb hz hZ.ne' (s.reduction_pos D a),Real.rpow_logb hz hZ.ne' (v.reduction_pos D b)]
   exact one_div _
 
-end SevenEighths.CenteredMomentExceptionalAmplitudePair
 
-end
 
-end OAI
+
+
+

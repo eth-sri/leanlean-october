@@ -18,22 +18,26 @@ open Set Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseMorseWeight (χ F : ℝ → ℝ) (v : ℝ) : ℝ → ℝ :=
   (modelPhaseMorseRange F v).indicator (modelPhaseMorseAmplitude χ F v)
 
-theorem modelPhaseMorseWeight_eq {χ F : ℝ → ℝ} {v z : ℝ}
+section
+variable {χ F : ℝ → ℝ}
+include χ F
+
+theorem modelPhaseMorseWeight_eq  {v z : ℝ}
     (hz : z ∈ modelPhaseMorseRange F v) :
     modelPhaseMorseWeight χ F v z = modelPhaseMorseAmplitude χ F v z :=
   Set.indicator_of_mem hz _
 
-theorem modelPhaseMorseWeight_zero_of_not_mem {χ F : ℝ → ℝ} {v z : ℝ}
+theorem modelPhaseMorseWeight_zero_of_not_mem  {v z : ℝ}
     (hz : z ∉ modelPhaseMorseRange F v) :
     modelPhaseMorseWeight χ F v z = 0 :=
   Set.indicator_of_notMem hz _
 
-theorem modelPhaseMorseWeight_support_subset {χ F : ℝ → ℝ} {v : ℝ} :
+theorem modelPhaseMorseWeight_support_subset  {v : ℝ} :
     Function.support (modelPhaseMorseWeight χ F v) ⊆
       modelPhaseMorseCoordinate F v '' tsupport χ := by
   intro z hz
@@ -46,12 +50,19 @@ theorem modelPhaseMorseWeight_support_subset {χ F : ℝ → ℝ} {v : ℝ} :
   apply hz
   rw [modelPhaseMorseWeight_eq hr,modelPhaseMorseAmplitude,hc,zero_mul]
 
-theorem isCompact_modelPhaseMorseCoordinate_image_tsupport
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
+section
+variable {σ δ v : ℝ}
+include σ δ v
+
+section
+variable (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+    (hv : v ∈ modelPhaseSlopeRange F)
+include hs hσ hδ hF hv
+
+theorem isCompact_modelPhaseMorseCoordinate_image_tsupport
+     :
     IsCompact (modelPhaseMorseCoordinate F v '' tsupport χ) := by
   have hc : IsCompact (tsupport χ) :=
     isCompact_Icc.of_isClosed_subset (isClosed_tsupport χ) (hs.trans Ioo_subset_Icc_self)
@@ -59,27 +70,21 @@ theorem isCompact_modelPhaseMorseCoordinate_image_tsupport
     ((modelPhaseMorseCoordinate_contDiffOn hσ hδ hF hv).continuousOn.mono hs)
 
 theorem modelPhaseMorseWeight_tsupport_subset
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+     :
     tsupport (modelPhaseMorseWeight χ F v) ⊆
       modelPhaseMorseCoordinate F v '' tsupport χ :=
   closure_minimal modelPhaseMorseWeight_support_subset
     (isCompact_modelPhaseMorseCoordinate_image_tsupport hs hσ hδ hF hv).isClosed
 
 theorem modelPhaseMorseWeight_tsupport_subset_range
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+     :
     tsupport (modelPhaseMorseWeight χ F v) ⊆ modelPhaseMorseRange F v :=
   (modelPhaseMorseWeight_tsupport_subset hs hσ hδ hF hv).trans (image_mono hs)
+end
+
 
 theorem modelPhaseMorseWeight_contDiff
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
+    
     (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
@@ -94,5 +99,8 @@ theorem modelPhaseMorseWeight_contDiff
   · have hn : z ∉ tsupport (modelPhaseMorseWeight χ F v) :=
       fun h => hz (modelPhaseMorseWeight_tsupport_subset_range hs hσ hδ hF hv h)
     exact contDiffAt_const.congr_of_eventuallyEq (notMem_tsupport_iff_eventuallyEq.mp hn)
+end
+end
 
-end TaoTrudgianYang2025
+
+

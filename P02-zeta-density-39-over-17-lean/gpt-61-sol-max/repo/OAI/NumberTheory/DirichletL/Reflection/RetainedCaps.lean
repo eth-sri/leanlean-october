@@ -7,7 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open ActualEisensteinCubic
 noncomputable section
 
 lemma retained_shell_le_ratio (scale T : ℝ) (hs : 0<scale)
@@ -64,7 +64,7 @@ lemma retained_extracted_log_budget (scale Z δ Lscale Lrow Lslot η X L : ℝ)
   have hn' := extracted_log_le_shell Z ((2:ℝ)^i.2.2) hZ (by positivity) D1 h1
   have hb' := extracted_log_le_shell Z ((2:ℝ)^i.2.1) hZ (by positivity) D2 h2
   linarith
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

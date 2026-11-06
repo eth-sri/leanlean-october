@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannLaplaceAmplitude.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -20,7 +21,6 @@ approximation and a uniform quadratic error are derived algebraically
 from the actual square root, not supplied as an asymptotic premise.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex
@@ -62,8 +62,7 @@ theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
     linarith
   have hw1n : 2 ≤ ‖w + 1‖ := by
     have h := Complex.re_le_norm (w + 1)
-    simp only [add_re, one_re] at h
-    linarith
+    simp_all <;> nlinarith
   have hw1 : w + 1 ≠ 0 := by
     intro he
     rw [he, norm_zero] at hw1n
@@ -95,11 +94,7 @@ theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
   have hplus : ‖w + 2‖ ≤ ‖w‖ + 2 := by
     simpa only [Complex.norm_ofNat] using norm_add_le w 2
   have hbound : 2 * ‖w‖ * ‖neumannLaplaceAmplitude u - 1 + (u : ℂ) * I / 2‖ ≤
-      2 * ‖w‖ * ((3 / 8 : ℝ) * u ^ 2) := by
-    rw [heqNorm]
-    calc
-      _ ≤ (u ^ 2 / 4) * (‖w‖ + 2) := by gcongr
-      _ ≤ _ := by nlinarith [mul_nonneg (sq_nonneg u) (sub_nonneg.mpr hwn)]
+      2 * ‖w‖ * ((3 / 8 : ℝ) * u ^ 2) := by nlinarith
   exact le_of_mul_le_mul_left hbound (by positivity : 0 < 2 * ‖w‖)
 
-end MathCollab.Density.Stronger.Atkinson
+

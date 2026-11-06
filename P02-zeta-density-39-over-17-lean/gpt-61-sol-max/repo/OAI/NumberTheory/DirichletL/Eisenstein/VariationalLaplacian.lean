@@ -10,84 +10,88 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                                  
+                                  
+
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff
 
-def kernelLiftedCutoff (χ : PositiveChartCutoff) (w : HyperbolicSpace) : ℝ :=
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+def kernelLiftedCutoff  (w : HyperbolicSpace) : ℝ :=
   χ.func (hyperbolicEuclideanCoordinates w)
 
-lemma kernelLiftedCutoff_continuous (χ : PositiveChartCutoff) : Continuous (kernelLiftedCutoff χ) :=
+lemma kernelLiftedCutoff_continuous  : Continuous (kernelLiftedCutoff χ) :=
   χ.smooth.continuous.comp hyperbolicEuclideanCoordinates_continuous
 
-lemma kernelLiftedCutoff_compact (χ : PositiveChartCutoff) : HasCompactSupport (kernelLiftedCutoff χ) := by
+lemma kernelLiftedCutoff_compact  : HasCompactSupport (kernelLiftedCutoff χ) := by
   apply HasCompactSupport.of_support_subset_isCompact
     (χ.compact.image_of_continuousOn (fun p hp =>
       (euclideanToHyperbolic_contMDiffAt p (χ.positive hp)).continuousAt.continuousWithinAt))
@@ -95,13 +99,17 @@ lemma kernelLiftedCutoff_compact (χ : PositiveChartCutoff) : HasCompactSupport 
   refine ⟨hyperbolicEuclideanCoordinates w,?_,euclideanToHyperbolic_coordinates w⟩
   exact subset_tsupport χ.func hw
 
-lemma kernelLiftedCutoff_bounded (χ : PositiveChartCutoff) :
+lemma kernelLiftedCutoff_bounded  :
     ∃C : ℝ,∀w,‖kernelLiftedCutoff χ w‖≤C := by
   obtain ⟨w,hw⟩ := (kernelLiftedCutoff_continuous χ).norm.exists_forall_ge_of_hasCompactSupport
     (kernelLiftedCutoff_compact χ).norm
   exact ⟨_,hw⟩
 
-lemma kernelCutoffGradient_memLp (χ : PositiveChartCutoff) (g : KernelGradientL2) :
+section
+variable (g : KernelGradientL2)
+include g
+
+lemma kernelCutoffGradient_memLp  :
     MemLp (fun w => kernelLiftedCutoff χ w • g w) 2 KernelFundamentalVolume := by
   obtain ⟨C,hC⟩ := kernelLiftedCutoff_bounded χ
   have hm : AEStronglyMeasurable (fun w => kernelLiftedCutoff χ w • g w) KernelFundamentalVolume :=
@@ -111,14 +119,16 @@ lemma kernelCutoffGradient_memLp (χ : PositiveChartCutoff) (g : KernelGradientL
   rw [norm_smul]
   exact mul_le_mul_of_nonneg_right (hC w) (norm_nonneg (g w))
 
-def kernelCutoffGradient (χ : PositiveChartCutoff) (g : KernelGradientL2) : KernelGradientL2 :=
+def kernelCutoffGradient  : KernelGradientL2 :=
   (kernelCutoffGradient_memLp χ g).toLp (fun w => kernelLiftedCutoff χ w • g w)
 
-lemma kernelCutoffGradient_coe (χ : PositiveChartCutoff) (g : KernelGradientL2) :
+lemma kernelCutoffGradient_coe  :
     (kernelCutoffGradient χ g : HyperbolicSpace→EuclideanSpace ℂ (Fin 3))=ᵐ[KernelFundamentalVolume]
       fun w => kernelLiftedCutoff χ w • g w := (kernelCutoffGradient_memLp χ g).coeFn_toLp
+end
 
-def kernelCutoffGradientLinear (χ : PositiveChartCutoff) : KernelGradientL2 →ₗ[ℂ] KernelGradientL2 where
+
+def kernelCutoffGradientLinear  : KernelGradientL2 →ₗ[ℂ] KernelGradientL2 where
   toFun := kernelCutoffGradient χ
   map_add' g h := by
     apply Lp.ext
@@ -133,7 +143,7 @@ def kernelCutoffGradientLinear (χ : PositiveChartCutoff) : KernelGradientL2 →
     simp only [RingHom.id_apply,hcg,ha',ha,Pi.smul_apply,hg]
     exact smul_comm _ _ _
 
-lemma kernelCutoffGradient_bound (χ : PositiveChartCutoff) :
+lemma kernelCutoffGradient_bound  :
     ∃C : ℝ,∀g : KernelGradientL2,‖kernelCutoffGradientLinear χ g‖≤C*‖g‖ := by
   obtain ⟨C,hC⟩ := kernelLiftedCutoff_bounded χ
   refine ⟨C,fun g => ?_⟩
@@ -143,10 +153,10 @@ lemma kernelCutoffGradient_bound (χ : PositiveChartCutoff) :
   rw [hw,norm_smul]
   exact mul_le_mul_of_nonneg_right (hC w) (norm_nonneg _)
 
-def kernelCutoffGradientCLM (χ : PositiveChartCutoff) : KernelGradientL2 →L[ℂ] KernelGradientL2 :=
+def kernelCutoffGradientCLM  : KernelGradientL2 →L[ℂ] KernelGradientL2 :=
   (kernelCutoffGradientLinear χ).mkContinuousOfExistsBound (kernelCutoffGradient_bound χ)
 
-lemma kernelCutoffGradient_norm_sq (χ : PositiveChartCutoff) (g : KernelGradientL2) :
+lemma kernelCutoffGradient_norm_sq  (g : KernelGradientL2) :
     ‖kernelCutoffGradientCLM χ g‖^2=
       ∫w,(kernelLiftedCutoff χ w)^2*‖g w‖^2∂KernelFundamentalVolume := by
   calc
@@ -158,7 +168,7 @@ lemma kernelCutoffGradient_norm_sq (χ : PositiveChartCutoff) (g : KernelGradien
       filter_upwards [kernelCutoffGradient_coe χ g] with w hw
       rw [hw,real_inner_self_eq_norm_sq,norm_smul,mul_pow,Real.norm_eq_abs,sq_abs]
 
-lemma kernelCutoffGradient_core_norm_sq (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelCutoffGradient_core_norm_sq  (f : kernelSmoothTests) :
     ‖kernelCutoffGradientCLM χ (kernelGradientToL2 f)‖^2=
       ∫w,(kernelLiftedCutoff χ w)^2*kernelTestEnergyDensity f w∂KernelFundamentalVolume := by
   rw [kernelCutoffGradient_norm_sq]
@@ -166,7 +176,7 @@ lemma kernelCutoffGradient_core_norm_sq (χ : PositiveChartCutoff) (f : kernelSm
   filter_upwards [kernelGradientToL2_coe f] with w hw
   rw [hw,kernelGradientAt_norm_sq]
 
-lemma kernelLocalizedField_reverse_energy (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+lemma kernelLocalizedField_reverse_energy  (f : kernelSmoothTests)
     (p : EuclideanSpatial) (hp : 0<p 2) :
     (χ.func p)^2*kernelTestEnergyDensity f (euclideanToHyperbolic p)≤
       2*(p 2)^2*kernelLocalizedDensity χ f p+
@@ -197,6 +207,8 @@ lemma kernelLocalizedField_reverse_energy (χ : PositiveChartCutoff) (f : kernel
   have hh := mul_le_mul_of_nonneg_left hsum (sq_nonneg (p 2))
   unfold kernelLocalizedDensity
   nlinarith [mul_nonneg (sq_nonneg (p 2)) (sq_nonneg ‖kernelLocalizedField χ f p‖)]
+end
+
 
 section
 open Filter MeasureTheory
@@ -255,13 +267,17 @@ private lemma integrable_sq_mul_of_compact (a b : HyperbolicSpace → ℝ)
     hc.comp_left (g := fun x : ℝ => x^2) (by simp)
   exact ((ha.pow 2).mul hb).integrable_of_hasCompactSupport hs.mul_right
 
-lemma kernelLiftedCutoffEnergy_integrable (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+section
+variable (χ : PositiveChartCutoff)
+include χ
+
+lemma kernelLiftedCutoffEnergy_integrable  (f : kernelSmoothTests) :
     Integrable (fun w => (kernelLiftedCutoff χ w)^2*kernelTestEnergyDensity f w) hyperbolicVolume :=
   integrable_sq_mul_of_compact (kernelLiftedCutoff χ) (kernelTestEnergyDensity f)
     (kernelLiftedCutoff_continuous χ) (kernelTestEnergyDensity_continuous f)
     (kernelLiftedCutoff_compact χ)
 
-lemma kernelLiftedCutoffEnergy_integral (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLiftedCutoffEnergy_integral  (f : kernelSmoothTests) :
     (∫w,(kernelLiftedCutoff χ w)^2*kernelTestEnergyDensity f w∂hyperbolicVolume)=
       ∫p,(χ.func p)^2*kernelTestEnergyDensity f (euclideanToHyperbolic p)∂hyperbolicEuclideanVolume := by
   rw [hyperbolicVolume,integral_map euclideanToHyperbolic_measurable.aemeasurable
@@ -270,8 +286,11 @@ lemma kernelLiftedCutoffEnergy_integral (χ : PositiveChartCutoff) (f : kernelSm
   filter_upwards [hyperbolicEuclideanVolume_ae_positive] with p hp
   simp only [kernelLiftedCutoff,hyperbolicEuclideanCoordinates_toHyperbolic p hp]
 
-lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+section
+variable (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
+include hinj
+
+lemma kernelCutoffGradient_core_estimate 
     (B D H : ℝ) (_hB : 0≤B) (hD : 0≤D) (hH : 0≤H)
     (hheight : ∀p∈tsupport χ.func,p 2≤B)
     (hderiv : ∀p∈tsupport χ.func,
@@ -342,8 +361,7 @@ lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
       gcongr
       exact kernelLocalMass_le S hS hpos hinj f
 
-lemma kernelCutoffGradient_core_bounded (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
+lemma kernelCutoffGradient_core_bounded  :
     ∃C : ℝ,0≤C ∧ ∀f : kernelSmoothTests,
       ‖kernelCutoffGradientCLM χ (kernelGradientToL2 f)‖^2≤
         C*(‖kernelLocalizedH1 χ f‖^2+‖kernelSmoothTestsToL2 f‖^2) := by
@@ -378,8 +396,7 @@ lemma kernelCutoffGradient_core_bounded (χ : PositiveChartCutoff)
   nlinarith [mul_nonneg hH (sq_nonneg ‖kernelSmoothTestsToL2 f‖),
     mul_nonneg hD (sq_nonneg ‖kernelLocalizedH1 χ f‖)]
 
-lemma kernelEnergyCutoffGradient_eq_zero (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (u : KernelEnergyGraph)
+lemma kernelEnergyCutoffGradient_eq_zero  (u : KernelEnergyGraph)
     (hu : kernelEnergyMass u=0) : kernelCutoffGradientCLM χ (kernelEnergyGradient u)=0 := by
   obtain ⟨C,hC,hbound⟩ := kernelCutoffGradient_core_bounded χ hinj
   have hh : ‖kernelCutoffGradientCLM χ (kernelEnergyGradient u)‖^2≤
@@ -390,6 +407,9 @@ lemma kernelEnergyCutoffGradient_eq_zero (χ : PositiveChartCutoff)
   rw [kernelEnergyLocalize_eq_zero_of_mass_zero χ hinj u hu,hu] at hh
   have hz : ‖kernelCutoffGradientCLM χ (kernelEnergyGradient u)‖=0 := by simpa using hh
   exact norm_eq_zero.mp hz
+end
+end
+
 
 lemma kernelCutoffGradient_faithful (g : KernelGradientL2)
     (hg : ∀χ : PositiveChartCutoff,
@@ -532,8 +552,8 @@ lemma kernelEnergyLaplacian_resolvent_relation (u : kernelEnergyLaplacian.domain
   rw [kernelEnergyLaplacian_graph,mem_kernelLaplacianGraph] at hh
   simpa only [add_comm] using hh
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

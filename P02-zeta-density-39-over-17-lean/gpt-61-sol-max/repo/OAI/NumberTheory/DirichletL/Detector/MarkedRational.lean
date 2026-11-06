@@ -8,8 +8,8 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open ProbeEuler ProbeRow
+open scoped EisensteinO
 
 def idealMarkedClosed (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   let Q : ℝ := Ideal.absNorm P.val
@@ -55,7 +55,7 @@ theorem idealMarkedLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeI
   · simp only [idealMarkedClosed,coordD,coordW,star_one,mul_one,one_mul]
     simp only [hspan,p,targetMonoid_primaryGenerator η P.val hs,Complex.ofReal_natCast,neg_mul]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

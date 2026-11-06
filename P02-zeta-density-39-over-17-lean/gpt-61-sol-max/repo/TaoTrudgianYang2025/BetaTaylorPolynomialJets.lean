@@ -19,26 +19,30 @@ open Set
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def finiteTaylorPolynomial (f : ℝ → ℝ) (Q : ℕ) (a : ℝ) : ℝ → ℝ :=
   taylorWithinEval f Q univ a
 
-theorem finiteTaylorPolynomial_contDiff (f : ℝ → ℝ) (Q : ℕ) (a : ℝ) :
+section
+variable (f : ℝ → ℝ)
+include f
+
+theorem finiteTaylorPolynomial_contDiff  (Q : ℕ) (a : ℝ) :
     ContDiff ℝ ∞ (finiteTaylorPolynomial f Q a) := by
   change ContDiff ℝ ∞ (fun x => taylorWithinEval f Q univ a x)
   simp_rw [taylor_within_apply]
   fun_prop
 
 theorem finiteTaylorPolynomial_succ_hasDerivAt
-    (f : ℝ → ℝ) (Q : ℕ) (a x : ℝ) :
+     (Q : ℕ) (a x : ℝ) :
     HasDerivAt (finiteTaylorPolynomial f (Q+1) a)
       (finiteTaylorPolynomial (deriv f) Q a x) x := by
   simpa only [finiteTaylorPolynomial,derivWithin_univ] using
     (hasDerivAt_taylorWithinEval_succ (x₀ := a) (x := x) (s := univ) f Q)
 
 theorem iteratedDeriv_finiteTaylorPolynomial
-    (f : ℝ → ℝ) (a : ℝ) {n Q : ℕ} (hn : n ≤ Q) (x : ℝ) :
+     (a : ℝ) {n Q : ℕ} (hn : n ≤ Q) (x : ℝ) :
     iteratedDeriv n (finiteTaylorPolynomial f Q a) x =
       finiteTaylorPolynomial (iteratedDeriv n f) (Q-n) a x := by
   induction n generalizing f Q with
@@ -54,5 +58,7 @@ theorem iteratedDeriv_finiteTaylorPolynomial
             exact (finiteTaylorPolynomial_succ_hasDerivAt f Q a y).deriv
           rw [he,ih (deriv f) (by omega)]
           simp only [Nat.succ_sub_succ_eq_sub,iteratedDeriv_succ']
+end
 
-end TaoTrudgianYang2025
+
+

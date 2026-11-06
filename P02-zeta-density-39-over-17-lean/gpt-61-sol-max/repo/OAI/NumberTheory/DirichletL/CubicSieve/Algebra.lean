@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.NumberTheory.MulChar.Lemmas
 public import Mathlib.Analysis.Complex.Norm
 public import Mathlib.Algebra.BigOperators.Ring.Finset
@@ -12,7 +13,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-noncomputable section
+
 
 theorem square_eq_star_of_fourth_eq (z : ℂ) (hz : z ^ 4 = z) : z ^ 2 = star z := by
   by_cases h0 : z = 0
@@ -24,8 +25,7 @@ theorem square_eq_star_of_fourth_eq (z : ℂ) (hz : z ^ 4 = z) : z ^ 2 = star z 
   change z ^ 2 = (starRingEnd ℂ) z
   rw [← Complex.inv_eq_conj hn]
   apply mul_right_cancel₀ h0
-  rw [inv_mul_cancel₀ h0]
-  simpa only [← pow_succ] using h3
+  grind
 
 variable {R : Type*} [CommRing R] [Finite Rˣ]
 
@@ -45,7 +45,7 @@ theorem cubic_cube_eq_mask (χ : MulChar R ℂ) (hχ : χ ^ 3 = 1) (x : R) :
   · rw [ite_eq_left hx, MulChar.one_apply hx]
   · rw [ite_eq_right hx, MulChar.map_nonunit _ hx]
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

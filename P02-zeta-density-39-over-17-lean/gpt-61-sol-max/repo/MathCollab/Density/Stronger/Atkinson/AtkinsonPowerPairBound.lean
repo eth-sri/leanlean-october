@@ -11,9 +11,9 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+
+open Complex MeasureTheory
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_norm_atkinsonPowerPair_le (α : ℝ) (c d : ℂ) :
@@ -35,4 +35,4 @@ theorem exists_norm_atkinsonPowerPair_le (α : ℝ) (c d : ℂ) :
       have hb : 0 ≤ C * G * T ^ (-α) := by positivity
       nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

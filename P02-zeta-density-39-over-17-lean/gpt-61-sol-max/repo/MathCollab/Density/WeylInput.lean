@@ -4,8 +4,7 @@ public import WeylPort.ActualZeta
 @[expose] public section
 
 open Complex
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- The independently ported actual-zeta theorem discharges the detector's
@@ -20,4 +19,4 @@ theorem actual_zeta_weyl_input {η₀ : ℝ} (hη₀ : 0 < η₀) :
   exact (hW t).trans (mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow (by positivity) hm (by linarith)) hC.le)
 
-end MathCollab.Density
+

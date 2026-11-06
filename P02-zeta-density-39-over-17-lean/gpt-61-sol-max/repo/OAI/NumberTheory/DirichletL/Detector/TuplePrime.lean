@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.CompensationActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma span_tupleProduct {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
@@ -46,7 +46,7 @@ theorem indexedCompensatedHigh_principal {K : ℕ} (η : HeckeFamily.Character) 
   simp only [tupleIndexedCoefficient,hnorm,hc,span_tupleProduct,
     span_primaryGenerator_of_supported _ (hs _)]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

@@ -3,15 +3,18 @@ public import TraceAlternatives.UniversalCenteredShell
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+    {η : ℝ} (hη : 0 < η)
+include w η hη
+
 /-- The sharp second moment reflected through every shell of the actual
 centered cutoff kernel, with the original ordered energy. -/
-theorem centered_energy_universal (w : MathCollab.Density.ReflectionCutoff)
-    {η : ℝ} (hη : 0 < η) :
+theorem centered_energy_universal  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 2 ≤ T → Real.sqrt T ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -136,8 +139,7 @@ theorem centered_energy_universal (w : MathCollab.Density.ReflectionCutoff)
 
 /-- The actual squared-cutoff centered matrix satisfies the improved
 quadratic trace bound, with no analytic estimate among the premises. -/
-theorem centered_trace_universal (w : MathCollab.Density.ReflectionCutoff)
-    {η : ℝ} (hη : 0 < η) :
+theorem centered_trace_universal  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 2 ≤ T → Real.sqrt T ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -149,5 +151,7 @@ theorem centered_trace_universal (w : MathCollab.Density.ReflectionCutoff)
   rw [cutoff_centered_trace_identity,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (sum_nonneg (fun _ _ => sum_nonneg (fun _ _ => sq_nonneg _)))]
   exact hbound T t₀ L hT hLs W hW hsep
+end
 
-end Montgomery.RationalMoment
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Algebra.Squarefree.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Lean.Elab.Tactic.Omega
@@ -28,10 +29,7 @@ def cubePart (x : M) : M :=
 
 theorem count_mod_three (k : ℕ) :
     k = (if k % 3 = 1 then 1 else 0) +
-      2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by
-  have h := Nat.mod_add_div k 3
-  have hlt := Nat.mod_lt k (by decide : 0 < 3)
-  split_ifs <;> omega
+      2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by grind
 
 omit [Subsingleton Mˣ] in
 private theorem residual_squarefree (x : M) (r : ℕ) :
@@ -77,7 +75,7 @@ theorem cubic_factorization (x : M) (hx : x ≠ 0) :
       simp only [Finset.prod_mul_distrib, Finset.prod_pow]
       simp only [firstPart, secondPart, cubePart, Finset.prod_filter]
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

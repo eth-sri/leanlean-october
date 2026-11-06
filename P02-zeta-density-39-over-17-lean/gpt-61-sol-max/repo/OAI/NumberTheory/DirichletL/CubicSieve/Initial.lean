@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Poisson
 public import OAI.NumberTheory.DirichletL.CubicSieve.Algebra
 
@@ -9,38 +10,52 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
+open CompletedGauss ConcretePrimeRowBridge QuadraticInitialBound
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def cubicFiniteRow {α : Type*} (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (S : Finset α) (z : O) : ℂ :=
+section
+variable {α : Type*}
+include α
+
+section
+variable (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+    (hg : ∀ i, goodLambda ∉ P i) (S : Finset α) (z : O)
+include P hg S z
+
+def cubicFiniteRow  : ℂ :=
   (finiteSquarefreeRow P hg S z) ^ 2
 
-theorem cubicFiniteRow_eq_canonical {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (S : Finset α) (z : O) :
+theorem cubicFiniteRow_eq_canonical  :
     cubicFiniteRow P hg S z =
       finiteSexticRow (fun i : S => P i.val) (fun i => hg i.val) (fun _ => 2) z := by
   simp only [cubicFiniteRow, finiteSexticRow, finiteSquarefreeRow,
     MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0), Finset.prod_pow]
   rw [Finset.prod_coe_sort (s := S) (f := fun i => actualSextic (P i) (hg i) (Ideal.Quotient.mk (P i) z))]
+end
 
-def activeCubicExponent {α : Type*} [DecidableEq α]
+
+def activeCubicExponent  [DecidableEq α]
     (S T : Finset α) (i : activeSupport S T) : ℕ :=
   if i.val ∈ S \ T then 4 else 2
 
-theorem activeCubicExponent_nonprincipal {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hg : ∀ i, goodLambda ∉ P i)
-    (S T : Finset α) (i : activeSupport S T) :
+section
+variable [DecidableEq α]
+    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+
+section
+variable (hg : ∀ i, goodLambda ∉ P i)
+    (S T : Finset α)
+include hg S T
+
+theorem activeCubicExponent_nonprincipal  (i : activeSupport S T) :
     actualSextic (P i.val) (hg i.val) ^ activeCubicExponent S T i ≠ 1 := by
   have h := cubicExponent_nonprincipal (P i.val) (hg i.val)
     (decide (i.val ∈ S \ T))
   simpa only [cubicExponent, activeCubicExponent, decide_eq_true_eq] using h
 
-theorem cubicFiniteRow_pair_kernel {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (S T : Finset α) (z : O) :
+theorem cubicFiniteRow_pair_kernel  (z : O) :
     star (cubicFiniteRow P hg S z) * cubicFiniteRow P hg T z =
       rowCoprimeMask P (S ∩ T) z *
         finiteSexticRow (activePrimes P S T) (fun i => hg i.val)
@@ -73,11 +88,16 @@ theorem cubicFiniteRow_pair_kernel {α : Type*} [DecidableEq α]
     · rw [← pow_mul, show (5 * 2 : ℕ) = 4 + 6 by decide, pow_add, h6, mul_one]
     · simp
   simpa only [mul_pow, ← star_pow, hm, hrow, cubicFiniteRow] using h
+end
 
-theorem cubic_gram_offdiagonal {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+
+section
+variable (hinj : Function.Injective P)
     (hg : ∀ i, goodLambda ∉ P i)
-    (S T : Finset α) (hne : S ≠ T) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+    (S T : Finset α) (hne : S ≠ T)
+include hinj hg S T hne
+
+theorem cubic_gram_offdiagonal  (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     ‖∑' z : O, (star (cubicFiniteRow P hg S z) * cubicFiniteRow P hg T z) *
         W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤
       (2 : ℝ) ^ (S ∩ T).card *
@@ -88,10 +108,7 @@ theorem cubic_gram_offdiagonal {α : Type*} [DecidableEq α]
     (activePrimes_pairwise_isCoprime P hinj S T) (fun i => hg i.val)
     (activeCubicExponent S T) (activeCubicExponent_nonprincipal P hg S T) W M hM
 
-theorem cubic_gram_offdiagonal_of_norm_le {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (hg : ∀ i, goodLambda ∉ P i)
-    (S T : Finset α) (hne : S ≠ T) (N : ℝ) (hN : 0 ≤ N)
+theorem cubic_gram_offdiagonal_of_norm_le  (N : ℝ) (hN : 0 ≤ N)
     (hS : supportNorm P S ≤ N) (hT : supportNorm P T ≤ N)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     ‖∑' z : O, (star (cubicFiniteRow P hg S z) * cubicFiniteRow P hg T z) *
@@ -100,17 +117,21 @@ theorem cubic_gram_offdiagonal_of_norm_le {α : Type*} [DecidableEq α]
   rw [mul_left_comm]
   exact mul_le_mul_of_nonneg_left (divisor_conductor_bound P S T N hN hS hT)
     (pvControl_nonneg W)
+end
+end
 
-theorem cubicFiniteRow_norm_le_one {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (S : Finset α) (z : O) :
+
+section
+variable (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+    (hg : ∀ i, goodLambda ∉ P i)
+include P hg
+
+theorem cubicFiniteRow_norm_le_one  (S : Finset α) (z : O) :
     ‖cubicFiniteRow P hg S z‖ ≤ 1 := by
   rw [cubicFiniteRow_eq_canonical]
   exact finiteSexticRow_norm_le_one _ _ _ _
 
-theorem cubic_pair_summable {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (S T : Finset α)
+theorem cubic_pair_summable  (S T : Finset α)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     Summable (fun z : O => (star (cubicFiniteRow P hg S z) * cubicFiniteRow P hg T z) *
       W (‖eisEmbedding z‖ ^ 2 / M)) := by
@@ -125,9 +146,7 @@ theorem cubic_pair_summable {α : Type*}
     ((mul_le_mul (cubicFiniteRow_norm_le_one P hg S z) (cubicFiniteRow_norm_le_one P hg T z)
       (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
 
-theorem cubic_gram_diagonal {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (S : Finset α)
+theorem cubic_gram_diagonal  (S : Finset α)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
     ‖∑' z : O, (star (cubicFiniteRow P hg S z) * cubicFiniteRow P hg S z) *
         W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤ diagonalControl W * M := by
@@ -143,6 +162,9 @@ theorem cubic_gram_diagonal {α : Type*}
   exact mul_le_of_le_one_left (norm_nonneg _)
     ((mul_le_mul (cubicFiniteRow_norm_le_one P hg S z) (cubicFiniteRow_norm_le_one P hg S z)
       (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
+end
+end
+
 
 private theorem norm_sq_finite_sum {β : Type*} (C : Finset β) (a r : β → ℂ) :
     (↑(‖∑ n ∈ C, a n * r n‖ ^ 2) : ℂ) =
@@ -151,15 +173,19 @@ private theorem norm_sq_finite_sum {β : Type*} (C : Finset β) (a r : β → �
   simp only [map_sum, map_mul, starRingEnd_apply]
   rw [Finset.sum_mul_sum]
   apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
-  ring
+  grind
 
-theorem cubic_mean_summable {α β : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+section
+variable {α β : Type*}
+include α β
+
+section
+variable (P : α → Ideal O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, goodLambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M)
+include P hg C support a W M hM
+
+theorem cubic_mean_summable  :
     Summable (fun z : O => W (‖eisEmbedding z‖ ^ 2 / M) *
       (↑(‖∑ n ∈ C, a n * cubicFiniteRow P hg (support n) z‖ ^ 2) : ℂ)) := by
   have hs := summable_sum (s := C) (fun n hn => summable_sum (s := C) (fun m hm =>
@@ -171,19 +197,15 @@ theorem cubic_mean_summable {α β : Type*}
   apply Finset.sum_congr rfl
   intro n hn
   apply Finset.sum_congr rfl
-  intro m hm
-  ring
+  grind
 
-theorem cubic_mean_expand {α β : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+theorem cubic_mean_expand  :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / M) *
       (↑(‖∑ n ∈ C, a n * cubicFiniteRow P hg (support n) z‖ ^ 2) : ℂ)) =
       ∑ n ∈ C, ∑ m ∈ C, (star (a n) * a m) *
         ∑' z : O, (star (cubicFiniteRow P hg (support n) z) * cubicFiniteRow P hg (support m) z) *
           W (‖eisEmbedding z‖ ^ 2 / M) := by
-  let f : β → β → O → ℂ := fun n m z => (star (a n) * a m) *
+  let f := fun n m z => (star (a n) * a m) *
     ((star (cubicFiniteRow P hg (support n) z) * cubicFiniteRow P hg (support m) z) *
       W (‖eisEmbedding z‖ ^ 2 / M))
   have hf (n m : β) : Summable (f n m) :=
@@ -195,10 +217,7 @@ theorem cubic_mean_expand {α β : Type*}
     simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro n hn
-    apply Finset.sum_congr rfl
-    intro m hm
-    dsimp [f]
-    ring
+    grind
   rw [tsum_congr heq, Summable.tsum_finsetSum (fun n hn => summable_sum (fun m hm => hf n m))]
   apply Finset.sum_congr rfl
   intro n hn
@@ -206,14 +225,20 @@ theorem cubic_mean_expand {α β : Type*}
   apply Finset.sum_congr rfl
   intro m hm
   exact tsum_mul_left
+end
 
-theorem cubic_initial_mean_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
+
+section
+variable [DecidableEq α] [DecidableEq β]
     (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
     (hg : ∀ i, goodLambda ∉ P i)
     (C : Finset β) (support : β → Finset α)
     (hsupp : Set.InjOn support (↑C : Set β))
     (N : ℝ) (hN : 0 ≤ N) (hNorm : ∀ n ∈ C, supportNorm P (support n) ≤ N)
-    (a : β → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
+    (a : β → ℂ)
+include P hinj hg C support hsupp N hN hNorm a
+
+theorem cubic_initial_mean_bound  (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
     ‖∑' z : O, W (‖eisEmbedding z‖ ^ 2 / M) *
       (↑(‖∑ n ∈ C, a n * cubicFiniteRow P hg (support n) z‖ ^ 2) : ℂ)‖ ≤
         (diagonalControl W * M + pvControl W * N * C.card) * ∑ n ∈ C, ‖a n‖ ^ 2 := by
@@ -221,7 +246,7 @@ theorem cubic_initial_mean_bound {α β : Type*} [DecidableEq α] [DecidableEq �
   let D := diagonalControl W * M
   let B := pvControl W * N
   have hB : 0 ≤ B := mul_nonneg (pvControl_nonneg W) hN
-  let K : β → β → ℂ := fun n m => ∑' z : O,
+  let K := fun n m => ∑' z : O,
     (star (cubicFiniteRow P hg (support n) z) * cubicFiniteRow P hg (support m) z) *
       W (‖eisEmbedding z‖ ^ 2 / M)
   have hK (n : β) (hn : n ∈ C) (m : β) (hm : m ∈ C) :
@@ -265,18 +290,13 @@ theorem cubic_initial_mean_bound {α β : Type*} [DecidableEq α] [DecidableEq �
         Finset.sum_mul_sq_le_sq_mul_sq C (fun n => ‖a n‖) (fun _ => (1 : ℝ))
     _ = _ := by dsimp [D, B]; ring
 
-theorem cubic_initial_finite_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (hg : ∀ i, goodLambda ∉ P i)
-    (C : Finset β) (support : β → Finset α) (hsupp : Set.InjOn support (↑C : Set β))
-    (N : ℝ) (hN : 0 ≤ N) (hNorm : ∀ n ∈ C, supportNorm P (support n) ≤ N)
-    (a : β → ℂ) (M : ℝ) (hM : 1 ≤ M) (R : Finset O)
+theorem cubic_initial_finite_bound  (M : ℝ) (hM : 1 ≤ M) (R : Finset O)
     (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M) :
     (∑ z ∈ R, ‖∑ n ∈ C, a n * cubicFiniteRow P hg (support n) z‖ ^ 2) ≤
       (diagonalControl sieveCutoff * M + pvControl sieveCutoff * N * C.card) *
         ∑ n ∈ C, ‖a n‖ ^ 2 := by
   have hMp : 0 < M := by linarith
-  let E : O → ℝ := fun z => ‖∑ n ∈ C, a n * cubicFiniteRow P hg (support n) z‖ ^ 2
+  let E := fun z => ‖∑ n ∈ C, a n * cubicFiniteRow P hg (support n) z‖ ^ 2
   let F : O → ℝ := fun z => sieveBump (‖eisEmbedding z‖ ^ 2 / M) * E z
   let H : O → ℂ := fun z => sieveCutoff (‖eisEmbedding z‖ ^ 2 / M) * (E z : ℂ)
   have hF (z : O) : 0 ≤ F z := mul_nonneg sieveBump.nonneg (sq_nonneg _)
@@ -293,12 +313,15 @@ theorem cubic_initial_finite_bound {α β : Type*} [DecidableEq α] [DecidableEq
       apply Finset.sum_congr rfl
       intro z hz
       have ht0 : 0 ≤ ‖eisEmbedding z‖ ^ 2 / M := div_nonneg (sq_nonneg _) hMp.le
-      have ht1 : ‖eisEmbedding z‖ ^ 2 / M ≤ 1 := (div_le_one hMp).mpr (hR z hz)
+      have ht1 := (div_le_one hMp).mpr (hR z hz)
       simp only [F, sieveBump_eq_one ht0 ht1, one_mul, E]
     _ ≤ ∑' z : O, F z := hFs.sum_le_tsum R (fun z _ => hF z)
     _ = ‖∑' z : O, H z‖ := hsum.symm
     _ ≤ _ := cubic_initial_mean_bound P hinj hg C support hsupp N hN hNorm
       a sieveCutoff M hM
+end
+end
+
 
 theorem ideal_initial_cubic_sieve
     (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
@@ -346,7 +369,7 @@ theorem ideal_initial_cubic_sieve
   nlinarith [mul_nonneg hdiag (sq_nonneg (N : ℝ)),
     mul_nonneg hpv (show 0 ≤ M by linarith)]
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

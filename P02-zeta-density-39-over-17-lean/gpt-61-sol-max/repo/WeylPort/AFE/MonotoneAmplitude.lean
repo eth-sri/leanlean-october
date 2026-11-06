@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.FirstDerivativeTest
 
@@ -45,7 +46,7 @@ theorem norm_integral_mul_le_of_primitive_bound {a b B : ℝ} (hab : a ≤ b)
       abs_of_nonpos (hgneg x ⟨hx.1.le, hx.2⟩)]
     exact mul_le_mul_of_nonneg_left (hB x ⟨hx.1.le, hx.2⟩)
       (neg_nonneg.mpr (hgneg x ⟨hx.1.le, hx.2⟩))
-  have hderiv : (∫ x in a..b, g' x) = g b - g a :=
+  have hderiv :=
     intervalIntegral.integral_eq_sub_of_hasDerivAt
       (fun x hx => hg x (Set.uIcc_of_le hab ▸ hx)) hi
   rw [intervalIntegral.integral_mul_const, intervalIntegral.integral_neg, hderiv] at hnorm
@@ -58,4 +59,4 @@ theorem norm_integral_mul_le_of_primitive_bound {a b B : ℝ} (hab : a ≤ b)
       exact mul_le_mul_of_nonneg_left (hB b (Set.right_mem_Icc.mpr hab)) hgpos
     _ = _ := by ring
 
-end DhimanKadiriQuesadaHerrera2026
+

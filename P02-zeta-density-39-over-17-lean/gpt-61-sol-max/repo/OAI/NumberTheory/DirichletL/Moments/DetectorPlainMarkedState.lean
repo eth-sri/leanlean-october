@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainStateDictionary
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainCapacity
 public import OAI.NumberTheory.DirichletL.Energy.Bands
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ComplexConjugate Topology ContDiff
 open Filter
 
@@ -17,19 +18,23 @@ open HeckeFamily HeckeDyadic HeckeDetectorRawFiber HeckeDetectorBatch HeckePrime
 open HeckeInverseAmplification HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 open CenteredMomentDetectorPlainStateDictionary CenteredMomentDetectorPlainExceptional
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainCapacity
-open CenteredMomentDetectorPlainSlotProfile CenteredMomentDetectorEnergyInitialState
+open CenteredMomentDetectorEnergyInitialState
 open CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily
+open CenteredMomentInductionEnergy
 open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
-open ConcretePrimeRowBridge ProbeHighRowFamily
-local notation "O" => HeckeFamily.O
+open ProbeHighRowFamily
+open scoped HeckeO
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem source_slot_coefficient (S:ProbeFinalAssembly.SourceData D)
+section
+variable (S:ProbeFinalAssembly.SourceData D)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (hprofile:∀s x,F.profile s x=S.W x)(η:Character)(s:Slot)
+    (hprofile:∀s x,F.profile s x=S.W x)
+include S F hprofile
+
+theorem source_slot_coefficient (η:Character)(s:Slot)
     (hreal:(F.external s).re=17/50)(hU:0<U)(I:Ideal O):
     idealCoeff η.inverse I*slotWindow F s ((I.absNorm:ℝ)/(U^(F.widths s)))=
       idealCoeff η.inverse I*annularWeight (fun x=>conj (S.W x))
@@ -40,9 +45,7 @@ theorem source_slot_coefficient (S:ProbeFinalAssembly.SourceData D)
   norm_num at he
   simpa only [physicalSlotCoefficient,slotWindow,hprofile] using he
 
-theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (hprofile:∀s x,F.profile s x=S.W x)(hupper:∀s,F.upper s=2)
+theorem retained_eq_initial_energy (hupper:∀s,F.upper s=2)
     (η:Character)(Q:Ideal O)(selected:Finset Slot)
     (hreal:∀s∈selected,(F.external s).re=17/50)
     (Φ:𝓢(ℝ,ℂ))(bΦ δ:ℝ)(hU:1≤U)(hδ:0≤δ)
@@ -73,21 +76,28 @@ theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
   simp only [hupper,plainProfile_eq_detectorSchwartz,initialState,NaturalState.mask,
     detectorProfiles,reduceIte,Fin.one_eq_zero_iff]
   norm_num
+end
 
-theorem plain_length_eq [NeZero M]
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U):
+
+section
+variable [NeZero M]
+    (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U)
+include F hU
+
+theorem plain_length_eq :
     length U (U^F.m)=F.m := by
-  have hm:0≤F.m:=(F.lengths hU).2.2.2.2
+  have hm :=(F.lengths hU).2.2.2.2
   rw [length,max_eq_right (Real.one_le_rpow hU.le hm),
     Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
 
-theorem marked_capacity [NeZero M]
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U)
+theorem marked_capacity 
     (selected:Finset Slot)(κ δ:ℝ)(hδ:0≤δ)
     (hcap:2*F.m+6*κ*(∑s∈selected,F.widths s)≤1):
     length U (U^F.m)+length U (U^F.m)+6*κ*(∑s:selected,F.widths s.val)≤1+δ := by
   rw [plain_length_eq F hU,Finset.sum_coe_sort]
   linarith
+end
+
 
 theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
     ∃bΦ:ℝ,0<bΦ ∧ ∀η:Character,∀δ:ℝ,0<δ→
@@ -110,7 +120,7 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
         state.radial.keep=initialKeep η₀ (internalQ (sourceFixedIdeal S) η₀) ∧
         state.width=1+δ ∧
         length (Z^d) ((Z^d)^F.m)+length (Z^d) ((Z^d)^F.m)+
-          6*(3/4+2*Δ)*(∑s:selected,F.widths s.val)≤state.width ∧
+          6*(3/4+2*Δ)*(∑s:selected,F.widths s.val)≤ state.width ∧
         (∀s:selected,0<F.widths s.val ∧ F.widths s.val≤F.mesh) ∧
         ∀j k:ℕ,∀σ t:ℝ,
         (∑u∈F.rows,‖polynomial (F.family u F.label) false ((logProfile^[j]) positiveAnnular)
@@ -133,8 +143,8 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
   intro rows hrows d hd a ε tstar T allowance i B hB hdata hprofile hwidth hupper hreal
     bin label J K hne selected hselected F hcap η₀
   have hdpos:0<d:=by linarith
-  have hU:1<Z^d:=Real.one_lt_rpow hz.1 hdpos
-  have hη:(η₀.modulus.absNorm:ℝ)≤(Z^d)^δ:=hz.2 label d hd
+  have hU :=Real.one_lt_rpow hz.1 hdpos
+  have hη :=hz.2 label d hd
   let state:=initialState η₀ (internalQ (sourceFixedIdeal S) η₀) radialMajorant bΦ
     (Z^d) δ hU.le hδ.le hs radialMajorant_nonneg hη
   refine ⟨state,rfl,rfl,rfl,rfl,rfl,rfl,rfl,?_,?_,?_⟩
@@ -152,8 +162,8 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
       (fun s _=>hreal s) radialMajorant bΦ δ hU.le hδ.le hs radialMajorant_nonneg hη j k σ t
     exact hb.trans_eq he
 
-end SevenEighths.CenteredMomentDetectorPlainMarkedState
 
-end
 
-end OAI
+
+
+

@@ -10,12 +10,16 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthSource
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
 open CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
+section
+variable (C D : Ideal O)
+include C D
+
+theorem sixthFactor_span_dvd  (hC : Supported C)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) :
     Ideal.span {sixthFactor C D U}∣C := by
   conv_rhs => rw [←left_ideal_product C D hC hCD]
@@ -28,14 +32,14 @@ theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
   unfold fixedExponent
   split_ifs <;> omega
 
-theorem fixed_sixth_coefficient (C D : Ideal O) (U : Finset (CommonIndex C D))
+theorem fixed_sixth_coefficient  (U : Finset (CommonIndex C D))
     (I : Ideal O) (hI : Supported I) :
     idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I=
       idealRowHom (reducedNumerator C D U) I*
         (if IsCoprime I (Ideal.span {sixthFactor C D U}) then 1 else 0) := by
   rw [fixed_sixth_factorization,idealRowHom_argument_mul,idealRowHom_sixth_mask _ I hI]
 
-theorem residual_sixth_coefficient (C D : Ideal O) (hC : Supported C)
+theorem residual_sixth_coefficient  (hC : Supported C)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D))
     (I : Ideal O) (hI : Supported I) (hcop : IsCoprime C I) :
     idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I=
@@ -43,20 +47,27 @@ theorem residual_sixth_coefficient (C D : Ideal O) (hC : Supported C)
   rw [fixed_sixth_coefficient C D U I hI,ite_eq_left
     (hcop.symm.of_isCoprime_of_dvd_right (sixthFactor_span_dvd C D hC hCD U)),mul_one]
 
-abbrev ActiveIndex (C D : Ideal O) (U : Finset (CommonIndex C D)) := ↥(fixedActiveSet C D U)
+section
+variable (U : Finset (CommonIndex C D))
+include U
 
-def activePrime (C D : Ideal O) (U : Finset (CommonIndex C D))
-    (P : ActiveIndex C D U) : O := commonPrime C D P.val
+abbrev ActiveIndex  := ↥(fixedActiveSet C D U)
 
-def activeExponent (C D : Ideal O) (U : Finset (CommonIndex C D))
-    (P : ActiveIndex C D U) : ℕ := fixedExponent C D U P.val%6
+section
+variable (P : ActiveIndex C D U)
+include P
 
-theorem activeExponent_pos (C D : Ideal O) (U : Finset (CommonIndex C D))
-    (P : ActiveIndex C D U) : 0<activeExponent C D U P := by
+def activePrime  : O := commonPrime C D P.val
+
+def activeExponent  : ℕ := fixedExponent C D U P.val%6
+
+theorem activeExponent_pos  : 0<activeExponent C D U P := by
   have hp : ¬6∣fixedExponent C D U P.val := (Finset.mem_filter.mp P.property).2
   exact Nat.pos_of_ne_zero (fun h=>hp (Nat.dvd_of_mod_eq_zero h))
+end
 
-theorem reducedNumerator_active_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
+
+theorem reducedNumerator_active_product  :
     reducedNumerator C D U=∏ P : ActiveIndex C D U,activePrime C D U P^activeExponent C D U P := by
   simp only [activePrime,activeExponent]
   rw [Finset.prod_coe_sort (fixedActiveSet C D U)
@@ -68,9 +79,12 @@ theorem reducedNumerator_active_product (C D : Ideal O) (U : Finset (CommonIndex
   have hp : 6∣fixedExponent C D U P := by
     simpa only [fixedActiveSet,Finset.mem_filter,Finset.mem_univ,true_and,not_not] using hn
   simp only [Nat.mod_eq_zero_of_dvd hp,pow_zero]
-
-end SevenEighths.CenteredMomentSecondSixthSource
-
+end
 end
 
-end OAI
+
+
+
+
+
+

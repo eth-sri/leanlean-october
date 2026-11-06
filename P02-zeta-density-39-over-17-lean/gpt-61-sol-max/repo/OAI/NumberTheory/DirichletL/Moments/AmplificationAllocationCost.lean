@@ -9,15 +9,19 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocationCost
-open CenteredMomentCommonAllocationSum CenteredMomentSupport IdealMobiusDivisorSum
-open CenteredMomentAddedZeroUniform CenteredMomentCommonSectors
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocationSum IdealMobiusDivisorSum
+open CenteredMomentCommonSectors
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
- theorem allocation_slot_one (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+ section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (P : Ideal O) (hP : P≠0) (k : ℕ)
     (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I)
+include S P hP k hslot
+
+theorem allocation_slot_one 
     (B : actualAllocations S (P^k)) (i : ι) : B.val (Sum.inl i)=1 := by
   obtain ⟨v,hv,hvB⟩ := Finset.mem_image.mp (Finset.mem_filter.mp B.property).1
   have hi := Fintype.mem_piFinset.mp hv (Sum.inl i)
@@ -28,9 +32,7 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
     ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff (pow_ne_zero k hP) hd.1).mpr hc).symm
   exact he.symm.trans hh
 
- theorem allocation_plain_product (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (P : Ideal O) (hP : P≠0) (k : ℕ)
-    (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I)
+ theorem allocation_plain_product 
     (B : actualAllocations S (P^k)) : B.val (Sum.inr 0)*B.val (Sum.inr 1)=P^k := by
   have he := (Finset.mem_filter.mp B.property).2
   rw [Fintype.prod_sum_type,show (∏ i : ι,B.val (Sum.inl i))=1 by
@@ -38,9 +40,7 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
     Fin.prod_univ_two] at he
   exact he
 
- theorem allocation_plain_injective (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (P : Ideal O) (hP : P≠0) (k : ℕ)
-    (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I) :
+ theorem allocation_plain_injective  :
     Function.Injective (fun B : actualAllocations S (P^k) => B.val (Sum.inr 0)) := by
   intro B D he
   have hb := allocation_plain_product S P hP k hslot B
@@ -54,6 +54,8 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
   cases i with
   | inl i => rw [allocation_slot_one S P hP k hslot B,allocation_slot_one S P hP k hslot D]
   | inr i => fin_cases i <;> assumption
+end
+
 
  theorem idealDivisors_prime_power_card (P : Ideal O) (hP : Prime P) (k : ℕ) :
     (idealDivisors (P^k)).card≤k+1 := by
@@ -78,8 +80,8 @@ theorem actual_amplification_allocations_card (S : (ι ⊕ Fin 2) → Finset (Id
   simp only [Fintype.card_coe] at hh
   exact hh.trans (idealDivisors_prime_power_card P hP k)
 
-end SevenEighths.CenteredMomentAmplificationAllocationCost
 
-end
 
-end OAI
+
+
+

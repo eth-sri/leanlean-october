@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpQuadraticLargeValues
 public import DensityEnergyGM.EnergyPowerMean
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -33,10 +33,7 @@ theorem sublinear_monomial_domination {S R r c : ℝ}
   rw [he]
   calc
     _ = S^c*(S^(2-c-r)*R^r) := by ring
-    _ ≤ S^c*(R^(2-c-r)*R^r) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow hS.le hSR (by linarith)) (by positivity)
+    _ ≤ S^c*(R^(2-c-r)*R^r) := by bound
     _ = _ := by rw [← Real.rpow_add hR]; congr 2; ring
 
 /-- Exact fourth-power count absorption for the common gap1/4. -/
@@ -60,4 +57,4 @@ theorem quarter_gap_count_absorption {R S C : ℝ}
     norm_num
   simpa only [hleft,mul_pow,hright] using hp
 
-end Montgomery.RationalMoment
+

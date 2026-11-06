@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownAbelTransfer
 public import GafniTao.FordVinogradovIntegral
 public import Mathlib.MeasureTheory.Group.AddCircle
@@ -13,7 +14,7 @@ The source integrates over the coefficient torus.  For each source index
 `f^(j+1)(n)/(j+1)!` modulo one.
 -/
 
-open Finset Set MeasureTheory Metric
+open Finset Set MeasureTheory
 open scoped BigOperators ENNReal
 
 namespace GafniTao
@@ -22,12 +23,12 @@ noncomputable section
 
 abbrev HeathBrownCoefficientTorus (k : ℕ) := UnitAddTorus (Fin (k - 1))
 
-noncomputable def heathBrownCoefficientCenter
+def heathBrownCoefficientCenter
     (k : ℕ) (f : ℝ → ℝ) (n : ℝ) : HeathBrownCoefficientTorus k :=
   fun j => ((iteratedDeriv ((j : ℕ) + 1) f n /
     (((j : ℕ) + 1).factorial : ℝ) : ℝ) : UnitAddCircle)
 
-noncomputable def heathBrownCellRadius (H : ℕ) (j : ℕ) : ℝ :=
+def heathBrownCellRadius (H : ℕ) (j : ℕ) : ℝ :=
   ((H : ℝ) ^ (j + 1))⁻¹
 
 def heathBrownCoefficientCell
@@ -54,13 +55,8 @@ theorem two_mul_heathBrownCellRadius_le_one
   have hpow : (2 : ℝ) ≤ (H : ℝ) ^ (j + 1) := by
     calc
       (2 : ℝ) ≤ (H : ℝ) := by exact_mod_cast hH
-      _ ≤ (H : ℝ) ^ (j + 1) := by
-        have hHreal : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
-        simpa only [pow_one] using
-          (pow_le_pow_right₀ hHreal (by omega : 1 ≤ j + 1))
-  have hpowPos : 0 < (H : ℝ) ^ (j + 1) := by positivity
-  rw [mul_inv_le_iff₀ hpowPos]
-  simpa [mul_comm] using hpow
+      _ ≤ (H : ℝ) ^ (j + 1) := by bound
+  bound
 
 theorem measure_heathBrownCoefficientCell
     {k H : ℕ} (hH : 2 ≤ H) (f : ℝ → ℝ) (n : ℝ) :
@@ -79,6 +75,6 @@ theorem measure_heathBrownCoefficientCell
   rw [min_eq_right (two_mul_heathBrownCellRadius_le_one hH j)]
 
 
-end
 
-end GafniTao
+
+

@@ -9,14 +9,14 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerReference
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialProfile
+
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
+open scoped EisensteinEis
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -128,7 +128,7 @@ theorem actual_physical_reference_bound
     ω₁ ω₂ Z D B v θ H R m η hZ.le hR hη c₁ c₂ θ₁ θ₂ hc₁ hc₂ hsupport hn
     w hw labels rows hlabels hneg hchild F ((C₁+C₂)*(A*Z^(F+ε))) (by positivity) hm
   apply hb.trans
-  have he : prefactorCenter m D B θ+3*η+F+R+π+(F+ε)≤m+11*η+π+ε := by
+  have he : prefactorCenter m D B θ+3*η+F+R+π+(F+ε)≤ m+11*η+π+ε := by
     rw [hF,hReq]
     exact InverseInitialEnergyCallerClipping.initial_scalar_le m D B v θ η _ π ε hδ
   have hexp := Real.rpow_add hZp (prefactorCenter m D B θ+3*η+F+R+π) (F+ε)
@@ -139,8 +139,8 @@ theorem actual_physical_reference_bound
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)) := by rw [hexp];ring
     _≤_ := by gcongr
 
-end SevenEighths.InverseInitialEnergyCallerReference
 
-end
 
-end OAI
+
+
+

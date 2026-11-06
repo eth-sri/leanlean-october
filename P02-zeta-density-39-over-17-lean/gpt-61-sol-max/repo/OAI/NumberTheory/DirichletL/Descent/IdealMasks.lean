@@ -9,7 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
@@ -120,8 +120,8 @@ theorem scaled_product_fiber_card
     apply mul_right_cancel₀ hBm
     rw [hep, hpq, heq]
 
-end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

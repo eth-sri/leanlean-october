@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeRow FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def lowSingleSlotWeight (η : HeckeFamily.Character) (W : ℝ→ℂ) (P t : ℝ) (a : O) : ℂ :=
   star (HeckeFamily.elementCoeff η a)*W (elementNorm a/P)*logPhase (-t) (Real.log (elementNorm a/P))
@@ -30,7 +30,7 @@ lemma lowSingleSlotWeight_norm (η : HeckeFamily.Character) (W : ℝ→ℂ) (P t
   rw [lowSingleSlotWeight,norm_mul,norm_mul,norm_star,logPhase_norm,mul_one]
   exact mul_le_of_le_one_left (norm_nonneg _) (targetMonoid_norm_le_one η a)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

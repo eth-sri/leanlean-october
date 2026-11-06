@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 public import OAI.NumberTheory.DirichletL.Descent.TripleMass
 public import OAI.NumberTheory.DirichletL.Descent.Basic
@@ -13,21 +14,27 @@ open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadrat
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialQuotientGeometry
 
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
 
-def sourceWeight {J : ℕ} (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
+section
+variable {J : ℕ}
+include J
+
+def sourceWeight  (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
     (Z B θ : ℝ) (x : Source (ι:=ι) J) : ℂ :=
   A x * ψC ((Ideal.absNorm (sourceIdeal p x.common) : ℝ)/Z^B) *
     ψd ((Ideal.absNorm (sourceIdeal p x.divisor) : ℝ)/Z^θ)
 
-def retained {J : ℕ} (S : Finset (Source (ι:=ι) J))
+def retained  (S : Finset (Source (ι:=ι) J))
     (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ) (Z B θ : ℝ) : Finset (Source (ι:=ι) J) :=
   S.filter (fun x => sourceWeight p A ψC ψd Z B θ x ≠ 0)
 
-def quotientSet {J : ℕ} (S : Finset (Source (ι:=ι) J)) : Finset (Ideal Eis) :=
+def quotientSet  (S : Finset (Source (ι:=ι) J)) : Finset (Ideal Eis) :=
   S.image (fun x => sourceIdeal p (x.common\x.divisor))
+end
+
 
 variable (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -76,9 +83,9 @@ theorem retained_norm_windows {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (Ideal.absNorm (sourceIdeal p x.common) : ℝ) ≤ bC*Z^B ∧
       ad*Z^θ ≤ (Ideal.absNorm (sourceIdeal p x.divisor) : ℝ) := by
   have hn := (Finset.mem_filter.mp hx).2
-  have hnC : ψC ((Ideal.absNorm (sourceIdeal p x.common) : ℝ)/Z^B) ≠ 0 :=
+  have hnC :=
     (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).2
-  have hnd : ψd ((Ideal.absNorm (sourceIdeal p x.divisor) : ℝ)/Z^θ) ≠ 0 :=
+  have hnd :=
     (mul_ne_zero_iff.mp hn).2
   exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hC hnC).2,
     (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hd hnd).1⟩
@@ -157,9 +164,13 @@ theorem normalized_mass_bound (J : ℕ) (ε : ℝ) (hε : 0 < ε) :
   apply (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr hH.le)).trans_eq
   field_simp
 
-def assignedCenter {σ : Type*} (slots : Finset σ) (z : σ → ℝ) : ℝ := ∑ i ∈ slots, z i
+section
+variable {σ : Type*}
+include σ
 
-theorem assigned_register {σ : Type*} [DecidableEq σ]
+def assignedCenter  (slots : Finset σ) (z : σ → ℝ) : ℝ := ∑ i ∈ slots, z i
+
+theorem assigned_register  [DecidableEq σ]
     (all assigned : Finset σ) (ha : assigned ⊆ all) (z : σ → ℝ)
     (hz : ∀ i ∈ all, 0 ≤ z i) :
     0 ≤ assignedCenter assigned z ∧ 0 ≤ assignedCenter (all\assigned) z ∧
@@ -170,10 +181,17 @@ theorem assigned_register {σ : Type*} [DecidableEq σ]
   have h := Finset.sum_sdiff ha (f := z)
   linarith
 
-def assignedElement {σ : Type*} (slots : Finset σ) (q : σ → Eis) : Eis := ∏ i ∈ slots, q i
+section
+variable (slots : Finset σ) (q : σ → Eis)
+include slots q
 
-theorem assigned_norm_bound {σ : Type*} (slots : Finset σ) (q : σ → Eis)
-    (z a b : σ → ℝ) (W : σ → ℝ → ℂ) (Z : ℝ) (hZ : 0 < Z)
+def assignedElement  : Eis := ∏ i ∈ slots, q i
+
+section
+variable (z a b : σ → ℝ) (W : σ → ℝ → ℂ)
+include z a b W
+
+theorem assigned_norm_bound  (Z : ℝ) (hZ : 0 < Z)
     (hW : ∀ i ∈ slots, Function.support (W i) ⊆ Set.Icc (a i) (b i))
     (hret : ∀ i ∈ slots, W i ((Ideal.absNorm (Ideal.span {q i}) : ℝ)/Z^(z i)) ≠ 0) :
     (Ideal.absNorm (Ideal.span {assignedElement slots q}) : ℝ) ≤
@@ -185,8 +203,7 @@ theorem assigned_norm_bound {σ : Type*} (slots : Finset σ) (q : σ → Eis)
   simpa only [assignedElement,FiniteGaussPhase.span_finset_prod,map_prod,Nat.cast_prod,
     Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,assignedCenter] using hp
 
-theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
-    (z a b : σ → ℝ) (W : σ → ℝ → ℂ) (Z η : ℝ) (hZ : 0 < Z)
+theorem assigned_norm_power  (Z η : ℝ) (hZ : 0 < Z)
     (hW : ∀ i ∈ slots, Function.support (W i) ⊆ Set.Icc (a i) (b i))
     (hret : ∀ i ∈ slots, W i ((Ideal.absNorm (Ideal.span {q i}) : ℝ)/Z^(z i)) ≠ 0)
     (hthreshold : (∏ i ∈ slots, b i) ≤ Z^η) :
@@ -196,6 +213,10 @@ theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
   calc
     _ ≤ Z^η*Z^(assignedCenter slots z) := mul_le_mul_of_nonneg_right hthreshold (by positivity)
     _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
+end
+end
+end
+
 
 include hp in
 omit [∀ i, (Ideal.span {p i}).IsMaximal] in
@@ -207,8 +228,8 @@ theorem span_source_puncture {J : ℕ} (S : Finset (Source (ι:=ι) J))
   rw [sourceIdeal_gen p hp hpr]
   simp only [sourceIdeal,Ideal.span_singleton_mul_span_singleton,mul_comm]
 
-end SevenEighths.InverseInitialQuotientGeometry
 
-end
 
-end OAI
+
+
+

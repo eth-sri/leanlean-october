@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Basic.Complex.Basic
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
@@ -68,26 +69,24 @@ lemma powCoeff_product_mem_support (N k : ℕ) (p : Fin k → ℕ)
       N ^ k = ∏ _x : Fin k, N := by simp
       _ ≤ ∏ x : Fin k, p x := by
         apply Finset.prod_le_prod₀
-        · intro _x _
-          exact Nat.zero_le N
-        · intro x _
-          exact (Finset.mem_Ioc.mp (hp x)).1.le
+        all_goals (grind)
   · calc
       ∏ x : Fin k, p x ≤ ∏ _x : Fin k, 2 * N := by
         apply Finset.prod_le_prod₀
-        · intro x _
-          exact Nat.zero_le (p x)
-        · intro x _
-          exact (Finset.mem_Ioc.mp (hp x)).2
+        all_goals (grind)
       _ = (2 * N) ^ k := by simp
 
 /-- A wide polynomial supported on `(Q,2^k Q]`. -/
 noncomputable def wideDirichletPoly (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
   ∑ m ∈ Finset.Ioc Q (2 ^ k * Q), a m * (m : ℂ) ^ (-t * I)
 
+section
+variable (Q k : ℕ) (a : ℕ → ℂ)
+include Q k a
+
 /-- The wide powered support is the disjoint union of exactly `k` ordinary
 dyadic blocks. -/
-theorem wideDirichletPoly_eq_sum_blocks (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem wideDirichletPoly_eq_sum_blocks  (t : ℝ) :
     wideDirichletPoly Q k a t =
       ∑ r ∈ Finset.range k, dirichletPoly (2 ^ r * Q) a t := by
   induction k with
@@ -96,11 +95,7 @@ theorem wideDirichletPoly_eq_sum_blocks (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) 
       rw [wideDirichletPoly]
       have hQ : Q ≤ 2 ^ k * Q := by
         exact Nat.le_mul_of_pos_left Q (pow_pos (by omega : 0 < 2) k)
-      have hBlock : 2 ^ k * Q ≤ 2 ^ (k + 1) * Q := by
-        calc
-          2 ^ k * Q ≤ 2 * (2 ^ k * Q) :=
-            Nat.le_mul_of_pos_left (2 ^ k * Q) (by omega)
-          _ = 2 ^ (k + 1) * Q := by rw [pow_succ]; ring
+      have hBlock : 2 ^ k * Q ≤ 2 ^ (k + 1) * Q := by bound
       rw [← Finset.Ioc_union_Ioc_eq_Ioc hQ hBlock,
         Finset.sum_union (Finset.Ioc_disjoint_Ioc_of_le le_rfl)]
       change wideDirichletPoly Q k a t + _ = _
@@ -110,7 +105,7 @@ theorem wideDirichletPoly_eq_sum_blocks (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) 
       ring_nf
 
 /-- One dyadic block carries at least the average of the sum of block norms. -/
-theorem exists_large_dyadic_block (Q k : ℕ) (a : ℕ → ℂ) (t V : ℝ)
+theorem exists_large_dyadic_block  (t V : ℝ)
     (hk : 0 < k) (hV : V ≤ ‖wideDirichletPoly Q k a t‖) :
     ∃ r ∈ Finset.range k,
       V / k ≤ ‖dirichletPoly (2 ^ r * Q) a t‖ := by
@@ -126,7 +121,7 @@ theorem exists_large_dyadic_block (Q k : ℕ) (a : ℕ → ℂ) (t V : ℝ)
 the output subset, which is essential before invoking a large-values or
 mean-value estimate. -/
 theorem exists_dyadic_block_and_subset
-    (Q k : ℕ) (a : ℕ → ℂ) (W : Finset ℝ) (V : ℝ)
+     (W : Finset ℝ) (V : ℝ)
     (hk : 0 < k)
     (hWide : ∀ t ∈ W, V ≤ ‖wideDirichletPoly Q k a t‖) :
     ∃ r ∈ Finset.range k, ∃ W' ⊆ W,
@@ -139,15 +134,9 @@ theorem exists_dyadic_block_and_subset
     exact exists_large_dyadic_block Q k a t V hk (hWide t ht)
   let index (t : ℝ) : ℕ :=
     if ht : t ∈ W then Classical.choose (hEach t ht) else 0
-  have hIndexMem : ∀ t ∈ W, index t ∈ Finset.range k := by
-    intro t ht
-    simp only [index, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).1
+  have hIndexMem : ∀ t ∈ W, index t ∈ Finset.range k := by grind
   have hIndexLarge : ∀ t ∈ W,
-      V / k ≤ ‖dirichletPoly (2 ^ index t * Q) a t‖ := by
-    intro t ht
-    simp only [index, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).2
+      V / k ≤ ‖dirichletPoly (2 ^ index t * Q) a t‖ := by grind
   have hCard : W.card = ∑ r ∈ Finset.range k,
       (W.filter fun t => index t = r).card := by
     exact Finset.card_eq_sum_card_fiberwise hIndexMem
@@ -165,5 +154,7 @@ theorem exists_dyadic_block_and_subset
   · intro t ht
     rw [Finset.mem_filter] at ht
     simpa [ht.2] using hIndexLarge t ht.1
+end
 
-end GuthMaynard.NativeMoment
+
+

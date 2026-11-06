@@ -39,20 +39,26 @@ theorem wooleySection7TranslatedDilatedPolynomial_eval
       phi.eval ((p : ℤ) ^ a * y + h) - phi.eval h := by
   simp [wooleySection7TranslatedDilatedPolynomial, taylor_eval]
 
+section
+variable (p a : ℕ) (h : ℤ) (phi : Polynomial ℤ)
+include p a h phi
+
 theorem wooleySection7TranslatedDilatedPolynomial_eq_comp
-    (p a : ℕ) (h : ℤ) (phi : Polynomial ℤ) :
+     :
     wooleySection7TranslatedDilatedPolynomial p a h phi =
       (wooleyTaylorDifference h phi).comp (C ((p : ℤ) ^ a) * X) := by
   simp [wooleySection7TranslatedDilatedPolynomial,
     wooleyTaylorDifference]
 
 theorem wooleySection7TranslatedDilatedPolynomial_coeff_zero
-    (p a : ℕ) (h : ℤ) (phi : Polynomial ℤ) :
+     :
     (wooleySection7TranslatedDilatedPolynomial p a h phi).coeff 0 = 0 := by
   unfold wooleySection7TranslatedDilatedPolynomial
   rw [coeff_sub, comp_C_mul_X_coeff, coeff_C, pow_zero, mul_one,
     taylor_coeff]
   simp
+end
+
 
 /-- Exact coefficient scaling under the substitution in (7.9). -/
 theorem wooleySection7TranslatedDilatedPolynomial_coeff_succ
@@ -108,6 +114,6 @@ theorem wooleySection7TranslatedTop_coeff_rat
   simp only [wooleySection7OmegaMatrix]
   ring_nf
 
-end
 
-end GafniTao
+
+

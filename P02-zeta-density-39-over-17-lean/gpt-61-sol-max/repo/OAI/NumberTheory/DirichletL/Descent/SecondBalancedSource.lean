@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.SecondDensityAssembly
+public import OAI.NumberTheory.DirichletL.Descent.SecondFreshAssembly
+public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 
 @[expose] public section
@@ -8,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic
+
+open scoped EisensteinEis
 
 theorem balanced_density_integrable (g : Fin 6 → 𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (ρ : Fin 6 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) :
@@ -22,7 +23,7 @@ variable {κ ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

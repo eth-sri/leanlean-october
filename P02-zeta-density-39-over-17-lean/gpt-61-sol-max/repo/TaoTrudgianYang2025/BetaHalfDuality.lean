@@ -13,13 +13,13 @@ reflection supplies the other half of the interval. This is a consumer
 of the actual growth exponent, not membership in a candidate polygon.
 -/
 
-noncomputable section
+
 
 open Expdb
 open scoped NNReal
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem exponentPairLine_reflected_le {k l α : ℝ}
     (hslope : 1/2 ≤ l-k) (hα : 1/2 ≤ α) :
@@ -65,4 +65,4 @@ theorem exponentPair_of_beta_bound_half {k l : ℝ}
         rw [hγreal]
         linarith
 
-end TaoTrudgianYang2025
+

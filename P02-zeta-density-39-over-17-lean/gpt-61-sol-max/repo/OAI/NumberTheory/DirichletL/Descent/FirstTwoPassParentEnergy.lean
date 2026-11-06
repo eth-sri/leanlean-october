@@ -11,17 +11,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
+
+open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell
 open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_two_pass_parent_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
@@ -96,8 +96,8 @@ theorem original_two_pass_parent_energy
     ((1+‖theta‖)^(2*InverseClippingProfiles.momentOrder (firstDegree degree))) hC hCz hCt hA (by linarith)
     (one_le_pow₀ (by linarith [norm_nonneg theta])) hparent hprincipal hretained htail)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CompensationActual
 public import OAI.NumberTheory.DirichletL.PrincipalMellinGrowth
 public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
@@ -12,7 +13,7 @@ open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductBounds
 open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
+open HeckeFamily PrincipalMellinResidues
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def localMultiplier (η : Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
@@ -234,7 +235,7 @@ theorem local_norm_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S
   have hp : ‖(Q : ℂ)^(z-1)‖ ≤ Q^(Bz-1) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
     apply Real.rpow_le_rpow_of_exponent_le hQ1
-    simpa only [Complex.sub_re,Complex.one_re] using sub_le_sub_right hz.2 1
+    exact sub_le_sub_right hz.2 1
   unfold localMultiplier
   dsimp only
   rw [div_eq_mul_inv,norm_mul,norm_mul]
@@ -356,7 +357,7 @@ theorem source_multiplier_differentiable_w {ι : Type*} (η : Character) (S : Fi
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) {w : ℂ | 9/10 < w.re} := by
   have hM := CubicReflectionKernel.compact_source_mellin_differentiable W1 a1 b1 ha1 hW1 (W1.smooth ⊤)
   have hH := (combined_slot_analytic_w η S hS.tail J T b hT s z hs hz).differentiableOn
-  have hYn : (Y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hYn := Complex.ofReal_ne_zero.mpr hY.ne'
   have he : (fun w => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) =
     (fun w => ((X:ℂ)^(1/2-z)*(Z:ℂ)^(s+z-1)*Complex.exp ((s+z-1)^2)*
@@ -378,8 +379,8 @@ theorem source_multiplier_differentiable_z {ι : Type*} (η : Character) (S : Fi
       {z : ℂ | 4/25 < z.re} :=
     (ProbeRadialMellin.radial_mellin_differentiable W0).mono (by intro z hz; change 0 < z.re; change (4/25:ℝ)<z.re at hz; linarith)
   have hH := (combined_slot_analytic_z η S hS.tail J T b hT s w hs hw).differentiableOn
-  have hXn : (X : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hZn : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hXn := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hZn := Complex.ofReal_ne_zero.mpr hZ.ne'
   have he : (fun z => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) =
     (fun z => ((Y:ℂ)^(w-1)*mellin W1 w / LFunction (η.excludePrimes S hS.prime) s) *
@@ -393,9 +394,7 @@ theorem source_multiplier_differentiable_z {ι : Type*} (η : Character) (S : Fi
 theorem local_eq_regionSlot (η : Character) (P : PrimeIdeal) (s w z : ℂ) :
     localMultiplier η P s w z = (Ideal.absNorm P.val : ℂ)^(z-1) *
       PrincipalSlotEstimate.regionSlot (Ideal.absNorm P.val)
-        (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) s w z := by
-  simp only [localMultiplier,PrincipalSlotEstimate.regionSlot,PrincipalSlotEstimate.regionReplacement,
-    PrincipalSlotEstimate.regionMarked,idealMarkedClosed,idealClosedCorrection,Complex.ofReal_natCast]
+        (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) s w z := by rfl
 
 def windowMultiplier {ι : Type*} (η : Character) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (W : ι → ℝ → ℂ) (scale : ι → ℝ) (s w z : ℂ) : ℂ :=
@@ -427,7 +426,7 @@ theorem slot_norm_bound_sharp {ι : Type*} (η : Character) (J : Finset ι)
     (hPmin : 480 ≤ Pmin) (hb : ∀j∈J,∀P∈T j,0≤b j P)
     (hQ : ∀j∈J,∀P∈T j,Pmin≤(Ideal.absNorm P.val : ℝ))
     (hη : ∀j∈J,∀P∈T j,‖idealCoeff η P.val‖=1) (s w z : ℂ)
-    (hs : 7/8≤s.re) (hw : 19/20≤w.re) (hz : 33/200≤z.re) :
+    (hs : 7/8≤ s.re) (hw : 19/20≤w.re) (hz : 33/200≤z.re) :
     ‖slotMultiplier η J T (fun j P => (b j P : ℂ)) s w z‖ ≤
       ∏ j ∈ J, (1+1440*Pmin^(-(7/8 : ℝ))) *
         ∑ P ∈ T j, b j P*(Ideal.absNorm P.val : ℝ)^(z.re-1) := by
@@ -444,7 +443,7 @@ theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) 
     (hPmin : 480 ≤ Pmin) (hb : ∀j∈J,∀P∈T j,0≤b j P)
     (hQ : ∀j∈J,∀P∈T j,Pmin≤(Ideal.absNorm P.val : ℝ))
     (hη : ∀j∈J,∀P∈T j,‖idealCoeff η P.val‖=1) (s w z : ℂ)
-    (hs : 7/8≤s.re) (hw : 19/20≤w.re) (hz : 33/200≤z.re) :
+    (hs : 7/8≤ s.re) (hw : 19/20≤w.re) (hz : 33/200≤z.re) :
     ‖globalClosedCorrection η S s w z * slotMultiplier η J T (fun j P => (b j P : ℂ)) s w z‖ ≤
       (3/2) * ∏ j ∈ J, (1+1440*Pmin^(-(7/8 : ℝ))) *
         ∑ P ∈ T j, b j P*(Ideal.absNorm P.val : ℝ)^(z.re-1) := by
@@ -452,9 +451,7 @@ theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) 
   exact mul_le_mul (global_norm_bound η S hS s w z hs (by linarith) (by linarith))
     (slot_norm_bound_sharp η J T b Pmin hPmin hb hQ hη s w z hs hw hz) (norm_nonneg _) (by norm_num)
 
-@[simp] theorem slotMultiplier_empty {ι : Type*} (η : Character) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (s w z : ℂ) : slotMultiplier η ∅ T b s w z = 1 := by
-  simp [slotMultiplier]
+
 
 lemma boundary_mul_const (F : ℂ → ℂ) (a b : ℝ) (h : BoundaryControl F a b) (c : ℂ) :
     BoundaryControl (fun z => F z*c) a b := by
@@ -462,7 +459,7 @@ lemma boundary_mul_const (F : ℂ → ℂ) (a b : ℝ) (h : BoundaryControl F a 
   · simpa only [intervalIntegral.integral_mul_const,zero_mul] using h.lower.mul_const c
   · simpa only [intervalIntegral.integral_mul_const,zero_mul] using h.upper.mul_const c
 
-end SevenEighths.ProbeFiniteProductBounds
-end
 
-end OAI
+
+
+

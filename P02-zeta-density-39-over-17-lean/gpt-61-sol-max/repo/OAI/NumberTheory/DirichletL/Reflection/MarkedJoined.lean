@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedOverlap
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma joined_whole_prime_mark {ι σ : Type*} [Fintype ι] [Fintype σ]
@@ -19,8 +20,7 @@ lemma joined_whole_prime_mark {ι σ : Type*} [Fintype ι] [Fintype σ]
       ∏ i, if S.ideal i∣A then (1:ℂ) else 0 := by
   unfold markedSumSlots
   rw [Finset.prod_filter,Fintype.prod_sum_type]
-  simp only [Sum.isRight_inl,Sum.isRight_inr,Bool.false_eq_true,ite_false,ite_true,
-    Finset.prod_const_one,one_mul]
+  simp
   apply Finset.prod_congr rfl
   intro i hi
   rw [(G.sum S).generator_span]
@@ -56,7 +56,7 @@ lemma joined_free_pairwise {σ : Type*} [Fintype σ]
   · intro P i
     exact Ideal.isCoprime_of_isMaximal (hdis P i).symm
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

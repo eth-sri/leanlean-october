@@ -13,10 +13,14 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentFixedRay
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
 open RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem supported_coprime_four (a : O) (ha : Supported (Ideal.span {a})) :
+section
+variable (a : O) (ha : Supported (Ideal.span {a}))
+include a ha
+
+theorem supported_coprime_four  :
     IsCoprime (4 : O) a := by
   have hn := (supported_span_iff a).mp ha |>.2
   have hneg : IsCoprime (-2 : O) a :=
@@ -26,16 +30,18 @@ theorem supported_coprime_four (a : O) (ha : Supported (Ideal.span {a})) :
   have h4 : IsCoprime ((2 : O)^2) a := h2.pow_left
   simpa only [show (2 : O)^2 = 4 by norm_num] using h4
 
-theorem supported_coprime_twelve (a : O) (ha : Supported (Ideal.span {a})) :
+theorem supported_coprime_twelve  :
     IsCoprime (12 : O) a := by
   have h9 := ShortDraftCRT.nine_coprime_of_not_lambda_dvd a ((supported_span_iff a).mp ha).1
   have h36 : IsCoprime (36 : O) a := by
     convert (supported_coprime_four a ha).mul_left h9 using 1 ; norm_num
   exact h36.of_isCoprime_of_dvd_left ⟨3, by norm_num⟩
 
-theorem supported_rayMask (a : O) (ha : Supported (Ideal.span {a})) : rayMask a = 1 := by
+theorem supported_rayMask  : rayMask a = 1 := by
   rw [rayMask, ite_eq_left (CenteredMomentCommonSupport.isUnit_residue_of_coprime
     4 a (supported_coprime_four a ha))]
+end
+
 
 def phaseTable (D E : O) (r s : RayRing) : ℂ :=
   (QuadraticAllOddCRT.quadraticRaySign
@@ -71,24 +77,28 @@ theorem phaseTable_mass (D E : O) :
   simpa only [mul_one] using pairCoeff_sum_norm_le (phaseTable D E) 1
     (fun u v => phaseTable_norm D E u v)
 
-def primaryRayHom (χ : RayCharacter) : O →* ℂ where
+section
+variable (χ : RayCharacter)
+include χ
+
+def primaryRayHom  : O →* ℂ where
   toFun n := primaryIdealCharacter 4 χ (Ideal.span {n})
   map_one' := by simp [← Ideal.one_eq_top]
   map_mul' x y := by rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
 
-theorem primaryRayHom_primary (χ : RayCharacter) (a : O) (hp : λ₀^2 ∣ a - 1) :
+theorem primaryRayHom_primary  (a : O) (hp : λ₀^2 ∣ a - 1) :
     primaryRayHom χ a = rayCharacter χ a := by
   change χ (Ideal.Quotient.mk _ (CompletedGauss.primaryGenerator (Ideal.span {a}))) = _
   rw [CompletedGauss.primaryGenerator_span a (CubicJacobiGlobal.primary_ne_zero a hp) hp]
   rfl
 
-theorem primaryRayHom_unit_mul (χ : RayCharacter) (u : Oˣ) (a : O) :
+theorem primaryRayHom_unit_mul  (u : Oˣ) (a : O) :
     primaryRayHom χ ((u : O) * a) = primaryRayHom χ a := by
   change primaryIdealCharacter 4 χ (Ideal.span {(u : O) * a}) = _
   rw [Ideal.span_singleton_mul_left_unit u.isUnit]
   rfl
 
-theorem primaryRayHom_periodic (χ : RayCharacter) :
+theorem primaryRayHom_periodic  :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {(12 : O)}) (primaryRayHom χ) := by
   let F : O →* ℂ := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {(4 : O)})).toMonoidHom
   refine periodic_of_primary _ ?_ _ F ?_ (primaryRayHom_unit_mul χ) ?_ ?_
@@ -108,21 +118,23 @@ theorem primaryRayHom_periodic (χ : RayCharacter) :
     rw [hz, map_zero, MulChar.map_zero]
   · exact primaryRayHom_primary χ
 
-def primaryRayCharacter (χ : RayCharacter) : Character :=
+def primaryRayCharacter  : Character :=
   rowCharacter (Ideal.span {(12 : O)}) (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))
     (primaryRayHom χ) (primaryRayHom_periodic χ) (by
       intro u
       simpa using primaryRayHom_unit_mul χ u 1)
 
-@[simp] theorem primaryRayCharacter_modulus (χ : RayCharacter) :
+@[simp] theorem primaryRayCharacter_modulus  :
     (primaryRayCharacter χ).modulus = Ideal.span {(12 : O)} := rfl
 
-theorem primaryRayCharacter_primary (χ : RayCharacter) (a : O)
+theorem primaryRayCharacter_primary  (a : O)
     (ha : Supported (Ideal.span {a})) (hp : λ₀^2 ∣ a - 1) :
     elementCoeff (primaryRayCharacter χ) a = rayCharacter χ a := by
   rw [primaryRayCharacter, elementCoeff_rowCharacter,
     ite_eq_left (CenteredMomentCommonSupport.isUnit_residue_of_coprime
       12 a (supported_coprime_twelve a ha)), primaryRayHom_primary χ a hp]
+end
+
 
 theorem completeSupportExtension_separated (D E h a b : O)
     (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
@@ -149,8 +161,8 @@ theorem completeSupportExtension_separated (D E h a b : O)
       intro ξ _
       ring
 
-end SevenEighths.CenteredMomentFixedRay
 
-end
 
-end OAI
+
+
+

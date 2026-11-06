@@ -15,7 +15,7 @@ pullbacks along `p^a y + xi` and `p^b z + eta`.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Uniform analytic form of (7.17).  The same lower system `Psi` works for
 all coefficient sequences, which is the quantifier order required when the
@@ -90,6 +90,6 @@ theorem wooley_exists_uniform_shifted_normalized_identity
     _ _ Psi _ _ _ _ left right hleft hright]
   rw [hrawReal]
 
-end
 
-end GafniTao
+
+

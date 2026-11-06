@@ -6,20 +6,31 @@ public import Mathlib
 
 /-! Exact gcd decomposition, including multiplicities. No analytic estimate is
 assumed in the identities. The final bound states its reduced-pair input explicitly. -/
-set_option autoImplicit false
 noncomputable section
 open Finset
 
 namespace Montgomery.RationalMoment
 
-def pairGcd (p : ℕ × ℕ) : ℕ := p.1.gcd p.2
-def reducePair (p : ℕ × ℕ) : ℕ × ℕ := (p.1 / pairGcd p, p.2 / pairGcd p)
-def pairRatio (p : ℕ × ℕ) : ℚ := (p.1 : ℚ) / p.2
-def gcdValues (P : Finset (ℕ × ℕ)) : Finset ℕ := P.image pairGcd
-def gcdFiber (P : Finset (ℕ × ℕ)) (d : ℕ) : Finset (ℕ × ℕ) :=
+section
+variable (p : ℕ × ℕ)
+include p
+
+def pairGcd  : ℕ := p.1.gcd p.2
+def reducePair  : ℕ × ℕ := (p.1 / pairGcd p, p.2 / pairGcd p)
+def pairRatio  : ℚ := (p.1 : ℚ) / p.2
+end
+
+section
+variable (P : Finset (ℕ × ℕ))
+include P
+
+def gcdValues  : Finset ℕ := P.image pairGcd
+def gcdFiber  (d : ℕ) : Finset (ℕ × ℕ) :=
   P.filter (fun p => pairGcd p = d)
-def reducedFiber (P : Finset (ℕ × ℕ)) (d : ℕ) : Finset (ℕ × ℕ) :=
+def reducedFiber  (d : ℕ) : Finset (ℕ × ℕ) :=
   (gcdFiber P d).image reducePair
+end
+
 
 theorem reduce_reconstruct (p : ℕ × ℕ) :
     (reducePair p).1 * pairGcd p = p.1 ∧
@@ -27,14 +38,18 @@ theorem reduce_reconstruct (p : ℕ × ℕ) :
   ⟨Nat.div_mul_cancel (Nat.gcd_dvd_left _ _),
     Nat.div_mul_cancel (Nat.gcd_dvd_right _ _)⟩
 
-theorem reduce_positive_coprime {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2) :
+section
+variable {p : ℕ × ℕ}
+include p
+
+theorem reduce_positive_coprime  (hp : 0 < p.1 ∧ 0 < p.2) :
     0 < (reducePair p).1 ∧ 0 < (reducePair p).2 ∧
       Nat.Coprime (reducePair p).1 (reducePair p).2 := by
   refine ⟨Nat.div_gcd_pos_of_pos_left _ hp.1, ?_, ?_⟩
   · simpa [reducePair, pairGcd, Nat.gcd_comm] using Nat.div_gcd_pos_of_pos_left p.1 hp.2
   · exact Nat.coprime_div_gcd_div_gcd (Nat.gcd_pos_of_pos_left _ hp.1)
 
-theorem reduce_ratio {p : ℕ × ℕ} (hp : 0 < p.1) :
+theorem reduce_ratio  (hp : 0 < p.1) :
     pairRatio (reducePair p) = pairRatio p := by
   have hd : (pairGcd p : ℚ) ≠ 0 := by
     exact_mod_cast (Nat.gcd_pos_of_pos_left p.2 hp).ne'
@@ -43,6 +58,8 @@ theorem reduce_ratio {p : ℕ × ℕ} (hp : 0 < p.1) :
   have hb' : ((reducePair p).2 : ℚ) * pairGcd p = p.2 := by exact_mod_cast hb
   unfold pairRatio
   rw [← ha', ← hb', mul_div_mul_right _ _ hd]
+end
+
 
 /-- Positive reduced pairs give distinct rational frequencies. -/
 theorem pair_ratio_injective {p q : ℕ × ℕ}
@@ -64,8 +81,12 @@ theorem reduced_energy_eq_rational_energy (Q : Finset (ℕ × ℕ))
   intro p hp q hq he
   exact pair_ratio_injective (hQ p hp).1 (hQ q hq).1 (hQ p hp).2 (hQ q hq).2 he
 
+section
+variable (P : Finset (ℕ × ℕ))
+include P
+
 /-- Reduction is injective within a fixed gcd class, not on all pairs. -/
-theorem reduce_injective_on_fiber (P : Finset (ℕ × ℕ)) (d : ℕ) :
+theorem reduce_injective_on_fiber  (d : ℕ) :
     Set.InjOn reducePair (gcdFiber P d) := by
   intro p hp q hq he
   have hp' := (mem_filter.mp hp).2
@@ -79,7 +100,7 @@ theorem reduce_injective_on_fiber (P : Finset (ℕ × ℕ)) (d : ℕ) :
 
 /-- Exact regrouping of an arbitrary function of the rational number.
 Repeated fractions in different gcd classes retain their multiplicity. -/
-theorem sum_by_gcd (P : Finset (ℕ × ℕ))
+theorem sum_by_gcd 
     (hP : ∀ p ∈ P, 0 < p.1) (f : ℚ → ℝ) :
     (∑ p ∈ P, f (pairRatio p)) =
       ∑ d ∈ gcdValues P, ∑ q ∈ reducedFiber P d, f (pairRatio q) := by
@@ -93,6 +114,8 @@ theorem sum_by_gcd (P : Finset (ℕ × ℕ))
   apply sum_congr rfl
   intro p hp
   rw [reduce_ratio (hP p (mem_filter.mp hp).1)]
+end
+
 
 theorem reduced_fiber_bounds {P : Finset (ℕ × ℕ)} {M : ℝ}
     (hP : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -119,9 +142,16 @@ theorem reduced_fiber_bounds {P : Finset (ℕ × ℕ)} {M : ℝ}
   · rw [← mul_div_assoc]
     exact (le_div_iff₀ hdreal).mpr (by linarith)
 
+section
+variable (P : Finset (ℕ × ℕ))
+include P
+
+section
+variable (hP : ∀ p ∈ P, 0 < p.1) (W : Finset ℝ)
+include hP W
+
 /-- Actual sums of squared rational phase sums, with exact gcd multiplicities. -/
-theorem pair_energy_by_gcd (P : Finset (ℕ × ℕ))
-    (hP : ∀ p ∈ P, 0 < p.1) (W : Finset ℝ) :
+theorem pair_energy_by_gcd  :
     (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 2) =
       ∑ d ∈ gcdValues P,
         ∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖ ^ 2 :=
@@ -129,8 +159,7 @@ theorem pair_energy_by_gcd (P : Finset (ℕ × ℕ))
 
 /-- A height-linear estimate for each reduced class gives the exact harmonic
 gcd loss. The premise is a reduced-pair estimate, explicitly left open here. -/
-theorem pair_energy_le_harmonic (P : Finset (ℕ × ℕ))
-    (hP : ∀ p ∈ P, 0 < p.1) (W : Finset ℝ) {B M : ℝ}
+theorem pair_energy_le_harmonic  {B M : ℝ}
     (hblock : ∀ d ∈ gcdValues P,
       (∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖ ^ 2) ≤ B * (M / d)) :
     (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 2) ≤
@@ -139,10 +168,12 @@ theorem pair_energy_le_harmonic (P : Finset (ℕ × ℕ))
   apply sum_le_sum
   intro d hd
   simpa [div_eq_mul_inv, mul_assoc] using hblock d hd
+end
+
 
 /-- The full gcd sum has a logarithmic cost, including the fraction one.
 This is conditional only on the displayed bound for each reduced class. -/
-theorem pair_energy_le_log (P : Finset (ℕ × ℕ)) {N : ℕ}
+theorem pair_energy_le_log  {N : ℕ}
     (hP : ∀ p ∈ P, 0 < p.1 ∧ p.1 ≤ N) (W : Finset ℝ)
     {B M : ℝ} (hB : 0 ≤ B) (hM : 0 ≤ M)
     (hblock : ∀ d ∈ gcdValues P,
@@ -163,5 +194,7 @@ theorem pair_energy_le_log (P : Finset (ℕ × ℕ)) {N : ℕ}
           using harmonic_le_one_add_log N
   exact (pair_energy_le_harmonic P (fun p hp => (hP p hp).1) W hblock).trans
     (mul_le_mul_of_nonneg_left hsum (mul_nonneg hB hM))
+end
 
-end Montgomery.RationalMoment
+
+

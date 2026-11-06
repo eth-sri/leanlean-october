@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.TriangularShiftBounds
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -30,10 +29,7 @@ theorem sum_signed_even (f : ℤ → ℝ) (N : ℕ) (hN : 0 < N)
     omega
   have hd : Disjoint (Finset.Ioo (-(N:ℤ)) 0) (Finset.Ioo (0:ℤ) N) := by
     apply Finset.disjoint_left.mpr
-    intro n h₁ h₂
-    have ha := Finset.mem_Ioo.mp h₁
-    have hb := Finset.mem_Ioo.mp h₂
-    omega
+    grind
   have hneg : (∑ n ∈ Finset.Ioo (-(N:ℤ)) 0, f n) =
       ∑ n ∈ Finset.Ioo (0:ℤ) N, f n := by
     apply Finset.sum_bij (fun n _ => -n)
@@ -51,4 +47,4 @@ theorem sum_signed_even (f : ℤ → ℝ) (N : ℕ) (hN : 0 < N)
   rw [he,Finset.sum_insert hn,Finset.sum_union hd,hneg]
   ring
 
-end TaoTrudgianYang2025
+

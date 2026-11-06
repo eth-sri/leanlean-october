@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.SecondTailSharp
 public import WeylPort.AFE.ZetaTruncation
@@ -22,8 +23,12 @@ namespace DhimanKadiriQuesadaHerrera2026
 open Filter
 open scoped Topology
 
+section
+variable {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u)
+include σ c u hσ hc hu
+
 /-- The source H numerator has its exact power-weight value. -/
-theorem secondH_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u) :
+theorem secondH_afe  :
     secondH (afePhase c) (afeWeight σ) u = (σ + 2 * Real.pi * c) * u ^ (-σ - 1) := by
   unfold secondH
   rw [abs_deriv_afeWeight hσ hu, (afePhase_hasDerivAt c hu).deriv,
@@ -33,7 +38,7 @@ theorem secondH_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u) 
   ring_nf
 
 /-- The source H₁ numerator has its exact power-weight value. -/
-theorem secondH1_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u) :
+theorem secondH1_afe  :
     secondH1 (afePhase c) (afeWeight σ) u =
       (σ + 1) * (σ + 2 * Real.pi * c) * u ^ (-σ - 2) := by
   unfold secondH1
@@ -54,6 +59,8 @@ theorem secondH1_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u)
   rw [he]
   field_simp
   ring_nf
+end
+
 
 /-- The actual H amplitude tends to zero at the upper endpoint, including σ=0. -/
 theorem tendsto_secondH_afe {σ c : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) :
@@ -193,7 +200,7 @@ theorem afe_second_finite_cpow_bound {σ t a : ℝ} (hσ : 0 ≤ σ) (ht : 0 < t
       have hf := Int.floor_nonneg.mpr ha.le
       have hn' := (Finset.mem_Ioc.mp hn).1
       exact_mod_cast (show 0 < n by omega)
-    simpa only [Complex.ofReal_intCast] using (conj_weightedWave_afe σ t hn0).symm
+    exact (conj_weightedWave_afe σ t hn0).symm
   rw [he, Complex.norm_conj]
   exact hb
 
@@ -211,8 +218,7 @@ theorem afe_zeta_sub_sum_pole_integrals_bound {σ t a : ℝ} (hσ : σ ∈ Set.I
   have hs1 : (σ : ℂ) + (t : ℂ) * Complex.I ≠ 1 := by
     intro h
     have him := congrArg Complex.im h
-    simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re,
-      Complex.I_im, mul_one, Complex.I_re, mul_zero, add_zero, zero_add, Complex.one_im] at him
+    simp at him
     exact ht.ne' him
   have hJ : Tendsto (fun N : ℕ => ∑ m ∈ Finset.Icc 1 ⌊(t / (2 * Real.pi)) / a⌋₊,
       weightedIntegral ((σ : ℂ) + (t : ℂ) * Complex.I) a N m) atTop
@@ -238,4 +244,4 @@ theorem afe_zeta_sub_sum_pole_integrals_bound {σ t a : ℝ} (hσ : σ ∈ Set.I
   rw [sum_weightedIntegral_eq_zero_add] at hb
   simpa only [sub_add_eq_sub_sub, Function.comp_apply] using hb
 
-end DhimanKadiriQuesadaHerrera2026
+

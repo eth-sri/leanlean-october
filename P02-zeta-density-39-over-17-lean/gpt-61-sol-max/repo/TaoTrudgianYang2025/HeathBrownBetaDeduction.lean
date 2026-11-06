@@ -11,16 +11,20 @@ The physical model-sum estimate supplies every original setup. The
 positive scale exponent supplies N >= 1; empty intervals are included.
 -/
 
-noncomputable section
+
 
 open Expdb
 open scoped NNReal
 
 namespace TaoTrudgianYang2025
 
+section
+variable (hHB : GafniTao.HeathBrownKthDerivativeTheorem)
+    {k : ℕ} (hk : 3 ≤ k) {α : ℝ≥0} (hα : 0 < (α : ℝ))
+include hHB k hk α hα
+
 theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
-    (hHB : GafniTao.HeathBrownKthDerivativeTheorem)
-    {k : ℕ} (hk : 3 ≤ k) {α : ℝ≥0} (hα : 0 < (α : ℝ)) :
+     :
     IsExponentSumBoundNonAsymptotic α (heathBrownBetaBound k α) := by
   intro ε hε σ hσ
   obtain ⟨η,d,hη,hη₁,hd,_,hbudget⟩ := heathBrown_epsilon_budget hα.le hε
@@ -69,10 +73,11 @@ theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
     exact mul_nonneg (zero_le_one.trans hK) (Real.rpow_nonneg hTpos.le _)
 
 theorem exponentSumGrowthExponent_le_heathBrown_of_derivative
-    (hHB : GafniTao.HeathBrownKthDerivativeTheorem)
-    {k : ℕ} (hk : 3 ≤ k) {α : ℝ≥0} (hα : 0 < (α : ℝ)) :
+     :
     exponentSumGrowthExponent α ≤ heathBrownBetaBound k α :=
   exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (isExponentSumBoundNonAsymptotic_heathBrown_of_derivative hHB hk hα)
+end
 
-end TaoTrudgianYang2025
+
+

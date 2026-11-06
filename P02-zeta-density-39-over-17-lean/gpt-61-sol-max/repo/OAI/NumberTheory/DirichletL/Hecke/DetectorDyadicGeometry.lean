@@ -78,8 +78,8 @@ lemma uniform_fourier_allowance (dmax τ : ℝ) (hdmax : 0<dmax) (hτ : 0<τ) :
   have hpi := mul_le_mul_of_nonneg_left hp (show 0≤2*Real.pi by positivity)
   nlinarith
 
-end SevenEighths.HeckeDetectorDyadicGeometry
 
-end
 
-end OAI
+
+
+

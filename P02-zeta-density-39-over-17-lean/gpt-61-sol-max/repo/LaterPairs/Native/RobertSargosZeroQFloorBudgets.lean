@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQPolynomialBudget
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_zero_q_floor_budgets (M H : ℕ) {lam : ℝ}
@@ -44,4 +43,4 @@ theorem robertSargos_zero_q_floor_budgets (M H : ℕ) {lam : ℝ}
     (Nat.cast_nonneg _) hRhi hlam hscale
   exact ⟨hQ,hR,hRhi,hb⟩
 
-end TaoTrudgianYang2025
+

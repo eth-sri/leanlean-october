@@ -3,7 +3,18 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondUniformSubsetSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondChildPowerBudget
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceRemainder
-public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalLiveSource
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalChosenBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalScalar
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalPhysical
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
+public import OAI.NumberTheory.DirichletL.Moments.SecondEnergySplit
+public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
+public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
+public import OAI.NumberTheory.DirichletL.Moments.SecondSupportedChildren
+public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalAggregate
 
 @[expose] public section
 
@@ -14,38 +25,43 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondSourcePowerDescent
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+
+
+
+
+
+
+
+
+
+
+
+
+
+open CenteredMomentSecondWindowBudget
+
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
+
+
+open EisensteinSchwartzPoisson
+
+
+open MeasureTheory
+
+
+
+section
+variable (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r
+    loProduct wlo : ℝ) (J₁ J₂ : ℕ) (SΦ : Finset (ℕ×ℕ))
+    (W : 𝓢(ℝ,ℂ))
+include Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r loProduct wlo J₁ J₂ SΦ W
+
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
-
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
-open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
-
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-
-def physicalFactors (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r
-    loProduct wlo : ℝ) (J₁ J₂ : ℕ) (SΦ : Finset (ℕ×ℕ))
-    (W : 𝓢(ℝ,ℂ)) : Fin 4→ℝ :=
+def physicalFactors  : Fin 4→ℝ :=
   ![Cmain*Z^(2*δ+ε)*ηNorm*Real.sqrt (E₁*E₂)*heightEnvelope t^(J₁+J₂)*
       profileMoment J₁*profileMoment J₂,
     Cexc*Z^(2*ε+2*δ+2*(5*B+1)*θ-2*max r 0/3)*K^(5/6:ℝ)*
@@ -53,8 +69,7 @@ def physicalFactors (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ 
     Cdiag*K*‖paperRadialFourier W 0‖,
     Ctail*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*K*Z^(-saving)]
 
-lemma physicalFactors_nonneg (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r
-    loProduct wlo : ℝ) (J₁ J₂ : ℕ) (SΦ : Finset (ℕ×ℕ)) (W : 𝓢(ℝ,ℂ))
+lemma physicalFactors_nonneg 
     (hm : 0≤Cmain) (he : 0≤Cexc) (hd : 0≤Cdiag) (ht : 0≤Ctail)
     (hZ : 0≤Z) (hK : 0≤K) (hη : 0≤ηNorm) (hl : 0≤loProduct) :
     ∀j,0≤physicalFactors Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r
@@ -66,9 +81,11 @@ lemma physicalFactors_nonneg (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηN
   have hs : 0≤SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) W := apply_nonneg _ _
   intro j
   fin_cases j <;> dsimp [physicalFactors] <;> positivity
-
-end SevenEighths.CenteredMomentSecondSourcePowerDescent
-
 end
 
-end OAI
+
+
+
+
+
+

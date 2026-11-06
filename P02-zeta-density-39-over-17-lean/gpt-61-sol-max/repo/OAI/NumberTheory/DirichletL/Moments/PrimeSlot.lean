@@ -10,9 +10,9 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentPrimeSlot
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckePrimeAnnular
+
+open scoped HeckeO
 
 def primePool (M:Ideal O) (H:Subgroup (O⧸M)ˣ) (b D:ℝ) : Finset (Ideal O) :=
   (annulusSet b D).filter (fun I=>Prime I ∧ I∈RayQuotient.identityClass M H)
@@ -23,8 +23,8 @@ lemma sqrt_inverse_cpow (D:ℝ) (hD:0<D) :
   congr 1
   simpa using (Complex.ofReal_cpow hD.le (1/2:ℝ))
 
-end SevenEighths.CenteredMomentPrimeSlot
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstPassage
 
 @[expose] public section
@@ -8,71 +9,71 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
 
-open scoped BigOperators Classical
+                                  
 namespace SecondPassArithmetic
 
 section
@@ -81,18 +82,24 @@ open MixedCrossSeparation (columnG columnPrimeCoprime quadraticCrossPhase)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open RayFourExpansion (RayCharacter rayCharacter gCoeff crossCoeff)
 
-def rayMonoid (χ : RayCharacter) : O →* ℂ where
+section
+variable (χ : RayCharacter)
+include χ
+
+def rayMonoid  : O →* ℂ where
   toFun := rayCharacter χ
   map_one' := by simp [rayCharacter]
   map_mul' := RayFourExpansion.rayCharacter_mul χ
 
-def conjugateRayMonoid (χ : RayCharacter) : O →* ℂ :=
+def conjugateRayMonoid  : O →* ℂ :=
   (starRingEnd ℂ).toMonoidHom.comp (rayMonoid χ)
 
-@[simp] theorem rayMonoid_apply (χ : RayCharacter) (a : O) :
+@[simp] theorem rayMonoid_apply  (a : O) :
     rayMonoid χ a = rayCharacter χ a := rfl
-@[simp] theorem conjugateRayMonoid_apply (χ : RayCharacter) (a : O) :
+@[simp] theorem conjugateRayMonoid_apply  (a : O) :
     conjugateRayMonoid χ a = star (rayCharacter χ a) := rfl
+end
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -114,10 +121,14 @@ def secondInputCoefficient (Ψ : O →* ℂ) (m c d : O)
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S c ^ 4 *
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S d * H S
 
-theorem secondColumnMinus_ray_expansion
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+section
+variable (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (Ψ : O →* ℂ) (m c d e k : O) (H : Finset ι → ℂ) (S : Finset ι) :
+    (Ψ : O →* ℂ) (m c d e k : O) (H : Finset ι → ℂ) (S : Finset ι)
+include hc hpr Ψ m c d e k H S
+
+theorem secondColumnMinus_ray_expansion
+     :
     secondColumnMinus p hp hcop hg (secondInputCoefficient p hg Ψ m c d H) e k S =
       ∑ χ : RayCharacter, star (gCoeff χ) *
         secondPreColumn p hp hcop hg (conjugateRayMonoid χ * Ψ) m c d e k H S := by
@@ -129,9 +140,7 @@ theorem secondColumnMinus_ray_expansion
   ring
 
 theorem secondColumnPlus_ray_expansion
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (Ψ : O →* ℂ) (m c d e k : O) (H : Finset ι → ℂ) (S : Finset ι) :
+     :
     secondColumnPlus p hp hcop hg (secondInputCoefficient p hg Ψ m c d H) e k S =
       ∑ χ : RayCharacter, star (gCoeff χ) *
         secondPreColumn p hp hcop hg (conjugateRayMonoid χ * Ψ) m c d e (-k) H S := by
@@ -145,6 +154,8 @@ theorem secondColumnPlus_ray_expansion
   intro χ hχ
   simp only [secondPreColumn, secondInputCoefficient, MonoidHom.mul_apply, conjugateRayMonoid_apply, hk]
   ring
+end
+
 
 theorem second_gauss_ray_expansion
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
@@ -190,11 +201,17 @@ abbrev SecondRayIndex := (RayCharacter × RayCharacter) × (RayCharacter × RayC
 def secondRayCoefficient (r : SecondRayIndex) : ℂ :=
   crossCoeff r.2.1 r.2.2 * gCoeff r.1.2 * star (gCoeff r.1.1)
 
-def secondRayMinus (Ψ : O →* ℂ) (r : SecondRayIndex) : O →* ℂ :=
+section
+variable (Ψ : O →* ℂ) (r : SecondRayIndex)
+include Ψ r
+
+def secondRayMinus  : O →* ℂ :=
   conjugateRayMonoid r.2.2 * (conjugateRayMonoid r.1.2 * Ψ)
 
-def secondRayPlus (Ψ : O →* ℂ) (r : SecondRayIndex) : O →* ℂ :=
+def secondRayPlus  : O →* ℂ :=
   rayMonoid r.2.1 * (conjugateRayMonoid r.1.1 * Ψ)
+end
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -219,7 +236,7 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic CompletedGauss CubicRamified
+open ActualEisensteinCubic CubicRamified
 
 theorem symbol_ne_zero_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
     (hcop : IsCoprime x a) : symbol x a ≠ 0 := by
@@ -264,7 +281,7 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
   have hA : lambda ^ 2 ∣ productA-1 := by
     have h := dvd_add (primary_mul a e ha he)
       (dvd_mul_of_dvd_left (lambda_sq_dvd_three.trans hb) g)
-    convert h using 1 ; dsimp [productA] ; ring
+    grind
   have hrelation : a*productC-c*productA=g := by
     dsimp [productA,productC]
     linear_combination g*hdet
@@ -297,8 +314,7 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
     · exact ⟨b,by dsimp [productA];ring⟩
   change symbol productC productA = _
   apply mul_left_cancel₀ hnonzero
-  rw [h1,h3,← h2]
-  ring
+  grind
 
 lemma three_dvd_primary_sub_one (a : O) (ha : lambda ^ 2 ∣ a-1) : (3 : O) ∣ a-1 := by
   obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
@@ -318,7 +334,7 @@ theorem exists_coprime_three_shift (a c g : O)
   by_cases hpa : p ∣ a
   · have hp3 : ¬p ∣ (3 : O) := by
       intro h3
-      have hsub : p ∣ a-1 := h3.trans (three_dvd_primary_sub_one a ha)
+      have hsub := h3.trans (three_dvd_primary_sub_one a ha)
       have hone : p ∣ (1 : O) := by
         convert dvd_sub hpa hsub using 1 ; ring
       exact hp.not_dvd_one hone
@@ -328,7 +344,7 @@ theorem exists_coprime_three_shift (a c g : O)
     have hps : ¬p ∣ s.prod := by
       intro hdiv
       obtain ⟨q,hqs,hpq⟩ := hp.exists_mem_multiset_dvd hdiv
-      have hqs' : q ∈ UniqueFactorizationMonoid.normalizedFactors g ∧ ¬q ∣ a :=
+      have hqs' :=
         Multiset.mem_filter.mp hqs
       have hqprime := UniqueFactorizationMonoid.prime_of_normalized_factor q hqs'.1
       have hqp : q ∣ p := (hp.associated_of_dvd hqprime hpq).dvd'
@@ -383,7 +399,7 @@ theorem kubota_mul (a b c d e f g h : O)
   have hA : lambda ^ 2 ∣ (a*e+b*g)-1 := by
     have hh := dvd_add (primary_mul a e ha he)
       (dvd_mul_of_dvd_left (lambda_sq_dvd_three.trans hb) g)
-    convert hh using 1 ; ring
+    grind
   calc
     symbol (c*e+d*g) (a*e+b*g) =
         symbol (c*e+d*g) ((a*e+b*g)+3*t*(c*e+d*g)) :=
@@ -432,7 +448,11 @@ def levelThree : Subgroup (SL(2, O)) :=
   (Matrix.SpecialLinearGroup.map (n := Fin 2)
     (Ideal.Quotient.mk (Ideal.span {(3 : O)}))).ker
 
-lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
+section
+variable (M : levelThree)
+include M
+
+lemma levelThree_entry  (i j : Fin 2) :
     (3 : O) ∣ (M : SL(2,O)) i j - (if i=j then 1 else 0) := by
   have hm : Matrix.SpecialLinearGroup.map (n := Fin 2)
       (Ideal.Quotient.mk (Ideal.span {(3 : O)})) (M : SL(2,O)) = 1 := M.property
@@ -443,16 +463,18 @@ lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
   simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using h
 
-lemma levelThree_primary (M : levelThree) :
+lemma levelThree_primary  :
     lambda ^ 2 ∣ (M : SL(2,O)) 0 0 - 1 := by
   exact lambda_sq_dvd_three.trans (by simpa using levelThree_entry M 0 0)
-lemma levelThree_upper (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 0 1 := by
+lemma levelThree_upper  : (3 : O) ∣ (M : SL(2,O)) 0 1 := by
   simpa using levelThree_entry M 0 1
-lemma levelThree_lower (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 1 0 := by
+lemma levelThree_lower  : (3 : O) ∣ (M : SL(2,O)) 1 0 := by
   simpa using levelThree_entry M 1 0
 
-def value (M : levelThree) : O :=
+def value  : O :=
   symbol ((M : SL(2,O)) 1 0) ((M : SL(2,O)) 0 0)
+end
+
 
 theorem value_mul (M N : levelThree) : value (M*N) = value M * value N := by
   have hM : (M : SL(2,O)) 0 0 * (M : SL(2,O)) 1 1 -
@@ -507,8 +529,8 @@ theorem norm_complexCharacter (M : levelThree) : ‖complexCharacter M‖ = 1 :=
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3 : ℕ) ≠ 0)).mp
   simpa only [norm_pow, norm_one] using congrArg norm (complexCharacter_cube M)
 
-end CubicKubota
 
-end
 
-end OAI
+
+
+

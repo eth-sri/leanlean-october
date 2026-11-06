@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import DensityEnergyGM.SecondMomentIntegral
 public import DensityEnergyGM.ClippedRadicalIntegral
 public import DensityEnergyGM.CoprimeFourthNative
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -50,14 +50,10 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
   have hB : 1 ≤ B := by
     have h := Real.one_le_rpow hMone (by norm_num : (0 : ℝ) ≤ 36 / 5)
     have hOther : 0 ≤ (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ) := by positivity
-    dsimp only [B]
-    linarith
+    grind
   have hK : 1 ≤ K := by
     have hPow : 1 ≤ (2 * T) ^ ε := Real.one_le_rpow (by linarith) hε.le
-    have hC : 1 ≤ C := le_max_left _ _
-    dsimp only [K]
-    have hEC : 1 ≤ E * C := by nlinarith
-    nlinarith
+    bound
   have hFirst : (∑ t ∈ W, ∑ u ∈ W, ‖dirichletPoly M a (t - u)‖ ^ 2) ≤
       ∫ s in Set.Ioc 0 ((M : ℝ) ^ 2),
         clippedRadicalTail R (E * C₀ * (2 * T) ^ ε) ((M : ℝ) ^ 2) B s := by
@@ -65,7 +61,6 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
     congr 1
     ext s
     dsimp only [clippedRadicalTail, R, E, B]
-    congr 1
     congr 1
     ring
   have hEnlarge :
@@ -84,4 +79,4 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
     (sq_pos_of_pos hMpos) hMT (gmSeparated_card_le_two_height hTone hSep hBase) hTtwo
   exact hFirst.trans (hEnlarge.trans hCap)
 
-end Montgomery.RationalMoment
+

@@ -14,7 +14,11 @@ open CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 def weight (x:ℝ):ℝ:=cutoff (x/2)*(1-cutoff (4*x))
 
-lemma weight_bounds (x:ℝ):0≤weight x ∧ weight x≤1:=by
+section
+variable (x:ℝ)
+include x
+
+lemma weight_bounds :0≤weight x ∧ weight x≤1:=by
   have h₁:=cutoff_bounds (x/2)
   have h₂:=cutoff_bounds (4*x)
   unfold weight
@@ -23,15 +27,17 @@ lemma weight_bounds (x:ℝ):0≤weight x ∧ weight x≤1:=by
   · exact (mul_le_mul_of_nonneg_left (sub_le_self _ h₂.1) h₁.1).trans
       (by simpa only [mul_one] using h₁.2)
 
-lemma weight_zero_low (x:ℝ)(hx:x≤1/8):weight x=0:=by
+lemma weight_zero_low (hx:x≤1/8):weight x=0:=by
   rw [weight,cutoff_one (4*x) (by linarith),sub_self,mul_zero]
 
-lemma weight_zero_high (x:ℝ)(hx:2≤x):weight x=0:=by
+lemma weight_zero_high (hx:2≤x):weight x=0:=by
   rw [weight,cutoff_zero (x/2) (by linarith),zero_mul]
 
-lemma weight_one (x:ℝ)(hx:1/4≤x)(hx':x≤1):weight x=1:=by
+lemma weight_one (hx:1/4≤x)(hx':x≤1):weight x=1:=by
   rw [weight,cutoff_one (x/2) (by linarith),cutoff_zero (4*x) (by linarith)]
   norm_num
+end
+
 
 lemma weight_support:Function.support weight⊆Set.Icc (1/8:ℝ) 2:=by
   intro x hx
@@ -56,11 +62,17 @@ def profile:𝓢(ℝ,ℂ):=
       rfl)).toSchwartzMap
     (Complex.ofRealCLM.contDiff.comp weight_smooth)
 
-lemma profile_apply (x:ℝ):profile x=(weight x:ℂ):=rfl
-lemma profile_nonneg (x:ℝ):0≤(profile x).re:=(weight_bounds x).1
-lemma profile_le_one (x:ℝ):(profile x).re≤1:=(weight_bounds x).2
-lemma profile_one (x:ℝ)(hx:1/4≤x)(hx':x≤1):profile x=1:=by
+section
+variable (x:ℝ)
+include x
+
+lemma profile_apply :profile x=(weight x:ℂ):=rfl
+lemma profile_nonneg :0≤(profile x).re:=(weight_bounds x).1
+lemma profile_le_one :(profile x).re≤1:=(weight_bounds x).2
+lemma profile_one (hx:1/4≤x)(hx':x≤1):profile x=1:=by
   rw [profile_apply,weight_one x hx hx'];rfl
+end
+
 
 lemma scaled_majorant (H q:ℝ)(hH:0<H)(hlo:H/4≤q)(hhi:q≤H):
     (profile (q/H)).re=1:=by
@@ -95,8 +107,8 @@ lemma weighted_partition (H q:ℝ)(hH:0<H):
     rw [bands,dyadic_partition_on_interval (H/8) (2*H) q (by positivity) hq]
     exact (one_mul _).symm
 
-end SevenEighths.CenteredMomentFirstAnnularMajorant
 
-end
 
-end OAI
+
+
+

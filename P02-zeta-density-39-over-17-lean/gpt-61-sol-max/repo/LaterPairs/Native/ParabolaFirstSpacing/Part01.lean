@@ -21,10 +21,9 @@ public import LaterPairs.Native.SargosPrefixFourthMajorant
 public import LaterPairs.Native.SargosQuarticKernelJets
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 noncomputable section
 open MeasureTheory GafniTao Set
@@ -60,16 +59,7 @@ theorem parabola_same_interval_separation
     {x x' d u ν : ℝ} (hν : 0 ≤ ν)
     (hu : u ≤ ν) (hd : 3*ν ≤ |d|)
     (hx : x ∈ Icc d (d+u)) (hx' : x' ∈ Icc d (d+u)) :
-    4*ν ≤ |x+x'| := by
-  rcases le_total 0 d with h | h
-  · rw [abs_of_nonneg h] at hd
-    have hp : 0 ≤ x+x' := by linarith [hx.1,hx'.1]
-    rw [abs_of_nonneg hp]
-    linarith [hx.1,hx'.1]
-  · rw [abs_of_nonpos h] at hd
-    have hp : x+x' ≤ 0 := by linarith [hx.2,hx'.2]
-    rw [abs_of_nonpos hp]
-    linarith [hx.2,hx'.2]
+    4*ν ≤ |x+x'| := by grind
 
 theorem planarSum_mul {ι κ : Type*}
     (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
@@ -141,7 +131,11 @@ private theorem banded_real_sum_le (J : Finset ℤ) (G : ℤ → ℤ → ℝ)
   rw [hswap] at hab
   linarith
 
-private theorem parabola_product_sum {ι τ : Type*}
+section
+variable {ι τ : Type*}
+include ι τ
+
+private theorem parabola_product_sum 
     (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
     (x : ι → ℝ) (y : τ → ℝ) (α γ : ℝ) :
     sargosPlanarSum ((S ×ˢ V) ×ˢ V)
@@ -156,7 +150,7 @@ private theorem parabola_product_sum {ι τ : Type*}
     ← planarSum_mul S V z c x (fun i => (x i)^2) y (fun k => (y k)^2) α γ]
   ring
 
-private theorem parabola_family_product_sum {ι τ : Type*}
+private theorem parabola_family_product_sum 
     (J : Finset ℤ) (S : ℤ → Finset ι) (V : Finset τ)
     (z : ℤ → ι → ℂ) (c : τ → ℂ)
     (x : ℤ → ι → ℝ) (y : τ → ℝ) (α γ : ℝ) :
@@ -177,6 +171,8 @@ private theorem parabola_family_product_sum {ι τ : Type*}
   rw [← Finset.sum_mul]
   congr 1
   simp only [sargosPlanarSum,Finset.sum_sigma]
+end
+
 
 private theorem parabola_block_gap_closed {i j : ℤ} {m : ℕ} {x x' d w ν : ℝ}
     (hm : 2/ν ≤ (m : ℝ))
@@ -205,7 +201,7 @@ private theorem parabola_block_gap_closed {i j : ℤ} {m : ℕ} {x x' d w ν : �
     exact (hm'.trans hd).trans (le_abs_self _)
 
 end TaoTrudgianYang2025
-noncomputable section
+
 open MeasureTheory FourierTransform SchwartzMap Set GafniTao
 open scoped ComplexConjugate Convolution ContDiff
 namespace TaoTrudgianYang2025
@@ -214,10 +210,14 @@ private def cutoffConjReflect (g : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
     (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
       (LinearIsometryEquiv.neg ℝ (E := ℝ)).toContinuousLinearEquiv g)
 
-private theorem cutoffConjReflect_apply (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
+section
+variable (g : 𝓢(ℝ, ℂ)) (x : ℝ)
+include g x
+
+private theorem cutoffConjReflect_apply  :
     cutoffConjReflect g x = conj (g (-x)) := rfl
 
-private theorem fourier_cutoffConjReflect (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
+private theorem fourier_cutoffConjReflect  :
     𝓕 (cutoffConjReflect g) x = conj (𝓕 g x) := by
   rw [SchwartzMap.fourier_coe, SchwartzMap.fourier_coe,
     Real.fourier_real_eq_integral_exp_smul,
@@ -230,27 +230,32 @@ private theorem fourier_cutoffConjReflect (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
   simp only [cutoffConjReflect_apply, neg_neg, smul_eq_mul, map_mul,
     ← Complex.exp_conj, Complex.conj_ofReal, Complex.conj_I]
   congr 2
-  push_cast
-  ring
+  simp_all
 
-private theorem fourier_fourier_cutoff (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
+private theorem fourier_fourier_cutoff  :
     𝓕 (𝓕 g) x = g (-x) := by
   have h := congrFun (g.continuous.fourierInv_fourier_eq
     g.integrable (𝓕 g).integrable) (-x)
   rw [Real.fourierInv_eq_fourier_neg, neg_neg] at h
   exact h
+end
+
 
 private def cutoffSquare (g : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.pairing (ContinuousLinearMap.mul ℂ ℂ)
     (𝓕 g) (𝓕 (cutoffConjReflect g))
 
-private theorem cutoffSquare_apply (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
+section
+variable (g : 𝓢(ℝ, ℂ))
+include g
+
+private theorem cutoffSquare_apply  (x : ℝ) :
     cutoffSquare g x = (‖𝓕 g x‖^2 : ℝ) := by
   simp only [cutoffSquare, SchwartzMap.pairing_apply_apply,
     ContinuousLinearMap.mul_apply', fourier_cutoffConjReflect,
     Complex.mul_conj, Complex.normSq_eq_norm_sq]
 
-private theorem fourier_cutoffSquare (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
+private theorem fourier_cutoffSquare  (x : ℝ) :
     𝓕 (cutoffSquare g) x =
       (g ⋆[ContinuousLinearMap.mul ℂ ℂ] cutoffConjReflect g) (-x) := by
   have h : cutoffSquare g =
@@ -260,7 +265,7 @@ private theorem fourier_cutoffSquare (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
   rw [h, fourier_fourier_cutoff, SchwartzMap.convolution_apply]
 
 private theorem fourier_cutoffSquare_eq_zero
-    (g : 𝓢(ℝ, ℂ)) {R x : ℝ}
+     {R x : ℝ}
     (hs : ∀ y, R < |y| → g y = 0) (hx : 2*R < |x|) :
     𝓕 (cutoffSquare g) x = 0 := by
   rw [fourier_cutoffSquare]
@@ -276,8 +281,9 @@ private theorem fourier_cutoffSquare_eq_zero
     rw [cutoffConjReflect_apply, hs (-v) (by simpa only [abs_neg] using hn), map_zero]
   have hsum := abs_add_le u v
   change u+v = -x at huv
-  rw [huv, abs_neg] at hsum
-  linarith
+  simp_all <;> nlinarith
+end
+
 
 private def parabolaFrequencyBumpReal : ℝ → ℝ :=
   modelPhaseBufferedCutoff (-1) 1 (1/4)
@@ -319,8 +325,7 @@ private theorem parabolaFrequencyBump_fourier_zero_pos :
     (show parabolaFrequencyBumpReal 0 ≠ 0 by rw [hz]; norm_num)
   have he : (𝓕 parabolaFrequencyBump 0).re = ∫ x, parabolaFrequencyBumpReal x := by
     rw [SchwartzMap.fourier_coe, Real.fourier_eq']
-    simp only [inner_zero_right, mul_zero, Complex.ofReal_zero, zero_mul,
-      Complex.exp_zero, one_smul, parabolaFrequencyBump_apply]
+    simp
     exact (integral_re (show Integrable (fun x => (parabolaFrequencyBumpReal x : ℂ))
       from parabolaFrequencyBump.integrable)).symm
   rwa [he]
@@ -331,12 +336,16 @@ private def cutoffRescale (f : 𝓢(ℝ, ℂ)) (a : ℝ) (ha : a ≠ 0) :
     (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := ℝ)
       (Units.mk0 a ha)) f
 
+section
+variable (f : 𝓢(ℝ, ℂ))
+include f
+
 private theorem cutoffRescale_apply
-    (f : 𝓢(ℝ, ℂ)) (a : ℝ) (ha : a ≠ 0) (x : ℝ) :
+     (a : ℝ) (ha : a ≠ 0) (x : ℝ) :
     cutoffRescale f a ha x = f (a*x) := rfl
 
 private theorem fourier_cutoffRescale
-    (f : 𝓢(ℝ, ℂ)) {a : ℝ} (ha : a ≠ 0) (ξ : ℝ) :
+     {a : ℝ} (ha : a ≠ 0) (ξ : ℝ) :
     𝓕 (cutoffRescale f a ha) ξ = |a⁻¹| • 𝓕 f (ξ/a) := by
   rw [SchwartzMap.fourier_coe, SchwartzMap.fourier_coe,
     Real.fourier_real_eq_integral_exp_smul,
@@ -347,15 +356,14 @@ private theorem fourier_cutoffRescale
       apply integral_congr_ae
       filter_upwards with x
       rw [cutoffRescale_apply]
-      congr 3
-      field_simp
+      grind
     _ = _ := by
-      simpa using Measure.integral_comp_mul_left
+      exact Measure.integral_comp_mul_left
         (fun y : ℝ => Complex.exp (↑(-2*Real.pi*y*(ξ/a))*Complex.I) • f y) a
 
-private theorem cutoff_polynomial_decay (f : 𝓢(ℝ, ℂ)) (n : ℕ) :
+private theorem cutoff_polynomial_decay  (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, (1+|x|)^n*‖f x‖ ≤ C := by
-  let B : ℝ := 2^n * (Finset.Iic (n,0)).sup
+  let B := 2^n * (Finset.Iic (n,0)).sup
     (fun p => SchwartzMap.seminorm ℝ p.1 p.2) f
   refine ⟨max B 1,lt_of_lt_of_le zero_lt_one (le_max_right _ _),?_⟩
   intro x
@@ -363,6 +371,8 @@ private theorem cutoff_polynomial_decay (f : 𝓢(ℝ, ℂ)) (n : ℕ) :
     (𝕜 := ℝ) (m := (n,0)) (k := n) (n := 0) le_rfl le_rfl f x
   simp only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] at h
   exact h.trans (le_max_left _ _)
+end
+
 
 theorem exists_parabola_rapid_cutoff :
     ∃ η : 𝓢(ℝ, ℂ),
@@ -382,17 +392,16 @@ theorem exists_parabola_rapid_cutoff :
     apply norm_pos_iff.mpr
     intro hz
     have h := parabolaFrequencyBump_fourier_zero_pos
-    rw [hz] at h
-    simp at h
-  let m : ℝ := (f 0).re/2
+    simp_all <;> nlinarith
+  let m := (f 0).re/2
   have hm : 0 < m := by dsimp [m]; positivity
   have hn : {x : ℝ | m < (f x).re} ∈ nhds 0 :=
     ((Complex.continuous_re.comp f.continuous).continuousAt).preimage_mem_nhds
       (Ioi_mem_nhds (by dsimp [m]; linarith))
   obtain ⟨δ,hδ,hball⟩ := Metric.mem_nhds_iff.mp hn
-  let a : ℝ := min (δ/2) (1/400)
+  let a := min (δ/2) (1/400)
   have ha : 0 < a := lt_min (by positivity) (by norm_num)
-  let η : 𝓢(ℝ, ℂ) := (m⁻¹ : ℂ) • cutoffRescale f a ha.ne'
+  let η := (m⁻¹ : ℂ) • cutoffRescale f a ha.ne'
   have he (x : ℝ) : η x = (m⁻¹ : ℂ)*f (a*x) := rfl
   have her (x : ℝ) : (η x).re = m⁻¹*(f (a*x)).re := by
     rw [he,Complex.mul_re]
@@ -405,7 +414,6 @@ theorem exists_parabola_rapid_cutoff :
     exact mul_nonneg (inv_nonneg.mpr hm.le) (hfn _)
   · intro x hx
     have hxδ : a*|x| < δ := by
-      have hax := mul_le_mul_of_nonneg_left hx ha.le
       have haδ : a ≤ δ/2 := min_le_left _ _
       nlinarith
     have hmx := hball (show a*x ∈ Metric.ball 0 δ by
@@ -430,17 +438,23 @@ theorem exists_parabola_rapid_cutoff :
 def parabolaRapidProfile : 𝓢(ℝ, ℂ) :=
   Classical.choose exists_parabola_rapid_cutoff
 
-private theorem parabolaRapidProfile_nonneg (x : ℝ) :
+section
+variable (x : ℝ)
+include x
+
+private theorem parabolaRapidProfile_nonneg  :
     0 ≤ (parabolaRapidProfile x).re :=
   (Classical.choose_spec exists_parabola_rapid_cutoff).1 x |>.1
 
-private theorem parabolaRapidProfile_real (x : ℝ) :
+private theorem parabolaRapidProfile_real  :
     (parabolaRapidProfile x).im = 0 :=
   (Classical.choose_spec exists_parabola_rapid_cutoff).1 x |>.2
 
-private theorem parabolaRapidProfile_one_le (x : ℝ) (hx : |x| ≤ 1) :
+private theorem parabolaRapidProfile_one_le  (hx : |x| ≤ 1) :
     1 ≤ (parabolaRapidProfile x).re :=
   (Classical.choose_spec exists_parabola_rapid_cutoff).2.1 x hx
+end
+
 
 private theorem parabolaRapidProfile_fourier_zero (ξ : ℝ) (hξ : 1/100 ≤ |ξ|) :
     𝓕 parabolaRapidProfile ξ = 0 :=
@@ -487,8 +501,12 @@ theorem parabolaRapidKernel_decay (n : ℕ) :
     rfl
   simpa only [he] using h ((x-c)/R)
 
+section
+variable {R ξ : ℝ} (hR : 0 < R) (hξ : 1/(100*R) ≤ |ξ|)
+include R ξ hR hξ
+
 private theorem integral_parabolaRapidKernel_character_zero_origin
-    {R ξ : ℝ} (hR : 0 < R) (hξ : 1/(100*R) ≤ |ξ|) :
+     :
     (∫ x : ℝ, (parabolaRapidKernel R 0 x : ℂ)*fordAdditiveCharacter (ξ*x)) = 0 := by
   have he : (∫ x : ℝ, (parabolaRapidKernel R 0 x : ℂ)*fordAdditiveCharacter (ξ*x)) =
       𝓕 (cutoffRescale parabolaRapidProfile R⁻¹ (inv_ne_zero hR.ne')) (-ξ) := by
@@ -509,9 +527,9 @@ private theorem integral_parabolaRapidKernel_character_zero_origin
     nlinarith
 
 theorem integral_parabolaRapidKernel_character_zero
-    {R ξ : ℝ} (hR : 0 < R) (hξ : 1/(100*R) ≤ |ξ|) (c : ℝ) :
+     (c : ℝ) :
     (∫ x : ℝ, (parabolaRapidKernel R c x : ℂ)*fordAdditiveCharacter (ξ*x)) = 0 := by
-  let f : ℝ → ℂ := fun x =>
+  let f := fun x =>
     (parabolaRapidKernel R c x : ℂ)*fordAdditiveCharacter (ξ*x)
   have ht := integral_add_right_eq_self (μ := volume) f c
   calc
@@ -528,6 +546,8 @@ theorem integral_parabolaRapidKernel_character_zero
       ∫ x : ℝ, (parabolaRapidKernel R 0 x : ℂ)*fordAdditiveCharacter (ξ*x) :=
         integral_const_mul _ _
     _ = 0 := by rw [integral_parabolaRapidKernel_character_zero_origin hR hξ,mul_zero]
+end
+
 
 def parabolaRapidWeight (R r t α γ : ℝ) : ℝ :=
   parabolaRapidKernel R r α * parabolaRapidKernel R t γ
@@ -590,7 +610,7 @@ private theorem rapid_weighted_integrable {f : ℝ × ℝ → ℂ}
     (hM : ∀ p, ‖f p‖ ≤ M) (r t : ℝ) :
     Integrable (fun p : ℝ × ℝ =>
       (parabolaRapidWeight R r t p.1 p.2 : ℂ)*f p) := by
-  have hw : Integrable (fun p : ℝ × ℝ => parabolaRapidWeight R r t p.1 p.2) :=
+  have hw :=
     (integrable_parabolaRapidKernel hR r).mul_prod (integrable_parabolaRapidKernel hR t)
   have hc := (Complex.continuous_ofReal.comp (continuous_rapidWeight R r t)).mul hf
   apply (hw.mul_const M).mono' hc.aestronglyMeasurable
@@ -767,23 +787,23 @@ private def parabolaMomentFunction {ι τ : Type*}
   ‖sargosPlanarSum S z x (fun i => (x i)^2) p.1 p.2‖^2 *
   ‖sargosPlanarSum V c y (fun j => (y j)^2) p.1 p.2‖^4
 
-private theorem parabolaMomentFunction_nonneg {ι τ : Type*}
+section
+variable {ι τ : Type*}
     (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) (p : ℝ × ℝ) :
+    (x : ι → ℝ) (y : τ → ℝ)
+include ι τ S V z c x y
+
+private theorem parabolaMomentFunction_nonneg  (p : ℝ × ℝ) :
     0 ≤ parabolaMomentFunction S V z c x y p := by
   unfold parabolaMomentFunction
   positivity
 
-private theorem parabolaMomentFunction_continuous {ι τ : Type*}
-    (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) :
+private theorem parabolaMomentFunction_continuous  :
     Continuous (parabolaMomentFunction S V z c x y) := by
   unfold parabolaMomentFunction sargosPlanarSum fordAdditiveCharacter
   fun_prop
 
-private theorem parabolaMomentFunction_integrable {ι τ : Type*}
-    (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
+private theorem parabolaMomentFunction_integrable  {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
     Integrable (fun p => W p*parabolaMomentFunction S V z c x y p) := by
   apply hW.mul_bdd (parabolaMomentFunction_continuous S V z c x y).aestronglyMeasurable
     (c := (∑ i ∈ S, ‖z i‖)^2*(∑ j ∈ V, ‖c j‖)^4)
@@ -793,6 +813,8 @@ private theorem parabolaMomentFunction_integrable {ι τ : Type*}
   have hS := norm_sargosPlanarSum_le_sum_norm S z x (fun i => (x i)^2) p.1 p.2
   have hV := norm_sargosPlanarSum_le_sum_norm V c y (fun j => (y j)^2) p.1 p.2
   gcongr
+end
+
 
 def parabolaSourceBilinearMoment {ι τ : Type*}
     (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
@@ -808,9 +830,13 @@ def parabolaBoxBilinearMoment {ι τ : Type*}
     ‖sargosPlanarSum S z x (fun i => (x i)^2) p.1 p.2‖^2 *
     ‖sargosPlanarSum V c y (fun j => (y j)^2) p.1 p.2‖^4
 
-private theorem parabolaBox_le_rapid {ι τ : Type*}
+section
+variable {ι τ : Type*}
     (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) {R : ℝ} (hR : 0 < R) (r t : ℝ) :
+    (x : ι → ℝ) (y : τ → ℝ)
+include ι τ S V z c x y
+
+private theorem parabolaBox_le_rapid  {R : ℝ} (hR : 0 < R) (r t : ℝ) :
     parabolaBoxBilinearMoment S V z c x y R r t ≤
       parabolaRapidBilinearMoment S V z c x y R r t := by
   let F := parabolaMomentFunction S V z c x y
@@ -837,9 +863,7 @@ private theorem parabolaBox_le_rapid {ι τ : Type*}
   simpa only [parabolaBoxBilinearMoment,parabolaRapidBilinearMoment,F,W,B,
     parabolaMomentFunction,mul_assoc] using hlocal.trans hwhole
 
-private theorem parabolaRapid_le_source {ι τ : Type*}
-    (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
-    (x : ι → ℝ) (y : τ → ℝ) {C R : ℝ} (hR : 0 < R)
+private theorem parabolaRapid_le_source  {C R : ℝ} (hR : 0 < R)
     (hC : ∀ R r t α γ : ℝ,
       parabolaRapidWeight R r t α γ ≤ C*parabolaSourceWeight R r t α γ)
     (r t : ℝ) :
@@ -857,9 +881,11 @@ private theorem parabolaRapid_le_source {ι τ : Type*}
   rw [integral_const_mul] at hb
   simpa only [parabolaRapidBilinearMoment,parabolaSourceBilinearMoment,
     parabolaMomentFunction,parabolaRapidWeight,mul_assoc] using hb
+end
+
 
 end TaoTrudgianYang2025
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators ComplexConjugate
 namespace TaoTrudgianYang2025
@@ -874,11 +900,10 @@ theorem parabola_sum_shift {ι : Type*} (S : Finset ι)
   apply Finset.sum_congr rfl
   intro i hi
   rw [mul_left_comm (fordAdditiveCharacter _),← fordAdditiveCharacter_add]
-  congr 2
   ring
 
 end TaoTrudgianYang2025
-noncomputable section
+
 namespace TaoTrudgianYang2025
 open MeasureTheory Set
 open scoped BigOperators
@@ -908,7 +933,7 @@ private theorem parabolaSourceWeight_triangle_lower (R r t α γ β δ : ℝ) :
   exact pow_le_pow_left₀ (by positivity) (by nlinarith only [h,hm]) _
 
 end TaoTrudgianYang2025
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators NNReal ENNReal
 namespace TaoTrudgianYang2025
@@ -971,23 +996,27 @@ private def parabolaRescaling (a σ : ℝ) (hσ : σ ≠ 0) : (ℝ × ℝ) ≃L[
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
-private theorem parabolaRescaling_haar_factor (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ)) :
+section
+variable (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ))
+include e
+
+private theorem parabolaRescaling_haar_factor  :
     ∃ c : ℝ≥0, 0 < c ∧
       Measure.map e (volume : Measure (ℝ × ℝ)) = (c : ℝ≥0∞) • volume := by
-  have : (Measure.map e (volume : Measure (ℝ × ℝ))).IsAddHaarMeasure :=
-    e.isAddHaarMeasure_map volume
   refine ⟨Measure.addHaarScalarFactor (Measure.map e volume) volume,
     Measure.addHaarScalarFactor_pos_of_isAddHaarMeasure _ _,?_⟩
   exact Measure.isAddLeftInvariant_eq_smul _ _
 
 private theorem parabolaRescaling_integrable
-    (e : (ℝ × ℝ) ≃L[ℝ] (ℝ × ℝ)) {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
+     {W : ℝ × ℝ → ℝ} (hW : Integrable W) :
     Integrable (fun p => W (e p)) := by
   obtain ⟨c,hc,he⟩ := parabolaRescaling_haar_factor e
   apply (integrable_map_equiv e.toHomeomorph.toMeasurableEquiv W).mp
   change Integrable W (Measure.map e volume)
   rw [he]
   exact hW.smul_measure ENNReal.coe_ne_top
+end
+
 
 private theorem parabolaRescaling_integral
     {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -1032,8 +1061,7 @@ theorem ParabolaWeightBand.rescale {δ a σ : ℝ} {W : ℝ × ℝ → ℝ}
     dsimp [e,parabolaRescaling]
     ring
   dsimp only [f]
-  simp_rw [he]
-  rw [hchar,smul_zero]
+  simp_all <;> nlinarith
 
 theorem parabolaRapidWeight_band {δ R : ℝ} (hR : 0 < R)
     (hwidth : 3/(100*R) ≤ δ^2) (r t : ℝ) :
@@ -1067,10 +1095,7 @@ theorem parabola_sum_rescale {ι : Type*} (S : Finset ι) (z : ι → ℂ) (x : 
   rw [parabola_sum_shift S z x a α γ]
   congr 1
   unfold sargosPlanarSum
-  apply Finset.sum_congr rfl
-  intro i hi
-  congr 2
-  field_simp
+  grind
 
 def parabolaWeightedBilinearMoment {ι τ : Type*}
     (W : ℝ × ℝ → ℝ) (S : Finset ι) (V : Finset τ)
@@ -1268,7 +1293,7 @@ theorem parabolaWeightedBilinearMoment_localization_closed {ι τ : Type*}
   exact integral_nonneg (fun p => mul_nonneg (hW.1 p) (sq_nonneg _))
 
 end TaoTrudgianYang2025
-noncomputable section
+
 namespace TaoTrudgianYang2025
 open MeasureTheory Set
 open scoped BigOperators
@@ -1341,7 +1366,11 @@ def parabolaWeightedSixNorm {ι : Type*} (W : ℝ × ℝ → ℝ)
   lpNorm (fun p : ℝ × ℝ => sargosPlanarSum S z x (fun i => (x i)^2) p.1 p.2)
     6 (volume.withDensity (fun p => ENNReal.ofReal (W p)))
 
-private theorem parabolaWeighted_memLp {ι : Type*} {W : ℝ × ℝ → ℝ}
+section
+variable {ι : Type*}
+include ι
+
+private theorem parabolaWeighted_memLp  {W : ℝ × ℝ → ℝ}
     (hW : Integrable W) (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     MemLp (fun p : ℝ × ℝ => sargosPlanarSum S z x (fun i => (x i)^2) p.1 p.2)
       6 (volume.withDensity (fun p => ENNReal.ofReal (W p))) := by
@@ -1354,11 +1383,15 @@ private theorem parabolaWeighted_memLp {ι : Type*} {W : ℝ × ℝ → ℝ}
     (Filter.Eventually.of_forall fun p =>
       norm_sargosPlanarSum_le_sum_norm S z x (fun i => (x i)^2) p.1 p.2)
 
-theorem parabolaWeightedSixNorm_nonneg {ι : Type*} (W : ℝ × ℝ → ℝ)
+section
+variable (W : ℝ × ℝ → ℝ)
+include W
+
+theorem parabolaWeightedSixNorm_nonneg 
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     0 ≤ parabolaWeightedSixNorm W S z x := lpNorm_nonneg
 
-theorem parabolaWeightedSixNorm_pow_six {ι : Type*} (W : ℝ × ℝ → ℝ)
+theorem parabolaWeightedSixNorm_pow_six 
     (hW₀ : ∀ p, 0 ≤ W p) (hW : Integrable W)
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     (parabolaWeightedSixNorm W S z x)^6 =
@@ -1370,22 +1403,24 @@ theorem parabolaWeightedSixNorm_pow_six {ι : Type*} (W : ℝ × ℝ → ℝ)
     Real.rpow_natCast]
   simp only [one_div]
   have hroot (m : ℝ) (hm : 0 ≤ m) : (m^((6:ℝ)⁻¹))^6 = m := by
-    simpa only [Nat.cast_ofNat] using Real.rpow_inv_natCast_pow hm (by norm_num : (6:ℕ) ≠ 0)
+    exact Real.rpow_inv_natCast_pow hm (by norm_num : (6:ℕ) ≠ 0)
   rw [hroot _ (integral_nonneg fun _ => by positivity)]
   rw [integral_withDensity_eq_integral_toReal_smul₀
     hW.1.aemeasurable.ennreal_ofReal (Filter.Eventually.of_forall fun _ => ENNReal.ofReal_lt_top)]
   unfold parabolaWeightedBilinearMoment
   apply integral_congr_ae
-  exact Filter.Eventually.of_forall fun p => by
-    dsimp only
-    rw [ENNReal.toReal_ofReal (hW₀ p)]
-    dsimp only [smul_eq_mul]
-    norm_num only [Real.rpow_ofNat]
-    ring
+  exact Filter.Eventually.of_forall fun p => by simp_all <;> nlinarith
+end
+end
 
-theorem parabolaWeightedSixNorm_sum_le {κ ι : Type*} (J : Finset κ)
+
+section
+variable {κ ι : Type*} (J : Finset κ)
     (S : κ → Finset ι) (z : κ → ι → ℂ) (x : κ → ι → ℝ)
-    (W : ℝ × ℝ → ℝ) (hW : Integrable W) :
+    (W : ℝ × ℝ → ℝ) (hW : Integrable W)
+include κ ι J S z x W hW
+
+theorem parabolaWeightedSixNorm_sum_le  :
     parabolaWeightedSixNorm W (J.sigma S) (fun ij => z ij.1 ij.2)
       (fun ij => x ij.1 ij.2) ≤
         ∑ i ∈ J, parabolaWeightedSixNorm W (S i) (z i) (x i) := by
@@ -1401,9 +1436,7 @@ theorem parabolaWeightedSixNorm_sum_le {κ ι : Type*} (J : Finset κ)
   exact lpNorm_sum_le (fun i _ => parabolaWeighted_memLp hW (S i) (z i) (x i))
     (by norm_num)
 
-theorem parabolaWeightedSixNorm_sq_le_card {κ ι : Type*} (J : Finset κ)
-    (S : κ → Finset ι) (z : κ → ι → ℂ) (x : κ → ι → ℝ)
-    (W : ℝ × ℝ → ℝ) (hW : Integrable W) :
+theorem parabolaWeightedSixNorm_sq_le_card  :
     (parabolaWeightedSixNorm W (J.sigma S) (fun ij => z ij.1 ij.2)
       (fun ij => x ij.1 ij.2))^2 ≤
         (J.card:ℝ)*∑ i ∈ J, (parabolaWeightedSixNorm W (S i) (z i) (x i))^2 := by
@@ -1412,6 +1445,8 @@ theorem parabolaWeightedSixNorm_sq_le_card {κ ι : Type*} (J : Finset κ)
       exact pow_le_pow_left₀ (parabolaWeightedSixNorm_nonneg _ _ _ _)
         (parabolaWeightedSixNorm_sum_le J S z x W hW) 2
     _ ≤ _ := sq_sum_le_card_mul_sum_sq
+end
+
 
 theorem parabolaWeightedBilinearMoment_le_sixNorm {ι τ : Type*}
     (W : ℝ × ℝ → ℝ) (hW₀ : ∀ p, 0 ≤ W p) (hW : Integrable W)
@@ -1463,10 +1498,9 @@ theorem exists_parabolaWeightedSixNorm_rescale (a σ : ℝ) (hσ : σ ≠ 0) :
   let C := d^((6:ℝ)⁻¹)
   have hC : 0 < C := Real.rpow_pos_of_pos hd _
   have hCpow : C^6 = d := by
-    simpa only [C,Nat.cast_ofNat] using
-      Real.rpow_inv_natCast_pow hd.le (by norm_num : (6:ℕ) ≠ 0)
+    exact Real.rpow_inv_natCast_pow hd.le (by norm_num : (6:ℕ) ≠ 0)
   refine ⟨C,hC,fun ι W hW₀ hW S z x => ?_⟩
-  let W' : ℝ × ℝ → ℝ := fun p => W (e.symm p)
+  let W' := fun p => W (e.symm p)
   have hW' : Integrable W' := parabolaRescaling_integrable e.symm hW
   have hW'₀ : ∀ p, 0 ≤ W' p := fun p => hW₀ (e.symm p)
   change parabolaWeightedSixNorm W' S z (fun i => (x i-a)/σ) =
@@ -1491,8 +1525,7 @@ theorem exists_parabolaWeightedSixNorm_rescale (a σ : ℝ) (hσ : σ ≠ 0) :
     _ = ∫ p : ℝ × ℝ, f (e.symm p) := by
       apply integral_congr_ae
       filter_upwards with p
-      dsimp only [f,parabolaWeightedBilinearMoment]
-      rw [hn]
+      grind
     _ = _ := by
       simpa only [f,parabolaWeightedBilinearMoment,smul_eq_mul] using hint f
 
@@ -1544,12 +1577,11 @@ theorem ParabolaDecouplingBound.rescale {n : ℕ} {D a σ : ℝ}
   simp_rw [hi,mul_pow] at h
   rw [← Finset.mul_sum] at h
   have hC₂ : 0 < C^2 := sq_pos_of_pos hC
-  apply (mul_le_mul_iff_right₀ hC₂).mp
-  nlinarith only [h]
+  nlinarith
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -1564,20 +1596,20 @@ private theorem add_sixth_le (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) :
       (show a+b ≤ 2*a by linarith) 6
     nlinarith only [hs,pow_nonneg hb 6]
 
-public  theorem parabola_near_card (J : Finset ℤ) (i : ℤ) :
+section
+variable (J : Finset ℤ)
+include J
+
+public  theorem parabola_near_card  (i : ℤ) :
     ((J.filter (fun j => |i-j| ≤ 3)).card : ℝ) ≤ 7 := by
-  have hs : J.filter (fun j => |i-j| ≤ 3) ⊆ Finset.Icc (i-3) (i+3) := by
-    intro j hj
-    have hh := abs_le.mp (Finset.mem_filter.mp hj).2
-    apply Finset.mem_Icc.mpr
-    constructor <;> omega
+  have hs : J.filter (fun j => |i-j| ≤ 3) ⊆ Finset.Icc (i-3) (i+3) := by grind
   have hc : (J.filter (fun j => |i-j| ≤ 3)).card ≤ 7 := by
     calc
       _ ≤ (Finset.Icc (i-3) (i+3)).card := Finset.card_le_card hs
       _ = 7 := by rw [Int.card_Icc]; omega
   exact_mod_cast hc
 
-theorem parabola_bilinear_reduction_pointwise (J : Finset ℤ) (f : ℤ → ℂ) :
+theorem parabola_bilinear_reduction_pointwise  (f : ℤ → ℂ) :
     ‖∑ i ∈ J, f i‖^6 ≤
       (64*7^6:ℝ)*∑ i ∈ J, ‖f i‖^6 +
       64*(J.card:ℝ)^5*
@@ -1647,6 +1679,8 @@ by
       have hd := mul_le_mul_of_nonneg_left hdiag (by positivity : (0:ℝ) ≤ 64*7^6)
       have hc := mul_le_mul_of_nonneg_left hcross (by positivity : (0:ℝ) ≤ 64*(J.card:ℝ)^5)
       nlinarith only [hd,hc]
+end
+
 
 theorem parabolaWeightedSixNorm_bilinear_reduction {ι : Type*}
     (J : Finset ℤ) (S : ℤ → Finset ι) (z : ℤ → ι → ℂ) (x : ℤ → ι → ℝ)
@@ -1715,7 +1749,7 @@ theorem parabolaWeightedSixNorm_bilinear_reduction {ι : Type*}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -1734,12 +1768,12 @@ public  theorem finGrid_cell {k l : ℕ} (hk : 0 < k) (hl : 0 < l)
       (i:ℕ)/(k:ℝ)+(1/(k:ℝ))*(((j:ℕ)+1)/(l:ℝ)) := by
   have hk' : (k:ℝ) ≠ 0 := by positivity
   have hl' : (l:ℝ) ≠ 0 := by positivity
-  simp only [finProdFinEquiv,Equiv.coe_fn_mk,Nat.cast_add,Nat.cast_mul]
+  simp
   constructor <;> field_simp <;> ring
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -1775,8 +1809,7 @@ private theorem parabola_grid_rescale_bound {n : ℕ} {D δ a : ℝ}
   intro j k hk
   have h := hx j k hk
   have hleft : δ*n*((j:ℕ)/(n:ℝ)) = δ*(j:ℕ) := by field_simp
-  have hright : δ*n*(((j:ℕ)+1)/(n:ℝ)) = δ*((j:ℕ)+1) := by field_simp
-  simpa only [hleft,hright] using h
+  grind
 
 theorem parabolaBilinearSixBound_of_linear {p q : ℕ} {δ ν A B : ℝ}
     (hp : 0 < p) (hq : 0 < q) (hδ : 0 < δ)
@@ -1841,7 +1874,7 @@ theorem ParabolaBilinearSixBound.holder_swap {p q : ℕ} {δ ν K B : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -1849,19 +1882,23 @@ namespace TaoTrudgianYang2025
 private def parabolaIntGridIndex (k : ℕ) (hk : 0 < k) (i : ℤ) : Fin k :=
   ⟨i.toNat % k,Nat.mod_lt _ hk⟩
 
-private theorem parabolaIntGridIndex_cast {k : ℕ} (hk : 0 < k) (i : Fin k) :
+section
+variable {k : ℕ} (hk : 0 < k)
+include k hk
+
+private theorem parabolaIntGridIndex_cast  (i : Fin k) :
     parabolaIntGridIndex k hk (i:ℕ) = i := by
   apply Fin.ext
   simp [parabolaIntGridIndex,Nat.mod_eq_of_lt i.isLt]
 
-private theorem parabolaIntGridIndex_val {k : ℕ} (hk : 0 < k) {i : ℤ}
+private theorem parabolaIntGridIndex_val  {i : ℤ}
     (hi : i ∈ Finset.Ico 0 (k:ℤ)) :
     ((parabolaIntGridIndex k hk i : Fin k):ℕ) = i.toNat := by
   have hh := Finset.mem_Ico.mp hi
   simp only [parabolaIntGridIndex]
   exact Nat.mod_eq_of_lt (by omega)
 
-private theorem parabola_intGrid_sum {k : ℕ} (hk : 0 < k)
+private theorem parabola_intGrid_sum 
     {A : Type*} [AddCommMonoid A] (f : Fin k → A) :
     ∑ i ∈ Finset.Ico 0 (k:ℤ), f (parabolaIntGridIndex k hk i) = ∑ j, f j := by
   classical
@@ -1883,8 +1920,7 @@ private theorem parabola_intGrid_sum {k : ℕ} (hk : 0 < k)
   · intro i _
     rw [parabolaIntGridIndex_cast]
 
-private theorem parabolaWeightedBilinearMoment_fin_localization {k : ℕ}
-    (hk : 0 < k) {ι τ : Type*}
+private theorem parabolaWeightedBilinearMoment_fin_localization  {ι τ : Type*}
     (S : Fin k → Finset ι) (V : Finset τ)
     (z : Fin k → ι → ℂ) (c : τ → ℂ) (x : Fin k → ι → ℝ) (y : τ → ℝ)
     {w a β u ν δ : ℝ} {W : ℝ × ℝ → ℝ}
@@ -1930,8 +1966,9 @@ private theorem parabolaWeightedBilinearMoment_fin_localization {k : ℕ}
   have hsum := parabola_intGrid_sum hk (fun i =>
     parabolaWeightedBilinearMoment W (S i) V (z i) c (x i) y)
   change (∑ i ∈ J, parabolaWeightedBilinearMoment W (S (R i)) V (z (R i)) c (x (R i)) y) = _ at hsum
-  rw [hsum] at h
-  exact h
+  grind
+end
+
 
 universe u
 
@@ -1959,18 +1996,9 @@ theorem ParabolaBilinearSixBound.localization {k m q : ℕ} {δ ν K : ℝ}
     have hi : ((i:ℕ):ℝ)+1 ≤ k := by exact_mod_cast i.isLt
     have hp := mul_le_mul_of_nonneg_left hi (by positivity : 0 ≤ δ*m)
     have hzero : 0 ≤ δ*m*(i:ℕ) := by positivity
-    dsimp only [ai]
-    constructor
-    · linarith
-    · nlinarith only [hp]
+    grind
   have hfine (i : Fin k) (j : Fin m) (v : ι) (hv : v ∈ S (e (i,j))) :
-      x (e (i,j)) v ∈ Icc (ai i+δ*(j:ℕ)) (ai i+δ*((j:ℕ)+1)) := by
-    have hf := hx (e (i,j)) v hv
-    change x (e (i,j)) v ∈ Icc (a+δ*((e (i,j):Fin (k*m)):ℝ))
-      (a+δ*(((e (i,j):Fin (k*m)):ℝ)+1)) at hf
-    rw [heval] at hf
-    dsimp only [ai]
-    constructor <;> nlinarith [hf.1,hf.2]
+      x (e (i,j)) v ∈ Icc (ai i+δ*(j:ℕ)) (ai i+δ*((j:ℕ)+1)) := by grind
   have hblock (i : Fin k) (v : (j : Fin m) × ι) (hv : v ∈ T i) :
       X i v ∈ Icc (ai i) (ai i+δ*m) := by
     have hf := hfine i v.1 v.2 (Finset.mem_sigma.mp hv).2
@@ -2004,8 +2032,7 @@ theorem ParabolaBilinearSixBound.localization {k m q : ℕ} {δ ν K : ℝ}
     (show b ∈ Icc 0 1 from ⟨hb,by nlinarith [mul_nonneg hδ.le (Nat.cast_nonneg q)]⟩)
     hwidth hsmall hd hglobal hsecondary (fun i v hv => by
       have h := hblock i v hv
-      dsimp only [ai] at h
-      simpa only [← hscale,mul_add,mul_one,mul_assoc,add_assoc] using h)
+      grind)
 
   let EV := ∑ j, (parabolaWeightedSixNorm W (V j) (c j) (y j))^2
   have hpiece (i : Fin k) :
@@ -2058,12 +2085,16 @@ theorem ParabolaBilinearSixBound.localization_holder {k m q : ℕ} {δ ν K B : 
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-private theorem sum_nonneg_powers_le {ι : Type*} (J : Finset ι) (E : ι → ℝ)
+section
+variable {ι : Type*}
+include ι
+
+private theorem sum_nonneg_powers_le  (J : Finset ι) (E : ι → ℝ)
     (hE : ∀ i ∈ J, 0 ≤ E i) {n : ℕ} (hn : n ≠ 0) :
     ∑ i ∈ J, (E i)^n ≤ (∑ i ∈ J, E i)^n := by
   classical
@@ -2078,7 +2109,7 @@ private theorem sum_nonneg_powers_le {ι : Type*} (J : Finset ι) (E : ι → �
       _ ≤ _ := pow_add_pow_le (hE a (Finset.mem_insert_self a J))
         (Finset.sum_nonneg hJ) hn
 
-private theorem parabolaWeightedSixNorm_bilinear_budget {ι : Type*}
+private theorem parabolaWeightedSixNorm_bilinear_budget 
     (J : Finset ℤ) (S : ℤ → Finset ι) (z : ℤ → ι → ℂ) (x : ℤ → ι → ℝ)
     (W : ℝ × ℝ → ℝ) (hW₀ : ∀ p, 0 ≤ W p) (hW : Integrable W)
     (E : ℤ → ℝ) (A K : ℝ) (hE : ∀ i ∈ J, 0 ≤ E i) (hK : 0 ≤ K)
@@ -2126,6 +2157,8 @@ private theorem parabolaWeightedSixNorm_bilinear_budget {ι : Type*}
   have hd := mul_le_mul_of_nonneg_left hds (by positivity : (0:ℝ) ≤ 64*7^6)
   have hf := mul_le_mul_of_nonneg_left hcs (by positivity : (0:ℝ) ≤ 64*(J.card:ℝ)^5)
   nlinarith only [hmain,hd,hf]
+end
+
 
 private theorem parabola_sixth_budget_to_square {L E A K k : ℝ}
     (hE : 0 ≤ E) (hA : 0 ≤ A) (hK : 0 ≤ K) (hk : 1 ≤ k)
@@ -2134,12 +2167,9 @@ private theorem parabola_sixth_budget_to_square {L E A K k : ℝ}
   let R := K^((6:ℝ)⁻¹)
   have hR : 0 ≤ R := Real.rpow_nonneg hK _
   have hR₆ : R^6 = K := by
-    simpa only [R,Nat.cast_ofNat] using
-      Real.rpow_inv_natCast_pow hK (by norm_num : (6:ℕ) ≠ 0)
+    exact Real.rpow_inv_natCast_pow hK (by norm_num : (6:ℕ) ≠ 0)
   have hk₀ : 0 ≤ k := by linarith
-  have hkp : k^5 ≤ k^6 := by
-    have hp := mul_le_mul_of_nonneg_left hk (pow_nonneg hk₀ 5)
-    simpa only [mul_one,← pow_succ] using hp
+  have hkp : k^5 ≤ k^6 := by field_simp <;> nlinarith
   have hab := pow_add_pow_le (by positivity : 0 ≤ 14*A)
     (by positivity : 0 ≤ 2*k*R) (by norm_num : (6:ℕ) ≠ 0)
   have hb : (64*7^6:ℝ)*A^6+64*k^5*K ≤ (14*A+2*k*R)^6 := by
@@ -2152,8 +2182,7 @@ private theorem parabola_sixth_budget_to_square {L E A K k : ℝ}
   have hc := h.trans (mul_le_mul_of_nonneg_right hb (pow_nonneg hE 3))
   apply (pow_le_pow_iff_left₀ (sq_nonneg L) (by positivity)
     (by norm_num : (3:ℕ) ≠ 0)).mp
-  change (L^2)^3 ≤ ((14*A+2*k*R)^2*E)^3
-  convert hc using 1 <;> ring
+  grind
 
 universe u
 
@@ -2166,7 +2195,7 @@ theorem ParabolaDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
   have hA₀ := hA.1
   have hK₀ := hK.1
   refine ⟨by positivity,fun ι W hW S z x hx => ?_⟩
-  let δ : ℝ := 1/((k*l:ℕ):ℝ)
+  let δ := 1/((k*l:ℕ):ℝ)
   let e : Fin k × Fin l ≃ Fin (k*l) := finProdFinEquiv
   let T := fun i : Fin k => Finset.univ.sigma (fun j : Fin l => S (e (i,j)))
   let Z := fun i : Fin k => fun jv : (j : Fin l) × ι => z (e (i,jv.1)) jv.2
@@ -2293,7 +2322,7 @@ theorem ParabolaDecouplingBound.of_bilinear_dyadic {n r : ℕ} {A K : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -2333,16 +2362,14 @@ theorem ParabolaBilinearSixBound.dyadic_step {n a b r : ℕ} {K B : ℝ}
     push_cast
     rw [dyadic_width_mul_cells hb,dyadic_width_mul_cells (by omega : b ≤ n),
       dyadic_width_sq]
-  have hν₁ : 1/(2:ℝ)^r ≤ 1 := by
-    apply (div_le_iff₀ (by positivity : (0:ℝ) < 2^r)).mpr
-    simpa only [one_mul] using one_le_pow₀ (by norm_num : (1:ℝ) ≤ 2) (n:=r)
+  have hν₁ : 1/(2:ℝ)^r ≤ 1 := by bound
   have h := hK.localization_holder (k:=2^(2*b-a)) (by positivity) (by positivity)
     (by positivity) (by positivity) hν₁ (by simpa only [Nat.cast_pow,Nat.cast_ofNat] using hsmall) hscale hB
   simpa only [hcount] using h
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -2353,7 +2380,11 @@ def parabolaDyadicBilinearBudget (D : ℕ → ℝ) (n r : ℕ) : ℕ → ℕ →
   | t+1,_,b => (7/(1/(2:ℝ)^r))*
       (Real.sqrt (parabolaDyadicBilinearBudget D n r t b (2*b))*(D (n-b))^3)
 
-theorem parabolaBilinearSixBound_dyadic_iterate (D : ℕ → ℝ)
+section
+variable (D : ℕ → ℝ)
+include D
+
+theorem parabolaBilinearSixBound_dyadic_iterate 
     {n r a b t : ℕ} (hr : 0 < r) (hra : r ≤ a) (hab : a ≤ b)
     (hb : b*2^t ≤ n)
     (hD : ∀ j < n, ParabolaDecouplingBound.{u} (2^j) (D j)) :
@@ -2375,7 +2406,7 @@ theorem parabolaBilinearSixBound_dyadic_iterate (D : ℕ → ℝ)
     have h := hprev.dyadic_step (a:=a) (by omega) hb₂ hra (hD (n-b) (by omega))
     simpa only [parabolaDyadicBilinearBudget] using h
 
-theorem parabolaDecouplingBound_dyadic_iterate (D : ℕ → ℝ)
+theorem parabolaDecouplingBound_dyadic_iterate 
     {n r t : ℕ} (hr : 0 < r) (hn : r*2^t ≤ n)
     (hD : ∀ j < n, ParabolaDecouplingBound.{u} (2^j) (D j)) :
     ParabolaDecouplingBound.{u} (2^n)
@@ -2387,10 +2418,12 @@ theorem parabolaDecouplingBound_dyadic_iterate (D : ℕ → ℝ)
       mul_le_mul_of_nonneg_left hpow (Nat.zero_le r)).trans hn
   exact ParabolaDecouplingBound.of_bilinear_dyadic hrn (hD (n-r) (by omega))
     (parabolaBilinearSixBound_dyadic_iterate D hr le_rfl le_rfl hn hD)
+end
+
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -2430,12 +2463,7 @@ theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
           (C*(2:ℝ)^(ε*((n:ℝ)-b))*
             (C*(2:ℝ)^(ε*((n:ℝ)-2*b)))^2*
               (C*(2:ℝ)^(ε*((n:ℝ)-b)))^3) =
-        7*(2:ℝ)^r*(C^6*(2:ℝ)^(6*ε*n-8*ε*b)) := by
-      rw [div_div_eq_mul_div,div_one]
-      calc
-        _ = 7*(2:ℝ)^r*((C*(2:ℝ)^(ε*((n:ℝ)-b)))^4*
-          (C*(2:ℝ)^(ε*((n:ℝ)-2*b)))^2) := by ring
-        _ = _ := by rw [hp]
+        7*(2:ℝ)^r*(C^6*(2:ℝ)^(6*ε*n-8*ε*b)) := by grind
     rw [hmain]
     have hrpow : (2:ℝ)^r ≤ (2:ℝ)^(2*(r:ℝ)) := by
       rw [←Real.rpow_natCast]
@@ -2462,17 +2490,13 @@ theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
         (7*C^3*(2:ℝ)^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r))^2 =
         49*C^6*(2:ℝ)^(6*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*(2*b)+2*r) := by
       rw [mul_pow,mul_pow,←pow_mul,←Real.rpow_mul_natCast (by norm_num)]
-      norm_num only [show (3*2:ℕ)=6 by omega,show (7:ℝ)^2=49 by norm_num,Nat.cast_ofNat]
-      congr 1
-      congr 1
       ring
     have hsqrt : Real.sqrt
         (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r (1+s) b (2*b)) ≤
         7*C^3*(2:ℝ)^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r) := by
       apply Real.sqrt_le_iff.mpr
       refine ⟨by positivity,?_⟩
-      rw [hsquare]
-      simpa only [Nat.cast_mul,Nat.cast_ofNat] using hprev
+      grind
     rw [show 1+(s+1)=(1+s)+1 by omega,parabolaDyadicBilinearBudget]
     calc
       _ ≤ (7/(1/(2:ℝ)^r))*
@@ -2491,7 +2515,7 @@ theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
         ring
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 universe u
@@ -2504,8 +2528,12 @@ theorem ParabolaDecouplingBound.mono {n : ℕ} {A B : ℝ}
     (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hA.1 hAB 2)
       (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))
 
-private theorem parabola_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
-    {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n) :
+section
+variable {C ε : ℝ} (hC : 0 ≤ C)
+    {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n)
+include C ε hC n r t ht hn
+
+private theorem parabola_dyadic_exponential_root  :
     (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
       2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3) := by
   have hbudget : 0 ≤
@@ -2516,9 +2544,6 @@ private theorem parabola_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
       (2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3))^6 =
         64*C^6*(2:ℝ)^(6*ε*n-(3*(t:ℝ)+5)*ε*r+2*r) := by
     rw [mul_pow,mul_pow,←Real.rpow_mul_natCast (by norm_num)]
-    norm_num only [show (2:ℝ)^6=64 by norm_num,Nat.cast_ofNat]
-    congr 1
-    congr 1
     ring
   apply (pow_le_pow_iff_left₀ (by positivity) (by positivity)
     (by norm_num : (6:ℕ) ≠ 0)).mp
@@ -2527,8 +2552,7 @@ private theorem parabola_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
   rw [hroot,hpower]
   exact hmajor.trans (by gcongr; norm_num)
 
-private theorem parabola_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C)
-    {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n)
+private theorem parabola_dyadic_exponential_iteration 
     (hεt : 8 ≤ (3*(t:ℝ)-1)*ε) :
     14*(C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)))+2*(2:ℝ)^r*
       (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
@@ -2539,7 +2563,6 @@ private theorem parabola_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C
       mul_le_mul_of_nonneg_left hpow (Nat.zero_le r)).trans hn
   have hroot := parabola_dyadic_exponential_root (ε:=ε) hC ht hn
   have hexp : ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3+r ≤ ε*((n:ℝ)-r) := by
-    have hmul := mul_le_mul_of_nonneg_right hεt (Nat.cast_nonneg r : (0:ℝ) ≤ r)
     nlinarith
   have hterm : 2*(2:ℝ)^r*
       (2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3)) ≤
@@ -2555,10 +2578,12 @@ private theorem parabola_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp) (by positivity)
   have h := mul_le_mul_of_nonneg_left hroot (show 0 ≤ 2*(2:ℝ)^r by positivity)
   linarith
+end
+
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 universe u
@@ -2585,7 +2610,7 @@ theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
       18 ≤ (2:ℝ)^(5:ℝ) := by norm_num
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le (by norm_num) hεr
   let N := r*2^t
-  let C : ℝ := (2:ℝ)^N
+  let C := (2:ℝ)^N
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C,hC,?_⟩
   intro n
@@ -2625,7 +2650,7 @@ theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
           nlinarith
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -2657,9 +2682,6 @@ theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
   simp only [mul_pow,←pow_mul] at hcube
   have hcoef : (D*(2:ℝ)^((ε/6)*n))^6 = D^6*(2:ℝ)^(ε*n) := by
     rw [mul_pow,←Real.rpow_mul_natCast (by norm_num)]
-    congr 1
-    congr 1
-    push_cast
     ring
   norm_num only [show (2*3:ℕ)=6 by omega] at hcube
   rw [←mul_pow,hcoef] at hcube
@@ -2674,11 +2696,11 @@ theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
       (fun jk => x jk.1 jk.2) (fun jk => x jk.1 jk.2) R r t =
       (parabolaWeightedSixNorm W (Finset.univ.sigma S)
         (fun jk => z jk.1 jk.2) (fun jk => x jk.1 jk.2))^6 := by
-    simpa only [parabolaRapidBilinearMoment,parabolaWeightedBilinearMoment,W] using hid.symm
+    exact hid.symm
   exact hbox.trans (he.le.trans hcube)
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -2713,7 +2735,7 @@ private theorem parabola_sixNorm_weight_comparison {ι : Type*}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -2763,7 +2785,7 @@ theorem exists_parabolaBox_sourceWeight_decoupling {ε : ℝ} (hε : 0 < ε) :
     _ = _ := by ring
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -2784,7 +2806,7 @@ private theorem parabola_sourceWeight_horizontal_translate {R : ℝ} (hR : 0 < R
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff
 namespace TaoTrudgianYang2025
@@ -2832,7 +2854,7 @@ private theorem norm_vertical_slice_iteratedFDeriv
     (p : ℝ × ℝ) (s : ℝ) (j : ℕ) :
     ‖iteratedFDeriv ℝ j (fun x => F (p,x)) s‖ ≤
       ‖iteratedFDeriv ℝ j F (p,s)‖ := by
-  let L : ℝ →L[ℝ] (ℝ × ℝ) × ℝ := ContinuousLinearMap.inr ℝ (ℝ × ℝ) ℝ
+  let L := ContinuousLinearMap.inr ℝ (ℝ × ℝ) ℝ
   have hL : ‖L‖=1 := ContinuousLinearMap.norm_inr ℝ (ℝ × ℝ) ℝ
   have hshift : ContDiff ℝ ∞ (fun q : (ℝ × ℝ) × ℝ => (p,0)+q) :=
     contDiff_const.add contDiff_id
@@ -2864,8 +2886,7 @@ private theorem bourgainCubicQuarticCutoff_derivative_bound (Q : ℕ) :
   by_cases hs : s ∈ Icc (-2:ℝ) 2
   · have hnorm : ‖iteratedFDeriv ℝ j (bourgainCubicQuarticCutoff a b) s‖ ≤
         ‖iteratedFDeriv ℝ j F ((a,b),s)‖ := by
-      simpa only [F,bourgainCubicQuarticJoint] using
-        norm_vertical_slice_iteratedFDeriv F bourgainCubicQuarticJoint_smooth (a,b) s j
+      exact norm_vertical_slice_iteratedFDeriv F bourgainCubicQuarticJoint_smooth (a,b) s j
     have hsum : ‖iteratedFDeriv ℝ j F ((a,b),s)‖ ≤ B ((a,b),s) := by
       dsimp only [B]
       exact Finset.single_le_sum (fun k _ => norm_nonneg (iteratedFDeriv ℝ k F ((a,b),s)))
@@ -2882,7 +2903,7 @@ private theorem bourgainCubicQuarticCutoff_derivative_bound (Q : ℕ) :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
@@ -2940,7 +2961,7 @@ private theorem bourgainCubicQuarticCutoff_fourier_moment (a b ξ : ℝ) (m : �
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
@@ -2983,7 +3004,7 @@ private theorem bourgainCubicQuarticCutoff_fourier_decay (Q : ℕ) :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
@@ -3004,9 +3025,7 @@ private theorem bourgainCubicQuarticCutoff_uniform_fourierL1 :
       calc
         _ ≤ (1+|ξ|)^2*((1+|ξ|)^100*‖𝓕 f ξ‖) :=
           mul_le_mul_of_nonneg_right hs (by positivity)
-        _ = (1+|ξ|)^102*‖𝓕 f ξ‖ := by
-          rw [show (102:ℕ)=2+100 by omega,pow_add]
-          exact (mul_assoc _ _ _).symm
+        _ = (1+|ξ|)^102*‖𝓕 f ξ‖ := by grind
         _ ≤ C := hdec a ha b hb ξ
     rw [←div_eq_mul_inv,le_div_iff₀ (by positivity)]
     simpa only [mul_comm] using hp
@@ -3031,7 +3050,7 @@ private theorem bourgainCubicQuarticCutoff_uniform_fourierL1 :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
@@ -3050,7 +3069,7 @@ theorem exists_bourgainCubicQuartic_multiplier_kernel :
   refine ⟨max C D,hC.trans_le (le_max_left _ _),?_⟩
   intro a ha b hb
   let f := bourgainCubicQuarticCutoff a b
-  let K : ℝ → ℂ := 𝓕 f
+  let K := 𝓕 f
   have hkernel := h a ha b hb
   have hc : HasCompactSupport f :=
     isCompact_Icc.of_isClosed_subset isClosed_closure (bourgainCubicQuarticCutoff_support a b)
@@ -3084,11 +3103,10 @@ theorem exists_bourgainCubicQuartic_multiplier_kernel :
       simp only [smul_eq_mul,fordAdditiveCharacter]
       have he : (↑(-2*Real.pi*ξ*(-s)) : ℂ)*Complex.I =
           2*(Real.pi:ℂ)*Complex.I*↑(ξ*s) := by push_cast; ring
-      rw [he]
-      exact mul_comm _ _
+      grind
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -3151,7 +3169,7 @@ public  theorem weighted_integral_sixth_power
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -3232,7 +3250,7 @@ theorem bourgain_finite_multiplier_moment {ι : Type*}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -3273,21 +3291,23 @@ theorem exists_bourgainCubicQuartic_finite_moment :
         apply integral_congr_ae
         filter_upwards with ξ
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro i hi
-        ring
+        grind
   rw [he]
   exact bourgain_finite_multiplier_moment S z s hKc hKi hC hmass henv
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-private theorem parabola_sum_modulation {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) (ξ α γ : ℝ) :
+section
+variable {ι : Type*}
+    (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ)
+include ι S z x
+
+private theorem parabola_sum_modulation  (ξ α γ : ℝ) :
     sargosPlanarSum S (fun i => z i*fordAdditiveCharacter (ξ*x i))
       x (fun i => (x i)^2) α γ =
     sargosPlanarSum S z x (fun i => (x i)^2) (α+ξ) γ := by
@@ -3295,11 +3315,9 @@ private theorem parabola_sum_modulation {ι : Type*}
   apply Finset.sum_congr rfl
   intro i hi
   rw [mul_assoc,←fordAdditiveCharacter_add]
-  congr 2
   ring
 
-private theorem parabola_sourceWeight_modulation {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ)
+private theorem parabola_sourceWeight_modulation 
     {R : ℝ} (hR : 0 < R) (r t ξ : ℝ) :
     (parabolaWeightedSixNorm
       (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
@@ -3346,19 +3364,18 @@ private theorem parabola_sourceWeight_modulation {ι : Type*}
     (fun p => parabolaSourceWeight_nonneg _ _ _ _ _)
     (fun p => parabolaSourceWeight_nonneg _ _ _ _ _) hV hW
     (fun p => parabola_sourceWeight_horizontal_translate hR r t p.1 p.2 ξ) S z x
+end
+
 
 end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
 open MeasureTheory GafniTao Set
 open scoped BigOperators
+
+
+                               
+                        
 namespace TaoTrudgianYang2025
 universe u
 private theorem bourgain_modulation_envelope {R : ℝ} (hR : 1 ≤ R) (ξ : ℝ) :
@@ -3367,11 +3384,7 @@ private theorem bourgain_modulation_envelope {R : ℝ} (hR : 1 ≤ R) (ξ : ℝ)
   have hdiv : |ξ|/R ≤ |ξ| := (div_le_self (abs_nonneg ξ) hR)
   have hloss : (1+|ξ|/R)^100 ≤ (1+|ξ|)^100 :=
     pow_le_pow_left₀ (by positivity) (by linarith) 100
-  have he : ((1+|ξ|)^102)⁻¹*(1+|ξ|)^100 = ((1+|ξ|)^2)⁻¹ := by
-    rw [show (102:ℕ)=2+100 by omega,pow_add,mul_inv_rev]
-    calc
-      _ = ((1+|ξ|)^2)⁻¹*(((1+|ξ|)^100)⁻¹*(1+|ξ|)^100) := by ring
-      _ = _ := by rw [inv_mul_cancel₀ (by positivity),mul_one]
+  have he : ((1+|ξ|)^102)⁻¹*(1+|ξ|)^100 = ((1+|ξ|)^2)⁻¹ := by field_simp <;> ring
   calc
     _ ≤ ((1+|ξ|)^102)⁻¹*(1+|ξ|)^100 :=
       mul_le_mul_of_nonneg_left hloss (by positivity)
@@ -3380,7 +3393,7 @@ private theorem bourgain_modulation_envelope {R : ℝ} (hR : 1 ≤ R) (ξ : ℝ)
       (by nlinarith [sq_abs ξ,abs_nonneg ξ])
 
 end TaoTrudgianYang2025
-noncomputable section
+
 open MeasureTheory
 open scoped Matrix
 namespace TaoTrudgianYang2025
@@ -3399,7 +3412,11 @@ private theorem bourgainQuadraticFrame_det (a b : ℝ) : (bourgainQuadraticFrame
     show (3:Fin 4).succAbove (2:Fin 3)=2 by decide]
   ring
 
-private theorem bourgainQuadraticFrame_map_volume {a b : ℝ} (hab : a ≠ b) :
+section
+variable {a b : ℝ} (hab : a ≠ b)
+include a b hab
+
+private theorem bourgainQuadraticFrame_map_volume  :
     Measure.map ((bourgainQuadraticFrame a b).mulVec)
       (volume : Measure (Fin 4 → ℝ)) =
       ENNReal.ofReal ((6*(b-a)^4)⁻¹) • volume := by
@@ -3415,21 +3432,21 @@ private theorem bourgainQuadraticFrame_map_volume {a b : ℝ} (hab : a ≠ b) :
   simpa only [bourgainQuadraticFrame_det,
     abs_of_pos (inv_pos.mpr hp)] using hm
 
-private theorem bourgainQuadraticFrame_integral {a b : ℝ} (hab : a ≠ b)
+private theorem bourgainQuadraticFrame_integral 
     (f : (Fin 4 → ℝ) → ℝ) (hf : StronglyMeasurable f) :
     (∫ x : Fin 4 → ℝ, f ((bourgainQuadraticFrame a b).mulVec x)) =
       (6*(b-a)^4)⁻¹*(∫ y : Fin 4 → ℝ, f y) := by
-  have hc : Continuous ((bourgainQuadraticFrame a b).mulVec) := by
-    change Continuous (Matrix.toLin' (bourgainQuadraticFrame a b))
-    exact LinearMap.continuous_on_pi _
+  have hc : Continuous ((bourgainQuadraticFrame a b).mulVec) := by fun_prop
   have hi := integral_map (μ:=volume) hc.aemeasurable hf.aestronglyMeasurable
   rw [bourgainQuadraticFrame_map_volume hab,integral_smul_measure,
     ENNReal.toReal_ofReal (by positivity),smul_eq_mul] at hi
   exact hi.symm
+end
+
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 namespace TaoTrudgianYang2025
 
@@ -3464,7 +3481,7 @@ private theorem bourgainFourCoordinates_integral_product
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -3492,7 +3509,7 @@ private theorem bourgainQuadraticFrame_cube_bound {a b R : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -3527,7 +3544,7 @@ private theorem bourgainQuadraticFrame_box_product
   have hiG : Integrable G := by
     have h := bourgainFourCoordinates_measurePreserving.integrable_comp_of_integrable
       (hi1.mul_prod hi2)
-    simpa only [G,Function.comp_def,bourgainFourCoordinates_apply] using h
+    exact h
   have hFc : Continuous F := by
     change Continuous (Matrix.toLin' (bourgainQuadraticFrame a b))
     exact LinearMap.continuous_on_pi _
@@ -3566,7 +3583,7 @@ private theorem bourgainQuadraticFrame_box_product
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -3636,7 +3653,6 @@ theorem exists_bourgainQuartic_scaled_moment :
             fordAdditiveCharacter (A*(s i)^3+B*(s i)^4))) by ring]
     rw [←fordAdditiveCharacter_add,←fordAdditiveCharacter_add]
     congr 2
-    dsimp [L,Q,A,B]
     ring
   rw [he,norm_mul,sargos_character_norm,one_mul]
   have hr (ξ : ℝ) :
@@ -3648,7 +3664,7 @@ theorem exists_bourgainQuartic_scaled_moment :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -3684,7 +3700,7 @@ private theorem bourgainQuadraticFrame_finite_product {ι τ : Type*}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -3726,13 +3742,17 @@ private theorem integrable_bourgain_modulated_box {ι : Type*}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
 
-public  theorem bourgain_character_six_bound {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (θ : ι → ℝ) :
+section
+variable {ι : Type*}
+    (S : Finset ι) (z : ι → ℂ)
+include ι S z
+
+public  theorem bourgain_character_six_bound  (θ : ι → ℝ) :
     ‖(‖∑ i ∈ S, z i*fordAdditiveCharacter (θ i)‖^6:ℝ)‖ ≤
       (∑ i ∈ S, ‖z i‖)^6 := by
   rw [Real.norm_eq_abs,abs_of_nonneg (by positivity)]
@@ -3741,8 +3761,7 @@ public  theorem bourgain_character_six_bound {ι : Type*}
     _ ≤ ∑ i ∈ S, ‖z i*fordAdditiveCharacter (θ i)‖ := norm_sum_le _ _
     _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
 
-private theorem bourgain_frame_modulation {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ) (σ ξ α γ : ℝ) :
+private theorem bourgain_frame_modulation  (s : ι → ℝ) (σ ξ α γ : ℝ) :
     sargosPlanarSum S (fun i => z i*fordAdditiveCharacter (ξ*s i))
       (fun i => σ*s i) (fun i => (σ*s i)^2) α γ =
     ∑ i ∈ S, z i*fordAdditiveCharacter
@@ -3751,8 +3770,9 @@ private theorem bourgain_frame_modulation {ι : Type*}
   apply Finset.sum_congr rfl
   intro i hi
   rw [mul_assoc,←fordAdditiveCharacter_add]
-  congr 2
   ring
+end
+
 
 private theorem bourgainQuadraticFrame_apply (a b : ℝ) (x : Fin 4 → ℝ) :
     (bourgainQuadraticFrame a b).mulVec x =
@@ -3776,8 +3796,7 @@ public  theorem bourgain_kernel_setIntegral_bound
   rw [integral_const_mul] at h
   dsimp only [Function.uncurry] at h
   have hswap := integral_integral_swap (μ:=ν) (ν:=μ.restrict B) hH
-  rw [←hswap] at h
-  exact h
+  simp_all
 
 universe u
 set_option maxHeartbeats 400000 in
@@ -3854,8 +3873,7 @@ theorem exists_bourgainQuartic_bilinear_reduction :
     have h := hprod.mul_bdd hcont.aestronglyMeasurable
       (Filter.Eventually.of_forall hfinite)
     convert h using 1
-    funext qx
-    simp only [mul_one]
+    bound
   have hAD : IntegrableOn (fun x => A x*D x) B := by
     have hc : Continuous (fun x => A x*D x) := by
       unfold A D fordAdditiveCharacter
@@ -3937,7 +3955,7 @@ theorem exists_bourgainQuartic_bilinear_reduction :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 public  theorem bourgain_source_quartic_phase {t : ℝ} (ht : 0 ≤ t) (x : Fin 4 → ℝ) :
@@ -3946,18 +3964,12 @@ public  theorem bourgain_source_quartic_phase {t : ℝ} (ht : 0 ≤ t) (x : Fin 
         x 2*(Real.sqrt t)^3+x 1*(Real.sqrt t)^4 := by
   have h3 : (Real.sqrt t)^3 = t^((3:ℝ)/2) := by
     rw [Real.sqrt_eq_rpow,←Real.rpow_natCast,←Real.rpow_mul ht]
-    congr 1
-    norm_num
-  have h4 : (Real.sqrt t)^4 = t^2 := by
-    calc
-      _ = ((Real.sqrt t)^2)^2 := by ring
-      _ = _ := by rw [Real.sq_sqrt ht]
-  rw [Real.sq_sqrt ht,h3,h4]
-  ring
+    bound
+  grind
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 namespace TaoTrudgianYang2025
 
@@ -4002,15 +4014,14 @@ private theorem bourgainSourcePermutation_cube_integral (R : ℝ)
       change x ∈ bourgainSourcePermutation ⁻¹' B ↔ x ∈ B
       rw [bourgainSourcePermutation_preimage_cube]
     by_cases hmem : x ∈ B
-    · rw [indicator_of_mem hmem,indicator_of_mem (hx.mpr hmem)]
-    · rw [indicator_of_notMem hmem,indicator_of_notMem (mt hx.mp hmem)]
+    all_goals (simp_all)
   simp_rw [he] at h
   rw [integral_indicator measurableSet_Icc] at h
   exact h
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -4109,13 +4120,17 @@ theorem exists_bourgainSourceCurve_bilinear_reduction :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 universe u
 
-private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 < ε) :
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+
+private theorem exists_parabolaBox_scaled_rapid_decoupling  :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 0 < R →
       3/(100*R) ≤ (σ/(2:ℝ)^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
@@ -4142,9 +4157,6 @@ private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 <
   simp only [mul_pow,←pow_mul] at hcube
   have hcoef : (D*(2:ℝ)^((ε/6)*n))^6 = D^6*(2:ℝ)^(ε*n) := by
     rw [mul_pow,←Real.rpow_mul_natCast (by norm_num)]
-    congr 1
-    congr 1
-    push_cast
     ring
   norm_num only [show (2*3:ℕ)=6 by omega] at hcube
   rw [←mul_pow,hcoef] at hcube
@@ -4159,10 +4171,10 @@ private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 <
       (fun jk => x jk.1 jk.2) (fun jk => x jk.1 jk.2) R r t =
       (parabolaWeightedSixNorm W (Finset.univ.sigma S)
         (fun jk => z jk.1 jk.2) (fun jk => x jk.1 jk.2))^6 := by
-    simpa only [parabolaRapidBilinearMoment,parabolaWeightedBilinearMoment,W] using hid.symm
+    exact hid.symm
   exact hbox.trans (he.le.trans hcube)
 
-private theorem exists_parabolaBox_scaled_source_decoupling {ε : ℝ} (hε : 0 < ε) :
+private theorem exists_parabolaBox_scaled_source_decoupling  :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 0 < R →
       3/(100*R) ≤ (σ/(2:ℝ)^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
@@ -4204,9 +4216,11 @@ private theorem exists_parabolaBox_scaled_source_decoupling {ε : ℝ} (hε : 0 
           (S j) (z j) (x j))^2)^3) :=
       mul_le_mul_of_nonneg_left hcube (by positivity)
     _ = _ := by ring
+end
+
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -4284,7 +4298,7 @@ theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -4413,7 +4427,7 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -4441,7 +4455,6 @@ private theorem exists_bourgainCubicQuartic_inverse_moment :
     apply Finset.sum_congr rfl
     intro i hi
     rw [mul_assoc,←fordAdditiveCharacter_add]
-    congr 2
     ring
   have hright (ξ : ℝ) :
       (∑ i ∈ S, (z i*fordAdditiveCharacter (θ i+a*(s i)^3+b*(s i)^4))*
@@ -4459,7 +4472,11 @@ private def bourgainCurveCellFrame (a c : ℝ) : Matrix (Fin 4) (Fin 4) ℝ :=
      0,0,1,0;
      0,0,0,1]
 
-private theorem bourgainCurveCellFrame_apply (a c : ℝ) (y : Fin 4 → ℝ) :
+section
+variable (a c : ℝ)
+include a c
+
+private theorem bourgainCurveCellFrame_apply  (y : Fin 4 → ℝ) :
     (bourgainCurveCellFrame a c).mulVec y =
       ![y 0-2*a*y 1+3*c^2*y 2+8*c^3*y 3,
         y 1-3*c*y 2-6*c^2*y 3,y 2,y 3] := by
@@ -4467,24 +4484,24 @@ private theorem bourgainCurveCellFrame_apply (a c : ℝ) (y : Fin 4 → ℝ) :
   fin_cases i <;>
     simp [bourgainCurveCellFrame,Matrix.mulVec,dotProduct,Fin.sum_univ_succ] <;> ring
 
-private theorem bourgainCurveCellFrame_det (a c : ℝ) :
+private theorem bourgainCurveCellFrame_det  :
     (bourgainCurveCellFrame a c).det = 1 := by
   unfold bourgainCurveCellFrame
   rw [Matrix.det_succ_row_zero]
   simp [Fin.sum_univ_succ,Matrix.det_fin_three,Matrix.submatrix]
 
-private theorem bourgainCurveCellFrame_measurePreserving (a c : ℝ) :
+private theorem bourgainCurveCellFrame_measurePreserving  :
     MeasurePreserving ((bourgainCurveCellFrame a c).mulVec)
       (volume : Measure (Fin 4 → ℝ)) volume := by
-  have hc : Continuous ((bourgainCurveCellFrame a c).mulVec) := by
-    change Continuous (Matrix.toLin' (bourgainCurveCellFrame a c))
-    exact LinearMap.continuous_on_pi _
+  have hc : Continuous ((bourgainCurveCellFrame a c).mulVec) := by fun_prop
   refine ⟨hc.measurable,?_⟩
   have hm := Real.map_matrix_volume_pi_eq_smul_volume_pi
     (show (bourgainCurveCellFrame a c).det ≠ 0 by rw [bourgainCurveCellFrame_det]; norm_num)
   change Measure.map (bourgainCurveCellFrame a c).mulVec volume = _ at hm
   simpa only [bourgainCurveCellFrame_det,inv_one,abs_one,
     ENNReal.ofReal_one,one_smul] using hm
+end
+
 
 private theorem bourgainCurveCellFrame_phase (a c δ s : ℝ) (y : Fin 4 → ℝ) :
     let x := (bourgainCurveCellFrame a c).mulVec y
@@ -4498,7 +4515,7 @@ private theorem bourgainCurveCellFrame_phase (a c δ s : ℝ) (y : Fin 4 → ℝ
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -4537,8 +4554,7 @@ private theorem exists_bourgainCurveCell_inverse_pointwise :
       fin_cases j
       · simpa using hR
       · simpa using hR
-      · exact hy₂
-      · exact hy₃)
+      all_goals (assumption))
   change |(y 2+4*c*y 3)*δ^3| ≤ 1 ∧ |y 3*δ^4| ≤ 1 at hcoeff
   let P := fun i => (c+δ*s i-a)*y 0+(c+δ*s i-a)^2*y 1
   let A := (y 2+4*c*y 3)*δ^3
@@ -4562,14 +4578,13 @@ private theorem exists_bourgainCurveCell_inverse_pointwise :
         have hp := bourgainCurveCellFrame_phase a c δ (s i) y
         dsimp only at hp
         rw [hp]
-        dsimp [P,A,B,K]
         ring
       _ = _ := norm_bourgain_character_sum_add S z _ K
   simpa only [he,P] using hm
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -4658,7 +4673,7 @@ private theorem bourgainCurveCellFrame_weight_bound {a c R δ : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -4678,10 +4693,7 @@ public  theorem integrable_bourgainCurveCellWeight {R : ℝ} (hR : 0 < R) :
     Integrable (fun x : Fin 4 → ℝ => ((1+‖R⁻¹ • x‖)^100)⁻¹) := by
   have h := integrable_one_add_norm (E:=Fin 4 → ℝ) (μ:=volume) (r:=100) (by norm_num)
   have hi := h.comp_smul (inv_ne_zero hR.ne')
-  have he (x : Fin 4 → ℝ) : (1+‖R⁻¹ • x‖)^(-(100:ℝ)) =
-      ((1+‖R⁻¹ • x‖)^100)⁻¹ := by
-    rw [Real.rpow_neg (by positivity),Real.rpow_ofNat]
-  simpa only [he] using hi
+  simp_all
 
 private theorem integrable_bourgainCurveCellMoment {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (u : ι → ℝ) {R : ℝ} (hR : 0 < R) :
@@ -4727,15 +4739,13 @@ private theorem bourgainCurveCellMoment_shift {ι : Type*}
     apply Finset.sum_congr rfl
     intro i hi
     congr 2
-    simp only [Pi.add_apply,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val,
-      add_zero]
-    field_simp
-    ring
+    simp
+    grind
   rw [he,norm_bourgain_character_sum_add]
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -4780,9 +4790,7 @@ private theorem bourgainCurveCell_inner_bound {ι : Type*}
         (∫ x : Fin 4 → ℝ, ((1+‖R⁻¹ • x‖)^100)⁻¹*bourgainCurveCellMoment S z u x) := by
   let T := fun y : Fin 4 → ℝ => (bourgainCurveCellFrame a c).mulVec y+![ξ/δ,0,0,0]
   let K := (32:ℝ)^100*(1+|ξ|/(δ*R))^100
-  have hcF : Continuous ((bourgainCurveCellFrame a c).mulVec) := by
-    change Continuous (Matrix.toLin' (bourgainCurveCellFrame a c))
-    exact LinearMap.continuous_on_pi _
+  have hcF : Continuous ((bourgainCurveCellFrame a c).mulVec) := by fun_prop
   have hcT : Continuous T := hcF.add continuous_const
   have hi₁ : Integrable (fun y => bourgainCurveCellBaseWeight R y*
       bourgainCurveCellMoment S z u (T y)) :=
@@ -4824,7 +4832,7 @@ private theorem bourgainCurveCell_inner_bound {ι : Type*}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -4867,9 +4875,7 @@ private theorem exists_bourgainQuartic_cell_return :
     (integrable_bourgainCurveCellBaseWeight hR).mul_bdd
       (hPc.comp (by fun_prop)).aestronglyMeasurable
       (Filter.Eventually.of_forall (fun y => hPb (y 0,y 1)))
-  have hcFrame : Continuous ((bourgainCurveCellFrame a c).mulVec) := by
-    change Continuous (Matrix.toLin' (bourgainCurveCellFrame a c))
-    exact LinearMap.continuous_on_pi _
+  have hcFrame : Continuous ((bourgainCurveCellFrame a c).mulVec) := by fun_prop
   have hcT : Continuous (fun q : ℝ × (Fin 4 → ℝ) => T q.1 q.2) := by
     exact (hcFrame.comp continuous_snd).add (by dsimp [T]; fun_prop)
   have hcM : Continuous (fun q : ℝ × (Fin 4 → ℝ) =>
@@ -4954,7 +4960,7 @@ private theorem exists_bourgainQuartic_cell_return :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5027,16 +5033,14 @@ theorem exists_bourgainSourceCurve_cell_return :
         apply Finset.sum_congr rfl
         intro i hi
         apply congrArg (fun v : ℝ => z i*fordAdditiveCharacter v)
-        simpa only [bourgainSourcePermutation_apply,Matrix.cons_val_zero,
-          Matrix.cons_val_one,Matrix.cons_val] using
-          (bourgain_source_quartic_phase (hw i hi) x).symm
+        exact (bourgain_source_quartic_phase (hw i hi) x).symm
   change _ ≤ C/R^2*(∫ x : Fin 4 → ℝ, f x) at hmain
   rw [he] at hmain
   exact hmain
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5169,11 +5173,8 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
   have hpow : (2:ℝ)^(ε*n)*((2:ℝ)^n)^4 = (2:ℝ)^((ε+4)*n) := by
     have he : ((2:ℝ)^n)^4 = (2:ℝ)^((4:ℝ)*n) := by
       rw [←Real.rpow_natCast (2:ℝ) n,←Real.rpow_mul_natCast (by norm_num)]
-      congr 1
-      push_cast
       ring
     rw [he,←Real.rpow_add (by norm_num)]
-    congr 1
     ring
   have halg (A B : ℝ) :
       (D*(2:ℝ)^(ε*n)*(6*(b-a)^4)⁻¹)*
@@ -5188,7 +5189,7 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5196,31 +5197,41 @@ namespace TaoTrudgianYang2025
 public  def bourgainRadialWeight (R : ℝ) (x : Fin 4 → ℝ) : ℝ :=
   ((1+‖R⁻¹ • x‖)^100)⁻¹
 
-public  theorem bourgainRadialWeight_nonneg (R : ℝ) (x : Fin 4 → ℝ) :
+section
+variable (R : ℝ)
+include R
+
+section
+variable (x : Fin 4 → ℝ)
+include x
+
+public  theorem bourgainRadialWeight_nonneg  :
     0 ≤ bourgainRadialWeight R x := by
   unfold bourgainRadialWeight
   positivity
 
-private theorem bourgainRadialWeight_le_one (R : ℝ) (x : Fin 4 → ℝ) :
+private theorem bourgainRadialWeight_le_one  :
     bourgainRadialWeight R x ≤ 1 := by
   unfold bourgainRadialWeight
-  apply inv_le_one_of_one_le₀
-  exact one_le_pow₀ (by linarith [norm_nonneg (R⁻¹ • x)])
+  bound
+end
 
-public  theorem continuous_bourgainRadialWeight (R : ℝ) :
+
+public  theorem continuous_bourgainRadialWeight  :
     Continuous (bourgainRadialWeight R) := by
   unfold bourgainRadialWeight
   apply Continuous.inv₀
   · fun_prop
   · intro x
     positivity
+end
+
 
 public  theorem bourgainRadialWeight_distance {R : ℝ} (hR : 0 < R) (x : Fin 4 → ℝ) :
     bourgainRadialWeight R x = ((1+‖x‖/R)^100)⁻¹ := by
   unfold bourgainRadialWeight
   rw [norm_smul,Real.norm_eq_abs,abs_inv,abs_of_pos hR]
-  congr 2
-  rw [div_eq_mul_inv,mul_comm]
+  grind
 
 private theorem integral_bourgainRadialWeight {R : ℝ} (hR : 0 ≤ R) :
     (∫ x : Fin 4 → ℝ, bourgainRadialWeight R x) =
@@ -5233,7 +5244,7 @@ private theorem integral_bourgainRadialWeight {R : ℝ} (hR : 0 ≤ R) :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5310,7 +5321,7 @@ private theorem bourgain_scalar_weight_product {K R X A B : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5365,12 +5376,11 @@ private theorem exists_bourgainRadialWeight_convolution :
       ring
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_right _ (bourgainRadialWeight_nonneg _ _)
-      apply mul_le_mul_of_nonneg_right _ (pow_nonneg hK.le 4)
-      exact mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) (by positivity)
+      field_simp <;> nlinarith
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5422,9 +5432,7 @@ private theorem exists_bourgainRadialWeight_shift_average :
       apply integral_congr_ae
       filter_upwards with z
       rw [he,←integral_const_mul]
-      apply integral_congr_ae
-      filter_upwards with y
-      ring
+      field_simp <;> ring
     _ = ∫ y : Fin 4 → ℝ, ∫ z : Fin 4 → ℝ,
         bourgainRadialWeight K z*bourgainRadialWeight R (y-z)*f y :=
       integral_integral_swap hiH
@@ -5435,16 +5443,13 @@ private theorem exists_bourgainRadialWeight_shift_average :
 
 end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
 open MeasureTheory GafniTao Set
 open scoped BigOperators
+
+
+                               
+                        
 namespace TaoTrudgianYang2025
 private theorem bourgain_modulation_envelope_general {L : ℝ} (hL : 0 < L) (ξ : ℝ) :
     ((1+|ξ|)^102)⁻¹*(1+|ξ|/L)^100 ≤
@@ -5464,7 +5469,7 @@ private theorem bourgain_modulation_envelope_general {L : ℝ} (hL : 0 < L) (ξ 
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators Matrix
 namespace TaoTrudgianYang2025
@@ -5598,7 +5603,7 @@ private theorem exists_bourgainQuartic_cell_return_quantitative :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5655,16 +5660,14 @@ private theorem exists_bourgainSourceCurve_cell_return_quantitative :
         apply Finset.sum_congr rfl
         intro i hi
         apply congrArg (fun v : ℝ => z i*fordAdditiveCharacter v)
-        simpa only [bourgainSourcePermutation_apply,Matrix.cons_val_zero,
-          Matrix.cons_val_one,Matrix.cons_val] using
-          (bourgain_source_quartic_phase (hw i hi) x).symm
+        exact (bourgain_source_quartic_phase (hw i hi) x).symm
   change _ ≤ C*(1+(δ*R)⁻¹)^100/R^2*(∫ x : Fin 4 → ℝ, f x) at hmain
   rw [he] at hmain
   exact hmain
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5736,7 +5739,7 @@ private theorem exists_bourgainParabola_unit_average :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 namespace TaoTrudgianYang2025
 
@@ -5798,7 +5801,7 @@ public  theorem bourgain_finite_box_average {K R : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -5877,12 +5880,16 @@ private theorem exists_bourgainSourceCurve_small_box :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 namespace TaoTrudgianYang2025
 
-private theorem bourgainRadialWeight_translate_large {R : ℝ}
-    (hR : 1 ≤ R) {q : Fin 4 → ℝ} (hq : ‖q‖ ≤ 2*R) (x : Fin 4 → ℝ) :
+section
+variable {R : ℝ}
+    (hR : 1 ≤ R) {q : Fin 4 → ℝ} (hq : ‖q‖ ≤ 2*R)
+include R hR q hq
+
+private theorem bourgainRadialWeight_translate_large  (x : Fin 4 → ℝ) :
     bourgainRadialWeight 1 (x-q) ≤ (2:ℝ)^100*bourgainRadialWeight (20*R) x := by
   have hR₀ : 0 < R := lt_of_lt_of_le zero_lt_one hR
   have h20 : 0 < 20*R := by positivity
@@ -5899,8 +5906,7 @@ private theorem bourgainRadialWeight_translate_large {R : ℝ}
     nlinarith [norm_nonneg (x-q),mul_nonneg (sub_nonneg.mpr hR) (norm_nonneg (x-q))]
   linarith [norm_nonneg (x-q)]
 
-private theorem bourgainRadialWeight_translated_integral {R : ℝ}
-    (hR : 1 ≤ R) {q : Fin 4 → ℝ} (hq : ‖q‖ ≤ 2*R)
+private theorem bourgainRadialWeight_translated_integral 
     (f : (Fin 4 → ℝ) → ℝ) (M : ℝ) (hc : Continuous f)
     (h₀ : ∀ x, 0 ≤ f x) (hb : ∀ x, ‖f x‖ ≤ M) :
     (∫ x : Fin 4 → ℝ, bourgainRadialWeight 1 x*f (x+q)) ≤
@@ -5924,29 +5930,33 @@ private theorem bourgainRadialWeight_translated_integral {R : ℝ}
         (fun x : Fin 4 → ℝ => bourgainRadialWeight 1 (x-q)*f x) q
       simpa only [add_sub_cancel_right] using he
     _ ≤ _ := hh
+end
+
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 universe u
 
-public  theorem bourgainSourceSixMoment_nonneg {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (x : Fin 4 → ℝ) :
+section
+variable {ι : Type*}
+    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ)
+include ι S z w
+
+public  theorem bourgainSourceSixMoment_nonneg  (x : Fin 4 → ℝ) :
     0 ≤ bourgainSourceSixMoment S z w x := by
   unfold bourgainSourceSixMoment
   positivity
 
-public  theorem continuous_bourgainSourceSixMoment {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) :
+public  theorem continuous_bourgainSourceSixMoment  :
     Continuous (bourgainSourceSixMoment S z w) := by
   unfold bourgainSourceSixMoment fordAdditiveCharacter
   fun_prop
 
-public  theorem bourgainSourceSixMoment_translate {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (q x : Fin 4 → ℝ) :
+public  theorem bourgainSourceSixMoment_translate  (q x : Fin 4 → ℝ) :
     bourgainSourceSixMoment S (fun i => z i*fordAdditiveCharacter
       (q 0*w i+q 1*(w i)^2+q 2*(w i)^((3:ℝ)/2)+q 3*Real.sqrt (w i))) w x =
         bourgainSourceSixMoment S z w (x+q) := by
@@ -5958,6 +5968,8 @@ public  theorem bourgainSourceSixMoment_translate {ι : Type*}
   apply congrArg (fun v : ℝ => z i*fordAdditiveCharacter v)
   simp only [Pi.add_apply]
   ring
+end
+
 
 private theorem exists_bourgainSourceCurve_box_base :
     ∃ C > (0:ℝ), ∀ R : ℝ, 1 ≤ R →
@@ -6052,7 +6064,7 @@ private theorem exists_bourgainSourceCurve_box_base :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -6066,8 +6078,12 @@ public  theorem integrable_bourgainSource_weighted {ι : Type*}
     (Filter.Eventually.of_forall (fun x => bourgain_character_six_bound S z
       (fun i => x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))))
 
-private theorem bourgainSourceSixMoment_finite_sum {N : ℕ} {ι : Type*}
+section
+variable {N : ℕ} {ι : Type*}
     (S : Fin N → Finset ι) (z : Fin N → ι → ℂ) (w : Fin N → ι → ℝ)
+include N ι S z w
+
+private theorem bourgainSourceSixMoment_finite_sum 
     (x : Fin 4 → ℝ) :
     bourgainSourceSixMoment (Finset.univ.sigma S) (fun ji => z ji.1 ji.2)
       (fun ji => w ji.1 ji.2) x ≤
@@ -6077,11 +6093,10 @@ private theorem bourgainSourceSixMoment_finite_sum {N : ℕ} {ι : Type*}
   have hn := pow_le_pow_left₀ (norm_nonneg (∑ j, A j)) (norm_sum_le Finset.univ A) 6
   have hh := pow_sum_le_card_mul_sum_pow (s:=Finset.univ)
     (f:=fun j => ‖A j‖) (fun _ _ => norm_nonneg _) 5
-  simp only [show (5+1:ℕ)=6 by omega,Finset.card_univ,Fintype.card_fin] at hh
+  simp at hh
   simpa only [bourgainSourceSixMoment,Finset.sum_sigma,A] using hn.trans hh
 
-private theorem bourgainSource_weighted_finite_sum {N : ℕ} {ι : Type*}
-    (S : Fin N → Finset ι) (z : Fin N → ι → ℂ) (w : Fin N → ι → ℝ)
+private theorem bourgainSource_weighted_finite_sum 
     {R : ℝ} (hR : 0 < R) :
     (∫ x : Fin 4 → ℝ, bourgainRadialWeight R x*
       bourgainSourceSixMoment (Finset.univ.sigma S) (fun ji => z ji.1 ji.2)
@@ -6102,6 +6117,8 @@ private theorem bourgainSource_weighted_finite_sum {N : ℕ} {ι : Type*}
       simpa only [Finset.mul_sum,mul_left_comm] using hp)
   rw [integral_const_mul,integral_finsetSum Finset.univ (fun j _ => hi j)] at hh
   exact hh
+end
+
 
 theorem exists_bourgainSourceCurve_polynomial_base :
     ∃ C > (0:ℝ), ∀ (n : ℕ) (ι τ : Type u)
@@ -6166,7 +6183,7 @@ theorem exists_bourgainSourceCurve_polynomial_base :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory Set
 namespace TaoTrudgianYang2025
 
@@ -6244,14 +6261,18 @@ public  theorem bourgain_radial_bilinear_fubini
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 universe u
 
+section
+variable {K R : ℝ} (hK : 0 < K) (hR : 0 < R)
+include K R hK hR
+
 private theorem integrable_bourgainRadial_shift_average
-    {K R : ℝ} (hK : 0 < K) (hR : 0 < R)
+    
     (f : (Fin 4 → ℝ) → ℝ) (M : ℝ) (hc : Continuous f)
     (hb : ∀ x, ‖f x‖ ≤ M) :
     Integrable (fun y : Fin 4 → ℝ => bourgainRadialWeight K y*
@@ -6267,7 +6288,7 @@ private theorem integrable_bourgainRadial_shift_average
   simp only [mul_assoc,integral_const_mul,Function.comp_apply,Pi.add_apply]
 
 private theorem integrable_bourgainSource_shift_sum
-    {K R : ℝ} (hK : 0 < K) (hR : 0 < R) {N : ℕ} {ι : Type*}
+     {N : ℕ} {ι : Type*}
     (S : Fin N → Finset ι) (z : Fin N → ι → ℂ) (w : Fin N → ι → ℝ) :
     Integrable (fun y : Fin 4 → ℝ => bourgainRadialWeight K y*
       (∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight R x*
@@ -6278,6 +6299,8 @@ private theorem integrable_bourgainSource_shift_sum
     (fun x => bourgain_character_six_bound (S j) (z j)
       (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i)))
   simpa only [Finset.mul_sum] using integrable_finsetSum Finset.univ (fun j _ => hi j)
+end
+
 
 private theorem exists_bourgainSource_shift_sum :
     ∃ C > (0:ℝ), ∀ K R : ℝ, 0 < K → K ≤ R →
@@ -6310,7 +6333,7 @@ private theorem exists_bourgainSource_shift_sum :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -6444,7 +6467,7 @@ public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} 
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open Set
 namespace TaoTrudgianYang2025
 
@@ -6473,7 +6496,7 @@ public  theorem bourgain_coarse_center_separation {a b σ ν u v : ℝ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 public  theorem bourgain_bootstrap_depth {n : ℕ} (hn : 9 ≤ n) :
@@ -6537,7 +6560,7 @@ public  theorem bourgain_bootstrap_scale_conditions {n m : ℕ}
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -6602,7 +6625,7 @@ public  theorem exists_bourgainSourceGridBound_polynomial :
 
 end TaoTrudgianYang2025
 
-noncomputable section
+
 open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -6650,79 +6673,79 @@ public  theorem bourgainSourceSixMoment_grid_reindex {k l : ℕ} {ι : Type*}
     (x 0*w r i+x 1*(w r i)^2+x 2*(w r i)^((3:ℝ)/2)+x 3*Real.sqrt (w r i)))
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice
+open JointLogSeparation CompletedHeight CenteredMomentLattice
 open EisensteinSchwartzPoisson
 
 theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
@@ -90,8 +90,8 @@ theorem normPowerProfile_source_control (a b : ℝ) (ha : 0 < a)
       exact (h₂ _ _).trans (mul_le_mul
         (mul_le_mul_of_nonneg_left (h₃ W) hC₂.le) ht (by positivity) (by positivity))
     _ = _ := by ring
-end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
 
-end OAI
+
+
+

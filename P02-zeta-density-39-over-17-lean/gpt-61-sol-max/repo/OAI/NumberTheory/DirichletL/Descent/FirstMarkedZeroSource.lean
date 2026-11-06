@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
@@ -72,8 +72,8 @@ theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     (fun b hb U hU=>hs₁ b hb U (mul_ne_zero_iff.mp hU).2)
   exact hh.trans_eq (by ring)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

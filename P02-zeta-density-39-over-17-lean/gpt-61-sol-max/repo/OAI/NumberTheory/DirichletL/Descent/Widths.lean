@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
@@ -8,8 +9,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 lemma actual_ideal_norm_pos (I : Ideal Eis) (hI : I ≠ 0) : 0 < (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.pos_of_ne_zero (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
@@ -23,14 +24,7 @@ theorem actual_residual_norm_width (I Q : Ideal Eis) (hI : I ≠ 0) :
   have he := congrArg (fun J : Ideal Eis => (Ideal.absNorm J : ℝ))
     (row_powerful_mask_residual_product I Q hI)
   simp only [map_mul, Nat.cast_mul] at he
-  calc
-    _ ≤ (Ideal.absNorm (rowPowerfulPart I) : ℝ) *
-        (Ideal.absNorm (rowMaskPart I Q) : ℝ) * (Ideal.absNorm (rowResidualPart I Q) : ℝ) := by
-      have hh := mul_le_mul_of_nonneg_left hm
-        (show 0 ≤ (Ideal.absNorm (rowResidualPart I Q) : ℝ) *
-          (Ideal.absNorm (rowPowerfulPart I) : ℝ) by positivity)
-      nlinarith [hh]
-    _ = _ := he
+  nlinarith
 
 theorem actual_common_width_charge {ι : Type*} [Fintype ι]
     (I F Q : Ideal Eis) (hI : I ≠ 0) (hQ : Q ≠ 0)
@@ -70,7 +64,7 @@ theorem actual_common_width_charge_label_puncture {ι : Type*} [Fintype ι]
   simp only [map_mul, Nat.cast_mul]
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -11,9 +11,9 @@ open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentCommonExceptionalMass
 open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
 open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentExceptionalAmplitudePair
 open CenteredMomentAllocatedDetectorAmplitude
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -23,13 +23,13 @@ lemma scalar_profile_volume (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
   calc
     _=slotControl (commonData s C R B)*
         (‖commonScalar s C R B‖*Real.sqrt (volume (commonData s C R B))):=by ring
-    _≤slotControl s.toData*(frozenProfile s*Real.sqrt (volume s.toData)/(Ideal.absNorm C:ℝ)):=
+    _≤ slotControl s.toData*(frozenProfile s*Real.sqrt (volume s.toData)/(Ideal.absNorm C:ℝ)):=
       mul_le_mul (common_slotControl s C R B) (scalar_volume_bound s C R hC B)
         (mul_nonneg (norm_nonneg _) (Real.sqrt_nonneg _)) (slotControl_nonneg s.toData)
     _=_:=by ring
 
-end SevenEighths.CenteredMomentCommonExceptionalMass
 
-end
 
-end OAI
+
+
+

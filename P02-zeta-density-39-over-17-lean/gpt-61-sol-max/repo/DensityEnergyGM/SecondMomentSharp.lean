@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import DensityEnergyGM.SecondMomentOptimized
 public import DensityEnergyGM.SecondMomentPowerAlgebra
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -25,10 +25,10 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
                 ((M : ℝ) ^ (9 / 5 : ℝ) +
                   T ^ (1 / 4 : ℝ) * (M : ℝ) ^ (6 / 5 : ℝ))) := by
   obtain ⟨C₀, T₀, hC₀, hT₀, hLog⟩ := actual_second_moment_optimized_log ε hε
-  let D : ℝ := (2 : ℝ) ^ (1 / 4 : ℝ)
-  let K₁ : ℝ := 2 * C₀ ^ (1 / 4 : ℝ) * (2 : ℝ) ^ (ε / 4) * D
-  let K₂ : ℝ := 3 * C₀ ^ (1 / 2 : ℝ) * (2 : ℝ) ^ (ε / 2) / (ε / 2)
-  let C : ℝ := K₁ + K₂ + 1
+  let D := (2 : ℝ) ^ (1 / 4 : ℝ)
+  let K₁ := 2 * C₀ ^ (1 / 4 : ℝ) * (2 : ℝ) ^ (ε / 4) * D
+  let K₂ := 3 * C₀ ^ (1 / 2 : ℝ) * (2 : ℝ) ^ (ε / 2) / (ε / 2)
+  let C := K₁ + K₂ + 1
   have hCpos : 0 < C := by dsimp only [C, K₁, K₂, D]; positivity
   refine ⟨C, T₀, hCpos, hT₀, ?_⟩
   intro M T a W hM hT hMT ha hSep hBase
@@ -45,10 +45,10 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
     positivity
   let E : ℝ := discreteAdditiveEnergy W
   let R : ℝ := W.card
-  let K : ℝ := E * C₀ * (2 * T) ^ ε
-  let B : ℝ := (M : ℝ) ^ (36 / 5 : ℝ) + (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ)
-  let P : ℝ := (M : ℝ) ^ (9 / 5 : ℝ)
-  let Z : ℝ := T ^ (1 / 4 : ℝ) * (M : ℝ) ^ (6 / 5 : ℝ)
+  let K := E * C₀ * (2 * T) ^ ε
+  let B := (M : ℝ) ^ (36 / 5 : ℝ) + (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ)
+  let P := (M : ℝ) ^ (9 / 5 : ℝ)
+  let Z := T ^ (1 / 4 : ℝ) * (M : ℝ) ^ (6 / 5 : ℝ)
   have hCzero : 0 ≤ C₀ := by linarith
   have hK0 : 0 ≤ K := by dsimp only [K]; positivity
   have hB0 : 0 ≤ B := by dsimp only [B]; positivity
@@ -115,4 +115,4 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
         C * T ^ ε * ((M : ℝ) ^ 2 * E ^ (1 / 2 : ℝ)) := by gcongr
     _ = _ := by dsimp only [R, E, P, Z]; ring
 
-end Montgomery.RationalMoment
+

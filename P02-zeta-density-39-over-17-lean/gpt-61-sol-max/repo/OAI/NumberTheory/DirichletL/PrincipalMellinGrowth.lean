@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.MellinBoundary
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
@@ -24,14 +25,17 @@ theorem principalConstant_pos (M : Ideal HeckeFamily.O) [NeZero M] :
   exact mul_pos (mul_pos (by linarith [HeckeLogarithmicInput.uniformConstant_nonneg])
     (Real.rpow_pos_of_pos hQ _)) (pow_pos (HeckeDeletionBounds.localBound_pos (by norm_num)) _)
 
-lemma poleRemoved_eq_mul_regular (χ : Character) (hχ : χ.residue=1)
-    {s : ℂ} (hs : s+1≠0) :
+section
+variable (χ : Character) (hχ : χ.residue=1)
+    {s : ℂ}
+include χ hχ s
+
+lemma poleRemoved_eq_mul_regular  (hs : s+1≠0) :
     HeckeOrigin.poleRemoved χ s=(s+1)*HeckeLogarithmicInput.regular χ s := by
   simp only [HeckeLogarithmicInput.regular,ite_eq_left hχ,HeckePrincipalStrip.sourceNormalized]
   field_simp
 
-theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
-    {s : ℂ} (hs : (19/20 : ℝ)≤s.re) :
+theorem principal_poleRemoved_growth  (hs : (19/20 : ℝ)≤ s.re) :
     ‖HeckeOrigin.poleRemoved χ s‖≤principalConstant χ.modulus*‖s+1‖*(3+|s.im|)^2 := by
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue=1 := (HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mp hχ
@@ -52,7 +56,7 @@ theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
     · rw [HeckeOrigin.poleRemoved_eq χ h0 h1,HeckeOrigin.poleRemoved_eq ψ h0 h1,
         HeckeFiniteDeletion.LFunction_eq_of_mask χ ψ hmask hs0 h1]
       ring
-  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10 : ℝ)≤s.re)
+  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10 : ℝ)≤ s.re)
   have hd := (HeckeDeletionBounds.factors_bound_pow (19/20) (by norm_num)
     χ.modulus ψ hs).1
   have hQ' : (ψ.modulus.absNorm : ℝ)^(3/5 : ℝ)≤(χ.modulus.absNorm : ℝ)^(3/5 : ℝ) :=
@@ -71,23 +75,27 @@ theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
       gcongr
       linarith
     _ = _ := by unfold principalConstant; ring
+end
+
 
 def wAmplitude (M : Ideal HeckeFamily.O) (cw : ℝ) : ℝ := 9*(cw+2)*principalConstant M
 
-theorem wAmplitude_pos (M : Ideal HeckeFamily.O) [NeZero M] {cw : ℝ} (hcw : 1<cw) :
+section
+variable (M : Ideal HeckeFamily.O) [NeZero M] {cw : ℝ} (hcw : 1<cw)
+include M cw hcw
+
+theorem wAmplitude_pos  :
     0<wAmplitude M cw := by
   unfold wAmplitude
   exact mul_pos (mul_pos (by norm_num) (by linarith)) (principalConstant_pos M)
 
-theorem fixed_principal_w_growth (M : Ideal HeckeFamily.O) [NeZero M]
-    {cw : ℝ} (hcw : 1<cw) {x : ℝ} (hx : x∈Icc (19/20 : ℝ) cw) (t : ℝ) :
+theorem fixed_principal_w_growth  {x : ℝ} (hx : x∈Icc (19/20 : ℝ) cw) (t : ℝ) :
     ‖HeckeOrigin.poleRemoved (fixedPrincipal M) ((x:ℂ)+t*I)‖≤wAmplitude M cw*height t^3 := by
   have hb := principal_poleRemoved_growth (fixedPrincipal M) rfl
     (show (19/20 : ℝ)≤(((x:ℂ)+t*I) : ℂ).re by simpa using hx.1)
   have hn : ‖((x:ℂ)+t*I)+1‖≤(cw+2)*height t := by
     apply (Complex.norm_le_abs_re_add_abs_im _).trans
-    simp only [add_re,add_im,ofReal_re,ofReal_im,mul_re,mul_im,I_re,I_im,
-      mul_zero,sub_zero,add_zero,zero_add,mul_one,one_re,one_im]
+    simp
     rw [abs_of_pos (by linarith [hx.1] : 0<x+1)]
     unfold height
     have hmul : 0≤(cw+1)*|t| := mul_nonneg (by linarith) (abs_nonneg t)
@@ -100,13 +108,15 @@ theorem fixed_principal_w_growth (M : Ideal HeckeFamily.O) [NeZero M]
   have ht0 := (height_pos t).le
   change ‖HeckeOrigin.poleRemoved (fixedPrincipal M) ((x:ℂ)+t*I)‖≤
     principalConstant M*‖((x:ℂ)+t*I)+1‖*(3+|(((x:ℂ)+t*I) : ℂ).im|)^2 at hb
-  simp only [add_im,ofReal_im,mul_im,ofReal_re,I_im,I_re,mul_one,mul_zero,add_zero,zero_add] at hb
+  simp at hb
   calc
     _ ≤ principalConstant M*‖((x:ℂ)+t*I)+1‖*(3+|t|)^2 := hb
     _ ≤ principalConstant M*((cw+2)*height t)*(9*height t^2) := by
       have hc2 : 0≤cw+2 := by linarith
       gcongr
     _ = _ := by unfold wAmplitude; ring
+end
+
 
 theorem source_w_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
     (ha1 : 0<a1) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -123,8 +133,8 @@ theorem source_w_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
   intro x hx t _
   exact fixed_principal_w_growth M hcw hx t
 
-end SevenEighths.PrincipalMellinGrowth
 
-end
 
-end OAI
+
+
+

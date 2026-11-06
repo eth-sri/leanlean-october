@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff Topology
 open MeasureTheory Set Complex
 namespace SevenEighths.CenteredMomentScaleSupremum
-open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorDyadicBridge
+
 open HeckeInverseAmplification (scaleProfile scaleProfile_continuous scaleProfile_support
   scale_normalization scaleSupport scaleSupport_cover)
 
@@ -31,8 +31,8 @@ lemma scaleTest_support (W : ℝ→ℂ) (a b : ℝ)
   · exact hs
   · exact scaleProfile_support W a b hs
 
-end SevenEighths.CenteredMomentScaleSupremum
 
-end
 
-end OAI
+
+
+

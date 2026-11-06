@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosProductFibers
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                          
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_primitive_count_large_tolerance (ε : ℝ) (hε : 0 < ε) :
@@ -43,9 +42,7 @@ theorem exists_robertSargos_primitive_count_large_tolerance (ε : ℝ) (hε : 0 
     exact hfiber _ R H Q δ z hHp hQp
       (fun p hp => hmem p (Finset.mem_filter.mp hp).1)
       (fun p hp => (Finset.mem_filter.mp hp).2)
-  have hHQ : H*Q ≤ R*H*Q := by
-    have hm := mul_le_mul_of_nonneg_right hR (mul_nonneg hHp.le hQp.le)
-    nlinarith only [hm]
+  have hHQ : H*Q ≤ R*H*Q := by nlinarith
   have hpow : (4*H*Q)^ε ≤ (4:ℝ)^ε*(R*H*Q)^ε := by
     calc
       _ = (4:ℝ)^ε*(H*Q)^ε := by
@@ -70,4 +67,4 @@ theorem exists_robertSargos_primitive_count_large_tolerance (ε : ℝ) (hε : 0 
     _ ≤ (570*((R*H*Q)*(1+δ*Q)))*(C*((4:ℝ)^ε*(R*H*Q)^ε)) := hb
     _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
 
-end TaoTrudgianYang2025
+

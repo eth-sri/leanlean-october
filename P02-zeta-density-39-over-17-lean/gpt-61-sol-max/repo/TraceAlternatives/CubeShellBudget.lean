@@ -4,7 +4,6 @@ public import DensityEnergyGM.SharpShellBudget
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -34,4 +33,4 @@ theorem cube_shell_budget_le {T L H R E : ℝ}
     _ ≤ (2*(T+L*T^(1/3:ℝ)))*R^(2/3:ℝ)*E^(1/3:ℝ) := by gcongr
     _ = _ := by unfold cubeCenteredBudget; ring
 
-end Montgomery.RationalMoment
+

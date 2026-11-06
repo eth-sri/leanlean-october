@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedChild
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildBound
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly
+open CanonicalQuadraticSieve CenteredMomentFirstAssembly
 open CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
     (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
@@ -143,8 +143,8 @@ theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ �
     hV₀ hV₁ U K hK hU hmajor (B₁ L) (B₂ L) (hB₁ L hL) (hB₂ L hL)
     (hleft L hL χ) (hright L hL (ξ⁻¹))
 
-end SevenEighths.CenteredMomentFirstChildBound
 
-end
 
-end OAI
+
+
+

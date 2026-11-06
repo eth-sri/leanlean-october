@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -11,10 +12,9 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open MeasureTheory Filter Set
+open MeasureTheory Filter
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 theorem exists_dyadic_cutoff {X : ℝ} (hX : 1 ≤ X) :
@@ -26,10 +26,10 @@ theorem exists_dyadic_cutoff {X : ℝ} (hX : 1 ≤ X) :
 
 theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ M : ℕ, ((M:ℝ)+1)^2 ≤ D*((2:ℝ)^M)^ε := by
-  let a : ℝ := ε/2
+  let a := ε/2
   have ha : 0 < a := by dsimp [a]; positivity
   have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  let C : ℝ := 1+1/(a*Real.log 2)
+  let C := 1+1/(a*Real.log 2)
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C^2,pow_pos hC 2,?_⟩
   intro M
@@ -41,18 +41,13 @@ theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
     apply (le_div_iff₀ (mul_pos ha hlog)).mpr
     have h := (le_div_iff₀ ha).mp hl
     nlinarith
-  have hcount : (M:ℝ)+1 ≤ C*((2:ℝ)^M)^a := by
-    calc
-      _ ≤ ((2:ℝ)^M)^a/(a*Real.log 2)+((2:ℝ)^M)^a := add_le_add hm hp
-      _ = _ := by dsimp [C]; ring
+  have hcount : (M:ℝ)+1 ≤ C*((2:ℝ)^M)^a := by grind
   calc
     _ ≤ (C*((2:ℝ)^M)^a)^2 :=
       pow_le_pow_left₀ (by positivity) hcount 2
     _ = _ := by
       rw [mul_pow,← Real.rpow_mul_natCast (by positivity : (0:ℝ) ≤ (2:ℝ)^M)]
-      congr 2
-      dsimp [a]
-      norm_num
+      grind
 
 
 /-- A nonnegative continuous function with a dyadic power bound has the
@@ -62,7 +57,7 @@ theorem integral_zero_le_of_dyadic (f : ℝ → ℝ) (hf : Continuous f)
     (hdyad : ∀ H : ℝ, B ≤ H → (∫ t in H..2*H, f t) ≤ C*H^p) :
     ∃ K : ℝ, 0 < K ∧ ∀ H : ℝ, B ≤ H →
       (∫ t in 0..H, f t) ≤ K*H^p := by
-  let A : ℝ := |∫ t in 0..B, f t| + C + 1
+  let A := |∫ t in 0..B, f t| + C + 1
   have hA : 0 < A := by dsimp [A]; positivity
   have hCA : C ≤ A := by dsimp [A]; linarith [abs_nonneg (∫ t in 0..B, f t)]
   have hBp : 0 < B := by linarith
@@ -119,4 +114,4 @@ theorem integral_zero_le_of_dyadic (f : ℝ → ℝ) (hf : Continuous f)
 
 
 
-end MathCollab.Density.Stronger
+

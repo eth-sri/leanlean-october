@@ -11,9 +11,9 @@ open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceAllocationEnergy
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-local notation "O" => ActualEisensteinCubic.O
+
+
+open scoped EisensteinO
 
  theorem gaussPolynomial_allocation {α γ : Type*} [Fintype γ]
     (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
@@ -24,10 +24,9 @@ local notation "O" => ActualEisensteinCubic.O
   exact Finset.sum_comm
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-end SevenEighths.CenteredMomentSourceAllocationEnergy
 
-end
 
-end OAI
+
+
+

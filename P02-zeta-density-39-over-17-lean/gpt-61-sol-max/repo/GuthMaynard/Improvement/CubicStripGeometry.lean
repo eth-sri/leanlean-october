@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 namespace GuthMaynard.Improvement
 
 /-- Exact strip-to-window conversion, including a negative denominator. -/
@@ -18,4 +17,4 @@ theorem cubic_affine_inversion {m₁ m₂ m₃ v : ℝ} (hm₂ : m₂ ≠ 0) (hv
   field_simp
   ring
 
-end GuthMaynard.Improvement
+

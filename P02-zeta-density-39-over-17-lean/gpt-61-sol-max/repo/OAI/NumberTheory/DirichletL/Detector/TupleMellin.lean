@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.TupleScaling
 public import OAI.NumberTheory.DirichletL.Detector.SourceIntegrable
 
@@ -11,10 +12,14 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def tupleSourceSeries {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
+include K η S
+
+def tupleSourceSeries 
     (C : CalibrationData) (p : Fin K→O) (x w z : ℂ) : ℂ :=
   ∑J∈(Finset.univ:Finset (Fin K)).powerset,
     (-1:ℂ)^J.card*(elementNorm (∏i∈J,p i):ℂ)^(z-w-1)*
@@ -22,7 +27,7 @@ def tupleSourceSeries {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
       (elementNorm (∏i∈Finset.univ\J,p i):ℂ)^(x+z-1)*
       sourceRowSeries η S C (Ideal.span {∏i∈Finset.univ\J,p i}) x w z
 
-def tupleSourceTripleIntegral {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
+def tupleSourceTripleIntegral 
     (C : CalibrationData) (W0 W1 : SchwartzMap ℝ ℂ) (p : Fin K→O) (X Y Z : ℝ) : ℂ :=
   ((1/(2*Real.pi):ℝ):ℂ)^3*∫t : HeightSpace,
     sourceMellinWeight W0 W1 X Y Z ((3:ℂ)+t.1.1*Complex.I)
@@ -30,8 +35,7 @@ def tupleSourceTripleIntegral {K : ℕ} (η : HeckeFamily.Character) (S : Finset
     tupleSourceSeries η S C p ((3:ℂ)+t.1.1*Complex.I)
       ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I) ∂heightMeasure
 
-theorem compensatedTuple_eq_source_triple {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
+theorem compensatedTuple_eq_source_triple  (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
@@ -39,7 +43,7 @@ theorem compensatedTuple_eq_source_triple {K : ℕ} (η : HeckeFamily.Character)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     compensatedTuple η (calibrationForSet S hS) W0 W1 p X Y Z=
       tupleSourceTripleIntegral η S (calibrationForSet S hS) W0 W1 p X Y Z := by
-  let A : Finset (Fin K)→ℂ := fun J=>(-1:ℂ)^J.card*
+  let A := fun J=>(-1:ℂ)^J.card*
     ((elementNorm (∏i∈J,p i)^(-(3/2:ℝ)):ℝ):ℂ)*
       star (HeckeFamily.elementCoeff η (∏i∈Finset.univ\J,p i))
   let F : Finset (Fin K)→HeightSpace→ℂ := fun J t=>
@@ -93,8 +97,10 @@ theorem compensatedTuple_eq_source_triple {K : ℕ} (η : HeckeFamily.Character)
   unfold tupleSourceSeries
   rw [Finset.mul_sum]
   exact Finset.sum_congr rfl (fun J _=>hpoint J t)
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

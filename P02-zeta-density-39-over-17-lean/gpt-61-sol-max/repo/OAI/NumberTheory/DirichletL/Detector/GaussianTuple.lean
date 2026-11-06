@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff Topology SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open ProbeCompleted
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
@@ -104,7 +104,7 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
       intro j
       exact gaussian_selected_tuple_sum W V hV hsep F a S D Ψ Z hZ j q hq
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

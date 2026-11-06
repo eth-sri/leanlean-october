@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveHeightStep
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicFullEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
@@ -11,17 +12,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
+open InverseFirstGlobalCaps InverseMomentFirstChildWindows
+open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell
 open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open JointLogSeparation CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_two_pass_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
@@ -101,7 +102,7 @@ theorem original_two_pass_energy
     Z M r ell V Γ theta pi epschild A loss hZ hbin hM hF hMcap hell hV hr hbZ hQpool hQ hrcap hellcap
     hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hΨ hΓ hA hsf hn hβ hlabels hslots hweights
     mark Y cutoff W source keys hl hr'
-  let Be:ℝ:=(Cl+Cr)*(1+A)*Z^(r+3*ell+V+loss)
+  let Be :=(Cl+Cr)*(1+A)*Z^(r+3*ell+V+loss)
   have hz:0<Z:=by linarith
   have hBe:0≤Be:=by dsimp[Be];positivity
   have left : ∀k∈keys,∀z:Frequency×(Fin 9→ℝ),
@@ -148,10 +149,10 @@ theorem original_two_pass_energy
     linarith
   have hall:=hfull p hp hg hinj hcop hc hpr pool Q labels β Ψ m slots lists weights Z M r ell V Γ theta Be
     hZ hbin hM hF hMcap hell hV hr hbZ hQpool hQ hrcap hellcap hΨ hΓ hBe hsf hn hβ hlabels hslots hweights left right
-  convert hall using 1 ; dsimp[Be] ; ring
+  convert hall using 1 ; ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

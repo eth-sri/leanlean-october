@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
 
@@ -10,69 +11,69 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 open scoped BigOperators Classical SchwartzMap
 
@@ -135,19 +136,25 @@ namespace CanonicalQuadraticSieve
 section
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
-def originalMiddleDecayConstant (W : 𝓢(ℝ, ℂ)) : ℝ :=
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
+def originalMiddleDecayConstant  : ℝ :=
   (actual_middle_radial_block_bound.{0, 0, 0} W 2).choose
 
-def dualMiddleDecayConstant (W : 𝓢(ℝ, ℂ)) : ℝ :=
+def dualMiddleDecayConstant  : ℝ :=
   (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose
 
-theorem originalMiddleDecayConstant_nonneg (W : 𝓢(ℝ, ℂ)) :
+theorem originalMiddleDecayConstant_nonneg  :
     0 ≤ originalMiddleDecayConstant W :=
   (actual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.1
 
-theorem dualMiddleDecayConstant_nonneg (W : 𝓢(ℝ, ℂ)) :
+theorem dualMiddleDecayConstant_nonneg  :
     0 ≤ dualMiddleDecayConstant W :=
   (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.1
+end
+
 
 theorem divisorBlockCost_mono_coefficients
     {n p : Type*} [Fintype n] [Fintype p]
@@ -166,9 +173,13 @@ section
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
-def originalMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
+section
+variable (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (h : O) : ℝ :=
+    (a : n → ℂ) (b : p → ℂ)
+include W S T rows left right a b
+
+def originalMiddleAt  (M : ℝ) (h : O) : ℝ :=
   ∑ D : S, ∑ E : T, ∑ i,
     (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) /
       ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ))) *
@@ -176,9 +187,7 @@ def originalMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
       (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) * ‖eisEmbedding h‖ ^ 2 /
         ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ)))‖
 
-def dualMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
-    (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (h : O) : ℝ :=
+def dualMiddleAt  (M F : ℝ) (h : O) : ℝ :=
   ∑ D : S, ∑ E : T, ∑ i,
     (Real.sqrt ((M / F) / (Ideal.absNorm (rows i) : ℝ)) /
       ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ))) *
@@ -186,6 +195,8 @@ def dualMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
       (Real.sqrt (F * (Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ) /
         (M * (Ideal.absNorm (rows i) : ℝ))) * ‖eisEmbedding h‖ ^ 2 /
           ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ)))‖
+end
+
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem originalMiddleAt_nonneg (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
@@ -346,13 +357,17 @@ end
 
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
-def divisorExponentConstant {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) : ℝ :=
+section
+variable {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
+include α h deltaLoss hδ
+
+def divisorExponentConstant  : ℝ :=
   (h.divisor_pair deltaLoss hδ).choose
 
-theorem divisorExponentConstant_pos {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) :
+theorem divisorExponentConstant_pos  :
     0 < divisorExponentConstant h deltaLoss hδ := (h.divisor_pair deltaLoss hδ).choose_spec.1
 
-theorem divisor_cost_with_constant {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
+theorem divisor_cost_with_constant 
     {n p : Type*} [Fintype n] [Fintype p]
     (ε : ℝ) (hε : 0 < ε) (B N D₁ D₂ : ℝ)
     (hB : 1 ≤ B) (hN : 1 ≤ N) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂)
@@ -364,6 +379,8 @@ theorem divisor_cost_with_constant {α : ℝ} (h : HasSieveExponent α) (deltaLo
   exact mul_le_mul_of_nonneg_left
     ((h.divisor_pair deltaLoss hδ).choose_spec.2 B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N)
     (divisorEnergyFactor_nonneg ε hε N a b)
+end
+
 
 theorem sqrt_div_mul_rpow (M B α : ℝ) (hM : 0 ≤ M) (hB : 0 < B) :
     Real.sqrt (M / B) * B ^ α = Real.sqrt M * B ^ (α - 1 / 2) := by
@@ -408,8 +425,12 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
 
 include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
 theorem HasSieveExponent.original_middle_block
-    (W : 𝓢(ℝ, ℂ))
+    
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hcut : D₁ * D₂ ≤ U * Real.sqrt (M / B)) :
@@ -437,7 +458,7 @@ theorem HasSieveExponent.original_middle_block
       (original_middle_scale_shape M B N (D₁ * D₂) U α hM.le (by linarith) hcut) (by positivity)
 
 theorem HasSieveExponent.dual_middle_block
-    (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F)
+     (F : ℝ) (hF : 0 < F)
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hcut : D₁ * D₂ ≤ U * (N * Real.sqrt (F / (M * B)))) :
@@ -463,6 +484,8 @@ theorem HasSieveExponent.dual_middle_block
           ((M / (F * N)) * (N + B ^ α * (D₁ * D₂))) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (dual_middle_scale_shape M F B N (D₁ * D₂) U α hM hF (by linarith) (by linarith) hcut) (by positivity)
+end
+
 
 end CanonicalQuadraticSieve
 
@@ -480,18 +503,22 @@ def integralComplexMatrix : SL(2,O) →* SL(2,ℂ) := Matrix.SpecialLinearGroup.
 lemma integralComplexMatrix_levelThree (M : levelThree) :
     integralComplexMatrix (M : SL(2,O)) = complexMatrix M := rfl
 
-lemma row_wedge_gram (u v : Fin 2 → ℂ) :
+section
+variable (u v : Fin 2 → ℂ)
+include u v
+
+lemma row_wedge_gram  :
     Complex.normSq (u 0*v 1-u 1*v 0) +
       Complex.normSq (u 0*star (v 0)+u 1*star (v 1)) = rowEnergy u * rowEnergy v := by
-  simp only [rowEnergy,← Complex.normSq_eq_norm_sq,Complex.normSq_apply,
-    Complex.add_re,Complex.add_im,Complex.sub_re,Complex.sub_im,Complex.mul_re,Complex.mul_im,
-    Complex.star_def,Complex.conj_re,Complex.conj_im]
+  simp only [normSq_apply, sub_re, mul_re, sub_im, mul_im, star_def, add_re, conj_re, conj_im, add_im, rowEnergy, ← normSq_eq_norm_sq]
   ring
 
-lemma row_wedge_le_energy (u v : Fin 2 → ℂ) :
+lemma row_wedge_le_energy  :
     Complex.normSq (u 0*v 1-u 1*v 0) ≤ rowEnergy u * rowEnergy v := by
   rw [← row_wedge_gram u v]
   exact le_add_of_nonneg_right (Complex.normSq_nonneg _)
+end
+
 
 lemma bottom_row_wedge_mul (g h : SL(2,ℂ)) :
     complexBottomRow (g*h) 0 * complexBottomRow h 1 -
@@ -551,7 +578,15 @@ lemma cosetHeight_rightEquiv (M : levelThree) (x : CuspCosets) (w : HyperbolicSp
     change cosetHeight (cosetOf (N*M)) w = cosetHeight (cosetOf N) (complexMatrix M • w)
     rw [cosetHeight_cosetOf,cosetHeight_cosetOf,map_mul,mul_smul]
 
-lemma high_coset_unique (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
+section
+variable (Y : ℝ)
+include Y
+
+section
+variable (hY : 1≤Y) (w : HyperbolicSpace)
+include hY w
+
+lemma high_coset_unique 
     (x y : CuspCosets) (hx : Y<cosetHeight x w) (hy : Y<cosetHeight y w) : x=y := by
   induction x using Quotient.inductionOn with | _ M =>
     induction y using Quotient.inductionOn with | _ N =>
@@ -570,16 +605,22 @@ lemma high_coset_unique (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
       have hn := lt_of_le_of_lt hY hy
       nlinarith [mul_pos (sub_pos.mpr hm) (sub_pos.mpr hn)]
 
-lemma high_cosets_finite (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace) :
+lemma high_cosets_finite  :
     Set.Finite {x : CuspCosets | Y<cosetHeight x w} := by
   have h : Set.Subsingleton {x : CuspCosets | Y<cosetHeight x w} :=
     fun x hx y hy => high_coset_unique Y hY w x y hx hy
   exact h.finite
+end
 
-def cuspCutoffTerm (Y : ℝ) (F : ℝ → ℂ) (x : CuspCosets) (w : HyperbolicSpace) : ℂ :=
+
+def cuspCutoffTerm  (F : ℝ → ℂ) (x : CuspCosets) (w : HyperbolicSpace) : ℂ :=
   if Y<cosetHeight x w then (cosetCharacter x)⁻¹ * F (cosetHeight x w) else 0
 
-lemma cuspCutoffTerm_finiteSupport (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+section
+variable (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace)
+include hY F w
+
+lemma cuspCutoffTerm_finiteSupport  :
     Function.HasFiniteSupport (fun x => cuspCutoffTerm Y F x w) := by
   apply (high_cosets_finite Y hY w).subset
   intro x hx
@@ -588,14 +629,20 @@ lemma cuspCutoffTerm_finiteSupport (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w :
   change ¬Y<cosetHeight x w at hn
   exact hx (by simp [cuspCutoffTerm,hn])
 
-lemma cuspCutoffTerm_summable (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+lemma cuspCutoffTerm_summable  :
     Summable (fun x => cuspCutoffTerm Y F x w) :=
   summable_of_hasFiniteSupport (cuspCutoffTerm_finiteSupport Y hY F w)
+end
 
-def cuspCutoffCorrection (Y : ℝ) (F : ℝ → ℂ) (w : HyperbolicSpace) : ℂ :=
+
+section
+variable (F : ℝ → ℂ)
+include F
+
+def cuspCutoffCorrection  (w : HyperbolicSpace) : ℂ :=
   ∑'x,cuspCutoffTerm Y F x w
 
-lemma cuspCutoffTerm_automorphy (Y : ℝ) (F : ℝ → ℂ) (M : levelThree)
+lemma cuspCutoffTerm_automorphy  (M : levelThree)
     (x : CuspCosets) (w : HyperbolicSpace) :
     cuspCutoffTerm Y F x (complexMatrix M • w) =
       complexCharacter M * cuspCutoffTerm Y F (rightEquiv M x) w := by
@@ -606,8 +653,14 @@ lemma cuspCutoffTerm_automorphy (Y : ℝ) (F : ℝ → ℂ) (M : levelThree)
     exact zero_ne_one hn
   simp only [cuspCutoffTerm,cosetHeight_rightEquiv,cosetCharacter_rightEquiv]
   split_ifs <;> simp [mul_inv_rev,hM,mul_assoc,mul_left_comm,mul_comm]
+end
 
-theorem cuspCutoffCorrection_automorphy (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
+
+section
+variable (hY : 1≤Y) (F : ℝ → ℂ)
+include hY F
+
+theorem cuspCutoffCorrection_automorphy 
     (M : levelThree) (w : HyperbolicSpace) :
     cuspCutoffCorrection Y F (complexMatrix M • w) = complexCharacter M*cuspCutoffCorrection Y F w := by
   have hsum := cuspCutoffTerm_summable Y hY F w
@@ -616,7 +669,7 @@ theorem cuspCutoffCorrection_automorphy (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
   exact (cuspCutoffTerm_summable Y hY F (complexMatrix M • w)).hasSum.unique
     (hscale.congr_fun (fun x => cuspCutoffTerm_automorphy Y F M x w))
 
-lemma cuspCutoffCorrection_eq (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
+lemma cuspCutoffCorrection_eq 
     (w : HyperbolicSpace) (x : CuspCosets) (hx : Y<cosetHeight x w) :
     cuspCutoffCorrection Y F w = (cosetCharacter x)⁻¹*F (cosetHeight x w) := by
   unfold cuspCutoffCorrection
@@ -625,14 +678,17 @@ lemma cuspCutoffCorrection_eq (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
   · intro y hy
     have hn : ¬Y<cosetHeight y w := fun hh => hy (high_coset_unique Y hY w y x hh hx)
     simp [cuspCutoffTerm,hn]
+end
+end
+
 
 lemma hyperbolicHeight_upperPoint (z : ℂ) (v : ℝ) (hv : 0<v) :
     hyperbolicHeight (upperPoint z v hv)=v := by
   have h := hyperbolicHeight_action_upperPoint 1 z v hv
   simpa [Matrix.one_apply] using h
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

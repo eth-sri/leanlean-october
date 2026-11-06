@@ -13,12 +13,12 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyWidthInduction
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+
+
+
+open scoped HeckeO
 
 def remaining (M ε:ℝ)(k:ℕ):ℕ:=count M ε-k
 def lowerAt (a b M ε:ℝ)(k:ℕ):ℝ:=CenteredMomentEnergyProfiles.lower a b (remaining M ε k)
@@ -42,8 +42,8 @@ variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-end SevenEighths.CenteredMomentEnergyWidthInduction
 
-end
 
-end OAI
+
+
+

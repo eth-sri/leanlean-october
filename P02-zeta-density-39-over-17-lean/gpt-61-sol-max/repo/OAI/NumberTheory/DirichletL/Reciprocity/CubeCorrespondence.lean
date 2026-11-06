@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.ReflectedCuspMellin
 
 @[expose] public section
@@ -8,85 +9,89 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CubicKubota
 
 open scoped Classical MatrixGroups
 
 section
-open ActualEisensteinCubic CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicJacobiGlobal
+open scoped EisensteinEis
 
-def cubeDiagonal (p : Eis) : Matrix (Fin 2) (Fin 2) Eis := !![p^3,0;0,1]
+section
+variable (p : Eis)
+include p
 
-def cubeCorrespondence (p : Eis) : Subgroup (levelThree × levelThree) where
+def cubeDiagonal  : Matrix (Fin 2) (Fin 2) Eis := !![p^3,0;0,1]
+
+def cubeCorrespondence  : Subgroup (levelThree × levelThree) where
   carrier := {MN | cubeDiagonal p * (MN.1 : SL(2,Eis)).val =
     (MN.2 : SL(2,Eis)).val * cubeDiagonal p}
   one_mem' := by simp
@@ -116,13 +121,13 @@ def cubeCorrespondence (p : Eis) : Subgroup (levelThree × levelThree) where
         simp only [Matrix.mul_assoc, ← Matrix.SpecialLinearGroup.coe_mul,
           mul_inv_cancel, Matrix.SpecialLinearGroup.coe_one, Matrix.mul_one]
 
-def cubeCorrespondenceLeft (p : Eis) : cubeCorrespondence p →* levelThree :=
+def cubeCorrespondenceLeft  : cubeCorrespondence p →* levelThree :=
   (MonoidHom.fst levelThree levelThree).comp (cubeCorrespondence p).subtype
 
-def cubeCorrespondenceRight (p : Eis) : cubeCorrespondence p →* levelThree :=
+def cubeCorrespondenceRight  : cubeCorrespondence p →* levelThree :=
   (MonoidHom.snd levelThree levelThree).comp (cubeCorrespondence p).subtype
 
-lemma cubeCorrespondence_entries (p : Eis) (MN : cubeCorrespondence p) :
+lemma cubeCorrespondence_entries  (MN : cubeCorrespondence p) :
     p^3 * ((MN.1.1 : levelThree) : SL(2,Eis)) 0 0 =
       (((MN.1.2 : levelThree) : SL(2,Eis)) 0 0) * p^3 ∧
     p^3 * ((MN.1.1 : levelThree) : SL(2,Eis)) 0 1 =
@@ -139,7 +144,11 @@ lemma cubeCorrespondence_entries (p : Eis) (MN : cubeCorrespondence p) :
   norm_num [cubeDiagonal, Matrix.mul_apply, Fin.sum_univ_two] at h00 h01 h10 h11
   exact ⟨h00,h01,h10,h11⟩
 
-lemma cubeCorrespondenceLeft_injective (p : Eis) (hp : p ≠ 0) :
+section
+variable (hp : p ≠ 0)
+include hp
+
+lemma cubeCorrespondenceLeft_injective  :
     Function.Injective (cubeCorrespondenceLeft p) := by
   intro x y h
   have hx := cubeCorrespondence_entries p x
@@ -156,7 +165,7 @@ lemma cubeCorrespondenceLeft_injective (p : Eis) (hp : p ≠ 0) :
   · exact mul_right_cancel₀ (pow_ne_zero 3 hp) (hx.2.2.1.symm.trans (by rw [hM]; exact hy.2.2.1))
   · exact hx.2.2.2.symm.trans (by rw [hM]; exact hy.2.2.2)
 
-lemma cubeCorrespondenceRight_injective (p : Eis) (hp : p ≠ 0) :
+lemma cubeCorrespondenceRight_injective  :
     Function.Injective (cubeCorrespondenceRight p) := by
   intro x y h
   have hx := cubeCorrespondence_entries p x
@@ -173,11 +182,15 @@ lemma cubeCorrespondenceRight_injective (p : Eis) (hp : p ≠ 0) :
   · exact hx.2.2.1.trans (by rw [hN]; exact hy.2.2.1.symm)
   · exact hx.2.2.2.trans (by rw [hN]; exact hy.2.2.2.symm)
 
-lemma cubeCorrespondence_value (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespondence p) :
+section
+variable (MN : cubeCorrespondence p)
+include MN
+
+lemma cubeCorrespondence_value  :
     value (cubeCorrespondenceLeft p MN) = value (cubeCorrespondenceRight p MN) := by
   have he := cubeCorrespondence_entries p MN
-  let M : levelThree := MN.1.1
-  let N : levelThree := MN.1.2
+  let M := MN.1.1
+  let N := MN.1.2
   have ha : (M : SL(2,Eis)) 0 0 = (N : SL(2,Eis)) 0 0 :=
     mul_left_cancel₀ (pow_ne_zero 3 hp) (he.1.trans (mul_comm _ _))
   have hc : (M : SL(2,Eis)) 1 0 = p^3 * (N : SL(2,Eis)) 1 0 :=
@@ -196,22 +209,30 @@ lemma cubeCorrespondence_value (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespondence
     symbol_pow_numerator _ _ (levelThree_primary N),
     symbol_cube_of_isCoprime _ _ (levelThree_primary N) hcop,one_mul]
 
-lemma cubeCorrespondence_character (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespondence p) :
+lemma cubeCorrespondence_character  :
     complexCharacter (cubeCorrespondenceLeft p MN) =
       complexCharacter (cubeCorrespondenceRight p MN) := by
   exact congrArg ConcreteTraceCRT.eisEmbedding (cubeCorrespondence_value p hp MN)
+end
+end
+end
+
 
 end
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def cubePrincipalLevel (p : Eis) : Subgroup levelThree :=
+section
+variable (p : Eis)
+include p
+
+def cubePrincipalLevel  : Subgroup levelThree :=
   ((Matrix.SpecialLinearGroup.map (n:=Fin 2)
     (Ideal.Quotient.mk (Ideal.span {(3:Eis)*p^3}))).comp levelThree.subtype).ker
 
-lemma cubePrincipalLevel_entry (p : Eis) (M : cubePrincipalLevel p) (i j : Fin 2) :
+lemma cubePrincipalLevel_entry  (M : cubePrincipalLevel p) (i j : Fin 2) :
     (3:Eis)*p^3 ∣ ((M.1 : levelThree) : SL(2,Eis)) i j-(if i=j then 1 else 0) := by
   have hm : Matrix.SpecialLinearGroup.map (n:=Fin 2)
       (Ideal.Quotient.mk (Ideal.span {(3:Eis)*p^3})) ((M.1 : levelThree) : SL(2,Eis)) = 1 := M.property
@@ -223,14 +244,14 @@ lemma cubePrincipalLevel_entry (p : Eis) (M : cubePrincipalLevel p) (i j : Fin 2
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
   simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using h
 
-lemma cubePrincipalLevel_finiteIndex (p : Eis) (hp : p ≠ 0) :
+lemma cubePrincipalLevel_finiteIndex  (hp : p ≠ 0) :
     (cubePrincipalLevel p).FiniteIndex := by
   let : Finite (Eis ⧸ Ideal.span {(3:Eis)*p^3}) :=
     finite_quotient_span (mul_ne_zero (by norm_num) (pow_ne_zero 3 hp))
   unfold cubePrincipalLevel
   infer_instance
 
-lemma cubePrincipalLevel_left_mate (p : Eis) (M : cubePrincipalLevel p) :
+lemma cubePrincipalLevel_left_mate  (M : cubePrincipalLevel p) :
     ∃ N : levelThree, ((M.1 : levelThree),N) ∈ cubeCorrespondence p := by
   obtain ⟨c,hc⟩ : (3:Eis)*p^3 ∣ ((M.1 : levelThree) : SL(2,Eis)) 1 0 := by
     simpa using cubePrincipalLevel_entry p M 1 0
@@ -264,7 +285,7 @@ lemma cubePrincipalLevel_left_mate (p : Eis) (M : cubePrincipalLevel p) :
     rw [hc]
     ring
 
-lemma cubePrincipalLevel_right_mate (p : Eis) (N : cubePrincipalLevel p) :
+lemma cubePrincipalLevel_right_mate  (N : cubePrincipalLevel p) :
     ∃ M : levelThree, (M,(N.1 : levelThree)) ∈ cubeCorrespondence p := by
   obtain ⟨b,hb⟩ : (3:Eis)*p^3 ∣ ((N.1 : levelThree) : SL(2,Eis)) 0 1 := by
     simpa using cubePrincipalLevel_entry p N 0 1
@@ -299,19 +320,19 @@ lemma cubePrincipalLevel_right_mate (p : Eis) (N : cubePrincipalLevel p) :
     ring
   · ring
 
-lemma cubePrincipalLevel_le_left_range (p : Eis) :
+lemma cubePrincipalLevel_le_left_range  :
     cubePrincipalLevel p ≤ (cubeCorrespondenceLeft p).range := by
   intro M hM
   obtain ⟨N,hN⟩ := cubePrincipalLevel_left_mate p ⟨M,hM⟩
   exact ⟨⟨(M,N),hN⟩,rfl⟩
 
-lemma cubePrincipalLevel_le_right_range (p : Eis) :
+lemma cubePrincipalLevel_le_right_range  :
     cubePrincipalLevel p ≤ (cubeCorrespondenceRight p).range := by
   intro N hN
   obtain ⟨M,hM⟩ := cubePrincipalLevel_right_mate p ⟨N,hN⟩
   exact ⟨⟨(M,N),hM⟩,rfl⟩
 
-lemma cubeCorrespondence_finite_covers (p : Eis) (hp : p ≠ 0) :
+lemma cubeCorrespondence_finite_covers  (hp : p ≠ 0) :
     Function.Injective (cubeCorrespondenceLeft p) ∧
     Function.Injective (cubeCorrespondenceRight p) ∧
     (cubeCorrespondenceLeft p).range.FiniteIndex ∧
@@ -320,34 +341,46 @@ lemma cubeCorrespondence_finite_covers (p : Eis) (hp : p ≠ 0) :
   exact ⟨cubeCorrespondenceLeft_injective p hp,cubeCorrespondenceRight_injective p hp,
     Subgroup.finiteIndex_of_le (cubePrincipalLevel_le_left_range p),
     Subgroup.finiteIndex_of_le (cubePrincipalLevel_le_right_range p)⟩
+end
+
 
 end
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def cubeKernelCorrespondence (p : Eis) : Subgroup (cubeCorrespondence p) :=
+section
+variable (p : Eis)
+include p
+
+def cubeKernelCorrespondence  : Subgroup (cubeCorrespondence p) :=
   (finiteCubicMultiplier.comp (cubeCorrespondenceLeft p)).ker
 
-def cubeKernelLeft (p : Eis) : cubeKernelCorrespondence p →* finiteCubicMultiplier.ker where
+def cubeKernelLeft  : cubeKernelCorrespondence p →* finiteCubicMultiplier.ker where
   toFun x := ⟨cubeCorrespondenceLeft p x.1,x.property⟩
   map_one' := by apply Subtype.ext; exact map_one (cubeCorrespondenceLeft p)
   map_mul' x y := by apply Subtype.ext; exact map_mul (cubeCorrespondenceLeft p) x.1 y.1
 
-lemma cubeKernel_right_mem (p : Eis) (hp : p ≠ 0) (x : cubeKernelCorrespondence p) :
+section
+variable (hp : p ≠ 0)
+include hp
+
+lemma cubeKernel_right_mem  (x : cubeKernelCorrespondence p) :
     cubeCorrespondenceRight p x.1 ∈ finiteCubicMultiplier.ker := by
   apply (finiteCubicMultiplier_eq_one _).mpr
   rw [←cubeCorrespondence_character p hp x.1]
   exact (finiteCubicMultiplier_eq_one _).mp x.property
 
-def cubeKernelRight (p : Eis) (hp : p ≠ 0) :
+def cubeKernelRight  :
     cubeKernelCorrespondence p →* finiteCubicMultiplier.ker where
   toFun x := ⟨cubeCorrespondenceRight p x.1,cubeKernel_right_mem p hp x⟩
   map_one' := by apply Subtype.ext; exact map_one (cubeCorrespondenceRight p)
   map_mul' x y := by apply Subtype.ext; exact map_mul (cubeCorrespondenceRight p) x.1 y.1
+end
 
-lemma cubeKernelLeft_range (p : Eis) :
+
+lemma cubeKernelLeft_range  :
     (cubeKernelLeft p).range =
       (cubeCorrespondenceLeft p).range.comap finiteCubicMultiplier.ker.subtype := by
   ext y
@@ -361,7 +394,11 @@ lemma cubeKernelLeft_range (p : Eis) :
       exact y.property
     exact ⟨⟨x,hmem⟩,Subtype.ext hx⟩
 
-lemma cubeKernelRight_range (p : Eis) (hp : p ≠ 0) :
+section
+variable (hp : p ≠ 0)
+include hp
+
+lemma cubeKernelRight_range  :
     (cubeKernelRight p hp).range =
       (cubeCorrespondenceRight p).range.comap finiteCubicMultiplier.ker.subtype := by
   ext y
@@ -375,7 +412,7 @@ lemma cubeKernelRight_range (p : Eis) (hp : p ≠ 0) :
       exact (finiteCubicMultiplier_eq_one _).mp y.property
     exact ⟨⟨x,hmem⟩,Subtype.ext hx⟩
 
-lemma cubeKernel_finite_covers (p : Eis) (hp : p ≠ 0) :
+lemma cubeKernel_finite_covers  :
     Function.Injective (cubeKernelLeft p) ∧ Function.Injective (cubeKernelRight p hp) ∧
     (cubeKernelLeft p).range.FiniteIndex ∧ (cubeKernelRight p hp).range.FiniteIndex := by
   have hcov := cubeCorrespondence_finite_covers p hp
@@ -394,18 +431,22 @@ lemma cubeKernel_finite_covers (p : Eis) (hp : p ≠ 0) :
     infer_instance
   · rw [cubeKernelRight_range]
     infer_instance
+end
 
-def cubeKernelLeftGlobal (p : Eis) : cubeKernelCorrespondence p →* SL(2,Eis) :=
+
+def cubeKernelLeftGlobal  : cubeKernelCorrespondence p →* SL(2,Eis) :=
   levelThree.subtype.comp (finiteCubicMultiplier.ker.subtype.comp (cubeKernelLeft p))
 
-def cubeKernelRightGlobal (p : Eis) (hp : p ≠ 0) :
+def cubeKernelRightGlobal  (hp : p ≠ 0) :
     cubeKernelCorrespondence p →* SL(2,Eis) :=
   levelThree.subtype.comp (finiteCubicMultiplier.ker.subtype.comp (cubeKernelRight p hp))
 
-lemma cubeKernelLeftGlobal_le (p : Eis) :
+lemma cubeKernelLeftGlobal_le  :
     (cubeKernelLeftGlobal p).range ≤ globalKubotaKernel := by
   rintro M ⟨x,rfl⟩
   exact ⟨(cubeKernelLeft p x).1,(cubeKernelLeft p x).property,rfl⟩
+end
+
 
 private lemma finiteIndex_subtype_image {G : Type*} [Group G] (H : Subgroup G)
     [H.FiniteIndex] (J : Subgroup H) [J.FiniteIndex] : (J.map H.subtype).FiniteIndex := by
@@ -434,30 +475,41 @@ lemma cubeKernelGlobal_finite_covers (p : Eis) (hp : p ≠ 0) :
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 end CubicKubota
 
 open Filter MeasureTheory Asymptotics
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
 namespace CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def cuspBarProfile (f : HyperbolicSpace→ℂ) (z : ℂ) (v : ℝ) : ℂ :=
+section
+variable (f : HyperbolicSpace→ℂ) (z : ℂ) (v : ℝ)
+include f z v
+
+def cuspBarProfile  : ℂ :=
   horizontalWirtingerBar (fun w=>f (cuspCoordinateLift (v,w))) z
 
-def cuspZProfile (f : HyperbolicSpace→ℂ) (z : ℂ) (v : ℝ) : ℂ :=
+def cuspZProfile  : ℂ :=
   horizontalWirtingerZ (fun w=>f (cuspCoordinateLift (v,w))) z
 
-lemma cuspBarProfile_positive (f : HyperbolicSpace→ℂ) (z : ℂ) (v : ℝ) (hv : 0<v) :
+section
+variable (hv : 0<v)
+include hv
+
+lemma cuspBarProfile_positive  :
     cuspBarProfile f z v=horizontalWirtingerBar (fun w=>f (upperPoint w v hv)) z := by
   simp only [cuspBarProfile,cuspCoordinateLift_positive v _ hv]
 
-lemma cuspZProfile_positive (f : HyperbolicSpace→ℂ) (z : ℂ) (v : ℝ) (hv : 0<v) :
+lemma cuspZProfile_positive  :
     cuspZProfile f z v=horizontalWirtingerZ (fun w=>f (upperPoint w v hv)) z := by
   simp only [cuspZProfile,cuspCoordinateLift_positive v _ hv]
+end
+end
+
 
 lemma horizontalWirtingerZ_star (f : ℂ→ℂ) (z : ℂ) :
     horizontalWirtingerZ (fun w=>star (f w)) z=star (horizontalWirtingerBar f z) := by
@@ -468,10 +520,14 @@ lemma horizontalWirtingerZ_star (f : ℂ→ℂ) (z : ℂ) :
 namespace SubexponentialBesselCoefficients
 variable (coeff : SubexponentialBesselCoefficients)
 
-def directionalSeries (direction : ℂ) (p : ℝ × ℂ) : ℂ :=
+section
+variable (direction : ℂ)
+include direction
+
+def directionalSeries  (p : ℝ × ℂ) : ℂ :=
   ∑'h : ActualEisensteinCubic.O,coeff.directionalTerm h p.1 p.2 direction
 
-lemma directionalSeries_continuousOn_slab (direction : ℂ) (a b : ℝ) (ha : 0<a) (hab : a≤b) :
+lemma directionalSeries_continuousOn_slab  (a b : ℝ) (ha : 0<a) (hab : a≤b) :
     ContinuousOn (coeff.directionalSeries direction) {p : ℝ × ℂ|p.1∈Set.Icc a b} := by
   obtain ⟨C,hC,hbound⟩ := coeff.directionalTerm_slab_bound a b ha hab direction
   apply continuousOn_tsum (u:=fun h : ActualEisensteinCubic.O=>C*(‖cuspFrequency h‖*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖)))
@@ -483,7 +539,7 @@ lemma directionalSeries_continuousOn_slab (direction : ℂ) (a b : ℝ) (ha : 0<
   · intro h p hp
     exact hbound h p.1 p.2 hp
 
-lemma directionalSeries_continuousOn (direction : ℂ) :
+lemma directionalSeries_continuousOn  :
     ContinuousOn (coeff.directionalSeries direction) {p : ℝ × ℂ|0<p.1} := by
   intro p hp
   have hclosed := coeff.directionalSeries_continuousOn_slab direction (p.1/2) (2*p.1)
@@ -492,6 +548,8 @@ lemma directionalSeries_continuousOn (direction : ℂ) :
     continuousAt_fst.tendsto.eventually (Icc_mem_nhds (by change 0<p.1 at hp;linarith)
       (by change 0<p.1 at hp;linarith))
   exact (hclosed.continuousAt hnb).continuousWithinAt
+end
+
 
 lemma cuspZProfile_full_eq (constant z : ℂ) (v : ℝ) (hv : 0<v) :
     cuspZProfile (coeff.fullFunction constant) z v=
@@ -514,27 +572,31 @@ lemma cuspZProfile_continuousOn (constant z : ℂ) :
 
 end SubexponentialBesselCoefficients
 
-lemma cuspZProfile_source_continuousOn (z : ℂ) :
+section
+variable (z : ℂ)
+include z
+
+lemma cuspZProfile_source_continuousOn  :
     ContinuousOn (cuspZProfile cubicSourceResidualFunction z) (Set.Ioi 0) := by
   rw [cubicSourceResidualFunction_eq_bessel]
   exact sourceBesselCoefficients.cuspZProfile_continuousOn _ z
 
-lemma cuspBarProfile_conjugate_eq (z : ℂ) :
+lemma cuspBarProfile_conjugate_eq  :
     cuspBarProfile cubicSourceConjugateFunction z=fun v=>star (cuspZProfile cubicSourceResidualFunction z v) := by
   funext v
   exact horizontalWirtingerBar_star _ z
 
-lemma cuspZProfile_conjugate_eq (z : ℂ) :
+lemma cuspZProfile_conjugate_eq  :
     cuspZProfile cubicSourceConjugateFunction z=fun v=>star (cuspBarProfile cubicSourceResidualFunction z v) := by
   funext v
   exact horizontalWirtingerZ_star _ z
 
-lemma cuspBarProfile_conjugate_continuousOn (z : ℂ) :
+lemma cuspBarProfile_conjugate_continuousOn  :
     ContinuousOn (cuspBarProfile cubicSourceConjugateFunction z) (Set.Ioi 0) := by
   rw [cuspBarProfile_conjugate_eq]
   exact (cuspZProfile_source_continuousOn z).star
 
-lemma cuspBarProfile_source_isBigO (z : ℂ) :
+lemma cuspBarProfile_source_isBigO  :
     cuspBarProfile cubicSourceResidualFunction z =O[atTop]
       (fun v : ℝ=>Real.exp (-residualCuspDecayRate*v)) := by
   obtain ⟨C,hC,hbound⟩ := cubicSourceResidualFunction_wirtingerBar_cusp_decay 1 (by norm_num)
@@ -544,7 +606,7 @@ lemma cuspBarProfile_source_isBigO (z : ℂ) :
   rw [cuspBarProfile_positive _ _ _ hvp,Real.norm_of_nonneg (Real.exp_pos _).le]
   exact hbound v hvp z hv
 
-lemma cuspZProfile_source_isBigO (z : ℂ) :
+lemma cuspZProfile_source_isBigO  :
     cuspZProfile cubicSourceResidualFunction z =O[atTop]
       (fun v : ℝ=>Real.exp (-residualCuspDecayRate*v)) := by
   obtain ⟨C,hC,hbound⟩ := cubicSourceResidualFunction_wirtingerZ_cusp_decay 1 (by norm_num)
@@ -554,7 +616,7 @@ lemma cuspZProfile_source_isBigO (z : ℂ) :
   rw [cuspZProfile_positive _ _ _ hvp,Real.norm_of_nonneg (Real.exp_pos _).le]
   exact hbound v hvp z hv
 
-lemma cuspBarProfile_conjugate_isBigO (z : ℂ) :
+lemma cuspBarProfile_conjugate_isBigO  :
     cuspBarProfile cubicSourceConjugateFunction z =O[atTop]
       (fun v : ℝ=>Real.exp (-residualCuspDecayRate*v)) := by
   obtain ⟨C,hC⟩ := Asymptotics.isBigO_iff.mp (cuspZProfile_source_isBigO z)
@@ -562,16 +624,18 @@ lemma cuspBarProfile_conjugate_isBigO (z : ℂ) :
   filter_upwards [hC] with v hv
   simpa only [cuspBarProfile_conjugate_eq,norm_star] using hv
 
-lemma cuspZProfile_conjugate_isBigO (z : ℂ) :
+lemma cuspZProfile_conjugate_isBigO  :
     cuspZProfile cubicSourceConjugateFunction z =O[atTop]
       (fun v : ℝ=>Real.exp (-residualCuspDecayRate*v)) := by
   obtain ⟨C,hC⟩ := Asymptotics.isBigO_iff.mp (cuspBarProfile_source_isBigO z)
   apply Asymptotics.IsBigO.of_bound C
   filter_upwards [hC] with v hv
   simpa only [cuspZProfile_conjugate_eq,norm_star] using hv
-
-end CubicEisenstein
-
 end
 
-end OAI
+
+
+
+
+
+

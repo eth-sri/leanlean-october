@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPhysicalShift
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                              
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem thirteenth_root_nat_pow {lam : ℝ} (hlam : 0 < lam) (n : ℕ) :
@@ -40,4 +39,4 @@ theorem positive_floor_half_bounds {X : ℝ} (hX : 1 ≤ X) :
   have hn := Nat.lt_floor_add_one X
   exact ⟨hp,by linarith,Nat.floor_le (by linarith)⟩
 
-end TaoTrudgianYang2025
+

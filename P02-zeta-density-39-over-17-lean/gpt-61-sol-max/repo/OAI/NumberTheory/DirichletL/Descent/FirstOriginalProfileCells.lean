@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment ActualEisensteinCubic
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -49,7 +49,7 @@ omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma original_outer_cell_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) :
     originalOuterCell p pool Q k⊆firstOriginalOuter pool Q := Finset.filter_subset _ _
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

@@ -14,16 +14,20 @@ The positive slope window below is fixed in sigma, not a shrinking
 reference-interior window.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
+
+section
+variable {F : ℝ → ℝ}
+include F
 
 theorem modelPhaseBufferedPlateau_frequency_gaps
-    {F : ℝ → ℝ} {l r η T N : ℝ} {q : ℤ}
+     {l r η T N : ℝ} {q : ℤ}
     (hT : 0 < T) (hN : 0 < N)
     (hq : q ∈ Finset.Ioo
       (modelPhaseBufferedPlateauLower F r η T N)
@@ -57,7 +61,7 @@ theorem modelPhaseBufferedPlateau_frequency_gaps
     ring
 
 theorem modelPhaseBufferedPlateau_critical_geometry
-    {F : ℝ → ℝ} {σ δ l r η T N : ℝ} {q : ℤ}
+     {σ δ l r η T N : ℝ} {q : ℤ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
@@ -82,7 +86,7 @@ theorem modelPhaseBufferedPlateau_critical_geometry
   simpa only [div_div] using hi
 
 theorem modelPhaseSharpStationarySet_critical_geometry
-    {F : ℝ → ℝ} {σ δ T N : ℝ} {a b : ℕ} {q : ℤ}
+     {σ δ T N : ℝ} {a b : ℕ} {q : ℤ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N)
@@ -101,7 +105,7 @@ theorem modelPhaseSharpStationarySet_critical_geometry
     simp at hq
 
 theorem modelPhaseSlopeRange_positive_window
-    {F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ} {v : ℝ}
+     {σ δ : ℝ} {P : ℕ} {v : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min ((2 : ℝ)^(-σ)/2) 1)
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
@@ -112,5 +116,7 @@ theorem modelPhaseSlopeRange_positive_window
   have hd₁ := hδ.trans (min_le_left _ _)
   have hd₂ := hδ.trans (min_le_right _ _)
   constructor <;> linarith [he.1,he.2]
+end
 
-end TaoTrudgianYang2025
+
+

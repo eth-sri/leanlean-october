@@ -6,33 +6,37 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentGaussNormalization
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentDivisorRawEnergy CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceRow
+open scoped EisensteinO
 
-theorem gaussPolynomial_const_mul {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ) (d : ℂ) (z : O) :
+section
+variable {α : Type*} (S : Finset α) (a : α → O)
+    (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
+include α S a ha c
+
+theorem gaussPolynomial_const_mul  (d : ℂ) (z : O) :
     gaussPolynomial S a ha (fun i => d*c i) z=d*gaussPolynomial S a ha c z := by
   simp only [gaussPolynomial,Finset.mul_sum,mul_assoc]
 
-theorem gaussEnergy_const_mul {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ) (d : ℂ)
+theorem gaussEnergy_const_mul  (d : ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     gaussEnergy S a ha (fun i => d*c i) W K=((‖d‖^2:ℝ):ℂ)*gaussEnergy S a ha c W K := by
   simp only [gaussEnergy,gaussPolynomial_const_mul,norm_mul,mul_pow,Complex.ofReal_mul,mul_assoc,tsum_mul_left]
 
-theorem gaussEnergy_central {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
+theorem gaussEnergy_central 
     (T : ℝ) (hT : 0<T) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     (gaussEnergy S a ha (fun i => (Real.sqrt T:ℂ)⁻¹*c i) W K).re=
       (gaussEnergy S a ha c W K).re/T := by
   rw [gaussEnergy_const_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _),inv_pow,Real.sq_sqrt hT.le]
   simp only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero,div_eq_mul_inv,mul_comm]
+end
+
 
 theorem sourceGaussEnergy_nonneg (Q : Finset (Ideal O)) (c f : Ideal O → ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
@@ -44,8 +48,8 @@ theorem sourceGaussEnergy_nonneg (Q : Finset (Ideal O)) (c f : Ideal O → ℂ)
   rw [←hs.tsum_eq]
   exact tsum_nonneg (fun z => mul_nonneg (sq_nonneg _) (hW z))
 
-end SevenEighths.CenteredMomentGaussNormalization
 
-end
 
-end OAI
+
+
+

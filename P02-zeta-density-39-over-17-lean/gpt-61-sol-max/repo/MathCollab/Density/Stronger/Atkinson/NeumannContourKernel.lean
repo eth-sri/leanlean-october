@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannContourKernel.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -21,7 +22,6 @@ branches on the strip and exposes the integrable square-root
 singularity as the right edge approaches one.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set Topology
@@ -48,11 +48,7 @@ theorem norm_neumannContourKernel (x : ℝ) (z : ℂ) :
   rw [norm_mul, norm_mul, Complex.norm_exp]
   have hm := Complex.norm_cpow_real (1 - z) (-(1 / 2 : ℝ))
   have hp := Complex.norm_cpow_real (1 + z) (-(1 / 2 : ℝ))
-  norm_num only [Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one,
-    Complex.ofReal_ofNat] at hm hp
-  rw [hm, hp]
-  congr 2
-  simp [mul_re, mul_im]
+  simp_all
 
 theorem neumannContourKernel_slit_vertical {b t : ℝ}
     (hb : 0 ≤ b) (ht : 0 < t) :
@@ -77,8 +73,7 @@ theorem norm_neumannContourKernel_vertical_le {x b t : ℝ}
     simpa [abs_of_pos ht] using h
   have hp : 1 ≤ ‖1 + ((b : ℂ) + t * I)‖ := by
     have h := Complex.re_le_norm (1 + ((b : ℂ) + t * I))
-    simp only [add_re, one_re, ofReal_re, mul_re, ofReal_im, I_re, I_im,
-      mul_zero, zero_mul, sub_self, add_zero] at h
+    simp at h
     linarith
   have hmp := Real.rpow_le_rpow_of_nonpos ht hm (by norm_num : -(1 / 2 : ℝ) ≤ 0)
   have hpp := Real.rpow_le_rpow_of_nonpos zero_lt_one hp (by norm_num : -(1 / 2 : ℝ) ≤ 0)
@@ -154,4 +149,4 @@ theorem neumannContourKernel_finite_rectangle (x : ℝ) {b H : ℝ}
     (by simpa using hd)
   simpa using h
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ComplexConjugate ContDiff
 open Complex
 namespace SevenEighths.HeckeInverseAmplification
@@ -27,8 +27,12 @@ theorem conj_shift (σ freq : ℝ) : conj (shift σ freq)=shift σ (-freq) := by
   simp only [HeckeDyadic.shift,map_sub,map_mul,conj_ofReal,conj_I,ofReal_neg]
   ring
 
-theorem conj_polynomial (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) :
+section
+variable (χ : Character) (inv : Bool) (W : ℝ→ℂ)
+    (D σ freq : ℝ) (hD : 0<D)
+include χ inv W D σ freq hD
+
+theorem conj_polynomial  :
     conj (polynomial χ inv W D σ freq)=
       polynomial χ.inverse inv (fun x => conj (W x)) D σ (-freq) := by
   unfold polynomial
@@ -42,11 +46,12 @@ theorem conj_polynomial (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   simp only [summand,map_mul,←coefficient_inverse_conj]
   rw [conj_positive_cpow _ (div_pos (norm_pos J) hD),map_neg,conj_shift]
 
-theorem polynomial_inverse_norm (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) :
+theorem polynomial_inverse_norm  :
     ‖polynomial χ.inverse inv (fun x => conj (W x)) D σ (-freq)‖=
       ‖polynomial χ inv W D σ freq‖ := by
   rw [←conj_polynomial χ inv W D σ freq hD,norm_conj]
+end
+
 
 theorem conjugate_profile_support (W : ℝ→ℂ) :
     Function.support (fun x => conj (W x))=Function.support W := by
@@ -57,8 +62,8 @@ theorem conjugate_profile_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (fun x => conj (W x)) := by
   exact Complex.conjCLE.contDiff.comp hW
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

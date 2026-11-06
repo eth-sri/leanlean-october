@@ -56,8 +56,8 @@ theorem actual_product_windows (k H a b : ℝ)
     actual_dyadic_log_window (n 1) H hH,actual_dyadic_log_window (n 2) a ha,
     actual_dyadic_log_window (n 3) b hb,windows]
 
-end SevenEighths.CenteredMomentLogDyadic
 
-end
 
-end OAI
+
+
+

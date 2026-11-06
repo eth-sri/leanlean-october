@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownKthDerivativeSetup
 public import GafniTao.FordMomentInterpolation
 
@@ -51,7 +52,7 @@ theorem fordVinogradovMomentNat_le_trivial_power_mul
         fordVinogradovMomentNat s₀ k Q := by
   let μ : Measure (UnitAddTorus (Fin k)) :=
     Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)
-  let W : UnitAddTorus (Fin k) → ℝ :=
+  let W :=
     fun α => ‖fordVinogradovWeylSum k Q α‖
   have hW : Continuous W :=
     (continuous_fordVinogradovWeylSum k Q).norm
@@ -77,10 +78,7 @@ theorem fordVinogradovMomentNat_le_trivial_power_mul
     rw [← hindex, pow_add]
     nlinarith [pow_nonneg (norm_nonneg (fordVinogradovWeylSum k Q α))
       (2 * s₀)]
-  have hIntegral :
-      (∫ α, W α ^ (2 * s) ∂μ) ≤
-        ∫ α, (Q : ℝ) ^ (2 * (s - s₀)) *
-          W α ^ (2 * s₀) ∂μ :=
+  have hIntegral :=
     integral_mono hIntLeft hIntRight hPoint
   rw [integral_const_mul] at hIntegral
   simpa only [W, μ, ford_vinogradov_torus_real_mean_eq] using hIntegral
@@ -92,8 +90,7 @@ theorem fordVinogradovKappa_cast (l : ℕ) :
   rw [Nat.cast_div
     (even_iff_two_dvd.mp (Nat.even_mul_succ_self l))
     (by norm_num : (2 : ℝ) ≠ 0)]
-  push_cast
-  rfl
+  simp_all
 
 /-- A critical endpoint estimate gives every larger moment with the exact
 main-conjecture exponent. -/
@@ -141,6 +138,6 @@ theorem heathBrownVMVTMainConjecture_of_critical
   exact ⟨C, hC, hmoment.of_critical hs⟩
 
 
-end
 
-end GafniTao
+
+

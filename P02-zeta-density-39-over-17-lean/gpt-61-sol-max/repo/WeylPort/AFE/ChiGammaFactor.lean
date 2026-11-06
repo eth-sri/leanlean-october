@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.ChiReflection
 
@@ -19,8 +20,12 @@ namespace DhimanKadiriQuesadaHerrera2026
 open Complex
 open scoped ComplexConjugate
 
+section
+variable (s : ℂ)
+include s
+
 /-- Principal powers on the negative imaginary axis have the explicit phase used by the AFE. -/
-theorem cpow_two_pi_div_I (s : ℂ) :
+theorem cpow_two_pi_div_I  :
     (2 * (Real.pi : ℂ) / I) ^ (s - 1) =
       (2 * (Real.pi : ℂ)) ^ (s - 1) *
         exp (-(Real.pi : ℂ) / 2 * I * (s - 1)) := by
@@ -39,7 +44,7 @@ theorem cpow_two_pi_div_I (s : ℂ) :
     ring
 
 /-- The exact identity underlying Lemma 7, before division by its nonzero factor. -/
-theorem gamma_factor_mul_one_sub_exp (s : ℂ) :
+theorem gamma_factor_mul_one_sub_exp  :
     (Gamma (1 - s) * (2 * (Real.pi : ℂ) / I) ^ (s - 1)) *
       (1 - exp ((Real.pi : ℂ) * s * I)) = chi s := by
   have he : exp (-(Real.pi : ℂ) / 2 * I * (s - 1)) =
@@ -56,16 +61,14 @@ theorem gamma_factor_mul_one_sub_exp (s : ℂ) :
   linear_combination -Gamma (1 - s) * (2 * (Real.pi : ℂ)) ^ (s - 1) * I * heprod
 
 /-- The norm of the exponential denominator term records the signed height exactly. -/
-theorem norm_exp_pi_mul_I (s : ℂ) :
+theorem norm_exp_pi_mul_I  :
     ‖exp ((Real.pi : ℂ) * s * I)‖ = Real.exp (-Real.pi * s.im) := by
   rw [norm_exp]
   congr 1
-  simp only [mul_re, mul_im, ofReal_re, ofReal_im, I_re, I_im, mul_zero,
-    zero_mul, mul_one, sub_zero, add_zero, zero_sub]
-  ring
+  simp
 
 /-- The denominator remains uniformly separated from zero for either sign of height. -/
-theorem one_sub_exp_neg_abs_le_norm (s : ℂ) :
+theorem one_sub_exp_neg_abs_le_norm  :
     1 - Real.exp (-Real.pi * |s.im|) ≤ ‖1 - exp ((Real.pi : ℂ) * s * I)‖ := by
   rcases le_total 0 s.im with hs | hs
   · rw [abs_of_nonneg hs]
@@ -78,14 +81,20 @@ theorem one_sub_exp_neg_abs_le_norm (s : ℂ) :
     have hn := Real.add_one_le_exp (Real.pi * s.im)
     rw [neg_mul_neg]
     linarith
+end
+
 
 /-- The relative error is an actual complex number with the exact source denominator. -/
 noncomputable def gammaChiError (s : ℂ) : ℂ :=
   exp ((Real.pi : ℂ) * s * I) / (1 - exp ((Real.pi : ℂ) * s * I))
 
+section
+variable {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
+    (ht : t₀ ≤ |s.im|)
+include s t₀ ht₀ ht
+
 /-- The denominator lower bound uses the positive threshold, independently of the height sign. -/
-theorem gammaChi_denominator_bound {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem gammaChi_denominator_bound  :
     0 < 1 - Real.exp (-Real.pi * t₀) ∧
       1 - Real.exp (-Real.pi * t₀) ≤ ‖1 - exp ((Real.pi : ℂ) * s * I)‖ := by
   have he : Real.exp (-Real.pi * t₀) < 1 := by
@@ -98,8 +107,7 @@ theorem gammaChi_denominator_bound {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
   linarith [one_sub_exp_neg_abs_le_norm s]
 
 /-- Lemma 7's printed signed-height error bound is valid for both signs of the height. -/
-theorem norm_gammaChiError_le {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem norm_gammaChiError_le  :
     ‖gammaChiError s‖ ≤ Real.exp (-Real.pi * s.im) /
       (1 - Real.exp (-Real.pi * t₀)) := by
   obtain ⟨hp, hle⟩ := gammaChi_denominator_bound ht₀ ht
@@ -107,8 +115,7 @@ theorem norm_gammaChiError_le {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
   exact div_le_div_of_nonneg_left (Real.exp_pos _).le hp hle
 
 /-- Lemma 7 is an exact identity plus a separately proved relative-error estimate. -/
-theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem gamma_factor_eq_chi_mul_one_add  :
     Gamma (1 - s) * (2 * (Real.pi : ℂ) / I) ^ (s - 1) =
       chi s * (1 + gammaChiError s) := by
   have hd : 1 - exp ((Real.pi : ℂ) * s * I) ≠ 0 := by
@@ -125,5 +132,7 @@ theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀
       _ = _ := by rw [sub_add_cancel, one_div]
   rw [he, ← div_eq_mul_inv]
   exact (eq_div_iff hd).mpr (gamma_factor_mul_one_sub_exp s)
+end
 
-end DhimanKadiriQuesadaHerrera2026
+
+

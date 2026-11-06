@@ -66,4 +66,4 @@ theorem quadratic_gap_sum_le (y : ℝ) (N : ℕ) (hy : 1 ≤ y)
     _ ≤ 8*(1+Real.log y) :=
       mul_le_mul_of_nonneg_left (hmono.trans (harmonic_floor_le_one_add_log y hy)) (by norm_num)
 
-end WeylPort
+

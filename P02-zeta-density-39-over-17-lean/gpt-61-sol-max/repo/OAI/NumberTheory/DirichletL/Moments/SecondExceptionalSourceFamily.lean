@@ -11,29 +11,37 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceFamily
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalKernel
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
+open CenteredMomentChildRows RayFourExpansion
 open CenteredExceptionalProfile
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
-lemma exceptional_part_nonzero (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
+section
+variable (η:Character)(χ₀:RayCharacter)(Q:Ideal O)
+include η χ₀ Q
+
+section
+variable (m:O)
     (C D:Ideal O)(U:Finset (CommonIndex C D))(R:ℝ)(z:O)
-    (hz:z∈partRows true η χ₀ Q m C D U R):z≠0:=
+    (hz:z∈partRows true η χ₀ Q m C D U R)
+include m C D U R z hz
+
+lemma exceptional_part_nonzero :z≠0:=
   sourceRows_nonzero C D U R z (Finset.mem_filter.mp hz).1
 
-lemma exceptional_part_inducing (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
-    (C D:Ideal O)(U:Finset (CommonIndex C D))(R:ℝ)(z:O)
-    (hz:z∈partRows true η χ₀ Q m C D U R):
+lemma exceptional_part_inducing :
     FixedInducingRow (childCharacter η χ₀) Q m
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z:=
   (Finset.mem_filter.mp hz).2
+end
 
-lemma actual_family_both_rows (η:Character)(χ₀:RayCharacter)(Q:Ideal O)
+
+lemma actual_family_both_rows 
     (hQ:Q≤Ideal.span {(72:O)})(m:O)(hm:m≠0)
     (hml:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:O)∣m)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
@@ -53,16 +61,18 @@ lemma actual_family_both_rows (η:Character)(χ₀:RayCharacter)(Q:Ideal O)
     simp only [inv_inv] at hh
     exact (hf.inducing_iff χ Q m (-z) hm (neg_ne_zero.mpr (hz0 z hz)) hml hm2).mp hh
 
-lemma exceptional_part_live (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
+lemma exceptional_part_live (m:O)
     (C D:Ideal O)(U:Finset (CommonIndex C D))(R:ℝ):
     liveRows C D U R (partRows true η χ₀ Q m C D U R)=
       partRows true η χ₀ Q m C D U R:=by
   apply Finset.filter_eq_self.mpr
   intro z hz
   exact liveRows_weight C D U R _ z (Finset.mem_filter.mp hz).1
-
-end SevenEighths.CenteredMomentSecondExceptionalSourceFamily
-
 end
 
-end OAI
+
+
+
+
+
+

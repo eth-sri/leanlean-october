@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import CenteredMixedTrace
 public import GuthMaynard.Improvement.SourceQuarticKernel
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
@@ -22,13 +22,8 @@ theorem energy_weight_integrable : Integrable energyReproducingWeight :=
 theorem energy_weight_shift {x y : ℝ} (hxy : |x-y| ≤ 1) :
     energyReproducingWeight x ≤ 3*energyReproducingWeight y := by
   have hd : (x-y)^2 ≤ 1 := by nlinarith [sq_abs (x-y),abs_nonneg (x-y)]
-  have hs : 1+y^2 ≤ 3*(1+x^2) := by nlinarith [sq_nonneg (2*x-y)]
   unfold energyReproducingWeight
-  simp only [inv_eq_one_div]
-  calc
-    _ ≤ 3/(1+y^2) := (div_le_div_iff₀ (by positivity : 0 < 1+x^2)
-      (by positivity : 0 < 1+y^2)).mpr (by nlinarith)
-    _ = _ := by ring
+  field_simp <;> nlinarith
 
 /-- Every translated weighted square of the actual finite polynomial is integrable. -/
 theorem detecting_energy_weight_integrable (N : ℝ) (a : ℕ → ℂ) (s : ℝ) :
@@ -48,15 +43,9 @@ theorem energy_nearby_card_le (W : Finset ℝ)
     ((W.filter (fun t => |s-t| ≤ 1)).card:ℝ) ≤ 3 := by
   have hh := separated_interval_card (T := 2) (t₀ := s-1) (by norm_num)
     (W.filter (fun t => |s-t| ≤ 1))
-    (by
-      intro t ht
-      have hp := abs_le.mp (mem_filter.mp ht).2
-      constructor <;> linarith)
-    (by
-      intro t ht u hu hne
-      exact hsep t (mem_filter.mp ht).1 u (mem_filter.mp hu).1 hne)
-  norm_num at hh
-  exact_mod_cast hh
+    (by grind)
+    (by simp_all)
+  bound
 
 /-- The literal quadruple count, including equality at distance one. -/
 def discreteAdditiveEnergy (W : Finset ℝ) : ℕ :=
@@ -165,7 +154,6 @@ theorem energy_triple_fourier (W : Finset ℝ) (ξ : ℝ) :
     change _ = _ * _ * (starRingEnd ℂ) _
     rw [GuthMaynard.Improvement.operator_phase_conj,← GuthMaynard.Improvement.phase_add,
       ← GuthMaynard.Improvement.phase_add]
-    congr 1
     ring
   rw [GuthMaynard.Improvement.fourier_eq_phase_integral]
   simp_rw [energyTripleWeight,Complex.ofReal_sum,mul_sum]
@@ -188,8 +176,7 @@ theorem energy_triple_fourier (W : Finset ℝ) (ξ : ℝ) :
   apply sum_congr rfl
   intro b _
   apply sum_congr rfl
-  intro c _
-  ring
+  grind
 
 open scoped FourierTransform in
 /-- The triple convolution gives exactly the cubic rational phase sum. -/
@@ -204,10 +191,7 @@ theorem energy_triple_fourier_norm (W : Finset ℝ) (r : ℝ) :
       GuthMaynard.Improvement.mellinFrequency_phase]
     change Complex.exp _ = (starRingEnd ℂ) (Complex.exp _)
     rw [← Complex.exp_conj]
-    congr 1
-    simp only [map_mul,Complex.conj_ofReal,Complex.conj_I]
-    push_cast
-    ring
+    simp_all
   simp_rw [he,← star_sum,norm_star]
   have hf := GuthMaynard.Improvement.time_fourier_norm_le_mass
     (μ := energyReproducingWeight) (by unfold energyReproducingWeight; fun_prop)
@@ -344,4 +328,4 @@ theorem discrete_additive_energy_reproducing :
         ∑ m ∈ GuthMaynard.Improvement.sourceRatioIndices N, ‖∑ t ∈ W, phase ((n:ℝ)/m) t‖^3 := by positivity
     nlinarith))
 
-end Montgomery.RationalMoment
+

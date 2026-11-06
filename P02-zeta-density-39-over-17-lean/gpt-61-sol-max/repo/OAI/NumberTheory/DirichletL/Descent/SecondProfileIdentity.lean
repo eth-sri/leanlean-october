@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 public import OAI.NumberTheory.DirichletL.Descent.Canonical
 
@@ -12,16 +13,19 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def secondNormProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 6 → ℝ → ℂ) (R : ℝ) (q : Fin 6 → ℝ) : ℂ :=
+section
+variable (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
+    (V : Fin 6 → ℝ → ℂ) (R : ℝ) (q : Fin 6 → ℝ)
+include W₁ W₂ Φ V R q
+
+def secondNormProfile  : ℂ :=
   (∏ i, V i (Real.log (q i))) * W₁ (q 0*q 2*q 4) * W₂ (q 0*q 2*q 5) *
     paperRadialFourier Φ (R*q 3/(q 1*(q 2)^2*q 4*q 5)) /
       ((q 1:ℂ)*(q 2:ℂ)*(Real.sqrt (q 4):ℂ)*(Real.sqrt (q 5):ℂ))
 
-lemma secondPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 6 → ℝ → ℂ) (R : ℝ) (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i) :
+lemma secondPoissonProfile_log  (hq : ∀ i, 0 < q i) :
     secondPoissonProfile W₁ W₂ Φ V R (fun i => Real.log (q i)) =
       secondNormProfile W₁ W₂ Φ V R q := by
   have hleft : (∑ i, secondLeftSlope i * Real.log (q i)) =
@@ -43,6 +47,8 @@ lemma secondPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   simp only [Fin.succ,  Fin.val_mk]
   norm_num
   ring
+end
+
 
 theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
@@ -111,13 +117,13 @@ theorem secondNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   rw [show (↑(q 1/E₀):ℂ)*↑(q 2/V₀)*↑(Real.sqrt (q 4/X₀))*↑(Real.sqrt (q 5/X₀)) =
       (↑(q 1/E₀):ℂ)*↑(q 2/V₀)*(↑(Real.sqrt (q 4/X₀))*↑(Real.sqrt (q 5/X₀))) from by ring,
     hrootC]
-  have hEc : (E₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hE.ne'
-  have hVc : (V₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hV.ne'
-  have hXc : (X₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hEc := Complex.ofReal_ne_zero.mpr hE.ne'
+  have hVc := Complex.ofReal_ne_zero.mpr hV.ne'
+  have hXc := Complex.ofReal_ne_zero.mpr hX.ne'
   push_cast
   field_simp [hEc,hVc,hXc]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

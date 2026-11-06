@@ -7,7 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open InverseReflectedNormalization InverseKernelSourceUniform
-noncomputable section
+
 variable {φ : Type*} [Fintype φ]
 
 theorem physical_scalar_hybrid_shape (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
@@ -46,7 +46,7 @@ theorem physical_scalar_hybrid_shape (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
   rw [hs]
   convert hbnd using 1 <;> ring
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
@@ -87,8 +87,8 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
   filter_upwards with v
   ring
 
-end SevenEighths.DetectorDictionaryInverseRawFourier
 
-end
 
-end OAI
+
+
+

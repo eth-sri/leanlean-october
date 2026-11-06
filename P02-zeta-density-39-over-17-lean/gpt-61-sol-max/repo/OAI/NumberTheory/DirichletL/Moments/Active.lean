@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentActive
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalRowCompletion CenteredMomentCanonical
@@ -32,15 +32,21 @@ theorem local_pair_reduction (P : Ideal O) [P.IsMaximal]
   rw [← actualSextic_order_six P hg hchar, pow_mod_orderOf,
     pow_add, pow_mul, h5, inv_pow]
 
-def activeSupport {ι : Type*} (B : Finset ι) (c d : ι → ℕ) : Finset ι :=
+section
+variable {ι : Type*} (B : Finset ι) (c d : ι → ℕ)
+include ι B c d
+
+def activeSupport  : Finset ι :=
   B.filter (fun i => netExponent (c i) (d i) ≠ 0)
 
-def principalSupport {ι : Type*} (B : Finset ι) (c d : ι → ℕ) : Finset ι :=
+def principalSupport  : Finset ι :=
   B.filter (fun i => netExponent (c i) (d i) = 0)
 
-theorem netExponent_ne_zero {ι : Type*} (B : Finset ι) (c d : ι → ℕ)
+theorem netExponent_ne_zero 
     (i : activeSupport B c d) : netExponent (c i.val) (d i.val) ≠ 0 :=
   (Finset.mem_filter.mp i.property).2
+end
+
 
 theorem netExponent_lt_six (c d : ℕ) : netExponent c d < 6 := Nat.mod_lt _ (by decide)
 
@@ -63,7 +69,11 @@ theorem principal_product_eq_mask {ι : Type*}
 
 variable {ι : Type*}
 
-theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+section
+variable (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+
+theorem common_ideal_pair_active 
     (hg : ∀ i, goodLambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (B : Finset ι) (c d : ι → ℕ)
     (hc : ∀ i ∈ B, c i ≠ 0) (hd : ∀ i ∈ B, d i ≠ 0) (z : O) :
@@ -94,16 +104,18 @@ theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
   congr 1
   exact (Finset.prod_coe_sort (s := activeSupport B c d) (f := f)).symm
 
-theorem activePrimes_pairwise_coprime (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+theorem activePrimes_pairwise_coprime 
     (hinj : Function.Injective P) (B : Finset ι) (c d : ι → ℕ) :
     Pairwise (Function.onFun IsCoprime (fun i : activeSupport B c d => P i.val)) := by
   intro i j hij
   apply Ideal.isCoprime_of_isMaximal
   exact fun he => hij (Subtype.ext (hinj he))
-
-open ConcreteTraceCRT EisensteinSchwartzPoisson
-
-end SevenEighths.CenteredMomentActive
 end
 
-end OAI
+
+
+
+
+
+
+

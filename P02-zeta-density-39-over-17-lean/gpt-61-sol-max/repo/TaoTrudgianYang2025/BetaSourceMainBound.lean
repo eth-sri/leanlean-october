@@ -12,13 +12,13 @@ are chosen over the fixed finite chart set before any source data.
 The exact chart partition then assembles every retained integer.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped NNReal BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem sourceStationaryMain_physical_bound
     {α : ℝ≥0} {β σ : ℝ}
@@ -105,4 +105,4 @@ theorem sourceStationaryMain_physical_bound
         (mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity))
         (Real.rpow_nonneg hT.le _)
 
-end TaoTrudgianYang2025
+

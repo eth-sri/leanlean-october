@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.PairPoisson
 
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic
 open EisensteinSchwartzPoisson FourierBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
     (hLr : 0 ≤ Lr) (hLc : 0 ≤ Lc) (A : ℕ) :
@@ -47,8 +48,8 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
   have hyy (p : n × n) : |y p.1 + y p.2| ≤ 2 * Lc :=
     (abs_add_le _ _).trans (by linarith [hy p.1, hy p.2])
   have hphase (t : ℝ) : (∑ i, ‖∑ p : n × n, c i p * logPhase t (y p.1 + y p.2)‖) ≤ H := by
-    let aTwist : n → ℂ := fun j => a j * star (logPhase t (y j))
-    let bTwist : n → ℂ := fun j => b j * logPhase t (y j)
+    let aTwist := fun j => a j * star (logPhase t (y j))
+    let bTwist := fun j => b j * logPhase t (y j)
     have ha' : (∑ j, ‖aTwist j‖ ^ 2) ≤ E := by simpa only [aTwist, norm_mul, norm_star, logPhase_norm, mul_one] using ha
     have hb' : (∑ j, ‖bTwist j‖ ^ 2) ≤ E := by simpa only [bTwist, norm_mul, logPhase_norm, mul_one] using hb
     have he (i : m) : (∑ p : n × n, c i p * logPhase t (y p.1 + y p.2)) =
@@ -79,7 +80,7 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
   have ht := htransfer R hR c x (fun p : n × n => y p.1 + y p.2) H hH hx hyy hphase
   simpa only [Fintype.sum_prod_type, c, H] using ht
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

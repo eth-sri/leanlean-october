@@ -10,7 +10,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def supportedHybridRow (S : Finset (Ideal Eis × Ideal Eis)) (Pset : Finset (Ideal Eis))
     (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) : ℂ :=
@@ -73,7 +73,7 @@ theorem supportedHybridRow_reconstruct
     (d.common * d.residualN) ((d.common * d.residualB) * d.square ^ 2)
     d.common d.residualN d.residualB d.square hk (hP P hPP) hdprim.2.2.1 rfl rfl hct)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

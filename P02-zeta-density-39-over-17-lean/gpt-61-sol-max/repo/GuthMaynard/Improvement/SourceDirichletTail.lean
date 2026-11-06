@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceDirichletPairing
 public import GuthMaynard.Improvement.SourceRatioBound
 public import GuthMaynard.Improvement.SourceTailConditional
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
@@ -34,8 +34,7 @@ theorem boundedPolynomial_source_sampling {χ : ℝ → ℝ}
     · exact (div_le_iff₀ hTp).mp hmem.2
   have hh := (boundedPolynomial_pairing_ratio_bound (by linarith : 0 < N) a ha h1).trans
     (h N T hN hT f h1 h2 hF hfs)
-  convert hh using 1
-  ring
+  bound
 
 /-- Actual source restricted Fourier tail for bounded coefficients, with no
 sampling or Fourier-estimate premise. The constant is fixed before all scales,
@@ -69,8 +68,7 @@ theorem boundedPolynomial_source_tail {χ : ℝ → ℝ} (hχd : ContDiff ℝ �
   have hth : 2*((D*N^2)*J+H) ≤ Λ := by
     have hp := mul_le_mul_of_nonneg_right hc1 (sq_nonneg N)
     have hq := mul_le_mul_of_nonneg_right hc2 hH
-    dsimp [H] at *
-    nlinarith
+    bound
   obtain ⟨hcont,hreg⟩ := boundedPolynomial_regular N a
   have hh := source_tail_of_sampling hχd (HasCompactSupport.intro isCompact_Icc hs)
     hχ0 hχ1 hTp hcont.measurable hreg U
@@ -83,4 +81,4 @@ theorem boundedPolynomial_source_tail {χ : ℝ → ℝ} (hχd : ContDiff ℝ �
     _ = (4*D^2)*N^2*T*Real.log (2*N) := by rw [mul_pow,mul_pow,hsqrt]; ring
     _ ≤ _ := by gcongr
 
-end GuthMaynard.Improvement
+

@@ -9,8 +9,8 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion ActualEisensteinCubic
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma summand_zero_completedIndex (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) (I J : Id)
@@ -27,8 +27,12 @@ lemma summand_zero_completedIndex (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) (I J
         div_zero,star_zero,zero_pow (by decide : (3:ℕ)≠0),zero_mul,zero_div]
     simp only [summand,hc,mul_zero,zero_mul]
 
-lemma markedSummand_eq_punctured (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    (D : Id) (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) (I J : Id) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+    (D : Id) (Ψ : O→*ℂ) (W : ℝ→ℂ)
+include S hS D Ψ W
+
+lemma markedSummand_eq_punctured  (X : ℝ) (I J : Id) :
     markedSummand S D Ψ W X I J=
       summand (coprimalityMask (calibrationForSet S hS).generator*Ψ) W X I J*
         (if D∣I*J^3 then (1:ℂ) else 0) := by
@@ -48,8 +52,7 @@ lemma markedSummand_eq_punctured (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     by_cases hd : D∣I*J^3 <;> by_cases hx : ∀P∈S,¬P∣I*J^3 <;>
       simp only [hd,hx,and_self,and_false,true_and,false_and,ite_true,ite_false,mul_one,mul_zero,zero_mul] ; simp_all
 
-lemma markedCompletedT_eq_punctured (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    (D : Id) (Ψ : O→*ℂ) (W : ℝ→ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0<X) :
+lemma markedCompletedT_eq_punctured  (hW : HasCompactSupport W) (X : ℝ) (hX : 0<X) :
     ProbeCompleted.markedCompletedT S D Ψ W X=
       InverseMoment.markedCompletedT (coprimalityMask (calibrationForSet S hS).generator*Ψ) W X
         (fun A=>if D∣A then (1:ℂ) else 0) := by
@@ -58,6 +61,8 @@ lemma markedCompletedT_eq_punctured (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
   apply tsum_congr
   intro p
   exact markedSummand_eq_punctured S hS D Ψ W X p.1 p.2
+end
+
 
 lemma inverseMarkedCompletedT_congr_primary (Ψ Φ : O→*ℂ)
     (h : ∀n : O,ConcretePrimeRowBridge.goodLambda^2∣n-1→Ψ n=Φ n)
@@ -94,7 +99,7 @@ theorem correctedPhysicalRow_eq_periodic_inverse (η : HeckeFamily.Character)
   exact (lowPeriodicRow_eq_primary η (calibrationForSet S hS) (calibrationForSet S hS).generator E
     (calibration_generator_bad S hS hbad).1 (calibration_generator_bad S hS hbad).2 s hs χ z n hn).symm
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

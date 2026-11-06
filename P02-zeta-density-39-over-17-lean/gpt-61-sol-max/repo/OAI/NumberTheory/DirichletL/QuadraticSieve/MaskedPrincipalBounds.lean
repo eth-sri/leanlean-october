@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspIntegration
 
 @[expose] public section
@@ -9,69 +10,69 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
@@ -294,10 +295,7 @@ theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieve
 
 end CanonicalQuadraticSieve
 
-namespace ShortDraftDescent
-open MeasureTheory Filter
 
-end ShortDraftDescent
 
 open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
@@ -376,10 +374,10 @@ theorem smallPrincipalCorrection_bound
   have hv (k) : 0 ≤ v k ∧ v k ≤ 1 :=
     ⟨halfShellFactor_nonneg _ _,halfShellFactor_le_one _ _ (by linarith [(hright k).2.1]) (hright k).2.1⟩
   have ha (j) : ‖a' j‖ ≤ ‖a j‖ := by
-    simp only [a',norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hu j).1]
+    simp only [norm_mul, norm_real, norm_eq_abs, abs_of_nonneg (hu j).1, a']
     exact mul_le_of_le_one_right (norm_nonneg _) (hu j).2
   have hb (k) : ‖b' k‖ ≤ ‖b k‖ := by
-    simp only [b',norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hv k).1]
+    simp only [norm_mul, norm_real, norm_eq_abs, abs_of_nonneg (hv k).1, b']
     exact mul_le_of_le_one_right (norm_nonneg _) (hv k).2
   have ht (D E : Ideal O) (i j k) :
       originalTerm rows left right a b D E i j k *
@@ -481,7 +479,7 @@ theorem primePool_symmetric_error_bound (m : ℕ) :
   intro ε hε G hG W X₀ X T hX₀ hlo hhi hT
   have hh := hb (fun P : primePool {G} => P.val) Subtype.val_injective Finset.univ W
     X₀ X T hX₀ hlo hhi hT
-  simp only [Finset.card_univ, Fintype.card_coe, primePool_singleton_eq_primeSupport] at hh
+  simp only [card_univ, primePool_singleton_eq_primeSupport, Fintype.card_coe] at hh
   apply hh.trans
   exact div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right (support_card_bound ε hε G hG) (by positivity)) (by positivity)
@@ -517,7 +515,7 @@ theorem actual_pair_error_energy {m n : Type*} [Fintype m] [Fintype n]
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => (1 : ℝ))
   simp only [mul_one, one_pow, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at hcs
   have hs : (∑ j, ∑ k, ‖a j‖ * ‖a k‖ * E) = (∑ j, ‖a j‖) ^ 2 * E := by
-    simp only [pow_two, Finset.sum_mul, Finset.mul_sum, mul_assoc]
+    simp only [mul_assoc, pow_two, mul_sum, sum_mul]
     apply Finset.sum_congr rfl
     intro j hj
     apply Finset.sum_congr rfl
@@ -571,8 +569,8 @@ theorem actual_pair_error_ideal_bound {m n : Type*} [Fintype m] [Fintype n]
     _ ≤ (128 * B) * (128 * N) * E * ∑ j, ‖a j‖ ^ 2 := by gcongr
     _ = _ := by ring
 
-end CanonicalQuadraticSieve
 
-end
 
-end OAI
+
+
+

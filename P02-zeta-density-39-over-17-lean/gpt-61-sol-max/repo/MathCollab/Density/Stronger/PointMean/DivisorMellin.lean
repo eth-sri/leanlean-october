@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected actual divisor Gamma-Mellin proofs from Scott McColm,
 PointMeanDivisorMellin.lean, exact revision
@@ -13,10 +14,9 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter ArithmeticFunction
+open Complex MeasureTheory Filter ArithmeticFunction
 open MathCollab.Density.Stronger.Fourth
 open scoped BigOperators Topology LSeries.notation
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
@@ -28,7 +28,6 @@ private theorem continuous_Gamma_two_vertical :
   intro n h
   have hr := congrArg Complex.re h
   simp at hr
-  have hn : (0 : ℝ) ≤ n := by positivity
   linarith
 
 private theorem integrable_Gamma_two_vertical :
@@ -43,28 +42,42 @@ private theorem inverseMellin_exp_neg {x : ℝ} (hx : 0 < x) :
     (GammaMellin.exp_neg_eq_gamma_vertical_integral
       (sigma := 2) (by norm_num) hx).symm
 
-noncomputable def heathBrownSmoothedDivisorTerm
-    (s : ℂ) (n : ℕ) : ℂ :=
+section
+variable (s : ℂ)
+include s
+
+def heathBrownSmoothedDivisorTerm
+     (n : ℕ) : ℂ :=
   if n = 0 then 0 else
     (n.divisors.card : ℂ) * (n : ℂ) ^ (-s) * Real.exp (-(n : ℝ))
 
-noncomputable def heathBrownSmoothedDivisorSeries (s : ℂ) : ℂ :=
+def heathBrownSmoothedDivisorSeries  : ℂ :=
   ∑' n : ℕ, heathBrownSmoothedDivisorTerm s n
 
-noncomputable def heathBrownDivisorMellinSeriesTerm
-    (s : ℂ) (n : ℕ) (t : ℝ) : ℂ :=
+def heathBrownDivisorMellinSeriesTerm
+     (n : ℕ) (t : ℝ) : ℂ :=
   if n = 0 then 0 else
     let w : ℂ := (2 : ℂ) + (t : ℂ) * I
     (n.divisors.card : ℂ) * (n : ℂ) ^ (-s) *
       ((n : ℂ) ^ (-w) * Complex.Gamma w)
 
-noncomputable def heathBrownDivisorMellinIntegrand
-    (s : ℂ) (t : ℝ) : ℂ :=
+def heathBrownDivisorMellinIntegrand
+     (t : ℝ) : ℂ :=
   let w : ℂ := (2 : ℂ) + (t : ℂ) * I
   Complex.Gamma w * riemannZeta (s + w) ^ 2
+end
+
+
+section
+variable {s : ℂ}
+include s
+
+section
+variable (n : ℕ)
+include n
 
 theorem continuous_heathBrownDivisorMellinSeriesTerm
-    {s : ℂ} (n : ℕ) :
+     :
     Continuous (heathBrownDivisorMellinSeriesTerm s n) := by
   by_cases hn : n = 0
   · subst n
@@ -74,15 +87,14 @@ theorem continuous_heathBrownDivisorMellinSeriesTerm
     have hPow : Continuous (fun t : ℝ =>
         (n : ℂ) ^ (-((2 : ℂ) + (t : ℂ) * I))) := by
       apply Continuous.cpow continuous_const (by fun_prop)
-      intro t
-      exact Complex.ofReal_mem_slitPlane.mpr hnPos
+      simp_all
     unfold heathBrownDivisorMellinSeriesTerm
     simp only [ite_eq_right hn]
     exact (continuous_const.mul continuous_const).mul
       (hPow.mul continuous_Gamma_two_vertical)
 
 theorem norm_heathBrownDivisorMellinSeriesTerm_le
-    {s : ℂ} (n : ℕ) (t : ℝ) :
+     (t : ℝ) :
     ‖heathBrownDivisorMellinSeriesTerm s n t‖ ≤
       (n : ℝ) ^ (-s.re - 1) *
         ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖ := by
@@ -139,11 +151,10 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
               ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖ := by
             rw [← Real.rpow_add hnPos, ← mul_assoc,
               ← Real.rpow_add hnPos]
-            congr 1
-            ring_nf
+            ring
 
 theorem integrable_heathBrownDivisorMellinSeriesTerm
-    {s : ℂ} (n : ℕ) :
+     :
     Integrable (heathBrownDivisorMellinSeriesTerm s n) := by
   have hMajorant : Integrable (fun t : ℝ =>
       (n : ℝ) ^ (-s.re - 1) *
@@ -153,9 +164,11 @@ theorem integrable_heathBrownDivisorMellinSeriesTerm
     (continuous_heathBrownDivisorMellinSeriesTerm n).aestronglyMeasurable
     (Filter.Eventually.of_forall
       (norm_heathBrownDivisorMellinSeriesTerm_le n))
+end
+
 
 theorem summable_integral_norm_heathBrownDivisorMellinSeriesTerm
-    {s : ℂ} (hs : 0 < s.re) :
+     (hs : 0 < s.re) :
     Summable (fun n : ℕ =>
       ∫ t : ℝ, ‖heathBrownDivisorMellinSeriesTerm s n t‖) := by
   let G : ℝ := ∫ t : ℝ,
@@ -180,7 +193,7 @@ theorem summable_integral_norm_heathBrownDivisorMellinSeriesTerm
       ring
 
 theorem integral_heathBrownDivisorMellinSeriesTerm
-    {s : ℂ} (n : ℕ) :
+     (n : ℕ) :
     (((1 / (2 * Real.pi) : ℝ) : ℂ)) *
         (∫ t : ℝ, heathBrownDivisorMellinSeriesTerm s n t) =
       heathBrownSmoothedDivisorTerm s n := by
@@ -216,8 +229,12 @@ theorem integral_heathBrownDivisorMellinSeriesTerm
       _ = (n.divisors.card : ℂ) * (n : ℂ) ^ (-s) *
           Real.exp (-(n : ℝ)) := by ring
 
+section
+variable (hs : 0 < s.re)
+include hs
+
 theorem tsum_heathBrownDivisorMellinSeriesTerm_eq
-    {s : ℂ} (hs : 0 < s.re) (t : ℝ) :
+     (t : ℝ) :
     (∑' n : ℕ, heathBrownDivisorMellinSeriesTerm s n t) =
       heathBrownDivisorMellinIntegrand s t := by
   let w : ℂ := (2 : ℂ) + (t : ℂ) * I
@@ -244,7 +261,7 @@ theorem tsum_heathBrownDivisorMellinSeriesTerm_eq
 /-- The exact termwise-integration identity printed immediately before
 Heath--Brown's equation (40). -/
 theorem heathBrown_smoothed_divisor_eq_right_mellin
-    {s : ℂ} (hs : 0 < s.re) :
+     :
     heathBrownSmoothedDivisorSeries s =
       (((1 / (2 * Real.pi) : ℝ) : ℂ)) *
         ∫ t : ℝ, heathBrownDivisorMellinIntegrand s t := by
@@ -264,5 +281,8 @@ theorem heathBrown_smoothed_divisor_eq_right_mellin
   apply integral_congr_ae
   filter_upwards with t
   exact tsum_heathBrownDivisorMellinSeriesTerm_eq hs t
+end
+end
 
-end MathCollab.Density.Stronger.PointMean
+
+

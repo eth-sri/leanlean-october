@@ -1,17 +1,21 @@
 module
+import Mathlib
 public import MathCollab.Density.LargeValuesOptimization
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators
 
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
+section
+variable {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
+include κ ε hκ hε
+
 /-- The fixed packet target, with the epsilon constant chosen before every configuration. -/
-theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
+theorem large_values_data  :
     ∃ C : ℝ, 0 < C ∧ ∀ d : LargeValueData κ,
       (d.W.card : ℝ) ≤ C*d.T^ε*((d.N : ℝ)^2/d.V^2+
         (d.N : ℝ)^3*Real.sqrt d.T/d.V^4) := by
@@ -34,9 +38,7 @@ theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
         have hh := pow_le_pow_left₀ (Nat.cast_nonneg _) hdelta 2
         have he : (D*d.T^(ε/2))^2 = D^2*d.T^ε := by
           rw [mul_pow, ← Real.rpow_natCast (d.T^(ε/2)) 2, ← Real.rpow_mul hT.le]
-          congr 1
-          congr 1
-          ring
+          bound
         exact hh.trans_eq he
       have hdelta₁ : (divisorMaximum d.T : ℝ) ≤ D^2*d.T^ε := by
         have hh : (d.T : ℝ)^(ε/2) ≤ d.T^ε :=
@@ -75,7 +77,7 @@ theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
     positivity
 
 /-- Draft Theorem 1.3 with all original hypotheses exposed and no cutoff or smallness premise. -/
-theorem large_values {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
+theorem large_values  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T V : ℝ) (N : ℕ) (a : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → 0 < N → 0 < V → T^(1/3 : ℝ) ≤ (N : ℝ) → (N : ℝ) ≤ T →
       (N : ℝ)^(3/4+κ) ≤ V →
@@ -92,5 +94,7 @@ theorem large_values {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
     { T := T, N := N, V := V, a := a, W := W, t₀ := t₀
       T_ge_two := hT, N_pos := hN, V_pos := hV, scale_lower := hlow, scale_upper := hhigh
       height := hheight, coefficients := ha, location := ht₀, separated := hsep, large := hlarge }
+end
 
-end MathCollab.Density
+
+

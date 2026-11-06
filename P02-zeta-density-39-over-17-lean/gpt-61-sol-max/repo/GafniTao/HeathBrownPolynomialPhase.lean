@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownSourceAverage
 public import GafniTao.FordLemma51Fibers
 
@@ -31,18 +32,24 @@ theorem heathBrownPhase_add (x y : ℝ) :
   simp only [heathBrownPhase_eq_fordAdditiveCharacter,
     fordAdditiveCharacter_add]
 
+section
+variable (k : ℕ) (f : ℝ → ℝ) (n x : ℝ)
+include k f n x
+
 /-- Heath-Brown's Taylor polynomial
 `f_n(x)=sum_{j=0}^{k-1} f^(j)(n)x^j/j!`. -/
-noncomputable def heathBrownTaylorPolynomial
-    (k : ℕ) (f : ℝ → ℝ) (n x : ℝ) : ℝ :=
+def heathBrownTaylorPolynomial
+     : ℝ :=
   ∑ j ∈ Finset.range k,
     iteratedDeriv j f n * x ^ j / (j.factorial : ℝ)
 
 /-- The same Taylor phase after removing its constant term. -/
-noncomputable def heathBrownReducedTaylorPolynomial
-    (k : ℕ) (f : ℝ → ℝ) (n x : ℝ) : ℝ :=
+def heathBrownReducedTaylorPolynomial
+     : ℝ :=
   ∑ j ∈ Finset.Ico 1 k,
     iteratedDeriv j f n * x ^ j / (j.factorial : ℝ)
+end
+
 
 theorem heathBrownTaylorPolynomial_eq_constant_add_reduced
     {k : ℕ} (hk : 1 ≤ k) (f : ℝ → ℝ) (n x : ℝ) :
@@ -53,21 +60,30 @@ theorem heathBrownTaylorPolynomial_eq_constant_add_reduced
     ext j
     simp only [Finset.mem_range, Finset.mem_insert, Finset.mem_Ico]
     omega
-  rw [hrange, Finset.sum_insert (by simp)]
-  simp
+  simp_all <;> nlinarith
 
-noncomputable def heathBrownTaylorPolynomialSum
-    (k Q : ℕ) (f : ℝ → ℝ) (n : ℝ) : ℂ :=
+section
+variable (k Q : ℕ) (f : ℝ → ℝ) (n : ℝ)
+include k Q f n
+
+def heathBrownTaylorPolynomialSum
+     : ℂ :=
   ∑ h ∈ Finset.Icc 1 Q,
     heathBrownPhase (heathBrownTaylorPolynomial k f n h)
 
-noncomputable def heathBrownReducedTaylorPolynomialSum
-    (k Q : ℕ) (f : ℝ → ℝ) (n : ℝ) : ℂ :=
+def heathBrownReducedTaylorPolynomialSum
+     : ℂ :=
   ∑ h ∈ Finset.Icc 1 Q,
     heathBrownPhase (heathBrownReducedTaylorPolynomial k f n h)
+end
+
+
+section
+variable {k : ℕ} (hk : 1 ≤ k) (Q : ℕ) (f : ℝ → ℝ) (n : ℝ)
+include k hk Q f n
 
 theorem heathBrownTaylorPolynomialSum_eq_phase_mul_reduced
-    {k : ℕ} (hk : 1 ≤ k) (Q : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+     :
     heathBrownTaylorPolynomialSum k Q f n =
       heathBrownPhase (f n) *
         heathBrownReducedTaylorPolynomialSum k Q f n := by
@@ -80,12 +96,14 @@ theorem heathBrownTaylorPolynomialSum_eq_phase_mul_reduced
 
 /-- Removing the constant Taylor coefficient preserves the exact norm. -/
 theorem norm_heathBrownTaylorPolynomialSum_eq_reduced
-    {k : ℕ} (hk : 1 ≤ k) (Q : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+     :
     ‖heathBrownTaylorPolynomialSum k Q f n‖ =
       ‖heathBrownReducedTaylorPolynomialSum k Q f n‖ := by
   rw [heathBrownTaylorPolynomialSum_eq_phase_mul_reduced hk, norm_mul,
     norm_heathBrownPhase, one_mul]
-
 end
 
-end GafniTao
+
+
+
+

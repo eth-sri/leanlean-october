@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.UniformIBP
 public import Mathlib.Analysis.PSeries
 
@@ -60,7 +61,7 @@ theorem modeIntegral_eq_interval {w : ℝ → ℂ}
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (v k : ℝ) :
     modeIntegral w v k = ∫ x in (1 / 3 : ℝ)..6, w x *
       Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I) := by
-  let f : ℝ → ℂ := fun x => w x *
+  let f := fun x => w x *
     Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I)
   have hs : Function.support f ⊆ Icc (1 / 2 : ℝ) 5 := by
     intro x hx
@@ -78,8 +79,7 @@ theorem modeIntegral_eq_interval {w : ℝ → ℂ}
   by_contra hf
   have hpos := (hs hf).1
   apply hx
-  change 0 < x
-  linarith
+  grind
 
 theorem uniform_offBand_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (A : ℕ) :
@@ -165,7 +165,6 @@ theorem uniform_discarded_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
 
 theorem zero_normalized_mem {k : ℝ} (hk : k ≠ 0) :
     (0, 2 * Real.pi * k / |k|) ∈ offBandParameters := by
-  have ha : 0 < |k| := abs_pos.mpr hk
   have he : abs (2 * Real.pi * k / |k|) = 2 * Real.pi := by
     rw [abs_div, abs_mul, abs_of_pos (by positivity : 0 < 2 * Real.pi), abs_abs]
     field_simp
@@ -189,8 +188,7 @@ theorem uniform_zero_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     intro x _
     simp only [ibpAmplitude, logOscillation, zero_mul, zero_sub]
     congr 3
-    congr 1
-    field_simp [ha.ne']
+    grind
   rwa [heq] at hbound
 
 def nonzeroMode (w : ℝ → ℂ) (L v : ℝ) (m : ℤ) : ℂ :=
@@ -233,4 +231,4 @@ theorem uniform_zero_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     _ ≤ L * ((C / L ^ A) * Z) := mul_le_mul_of_nonneg_left hsum hL.le
     _ = (C * Z) * L / L ^ A := by ring
 
-end MathCollab.Density
+

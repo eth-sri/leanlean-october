@@ -11,11 +11,15 @@ noncomputable section
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
 open PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
-lemma slotMultiplier_as_tuples {K : ℕ} (η : Character) (T : Fin K→Finset PrimeIdeal)
+section
+variable {K : ℕ} (η : Character)
+include K η
+
+lemma slotMultiplier_as_tuples  (T : Fin K→Finset PrimeIdeal)
     (b : Fin K→PrimeIdeal→ℂ) (s w z : ℂ) :
     slotMultiplier η Finset.univ T b s w z=
       ∑P : (∀i,T i),(∏i,b i (P i).val)*
@@ -27,16 +31,22 @@ lemma slotMultiplier_as_tuples {K : ℕ} (η : Character) (T : Fin K→Finset Pr
   funext i
   exact (Finset.sum_coe_sort (T i) (fun p=>b i p*localMultiplier η p s w z)).symm
 
-def principalPoolKernel {K : ℕ} (η : Character) (S : Finset Id) (hS : SourceExclusions S)
-    (T : Fin K→Finset PrimeIdeal) (b : Fin K→PrimeIdeal→ℂ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s w z : ℂ) : ℂ :=
+section
+variable (S : Finset Id) (hS : SourceExclusions S)
+    (T : Fin K→Finset PrimeIdeal)
+include S hS T
+
+section
+variable (b : Fin K→PrimeIdeal→ℂ)
+    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s w z : ℂ)
+include b W0 W1 X Y Z s w z
+
+def principalPoolKernel  : ℂ :=
   sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
     (globalClosedCorrection η S s) (slotMultiplier η Finset.univ T b s) w z *
     LFunction (fixedSourcePrincipal S hS.prime) (6*z)*LFunction (fixedSourcePrincipal S hS.prime) w
 
-lemma principalPoolKernel_as_tuples {K : ℕ} (η : Character) (S : Finset Id) (hS : SourceExclusions S)
-    (T : Fin K→Finset PrimeIdeal) (b : Fin K→PrimeIdeal→ℂ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s w z : ℂ) :
+lemma principalPoolKernel_as_tuples  :
     principalPoolKernel η S hS T b W0 W1 X Y Z s w z=
       ∑P : (∀i,T i),(∏i,b i (P i).val)*
         principalPoolKernel η S hS (fun i=>{(P i).val}) (fun _ _=>1) W0 W1 X Y Z s w z := by
@@ -46,14 +56,18 @@ lemma principalPoolKernel_as_tuples {K : ℕ} (η : Character) (S : Finset Id) (
   apply Finset.sum_congr rfl
   intro P hP
   ring
+end
 
-theorem principal_physical_pool_initial {K : ℕ} (η : Character)
-    (S : Finset Id) (hS : SourceExclusions S)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
+
+section
+variable (hT : ∀i P,P∈T i→P.val∉S)
     (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
     (b : Fin K→PrimeIdeal→ℂ) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+include hT hdis b W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+
+theorem principal_physical_pool_initial 
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     (∑P : (∀i,T i),(∏i,b i (P i).val)*
       principalRowIntegral η S (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z)=
@@ -78,13 +92,7 @@ theorem principal_physical_pool_initial {K : ℕ} (η : Character)
   dsimp only [F,principalPoolKernel]
   ring
 
-theorem principal_physical_pool_ordered {K : ℕ} (η : Character)
-    (S : Finset Id) (hS : SourceExclusions S)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
-    (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
-    (b : Fin K→PrimeIdeal→ℂ) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+theorem principal_physical_pool_ordered 
     (X Y Z a e : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8<a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e) (he2 : e≤11/6) :
     let F := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
@@ -103,8 +111,12 @@ theorem principal_physical_pool_ordered {K : ℕ} (η : Character)
   exact ProbePrincipalTransport.source_initial_joint_ordered_at_a η S hS Finset.univ T b
     (fun i _ p hp=>hT i p hp) W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a e hX hY hZ ha ha3 hβ he he2
-
-end SevenEighths.ProbePrincipalPhysical
+end
+end
 end
 
-end OAI
+
+
+
+
+

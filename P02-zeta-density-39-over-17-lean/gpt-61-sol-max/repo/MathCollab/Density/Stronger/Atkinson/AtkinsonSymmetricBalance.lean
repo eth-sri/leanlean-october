@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected proof slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -21,7 +22,7 @@ They replace the earlier cubic/fifth-power balance. Both physical
 frequency signs are handled by the same actual-source theorem.
 -/
 
-noncomputable section
+
 
 open Complex
 
@@ -48,25 +49,7 @@ theorem atkinsonSymmetricError_le_physical {T G H b : ℝ}
         8*(G/Real.sqrt T)*T*H^5/(Real.sqrt T/3)^3 +
         16*T*H^5/(Real.sqrt T/3)^4 +
         16*T^2*H^7/(Real.sqrt T/3)^6 := by linarith
-    _ = _ := by
-      have h4 : (Real.sqrt T)^4 = T^2 := by
-        rw [show (Real.sqrt T)^4 = ((Real.sqrt T)^2)^2 by ring,Real.sq_sqrt hT.le]
-      have h6 : (Real.sqrt T)^6 = T^3 := by
-        rw [show (Real.sqrt T)^6 = ((Real.sqrt T)^2)^3 by ring,Real.sq_sqrt hT.le]
-      have he3 : 8*(G/Real.sqrt T)*T*H^5/(Real.sqrt T/3)^3 = 216*G*H^5/T := by
-        calc
-          _ = 216*G*H^5*T/(Real.sqrt T)^4 := by ring
-          _ = _ := by rw [h4]; field_simp
-      have he4 : 16*T*H^5/(Real.sqrt T/3)^4 = 1296*H^5/T := by
-        calc
-          _ = 1296*T*H^5/(Real.sqrt T)^4 := by ring
-          _ = _ := by rw [h4]; field_simp
-      have he6 : 16*T^2*H^7/(Real.sqrt T/3)^6 = 11664*H^7/T := by
-        calc
-          _ = 11664*T^2*H^7/(Real.sqrt T)^6 := by ring
-          _ = _ := by rw [h6]; field_simp
-      rw [he3,he4,he6,div_pow,Real.sq_sqrt hT.le]
-      ring
+    _ = _ := by grind
 
 theorem atkinsonSymmetric_error_le_of_power_balance {T G X : ℝ}
     (hT : 0 < T) (hG : 0 ≤ G) (hX : 1 ≤ X)
@@ -113,7 +96,6 @@ theorem exists_atkinsonPowerIntegral_symmetric_balance (α : ℝ) :
   have hX0 : 0 < X := by linarith
   have hXpow : X ≤ X^4 := by
     simpa only [pow_one] using pow_le_pow_right₀ hX (by norm_num : (1:ℕ) ≤ 4)
-  have hXle : X ≤ Real.sqrt T := hXpow.trans hXS
   obtain ⟨hleft,hright,hwindow⟩ :=
     atkinsonSaddleRoot_small_frequency_window hT0 hb (show X/12 ≤ Real.sqrt T/12 by linarith)
   have h := hbound T G L b (X/12) hT0 hG hGT hL hwidth (by positivity) hleft hright hwindow
@@ -123,4 +105,4 @@ theorem exists_atkinsonPowerIntegral_symmetric_balance (α : ℝ) :
   apply h.trans ((mul_le_mul_of_nonneg_left he (by positivity)).trans_eq ?_)
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

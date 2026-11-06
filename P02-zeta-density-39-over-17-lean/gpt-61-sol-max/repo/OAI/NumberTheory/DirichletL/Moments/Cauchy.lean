@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
 @[expose] public section
@@ -84,7 +85,7 @@ theorem common_density_cauchy {κ α β : Type*}
       ring
     rw [he, norm_mul]
     exact (mul_le_mul_of_nonneg_right (hs.trans (henergy t)) (norm_nonneg _)).trans_eq (by ring)
-  have hi : Integrable (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) :=
+  have hi :=
     JointLogSeparation.weighted_schwartz_integrable b J
   calc
     _ = ‖∫ t : ℝ, ∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
@@ -131,7 +132,7 @@ theorem whole_kernel_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → �
     _ ≤ E * C := mul_le_mul_of_nonneg_left hm hE
     _ = _ := mul_comm _ _
 
-end SevenEighths.CenteredMomentCauchy
-end
 
-end OAI
+
+
+

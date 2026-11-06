@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -21,19 +21,31 @@ def gramPrime (C : SupportedIdeal) (P : GramPrime C) : Id := P.val
 instance gramPrimeMaximal (C : SupportedIdeal) (P : GramPrime C) : (gramPrime C P).IsMaximal :=
   (Ideal.isPrime_of_prime (support_prime P.property)).isMaximal (support_prime P.property).ne_zero
 
-def gramExponent (C : SupportedIdeal) (P : GramPrime C) : ℕ := (normalizedFactors C.val).count P.val
-lemma gramExponent_pos (C : SupportedIdeal) (P : GramPrime C) : 1≤gramExponent C P :=
+section
+variable (C : SupportedIdeal)
+include C
+
+section
+variable (P : GramPrime C)
+include P
+
+def gramExponent  : ℕ := (normalizedFactors C.val).count P.val
+lemma gramExponent_pos  : 1≤gramExponent C P :=
   Multiset.count_pos.mpr (Multiset.mem_toFinset.mp P.property)
-lemma gramPrime_good (C : SupportedIdeal) (P : GramPrime C) : λ₀∉gramPrime C P :=
+lemma gramPrime_good  : λ₀∉gramPrime C P :=
   (supported_factors_good C.val C.property P.val (Multiset.mem_toFinset.mp P.property)).2.1
-lemma gramPrime_coprime (C : SupportedIdeal) : Pairwise (Function.onFun IsCoprime (gramPrime C)) := by
+end
+
+lemma gramPrime_coprime  : Pairwise (Function.onFun IsCoprime (gramPrime C)) := by
   intro P Q hpq
   exact Ideal.isCoprime_of_isMaximal (Subtype.val_injective.ne hpq)
-lemma gramPrime_product (C : SupportedIdeal) : C.val=∏P : GramPrime C,gramPrime C P^gramExponent C P := by
+lemma gramPrime_product  : C.val=∏P : GramPrime C,gramPrime C P^gramExponent C P := by
   calc
     C.val=(normalizedFactors C.val).prod := (Ideal.prod_normalizedFactors_eq_self C.property.1).symm
     _=∏P∈IdealMobiusDivisorSum.primeSupport C.val,P^(normalizedFactors C.val).count P := Finset.prod_multiset_count _
     _=_ := (Finset.prod_coe_sort _ _).symm
+end
+
 
 instance gramPrimePowerFinite (C : SupportedIdeal) (P : GramPrime C) :
     Finite (O⧸gramPrime C P^gramExponent C P) :=
@@ -60,21 +72,26 @@ lemma gramNumeratorData_nonempty (k : GramFrequency) : Nonempty (GramNumeratorDa
   exact ⟨⟨u,a,b,r,hr,hpr,hf⟩⟩
 def gramNumeratorData (k : GramFrequency) : GramNumeratorData k := Classical.choice (gramNumeratorData_nonempty k)
 
-def canonicalJoint (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (C : SupportedIdeal) (k : GramFrequency) (n m : O) : ℂ :=
+section
+variable (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
+    (C : SupportedIdeal) (k : GramFrequency) (n m : O)
+include S hS σ C k n m
+
+def canonicalJoint  : ℂ :=
   let f:=gramNumeratorData k
   jointExtension S hS σ (primaryGenerator C.val) k.val f.unit f.lambdaExponent f.twoExponent
     f.good f.supported (gramPrime C) (gramPrime_good C) (gramExponent C) n m
 
-lemma canonicalJoint_norm (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (C : SupportedIdeal) (k : GramFrequency) (n m : O) : ‖canonicalJoint S hS σ C k n m‖≤(Ideal.absNorm C.val:ℝ) := by
+lemma canonicalJoint_norm  : ‖canonicalJoint S hS σ C k n m‖≤(Ideal.absNorm C.val:ℝ) := by
   have hh := jointExtension_norm S hS σ (primaryGenerator C.val) k.val
     (gramNumeratorData k).unit (gramNumeratorData k).lambdaExponent (gramNumeratorData k).twoExponent
     (gramNumeratorData k).good (gramNumeratorData k).supported (gramPrime C) (gramPrime_good C)
     (gramExponent C) (gramExponent_pos C) n m
   simpa only [←gramPrime_product C,canonicalJoint] using hh
-
-end SevenEighths.ProbeGramCommon
 end
 
-end OAI
+
+
+
+
+

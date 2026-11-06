@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TwoTermLargeValues
 public import TwoTermDetectorCover
 public import TwoTermWindowParameters
@@ -7,15 +8,18 @@ public import TwoTermWindowParameters
 
 open Real Complex Set Filter Finset MathCollab.Density GuthMaynard.Improvement
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
+section
+variable {σ a p α ε : ℝ}
+    (hw : TwoTermWindow σ a p α) (hε : 0 < ε)
+include σ a p α ε hw hε
+
 /-- Actual Type-I detection with every powered length covered. -/
-theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
-    (hw : TwoTermWindow σ a p α) (hε : 0 < ε) :
+theorem two_term_typeI_separated_count  :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (t₀ : ℝ) (R : Finset ℂ),
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
       (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
@@ -107,8 +111,7 @@ theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le
 
 /-- The Type-I branch count on actual zeta zero representatives. -/
-theorem two_term_typeI_zero_slab_count {σ a p α ε : ℝ}
-    (hw : TwoTermWindow σ a p α) (hε : 0 < ε) :
+theorem two_term_typeI_zero_slab_count  :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ R : Finset ℂ,
       R ⊆ zetaZeroFinset σ H (2*H) →
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
@@ -125,15 +128,14 @@ theorem two_term_typeI_zero_slab_count {σ a p α ε : ℝ}
 
 /-- Actual slabs: the weak Type-II moment is already proved and its exponent
 is checked against p. Multiplicity and ordinate collisions are restored. -/
-theorem two_term_slab_density {σ a p α ε : ℝ}
-    (hw : TwoTermWindow σ a p α) (hε : 0 < ε) :
+theorem two_term_slab_density  :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop,
       (zetaSlabCount σ H (2*H):ℝ) ≤ C*H^(p+ε) := by
   have hη : 0 < ε/2 := by positivity
   obtain ⟨CI,hCI,hI⟩ := two_term_typeI_zero_slab_count hw hη
   obtain ⟨CII,hCII,hII⟩ := weak_short_typeII_zero_slab_count hη
   obtain ⟨C₀,hC₀,hrestore⟩ := short_slab_count_of_separated_branch_bounds
-  let D : ℝ := Real.log 2+1/(ε/2)
+  let D := Real.log 2+1/(ε/2)
   have hD : 0 < D := by
     dsimp [D]
     exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hη)
@@ -155,19 +157,18 @@ theorem two_term_slab_density {σ a p α ε : ℝ}
 
 /-- End-to-end theorem for actual riemannZeta zeros. TwoTermWindow contains
 only explicit algebraic inequalities; no analytic conclusion is assumed. -/
-theorem two_term_density {σ a p α ε : ℝ}
-    (hw : TwoTermWindow σ a p α) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(p+ε) := by
+theorem two_term_density  :
+    MathCollab.Density.ZetaBound σ ((p+ε)) := by
   obtain ⟨C,hC,hslab⟩ := two_term_slab_density hw hε
   have hp : 0 < p+ε := by linarith [hw.p_low]
   exact zetaDensity_bound_of_eventual_slabs hp hC hslab
+end
+
 
 /-- First new unconditional density branch, including both endpoints. -/
 theorem two_term_density_first {σ ε : ℝ}
     (hσ : 12/17 ≤ σ) (hσ' : σ ≤ 5/7) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(6*(1-σ)/(8*σ-3)+ε) :=
+    MathCollab.Density.ZetaBound σ ((6*(1-σ)/(8*σ-3)+ε)) :=
   two_term_density (two_term_window_first σ hσ hσ') hε
 
-end Montgomery.RationalMoment
+

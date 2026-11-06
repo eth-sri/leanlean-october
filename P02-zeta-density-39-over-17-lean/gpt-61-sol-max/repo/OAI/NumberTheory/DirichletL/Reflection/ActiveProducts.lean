@@ -9,8 +9,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 lemma slotProductCoefficient_norm (tuples : Finset (σ→Ideal Eis))
@@ -50,7 +50,7 @@ theorem literalWholeRow_eq_active_tuples
   simp only [literalPairEntry,dite_eq_left K.property,
     dite_eq_left (Finset.mem_image.mpr ⟨p.val,p.property,rfl⟩),
     slotProductCoefficient_at_product tuples hinj aw p.val p.property]
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

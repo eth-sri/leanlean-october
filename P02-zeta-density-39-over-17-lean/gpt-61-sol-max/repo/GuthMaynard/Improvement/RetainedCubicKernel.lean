@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicKernel
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 namespace GuthMaynard.Improvement
@@ -53,7 +53,6 @@ theorem retainedPoissonKernel_expanded (ν : Measure ℝ) [IsFiniteMeasure ν]
     apply Finset.sum_congr rfl
     intro m _
     rw [mul_assoc,← phase_add]
-    congr 2
     ring
   unfold retainedPoissonKernel frequencyKernel
   simp_rw [hid]
@@ -110,8 +109,6 @@ expressed using exp and log without a complex-power branch convention. -/
 theorem mellinFrequency_phase (s x : ℝ) :
     phase (s*mellinFrequency x) = Complex.exp (((s*Real.log x:ℝ):ℂ)*Complex.I) := by
   unfold phase mellinFrequency
-  have hh : 2*Real.pi*(s*(Real.log x/(2*Real.pi))) = s*Real.log x := by
-    field_simp
-  rw [hh]
+  field_simp <;> ring
 
-end GuthMaynard.Improvement
+

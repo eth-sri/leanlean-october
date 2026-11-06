@@ -67,7 +67,7 @@ theorem continued_ramified_compensation (V Pstar B q : ℂ) :
     mul_one, div_one]
   ring
 
-end
-end SevenEighths.ProbeLocal
 
-end OAI
+
+
+

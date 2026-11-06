@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalCompleteNormalized
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open InverseInitialClippedColumns FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalCubeSeparation SecondPassArithmetic
+open InverseMomentFirstSecondHeightCost CompletedHeight
+open InverseInitialClippedColumns InverseTerminalWidths
+open scoped EisensteinO
 
 theorem actual_complete_normalized_rank_step
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
@@ -40,7 +40,7 @@ theorem actual_complete_normalized_rank_step
       hi≤Z^eta → Real.exp Alog≤Z^eta → Real.exp window≤Z^eta →
       0<cutoff → cutoff≤L → cutoff≤cstar/200 → eta≤cutoff/32 →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^(normWidth Z (Ideal.span {m})) →
       0≤pi → 6*eta≤pi → em*(20*(3*L+16)+30)≤pi/4 → ed*(20*(3*L+16)+30)≤pi/4 →
       0≤epschild → -saving≤48*eta+tau+pi+epschild+epsSecond →
@@ -105,8 +105,8 @@ theorem actual_complete_normalized_rank_step
     (normTwistedSource W theta) (Z^N) Z (N+V) (Z^M) (by linarith)] at hh
   exact hh
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

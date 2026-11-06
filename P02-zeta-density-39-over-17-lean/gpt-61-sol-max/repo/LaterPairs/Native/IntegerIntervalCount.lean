@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.AdditiveEnergy
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                            
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem integer_card_le_interval_length_add_one (S : Finset ℤ) {a b : ℝ}
@@ -23,10 +22,7 @@ theorem integer_card_le_interval_length_add_one (S : Finset ℤ) {a b : ℝ}
     intro x hx y hy hxy
     obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp hy
-    have hmn : m-n ≠ 0 := by
-      intro he
-      apply hxy
-      exact congrArg (fun z : ℤ => (z:ℝ)) (sub_eq_zero.mp he)
+    have hmn : m-n ≠ 0 := by grind
     have hpos : 0 < |m-n| := abs_pos.mpr hmn
     have hbound : (1:ℤ) ≤ |m-n| := by omega
     exact_mod_cast hbound
@@ -49,5 +45,5 @@ theorem integer_card_le_of_abs_sub_le (S : Finset ℤ) {a B : ℝ}
       constructor <;> linarith)
   linarith
 
-end TaoTrudgianYang2025
+
 

@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationBudget
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeInverseAmplification
 
 theorem amplified_norm_power (U A b p : ℝ) (hU : 0<U) :
@@ -52,8 +52,8 @@ theorem amplified_norm_dominates (U A b c r : ℝ) (hU : 1≤U) (hbA : 1≤b*A) 
   have hconst : (1 : ℝ)≤(b*A)^6 := one_le_pow₀ hbA
   exact hp.trans (le_mul_of_one_le_left (Real.rpow_nonneg hUp.le _) hconst)
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

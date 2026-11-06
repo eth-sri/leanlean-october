@@ -5,20 +5,24 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondRadicalColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
-open CenteredMomentSecondSixthSource CenteredMomentSecondRadicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-open CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSecondSixthSource
 
-theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) :
+open CenteredMomentCanonicalFirst
+open scoped EisensteinO
+
+section
+variable (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+    (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D))
+include C D hC hD hCD U
+
+theorem sixthFactor_span_dvd_right  :
     Ideal.span {sixthFactor C D U}∣D := by
   conv_rhs => rw [←right_ideal_product C D hC hD hCD]
   simp only [sixthFactor,span_finset_product,←Ideal.span_singleton_pow]
@@ -30,16 +34,17 @@ theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supp
   unfold fixedExponent
   split_ifs <;> omega
 
-theorem residual_sixth_coefficient_right (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D))
+theorem residual_sixth_coefficient_right 
     (I : Ideal O) (hI : Supported I) (hcop : IsCoprime D I) :
     idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I=
       idealRowHom (reducedNumerator C D U) I := by
   rw [fixed_sixth_coefficient C D U I hI,ite_eq_left
     (hcop.symm.of_isCoprime_of_dvd_right (sixthFactor_span_dvd_right C D hC hD hCD U)),mul_one]
-
-end SevenEighths.CenteredMomentSecondRadicalColumns
-
 end
 
-end OAI
+
+
+
+
+
+

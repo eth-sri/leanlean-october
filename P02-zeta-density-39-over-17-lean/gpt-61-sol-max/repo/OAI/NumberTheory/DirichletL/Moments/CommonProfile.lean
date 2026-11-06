@@ -11,8 +11,8 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonProfile
 open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 
 def liveIndices (B : Tuple ι) : Finset ι := Finset.univ.filter (fun i => B (Sum.inl i)=1)
@@ -20,14 +20,21 @@ def liveIndices (B : Tuple ι) : Finset ι := Finset.univ.filter (fun i => B (Su
 def remainingTuple (B u : Tuple ι) : Tuple (liveIndices B) :=
   Sum.elim (fun i => u (Sum.inl i.val)) (fun j => u (Sum.inr j))
 
-@[simp] theorem remainingTuple_slot (B u : Tuple ι) (i : liveIndices B) :
+section
+variable (B u : Tuple ι)
+include B u
+
+@[simp] theorem remainingTuple_slot  (i : liveIndices B) :
     remainingTuple B u (Sum.inl i)=u (Sum.inl i.val) := rfl
 
-@[simp] theorem remainingTuple_plain (B u : Tuple ι) (j : Fin 2) :
+@[simp] theorem remainingTuple_plain  (j : Fin 2) :
     remainingTuple B u (Sum.inr j)=u (Sum.inr j) := rfl
 
-theorem remaining_product (B u : Tuple ι)
-    (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1) :
+section
+variable (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
+include hf
+
+theorem remaining_product  :
     finiteTupleProduct u=finiteTupleProduct (remainingTuple B u) := by
   simp only [finiteTupleProduct,Fintype.prod_sum_type,Fin.prod_univ_two,remainingTuple,
     Sum.elim_inl,Sum.elim_inr]
@@ -40,8 +47,7 @@ theorem remaining_product (B u : Tuple ι)
   intro hBi
   exact hnot (Finset.mem_filter.mpr ⟨Finset.mem_univ _,hBi⟩)
 
-theorem slot_profiles_split (B u : Tuple ι)
-    (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
+theorem slot_profiles_split 
     (β : ι → Ideal O → ℂ) :
     (∏ i,β i (B (Sum.inl i)*u (Sum.inl i)))=
       (∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),β i (B (Sum.inl i)))*
@@ -56,8 +62,10 @@ theorem slot_profiles_split (B u : Tuple ι)
   · apply Finset.prod_congr rfl
     intro i hi
     rw [(Finset.mem_filter.mp hi).2,one_mul]
+end
 
-theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
+
+theorem profile_common_allocation  (C R s : Ideal O)
     (hB : finiteTupleProduct B=C) (hsC : s∣C)
     (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
     (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -82,9 +90,11 @@ theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
     by_cases hu : IsCoprime (finiteTupleProduct (remainingTuple B u)) R <;>
     simp_all only [true_and,false_and,ite_true,ite_false,mul_zero,zero_mul,mul_one]
   ring
-
-end SevenEighths.CenteredMomentCommonProfile
-
 end
 
-end OAI
+
+
+
+
+
+

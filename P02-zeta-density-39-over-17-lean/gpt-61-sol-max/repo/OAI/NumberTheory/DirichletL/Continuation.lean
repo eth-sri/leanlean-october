@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.MellinTransform
 public import Mathlib.Analysis.Complex.HalfPlane
 public import Mathlib.Analysis.Complex.Convex
@@ -46,23 +47,23 @@ theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
   simpa only [Supremum.max_signal_exponents] using
     common_signal_bound J f (7 / 8 + c + ω) (β + c - σ) hJ herror
 
-theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
+section
+variable (f : ℝ → ℂ) (a c : ℝ)
     (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
     (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) {s : ℂ} (hs : a < s.re) :
+    (hzero : RapidDecayAtZero f)
+include f a c hlocal htop hzero
+
+theorem signalMellin_convergent  {s : ℂ} (hs : a < s.re) :
     MellinConvergent f (-(s + (c : ℂ))) := by
   apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
     (b := (-(s + (c : ℂ))).re - 1) hlocal
   · simpa only [neg_neg] using htop
   · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
     linarith
-  · exact hzero _
-  · linarith
+  all_goals (bound)
 
-theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) :
+theorem signalMellin_analytic  :
     AnalyticOnNhd ℂ (signalMellin f c) {s : ℂ | a < s.re} := by
   apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt a)).2
   intro s hs
@@ -73,9 +74,10 @@ theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
     · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
       change a < s.re at hs
       linarith
-    · exact hzero _
-    · linarith
+    all_goals (bound)
   exact (hd.comp s ((differentiableAt_id.add_const (c : ℂ)).neg)).differentiableWithinAt
+end
+
 
 theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
     (hL : AnalyticOnNhd ℂ L {s : ℂ | a < s.re})
@@ -108,10 +110,7 @@ theorem nonzero_of_regularized_signal (a b c : ℝ)
   have hid := product_identity_on_halfPlane a b Lregular (signalMellin f c)
     (fun s => R s * W s) hL (signalMellin_analytic f a c hlocal htop hzero)
     (hR.mul hW) heq hρ
-  intro hz
-  change Lregular ρ * signalMellin f c ρ = R ρ * W ρ at hid
-  rw [hregular, hz, mul_zero, zero_mul] at hid
-  exact (mul_ne_zero hRρ hWρ) hid.symm
+  grind
 
 theorem multiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
     (h : ‖H s - 1‖ ≤ (1 / 2 : ℝ)) : H s ≠ 0 := by
@@ -148,8 +147,7 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
     {ρ : ℂ} (hρ : β - Supremum.continuationMargin β ω σ < ρ.re)
     (hregular : Lregular ρ = R ρ * L ρ) (hRρ : R ρ ≠ 0) : L ρ ≠ 0 := by
   have hboundary := Supremum.continuation_boundary_gt (β := β) (σ := σ) hω
-  have hH' : AnalyticOnNhd ℂ H
-      {s : ℂ | β - Supremum.continuationMargin β ω σ < s.re} :=
+  have hH' :=
     hH.mono (fun s hs => lt_trans hboundary hs)
   have htop : f =O[atTop] (fun x : ℝ =>
       x ^ ((β - Supremum.continuationMargin β ω σ) + c)) := by
@@ -160,8 +158,8 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
     hL hR (gaussianMultiplier_analytic hH') hlocal htop hzero heq hρ hregular
     hRρ (gaussianMultiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))
 
-end SevenEighths.Continuation
 
-end
 
-end OAI
+
+
+

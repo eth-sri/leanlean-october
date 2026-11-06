@@ -4,8 +4,7 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- The minimum is below every geometric interpolation of two nonnegative
@@ -48,4 +47,4 @@ theorem weak_power_square_mass_bound {A D U p θ mass : ℝ}
     field_simp
   exact hh.trans_eq hId
 
-end Montgomery.RationalMoment
+

@@ -6,21 +6,21 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstNormalizedGaussianPowers
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstLowHomogeneousPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
+open CenteredMomentCanonicalFirst
+open CenteredMomentSecondHeightFamily
+open CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondChildPowerBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFiniteProfileExceptional
-open QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSecondChildPowerBudget
+
+
+open scoped HeckeO
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
 open CenteredMomentEnergyFirstHighGaussianUniformPowers
@@ -77,8 +77,8 @@ theorem actual_low_homogeneous_four_powers
     hupper (Nat.cast_nonneg _) hZ heps heps1 hncap (by positivity) hF hseed H
     srcLoss (lossVector sigma delta reserve paid eps Mcap saving) hH hbound
 
-end SevenEighths.CenteredMomentEnergyFirstLowHomogeneousPowers
 
-end
 
-end OAI
+
+
+

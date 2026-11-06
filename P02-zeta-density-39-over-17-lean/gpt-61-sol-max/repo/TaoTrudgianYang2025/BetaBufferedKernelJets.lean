@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaFourierCarrierBounds
 public import TaoTrudgianYang2025.BetaTaylorJets
@@ -13,7 +14,7 @@ The phase derivatives come from the original model on (1,2). Outside
 the cutoff's closed support the actual kernel is locally zero.
 -/
 
-noncomputable section
+
 
 open Complex Set Filter Expdb
 open scoped ContDiff FourierTransform Topology
@@ -23,9 +24,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 theorem norm_modelPhaseBufferedKernel_le_one (l r η T N x : ℝ) (F : ℝ → ℝ) :
     ‖modelPhaseWeightedKernel (modelPhaseBufferedCutoff l r η) F T N x‖ ≤ 1 := by
-  simp only [modelPhaseWeightedKernel,norm_mul,Circle.norm_coe,mul_one,
-    Complex.norm_real,Real.norm_eq_abs,
-    abs_of_nonneg (modelPhaseBufferedCutoff_nonneg _ _ _ _)]
+  simp only [modelPhaseWeightedKernel, norm_mul, norm_real, Real.norm_eq_abs, abs_of_nonneg (modelPhaseBufferedCutoff_nonneg _ _ _ _), Circle.norm_coe, mul_one]
   exact modelPhaseBufferedCutoff_le_one _ _ _ _
 
 theorem modelPhaseBufferedKernel_uniform_second_derivative
@@ -89,11 +88,11 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
     ring
   · have hz : modelPhaseWeightedKernel χ F T 1 =ᶠ[𝓝 u] fun _ => (0 : ℂ) := by
       filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hu] with x hx
-      simp only [modelPhaseWeightedKernel,div_one,hx,Pi.zero_apply,Complex.ofReal_zero,zero_mul]
+      simp only [modelPhaseWeightedKernel, div_one, hx, Pi.zero_apply, ofReal_zero, zero_mul]
     rw [hz.iteratedDeriv_eq 2]
     simp only [iteratedDeriv_const,show (2 : ℕ) ≠ 0 by norm_num,ite_false,norm_zero]
     have hM₀ : 0 ≤ M := by linarith
     have hD₀ : 0 ≤ D := by linarith
     positivity
 
-end TaoTrudgianYang2025
+

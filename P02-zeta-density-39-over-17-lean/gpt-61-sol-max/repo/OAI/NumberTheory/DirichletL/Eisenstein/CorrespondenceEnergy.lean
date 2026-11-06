@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondenceAdjoint
 
 @[expose] public section
@@ -11,72 +12,72 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 section
 open Filter MeasureTheory
@@ -84,7 +85,7 @@ open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold Cont
 open Finset AddChar MulChar EisensteinEmbedding
 
 section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma kernelTestField_comp_contDiffAt (f : kernelSmoothTests) (g : SL(2,ℂ))
     (p : EuclideanSpatial) (hp : 0<p 2) :
@@ -94,7 +95,7 @@ lemma kernelTestField_comp_contDiffAt (f : kernelSmoothTests) (g : SL(2,ℂ))
   simpa only [Function.comp_def,kernelTestField,euclideanAction,euclideanToHyperbolic_coordinates] using hd
 
 lemma coverGradientAt_lift_continuous (F : EuclideanSpatial→ℂ)
-    (hF : ∀p,0<p 2→ContDiffAt ℝ ∞ F p) :
+    (hF : ∀p,0<p 2→ ContDiffAt ℝ ∞ F p) :
     Continuous (fun w : HyperbolicSpace=>coverGradientAt F (hyperbolicEuclideanCoordinates w)) := by
   apply (PiLp.continuousLinearEquiv 2 ℂ (fun _ : Fin 3=>ℂ)).symm.continuous.comp
   apply continuous_pi
@@ -194,7 +195,7 @@ lemma kernelCorrespondencePair_integrable (f h : kernelSmoothTests) :
 
 end
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma kernelCorrespondencePairLift_kernel (g : SL(2,ℂ)) (f h : kernelSmoothTests)
     (r : globalKubotaKernel) (w : HyperbolicSpace) :
@@ -322,7 +323,7 @@ open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 variable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
@@ -408,7 +409,7 @@ open scoped Classical MatrixGroups BigOperators
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma cuspFrequency_mul_right (h c:Eis) : cuspFrequency (h*c)=cuspFrequency h*eisEmbedding c := by
   unfold cuspFrequency
@@ -440,7 +441,7 @@ lemma period_fourier_fractional_translation (f:ℂ→ℂ)
     (∫z in periodDomain,f (z+3*eisEmbedding q/eisEmbedding c)*
       ShortDraftTrace.breveE (-cuspFrequency (h*c)*z))=
     ∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z) := by
-  let g:ℂ→ℂ:=fun z=>f z*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z)
+  let g :=fun z=>f z*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z)
   have hg (n:Eis) (z:ℂ):g (z+3*eisEmbedding n)=g z:=by
     dsimp [g]
     rw [hf,cuspFrequency_negative_period]
@@ -454,14 +455,14 @@ lemma period_fourier_fractional_translation (f:ℂ→ℂ)
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma cube_upperPoint_continuous (v:ℝ) (hv:0<v) : Continuous (fun z:ℂ=>upperPoint z v hv) := by
   let c:ℂ→UpperCoordinates:=fun z=>⟨(z,v),hv⟩
   have hc:Continuous c:=by
     apply Continuous.subtype_mk
     exact continuous_id.prodMk continuous_const
-  simpa only [Function.comp_def,c] using continuous_upperCoordinates.comp hc
+  exact continuous_upperCoordinates.comp hc
 
 theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Continuous F)
     (hperiod:∀n:Eis,∀w:HyperbolicSpace,F (complexTranslation (3*eisEmbedding n) • w)=F w)
@@ -472,8 +473,8 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
         ShortDraftTrace.breveE (-cuspFrequency (h*p^3)*z) := by
   let V:=v/‖eisEmbedding p‖^3
   have hV:0<V:=div_pos hv (pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hp)) 3)
-  let f:ℂ→ℂ:=fun z=>F (upperPoint z V hV)
-  let H:ℂ→ℂ:=fun z=>cubeAverage p hp F (upperPoint z v hv)*ShortDraftTrace.breveE (-cuspFrequency h*z)
+  let f :=fun z=>F (upperPoint z V hV)
+  let H :=fun z=>cubeAverage p hp F (upperPoint z v hv)*ShortDraftTrace.breveE (-cuspFrequency h*z)
   have hf:Continuous f:=hF.comp (cube_upperPoint_continuous V hV)
   have hfperiod (n:Eis) (z:ℂ):f (z+3*eisEmbedding n)=f z:=by
     dsimp [f]
@@ -544,7 +545,7 @@ end
 open MeasureTheory
 open scoped Classical MatrixGroups BigOperators
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem cubeSource_fourier (p:Eis) (hp:p≠0) (h:Eis) (v:ℝ) (hv:0<v) :
     (∫z in periodDomain,cubeAverage p hp cubicSourceResidualFunction (upperPoint z v hv)*
@@ -580,9 +581,7 @@ lemma cubeSource_amplitude_of_eigenrelation (p:Eis) (hp:p≠0)
 lemma schlafliBesselK_cubic_ne_zero (x:ℝ) (hx:0<x) : schlafliBesselK (1/3:ℂ) x≠0 := by
   have hp:0<(schlafliBesselK (1/3:ℂ) x).re:=
     lt_of_lt_of_le (mul_pos cubicBesselLowerConstant_pos (Real.exp_pos _)) (schlafliBesselK_cubic_lower x hx)
-  intro he
-  rw [he,Complex.zero_re] at hp
-  exact (lt_irrefl 0) hp
+  aesop
 
 theorem sourceResidualFourierCoefficient_cube_of_eigenrelation (p:Eis) (hp:p≠0)
     (hU:∀w:HyperbolicSpace,cubeAverage p hp cubicSourceResidualFunction w=
@@ -591,15 +590,14 @@ theorem sourceResidualFourierCoefficient_cube_of_eigenrelation (p:Eis) (hp:p≠0
     sourceResidualFourierCoefficient (h*p^3)=(‖eisEmbedding p‖:ℂ)*sourceResidualFourierCoefficient h := by
   have hhp:h*p^3≠0:=mul_ne_zero hh (pow_ne_zero 3 hp)
   have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
-  have hrC:(‖eisEmbedding p‖:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hr.ne'
+  have hrC :=Complex.ofReal_ne_zero.mpr hr.ne'
   have hf:‖cuspFrequency (h*p^3)‖=‖cuspFrequency h‖*‖eisEmbedding p‖^3:=by
     rw [cuspFrequency_mul_right,norm_mul,map_pow,norm_pow]
   have hx:0<4*Real.pi*‖cuspFrequency h‖:=by
     exact mul_pos (mul_pos (by norm_num) Real.pi_pos) (norm_pos_iff.mpr (cuspFrequency_ne_zero h hh))
   have hK:=schlafliBesselK_cubic_ne_zero _ hx
   have he:=cubeSource_amplitude_of_eigenrelation p hp hU h 1 (by norm_num)
-  simp only [sourceResidualFullModeAmplitude,ite_eq_right hhp,ite_eq_right hh,Complex.ofReal_div,
-    Complex.ofReal_one,Complex.ofReal_pow,mul_one,hf] at he
+  simp only [sourceResidualFullModeAmplitude, ofReal_div, ofReal_one, ofReal_pow, hf, ite_eq_right hhp, mul_one, ite_eq_right hh] at he
   have harg:4*Real.pi*(‖cuspFrequency h‖*‖eisEmbedding p‖^3)*(1/‖eisEmbedding p‖^3)=
       4*Real.pi*‖cuspFrequency h‖:=by field_simp
   rw [harg] at he
@@ -614,8 +612,8 @@ theorem sourceResidualFourierCoefficient_cube_of_eigenrelation (p:Eis) (hp:p≠0
   rw [he'']
   field_simp
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

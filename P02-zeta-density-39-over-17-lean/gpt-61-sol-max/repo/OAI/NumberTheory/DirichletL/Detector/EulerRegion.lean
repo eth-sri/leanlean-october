@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerCoordinates
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 
 lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 := by
@@ -79,7 +79,7 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
       _ = _ := by ring
   nlinarith
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

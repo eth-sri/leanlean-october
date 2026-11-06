@@ -5,12 +5,11 @@ public import TaoTrudgianYang2025.HeathBrownModelJetCore
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Set Filter Expdb
 open scoped Topology ContDiff
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 theorem iteratedDeriv_modelPhase_abs_le {σ : ℝ} (hσ : 0 ≤ σ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (p : ℕ) :
     |iteratedDeriv p (modelPhase σ) u| ≤ modelPhaseJetCoefficient σ p := by
@@ -37,4 +36,4 @@ theorem iteratedDeriv_modelPhase_lipschitz {σ : ℝ} (hσ : 0 ≤ σ)
     exact iteratedDeriv_modelPhase_abs_le hσ hx (p+1)
   exact Convex.norm_image_sub_le_of_norm_deriv_le hd hb (convex_Ioo 1 2) hw hu
 
-end TaoTrudgianYang2025
+

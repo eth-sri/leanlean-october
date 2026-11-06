@@ -7,22 +7,23 @@ public import OAI.NumberTheory.DirichletL.Continuation
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeTheta
 open EisensteinTheta
 
-theorem latticeL_eq_of_coefficients_right {N M : ℕ} [NeZero N] [NeZero M]
+section
+variable {N M : ℕ} [NeZero N] [NeZero M]
     (w : Fin N × Fin N → ℂ) (v : Fin M × Fin M → ℂ)
     (hcoeff : ∀ n, periodicCoeff w n = periodicCoeff v n)
-    {s : ℂ} (hs : 1 < s.re) : latticeL w s = latticeL v s := by
+    {s : ℂ}
+include N M w v hcoeff s
+
+theorem latticeL_eq_of_coefficients_right  (hs : 1 < s.re) : latticeL w s = latticeL v s := by
   have hw := latticeL_hasSum w hs
   simp_rw [hcoeff] at hw
   exact hw.unique (latticeL_hasSum v hs)
 
-theorem latticeL_eq_of_coefficients {N M : ℕ} [NeZero N] [NeZero M]
-    (w : Fin N × Fin N → ℂ) (v : Fin M × Fin M → ℂ)
-    (hcoeff : ∀ n, periodicCoeff w n = periodicCoeff v n)
-    {s : ℂ} (hs : 0 < s.re) (hs₁ : s ≠ 1) : latticeL w s = latticeL v s := by
+theorem latticeL_eq_of_coefficients  (hs : 0 < s.re) (hs₁ : s ≠ 1) : latticeL w s = latticeL v s := by
   have hwa : AnalyticOnNhd ℂ (regularizedLatticeL w) {z : ℂ | 0 < z.re} := by
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
     intro z hz
@@ -47,6 +48,8 @@ theorem latticeL_eq_of_coefficients {N M : ℕ} [NeZero N] [NeZero M]
   simp only [mul_one, regularizedLatticeL_eq w hs₀ hs₁,
     regularizedLatticeL_eq v hs₀ hs₁] at hident
   exact mul_left_cancel₀ (sub_ne_zero.mpr hs₁) hident
+end
+
 end SevenEighths.HeckeTheta
 
 namespace SevenEighths.HeckeFamily
@@ -65,8 +68,8 @@ theorem continuedLattice_eq_of_elementCoeff_eq (χ ψ : Character)
   intro n
   simp only [periodicCoeff_eq_elementCoeff, hχψ]
 
-end SevenEighths.HeckeFamily
 
-end
 
-end OAI
+
+
+

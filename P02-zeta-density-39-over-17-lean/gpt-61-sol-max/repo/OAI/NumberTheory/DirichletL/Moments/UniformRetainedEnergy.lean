@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformRetainedEnergy
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum
@@ -81,8 +81,8 @@ theorem actual_retained_uniform_energy (epsilon : ℝ)
   simp only [retained_zero,P',Nat.mul_zero,pow_zero,mul_one,←mul_assoc] at hfinal
   convert hfinal using 1 ; ring
 
-end SevenEighths.CenteredMomentUniformRetainedEnergy
 
-end
 
-end OAI
+
+
+

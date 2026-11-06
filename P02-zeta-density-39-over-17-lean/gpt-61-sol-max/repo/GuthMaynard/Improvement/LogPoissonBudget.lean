@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.LogPoissonTail
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -20,8 +20,7 @@ theorem choose_log_poisson_order {η : ℝ} (hη : 0 < η) :
     ← Real.rpow_natCast T 2,← Real.rpow_natCast T (j+2),
     ← Real.rpow_add hTp,← Real.rpow_sub hTp]
   apply Real.rpow_le_rpow_of_exponent_le hT
-  push_cast
-  nlinarith
+  grind
 
 /-- The actual log-modulated Poisson tail, including the outer L.
 The decay order and constant precede time, length, and shift. -/
@@ -77,4 +76,4 @@ theorem poisson_cubic_error_budget {T L C D d M : ℝ}
       have hp : T^(-193:ℝ) ≤ T^(-100:ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by norm_num)
       gcongr
 
-end GuthMaynard.Improvement
+

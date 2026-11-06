@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CompactKernel
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -38,9 +38,6 @@ theorem compact_masked_transverse (a b : ℝ) (ha : 0 < a) :
       rw [abs_div, abs_of_pos (mul_pos hq hδ)]
       exact (div_le_one (mul_pos hq hδ)).mpr ht
     rw [scaledKernel,compactKernel_plateau ht']
-    have hqn := hq.ne'
-    have hdn := hδ.ne'
-    have hin := hi.ne'
     field_simp
     nlinarith
   exact masked_transverse_smoothing hA
@@ -49,4 +46,4 @@ theorem compact_masked_transverse (a b : ℝ) (ha : 0 < a) :
     (scaledKernel_nonneg compactKernel_nonneg (mul_pos hq hδ))
     (mul_pos hq hi).le hδ.le ha hav hvb hlower hr hr2 hr0
 
-end GuthMaynard.Improvement
+

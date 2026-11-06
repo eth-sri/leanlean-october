@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -22,7 +23,7 @@ the full complex quadratic coefficient and saves the otherwise lost
 factor of the source width.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 open scoped ContDiff
@@ -65,7 +66,7 @@ theorem intervalC1Bound_zetaQuadraticLogGaussian {T G : ℝ}
     IntervalC1Bound
       (fun x => zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi))))
       (T / 16) T (4 * Real.sqrt Real.pi * G) := by
-  let A : ℝ := T / (2 * Real.pi)
+  let A := T / (2 * Real.pi)
   have hcenter := atkinson_center_mem_physical hT
   have henv := intervalC1Bound_zetaLogGaussianEnvelope (by positivity : 0 < T / 16)
     hcenter.1 hcenter.2 G
@@ -103,4 +104,4 @@ theorem intervalC1Bound_zetaQuadraticLogGaussian {T G : ℝ}
         mul_le_mul_of_nonneg_left henv.variation_le (by positivity)
       _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson
+

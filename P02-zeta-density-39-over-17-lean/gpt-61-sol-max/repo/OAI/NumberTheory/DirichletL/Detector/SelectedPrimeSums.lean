@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedActual
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
@@ -9,7 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeSelectedPrimeSums
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma finite_ideal_count (S : Finset (Ideal O)) (H : ℝ) (hH : 0≤H)
     (hS : ∀I∈S,I≠0) (hN : ∀I∈S,(Ideal.absNorm I:ℝ)≤H) :
@@ -72,7 +73,7 @@ theorem annular_slot_majorant (eps a b r d : ℝ) (heps : 0<eps)
   have hP0 : 0<P := by linarith
   have hU1 : (1:ℝ)≤Ideal.absNorm U := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hU)
-  have hUpow : 1≤(Ideal.absNorm U:ℝ)^eps := Real.one_le_rpow hU1 heps.le
+  have hUpow := Real.one_le_rpow hU1 heps.le
   have hq (I : Ideal O) (hI : I∈S) : 0<(Ideal.absNorm I:ℝ) :=
     (mul_pos ha hP0).trans_le (hSP I hI).1
   have hc := finite_ideal_count S (b*P) (by positivity) hS (fun I hI=>(hSP I hI).2)
@@ -168,7 +169,7 @@ theorem weighted_slot_bound (eps a b r d B K : ℝ) (heps : 0<eps)
       nlinarith [mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg (by positivity : (0:ℝ)≤Ideal.absNorm U) eps))
         (Real.rpow_nonneg hP0.le r)]
 
-end SevenEighths.ProbeSelectedPrimeSums
-end
 
-end OAI
+
+
+

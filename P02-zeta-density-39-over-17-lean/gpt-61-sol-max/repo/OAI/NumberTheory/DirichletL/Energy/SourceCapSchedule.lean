@@ -18,7 +18,7 @@ lemma count_pos (M ε:ℝ):0<count M ε:=by
 lemma final_range_large (M B L ε:ℝ)(hM:0≤M)(hB:0≤B):
     20≤range M B L (count M ε):=by
   have hh:=range_mono M B L hM hB (show 1≤count M ε from count_pos M ε)
-  have hm:1≤max 1 L:=le_max_left _ _
+  have hm:1≤ max 1 L:=le_max_left _ _
   simp only [range,step] at hh
   linarith
 lemma readyBudget_le_schedule (M B L ε A P:ℝ)(hM:0≤M)(hB:0≤B)
@@ -28,8 +28,8 @@ lemma readyBudget_le_schedule (M B L ε A P:ℝ)(hM:0≤M)(hB:0≤B)
   unfold readyBudget finalSourceCap sourceCap
   linarith
 
-end SevenEighths.CenteredMomentEnergySourceCapSchedule
 
-end
 
-end OAI
+
+
+

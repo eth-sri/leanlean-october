@@ -8,38 +8,50 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 abbrev SupportedIdeal := {I : Id // Supported I}
 
-lemma gram_supported_divisor (I D : Id) (hI : Supported I) (hd : D∣I) : Supported D := by
+section
+variable (I D : Id) (hI : Supported I) (hd : D∣I)
+include I D hI hd
+
+lemma gram_supported_divisor  : Supported D := by
   obtain ⟨J,rfl⟩ := hd
   exact (supported_mul_iff D J).mp hI |>.1
 
-lemma gram_supported_quotient (I D : Id) (hI : Supported I) (hd : D∣I) :
+lemma gram_supported_quotient  :
     Supported (idealQuotient D I) := gram_supported_divisor I _ hI (idealQuotient_dvd hd)
+end
 
-def gcdCommon (I J : SupportedIdeal) : SupportedIdeal :=
+
+section
+variable (I J : SupportedIdeal)
+include I J
+
+def gcdCommon  : SupportedIdeal :=
   ⟨gcd I.val J.val,gram_supported_divisor I.val _ I.property (gcd_dvd_left _ _)⟩
 
-def gcdLeft (I J : SupportedIdeal) : SupportedIdeal :=
+def gcdLeft  : SupportedIdeal :=
   ⟨idealQuotient (gcdCommon I J).val I.val,
     gram_supported_quotient I.val _ I.property (gcd_dvd_left _ _)⟩
 
-def gcdRight (I J : SupportedIdeal) : SupportedIdeal :=
+def gcdRight  : SupportedIdeal :=
   ⟨idealQuotient (gcdCommon I J).val J.val,
     gram_supported_quotient J.val _ J.property (gcd_dvd_right _ _)⟩
 
-lemma gcd_residual_coprime (I J : SupportedIdeal) : IsCoprime (gcdLeft I J).val (gcdRight I J).val :=
+lemma gcd_residual_coprime  : IsCoprime (gcdLeft I J).val (gcdRight I J).val :=
   (gcd_eq_iff_quotient_coprime _ _ _ (gcdCommon I J).property.1
     (gcd_dvd_left _ _) (gcd_dvd_right _ _)).mp rfl
 
-lemma gcd_common_left (I J : SupportedIdeal) : (gcdCommon I J).val*(gcdLeft I J).val=I.val :=
+lemma gcd_common_left  : (gcdCommon I J).val*(gcdLeft I J).val=I.val :=
   idealQuotient_mul (gcd_dvd_left _ _)
 
-lemma gcd_common_right (I J : SupportedIdeal) : (gcdCommon I J).val*(gcdRight I J).val=J.val :=
+lemma gcd_common_right  : (gcdCommon I J).val*(gcdRight I J).val=J.val :=
   idealQuotient_mul (gcd_dvd_right _ _)
+end
+
 
 abbrev CoprimeTriple := {t : SupportedIdeal×SupportedIdeal×SupportedIdeal // IsCoprime t.2.1.val t.2.2.val}
 
@@ -66,7 +78,7 @@ lemma gcdTriple_multiply (t : CoprimeTriple) : gcdTriple (multiplyTriple t)=t :=
       rw [he]
       exact mul_left_cancel₀ t.val.1.property.1 (idealQuotient_mul (dvd_mul_right _ _))
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

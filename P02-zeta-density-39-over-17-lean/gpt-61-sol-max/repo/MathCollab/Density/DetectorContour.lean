@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Pole-removal and finite contour argument adapted from McColm TypeIICoverage,
 exact pin 2ace9e7c09a69fdcd1edae1ab6deb7cb3b4df1be, MIT.
@@ -15,7 +16,6 @@ public import MathCollab.Density.RectangleResidue
 open Complex MeasureTheory Set Filter
 open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
@@ -73,25 +73,13 @@ theorem detectorContourNumerator_div_eq_integrand {ρ s : ℂ} {X Y : ℝ}
       smul_eq_mul] using hSlope
   rw [div_eq_iff (sub_ne_zero.mpr hsPole)]
   unfold detectorContourNumerator
-  rw [Complex.Gamma_add_one s hsZero]
-  calc
-    (Y : ℂ) ^ s * (s * Complex.Gamma s) *
-          zetaMollifier X (ρ + s) * zetaZeroQuotient ρ s =
-        (Y : ℂ) ^ s * Complex.Gamma s *
-          zetaMollifier X (ρ + s) *
-            (s * zetaZeroQuotient ρ s) := by ring
-    _ = (Y : ℂ) ^ s * Complex.Gamma s *
-          zetaMollifier X (ρ + s) *
-            ((s - (1 - ρ)) * riemannZeta (ρ + s)) := by rw [hQuotient]
-    _ = ((Y : ℂ) ^ s * Complex.Gamma s *
-          zetaMollifier X (ρ + s) * riemannZeta (ρ + s)) *
-            (s - (1 - ρ)) := by ring
+  grind
 
 /-- Exact residue evaluation at `s = 1 - ρ`. -/
 theorem detectorContourNumerator_at_pole {ρ : ℂ} {X Y : ℝ}
     (hρOne : ρ ≠ 1) (hZero : riemannZeta ρ = 0) :
     detectorContourNumerator ρ X Y (1 - ρ) = detectorResidue ρ X Y := by
-  let p : ℂ := 1 - ρ
+  let p := 1 - ρ
   have hpZero : p ≠ 0 := sub_ne_zero.mpr hρOne.symm
   have hR0 := shiftedRegularizedZeta_zero hρOne hZero
   have hRp : shiftedRegularizedZeta ρ p = 1 := by
@@ -107,14 +95,7 @@ theorem detectorContourNumerator_at_pole {ρ : ℂ} {X Y : ℝ}
     (Y : ℂ) ^ p * Complex.Gamma p * zetaMollifier X 1
   rw [Complex.Gamma_add_one p hpZero]
   have hρp : ρ + p = 1 := by dsimp [p]; ring
-  rw [hρp]
-  calc
-    (Y : ℂ) ^ p * (p * Complex.Gamma p) *
-          zetaMollifier X 1 * zetaZeroQuotient ρ p =
-        (Y : ℂ) ^ p * Complex.Gamma p *
-          zetaMollifier X 1 * (p * zetaZeroQuotient ρ p) := by ring
-    _ = (Y : ℂ) ^ p * Complex.Gamma p * zetaMollifier X 1 := by
-      rw [hQuotient, mul_one]
+  grind
 
 theorem differentiableAt_shiftedRegularizedZeta (ρ s : ℂ) :
     DifferentiableAt ℂ (shiftedRegularizedZeta ρ) s := by
@@ -126,8 +107,7 @@ theorem differentiableAt_zetaZeroQuotient (ρ s : ℂ) :
     DifferentiableAt ℂ (zetaZeroQuotient ρ) s := by
   have hShift : DifferentiableOn ℂ (shiftedRegularizedZeta ρ) Set.univ :=
     fun z _hz => (differentiableAt_shiftedRegularizedZeta ρ z).differentiableWithinAt
-  have hSlope : DifferentiableOn ℂ
-      (dslope (shiftedRegularizedZeta ρ) 0) Set.univ :=
+  have hSlope :=
     (Complex.differentiableOn_dslope
       (Filter.univ_mem : Set.univ ∈ nhds (0 : ℂ))).2 hShift
   exact differentiableWithinAt_univ.mp (hSlope s (Set.mem_univ s))
@@ -147,37 +127,39 @@ theorem differentiableOn_detectorContourNumerator {ρ : ℂ} {X Y : ℝ}
   have hGammaNoPole : ∀ m : ℕ, s + 1 ≠ -m := by
     intro m hm
     have hRe := congrArg Complex.re hm
-    have hmNonneg : (0 : ℝ) ≤ m := by positivity
     simp at hRe
     linarith
-  have hGamma : DifferentiableAt ℂ (fun z : ℂ => Complex.Gamma (z + 1)) s :=
+  have hGamma :=
     (Complex.differentiableAt_Gamma (s + 1) hGammaNoPole).comp s
       (differentiableAt_id.add_const 1)
-  have hMollifier : DifferentiableAt ℂ
-      (fun z : ℂ => zetaMollifier X (ρ + z)) s :=
+  have hMollifier :=
     (differentiableAt_zetaMollifier X (ρ + s)).comp s
       ((differentiableAt_const (𝕜 := ℂ) ρ).add differentiableAt_id)
   have hQuotient := differentiableAt_zetaZeroQuotient ρ s
   exact (((hPow.mul hGamma).mul hMollifier).mul hQuotient).differentiableWithinAt
 
 set_option maxHeartbeats 800000 in
+section
+variable {ρ : ℂ} {X Y R : ℝ}
+    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
+    (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0)
+include ρ X Y R hY hβLower hβUpper hR hZero
+
 /-- Finite-height rectangle shift.  The apparent pole at zero has already
 been removed, so the rectangle crosses exactly the zeta pole `1 - ρ`. -/
-theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
-    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
-    (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0) :
+theorem detector_finite_rectangle_residue  :
     let a : ℝ := 1/2 - ρ.re
     RectangleIntegral'
       (fun s => detectorContourNumerator ρ X Y s / (s - (1 - ρ)))
       ((a : ℂ) - (R : ℂ)*I) (((1/2 : ℝ) : ℂ) + (R : ℂ)*I) =
         detectorResidue ρ X Y := by
-  let a : ℝ := 1/2 - ρ.re
-  let z : ℂ := (a : ℂ) - (R : ℂ) * I
-  let w : ℂ := ((1 / 2 : ℝ) : ℂ) + (R : ℂ) * I
-  let p : ℂ := 1 - ρ
-  let N : ℂ → ℂ := detectorContourNumerator ρ X Y
-  let f : ℂ → ℂ := fun s => N s / (s - p)
-  let g : ℂ → ℂ := dslope N p
+  let a := 1/2 - ρ.re
+  let z := (a : ℂ) - (R : ℂ) * I
+  let w := ((1 / 2 : ℝ) : ℂ) + (R : ℂ) * I
+  let p := 1 - ρ
+  let N := detectorContourNumerator ρ X Y
+  let f := fun s => N s / (s - p)
+  let g := dslope N p
   have hRpos : 0 < R := lt_of_le_of_lt (abs_nonneg _) hR
   have hγLower := (abs_lt.mp hR).1
   have hγUpper := (abs_lt.mp hR).2
@@ -202,13 +184,13 @@ theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
     change -(1 : ℝ) < s.re
     have haLower : -(1 / 2 : ℝ) ≤ a := by dsimp [a]; linarith
     have hzReal : z.re = a := by simp [z]
-    linarith [hsBounds.1]
+    linarith
   have hNdiff : DifferentiableOn ℂ N (Rectangle z w) := by
     exact (differentiableOn_detectorContourNumerator hY).mono hRectSubset
   have hgHolo : HolomorphicOn g (Rectangle z w) := by
     exact (Complex.differentiableOn_dslope hpInterior).2 hNdiff
   have hNp : N p = detectorResidue ρ X Y := by
-    simpa [N, p] using detectorContourNumerator_at_pole
+    exact detectorContourNumerator_at_pole
       (X := X) (Y := Y) hρOne hZero
   have hPrincipal : Set.EqOn
       (f - fun s => detectorResidue ρ X Y / (s - p)) g
@@ -224,21 +206,19 @@ theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
     rw [smul_eq_mul, mul_div_cancel_left₀ _ (sub_ne_zero.mpr hsp)]
   have hResidue := ResidueTheoremOnRectangleWithSimplePole
     hzRe hzIm hpInterior hgHolo hPrincipal
-  simpa [a, z, w, p, N, f, g] using hResidue
+  exact hResidue
 
 
 /-- Exact finite shift for the literal kernel; both exceptional points are
 strictly interior for every independently chosen R>|Im(rho)|. -/
-theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
-    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
-    (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0) :
+theorem detector_finite_rectangle_kernel  :
     let a : ℝ := 1/2 - ρ.re
     RectangleIntegral' (detectorKernel ρ X Y)
       ((a : ℂ)-(R : ℂ)*I) (((1/2 : ℝ) : ℂ)+(R : ℂ)*I) =
         detectorResidue ρ X Y := by
-  let a : ℝ := 1 / 2 - ρ.re
-  let z : ℂ := (a : ℂ) - (R : ℂ) * I
-  let w : ℂ := ((1 / 2 : ℝ) : ℂ) + (R : ℂ) * I
+  let a := 1 / 2 - ρ.re
+  let z := (a : ℂ) - (R : ℂ) * I
+  let w := ((1 / 2 : ℝ) : ℂ) + (R : ℂ) * I
   have hρOne : ρ ≠ 1 := by
     intro h
     have hRe := congrArg Complex.re h
@@ -256,8 +236,7 @@ theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
   have hsZero : s ≠ 0 := by
     intro hs0
     rw [hs0] at hs
-    simp only [RectangleBorder, Set.mem_union, Complex.mem_reProdIm,
-      Set.mem_singleton_iff] at hs
+    simp only [RectangleBorder, mem_union, mem_reProdIm, mem_singleton_iff] at hs
     rcases hs with ((hBottom | hLeft) | hTop) | hRight
     · have : (0 : ℝ) = -R := by simpa [z, w] using hBottom.2
       linarith
@@ -271,8 +250,7 @@ theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
   have hsPole : s ≠ 1 - ρ := by
     intro hsp
     rw [hsp] at hs
-    simp only [RectangleBorder, Set.mem_union, Complex.mem_reProdIm,
-      Set.mem_singleton_iff] at hs
+    simp only [RectangleBorder, mem_union, mem_reProdIm, mem_singleton_iff] at hs
     rcases hs with ((hBottom | hLeft) | hTop) | hRight
     · have : -ρ.im = -R := by simpa [z, w] using hBottom.2
       linarith
@@ -284,6 +262,8 @@ theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
     · have : 1 - ρ.re = 1 / 2 := by simpa [z, w] using hRight.1
       linarith
   exact (detectorContourNumerator_div_eq_integrand hρOne hZero hsZero hsPole).symm
+end
 
 
-end MathCollab.Density
+
+

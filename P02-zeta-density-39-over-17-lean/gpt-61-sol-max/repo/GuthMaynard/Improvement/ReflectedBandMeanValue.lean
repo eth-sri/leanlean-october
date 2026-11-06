@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.DirichletProductEnergy
 public import GuthMaynard.Improvement.Target
 public import MathCollab.Density.Reflection
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Finset
 open scoped ComplexConjugate
@@ -85,8 +85,12 @@ theorem boundedPolynomial_integer_phase {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ)
       ring
     _ = _ := by ring
 
+section
+variable {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
+include N L hN hL
+
 /-- Actual norm product, with no oscillatory factor discarded except unit global phases. -/
-theorem reflected_band_product_norm {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
+theorem reflected_band_product_norm 
     (H r u t : ℝ) (a : ℕ → ℂ) :
     ‖boundedPolynomial N a t‖^2*‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2 =
       ‖finiteDirichletPolynomial (⌊2*N⌋₊*reflectedBandLength L H)
@@ -100,13 +104,15 @@ theorem reflected_band_product_norm {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
   rw [hs,hb,← mul_pow,← norm_mul,dirichlet_product_polynomial hN.le]
 
 /-- The actual shell integrand is integrable, for every Mellin parameter and translate. -/
-theorem reflected_band_product_integrable {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
+theorem reflected_band_product_integrable 
     (H r u : ℝ) (a : ℕ → ℂ) :
     IntegrableOn (fun t => ‖boundedPolynomial N a t‖^2*
       ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2) (Set.Icc (u+H) (u+2*H)) := by
   have he := funext (fun t => reflected_band_product_norm hN hL H r u t a)
   rw [he]
   exact finiteDirichletPolynomial_integrable _ _ _ _
+end
+
 
 /-- Actual reflected mean value. The constant depends on eta alone, before
 all scales, Mellin parameters, translates and bounded source coefficients. -/
@@ -128,13 +134,7 @@ theorem reflected_band_mean_value {η : ℝ} (hη : 0 < η) :
   have hmv := dirichlet_mean_value Y c (show u+H ≤ u+2*H by linarith)
   have he := henergy N hN.le X a (reflectedBandCoefficient L H r u) (Finset.Icc 1 Y) ha
     (fun m _ => reflected_band_coefficient_norm L H r u m)
-  have hfactor : 0 ≤ H+4*(Y:ℝ)*(1+Real.log Y) := by
-    by_cases hy : Y=0
-    · simp only [hy,Nat.cast_zero,mul_zero,zero_mul,add_zero]
-      exact hH
-    · have hy1 : (1:ℝ) ≤ Y := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hy
-      have hl : 0 ≤ Real.log Y := Real.log_nonneg hy1
-      positivity
+  have hfactor : 0 ≤ H+4*(Y:ℝ)*(1+Real.log Y) := by positivity
   calc
     _ = ∫ t in Set.Icc (u+H) (u+2*H), ‖finiteDirichletPolynomial Y c t‖^2 := by
       apply integral_congr_ae
@@ -147,4 +147,4 @@ theorem reflected_band_mean_value {η : ℝ} (hη : 0 < η) :
       mul_le_mul_of_nonneg_left he hfactor
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

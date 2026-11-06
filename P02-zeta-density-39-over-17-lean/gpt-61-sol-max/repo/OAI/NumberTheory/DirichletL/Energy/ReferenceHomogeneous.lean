@@ -1,22 +1,23 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneous
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
 open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
-local notation "O"=>HeckeFamily.O
+open CenteredMomentLattice
+open scoped HeckeO
 
 open CenteredMomentEnergyReferenceReflection CenteredMomentFiniteProfileExceptional
 
@@ -73,7 +74,7 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
   let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
   have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
-  have hcontrol:sourceControl T Wlong≤sourceControl S Wlong:=
+  have hcontrol:sourceControl T Wlong≤ sourceControl S Wlong:=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong
   have hnorm:H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤Src:=
     (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
@@ -93,11 +94,10 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t] at hh
   apply hh.trans_eq
   dsimp only [Src]
-  rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
-end SevenEighths.CenteredMomentEnergyReferenceHomogeneous
 
-end
 
-end OAI
+
+
+

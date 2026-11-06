@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma PrimeFamily.product_span {ι : Type*} [Fintype ι] (G : PrimeFamily ι) :
     Ideal.span {∏ i, G.generator i} = ∏ i, G.ideal i := by
@@ -78,7 +78,7 @@ lemma source_kernel_argument_factor {φ σ : Type*} [Fintype φ] [Fintype σ]
   simp only [fixedKernelCoefficient,map_mul,Nat.cast_mul,mul_pow,div_eq_mul_inv,mul_inv_rev]
   ring
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

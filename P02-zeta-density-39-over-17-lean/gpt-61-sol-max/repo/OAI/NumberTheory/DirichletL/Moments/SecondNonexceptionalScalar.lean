@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
 public import OAI.NumberTheory.DirichletL.Moments.SourceBlockWindows
@@ -11,25 +12,25 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondNonexceptionalScalar
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
+open HeckeFamily CanonicalQuadraticSieve RayFourExpansion
+open CenteredMomentSecondPhysicalBlock
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
+open CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondWholeKernel
 open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
 open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
-local notation "O" => HeckeFamily.O
+open CenteredMomentSourceDyadicShell
+open scoped HeckeO
 
 lemma scalar_cancel (K G V U c d x y h q M:ℝ)
     (hc:0<c)(hd:0<d)(hx:0<x)(hy:0<y)(hU:0<U)(hq:0≤q) :
     (K/(Real.sqrt c*Real.sqrt d*Real.sqrt x*Real.sqrt y))*(G/U)/Real.sqrt (c*d)*
       (M*U*V*h)/(1+q)=M*((K*G*V/(c*d))*h/(x*y))/(1+q)*Real.sqrt (x*y) := by
   rw [Real.sqrt_mul hc.le,Real.sqrt_mul hx.le]
-  have hc':Real.sqrt c≠0:=(Real.sqrt_pos.mpr hc).ne'
-  have hd':Real.sqrt d≠0:=(Real.sqrt_pos.mpr hd).ne'
-  have hx':Real.sqrt x≠0:=(Real.sqrt_pos.mpr hx).ne'
-  have hy':Real.sqrt y≠0:=(Real.sqrt_pos.mpr hy).ne'
+  have hc' :=(Real.sqrt_pos.mpr hc).ne'
+  have hd' :=(Real.sqrt_pos.mpr hd).ne'
+  have hx' :=(Real.sqrt_pos.mpr hx).ne'
+  have hy' :=(Real.sqrt_pos.mpr hy).ne'
   have hq':1+q≠0:=by positivity
   field_simp
   ; ring_nf
@@ -93,8 +94,8 @@ theorem actual_residual_sqrt_cap (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Id
   rw [he,Real.sqrt_div (sq_nonneg _),Real.sqrt_sq (by positivity)] at hh
   exact hh
 
-end SevenEighths.CenteredMomentSecondNonexceptionalScalar
 
-end
 
-end OAI
+
+
+

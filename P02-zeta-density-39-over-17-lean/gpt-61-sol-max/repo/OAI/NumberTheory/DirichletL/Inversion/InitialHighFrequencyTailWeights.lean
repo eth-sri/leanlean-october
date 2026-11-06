@@ -5,17 +5,21 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWeights
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialEnergyCallerWeights
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι]
 
+section
+variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+include p hp
+
 theorem marked_support_norm_bound
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (hdis : (slots:Set σ).PairwiseDisjoint lists)
@@ -30,19 +34,20 @@ theorem marked_support_norm_bound
   rw [heq,Finset.card_powerset] at hc
   exact (primeMark_norm_le_divisor_count slots lists a S hdis ha).trans (by exact_mod_cast hc)
 
-theorem initialColumn_mark_factor
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+section
+variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+include hcop hg
+
+theorem initialColumn_mark_factor
+    
     (Ψ : O→*ℂ) (j C d h : O) (H : Finset ι→ℂ) (S : Finset ι) :
     initialColumn p hp hcop hg Ψ j C d h H S =
       initialColumn p hp hcop hg Ψ j C d h (fun _=>1) S * H S := by
   simp only [initialColumn,mul_one]
 
 theorem initialColumn_mark_norm
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (Ψ : O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1)
     (j C d h : O) (H : Finset ι→ℂ) (S : Finset ι) :
@@ -51,9 +56,12 @@ theorem initialColumn_mark_norm
   exact (mul_le_mul_of_nonneg_right
     ((initialColumn_norm_le p hp hcop hg hc Ψ j C d h S).trans (hΨ _))
     (norm_nonneg _)).trans_eq (one_mul _)
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
+end
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyThreeFactorHolder
 
 @[expose] public section
@@ -16,7 +17,7 @@ open scoped BigOperators ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_two_factor_holder_ennreal
     {ι : Type*} (t : Finset ι) (f g : ι → ℝ≥0∞)
@@ -58,8 +59,8 @@ theorem wooley_two_factor_holder_real
     {u : ℝ} (hu0 : 0 ≤ u) (hu1 : u ≤ 1) :
     (∑ i ∈ t, f i ^ u * g i ^ (1 - u)) ≤
       (∑ i ∈ t, f i) ^ u * (∑ i ∈ t, g i) ^ (1 - u) := by
-  let F : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f i)
-  let G : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (g i)
+  let F := fun i => ENNReal.ofReal (f i)
+  let G := fun i => ENNReal.ofReal (g i)
   have hholder := wooley_two_factor_holder_ennreal t F G hu0 hu1
   have hOne : 0 ≤ 1 - u := sub_nonneg.mpr hu1
   have hterm (i : ι) (hi : i ∈ t) :
@@ -73,10 +74,6 @@ theorem wooley_two_factor_holder_real
       ENNReal.ofReal (∑ i ∈ t, h i) =
         ∑ i ∈ t, ENNReal.ofReal (h i) :=
     ENNReal.ofReal_sum_of_nonneg hh
-  have hleft : 0 ≤ ∑ i ∈ t, f i ^ u * g i ^ (1 - u) :=
-    Finset.sum_nonneg fun i hi =>
-      mul_nonneg (Real.rpow_nonneg (hf i hi) _)
-        (Real.rpow_nonneg (hg i hi) _)
   have hsumF : 0 ≤ ∑ i ∈ t, f i := Finset.sum_nonneg hf
   have hsumG : 0 ≤ ∑ i ∈ t, g i := Finset.sum_nonneg hg
   have hright :
@@ -99,6 +96,6 @@ theorem wooley_two_factor_holder_real
   exact hholder
 
 
-end
 
-end GafniTao
+
+

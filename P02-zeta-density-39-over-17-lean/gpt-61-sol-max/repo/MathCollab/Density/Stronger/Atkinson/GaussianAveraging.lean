@@ -11,9 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.LocalDivisorMean
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -66,4 +65,4 @@ theorem zetaSquareLocalMean_le_gaussian_window {T G L : ℝ}
         (Eventually.of_forall (fun t => mul_nonneg (zetaGaussianWeight_pos T G t).le
           (sq_nonneg _))) (hf.intervalIntegrable _ _)
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -13,13 +13,13 @@ the actual empty retained set. All constants and model budgets precede
 the original source data; no dual-window or extension premise remains.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped NNReal BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem sourceExponentialSum_reflection_estimate
     {α : ℝ≥0} {β σ : ℝ}
@@ -72,4 +72,4 @@ theorem sourceExponentialSum_reflection_estimate
         (mul_le_mul_of_nonneg_right (le_max_left _ _) hX)
     _ = K*((N/Real.sqrt T)*T^(β+ε)+N/Real.sqrt T+T^ε) := by ring
 
-end TaoTrudgianYang2025
+

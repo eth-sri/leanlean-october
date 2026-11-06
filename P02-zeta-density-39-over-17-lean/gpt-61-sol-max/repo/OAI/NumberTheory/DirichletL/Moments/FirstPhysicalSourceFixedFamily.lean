@@ -12,12 +12,12 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
+open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst
 open CenteredMomentFirstColumns CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredMomentFirstMaskedFamily CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy CenteredMomentCommonSupport
-open CenteredMomentChildAssembly CenteredMomentAddedZeroUniform RayFourExpansion CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentFirstMaskedFamily CenteredMomentFirstAmplificationChoice
+open CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy
+open CenteredMomentChildAssembly RayFourExpansion CompletedGauss
+open scoped EisensteinO
 
 structure FixedPair (η:Character)(C D:Ideal O)(hC:Supported C)
     (E:Finset (CommonIndex C D))(ξ₁ ξ₂:RayCharacter) where
@@ -84,8 +84,8 @@ theorem fixed_divisor_column (s:OriginalData ι)(η τ:Character)(C:Ideal O)
   rw [extracted_mask_redundant] at hh
   exact hh
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

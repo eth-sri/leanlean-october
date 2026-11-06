@@ -26,7 +26,7 @@ lemma tuple_norm_pos {K : ℕ} (p : Fin K→ActualEisensteinCubic.O)
   apply elementNorm_pos
   exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

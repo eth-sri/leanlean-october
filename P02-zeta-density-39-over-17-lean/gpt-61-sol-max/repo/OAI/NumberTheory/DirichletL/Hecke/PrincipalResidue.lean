@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.RayFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckePrincipalResidue
 open HeckeFamily HeckeCharacterAnalytic HeckeCoordinates
@@ -53,8 +53,8 @@ theorem fixed_principal_residue_positive (M : Ideal O) [NeZero M] :
     ∃ R : ℝ, 0<R ∧ HeckeOrigin.poleRemoved (HeckeRayFamily.character M 1) 1=(R : ℂ) :=
   principal_residue_positive _ rfl
 
-end SevenEighths.HeckePrincipalResidue
 
-end
 
-end OAI
+
+
+

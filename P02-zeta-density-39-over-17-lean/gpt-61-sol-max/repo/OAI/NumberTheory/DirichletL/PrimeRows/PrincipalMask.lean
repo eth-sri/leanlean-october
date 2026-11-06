@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma calibration_nonzero_supported (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
@@ -37,8 +37,8 @@ theorem calibrated_row_nonprincipal (S : Finset (Ideal O)) (hS : ∀P∈S,Prime 
       (rowCharacter_principal_supported_eq_one S hS hbad u
         (calibration_nonzero_supported S hmax hbad u.val hcal) hp)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

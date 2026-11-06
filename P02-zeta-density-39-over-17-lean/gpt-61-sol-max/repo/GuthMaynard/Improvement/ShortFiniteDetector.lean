@@ -4,9 +4,8 @@ module
 public import GuthMaynard.Improvement.ShortDetectorTruncation
 
 @[expose] public section
-open Complex MeasureTheory Set Filter MathCollab.Density
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -21,7 +20,11 @@ in n^(-rho) until the separate Taylor-family reduction. -/
 def shortFiniteDetector (ρ : ℂ) (T : ℝ) : ℂ :=
   ∑ n ∈ Finset.range (shortDetectorCutoff T), shortDetectorCoefficient T n*(n : ℂ)^(-ρ)
 
-theorem shortDetectorCoefficient_support {T : ℝ} {n : ℕ}
+section
+variable {T : ℝ}
+include T
+
+theorem shortDetectorCoefficient_support  {n : ℕ}
     (hn : shortDetectorCoefficient T n ≠ 0) :
     ⌊(2*T^((100:ℝ)⁻¹))⌋₊ < n ∧ n < shortDetectorCutoff T := by
   by_contra h
@@ -29,13 +32,13 @@ theorem shortDetectorCoefficient_support {T : ℝ} {n : ℕ}
 
 /-- The cutoff convention retains only X<n<sqrt(T)(log T)^2, including all integer
 rounding cases. -/
-theorem shortDetectorCoefficient_real_support {T : ℝ} {n : ℕ}
+theorem shortDetectorCoefficient_real_support  {n : ℕ}
     (hT : 0 < T) (hn : shortDetectorCoefficient T n ≠ 0) :
     (2*T^((100:ℝ)⁻¹)) < (n : ℝ) ∧ (n : ℝ) < T^(1/2:ℝ)*(Real.log T)^2 := by
   have hs := shortDetectorCoefficient_support hn
   exact ⟨(Nat.floor_lt (by positivity)).mp hs.1, Nat.lt_ceil.mp hs.2⟩
 
-theorem shortDetectorCoefficient_norm_le {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem shortDetectorCoefficient_norm_le  (hT : 0 < T) (n : ℕ) :
     ‖shortDetectorCoefficient T n‖ ≤ (n.divisors.card : ℝ) := by
   unfold shortDetectorCoefficient
   split_ifs with h
@@ -44,11 +47,11 @@ theorem shortDetectorCoefficient_norm_le {T : ℝ} (hT : 0 < T) (n : ℕ) :
     exact (mul_le_mul (mollifierCoefficient_norm_le _ _) he (by positivity) (by positivity)).trans_eq (mul_one _)
   · simp
 
-theorem shortDetectorX_one_le {T : ℝ} (hT : 1 ≤ T) : 1 ≤ (2*T^((100:ℝ)⁻¹)) := by
+theorem shortDetectorX_one_le  (hT : 1 ≤ T) : 1 ≤ (2*T^((100:ℝ)⁻¹)) := by
   have h := Real.one_le_rpow hT (show (0 : ℝ) ≤ 1/100 by norm_num)
   linarith
 
-theorem short_detectorTerm_finite_split {T : ℝ} (hT : 1 ≤ T) (ρ : ℂ) {n : ℕ}
+theorem short_detectorTerm_finite_split  (hT : 1 ≤ T) (ρ : ℂ) {n : ℕ}
     (hn : n < shortDetectorCutoff T) :
     detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) n =
       (if n = 1 then (Real.exp (-1/(T^(1/2:ℝ))) : ℂ) else 0) +
@@ -77,7 +80,7 @@ theorem short_detectorTerm_finite_split {T : ℝ} (hT : 1 ≤ T) (ρ : ℂ) {n :
 
 /-- Exact subtraction of n=1 and all cancelled terms, with the logarithmic
 cutoff's tail still visible. -/
-theorem shortFiniteDetector_decomposition {T : ℝ} (hT : 1 ≤ T)
+theorem shortFiniteDetector_decomposition  (hT : 1 ≤ T)
     (hK : 1 < shortDetectorCutoff T) {ρ : ℂ} (hρ : 0 ≤ ρ.re) :
     (Real.exp (-1/(T^(1/2:ℝ))) : ℂ) + shortFiniteDetector ρ T +
       (∑' n : ℕ, detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) (n+shortDetectorCutoff T)) =
@@ -96,5 +99,7 @@ theorem shortFiniteDetector_decomposition {T : ℝ} (hT : 1 ≤ T)
   change (∑ n ∈ Finset.range (shortDetectorCutoff T), detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) n) +
     (∑' n : ℕ, detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) (n+shortDetectorCutoff T)) = (∑' n : ℕ, detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) n) at he
   rwa [hsum, hfull] at he
+end
 
-end GuthMaynard.Improvement
+
+

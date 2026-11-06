@@ -10,9 +10,9 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeUnitRows
 open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion
-open ActualEisensteinCubic CubicRamified ConcreteTraceCRT
+
 open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "ω" => HeckeFamily.omega
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -53,8 +53,8 @@ theorem elementCoeff_character (u : Oˣ) (n : O) :
   · change 0 = if Supported (Ideal.span {n}) then _ else 0
     rw [ite_eq_right (fun hs => hn (supported_unit_thirty_six n hs))]
 
-end SevenEighths.HeckeUnitRows
 
-end
 
-end OAI
+
+
+

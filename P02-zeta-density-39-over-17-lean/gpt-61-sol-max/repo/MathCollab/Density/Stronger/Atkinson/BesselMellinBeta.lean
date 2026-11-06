@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from DFIBesselMellin.lean,
 exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -13,18 +14,17 @@ public import Mathlib.Analysis.MellinTransform
 
 @[expose] public section
 
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 open scoped Topology Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 /-- Mellin transform of the order-zero modified Bessel kernel. -/
-noncomputable def dfiBesselK0MellinSymbol (s : ℂ) : ℂ :=
+def dfiBesselK0MellinSymbol (s : ℂ) : ℂ :=
   (2 : ℂ) ^ (s - 2) * Gamma (s / 2) ^ 2
 
 /-- Mellin transform of the order-zero Neumann kernel. -/
-noncomputable def dfiBesselY0MellinSymbol (s : ℂ) : ℂ :=
+def dfiBesselY0MellinSymbol (s : ℂ) : ℂ :=
   -((2 : ℂ) ^ (s - 1) / Real.pi) *
     Complex.cos (Real.pi * s / 2) * Gamma (s / 2) ^ 2
 
@@ -51,9 +51,7 @@ theorem integral_cpow_mul_exp_neg_mul_Ioi_eq
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Complex.exp (-(a * x))) =
       (1 / a : ℂ) ^ s * Gamma s := by
-  simpa only [Complex.ofReal_neg, Complex.ofReal_mul,
-    Complex.ofReal_exp] using
-    Complex.integral_cpow_mul_exp_neg_mul_Ioi hs ha
+  exact Complex.integral_cpow_mul_exp_neg_mul_Ioi hs ha
 
 /-- Squaring is a bijection from the positive unit interval to itself. -/
 theorem image_sq_Ioo_zero_one :
@@ -137,8 +135,7 @@ theorem integral_one_sub_sq_cpow_Ioo_eq_half_beta
         ((((x ^ 2 : ℝ) : ℂ) ^ ((1 / 2 : ℂ) - 1)) *
           (1 - ((x ^ 2 : ℝ) : ℂ)) ^ (w - 1)) = _
     rw [← smul_mul_assoc, abs_two_mul_smul_sq_cpow_neg_half hx.1]
-    push_cast
-    norm_num
+    simp_all
   rw [h', ← MeasureTheory.integral_const_mul]
   ring_nf
 
@@ -184,7 +181,7 @@ theorem inv_sq_mul_inv_sq_cpow_sub_one
     ((1 / c ^ 2 : ℝ) : ℂ) *
         (((1 / c ^ 2 : ℝ) : ℂ) ^ (w - 1)) =
       (c : ℂ) ^ (-2 * w) := by
-  let C : ℂ := (c : ℂ)
+  let C := (c : ℂ)
   have hC : C ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
   have hCarg : C.arg = 0 := Complex.arg_ofReal_of_nonneg hc.le
   have hbase : (((1 / c ^ 2 : ℝ) : ℂ)) = (C ^ (2 : ℕ))⁻¹ := by
@@ -192,7 +189,7 @@ theorem inv_sq_mul_inv_sq_cpow_sub_one
     push_cast
     field_simp
   rw [hbase]
-  have hB : (C ^ (2 : ℕ))⁻¹ ≠ 0 := inv_ne_zero (pow_ne_zero 2 hC)
+  have hB := inv_ne_zero (pow_ne_zero 2 hC)
   calc
     (C ^ (2 : ℕ))⁻¹ * ((C ^ (2 : ℕ))⁻¹ ^ (w - 1)) =
         ((C ^ (2 : ℕ))⁻¹ ^ (w - 1)) *
@@ -278,7 +275,7 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
   have hgIoc : IntegrableOn g (Set.Ioc 0 1) := by
     rw [← intervalIntegrable_iff_integrableOn_Ioc_of_le zero_le_one]
     exact Complex.betaIntegral_convergent (by norm_num) hw
-  have hg : IntegrableOn g (Set.Ioo 0 1) :=
+  have hg :=
     hgIoc.mono_set Set.Ioo_subset_Ioc_self
   have htrans : IntegrableOn
       (fun x : ℝ => |2 * x| • g (x ^ 2)) (Set.Ioo 0 1) := by
@@ -304,8 +301,7 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
         ((((x ^ 2 : ℝ) : ℂ) ^ ((1 / 2 : ℂ) - 1)) *
           (1 - ((x ^ 2 : ℝ) : ℂ)) ^ (w - 1)) = _
     rw [← smul_mul_assoc, abs_two_mul_smul_sq_cpow_neg_half hx.1]
-    push_cast
-    norm_num
+    simp_all
   have hhalf : IntegrableOn
       (fun x : ℝ => (1 / 2 : ℂ) *
         (2 * (((1 - x ^ 2 : ℝ) : ℂ) ^ (w - 1))))
@@ -320,9 +316,9 @@ theorem integrableOn_cosh_cpow_neg_two_mul_Ioi
     IntegrableOn
       (fun x : ℝ => (Real.cosh x : ℂ) ^ (-2 * w))
       (Set.Ioi 0) := by
-  let g : ℝ → ℂ := fun u =>
+  let g := fun u =>
     ((1 - u ^ 2 : ℝ) : ℂ) ^ (w - 1)
-  have hg : IntegrableOn g (Set.Ioo 0 1) :=
+  have hg :=
     integrableOn_one_sub_sq_cpow_Ioo hw
   have hiff := integrableOn_image_iff_integrableOn_abs_deriv_smul
     (s := Set.Ioi (0 : ℝ)) (f := Real.tanh)
@@ -339,4 +335,4 @@ theorem integrableOn_cosh_cpow_neg_two_mul_Ioi
 
 
 
-end MathCollab.Density.Stronger.Atkinson
+

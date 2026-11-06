@@ -7,7 +7,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-noncomputable section
+
 
 theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
     (L : ℝ) (hL : 0 ≤ L) (K : ℕ) (CF : ℝ) (hCF : 0 ≤ CF)
@@ -89,7 +89,7 @@ lemma product_derivative_bound (F G : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hj) hCF) hCG
 
-end
-end SevenEighths.HeckeDetectorProfiles
 
-end OAI
+
+
+

@@ -45,8 +45,8 @@ theorem sum_globalParentSource {A:Type*}[AddCommMonoid A]
       eraseFirstQuotient_eq _ (houter y hy)] at he'
     exact hxy he'.symm
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

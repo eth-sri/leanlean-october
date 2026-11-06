@@ -33,8 +33,8 @@ lemma common_weight_bound (Z c d θ B ε δ r:ℝ)(hZ:1<Z)(hc:1≤c)(hd:1≤d)
       rw [←Real.rpow_add hz,←Real.rpow_add hz]
       congr 1;ring
     _≤_:=Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
-end SevenEighths.CenteredMomentSecondExceptionalCommonSaving
 
-end
 
-end OAI
+
+
+

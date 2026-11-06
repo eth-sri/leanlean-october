@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalRowCompletion CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -61,7 +61,7 @@ theorem lowSingleSlotWeight_zero_of_period (η : HeckeFamily.Character)
       (calibration_generator_bad S hS hbad).2 n hcn hh)
   simp [lowSingleSlotWeight,heta]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

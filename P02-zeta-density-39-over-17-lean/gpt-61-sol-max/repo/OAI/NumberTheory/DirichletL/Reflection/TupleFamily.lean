@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
@@ -66,7 +66,7 @@ lemma tuplePrimeFamily_at_product (tuples : Finset (σ→Ideal Eis)) (hne : tupl
     (tuplePrimeFamily tuples hne hmax hgood (slotTupleProduct p)).ideal=p :=
   tupleRepresentative_at_product tuples hne hinj p hp
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

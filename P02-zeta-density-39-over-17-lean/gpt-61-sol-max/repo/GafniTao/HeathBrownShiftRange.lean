@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownShiftDecomposition
 
 @[expose] public section
@@ -19,7 +20,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownShiftBound
+def heathBrownShiftBound
     (N k H : ℕ) (lambda : ℝ) : ℕ :=
   min N ⌊4 * ((k - 1).factorial : ℝ) /
     (lambda * (H : ℝ) ^ (k - 1))⌋₊
@@ -53,9 +54,7 @@ theorem heathBrownPositiveShiftFiber_shift_le
     le_trans (Nat.le_add_left d n) hn'.2.1
   have hdReal : (d : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) /
-        (lambda * (H : ℝ) ^ (k - 1)) := by
-    simpa only [Nat.cast_add, add_sub_cancel_left, abs_of_nonneg,
-      Nat.cast_nonneg] using hsep
+        (lambda * (H : ℝ) ^ (k - 1)) := by simp_all
   have hfloor : d ≤ ⌊4 * ((k - 1).factorial : ℝ) /
       (lambda * (H : ℝ) ^ (k - 1))⌋₊ := by
     exact Nat.le_floor hdReal
@@ -109,9 +108,7 @@ theorem heathBrown_positiveShift_sum_restrict
     exact ⟨hd.1, hd.2.trans (heathBrownShiftBound_le_N N k H lambda)⟩
   · intro d hdBig hdSmall
     have hdBig' := Finset.mem_Icc.mp hdBig
-    have hdOut : heathBrownShiftBound N k H lambda < d := by
-      by_contra hnot
-      exact hdSmall (Finset.mem_Icc.mpr ⟨hdBig'.1, Nat.le_of_not_gt hnot⟩)
+    have hdOut : heathBrownShiftBound N k H lambda < d := by simp_all
     rw [heathBrownPositiveShiftFiber_eq_empty_of_shiftBound_lt
       hk hA hlambda hsmall hg hgd hkBounds hdOut]
     rfl
@@ -140,6 +137,6 @@ theorem heathBrownPairCountTwo_card_le_restricted_shift_sum
     (heathBrownBlockParameter A lambda N) f
 
 
-end
 
-end GafniTao
+
+

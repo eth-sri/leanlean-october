@@ -18,7 +18,7 @@ open Set Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def positiveSlopeChartFiber (s : Finset ℤ) (d N T : ℝ) (j : ℕ) : Finset ℤ := by
   classical
@@ -99,4 +99,4 @@ theorem positiveSlopeChartFiber_Ioo_natural_interval {x y : ℤ} {d N T : ℝ} {
   exact (positiveSlopeChartFiber_Ioo_eq_Icc hd hN hT hne).trans
     (int_Icc_eq_image_nat_Icc hlo horder)
 
-end TaoTrudgianYang2025
+

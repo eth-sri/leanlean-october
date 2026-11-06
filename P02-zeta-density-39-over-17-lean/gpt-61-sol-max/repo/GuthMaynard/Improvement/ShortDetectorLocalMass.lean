@@ -1,13 +1,13 @@
 module
+import Mathlib
 /- Actual short-detector critical-line input, using the audited zeta and
 mollifier bounds. This file does not assume a fourth moment. -/
 public import GuthMaynard.Improvement.ShortDetectorIdentity
 public import MathCollab.Density.BandEnergy
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -45,8 +45,7 @@ theorem short_detector_kernel_norm {ρ : ℂ} {Y : ℝ} (hY : 0 < Y) (H t : ℝ)
     apply Complex.ext <;> simp
   unfold detectorKernel shortTwistedNorm
   rw [he,norm_mul,norm_mul,norm_mul,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hY]
-  simp only [Complex.add_re,Complex.ofReal_re,Complex.mul_re,Complex.ofReal_im,Complex.I_re,
-    Complex.I_im,mul_zero,zero_mul,sub_self,add_zero]
+  simp
   ring
 
 /-- Weighted fourth Hölder proved from two audited Cauchy--Schwarz estimates.
@@ -59,11 +58,9 @@ theorem short_weighted_fourth_holder {g F : ℝ → ℝ} (hg0 : ∀ t, 0 ≤ g t
   have hfirst := weighted_integral_sq_le hg0 hg hgf hgf2
   have hsecond := weighted_integral_sq_le (f := fun t => (F t)^2) hg0 hg hgf2
     (by simpa only [← pow_mul] using hgf4)
-  have h0 : 0 ≤ ∫ t,g t := integral_nonneg hg0
-  have h2 : 0 ≤ ∫ t,g t*(F t)^2 := integral_nonneg (fun t => mul_nonneg (hg0 t) (sq_nonneg _))
   have hh := pow_le_pow_left₀ (sq_nonneg _) hfirst 2
   have hs := mul_le_mul_of_nonneg_left hsecond (sq_nonneg (∫ t,g t))
   simp only [← pow_mul] at hh hs
   nlinarith
 
-end GuthMaynard.Improvement
+

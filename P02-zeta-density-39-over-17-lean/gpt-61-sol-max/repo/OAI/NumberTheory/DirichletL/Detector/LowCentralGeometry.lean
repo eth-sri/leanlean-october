@@ -70,7 +70,7 @@ lemma lowCentral_ratio_bounds (Z T ell ε : ℝ) (hZ : 0<Z)
     congr 1
     ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

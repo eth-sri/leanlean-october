@@ -12,20 +12,23 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRetained
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentRetainedEnergy HeckeFamily
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def allocatedPositiveRow (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
+    (S : ι → Finset (Ideal O))
+include η m A z t S
+
+def allocatedPositiveRow  (β : ι → Ideal O → ℂ) (P : ι → ℝ)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ : ℝ) : ℂ :=
   retainedPositiveRow η m A z W₁ W₂ (fun i : liveIndices D a => S i)
     (fun i : liveIndices D a => β i) (fun i : liveIndices D a => P i) t
     (X₁/Ideal.absNorm (selectedPlain D a 0)) (X₂/Ideal.absNorm (selectedPlain D a 1))
 
-theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+theorem allocated_to_retained_energy  (hS : ∀ i,∀ I∈S i,Prime I)
     (β : ι → Ideal O → ℂ) (M P : ι → ℝ) (hM : ∀ i,0 ≤ M i) (hP : ∀ i,0 < P i)
     (hβ : ∀ i,∀ I∈S i,‖β i I‖ ≤ M i)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
@@ -58,9 +61,11 @@ theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
   have hh := mul_le_mul_of_nonneg_left hc (div_nonneg (sq_nonneg (∏ i∈frozenIndices D a,M i)) hF.le)
   apply hr.trans
   convert hh using 1 <;> simp only [residualCenteredRow,allocatedPositiveRow] ; ring
-
-end SevenEighths.CenteredMomentDivisorRetained
-
 end
 
-end OAI
+
+
+
+
+
+

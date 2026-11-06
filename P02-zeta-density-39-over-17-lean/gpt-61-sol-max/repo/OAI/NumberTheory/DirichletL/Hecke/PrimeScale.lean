@@ -43,8 +43,8 @@ theorem twisted_modulus_bound (χ : Character) (θ : RayQuotient.Characters M H)
     (HeckePrimeRay.twistedFamily M H hH χ θ).modulus.absNorm≤χ.modulus.absNorm*M.absNorm :=
   product_modulus_bound χ (HeckeRayQuotient.character M H hH θ)
 
-end SevenEighths.HeckePrimeScale
 
-end
 
-end OAI
+
+
+

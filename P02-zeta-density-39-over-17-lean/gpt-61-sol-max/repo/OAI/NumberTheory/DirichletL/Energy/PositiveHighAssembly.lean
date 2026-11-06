@@ -10,22 +10,22 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighAssembly
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalHighReflectionSymmetric
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open HeckeFamily QuadraticInitialBound
+open CenteredMomentEnergyState
+open CenteredMomentEnergyReferenceLowBands
+
+
+
+
+
+
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
+local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 omit [Fintype α] [DecidableEq α] in
 lemma low_restrict (W:ℝ→ℂ)(bslot a b bΦ Bmask L L' Lslot lo hi Mcap d d' κ Z:ℝ)
     (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
@@ -44,8 +44,8 @@ lemma low_restrict (W:ℝ→ℂ)(bslot a b bΦ Bmask L L' Lslot lo hi Mcap d d' 
     (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
     (by have hh:=diagonalControl_nonneg s.radial.profile;positivity)
 
-end SevenEighths.CenteredMomentEnergyPositiveHighAssembly
 
-end
 
-end OAI
+
+
+

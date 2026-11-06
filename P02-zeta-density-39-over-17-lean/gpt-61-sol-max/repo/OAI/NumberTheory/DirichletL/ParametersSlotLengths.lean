@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Parameters
 public import Mathlib.Algebra.BigOperators.Fin
 public import Mathlib.Algebra.BigOperators.Field
@@ -7,7 +8,7 @@ public import Mathlib.Algebra.BigOperators.Field
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 namespace SevenEighths.Parameters
 
@@ -24,7 +25,7 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
     apply (div_lt_iff₀ (show 0<3*(N:ℝ) by positivity)).mpr
     nlinarith
   let w : Fin N→ℝ := fun j=>1+(j.val:ℝ)/(N:ℝ)
-  let A : ℝ := ∑j,w j
+  let A := ∑j,w j
   have hw (j : Fin N) : 1≤w j ∧ w j<2 := by
     have hj : (j.val:ℝ)<N := by exact_mod_cast j.isLt
     have hdiv : (j.val:ℝ)/(N:ℝ)<1 := (div_lt_one hNp).mpr hj
@@ -37,7 +38,7 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
       _ = ∑_j : Fin N,(1:ℝ) := by simp
       _ ≤ _ := Finset.sum_le_sum fun j _=>(hw j).1
   have hAp : 0<A := hNp.trans_le hA
-  let ell : Fin N→ℝ := fun j=>w j/(6*A)
+  let ell := fun j=>w j/(6*A)
   refine ⟨N,hNnat,ell,?_,?_,?_⟩
   · intro j k he
     have hden : 6*A≠0 := by positivity
@@ -60,11 +61,11 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
     field_simp
 
 theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
-    (hdmin : 0<dmin) (hd : dmin≤dmax) (hm : 0<mesh) (hR : 0<R) :
+    (hdmin : 0<dmin) (hd : dmin≤dmax) (hm : 0< mesh) (hR : 0<R) :
     ∃N : ℕ,0<N ∧ ∃ell : Fin N→ℝ,∃rmin : ℝ,0<rmin ∧
       Function.Injective ell ∧ (∑j,ell j)=1/6 ∧
       (∀j,0<ell j ∧ dmax*rmin≤ell j ∧ ell j≤dmin*mesh ∧ ell j≤dmin*R) ∧
-      (∀d : ℝ,dmin≤d → d≤dmax → ∀j,rmin≤ell j/d ∧ ell j/d≤mesh ∧ ell j/d≤R) := by
+      (∀d : ℝ,dmin≤d → d≤dmax → ∀j,rmin≤ell j/d ∧ ell j/d≤ mesh ∧ ell j/d≤R) := by
   obtain ⟨N,hN,ell,hi,he,hS⟩ := exists_distinct_slot_lengths (dmin*min mesh R)
     (mul_pos hdmin (lt_min hm hR))
   have hne : (Finset.univ : Finset (Fin N)).Nonempty := ⟨⟨0,hN⟩,Finset.mem_univ _⟩
@@ -89,8 +90,8 @@ theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
   · exact (hup k).1.trans (by nlinarith)
   · exact (hup k).2.trans (by nlinarith)
 
-end SevenEighths.Parameters
 
-end
 
-end OAI
+
+
+

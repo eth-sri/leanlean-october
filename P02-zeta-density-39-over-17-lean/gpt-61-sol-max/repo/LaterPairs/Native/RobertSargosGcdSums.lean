@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosDisplacementSums
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem sum_inverse_gcd_product (J K : ℕ) :
@@ -19,11 +18,7 @@ theorem sum_inverse_gcd_product (J K : ℕ) :
       (harmonic J:ℝ)*(harmonic K:ℝ) := by
   simp only [harmonic_eq_sum_Icc,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
   rw [Finset.sum_mul_sum]
-  apply Finset.sum_congr rfl
-  intro j _
-  apply Finset.sum_congr rfl
-  intro k _
-  simp only [one_div,mul_inv]
+  ring
 
 theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ R H Q : ℝ, 1 ≤ R → 1 ≤ H → 1 ≤ Q →
@@ -41,10 +36,7 @@ theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
   have hRB : R ≤ R*H*Q :=
     (le_mul_of_one_le_right hRp.le hH).trans
       (le_mul_of_one_le_right (by positivity : 0 ≤ R*H) hQ)
-  have hQB : Q ≤ R*H*Q := by
-    have hm := mul_le_mul_of_nonneg_right
-      (one_le_mul_of_one_le_of_one_le hR hH) hQp.le
-    nlinarith only [hm]
+  have hQB : Q ≤ R*H*Q := by field_simp <;> nlinarith
   have hJ : 1 ≤ ⌊R⌋₊ := (Nat.one_le_floor_iff R).mpr hR
   have hL : 1 ≤ ⌊2*Q⌋₊ := (Nat.one_le_floor_iff (2*Q)).mpr (by linarith)
   have hJbound : (⌊R⌋₊:ℝ) ≤ R*H*Q := (Nat.floor_le hRp.le).trans hRB
@@ -75,4 +67,4 @@ theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
       ring
     _ = _ := by rw [hsq]
 
-end TaoTrudgianYang2025
+

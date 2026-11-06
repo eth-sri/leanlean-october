@@ -13,18 +13,22 @@ open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
 
 def logProfile (W : ℝ→ℂ) (x : ℝ) : ℂ := (Real.log x : ℂ)*W x
 
-theorem logProfile_cover (W : ℝ→ℂ) (D : ℝ) (S : Finset (Ideal O))
+section
+variable (W : ℝ→ℂ)
+include W
+
+theorem logProfile_cover  (D : ℝ) (S : Finset (Ideal O))
     (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
     ∀ J : Ideal O, J≠0 → logProfile W ((J.absNorm : ℝ)/D)≠0 → J∈S := by
   intro J hJ hw
   exact hc J hJ (fun hz => hw (by simp [logProfile,hz]))
 
-theorem logProfile_support (W : ℝ→ℂ) :
+theorem logProfile_support  :
     Function.support (logProfile W)⊆Function.support W := by
   intro x hx hw
   exact hx (by simp [logProfile,hw])
 
-theorem logProfile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
+theorem logProfile_smooth  (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (logProfile W) := by
   apply contDiff_iff_contDiffAt.mpr
@@ -40,8 +44,14 @@ theorem logProfile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     exact contDiffAt_const.congr_of_eventuallyEq he
   · exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x
       (Real.contDiffAt_log.mpr hx)).mul hW.contDiffAt
+end
 
-lemma power_sigma_deriv (x σ freq : ℝ) (hx : 0<x) :
+
+section
+variable (x σ freq : ℝ) (hx : 0<x)
+include x σ freq hx
+
+lemma power_sigma_deriv  :
     HasDerivAt (fun u : ℝ => (x : ℂ)^(-HeckeDyadic.shift u freq))
       (-(Real.log x : ℂ)*(x : ℂ)^(-HeckeDyadic.shift σ freq)) σ := by
   have hd := (((hasDerivAt_id (σ : ℂ)).neg).add_const ((freq : ℂ)*I)).const_cpow
@@ -58,7 +68,7 @@ lemma power_sigma_deriv (x σ freq : ℝ) (hx : 0<x) :
     simp only [Pi.neg_apply,id_eq]
     ring
 
-lemma power_freq_deriv (x σ freq : ℝ) (hx : 0<x) :
+lemma power_freq_deriv  :
     HasDerivAt (fun u : ℝ => (x : ℂ)^(-HeckeDyadic.shift σ u))
       (I*(Real.log x : ℂ)*(x : ℂ)^(-HeckeDyadic.shift σ freq)) freq := by
   have hd := (((hasDerivAt_id (freq : ℂ)).mul_const I).const_add (-(σ : ℂ))).const_cpow
@@ -74,10 +84,19 @@ lemma power_freq_deriv (x σ freq : ℝ) (hx : 0<x) :
     rw [he]
     simp only [id_eq]
     ring
+end
 
-theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+
+section
+variable (χ : Character) (inv : Bool) (W : ℝ→ℂ)
+include χ inv W
+
+section
+variable (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
+    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S)
+include D σ freq hD S hc
+
+theorem polynomial_sigma_deriv  :
     HasDerivAt (fun u => polynomial χ inv W D u freq)
       (-polynomial χ inv (logProfile W) D σ freq) σ := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
@@ -99,9 +118,7 @@ theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   convert (HasDerivAt.sum (u:=S) hd).const_mul ((D : ℂ)^(-(1/2 : ℂ))) using 1
   all_goals simp only [Finset.sum_apply,neg_mul,Finset.sum_neg_distrib,mul_neg]
 
-theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+theorem polynomial_freq_deriv  :
     HasDerivAt (fun u => polynomial χ inv W D σ u)
       (I*polynomial χ inv (logProfile W) D σ freq) freq := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
@@ -123,8 +140,10 @@ theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   convert (HasDerivAt.sum (u:=S) hd).const_mul ((D : ℂ)^(-(1/2 : ℂ))) using 1
   all_goals simp only [Finset.sum_apply,←Finset.mul_sum]
   ring
+end
 
-theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
+
+theorem polynomial_continuous 
     (D : ℝ) (hD : 0<D) (S : Finset (Ideal O))
     (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
     Continuous (fun p : ℝ×ℝ => polynomial χ inv W D p.1 p.2) := by
@@ -142,9 +161,11 @@ theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   apply Continuous.const_cpow _ (Or.inl (Complex.ofReal_ne_zero.mpr hn.ne'))
   unfold HeckeDyadic.shift
   fun_prop
-
-end SevenEighths.HeckeDetectorRowwisePolynomial
-
 end
 
-end OAI
+
+
+
+
+
+

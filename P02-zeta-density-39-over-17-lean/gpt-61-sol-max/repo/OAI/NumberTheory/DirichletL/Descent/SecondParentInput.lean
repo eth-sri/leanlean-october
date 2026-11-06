@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
 public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
 
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -24,12 +25,7 @@ theorem secondInputCoefficient_old_divisor_mask (Ψ : Eis →* ℂ) (m c d : Eis
   have hd := row_power_mul_mask_power (fun i => Ideal.span {p i}) hg S d 1 1 (by decide)
   simp only [pow_one] at hd
   unfold secondInputCoefficient
-  calc
-    _ = Ψ (∏ i∈S,p i)*rowCoprimeMask (fun i => Ideal.span {p i}) S m*
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S c^4*
-      (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S d*
-        rowCoprimeMask (fun i => Ideal.span {p i}) S d)*H S := by ring
-    _ = _ := by rw [hd]
+  grind
 
 theorem inputConjugateRow_old_divisor_mask (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis)
     (H : Finset ι → ℂ) (k : Eis) :
@@ -64,7 +60,7 @@ theorem fresh_input_parent_mask {Jo : ℕ} (parent : SecondParentSource ι Jo)
   simp only [←Ideal.span_singleton_mul_span_singleton,
     ConcretePrimeRowBridge.span_idealGenerator,hq,sourceIdeal]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

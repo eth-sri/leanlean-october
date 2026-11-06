@@ -6,18 +6,18 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstHighFourCoefficients
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighNormalizedGaussianPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst
+open CenteredMomentSecondHeightFamily
+open CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
 open CenteredMomentEnergyFirstHighFourCoefficients
@@ -82,8 +82,8 @@ theorem actual_high_normalized_four_powers
   have hpos:0≤(C.absNorm:ℝ)^eps*(upper^N)^(CenteredMomentSecondChildPowerBudget.powers eps j):=by positivity
   exact (mul_le_mul_of_nonneg_left (hav j) hpos).trans_eq (by ring)
 
-end SevenEighths.CenteredMomentEnergyFirstHighNormalizedGaussianPowers
 
-end
 
-end OAI
+
+
+

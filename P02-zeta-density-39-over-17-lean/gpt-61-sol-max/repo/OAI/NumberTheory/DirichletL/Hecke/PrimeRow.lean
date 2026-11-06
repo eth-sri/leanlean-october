@@ -10,7 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate BigOperators
 namespace SevenEighths.HeckePrimeRow
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion
+open HeckeFamily CanonicalRowCompletion
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -47,8 +47,8 @@ def canonicalPrimeAmplitude (u : O) (W : ℝ→ℂ) (b D : ℝ) (z : ℂ) : ℂ 
     starRingEnd ℂ (idealRowHom u P)*W ((P.absNorm : ℝ)/D)*
       (((P.absNorm : ℝ)/D : ℝ) : ℂ)^(z-1)
 
-end SevenEighths.HeckePrimeRow
 
-end
 
-end OAI
+
+
+

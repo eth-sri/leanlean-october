@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
 open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment
 open SevenEighths.InverseInitialPhysicalMeasure
 namespace SevenEighths.InverseInitialEnergyCallerWeights
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -59,8 +59,8 @@ theorem outerCoefficient_norm_le
       gcongr
     _ = _ := by ring
 
-end SevenEighths.InverseInitialEnergyCallerWeights
 
-end
 
-end OAI
+
+
+

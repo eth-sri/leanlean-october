@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDeletionDerivative
 open HeckeFamily HeckeDeletionBounds
@@ -68,8 +68,8 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
       rw [← Finset.mul_sum, ← Real.log_prod (fun P _ => (hp0 P).ne')]
       simp only [radical, SmoothMobiusCorrection.primeProduct, map_prod, Nat.cast_prod]
 
-end SevenEighths.HeckeDeletionDerivative
 
-end
 
-end OAI
+
+
+

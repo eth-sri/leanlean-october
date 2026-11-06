@@ -11,17 +11,17 @@ open Filter
 
 namespace SevenEighths.CenteredMomentExceptionalAsymmetricSource
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
-open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
+
+
+open CenteredMomentExceptionalAllocationShell
+open CenteredMomentDivisorExtraction
 open CenteredMomentDivisorRectangle
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
 lemma reduction_ge_one {α:Type u} [Fintype α] [DecidableEq α]
-    (s:Data α)(hP:∀i,1≤s.P i)(D:Ideal O)
+    (s:Data α)(hP:∀i,1≤ s.P i)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2))):1≤formalReductionFactor D a s.P:=by
   have hn (j:Fin 2):(1:ℝ)≤Ideal.absNorm (selectedPlain D a j):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -30,7 +30,7 @@ lemma reduction_ge_one {α:Type u} [Fintype α] [DecidableEq α]
     (Finset.one_le_prod₀ (fun i _=>hP i))
 
 lemma raw_cap_weight {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [DecidableEq κ]
-    (s:Data α)(v:Data κ)(hP:∀i,1≤s.P i)(D:Ideal O)
+    (s:Data α)(v:Data κ)(hP:∀i,1≤ s.P i)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
     (b:Allocation D (Finset.univ:Finset (κ⊕Fin 2)))(Z r:ℝ)(hZ:1<Z):
     exceptionalWeight s.toSource v.toSource D a b Z r=
@@ -45,8 +45,8 @@ lemma raw_cap_weight {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [
     rw [max_eq_right h0,max_eq_right (by linarith:r-Real.logb Z (formalReductionFactor D a s.P)≤0),
       max_eq_right (by linarith:0-Real.logb Z (formalReductionFactor D a s.P)≤0)]
 
-end SevenEighths.CenteredMomentExceptionalAsymmetricSource
 
-end
 
-end OAI
+
+
+

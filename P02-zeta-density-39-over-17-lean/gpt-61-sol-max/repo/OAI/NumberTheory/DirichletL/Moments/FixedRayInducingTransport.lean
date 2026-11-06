@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedRayInducingTransport
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile
 open CanonicalRowCompletion ConcretePrimeRowBridge
 open CenteredMomentExceptionalPair CenteredMomentFixedRowMask
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem modulus_generator_ne_zero (ν : Character) :
     idealGenerator ν.modulus ≠ 0 :=
@@ -26,7 +26,11 @@ theorem modulus_unit_iff (ν : Character) (n : O) :
   conv_lhs => rw [←span_idealGenerator ν.modulus]
   rw [Ideal.isCoprime_span_singleton_iff]
 
-theorem elementCoeff_product_inverse_mask (η ν : Character) (n : O) :
+section
+variable (η ν : Character)
+include η ν
+
+theorem elementCoeff_product_inverse_mask  (n : O) :
     elementCoeff ((η.product ν).product ν.inverse) n =
       if IsCoprime n (idealGenerator ν.modulus) then elementCoeff η n else 0 := by
   rw [elementCoeff_product,elementCoeff_product,elementCoeff_inverse]
@@ -38,7 +42,7 @@ theorem elementCoeff_product_inverse_mask (η ν : Character) (n : O) :
       MulChar.map_nonunit ν.residue (fun hu=>hn ((modulus_unit_iff ν n).mp hu))
     simp only [hn,ite_false,hv,mul_zero,zero_mul]
 
-theorem rowTwist_product (η ν : Character) (m f z n : O) :
+theorem rowTwist_product  (m f z n : O) :
     rowTwist (elementHom (η.product ν)) m f z n =
       rowTwist (elementHom η) m f z n * elementCoeff ν n := by
   change elementCoeff (η.product ν) n * idealRowHom (m^6*f^4*z) (Ideal.span {n}) =
@@ -46,7 +50,7 @@ theorem rowTwist_product (η ν : Character) (m f z n : O) :
   rw [elementCoeff_product]
   ring
 
-theorem rowTwist_product_inverse_mask (η ν : Character) (m A z n : O)
+theorem rowTwist_product_inverse_mask  (m A z n : O)
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
     rowTwist (elementHom ((η.product ν).product ν.inverse)) m 1 (A*z) n =
       rowTwist (elementHom η) (m*idealGenerator ν.modulus) 1 (A*z) n := by
@@ -58,17 +62,23 @@ theorem rowTwist_product_inverse_mask (η ν : Character) (m A z n : O)
   · rfl
   · exact zero_mul _
 
-theorem fixedInducingRow_product_of (η ν : Character) (Q : Ideal O)
+section
+variable (Q : Ideal O)
     (m A z : O) (hν : Q ≤ ν.modulus)
+include Q m A z hν
+
+theorem fixedInducingRow_product_of 
     (h : FixedInducingRow η Q m A z) :
     FixedInducingRow (η.product ν) Q m A z :=
   fixedInducingRow_of_product η (η.product ν) ν Q m A z z hν
     (fun n=>rowTwist_product η ν m 1 (A*z) n) h
 
-theorem fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
-    (m A z : O) (hν : Q ≤ ν.modulus)
-    (hm : m≠0) (hA : A≠0) (hz : z≠0)
-    (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
+section
+variable (hm : m≠0) (hA : A≠0) (hz : z≠0)
+    (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m)
+include hm hA hz hmLam hm2
+
+theorem fixedInducingRow_product_iff  :
     FixedInducingRow (η.product ν) Q m A z ↔ FixedInducingRow η Q m A z := by
   constructor
   · intro h
@@ -80,15 +90,16 @@ theorem fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
       (rowTwist_product_inverse_mask η ν m A z n hmLam hm2)⟩
   · exact fixedInducingRow_product_of η ν Q m A z hν
 
-theorem not_fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
-    (m A z : O) (hν : Q ≤ ν.modulus)
-    (hm : m≠0) (hA : A≠0) (hz : z≠0)
-    (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
+theorem not_fixedInducingRow_product_iff  :
     (¬FixedInducingRow (η.product ν) Q m A z) ↔ ¬FixedInducingRow η Q m A z :=
   not_congr (fixedInducingRow_product_iff η ν Q m A z hν hm hA hz hmLam hm2)
-
-end SevenEighths.CenteredMomentFixedRayInducingTransport
-
+end
+end
 end
 
-end OAI
+
+
+
+
+
+

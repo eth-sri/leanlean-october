@@ -11,16 +11,20 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedPhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentSourceRow
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open CenteredMomentFirstSectors CenteredMomentSourceRow
 open CenteredMomentFirstRetainedSector CenteredMomentFirstCommonFourierTransport
-open CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentFirstReduced
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource
+open CenteredMomentHeckeExpansion
 
- theorem original_sector_columns (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:C≠0)(hD:D≠0)(hCD:primeSupport C=primeSupport D)
+open scoped EisensteinO
+
+ section
+variable (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
+    (C D:Ideal O)
+include η m A t S c C D
+
+theorem original_sector_columns (hC:C≠0)(hD:D≠0)(hCD:primeSupport C=primeSupport D)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     (∑q∈pairSector C D (supportedColumns S) (supportedColumns S),
       ((c q.1*rowWeight η m A 1 t q.1)*star (c q.2*rowWeight η m A 1 t q.2))*
@@ -46,8 +50,11 @@ local notation "O"=>ActualEisensteinCubic.O
   split_ifs <;> simp only [coefficient,map_mul,star_mul,mul_zero]
   ring
 
-def fixedRetainedSector (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):ℂ:=
+section
+variable (hC:Supported C)(hD:Supported D)
+include hC hD
+
+def fixedRetainedSector (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):ℂ:=
   ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets C D,
     ∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
       if IsCoprime (a:Ideal O) (b:Ideal O) then
@@ -56,8 +63,7 @@ def fixedRetainedSector (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal
             (element_supported C C hC.1 S a) (element_supported C D hD.1 S b) E W K X Z ξ
       else 0
 
-theorem original_sector_fixed (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
+theorem original_sector_fixed (hCD:primeSupport C=primeSupport D)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     (∑q∈pairSector C D (supportedColumns S) (supportedColumns S),
       ((c q.1*rowWeight η m A 1 t q.1)*star (c q.2*rowWeight η m A 1 t q.2))*
@@ -92,9 +98,12 @@ theorem original_sector_fixed (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c
       intro a ha
       exact Finset.sum_comm
     _=fixedRetainedSector η m A t S c C D hC hD W K X Z ξ:=Finset.sum_comm
-
-end SevenEighths.CenteredMomentFirstRetainedPhysical
-
+end
 end
 
-end OAI
+
+
+
+
+
+

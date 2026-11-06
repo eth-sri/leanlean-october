@@ -10,7 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstSecondHeightCost
-open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
+open InverseMoment InverseAmbientProfileTower JointLogSeparation
 open InverseMomentFirstOriginalProfile
 
 def firstDegree (degree : ℕ) : ℕ := 2*InverseClippingProfiles.momentOrder (2*degree)
@@ -112,8 +112,12 @@ theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
     nlinarith
   convert mul_le_mul_of_nonneg_right hcoef hpow using 1 ; ring
 
-theorem first_source_budget (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
-    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε) :
+section
+variable (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
+    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε)
+include degree C Cbin Czero Ctail ε hC hz ht hε
+
+theorem first_source_budget  :
     ∃ Ctotal : ℝ,0<Ctotal ∧ ∀ A Z F eta tau pi epschild saving : ℝ,
       0≤A→2≤Z→0≤eta→0≤epschild→
       -saving≤F+48*eta+tau+pi+epschild+ε→
@@ -131,8 +135,7 @@ theorem first_source_budget (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
     (mul_le_mul_of_nonneg_right (hbudget A Z F eta tau pi epschild saving hA hZ heta heps hsaving)
       (le_trans zero_le_one (first_weight_one_le _ z)))
 
-theorem first_source_requested_loss (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
-    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε) :
+theorem first_source_requested_loss  :
     ∃ Ctotal : ℝ,0<Ctotal ∧ ∀ A Z F eta tau pi epschild saving loss : ℝ,
       0≤A→2≤Z→0≤eta→0≤epschild→
       -saving≤F+48*eta+tau+pi+epschild+ε→
@@ -150,8 +153,10 @@ theorem first_source_requested_loss (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
   apply mul_le_mul_of_nonneg_right _ (le_trans zero_le_one (first_weight_one_le _ z))
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
-
-end SevenEighths.InverseMomentFirstSecondHeightCost
 end
 
-end OAI
+
+
+
+
+

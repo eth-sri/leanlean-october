@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -20,7 +21,7 @@ The weighted bounds use the proved total variation, independently of the
 natural-scale C2 estimate used in the central window.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 open scoped ContDiff
@@ -38,28 +39,33 @@ theorem IntervalC1Bound.restrict {f : ℝ → ℂ} {a c u v M : ℝ}
     (Filter.Eventually.of_forall (fun x => norm_nonneg (deriv f x)))
     (hf.derivative_integrable (hau.trans (huv.trans hvc))).norm).trans hf.variation_le
 
-theorem atkinsonRootSlope_le_neg_window {T b y H : ℝ} (hT : 0 < T)
+section
+variable {T b y H : ℝ} (hT : 0 < T)
     (hy : 0 < y) (hH : 0 ≤ H)
+include T b y H hT hy hH
+
+theorem atkinsonRootSlope_le_neg_window 
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ y) :
     atkinsonRootSlope T b y ≤ -2 * H := by
   rw [atkinsonRootSlope_factored hT b hy]
   have hp := atkinsonSaddleRoot_sub_pos (by positivity : 0 < T / (2 * Real.pi)) b
-  have hq : 0 ≤ (atkinsonSaddleRoot (T / (2 * Real.pi)) b - b) / y := by positivity
-  nlinarith [mul_nonpos_of_nonpos_of_nonneg
-    (show atkinsonSaddleRoot (T / (2 * Real.pi)) b - y ≤ 0 by linarith) hq]
+  field_simp <;> nlinarith
 
-theorem window_le_atkinsonRootSlope {T b y H : ℝ} (hT : 0 < T)
-    (hy : 0 < y) (hH : 0 ≤ H)
+theorem window_le_atkinsonRootSlope 
     (hr : y ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H) :
     2 * H ≤ atkinsonRootSlope T b y := by
   rw [atkinsonRootSlope_factored hT b hy]
   have hp := atkinsonSaddleRoot_sub_pos (by positivity : 0 < T / (2 * Real.pi)) b
-  have hq : 0 ≤ (atkinsonSaddleRoot (T / (2 * Real.pi)) b - b) / y := by positivity
-  nlinarith [mul_nonneg
-    (show 0 ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - y by linarith) hq]
+  field_simp <;> nlinarith
+end
 
-theorem norm_atkinsonRootKernel_integral_right_window {T b a c H : ℝ}
+
+section
+variable {T b a c H : ℝ}
     (hT : 0 < T) (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
+include T b a c H hT ha hac hH
+
+theorem norm_atkinsonRootKernel_integral_right_window 
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ a) :
     ‖∫ y in a..c, atkinsonRootKernel T b y‖ ≤ 1 / (2 * H * Real.pi) := by
   have hd (y : ℝ) (hy : y ∈ Icc a c) :
@@ -76,8 +82,7 @@ theorem norm_atkinsonRootKernel_integral_right_window {T b a c H : ℝ}
     exact (atkinsonRootSlope_strictAnti hT.le b).antitoneOn
       (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
 
-theorem norm_atkinsonRootKernel_integral_left_window {T b a c H : ℝ}
-    (hT : 0 < T) (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
+theorem norm_atkinsonRootKernel_integral_left_window 
     (hr : c ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H) :
     ‖∫ y in a..c, atkinsonRootKernel T b y‖ ≤ 1 / (2 * H * Real.pi) := by
   have hd (y : ℝ) (hy : y ∈ Icc a c) :
@@ -92,19 +97,23 @@ theorem norm_atkinsonRootKernel_integral_left_window {T b a c H : ℝ}
     rw [hd x hx, hd y hy]
     exact (atkinsonRootSlope_strictAnti hT.le b).antitoneOn
       (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
+end
 
-theorem IntervalC1Bound.atkinsonRoot_right_window {f : ℝ → ℂ} {a c M T H : ℝ}
+
+section
+variable {f : ℝ → ℂ} {a c M T H : ℝ}
     (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
-    (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
+    (ha : 0 < a)
+include f a c M T H hf hT b ha
+
+theorem IntervalC1Bound.atkinsonRoot_right_window  (hac : a ≤ c) (hH : 0 < H)
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ a) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ M / (H * Real.pi) := by
   apply (hf.atkinsonRoot_of_primitive_bound b ha hac
     (fun x hx => norm_atkinsonRootKernel_integral_right_window hT ha hx.1 hH hr)).trans_eq
   ring
 
-theorem IntervalC1Bound.atkinsonRoot_left_window {f : ℝ → ℂ} {a c M T H : ℝ}
-    (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
-    (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
+theorem IntervalC1Bound.atkinsonRoot_left_window  (hac : a ≤ c) (hH : 0 < H)
     (hr : c ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ M / (H * Real.pi) := by
   apply (hf.atkinsonRoot_of_primitive_bound b ha hac
@@ -112,9 +121,7 @@ theorem IntervalC1Bound.atkinsonRoot_left_window {f : ℝ → ℂ} {a c M T H : 
       (hx.2.trans hr))).trans_eq
   ring
 
-theorem IntervalC1Bound.atkinsonRoot_sub_local {f : ℝ → ℂ} {a c M T H : ℝ}
-    (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
-    (ha : 0 < a) (hH : 0 < H)
+theorem IntervalC1Bound.atkinsonRoot_sub_local  (hH : 0 < H)
     (hleft : a ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H)
     (hright : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ c) :
     ‖(∫ y in a..c, f y * atkinsonRootKernel T b y) -
@@ -147,5 +154,7 @@ theorem IntervalC1Bound.atkinsonRoot_sub_local {f : ℝ → ℂ} {a c M T H : �
   rw [he]
   apply (norm_add_le _ _).trans ((add_le_add hlow hhigh).trans_eq ?_)
   ring
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

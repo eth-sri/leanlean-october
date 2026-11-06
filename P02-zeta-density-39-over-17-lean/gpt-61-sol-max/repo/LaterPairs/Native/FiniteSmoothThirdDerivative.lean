@@ -6,14 +6,13 @@ public import LaterPairs.Native.ContinuousThirdDerivative
 public import LaterPairs.Native.FiniteSmoothTaylor
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
-open Set GafniTao
+
+
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 
@@ -26,4 +25,4 @@ theorem hasDerivAt_iteratedDeriv_finite
   have hd := contDiffAt_iteratedDeriv_finite (n := 1) (j := j) hh
   simpa only [iteratedDeriv_succ] using hd.differentiableAt_one.hasDerivAt
 
-end TaoTrudgianYang2025
+

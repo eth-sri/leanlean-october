@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.ParametersDetectorScales
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.Parameters
 
 theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
@@ -41,8 +41,8 @@ theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
     nlinarith
   have heps8 : ((N:ℝ)+8)*eps≤t := by nlinarith
   constructor <;> nlinarith
-end SevenEighths.Parameters
 
-end
 
-end OAI
+
+
+

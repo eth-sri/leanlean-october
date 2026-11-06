@@ -39,7 +39,7 @@ namespace Euclidean
 namespace L2Compactness
 
 open scoped ENNReal MeasureTheory Topology Convolution Pointwise
-open MeasureTheory Set
+open MeasureTheory
 
 noncomputable section
 
@@ -79,22 +79,26 @@ def smoothOn (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactS
       continuous_smoothFun (E := E) (K := K) (ψ := ψ) (hKm := hKm) hψc hψcs u
     exact this.comp continuous_subtype_val
 
-/-- `smoothFun` packaged as a `BoundedContinuousFunction` on the compact set `K + tsupport ψ`. -/
-def smoothBCF (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
+section
+variable (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
     (hψcs : HasCompactSupport ψ)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
+include hK hKm hψc hψcs u
+
+/-- `smoothFun` packaged as a `BoundedContinuousFunction` on the compact set `K + tsupport ψ`. -/
+def smoothBCF  :
     BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ :=
   letI : CompactSpace ↥(Kψ (K := K) (ψ := ψ)) :=
     isCompact_iff_compactSpace.1 (isCompact_Kψ (K := K) (ψ := ψ) hK hψcs)
   BoundedContinuousFunction.mkOfCompact (smoothOn (E := E) (K := K) (ψ := ψ) hKm hψc hψcs u)
 
-@[simp] lemma smoothBCF_apply (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
-    (hψcs : HasCompactSupport ψ)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
+@[simp] lemma smoothBCF_apply 
     (x : ↥(Kψ (K := K) (ψ := ψ))) :
     smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x =
       smoothFun (E := E) (K := K) ψ u x := by
   rfl
+end
+
 
 omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
 lemma uniformContinuous_ψ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) :
@@ -133,13 +137,13 @@ We intentionally keep the helper lemmas above in this file so the final proof ca
 only reference re-usable bounds.
 -/
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov
+
+
+
+
+
+
+
+

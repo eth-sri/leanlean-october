@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramShell
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
@@ -80,7 +80,7 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   convert he using 1
   rw [hd]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

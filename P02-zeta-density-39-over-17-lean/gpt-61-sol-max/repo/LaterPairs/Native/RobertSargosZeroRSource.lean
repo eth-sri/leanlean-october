@@ -6,14 +6,13 @@ public import LaterPairs.Native.IntegerClosedIntervalPrefix
 public import LaterPairs.Native.RobertSargosShiftBoundary
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
 noncomputable section
-open Set GafniTao
+open GafniTao
 namespace TaoTrudgianYang2025
 
 def robertSargosZeroRSource (f : ℝ → ℝ) (M : ℕ) (h q : ℤ) : ℂ :=
@@ -26,7 +25,11 @@ theorem robertSargos_zero_r_positive_interval (M : ℕ) (h q : ℤ) (hq : 0 ≤ 
   rw [robertSargos_m_overlap_zero_source]
   rw [max_eq_left (by omega),min_eq_right (by omega)]
 
-theorem robertSargos_zero_r_source_neg (f : ℝ → ℝ) (M : ℕ) (h q : ℤ) :
+section
+variable (f : ℝ → ℝ) (M : ℕ) (h q : ℤ)
+include f M h q
+
+theorem robertSargos_zero_r_source_neg  :
     robertSargosZeroRSource f M h (-q) = star (robertSargosZeroRSource f M h q) := by
   unfold robertSargosZeroRSource
   change _ = (starRingEnd ℂ) _
@@ -48,8 +51,10 @@ theorem robertSargos_zero_r_source_neg (f : ℝ → ℝ) (M : ℕ) (h q : ℤ) :
     simp only [Int.cast_add,Int.cast_neg,add_neg_cancel_right]
     ring
 
-theorem norm_robertSargos_zero_r_source_neg (f : ℝ → ℝ) (M : ℕ) (h q : ℤ) :
+theorem norm_robertSargos_zero_r_source_neg  :
     ‖robertSargosZeroRSource f M h (-q)‖ = ‖robertSargosZeroRSource f M h q‖ := by
   rw [robertSargos_zero_r_source_neg,norm_star]
+end
 
-end TaoTrudgianYang2025
+
+

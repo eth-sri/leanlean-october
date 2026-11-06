@@ -4,8 +4,7 @@ public import GeneralCenteredMixedTrace
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -89,4 +88,4 @@ theorem finite_cubic_large_value_general (w : MathCollab.Density.ComparisonCutof
     _ = (A*(1+B+D))*T^η*X := by rw [← hp]; ring
 
 
-end Montgomery.RationalMoment
+

@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftDistanceSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                  
@@ -16,7 +15,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                     
 
 
-noncomputable section
+
 
 open Complex Finset RiemannZeta.GuthMaynard
 open scoped BigOperators InnerProductSpace
@@ -49,10 +48,7 @@ theorem interval_weyl_differencing_sum
     dsimp [s,b]
     rw [sum_norm_sq_paddedShift_eq a N H h (mem_range.mp hh)]
     calc
-      _ ≤ ∑ _n ∈ Ico (0 : ℤ) N, (1 : ℝ) := by
-        apply sum_le_sum
-        intro n hn
-        nlinarith [norm_nonneg (a n),ha n hn]
+      _ ≤ ∑ _n ∈ Ico (0 : ℤ) N, (1 : ℝ) := by bound
       _ = _ := by simp [Int.card_Ico]
   have hexpand : ∑ n ∈ s, ‖u n‖^2 =
       ∑ h ∈ range H, ∑ k ∈ range H, ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ := by
@@ -80,7 +76,6 @@ theorem interval_weyl_differencing_sum
         simp only [Complex.re_sum]
         apply sum_congr rfl
         intro n _
-        simp
         ring
       rw [hre]
       exact (Complex.re_le_norm z).trans (hcorr h hh k hk he)
@@ -107,4 +102,4 @@ theorem interval_weyl_differencing_sum
         (∑ h ∈ range H, ∑ k ∈ range H, ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ) := hcs
     _ ≤ _ := mul_le_mul_of_nonneg_left htotal (Nat.cast_nonneg _)
 
-end TaoTrudgianYang2025
+

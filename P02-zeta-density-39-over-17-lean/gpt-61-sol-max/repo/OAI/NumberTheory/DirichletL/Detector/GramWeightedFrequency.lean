@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma min_product_amplification (L T : ℝ) (hL : 0≤L) (hT : 0≤T) (A : ℕ) :
@@ -67,7 +67,7 @@ theorem canonical_nonexceptional_weighted (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       field_simp
     _=_ := rfl
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

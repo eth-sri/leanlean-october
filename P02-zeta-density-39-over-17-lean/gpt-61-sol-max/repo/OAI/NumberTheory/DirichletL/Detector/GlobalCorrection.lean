@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GlobalHolomorphic
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalProduct
@@ -11,8 +12,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeEuler CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ProbeEuler
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def globalPrimeDefectBound (P : PrimeIdeal) : ℝ :=
@@ -40,16 +41,26 @@ structure CorrectionTail (S : Finset Id) : Prop where
   norm_four : ∀P : PrimeIdeal,P.val∉S → 4≤Ideal.absNorm P.val
   small : (∑' P : {P : PrimeIdeal // P.val∉S},globalPrimeDefectBound P.val)≤1/6
 
-lemma CorrectionTail.summable {S : Finset Id} (_h : CorrectionTail S) :
+section
+variable {S : Finset Id}
+include S
+
+lemma CorrectionTail.summable  (_h : CorrectionTail S) :
     Summable (fun P : {P : PrimeIdeal // P.val∉S}=>globalPrimeDefectBound P.val) :=
   globalPrimeDefectBound_summable.subtype _
 
-lemma CorrectionTail.half {S : Finset Id} (h : CorrectionTail S)
+lemma CorrectionTail.half  (h : CorrectionTail S)
     (P : {P : PrimeIdeal // P.val∉S}) : globalPrimeDefectBound P.val≤1/2 := by
   have hh := Summable.le_tsum h.summable P (fun Q _=>globalPrimeDefectBound_nonneg Q.val)
   linarith [h.small]
+end
 
-lemma idealClosedCorrection_bound (η : HeckeFamily.Character) (P : PrimeIdeal)
+
+section
+variable (η : HeckeFamily.Character)
+include η
+
+lemma idealClosedCorrection_bound  (P : PrimeIdeal)
     (hP : 4≤Ideal.absNorm P.val) (x w z : ℂ)
     (hx : 7/8≤x.re) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
     ‖idealClosedCorrection η P x w z-1‖≤globalPrimeDefectBound P := by
@@ -59,20 +70,25 @@ lemma idealClosedCorrection_bound (η : HeckeFamily.Character) (P : PrimeIdeal)
   · exact HeckeFamily.idealCoeff_norm_le_one η P.val
   · simp
   · exact hx
-  · exact hw
-  · exact hz
+  all_goals (assumption)
 
-theorem globalClosedCorrection_bound (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (x w z : ℂ)
-    (hx : 7/8≤x.re) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
+section
+variable (S : Finset Id)
+    (hS : CorrectionTail S)
+include S hS
+
+section
+variable (x w z : ℂ)
+    (hx : 7/8≤x.re) (hw : 9/10≤w.re) (hz : 4/25≤z.re)
+include x w z hx hw hz
+
+theorem globalClosedCorrection_bound  :
     ‖globalClosedCorrection η S x w z-1‖≤1/2 :=
   product_defect_le _ _ hS.summable
     (fun P=>idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw hz)
     hS.half hS.small
 
-lemma globalClosedCorrection_multipliable (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (x w z : ℂ)
-    (hx : 7/8≤x.re) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
+lemma globalClosedCorrection_multipliable  :
     Multipliable (fun P : {P : PrimeIdeal // P.val∉S}=>idealClosedCorrection η P.val x w z) := by
   let F := fun P : {P : PrimeIdeal // P.val∉S}=>idealClosedCorrection η P.val x w z
   let B := fun P : {P : PrimeIdeal // P.val∉S}=>globalPrimeDefectBound P.val
@@ -84,9 +100,10 @@ lemma globalClosedCorrection_multipliable (η : HeckeFamily.Character) (S : Fins
   apply Finset.prod_congr rfl
   intro P hP
   exact Complex.exp_log (factor_ne_zero_of_defect _ ((hB P).trans (hS.half P)))
+end
 
-theorem globalClosedCorrection_analytic_x (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (w z : ℂ) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
+
+theorem globalClosedCorrection_analytic_x  (w z : ℂ) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
     AnalyticOnNhd ℂ (fun x=>globalClosedCorrection η S x w z) {x : ℂ|7/8<x.re} := by
   apply normalProduct_analytic _ _ _ (Complex.isOpen_re_gt _) hS.summable
   · intro P
@@ -100,8 +117,7 @@ theorem globalClosedCorrection_analytic_x (η : HeckeFamily.Character) (S : Fins
     exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx.le hw hz
   · exact hS.half
 
-theorem globalClosedCorrection_analytic_w (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (x z : ℂ) (hx : 7/8≤x.re) (hz : 4/25≤z.re) :
+theorem globalClosedCorrection_analytic_w  (x z : ℂ) (hx : 7/8≤x.re) (hz : 4/25≤z.re) :
     AnalyticOnNhd ℂ (fun w=>globalClosedCorrection η S x w z) {w : ℂ|9/10<w.re} := by
   apply normalProduct_analytic _ _ _ (Complex.isOpen_re_gt _) hS.summable
   · intro P
@@ -116,8 +132,7 @@ theorem globalClosedCorrection_analytic_w (η : HeckeFamily.Character) (S : Fins
     exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw.le hz
   · exact hS.half
 
-theorem globalClosedCorrection_analytic_z (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (x w : ℂ) (hx : 7/8≤x.re) (hw : 9/10≤w.re) :
+theorem globalClosedCorrection_analytic_z  (x w : ℂ) (hx : 7/8≤x.re) (hw : 9/10≤w.re) :
     AnalyticOnNhd ℂ (fun z=>globalClosedCorrection η S x w z) {z : ℂ|4/25<z.re} := by
   apply normalProduct_analytic _ _ _ (Complex.isOpen_re_gt _) hS.summable
   · intro P
@@ -130,6 +145,9 @@ theorem globalClosedCorrection_analytic_z (η : HeckeFamily.Character) (S : Fins
   · intro P z hz
     exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw hz.le
   · exact hS.half
+end
+end
+
 
 theorem exists_uniform_global_cutoff :
     ∃N : ℕ,4≤N ∧ ∀S : Finset Id,
@@ -156,7 +174,7 @@ theorem exists_uniform_global_cutoff :
       (fun P _=>globalPrimeDefectBound_nonneg P.val) (fun _=>le_rfl)
       (globalPrimeDefectBound_summable.subtype _) (globalPrimeDefectBound_summable.subtype _)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

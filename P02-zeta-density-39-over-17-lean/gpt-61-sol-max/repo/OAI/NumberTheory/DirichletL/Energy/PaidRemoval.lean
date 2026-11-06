@@ -13,7 +13,7 @@ open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyPaidBands CenteredMomentEnergyCapacityRemoval
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -31,7 +31,7 @@ theorem actual_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εremove lo h
     PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(J:Finset α)(w σ v:α→ℝ)(t height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|v i|≤height) →
     ∀s:NaturalState Z Bmask bΦ,s.puncture=1 → s.fixedModulus=internalQ Q η₀ → s.width≤Mcap →
     ∀p:Profiles a b,∀X₁ X₂:ℝ,0<X₁ → 0<X₂ → X₁≤Z^L → X₂≤Z^L →
@@ -74,8 +74,8 @@ theorem actual_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εremove lo h
   simp only [pow_add,Real.rpow_add hZp]
   ring
 
-end SevenEighths.CenteredMomentEnergyPaidRemoval
 
-end
 
-end OAI
+
+
+

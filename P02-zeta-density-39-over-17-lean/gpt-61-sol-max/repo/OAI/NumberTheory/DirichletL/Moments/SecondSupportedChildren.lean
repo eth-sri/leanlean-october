@@ -10,21 +10,21 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondSupportedChildren
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
 open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
+open CenteredMomentRestrictedEnergy
+open CenteredMomentMobiusRegroup CenteredMomentRowNorm
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound CenteredMomentSecondDivisorSupport CenteredMomentSourceRow
+open CenteredMomentSecondWindowBudget
+open CenteredMomentRestrictedSource CenteredMomentFirstSectors
+open CenteredMomentSecondDivisorSupport CenteredMomentSourceRow
 open Filter
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentSecondOriginalChildren
-local notation "O" => ActualEisensteinCubic.O
+
+
+
+open scoped EisensteinO
 
 theorem right_source_energy_zero
     (D:Ideal O) (hD:Supported D) (S:Finset (Ideal O)) (β:Ideal O→ℂ) (Hsource:ℝ)
@@ -143,17 +143,16 @@ theorem actual_block_from_supported_envelopes (W : 𝓢(ℝ,ℂ)) (decay J₁ J�
     _≤K*(Cm*Z^δ*(windowBudget J₁ t E₁*windowBudget J₂ t E₂)):=
       mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hmass'
         (mul_nonneg (windowBudget_nonneg _ _ _) (windowBudget_nonneg _ _ _))) hK
-    _≤max 1 K*(Cm*Z^δ*(windowBudget J₁ t E₁*windowBudget J₂ t E₂)):=
+    _≤ max 1 K*(Cm*Z^δ*(windowBudget J₁ t E₁*windowBudget J₂ t E₂)):=
       mul_le_mul_of_nonneg_right (le_max_right _ _)
         (mul_nonneg (mul_nonneg hCm.le (Real.rpow_nonneg (zero_lt_one.trans hZ.1).le _))
           (mul_nonneg (windowBudget_nonneg _ _ _) (windowBudget_nonneg _ _ _)))
     _=_:=by ring
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-end SevenEighths.CenteredMomentSecondSupportedChildren
 
-end
 
-end OAI
+
+
+

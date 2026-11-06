@@ -11,7 +11,7 @@ open scoped Classical BigOperators Topology
 open Set
 namespace SevenEighths.HeckePrimeAnnular
 open HeckeFamily HeckeDyadic ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def annulusSet (b D : ℝ) : Finset (Ideal O) := idealsUpTo ⌊max 1 b*D⌋₊
 
@@ -97,8 +97,8 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
   refine ⟨C,hC,?_⟩
   intro χ W a b D σ freq B ha hD hWs hlarge hB hWbound
   have hDp : 0<D := lt_of_lt_of_le zero_lt_one hD
-  have hX : 1≤max 1 b*D := hD.trans (le_mul_of_one_le_left hDp.le (le_max_left _ _))
-  have hnorm (I : Ideal O) (hI : I∈annulusSet b D) : (I.absNorm : ℝ)≤max 1 b*D := by
+  have hX : 1≤ max 1 b*D := hD.trans (le_mul_of_one_le_left hDp.le (le_max_left _ _))
+  have hnorm (I : Ideal O) (hI : I∈annulusSet b D) : (I.absNorm : ℝ)≤ max 1 b*D := by
     exact (Nat.cast_le.mpr (mem_idealsUpTo.mp hI).2).trans
       (Nat.floor_le (by positivity))
   have hw (I : Ideal O) (_hI : I∈annulusSet b D) : ‖annularWeight W D σ freq I‖≤B := by
@@ -119,7 +119,7 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
     _ ≤ D^(-(1/2 : ℝ))*(C*(max 1 b*D)^(1/2+ε)*B) := by
       exact mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hDp.le _)
     _ = _ := by
-      rw [Real.mul_rpow (by positivity : 0≤max 1 b) hDp.le]
+      rw [Real.mul_rpow (by positivity : 0≤ max 1 b) hDp.le]
       have he : D^(-(1/2 : ℝ))*D^(1/2+ε)=D^ε := by
         rw [←Real.rpow_add hDp]
         congr 1
@@ -128,8 +128,8 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
         _ = C*(max 1 b)^(1/2+ε)*(D^(-(1/2 : ℝ))*D^(1/2+ε))*B := by ring
         _ = _ := by rw [he]
 
-end SevenEighths.HeckePrimeAnnular
 
-end
 
-end OAI
+
+
+

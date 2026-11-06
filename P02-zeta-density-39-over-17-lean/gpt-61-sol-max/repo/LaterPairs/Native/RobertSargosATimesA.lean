@@ -5,20 +5,23 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPlaneWeights
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                  
                                                                     
                                                            
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_a_times_a_exact (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
-    (hQ : 0 < Q) (hR : 0 < R) :
+section
+variable (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
+    (hQ : 0 < Q) (hR : 0 < R)
+include a M H Q R hQ hR
+
+theorem robertSargos_a_times_a_exact  :
     ‖∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h‖^2 ≤
       (((M:ℝ)+Q)*((H:ℝ)+R)/((Q:ℝ)*R))*robertSargosWeightedCorrelations a M H Q R := by
   have hp : 0 < (Q:ℝ)*R := by positivity
@@ -32,8 +35,7 @@ theorem robertSargos_a_times_a_exact (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     _ = _ := by
       field_simp
 
-theorem robertSargos_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
-    (hQ : 0 < Q) (hR : 0 < R) (hQM : Q ≤ M) (hRH : R ≤ H) :
+theorem robertSargos_a_times_a  (hQM : Q ≤ M) (hRH : R ≤ H) :
     ‖∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h‖^2 ≤
       (4*(M:ℝ)*H/((Q:ℝ)*R))*robertSargosWeightedCorrelations a M H Q R := by
   apply (robertSargos_a_times_a_exact a M H Q R hQ hR).trans
@@ -46,5 +48,7 @@ theorem robertSargos_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     ((M:ℝ)+Q)*((H:ℝ)+R) ≤ (2*(M:ℝ))*(2*(H:ℝ)) :=
       mul_le_mul (by linarith) (by linarith) (by positivity) (by positivity)
     _ = 4*(M:ℝ)*H := by ring
+end
 
-end TaoTrudgianYang2025
+
+

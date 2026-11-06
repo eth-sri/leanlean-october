@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.FixedRayFibers
 
 @[expose] public section
@@ -8,91 +9,87 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CubicEisenstein
 
 section
 open scoped BigOperators Classical ContDiff MatrixGroups
 
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CubicKubota CubicJacobiGlobal ConcreteTraceCRT
-open LocalReflectionBrackets ShortDraftCusp
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
+open ActualEisensteinCubic CompletedGauss
 
-end FixedFourierGeometry
+open scoped EisensteinEis
+
 end
 
 open ActualEisensteinCubic CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 end CubicEisenstein
 
@@ -117,16 +114,7 @@ def mandatoryActiveEquiv (R:Finset ι) :
       by_cases hr:i∈R
       · exact Or.inl hr
       · exact Or.inr ⟨⟨i,hr⟩,hi,rfl⟩
-  right_inv B:=by
-    ext i
-    simp only [Finset.mem_subtype,Finset.mem_union,Finset.mem_image]
-    constructor
-    · rintro (hi|⟨j,hj,hji⟩)
-      · exact False.elim (i.property hi)
-      · have he:j=i:=Subtype.ext hji
-        simpa only [he] using hj
-    · intro hi
-      exact Or.inr ⟨i,hi,rfl⟩
+  right_inv B:=by grind
 
 lemma sum_mandatory_active {V:Type*} [AddCommMonoid V]
     (R:Finset ι) (F:Finset ι→V) (hz:∀A,¬R⊆A→F A=0) :
@@ -135,10 +123,7 @@ lemma sum_mandatory_active {V:Type*} [AddCommMonoid V]
   calc
     _=∑A:Finset ι,if R⊆A then F A else 0:=by
       apply Finset.sum_congr rfl
-      intro A hA
-      by_cases h:R⊆A
-      · simp only [ite_eq_left h]
-      · simp only [ite_eq_right h,hz A h]
+      simp_all
     _=∑A:{A:Finset ι // R⊆A},F A.val:=by
       rw [←Finset.sum_filter]
       exact Finset.sum_subtype (Finset.univ.filter (fun A:Finset ι=>R⊆A)) (by simp) F
@@ -147,7 +132,11 @@ lemma sum_mandatory_active {V:Type*} [AddCommMonoid V]
       intro A
       exact congrArg F (congrArg Subtype.val ((mandatoryActiveEquiv R).left_inv A)).symm
 
-theorem inactive_weight_mandatory_active (R:Finset ι) (z:ι→ℂ)
+section
+variable (R:Finset ι) (z:ι→ℂ)
+include R z
+
+theorem inactive_weight_mandatory_active 
     (hz:∀i∈R,z i=0) (F:Finset ι→ℂ) :
     (∑A:Finset ι,(∏i∈(Finset.univ:Finset ι)\A,z i)*F A)=
       ∑B:Finset {i:ι // i∉R},
@@ -162,7 +151,7 @@ theorem inactive_weight_mandatory_active (R:Finset ι) (z:ι→ℂ)
   have hm:i∈(Finset.univ:Finset ι)\A:=by simp [hni]
   rw [Finset.prod_eq_zero hm (hz i hi),zero_mul]
 
-lemma inactive_product_complement (R:Finset ι) (z:ι→ℂ)
+lemma inactive_product_complement 
     (B:Finset {i:ι // i∉R}) :
     (∏i∈(Finset.univ:Finset ι)\(R∪B.image Subtype.val),z i)=
       ∏i∈(Finset.univ:Finset {i:ι // i∉R})\B,z i.val := by
@@ -177,17 +166,9 @@ lemma inactive_product_complement (R:Finset ι) (z:ι→ℂ)
       exact hi ((Subtype.ext hji) ▸ hj)
   · intro i hi j hj he
     exact Subtype.ext he
-  · intro i hi
-    have hnot:i∉R∪B.image Subtype.val:=(Finset.mem_sdiff.mp hi).2
-    have hr:i∉R:=fun h=>hnot (Finset.mem_union_left _ h)
-    refine ⟨⟨i,hr⟩,?_,rfl⟩
-    simp only [Finset.mem_sdiff,Finset.mem_univ,true_and]
-    intro hb
-    exact hnot (Finset.mem_union_right _ (Finset.mem_image.mpr ⟨⟨i,hr⟩,hb,rfl⟩))
-  · intro i hi
-    rfl
+  all_goals (simp_all <;> nlinarith)
 
-theorem inactive_weight_optional_active (R:Finset ι) (z:ι→ℂ)
+theorem inactive_weight_optional_active 
     (hz:∀i∈R,z i=0) (F:Finset ι→ℂ) :
     (∑A:Finset ι,(∏i∈(Finset.univ:Finset ι)\A,z i)*F A)=
       ∑B:Finset {i:ι // i∉R},
@@ -197,12 +178,14 @@ theorem inactive_weight_optional_active (R:Finset ι) (z:ι→ℂ)
   apply Finset.sum_congr rfl
   intro B hB
   rw [inactive_product_complement]
+end
+
 
 end CompletedGauss
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open scoped EisensteinEis
 
 lemma excluded_prime_dvd_row_mask (q:ℕ) (m:Eis) (F P:Ideal Eis)
     (hP:P∈reflectionExcludedPrimes q) :
@@ -229,8 +212,8 @@ lemma residual_coprime_fixed_conductor (q:ℕ) (hq:q≠0) (m:Eis) (F I:Ideal Eis
     (squarefreeResidualPart_ne_zero (rowSimplePart I) Q)).mp
   apply Finset.disjoint_left.mpr
   intro P hfixed hres
-  have hp:Prime P:=support_prime hfixed
-  have hd:P∣Ideal.span {reflectionConductor q}:=
+  have hp :=support_prime hfixed
+  have hd :=
     UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hfixed)
   have hr:P∣rowResidualPart I Q:=
     UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hres)
@@ -243,8 +226,8 @@ open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinEis
 
 def representativeRowFiber (rows:Finset (Ideal Eis)) (I Q:Ideal Eis) : Finset (Ideal Eis) :=
   completedRowFiber rows Q (rowPowerfulPart I) (rowMaskPart I Q)
@@ -266,19 +249,19 @@ lemma representativeRowFiber_injective (rows:Finset (Ideal Eis)) (I Q:Ideal Eis)
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinEis
 
 end CompletedGauss
 
 open scoped Classical BigOperators
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein
+open scoped EisensteinEis
 
-end CompletedGauss.FreeReflection
 
-end
 
-end OAI
+
+
+

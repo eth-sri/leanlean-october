@@ -57,7 +57,7 @@ theorem actual_pair_profile (χ : Character) (Ω V T W₁ W₂ : ℝ → ℂ)
   push_cast
   ring_nf
 
-end
-end SevenEighths.HeckeDetectorFourier
 
-end OAI
+
+
+

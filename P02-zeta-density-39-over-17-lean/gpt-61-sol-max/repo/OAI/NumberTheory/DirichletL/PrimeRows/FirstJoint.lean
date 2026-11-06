@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem calibrated_physicalRow_first_joint_growth
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (1/4) S)
@@ -67,8 +67,8 @@ theorem calibrated_physicalRow_first_joint_growth
       exact mul_le_mul hl hrec (norm_nonneg _) hL
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

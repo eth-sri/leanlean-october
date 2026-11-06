@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftModel
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                             
@@ -19,7 +18,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
@@ -81,7 +80,6 @@ theorem aProcessShiftPhase_uniform_model {σ : ℝ}
   have hδeq : δ/σ = ε/2 := by dsimp [δ]; field_simp
   have hcoef := mul_le_mul_of_nonneg_right
     (aProcessShiftJetCoefficient_le_budget σ hp) hη.le
-  rw [hδeq] at hb
-  exact hb.trans (by dsimp [B] at hprod; linarith)
+  grind
 
-end TaoTrudgianYang2025
+

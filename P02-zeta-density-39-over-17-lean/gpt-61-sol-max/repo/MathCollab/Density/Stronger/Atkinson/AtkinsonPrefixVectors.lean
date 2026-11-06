@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -19,7 +20,6 @@ Each height retains its own prefix. The exact Gram entry has the minimum
 of the two prefix lengths and the same zero-based source block.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex
@@ -36,9 +36,7 @@ theorem sum_range_prefix_mask {α : Type*} [AddCommMonoid α]
     _ = ∑ i ∈ Finset.range j, if i < j then f i else 0 := by
       symm
       apply Finset.sum_subset (Finset.range_mono hj)
-      intro i _ hi
-      simp only [Finset.mem_range] at hi
-      simp [hi]
+      simp_all
     _ = _ := Finset.sum_congr rfl (fun i hi => ite_eq_left (Finset.mem_range.mp hi))
 
 def atkinsonPositivePhaseTerm (T : ℝ) (n : ℕ) : ℂ :=
@@ -124,4 +122,4 @@ theorem atkinsonBlockCoefficientEnergy_nonneg (m N : ℕ) :
   intro i _
   exact sq_nonneg _
 
-end MathCollab.Density.Stronger.Atkinson
+

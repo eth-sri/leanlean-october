@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Adapted from Conor Grogan's GammaCompactStrip.lean at
 f369f267b4dcfebf010c8e7baa2c9602e2960eba; Apache-2.0.
@@ -13,7 +14,6 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 open Set MeasureTheory
 open scoped Real
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density.GammaBounds
@@ -47,8 +47,7 @@ theorem norm_Gamma_centralPoint_sq (t : ℝ) :
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
   have hcosh : ‖(Real.cosh (Real.pi * t) : ℂ)‖ = Real.cosh (Real.pi * t) := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.cosh_pos _)]
-  rw [hpi, hcosh] at hnorm
-  simpa [pow_two] using hnorm
+  grind
 
 theorem two_mul_cosh_abs (x : ℝ) :
     2 * Real.cosh x = Real.exp |x| + Real.exp (-|x|) := by
@@ -74,10 +73,7 @@ theorem norm_Gamma_centralPoint_le_exp (t : ℝ) :
     rw [hsq]
     have hexp_pos := Real.exp_pos (Real.pi * |t|)
     rw [Real.exp_neg]
-    change Real.pi / Real.cosh (Real.pi * t) ≤
-      (2 * Real.pi) / Real.exp (Real.pi * |t|)
-    apply (div_le_div_iff₀ hcosh_pos hexp_pos).2
-    nlinarith [Real.pi_pos]
+    field_simp <;> nlinarith
   have hpi_two : (2 : ℝ) ≤ Real.pi := by linarith [Real.pi_gt_three]
   have hexp_cmp : Real.exp (-(Real.pi * |t|)) ≤ Real.exp (-2 * |t|) := by
     apply Real.exp_le_exp.mpr
@@ -137,8 +133,7 @@ theorem betaIntegral_ofReal_eq_ofReal_integral {s d : ℝ} :
     show 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) by norm_cast]
   rw [← Complex.ofReal_cpow hx0.le,
     ← Complex.ofReal_cpow (sub_nonneg.mpr hx1lt.le)]
-  push_cast
-  rfl
+  simp_all
 
 theorem real_beta_integral_eq_Gamma_div {s d : ℝ}
     (hs : 0 < s) (hd : 0 < d) :
@@ -178,7 +173,6 @@ theorem one_le_Gamma_half : (1 : ℝ) ≤ Real.Gamma (1 / 2) := by
   nlinarith [Gamma_half_sq, Real.pi_gt_three]
 
 theorem Gamma_half_le_two : Real.Gamma (1 / 2) ≤ 2 := by
-  have hpos := Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 1 / 2)
   nlinarith [Gamma_half_sq, Real.pi_le_four]
 
 theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
@@ -338,8 +332,7 @@ theorem norm_Gamma_compactStrip_le_exp
     intro hz
     have him := congrArg Complex.im hz
     simp [stripPoint] at him
-    subst t
-    norm_num at ht
+    grind
   have hrec := Complex.Gamma_add_one (stripPoint a t) hz_ne
   rw [stripPoint_add_one] at hrec
   have hnormrec := congrArg norm hrec
@@ -354,11 +347,6 @@ theorem norm_Gamma_compactStrip_le_exp
     · linarith
     · linarith
   have hGamma_nonneg := norm_nonneg (Complex.Gamma (stripPoint a t))
-  have hbase :
-      ‖Complex.Gamma (stripPoint a t)‖ ≤
-        ‖Complex.Gamma (stripPoint (a + 1) t)‖ := by
-    rw [hnormrec]
-    nlinarith
-  simpa using hbase.trans hshift
+  field_simp <;> nlinarith
 
-end MathCollab.Density.GammaBounds
+

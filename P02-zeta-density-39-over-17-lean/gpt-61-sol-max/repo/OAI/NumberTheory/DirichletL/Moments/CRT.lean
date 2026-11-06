@@ -56,8 +56,12 @@ theorem fullCorrelation_pi {ι : Type*} [Fintype ι] {R : ι → Type*}
     _ = _ := (Fintype.prod_sum (fun i (x : R i) => ∑ y : R i,
       if v i * x - u i * y = k i then f i x * star (g i y) else (0 : ℂ))).symm
 
-def crtCharacter {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
-    [∀ i, CommRing (R i)] (e : S ≃+* (∀ i, R i)) (χ : ∀ i, MulChar (R i) ℂ) :
+section
+variable {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
+    [∀ i, CommRing (R i)] (e : S ≃+* (∀ i, R i)) (χ : ∀ i, MulChar (R i) ℂ)
+include S ι R e χ
+
+def crtCharacter  :
     MulChar S ℂ where
   toFun x := ∏ i, χ i (e x i)
   map_one' := by simp
@@ -72,11 +76,12 @@ def crtCharacter {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
     obtain ⟨i, hi⟩ := hsome
     exact Finset.prod_eq_zero (Finset.mem_univ i) ((χ i).map_nonunit hi)
 
-@[simp] theorem crtCharacter_apply {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
-    [∀ i, CommRing (R i)] (e : S ≃+* (∀ i, R i)) (χ : ∀ i, MulChar (R i) ℂ) (x : S) :
+@[simp] theorem crtCharacter_apply  (x : S) :
     crtCharacter e χ x = ∏ i, χ i (e x i) := rfl
-
 end
-end SevenEighths.CenteredMomentCorrelation
 
-end OAI
+
+
+
+
+

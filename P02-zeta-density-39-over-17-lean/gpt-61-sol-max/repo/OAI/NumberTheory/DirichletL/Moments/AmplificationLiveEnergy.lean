@@ -12,9 +12,9 @@ namespace SevenEighths.CenteredMomentAmplificationLiveEnergy
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
+open CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
 open CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -88,8 +88,8 @@ theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (Finset.mem_filter.mp B.property).1 (Finset.mem_filter.mp B.property).2
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ f W K)
 
-end SevenEighths.CenteredMomentAmplificationLiveEnergy
 
-end
 
-end OAI
+
+
+

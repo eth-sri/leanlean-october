@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
+open ActualEisensteinCubic CubicEisenstein CompletedGauss
 open LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma scalar_phase_power (a b : ℂ) (ha : a ≠ 0) (j : ℕ) :
@@ -20,8 +20,12 @@ lemma scalar_phase_power (a b : ℂ) (ha : a ≠ 0) (j : ℕ) :
     _ = (a^j*(a⁻¹)^j)*(a⁻¹)^2*(b⁻¹)^(j+2) := by rw [mul_pow,pow_add]; ring
     _ = _ := by rw [← mul_pow,mul_inv_cancel₀ ha,one_pow,one_mul]
 
-theorem general_local_phase {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (A B z : F)
+section
+variable {F : Type*} [Field F] [Fintype F]
+    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ)
+include F χ ψ σ ε
+
+theorem general_local_phase  (A B z : F)
     (hsigma : (σ : F) = A*z) (he : B*z*(σ : F)*(ε : F) = -1)
     (j : ℕ) (hj0 : j ≠ 0) (hj4 : j ≠ 4) :
     ((χ⁻¹)^2) σ * phase χ ψ j ε =
@@ -42,8 +46,7 @@ theorem general_local_phase {F : Type*} [Field F] [Fintype F]
       simp only [mul_pow,pow_add,show 2*j=j+j by omega]
       ring
 
-theorem exceptional_local_phase {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (A z : F)
+theorem exceptional_local_phase  (A z : F)
     (hsigma : (σ : F) = A*z) :
     ((χ⁻¹)^2) σ * phase χ ψ 4 ε =
       (tau χ (ψ.mulShift (-1)) 4*(χ A)⁻¹^2)*(χ z)⁻¹^2 := by
@@ -51,9 +54,11 @@ theorem exceptional_local_phase {F : Type*} [Field F] [Fintype F]
     ]
   simp only [MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0),MulChar.inv_apply_eq_inv']
   ring
+end
 
-noncomputable local instance frozenField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
-noncomputable local instance frozenFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+
+local instance frozenField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
+local instance frozenFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 def frozenPrimeScalar (p c : Eis) [(Ideal.span {p}).IsMaximal]
     (hp : p ≠ 0) (hg : λ₀ ∉ Ideal.span {p}) (j : ℕ) : ℂ :=
@@ -104,7 +109,7 @@ theorem controlled_frozen_phase [∀ i, (Ideal.span {p i}).IsMaximal]
         MulChar.coe_toMonoidHom,MulChar.pow_apply' _ (by omega : 2*j+2 ≠ 0)]
       rfl
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

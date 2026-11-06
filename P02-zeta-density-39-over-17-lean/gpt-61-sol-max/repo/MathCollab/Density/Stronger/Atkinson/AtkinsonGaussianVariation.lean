@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -15,7 +16,6 @@ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.DistLEIntegral
 @[expose] public section
 
 open Complex MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -35,11 +35,9 @@ theorem third_mul_le_arsinh {x : ℝ} (hx : 0 ≤ x) (hx2 : x ≤ 2) : x / 3 ≤
     have hs : 0 < Real.sqrt (1 + y ^ 2) := Real.sqrt_pos.2 (by positivity)
     have hs3 : Real.sqrt (1 + y ^ 2) ≤ 3 :=
       (Real.sqrt_le_iff).2 ⟨by norm_num, by nlinarith [hy.1, hy.2]⟩
-    have h := one_div_le_one_div_of_le hs hs3
-    simpa only [one_div] using sub_nonneg.mpr h
+    field_simp <;> nlinarith
   have h := hm (by norm_num : (0 : ℝ) ∈ Icc 0 2) ⟨hx, hx2⟩ hx
-  simp only [Real.arsinh_zero, zero_div, sub_zero] at h
-  linarith
+  simp_all
 
 def quadraticFrequencyEnvelope (G v : ℝ) : ℝ := Real.exp (-(G*v)^2/8)
 
@@ -48,14 +46,13 @@ theorem quadraticFrequencyEnvelope_antitone (G : ℝ) :
   intro a ha b hb hab
   apply Real.exp_le_exp.mpr
   have hsq : a^2 ≤ b^2 := pow_le_pow_left₀ ha hab 2
-  have hm := mul_le_mul_of_nonneg_left hsq (sq_nonneg G)
-  nlinarith
+  field_simp <;> nlinarith
 
 theorem norm_quadraticGaussian_increment_le {T G a b : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G^2 ≤ 2*T) (ha : 0 ≤ a) (hab : a ≤ b) :
     ‖zetaGaussianQuadraticIntegral T G b-zetaGaussianQuadraticIntegral T G a‖ ≤
       2*Real.sqrt Real.pi*G*(quadraticFrequencyEnvelope G a-quadraticFrequencyEnvelope G b) := by
-  let B : ℝ → ℝ := fun v => (Real.sqrt Real.pi*G^3/2)*v*quadraticFrequencyEnvelope G v
+  let B := fun v => (Real.sqrt Real.pi*G^3/2)*v*quadraticFrequencyEnvelope G v
   have hBi : IntervalIntegrable B volume a b := by
     apply Continuous.intervalIntegrable
     dsimp [B,quadraticFrequencyEnvelope]
@@ -92,10 +89,7 @@ theorem atkinsonSaddleFrequency_monotone {T : ℝ} (hT : 0 < T) :
     Monotone (atkinsonSaddleFrequency T) := by
   intro m n hmn
   apply mul_le_mul_of_nonneg_left _ (by norm_num)
-  apply Real.arsinh_strictMono.monotone
-  apply Real.sqrt_le_sqrt
-  apply div_le_div_of_nonneg_right _ (by positivity)
-  exact mul_le_mul_of_nonneg_left (by exact_mod_cast hmn) Real.pi_pos.le
+  gcongr
 
 theorem finiteVariationBound_atkinsonSaddleGaussian {T G : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G^2 ≤ 2*T) (m N : ℕ) :
@@ -121,7 +115,7 @@ theorem finiteVariationBound_atkinsonSaddleGaussian {T G : ℝ}
       nlinarith)
     (fun i _ => norm_quadraticGaussian_increment_le hT hG hGT
       (atkinsonSaddleFrequency_nonneg T _) (hm (Nat.le_succ i)))
-  simpa only [Nat.add_zero] using h
+  exact h
 
 theorem quadraticFrequencyEnvelope_saddle_le_physical {T : ℝ}
     (hT : 0 < T) (G : ℝ) (n : ℕ) (hn : (n:ℝ) ≤ T) :
@@ -135,7 +129,7 @@ theorem quadraticFrequencyEnvelope_saddle_le_physical {T : ℝ}
     apply (div_le_iff₀ (by positivity : 0 < 2*T)).2
     nlinarith [Real.pi_lt_four,Nat.cast_nonneg (α := ℝ) n]
   have ha := third_mul_le_arsinh hx hx2
-  have ha0 : 0 ≤ Real.arsinh x := Real.arsinh_nonneg_iff.mpr hx
+  have ha0 := Real.arsinh_nonneg_iff.mpr hx
   have hxsq : x^2 = Real.pi*(n:ℝ)/(2*T) := Real.sq_sqrt (by positivity)
   have hsq : (n:ℝ)/(6*T) ≤ (Real.arsinh x)^2 := by
     have hfirst : x^2/9 ≤ (Real.arsinh x)^2 := by nlinarith
@@ -159,4 +153,4 @@ theorem finiteVariationBound_atkinsonSaddleGaussian_physical {T G : ℝ}
   apply (finiteVariationBound_atkinsonSaddleGaussian hT hG hGT m N).mono
   exact mul_le_mul_of_nonneg_left (quadraticFrequencyEnvelope_saddle_le_physical hT G m hm) (by positivity)
 
-end MathCollab.Density.Stronger.Atkinson
+

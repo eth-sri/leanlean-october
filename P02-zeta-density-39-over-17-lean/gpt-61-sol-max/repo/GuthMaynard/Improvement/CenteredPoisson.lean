@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.LogPoissonTail
 public import GuthMaynard.Improvement.RetainedCubicKernel
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform SchwartzMap
@@ -15,11 +15,15 @@ def centeredKernel (a : ℝ → ℂ) (l u L s : ℝ) : ℂ :=
   (∑ d ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, logModulated a s ((d:ℝ)/L)) -
     (L:ℂ)*∫ x, logModulated a s x
 
-theorem logModulated_scaled_schwartz {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+    (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ)
+include a ha l u L hl hL hs s
+
+theorem logModulated_scaled_schwartz  :
     ∃ ψ : 𝓢(ℝ,ℂ), (ψ : ℝ → ℂ) = fun x => logModulated a s (x/L) := by
-  have hd : ContDiff ℝ ∞ (fun x => logModulated a s (x/L)) :=
+  have hd :=
     (logModulated_smooth ha hl hs s).comp (contDiff_id.div_const L)
   have hc : HasCompactSupport (fun x => logModulated a s (x/L)) := by
     apply HasCompactSupport.intro (K := Icc (l*L) (u*L)) isCompact_Icc
@@ -32,9 +36,7 @@ theorem logModulated_scaled_schwartz {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
 
 /-- Actual scaled Poisson formula, with all smoothness/decay premises
 discharged by the given fixed cutoff. -/
-theorem logModulated_poisson {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+theorem logModulated_poisson  :
     (∑ d ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, logModulated a s ((d:ℝ)/L)) =
       (L:ℂ)*∑' m : ℤ, 𝓕 (logModulated a s) (L*(m:ℝ)) := by
   obtain ⟨ψ,hψ⟩ := logModulated_scaled_schwartz ha hl hL hs s
@@ -64,6 +66,8 @@ theorem logModulated_poisson {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       rw [Finset.mem_Icc]
       exact ⟨Int.ceil_le.mpr ((le_div_iff₀ hL).mp h.1),Int.le_floor.mpr ((div_le_iff₀ hL).mp h.2)⟩
     simp [logModulated,hs _ hn]
+end
+
 
 /-- The zero-threshold tail is exactly the nonzero-mode sum. -/
 theorem poissonRemainder_zero (f : ℝ → ℂ) {L : ℝ} (hL : 0 < L) (m : ℤ) :
@@ -72,19 +76,21 @@ theorem poissonRemainder_zero (f : ℝ → ℂ) {L : ℝ} (hL : 0 < L) (m : ℤ)
   · subst m; simp [poissonRemainder]
   · simp [poissonRemainder,hm,hL.ne']
 
-/-- Absolute convergence of the actual nonzero Poisson series. -/
-theorem logModulated_nonzero_summable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     {l u L : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hL : 0 < L)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+    (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ)
+include a ha l u L hl hlu hL hs s
+
+/-- Absolute convergence of the actual nonzero Poisson series. -/
+theorem logModulated_nonzero_summable  :
     Summable (fun m : ℤ => ‖if m = 0 then 0 else 𝓕 (logModulated a s) (L*(m:ℝ))‖) := by
   obtain ⟨C,hC,h⟩ := logModulated_poisson_tail ha hl hlu hs 0
   simpa only [poissonRemainder_zero _ hL] using (h s L 0 0 hL le_rfl).1
 
 /-- The literal centered finite kernel equals the absolutely convergent
 nonzero Poisson series. No operator trace identity is built into this claim. -/
-theorem centeredKernel_poisson {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u L : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hL : 0 < L)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+theorem centeredKernel_poisson  :
     centeredKernel a l u L s =
       (L:ℂ)*∑' m : ℤ, if m = 0 then 0 else 𝓕 (logModulated a s) (L*(m:ℝ)) := by
   let f : ℤ → ℂ := fun m => 𝓕 (logModulated a s) (L*(m:ℝ))
@@ -97,7 +103,8 @@ theorem centeredKernel_poisson {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     simp [f,fourier_eq_phase_integral,phase]
   unfold centeredKernel
   rw [logModulated_poisson ha hl hL hs s]
-  change (L:ℂ)*(∑' m, f m) - (L:ℂ)*(∫ x, logModulated a s x) = _
-  rw [he,hzero,mul_add,add_sub_cancel_left]
+  grind
+end
 
-end GuthMaynard.Improvement
+
+

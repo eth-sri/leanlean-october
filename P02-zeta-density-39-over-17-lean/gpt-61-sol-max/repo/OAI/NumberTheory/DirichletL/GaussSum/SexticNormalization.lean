@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.CubicNormalization
 
 @[expose] public section
@@ -9,14 +10,14 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 
 namespace ActualEisensteinCubic
 
@@ -24,24 +25,31 @@ section
 
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 
-noncomputable def breveGamma1 (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
-    (hp : p ≠ 0) : ℂ :=
+section
+variable (P : Ideal O) [P.IsMaximal]
+    (hgood : lambda ∉ P)
+include P hgood
+
+section
+variable (p : O) (hP : P = Ideal.span {p})
+    (hp : p ≠ 0)
+include p hP hp
+
+def breveGamma1  : ℂ :=
   gaussSum (canonicalSextic P hgood)
     (hP.symm ▸ eisTraceModChar ShortDraftTrace.breveE
       ConcreteBreveE.breveE_period_coordinates p hp) /
       (‖eisEmbedding p‖ : ℂ)
 
-noncomputable def breveGamma3 (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
-    (hp : p ≠ 0) : ℂ :=
+def breveGamma3  : ℂ :=
   gaussSum (canonicalSextic P hgood ^ 3)
     (hP.symm ▸ eisTraceModChar ShortDraftTrace.breveE
       ConcreteBreveE.breveE_period_coordinates p hp) /
       (‖eisEmbedding p‖ : ℂ)
+end
 
-theorem canonicalSextic_pow_three_quadratic (P : Ideal O)
-    [P.IsMaximal] (hgood : lambda ∉ P) :
+
+theorem canonicalSextic_pow_three_quadratic  :
     canonicalSextic P hgood ^ 3 =
       (quadraticChar (O ⧸ P)).ringHomComp (Int.castRingHom ℂ) := by
   change ((sexticChar P hgood).ringHomComp eisEmbedding) ^ 3 = _
@@ -51,8 +59,7 @@ theorem canonicalSextic_pow_three_quadratic (P : Ideal O)
     ((quadraticChar (O ⧸ P) x : ℤ) : ℂ)
   simp
 
-theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
+theorem breveGamma1_gamma2_relation  (hchar : ringChar (O ⧸ P) ≠ 2)
     (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
     (hprimary : lambda ^ 2 ∣ p - 1) :
     breveGamma1 P hgood p hP hp * breveGamma2 P hgood p hP hp =
@@ -91,7 +98,7 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
   have hmul := JacobiQuadratic.normalized_gauss_sextic_relation
     χ ψ hchar hψ hχ1 hχ2 hχ4 hχ3 hχ6 s hs hs0
   have hfour : (4 : O ⧸ Ideal.span {p}) ≠ 0 := by
-    have htwo : (2 : O ⧸ Ideal.span {p}) ≠ 0 := Ring.two_ne_zero hchar
+    have htwo := Ring.two_ne_zero hchar
     convert pow_ne_zero 2 htwo using 1 ; norm_num
   have hχfour : χ (4 : O ⧸ Ideal.span {p}) ≠ 0 :=
     χ.apply_ne_zero_iff.mpr (isUnit_iff_ne_zero.mpr hfour)
@@ -111,27 +118,28 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
     _ = (χ 4)⁻¹ * (breveGamma3 (Ideal.span {p}) hgood p rfl hp *
         breveGamma2 (Ideal.span {p}) hgood p rfl hp ^ 3) := by rw [hmul]
     _ = _ := by ring
+end
+
 
 end
 
-section
 
-open EisensteinEmbedding ConcreteTraceCRT IdealGaussCRT
-
-end
 
 section
 
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 
-noncomputable def breveLocalG (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
+section
+variable (P : Ideal O) [P.IsMaximal]
+    (hgood : lambda ∉ P)
+include P hgood
+
+def breveLocalG  (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) : ℂ :=
   (canonicalSextic P hgood (Ideal.Quotient.mk P (4 : O)))⁻¹ *
     breveGamma3 P hgood p hP hp
 
-theorem breveGamma1_gamma2_eq_neg_alpha_G (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
+theorem breveGamma1_gamma2_eq_neg_alpha_G  (hchar : ringChar (O ⧸ P) ≠ 2)
     (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
     (hprimary : lambda ^ 2 ∣ p - 1) :
     breveGamma1 P hgood p hP hp * breveGamma2 P hgood p hP hp =
@@ -141,6 +149,8 @@ theorem breveGamma1_gamma2_eq_neg_alpha_G (P : Ideal O) [P.IsMaximal]
     breveGamma2_cube P hgood p hP hp hprimary]
   unfold breveLocalG
   ring
+end
+
 
 end
 
@@ -152,7 +162,7 @@ namespace ConcreteBreveE
 
 open EisensteinEmbedding ConcreteTraceCRT
 
-noncomputable def normalizedTraceGauss
+def normalizedTraceGauss
     (a : O) (ha : a ≠ 0) (χ : MulChar (O ⧸ Ideal.span {a}) ℂ) : ℂ := by
   letI : Finite (O ⧸ Ideal.span {a}) := finite_quotient_span ha
   letI : Fintype (O ⧸ Ideal.span {a}) := Fintype.ofFinite _
@@ -161,30 +171,31 @@ noncomputable def normalizedTraceGauss
 
 end ConcreteBreveE
 
-namespace FixedRayActiveSet
 
-open scoped BigOperators
 
-end FixedRayActiveSet
 
-namespace CubeInversion
-
-end CubeInversion
 
 namespace ActualEisensteinCubic
 
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 
-noncomputable def breveGammaMinus1 (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
+section
+variable (P : Ideal O) [P.IsMaximal]
+    (hgood : lambda ∉ P)
+include P hgood
+
+def breveGammaMinus1  (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) : ℂ :=
   gaussSum (canonicalSextic P hgood)⁻¹
     (hP.symm ▸ eisTraceModChar ShortDraftTrace.breveE
       ConcreteBreveE.breveE_period_coordinates p hp) /
       (‖eisEmbedding p‖ : ℂ)
 
-private theorem canonicalSextic_order_six (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) :
+section
+variable (hchar : ringChar (O ⧸ P) ≠ 2)
+include hchar
+
+private theorem canonicalSextic_order_six  :
     orderOf (canonicalSextic P hgood) = 6 := by
   let Φ : MulChar (O ⧸ P) O →* MulChar (O ⧸ P) ℂ :=
     MulChar.ringHomCompHom eisEmbedding
@@ -197,8 +208,7 @@ private theorem canonicalSextic_order_six (P : Ideal O) [P.IsMaximal]
   change orderOf (Φ (sexticChar P hgood)) = 6
   rw [orderOf_injective Φ hΦ, sexticChar_order P hgood hchar]
 
-theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
+theorem breveGamma1_gammaMinus1 
     (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
     (hprimary : lambda ^ 2 ∣ p - 1) :
     breveGamma1 P hgood p hP hp * breveGammaMinus1 P hgood p hP hp =
@@ -238,13 +248,14 @@ theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
   field_simp
   rw [hs]
   simpa only [mul_comm] using hprod
+end
+end
+
 
 end ActualEisensteinCubic
 
-namespace PowerExtraction
 
-end PowerExtraction
 
-end
 
-end OAI
+
+

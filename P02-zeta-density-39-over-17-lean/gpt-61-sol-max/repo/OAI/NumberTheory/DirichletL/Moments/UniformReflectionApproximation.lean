@@ -14,7 +14,7 @@ open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
 open CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation
 open CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀(G : 𝓢(ℝ,ℂ))(χ : Character)(Y R : ℝ),
@@ -107,19 +107,23 @@ theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
       exact hCb G χ _ Z hZ hy.1 hy.2)
   exact ⟨hh.1,hh.2.trans_eq (by ring)⟩
 
-def retainedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) : ℂ :=
+section
+variable (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ)
+include χ ψ G X R
+
+def retainedSchwartz  : ℂ :=
   let S := redundantSet χ.modulus ψ.modulus
   ∑D∈S.powerset,∑'I : SmoothIdeal S,coefficient ψ ψ.inverse S D I*
     finiteAnnularColumn χ.inverse (paperRadialFourier G) R
       ((ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm I.val))
 
-def discardedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) : ℂ :=
+def discardedSchwartz  : ℂ :=
   let S := redundantSet χ.modulus ψ.modulus
   ∑D∈S.powerset,∑'I : SmoothIdeal S,coefficient ψ ψ.inverse S D I*
     HeckeDyadic.polynomial χ.inverse false (fun x=>(discardedWeight R x:ℂ)*paperRadialFourier G x)
       ((ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm I.val)) 0 0
 
-lemma retainedSchwartz_eq (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) (hX : 0<X) :
+lemma retainedSchwartz_eq  (hX : 0<X) :
     retainedSchwartz χ ψ G X R=
       let S := redundantSet χ.modulus ψ.modulus
       ∑D∈S.powerset,∑'I : SmoothIdeal S,coefficient ψ ψ.inverse S D I*
@@ -136,6 +140,8 @@ lemma retainedSchwartz_eq (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) (h
     ((Finset.mem_powerset.mp hD) hP))
   have hI := norm_pos I.val
   rw [finiteAnnularColumn_eq _ _ (reflected_decayTwo G) _ _ (by positivity)]
+end
+
 
 theorem original_split (χ : Character) (hn : χ.residue≠1) :
     ∃(ψ : Character)(g : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖g‖=1 ∧
@@ -181,8 +187,8 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow (Nat.cast_nonneg _) (radical_le_original χ ψ hcap) hepsilon.le
 
-end SevenEighths.CenteredMomentUniformReflectionApproximation
 
-end
 
-end OAI
+
+
+

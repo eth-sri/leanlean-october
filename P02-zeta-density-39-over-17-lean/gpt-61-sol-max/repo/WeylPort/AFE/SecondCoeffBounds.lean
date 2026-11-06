@@ -36,22 +36,32 @@ noncomputable def positiveModeError (p p' h h' : ℝ → ℝ) (a b : ℝ) : ℝ 
   (|h' a| / (4 * Real.pi ^ 3)) * plusSquareBound (p a) +
   (|h a * p' a| / (4 * Real.pi ^ 3)) * plusCubeBound (p a)
 
+section
+variable (f g : ℝ → ℝ) (x : ℝ)
+include f g x
+
 /-- The complete source H numerator, evaluated on the actual phase and weight. -/
-noncomputable def secondH (f g : ℝ → ℝ) (x : ℝ) : ℝ :=
+noncomputable def secondH  : ℝ :=
   |deriv g x| + 2 * Real.pi * |g x * deriv f x|
 
 /-- The complete source H₁ numerator, evaluated on the actual derivatives. -/
-noncomputable def secondH1 (f g : ℝ → ℝ) (x : ℝ) : ℝ :=
+noncomputable def secondH1  : ℝ :=
   |deriv (deriv g) x| + 2 * Real.pi *
     (|g x * deriv (deriv f) x| + |deriv g x * deriv f x|)
+end
+
 
 /-- The square coefficient is nonnegative because it bounds a nonnegative actual series. -/
 theorem plusSquareBound_nonneg {y : ℝ} (hy : 0 < y) : 0 ≤ plusSquareBound y :=
   (tsum_nonneg (fun n : ℕ => by positivity : ∀ n : ℕ,
     0 ≤ 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 2))).trans (harmonic_plus_square_bound hy)
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ}
+include f g a b
+
 /-- Combining the two amplitude majorants yields exactly the source H/H₁ terms. -/
-theorem positiveModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
+theorem positiveModeError_pair_le 
     (hfa : 0 < deriv f a) (hfd : DifferentiableAt ℝ (deriv f) a)
     (hgd : DifferentiableAt ℝ g a) :
     positiveModeError (deriv f) (deriv (deriv f)) (deriv g) (deriv (deriv g)) a b +
@@ -75,7 +85,7 @@ theorem positiveModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
   nlinarith only [ht]
 
 /-- The exact positive coefficient identity transfers proved bounds on the two actual amplitude series. -/
-theorem norm_positiveCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
+theorem norm_positiveCoefficient_le_mode_errors 
     (h : PartIRegularity f g a b)
     (hg : Summable (secondModeTerm f (deriv g) a b))
     (hgf : Summable (secondModeTerm f (fun u => g u * deriv f u) a b))
@@ -98,6 +108,8 @@ theorem norm_positiveCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
   exact (add_le_add bg (mul_le_mul_of_nonneg_left bgf (by positivity))).trans
     (positiveModeError_pair_le (h.f_deriv_pos a (Set.left_mem_Icc.mpr h.lt.le)) hfd
       (h.g_differentiable a (Set.left_mem_Icc.mpr h.lt.le)))
+end
+
 
 /-- The actual AFE positive Poisson tail satisfies the complete H/H₁ bound, with all integral estimates derived. -/
 theorem afe_positiveCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
@@ -130,18 +142,24 @@ theorem afe_positiveCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 
     (afePhase_deriv_hasDerivAt c ha).deriv, abs_div, abs_neg, abs_of_pos hc,
     abs_of_nonneg (sq_nonneg a)] using hn
 
+section
+variable (M : ℕ) (y : ℝ)
+include M y
+
 /-- The literal square-denominator coefficient in the upper-frequency source estimate. -/
-noncomputable def minusSquareBound (M : ℕ) (y : ℝ) : ℝ :=
+noncomputable def minusSquareBound  : ℝ :=
   let δ : ℝ := (M : ℝ) + 1 - y
   (1 / δ ^ 2 + 1 / (δ + 1) ^ 2 + 1 / (δ + 1)) / y -
     (Real.log ((M : ℝ) + 1) - 1 / ((M : ℝ) + 1) - (Complex.digamma (δ : ℂ)).re) / y ^ 2
 
 /-- The literal cube-denominator coefficient in the upper-frequency source estimate. -/
-noncomputable def minusCubeBound (M : ℕ) (y : ℝ) : ℝ :=
+noncomputable def minusCubeBound  : ℝ :=
   let δ : ℝ := (M : ℝ) + 1 - y
   (1 / δ ^ 3 + 1 / (δ + 1) ^ 3 + 1 / (2 * (δ + 1) ^ 2)) / y -
     (1 / δ ^ 2 + 1 / (δ + 1)) / y ^ 2 +
     (Real.log ((M : ℝ) + 1) - 1 / (2 * ((M : ℝ) + 1)) - (Complex.digamma (δ : ℂ)).re) / y ^ 3
+end
+
 
 /-- The complete upper-frequency majorant for one actual amplitude. -/
 noncomputable def negativeModeError (p p' h h' : ℝ → ℝ) (a b : ℝ) (M : ℕ) : ℝ :=
@@ -156,8 +174,12 @@ theorem minusSquareBound_nonneg {M : ℕ} {y : ℝ} (hy : 0 < y) (hM : y < (M : 
   apply (tsum_nonneg (fun n : ℕ => show 0 ≤ 1 / (((n : ℝ) + M + 1) * ((n : ℝ) + M + 1 - y) ^ 2) by positivity)).trans
   exact harmonic_tail_square_bound hy hM
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ}
+include f g a b
+
 /-- Combining the two amplitude majorants yields exactly the source H/H₁ terms. -/
-theorem negativeModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
+theorem negativeModeError_pair_le 
     (hfa : 0 < deriv f a) {M : ℕ} (hM : deriv f a < (M : ℝ) + 1) (hfd : DifferentiableAt ℝ (deriv f) a)
     (hgd : DifferentiableAt ℝ g a) :
     negativeModeError (deriv f) (deriv (deriv f)) (deriv g) (deriv (deriv g)) a b M +
@@ -181,7 +203,7 @@ theorem negativeModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
   nlinarith only [ht]
 
 /-- The exact upper coefficient identity transfers proved bounds on the two actual amplitude series. -/
-theorem norm_negativeCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
+theorem norm_negativeCoefficient_le_mode_errors 
     (h : PartIRegularity f g a b) (M : ℕ) (hM : deriv f a < (M : ℝ) + 1)
     (hg : Summable (upperModeTerm f (deriv g) a b M))
     (hgf : Summable (upperModeTerm f (fun u => g u * deriv f u) a b M))
@@ -204,10 +226,16 @@ theorem norm_negativeCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
   exact (add_le_add bg (mul_le_mul_of_nonneg_left bgf (by positivity))).trans
     (negativeModeError_pair_le (h.f_deriv_pos a (Set.left_mem_Icc.mpr h.lt.le)) hM hfd
       (h.g_differentiable a (Set.left_mem_Icc.mpr h.lt.le)))
+end
+
+
+section
+variable {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
+    (ha : 0 < a) (hab : a < b)
+include σ c a b hσ hc ha hab
 
 /-- The actual AFE upper Poisson tail satisfies the complete H/H₁ bound, with all integral estimates derived. -/
-theorem afe_negativeCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
-    (ha : 0 < a) (hab : a < b) (M : ℕ) (hM : c / a < (M : ℝ) + 1) :
+theorem afe_negativeCoefficient_bound  (M : ℕ) (hM : c / a < (M : ℝ) + 1) :
     ‖∑' n : ℕ, negativeCoefficient (afePhase c) (afeWeight σ) a b (n + M + 1)‖ ≤
       secondH (afePhase c) (afeWeight σ) b / (4 * Real.pi ^ 2) * ‖negativeTail M b (c / b)‖ +
       secondH (afePhase c) (afeWeight σ) a / (4 * Real.pi ^ 2) * ‖negativeTail M a (c / a)‖ +
@@ -238,8 +266,7 @@ theorem afe_negativeCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 
     abs_of_nonneg (sq_nonneg a)] using hn
 
 /-- The actual finite AFE Poisson remainder satisfies the assembled second-order bound before the separate E₁/E₂ packaging. -/
-theorem afe_finite_poisson_second_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
-    (ha : 0 < a) (hab : a < b) :
+theorem afe_finite_poisson_second_bound  :
     let f : ℝ → ℝ := afePhase c
     let g : ℝ → ℝ := afeWeight σ
     let M : ℕ := ⌊c / a⌋₊
@@ -267,5 +294,7 @@ theorem afe_finite_poisson_second_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 
   apply (hs _ _ _ _ _).trans
   simp only [div_eq_mul_inv] at hp hn ⊢
   nlinarith only [hp, hn]
+end
 
-end DhimanKadiriQuesadaHerrera2026
+
+

@@ -9,13 +9,13 @@ public import TaoTrudgianYang2025.BetaModelSumBound
 the full closed unit interval. The separate beta reflection identity is
 not asserted by this module. -/
 
-noncomputable section
+
 
 open Expdb
 open scoped NNReal
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem exponentSumGrowthExponent_zero :
     exponentSumGrowthExponent 0 = 0 := by
@@ -94,4 +94,4 @@ theorem exponentPair_iff_beta_bound {k l : ℝ}
   exact ⟨fun h α hα => exponentSumGrowthExponent_le_exponentPairLine_closed h α hα,
     exponentPair_of_beta_bound htri⟩
 
-end TaoTrudgianYang2025
+

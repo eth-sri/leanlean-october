@@ -11,17 +11,21 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-lemma fixedPrimeProduct_ne_zero (S : Finset Id) (hS : ∀P∈S,Prime P) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,Prime P)
+include S hS
+
+lemma fixedPrimeProduct_ne_zero  :
     (∏P∈S,P)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>(hS P hP).ne_zero)
 
-def fixedSourcePrincipal (S : Finset Id) (hS : ∀P∈S,Prime P) : Character :=
+def fixedSourcePrincipal  : Character :=
   letI : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS⟩
   HeckeRayFamily.character (∏P∈S,P) 1
 
-lemma prime_coprime_fixedProduct (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
+lemma prime_coprime_fixedProduct  (P : PrimeIdeal) :
     IsCoprime P.val (∏Q∈S,Q) ↔ P.val∉S := by
   rw [IsCoprime.prod_right_iff]
   constructor
@@ -30,13 +34,15 @@ lemma prime_coprime_fixedProduct (S : Finset Id) (hS : ∀P∈S,Prime P) (P : Pr
   · intro h Q hQ
     exact primeIdeal_coprime P ⟨Q,hS Q hQ⟩ (fun he=>h ((congrArg Subtype.val he).symm ▸ hQ))
 
-lemma fixedSourcePrincipal_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
+lemma fixedSourcePrincipal_prime  (P : PrimeIdeal) :
     idealCoeff (fixedSourcePrincipal S hS) P.val=if P.val∈S then 0 else 1 := by
   unfold fixedSourcePrincipal
   rw [HeckeRayFamily.idealCoeff_character,RayOrthogonality.idealCharacter_one]
   change (if P.val=0 then (0:ℂ) else if IsCoprime P.val (∏Q∈S,Q) then 1 else 0)=_
   simp only [P.property.ne_zero,ite_false,prime_coprime_fixedProduct S hS P]
   split_ifs <;> simp_all
+end
+
 
 lemma excludedTarget_prime (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
     idealCoeff (η.excludePrimes S hS) P.val=if P.val∈S then 0 else idealCoeff η P.val := by
@@ -81,7 +87,7 @@ theorem excludedTarget_hasProd (η : Character) (S : Finset Id) (hS : ∀P∈S,P
       (LFunction (η.excludePrimes S hS) s) :=
   LFunction_hasProd_outside _ S (idealCoeff η) (excludedTarget_prime η S hS) s hs
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

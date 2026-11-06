@@ -9,7 +9,6 @@ public import Mathlib.Tactic
 
 open Real Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 noncomputable section
 
@@ -113,7 +112,11 @@ theorem hasSum_smoothDyadicWeight_nonneg_scales (x : ℝ) :
   simp only [pow_zero, div_one, smoothDyadicWeight]
   ring
 
-theorem dyadicStep_mul_pow_tendsto {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+
+theorem dyadicStep_mul_pow_tendsto  :
     Tendsto (fun n : ℕ => dyadicStep (x*(2 : ℝ)^n)) atTop (𝓝 0) := by
   have he : ∀ᶠ n : ℕ in atTop, dyadicStep (x*(2 : ℝ)^n) = 0 := by
     filter_upwards [(tendsto_pow_atTop_atTop_of_one_lt (by norm_num : (1 : ℝ) < 2)).eventually_ge_atTop ((3/2)/x)] with n hn
@@ -122,7 +125,7 @@ theorem dyadicStep_mul_pow_tendsto {x : ℝ} (hx : 0 < x) :
     nlinarith
   exact (tendsto_congr' he).mpr tendsto_const_nhds
 
-theorem hasSum_smoothDyadicWeight_neg_scales {x : ℝ} (hx : 0 < x) :
+theorem hasSum_smoothDyadicWeight_neg_scales  :
     HasSum (fun n : ℕ => smoothDyadicWeight (x*(2 : ℝ)^(n+1))) (dyadicStep (2*x)) := by
   apply (hasSum_iff_tendsto_nat_of_nonneg
     (fun n => (smoothDyadicWeight_bounds _).1) _).mpr
@@ -136,7 +139,7 @@ theorem hasSum_smoothDyadicWeight_neg_scales {x : ℝ} (hx : 0 < x) :
     (dyadicStep_mul_pow_tendsto (show 0 < 2*x by positivity)).const_sub (dyadicStep (2*x))
 
 /-- Genuine absolute summation over every integer dyadic scale. -/
-theorem hasSum_smoothDyadicWeight {x : ℝ} (hx : 0 < x) :
+theorem hasSum_smoothDyadicWeight  :
     HasSum (fun j : ℤ => smoothDyadicWeight (x/(2 : ℝ)^j)) 1 := by
   have hpos : HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^(n : ℤ)))
       (1-dyadicStep (2*x)) := by
@@ -147,5 +150,7 @@ theorem hasSum_smoothDyadicWeight {x : ℝ} (hx : 0 < x) :
       hasSum_smoothDyadicWeight_neg_scales hx
   simpa only [sub_add_cancel] using
     HasSum.of_nat_of_neg_add_one (f := fun j : ℤ => smoothDyadicWeight (x/(2 : ℝ)^j)) hpos hneg
+end
 
-end MathCollab.Density.Stronger
+
+

@@ -6,13 +6,12 @@ public import LaterPairs.Native.IntegerIntervalShift
 public import LaterPairs.Native.RobertSargosShiftSupport
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -49,4 +48,4 @@ theorem robertSargos_source_shift_average (w : ℤ → ℂ) (M N : ℕ) (h q : �
   rw [robertSargos_m_overlap_zero_source]
   exact sum_integer_interval_average w _ _ N hN
 
-end TaoTrudgianYang2025
+

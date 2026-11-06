@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonPairPhysicalBudget
 public import TaoTrudgianYang2025.AtkinsonPairDyadicBudget
@@ -7,10 +8,10 @@ public import TaoTrudgianYang2025.AtkinsonPairDyadicBudget
 
 /-! Uniform model entry at the literal Atkinson source cutoff. -/
 
-noncomputable section
+
 open Filter
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
 
 theorem exists_atkinsonPhysicalCutoff_pair_geometry {δ η : ℝ}
     (hδ : 0 < δ) (hη : 0 < η) :
@@ -34,7 +35,7 @@ theorem exists_atkinsonPhysicalCutoff_pair_geometry {δ η : ℝ}
   obtain ⟨hAH,hlogpow,hpowlarge,hlogH⟩ := hB H ((le_max_right _ _).trans hH)
   have hH1 : 1 ≤ H := by linarith [hA.trans hAH]
   have hH0 : 0 < H := by linarith
-  have hpow : 0 < H^δ := Real.rpow_pos_of_pos hH0 δ
+  have hpow := Real.rpow_pos_of_pos hH0 δ
   have hG : 0 < G := hpow.trans_le hwidth
   have hlog : 1 ≤ Real.log (2*H) :=
     hlogH.trans (Real.log_le_log hH0 (by linarith))
@@ -117,4 +118,4 @@ theorem ExponentPair.atkinson_physical_gram_budget {k l δ ν : ℝ}
             ((W.card : ℝ)*H/G+(W.card : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l)) := by ring
         _ = _ := by rw [he]
 
-end TaoTrudgianYang2025
+

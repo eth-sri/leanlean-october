@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindow
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialResidualPool
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
 open InverseInitialExcludedPool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem exists_original_complete_pool {κ:Type*}
     (q:ℕ)(Z r b cap Btree:ℝ)(hZ:0<Z)(hBtree:0≤Btree)
@@ -27,8 +27,8 @@ theorem exists_original_complete_pool {κ:Type*}
     (originalSource_supported Z r b) Btree (Z^(cap+1)) hBtree (Real.rpow_nonneg hZ.le _)
   exact ⟨D,hsize Btree (Z^(cap+1)) hBtree le_rfl (Real.rpow_nonneg hZ.le _) le_rfl,hcover⟩
 
-end SevenEighths.InverseInitialResidualPool
 
-end
 
-end OAI
+
+
+

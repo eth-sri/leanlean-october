@@ -4,9 +4,8 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                   
                                                                              
@@ -21,12 +20,10 @@ theorem primitive_linear_congruence_determinant_dvd
   let D := u₁*v₂-u₂*v₁
   have ha : c ∣ a*D := by
     convert dvd_sub (dvd_mul_of_dvd_left h₁ v₂) (dvd_mul_of_dvd_left h₂ v₁) using 1
-    dsimp [D]
-    ring
+    bound
   have hb : c ∣ b*D := by
     convert dvd_sub (dvd_mul_of_dvd_left h₂ u₁) (dvd_mul_of_dvd_left h₁ u₂) using 1
-    dsimp [D]
-    ring
+    bound
   have hg : c ∣ (Int.gcd a b : ℤ)*D := by
     rw [Int.gcd_eq_gcd_ab]
     convert dvd_add (dvd_mul_of_dvd_left ha (Int.gcdA a b))
@@ -39,10 +36,14 @@ theorem primitive_linear_congruence_determinant_dvd
     ring
   simpa only [hprim,Int.natCast_one,one_mul,D] using hlast
 
-theorem primitive_fraction_coordinates_eq {u₁ v₁ u₂ v₂ : ℤ}
+section
+variable {u₁ v₁ u₂ v₂ : ℤ}
     (hv₁ : 0 < v₁) (hv₂ : 0 < v₂)
     (hp₁ : Nat.Coprime u₁.natAbs v₁.natAbs)
     (hp₂ : Nat.Coprime u₂.natAbs v₂.natAbs)
+include u₁ v₁ u₂ v₂ hv₁ hv₂ hp₁ hp₂
+
+theorem primitive_fraction_coordinates_eq 
     (h : (u₁:ℝ)/v₁ = (u₂:ℝ)/v₂) :
     u₁ = u₂ ∧ v₁ = v₂ := by
   have hd₁ : (v₁:ℝ) ≠ 0 := by exact_mod_cast hv₁.ne'
@@ -53,10 +54,7 @@ theorem primitive_fraction_coordinates_eq {u₁ v₁ u₂ v₂ : ℤ}
   apply (div_eq_div_iff (by exact_mod_cast hv₁.ne') (by exact_mod_cast hv₂.ne')).mpr
   exact_mod_cast hm
 
-theorem primitive_fraction_determinant_ne_zero {u₁ v₁ u₂ v₂ : ℤ}
-    (hv₁ : 0 < v₁) (hv₂ : 0 < v₂)
-    (hp₁ : Nat.Coprime u₁.natAbs v₁.natAbs)
-    (hp₂ : Nat.Coprime u₂.natAbs v₂.natAbs)
+theorem primitive_fraction_determinant_ne_zero 
     (hne : (u₁,v₁) ≠ (u₂,v₂)) :
     u₁*v₂-u₂*v₁ ≠ 0 := by
   intro hz
@@ -65,6 +63,8 @@ theorem primitive_fraction_determinant_ne_zero {u₁ v₁ u₂ v₂ : ℤ}
   have he := primitive_fraction_coordinates_eq hv₁ hv₂ hp₁ hp₂
     ((div_eq_div_iff (by exact_mod_cast hv₁.ne') (by exact_mod_cast hv₂.ne')).mpr hm)
   exact hne (Prod.ext he.1 he.2)
+end
+
 
 theorem primitive_linear_congruence_ratio_spacing
     {a b c u₁ v₁ u₂ v₂ : ℤ} {V : ℝ}
@@ -90,9 +90,7 @@ theorem primitive_linear_congruence_ratio_spacing
     nlinarith
   have hDr : (c:ℝ) ≤ |((u₁*v₂-u₂*v₁:ℤ):ℝ)| := by exact_mod_cast hD
   have hprod : 0 < (v₁:ℝ)*v₂ := mul_pos hv₁p hv₂p
-  have hprodu : (v₁:ℝ)*v₂ ≤ 4*V^2 := by
-    have hm := mul_le_mul hv₁u hv₂u hv₂p.le (by positivity : 0 ≤ 2*V)
-    nlinarith only [hm]
+  have hprodu : (v₁:ℝ)*v₂ ≤ 4*V^2 := by nlinarith
   have he : (u₁:ℝ)/v₁-(u₂:ℝ)/v₂ =
       ((u₁*v₂-u₂*v₁:ℤ):ℝ)/((v₁:ℝ)*v₂) := by
     push_cast
@@ -103,4 +101,4 @@ theorem primitive_linear_congruence_ratio_spacing
       div_le_div_of_nonneg_left (by exact_mod_cast hc.le) hprod hprodu
     _ ≤ _ := div_le_div_of_nonneg_right hDr hprod.le
 
-end TaoTrudgianYang2025
+

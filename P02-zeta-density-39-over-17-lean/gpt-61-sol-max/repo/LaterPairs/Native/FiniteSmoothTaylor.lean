@@ -4,19 +4,22 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                         
                                                                      
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 
-theorem contDiffAt_iteratedDeriv_finite {f : ℝ → ℝ} {x : ℝ} {n j : ℕ}
+section
+variable {f : ℝ → ℝ}
+include f
+
+theorem contDiffAt_iteratedDeriv_finite  {x : ℝ} {n j : ℕ}
     (hf : ContDiffAt ℝ (n+j) f x) :
     ContDiffAt ℝ n (iteratedDeriv j f) x := by
   induction j generalizing n with
@@ -29,13 +32,10 @@ theorem contDiffAt_iteratedDeriv_finite {f : ℝ → ℝ} {x : ℝ} {n j : ℕ}
       exact (ih hh).derivWithin (by simp)
 
 theorem taylorWithinEval_uIcc_eq_finiteTaylorPolynomial_finite
-    {f : ℝ → ℝ} {a x : ℝ} {n : ℕ} (hax : a ≠ x)
+     {a x : ℝ} {n : ℕ} (hax : a ≠ x)
     (hf : ContDiffAt ℝ n f a) :
     taylorWithinEval f n (uIcc a x) a x = finiteTaylorPolynomial f n a x := by
-  have hu : UniqueDiffOn ℝ (uIcc a x) := uniqueDiffOn_Icc (by
-    rcases lt_or_gt_of_ne hax with h | h
-    · simpa only [min_eq_left h.le,max_eq_right h.le] using h
-    · simpa only [min_eq_right h.le,max_eq_left h.le] using h)
+  have hu : UniqueDiffOn ℝ (uIcc a x) := uniqueDiffOn_Icc (by aesop)
   rw [taylor_within_apply,finiteTaylorPolynomial,taylor_within_apply]
   apply Finset.sum_congr rfl
   intro j hj
@@ -45,7 +45,7 @@ theorem taylorWithinEval_uIcc_eq_finiteTaylorPolynomial_finite
     iteratedDerivWithin_univ]
 
 theorem abs_finiteTaylorPolynomial_remainder_le_finite
-    {f : ℝ → ℝ} {a x M : ℝ} (n : ℕ)
+     {a x M : ℝ} (n : ℕ)
     (hf : ∀ y ∈ uIcc a x, ContDiffAt ℝ (n+1) f y)
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (n+1) f y| ≤ M) :
     |f x-finiteTaylorPolynomial f n a x| ≤
@@ -64,7 +64,7 @@ theorem abs_finiteTaylorPolynomial_remainder_le_finite
         (pow_nonneg (abs_nonneg _) _)) (Nat.cast_nonneg _)
 
 theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le_finite
-    {f : ℝ → ℝ} {a x M : ℝ} {j Q : ℕ} (hj : j ≤ Q)
+     {a x M : ℝ} {j Q : ℕ} (hj : j ≤ Q)
     (hf : ∀ y ∈ uIcc a x, ContDiffAt ℝ (Q+1) f y)
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (Q+1) f y| ≤ M) :
     |iteratedDeriv j (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
@@ -93,5 +93,7 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le_finite
   · intro y hy
     rw [iteratedDeriv_real_comp_order,show Q-j+1+j = Q+1 by omega]
     exact hb y hy
+end
 
-end TaoTrudgianYang2025
+
+

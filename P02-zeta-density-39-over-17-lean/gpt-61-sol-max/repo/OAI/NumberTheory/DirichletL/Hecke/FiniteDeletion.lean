@@ -16,7 +16,11 @@ def factors (M : Ideal O) (ψ : Character) : ℂ → ℂ :=
   EulerFactors.deletedProduct (SmoothMobiusCorrection.primeSet M)
     (fun P => Ideal.absNorm P.val) (fun P => idealCoeff ψ P.val)
 
-theorem factors_eq (M : Ideal O) (ψ : Character) (s : ℂ) :
+section
+variable (M : Ideal O) (ψ : Character)
+include M ψ
+
+theorem factors_eq  (s : ℂ) :
     factors M ψ s = ∏ P ∈ SmoothMobiusCorrection.primeSet M,
       (1 - IdealEuler.weighted (idealCoeff ψ) s P.val) := by
   apply Finset.prod_congr rfl
@@ -25,14 +29,14 @@ theorem factors_eq (M : Ideal O) (ψ : Character) (s : ℂ) :
     ZeroHom.coe_mk, IdealEuler.normWeight, CubicEisenstein.fullIdealWeight,
     P.property.ne_zero, ite_false, Complex.ofReal_natCast]
 
-theorem factors_differentiable (M : Ideal O) (ψ : Character) :
+theorem factors_differentiable  :
     Differentiable ℂ (factors M ψ) := by
   apply EulerFactors.differentiable_deletedProduct
   intro P _
   have h := SmoothMobiusCorrection.prime_norm_two_le P
   exact_mod_cast (by omega : 0 < Ideal.absNorm P.val)
 
-theorem factors_ne_zero (M : Ideal O) (ψ : Character) {s : ℂ} (hs : 0 < s.re) :
+theorem factors_ne_zero  {s : ℂ} (hs : 0 < s.re) :
     factors M ψ s ≠ 0 := by
   apply EulerFactors.deletedProduct_ne_zero _ _ _ _ _ hs
   · intro P _
@@ -40,6 +44,8 @@ theorem factors_ne_zero (M : Ideal O) (ψ : Character) {s : ℂ} (hs : 0 < s.re)
     exact_mod_cast (by omega : 1 < Ideal.absNorm P.val)
   · intro P _
     exact idealCoeff_norm_le_one ψ P.val
+end
+
 
 theorem LFunction_eq_of_mask_right (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
@@ -56,10 +62,14 @@ theorem regularizedL_analytic (χ : Character) :
   intro s hs
   exact (regularizedL_differentiableAt χ (by intro h; simp [h] at hs)).differentiableWithinAt
 
-theorem regularizedL_eq_of_mask (χ ψ : Character)
+section
+variable (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
       if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
-    {s : ℂ} (hs : 0 < s.re) :
+    {s : ℂ} (hs : 0 < s.re)
+include χ ψ hmask s hs
+
+theorem regularizedL_eq_of_mask  :
     regularizedL χ s = regularizedL ψ s * factors χ.modulus ψ s := by
   have hf : AnalyticOnNhd ℂ (factors χ.modulus ψ) {z : ℂ | 0 < z.re} := by
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
@@ -76,15 +86,14 @@ theorem regularizedL_eq_of_mask (χ ψ : Character)
     LFunction_eq_of_mask_right χ ψ hmask hz']
   ring
 
-theorem LFunction_eq_of_mask (χ ψ : Character)
-    (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
-    {s : ℂ} (hs : 0 < s.re) (h1 : s ≠ 1) :
+theorem LFunction_eq_of_mask  (h1 : s ≠ 1) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
   have h0 : s ≠ 0 := by intro h; simp [h] at hs
   have h := regularizedL_eq_of_mask χ ψ hmask hs
   rw [regularizedL_eq χ h0 h1, regularizedL_eq ψ h0 h1, mul_assoc] at h
   exact mul_left_cancel₀ (sub_ne_zero.mpr h1) h
+end
+
 
 theorem regularizedL_one_ne_zero_iff (χ : Character) :
     regularizedL χ 1 ≠ 0 ↔ χ.residue = 1 := by
@@ -97,17 +106,19 @@ theorem regularizedL_one_ne_zero_iff (χ : Character) :
     exact h rfl
   · exact regularizedL_ne_zero_at_one χ
 
-theorem principal_iff_of_mask (χ ψ : Character)
+section
+variable (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0) :
+      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
+include χ ψ hmask
+
+theorem principal_iff_of_mask  :
     χ.residue = 1 ↔ ψ.residue = 1 := by
   rw [← regularizedL_one_ne_zero_iff χ, ← regularizedL_one_ne_zero_iff ψ,
     regularizedL_eq_of_mask χ ψ hmask (by norm_num : 0 < (1 : ℂ).re),
     mul_ne_zero_iff, and_iff_left (factors_ne_zero χ.modulus ψ (by norm_num))]
 
-theorem LFunction_eq_of_mask_nonprincipal (χ ψ : Character)
-    (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
+theorem LFunction_eq_of_mask_nonprincipal 
     (hχ : χ.residue ≠ 1) {s : ℂ} (hs : 0 < s.re) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
   have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
@@ -126,14 +137,14 @@ theorem LFunction_eq_of_mask_nonprincipal (χ ψ : Character)
   intro z hz
   exact (LFunction_eq_of_mask_right χ ψ hmask (by simpa using hz)).symm
 
-theorem LFunction_eq_of_mask_nonpole (χ ψ : Character)
-    (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
+theorem LFunction_eq_of_mask_nonpole 
     {s : ℂ} (hs : 0 < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
   rcases hpole with h1 | hχ
   · exact LFunction_eq_of_mask χ ψ hmask hs h1
   · exact LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hs
+end
+
 
 theorem exists_primitive_zero (χ : Character) {s : ℂ}
     (hs : 0 < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) (hz : LFunction χ s = 0) :
@@ -147,8 +158,8 @@ theorem exists_primitive_zero (χ : Character) {s : ℂ}
   · rw [LFunction_eq_of_mask_nonpole χ ψ hmask hs hpole, mul_eq_zero] at hz
     exact hz.resolve_right (factors_ne_zero χ.modulus ψ hs)
 
-end SevenEighths.HeckeFiniteDeletion
 
-end
 
-end OAI
+
+
+

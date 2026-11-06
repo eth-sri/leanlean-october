@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
+public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalSlots
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 
@@ -15,7 +16,7 @@ namespace SevenEighths.DetectorDictionaryInverseMarkedUniform
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
 open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
+open FourierBridge HeckeDetectorRawFiber
 
 private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
   funext x
@@ -61,8 +62,12 @@ section Fiber
 variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
+section
+variable (F : Fiber M H Label Slot U a ε tstar T allowance i)
+include F
+
 theorem fiber_inverse_source
-    (F : Fiber M H Label Slot U a ε tstar T allowance i) (n : ℕ) (σ t : ℝ) :
+     (n : ℕ) (σ t : ℝ) :
     (inverseSourceSchwartz false false n U tstar F.r σ t : ℝ→ℂ)=
       twistProfile ((HeckeDetectorRowwisePolynomial.logProfile^[n]) F.inverseProfile) σ t := by
   funext x
@@ -71,7 +76,7 @@ theorem fiber_inverse_source
     inverseSourceSchwartz_apply false false n U tstar F.r σ t x
 
 theorem fiber_inverse_polynomial
-    (F : Fiber M H Label Slot U a ε tstar T allowance i) (selected : Finset Slot)
+     (selected : Finset Slot)
     (n : ℕ) (σ t : ℝ) (u : FreeRow) :
     polynomial (F.family u F.label) true
       (inverseSourceSchwartz false false n U tstar F.r σ t) (U^F.r) 0 0*
@@ -79,6 +84,8 @@ theorem fiber_inverse_polynomial
     polynomial (F.family u F.label) true ((HeckeDetectorRowwisePolynomial.logProfile^[n]) F.inverseProfile)
       (U^F.r) σ t*F.physicalProduct selected u := by
   rw [fiber_inverse_source,polynomial_twistProfile]
+end
+
 
 end Fiber
 
@@ -120,8 +127,8 @@ theorem fiber_inverse_height_uniform (J : ℕ) :
   have hnorm : ‖t‖≤height := by simpa only [Real.norm_eq_abs,abs_le,Set.mem_Icc] using ht
   gcongr
 
-end SevenEighths.DetectorDictionaryInverseMarkedUniform
 
-end
 
-end OAI
+
+
+

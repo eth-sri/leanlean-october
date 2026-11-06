@@ -5,17 +5,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonTransform
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
 namespace SevenEighths.InverseInitialLargePool
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
-local notation "Eis"=>ActualEisensteinCubic.O
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialRayAttachment InverseInitialArithmetic
+
+open scoped EisensteinEis
+open scoped EisensteinO
 theorem selected_conjugate_row_supported (F : Finset (Ideal O))
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (η : Ideal O →* ℂ) (H : Ideal O → ℂ)
@@ -100,8 +100,8 @@ theorem residual_eq_large_input
 
 variable {κ:Type*}
 
-end SevenEighths.InverseInitialLargePool
 
-end
 
-end OAI
+
+
+

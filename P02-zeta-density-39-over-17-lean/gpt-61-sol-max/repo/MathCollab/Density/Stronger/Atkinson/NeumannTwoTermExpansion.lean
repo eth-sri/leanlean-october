@@ -19,7 +19,6 @@ oscillatory carriers directly. The error has the globally valid
 positive-argument bound C x^(-5/2).
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex
@@ -73,4 +72,4 @@ theorem abs_dfiBesselY0_sub_neumannTwoTerm_le {x : ℝ} (hx : 0 < x) :
   unfold neumannTwoTermErrorConstant
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

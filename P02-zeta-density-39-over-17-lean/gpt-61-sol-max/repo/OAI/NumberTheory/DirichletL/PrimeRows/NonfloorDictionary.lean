@@ -11,19 +11,26 @@ open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection
 open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O)
 variable (H : Subgroup (O ⧸ M)ˣ)
 
-lemma source_physical_amplitude {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
+section
+variable {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
+include N ell W
+
+lemma source_physical_amplitude 
     (Z d b : ℝ) (z : ℂ) (hZ : 0<Z) (hd : d≠0) (u : FreeRow) (j : Fin N) :
     physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z^d) u j=
       HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Z^(ell j)) z := by
   unfold physical
   rw [physical_slot_scale ell Z d hZ hd j]
 
-lemma source_rowMean_eq {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
-    (Z d b a mesh : ℝ) (z : ℂ) (hZ : 0<Z) (hd : d≠0) (u : FreeRow) :
+section
+variable (Z d b a mesh : ℝ) (z : ℂ) (hZ : 0<Z) (hd : d≠0)
+include Z d b a mesh z hZ hd
+
+lemma source_rowMean_eq  (u : FreeRow) :
     rowMean Finset.univ (Z^d) ((2*a-1)/2) mesh (fun j=>ell j/d)
       (physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z^d)) u=
       weightedMean Finset.univ (fun j=>ell j/d)
@@ -33,8 +40,7 @@ lemma source_rowMean_eq {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
   simp_rw [physical_slot_scale ell Z d hZ hd,source_physical_amplitude M H ell W Z d b z hZ hd]
   rw [show (2*a-1)/2=a-1/2 by ring]
 
-lemma source_amplitude_class_mean {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
-    (Z d b a mesh : ℝ) (z : ℂ) (hZ : 0<Z) (hd : d≠0) (hm : 0<mesh)
+lemma source_amplitude_class_mean  (hm : 0< mesh)
     (rows : Finset FreeRow) (bin : BinLabel (Finset.univ : Finset (Fin N)) ((2*a-1)/2) mesh)
     (u : FreeRow)
     (hu : u∈amplitudeRows rows Finset.univ (Z^d) ((2*a-1)/2) mesh hm (fun j=>ell j/d)
@@ -45,9 +51,12 @@ lemma source_amplitude_class_mean {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ
       classMean Finset.univ ((2*a-1)/2) mesh (fun j=>ell j/d) bin := by
   rw [←source_rowMean_eq M H ell W Z d b a mesh z hZ hd u]
   exact rowMean_eq rows Finset.univ (Z^d) ((2*a-1)/2) mesh hm (fun j=>ell j/d) _ bin u hu
-
-end SevenEighths.ProbeHighRowFamily
-
+end
 end
 
-end OAI
+
+
+
+
+
+

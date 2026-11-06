@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SlotSums
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open CanonicalQuadraticSieve
+open scoped HeckeO
 
 theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<eps)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
@@ -60,7 +60,7 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow (by positivity))
         (Finset.prod_nonneg fun i _=>Real.rpow_nonneg (by linarith [hY i]) _)
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

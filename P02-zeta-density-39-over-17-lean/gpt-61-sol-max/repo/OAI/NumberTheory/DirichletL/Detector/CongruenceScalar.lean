@@ -8,21 +8,35 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic GaussianShiftedPartition
+open scoped EisensteinO
 
-def exactQuotient (a b : O) (h : b ∣ a) : O := Classical.choose h
+section
+variable (a b : O) (h : b ∣ a)
+include a b h
 
-lemma exactQuotient_spec (a b : O) (h : b ∣ a) : a = b * exactQuotient a b h :=
+def exactQuotient  : O := Classical.choose h
+
+lemma exactQuotient_spec  : a = b * exactQuotient a b h :=
   Classical.choose_spec h
+end
+
 
 lemma exactQuotient_eq (a b c : O) (h : b ∣ a) (hb : b ≠ 0) (he : a = b*c) :
     exactQuotient a b h = c := by
   apply mul_left_cancel₀ hb
   exact (exactQuotient_spec a b h).symm.trans he
 
-def positiveScalar (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k j : ℕ) : ℂ :=
+section
+variable (p : O)
+include p
+
+section
+variable (hp : p ≠ 0)
+    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ)
+include hp χ
+
+def positiveScalar  (n k j : ℕ) : ℂ :=
   if k = 0 then primePowerGauss p hp (χ^(n+1)) n (p^j)
   else ∑' d : O ⧸ Ideal.span {p^k},
     if h : p^k ∣ p^j-p^(n+1)*representative (p^k) d then
@@ -31,12 +45,13 @@ def positiveScalar (p : O) (hp : p ≠ 0)
           (exactQuotient (p^j-p^(n+1)*representative (p^k) d) (p^k) h)
     else 0
 
-@[simp] theorem positiveScalar_kzero (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n j : ℕ) :
+@[simp] theorem positiveScalar_kzero  (n j : ℕ) :
     positiveScalar p hp χ n 0 j = primePowerGauss p hp (χ^(n+1)) n (p^j) := by
   simp only [positiveScalar, ite_true]
+end
 
-theorem positiveScalar_kone_jzero (p : O) (hp : Prime p)
+
+theorem positiveScalar_kone_jzero  (hp : Prime p)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) :
     positiveScalar p hp.ne_zero χ n 1 0 = 0 := by
   simp only [positiveScalar, Nat.one_ne_zero, ite_false]
@@ -53,7 +68,11 @@ theorem positiveScalar_kone_jzero (p : O) (hp : Prime p)
     simpa only [sub_add_cancel] using this
   exact hp.not_isUnit (isUnit_iff_dvd_one.mpr hunit)
 
-theorem positiveScalar_kone_convolution (p : O) (hp : p ≠ 0)
+section
+variable (hp : p ≠ 0)
+include hp
+
+theorem positiveScalar_kone_convolution 
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n j : ℕ) :
     positiveScalar p hp χ n 1 (j+1) = scalarKOne p hp χ (χ^(n+1)) n (p^j) := by
   simp only [positiveScalar, Nat.one_ne_zero, ite_false, scalarKOne]
@@ -67,7 +86,7 @@ theorem positiveScalar_kone_convolution (p : O) (hp : p ≠ 0)
   have hd : p ∣ p^(j+1)-p^(n+1)*representative p d := ⟨_,he⟩
   rw [dite_eq_left hd, exactQuotient_eq _ _ _ hd hp he, representative_spec]
 
-theorem positiveScalar_kone (p : O) (hp : p ≠ 0)
+theorem positiveScalar_kone 
     [(Ideal.span {p} : Ideal O).IsMaximal]
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n j : ℕ) :
     positiveScalar p hp χ n 1 (j+1) =
@@ -75,8 +94,11 @@ theorem positiveScalar_kone (p : O) (hp : p ≠ 0)
   rw [positiveScalar_kone_convolution, scalarKOne_eq]
   have he : χ^(n+1)*χ⁻¹ = χ^n := by rw [pow_succ, mul_assoc, mul_inv_cancel, mul_one]
   rw [he]
-
-end SevenEighths.ProbePrimePower
+end
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceBox
 
 @[expose] public section
@@ -16,7 +17,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyWeightedMassSq_one (Q : ℕ) :
     wooleyWeightedMassSq (fun _ : Fin Q => (1 : ℂ)) = Q := by
@@ -33,16 +34,19 @@ theorem wooleyWeightedGridSum_one
       wooleyMonomialGridSum q k Q alpha := by
   simp [wooleyWeightedGridSum, wooleyMonomialGridSum]
 
+section
+variable (qB k Q qH : ℕ) [NeZero qB]
+    (alpha : Fin k → ZMod qB) (xi : ZMod qH)
+include qB k Q qH alpha xi
+
 theorem wooleyWeightedResidueGridSum_one
-    (qB k Q qH : ℕ) [NeZero qB]
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+     :
     wooleyWeightedResidueGridSum qB k (fun _ : Fin Q => (1 : ℂ)) alpha xi =
       wooleyResidueGridSum qB k Q qH alpha xi := by
   simp [wooleyWeightedResidueGridSum, wooleyResidueGridSum]
 
 theorem wooleyWeightedNormalizedResidueGridSum_one
-    (qB k Q qH : ℕ) [NeZero qB]
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+     :
     wooleyWeightedNormalizedResidueGridSum
         qB k (fun _ : Fin Q => (1 : ℂ)) alpha xi =
       wooleyNormalizedResidueGridSum qB k Q qH alpha xi := by
@@ -51,6 +55,8 @@ theorem wooleyWeightedNormalizedResidueGridSum_one
   rw [wooleyWeightedResidueMassSq_one,
     wooleyWeightedResidueGridSum_one]
   norm_cast
+end
+
 
 theorem wooleyWeightedConditionedGridMean_one
     {s k Q qB qH : ℕ} [NeZero qB] [NeZero qH] (hQ : 1 ≤ Q) :
@@ -60,14 +66,10 @@ theorem wooleyWeightedConditionedGridMean_one
   unfold wooleyWeightedConditionedGridMean wooleyConditionedGridMean
     wooleyResidueRawMoment
   rw [wooleyWeightedMassSq_one]
-  have hQne : (Q : ℝ) ≠ 0 := by positivity
   simp only [Nat.cast_eq_zero, show Q ≠ 0 by omega, ↓reduceIte]
   simp_rw [wooleyWeightedResidueMassSq_one,
     wooleyWeightedNormalizedResidueGridSum_one]
-  apply congrArg ((Q : ℝ)⁻¹ * ·)
-  apply Finset.sum_congr rfl
-  intro xi hxi
-  ring
+  grind
 
 /-- The all-one weighted global mean is exactly Wooley's normalized
 coefficient-one mean. -/
@@ -88,12 +90,8 @@ theorem wooleyWeightedGridMean_one
   simp_rw [mul_pow, inv_pow, hsqrtPow]
   rw [← Finset.mul_sum]
   have hqpos : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
-  have hqpow : (((q ^ k : ℕ) : ℝ)) ≠ 0 := by
-    exact_mod_cast (pow_ne_zero k (NeZero.ne q))
-  have hQpow : ((Q : ℝ) ^ s) ≠ 0 := pow_ne_zero _ hQpos.ne'
   field_simp
-  norm_num
-  ring
+  grind
 
 /-- The all-one source sequence is admissible. -/
   theorem wooleyBoxSourceSequence_one_admissible (Q : ℕ) :
@@ -104,6 +102,6 @@ theorem wooleyWeightedGridMean_one
   split_ifs <;> norm_num
 
 
-end
 
-end GafniTao
+
+

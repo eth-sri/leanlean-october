@@ -1,5 +1,10 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalPair
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalSymmetry
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairBound
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonWindow
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalHeight
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalWindow
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalKernel
 public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
 
@@ -12,29 +17,34 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
+open HeckeFamily UniqueFactorizationMonoid
+open CenteredMomentCommonRadialData
+
+
+open CenteredMomentHeckeColumnWindow
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentLogDyadic
+open CenteredMomentCommonExceptionalCost
+
+
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
+open CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing
+
+
+open scoped HeckeO
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
-def sourceBudget {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)(U:Finset (CommonIndex C D))
-    (K Z ε δ θ r Cr M:ℝ):ℝ:=
+section
+variable {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)(U:Finset (CommonIndex C D))
+    (K Z ε δ θ r Cr M:ℝ)
+include wlo whi Sprofile s p J Q C D U K Z ε δ θ r Cr M
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
+def sourceBudget :ℝ:=
   K*(768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
     Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D=>P.val)
       (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U)):ℝ))/6+
@@ -44,17 +54,18 @@ def sourceBudget {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profi
       frozenProfile s*frozenProfile s/((C.absNorm:ℝ)*D.absNorm))*volume s.toData*
     (∫u:ℝ,(1+‖u‖)^J*‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth u‖)^2
 
-lemma sourceBudget_nonneg {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)(U:Finset (CommonIndex C D))
-    (K Z ε δ θ r Cr M:ℝ)(hK:0≤K)(hZ:0≤Z)(hCr:0≤Cr):
-    0≤sourceBudget Sprofile s p J Q C D U K Z ε δ θ r Cr M:=by
+lemma sourceBudget_nonneg (hK:0≤K)(hZ:0≤Z)(hCr:0≤Cr):
+    0≤ sourceBudget Sprofile s p J Q C D U K Z ε δ θ r Cr M:=by
   have hp:=profileMass_nonneg Sprofile s.toData s.toData p p J
   have hf:=frozenProfile_nonneg s
   have hv:0≤volume s.toData:=(volume_pos s.toData).le
   unfold sourceBudget
   positivity
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-
 end
 
-end OAI
+
+
+
+
+
+

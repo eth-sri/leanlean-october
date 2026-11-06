@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.RayCoefficients
 
 @[expose] public section
@@ -10,69 +11,69 @@ noncomputable section
 namespace SecondPassArithmetic
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
 
 section
 
@@ -104,7 +105,7 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
             (Y * ‖eisEmbedding k‖ ^ 2 / (‖eisEmbedding e‖ ^ 2 * ‖eisEmbedding n‖ ^ 2)) *
               activeGaussRowFactor p hp hinj hg T S e k := by
   dsimp only
-  let P : ι → Ideal O := fun i => Ideal.span {p i}
+  let P := fun i => Ideal.span {p i}
   let Q := activePrimes P T S
   let q : activeSupport T S → O := fun i => p i.val
   let hQ := activePrimes_pairwise_isCoprime P hinj T S
@@ -179,39 +180,9 @@ def secondGaussTerm (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 end
 
-section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
 
-section
-open ActualEisensteinCubic
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-open FirstPassCubeLabels (primeProductNorm_pos)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-section
-
-open scoped BigOperators Classical
-open ActualEisensteinCubic
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-
-end
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic
@@ -222,7 +193,7 @@ local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.fini
 
 theorem exists_label_unit (f : O) (I : Ideal O) (hf : Ideal.span {f} = I) :
     ∃ u : Oˣ, f = (u : O) * idealGenerator I := by
-  have hs : Ideal.span {idealGenerator I} = Ideal.span {f} := (span_idealGenerator I).trans hf.symm
+  have hs := (span_idealGenerator I).trans hf.symm
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs
   exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
 
@@ -235,8 +206,8 @@ def fixedChildRow (F : Finset ι) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (f y : O) : ℂ :=
   ∑ N ∈ F.powerset, secondChildColumn p hp hcop hg Ψ m f y H N
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

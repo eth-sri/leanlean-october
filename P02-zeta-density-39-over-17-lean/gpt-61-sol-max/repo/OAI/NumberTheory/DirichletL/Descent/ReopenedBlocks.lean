@@ -7,11 +7,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def varyingCanonicalSourceTotal {ι : Type*} [DecidableEq ι]
     (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -73,7 +73,7 @@ theorem varying_reopened_smoothed_source {ι : Type*} [DecidableEq ι]
       intro A₁ hA₁
       rw [Finset.sum_comm]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

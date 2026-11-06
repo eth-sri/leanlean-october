@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped ComplexConjugate
@@ -47,15 +46,8 @@ theorem dirichlet_distance_side (X n : ℕ) (hn : n ≤ X) (S : Finset ℕ)
     (∑ m ∈ S, ((n-m:ℕ):ℝ)⁻¹) ≤ (harmonic X:ℝ) := by
   have hinj : Set.InjOn (fun m => n-m) S := by
     intro x hx y hy he
-    have hx' := hside x hx
-    have hy' := hside y hy
-    dsimp at he
-    omega
-  have himage : S.image (fun m => n-m) ⊆ Finset.Icc 1 X := by
-    intro k hk
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hk
-    have hh := hside m hm
-    exact Finset.mem_Icc.mpr ⟨by omega,by omega⟩
+    grind
+  have himage : S.image (fun m => n-m) ⊆ Finset.Icc 1 X := by grind
   rw [harmonic_eq_sum_Icc]
   simp only [Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
   rw [← Finset.sum_image (f := fun k : ℕ => (k:ℝ)⁻¹) hinj]
@@ -66,16 +58,8 @@ theorem dirichlet_distance_other_side (X n : ℕ) (S : Finset ℕ)
     (∑ m ∈ S, ((m-n:ℕ):ℝ)⁻¹) ≤ (harmonic X:ℝ) := by
   have hinj : Set.InjOn (fun m => m-n) S := by
     intro x hx y hy he
-    have hx' := hside x hx
-    have hy' := hside y hy
-    dsimp at he
-    omega
-  have himage : S.image (fun m => m-n) ⊆ Finset.Icc 1 X := by
-    intro k hk
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hk
-    have hh := hside m hm
-    have hmX := (Finset.mem_Icc.mp (hS hm)).2
-    exact Finset.mem_Icc.mpr ⟨by omega,by omega⟩
+    grind
+  have himage : S.image (fun m => m-n) ⊆ Finset.Icc 1 X := by grind
   rw [harmonic_eq_sum_Icc]
   simp only [Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
   rw [← Finset.sum_image (f := fun k : ℕ => (k:ℝ)⁻¹) hinj]
@@ -90,10 +74,7 @@ theorem dirichlet_harmonic_row {X n : ℕ} (hn : n ∈ Finset.Icc 1 X) :
     (fun m hm => (Finset.mem_filter.mp hm).2)
   have hright := dirichlet_distance_other_side X n (S.filter (fun m => ¬m<n))
     (fun m hm => Finset.mem_of_mem_erase (Finset.mem_filter.mp hm).1)
-    (fun m hm => by
-      have hne := (Finset.mem_erase.mp (Finset.mem_filter.mp hm).1).1
-      have hnot := (Finset.mem_filter.mp hm).2
-      omega)
+    (fun m hm => by grind)
   have heleft : (∑ m ∈ S.filter (fun m => m<n), (|(n:ℝ)-m|)⁻¹) =
       ∑ m ∈ S.filter (fun m => m<n), ((n-m:ℕ):ℝ)⁻¹ := by
     apply Finset.sum_congr rfl
@@ -104,10 +85,9 @@ theorem dirichlet_harmonic_row {X n : ℕ} (hn : n ∈ Finset.Icc 1 X) :
       ∑ m ∈ S.filter (fun m => ¬m<n), ((m-n:ℕ):ℝ)⁻¹ := by
     apply Finset.sum_congr rfl
     intro m hm
-    have hnm : n ≤ m := Nat.le_of_not_gt (Finset.mem_filter.mp hm).2
+    have hnm := Nat.le_of_not_gt (Finset.mem_filter.mp hm).2
     rw [Nat.cast_sub hnm,abs_of_nonpos (by exact_mod_cast (sub_nonpos.mpr (show (n:ℝ) ≤ m by exact_mod_cast hnm)))]
-    congr 1
-    ring
+    bound
   have he := Finset.sum_filter_add_sum_filter_not S (fun m => m<n) (fun m => (|(n:ℝ)-m|)⁻¹)
   change (∑ m ∈ S, (|(n:ℝ)-m|)⁻¹) ≤ _
   rw [← he,heleft,heright]
@@ -174,15 +154,11 @@ theorem finite_symmetric_row_bound {ι : Type*} (S : Finset ι) (v : ι → ℝ)
   have hswap : (∑ n ∈ S, ∑ m ∈ S, (v m)^2*k n m) =
       ∑ n ∈ S, ∑ m ∈ S, (v n)^2*k n m := by
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro n hn
-    apply Finset.sum_congr rfl
-    intro m hm
-    rw [hsym m hm n hn]
+    simp_all
   calc
     _ ≤ _ := hterm
     _ = ∑ n ∈ S, (v n)^2*(∑ m ∈ S, k n m) := by
-      simp only [div_eq_mul_inv,add_mul,Finset.sum_add_distrib,← Finset.sum_mul]
+      simp only [div_eq_mul_inv, add_mul, sum_add_distrib, ← sum_mul]
       rw [hswap]
       simp only [Finset.mul_sum]
       ring
@@ -190,13 +166,17 @@ theorem finite_symmetric_row_bound {ι : Type*} (S : Finset ι) (v : ι → ℝ)
       mul_le_mul_of_nonneg_left (hrow n hn) (sq_nonneg _))
     _ = _ := by rw [← Finset.sum_mul]; ring
 
+section
+variable (X : ℕ) (c : ℕ → ℂ)
+include X c
+
 /-- Actual integrability of the squared finite Dirichlet polynomial on every compact interval. -/
-theorem finiteDirichletPolynomial_integrable (X : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
+theorem finiteDirichletPolynomial_integrable  (a b : ℝ) :
     IntegrableOn (fun t => ‖finiteDirichletPolynomial X c t‖^2) (Set.Icc a b) :=
   ((finiteDirichletPolynomial_continuous X c).norm.pow 2).continuousOn.integrableOn_Icc
 
 /-- Exact finite Gram expansion on the actual interval. -/
-theorem finiteDirichletPolynomial_gram (X : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
+theorem finiteDirichletPolynomial_gram  (a b : ℝ) :
     (∫ t in Set.Icc a b, (‖finiteDirichletPolynomial X c t‖^2:ℂ)) =
       ∑ n ∈ Finset.Icc 1 X, ∑ m ∈ Finset.Icc 1 X,
         (c n*conj (c m))*(∫ t in Set.Icc a b, dirichletPhase n t*conj (dirichletPhase m t)) := by
@@ -204,13 +184,10 @@ theorem finiteDirichletPolynomial_gram (X : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
       ∑ n ∈ Finset.Icc 1 X, ∑ m ∈ Finset.Icc 1 X,
         (c n*conj (c m))*(dirichletPhase n t*conj (dirichletPhase m t)) := by
     rw [← Complex.mul_conj']
-    simp only [finiteDirichletPolynomial,map_sum,map_mul,Finset.sum_mul,Finset.mul_sum]
+    simp only [finiteDirichletPolynomial, map_sum, map_mul, mul_sum, sum_mul]
     rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
-    intro n _
-    apply Finset.sum_congr rfl
-    intro m _
-    ring
+    grind
   have ht (n m : ℕ) : IntegrableOn
       (fun t => (c n*conj (c m))*(dirichletPhase n t*conj (dirichletPhase m t))) (Set.Icc a b) := by
     apply ContinuousOn.integrableOn_Icc
@@ -228,7 +205,7 @@ theorem finiteDirichletPolynomial_gram (X : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
 
 /-- Elementary Dirichlet mean value with an absolute logarithmic loss.
 The coefficients and interval location are arbitrary. -/
-theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a ≤ b) :
+theorem dirichlet_mean_value  {a b : ℝ} (hab : a ≤ b) :
     (∫ t in Set.Icc a b, ‖finiteDirichletPolynomial X c t‖^2) ≤
       ((b-a)+4*(X:ℝ)*(1+Real.log X))*(∑ n ∈ Finset.Icc 1 X, ‖c n‖^2) := by
   let S := Finset.Icc 1 X
@@ -247,13 +224,10 @@ theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a �
         2*(X:ℝ)*(∑ m ∈ S.erase n, (|(n:ℝ)-m|)⁻¹) := by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
-      intro m hm
-      have hne : n ≠ m := Ne.symm (Finset.mem_erase.mp hm).1
-      simp only [k,ite_eq_right hne,div_eq_mul_inv]
+      grind
     rw [he]
     have hh := mul_le_mul_of_nonneg_left (dirichlet_harmonic_row hn) (by positivity : 0 ≤ 2*(X:ℝ))
-    simp only [k,ite_true]
-    nlinarith
+    grind
   have hgram (n m : ℕ) (hn : n ∈ S) (hm : m ∈ S) :
       ‖∫ t in Set.Icc a b, dirichletPhase n t*conj (dirichletPhase m t)‖ ≤ k n m := by
     by_cases he : n=m
@@ -280,5 +254,7 @@ theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a �
       rw [norm_mul,norm_mul,RCLike.norm_conj]
       exact mul_le_mul_of_nonneg_left (hgram n m hn hm) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ ≤ _ := finite_symmetric_row_bound S (fun n => ‖c n‖) k hk hsym hrow
+end
 
-end GuthMaynard.Improvement
+
+

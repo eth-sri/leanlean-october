@@ -14,7 +14,7 @@ open scoped Classical BigOperators SchwartzMap Topology
 namespace SevenEighths.CenteredMomentSecondExceptionalFamily
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm
 open CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth
 open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns
@@ -22,7 +22,7 @@ open CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock Centered
 open CenteredMomentSecondPhysicalBlock CenteredMomentHeckeColumnWindow CenteredMomentChildRows
 open CenteredMomentRestrictedEnergy CenteredMomentSectorLocalization RayFourExpansion
 open CenteredExceptionalProfile CenteredMomentReflectedSource
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem span_thirty_six_norm : (Ideal.span {(36:O)}).absNorm=1296 := by
   have h := ActualEisensteinCubic.rational_modulus_card 36 (by norm_num)
@@ -35,7 +35,11 @@ theorem reflected_modulus_bound (τ:Character) :
   change (reflected τ).modulus.absNorm≤τ.modulus.absNorm*(Ideal.span {(36:O)}).absNorm at h
   simpa only [span_thirty_six_norm,mul_comm] using h
 
-theorem common_subproduct_dvd_left (C D:Ideal O) (hC:Supported C)
+section
+variable (C D:Ideal O) (hC:Supported C)
+include C D hC
+
+theorem common_subproduct_dvd_left 
     (hCD:primeSupport C=primeSupport D) (S:Finset (CommonIndex C D)) :
     (∏P∈S,P.val)∣C := by
   have h₁ := Finset.prod_dvd_prod_of_subset S Finset.univ
@@ -49,7 +53,7 @@ theorem common_subproduct_dvd_left (C D:Ideal O) (hC:Supported C)
   rw [left_ideal_product C D hC hCD] at h₂
   exact h₁.trans h₂
 
-theorem common_subproduct_dvd_right (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem common_subproduct_dvd_right  (hD:Supported D)
     (hCD:primeSupport C=primeSupport D) (S:Finset (CommonIndex C D)) :
     (∏P∈S,P.val)∣D := by
   have h₁ := Finset.prod_dvd_prod_of_subset S Finset.univ
@@ -63,7 +67,7 @@ theorem common_subproduct_dvd_right (C D:Ideal O) (hC:Supported C) (hD:Supported
   rw [right_ideal_product C D hC hD hCD] at h₂
   exact h₁.trans h₂
 
-theorem selected_nonunit_product (C D:Ideal O) (hC:Supported C)
+theorem selected_nonunit_product 
     (U:Finset (CommonIndex C D)) :
     (∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U}=
       ∏P∈U∪nonunitPartitionSet C D U,P.val := by
@@ -74,16 +78,19 @@ theorem selected_nonunit_product (C D:Ideal O) (hC:Supported C)
   rw [Finset.prod_union hd,nonunitFrequencyGenerator_span]
   simp only [unitIdeal,commonPrime_span C D hC]
 
-theorem selected_nonunit_dvd (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D)) :
+section
+variable (hD:Supported D)
+    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
+include hD hCD U
+
+theorem selected_nonunit_dvd  :
     ((∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U}∣C) ∧
     ((∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U}∣D) := by
   rw [selected_nonunit_product C D hC]
   exact ⟨common_subproduct_dvd_left C D hC hCD _,
     common_subproduct_dvd_right C D hC hD hCD _⟩
 
-theorem selected_nonunit_norm (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D)) :
+theorem selected_nonunit_norm  :
     (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm≤C.absNorm ∧
     (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm≤D.absNorm := by
   obtain ⟨h₁,h₂⟩ := selected_nonunit_dvd C D hC hD hCD U
@@ -92,6 +99,9 @@ theorem selected_nonunit_norm (C D:Ideal O) (hC:Supported C) (hD:Supported D)
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)) (map_dvd Ideal.absNorm h₁)
   · simpa only [map_mul] using Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)) (map_dvd Ideal.absNorm h₂)
+end
+end
+
 
 structure Family (η:Character) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
     (U:Finset (CommonIndex C D)) (τ:RayCharacter→Character) : Prop where
@@ -138,21 +148,30 @@ namespace Family
 variable {η:Character} {C D:Ideal O} {hC:Supported C} {hD:Supported D}
   {U:Finset (CommonIndex C D)} {τ:RayCharacter→Character}
 
-theorem nonexceptional_iff (h:Family η C D hC hD U τ) (χ:RayCharacter)
-    (Q:Ideal O) (m z:O) (hm:m≠0) (hml:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m) :
+section
+variable (h:Family η C D hC hD U τ)
+include h
+
+section
+variable (χ:RayCharacter)
+    (Q:Ideal O) (m z:O) (hm:m≠0)
+include χ Q m z hm
+
+theorem nonexceptional_iff  (hml:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m) :
     nonexceptional η χ Q m (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z ↔
       z≠0 ∧ ¬FixedInducingRow (τ χ) Q fixedBadMask 1 z :=
   actual_nonexceptional_iff η (τ χ) χ C D hC U (h.element_eq χ) Q m z hm hml hm2
 
-theorem inducing_iff (h:Family η C D hC hD U τ) (χ:RayCharacter)
-    (Q:Ideal O) (m z:O) (hm:m≠0) (hz:z≠0)
+theorem inducing_iff  (hz:z≠0)
     (hml:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m) :
     FixedInducingRow (childCharacter η χ) Q m
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z ↔
       FixedInducingRow (τ χ) Q fixedBadMask 1 z :=
   actual_reduced_inducing_iff η (τ χ) χ C D hC U (h.element_eq χ) Q m z hm hz hml hm2
+end
 
-theorem physical_conductor_bounds (h:Family η C D hC hD U τ)
+
+theorem physical_conductor_bounds 
     (hCD:primeSupport C=primeSupport D)
     (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(R:ℝ)(rows:Finset O)
     (W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
@@ -166,6 +185,8 @@ theorem physical_conductor_bounds (h:Family η C D hC hD U τ)
       simpa only [mul_assoc] using (Nat.mul_le_mul_left (η.modulus.absNorm*fixedFactor) h₁)
   · exact hN.trans <| by
       simpa only [mul_assoc] using (Nat.mul_le_mul_left (η.modulus.absNorm*fixedFactor) h₂)
+end
+
 
 end Family
 
@@ -223,8 +244,8 @@ theorem live_norm_le_four_radius (C D:Ideal O)(U:Finset (CommonIndex C D))
     nlinarith [mul_nonneg (sub_nonneg.mpr hG) (sub_nonneg.mpr hV)]
   exact hn.trans (div_le_self (by positivity) hprod)
 
-end SevenEighths.CenteredMomentSecondExceptionalFamily
 
-end
 
-end OAI
+
+
+

@@ -9,7 +9,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -30,8 +30,12 @@ theorem expansionProfileWeight_eq_signed (Ψ : Eis →* ℂ) (m c d : Eis)
   simp only [expansionProfileWeight,secondSignedSourceWeight,secondTotalWeight]
   ring
 
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hinj
+
 theorem secondSignedSourceWeight_norm_le_one
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (Ψ : Eis →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : Eis) (z : SecondRayIndex)
     (x : SecondExpansionData ι) :
@@ -57,7 +61,7 @@ theorem secondSignedSourceWeight_norm_le_one
     ((mul_le_of_le_one_left (norm_nonneg _) hinput).trans hμ)).trans hc1
 
 theorem secondExpansionSource_signed_profile
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
     (source : Finset (SecondExpansionData ι)) (hE : ∀ x ∈ source, x.divisor ⊆ x.sourceCommon)
@@ -72,8 +76,10 @@ theorem secondExpansionSource_signed_profile
           slots₁ slots₂ lists₁ lists₂ a₁ a₂ W₁ W₂ Φ Y X := by
   rw [secondExpansionSource_marked_profile p hp hcop hg hinj hpr (hE := hE)]
   simp only [expansionProfileWeight_eq_signed,Finset.mul_sum,mul_assoc]
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

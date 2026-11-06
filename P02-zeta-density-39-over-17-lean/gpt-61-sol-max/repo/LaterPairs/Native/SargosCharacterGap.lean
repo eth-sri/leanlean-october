@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosFiniteFourier
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                    
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
 
@@ -40,7 +39,6 @@ theorem sargos_stdAddChar_sub_one_norm {N : ℕ} [NeZero N] (k : ZMod N) :
   rw [he,Complex.norm_exp_I_mul_ofReal_sub_one]
   have he' : (2*Real.pi*(k.val : ℝ)/(N : ℝ))/2 =
       Real.pi*(k.val : ℝ)/(N : ℝ) := by ring
-  rw [he',Real.norm_eq_abs,abs_mul]
-  norm_num
+  simp_all <;> nlinarith
 
-end TaoTrudgianYang2025
+

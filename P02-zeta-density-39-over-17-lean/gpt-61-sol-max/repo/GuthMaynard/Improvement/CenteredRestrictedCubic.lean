@@ -1,22 +1,26 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicRetainedMasked
 public import GuthMaynard.Improvement.CenteredCubicApprox
 public import GuthMaynard.Improvement.CenteredCubicBoundedHeight
 public import GuthMaynard.Improvement.CubicOrdinaryClosure
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
+    {ε : ℝ} (hε : 0 < ε)
+include a ha l u hl hlu hs ε hε
+
 /-- Actual centered kernel masked cubic for every height T>=2. The
 bounded-height argument is included; no retained-kernel approximation or
 masked-majorant premise remains. -/
-theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    {ε : ℝ} (hε : 0 < ε) :
+theorem centered_masked_cubic_estimate  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T L t₀ t₁ : ℝ) (μ : ℝ → ℝ) (A : Set ℝ),
       2 ≤ T → T^((4:ℝ)/5) ≤ L → L ≤ T → t₀ ≤ t₁ → t₁-t₀ ≤ T →
       Measurable μ → (∀ t, 0 ≤ μ t) → Integrable μ → Integrable (fun t => μ t^2) →
@@ -44,7 +48,7 @@ theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
   have hL1 : 1 ≤ L := (Real.one_le_rpow hT1 (by norm_num : (0:ℝ) ≤ 4/5)).trans hLl
   have hLp : 0 < L := by linarith
   have hLT2 : L ≤ T^2 := hLu.trans (by nlinarith)
-  have hTe : 1 ≤ T^ε := Real.one_le_rpow hT1 hε.le
+  have hTe := Real.one_le_rpow hT1 hε.le
   have hZ : 0 ≤ Z := by dsimp [Z]; positivity
   have hbase : T^2*M*Real.sqrt M ≤ Z := by
     dsimp [Z]
@@ -92,9 +96,7 @@ theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
 /-- Restricted cubic bound for the actual centered kernel. Exact scales
 T^(4/5)<=L<=T and time support length<=T; cutoff fixed before epsilon and
 all varying data. This theorem has no open analytic estimate premise. -/
-theorem centered_restricted_cubic {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    {ε : ℝ} (hε : 0 < ε) :
+theorem centered_restricted_cubic  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T L t₀ t₁ Λ : ℝ) (μ : ℝ → ℝ),
       2 ≤ T → T^((4:ℝ)/5) ≤ L → L ≤ T → t₀ ≤ t₁ → t₁-t₀ ≤ T → 0 ≤ Λ →
       Measurable μ → (∀ t, 0 ≤ μ t) → Integrable μ → Integrable (fun t => μ t^2) →
@@ -112,12 +114,13 @@ theorem centered_restricted_cubic {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar (innerSL ℝ).continuous₂
       (Complex.ofRealCLM.integrable_comp hi)
   have hA : MeasurableSet A := measurableSet_lt measurable_const hf.measurable.norm
-  have hsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A := realDensity_level_symmetry μ Λ
+  have hsym := realDensity_level_symmetry μ Λ
   have hh := ordinary_restricted_cubic_of_masked h0 hi h2 hΛ
     (show 0 ≤ C*T^ε by positivity) hTp.le hLp.le
     (kernelCubic (timeMeasure μ) (centeredKernel a l u L))
     (h T L t₀ t₁ μ A hT hLl hLu ht hlen hm h0 hi h2 hsup hA hsym)
-  convert hh using 1
-  ring
+  grind
+end
 
-end GuthMaynard.Improvement
+
+

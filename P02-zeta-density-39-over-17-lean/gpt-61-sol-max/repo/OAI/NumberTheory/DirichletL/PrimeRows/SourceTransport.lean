@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.XShift
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 private lemma height_integral_wzx (f : HeightSpace→ℂ) (hf : Integrable f heightMeasure) :
     (∫p : HeightSpace,f p ∂heightMeasure)=∫w : ℝ,∫z : ℝ,∫x : ℝ,f ((x,z),w) := by
@@ -79,8 +79,8 @@ theorem rowIntegral_source_lines {K : ℕ}
     S hS hmax hfirst P hP hPS η u hu W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
   exact ⟨hi,hphysical.trans (by rw [hx,hz])⟩
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

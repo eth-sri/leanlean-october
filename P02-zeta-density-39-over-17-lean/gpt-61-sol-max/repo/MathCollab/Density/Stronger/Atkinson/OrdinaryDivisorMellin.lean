@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -11,10 +12,9 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set Filter Topology MeasureTheory
+open Complex Filter Topology MeasureTheory
 open MathCollab.Density.Stronger.Fourth
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -48,8 +48,12 @@ theorem DFIVoronoiTestFunction.integrable_ordinaryDivisorMellinTerm
     rw [LSeries.norm_term_eq, LSeries.norm_term_eq]
     simp
 
+section
+variable (g : ℝ → ℂ)
+include g
+
 theorem DFIVoronoiTestFunction.integral_norm_ordinaryDivisorMellinTerm
-    (g : ℝ → ℂ)
+    
     (c : ℝ) (n : ℕ) :
     (∫ u : ℝ, ‖ordinaryDivisorMellinTerm g c n u‖) =
       ‖LSeries.term divisorWeight (c : ℂ) n‖ *
@@ -66,14 +70,13 @@ theorem DFIVoronoiTestFunction.integral_norm_ordinaryDivisorMellinTerm
 /-- Absolute summability of the norms of all right-line Mellin terms.  This
 is the complete Tonelli/Fubini condition used by the Voronoi entry theorem. -/
 theorem DFIVoronoiTestFunction.summable_integral_norm_ordinaryDivisorMellinTerm
-    (g : ℝ → ℂ)
+    
     {c : ℝ} (hc : 1 < c) :
     Summable (fun n : ℕ =>
       ∫ u : ℝ, ‖ordinaryDivisorMellinTerm g c n u‖) := by
   have hCoeff : LSeriesSummable divisorWeight (c : ℂ) :=
     divisorLSeries_summable (by simpa using hc)
-  have hNorm : Summable (fun n : ℕ =>
-      ‖LSeries.term divisorWeight (c : ℂ) n‖) :=
+  have hNorm :=
     summable_norm_iff.mpr hCoeff
   have hMul := hNorm.mul_right
     (∫ u : ℝ, ‖mellin g ((c : ℂ) + (u : ℂ) * I)‖)
@@ -83,7 +86,7 @@ theorem DFIVoronoiTestFunction.summable_integral_norm_ordinaryDivisorMellinTerm
 
 
 theorem divisorWeight_mul_mellinInv
-    (g : ℝ → ℂ) (σ : ℝ)
+     (σ : ℝ)
     (n : ℕ) :
     divisorWeight n * mellinInv σ (mellin g) n =
       (1 / (2 * Real.pi) : ℂ) *
@@ -113,6 +116,8 @@ theorem divisorWeight_mul_mellinInv
     rw [show ((n : ℝ) : ℂ) = (n : ℂ) by norm_cast, cpow_neg,
       div_eq_mul_inv]
     ring
+end
+
 
 
 /-- Native q=1 right-line identity, with inversion and absolute exchange proved. -/
@@ -139,4 +144,4 @@ theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_zetaSquareMellinIntegral
   unfold LSeries ordinaryDivisorMellinTerm divisorWeight
   rw [tsum_mul_right]
 
-end MathCollab.Density.Stronger.Atkinson
+

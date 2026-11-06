@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 public import OAI.NumberTheory.DirichletL.Moments.SecondLocalization
@@ -12,36 +13,53 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplificationChildSourceCaps
-open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow
+open HeckeFamily CenteredMomentCommonRadialData
+open CenteredMomentFirstAmplificationChoice
 open CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale
 open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
 open CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open CenteredMomentSectorLocalization
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
+
+section
+variable (N : ℕ) (b b₁ b₂ : ℝ)
+include N b b₁ b₂
+
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
-def geometry (N : ℕ) (b b₁ b₂ : ℝ) : ℝ := b^(2*N)*b₁*b₂
+def geometry  : ℝ := b^(2*N)*b₁*b₂
 
-lemma geometry_ge_one (N : ℕ) (b b₁ b₂ : ℝ)
+lemma geometry_ge_one 
     (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) : 1≤geometry N b b₁ b₂ := by
   unfold geometry
   have hp : 1≤b^(2*N):=one_le_pow₀ hb
   have hp1 : 1≤b^(2*N)*b₁ := by nlinarith
   nlinarith
+end
+
 
 lemma norm_ge_one (I : Ideal O) (hI : I≠0) : (1:ℝ)≤I.absNorm := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
 
-lemma allocation_product (s : Input ι) (C : Ideal O) (B : actualAllocations s.pools C) :
+section
+variable (s : Input ι)
+include s
+
+section
+variable (C : Ideal O) (B : actualAllocations s.pools C)
+include C B
+
+lemma allocation_product  :
     finiteTupleProduct B.val=C := (Finset.mem_filter.mp B.property).2
 
-lemma allocation_ne (s : Input ι) (C : Ideal O) (B : actualAllocations s.pools C) : C≠0 := by
+lemma allocation_ne  : C≠0 := by
   rw [←allocation_product s C B]
   exact Finset.prod_ne_zero_iff.mpr (fun i _=>alloc_ne s C B i)
+end
 
-theorem common_volume (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
+
+theorem common_volume  (C R : Ideal O) (B : actualAllocations s.pools C)
     (τ : Character) (t : ℝ) :
     CenteredMomentAmplificationChildInput.volume (child s C R B τ t)=
       CenteredMomentAmplificationChildInput.volume s/rawReduction B.val s.P := by
@@ -54,6 +72,8 @@ theorem common_volume (s : Input ι) (C R : Ideal O) (B : actualAllocations s.po
   unfold CenteredMomentAmplificationChildInput.volume child commonData remainingRaw plainNorm
   dsimp only
   ring
+end
+
 
 lemma live_card_le (B : Tuple ι) : Fintype.card (liveIndices B)≤Fintype.card ι := by
   simpa only [Fintype.card_coe] using (Finset.card_le_univ (liveIndices B))
@@ -77,8 +97,8 @@ theorem common_volume_le (N : ℕ) (b : ℝ) (hb : 1≤b) (s : Input ι)
   nlinarith [CenteredMomentAmplificationChildInput.volume_pos s]
 
 theorem radius_le (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 0≤b₁) (_h₂ : 0≤b₂)
-    (s : Input ι) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i) (hhib : ∀i,s.hi i≤b)
-    (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂) :
+    (s : Input ι) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤ s.hi i) (hhib : ∀i,s.hi i≤b)
+    (hs₁ : 0≤ s.b₁) (hs₂ : 0≤ s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂) :
     0≤CenteredMomentOriginalCommonHarmonic.sourceRadius s ∧ CenteredMomentOriginalCommonHarmonic.sourceRadius s≤(b^N*b₁*b₂)*CenteredMomentAmplificationChildInput.volume s := by
   have hp:0≤∏i,s.hi i:=Finset.prod_nonneg (fun i _=>hhi i)
   have hp':(∏i,s.hi i)≤b^N := by
@@ -96,10 +116,14 @@ theorem radius_le (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 0≤b₁) (
     (CenteredMomentAmplificationChildInput.volume_pos s).le,
     mul_le_mul_of_nonneg_right hpp (CenteredMomentAmplificationChildInput.volume_pos s).le⟩
 
-theorem original_beta (s : Input ι) (R seed : Ideal O) :
+section
+variable (s : Input ι)
+include s
+
+theorem original_beta  (R seed : Ideal O) :
     (original s R seed).beta=coefficient s R seed := rfl
 
-theorem child_column_norm (s : Input ι) (C R seed : Ideal O) (B : actualAllocations s.pools C)
+theorem child_column_norm  (C R seed : Ideal O) (B : actualAllocations s.pools C)
     (τ : Character) (t : ℝ) (hz₁ : s.W₁ 0=0) (hz₂ : s.W₂ 0=0) (I : Ideal O)
     (hne : (original (child s C R B τ t) (R*C) seed).beta I≠0) :
     I≠0 ∧ seed∣I ∧ (I.absNorm:ℝ)≤CenteredMomentOriginalCommonHarmonic.sourceRadius (child s C R B τ t) := by
@@ -107,18 +131,26 @@ theorem child_column_norm (s : Input ι) (C R seed : Ideal O) (B : actualAllocat
   have hn:=original_column_norm (child s C R B τ t) (R*C) seed I hz₁ hz₂ hne
   exact ⟨hn.1,original_column_mask _ _ _ I hne,hn.2⟩
 
-def nominal (s : Input ι) (K : ℝ) : ℝ := CenteredMomentAmplificationChildInput.volume s^2/K
+def nominal  (K : ℝ) : ℝ := CenteredMomentAmplificationChildInput.volume s^2/K
 
-lemma nominal_pos (s : Input ι) (K : ℝ) (hK : 0<K) : 0<nominal s K :=
+lemma nominal_pos  (K : ℝ) (hK : 0<K) : 0<nominal s K :=
   div_pos (sq_pos_of_pos (CenteredMomentAmplificationChildInput.volume_pos s)) hK
+end
 
-def Endpoints (b b₁ b₂ : ℝ) (s : Input ι) : Prop :=
-  s.upper≤b ∧ (∀i,0≤s.hi i) ∧ 0≤s.b₁ ∧ s.b₁≤b₁ ∧ 0≤s.b₂ ∧ s.b₂≤b₂
 
-lemma endpoints_child (b b₁ b₂ : ℝ) (s : Input ι) (h : Endpoints b b₁ b₂ s)
+section
+variable (b b₁ b₂ : ℝ) (s : Input ι)
+include b b₁ b₂ s
+
+def Endpoints  : Prop :=
+  s.upper≤b ∧ (∀i,0≤ s.hi i) ∧ 0≤ s.b₁ ∧ s.b₁≤b₁ ∧ 0≤ s.b₂ ∧ s.b₂≤b₂
+
+lemma endpoints_child  (h : Endpoints b b₁ b₂ s)
     (C R : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
     Endpoints b b₁ b₂ (child s C R B τ t) :=
   ⟨h.1,fun i=>h.2.1 i.val,h.2.2⟩
+end
+
 
 lemma radius_bound (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂)
     (s : Input ι) (hc : Fintype.card ι≤N) (he : Endpoints b b₁ b₂ s) :
@@ -152,8 +184,8 @@ theorem polynomial_caps (G V X H K Z A D ε ξ : ℝ)
     frequencyRadius (X^2/K) Z ξ≤Z^(2*A+D+ε+ξ/2) := by
   have hz:=hZ.trans' zero_lt_one
   have hgp:G≤Z^ε := (by nlinarith : G≤G^2).trans hGp
-  have hvpow:0<Z^A:=Real.rpow_pos_of_pos hz A
-  have hrpow:0<Z^ε:=Real.rpow_pos_of_pos hz ε
+  have hvpow :=Real.rpow_pos_of_pos hz A
+  have hrpow :=Real.rpow_pos_of_pos hz ε
   have hcap:G*V≤Z^(A+ε) := by
     rw [Real.rpow_add hz]
     nlinarith [mul_le_mul hgp hVp hV.le hrpow.le]
@@ -172,8 +204,8 @@ theorem polynomial_caps (G V X H K Z A D ε ξ : ℝ)
     rw [Real.rpow_add hz]
     exact mul_le_mul_of_nonneg_right ht (Real.rpow_nonneg hz.le _)
 
-end SevenEighths.CenteredMomentAmplificationChildSourceCaps
 
-end
 
-end OAI
+
+
+

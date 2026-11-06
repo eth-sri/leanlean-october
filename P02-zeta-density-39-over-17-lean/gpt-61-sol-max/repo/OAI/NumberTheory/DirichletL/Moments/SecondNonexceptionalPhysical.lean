@@ -11,29 +11,30 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondNonexceptionalPhysical
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+
+
+
+
+
+
+open CenteredMomentSecondWindowBudget
+
+
+open scoped EisensteinO
 
 open Filter
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+open CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
 
-open CenteredMomentSecondOriginalChildren CenteredMomentSecondSupportedChildren
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentSecondPhysicalCost CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
+
+variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
+open CenteredMomentSecondOriginalChildren
+
+
+open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
+
+local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 lemma paired_sqrt (A E₁ E₂ c d:ℝ) (hA:0≤A) (hE₁:0≤E₁) (hE₂:0≤E₂)
     (hc:0<c) (_hd:0<d) :
@@ -67,8 +68,8 @@ theorem paired_core_budget (s:Input ι) (C D:Ideal O) (hC:Supported C) (hD:Suppo
       (heightEnvelope t^J₁*heightEnvelope t^J₂)*profileMoment J₁*profileMoment J₂:=by ring
     _=_:=by rw [hh]
 
-end SevenEighths.CenteredMomentSecondNonexceptionalPhysical
 
-end
 
-end OAI
+
+
+

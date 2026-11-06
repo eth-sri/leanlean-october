@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.TruncatedSourceMomentRaw
 public import GuthMaynard.Improvement.MiddleRangeIdentities
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 /-- Actual raw moment at the middle-range scales, with the actual removed
@@ -61,7 +61,6 @@ theorem middle_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 < ε) :
       _ = 25*(N^5*L*T)*M := by ring
       _ = _ := by rw [h3]
   change M^3 ≤ _ at hraw ⊢
-  dsimp only [M,μ,H] at he2 he3
-  simpa only [he1,he2,he3] using hraw
+  grind
 
-end GuthMaynard.Improvement
+

@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem canonical_dyadic_geometry_uniform_uniform_degree
@@ -34,7 +34,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hhat≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm R:ℝ)≤Z^L →
       0≤O₀ → O₀≤M → Z^O₀≤(Ideal.absNorm (rowPowerfulPart J):ℝ) →
-      CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤ margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
     ∀ (parents rows : Finset (Ideal Eis)),
       (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
@@ -151,7 +151,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
     (fun K hK => hr K (divisorDyadicBin_subset rows Hrow i hK))
     (fun p hp => haw p (activeTupleDyad_subset tuples Hslot j hp))
   exact hb
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

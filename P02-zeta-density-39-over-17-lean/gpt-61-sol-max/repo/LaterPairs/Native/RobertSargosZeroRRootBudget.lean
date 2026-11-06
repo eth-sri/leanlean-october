@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                 
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem zero_r_positive_root_budget {H Q R lam : ℝ}
@@ -44,13 +43,7 @@ theorem zero_r_a_times_a_row_budget {M H Q R C lam : ℝ}
         96*H*Real.sqrt Q/Real.sqrt (2*H*lam)) ≤ 1168*C*M^2 := by
   have hq0 : Q ≠ 0 := hQ.ne'
   have hr0 : R ≠ 0 := hR.ne'
-  have hd : (8*M*H/(Q*R))*(2*H*Q) ≤ 16*M^2 := by
-    have hh := mul_le_mul_of_nonneg_left ((div_le_iff₀ hR).mpr hdiag)
-      (show 0 ≤ 16*M by positivity)
-    calc
-      _ = (16*M)*(H^2/R) := by field_simp; ring
-      _ ≤ (16*M)*M := hh
-      _ = _ := by ring
+  have hd : (8*M*H/(Q*R))*(2*H*Q) ≤ 16*M^2 := by field_simp <;> nlinarith
   have hp : (8*M*H/(Q*R))*
       (24*C*M*H*Real.sqrt (4*H*lam)*Q*Real.sqrt Q) ≤ 384*C*M^2 := by
     have hh := mul_le_mul_of_nonneg_left
@@ -71,7 +64,6 @@ theorem zero_r_a_times_a_row_budget {M H Q R C lam : ℝ}
       _ ≤ (768*M)*M := hh
       _ = _ := by ring
   have hc := mul_le_mul_of_nonneg_right hC (sq_nonneg M)
-  rw [mul_add,mul_add]
-  nlinarith
+  grind
 
-end TaoTrudgianYang2025
+

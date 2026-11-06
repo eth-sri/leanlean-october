@@ -26,8 +26,8 @@ theorem inverse_fiber_count {Row Label Slot : Type*}
     (hlabel : ∀ u∈rows,(witness u).label=label)
     (hJ : ∀ u∈rows,(witness u).left=J) (hK : ∀ u∈rows,(witness u).right=K)
     (slots : Finset Slot) (row : Row→O) (W : Slot→ℝ→ℂ) (b widths g : Slot→ℝ) (zs : Slot→ℂ)
-    (mesh binWidth z εm C height : ℝ) (hmesh : 0≤mesh) (hbin : 0<binWidth)
-    (hw : ∀ s∈slots,0<widths s) (hwm : ∀ s∈slots,widths s≤mesh)
+    (mesh binWidth z εm C height : ℝ) (hmesh : 0≤ mesh) (hbin : 0<binWidth)
+    (hw : ∀ s∈slots,0<widths s) (hwm : ∀ s∈slots,widths s≤ mesh)
     (hL : 0<∑ s∈slots,widths s) (hz : 0≤z) (hzL : z≤∑ s∈slots,widths s)
     (hbins : ∀ u∈rows,∀ s∈slots,
       HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) binWidth
@@ -74,8 +74,8 @@ theorem inverse_fiber_count {Row Label Slot : Type*}
     U (2*a-1) r (weightedMean slots widths g) z (2*ε) ((2*a-1)*mesh) εm
     (12*(1+height)*C) hUp (fun u hu => (hsp u hu).2.2.1) hspike he'
 
-end SevenEighths.HeckeDetectorInverseFiberCount
 
-end
 
-end OAI
+
+
+

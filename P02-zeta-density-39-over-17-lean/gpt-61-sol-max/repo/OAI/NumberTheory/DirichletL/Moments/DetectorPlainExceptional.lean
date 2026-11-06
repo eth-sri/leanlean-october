@@ -12,17 +12,17 @@ open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainExceptional
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
+open HeckeFamily HeckeDyadic HeckeInverseAmplification
+open CenteredMomentDetectorDictionary
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceRow CenteredMomentSourceMass
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
 open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
+open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open CenteredMomentPrimeSlot CenteredMomentRowNorm
+open ConcreteTraceCRT ActualEisensteinCubic
+open scoped HeckeO
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
@@ -153,8 +153,8 @@ theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Chara
   exact retained_positive_energy_le_source _ radialMajorant radialMajorant_nonneg radialMajorant_one
     F η₀ selected j k σ t hU (hret rows hrows d a ε tstar T allowance i B hB bin label J K hne).1
 
-end SevenEighths.CenteredMomentDetectorPlainExceptional
 
-end
 
-end OAI
+
+
+

@@ -13,12 +13,12 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalZeroStage
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyBandMonotonicity
 open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyWidthSchedule
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -37,14 +37,14 @@ theorem actual_zero_stage
     ∃d Lgrow Llow:ℝ,0<d ∧ d≤1 ∧ 0<Lgrow ∧ Lgoal≤Lgrow ∧
       Lgrow=max Lgoal (Mparent+Bmask+2*d)+1 ∧
       Llow=max Lgrow (Mparent+Bmask+rho/100) ∧
-      Llow≤max Lgoal (Mparent+Bmask+rho/100+2)+1 ∧
+      Llow≤ max Lgoal (Mparent+Bmask+rho/100+2)+1 ∧
     ∀Lchild:ℝ,0≤Lchild→max Mparent (2*Lgrow)≤Lchild→
       readyBudget (max Mparent (2*Lgrow)) Bmask≤Bschedule→
     ∀degree degreeLow:ℕ,∀S Slow:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),
     ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁ Clow:ℝ,εchild≤stageLoss Mschedule Bschedule ε k→
+    ∀εchild C₀ C₁ Clow:ℝ,εchild≤ stageLoss Mschedule Bschedule ε k→
       0≤C₀→0≤C₁→0≤Clow→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b bΦ Bmask Lchild Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask Lchild Lslot lo hi
@@ -133,8 +133,8 @@ theorem actual_zero_stage
     J J U U _ _ hZ.le le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl
     le_rfl (Finset.Subset.refl _) (by positivity) hfront hfinal
 
-end SevenEighths.CenteredMomentEnergyNaturalZeroStage
 
-end
 
-end OAI
+
+
+

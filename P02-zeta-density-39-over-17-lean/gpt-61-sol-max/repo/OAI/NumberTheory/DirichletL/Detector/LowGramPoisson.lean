@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowGramProfile
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma lowGram_pair_prefactor (C : CalibrationData) (W1 : ℝ→ℂ)
@@ -24,7 +25,7 @@ lemma lowGram_pair_prefactor (C : CalibrationData) (W1 : ℝ→ℂ)
   calc
     _ = (Q:ℂ)*(lowGaussColumn C W1 Y σ v s/(Real.sqrt (Ideal.absNorm s.val:ℝ):ℂ))*
         star (lowGaussColumn C W1 Y σ v t/(Real.sqrt (Ideal.absNorm t.val:ℝ):ℂ)) := by
-      simp only [Complex.star_def,map_mul,map_inv₀,Complex.conj_ofReal,div_eq_mul_inv,mul_inv_rev]
+      simp
       ring
     _ = (Q:ℂ)*(lowGramScale Y*star (lowGramScale Y))*
         ((lowGramCoefficient C σ s*lowGramProfile W1 v ((Ideal.absNorm s.val:ℝ)/Y))*
@@ -68,7 +69,7 @@ theorem lowGram_kernel_scale (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
     (primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1,map_mul,Nat.cast_mul]
   field_simp
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

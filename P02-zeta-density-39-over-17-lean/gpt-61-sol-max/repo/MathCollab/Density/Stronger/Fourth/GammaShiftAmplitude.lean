@@ -13,17 +13,22 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 open Complex Set MeasureTheory
 open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
-def zetaGammaShiftAmplitude (t : ℝ) (w : ℂ) (v : ℝ) : ℂ :=
+section
+variable (t : ℝ) (w : ℂ)
+include t w
+
+def zetaGammaShiftAmplitude  (v : ℝ) : ℂ :=
   (Complex.Gammaℝ (afeCriticalPoint (-t) + (v : ℂ) * w) /
     Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 *
       Complex.exp (-(v : ℂ) * w * zetaGammaLeadingLog t)
 
-def zetaGammaShiftError (t : ℝ) (w : ℂ) : ℝ := (17 * ‖w‖ + 2 * ‖w‖ ^ 2) / t
+def zetaGammaShiftError  : ℝ := (17 * ‖w‖ + 2 * ‖w‖ ^ 2) / t
+end
+
 
 theorem zetaGammaShiftError_nonneg {t : ℝ} (ht : 0 ≤ t) (w : ℂ) :
     0 ≤ zetaGammaShiftError t w := by unfold zetaGammaShiftError; positivity
@@ -54,9 +59,16 @@ theorem hasDerivAt_zetaGammaShiftAmplitude (t : ℝ) {w : ℂ} (hw : 0 ≤ w.re)
   | rfl
   | (norm_num [zetaGammaShiftAmplitude, zetaGammaHalfShift, Function.comp_def]; ring)
 
-theorem amplitude_derivative_norm_le {t : ℝ} (ht : 4 ≤ t)
+section
+variable {t : ℝ} (ht : 4 ≤ t)
     {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2)
-    {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) :
+include t ht w hwre hw
+
+section
+variable {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1)
+include v hv
+
+theorem amplitude_derivative_norm_le  :
     ‖zetaGammaShiftAmplitude t w v * w *
       (Complex.digamma (zetaGammaHalfShift t w v) -
         (zetaGammaLeadingLog t + Complex.log (Real.pi : ℂ)))‖ ≤
@@ -68,9 +80,7 @@ theorem amplitude_derivative_norm_le {t : ℝ} (ht : 4 ≤ t)
         (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ = _ := by unfold zetaGammaShiftError; ring
 
-theorem norm_zetaGammaShiftAmplitude_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2)
-    {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) :
+theorem norm_zetaGammaShiftAmplitude_le  :
     ‖zetaGammaShiftAmplitude t w v‖ ≤ Real.exp (zetaGammaShiftError t w * v) := by
   let f := zetaGammaShiftAmplitude t w
   let f' := fun u : ℝ => f u * w * (Complex.digamma (zetaGammaHalfShift t w u) -
@@ -86,11 +96,12 @@ theorem norm_zetaGammaShiftAmplitude_le {t : ℝ} (ht : 4 ≤ t)
   have h := norm_le_gronwallBound_of_norm_deriv_right_le hc
     (fun u hu => (hderiv u ⟨hu.1, hu.2.le⟩).hasDerivWithinAt) hi hbound v hv
   simpa only [gronwallBound_ε0, sub_zero, one_mul] using h
+end
+
 
 /-- Uniform relative error, obtained by integrating the genuine normalized
 ratio's derivative after its Gronwall estimate. -/
-theorem norm_zetaGammaShiftAmplitude_sub_one_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2) :
+theorem norm_zetaGammaShiftAmplitude_sub_one_le  :
     ‖zetaGammaShiftAmplitude t w 1 - 1‖ ≤
       zetaGammaShiftError t w * Real.exp (zetaGammaShiftError t w) := by
   have hB : 0 ≤ zetaGammaShiftError t w := zetaGammaShiftError_nonneg (by linarith) w
@@ -111,8 +122,7 @@ theorem norm_zetaGammaShiftAmplitude_sub_one_le {t : ℝ} (ht : 4 ≤ t)
 
 /-- Absolute error for the actual squared Gamma ratio. The leading
 exponential retains both its height power and its signed contour growth. -/
-theorem norm_gammaReal_shift_sq_sub_exp_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2) :
+theorem norm_gammaReal_shift_sq_sub_exp_le  :
     ‖(Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
         Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 - Complex.exp (w * zetaGammaLeadingLog t)‖ ≤
       zetaGammaShiftError t w * Real.exp (zetaGammaShiftError t w) *
@@ -125,6 +135,8 @@ theorem norm_gammaReal_shift_sq_sub_exp_le {t : ℝ} (ht : 4 ≤ t)
   rw [heq, norm_mul, Complex.norm_exp]
   exact mul_le_mul_of_nonneg_right (norm_zetaGammaShiftAmplitude_sub_one_le ht hwre hw)
     (Real.exp_pos _).le
+end
+
 
 theorem zetaGammaLeadingLog_mul_re (t : ℝ) (w : ℂ) :
     (w * zetaGammaLeadingLog t).re = w.re * Real.log (t / (2 * Real.pi)) + w.im * (Real.pi / 2) := by
@@ -148,4 +160,4 @@ theorem norm_gammaReal_shift_sq_le_exp {t : ℝ} (ht : 4 ≤ t)
   exact mul_le_mul_of_nonneg_right (by simpa only [mul_one] using h) (by positivity)
 
 
-end MathCollab.Density.Stronger.Fourth
+

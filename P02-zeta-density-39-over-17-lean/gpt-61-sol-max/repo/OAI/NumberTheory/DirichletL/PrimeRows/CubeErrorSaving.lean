@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralCube
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
@@ -66,8 +66,8 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
       exact div_le_div_of_nonneg_left (Real.rpow_nonneg hZ0.le _) (Real.rpow_pos_of_pos hZ0 _) hden
     _ ≤ _ := mul_le_mul_of_nonneg_left hsave (by positivity)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

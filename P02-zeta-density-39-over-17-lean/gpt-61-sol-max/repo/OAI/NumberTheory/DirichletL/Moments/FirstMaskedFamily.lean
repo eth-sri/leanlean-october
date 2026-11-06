@@ -11,19 +11,19 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMaskedFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
+open HeckeFamily CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFixedRowMask
-open CenteredMomentFirstFamily CenteredMomentFirstIdealFamily CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstColumns CenteredMomentCanonicalFirst CenteredMomentCommonSupport
+
+open CenteredMomentFirstIdealFamily
+open CenteredMomentFirstColumns CenteredMomentCanonicalFirst
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
-open CenteredMomentAmplificationFamily CenteredMomentSourceAllocationEnergy
-open CenteredMomentAmplificationFamilyEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentPrimaryCharacter
-open ActualEisensteinCubic ConcreteTraceCRT CenteredMomentChildAssembly CenteredMomentChildRows
-local notation "O" => HeckeFamily.O
+
+
+
+
+
+open ActualEisensteinCubic CenteredMomentChildAssembly
+open scoped HeckeO
 local notation "fixedBadMask" => (goodLambda*(2:O))
 
 lemma fixed_mask_ne_zero : fixedBadMask≠0 :=
@@ -111,8 +111,8 @@ lemma maskedSource_eq_of_live (u : O) (β : Ideal O → ℂ)
   · simp [maskedSource,hi]
   · simp [maskedSource,idealMask,h I hi]
 
-end SevenEighths.CenteredMomentFirstMaskedFamily
 
-end
 
-end OAI
+
+
+

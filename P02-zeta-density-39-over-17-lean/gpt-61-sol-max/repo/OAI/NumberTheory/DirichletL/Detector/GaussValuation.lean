@@ -1,17 +1,22 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.PrimePower
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
+section
+variable (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+
+theorem primePowerGauss_at_pow_nonprincipal 
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (hχ : χ ≠ 1) (n j : ℕ) :
     primePowerGauss p hp.ne_zero χ n (p ^ j) =
       if j = n then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n * primeGauss p hp.ne_zero χ 1
@@ -31,14 +36,11 @@ theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
     apply primePowerGauss_nonprincipal_extra_divisibility p hp.ne_zero χ hχ
     exact dvd_pow_self p (by omega)
 
-theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem primePowerGauss_at_pow_principal 
     (hψ : quotientTrace p hp.ne_zero ≠ 1) (n j : ℕ) :
     primePowerGauss p hp.ne_zero 1 n (p ^ j) =
       (if n + 1 ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ (n + 1) else 0) -
       (if n ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n else 0) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  let : Finite (O ⧸ Ideal.span {p}) := ConcreteTraceCRT.finite_quotient_span hp.ne_zero
   have hcard : (Nat.card (O ⧸ Ideal.span {p})ˣ : ℂ) =
       (Ideal.absNorm (Ideal.span {p}) : ℂ) - 1 := by
     rw [Nat.card_units, Nat.cast_sub (Nat.card_pos : 0 < Nat.card (O ⧸ Ideal.span {p})),
@@ -61,8 +63,10 @@ theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
       ite_eq_left hle, hcard, pow_succ]
     ring
     exact hψ
-
-end SevenEighths.ProbePrimePower
 end
 
-end OAI
+
+
+
+
+

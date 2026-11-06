@@ -1,28 +1,27 @@
 module
+import Mathlib
 public import LaterPairs.Native.HuxleyProfileGeometry.Part01
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 noncomputable section
 open Set
-namespace TaoTrudgianYang2025.HuxleyLinearForm
-end TaoTrudgianYang2025.HuxleyLinearForm
+
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 open Filter
 open scoped Topology
 open Set
 open Polynomial
-open Set
+        
 open scoped Classical
-open scoped Classical
-open scoped Classical
-open scoped Classical
-open Filter
-open scoped Topology
+                     
+                     
+                     
+           
+                    
 open scoped ContDiff
 open scoped FourierTransform BigOperators
 
@@ -67,7 +66,7 @@ theorem curvature_surface_hasFDerivAt
     (hroot : ∀ᶠ w in 𝓝 z, ρ w ∈ I ∧ H w (ρ w)=H z (ρ z))
     (huniq : ∀ᶠ w in 𝓝 z, Set.InjOn (H w) I) :
     HasFDerivAt ρ (-(hx⁻¹ • L)) z := by
-  let M : ((ℝ × ℝ) × ℝ) →L[ℝ] ℝ :=
+  let M :=
     L.comp (ContinuousLinearMap.fst ℝ (ℝ × ℝ) ℝ)+
       hx • ContinuousLinearMap.snd ℝ (ℝ × ℝ) ℝ
   have hleft : M.comp (ContinuousLinearMap.inl ℝ (ℝ × ℝ) ℝ)=L := by
@@ -89,10 +88,9 @@ theorem curvature_surface_hasFDerivAt
     rw [hright]
     ext
     simp [hx0]
-  have hinv : (M.comp (ContinuousLinearMap.inr ℝ (ℝ × ℝ) ℝ)).IsInvertible :=
+  have hinv :=
     ContinuousLinearMap.IsInvertible.of_inverse hcomp₁ hcomp₂
-  have hinveq : (M.comp (ContinuousLinearMap.inr ℝ (ℝ × ℝ) ℝ)).inverse=
-      hx⁻¹ • ContinuousLinearMap.id ℝ ℝ :=
+  have hinveq :=
     ContinuousLinearMap.inverse_eq hcomp₁ hcomp₂
   change HasStrictFDerivAt (fun p : (ℝ × ℝ) × ℝ => H p.1 p.2) M (z,ρ z) at hH
   let ψ := hH.implicitFunctionOfProdDomain hinv
@@ -102,7 +100,7 @@ theorem curvature_surface_hasFDerivAt
     convert hh using 1
     apply ContinuousLinearMap.ext
     intro v
-    simp only [ContinuousLinearMap.comp_apply,neg_apply,smul_apply,ContinuousLinearMap.id_apply]
+    simp
   have hψin : ∀ᶠ w in 𝓝 z, ψ w ∈ I :=
     (hH.tendsto_implicitFunctionOfProdDomain hinv) (hI.mem_nhds hbase)
   have hψroot := hH.eventually_apply_implicitFunctionOfProdDomain hinv
@@ -114,10 +112,14 @@ theorem curvature_surface_hasFDerivAt
 
                                                                           
                                                             
-theorem curvature_surface_root_hasFDerivAt
-    (H : ℝ × ℝ → ℝ) (ρ : (ℝ × ℝ) → ℝ)
+section
+variable (H : ℝ × ℝ → ℝ) (ρ : (ℝ × ℝ) → ℝ)
     {z : ℝ × ℝ} {I : Set ℝ}
     (hI : IsOpen I) (hbase : ρ z ∈ I)
+include H ρ z I hI hbase
+
+theorem curvature_surface_root_hasFDerivAt
+    
     (hH : ContDiffAt ℝ 1 H (z.1,ρ z))
     (hx0 : fderiv ℝ H (z.1,ρ z) (0,1) ≠ 0)
     (hroot : ∀ᶠ w in 𝓝 z, ρ w ∈ I ∧ H (w.1,ρ w)=w.2)
@@ -126,16 +128,16 @@ theorem curvature_surface_root_hasFDerivAt
       ((-fderiv ℝ H (z.1,ρ z) (1,0)/fderiv ℝ H (z.1,ρ z) (0,1)) •
           ContinuousLinearMap.fst ℝ ℝ ℝ +
         (1/fderiv ℝ H (z.1,ρ z) (0,1)) • ContinuousLinearMap.snd ℝ ℝ ℝ) z := by
-  let p : ℝ × ℝ := (z.1,ρ z)
+  let p := (z.1,ρ z)
   let B := fderiv ℝ H p (1,0)
   let G := fderiv ℝ H p (0,1)
-  let A : ((ℝ × ℝ) × ℝ) →L[ℝ] ℝ :=
+  let A :=
     (ContinuousLinearMap.fst ℝ ℝ ℝ).comp (ContinuousLinearMap.fst ℝ (ℝ × ℝ) ℝ)
-  let C : ((ℝ × ℝ) × ℝ) →L[ℝ] ℝ :=
+  let C :=
     (ContinuousLinearMap.snd ℝ ℝ ℝ).comp (ContinuousLinearMap.fst ℝ (ℝ × ℝ) ℝ)
-  let E : ((ℝ × ℝ) × ℝ) →L[ℝ] (ℝ × ℝ) :=
+  let E :=
     A.prod (ContinuousLinearMap.snd ℝ (ℝ × ℝ) ℝ)
-  let L : (ℝ × ℝ) →L[ℝ] ℝ :=
+  let L :=
     B • ContinuousLinearMap.fst ℝ ℝ ℝ - ContinuousLinearMap.snd ℝ ℝ ℝ
   have hsplit (v : ℝ × ℝ) : fderiv ℝ H p v=B*v.1+G*v.2 := by
     have hv : v=v.1 • (1,0)+v.2 • (0,1) := by ext <;> simp
@@ -150,8 +152,7 @@ theorem curvature_surface_root_hasFDerivAt
         G • ContinuousLinearMap.snd ℝ (ℝ × ℝ) ℝ := by
     apply ContinuousLinearMap.ext
     intro v
-    simp only [sub_apply,ContinuousLinearMap.comp_apply,
-      add_apply,smul_apply,smul_eq_mul]
+    simp
     rw [hsplit]
     simp [E,A,C,L]
     ring
@@ -183,9 +184,7 @@ theorem curvature_surface_root_hasFDerivAt
                                                                     
                                                                                
 theorem curvature_surface_profile_hasFDerivAt
-    (H : ℝ × ℝ → ℝ) (ρ : (ℝ × ℝ) → ℝ)
-    {z : ℝ × ℝ} {I : Set ℝ}
-    (hI : IsOpen I) (hbase : ρ z ∈ I)
+    
     (hH : ContDiffAt ℝ 2 H (z.1,ρ z))
     (hx0 : fderiv ℝ H (z.1,ρ z) (0,1) ≠ 0)
     (hroot : ∀ᶠ w in 𝓝 z, ρ w ∈ I ∧ H (w.1,ρ w)=w.2)
@@ -226,9 +225,7 @@ theorem curvature_surface_profile_hasFDerivAt
                                                                        
                                                                          
 theorem curvature_surface_profile_jacobian
-    (H : ℝ × ℝ → ℝ) (ρ : (ℝ × ℝ) → ℝ)
-    {z : ℝ × ℝ} {I : Set ℝ}
-    (hI : IsOpen I) (hbase : ρ z ∈ I)
+    
     (hH : ContDiffAt ℝ 3 H (z.1,ρ z))
     (hx0 : fderiv ℝ H (z.1,ρ z) (0,1) ≠ 0)
     (hxx0 : fderiv ℝ (fun v => fderiv ℝ H v (0,1)) (z.1,ρ z) (0,1) ≠ 0)
@@ -339,6 +336,8 @@ theorem curvature_surface_profile_jacobian
   rw [hgx,hgy,hqx,hqy,hratio]
   field_simp [show G p ≠ 0 from hx0,show K p ≠ 0 from hxx0]
   ring
+end
+
 
 
                                                                       
@@ -369,7 +368,7 @@ theorem positive_difference_inverse_profile_jacobian_lower
       |fderiv ℝ g z (0,1)*fderiv ℝ q z (1,0)-
         fderiv ℝ q z (0,1)*fderiv ℝ g z (1,0)| := by
   intro H G g q
-  let p : ℝ × ℝ := (z.1,ρ z)
+  let p := (z.1,ρ z)
   let J := fun v : ℝ × ℝ =>
     (iteratedDeriv 3 F v.2-iteratedDeriv 3 F (v.2+η*v.1))/(σ*η)
   let K := fun v => fderiv ℝ G v (0,1)
@@ -400,8 +399,7 @@ theorem positive_difference_inverse_profile_jacobian_lower
     rw [hGp.self_of_nhds]
     have hj : iteratedDeriv 3 (fun x => (F x-F (x+η*z.1))/(σ*η)) (ρ z)=J p := he₄.1
     rw [←hj]
-    simpa only [iteratedDeriv_zero] using
-      positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound
+    exact positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound
         3 0 (by norm_num) (by norm_num)
   have hratio : c^2*c/(6*U^4) ≤
       |deriv (fun x => Z (z.1,x)/K (z.1,x)) (ρ z)| := by
@@ -546,8 +544,12 @@ theorem scalar_surface_contDiffAt
 
                                                                          
                                                                                 
+section
+variable (H : ℝ × ℝ → ℝ)
+include H
+
 theorem curvature_surface_root_contDiffAt
-    (H : ℝ × ℝ → ℝ) (ρ : ℝ × ℝ → ℝ)
+     (ρ : ℝ × ℝ → ℝ)
     {n : ℕ∞ω} {z : ℝ × ℝ} {I : Set ℝ}
     (hn : n ≠ 0) (hI : IsOpen I) (hbase : ρ z ∈ I)
     (hH : ContDiffAt ℝ n H (z.1,ρ z))
@@ -555,11 +557,11 @@ theorem curvature_surface_root_contDiffAt
     (hroot : ∀ᶠ w in 𝓝 z, ρ w ∈ I ∧ H (w.1,ρ w)=w.2)
     (huniq : ∀ᶠ w in 𝓝 z, Set.InjOn (fun x => H (w.1,x)) I) :
     ContDiffAt ℝ n ρ z := by
-  let E : ((ℝ × ℝ) × ℝ) →L[ℝ] (ℝ × ℝ) :=
+  let E :=
     ((ContinuousLinearMap.fst ℝ ℝ ℝ).comp
       (ContinuousLinearMap.fst ℝ (ℝ × ℝ) ℝ)).prod
         (ContinuousLinearMap.snd ℝ (ℝ × ℝ) ℝ)
-  let C : ((ℝ × ℝ) × ℝ) →L[ℝ] ℝ :=
+  let C :=
     (ContinuousLinearMap.snd ℝ ℝ ℝ).comp (ContinuousLinearMap.fst ℝ (ℝ × ℝ) ℝ)
   let F := fun v : (ℝ × ℝ) × ℝ => H (v.1.1,v.2)-v.1.2
   have hF : ContDiffAt ℝ n F (z,ρ z) :=
@@ -584,7 +586,7 @@ theorem curvature_surface_root_contDiffAt
                                                                          
                                                                     
 theorem curvature_surface_profile_derivative_matrix
-    (H : ℝ × ℝ → ℝ) (ρ : (ℝ × ℝ) → ℝ)
+     (ρ : (ℝ × ℝ) → ℝ)
     {z : ℝ × ℝ} {I : Set ℝ}
     (hI : IsOpen I) (hbase : ρ z ∈ I)
     (hH : ContDiffAt ℝ 3 H (z.1,ρ z))
@@ -680,6 +682,8 @@ theorem curvature_surface_profile_derivative_matrix
     hgd.differentiableAt.hasFDerivAt.prodMk hqd.differentiableAt.hasFDerivAt
   rw [hΦ.fderiv]
   exact ⟨Prod.ext hgy hqy,Prod.ext hgx hqx⟩
+end
+
 
 
 private theorem profile_matrix_entries_bound
@@ -793,7 +797,7 @@ theorem positive_difference_inverse_profile_columns_bound
     let R := max 1 (max (3*U/σ) (2*σ/c))
     ‖fderiv ℝ Φ z (1,0)‖ ≤ 4*R^6 ∧ ‖fderiv ℝ Φ z (0,1)‖ ≤ 4*R^6 := by
   intro H g Φ R
-  let p : ℝ × ℝ := (z.1,ρ z)
+  let p := (z.1,ρ z)
   let J := fun (r : ℕ) (v : ℝ × ℝ) =>
     (iteratedDeriv r F v.2-iteratedDeriv r F (v.2+η*v.1))/(σ*η)
   let G := fun v => fderiv ℝ H v (0,1)
@@ -826,8 +830,7 @@ theorem positive_difference_inverse_profile_columns_bound
     have he : iteratedDeriv r (fun x => (F x-F (x+η*z.1))/(σ*η)) (ρ z)=J r p := by
       rw [iteratedDeriv_div_const,iteratedDeriv_fun_sub hc₀ hc₁,iteratedDeriv_comp_add_const]
     rw [←he]
-    simpa only [iteratedDeriv_zero] using
-      positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound r 0
+    exact positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound r 0
         (by norm_num) (by omega)
   have hYbound (r : ℕ) (hr : r ≤ 5) : |fderiv ℝ (J r) p (1,0)| ≤ 3*U/σ := by
     rw [(positive_difference_curvature_directions F (σ:=σ) hx0 hz0 hf r).2.2]
@@ -918,8 +921,7 @@ theorem curvature_surface_profile_columns_polynomial
   intro p G K Z g Φ
   obtain ⟨hy,hu⟩ := curvature_surface_profile_derivative_matrix H ρ hI hbase hH hx0 hroot huniq
   rw [hy,hu]
-  dsimp only [profileDerivativeColumns,Matrix.cons_val_zero,Matrix.cons_val_succ,
-    Matrix.head_cons,Matrix.tail_cons]
+  dsimp
   simp only [div_eq_mul_inv,←inv_pow]
   congr 1
 
@@ -993,15 +995,19 @@ theorem profile_columns_uniform_variation (R : ℝ) :
 
                                                                     
                                                                           
-noncomputable def differenceProfileJet (F : ℝ → ℝ) (σ η : ℝ) (p : ℝ × ℝ) : Fin 7 → ℝ :=
+def differenceProfileJet (F : ℝ → ℝ) (σ η : ℝ) (p : ℝ × ℝ) : Fin 7 → ℝ :=
   let J := fun r => (iteratedDeriv r F p.2-iteratedDeriv r F (p.2+η*p.1))/(σ*η)
   let Y := fun r => -iteratedDeriv (r+1) F (p.2+η*p.1)/σ
   ![Y 2,J 3,J 4,Y 3,J 5,Y 4,(J 3)⁻¹]
 
                                                                     
                                                                          
+section
+variable (F : ℝ → ℝ)
+include F
+
 theorem positive_difference_profile_jet_bound
-    (F : ℝ → ℝ) {σ c U η x y : ℝ}
+     {σ c U η x y : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
     (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hx : x ∈ Icc (3/4:ℝ) (9/4)) (hy : y ∈ Icc (1/2:ℝ) 3)
@@ -1015,7 +1021,7 @@ theorem positive_difference_profile_jet_bound
     (∀ i, |differenceProfileJet F σ η (y,x) i| ≤ R) ∧
     ‖fderiv ℝ (differenceProfileJet F σ η) (y,x)‖ ≤ 2*R^3 := by
   intro R
-  let p : ℝ × ℝ := (y,x)
+  let p := (y,x)
   let J := fun (r : ℕ) (v : ℝ × ℝ) =>
     (iteratedDeriv r F v.2-iteratedDeriv r F (v.2+η*v.1))/(σ*η)
   let Y := fun (r : ℕ) (v : ℝ × ℝ) =>
@@ -1042,8 +1048,7 @@ theorem positive_difference_profile_jet_bound
       rw [iteratedDeriv_div_const,iteratedDeriv_fun_sub hc₀ hc₁,iteratedDeriv_comp_add_const]
     rw [←he]
     have hb : |iteratedDeriv r (fun u => (F u-F (u+η*y))/(σ*η)) x| ≤ 3*U/σ := by
-      simpa only [iteratedDeriv_zero] using
-        (positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound r 0
+      exact (positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound r 0
           (by norm_num) (by omega))
     exact hb.trans hAR
   have hYbound (r : ℕ) (hr : r ≤ 6) : |Y r p| ≤ R := by
@@ -1167,7 +1172,7 @@ theorem positive_difference_profile_jet_bound
                                                                      
                                                                          
 theorem positive_difference_profile_chart_bound
-    (F : ℝ → ℝ) (ρ : ℝ × ℝ → ℝ)
+     (ρ : ℝ × ℝ → ℝ)
     {σ c U η : ℝ} {z : ℝ × ℝ} {I : Set ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
     (hη : 0 < η) (hηmax : η ≤ 1/8)
@@ -1192,7 +1197,7 @@ theorem positive_difference_profile_chart_bound
     ‖fderiv ℝ W z‖ ≤ 6*R^5 ∧
     (fderiv ℝ Φ z (1,0),fderiv ℝ Φ z (0,1))=profileDerivativeColumns (W z) := by
   intro H g Φ W R
-  let p : ℝ × ℝ := (z.1,ρ z)
+  let p := (z.1,ρ z)
   let J := fun (r : ℕ) (v : ℝ × ℝ) =>
     (iteratedDeriv r F v.2-iteratedDeriv r F (v.2+η*v.1))/(σ*η)
   let Y := fun (r : ℕ) (v : ℝ × ℝ) =>
@@ -1277,6 +1282,8 @@ theorem positive_difference_profile_chart_bound
     have hJ4 : fderiv ℝ (J 4) p (0,1)=J 5 p := (hGerm 4 p hx0 hz0).self_of_nhds
     rw [hYe,hGe.self_of_nhds,hKe.self_of_nhds,hGe.fderiv_eq,hKe.fderiv_eq,
       hYe,hYe,hJ4]
+end
+
 
 
                                                                             
@@ -1533,8 +1540,8 @@ theorem triangular_profile_endpoint_compression
     have hf₁ : ContDiffAt ℝ 1 (fun v => fderiv ℝ f v (0,1)) w :=
       ((hF w hw).fderiv_right (by norm_num : (1:WithTop ℕ∞)+1 ≤ 2)).clm_apply contDiffAt_const
     exact hf₀.prodMk hf₁.differentiableAt_one
-  let p₀ : ℝ × ℝ := (ya,l)
-  let Δ : ℝ × ℝ := (yb-ya,b)
+  let p₀ := (ya,l)
+  let Δ := (yb-ya,b)
   let A := fderiv ℝ Φ p₀
   have hp₀ : p₀ ∈ S := (hpoints l ⟨le_rfl,hlr.le⟩).1
   have hAder w : fderiv ℝ (fun v => A v) w=A := A.hasFDerivAt.fderiv
@@ -1742,8 +1749,12 @@ private theorem interval_abs_derivative_lower
 
                                                                         
                                                                            
+section
+variable (F : ℝ → ℝ)
+include F
+
 theorem positive_difference_curvature_inverse_eq
-    (F : ℝ → ℝ) {σ c U η x y u : ℝ}
+     {σ c U η x y u : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
     (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hx : x ∈ Ioo (3/4:ℝ) (9/4)) (hy : y ∈ Icc (1/2:ℝ) 3)
@@ -1789,7 +1800,7 @@ theorem positive_difference_curvature_inverse_eq
                                                                         
                                                                
 theorem positive_difference_physical_iteratedDeriv
-    (F : ℝ → ℝ) {σ η y T M x : ℝ} (hM : 0 < M) (hx : 0 < x)
+     {σ η y T M x : ℝ} (hM : 0 < M) (hx : 0 < x)
     (hshift : 0 ≤ η*y) (hf : ∀ z, 0 < z → ContDiffAt ℝ ∞ F z) (n : ℕ) :
     iteratedDeriv n (fun z => T*(F (z/M)-F (z/M+η*y))/(σ*η)) x =
       T/M^n*((iteratedDeriv n F (x/M)-iteratedDeriv n F (x/M+η*y))/(σ*η)) := by
@@ -1820,7 +1831,7 @@ theorem positive_difference_physical_iteratedDeriv
                                                                        
                                                      
 theorem positive_difference_rounded_third_bound
-    (F : ℝ → ℝ) {σ c U η M xa xb ya yb Δ : ℝ}
+     {σ c U η M xa xb ya yb Δ : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hM : 2 ≤ M) (hxa : xa ∈ Icc (1:ℝ) 2) (hxb : xb ∈ Icc (1:ℝ) 2)
     (hya : ya ∈ Icc (1:ℝ) 2) (hyb : yb ∈ Icc (1:ℝ) 2)
@@ -1874,7 +1885,7 @@ theorem positive_difference_rounded_third_bound
       ((hasDerivAt_const x y).prodMk (hasDerivAt_id x))
     convert hd using 1
     · rfl
-    simpa using hj.2.1.symm
+    exact hj.2.1.symm
   have herr x y (hx : x ∈ Icc (1:ℝ) 2) (hy : y ∈ Icc (1:ℝ) 2) :
       |G (y,x)-G (y,rd x)| ≤ R/(2*M) := by
     have hh : |G (y,x)-G (y,rd x)| ≤ R*|x-rd x| := by
@@ -1915,6 +1926,8 @@ theorem positive_difference_rounded_third_bound
       rw [abs_sub_comm (G (ya,rd xa))]
       exact add_le_add (add_le_add (herr xb yb hxb hyb) hcoinc) (herr xa ya hxa hya)
     _ = _ := by ring
+end
+
 
 
 
@@ -1991,8 +2004,7 @@ theorem reciprocal_profile_derivative_matrix
     dsimp only [Q,q]
     simp only [add_apply,smul_apply,
       ContinuousLinearMap.comp_apply,ContinuousLinearMap.prod_apply,smul_eq_mul]
-    simp only [show (ContinuousLinearMap.fst ℝ ℝ ℝ) ((0,1):ℝ × ℝ)=0 from rfl,
-      show (ContinuousLinearMap.snd ℝ ℝ ℝ) ((0,1):ℝ × ℝ)=1 from rfl,mul_one]
+    simp
     have hv : ((0:ℝ),-(w.2^2)⁻¹)=(-(w.2^2)⁻¹) • ((0,1):ℝ × ℝ) := by ext <;> simp
     rw [hv,map_smul]
     dsimp only [smul_eq_mul]
@@ -2047,7 +2059,7 @@ theorem curvature_surface_reciprocal_profile_jacobian
           fderiv ℝ H p (1,0),Z p,fderiv ℝ K p (1,0)] 1/
         ((H p)^4*(G p)^2) := by
   intro p G K Z g k Φ
-  let z₀ : ℝ × ℝ := (z.1,z.2⁻¹)
+  let z₀ := (z.1,z.2⁻¹)
   let q := fun w => fderiv ℝ g w (0,1)
   have hρ : ContDiffAt ℝ 3 ρ z₀ := curvature_surface_root_contDiffAt H ρ
     (by norm_num) hI hbase hH hx0 hroot huniq
@@ -2122,8 +2134,8 @@ theorem positive_difference_reciprocal_profile_jacobian_lower
   have hR : 0 < R := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   refine ⟨η₀,d/R^6,hη₀,hηcap,by positivity,?_⟩
   intro F ρ η z I hη hηsmall hz hx hy hf hbound htests hI hbase hroot huniq H g k Φ
-  let z₀ : ℝ × ℝ := (z.1,z.2⁻¹)
-  let p : ℝ × ℝ := (z.1,ρ z₀)
+  let z₀ := (z.1,z.2⁻¹)
+  let p := (z.1,ρ z₀)
   let J := fun (r : ℕ) (v : ℝ × ℝ) =>
     (iteratedDeriv r F v.2-iteratedDeriv r F (v.2+η*v.1))/(σ*η)
   let Y := fun (r : ℕ) (v : ℝ × ℝ) =>
@@ -2259,8 +2271,12 @@ theorem reciprocal_coordinate_local_bound {A a u : ℝ}
                                                                          
                                                                            
                                                               
+section
+variable {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
+include σ c U hσ hc hU
+
 theorem positive_difference_uniform_reciprocal_root_chart
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ s : ℝ, 0 < s ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ : ℝ),
       0 < η → η ≤ 1/8 → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
@@ -2296,8 +2312,7 @@ theorem positive_difference_uniform_reciprocal_root_chart
       hx hy hf hbound htests 3 (by norm_num) (by norm_num)).1
   have hHA : |H (y₀,x₀)| ≤ A := by
     rw [←he]
-    simpa only [iteratedDeriv_zero] using
-      positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound
+    exact positive_jets_difference_mixed_upper F hσ hU hη hηmax hx hy hf hbound
         2 0 (by norm_num) (by norm_num)
   have hH0 : H (y₀,x₀) ≠ 0 := by
     have hh := positive_jets_difference_spatial_lower F hσ hc hη hηmax
@@ -2337,7 +2352,7 @@ theorem positive_difference_uniform_reciprocal_root_chart
                                                                       
                                                                         
 theorem positive_difference_constructed_reciprocal_profile
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ η₀ κ s : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < κ ∧ 0 < s ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ : ℝ),
       0 < η → η ≤ η₀ → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
@@ -2368,8 +2383,8 @@ theorem positive_difference_constructed_reciprocal_profile
   have hx' : ρ (z.1,z.2⁻¹) ∈ Icc (3/4:ℝ) (9/4) := ⟨hx.1.le,hx.2.le⟩
   refine ⟨?_,hjac F ρ η z (Ioo (3/4:ℝ) (9/4)) hη hηsmall hz0 hx' hy
     hf hbound htests isOpen_Ioo hx hroot huniq⟩
-  let z₀ : ℝ × ℝ := (z.1,z.2⁻¹)
-  let p : ℝ × ℝ := (z.1,ρ z₀)
+  let z₀ := (z.1,z.2⁻¹)
+  let p := (z.1,ρ z₀)
   let G := fun v => fderiv ℝ H v (0,1)
   have hp : 0 < ρ z₀ := by change 0 < ρ (z.1,z.2⁻¹); linarith only [hx.1]
   have hyp : 0 < z.1 := zero_lt_one.trans_le hy.1
@@ -2388,6 +2403,8 @@ theorem positive_difference_constructed_reciprocal_profile
     hG.comp z₀ (contDiffAt_fst.prodMk (hρ.of_le (by norm_num)))
   exact (contDiffAt_snd.pow 3).mul
     (hg.comp z (contDiffAt_fst.prodMk (contDiffAt_snd.inv hz0)))
+end
+
 
                                                                       
                                                        
@@ -2450,8 +2467,8 @@ theorem positive_difference_reciprocal_profile_chart_bound
     ‖fderiv ℝ V z‖ ≤ 6*R^7 ∧
     (fderiv ℝ Φ z (1,0),fderiv ℝ Φ z (0,1))=reciprocalProfileColumns (V z) := by
   intro H g k Φ W V R
-  let z₀ : ℝ × ℝ := (z.1,z.2⁻¹)
-  let p : ℝ × ℝ := (z.1,ρ z₀)
+  let z₀ := (z.1,z.2⁻¹)
+  let p := (z.1,ρ z₀)
   let G := fun v => fderiv ℝ H v (0,1)
   let q := fun w => fderiv ℝ g w (0,1)
   let Φ₀ := fun w => (g w,q w)
@@ -2489,7 +2506,7 @@ theorem positive_difference_reciprocal_profile_chart_bound
     change iteratedDeriv 2 (fun u => (F u-F (u+η*z.1))/(σ*η)) (ρ z₀)=H p at he
     rw [he] at hh
     exact hh
-  have hZu : |z.2⁻¹| ≤ R := hlevel ▸ hHupper
+  have hZu := hlevel ▸ hHupper
   have hZ : |z.2| ≤ R := by
     calc
       _ = 1/|H p| := by rw [hlevel,abs_inv,one_div,inv_inv]
@@ -2577,8 +2594,12 @@ theorem positive_difference_reciprocal_profile_chart_bound
                                                                        
                                                                          
                                                                    
+section
+variable {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
+include σ c U hσ hc hU
+
 theorem positive_difference_reciprocal_profile_uniform_variation
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ D L : ℝ, 0 < D ∧ 0 < L ∧
       ∀ (F : ℝ → ℝ) (ρ : ℝ × ℝ → ℝ) (η : ℝ)
         (I : Set ℝ) (S : Set (ℝ × ℝ)),
@@ -2670,7 +2691,7 @@ theorem positive_difference_reciprocal_profile_uniform_variation
                                                                         
                                                    
 theorem positive_difference_constructed_reciprocal_endpoint_compression
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b l r δ : ℝ),
       0 < η → η ≤ η₀ → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
@@ -2753,12 +2774,18 @@ theorem positive_difference_constructed_reciprocal_endpoint_compression
   calc
     _ ≤ 16*D*δ/κ := (le_div_iff₀ hκ).mpr (by nlinarith only [hh])
     _ = _ := by ring
+end
+
 
 
                                                                            
                                                                   
+section
+variable (F : ℝ → ℝ)
+include F
+
 theorem positive_difference_rounded_weighted_third_bound
-    (F : ℝ → ℝ) {σ c U η M xa xb ya yb Δ q : ℝ}
+     {σ c U η M xa xb ya yb Δ q : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hM : 2 ≤ M) (hxa : xa ∈ Icc (1:ℝ) 2) (hxb : xb ∈ Icc (1:ℝ) 2)
     (hya : ya ∈ Icc (1:ℝ) 2) (hyb : yb ∈ Icc (1:ℝ) 2)
@@ -2812,7 +2839,7 @@ theorem positive_difference_rounded_weighted_third_bound
       ((hasDerivAt_const x y).prodMk (hasDerivAt_id x))
     convert hd using 1
     · rfl
-    simpa using hj.2.1.symm
+    exact hj.2.1.symm
   have herr x y (hx : x ∈ Icc (1:ℝ) 2) (hy : y ∈ Icc (1:ℝ) 2) :
       |G (y,x)-G (y,rd x)| ≤ R/(2*M) := by
     have hh : |G (y,x)-G (y,rd x)| ≤ R*|x-rd x| := by
@@ -2859,7 +2886,7 @@ theorem positive_difference_rounded_weighted_third_bound
                                                                           
                                                                    
 theorem positive_difference_rounded_reciprocal_profile_bound
-    (F : ℝ → ℝ) {σ c U η M xa xb ya yb Δ : ℝ}
+     {σ c U η M xa xb ya yb Δ : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hM : 2 ≤ M) (hxa : xa ∈ Icc (1:ℝ) 2) (hxb : xb ∈ Icc (1:ℝ) 2)
     (hya : ya ∈ Icc (1:ℝ) 2) (hyb : yb ∈ Icc (1:ℝ) 2)
@@ -2944,7 +2971,7 @@ theorem positive_difference_rounded_reciprocal_profile_bound
                                                                          
                                                                       
 theorem positive_difference_third_signed_lower
-    (F : ℝ → ℝ) {σ c η x y : ℝ}
+     {σ c η x y : ℝ}
     (hσ : 0 < σ) (hη : 0 < η) (hηmax : η ≤ 1/8) (hc : 0 < c)
     (hx : x ∈ Icc (3/4:ℝ) (9/4)) (hy : y ∈ Icc (1/2:ℝ) 3)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
@@ -2972,13 +2999,19 @@ theorem positive_difference_third_signed_lower
   have heq : c/(2*σ)*(σ*η)=c*η/2 := by field_simp
   rw [heq]
   nlinarith only [hn',mul_le_mul_of_nonneg_left hy.1 (mul_pos hc hη).le]
+end
+
 
 
                                                                   
                                                                    
                                                   
+section
+variable {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
+include σ c U hσ hc hU
+
 theorem positive_difference_local_parameter_count
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ a C : ℝ, 0 < a ∧ a ≤ 1/4 ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ E J g : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
       0 < η → η ≤ 1/8 → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
@@ -3051,7 +3084,7 @@ theorem positive_difference_local_parameter_count
                                                                        
                                                               
 theorem positive_difference_parameter_count
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ K C : ℝ, 0 < K ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η E J q g : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
       0 < η → η ≤ 1/8 →
@@ -3101,9 +3134,9 @@ theorem positive_difference_parameter_count
       rw [hv,Finset.card_empty,Nat.cast_zero]
       exact hB
     obtain ⟨y₀,hy₀⟩ := hv
-    have hy₀S : y₀ ∈ S := (Finset.mem_filter.mp hy₀).1
+    have hy₀S := (Finset.mem_filter.mp hy₀).1
     have hclose y (hy : y ∈ V) : |y-y₀| < a := by
-      have hbin : bin y=bin y₀ := (Finset.mem_filter.mp hy).2.trans
+      have hbin := (Finset.mem_filter.mp hy).2.trans
         (Finset.mem_filter.mp hy₀).2.symm
       have hylo := Int.floor_le (y/a)
       have hyhi := Int.lt_floor_add_one (y/a)
@@ -3140,7 +3173,7 @@ theorem positive_difference_parameter_count
                                                                      
                                                                            
 theorem positive_difference_physical_parameter_count
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ K C : ℝ, 0 < K ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η ya xa Δ J q t T M : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
       0 < η → η ≤ 1/8 → ya ∈ Icc (1:ℝ) 2 →
@@ -3234,6 +3267,8 @@ theorem positive_difference_physical_parameter_count
     (fun y hy => ⟨(hpoints y hy).1,hnorm _ (hpoints y hy).2⟩) hsep hroots hnear
   convert hh using 1
   ring
+end
+
 
                                                                     
                                                                        
@@ -3278,7 +3313,11 @@ theorem exists_right_neighbor_at_order {a b H : ℤ}
                                                                   
                                                                       
                                                         
-theorem exists_farey_bracket_unit {H : ℤ} (hH : 1 ≤ H)
+section
+variable {H : ℤ} (hH : 1 ≤ H)
+include H hH
+
+theorem exists_farey_bracket_unit 
     {x : ℝ} (hx : x ∈ Ico (0:ℝ) 1) :
     ∃ a b c d : ℤ, 1 ≤ b ∧ b ≤ H ∧ 1 ≤ d ∧ d ≤ H ∧ H < b+d ∧
       IsCoprime a b ∧ IsCoprime c d ∧ c*b-a*d=1 ∧
@@ -3347,12 +3386,12 @@ theorem exists_farey_bracket_unit {H : ℤ} (hH : 1 ≤ H)
 
                                                                   
                                                                      
-theorem exists_farey_bracket {H : ℤ} (hH : 1 ≤ H) (x : ℝ) :
+theorem exists_farey_bracket  (x : ℝ) :
     ∃ a b c d : ℤ, 1 ≤ b ∧ b ≤ H ∧ 1 ≤ d ∧ d ≤ H ∧ H < b+d ∧
       IsCoprime a b ∧ IsCoprime c d ∧ c*b-a*d=1 ∧
       (a:ℝ)/b ≤ x ∧ x < (c:ℝ)/d ∧
       (c:ℝ)/d-(a:ℝ)/b=1/((b:ℝ)*d) := by
-  let m : ℤ := ⌊x⌋
+  let m := ⌊x⌋
   have hy : x-(m:ℝ) ∈ Ico (0:ℝ) 1 := by
     have hlo := Int.floor_le x
     have hhi := Int.lt_floor_add_one x
@@ -3385,6 +3424,8 @@ theorem exists_farey_bracket {H : ℤ} (hH : 1 ≤ H) (x : ℝ) :
     linarith only [hhi]
   · field_simp
     exact_mod_cast (show cc*b-d*aa=1 by nlinarith only [hdet'])
+end
+
 
                                                                   
                                                                        
@@ -3408,9 +3449,17 @@ theorem exists_seeded_separated_reference_cover
                                                                    
                                                                       
                                                     
-theorem exists_mediant_reference_cover {e r f s : ℤ} {δ : ℝ}
+section
+variable {e r f s : ℤ} {δ : ℝ}
     (hr : 0 < r) (hs : 0 < s) (hdet : f*r-e*s=1)
-    (hδ : 0 < δ) (hscale : 1 ≤ δ*(r:ℝ)^2) :
+    (hδ : 0 < δ)
+include e r f s δ hr hs hdet hδ
+
+section
+variable (hscale : 1 ≤ δ*(r:ℝ)^2)
+include hscale
+
+theorem exists_mediant_reference_cover  :
     ∃ K : ℕ,
       (∀ n : ℕ, n ≤ K →
         IsCoprime (e+f*(n:ℤ)) (r+s*(n:ℤ)) ∧ r ≤ r+s*(n:ℤ)) ∧
@@ -3487,9 +3536,7 @@ theorem exists_mediant_reference_cover {e r f s : ℤ} {δ : ℝ}
                                                                       
                                                                       
                                                             
-theorem exists_separated_mediant_reference_cover {e r f s : ℤ} {δ : ℝ}
-    (hr : 0 < r) (hs : 0 < s) (hdet : f*r-e*s=1)
-    (hδ : 0 < δ) (hscale : 1 ≤ δ*(r:ℝ)^2)
+theorem exists_separated_mediant_reference_cover 
     (hlong : δ < (f:ℝ)/s-(e:ℝ)/r) :
     ∃ S : Finset ℝ, (e:ℝ)/r ∈ S ∧ (f:ℝ)/s ∈ S ∧
       (∀ x ∈ S, x ∈ Icc ((e:ℝ)/r) ((f:ℝ)/s)) ∧
@@ -3527,7 +3574,7 @@ theorem exists_separated_mediant_reference_cover {e r f s : ℤ} {δ : ℝ}
     rw [Set.mem_singleton_iff.mp hy,edist_dist,Real.dist_eq,ENNReal.coe_lt_ofReal]
     change δ/4 < |(e:ℝ)/r-(f:ℝ)/s|
     rw [abs_of_neg (by linarith only [hlong,hδ])]
-    linarith only [hlong,hδ]
+    linarith
   obtain ⟨N,hseedN,hNA,hNfin,hNsep,hcover⟩ :=
     exists_seeded_separated_reference_cover (A : Set ℝ) _ ε A.finite_toSet hseed hseedSep
   let S := hNfin.toFinset
@@ -3594,12 +3641,12 @@ theorem exists_separated_mediant_reference_cover {e r f s : ℤ} {δ : ℝ}
       linarith only [hzabs.1,hyz]
     · have hzx : z ≤ x := le_of_not_gt hxz
       linarith only [hzabs.2,hzx]
+end
+
 
                                                                   
                                                                          
-theorem exists_separated_reflected_mediant_reference_cover {e r f s : ℤ} {δ : ℝ}
-    (hr : 0 < r) (hs : 0 < s) (hdet : f*r-e*s=1)
-    (hδ : 0 < δ) (hscale : 1 ≤ δ*(s:ℝ)^2)
+theorem exists_separated_reflected_mediant_reference_cover  (hscale : 1 ≤ δ*(s:ℝ)^2)
     (hlong : δ < (f:ℝ)/s-(e:ℝ)/r) :
     ∃ S : Finset ℝ, (e:ℝ)/r ∈ S ∧ (f:ℝ)/s ∈ S ∧
       (∀ x ∈ S, x ∈ Icc ((e:ℝ)/r) ((f:ℝ)/s)) ∧
@@ -3665,6 +3712,8 @@ theorem exists_separated_reflected_mediant_reference_cover {e r f s : ℤ} {δ :
       have hzin : -z ∈ V := (hVS _).mpr (by simpa only [neg_neg] using hz)
       exact hadj (-z) hzin ⟨by linarith only [hbetween.2],by linarith only [hbetween.1]⟩)
     simpa only [neg_sub_neg] using hh
+end
+
 
                                                               
                                                                   
@@ -3755,8 +3804,8 @@ theorem exists_source_farey_order {δ : ℝ} (hδ : 0 < δ) (hδmax : δ ≤ 1) 
     ∃ H : ℤ, 2 ≤ H ∧
       ∀ b d : ℤ, 0 < b → b ≤ H → 0 < d → d ≤ H → H < b+d →
         1 ≤ δ*((max b d:ℤ):ℝ)^2 ∧ δ/4 ≤ 1/((b:ℝ)*d) := by
-  let H : ℤ := ⌊2/Real.sqrt δ⌋
-  have hsqrt : 0 < Real.sqrt δ := Real.sqrt_pos.mpr hδ
+  let H := ⌊2/Real.sqrt δ⌋
+  have hsqrt := Real.sqrt_pos.mpr hδ
   have hsqrt1 : Real.sqrt δ ≤ 1 := by
     have hh := Real.sq_sqrt hδ.le
     nlinarith only [hh,hδmax,hsqrt]
@@ -3784,7 +3833,7 @@ theorem exists_source_farey_order {δ : ℝ} (hδ : 0 < δ) (hδmax : δ ≤ 1) 
   have hmaxd : (d:ℝ) ≤ (max b d:ℤ) := by exact_mod_cast le_max_right b d
   have hmaxlo : 1/Real.sqrt δ ≤ ((max b d:ℤ):ℝ) := by
     rw [show 2/Real.sqrt δ=2*(1/Real.sqrt δ) by ring] at hHlower
-    linarith only [hHlower,hsum',hmaxb,hmaxd]
+    linarith
   have hmaxsq : 1 ≤ δ*((max b d:ℤ):ℝ)^2 := by
     have hh := (div_le_iff₀ hsqrt).mp hmaxlo
     have hh2 := pow_le_pow_left₀ (by norm_num : (0:ℝ) ≤ 1) hh 2
@@ -3891,7 +3940,7 @@ theorem bounded_denominator_strict_separation {q r : ℚ} {H : ℤ}
       · have hrne : (r.den:ℝ) ≠ H := by
           intro he
           apply hden
-          have hh : (q.den:ℝ)=(r.den:ℝ) := hqeq.trans he.symm
+          have hh := hqeq.trans he.symm
           exact_mod_cast hh
         have hrstrict : (r.den:ℝ) < H := lt_of_le_of_ne hrH hrne
         rw [hqeq]
@@ -3964,10 +4013,14 @@ theorem exists_finite_farey_seed {H : ℤ} (hH : 2 ≤ H) :
                                                                       
                                                                        
                                                                 
-theorem exists_unit_reference_candidate {δ : ℝ} {H : ℤ}
+section
+variable {δ : ℝ} {H : ℤ}
     (hδ : 0 < δ) (hH : 2 ≤ H)
     (hscale : ∀ b d : ℤ, 0 < b → b ≤ H → 0 < d → d ≤ H → H < b+d →
       1 ≤ δ*((max b d:ℤ):ℝ)^2 ∧ δ/4 ≤ 1/((b:ℝ)*d))
+include δ H hδ hH hscale
+
+theorem exists_unit_reference_candidate 
     {x : ℝ} (hx : x ∈ Icc (0:ℝ) 1) :
     ∃ z ∈ Icc (0:ℝ) 1, |x-z| ≤ 5*δ/4 ∧
       ((∃ q : ℚ, z=(q:ℝ) ∧ (q.den:ℤ) ≤ H) ∨
@@ -4027,10 +4080,7 @@ theorem exists_unit_reference_candidate {δ : ℝ} {H : ℤ}
                                                                     
                                                                       
                                                                   
-theorem exists_unit_reference_system {δ : ℝ} {H : ℤ}
-    (hδ : 0 < δ) (hH : 2 ≤ H)
-    (hscale : ∀ b d : ℤ, 0 < b → b ≤ H → 0 < d → d ≤ H → H < b+d →
-      1 ≤ δ*((max b d:ℤ):ℝ)^2 ∧ δ/4 ≤ 1/((b:ℝ)*d)) :
+theorem exists_unit_reference_system  :
     ∃ S : Finset ℝ,
       (∀ q : ℚ, (q.den:ℤ) ≤ H → (q:ℝ) ∈ Icc (0:ℝ) 1 → (q:ℝ) ∈ S) ∧
       (∀ z ∈ S, z ∈ Icc (0:ℝ) 1) ∧
@@ -4056,7 +4106,7 @@ theorem exists_unit_reference_system {δ : ℝ} {H : ℤ}
     apply Set.mem_iUnion.mpr
     refine ⟨z,Set.mem_iUnion.mpr ⟨⟨hzI,hlabel⟩,?_⟩⟩
     rw [Metric.mem_ball,Real.dist_eq]
-    linarith only [hnear,hδ]
+    linarith
   obtain ⟨A,hAC,hAfin,hAcover⟩ :=
     isCompact_Icc.elim_finite_subcover_image (fun z (_hz : z ∈ C) => Metric.isOpen_ball) hCcover
   obtain ⟨B,hB,hBsep⟩ := exists_finite_farey_seed hH
@@ -4121,12 +4171,18 @@ theorem exists_unit_reference_system {δ : ℝ} {H : ℤ}
       linarith only [hzabs.1,hyz]
     · have hzx : z ≤ x := le_of_not_gt hxz
       linarith only [hzabs.2,hzx]
+end
+
 
                                                              
                                                                         
                                                                          
                                                   
-theorem reference_adjacent_denominator_scale (S : Finset ℝ) {δ L U : ℝ} {H : ℤ}
+section
+variable (S : Finset ℝ)
+include S
+
+theorem reference_adjacent_denominator_scale  {δ L U : ℝ} {H : ℤ}
     (hδ : 0 < δ)
     (hseed : ∀ q : ℚ, (q.den:ℤ) ≤ H → (q:ℝ) ∈ Icc L U → (q:ℝ) ∈ S)
     (hpoints : ∀ z ∈ S, z ∈ Icc L U)
@@ -4176,7 +4232,7 @@ theorem reference_adjacent_denominator_scale (S : Finset ℝ) {δ L U : ℝ} {H 
                                                                      
                                                                        
                                             
-theorem integer_translate_reference_separation (S : Finset ℝ) {ε : ℝ}
+theorem integer_translate_reference_separation  {ε : ℝ}
     (hzero : (0:ℝ) ∈ S) (hone : (1:ℝ) ∈ S)
     (hpoints : ∀ z ∈ S, z ∈ Icc (0:ℝ) 1)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → ε < |x-y|)
@@ -4214,6 +4270,8 @@ theorem integer_translate_reference_separation (S : Finset ℝ) {ε : ℝ}
     exact hsep x hx y hy hxy
   · have hh := (hordered j i y x hy hx hji hne.symm).trans_le (le_abs_self _)
     simpa only [abs_sub_comm] using hh
+end
+
 
                                                                       
                                                                       
@@ -4265,7 +4323,7 @@ theorem exists_source_interval_reference_system {δ : ℝ}
       rw [hxU]
       constructor <;> linarith
     have hxlt : x < (U:ℝ)+1 := lt_of_le_of_ne hx.2 hxU
-    have hjL : L ≤ Int.floor x := Int.le_floor.mpr hx.1
+    have hjL := Int.le_floor.mpr hx.1
     have hjU : Int.floor x ≤ U := by
       have hh : Int.floor x < U+1 := Int.floor_lt.mpr (by simpa only [Int.cast_add,Int.cast_one] using hxlt)
       omega
@@ -4369,8 +4427,12 @@ theorem exists_source_interval_reference_system {δ : ℝ}
                                                                       
                                                                     
                                                    
+section
+variable (F : ℝ → ℝ)
+include F
+
 theorem positive_difference_reference_preimage_width
-    (F : ℝ → ℝ) {σ c η y T M N R U x z : ℝ}
+     {σ c η y T M N R U x z : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hy : y ∈ Icc (1:ℝ) 2)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
@@ -4432,7 +4494,7 @@ theorem positive_difference_reference_preimage_width
                                                                          
                                                                     
 theorem positive_difference_constructed_reference_system
-    (F : ℝ → ℝ) {σ c J η T M N R U : ℝ}
+     {σ c J η T M N R U : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hJ : 0 < J)
     (hη : 0 < η) (hηmax : η ≤ 1/8)
     (hf : ∀ w, 0 < w → ContDiffAt ℝ ∞ F w)
@@ -4476,8 +4538,8 @@ theorem positive_difference_constructed_reference_system
   have hδ : 0 < δ := div_pos hU (sq_pos_of_pos hR)
   have hδmax : δ ≤ 1 := (div_le_one (sq_pos_of_pos hR)).mpr hUmax
   have hcurvpos : 0 ≤ curvatureScale := by dsimp only [curvatureScale]; positivity
-  let L : ℤ := Int.floor (-curvatureScale)
-  let V : ℤ := Int.floor curvatureScale
+  let L := Int.floor (-curvatureScale)
+  let V := Int.floor curvatureScale
   have hLV : L ≤ V := Int.floor_mono (by linarith only [hcurvpos])
   obtain ⟨H,hH,hbuild⟩ := exists_source_interval_reference_system hδ hδmax
   obtain ⟨S,hseed,hpoints,hlabels,hsep,hcover,hgaps⟩ := hbuild L V hLV
@@ -4529,7 +4591,7 @@ theorem positive_difference_constructed_reference_system
         simp only [Rat.cast_intCast]
         have hh : (L:ℝ) ≤ V := by exact_mod_cast hLV
         exact ⟨le_rfl,by linarith only [hh]⟩)
-    simpa only [Rat.cast_intCast] using hq
+    exact hq
   have hVmem : (V:ℝ)+1 ∈ S := by
     have hq := hseed ((V+1:ℤ):ℚ) (by norm_num; omega)
       (show (((V+1:ℤ):ℚ):ℝ) ∈ Icc (L:ℝ) ((V:ℝ)+1) by
@@ -4582,15 +4644,25 @@ theorem positive_difference_constructed_reference_system
     change |h y z-h y x| ≤ 7*U/(2*R^2)
     rw [hxa,hzb,abs_of_pos (sub_pos.mpr hab)]
     simpa only [hgapUpper] using hupp
+end
+
 
 
 
                                                                        
                                                                      
                                                                          
-theorem bounded_denominator_adjacent_unimodular
-    (S : Finset ℝ) {H a b c d : ℤ} {L U : ℝ}
+section
+variable (S : Finset ℝ)
+include S
+
+section
+variable {H a b c d : ℤ} {L U : ℝ}
     (hseed : ∀ q : ℚ, (q.den:ℤ) ≤ H → (q:ℝ) ∈ Icc L U → (q:ℝ) ∈ S)
+include H a b c d L U hseed
+
+theorem bounded_denominator_adjacent_unimodular
+    
     (hb : 0 < b) (hbH : b ≤ H) (hd : 0 < d) (hdH : d ≤ H)
     (hcopb : IsCoprime a b) (hcopd : IsCoprime c d)
     (haI : (a:ℝ)/b ∈ Icc L U) (hcI : (c:ℝ)/d ∈ Icc L U)
@@ -4634,8 +4706,7 @@ theorem bounded_denominator_adjacent_unimodular
                                                                        
                                                                           
 theorem reference_max_denominator_neighbor
-    (S : Finset ℝ) {H a b c d : ℤ} {L U : ℝ}
-    (hseed : ∀ q : ℚ, (q.den:ℤ) ≤ H → (q:ℝ) ∈ Icc L U → (q:ℝ) ∈ S)
+    
     (hlabels : ∀ z ∈ S,
       (∃ q : ℚ, z=(q:ℝ) ∧ (q.den:ℤ) ≤ H) ∨
       (∃ m n u v : ℤ, z=(m:ℝ)/n ∧ IsCoprime m n ∧ 0 < n ∧
@@ -4688,12 +4759,14 @@ theorem reference_max_denominator_neighbor
     · obtain ⟨u,v,hv,hvH,huS,hdet⟩ := hlarge c d hd hcopd hcS (lt_of_not_ge hdH)
       exact ⟨c,d,u,v,Or.inr ⟨rfl,rfl⟩,(max_eq_right hbd).symm,hcopd,hd,
         hv,hvH.trans (lt_of_not_ge hdH).le,hvH,huS,hdet⟩
+end
+
 
 
                                                                
                                                                       
                                                                
-theorem finite_reference_bracket (S : Finset ℝ) {l u x : ℝ}
+theorem finite_reference_bracket  {l u x : ℝ}
     (hl : l ∈ S) (hu : u ∈ S) (hlx : l ≤ x) (hxu : x ≤ u) (hx : x ∉ S) :
     ∃ a ∈ S, ∃ b ∈ S, a < x ∧ x < b ∧
       ∀ z ∈ S, ¬ (a < z ∧ z < b) := by
@@ -4718,6 +4791,8 @@ theorem finite_reference_bracket (S : Finset ℝ) {l u x : ℝ}
   · have hzB : z ∈ B := Finset.mem_filter.mpr ⟨hz,hxz⟩
     have hh : b ≤ z := Finset.min'_le B z hzB
     exact (not_lt_of_ge hh) hinside.2
+end
+
 
 
                                                                   
@@ -4923,8 +4998,8 @@ theorem positive_difference_physical_curvature_strictMono
                                                                  
 open scoped FourierTransform BigOperators
 
-end TaoTrudgianYang2025.HuxleyRationalPhase
+
 
 -- Generated closures: source context is replayed in the next part.
-end
-end
+
+

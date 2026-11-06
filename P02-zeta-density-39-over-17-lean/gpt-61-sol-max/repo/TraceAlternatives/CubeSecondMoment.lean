@@ -4,9 +4,8 @@ public import TraceAlternatives.WeightedCube
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -97,4 +96,4 @@ theorem actual_second_moment_cube_native (ε : ℝ) (hε : 0 < ε) :
       _ = _ := sum_differenceFloor_values W (fun j => v j ^ 2)
   exact hOriginal.trans (hBound.trans_eq (by ring))
 
-end Montgomery.RationalMoment
+

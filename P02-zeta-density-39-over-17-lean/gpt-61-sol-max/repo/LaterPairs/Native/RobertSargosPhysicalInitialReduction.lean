@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosInitialFloorBudget
 public import LaterPairs.Native.RobertSargosInitialSmallBlock
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -41,4 +40,4 @@ theorem robertSargos_physical_initial_reduction
     have hkHr : 2*(k:ℝ) ≤ (⌊lam^(-(2:ℝ)/13)⌋₊:ℝ) := by exact_mod_cast hkH
     linarith
 
-end TaoTrudgianYang2025
+

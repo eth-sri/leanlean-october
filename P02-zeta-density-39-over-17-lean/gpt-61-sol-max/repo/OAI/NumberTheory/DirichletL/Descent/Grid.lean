@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.Dyadic
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CanonicalQuadraticSieve CompletedGauss
+
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 section FiniteGrid
 variable {M H C A : Type*} [DecidableEq M] [DecidableEq H] [DecidableEq C] [AddCommMonoid A]
@@ -41,9 +42,7 @@ theorem finite_triple_support_reindex (T : Finset ((M × H) × C))
   · intro c hc
     have hpc := (Finset.mem_filter.mp hc).2
     exact ⟨(p, c), Finset.mem_filter.mpr ⟨hpc, rfl⟩, rfl⟩
-  · intro u hu
-    have hup := (Finset.mem_filter.mp hu).2
-    simp only [← hup, Prod.eta]
+  grind
 
 end FiniteGrid
 
@@ -56,19 +55,14 @@ theorem HybridColumnData.gridIndex_injective_on_square (t : Ideal Eis) :
   have hm : d.residualN = e.residualN := congrArg (fun u => u.1.1) hg
   have hh : d.residualB = e.residualB := congrArg (fun u => u.1.2) hg
   have hc : d.common = e.common := congrArg Prod.snd hg
-  have ht : d.square = e.square := hd.trans he.symm
+  have ht := hd.trans he.symm
   cases d
-  cases e
-  cases hc
-  cases hm
-  cases hh
-  cases ht
-  rfl
+  bound
 
 def hybridGridSupport (D : Finset HybridColumnData) :
     Finset ((Ideal Eis × Ideal Eis) × Ideal Eis) := D.image HybridColumnData.gridIndex
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import MathCollab.Density.GammaStrip
 public import MathCollab.Density.MollifierDirichlet
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 namespace GuthMaynard.Improvement
 
@@ -35,6 +35,6 @@ theorem short_detector_gamma_bound {a : ℝ} (ha : 0 < a) (hahi : a ≤ 1/2) (u 
   have hd := (le_div_iff₀ ha).mpr (show ‖Complex.Gamma z‖*a ≤
     12*(1+|u|)*Real.exp (-|u|) by nlinarith [hm])
   change ‖Complex.Gamma z‖ ≤ _
-  convert hd using 1; ring
+  grind
 
-end GuthMaynard.Improvement
+

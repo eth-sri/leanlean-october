@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaMorseWindowIntegral
@@ -12,13 +13,13 @@ Slope gaps are needed only on the actual closed integration interval.
 The cutoff has total variation at most two, independent of its width.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem IntervalC1Bound.fourierChar_of_closed_slope_gap
     {f : ℝ → ℂ} {φ : ℝ → ℝ} {a b M lam : ℝ} {J : Set ℝ}
@@ -58,7 +59,7 @@ theorem norm_buffered_subinterval_nonstationary
       (∀ u ∈ Icc a b, T*deriv F u-q ≤ -lam)) :
     ‖∫ u in a..b, (modelPhaseBufferedCutoff l r η u : ℂ)*
       (𝐞 (T*F u-q*u) : ℂ)‖ ≤ 4/(lam*Real.pi) := by
-  let φ : ℝ → ℝ := fun u => T*F u-q*u
+  let φ := fun u => T*F u-q*u
   have hs : Icc a b ⊆ Ioo (1 : ℝ) 2 :=
     fun u hu => ⟨ha.trans_le hu.1,hu.2.trans_lt hb⟩
   have hd {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -110,4 +111,4 @@ theorem modelPhaseMorseInverse_window_slope_gaps
   rw [← mul_div_assoc] at hl' hr'
   constructor <;> nlinarith
 
-end TaoTrudgianYang2025
+

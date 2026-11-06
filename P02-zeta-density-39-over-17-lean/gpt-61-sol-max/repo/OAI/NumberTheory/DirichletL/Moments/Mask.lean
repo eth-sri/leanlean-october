@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.Basic
 
@@ -6,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Basic
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open scoped ContDiff
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentMask
 open ActualEisensteinCubic IdealMobiusDivisorSum
 open UniqueFactorizationMonoid
@@ -17,7 +18,7 @@ open UniqueFactorizationMonoid
 theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
     (if IsCoprime I R then (1 : ℂ) else 0) =
       ∑ D ∈ idealDivisors R, if D ∣ I then (moebius D : ℂ) else 0 := by
-  let G : Ideal O := R ⊔ I
+  let G := R ⊔ I
   have hG : G ≠ 0 := by
     intro hz
     apply hR
@@ -33,7 +34,7 @@ theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
 theorem tsum_ideal_divisible (D : Ideal O) (hD : D ≠ 0) (f : Ideal O → ℂ) :
     (∑' I : Ideal O, if D ∣ I then f I else 0) =
       ∑' J : Ideal O, f (D * J) := by
-  let F : Ideal O → ℂ := fun I => if D ∣ I then f I else 0
+  let F := fun I => if D ∣ I then f I else 0
   have hrange : Function.support F ⊆ Set.range (fun J : Ideal O => D * J) := by
     intro I hI
     have hd : D ∣ I := by
@@ -62,7 +63,7 @@ theorem masked_ideal_sum_eq (R : Ideal O) (hR : R ≠ 0)
   have hsum (D : Ideal O) :
       Summable (fun I : Ideal O => (moebius D : ℂ) * (if D ∣ I then f I else 0)) := by
     have h := (hf.indicator {I : Ideal O | D ∣ I}).mul_left (moebius D : ℂ)
-    simpa only [Set.indicator_apply, Set.mem_ofPred_eq] using h
+    exact h
   simp_rw [hterm]
   rw [Summable.tsum_finsetSum (fun D _ => hsum D)]
   apply Finset.sum_congr rfl
@@ -79,7 +80,7 @@ theorem annular_ideal_sum_summable (χ : Ideal O → ℂ) (W : ℝ → ℂ)
   have hw : W ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
     intro hz
     exact hI (by simp only [hz, mul_zero])
-  have hn : (Ideal.absNorm I : ℝ) ≤ b * X := (div_le_iff₀ hX).mp (hs hw)
+  have hn := (div_le_iff₀ hX).mp (hs hw)
   exact_mod_cast hn.trans (Nat.le_ceil (b * X))
 
 theorem masked_plain_ideal_sum (R : Ideal O) (hR : R ≠ 0)
@@ -132,7 +133,7 @@ theorem polynomial_mask_divisor_bound (ε B : ℝ) (hε : 0 < ε) (hB : 0 ≤ B)
     _ ≤ C * Z ^ ε := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ hexp) hC.le
 
-end SevenEighths.CenteredMomentMask
-end
 
-end OAI
+
+
+

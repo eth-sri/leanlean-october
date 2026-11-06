@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,7 +14,6 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -51,9 +51,7 @@ theorem atkinsonSaddleRoot_small_frequency_window {T b H : ℝ} (hT : 0 < T)
       atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ Real.sqrt T ∧
         H ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2 := by
   obtain ⟨hlo, hhi⟩ := atkinsonSaddleRoot_small_frequency hT hb
-  constructor
-  · linarith
-  constructor <;> nlinarith [Real.sqrt_nonneg T]
+  grind
 
 theorem sqrt_nat_small_frequency {T : ℝ} (hT : 0 < T) (n : ℕ)
     (hn : 10000 * (n : ℝ) ≤ T) : |Real.sqrt (n : ℝ)| ≤ Real.sqrt T / 100 := by
@@ -66,8 +64,7 @@ theorem atkinsonSaddleRoot_inverse_identity {A : ℝ} (hA : 0 < A) (b : ℝ) :
     atkinsonSaddleRoot A b-A/atkinsonSaddleRoot A b = b := by
   have hr := atkinsonSaddleRoot_pos hA b
   have he := atkinsonSaddleRoot_equation hA b
-  field_simp
-  nlinarith
+  grind
 
 theorem atkinsonSaddleRoot_monotone {A : ℝ} (hA : 0 < A) :
     Monotone (atkinsonSaddleRoot A) := by
@@ -91,22 +88,25 @@ def atkinsonPositiveRootSample (T : ℝ) (m i : ℕ) : ℝ :=
 def atkinsonNegativeRootSample (T : ℝ) (m i : ℕ) : ℝ :=
   atkinsonSaddleRoot (T/(2*Real.pi)) (-Real.sqrt ((m+i:ℕ):ℝ)) / Real.sqrt T
 
-theorem atkinsonPositiveRootSample_monotone {T : ℝ} (hT : 0 < T) (m : ℕ) :
+section
+variable {T : ℝ} (hT : 0 < T)
+include T hT
+
+theorem atkinsonPositiveRootSample_monotone  (m : ℕ) :
     Monotone (atkinsonPositiveRootSample T m) := by
   intro i j hij
   apply div_le_div_of_nonneg_right _ (Real.sqrt_nonneg T)
   apply atkinsonSaddleRoot_monotone (by positivity)
   exact Real.sqrt_le_sqrt (by exact_mod_cast Nat.add_le_add_left hij m)
 
-theorem atkinsonNegativeRootSample_antitone {T : ℝ} (hT : 0 < T) (m : ℕ) :
+theorem atkinsonNegativeRootSample_antitone  (m : ℕ) :
     Antitone (atkinsonNegativeRootSample T m) := by
   intro i j hij
   apply div_le_div_of_nonneg_right _ (Real.sqrt_nonneg T)
   apply atkinsonSaddleRoot_monotone (by positivity)
-  apply neg_le_neg
-  exact Real.sqrt_le_sqrt (by exact_mod_cast Nat.add_le_add_left hij m)
+  gcongr
 
-theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
+theorem atkinsonRootSample_mem  (m N : ℕ)
     (hN : 10000*((m+N:ℕ):ℝ) ≤ T) (i : ℕ) (hi : i ≤ N) :
     atkinsonPositiveRootSample T m i ∈ Icc (1/4) 1 ∧
       atkinsonNegativeRootSample T m i ∈ Icc (1/4) 1 := by
@@ -117,7 +117,7 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
   have hp := atkinsonSaddleRoot_small_frequency hT hb
   have hm := atkinsonSaddleRoot_small_frequency hT (b := -Real.sqrt ((m+i:ℕ):ℝ))
     (by simpa only [abs_neg] using hb)
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hs := Real.sqrt_pos.2 hT
   constructor
   · constructor
     · apply (le_div_iff₀ hs).2
@@ -129,5 +129,7 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
       linarith [hm.1]
     · apply (div_le_iff₀ hs).2
       linarith [hm.2]
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

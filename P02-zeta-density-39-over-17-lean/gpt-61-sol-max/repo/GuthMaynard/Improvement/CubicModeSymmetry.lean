@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMixedBox
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -22,9 +22,7 @@ theorem negateCubicMode_injective : Function.Injective negateCubicMode :=
 theorem cubicStripMass_negate (r : ℝ → ℝ) (L H : ℝ) (m : ℤ × (ℤ × ℤ)) (v : ℝ) :
     cubicStripMass r L H (negateCubicMode m) v = cubicStripMass r L H m v := by
   unfold cubicStripMass negateCubicMode
-  have hlin (y : ℝ) : L*(((-m.1:ℤ):ℝ)*v+((-m.2.1:ℤ):ℝ)*y+((-m.2.2:ℤ):ℝ)) =
-      -(L*((m.1:ℝ)*v+(m.2.1:ℝ)*y+(m.2.2:ℝ))) := by push_cast; ring
-  simp only [hlin,abs_neg]
+  grind
 
 theorem cubicStripMass_sum_negate (S : Finset (ℤ × (ℤ × ℤ))) (r : ℝ → ℝ) (L H v : ℝ) :
     (∑ m ∈ S.image negateCubicMode, cubicStripMass r L H m v) =
@@ -32,15 +30,20 @@ theorem cubicStripMass_sum_negate (S : Finset (ℤ × (ℤ × ℤ))) (r : ℝ �
   rw [Finset.sum_image (fun _ _ _ _ h => negateCubicMode_injective h)]
   simp only [cubicStripMass_negate]
 
-theorem signed_box_positive {B K D : ℝ} {m : ℤ × (ℤ × ℤ)}
-    (hbox : InSignedCubicBox B K D m) (hm : 0 < m.2.1) : InCubicBox B K D m := by
+section
+variable {B K D : ℝ} {m : ℤ × (ℤ × ℤ)}
+    (hbox : InSignedCubicBox B K D m)
+include B K D m hbox
+
+theorem signed_box_positive  (hm : 0 < m.2.1) : InCubicBox B K D m := by
   have hm' : (0:ℝ) < (m.2.1:ℝ) := by exact_mod_cast hm
   simpa only [InSignedCubicBox,InCubicBox,abs_of_pos hm'] using hbox
 
-theorem signed_box_negative {B K D : ℝ} {m : ℤ × (ℤ × ℤ)}
-    (hbox : InSignedCubicBox B K D m) (hm : m.2.1 < 0) : InCubicBox B K D (negateCubicMode m) := by
+theorem signed_box_negative  (hm : m.2.1 < 0) : InCubicBox B K D (negateCubicMode m) := by
   have hm' : (m.2.1:ℝ) < 0 := by exact_mod_cast hm
   simpa only [InSignedCubicBox,InCubicBox,negateCubicMode,Int.cast_neg,abs_neg,abs_of_neg hm'] using hbox
+end
+
 
 /-- Two sign pieces, counted separately even when normalized images overlap.
 There is no injectivity claim across the union of the two pieces. -/
@@ -50,12 +53,7 @@ theorem cubicStripMass_sign_split (S : Finset (ℤ × (ℤ × ℤ)))
       (∑ m ∈ S.filter (fun m => 0 < m.2.1), cubicStripMass r L H m v) +
       ∑ m ∈ (S.filter (fun m => m.2.1 < 0)).image negateCubicMode, cubicStripMass r L H m v := by
   rw [cubicStripMass_sum_negate]
-  have hfilters : S.filter (fun m => ¬ 0 < m.2.1) = S.filter (fun m => m.2.1 < 0) := by
-    ext m
-    simp only [Finset.mem_filter]
-    constructor
-    · intro hm; exact ⟨hm.1,lt_of_le_of_ne (le_of_not_gt hm.2) (hS m hm.1)⟩
-    · intro hm; exact ⟨hm.1,not_lt_of_ge hm.2.le⟩
+  have hfilters : S.filter (fun m => ¬ 0 < m.2.1) = S.filter (fun m => m.2.1 < 0) := by grind
   simpa only [hfilters] using
     (Finset.sum_filter_add_sum_filter_not S (fun m => 0 < m.2.1) (fun m => cubicStripMass r L H m v)).symm
 
@@ -114,4 +112,4 @@ theorem signed_cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   rw [integral_add hiP hiN]
   nlinarith only [hbP,hbN]
 
-end GuthMaynard.Improvement
+

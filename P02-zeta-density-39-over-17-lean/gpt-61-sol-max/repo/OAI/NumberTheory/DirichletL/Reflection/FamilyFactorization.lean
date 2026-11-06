@@ -8,8 +8,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 theorem actualMixedCoefficient_common_branches (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
@@ -40,7 +40,7 @@ theorem actualMixedCoefficient_common_branches (F : PrimeFamily φ) (K : Ideal E
   rw [frozenBranchColumn_eq_normalized]
   ring
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

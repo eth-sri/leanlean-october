@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 
 @[expose] public section
@@ -9,8 +10,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open InverseSecondFibers
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def varyingAssignedGate {Jo : ℕ} (J₁ J₂ : Finset σ)
@@ -42,11 +43,15 @@ theorem varyingAssignedSource_mono {Jo : ℕ}
       varyingAssignedSource T J₁ J₂ base₁ base₂ L₁ L₂ := by
   exact Finset.filter_subset_filter _ (assignedSecondSource_mono hST J₁ J₂ base₁ base₂)
 
-theorem varyingAssignedSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
+section
+variable {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
     (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
     (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
     (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
+include Jo source J₁ J₂ base₁ base₂ L₁ L₂ hL₁ hL₂
+
+theorem varyingAssignedSource_sum 
     (F : MarkedSecondSource ι Jo (J₁.card+J₂.card)→ℂ) :
     ∑ x∈varyingAssignedSource source J₁ J₂ base₁ base₂ L₁ L₂,F x =
       ∑ y∈source,∑ q∈(J₁.pi (fun i=>L₁ y i∩(y.second.sourceCommon∪y.second.overlap)))×ˢ
@@ -66,11 +71,7 @@ theorem varyingAssignedSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSourc
       fun i hi=>⟨hL₂ y hy i hi (h₂ i hi).1,(h₂ i hi).2⟩⟩,
       fun i hi=>(h₁ i hi).1,fun i hi=>(h₂ i hi).1⟩
 
-theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
-    (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
-    (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
+theorem varyingAssignedSource_sum_marks 
     (a₁ a₂ : σ→ι→ℂ) (w P : MarkedSecondSource ι Jo 0→ℂ) :
     (∑ y∈source,w y*(star (primeMark J₁ (L₁ y) a₁ (y.second.sourceCommon∪y.second.overlap))*
       primeMark J₂ (L₂ y) a₂ (y.second.sourceCommon∪y.second.overlap))*P y) =
@@ -85,6 +86,8 @@ theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecon
   intro q hq
   rw [assignedSecondCoefficient_attach]
   simp only [attachPairedSlots,erase_attachSecondSlots]
+end
+
 
 variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -130,7 +133,7 @@ theorem actual_second_varying_lists_weighted_count
       (assignedSecondCoefficient_norm_le_one source J₁ J₂ base₁ base₂ a₁ a₂ ha₁ ha₂ x (hsub hx))
   have hc' : ∀ x∈S,(actualSecondChild p u v x).2.1∈labels ∧ (actualSecondChild p u v x).2.2∈rows := by
     intro x hx
-    simpa only [actualSecondChild_erase] using hchild (eraseSecondSlots x) (herase x hx)
+    exact hchild (eraseSecondSlots x) (herase x hx)
   have he := varyingAssignedSource_sum_marks source J₁ J₂ base₁ base₂ L₁ L₂ hL₁ hL₂ a₁ a₂ w
     (fun x=>F (actualSecondChild p u v x)*star (G (actualSecondChild p u v x)))
   simp only [actualSecondChild_erase,←mul_assoc] at he
@@ -139,8 +142,8 @@ theorem actual_second_varying_lists_weighted_count
   exact actual_second_weighted_count p hp hpr hcop hinj u v S hs' labels rows hc' K ho
     (by omega) w' hw' F G
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

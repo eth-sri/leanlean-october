@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosWeightedBoundary
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                  
 
@@ -20,21 +19,7 @@ theorem sum_signed_shift_axes (F : ℤ → ℤ → ℝ) (Q R : ℕ)
       F 0 0+(∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0, F q 0)+
         (∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F 0 r)+
           ∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0,
-            ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F q r := by
-  have hq0 : (0:ℤ) ∈ Finset.Ioo (-(Q:ℤ)) Q := by
-    simp only [Finset.mem_Ioo]
-    constructor <;> omega
-  have hr0 : (0:ℤ) ∈ Finset.Ioo (-(R:ℤ)) R := by
-    simp only [Finset.mem_Ioo]
-    constructor <;> omega
-  have he (q : ℤ) : (∑ r ∈ Finset.Ioo (-(R:ℤ)) R, F q r) =
-      (∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F q r)+F q 0 :=
-    (Finset.sum_erase_add _ _ hr0).symm
-  rw [← Finset.sum_erase_add (Finset.Ioo (-(Q:ℤ)) Q)
-    (fun q => ∑ r ∈ Finset.Ioo (-(R:ℤ)) R, F q r) hq0]
-  simp_rw [he]
-  rw [Finset.sum_add_distrib]
-  ring
+            ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F q r := by simp_all <;> nlinarith
 
 def robertSargosNonzeroShiftSum (f : ℝ → ℝ) (M H Q R : ℕ) : ℝ :=
   ∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0,
@@ -56,4 +41,4 @@ theorem robertSargos_weighted_zero_shift_decomposition
       (fun q r => (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*
         (robertSargosTrimmedCorrelation f M H q r).re) Q R hQ hR
 
-end TaoTrudgianYang2025
+

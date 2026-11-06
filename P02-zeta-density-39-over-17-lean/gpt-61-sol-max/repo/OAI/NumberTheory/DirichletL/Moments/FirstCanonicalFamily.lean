@@ -15,18 +15,22 @@ open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily
 open CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem supported_of_dvd (A B : Ideal O) (hB : Supported B) (hd : A∣B) : Supported A := by
   obtain ⟨Q,hQ⟩ := hd
   rw [hQ] at hB
   exact ((supported_mul_iff A Q).mp hB).1
 
-theorem activeConductor_supported (I J : Ideal O) (hI : Supported I) :
+section
+variable (I J : Ideal O)
+include I J
+
+theorem activeConductor_supported  (hI : Supported I) :
     Supported (Ideal.span {activeConductor I J}) :=
   supported_of_dvd _ _ (commonPart_supported I J hI) (activeConductor_span_dvd I J)
 
-theorem subsetGenerator_span_dvd (I J : Ideal O) (E : Finset (CommonIndex I J)) :
+theorem subsetGenerator_span_dvd  (E : Finset (CommonIndex I J)) :
     Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E}∣commonPart I J := by
   rw [primeSubsetGenerator,span_idealGenerator]
   refine (Finset.prod_dvd_prod_of_subset E Finset.univ
@@ -36,21 +40,32 @@ theorem subsetGenerator_span_dvd (I J : Ideal O) (E : Finset (CommonIndex I J)) 
   intro P hP
   simpa only [pow_one] using pow_dvd_pow P.val (leftExponent_pos I J P)
 
-theorem subsetGenerator_supported (I J : Ideal O) (hI : Supported I)
+section
+variable (hI : Supported I)
+include hI
+
+theorem subsetGenerator_supported 
     (E : Finset (CommonIndex I J)) :
     Supported (Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E}) :=
   supported_of_dvd _ _ (commonPart_supported I J hI) (subsetGenerator_span_dvd I J E)
 
-def canonicalActiveCharacter (I J : Ideal O) (hI : Supported I) :
+def canonicalActiveCharacter  :
     MulChar (Residue (activeConductor I J)) ℂ :=
   primitiveCharacter (activePrime I J) (activeCoprime I J) (activeGood I J hI) (activeExponent I J)
 
-@[simp] theorem canonicalActiveCharacter_mk (I J : Ideal O) (hI : Supported I) (n : O) :
+@[simp] theorem canonicalActiveCharacter_mk  (n : O) :
     canonicalActiveCharacter I J hI (Ideal.Quotient.mk _ n)=
       finiteSexticRow (activePrime I J) (activeGood I J hI) (activeExponent I J) n :=
   primitiveCharacter_mk _ _ _ _ n
+end
+end
 
-theorem exists_canonical_first_pair (η : Character) (m : O) (hm : m≠0)
+
+section
+variable (η : Character) (m : O)
+include η m
+
+theorem exists_canonical_first_pair  (hm : m≠0)
     (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
     (I J : Ideal O) (hI : Supported I) (E : Finset (CommonIndex I J))
     (ξ₁ ξ₂ : RayCharacter) :
@@ -81,7 +96,7 @@ theorem exists_canonical_first_pair (η : Character) (m : O) (hm : m≠0)
     rw [h₂ n hn hp,← MulChar.star_apply',canonicalActiveCharacter_mk,rightCoefficient]
     ring
 
-theorem first_displayed_norm (η : Character) (m : O) (I J : Ideal O)
+theorem first_displayed_norm  (I J : Ideal O)
     (E : Finset (CommonIndex I J)) :
     (η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E*activeConductor I J}).absNorm =
@@ -89,9 +104,11 @@ theorem first_displayed_norm (η : Character) (m : O) (I J : Ideal O)
       ((∏ P∈E,P.val).absNorm*(Ideal.span {activeConductor I J}).absNorm) := by
   rw [← Ideal.span_singleton_mul_span_singleton,primeSubsetGenerator,span_idealGenerator]
   simp only [map_mul]
-
-end SevenEighths.CenteredMomentFirstCanonicalFamily
-
 end
 
-end OAI
+
+
+
+
+
+

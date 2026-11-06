@@ -11,16 +11,16 @@ open scoped Classical BigOperators SchwartzMap
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss UniqueFactorizationMonoid
+open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid
 open CenteredMomentSecondPhysicalLedger
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentSecondCanonical
+open CenteredMomentCommonExceptionalCost
+open CenteredMomentAllocatedDetectorAmplitude
 open CenteredMomentCanonicalFirst CenteredMomentForcing CenteredMomentSecondCanonicalNonunit
 open CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic CenteredMomentSectorLocalization
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
@@ -96,8 +96,8 @@ theorem central_sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s
   unfold centralPhysicalCost
   field_simp
 
-end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 
-end
 
-end OAI
+
+
+

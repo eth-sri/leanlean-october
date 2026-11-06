@@ -31,7 +31,7 @@ lemma sourceMellinWeight_shear (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (t w 
         mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z*mellin W1 w := by
   simp only [sourceMellinWeight,show t+1-z+z-1=t by ring]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

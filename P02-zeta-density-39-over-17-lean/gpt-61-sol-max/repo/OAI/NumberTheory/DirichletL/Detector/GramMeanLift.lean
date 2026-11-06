@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramMean
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CenteredMomentCorrelation
+open scoped EisensteinO
 
 theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
     (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
@@ -40,7 +40,7 @@ theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
   intro y hy
   rw [hp,hf]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedTransport
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoins
 public import OAI.NumberTheory.DirichletL.PrimeRows.OriginalHeightTail
@@ -7,22 +8,25 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.OriginalHeightTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
-    (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
+section
+variable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
+    (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure)
+include f H hH hf
+
+lemma height_slab_partial_integrable  :
     Integrable (fun q : ℝ×ℝ=>∫x : ℝ in -H..H,f ((x,q.1),q.2)) (volume.prod volume) := by
   let E : Set HeightSpace := {t | |t.1.1|≤H}
   have hE : MeasurableSet E := measurableSet_le (by fun_prop) measurable_const
   have hi : Integrable (E.indicator f) heightMeasure := (integrable_indicator_iff hE).mpr hf
   have hp := (measurePreserving_prodAssoc (volume : Measure ℝ) (volume : Measure ℝ) (volume : Measure ℝ)).symm MeasurableEquiv.prodAssoc
-  have hr : Integrable (fun p : ℝ × (ℝ × ℝ)=>(E.indicator f) ((p.1,p.2.1),p.2.2))
-      (volume.prod (volume.prod volume)) := hp.integrable_comp_of_integrable hi
+  have hr := hp.integrable_comp_of_integrable hi
   have hj := hr.integral_prod_right
   have heq : (fun q : ℝ×ℝ=>∫x : ℝ,(E.indicator f) ((x,q.1),q.2))=
       (fun q : ℝ×ℝ=>∫x : ℝ in -H..H,f ((x,q.1),q.2)) := by
@@ -35,12 +39,13 @@ lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0�
       intervalIntegral.integral_of_le (by linarith)]
   exact heq ▸ hj
 
-lemma height_slab_integral_pair (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
-    (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
+lemma height_slab_integral_pair  :
     (∫p : HeightSpace in {t : HeightSpace | |t.1.1|≤H},f p ∂heightMeasure)=
       ∫q : ℝ×ℝ,(∫x : ℝ in -H..H,f ((x,q.1),q.2)) ∂volume.prod volume := by
   rw [height_slab_integral_wzx f H hH hf]
   exact (integral_prod_symm _ (height_slab_partial_integrable f H hH hf)).symm
+end
+
 
 variable {ι : Type*} [Fintype ι]
 
@@ -105,8 +110,8 @@ theorem rowIntegral_central_decomposition {K : ℕ}
   congr 1
   exact congrArg (fun z : ℂ=>I*z) (integral_sub hm hp)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

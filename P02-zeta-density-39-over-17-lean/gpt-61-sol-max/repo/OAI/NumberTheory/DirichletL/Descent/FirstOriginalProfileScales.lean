@@ -7,7 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment InverseMomentFirstChildWindows InverseSecondSourceBlocks
+open InverseMomentFirstChildWindows InverseSecondSourceBlocks
 
 def physicalScales (X : ℝ) (k : SourceIndex) (l : ℕ) : Fin 9→ℝ :=
   rawScales k l (X/(dyadScale (k 0)*dyadScale (k 2)*dyadScale l))
@@ -41,7 +41,7 @@ theorem physicalScales_rpow (Z r : ℝ) (hZ : 1<Z) (k : SourceIndex) (l : ℕ) :
   funext i
   fin_cases i <;> simp [physicalScales,rawScales,he,Real.rpow_sub hz,div_div]
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

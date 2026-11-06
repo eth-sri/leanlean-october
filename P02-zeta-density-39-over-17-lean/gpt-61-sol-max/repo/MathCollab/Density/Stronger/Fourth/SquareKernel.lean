@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under the MIT-0 license. See ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -11,11 +12,10 @@ public import MathCollab.Density.Stronger.Fourth.SquareKernelFar
 
 @[expose] public section
 
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
-noncomputable section
+
+
 namespace MathCollab.Density.Stronger.Fourth
 
 theorem zetaGammaShiftError_le_quadratic
@@ -44,7 +44,6 @@ theorem exp_zetaGammaLeadingLog_vertical_le
     Real.exp (c*Real.log (t/(2*Real.pi))+u*(Real.pi/2)) ≤
         Real.exp (c*Real.log t+Real.pi*|u|/2) := by
       apply Real.exp_le_exp.mpr
-      have h1 := mul_le_mul_of_nonneg_left hlog hc
       have h2 := mul_le_mul_of_nonneg_right (le_abs_self u) Real.pi_pos.le
       nlinarith
     _ = _ := by
@@ -57,16 +56,16 @@ theorem exists_norm_zetaFourthKernel_near_le {c : ℝ} (hc : 0 < c) :
       4 ≤ t → 4*c ≤ t → |u| ≤ t/4 →
       ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ ≤
         K*t^c*Real.exp (-98*u^2) := by
-  let D : ℝ := 17/4+Real.pi/2
-  let A : ℝ := 101*c^2+17*c/4
-  let Q : ℝ := 8*(1+c)+(8+D)^2/4
-  let K : ℝ := (5625/c)*Real.exp A*Real.exp Q
+  let D := 17/4+Real.pi/2
+  let A := 101*c^2+17*c/4
+  let Q := 8*(1+c)+(8+D)^2/4
+  let K := (5625/c)*Real.exp A*Real.exp Q
   refine ⟨K,by dsimp [K]; positivity,?_⟩
   intro t u ht hct hu
   have ht0 : 0 < t := by linarith
-  let w : ℂ := (c:ℂ)+(u:ℂ)*I
-  let R : ℝ := 1+c+|u|
-  let E : ℝ := 17*c/4+c^2+u^2+17*|u|/4
+  let w := (c:ℂ)+(u:ℂ)*I
+  let R := 1+c+|u|
+  let E := 17*c/4+c^2+u^2+17*|u|/4
   have hw : ‖w‖ ≤ c+|u| := norm_vertical_shift_le hc.le u
   have hwsmall : ‖w‖ ≤ t/2 := hw.trans (by linarith)
   have hwre : 0 ≤ w.re := by dsimp [w]; norm_num; exact hc.le
@@ -167,4 +166,4 @@ theorem exists_integral_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
     _ = _ := by rw [integral_const_mul, integral_gaussian]
 
 
-end MathCollab.Density.Stronger.Fourth
+

@@ -5,14 +5,18 @@ public import OAI.NumberTheory.DirichletL.Detector.Physical
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem elementWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
-    (R : ℝ) (hR : 0 < R) :
+section
+variable (W : ℝ → ℂ) (hW : HasCompactSupport W)
+    (R : ℝ) (hR : 0 < R)
+include W hW R hR
+
+theorem elementWindow_finite_support  :
     (Function.support (fun m : O => W (elementNorm m / R))).Finite := by
   obtain ⟨B, hB, hbound⟩ := compact_window_bound W hW
   obtain ⟨M, hM⟩ := exists_nat_gt (B * R)
@@ -23,8 +27,7 @@ theorem elementWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W
   unfold elementNorm at hnorm
   exact_mod_cast hnorm.trans hM.le
 
-theorem idealWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
-    (R : ℝ) (hR : 0 < R) :
+theorem idealWindow_finite_support  :
     (Function.support (fun I : Ideal O => W ((Ideal.absNorm I : ℝ) / R))).Finite := by
   obtain ⟨B, hB, hbound⟩ := compact_window_bound W hW
   obtain ⟨M, hM⟩ := exists_nat_gt (B * R)
@@ -32,8 +35,10 @@ theorem idealWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
   intro I hI
   have hnorm : (Ideal.absNorm I : ℝ) ≤ B * R := (div_le_iff₀ hR).mp (hbound _ hI)
   exact_mod_cast hnorm.trans hM.le
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

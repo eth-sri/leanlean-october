@@ -10,10 +10,10 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily CenteredExceptionalProfile CenteredExceptionalCount
-open HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentNaturalRowSource UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+
+
+open scoped HeckeO
 
 def internalQ (Q : Ideal O) (η₀ : Character) : Ideal O := Q⊓η₀.modulus
 
@@ -28,8 +28,8 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-end SevenEighths.CenteredMomentNaturalFixedRaySource
 
-end
 
-end OAI
+
+
+

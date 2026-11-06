@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationAggregate
 public import OAI.NumberTheory.DirichletL.Moments.PrimePool
 
@@ -18,12 +19,18 @@ def RawScaleEnergy (data : RowData) (W : ℝ→ℂ) (U D V E : ℝ) : Prop :=
     ∀ l∈Icc (Real.log D-Real.log V) (Real.log D),
       ∑ v∈R, ‖polynomial (data.character v) true W (Real.exp l) 0 0‖^2≤E
 
-def typedPrimePool (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (S : Finset (Ideal O)) (a b x : ℝ) : Finset PrimeIdeal :=
+section
+variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+include M H
+
+section
+variable (S : Finset (Ideal O)) (a b x : ℝ)
+include S a b x
+
+def typedPrimePool  : Finset PrimeIdeal :=
   (CenteredMomentPrimePool.primePool M H S a b x).subtype Prime
 
-theorem typedPrimePool_card (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (S : Finset (Ideal O)) (a b x : ℝ) :
+theorem typedPrimePool_card  :
     (typedPrimePool M H S a b x).card=
       (CenteredMomentPrimePool.primePool M H S a b x).card := by
   rw [typedPrimePool,Finset.card_subtype]
@@ -33,16 +40,17 @@ theorem typedPrimePool_card (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
   exact ((PNT.AnnularPrimeMass.mem_annularPrimeIdeals _ _ _ _ _).mp
     (Finset.mem_sdiff.mp hP).1).2.1
 
-theorem typedPrimePool_norm (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (S : Finset (Ideal O)) (a b x : ℝ) (ha : 0≤a) (hab : a≤b) (hx : 0<x)
+theorem typedPrimePool_norm  (ha : 0≤a) (hab : a≤b) (hx : 0<x)
     (P : PrimeIdeal) (hP : P∈typedPrimePool M H S a b x) :
     (P.val.absNorm : ℝ)≤x*b := by
   have hh := Finset.mem_subtype.mp hP
   exact (PNT.AnnularPrimeMass.norm_bounds_of_mem_annularPrimeIdeals ha hab hx
     (Finset.mem_sdiff.mp hh).1).2
+end
+
 
 theorem eventually_fixed_ray_amplification
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+    
     (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
     (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y, 0≤φ y) (hφne : φ≠0)
@@ -65,7 +73,7 @@ theorem eventually_fixed_ray_amplification
   intro data rows W wa wb D U E hwa hwb hWs hW hD hrows hraw0 hraw1
   have hx0 : 0<x := zero_lt_one.trans hx
   have hxblog : 1≤x*b := (div_le_iff₀ hb).mp hxB
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hlog := Real.log_pos hx
   have hc' : c*x/Real.log x≤((typedPrimePool M H S a b x).card : ℝ) := by
     rw [typedPrimePool_card]
     exact hcard
@@ -82,9 +90,11 @@ theorem eventually_fixed_ray_amplification
       ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2))*Real.log x := by
         field_simp
     _ ≤ _ := mul_le_mul_of_nonneg_right hh hlog.le
-
-end SevenEighths.HeckeInverseAmplification
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.UnitNormalization
 
 @[expose] public section
@@ -8,75 +9,75 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
 namespace CanonicalRowCompletion
 open ActualEisensteinCubic
 open CompletedGauss hiding O
@@ -120,13 +121,9 @@ lemma embedding_lambda_ne_zero : eisEmbedding lambda≠0 :=
 
 end
 
-section
-open ActualEisensteinCubic CompletedDyadic LocalReflectionBrackets
-open ConcreteTraceCRT (eisEmbedding)
 
-end
 
-open ActualEisensteinCubic LocalReflectionBrackets
+open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 def paperLambda : ActualEisensteinCubic.O := 1+2*omega
@@ -153,29 +150,16 @@ lemma paperLambda_eq : paperLambda=paperLambdaUnit.val*lambda := by
 end CompletedGauss
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalCubeSeparation
 
-end CanonicalCubeSeparation
 
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open ConcreteTraceCRT (eisEmbedding)
 
-end CanonicalRowCompletion
 
 namespace CanonicalCubeSeparation
 
-def radiusIter (A : ℝ) : ℕ→ℝ
-  | 0=>A
-  | n+1=>radiusIter (2*A+11) n
 
-@[simp] theorem radiusIter_zero (A : ℝ) : radiusIter A 0=A:=rfl
-@[simp] theorem radiusIter_succ (A : ℝ) (n : ℕ) :
-    radiusIter A (n+1)=radiusIter (2*A+11) n:=rfl
+
+
+
 
 end CanonicalCubeSeparation
 
@@ -237,8 +221,8 @@ theorem quadraticGamma_product {ι : Type*} [Fintype ι]
   intro i hi
   rw [normalized_prime_eq_square_sum _ _ (hc i)]
 
-end QuadraticAllOddCRT
 
-end
 
-end OAI
+
+
+

@@ -1,13 +1,13 @@
 module
+import Mathlib
 /- Adapted actual short coefficients; generic audited arithmetic and phases reused. -/
 public import MathCollab.Density.DetectorPoweredPieces
 public import GuthMaynard.Improvement.ShortDetectorConvolution
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
+open Complex Filter MathCollab.Density
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -35,8 +35,12 @@ theorem norm_shortDetectorTaylorPolynomial_LSeries {N : ℕ} (hN : 0 < N)
   rw [shortDetectorTaylorPolynomial, norm_detectingPolynomial_eq_cpow_sum hN,
     shortDetectorBlockCoefficients_LSeries]
 
-theorem shortDetectorBlockCoefficients_pow_LSeries_sum {N k : ℕ} (hN : 0 < N)
-    (hk : 0 < k) (T : ℝ) (j : ℕ) (s : ℂ) :
+section
+variable {N k : ℕ} (hN : 0 < N)
+    (hk : 0 < k)
+include N k hN hk
+
+theorem shortDetectorBlockCoefficients_pow_LSeries_sum  (T : ℝ) (j : ℕ) (s : ℂ) :
     LSeries (fun n => ((shortDetectorBlockCoefficients T N j)^k) n) s =
       ∑ n ∈ Finset.Ioc (N^k) ((2*N)^k),
         ((shortDetectorBlockCoefficients T N j)^k) n*(n : ℂ)^(-s) := by
@@ -57,7 +61,7 @@ theorem shortDetectorBlockCoefficients_pow_LSeries_sum {N k : ℕ} (hN : 0 < N)
 
 /-- A powered component is detected on one of its k fixed dyadic pieces,
 with exactly the pigeonhole loss k and at the same ordinate t. -/
-theorem exists_shortPoweredDetector_piece {N k : ℕ} (hN : 0 < N) (hk : 0 < k)
+theorem exists_shortPoweredDetector_piece 
     (T t : ℝ) (j : ℕ) :
     ∃ ℓ ∈ Finset.range k,
       ‖shortDetectorTaylorPolynomial T N j t‖^k/(k : ℝ) ≤
@@ -82,13 +86,12 @@ theorem exists_shortPoweredDetector_piece {N k : ℕ} (hN : 0 < N) (hk : 0 < k)
     calc
       _ < ∑ _ℓ ∈ Finset.range k, ‖shortDetectorTaylorPolynomial T N j t‖^k/(k : ℝ) := by
         apply Finset.sum_lt_sum_of_nonempty ⟨0, Finset.mem_range.mpr hk⟩
-        intro ℓ hℓ
-        rw [← hn]
-        exact h ℓ hℓ
+        grind
       _ = _ := by simp; field_simp
   have hb := norm_sum_le (Finset.range k)
     (fun ℓ => ∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), f n)
-  rw [← he] at hb
-  linarith
+  bound
+end
 
-end GuthMaynard.Improvement
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7HardArithmetic
 
 @[expose] public section
@@ -14,7 +15,7 @@ absorbed here.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- A single loss independent of the valuation class.  This is the form
 needed before summing (7.23) over all separated residue pairs. -/
@@ -51,9 +52,7 @@ theorem wooley_section7_hard_power_loss_zero
     norm_num [Nat.cast_sub
       (wooley_section7_a_add_HPrime_le_nextB hr hBPrime)] at htri ⊢
     nlinarith
-  have hpow :
-      (p : ℝ) ^ ((bp0 : ℝ) * epsilon ^ 2 + (R : ℝ) * (d : ℝ)) ≤
-        (p : ℝ) ^ ((k ^ 2 * nu : ℕ) : ℝ) :=
+  have hpow :=
     Real.rpow_le_rpow_of_exponent_le hpReal hexp.le
   calc
     ((p : ℝ) ^ bp0) ^ (epsilon ^ 2) * ((p : ℝ) ^ d) ^ R =
@@ -67,6 +66,6 @@ theorem wooley_section7_hard_power_loss_zero
     _ ≤ (p : ℝ) ^ ((k ^ 2 * nu : ℕ) : ℝ) := hpow
     _ = (p : ℝ) ^ (k ^ 2 * nu) := Real.rpow_natCast _ _
 
-end
 
-end GafniTao
+
+

@@ -1,18 +1,22 @@
 module
+import Mathlib
 public import MathCollab.Density.ZetaConjugation
 public import Mathlib.Algebra.Order.Archimedean.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
 
-open Real Set Filter
+open Real Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
+section
+variable {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
+include σ p C hp hC
+
 /-- The finite bounded-height range is absorbed before all positive scales. -/
-theorem zetaSlab_extend_power_bound {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
+theorem zetaSlab_extend_power_bound 
     (hlarge : ∀ᶠ T : ℝ in atTop, (zetaSlabCount σ T (2*T) : ℝ) ≤ C*T^p) :
     ∃ A : ℝ, 0 < A ∧ ∀ T : ℝ, 1 ≤ T →
       (zetaSlabCount σ T (2*T) : ℝ) ≤ A*T^p := by
@@ -33,7 +37,7 @@ theorem zetaSlab_extend_power_bound {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
     exact hsmall.trans (by nlinarith)
 
 /-- Dyadic accumulation with a geometric constant, without spending epsilon. -/
-theorem zetaPositive_bound_of_slabs {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
+theorem zetaPositive_bound_of_slabs 
     (hslab : ∀ T : ℝ, 1 ≤ T → (zetaSlabCount σ T (2*T) : ℝ) ≤ C*T^p) :
     ∃ A : ℝ, 0 < A ∧ ∀ T : ℝ, 1 ≤ T →
       (zetaSlabCount σ 0 T : ℝ) ≤ A*T^p := by
@@ -70,8 +74,7 @@ theorem zetaPositive_bound_of_slabs {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
         _ ≤ (A*r)*((2 : ℝ)^k)^p := mul_le_mul_of_nonneg_right hAr (by positivity)
         _ = A*((2 : ℝ)^(k+1))^p := by
           rw [pow_succ, Real.mul_rpow (by positivity) (by norm_num)]
-          dsimp [r]
-          ring
+          bound
   refine ⟨A*r, by positivity, ?_⟩
   intro T hT
   obtain ⟨k,hlo,hhi⟩ := exists_nat_pow_near hT (by norm_num : (1 : ℝ) < 2)
@@ -88,8 +91,7 @@ theorem zetaPositive_bound_of_slabs {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
 
 /-- Eventual positive-slab bounds imply a uniform bound for the original count
 of all actual zeros, with analytic multiplicity and both closed endpoints. -/
-theorem zetaDensity_bound_of_eventual_slabs {σ p C : ℝ}
-    (hp : 0 < p) (hC : 0 < C)
+theorem zetaDensity_bound_of_eventual_slabs 
     (hslab : ∀ᶠ T : ℝ in atTop, (zetaSlabCount σ T (2*T) : ℝ) ≤ C*T^p) :
     ∃ A : ℝ, 0 < A ∧ ∀ T : ℝ, 2 ≤ T →
       (zetaDensityCount σ T : ℝ) ≤ A*T^p := by
@@ -99,7 +101,8 @@ theorem zetaDensity_bound_of_eventual_slabs {σ p C : ℝ}
   intro T hT
   have hsym : (zetaDensityCount σ T : ℝ) ≤ 2*(zetaSlabCount σ 0 T : ℝ) := by
     exact_mod_cast zetaDensityCount_le_twice_positive σ T
-  have hb := hpos T (by linarith)
-  nlinarith
+  grind
+end
 
-end MathCollab.Density
+
+

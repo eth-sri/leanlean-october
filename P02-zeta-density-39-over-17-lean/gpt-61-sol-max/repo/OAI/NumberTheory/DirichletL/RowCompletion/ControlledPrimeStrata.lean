@@ -9,115 +9,132 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped EisensteinEis
 
-def freePrimaryPrime (I Q:Ideal Eis) (P:FreePrimeIndex I Q) : Eis := primaryPrime P.val.val
+section
+variable (I Q:Ideal Eis)
+include I Q
 
-lemma freePrimaryPrime_ne_zero (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
+def freePrimaryPrime  (P:FreePrimeIndex I Q) : Eis := primaryPrime P.val.val
+
+section
+variable (hI:Supported I)
+include hI
+
+section
+variable (P:FreePrimeIndex I Q)
+include P
+
+lemma freePrimaryPrime_ne_zero  :
     freePrimaryPrime I Q P≠0 :=
   primaryPrime_ne_zero P.val.val
     (supported_factors_good I hI P.val.val (Multiset.mem_toFinset.mp P.val.property)).2.1
 
-lemma freePrimaryPrime_span (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
+lemma freePrimaryPrime_span  :
     Ideal.span {freePrimaryPrime I Q P}=P.val.val :=
   (primaryPrime_spec P.val.val (freePrimaryPrime_ne_zero I Q hI P)).2.2.1
 
-lemma freePrimaryPrime_primary (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
+lemma freePrimaryPrime_primary  :
     lambda^2∣freePrimaryPrime I Q P-1 :=
   (primaryPrime_spec P.val.val (freePrimaryPrime_ne_zero I Q hI P)).2.2.2
 
-lemma freePrimaryPrime_maximal (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
+lemma freePrimaryPrime_maximal  :
     (Ideal.span {freePrimaryPrime I Q P}:Ideal Eis).IsMaximal := by
   rw [freePrimaryPrime_span I Q hI P]
   infer_instance
 
-lemma freePrimaryPrime_good (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
+lemma freePrimaryPrime_good  :
     lambda∉(Ideal.span {freePrimaryPrime I Q P}:Ideal Eis) := by
   rw [freePrimaryPrime_span I Q hI P]
   exact (supported_factors_good I hI P.val.val (Multiset.mem_toFinset.mp P.val.property)).2.1
+end
 
-lemma freePrimaryPrime_coprime (I Q:Ideal Eis) (hI:Supported I) :
+
+lemma freePrimaryPrime_coprime  :
     Pairwise (fun P R:FreePrimeIndex I Q =>
       IsCoprime (Ideal.span {freePrimaryPrime I Q P}:Ideal Eis) (Ideal.span {freePrimaryPrime I Q R})) := by
   intro P R hPR
   rw [freePrimaryPrime_span I Q hI P,freePrimaryPrime_span I Q hI R]
   exact freePrimeIndex_pairwise_coprime I Q hPR
 
-lemma freePrimaryPrime_coprime_fixed (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
+lemma freePrimaryPrime_coprime_fixed  (P:FreePrimeIndex I Q) :
     IsCoprime Q (Ideal.span {freePrimaryPrime I Q P}:Ideal Eis) := by
   rw [freePrimaryPrime_span I Q hI P]
   exact freePrimeIndex_coprime I Q P
+end
+end
+
 
 end CanonicalRowCompletion
 
@@ -170,14 +187,14 @@ namespace CubicEisenstein
 
 section
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 end
 
 open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open scoped EisensteinEis
 
 lemma theta_lifted_phase (c:Eis) (hc:c≠0) (lift n:Eis) :
     ShortDraftTrace.breveE (-cuspFrequency n*(eisLam^2*eisEmbedding lift/eisEmbedding c))=
@@ -192,14 +209,18 @@ lemma theta_lifted_phase (c:Eis) (hc:c≠0) (lift n:Eis) :
   field_simp
   linear_combination -(eisEmbedding n*eisEmbedding lift)*TraceLambdaPhase.eisLam_sq
 
-lemma breveE_finset_sum {ι:Type*} (s:Finset ι) (z:ι→ℂ) :
+section
+variable {ι:Type*}
+include ι
+
+lemma breveE_finset_sum  (s:Finset ι) (z:ι→ℂ) :
     ShortDraftTrace.breveE (∑i∈s,z i)=∏i∈s,ShortDraftTrace.breveE (z i) := by
   induction s using Finset.induction_on with
   | empty => simp only [Finset.sum_empty,Finset.prod_empty,AddChar.map_zero_eq_one]
   | @insert i s hi ih =>
     rw [Finset.sum_insert hi,Finset.prod_insert hi,AddChar.map_add_eq_mul,ih]
 
-lemma ControlledStratumArithmetic.datum_fourier_phase {ι:Type*} [Fintype ι]
+lemma ControlledStratumArithmetic.datum_fourier_phase  [Fintype ι]
     {p:ι→Eis} {N a0 c0:Eis} {mode:Bool}
     (D:ControlledStratumArithmetic p N a0 c0 mode)
     (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
@@ -224,46 +245,44 @@ lemma ControlledStratumArithmetic.datum_fourier_phase {ι:Type*} [Fintype ι]
   apply Finset.prod_congr rfl
   intro i hi
   rw [theta_lifted_phase,D.lift_residue]
+end
+
 
 end CubicEisenstein
 
 open scoped BigOperators Classical ContDiff
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein
+open scoped EisensteinEis
 
 end CompletedGauss
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
+open ActualEisensteinCubic CompletedGauss
+open scoped EisensteinEis
 
-end FixedFourierGeometry
 end
 
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
+open ActualEisensteinCubic CompletedGauss
+open scoped EisensteinEis
 
-end FixedFourierGeometry
 end CubicEisenstein
 
 open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-lemma freePrimaryPrime_coprime_completion (I Q:Ideal Eis) (hI:Supported I)
+section
+variable (I Q:Ideal Eis) (hI:Supported I)
     (c:Eis) (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
+include I Q hI c hcQ
+
+lemma freePrimaryPrime_coprime_completion 
     (P:FreePrimeIndex I Q) : IsCoprime ((9:Eis)*c) (freePrimaryPrime I Q P) := by
   have h9:IsCoprime (9:Eis) (freePrimaryPrime I Q P):=
     (ShortDraftCRT.primary_coprime_nine _ (freePrimaryPrime_primary I Q hI P)).symm
@@ -276,10 +295,12 @@ lemma freePrimaryPrime_coprime_completion (I Q:Ideal Eis) (hI:Supported I)
     exact h9ideal.mul_left (freePrimaryPrime_coprime_fixed I Q hI P)
   exact h9.mul_left ((Ideal.isCoprime_span_singleton_iff _ _).mp hcideal)
 
-theorem exists_freePrimary_controlled_stratum (I Q:Ideal Eis) (hI:Supported I)
-    (c:Eis) (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
-    (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
-    (A:Finset (FreePrimeIndex I Q)) :
+section
+variable (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
+    (A:Finset (FreePrimeIndex I Q))
+include h G A
+
+theorem exists_freePrimary_controlled_stratum  :
     Nonempty (ControlledStratumArithmetic
       (fun i:A=>freePrimaryPrime I Q i.val) ((9:Eis)*c) G.a0 G.c0 G.mode) := by
   let : ∀i:A,(Ideal.span {freePrimaryPrime I Q i.val}:Ideal Eis).IsMaximal:=
@@ -296,16 +317,16 @@ theorem exists_freePrimary_controlled_stratum (I Q:Ideal Eis) (hI:Supported I)
   · exact G.coprime
   · exact fun i=>freePrimaryPrime_coprime_completion I Q hI c hcQ i.val
 
-noncomputable def freePrimaryControlledStratum (I Q:Ideal Eis) (hI:Supported I)
-    (c:Eis) (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
-    (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
-    (A:Finset (FreePrimeIndex I Q)) :
+def freePrimaryControlledStratum  :
     ControlledStratumArithmetic
       (fun i:A=>freePrimaryPrime I Q i.val) ((9:Eis)*c) G.a0 G.c0 G.mode :=
   Classical.choice (exists_freePrimary_controlled_stratum I Q hI c hcQ h G A)
-
-end CanonicalRowCompletion
-
+end
 end
 
-end OAI
+
+
+
+
+
+

@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators Topology
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 namespace SevenEighths.ProbeFiniteProductX
 open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
 open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
@@ -54,7 +54,11 @@ theorem local_analytic_x (η : Character) (S : Finset Id) (hS : CorrectionTail S
   dsimp only
   fun_prop (disch := first | assumption | exact hd.2.2 | exact Or.inl hn)
 
-theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id)
+include ι η S
+
+theorem slot_analytic_x  (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
     (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (w z : ℂ)
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
@@ -65,7 +69,7 @@ theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro P hp
   exact analyticOnNhd_const.mul (local_analytic_x η S hS P (hT j hj P hp) w z hw hz)
 
-def continuedSourceMultiplier {ι : Type*} (η : Character) (S : Finset Id)
+def continuedSourceMultiplier 
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) : ℂ :=
   (X:ℂ)^(1/2-z) * (Z:ℂ)^(x+z-1) * (Y:ℂ)^(w-1) *
@@ -74,7 +78,7 @@ def continuedSourceMultiplier {ι : Type*} (η : Character) (S : Finset Id)
       HeckeReciprocal.reciprocal (η.excludePrimes S hS) x *
       globalClosedCorrection η S x w z * slotMultiplier η J T b x w z
 
-theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id)
+theorem continued_source_analytic_x 
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ)
@@ -93,7 +97,7 @@ theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id
   unfold continuedSourceMultiplier
   fun_prop (disch := first | assumption | exact Or.inl hn)
 
-theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
+theorem continued_source_eq_raw 
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)
     (hx0 : x≠0) (hx1 : x≠1) :
@@ -103,7 +107,7 @@ theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
   simp only [continuedSourceMultiplier,sourceMultiplier,
     HeckeReciprocal.reciprocal_eq_inv _ hx0 hx1,div_eq_mul_inv]
 
-theorem continued_source_differentiable_strip {ι : Type*} (η : Character) (S : Finset Id)
+theorem continued_source_differentiable_strip 
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ)
@@ -114,8 +118,10 @@ theorem continued_source_differentiable_strip {ι : Type*} (η : Character) (S :
   apply (continued_source_analytic_x η S hS J T b hT W0 W1 X Y Z hZ w z hw hz).differentiableOn.mono
   intro x hx
   exact lt_of_lt_of_le (max_lt ha hβ) hx.1
-
-end SevenEighths.ProbeFiniteProductX
 end
 
-end OAI
+
+
+
+
+

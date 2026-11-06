@@ -3,8 +3,7 @@ public import RationalCoefficientEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -13,7 +12,11 @@ theorem cyclic_probability_mass {N d : ℕ} [NeZero N] :
   rw [← Fintype.prod_sum (fun (_ : Fin d) (_ : ZMod N) => (N : ℝ)⁻¹)]
   simp [ZMod.card, NeZero.ne N]
 
-theorem rational_coefficient_energy_one (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < r)
+section
+variable (A : Finset ℚ)
+include A
+
+theorem rational_coefficient_energy_one  (hA : ∀ r ∈ A, 0 < r)
     (c : ℚ → ℂ) : rationalCoefficientEnergy A 1 c = ∑ r ∈ A, ‖c r‖^2 := by
   obtain ⟨d, p, N, hN, _, hP, _, hdiff⟩ := finite_rational_prime_model (A ∪ rationalProducts A 1)
   let : NeZero N := ⟨hN.ne'⟩
@@ -26,7 +29,7 @@ theorem rational_coefficient_energy_one (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < 
   norm_num only [show 2*1 = 2 by omega] at hm
   exact hm.symm.trans hs
 
-theorem rational_coefficient_energy_double (A : Finset ℚ) (k : ℕ)
+theorem rational_coefficient_energy_double  (k : ℕ)
     (hA : ∀ r ∈ A, 0 < r) (c : ℚ → ℂ) :
     rationalCoefficientEnergy A (2*k) c =
       rationalCoefficientEnergy (rationalProducts A k) 2 (rationalPowerCoefficient A k c) := by
@@ -50,7 +53,7 @@ theorem rational_coefficient_energy_double (A : Finset ℚ) (k : ℕ)
 
 /-- A lower moment is bounded by one plus a higher moment in a probability
 model. This elementary inequality avoids a separate interpolation theorem. -/
-theorem rational_coefficient_energy_le_one_add (A : Finset ℚ) (k m : ℕ)
+theorem rational_coefficient_energy_le_one_add  (k m : ℕ)
     (hkm : k ≤ m) (hA : ∀ r ∈ A, 0 < r) (c : ℚ → ℂ) :
     rationalCoefficientEnergy A k c ≤ 1 + rationalCoefficientEnergy A m c := by
   obtain ⟨d, p, N, hN, _, hP, _, hdiff⟩ :=
@@ -76,17 +79,19 @@ theorem rational_coefficient_energy_le_one_add (A : Finset ℚ) (k m : ℕ)
     _ = _ := by
       simp only [mul_add, mul_one, sum_add_distrib, cyclic_probability_mass]
 
-theorem rational_power_coefficient_smul (A : Finset ℚ) (k : ℕ) (c : ℚ → ℂ) (a : ℂ)
+theorem rational_power_coefficient_smul  (k : ℕ) (c : ℚ → ℂ) (a : ℂ)
     (r : ℚ) :
     rationalPowerCoefficient A k (fun x => a*c x) r = a^k*rationalPowerCoefficient A k c r := by
   unfold rationalPowerCoefficient
   simp only [prod_mul_distrib, prod_const, card_univ, Fintype.card_fin, ← mul_sum]
 
-theorem rational_coefficient_energy_smul (A : Finset ℚ) (k : ℕ) (c : ℚ → ℂ) (a : ℂ) :
+theorem rational_coefficient_energy_smul  (k : ℕ) (c : ℚ → ℂ) (a : ℂ) :
     rationalCoefficientEnergy A k (fun x => a*c x) = ‖a‖^(2*k)*rationalCoefficientEnergy A k c := by
   unfold rationalCoefficientEnergy
   simp only [rational_power_coefficient_smul A k c a, norm_mul, norm_pow, mul_pow, ← mul_sum]
   rw [← pow_mul, Nat.mul_comm k 2]
+end
+
 
 theorem rational_mul_numerator_le {r s : ℚ} (hr : r ≠ 0) (hs : s ≠ 0) :
     (r*s).num.natAbs ≤ r.num.natAbs*s.num.natAbs := by
@@ -145,4 +150,4 @@ theorem rational_coefficient_energy_zero (A : Finset ℚ) {k : ℕ} (hk : 0 < k)
     sum_eq_zero (fun r hr => by rw [hz r hr, zero_mul])
   rw [hsum, norm_zero, zero_pow (by omega : 2*k ≠ 0), mul_zero]
 
-end Montgomery.RationalMoment
+

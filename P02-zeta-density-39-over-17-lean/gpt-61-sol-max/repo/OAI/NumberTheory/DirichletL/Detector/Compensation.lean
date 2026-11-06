@@ -23,7 +23,7 @@ def tupleOperation {α : Type*} [CommMonoid α] {K : ℕ}
         (X / q (∏ i ∈ J, p i)) (Y / q (∏ i ∈ J, p i))
         (Z * q (∏ i ∈ Finset.univ \ J, p i))
 
-end SevenEighths.ProbeCompensation
-end
 
-end OAI
+
+
+

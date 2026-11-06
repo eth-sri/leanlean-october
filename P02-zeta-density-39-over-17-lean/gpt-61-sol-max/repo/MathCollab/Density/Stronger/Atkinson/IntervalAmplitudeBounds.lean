@@ -91,10 +91,14 @@ theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
         (mul_le_mul_of_nonneg_left hg.variation_le hf.nonneg)
       _ = _ := by ring
 
-theorem intervalC1Bound_ofReal_of_deriv_nonneg {f : ℝ → ℝ} {a b M : ℝ}
+section
+variable {f : ℝ → ℝ} {a b M : ℝ}
     (hab : a ≤ b) (hM : 0 ≤ M)
     (hf : ∀ x ∈ Icc a b, ContDiffAt ℝ 1 f x)
     (hbound : ∀ x ∈ Icc a b, 0 ≤ f x ∧ f x ≤ M)
+include f a b M hab hM hf hbound
+
+theorem intervalC1Bound_ofReal_of_deriv_nonneg 
     (hd : ∀ x ∈ Icc a b, 0 ≤ deriv f x) :
     IntervalC1Bound (fun x => (f x : ℂ)) a b M := by
   have hfd (x : ℝ) (hx : x ∈ Icc a b) :=
@@ -123,10 +127,7 @@ theorem intervalC1Bound_ofReal_of_deriv_nonneg {f : ℝ → ℝ} {a b M : ℝ}
       exact hfd x hx) hfi]
     linarith [(hbound a ⟨le_rfl, hab⟩).1, (hbound b ⟨hab, le_rfl⟩).2]
 
-theorem intervalC1Bound_ofReal_of_deriv_nonpos {f : ℝ → ℝ} {a b M : ℝ}
-    (hab : a ≤ b) (hM : 0 ≤ M)
-    (hf : ∀ x ∈ Icc a b, ContDiffAt ℝ 1 f x)
-    (hbound : ∀ x ∈ Icc a b, 0 ≤ f x ∧ f x ≤ M)
+theorem intervalC1Bound_ofReal_of_deriv_nonpos 
     (hd : ∀ x ∈ Icc a b, deriv f x ≤ 0) :
     IntervalC1Bound (fun x => (f x : ℂ)) a b M := by
   have hfd (x : ℝ) (hx : x ∈ Icc a b) :=
@@ -155,6 +156,8 @@ theorem intervalC1Bound_ofReal_of_deriv_nonpos {f : ℝ → ℝ} {a b M : ℝ}
         rw [uIcc_of_le hab] at hx
         exact hfd x hx) hfi]
     linarith [(hbound b ⟨hab, le_rfl⟩).1, (hbound a ⟨le_rfl, hab⟩).2]
+end
+
 
 
 theorem IntervalC1Bound.join {f : ℝ → ℂ} {a b c M N : ℝ}
@@ -174,4 +177,4 @@ theorem IntervalC1Bound.join {f : ℝ → ℂ} {a b c M N : ℝ}
     exact add_le_add hf.variation_le hg.variation_le
 
 
-end MathCollab.Density.Stronger.Atkinson
+

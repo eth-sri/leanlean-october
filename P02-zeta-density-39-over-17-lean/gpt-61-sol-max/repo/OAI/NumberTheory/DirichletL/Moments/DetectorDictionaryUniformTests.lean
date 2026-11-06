@@ -17,23 +17,29 @@ lemma twistProfile_zero (W : ℝ→ℂ) : twistProfile W 0 0=W := by
   funext x
   simp [twistProfile,HeckeDyadic.shift]
 
-lemma oriented_detector_log_support (reverse : Bool) (n : ℕ) :
+section
+variable (reverse : Bool) (n : ℕ)
+include reverse n
+
+lemma oriented_detector_log_support  :
     Function.support (orientedProfile reverse ((logProfile^[n]) positiveAnnular))⊆Icc (1/4) (9/4) := by
   simpa only [twistProfile_zero] using detector_profile_support reverse n 0 0
 
-lemma oriented_detector_log_smooth (reverse : Bool) (n : ℕ) :
+lemma oriented_detector_log_smooth  :
     ContDiff ℝ ∞ (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) := by
   simpa only [twistProfile_zero] using detector_profile_smooth reverse n 0 0
 
-def detectorSchwartz (reverse : Bool) (n : ℕ) (σ t : ℝ) : 𝓢(ℝ,ℂ) :=
+def detectorSchwartz  (σ t : ℝ) : 𝓢(ℝ,ℂ) :=
   interpolatedProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) (1/4) (9/4)
     (by norm_num) (oriented_detector_log_support reverse n) (oriented_detector_log_smooth reverse n) σ
       (orientedFrequency reverse t)
 
-lemma detectorSchwartz_apply (reverse : Bool) (n : ℕ) (σ t x : ℝ) :
+lemma detectorSchwartz_apply  (σ t x : ℝ) :
     detectorSchwartz reverse n σ t x=
       twistProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) σ (orientedFrequency reverse t) x :=
   interpolatedProfile_apply _ _ _ _ _ _ _ _ _
+end
+
 
 theorem detectorSchwartz_uniform (S : Finset (ℕ×ℕ)) :
     ∃J : ℕ,∃C : ℝ,0<C ∧ ∀reverse : Bool,∀n : ℕ,n≤2→∀σ∈Icc (0:ℝ) 1,∀t : ℝ,
@@ -57,8 +63,8 @@ theorem detectorSchwartz_uniform (S : Finset (ℕ×ℕ)) :
   exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hdegree)
     (by positivity) (by linarith))
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

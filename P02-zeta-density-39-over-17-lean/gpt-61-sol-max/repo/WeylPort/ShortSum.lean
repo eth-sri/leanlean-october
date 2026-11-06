@@ -13,7 +13,11 @@ namespace WeylPort
 noncomputable def criticalTerm (t : ℝ) (n : ℕ) : ℂ :=
   (n : ℂ) ^ (-((1 / 2 : ℂ) + (t : ℂ) * I))
 
-theorem norm_criticalTerm (t : ℝ) {n : ℕ} (hn : 0 < n) :
+section
+variable (t : ℝ)
+include t
+
+theorem norm_criticalTerm  {n : ℕ} (hn : 0 < n) :
     ‖criticalTerm t n‖ = (n : ℝ) ^ (-(1 / 2 : ℝ)) := by
   unfold criticalTerm
   rw [Complex.norm_natCast_cpow_of_pos hn]
@@ -21,7 +25,7 @@ theorem norm_criticalTerm (t : ℝ) {n : ℕ} (hn : 0 < n) :
   simp
 
 /-- Absolute estimation handles every block below the cube-root height. -/
-theorem norm_critical_block_small (t : ℝ) (A N : ℕ)
+theorem norm_critical_block_small  (A N : ℕ)
     (ht : 0 ≤ t) (hA : 0 < A) (hNA : N ≤ A)
     (hsmall : (A : ℝ) ≤ t ^ (1 / 3 : ℝ)) :
     ‖∑ n ∈ range N, criticalTerm t (A+n)‖ ≤ t ^ (1 / 6 : ℝ) := by
@@ -45,7 +49,7 @@ theorem norm_critical_block_small (t : ℝ) (A N : ℕ)
     _ = t ^ (1 / 6 : ℝ) := by rw [← Real.rpow_mul ht]; norm_num
 
 /-- Uniform Weyl bound on all blocks up to the square-root length. -/
-theorem norm_critical_block_le (t : ℝ) (A N : ℕ)
+theorem norm_critical_block_le  (A N : ℕ)
     (ht : 1 ≤ t) (hA : 0 < A) (hNA : N ≤ A) (hAt : (A : ℝ)^2 ≤ t) :
     ‖∑ n ∈ range N, criticalTerm t (A+n)‖ ≤ 30 * t ^ (1 / 6 : ℝ) := by
   by_cases hlo : t ^ (1 / 3 : ℝ) ≤ A
@@ -57,7 +61,7 @@ theorem norm_critical_block_le (t : ℝ) (A N : ℕ)
     linarith
 
 /-- At most `K` dyadic blocks suffice for every prefix shorter than `2^K`. -/
-theorem norm_critical_sum_le_dyadic (t : ℝ) (K N : ℕ)
+theorem norm_critical_sum_le_dyadic  (K N : ℕ)
     (ht : 1 ≤ t) (hNK : N < 2^K) (hNt : (N : ℝ)^2 ≤ t) :
     ‖∑ n ∈ Ico 1 (N+1), criticalTerm t n‖ ≤ 30 * K * t ^ (1 / 6 : ℝ) := by
   induction K generalizing N with
@@ -97,7 +101,7 @@ theorem norm_critical_sum_le_dyadic (t : ℝ) (K N : ℕ)
       linarith
 
 /-- Explicit bound for every short Dirichlet polynomial on the critical line. -/
-theorem norm_critical_sum_le_log (t : ℝ) (N : ℕ)
+theorem norm_critical_sum_le_log  (N : ℕ)
     (ht : 1 ≤ t) (hNt : (N : ℝ)^2 ≤ t) :
     ‖∑ n ∈ Ico 1 (N+1), criticalTerm t n‖ ≤
       30 * (Real.log t + 1) * t ^ (1 / 6 : ℝ) := by
@@ -127,6 +131,8 @@ theorem norm_critical_sum_le_log (t : ℝ) (N : ℕ)
   have hp : 0 ≤ t ^ (1 / 6 : ℝ) := Real.rpow_nonneg (by linarith) _
   push_cast at hb
   exact hb.trans (mul_le_mul_of_nonneg_right (by linarith) hp)
+end
+
 
 /-- A fixed multiplier and the entire logarithmic loss are absorbed by any positive epsilon.
 The eventual threshold is chosen before, and uniformly for, every cutoff `N`. -/
@@ -152,4 +158,4 @@ theorem eventually_mul_norm_critical_sum_le_rpow (C : ℝ) (hC : 0 ≤ C)
       mul_le_mul_of_nonneg_right hcoeff (by positivity)
     _ = t^(1/6+ε:ℝ) := by rw [← Real.rpow_add htpos]; congr 1; ring
 
-end WeylPort
+

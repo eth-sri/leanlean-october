@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CentralBranchProduct
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedSubset
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSlotSum
@@ -13,7 +14,7 @@ namespace SevenEighths.ProbeCentralAllSlots
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ProbeCentralRepeatedProduct
 open ProbeCentralRepeatedSubset ProbeCentralBranchProduct
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def phaseSlot (u : FreeRow) (T : Finset PrimeIdeal) (W : ℝ→ℂ) (Y : ℝ) (z : ℂ) : ℂ :=
   ∑P:T,W ((P.val.val.absNorm:ℝ)/Y)*(P.val.val.absNorm:ℂ)^(z-1)*(-star (idealRowHom u.val P.val.val))
@@ -47,15 +48,15 @@ theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
   let L := ‖star ((calibrationForSet S hmax).residueMonoid u.val)*HeckeOrigin.continued (rowCharacter S hS u) w‖
   let U : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
   let R := Ct*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*U^eps
-  let A : Fin N→ℂ := fun j=>phaseSlot u (T j) (W j) (Y j) z
-  let E : Fin N→ℂ := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
+  let A := fun j=>phaseSlot u (T j) (W j) (Y j) z
+  let E := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
     centralRegularError η u P.val (hs j P.val P.property) x w z
-  let F : Fin N→ℂ := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
+  let F := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
     centralRepeatedTerm η u P.val (hs j P.val P.property) x w z
-  let yy : Fin N→ℝ := fun j=>(Y j)^(-(4/25:ℝ))
+  let yy := fun j=>(Y j)^(-(4/25:ℝ))
   have hU : 1≤U := by dsimp [U];exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
-  have hUp : 1≤U^eps := Real.one_le_rpow hU heps.le
+  have hUp := Real.one_le_rpow hU heps.le
   have hR : 0≤R := by dsimp [R];exact mul_nonneg (mul_nonneg hCt.le (rowCost_nonneg _ _ _ _ _ _ _)) (Real.rpow_nonneg (zero_le_one.trans hU) _)
   have hyy (j : Fin N) : 0≤yy j := Real.rpow_nonneg (zero_le_one.trans (hY j)) _
   have hE (j : Fin N) : ‖E j‖≤yy j*(Cr*U^eps) := by
@@ -68,8 +69,7 @@ theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
     have hp' : (∏j:J,‖F j.val‖)≤∏j:J,∑P:T j.val,‖W j.val ((P.val.val.absNorm:ℝ)/Y j.val)*
         (P.val.val.absNorm:ℂ)^(z-1)*centralRepeatedTerm η u P.val (hs j.val P.val P.property) x w z‖ := by
       apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
-      intro j _
-      exact norm_sum_le _ _
+      bound
     have hh := (mul_le_mul_of_nonneg_left hp' (show 0≤L from norm_nonneg _)).trans hb
     rw [Finset.prod_coe_sort J (fun j=>‖F j‖),
       Finset.prod_coe_sort J (fun j=>(Y j)^(-(4/25:ℝ)))] at hh
@@ -99,8 +99,8 @@ theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
       calc
         _ = Ct*(Cr+2)^N*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*(U^eps*U^(eps*N))*(∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j) := by ring
         _ = _ := by rw [hh]
-end SevenEighths.ProbeCentralAllSlots
 
-end
 
-end OAI
+
+
+

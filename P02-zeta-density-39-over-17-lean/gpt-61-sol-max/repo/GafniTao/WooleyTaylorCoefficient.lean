@@ -36,9 +36,13 @@ theorem wooley_X_pow_sub_dvd_hasseDeriv_X_pow_mul
   rw [coeff_X_pow_mul']
   simp only [ite_eq_right (not_le.mpr hlt), mul_zero]
 
+section
+variable {p c i j k : ℕ} (h : ℤ)
+include p c i j k h
+
 /-- Literal coefficient factorization defining the source integer `Ω`. -/
 theorem wooley_taylorCoefficient_exists_omega
-    {p c i j k : ℕ} (h : ℤ) (hi : i ≤ j) (hj : j ≤ k)
+     (hi : i ≤ j) (hj : j ≤ k)
     (psi : Polynomial ℤ) :
     ∃ Omega : ℤ,
       (taylor h
@@ -74,7 +78,7 @@ monomial Taylor coefficient plus a literal multiple of `p^c`.  This is the
 raw congruence used before the source redistributes powers of the translation
 parameter. -/
 theorem wooley_taylorCoefficient_eq_monomial_add_spacing
-    {p c i j k : ℕ} (h : ℤ) (psi : Polynomial ℤ) :
+     (psi : Polynomial ℤ) :
     ∃ z : ℤ,
       (taylor h
         (X ^ j + C ((p : ℤ) ^ c) * X ^ (k + 1) * psi)).coeff i =
@@ -103,7 +107,7 @@ integral coefficient `Omega` then contains the compensating positive power of
 `h`.  Stating the equality in `ℚ` records that convention without pretending
 that a negative exponent is a natural power. -/
 theorem wooley_taylorCoefficient_exists_laurent_omega
-    {p c i j k : ℕ} (h : ℤ) (hh : h ≠ 0) (hj : j ≤ k)
+     (hh : h ≠ 0) (hj : j ≤ k)
     (psi : Polynomial ℤ) :
     ∃ Omega : ℤ,
       ((taylor h
@@ -149,6 +153,8 @@ theorem wooley_taylorCoefficient_exists_laurent_omega
         ring
       rw [ha]
       exact ⟨-(z * h ^ (i - j)), by ring⟩
+end
+
 
 /-- The `Ω` coefficient is nonzero modulo `p` exactly when the corresponding
 binomial coefficient is, provided the spacing exponent is positive. -/
@@ -161,6 +167,6 @@ theorem wooley_taylorOmega_mod_prime
   rw [← Int.cast_natCast, ZMod.intCast_eq_intCast_iff]
   exact hOmega.of_dvd hpdiv
 
-end
 
-end GafniTao
+
+

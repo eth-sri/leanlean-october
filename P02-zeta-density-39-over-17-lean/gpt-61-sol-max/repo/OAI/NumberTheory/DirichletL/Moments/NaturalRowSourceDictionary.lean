@@ -6,30 +6,35 @@ public import OAI.NumberTheory.DirichletL.Moments.RetainedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
 open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-local notation "O" => HeckeFamily.O
+open CenteredMomentRetainedEnergy
+open scoped HeckeO
 
-lemma NaturalRow.masked_plain {η : Character} {z : O} (F : NaturalRow η z)
-    (R : Ideal O) (hR : R≠0) (W : ℝ→ℂ) (t X : ℝ) :
+section
+variable {η : Character} {z : O} (F : NaturalRow η z)
+    (R : Ideal O) (hR : R≠0)
+include η z F R hR
+
+lemma NaturalRow.masked_plain  (W : ℝ→ℂ) (t X : ℝ) :
     rowTwistedSum η (fixedBadMask*idealGenerator R) 1 z W t X=
       twistedIdealSum (excluded F.character R) W t X := by
   exact rowTwistedSum_eq η (excluded F.character R) (fixedBadMask*idealGenerator R) 1 z
     (by simpa only [one_mul] using F.masked_element R hR) W t X
 
-lemma NaturalRow.masked_slot {η : Character} {z : O} (F : NaturalRow η z)
-    (R : Ideal O) (hR : R≠0) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t : ℝ) :
+lemma NaturalRow.masked_slot  (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t : ℝ) :
     rowSlot η (fixedBadMask*idealGenerator R) 1 z S β t=
       ∑I∈S,β I*idealCoeff (excluded F.character R) I*(I.absNorm:ℂ)^(Complex.I*t) := by
   unfold rowSlot
   apply Finset.sum_congr rfl
   intro I hI
   rw [F.masked_ideal R hR I,one_mul]
+end
+
 
 theorem NaturalRow.masked_positive {ι : Type*} [Fintype ι] [DecidableEq ι]
     {η : Character} {z : O} (F : NaturalRow η z) (R : Ideal O) (hR : R≠0)
@@ -42,8 +47,8 @@ theorem NaturalRow.masked_positive {ι : Type*} [Fintype ι] [DecidableEq ι]
           ∏i,∑I∈S i,β i I*idealCoeff (excluded F.character R) I*(I.absNorm:ℂ)^(Complex.I*t)) := by
   simp only [positiveSlotRow,F.masked_plain R hR,F.masked_slot R hR]
 
-end SevenEighths.CenteredMomentNaturalRowSource
 
-end
 
-end OAI
+
+
+

@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalBoundary
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                       
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -40,4 +39,4 @@ theorem sum_integer_interval_average (w : ℤ → ℂ) (a b : ℤ) (N : ℕ) (hN
   have hn : (N:ℂ) ≠ 0 := by exact_mod_cast Nat.ne_of_gt hN
   rw [← mul_assoc,inv_mul_cancel₀ hn,one_mul]
 
-end TaoTrudgianYang2025
+

@@ -8,10 +8,10 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open CompletedHeight FourierBridge
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
+open CompletedHeight
 open InverseMomentFirstProfileUniform
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι κ : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -73,7 +73,7 @@ theorem original_family_profiles (S : Finset κ) (F : Finset ι)
     rw [hright,mul_div_cancel_left₀ y (ne_of_gt hX)]
     exact (actual_old_profile om a b ha hsom theta y hy).1.symm
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

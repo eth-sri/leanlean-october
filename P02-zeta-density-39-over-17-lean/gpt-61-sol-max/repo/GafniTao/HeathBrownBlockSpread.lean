@@ -15,10 +15,10 @@ value condition.
 
 namespace GafniTao
 
-noncomputable section
 
-theorem heathBrown_actualBlock_last_coordinate_spread
-    {N k H m n : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
+
+section
+variable {N k H m n : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 ≤ A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4)
     (hg : ContinuousOn
@@ -31,7 +31,11 @@ theorem heathBrown_actualBlock_last_coordinate_spread
       lambda ≤ iteratedDeriv k f x ∧
         iteratedDeriv k f x ≤ A * lambda)
     (hp : (m, n) ∈ heathBrownPairCountTwo N k H
-      (heathBrownBlockParameter A lambda N) f) :
+      (heathBrownBlockParameter A lambda N) f)
+include N k H m n f A lambda hk hA hlambda hsmall hg hgd hkBounds hp
+
+theorem heathBrown_actualBlock_last_coordinate_spread
+     :
     |heathBrownDerivativeCoordinate f (k - 1) m -
         heathBrownDerivativeCoordinate f (k - 1) n| ≤ 1 / 2 := by
   let F : ℝ → ℝ := fun x => heathBrownDerivativeCoordinate f (k - 1) x
@@ -76,20 +80,7 @@ theorem heathBrown_actualBlock_last_coordinate_spread
     _ ≤ 1 / 2 := hscale
 
 theorem heathBrown_actualBlock_pair_source_separation
-    {N k H m n : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 ≤ A) (hlambda : 0 < lambda)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hg : ContinuousOn
-      (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
-      (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ
-      (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
-      lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda)
-    (hp : (m, n) ∈ heathBrownPairCountTwo N k H
-      (heathBrownBlockParameter A lambda N) f) :
+     :
     |(m : ℝ) - n| ≤
       4 * ((k - 1).factorial : ℝ) /
         (lambda * (H : ℝ) ^ (k - 1)) := by
@@ -97,8 +88,10 @@ theorem heathBrown_actualBlock_pair_source_separation
     (fun x hx => (hkBounds x hx).1) hp
   exact heathBrown_actualBlock_last_coordinate_spread
     hk hA hlambda hsmall hg hgd hkBounds hp
-
-
 end
 
-end GafniTao
+
+
+
+
+

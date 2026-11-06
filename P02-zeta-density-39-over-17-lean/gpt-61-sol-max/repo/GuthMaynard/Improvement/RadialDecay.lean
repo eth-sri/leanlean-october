@@ -1,23 +1,27 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.RadialFamily
 public import GuthMaynard.Improvement.PoissonReduction
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {f : ℝ → ℂ} (hf : ContDiff ℝ ∞ f)
+include f hf
+
 /-- Compact support gives genuine integrability of every radial derivative. -/
-theorem compact_iteratedDeriv_integrable {f : ℝ → ℂ} (hf : ContDiff ℝ ∞ f)
+theorem compact_iteratedDeriv_integrable 
     {l u : ℝ} (hs : ∀ x, x ∉ Icc l u → f x = 0) (n : ℕ) : Integrable (iteratedDeriv n f) := by
   exact (hf.continuous_iteratedDeriv n (by simp)).integrable_of_hasCompactSupport
     (HasCompactSupport.intro isCompact_Icc (fun x hx => iteratedDeriv_zero_off_interval hs n hx))
 
 /-- Quantitative Fourier decay from an actual bounded derivative on fixed
 compact support, proved using Fourier integration by parts. -/
-theorem compact_fourier_power_bound {f : ℝ → ℂ} (hf : ContDiff ℝ ∞ f)
+theorem compact_fourier_power_bound 
     {l u C : ℝ} (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → f x = 0)
     (n : ℕ) (_hC : 0 ≤ C) (hb : ∀ x, ‖iteratedDeriv n f x‖ ≤ C) (ξ : ℝ) :
     |ξ|^n*‖𝓕 f ξ‖ ≤ (u-l)*C := by
@@ -46,6 +50,8 @@ theorem compact_fourier_power_bound {f : ℝ → ℂ} (hf : ContDiff ℝ ∞ f)
     _ = ‖𝓕 (iteratedDeriv n f) ξ‖ := hn.symm
     _ ≤ C*(u-l) := hnorm.trans hiBound
     _ = _ := by ring
+end
+
 
 /-- Uniform rapid radial Fourier decay, with the constant chosen before
 both ratio variables and the Fourier frequency. -/
@@ -68,9 +74,6 @@ theorem radial_integral_fourier (a : ℝ → ℂ) (v y L m₁ m₂ m₃ : ℝ) :
     (∫ r, radialAmplitude a v y r * phase (-L*(m₁*v+m₂*y+m₃)*r)) =
       𝓕 (radialAmplitude a v y) (L*(m₁*v+m₂*y+m₃)) := by
   rw [fourier_eq_phase_integral]
-  apply integral_congr_ae
-  filter_upwards with r
-  rw [show -L*(m₁*v+m₂*y+m₃)*r = -(L*(m₁*v+m₂*y+m₃))*r by ring]
-  ring
+  grind
 
-end GuthMaynard.Improvement
+

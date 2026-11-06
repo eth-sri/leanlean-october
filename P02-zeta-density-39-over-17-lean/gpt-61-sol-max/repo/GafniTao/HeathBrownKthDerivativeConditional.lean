@@ -16,17 +16,17 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownQuarterLambdaBase (A : ℝ) : ℝ :=
+def heathBrownQuarterLambdaBase (A : ℝ) : ℝ :=
   (1 / 4 : ℝ) / A
 
-noncomputable def heathBrownSmallHBase (k : ℕ) (A : ℝ) : ℝ :=
+def heathBrownSmallHBase (k : ℕ) (A : ℝ) : ℝ :=
   (8 : ℝ) ^ (-(k : ℝ)) / A
 
-noncomputable def heathBrownLongHBase (k : ℕ) (A : ℝ) : ℝ :=
+def heathBrownLongHBase (k : ℕ) (A : ℝ) : ℝ :=
   (A ^ (1 / (k : ℝ)) / 2) ^
     (2 * heathBrownCriticalReciprocal k)
 
-noncomputable def heathBrownGlobalConstant
+def heathBrownGlobalConstant
     (k : ℕ) (A C epsilon : ℝ) : ℝ :=
   2 + heathBrownLemmaOneGoodConstant k A C epsilon +
     ((heathBrownQuarterLambdaBase A) ^
@@ -40,17 +40,23 @@ theorem heathBrownQuarterLambdaBase_pos
   unfold heathBrownQuarterLambdaBase
   positivity
 
+section
+variable {k : ℕ} {A : ℝ} (hA : 0 < A)
+include k A hA
+
 theorem heathBrownSmallHBase_pos
-    {k : ℕ} {A : ℝ} (hA : 0 < A) :
+     :
     0 < heathBrownSmallHBase k A := by
   unfold heathBrownSmallHBase
   positivity
 
 theorem heathBrownLongHBase_pos
-    {k : ℕ} {A : ℝ} (hA : 0 < A) :
+     :
     0 < heathBrownLongHBase k A := by
   unfold heathBrownLongHBase
   positivity
+end
+
 
 theorem heathBrownKthDerivativeFactor_nonneg
     (k : ℕ) {N lambda : ℝ} (hN : 0 ≤ N) (hlambda : 0 < lambda) :
@@ -225,6 +231,6 @@ theorem heathBrownKthDerivativeTheorem_of_vmvt
     hk hN hA hlambda hepsilon hfContinuous hfDiff hkBounds hC hcritical
 
 
-end
 
-end GafniTao
+
+

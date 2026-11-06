@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected ZetaAtkinsonVoronoi.lean proofs,
 revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -15,8 +16,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSource
 
 open Complex MeasureTheory Set
 open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem ordinaryDivisorVoronoi_bessel {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
@@ -62,8 +62,7 @@ theorem exists_zetaSquareLocalMean_le_atkinson_bessel {δ : ℝ} (hδ : 0 < δ) 
   obtain ⟨C, hC, T₀, hT₀, hbound⟩ := exists_zetaSquareLocalMean_le_smooth_divisor hδ
   refine ⟨C, hC, T₀, hT₀, ?_⟩
   intro T G hT hG hupper
-  have hT8 := hT₀.trans hT
   rw [← zetaSmoothDivisorSum_eq_atkinson_bessel (by linarith : 0 < T) hG (Real.log_pos (by linarith))]
   exact hbound T G hT hG hupper
 
-end MathCollab.Density.Stronger.Atkinson
+

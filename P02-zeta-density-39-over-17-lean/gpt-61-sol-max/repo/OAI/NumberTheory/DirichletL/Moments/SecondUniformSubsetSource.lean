@@ -1,8 +1,18 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.SecondLiveSourceDescent
-public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceRemainder
-public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalLiveSource
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalChosenBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalScalar
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalPhysical
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
+public import OAI.NumberTheory.DirichletL.Moments.SecondEnergySplit
+public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
+public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
+public import OAI.NumberTheory.DirichletL.Moments.SecondSupportedChildren
+public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalAggregate
+public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
 
 @[expose] public section
 
@@ -13,32 +23,33 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondUniformSubsetSource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+open CenteredMomentCommonRadialData
+
+
+
+
+
+
+
+
+
+
+open CenteredMomentHeckeColumnWindow
+
+open CenteredMomentSecondWindowBudget
+
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
+
+
+open CenteredMomentLogDyadic
 open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
+
+local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma control_mono {wlo whi : ℝ} (p : Profiles wlo whi)
     {S T : Finset (ℕ×ℕ)} (h : S⊆T) : p.control S≤p.control T := by
@@ -78,10 +89,10 @@ lemma factor_mono {wlo whi : ℝ} {S T : Finset (ℕ×ℕ)} (hST : S⊆T)
     p.control T^2*(1+‖s.t‖)^(2*k)*slotControl s.toData^2*frozenProfile s^2*profileMoment k^2
   gcongr
 
-open CenteredMomentSourceInputReindex CenteredMomentAmplificationChildInput CenteredMomentCommonProfile
 
-end SevenEighths.CenteredMomentSecondUniformSubsetSource
 
-end
 
-end OAI
+
+
+
+

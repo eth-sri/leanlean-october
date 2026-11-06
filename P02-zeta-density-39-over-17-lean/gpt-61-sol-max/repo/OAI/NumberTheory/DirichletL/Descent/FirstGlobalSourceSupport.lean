@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalFamily
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -22,8 +22,12 @@ lemma first_squarefree_row_zero_mem (U : Finset ι) (i : ι) (hi : i∈U) (n : O
   apply Finset.prod_eq_zero hi
   rw [Ideal.Quotient.eq_zero_iff_mem.mpr hn,MulChar.map_zero]
 
-lemma canonicalCubeResidual_zero_overlap (b : CubeCoordinates ι) (C U : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m f : O) (H : Finset ι→ℂ)
+section
+variable (b : CubeCoordinates ι) (C U : Finset ι)
+    (negative : Bool) (Ψ : O→*ℂ)
+include b C U negative Ψ
+
+lemma canonicalCubeResidual_zero_overlap  (m f : O) (H : Finset ι→ℂ)
     (hn : ¬Disjoint U (b.support∪C)) : canonicalCubeResidual p hg b C negative Ψ m f H U=0 := by
   obtain ⟨i,hi,hib⟩ := Finset.not_disjoint_iff.mp hn
   rcases Finset.mem_union.mp hib with hib|hiC
@@ -39,14 +43,15 @@ lemma canonicalCubeResidual_zero_overlap (b : CubeCoordinates ι) (C U : Finset 
     have hz := first_squarefree_row_zero_mem p hg U i hi _ hm
     simp only [canonicalCubeResidual,originalLabelColumn,hz,zero_pow (by norm_num : 4≠0),mul_zero,zero_mul]
 
-lemma firstCanonicalCoefficient_zero_overlap (b : CubeCoordinates ι) (C U : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m d : O) (H : Finset ι→ℂ) (x : Ideal O×O)
+lemma firstCanonicalCoefficient_zero_overlap  (m d : O) (H : Finset ι→ℂ) (x : Ideal O×O)
     (hn : ¬Disjoint U (b.support∪C)) : firstCanonicalCoefficient p hp hcop hg b C negative Ψ m d H x U=0 := by
   have hz := canonicalCubeResidual_zero_overlap p hg b C U negative Ψ m
     (ConcretePrimeRowBridge.idealGenerator x.1) H hn
   cases negative <;>
     simp only [firstCanonicalCoefficient,firstBareCubeCoefficient,Bool.false_eq_true,ite_false,ite_true,
       cubeMinusCoefficient,cubePlusCoefficient,firstPassColumnMinus,firstPassColumnPlus,hz,mul_zero]
+end
+
 
 lemma firstCommonIndices_membership (F : Finset ι) (j : FirstCommonIndex ι) :
     j∈firstCommonIndices F ↔ j.2.1⊆F ∧ j.2.2.1⊆F\j.2.1 ∧ j.2.2.2⊆F\j.2.1 := by
@@ -88,7 +93,7 @@ theorem firstPhysicalCommonRows_fixed_pool (F G : Finset ι) (hFG : F⊆G)
   exact Finset.sum_subset (firstCommonIndices_mono hFG) (fun j hj hn=>by
     rw [firstCommonWeight_zero_outside p hg F G C₁ C₂ h hC₁ hC₂ j hj hn,zero_mul])
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

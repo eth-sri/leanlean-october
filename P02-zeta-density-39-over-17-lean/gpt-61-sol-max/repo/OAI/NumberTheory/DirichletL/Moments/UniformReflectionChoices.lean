@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformReflectionChoices
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
@@ -65,8 +65,8 @@ theorem actual_independent_choices (B J : ℕ) :
   · rw [Real.exp_log (hgeom i (u i) hk).1]
   · simp
 
-end SevenEighths.CenteredMomentUniformReflectionChoices
 
-end
 
-end OAI
+
+
+

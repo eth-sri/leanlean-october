@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.AffineScaleTransfer
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
 open RiemannZeta.GuthMaynard
@@ -78,8 +78,12 @@ theorem affine_integral_le_cover {ι : Type*} [DecidableEq ι]
       · rfl
       · exact fun i hi => integrable_affine_square f (h₁ i hi) (h₂ i hi)
 
+section
+variable {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
+include R hR m
+
 /-- A real dyadic interval is covered by two native natural dyadic intervals. -/
-theorem real_dyadic_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
+theorem real_dyadic_two_shells 
     (hlo : R ≤ (m:ℝ)) (hhi : (m:ℝ) ≤ 2*R) :
     m ∈ gmAffinePositiveShell ⌊R⌋₊ ∨ m ∈ gmAffinePositiveShell (2*⌊R⌋₊) := by
   have hp : 0 < ⌊R⌋₊ := Nat.floor_pos.mpr hR
@@ -98,7 +102,7 @@ theorem real_dyadic_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
     constructor <;> omega
 
 /-- The same two-shell cover retains both slope signs. -/
-theorem real_signed_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
+theorem real_signed_two_shells 
     (hlo : R ≤ |(m:ℝ)|) (hhi : |(m:ℝ)| ≤ 2*R) :
     m ∈ gmAffineSignedShell ⌊R⌋₊ ∨ m ∈ gmAffineSignedShell (2*⌊R⌋₊) := by
   have h := real_dyadic_two_shells hR (m := |m|) (by simpa using hlo) (by simpa using hhi)
@@ -106,14 +110,9 @@ theorem real_signed_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
     intro N hp
     rcases mem_gmAffinePositiveShell.mp hp with ⟨hl,hu⟩
     apply mem_gmAffineSignedShell.mpr
-    by_cases hz : 0 ≤ m
-    · right
-      simpa only [abs_of_nonneg hz] using And.intro hl hu
-    · left
-      have hz' : m < 0 := lt_of_not_ge hz
-      rw [abs_of_neg hz'] at hl hu
-      push_cast
-      constructor <;> omega
+    grind
   exact h.elim (fun hp => Or.inl (hc hp)) (fun hp => Or.inr (hc hp))
+end
 
-end GuthMaynard.Improvement
+
+

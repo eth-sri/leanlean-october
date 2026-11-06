@@ -13,7 +13,6 @@ public import MathCollab.Density.Stronger.Atkinson.BesselY0
 open Complex Filter MeasureTheory Set
 open MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -32,4 +31,4 @@ def zetaAtkinsonBesselPlusTerm (T G L : ℝ) (n : ℕ) : ℂ :=
 
 def zetaAtkinsonBesselPlus (T G L : ℝ) : ℂ := ∑' n : ℕ, zetaAtkinsonBesselPlusTerm T G L n
 
-end MathCollab.Density.Stronger.Atkinson
+

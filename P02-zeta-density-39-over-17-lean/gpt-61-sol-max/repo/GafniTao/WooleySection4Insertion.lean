@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection4Congruence
 public import GafniTao.WooleySection7MomentIdentity
 
@@ -15,7 +16,7 @@ mean, retaining the alpha-dependent coefficient twist used in (4.10)--(4.13).
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleySourceNormalizedMixedRealAverage_self_zero
     {k q s : ℕ} [NeZero q]
@@ -52,8 +53,7 @@ theorem wooleySourcePolynomialMean_eq_zero_of_massSq_eq_zero
     intro alpha
     simp [wooleySourceNormalizedPolynomialSum, hmass]
   unfold wooleySourcePolynomialMean
-  simp_rw [hnormalized]
-  simp [zero_pow h2s]
+  simp_all
 
 /-- The tuple implication behind equation (4.12). -/
 theorem wooleySection4_originalDisplacement_forces_inserted
@@ -110,8 +110,7 @@ theorem wooleySection4_originalDisplacement_forces_inserted
           norm_num only [Nat.cast_pow]
         _ = 0 := congr_fun hleft j
     rw [ZMod.intCast_zmod_eq_zero_iff_dvd] at hz
-    norm_num only [Nat.cast_pow] at hz
-    exact hz
+    assumption
   have hnew := htransfer (fun x : ↑gamma.support => (x : ℤ)) omega.1 hdiv
   funext i
   unfold wooleyEquation717InsertedDisplacement
@@ -206,6 +205,6 @@ theorem wooleySourcePolynomial_equation_4_12
     simpa only [theta] using hnormalized
 
 
-end
 
-end GafniTao
+
+

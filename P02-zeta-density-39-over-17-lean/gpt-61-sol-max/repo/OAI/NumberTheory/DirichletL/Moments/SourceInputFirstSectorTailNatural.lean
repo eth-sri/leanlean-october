@@ -10,14 +10,14 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+
+
+
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSourceInputTailUniform
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -52,8 +52,8 @@ theorem local_input_tail (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
     ring
   exact hZ.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K _ hK hVcap hTcap le_rfl
 
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 
-end
 
-end OAI
+
+
+

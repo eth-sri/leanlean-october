@@ -1,18 +1,18 @@
 module
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceCoefficients
+public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid
 open InverseInitialConjugateEnergy InverseInitialPoissonBridge
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -77,8 +77,8 @@ theorem originalTotal_slot_subsets (S:Finset (Ideal O))
   rw [originalTotalPolynomial_eq_sectors S (tuple_product_squarefree P hP hinj)
     η a W hZ r z (fun _=>0),sum_tuple_divisors P hP hinj]
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

@@ -10,10 +10,9 @@ public import Mathlib.NumberTheory.Harmonic.EulerMascheroni
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
+open Complex Filter MeasureTheory
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem intervalC1Bound_source_sqrt {T : ℝ} (hT : 0 < T) :
@@ -59,4 +58,4 @@ theorem sourceLogWeight_le_three_log {T : ℝ} (hlog : 1 ≤ Real.log T) :
     Real.log T + 2 * Real.eulerMascheroniConstant ≤ 3 * Real.log T := by
   linarith [Real.eulerMascheroniConstant_lt_two_thirds]
 
-end MathCollab.Density.Stronger.Atkinson
+

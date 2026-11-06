@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -18,7 +19,7 @@ The second uses the proved primitive bound. Endpoint vanishing is explicit.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 
@@ -85,18 +86,13 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
           ((((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ) * (atkinsonRootSlope T b y : ℂ)) := by
         dsimp only [w]
         ring
-      _ = _ := by
-        rw [← Complex.ofReal_mul, inv_mul_cancel₀ (hne y hy), Complex.ofReal_one, mul_one]
+      _ = _ := by simp_all
   rw [he, hwa, hwc, zero_mul, zero_mul, sub_self, zero_sub] at hparts
   have hnorm := congrArg norm hparts
-  have hk : ‖k‖ = 2 * Real.pi := by
-    dsimp only [k]
-    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos (by positivity : 0 < 2 * Real.pi), Complex.norm_I, mul_one]
+  have hk : ‖k‖ = 2 * Real.pi := by aesop
   rw [norm_mul, hk, norm_neg] at hnorm
   have hd := (hw.deriv_c1 hac).atkinsonRoot_of_primitive_bound b ha hac hprimitive
   apply (le_div_iff₀ Real.pi_pos).2
-  change ‖∫ y in a..c, deriv w y * atkinsonRootKernel T b y‖ ≤ _ at hd
-  nlinarith
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

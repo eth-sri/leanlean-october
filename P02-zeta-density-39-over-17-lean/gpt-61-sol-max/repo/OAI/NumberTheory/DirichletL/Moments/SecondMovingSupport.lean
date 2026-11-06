@@ -9,13 +9,17 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondMovingSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm
+open CanonicalQuadraticSieve CompletedGauss
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
+open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition
 open CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+section
+variable (C D : Ideal O)
+include C D
+
+theorem actual_unequal_min_six  (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (w : O)
     (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0)
     (P : CommonIndex C D) (hneq : leftExponent C D P≠rightExponent C D P) :
@@ -36,13 +40,19 @@ theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supporte
     (by rw [commonPrime_span C D hC P];exact common_odd C D hC P)
     _ _ (leftExponent_pos C D P) (rightExponent_pos C D P) hneq _ hl
 
-def fixedExponent (C D : Ideal O) (U : Finset (CommonIndex C D)) (P : CommonIndex C D) : ℕ :=
+section
+variable (U : Finset (CommonIndex C D))
+include U
+
+def fixedExponent  (P : CommonIndex C D) : ℕ :=
   min (leftExponent C D P) (rightExponent C D P)+if P∈nonunitPartitionSet C D U then 1 else 0
 
-def fixedActiveSet (C D : Ideal O) (U : Finset (CommonIndex C D)) : Finset (CommonIndex C D) :=
+def fixedActiveSet  : Finset (CommonIndex C D) :=
   Finset.univ.filter (fun P=>¬6∣fixedExponent C D U P)
+end
 
-theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+
+theorem fixedActiveSet_subset  (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (U : Finset (CommonIndex C D)) (w : O)
     (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0) :
@@ -60,9 +70,11 @@ theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported
   · rw [hc,min_self] at ha
     exact heq ⟨hc,by simpa only [hc] using ha⟩
   · exact ha (actual_unequal_min_six C D hC hD hCD w hne P hc)
-
-end SevenEighths.CenteredMomentSecondMovingSupport
-
 end
 
-end OAI
+
+
+
+
+
+

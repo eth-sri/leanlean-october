@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedProduct
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 
@@ -6,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
 open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     N^A*N^R*L^2*(2*N^2*L^2)^eps=
@@ -37,10 +38,10 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hFp : 0<F := zero_lt_one.trans_le hF
   refine ⟨(2:ℝ)^eps*F^(1/2+12*e+4*eps),by positivity,?_⟩
   intro u a H ha ha1 hH
-  let N : ℝ := F*rowNorm u
-  let L : ℝ := 3+H
-  let A : ℝ := a-1/2+6*e
-  let R : ℝ := 6*e+2*eps
+  let N := F*rowNorm u
+  let L := 3+H
+  let A := a-1/2+6*e
+  let R := 6*e+2*eps
   have hn : 0<rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
   have hN : 0<N := mul_pos hFp hn
   have hL : 0<L := by dsimp [L];linarith
@@ -81,8 +82,8 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
       apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hn.le _)
       exact mul_le_mul_of_nonneg_left hf (Real.rpow_nonneg (by norm_num) _)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

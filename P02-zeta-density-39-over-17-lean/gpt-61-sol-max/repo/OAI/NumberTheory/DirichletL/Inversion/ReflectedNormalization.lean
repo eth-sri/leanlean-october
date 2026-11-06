@@ -15,7 +15,11 @@ def outsideScalar (Z v ell el S₀ B₀ Td : ℝ) : ℝ :=
   Z ^ (-v/2-ell-el/3-(S₀+B₀)/2) *
     InverseKernelSourceUniform.smallScalar (Z ^ (v+3*ell+el-Td))
 
-theorem smallScalar_rpow {Z : ℝ} (hZ : 1 ≤ Z) (d : ℝ) :
+section
+variable {Z : ℝ} (hZ : 1 ≤ Z)
+include Z hZ
+
+theorem smallScalar_rpow  (d : ℝ) :
     InverseKernelSourceUniform.smallScalar (Z ^ (-d)) = Z ^ (-max 0 d/4) := by
   have hZ0 : 0 < Z := lt_of_lt_of_le zero_lt_one hZ
   unfold InverseKernelSourceUniform.smallScalar
@@ -32,7 +36,7 @@ theorem smallScalar_rpow {Z : ℝ} (hZ : 1 ≤ Z) (d : ℝ) :
       1 = Z ^ (0:ℝ) := (Real.rpow_zero _).symm
       _ ≤ Z ^ (-d*(1/4:ℝ)) := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
-theorem outsideScalar_square {Z : ℝ} (hZ : 1 ≤ Z) (v ell el S₀ B₀ Td : ℝ) :
+theorem outsideScalar_square  (v ell el S₀ B₀ Td : ℝ) :
     outsideScalar Z v ell el S₀ B₀ Td ^ 2 =
       Z ^ (-v-2*ell-2*el/3-S₀-B₀-max 0 (Td-v-3*ell-el)/2) := by
   have hZ0 : 0 < Z := lt_of_lt_of_le zero_lt_one hZ
@@ -42,7 +46,7 @@ theorem outsideScalar_square {Z : ℝ} (hZ : 1 ≤ Z) (v ell el S₀ B₀ Td : �
   congr 1
   ring
 
-theorem row_shape {Z : ℝ} (hZ : 1 ≤ Z) (H v ell : ℝ) :
+theorem row_shape  (H v ell : ℝ) :
     Z^H + Z^v*Z^ell ≤ 2*Z^(max H (v+ell)) := by
   have hZ0 : 0 < Z := lt_of_lt_of_le zero_lt_one hZ
   rw [← Real.rpow_add hZ0]
@@ -50,7 +54,7 @@ theorem row_shape {Z : ℝ} (hZ : 1 ≤ Z) (H v ell : ℝ) :
   have h2 := Real.rpow_le_rpow_of_exponent_le hZ (le_max_right H (v+ell))
   linarith
 
-theorem cubic_shape {Z : ℝ} (hZ : 1 ≤ Z) (v za : ℝ) :
+theorem cubic_shape  (v za : ℝ) :
     Z^v + Z^za + (Z^v*Z^za)^(2/3:ℝ) ≤ 3*Z^(v+za-hybridSaving v za) := by
   have hZ0 : 0 < Z := lt_of_lt_of_le zero_lt_one hZ
   have hv : hybridSaving v za ≤ v := min_le_left _ _
@@ -61,6 +65,8 @@ theorem cubic_shape {Z : ℝ} (hZ : 1 ≤ Z) (v za : ℝ) :
   have h2 := Real.rpow_le_rpow_of_exponent_le hZ (show za ≤ v+za-hybridSaving v za by linarith)
   have h3 := Real.rpow_le_rpow_of_exponent_le hZ (show (v+za)*(2/3:ℝ) ≤ v+za-hybridSaving v za by linarith)
   linarith
+end
+
 
 theorem reflected_exponent_identity (H v ell el S₀ B₀ Td za ε : ℝ) :
     (-v-2*ell-2*el/3-S₀-B₀-max 0 (Td-v-3*ell-el)/2) +
@@ -99,7 +105,7 @@ theorem normalized_hybrid_shape {Z : ℝ} (hZ : 1 ≤ Z)
           rw [← Real.rpow_add hZ0,← Real.rpow_add hZ0,← Real.rpow_add hZ0,
             ← Real.rpow_add hZ0,reflected_exponent_identity]
 
-end
-end SevenEighths.InverseReflectedNormalization
 
-end OAI
+
+
+

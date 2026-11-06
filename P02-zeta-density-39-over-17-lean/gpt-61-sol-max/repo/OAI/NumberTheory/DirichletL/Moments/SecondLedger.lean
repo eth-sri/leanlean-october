@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
 public import OAI.NumberTheory.DirichletL.Moments.Forcing
 
@@ -12,7 +13,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentSecondLedger
 open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
 open CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
@@ -119,7 +120,11 @@ theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaxi
   exact norm_ne_zero_iff.mp hi
 
 omit [DecidableEq ι] in
-theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+section
+variable (p : ι → O)
+include p
+
+theorem log_norm_power_product  (hp : ∀ i, Supported (Ideal.span {p i}))
     (c : ι → ℕ) (Z : ℝ) :
     Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) =
       ∑ i, (c i : ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
@@ -128,15 +133,22 @@ theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span
     (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)))]
   simp only [Real.logb_pow]
 
-def secondSaving (p : ι → O) (c d : ι → ℕ) (w : O) (Z : ℝ) : ℝ :=
+section
+variable (c d : ι → ℕ) (w : O)
+include c d w
+
+def secondSaving  (Z : ℝ) : ℝ :=
   ∑ i, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) *
     localSaving (c i) (d i) (p i ∣ dividedFrequency p c d w i)
 
-def actualUnitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
+def actualUnitSet  : Finset ι :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ ¬p i∣dividedFrequency p c d w i)
 
-def actualNonunitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
+def actualNonunitSet  : Finset ι :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i)
+end
+end
+
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
@@ -163,8 +175,7 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
     CenteredMomentForcing.forcingIdeal]
   rw [log_norm_power_product p hp,log_norm_radical p hp,log_norm_radical p hp,
     log_norm_radical p hp,log_norm_radical p hp]
-  simp only [actualUnitSet,actualNonunitSet,CenteredMomentForcing.forcingSet,
-    Finset.filter_filter,Finset.sum_filter,]
+  simp only [actualUnitSet, Finset.sum_filter, actualNonunitSet, CenteredMomentForcing.forcingSet, Finset.filter_filter]
   unfold secondSaving
   have hf (i : ι) :
       (if (c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i) ∧ c i=1 ∧ d i=1
@@ -219,10 +230,10 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
       apply Real.logb_nonneg hZ
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
 
-end Global
 
-end SevenEighths.CenteredMomentSecondLedger
 
-end
 
-end OAI
+
+
+
+

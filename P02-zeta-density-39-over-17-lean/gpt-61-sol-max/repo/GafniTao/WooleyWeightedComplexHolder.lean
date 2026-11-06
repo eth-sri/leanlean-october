@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyWeightedHolder
 
 @[expose] public section
@@ -15,7 +16,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_weighted_complex_sum_pow_le
     {ι : Type*} (t : Finset ι) (w : ι → ℝ) (z : ι → ℂ)
@@ -33,12 +34,8 @@ theorem wooley_weighted_complex_sum_pow_le
         norm_sum_le _ _
       _ = A := by
         apply Finset.sum_congr rfl
-        intro i hi
-        simp [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
-  have hA : 0 ≤ A := by
-    dsimp [A]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _)
+        simp_all
+  have hA : 0 ≤ A := by positivity
   have hD : 0 ≤ D := by
     dsimp [D]
     exact Finset.sum_nonneg fun i hi =>
@@ -89,6 +86,6 @@ theorem wooley_weighted_complex_sum_pow_le
         ∑ i ∈ t, w i * ‖z i‖ ^ (2 * s) := by ring
 
 
-end
 
-end GafniTao
+
+

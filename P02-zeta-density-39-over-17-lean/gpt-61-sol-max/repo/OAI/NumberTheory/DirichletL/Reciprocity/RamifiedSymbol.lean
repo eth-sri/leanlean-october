@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reciprocity.CubicJacobi
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionBrackets
 
@@ -9,71 +10,71 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                                                 
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
 
-open scoped BigOperators Classical
+                                  
 
 namespace CubicRamified
 open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
@@ -158,7 +159,11 @@ theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
       hprime p hp.1 hp.2, ih hss,
       linearRay_mul u v p s.prod hp.2 (primary_multiset_prod s (fun r hr => (hss r hr).2))]
 
-theorem symbol_lambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
+section
+variable (y : O) (hy : lambda ^ 2 ∣ y-1)
+include y hy
+
+theorem symbol_lambda_eq_linearRay  :
     symbol lambda y = linearRay 1 0 y := by
   apply symbol_eq_linearRay_of_prime lambda 1 0 _ y hy
   intro p hp hprimary
@@ -172,7 +177,7 @@ theorem symbol_lambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
   rw [hc, hpAB, linearRay_primaryCoord]
   simp [cubicExp]
 
-theorem symbol_omega_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
+theorem symbol_omega_eq_linearRay  :
     symbol omega y = linearRay 2 (-1) y := by
   apply symbol_eq_linearRay_of_prime omega 2 (-1) _ y hy
   intro p hp hprimary
@@ -185,6 +190,8 @@ theorem symbol_omega_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
   have hc := cubicValue_omega_primary (Ideal.span {p}) hg A B (by rw [hpAB])
   rw [hc, hpAB, linearRay_primaryCoord]
   simp [cubicExp, sub_eq_add_neg]
+end
+
 
 theorem cubicValue_traceLambda_primary (P : Ideal O) [P.IsMaximal]
     (hg : lambda ∉ P) (A B : ℤ) (hP : P = Ideal.span {primaryCoord A B}) :
@@ -236,31 +243,42 @@ theorem linearRay_congr_mod_nine (u v : ℤ) (x y : O)
   refine ⟨u*E+v*F, ?_⟩
   linear_combination u*ha + v*hb
 
-theorem symbol_lambda_congr_mod_nine (x y : O)
-    (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
+section
+variable (x y : O)
+    (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y)
+include x y hx hy hxy
+
+theorem symbol_lambda_congr_mod_nine  :
     symbol lambda x = symbol lambda y := by
   rw [symbol_lambda_eq_linearRay x hx, symbol_lambda_eq_linearRay y hy]
   exact linearRay_congr_mod_nine 1 0 x y hx hy hxy
 
-theorem symbol_traceLambda_congr_mod_nine (x y : O)
-    (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
+theorem symbol_traceLambda_congr_mod_nine  :
     symbol traceLambda x = symbol traceLambda y := by
   rw [symbol_traceLambda_eq_linearRay x hx, symbol_traceLambda_eq_linearRay y hy]
   exact linearRay_congr_mod_nine 0 (-1) x y hx hy hxy
+end
+
 
 end CubicRamified
 
 namespace CubicJacobiGlobal
 open ActualEisensteinCubic CompletedGauss CubicRamified
 
-theorem primary_ne_zero (a : O) (ha : lambda ^ 2 ∣ a-1) : a ≠ 0 := by
+section
+variable (a : O) (ha : lambda ^ 2 ∣ a-1)
+include a ha
+
+theorem primary_ne_zero  : a ≠ 0 := by
   obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
   exact primaryCoord_ne_zero A B
 
-theorem symbol_one_numerator (a : O) (ha : lambda ^ 2 ∣ a-1) : symbol 1 a = 1 := by
+theorem symbol_one_numerator  : symbol 1 a = 1 := by
   apply idealSymbol_map_one
   rw [primaryGenerator_span a (primary_ne_zero a ha) ha]
   exact primary_ne_zero a ha
+end
+
 
 theorem symbol_mul_numerator (x y a : O) (ha : lambda ^ 2 ∣ a-1) :
     symbol (x*y) a = symbol x a * symbol y a := by
@@ -436,15 +454,20 @@ open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoo
 open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson
 open PrimaryIdealUnitReindex CompletedGauss
 
-theorem rowCoprimeMask_unit_mul {α : Type*} (R : α → Ideal O)
-    (S : Finset α) (u : Oˣ) (z : O) :
+section
+variable {α : Type*} (R : α → Ideal O)
+    (S : Finset α)
+include α R S
+
+theorem rowCoprimeMask_unit_mul  (u : Oˣ) (z : O) :
     rowCoprimeMask R S (u.val * z) = rowCoprimeMask R S z := by
   simp only [rowCoprimeMask, Ideal.unit_mul_mem_iff_mem _ u.isUnit]
 
-theorem rowCoprimeMask_norm_le_one {α : Type*} (R : α → Ideal O)
-    (S : Finset α) (z : O) : ‖rowCoprimeMask R S z‖ ≤ 1 := by
+theorem rowCoprimeMask_norm_le_one  (z : O) : ‖rowCoprimeMask R S z‖ ≤ 1 := by
   unfold rowCoprimeMask
   split_ifs <;> simp
+end
+
 
 end QuadraticUnitInvariance
 
@@ -475,11 +498,11 @@ theorem canonical_masked_radial_poisson_product
   dsimp only at ht
   rw [finitePrimeModulus_norm_eq_product p] at ht
   rw [ht]
-  let a : Finset α → ℂ := fun E =>
+  let a := fun E =>
     (UniqueFactorizationMonoid.moebius (∏ i ∈ E, R i) : ℂ) *
       finiteSexticRow (fun i => Ideal.span {p i}) hg j (primeSubsetGenerator R E) /
       (‖eisEmbedding (primeSubsetGenerator R E)‖ ^ 2 : ℝ)
-  let F : Finset α → ℝ → ℂ := fun E t => paperRadialFourier W
+  let F := fun E t => paperRadialFourier W
     (M * t / (‖eisEmbedding (primeSubsetGenerator R E)‖ ^ 2 * ‖eisEmbedding (∏ i, p i)‖ ^ 2))
   have hu := gauss_weighted_finite_radial_sum_transport p hp hcop hg j S.powerset a F
   change ((M : ℂ) * canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hg j /
@@ -565,11 +588,8 @@ theorem same_ray_quadratic_pair_poisson
 end QuadraticUnitInvariance
 
 open scoped BigOperators Classical SchwartzMap
-namespace EisensteinSchwartzPoisson
-open ActualEisensteinCubic ConcreteTraceCRT
 
-end EisensteinSchwartzPoisson
 
-end
 
-end OAI
+
+

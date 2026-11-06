@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -11,15 +12,18 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerGapBudget
 @[expose] public section
 
 open Filter
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
+
+section
+variable {δ η : ℝ}
+    (hδ : 0 < δ) (hη : 0 < η)
+include δ η hδ hη
 
 /-- The literal divisor-weighted maximal-prefix Gram budget at the original
 source cutoff is bounded by the closed physical power budget. No stationary
 source, local-mean excess, or moment estimate is a premise. -/
-theorem exists_atkinsonPhysicalGramBudget_le_power {δ η : ℝ}
-    (hδ : 0 < δ) (hη : 0 < η) :
+theorem exists_atkinsonPhysicalGramBudget_le_power  :
     ∃ C : ℝ, 0 < C ∧ ∃ H₀ : ℝ, 40000 ≤ H₀ ∧
       ∀ H G A L : ℝ, ∀ W : Finset ℝ, H₀ ≤ H → H^δ ≤ G → IsSeparated G W →
       (∀ t ∈ W, H ≤ t ∧ t ≤ 2*H) →
@@ -35,10 +39,7 @@ theorem exists_atkinsonPhysicalGramBudget_le_power {δ η : ℝ}
   have hG : 0 < G := (Real.rpow_pos_of_pos hH0 δ).trans_le hwidth
   let N := atkinsonSourceCutoff (2*H) G (Real.log (2*H))
   have hgap : ∀ j < Nat.clog 2 N, ∀ t ∈ W, ∀ u ∈ W,
-      atkinsonPrefixGramMax (2^j) (2^j) t u ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u := by
-    intro j hj t ht u hu
-    exact hprefix H G hH hwidth j hj t u
-      (hrange t ht).1 (hrange t ht).2 (hrange u hu).1 (hrange u hu).2
+      atkinsonPrefixGramMax (2^j) (2^j) t u ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u := by grind
   have hnonneg : ∀ j < Nat.clog 2 N, ∀ t ∈ W, ∀ u ∈ W,
       0 ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u := by
     intro j hj t ht u hu
@@ -58,8 +59,7 @@ theorem exists_atkinsonPhysicalGramBudget_le_power {δ η : ℝ}
 
 /-- Genuine weighted phase-prefix packets satisfy the same closed bound,
 with all heights and their separate maximizing prefixes retained. -/
-theorem exists_sum_atkinsonUndampedDyadicPhaseBound_sq_le_power {δ η : ℝ}
-    (hδ : 0 < δ) (hη : 0 < η) :
+theorem exists_sum_atkinsonUndampedDyadicPhaseBound_sq_le_power  :
     ∃ C : ℝ, 0 < C ∧ ∃ H₀ : ℝ, 40000 ≤ H₀ ∧
       ∀ H G A L : ℝ, ∀ W : Finset ℝ, H₀ ≤ H → H^δ ≤ G → IsSeparated G W →
       (∀ t ∈ W, H ≤ t ∧ t ≤ 2*H) →
@@ -73,5 +73,7 @@ theorem exists_sum_atkinsonUndampedDyadicPhaseBound_sq_le_power {δ η : ℝ}
   intro H G A L W hH hwidth hsep hrange hlocal
   exact (sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget _ W).trans
     (hbound H G A L W hH hwidth hsep hrange hlocal)
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

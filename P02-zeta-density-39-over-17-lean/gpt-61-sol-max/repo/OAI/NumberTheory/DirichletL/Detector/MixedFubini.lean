@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.RawPhysicalIntegral
 
 @[expose] public section
@@ -9,27 +10,35 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 
-lemma count_product {A B : Type*} [Countable A] [Countable B]
-    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B] :
+section
+variable {A B : Type*} [Countable A] [Countable B]
+    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B]
+include A B
+
+lemma count_product  :
     (Measure.count:Measure A).prod (Measure.count:Measure B)=Measure.count := by
   apply Measure.ext_of_singleton
   rintro ⟨a,b⟩
   rw [←Set.singleton_prod_singleton,Measure.prod_prod]
   simp
 
-lemma count_equiv_preserving {A B : Type*} [Countable A] [Countable B]
-    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B]
+lemma count_equiv_preserving 
     (e : A≃ᵐB) : MeasurePreserving e Measure.count Measure.count := by
   refine ⟨e.measurable,?_⟩
   apply Measure.ext_of_singleton
   intro b
   rw [Measure.map_apply e.measurable (measurableSet_singleton b)]
   have he : e ⁻¹' {b}={e.symm b} := by ext a;simp [e.eq_symm_apply]
-  rw [he]
-  simp
+  simp_all
+end
 
-def quadShuffle {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
-    [MeasurableSpace C] [MeasurableSpace D] : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D) where
+
+section
+variable {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
+    [MeasurableSpace C] [MeasurableSpace D]
+include A B C D
+
+def quadShuffle  : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D) where
   toFun p := ((p.1.1,p.2.1),(p.1.2,p.2.2))
   invFun p := ((p.1.1,p.2.1),(p.1.2,p.2.2))
   left_inv p := rfl
@@ -37,8 +46,7 @@ def quadShuffle {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
   measurable_toFun := by change Measurable (fun p : (A×B)×(C×D)=>((p.1.1,p.2.1),(p.1.2,p.2.2)));fun_prop
   measurable_invFun := by change Measurable (fun p : (A×C)×(B×D)=>((p.1.1,p.2.1),(p.1.2,p.2.2)));fun_prop
 
-lemma quadShuffle_preserving {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
-    [MeasurableSpace C] [MeasurableSpace D] (μA : Measure A) (μB : Measure B)
+lemma quadShuffle_preserving  (μA : Measure A) (μB : Measure B)
     (μC : Measure C) (μD : Measure D) [SFinite μA] [SFinite μB] [SFinite μC] [SFinite μD] :
     MeasurePreserving (quadShuffle : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D))
       ((μA.prod μB).prod (μC.prod μD)) ((μA.prod μC).prod (μB.prod μD)) := by
@@ -49,9 +57,15 @@ lemma quadShuffle_preserving {A B C D : Type*} [MeasurableSpace A] [MeasurableSp
   have h4 := (MeasurePreserving.id μA).prod (measurePreserving_prodAssoc μC μB μD)
   have h5 := (measurePreserving_prodAssoc μA μC (μB.prod μD)).symm MeasurableEquiv.prodAssoc
   exact h5.comp (h4.comp (h3.comp (h2.comp h1)))
+end
 
-def physicalNestingEquiv {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSpace B]
-    [MeasurableSpace C] [MeasurableSpace D] [MeasurableSpace E] [MeasurableSpace F] :
+
+section
+variable {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSpace B]
+    [MeasurableSpace C] [MeasurableSpace D] [MeasurableSpace E] [MeasurableSpace F]
+include A B C D E F
+
+def physicalNestingEquiv  :
     (A×(B×C))×((D×E)×F) ≃ᵐ A×(F×(D×(B×(E×C)))) where
   toFun p := (p.1.1,(p.2.2,(p.2.1.1,(p.1.2.1,(p.2.1.2,p.1.2.2)))))
   invFun p := ((p.1,(p.2.2.2.1,p.2.2.2.2.2)),((p.2.2.1,p.2.2.2.2.1),p.2.1))
@@ -66,8 +80,7 @@ def physicalNestingEquiv {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSp
       ((p.1,(p.2.2.2.1,p.2.2.2.2.2)),((p.2.2.1,p.2.2.2.2.1),p.2.1)))
     fun_prop
 
-lemma physicalNesting_preserving {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSpace B]
-    [MeasurableSpace C] [MeasurableSpace D] [MeasurableSpace E] [MeasurableSpace F]
+lemma physicalNesting_preserving 
     (μA : Measure A) (μB : Measure B) (μC : Measure C)
     (μD : Measure D) (μE : Measure E) (μF : Measure F)
     [SFinite μA] [SFinite μB] [SFinite μC] [SFinite μD] [SFinite μE] [SFinite μF] :
@@ -83,6 +96,8 @@ lemma physicalNesting_preserving {A B C D E F : Type*} [MeasurableSpace A] [Meas
   have ha := measurePreserving_prodAssoc μD μB (μE.prod μC)
   exact ((MeasurePreserving.id μA).prod
     (((MeasurePreserving.id μF).prod (ha.comp (hs.comp hq))).comp hr)).comp h1
+end
+
 
 lemma integral_count_eq_tsum {A : Type*} [Countable A] [MeasurableSpace A]
     [MeasurableSingletonClass A] (f : A→ℂ) (hf : Integrable f Measure.count) :
@@ -117,7 +132,7 @@ theorem integral_physical_nesting {A B C : Type*} [Countable A] [Countable B] [C
   filter_upwards [hb.prod_right_ae] with z hz
   exact integral_count_eq_tsum _ hz
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

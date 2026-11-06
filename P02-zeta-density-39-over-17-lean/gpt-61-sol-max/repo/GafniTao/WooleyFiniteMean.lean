@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPadicSetup
 public import Mathlib.Analysis.Fourier.ZMod
 
@@ -63,21 +64,34 @@ theorem wooley_addChar_sum_eq_prod
   | @insert a t ha ih =>
       rw [sum_insert ha, prod_insert ha, chi.map_add_eq_mul, ih]
 
+section
+variable (q k Q : ℕ) [NeZero q]
+    (alpha : Fin k → ZMod q)
+include q k Q alpha
+
 /-- The monomial phase on Wooley's finite residue grid.  A value `n : Fin Q`
 represents the source integer `n+1`. -/
-def wooleyMonomialGridPhase (q k Q : ℕ) [NeZero q]
-    (alpha : Fin k → ZMod q) (n : Fin Q) : ℂ :=
+def wooleyMonomialGridPhase  (n : Fin Q) : ℂ :=
   ZMod.stdAddChar
     (∑ j : Fin k,
       alpha j * (((n : ℕ) + 1 : ℕ) : ZMod q) ^ ((j : ℕ) + 1))
 
 /-- The coefficient-one Weyl sum on the finite grid in (3.5). -/
-def wooleyMonomialGridSum (q k Q : ℕ) [NeZero q]
-    (alpha : Fin k → ZMod q) : ℂ :=
+def wooleyMonomialGridSum  : ℂ :=
   ∑ n : Fin Q, wooleyMonomialGridPhase q k Q alpha n
+end
 
-theorem wooleyMonomialTuplePhase_eq (q s k Q : ℕ) [NeZero q]
-    (alpha : Fin k → ZMod q) (x : FordVinogradovTuple s Q) :
+
+section
+variable (q s k Q : ℕ)
+include q s k Q
+
+section
+variable [NeZero q]
+    (alpha : Fin k → ZMod q)
+include alpha
+
+theorem wooleyMonomialTuplePhase_eq  (x : FordVinogradovTuple s Q) :
     ∏ i : Fin s, wooleyMonomialGridPhase q k Q alpha (x i) =
       ZMod.stdAddChar
         (∑ j : Fin k,
@@ -92,8 +106,7 @@ theorem wooleyMonomialTuplePhase_eq (q s k Q : ℕ) [NeZero q]
   congr 1
   simp [fordVinogradovPowerVector]
 
-theorem wooleyMonomialGridSum_pow (q s k Q : ℕ) [NeZero q]
-    (alpha : Fin k → ZMod q) :
+theorem wooleyMonomialGridSum_pow  :
     wooleyMonomialGridSum q k Q alpha ^ s =
       ∑ x : FordVinogradovTuple s Q,
         ZMod.stdAddChar
@@ -104,8 +117,7 @@ theorem wooleyMonomialGridSum_pow (q s k Q : ℕ) [NeZero q]
   intro x hx
   exact wooleyMonomialTuplePhase_eq q s k Q alpha x
 
-theorem wooley_conj_monomialGridSum_pow (q s k Q : ℕ) [NeZero q]
-    (alpha : Fin k → ZMod q) :
+theorem wooley_conj_monomialGridSum_pow  :
     conj (wooleyMonomialGridSum q k Q alpha) ^ s =
       ∑ y : FordVinogradovTuple s Q,
         ZMod.stdAddChar
@@ -113,15 +125,17 @@ theorem wooley_conj_monomialGridSum_pow (q s k Q : ℕ) [NeZero q]
             alpha j * (fordVinogradovPowerVector s k Q y j : ZMod q)) := by
   have h := congrArg conj (wooleyMonomialGridSum_pow q s k Q alpha)
   simpa only [map_pow, map_sum, AddChar.map_neg_eq_conj] using h
+end
+
 
 /-- The degree-by-degree displacement in the residue ring. -/
-def wooleyModularDisplacement (q s k Q : ℕ)
+def wooleyModularDisplacement 
     (xy : FordVinogradovTuple s Q × FordVinogradovTuple s Q) :
     Fin k → ZMod q :=
   fun j => (fordVinogradovPowerVector s k Q xy.1 j : ZMod q) -
     (fordVinogradovPowerVector s k Q xy.2 j : ZMod q)
 
-theorem wooley_pair_grid_character (q s k Q : ℕ) [NeZero q]
+theorem wooley_pair_grid_character  [NeZero q]
     (alpha : Fin k → ZMod q)
     (xy : FordVinogradovTuple s Q × FordVinogradovTuple s Q) :
     ZMod.stdAddChar
@@ -137,28 +151,39 @@ theorem wooley_pair_grid_character (q s k Q : ℕ) [NeZero q]
   simp only [wooleyModularDisplacement]
   rw [← sub_eq_add_neg, ← sum_sub_distrib]
   apply sum_congr rfl
-  intro j hj
-  ring
+  grind
+end
+
+
+section
+variable (s k Q q : ℕ)
+include s k Q q
 
 /-- A modulus-generic version of the congruence system (3.7). -/
-abbrev WooleyModularSolution (s k Q q : ℕ) :=
+abbrev WooleyModularSolution  :=
   {xy : FordVinogradovTuple s Q × FordVinogradovTuple s Q //
     ∀ j : Fin k,
       Int.ModEq (q : ℤ)
         (fordVinogradovPowerVector s k Q xy.1 j)
         (fordVinogradovPowerVector s k Q xy.2 j)}
 
-def wooleyModularCount (s k Q q : ℕ) : ℕ :=
+def wooleyModularCount  : ℕ :=
   Nat.card (WooleyModularSolution s k Q q)
 
 /-- Complex form of the unnormalised grid moment. -/
-def wooleyMonomialComplexGridMoment (s k Q q : ℕ) [NeZero q] : ℂ :=
+def wooleyMonomialComplexGridMoment  [NeZero q] : ℂ :=
   ∑ alpha : Fin k → ZMod q,
     wooleyMonomialGridSum q k Q alpha ^ s *
       conj (wooleyMonomialGridSum q k Q alpha) ^ s
+end
+
+
+section
+variable (q s k Q : ℕ)
+include q s k Q
 
 theorem wooleyModularDisplacement_eq_zero_iff
-    (q s k Q : ℕ)
+    
     (xy : FordVinogradovTuple s Q × FordVinogradovTuple s Q) :
     wooleyModularDisplacement q s k Q xy = 0 ↔
       ∀ j : Fin k,
@@ -175,11 +200,10 @@ theorem wooleyModularDisplacement_eq_zero_iff
     simp only [wooleyModularDisplacement, Pi.zero_apply, sub_eq_zero]
     exact (ZMod.intCast_eq_intCast_iff _ _ q).mpr (h j)
 
-theorem wooleyModularCount_cast_complex (q s k Q : ℕ) :
+theorem wooleyModularCount_cast_complex  :
     (wooleyModularCount s k Q q : ℂ) =
       ∑ xy : FordVinogradovTuple s Q × FordVinogradovTuple s Q,
         if wooleyModularDisplacement q s k Q xy = 0 then 1 else 0 := by
-  let : Fintype (WooleyModularSolution s k Q q) := Fintype.ofFinite _
   rw [wooleyModularCount, Nat.card_eq_fintype_card]
   unfold WooleyModularSolution
   rw [Fintype.card_subtype, Finset.card_eq_sum_ones]
@@ -190,7 +214,7 @@ theorem wooleyModularCount_cast_complex (q s k Q : ℕ) :
   simp only [wooleyModularDisplacement_eq_zero_iff]
 
 theorem wooleyMonomialComplexGridMoment_eq_count
-    (q s k Q : ℕ) [NeZero q] :
+     [NeZero q] :
     wooleyMonomialComplexGridMoment s k Q q =
       ((q ^ k : ℕ) : ℂ) * (wooleyModularCount s k Q q : ℂ) := by
   unfold wooleyMonomialComplexGridMoment
@@ -251,8 +275,9 @@ theorem wooleyMonomialComplexGridMoment_eq_count
       intro x hx
       rw [Finset.mul_sum]
       apply sum_congr rfl
-      intro y hy
-      split_ifs <;> simp
+      bound
+end
+
 
 /-- The unnormalised finite grid moment.  Division by `q^k` and `Q^s`
 produces Wooley's normalized `U^B_{s,k}` for the coefficient-one sequence. -/
@@ -260,8 +285,12 @@ def wooleyMonomialRawGridMoment (s k Q q : ℕ) [NeZero q] : ℝ :=
   ∑ alpha : Fin k → ZMod q,
     ‖wooleyMonomialGridSum q k Q alpha‖ ^ (2 * s)
 
+section
+variable (q s k Q : ℕ) [NeZero q]
+include q s k Q
+
 theorem wooleyMonomialComplexGridMoment_eq_ofReal_raw
-    (q s k Q : ℕ) [NeZero q] :
+     :
     wooleyMonomialComplexGridMoment s k Q q =
       (wooleyMonomialRawGridMoment s k Q q : ℂ) := by
   unfold wooleyMonomialComplexGridMoment wooleyMonomialRawGridMoment
@@ -269,12 +298,14 @@ theorem wooleyMonomialComplexGridMoment_eq_ofReal_raw
   norm_cast
 
 theorem wooleyMonomialRawGridMoment_eq_count
-    (q s k Q : ℕ) [NeZero q] :
+     :
     wooleyMonomialRawGridMoment s k Q q =
       ((q ^ k : ℕ) : ℝ) * (wooleyModularCount s k Q q : ℝ) := by
   apply Complex.ofReal_injective
   rw [← wooleyMonomialComplexGridMoment_eq_ofReal_raw]
   simpa using wooleyMonomialComplexGridMoment_eq_count q s k Q
+end
+
 
 theorem wooleyModularCount_primePower_eq_padic
     (s k Q p B : ℕ) :
@@ -295,8 +326,6 @@ theorem wooleyMonomialNormalizedGridMean_eq_count
   rw [wooleyMonomialNormalizedGridMean,
     wooleyMonomialRawGridMoment_eq_count]
   have hq : 0 < q := NeZero.pos q
-  have hqpow : (((q ^ k : ℕ) : ℝ)) ≠ 0 := by positivity
-  have hQpow : (((Q ^ s : ℕ) : ℝ)) ≠ 0 := by positivity
   field_simp
 
 /-- Equations (3.5)--(3.7) at Wooley's literal prime-power modulus. -/
@@ -311,6 +340,6 @@ theorem wooley_equations_3_5_to_3_7
     wooleyModularCount_primePower_eq_padic]
 
 
-end
 
-end GafniTao
+
+

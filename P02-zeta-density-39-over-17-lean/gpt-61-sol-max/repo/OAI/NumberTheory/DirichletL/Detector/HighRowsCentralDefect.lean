@@ -8,8 +8,8 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 include hc in
@@ -63,7 +63,7 @@ theorem ramifiedClosed_central_defect (eta a rho x w z : ℂ) (alpha eps : ℝ)
   apply (mul_le_mul (show ‖1-coordV (Ideal.absNorm (Ideal.span {p})) z‖≤3/2 by linarith)
     hb (norm_nonneg _) (by norm_num : (0:ℝ)≤3/2)).trans_eq
   ring
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

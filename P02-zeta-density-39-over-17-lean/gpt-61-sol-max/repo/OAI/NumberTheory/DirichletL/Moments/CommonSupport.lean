@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FullCorrelation
 public import OAI.NumberTheory.DirichletL.Moments.Canonical
 
@@ -14,16 +15,22 @@ variable {A : Type*} [CommRing A]
 
 abbrev Residue (d : A) := A ⧸ Ideal.span {d}
 
-def principalCRT (d a : A) (h : IsCoprime d a) :
+section
+variable (d a : A) (h : IsCoprime d a)
+include d a h
+
+def principalCRT  :
     Residue (d * a) ≃+* Residue d × Residue a :=
   (Ideal.quotEquivOfEq (Ideal.span_singleton_mul_span_singleton d a).symm).trans
     (Ideal.quotientMulEquivQuotientProd (Ideal.span {d}) (Ideal.span {a})
       ((Ideal.isCoprime_span_singleton_iff d a).mpr h))
 
-@[simp] theorem principalCRT_mk (d a : A) (h : IsCoprime d a) (x : A) :
+@[simp] theorem principalCRT_mk  (x : A) :
     principalCRT d a h (Ideal.Quotient.mk _ x) =
       (Ideal.Quotient.mk _ x, Ideal.Quotient.mk _ x) := by
   ext <;> simp [principalCRT, Ideal.quotEquivOfEq_mk]
+end
+
 
 lemma coprime_mul_dvd_iff (d a n : A) (h : IsCoprime d a) :
     d * a ∣ n ↔ d ∣ n ∧ a ∣ n := by
@@ -43,7 +50,7 @@ theorem isUnit_residue_of_coprime (d a : A) (h : IsCoprime d a) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {d}) a) := by
   obtain ⟨u, v, huv⟩ := h
   apply IsUnit.of_mul_eq_one (Ideal.Quotient.mk (Ideal.span {d}) v)
-  have hd : Ideal.Quotient.mk (Ideal.span {d}) d = 0 :=
+  have hd :=
     Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span (Set.mem_singleton d))
   have hm := congrArg (Ideal.Quotient.mk (Ideal.span {d})) huv
   simpa only [map_add, map_mul, map_one, hd, mul_zero, zero_mul, zero_add, mul_comm] using hm
@@ -59,9 +66,9 @@ theorem full_congruence_split (D E a b x y j : A)
       Ideal.Quotient.mk (Ideal.span {a}) (E * b * x) = Ideal.Quotient.mk _ j ∧
       Ideal.Quotient.mk (Ideal.span {b}) (D * a * y) = Ideal.Quotient.mk _ (-j) := by
   rw [full_product_congruence D E a b _ ha hb hab]
-  have hzeroa : Ideal.Quotient.mk (Ideal.span {a}) a = 0 :=
+  have hzeroa :=
     (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
-  have hzerob : Ideal.Quotient.mk (Ideal.span {b}) b = 0 :=
+  have hzerob :=
     (residue_eq_zero_iff_dvd b b).mpr dvd_rfl
   have heq : (E * b) * x - (D * a) * y - j = E * (b * x) - D * (a * y) - j := by ring
   refine and_congr (by rw [heq]) (and_congr ?_ ?_)
@@ -137,14 +144,24 @@ lemma character_unit_inverse {X : Type*} [CommRing X] [Fintype X]
     (χ : MulChar X ℂ) (u : Xˣ) : χ (↑u⁻¹ : X) = star (χ (u : X)) := by
   rw [MulChar.star_apply', MulChar.inv_apply, Ring.inverse_unit]
 
-def residueUnit (d a : A) (h : IsCoprime d a) : (Residue d)ˣ :=
+section
+variable (d a : A) (h : IsCoprime d a)
+include d a h
+
+def residueUnit  : (Residue d)ˣ :=
   (isUnit_residue_of_coprime d a h).unit
 
-@[simp] theorem residueUnit_coe (d a : A) (h : IsCoprime d a) :
+@[simp] theorem residueUnit_coe  :
     (residueUnit d a h : Residue d) = Ideal.Quotient.mk _ a :=
   (isUnit_residue_of_coprime d a h).unit_spec
+end
 
-def scaledCommonCorrelation (D E a b : A)
+
+section
+variable (D E a b : A)
+include D E a b
+
+def scaledCommonCorrelation 
     [Fintype (Residue D)] [Fintype (Residue E)]
     (χD : MulChar (Residue D) ℂ) (χE : MulChar (Residue E) ℂ) (j : A) : ℂ :=
   fullCorrelation
@@ -152,7 +169,7 @@ def scaledCommonCorrelation (D E a b : A)
     (fun y => scaledResidue E D (D * E) (mul_comm _ _) (Ideal.Quotient.mk _ a * y))
     χD χE (Ideal.Quotient.mk _ j)
 
-theorem scaledCommonCorrelation_eq (D E a b : A)
+theorem scaledCommonCorrelation_eq 
     (hDb : IsCoprime D b) (hEa : IsCoprime E a)
     [Fintype (Residue D)] [Fintype (Residue E)]
     (χD : MulChar (Residue D) ℂ) (χE : MulChar (Residue E) ℂ) (j : A) :
@@ -165,8 +182,8 @@ theorem scaledCommonCorrelation_eq (D E a b : A)
   simpa only [residueUnit_coe, character_unit_inverse, star_star,
     scaledCommonCorrelation, fullModulusCorrelation] using h
 
-theorem fullModulusCorrelation_extract (D E a b : A)
-    (ha : IsCoprime (D * E) a) (hb : IsCoprime (D * E) b) (hab : IsCoprime a b)
+section
+variable (ha : IsCoprime (D * E) a) (hb : IsCoprime (D * E) b) (hab : IsCoprime a b)
     [Fintype (Residue D)] [Fintype (Residue E)]
     [Fintype (Residue a)] [Fintype (Residue b)]
     [Fintype (Residue (D * a))] [Fintype (Residue (E * b))]
@@ -176,7 +193,10 @@ theorem fullModulusCorrelation_extract (D E a b : A)
     (hχDa : ∀ x : A, χDa (Ideal.Quotient.mk _ x) =
       χD (Ideal.Quotient.mk _ x) * χa (Ideal.Quotient.mk _ x))
     (hχEb : ∀ x : A, χEb (Ideal.Quotient.mk _ x) =
-      χE (Ideal.Quotient.mk _ x) * χb (Ideal.Quotient.mk _ x)) (j : A) :
+      χE (Ideal.Quotient.mk _ x) * χb (Ideal.Quotient.mk _ x)) (j : A)
+include ha hb hab χD χE χa χb χDa χEb hχDa hχEb j
+
+theorem fullModulusCorrelation_extract  :
     let α := residueUnit a (E * b) (((IsCoprime.mul_left_iff.mp ha).2.symm).mul_right hab)
     let β := residueUnit b (D * a) (((IsCoprime.mul_left_iff.mp hb).1.symm).mul_right hab.symm)
     fullModulusCorrelation (D * a) (E * b) χDa χEb j =
@@ -212,18 +232,7 @@ theorem fullModulusCorrelation_extract (D E a b : A)
   rw [hextract, sum_residual_constraints]
   rfl
 
-theorem fullModulusCorrelation_complete_support (D E a b : A)
-    (ha : IsCoprime (D * E) a) (hb : IsCoprime (D * E) b) (hab : IsCoprime a b)
-    [Fintype (Residue D)] [Fintype (Residue E)]
-    [Fintype (Residue a)] [Fintype (Residue b)]
-    [Fintype (Residue (D * a))] [Fintype (Residue (E * b))]
-    (χD : MulChar (Residue D) ℂ) (χE : MulChar (Residue E) ℂ)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (χDa : MulChar (Residue (D * a)) ℂ) (χEb : MulChar (Residue (E * b)) ℂ)
-    (hχDa : ∀ x : A, χDa (Ideal.Quotient.mk _ x) =
-      χD (Ideal.Quotient.mk _ x) * χa (Ideal.Quotient.mk _ x))
-    (hχEb : ∀ x : A, χEb (Ideal.Quotient.mk _ x) =
-      χE (Ideal.Quotient.mk _ x) * χb (Ideal.Quotient.mk _ x)) (j : A) :
+theorem fullModulusCorrelation_complete_support  :
     fullModulusCorrelation (D * a) (E * b) χDa χEb j =
       fullModulusCorrelation D E χD χE j *
         (χE (Ideal.Quotient.mk _ a) * star (χa (Ideal.Quotient.mk _ E))) *
@@ -235,8 +244,11 @@ theorem fullModulusCorrelation_complete_support (D E a b : A)
     (IsCoprime.mul_left_iff.mp ha).2 χD χE j]
   simp only [map_mul, character_unit_inverse, residueUnit_coe, star_mul, star_star]
   ring
-
-end SevenEighths.CenteredMomentCommonSupport
+end
 end
 
-end OAI
+
+
+
+
+

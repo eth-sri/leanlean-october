@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.MollifierCoefficients
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 @[expose] public section
 
 open scoped BigOperators
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- Telescoping square-root bound, including the empty cutoff. -/
@@ -21,9 +21,7 @@ theorem sum_inv_sqrt_le (N : ℕ) :
     have hs' := Real.sq_sqrt (show 0 ≤ (N+1 : ℝ) by positivity)
     have hm : Real.sqrt (N : ℝ) ≤ Real.sqrt (N+1 : ℝ) := Real.sqrt_le_sqrt (by linarith)
     have hd : 1 / Real.sqrt (N+1 : ℝ) ≤
-        2*(Real.sqrt (N+1 : ℝ)-Real.sqrt (N : ℝ)) := by
-      apply (div_le_iff₀ hp).2
-      nlinarith [sq_nonneg (Real.sqrt (N+1 : ℝ)-Real.sqrt (N : ℝ))]
+        2*(Real.sqrt (N+1 : ℝ)-Real.sqrt (N : ℝ)) := by field_simp <;> nlinarith
     push_cast
     linarith
 
@@ -50,4 +48,4 @@ theorem norm_zetaMollifier_le_two_sqrt {X : ℝ} {s : ℂ}
     _ ≤ 2*Real.sqrt (⌊X⌋₊ : ℝ) := sum_inv_sqrt_le _
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (Nat.floor_le hX)) (by norm_num)
 
-end MathCollab.Density
+

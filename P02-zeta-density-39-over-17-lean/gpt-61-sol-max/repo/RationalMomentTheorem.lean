@@ -3,8 +3,7 @@ public import RationalHigherMoments
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -22,10 +21,14 @@ theorem numerator_bound_of_log {r : ℚ} (hr : 0 < r)
   rw [← hrat] at hval
   exact (div_le_iff₀ (by exact_mod_cast r.pos : (0 : ℝ) < r.den)).mp hval
 
+section
+variable {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η)
+include k hk η hη
+
 /-- Complete finite-height rational moment theorem. The coefficient-energy
 estimate is proved internally, and the constant is uniform in all data after
 the fixed moment order and loss. -/
-theorem rational_higher_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem rational_higher_moment  :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℕ), 1 ≤ H → ∀ (T t₀ : ℝ), 0 ≤ T →
       ∀ (A : Finset ℚ) (c : ℚ → ℂ),
       (∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ 1) →
@@ -70,7 +73,7 @@ theorem rational_higher_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η
 
 /-- Unconditional dual bound for the literal sum over rational frequencies.
 No higher-moment estimate is assumed as a premise. -/
-theorem rational_dual_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem rational_dual_moment  :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℕ), 1 ≤ H → ∀ (T t₀ : ℝ), 0 ≤ T →
       ∀ (A : Finset ℚ),
       (∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ 1) →
@@ -84,5 +87,7 @@ theorem rational_dual_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) 
   apply rational_energy_pow_le A W hk (by positivity)
   intro c
   exact hm H hH T t₀ hT A c hA W hW hsep
+end
 
-end Montgomery.RationalMoment
+
+

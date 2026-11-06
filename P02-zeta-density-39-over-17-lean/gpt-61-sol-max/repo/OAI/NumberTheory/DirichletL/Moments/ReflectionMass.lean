@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionDeletion
 
 @[expose] public section
@@ -9,16 +10,22 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionMass
 open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid
-open IdealMobiusDivisorSum
-local notation "O" => HeckeFamily.O
 
-def weight (I : Ideal O) : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹
-lemma weight_nonneg (I : Ideal O) : 0 ≤ weight I := by unfold weight; positivity
+open scoped HeckeO
+
+section
+variable (I : Ideal O)
+include I
+
+def weight  : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹
+lemma weight_nonneg  : 0 ≤ weight I := by unfold weight; positivity
+end
+
 lemma weight_mul (I J : Ideal O) : weight (I*J) = weight I * weight J := by
   simp only [weight, map_mul, Nat.cast_mul, Real.sqrt_mul (Nat.cast_nonneg _), mul_inv_rev]
   ring
 lemma weight_one : weight (1 : Ideal O) = 1 := by simp [weight]
-lemma weight_pow (I : Ideal O) (n : ℕ) : weight (I^n) = weight I ^ n := by
+lemma weight_pow (I : Ideal O) (n : ℕ) : weight (I ^n) = weight I ^ n := by
   induction n with
   | zero => simpa only [pow_zero] using weight_one
   | succ n ih => rw [pow_succ,weight_mul,ih,pow_succ]
@@ -36,26 +43,38 @@ lemma prime_weight_lt_one (P : Ideal O) (hP : Prime P) : weight P < 1 := by
     simpa using h
   exact inv_lt_one_of_one_lt₀ hs
 
-def exponents (S : Finset (Ideal O)) (I : SmoothIdeal S) (P : S) : ℕ :=
+section
+variable (S : Finset (Ideal O))
+include S
+
+section
+variable (I : SmoothIdeal S)
+include I
+
+def exponents  (P : S) : ℕ :=
   (normalizedFactors I.val.val).count P.val
-lemma reconstruct_exponents (S : Finset (Ideal O)) (I : SmoothIdeal S) :
+lemma reconstruct_exponents  :
     (∏ P : S,P.val ^ exponents S I P) = I.val.val := by
   simp only [exponents]
   rw [Finset.prod_coe_sort S (fun P => P ^ (normalizedFactors I.val.val).count P)]
   exact (Finset.prod_multiset_count_of_subset (normalizedFactors I.val.val) S I.property).symm.trans
     (Ideal.prod_normalizedFactors_eq_self I.val.property)
-lemma exponents_injective (S : Finset (Ideal O)) : Function.Injective (exponents S) := by
+end
+
+lemma exponents_injective  : Function.Injective (exponents S) := by
   intro I J h
   apply Subtype.ext
   apply Subtype.ext
   rw [← reconstruct_exponents S I,← reconstruct_exponents S J,h]
-lemma weight_exponents (S : Finset (Ideal O)) (I : SmoothIdeal S) :
+lemma weight_exponents  (I : SmoothIdeal S) :
     weight I.val.val = ∏ P : S,weight P.val ^ exponents S I P := by
   conv_lhs => rw [← reconstruct_exponents S I]
   simp only [exponents]
   rw [Finset.prod_coe_sort S (fun P => P ^ (normalizedFactors I.val.val).count P),
     Finset.prod_coe_sort S (fun P => weight P ^ (normalizedFactors I.val.val).count P), weight_prod]
   simp only [weight_pow]
+end
+
 
 lemma hasSum_geometric_pi {α : Type*} [Fintype α] (r : α → ℝ)
     (hr : ∀ a, 0 ≤ r a) (hr1 : ∀ a, r a < 1) :
@@ -84,13 +103,21 @@ lemma hasSum_geometric_pi {α : Type*} [Fintype α] (r : α → ℝ)
     have he := (Equiv.piOptionEquivProd (β := fun _ : Option α => ℕ)).hasSum_iff.mpr hp
     simpa only [Function.comp_def, Fintype.prod_option, Equiv.piOptionEquivProd_apply] using he
 
-lemma smooth_summable (S : Finset (Ideal O)) (hS : ∀ P ∈ S,Prime P) :
+section
+variable (S : Finset (Ideal O))
+include S
+
+section
+variable (hS : ∀ P ∈ S,Prime P)
+include hS
+
+lemma smooth_summable  :
     Summable (fun I : SmoothIdeal S => weight I.val.val) := by
   have hs := (hasSum_geometric_pi (fun P : S => weight P.val)
     (fun P => weight_nonneg P.val) (fun P => prime_weight_lt_one P.val (hS P.val P.property))).summable
   exact (hs.comp_injective (exponents_injective S)).congr (fun I => (weight_exponents S I).symm)
 
-lemma smooth_mass_le_euler (S : Finset (Ideal O)) (hS : ∀ P ∈ S,Prime P) :
+lemma smooth_mass_le_euler  :
     (∑' I : SmoothIdeal S,weight I.val.val) ≤ ∏ P ∈ S,(1-weight P)⁻¹ := by
   have hh := hasSum_geometric_pi (fun P : S => weight P.val)
     (fun P => weight_nonneg P.val) (fun P => prime_weight_lt_one P.val (hS P.val P.property))
@@ -99,16 +126,28 @@ lemma smooth_mass_le_euler (S : Finset (Ideal O)) (hS : ∀ P ∈ S,Prime P) :
     (fun I => (weight_exponents S I).le) (smooth_summable S hS) hh.summable
   rw [hh.tsum_eq,Finset.prod_coe_sort S (fun P => (1-weight P)⁻¹)] at h
   exact h
+end
 
-lemma deletion_mass (S : Finset (Ideal O)) :
+
+lemma deletion_mass  :
     (∑ D ∈ S.powerset, weight (∏ P ∈ D,P)) = ∏ P ∈ S,(1+weight P) := by
   simp_rw [weight_prod]
   exact (Finset.prod_one_add S).symm
+end
 
-def localMass (P : Ideal O) : ℝ := (1+weight P)/(1-weight P)
-lemma localMass_nonneg (P : Ideal O) (hP : Prime P) : 0 ≤ localMass P := by
+
+section
+variable (P : Ideal O)
+include P
+
+def localMass  : ℝ := (1+weight P)/(1-weight P)
+section
+variable (hP : Prime P)
+include hP
+
+lemma localMass_nonneg  : 0 ≤ localMass P := by
   exact div_nonneg (by linarith [weight_nonneg P]) (sub_pos.mpr (prime_weight_lt_one P hP)).le
-lemma prime_weight_le (P : Ideal O) (hP : Prime P) : weight P ≤ 3/4 := by
+lemma prime_weight_le  : weight P ≤ 3/4 := by
   have hn : (2:ℝ) ≤ P.absNorm := by
     exact_mod_cast (SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩ : 2 ≤ P.absNorm)
   have hs : 4/3 ≤ Real.sqrt (P.absNorm : ℝ) := by
@@ -116,10 +155,10 @@ lemma prime_weight_le (P : Ideal O) (hP : Prime P) : weight P ≤ 3/4 := by
     nlinarith
   rw [weight,inv_eq_one_div,div_le_iff₀ (by linarith : 0 < Real.sqrt (P.absNorm : ℝ))]
   nlinarith
-lemma localMass_le_seven (P : Ideal O) (hP : Prime P) : localMass P ≤ 7 := by
+lemma localMass_le_seven  : localMass P ≤ 7 := by
   apply (div_le_iff₀ (sub_pos.mpr (prime_weight_lt_one P hP))).mpr
   linarith [prime_weight_le P hP]
-lemma localMass_le_three (P : Ideal O) (hP : Prime P) (hn : (4:ℝ) ≤ P.absNorm) :
+lemma localMass_le_three  (hn : (4:ℝ) ≤ P.absNorm) :
     localMass P ≤ 3 := by
   have hs : 2 ≤ Real.sqrt (P.absNorm : ℝ) := by
     rw [Real.le_sqrt (by norm_num) (by positivity)]
@@ -129,13 +168,16 @@ lemma localMass_le_three (P : Ideal O) (hP : Prime P) (hn : (4:ℝ) ≤ P.absNor
     linarith
   apply (div_le_iff₀ (sub_pos.mpr (prime_weight_lt_one P hP))).mpr
   linarith
+end
+end
+
 
 theorem euler_mass_subpower (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O)) (_hS : ∀ P ∈ S,Prime P),
       (∏ P ∈ S,localMass P) ≤ C * (Ideal.absNorm (∏ P ∈ S,P) : ℝ)^ε := by
   obtain ⟨B,hB⟩ := Filter.eventually_atTop.mp
     ((tendsto_rpow_atTop hε).eventually (Filter.eventually_ge_atTop (3:ℝ)))
-  let K : ℕ := ⌈max 4 B⌉₊
+  let K := ⌈max 4 B⌉₊
   let smallIdeals := ConcretePrimeRowBridge.idealsUpTo K
   have hK : max 4 B ≤ (K:ℝ) := Nat.le_ceil _
   refine ⟨(7:ℝ)^smallIdeals.card,by positivity,?_⟩
@@ -145,7 +187,7 @@ theorem euler_mass_subpower (ε : ℝ) (hε : 0 < ε) :
     have hn : (1:ℝ) ≤ P.absNorm := by
       have hh : 2 ≤ P.absNorm := SmoothMobiusCorrection.prime_norm_two_le ⟨P,hS P hP⟩
       exact_mod_cast (by omega : 1 ≤ P.absNorm)
-    have he : 1 ≤ (P.absNorm:ℝ)^ε := Real.one_le_rpow hn hε.le
+    have he := Real.one_le_rpow hn hε.le
     by_cases hp : P ∈ smallIdeals
     · simp only [ite_eq_left hp]
       exact (localMass_le_seven P (hS P hP)).trans (by nlinarith)
@@ -170,13 +212,19 @@ theorem euler_mass_subpower (ε : ℝ) (hε : 0 < ε) :
         map_prod,Nat.cast_prod]
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hc) (Real.rpow_nonneg (by positivity) _)
 
-def coefficient (η ηi : Character) (S : Finset (Ideal O))
-    (D : Finset (Ideal O)) (H : SmoothIdeal S) : ℂ :=
+section
+variable (η ηi : Character) (S : Finset (Ideal O))
+include η ηi S
+
+section
+variable (D : Finset (Ideal O))
+include D
+
+def coefficient  (H : SmoothIdeal S) : ℂ :=
   (moebius (∏ P ∈ D,P) : ℂ) * idealCoeff η (∏ P ∈ D,P) * idealCoeff ηi H.val.val /
     (Real.sqrt ((Ideal.absNorm (∏ P ∈ D,P):ℝ) * norm H.val) : ℂ)
 
-lemma coefficient_norm_le (η ηi : Character) (S : Finset (Ideal O))
-    (D : Finset (Ideal O)) (hD : ∀ P ∈ D,Prime P) (H : SmoothIdeal S) :
+lemma coefficient_norm_le  (hD : ∀ P ∈ D,Prime P) (H : SmoothIdeal S) :
     ‖coefficient η ηi S D H‖ ≤ weight (∏ P ∈ D,P) * weight H.val.val := by
   rw [coefficient,subset_product_moebius D hD]
   simp only [norm_div,norm_mul,norm_pow,norm_neg,norm_one,one_pow,one_mul,
@@ -187,16 +235,20 @@ lemma coefficient_norm_le (η ηi : Character) (S : Finset (Ideal O))
   apply (div_le_div_of_nonneg_right h (Real.sqrt_nonneg _)).trans_eq
   simp only [CenteredMomentReflectionDeletion.norm,weight,Real.sqrt_mul (Nat.cast_nonneg _),one_div,mul_inv_rev]
   ring
+end
 
-lemma coefficient_summable_norm (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S,Prime P) (D : Finset (Ideal O)) (hD : D ⊆ S) :
+
+section
+variable (hS : ∀ P ∈ S,Prime P)
+include hS
+
+lemma coefficient_summable_norm  (D : Finset (Ideal O)) (hD : D ⊆ S) :
     Summable (fun H : SmoothIdeal S => ‖coefficient η ηi S D H‖) := by
   apply ((smooth_summable S hS).mul_left (weight (∏ P ∈ D,P))).of_nonneg_of_le
     (fun _ => norm_nonneg _)
   exact fun H => coefficient_norm_le η ηi S D (fun P hP => hS P (hD hP)) H
 
-lemma coefficient_mass_le_euler (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S,Prime P) :
+lemma coefficient_mass_le_euler  :
     (∑ D ∈ S.powerset, ∑' H : SmoothIdeal S, ‖coefficient η ηi S D H‖) ≤
       ∏ P ∈ S,localMass P := by
   have hD (D : Finset (Ideal O)) (hD : D ∈ S.powerset) :
@@ -214,10 +266,12 @@ lemma coefficient_mass_le_euler (η ηi : Character) (S : Finset (Ideal O))
   intro P _
   exact (div_eq_mul_inv _ _).symm
 
-lemma coefficient_mass_summable (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S,Prime P) :
+lemma coefficient_mass_summable  :
     Summable (fun H : SmoothIdeal S => ∑ D ∈ S.powerset,‖coefficient η ηi S D H‖) := by
   exact summable_sum (fun D hD => coefficient_summable_norm η ηi S hS D (Finset.mem_powerset.mp hD))
+end
+end
+
 
 theorem reflection_mass_subpower (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O)) (_hS : ∀ P ∈ S,Prime P)
@@ -235,7 +289,7 @@ def unitSmooth (S : Finset (Ideal O)) : SmoothIdeal S :=
     rw [normalizedFactors_one]
     exact Finset.empty_subset _⟩
 
-end SevenEighths.CenteredMomentReflectionMass
-end
 
-end OAI
+
+
+

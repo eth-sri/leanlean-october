@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.UnrestrictedCharacters
 
 @[expose] public section
@@ -9,69 +10,69 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 namespace SecondPassIntegration
@@ -79,21 +80,12 @@ open JointLogSeparation FourierBridge
 
 lemma logPhase_conjugate (t x : ℝ) : star (logPhase t x) = logPhase (-t) x := by
   unfold logPhase
-  simp only [Complex.star_def, ← Complex.exp_conj, map_mul, Complex.conj_ofReal,
-    Complex.conj_I]
-  congr 1
-  push_cast
-  ring
+  simp only [star_def, ← exp_conj, map_mul, conj_ofReal, conj_I]
+  simp
 
 end SecondPassIntegration
 
-namespace JointLogSeparation
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open FourierBridge FirstPassCubeLabels
-
-end JointLogSeparation
 
 open scoped BigOperators Classical
 namespace SecondPassArithmetic
@@ -118,10 +110,14 @@ theorem secondPreColumn_zero_of_common_overlap
       commonProduct_mask p hg hinj S G, ite_eq_right hSG, mul_zero]
   simp only [secondPreColumn, hm, mul_zero, zero_mul]
 
-theorem weighted_secondChildKernelPair_congr_off_common
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+section
+variable (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (G E : Finset ι) (hEG : E ⊆ G) (F V : Finset ι)
-    (Ψ₁ Ψ₂ : O →* ℂ) (m c d k₁ k₂ : O)
+    (Ψ₁ Ψ₂ : O →* ℂ)
+include hpr G E hEG F V Ψ₁ Ψ₂
+
+theorem weighted_secondChildKernelPair_congr_off_common
+     (m c d k₁ k₂ : O)
     (K lengthScale : Finset ι → Finset ι → ℂ)
     (hKL : ∀ S T, Disjoint G S → Disjoint G T → K S T = lengthScale S T) :
     let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E
@@ -140,9 +136,9 @@ theorem weighted_secondChildKernelPair_congr_off_common
   intro N hN
   apply Finset.sum_congr rfl
   intro M hM
-  have hVN : Disjoint V N := Finset.disjoint_of_subset_right
+  have hVN := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hN) disjoint_sdiff_self_right
-  have hVM : Disjoint V M := Finset.disjoint_of_subset_right
+  have hVM := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hM) disjoint_sdiff_self_right
   have hcoeff :
       w * (star (secondChildColumn p hp hcop hg Ψ₁ (m*r) (c*e*∏ i ∈ V, p i)
@@ -176,9 +172,7 @@ theorem weighted_secondChildKernelPair_congr_off_common
     ring
 
 theorem weighted_secondRayChild_congr_off_common
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (G E : Finset ι) (hEG : E ⊆ G) (F V : Finset ι)
-    (Ψ₁ Ψ₂ : O →* ℂ) (m c d k : O) (z : SecondRayIndex)
+     (m c d k : O) (z : SecondRayIndex)
     (K lengthScale : Finset ι → Finset ι → ℂ)
     (hKL : ∀ S T, Disjoint G S → Disjoint G T → K S T = lengthScale S T) :
     let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E
@@ -194,32 +188,13 @@ theorem weighted_secondRayChild_congr_off_common
   congr 1
   exact weighted_secondChildKernelPair_congr_off_common p hp hcop hg hinj hpr G E hEG F V
     (secondRayMinus Ψ₁ z) (secondRayPlus Ψ₂ z) m c d k (-k) K lengthScale hKL
-
 end
-section
 
-open ActualEisensteinCubic
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
 end
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
-include hinj
 
-end
 section
 
 open ActualEisensteinCubic
@@ -313,16 +288,24 @@ lemma isUnit_quotient_span_iff (c d : O) :
     have h := congrArg (Ideal.Quotient.mk (Ideal.span {c})) hab
     simpa only [map_add,map_mul,map_one,hc,mul_zero,zero_mul,zero_add,mul_comm] using h
 
-abbrev AffineUnitResidue (c : O) :=
+section
+variable (c : O)
+include c
+
+abbrev AffineUnitResidue  :=
   {u : O ⧸ Ideal.span {c} // IsUnit (1+3*u)}
 
-lemma affine_representative_condition (c : O) (u : AffineUnitResidue c) :
+section
+variable (u : AffineUnitResidue c)
+include u
+
+lemma affine_representative_condition  :
     denominatorCondition c (1+3*GaussianShiftedPartition.representative c u.1) := by
   refine ⟨(isUnit_quotient_span_iff c _).mp ?_, ⟨_,by ring⟩⟩
   simpa only [map_add,map_mul,map_one,map_ofNat,
     GaussianShiftedPartition.representative_spec] using u.2
 
-def affineResidueMap (c : O) (u : AffineUnitResidue c) : AdmissibleResidue c :=
+def affineResidueMap  : AdmissibleResidue c :=
   ⟨Ideal.Quotient.mk (Ideal.span {3*c})
     (1+3*GaussianShiftedPartition.representative c u.1), by
     apply (denominatorCondition_congr c _
@@ -331,8 +314,10 @@ def affineResidueMap (c : O) (u : AffineUnitResidue c) : AdmissibleResidue c :=
     apply Ideal.mem_span_singleton.mp
     apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
     exact denominatorRep_spec c _⟩
+end
 
-lemma affineResidueMap_bijective (c : O) : Function.Bijective (affineResidueMap c) := by
+
+lemma affineResidueMap_bijective  : Function.Bijective (affineResidueMap c) := by
   constructor
   · intro u v huv
     have hdiv : 3*c ∣ (1+3*GaussianShiftedPartition.representative c u.1)-
@@ -369,8 +354,10 @@ lemma affineResidueMap_bijective (c : O) : Function.Bijective (affineResidueMap 
     obtain ⟨k,hk⟩ := hrep
     exact ⟨k,by linear_combination 3*hk⟩
 
-def affineResidueEquiv (c : O) : AffineUnitResidue c ≃ AdmissibleResidue c :=
+def affineResidueEquiv  : AffineUnitResidue c ≃ AdmissibleResidue c :=
   Equiv.ofBijective (affineResidueMap c) (affineResidueMap_bijective c)
+end
+
 
 def unitsSubtypeEquiv (R : Type*) [Monoid R] : Rˣ ≃ {x : R // IsUnit x} where
   toFun u := ⟨u,u.isUnit⟩
@@ -378,17 +365,23 @@ def unitsSubtypeEquiv (R : Type*) [Monoid R] : Rˣ ≃ {x : R // IsUnit x} where
   left_inv u := Units.ext u.isUnit.unit_spec
   right_inv x := Subtype.ext x.2.unit_spec
 
-def quotientProductEquiv (a b : O) (hab : IsCoprime a b) :
+section
+variable (a b : O) (hab : IsCoprime a b)
+include a b hab
+
+def quotientProductEquiv  :
     (O ⧸ Ideal.span {a*b}) ≃+* (O ⧸ Ideal.span {a}) × (O ⧸ Ideal.span {b}) :=
   (Ideal.quotEquivOfEq (Ideal.span_singleton_mul_span_singleton a b).symm).trans
     (Ideal.quotientMulEquivQuotientProd _ _ ((Ideal.isCoprime_span_singleton_iff a b).mpr hab))
 
-def affineCRTEq (a b : O) (hab : IsCoprime a b) :
+def affineCRTEq  :
     AffineUnitResidue (a*b) ≃ AffineUnitResidue a × AffineUnitResidue b :=
   ((quotientProductEquiv a b hab).toEquiv.subtypeEquiv (fun q => by
     rw [← MulEquiv.isUnit_map (quotientProductEquiv a b hab) (x := 1+3*q)]
     simp only [map_add,map_one,map_mul,map_ofNat,Prod.isUnit_iff]
     rfl)).trans Equiv.subtypeProdEquivProd
+end
+
 
 lemma affine_ramified_unit (n : ℕ) (q : O ⧸ Ideal.span {lambda^n}) : IsUnit (1+3*q) := by
   obtain ⟨d,rfl⟩ := Ideal.Quotient.mk_surjective q
@@ -397,7 +390,7 @@ lemma affine_ramified_unit (n : ℕ) (q : O ⧸ Ideal.span {lambda^n}) : IsUnit 
   have hcop : IsCoprime lambda (1+3*d) :=
     coprime_of_dvd_sub_one _ _ (by convert hlam3.mul_right d using 1 ; ring)
   have h := (isUnit_quotient_span_iff (lambda^n) (1+3*d)).mpr hcop.pow_left
-  simpa only [map_add,map_one,map_mul,map_ofNat] using h
+  exact h
 
 def affineRamifiedEquiv (n : ℕ) : AffineUnitResidue (lambda^n) ≃ (O ⧸ Ideal.span {lambda^n}) :=
   Equiv.subtypeUnivEquiv (affine_ramified_unit n)
@@ -406,7 +399,7 @@ def affineUnramifiedEquiv (m : O) (hm : IsCoprime m (3:O)) :
     AffineUnitResidue m ≃ (O ⧸ Ideal.span {m})ˣ := by
   let h3 : IsUnit (3 : O ⧸ Ideal.span {m}) := by
     simpa only [map_ofNat] using (isUnit_quotient_span_iff m 3).mpr hm
-  let e : (O ⧸ Ideal.span {m}) ≃ (O ⧸ Ideal.span {m}) :=
+  let e :=
     h3.unit.mulLeft.trans (Equiv.addLeft 1)
   refine (e.subtypeEquiv (fun q => ?_)).trans (unitsSubtypeEquiv _).symm
   change IsUnit (1+3*q) ↔ IsUnit (1+(h3.unit : O ⧸ Ideal.span {m})*q)
@@ -428,7 +421,6 @@ lemma card_admissible_ramified_product (n : ℕ) (m : O)
     _ = _ := Nat.card_prod _ _
 
 lemma absNorm_span_lambda : Ideal.absNorm (Ideal.span {lambda})=3 := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
   let : IsCyclotomicExtension {3^(0+1)} ℚ ActualEisensteinCubic.K := by
     simpa using (inferInstance : IsCyclotomicExtension {3} ℚ ActualEisensteinCubic.K)
   exact IsCyclotomicExtension.Rat.absNorm_span_zeta_sub_one 3 0
@@ -447,8 +439,8 @@ theorem card_admissible_lambda_pow_mul (n : ℕ) (m : O)
   rw [card_admissible_ramified_product n m hm
     (hm.symm.of_isCoprime_of_dvd_left hlam3),card_quotient_lambda_pow]
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

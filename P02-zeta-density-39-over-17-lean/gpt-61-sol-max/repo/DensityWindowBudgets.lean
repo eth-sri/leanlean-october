@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import FiniteCubicLargeValues
 public import DiscreteAdditiveEnergy
 public import GuthMaynard.Improvement.MomentScalarClosure
@@ -7,11 +8,10 @@ public import RefinedDensity
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set Finset
+open MeasureTheory Finset
 namespace Montgomery.RationalMoment
-open GuthMaynard.Improvement
+
 
 /-- Pure parameter conditions for the actual two-term-energy route. None
 of these fields is an assumed analytic estimate or a counting conclusion. -/
@@ -78,8 +78,7 @@ theorem two_term_amplifier_budgets {σ a p α T N : ℝ}
       _ = T^(2*(1-a)) := by
         rw [← Real.rpow_natCast (T/(T^a)) 2,Real.div_rpow hTp.le (Real.rpow_nonneg hTp.le _),
           ← Real.rpow_mul hTp.le,← Real.rpow_sub hTp]
-        congr 1
         ring
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT hw.energy_range
 
-end Montgomery.RationalMoment
+

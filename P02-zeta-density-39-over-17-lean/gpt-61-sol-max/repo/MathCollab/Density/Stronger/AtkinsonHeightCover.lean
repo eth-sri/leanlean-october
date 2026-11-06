@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.AtkinsonCardinalityAbsorption
 
 @[expose] public section
@@ -11,7 +12,6 @@ The localized packet bound remains an explicit theorem hypothesis.
 No physical Atkinson estimate or point-mean theorem is imported or asserted.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Constructed localization of a physical height set
@@ -40,8 +40,7 @@ theorem atkinsonHeightBin_mem_range {H L t : ℝ}
   have hq : (t-H)/L ≤ H/L :=
     div_le_div_of_nonneg_right (by linarith) hL.le
   have hf := Nat.floor_mono hq
-  simp only [atkinsonHeightBin,Finset.mem_range]
-  omega
+  aesop
 
 theorem atkinsonHeightFiber_interval {H L : ℝ} {W : Finset ℝ} (k : ℕ)
     (hL : 0 < L) (hrange : ∀ t ∈ W, H ≤ t) :
@@ -79,4 +78,4 @@ theorem atkinson_card_le_of_height_fibers {H L B : ℝ} {W : Finset ℝ}
     _ ≤ ∑ _k ∈ Finset.range (Nat.floor (H/L)+1), B := Finset.sum_le_sum hcard
     _ = _ := by simp
 
-end MathCollab.Density.Stronger
+

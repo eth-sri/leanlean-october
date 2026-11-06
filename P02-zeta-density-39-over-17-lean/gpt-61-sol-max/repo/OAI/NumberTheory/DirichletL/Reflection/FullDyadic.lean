@@ -7,23 +7,25 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
-def literalDyadicBlock (G : PrimeFamily ι)
+section
+variable (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+include G D s hc
+
+def literalDyadicBlock 
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (u : Eisˣ) (i : ℕ×ℕ×ℕ) : ℂ :=
   ∑ n : dualIdealDyad i.2.2, ∑ b : dualIdealDyad i.2.1,
     literalRawSeries G D s hc j S W X
       (u,i.1,⟨n.val,((mem_dualIdealDyad _ _).mp n.property).1⟩,
         ⟨b.val,((mem_dualIdealDyad _ _).mp b.property).1⟩)
 
-theorem mixedReflectedValue_eq_dyadic (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+theorem mixedReflectedValue_eq_dyadic 
     (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
@@ -37,15 +39,17 @@ theorem mixedReflectedValue_eq_dyadic (G : PrimeFamily ι)
   apply tsum_congr
   intro u
   exact tsum_dualIdealDyads _ (hs.prod_factor u)
+end
 
-lemma dyadic_kernel_argument_lower (scale rho q : ℝ) (hs : 0≤scale)
+
+lemma dyadic_kernel_argument_lower (scale rho q : ℝ) (hs : 0≤ scale)
     (hr : 0≤rho) (hq : 0≤q) (i : ℕ×ℕ×ℕ)
     (n : dualIdealDyad i.2.2) (b : dualIdealDyad i.2.1) :
     scale*(ramifiedScale rho q i.1)^3*(2:ℝ)^i.2.2*((2:ℝ)^i.2.1)^3/16 ≤
       scale*(ramifiedScale rho q i.1)^3*(Ideal.absNorm n.val:ℝ)*(Ideal.absNorm b.val:ℝ)^3 := by
   have hn := (dualIdealDyad_bounds _ _ n.property).2.1
   have hb := (dualIdealDyad_bounds _ _ b.property).2.1
-  have hp : 0≤scale*(ramifiedScale rho q i.1)^3 := by
+  have hp : 0≤ scale*(ramifiedScale rho q i.1)^3 := by
     unfold ramifiedScale
     positivity
   have hh := mul_le_mul hn (pow_le_pow_left₀ (by positivity) hb 3) (by positivity)
@@ -53,7 +57,7 @@ lemma dyadic_kernel_argument_lower (scale rho q : ℝ) (hs : 0≤scale)
   have hh' := mul_le_mul_of_nonneg_left hh hp
   nlinarith only [hh']
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

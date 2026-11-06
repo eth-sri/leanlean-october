@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GaussianLogWindow
 
 @[expose] public section
@@ -7,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap FourierTransform
-open MeasureTheory Filter Set FourierBridge LocalLogFourier
+open MeasureTheory Filter FourierBridge LocalLogFourier
 namespace SevenEighths.ProbePhysical
 
 def gaussianJointDensity (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ)) (R : ℝ) : SchwartzMap ℝ ℂ :=
@@ -24,8 +25,12 @@ lemma gaussianLogWindow_eq_positive (V : SchwartzMap ℝ ℂ) (hV : HasCompactSu
   ext s
   simp only [gaussianLogWindow_apply,positiveLogProfile_apply,gaussianFlow_real R hR]
 
-theorem gaussian_coupled_separation {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (a y : ι→ℝ) (V : SchwartzMap ℝ ℂ)
+section
+variable {ι : Type*} [Fintype ι]
+    (W : ι→ℝ→ℂ)
+include ι W
+
+theorem gaussian_coupled_separation  (a y : ι→ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (R : ℝ) (hR : 0<R)
     (hactive : (∏i,W i (y i))≠0→V (∑i,a i*y i)=1) :
     (∏i,W i (y i))*gaussianMellinProfile (R*Real.exp (∑i,a i*y i))=
@@ -35,8 +40,7 @@ theorem gaussian_coupled_separation {ι : Type*} [Fintype ι]
   rw [←gaussianLogWindow_eq_positive V hV R hR] at hh
   exact hh
 
-theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (a M : ι→ℝ) (hM : ∀i,0≤M i)
+theorem gaussian_coupled_family  (a M : ι→ℝ) (hM : ∀i,0≤M i)
     (hwindow : ∀i y,W i y≠0→|y|≤M i) :
     ∃V : SchwartzMap ℝ ℂ,∃hV : HasCompactSupport (V:ℝ→ℂ),
       (∀R : ℝ,0<R→∀y : ι→ℝ,
@@ -48,8 +52,8 @@ theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
   let T := ∑i,|a i| *M i
   have hT : 0≤T := Finset.sum_nonneg (fun i _=>mul_nonneg (abs_nonneg _) (hM i))
   obtain ⟨φ,hφc,hφs,hφone,hφsupp,_⟩ := FourierBridge.exists_complex_smooth_cutoff T hT
-  let V : SchwartzMap ℝ ℂ := hφc.toSchwartzMap hφs
-  have hV : HasCompactSupport (V:ℝ→ℂ) := hφc
+  let V := hφc.toSchwartzMap hφs
+  have hV := hφc
   have hbox : ∀s,V s≠0→|s|≤T+1 := by
     intro s hs
     have hh := hφsupp (subset_tsupport φ hs)
@@ -63,8 +67,10 @@ theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
     refine ⟨C,hC,?_⟩
     intro R hR
     exact ⟨JointLogSeparation.weighted_schwartz_integrable (gaussianJointDensity V hV R) J,hbound R hR⟩
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 
@@ -8,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic RayFourExpansion
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -61,13 +62,10 @@ theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
         (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative
         (multiplicativeCoreColumn p (if negative then Ψ₁ else Ψ₂) (if negative then m₁ else m₂)
           (fun U=>H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪U)))
-        (∏i∈C,p i) d x.1 := by
-    funext x
-    exact firstCanonicalCoefficient_old p hp hcop hg b C negative _ _ d H x
-  rw [hcoef]
-  exact he
+        (∏i∈C,p i) d x.1 := by rfl
+  assumption
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

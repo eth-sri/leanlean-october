@@ -10,10 +10,10 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstGlobalCaps InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
+open InverseMomentFirstChildWindows InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -49,7 +49,7 @@ theorem source_state_bounds (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceInd
     (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)):
     let S:=source p pool Q k l j negative J lists Z M r ell V eta tau window b;
     ∀d∈keys p S,
-      0≤max 0 (secondCellColumnExponent Z (columnScale Z r k l negative) d) ∧
+      0≤ max 0 (secondCellColumnExponent Z (columnScale Z r k l negative) d) ∧
       0≤actualCellLabelExponent Z (exponent Z (k 2)) (exponent Z j) eta d ∧
       actualCellTotalExponent Z (columnScale Z r k l negative) (exponent Z (k 2)) (exponent Z j) eta d≤r+3*ell+V+15*eta ∧
       0≤actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d ∧
@@ -61,8 +61,8 @@ theorem source_state_bounds (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceInd
   · exact (source_row_gates p hp pool Q k l j negative J lists Z M r ell V eta tau window b hZ heta hbin hwindow).2 d hd
   · exact source_row_decrease p hp pool Q k l j negative J lists Z M r ell V eta tau window b cutoff hZ heta hbin hterminal hsmall hQ d hd
 
-end SevenEighths.InverseMomentFirstLabelCell
 
-end
 
-end OAI
+
+
+

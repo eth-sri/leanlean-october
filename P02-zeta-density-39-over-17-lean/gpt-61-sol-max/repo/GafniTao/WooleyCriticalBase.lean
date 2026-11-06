@@ -17,7 +17,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem fordVinogradovPowerVector_one_one_injective (Q : ℕ) :
     Function.Injective (fordVinogradovPowerVector 1 1 Q) := by
@@ -75,6 +75,6 @@ theorem vinogradovCriticalEndpoint_degree_one
   simpa [fordVinogradovKappa] using
     fordVinogradovMomentBound_critical_one hepsilon
 
-end
 
-end GafniTao
+
+

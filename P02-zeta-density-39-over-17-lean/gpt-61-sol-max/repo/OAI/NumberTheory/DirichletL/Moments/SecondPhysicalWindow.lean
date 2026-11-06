@@ -6,19 +6,23 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSectorRetained
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalWindow
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorColumns
+open CanonicalQuadraticSieve ConcreteTraceCRT
+open CenteredMomentSecondSectorRetained
 open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
 open CenteredMomentSmooth CenteredMomentLogDyadic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem physical_kernel_window (C D I J : Ideal O)
+section
+variable (C D I J : Ideal O)
     (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
     (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
+include C D I J hC hD hI hJ A h hA hh W K R hK
+
+theorem physical_kernel_window 
     (V : Fin 4→ℝ→ℂ) (K₀ H₀ A₀ B₀ : ℝ)
     (hK₀ : 0<K₀) (hH₀ : 0<H₀) (hA₀ : 0<A₀) (hB₀ : 0<B₀) :
     physicalKernel C D W K R (A*h) I J*
@@ -45,9 +49,7 @@ theorem physical_kernel_window (C D I J : Ideal O)
   simp only [normValue_eq_embedding]
   convert congrArg (fun x : ℂ=>(retainedWeight R (‖eisEmbedding (A*h)‖^2):ℂ)*x) he using 1 <;> ring
 
-theorem physical_kernel_dyadic (C D I J : Ideal O)
-    (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
+theorem physical_kernel_dyadic 
     (n : Fin 4→ℤ) :
     physicalKernel C D W K R (A*h) I J*
       ((dyadicWeight (n 0) (secondEffectiveScale C D A K)*dyadicWeight (n 1) (normValue h)*
@@ -66,9 +68,11 @@ theorem physical_kernel_dyadic (C D I J : Ideal O)
     (CenteredMomentFirstScale.norm_pos J hJ.1)]
   exact physical_kernel_window C D I J hC hD hI hJ A h hA hh W K R hK _ _ _ _ _
     (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _)
-
-end SevenEighths.CenteredMomentSecondPhysicalWindow
-
 end
 
-end OAI
+
+
+
+
+
+

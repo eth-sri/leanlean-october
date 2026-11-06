@@ -16,7 +16,7 @@ Vinogradov mean value theorem to Heath--Brown's k-th derivative estimate.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The Vinogradov main-conjecture estimate, obtained from the proved source
 form of Wooley's Corollary 3.2. -/
@@ -34,6 +34,6 @@ theorem heathBrownKthDerivativeTheorem_native :
     heathBrownVMVTMainConjecture_native
 
 
-end
 
-end GafniTao
+
+

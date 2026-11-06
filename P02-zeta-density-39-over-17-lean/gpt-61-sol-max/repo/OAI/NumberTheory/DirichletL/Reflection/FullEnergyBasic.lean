@@ -26,7 +26,7 @@ lemma row_energy_le_retained {α : Type*} (rows : Finset α) (f g : α→ℂ) (E
   calc
     _ ≤ ∑ k∈rows, (2*‖g k‖^2+2*E^2) := Finset.sum_le_sum (fun k hk => norm_sq_le_retained (f k) (g k) E hE (hf k hk))
     _ = _ := by simp only [Finset.sum_add_distrib,←Finset.mul_sum,Finset.sum_const,nsmul_eq_mul];ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

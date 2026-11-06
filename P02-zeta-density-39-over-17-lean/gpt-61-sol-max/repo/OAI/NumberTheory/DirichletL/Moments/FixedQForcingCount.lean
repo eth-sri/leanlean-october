@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 
@@ -14,23 +15,29 @@ open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
 open CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSupport
+
 open CenteredMomentSourceRow
 open UniqueFactorizationMonoid IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def goodSet (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
+section
+variable (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι)
+include Q P c d V
+
+def goodSet  : Finset ι :=
   (forcingSet c d V).filter (fun i => IsCoprime Q (P i))
 
-def excludedSet (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
+def excludedSet  : Finset ι :=
   (forcingSet c d V).filter (fun i => ¬IsCoprime Q (P i))
 
-def goodIdeal (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Ideal O :=
+def goodIdeal  : Ideal O :=
   ∏ i ∈ goodSet Q P c d V, P i
 
-def excludedIdeal (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Ideal O :=
+def excludedIdeal  : Ideal O :=
   ∏ i ∈ excludedSet Q P c d V, P i
+end
+
 
 omit [Fintype ι] [DecidableEq ι] in
 lemma prime_product_squarefree (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
@@ -71,7 +78,7 @@ lemma forcing_split (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : F
 lemma prime_dvd_of_not_coprime (Q P : Ideal O) (hP : Prime P) (h : ¬IsCoprime Q P) : P ∣ Q := by
   let : P.IsMaximal := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero
   have hs : Q ⊔ P ≠ ⊤ := by simpa only [Ideal.isCoprime_iff_sup_eq] using h
-  have he : P = Q ⊔ P := Ideal.IsMaximal.eq_of_le inferInstance hs le_sup_right
+  have he := Ideal.IsMaximal.eq_of_le inferInstance hs le_sup_right
   exact Ideal.dvd_iff_le.mpr (le_sup_left.trans_eq he.symm)
 
 omit [Fintype ι] [DecidableEq ι] in
@@ -103,7 +110,7 @@ lemma forcing_norm_le (Q : Ideal O) (hQ : Q ≠ 0)
     (Ideal.absNorm (forcingIdeal P c d V) : ℝ) ≤
       (Ideal.absNorm (goodIdeal Q P c d V) : ℝ) * Ideal.absNorm (commonRadical Q Q) := by
   have hd := map_dvd Ideal.absNorm (forcing_dvd_good_mul_radical Q hQ P hp hinj c d V)
-  have hn : (goodIdeal Q P c d V) * commonRadical Q Q ≠ 0 :=
+  have hn :=
     mul_ne_zero (goodIdeal_ne_zero Q P hp c d V) (commonRadical_ne_zero Q Q)
   have hh := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) hd
   exact_mod_cast (show Ideal.absNorm (forcingIdeal P c d V) ≤
@@ -140,14 +147,14 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
       (768 * (6 : ℝ) ^ (normalizedFactors Q).toFinset.card * Cr^(1/6:ℝ) *
         Z^((M-4*Real.logb Z (Ideal.absNorm
           (forcingIdeal (fun i => Ideal.span {p i}) c d V):ℝ))/6)) := by
-  let P : ι → Ideal O := fun i => Ideal.span {p i}
+  let P := fun i => Ideal.span {p i}
   let G := goodIdeal Q P c d V
   have hA : movingElement p c d V ≠ 0 := by
     apply Ideal.span_singleton_eq_bot.not.mp
     rw [movingElement_span]
     exact movingIdeal_ne_zero _ hp c d V
   have hG0 : G ≠ 0 := goodIdeal_ne_zero Q P hp c d V
-  have hGn : (0:ℝ) < Ideal.absNorm G := CenteredExceptionalCount.norm_pos hG0
+  have hGn := CenteredExceptionalCount.norm_pos hG0
   have hb := separated_exceptional_count η χ Q hQ0 hQ hQ72
     m (movingElement p c d V) e hm hA hmLam hm2 he rows hrows hex G
     (goodIdeal_squarefree Q P hp hinj c d V) (by
@@ -168,7 +175,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
   have hf : (0:ℝ) < Ideal.absNorm (forcingIdeal P c d V) := by
     apply CenteredExceptionalCount.norm_pos
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
-  have hr : (0:ℝ) < Ideal.absNorm (commonRadical Q Q) :=
+  have hr :=
     CenteredExceptionalCount.norm_pos (commonRadical_ne_zero Q Q)
   have hs := fixed_radical_power_loss Z M _ _ _ hZ hf hGn hr
     (forcing_norm_le Q hQ0 P hp hinj c d V)
@@ -211,8 +218,8 @@ theorem actual_canonical_exceptional_count_fixedQ (η : Character) (χ : RayFour
       exact common_prime_dvd_left C D P) Z Cr M hZ hCr hN
   simpa only [commonPrime_span C D hC] using hb
 
-end SevenEighths.CenteredMomentFixedQForcingCount
 
-end
 
-end OAI
+
+
+

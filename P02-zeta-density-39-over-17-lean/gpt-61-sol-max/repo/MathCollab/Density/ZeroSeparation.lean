@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import MathCollab.Density.ZetaCounting
 public import MathCollab.Density.LargeValueDefinitions
 
 @[expose] public section
 
-open Set
+
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -73,10 +73,7 @@ theorem weighted_separated_extraction (S : Finset ℂ) (w : ℂ → ℝ)
   have hfJ : ∀ k ∈ J, f k ∈ S ∧ ordinateBin (f k) = k := fun k hk => hf k (hJK hk)
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
-    calc
-      k = ordinateBin (f k) := (hfJ k hk).2.symm
-      _ = ordinateBin (f l) := congrArg ordinateBin he
-      _ = l := (hfJ l hl).2
+    grind
   have himinj : Set.InjOn Complex.im ((J.image f) : Set ℂ) := by
     intro ρ hρ ω hω he
     obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hρ
@@ -124,4 +121,4 @@ theorem zetaSlab_separated_representatives (σ a b : ℝ) {B : ℝ} (hB : 0 ≤ 
     weighted_separated_extraction (zetaZeroFinset σ a b) (fun ρ => (zetaMultiplicity ρ : ℝ))
       hB hlocal
 
-end MathCollab.Density
+

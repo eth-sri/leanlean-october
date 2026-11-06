@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+
+
+open scoped EisensteinO
 
 lemma cubicDualRow_zero {n : Type*} [Fintype n]
     (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
@@ -50,7 +50,7 @@ theorem cubic_dual_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     ((2 / N) * ∑ j, ‖a j‖ ^ 2) (by positivity) he he
   simpa only [cubicDualRow_eq_gram] using h
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

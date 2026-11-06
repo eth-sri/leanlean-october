@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.GaussNorm
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open CubicEisenstein ProbePhase ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
+open ProbePhase ProbeRow
+open scoped EisensteinO
 
 theorem bareCongruenceCoefficient_norm_le (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
     ‖bareCongruenceCoefficient A s hA H‖ ≤
@@ -43,7 +43,7 @@ theorem bareSourceCoefficient_norm_le (η : HeckeFamily.Character)
     _ ≤ _ := bareCongruenceCoefficient_norm_le A s (supportedElement_ne_zero A hA)
       (supportedElement_ne_zero s hs) H
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

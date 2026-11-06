@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 abbrev CoprimeSourceIndex (K : Ideal Eis) (Pset nset bset : Finset (Ideal Eis)) :=
@@ -47,7 +47,7 @@ theorem weightedPhysicalReflectedRow_eq_coprime_source
     simp only [Set.mem_ofPred_eq] at hP
     simp only [dite_eq_right hP,mul_zero,Finset.sum_const_zero]
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

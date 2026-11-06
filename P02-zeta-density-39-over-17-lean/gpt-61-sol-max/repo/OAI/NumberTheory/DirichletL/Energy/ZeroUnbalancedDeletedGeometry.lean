@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceGeometry
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedDeletedGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReferenceGeometry
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
     (hZ : 1 < Z) (hB : 0 ≤ Bmask) (Mcap L X₁ X₂ xi : ℝ)
@@ -35,7 +36,7 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
   obtain ⟨hn₂, hc₂⟩ := divisor_norm s D₂ hD₂
   have hl₁ := Real.logb_nonneg hZ hn₁
   have hlonglog := Real.logb_nonneg hZ hlong
-  have hu₂ : Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ) ≤ Bmask :=
+  have hu₂ :=
     (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
   have hM := s.width_nonneg
   have hL0 : 0 ≤ L := by linarith
@@ -62,8 +63,8 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
     linarith
   · exact Or.inr hr
 
-end SevenEighths.CenteredMomentEnergyZeroUnbalancedDeletedGeometry
 
-end
 
-end OAI
+
+
+

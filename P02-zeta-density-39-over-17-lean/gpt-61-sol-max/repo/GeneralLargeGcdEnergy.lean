@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import GeneralCoprimeEnergy
 public import RationalLargeGcdEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -25,16 +25,13 @@ theorem large_gcd_adjacent_general {η : ℝ} (hη : 0 < η) :
         C*T^η*X*((W.card:ℝ)^2+(T/X)*(W.card:ℝ)^((3:ℝ)/2)+
           T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12)) := by
   obtain ⟨C,hC,hb⟩ := coprime_dyadic_adjacent_general (K:=2) (by norm_num) (show 0 < η/2 by positivity) (B:=1) (by norm_num)
-  let L : ℝ := 1+4^(η/2)/(η/2)
+  let L := 1+4^(η/2)/(η/2)
   have hL : 0 < L := by dsimp [L]; positivity
   refine ⟨C*L,by positivity,?_⟩
   intro T t₀ X hT hX hXT P hP W hW hsep
   have ht : 0 < T := by linarith
   have hgeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
-      X < p.1 ∧ (p.1:ℝ) ≤ 2*X ∧ X < p.2 ∧ (p.2:ℝ) ≤ 2*X := by
-    intro p hp
-    obtain ⟨h1,h2,hl1,hu1,hl2,hu2,_⟩ := hP p hp
-    exact ⟨h1,h2,hl1,hu1,hl2,hu2⟩
+      X < p.1 ∧ (p.1:ℝ) ≤ 2*X ∧ X < p.2 ∧ (p.2:ℝ) ≤ 2*X := by grind
   have hblock : ∀ d ∈ gcdValues P,
       (∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖^2) ≤
         (C*T^(η/2)*((W.card:ℝ)^2+(T/X)*(W.card:ℝ)^((3:ℝ)/2)+
@@ -43,7 +40,7 @@ theorem large_gcd_adjacent_general {η : ℝ} (hη : 0 < η) :
     obtain ⟨p,hp,he⟩ := mem_image.mp hd
     have hd0 : 0 < d := he ▸ Nat.gcd_pos_of_pos_left _ (hP p hp).1
     have hd1 : (1:ℝ) ≤ d := by exact_mod_cast hd0
-    have hdD : X^2/T ≤ (d:ℝ) := he ▸ (hP p hp).2.2.2.2.2.2
+    have hdD := he ▸ (hP p hp).2.2.2.2.2.2
     have hdiv : X/(d:ℝ) ≤ T/X := by
       have hh := div_le_div_of_nonneg_left hX.le (show 0 < X^2/T by positivity) hdD
       have heq : X/(X^2/T)=T/X := by field_simp
@@ -87,4 +84,4 @@ theorem large_gcd_adjacent_general {η : ℝ} (hη : 0 < η) :
         T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12)) := by ring
     _ = _ := by rw [hp]
 
-end Montgomery.RationalMoment
+

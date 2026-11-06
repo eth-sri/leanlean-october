@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Mellin.UniformKernelBounds
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.FiniteOperator
 
@@ -10,89 +11,96 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
-open scoped BigOperators Classical
+                                  
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase columnPrimeCoprime)
 open FiniteGaussPhase (canonicalProductGauss)
 
-theorem blockCross_union_left {ι : Type*} [DecidableEq ι]
+section
+variable {ι : Type*} [DecidableEq ι]
+include ι
+
+theorem blockCross_union_left 
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S T C : Finset ι)
     (hd : Disjoint S T) (e : ι → ℕ) :
     blockCross p hg (S ∪ T) C e = blockCross p hg S C e * blockCross p hg T C e :=
   Finset.prod_union hd
 
-def threeBlockExponent {ι : Type*} [DecidableEq ι] (N P : Finset ι)
+def threeBlockExponent  (N P : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (i : ι) : ℕ :=
   if i ∈ N then 5 else if i ∈ P then 1
   else (conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)).val
 
-theorem gaussBlock_three_cube_partition {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+include p hp
+
+theorem gaussBlock_three_cube_partition 
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (N P B : Finset ι) (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
@@ -108,7 +116,7 @@ theorem gaussBlock_three_cube_partition {ι : Type*} [DecidableEq ι]
   let e := threeBlockExponent N P v ε₁ ε₂
   have hNC : Disjoint N C := hNB.mono_right (Finset.filter_subset _ _)
   have hPC : Disjoint P C := hPB.mono_right (Finset.filter_subset _ _)
-  have hNPC : Disjoint (N ∪ P) C := Finset.disjoint_union_left.mpr ⟨hNC, hPC⟩
+  have hNPC := Finset.disjoint_union_left.mpr ⟨hNC, hPC⟩
   have hN (i : ι) (hi : i ∈ N) : e i = 5 := by simp [e, threeBlockExponent, hi]
   have hP (i : ι) (hi : i ∈ P) : e i = 1 := by
     have hn : i ∉ N := fun h => Finset.disjoint_left.mp hNP h hi
@@ -129,16 +137,12 @@ theorem gaussBlock_three_cube_partition {ι : Type*} [DecidableEq ι]
     apply Finset.prod_congr rfl
     intro i hi
     apply Finset.prod_congr rfl
-    intro k hk
-    rw [hN i hi, hC k hk]
-    rfl
+    grind
   have hcrossPC : blockCross p hg P C e = mixedCubeCross p hg P B v ε₁ ε₂ false := by
     apply Finset.prod_congr rfl
     intro i hi
     apply Finset.prod_congr rfl
-    intro k hk
-    rw [hP i hi, hC k hk]
-    rfl
+    simp_all <;> nlinarith
   change gaussBlock p hp hg ((N ∪ P) ∪ C) e = _
   rw [gaussBlock_union p hp hg (N ∪ P) C hNPC, gaussBlock_union p hp hg N P hNP,
     blockCross_union_left p hg N P C hNP,
@@ -147,10 +151,12 @@ theorem gaussBlock_three_cube_partition {ι : Type*} [DecidableEq ι]
     gaussBlock_congr p hp hg C e _ hC, hcrossNP, hcrossNC, hcrossPC]
   ring
 
-theorem canonicalProductGauss_three_cube_partition {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+section
+variable (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
+include hcop hg
+
+theorem canonicalProductGauss_three_cube_partition 
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (N P B : Finset ι) (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) :
@@ -182,12 +188,12 @@ theorem canonicalProductGauss_three_cube_partition {ι : Type*} [DecidableEq ι]
     mixedCubeCross_eq_row_quadratic p hcop hg hpr P B hPB]
   rfl
 
-theorem gaussBlock_eq_mobius_converted {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) (side : Bool) :
+section
+variable (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+include hc hpr
+
+theorem gaussBlock_eq_mobius_converted  (S : Finset ι) (side : Bool) :
     gaussBlock p hp hg S (fun _ => if side then 5 else 1) =
       FirstCauchyArithmetic.supportMobius (fun i => Ideal.span {p i}) S *
         MixedCrossSeparation.convertedColumnBlock p hp hg S side := by
@@ -210,15 +216,9 @@ theorem gaussBlock_eq_mobius_converted {ι : Type*} [DecidableEq ι]
       MixedGaussConversion.localGauss (p i) (hp i) (hg i) (if side then 5 else 1) =
     -((∏ k ∈ S.erase i, crossSymbol p hg i k ^ (if side then 5 else 1)) *
       MixedGaussConversion.convertedLocal (p i) (hp i) (hg i) side)
-  rw [← hl]
-  ring
+  grind
 
-theorem a_weighted_three_cube_gauss {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+theorem a_weighted_three_cube_gauss 
     (N P B : Finset ι) (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ) :
     star (MixedCrossSeparation.columnCoefficient p hp hcop hg N * C₁ N) *
@@ -245,22 +245,12 @@ theorem a_weighted_three_cube_gauss {ι : Type*} [DecidableEq ι]
   have hp' := MixedCrossSeparation.columnCoefficient_cancel_false p hp hcop hg hc hpr P
   simp only [FirstCauchyArithmetic.firstPassColumnMinus, FirstCauchyArithmetic.firstPassColumnPlus,
     star_mul, star_star, FirstCauchyArithmetic.star_supportMobius]
-  calc
-    _ = (star (MixedCrossSeparation.columnCoefficient p hp hcop hg N) *
-        MixedCrossSeparation.convertedColumnBlock p hp hg N true) *
-      (MixedCrossSeparation.columnCoefficient p hp hcop hg P *
-        MixedCrossSeparation.convertedColumnBlock p hp hg P false) *
-      (star (C₁ N) * C₂ P *
-        FirstCauchyArithmetic.supportMobius (fun i => Ideal.span {p i}) N *
-        FirstCauchyArithmetic.supportMobius (fun i => Ideal.span {p i}) P *
-        gaussBlock p hp hg (cubeActiveSupport B v ε₁ ε₂)
-          (fun k => (conductorExponent (parity (v k)) (ε₁ k) (ε₂ k)).val) *
-        quadraticCrossPhase p hg N P *
-        quadraticCrossPhase p hg N (cubeOddSupport B v ε₁ ε₂) *
-        quadraticCrossPhase p hg P (cubeOddSupport B v ε₁ ε₂) *
-        star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N (crtLabel p B v ε₁ ε₂ true)) *
-        finiteSquarefreeRow (fun i => Ideal.span {p i}) hg P (crtLabel p B v ε₁ ε₂ false)) := by ring
-    _ = _ := by rw [hn, hp']; ring
+  grind
+end
+end
+end
+end
+
 
 end FirstPassCubeLabels
 
@@ -297,10 +287,7 @@ theorem quadraticRayValue_same_residue_product (a b : ActualEisensteinCubic.O)
 
 end QuadraticGaussRay
 
-namespace QuadraticMainBoundaryFibers
-open IdealMobiusDivisorSum QuadraticMainBoundary
 
-end QuadraticMainBoundaryFibers
 
 namespace CoprimeSieveOperator
 open FiniteSieveOperator CoprimeMobiusExtension
@@ -311,8 +298,12 @@ theorem square_norm_sum {n : Type*} [Fintype n] (z : n → ℂ) :
   simp only [map_sum, starRingEnd_apply]
   rw [Finset.sum_mul_sum]
 
-theorem disjoint_gram_expansion {ι n : Type*} [DecidableEq ι] [Fintype n]
-    (B : Finset ι) (support : n → Finset ι) (hs : ∀ j, support j ⊆ B) (z : n → ℂ) :
+section
+variable {ι n : Type*} [DecidableEq ι] [Fintype n]
+    (B : Finset ι) (support : n → Finset ι) (hs : ∀ j, support j ⊆ B)
+include ι n B support hs
+
+theorem disjoint_gram_expansion  (z : n → ℂ) :
     (∑ j, ∑ k, if Disjoint (support j) (support k) then star (z j) * z k else 0) =
       ∑ D ∈ B.powerset, (-1 : ℂ) ^ D.card *
         (↑(‖∑ j, if D ⊆ support j then z j else 0‖ ^ 2) : ℂ) := by
@@ -325,9 +316,7 @@ theorem disjoint_gram_expansion {ι n : Type*} [DecidableEq ι] [Fintype n]
         split_ifs <;> simp
       _ = _ := by
         rw [disjoint_indicator_expansion B _ _ (hs j) (hs k), Finset.sum_mul]
-        apply Finset.sum_congr rfl
-        intro D _
-        split_ifs <;> simp
+        grind
   simp_rw [hp]
   calc
     _ = ∑ j, ∑ D ∈ B.powerset, ∑ k,
@@ -349,25 +338,22 @@ theorem disjoint_gram_expansion {ι n : Type*} [DecidableEq ι] [Fintype n]
       apply Finset.sum_congr rfl
       intro j _
       apply Finset.sum_congr rfl
-      intro k _
-      by_cases hj : D ⊆ support j <;> by_cases hk : D ⊆ support k <;> simp [hj, hk]
+      grind
 
-theorem masked_coefficient_energy {ι n : Type*} [DecidableEq ι] [Fintype n]
-    (B : Finset ι) (support : n → Finset ι) (hs : ∀ j, support j ⊆ B) (a : n → ℂ) :
+theorem masked_coefficient_energy  (a : n → ℂ) :
     (∑ D ∈ B.powerset, ∑ j, ‖if D ⊆ support j then a j else 0‖ ^ 2) =
       ∑ j, (2 : ℝ) ^ (support j).card * ‖a j‖ ^ 2 := by
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro j _
-  have heq : B.powerset.filter (fun D => D ⊆ support j) = (support j).powerset := by
-    ext D
-    simp only [Finset.mem_filter, Finset.mem_powerset]
-    exact ⟨And.right, fun h => ⟨h.trans (hs j), h⟩⟩
+  have heq : B.powerset.filter (fun D => D ⊆ support j) = (support j).powerset := by grind
   have hite (D : Finset ι) : ‖if D ⊆ support j then a j else 0‖ ^ 2 =
       if D ⊆ support j then ‖a j‖ ^ 2 else 0 := by split_ifs <;> simp
   simp_rw [hite]
   rw [← Finset.sum_filter, heq]
   simp
+end
+
 
 theorem weighted_energy_bound {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
@@ -402,17 +388,7 @@ theorem coprime_gram_operator_bound {ι m n : Type*} [DecidableEq ι]
         ∑ i, w i * (↑(‖∑ j, A i j * (if D ⊆ support j then a j else 0)‖ ^ 2) : ℂ) := by
     simp_rw [disjoint_gram_expansion B support hs, Finset.mul_sum]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro D _
-    apply Finset.sum_congr rfl
-    intro i _
-    have hz : (∑ j, if D ⊆ support j then A i j * a j else 0) =
-        ∑ j, A i j * (if D ⊆ support j then a j else 0) := by
-      apply Finset.sum_congr rfl
-      intro j _
-      split_ifs <;> simp
-    rw [hz]
-    ring
+    grind
   rw [heq]
   calc
     _ ≤ ∑ D ∈ B.powerset, ‖(-1 : ℂ) ^ D.card *
@@ -451,15 +427,21 @@ theorem primeSupport_disjoint_iff {I J : Ideal O} (hI : I ≠ 0) (hJ : J ≠ 0) 
   · intro h
     exact Multiset.disjoint_toFinset.mpr (disjoint_normalizedFactors h.isRelPrime)
 
-def supportConstant (ε : ℝ) (hε : 0 < ε) : ℝ :=
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+def supportConstant  : ℝ :=
   (SquarefreeDivisorBound.prime_support_subsets_bound ε hε).choose
 
-theorem supportConstant_pos (ε : ℝ) (hε : 0 < ε) : 0 < supportConstant ε hε :=
+theorem supportConstant_pos  : 0 < supportConstant ε hε :=
   (SquarefreeDivisorBound.prime_support_subsets_bound ε hε).choose_spec.1
 
-theorem support_card_bound (ε : ℝ) (hε : 0 < ε) (I : Ideal O) (hI : I ≠ 0) :
+theorem support_card_bound  (I : Ideal O) (hI : I ≠ 0) :
     (2 : ℝ) ^ (primeSupport I).card ≤ supportConstant ε hε * (Ideal.absNorm I : ℝ) ^ ε :=
   (SquarefreeDivisorBound.prime_support_subsets_bound ε hε).choose_spec.2 I hI
+end
+
 
 theorem ideal_coprime_gram_operator_bound {m n : Type*}
     [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -508,11 +490,10 @@ theorem mainWeight_norm_le (K : ℝ) (hK : 0 < K) (H D E : Ideal O)
   · simp [mainWeight, hc]
   have hn : K < (Ideal.absNorm (H * D * E) : ℝ) := by
     exact lt_of_not_ge (fun h => hc (cutoffDifference_eq_zero_of_product_le K hD hE h))
-  have hsq : 0 < Real.sqrt K := Real.sqrt_pos.mpr hK
+  have hsq := Real.sqrt_pos.mpr hK
   have hle := Real.sqrt_le_sqrt hn.le
   rw [mainWeight, cutoffDifference_eq_neg_one_of_nonzero K H D hD hc]
-  simp only [norm_div, Complex.ofReal_neg, Complex.ofReal_one, norm_neg, norm_one,
-    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
+  simp only [ofReal_neg, ofReal_one, norm_div, norm_neg, norm_one, norm_real, norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
   exact one_div_le_one_div_of_le hsq hle
 
 theorem main_difference_operator_bound {m n : Type*}
@@ -592,8 +573,8 @@ theorem ideal_quadraticRow_norm_le_one (F : Finset (Ideal O))
   exact finiteSquarefreeRow_norm_le_one (fun i : primePool F => i.val)
     (primePool_good F hFgood) (idealSupport F J) z
 
-end QuadraticMainOperatorBound
 
-end
 
-end OAI
+
+
+

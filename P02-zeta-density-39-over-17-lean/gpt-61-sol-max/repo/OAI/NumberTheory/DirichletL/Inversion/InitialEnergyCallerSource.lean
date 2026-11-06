@@ -9,7 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
 open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
 open SevenEighths.InverseInitialEnergyCallerModes
@@ -36,14 +36,18 @@ theorem point_pair_injective (x : Source (ι:=ι) 0) :
   intro q r h
   exact Prod.ext (congrArg Point.left h) (congrArg Point.right h)
 
-def rectangle (F : Finset ι) (x : Source (ι:=ι) 0) : Finset (Point ι) :=
+section
+variable (F : Finset ι)
+include F
+
+def rectangle  (x : Source (ι:=ι) 0) : Finset (Point ι) :=
   ((F\x.overlap).powerset ×ˢ (F\x.overlap).powerset).image
     (fun q=>sourcePoint x q.1 q.2)
 
-def pointSource (F : Finset ι) (S : Finset (Source (ι:=ι) 0)) : Finset (Point ι) :=
+def pointSource  (S : Finset (Source (ι:=ι) 0)) : Finset (Point ι) :=
   S.biUnion (rectangle F)
 
-theorem rectangles_disjoint (F : Finset ι) {x y : Source (ι:=ι) 0} (hne : x≠y) :
+theorem rectangles_disjoint  {x y : Source (ι:=ι) 0} (hne : x≠y) :
     Disjoint (rectangle F x) (rectangle F y) := by
   apply Finset.disjoint_left.mpr
   intro z hz₁ hz₂
@@ -52,6 +56,8 @@ theorem rectangles_disjoint (F : Finset ι) {x y : Source (ι:=ι) 0} (hne : x�
   have he := congrArg erasePoint (hea.trans heb.symm)
   simp only [erase_sourcePoint] at he
   exact hne he
+end
+
 
 theorem pointSource_sum {A : Type*} [AddCommMonoid A]
     (F : Finset ι) (S : Finset (Source (ι:=ι) 0)) (f : Point ι→A) :
@@ -82,8 +88,15 @@ variable {σ : Type*} [DecidableEq σ]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
+section
+variable (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+include hpr
+
+section
+variable (F : Finset ι)
+include F
+
+def rowMode  (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (x : Source (ι:=ι) 0) (ρ : SecondRayIndex)
@@ -97,8 +110,7 @@ def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       slots lists a (childLogTest ω₂ (height 5)) Z D B v)
 
 theorem canonicalBlock_rows
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
+     (S : Finset (Source (ι:=ι) 0))
     (hE : ∀ x∈S,x.divisor⊆x.common) (w : Source (ι:=ι) 0→ℂ)
     (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
@@ -130,9 +142,11 @@ theorem canonicalBlock_rows
       rw [canonicalPairMode_rectangle p hp hcop hg hpr x (hE x hx) F Ψ j
         slots lists a ω₁ ω₂ Z D B v θ H ρ z]
       rfl
+end
+
 
 theorem physicalBlock_rectangular_common_measure
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 6→ℝ→ℂ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (Z D B v m θ H η c₁ c₂ θ₁ θ₂ : ℝ)
@@ -156,9 +170,11 @@ theorem physicalBlock_rectangular_common_measure
   apply integral_congr_ae
   filter_upwards with z
   rw [canonicalBlock_rows p hp hcop hg hpr F S hE w Ψ j slots lists a ω₁ ω₂ Z D B v θ H z]
-
-end SevenEighths.InverseInitialEnergyCallerSource
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalMaskedFloor
 open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
@@ -19,7 +19,7 @@ open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExc
 open CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist
 open CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem excluded_pair (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
     ∃ S : Finset (ℕ×ℕ), ∃ C : ℝ, 0<C ∧
@@ -85,7 +85,7 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ →
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η Q (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 z) →
-    ∀ (Z m q ρ t X₁ X₂ : ℝ), 1≤Z → 0≤m → 0≤q → r.scale=Z^m →
+    ∀ (Z m q ρ t X₁ X₂ : ℝ), 1≤Z → 0≤ m → 0≤q → r.scale=Z^m →
       m+q≤ρ → 0<X₁ → 0<X₂ → (η.modulus.absNorm:ℝ)≤Z^q →
     zeroEnergy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 t W₁ W₂ X₁ X₂ r ≤
       C*(R.radical.absNorm:ℝ)^ε*bΦ^4*diagonalControl r.profile*
@@ -169,8 +169,8 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
       (T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2*(1+‖t‖)^(4*n))*(Z^m*(Z^(m+q))^4) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hp (by positivity)
 
-end SevenEighths.CenteredMomentNaturalMaskedFloor
 
-end
 
-end OAI
+
+
+

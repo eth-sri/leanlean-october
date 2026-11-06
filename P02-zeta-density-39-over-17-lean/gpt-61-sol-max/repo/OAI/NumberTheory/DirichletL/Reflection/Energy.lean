@@ -9,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
@@ -20,7 +20,7 @@ def actualRowPhaseExtension (F : PrimeFamily φ) (jF : φ → ℕ)
     (u : Eisˣ) (m : ℕ) (K : Ideal Eis) : ℂ :=
   if hK : Admissible K then actualRowPhase F K hK jF s u m else 0
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

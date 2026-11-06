@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceNaturalPrime
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
@@ -11,11 +12,11 @@ noncomputable section
 
 open scoped Classical BigOperators ContDiff Topology
 namespace SevenEighths.CenteredMomentRelativeCapacityRemoval
-open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
+open HeckeFamily HeckeZeroSupremum CenteredExceptionalProfile
 open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular
 open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
 open CenteredMomentSecondHeightFamily Filter
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -37,7 +38,7 @@ theorem relative_slots_uniform {ι:Type*}[Fintype ι]
         C*(1+|t|+V)^degree*Z^loss*P^κ := by
   choose degree C hC hb using fun i=>natural_character_slot_bound M H hH (W i) (a i) (b i)
     (ha i) (hWs i) (hW i) Lmod Lslot loss lo hi κ hLm hLs hloss hbeta hκ
-  let Ctotal:ℝ:=1+∑i,C i
+  let Ctotal :=1+∑i,C i
   have hCtotal:1≤Ctotal:=by
     have hsum:=Finset.sum_nonneg (fun i (_:i∈Finset.univ)=>(hC i).le)
     dsimp [Ctotal];linarith
@@ -67,8 +68,8 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
     (Lmod Lslot ε lo hi κ:ℝ)(hLm:0≤Lmod)(hLs:0≤Lslot)(hε:0<ε)
     (hbeta:(51/100:ℝ)≤beta)(hκ:2*beta-1≤κ):
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀ν:ι→Character,∃Z₀:ℝ,1<Z₀ ∧
-    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
-      (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤ mesh →
+      (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     ∃R:Finset ι,R⊆J ∧ (R=J ∨ n₁+n₂+6*κ*(∑i∈J\R,w i)≤width) ∧
       κ*(∑i∈R,w i)≤CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh ∧
     ∀Z:ℝ,Z₀≤Z → ∀η:Character,∀z:O,z≠0 → ∀F:NaturalRow η z,
@@ -104,7 +105,7 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   let B:=C*(1+|t|+V)^degree*Z^loss
   have hB:1≤B:=by
     have ht:1≤(1+|t|+V)^degree:=one_le_pow₀ (by linarith [abs_nonneg t])
-    have hz:1≤Z^loss:=Real.one_le_rpow hZ1 hloss.le
+    have hz :=Real.one_le_rpow hZ1 hloss.le
     exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hC ht) hz
   have hs:∀i∈R,‖normalizedSlot η fixedBadMask 1 z (primePool M H (b i) (Z^(w i)))
       (fun I=>idealCoeff (ν i) I*annularWeight (W i) (Z^(w i)) (σ i) (freq i) I) t (Z^(w i))‖^2≤
@@ -125,7 +126,7 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   have hpow:(∏i∈R,B)≤B^N:=by
     rw [Finset.prod_const]
     exact pow_le_pow_right₀ hB hcard
-  have hcostZ:Z^(κ*∑i∈R,w i)≤Z^(excess/6+κ*mesh):=
+  have hcostZ :=
     Real.rpow_le_rpow_of_exponent_le hZ1 hcost
   have hsplit:B^N=C^N*(1+|t|+V)^(degree*N)*Z^(loss*(N:ℝ)):=by
     dsimp [B]
@@ -146,8 +147,8 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   ext i
   simp
 
-end SevenEighths.CenteredMomentRelativeCapacityRemoval
 
-end
 
-end OAI
+
+
+

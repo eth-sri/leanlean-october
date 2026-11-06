@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownTaylorPhaseDerivative
 public import Mathlib.Analysis.Calculus.MeanValue
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
@@ -17,7 +18,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem norm_heathBrownPhase_sub_le (a b : ℝ) :
     ‖heathBrownPhase a - heathBrownPhase b‖ ≤
@@ -41,13 +42,7 @@ theorem norm_heathBrownPhase_sub_le (a b : ℝ) :
     congr 1
     push_cast
     ring
-  rw [hexp]
-  calc
-    ‖Complex.exp (Complex.I * (2 * Real.pi * (a - b) : ℝ)) - 1‖ ≤
-        ‖(2 * Real.pi * (a - b) : ℝ)‖ := h
-    _ = 2 * Real.pi * |a - b| := by
-      rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg (by positivity : 0 ≤ (2 : ℝ)),
-        abs_of_nonneg Real.pi_pos.le]
+  simp_all
 
 /-- Mean-value estimate in the exact form used between consecutive integer
 arguments of the Abel weight. -/
@@ -93,6 +88,6 @@ theorem norm_heathBrownTaylorError_phase_succ_sub_le
       gcongr
       simpa using hgdiff
 
-end
 
-end GafniTao
+
+

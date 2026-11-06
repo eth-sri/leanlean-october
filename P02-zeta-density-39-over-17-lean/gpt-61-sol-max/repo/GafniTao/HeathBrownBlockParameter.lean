@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownClosePairs
 
 @[expose] public section
@@ -16,7 +17,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownBlockParameter
+def heathBrownBlockParameter
     (A lambda : ℝ) (N : ℕ) : ℕ :=
   1 + ⌊4 * A * lambda * N⌋₊
 
@@ -26,8 +27,12 @@ theorem heathBrownBlockParameter_pos
   unfold heathBrownBlockParameter
   omega
 
+section
+variable {A lambda : ℝ} {N : ℕ}
+include A lambda N
+
 theorem heathBrown_scale_lt_blockParameter
-    {A lambda : ℝ} {N : ℕ} :
+     :
     4 * A * lambda * N <
       (heathBrownBlockParameter A lambda N : ℝ) := by
   unfold heathBrownBlockParameter
@@ -37,7 +42,7 @@ theorem heathBrown_scale_lt_blockParameter
 /-- The exact strict half-unit margin used to remove wrapping in the last
 coordinate. -/
 theorem heathBrown_block_scale_lt_half
-    {A lambda : ℝ} {N : ℕ}
+    
     (hsmall : A * lambda ≤ 1 / 4) :
     A * lambda *
         (1 + (N : ℝ) / heathBrownBlockParameter A lambda N) <
@@ -53,16 +58,17 @@ theorem heathBrown_block_scale_lt_half
   have hrewrite :
       A * lambda * (1 + (N : ℝ) / K) =
         A * lambda + A * lambda * (N : ℝ) / K := by ring
-  rw [hrewrite]
-  linarith
+  grind
 
 theorem heathBrown_block_scale_le_half
-    {A lambda : ℝ} {N : ℕ}
+    
     (hsmall : A * lambda ≤ 1 / 4) :
     A * lambda *
         (1 + (N : ℝ) / heathBrownBlockParameter A lambda N) ≤
       1 / 2 :=
   (heathBrown_block_scale_lt_half hsmall).le
+end
+
 
 /-- A nonnegative derivative bounded by `M` controls the absolute difference
 between two sampled values. -/
@@ -124,6 +130,6 @@ theorem heathBrown_pairCountTwo_index_le_block_length
       exact Nat.cast_div_le
 
 
-end
 
-end GafniTao
+
+

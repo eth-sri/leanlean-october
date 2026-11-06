@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -12,11 +13,10 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -100,7 +100,7 @@ theorem exists_norm_zetaSquareLeadingRightKernel_far_le :
   refine ⟨2500 * Real.exp 164, by positivity, ?_⟩
   intro t u ht hu
   have ht0 : 0 < t := by linarith
-  let R : ℝ := 1 + |u|
+  let R := 1 + |u|
   have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
   have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ R := by
     simpa [R, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
@@ -134,7 +134,7 @@ theorem exists_norm_zetaSquareRightKernel_sub_leading_le :
         zetaSquareLeadingRightKernel t u‖ ≤ C * zetaSquareKernelErrorMajorant u := by
   obtain ⟨K, hK, hk⟩ := exists_norm_normalized_zetaSquareRightKernel_far_le
   obtain ⟨L, hL, hl⟩ := exists_norm_zetaSquareLeadingRightKernel_far_le
-  let N : ℝ := 114375 * Real.exp 120
+  let N := 114375 * Real.exp 120
   have hN : 0 < N := by dsimp [N]; positivity
   refine ⟨N + K + L, by positivity, ?_⟩
   intro t u ht
@@ -161,16 +161,14 @@ theorem integrable_zetaSquareRightKernel_error {t : ℝ} (ht : 4 ≤ t) :
   apply (integrable_zetaSquareKernelErrorMajorant.const_mul C).mono'
     (((continuous_zetaSquareRightKernel (-t)).div_const _).sub
       (continuous_zetaSquareLeadingRightKernel t)).aestronglyMeasurable
-  filter_upwards with u
-  exact hbound t u ht
+  simp_all
 
 theorem integrable_zetaSquareLeadingRightKernel {t : ℝ} (ht : 4 ≤ t) :
     Integrable (zetaSquareLeadingRightKernel t) := by
   have h := ((integrable_zetaSquareRightKernel (-t)).div_const
     (zetaSquareGammaNormalization t)).sub (integrable_zetaSquareRightKernel_error ht)
   convert h using 1
-  funext u
-  simp only [Pi.sub_apply, sub_sub_cancel]
+  bound
 
 /-- The whole-line integrated absolute error has one uniform constant.
 This supplies an honest `O(1)` kernel remainder before the divisor series
@@ -189,4 +187,4 @@ theorem exists_integral_norm_zetaSquareRightKernel_error_le :
   rw [integral_const_mul] at h
   linarith
 
-end MathCollab.Density.Stronger.Atkinson
+

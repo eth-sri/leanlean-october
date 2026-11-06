@@ -4,9 +4,8 @@ public import DensityEnergyGM.DifferenceLayerCake
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -107,4 +106,4 @@ theorem difference_peak_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
       have hh : 0 ≤ C₀ * (2 : ℝ) ^ ε * T ^ ε * (M : ℝ) ^ 6 := by positivity
       nlinarith
 
-end Montgomery.RationalMoment
+

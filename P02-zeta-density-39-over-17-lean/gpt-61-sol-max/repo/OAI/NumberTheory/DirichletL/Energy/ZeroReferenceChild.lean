@@ -1,24 +1,25 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowChild
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyProfiles CenteredMomentLattice
+open HeckeFamily HeckeDyadic QuadraticInitialBound
+open CenteredMomentEnergyProfiles
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceLowChild
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild
 open CenteredMomentEnergyReferenceChildProfiles CenteredMomentInductionEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-open CenteredMomentSectorLocalization CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSectorLocalization
+open scoped HeckeO
 
 lemma independent_energy {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     (hB:0≤Bmask)(ha:0<a)(W₁ W₂:𝓢(ℝ,ℂ))
@@ -31,15 +32,17 @@ lemma independent_energy {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     (unitBudgetState s hB).plainEnergy (independentProfiles ha W₁ W₂ hs₁ hs₂ t₁ t₂) 0 X₁ X₂:=by
   have hh:=independent_child_energy s ha W₁ W₂ hs₁ hs₂ (∅:Finset (Fin 0))
     (fun _=>∅) (fun _ _=>0) (fun _=>1) t₁ t₂ X₁ X₂ hX₁ hX₂ (by simp)
-  simpa only [Finset.prod_empty,mul_one,energy,NaturalState.plainEnergy,
-    CenteredMomentRetainedEnergy.positiveSlotRow,Fintype.prod_empty,
-    unitBudgetState,unpuncturedState,NaturalState.mask,effectiveState,effectiveRadial] using hh
+  aesop
 
-theorem independent_from_low
-    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
+section
+variable (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hlow:ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S C)
-    (hB:0≤Bmask)(ha:0<a)(s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=Q)
+    (hB:0≤Bmask)(ha:0<a)
+include a b bΦ Bmask L Mcap ε Z Q degree S C hlow hB ha
+
+theorem independent_from_low
+    (s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=Q)
     (hs:s.width≤Mcap)(W₁ W₂:𝓢(ℝ,ℂ))
     (hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b)
     (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b)
@@ -57,10 +60,7 @@ theorem independent_from_low
     norm_zero,add_zero,one_pow,mul_one,effectiveState,effectiveRadial] using hh
 
 theorem reflected_from_low
-    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
-    (hlow:ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S C)
-    (hB:0≤Bmask)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
+    (hlo:a≤1/4)(hhi:1≤b)
     (s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=Q)(hs:s.width≤Mcap)
     (Wshort:𝓢(ℝ,ℂ))(hsW:Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b)
     (j k:Fin 2)(v t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(hc₁:X₁≤Z^L)(hc₂:X₂≤Z^L)
@@ -78,9 +78,11 @@ theorem reflected_from_low
   have he:((annulusSeed a b hlo hhi).profile:ℝ→ℂ)=(fun y:ℝ=>(annulus y:ℂ)):=
     funext annulusTemplate_apply
   simpa only [derivativeChoice_apply,he,reflectionProfiles] using hh
-
-end SevenEighths.CenteredMomentEnergyZeroReferenceChild
-
 end
 
-end OAI
+
+
+
+
+
+

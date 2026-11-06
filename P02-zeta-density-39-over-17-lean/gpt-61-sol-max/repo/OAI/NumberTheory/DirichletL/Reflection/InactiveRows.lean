@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
 def inactiveRowSet (rows : Finset (Ideal Eis)) (L : σ→Finset (Ideal Eis)) (T : Finset σ)
@@ -60,7 +60,7 @@ theorem original_inactive_restricted_energy
   apply (weighted_finite_row_energy_uniform Finset.univ rows wt g E (fun b hb => hg b)).trans
   exact mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (Finset.sum_nonneg (fun b _ => norm_nonneg _)) hm 2) hE
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

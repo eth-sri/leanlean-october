@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import WeightedFourthMoment
 public import Mathlib.Analysis.Fourier.ZMod
 public import Mathlib.Analysis.PSeries
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -24,32 +24,13 @@ theorem int_reciprocal_square_budget (A : Finset ℤ)
     (hA : ∀ n ∈ A, n ≠ 0) :
     (∑ n ∈ A, (n : ℝ)⁻¹ ^ 2) ≤ 4 := by
   let B := A.image Int.natAbs
-  have hB : ∀ n ∈ B, n ≠ 0 := by
-    intro n hn
-    obtain ⟨m, hm, rfl⟩ := mem_image.mp hn
-    exact Int.natAbs_ne_zero.mpr (hA m hm)
+  have hB : ∀ n ∈ B, n ≠ 0 := by aesop
   have hb := nat_reciprocal_square_budget B hB
   let P := B.image (fun n : ℕ => (n : ℤ))
   let Q := B.image (fun n : ℕ => -(n : ℤ))
-  have hs : A ⊆ P ∪ Q := by
-    intro n hn
-    have hnB : n.natAbs ∈ B := mem_image.mpr ⟨n, hn, rfl⟩
-    rcases le_total 0 n with hn0 | hn0
-    · exact mem_union_left Q (mem_image.mpr ⟨n.natAbs, hnB, by
-        rw [Int.natCast_natAbs, abs_of_nonneg hn0]⟩)
-    · exact mem_union_right P (mem_image.mpr ⟨n.natAbs, hnB, by
-        rw [Int.natCast_natAbs, abs_of_nonpos hn0, neg_neg]⟩)
-  have hp : (∑ n ∈ P, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
-    rw [show P = B.image (fun n : ℕ => (n : ℤ)) from rfl, sum_image]
-    · simp only [Int.cast_natCast, inv_pow]
-    · intro a _ b _ hab
-      change (a : ℤ) = (b : ℤ) at hab
-      exact_mod_cast hab
-  have hq : (∑ n ∈ Q, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
-    rw [show Q = B.image (fun n : ℕ => -(n : ℤ)) from rfl, sum_image]
-    · simp only [Int.cast_neg, Int.cast_natCast, inv_neg, neg_sq, inv_pow]
-    · intro a _ b _ hab
-      exact_mod_cast neg_injective hab
+  have hs : A ⊆ P ∪ Q := by grind
+  have hp : (∑ n ∈ P, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by aesop
+  have hq : (∑ n ∈ Q, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by aesop
   calc
     _ ≤ ∑ n ∈ P ∪ Q, (n : ℝ)⁻¹ ^ 2 :=
       sum_le_sum_of_subset_of_nonneg hs (fun _ _ _ => sq_nonneg _)
@@ -72,10 +53,14 @@ theorem integerFourthWeight_nonneg (n : ℤ) : 0 ≤ integerFourthWeight n := by
 def cyclicPhase {N : ℕ} [NeZero N] (n : ℤ) (x : ZMod N) : ℂ :=
   ZMod.stdAddChar ((n : ZMod N)*x)
 
-theorem cyclicPhase_norm {N : ℕ} [NeZero N] (n : ℤ) (x : ZMod N) : ‖cyclicPhase n x‖ = 1 := by
+section
+variable {N : ℕ} [NeZero N]
+include N
+
+theorem cyclicPhase_norm  (n : ℤ) (x : ZMod N) : ‖cyclicPhase n x‖ = 1 := by
   simp only [cyclicPhase, ZMod.stdAddChar_apply, Circle.norm_coe]
 
-theorem cyclicPhase_mean_zero {N : ℕ} [NeZero N] {n : ℤ}
+theorem cyclicPhase_mean_zero  {n : ℤ}
     (hn : n ≠ 0) (hN : n.natAbs < N) :
     (∑ x : ZMod N, cyclicPhase n x) = 0 := by
   have hcast : (n : ZMod N) ≠ 0 := by
@@ -83,12 +68,11 @@ theorem cyclicPhase_mean_zero {N : ℕ} [NeZero N] {n : ℤ}
     have hd := (ZMod.intCast_zmod_eq_zero_iff_dvd n N).mp he
     have hd' : N ∣ n.natAbs := by exact_mod_cast Int.natAbs_dvd_natAbs.mpr hd
     exact (Nat.not_dvd_of_pos_of_lt (Int.natAbs_pos.mpr hn) hN) hd'
-  simpa only [cyclicPhase, AddChar.mulShift_apply, mul_comm] using
-    AddChar.sum_eq_zero_of_ne_one (ZMod.isPrimitive_stdAddChar N hcast)
+  exact AddChar.sum_eq_zero_of_ne_one (ZMod.isPrimitive_stdAddChar N hcast)
 
 /-- A genuine finite cyclic Laurent-polynomial estimate, with mean zero
 and the reciprocal-square budget proved internally. -/
-theorem cyclic_fourth_moment {N : ℕ} [NeZero N] (A : Finset ℤ)
+theorem cyclic_fourth_moment  (A : Finset ℤ)
     (hzero : 0 ∈ A) (hN : ∀ n ∈ A, n.natAbs < N) (c : ℤ → ℂ) :
     (∑ x : ZMod N, (N : ℝ)⁻¹ * ‖∑ n ∈ A, c n*cyclicPhase n x‖^4) ≤
       (∑ n ∈ A, integerFourthWeight n * ‖c n‖^2)^2 := by
@@ -115,11 +99,11 @@ theorem cyclic_fourth_moment {N : ℕ} [NeZero N] (A : Finset ℤ)
     congr 1
     apply sum_congr rfl
     intro n hn
-    rw [ite_eq_right (ne_of_mem_erase hn)]
-    ring
+    grind
   simp_rw [he]
   rw [hw]
-  convert hh using 1
-  norm_num
+  nlinarith
+end
 
-end Montgomery.RationalMoment
+
+

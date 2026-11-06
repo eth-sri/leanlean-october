@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 Adam Benenson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
@@ -53,7 +54,7 @@ namespace Euclidean
 open scoped ENNReal MeasureTheory
 open MeasureTheory
 
-section
+
 
 variable
   {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
@@ -77,7 +78,7 @@ def C1c : Submodule ℝ (E → ℝ) where
   carrier := {f | ContDiff ℝ 1 f ∧ HasCompactSupport f}
   zero_mem' := by
     refine ⟨contDiff_const, ?_⟩
-    simpa using (HasCompactSupport.zero : HasCompactSupport (fun _ : E => (0 : ℝ)))
+    exact (HasCompactSupport.zero : HasCompactSupport (fun _ : E => (0 : ℝ)))
   add_mem' := by
     intro f g hf hg
     refine ⟨hf.1.add hg.1, hf.2.add hg.2⟩
@@ -100,7 +101,7 @@ lemma continuous_grad {f : E → ℝ} (hf : ContDiff ℝ 1 f) : Continuous (grad
 lemma hasCompactSupport_grad {f : E → ℝ} (hf : HasCompactSupport f) :
     HasCompactSupport (grad (E := E) f) := by
   -- Outside the support of `f`, `fderiv` is identically `0`, hence so is `grad`.
-  have hf' : HasCompactSupport (fderiv ℝ f) := hf.fderiv ℝ
+  have hf' := hf.fderiv ℝ
   -- `grad` is composition with a linear map sending `0` to `0`.
   exact
     (HasCompactSupport.comp_left (f := fderiv ℝ f) (g := (InnerProductSpace.toDual ℝ E).symm)
@@ -112,8 +113,8 @@ lemma memLp_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) : MemLp f 2 μ 
 
 lemma memLp_grad_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) :
     MemLp (grad (E := E) f) 2 μ := by
-  have hcont : Continuous (grad (E := E) f) := continuous_grad (E := E) (f := f) hf.1
-  have hcs : HasCompactSupport (grad (E := E) f) := hasCompactSupport_grad (E := E) (f := f) hf.2
+  have hcont := continuous_grad (E := E) (f := f) hf.1
+  have hcs := hasCompactSupport_grad (E := E) (f := f) hf.2
   exact hcont.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hcs
 
 /-- The `L²` class of a `C¹` compactly supported function. -/
@@ -154,7 +155,7 @@ private lemma toL2_smul (c : ℝ) (f : ↥(C1c (E := E))) :
   apply Lp.ext
   have hf : (toL2 (μ := μ) (E := E) f : E → ℝ) =ᵐ[μ] f.1 :=
     (memLp_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
-  have hcf : (toL2 (μ := μ) (E := E) (c • f) : E → ℝ) =ᵐ[μ] (c • f.1) :=
+  have hcf :=
     (memLp_of_mem_C1c (μ := μ) (E := E) (c • f).2).coeFn_toLp
   refine hcf.trans ?_
   filter_upwards [Lp.coeFn_smul c (toL2 (μ := μ) (E := E) f), hf] with x hxsmul hxf
@@ -219,7 +220,7 @@ private lemma toL2Grad_smul (c : ℝ) (f : ↥(C1c (E := E))) :
       simp [hxf]
     _ = ((c • toL2Grad (μ := μ) (E := E) f : L2E (μ := μ)) : E → E) x := by
       -- `Lp.coeFn_smul` gives the pointwise evaluation of `c • f` in `L²`.
-      simpa [Pi.smul_apply] using hxsmul.symm
+      exact hxsmul.symm
 
 /-- Linear map sending `C¹_c` functions to the `L²` class of their gradient. -/
 noncomputable def toL2GradLinear : ↥(C1c (E := E)) →ₗ[ℝ] L2E (μ := μ) where
@@ -255,10 +256,10 @@ noncomputable def h1ToL2Grad : (↥(h1 (μ := μ) (E := E))) →L[ℝ] L2E (μ :
   (ContinuousLinearMap.snd ℝ (L2ℝ (μ := μ)) (L2E (μ := μ))).comp
     (Submodule.subtypeL (h1 (μ := μ) (E := E)))
 
-end
 
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov
+
+
+
+
+
+

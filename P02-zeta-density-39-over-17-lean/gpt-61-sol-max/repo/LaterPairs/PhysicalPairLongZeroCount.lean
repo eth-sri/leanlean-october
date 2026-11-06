@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import LaterPairs.PhysicalExcessReduction
 public import LaterPairs.PairPhysicalExcess
 public import DetectorPowerRange
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Real Filter MeasureTheory Set
+
+open Real Filter MeasureTheory
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger MathCollab.Density
 open TaoTrudgianYang2025
@@ -22,8 +22,8 @@ theorem smoothLongZeroCount_pair_tail_general {k l σ a δ η q ε : ℝ}
     (hsecond : 1+l/k-(4+(2+4*l)/k)*q ≤ 3*a*(1-σ)+ε/2) :
     ∃ C : ℝ,0 < C ∧ ∀ᶠ T : ℝ in atTop,
       (smoothLongZeroCount η σ a δ T:ℝ) ≤ C*T^(3*a*(1-σ)+ε) := by
-  let b : ℝ := 4+(2+4*l)/k
-  let ξ : ℝ := (q-1/8)/2
+  let b := 4+(2+4*l)/k
+  let ξ := (q-1/8)/2
   have hξ : 0 < ξ := by dsimp [ξ]; linarith
   have hqξ : 1/8+ξ < q := by dsimp [ξ]; linarith
   have hquarter : 0 < ε/4 := by positivity
@@ -36,24 +36,23 @@ theorem smoothLongZeroCount_pair_tail_general {k l σ a δ η q ε : ℝ}
   have hrange := criticalMeanThreshold_dominates_power hCm
     (show 0 < 4*Real.pi*(3:ℝ)^(1/8+ξ) by positivity)
     (show (1/8+ξ)+δ/2 < (3*a/4)*(σ-1/2) by linarith)
-  let C : ℝ := 2*D*A/(4*Real.pi)
+  let C := 2*D*A/(4*Real.pi)
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C,hC,?_⟩
   filter_upwards [hraw,htail,hpower,hrange,eventually_ge_atTop (2:ℝ),
     log_pow_eventually_le_rpow 1 hquarter] with T hr ht hp hv hT hlogT
   have hT0 : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
-  let v : ℝ := criticalMeanThreshold Cm σ a δ T/(4*Real.pi)
+  let v := criticalMeanThreshold Cm σ a δ T/(4*Real.pi)
   have hpv : T^q ≤ v := (le_div_iff₀ (by positivity : 0 < 4*Real.pi)).mpr
     (by simpa only [mul_comm] using hp)
   have hv0 : 0 < v := lt_of_lt_of_le (Real.rpow_pos_of_pos hT0 q) hpv
   have hvphys : (3*T)^(1/8+ξ) ≤ v := by
     apply (le_div_iff₀ (by positivity : 0 < 4*Real.pi)).mpr
     rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 3) hT0.le]
-    convert hv using 1
-    ring
+    grind
   have ht' := ht v hv0 hvphys
-  have hlog0 : 0 ≤ Real.log T := Real.log_nonneg hT1
+  have hlog0 := Real.log_nonneg hT1
   have hv6 : v^(-6:ℝ) ≤ T^(-6*q) := by
     calc
       _ ≤ (T^q)^(-6:ℝ) := Real.rpow_le_rpow_of_nonpos (by positivity) hpv (by norm_num)
@@ -101,4 +100,4 @@ theorem smoothLongZeroCount_pair_tail_general {k l σ a δ η q ε : ℝ}
       calc
         _ = (2*D*A/(4*Real.pi))*((T^(ε/4)*T^(ε/4))*T^(3*a*(1-σ)+ε/2)) := by ring
         _ = _ := by rw [← Real.rpow_add hT0,← Real.rpow_add hT0,he]
-end Montgomery.RationalMoment.RightDetector.Physical
+

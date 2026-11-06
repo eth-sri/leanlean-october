@@ -6,14 +6,13 @@ public import LaterPairs.Native.RobertSargosSourceThirdDerivative
 public import LaterPairs.Native.RobertSargosSymmetricArray
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                              
 
-noncomputable section
-open Set GafniTao
+
+open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 
@@ -61,4 +60,4 @@ theorem robertSargos_symmetric_block_third_derivative_bound
           Real.sqrt M*(2*(H:ℝ)*lam)^(-(1:ℝ)/6))) := Finset.sum_le_sum hb
     _ = _ := by simp only [Finset.sum_const,hcard,nsmul_eq_mul]
 
-end TaoTrudgianYang2025
+

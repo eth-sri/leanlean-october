@@ -13,7 +13,7 @@ derivative theorem. The model sign, derivative scale, interval length,
 endpoints, source sum and every uniform constant are derived here.
 -/
 
-noncomputable section
+
 
 open Expdb Set
 open scoped ContDiff FourierTransform BigOperators
@@ -104,4 +104,4 @@ theorem source_exponentialSum_heathBrown_bound_of_derivative
     have hprod := mul_le_mul_of_nonneg_right hK hnonneg
     exact htail.trans (hMone.trans (by simpa only [one_mul] using hprod))
 
-end TaoTrudgianYang2025
+

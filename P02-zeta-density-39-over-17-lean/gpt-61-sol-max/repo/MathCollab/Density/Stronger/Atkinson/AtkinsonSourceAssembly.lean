@@ -13,10 +13,9 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalBudget
 public import MathCollab.Density.Stronger.Peaks.Inputs
 
 @[expose] public section
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Topology Finset
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -115,4 +114,4 @@ theorem localMeanPacketInput_of_sourceToPrefix (hSource : LocalMeanSourceToPrefi
     subst W
     simp
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.Presentation
 public import OAI.NumberTheory.DirichletL.Hecke.Origin
 
@@ -8,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical Topology
-open Set MeasureTheory
+open MeasureTheory
 namespace SevenEighths.HeckePrincipalStrip
 open HeckeFamily HeckeTheta
 
@@ -37,18 +38,24 @@ theorem normalized_norm_le (η : Character) {z : ℂ} (hz : z ∈ HeckeStrip.clo
   simpa only [mul_comm] using mul_le_mul_of_nonneg_right (norm_sub_one_le_shift z hz)
     (norm_nonneg (LFunction η z))
 
-private theorem norm_z_le_height (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
+section
+variable (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip)
+include z hz
+
+private theorem norm_z_le_height  :
     ‖z‖ ≤ 3 + |z.im| := by
   apply (Complex.norm_le_abs_re_add_abs_im z).trans
   have hr : |z.re| ≤ 3 := abs_le.mpr ⟨by linarith [hz.1], by linarith [hz.2]⟩
   linarith
 
-private theorem norm_sub_one_le_height (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
+private theorem norm_sub_one_le_height  :
     ‖z-1‖ ≤ 3 + |z.im| := by
   apply (Complex.norm_le_abs_re_add_abs_im (z-1)).trans
   have hr : |z.re-1| ≤ 3 := abs_le.mpr ⟨by linarith [hz.1], by linarith [hz.2]⟩
-  simp only [Complex.sub_re, Complex.sub_im, Complex.one_re, Complex.one_im, sub_zero]
+  simp
   linarith
+end
+
 
 theorem regularized_completion_bound (η : Character) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ HeckeStrip.closedStrip,
@@ -85,7 +92,7 @@ theorem normalized_exp_growth (η : Character) :
   obtain ⟨C, hC, hCbound⟩ := regularized_completion_bound η
   obtain ⟨G, hG, hGbound⟩ := CubicGammaExponential.inverse_Gamma_strip_exp_bound_complex
     (9/10) (21/10)
-  let S : ℝ := Real.pi ^ (-(1/10) : ℝ) + Real.pi ^ (11/10 : ℝ)
+  let S := Real.pi ^ (-(1/10) : ℝ) + Real.pi ^ (11/10 : ℝ)
   have hS : 0 ≤ S := by dsimp [S]; positivity
   refine ⟨9*S*G*C, Real.pi+2, by positivity, by positivity, ?_⟩
   intro z hz
@@ -161,7 +168,11 @@ theorem primitive_normalized_bound (c : O) [NeZero c]
     change D ≤ (1+HeckeStrip.leftConstant)*D
     nlinarith
 
-theorem poleRemoved_principalCharacter (η : Character) (s : ℂ) :
+section
+variable (η : Character)
+include η
+
+theorem poleRemoved_principalCharacter  (s : ℂ) :
     HeckeOrigin.poleRemoved (HeckePresentation.principalCharacter η) s =
       HeckeOrigin.poleRemoved η s := by
   have he : HeckeOrigin.poleRemoved (HeckePresentation.principalCharacter η) =
@@ -182,7 +193,7 @@ theorem poleRemoved_principalCharacter (η : Character) (s : ℂ) :
       (HeckePresentation.principalCharacter_elementCoeff η) (by linarith) h1
   exact congr_fun he s
 
-theorem uniform_normalized_strip_bound (η : Character)
+theorem uniform_normalized_strip_bound 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue)
     (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
     ‖normalized η z‖ ≤
@@ -196,10 +207,10 @@ theorem uniform_normalized_strip_bound (η : Character)
   rw [poleRemoved_principalCharacter] at h
   simpa only [HeckeStripActual.conductor, HeckePresentation.span_generator] using h
 
-def sourceNormalized (η : Character) (s : ℂ) : ℂ :=
+def sourceNormalized  (s : ℂ) : ℂ :=
   HeckeOrigin.poleRemoved η s / (s+1)
 
-theorem sourceNormalized_norm_le (η : Character) (z : ℂ)
+theorem sourceNormalized_norm_le  (z : ℂ)
     (hz : z ∈ HeckeStrip.closedStrip) :
     ‖sourceNormalized η z‖ ≤ 3 * ‖normalized η z‖ := by
   have hlow : (9/10 : ℝ) ≤ ‖z+1‖ := by
@@ -207,7 +218,7 @@ theorem sourceNormalized_norm_le (η : Character) (z : ℂ)
     simp only [Complex.add_re, Complex.one_re] at hre
     linarith [hz.1]
   have hn1 : z+1 ≠ 0 := norm_pos_iff.mp (by linarith)
-  have hn2 : z+2 ≠ 0 := HeckeStrip.shift_ne_zero z hz
+  have hn2 := HeckeStrip.shift_ne_zero z hz
   have hratio : ‖z+2‖ ≤ 3*‖z+1‖ := by
     have ht := norm_add_le (z+1) (1 : ℂ)
     rw [norm_one, show z+1+1=z+2 by ring] at ht
@@ -219,7 +230,7 @@ theorem sourceNormalized_norm_le (η : Character) (z : ℂ)
   have hd : ‖z+2‖ / ‖z+1‖ ≤ 3 := (div_le_iff₀ (norm_pos_iff.mpr hn1)).mpr hratio
   nlinarith [norm_nonneg (normalized η z)]
 
-theorem uniform_source_normalized_strip_bound (η : Character)
+theorem uniform_source_normalized_strip_bound 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue)
     (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
     ‖sourceNormalized η z‖ ≤
@@ -228,9 +239,11 @@ theorem uniform_source_normalized_strip_bound (η : Character)
   apply (sourceNormalized_norm_le η z hz).trans
   have h := mul_le_mul_of_nonneg_left (uniform_normalized_strip_bound η hp z hz) (by norm_num : (0 : ℝ) ≤ 3)
   convert h using 1 ; ring
-
-end SevenEighths.HeckePrincipalStrip
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -3,7 +3,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstHighExceptionalPowers
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedFourCoefficients
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPowerBudget
 public import OAI.NumberTheory.DirichletL.Moments.FirstCommonReferencePower
-public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalDeclared
+public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalLow
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedDiagonal
 public import OAI.NumberTheory.DirichletL.Moments.SuccessorPaidParameters
 
@@ -11,32 +11,36 @@ public import OAI.NumberTheory.DirichletL.Moments.SuccessorPaidParameters
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighFourCoefficients
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal
-open CenteredMomentSuccessorPaidParameters
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFirstMixedAllowance
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst
+open CenteredMomentSecondHeightFamily
+open CenteredMomentAmplifiedRetainedRadius
+
+open CenteredMomentFirstMixedDiagonal
+
+open scoped HeckeO
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentEnergyFirstHighExceptionalPowers
 
-theorem actual_main_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+section
+variable (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve paid eps saving Mdecl Mwidth Mcap:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)(_hM:0≤Mdecl)
+    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤ sigma)(heps:0≤eps)(_hM:0≤Mdecl)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mwidth)(hwidth:Mwidth≤Mdecl)
     (hlow:Real.logb Z V≤Mdecl)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
+      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+include η τ C D hC hD hCD E K V Z sigma delta reserve paid eps saving Mdecl Mwidth Mcap hK hV hZ hs heps _hM hcap hactual hwidth hlow hmod
+
+theorem actual_main_high_cores :
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
@@ -48,7 +52,7 @@ theorem actual_main_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
   have hz:0<Z:=zero_lt_one.trans hZ
   have hq:=norm_pos τ.modulus τ.modulus_ne_bot
   have hc:=norm_pos C hC.1
-  have hr:0<mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
+  have hr:0< mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve:=by unfold mainCommonRadius;positivity
   have havg:Z^(-sigma/3)≤1:=Real.rpow_le_one_of_one_le_of_nonpos hZ.le (by linarith)
@@ -79,7 +83,7 @@ theorem actual_main_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
     dsimp [lossVector]
     linarith
   · have hh:=actual_main_diagonal η τ C D hC hD hCD E K V Z sigma delta reserve eps hK hV hZ heps hmod
-    have hc0:0≤mainCores (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z
+    have hc0:0≤ mainCores (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z
         (allowance C D Z) (mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
           (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
           (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve) (sigma/3)
@@ -114,14 +118,7 @@ theorem actual_main_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
         dsimp [lossVector]
         linarith
 
-theorem actual_error_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve paid eps saving Mdecl Mwidth Mcap:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)(_hM:0≤Mdecl)
-    (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mwidth)(hwidth:Mwidth≤Mdecl)
-    (hlow:Real.logb Z V≤Mdecl)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+theorem actual_error_high_cores 
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))(hbad:fixedBadPrimes⊆Sbad)
     (p:O)(hp:p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
     (k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
@@ -190,6 +187,8 @@ theorem actual_error_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(h
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
     dsimp [lossVector]
     linarith
+end
+
 
 theorem actual_high_four_coefficients
     (M:Ideal O)[NeZero M](Hray:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))
@@ -237,8 +236,8 @@ theorem actual_high_four_coefficients
     (div_nonneg (by linarith) (by positivity)) hcard H _ _ _ hH
     (by simpa only [neg_div] using hmain) herror
 
-end SevenEighths.CenteredMomentEnergyFirstHighFourCoefficients
 
-end
 
-end OAI
+
+
+

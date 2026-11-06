@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.BandEnergy
 public import MathCollab.Density.DyadicBlocks
 public import MathCollab.Density.LocalCover
 
 @[expose] public section
 
-open Real Complex Set MeasureTheory
+open Real Complex MeasureTheory
 open scoped BigOperators ContDiff ComplexConjugate
 
 noncomputable section
@@ -89,9 +90,13 @@ theorem positiveShell_bandPhaseSum_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       exact Finset.sum_le_sum (fun M _ => close_pairs_block_le_local L hH M r U)
 
+section
+variable {H : ℝ} (U : Finset ℝ) (F : ℝ → ℝ → ℝ)
+    (hi : ∀ v, Integrable (F v))
+include H U F hi
+
 /-- The finite shell sum and integral commute using proved integrability for each summand. -/
-theorem positiveShell_integral {H : ℝ} (U : Finset ℝ) (F : ℝ → ℝ → ℝ)
-    (hi : ∀ v, Integrable (F v)) :
+theorem positiveShell_integral  :
     positiveShell H U (fun v => ∫ r, F v r) = ∫ r, positiveShell H U (fun v => F v r) := by
   unfold positiveShell
   symm
@@ -115,38 +120,26 @@ theorem positiveShell_integral {H : ℝ} (U : Finset ℝ) (F : ℝ → ℝ → �
     · simp only [ite_eq_right hh]
       exact integrable_zero ℝ ℝ volume
 
-theorem integrable_positiveShell {H : ℝ} (U : Finset ℝ) (F : ℝ → ℝ → ℝ)
-    (hi : ∀ v, Integrable (F v)) :
+theorem integrable_positiveShell  :
     Integrable (fun r => positiveShell H U (fun v => F v r)) := by
   apply integrable_finsetSum
   intro t _
   apply integrable_finsetSum
-  intro u _
-  by_cases hh : H ≤ t-u ∧ t-u < 2*H
-  · simpa only [ite_eq_left hh] using hi (t-u)
-  · simp only [ite_eq_right hh]
-    exact integrable_zero ℝ ℝ volume
+  bound
+end
+
 
 theorem positiveShell_const_mul (H : ℝ) (U : Finset ℝ) (c : ℝ) (F : ℝ → ℝ) :
     positiveShell H U (fun v => c * F v) = c * positiveShell H U F := by
   unfold positiveShell
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro t _
-  apply Finset.sum_congr rfl
-  intro u _
-  split_ifs <;> simp
+  simp_all <;> nlinarith
 
 theorem positiveShell_mono (H : ℝ) (U : Finset ℝ) {F G : ℝ → ℝ}
     (h : ∀ v, H ≤ v → v < 2*H → F v ≤ G v) :
     positiveShell H U F ≤ positiveShell H U G := by
   apply Finset.sum_le_sum
-  intro t _
-  apply Finset.sum_le_sum
-  intro u _
-  split_ifs with hs
-  · exact h (t-u) hs.1 hs.2
-  · exact le_rfl
+  bound
 
 /-- The retained band contributes the required uniform complete-pair energy. -/
 theorem positiveShell_bandContribution_le (w : ReflectionCutoff) {L H : ℝ}
@@ -186,4 +179,4 @@ theorem positiveShell_bandContribution_le (w : ReflectionCutoff) {L H : ℝ}
       mul_le_mul_of_nonneg_left hint hcoef
     _ = _ := by ring
 
-end MathCollab.Density
+

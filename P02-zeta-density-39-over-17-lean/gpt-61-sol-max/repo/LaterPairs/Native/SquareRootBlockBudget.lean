@@ -6,13 +6,12 @@ public import LaterPairs.Native.ContinuousPhaseAbel
 public import LaterPairs.Native.ThirteenthRootScales
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                              
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem third_derivative_square_root_block_budget {N μ : ℝ}
@@ -59,7 +58,7 @@ theorem third_derivative_abel_block_budget {N C K D μ : ℝ}
     (mul_le_mul_of_nonneg_left hb (show 0 ≤ 20*C by positivity))
     (show 0 ≤ 20*C*(N*μ^((1:ℝ)/6)+Real.sqrt N*μ^(-(1:ℝ)/6)) by positivity)
     (show 0 ≤ 1+2*Real.pi*D by positivity)
-  convert hm using 1; ring
+  grind
 
 theorem square_root_block_floor {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) :
     0 < ⌊μ^(-(1:ℝ)/2)⌋₊ ∧
@@ -70,4 +69,4 @@ theorem square_root_block_floor {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) :
     (show -(1:ℝ)/2 ≤ 0 by norm_num)
   simpa only [Real.rpow_zero] using he
 
-end TaoTrudgianYang2025
+

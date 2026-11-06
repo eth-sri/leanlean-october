@@ -144,8 +144,8 @@ theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<
     _ = (16*K^4)*(Real.log Z)^4 := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hp (by positivity)
 
-end SevenEighths.CenteredMomentDyadicCount
 
-end
 
-end OAI
+
+
+

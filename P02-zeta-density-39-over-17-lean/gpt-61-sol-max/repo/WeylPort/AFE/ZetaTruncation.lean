@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.Analytic.ZetaContinuation
 public import WeylPort.AFE.PoissonApplications
@@ -46,8 +47,7 @@ theorem norm_zeta_sub_regularized_sum_le {N : ℕ} (hN : 0 < N) {s : ℂ}
     _ ≤ (N : ℝ) ^ (-s.re) / 2 + ‖s‖ * ((N : ℝ) ^ (-s.re) / s.re) := by
       rw [norm_div, norm_neg, Complex.norm_ofNat, norm_mul]
       have hp : ‖(N : ℂ) ^ (-s)‖ = (N : ℝ) ^ (-s.re) := by
-        simpa only [Complex.ofReal_natCast, Complex.neg_re] using
-          Complex.norm_cpow_eq_rpow_re_of_pos hn (-s)
+        exact Complex.norm_cpow_eq_rpow_re_of_pos hn (-s)
       rw [hp]
       exact add_le_add le_rfl (mul_le_mul_of_nonneg_left hi (norm_nonneg s))
     _ = _ := by ring
@@ -56,7 +56,7 @@ theorem norm_zeta_sub_regularized_sum_le {N : ℕ} (hN : 0 < N) {s : ℂ}
 theorem tendsto_regularized_sum {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
     Tendsto (fun N : ℕ => (∑ n ∈ Finset.range (N + 1), 1 / (n : ℂ) ^ s) +
       (N : ℂ) ^ (1 - s) / (s - 1)) atTop (𝓝 (riemannZeta s)) := by
-  have hp : Tendsto (fun N : ℕ => (N : ℝ) ^ (-s.re)) atTop (𝓝 0) :=
+  have hp :=
     (tendsto_rpow_neg_atTop hs).comp tendsto_natCast_atTop_atTop
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   apply squeeze_zero' (Eventually.of_forall (fun N => norm_nonneg _)) ?_
@@ -65,8 +65,12 @@ theorem tendsto_regularized_sum {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
   rw [norm_sub_rev]
   simpa only [one_div] using norm_zeta_sub_regularized_sum_le hN hs hs1
 
+section
+variable (sigma t : ℝ) {x : ℝ} (hx : 0 < x)
+include sigma t x hx
+
 /-- The real logarithmic phase is the principal complex power, with the positive-height sign. -/
-theorem weightedWave_afe_eq_cpow (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem weightedWave_afe_eq_cpow  :
     weightedWave (afePhase (t / (2 * Real.pi))) (afeWeight sigma) x =
       (x : ℂ) ^ (-(sigma : ℂ) + (t : ℂ) * Complex.I) := by
   unfold weightedWave afePhase afeWeight
@@ -77,7 +81,7 @@ theorem weightedWave_afe_eq_cpow (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
   field_simp
 
 /-- Conjugation supplies the negative sign in the actual Dirichlet term. -/
-theorem conj_weightedWave_afe (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem conj_weightedWave_afe  :
     starRingEnd ℂ (weightedWave (afePhase (t / (2 * Real.pi))) (afeWeight sigma) x) =
       (x : ℂ) ^ (-((sigma : ℂ) + (t : ℂ) * Complex.I)) := by
   rw [weightedWave_afe_eq_cpow sigma t hx,
@@ -87,6 +91,8 @@ theorem conj_weightedWave_afe (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
   congr 1
   simp only [map_mul, map_add, map_neg, Complex.conj_ofReal, Complex.conj_I]
   ring
+end
+
 
 /-- The finite Dirichlet integral has its actual antiderivative on every positive interval. -/
 theorem integral_cpow_neg {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) {s : ℂ} (hs : s ≠ 1) :
@@ -200,4 +206,4 @@ theorem norm_afe_pole_le {sigma t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
       rw [sub_eq_add_neg, Real.rpow_add ha, Real.rpow_one]
       ring
 
-end DhimanKadiriQuesadaHerrera2026
+

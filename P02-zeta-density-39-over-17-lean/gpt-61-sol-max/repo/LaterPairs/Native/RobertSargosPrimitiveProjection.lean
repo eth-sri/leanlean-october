@@ -6,9 +6,8 @@ public import LaterPairs.Native.IntegerIntervalCount
 public import LaterPairs.Native.RobertSargosPrimitiveSystem
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                              
 
@@ -28,4 +27,4 @@ theorem robertSargos_keys_injective {p q : RobertSargosPoint}
   cases q
   simp_all [robertSargosCoefficientKey,robertSargosFrequencyKey]
 
-end TaoTrudgianYang2025
+

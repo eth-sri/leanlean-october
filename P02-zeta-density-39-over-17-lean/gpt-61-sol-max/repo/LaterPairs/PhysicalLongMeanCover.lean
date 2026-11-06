@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import LaterPairs.PhysicalShortPoweredFamily
 public import RetunedLongMeanCover
 public import RetunedShortPoweredFamily
@@ -8,8 +9,7 @@ public import MathCollab.Density.Stronger.LongMeanCounting
 
 open Real Complex Filter MeasureTheory
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger
 open MathCollab.Density
@@ -64,10 +64,8 @@ theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
     have hlong' : Real.sqrt (detectorY a T) ≤ (2 : ℝ)^j := by
       have he : Real.sqrt (detectorY a T) = T^(smoothingExponent a/2) := by
         rw [Real.sqrt_eq_rpow,detectorY,← Real.rpow_mul hTp.le]
-        congr 1
         ring
-      rw [he]
-      exact hlong.le
+      grind
     apply weightedCriticalMean_long_scale (by linarith) (by linarith) hYp
       (by linarith : 1/2 ≤ σ) hβ hlong'
     apply hmean ρ (detectorX δ T) ((2 : ℝ)^j) ((2 : ℝ)^j/detectorY a T)
@@ -77,4 +75,4 @@ theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
   · exact Or.inr hshort
 
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

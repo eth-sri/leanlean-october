@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRadialPointwiseEnergy
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
@@ -64,8 +64,8 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
           Z^(s.toSource.allowance Z)*(s.profileFactor*E)/(Ideal.absNorm D:ℝ):=by ring
         _=_:=by rw [he]
 
-end SevenEighths.CenteredMomentRadialPointwiseEnergy
 
-end
 
-end OAI
+
+
+

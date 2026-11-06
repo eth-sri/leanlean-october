@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OneReflectionScaleEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentUniformReflectionScale
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
@@ -71,8 +71,8 @@ theorem actual_rowwise_scales (A J : ℕ) :
   simp only [actual_log_window,←mul_assoc] at hh
   convert hh using 1
 
-end SevenEighths.CenteredMomentUniformReflectionScale
 
-end
 
-end OAI
+
+
+

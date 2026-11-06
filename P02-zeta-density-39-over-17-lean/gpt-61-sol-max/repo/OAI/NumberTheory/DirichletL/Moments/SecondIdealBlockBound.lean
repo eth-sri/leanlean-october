@@ -7,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptional
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondIdealBlockBound
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSupportedCorrelation
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
 open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
+open CenteredMomentChildAssembly CenteredMomentMobiusRegroup
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem logAnnulus_enclosure (x : ℝ) (hx : logAnnulus x≠0) : |x|≤Real.log 4 := by
   have hh := logAnnulus_support hx
@@ -96,8 +96,8 @@ theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
   simp_rw [hcop,sectorElement_span] at he
   simpa only [idealCorrelation,primaryGenerator_mul,sectorElement] using he
 
-end SevenEighths.CenteredMomentSecondIdealBlockBound
 
-end
 
-end OAI
+
+
+

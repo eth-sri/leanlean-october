@@ -14,7 +14,11 @@ def gaussianMellinProfile (y : ℝ) : ℂ :=
   ((1/(2*Real.pi):ℝ):ℂ)*(Real.pi:ℂ)^(1/2:ℂ)*
     Complex.exp (-(Complex.log (y:ℂ))^2/4)
 
-lemma gaussianMellin_integral (y : ℝ) (hy : 0<y) (σ : ℝ) :
+section
+variable (y : ℝ) (hy : 0<y) (σ : ℝ)
+include y hy σ
+
+lemma gaussianMellin_integral  :
     (∫v : ℝ,(y:ℂ)^(-((σ:ℂ)+v*Complex.I))*Complex.exp (((σ:ℂ)+v*Complex.I)^2))=
       (Real.pi:ℂ)^(1/2:ℂ)*Complex.exp (-(Complex.log (y:ℂ))^2/4) := by
   have hi (v : ℝ) :
@@ -36,12 +40,14 @@ lemma gaussianMellin_integral (y : ℝ) (hy : 0<y) (σ : ℝ) :
     simp only [Complex.I_sq]
     ring
 
-lemma gaussianMellin_inversion (y : ℝ) (hy : 0<y) (σ : ℝ) :
+lemma gaussianMellin_inversion  :
     ((1/(2*Real.pi):ℝ):ℂ)*
       (∫v : ℝ,(y:ℂ)^(-((σ:ℂ)+v*Complex.I))*Complex.exp (((σ:ℂ)+v*Complex.I)^2))=
       gaussianMellinProfile y := by
   rw [gaussianMellin_integral y hy σ]
   exact mul_assoc _ _ _ |>.symm
+end
+
 
 lemma gaussian_completed_norm_power (a b Z : ℝ) (ha : 0<a) (hb : 0<b) (hZ : 0<Z) (t : ℂ) :
     (Z:ℂ)^t*((a:ℂ)^(-t)*(b:ℂ)^(-(3*t)))=((a*b^3/Z:ℝ):ℂ)^(-t) := by
@@ -54,7 +60,7 @@ lemma gaussian_completed_norm_power (a b Z : ℝ) (ha : 0<a) (hb : 0<b) (hZ : 0<
   rw [show (3:ℂ)*(-t)= -(3*t) by ring]
   ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

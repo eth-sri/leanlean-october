@@ -15,11 +15,11 @@ uniformly by 4*N*eta+2. Empty, reversed and singleton intervals are allowed.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseBufferedBoundary (a b : ℤ) (m : ℕ) : Finset ℤ := by
   classical
@@ -41,8 +41,12 @@ theorem modelPhaseBufferedBoundary_card_le (a b : ℤ) (m : ℕ) :
   simp only [Int.card_Ico,Int.card_Ioc,add_sub_cancel_left,sub_sub_cancel,Int.toNat_natCast]
   omega
 
+section
+variable {N η : ℝ} (hN : 0 < N) (hη : 0 < η)
+include N η hN hη
+
 theorem modelPhaseBufferedCutoff_one_off_boundary
-    {N η : ℝ} (hN : 0 < N) (hη : 0 < η)
+    
     {a b n : ℤ} (hn : n ∈ Finset.Icc a b)
     (hnot : n ∉ modelPhaseBufferedBoundary a b ⌈2*N*η⌉₊) :
     modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η ((n : ℝ)/N) = 1 := by
@@ -65,7 +69,7 @@ theorem modelPhaseBufferedCutoff_one_off_boundary
     linarith
 
 theorem modelPhaseBufferedKernel_zero_outside
-    {N η : ℝ} (hN : 0 < N) (hη : 0 < η)
+    
     (F : ℝ → ℝ) (T : ℝ) {a b n : ℤ} (hn : n ∉ Finset.Icc a b) :
     modelPhaseWeightedKernel (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η)
       F T N n = 0 := by
@@ -82,7 +86,7 @@ theorem modelPhaseBufferedKernel_zero_outside
   simp only [modelPhaseWeightedKernel,hz,Complex.ofReal_zero,zero_mul]
 
 theorem norm_modelPhase_source_sub_buffered_le
-    {N η : ℝ} (hN : 0 < N) (hη : 0 < η) (F : ℝ → ℝ) (T : ℝ) (a b : ℤ) :
+     (F : ℝ → ℝ) (T : ℝ) (a b : ℤ) :
     ‖(∑ n ∈ Finset.Icc a b, (𝐞 (T*F ((n : ℝ)/N)) : ℂ))-
       ∑' n : ℤ, modelPhaseWeightedKernel
         (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η) F T N n‖ ≤ 4*N*η+2 := by
@@ -121,6 +125,8 @@ theorem norm_modelPhase_source_sub_buffered_le
     _ ≤ 4*N*η+2 := by
       have h := Nat.ceil_lt_add_one (by positivity : 0 ≤ 2*N*η)
       linarith
+end
+
 
 theorem modelPhase_buffered_poisson
     {F : ℝ → ℝ} {σ δ N η : ℝ} {P : ℕ}
@@ -140,4 +146,4 @@ theorem modelPhase_buffered_poisson
     ← modelPhaseWeightedKernel_tsum_eq_finite hs hN T,exponentialSumAt_eq_int_sum]
   exact norm_modelPhase_source_sub_buffered_le hN hη F T a b
 
-end TaoTrudgianYang2025
+

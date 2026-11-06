@@ -13,7 +13,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 noncomputable section
-open Complex MeasureTheory Set
+open Complex MeasureTheory
 namespace MathCollab.Density.Stronger.Atkinson
 
 def atkinsonFiniteStationaryMain (T G L α b H : ℝ) : ℂ :=
@@ -30,4 +30,4 @@ theorem atkinsonFiniteStationaryMain_eq_quadratic (T G L α b H : ℝ) :
   unfold atkinsonFiniteStationaryMain
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

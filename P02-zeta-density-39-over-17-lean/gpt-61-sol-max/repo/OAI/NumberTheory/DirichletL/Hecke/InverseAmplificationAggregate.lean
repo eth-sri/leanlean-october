@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationFamily
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScaleSup
 
@@ -10,7 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Set Complex
 namespace SevenEighths.HeckeInverseAmplification
-open HeckeFamily HeckeDyadic
+open HeckeDyadic
 abbrev PrimeIdeal := SmoothMobiusCorrection.PrimeIdeal
 
 def primeRowMap (p : FreeRow×PrimeIdeal) : NonzeroElement :=
@@ -66,7 +67,7 @@ theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finse
     have hN : (1 : ℝ)≤P.val.absNorm := by
       exact_mod_cast (show 1≤P.val.absNorm from (SmoothMobiusCorrection.prime_norm_two_le P).trans' (by norm_num))
     have hNp : (0 : ℝ)<P.val.absNorm := by linarith
-    have hlog : Real.log (P.val.absNorm : ℝ)≤Real.log V :=
+    have hlog :=
       Real.log_le_log hNp (hprimes P hP)
     have hDV : Real.log (D/(P.val.absNorm : ℝ))∈Icc (Real.log D-Real.log V) (Real.log D) := by
       rw [Real.log_div hD.ne' hNp.ne']
@@ -105,8 +106,8 @@ theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finse
   have hh := mul_le_mul_of_nonneg_left henergy (by norm_num : (0 : ℝ)≤4)
   nlinarith
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

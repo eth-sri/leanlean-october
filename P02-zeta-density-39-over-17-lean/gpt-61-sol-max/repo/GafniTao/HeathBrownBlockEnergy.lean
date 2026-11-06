@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownKernelEnergy
 
 @[expose] public section
@@ -17,10 +18,14 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
+
+section
+variable {N K : ℕ}
+include N K
 
 theorem heathBrownFourierAtom_sum_eq_block_sums
-    {N K : ℕ} (hK : 0 < K) (g₁ g₂ : ℕ → ℝ) (rs : ℤ × ℤ) :
+     (hK : 0 < K) (g₁ g₂ : ℕ → ℝ) (rs : ℤ × ℤ) :
     (∑ n ∈ Finset.Icc 1 N, heathBrownFourierAtom g₁ g₂ rs n) =
       ∑ i ∈ Finset.range K, ∑ n ∈ heathBrownBlock N K i,
         heathBrownFourierAtom g₁ g₂ rs n := by
@@ -39,7 +44,7 @@ theorem heathBrownFourierAtom_sum_eq_block_sums
       heathBrown_sum_over_blocks hK _
 
 theorem heathBrownFrequencyEnergy_le_block_energies
-    {N K : ℕ} (hK : 0 < K)
+     (hK : 0 < K)
     {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
     (g₁ g₂ : ℕ → ℝ) (rs : ℤ × ℤ) :
     heathBrownFrequencyEnergy B C g₁ g₂ (Finset.Icc 1 N) rs ≤
@@ -47,7 +52,7 @@ theorem heathBrownFrequencyEnergy_le_block_energies
         heathBrownFrequencyEnergy B C g₁ g₂
           (heathBrownBlock N K i) rs := by
   let c := heathBrownTriangularFourierCoefficient B C rs.1 rs.2
-  let V : ℕ → ℂ := fun i =>
+  let V := fun i =>
     ∑ n ∈ heathBrownBlock N K i, heathBrownFourierAtom g₁ g₂ rs n
   have hc : 0 ≤ c :=
     heathBrownTriangularFourierCoefficient_nonneg hB hC rs.1 rs.2
@@ -74,7 +79,7 @@ theorem heathBrownFrequencyEnergy_le_block_energies
       rw [Finset.mul_sum]
 
 theorem hasSum_heathBrownBlockFrequencyEnergy
-    {N K : ℕ}
+    
     {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
     (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
     (g₁ g₂ : ℕ → ℝ) :
@@ -88,13 +93,13 @@ theorem hasSum_heathBrownBlockFrequencyEnergy
           ∑ n ∈ heathBrownBlock N K i,
             heathBrownTriangularKernel B C
               (g₁ m - g₁ n) (g₂ m - g₂ n)) := by
-  simpa using hasSum_sum (s := Finset.range K)
+  exact hasSum_sum (s := Finset.range K)
     (fun i _hi => hasSum_heathBrownFrequencyEnergy
       hB hBHalf hC hCHalf g₁ g₂ (heathBrownBlock N K i))
 
 /-- Exact source block-energy inequality before the kernel support is used. -/
 theorem heathBrown_full_kernel_sum_le_blocks
-    {N K : ℕ} (hK : 0 < K)
+     (hK : 0 < K)
     {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
     (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
     (g₁ g₂ : ℕ → ℝ) :
@@ -107,16 +112,13 @@ theorem heathBrown_full_kernel_sum_le_blocks
             ∑ n ∈ heathBrownBlock N K i,
               heathBrownTriangularKernel B C
                 (g₁ m - g₁ n) (g₂ m - g₂ n) := by
-  let fullEnergy : (ℤ × ℤ) → ℝ :=
+  let fullEnergy :=
     heathBrownFrequencyEnergy B C g₁ g₂ (Finset.Icc 1 N)
-  let blockEnergy : (ℤ × ℤ) → ℝ := fun rs =>
+  let blockEnergy := fun rs =>
     ∑ i ∈ Finset.range K,
       heathBrownFrequencyEnergy B C g₁ g₂
         (heathBrownBlock N K i) rs
-  have hfull : HasSum fullEnergy
-      (∑ m ∈ Finset.Icc 1 N, ∑ n ∈ Finset.Icc 1 N,
-        heathBrownTriangularKernel B C
-          (g₁ m - g₁ n) (g₂ m - g₂ n)) :=
+  have hfull :=
     hasSum_heathBrownFrequencyEnergy hB hBHalf hC hCHalf
       g₁ g₂ (Finset.Icc 1 N)
   have hblocks : HasSum blockEnergy
@@ -134,8 +136,10 @@ theorem heathBrown_full_kernel_sum_le_blocks
   have htsum := hfull.summable.tsum_le_tsum hpoint hscaled.summable
   rw [hfull.tsum_eq, hscaled.tsum_eq] at htsum
   exact htsum
-
-
 end
 
-end GafniTao
+
+
+
+
+

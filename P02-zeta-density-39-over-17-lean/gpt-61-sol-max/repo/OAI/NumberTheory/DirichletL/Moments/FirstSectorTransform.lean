@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstSectorTransform
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentSourceRow CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentSupportedCorrelation IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open CanonicalQuadraticSieve CenteredMomentSourceRow
+open CenteredMomentFirstSectors CenteredMomentCompleteCommon
+
+open scoped EisensteinO
 
 theorem residualPool_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
     (a : residualPool C hC (supportedColumns S)) : Supported (a:Ideal O) := by
@@ -30,8 +30,8 @@ theorem commonLabels_supported (S : Finset (Ideal O))
   rw [← he]
   exact ⟨commonPart_supported _ _ hq₁,commonPart_supported _ _ hq₂⟩
 
-end SevenEighths.CenteredMomentFirstSectorTransform
 
-end
 
-end OAI
+
+
+

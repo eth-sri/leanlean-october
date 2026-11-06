@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import MathCollab.Density.ZetaCounting
 public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 public import Mathlib.Analysis.Calculus.Deriv.Star
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- Conjugating both the argument and value preserves complex analyticity. -/
@@ -83,7 +83,6 @@ theorem zetaDensityCount_le_twice_positive (σ T : ℝ) :
   have hc := zetaSlabCount_conj σ 0 T
   simp only [neg_zero] at hc
   change zetaSlabCount σ (-T) T ≤ _
-  rw [hc] at hs
-  omega
+  bound
 
-end MathCollab.Density
+

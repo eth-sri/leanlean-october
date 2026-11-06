@@ -6,18 +6,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstActiveRadicalBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNonexceptionalPrefactor
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
+open CenteredMomentCanonicalFirst
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalSourceSupport
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstActiveRadicalBudget CenteredMomentRankinRadical
-open CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSupportedCorrelation
-local notation "O"=>ActualEisensteinCubic.O
+
+
+
+
+open scoped EisensteinO
 
 lemma pair_conductor_root (q₁ q₂ B:ℝ)(_h₁:0≤q₁)(h₂:0≤q₂)
     (hB:0≤B)(hb₁:q₁≤B)(hb₂:q₂≤B):Real.sqrt (q₁*q₂)≤B := by
@@ -26,7 +26,7 @@ lemma pair_conductor_root (q₁ q₂ B:ℝ)(_h₁:0≤q₁)(h₂:0≤q₂)
   simpa only [←pow_two,Real.sqrt_sq hB] using hs
 
 lemma scalar_conductor_algebra (s μ K T N E r C F q q₁ q₂:ℝ)
-    (_hs:0≤s)(hμ:0≤μ)(hK:0≤K)(_hT:0<T)(hN:0<N)(hE:0<E)(hr:0<r)
+    (_hs:0≤ s)(hμ:0≤μ)(hK:0≤K)(_hT:0<T)(hN:0<N)(hE:0<E)(hr:0<r)
     (hC:0≤C)(hF:0≤F)(hq:0≤q)(h₁:0≤q₁)(h₂:0≤q₂)
     (hscalar:s*T≤μ*C*K*Real.sqrt N/(E*r))
     (hc₁:q₁≤F*q*E*r^2)(hc₂:q₂≤F*q*E*r^2):
@@ -67,8 +67,8 @@ theorem weighted_scalar_volume (C D:Ideal O)(hC:Supported C)(E:Finset (CommonInd
       mul_le_mul_of_nonneg_left hratio (by positivity)
     _=_:=by ring
 
-end SevenEighths.CenteredMomentFirstNonexceptionalPrefactor
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.Completion
 
 @[expose] public section
@@ -6,13 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.Completion
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem marked_cube_inverse_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
+section
+variable (Ψ : O →* ℂ) (W : ℝ → ℂ)
+    (hW : HasCompactSupport W)
+include Ψ W hW
+
+theorem marked_cube_inverse_finite_support  (X : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
     (Function.support (fun H : Ideal O =>
       (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
         markedCompletedT Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) (fun A => d (H^3*A)))).Finite := by
@@ -29,12 +34,15 @@ theorem marked_cube_inverse_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
   rw [weighted_markedCompletedT_reopen]
   simp only [hzero, tsum_zero]
 
-theorem marked_large_cube_inner_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) (I : Ideal O) :
+section
+variable (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ)
+include X H₀ hX d
+
+theorem marked_large_cube_inner_reopen  (I : Ideal O) :
     (∑' H : Ideal O,∑' J : Ideal O,
       if H₀ ≤ (Ideal.absNorm H : ℝ) then markedExpandedTerm Ψ W X d I H J else 0) =
     ∑' B : Ideal O,largeCubeCoefficient H₀ B*summand Ψ W X I B*d (I*B^3) := by
-  let f : Ideal O → ℂ := fun B =>
+  let f := fun B =>
     columnWeight Ψ I/(Real.sqrt (Ideal.absNorm I : ℝ) : ℂ)*
       Vstar W ((Ideal.absNorm I : ℝ)*(Ideal.absNorm B : ℝ)^3/X)*d (I*B^3)
   have heq (H J : Ideal O) :
@@ -54,8 +62,7 @@ theorem marked_large_cube_inner_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
   dsimp [f,summand]
   ring
 
-theorem marked_large_cube_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
+theorem marked_large_cube_reopen  :
     (∑' H : Ideal O, if H₀ ≤ (Ideal.absNorm H : ℝ) then
       (UniqueFactorizationMonoid.moebius H : ℂ)*cubeWeight Ψ H*
         markedCompletedT Ψ W (X/(Ideal.absNorm H : ℝ)^3) (fun A => d (H^3*A)) else 0) =
@@ -66,7 +73,7 @@ theorem marked_large_cube_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
     ((markedExpandedTerm_finite_support Ψ W hW X hX d).subset (by
       intro p hp
       by_contra hn
-      have he : markedExpandedTerm Ψ W X d p.1 p.2.1 p.2.2=0 := not_ne_iff.mp hn
+      have he := not_ne_iff.mp hn
       exact hp (by simp [F,he])))
   let e : (Ideal O × Ideal O × Ideal O) ≃ (Ideal O × Ideal O × Ideal O) := {
     toFun := fun p => (p.2.1,p.1,p.2.2)
@@ -96,8 +103,7 @@ theorem marked_large_cube_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
       exact (hF.prod_factor I).tsum_prod
     _ = _ := tsum_congr (marked_large_cube_inner_reopen Ψ W hW X H₀ hX d)
 
-theorem marked_completed_cube_inverse_split (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
+theorem marked_completed_cube_inverse_split  :
     (Real.sqrt X : ℂ)⁻¹*(∑' I : Ideal O,columnWeight Ψ I*d I*W ((Ideal.absNorm I : ℝ)/X)) =
     (∑' H : Ideal O, if (Ideal.absNorm H : ℝ)<H₀ then
       (UniqueFactorizationMonoid.moebius H : ℂ)*cubeWeight Ψ H*
@@ -127,8 +133,11 @@ theorem marked_completed_cube_inverse_split (Ψ : O →* ℂ) (W : ℝ → ℂ)
   by_cases h : (Ideal.absNorm H : ℝ)<H₀
   · simp [h,not_le.mpr h]
   · simp [h,le_of_not_gt h]
-
 end
-end SevenEighths.InverseMoment
+end
 
-end OAI
+
+
+
+
+

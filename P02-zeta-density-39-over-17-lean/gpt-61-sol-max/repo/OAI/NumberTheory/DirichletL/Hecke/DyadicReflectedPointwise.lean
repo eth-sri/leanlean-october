@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
@@ -82,8 +82,8 @@ theorem reflected_polynomial_bound (e ε : ℝ)
   dsimp only [Kg,Kr,Q,R,H] at hb
   convert hb using 1 ; congr 2 <;> ring_nf
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

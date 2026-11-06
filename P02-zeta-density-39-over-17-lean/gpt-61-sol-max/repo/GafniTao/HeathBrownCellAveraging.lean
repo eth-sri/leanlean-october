@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownCoefficientAbel
 public import GafniTao.HeathBrownIntegratedHolder
 
@@ -13,14 +14,14 @@ previously defined function `heathBrownNu`; no uniform-overlap surrogate is
 introduced.
 -/
 
-open Complex Finset Set MeasureTheory
+open Complex Finset MeasureTheory
 open scoped BigOperators ENNReal
 
 namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownIntegratedWeyl
+def heathBrownIntegratedWeyl
     (N k H Q : ℕ) (f : ℝ → ℝ) : ENNReal :=
   ∫⁻ α : HeathBrownCoefficientTorus k,
     ENNReal.ofReal ‖heathBrownWeylSum k Q α‖ *
@@ -85,11 +86,8 @@ theorem heathBrown_cellwise_center_le
               ∑ j ∈ Finset.Ico 1 Q,
                 ‖heathBrownWeylSum k j α‖ := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro j hj
-        rw [mul_comm]
-      rw [hsum]
-      ring
+        grind
+      grind
 
 theorem lintegral_heathBrownCellIndicator_mul_const
     {k H n : ℕ} (f : ℝ → ℝ) (C : ℝ) :
@@ -127,7 +125,7 @@ theorem heathBrown_cellwise_center_lintegral_le
           ∑ j ∈ Finset.Ico 1 Q,
             heathBrownIntegratedWeyl N k H j f := by
   let μ := heathBrownCoefficientMeasure k
-  let c : ℝ := 2 * Real.pi * ((k : ℝ) ^ 2 / H)
+  let c := 2 * Real.pi * ((k : ℝ) ^ 2 / H)
   have hc : 0 ≤ c := by dsimp [c]; positivity
   have hpoint (α : HeathBrownCoefficientTorus k) :
       ∑ n ∈ heathBrownInteriorIndices N H,
@@ -194,8 +192,7 @@ theorem heathBrown_cellwise_center_lintegral_le
         measurable_const
   rw [hleft] at hmono
   -- The right side is exactly `I(Q) + c * sum_{j<Q} I(j)` after Tonelli.
-  have hnu : Measurable (fun α : HeathBrownCoefficientTorus k =>
-      ENNReal.ofReal (heathBrownNu N k H f α)) :=
+  have hnu :=
     (measurable_heathBrownNu N k H f).ennreal_ofReal
   have hweyl (j : ℕ) : Measurable (fun α : HeathBrownCoefficientTorus k =>
       ENNReal.ofReal ‖heathBrownWeylSum k j α‖) :=
@@ -205,10 +202,7 @@ theorem heathBrown_cellwise_center_lintegral_le
       ENNReal.ofReal ‖heathBrownWeylSum k j α‖ *
         ENNReal.ofReal (heathBrownNu N k H f α)) :=
     (hweyl j).mul hnu
-  have hsum : Measurable (fun α : HeathBrownCoefficientTorus k =>
-      ∑ j ∈ Finset.Ico 1 Q,
-        ENNReal.ofReal ‖heathBrownWeylSum k j α‖ *
-          ENNReal.ofReal (heathBrownNu N k H f α)) :=
+  have hsum :=
     Finset.measurable_sum (Finset.Ico 1 Q) fun j hj => hterm j
   have hright :
       (∫⁻ α : HeathBrownCoefficientTorus k,
@@ -226,10 +220,9 @@ theorem heathBrown_cellwise_center_lintegral_le
     rw [lintegral_const_mul _ hsum]
     rw [lintegral_finsetSum (Finset.Ico 1 Q) fun j hj => hterm j]
     rfl
-  rw [hright] at hmono
-  simpa only [c] using hmono
+  grind
 
 
-end
 
-end GafniTao
+
+

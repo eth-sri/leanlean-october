@@ -8,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicSupport
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open MeasureTheory
 namespace SevenEighths.HeckeDetectorFrequency
 open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier
 open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
     (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
@@ -82,8 +82,8 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
       _ = _ := by ring
   · exact mul_le_mul_of_nonneg_right (hg₀.trans (by linarith)) (norm_nonneg _)
 
-end SevenEighths.HeckeDetectorFrequency
 
-end
 
-end OAI
+
+
+

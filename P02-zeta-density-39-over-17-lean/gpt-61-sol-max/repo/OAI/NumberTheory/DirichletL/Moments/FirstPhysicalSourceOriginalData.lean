@@ -17,11 +17,11 @@ namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
 open CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors
 open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
+open CenteredMomentSourceMass
 open CenteredMomentAmplificationLiveMask CenteredMomentLiveDomain CenteredMomentRemainingBox
 open CenteredMomentGaussEnergy CenteredMomentSourceAllocationEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondHeightFamily CenteredMomentCommonPuncture CenteredMomentOriginalChildEnergy
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentOriginalChildEnergy
+open scoped EisensteinO
 variable {ι:Type*}[Fintype ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -105,8 +105,8 @@ theorem common_gauss_allocation (D:OriginalData ι)
   rw [allocated_pools]
   ring
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

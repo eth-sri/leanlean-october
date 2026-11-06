@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosFixedDisplacementLoss
 public import LaterPairs.Native.RobertSargosFrequencyCoordinates
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                         
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_frequency_fiber_conic_bound (ε : ℝ) (hε : 0 < ε) :
@@ -80,5 +79,5 @@ theorem exists_robertSargos_frequency_fiber_linear_bound (ε : ℝ) (hε : 0 < �
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
+
 

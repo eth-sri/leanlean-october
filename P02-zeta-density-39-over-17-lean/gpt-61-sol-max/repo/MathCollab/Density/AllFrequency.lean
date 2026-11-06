@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import MathCollab.Density.Oscillatory
 
 @[expose] public section
 
-open Complex MeasureTheory Real Set
+open Complex MeasureTheory Real
 
 namespace MathCollab.Density
 
@@ -69,10 +70,7 @@ theorem norm_gmReflectionIntegral_le_six_div_sqrt {tau a b : ℝ}
       have hgap : 2 * Real.pi * v - tau = s := by rw [hvR']; linarith
       have ht : tau < 2 * Real.pi * v := by linarith
       simpa only [hgap] using norm_gmReflectionIntegral_le_right hvb hv ht
-  have hwidth : (R - L) / a = 2 / s := by
-    apply (div_eq_div_iff ha.ne' hs.ne').2
-    have hspan : (2 * Real.pi) * (R - L) = 2 * s := by linarith
-    nlinarith [sq_nonneg (s - 1)]
+  have hwidth : (R - L) / a = 2 / s := by grind
   have hmiddle : ‖gmReflectionIntegral tau u v‖ ≤ 2 / s := by
     calc
       ‖gmReflectionIntegral tau u v‖ ≤ (v - u) / a :=
@@ -103,4 +101,4 @@ theorem norm_oscillatoryIntegral_le {a b tau : ℝ} (ha : 0 < a) (hab : a ≤ b)
   simpa only [gmReflectionIntegral, mul_comm I] using
     norm_gmReflectionIntegral_le_six_div_sqrt (tau := tau) ha hab
 
-end MathCollab.Density
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -25,7 +26,6 @@ hidden.
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Literal lower slope used in the dyadic curvature estimate. -/
@@ -54,20 +54,23 @@ def atkinsonIndexBoxCurvatureLower (u A B : ℝ) : ℝ :=
 def atkinsonIndexBoxCurvatureUpper (u A B : ℝ) : ℝ :=
   Real.pi / (A ^ (2 : ℕ) * atkinsonIndexSlopeLower u B)
 
+section
+variable {u x : ℝ} (hu : 0 < u) (hx : 0 < x)
+include u x hu hx
+
 theorem atkinsonIndexSlopeLower_pos
-    {u x : ℝ} (hu : 0 < u) (hx : 0 < x) :
+     :
     0 < atkinsonIndexSlopeLower u x := by
   unfold atkinsonIndexSlopeLower
   exact Real.sqrt_pos.2 (div_pos (mul_pos (mul_pos (by norm_num) Real.pi_pos) hu) hx)
 
 theorem atkinsonIndexSlopeUpper_pos
-    {u x : ℝ} (hu : 0 < u) (hx : 0 < x) :
+     :
     0 < atkinsonIndexSlopeUpper u x := by
   unfold atkinsonIndexSlopeUpper
-  apply Real.sqrt_pos.2
-  exact div_pos
-    (mul_pos (add_pos (mul_pos (by norm_num) Real.pi_pos)
-      (sq_pos_of_pos Real.pi_pos)) (mul_pos (by norm_num) hu)) hx
+  positivity
+end
+
 
 /-- Lower radical comparison on the source dyadic box. -/
 theorem atkinsonIndexSlopeLower_le
@@ -78,7 +81,7 @@ theorem atkinsonIndexSlopeLower_le
   apply Real.sqrt_le_sqrt
   have hmul := mul_le_mul_of_nonneg_left huc
     (mul_nonneg (show 0 ≤ (2 : ℝ) by norm_num) Real.pi_nonneg)
-  have hdiv : 2 * Real.pi * u / x ≤ 2 * Real.pi * c / x :=
+  have hdiv :=
     div_le_div_of_nonneg_right hmul hx.le
   exact hdiv.trans (le_add_of_nonneg_right (sq_nonneg Real.pi))
 
@@ -90,32 +93,22 @@ theorem atkinsonIndexSlope_le_upper
       atkinsonIndexSlopeUpper u x := by
   unfold atkinsonIndexSlopeUpper atkinsonIndexRealSlope
   apply Real.sqrt_le_sqrt
-  have hc2 : 2 * c ≤ 2 * (2 * u) := by linarith
-  have hxu' : Real.pi * x ≤ Real.pi * (2 * u) := by
-    have : x ≤ 2 * u := hxu.trans (by linarith)
-    exact mul_le_mul_of_nonneg_left this Real.pi_nonneg
-  rw [le_div_iff₀ hx]
-  field_simp [hx.ne']
-  nlinarith
+  have hxu' : Real.pi * x ≤ Real.pi * (2 * u) := by field_simp <;> nlinarith
+  field_simp <;> nlinarith
 
 theorem atkinsonIndexSlopeUpper_anti
     {u A x : ℝ} (hu : 0 < u) (hA : 0 < A) (hAx : A ≤ x) :
     atkinsonIndexSlopeUpper u x ≤
       atkinsonIndexSlopeUpper u A := by
   unfold atkinsonIndexSlopeUpper
-  apply Real.sqrt_le_sqrt
-  have hnum : 0 ≤ (2 * Real.pi + Real.pi ^ (2 : ℕ)) * (2 * u) := by
-    positivity
-  exact div_le_div_of_nonneg_left hnum hA hAx
+  bound
 
 theorem atkinsonIndexSlopeLower_anti
     {u x B : ℝ} (hu : 0 < u) (hx : 0 < x) (hxB : x ≤ B) :
     atkinsonIndexSlopeLower u B ≤
       atkinsonIndexSlopeLower u x := by
   unfold atkinsonIndexSlopeLower
-  apply Real.sqrt_le_sqrt
-  have hnum : 0 ≤ 2 * Real.pi * u := by positivity
-  exact div_le_div_of_nonneg_left hnum hx hxB
+  bound
 
 /-- Uniformize the pointwise curvature bounds on a closed index box. -/
 theorem atkinsonIndexCurvatureDerivative_box_bounds
@@ -204,16 +197,12 @@ theorem atkinsonIndexCurvatureDerivative_bounds
   constructor
   · have hden :
         2 * x ^ (2 : ℕ) * atkinsonIndexRealSlope c x ≤
-          2 * x ^ (2 : ℕ) * atkinsonIndexSlopeUpper u x := by
-      exact mul_le_mul_of_nonneg_left hsup
-        (mul_nonneg (by norm_num) (sq_nonneg x))
+          2 * x ^ (2 : ℕ) * atkinsonIndexSlopeUpper u x := by simp_all
     have hrecip :
         Real.pi /
             (2 * x ^ (2 : ℕ) * atkinsonIndexSlopeUpper u x) ≤
           Real.pi /
-            (2 * x ^ (2 : ℕ) * atkinsonIndexRealSlope c x) := by
-      exact div_le_div_of_nonneg_left Real.pi_nonneg
-        (mul_pos (mul_pos (by norm_num) (sq_pos_of_pos hx)) hspos) hden
+            (2 * x ^ (2 : ℕ) * atkinsonIndexRealSlope c x) := by gcongr
     rw [atkinsonIndexCurvatureDerivativeLower]
     refine hrecip.trans ?_
     have hmul := mul_le_mul_of_nonneg_left hhalf
@@ -275,10 +264,8 @@ theorem atkinsonIndexCurvatureDifference_bounds
     exists_atkinsonIndexCurvatureDifference_eq hu htu hx
   have hcBounds := atkinsonIndexCurvatureDerivative_bounds hu hx hxu
     hc.1.le (hc.2.le.trans htuUpper)
-  rw [heq]
-  exact ⟨mul_le_mul_of_nonneg_right hcBounds.1 (sub_nonneg.mpr htu.le),
-    mul_le_mul_of_nonneg_right hcBounds.2 (sub_nonneg.mpr htu.le)⟩
+  simp_all <;> nlinarith
 
-end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

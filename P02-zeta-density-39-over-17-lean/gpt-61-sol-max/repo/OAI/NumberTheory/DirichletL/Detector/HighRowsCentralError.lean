@@ -102,7 +102,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     change L*‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤_
     nlinarith [hLBR,hLBKV]
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

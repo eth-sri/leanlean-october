@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownThreeTermMonotone
 
 @[expose] public section
@@ -13,7 +14,7 @@ omitted endpoint phases with their exact loss `2`.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
@@ -61,23 +62,9 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
   have hMainMono := heathBrown_sourceScale_main_mono
     hM hMN hk hlambda hepsilon hConstant0
-  change heathBrownLemmaOneSourceConstant k A C epsilon *
-      (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda ≤
-    heathBrownLemmaOneSourceConstant k A C epsilon *
-      (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda at hMainMono
-  calc
-    ‖heathBrownExponentialSum N f‖ ≤
-        ‖heathBrownExponentialSum M (heathBrownInteriorShift f)‖ + 2 := by
-      simpa only [M] using hEndpoint
-    _ ≤ (heathBrownLemmaOneSourceConstant k A C epsilon *
-          (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda +
-        heathBrownHChoice k A lambda) + 2 := by gcongr
-    _ ≤ (heathBrownLemmaOneSourceConstant k A C epsilon *
-          (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda +
-        heathBrownHChoice k A lambda) + 2 := by gcongr
-    _ = _ := by ring
+  grind
 
 
-end
 
-end GafniTao
+
+

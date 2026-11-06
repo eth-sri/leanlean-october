@@ -14,16 +14,22 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentSourceRectangle
 open ActualEisensteinCubic HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentExtraction CenteredMomentFirstSectors
-open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile CenteredMomentRemainingBox
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstSectors
+open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 
-def tuplePools (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
+section
+variable (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
+include slots S₁ S₂
+
+def tuplePools  :
     (ι⊕Fin 2)→Finset (Ideal O) := Sum.elim slots (fun j=>if j=0 then S₁ else S₂)
 
-def tuplePool (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) : Finset (Tuple ι) :=
+def tuplePool  : Finset (Tuple ι) :=
   Fintype.piFinset (tuplePools slots S₁ S₂)
+end
+
 
 def pack (v : ι→Ideal O) (I J : Ideal O) : Tuple ι :=
   Sum.elim v (fun j=>if j=0 then I else J)
@@ -206,8 +212,8 @@ theorem liveBox_eq_tuplePool (S : (ι⊕Fin 2)→Finset (Ideal O)) (B : Tuple ι
       · exact h (Sum.inr 0)
       · exact h (Sum.inr 1)
 
-end SevenEighths.CenteredMomentSourceRectangle
 
-end
 
-end OAI
+
+
+

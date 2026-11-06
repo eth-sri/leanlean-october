@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainChildEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDescent
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+
+open CenteredMomentFixedRay
+open RayFourExpansion
+open scoped EisensteinO
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
     (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
@@ -58,8 +58,8 @@ theorem finite_ray_divisor_bound (L : Finset (Ideal O)) (D E : O)
   intro I hI
   ring
 
-end SevenEighths.CenteredMomentSecondDescent
 
-end
 
-end OAI
+
+
+

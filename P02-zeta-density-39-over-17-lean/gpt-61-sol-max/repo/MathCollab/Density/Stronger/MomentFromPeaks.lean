@@ -6,10 +6,9 @@ public import MathCollab.Density.Stronger.ConditionalDensity
 
 @[expose] public section
 
-open MeasureTheory Filter Set
+open MeasureTheory Filter
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- The literal fourth moment is now supplied by a proved producer. -/
@@ -35,4 +34,4 @@ theorem pointValue_volume_le_of_peak_card {H V η : ℝ} (hV : 0 < V)
   have h := volume_le_two_mul_of_separated_card_bound hc
   simpa only [mul_div_assoc] using h
 
-end MathCollab.Density.Stronger
+

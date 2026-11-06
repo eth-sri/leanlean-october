@@ -4,9 +4,8 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                         
@@ -16,7 +15,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                
 
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
 
@@ -44,17 +43,12 @@ theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
     apply (le_div_iff₀ (mul_pos ha hlog)).mpr
     have h := (le_div_iff₀ ha).mp hl
     nlinarith
-  have hcount : (M:ℝ)+1 ≤ C*((2:ℝ)^M)^a := by
-    calc
-      _ ≤ ((2:ℝ)^M)^a/(a*Real.log 2)+((2:ℝ)^M)^a := add_le_add hm hp
-      _ = _ := by dsimp [C]; ring
+  have hcount : (M:ℝ)+1 ≤ C*((2:ℝ)^M)^a := by grind
   calc
     _ ≤ (C*((2:ℝ)^M)^a)^2 :=
       pow_le_pow_left₀ (by positivity) hcount 2
     _ = _ := by
       rw [mul_pow,← Real.rpow_mul_natCast (by positivity : (0:ℝ) ≤ (2:ℝ)^M)]
-      congr 2
-      dsimp [a]
-      norm_num
+      grind
 
-end TaoTrudgianYang2025
+

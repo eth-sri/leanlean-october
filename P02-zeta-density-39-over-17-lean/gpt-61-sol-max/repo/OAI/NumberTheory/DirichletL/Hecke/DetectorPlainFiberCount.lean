@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorPlainFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorDyadicProfiles
 open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
@@ -21,8 +21,8 @@ theorem plain_fiber_count {Row Label Slot : Type*}
     (hlabel : ∀ u∈rows,(witness u).label=label)
     (hJ : ∀ u∈rows,(witness u).left=J) (hK : ∀ u∈rows,(witness u).right=K)
     (slots : Finset Slot) (row : Row→O) (W : Slot→ℝ→ℂ) (b widths g : Slot→ℝ) (zs : Slot→ℂ)
-    (mesh binWidth z κplain εm C height : ℝ) (hmesh : 0≤mesh) (hbin : 0<binWidth)
-    (hw : ∀ s∈slots,0<widths s) (hwm : ∀ s∈slots,widths s≤mesh)
+    (mesh binWidth z κplain εm C height : ℝ) (hmesh : 0≤ mesh) (hbin : 0<binWidth)
+    (hw : ∀ s∈slots,0<widths s) (hwm : ∀ s∈slots,widths s≤ mesh)
     (hL : 0<∑ s∈slots,widths s) (hz : 0≤z) (hzL : z≤∑ s∈slots,widths s)
     (hbins : ∀ u∈rows,∀ s∈slots,
       HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) binWidth
@@ -71,8 +71,8 @@ theorem plain_fiber_count {Row Label Slot : Type*}
     (192*(1+height)*C) hUp (fun u hu => (hsp u hu).2.2.2) hspike he'
   convert hc using 1; congr 2; ring
 
-end SevenEighths.HeckeDetectorPlainFiberCount
 
-end
 
-end OAI
+
+
+

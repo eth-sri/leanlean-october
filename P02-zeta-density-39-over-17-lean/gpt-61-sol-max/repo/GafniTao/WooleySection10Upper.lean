@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection10HierarchySelection
 public import GafniTao.WooleySection4Lemma42
 
@@ -15,7 +16,7 @@ depth, so the other half of epsilon absorbs its uniform constant.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- A fixed positive constant is eventually absorbed by a positive real
 power of the prime-power scale. -/
@@ -24,15 +25,13 @@ theorem wooley_constant_le_primePower_rpow_eventually
     ∃ H0 : ℕ, ∀ H : ℕ, H0 ≤ H →
       C ≤ (((p ^ H : ℕ) : ℝ) ^ eta) := by
   have hpReal : (1 : ℝ) < p := by exact_mod_cast hp
-  have hpTop : Filter.Tendsto (fun H : ℕ ↦ ((p : ℝ) ^ H))
-      Filter.atTop Filter.atTop :=
+  have hpTop :=
     tendsto_pow_atTop_atTop_of_one_lt hpReal
   have hTop : Filter.Tendsto
       (fun H : ℕ ↦ (((p ^ H : ℕ) : ℝ) ^ eta))
       Filter.atTop Filter.atTop := by
     convert (tendsto_rpow_atTop heta).comp hpTop using 1
-    ext H
-    simp only [Function.comp_apply, Nat.cast_pow]
+    bound
   exact Filter.eventually_atTop.mp
     (hTop.eventually (Filter.eventually_ge_atTop C))
 
@@ -91,10 +90,7 @@ theorem wooley_lemma41_absorb_constant
           (((p ^ (H - h) : ℕ) : ℝ) ^
             (wooleyCriticalExponent k p + epsilon / 2)) *
         wooleySourcePolynomialConditionedMean (wooleyTriangular k)
-          (p ^ B) (p ^ H) phi gamma := by
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right hC'
-          (by positivity)) hmean0
+          (p ^ B) (p ^ H) phi gamma := by field_simp <;> nlinarith
     _ = (((p ^ (H - h) : ℕ) : ℝ) ^
           (wooleyCriticalExponent k p + epsilon)) *
         wooleySourcePolynomialConditionedMean (wooleyTriangular k)
@@ -147,11 +143,10 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
     have hHnonneg : (0 : ℝ) ≤ ((B ⌈/⌉ k : ℕ) : ℝ) := by positivity
     nlinarith
   have hraw' := hraw B phi gamma h hB0 hphi hgamma hdepth
-  have hCscale :
-      C ≤ (((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ^ (epsilon / 4)) :=
+  have hCscale :=
     habsorb (B ⌈/⌉ k) hH0
   exact wooley_lemma41_absorb_constant hp hepsilon hhalf hCscale hraw'
 
-end
 
-end GafniTao
+
+

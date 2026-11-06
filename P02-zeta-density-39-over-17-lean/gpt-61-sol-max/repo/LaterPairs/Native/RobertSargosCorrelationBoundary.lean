@@ -6,9 +6,8 @@ public import LaterPairs.Native.IntegerIntervalBoundary
 public import LaterPairs.Native.RobertSargosSymmetricATimesA
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
@@ -42,7 +41,7 @@ def robertSargosTrimmedCorrelation (f : ℝ → ℝ) (M H : ℕ) (q r : ℤ) : �
 
 theorem robertSargos_h_overlap_card (H : ℕ) (r : ℤ) :
     (robertSargosHOverlap H r).card ≤ H := by
-  have hs : robertSargosHOverlap H r ⊆ Finset.Ico (H:ℤ) (2*H) :=
+  have hs :=
     fun h hh => ((mem_robertSargosHOverlap H h r).mp hh).1
   have hc := Finset.card_le_card hs
   have hi : 2*(H:ℤ)-H = H := by omega
@@ -73,4 +72,4 @@ theorem norm_robertSargos_correlation_endpoint_error (f : ℝ → ℝ) (M H : �
         exact_mod_cast robertSargos_h_overlap_card H r
       nlinarith [abs_nonneg (r:ℝ)]
 
-end TaoTrudgianYang2025
+

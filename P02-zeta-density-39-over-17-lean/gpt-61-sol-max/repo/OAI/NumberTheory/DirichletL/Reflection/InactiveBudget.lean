@@ -7,8 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-noncomputable section
+open CanonicalQuadraticSieve
+
 
 lemma subtype_product_le_full {σ : Type*} [Fintype σ] (p : σ→Prop) [DecidablePred p]
     (H : σ→ℝ) (hH : ∀ i,1≤H i) :
@@ -43,7 +43,7 @@ theorem harmonic_product_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
       · congr 1;norm_num
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hD (Nat.mul_le_mul_left 2 hcard)) (Real.rpow_nonneg hp.le _)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

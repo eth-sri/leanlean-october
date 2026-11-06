@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformRadialComparison
 open HeckeFamily HeckeDyadic ConcreteTraceCRT
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
      (hepsilon : 0<epsilon) (hscale : 0<Cscale) (hxi : 0<xi)
@@ -77,8 +77,8 @@ theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
     exact (hschild.sum_le_tsum rows (fun z _=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)).trans
       (henergy v j k x hx)
 
-end SevenEighths.CenteredMomentUniformRadialComparison
 
-end
 
-end OAI
+
+
+

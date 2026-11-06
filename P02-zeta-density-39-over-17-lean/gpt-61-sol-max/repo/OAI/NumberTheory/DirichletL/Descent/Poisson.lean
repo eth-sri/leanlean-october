@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.Marks
 public import OAI.NumberTheory.DirichletL.Descent.LocalReflection
@@ -13,28 +14,29 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic
-open FirstPassCubeLabels
-open SecondPassArithmetic
 
-noncomputable local instance markedQuotientField (P : Ideal ActualEisensteinCubic.O)
+
+
+local instance markedQuotientField (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Field (ActualEisensteinCubic.O ⧸ P) := Ideal.Quotient.field P
 
-noncomputable local instance markedQuotientFintype (P : Ideal ActualEisensteinCubic.O)
+local instance markedQuotientFintype (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
+section
+variable (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
+include P hg
+
 theorem actual_marked_active_eq
-    (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
+    
     (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
     (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
     localReflectionActive zeroMark (CompletedGauss.actualSextic P hg) ψ σ ε x =
       -LocalReflectionBrackets.activeRow (CompletedGauss.actualSextic P hg) ψ 0 σ ε x := by
-  simpa only [localReflectionActive, localFourier,
-    LocalReflectionBrackets.activeRow, pow_zero] using
-    marked_active_eq_neg_trivial (CompletedGauss.actualSextic P hg) ψ hψ σ ε x
+  exact marked_active_eq_neg_trivial (CompletedGauss.actualSextic P hg) ψ hψ σ ε x
 
 theorem actual_marked_active_formula
-    (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
-    (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
+    
     (hchar : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2)
     (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
     (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
@@ -48,6 +50,8 @@ theorem actual_marked_active_formula
   simp only [LocalReflectionBrackets.phase, LocalReflectionBrackets.bracket,
     show (0 : ℕ) ≠ 4 by decide, ↓reduceIte, inv_pow, map_mul]
   ring
+end
+
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)
@@ -68,7 +72,7 @@ theorem row_slot_cross_phase
       (hg i) (hg k) (p i) (p k) rfl rfl (hpr i) (hpr k)
   have hnot : p k ∉ Ideal.span {p i} := by
     intro hm
-    have hle : Ideal.span {p k} ≤ Ideal.span {p i} :=
+    have hle :=
       Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm)
     have ht := (hcop hik).sup_eq
     rw [sup_eq_left.mpr hle] at ht
@@ -93,8 +97,8 @@ theorem row_slot_product_phase
   exact row_slot_cross_phase p hcop hg hpr i k (fun h =>
     (Finset.disjoint_left.mp hRP) hi (h.symm ▸ hk))
 
-end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

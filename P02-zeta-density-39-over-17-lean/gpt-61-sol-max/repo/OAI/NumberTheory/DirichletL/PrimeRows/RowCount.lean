@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ConcreteTraceCRT ActualEisensteinCubic
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ActualEisensteinCubic
+open scoped HeckeO
 
 lemma freeRow_count (R : Finset FreeRow) (H : ℝ) (hH : 1≤H)
     (hR : ∀u∈R,((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤H) :
@@ -73,7 +73,7 @@ lemma dyadic_weighted_rows (a r C U : ℝ) (hC : 0≤C) (hU : 1≤U)
         _ = (256*C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r))*(U*U^(a-r)) := by ring
         _ = _ := by rw [hp]
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

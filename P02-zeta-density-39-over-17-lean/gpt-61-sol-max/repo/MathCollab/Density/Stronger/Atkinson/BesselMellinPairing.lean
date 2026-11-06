@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected literal Y0 Mellin proofs adapted
 from DFIMellinPairing.lean, exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -21,17 +22,20 @@ integrals.  The proof uses Mathlib's kernel-checked Mellin inversion and an
 explicit Tonelli majorant.
 -/
 
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 open scoped FourierTransform SchwartzMap Topology
 
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
+
+section
+variable {f : ℝ → ℂ} {s : ℂ} (hf : MellinConvergent f s)
+include f s hf
 
 /-- Absolute Mellin convergence recovers measurability of the underlying
 physical function on the positive half-line. -/
 theorem MellinConvergent.aestronglyMeasurable_positive
-    {f : ℝ → ℂ} {s : ℂ} (hf : MellinConvergent f s) :
+     :
     AEStronglyMeasurable f (volume.restrict (Set.Ioi 0)) := by
   have hf' : IntegrableOn
       (fun x : ℝ => (x : ℂ) ^ (s - 1) • f x) (Set.Ioi 0) := by
@@ -59,7 +63,7 @@ theorem MellinConvergent.aestronglyMeasurable_positive
 
 /-- The real norm majorant encoded by Mellin convergence. -/
 theorem MellinConvergent.integrableOn_rpow_mul_norm
-    {f : ℝ → ℂ} {s : ℂ} (hf : MellinConvergent f s) :
+     :
     IntegrableOn (fun x : ℝ => x ^ (s.re - 1) * ‖f x‖)
       (Set.Ioi 0) := by
   have hf' : IntegrableOn
@@ -73,6 +77,8 @@ theorem MellinConvergent.integrableOn_rpow_mul_norm
   simp only [norm_smul]
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
   congr 2
+end
+
 
 /-- The Mellin transform of a DFI test function is continuous along every
 vertical line. -/
@@ -81,7 +87,6 @@ theorem DFIVoronoiTestFunction.continuous_mellin_vertical
     Continuous (fun u : ℝ =>
       mellin g ((σ : ℂ) + (u : ℂ) * I)) := by
   let F : 𝓢(ℝ, ℂ) := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
-  have hF : Continuous (F : ℝ → ℂ) := F.continuous
   have hComp : Continuous (fun u : ℝ => F (u / (2 * Real.pi))) := by
     fun_prop
   apply hComp.congr
@@ -181,11 +186,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
     rw [MeasureTheory.integral_const_mul]
     congr 1
     unfold mellin
-    apply setIntegral_congr_fun measurableSet_Ioi
-    intro x hx
-    have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.ne'
-    rw [show 1 - z u - 1 = -z u by ring]
-    ring
+    simp_all
   have hOuter (x : ℝ) (hx : x ∈ Set.Ioi (0 : ℝ)) :
       (1 / (2 * Real.pi) : ℂ) * (∫ u : ℝ, F (u, x)) =
         g x * h x := by
@@ -205,12 +206,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
       ring]
     have hInv' : (1 / (2 * (Real.pi : ℂ))) *
         (∫ y : ℝ, (x : ℂ) ^ (-((σ : ℂ) + (y : ℂ) * I)) *
-          mellin g ((σ : ℂ) + (y : ℂ) * I)) = g x := by
-      have hScalar : ((1 / (2 * Real.pi) : ℝ) : ℂ) =
-          1 / (2 * (Real.pi : ℂ)) := by
-        norm_cast
-      rw [← hScalar]
-      exact hInv
+          mellin g ((σ : ℂ) + (y : ℂ) * I)) = g x := by simp_all
     rw [← mul_assoc, hInv']
   unfold PointMean.VerticalIntegral' PointMean.VerticalIntegral
   simp only [smul_eq_mul]
@@ -227,7 +223,6 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
     exact (hInner u).symm]
   rw [hSwap, ← MeasureTheory.integral_const_mul]
   apply setIntegral_congr_fun measurableSet_Ioi
-  intro x hx
-  exact hOuter x hx
+  assumption
 
-end MathCollab.Density.Stronger.Atkinson
+

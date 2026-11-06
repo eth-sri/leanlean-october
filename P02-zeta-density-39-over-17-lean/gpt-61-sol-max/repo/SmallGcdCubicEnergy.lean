@@ -4,8 +4,7 @@ public import IntegerFourthMoment
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -138,4 +137,4 @@ theorem small_gcd_cubic_sum :
   obtain ⟨hl2,hu2⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.2).mp hp2
   exact ⟨by exact_mod_cast hN.trans hl1,by exact_mod_cast hN.trans hl2,hl1,hu1,hl2,hu2,hg⟩
 
-end Montgomery.RationalMoment
+

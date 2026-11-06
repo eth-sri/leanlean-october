@@ -12,7 +12,7 @@ open MeasureTheory
 namespace SevenEighths.CenteredMomentHeckeWindowEnergy
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
 open HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
     (b : ℝ → ℂ) (φ : κ → ℝ → ℂ) (w : ℝ → ℝ) (hw : ∀ t,0<w t)
@@ -73,8 +73,8 @@ theorem norm_height_shift (t θ w : ℝ) :
       apply mul_le_mul_of_nonneg_left _ (le_trans zero_le_one hb)
       nlinarith [norm_nonneg w,Real.pi_pos]
 
-end SevenEighths.CenteredMomentHeckeWindowEnergy
 
-end
 
-end OAI
+
+
+

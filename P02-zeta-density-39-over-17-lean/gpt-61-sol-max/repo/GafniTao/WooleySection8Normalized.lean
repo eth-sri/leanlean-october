@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyNormalization
 
 @[expose] public section
@@ -12,12 +13,10 @@ both quotient powers into the exact bracket notation defined in (3.24).
 
 namespace GafniTao
 
-noncomputable section
 
-/-- Direct equation-(3.24) normalization of the `r >= 2` branch of Lemma
-8.1. -/
-theorem wooleySourcePolynomial_equation_8_4_quotient
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
     (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k)
     (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
@@ -29,7 +28,13 @@ theorem wooleySourcePolynomial_equation_8_4_quotient
       wooleySourcePolynomialMixedMean
           phi (wooleyTriangular k) r p B a b nu gamma ≤
         D * wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B bPrime b nu gamma) :
+          phi (wooleyTriangular k) r p B bPrime b nu gamma)
+include k phi p B H r a b bPrime nu Delta D hr hrk hnub hnuPrime gamma hscale hD hsection7
+
+/-- Direct equation-(3.24) normalization of the `r >= 2` branch of Lemma
+8.1. -/
+theorem wooleySourcePolynomial_equation_8_4_quotient
+     :
     (wooleySourcePolynomialMixedMean
         phi (wooleyTriangular k) r p B a b nu gamma /
       wooleySourceNormalizationScale
@@ -66,19 +71,7 @@ theorem wooleySourcePolynomial_equation_8_4_quotient
 /-- Wooley equation (8.4) in the literal bracket normalization (3.24),
 with the exact Lemma-7.1 multiplier `D` still visible. -/
 theorem wooleySourcePolynomial_equation_8_4
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k)
-    (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
-    (gamma : WooleySourceSequence)
-    (hscale : 0 < wooleySourceNormalizationScale
-      phi p B H (wooleyTriangular k) Delta gamma)
-    (hD : 0 ≤ D)
-    (hsection7 :
-      wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B a b nu gamma ≤
-        D * wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B bPrime b nu gamma) :
+     :
     wooleySourceNormalizedMixedMean
         phi p B H (wooleyTriangular k) r a b nu Delta gamma ≤
       D ^ wooleyNormalizationExponent k r *
@@ -94,9 +87,9 @@ theorem wooleySourcePolynomial_equation_8_4
     phi (wooleyTriangular k) (k - r) p B b bPrime nu gamma
   let Y := wooleySourcePolynomialMixedMean
     phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma
-  let u : ℝ := 1 / ((k - r + 1 : ℕ) : ℝ)
-  let v : ℝ := ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)
-  let e : ℝ := wooleyNormalizationExponent k r
+  let u := 1 / ((k - r + 1 : ℕ) : ℝ)
+  let v := ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)
+  let e := wooleyNormalizationExponent k r
   have hq := wooleySourcePolynomial_equation_8_4_quotient
     phi p B H r a b bPrime nu Delta D hr hrk hnub hnuPrime gamma
       hscale hD hsection7
@@ -136,14 +129,19 @@ theorem wooleySourcePolynomial_equation_8_4
       wooleyNormalizationExponent k (k - r)) ^ u *
     ((Y / Z) ^ wooleyNormalizationExponent k (r - 1)) ^
       (1 - 1 / (r : ℝ))
-  change _ ≤ D ^ e * (X / Z) ^ (u * e) * (Y / Z) ^ (v * e) at hq
-  simpa only [hx, hy] using hq
+  grind
+end
+
+
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
+    (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
+include k phi p B H a b nu
 
 /-- The normalized `r=1` conclusion before the Section-6 estimate for the
 conditioned mean is inserted. -/
 theorem wooleySourcePolynomial_equation_8_5_pre
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
+    
     (Delta D : ℝ) (hk : 2 ≤ k)
     (hnub : nu ≤ b) (hnukb : nu ≤ k * b)
     (gamma : WooleySourceSequence)
@@ -172,8 +170,8 @@ theorem wooleySourcePolynomial_equation_8_5_pre
     phi (wooleyTriangular k) (k - 1) p B b (k * b) nu gamma
   let Y := wooleySourcePolynomialConditionedMean
     (wooleyTriangular k) (p ^ B) (p ^ b) phi gamma
-  let u : ℝ := 1 / (k : ℝ)
-  let v : ℝ := 1 - 1 / (k : ℝ)
+  let u := 1 / (k : ℝ)
+  let v := 1 - 1 / (k : ℝ)
   have hraw := wooleySourcePolynomial_equation_8_2_of_section7_mul
     phi p B a b nu hk hnub hnukb gamma D hD hsection7
   have huv : u + v = 1 := by dsimp [u, v]; ring
@@ -188,9 +186,6 @@ theorem wooleySourcePolynomial_equation_8_5_pre
     (wooleySourcePolynomialConditionedMean_nonneg
       phi (wooleyTriangular k) (p ^ B) (p ^ b) gamma)
     hscale hD (by norm_num) huv hraw
-  have hXZ : 0 ≤ X / Z := div_nonneg
-    (wooleySourcePolynomialMixedMean_nonneg
-      phi (wooleyTriangular k) (k - 1) p B b (k * b) nu gamma) hscale.le
   unfold wooleySourceNormalizedMixedMean
   rw [wooleyNormalizationExponent_one hk,
     wooleyNormalizationExponent_pred hk]
@@ -202,8 +197,7 @@ theorem wooleySourcePolynomial_equation_8_5_pre
 ratio.  The next module derives that ratio from Wooley (6.4), (6.5), and
 the hierarchy instead of taking it as an asymptotic convention. -/
 theorem wooleySourcePolynomial_equation_8_5_of_ratio
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
+    
     (Delta D E : ℝ) (hk : 2 ≤ k)
     (hnub : nu ≤ b) (hnukb : nu ≤ k * b)
     (gamma : WooleySourceSequence)
@@ -233,11 +227,7 @@ theorem wooleySourcePolynomial_equation_8_5_of_ratio
     have hkPos : (0 : ℝ) < k := by positivity
     rw [sub_nonneg, div_le_iff₀ hkPos]
     linarith
-  have hratio0 : 0 ≤
-      wooleySourcePolynomialConditionedMean
-          (wooleyTriangular k) (p ^ B) (p ^ b) phi gamma /
-        wooleySourceNormalizationScale
-          phi p B H (wooleyTriangular k) Delta gamma := div_nonneg
+  have hratio0 := div_nonneg
     (wooleySourcePolynomialConditionedMean_nonneg
       phi (wooleyTriangular k) (p ^ B) (p ^ b) gamma) hscale.le
   have hp := Real.rpow_le_rpow hratio0 hratio hv
@@ -245,8 +235,10 @@ theorem wooleySourcePolynomial_equation_8_5_of_ratio
     (Real.rpow_nonneg
       (wooleySourceNormalizedMixedMean_nonneg
         phi p B H (wooleyTriangular k) (k - 1) b (k * b) nu Delta gamma) _)))
-
-
 end
 
-end GafniTao
+
+
+
+
+

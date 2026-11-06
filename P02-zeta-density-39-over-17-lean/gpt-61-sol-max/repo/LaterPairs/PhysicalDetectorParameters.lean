@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import RetunedDetectorParameters
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 
@@ -36,10 +36,9 @@ theorem detector_error_scale_physical {σ a δ T β η : ℝ}
     nlinarith only [hsprod,hmono]
   have hsqrt : Real.sqrt (MathCollab.Density.Stronger.detectorX δ T)=T^(δ/2) := by
     rw [MathCollab.Density.Stronger.detectorX,Real.sqrt_eq_rpow,← Real.rpow_mul hTp.le]
-    congr 1
     ring
   rw [hsqrt,detectorY,← Real.rpow_mul hTp.le,← Real.rpow_add hTp,← Real.rpow_add hTp]
   apply Real.rpow_le_rpow_of_exponent_le hT
   nlinarith only [hproduct,hδ]
 
-end Montgomery.RationalMoment.RightDetector
+

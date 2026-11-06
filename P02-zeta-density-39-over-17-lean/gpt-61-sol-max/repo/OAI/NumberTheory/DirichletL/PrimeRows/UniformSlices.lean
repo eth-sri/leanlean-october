@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SliceIntegral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_buffered_x_slice_decay (K : ℕ)
@@ -75,8 +75,8 @@ theorem uniform_buffered_x_slice_decay (K : ℕ)
       gcongr
     _ = _ := by dsimp [A];rw [pow_add];field_simp;ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.Rows
 
 @[expose] public section
@@ -9,67 +10,67 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
 namespace CubicEisenstein
@@ -194,7 +195,7 @@ open scoped BigOperators Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 
 section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 
 def radialSource (W : ℝ → ℂ) (X : ℝ) : ℂ :=
@@ -203,7 +204,11 @@ def radialSource (W : ℝ → ℂ) (X : ℝ) : ℂ :=
 def radialDual (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑' h : O, if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)
 
-theorem radialSource_summable (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
+section
+variable (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X)
+include W X hX
+
+theorem radialSource_summable  :
     Summable (fun z : O => if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X)) := by
   have hs : Summable (fun z : O => W (‖eisEmbedding z‖ ^ 2 / X)) := by
     simpa only [scaledRadialTest_apply] using
@@ -212,27 +217,27 @@ theorem radialSource_summable (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
   ext z
   by_cases hz : z = 0 <;> simp [hz]
 
-theorem radialSource_poisson (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
+theorem radialSource_poisson  :
     radialSource W X = (X : ℂ) * paperRadialFourier W 0 - W 0 +
       (X : ℂ) * radialDual W X := by
   let P : Empty → Ideal O := Empty.elim
   let : ∀ i, (P i).IsMaximal := fun i => nomatch i
   have hi : Function.Injective P := by intro i; cases i
   have hp := masked_principal_radial_poisson_zero_split P hi ∅ W X hX
-  simp only [maskedPrincipalRemainder, Finset.prod_empty, Finset.powerset_empty,
-    Finset.sum_singleton, UniqueFactorizationMonoid.moebius_one, map_one,
-    Int.cast_one, Nat.cast_one, div_one, mul_one] at hp
+  simp only [Finset.prod_empty, mul_one, maskedPrincipalRemainder, Finset.powerset_empty, sum_singleton, moebius_one, Int.cast_one, map_one, Nat.cast_one, div_one] at hp
   simp only [rowCoprimeMask, Finset.notMem_empty, false_and, exists_false,
     ite_false, one_mul] at hp
   have hs : Summable (fun z : O => W (‖eisEmbedding z‖ ^ 2 / X)) := by
     simpa only [scaledRadialTest_apply] using
       (actual_eisenstein_summable_norm (scaledRadialTest W X hX)).of_norm
   have hz := hs.tsum_eq_add_tsum_ite 0
-  simp only [map_zero, norm_zero, zero_pow (by decide : 2 ≠ 0), zero_div] at hz
+  simp at hz
   change (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / X)) =
     (X : ℂ) * paperRadialFourier W 0 + (X : ℂ) * radialDual W X at hp
   change (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / X)) = W 0 + radialSource W X at hz
   linear_combination hp - hz
+end
+
 
 def subsetNorm {ι : Type*} (P : ι → Ideal O) (E : Finset ι) : ℝ :=
   Ideal.absNorm (∏ i ∈ E, P i)
@@ -246,21 +251,32 @@ def smallDivisors {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S : Finset
 def largeDivisors {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S : Finset ι) (Z : ℝ) :=
   S.powerset.filter (fun E => Z < subsetNorm P E)
 
-theorem subsetNorm_pos {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (E : Finset ι) :
+section
+variable {ι : Type*}
+include ι
+
+theorem subsetNorm_pos  (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (E : Finset ι) :
     0 < subsetNorm P E := by
   rw [subsetNorm, ← primeSubsetGenerator_norm_sq]
   exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (primeSubsetGenerator_ne_zero P E)))
 
-theorem sum_small_add_large {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
+section
+variable [DecidableEq ι] (P : ι → Ideal O)
+include P
+
+theorem sum_small_add_large 
     (S : Finset ι) (Z : ℝ) (f : Finset ι → ℂ) :
     (∑ E ∈ smallDivisors P S Z, f E) + (∑ E ∈ largeDivisors P S Z, f E) =
       ∑ E ∈ S.powerset, f E := by
   simpa only [smallDivisors, largeDivisors, not_le] using
     Finset.sum_filter_add_sum_filter_not S.powerset (fun E => subsetNorm P E ≤ Z) f
 
-theorem masked_radialSource_dilations {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
+section
+variable [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+    (S : Finset ι) (W : 𝓢(ℝ, ℂ))
+include hinj S W
+
+theorem masked_radialSource_dilations  (X : ℝ) (hX : 0 < X) :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
       ∑ E ∈ S.powerset, subsetMobius P E * radialSource W (X / subsetNorm P E) := by
@@ -279,9 +295,11 @@ theorem masked_radialSource_dilations {ι : Type*} [DecidableEq ι]
     simp only [subsetNorm, div_div_eq_mul_div]
     ring
 
-theorem masked_radialSource_truncated {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Z : ℝ) (hX : 0 < X) :
+section
+variable (X Z : ℝ) (hX : 0 < X)
+include X Z hX
+
+theorem masked_radialSource_truncated  :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
       (X : ℂ) * paperRadialFourier W 0 *
@@ -293,16 +311,14 @@ theorem masked_radialSource_truncated {ι : Type*} [DecidableEq ι]
   rw [masked_radialSource_dilations P hinj S W X hX,
     ← sum_small_add_large P S Z]
   congr 1
-  simp only [Finset.mul_sum, ← Finset.sum_sub_distrib, ← Finset.sum_add_distrib]
+  simp only [mul_sum, ← sum_sub_distrib, ← sum_add_distrib]
   apply Finset.sum_congr rfl
   intro E hE
   rw [radialSource_poisson W _ (div_pos hX (subsetNorm_pos P E))]
   push_cast
   ring
 
-theorem masked_radialSource_truncated_euler {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Z : ℝ) (hX : 0 < X) :
+theorem masked_radialSource_truncated_euler  :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
       (X : ℂ) * paperRadialFourier W 0 *
@@ -315,15 +331,20 @@ theorem masked_radialSource_truncated_euler {ι : Type*} [DecidableEq ι]
       (∑ E ∈ largeDivisors P S Z, subsetMobius P E * radialSource W (X / subsetNorm P E)) := by
   rw [masked_radialSource_truncated P hinj S W X Z hX]
   have hs := sum_small_add_large P S Z (fun E => subsetMobius P E / (subsetNorm P E : ℂ))
-  have hprime : ∀ i, Prime (P i) := fun i => Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+  have hprime := fun i => Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
   have he := primeSubset_moebius_norm_sum P hprime hinj S
   change (∑ E ∈ S.powerset, subsetMobius P E / (subsetNorm P E : ℂ)) = _ at he
   rw [he] at hs
   linear_combination (X : ℂ) * paperRadialFourier W 0 * hs
+end
+end
+end
+end
+
 
 end
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 def middleDivisors {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S : Finset ι) (Y Z : ℝ) :=
@@ -337,14 +358,18 @@ def dualFar (W : ℝ → ℂ) (X lengthScale : ℝ) : ℂ :=
   ∑' h : O, if lengthScale < ‖eisEmbedding h‖ ^ 2 then
     (if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)) else 0
 
-theorem radialDual_summable (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
+theorem radialDual_summable  (X : ℝ) (hX : 0 < X) :
     Summable (fun h : O => if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)) := by
   have hs := (paperRadialFourier_lattice_summable_norm W X hX).of_norm
   convert hs.indicator {z : O | z ≠ 0} using 1
   ext z
   by_cases hz : z = 0 <;> simp [hz]
 
-theorem radialDual_near_add_far (W : 𝓢(ℝ, ℂ)) (X lengthScale : ℝ) (hX : 0 < X) :
+theorem radialDual_near_add_far  (X lengthScale : ℝ) (hX : 0 < X) :
     radialDual W X = dualNear W X lengthScale + dualFar W X lengthScale := by
   have hs := radialDual_summable W X hX
   have hn : Summable (fun h : O => if ‖eisEmbedding h‖ ^ 2 ≤ lengthScale then
@@ -358,27 +383,25 @@ theorem radialDual_near_add_far (W : 𝓢(ℝ, ℂ)) (X lengthScale : ℝ) (hX :
   apply tsum_congr
   intro h
   by_cases hL : ‖eisEmbedding h‖ ^ 2 ≤ lengthScale <;> simp [hL, not_lt_of_ge, lt_of_not_ge]
+end
 
-theorem sum_small_add_middle {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
+
+section
+variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
+include ι P
+
+theorem sum_small_add_middle 
     (S : Finset ι) (Y Z : ℝ) (hYZ : Y ≤ Z) (f : Finset ι → ℂ) :
     (∑ E ∈ smallDivisors P S Y, f E) + (∑ E ∈ middleDivisors P S Y Z, f E) =
       ∑ E ∈ smallDivisors P S Z, f E := by
   have hsmall : (smallDivisors P S Z).filter (fun E => subsetNorm P E ≤ Y) =
-      smallDivisors P S Y := by
-    ext E
-    simp only [Finset.mem_filter, smallDivisors]
-    constructor
-    · rintro ⟨⟨hE, hEZ⟩, hEY⟩
-      exact ⟨hE, hEY⟩
-    · rintro ⟨hE, hEY⟩
-      exact ⟨⟨hE, hEY.trans hYZ⟩, hEY⟩
+      smallDivisors P S Y := by grind [smallDivisors]
   have hs := Finset.sum_filter_add_sum_filter_not (smallDivisors P S Z)
     (fun E => subsetNorm P E ≤ Y) f
   rw [hsmall] at hs
   simpa only [middleDivisors, not_le] using hs
 
-theorem masked_radialSource_five_pieces {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+theorem masked_radialSource_five_pieces  [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
     (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Y Z lengthScale : ℝ) (hX : 0 < X) (hYZ : Y ≤ Z) :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
@@ -410,6 +433,8 @@ theorem masked_radialSource_five_pieces {ι : Type*} [DecidableEq ι]
     rw [radialDual_near_add_far W _ lengthScale (div_pos hX (subsetNorm_pos P E)), mul_add]
   rw [hm]
   ring
+end
+
 
 end TruncatedPrincipalPoisson
 
@@ -421,8 +446,8 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
       ∀ (W : 𝓢(ℝ, ℂ)) (K : ℝ), 1 ≤ K →
         (∑' h : {h : O // h ≠ 0}, ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖) ≤
           (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) / (1 + K) ^ A := by
-  let s : Finset (ℕ × ℕ) := Finset.Iic (A + 2, 0)
-  let C : ℝ := 2 ^ (A + 2) * (eisensteinCauchyMass + 1)
+  let s := Finset.Iic (A + 2, 0)
+  let C := 2 ^ (A + 2) * (eisensteinCauchyMass + 1)
   have hC : 0 < C := by
     have hm := eisensteinCauchyMass_nonneg
     dsimp [C]
@@ -430,14 +455,13 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
   refine ⟨s, C, hC, ?_⟩
   intro W K hK
   have hK0 : 0 < K := lt_of_lt_of_le zero_lt_one hK
-  let B : ℝ := 2 ^ (A + 2) * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
+  let B := 2 ^ (A + 2) * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   have hB : 0 ≤ B := by dsimp [B]; positivity
   have hb (q : ℝ) (hq : 0 ≤ q) : (1 + q) ^ (A + 2) * ‖W q‖ ≤ B := by
     have hh := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
       (m := (A + 2, 0)) (k := A + 2) (n := 0) le_rfl le_rfl W q
     simp only [norm_iteratedFDeriv_zero, Real.norm_of_nonneg hq] at hh
-    change (1 + q) ^ (A + 2) * ‖W q‖ ≤ B at hh
-    exact hh
+    assumption
   have hp (h : {h : O // h ≠ 0}) : ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
       (B / (1 + K) ^ A) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ := by
     have hq : K ≤ K * ‖eisEmbedding h.val‖ ^ 2 := by
@@ -467,7 +491,7 @@ end EisensteinSchwartzPoisson
 
 open scoped BigOperators Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 private theorem zero_removed_tsum (f : O → ℂ) :
@@ -569,12 +593,11 @@ theorem small_divisor_dual_tail (A : ℕ) :
       ‖(X : ℂ) * ((subsetMobius P E / (subsetNorm P E : ℂ)) *
         radialDual W (X / subsetNorm P E))‖ ≤ B * (Y / X) ^ A := by
     have hn := subsetNorm_pos P E
-    have hEY : subsetNorm P E ≤ Y := (Finset.mem_filter.mp hE).2
+    have hEY := (Finset.mem_filter.mp hE).2
     have hscale : 1 ≤ X / subsetNorm P E := (le_div_iff₀ hn).mpr (by simpa using hEY.trans hYX)
     calc
       _ = (X / subsetNorm P E) * ‖subsetMobius P E‖ * ‖radialDual W (X / subsetNorm P E)‖ := by
-        simp only [norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs,
-          abs_of_pos hX, abs_of_pos hn]
+        simp only [norm_mul, norm_real, norm_eq_abs, abs_of_pos hX, norm_div, abs_of_pos hn]
         ring
       _ ≤ (X / subsetNorm P E) * 1 * (B / (1 + X / subsetNorm P E) ^ (A + 1)) := by
         gcongr
@@ -600,8 +623,7 @@ theorem large_divisor_source_tail (A : ℕ) :
   have hZ : 0 < Z := hX.trans_le hXZ
   have hf (E : Finset ι) (hE : E ∈ largeDivisors P S Z) :
       ‖subsetMobius P E * radialSource W (X / subsetNorm P E)‖ ≤ B / (1 + Z / X) ^ A := by
-    have hn := subsetNorm_pos P E
-    have hEZ : Z < subsetNorm P E := (Finset.mem_filter.mp hE).2
+    have hEZ := (Finset.mem_filter.mp hE).2
     have hscale : 1 ≤ subsetNorm P E / X := (le_div_iff₀ hX).mpr (by simpa using hXZ.trans hEZ.le)
     have hh := hb W (subsetNorm P E / X) hscale
     rw [inv_div] at hh
@@ -615,8 +637,8 @@ theorem large_divisor_source_tail (A : ℕ) :
         exact pow_le_pow_left₀ (by positivity) (by gcongr) A
   exact (norm_sum_subsets_le S _ (Finset.filter_subset _ _) _ _ (by positivity) hf).trans_eq (by ring)
 
-end TruncatedPrincipalPoisson
 
-end
 
-end OAI
+
+
+

@@ -17,7 +17,7 @@ def sourceControl (S : Finset (ℕ×ℕ)) (W : 𝓢(ℝ,ℂ)) : ℝ :=
 def normalizedProfile (S : Finset (ℕ×ℕ)) (W : 𝓢(ℝ,ℂ)) : 𝓢(ℝ,ℂ) :=
   (sourceControl S W)⁻¹ • W
 
-theorem sourceControl_nonneg (S) (W : 𝓢(ℝ,ℂ)) : 0≤sourceControl S W := apply_nonneg _ _
+theorem sourceControl_nonneg (S) (W : 𝓢(ℝ,ℂ)) : 0≤ sourceControl S W := apply_nonneg _ _
 
 theorem sourceControl_zero (S : Finset (ℕ×ℕ)) (hS : (0,0)∈S)
     (W : 𝓢(ℝ,ℂ)) (hW : sourceControl S W=0) : W=0 := by
@@ -63,8 +63,8 @@ theorem twistedIdealSum_normalized (S : Finset (ℕ×ℕ)) (hS : (0,0)∈S)
     twistedIdealSum χ W t X = (sourceControl S W:ℂ)*
       twistedIdealSum χ (normalizedProfile S W) t X := by
   rw [←twistedIdealSum_profile_smul,normalizedProfile_reconstruct S hS W]
-end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
 
-end OAI
+
+
+

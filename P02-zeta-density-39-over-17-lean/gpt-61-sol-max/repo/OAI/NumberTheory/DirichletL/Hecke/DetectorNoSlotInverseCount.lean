@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRowwise
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff ComplexConjugate
 open Set Filter
 namespace SevenEighths.HeckeDetectorNoSlotInverseCount
@@ -90,8 +90,8 @@ theorem no_slot_inverse_count
     (sourceExponent r+εm) (12*(1+height)*(C*K₀)) hUp hspike hen'
   convert hc' using 1; congr 2; ring
 
-end SevenEighths.HeckeDetectorNoSlotInverseCount
 
-end
 
-end OAI
+
+
+

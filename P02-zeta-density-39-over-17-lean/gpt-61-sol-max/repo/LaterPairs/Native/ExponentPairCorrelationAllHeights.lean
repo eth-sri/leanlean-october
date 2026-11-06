@@ -6,9 +6,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairSourceCorrelation
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                     
@@ -18,7 +17,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                
 
 
-noncomputable section
+
 
 open Expdb
 
@@ -61,4 +60,4 @@ theorem sourceShiftCorrelation_bound_allHeights
     have hNrpos := zero_lt_one.trans_le hNr
     positivity
 
-end TaoTrudgianYang2025
+

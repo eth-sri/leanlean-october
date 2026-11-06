@@ -15,14 +15,14 @@ error, uniformly along the entire compact interval.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def anchoredLegendreError (F : ℝ → ℝ) (σ w v : ℝ) : ℝ :=
   (modelPhaseLegendreDual F v - referenceModelPrimitive σ⁻¹ v) -
     (modelPhaseLegendreDual F w - referenceModelPrimitive σ⁻¹ w)
 
-end TaoTrudgianYang2025
+

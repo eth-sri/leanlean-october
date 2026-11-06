@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ReflectionShellBudget
 public import GuthMaynard.Improvement.ReflectionNearRow
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -80,16 +80,7 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
     intro t ht ht'
     linarith [ht.1,ht'.2]
   have hsub : {t : ℝ | H < |t-u| ∧ |t-u| ≤ 2*H} ⊆
-      Icc (u+H) (u+2*H) ∪ Icc (u-2*H) (u-H) := by
-    intro t ht
-    change H < |t-u| ∧ |t-u| ≤ 2*H at ht
-    rcases lt_or_ge (t-u) 0 with hn | hn
-    · right
-      rw [abs_of_neg hn] at ht
-      constructor <;> linarith [ht.1,ht.2]
-    · left
-      rw [abs_of_nonneg hn] at ht
-      constructor <;> linarith [ht.1,ht.2]
+      Icc (u+H) (u+2*H) ∪ Icc (u-2*H) (u-H) := by grind
   calc
     _ ≤ ∫ t in Icc (u+H) (u+2*H) ∪ Icc (u-2*H) (u-H), F t :=
       setIntegral_mono_set hiF.integrableOn (Filter.Eventually.of_forall hF0)
@@ -100,4 +91,4 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
       add_le_add (hsingle _ (by simp)) (hsingle _ (by simp))
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

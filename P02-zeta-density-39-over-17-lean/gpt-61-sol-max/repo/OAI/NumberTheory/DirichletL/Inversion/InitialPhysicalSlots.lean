@@ -8,10 +8,10 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialPhysicalSlots
-open HeckeFamily HeckeDyadic HeckeInverseAmplification
+open HeckeFamily HeckeInverseAmplification
 open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialMarkedDictionary
-open InverseInitialConjugateEnergy
-local notation "O" => HeckeFamily.O
+
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
 
@@ -119,8 +119,8 @@ theorem live_tuple_admissible {ι : Type*} [Fintype ι]
   · intro P hP
     exact hsprod.2 P hP
 
-end SevenEighths.InverseInitialPhysicalSlots
 
-end
 
-end OAI
+
+
+

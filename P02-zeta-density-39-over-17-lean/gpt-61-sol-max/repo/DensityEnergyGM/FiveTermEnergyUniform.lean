@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import DensityEnergyGM.FiveTermEnergy
 public import GuthMaynard.Improvement.SourceTranslation
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 3200000
 noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
@@ -16,14 +16,17 @@ def fiveTermEnergyExpression (T N V R : ℝ) : ℝ :=
     N ^ (40 / 31 : ℝ) * T ^ (9 / 31 : ℝ) * V ^ (-80 / 31 : ℝ) * R ^ (84 / 31 : ℝ) +
     N ^ (40 / 19 : ℝ) * T ^ (17 / 19 : ℝ) * V ^ (-80 / 19 : ℝ) * R ^ (36 / 19 : ℝ)
 
-theorem fiveTermEnergyExpression_nonneg {T N V R : ℝ}
-    (hT : 0 ≤ T) (hN : 0 ≤ N) (hV : 0 ≤ V) (hR : 0 ≤ R) :
+section
+variable {T N V R : ℝ}
+    (hT : 0 ≤ T) (hN : 0 ≤ N) (hV : 0 ≤ V) (hR : 0 ≤ R)
+include T N V R hT hN hV hR
+
+theorem fiveTermEnergyExpression_nonneg  :
     0 ≤ fiveTermEnergyExpression T N V R := by
   dsimp only [fiveTermEnergyExpression]
   positivity
 
-theorem first_term_le_fiveTermEnergyExpression {T N V R : ℝ}
-    (hT : 0 ≤ T) (hN : 0 ≤ N) (hV : 0 ≤ V) (hR : 0 ≤ R) :
+theorem first_term_le_fiveTermEnergyExpression  :
     N ^ 4 * R * V ^ (-4 : ℝ) ≤ fiveTermEnergyExpression T N V R := by
   have hRest : 0 ≤ N ^ 4 * T ^ 2 * V ^ (-8 : ℝ) +
       N ^ (5 / 2 : ℝ) * T ^ (9 / 8 : ℝ) * V ^ (-5 : ℝ) * R ^ (3 / 2 : ℝ) +
@@ -31,6 +34,8 @@ theorem first_term_le_fiveTermEnergyExpression {T N V R : ℝ}
       N ^ (40 / 19 : ℝ) * T ^ (17 / 19 : ℝ) * V ^ (-80 / 19 : ℝ) * R ^ (36 / 19 : ℝ) := by positivity
   simpa only [fiveTermEnergyExpression, add_assoc] using
     le_add_of_nonneg_right (a := N ^ 4 * R * V ^ (-4 : ℝ)) hRest
+end
+
 
 theorem bounded_polynomial_norm_le_two_scale {N : ℝ} (hN : 1 ≤ N)
     (a : ℕ → ℂ) (ha : ∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) (t : ℝ) :
@@ -63,13 +68,13 @@ theorem discrete_energy_five_term_base (ε : ℝ) (hε : 0 < ε) :
         (discreteAdditiveEnergy W : ℝ) ≤
           C * T ^ ε * fiveTermEnergyExpression T N V (W.card : ℝ) := by
   obtain ⟨C₀, T₀, hC₀, hT₀, hEventual⟩ := discrete_energy_five_term_base_eventual ε hε
-  let C : ℝ := C₀ + 128 * T₀ ^ 3
+  let C := C₀ + 128 * T₀ ^ 3
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
   have hTpos : 0 < T := by linarith
   have hR0 : (0 : ℝ) ≤ W.card := Nat.cast_nonneg _
-  have hExpr : 0 ≤ fiveTermEnergyExpression T N V (W.card : ℝ) :=
+  have hExpr :=
     fiveTermEnergyExpression_nonneg hTpos.le hN.le hV.le hR0
   by_cases hHeight : T₀ ≤ T
   · have h := hEventual T N a W V hHeight hN hTN hNT ha hV hValues hSep hBase
@@ -118,10 +123,7 @@ theorem discrete_energy_five_term_base (ε : ℝ) (hε : 0 < ε) :
       have h := mul_le_mul_of_nonneg_left hMain (show 0 ≤ (2 * T₀) ^ 3 by positivity)
       nlinarith
     have hPow : 1 ≤ T ^ ε := Real.one_le_rpow (by linarith) hε.le
-    have hCoeff : 128 * T₀ ^ 3 ≤ C * T ^ ε := by
-      have hc : 128 * T₀ ^ 3 ≤ C := by dsimp only [C]; linarith
-      have hg : C ≤ C * T ^ ε := by nlinarith
-      exact hc.trans hg
+    have hCoeff : 128 * T₀ ^ 3 ≤ C * T ^ ε := by nlinarith
     calc
       _ ≤ (128 * T₀ ^ 3) * (N ^ 4 * (W.card : ℝ) * V ^ (-4 : ℝ)) := hPrefix
       _ ≤ (C * T ^ ε) * (N ^ 4 * (W.card : ℝ) * V ^ (-4 : ℝ)) :=
@@ -153,8 +155,7 @@ theorem discrete_energy_five_term_native (ε : ℝ) (hε : 0 < ε) :
   have hBase : InBaseInterval T (translateSet t₀ W) := by
     intro t ht
     obtain ⟨u, hu, rfl⟩ := Finset.mem_image.mp ht
-    obtain ⟨hlo, hhi⟩ := hInterval u hu
-    exact ⟨by linarith, by linarith⟩
+    grind
   have h := hOrigin T N (translatedSourceCoefficient N t₀ a) (translateSet t₀ W) V
     hT hN hTN hNT (by
       intro n hn
@@ -167,4 +168,4 @@ theorem discrete_energy_five_term_native (ε : ℝ) (hε : 0 < ε) :
   rw [discrete_energy_translateSet, translateSet_card] at h
   exact h
 
-end Montgomery.RationalMoment
+

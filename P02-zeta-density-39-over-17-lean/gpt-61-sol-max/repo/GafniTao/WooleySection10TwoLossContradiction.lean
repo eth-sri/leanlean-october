@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection6TwoLoss
 public import GafniTao.WooleySection10Contradiction
 
@@ -14,7 +15,7 @@ of `epsilon` and `tau` implicit in the paper's hierarchy notation.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The numerical comparison remains contradictory when the initial and
 terminal estimates use two different nonnegative losses. -/
@@ -43,11 +44,7 @@ theorem wooley_section10_force_final_bound_twoLoss
   have hzeta : 0 ≤ zeta := by exact le_max_of_le_left heta
   have hetaZeta : eta ≤ zeta := le_max_left _ _
   have hepsilonZeta : epsilon ≤ zeta := le_max_right _ _
-  have hHzeta : (H : ℝ) * zeta ≤ theta := by
-    dsimp only [zeta]
-    rcases le_total eta epsilon with h | h
-    · simpa only [max_eq_right h] using hHepsilon
-    · simpa only [max_eq_left h] using hHeta
+  have hHzeta : (H : ℝ) * zeta ≤ theta := by grind
   have hpOne : (1 : ℝ) ≤ p := by exact_mod_cast (show 1 ≤ p by omega)
   have hinitialZeta :
       C0⁻¹ * (p : ℝ) ^
@@ -189,6 +186,6 @@ theorem wooleySourcePolynomial_iterationChain_contradict_twoLoss
     hterminal hHeta hHepsilon hconstants
 
 
-end
 
-end GafniTao
+
+

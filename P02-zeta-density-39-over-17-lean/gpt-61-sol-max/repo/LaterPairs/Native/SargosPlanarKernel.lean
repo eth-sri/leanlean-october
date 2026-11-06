@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosKernelTranslation
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
@@ -21,8 +20,12 @@ def sargosPlanarKernelTerm (a b c d ξ η α γ : ℝ) : ℂ :=
   (sargosSincKernel a (α-c) : ℂ)*(sargosSincKernel b (γ-d) : ℂ)*
     fordAdditiveCharacter (ξ*α+η*γ)
 
-theorem integrable_sargosPlanarKernelTerm_inner {b : ℝ} (hb : 0 < b)
-    (a c d ξ η α : ℝ) :
+section
+variable {b : ℝ} (hb : 0 < b)
+    (a c d ξ η α : ℝ)
+include b hb a c d ξ η α
+
+theorem integrable_sargosPlanarKernelTerm_inner  :
     Integrable (sargosPlanarKernelTerm a b c d ξ η α) := by
   have h := (integrable_sargosSincKernel_shift_character_positive hb d η).const_mul
     ((sargosSincKernel a (α-c) : ℂ)*fordAdditiveCharacter (ξ*α))
@@ -32,8 +35,7 @@ theorem integrable_sargosPlanarKernelTerm_inner {b : ℝ} (hb : 0 < b)
     rw [fordAdditiveCharacter_add]
     ring)
 
-theorem integral_sargosPlanarKernelTerm_inner {b : ℝ} (hb : 0 < b)
-    (a c d ξ η α : ℝ) :
+theorem integral_sargosPlanarKernelTerm_inner  :
     (∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ) =
       ((sargosSincKernel a (α-c) : ℂ)*fordAdditiveCharacter (ξ*α))*
         fordAdditiveCharacter (η*d)*(sargosRealTent b η : ℂ) := by
@@ -48,16 +50,21 @@ theorem integral_sargosPlanarKernelTerm_inner {b : ℝ} (hb : 0 < b)
     _ = _ := by
       rw [integral_const_mul,integral_sargosSincKernel_shift_character_positive hb d η]
       ring
+end
 
-theorem integrable_sargosPlanarKernelTerm_outer {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ) :
+
+section
+variable {a b : ℝ}
+    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ)
+include a b ha hb c d ξ η
+
+theorem integrable_sargosPlanarKernelTerm_outer  :
     Integrable (fun α : ℝ => ∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ) := by
   simp_rw [integral_sargosPlanarKernelTerm_inner hb]
   exact ((integrable_sargosSincKernel_shift_character_positive ha c ξ).mul_const
     (fordAdditiveCharacter (η*d))).mul_const (sargosRealTent b η : ℂ)
 
-theorem integral_sargosPlanarKernelTerm {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ) :
+theorem integral_sargosPlanarKernelTerm  :
     (∫ α : ℝ, ∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ) =
       fordAdditiveCharacter (ξ*c+η*d)*(sargosRealTent a ξ : ℂ)*(sargosRealTent b η : ℂ) := by
   simp_rw [integral_sargosPlanarKernelTerm_inner hb]
@@ -65,8 +72,7 @@ theorem integral_sargosPlanarKernelTerm {a b : ℝ}
     integral_sargosSincKernel_shift_character_positive ha c ξ,fordAdditiveCharacter_add]
   ring
 
-theorem norm_integral_sargosPlanarKernelTerm_le_one {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ) :
+theorem norm_integral_sargosPlanarKernelTerm_le_one  :
     ‖∫ α : ℝ, ∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ‖ ≤ 1 := by
   rw [integral_sargosPlanarKernelTerm ha hb c d ξ η]
   simp only [norm_mul,sargos_character_norm,Complex.norm_real,Real.norm_eq_abs,
@@ -74,6 +80,8 @@ theorem norm_integral_sargosPlanarKernelTerm_le_one {a b : ℝ}
     one_mul]
   exact (mul_le_mul (sargosRealTent_le_one ha ξ) (sargosRealTent_le_one hb η)
     (sargosRealTent_nonneg b η) (by norm_num)).trans_eq (by norm_num)
+end
+
 
 theorem integral_sargosPlanarKernelTerm_eq_zero {a b ξ η : ℝ}
     (ha : 0 < a) (hb : 0 < b) (hcut : a ≤ |ξ| ∨ b ≤ |η|) (c d : ℝ) :
@@ -85,4 +93,4 @@ theorem integral_sargosPlanarKernelTerm_eq_zero {a b ξ η : ℝ}
   · rw [sargosRealTent_zero_of_le_abs hb h]
     simp
 
-end TaoTrudgianYang2025
+

@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Filter
 namespace GuthMaynard.Improvement
@@ -50,7 +49,7 @@ theorem cubic_smoothing_width_eventually {η q δ : ℝ}
     have hm : Tendsto (fun T : ℝ => q*T^(-((4:ℝ)/5-η))) atTop (nhds (q*0)) :=
       tendsto_const_nhds.mul hh
     simpa only [neg_sub,mul_zero] using hm
-  have he : ∀ᶠ T : ℝ in atTop, q*T^(η-(4:ℝ)/5) < δ :=
+  have he :=
     (tendsto_order.mp ht).2 δ hδ
   obtain ⟨T₀,h⟩ := eventually_atTop.mp he
   refine ⟨max 1 T₀,le_max_left _ _,?_⟩
@@ -78,7 +77,7 @@ theorem cubic_shell_sqrt_normalization {U K M E : ℝ}
   have hK0 : 0 ≤ K := by linarith
   have hU0 : 0 ≤ U := hK0.trans hKU
   have hUK : U*K ≤ U^2 := by nlinarith
-  have hroot : Real.sqrt (U*K) ≤ U := (Real.sqrt_le_iff).mpr ⟨hU0,hUK⟩
+  have hroot := (Real.sqrt_le_iff).mpr ⟨hU0,hUK⟩
   exact (cubic_box_sqrt_polynomial hU0 hK0 hM hE).trans (by gcongr)
 
 /-- Exact affine half-exponent and dyadic exponent absorption, preserving
@@ -129,4 +128,4 @@ theorem cubic_affine_sqrt_exponent {T : ℝ} (hT : 1 ≤ T) (α : ℝ) :
   congr 1
   ring
 
-end GuthMaynard.Improvement
+

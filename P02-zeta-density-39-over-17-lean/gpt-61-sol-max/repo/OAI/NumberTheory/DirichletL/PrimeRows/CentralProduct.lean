@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 
 def centralRowScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
@@ -20,9 +20,13 @@ def centralRowScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
       HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x))*
     continuedCorrection S hS η u x w z
 
-theorem calibratedTupleValue_central {K : ℕ}
+section
+variable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal)
+    (η : Character) (u : FreeRow)
+include K S hS hmax η u
+
+theorem calibratedTupleValue_central  (P : Fin K→PrimeIdeal)
     (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ) (x w z : ℂ)
     (htail : FirstTail (4*e) S) (ha : (51/100:ℝ)≤a) (ha1 : a≤1)
@@ -53,9 +57,7 @@ theorem calibratedTupleValue_central {K : ℕ}
   simp only [Finset.prod_mul_distrib,Finset.prod_div_distrib]
   field_simp
 
-theorem calibrated_prime_slots_separate {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (u : FreeRow) (T : Fin K→Finset PrimeIdeal)
+theorem calibrated_prime_slots_separate  (T : Fin K→Finset PrimeIdeal)
     (hPS : ∀i P,P∈T i→P.val∉S)
     (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ) (x w z : ℂ)
@@ -88,8 +90,10 @@ theorem calibrated_prime_slots_separate {K : ℕ}
       exact (Fintype.prod_sum (fun i (P:T i)=>W i ((P.val.val.absNorm:ℝ)/Y i)*
         (P.val.val.absNorm:ℂ)^(z-1)*centralNormalizedSlot η u P.val
           (outside_prime_supported S hS.bad P.val (hPS i P.val P.property)) x w z)).symm
-
-end SevenEighths.ProbeHighRowFamily
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -18,7 +19,7 @@ source amplitude once the frequency is outside the exact smooth band.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex Filter Set
 open scoped Topology ContDiff
@@ -69,8 +70,7 @@ theorem atkinsonRootSlope_derivative_bounds {T y : ℝ} (hT : 0 < T)
   · rw [(hasDerivAt_atkinsonRootSlope T b hy0).deriv,
       abs_of_nonpos (by
         have hp : 0 ≤ T / (Real.pi * y ^ 2) := by positivity
-        rw [neg_div]
-        linarith)]
+        grind)]
     rw [neg_div]
     linarith
   · rw [iteratedDeriv_two_atkinsonRootSlope T b hy0,
@@ -124,4 +124,4 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
         nlinarith
       _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import ThirdWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- All nine budgets, including both unrestricted order-four trace terms.
@@ -27,8 +27,8 @@ theorem third_monomial_budgets {σ a p α δ T N : ℝ}
     N^4*T ≤ Q*S^((5:ℝ)/4)*V^6 ∧
     N^4*L*T^((1:ℝ)/8) ≤ Q*S^((49:ℝ)/40)*V^6 := by
   have hTp : 0 < T := by linarith
-  have ht : 0 < Real.log T := Real.log_pos hT
-  let x : ℝ := Real.logb T N
+  have ht := Real.log_pos hT
+  let x := Real.logb T N
   have hNx : T^x=N := Real.rpow_logb hTp (by linarith) hN
   have hxa : a ≤ x := by
     have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
@@ -80,4 +80,4 @@ theorem third_monomial_budgets {σ a p α δ T N : ℝ}
   · have hh := hm _ (show 0 ≤ (49/40)*p+(6*σ-4)*x-1/8-l by linarith only [hb9])
     nlinarith only [hh,hd]
 
-end Montgomery.RationalMoment
+

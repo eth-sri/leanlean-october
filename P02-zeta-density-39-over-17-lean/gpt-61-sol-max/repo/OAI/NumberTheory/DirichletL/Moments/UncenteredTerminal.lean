@@ -10,10 +10,10 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentUncenteredTerminal
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
+
+open CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
 open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
     (R : Ideal O) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -27,7 +27,7 @@ def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
 def comparisonScale (b : ℝ) : ℝ := 1/(2*max 1 b)
 
 lemma comparisonScale_pos (b : ℝ) : 0<comparisonScale b := by
-  have hb : 0<max 1 b := zero_lt_one.trans_le (le_max_left _ _)
+  have hb : 0< max 1 b := zero_lt_one.trans_le (le_max_left _ _)
   unfold comparisonScale
   positivity
 
@@ -41,8 +41,8 @@ theorem comparison_first_zero (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     linarith [ht.1]
   have hn : 1≤(Ideal.absNorm (B*I):ℝ) :=
     QuadraticMainBoundary.norm_one_le (mul_ne_zero hB hI)
-  have hmax : 1≤max 1 b := le_max_left _ _
-  have hb : b≤max 1 b := le_max_right _ _
+  have hmax : 1≤ max 1 b := le_max_left _ _
+  have hb : b≤ max 1 b := le_max_right _ _
   have harg : (Ideal.absNorm (B*I):ℝ)/comparisonScale b=
       (Ideal.absNorm (B*I):ℝ)*(2*max 1 b) := by
     simp [comparisonScale,div_eq_mul_inv]
@@ -62,8 +62,8 @@ theorem profileCoefficient_eq_uncentered {ι : Type*} [Fintype ι]
     comparison_first_zero W₁ a₁ b₁ ha₁ hs₁ B₁ (v (Sum.inr 0)) hB₁,
     zero_mul,sub_zero,uncenteredProfileCoefficient]
 
-end SevenEighths.CenteredMomentUncenteredTerminal
 
-end
 
-end OAI
+
+
+

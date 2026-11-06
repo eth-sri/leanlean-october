@@ -2,16 +2,19 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Complex MeasureTheory Set
+
+open Complex MeasureTheory
 open scoped FourierTransform ContDiff Topology
 namespace RiemannZeta.GuthMaynard
+section
+variable (f : ℝ → ℂ) (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f)
+    (j : ℕ)
+include f hf hfc j
+
 theorem integrable_iteratedDeriv_of_complex
-    (f : ℝ → ℂ) (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f)
-    (j : ℕ) :
+     :
     Integrable (iteratedDeriv j f) := by
-  have hcont : Continuous (iteratedDeriv j f) :=
+  have hcont :=
     hf.continuous_iteratedDeriv j
       (WithTop.coe_le_coe.mpr (le_of_lt (ENat.natCast_lt_top j)))
   have hcomp : HasCompactSupport (iteratedDeriv j f) := by
@@ -27,8 +30,7 @@ theorem integrable_iteratedDeriv_of_complex
 supported function.  Mathlib's `(2π)^j` normalization is discarded using
 `2π ≥ 1`, leaving the source-friendly factor `|ξ|^j`. -/
 theorem abs_pow_mul_norm_fourier_complex_le
-    (f : ℝ → ℂ) (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f)
-    (j : ℕ) (ξ : ℝ) :
+     (ξ : ℝ) :
     |ξ| ^ j * ‖𝓕 f ξ‖ ≤ ∫ x : ℝ, ‖iteratedDeriv j f x‖ := by
   have hall : ∀ n : ℕ, n ≤ (⊤ : ℕ∞) →
       Integrable (iteratedDeriv n f) := by
@@ -45,7 +47,7 @@ theorem abs_pow_mul_norm_fourier_complex_le
   rw [norm_smul, hfactor] at hnormeq
   have hbase : |ξ| ≤ 2 * Real.pi * |ξ| := by
     nlinarith [abs_nonneg ξ, Real.pi_gt_three]
-  have hpow : |ξ| ^ j ≤ (2 * Real.pi * |ξ|) ^ j :=
+  have hpow :=
     pow_le_pow_left₀ (abs_nonneg ξ) hbase j
   calc
     |ξ| ^ j * ‖𝓕 f ξ‖ ≤
@@ -55,6 +57,8 @@ theorem abs_pow_mul_norm_fourier_complex_le
     _ ≤ ∫ x : ℝ, ‖iteratedDeriv j f x‖ :=
       VectorFourier.norm_fourierIntegral_le_integral_norm
         𝐞 MeasureTheory.volume (innerₗ ℝ) (iteratedDeriv j f) ξ
+end
+
 
 theorem one_add_abs_fourier_decay_of_support_of_bounds_order
     {f : ℝ → ℂ} {C D K₀ Kp : ℝ} (p : ℕ)
@@ -158,4 +162,4 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
           _ ≤ ((2 : ℝ) ^ p * (D - C)) * (K₀ + Kp) :=
             mul_le_mul_of_nonneg_left hmono (mul_nonneg (by positivity) hLen)
 
-end RiemannZeta.GuthMaynard
+

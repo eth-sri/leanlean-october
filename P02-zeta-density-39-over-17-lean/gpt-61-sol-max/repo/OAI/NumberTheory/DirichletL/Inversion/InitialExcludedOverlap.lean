@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPool
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
+open ActualEisensteinCubic CanonicalQuadraticSieve
 namespace SevenEighths.InverseInitialExcludedOverlap
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open HeckeFamily InverseInitialExcludedPolynomial
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily
+open scoped EisensteinO
 
 theorem reconstruct_outside (E:Finset (Ideal O)){P j c:Ideal O}
     (hE:∀Q∈E,Prime Q)(hj:j∣P)(hP:outside E P)(hc:outside E c)
@@ -66,8 +66,8 @@ theorem residual_filtered (A E:Finset (Ideal O)){P j:Ideal O}
   · rw [ite_eq_right hout]
     simp only [overlapResidualCoefficient,hη c hout,mul_zero,zero_mul]
 
-end SevenEighths.InverseInitialExcludedOverlap
 
-end
 
-end OAI
+
+
+

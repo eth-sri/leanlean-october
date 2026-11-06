@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Smoothed
 public import OAI.NumberTheory.DirichletL.CubicSieve.Majorant
 public import OAI.NumberTheory.DirichletL.CubicSieve.ZeroMode
@@ -9,10 +10,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic
 open EisensteinSchwartzPoisson
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
     ∃ C : ℝ, 0 ≤ C ∧
@@ -29,8 +30,8 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
   refine ⟨C, hC, ?_⟩
   intro n _ _ ε hε M N hM hN cols hc hcols a
   have hN0 : 0 < N := by linarith
-  let f : O → ℂ := cubicDualRow cols (fun j => (hcols j).1) a W M
-  let B : ℝ := C * (IdealCoprimeSieveOperator.supportConstant ε hε * N^ε) *
+  let f := cubicDualRow cols (fun j => (hcols j).1) a W M
+  let B := C * (IdealCoprimeSieveOperator.supportConstant ε hε * N^ε) *
     ((2 / N) * ∑ j, ‖a j‖^2)
   have hf : Summable f := cubicDualRow_summable cols (fun j => (hcols j).1) a W M hM
   have hblock (l : ℕ) : ‖∑ h : frequencyDyad l, f h.val‖ ≤ B * frequencyMajorant M N l := by
@@ -49,7 +50,7 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
       apply (le_div_iff₀ hd).mpr
       simpa only [mul_comm] using hp
     exact (norm_sum_le _ _).trans hs
-  have hg : Summable (fun l => B * frequencyMajorant M N l) :=
+  have hg :=
     (frequencyMajorant_summable M N hM hN).mul_left B
   have hb := (hg.of_norm_bounded hblock).hasSum.norm_le_of_bounded hg.hasSum hblock
   rw [tsum_mul_left] at hb
@@ -62,7 +63,7 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
     (cubicDualRow_zero_bound cols (fun j => (hcols j).1) hc a W M N hN0
       (fun j => (hcols j).2.1)) hb)
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

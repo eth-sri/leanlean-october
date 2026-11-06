@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma continuedPhysicalRowKernel_eq_calibratedTuple {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -105,7 +105,7 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
           ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I))) (Finset.mem_univ P0)
   exact hh
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

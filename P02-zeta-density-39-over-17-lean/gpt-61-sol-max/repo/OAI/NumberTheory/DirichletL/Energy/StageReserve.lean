@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarReserve
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyStageReserve
@@ -30,15 +31,15 @@ theorem exists_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
   refine ⟨d,xi,saving,L,C,hd,hxi,hs,hC,hxr,hL,?_⟩
   intro e he Z hZ s hwidth α _ w hw
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hze:1≤Z^e:=Real.one_le_rpow hZ he
+  have hze :=Real.one_le_rpow hZ he
   have hp:Z^(s.width+e)≤Z^e*Z^(s.width+d):=by
     rw [←Real.rpow_add hz]
     exact Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-  let A:ℝ:=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d*(1+2*(L*Real.log Z))
-  let B:ℝ:=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*d)*Z^(-2*saving)*
+  let A :=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d*(1+2*(L*Real.log Z))
+  let B :=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*d)*Z^(-2*saving)*
           max 1 s.radial.scale*Z^(s.width/4)*(∏i,Z^(w i))
   have hLp:0≤L:=by linarith
-  have hlog:0≤Real.log Z:=Real.log_nonneg hZ
+  have hlog :=Real.log_nonneg hZ
   have hA:0≤A:=by dsimp [A];positivity
   have hB0:0≤B:=by dsimp [B];positivity
   have hb:B≤Z^e*B:=by nlinarith
@@ -57,8 +58,8 @@ theorem exists_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
       congr 2
       ring
 
-end SevenEighths.CenteredMomentEnergyStageReserve
 
-end
 
-end OAI
+
+
+

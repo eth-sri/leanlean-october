@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ZetaMomentKernel
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                            
@@ -17,10 +16,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                 
 
 
-noncomputable section
+
 
 open Complex Filter
-open RiemannZeta.GuthMaynard
+
 
 namespace TaoTrudgianYang2025
 
@@ -33,4 +32,4 @@ theorem eventually_const_log_pow_le_rpow (C : ℝ) (hC : 0 ≤ C) (k : ℕ)
     abs_of_nonneg (mul_nonneg hC (pow_nonneg (Real.log_nonneg hT) k)),
     abs_of_nonneg (Real.rpow_nonneg (by linarith : 0 ≤ T) η)] using h
 
-end TaoTrudgianYang2025
+

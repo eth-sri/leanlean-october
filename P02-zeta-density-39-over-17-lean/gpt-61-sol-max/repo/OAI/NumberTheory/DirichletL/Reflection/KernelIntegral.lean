@@ -7,8 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform
-noncomputable section
+open MeasureTheory InverseKernelSourceUniform
+
 
 lemma reflected_density_integrable (U W : ℝ→ℂ) (hU : Measurable U)
     (a b : ℝ) (ha : 0<a) (hWs : Function.support W ⊆ Set.Icc a b)
@@ -66,7 +66,7 @@ theorem kernel_finite_contraction {κ : Type*} (source : Finset κ) (coeff value
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun t => by dsimp only; ring)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

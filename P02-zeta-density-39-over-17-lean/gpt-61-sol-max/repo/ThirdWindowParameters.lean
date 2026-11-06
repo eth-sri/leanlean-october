@@ -3,7 +3,6 @@ public import ThirdWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 namespace Montgomery.RationalMoment
 
@@ -486,4 +485,4 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
       · nlinarith only [h16]
   }
 
-end Montgomery.RationalMoment
+

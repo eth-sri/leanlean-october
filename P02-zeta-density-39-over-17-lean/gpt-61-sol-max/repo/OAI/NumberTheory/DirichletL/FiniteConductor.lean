@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.FiniteFourier
 public import Mathlib.NumberTheory.MulChar.Duality
 public import Mathlib.RingTheory.Ideal.Quotient.Defs
@@ -81,10 +82,7 @@ theorem primitiveOnIdeals_iff_no_descent (χ : MulChar R ℂ) :
   push Not
   rfl
 
-theorem FactorsThroughIdeal.mono {χ : MulChar R ℂ} {I J : Ideal R}
-    (h : FactorsThroughIdeal χ I) (hJI : J ≤ I) : FactorsThroughIdeal χ J := by
-  rw [factorsThroughIdeal_iff] at h ⊢
-  exact fun u hu => h u (hJI hu)
+
 
 omit [Finite R] in
 
@@ -99,8 +97,8 @@ theorem factorization_with_source_mask (χ : MulChar R ℂ) (I : Ideal R)
     exact (congrArg (fun f : Rˣ →* ℂˣ => ((f u : ℂˣ) : ℂ)) hφ).symm
   · simp only [ha, ite_false, MulChar.map_nonunit _ ha]
 
-end
 
-end SevenEighths.FiniteConductor
 
-end OAI
+
+
+

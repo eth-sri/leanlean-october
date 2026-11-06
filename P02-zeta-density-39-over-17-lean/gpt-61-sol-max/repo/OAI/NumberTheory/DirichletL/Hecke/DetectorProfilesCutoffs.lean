@@ -11,11 +11,15 @@ noncomputable section
 
 abbrev cutoff : SchwartzMap ℝ ℂ := QuadraticInitialBound.sieveCutoff
 
-lemma cutoff_one (x : ℝ) (hx : 0 ≤ x) (hx1 : x ≤ 1) : cutoff x = 1 := by
+section
+variable (x : ℝ)
+include x
+
+lemma cutoff_one  (hx : 0 ≤ x) (hx1 : x ≤ 1) : cutoff x = 1 := by
   simp only [cutoff, QuadraticInitialBound.sieveCutoff_apply,
     QuadraticInitialBound.sieveBump_eq_one hx hx1, Complex.ofReal_one]
 
-lemma cutoff_zero (x : ℝ) (hx : 2 ≤ x) : cutoff x = 0 := by
+lemma cutoff_zero  (hx : 2 ≤ x) : cutoff x = 0 := by
   rw [QuadraticInitialBound.sieveCutoff_apply]
   have hh := QuadraticInitialBound.sieveBump.zero_of_le_dist (x := x)
     (show QuadraticInitialBound.sieveBump.rOut ≤ dist x 0 by
@@ -23,12 +27,12 @@ lemma cutoff_zero (x : ℝ) (hx : 2 ≤ x) : cutoff x = 0 := by
       simpa [dist_zero_right, Real.norm_eq_abs, abs_of_nonneg (by linarith : 0 ≤ x)] using hx)
   rw [hh, Complex.ofReal_zero]
 
-lemma cutoff_norm_le (x : ℝ) : ‖cutoff x‖ ≤ 1 := by
+lemma cutoff_norm_le  : ‖cutoff x‖ ≤ 1 := by
   rw [QuadraticInitialBound.sieveCutoff_apply, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg QuadraticInitialBound.sieveBump.nonneg]
   exact QuadraticInitialBound.sieveBump.le_one
 
-lemma annular_log_bound (x : ℝ) (hx : 0 ≤ x)
+lemma annular_log_bound  (hx : 0 ≤ x)
     (hactive : DyadicTransfer.annularCutoff cutoff x ≠ 0) : |Real.log x| ≤ Real.log 2 := by
   have hh := HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx 0
     (by simpa using hactive)
@@ -38,6 +42,8 @@ lemma annular_log_bound (x : ℝ) (hx : 0 ≤ x)
     (show (2 : ℝ)⁻¹ ≤ x by linarith)
   rw [Real.log_inv] at hlo
   exact abs_le.mpr ⟨hlo,Real.log_le_log hx0 hh.2.le⟩
+end
+
 
 theorem exists_product_log_cutoff :
     ∃ Ω : ℝ → ℂ, HasCompactSupport Ω ∧ ContDiff ℝ ∞ Ω ∧
@@ -55,7 +61,7 @@ theorem exists_product_log_cutoff :
   have hb2 := annular_log_bound y hy hay
   exact (abs_add_le _ _).trans (by linarith)
 
-end
-end SevenEighths.HeckeDetectorProfiles
 
-end OAI
+
+
+

@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.PrimePhase
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhase
 open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay QuadraticAllOddCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma residue_one_mod_four : residue (1 : O) = (1, 0) := by
   have he : (1 : O) = eval 1 0 := by simp [eval]
@@ -64,7 +64,11 @@ lemma G_one : G (1 : O) = 1 := by
   have he := G_cube (1 : O) odd_residue_one (cubicTwo_isUnit_of_odd 1 odd_residue_one)
   simpa only [one_pow, hq] using he
 
-theorem G_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
+section
+variable (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
+include a ha
+
+theorem G_pow  (n : ℕ) :
     G (a ^ n) = G a ^ n * reciprocitySign a a ^ (n.choose 2) := by
   induction n with
   | zero => simp [G_one]
@@ -74,16 +78,16 @@ theorem G_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
       pow_add, pow_succ]
     ring
 
-theorem reciprocitySign_cube_self (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) :
+theorem reciprocitySign_cube_self  :
     reciprocitySign (a ^ 3) (a ^ 3) = reciprocitySign a a := by
   rw [reciprocitySign_cube_right (a ^ 3) a (odd_residue_pow a ha 3) ha,
     reciprocitySign_symm, reciprocitySign_cube_right a a ha ha]
 
-theorem G_cube_power (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (l : ℕ) :
+theorem G_cube_power  (l : ℕ) :
     G (a ^ (3 * l)) = G (a ^ 3) ^ l * reciprocitySign a a ^ (l.choose 2) := by
   rw [pow_mul, G_pow (a ^ 3) (odd_residue_pow a ha 3), reciprocitySign_cube_self a ha]
 
-theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
+theorem G_completed_prime_power 
     (e l : ℕ) (he : e ≤ 1) :
     G (a ^ (e + 3 * l)) =
       G a ^ e * G (a ^ 3) ^ l * reciprocitySign a a ^ (e * l + l.choose 2) := by
@@ -95,8 +99,10 @@ theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (resid
       reciprocitySign_cube_right a a ha ha]
     simp only [pow_one, one_mul, pow_add]
     ring
-
-end SevenEighths.ProbePhase
 end
 
-end OAI
+
+
+
+
+

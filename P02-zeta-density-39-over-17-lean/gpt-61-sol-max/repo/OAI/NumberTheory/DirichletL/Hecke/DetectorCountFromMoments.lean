@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorCountFromMoments
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBranchBudget
+open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBranchBudget
 open HeckeDetectorRowCount
 
 theorem count_from_raw_moments
@@ -94,8 +94,8 @@ theorem count_from_raw_moments
   unfold commonLoss
   ring
 
-end SevenEighths.HeckeDetectorCountFromMoments
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourcePoisson
 public import OAI.NumberTheory.DirichletL.Moments.FirstWholeKernel
 public import OAI.NumberTheory.DirichletL.Moments.FirstScale
@@ -14,7 +15,7 @@ namespace SevenEighths.CenteredMomentSecondWholeKernel
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth
 open CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def secondEffectiveScale (C D : Ideal O) (A : O) (K : ℝ) : ℝ :=
   K*‖eisEmbedding A‖^2/((Ideal.absNorm C:ℝ)*(Ideal.absNorm D:ℝ))
@@ -34,8 +35,7 @@ theorem second_kernel_argument (C D a b : Ideal O)
     K*‖eisEmbedding (A*h)‖^2/
       ‖eisEmbedding (primaryGenerator (C*a)*primaryGenerator (D*b))‖^2=
       secondEffectiveScale C D A K*‖eisEmbedding h‖^2/((Ideal.absNorm a:ℝ)*(Ideal.absNorm b:ℝ)) := by
-  simp only [map_mul,norm_mul,mul_pow,primary_norm_sq (C*a) ((supported_mul_iff _ _).mpr ⟨hC,ha⟩),
-    primary_norm_sq (D*b) ((supported_mul_iff _ _).mpr ⟨hD,hb⟩),map_mul,Nat.cast_mul,secondEffectiveScale]
+  simp only [map_mul, norm_mul, mul_pow, primary_norm_sq (C * a) ((supported_mul_iff _ _).mpr ⟨hC, ha⟩), Nat.cast_mul, primary_norm_sq (D * b) ((supported_mul_iff _ _).mpr ⟨hD, hb⟩), secondEffectiveScale]
   ring
 
 theorem common_normalized_kernel (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -50,10 +50,10 @@ theorem common_normalized_kernel (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
   rw [wholeKernel_actual W V k H a b K₀ H₀ A₀ B₀ hk hH ha hb hK₀ hH₀ hA₀ hB₀]
   rw [Real.sqrt_mul hC.le a,Real.sqrt_mul hD.le b]
   simp only [Complex.ofReal_mul,windows]
-  have hc : (Real.sqrt C:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
-  have hd : (Real.sqrt D:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
-  have haa : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hbb : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  have hc := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
+  have hd := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
+  have haa := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
+  have hbb := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
   field_simp
 
 theorem second_frequency_whole_kernel (C D a b : Ideal O)
@@ -83,8 +83,8 @@ theorem second_frequency_whole_kernel (C D a b : Ideal O)
     hK₀ hH₀ hA₀ hB₀
   convert congrArg (fun z : ℂ => F*z) he using 1 <;> ring
 
-end SevenEighths.CenteredMomentSecondWholeKernel
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownBlockSpread
 public import Mathlib.Analysis.Calculus.Deriv.Shift
 
@@ -21,7 +22,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownShiftedDifference
+def heathBrownShiftedDifference
     (f : ℝ → ℝ) (j d : ℕ) (x : ℝ) : ℝ :=
   heathBrownDerivativeCoordinate f j (x + d) -
     heathBrownDerivativeCoordinate f j x
@@ -55,57 +56,54 @@ theorem deriv_heathBrownShiftedDifference
         deriv_heathBrownDerivativeCoordinate]
       ring
 
-theorem heathBrown_shiftedDifference_continuousOn
-    {N j d : ℕ} {f : ℝ → ℝ}
+section
+variable {N j d : ℕ} {f : ℝ → ℝ}
     (hdN : d ≤ N)
+include N j d f hdN
+
+theorem heathBrown_shiftedDifference_continuousOn
+    
     (hcoord : ContinuousOn (heathBrownDerivativeCoordinate f j)
       (Set.Icc 0 (N : ℝ))) :
     ContinuousOn (heathBrownShiftedDifference f j d)
       (Set.Icc 0 ((N - d : ℕ) : ℝ)) := by
-  let s : Set ℝ := Set.Icc 0 ((N - d : ℕ) : ℝ)
+  let s := Set.Icc 0 ((N - d : ℕ) : ℝ)
   have hsub : s ⊆ Set.Icc (0 : ℝ) N := by
     intro x hx
     change x ∈ Set.Icc (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
     rw [Nat.cast_sub hdN] at hx
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    exact ⟨hx.1, hx.2.trans (sub_le_self _ hd0)⟩
+    grind
   have hmaps : Set.MapsTo (fun x : ℝ => x + d) s (Set.Icc 0 (N : ℝ)) := by
     intro x hx
     change x ∈ Set.Icc (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
     rw [Nat.cast_sub hdN] at hx
     change x + (d : ℝ) ∈ Set.Icc (0 : ℝ) (N : ℝ)
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    constructor
-    · exact add_nonneg hx.1 hd0
-    · linarith only [hx.2]
+    grind
   exact (hcoord.comp' (continuousOn_id.add continuousOn_const) hmaps).sub
     (hcoord.mono hsub)
 
 theorem heathBrown_shiftedDifference_differentiableOn
-    {N j d : ℕ} {f : ℝ → ℝ}
-    (hdN : d ≤ N)
+    
     (hcoord : DifferentiableOn ℝ (heathBrownDerivativeCoordinate f j)
       (Set.Ioo 0 (N : ℝ))) :
     DifferentiableOn ℝ (heathBrownShiftedDifference f j d)
       (Set.Ioo 0 ((N - d : ℕ) : ℝ)) := by
-  let s : Set ℝ := Set.Ioo 0 ((N - d : ℕ) : ℝ)
+  let s := Set.Ioo 0 ((N - d : ℕ) : ℝ)
   have hsub : s ⊆ Set.Ioo (0 : ℝ) N := by
     intro x hx
     change x ∈ Set.Ioo (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
     rw [Nat.cast_sub hdN] at hx
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    exact ⟨hx.1, hx.2.trans_le (sub_le_self _ hd0)⟩
+    grind
   have hmaps : Set.MapsTo (fun x : ℝ => x + d) s (Set.Ioo 0 (N : ℝ)) := by
     intro x hx
     change x ∈ Set.Ioo (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
     rw [Nat.cast_sub hdN] at hx
     change x + (d : ℝ) ∈ Set.Ioo (0 : ℝ) (N : ℝ)
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    constructor
-    · exact add_pos_of_pos_of_nonneg hx.1 hd0
-    · linarith only [hx.2]
+    grind
   exact (hcoord.fun_comp (differentiableOn_id.add_const (d : ℝ)) hmaps).sub
     (hcoord.mono hsub)
+end
+
 
 theorem heathBrown_shiftedDifference_deriv_bounds
     {N k d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -139,11 +137,7 @@ theorem heathBrown_shiftedDifference_deriv_bounds
       linarith only [hx.2]
   have hxd : x ≤ x + (d : ℝ) := by
     exact le_add_of_nonneg_right hd0
-  have hxOpen : x ∈ Set.Ioo (0 : ℝ) N := by
-    constructor
-    · exact hx.1
-    · rw [Nat.cast_sub hdN] at hx
-      exact hx.2.trans_le (sub_le_self _ hd0)
+  have hxOpen : x ∈ Set.Ioo (0 : ℝ) N := by simp_all <;> nlinarith
   have hxdOpen : x + (d : ℝ) ∈ Set.Ioo (0 : ℝ) N := by
     constructor
     · exact add_pos_of_pos_of_nonneg hx.1 hd0
@@ -154,14 +148,12 @@ theorem heathBrown_shiftedDifference_deriv_bounds
       lambda ≤ deriv (iteratedDeriv (k - 1) f) y := by
     intro y hy
     rw [← iteratedDeriv_succ]
-    rw [hkpred]
-    exact (hkBounds y hy).1
+    grind
   have hrawUpper : ∀ y ∈ Set.Ioo (0 : ℝ) (N : ℝ),
       deriv (iteratedDeriv (k - 1) f) y ≤ A * lambda := by
     intro y hy
     rw [← iteratedDeriv_succ]
-    rw [hkpred]
-    exact (hkBounds y hy).2
+    grind
   have hlower := heathBrown_lower_slope hraw hrawd hrawLower hxI hxdI hxd
   have hupper := heathBrown_upper_slope hraw hrawd hrawUpper hxI hxdI hxd
   have hxdiff : x + (d : ℝ) - x = (d : ℝ) := by ring
@@ -185,6 +177,6 @@ theorem heathBrown_shiftedDifference_deriv_bounds
     simpa only [hxdiff] using hupper
 
 
-end
 
-end GafniTao
+
+

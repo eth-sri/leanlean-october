@@ -6,26 +6,31 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocation
-open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupport CenteredMomentCommonSectors
+open IdealMobiusDivisorSum
+open scoped EisensteinO
 
-theorem extract_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)
-    (hCa : IsCoprime C a) : supportExtract (C*a) (primeSupport C)=C := by
+section
+variable (C a : Ideal O) (hC : C≠0) (ha : a≠0)
+    (hCa : IsCoprime C a)
+include C a hC ha hCa
+
+theorem extract_coprime_product  : supportExtract (C*a) (primeSupport C)=C := by
   rw [supportExtract_mul C a hC ha,
     supportExtract_of_subset C hC _ (Finset.Subset.refl _),
     supportExtract_of_disjoint a _ ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC ha).mpr hCa).symm,
     mul_one]
 
-theorem residual_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)
-    (hCa : IsCoprime C a) : supportResidual (C*a) (primeSupport C)=a := by
+theorem residual_coprime_product  : supportResidual (C*a) (primeSupport C)=a := by
   apply mul_left_cancel₀ hC
   have he := support_reconstruct (C*a) (mul_ne_zero hC ha) (primeSupport C)
   rwa [extract_coprime_product C a hC ha hCa] at he
+end
+
 
 theorem tuple_products {ι : Type*} [Fintype ι] (v : ι → Ideal O) (C a : Ideal O)
     (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a) (hv : ∏ i,v i=C*a) :
@@ -44,8 +49,8 @@ theorem residual_factor_coprime (C I : Ideal O) (hC : C≠0) :
   have hh := extracted_residual_coprime C I (primeSupport C)
   rwa [supportExtract_of_subset C hC _ (Finset.Subset.refl _)] at hh
 
-end SevenEighths.CenteredMomentCommonAllocation
 
-end
 
-end OAI
+
+
+

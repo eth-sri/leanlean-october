@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
 public import OAI.NumberTheory.DirichletL.Detector.FrequencySupport
@@ -8,18 +9,18 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma radialFourier_vertical_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0<r) :
     paperRadialFourier W r=verticalIntegral σ (fun z=>(r:ℂ)^(-z)*mellin (paperRadialFourier W) z) := by
   have he := ProbeRadialMellin.radial_mellin_inversion W a b ha hW σ r hσ hr
-  simpa only [mellinInv,verticalIntegral,Complex.real_smul,smul_eq_mul] using he.symm
+  exact he.symm
 
 lemma radial_sum_exchange {ι : Type*} [Countable ι] (W : SchwartzMap ℝ ℂ)
     (a b : ℝ) (ha : 0<a) (hW : Function.support W⊆Set.Icc a b)
@@ -89,7 +90,7 @@ theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
     (mul_le_mul_of_nonneg_right (actualCongruenceCoefficient_norm_le C A s hA hs H.val)
       (Real.rpow_nonneg (div_pos hK hd).le _)) (Real.rpow_nonneg (by unfold elementNorm;positivity) _)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

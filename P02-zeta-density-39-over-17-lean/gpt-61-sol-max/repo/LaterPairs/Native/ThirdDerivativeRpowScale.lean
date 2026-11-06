@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem third_derivative_rpow_scale {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) :
@@ -33,4 +32,4 @@ theorem third_derivative_rpow_scale {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) 
   rw [hs,show -(1:ℝ)/6 = -((1:ℝ)/6) by ring,Real.rpow_neg hμ.le]
   simp
 
-end TaoTrudgianYang2025
+

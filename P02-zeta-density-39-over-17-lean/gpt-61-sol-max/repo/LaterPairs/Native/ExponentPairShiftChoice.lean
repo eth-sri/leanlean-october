@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairDifferencingBound
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
 
@@ -24,9 +23,8 @@ theorem exists_comparable_source_shift
   have hH₁ : 1 ≤ H := Nat.one_le_iff_ne_zero.mpr (Nat.floor_pos.mpr (by linarith)).ne'
   have hfloor : (H : ℝ) ≤ η*R := Nat.floor_le (by linarith)
   have hfloor' : η*R < (H : ℝ)+1 := Nat.lt_floor_add_one _
-  have hR : 0 < R := by nlinarith
   refine ⟨H,hH₁,hfloor.trans (mul_le_mul_of_nonneg_left hRN hη.le),?_,?_⟩
   · linarith
   · exact hfloor.trans (by nlinarith)
 
-end TaoTrudgianYang2025
+

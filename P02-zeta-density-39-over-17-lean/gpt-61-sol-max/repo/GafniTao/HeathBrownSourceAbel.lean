@@ -16,10 +16,14 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
+
+section
+variable (w a : ℕ → ℂ) {H : ℕ} (hH : 1 ≤ H)
+include w a H hH
 
 theorem heathBrown_source_abel_identity
-    (w a : ℕ → ℂ) {H : ℕ} (hH : 1 ≤ H) :
+     :
     (∑ h ∈ Finset.Icc 1 H, w h * a h) =
       w H * (∑ h ∈ Finset.Icc 1 H, a h) +
         ∑ j ∈ Finset.Ico 1 H,
@@ -42,7 +46,7 @@ theorem heathBrown_source_abel_identity
 partial sum, which is essential when those partial sums are averaged over
 coefficient cells. -/
 theorem heathBrown_norm_source_weighted_le_partial
-    (w a : ℕ → ℂ) {H : ℕ} (hH : 1 ≤ H) (C : ℝ)
+     (C : ℝ)
     (hweight : ‖w H‖ ≤ 1)
     (hedge : ∀ j ∈ Finset.Ico 1 H, ‖w (j + 1) - w j‖ ≤ C) :
     ‖∑ h ∈ Finset.Icc 1 H, w h * a h‖ ≤
@@ -70,7 +74,9 @@ theorem heathBrown_norm_source_weighted_le_partial
             rw [norm_mul, norm_sub_rev]
             exact mul_le_mul_of_nonneg_right (hedge j hj) (norm_nonneg _)
     _ = _ := by rw [← Finset.mul_sum]
-
 end
 
-end GafniTao
+
+
+
+

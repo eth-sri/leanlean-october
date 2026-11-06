@@ -10,7 +10,7 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 def centralRectangleIntegral {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -20,13 +20,17 @@ def centralRectangleIntegral {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclus
     ∫p : HeightSpace in {t : HeightSpace | |t.1.1|≤H ∧ |t.2|≤H},
       continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z (a+16*e) (1-a-6*e) (17/50) p ∂heightMeasure
 
-theorem central_row_w_cutoff_error (K : ℕ)
+section
+variable (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (N : ℕ) :
+    (N : ℕ)
+include K e he he' S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N
+
+theorem central_row_w_cutoff_error  :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀X Y Z : ℝ,0<X → 0<Y → 0<Z → ∀a B H : ℝ,∀i : ℕ,
@@ -71,13 +75,7 @@ theorem central_row_w_cutoff_error (K : ℕ)
         (a+16*e) ⟨le_rfl,by linarith⟩) (norm_nonneg _)
     _ = _ := by ring
 
-theorem uniform_original_row_rectangle_error (K : ℕ)
-    (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (4*e) S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (N : ℕ) :
+theorem uniform_original_row_rectangle_error  :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀X Y Z : ℝ,0<X → 0<Y → 1≤Z → ∀a B H : ℝ,∀i : ℕ,
@@ -105,9 +103,11 @@ theorem uniform_original_row_rectangle_error (K : ℕ)
     exact pow_nonneg (height_pos _).le _
   apply (norm_sub_le_norm_sub_add_norm_sub _ (centralRowIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H) _).trans
   exact (add_le_add h0' h1'').trans_eq (by ring)
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

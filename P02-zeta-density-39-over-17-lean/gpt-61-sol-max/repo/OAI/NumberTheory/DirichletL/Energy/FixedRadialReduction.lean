@@ -12,13 +12,13 @@ open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialReduction
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentSourceMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput
+open CenteredMomentCommonRadialData
+open CenteredMomentAmplificationChildInput
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialEntry
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputFirstRemainder
+open CenteredMomentFirstSourceReduction
 open CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -57,8 +57,8 @@ theorem actual_original_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
   apply add_le_add _ le_rfl
   simpa only [mul_div_assoc, CenteredMomentAmplificationChildInput.volume,
     CenteredMomentExceptionalAmplitudePair.volume] using hdom
-end SevenEighths.CenteredMomentEnergyFixedRadialReduction
 
-end
 
-end OAI
+
+
+

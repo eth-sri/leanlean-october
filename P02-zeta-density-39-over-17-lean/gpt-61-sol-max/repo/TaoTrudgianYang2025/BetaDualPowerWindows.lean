@@ -14,13 +14,13 @@ then lies in the requested window around exponent alpha at parameter k*T.
 No logarithmic exponent is introduced independently of N and T.
 -/
 
-noncomputable section
 
-open Set Expdb Filter
+
+open Expdb Filter
 open scoped Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.PointMean
 
 theorem eventually_fixed_multiple_ge {k : ℝ} (hk : 0 < k) (C : ℝ) :
     ∀ᶠ T : ℝ in atTop, C ≤ k*T := by
@@ -82,4 +82,4 @@ theorem eventually_modelPhaseDual_power_windows {σ A δ : ℝ}
     eventually_reflected_power_windows hA hk hδ α] with T hTC hwindow
   exact ⟨hTC,hwindow⟩
 
-end TaoTrudgianYang2025
+

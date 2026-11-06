@@ -1,16 +1,18 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPrincipal
+public import OAI.NumberTheory.DirichletL.Descent.SecondVariablePrincipal
+public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCubePriority
+public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem first_whole_extracted_norm {ι:Type*} [DecidableEq ι]
     (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -32,8 +34,8 @@ theorem first_whole_extracted_norm {ι:Type*} [DecidableEq ι]
   exact mul_le_mul_of_nonneg_right (cubeCoordinates_radical_bound p hp b B hB h₁ h₂)
     (primeProductNorm_pos p hp C).le
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

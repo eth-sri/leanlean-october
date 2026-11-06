@@ -7,9 +7,8 @@ public import LaterPairs.Native.ThirdDerivativeNormScale
 public import LaterPairs.Native.ThirdDerivativeRpowScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
@@ -17,7 +16,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                    
 
 
-noncomputable section
+
 open Set GafniTao
 namespace TaoTrudgianYang2025
 
@@ -36,9 +35,7 @@ theorem continuous_third_derivative_bound
     hC hμ hR hscale hF hF' hF'' hlo hhi
   have hn := third_derivative_norm_of_square (Nat.cast_nonneg N)
     (zero_lt_one.trans_le hR) hC hb
-  have he : (N:ℝ)/Real.sqrt (μ^(-(1:ℝ)/3)) = (N:ℝ)*μ^((1:ℝ)/6) := by
-    rw [div_eq_mul_one_div,hi]
-  rwa [he,hs] at hn
+  grind
 
 theorem norm_sum_fordAdditiveCharacter_neg_phase
     (F : ℝ → ℝ) (A : ℝ) (N : ℕ) :
@@ -68,4 +65,4 @@ theorem continuous_third_derivative_negative_bound
     (fun x hx => by linarith [hlo x hx])
   rwa [norm_sum_fordAdditiveCharacter_neg_phase] at hb
 
-end TaoTrudgianYang2025
+

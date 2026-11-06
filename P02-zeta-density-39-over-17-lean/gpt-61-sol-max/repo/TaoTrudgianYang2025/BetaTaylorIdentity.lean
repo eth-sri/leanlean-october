@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorAverage
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -12,13 +13,13 @@ A direct fundamental-theorem-of-calculus argument supplies the
 weighted second-derivative average, including the zero-length segment.
 -/
 
-noncomputable section
+
 
 open Set Filter MeasureTheory
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem segmentTaylorAverage_zero_eq_intervalIntegral (f : ℝ → ℝ) (a x : ℝ) :
     segmentTaylorAverage f a 0 x =
@@ -44,7 +45,7 @@ theorem segmentTaylorAverage_second
     (ha : a ∈ Ioo l r) (hx : x ∈ Ioo l r) :
     (x-a)^2*segmentTaylorAverage (deriv (deriv F)) a 0 x =
       F x-F a-(x-a)*deriv F a := by
-  let p : ℝ → ℝ := fun t => F (a+t*(x-a))+(1-t)*(x-a)*deriv F (a+t*(x-a))
+  let p := fun t => F (a+t*(x-a))+(1-t)*(x-a)*deriv F (a+t*(x-a))
   have hd : ∀ t ∈ uIcc (0 : ℝ) 1,
       HasDerivAt p ((x-a)^2*((1-t)*deriv (deriv F) (a+t*(x-a)))) t := by
     intro t ht
@@ -77,4 +78,4 @@ theorem segmentTaylorAverage_second
   simpa only [p,one_mul,zero_mul,sub_zero,sub_self,zero_add,add_zero,
     add_sub_cancel,sub_add_cancel,sub_add_eq_sub_sub] using h
 
-end TaoTrudgianYang2025
+

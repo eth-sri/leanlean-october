@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeFamily CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma annular_prime_coprime (η : Character) (a D : ℝ) (ha : 0<a) (hD : 0<D)
     (hlarge : (η.modulus.absNorm:ℝ)/a<D)
@@ -39,8 +39,8 @@ theorem eventually_primePool_power_coprime (η : Character) (a ell : ℝ) (ha : 
       ∀P∈primePool M H b (Z^ell),W ((P.absNorm:ℝ)/(Z^ell))≠0→IsCoprime P η.modulus :=
   (tendsto_rpow_atTop hell).eventually (eventually_primePool_coprime η a ha)
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

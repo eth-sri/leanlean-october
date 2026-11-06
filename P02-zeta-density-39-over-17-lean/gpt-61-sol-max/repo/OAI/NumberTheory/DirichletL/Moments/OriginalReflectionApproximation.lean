@@ -10,12 +10,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentOriginalReflectionApproximation
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
+
 open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
 open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
-open CenteredMomentRetainedReflection CenteredMomentTwistedReflection
+
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ) : ℂ :=
   if hY : 0<Y then ∑n∈retainedAnnuli R Y hY,(Real.sqrt (dyadicScale n):ℂ)*
@@ -42,8 +42,8 @@ lemma radical_le_original (χ ψ : Character)
   exact_mod_cast (show (redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm by
     nlinarith)
 
-end SevenEighths.CenteredMomentOriginalReflectionApproximation
 
-end
 
-end OAI
+
+
+

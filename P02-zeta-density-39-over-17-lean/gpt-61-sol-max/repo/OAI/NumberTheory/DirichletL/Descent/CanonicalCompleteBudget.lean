@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.RecursionParameters
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseMoment
 
@@ -50,8 +50,8 @@ theorem actual_complete_height_merge (dshort dlong:ℕ)(Z F cstar loss Cs Cb A t
   have hh:=add_le_add hs' hl'
   convert hh using 1 ; ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

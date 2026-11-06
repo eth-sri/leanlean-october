@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.AmplifierNorm
 public import GuthMaynard.Improvement.OperatorKernel
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset InnerProductSpace
 open scoped InnerProductSpace
@@ -58,4 +57,4 @@ theorem amplifier_operator_norm {η : ℝ} (hη : 0 < η) :
     exact hvec z
   exact ((sq_le_sq₀ (norm_nonneg _) (Real.sqrt_nonneg D)).mpr hop).trans_eq (Real.sq_sqrt hD)
 
-end GuthMaynard.Improvement
+

@@ -20,7 +20,7 @@ theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     (R dmin dmax rmin τ ε e κ η mesh σmin σmax : ℝ)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hrmin : 0<rmin)
     (hτ : 0<τ) (hε : 0<ε) (he : 0<e) (he' : e<1/1000)
-    (hκ : 0<κ) (hη : 0≤η) (hmesh : 0<mesh)
+    (hκ : 0<κ) (hη : 0≤η) (hmesh : 0< mesh)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d → d≤dmax → 2≤Z^d → 2<Z^τ →
     ∀ (χ : Character) (hχ : ∀ θ : RayQuotient.Characters M H,
@@ -45,8 +45,8 @@ theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     ha ha' hmax r σ freq (hrmin.trans_le hr).le hr' hσ hσ' (hl d r hd hr) hQ hf ht
   exact hb d hd r (a-1/2) hr (by linarith) _ hestimate
 
-end SevenEighths.HeckePrimeAmplitudeActual
 
-end
 
-end OAI
+
+
+

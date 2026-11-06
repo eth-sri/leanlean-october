@@ -18,7 +18,7 @@ open Set Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def taylorLeftTransition (l h x : ℝ) : ℝ :=
   Real.smoothTransition ((x-l)/h-1)
@@ -71,8 +71,12 @@ theorem taylorPastedExtension_contDiff
   exact (hprod.add ((contDiff_const.sub hL).mul (finiteTaylorPolynomial_contDiff f Q (l+2*h)))).add
     ((contDiff_const.sub hR).mul (finiteTaylorPolynomial_contDiff f Q (r-2*h)))
 
+section
+variable (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+include f Q l r h x hh
+
 theorem taylorPastedExtension_agrees
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hx : x ∈ Icc (l+2*h) (r-2*h)) :
     taylorPastedExtension f Q l r h x = f x := by
   rw [taylorPastedExtension,modelPhaseBufferedCutoff_one hh hx.1 hx.2,
@@ -80,7 +84,7 @@ theorem taylorPastedExtension_agrees
   ring
 
 theorem taylorPastedExtension_left_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hx : x ≤ r-2*h) :
     taylorPastedExtension f Q l r h x =
       finiteTaylorPolynomial f Q (l+2*h) x+
@@ -91,7 +95,7 @@ theorem taylorPastedExtension_left_formula
   ring
 
 theorem taylorPastedExtension_right_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hx : l+2*h ≤ x) :
     taylorPastedExtension f Q l r h x =
       finiteTaylorPolynomial f Q (r-2*h) x+
@@ -102,7 +106,7 @@ theorem taylorPastedExtension_right_formula
   ring
 
 theorem taylorPastedExtension_eventuallyEq_left_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hx : x < r-2*h) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       (fun y => finiteTaylorPolynomial f Q (l+2*h) y+
@@ -111,7 +115,7 @@ theorem taylorPastedExtension_eventuallyEq_left_formula
   exact taylorPastedExtension_left_formula f Q hh hy.le
 
 theorem taylorPastedExtension_eventuallyEq_right_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hx : l+2*h < x) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       (fun y => finiteTaylorPolynomial f Q (r-2*h) y+
@@ -120,14 +124,14 @@ theorem taylorPastedExtension_eventuallyEq_right_formula
   exact taylorPastedExtension_right_formula f Q hh hy.le
 
 theorem taylorPastedExtension_eventuallyEq_plateau
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hx : x ∈ Ioo (l+2*h) (r-2*h)) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x] f := by
   filter_upwards [isOpen_Ioo.mem_nhds hx] with y hy
   exact taylorPastedExtension_agrees f Q hh ⟨hy.1.le,hy.2.le⟩
 
 theorem taylorPastedExtension_eventuallyEq_left_polynomial
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hgap : l+4*h < r) (hx : x < l+h) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       finiteTaylorPolynomial f Q (l+2*h) := by
@@ -137,7 +141,7 @@ theorem taylorPastedExtension_eventuallyEq_left_polynomial
     taylorLeftTransition_zero hh hy.le,zero_mul,add_zero]
 
 theorem taylorPastedExtension_eventuallyEq_right_polynomial
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+    
     (hgap : l+4*h < r) (hx : r-h < x) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       finiteTaylorPolynomial f Q (r-2*h) := by
@@ -145,5 +149,7 @@ theorem taylorPastedExtension_eventuallyEq_right_polynomial
   change r-h < y at hy
   rw [taylorPastedExtension_right_formula f Q hh (show l+2*h ≤ y by linarith),
     taylorRightTransition_zero hh hy.le,zero_mul,add_zero]
+end
 
-end TaoTrudgianYang2025
+
+

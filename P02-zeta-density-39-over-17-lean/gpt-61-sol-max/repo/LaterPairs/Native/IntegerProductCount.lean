@@ -6,14 +6,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                  
                                                 
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem positive_integer_product_pairs_card_le
@@ -30,12 +29,7 @@ theorem positive_integer_product_pairs_card_le
       exact dvd_mul_right _ _
     · exact Int.natAbs_ne_zero.mpr hm
   · intro p hp q hq he
-    have hfirst : p.1 = q.1 := by
-      rcases Int.natAbs_eq_natAbs_iff.mp he with heq | hneg
-      · exact heq
-      · have hp0 := hpos p hp
-        have hq0 := hpos q hq
-        omega
+    have hfirst : p.1 = q.1 := by grind
     apply Prod.ext hfirst
     apply mul_left_cancel₀ (ne_of_gt (hpos p hp))
     calc
@@ -58,5 +52,5 @@ theorem exists_positive_integer_product_pairs_bound (ε : ℝ) (hε : 0 < ε) :
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) hM hε.le) hC.le
 
-end TaoTrudgianYang2025
+
 

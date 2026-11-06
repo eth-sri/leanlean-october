@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceWeightedEnergy
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionBudget
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
@@ -17,7 +18,7 @@ open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
 open CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
@@ -92,8 +93,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
     have hpow:(q j)^2=((∏I∈j.2.1.val,I).absNorm:ℝ)^p:=by
       dsimp only [q]
       rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
-      congr 1
-      norm_num
+      simp
     rw [hpow]
     exact hh
   have he:=radial_weighted_energy cf f ρ q hρ hq (effectiveState s).radial.keep s.radial.profile
@@ -114,14 +114,13 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
   have hr:(((∏I∈R,I).absNorm:ℝ)^(ε/2))^2=(s.puncture.radical.absNorm:ℝ)^ε:=by
     rw [CenteredMomentAllocatedNaturalSource.primeSupport_product_radical s.puncture s.puncture_ne_zero]
     rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
-    congr 1
-    norm_num
+    simp
   exact he.trans ((mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (Finset.sum_nonneg (fun j _=>mul_nonneg (hρ j) (hq j))) hm 2) hE).trans_eq
     (by rw [mul_pow,hr]))
 
-end SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
 
-end
 
-end OAI
+
+
+

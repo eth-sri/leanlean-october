@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ReflectionMellinIntegral
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import GuthMaynard.Improvement.CubicTimeMeasure
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -38,7 +38,6 @@ theorem reflection_shell_integral (w : MathCollab.Density.ReflectionCutoff)
       exact hpoint L H (t-u) hL hH (by linarith [ht.1]) (by linarith [ht.2])
     _ = D*(∫ t, F t ∂ν)+2*(K*L/L^A)^2*ν.real univ := by
       rw [integral_add (hi.const_mul D) (integrable_const _),integral_const_mul,integral_const]
-      simp only [smul_eq_mul]
       ring
     _ ≤ D*(MathCollab.Density.mellinMass w*B)+2*(K*L/L^A)^2*ν.real univ :=
       add_le_add (mul_le_mul_of_nonneg_left (reflection_mellin_integral_bound w ν L H u B hB) hD) le_rfl
@@ -93,4 +92,4 @@ theorem reflection_shell_density (w : MathCollab.Density.ReflectionCutoff)
   exact (reflection_shell_density_energy hm h0 hN hL a hμ).trans
     (hmean N L H r u hN hL hH.le a ha)
 
-end GuthMaynard.Improvement
+

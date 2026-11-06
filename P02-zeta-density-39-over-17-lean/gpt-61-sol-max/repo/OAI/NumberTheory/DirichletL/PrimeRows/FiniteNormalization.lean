@@ -9,16 +9,23 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def globalNormalization (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+include S hS
+
+def globalNormalization 
     (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
   (LFunction (fixedSourcePrincipal S hS) (6*z))⁻¹*
     (LFunction (rowCharacter S hS u) w)⁻¹*LFunction ((targetRow η u).excludePrimes S hS) x
 
-theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
+section
+variable (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow) (x w z : ℂ)
+include hbad T hT η u x w z
+
+theorem globalNormalization_finite_split 
     (hx : 1<x.re) (hw : 1<w.re) (hz : 1<(6*z).re) :
     globalNormalization S hS η u x w z=
       globalNormalization (markExclusions S T) (markExclusions_prime S hS T) η u x w z*
@@ -39,9 +46,7 @@ theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,P
     · simp only [mem_markExclusions,hP,or_false,R,ite_eq_right hP,mul_one]
   · rfl
 
-theorem finite_replacement_normalized (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow) (x w z : ℂ)
+theorem finite_replacement_normalized 
     (g : PrimeIdeal→ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     (markedIdealHighSeries (markExclusions S T) 1 η u.val x w z*∏P∈T,g P)*
       globalNormalization S hS η u x w z=
@@ -53,9 +58,12 @@ theorem finite_replacement_normalized (S : Finset (Ideal O)) (hS : ∀P∈S,Prim
       (hbad.trans Finset.subset_union_left) η u x w z hx hw hz).tprod_eq,
     Finset.prod_mul_distrib,globalNormalization]
   ring
-
-end SevenEighths.ProbeHighRowFamily
-
+end
 end
 
-end OAI
+
+
+
+
+
+

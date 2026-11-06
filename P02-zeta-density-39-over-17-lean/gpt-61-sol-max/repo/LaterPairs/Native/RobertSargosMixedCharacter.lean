@@ -6,20 +6,23 @@ public import LaterPairs.Native.RobertSargosCubicPhase
 public import LaterPairs.Native.SargosKernelTranslation
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                
                                                           
 
-noncomputable section
+
 open GafniTao
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-theorem norm_sum_character_add_constant {ι : Type*} (S : Finset ι)
-    (w : ι → ℂ) (φ : ι → ℝ) (c : ℝ) :
+section
+variable {ι : Type*} (S : Finset ι)
+    (w : ι → ℂ)
+include ι S w
+
+theorem norm_sum_character_add_constant  (φ : ι → ℝ) (c : ℝ) :
     ‖∑ i ∈ S, w i*fordAdditiveCharacter (c+φ i)‖ =
       ‖∑ i ∈ S, w i*fordAdditiveCharacter (φ i)‖ := by
   have he : (∑ i ∈ S, w i*fordAdditiveCharacter (c+φ i)) =
@@ -31,8 +34,7 @@ theorem norm_sum_character_add_constant {ι : Type*} (S : Finset ι)
     ring
   rw [he,norm_mul,sargos_character_norm,one_mul]
 
-theorem norm_robertSargos_mixed_sum_eq {ι : Type*} (S : Finset ι)
-    (w : ι → ℂ) (q h n : ι → ℝ) (f : ℝ → ℝ) (m r : ℝ) :
+theorem norm_robertSargos_mixed_sum_eq  (q h n : ι → ℝ) (f : ℝ → ℝ) (m r : ℝ) :
     ‖∑ i ∈ S, w i*fordAdditiveCharacter
       (robertSargosSymmetricDifference f (m+n i+q i) (h i)-
         robertSargosSymmetricDifference f (m+n i) (h i+r))‖ =
@@ -53,6 +55,8 @@ theorem norm_robertSargos_mixed_sum_eq {ι : Type*} (S : Finset ι)
     ring
   simp only [he]
   exact norm_sum_character_add_constant S w φ c
+end
 
-end TaoTrudgianYang2025
+
+
 

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import CriticalTailThreshold
 public import RightSolidPolynomialCounts
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Filter MathCollab.Density.Stronger MathCollab.Density
 namespace Montgomery.RationalMoment.RightDetector
 
@@ -75,8 +75,7 @@ theorem criticalMeanThreshold_dominates_power {C σ a δ q K : ℝ}
     _ ≤ T^e*T^q*T^(δ/2)*T^e := by gcongr; simpa only [pow_one] using hlog
     _ = T^(q+δ/2+2*e) := by
       rw [← Real.rpow_add hTp,← Real.rpow_add hTp,← Real.rpow_add hTp]
-      congr 1
       ring
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT1 (by dsimp [e]; linarith)
 
-end Montgomery.RationalMoment.RightDetector
+

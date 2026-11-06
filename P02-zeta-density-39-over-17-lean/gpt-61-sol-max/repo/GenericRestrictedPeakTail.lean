@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GenericPeakWidth
 public import TaoTrudgianYang2025.AtkinsonPairNativePacket
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Filter Finset
 open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace Montgomery.CriticalPeak
@@ -41,9 +41,7 @@ theorem restricted_peak_tail_of_count {a g b η ε : ℝ}
   · simp only [Finset.card_empty,Nat.cast_zero]
     positivity
   have hVgrowth : V ≤ H^(1/6+κ) :=
-    (hlarge t ht).trans (hg t (by
-      rw [abs_of_nonneg (by linarith [(hrange t ht).1] : 0 ≤ t)]
-      exact (hrange t ht).2)).le
+    (hlarge t ht).trans (hg t (by grind)).le
   have hVl : H^(1/8+κ) ≤ V :=
     (Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)).trans hVlower
   have hVsq := pow_le_pow_left₀ (by positivity : 0 ≤ H^(1/8+κ)) hVl 2
@@ -85,4 +83,4 @@ theorem ExponentPair.restricted_critical_peak_tail {k l η ε : ℝ}
     (a := 1+l/k) (g := (2*l-1)/k) (b := 2+2/k) (by rwa [he])
     (localMeanCount_of_pair_packet hk hpair.localMeanPacket_native) hη hε
   simpa only [hf] using hh
-end TaoTrudgianYang2025
+

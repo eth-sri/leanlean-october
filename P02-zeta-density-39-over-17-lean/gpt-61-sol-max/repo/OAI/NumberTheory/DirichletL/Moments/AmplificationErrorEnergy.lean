@@ -10,12 +10,12 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationErrorEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationSourceError CenteredMomentAmplificationSourceDomain
 open CenteredMomentGaussEnergy CenteredMomentGaussNormalization
 open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def localErrorCost (p : O) (n : ℕ) : ℝ :=
   if n=5 then (1-(Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹)^2
@@ -78,8 +78,8 @@ theorem finite_original_error_energy (S : Finset (Ideal O)) (c : Ideal O → ℂ
   rw [gaussEnergy_central _ _ _ d T' ht] at hh
   exact hh
 
-end SevenEighths.CenteredMomentAmplificationErrorEnergy
 
-end
 
-end OAI
+
+
+

@@ -7,9 +7,9 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators
-open Set
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 def smallDyadicIndices (L : ℝ) : Finset ℕ :=
   (Finset.range (Nat.find (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))).filter (fun n=>(2:ℝ)^n≤L)
@@ -55,8 +55,8 @@ lemma sum_small_dyadicRows (L : ℝ) (f : FreeRow→ℂ) :
   rw [←small_rows_biUnion L]
   exact Finset.sum_biUnion (fun m hm n hn hmn=>smallDyadicRows_disjoint L hmn)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

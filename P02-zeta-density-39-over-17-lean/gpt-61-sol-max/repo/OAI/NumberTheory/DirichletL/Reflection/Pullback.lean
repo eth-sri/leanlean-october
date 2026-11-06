@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseMoment
+open ActualEisensteinCubic CubicEisenstein InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι→Eis} {q : κ→Eis}
     {N a c : Eis} {mode : Bool}
@@ -48,7 +48,7 @@ theorem mixedReflectedValue_pullback
     (fun k => j (e k)) (reindexMarks e S) W X
   rw [hj,reindexMarks_symm] at he
   exact he
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

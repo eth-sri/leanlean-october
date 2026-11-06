@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.HeckeDetectorLower
 open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition
 open GammaZeroDetector
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :
     (3/4 : ℝ) ≤ ‖Complex.exp (-1/((U^20 : ℝ) : ℂ))‖ := by
@@ -30,7 +30,11 @@ lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :
   simp only [neg_div] at hh ⊢
   linarith
 
-theorem terminal_uniform_lower (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ' : θ < 3/4) :
+section
+variable (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ' : θ < 3/4)
+include R θ hR hθ hθ'
+
+theorem terminal_uniform_lower  :
     ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U →
       ∀ (χ : Character), χ.residue ≠ 1 → ∀ (V T : ℝ → ℂ),
       (∀ x : ℝ, ‖V x‖ ≤ 1) → (∀ x : ℝ, ‖T x‖ ≤ 1) →
@@ -71,7 +75,7 @@ theorem terminal_uniform_lower (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ
   have hu := unit_term_lower U hU2
   linarith
 
-theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ' : θ < 3/4) :
+theorem exists_dyadic_zero_witness  :
     ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U →
       ∀ (χ : Character), χ.residue ≠ 1 → ∀ (V T : ℝ → ℂ),
       (∀ x : ℝ, ‖V x‖ ≤ 1) → (∀ x : ℝ, ‖T x‖ ≤ 1) →
@@ -103,9 +107,11 @@ theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) 
     (by linarith) (by positivity) hTzero hVone hVzero ρ j k hbn⟩
   exact hb.trans (mul_le_mul_of_nonneg_right
     (HeckeDetectorBudget.source_pair_count_bound U hU2) (norm_nonneg _))
-
-end SevenEighths.HeckeDetectorLower
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -13,13 +13,13 @@ open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorEnergyInitialState
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
+open HeckeFamily HeckeInverseAmplification
 open CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy
 open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def initialKeep (η:Character)(Q:Ideal O)(z:O):Prop:=
   z≠0 ∧ ¬FixedInducingRow η Q (fixedBadMask*idealGenerator 1) 1 z
@@ -72,8 +72,12 @@ theorem radialMajorant_support_bound:
 
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem source_label_modulus_eventually (F:ProbeFinalAssembly.SourceData D)
-    (η:Character)(δ:ℝ)(hδ:0<δ):
+section
+variable (F:ProbeFinalAssembly.SourceData D)
+    (η:Character)
+include F η
+
+theorem source_label_modulus_eventually (δ:ℝ)(hδ:0<δ):
     ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀label:Sum Bool (RayQuotient.Characters F.modulus ⊤),∀d:ℝ,(1/200:ℝ)≤d→
       ((sourceMomentBase F.modulus ⊤ le_top F.S F.exclusions.prime η label).modulus.absNorm:ℝ)
@@ -91,11 +95,11 @@ theorem source_label_modulus_eventually (F:ProbeFinalAssembly.SourceData D)
   rw [←Real.rpow_mul (zero_lt_one.trans hZ).le]
   exact Real.rpow_le_rpow_of_exponent_le hZ.le (mul_le_mul_of_nonneg_right hd hδ.le)
 
-lemma source_keep_iff (F:ProbeFinalAssembly.SourceData D)(η:Character)(u:FreeRow):
+lemma source_keep_iff (u:FreeRow):
     initialKeep η (internalQ (sourceFixedIdeal F) η) u.val↔¬sourceExceptional F η u:=by
   exact and_iff_right u.property.1
 
-lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
+lemma source_fixed_gates :
     internalQ (sourceFixedIdeal F) η≠0 ∧
     internalQ (sourceFixedIdeal F) η≤F.modulus ∧
     internalQ (sourceFixedIdeal F) η≤η.modulus ∧
@@ -103,9 +107,11 @@ lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
   ⟨internalQ_ne_zero _ (sourceFixedIdeal_ne_zero F) η,
     inf_le_left.trans (sourceFixedIdeal_le_modulus F),inf_le_right,
     inf_le_left.trans (sourceFixedIdeal_le_72 F)⟩
-
-end SevenEighths.CenteredMomentDetectorEnergyInitialState
-
 end
 
-end OAI
+
+
+
+
+
+

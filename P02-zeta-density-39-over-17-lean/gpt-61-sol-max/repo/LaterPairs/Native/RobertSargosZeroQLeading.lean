@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -50,4 +49,4 @@ theorem robertSargos_zero_q_leading_prefix
       (fun x hx => by nlinarith [mul_le_mul_of_nonneg_left (hlo x hx) (neg_nonneg.mpr hrn.le)])
       (fun x hx => by nlinarith [mul_le_mul_of_nonneg_left (hhi x hx) (neg_nonneg.mpr hrn.le)])
 
-end TaoTrudgianYang2025
+

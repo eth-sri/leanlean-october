@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set MeasureTheory Complex
 namespace SevenEighths.CenteredMomentPlainGlobalBound
@@ -99,8 +99,8 @@ open HeckeFamily HeckeDyadic
   simp only [ofReal_neg] at hlo
   linarith [hlo.trans hj,hhi.trans hj,htail.trans ht]
 
-end SevenEighths.CenteredMomentPlainGlobalBound
 
-end
 
-end OAI
+
+
+

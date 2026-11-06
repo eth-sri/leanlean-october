@@ -13,13 +13,13 @@ Multiplication by the cutoff turns a function smooth near its support
 into a globally smooth correction, without extending the original function.
 -/
 
-noncomputable section
 
-open Set Filter
+
+open Filter
 open scoped Topology ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem smoothCutoff_mul_contDiff {χ H : ℝ → ℝ}
     (hχ : ContDiff ℝ ∞ χ)
@@ -34,4 +34,4 @@ theorem smoothCutoff_mul_contDiff {χ H : ℝ → ℝ}
       simp only [hy, zero_mul, Pi.zero_apply]
     exact contDiffAt_const.congr_of_eventuallyEq he
 
-end TaoTrudgianYang2025
+

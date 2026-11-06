@@ -11,9 +11,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentCommonMaskEnergy
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice
+open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation CenteredMomentLattice
 open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem finite_shared_energy {ι κ : Type*} [Fintype ι] [Fintype κ]
     (a f : ι→κ→ℂ) (ρ : κ→ℝ) (hρ : ∀j,0≤ρ j)
@@ -196,7 +196,11 @@ theorem original_positive_normalized {α : Type*} [Fintype α] [DecidableEq α]
 lemma positive_height_phase_norm (X t : ℝ) (hX : 0<X) : ‖(X:ℂ)^(Complex.I*t)‖=1 := by
   simpa using Complex.norm_cpow_eq_rpow_re_of_pos hX (Complex.I*t)
 
-theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
+section
+variable {α : Type*} [Fintype α]
+include α
+
+theorem original_positive_deletion  [DecidableEq α]
     (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
@@ -225,7 +229,7 @@ theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
     (normPowerProfile W₂ a₂ b₂ ha₂ hs₂ hW₂ t) X₁ X₂ hX₁ hX₂ Finset.univ pool
     (fun i _=>hp i) (fun i=>heightCoefficient (β i) t) P
 
-theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
+theorem original_retained_normalized  [DecidableEq α]
     {η : Character} {z : O} (F : NaturalRow η z) (R : Ideal O) (hR : R≠0)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
@@ -251,7 +255,7 @@ theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
     (dilated_contDiff W₁ hW₁ _) (dilated_contDiff W₂ hW₂ _) pool β P hP t
     _ _ (by unfold clippedScale;positivity) (by unfold clippedScale;positivity)
 
-theorem original_retained_zero {α : Type*} [Fintype α]
+theorem original_retained_zero 
     (η : Character) (m A z : O) (W₁ W₂ : ℝ→ℂ) (b₁ b₂ : ℝ)
     (hs₁ : Function.support W₁⊆Set.Iic b₁) (hs₂ : Function.support W₂⊆Set.Iic b₂)
     (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
@@ -266,9 +270,11 @@ theorem original_retained_zero {α : Type*} [Fintype α]
     simp
   · rw [strict_subunit_rowTwistedSum_zero η m A z W₂ b₂ t X₂ hX₂ hs₂ h]
     simp
-
-end SevenEighths.CenteredMomentCommonMaskEnergy
-
 end
 
-end OAI
+
+
+
+
+
+

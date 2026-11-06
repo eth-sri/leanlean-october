@@ -12,14 +12,15 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
+open CenteredMomentCommonAllocationSum
 open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
+
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
     ∃Cbound:ℝ,0<Cbound ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
-    Fintype.card ι≤N → a≤s.lower → s.upper≤b →
+    Fintype.card ι≤N → a≤ s.lower → s.upper≤b →
     ∀(C R seed:Ideal O)(hC:Supported C),seed∣C →
     ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K:ℝ),0<K →
     (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
@@ -49,8 +50,8 @@ theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<�
   exact Real.rpow_le_rpow (CenteredMomentAmplificationChildInput.volume_pos _).le
     (CenteredMomentAmplificationChildSourceCaps.common_volume_le N b hb s hcard hbS C R B τ t hB) (hα j)
 
-end SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
 
-end
 
-end OAI
+
+
+

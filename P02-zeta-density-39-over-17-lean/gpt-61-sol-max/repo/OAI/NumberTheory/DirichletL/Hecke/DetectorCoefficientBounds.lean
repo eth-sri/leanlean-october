@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierActual
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorTail
 
@@ -11,14 +12,18 @@ open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorCoefficientBounds
 open HeckeFamily HeckeDetectorFourier HeckeDetectorTail
 open ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma annular_norm_le_two (V : ℝ → ℂ) (hV : ∀ x, ‖V x‖ ≤ 1) (x : ℝ) :
     ‖DyadicTransfer.annularCutoff V x‖ ≤ 2 := by
   exact (norm_sub_le _ _).trans (by linarith [hV x,hV (2*x)])
 
-lemma inverseCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
-    (hV : ∀ x, ‖V x‖ ≤ 1) (Dstar D : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+section
+variable (χ : Character) (V : ℝ → ℂ)
+    (hV : ∀ x, ‖V x‖ ≤ 1)
+include χ V hV
+
+lemma inverseCoefficient_norm_le_two  (Dstar D : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
     ‖inverseCoefficient χ V (DyadicTransfer.annularCutoff V) Dstar D s I‖ ≤ 2 := by
   simp only [inverseCoefficient,norm_mul]
   calc
@@ -30,14 +35,15 @@ lemma inverseCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
       · exact annular_norm_le_two V hV _
     _ = _ := by norm_num
 
-lemma plainCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
-    (hV : ∀ x, ‖V x‖ ≤ 1) (N : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+lemma plainCoefficient_norm_le_two  (N : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
     ‖plainCoefficient χ (DyadicTransfer.annularCutoff V) N s I‖ ≤ 2 := by
   simp only [plainCoefficient,norm_mul]
   calc
     _ ≤ (1 : ℝ)*2 := mul_le_mul (weighted_norm_le_one χ s hs I)
       (annular_norm_le_two V hV _) (norm_nonneg _) (by norm_num)
     _ = _ := by norm_num
+end
+
 
 def expandedSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U^21⌉₊
 
@@ -70,11 +76,10 @@ theorem coefficient_mass (χ : Character) (V : ℝ → ℂ) (hV : ∀ x, ‖V x�
     linarith [expandedSet_count U hU]
   have hh := mul_le_mul hi hp
     (Finset.sum_nonneg (fun I hI => norm_nonneg _)) (by positivity)
-  apply hh.trans_eq
-  ring
+  linarith
 
-end SevenEighths.HeckeDetectorCoefficientBounds
 
-end
 
-end OAI
+
+
+

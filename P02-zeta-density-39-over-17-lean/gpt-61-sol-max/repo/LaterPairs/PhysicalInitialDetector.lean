@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import LaterPairs.PhysicalDetectorParameters
 
 @[expose] public section
 
-open Real Complex MeasureTheory Set Filter
+open Real Complex MeasureTheory Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
 open MathCollab.Density
@@ -77,8 +77,7 @@ theorem detectorTail_eventually_large_physical {σ a δ : ℝ}
     have hexp := Real.add_one_le_exp (-1 / detectorY a T)
     have hinv : 1 / detectorY a T ≤ (1/4 : ℝ) :=
       (div_le_iff₀ (by linarith : 0 < detectorY a T)).2 (by linarith)
-    rw [neg_div] at hexp ⊢
-    linarith
+    grind
   have hn : ‖(Real.exp (-1 / detectorY a T) : ℂ)‖ ≤
       ‖smoothedDetector ρ (detectorX δ T) (1 / detectorY a T)‖ +
         ‖detectorTail ρ (detectorX δ T) (detectorY a T)‖ := by
@@ -88,8 +87,7 @@ theorem detectorTail_eventually_large_physical {σ a δ : ℝ}
     rw [hh]
     exact norm_sub_le _ _
   rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)] at hn
-  have hm := hs ρ hβ hβ' hγ hγ' hzero
-  linarith
+  grind
 
 
-end Montgomery.RationalMoment.RightDetector
+

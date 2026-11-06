@@ -10,12 +10,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
+open HeckeFamily
 open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
+open CenteredMomentFirstAmplificationChoice
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-local notation "O" => HeckeFamily.O
+
+open scoped HeckeO
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 local instance : DecidableEq (α⊕Fin 2) := Classical.decEq _
@@ -127,8 +127,8 @@ lemma sourceRadius_map (e : α≃β) (s : Input α) :
       CenteredMomentOriginalCommonHarmonic.sourceRadius s := by
   simp only [CenteredMomentOriginalCommonHarmonic.sourceRadius,reindex,e.symm.prod_comp]
 
-end SevenEighths.CenteredMomentSourceInputReindex
 
-end
 
-end OAI
+
+
+

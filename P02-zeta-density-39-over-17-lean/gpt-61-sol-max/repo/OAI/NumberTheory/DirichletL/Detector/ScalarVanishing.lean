@@ -5,14 +5,18 @@ public import OAI.NumberTheory.DirichletL.Detector.LiftedFourier
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem higher_convolution_zero (p : O) (hp : Prime p)
+section
+variable (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+
+theorem higher_convolution_zero 
     (χ ξ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n m : ℕ) (H : O) :
     (∑' d : O ⧸ Ideal.span {p^(m+2)},
       χ (Ideal.Quotient.mk _ (representative (p^(m+2)) d)) *
@@ -82,14 +86,15 @@ theorem higher_convolution_zero (p : O) (hp : Prime p)
       ring
     _ = 0 := by rw [higher_outer_lift_annihilated p hp.ne_zero χ ξ (by omega : 0 < m+1) v, mul_zero]
 
-theorem positiveScalar_kge_two (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem positiveScalar_kge_two 
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n m j : ℕ) :
     positiveScalar p hp.ne_zero χ n (m+2) j = 0 := by
   rw [positiveScalar_full_lift p hp χ n (m+2) j (by omega),
     higher_convolution_zero p hp (χ^(m+2)) (χ^(n+1)) n m (p^j), mul_zero]
-
-end SevenEighths.ProbePrimePower
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongKeys
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongIntegral
 
@@ -6,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongIntegral
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation
-local notation "O"=>ActualEisensteinCubic.O
+open JointLogSeparation
+open scoped EisensteinO
 
 theorem actual_marked_bin_uniform_test
     (a₀ b₀:ℝ)(ha₀:0<a₀)(hb₀:0≤b₀)
@@ -86,7 +87,7 @@ theorem actual_marked_bin_uniform_test
   let d:=InverseClippingProfiles.momentOrder (firstDegree degree)
   refine ⟨Ccoef,C,hCcoef,hC,?_⟩
   intro test hs₀ hTest
-  let moment:ℝ:=∫ξ:ℝ,‖reopeningCoefficient test a₀ b₀ ha₀ hs₀ hTest ξ‖*(1+|ξ|)^d
+  let moment :=∫ξ:ℝ,‖reopeningCoefficient test a₀ b₀ ha₀ hs₀ hTest ξ‖*(1+|ξ|)^d
   intro σ _ S D hbad hSp
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
@@ -147,8 +148,8 @@ theorem actual_marked_bin_uniform_test
       ring
   · dsimp [E,Gamma,moment]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

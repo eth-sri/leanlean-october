@@ -1,6 +1,11 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroBalancedAdmission
-public import OAI.NumberTheory.DirichletL.Energy.SourceInputReindexGates
+public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedRayDictionary
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
+public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularActiveInput
+public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 
 @[expose] public section
 
@@ -14,7 +19,7 @@ open HeckeFamily CenteredMomentCommonRadialData CenteredMomentSourceInputReindex
 open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
 open CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α β:Type*}[Fintype α][Fintype β]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
@@ -24,9 +29,7 @@ lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal O)(m A:O)
     (Ψ:𝓢(ℝ,ℂ))(K Z ξ:ℝ):
     physicalMass (reindex e s) R seed m A Ψ K Z ξ=physicalMass s R seed m A Ψ K Z ξ:=by
   have hc:coefficient (reindex e s) R seed=coefficient s R seed:=by
-    simpa only [CenteredMomentFirstAmplificationChoice.OriginalData.beta,
-      CenteredMomentFirstAmplificationChoice.OriginalData.profile,original,coefficient]
-      using coefficient_map e s R seed
+    exact coefficient_map e s R seed
   have hp:CenteredMomentSourceMass.finiteColumns (Fintype.piFinset (reindex e s).pools)=
       CenteredMomentSourceMass.finiteColumns (Fintype.piFinset s.pools):=by
     rw [←pools_map e s,CenteredMomentSourceMass.finiteColumns,Finset.image_image]
@@ -79,8 +82,8 @@ lemma empty_balanced_mass (R seed:Ideal O)(m A:O)(Ψ:𝓢(ℝ,ℂ))(K Z₀ ξ:�
 lemma empty_balanced_volume : volume (emptyBalanced s p ha t X₁ X₂ hX₁ hX₂ α)=X₁*X₂:=by
   rw [emptyBalanced,volume_map,CenteredMomentEnergyZeroReferencePhysical.balanced_volume]
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthPhysicalReindex
 
-end
 
-end OAI
+
+
+

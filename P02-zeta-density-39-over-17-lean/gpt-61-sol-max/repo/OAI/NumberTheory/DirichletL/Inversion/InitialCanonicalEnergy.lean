@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMoments
 
 @[expose] public section
@@ -9,9 +10,9 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialCanonicalEnergy
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve
-open InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
+open InverseMoment InverseInitialClippedColumns CanonicalCoefficientClass
+open scoped EisensteinO
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
   (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -24,8 +25,7 @@ theorem normalization_change (pool:Finset ι)(Ψ:O→*ℂ)(m:O)
     (X Z F G:ℝ)(hZ:0<Z):
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F=
       Z^(G-F)*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z G := by
-  have he:Z^F*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F=
-      Z^G*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z G:=
+  have he :=
     (columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows w W X hZ F).symm.trans
       (columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows w W X hZ G)
   apply mul_left_cancel₀ (Real.rpow_pos_of_pos hZ F).ne'
@@ -59,7 +59,7 @@ theorem initial_child_from_rank (pool:Finset ι)(base Ψ:O→*ℂ)
     (labels:Finset (Ideal O))(hlabels:∀f∈labels,Admissible f ∧ (f.absNorm:ℝ)≤Z^(V+2*η))
     (rows:Finset O)(hrows:rows⊆nonzeroChildFrequencyBall 1 (Z^M))
     (weight:Ideal O→ℝ)(hw:∀f∈labels,0≤weight f)
-    (hweight:∀f∈labels,weight f≤secondLabelWeight K f)(s:ℝ)
+    (hweight:∀f∈labels,weight f≤ secondLabelWeight K f)(s:ℝ)
     (hmoment:CanonicalRankMoments p hp hcop hg pool base slots lists a W Z Mcap Fcap z c eps A K degree):
     normalizedColumnEnergy p hp hcop hg pool Ψ m subslots lists a labels rows weight
       (childLogTest W s) (Z^N) Z (N+V)≤A*Z^(N+V+eps+4*η)*(1+‖s‖)^(2*degree) := by
@@ -80,8 +80,8 @@ theorem initial_child_from_rank (pool:Finset ι)(base Ψ:O→*ℂ)
       congr 3
       ring
 
-end SevenEighths.InverseInitialCanonicalEnergy
 
-end
 
-end OAI
+
+
+

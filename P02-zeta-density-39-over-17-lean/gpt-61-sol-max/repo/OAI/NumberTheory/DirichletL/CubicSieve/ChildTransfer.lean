@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Fourier.FrequencyTwists
 
 @[expose] public section
@@ -11,69 +12,69 @@ namespace SecondPassArithmetic
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 section
 
@@ -114,8 +115,12 @@ def inputConjugateRow (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
   supportConjugateSum (fun i => Ideal.span {p i}) hg F
     (secondInputCoefficient p hg Ψ m c d H) z
 
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hinj
+
 theorem supportMobius_disjoint_mul
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (G U : Finset ι) (hd : Disjoint G U) :
     supportMobius (fun i => Ideal.span {p i}) (G ∪ U) =
       supportMobius (fun i => Ideal.span {p i}) G * supportMobius (fun i => Ideal.span {p i}) U := by
@@ -125,7 +130,7 @@ theorem supportMobius_disjoint_mul
     Finset.card_union_of_disjoint hd, pow_add]
 
 theorem inputConjugateRow_sq_overlap
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ) (z : O) :
     (↑(‖inputConjugateRow p hg F Ψ m c d H z‖ ^ 2) : ℂ) =
       ∑ G ∈ F.powerset, ∑ U ∈ (F \ G).powerset, ∑ V ∈ (F \ G).powerset,
@@ -188,6 +193,8 @@ theorem inputConjugateRow_sq_overlap
         simp only [star_mul, FirstCauchyArithmetic.star_supportMobius]
         ring
   · simp [hd]
+end
+
 
 end
 
@@ -199,8 +206,12 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
 include hg
 
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hinj
+
 theorem commonProduct_mask
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) (U G : Finset ι) :
+     (U G : Finset ι) :
     rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) =
       if Disjoint U G then 1 else 0 := by
   by_cases hd : Disjoint U G
@@ -220,7 +231,7 @@ theorem commonProduct_mask
     simp [rowCoprimeMask, hh]
 
 theorem sum_remove_common_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (F G : Finset ι) (A : Finset ι → ℂ) :
     (∑ U ∈ (F \ G).powerset, A U) =
       ∑ U ∈ F.powerset, rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) * A U := by
@@ -244,6 +255,8 @@ theorem sum_remove_common_pool
         exact Finset.mem_sdiff.mpr ⟨(Finset.mem_powerset.mp hUF) hi,
           fun hG => Finset.disjoint_left.mp hd hi hG⟩
       rw [commonProduct_mask p hg hinj U G, ite_eq_right hd, zero_mul]
+end
+
 
 omit [DecidableEq ι] in
 theorem secondInputCoefficient_fixed_mask (Ψ : O →* ℂ) (m g c d : O)
@@ -289,8 +302,7 @@ theorem sum_pair_remove_common_pool
   intro U hU
   rw [sum_remove_common_pool p hg hinj F G, Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro V hV
-  ring
+  grind
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] hg in
 lemma star_mask (P : ι → Ideal O) (S : Finset ι) (a : O) :
@@ -465,8 +477,12 @@ theorem inputConjugateRow_smoothed_overlap
     exact tsum_mul_left
   · simp [f, hd]
 
-def maskedSecondDual (hp : ∀ i, p i ≠ 0)
+section
+variable (hp : ∀ i, p i ≠ 0)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hp hinj
+
+def maskedSecondDual 
     (G U V : Finset ι) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) : ℂ :=
   let n := ∏ i : activeSupport V U, p i.val
   ((Y : ℂ) / (‖eisEmbedding n‖ : ℂ)) *
@@ -478,8 +494,7 @@ def maskedSecondDual (hp : ∀ i, p i ≠ 0)
           (‖eisEmbedding e‖ ^ 2 * ‖eisEmbedding n‖ ^ 2)) *
           FirstCauchyArithmetic.activeGaussRowFactor p hp hinj hg V U e k
 
-theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+theorem inputConjugateRow_smoothed_second_poisson 
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
     (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
@@ -500,6 +515,8 @@ theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
     congr 1
     exact masked_pair_second_poisson p hp hinj hg hc G U V hd W Y hY
   · simp [hd]
+end
+
 
 end
 
@@ -541,9 +558,13 @@ def firstCoreTwist (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ)
     (r : FirstCoreIndex) : O →* ℂ :=
   sideRayMonoid negative χ * (Ψ * coreRayTwist negative r.1 r.2.2)
 
-theorem cubeCoreCoefficient_ray_family
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+section
+variable (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+include hc hpr
+
+theorem cubeCoreCoefficient_ray_family
+    
     (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
     (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (S : Finset ι) :
     cubeCoreCoefficient p hp hcop hg B v ε₁ ε₂ negative C V y t S =
@@ -565,8 +586,7 @@ theorem cubeCoreCoefficient_ray_family
   simp only [Fintype.sum_prod_type, Finset.sum_mul]
 
 theorem dilatedCoreRow_eq_input_family
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O) (t : ℝ) (z : O) :
@@ -582,7 +602,7 @@ theorem dilatedCoreRow_eq_input_family
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro r hr
-  simp only [inputConjugateRow, supportConjugateSum, Finset.mul_sum]
+  simp only [inputConjugateRow, supportConjugateSum, mul_sum]
   apply Finset.sum_congr rfl
   intro U hU
   have hDU : Disjoint D U := Finset.disjoint_left.mpr (fun i hi hu =>
@@ -598,9 +618,11 @@ theorem dilatedCoreRow_eq_input_family
       FirstPassCubeLabels.row_union _ hg D U hDU, FirstPassCubeLabels.mask_mul _ hg U,
       FirstPassCubeLabels.coreRayTwist_prod, MonoidHom.mul_apply, conjugateRayMonoid_apply, rayMonoid_apply,
       supportRay, coreRayCharacter, RayFourExpansion.rayCharacter_mul, hz, star_mul, mul_one] <;> ring
-
-end SecondPassArithmetic
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -9,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def poolPrimeFamily (R Q Q₀ : Ideal Eis) : PrimeFamily (FreeReflection.pool R Q Q₀) where
   ideal P := P.val
@@ -53,8 +53,12 @@ lemma original_active_family_generator (S : PrimeFamily σ)
     (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator x :=
   congrArg primaryPrime (original_active_family_ideal D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T x)
 
+section
+variable (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ)
+include B T
+
 lemma original_active_exponent
-    (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ)
+    
     (x : B⊕(PrimeIndex K⊕T)) :
     Sum.elim (fun P : FreePrimeIndex D.movingIdeal Q₀ =>
       (UniqueFactorizationMonoid.normalizedFactors D.movingIdeal).count P.val.val%6) (fun _ : σ => 0)
@@ -68,7 +72,7 @@ lemma original_active_exponent
     | inr t => rfl
 
 lemma original_active_marks
-    (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ) :
+     :
     reindexMarks (markedActiveEquiv E B T) (activeMarks (markedActiveSet E B T) markedSumSlots)=
     Finset.univ.filter (fun x : B⊕(PrimeIndex K⊕T) => match x with
       | Sum.inr (Sum.inr _) => True | _ => False) := by
@@ -80,6 +84,8 @@ lemma original_active_marks
     | inl a => simp [markedActiveEquiv_residual,markedSumSlots]
     | inr t => simp [markedActiveEquiv_slot,markedSumSlots]
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

@@ -51,9 +51,13 @@ theorem tuple_mark_phase (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ
   intro i hi
   split_ifs <;> simp
 
-theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
+section
+variable (g : 𝓢(ℝ,ℂ))
     (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (A : Finset ι) (xj xc : ℝ) :
+    (A : Finset ι) (xj xc : ℝ)
+include g I L a y A xj xc
+
+theorem overlap_tuple_separation  :
     (∑p∈I.pi L,(∏i∈I.attach,if p i.val i.property∈A then a i.val (p i.val i.property) else 0)*
       g (xj+xc-∑i∈I.attach,y i.val (p i.val i.property))) =
       ∫t:ℝ,density g xj t*logPhase t xc*
@@ -82,9 +86,7 @@ theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
   filter_upwards with t
   ring
 
-theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
-    (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (A : Finset ι) (xj xc : ℝ) :
+theorem overlap_mode_integrable  :
     Integrable (fun t:ℝ=>density g xj t*logPhase t xc*
       primeMark I L (fun i p=>a i p*logPhase (-t) (y i p)) A) := by
   simp_rw [tuple_mark_phase]
@@ -97,6 +99,8 @@ theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
   funext t
   rw [←phase_sub]
   ring
+end
+
 
 theorem actual_overlap_separation
     (W : ℝ→ℂ) (a₀ b₀ : ℝ) (ha₀ : 0<a₀)
@@ -121,8 +125,8 @@ theorem actual_overlap_separation
   exact (Real.exp_log (hy i.val i.property (p i.val i.property)
     ((Finset.mem_pi.mp hp) i.val i.property))).symm
 
-end SevenEighths.InverseInitialOverlapFourier
 
-end
 
-end OAI
+
+
+

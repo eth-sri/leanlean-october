@@ -7,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.RadicalFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondRadicalFamily
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonical
 open CenteredMomentCanonicalFirst (CommonIndex)
 open CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource
 open CenteredMomentRadicalFamily CenteredMomentSecondHeightFamily CenteredMomentSecondChildProfile
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
-open CenteredMomentHeckeExpansion CenteredMomentCommonSupport RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentChildRows CenteredMomentHeckeColumnWindow
+open CenteredMomentHeckeExpansion RayFourExpansion
+open scoped EisensteinO
 
 theorem active_radical_product (C D : Ideal O) (hC : Supported C)
     (U : Finset (CommonIndex C D)) :
@@ -59,8 +59,8 @@ theorem exists_second_radical_family (η : Character) (χ : RayCharacter)
     simp only [rowWeight,MonoidWithZeroHom.coe_mk,ZeroHom.coe_mk]
     ring_nf
 
-end SevenEighths.CenteredMomentSecondRadicalFamily
 
-end
 
-end OAI
+
+
+

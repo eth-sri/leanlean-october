@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.ResidualFourierBounds
 
 @[expose] public section
@@ -10,80 +11,80 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma cuspFrequency_norm_lower (h : ActualEisensteinCubic.O) (hh : h≠0) :
     ‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹≤‖cuspFrequency h‖ := by
@@ -117,19 +118,22 @@ lemma schlafliBesselK_cubic_upper_away (deltaLoss x : ℝ) (hδ : 0<deltaLoss) (
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hp (by norm_num)) (by positivity)
     _ = _ := by unfold cubicBesselUpperAway;ring
 
-def cubicResidualNonzeroTerm (h : ActualEisensteinCubic.O) (p : ℝ × ℂ) : ℂ :=
+section
+variable (h : ActualEisensteinCubic.O)
+include h
+
+def cubicResidualNonzeroTerm  (p : ℝ × ℂ) : ℂ :=
   if h=0 then 0 else nonzeroScatteringResidue h*(p.1:ℂ)^(2/3:ℂ)*
     sourceFourierKernel (4/3) (cuspFrequency h*p.1)*ShortDraftTrace.breveE (cuspFrequency h*p.2)
 
-lemma cubicResidualNonzeroTerm_bessel (h : ActualEisensteinCubic.O) (hh : h≠0) (v : ℝ) (hv : 0<v) (z : ℂ) :
+lemma cubicResidualNonzeroTerm_bessel  (hh : h≠0) (v : ℝ) (hv : 0<v) (z : ℂ) :
     cubicResidualNonzeroTerm h (v,z)=cubicResidualFourierCoefficient h*(v:ℂ)*
       schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)*ShortDraftTrace.breveE (cuspFrequency h*z) := by
   rw [cubicResidualNonzeroTerm,ite_eq_right hh]
-  have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
+  have hv0 := Complex.ofReal_ne_zero.mpr hv.ne'
   have hp : (v:ℂ)^3*(v:ℂ)^(-(4/3:ℂ)-1)=(v:ℂ)^(2/3:ℂ) := by
     rw [←Complex.cpow_ofNat (v:ℂ) 3,←Complex.cpow_add _ _ hv0]
-    congr 1
-    ring
+    norm_num
   have hker := sourceFourierKernel_cubic_height h hh v hv
   calc
     _ = nonzeroScatteringResidue h*(v:ℂ)^3*
@@ -139,7 +143,7 @@ lemma cubicResidualNonzeroTerm_bessel (h : ActualEisensteinCubic.O) (hh : h≠0)
       rw [hker,cubicResidualFourierCoefficient]
       field_simp
 
-lemma cubicResidualNonzeroTerm_continuousOn (h : ActualEisensteinCubic.O) :
+lemma cubicResidualNonzeroTerm_continuousOn  :
     ContinuousOn (cubicResidualNonzeroTerm h) {p : ℝ × ℂ | 0<p.1} := by
   unfold cubicResidualNonzeroTerm
   by_cases hh : h=0
@@ -157,6 +161,8 @@ lemma cubicResidualNonzeroTerm_continuousOn (h : ActualEisensteinCubic.O) :
       ((cuspFrequency h*q.2)+starRingEnd ℂ (cuspFrequency h*q.2))))
     fun_prop
   exact (((continuousAt_const.mul hpow).mul hsource).mul hphase.continuousAt).continuousWithinAt
+end
+
 
 lemma cubicResidualNonzeroTerm_slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
     ∃C : ℝ,0≤C ∧ ∀(h : ActualEisensteinCubic.O)(p : ℝ × ℂ),p.1∈Set.Icc a b →
@@ -164,9 +170,9 @@ lemma cubicResidualNonzeroTerm_slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
   have hb : 0<b := ha.trans_le hab
   have hd : 0<‖(3:ℂ)*ConcreteTraceCRT.eisLam‖ := norm_pos_iff.mpr
     (mul_ne_zero (by norm_num) ConcreteTraceCRT.eisLam_ne_zero)
-  let deltaLoss : ℝ := 4*Real.pi*a*‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹
+  let deltaLoss := 4*Real.pi*a*‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹
   have hδ : 0<deltaLoss := by dsimp [deltaLoss];positivity
-  have hCu : 0<cubicBesselUpperAway deltaLoss := cubicBesselUpperAway_pos deltaLoss hδ
+  have hCu := cubicBesselUpperAway_pos deltaLoss hδ
   obtain ⟨C,hC,hcoeff⟩ := cubicResidualFourierCoefficient_subexponential (Real.pi*a) (mul_pos Real.pi_pos ha)
   refine ⟨C*b*cubicBesselUpperAway deltaLoss,mul_nonneg (mul_nonneg hC hb.le) (cubicBesselUpperAway_pos deltaLoss hδ).le,?_⟩
   intro h p hp
@@ -226,7 +232,7 @@ lemma cubicResidualNonzeroFunction_continuous : Continuous cubicResidualNonzeroF
   apply continuous_iff_continuousAt.mpr
   intro w
   have hopen : IsOpen {p : ℝ × ℂ | 0<p.1} := isOpen_lt continuous_const continuous_fst
-  have hp : (hyperbolicHeight w,hyperbolicHorizontal w)∈{p : ℝ × ℂ | 0<p.1} := hyperbolicHeight_pos w
+  have hp := hyperbolicHeight_pos w
   exact (cubicResidualNonzeroSeries_continuousOn.continuousAt (hopen.mem_nhds hp)).comp
     (f := fun u : HyperbolicSpace => (hyperbolicHeight u,hyperbolicHorizontal u))
     (hyperbolicHeight_continuous.prodMk hyperbolicHorizontal_continuous).continuousAt
@@ -245,19 +251,16 @@ end
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def cubicResidualModeAmplitude (v : ℝ) (h : ActualEisensteinCubic.O) : ℂ :=
   if h=0 then 0 else cubicResidualFourierCoefficient h*(v:ℂ)*
     schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)
 
 lemma cubicResidualNonzeroTerm_eq_amplitude (v : ℝ) (hv : 0<v) (h : ActualEisensteinCubic.O) (z : ℂ) :
-    cubicResidualNonzeroTerm h (v,z)=cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z) := by
-  by_cases hh : h=0
-  · simp only [cubicResidualNonzeroTerm,cubicResidualModeAmplitude,ite_eq_left hh,zero_mul]
-  · rw [cubicResidualNonzeroTerm_bessel h hh v hv z,cubicResidualModeAmplitude,ite_eq_right hh]
+    cubicResidualNonzeroTerm h (v,z)=cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z) := by grind [cubicResidualNonzeroTerm, cubicResidualModeAmplitude, cubicResidualNonzeroTerm_bessel]
 
 lemma integral_cusp_character_product (h k : ActualEisensteinCubic.O) :
     (∫z in periodDomain,ShortDraftTrace.breveE (cuspFrequency h*z)*
@@ -279,7 +282,7 @@ lemma cubicResidualNonzeroSeries_fourier (v : ℝ) (hv : 0<v) (k : ActualEisenst
   let : IsFiniteMeasure (volume.restrict periodDomain) := isFiniteMeasure_restrict.mpr (by
     rw [periodDomain_volume]
     exact ENNReal.ofReal_ne_top)
-  let f : ActualEisensteinCubic.O→ℂ→ℂ := fun h z => cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z)*
+  let f := fun h z => cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z)*
     ShortDraftTrace.breveE (-cuspFrequency k*z)
   have hc (h : ActualEisensteinCubic.O) : Continuous (f h) := by
     change Continuous (fun z : ℂ => cubicResidualModeAmplitude v h*
@@ -329,9 +332,9 @@ end
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 end
 
@@ -351,8 +354,7 @@ lemma ae_eq_of_boundedContinuous_height_tests («μ» : Measure ℝ) (f g : ℝ�
       (Complex.continuous_ofReal.comp htest.continuous) C (fun x => by
         simpa only [Complex.norm_real,Real.norm_eq_abs] using hC x)
   have hh := heq ρ
-  change (∫x,(test x:ℂ)*f x∂«μ»)=(∫x,(test x:ℂ)*g x∂«μ») at hh
-  simpa only [Complex.real_smul] using hh
+  assumption
 
 lemma interval_ae_eq_of_boundedContinuous_height_tests (a b : ℝ) (f g : ℝ→ℂ)
     (hf : IntegrableOn f (Set.Icc a b)) (hg : IntegrableOn g (Set.Icc a b))
@@ -366,11 +368,19 @@ end
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
 
-def compactHeightMellin (a b : ℝ) (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) : ℂ :=
+section
+variable (a b : ℝ)
+include a b
+
+def compactHeightMellin  (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) : ℂ :=
   ∫v in Set.Icc a b,ρ v*(v:ℂ)^s
 
-lemma compactHeightMellin_integrable (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) :
+section
+variable (ha : 0<a)
+    (ρ : BoundedContinuousFunction ℝ ℂ)
+include ha ρ
+
+lemma compactHeightMellin_integrable  (s : ℂ) :
     IntegrableOn (fun v : ℝ => ρ v*(v:ℂ)^s) (Set.Icc a b) := by
   apply ContinuousOn.integrableOn_Icc
   apply ρ.continuous.continuousOn.mul
@@ -378,17 +388,14 @@ lemma compactHeightMellin_integrable (a b : ℝ) (ha : 0<a)
   exact (Complex.continuousAt_ofReal_cpow_const v s
     (Or.inr (ha.trans_le hv.1).ne')).continuousWithinAt
 
-theorem compactHeightMellin_differentiable (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) : Differentiable ℂ (compactHeightMellin a b ρ) := by
-  let heightLog : ℝ→ℂ := fun v => (Real.log (max a v):ℂ)
+theorem compactHeightMellin_differentiable  : Differentiable ℂ (compactHeightMellin a b ρ) := by
+  let heightLog := fun v => (Real.log (max a v):ℂ)
   have hl : Continuous heightLog := Complex.continuous_ofReal.comp
     ((continuous_const.max continuous_id).log (fun v => (ha.trans_le (le_max_left a v)).ne'))
-  let F : ℂ→ℝ→ℂ := fun s v => ρ v*Complex.exp (heightLog v*s)
-  let F' : ℂ→ℝ→ℂ := fun s v => ρ v*(Complex.exp (heightLog v*s)*heightLog v)
+  let F := fun s v => ρ v*Complex.exp (heightLog v*s)
+  let F' := fun s v => ρ v*(Complex.exp (heightLog v*s)*heightLog v)
   have hF : ∀s,Continuous (F s) := fun s => ρ.continuous.mul ((hl.mul_const s).cexp)
-  have hF' : Continuous (fun p : ℂ×ℝ => F' p.1 p.2) := by
-    exact (ρ.continuous.comp continuous_snd).mul
-      ((((hl.comp continuous_snd).mul continuous_fst).cexp).mul (hl.comp continuous_snd))
+  have hF' : Continuous (fun p : ℂ×ℝ => F' p.1 p.2) := by fun_prop
   have hder : ∀s v,HasDerivAt (fun w => F w v) (F' s v) s := by
     intro s v
     simpa only [F,F',id_eq,mul_one] using
@@ -416,25 +423,35 @@ theorem compactHeightMellin_differentiable (a b : ℝ) (ha : 0<a)
     (Eventually.of_forall (fun v w _ => hder w v))
   exact hd.2.differentiableAt
 
-lemma compactHeightMellin_analyticAt (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) :
+lemma compactHeightMellin_analyticAt  (s : ℂ) :
     AnalyticAt ℂ (compactHeightMellin a b ρ) s :=
   (compactHeightMellin_differentiable a b ha ρ).analyticAt s
+end
+end
+
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def cuspHeightConstantAverage (a b : ℝ) (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) : ℂ :=
+section
+variable (a b : ℝ)
+include a b
+
+def cuspHeightConstantAverage  (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) : ℂ :=
   ((9*Real.sqrt 3/2:ℝ):ℂ)*(compactHeightMellin a b ρ (s-3)+
     ((Real.pi:ℂ)/(s-1))*scatteringCoefficient s 0*compactHeightMellin a b ρ (-s-1))
 
-lemma hyperbolicEisenstein_cusp_height_fourier_zero (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) (hs : 2<s.re) :
+section
+variable (ha : 0<a)
+    (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ)
+include ha ρ s
+
+lemma hyperbolicEisenstein_cusp_height_fourier_zero  (hs : 2<s.re) :
     (∫w in cuspPeriodStrip a b,hyperbolicEisenstein s w*cuspWeightedFourierPhase ρ 0 w∂hyperbolicVolume)=
       cuspHeightConstantAverage a b ρ s := by
-  let g : HyperbolicSpace→ℂ := fun w => hyperbolicEisenstein s w*cuspWeightedFourierPhase ρ 0 w
+  let g := fun w => hyperbolicEisenstein s w*cuspWeightedFourierPhase ρ 0 w
   have hg : Continuous g := (hyperbolicEisenstein_continuous s hs).mul (cuspWeightedFourierPhase_continuous ρ 0)
   rw [cuspPeriodStrip_integral_coordinates_of_pos a b ha g hg.aestronglyMeasurable
     (cuspCoordinateLift_weighted_integrable_of_pos a b ha g hg)]
@@ -459,11 +476,10 @@ lemma hyperbolicEisenstein_cusp_height_fourier_zero (a b : ℝ) (ha : 0<a)
       congr 1
       exact (div_mul_cancel₀ _ cusp_volume_ne_zero).symm
     rw [hinner,eisensteinConstantCoefficient_formula v hpos s hs]
-    have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hpos.ne'
+    have hv0 := Complex.ofReal_ne_zero.mpr hpos.ne'
     have hp : (v:ℂ)^(-s-1)=(v:ℂ)^(2-s)/(v:ℂ)^3 := by
       rw [show -s-1=(2-s)-3 by ring,Complex.cpow_sub _ _ hv0]
-      congr 1
-      exact Complex.cpow_natCast _ 3
+      simp
     have hm : (v:ℂ)^(s-3)=(v:ℂ)^s/(v:ℂ)^3 := by
       rw [Complex.cpow_sub _ _ hv0]
       congr 1
@@ -475,16 +491,17 @@ lemma hyperbolicEisenstein_cusp_height_fourier_zero (a b : ℝ) (ha : 0<a)
       ((compactHeightMellin_integrable a b ha ρ _).const_mul _),integral_const_mul]
   rfl
 
-lemma kernelCuspHeightFourierFamily_zero_initial (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
+lemma kernelCuspHeightFourierFamily_zero_initial  (hs : 4<s.re) (hi : 0<s.im) :
     kernelCuspHeightFourierFamily a b ha ρ 0 s=cuspHeightConstantAverage a b ρ s := by
   rw [kernelCuspHeightFourierFamily_initial a b ha ρ 0 s hs hi,
     hyperbolicEisenstein_cusp_height_fourier_zero a b ha ρ s (by linarith)]
 
-def weightedOutgoingConstant (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (s : ℂ) : ℂ :=
+def weightedOutgoingConstant  : ℂ :=
   kernelCuspHeightFourierFamily a b ha ρ 0 s-
     ((9*Real.sqrt 3/2:ℝ):ℂ)*compactHeightMellin a b ρ (s-3)
+end
+end
+
 
 def baseOutgoingConstant (s : ℂ) : ℂ :=
   kernelCuspAverageFamily 2 3 (by norm_num) (by norm_num) s-
@@ -497,7 +514,11 @@ lemma weightedOutgoingConstant_analyticAt (a b : ℝ) (ha : 0<a)
     (analyticAt_const.mul ((compactHeightMellin_analyticAt a b ha ρ _).comp_of_eq
       (analyticAt_id.sub analyticAt_const) rfl))
 
-lemma baseOutgoingConstant_analyticAt (s : ℂ) (hs : 1<s.re) (hi : 0<s.im) :
+section
+variable (s : ℂ) (hs : 1<s.re)
+include s hs
+
+lemma baseOutgoingConstant_analyticAt  (hi : 0<s.im) :
     AnalyticAt ℂ baseOutgoingConstant s := by
   have hne : s≠2 := by intro he; subst s; norm_num at hi
   have hmain : AnalyticAt ℂ cuspMainHeightFactor s := by
@@ -507,12 +528,14 @@ lemma baseOutgoingConstant_analyticAt (s : ℂ) (hs : 1<s.re) (hi : 0<s.im) :
   exact (kernelCuspAverageFamily_analyticAt_nonreal 2 3 (by norm_num) (by norm_num)
     s hs.ne' hi.ne').sub (analyticAt_const.mul hmain)
 
-lemma cuspScatterHeightFactor_analyticAt (s : ℂ) (hs : 1<s.re) :
+lemma cuspScatterHeightFactor_analyticAt  :
     AnalyticAt ℂ cuspScatterHeightFactor s := by
   have hne : s≠0 := by intro he; subst s; norm_num at hs
   apply Complex.analyticAt_iff_eventually_differentiableAt.mpr
   filter_upwards [eventually_ne_nhds hne] with z hz
   exact cuspScatterHeightFactor_differentiableAt z hz
+end
+
 
 lemma weightedOutgoingConstant_cross_identity (a b : ℝ) (ha : 0<a)
     (ρ : BoundedContinuousFunction ℝ ℂ) :
@@ -553,8 +576,8 @@ lemma weightedOutgoingConstant_cross_identity (a b : ℝ) (ha : 0<a)
     ring
   exact hleft.eqOn_of_preconnected_of_eventuallyEq hright hconvex.isPreconnected hstart hevent
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

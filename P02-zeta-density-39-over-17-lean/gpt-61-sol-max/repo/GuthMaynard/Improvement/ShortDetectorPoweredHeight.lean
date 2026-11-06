@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDetectorNormalization
 
 @[expose] public section
 
-open Real Complex Set Filter MathCollab.Density
+open Real Complex Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -28,8 +28,7 @@ theorem exists_shortPoweredDetector_height {T σ t : ℝ} {N j k : ℕ}
   have hℓthree : ℓ ≤ 100 := by have := Finset.mem_range.mp hℓ; omega
   have htwo : (2 : ℝ)^ℓ ≤ 2^100 := by
     have hh := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hℓthree
-    norm_num at hh ⊢
-    exact hh
+    assumption
   have hscale : (((2^ℓ*N^k : ℕ) : ℝ)^σ) ≤ 2^100*((N : ℝ)^σ)^k := by
     push_cast
     rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_natCast_mul (Nat.cast_nonneg N),
@@ -91,11 +90,9 @@ theorem exists_shortNormalizedPowered_height {η : ℝ} (hη : 0 < η) :
   calc
     _ = (((2^ℓ*N^k : ℕ) : ℝ)^σ)/T^η/T^η := by
       rw [div_div, ← Real.rpow_add hTpos, div_eq_mul_inv, ← Real.rpow_neg hTpos.le]
-      congr 1
-      congr 1
       ring
     _ ≤ ((((2^ℓ*N^k : ℕ) : ℝ)^σ)/(shortDetectorHeightConstant*(Real.log T)^100))/T^η := by
       exact div_le_div_of_nonneg_right (div_le_div_of_nonneg_left (by positivity) hden hc) (by positivity)
     _ ≤ _ := div_le_div_of_nonneg_right hh (by positivity)
 
-end GuthMaynard.Improvement
+

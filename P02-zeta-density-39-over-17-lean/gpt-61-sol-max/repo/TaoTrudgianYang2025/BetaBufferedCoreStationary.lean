@@ -12,13 +12,13 @@ The selected set is derived from the actual slope image. Its size is
 controlled by T/N, independently of the much larger far-tail radius.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseCore_card_le
     {σ δ T N : ℝ} (hσ : 0 ≤ σ) (hδ : 0 ≤ δ) (hδ₁ : δ ≤ 1)
@@ -46,4 +46,4 @@ theorem modelPhaseCore_card_le
   unfold modelPhaseCoreLower modelPhaseCoreUpper
   linarith
 
-end TaoTrudgianYang2025
+

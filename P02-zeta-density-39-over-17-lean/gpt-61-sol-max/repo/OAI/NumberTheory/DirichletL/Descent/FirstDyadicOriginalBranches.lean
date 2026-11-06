@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalZeroPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-open CompletedHeight SecondPassIntegration FourierBridge
-local notation "O"=>ActualEisensteinCubic.O
+open CompletedHeight FourierBridge
+open scoped EisensteinO
 
 theorem original_dyadic_zero_tail
     (om:𝓢(ℝ,ℂ))(b Mmax Fmax eta tau saving eps:ℝ)
@@ -85,8 +85,8 @@ theorem original_dyadic_zero_tail
   · simpa only [mark,Finset.union_comm,Cz',G,mul_assoc,mul_left_comm,mul_comm] using hzero'
   · simpa only [mark,reopenedPhysicalSourceSum,Ct',pow_two,mul_assoc,mul_left_comm,mul_comm] using htail'
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

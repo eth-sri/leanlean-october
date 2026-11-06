@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 variable {Nlevel : Eis}
 
@@ -120,7 +120,7 @@ theorem low_original_inactive_energy
     hH w hw f (C*(1+‖θ‖)^degree*Z^((5/6-2*d)+505*η-O₀/2)) (by positivity)
   intro b
   exact hDb b θ (fun i : T => w i.val) (fun i P => hw i.val P)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -8,10 +8,10 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeHeight
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist
-open CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight
-open QuadraticInitialBound EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentHeckeTwist
+
+
+open scoped EisensteinO
 
 def rowTwistedSum (η : Character) (m A₀ z : O) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
   ∑' I : Ideal O, (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A₀*z)) I)*
@@ -28,8 +28,8 @@ theorem rowTwistedSum_eq (η χ : Character) (m A₀ z : O)
   simp only [one_pow,mul_one] at he
   rw [he]
 
-end SevenEighths.CenteredMomentHeckeHeight
 
-end
 
-end OAI
+
+
+

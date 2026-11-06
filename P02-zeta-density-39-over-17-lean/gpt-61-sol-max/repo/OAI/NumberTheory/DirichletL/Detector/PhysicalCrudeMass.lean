@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcreteTraceCRT CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma calibration_elementNorm_ge_one (C : CalibrationData) : 1≤elementNorm C.generator := by
@@ -40,7 +41,6 @@ lemma physicalRowWeight_arithmetic_form (C : CalibrationData) (W0 W1 : ℝ→ℂ
         W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X)) := by
   unfold physicalRowWeight lowArithmeticCoefficient
   split_ifs <;> simp only [mul_zero,zero_mul]
-  simp only [div_eq_mul_inv,mul_inv_rev]
   ring
 
 lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
@@ -51,7 +51,7 @@ lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
   have hb := calibration_elementNorm_ge_one C
-  have hscale : 0<elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X :=
+  have hscale :=
     physicalRowScale_pos C X (lt_of_lt_of_le zero_lt_one hX) r.1
   have hqscale : (Ideal.absNorm r.1.val:ℝ)≤elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X := by
     have hbx : 1≤elementNorm C.generator*X := one_le_mul_of_one_le_of_one_le hb hX
@@ -95,7 +95,7 @@ lemma lowNumeratorRows_card (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 1�
       rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]
       change elementNorm m≤2*max 1 b*Q
       exact hn.trans (by gcongr;exact le_max_right _ _))
-  convert hh using 1 ; ring
+  linarith
 
 lemma lowPhysicalScale_ge_one (C : CalibrationData) (X Y : ℝ) (hX : 1≤X) (hY : 1≤Y) :
     1≤lowPhysicalScale C X Y :=
@@ -160,7 +160,7 @@ theorem physicalRowWeight_source_mass (a0 b0 a1 b1 B0 B1 : ℝ)
     _ = (32768*max 1 b1*max 1 (b0*b1)*B0*B1)*Q := by field_simp;ring
     _ ≤ K*Q := mul_le_mul_of_nonneg_right (by dsimp only [K];linarith) (le_trans zero_le_one hQ)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

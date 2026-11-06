@@ -66,6 +66,6 @@ theorem wooleySource_sum_eq_support_subtype
     (fun n => gamma n * f n)).symm
 
 
-end
 
-end GafniTao
+
+

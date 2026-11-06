@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SpectralScaleBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Elementary absorption of the normalized cubic inequality. No positive
@@ -24,16 +24,11 @@ theorem normalized_moment_absorption {M P Q : ℝ}
         _ = P*M^2 := by rw [Real.sq_sqrt hM]; ring
     have h1 : P^3 ≤ P*M^2 := by
       have hh := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hP hpm 2) hP
-      convert hh using 1
-      ring
+      bound
     have h2 : P^2*M ≤ P*M^2 := by
       have hh := mul_le_mul_of_nonneg_left hpm (mul_nonneg hP hM)
       nlinarith
-    have hh : M^3 ≤ 3*Q*P*M^2 := by
-      calc
-        _ ≤ Q*(P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M) := h
-        _ ≤ Q*(3*(P*M^2)) := mul_le_mul_of_nonneg_left (by linarith) hQ
-        _ = _ := by ring
+    have hh : M^3 ≤ 3*Q*P*M^2 := by nlinarith
     have hcancel : M ≤ 3*Q*P := by
       have hh' : M*M^2 ≤ (3*Q*P)*M^2 := by convert hh using 1; ring
       exact le_of_mul_le_mul_right hh' (show 0 < M^2 by positivity)
@@ -45,12 +40,9 @@ theorem normalized_moment_power_absorption {M P Q N ε : ℝ}
     (h : M^3 ≤ Q*N^ε*(P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M)) :
     M ≤ (1+3*Q)*N^ε*P := by
   have hn : 0 ≤ N := by linarith
-  have hp : 1 ≤ N^ε := Real.one_le_rpow hN hε
+  have hp := Real.one_le_rpow hN hε
   have hh := normalized_moment_absorption hM hP (mul_nonneg hQ (Real.rpow_nonneg hn _)) h
-  have hb : (1+3*(Q*N^ε))*P ≤ (1+3*Q)*N^ε*P := by
-    apply mul_le_mul_of_nonneg_right _ hP
-    nlinarith
-  exact hh.trans hb
+  nlinarith
 
 /-- Normalize the middle-scale raw moment from explicit scalar identities and
 three independent losses. Every constant is independent of the varying scales. -/
@@ -106,19 +98,12 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
     have h1 := mul_le_mul_of_nonneg_left (hv2.trans hvxz) (show (0:ℝ)≤5 by norm_num)
     have h2 := mul_le_mul_of_nonneg_left (hv3.trans hvz) (show 0 ≤ 5*D*(1+K)*X by positivity)
     have h3 := mul_le_mul_of_nonneg_left (hv1.trans hvx) (show 0 ≤ 3060*D*B*Z by positivity)
-    have hh := add_le_add (add_le_add h1 (hm.trans h2)) (hb.trans h3)
-    dsimp [E]
-    convert hh using 1 <;> ring
+    grind
   have hbase : 125*P^3+25*P^2*M ≤ 150*X*Y*Z*V := by
     have hvxyz : V ≤ X*Y*Z*V := by
       have hh := mul_le_mul_of_nonneg_right hY (show 0 ≤ X*Z*V by positivity)
-      have hh' := hvxz.trans (by simpa only [one_mul] using hh)
-      convert hh' using 1
-      ring
-    have hh := add_le_add
-      (mul_le_mul_of_nonneg_left (hv1.trans hvxyz) (show (0:ℝ)≤125 by norm_num))
-      (mul_le_mul_of_nonneg_left (hv3.trans hvxyz) (show (0:ℝ)≤25 by norm_num))
-    convert hh using 1 <;> ring
+      grind
+    grind
   have hprod : C*R*(5*P*Real.sqrt P*M*Real.sqrt M+5*D*N^4*T*(N^2+H)*M+
         3060*D*N^7*T^3*(Real.log (2*N))^2) ≤ C*(A*Y)*(E*X*Z*V) := by
     gcongr
@@ -130,4 +115,4 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
       linarith only [hbase,hprod]
     _ = _ := by dsimp [E,V]; ring
 
-end GuthMaynard.Improvement
+

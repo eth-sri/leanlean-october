@@ -6,19 +6,23 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedSlices
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
-lemma rowAmplitudeOnLines_buffered_height_uniform {K : ℕ}
+section
+variable {K : ℕ}
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
+include K e he he' S hS hmax hfirst P hPS η u hu ψ
+
+lemma rowAmplitudeOnLines_buffered_height_uniform 
     (r : ℝ) (hr : (17/50:ℝ)≤r) :
     ∃C : ℝ,0≤C ∧ ∀a B H : ℝ,∀i : ℕ,(51/100:ℝ)≤a → a≤1 → 2<B →
       H≤(3*i+2:ℕ)*B → detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
@@ -50,11 +54,7 @@ lemma rowAmplitudeOnLines_buffered_height_uniform {K : ℕ}
   simp_rw [hn,hf]
   exact (mul_le_mul_of_nonneg_left hh hA).trans_eq (by ring)
 
-theorem buffered_x_slice_arbitrary_decay {K : ℕ}
-    (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
+theorem buffered_x_slice_arbitrary_decay 
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (N : ℕ)
@@ -106,9 +106,11 @@ theorem buffered_x_slice_arbitrary_decay {K : ℕ}
     _ ≤ (9*A*(9*(height H)^2))*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height H^(N+2) := by
       gcongr
     _ = _ := by rw [pow_add];field_simp;ring
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

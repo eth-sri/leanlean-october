@@ -14,13 +14,13 @@ namespace SevenEighths.CenteredMomentFirstPhysicalOriginalMask
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport
+open CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction
-open CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-local notation "O" => HeckeFamily.O
+open CenteredMomentCanonicalFirst
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
+local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 omit [DecidableEq ι] in
 lemma original_coefficient (s : Input ι) (R seed C I : Ideal O)
     (hI : Supported I) (t : ℝ) :
@@ -79,8 +79,8 @@ theorem original_physicalMass (s : Input ι) (R seed : Ideal O)
   unfold physicalMass
   simp_rw [original_sectorMass]
 
-end SevenEighths.CenteredMomentFirstPhysicalOriginalMask
 
-end
 
-end OAI
+
+
+

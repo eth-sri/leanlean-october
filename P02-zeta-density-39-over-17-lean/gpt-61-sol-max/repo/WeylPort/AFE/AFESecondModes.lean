@@ -19,10 +19,14 @@ namespace DhimanKadiriQuesadaHerrera2026
 
 open Complex MeasureTheory
 
-/-- Both actual AFE amplitudes satisfy the complete positive-frequency series estimate, with no quotient hypothesis remaining. -/
-theorem afe_positive_second_tail_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
+section
+variable {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
     (ha : 0 < a) (hab : a < b) (h : ℝ → ℝ)
-    (hh : h = deriv (afeWeight σ) ∨ h = fun u => afeWeight σ u * deriv (afePhase c) u) :
+    (hh : h = deriv (afeWeight σ) ∨ h = fun u => afeWeight σ u * deriv (afePhase c) u)
+include σ c a b hσ hc ha hab h hh
+
+/-- Both actual AFE amplitudes satisfy the complete positive-frequency series estimate, with no quotient hypothesis remaining. -/
+theorem afe_positive_second_tail_bound  :
     Summable (secondModeTerm (afePhase c) h a b) ∧
     ‖∑' n : ℕ, secondModeTerm (afePhase c) h a b n‖ ≤
       |h b| / (4 * Real.pi ^ 2) * ‖positiveTail (-b) (c / b)‖ +
@@ -70,9 +74,7 @@ theorem afe_positive_second_tail_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0
     (afePhase_deriv_hasDerivAt c ha).deriv] using hb
 
 /-- Both actual AFE amplitudes satisfy the complete upper-frequency series estimate with the exact cutoff and δ. -/
-theorem afe_upper_second_tail_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
-    (ha : 0 < a) (hab : a < b) (h : ℝ → ℝ)
-    (hh : h = deriv (afeWeight σ) ∨ h = fun u => afeWeight σ u * deriv (afePhase c) u)
+theorem afe_upper_second_tail_bound 
     {M : ℕ} (hM : c / a < (M : ℝ) + 1) :
     let δ : ℝ := (M : ℝ) + 1 - c / a
     Summable (upperModeTerm (afePhase c) h a b M) ∧
@@ -123,5 +125,7 @@ theorem afe_upper_second_tail_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < 
   simpa only [(afePhase_hasDerivAt c ha).deriv,
     (afePhase_hasDerivAt c (ha.trans hab)).deriv,
     (afePhase_deriv_hasDerivAt c ha).deriv] using hb
+end
 
-end DhimanKadiriQuesadaHerrera2026
+
+

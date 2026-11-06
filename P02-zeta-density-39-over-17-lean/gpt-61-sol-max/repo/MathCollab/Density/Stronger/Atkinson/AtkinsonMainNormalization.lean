@@ -11,9 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSaddleProfileNormaliz
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
-noncomputable section
+open Complex
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonStationaryMain_sqrt_normalized {T : ℝ} (hT : 0 < T)
@@ -48,4 +47,4 @@ theorem atkinsonStationaryMain_neg_sqrt_normalized {T G : ℝ} (hT : 0 < T)
       rw [atkinsonSaddleProfile_div_curvature hT,atkinsonCommonSaddleFactor_neg]
       ring
 
-end MathCollab.Density.Stronger.Atkinson
+

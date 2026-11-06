@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMaskPermutation
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff
@@ -16,9 +16,6 @@ def ratioMaskProduct (A B C : Set ℝ) (p : ℝ × ℝ) : ℂ :=
 theorem ratioMaskProduct_measurable {A B C : Set ℝ}
     (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) :
     Measurable (ratioMaskProduct A B C) := by
-  have hAi : Measurable (A.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hA
-  have hBi : Measurable (B.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hB
-  have hCi : Measurable (C.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hC
   unfold ratioMaskProduct mellinFrequency
   fun_prop
 
@@ -56,21 +53,24 @@ theorem maskedSpatialCubicMode_radial {a : ℝ → ℂ}
   have h₃ : mellinFrequency (r*y)-mellinFrequency r = mellinFrequency y := by
     rw [mellinFrequency_mul hrp.ne' hyp.ne']; ring
   unfold maskedSpatialCubicMode
-  dsimp only
   rw [h₁,h₂,h₃]
   calc
     _ = ((r:ℂ)^2*spatialCubicMode a μ L m (r*v) (r*y) r)*ratioMaskProduct A B C (v,y) := by
       unfold ratioMaskProduct; dsimp only; ring
     _ = _ := by rw [spatialCubicMode_radial ha]; rfl
 
-/-- Actual absolute integrability of the masked radial integrand, derived
-from compact radial support and the norm-one mask product. -/
-theorem maskedRadialIntegrand_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
+section
+variable {a : ℝ → ℂ} {μ : ℝ → ℝ}
     (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
     (hs : ∀ x, x ∉ Icc l u → a x = 0)
     (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ)
     (L : ℝ) (m : ℤ × (ℤ × ℤ)) {A B C : Set ℝ}
-    (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) :
+    (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C)
+include a μ ha l u hl hlu hs hm h0 hi L m A B C hA hB hC
+
+/-- Actual absolute integrability of the masked radial integrand, derived
+from compact radial support and the norm-one mask product. -/
+theorem maskedRadialIntegrand_integrable  :
     Integrable (fun z : Triple => radialIntegrand a μ L m z.1 z.2*ratioMaskProduct A B C z.2) := by
   have hmeas := (radialIntegrand_measurable ha.continuous.measurable hi L m).mul
     ((ratioMaskProduct_measurable hA hB hC).comp measurable_snd)
@@ -82,12 +82,7 @@ theorem maskedRadialIntegrand_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
 
 /-- Full masked spatial integral equals the compact-ratio radial integral,
 with all three complex Fourier factors and all independent masks retained. -/
-theorem maskedSpatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ)
-    (L : ℝ) (m : ℤ × (ℤ × ℤ)) {A B C : Set ℝ}
-    (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) :
+theorem maskedSpatialCubicMode_radial_fubini  :
     (∫ x : Triple, maskedSpatialCubicMode a μ L m A B C x) =
       ∫ p in Icc (l/u) (u/l) ×ˢ Icc (l/u) (u/l),
         radialKernel a L m p*ratioFourierProduct μ p*ratioMaskProduct A B C p := by
@@ -140,5 +135,7 @@ theorem maskedSpatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ
     by_contra hn
     exact hp (radialAmplitude_support hl hlu hs hn).2
   simp [radialKernel,hz]
+end
 
-end GuthMaynard.Improvement
+
+

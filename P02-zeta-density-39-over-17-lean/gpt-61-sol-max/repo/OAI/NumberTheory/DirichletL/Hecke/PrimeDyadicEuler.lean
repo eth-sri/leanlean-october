@@ -38,7 +38,7 @@ theorem eulerBound_summable {b : ℝ} (hb : 1<b) :
   simp
 
 theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
-    {s : ℂ} (hs : b≤s.re) : ‖series χ s‖ ≤ eulerBound b := by
+    {s : ℂ} (hs : b≤ s.re) : ‖series χ s‖ ≤ eulerBound b := by
   rw [series_eq_tsum χ (hb.trans_le hs)]
   have hbound (I : NonzeroIdeal) :
       ‖coefficient χ I.val * (norm I : ℂ)^(-s)‖ ≤
@@ -58,8 +58,8 @@ theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
   have hf := (eulerBound_summable hb).of_nonneg_of_le (fun _ => norm_nonneg _) hbound
   exact (norm_tsum_le_tsum_norm hf).trans (hf.tsum_le_tsum hbound (eulerBound_summable hb))
 
-end SevenEighths.HeckePrimeDyadic
 
-end
 
-end OAI
+
+
+

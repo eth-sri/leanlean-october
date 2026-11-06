@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDichotomy
 public import GuthMaynard.NativeSource.GuthMaynard.WeylZeta
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
@@ -31,9 +32,9 @@ theorem norm_logarithmicPhase_prefix_le_div
   · subst L
     simp only [Finset.range_zero, Finset.sum_empty, norm_zero]
     positivity
-  have hLpos : 0 < L := Nat.pos_of_ne_zero hL0
+  have hLpos := Nat.pos_of_ne_zero hL0
   have hAReal : 0 < (A : ℝ) := by exact_mod_cast hA
-  let δ : ℝ := t / (3 * (A : ℝ))
+  let δ := t / (3 * (A : ℝ))
   have hδ : 0 < δ := by
     dsimp only [δ]
     positivity
@@ -57,9 +58,7 @@ theorem norm_logarithmicPhase_prefix_le_div
       have hmReal : 0 < (m : ℝ) := by exact_mod_cast hm
       have hsuccReal : 0 < ((m + 1 : ℕ) : ℝ) := by positivity
       have hratio : 0 < (((m + 1 : ℕ) : ℝ) / (m : ℝ)) := by positivity
-      have hlog :
-          Real.log (((m + 1 : ℕ) : ℝ) / (m : ℝ)) =
-            Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) :=
+      have hlog :=
         Real.log_div hsuccReal.ne' hmReal.ne'
       constructor
       · calc
@@ -143,18 +142,12 @@ theorem norm_logarithmicPhase_prefix_le_div
       simp only [logarithmicPhase, Nat.cast_add, Nat.cast_ofNat]
       ring_nf
     have hfinal := mul_le_mul_of_nonpos_left hlogLe (by linarith : -t ≤ 0)
-    rw [← hphaseOne, ← hphaseTwo] at hfinal
-    simpa only [m, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hfinal
+    grind
   have hKL := kusminLandau_interval (fun n : ℕ => logarithmicPhase t n)
     (A + 1) (L - 1) (-1) δ hδ
-    (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).1)
-    (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).2)
-    (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hmono n hn)
+    (fun n hn => by simp_all)
+    (fun n hn => by simp_all)
+    (fun n hn => by simp_all)
   have hpred : L - 1 + 1 = L := by omega
   rw [hpred] at hKL
   calc
@@ -162,10 +155,7 @@ theorem norm_logarithmicPhase_prefix_le_div
         unitaryPhase (logarithmicPhase t (A + 1 + n))‖ ≤
         2 * Real.pi / δ := by
           simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hKL
-    _ = 6 * Real.pi * (A : ℝ) / t := by
-      dsimp only [δ]
-      field_simp [show t ≠ 0 by linarith, hAReal.ne']
-      ring
+    _ = 6 * Real.pi * (A : ℝ) / t := by grind
 
 /-- The sharp-cutoff Type-I coefficients on a dyadic block are exactly a
 decreasing real weight, followed (if necessary) by zeros. -/
@@ -227,14 +217,10 @@ theorem norm_terminal_classicalZetaLongLineCoeff_le
     (6 * Real.pi * (N : ℝ) / t) hN
     (by
       intro i hi
-      dsimp only [f]
-      split_ifs
-      · positivity
-      · exact le_rfl)
+      positivity)
     hanti
     (by
       intro j hj
-      dsimp only [g]
       exact norm_logarithmicPhase_prefix_le_div N j t hN hj htOne htN)
   rw [dirichletPoly_classicalZetaLongLineCoeff_eq_terminal C N σ t hN]
   have hStart : N + 1 ≤ C := by omega
@@ -257,4 +243,4 @@ theorem typeI_scale_lt_height_of_large
     C N σ t hσ hN hNC htOne htN
   linarith
 
-end GuthMaynard.NativeMoment
+

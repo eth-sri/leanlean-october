@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSourceScales
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 lemma elementNorm_finset_prod {ι : Type*} (F : Finset ι) (p : ι→O) :
     elementNorm (∏i∈F,p i)=∏i∈F,elementNorm (p i) := by
@@ -62,7 +62,7 @@ theorem eventually_original_slot_scales {K : ℕ} (C : CalibrationData) (ell : F
   exact hZ.2.2 _ (lowUnselectedProduct_norm_ge_one slots hslots J a)
     (lowUnselectedProduct_norm_bound ell hell hsum b Z hb hZ.1 slots hnorm J a)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

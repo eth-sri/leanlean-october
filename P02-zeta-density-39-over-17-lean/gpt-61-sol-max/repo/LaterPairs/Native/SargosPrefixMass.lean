@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPrefixKernelBound
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 
 open scoped BigOperators
 
@@ -40,7 +39,11 @@ theorem sargos_sum_range_inv_le_harmonic (N : ℕ) :
       rw [Finset.sum_range_succ']
       simp [harmonic]
 
-theorem sum_sargosPrefixMajorant_eq {N : ℕ} [NeZero N] :
+section
+variable {N : ℕ} [NeZero N]
+include N
+
+theorem sum_sargosPrefixMajorant_eq  :
     (∑ k : ZMod N, sargosPrefixMajorant k) =
       1+2*(∑ j ∈ Finset.range N, (j : ℝ)⁻¹) := by
   have hn : (∑ k : ZMod N, ((-k).val : ℝ)⁻¹) =
@@ -52,17 +55,19 @@ theorem sum_sargosPrefixMajorant_eq {N : ℕ} [NeZero N] :
   simp
   ring
 
-theorem sum_sargosPrefixMajorant_le_harmonic {N : ℕ} [NeZero N] :
+theorem sum_sargosPrefixMajorant_le_harmonic  :
     (∑ k : ZMod N, sargosPrefixMajorant k) ≤ 1+2*(harmonic N : ℝ) := by
   rw [sum_sargosPrefixMajorant_eq]
   linarith [sargos_sum_range_inv_le_harmonic N]
 
-theorem sum_sargosPrefixMajorant_le_log {N : ℕ} [NeZero N] :
+theorem sum_sargosPrefixMajorant_le_log  :
     (∑ k : ZMod N, sargosPrefixMajorant k) ≤ 3*(1+Real.log N) := by
   have hN : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne N)
   have hlog := Real.log_nonneg hN
   have h := sum_sargosPrefixMajorant_le_harmonic (N := N)
   have hh := harmonic_le_one_add_log N
   linarith
+end
 
-end TaoTrudgianYang2025
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicBounded
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Set Complex
 namespace SevenEighths.HeckeDyadicReflection
@@ -70,7 +70,7 @@ theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
   exact (le_abs_self _).trans ((hC x hx).trans (by linarith [le_abs_self C]))
 
 theorem gamma_ratio_strip_bound : ∃ C : ℝ, 0<C ∧ ∀ s : ℂ,
-    -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖Complex.Gamma (1-s)/Complex.Gamma s‖≤C*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hreal⟩ := gamma_real_ratio_bound
   refine ⟨C,hC,?_⟩
@@ -125,7 +125,7 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
     ∀ (c : O) [NeZero c] (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O))=1)
       (_hp : FiniteFourier.IsPrimitiveOnIdeals χ), χ≠1 →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction (character c χ hu) s‖≤
       C*(conductor c)^(1/2-s.re)*(3+|s.im|)^2*
         ‖LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s)‖ := by
@@ -150,8 +150,8 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
         (norm_nonneg _)
     _ = _ := by ring
 
-end SevenEighths.HeckeDyadicReflection
 
-end
 
-end OAI
+
+
+

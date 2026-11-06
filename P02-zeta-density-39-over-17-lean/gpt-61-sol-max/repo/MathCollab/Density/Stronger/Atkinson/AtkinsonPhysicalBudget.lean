@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected physical-budget proofs released under MIT-0; see
@@ -15,10 +16,9 @@ public import Mathlib.NumberTheory.Harmonic.Bounds
 public import WeylPort.GrowthAlgebra
 
 @[expose] public section
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Topology Finset
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow)
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
     (hT : 1 ≤ T) (hG : 0 < G) (hupper : G ≤ Real.sqrt T) (hL : 1 ≤ L) :
@@ -33,8 +33,7 @@ theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
   have he : 36*T*(L/G)^2 = 36*(T*L^2/G^2) := by ring
   rw [he] at hceil
   have he' : 37*T*L^2/G^2 = 37*(T*L^2/G^2) := by ring
-  rw [he']
-  linarith
+  grind
 
 
 
@@ -102,8 +101,12 @@ theorem atkinsonPhysicalCutoff_le_natural {H G : ℝ}
   exact (atkinsonSourceCutoff_le_natural (by linarith : 1 ≤ 2*H) hG hupper hlog).trans_eq
     (by ring)
 
-theorem atkinsonPhysical_cutoff_scale_identity {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) (q : ℝ) :
+section
+variable {H G ℓ : ℝ}
+    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ)
+include H G ℓ hH hG hℓ
+
+theorem atkinsonPhysical_cutoff_scale_identity  (q : ℝ) :
     G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^q =
       (74:ℝ)^q*H^(q-1/2)*ℓ^(2*q)*G^(2-2*q) := by
   have hbase : (74*H*ℓ^2/G^2)^q =
@@ -117,8 +120,7 @@ theorem atkinsonPhysical_cutoff_scale_identity {H G ℓ : ℝ}
   rw [hbase,Real.rpow_sub hH,Real.rpow_sub hG,Real.rpow_neg hH.le,Real.rpow_two]
   ring
 
-theorem atkinsonPhysical_diagonal_scale {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) :
+theorem atkinsonPhysical_diagonal_scale  :
     G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(3/2:ℝ) ≤
       5476*(H/G)*ℓ^3 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
@@ -133,8 +135,7 @@ theorem atkinsonPhysical_diagonal_scale {H G ℓ : ℝ}
     _ ≤ 5476*H*ℓ^3*G⁻¹ := by gcongr
     _ = _ := by ring
 
-theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) :
+theorem atkinsonPhysical_near_scale  :
     (Real.sqrt H/G)*(G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(1:ℝ)) =
       74*(H/G)*ℓ^2 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
@@ -145,6 +146,8 @@ theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
   calc
     _ = 74*(Real.sqrt H)^2/G*ℓ^2 := by ring
     _ = _ := by rw [Real.sq_sqrt hH.le]; ring
+end
+
 
 theorem atkinsonPhysical_far_scale {H G ℓ L : ℝ}
     (hH : 0 < H) (hG : 0 < G) (hℓ : 1 ≤ ℓ) :
@@ -208,10 +211,7 @@ theorem atkinsonPhysical_gap_term_zero_le {H G : ℝ} {N : ℕ} (L : ℝ) (R : �
   have hnear : (Real.sqrt H/G)*(P*(N:ℝ)^(1:ℝ)) ≤
       74*(H/G)*(Real.log (2*H))^2 := by
     calc
-      _ ≤ (Real.sqrt H/G)*(P*B^(1:ℝ)) := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
+      _ ≤ (Real.sqrt H/G)*(P*B^(1:ℝ)) := by simp_all <;> nlinarith
       _ = _ := atkinsonPhysical_near_scale hH0 hG0 hlog0
   have hfar : (H^(-(1/4:ℝ))*Real.sqrt L)*(P*(N:ℝ)^(3/4:ℝ)) ≤
       74*Real.sqrt (G*L)*(Real.log (2*H))^3 := by
@@ -238,8 +238,7 @@ theorem atkinsonPhysical_gap_term_zero_le {H G : ℝ} {N : ℕ} (L : ℝ) (R : �
   rw [he]
   apply hsum.trans
   have hpos : 0 ≤ (R:ℝ)*(H/G)*(Real.log (2*H))^3 := by positivity
-  ring_nf at hpos ⊢
-  nlinarith
+  grind
 
 
 
@@ -292,7 +291,7 @@ theorem exists_atkinsonPhysicalGapBudget_le_twoTerm {δ ν : ℝ} (hδ : 0 < δ)
   obtain ⟨B,hB⟩ := eventually_atTop.mp
     (eventually_atkinson_height_log_pow_le_rpow 5 (show 0 < ν/2 by linarith))
   obtain ⟨D,hD⟩ := eventually_atTop.mp (Real.tendsto_log_atTop.eventually_ge_atTop 1)
-  let C : ℝ := 148000*(1/Real.log 2+1)^2
+  let C := 148000*(1/Real.log 2+1)^2
   have hC : 0 < C := by
     have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
     dsimp [C]
@@ -308,10 +307,7 @@ theorem exists_atkinsonPhysicalGapBudget_le_twoTerm {δ ν : ℝ} (hδ : 0 < δ)
   have hG0 : 0 < G := by linarith
   have hl : 1 ≤ Real.log (2*H) :=
     (hD H hDH).trans (Real.log_le_log hH0 (by linarith))
-  have hn : (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) ≤ H := by
-    have hg := hgeometry H G hAH hwidth
-    have hn0 := Nat.cast_nonneg (α := ℝ) (atkinsonSourceCutoff (2*H) G (Real.log (2*H)))
-    linarith
+  have hn : (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) ≤ H := by grind
   have hn0 := atkinsonSourceCutoff_pos (by positivity : 0 < 2*H) hG0
     (by linarith : 0 < Real.log (2*H))
   have hp := atkinsonPhysical_gap_budget_log_le L R hH1 hG1
@@ -329,4 +325,4 @@ theorem exists_atkinsonPhysicalGapBudget_le_twoTerm {δ ν : ℝ} (hδ : 0 < δ)
     _ = _ := by rw [mul_assoc C,hh]
 
 
-end MathCollab.Density.Stronger.Atkinson
+

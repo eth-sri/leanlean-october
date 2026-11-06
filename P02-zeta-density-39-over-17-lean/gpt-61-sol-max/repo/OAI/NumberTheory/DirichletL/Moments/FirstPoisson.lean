@@ -1,15 +1,16 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.Poisson
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentFirstPoisson
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 lemma principalCRT_scaled_left (a b : O) (hcop : IsCoprime a b) (x : Residue a) :
@@ -17,7 +18,7 @@ lemma principalCRT_scaled_left (a b : O) (hcop : IsCoprime a b) (x : Residue a) 
       (Ideal.Quotient.mk _ b * x, 0) := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   rw [scaledResidue_mk, principalCRT_mk]
-  have hb : Ideal.Quotient.mk (Ideal.span {b}) b = 0 :=
+  have hb :=
     (residue_eq_zero_iff_dvd b b).mpr dvd_rfl
   simp only [map_mul, hb, zero_mul]
 
@@ -26,7 +27,7 @@ lemma principalCRT_scaled_right (a b : O) (hcop : IsCoprime a b) (y : Residue b)
       (0, Ideal.Quotient.mk _ a * y) := by
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, principalCRT_mk]
-  have ha : Ideal.Quotient.mk (Ideal.span {a}) a = 0 :=
+  have ha :=
     (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
   simp only [map_mul, ha, zero_mul]
 
@@ -44,7 +45,7 @@ theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
         residueGauss b hb χb (frequencyReduction b (a * b) (dvd_mul_left b a) h) := by
   let ua := residueUnit a b hcop
   let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
+  let e :=
     (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
   have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
       ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
@@ -65,12 +66,12 @@ theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
       frequencyReduction a (a * b) (dvd_mul_right a b) (e x) = Ideal.Quotient.mk _ b * x.1 := by
     have ht := congrArg Prod.fst (hproj (e x))
     rw [heproj] at ht
-    simpa only [ua, residueUnit_coe] using ht
+    exact ht
   have hprojB (x : Residue a × Residue b) :
       frequencyReduction b (a * b) (dvd_mul_left b a) (e x) = Ideal.Quotient.mk _ a * x.2 := by
     have ht := congrArg Prod.snd (hproj (e x))
     rw [heproj] at ht
-    simpa only [ub, residueUnit_coe] using ht
+    exact ht
   rw [← e.sum_comp]
   simp_rw [hprojA, hprojB]
   simp only [map_mul, he, mul_add, AddChar.map_add_eq_mul,
@@ -99,7 +100,7 @@ theorem residueGauss_inverse (d : O) (hd : d ≠ 0)
   intro x _
   exact mul_comm _ _
 
-end SevenEighths.CenteredMomentFirstPoisson
-end
 
-end OAI
+
+
+

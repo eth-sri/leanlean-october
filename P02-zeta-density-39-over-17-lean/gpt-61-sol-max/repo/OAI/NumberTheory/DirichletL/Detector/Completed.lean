@@ -12,21 +12,27 @@ namespace SevenEighths.ProbeCompleted
 open ActualEisensteinCubic CompletedGauss
 open RayFourExpansion QuadraticGaussRay SecondPassArithmetic
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def completedIndex (I J : Ideal O) : O := primaryGenerator I * primaryGenerator J ^ 3
 
 def completedMask (S : Finset (Ideal O)) (D I J : Ideal O) : ℂ :=
   if D ∣ I * J ^ 3 ∧ ∀ p ∈ S, ¬p ∣ I * J ^ 3 then 1 else 0
 
-def completedCorrection (I J : Ideal O) : ℂ :=
+section
+variable (I J : Ideal O)
+include I J
+
+def completedCorrection  : ℂ :=
   rayMask (completedIndex I J) *
     star (fixedGQuotientValue
       (Ideal.Quotient.mk (Ideal.span {(4 : O)}) (completedIndex I J)))
 
-theorem completedCorrection_eq_phase (I J : Ideal O) :
+theorem completedCorrection_eq_phase  :
     completedCorrection I J = rayMask (completedIndex I J) *
       star (ProbePhase.G (completedIndex I J)) := rfl
+end
+
 
 theorem completedMask_norm_le_one (S : Finset (Ideal O)) (D I J : Ideal O) :
     ‖completedMask S D I J‖ ≤ 1 := by
@@ -43,35 +49,54 @@ theorem completedCorrection_norm_le_two (I J : Ideal O) :
   exact (mul_le_mul hm (fixedGQuotientValue_norm_le_two _) (norm_nonneg _) (by norm_num)).trans_eq
     (by norm_num)
 
-def markedSummand (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (W : ℝ → ℂ) (X : ℝ) (I J : Ideal O) : ℂ :=
+section
+variable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
+    (W : ℝ → ℂ) (X : ℝ)
+include S D Ψ W X
+
+section
+variable (I J : Ideal O)
+include I J
+
+def markedSummand  : ℂ :=
   completedMask S D I J * summand Ψ W X I J
 
-def correctedSummand (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (W : ℝ → ℂ) (X : ℝ) (I J : Ideal O) : ℂ :=
+def correctedSummand  : ℂ :=
   completedCorrection I J * markedSummand S D Ψ W X I J
+end
 
-def markedCompletedT (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+
+def markedCompletedT  : ℂ :=
   ∑' p : Ideal O × Ideal O, markedSummand S D Ψ W X p.1 p.2
 
-def correctedCompletedT (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+def correctedCompletedT  : ℂ :=
   ∑' p : Ideal O × Ideal O, correctedSummand S D Ψ W X p.1 p.2
+end
+
 
 def correctionCoeff (χ : RayCharacter) : ℂ :=
   phaseCoeff (fun r => star (fixedGQuotientValue r)) χ
 
-theorem completedIndex_eq_primaryGenerator (I J : Ideal O) :
+section
+variable (I J : Ideal O)
+include I J
+
+theorem completedIndex_eq_primaryGenerator  :
     completedIndex I J = primaryGenerator (I * J ^ 3) := by
   simp only [completedIndex, primaryGenerator_mul, CubicEisenstein.primaryGenerator_pow]
 
-theorem completedCorrection_expansion (I J : Ideal O) :
+theorem completedCorrection_expansion  :
     completedCorrection I J =
       ∑ χ : RayCharacter, correctionCoeff χ * rayCharacter χ (completedIndex I J) := by
   exact phase_expansion (fun r => star (fixedGQuotientValue r)) (completedIndex I J)
+end
 
-theorem correctedSummand_ray_expansion (S : Finset (Ideal O)) (D I J : Ideal O)
+
+section
+variable (S : Finset (Ideal O))
+include S
+
+theorem correctedSummand_ray_expansion  (D I J : Ideal O)
     (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) :
     correctedSummand S D Ψ W X I J =
       ∑ χ : RayCharacter, correctionCoeff χ *
@@ -85,24 +110,26 @@ theorem correctedSummand_ray_expansion (S : Finset (Ideal O)) (D I J : Ideal O)
   simp only [rayMonoid_apply, completedIndex]
   ring
 
-theorem markedSummand_summable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+section
+variable (D : Ideal O)
+    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X)
+include D Ψ W hW X hX
+
+theorem markedSummand_summable  :
     Summable (fun p : Ideal O × Ideal O => markedSummand S D Ψ W X p.1 p.2) := by
   apply summable_of_hasFiniteSupport
   apply (completedT_finite_support Ψ W hW X hX).subset
   intro p hp
   exact fun hz => hp (by simp only [markedSummand, hz, mul_zero])
 
-theorem correctedSummand_summable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+theorem correctedSummand_summable  :
     Summable (fun p : Ideal O × Ideal O => correctedSummand S D Ψ W X p.1 p.2) := by
   apply summable_of_hasFiniteSupport
   apply (completedT_finite_support Ψ W hW X hX).subset
   intro p hp
   exact fun hz => hp (by simp only [correctedSummand, markedSummand, hz, mul_zero])
 
-theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+theorem correctedCompletedT_ray_expansion  :
     correctedCompletedT S D Ψ W X =
       ∑ χ : RayCharacter, correctionCoeff χ *
         markedCompletedT S D (rayMonoid χ * Ψ) W X := by
@@ -111,8 +138,11 @@ theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
   rw [Summable.tsum_finsetSum (fun χ _ =>
     (markedSummand_summable S D (rayMonoid χ * Ψ) W hW X hX).mul_left (correctionCoeff χ))]
   simp only [tsum_mul_left, markedCompletedT]
-
-end SevenEighths.ProbeCompleted
+end
 end
 
-end OAI
+
+
+
+
+

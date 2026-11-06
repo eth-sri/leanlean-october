@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected harmless-term bounds adapted from Scott McColm,
 PointMeanMellinBounds.lean, exact revision
@@ -17,13 +18,12 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 open Complex Filter ArithmeticFunction
 open MathCollab.Density.Stronger.Fourth.Digamma
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- A concrete absolute constant dominating the exponentially smoothed
 divisor series. -/
-noncomputable def heathBrownSmoothedDivisorMajorant : ℝ :=
+def heathBrownSmoothedDivisorMajorant : ℝ :=
   ∑' n : ℕ, (n : ℝ) * Real.exp (-(n : ℝ))
 
 theorem summable_heathBrownSmoothedDivisorMajorant :
@@ -36,8 +36,12 @@ theorem heathBrownSmoothedDivisorMajorant_nonneg :
   unfold heathBrownSmoothedDivisorMajorant
   exact tsum_nonneg fun n => mul_nonneg (Nat.cast_nonneg' n) (Real.exp_pos _).le
 
+section
+variable {s : ℂ} (hs : 0 ≤ s.re)
+include s hs
+
 theorem norm_heathBrownSmoothedDivisorTerm_le
-    {s : ℂ} (hs : 0 ≤ s.re) (n : ℕ) :
+     (n : ℕ) :
     ‖heathBrownSmoothedDivisorTerm s n‖ ≤
       (n : ℝ) * Real.exp (-(n : ℝ)) := by
   by_cases hn : n = 0
@@ -68,13 +72,13 @@ theorem norm_heathBrownSmoothedDivisorTerm_le
       _ = (n : ℝ) * Real.exp (-(n : ℝ)) := by ring
 
 theorem summable_norm_heathBrownSmoothedDivisorTerm
-    {s : ℂ} (hs : 0 ≤ s.re) :
+     :
     Summable (fun n : ℕ => ‖heathBrownSmoothedDivisorTerm s n‖) :=
   summable_heathBrownSmoothedDivisorMajorant.of_nonneg_of_le
     (fun _ => norm_nonneg _) (norm_heathBrownSmoothedDivisorTerm_le hs)
 
 theorem norm_heathBrownSmoothedDivisorSeries_le
-    {s : ℂ} (hs : 0 ≤ s.re) :
+     :
     ‖heathBrownSmoothedDivisorSeries s‖ ≤
       heathBrownSmoothedDivisorMajorant := by
   unfold heathBrownSmoothedDivisorSeries heathBrownSmoothedDivisorMajorant
@@ -86,6 +90,8 @@ theorem norm_heathBrownSmoothedDivisorSeries_le
       (summable_norm_heathBrownSmoothedDivisorTerm hs).tsum_le_tsum
         (norm_heathBrownSmoothedDivisorTerm_le hs)
         summable_heathBrownSmoothedDivisorMajorant
+end
+
 
 theorem exists_norm_Gamma_heathBrown_residue_strip_le :
     ∃ C : ℝ, 0 < C ∧ ∀ (a v : ℝ), 5 / 4 ≤ a → a ≤ 3 / 2 →
@@ -106,17 +112,15 @@ theorem exists_norm_Gamma_heathBrown_movingPole_le :
         C * Real.exp (-|v|) := by
   obtain ⟨B, hB, hStrip⟩ :=
     exists_norm_Gamma_heathBrown_residue_strip_le
-  let C : ℝ := 4 * B
+  let C := 4 * B
   refine ⟨C, by dsimp only [C]; positivity, ?_⟩
   intro delta v hdelta hdeltaUpper
-  let p : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (v : ℂ) * I
+  let p := ((1 / 2 - delta : ℝ) : ℂ) + (v : ℂ) * I
   have hpRe : p.re = 1 / 2 - delta := by simp [p]
   have hpNonzero : p ≠ 0 := by
     intro hp
     have hre := congrArg Complex.re hp
-    rw [hpRe] at hre
-    norm_num at hre
-    linarith
+    norm_num at * <;> nlinarith
   have harg : p + 1 =
       ((3 / 2 - delta : ℝ) : ℂ) + (v : ℂ) * I := by
     apply Complex.ext <;> simp [p]
@@ -131,8 +135,7 @@ theorem exists_norm_Gamma_heathBrown_movingPole_le :
     rw [hRec, norm_mul]
   have hpNormLower : (1 / 4 : ℝ) ≤ ‖p‖ := by
     have hre := Complex.abs_re_le_norm p
-    rw [hpRe, abs_of_pos (by linarith : 0 < 1 / 2 - delta)] at hre
-    linarith
+    grind
   have hGamma : ‖Complex.Gamma p‖ ≤
       4 * (B * Real.exp (-|v|)) := by
     rw [hRecNorm] at hUpper
@@ -147,8 +150,7 @@ theorem norm_digamma_small_strip_le_linear {z : ℂ}
   have hlog : Real.log ‖z‖ ≤ |z.im| := by
     have h := Real.log_le_sub_one_of_pos (by linarith : 0 < ‖z‖)
     have hnorm := Complex.norm_le_abs_re_add_abs_im z
-    rw [abs_of_pos hz] at hnorm
-    linarith
+    grind
   have hl : ‖Complex.log z‖ ≤ |z.im| + 4 := by
     calc
       _ ≤ |(Complex.log z).re| + |(Complex.log z).im| :=
@@ -172,22 +174,19 @@ theorem exists_norm_heathBrownMovingPoleResidue_le :
       ‖heathBrownMovingPoleResidue
           (((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I)‖ ≤ C := by
   obtain ⟨B, hB, hGamma⟩ := exists_norm_Gamma_heathBrown_movingPole_le
-  let R : ℝ := ‖deriv riemannZetaPoleRemoved 0‖
-  let C : ℝ := B * (10 + 2 * R)
+  let R := ‖deriv riemannZetaPoleRemoved 0‖
+  let C := B * (10 + 2 * R)
   refine ⟨C, by dsimp [C, R]; positivity, ?_⟩
   intro delta t hdelta hdeltaUpper ht
-  let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
-  let p : ℂ := heathBrownMovingPole s
+  let s := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  let p := heathBrownMovingPole s
   have hp : p = ((1 / 2 - delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I := by
     apply Complex.ext <;> simp [p, s, heathBrownMovingPole]
     ring
   have hpRe : p.re = 1 / 2 - delta := by rw [hp]; simp
   have hpIm : |p.im| = t := by rw [hp]; simp [abs_of_nonneg (by linarith : 0 ≤ t)]
   have hpPos : 0 < p.re := by rw [hpRe]; linarith
-  have hGammaP : ‖Complex.Gamma p‖ ≤ B * Real.exp (-t) := by
-    rw [hp]
-    simpa [abs_of_nonneg (by linarith : 0 ≤ t)] using
-      hGamma delta (-t) hdelta hdeltaUpper
+  have hGammaP : ‖Complex.Gamma p‖ ≤ B * Real.exp (-t) := by grind
   have hDigammaP : ‖Complex.digamma p‖ ≤ t + 8 := by
     simpa only [hpIm] using norm_digamma_small_strip_le_linear hpPos
       (by rw [hpRe]; linarith) (by rw [hpIm]; linarith)
@@ -215,4 +214,4 @@ theorem exists_norm_heathBrownMovingPoleResidue_le :
     _ ≤ C := by dsimp only [C]; nlinarith
 
 
-end MathCollab.Density.Stronger.PointMean
+

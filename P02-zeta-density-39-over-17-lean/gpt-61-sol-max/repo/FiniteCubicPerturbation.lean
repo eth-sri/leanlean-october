@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import FiniteCubicBasics
 public import GuthMaynard.Improvement.RetainedRadialAssembly
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -16,12 +16,7 @@ theorem finite_cubic_congr_window (W : Finset ℝ) {T : ℝ} {K J : ℝ → ℂ}
     (hW : ∀ t ∈ W, ∀ u ∈ W, |t-u| ≤ T) (he : ∀ s, |s| ≤ T → K s=J s) :
     finiteCubic W K=finiteCubic W J := by
   apply sum_congr rfl
-  intro t ht
-  apply sum_congr rfl
-  intro u hu
-  apply sum_congr rfl
-  intro v hv
-  rw [he _ (hW t ht u hu),he _ (hW u hu v hv),he _ (hW v hv t ht)]
+  simp_all
 
 /-- Local Poisson perturbation with the literal atomic mass cubed.
 No L2 approximation density enters the error term. -/
@@ -112,10 +107,7 @@ theorem centered_atomic_cubic_approximation (w : MathCollab.Density.ReflectionCu
       _ ≤ ‖K s‖+‖K s-J s‖ := norm_sub_le _ _
       _ ≤ D*L+E*T^(-200:ℝ) := add_le_add (hbound L s hL) (he s hst)
       _ ≤ _ := by nlinarith
-  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by
-    obtain ⟨ht₁,ht₂⟩ := hW t ht
-    obtain ⟨hu₁,hu₂⟩ := hW u hu
-    exact abs_le.mpr ⟨by linarith,by linarith⟩
+  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by grind
   have hJm : Measurable J := retainedPoissonKernel_measurable _ w.complex_smooth.continuous.measurable L _
   have hp := finite_cubic_local_perturbation W
     (centeredKernel_measurable w.complex_smooth.continuous.measurable _ _ _) hJm
@@ -140,4 +132,4 @@ theorem centered_atomic_cubic_approximation (w : MathCollab.Density.ReflectionCu
     _ = (3*E*(D+E)^2)*(T^(-200:ℝ)*L^2)*(W.card:ℝ)^3 := by ring
     _ ≤ _ := by gcongr
 
-end Montgomery.RationalMoment
+

@@ -3,8 +3,7 @@ public import TraceAlternatives.CubeCountBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem cubeTraceEnergyMargin_affine_length (σ P Q C t : ℝ)
@@ -42,4 +41,4 @@ theorem cubeTraceEnergyMargin_row3 {σ x : ℝ}
       norm_num [cubeTraceA,cubeTraceB,cubeTraceG,cubeTraceD,gmEnergyU,gmEnergyV,gmEnergyW,gmEnergyR] <;>
       linarith
 
-end Montgomery.RationalMoment
+

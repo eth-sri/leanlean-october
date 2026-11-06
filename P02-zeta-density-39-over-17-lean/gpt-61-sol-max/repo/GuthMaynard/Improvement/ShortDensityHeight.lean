@@ -1,13 +1,17 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDensityScale
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
-theorem short_density_height_eq {H N : ℝ} (hH : 0 < H) (hN : 0 < N)
-    (σ δ : ℝ) :
+section
+variable {H N : ℝ} (hH : 0 < H) (hN : 0 < N)
+    (σ δ : ℝ)
+include H N hH hN σ δ
+
+theorem short_density_height_eq  :
     N^σ*H^(-2*δ) = N^σ/(H^δ)^2 ∧ 0 < N^σ*H^(-2*δ) := by
   constructor
   · rw [show -2*δ = -(δ*2) by ring, Real.rpow_neg hH.le,
@@ -16,16 +20,13 @@ theorem short_density_height_eq {H N : ℝ} (hH : 0 < H) (hN : 0 < N)
   · positivity
 
 /-- Exact denominator algebra for the normalized powered detector height. -/
-theorem short_density_height_budgets {H N : ℝ} (hH : 0 < H) (hN : 0 < N)
-    (σ δ : ℝ) :
+theorem short_density_height_budgets  :
     N^2/(N^σ*H^(-2*δ))^2 = N^(2-2*σ)*H^(4*δ) ∧
     N^(18/7:ℝ)*H^(6/7:ℝ)/(N^σ*H^(-2*δ))^4 =
       (N^(18/7-4*σ)*H^(6/7:ℝ))*H^(8*δ) ∧
     N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2 =
       (H*N^(1-2*σ)+N^(2-2*σ)*Real.log (2*N))*H^(4*δ) := by
   have hV := (short_density_height_eq hH hN σ δ).1
-  have hnσ : N^σ ≠ 0 := (Real.rpow_pos_of_pos hN _).ne'
-  have hhδ : H^δ ≠ 0 := (Real.rpow_pos_of_pos hH _).ne'
   have hn2 : N^(2-2*σ) = N^2/(N^σ)^2 := by
     rw [Real.rpow_sub hN, show 2*σ = σ*2 by ring,
       Real.rpow_mul hN.le σ 2, Real.rpow_ofNat, Real.rpow_ofNat]
@@ -43,6 +44,8 @@ theorem short_density_height_budgets {H N : ℝ} (hH : 0 < H) (hN : 0 < N)
   constructor
   · field_simp
   constructor <;> field_simp
+end
+
 
 /-- Uniform conversion of the length epsilon factor into a height factor. -/
 theorem short_density_small_power {σ H N δ : ℝ} (hσ : 9/13 ≤ σ)
@@ -57,4 +60,4 @@ theorem short_density_small_power {σ H N δ : ℝ} (hσ : 9/13 ≤ σ)
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH
       (mul_le_mul_of_nonneg_right (by linarith : shortDensityB σ+δ ≤ 2) hδ)
 
-end GuthMaynard.Improvement
+

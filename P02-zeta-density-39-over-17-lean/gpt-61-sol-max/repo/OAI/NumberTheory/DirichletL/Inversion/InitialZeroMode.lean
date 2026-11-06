@@ -6,17 +6,21 @@ public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment
-local notation "O"=>ActualEisensteinCubic.O
+open EisensteinSchwartzPoisson InverseMoment
+
+open scoped EisensteinO
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
-theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
+section
+variable (eps b B:ℝ)(heps:0<eps)(hb:0<b)
+include eps b B heps hb
+
+theorem marked_coefficient_mass (_hB:0≤B):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
       (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -87,7 +91,7 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
         _=_:=by rw [hh]
     _≤_:=by nlinarith [Real.rpow_nonneg hX.le (1+eps)]
 
-theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
+theorem marked_normalized_zero (hB:0≤B)
     (Φ:𝓢(ℝ,ℂ)):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
       (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -116,9 +120,11 @@ theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
       rw [Real.rpow_add hX,Real.rpow_one]
       field_simp
     _≤_:=by nlinarith [mul_nonneg hY.le (Real.rpow_nonneg hX.le eps)]
-
-end SevenEighths.InverseInitialZeroMode
-
 end
 
-end OAI
+
+
+
+
+
+

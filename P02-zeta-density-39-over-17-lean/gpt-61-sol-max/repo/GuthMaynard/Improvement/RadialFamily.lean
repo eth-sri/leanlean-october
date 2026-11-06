@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff SchwartzMap
@@ -24,7 +23,11 @@ theorem family_product_deriv_continuous {P : Type*} [TopologicalSpace P]
 def radialAmplitude (a : ℝ → ℂ) (v y r : ℝ) : ℂ :=
   a (v*r)*a (y*r)*((r:ℂ)^2*a r)
 
-theorem radialAmplitude_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) (v y : ℝ) :
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+include a ha
+
+theorem radialAmplitude_smooth  (v y : ℝ) :
     ContDiff ℝ ∞ (radialAmplitude a v y) := by
   have hc : ContDiff ℝ ∞ (fun r : ℝ => (r:ℂ)) := Complex.ofRealCLM.contDiff
   unfold radialAmplitude
@@ -32,7 +35,7 @@ theorem radialAmplitude_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) (v y 
 
 /-- The actual cutoff r^2*a(rv)*a(ry)*a(r) has jointly continuous radial
 derivatives, before any compact ratio parameters are selected. -/
-theorem radialAmplitude_deriv_continuous {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) (n : ℕ) :
+theorem radialAmplitude_deriv_continuous  (n : ℕ) :
     Continuous (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (radialAmplitude a z.1.1 z.1.2) z.2) := by
   let f : (ℝ × ℝ) → ℝ → ℂ := fun p r => a (p.1*r)
   let g : (ℝ × ℝ) → ℝ → ℂ := fun p r => a (p.2*r)
@@ -62,6 +65,8 @@ theorem radialAmplitude_deriv_continuous {a : ℝ → ℂ} (ha : ContDiff ℝ �
     exact ((hb (0,0)).continuous_iteratedDeriv n (by simp)).comp continuous_snd
   exact family_product_deriv_continuous (fun p r => f p r*g p r) b
     (fun p => (hf p).mul (hg p)) hb (family_product_deriv_continuous f g hf hg hfc hgc) hbc n
+end
+
 
 /-- Every derivative vanishes off the same fixed closed support interval. -/
 theorem iteratedDeriv_zero_off_interval {f : ℝ → ℂ} {l u : ℝ}
@@ -92,4 +97,4 @@ theorem radialAmplitude_uniform_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
     rw [iteratedDeriv_zero_off_interval hz n hr,norm_zero]
     exact le_trans zero_le_one (le_max_left _ _)
 
-end GuthMaynard.Improvement
+

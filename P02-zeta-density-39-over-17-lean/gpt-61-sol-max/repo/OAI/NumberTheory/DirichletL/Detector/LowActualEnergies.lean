@@ -11,26 +11,36 @@ open scoped Classical ContDiff SchwartzMap
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def lowNumeratorRows (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q) : Finset O :=
+section
+variable (a b : ℝ) (ha : 0<a) (hb : 0<b)
+include a b ha hb
+
+section
+variable (Q : ℝ) (hQ : 0<Q)
+include Q hQ
+
+def lowNumeratorRows  : Finset O :=
   (elementWindow_finite_support (lowOuterCutoff a b) (lowOuterCutoff_compact a b ha hb) Q hQ).toFinset
 
-lemma lowNumeratorRows_mem (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q) (m : O) :
+lemma lowNumeratorRows_mem  (m : O) :
     m∈lowNumeratorRows a b ha hb Q hQ ↔ lowOuterCutoff a b (elementNorm m/Q)≠0 := by
   simp only [lowNumeratorRows,Set.Finite.mem_toFinset,Function.mem_support]
+end
 
-def lowGaussMajorant (a b : ℝ) (ha : 0<a) (hb : 0<b) : SchwartzMap ℝ ℂ :=
+
+def lowGaussMajorant  : SchwartzMap ℝ ℂ :=
   (lowOuterCutoff_compact (a/2) (2*b) (by positivity) (by positivity)).toSchwartzMap
     (lowOuterCutoff_smooth (a/2) (2*b))
 
-lemma lowGaussMajorant_nonneg (a b : ℝ) (ha : 0<a) (hb : 0<b) (x : ℝ) :
+lemma lowGaussMajorant_nonneg  (x : ℝ) :
     0≤(lowGaussMajorant a b ha hb x).re := by
   change 0≤(lowOuterCutoff (a/2) (2*b) x).re
   simp only [lowOuterCutoff,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero]
   exact mul_nonneg (Real.smoothTransition.nonneg _) (Real.smoothTransition.nonneg _)
 
-lemma lowGaussMajorant_on_rows (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
+lemma lowGaussMajorant_on_rows  (Q : ℝ) (hQ : 0<Q)
     (m : O) (hm : m∈lowNumeratorRows a b ha hb Q hQ) :
     lowGaussMajorant a b ha hb (‖ConcreteTraceCRT.eisEmbedding m‖^2/Q)=1 := by
   have hh := lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ m).mp hm)
@@ -38,8 +48,11 @@ lemma lowGaussMajorant_on_rows (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ :
   rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]
   exact lowOuterCutoff_one _ _ (by positivity) (by positivity) _ hh.1 hh.2
 
-theorem lowRayAmplitude_actual_energy (a b : ℝ) (ha : 0<a) (hb : 0<b)
-    (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
+section
+variable (C : CalibrationData)
+include C
+
+theorem lowRayAmplitude_actual_energy  (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v Q : ℝ) (hQ : 0<Q) :
     (∑m∈lowNumeratorRows a b ha hb Q hQ,‖lowRayAmplitude C W1 Y σ m v‖^2)≤
       (gaussEnergy (lowGaussColumns W1 hW1 Y hY) (fun s=>primaryGenerator s.val)
@@ -50,8 +63,11 @@ theorem lowRayAmplitude_actual_energy (a b : ℝ) (ha : 0<a) (hb : 0<b)
     (fun _=>lowGaussMajorant_nonneg a b ha hb _)
     (fun m hm=>by rw [lowGaussMajorant_on_rows a b ha hb Q hQ m hm];norm_num)
 
-lemma lowSeparatedIntegrand_source_cauchy (a b : ℝ) (ha : 0<a) (hb : 0<b)
-    (C : CalibrationData) (W0 W1 : ℝ→ℂ) (X Y : ℝ) (hX : 0<X) (hY : 0<Y)
+section
+variable (W0 W1 : ℝ→ℂ)
+include W0 W1
+
+lemma lowSeparatedIntegrand_source_cauchy  (X Y : ℝ) (hX : 0<X) (hY : 0<Y)
     (B : RayRing→O→ℂ) (v : ℝ) :
     ‖lowSeparatedIntegrand C W0 W1 (lowOuterCutoff a b) X Y B v‖≤
       ‖mellin W0 ((v:ℂ)*Complex.I)‖*
@@ -82,8 +98,7 @@ lemma lowSeparatedIntegrand_source_cauchy (a b : ℝ) (ha : 0<a) (hb : 0<b)
       (fun m _=>lowNumeratorWeight_norm C _ (lowOuterCutoff_norm a b)
         (lowOuterCutoff_small a b ha 0 (by positivity)) X Y hX hY m v))
 
-theorem lowSeparatedIntegrand_actual_energies (a b : ℝ) (ha : 0<a) (hb : 0<b)
-    (C : CalibrationData) (W0 W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
+theorem lowSeparatedIntegrand_actual_energies  (hW1 : HasCompactSupport W1)
     (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : RayRing→O→ℂ) (v : ℝ) :
     ‖lowSeparatedIntegrand C W0 W1 (lowOuterCutoff a b) X Y B v‖≤
       ‖mellin W0 ((v:ℂ)*Complex.I)‖*
@@ -97,8 +112,12 @@ theorem lowSeparatedIntegrand_actual_energies (a b : ℝ) (ha : 0<a) (hb : 0<b)
   intro σ hσ
   exact mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt (lowRayAmplitude_actual_energy a b ha hb C W1 hW1 Y hY σ v
     (lowPhysicalScale C X Y) (lowPhysicalScale_pos C X Y hX hY))) (Real.sqrt_nonneg _)
-
-end SevenEighths.ProbePhysical
+end
+end
 end
 
-end OAI
+
+
+
+
+

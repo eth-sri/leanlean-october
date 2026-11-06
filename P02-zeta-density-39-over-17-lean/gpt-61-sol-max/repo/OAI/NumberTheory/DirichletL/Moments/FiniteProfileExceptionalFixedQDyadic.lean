@@ -14,27 +14,27 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentCommonRadialData CenteredMomentReflectedSource
+
+
+open CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass
+open RayFourExpansion
+
+open CenteredMomentSecondHeightFamily
+
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
+open CenteredMomentSecondCanonical
+open CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalNonunit CenteredMomentChildRows
 open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
+open CenteredMomentSectorLocalization
 open CenteredMomentSecondDyadicRowSupport
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
+open ConcretePrimeRowBridge
+open CenteredMomentSecondCanonicalScalar
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -44,14 +44,14 @@ theorem actual_dyadic_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∃Ck:ℝ,0≤Ck ∧ ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
       ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
+      (∀i,1≤ s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
       ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R0 seed:Ideal O),R0≠0 → seed∣C → seed∣D →
       primeSupport C=primeSupport D → ∀U:Finset (CommonIndex C D),
       let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=finiteColumnCoefficient (Fintype.piFinset s.pools)
         (profileCoefficient R0 s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
-      ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
+      ∀r:ℝ,Z^r≤ s.X₁ → Z^r≤ s.X₂ → Z^r≤ s.Y₁ → Z^r≤ s.Y₂ →
       ∀τ:RayCharacter→Character,
       (∀χ:RayCharacter,∀I:Ideal O,Supported I → (IsCoprime C I ∨ IsCoprime D I) → ∀v:ℝ,
         heightCoeff (τ χ) v I=heightCoeff s.η v I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) →
@@ -94,8 +94,8 @@ theorem actual_dyadic_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(
     (fun z hz=>by simpa only [one_mul] using dyadicRows_power_cap rows n Z hZ.1 z hz)
     H hβ hHD R Kphys hKphys n
 
-end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 
-end
 
-end OAI
+
+
+

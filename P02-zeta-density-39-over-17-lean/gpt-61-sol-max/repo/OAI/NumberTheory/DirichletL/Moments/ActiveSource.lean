@@ -8,29 +8,39 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentActiveSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy
-open CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization
+open CanonicalQuadraticSieve CenteredMomentSourceRow
+open CenteredMomentSecondLocalization
 open CenteredMomentFirstSectors CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def activeSource (S : Finset (Ideal O)) (β : Ideal O → ℂ) : Finset (Ideal O) :=
+section
+variable (S : Finset (Ideal O)) (β : Ideal O → ℂ)
+include S β
+
+def activeSource  : Finset (Ideal O) :=
   S.filter (fun I => β I≠0)
 
-@[simp] theorem mem_activeSource (S : Finset (Ideal O)) (β : Ideal O → ℂ) (I : Ideal O) :
+@[simp] theorem mem_activeSource  (I : Ideal O) :
     I∈activeSource S β ↔ I∈S ∧ β I≠0 := Finset.mem_filter
 
-theorem supportedColumns_active (S : Finset (Ideal O)) (β : Ideal O → ℂ) :
+theorem supportedColumns_active  :
     supportedColumns (activeSource S β)=(supportedColumns S).filter (fun I => β I≠0) := by
   ext I
   simp only [supportedColumns,activeSource,Finset.mem_filter]
   tauto
+end
+
 
 def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K T Z ξ : ℝ) : ℂ :=
   if hI : Supported I then if hJ : Supported J then
     secondRetainedPair I J hI hJ W K T Z ξ else 0 else 0
 
-theorem secondRetainedEnergy_eq_sum (η : HeckeFamily.Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K T Z ξ : ℝ) :
+section
+variable (η : HeckeFamily.Character) (t : ℝ)
+    (S : Finset (Ideal O)) (β : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K T Z ξ : ℝ)
+include η t S β W K T Z ξ
+
+theorem secondRetainedEnergy_eq_sum  :
     secondRetainedEnergy η t S β W K T Z ξ=
       ∑I∈supportedColumns S,∑J∈supportedColumns S,
         ((β I*CenteredMomentHeckeColumnWindow.heightCoeff η t I)*
@@ -46,8 +56,7 @@ theorem secondRetainedEnergy_eq_sum (η : HeckeFamily.Character) (t : ℝ)
   rw [retainedKernel,dite_eq_left (Finset.mem_filter.mp I.property).2,
     dite_eq_left (Finset.mem_filter.mp J.property).2]
 
-theorem secondRetainedEnergy_active (η : HeckeFamily.Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K T Z ξ : ℝ) :
+theorem secondRetainedEnergy_active  :
     secondRetainedEnergy η t (activeSource S β) β W K T Z ξ=
       secondRetainedEnergy η t S β W K T Z ξ := by
   rw [secondRetainedEnergy_eq_sum,secondRetainedEnergy_eq_sum,supportedColumns_active]
@@ -60,8 +69,14 @@ theorem secondRetainedEnergy_active (η : HeckeFamily.Character) (t : ℝ)
     apply Finset.sum_congr rfl
     intro J hJ
     by_cases hj : β J=0 <;> simp [hj]
+end
 
-theorem commonLabel_witnesses (S : Finset (Ideal O)) (β : Ideal O → ℂ) (C D : Ideal O)
+
+section
+variable (S : Finset (Ideal O)) (β : Ideal O → ℂ)
+include S β
+
+theorem commonLabel_witnesses  (C D : Ideal O)
     (h : (C,D)∈commonLabels (supportedColumns (activeSource S β))
       (supportedColumns (activeSource S β))) :
     ∃I∈S,∃J∈S,Supported I ∧ Supported J ∧ β I≠0 ∧ β J≠0 ∧
@@ -74,8 +89,11 @@ theorem commonLabel_witnesses (S : Finset (Ideal O)) (β : Ideal O → ℂ) (C D
   obtain ⟨hj,hβj⟩ := mem_activeSource S β J |>.mp hj
   exact ⟨I,hi,J,hj,hIs,hJs,hβi,hβj,(Prod.mk.inj he).1,(Prod.mk.inj he).2⟩
 
-theorem commonLabel_norm_bounds (S : Finset (Ideal O)) (β : Ideal O → ℂ)
-    (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
+section
+variable (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
+include H hH
+
+theorem commonLabel_norm_bounds 
     (C D : Ideal O) (h : (C,D)∈commonLabels (supportedColumns (activeSource S β))
       (supportedColumns (activeSource S β))) :
     (Ideal.absNorm C:ℝ)≤H ∧ (Ideal.absNorm D:ℝ)≤H := by
@@ -86,8 +104,7 @@ theorem commonLabel_norm_bounds (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   · rw [←hD]
     exact (Nat.cast_le.mpr (absNorm_commonPart_le J I hJs.1)).trans (hH J hj hβj)
 
-theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
-    (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
+theorem residualPool_data 
     (C : Ideal O) (hC : C≠0) (a : Ideal O)
     (ha : a∈residualPool C hC (supportedColumns (activeSource S β))) :
     C*a∈S ∧ β (C*a)≠0 ∧ Supported (C*a) ∧ a≠0 ∧
@@ -102,9 +119,12 @@ theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   refine ⟨hm,hβ,hsa,ha0,?_,?_⟩
   · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ha0)
   · exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hab)
-
-end SevenEighths.CenteredMomentActiveSource
-
+end
 end
 
-end OAI
+
+
+
+
+
+

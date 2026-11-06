@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighBound
 public import OAI.NumberTheory.DirichletL.Energy.LowBandSubtype
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
@@ -13,15 +14,14 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSourceBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentInductionEnergy CenteredMomentPrimeSlot
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
 open CenteredMomentFiniteProfileExceptional
 open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -29,6 +29,8 @@ variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 open CenteredMomentEnergyPositiveHighSource (balancedInput)
 open CenteredMomentEnergyPositiveHighBound CenteredMomentEnergyBandMonotonicity
 open CenteredMomentEnergyPositiveHighAssembly (low_restrict)
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 def PhysicalHighAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (a b bΦ Bmask L Lslot rho Mcap κ ξ e Z:ℝ)(ha:0<a)
@@ -37,10 +39,10 @@ def PhysicalHighAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ freq:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→∀hσlo:∀i,lo≤σ i,∀hσhi:∀i,σ i≤hi,
     0≤height→(∀i,|freq i|≤height)→
-  ∀state:NaturalState Z Bmask bΦ,state.fixedModulus=internalQ Q η₀→ rho≤state.width→state.width≤Mcap→
+  ∀state:NaturalState Z Bmask bΦ,state.fixedModulus=internalQ Q η₀→ rho≤ state.width→state.width≤Mcap→
   ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,
     X₁≤Z^L→X₂≤Z^L→
-    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤state.width→
+    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ state.width→
     5*state.width/6≤length Z X₁+length Z X₂+(∑i,w i)→
     let inp:=balancedInput M H hH η₀ θ W hW aslot bslot lo hi haslot hWs
       w σ freq (fun i=>⟨hσlo i,hσhi i⟩) state p ha t X₁ X₂ hX₁ hX₂;
@@ -54,9 +56,9 @@ def PositiveHighAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi rho Mcap ε �
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→
-  ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=internalQ Q η₀→ rho≤s.width→s.width≤Mcap→
+  ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=internalQ Q η₀→ rho≤ s.width→s.width≤Mcap→
   ∀p:Profiles a b,∀X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
-    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+    length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
     5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i)→
     energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
       (fun i=>primePool M H bslot (Z^(w i)))
@@ -93,12 +95,12 @@ theorem actual_high_stage_from_physical
   intro degree S Jmass Smass
   have hall (T:Finset α):=hj T degree S Jmass Smass
   choose Jj Uj Cj hCj hbound using hall
-  let Jout:ℕ:=∑T:Finset α,Jj T
-  let U:Finset (ℕ×ℕ):=Finset.univ.biUnion Uj
-  let Cfixed:ℝ:=1+∑T:Finset α,Cj T
+  let Jout :=∑T:Finset α,Jj T
+  let U :=Finset.univ.biUnion Uj
+  let Cfixed :=1+∑T:Finset α,Cj T
   have hCfixed:0<Cfixed:=by
     have hh:=Finset.sum_nonneg (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hCj T).le)
-    dsimp [Cfixed];linarith
+    positivity
   have hCC (T:Finset α):Cj T≤Cfixed:=by
     have hh:=Finset.single_le_sum (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hCj T).le)
       (Finset.mem_univ T)
@@ -153,8 +155,8 @@ theorem positive_from_stages
   exact hhigh T θ w σ v t height hw hwL hσlo hσhi hheight hv s hQ (le_of_not_ge hsmall) hs
     p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂ hcapacity (le_of_not_ge hl)
 
-end SevenEighths.CenteredMomentEnergyPositiveHighSourceBound
 
-end
 
-end OAI
+
+
+

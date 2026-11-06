@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedAllOrders
 public import TaoTrudgianYang2025.BetaLegendreCorrection
@@ -13,13 +14,13 @@ uniform value estimate from the first derivative, and a single finite
 original-model order controls every requested anchored derivative.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseLegendreDual_expanded_anchored_bound
     {σ : ℝ} (hσ : 0 < σ) :
@@ -74,8 +75,7 @@ theorem anchoredLegendreError_expanded_finite_uniformity
   intro F δ hδ hpos hF w hw v hv n hn
   have hd := approximateModelPhase_tolerance_nonneg hF
   have hP : 1 ≤ legendreFiniteInputOrder Q := by
-    simpa only [inversePhaseDerivativeExpression,inversePhaseOrder,zero_add] using
-      legendreFiniteInputOrder_le (Nat.zero_le Q)
+    exact legendreFiniteInputOrder_le (Nat.zero_le Q)
   have hF₁ := approximateModelPhase_mono hF hP le_rfl
   cases n with
   | zero =>
@@ -93,4 +93,4 @@ theorem anchoredLegendreError_expanded_finite_uniformity
       exact (hderiv n F δ hδ hpos hsmall v hv).trans
         (mul_le_mul_of_nonneg_right (by linarith) hd)
 
-end TaoTrudgianYang2025
+

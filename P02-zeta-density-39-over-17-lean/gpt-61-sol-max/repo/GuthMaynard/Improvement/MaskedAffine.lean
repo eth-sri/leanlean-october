@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.StrengthenedAffine
 public import GuthMaynard.Improvement.SparseAffineInput
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
@@ -20,9 +20,7 @@ theorem compact_smoothed_general_schwartz {g : ℝ → ℝ} {a b δ : ℝ}
     apply HasCompactSupport.intro (isCompact_Icc : IsCompact (Icc (-2*δ) (2*δ)))
     intro x hx
     apply scaled_compactKernel_zero hδ
-    by_contra hn
-    have hh := abs_le.mp (le_of_not_gt hn)
-    exact hx ⟨by linarith [hh.1],hh.2⟩
+    grind
   have hd : ContDiff ℝ ∞ (scaledKernel compactKernel δ) :=
     contDiff_const.mul (compactKernel_smooth.comp (contDiff_id.div_const δ))
   have hsd : ContDiff ℝ ∞ (smooth (scaledKernel compactKernel δ) g) := by
@@ -70,4 +68,4 @@ theorem compact_smoothed_full_input (a b : ℝ) (hab : a ≤ b) :
       (le_div_iff₀ hξp).mpr (by simpa only [mul_comm] using hnum)
     _ = _ := by rw [div_pow]; ring
 
-end GuthMaynard.Improvement
+

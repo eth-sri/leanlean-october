@@ -5,8 +5,7 @@ public import QuadraticWindow
 
 open Filter
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- The apparently resonant R² term in the quadratic estimate is actually
@@ -49,4 +48,4 @@ theorem quadratic_diagonal_budget {σ a δ A : ℝ}
     _ = (N^(4*σ-3)*N^3)*T^(-8*δ) := by ring
     _ = _ := by rw [hnid,hvid]
 
-end Montgomery.RationalMoment
+

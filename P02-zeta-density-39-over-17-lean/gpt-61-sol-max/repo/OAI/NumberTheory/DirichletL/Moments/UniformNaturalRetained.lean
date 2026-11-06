@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.UniformRetainedEnergy
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformNaturalRetained
@@ -59,12 +60,12 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
     (mul_nonneg (le_max_left _ _) hlog) le_rfl (fun _=>⟨le_rfl,le_rfl⟩) hgeom
     hD hE hGD hRcap hrad (by
       intro v j k x hx y hy
-      have hey : y=bshort*Real.log Z := le_antisymm hy.2 hy.1
+      have hey := le_antisymm hy.2 hy.1
       simpa only [hey,hexp] using henergy v j k x hx)
   simpa only [hexp,sub_zero,sub_self,mul_zero,add_zero,mul_one] using hh
 
-end SevenEighths.CenteredMomentUniformNaturalRetained
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 The finite rectangle argument adapts the local DetectorContour proof,
 itself adapted from McColm TypeIICoverage at exact pin
@@ -13,23 +14,26 @@ public import MathCollab.Density.DetectorContour
 open Complex MeasureTheory Set Filter
 open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
-def smoothDetectorKernel (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) (s : ℂ) : ℂ :=
+section
+variable (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ)
+include ψ ρ X N q
+
+def smoothDetectorKernel  (s : ℂ) : ℂ :=
   (N : ℂ)^s * mellin (fun y => (dampedCutoff ψ q y : ℂ)) s *
     zetaMollifier X (ρ+s) * riemannZeta (ρ+s)
 
-def smoothContourNumerator (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) (s : ℂ) : ℂ :=
+def smoothContourNumerator  (s : ℂ) : ℂ :=
   (N : ℂ)^s * mellin (fun y => (dampedCutoff ψ q y : ℂ)) s *
     zetaMollifier X (ρ+s) * shiftedRegularizedZeta ρ s
 
-def smoothDetectorResidue (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) : ℂ :=
+def smoothDetectorResidue  : ℂ :=
   (N : ℂ)^(1-ρ) * mellin (fun y => (dampedCutoff ψ q y : ℂ)) (1-ρ) *
     zetaMollifier X 1
 
-theorem smoothContourNumerator_div_eq_kernel (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ)
+theorem smoothContourNumerator_div_eq_kernel 
     {s : ℂ} (hs : s ≠ 1-ρ) :
     smoothContourNumerator ψ ρ X N q s / (s-(1-ρ)) =
       smoothDetectorKernel ψ ρ X N q s := by
@@ -38,11 +42,13 @@ theorem smoothContourNumerator_div_eq_kernel (ψ : ℝ → ℝ) (ρ : ℂ) (X N 
   rw [shiftedRegularizedZeta_eq hp]
   field_simp [sub_ne_zero.mpr hs]
 
-theorem smoothContourNumerator_at_pole (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) :
+theorem smoothContourNumerator_at_pole  :
     smoothContourNumerator ψ ρ X N q (1-ρ) = smoothDetectorResidue ψ ρ X N q := by
   have hp : ρ+(1-ρ) = 1 := by ring
   simp [smoothContourNumerator, smoothDetectorResidue, shiftedRegularizedZeta,
     hp, regularizedRiemannZeta]
+end
+
 
 theorem smoothContourNumerator_differentiable {ψ : ℝ → ℝ} {a b : ℝ}
     (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hs : tsupport ψ ⊆ Icc a b)
@@ -53,7 +59,7 @@ theorem smoothContourNumerator_differentiable {ψ : ℝ → ℝ} {a b : ℝ}
   have hPow : DifferentiableAt ℂ (fun z : ℂ => (N : ℂ)^z) s :=
     differentiableAt_id.const_cpow (Or.inl hBase)
   have hMellin := (dampedCutoff_mellin_entire hψ ha hs q s (mem_univ s)).differentiableAt
-  have hMollifier : DifferentiableAt ℂ (fun z : ℂ => zetaMollifier X (ρ+z)) s :=
+  have hMollifier :=
     (differentiableAt_zetaMollifier X (ρ+s)).comp s
       ((differentiableAt_const (𝕜 := ℂ) ρ).add differentiableAt_id)
   exact ((hPow.mul hMellin).mul hMollifier).mul
@@ -64,7 +70,7 @@ theorem entire_div_sub_rectangle {F : ℂ → ℂ} (hF : Differentiable ℂ F)
     {z w p : ℂ} (hzRe : z.re ≤ w.re) (hzIm : z.im ≤ w.im)
     (hp : Rectangle z w ∈ 𝓝 p) :
     RectangleIntegral' (fun s => F s/(s-p)) z w = F p := by
-  have hg : HolomorphicOn (dslope F p) (Rectangle z w) :=
+  have hg :=
     (Complex.differentiableOn_dslope hp).2 hF.differentiableOn
   apply ResidueTheoremOnRectangleWithSimplePole hzRe hzIm hp hg
   intro s hs
@@ -81,10 +87,10 @@ theorem smoothDetector_finite_rectangle_residue {ψ : ℝ → ℝ} {a b : ℝ}
     RectangleIntegral' (smoothDetectorKernel ψ ρ X N q)
       (((1/2-ρ.re : ℝ) : ℂ)-(R : ℂ)*I) (((1/2 : ℝ) : ℂ)+(R : ℂ)*I) =
         smoothDetectorResidue ψ ρ X N q := by
-  let l : ℝ := 1/2-ρ.re
-  let z : ℂ := (l : ℂ)-(R : ℂ)*I
-  let w : ℂ := ((1/2 : ℝ) : ℂ)+(R : ℂ)*I
-  let p : ℂ := 1-ρ
+  let l := 1/2-ρ.re
+  let z := (l : ℂ)-(R : ℂ)*I
+  let w := ((1/2 : ℝ) : ℂ)+(R : ℂ)*I
+  let p := 1-ρ
   have hRpos : 0 < R := lt_of_le_of_lt (abs_nonneg _) hR
   have hγLower := (abs_lt.mp hR).1
   have hγUpper := (abs_lt.mp hR).2
@@ -110,4 +116,4 @@ theorem smoothDetector_finite_rectangle_residue {ψ : ℝ → ℝ} {a b : ℝ}
     exact not_mem_rectangleBorder_of_rectangle_mem_nhds hpInterior (heq ▸ hsBorder)
   exact (smoothContourNumerator_div_eq_kernel ψ ρ X N q hsp).symm
 
-end MathCollab.Density.Stronger
+

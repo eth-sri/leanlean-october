@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.UnramifiedScalar
 public import OAI.NumberTheory.DirichletL.Detector.LocalWeights
 
@@ -10,7 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -41,7 +42,7 @@ lemma firstGauss_ne_zero : primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}
     have hd := (actualSextic_pow_eq_one_iff _ hg hc 1).mp he
     norm_num at hd
   have he := primeGauss_inverse_pair p hp.ne_zero (actualSextic (Ideal.span {p}) hg) hχ
-  have hω : actualSextic (Ideal.span {p}) hg (-1) ≠ 0 :=
+  have hω :=
     (actualSextic (Ideal.span {p}) hg).apply_ne_zero_iff.mpr isUnit_one.neg
   have hQ : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
@@ -142,7 +143,7 @@ lemma markedTerm_squarefree_bulk_off (eta a X W V : ℂ) (r m : ℕ) (hm : m < r
   rw [ite_eq_right (by omega), show 1+3*(2*r)-1=6*r by omega,
     unramified_squarefree_kone p hp hg hc, ite_eq_right (by omega), weightedScalar_zero]
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

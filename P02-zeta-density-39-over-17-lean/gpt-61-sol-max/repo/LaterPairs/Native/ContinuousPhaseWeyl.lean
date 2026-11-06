@@ -6,9 +6,8 @@ public import LaterPairs.Native.ExponentPairFiniteCorrelation
 public import LaterPairs.Native.ExponentPairWeylSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                   
 
@@ -33,9 +32,13 @@ theorem sum_integer_zero_interval_eq_range (a : ℤ → ℂ) (N : ℕ) :
   · intro _ _
     rfl
 
+section
+variable (F : ℝ → ℝ) (A : ℝ) (N H h k : ℕ)
+    (hh : h < H) (hk : k < H)
+include F A N H h k hh hk
+
 theorem padded_continuousPhase_correlation
-    (F : ℝ → ℝ) (A : ℝ) (N H h k : ℕ)
-    (hh : h < H) (hk : k < H) (hhk : h < k) :
+     (hhk : h < k) :
     (∑ n ∈ Finset.Ico (-(H:ℤ)) N,
       star (paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n h)*
         paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n k) =
@@ -52,8 +55,7 @@ theorem padded_continuousPhase_correlation
   simp only [Nat.cast_sub hhk.le,add_assoc,sub_eq_add_neg,add_comm]
 
 theorem norm_padded_continuousPhase_correlation
-    (F : ℝ → ℝ) (A : ℝ) (N H h k : ℕ)
-    (hh : h < H) (hk : k < H) (hne : h ≠ k) :
+     (hne : h ≠ k) :
     ‖∑ n ∈ Finset.Ico (-(H:ℤ)) N,
       star (paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n h)*
         paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n k‖ =
@@ -65,6 +67,8 @@ theorem norm_padded_continuousPhase_correlation
     rw [padded_sequence_correlation_reverse _ N H h k,norm_star,
       padded_continuousPhase_correlation F A N H k h hk hh hkh]
     simp only [shiftDistance,Nat.sub_eq_zero_of_le hkh.le,add_zero]
+end
+
 
 theorem continuous_phase_weyl
     (F : ℝ → ℝ) (A : ℝ) (N H : ℕ) :
@@ -81,4 +85,4 @@ theorem continuous_phase_weyl
   rw [sum_integer_zero_interval_eq_range] at hb
   simpa only [Int.cast_natCast] using hb
 
-end TaoTrudgianYang2025
+

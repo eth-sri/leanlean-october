@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaCurvatureAmplitude
 
@@ -18,7 +19,7 @@ open Set Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseThirdLower (σ : ℝ) : ℝ :=
   σ*(σ+1)*2^(-σ-2)/2
@@ -26,20 +27,33 @@ def modelPhaseThirdLower (σ : ℝ) : ℝ :=
 def modelPhaseAmplitudeTolerance (σ : ℝ) : ℝ :=
   min (min (modelPhaseCurvatureLower σ) 1) (min (modelPhaseThirdLower σ) 1)
 
-theorem modelPhaseThirdLower_pos {σ : ℝ} (hσ : 0 < σ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+
+theorem modelPhaseThirdLower_pos  :
     0 < modelPhaseThirdLower σ := by
   unfold modelPhaseThirdLower
   positivity
 
-theorem modelPhaseAmplitudeTolerance_pos {σ : ℝ} (hσ : 0 < σ) :
+theorem modelPhaseAmplitudeTolerance_pos  :
     0 < modelPhaseAmplitudeTolerance σ :=
   lt_min (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one)
     (lt_min (modelPhaseThirdLower_pos hσ) zero_lt_one)
+end
+
+
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
+include σ δ F hσ
+
+section
+variable (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
+    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
+include hδ hF
 
 theorem approximateModelPhase_thirdWithin_bounds
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
+    
     {u : ℝ} (hu : u ∈ phaseInterval) :
     modelPhaseThirdLower σ ≤ iteratedDerivWithin 3 F phaseInterval u ∧
       iteratedDerivWithin 3 F phaseInterval u ≤ σ*(σ+1)+1 := by
@@ -66,9 +80,7 @@ theorem approximateModelPhase_thirdWithin_bounds
   constructor <;> nlinarith
 
 theorem approximateModelPhase_thirdDeriv_bounds
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
+    
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseThirdLower σ ≤ deriv (deriv (deriv F)) u ∧
       deriv (deriv (deriv F)) u ≤ σ*(σ+1)+1 := by
@@ -81,9 +93,7 @@ theorem approximateModelPhase_thirdDeriv_bounds
   simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using h
 
 theorem approximateModelPhase_secondDeriv_strictMonoOn
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ) :
+     :
     StrictMonoOn (deriv (deriv F)) (Ioo (1 : ℝ) 2) := by
   apply strictMonoOn_of_deriv_pos (convex_Ioo 1 2)
   · intro u hu
@@ -93,15 +103,17 @@ theorem approximateModelPhase_secondDeriv_strictMonoOn
     have hui : u ∈ Ioo (1 : ℝ) 2 := by simpa using hu
     exact (modelPhaseThirdLower_pos hσ).trans_le
       (approximateModelPhase_thirdDeriv_bounds hσ hδ hF hui).1
+end
+
 
 theorem modelPhaseInverseSlope_antitoneOn
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
+    
     (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ) :
     AntitoneOn (modelPhaseInverseSlope F) (modelPhaseSlopeRange F) := by
   intro v hv w hw hvw
   by_contra hn
-  have hlt : modelPhaseInverseSlope F v < modelPhaseInverseSlope F w :=
+  have hlt :=
     lt_of_not_ge hn
   have h := approximateModelPhase_deriv_strictAntiOn hσ hδ hF
     (modelPhaseInverseSlope_mem hv) (modelPhaseInverseSlope_mem hw) hlt
@@ -109,7 +121,7 @@ theorem modelPhaseInverseSlope_antitoneOn
   exact (not_lt_of_ge hvw) h
 
 theorem modelPhaseStationaryAmplitude_antitoneOn
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
+    
     (hδ : δ ≤ modelPhaseAmplitudeTolerance σ)
     (hF : IsApproximateModelPhaseFunction F σ 2 δ) :
     AntitoneOn (modelPhaseStationaryAmplitude F) (modelPhaseSlopeRange F) := by
@@ -123,5 +135,7 @@ theorem modelPhaseStationaryAmplitude_antitoneOn
       (modelPhaseInverseSlope_mem hw) (modelPhaseInverseSlope_mem hv) hi)
   exact inv_anti₀ (Real.sqrt_pos.mpr (modelPhaseCurvatureAt_pos hσ hd₁ hF₁ hv))
     (Real.sqrt_le_sqrt hq)
+end
 
-end TaoTrudgianYang2025
+
+

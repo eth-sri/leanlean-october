@@ -7,13 +7,12 @@ public import LaterPairs.Native.RobertSargosFixedDisplacementConic
 public import LaterPairs.Native.RobertSargosFixedDisplacementLinear
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_fixed_displacement_conic_bound (ε : ℝ) (hε : 0 < ε) :
@@ -53,5 +52,5 @@ theorem exists_robertSargos_fixed_displacement_linear_bound (ε : ℝ) (hε : 0 
   exact (robertSargos_fixed_displacement_linear_card_le S hc hd hR hH hQ hδ hq₁ hq₂ hs
     hh₁ hh₂ hr hp hl hn).trans (hdiv d.natAbs (72*H*R) (Int.natAbs_pos.mpr hd) (by positivity))
 
-end TaoTrudgianYang2025
+
 

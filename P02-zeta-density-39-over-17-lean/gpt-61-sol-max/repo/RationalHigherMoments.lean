@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import RationalEnergyIdentities
 public import RationalTransferSubpower
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -29,7 +29,7 @@ theorem rational_energy_bound_double {k : ℕ} (hk : 0 < k)
   obtain ⟨D, hD, hkbound⟩ := hbound (η/4) (by positivity)
   refine ⟨C*D^2, by positivity, ?_⟩
   intro H hH A hA c
-  let S : ℝ := ∑ r ∈ A, ‖c r‖^2
+  let S := ∑ r ∈ A, ‖c r‖^2
   have hS : 0 ≤ S := sum_nonneg (fun _ _ => sq_nonneg _)
   have hH0 : 0 < H := by linarith
   have he := htwo (H^k) (one_le_pow₀ hH) (rationalProducts A k)
@@ -68,14 +68,14 @@ theorem rational_energy_bound_downward {k m : ℕ} (hk : 0 < k) (hkm : k ≤ m)
   obtain ⟨D, hD, hd⟩ := hbound η hη
   refine ⟨1+D, by positivity, ?_⟩
   intro H hH A hA c
-  let S : ℝ := ∑ r ∈ A, ‖c r‖^2
+  let S := ∑ r ∈ A, ‖c r‖^2
   have hS : 0 ≤ S := sum_nonneg (fun _ _ => sq_nonneg _)
   by_cases hSzero : S = 0
   · rw [rational_coefficient_energy_zero A hk (fun r hr => (hA r hr).1) c hSzero]
     positivity
   have hSp : 0 < S := lt_of_le_of_ne hS (Ne.symm hSzero)
   let a : ℂ := (Real.sqrt S : ℝ)
-  let b : ℚ → ℂ := fun r => a⁻¹*c r
+  let b := fun r => a⁻¹*c r
   have ha : a ≠ 0 := by dsimp [a]; exact_mod_cast (Real.sqrt_pos.mpr hSp).ne'
   have hanorm : ‖a‖^2 = S := by
     simp only [a, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _), Real.sq_sqrt hS]
@@ -86,7 +86,7 @@ theorem rational_energy_bound_downward {k m : ℕ} (hk : 0 < k) (hkm : k ≤ m)
   have hlow := rational_coefficient_energy_le_one_add A k m hkm (fun r hr => (hA r hr).1) b
   have hhigh := hd H hH A hA b
   rw [hb, one_pow, mul_one] at hhigh
-  have hHpow : 1 ≤ H^η := Real.one_le_rpow hH hη.le
+  have hHpow := Real.one_le_rpow hH hη.le
   have hnormbound : rationalCoefficientEnergy A k b ≤ (1+D)*H^η := by
     nlinarith
   have hc : c = fun r => a*b r := by
@@ -107,4 +107,4 @@ theorem rational_coefficient_energy_subpower {k : ℕ} (hk : 1 ≤ k) : Rational
   apply rational_energy_bound_downward (by omega : 0 < k) (Nat.le_of_lt (Nat.lt_two_pow_self (n := k)))
   exact rational_energy_bound_power_two k
 
-end Montgomery.RationalMoment
+

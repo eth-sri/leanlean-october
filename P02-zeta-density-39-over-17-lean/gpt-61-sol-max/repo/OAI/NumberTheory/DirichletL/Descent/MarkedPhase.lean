@@ -7,19 +7,23 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CompletedGauss CubicEisenstein ConcreteTraceCRT LocalReflectionBrackets
+open CompletedGauss CubicEisenstein LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance markedPhaseFintype (P : Ideal Eis) [P.IsMaximal] :
+local instance markedPhaseFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
 def markedActiveExponent (S : Finset ι) (j : ι → ℕ) (i : ι) : ℕ := if i ∈ S then 0 else j i
 
-theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
     (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
+include hp hg j S D
+
+theorem mixedActiveBracket_eq_signed 
     (i : ι) (x : Eis) :
     mixedActiveBracket hp hg j S D i x = (if i ∈ S then (-1 : ℂ) else 1) *
       ((((actualSextic (Ideal.span {p i}) (hg i))⁻¹) ^ 2) (D.sigma i) *
@@ -33,9 +37,7 @@ theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
     ring
   · simp only [mixedActiveBracket, markedActiveExponent, hi, ite_false, one_mul]
 
-theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode) (x : Eis) :
+theorem mixedActiveBracket_product  (x : Eis) :
     (∏ i, mixedActiveBracket hp hg j S D i x) =
       (-1 : ℂ) ^ S.card * D.bracketProduct hp hg (markedActiveExponent S j) x := by
   simp_rw [mixedActiveBracket_eq_signed]
@@ -45,6 +47,8 @@ theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
     simp
   rw [hsign]
   rfl
+end
+
 
 theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a0 c0 mode)
@@ -74,7 +78,7 @@ theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
         (D.model_coefficient s hp hc0 hg (markedActiveExponent S j) u m I J)).trans
           (mul_assoc _ _ _).symm
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

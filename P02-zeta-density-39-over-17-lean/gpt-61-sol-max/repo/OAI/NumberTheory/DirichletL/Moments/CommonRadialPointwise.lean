@@ -11,11 +11,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonRadialData
+open CenteredMomentEligibleEnergy
+
+
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
  def profileCost (s:Input ι) : ℝ :=
@@ -25,8 +25,8 @@ omit [DecidableEq ι] in
 lemma profileCost_nonneg (s:Input ι) : 0≤profileCost s :=
   mul_nonneg (mul_nonneg (sq_nonneg _) (by positivity)) s.toData.profile_nonneg
 
-end SevenEighths.CenteredMomentCommonRadialPointwise
 
-end
 
-end OAI
+
+
+

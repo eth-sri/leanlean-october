@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7LocalIdentity
 
 @[expose] public section
@@ -13,7 +14,7 @@ parameter `y` modulo `h` after writing `n = q*y + xi` is the same as writing
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyAffinePullback_comp
     (gamma : WooleySourceSequence) (q h : ℕ)
@@ -39,7 +40,6 @@ theorem wooleyAffinePolynomialSystem_comp {k : ℕ}
   intro y
   simp only [wooleyAffinePolynomialSystem_eval]
   push_cast
-  congr 1
   ring
 
 /-- Mass identity in the line following equation (7.19). -/
@@ -97,11 +97,8 @@ theorem wooleySourceResidueSequence_twist
     (gamma : WooleySourceSequence) (phase : ℤ → ℂ)
     (h : ℕ) (zeta : ZMod h) :
     wooleySourceResidueSequence (wooleySourceTwist gamma phase) h zeta =
-      wooleySourceTwist (wooleySourceResidueSequence gamma h zeta) phase := by
-  ext n
-  simp only [wooleySourceResidueSequence_apply, wooleySourceTwist_apply]
-  by_cases hn : (n : ZMod h) = zeta <;> simp [hn]
+      wooleySourceTwist (wooleySourceResidueSequence gamma h zeta) phase := by aesop
 
-end
 
-end GafniTao
+
+

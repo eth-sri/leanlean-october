@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.RowCompletion.ThetaNonvanishing
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspResidues
 
@@ -10,72 +11,72 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CubicEisenstein
 
@@ -84,9 +85,13 @@ open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
 
 open CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-lemma globalKubotaKernel_conjugate_mem (M : levelThree) (N : globalKubotaKernel) :
+section
+variable (M : levelThree)
+include M
+
+lemma globalKubotaKernel_conjugate_mem  (N : globalKubotaKernel) :
     (M:SL(2,ActualEisensteinCubic.O))*(N:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹∈globalKubotaKernel := by
   obtain ⟨n,hn,hnval⟩ := N.property
   change (n:SL(2,ActualEisensteinCubic.O))=(N:SL(2,ActualEisensteinCubic.O)) at hnval
@@ -94,17 +99,16 @@ lemma globalKubotaKernel_conjugate_mem (M : levelThree) (N : globalKubotaKernel)
   · change finiteCubicMultiplier (M*n*M⁻¹)=1
     change finiteCubicMultiplier n=1 at hn
     simp only [map_mul,map_inv,hn,mul_one,mul_inv_cancel]
-  · change (M:SL(2,ActualEisensteinCubic.O))*(n:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹=_
-    rw [hnval]
+  bound
 
-def kernelConjugate (M : levelThree) : globalKubotaKernel ≃* globalKubotaKernel where
+def kernelConjugate  : globalKubotaKernel ≃* globalKubotaKernel where
   toFun N := ⟨(M:SL(2,ActualEisensteinCubic.O))*(N:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹,globalKubotaKernel_conjugate_mem M N⟩
   invFun N := ⟨(M⁻¹:levelThree)*(N:SL(2,ActualEisensteinCubic.O))*(M⁻¹:levelThree)⁻¹,globalKubotaKernel_conjugate_mem M⁻¹ N⟩
   left_inv N := by apply Subtype.ext; simp [mul_assoc]
   right_inv N := by apply Subtype.ext; simp [mul_assoc]
   map_mul' N P := by apply Subtype.ext; simp [mul_assoc]
 
-lemma level_action_respects_kernel (M : levelThree) (u v : HyperbolicSpace)
+lemma level_action_respects_kernel  (u v : HyperbolicSpace)
     (h : (integralOrbitRel globalKubotaKernel).r u v) :
     (integralOrbitRel globalKubotaKernel).r (complexMatrix M • u) (complexMatrix M • v) := by
   obtain ⟨N,hN⟩ := h
@@ -116,17 +120,15 @@ lemma level_action_respects_kernel (M : levelThree) (u v : HyperbolicSpace)
     ((complexMatrix M)⁻¹ • (complexMatrix M • u)))=_
   rw [inv_smul_smul,hN]
 
-def kernelLevelAction (M : levelThree) : KernelQuotient→KernelQuotient :=
+def kernelLevelAction  : KernelQuotient→KernelQuotient :=
   Quotient.map' (fun w => complexMatrix M • w) (level_action_respects_kernel M)
 
-lemma kernelLevelAction_mk (M : levelThree) (w : HyperbolicSpace) :
-    kernelLevelAction M (integralOrbitProjection globalKubotaKernel w)=
-      integralOrbitProjection globalKubotaKernel (complexMatrix M • w) := rfl
 
-lemma kernelLevelAction_continuous (M : levelThree) : Continuous (kernelLevelAction M) :=
+
+lemma kernelLevelAction_continuous  : Continuous (kernelLevelAction M) :=
   (continuous_hyperbolic_action (complexMatrix M)).quotient_map' (level_action_respects_kernel M)
 
-lemma kernelLevelAction_eisenstein (M : levelThree) (s : ℂ) (hs : 2<s.re)
+lemma kernelLevelAction_eisenstein  (s : ℂ) (hs : 2<s.re)
     (q : KernelQuotient) :
     kernelQuotientEisenstein s hs (kernelLevelAction M q)=
       complexCharacter M*kernelQuotientEisenstein s hs q := by
@@ -134,12 +136,12 @@ lemma kernelLevelAction_eisenstein (M : levelThree) (s : ℂ) (hs : 2<s.re)
   | _ w =>
     exact hyperbolicEisenstein_automorphy M s hs w
 
-lemma kernelLevelAction_seed (M : levelThree) (a b : ℝ) (s : ℂ) (q : KernelQuotient) :
+lemma kernelLevelAction_seed  (a b : ℝ) (s : ℂ) (q : KernelQuotient) :
     kernelQuotientSeed a b s (kernelLevelAction M q)=complexCharacter M*kernelQuotientSeed a b s q := by
   induction q using Quotient.inductionOn with
   | _ w => exact smoothCuspSeed_automorphy a b s M w
 
-lemma kernelLevelAction_fundamentalDomain (M : levelThree) :
+lemma kernelLevelAction_fundamentalDomain  :
     IsFundamentalDomain globalKubotaKernel
       ((fun w : HyperbolicSpace => complexMatrix M • w) '' hyperbolicFundamentalSet globalKubotaKernel)
       hyperbolicVolume := by
@@ -157,7 +159,7 @@ lemma kernelLevelAction_fundamentalDomain (M : levelThree) :
     ((complexMatrix M)⁻¹)⁻¹) • w)=_
   simp only [inv_inv,mul_smul,smul_inv_smul]
 
-lemma kernelLevelAction_measurePreserving (M : levelThree) :
+lemma kernelLevelAction_measurePreserving  :
     MeasurePreserving (kernelLevelAction M) (integralQuotientVolume globalKubotaKernel)
       (integralQuotientVolume globalKubotaKernel) := by
   refine ⟨(kernelLevelAction_continuous M).measurable,?_⟩
@@ -177,6 +179,8 @@ lemma kernelLevelAction_measurePreserving (M : levelThree) :
   rw [hmap.map_eq]
   exact integralQuotientVolume_independent globalKubotaKernel globalKubotaKernel_le_levelThree _
     (kernelLevelAction_fundamentalDomain M)
+end
+
 
 end
 
@@ -185,15 +189,19 @@ open scoped BigOperators Classical Topology MatrixGroups
 
 open CubicKubota
 
-def kernelLevelPullback (M : levelThree) : KernelQuotientL2 →ₗᵢ[ℂ] KernelQuotientL2 :=
+section
+variable (M : levelThree)
+include M
+
+def kernelLevelPullback  : KernelQuotientL2 →ₗᵢ[ℂ] KernelQuotientL2 :=
   Lp.compMeasurePreservingₗᵢ ℂ (kernelLevelAction M) (kernelLevelAction_measurePreserving M)
 
-lemma kernelLevelPullback_ae_eq (M : levelThree) (F : KernelQuotientL2) :
+lemma kernelLevelPullback_ae_eq  (F : KernelQuotientL2) :
     kernelLevelPullback M F=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => F (kernelLevelAction M q) :=
   Lp.coeFn_compMeasurePreserving F (kernelLevelAction_measurePreserving M)
 
-lemma kernelLevelPullback_of_remainder_ae (M : levelThree) (a b : ℝ) (s : ℂ)
+lemma kernelLevelPullback_of_remainder_ae  (a b : ℝ) (s : ℂ)
     (hs : 2<s.re) (F : KernelQuotientL2)
     (hF : F=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => kernelQuotientEisenstein s hs q-kernelQuotientSeed a b s q) :
@@ -207,7 +215,7 @@ lemma kernelLevelPullback_of_remainder_ae (M : levelThree) (a b : ℝ) (s : ℂ)
   dsimp only [Function.comp_def] at hc
   rw [hc,kernelLevelAction_eisenstein,kernelLevelAction_seed,mul_sub]
 
-lemma kernelCorrection_character_of_initial_overlap (M : levelThree) (a b : ℝ)
+lemma kernelCorrection_character_of_initial_overlap  (a b : ℝ)
     (ha : 0<a) (hab : a<b)
     (hoverlap : ∀s : ℂ, ∀hs : 4<s.re, 0<s.im →
       kernelEisensteinL2Correction a b ha hab s=ᵐ[integralQuotientVolume globalKubotaKernel]
@@ -236,6 +244,8 @@ lemma kernelCorrection_character_of_initial_overlap (M : levelThree) (a b : ℝ)
     exact kernelLevelPullback_of_remainder_ae M a b s (by linarith [hs.1]) _ (hoverlap s hs.1 hs.2)
   exact hl.eqOn_of_preconnected_of_eventuallyEq hr cuspUpperParameterRegion_convex.isPreconnected
     (by norm_num [cuspUpperParameterRegion]) hevent
+end
+
 
 lemma thetaApproach_tendsto_complex_punctured :
     Tendsto (fun t : ℝ => (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I)
@@ -274,16 +284,18 @@ lemma kernelEisensteinResidueVector_character_of_initial_overlap (M : levelThree
     filter_upwards [self_mem_nhdsWithin] with t ht
     change 0<t at ht
     have hs : (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I∈cuspUpperParameterRegion := by
-      simp only [cuspUpperParameterRegion,Set.mem_ofPred_eq,Complex.add_re,Complex.add_im,
-        Complex.mul_re,Complex.mul_im,Complex.ofReal_re,Complex.ofReal_im,Complex.I_re,
-        Complex.I_im,mul_zero,mul_one,sub_zero,add_zero]
+      simp only [cuspUpperParameterRegion, mem_ofPred_eq, add_re, ofReal_re, mul_re, I_re, mul_zero, ofReal_im, I_im, mul_one, sub_zero, add_zero, add_im, mul_im]
       norm_num
       exact ht
     rw [map_smul,kernelCorrection_character_of_initial_overlap M a b ha hab hoverlap _ hs]
     exact smul_comm _ _ _
   exact tendsto_nhds_unique_of_eventuallyEq hl hr hevent
 
-lemma kernelCuspAverageFamily_eq_of_initial_overlap (a b : ℝ) (ha : 0<a) (hab : a<b)
+section
+variable (a b : ℝ) (ha : 0<a) (hab : a<b)
+include a b ha hab
+
+lemma kernelCuspAverageFamily_eq_of_initial_overlap 
     (s : ℂ) (hs : 2<s.re)
     (hoverlap : kernelEisensteinL2Correction a b ha hab s=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => kernelQuotientEisenstein s hs q-kernelQuotientSeed a b s q) :
@@ -293,18 +305,15 @@ lemma kernelCuspAverageFamily_eq_of_initial_overlap (a b : ℝ) (ha : 0<a) (hab 
       kernelQuotientEisenstein s hs := by
     filter_upwards [hoverlap] with q hq
     change kernelQuotientSeed a b s q+kernelEisensteinL2Correction a b ha hab s q=_
-    rw [hq]
-    ring
+    simp_all
   have hm := kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)
   have hrestr := ae_restrict_of_ae hcorrected (s := kernelCuspStripSet)
   have hp := hm.quasiMeasurePreserving.ae_eq_comp hrestr
   rw [kernelCuspAverageFamily_actual_integral]
   apply integral_congr_ae
-  filter_upwards [hp] with w hw
-  exact hw.trans (kernelQuotientEisenstein_mk s hs w)
+  assumption
 
-lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap (a b : ℝ)
-    (ha : 0<a) (hab : a<b)
+lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap 
     (hoverlap : ∀s : ℂ, ∀hs : 4<s.re, 0<s.im →
       kernelEisensteinL2Correction a b ha hab s=ᵐ[integralQuotientVolume globalKubotaKernel]
         fun q => kernelQuotientEisenstein s (by linarith) q-kernelQuotientSeed a b s q) :
@@ -317,6 +326,8 @@ lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap (a b : 
     exact kernelCuspAverageFamily_eq_of_initial_overlap a b ha hab s (by linarith) (hoverlap s hs hi)
   · intro M
     exact kernelEisensteinResidueVector_character_of_initial_overlap M a b ha hab hoverlap
+end
+
 
 end CubicEisenstein
 
@@ -331,13 +342,12 @@ def quadraticRayExponent (r : Coord) : ZMod 4 :=
   if r∈({(0,1),(0,3),(1,0),(1,1),(3,0),(3,3)} : Finset Coord) then 0
   else if r∈({(1,2),(1,3),(2,3)} : Finset Coord) then 1 else 3
 
-def fourthRoot (a : ZMod 4) : ℂ := Complex.I^(a.val:ℤ)
+def fourthRoot (a : ZMod 4) : ℂ := Complex.I ^(a.val:ℤ)
 
 lemma fourthRoot_add (a b : ZMod 4) : fourthRoot (a+b)=fourthRoot a*fourthRoot b := by
   unfold fourthRoot
   rw [←zpow_add₀ Complex.I_ne_zero]
   apply I_zpow_eq_of_mod_four
-  push_cast
   simp
 
 lemma quadraticRayValue_eq_fourthRoot (r : Coord) (hr : odd r) :
@@ -377,17 +387,25 @@ lemma quadraticRaySign_mul_right (r s t : Coord) :
         quadraticRaySign r s*quadraticRaySign r t := by decide
   exact h r s t
 
-lemma quadraticRaySign_symm (r s : Coord) : quadraticRaySign r s=quadraticRaySign s r := by
+section
+variable (r s : Coord)
+include r s
+
+lemma quadraticRaySign_symm  : quadraticRaySign r s=quadraticRaySign s r := by
   have h : ∀r s : Coord,quadraticRaySign r s=quadraticRaySign s r := by decide
   exact h r s
 
-lemma quadraticRaySign_sq (r s : Coord) (hr : odd r) (hs : odd s) :
+section
+variable (hr : odd r) (hs : odd s)
+include hr hs
+
+lemma quadraticRaySign_sq  :
     quadraticRaySign r s^2=1 := by
   unfold quadraticRaySign
   rw [ite_eq_left ⟨hr,hs⟩]
   split_ifs <;> norm_num
 
-lemma quadraticRaySign_exponent (r s : Coord) (hr : odd r) (hs : odd s) :
+lemma quadraticRaySign_exponent  :
     quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
       (if quadraticRaySign r s=1 then 0 else 2)+quadraticRayExponent r+quadraticRayExponent s := by
   have h : ∀r s : Coord,odd r → odd s →
@@ -395,23 +413,23 @@ lemma quadraticRaySign_exponent (r s : Coord) (hr : odd r) (hs : odd s) :
         (if quadraticRaySign r s=1 then 0 else 2)+quadraticRayExponent r+quadraticRayExponent s := by decide
   exact h r s hr hs
 
-lemma quadraticRaySign_root (r s : Coord) (hr : odd r) (hs : odd s) :
+lemma quadraticRaySign_root  :
     fourthRoot (if quadraticRaySign r s=1 then 0 else 2)=(quadraticRaySign r s:ℂ) := by
   by_cases he : quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
       quadraticRayExponent r+quadraticRayExponent s
   · norm_num [quadraticRaySign,hr,hs,he,fourthRoot,ZMod.val_zero,ZMod.val_ofNat,Complex.I_sq]
   · norm_num [quadraticRaySign,hr,hs,he,fourthRoot,ZMod.val_zero,ZMod.val_ofNat,Complex.I_sq]
 
-lemma odd_mul (r s : Coord) (hr : odd r) (hs : odd s) : odd (EisensteinEPrimaryPhase.mul r s) := by
+lemma odd_mul  : odd (EisensteinEPrimaryPhase.mul r s) := by
   have h : ∀r s : Coord,odd r → odd s → odd (EisensteinEPrimaryPhase.mul r s) := by decide
   exact h r s hr hs
 
-theorem quadraticRayValue_mul (r s : Coord) (hr : odd r) (hs : odd s) :
+theorem quadraticRayValue_mul  :
     quadraticRayValue (EisensteinEPrimaryPhase.mul r s)=
-      (quadraticRaySign r s:ℂ)*quadraticRayValue r*quadraticRayValue s := by
-  rw [quadraticRayValue_eq_fourthRoot _ (odd_mul r s hr hs),quadraticRaySign_exponent r s hr hs,
-    fourthRoot_add,fourthRoot_add,quadraticRaySign_root r s hr hs,
-    quadraticRayValue_eq_fourthRoot r hr,quadraticRayValue_eq_fourthRoot s hs]
+      (quadraticRaySign r s:ℂ)*quadraticRayValue r*quadraticRayValue s := by simp_all [quadraticRayValue_eq_fourthRoot, odd_mul, quadraticRaySign_exponent, fourthRoot_add, quadraticRaySign_root]
+end
+end
+
 
 end QuadraticAllOddCRT
 
@@ -428,23 +446,35 @@ open QuadraticAllOddCRT
 open ActualEisensteinCoordinates hiding O omega
 open UniqueFactorizationMonoid
 
-lemma supported_factors_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
+section
+variable (I : Ideal ActualEisensteinCubic.O) (hI : Supported I)
+include I hI
+
+lemma supported_factors_good  :
     ∀P∈normalizedFactors I,P.IsMaximal ∧ lambda∉P ∧ ringChar (ActualEisensteinCubic.O⧸P)≠2 := by
   intro P hP
   have hp := prime_of_normalized_factor P hP
   exact ⟨(Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero,hI.2 P hP⟩
 
-lemma idealRowHom_one_supported (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) : idealRowHom 1 I=1 := by
+lemma idealRowHom_one_supported  : idealRowHom 1 I=1 := by
   have h := CanonicalUnitEuler.idealRowHom_unit_norm (1:ActualEisensteinCubic.Oˣ) I hI.1 (supported_factors_good I hI)
   simpa using h
+end
 
-lemma supported_prime_data (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p})) :
+
+section
+variable (p : ActualEisensteinCubic.O)
+include p
+
+lemma supported_prime_data  (hp : Prime p) (hs : Supported (Ideal.span {p})) :
     lambda∉(Ideal.span {p}:Ideal ActualEisensteinCubic.O) ∧ ringChar (ActualEisensteinCubic.O⧸Ideal.span {p})≠2 := by
   let : (Ideal.span {p}).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   exact hs.2 _ ((Ideal.mem_normalizedFactors_iff hs.1).mpr ⟨inferInstance,le_rfl⟩)
 
-lemma supported_residue_odd (p : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {p})) : EisensteinEPrimaryPhase.odd (residue p) :=
+lemma supported_residue_odd  (hs : Supported (Ideal.span {p})) : EisensteinEPrimaryPhase.odd (residue p) :=
   (ActualEisensteinCoordinates.odd_residue_iff_not_two_dvd p).mpr ((supported_span_iff p).mp hs).2
+end
+
 
 theorem idealRowHom_prime_reciprocity (p q : ActualEisensteinCubic.O) (hp : Prime p) (hq : Prime q)
     (hprimaryP : lambda^2∣p-1) (hprimaryQ : lambda^2∣q-1)
@@ -487,7 +517,7 @@ theorem idealRowHom_prime_reciprocity (p q : ActualEisensteinCubic.O) (hp : Prim
       rw [h3 p q hgP,h3 q p hgQ]
       apply mul_right_cancel₀ (quadraticRayValue_ne_zero_of_odd _ (supported_residue_odd p hsP))
       apply mul_right_cancel₀ (quadraticRayValue_ne_zero_of_odd _ (supported_residue_odd q hsQ))
-      simpa only [mul_assoc,mul_left_comm,mul_comm] using hcross.symm
+      exact hcross.symm
     calc
       _ = idealRowHom q (Ideal.span {p})*idealRowHom q (Ideal.span {p})^6 := by rw [h6,mul_one]
       _ = idealRowHom q (Ideal.span {p})^3*(idealRowHom q (Ideal.span {p})^2)^2 := by ring
@@ -507,15 +537,25 @@ open ActualEisensteinCoordinates hiding O omega
 def sexticReciprocityPhase (a b : ActualEisensteinCubic.O) : ℂ :=
   (quadraticRaySign (residue a) (residue b):ℂ)
 
-lemma sexticReciprocityPhase_mul_left (a b c : ActualEisensteinCubic.O) :
+section
+variable (a b c : ActualEisensteinCubic.O)
+include a b c
+
+lemma sexticReciprocityPhase_mul_left  :
     sexticReciprocityPhase (a*b) c=sexticReciprocityPhase a c*sexticReciprocityPhase b c := by
   simp only [sexticReciprocityPhase,residue_mul,quadraticRaySign_mul_left,Int.cast_mul]
 
-lemma sexticReciprocityPhase_mul_right (a b c : ActualEisensteinCubic.O) :
+lemma sexticReciprocityPhase_mul_right  :
     sexticReciprocityPhase a (b*c)=sexticReciprocityPhase a b*sexticReciprocityPhase a c := by
   simp only [sexticReciprocityPhase,residue_mul,quadraticRaySign_mul_right,Int.cast_mul]
+end
 
-lemma sexticReciprocityPhase_one_right (a : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) :
+
+section
+variable (a : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a}))
+include a ha
+
+lemma sexticReciprocityPhase_one_right  :
     sexticReciprocityPhase a 1=1 := by
   have h1 : residue (1:ActualEisensteinCubic.O)=((1:ZMod 4),0) := by
     have h : (1:ActualEisensteinCubic.O)=eval 1 0 := by simp [eval]
@@ -525,11 +565,13 @@ lemma sexticReciprocityPhase_one_right (a : ActualEisensteinCubic.O) (ha : Suppo
       quadraticRaySign r ((1:ZMod 4),0)=1 := by decide
   simp only [sexticReciprocityPhase,h1,ht _ (supported_residue_odd a ha),Int.cast_one]
 
-lemma sexticReciprocityPhase_one_left (a : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) :
+lemma sexticReciprocityPhase_one_left  :
     sexticReciprocityPhase 1 a=1 := by
   have he : sexticReciprocityPhase 1 a=sexticReciprocityPhase a 1 := by
     simp only [sexticReciprocityPhase,quadraticRaySign_symm]
   rw [he,sexticReciprocityPhase_one_right a ha]
+end
+
 
 lemma idealRowHom_prime_primary_reciprocity (p b : ActualEisensteinCubic.O) (hp : Prime p)
     (hprimaryP : lambda^2∣p-1) (hprimaryB : lambda^2∣b-1)
@@ -584,8 +626,8 @@ theorem idealRowHom_primary_reciprocity (a b : ActualEisensteinCubic.O)
       ih hsplit.2 htail]
     ring
 
-end CanonicalRowCompletion
 
-end
 
-end OAI
+
+
+

@@ -10,7 +10,7 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -80,7 +80,7 @@ theorem secondExpansionSource_marked_profile
     secondSourceCommonCoefficient,Complex.ofReal_pow]
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

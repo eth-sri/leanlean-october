@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroRPositiveBound
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -40,4 +39,4 @@ theorem robertSargos_zero_r_source_bound
     simpa only [abs_of_pos hqr] using
       robertSargos_zero_r_source_positive_bound f M h q hC hh hpos hlam hs hf hlo hhi
 
-end TaoTrudgianYang2025
+

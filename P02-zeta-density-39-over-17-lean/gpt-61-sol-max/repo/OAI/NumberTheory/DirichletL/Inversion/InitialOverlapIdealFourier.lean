@@ -9,10 +9,10 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 namespace SevenEighths.InverseInitialOverlapIdealFourier
-open InverseMoment InverseInitialOverlapFourier
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment
+open scoped EisensteinEis
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
 def activeIndices (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
@@ -56,8 +56,8 @@ theorem tuple_gate_product (primes : ι→Ideal Eis) (I : Finset σ)
     obtain ⟨i,hi⟩ := hn
     exact Finset.prod_eq_zero (Finset.mem_attach _ i) (ite_eq_right hi)
 
-end SevenEighths.InverseInitialOverlapIdealFourier
 
-end
 
-end OAI
+
+
+

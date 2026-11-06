@@ -1,15 +1,16 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSubset
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
     (W : Fin K→ℝ→ℂ) (M : Fin K→ℝ) (hM : ∀i,0≤M i)
@@ -42,8 +43,7 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
     have hB0 : 0<B0 := by
       have hh : 0≤∑A∈(Finset.univ : Finset (Fin K)).powerset,B A :=
         Finset.sum_nonneg (fun A _=>(hB A).le)
-      dsimp only [B0]
-      linarith
+      positivity
     refine ⟨B0,hB0,?_⟩
     intro A Z hZ
     obtain ⟨hsm,hbd⟩ := hb A Z hZ
@@ -61,7 +61,7 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
       (fun p : ((i : Fin K)→{a : O // a∈slotPrimes i})=>fun i=>(p i).val)
       (fun p _ i=>hp i (p i).val (p i).property) P hP X Y Z hX hY hZ
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

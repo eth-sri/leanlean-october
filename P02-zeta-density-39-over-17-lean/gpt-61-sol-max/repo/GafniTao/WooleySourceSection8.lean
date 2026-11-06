@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceSections68
 
 @[expose] public section
@@ -14,12 +15,16 @@ normalised only once, in the exact equation-(3.24) quotient.
 
 namespace GafniTao
 
-noncomputable section
+
+
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
+include k phi
 
 /-- The source-sequence version of the endpoint estimate
 `K^0_{a,b} \le U^{B,b}` used in (8.2). -/
 theorem wooleySourcePolynomialMixedMean_zero_le_conditioned
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (hnua : nu ≤ a) (hnub : nu ≤ b)
     (gamma : WooleySourceSequence) :
@@ -41,7 +46,7 @@ theorem wooleySourcePolynomialMixedMean_zero_le_conditioned
 /-- Equation (8.1) with the exact multiplier delivered by Lemma 7.1.
 No implicit Vinogradov constant is introduced. -/
 theorem wooleySourcePolynomial_equation_8_1_of_section7_mul
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (p B r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (hr : 2 ≤ r) (hrk : r < k)
     (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
@@ -68,7 +73,7 @@ theorem wooleySourcePolynomial_equation_8_1_of_section7_mul
 The separated `K^0` term is bounded by the literal conditioned mean rather
 than silently identified with it. -/
 theorem wooleySourcePolynomial_equation_8_2_of_section7_mul
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (hk : 2 ≤ k) (hnub : nu ≤ b) (hnukb : nu ≤ k * b)
     (gamma : WooleySourceSequence) (D : ℝ) (hD : 0 ≤ D)
@@ -111,11 +116,7 @@ theorem wooleySourcePolynomial_equation_8_2_of_section7_mul
     simpa only [Nat.sub_self, hdenNat, hfrac'] using h83
   have hzero := wooleySourcePolynomialMixedMean_zero_le_conditioned
     phi p B (k * b) b nu hnukb hnub gamma
-  have hv0 : (0 : ℝ) ≤ 1 - 1 / (k : ℝ) := by
-    have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-    have hkPos : (0 : ℝ) < k := by positivity
-    rw [sub_nonneg, div_le_iff₀ hkPos]
-    simpa only [one_mul] using hkReal.trans' (by norm_num)
+  have hv0 : (0 : ℝ) ≤ 1 - 1 / (k : ℝ) := by bound
   have hzeroPow := Real.rpow_le_rpow
     (wooleySourcePolynomialMixedMean_nonneg
       phi (wooleyTriangular k) 0 p B (k * b) b nu gamma) hzero hv0
@@ -128,8 +129,10 @@ theorem wooleySourcePolynomial_equation_8_2_of_section7_mul
   have hinside := h83'.trans
     (mul_le_mul_of_nonneg_left hzeroPow hfirstNonneg)
   exact hsection7.trans (mul_le_mul_of_nonneg_left hinside hD)
-
-
 end
 
-end GafniTao
+
+
+
+
+

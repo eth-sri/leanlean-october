@@ -5,21 +5,21 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedForcing
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
+open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialExcludedFourier
 open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
+open InverseInitialCommonTuples InverseInitialOverlapFourier
 open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
 open InverseInitialEnergyCallerWindow
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ:Type*} [DecidableEq σ]
 
-open InverseInitialCommonTransform InverseInitialLargePool
+open InverseInitialCommonTransform
 open InverseInitialExcludedPool InverseInitialExcludedForcing
 theorem original_tuples_excluded_fourier
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
@@ -110,8 +110,8 @@ theorem original_tuples_excluded_fourier
   intro A hA
   ring
 
-end SevenEighths.InverseInitialExcludedFourier
 
-end
 
-end OAI
+
+
+

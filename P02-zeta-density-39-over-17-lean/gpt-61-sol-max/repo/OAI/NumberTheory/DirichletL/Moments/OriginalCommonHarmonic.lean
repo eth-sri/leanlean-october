@@ -12,11 +12,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentOriginalCommonHarmonic
-open HeckeFamily CanonicalQuadraticSieve
+
 open CenteredMomentCommonRadialData CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentSupportedZeroEnergy CenteredMomentSourceZeroEnergy CenteredMomentAddedZeroUniform
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentCommonHarmonicMass
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedZeroEnergy CenteredMomentSourceZeroEnergy
+open CenteredMomentSecondActiveCount CenteredMomentActiveSource
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
@@ -39,7 +39,7 @@ omit [DecidableEq ι] in
 omit [DecidableEq ι] in
  theorem original_column_norm (s:Input ι) (R seed I:Ideal O)
     (hz₁:s.W₁ 0=0) (hz₂:s.W₂ 0=0) (h:coefficient s R seed I≠0):
-    I≠0 ∧ (Ideal.absNorm I:ℝ)≤sourceRadius s:=by
+    I≠0 ∧ (Ideal.absNorm I:ℝ)≤ sourceRadius s:=by
   obtain ⟨v,hv,hv0,he⟩:=finiteColumnCoefficient_witness (Fintype.piFinset s.pools)
     (profileCoefficient R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed) I h
   have hz (i:ι):s.W i 0=0:=by
@@ -60,7 +60,7 @@ omit [DecidableEq ι] in
       (CenteredMomentSourceRow.supportedColumns (activeSource (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed)))
       (CenteredMomentSourceRow.supportedColumns (activeSource (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed)))):
     C≠0 ∧ D≠0 ∧ CompletedGauss.primeSupport C=CompletedGauss.primeSupport D ∧
-      seed∣C ∧ seed∣D ∧ (Ideal.absNorm C:ℝ)≤sourceRadius s ∧ (Ideal.absNorm D:ℝ)≤sourceRadius s:=by
+      seed∣C ∧ seed∣D ∧ (Ideal.absNorm C:ℝ)≤ sourceRadius s ∧ (Ideal.absNorm D:ℝ)≤ sourceRadius s:=by
   let S:=finiteColumns (Fintype.piFinset s.pools)
   let β:=coefficient s R seed
   have hm (I:Ideal O) (_:I∈S) (hI:β I≠0):seed∣I:=original_column_mask s R seed I hI
@@ -71,8 +71,8 @@ omit [DecidableEq ι] in
     (fun I _ hI=>(original_column_norm s R seed I hz₁ hz₂ hI).2) C D hlabel
   exact ⟨hh.1,hh.2.1,hh.2.2.1,hh.2.2.2.1,hh.2.2.2.2,hn⟩
 
-end SevenEighths.CenteredMomentOriginalCommonHarmonic
 
-end
 
-end OAI
+
+
+

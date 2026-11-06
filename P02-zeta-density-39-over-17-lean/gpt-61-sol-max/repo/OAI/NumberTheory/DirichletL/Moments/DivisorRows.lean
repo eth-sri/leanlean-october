@@ -12,25 +12,30 @@ namespace SevenEighths.CenteredMomentDivisorRows
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
 open CenteredMomentDivisorRectangle CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
 open CenteredMomentHeckeSlots CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def allocatedRectangle (η : Character) (m A z : O) (t : ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
     (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) : ℂ :=
+    (W₁ W₂ : ℝ → ℂ)
+include η m A z t S β D a W₁ W₂
+
+def allocatedRectangle  (X₁ X₂ Y₁ Y₂ : ℝ) : ℂ :=
   ∑ v : (i : ι) → S i,(∏ i,β i (v i))*
     ∑' I : Ideal O,∑' J : Ideal O,
       allocationTerm D Finset.univ (factorTuple (fun i => v i) I J) a *
         rowWeight η m A z t ((∏ i,(v i:Ideal O))*I*J)*
         idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ I J
 
-theorem allocatedRectangle_eq_rows (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
-    (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
+section
+variable (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
     (hW₁ : Function.support W₁ ⊆ Set.Iic b₁) (hW₂ : Function.support W₂ ⊆ Set.Iic b₂)
-    (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) :
+    (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂)
+include b₁ b₂ X₁ X₂ Y₁ Y₂ hW₁ hW₂ hX₁ hX₂ hY₁ hY₂
+
+theorem allocatedRectangle_eq_rows  :
     allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂ =
       allocationSign D Finset.univ a *
         rowWeight η m A z t (selectedPlain D a 0*selectedPlain D a 1)*
@@ -49,12 +54,7 @@ theorem allocatedRectangle_eq_rows (η : Character) (m A z : O) (t : ℝ)
     _ _ _ _ hW₁ hW₂ (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1))
     (div_pos hY₁ (hN 0)) (div_pos hY₂ (hN 1))]
 
-theorem allocatedRectangle_norm_le (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
-    (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
-    (hW₁ : Function.support W₁ ⊆ Set.Iic b₁) (hW₂ : Function.support W₂ ⊆ Set.Iic b₂)
-    (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) :
+theorem allocatedRectangle_norm_le  :
     ‖allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂‖ ≤
       ‖rowTwistedSum η m A z W₁ t (X₁/Ideal.absNorm (selectedPlain D a 0))*
         rowTwistedSum η m A z W₂ t (X₂/Ideal.absNorm (selectedPlain D a 1))-
@@ -67,9 +67,12 @@ theorem allocatedRectangle_norm_le (η : Character) (m A z : O) (t : ℝ)
   exact row_twisted_coefficient_norm η m A z t _ (mul_ne_zero
     (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 0))
     (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 1)))
-
-end SevenEighths.CenteredMomentDivisorRows
-
+end
 end
 
-end OAI
+
+
+
+
+
+

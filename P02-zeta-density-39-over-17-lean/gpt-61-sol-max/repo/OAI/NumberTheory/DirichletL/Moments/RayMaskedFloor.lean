@@ -9,14 +9,14 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+
+open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
+
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -36,7 +36,7 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η (internalQ Q η₀) (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 z) →
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ →
-    ∀(m q ρ : ℝ),0≤m → 0≤q → m+q≤ρ → ρ≤L → r.scale=Z^m →
+    ∀(m q ρ : ℝ),0≤ m → 0≤q → m+q≤ρ → ρ≤L → r.scale=Z^m →
       (η.modulus.absNorm:ℝ)≤Z^q →
     ∀(W₁ W₂ : 𝓢(ℝ,ℂ)),Function.support (W₁:ℝ→ℂ)⊆Set.Icc a₀ b₀ →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a₀ b₀ →
@@ -125,8 +125,8 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
       (1+|t|+T)^J)*(Z^m*(Z^ρ)^4*Z^(loss+κ*(∑i,w i))) := by ring
     _ = _ := by rw [hzpow]
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

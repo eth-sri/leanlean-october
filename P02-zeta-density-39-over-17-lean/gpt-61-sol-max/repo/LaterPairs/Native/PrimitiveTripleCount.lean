@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleGcdFiber
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
                                               
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem primitive_linear_triple_card_le_divisor_sum
@@ -63,8 +62,7 @@ theorem primitive_divisor_bound_identity {c : ℕ} (hc : 0 < c) (K : ℝ) :
       have he : ((c/g:ℕ):ℝ)*(g:ℝ) = c := by
         exact_mod_cast Nat.div_mul_cancel (Nat.dvd_of_mem_divisors hg)
       congr 1
-      field_simp
-      nlinarith only [congrArg (fun x : ℝ => K*x) he]
+      grind
     _ = _ := by
       rw [Finset.sum_add_distrib,← Finset.mul_sum,Nat.sum_div_divisors]
       simp
@@ -83,4 +81,4 @@ theorem primitive_linear_triple_card_le
     hden hprim hline hratio
   rwa [primitive_divisor_bound_identity hc] at hb
 
-end TaoTrudgianYang2025
+

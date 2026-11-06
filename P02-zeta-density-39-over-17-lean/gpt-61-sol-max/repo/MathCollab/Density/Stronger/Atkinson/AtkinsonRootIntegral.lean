@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -88,9 +89,7 @@ theorem norm_atkinsonRootKernel_integral_le_four {T : ℝ} (hT : 0 < T)
       exact (norm_atkinsonRootPhase_integral_right hT hv0 hvc (by rw [hv])).trans hsmall
   have hmid : ‖∫ y in u..v, atkinsonRootKernel T b y‖ ≤ 2 := by
     apply (norm_atkinsonRootKernel_integral_le_length T b huv).trans
-    have hru : r - 1 ≤ u := le_max_right _ _
-    have hvr : v ≤ r + 1 := min_le_right _ _
-    linarith
+    grind
   rw [← intervalIntegral.integral_add_adjacent_intervals
     (intervalIntegrable_atkinsonRootKernel T b ha hau)
     (intervalIntegrable_atkinsonRootKernel T b hu0 huc)]
@@ -102,4 +101,4 @@ theorem norm_atkinsonRootKernel_integral_le_four {T : ℝ} (hT : 0 < T)
       (∫ y in v..c, atkinsonRootKernel T b y)
     linarith)
 
-end MathCollab.Density.Stronger.Atkinson
+

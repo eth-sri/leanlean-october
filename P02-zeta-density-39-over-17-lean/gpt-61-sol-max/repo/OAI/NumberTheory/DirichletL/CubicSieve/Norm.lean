@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Ideal
 public import OAI.NumberTheory.DirichletL.CubicSieve.Initial
 
@@ -9,8 +10,8 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem primaryGenerator_inj_on_cubic_admissible {I J : Ideal O}
     (hI : Admissible I) (hJ : Admissible J)
@@ -28,7 +29,6 @@ theorem idealSymbol_eq_idealSexticRow_sq
       (idealSexticRow F hFp hFg I z) ^ 2 := by
   rw [← CanonicalRowCompletion.idealRowHom_square]
   congr 1
-  let : ∀ i : primePool F, (i.val).IsMaximal := primePool_maximal F hFp
   conv_lhs => rw [← idealSupport_product_eq F hI hsq, map_prod]
   unfold idealSexticRow finiteSquarefreeRow
   apply Finset.prod_congr rfl
@@ -69,9 +69,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     intro J _
     rw [idealSymbol_eq_idealSexticRow_sq F hFp hFg J.val J.property (hF J.val J.property).1 z]
     simp only [aext, dite_eq_left J.property]
-    change a J * (idealSexticRow F hFp hFg J.val z) ^ 2 =
-      (idealSexticRow F hFp hFg J.val z) ^ 2 * a J
-    exact mul_comm _ _
+    ring
   have he := ideal_initial_cubic_sieve F hFp hFg
     (fun I hI => (hF I hI).1) ⌈N⌉₊ hnat hnorm aext M hM R hR
   have heR : (∑ z ∈ R, ‖∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 2‖ ^ 2) =
@@ -89,7 +87,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   rw [heR, hea] at he
   exact he
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

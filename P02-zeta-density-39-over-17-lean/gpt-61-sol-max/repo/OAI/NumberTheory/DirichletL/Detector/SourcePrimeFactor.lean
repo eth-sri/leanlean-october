@@ -5,16 +5,20 @@ public import OAI.NumberTheory.DirichletL.Detector.SourcePrime
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open scoped EisensteinO
 
-theorem bareSourceCoefficient_prime_formula (η : HeckeFamily.Character) (p : O) (hp : Prime p)
+section
+variable (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (e l k j : ℕ) (he : e≤1)
+    (hs : Supported (Ideal.span {p}))
+include η p hp hg hchar hprimary hs
+
+theorem bareSourceCoefficient_prime_formula  (e l k j : ℕ) (he : e≤1)
     (hI : primaryGenerator (Ideal.span {p^e})≠0) :
     bareSourceCoefficient η (Ideal.span {p^e}) hI (p^(e+3*l)) (p^k)
       (pow_ne_zero _ hp.ne_zero) (p^j) =
@@ -57,10 +61,7 @@ theorem bareSourceCoefficient_prime_formula (η : HeckeFamily.Character) (p : O)
       rw [corrected_prime_cubic_signal p hp.ne_zero hg hchar hprimary hs]
       rw [neg_eq_neg_one_mul ((localGamma p hp.ne_zero hg 1)⁻¹),mul_pow]
 
-theorem bareSourceCoefficient_weighted_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (e l k m : ℕ) (he : e≤1)
+theorem bareSourceCoefficient_weighted_prime  (e l k m : ℕ) (he : e≤1)
     (hI : primaryGenerator (Ideal.span {p^e})≠0) (x w z : ℂ) :
     bareSourceCoefficient η (Ideal.span {p^e}) hI (p^(e+3*l)) (p^k)
       (pow_ne_zero _ hp.ne_zero) (p^(6*m)) *
@@ -84,8 +85,10 @@ theorem bareSourceCoefficient_weighted_prime (η : HeckeFamily.Character) (p : O
       sourceScalar p hp hg (e+3*l) k (6*m) *
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(x+1/2)*(e:ℂ)-(1+3*x)*(l:ℂ)-w*(k:ℂ)-6*z*(m:ℂ)) := by ring
     _ = _ := by rw [←hpdiag]; ring
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

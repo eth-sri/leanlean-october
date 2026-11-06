@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalCappedAmplitude
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
-local notation "O" => HeckeFamily.O
+
+open scoped HeckeO
 theorem row_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃ J : ℕ, ∃ S : Finset (ℕ×ℕ), (0,0)∈S ∧
@@ -43,8 +43,8 @@ theorem row_rectangle_source_control
   exact hbound W₁ W₂ hs₁ hs₂ Z hZ η χ ψ hχnorm hQψ hind m A₀ z hmLam hm2 hrow
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
 
-end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
 
-end OAI
+
+
+

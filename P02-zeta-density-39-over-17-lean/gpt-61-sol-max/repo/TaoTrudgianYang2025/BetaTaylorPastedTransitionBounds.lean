@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorPastedExtension
 public import TaoTrudgianYang2025.BetaTaylorPolynomialBudget
@@ -13,13 +14,13 @@ uses the genuine Taylor remainder, so no negative power of the width
 appears in the final derivative bound.
 -/
 
-noncomputable section
+
 
 open Set
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem taylorPastedExtension_left_transition_bound (Q : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (f : ℝ → ℝ) (l r h x M : ℝ),
@@ -50,7 +51,7 @@ theorem taylorPastedExtension_left_transition_bound (Q : ℕ) :
     simpa only [one_pow,mul_one] using abs_iteratedDeriv_finiteTaylorPolynomial_le hn
       (D := 1) le_rfl (hdist.trans hh₁) (fun j hj => hb _ ha j (by omega))
   have hlocal : x < r-2*h := by linarith [hx.1,hx.2]
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   have hp : ContDiffAt ℝ ∞ (finiteTaylorPolynomial f Q (l+2*h)) x :=
     (finiteTaylorPolynomial_contDiff f Q (l+2*h)).contDiffAt
@@ -89,7 +90,7 @@ theorem taylorPastedExtension_right_transition_bound (Q : ℕ) :
     simpa only [one_pow,mul_one] using abs_iteratedDeriv_finiteTaylorPolynomial_le hn
       (D := 1) le_rfl (hdist.trans hh₁) (fun j hj => hb _ ha j (by omega))
   have hlocal : l+2*h < x := by linarith [hx.1,hx.2]
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   have hp : ContDiffAt ℝ ∞ (finiteTaylorPolynomial f Q (r-2*h)) x :=
     (finiteTaylorPolynomial_contDiff f Q (r-2*h)).contDiffAt
@@ -99,4 +100,4 @@ theorem taylorPastedExtension_right_transition_bound (Q : ℕ) :
     iteratedDeriv_fun_add (hp.of_le hN) ((ht.mul ((hf x hxI).sub hp)).of_le hN)]
   exact (abs_add_le _ _).trans ((add_le_add hpoly hrem).trans_eq (by ring))
 
-end TaoTrudgianYang2025
+

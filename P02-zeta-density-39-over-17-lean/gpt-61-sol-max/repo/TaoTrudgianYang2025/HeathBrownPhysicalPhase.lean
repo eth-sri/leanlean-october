@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.HeathBrownModelJets
 public import Expdb.Mathlib.IteratedDeriv
 
@@ -22,8 +23,12 @@ namespace TaoTrudgianYang2025
 def heathBrownPhysicalPhase (F : ℝ → ℝ) (T N A s : ℝ) : ℝ → ℝ :=
   fun x => s*T*F ((A+x)/N)
 
-theorem heathBrownPhysicalPoint_mem {N A L x : ℝ}
-    (hN : 0 < N) (ha : N ≤ A) (hb : A+L ≤ 2*N) (hx : x ∈ Icc 0 L) :
+section
+variable {N A L x : ℝ}
+    (hN : 0 < N) (ha : N ≤ A) (hb : A+L ≤ 2*N)
+include N A L x hN ha hb
+
+theorem heathBrownPhysicalPoint_mem  (hx : x ∈ Icc 0 L) :
     (A+x)/N ∈ phaseInterval := by
   constructor
   · apply (le_div_iff₀ hN).mpr
@@ -31,14 +36,15 @@ theorem heathBrownPhysicalPoint_mem {N A L x : ℝ}
   · apply (div_le_iff₀ hN).mpr
     linarith [hx.2]
 
-theorem heathBrownPhysicalPoint_mem_interior {N A L x : ℝ}
-    (hN : 0 < N) (ha : N ≤ A) (hb : A+L ≤ 2*N) (hx : x ∈ Ioo 0 L) :
+theorem heathBrownPhysicalPoint_mem_interior  (hx : x ∈ Ioo 0 L) :
     (A+x)/N ∈ Ioo (1 : ℝ) 2 := by
   constructor
   · apply (lt_div_iff₀ hN).mpr
     linarith [hx.1]
   · apply (div_lt_iff₀ hN).mpr
     linarith [hx.2]
+end
+
 
 theorem heathBrownPhysicalPhase_contDiffOn {F : ℝ → ℝ} {N A L : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval)
@@ -59,11 +65,11 @@ theorem heathBrownPhysicalPhase_iteratedDeriv
   have hsrc := heathBrownPhysicalPoint_mem_interior hN ha hb hx
   have hxc : x ∈ Icc (0 : ℝ) L := ⟨hx.1.le,hx.2.le⟩
   have hsrcC : (A+x)/N ∈ phaseInterval := ⟨hsrc.1.le,hsrc.2.le⟩
-  have hf : ContDiffOn ℝ n F phaseInterval :=
+  have hf :=
     hF.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl n)
   have hg : ContDiffOn ℝ n (fun y => F ((A+y)/N)) (Icc (0 : ℝ) L) :=
     hf.comp (by fun_prop) (fun _ hy => heathBrownPhysicalPoint_mem hN ha hb hy)
-  have hgAt : ContDiffAt ℝ n (fun y => F ((A+y)/N)) x :=
+  have hgAt :=
     (hg x hxc).contDiffAt
       (mem_of_superset (isOpen_Ioo.mem_nhds hx) Ioo_subset_Icc_self)
   have hfAt : ContDiffAt ℝ n F ((A+x)/N) :=
@@ -105,4 +111,4 @@ theorem heathBrownPhysicalPhase_signed_derivative_bounds
   · convert hlo using 1 <;> ring
   · convert hhi using 1 <;> ring
 
-end TaoTrudgianYang2025
+

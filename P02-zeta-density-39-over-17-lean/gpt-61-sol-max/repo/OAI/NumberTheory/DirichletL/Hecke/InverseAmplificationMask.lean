@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationColumn
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
@@ -53,8 +53,8 @@ theorem amplified_row_prime_mask (η χ ψ : Character) (m f z a : O)
       row_coeff_zero_unsupported η χ m f z hχ hmLam hm2 J hs]
     simp
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

@@ -10,11 +10,11 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
+open HeckeFamily HeckeDyadic HeckeInverseAmplification
 open HeckeDetectorCoefficientTransfer HeckeDetectorRawFiber HeckeDetectorRowwisePolynomial
 open HeckeDetectorDyadicProfiles CenteredMomentRetainedEnergy
 open CenteredMomentPrimeSlot ProbeHighRowFamily
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
@@ -54,8 +54,8 @@ theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance
   simpa only [detectorPositiveRow,Fiber.physicalProduct,HeckeDetectorPhysicalSelection.physical,
     Finset.prod_coe_sort] using he
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

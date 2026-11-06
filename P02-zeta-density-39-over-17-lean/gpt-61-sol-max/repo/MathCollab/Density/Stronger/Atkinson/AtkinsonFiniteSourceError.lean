@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -11,13 +12,17 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-noncomputable section
+
 open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem exists_atkinsonStationary_finite_log_error {δ ε : ℝ}
-    (hδ : 0 < δ) (hε : 0 < ε) (hεmax : ε ≤ 1/4) :
+section
+variable {δ ε : ℝ}
+    (hδ : 0 < δ) (hε : 0 < ε)
+include δ ε hδ hε
+
+theorem exists_atkinsonStationary_finite_log_error  (hεmax : ε ≤ 1/4) :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) → T^(1/4 : ℝ) ≤ G →
       ‖atkinsonLeadingFiniteSum T G (Real.log T) (atkinsonSourceCutoff T G (Real.log T)) -
@@ -46,15 +51,13 @@ theorem exists_atkinsonStationary_finite_log_error {δ ε : ℝ}
     have he := atkinsonStationary_cutoff_scale_le hT hG1 hGS hscale.2.1
       (q := 3/4+ε) (by linarith) (by linarith)
     have h := mul_le_mul_of_nonneg_left he hC.le
-    norm_num only [show (3/4+ε-1/2 : ℝ) = 1/4+ε by ring] at h
-    convert h using 1 <;> ring
+    grind
   obtain ⟨B,hB⟩ := eventually_atTop.mp hev
   refine ⟨37*C,by positivity,max 40000 B,le_max_left _ _,?_⟩
   intro T G hT hlower hupper hquarter
   exact hB T ((le_max_right _ _).trans hT) G hlower hupper hquarter
 
-theorem exists_atkinsonStationary_finite_power_error {δ ε : ℝ}
-    (hδ : 0 < δ) (hε : 0 < ε) :
+theorem exists_atkinsonStationary_finite_power_error  :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) → T^(1/4 : ℝ) ≤ G →
       ‖atkinsonLeadingFiniteSum T G (Real.log T) (atkinsonSourceCutoff T G (Real.log T)) -
@@ -79,5 +82,7 @@ theorem exists_atkinsonStationary_finite_power_error {δ ε : ℝ}
       rw [mul_assoc,← Real.rpow_add hT0]
       congr 2
       ring
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

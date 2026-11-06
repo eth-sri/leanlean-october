@@ -30,4 +30,4 @@ def MontgomeryMeanValue : Prop :=
       ∑ t ∈ W, ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 ≤
         C * (T + (N : ℝ)) * ∑ n ∈ Ioc N (2 * N), ‖a n‖^2
 
-end GuthMaynard.NativeMoment
+

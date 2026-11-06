@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matteo Cipollina
 -/
 module
+import Mathlib
 
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.Basic
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.Norm
@@ -56,23 +57,15 @@ Riemann zeta function, completed zeta function, finite order, Hadamard factoriza
 
 @[expose] public section
 
-open Complex Set Filter Topology Metric
+open Complex Filter Topology
 open scoped Real
 
 namespace Complex
 
 /-! ### Finite order of the completed zeta function -/
 
-/-- The removable extension of `(s - 1)ζ(s)`.
 
-The value at `1` is set to the residue of `ζ` at its simple pole; away from `1` this is the
-ordinary product `(s - 1)ζ(s)`. -/
-noncomputable def zetaTimesSMinusOne_entire (s : ℂ) : ℂ :=
-  Function.update (fun s : ℂ => (s - 1) * riemannZeta s) 1 1 s
 
-/-- The removable extension of `(s - 1)ζ(s)` has value `1` at the pole. -/
-@[simp]
-theorem zetaTimesSMinusOne_entire_one : zetaTimesSMinusOne_entire (1 : ℂ) = 1 := by
-  simp [zetaTimesSMinusOne_entire]
 
-end Complex
+
+

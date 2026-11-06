@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosWeightedShift
 public import LaterPairs.Native.RobertSargosWeightedZeroSplit
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem sum_nonzero_signed_triangular_constant_le (Q R : ℕ) (hQ : 0 < Q) (hR : 0 < R)
@@ -74,4 +73,4 @@ theorem robertSargos_nonzero_weighted_shift_error (f : ℝ → ℝ) (M H Q R N :
       simp only [mul_add,Finset.sum_add_distrib] at hb ⊢
       exact add_le_add_right hb _
 
-end TaoTrudgianYang2025
+

@@ -7,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily QuadraticInitialBound
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceOriginal CenteredMomentEnergyReferenceScalarReserve
+open CenteredMomentEnergyZeroReferenceOriginal
 open CenteredMomentEnergyStageReserveBounded
 open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem balanced_reference_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
@@ -30,7 +30,7 @@ theorem balanced_reference_from_zero_low
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤ s.width →s.width≤Mcap →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
       s.plainEnergy p t (comparisonFirst Z s.width) (comparisonSecond Z s.width X₁ X₂) ≤
         C*(K+1)*diagonalControl s.radial.profile*
@@ -49,7 +49,7 @@ theorem balanced_reference_from_zero_low
   filter_upwards [href] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ hlarge
-  have hxiM:xi≤s.width/6:=by linarith only [hxirho, hslo, hrho]
+  have hxiM:xi≤ s.width/6:=by linarith only [hxirho, hslo, hrho]
   have hh:=hZ.2 e Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ hlarge
   have hledger:=hscalar e he Z hZ.1.le s hs (Fin 0) (fun _=>0) (by simpa using hM)
   simp only [Finset.univ_eq_empty,Finset.prod_empty,mul_one] at hledger
@@ -107,8 +107,8 @@ theorem balanced_reference_from_zero_low
   · dsimp only [E,A]
     ring
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceBounded
 
-end
 
-end OAI
+
+
+

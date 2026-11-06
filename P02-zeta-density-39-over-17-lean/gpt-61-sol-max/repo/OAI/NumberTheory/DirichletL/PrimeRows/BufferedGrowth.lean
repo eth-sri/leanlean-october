@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstJoint
 public import OAI.NumberTheory.DirichletL.PrimeRows.DiskControl
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedBin
@@ -8,11 +9,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable {ι : Type*} [Fintype ι]
 
@@ -29,13 +30,13 @@ theorem calibrated_physicalRow_buffered_joint_growth
   obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_first_growth S hS hmax u hu
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
   obtain ⟨Cr,hCr,hreciprocal⟩ := buffered_rectangle_reciprocal_bound e 1 he he' (by norm_num)
-  let R : ℝ := Cr*(HeckeReciprocalGrowth.presentationComplexity ((targetRow η u).excludePrimes S hS.prime) H)^(1:ℝ)
+  let R := Cr*(HeckeReciprocalGrowth.presentationComplexity ((targetRow η u).excludePrimes S hS.prime) H)^(1:ℝ)
   have hR : 0≤R := by
     dsimp [R,HeckeReciprocalGrowth.presentationComplexity,HeckeLogarithmic.complexity]
     positivity
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm 2
-  let L : ℝ := HeckeReciprocalBound.bound 2
+  let L := HeckeReciprocalBound.bound 2
   have hL : 0≤L := by dsimp [L,HeckeReciprocalBound.bound];positivity
   have hA (P : T) : 0≤A P := selectedFirstBound_nonneg _ _ (by positivity)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
@@ -81,8 +82,8 @@ theorem calibrated_physicalRow_buffered_joint_growth
       exact mul_le_mul hl hrec (norm_nonneg _) hL
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

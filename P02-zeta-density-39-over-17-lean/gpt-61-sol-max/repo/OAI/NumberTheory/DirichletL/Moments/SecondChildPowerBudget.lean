@@ -14,12 +14,12 @@ open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
 open CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
 lemma endpoint_product (s : Input ι) (N : ℕ) (b : ℝ) (hb : 1≤b)
-    (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i) :
+    (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤ s.hi i) :
     0≤∏i,s.hi i ∧ (∏i,s.hi i)≤b^N := by
   refine ⟨Finset.prod_nonneg (fun i _=>hhi i),?_⟩
   calc
@@ -30,8 +30,8 @@ lemma endpoint_product (s : Input ι) (N : ℕ) (b : ℝ) (hb : 1≤b)
 omit [DecidableEq ι] in
 lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
     (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) (hu : s.upper≤b)
-    (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i)
-    (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
+    (hc : Fintype.card ι≤N) (hhi : ∀i,0≤ s.hi i)
+    (hs₁ : 0≤ s.b₁) (hs₂ : 0≤ s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
     (hm : mass s≤A) :
     profileCost s*sourceRadius s≤
       (2*(b₁*b₂)*b^N*A^2)*(b^N*b₁*b₂)*
@@ -51,7 +51,7 @@ lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
 omit [DecidableEq ι] in
 lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) (N : ℕ) (b whi ε : ℝ)
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N)
-    (hhi : ∀i,0≤s.hi i) (hε : 0≤ε) :
+    (hhi : ∀i,0≤ s.hi i) (hε : 0≤ε) :
     (2*SchwartzMap.seminorm ℝ 0 0 W₁*SchwartzMap.seminorm ℝ 0 0 W₂*mass s)^2*
       (1+(∏i,s.hi i)*whi*whi)^(1+ε)≤
     (4*(SchwartzMap.seminorm ℝ 0 0 W₁*SchwartzMap.seminorm ℝ 0 0 W₂)^2*
@@ -99,11 +99,11 @@ def sourceCost {wlo whi : ℝ} (s : Input ι) (S : Finset (ℕ×ℕ))
 omit [DecidableEq ι] in
 theorem source_rhs {wlo whi : ℝ} (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
     (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) (hu : s.upper≤b)
-    (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i)
-    (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
+    (hc : Fintype.card ι≤N) (hhi : ∀i,0≤ s.hi i)
+    (hs₁ : 0≤ s.b₁) (hs₂ : 0≤ s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
     (hm : mass s≤A) (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi)
     (J : ℕ) (Q : Ideal O) (K ε seedNorm : ℝ) (hK : 0≤K) (hε : 0≤ε)
-    (hs : 0≤seedNorm) (a : Fin 4→ℝ) (ha : ∀j,0≤a j) :
+    (hs : 0≤ seedNorm) (a : Fin 4→ℝ) (ha : ∀j,0≤a j) :
     sourceCost s S p J Q K ε seedNorm a ≤
       (∑j,coefficients N b b₁ b₂ A S p J Q K s.t ε seedNorm a j*
         (CenteredMomentAmplificationChildInput.volume s)^(powers ε j))*mass s^2 := by
@@ -126,8 +126,8 @@ theorem source_rhs {wlo whi : ℝ} (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ
       Matrix.cons_val_zero,Matrix.cons_val_succ,
       Real.rpow_one,Real.rpow_zero]) <;> ring
 
-end SevenEighths.CenteredMomentSecondChildPowerBudget
 
-end
 
-end OAI
+
+
+

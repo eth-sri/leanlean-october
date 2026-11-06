@@ -48,8 +48,8 @@ lemma polynomial_height_absorption (C Z τ J t : ℝ)
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

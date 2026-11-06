@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
-open HeckeFamily EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+open scoped HeckeO
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma ideal_norm_rpow_summable (B : ℕ) (hB : 2≤B) :
@@ -27,7 +27,11 @@ lemma ideal_norm_rpow_summable (B : ℕ) (hB : 2≤B) :
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hi]
   simp
 
-lemma plain_term_rapid_bound (η : Character) (F : ℝ→ℂ) (B : ℕ) (D Y : ℝ)
+section
+variable (η : Character) (F : ℝ→ℂ) (B : ℕ)
+include η F B
+
+lemma plain_term_rapid_bound  (D Y : ℝ)
     (hY : 0<Y) (hF : ∀x : ℝ,0<x → x^B*‖F x‖≤D) (I : NI) :
     ‖idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)‖≤
       (D*Y^B)*(I.val.absNorm:ℝ)^(-(B:ℝ)) := by
@@ -44,13 +48,15 @@ lemma plain_term_rapid_bound (η : Character) (F : ℝ→ℂ) (B : ℕ) (D Y : �
       rw [Real.rpow_neg hi.le,Real.rpow_natCast,div_pow]
       field_simp
 
-theorem plain_rapid_summable (η : Character) (F : ℝ→ℂ) (B : ℕ) (hB : 2≤B)
+theorem plain_rapid_summable  (hB : 2≤B)
     (D Y : ℝ) (hY : 0<Y) (hF : ∀x : ℝ,0<x → x^B*‖F x‖≤D) :
     Summable (fun I : NI=>idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)) := by
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _)
     (plain_term_rapid_bound η F B D Y hY hF)
     ((ideal_norm_rpow_summable B hB).mul_left (D*Y^B))
+end
+
 
 theorem plain_rapid_bound (B : ℕ) (hB : 2≤B) :
     ∃C : ℝ,0<C ∧ ∀(η : Character)(F : ℝ→ℂ)(D Y : ℝ),0≤D → 0<Y →
@@ -94,8 +100,8 @@ lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
     _=x^(B+A)*‖F x‖ :=by rw [pow_add];ring
     _≤D :=hF x hx
 
-end SevenEighths.CenteredMomentComparisonReflection
 
-end
 
-end OAI
+
+
+

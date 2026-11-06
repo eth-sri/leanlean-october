@@ -10,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 lemma sum_subtype_dite_decidable {α : Type*} [Fintype α] (p : α→Prop) [DecidablePred p]
     (f : ∀ x,p x→ℂ) :
     (∑ x : {x // p x},f x.val x.property)=∑ x,if h:p x then f x h else 0 := by
@@ -105,7 +105,7 @@ theorem actual_marked_tuple_reflection
   apply Finset.sum_congr rfl
   intro p hp
   ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -4,9 +4,8 @@ public import TraceAlternatives.CubeReflectionSecond
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
-open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
+
+open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
 theorem ratio_second_universal_uniform_translate (ε B : ℝ)
@@ -72,4 +71,4 @@ theorem reflection_complete_pair_energy_universal {η : ℝ} (hη : 0<η) :
     ((hBound T t₀ hT Q hQ hQ2 W hW).trans
       ((mul_le_mul_of_nonneg_left hScale (by positivity)).trans_eq (by ring)))
 
-end Montgomery.RationalMoment
+

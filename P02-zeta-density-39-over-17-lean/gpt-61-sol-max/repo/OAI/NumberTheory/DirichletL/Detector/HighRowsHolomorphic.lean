@@ -9,13 +9,17 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p})
 
-lemma rowMarkedTerm_differentiableAt (eta a rho : ℂ) (X W V : ℂ→ℂ) (t : ℂ)
+section
+variable (eta a rho : ℂ) (X W V : ℂ→ℂ) (t : ℂ)
     (hX : DifferentiableAt ℂ X t) (hW : DifferentiableAt ℂ W t) (hV : DifferentiableAt ℂ V t)
+include eta a rho X W V t hX hW hV
+
+lemma rowMarkedTerm_differentiableAt 
     (j e l k m : ℕ) :
     DifferentiableAt ℂ (fun s=>rowMarkedTerm p hp hg eta a (X s) (W s) (V s) rho j e l k m) t := by
   unfold rowMarkedTerm
@@ -24,16 +28,14 @@ lemma rowMarkedTerm_differentiableAt (eta a rho : ℂ) (X W V : ℂ→ℂ) (t : 
   · unfold rowWeightedScalar weightedScalar
     fun_prop
 
-lemma rowBaseFinite_differentiableAt (eta a rho : ℂ) (X W V : ℂ→ℂ) (t : ℂ)
-    (hX : DifferentiableAt ℂ X t) (hW : DifferentiableAt ℂ W t) (hV : DifferentiableAt ℂ V t)
+lemma rowBaseFinite_differentiableAt 
     (hv : 1-V t≠0) (j e l : ℕ) :
     DifferentiableAt ℂ (fun s=>rowBaseFinite p hp hg eta a (X s) (W s) (V s) rho j e l) t := by
   have hd (k m : ℕ) := rowMarkedTerm_differentiableAt p hp hg eta a rho X W V t hX hW hV j e l k m
   unfold rowBaseFinite
   fun_prop (disch := assumption)
 
-lemma rowClosedMarked_differentiableAt (eta a rho : ℂ) (X W V : ℂ→ℂ) (t : ℂ)
-    (hX : DifferentiableAt ℂ X t) (hW : DifferentiableAt ℂ W t) (hV : DifferentiableAt ℂ V t)
+lemma rowClosedMarked_differentiableAt 
     (hv : 1-V t≠0) (hr : 1-evenRatio (Ideal.absNorm (Ideal.span {p})) a (X t) (V t)≠0) (j : ℕ) :
     DifferentiableAt ℂ (fun s=>rowClosedMarked p hp hg eta a (X s) (W s) (V s) rho j) t := by
   have hd (e l : ℕ) := rowBaseFinite_differentiableAt p hp hg eta a rho X W V t hX hW hV hv j e l
@@ -42,6 +44,8 @@ lemma rowClosedMarked_differentiableAt (eta a rho : ℂ) (X W V : ℂ→ℂ) (t 
     fun_prop
   unfold rowClosedMarked
   fun_prop (disch := assumption)
+end
+
 
 lemma ramifiedClosed_differentiableAt (eta a rho : ℂ) (X W Z : ℂ→ℂ) (t : ℂ)
     (hX : DifferentiableAt ℂ X t) (hW : DifferentiableAt ℂ W t) (hZ : DifferentiableAt ℂ Z t)
@@ -64,7 +68,7 @@ lemma ramifiedClosed_differentiableAt (eta a rho : ℂ) (X W Z : ℂ→ℂ) (t :
   unfold ramifiedClosed
   fun_prop
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

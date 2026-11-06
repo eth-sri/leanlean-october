@@ -7,10 +7,14 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
-noncomputable section
 
-theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ) (A B U : Finset ι)
+
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ)
+include ι x l a b
+
+theorem ordered_cross_partition_on  (A B U : Finset ι)
     (hd : Disjoint A B) (hu : A ∪ B = U) :
     (∏ i ∈ U, ((∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) * l i)) =
       (∏ i ∈ A, (∏ k ∈ A.erase i, x i k ^ a) * l i) *
@@ -68,8 +72,7 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
       simp only [Finset.prod_mul_distrib]
       ring
 
-theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ) (R P F : Finset ι)
+theorem ordered_cross_frozen_partition  (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F)
     (hu : (R ∪ P) ∪ F = Finset.univ) :
     (∏ i ∈ R ∪ P, (∏ k ∈ Finset.univ.erase i,
@@ -103,8 +106,10 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
     intro i hi
     have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
     simp [ll,hn]
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

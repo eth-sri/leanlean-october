@@ -11,8 +11,8 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondDiagonal
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss
+open scoped EisensteinO
 
 theorem full_zero_off_diagonal (u v : O)
     [Fintype (Residue u)] [Fintype (Residue v)]
@@ -49,8 +49,12 @@ theorem full_zero_off_diagonal (u v : O)
       (Ideal.span_singleton_le_span_singleton.mpr huv)))
   · rfl
 
-theorem full_same_zero (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
-    (χ : MulChar (Residue u) ℂ) :
+section
+variable (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
+    (χ : MulChar (Residue u) ℂ)
+include u hu χ
+
+theorem full_same_zero  :
     fullModulusCorrelation u u χ χ 0 = ∑ x : Residue u, χ x*star (χ x) := by
   have hcong (x y : Residue u) :
       scaledResidue u u (u*u) rfl x - scaledResidue u u (u*u) (mul_comm u u) y =
@@ -61,8 +65,7 @@ theorem full_same_zero (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
     exact Ideal.mem_span_singleton.symm.trans Ideal.Quotient.eq.symm
   simp only [fullModulusCorrelation,fullCorrelation,hcong,Finset.sum_ite_eq,Finset.mem_univ,ite_true]
 
-theorem full_same_zero_norm_le (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
-    (χ : MulChar (Residue u) ℂ) :
+theorem full_same_zero_norm_le  :
     ‖fullModulusCorrelation u u χ χ 0‖ ≤ (Fintype.card (Residue u) : ℝ) := by
   rw [full_same_zero u hu χ]
   calc
@@ -74,6 +77,8 @@ theorem full_same_zero_norm_le (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
       · simp only [hn,zero_mul,norm_zero,zero_le_one]
       · rw [MulChar.star_apply',MulChar.inv_apply_eq_inv',mul_inv_cancel₀ hn,norm_one]
     _ = _ := by simp
+end
+
 
 theorem actual_zero_off_diagonal (u v : O) (hu : Supported (Ideal.span {u}))
     (hv : Supported (Ideal.span {v}))
@@ -119,17 +124,23 @@ theorem divisible_ideal_card (S : Finset (Ideal O)) (s : Ideal O) (hs : s ≠ 0)
   · rw [Finset.not_nonempty_iff_eq_empty.mp hempty,Finset.card_empty,Nat.cast_zero]
     positivity
 
-def secondZeroEnergy {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ) : ℂ :=
+section
+variable {α : Type*} (S : Finset α) (a : α → O)
+    (ha : ∀ i, Supported (Ideal.span {a i}))
+include α S a ha
+
+def secondZeroEnergy  (c : α → ℂ) : ℂ :=
   ∑ i ∈ S, ∑ j ∈ S, (c i*star (c j)) *
     (actualCorrelation (a i) (a j) (ha i) (ha j) 0 /
       ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ)*
        (Real.sqrt (Ideal.absNorm (Ideal.span {a j}) : ℝ) : ℂ)))
 
-theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (c : α → ℂ) :
+section
+variable (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
+    (hinj : Set.InjOn a S)
+include hp hinj
+
+theorem secondZeroEnergy_bound  (c : α → ℂ) :
     ‖secondZeroEnergy S a ha c‖ ≤ ∑ i ∈ S, ‖c i‖^2 := by
   have hroot (i : α) :
       ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ)*
@@ -157,10 +168,7 @@ theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (ha i).1)
   exact mul_le_of_le_one_right (sq_nonneg _) ((div_le_one hN).mpr (actual_same_zero_norm_le _ (ha i)))
 
-theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (s : Ideal O) (hs : s ≠ 0)
+theorem primary_column_card  (s : Ideal O) (hs : s ≠ 0)
     (hdiv : ∀ i ∈ S, s ∣ Ideal.span {a i}) (Y : ℝ) (hY : 0 ≤ Y)
     (hN : ∀ i ∈ S, (Ideal.absNorm (Ideal.span {a i}) : ℝ) ≤ Y) :
     (S.card : ℝ) ≤ 128*Y/(Ideal.absNorm s : ℝ) := by
@@ -176,10 +184,7 @@ theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
     Y hY (by intro I hI; obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hI; exact hN i hi)
   rwa [Finset.card_image_of_injOn hspan] at hb
 
-theorem secondZeroEnergy_divisor_bound {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (c : α → ℂ) (B : ℝ) (_hB : 0 ≤ B)
+theorem secondZeroEnergy_divisor_bound  (c : α → ℂ) (B : ℝ) (_hB : 0 ≤ B)
     (hc : ∀ i ∈ S, ‖c i‖ ≤ B) (s : Ideal O) (hs : s ≠ 0)
     (hdiv : ∀ i ∈ S, s ∣ Ideal.span {a i}) (Y : ℝ) (hY : 0 ≤ Y)
     (hN : ∀ i ∈ S, (Ideal.absNorm (Ideal.span {a i}) : ℝ) ≤ Y) :
@@ -192,9 +197,12 @@ theorem secondZeroEnergy_divisor_bound {α : Type*} (S : Finset α) (a : α → 
     _ ≤ B^2*(128*Y/(Ideal.absNorm s : ℝ)) :=
       mul_le_mul_of_nonneg_left (primary_column_card S a ha hp hinj s hs hdiv Y hY hN) (sq_nonneg _)
     _ = _ := by ring
-
-end SevenEighths.CenteredMomentSecondDiagonal
-
+end
 end
 
-end OAI
+
+
+
+
+
+

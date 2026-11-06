@@ -27,6 +27,6 @@ lemma retained_kernel_quarter (Td y : ℝ) : Td/4≤y/4+max 0 (Td-y)/2 := by
   have h1 := le_max_right 0 (Td-y)
   linarith
 
-end SevenEighths.ProbeLowReflected
 
-end OAI
+
+

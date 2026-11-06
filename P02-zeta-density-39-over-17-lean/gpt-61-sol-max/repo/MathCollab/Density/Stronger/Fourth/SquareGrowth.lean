@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -15,10 +16,9 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 
 open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
-open MathCollab.Density.Contour
+
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Fourth
 
 theorem norm_Gamma_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
@@ -35,8 +35,7 @@ theorem norm_Gamma_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
       apply MeasureTheory.integral_congr_ae
       filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with x hx
       rw [norm_mul, Complex.norm_real, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp only [Complex.sub_re, Complex.one_re]
-      simp [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+      simp_all
 
 /-- Height-uniform majorant for Deligne's real Gamma factor on a positive
 vertical line. -/
@@ -142,4 +141,4 @@ theorem exists_completedXiNumerator_strip_cubic {c : ℝ} (hc : 0 ≤ c) :
     exact hb.trans ((le_max_right C D).trans (le_mul_of_one_le_right
       (le_trans hC.le (le_max_left _ _)) hp))
 
-end MathCollab.Density.Stronger.Fourth
+

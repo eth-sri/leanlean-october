@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import MathCollab.Density.LargeValueDefinitions
 public import Mathlib.Analysis.PSeries
 
 @[expose] public section
 
-open Real Set MeasureTheory
+open Real MeasureTheory
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -23,7 +23,11 @@ theorem localDiameter_ge_one (U : Finset ℝ) : 1 ≤ localDiameter U := by
   dsimp [localDiameter]
   linarith
 
-theorem abs_sub_le_intervalSpan {U : Finset ℝ} {t u : ℝ} (ht : t ∈ U) (hu : u ∈ U) :
+section
+variable {U : Finset ℝ}
+include U
+
+theorem abs_sub_le_intervalSpan  {t u : ℝ} (ht : t ∈ U) (hu : u ∈ U) :
     |t-u| ≤ intervalSpan U := by
   have hU : U.Nonempty := ⟨t, ht⟩
   simp only [intervalSpan, dite_eq_left hU]
@@ -33,14 +37,14 @@ theorem abs_sub_le_intervalSpan {U : Finset ℝ} {t u : ℝ} (ht : t ∈ U) (hu 
   have huhi := U.le_max' u hu
   exact abs_le.mpr ⟨by linarith, by linarith⟩
 
-theorem intervalSpan_le_of_forall {U : Finset ℝ} {D : ℝ} (hD : 0 ≤ D)
+theorem intervalSpan_le_of_forall  {D : ℝ} (hD : 0 ≤ D)
     (h : ∀ t ∈ U, ∀ u ∈ U, |t-u| ≤ D) : intervalSpan U ≤ D := by
   by_cases hU : U.Nonempty
   · simp only [intervalSpan, dite_eq_left hU]
     exact (le_abs_self _).trans (h _ (U.max'_mem hU) _ (U.min'_mem hU))
   · simpa only [intervalSpan, dite_eq_right hU] using hD
 
-theorem separated_floor_shift_injOn {U : Finset ℝ} (hU : oneSeparated U) (s : ℝ) :
+theorem separated_floor_shift_injOn  (hU : oneSeparated U) (s : ℝ) :
     Set.InjOn (fun t : ℝ => ⌊t-s⌋) (U : Set ℝ) := by
   intro t ht u hu he
   by_contra hne
@@ -55,7 +59,7 @@ theorem separated_floor_shift_injOn {U : Finset ℝ} (hU : oneSeparated U) (s : 
   linarith
 
 /-- Exact packing without an additional cardinality factor. -/
-theorem separated_card_le_localDiameter {U : Finset ℝ} (hsep : oneSeparated U) :
+theorem separated_card_le_localDiameter  (hsep : oneSeparated U) :
     (U.card : ℝ) ≤ localDiameter U := by
   by_cases hU : U.Nonempty
   · let a := U.min' hU
@@ -88,6 +92,8 @@ theorem separated_card_le_localDiameter {U : Finset ℝ} (hsep : oneSeparated U)
   · have he := Finset.not_nonempty_iff_eq_empty.mp hU
     subst U
     simp [localDiameter, intervalSpan]
+end
+
 
 /-- A single absolute constant for every separated row. -/
 def separationMass : ℝ := ∑' z : ℤ, 4/(1+|(z : ℝ)|)^2
@@ -117,9 +123,7 @@ theorem decay_le_floor_majorant (x : ℝ) :
     have ha := abs_nonneg x
     have hb := abs_nonneg (⌊x⌋ : ℝ)
     nlinarith
-  apply (div_le_div_iff₀ (by positivity : (0 : ℝ) < (1+|x|)^2)
-    (by positivity : (0 : ℝ) < (1+|(⌊x⌋ : ℝ)|)^2)).2
-  simpa only [one_mul] using hp
+  field_simp <;> nlinarith
 
 theorem separated_decay_row {U : Finset ℝ} (hsep : oneSeparated U) (t : ℝ) :
     (∑ u ∈ U, 1/(1+|t-u|)^2) ≤ separationMass := by
@@ -151,4 +155,4 @@ theorem LargeValueData.local_card_le {κ : ℝ} (d : LargeValueData κ) {U : Fin
   dsimp [localDiameter]
   linarith
 
-end MathCollab.Density
+

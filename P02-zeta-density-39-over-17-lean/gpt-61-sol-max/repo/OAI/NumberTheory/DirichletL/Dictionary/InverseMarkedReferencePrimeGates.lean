@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentPrimeGeometry
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
+open InverseInitialPhysicalSlots
+open DetectorDictionaryInverseRawInitialGates
 open InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]
     (data:Label→RowData)(ell:Slot→ℝ)(hell:∀s,0<ell s) :
@@ -60,8 +60,8 @@ theorem deleted_source_live_prime {Δ:ℝ}{D:Parameters.HighData Δ}
   rw [norm_div,norm_star,hn,div_one]
   exact ProbeHighRowFamily.sourceMoment_primeProfile_norm F X ζ hζ P
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

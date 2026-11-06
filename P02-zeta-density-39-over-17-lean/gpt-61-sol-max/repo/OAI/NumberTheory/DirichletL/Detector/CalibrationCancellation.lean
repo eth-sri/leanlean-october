@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
@@ -6,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma Xi_apply (C : CalibrationData) (a : O) :
     C.Xi a = C.residueMonoid a * idealRowHom C.generator (Ideal.span {a}) := rfl
@@ -30,8 +31,7 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   have hXA : C.Xi A≠0 := by
     intro h
     have hn := C.Xi_norm_one A hA hcA
-    rw [h, norm_zero] at hn
-    norm_num at hn
+    simp_all
   have hXs : C.Xi s≠0 := by
     intro h
     have hn := C.Xi_norm_one s hs hcs
@@ -60,7 +60,7 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   dsimp only [C] at hηA hκA hηs hκs hηHstar hτ hroot
   field_simp
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

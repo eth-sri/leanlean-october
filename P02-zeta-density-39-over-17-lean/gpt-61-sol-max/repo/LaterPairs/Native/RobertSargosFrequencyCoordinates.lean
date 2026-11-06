@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPrimitiveProjection
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                 
 
@@ -53,5 +52,5 @@ theorem robertSargos_frequency_fiber_image_valid
   rw [robertSargos_from_fixed_frequency (hfix p hp)]
   exact hmem p hp
 
-end TaoTrudgianYang2025
+
 

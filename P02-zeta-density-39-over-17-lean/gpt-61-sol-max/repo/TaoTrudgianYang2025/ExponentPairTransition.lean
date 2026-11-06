@@ -7,7 +7,7 @@ public import TaoTrudgianYang2025.ExponentPair
 /-! A uniform transition bound between the first-derivative and
 large-parameter exponent-pair regimes. -/
 
-noncomputable section
+
 
 open Expdb
 
@@ -71,4 +71,4 @@ theorem norm_exponentialSumAt_le_transition
         (show 0 ≤ 3*modelPhaseSumConstant σ by positivity)
       nlinarith
 
-end TaoTrudgianYang2025
+

@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.TruncatedSourceMeanValue
 public import GuthMaynard.Improvement.CenteredRestrictedCubic
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -72,4 +71,4 @@ theorem fixed_truncated_source_cubic {ε : ℝ} (hε : 0 < ε) :
   dsimp only [M,μ,H] at *
   nlinarith only [hh]
 
-end GuthMaynard.Improvement
+

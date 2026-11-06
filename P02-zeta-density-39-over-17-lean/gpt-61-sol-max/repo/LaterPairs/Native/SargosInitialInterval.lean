@@ -14,15 +14,14 @@ public import LaterPairs.Native.SargosSlowAbel
 public import LaterPairs.Native.SargosSlowCharacter
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                 
 
-noncomputable section
 
-open GafniTao
+
+
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
@@ -36,11 +35,7 @@ theorem sargos_integer_Ioc_sum_split {A : Type*} [AddCommMonoid A]
     ext n
     simp only [Finset.mem_Ioc,Finset.mem_union]
     omega
-  have hd : Disjoint (Finset.Ioc a b) (Finset.Ioc b c) := by
-    apply Finset.disjoint_left.mpr
-    intro n hn hm
-    simp only [Finset.mem_Ioc] at hn hm
-    omega
+  have hd : Disjoint (Finset.Ioc a b) (Finset.Ioc b c) := by simp_all
   rw [hu,Finset.sum_union hd]
 
-end TaoTrudgianYang2025
+

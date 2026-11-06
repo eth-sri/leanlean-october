@@ -14,10 +14,10 @@ namespace SevenEighths.CenteredMomentFirstRetainedSector
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSourceRow CenteredMomentFirstSectorLocalization CenteredMomentFirstCommonFourierTransport
 open CenteredMomentHeckeExpansion CenteredMomentCommonSectors
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns
-open CenteredMomentHeckeColumnWindow
-open CenteredMomentSupport CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstSectors CenteredMomentCompleteCommon
+
+
+open scoped EisensteinO
 
 def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
   if hI : Supported I then if hJ : Supported J then CenteredMomentFirstSectorLocalization.retainedPair I J hI hJ W K X Z ξ else 0 else 0
@@ -95,8 +95,8 @@ theorem retainedKernel_fixed (C D I J:Ideal O)(hC:Supported C)(hD:Supported D)
   have hh:=canonicalRetainedPair_of_common (C*I) (D*J) C D hCI' hDJ' hC hc hd W K X Z ξ
   simpa only [CenteredMomentCanonicalFirst.residualGenerator,hi,hj] using hh
 
-end SevenEighths.CenteredMomentFirstRetainedSector
 
-end
 
-end OAI
+
+
+

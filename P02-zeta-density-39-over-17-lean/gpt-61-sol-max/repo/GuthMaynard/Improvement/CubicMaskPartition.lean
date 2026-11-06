@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMaskPermutation
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -40,7 +40,6 @@ theorem spatialCubicMode_integral_mask_partition {a : ℝ → ℂ} {μ : ℝ →
   have e₁ := integral_add ((h₀.add h₁).add h₂) h₃
   have e₂ := integral_add (h₀.add h₁) h₂
   have e₃ := integral_add h₀ h₁
-  simp only [Pi.add_apply] at e₁ e₂ e₃
-  rw [e₁,e₂,e₃]
+  simp_all
 
-end GuthMaynard.Improvement
+

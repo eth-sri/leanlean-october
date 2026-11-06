@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongNormalization
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalPunctureMaskEnergy
 public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseInitialClippedColumns
+open scoped EisensteinO
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
     (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -29,8 +30,7 @@ theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][De
   have hn:‖((Z^(-F/2):ℝ):ℂ)‖^2=Z^(-F) := by
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZ _),
       ←Real.rpow_mul_natCast hZ.le]
-    congr 1
-    ring
+    simp
   unfold normalizedColumnEnergy
   simp only [norm_mul,mul_pow,hn,←Finset.mul_sum]
   rw [Finset.mul_sum]
@@ -64,8 +64,8 @@ theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m slots lists a labels
     (fun I hI=>supported_primaryGenerator_ne_zero I (hlabels I hI)) weight W X Z Fexp R hZ).symm
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

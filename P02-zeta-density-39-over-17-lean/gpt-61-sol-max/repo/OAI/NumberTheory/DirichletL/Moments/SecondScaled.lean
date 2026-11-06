@@ -13,9 +13,9 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentSecondScaled
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-open CenteredMomentSecondDescent CenteredMomentProductCRT CenteredMomentUnequal CenteredMomentPartition
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion
+
+open scoped EisensteinO
 
 def movingCoefficient {α : Type*} (A : O) (a : α → O) (c : α → ℂ) (i : α) : ℂ :=
   c i*idealRowHom A (Ideal.span {a i})
@@ -70,8 +70,8 @@ theorem actual_scaled_row_children {α β : Type*} (rows : Finset O) (S : Finset
   simp only [idealRowHom_argument_mul,divisorCoefficient_moving,star_mul]
   ring
 
-end SevenEighths.CenteredMomentSecondScaled
 
-end
 
-end OAI
+
+
+

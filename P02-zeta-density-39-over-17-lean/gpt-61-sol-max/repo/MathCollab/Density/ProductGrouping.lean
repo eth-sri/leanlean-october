@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.ComparisonCutoff
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -48,12 +48,7 @@ theorem product_range {N M : ℕ} (_hN : 0 < N) (hM : 0 < M)
     nlinarith
 
 theorem divisorMaximum_ge_one {T : ℝ} (hT : 0 ≤ T) : 1 ≤ divisorMaximum T := by
-  have hmem : 1 ∈ Finset.Icc 1 ⌈32*(T+1)⌉₊ := by
-    apply Finset.mem_Icc.mpr
-    refine ⟨le_rfl, ?_⟩
-    have hh := Nat.le_ceil (32*(T+1))
-    have hi : (1 : ℝ) ≤ (⌈32*(T+1)⌉₊ : ℝ) := by linarith
-    exact_mod_cast hi
+  have hmem : 1 ∈ Finset.Icc 1 ⌈32*(T+1)⌉₊ := by norm_num at * <;> linarith
   simpa only [divisorMaximum, Nat.divisors_one, Finset.card_singleton] using
     (Finset.le_sup (f := fun m : ℕ => m.divisors.card) hmem)
 
@@ -92,7 +87,6 @@ theorem product_grouping_cutoff (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
   let P := productPairs N M
   let S := P.image (fun p => p.1*p.2)
   let R := Finset.range (⌈5*((N : ℝ)*M)⌉₊+1)
-  have hL : (0 : ℝ) < (N : ℝ)*M := by positivity
   have hsub : S ⊆ R := by
     intro m hm
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hm
@@ -114,8 +108,7 @@ theorem product_grouping_cutoff (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
     calc
       _ = ∑ _p ∈ P.filter (fun p => p.1*p.2=m), F m := by
         apply Finset.sum_congr rfl
-        intro p hp
-        rw [(Finset.mem_filter.mp hp).2]
+        simp_all
       _ = _ := by simp [productMultiplicity, P]
   calc
     _ = ∑ p ∈ P, F (p.1*p.2) := (Finset.sum_product _ _ _).symm
@@ -134,4 +127,4 @@ theorem product_grouping_cutoff (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
         (fun m _ _ => mul_nonneg (Nat.cast_nonneg _) (mul_nonneg (w.nonneg _) (hF m)))
     _ = _ := (Finset.mul_sum _ _ _).symm
 
-end MathCollab.Density
+

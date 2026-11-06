@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaFourierModes
 public import TaoTrudgianYang2025.BetaMorseAmplitude
@@ -19,34 +20,38 @@ open Set Expdb Filter MeasureTheory
 open scoped ContDiff Topology FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseMorseWeightedIntegral (χ F : ℝ → ℝ) (T v : ℝ) : ℂ :=
   ∫ z in modelPhaseMorseRange F v,
     (modelPhaseMorseAmplitude χ F v z : ℂ)*(𝐞 (-(T/2)*z^2) : ℂ)
 
+section
+variable {χ F : ℝ → ℝ}
+include χ F
+
 theorem modelPhaseNormalizedIntegrand_integrableOn
-    {χ F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ}
+     {σ δ : ℝ} {P : ℕ}
     (hχ : Continuous χ) (hF : IsApproximateModelPhaseFunction F σ P δ) (T q : ℝ) :
     IntegrableOn (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-q*u) : ℂ)) (Icc (1 : ℝ) 2) := by
-  have hf : ContinuousOn F (Icc (1 : ℝ) 2) := hF.1.continuousOn
+  have hf := hF.1.continuousOn
   have hp : ContinuousOn (fun u : ℝ => T*F u-q*u) (Icc (1 : ℝ) 2) :=
     (continuousOn_const.mul hf).sub (continuousOn_const.mul continuousOn_id)
-  have he : Continuous (fun t : ℝ => (𝐞 t : ℂ)) :=
+  have he :=
     continuous_subtype_val.comp Real.continuous_fourierChar
   exact (((Complex.continuous_ofReal.comp hχ).continuousOn).mul
     (he.comp_continuousOn' hp)).integrableOn_Icc
 
 theorem modelPhaseNormalizedIntegrand_support
-    {χ F : ℝ → ℝ} (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (T q : ℝ) :
+     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (T q : ℝ) :
     Function.support (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-q*u) : ℂ)) ⊆ Ioo (1 : ℝ) 2 := by
   intro u hu
   by_contra hout
-  have hz : χ u = 0 := image_eq_zero_of_notMem_tsupport (fun h => hout (hs h))
+  have hz := image_eq_zero_of_notMem_tsupport (fun h => hout (hs h))
   exact hu (by simp only [hz,Complex.ofReal_zero,zero_mul])
 
 theorem modelPhaseNormalizedIntegrand_integrable
-    {χ F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ}
+     {σ δ : ℝ} {P : ℕ}
     (hχ : Continuous χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hF : IsApproximateModelPhaseFunction F σ P δ) (T q : ℝ) :
     Integrable (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-q*u) : ℂ)) := by
@@ -55,7 +60,7 @@ theorem modelPhaseNormalizedIntegrand_integrable
   exact (modelPhaseNormalizedIntegrand_integrableOn hχ hF T q).mono_set Ioo_subset_Icc_self
 
 theorem modelPhaseMorse_integrand
-    {χ F : ℝ → ℝ} {σ δ v z : ℝ}
+     {σ δ v z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) (T : ℝ) :
@@ -77,7 +82,7 @@ theorem modelPhaseMorse_integrand
   ring
 
 theorem modelPhaseNormalizedMode_morse
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
+     {σ δ v : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
@@ -88,7 +93,7 @@ theorem modelPhaseNormalizedMode_morse
       modelPhaseNormalizedMode χ F T (T*v) := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro u hu
-    have hz : χ u = 0 := image_eq_zero_of_notMem_tsupport (fun h => hu (hs h))
+    have hz := image_eq_zero_of_notMem_tsupport (fun h => hu (hs h))
     simp only [hz,Complex.ofReal_zero,zero_mul]
   rw [← hsource,integral_Ioo_eq_morseIntegral hσ hδ hF hv]
   unfold modelPhaseMorseWeightedIntegral
@@ -97,7 +102,7 @@ theorem modelPhaseNormalizedMode_morse
     (fun _ hz => modelPhaseMorse_integrand hσ hδ hF hv hz T)
 
 theorem modelPhaseFourierMode_morse
-    {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
+     {σ δ T N r : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
@@ -112,5 +117,7 @@ theorem modelPhaseFourierMode_morse
   have h := modelPhaseNormalizedMode_morse (χ := χ) hs hσ hδ hF hv T
   rw [← hq] at h
   rw [h,Complex.real_smul,mul_assoc]
+end
 
-end TaoTrudgianYang2025
+
+

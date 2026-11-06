@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationRadicalChoice
 public import OAI.NumberTheory.DirichletL.Moments.SecondChildRadialWidth
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadiusSaving
@@ -14,19 +15,19 @@ open Filter
 
 namespace SevenEighths.CenteredMomentAmplifiedChildWidth
 open ActualEisensteinCubic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve RayFourExpansion
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
 open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
 open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
 open CenteredMomentChildRows CenteredMomentSecondRadicalBudget
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
+open CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondActualWidth
 open CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
+
 open CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem modulus_pos (η:Character) : 0<(η.modulus.absNorm:ℝ) :=
   norm_pos _ η.modulus_ne_bot
@@ -144,14 +145,18 @@ theorem error_nominal_bound (η ρ θ:Character)(χ:RayCharacter)(m₀ m₁ p:O)
   linarith [le_max_left (Real.logb Z (Ideal.absNorm (commonPart J I):ℝ)-
     Real.logb Z (Ideal.absNorm (commonPart I J):ℝ)-2*errorRemoval p Z (n+1)+errorMoving p Z (n+1)) (0:ℝ)]
 
-theorem physical_radial_budget {η:Character}{C D:Ideal O}
+section
+variable {η:Character}{C D:Ideal O}
     {hC:Supported C}{hD:Supported D}{U:Finset (CommonIndex C D)}
     {τ:RayCharacter→Character}(h:Family η C D hC hD U τ)
     (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
     (Z H L Tsec Csec ξ:ℝ)(hZ:1<Z)(hH:0<H)(hL:0<L)(hT:0<Tsec)(hCs:0<Csec)
     (hscale:Tsec≤Csec*(H^2/L))(n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U (frequencyRadius Tsec Z ξ) rows W L n≠0)
-    (χ:RayCharacter)(b:ℝ)(hb:0<b) :
+    (χ:RayCharacter)
+include η C D hC hD U τ h t S β rows W Z H L Tsec Csec ξ hZ hH hL hT hCs hscale n hne χ
+
+theorem physical_radial_budget (b:ℝ)(hb:0<b) :
     Real.logb Z (b*dyadicScale (n 1))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)≤
       2*Real.logb Z H-Real.logb Z L+Real.logb Z (η.modulus.absNorm:ℝ)-
       Real.logb Z (normValue (commonFrequencyGenerator C D))+
@@ -177,14 +182,7 @@ theorem physical_radial_budget {η:Character}{C D:Ideal O}
   rw [hf]
   linarith
 
-theorem physical_declared_budget {η:Character}{C D:Ideal O}
-    {hC:Supported C}{hD:Supported D}{U:Finset (CommonIndex C D)}
-    {τ:RayCharacter→Character}(h:Family η C D hC hD U τ)
-    (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
-    (Z H L Tsec Csec ξ:ℝ)(hZ:1<Z)(hH:0<H)(hL:0<L)(hT:0<Tsec)(hCs:0<Csec)
-    (hscale:Tsec≤Csec*(H^2/L))(n:Fin 4→ℤ)
-    (hne:physicalBlock η t S β C D hC hD U (frequencyRadius Tsec Z ξ) rows W L n≠0)
-    (χ:RayCharacter)(Φ:ℝ→ℂ)(b:ℝ)(hb:0<b)(hs:Function.support Φ⊆Set.Iic b)
+theorem physical_declared_budget (Φ:ℝ→ℂ)(b:ℝ)(hb:0<b)(hs:Function.support Φ⊆Set.Iic b)
     (y:O)(hy0:y≠0)(hy:Φ (normValue y/dyadicScale (n 1))≠0) :
     Real.logb Z (max 1 (b*dyadicScale (n 1)))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)≤
       2*Real.logb Z H-Real.logb Z L+Real.logb Z (η.modulus.absNorm:ℝ)+ξ/2+
@@ -195,6 +193,8 @@ theorem physical_declared_budget {η:Character}{C D:Ideal O}
     (radial_support_bound n Φ b hs y hy)
   rw [max_eq_right hbH]
   linarith
+end
+
 
 def presentationFactor : ℝ :=
   ((Ideal.span {(72:O)}).absNorm:ℝ)*(fixedFactor:ℝ)
@@ -222,12 +222,16 @@ theorem first_fixed_log_le (Z:ℝ)(hZ:1<Z) :
   have hf:(1:ℝ)≤fixedFactor:=by exact_mod_cast fixedFactor_pos
   exact le_mul_of_one_le_right (span_pos 72 (by norm_num)).le hf
 
-theorem exists_fixed_width_threshold (b Csec σ:ℝ)(hb:0<b)(hCs:0<Csec)(hσ:0<σ) :
+section
+variable (b Csec σ:ℝ)(hb:0<b)(hCs:0<Csec)(hσ:0<σ)
+include b Csec σ hb hCs hσ
+
+theorem exists_fixed_width_threshold  :
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z→∀ξ:ℝ,ξ≤σ/4→
       Real.logb Z ((Ideal.span {fixedBadMask}).absNorm:ℝ)+ξ/2+
       Real.logb Z (16*b*Csec*(fixedFactor:ℝ)*presentationFactor)<σ/2 := by
   have hF:(0:ℝ)<fixedFactor:=by exact_mod_cast fixedFactor_pos
-  let C:ℝ:=((Ideal.span {fixedBadMask}).absNorm:ℝ)*(16*b*Csec*(fixedFactor:ℝ)*presentationFactor)
+  let C :=((Ideal.span {fixedBadMask}).absNorm:ℝ)*(16*b*Csec*(fixedFactor:ℝ)*presentationFactor)
   have hCp:0<C:=mul_pos (span_pos fixedBadMask fixedBadMask_ne_zero)
     (mul_pos (by positivity : (0:ℝ)<16*b*Csec*fixedFactor) presentationFactor_pos)
   have he:=(Filter.tendsto_atTop.1 (tendsto_rpow_atTop (show 0<σ/4 by linarith))) C
@@ -235,21 +239,23 @@ theorem exists_fixed_width_threshold (b Csec σ:ℝ)(hb:0<b)(hCs:0<Csec)(hσ:0<�
   refine ⟨max 2 Z₀,lt_of_lt_of_le (by norm_num) (le_max_left _ _),?_⟩
   intro Z hZ ξ hξ
   obtain ⟨hCZ,hZ1⟩:=hZ₀ Z ((le_max_right _ _).trans hZ)
-  have hh:Real.logb Z C≤σ/4:=(Real.logb_le_iff_le_rpow hZ1 hCp).mpr hCZ
+  have hh :=(Real.logb_le_iff_le_rpow hZ1 hCp).mpr hCZ
   dsimp [C] at hh
   rw [Real.logb_mul (span_pos fixedBadMask fixedBadMask_ne_zero).ne'
     (mul_pos (by positivity : (0:ℝ)<16*b*Csec*fixedFactor) presentationFactor_pos).ne'] at hh
   linarith
 
-def fixedWidthThreshold (b Csec σ:ℝ)(hb:0<b)(hCs:0<Csec)(hσ:0<σ) : ℝ :=
+def fixedWidthThreshold  : ℝ :=
   (exists_fixed_width_threshold b Csec σ hb hCs hσ).choose
 
-theorem fixedWidthThreshold_spec (b Csec σ:ℝ)(hb:0<b)(hCs:0<Csec)(hσ:0<σ) :
+theorem fixedWidthThreshold_spec  :
     1<fixedWidthThreshold b Csec σ hb hCs hσ ∧
     ∀Z:ℝ,fixedWidthThreshold b Csec σ hb hCs hσ≤Z→∀ξ:ℝ,ξ≤σ/4→
       Real.logb Z ((Ideal.span {fixedBadMask}).absNorm:ℝ)+ξ/2+
       Real.logb Z (16*b*Csec*(fixedFactor:ℝ)*presentationFactor)<σ/2 :=
   (exists_fixed_width_threshold b Csec σ hb hCs hσ).choose_spec
+end
+
 
 section ActualSource
 variable (η ρ:Character)(m:O)(hm:m≠0)(I J:Ideal O)(A:Finset (CommonIndex I J))
@@ -343,7 +349,7 @@ theorem main_declared_width_drop {C D:Ideal O}{hC:Supported C}{hD:Supported D}
     Real.logb Z (max 1 (b*dyadicScale (n 1)))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)<
       Real.logb Z K+q-σ/2 := by
   have hw:=main_declared_width η ρ m hm I J A K X Z σ δ reserve hK hX hZ hmod h t S β rows W Tsec Csec ξ hT hCs hscale n hne χ Φ b hb hs y hy0 hy
-  have hq:Real.logb Z (η.modulus.absNorm:ℝ)≤q:=
+  have hq :=
     (Real.logb_le_iff_le_rpow hZ (modulus_pos η)).mpr hcap
   have hc:=(fixedWidthThreshold_spec b Csec σ hb hCs hσ).2 Z hlarge ξ hξ
   rw [hmask] at hw
@@ -369,15 +375,15 @@ theorem error_declared_width_drop (θ:Character)(χ₀:RayCharacter)(p:O)(hp:p�
     Real.logb Z (max 1 (b*dyadicScale (n 1)))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)<
       Real.logb Z K+q-σ/2 := by
   have hw:=error_declared_width η ρ m hm I J A K X Z σ δ reserve hK hX hZ hmod θ χ₀ p hp k hk hN h t S β rows W Tsec Csec ξ hT hCs hscale n hne χ Φ b hb hs y hy0 hy
-  have hq:Real.logb Z (η.modulus.absNorm:ℝ)≤q:=
+  have hq :=
     (Real.logb_le_iff_le_rpow hZ (modulus_pos η)).mpr hcap
   have hc:=(fixedWidthThreshold_spec b Csec σ hb hCs hσ).2 Z hlarge ξ hξ
   rw [hmask] at hw
   linarith
 
-end ActualSource
-end SevenEighths.CenteredMomentAmplifiedChildWidth
 
-end
 
-end OAI
+
+
+
+

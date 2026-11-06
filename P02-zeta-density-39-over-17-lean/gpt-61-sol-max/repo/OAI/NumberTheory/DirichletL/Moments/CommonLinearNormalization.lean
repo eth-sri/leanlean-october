@@ -11,11 +11,11 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonLinearNormalization
 open HeckeFamily CenteredMomentCommonLinearSource CenteredMomentCommonRadialData
-open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentEligibleEnergy
+open CenteredMomentCommonRawScale
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
 open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def commonScalar (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):ℂ:=
@@ -49,8 +49,8 @@ theorem source_normalized (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal
   rw [hs,Complex.ofReal_mul,mul_inv_rev]
   ring
 
-end SevenEighths.CenteredMomentCommonLinearNormalization
 
-end
 
-end OAI
+
+
+

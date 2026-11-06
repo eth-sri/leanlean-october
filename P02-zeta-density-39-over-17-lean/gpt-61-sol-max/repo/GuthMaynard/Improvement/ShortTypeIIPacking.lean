@@ -1,12 +1,12 @@
 module
+import Mathlib
 /- The interval-translation argument is adapted from the user-owned task6
 TypeIIFourthMomentReduction. Weighted overlap reuses audited Density.Packing;
 no donor zero-family, tail assumption, or7/10 restriction is imported. -/
 public import GuthMaynard.Improvement.ShortGammaPacking
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
@@ -22,10 +22,7 @@ theorem short_setIntegral_comp_add_Icc (f : ℝ → ℝ) (u R : ℝ) :
       simp only [indicator_of_mem hv,indicator_of_mem ht]
       congr 1
       ring
-    · have ht : v+u ∉ Icc (u-R) (u+R) := by
-        intro ht
-        apply hv
-        exact ⟨by linarith [ht.1],by linarith [ht.2]⟩
+    · have ht : v+u ∉ Icc (u-R) (u+R) := by grind
       simp only [indicator_of_notMem hv,indicator_of_notMem ht]
   rw [he]
   exact integral_add_right_eq_self _ u
@@ -75,8 +72,7 @@ theorem short_typeII_window_packing :
         apply setIntegral_mono_set (hi u) (Filter.Eventually.of_forall (fun t => by dsimp [q]; positivity))
         apply Filter.Eventually.of_forall
         intro t ht
-        obtain ⟨hu0,hu1⟩ := hw u hu
-        exact ⟨by linarith [ht.1],by linarith [ht.2]⟩
+        grind
   calc
     _ ≤ ∑ u ∈ W, ∫ t in Icc (H/2) (3*H),q u t*F t := Finset.sum_le_sum hone
     _ = ∫ t in Icc (H/2) (3*H),∑ u ∈ W,q u t*F t := (integral_finsetSum W (fun u _ => hi u)).symm
@@ -90,12 +86,8 @@ theorem short_typeII_window_packing :
       have hh := mul_le_mul_of_nonneg_left (separated_decay_row hsep t) hK.le
       have he : (∑ u ∈ W,q u t)=K*(∑ u ∈ W,1/(1+|t-u|)^2) := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro u _
-        dsimp [q]
-        ring
-      rw [he]
-      linarith
+        grind
+      bound
     _ = _ := integral_const_mul _ _
 
-end GuthMaynard.Improvement
+

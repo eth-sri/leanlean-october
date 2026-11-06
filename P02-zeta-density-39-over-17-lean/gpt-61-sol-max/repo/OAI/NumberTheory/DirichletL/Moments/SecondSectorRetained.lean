@@ -13,10 +13,10 @@ namespace SevenEighths.CenteredMomentSecondSectorRetained
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondSectorColumns CenteredMomentSecondSectorFrequency CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
+open CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst
 open CenteredMomentSecondWholeKernel CenteredMomentFirstLocalization CenteredMomentSectorLocalization
 open CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def physicalKernel (C D : Ideal O) (W : 𝓢(ℝ,ℂ)) (K R : ℝ)
     (j : O) (I J : Ideal O) : ℂ :=
@@ -25,8 +25,12 @@ def physicalKernel (C D : Ideal O) (W : 𝓢(ℝ,ℂ)) (K R : ℝ)
       paperRadialFourier W (K*‖eisEmbedding j‖^2/
         ‖eisEmbedding (primaryGenerator (C*I)*primaryGenerator (D*J))‖^2)
 
-theorem physical_sector_summable (η : Character) (t : ℝ)
+section
+variable (η : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+include η t S β C D hC hD
+
+theorem physical_sector_summable 
     (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
     Summable (sectorFrequency η t S β C D hC hD (physicalKernel C D W K R)) := by
   unfold sectorFrequency
@@ -62,8 +66,7 @@ theorem physical_sector_summable (η : Character) (t : ℝ)
   · simp only [ite_eq_right hcop,zero_mul]
     exact summable_zero
 
-theorem actual_retained_sector_GV (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem actual_retained_sector_GV 
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
     (∑' j : O,sectorFrequency η t S β C D hC hD (physicalKernel C D W K R) j)=
@@ -76,9 +79,11 @@ theorem actual_retained_sector_GV (η : Character) (t : ℝ)
     ((physical_sector_summable η t S β C D hC hD W K R hK).comp_injective
       (mul_right_injective₀ (commonFrequencyGenerator_ne_zero C D hC)))]
   exact Finset.sum_congr rfl (fun U _=>sectorFrequency_partition_nonunit η t S β C D hC hD U _)
-
-end SevenEighths.CenteredMomentSecondSectorRetained
-
 end
 
-end OAI
+
+
+
+
+
+

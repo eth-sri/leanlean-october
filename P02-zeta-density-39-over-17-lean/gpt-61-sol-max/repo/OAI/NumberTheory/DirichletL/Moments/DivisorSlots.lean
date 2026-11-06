@@ -5,17 +5,21 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorTensor
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorSlots
-open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
+open CenteredMomentHeckeExpansion CenteredMomentHeckeSlots HeckeFamily
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
-theorem selected_slot_exact (η : Character) (m A z : O) (t : ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
     (D P : Ideal O) (hP : Prime P) (hPD : P∣D)
-    (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Prime I) (β : Ideal O → ℂ) :
+    (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Prime I) (β : Ideal O → ℂ)
+include η m A z t D P hP hPD S hS β
+
+theorem selected_slot_exact  :
     rowSlot η m A z S (fun I => if D∣I then β I else 0) t =
       if P ∈ S ∧ D∣P then β P*rowWeight η m A z t P else 0 := by
   rw [rowSlot_eq_weight]
@@ -29,10 +33,7 @@ theorem selected_slot_exact (η : Character) (m A z : O) (t : ℝ)
   · rw [Finset.sum_eq_zero (fun I hI => hz I hI (fun he => hmem (he ▸ hI)))]
     simp only [hmem,false_and,ite_false]
 
-theorem selected_slot_bound (η : Character) (m A z : O) (t : ℝ)
-    (D P : Ideal O) (hP : Prime P) (hPD : P∣D)
-    (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Prime I)
-    (β : Ideal O → ℂ) (M : ℝ) (hM : 0 ≤ M) (hβ : ∀ I ∈ S, ‖β I‖ ≤ M) :
+theorem selected_slot_bound  (M : ℝ) (hM : 0 ≤ M) (hβ : ∀ I ∈ S, ‖β I‖ ≤ M) :
     ‖rowSlot η m A z S (fun I => if D∣I then β I else 0) t‖ ≤ M := by
   rw [selected_slot_exact η m A z t D P hP hPD S hS β]
   split_ifs with h
@@ -40,13 +41,15 @@ theorem selected_slot_bound (η : Character) (m A z : O) (t : ℝ)
     exact (mul_le_mul (hβ P h.1) (row_twisted_coefficient_norm η m A z t P hP.ne_zero)
       (norm_nonneg _) hM).trans_eq (mul_one M)
   · simpa only [norm_zero] using hM
+end
+
 
 theorem selectedDivisor_empty (D : Ideal O) (s : Finset ι) (a : Allocation D s) (i : ι)
     (he : selectedPrimes D s a i=∅) : selectedDivisor D s a i=1 := by
   simp only [selectedDivisor,he,Finset.prod_empty]
 
-end SevenEighths.CenteredMomentDivisorSlots
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GlobalBinLoss
 
 @[expose] public section
@@ -10,75 +11,75 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+
+                        
 
 section
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+open IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 theorem list_exists_positive_bound (xs : List ℝ) :
     ∃ H : ℝ, 1≤H ∧ ∀x∈xs, x≤H := by
@@ -93,8 +94,12 @@ theorem list_exists_positive_bound (xs : List ℝ) :
     · exact le_max_right _ _
     · exact (hxs y hy).trans (le_max_left _ _)
 
+section
+variable (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
+include sD sS sT CD CS CT CP
+
 def poissonPrimitiveConstants
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
+    
     {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
     (D : ℝ) (W : 𝓢(ℝ,ℂ)) : List ℝ :=
   [divisorConstant η hη, 2+1/(η*Real.log 2), 256,
@@ -109,10 +114,13 @@ def poissonPrimitiveConstants
    sS.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticSquareProfile W),
    sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, D^η]
 
-theorem poissonPrimitiveConstants_nonneg
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
+section
+variable (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
     {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
+include hCD hCS hCT hCP α hexp η hη
+
+theorem poissonPrimitiveConstants_nonneg
+    
     (D : ℝ) (hD : 0≤D) (W : 𝓢(ℝ,ℂ)) :
     ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, 0≤x := by
   intro x hx
@@ -139,9 +147,7 @@ theorem poissonPrimitiveConstants_nonneg
   · exact Real.rpow_nonneg hD _
 
 theorem poissonUnitBudget_power_envelope
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
-    {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
+    
     (G : Ideal O) (hG : G≠0) (K N P D H : ℝ) (W : 𝓢(ℝ,ℂ))
     (hK : 1≤K) (hN : 1≤N) (hP : 1≤P) (hD : 1≤D) (hH : 1≤H)
     (hconst : ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, x≤H)
@@ -343,6 +349,9 @@ theorem poissonUnitBudget_power_envelope
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
     simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+end
+end
+
 
 end
 
@@ -351,16 +360,16 @@ section
 theorem selectedPoisson_upper (C C1 M X η : ℝ)
     (hC : 4≤C) (hCC : C≤C1) (hM : 1≤M) (hX : 1≤X)
     (hη : 0≤η) (hη1 : η≤1) :
-    4≤selectedPoissonT C M X η ∧
-    (M*X)^η≤selectedPoissonT C M X η ∧
+    4≤ selectedPoissonT C M X η ∧
+    (M*X)^η≤ selectedPoissonT C M X η ∧
     selectedPoissonK C M X η≤C1*(M*X)^3 := by
   have hC10 : 0≤C1 := by linarith
   have hM0 : 0<M := by linarith
   have hX0 : 0<X := by linarith
   have hP : 1≤M*X := by nlinarith
   have hP0 : 0<M*X := by positivity
-  have hR : 1≤(M*X)^η := Real.one_le_rpow hP hη
-  have hT : 4≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
+  have hR := Real.one_le_rpow hP hη
+  have hT : 4≤ selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
   refine ⟨hT,by dsimp [selectedPoissonT]; nlinarith,?_⟩
   have hXP : X≤M*X := by nlinarith
   have hfrac : X^2/M≤(M*X)^2 :=
@@ -456,8 +465,8 @@ theorem poisson_tail_abstract (B P t K η M : ℝ) (A : ℕ)
   have hP0 : 0<P := by linarith
   have hBP : 1≤B*P^2 := by nlinarith [sq_nonneg (P-1)]
   have hinv : 1/(B*P^2)≤1 := (div_le_one (by positivity)).mpr hBP
-  have htlo : 1/(B*P^2)≤min 1 t := le_min hinv ht
-  have htpos : 0<min 1 t := lt_of_lt_of_le (by positivity) htlo
+  have htlo : 1/(B*P^2)≤ min 1 t := le_min hinv ht
+  have htpos : 0< min 1 t := lt_of_lt_of_le (by positivity) htlo
   have hup : 0<1+t*K := lt_of_lt_of_le (Real.rpow_pos_of_pos hP0 _) hu
   have hpow := power_cutoff_dominates P (1+t*K) η A hP hu hA
   have hprod : 1/B^2≤(min 1 t)^2*(1+t*K)^A := by
@@ -494,7 +503,7 @@ theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
   have hu : (M*X)^η≤1+(M/((B*q)*(X/q)*(X/q)))*selectedPoissonK C M X η := by
     rw [selectedPoisson_radial_identity C B M X q η hM0 hX0 hq0 hB0]
     have hp : 0≤(M*X)^η := Real.rpow_nonneg (by positivity) _
-    have hb : (M*X)^η≤selectedPoissonT C M X η*q/B := by
+    have hb : (M*X)^η≤ selectedPoissonT C M X η*q/B := by
       apply (le_div_iff₀ hB0).mpr
       dsimp [selectedPoissonT]
       calc
@@ -513,8 +522,8 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
   have hM0 : 0<M := by linarith
   have hX0 : 0<X := by linarith
   have hP : 1≤M*X := by nlinarith
-  have hpow : 1≤(M*X)^η := Real.one_le_rpow hP hη
-  have hT : 1≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
+  have hpow := Real.one_le_rpow hP hη
+  have hT : 1≤ selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
   have hT0 : 0<selectedPoissonT C M X η := by linarith
   have hK0 : 0<selectedPoissonK C M X η := by unfold selectedPoissonK; positivity
   have hfrac : M/selectedPoissonK C M X η≤(M/X)^2 := by
@@ -545,7 +554,7 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
 end
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+open IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 def poissonShape (M X α : ℝ) : ℝ := M+X+X^(2*α-1)*M^(1-α)
 def poissonShapeConstant (B C1 : ℝ) : ℝ := 2+4*C1^3+B^2+C1
@@ -572,7 +581,7 @@ theorem poissonComparisonMajorant_selected_power
     ∃ Cfinal : ℝ, 0<Cfinal ∧
       ∀ (C M X q : ℝ) (G : Ideal O), 4≤C → B≤C → C≤C1 →
         1≤M → 1≤X → 1≤q → q≤X → G≠0 → (Ideal.absNorm G:ℝ)=B*q →
-        1≤selectedPoissonK C M X η →
+        1≤ selectedPoissonK C M X η →
       poissonComparisonMajorant sD sS sT CD CS CT CP l A hexp η hη η hη G
         (selectedPoissonK C M X η) (X/q) M (selectedPoissonT C M X η)
         (fun _ : Unit => (1:ℂ)) W ≤
@@ -608,7 +617,7 @@ theorem poissonComparisonMajorant_selected_power
   have hNX : X/q≤X := div_le_self hX0.le hq
   have hNP : X/q≤M*X := hNX.trans hXP
   obtain ⟨hT,hTP,hKP⟩ := selectedPoisson_upper C C1 M X η hC hCC hM hX hη.le hη1
-  have hKg : 0≤selectedPoissonK C M X η := le_trans zero_le_one hK
+  have hKg : 0≤ selectedPoissonK C M X η := le_trans zero_le_one hK
   have hg : (Ideal.absNorm G:ℝ)≤B*(M*X) := by rw [hGN]; gcongr; exact hqX.trans hXP
   have hb := poissonUnitBudget_power_envelope sD sS sT CD CS CT CP hCD hCS hCT hCP
     hexp η hη G hG (selectedPoissonK C M X η) (X/q) (M*X) D H W
@@ -686,8 +695,8 @@ theorem poissonComparisonMajorant_selected_power
     hb hMS hNS hmidS hprS (hED.trans hC1S) (hES.trans hC1S) htailS).trans_eq
   exact poisson_envelope_identity H Cshape (M*X) η (poissonShape M X α) hP0
 
-end CanonicalQuadraticSieve
 
-end
 
-end OAI
+
+
+

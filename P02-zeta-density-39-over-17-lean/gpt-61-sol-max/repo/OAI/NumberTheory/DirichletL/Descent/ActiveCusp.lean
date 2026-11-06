@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CuspCongruence
 public import OAI.NumberTheory.DirichletL.Descent.MarkedStratum
 
@@ -8,47 +9,57 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CompletedGauss CubicEisenstein ConcreteTraceCRT
+open CubicEisenstein ConcreteTraceCRT
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance activeQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
+local instance activeQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 variable {ι : Type*} [Fintype ι]
 
-def localInactiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (A : Finset ι) : ℂ :=
+section
+variable (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (hp : ∀ i, p i ≠ 0)
+include p hp
+
+section
+variable (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
+include F
+
+section
+variable (A : Finset ι)
+include A
+
+def localInactiveWeight  : ℂ :=
   ∏ i ∈ (Finset.univ : Finset ι) \ A,
     finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (F i) 0
 
-def localActiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
-    (A : Finset ι) (v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ) : ℂ :=
+def localActiveWeight  (v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ) : ℂ :=
   ∏ i : A, finiteAdditiveFourierCoeff (quotientTrace (p i.val) (hp i.val)) (F i.val) (v i)
+end
+
 
 theorem primeFunction_fourier_by_active
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (n : Eis) :
+     (n : Eis) :
     (∏ i, F i (Ideal.Quotient.mk _ n)) =
       ∑ A : Finset ι, localInactiveWeight p hp F A *
         ∑ v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ,
           localActiveWeight p hp F A v *
             ∏ i : A, quotientTrace (p i.val) (hp i.val)
               ((v i : Eis ⧸ Ideal.span {p i.val}) * Ideal.Quotient.mk _ n) := by
-  let (i : ι) : Field (Eis ⧸ Ideal.span {p i}) := Ideal.Quotient.field _
   have hpow : (Finset.univ : Finset ι).powerset = (Finset.univ : Finset (Finset ι)) := by
     ext A
     simp
-  simpa only [hpow, localInactiveWeight, localActiveWeight] using
-    FixedRayActiveSet.fourier_inversion_by_active_set (fun i => Eis ⧸ Ideal.span {p i})
+  exact FixedRayActiveSet.fourier_inversion_by_active_set (fun i => Eis ⧸ Ideal.span {p i})
       (fun i => quotientTrace (p i) (hp i))
       (fun i => GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive (p i) (hp i)) F
       (fun i => Ideal.Quotient.mk _ n)
+end
+
 
 theorem activeStratum_function_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
+     (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     {N a0 c0 : Eis} {mode : Bool}
     (D : ∀ A : Finset ι, ControlledStratumArithmetic (fun i : A => p i.val) N a0 c0 mode)
@@ -80,16 +91,14 @@ theorem activeStratum_function_multiplier
   ring
 
 def fixedActiveFunctionWeight
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
+     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
     (φ : Eis →* ℂ) (t : FixedActiveCuspIndex c p) : ℂ :=
   fixedThetaRowCoeff c hc φ t.1 * localInactiveWeight p hp F t.2.1 *
     localActiveWeight p hp F t.2.1 t.2.2
 
 theorem fixedActiveFunction_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
+     (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
     (G : ∀ h : Eis ⧸ Ideal.span {c}, FixedFourierGeometry c h) (N : Eis)
@@ -128,8 +137,10 @@ theorem fixedActiveFunction_multiplier
       rw [activeStratum_function_multiplier p hp hprimary F (D h) (hN h)
         (G h).denominator_ne_zero (G h).primary (G h).shape n, (G h).point]
       ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

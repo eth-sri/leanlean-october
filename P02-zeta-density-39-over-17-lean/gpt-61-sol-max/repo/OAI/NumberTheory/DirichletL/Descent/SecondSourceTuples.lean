@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 @[ext] structure SecondOriginalSource (ι : Type*) (Jo Jn : ℕ) where
   q0 : Ideal Eis
@@ -122,7 +122,7 @@ theorem originalSecondTuple_injective
     apply hinj
     exact congrArg (fun z : SecondTuple Jo Jn => (z.newAssigned i).val) hxy
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

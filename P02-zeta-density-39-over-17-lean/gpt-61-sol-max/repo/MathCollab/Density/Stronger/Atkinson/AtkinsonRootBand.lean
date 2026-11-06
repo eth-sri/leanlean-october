@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -72,8 +73,7 @@ theorem zetaAtkinsonSaddle_inverse_root {T y : ℝ} (hT : 0 < T) (hy : 0 < y) :
   apply (atkinson_saddle_equation_iff (by positivity : 0 < T / (2 * Real.pi))
     (sq_pos_of_pos hy) _).1
   rw [Real.sqrt_sq hy.le]
-  field_simp
-  ring
+  grind
 
 theorem abs_atkinsonRootSlope_zero_le_band {T G L y : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
@@ -86,8 +86,7 @@ theorem abs_atkinsonRootSlope_zero_le_band {T G L y : ℝ}
   have he : atkinsonRootSlope T 0 y = -2 * (y - (T / (2 * Real.pi)) / y) := by
     unfold atkinsonRootSlope
     ring
-  rw [he, abs_mul, abs_of_neg (by norm_num : (-2 : ℝ) < 0)]
-  linarith
+  grind
 
 theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (α b : ℝ) :
@@ -118,10 +117,7 @@ theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
     (f' := fun y : ℝ => 2 * y)
     (a := atkinsonRootBandLower T G L) (b := atkinsonRootBandUpper T G L)
     (by fun_prop) (fun y _ => by simpa using! (hasDerivAt_id y).pow 2)
-    (fun y hy => by
-      rw [min_eq_left hab, max_eq_right hab] at hy
-      have := ha.trans hy.1
-      positivity)
+    (fun y hy => by grind)
   rw [show (atkinsonRootBandLower T G L) ^ 2 = zetaDivisorBandEdge T G (-2 * L) from
     Real.sq_sqrt (zetaDivisorBandEdge_pos hT G (-2 * L)).le,
     show (atkinsonRootBandUpper T G L) ^ 2 = zetaDivisorBandEdge T G (2 * L) from
@@ -132,4 +128,4 @@ theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
   rw [uIcc_of_le hab] at hy
   exact atkinsonPowerIntegrand_sq hT (ha.trans_le hy.1) G L α b
 
-end MathCollab.Density.Stronger.Atkinson
+

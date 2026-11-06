@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstCommonTransport
 
 @[expose] public section
@@ -9,12 +10,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonFourierTransport
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
+open ActualEisensteinCubic CanonicalQuadraticSieve
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstReduced
 open CenteredMomentSupportedCorrelation
 open CenteredMomentCommonSupport CenteredMomentFirstLocalization CenteredMomentFirstScale
 open CenteredMomentSectorLocalization CenteredMomentFirstCommonTransport
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem quotient_function_heq (r r':O)(hr:r'=r)
     (G:Residue r→ℂ)(G':Residue r'→ℂ)
@@ -77,14 +78,9 @@ theorem canonicalRetainedTerm_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J
     (frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K X) Z ξ)
   exact hh.symm
 
-def inactiveEquiv (I J:Ideal O):
-    CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J ≃
-      CenteredMomentFirstDiscardedEnergy.inactiveSubsets (commonPart I J) (commonPart J I):=
-  (Equiv.finsetCongr (commonEquiv I J)).subtypeEquiv (fun E=>(mappedSubset_inactive I J E).symm)
 
-@[simp] theorem inactiveEquiv_val (I J:Ideal O)
-    (E:CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J):
-    (inactiveEquiv I J E).val=mappedSubset I J E.val:=rfl
+
+
 
 theorem canonicalRetainedPair_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
@@ -106,8 +102,8 @@ theorem canonicalRetainedPair_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J
   · intro E hE
     exact canonicalRetainedTerm_fixed I J hI hJ E W K X Z ξ
 
-end SevenEighths.CenteredMomentFirstCommonFourierTransport
 
-end
 
-end OAI
+
+
+

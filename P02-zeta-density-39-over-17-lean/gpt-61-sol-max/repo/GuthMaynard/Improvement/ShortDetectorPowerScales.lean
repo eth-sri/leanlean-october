@@ -3,10 +3,9 @@ public import GuthMaynard.Improvement.ShortDetectorPoweredHeight
 
 @[expose] public section
 
-open Real Set Filter MathCollab.Density
+open Real Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Least-successful powering, allowing all short bases rather than just four powers. -/
@@ -106,4 +105,4 @@ theorem short_detector_power_piece_bounds {T a : ℝ} {N k ℓ : ℕ}
       _ ≤ (2:ℝ)^100*T^(3*a/2) := mul_le_mul htwo100 hhi (by positivity) (by positivity)
       _ ≤ _ := hbuffer
 
-end GuthMaynard.Improvement
+

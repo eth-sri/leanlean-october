@@ -10,7 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialOverlapSource
-open InverseInitialOverlapFresh InverseInitialOverlapInputFourier
+
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
 def tupleCoordinate (I : Finset σ) (y : σ→ι→ℝ) (q : ∀i∈I,ι) (i : σ) : ℝ :=
@@ -61,8 +61,8 @@ theorem insert_original_fresh
     (by rwa [tupleCoordinate_product])
   rw [hf,one_mul]
 
-end SevenEighths.InverseInitialOverlapSource
 
-end
 
-end OAI
+
+
+

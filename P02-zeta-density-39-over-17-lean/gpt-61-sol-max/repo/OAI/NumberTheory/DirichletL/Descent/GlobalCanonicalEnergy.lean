@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseFirstPriorityParents
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -38,8 +38,8 @@ theorem global_canonical_to_original_priority
   exact le_of_eq (global_second_energy_source p hg hp hinj outer pool selector houter extra
     negative Ψ m slots lists a om X t Y)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

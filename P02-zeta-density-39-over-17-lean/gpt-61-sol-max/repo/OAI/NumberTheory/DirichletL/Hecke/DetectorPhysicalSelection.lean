@@ -1,5 +1,8 @@
 module
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorPhysicalBins
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeNonprincipal
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorFamilyInclusion
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeActual
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
 
 @[expose] public section
@@ -35,8 +38,8 @@ omit [NeZero M] in
 theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : rows.Nonempty)
     (slots : Finset Slot) (row : Row→O) (W : Slot→ℝ→ℂ) (b w g : Slot→ℝ)
     (zs : Slot→ℂ) (U δ mesh binWidth z : ℝ)
-    (hU : 1<U) (hδ : 0≤δ) (hmesh : 0≤mesh) (hbin : 0<binWidth)
-    (hw : ∀ s∈slots,0<w s) (hwm : ∀ s∈slots,w s≤mesh)
+    (hU : 1<U) (hδ : 0≤δ) (hmesh : 0≤ mesh) (hbin : 0<binWidth)
+    (hw : ∀ s∈slots,0<w s) (hwm : ∀ s∈slots,w s≤ mesh)
     (hL : 0<∑ s∈slots,w s) (hz : 0≤z) (hzL : z≤∑ s∈slots,w s)
     (hbins : ∀ u∈rows,∀ s∈slots,
       amplitude (U^(w s)) (δ/2) binWidth (physical M H row W b w zs U u s)=g s) :
@@ -56,8 +59,8 @@ theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : ro
     (weightedMean slots w g) z hU hδ hmesh hbin hw hwm hg hq hqδ hz hzL hm
   exact ⟨selected,hsub,hpositive,hlen,fun u hu => hspike _ (hbins u hu)⟩
 
-end SevenEighths.HeckeDetectorPhysicalSelection
 
-end
 
-end OAI
+
+
+

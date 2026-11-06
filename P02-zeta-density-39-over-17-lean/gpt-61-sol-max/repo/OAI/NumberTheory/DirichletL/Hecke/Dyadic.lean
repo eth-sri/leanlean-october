@@ -7,7 +7,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators Topology
-open MeasureTheory Set
+open MeasureTheory
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
@@ -22,10 +22,18 @@ theorem norm_pos (I : NonzeroIdeal) : 0 < norm I := by
   unfold norm
   exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr I.property)
 
-def coefficient (χ : Character) (inverse : Bool) (I : Ideal O) : ℂ :=
+section
+variable (χ : Character) (inverse : Bool)
+include χ inverse
+
+section
+variable (I : Ideal O)
+include I
+
+def coefficient  : ℂ :=
   if inverse then (UniqueFactorizationMonoid.moebius I : ℂ)*idealCoeff χ I else idealCoeff χ I
 
-theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
+theorem coefficient_norm_le  :
     ‖coefficient χ inverse I‖ ≤ 1 := by
   cases inverse
   · exact idealCoeff_norm_le_one χ I
@@ -33,28 +41,42 @@ theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
     rw [norm_mul]
     exact (mul_le_of_le_one_left (norm_nonneg _) (CubicEisenstein.norm_ideal_moebius_le_one I)).trans
       (idealCoeff_norm_le_one χ I)
+end
 
-@[simp] theorem coefficient_zero (χ : Character) (inverse : Bool) : coefficient χ inverse 0 = 0 := by
+
+@[simp] theorem coefficient_zero  : coefficient χ inverse 0 = 0 := by
   cases inverse
   · exact idealCoeff_zero χ
   · change (UniqueFactorizationMonoid.moebius (0 : Ideal O) : ℂ)*idealCoeff χ 0 = 0
     rw [idealCoeff_zero, mul_zero]
+end
+
 
 def shift (σ ω : ℝ) : ℂ := (σ : ℂ)-(ω : ℂ)*Complex.I
 
 @[simp] theorem shift_re (σ ω : ℝ) : (shift σ ω).re = σ := by simp [shift]
 
-def summand (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (D σ ω : ℝ) (I : NonzeroIdeal) : ℂ :=
+section
+variable (χ : Character) (inverse : Bool)
+include χ inverse
+
+section
+variable (W : ℝ → ℂ)
+    (D σ ω : ℝ)
+include W D σ ω
+
+def summand  (I : NonzeroIdeal) : ℂ :=
   coefficient χ inverse I.val * W (norm I/D) * ((norm I/D : ℝ) : ℂ)^(-shift σ ω)
 
-def polynomial (χ : Character) (inverse : Bool) (W : ℝ → ℂ) (D σ ω : ℝ) : ℂ :=
+def polynomial  : ℂ :=
   (D : ℂ)^(-(1/2 : ℂ)) * ∑' I : NonzeroIdeal, summand χ inverse W D σ ω I
+end
 
-def series (χ : Character) (inverse : Bool) (s : ℂ) : ℂ :=
+
+def series  (s : ℂ) : ℂ :=
   if inverse then HeckeReciprocal.reciprocal χ s else LFunction χ s
 
-theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.re) :
+theorem series_eq_tsum  {s : ℂ} (hs : 1 < s.re) :
     series χ inverse s =
       ∑' I : NonzeroIdeal, coefficient χ inverse I.val * (norm I : ℂ)^(-s) := by
   have he : (∑' I : NonzeroIdeal, coefficient χ inverse I.val *
@@ -89,9 +111,11 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
     simp only [coefficient,  ite_true, IdealEuler.weighted,
       IdealEuler.normWeight, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
     ring
-
-end SevenEighths.HeckeDyadic
-
 end
 
-end OAI
+
+
+
+
+
+

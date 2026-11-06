@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaQuadraticKernel
 
@@ -11,13 +12,13 @@ A factor z squared removes the stationary singularity. The estimate uses
 the actual smooth coefficient and its derivative, with no omitted endpoint.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem norm_integral_sq_mul_betaQuadraticKernel_le
     {V : ℝ → ℝ} {T H M L : ℝ}
@@ -25,9 +26,9 @@ theorem norm_integral_sq_mul_betaQuadraticKernel_le
     (hb : ∀ z : ℝ, |V z| ≤ M) (hd : ∀ z : ℝ, |deriv V z| ≤ L) :
     ‖∫ z in (-H)..H, ((z^2*V z : ℝ) : ℂ)*betaQuadraticKernel T z‖ ≤
       (2*H*M+2*H*(M+H*L))/(2*Real.pi*T) := by
-  let c : ℂ := ((-2*Real.pi*T : ℝ) : ℂ)*Complex.I
-  let U : ℝ → ℂ := fun z => ((z*V z : ℝ) : ℂ)
-  let U' : ℝ → ℂ := fun z => ((V z+z*deriv V z : ℝ) : ℂ)
+  let c := ((-2*Real.pi*T : ℝ) : ℂ)*Complex.I
+  let U := fun z => ((z*V z : ℝ) : ℂ)
+  let U' := fun z => ((V z+z*deriv V z : ℝ) : ℂ)
   have hDV : Continuous (deriv V) := by
     simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
       hV.continuous_iteratedDeriv 1 (by simp)
@@ -95,4 +96,4 @@ theorem norm_integral_sq_mul_betaQuadraticKernel_le
   have hleft := hUb (-H) (by rw [abs_neg,abs_of_pos hH])
   linarith
 
-end TaoTrudgianYang2025
+

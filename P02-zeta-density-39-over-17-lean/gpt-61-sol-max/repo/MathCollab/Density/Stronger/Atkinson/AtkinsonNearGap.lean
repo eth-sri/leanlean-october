@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -19,8 +20,7 @@ The resulting bound is 60*sqrt(H*M)/|t-u|, for the literal
 orientation-free numerical majorant already consumed by the source.
 -/
 
-set_option autoImplicit false
-noncomputable section
+
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -41,9 +41,6 @@ theorem atkinson_near_slope_lower {H u M : ℝ}
   rw [div_le_div_iff₀ hM0 hB]
   have hp : 3 ≤ 2*Real.pi := by linarith [Real.pi_gt_three]
   have hcoef : M+M+1 ≤ 2*Real.pi*M := by nlinarith
-  have h1 := mul_le_mul_of_nonneg_left hcoef hH.le
-  have h2 := mul_le_mul_of_nonneg_right hHu
-    (by positivity : 0 ≤ 2*Real.pi*M)
   nlinarith
 
 theorem atkinson_near_slope_upper {H u M : ℝ}
@@ -52,16 +49,18 @@ theorem atkinson_near_slope_upper {H u M : ℝ}
   have hpi : Real.pi^2 ≤ 16 := by nlinarith [Real.pi_lt_four, Real.pi_pos]
   have hcU : (2*Real.pi+Real.pi^2)*2 ≤ 48 := by nlinarith [Real.pi_lt_four]
   have hn := mul_le_mul hcU huH hu (by norm_num : (0:ℝ) ≤ 48)
-  have hrad : (2*Real.pi+Real.pi^2)*(2*u)/M ≤ 100*(H/M) := by
-    have hn' : (2*Real.pi+Real.pi^2)*(2*u) ≤ 100*H := by nlinarith
-    exact (div_le_div_of_nonneg_right hn' hM.le).trans_eq (by ring)
+  have hrad : (2*Real.pi+Real.pi^2)*(2*u)/M ≤ 100*(H/M) := by field_simp <;> nlinarith
   unfold atkinsonIndexSlopeUpper
   calc
     _ ≤ Real.sqrt (100*(H/M)) := Real.sqrt_le_sqrt hrad
     _ = _ := by rw [Real.sqrt_mul (by norm_num)]; norm_num
 
-theorem atkinson_near_half_period {H t u : ℝ} {M : ℕ}
-    (hH : 0 < H) (hHu : H ≤ u) (hM : 0 < M)
+section
+variable {H t u : ℝ} {M : ℕ}
+    (hH : 0 < H)
+include H t u M hH
+
+theorem atkinson_near_half_period  (hHu : H ≤ u) (hM : 0 < M)
     (hgap : t-u ≤ Real.sqrt (H*(M:ℝ))) :
     atkinsonIndexFirstDerivativeUpper u t M ((M:ℝ)+(M:ℝ)+1) ≤ Real.pi := by
   have hMr : 0 < (M:ℝ) := by exact_mod_cast hM
@@ -75,8 +74,7 @@ theorem atkinson_near_half_period {H t u : ℝ} {M : ℕ}
   rw [div_le_iff₀ hden]
   exact mul_le_mul_of_nonneg_left (hgap.trans hscale) Real.pi_nonneg
 
-theorem atkinsonOrderedPrefixGapMajorant_le_near {H t u : ℝ} {M : ℕ}
-    (hH : 0 < H) (hHu : H ≤ u) (huH : u ≤ 2*H) (htu : u < t) (hM : 0 < M)
+theorem atkinsonOrderedPrefixGapMajorant_le_near  (hHu : H ≤ u) (huH : u ≤ 2*H) (htu : u < t) (hM : 0 < M)
     (hgap : t-u ≤ Real.sqrt (H*(M:ℝ))) :
     atkinsonOrderedPrefixGapMajorant M M t u ≤ 60*Real.sqrt (H*(M:ℝ))/(t-u) := by
   have hMr : 0 < (M:ℝ) := by exact_mod_cast hM
@@ -98,8 +96,7 @@ theorem atkinsonOrderedPrefixGapMajorant_le_near {H t u : ℝ} {M : ℕ}
   rw [atkinsonPrefixFirstDerivativeMajorant_eq_gap hu htu hM]
   exact div_le_div_of_nonneg_right hn' (sub_pos.mpr htu).le
 
-theorem atkinsonPrefixGapMajorant_le_near {H t u : ℝ} {M : ℕ}
-    (hH : 0 < H) (htH : H ≤ t) (hHt : t ≤ 2*H)
+theorem atkinsonPrefixGapMajorant_le_near  (htH : H ≤ t) (hHt : t ≤ 2*H)
     (huH : H ≤ u) (hHu : u ≤ 2*H) (hne : t ≠ u) (hM : 0 < M)
     (hgap : |t-u| ≤ Real.sqrt (H*(M:ℝ))) :
     atkinsonPrefixGapMajorant M M t u ≤ 60*Real.sqrt (H*(M:ℝ))/|t-u| := by
@@ -112,5 +109,7 @@ theorem atkinsonPrefixGapMajorant_le_near {H t u : ℝ} {M : ℕ}
       atkinsonOrderedPrefixGapMajorant_le_near hH htH hHt htu hM hg
   · rw [max_eq_left hut.le, min_eq_right hut.le, abs_of_pos (sub_pos.mpr hut)] at *
     exact atkinsonOrderedPrefixGapMajorant_le_near hH huH hHu hut hM hgap
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

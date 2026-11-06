@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCountTraceExpansion
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem gm_amplitude_log_identity {T : ℝ} (hT : 0 < T) (σ x δ : ℝ) :
@@ -44,20 +44,9 @@ theorem gm_detecting_scale {σ a δ T N : ℝ}
     apply max_le ?_ (by linarith only [hδ])
     have hm := mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*(1-σ) by linarith)
     have hd := mul_nonneg hδ (show 0 ≤ 2*σ-1 by linarith)
-    dsimp [p]
-    nlinarith only [hm,hd]
-  have hell1 : ell ≤ 1 := by
-    have hxu : x ≤ 1 := by linarith
-    apply max_le hxu
-    have hm := mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*σ-1 by linarith)
-    have hd := mul_nonneg hδ (show 0 ≤ 2-2*σ by linarith)
-    dsimp [p]
-    nlinarith only [hm,hd,hδa,ha1]
-  have hellhalf : (1/2:ℝ) ≤ ell := by
-    have hm := mul_le_mul_of_nonneg_left hxa (show 0 ≤ 2*σ-1 by linarith)
-    have hh := mul_nonneg (show 0 ≤ a by linarith) (show 0 ≤ 1-σ by linarith)
-    dsimp [p] at hlower
-    nlinarith only [hm,hh,ha,hlower]
+    grind
+  have hell1 : ell ≤ 1 := by nlinarith
+  have hellhalf : (1/2:ℝ) ≤ ell := by linarith
   refine ⟨x,ell,hNx,hxa,?_,?_,?_,hlower,?_⟩
   · rw [← hNx]
     exact Real.rpow_le_rpow_of_exponent_le hT.le hlx
@@ -73,4 +62,4 @@ theorem gm_detecting_scale {σ a δ T N : ℝ}
     norm_num
     linarith only [hupper]
 
-end Montgomery.RationalMoment
+

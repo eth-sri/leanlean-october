@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.LowFixedRadialEntry
 public import OAI.NumberTheory.DirichletL.Energy.OriginalProfileControl
 public import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
@@ -12,7 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentEnergyZeroComparison CenteredMomentEnergyOriginalProfileControl
@@ -20,8 +21,8 @@ open CenteredMomentEnergyLowFixedRadialEntry CenteredMomentEnergyInputParentCapa
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentAmplificationChildInput CenteredMomentInductionEnergy
 open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-local notation "O" => HeckeFamily.O
+open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckePrimeAnnular
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=
   CenteredMomentEnergyOriginalSource.energyOriginalSourceDecidableSum
@@ -86,9 +87,9 @@ theorem natural_low_source_bound
   obtain ⟨Ψ,hΨs,hΨn,Sd,St,Cd,Ct,hCd,hCt,hred⟩:=
     original_low_reduction (ι:=ι) bΦ hbΦ (fun _=>bslot) a b Mcap εdiag ξ saving
       (fun _=>hbslot) ha hb hMcap hεdiag hξ
-  let P:ℝ:=(profileBound W hW aslot bslot lo hi haslot hWs)^(2*Fintype.card ι)
-  let D:ℝ:=Cd*P*Sd.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
-  let T:ℝ:=Ct*P*St.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
+  let P :=(profileBound W hW aslot bslot lo hi haslot hWs)^(2*Fintype.card ι)
+  let D :=Cd*P*Sd.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
+  let T :=Ct*P*St.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
   have hP:0≤P:=pow_nonneg (zero_le_one.trans (profileBound_ge_one W hW aslot bslot lo hi haslot hWs)) _
   have hD:0≤D:=by dsimp [D];positivity
   have hT:0≤T:=by dsimp [T];positivity
@@ -100,11 +101,11 @@ theorem natural_low_source_bound
   let s:=sourceInput Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
     w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂
   have hZ:0<Z:=zero_lt_one.trans hz.1
-  have hPi:∀i,1≤s.P i:=fun i=>Real.one_le_rpow hz.1.le (hw i)
+  have hPi:∀i,1≤ s.P i:=fun i=>Real.one_le_rpow hz.1.le (hw i)
   have hv:volume s≤Z^Mcap:=original_volume_cap s Z κ Mcap hz.1 hκ hPi (by
     change length Z X₁+length Z X₂+6*κ*(∑i,Real.logb Z (Z^(w i)))≤Mcap
     simpa only [Real.logb_rpow hZ hz.1.ne'] using hcap)
-  have hscale:1≤state.radial.scale:=by rw [state.scale_eq];exact Real.one_le_rpow hz.1.le state.row_nonneg
+  have hscale:1≤ state.radial.scale:=by rw [state.scale_eq];exact Real.one_le_rpow hz.1.le state.row_nonneg
   have hKi:state.radial.scale⁻¹≤Z^Mcap:=
     (inv_le_one_of_one_le₀ hscale).trans (Real.one_le_rpow hz.1.le hMcap)
   have hbound:=hz.2 s (p.profile 0) (p.profile 1) rfl rfl (p.support 0) (p.support 1)
@@ -114,7 +115,7 @@ theorem natural_low_source_bound
       (profileBound_ge_one W hW aslot bslot lo hi haslot hWs) le_rfl (fun _=>le_rfl)
   have hsquare:(p.control S)^2≤(p.control (insert (0,0) S))^2:=
     pow_le_pow_left₀ (p.control_nonneg S) (control_mono p S) 2
-  let F:ℝ:=(p.control (insert (0,0) S))^2*(1+|t|+height)^J*Z^(state.width+e)
+  let F :=(p.control (insert (0,0) S))^2*(1+|t|+height)^J*Z^(state.width+e)
   have hF:0≤F:=by dsimp [F];positivity
   have hheight1:1≤(1+|t|+height)^J:=one_le_pow₀ (by linarith [abs_nonneg t])
   have hscalePower (x:ℝ)(hx:x≤e):state.radial.scale*Z^x≤Z^(state.width+e):=by
@@ -159,8 +160,8 @@ theorem natural_low_source_bound
   dsimp [F] at hh ⊢
   nlinarith only [hh]
 
-end SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
 
-end
 
-end OAI
+
+
+

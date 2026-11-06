@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannLaplaceRemainder.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -19,7 +20,6 @@ and linear amplitude terms. The quadratic error is integrable and
 has its exact x^(-5/2) scale.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set
@@ -93,8 +93,6 @@ theorem norm_neumannLaplaceIntegral_sub_approximation_le {x : ℝ} (hx : 0 < x) 
     unfold neumannLaplaceApproximation
     push_cast
     ring
-  rw [he] at h
-  convert h using 1
-  ring
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -10,12 +10,12 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open ActualEisensteinCubic EisensteinSchwartzPoisson
 open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCanonicalFirst CenteredMomentFirstReduced
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
+open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion
+open scoped EisensteinO
 
 theorem weighted_fourier_summable (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
     (c w : O → ℂ) (B : ℝ) (hc : ∀ h,‖c h‖≤B) (hw : ∀ h,‖w h‖≤1) :
@@ -67,8 +67,15 @@ theorem lattice_fourier_split (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
       exact_mod_cast retained_add_discarded R (normValue h) hp
     rw [← add_mul,← add_mul,he,one_mul]
 
-def canonicalRetainedTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+section
+variable (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+include I J hI hJ
+
+section
+variable (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ))
+include E W
+
+def canonicalRetainedTerm  (K Tsec Z ξ : ℝ) : ℂ :=
   let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
@@ -83,8 +90,7 @@ def canonicalRetainedTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
           (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) h*
         paperRadialFourier W ((k/normValue (a*(b*r)))*normValue h))
 
-def canonicalZeroTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
+def canonicalZeroTerm  (K : ℝ) : ℂ :=
   let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
@@ -96,31 +102,43 @@ def canonicalZeroTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
       (tripleFourier a b r (supported_element_ne_zero _ (residualGenerator_supported I J hI))
         (supported_element_ne_zero _ (residualGenerator_supported J I hJ)) (finitePrimeModulus_ne_zero _)
         (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) 0*paperRadialFourier W 0))
+end
 
-def canonicalRetainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+
+section
+variable (W : 𝓢(ℝ,ℂ))
+include W
+
+def canonicalRetainedPair  (K Tsec Z ξ : ℝ) : ℂ :=
   ∑ E∈inactiveSubsets I J,canonicalRetainedTerm I J hI hJ E W K Tsec Z ξ
 
-def canonicalZeroPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
+def canonicalZeroPair  (K : ℝ) : ℂ :=
   ∑ E∈inactiveSubsets I J,canonicalZeroTerm I J hI hJ E W K
+end
+end
 
-def retainedEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+
+section
+variable (η : Character) (m A : O) (t : ℝ)
+    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ))
+include η m A t S c W
+
+def retainedEnergy  (K Tsec Z ξ : ℝ) : ℂ :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       canonicalRetainedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K Tsec Z ξ
 
-def zeroEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
+def zeroEnergy  (K : ℝ) : ℂ :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       canonicalZeroPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K
-
-end SevenEighths.CenteredMomentFirstLocalization
-
 end
 
-end OAI
+
+
+
+
+
+

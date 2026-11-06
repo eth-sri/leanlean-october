@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailCollapse
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
+open InverseMomentGlobalPrincipalMass
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseSecondPrincipalCaller
+open InverseWholePriorityRetainedSource
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
@@ -124,7 +124,7 @@ theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
           (SchwartzMap.seminorm ℝ 0 0 om)^2*(Z^(-(saving+13*Lcap))*Z^(13*Lcap)) := by ring
         _ = _ := by rw [he]
 
-end SevenEighths.InverseMomentGlobalPriorityTail
-end
 
-end OAI
+
+
+

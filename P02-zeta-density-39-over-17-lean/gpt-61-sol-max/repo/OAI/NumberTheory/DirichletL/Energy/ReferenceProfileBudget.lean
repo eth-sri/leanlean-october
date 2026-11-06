@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceProfileBudget
@@ -13,7 +14,7 @@ open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfil
 open CenteredMomentFiniteProfileExceptional
 
 lemma control_mono {S T:Finset (ℕ×ℕ)}(h:S⊆T)(W:𝓢(ℝ,ℂ)):
-    sourceControl S W≤sourceControl T W:=Seminorm.le_def.mp (Finset.sup_mono h) W
+    sourceControl S W≤ sourceControl T W:=Seminorm.le_def.mp (Finset.sup_mono h) W
 
 theorem reference_envelopes (a b:ℝ)(ha:0<a)
     (S T Slong:Finset (ℕ×ℕ))(degree n nlong:ℕ)(Cref Dchild Dref:ℝ)
@@ -44,7 +45,7 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
   have hTU:T⊆U:=by intro x hx;simp [U,hx]
   have hlU:Slong⊆U:=by intro x hx;simp [U,hx]
   have hzU:(0,0)∈U:=by simp [U]
-  have hz:(schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁≤sourceControl U W₁:=
+  have hz:(schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁≤ sourceControl U W₁:=
     Seminorm.le_def.mp (Finset.le_sup hzU) W₁
   have hp:(independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S≤Ca*A*(2*H)^(2*na):=by
     apply (hprof W₁ W₂ hs₁ hs₂ t t).trans
@@ -83,9 +84,7 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
       (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
   have hheightpow:(1+‖t‖)^(2*nlong)≤H^(2*nlong):=by
     apply pow_le_pow_left₀ (by positivity)
-    dsimp only [H]
-    simp only [Real.norm_eq_abs]
-    linarith
+    bound
   have hcm: Cref*Dchild≤C:=by dsimp only [C];nlinarith [sq_nonneg Ca,pow_nonneg (show (0:ℝ)≤2 by norm_num) (4*na)]
   have hce:Dref≤C:=by dsimp only [C];nlinarith [sq_nonneg Ca,pow_nonneg (show (0:ℝ)≤2 by norm_num) (4*na)]
   have hcd:Ca^2*2^(4*na)≤C:=by dsimp only [C];nlinarith
@@ -104,8 +103,8 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
       _≤C*A^2*H^J:=mul_le_mul_of_nonneg_left
         (pow_le_pow_right₀ hH (by dsimp only [J];omega)) (mul_nonneg hC.le (sq_nonneg A))
 
-end SevenEighths.CenteredMomentEnergyReferenceProfileBudget
 
-end
 
-end OAI
+
+
+

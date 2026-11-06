@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem full_second_supported_tail (order : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
@@ -43,7 +43,7 @@ theorem full_second_supported_tail (order : ℕ) :
     (secondSourceTailCost_bounded_test p hp hg hinj F Ψ hΨ m c d Hcol B Y H lengthScale
       (Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) order hB hY hH (by positivity) hL hcol hsupp)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

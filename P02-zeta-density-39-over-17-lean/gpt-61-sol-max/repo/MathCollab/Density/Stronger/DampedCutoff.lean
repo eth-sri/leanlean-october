@@ -9,7 +9,6 @@ public import Mathlib.Tactic
 
 open Real Set
 open scoped BigOperators ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -24,9 +23,13 @@ theorem dampedCutoff_contDiff {ψ : ℝ → ℝ} (hψ : ContDiff ℝ ∞ ψ) (q 
 theorem dampedCutoff_tsupport (ψ : ℝ → ℝ) (q : ℝ) :
     tsupport (dampedCutoff ψ q) ⊆ tsupport ψ := tsupport_mul_subset_left
 
+section
+variable {a q y : ℝ} (ha : 0 < a) (hq : 0 ≤ q)
+    (hy : a ≤ y) (n : ℕ)
+include a q y ha hq hy n
+
 /-- Explicit domination of every parameter power by the damping. -/
-theorem damping_power_bound {a q y : ℝ} (ha : 0 < a) (hq : 0 ≤ q)
-    (hy : a ≤ y) (n : ℕ) :
+theorem damping_power_bound  :
     q^n * Real.exp (-q*y) ≤ (n.factorial : ℝ) / a^n := by
   have hf : (0 : ℝ) < n.factorial := by positivity
   have hp : (q*a)^n ≤ (n.factorial : ℝ) * Real.exp (q*a) := by
@@ -43,14 +46,15 @@ theorem damping_power_bound {a q y : ℝ} (ha : 0 < a) (hq : 0 ≤ q)
       exact mul_le_mul hp he (Real.exp_pos _).le (by positivity)
     _ = n.factorial := by rw [mul_assoc, ← Real.exp_add]; simp
 
-theorem norm_iteratedDeriv_damping_le {a q y : ℝ}
-    (ha : 0 < a) (hq : 0 ≤ q) (hy : a ≤ y) (n : ℕ) :
+theorem norm_iteratedDeriv_damping_le  :
     ‖iteratedDeriv n (fun x : ℝ => Real.exp (-q*x)) y‖ ≤
       (n.factorial : ℝ) / a^n := by
   rw [iteratedDeriv_exp_const_mul, norm_mul, norm_pow,
     Real.norm_eq_abs, abs_neg, abs_of_nonneg hq, Real.norm_eq_abs,
     abs_of_pos (Real.exp_pos _)]
   exact damping_power_bound ha hq hy n
+end
+
 
 theorem tsupport_iteratedDeriv_subset (f : ℝ → ℝ) (n : ℕ) :
     tsupport (iteratedDeriv n f) ⊆ tsupport f := by
@@ -104,4 +108,4 @@ theorem dampedCutoff_uniform_derivatives {ψ : ℝ → ℝ} {a b : ℝ}
     rw [image_eq_zero_of_notMem_tsupport hn, norm_zero]
     exact hC
 
-end MathCollab.Density.Stronger
+

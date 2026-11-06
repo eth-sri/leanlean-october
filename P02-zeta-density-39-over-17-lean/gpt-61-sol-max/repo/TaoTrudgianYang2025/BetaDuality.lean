@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.ExponentPair
 
@@ -20,7 +21,7 @@ open scoped Expdb NNReal
 noncomputable section
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 open Expdb
 
@@ -43,7 +44,7 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
   have hdiffLeOne : l - k ≤ 1 := by
     dsimp [InExponentPairTriangle] at htriangle
     linarith
-  let margin : ℝ := (1 - (α : ℝ)) / 2
+  let margin := (1 - (α : ℝ)) / 2
   have hmargin : 0 < margin := by
     dsimp [margin]
     linarith
@@ -62,7 +63,7 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
     (exponentialSum F T N a b) T (exponentPairLine k l α)
     hT hTunbounded).2
   intro ε hε
-  let η : ℝ := ε / 3
+  let η := ε / 3
   have hη : 0 < η := by
     dsimp [η]
     linarith
@@ -109,4 +110,4 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
         dsimp [η, exponentPairLine]
         nlinarith)
 
-end TaoTrudgianYang2025
+

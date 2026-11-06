@@ -5,15 +5,14 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPrefixFourthMajorant
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
-noncomputable section
 
-open GafniTao Set
+
+open GafniTao
 
 namespace TaoTrudgianYang2025
 
@@ -30,4 +29,4 @@ theorem sargos_character_sub_norm_le (x y : ℝ) :
   simpa only [fordAdditiveCharacter,Real.norm_eq_abs,abs_mul,
     abs_of_nonneg (by positivity : (0 : ℝ) ≤ 2*Real.pi)] using h
 
-end TaoTrudgianYang2025
+

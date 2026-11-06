@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -183,7 +183,7 @@ theorem secondSourceTailCost_bounded_test
         (mul_nonneg (pow_nonneg h128 _) hC)
     _ = _ := by ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

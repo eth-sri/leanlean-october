@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaQuadraticRemainder
 
@@ -12,13 +13,13 @@ smooth weight is retained, so this can be applied where the original
 cutoff is constant without paying its remote transition derivatives.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem abs_segmentTaylorAverage_le_closed
     {f : ℝ → ℝ} {l r a x M : ℝ}
@@ -68,9 +69,9 @@ theorem norm_integral_sq_mul_betaQuadraticKernel_le_local
     (hd : ∀ z ∈ Icc (-H) H, |deriv V z| ≤ L) :
     ‖∫ z in (-H)..H, ((z^2*V z : ℝ) : ℂ)*betaQuadraticKernel T z‖ ≤
       (2*H*M+2*H*(M+H*L))/(2*Real.pi*T) := by
-  let c : ℂ := ((-2*Real.pi*T : ℝ) : ℂ)*Complex.I
-  let U : ℝ → ℂ := fun z => ((z*V z : ℝ) : ℂ)
-  let U' : ℝ → ℂ := fun z => ((V z+z*deriv V z : ℝ) : ℂ)
+  let c := ((-2*Real.pi*T : ℝ) : ℂ)*Complex.I
+  let U := fun z => ((z*V z : ℝ) : ℂ)
+  let U' := fun z => ((V z+z*deriv V z : ℝ) : ℂ)
   have hDV : Continuous (deriv V) := by
     simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
       hV.continuous_iteratedDeriv 1 (by simp)
@@ -191,4 +192,4 @@ theorem quadraticRemainderConstant_le_inverse_window
   rw [he]
   exact add_le_add le_rfl (div_le_div_of_nonneg_right hb (by positivity))
 
-end TaoTrudgianYang2025
+

@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
+open MeasureTheory InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 
@@ -101,7 +101,7 @@ theorem normalized_surviving_physical_source_energy_type_uniform_uniform_degree
   rw [hsX,hsY,hsB,hsL]
   convert hee using 1 ; ring
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

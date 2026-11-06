@@ -10,12 +10,11 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonWeightedGram
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
+
 open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_atkinsonBlockCoefficientEnergy_le {ε : ℝ} (hε : 0 < ε) :
@@ -52,4 +51,4 @@ theorem exists_atkinsonBlockCoefficientEnergy_le {ε : ℝ} (hε : 0 < ε) :
       rw [Real.rpow_add hmR,Real.rpow_one]
       ring
 
-end MathCollab.Density.Stronger.Atkinson
+

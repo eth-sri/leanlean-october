@@ -10,34 +10,49 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicRows
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
+open ConcreteTraceCRT
 open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
 open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+open CenteredMomentFirstAmplificationChoice
+open scoped HeckeO
 
-def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=
+section
+variable (rows : Finset O) (n : Fin 4→ℤ)
+include rows n
+
+def activeRows  : Finset O :=
   rows.filter (fun h => h∈dyadRows (n 1))
 
-lemma mem_activeRows (rows : Finset O) (n : Fin 4→ℤ) (h : O) :
+section
+variable (h : O)
+include h
+
+lemma mem_activeRows  :
     h∈activeRows rows n ↔ h∈rows ∧ dyadicWeight (n 1) (normValue h)≠0 := by
   simp only [activeRows,Finset.mem_filter,mem_dyadRows]
 
-lemma activeRows_nonzero (rows : Finset O) (n : Fin 4→ℤ) (h : O)
-    (hh : h∈activeRows rows n) : h≠0 :=
+section
+variable (hh : h∈activeRows rows n)
+include hh
+
+lemma activeRows_nonzero  : h≠0 :=
   dyadRows_ne_zero (n 1) h (Finset.mem_filter.mp hh).2
 
-lemma activeRows_norm (rows : Finset O) (n : Fin 4→ℤ) (h : O)
-    (hh : h∈activeRows rows n) :
+lemma activeRows_norm  :
     1≤normValue h ∧ dyadicScale (n 1)/4<normValue h ∧ normValue h<dyadicScale (n 1) :=
   ⟨normValue_ge_one h (activeRows_nonzero rows n h hh),
     dyadicWeight_support (n 1) ((mem_activeRows rows n h).mp hh).2⟩
+end
+end
 
-lemma activeRows_scale_gt_one (rows : Finset O) (n : Fin 4→ℤ)
+
+lemma activeRows_scale_gt_one 
     (hne : (activeRows rows n).Nonempty) : 1<dyadicScale (n 1) := by
   obtain ⟨h,hh⟩:=hne
   exact (activeRows_norm rows n h hh).1.trans_lt (activeRows_norm rows n h hh).2.2
+end
+
 
 lemma row_log_window (n : ℤ) (h : O) :
     logAnnulus (Real.log (‖eisEmbedding h‖^2/dyadicScale n)) =
@@ -74,8 +89,8 @@ theorem block_activeRows (η : Character) (m A : O) (t : ℝ)
     simp only [hd,windows,row_log_window,hw,Complex.ofReal_zero,
       mul_zero,zero_mul,ite_self,Finset.sum_const_zero]
 
-end SevenEighths.CenteredMomentFirstPhysicalDyadicRows
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.CompactEnergyFamilies
 
 @[expose] public section
@@ -8,75 +9,75 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 namespace CanonicalRowCompletion
 
 section
@@ -84,7 +85,11 @@ open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 
-theorem localRowValue_zero_of_mem (x : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) (hx : x∈P) :
+section
+variable (x : ActualEisensteinCubic.O)
+include x
+
+theorem localRowValue_zero_of_mem  (P : Ideal ActualEisensteinCubic.O) (hx : x∈P) :
     localRowValue x P = 0 := by
   unfold localRowValue
   split_ifs with h
@@ -93,15 +98,21 @@ theorem localRowValue_zero_of_mem (x : ActualEisensteinCubic.O) (P : Ideal Actua
     exact MulChar.map_nonunit _ (not_isUnit_zero)
   · rfl
 
-theorem idealRowHom_zero_of_dvd (x : ActualEisensteinCubic.O) {P I : Ideal ActualEisensteinCubic.O}
+theorem idealRowHom_zero_of_dvd  {P I : Ideal ActualEisensteinCubic.O}
     (hP : Prime P) (hPI : P∣I) (hx : x∈P) : idealRowHom x I = 0 := by
   obtain ⟨J,rfl⟩ := hPI
   rw [map_mul]
   have hz : idealRowHom x P = 0 := by
     rw [idealRowHom,primeValueHom_prime _ P hP,localRowValue_zero_of_mem x P hx]
   rw [hz,zero_mul]
+end
 
-theorem columnWeight_zero_of_mask (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) {P I : Ideal ActualEisensteinCubic.O}
+
+section
+variable (Ψ : ActualEisensteinCubic.O →* ℂ)
+include Ψ
+
+theorem columnWeight_zero_of_mask  (m f z : ActualEisensteinCubic.O) {P I : Ideal ActualEisensteinCubic.O}
     (hP : Prime P) (hPI : P∣I) (hm : m∈P) :
     columnWeight (rowTwist Ψ m f z) I = 0 := by
   unfold columnWeight
@@ -120,9 +131,11 @@ theorem columnWeight_zero_of_mask (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z
       (Ψ (primaryGenerator I) * idealRowHom _ (Ideal.span {primaryGenerator I})) = 0
     rw [(primaryGenerator_spec I hg).1,idealRowHom_zero_of_dvd _ hP hPI hx,mul_zero,mul_zero]
 
-theorem columnWeight_zero_of_not_squarefree (Ψ : ActualEisensteinCubic.O →* ℂ) {I : Ideal ActualEisensteinCubic.O}
+theorem columnWeight_zero_of_not_squarefree  {I : Ideal ActualEisensteinCubic.O}
     (hI : ¬Squarefree I) : columnWeight Ψ I = 0 := by
   simp [columnWeight,squarefreeGaussCoefficient,hI]
+end
+
 
 theorem weighted_column_support (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
     (hSp : ∀P∈S,Prime P) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (hm : ∀P∈S,m∈P)
@@ -153,7 +166,11 @@ open ActualEisensteinCubic
 open CompletedGauss hiding O
 open FirstPassCubeLabels hiding O
 
-theorem localRowValue_mul (a b : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) :
+section
+variable (a b : ActualEisensteinCubic.O)
+include a b
+
+theorem localRowValue_mul  (P : Ideal ActualEisensteinCubic.O) :
     localRowValue (a*b) P = localRowValue a P * localRowValue b P := by
   unfold localRowValue
   split_ifs with h
@@ -161,7 +178,7 @@ theorem localRowValue_mul (a b : ActualEisensteinCubic.O) (P : Ideal ActualEisen
     simp only [map_mul]
   · simp
 
-theorem idealRowHom_argument_mul (a b : ActualEisensteinCubic.O) (I : Ideal ActualEisensteinCubic.O) :
+theorem idealRowHom_argument_mul  (I : Ideal ActualEisensteinCubic.O) :
     idealRowHom (a*b) I = idealRowHom a I * idealRowHom b I := by
   by_cases hI : I=0
   · rw [hI,map_zero,map_zero,map_zero,zero_mul]
@@ -177,8 +194,14 @@ theorem idealRowHom_argument_mul (a b : ActualEisensteinCubic.O) (I : Ideal Actu
       rw [localRowValue_mul,ih]
       ring
   exact hprod _
+end
 
-theorem rowTwist_row_factor (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z n : ActualEisensteinCubic.O) :
+
+section
+variable (Ψ : ActualEisensteinCubic.O →* ℂ)
+include Ψ
+
+theorem rowTwist_row_factor  (m f z n : ActualEisensteinCubic.O) :
     rowTwist Ψ m f z n =
       rowTwist Ψ m f 1 n * idealRowHom z (Ideal.span {n}) := by
   change Ψ n * idealRowHom (m^6*f^4*z) (Ideal.span {n}) =
@@ -186,7 +209,7 @@ theorem rowTwist_row_factor (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z n : A
   rw [mul_one,idealRowHom_argument_mul]
   ring
 
-theorem cubeWeight_row_factor (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (B : Ideal ActualEisensteinCubic.O) :
+theorem cubeWeight_row_factor  (m f z : ActualEisensteinCubic.O) (B : Ideal ActualEisensteinCubic.O) :
     cubeWeight (rowTwist Ψ m f z) B =
       cubeWeight (rowTwist Ψ m f 1) B * idealRowHom z B^3 := by
   by_cases hB : primaryGenerator B=0
@@ -204,6 +227,8 @@ theorem cubeWeight_row_factor (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : A
       (_ * rowTwist Ψ m f 1 (primaryGenerator B)^3 / _) * _
     rw [rowTwist_row_factor,(primaryGenerator_spec B hB).1,mul_pow]
     ring
+end
+
 
 theorem idealRowHom_prime_powers {ι : Type*} (P : ι → Ideal ActualEisensteinCubic.O)
     [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i) (pool : Finset ι)
@@ -223,9 +248,13 @@ open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 
-def excludedGenerator (S : Finset (Ideal ActualEisensteinCubic.O)) : ActualEisensteinCubic.O := idealGenerator (∏P∈S,P)
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O))
+include S
 
-theorem excludedGenerator_mem (S : Finset (Ideal ActualEisensteinCubic.O)) {P : Ideal ActualEisensteinCubic.O} (hP : P∈S) :
+def excludedGenerator  : ActualEisensteinCubic.O := idealGenerator (∏P∈S,P)
+
+theorem excludedGenerator_mem  {P : Ideal ActualEisensteinCubic.O} (hP : P∈S) :
     excludedGenerator S∈P := by
   have hdiv : P∣∏Q∈S,Q := Finset.dvd_prod_of_mem (fun Q:Ideal ActualEisensteinCubic.O=>Q) hP
   have hm : idealGenerator (∏Q∈S,Q)∈Ideal.span {idealGenerator (∏Q∈S,Q)} :=
@@ -233,25 +262,25 @@ theorem excludedGenerator_mem (S : Finset (Ideal ActualEisensteinCubic.O)) {P : 
   rw [span_idealGenerator] at hm
   exact (Ideal.dvd_iff_le.mp hdiv) hm
 
-theorem excludedGenerator_not_mem_pool (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
+theorem excludedGenerator_not_mem_pool  (D : ℕ)
     (hSp : ∀P∈S,Prime P)
     (i : primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)) :
     excludedGenerator S∉i.val := by
   intro hm
-  have hprime : Prime i.val := Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
+  have hprime := Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
   have hspan : Ideal.span {excludedGenerator S} ≤ i.val :=
     Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm)
   change Ideal.span {idealGenerator (∏Q∈S,Q)} ≤ i.val at hspan
   rw [span_idealGenerator] at hspan
-  have hdiv : i.val∣∏Q∈S,Q := Ideal.dvd_iff_le.mpr hspan
+  have hdiv := Ideal.dvd_iff_le.mpr hspan
   obtain ⟨P,hPS,hPi⟩ := (hprime.dvd_finsetProd_iff (fun Q:Ideal ActualEisensteinCubic.O=>Q)).mp hdiv
-  have heq : i.val=P := (prime_dvd_prime_iff_eq hprime (hSp P hPS)).mp hPi
+  have heq := (prime_dvd_prime_iff_eq hprime (hSp P hPS)).mp hPi
   obtain ⟨I,hI,hfactor⟩ := mem_primePool_iff.mp i.property
-  have ho : I∈outsideIdealsUpTo S D := (Finset.mem_filter.mp hI).1
+  have ho := (Finset.mem_filter.mp hI).1
   have hd : i.val∣I := UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hfactor
   exact (mem_outsideIdealsUpTo.mp ho).2.2 P hPS (heq ▸ hd)
 
-theorem outside_pool_fixed_mask (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
+theorem outside_pool_fixed_mask  (D : ℕ)
     (hbad : fixedBadPrimes⊆S) (hSp : ∀P∈S,Prime P)
     (T : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D))) :
     rowCoprimeMask (fun i=>Ideal.span {poolPrimary (InitialMeanSquare.outsideSquarefreeIdeals S D) i})
@@ -262,6 +291,8 @@ theorem outside_pool_fixed_mask (S : Finset (Ideal ActualEisensteinCubic.O)) (D 
   change excludedGenerator S ∈ Ideal.span {poolPrimary (InitialMeanSquare.outsideSquarefreeIdeals S D) i} at hmem
   rw [poolPrimary_span _ (InitialMeanSquare.outsideSquarefree_admissible S D hbad)] at hmem
   exact excludedGenerator_not_mem_pool S D hSp i hmem
+end
+
 
 theorem canonicalSourceCoefficient_fixed_mask {ι : Type*} [DecidableEq ι]
     (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -300,17 +331,27 @@ open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open CompletedGauss hiding O
 
-def cubeIndex (F : Finset (Ideal ActualEisensteinCubic.O)) (B : Ideal ActualEisensteinCubic.O) : primePool F →₀ ℕ :=
+section
+variable (F : Finset (Ideal ActualEisensteinCubic.O))
+include F
+
+section
+variable (B : Ideal ActualEisensteinCubic.O)
+include B
+
+def cubeIndex  : primePool F →₀ ℕ :=
   Finsupp.equivFunOnFinite.symm (fun i=>(UniqueFactorizationMonoid.normalizedFactors B).count i.val)
 
-@[simp] theorem cubeIndex_apply (F : Finset (Ideal ActualEisensteinCubic.O)) (B : Ideal ActualEisensteinCubic.O) (i : primePool F) :
+@[simp] theorem cubeIndex_apply  (i : primePool F) :
     cubeIndex F B i = (UniqueFactorizationMonoid.normalizedFactors B).count i.val := by
   simp [cubeIndex]
+end
 
-def cubeIdeal (F : Finset (Ideal ActualEisensteinCubic.O)) (v : primePool F →₀ ℕ) : Ideal ActualEisensteinCubic.O :=
+
+def cubeIdeal  (v : primePool F →₀ ℕ) : Ideal ActualEisensteinCubic.O :=
   ∏i:primePool F,i.val^v i
 
-theorem cubeIdeal_cubeIndex (F : Finset (Ideal ActualEisensteinCubic.O)) (B : Ideal ActualEisensteinCubic.O) (hB : B≠0)
+theorem cubeIdeal_cubeIndex  (B : Ideal ActualEisensteinCubic.O) (hB : B≠0)
     (hcover : ∀P∈UniqueFactorizationMonoid.normalizedFactors B,P∈primePool F) :
     cubeIdeal F (cubeIndex F B) = B := by
   have hsub : (UniqueFactorizationMonoid.normalizedFactors B).toFinset ⊆ primePool F := by
@@ -325,21 +366,27 @@ theorem cubeIdeal_cubeIndex (F : Finset (Ideal ActualEisensteinCubic.O)) (B : Id
       (Finset.prod_multiset_count_of_subset _ _ hsub).symm
     _ = B := Ideal.prod_normalizedFactors_eq_self hB
 
-theorem cubeIndex_inj (F : Finset (Ideal ActualEisensteinCubic.O)) (B C : Ideal ActualEisensteinCubic.O) (hB : B≠0) (hC : C≠0)
+theorem cubeIndex_inj  (B C : Ideal ActualEisensteinCubic.O) (hB : B≠0) (hC : C≠0)
     (hb : ∀P∈UniqueFactorizationMonoid.normalizedFactors B,P∈primePool F)
     (hc : ∀P∈UniqueFactorizationMonoid.normalizedFactors C,P∈primePool F)
     (heq : cubeIndex F B = cubeIndex F C) : B=C := by
   have he := congrArg (cubeIdeal F) heq
   rwa [cubeIdeal_cubeIndex F B hB hb,cubeIdeal_cubeIndex F C hC hc] at he
+end
 
-theorem outside_cubeIdeal_cubeIndex (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
+
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
+include S D
+
+theorem outside_cubeIdeal_cubeIndex 
     {B : Ideal ActualEisensteinCubic.O} (hB : B∈outsideIdealsUpTo S D) :
     cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D)
       (cubeIndex (InitialMeanSquare.outsideSquarefreeIdeals S D) B) = B := by
   exact cubeIdeal_cubeIndex _ B (outsideIdealsUpTo_ne_bot S D B hB)
     (InitialMeanSquare.outside_factors_mem_pool S D hB)
 
-theorem sum_outside_cubeIndex (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (a : Ideal ActualEisensteinCubic.O → ℂ) :
+theorem sum_outside_cubeIndex  (a : Ideal ActualEisensteinCubic.O → ℂ) :
     (∑B∈outsideIdealsUpTo S D,a B) =
       ∑v∈(outsideIdealsUpTo S D).image (cubeIndex (InitialMeanSquare.outsideSquarefreeIdeals S D)),
         a (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) := by
@@ -352,6 +399,8 @@ theorem sum_outside_cubeIndex (S : Finset (Ideal ActualEisensteinCubic.O)) (D : 
       (outsideIdealsUpTo_ne_bot S D C hC)
       (InitialMeanSquare.outside_factors_mem_pool S D hB)
       (InitialMeanSquare.outside_factors_mem_pool S D hC) he
+end
+
 
 theorem cubeIdeal_ne_zero (F : Finset (Ideal ActualEisensteinCubic.O)) (v : primePool F →₀ ℕ) :
     cubeIdeal F v ≠ 0 := by
@@ -360,27 +409,12 @@ theorem cubeIdeal_ne_zero (F : Finset (Ideal ActualEisensteinCubic.O)) (v : prim
 
 end CanonicalRowCompletion
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
 
-end SecondPassIntegration
 
 open scoped BigOperators Classical
 open MeasureTheory
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
-open RayFourExpansion (RayCharacter crossCoeff)
 
-section
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
-  [∀i,(Ideal.span {p i}).IsMaximal]
 
-end
 
-end SecondPassArithmetic
 
-end
 
-end OAI

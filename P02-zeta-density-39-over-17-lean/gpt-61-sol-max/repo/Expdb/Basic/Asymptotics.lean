@@ -1,4 +1,5 @@
 module
+import Mathlib
 
 public import Expdb.Basic.Definitions
 public import Mathlib.Analysis.Asymptotics.Theta
@@ -32,41 +33,41 @@ namespace Expdb
 
 universe u v
 
-/-- A family indexed by the ambient natural-number parameter. -/
+/- A family indexed by the ambient natural-number parameter. -/
 abbrev VariableObject (α : Type u) := ℕ → α
 
-/-- A family of functions whose domain may depend on the ambient natural-number parameter. -/
+/- A family of functions whose domain may depend on the ambient natural-number parameter. -/
 abbrev VariableFunction (domain : VariableObject (Type u)) (codomain : Type v) :=
   ∀ i, domain i → codomain
 
 namespace VariableObject
 
-/-- The constant variable object with value `x`. -/
+/- The constant variable object with value `x`. -/
 abbrev fixed {α : Type u} (x : α) : VariableObject α := fun _ ↦ x
 
 variable {α : Type u} [SeminormedAddCommGroup α]
 
-/-- A variable object whose norm tends to infinity. -/
+/- A variable object whose norm tends to infinity. -/
 def IsUnbounded (X : VariableObject α) : Prop :=
   Tendsto (fun i ↦ ‖X i‖) atTop atTop
 
-/-- A variable object is unbounded iff its norm eventually exceeds every fixed threshold. -/
+/- A variable object is unbounded iff its norm eventually exceeds every fixed threshold. -/
 theorem isUnbounded_iff_forall_eventually_norm_ge (X : VariableObject α) :
     X.IsUnbounded ↔ ∀ C : ℝ, ∀ᶠ i in atTop, C ≤ ‖X i‖ := by
   rw [IsUnbounded, tendsto_atTop]
 
-/-- For a nonnegative real variable object, being unbounded is the same as tending to
+/- For a nonnegative real variable object, being unbounded is the same as tending to
 infinity. -/
 theorem isUnbounded_iff_tendsto_atTop {X : VariableObject ℝ} (hX : ∀ i, 0 ≤ X i) :
     X.IsUnbounded ↔ Tendsto X atTop atTop := by
   rw [IsUnbounded]
   exact tendsto_congr fun i ↦ by rw [Real.norm_eq_abs, abs_of_nonneg (hX i)]
 
-/-- A variable object whose norm tends to zero. -/
+/- A variable object whose norm tends to zero. -/
 def IsInfinitesimal (X : VariableObject α) : Prop :=
   Tendsto (fun i ↦ ‖X i‖) atTop (nhds 0)
 
-/-- A variable object is infinitesimal iff its norm is eventually below every positive
+/- A variable object is infinitesimal iff its norm is eventually below every positive
 tolerance. -/
 theorem isInfinitesimal_iff_forall_pos (X : VariableObject α) :
     X.IsInfinitesimal ↔
@@ -81,7 +82,7 @@ namespace VariableFunction
 variable {domain : VariableObject (Type u)}
 variable {α : Type v} [SeminormedAddCommGroup α]
 
-/-- A variable function that is infinitesimal along every variable choice.
+/- A variable function that is infinitesimal along every variable choice.
 The choice may vary with the ambient index; it is not a fixed point of the domain. -/
 def IsChoicewiseInfinitesimal (f : VariableFunction domain α) : Prop :=
   ∀ x : ∀ i, domain i, VariableObject.IsInfinitesimal (fun i ↦ f i (x i))
@@ -96,19 +97,19 @@ section InfinitesimalRelations
 
 variable {E : Type u} [SeminormedAddCommGroup E]
 
-/-- The relation `X = Y + o(1)`, meaning that `X - Y` is infinitesimal. -/
+/- The relation `X = Y + o(1)`, meaning that `X - Y` is infinitesimal. -/
 def IsEqUpToInfinitesimal (X Y : VariableObject E) : Prop :=
   (X - Y).IsInfinitesimal
 
-/-- The relation `X ≤ Y + o(1)`, meaning that the positive part of `X - Y` is
+/- The relation `X ≤ Y + o(1)`, meaning that the positive part of `X - Y` is
 infinitesimal. -/
 def IsLEUpToInfinitesimal (X Y : VariableObject ℝ) : Prop :=
   VariableObject.IsInfinitesimal (fun i ↦ max (X i - Y i) 0)
 
-/-- `X =o Y` denotes `X = Y + o(1)`, not the little-o relation `X = o(Y)`. -/
+/- `X =o Y` denotes `X = Y + o(1)`, not the little-o relation `X = o(Y)`. -/
 scoped[Expdb] infix:50 " =o " => Expdb.IsEqUpToInfinitesimal
 
-/-- `X ≤o Y` denotes `X ≤ Y + o(1)`. -/
+/- `X ≤o Y` denotes `X ≤ Y + o(1)`. -/
 scoped[Expdb] infix:50 " ≤o " => Expdb.IsLEUpToInfinitesimal
 
 open scoped Expdb
@@ -121,50 +122,45 @@ private theorem isEqUpToInfinitesimal_iff_tendsto_sub
     Tendsto (fun i ↦ X i - Y i) atTop (nhds 0)
   exact tendsto_zero_iff_norm_tendsto_zero.symm
 
-/-- The relation `=o` is reflexive. -/
+/- The relation `=o` is reflexive. -/
 theorem IsEqUpToInfinitesimal.refl (X : VariableObject E) :
     X =o X := by
   rw [isEqUpToInfinitesimal_iff_tendsto_sub]
   simpa only [Pi.sub_apply, sub_self] using
     (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ (0 : E)) atTop (nhds 0))
 
-/-- The relation `=o` is symmetric. -/
-theorem IsEqUpToInfinitesimal.symm
-    {X Y : VariableObject E} (h : X =o Y) :
-    Y =o X := by
-  rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h ⊢
-  simpa only [Pi.sub_apply, neg_sub, neg_zero] using h.neg
 
-/-- The relation `=o` is transitive. -/
-theorem IsEqUpToInfinitesimal.trans
-    {X Y Z : VariableObject E} (hXY : X =o Y) (hYZ : Y =o Z) :
-    X =o Z := by
-  rw [isEqUpToInfinitesimal_iff_tendsto_sub] at hXY hYZ ⊢
-  simpa only [sub_add_sub_cancel, zero_add] using hXY.add hYZ
 
-/-- The relation `=o` is preserved by negation. -/
+
+
+/- The relation `=o` is preserved by negation. -/
 theorem IsEqUpToInfinitesimal.neg
     {X Y : VariableObject E} (h : X =o Y) :
     -X =o -Y := by
   rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h ⊢
   simpa [sub_eq_add_neg, add_comm] using h.neg
 
-/-- The relation `=o` is preserved by addition. -/
+section
+variable {X₁ X₂ Y₁ Y₂ : VariableObject E}
+    (h₁ : X₁ =o Y₁) (h₂ : X₂ =o Y₂)
+include X₁ X₂ Y₁ Y₂ h₁ h₂
+
+/- The relation `=o` is preserved by addition. -/
 theorem IsEqUpToInfinitesimal.add
-    {X₁ X₂ Y₁ Y₂ : VariableObject E}
-    (h₁ : X₁ =o Y₁) (h₂ : X₂ =o Y₂) :
+     :
     X₁ + X₂ =o Y₁ + Y₂ := by
   rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h₁ h₂ ⊢
   simpa only [Pi.add_apply, add_sub_add_comm, zero_add] using h₁.add h₂
 
-/-- The relation `=o` is preserved by subtraction. -/
+/- The relation `=o` is preserved by subtraction. -/
 theorem IsEqUpToInfinitesimal.sub
-    {X₁ X₂ Y₁ Y₂ : VariableObject E}
-    (h₁ : X₁ =o Y₁) (h₂ : X₂ =o Y₂) :
+     :
     X₁ - X₂ =o Y₁ - Y₂ := by
   simpa only [sub_eq_add_neg] using h₁.add h₂.neg
+end
 
-/-- The relation `=o` is preserved by multiplication by a fixed scalar. -/
+
+/- The relation `=o` is preserved by multiplication by a fixed scalar. -/
 theorem IsEqUpToInfinitesimal.const_smul
     {𝕜 : Type u} {F : Type v}
     [NormedField 𝕜] [SeminormedAddCommGroup F] [NormedSpace 𝕜 F]
@@ -173,7 +169,7 @@ theorem IsEqUpToInfinitesimal.const_smul
   rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h ⊢
   simpa only [Pi.sub_apply, Pi.smul_apply, smul_sub, smul_zero] using h.const_smul c
 
-/-- `X =o Y` iff `X` and `Y` are eventually within every positive tolerance. -/
+/- `X =o Y` iff `X` and `Y` are eventually within every positive tolerance. -/
 theorem isEqUpToInfinitesimal_iff_forall_pos
     (X Y : VariableObject E) :
     (X =o Y) ↔
@@ -183,7 +179,7 @@ theorem isEqUpToInfinitesimal_iff_forall_pos
 
 end InfinitesimalRelations
 
-/-- `X ≤o Y` iff `X i ≤ Y i + δ` eventually for every `δ > 0`. -/
+/- `X ≤o Y` iff `X i ≤ Y i + δ` eventually for every `δ > 0`. -/
 theorem isLEUpToInfinitesimal_iff_forall_pos (X Y : VariableObject ℝ) :
     (X ≤o Y) ↔
     ∀ δ : ℝ, 0 < δ → ∀ᶠ i in atTop, X i ≤ Y i + δ := by
@@ -199,7 +195,7 @@ theorem isLEUpToInfinitesimal_iff_forall_pos (X Y : VariableObject ℝ) :
     rw [Real.norm_eq_abs, abs_of_nonneg (le_max_right _ _)]
     exact max_lt (by linarith) hδ
 
-/-- For real variable objects, `X =o Y` iff `X ≤o Y` and `Y ≤o X`. -/
+/- For real variable objects, `X =o Y` iff `X ≤o Y` and `Y ≤o X`. -/
 theorem isEqUpToInfinitesimal_iff_leUpToInfinitesimal
     (X Y : VariableObject ℝ) :
     (X =o Y) ↔ (X ≤o Y ∧ Y ≤o X) := by
@@ -224,4 +220,4 @@ theorem isEqUpToInfinitesimal_iff_leUpToInfinitesimal
     rw [abs_lt]
     constructor <;> linarith
 
-end Expdb
+

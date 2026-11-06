@@ -9,14 +9,18 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hinj
+
 def firstFreshSecondPoisson
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
     (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
@@ -28,9 +32,12 @@ def firstFreshSecondPoisson
         (columnLog p (primeProductNorm p D*X)) negative (-t) D) G U V *
       maskedSecondDual p hg hp hinj G U V rowMajorant Y else 0
 
+section
+variable (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+include hc
+
 theorem firstFreshSecondPoisson_fixed_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
     (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
@@ -55,8 +62,7 @@ theorem firstFreshSecondPoisson_fixed_pool
       (columnLog p (primeProductNorm p D*X)) negative (-t) D) rowMajorant Y hY
 
 theorem first_fresh_core_energy_to_second
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
@@ -92,8 +98,11 @@ theorem first_fresh_core_energy_to_second
       exact firstCoreInputRow_finite_le_second_poisson p hg hp hinj hc F D B v ε₁ ε₂
         negative χ Ψ m H (fun u => ω (Real.exp u))
         (columnLog p (primeProductNorm p D*X)) c d r (-t) rows Y hY hrows
-
 end
-end SevenEighths.InverseMoment
+end
 
-end OAI
+
+
+
+
+

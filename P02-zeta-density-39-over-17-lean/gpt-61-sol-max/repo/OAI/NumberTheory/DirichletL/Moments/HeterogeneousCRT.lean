@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.Local
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentHeterogeneousCRT
 open CenteredMomentCorrelation
@@ -66,13 +67,13 @@ theorem fullCorrelation_three_equiv {ι X Y R : Type*} [Fintype ι]
   have he : left x - right y = k ↔
       (fun i => li i (eX x i)) - (fun i => ri i (eY y i)) = eR k := by
     rw [← eR.injective.eq_iff, map_sub]
-    have hleft : eR (left x) = fun i => li i (eX x i) := funext (hl x)
-    have hright : eR (right y) = fun i => ri i (eY y i) := funext (hr y)
+    have hleft := funext (hl x)
+    have hright := funext (hr y)
     rw [hleft, hright]
   simp only [he]
 
-end SevenEighths.CenteredMomentHeterogeneousCRT
 
-end
 
-end OAI
+
+
+

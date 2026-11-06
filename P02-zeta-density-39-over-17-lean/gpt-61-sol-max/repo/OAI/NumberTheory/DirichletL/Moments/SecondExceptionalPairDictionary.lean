@@ -13,10 +13,10 @@ open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss U
 open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
 open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
 open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
 open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
@@ -66,8 +66,8 @@ theorem original_pair (s:Input ι)(η τ₁ τ₂:Character)(χ ξ:RayCharacter)
     actual_reflected_sector_window s η τ₂ ξ A D hD R seed L t w Y z hτ₂]
   ring
 
-end SevenEighths.CenteredMomentSecondExceptionalPairDictionary
 
-end
 
-end OAI
+
+
+

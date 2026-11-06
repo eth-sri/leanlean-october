@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.LongMultiplicityReduction
 public import MathCollab.Density.Stronger.LongScalarBudget
 public import MathCollab.Density.Stronger.FinalParameters
@@ -8,15 +9,18 @@ public import MathCollab.Density.DensityDyadicSummation
 
 open Filter MeasureTheory Set
 open scoped BigOperators
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
+
+section
+variable {σ δ η ν D : ℝ}
+    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8)
+    (hδm : δ < (1-smoothingExponent σ)/12) (hη : 0 < η)
+include σ δ η ν D hσ hσ' hδ hδ' hδm hη
 
 /-- Conditional on the displayed literal twelfth moment, the actual long
 subset, including analytic multiplicities, retains an exponent saving. -/
-theorem smoothLongZeroCount_bound_of_twelfth_moment {σ δ η ν D : ℝ}
-    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8)
-    (hδm : δ < (1-smoothingExponent σ)/12) (hη : 0 < η)
+theorem smoothLongZeroCount_bound_of_twelfth_moment 
     (hν : 0 ≤ ν) (hν' : ν ≤ (1-smoothingExponent σ)/8) (hD : 0 ≤ D)
     (hmoment : ∀ᶠ T : ℝ in atTop,
       (∫ t in Icc 0 (3*T), zetaMomentCriticalNorm t^12) ≤ D*T^(2+ν)) :
@@ -50,9 +54,7 @@ theorem smoothLongZeroCount_bound_of_twelfth_moment {σ δ η ν D : ℝ}
 
 /-- All original positive-slab zeros are counted, conditionally only on the
 literal actual-zeta twelfth moment displayed below. -/
-theorem stronger_slab_bound_of_twelfth_moment {σ δ η ν D : ℝ}
-    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8)
-    (hδm : δ < (1-smoothingExponent σ)/12) (hη : 0 < η)
+theorem stronger_slab_bound_of_twelfth_moment 
     (hmargin : 8*η < σ-3/4) (hν : 0 ≤ ν) (hν' : ν ≤ (1-smoothingExponent σ)/8)
     (hD : 0 ≤ D)
     (hmoment : ∀ᶠ T : ℝ in atTop,
@@ -70,6 +72,8 @@ theorem stronger_slab_bound_of_twelfth_moment {σ δ η ν D : ℝ}
   have hl' := hlT.trans (mul_le_mul_of_nonneg_left hp hCl.le)
   rw [smooth_zeroCount_partition η σ δ T, Nat.cast_add]
   nlinarith
+end
+
 
 /-- Conditional final interface. The twelfth-moment estimate is an explicit
 analytic hypothesis, not a theorem proved or assumed by this module. Every
@@ -79,8 +83,7 @@ theorem stronger_density_bound_of_twelfth_moment {σ ε : ℝ}
     (hσ : 3/4 < σ) (hσ' : σ < 1) (hε : 0 < ε)
     (hmoment : ∀ ν : ℝ, 0 < ν → ∃ D : ℝ, 0 < D ∧ ∀ᶠ T : ℝ in atTop,
       (∫ t in Icc 0 (3*T), zetaMomentCriticalNorm t^12) ≤ D*T^(2+ν)) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T : ℝ) ≤ C*T^(3*(1-σ)/(2*σ)+ε) := by
+    MathCollab.Density.ZetaBound σ ((3*(1-σ)/(2*σ)+ε)) := by
   obtain ⟨δ,η,ν,hδ,hδ',hδm,hη,hmargin,hηε,hν,hν'⟩ := exists_stronger_loss_parameters hσ hε
   obtain ⟨D,hD,hm⟩ := hmoment ν hν
   obtain ⟨C,hC,hslab⟩ := stronger_slab_bound_of_twelfth_moment
@@ -94,7 +97,6 @@ theorem stronger_density_bound_of_twelfth_moment {σ ε : ℝ}
   apply (hbound T hT).trans
   apply mul_le_mul_of_nonneg_left _ hB.le
   apply Real.rpow_le_rpow_of_exponent_le (by linarith : 1 ≤ T)
-  change densityExponent σ+12*η ≤ densityExponent σ+ε
-  linarith
+  bound
 
-end MathCollab.Density.Stronger
+

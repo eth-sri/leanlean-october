@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GramWeightedFrequency
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalTrivial
 public import OAI.NumberTheory.DirichletL.Detector.GramFrequencySummation
@@ -7,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramFrequencySummation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma gramFrequency_image_sum (E : Finset GramFrequency) (f : O→ℝ) :
@@ -82,7 +83,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     have hpos : 0<1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H := by positivity
     rw [Real.rpow_neg hpos.le,Real.rpow_two,←div_eq_mul_inv]
     apply (le_div_iff₀ (sq_pos_of_pos hpos)).mpr
-    convert hb using 1 ; dsimp [V] ; ring
+    convert hb using 1 ; ring
   calc
     _≤∑k∈E,‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖ := norm_sum_le _ _
     _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) := Finset.sum_le_sum (fun k _=>hp k)
@@ -90,7 +91,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     _≤V*(L*((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val)^ε*H^(1/6:ℝ)) := mul_le_mul_of_nonneg_left hc hV
     _=_ := by dsimp [V];ring
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

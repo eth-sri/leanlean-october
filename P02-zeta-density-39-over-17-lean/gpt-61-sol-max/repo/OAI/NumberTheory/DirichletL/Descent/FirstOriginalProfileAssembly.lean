@@ -8,9 +8,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows CompletedHeight
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment ActualEisensteinCubic SecondPassArithmetic
+
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -21,14 +21,17 @@ def coefficient (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
   firstCanonicalCoefficient p hp hcop hg x.1.1 x.1.2.1 negative Ψ m (divisorElement p x.1)
     (mark (if negative then x.1.1.rightExponent else x.1.1.leftExponent)) x.2
 
-def weight (β : Ideal O→(ι→₀ℕ)→ℂ)
+section
+variable (β : Ideal O→(ι→₀ℕ)→ℂ)
     (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
+include β R Ψ m
+
+def weight 
     (x : OriginalIndex ι) : ℂ :=
   retainedCubeWeight p hp hcop hg x.1.1 x.1.2.1 Ψ Ψ m m
     (divisorElement p x.1) (firstOriginalWeight p β R x.1) x.2
 
-def sourceSummand (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
+def sourceSummand 
     (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
     (x : OriginalIndex ι) (j : FirstCommonIndex ι) : ℂ :=
   weight p hp hcop hg β R Ψ m x *
@@ -37,6 +40,8 @@ def sourceSummand (β : Ideal O→(ι→₀ℕ)→ℂ)
     firstNormProfile (fun y=>star (W y)) W Φ (fun _ _=>1) K
       (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
         (divisorElement p x.1) x.2.2 j)
+end
+
 
 theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
@@ -57,7 +62,7 @@ theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   simp only [firstNormProfile,mul_div_cancel₀ _ hleft,mul_div_cancel₀ _ hright]
   ring
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

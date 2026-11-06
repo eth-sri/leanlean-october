@@ -11,15 +11,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily
 open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
 open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondPhysicalBlock
+open CenteredMomentCanonicalFirst
 open CenteredMomentSectorLocalization CenteredMomentActiveSource
 open CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentFirstSectors CenteredMomentSourceRow RayFourExpansion
-local notation "O"=>HeckeFamily.O
+open RayFourExpansion
+open scoped HeckeO
+
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma live_radical_sum_le (η:Character)(S:Finset (Ideal O))(β:Ideal O→ℂ)(K R H:ℝ):
@@ -89,8 +90,8 @@ theorem source_part_radical_bound (B L Cr ε:ℝ)(hB:0≤B)(hL:0≤L)
     (mul_le_mul_of_nonneg_left (hZ seed hs hs0 S β hmask hnorm K
       (frequencyRadius Tsec Z ξ) H hK hR hH) hE)
 
-end SevenEighths.CenteredMomentSecondExceptionalAggregate
 
-end
 
-end OAI
+
+
+

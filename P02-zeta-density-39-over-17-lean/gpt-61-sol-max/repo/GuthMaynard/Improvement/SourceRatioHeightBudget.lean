@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceRatioAssembly
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -30,12 +30,8 @@ theorem sourceHeight_sqrt_le_of_lt {N T : ℝ}
     (h : sourceHeight N T < 2*N) : Real.sqrt T ≤ sourceHeight N T := by
   have he : sourceHeight N T=max 2 (Real.sqrt T) := by
     unfold sourceHeight at h ⊢
-    rcases min_choice (2*N) (max 2 (Real.sqrt T)) with he | he
-    · rw [he] at h
-      exact False.elim (lt_irrefl _ h)
-    · exact he
-  rw [he]
-  exact le_max_right _ _
+    grind
+  simp_all
 
 /-- Actual least dyadic cover. Minimality yields the strict factor-two
 overshoot and correctly makes the full-height case have zero shells. -/
@@ -83,8 +79,12 @@ theorem source_height_inverse_sum (Y : ℝ) (J : ℕ) :
     simp only [mul_inv_rev,inv_pow]
     ring
 
+section
+variable {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
+include N T hN hT
+
 /-- The high-height derivative loss is sqrt(T), whenever high shells exist. -/
-theorem source_high_height_budget {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
+theorem source_high_height_budget 
     (hhigh : sourceHeight N T < 2*N) :
     N*T/sourceHeight N T ≤ N*Real.sqrt T := by
   have hY := (sourceHeight_bounds hN hT).1
@@ -97,7 +97,7 @@ theorem source_high_height_budget {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
 
 /-- One least cover simultaneously supplies both shell budgets and the
 empty-high-range conclusion, with absolute constants 4 and 2. -/
-theorem source_height_shell_budgets {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T) :
+theorem source_height_shell_budgets  :
     ∃ J : ℕ, 2*N ≤ (2:ℝ)^J*sourceHeight N T ∧
       (∀ j < J, (2:ℝ)^j*sourceHeight N T < 2*N) ∧
       (J=0 ↔ sourceHeight N T=2*N) ∧
@@ -114,17 +114,16 @@ theorem source_height_shell_budgets {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T) :
     have hy : 0 ≤ (sourceHeight N T)⁻¹ := by positivity
     rw [div_eq_mul_inv]
     nlinarith [mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hy) hp]
+end
+
 
 theorem source_log_mass_ge_one {N : ℝ} (hN : 2 ≤ N) : 1 ≤ Real.log (2*N) := by
   have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ)<2)
-  norm_num at hh
   have hlog : Real.log 4 ≤ Real.log (2*N) := Real.log_le_log (by norm_num) (by linarith)
   have he : Real.log 4=2*Real.log 2 := by
     have hx := Real.log_mul (by norm_num : (2:ℝ) ≠ 0) (by norm_num : (2:ℝ) ≠ 0)
-    norm_num at hx
-    linarith
-  rw [he] at hlog
-  linarith
+    grind
+  bound
 
 /-- Scalar low-height Fourier cost, with all source quantities actual and
 no sampling or variation estimate among the premises. -/
@@ -139,9 +138,7 @@ theorem source_sampling_low_scalar {N T c M : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
   have hp : 0 ≤ Real.pi*(1+c) := by positivity
   have hY := (sourceHeight_bounds hN hT).2.2
   have hK : (2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M ≤
-      4*Real.pi*(1+c)*T*M := by
-    apply mul_le_mul_of_nonneg_right _ hM
-    nlinarith [mul_le_mul_of_nonneg_left hY (show 0 ≤ 2*Real.pi by positivity)]
+      4*Real.pi*(1+c)*T*M := by field_simp <;> nlinarith
   have hW : 0 ≤ 16*N^2*Real.log (2*N) := by positivity
   have hK0 : 0 ≤ (2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M := by positivity
   apply (sq_le_sq₀ (by positivity) (by positivity)).mp
@@ -194,4 +191,4 @@ theorem source_sampling_scalar_budget (c : ℝ) (hc : 0 ≤ c) :
       (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith [Real.pi_pos]) hZ)
     _ = _ := by dsimp [Z]; ring
 
-end GuthMaynard.Improvement
+

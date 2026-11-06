@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.PrimeRows.HighFromMoments
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorDyadic
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorTransport
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCollected
 
 @[expose] public section
@@ -12,9 +13,9 @@ open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open ProbeRaySlots
 open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -22,8 +23,8 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -60,7 +61,7 @@ theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rm
     (hgeometric : sigma+8*e+nu≤63/800) (hprincipal : sigma+nu≤17/48000)
     (hwindow : sigma+e≤(7/8)*(dmax*rmin))
     (hfloorbudget : 2*ζ+26*e+(N+8)*eps+loss+mesh/6+nu+sigma≤7/1200)
-    (hcentral : sigma+nu+dyadCost≤saving) (counts : CountParameters M H εm) :
+    (hcentral : sigma+nu+dyadCost≤ saving) (counts : CountParameters M H εm) :
     letI : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∃n : ℕ,0<n ∧ ∃C : ℝ,
       0<C ∧
@@ -81,7 +82,7 @@ theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rm
         detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u)) (3*(idx u+1:ℕ)*Z^τ)<a+2*e ∧
         (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j) s=0 ∧
           ¬((sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j).residue=1 ∧ s=1) ∧
-          a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
+          a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
       (∀u∈rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ)),
         (calibrationForSet S hmax).residueMonoid u.val≠0 →
         (∀θ,(rayCubeFamily M H hH u θ).residue≠1) ∧
@@ -159,8 +160,8 @@ theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rm
   have hsum := (norm_add_le _ _).trans (add_le_add herror hcentral')
   simpa only [rows,sub_add_cancel,add_mul] using hsum
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

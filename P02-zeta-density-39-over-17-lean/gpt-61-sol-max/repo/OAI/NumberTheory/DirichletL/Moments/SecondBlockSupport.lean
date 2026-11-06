@@ -5,21 +5,29 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockSupport
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorFrequency CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
+open scoped EisensteinO
 
-theorem normalizedBlock_zero_of_common (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
     (C D : Ideal O) (hC:Supported C) (hD:Supported D)
     (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+    (R:ℝ) (rows:Finset O)
+include η t S β C D hC hD hCD U R rows
+
+section
+variable (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+include W K n
+
+theorem normalizedBlock_zero_of_common 
     (hz:∀z∈rows,idealCorrelation C D hC hD
       ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z)=0) :
     normalizedBlock η t S β C D hC hD U R rows W K n=0 := by
@@ -37,10 +45,7 @@ theorem normalizedBlock_zero_of_common (η : Character) (t : ℝ) (S : Finset (I
     ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z) (hz z hzr)
   simpa only [sectorFrequency,F,mul_zero] using congrArg (fun x:ℂ=>retainedScalar C D U R z*x) he
 
-theorem normalizedBlock_nonzero_common (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+theorem normalizedBlock_nonzero_common 
     (hne:normalizedBlock η t S β C D hC hD U R rows W K n≠0) :
     ∃z∈rows,idealCorrelation C D hC hD
       (commonFrequencyGenerator C D*(nonunitFrequencyGenerator C D U*z))≠0 := by
@@ -49,11 +54,10 @@ theorem normalizedBlock_nonzero_common (η : Character) (t : ℝ) (S : Finset (I
   apply hne
   exact normalizedBlock_zero_of_common η t S β C D hC hD hCD U R rows W K n
     (fun z hz=>by simpa only [mul_assoc] using hn z hz)
+end
 
-theorem physicalBlock_nonzero_common (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0)
+
+theorem physicalBlock_nonzero_common  (hrows:∀z∈rows,z≠0)
     (W:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) (n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     ∃z∈rows,idealCorrelation C D hC hD
@@ -61,9 +65,11 @@ theorem physicalBlock_nonzero_common (η : Character) (t : ℝ) (S : Finset (Ide
   rw [physicalBlock_eq η t S β C D hC hD U R rows hrows W K hK n] at hne
   exact normalizedBlock_nonzero_common η t S β C D hC hD hCD U R rows W K n
     (right_ne_zero_of_mul hne)
-
-end SevenEighths.CenteredMomentSecondBlockSupport
-
 end
 
-end OAI
+
+
+
+
+
+

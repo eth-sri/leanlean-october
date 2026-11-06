@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceBoxing
 
 @[expose] public section
@@ -21,9 +22,13 @@ namespace GafniTao
 
 noncomputable section
 
-/-- The source-sequence version of the local mixed mean (3.20). -/
-def wooleySourcePolynomialMixedResidueMoment {k : ℕ}
+section
+variable {k : ℕ}
     (phi : WooleyPolynomialSystem k)
+include k phi
+
+/-- The source-sequence version of the local mixed mean (3.20). -/
+def wooleySourcePolynomialMixedResidueMoment 
     (s r p B a b : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : WooleySourceSequence) (xi : ZMod (p ^ a))
     (eta : ZMod (p ^ b)) : ℝ :=
@@ -36,8 +41,7 @@ def wooleySourcePolynomialMixedResidueMoment {k : ℕ}
             (2 * (s - wooleyTriangular r))
 
 /-- The literal source-sequence version of `K^r_{a,b}` from (3.19). -/
-def wooleySourcePolynomialMixedMean {k : ℕ}
-    (phi : WooleyPolynomialSystem k)
+def wooleySourcePolynomialMixedMean 
     (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : WooleySourceSequence) : ℝ :=
   if wooleySourceMassSq gamma = 0 then 0
@@ -50,7 +54,7 @@ def wooleySourcePolynomialMixedMean {k : ℕ}
               phi s r p B a b gamma xi eta
 
 theorem wooleySourcePolynomialMixedResidueMoment_nonneg
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (s r p B a b : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : WooleySourceSequence) (xi : ZMod (p ^ a))
     (eta : ZMod (p ^ b)) :
@@ -60,7 +64,7 @@ theorem wooleySourcePolynomialMixedResidueMoment_nonneg
   positivity
 
 theorem wooleySourcePolynomialMixedMean_nonneg
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : WooleySourceSequence) :
     0 ≤ wooleySourcePolynomialMixedMean
@@ -79,11 +83,17 @@ theorem wooleySourcePolynomialMixedMean_nonneg
         (wooleySourceResidueMassSq_nonneg gamma (p ^ b) eta))
       (wooleySourcePolynomialMixedResidueMoment_nonneg
         phi s r p B a b gamma xi eta)
+end
+
+
+section
+variable {Q k : ℕ} (phi : WooleyPolynomialSystem k)
+include Q k phi
 
 /-- The local source mixed moment of a box sequence is definitionally the
 finite-box polynomial mixed moment, after the proved residue-sum bridge. -/
 theorem wooleySourcePolynomialMixedResidueMoment_box
-    {Q k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (s r p B a b : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) (xi : ZMod (p ^ a))
     (eta : ZMod (p ^ b)) :
@@ -97,7 +107,7 @@ theorem wooleySourcePolynomialMixedResidueMoment_box
 
 /-- Exact source/finite-box bridge for (3.19). -/
 theorem wooleySourcePolynomialMixedMean_box
-    {Q k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) :
     wooleySourcePolynomialMixedMean phi s r p B a b nu
@@ -109,12 +119,18 @@ theorem wooleySourcePolynomialMixedMean_box
   · rfl
   · simp_rw [wooleySourceResidueMassSq_box,
       wooleySourcePolynomialMixedResidueMoment_box]
+end
+
+
+section
+variable {p a b nu : ℕ} [NeZero p] (hna : nu ≤ a) (hnb : nu ≤ b)
+    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b))
+include p a b nu hna hnb xi eta
 
 /-- Separation is inequality after reduction to the common depth.  The
 depth hypotheses are exactly the divisibility assumptions used in (3.19). -/
 theorem wooleyResiduesSeparated_iff_cast_ne
-    {p a b nu : ℕ} [NeZero p] (hna : nu ≤ a) (hnb : nu ≤ b)
-    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) :
+     :
     wooleyResiduesSeparated nu xi eta ↔
       ZMod.castHom (pow_dvd_pow p hna) (ZMod (p ^ nu)) xi ≠
         ZMod.castHom (pow_dvd_pow p hnb) (ZMod (p ^ nu)) eta := by
@@ -134,26 +150,25 @@ theorem wooleyResiduesSeparated_iff_cast_ne
 /-- Adding the same integer to residue labels at two depths preserves the
 source separation relation. -/
 theorem wooleyResiduesSeparated_add_iff
-    {p a b nu : ℕ} [NeZero p] (hna : nu ≤ a) (hnb : nu ≤ b)
-    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) (t : ℤ) :
+     (t : ℤ) :
     wooleyResiduesSeparated nu (xi + (t : ZMod (p ^ a)))
         (eta + (t : ZMod (p ^ b))) ↔
       wooleyResiduesSeparated nu xi eta := by
   rw [wooleyResiduesSeparated_iff_cast_ne hna hnb,
     wooleyResiduesSeparated_iff_cast_ne hna hnb]
   simp only [map_add, map_intCast]
-  constructor
-  · intro h hEq
-    apply h
-    rw [hEq]
-  · intro h hEq
-    apply h
-    exact add_right_cancel hEq
+  simp_all
+end
+
+
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
+include k phi
 
 /-- A simultaneous translation of coefficients and polynomial arguments
 only translates the two residue labels in the local mixed moment. -/
 theorem wooleySourcePolynomialMixedResidueMoment_affinePullback_one
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (s r p B a b : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : WooleySourceSequence) (xi : ZMod (p ^ a))
     (eta : ZMod (p ^ b)) (t : ℤ) :
@@ -166,13 +181,16 @@ theorem wooleySourcePolynomialMixedResidueMoment_affinePullback_one
   unfold wooleySourcePolynomialMixedResidueMoment
   simp_rw [wooleySourceNormalizedPolynomialResidueSum_affinePullback_one]
 
+section
+variable (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
+    (hna : nu ≤ a) (hnb : nu ≤ b)
+    (gamma : WooleySourceSequence)
+include s r p B a b nu hna hnb gamma
+
 /-- The aggregate source mixed mean is translation invariant whenever the
 common separation depth is no larger than either residue depth. -/
 theorem wooleySourcePolynomialMixedMean_affinePullback_one
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (hna : nu ≤ a) (hnb : nu ≤ b)
-    (gamma : WooleySourceSequence) (t : ℤ) :
+     (t : ℤ) :
     wooleySourcePolynomialMixedMean
         (wooleyAffinePolynomialSystem phi 1 t) s r p B a b nu
         (wooleyAffinePullback gamma 1 (by norm_num) t) =
@@ -231,10 +249,7 @@ theorem wooleySourcePolynomialMixedMean_affinePullback_one
 mean after the same checked translation used for the global and conditioned
 means. -/
 theorem wooleySourcePolynomialMixedMean_eq_boxed
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (hna : nu ≤ a) (hnb : nu ≤ b)
-    (gamma : WooleySourceSequence) :
+     :
     wooleySourcePolynomialMixedMean phi s r p B a b nu gamma =
       wooleyPolynomialMixedGridMean
         (wooleyBoxedPolynomialSystem phi gamma) s r p B a b nu
@@ -252,8 +267,11 @@ theorem wooleySourcePolynomialMixedMean_eq_boxed
           (wooleyBoxSourceSequence (wooleySourceBoxCoefficients gamma)) := by
       rw [wooleyBoxSourceSequence_boxCoefficients]
     _ = _ := wooleySourcePolynomialMixedMean_box _ _ _ _ _ _ _ _ _
-
-
+end
 end
 
-end GafniTao
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.DetectorBins
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 
@@ -6,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
-open Set Metric
+open Metric
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
 open HeckeDeletionBounds HeckeReciprocalGrowth
@@ -39,7 +40,11 @@ lemma regular_eq_detector (χ : Character) (s : ℂ) :
   · simp [regular,detectorEntire,HeckePrincipalStrip.sourceNormalized,hχ]
   · simp [regular,detectorEntire_eq_nonprincipal χ hχ,hχ]
 
-lemma regular_nonzero_of_detector (χ : Character) {s : ℂ} (hs : 0<s.re)
+section
+variable (χ : Character) {s : ℂ} (hs : 0<s.re)
+include χ s hs
+
+lemma regular_nonzero_of_detector 
     (hz : detectorEntire χ s≠0) : regular χ s≠0 := by
   rw [regular_eq_detector]
   split_ifs
@@ -50,8 +55,7 @@ lemma regular_nonzero_of_detector (χ : Character) {s : ℂ} (hs : 0<s.re)
     linarith
   · exact hz
 
-lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
-    (hs : 0<s.re) (hz : regular χ s≠0) :
+lemma reciprocal_norm_le_regular_inverse_on_positive  (hz : regular χ s≠0) :
     ‖HeckeReciprocal.reciprocal χ s‖≤‖(regular χ s)⁻¹‖ := by
   have h0 : s≠0 := by intro h;simp [h] at hs
   by_cases hχ : χ.residue=1
@@ -62,7 +66,7 @@ lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
     have hp : s+1≠0 := by
       intro h
       have hr := congrArg Complex.re h
-      simp only [Complex.add_re,Complex.one_re,Complex.zero_re] at hr
+      simp at hr
       linarith
     have hL : LFunction χ s≠0 := by
       intro h
@@ -77,9 +81,15 @@ lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
     rw [norm_div]
     exact (div_le_one (norm_pos_iff.mpr hp)).mpr (principal_regular_factor_bound hs.le)
   · simp only [HeckeReciprocal.reciprocal,regular,ite_eq_right hχ,le_refl]
+end
 
-theorem original_regular_disk_control (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+
+section
+variable (e ε : ℝ)
+    (he : 0<e) (he' : e<1/1000) (hε : 0<ε)
+include e ε he he' hε
+
+theorem original_regular_disk_control  :
     ∃ C : ℝ, 0<C ∧ ∀ (χ : Character), ∀ a t : ℝ,
       1/2≤a → a≤1 →
       (∀ z ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular χ z ≠ 0) →
@@ -107,10 +117,9 @@ theorem original_regular_disk_control (e ε : ℝ)
     linarith
   have hzpos : 0 < z.re := by linarith
   have hdel := hdelete χ.modulus ψ z hzre
-  have hL : regular χ z = regular ψ z*factors χ.modulus ψ z :=
+  have hL :=
     regular_eq_of_mask χ ψ hmask hzpos
-  have hR : HeckeReciprocal.reciprocal χ z =
-      HeckeReciprocal.reciprocal ψ z*(factors χ.modulus ψ z)⁻¹ :=
+  have hR :=
     HeckeDeletionReciprocal.reciprocal_eq_of_mask χ ψ hmask hzpos
   have hrec := reciprocal_norm_le_regular_inverse_on_positive ψ hzpos (hzeroψ z hz2)
   have hdel1 : ‖factors χ.modulus ψ z‖ ≤ Cd*((radical χ.modulus).absNorm : ℝ)^ε := by
@@ -139,8 +148,7 @@ theorem original_regular_disk_control (e ε : ℝ)
       (Real.rpow_le_rpow (mul_nonneg hr0 hc0) (mul_le_mul_of_nonneg_left hQ hr0) hε.le)
       (mul_pos hDp hCd).le
 
-theorem buffered_regular_control (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+theorem buffered_regular_control  :
     ∃C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)
       (T a : ℝ) (i : ℕ),2<T → (51/100:ℝ)≤a → a≤1 →
       detectorMaximum χ (3*(i+1:ℕ)*T)<a+2*e →
@@ -157,8 +165,7 @@ theorem buffered_regular_control (e ε : ℝ)
   exact regular_nonzero_of_detector (χ j) hre
     (detectorEntire_nonzero_on_buffered_disk χ T a e i hT ha he hmax j t ht (ball_subset_closedBall hw))
 
-theorem buffered_rectangle_reciprocal_bound (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+theorem buffered_rectangle_reciprocal_bound  :
     ∃C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)
       (T a H : ℝ) (i : ℕ),2<T → (51/100:ℝ)≤a → a≤1 →
       H≤(3*i+2:ℕ)*T → detectorMaximum χ (3*(i+1:ℕ)*T)<a+2*e →
@@ -183,9 +190,11 @@ theorem buffered_rectangle_reciprocal_bound (e ε : ℝ)
     positivity
   apply (le_trans (le_add_of_nonneg_left (norm_nonneg _)) hb).trans
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hnonneg hc hε.le) hC.le
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

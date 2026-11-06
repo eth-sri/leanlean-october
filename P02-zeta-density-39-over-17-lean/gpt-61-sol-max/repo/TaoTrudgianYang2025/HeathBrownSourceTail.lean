@@ -22,11 +22,15 @@ namespace TaoTrudgianYang2025
 def heathBrownCharacterSum (L : ℕ) (f : ℝ → ℝ) : ℂ :=
   ∑ n ∈ Finset.Icc 1 L, (𝐞 (f n) : ℂ)
 
-def heathBrownSourceTail (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) : ℂ :=
+section
+variable (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ)
+include F T N a L
+
+def heathBrownSourceTail  : ℂ :=
   ∑ n ∈ Finset.Icc 1 L, oscillatory F T N ((a : ℝ)+n)
 
 theorem exponentialSumAt_first_add_heathBrownTail
-    (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
+     :
     exponentialSumAt F T N a (a+L) =
       oscillatory F T N a + heathBrownSourceTail F T N a L := by
   induction L with
@@ -46,10 +50,12 @@ theorem exponentialSumAt_first_add_heathBrownTail
     simp only [Nat.cast_add,Nat.cast_one,add_assoc]
 
 theorem norm_exponentialSumAt_le_one_add_heathBrownTail
-    (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
+     :
     ‖exponentialSumAt F T N a (a+L)‖ ≤ 1+‖heathBrownSourceTail F T N a L‖ := by
   rw [exponentialSumAt_first_add_heathBrownTail]
   exact (norm_add_le _ _).trans_eq (by rw [norm_oscillatory])
+end
+
 
 theorem heathBrownCharacterSum_neg (L : ℕ) (f : ℝ → ℝ) :
     heathBrownCharacterSum L (fun x => -f x) =
@@ -77,4 +83,4 @@ theorem norm_heathBrownSourceTail_eq_signed_characterSum
     rw [he,heathBrownCharacterSum_neg,Complex.norm_conj]
     rfl
 
-end TaoTrudgianYang2025
+

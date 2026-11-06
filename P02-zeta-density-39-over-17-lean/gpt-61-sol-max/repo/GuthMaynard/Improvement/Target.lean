@@ -4,7 +4,6 @@ public import Mathlib
 @[expose] public section
 
 /-! Literal middle-range target. The proof is in `MiddleLargeValues`. -/
-set_option autoImplicit false
 
 namespace GuthMaynard.Improvement
 
@@ -28,4 +27,4 @@ def CandidateMiddleRangeEstimate : Prop :=
       (W.card : ℝ) ≤ C * N ^ ε *
         (N ^ 2 / V ^ 2 + N ^ (18 / 7 : ℝ) * T ^ (6 / 7 : ℝ) / V ^ 4)
 
-end GuthMaynard.Improvement
+

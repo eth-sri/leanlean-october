@@ -11,13 +11,13 @@ The jth derivative costs eta^(-j), uniformly in both endpoints.
 The statement includes overlapping transition bands and reversed intervals.
 -/
 
-noncomputable section
 
-open Set
+
+
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem iteratedDeriv_smoothTransition_affine (j : ℕ) (c d x : ℝ) :
     iteratedDeriv j (fun y => Real.smoothTransition (c*y+d)) x =
@@ -98,4 +98,4 @@ theorem modelPhaseBufferedCutoff_uniform_ordered_jets (Q : ℕ) :
       (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hj)
         (sq_nonneg M)) (pow_nonneg (inv_nonneg.mpr hη.le) _))
 
-end TaoTrudgianYang2025
+

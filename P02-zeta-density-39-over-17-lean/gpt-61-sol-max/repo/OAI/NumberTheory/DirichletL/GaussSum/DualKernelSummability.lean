@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceMellinInversion
 
 @[expose] public section
@@ -8,80 +9,80 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CompletedGauss
 open scoped BigOperators Classical ContDiff
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
 section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma nonzeroDualIdeal_norm_pos (I : NonzeroDualIdeal) :
     0<(Ideal.absNorm I.val:ℝ) := by
@@ -155,17 +156,15 @@ theorem rawDualKernelTerm_summable_norm
 end
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinEis
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinEis
 
-namespace ReflectedBranchData
 
-end ReflectedBranchData
 
 end CompletedGauss
 
@@ -177,7 +176,7 @@ open scoped BigOperators Classical Topology MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance ramifiedFrequencyUnitsFintype : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 lemma ramifiedFrequencyChar_neg_unit (k:Eis) (u:Eisˣ) (n:ℕ) :
@@ -190,7 +189,11 @@ lemma ramifiedFrequencyChar_neg_unit (k:Eis) (u:Eisˣ) (n:ℕ) :
   rw [ramifiedFrequencyChar_mk,ramifiedFrequencyChar_mk,Units.val_neg,neg_mul,
     symbol_neg_numerator _ _ hp]
 
-lemma arithmeticResidueSum_neg_unit (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
+section
+variable (h:Eis)
+include h
+
+lemma arithmeticResidueSum_neg_unit  (u:Eisˣ) (n:ℕ) (hn:2≤n) :
     arithmeticResidueSum (-h) (u.val*lambda^n)=
       arithmeticResidueSum h ((-u).val*lambda^n) := by
   by_cases hd:u.val*lambda^n∣3*(-h)
@@ -206,21 +209,16 @@ lemma arithmeticResidueSum_neg_unit (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
     have hr:arithmeticResidueSum h ((-u).val*lambda^n)=0:=by
       by_contra he
       obtain ⟨k,hk⟩:=ramified_arithmetic_support h (-u) n hn he
-      apply hd
-      refine ⟨k,?_⟩
-      simp only [Units.val_neg] at hk
-      linear_combination -hk
+      simp_all
     rw [hl,hr]
 
-lemma principalResidueTerm_neg (h:Eis) (u:Eisˣ) (n:ℕ) :
+lemma principalResidueTerm_neg  (u:Eisˣ) (n:ℕ) :
     principalResidueTerm (-h) u n=principalResidueTerm h (-u) n := by
   unfold principalResidueTerm
   rw [arithmeticResidueSum_neg_unit h u (n+2) (by omega)]
-  congr 2
-  simp only [Units.val_neg]
-  ring
+  simp
 
-lemma principalArithmeticResidue_neg (h:Eis) :
+lemma principalArithmeticResidue_neg  :
     principalArithmeticResidue (-h)=principalArithmeticResidue h := by
   by_cases hh:h=0
   · rw [hh,neg_zero]
@@ -233,7 +231,7 @@ lemma principalArithmeticResidue_neg (h:Eis) :
     (fun u=>∑n∈Finset.range N,principalResidueTerm h (-u) n)
     (fun u=>∑n∈Finset.range N,principalResidueTerm h u n) (fun _=>rfl)
 
-theorem sourceArithmeticResidue_neg (h:Eis) :
+theorem sourceArithmeticResidue_neg  :
     sourceArithmeticResidue (-h)=sourceArithmeticResidue h := by
   have hU:unramifiedGaussResidue (-(9*h))=unramifiedGaussResidue (9*h):=by
     have he:=unramifiedGaussResidue_of_initial_relation (-(9*h)) (9*h) 0
@@ -245,19 +243,21 @@ theorem sourceArithmeticResidue_neg (h:Eis) :
     AddChar.map_neg_eq_inv,inv_eq_one,principalArithmeticResidue_neg,
     mul_neg,hU]
 
-lemma cubicBesselNormalizer_neg (h:Eis) : cubicBesselNormalizer (-h)=cubicBesselNormalizer h := by
+lemma cubicBesselNormalizer_neg  : cubicBesselNormalizer (-h)=cubicBesselNormalizer h := by
   simp only [cubicBesselNormalizer,cuspFrequency_neg,norm_neg]
 
-theorem sourceResidualFourierCoefficient_neg (h:Eis) :
+theorem sourceResidualFourierCoefficient_neg  :
     sourceResidualFourierCoefficient (-h)=sourceResidualFourierCoefficient h := by
   rw [sourceResidualFourierCoefficient,sourceResidualFourierCoefficient,
     cubicBesselNormalizer_neg,sourceArithmeticResidue_neg]
+end
+
 
 end
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma sourceRayPhase_eq_one_iff_coordinate (h:Eis) :
     ShortDraftTrace.breveE (cuspFrequency h)=1 ↔
@@ -275,8 +275,8 @@ lemma sourceRayPhase_eq_one_iff_coordinate (h:Eis) :
 lemma primary_or_negative_primary_of_source_mask (h:Eis) (h3:¬(3:Eis)∣h)
     (hphase:ShortDraftTrace.breveE (cuspFrequency h)=1) :
     lambda^2∣h-1 ∨ lambda^2∣(-h)-1 := by
-  let a:ℤ:=(ActualEisensteinCoordinates.coords h).1
-  let b:ℤ:=(ActualEisensteinCoordinates.coords h).2
+  let a :=(ActualEisensteinCoordinates.coords h).1
+  let b :=(ActualEisensteinCoordinates.coords h).2
   have heval:h=(a:Eis)+(b:Eis)*omega:=
     (ActualEisensteinCoordinates.eval_coords h).symm
   obtain ⟨B,hB⟩:=(sourceRayPhase_eq_one_iff_coordinate h).mp hphase
@@ -306,7 +306,7 @@ lemma primary_or_negative_primary_of_source_mask (h:Eis) (h3:¬(3:Eis)∣h)
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem sourceFourier_supported_three_of_base_zero (hC:infinityCoefficientScalar=0)
     (h:Eis) (h3:¬(3:Eis)∣h) : sourceResidualFourierCoefficient h=0 := by
@@ -320,7 +320,7 @@ theorem sourceFourier_supported_three_of_base_zero (hC:infinityCoefficientScalar
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem infinityCoefficientScalar_ne_zero : infinityCoefficientScalar≠0 := by
   intro hC
@@ -336,8 +336,8 @@ theorem normalized_infinityCoefficient_squarefree_cube (I J:Ideal Eis)
   rw [infinityCoefficient_squarefree_cube I J hI hJ hsq]
   simp only [←mul_assoc,inv_mul_cancel₀ infinityCoefficientScalar_ne_zero,one_mul]
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

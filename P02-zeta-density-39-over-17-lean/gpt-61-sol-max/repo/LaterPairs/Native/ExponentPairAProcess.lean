@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairOptimizedSource
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                  
@@ -17,7 +16,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                      
 
 
-noncomputable section
+
 
 open Expdb
 
@@ -58,8 +57,7 @@ theorem isExponentPairEstimateNonAsymptotic_aProcess
   have hY : 1 ≤ Y := by
     have h₁ := Real.one_le_rpow hratio (show 0 ≤ k/(2*k+2)+ε by linarith [ht.1])
     have h₂ := Real.one_le_rpow hN (show 0 ≤ l/(2*k+2)+1/2+ε by linarith [ht.2.2.1])
-    dsimp [Y]
-    nlinarith
+    bound
   change ‖exponentialSumAt F T N a b‖ ≤ C*(T/N)^(k/(2*k+2)+ε)*N^(l/(2*k+2)+1/2+ε)
   rw [mul_assoc]
   change ‖exponentialSumAt F T N a b‖ ≤ C*Y
@@ -86,4 +84,4 @@ theorem ExponentPair.aProcess {k l : ℝ} (h : ExponentPair k l) :
   ⟨h.inTriangle.aProcess,isExponentPairEstimate_iff_nonAsymptotic.mpr
     (isExponentPairEstimateNonAsymptotic_aProcess h)⟩
 
-end TaoTrudgianYang2025
+

@@ -14,7 +14,7 @@ statement and proves all normalization and conditioning conversions.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyPadicCount_degree_zero (Q p h : ℕ) :
     wooleyPadicCount (fordVinogradovKappa 0) 0 Q p (0 * h) = 1 := by
@@ -82,6 +82,6 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
     simpa only [Nat.cast_pow, mul_assoc, wooleyTriangular, fordVinogradovKappa] using hmul
 
 
-end
 
-end GafniTao
+
+

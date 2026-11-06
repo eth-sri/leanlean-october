@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see third_party/twelfth/LICENSE-MIT-0.
@@ -12,10 +13,9 @@ public import MathCollab.Density.AbelZetaGrowth
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger
 open MathCollab.Density.ZetaGrowth
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -23,7 +23,7 @@ theorem exists_zetaMomentCriticalNorm_linear_bound :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ t : ℝ, zetaMomentCriticalNorm t ≤ C * (1 + |t|) := by
   obtain ⟨D, hD⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (s := Icc (-1 : ℝ) 1) continuous_zetaMomentCriticalNorm.continuousOn
-  let C : ℝ := max 5 (max D 1)
+  let C := max 5 (max D 1)
   have hC5 : 5 ≤ C := le_max_left _ _
   have hCD : D ≤ C := (le_max_left _ _).trans (le_max_right _ _)
   refine ⟨C, by linarith, ?_⟩
@@ -126,15 +126,12 @@ theorem exists_zetaSquareGaussian_tail_bound :
       zetaSquareGaussianMean T G - zetaSquareGaussianWindow T G L ≤
         C * G * (1 + |T| + G) ^ 2 * Real.exp (-L ^ 2 / 2) := by
   obtain ⟨C₀, hC₀, hbound⟩ := exists_zetaMomentCriticalNorm_linear_bound
-  let K : ℝ → ℝ := fun x => Real.exp (-x ^ 2 / 2) * (1 + |x|) ^ 2
+  let K := fun x => Real.exp (-x ^ 2 / 2) * (1 + |x|) ^ 2
   have hK0 : ∀ x, 0 ≤ K x := by intro x; dsimp [K]; positivity
   have hK : Integrable K := by
     convert integrable_exp_sub_mul_sq_mul_add_abs_pow (C := 1) 0
       (by norm_num : (0 : ℝ) < 1 / 2) 2 using 1
-    funext x
-    dsimp [K]
-    congr 2
-    ring
+    grind
   refine ⟨C₀ ^ 2 * ∫ x : ℝ, K x, mul_nonneg (sq_nonneg _) (integral_nonneg hK0), ?_⟩
   intro T G L hG hL
   have hsplit : zetaSquareGaussianMean T G - zetaSquareGaussianWindow T G L =
@@ -201,7 +198,6 @@ theorem exists_zetaSquareGaussian_log_tail_bound (A : ℝ) :
     _ ≤ G * T ^ 3 * T ^ (-(A + 3)) := by gcongr
     _ = G * T ^ (-A) := by
       rw [mul_assoc, ← Real.rpow_natCast T 3, ← Real.rpow_add hT]
-      congr 2
-      norm_num
+      bound
 
-end MathCollab.Density.Stronger.Atkinson
+

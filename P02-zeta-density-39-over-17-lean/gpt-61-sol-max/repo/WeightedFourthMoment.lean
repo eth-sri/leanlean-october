@@ -6,8 +6,7 @@ public import Mathlib
 /-! Elementary mean-zero fourth-moment contraction. This is a proved ingredient
 for a possible divisor-weight proof of the rational coefficient estimate.
 The multidimensional and arithmetic assembly is not asserted here. -/
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 open scoped ComplexConjugate
 namespace Montgomery.RationalMoment
@@ -41,7 +40,7 @@ theorem mean_zero_fourth_moment {ι : Type*} (S : Finset ι)
     calc
       _ = (∑ x ∈ S, (w x : ℂ)*(conj a*f x)).re := by
         rw [Complex.re_sum]
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+        simp
       _ = (conj a * (∑ x ∈ S, (w x : ℂ)*f x)).re := by
         congr 1
         rw [mul_sum]
@@ -198,4 +197,4 @@ theorem tensorize_fourth_bound {ι κ τ υ : Type*}
   change (∑ y ∈ Y, ∑ x ∈ X, wy y*wx x*‖∑ i ∈ A, F i y*χ i x‖^4) ≤ _
   exact (ht.trans hb).trans_eq (congrArg (fun t : ℝ => t^2) he)
 
-end Montgomery.RationalMoment
+

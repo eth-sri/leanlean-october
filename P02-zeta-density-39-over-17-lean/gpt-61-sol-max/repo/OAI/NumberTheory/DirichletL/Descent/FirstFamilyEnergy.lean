@@ -7,27 +7,31 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic RayFourExpansion
+open JointLogSeparation MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι κ : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def firstFamilySeparatedRow (source : Finset κ) (F : Finset ι)
+section
+variable (source : Finset κ) (F : Finset ι)
+include source F
+
+def firstFamilySeparatedRow 
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
     (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → Eis)
     (s : Fin 9 → ℝ) (z : Frequency × (Fin 9 → ℝ)) : ℂ :=
   ∑ x∈source,w x*firstBlockedSeparatedRow p hg F (selector x) (C₁ x) (C₂ x)
     ω₁ ω₂ (A₁ x) (A₂ x) (C x) (R x) (d x) (h x) s z
 
-def firstFamilyEnergy (source : Finset κ) (F : Finset ι)
+def firstFamilyEnergy 
     (selector C : κ → Finset ι → ℂ) (w : κ → ℂ)
     (negative : Bool) (ω : ℝ → ℂ) (X t : ℝ) (h : κ → Eis) : ℝ :=
   ∑ x∈source,‖w x‖*firstBlockEnergy p hg F (selector x) (C x) negative ω X t (h x)
 
-theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
+theorem first_family_cauchy 
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
     (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → Eis)
     (s : Fin 9 → ℝ) (z : Frequency × (Fin 9 → ℝ)) :
@@ -75,8 +79,10 @@ theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
     simp only [firstFamilyEnergy,firstBlockEnergy,Finset.mul_sum,mul_assoc,Bool.false_eq_true,ite_false]
   rw [hleft,hright] at hc
   exact hc.trans_eq (mul_comm _ _)
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

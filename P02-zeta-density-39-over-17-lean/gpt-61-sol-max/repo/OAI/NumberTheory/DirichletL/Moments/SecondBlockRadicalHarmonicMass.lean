@@ -10,15 +10,15 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondBlockRadicalHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
+
+open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate
 open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
 open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
+
+open CenteredMomentRankinRadical
+
 open CenteredMomentSecondBlockHarmonicMass (ActiveSubsets ActiveBlocks activeSubsetLabel activeSubsetLabel_injective activeSubsetLabel_mem)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def radicalWeight (C D:Ideal O):ℝ:=1/(Ideal.absNorm (commonRadical C D):ℝ)
 
@@ -26,7 +26,11 @@ lemma radicalWeight_nonneg (C D:Ideal O):0≤radicalWeight C D:=by
   unfold radicalWeight
   positivity
 
-lemma active_mass_le_partition (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
+section
+variable (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+include S β
+
+lemma active_mass_le_partition  (Y : ℝ)
     (hN : ∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Y) :
     (∑p : ActiveLabel S β,∑_U : Finset (CommonIndex p.val.1 p.val.2),
       radicalWeight p.val.1 p.val.2)≤
@@ -46,13 +50,15 @@ lemma active_mass_le_partition (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : 
           exact activeSubsetLabel_mem S β Y hN q)
       (fun v _ _=>radicalWeight_nonneg _ _)
 
-lemma active_blocks_sum_eq (S : Finset (Ideal O)) (β : Ideal O→ℂ) (K R H : ℝ) :
+lemma active_blocks_sum_eq  (K R H : ℝ) :
     (∑q : ActiveBlocks S β K R H,radicalWeight q.1.1.val.1 q.1.1.val.2)=
       ∑p : ActiveLabel S β,∑U : Finset (CommonIndex p.val.1 p.val.2),
         (Fintype.card (SourceBlocks p.val.1 p.val.2 U K R H):ℝ)*radicalWeight p.val.1 p.val.2 := by
   rw [Fintype.sum_sigma]
   simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
   exact Fintype.sum_sigma _
+end
+
 
 theorem actual_active_radical_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     ∃C:ℝ,0<C ∧ ∀Z:ℝ,2≤Z → ∀seed:Ideal O,Squarefree seed → seed≠0 →
@@ -111,8 +117,8 @@ theorem actual_block_radical_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
         _ = (C₂*C₁)*(Z^(ε/2)*Z^(ε/2))/(seed.absNorm:ℝ) := by ring
         _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z),add_halves]
 
-end SevenEighths.CenteredMomentSecondBlockRadicalHarmonicMass
 
-end
 
-end OAI
+
+
+

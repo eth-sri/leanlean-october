@@ -16,7 +16,7 @@ is the literal source mean from (3.7), (3.8), or (3.19).
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Literal source-sequence form of the easy branch `B' ≤ nu` in Wooley
 Lemma 7.1. -/
@@ -78,6 +78,6 @@ theorem wooleySourcePolynomial_equation_8_3
       phi (wooleyTriangular k) (r - 1) p B bPrime b nu hnuPrime hnub gamma]
     using hfinite
 
-end
 
-end GafniTao
+
+

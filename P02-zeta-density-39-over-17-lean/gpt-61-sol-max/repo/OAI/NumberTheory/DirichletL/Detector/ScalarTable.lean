@@ -9,24 +9,26 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def gaussValuationTable (Q G : ℂ) (r n j : ℕ) : ℂ :=
   if 6 ∣ r then (if n+1 ≤ j then Q^(n+1) else 0) - (if n ≤ j then Q^n else 0)
   else if j=n then Q^n*G else 0
 
-theorem actualSextic_gaussValuationTable (p : O) (hp : Prime p)
+section
+variable (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+include p hp hg hc
+
+theorem actualSextic_gaussValuationTable 
     (r n j : ℕ) :
     primePowerGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg ^ r) n (p^j) =
       gaussValuationTable (Ideal.absNorm (Ideal.span {p}))
         (primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg ^ r) 1) r n j :=
   actualSextic_primePowerGauss_at_pow p hp hg hc r n j
 
-theorem positiveScalar_actual_table (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem positiveScalar_actual_table 
     (n k j : ℕ) :
     let χ := actualSextic (Ideal.span {p}) hg
     let Q : ℂ := Ideal.absNorm (Ideal.span {p})
@@ -49,6 +51,8 @@ theorem positiveScalar_actual_table (p : O) (hp : Prime p)
         actualSextic_gaussValuationTable p hp hg hc]
       simp
   · rw [ite_eq_right (by omega), ite_eq_right (by omega), positiveScalar_kge_two p hp]
+end
+
 
 theorem zero_index_scalar (p : O) (_hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
@@ -61,7 +65,7 @@ theorem zero_index_scalar (p : O) (_hp : Prime p)
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (dvd_pow_self p hj))
     rw [hz, MulChar.map_zero]
 
-end SevenEighths.ProbePrimePower
-end
 
-end OAI
+
+
+

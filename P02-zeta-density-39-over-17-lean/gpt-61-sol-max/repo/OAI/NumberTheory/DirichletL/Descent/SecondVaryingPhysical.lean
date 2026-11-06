@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance inverseSecondVaryingPhysicalUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 universe u₁ u₂
 variable {ι : Type u₁} {σ : Type u₂} [DecidableEq ι] [DecidableEq σ]
@@ -19,10 +19,14 @@ variable {ι : Type u₁} {σ : Type u₂} [DecidableEq ι] [DecidableEq σ]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-theorem actual_second_varying_modes_common_sectors
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+section
+variable (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (hs : ActualSecondSourceConditions p source) :
+    (hs : ActualSecondSourceConditions p source)
+include hpr Jo source hs
+
+theorem actual_second_varying_modes_common_sectors
+     :
     ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
       ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : MarkedSecondSource ι Jo 0 → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -50,9 +54,7 @@ theorem actual_second_varying_modes_common_sectors
     pool Ψ m z slots₁ slots₂ (lists₁ x) (lists₂ x) a₁ a₂ ω₁ ω₂ G E V B X t
 
 theorem actual_second_varying_balanced_profile_children
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (hs : ActualSecondSourceConditions p source) :
+     :
     ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
       ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : MarkedSecondSource ι Jo 0 → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -120,8 +122,10 @@ theorem actual_second_varying_balanced_profile_children
       filter_upwards with t
       apply congrArg (fun a : ℂ => density t*a)
       exact hsector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ ω₁ ω₂ G E V B X t _
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

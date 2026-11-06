@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CanonicalQuadraticSieve CompletedGauss
+open CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def hybridSquarePool (S : Finset (Ideal Eis × Ideal Eis)) : Finset (Ideal Eis) :=
   (hybridColumnSupport S).image HybridColumnData.square
@@ -43,8 +43,16 @@ theorem hybrid_dyadic_reindex {A : Type*} [AddCommMonoid A]
     (fun d => divisorDyadicLabel N d.common) f
   simpa only [Finset.filter_filter, hybridCommonBlock] using hi.symm
 
-theorem hybridSquarePool_bounds (S : Finset (Ideal Eis × Ideal Eis)) (B : ℝ)
+section
+variable (S : Finset (Ideal Eis × Ideal Eis))
+include S
+
+section
+variable (B : ℝ)
     (hS : ∀ p ∈ S, (Ideal.absNorm p.2 : ℝ) ≤ B)
+include B hS
+
+theorem hybridSquarePool_bounds 
     (t : Ideal Eis) (ht : t ∈ hybridSquarePool S) :
     1 ≤ (Ideal.absNorm t : ℝ) ∧ (Ideal.absNorm t : ℝ) ≤ B := by
   obtain ⟨d, hd, rfl⟩ := Finset.mem_image.mp ht
@@ -55,8 +63,7 @@ theorem hybridSquarePool_bounds (S : Finset (Ideal Eis × Ideal Eis)) (B : ℝ)
     (hS d.reconstruct ((mem_hybridColumnSupport S d).mp hd))
   exact dvd_mul_of_dvd_right (dvd_pow_self d.square (by norm_num : 2 ≠ 0)) _
 
-theorem hybridSquarePool_bin_count (S : Finset (Ideal Eis × Ideal Eis)) (B : ℝ)
-    (hS : ∀ p ∈ S, (Ideal.absNorm p.2 : ℝ) ≤ B)
+theorem hybridSquarePool_bin_count 
     (j : Fin (columnDyadicLength B + 1)) :
     ((divisorDyadicBin (hybridSquarePool S) B j).card : ℝ) ≤
       256 * divisorDyadicScale j.val := by
@@ -70,9 +77,11 @@ theorem hybridSquarePool_bin_count (S : Finset (Ideal Eis × Ideal Eis)) (B : �
       simp [hz] at hp
       linarith) (fun t ht => (hb t ht).2)
   linarith
+end
+
 
 theorem hybridCommonBlock_bounds
-    (S : Finset (Ideal Eis × Ideal Eis)) (N B : ℝ) (hN : 0 ≤ N) (hB : 0 ≤ B)
+     (N B : ℝ) (hN : 0 ≤ N) (hB : 0 ≤ B)
     (hS : ∀ p ∈ S, (Ideal.absNorm p.1 : ℝ) ≤ N ∧ (Ideal.absNorm p.2 : ℝ) ≤ B)
     (i : Fin (columnDyadicLength N + 1)) (j : Fin (columnDyadicLength B + 1))
     (t : Ideal Eis) (ht : t ∈ divisorDyadicBin (hybridSquarePool S) B j)
@@ -104,7 +113,7 @@ theorem hybridCommonBlock_bounds
     (by linarith [divisorDyadicScale_ge_one j.val]) hs.1 hs.2 hcLow htLow
 
 theorem hybrid_square_dyad_energy
-    (S : Finset (Ideal Eis × Ideal Eis)) (B : ℝ)
+     (B : ℝ)
     (hS : ∀ p ∈ S, (Ideal.absNorm p.2 : ℝ) ≤ B)
     (j : Fin (columnDyadicLength B + 1)) (rows : Finset (Ideal Eis))
     (F : Ideal Eis → Ideal Eis → ℂ) (E : ℝ) (hE : 0 ≤ E)
@@ -127,8 +136,10 @@ theorem hybrid_square_dyad_energy
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum hF) (Nat.cast_nonneg _)
     _ = (Tset.card : ℝ) ^ 2 * E := by simp; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hc 2) hE
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

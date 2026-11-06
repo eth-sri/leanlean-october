@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawReference
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
@@ -12,7 +13,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeDetectorInverseRawField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
+open HeckeFamily HeckeInverseAmplification
 open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
 open HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform
 open ProbeHighRowFamily ProbeFinalAssembly
@@ -71,10 +72,10 @@ theorem source_batch_inverse_raw
   have hC:0<C:=by dsimp [C];linarith
   have hCBound (label):CB label≤C:=by
     have he:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hCB j).le) (Finset.mem_univ label)
-    dsimp [C];linarith
+    linarith
   have hCHound (label):CH label≤C:=by
     have he:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hCH j).le) (Finset.mem_univ label)
-    dsimp [C];linarith
+    linarith
   refine ⟨C,hC,?_⟩
   intro Slot U a ε tstar T allowance i hU B hdata bin label left right hne height hheight n hn s hs t ht F W
   have hd:F.rowData=data label:=by
@@ -97,8 +98,8 @@ theorem source_batch_inverse_raw
     rw [hd]
     exact ⟨raw_mono _ _ _ _ _ _ hconstant hpair.1,raw_mono _ _ _ _ _ _ hconstant hpair.2⟩
 
-end SevenEighths.ProbeDetectorInverseRawField
 
-end
 
-end OAI
+
+
+

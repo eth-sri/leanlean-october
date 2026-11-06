@@ -1,16 +1,20 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.LogModulated
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0) (n : ℕ)
+include a ha l u hl hlu hs n
+
 /-- Actual integration by parts with explicit polynomial time growth. -/
-theorem logModulated_fourier_power {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0) (n : ℕ) :
+theorem logModulated_fourier_power  :
     ∃ C : ℝ, 0 < C ∧ ∀ s ξ : ℝ,
       |ξ|^n*‖𝓕 (logModulated a s) ξ‖ ≤ C*(1+|s|)^n := by
   obtain ⟨C,hC,hb⟩ := logModulated_global_deriv ha hl hs n
@@ -25,8 +29,7 @@ theorem logModulated_fourier_power {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
 
 /-- One-plus-frequency bound for the actual modulated cutoff. The fixed
 constant precedes time and frequency; its time cost is explicit. -/
-theorem logModulated_fourier_decay {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0) (n : ℕ) :
+theorem logModulated_fourier_decay  :
     ∃ C : ℝ, 0 < C ∧ ∀ s ξ : ℝ,
       (1+|ξ|)^n*‖𝓕 (logModulated a s) ξ‖ ≤ C*(1+|s|)^n := by
   obtain ⟨D₀,hD₀,h₀⟩ := logModulated_fourier_power ha hl hlu hs 0
@@ -46,6 +49,8 @@ theorem logModulated_fourier_decay {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       _ ≤ (2*|ξ|)^n*‖𝓕 (logModulated a s) ξ‖ := by gcongr; linarith
       _ = 2^n*(|ξ|^n*‖𝓕 (logModulated a s) ξ‖) := by rw [mul_pow]; ring
       _ ≤ 2^n*(Dₙ*(1+|s|)^n) := mul_le_mul_of_nonneg_left hn (by positivity)
-      _ ≤ _ := by nlinarith [mul_nonneg (show 0 ≤ (2:ℝ)^n*D₀ by positivity) (pow_nonneg (by positivity : 0 ≤ 1+|s|) n)]
+      _ ≤ _ := by field_simp <;> nlinarith
+end
 
-end GuthMaynard.Improvement
+
+

@@ -11,14 +11,18 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentAmplificationEnergy
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def eligiblePairs (rows P : Finset O) (allow : O → O → Prop) : Finset (O × O) :=
   (rows.product P).filter (fun x => allow x.1 x.2)
 
-def outputRow (x : O × O) : O := x.2^6*x.1
+section
+variable (x : O × O)
+include x
 
-theorem outputRow_norm (x : O × O) (Z M L : ℝ) (hZ : 0 < Z)
+def outputRow  : O := x.2^6*x.1
+
+theorem outputRow_norm  (Z M L : ℝ) (hZ : 0 < Z)
     (hh : (Ideal.absNorm (Ideal.span {x.1}) : ℝ) ≤ Z^M)
     (hp : (Ideal.absNorm (Ideal.span {x.2}) : ℝ) ≤ Z^L) :
     (Ideal.absNorm (Ideal.span {outputRow x}) : ℝ) ≤ Z^(M+6*L) := by
@@ -33,8 +37,14 @@ theorem outputRow_norm (x : O × O) (Z M L : ℝ) (hZ : 0 < Z)
       rw [← Real.rpow_mul_natCast hZ.le,← Real.rpow_add hZ]
       congr 1
       ring
+end
 
-theorem amplified_energy_pushforward (rows P : Finset O) (allow : O → O → Prop)
+
+section
+variable (rows P : Finset O) (allow : O → O → Prop)
+include rows P allow
+
+theorem amplified_energy_pushforward 
     (hrows : ∀ h ∈ rows, h ≠ 0) (hp : ∀ p ∈ P, Prime p)
     (hprimary : ∀ p ∈ P, ConcretePrimeRowBridge.goodLambda^2 ∣ p-1)
     (Z ell M L : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
@@ -65,20 +75,25 @@ theorem amplified_energy_pushforward (rows P : Finset O) (allow : O → O → Pr
   · rw [← hxy]
     exact outputRow_norm x Z M L (zero_lt_one.trans hZ) (hhu x.1 hxm.1) (hpu x.2 hxm.2)
 
-theorem sum_eligiblePairs (rows P : Finset O) (allow : O → O → Prop) (f : O → O → ℝ) :
+theorem sum_eligiblePairs  (f : O → O → ℝ) :
     (∑ h ∈ rows, ∑ p ∈ P.filter (allow h), f h p) =
       ∑ x ∈ eligiblePairs rows P allow, f x.1 x.2 := by
   simp only [eligiblePairs,Finset.sum_filter]
   exact (Finset.sum_product rows P (fun x : O × O => if allow x.1 x.2 then f x.1 x.2 else 0)).symm
+end
 
-def errorEnergy {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ) (h p : O) : ℝ :=
+
+section
+variable {α : Type*} (S : Finset α) (a : α → O)
+    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+include α S a ha c
+
+def errorEnergy  (h p : O) : ℝ :=
   ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 1 h‖^2 +
   ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 6 h‖^2 +
   ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 7 h‖^2
 
-theorem gauss_energy_amplification {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+theorem gauss_energy_amplification 
     (rows P : Finset O) (allow : O → O → Prop)
     (hrows : ∀ h ∈ rows, h ≠ 0) (hp : ∀ p ∈ P, Prime p)
     (hs : ∀ p ∈ P, Supported (Ideal.span {p}))
@@ -124,9 +139,11 @@ theorem gauss_energy_amplification {α : Type*} (S : Finset α) (a : α → O)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   rw [Finset.sum_add_distrib]
   exact add_le_add hf le_rfl
-
-end SevenEighths.CenteredMomentAmplificationEnergy
-
 end
 
-end OAI
+
+
+
+
+
+

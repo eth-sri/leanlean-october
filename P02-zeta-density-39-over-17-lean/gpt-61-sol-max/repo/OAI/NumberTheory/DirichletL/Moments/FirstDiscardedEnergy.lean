@@ -10,13 +10,17 @@ open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstDiscardedEnergy
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge
-open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation
+open CenteredMomentFirstReduced CenteredMomentSectorLocalization
 open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
 open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
 open CenteredMomentCompleteCommon IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
+section
+variable (a b r : O) (ha : a≠0) (hb : b≠0)
+include a b r ha hb
+
+theorem tripleRow_norm_le_one 
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
     (G : Residue r → ℂ) (hG : ∀ x,‖G x‖≤1) (z : O) :
     ‖tripleRow a b r χa χb G z‖≤1 := by
@@ -30,7 +34,7 @@ theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
       (QuadraticInitialBound.norm_finite_character_le_one χa _)).trans
       (QuadraticInitialBound.norm_finite_character_le_one χb _))).trans (hG _)
 
-theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
+theorem tripleFourier_norm_le_full  (hr : r≠0)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
     (G : Residue r → ℂ) (hG : ∀ x,‖G x‖≤1) (h : O) :
     ‖tripleFourier a b r ha hb hr χa χb G h‖≤normValue (a*(b*r)) := by
@@ -47,6 +51,8 @@ theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r
       rw [norm_mul,(quotientTrace _ _).norm_apply,mul_one,tripleResidue_mk]
       exact tripleRow_norm_le_one a b r ha hb χa χb G hG z
     _ = _ := by simp [normValue,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
+end
+
 
 theorem activeFunction_norm_le_one (I J : Ideal O) (hI : CanonicalQuadraticSieve.Supported I)
     (x : Residue (activeConductor I J)) : ‖activeFunction I J hI x‖≤1 := by
@@ -86,9 +92,13 @@ theorem scaled_discarded_triple_bound (A : ℕ) :
   apply (mul_le_mul_of_nonneg_left hh (div_pos hk hN).le).trans_eq
   field_simp
 
-def canonicalDiscardedTerm (I J : Ideal O)
+section
+variable (I J : Ideal O)
     (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
-    (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+    (E : Finset (CommonIndex I J))
+include I J hI hJ E
+
+def canonicalDiscardedTerm  (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
   let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
@@ -103,9 +113,7 @@ def canonicalDiscardedTerm (I J : Ideal O)
           (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) h*
         paperRadialFourier W ((k/normValue (a*(b*r)))*normValue h))
 
-theorem canonical_kernel_scale (I J : Ideal O)
-    (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
-    (E : Finset (CommonIndex I J)) (K : ℝ) :
+theorem canonical_kernel_scale  (K : ℝ) :
     (K/normValue (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E))/
       normValue (residualGenerator I J*(residualGenerator J I*activeConductor I J)) =
       K/((Ideal.absNorm (∏ P∈E,P.val):ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
@@ -116,6 +124,8 @@ theorem canonical_kernel_scale (I J : Ideal O)
   rw [primeSubsetGenerator,span_idealGenerator,residualGenerator_span I J hI,residualGenerator_span J I hJ,div_div]
   congr 1
   ring
+end
+
 
 theorem canonical_discarded_term_bound (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ),0<C ∧
@@ -166,10 +176,14 @@ theorem canonical_discarded_term_bound (A : ℕ) :
   rw [one_mul]
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hkK (by positivity)) (by positivity)
 
-def inactiveSubsets (I J : Ideal O) : Finset (Finset (CommonIndex I J)) :=
+section
+variable (I J : Ideal O)
+include I J
+
+def inactiveSubsets  : Finset (Finset (CommonIndex I J)) :=
   (principalSupport (Finset.univ : Finset (CommonIndex I J)) (leftExponent I J) (rightExponent I J)).powerset
 
-theorem inactiveSubsets_card (I J : Ideal O) :
+theorem inactiveSubsets_card  :
     (inactiveSubsets I J).card≤2^(primeSupport I).card := by
   rw [inactiveSubsets,Finset.card_powerset]
   apply Nat.pow_le_pow_right (by norm_num)
@@ -177,9 +191,11 @@ theorem inactiveSubsets_card (I J : Ideal O) :
     _ ≤ (Finset.univ : Finset (CommonIndex I J)).card := Finset.card_le_card (Finset.subset_univ _)
     _ = (commonSupport I J).card := by simp [CommonIndex]
     _ ≤ _ := Finset.card_le_card Finset.inter_subset_left
-
-end SevenEighths.CenteredMomentFirstDiscardedEnergy
-
 end
 
-end OAI
+
+
+
+
+
+

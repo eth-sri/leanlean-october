@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MaskedAffine
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
 open RiemannZeta.GuthMaynard
@@ -31,11 +31,7 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
   have hM₃ : 0 < M₃ := Nat.ceil_pos.mpr (by positivity)
   have hM₃r : (M₃:ℝ) ≤ (C₀+2)*R := by
     have hh := Nat.ceil_lt_add_one (show 0 ≤ C₀*R+1 by positivity)
-    have hBmax := le_refl R
-    have hr1 : 1 ≤ R := hK.trans hKR
-    have hmul := mul_le_mul_of_nonneg_left hBmax hC₀
-    dsimp only [M₃]
-    nlinarith only [hh,hr1,hmul]
+    grind
   have h₁bound : ∀ i : Bool, (twoShell B i:ℝ) ≤ (C₀+2)*R := by
     intro i
     have hb := twoShell_le hB i
@@ -81,8 +77,7 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
   have hcard : A.card = 4 := by simp [A]
   rw [Finset.sum_const,hcard] at hsum
   rw [hcard] at hcov
-  norm_num only [Nat.cast_ofNat,nsmul_eq_mul] at hsum hcov
-  exact hcov.trans (by nlinarith only [hsum])
+  grind
 
 set_option maxHeartbeats 800000 in
 /-- Full arbitrary-support finite-box estimate. The support radius and
@@ -148,7 +143,7 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
       have hh := (hbox p hpS).2.2.1
       intro hz
       rw [hz,Int.cast_zero] at hh
-      linarith only [hh,hQ]
+      linarith
     exact supportIndexMap_term hL hg p hq u
   have hmass := (affine_input_integrals f hLp).1
   have hL2 := (affine_input_integrals f hLp).2
@@ -176,4 +171,4 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
     _ ≤ C*((L:ℝ)*T)^ε*((L:ℝ)^6*(R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2))) := by gcongr
     _ = _ := by rw [Real.mul_rpow hLp.le hTp.le]; ring
 
-end GuthMaynard.Improvement
+

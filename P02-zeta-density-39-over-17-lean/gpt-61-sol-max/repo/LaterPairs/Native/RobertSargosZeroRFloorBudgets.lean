@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosZeroRPolynomialBudget
 public import LaterPairs.Native.ThirteenthRootScales
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                            
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_zero_r_floor_budgets
@@ -52,4 +51,4 @@ theorem robertSargos_zero_r_floor_budgets
     hT hM' (by exact_mod_cast hH) hH' hQlo' hQhi' hRlo hlam hscale
   exact ⟨hQ,hR,hb⟩
 
-end TaoTrudgianYang2025
+

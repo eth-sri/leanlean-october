@@ -11,7 +11,7 @@ The actual model supplies the slope gap and monotonicity. The physical
 parameters and the complex conjugation are retained in the finite sum.
 -/
 
-noncomputable section
+
 
 open Expdb RiemannZeta.GuthMaynard
 
@@ -81,4 +81,4 @@ theorem norm_modelPhaseCore_le_firstDerivative
     field_simp
   exact hb.trans_eq hconst
 
-end TaoTrudgianYang2025
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceQuarticKernel
 public import GuthMaynard.Improvement.ReflectionNearRow
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -62,9 +62,9 @@ theorem source_quartic_polynomial_tail (q : ℕ) :
       intro t _
       apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
       have hh := pow_le_pow_left₀ (norm_nonneg _) (boundedPolynomial_norm_le_two_mul hN a ha t) 4
-      convert hh using 1; ring
+      bound
     _ = (∫ t in {t : ℝ | R < |t-w|}, sourceQuarticWeight (t-w))*(16*N^4) := integral_mul_const _ _
     _ ≤ (C/R^q)*(16*N^4) := by rw [ht]; exact mul_le_mul_of_nonneg_right (h R hR) (by positivity)
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

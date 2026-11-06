@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
 
@@ -6,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
-open Set Metric Complex
+open Metric Complex
 namespace SevenEighths.HeckePrimeDyadicControl
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeDeletionBounds
 
 theorem logDeriv_eq_of_mask (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
@@ -28,7 +29,11 @@ theorem logDeriv_eq_of_mask (χ ψ : Character)
   exact logDeriv_fun_mul s hψs (factors_ne_zero _ _ hs)
     (LFunction_entire_nonprincipal ψ hψ s) (factors_differentiable _ _ s)
 
-theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
+section
+variable (e : ℝ) (he : 0<e) (he' : e<1/1000)
+include e he he'
+
+theorem original_disk_control  :
     ∃ B : ℝ, 0≤B ∧ ∀ (χ : Character), χ.residue ≠ 1 → ∀ a t : ℝ,
       1/2≤a → a≤1 →
       (∀ z ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), LFunction χ z ≠ 0) →
@@ -40,7 +45,7 @@ theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
   intro χ hχ a t ha ha' hzero z hz
   obtain ⟨ψ,_,hp,hn,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have hregular : regular ψ = LFunction ψ := regular_eq_nonprincipal ψ hψ
+  have hregular := regular_eq_nonprincipal ψ hψ
   have hzeroψ : ∀ w ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular ψ w ≠ 0 := by
     intro w hw
     rw [hregular]
@@ -69,7 +74,7 @@ theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
   apply (norm_add_le _ _).trans
   exact add_le_add (hbound.trans (mul_le_mul_of_nonneg_left (Real.log_le_log hc0 hQ) hB)) hdel
 
-theorem buffered_original_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
+theorem buffered_original_control  :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue ≠ 1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →
@@ -85,8 +90,7 @@ theorem buffered_original_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
       hmax j t ht (ball_subset_closedBall hw)) z hz
 
-theorem buffered_rectangle_control (e : ℝ)
-    (he : 0<e) (he' : e<1/1000) :
+theorem buffered_rectangle_control  :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue≠1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →
@@ -118,9 +122,11 @@ theorem buffered_rectangle_control (e : ℝ)
   have hH : 0 ≤ (3*i+2 : ℕ)*T := (abs_nonneg z.im).trans hzi
   rw [abs_of_nonneg hH]
   gcongr
-
-end SevenEighths.HeckePrimeDyadicControl
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SecondKernelError
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 namespace GuthMaynard.Improvement
@@ -68,7 +68,6 @@ theorem cubicIntegrand_time_integral (μ : Measure ℝ) [SFinite μ]
       phase (-(f x.2.2-f x.1)*t.1)*phase (-(f x.1-f x.2.1)*t.2.1)*
         phase (-(f x.2.1-f x.2.2)*t.2.2) := by
       rw [← phase_add,← phase_add,← phase_add,← phase_add]
-      congr 1
       ring
     calc
       _ = (A x.1*A x.2.1*A x.2.2)*
@@ -102,4 +101,4 @@ theorem frequencyKernel_cubic (μ ν : Measure ℝ) [IsFiniteMeasure μ] [IsFini
   simp_rw [hx,cubicIntegrand_time_integral] at hswap
   exact hswap.symm
 
-end GuthMaynard.Improvement
+

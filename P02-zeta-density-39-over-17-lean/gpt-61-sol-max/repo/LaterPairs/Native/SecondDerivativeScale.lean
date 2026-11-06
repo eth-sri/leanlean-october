@@ -4,13 +4,12 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem second_derivative_scale_bound {N C α : ℝ}
@@ -30,10 +29,7 @@ theorem second_derivative_scale_bound {N C α : ℝ}
   have hpi : 2*Real.pi/Real.sqrt α ≤ 8/Real.sqrt α :=
     div_le_div_of_nonneg_right (by linarith [Real.pi_lt_four]) hs.le
   have hfactor : 2*Real.pi/Real.sqrt α+
-      2*(Real.sqrt α/(2*Real.pi*α)+1) ≤ 12/Real.sqrt α := by
-    calc
-      _ ≤ 8/Real.sqrt α+2*(1/Real.sqrt α+1/Real.sqrt α) := by linarith
-      _ = _ := by ring
+      2*(Real.sqrt α/(2*Real.pi*α)+1) ≤ 12/Real.sqrt α := by grind
   have hfirst : N*(2*Real.pi*(C*α))/(2*Real.pi)+2 = C*N*α+2 := by
     field_simp
   rw [hfirst]
@@ -43,4 +39,4 @@ theorem second_derivative_scale_bound {N C α : ℝ}
     _ = 12*(C*N*(α/Real.sqrt α)+2/Real.sqrt α) := by ring
     _ = _ := by rw [Real.div_sqrt]
 
-end TaoTrudgianYang2025
+

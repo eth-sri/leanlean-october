@@ -12,10 +12,11 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstCommonSourceBudget
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
+open CenteredMomentCommonAllocationSum
 open CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn CenteredMomentFirstAllocationGaussEnergy
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*}[Fintype ι]
+
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 lemma child_nonneg (s:Input ι)(C R seed:Ideal O)(B:actualAllocations s.pools C)
@@ -29,7 +30,7 @@ lemma child_nonneg (s:Input ι)(C R seed:Ideal O)(B:actualAllocations s.pools C)
     exact (CenteredMomentAmplificationChildInput.volume_pos _).le
 
 theorem common_energy_live_allocations (N:ℕ)(a b:ℝ)(ha:0<a)
-    (s:Input ι)(hcard:Fintype.card ι≤N)(haS:a≤s.lower)(hbS:s.upper≤b)
+    (s:Input ι)(hcard:Fintype.card ι≤N)(haS:a≤ s.lower)(hbS:s.upper≤b)
     (C R seed:Ideal O)(hC:Supported C)(hseed:seed∣C)
     (τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)
     (hW:∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re):
@@ -75,7 +76,7 @@ theorem common_energy_live_allocations (N:ℕ)(a b:ℝ)(ha:0<a)
 
 theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
     ∃Cbound:ℝ,0<Cbound ∧ ∀{κ:Type*}[Fintype κ],∀s:Input κ,
-    Fintype.card κ≤N → a≤s.lower → s.upper≤b →
+    Fintype.card κ≤N → a≤ s.lower → s.upper≤b →
     ∀(C R seed:Ideal O)(hC:Supported C),seed∣C →
     ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K E:ℝ),0<K → 0≤E →
     (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
@@ -111,8 +112,8 @@ theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
       mul_le_mul_of_nonneg_left hm (mul_nonneg (by positivity) hE)
     _=_:=by ring
 
-end SevenEighths.CenteredMomentFirstCommonSourceBudget
 
-end
 
-end OAI
+
+
+

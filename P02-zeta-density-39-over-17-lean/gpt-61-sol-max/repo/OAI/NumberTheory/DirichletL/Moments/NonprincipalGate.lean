@@ -10,8 +10,8 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNonprincipalGate
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion
-open ConcretePrimeRowBridge CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
-local notation "O" => HeckeFamily.O
+open ConcretePrimeRowBridge
+open scoped HeckeO
 
 def unitCharacter : Character := Character.ofResidue ⊤ top_ne_bot 1 (by
   intro u
@@ -44,18 +44,23 @@ theorem principal_inducedBy_unit (χ:Character) (hχ:χ.residue=1) : InducedBy �
     · rw [ite_eq_right hc]
       exact MulChar.map_nonunit _ (fun h=>hc ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp h))
 
-theorem principal_row_fixed (η χ:Character) (Q:Ideal O) (m A z:O)
+section
+variable (η χ:Character) (Q:Ideal O) (m A z:O)
     (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
+include η χ Q m A z hrow
+
+theorem principal_row_fixed 
     (hχ:χ.residue=1) : FixedInducingRow η Q m A z :=
   ⟨χ,unitCharacter,unitCharacter_primitive,principal_inducedBy_unit χ hχ,le_top,hrow⟩
 
-theorem actual_row_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)
-    (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
+theorem actual_row_nonprincipal 
     (hex:¬FixedInducingRow η Q m A z) : χ.residue≠1 :=
   fun h=>hex (principal_row_fixed η χ Q m A z hrow h)
-
-end SevenEighths.CenteredMomentNonprincipalGate
-
 end
 
-end OAI
+
+
+
+
+
+

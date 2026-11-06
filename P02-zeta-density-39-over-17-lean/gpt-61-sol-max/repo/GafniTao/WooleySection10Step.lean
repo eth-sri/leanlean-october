@@ -140,6 +140,6 @@ theorem wooleySourcePolynomial_iterationStep_of_lemma_9_1
     hrho, hrhoOne, hgrowth, hupper, hceil, hweighted, huniform⟩
 
 
-end
 
-end GafniTao
+
+

@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.QuarticRadiusExtraction
 public import GuthMaynard.Improvement.MiddleFourthMoment
 public import GuthMaynard.Improvement.MiddleLargeValueBranches
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -69,12 +69,8 @@ theorem middle_large_values_low {ε : ℝ} (hε : 0 < ε) :
   calc
     _ ≤ E*N^(ε/2)*(2*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) :=
       hx.trans (mul_le_mul_of_nonneg_left (add_le_add hbudget le_rfl) (by positivity))
-    _ ≤ E*N^(ε/2)*(2*N^(ε/2)*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      apply add_le_add _ le_rfl
-      gcongr
-      linarith
+    _ ≤ E*N^(ε/2)*(2*N^(ε/2)*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) := by field_simp <;> nlinarith
     _ = E*(2+D)*(N^(ε/2)*N^(ε/2))*middleMoment N T/V^4 := by ring
     _ = _ := by rw [hid]
 
-end GuthMaynard.Improvement
+

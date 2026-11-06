@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedShortUniformDegree
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion
+open InverseTerminalWidths CompletedHeight
+open scoped EisensteinEis
 universe u v
 
 theorem canonical_short_completed_power_energy_uniform_degree
@@ -24,7 +24,7 @@ theorem canonical_short_completed_power_energy_uniform_degree
       (m:Eis)(_hm:m≠0)(Z N V M z₀ margin hcut d:ℝ),
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → 0≤hcut → hcut≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hcut≤d+eta → d≤cstar/200 →
     ∀(parents:Finset (Ideal Eis)),(∀I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
       Fintype.card σ≤rmax → ∀(lists:σ→Finset (Ideal Eis))(H:σ→ℝ),
@@ -62,8 +62,8 @@ theorem canonical_short_completed_power_energy_uniform_degree
       rw [show N+V-cstar/128=(N+V-cstar/64)+cstar/128 by ring,Real.rpow_add hz]
       ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

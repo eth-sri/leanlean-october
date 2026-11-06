@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import DensityEnergyGM.SquareLevelAlgebra
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace GuthMaynard.NativeMoment
 
 theorem rpow_double_square_bound {q x a : ℝ}
@@ -34,9 +34,7 @@ theorem square_level_shape_bound {q x U D T K : ℝ}
         16 * K * (x ^ 4 * U ^ (-4 : ℝ) +
           x ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
           T * x ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) := by
-  have hq2 : q ^ 2 ≤ 16 * x ^ 4 := by
-    convert rpow_double_square_bound hq hx hqx
-      (by norm_num : (0 : ℝ) ≤ 2) (by norm_num) using 1 <;> norm_num
+  have hq2 : q ^ 2 ≤ 16 * x ^ 4 := by nlinarith
   have hq18 : q ^ (18 / 5 : ℝ) ≤ 16 * x ^ (36 / 5 : ℝ) := by
     convert rpow_double_square_bound hq hx hqx
       (by norm_num : (0 : ℝ) ≤ 18 / 5) (by norm_num) using 1
@@ -58,4 +56,4 @@ theorem square_level_shape_bound {q x U D T K : ℝ}
   have h3' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right h3 h8) hT
   nlinarith
 
-end GuthMaynard.NativeMoment
+

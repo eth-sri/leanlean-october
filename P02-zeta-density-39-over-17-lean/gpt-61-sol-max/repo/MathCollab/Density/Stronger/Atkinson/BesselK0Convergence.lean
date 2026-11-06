@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from DFIBesselMellin.lean,
 exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -11,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.BesselMellinBeta
 
 open Complex Set MeasureTheory
 open scoped Topology Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem integrableOn_cpow_mul_exp_neg_mul_Ioi
@@ -29,12 +29,9 @@ theorem integrableOn_cpow_mul_exp_neg_mul_Ioi
       (x : ℂ) ^ (s - 1) * Complex.exp (-(x : ℂ))
     rw [Complex.ofReal_exp, Complex.ofReal_neg]
     ring
-  have hscaled : MellinConvergent (fun x => f (a * x)) s :=
+  have hscaled :=
     (MellinConvergent.comp_mul_left (f := f) (s := s) ha).2 hbase
-  unfold MellinConvergent at hscaled
-  refine hscaled.congr_fun ?_ measurableSet_Ioi
-  intro x _
-  simp only [f, smul_eq_mul, Complex.ofReal_mul]
+  aesop
 
 /-- Norm of the two-variable Gamma kernel on the positive quadrant. -/
 theorem norm_cpow_mul_exp_neg_cosh
@@ -42,8 +39,7 @@ theorem norm_cpow_mul_exp_neg_cosh
     ‖(x : ℂ) ^ (s - 1) * Complex.exp (-(x * Real.cosh t))‖ =
       x ^ (s.re - 1) * Real.exp (-(Real.cosh t * x)) := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx, Complex.norm_exp]
-  simp only [sub_re, one_re, neg_re, Complex.mul_re,
-    Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+  simp only [sub_re, one_re, neg_re, mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero]
   ring_nf
 
 /-- Exact integral of the norm in the radial variable. -/
@@ -164,14 +160,7 @@ theorem dfiBesselK0_ofReal_eq_integral {x : ℝ} :
         Complex.exp (-(x * Real.cosh t)) := by
   unfold dfiBesselK0
   refine integral_ofReal.symm.trans ?_
-  apply setIntegral_congr_fun measurableSet_Ioi
-  intro t _
-  change (Real.exp (-x * Real.cosh t) : ℂ) =
-    Complex.exp (-(x * Real.cosh t))
-  rw [Complex.ofReal_exp]
-  congr 1
-  push_cast
-  ring
+  simp_all
 
 /-- Absolute Mellin convergence of the literal Macdonald kernel throughout
 its natural right half-plane.  This is extracted from the joint integral
@@ -212,8 +201,7 @@ theorem mellinConvergent_dfiBesselK0_mul_sqrt
     apply mellinConvergent_dfiBesselK0
     norm_num
     linarith
-  have hscaled : MellinConvergent
-      (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ)) (2 * s) :=
+  have hscaled :=
     (MellinConvergent.comp_mul_left hA).2 hbase
   have hscaled' : MellinConvergent
       (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ))
@@ -228,4 +216,4 @@ theorem mellinConvergent_dfiBesselK0_mul_sqrt
   simpa only [Real.sqrt_eq_rpow] using hroot
 
 
-end MathCollab.Density.Stronger.Atkinson
+

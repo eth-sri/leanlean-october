@@ -8,27 +8,32 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff
-open MeasureTheory CompletedGauss
+open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted CanonicalRowCompletion RayFourExpansion ProbeRow CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ProbeCompleted CanonicalRowCompletion RayFourExpansion CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowMarkedInverseRow (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (D : Id) (T t : ℝ) (σ : RayRing) (m : O) : ℂ :=
+section
+variable (η : HeckeFamily.Character) (S : Finset Id)
+    (hS : ∀P∈S,P.IsMaximal)
+include η S hS
+
+def lowMarkedInverseRow  (D : Id) (T t : ℝ) (σ : RayRing) (m : O) : ℂ :=
   ∑χ : RayCharacter,correctionCoeff χ*
     InverseMoment.markedCompletedT
       (rowTwist (physicalRayPeriodicBase η S hS σ χ) (calibrationForSet S hS).generator 1 m)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T
       (fun A=>if D∣A then (1:ℂ) else 0)
 
-lemma lowMarkedInverseRow_eq (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (D : Id) (T t : ℝ) (hT : 0<T)
+lemma lowMarkedInverseRow_eq  (hbad : fixedBadPrimes⊆S) (D : Id) (T t : ℝ) (hT : 0<T)
     (σ : RayRing) (m : O) :
     correctedCompletedT S D (physicalRayRowMonoid η (calibrationForSet S hS) σ m)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T=
         lowMarkedInverseRow η S hS D T t σ m :=
   physicalRayRow_eq_periodic_inverse η S hS hbad σ m D _ (gaussianFixedWindow_twist_compact t) T hT
+end
+
 
 theorem compensationRowTest_low_separated {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
@@ -53,7 +58,7 @@ theorem compensationRowTest_low_separated {K : ℕ} (η : HeckeFamily.Character)
       (div_pos hY (slotProduct_norm_pos p hp J))
       (lowMarkedInverseRow η S hS (Ideal.span {slotProduct p (Finset.univ\J)}) T t)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

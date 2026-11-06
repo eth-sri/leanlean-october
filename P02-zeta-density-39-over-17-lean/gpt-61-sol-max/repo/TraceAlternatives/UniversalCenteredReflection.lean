@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import TraceAlternatives.UniversalReflectionSecond
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
@@ -21,9 +21,9 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
   refine ⟨240*C,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW _hSep
   have hTp : 0<T := by linarith
-  have hRoot : 0<Real.sqrt T := Real.sqrt_pos.mpr hTp
+  have hRoot := Real.sqrt_pos.mpr hTp
   have hLp : 0<L := hRoot.trans_le hL
-  let X : ℝ := H/L
+  let X := H/L
   have hX : 0<X := div_pos hH hLp
   have hXbound : X≤2*Real.sqrt T := by
     apply (div_le_iff₀ hLp).mpr
@@ -50,8 +50,7 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
         (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
       norm_num only [pow_succ,pow_zero,mul_one] at hs
       exact hh.trans hs
-    have hGrouped : completePairEnergy M W ≤ C*T^η*
-        universalShortProfile T M W.card (discreteAdditiveEnergy W) := h
+    have hGrouped := h
     exact (reflection_local_pair_le_three hH M W).trans
       ((mul_le_mul_of_nonneg_left
         (hGrouped.trans (mul_le_mul_of_nonneg_left hMono (by positivity)))
@@ -65,4 +64,4 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
       exact_mod_cast reflectionBlocks_card_le hLp hH
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

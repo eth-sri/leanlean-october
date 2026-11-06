@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss
+open InverseMoment
+open scoped EisensteinO
 
 lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -60,13 +60,17 @@ def activeCharge (j : ℕ) (e : Fin 3) : ℤ :=
 
 def normWidth (Z : ℝ) (I : Ideal O) : ℝ := Real.logb Z (Ideal.absNorm I : ℝ)
 
-def reflectionWidth {ι : Type*} [Fintype ι] (Z : ℝ)
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+
+def reflectionWidth  (Z : ℝ)
     (P : ι → Ideal O) (j : ι → ℕ) (e : ι → Fin 3) : ℝ :=
   2 * normWidth Z (∏ i, P i) - normWidth Z (reflectionExtractedDivisor P j e 1) -
     normWidth Z (reflectionExtractedDivisor P j e 0) -
       4 * normWidth Z (reflectionExtractedDivisor P j e 2)
 
-theorem reflectionConductorCost_pos {ι : Type*} [Fintype ι]
+theorem reflectionConductorCost_pos 
     (P : ι → Ideal O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
     0 < reflectionConductorCost P j e := by
   have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hP i))
@@ -78,7 +82,7 @@ theorem reflectionConductorCost_pos {ι : Type*} [Fintype ι]
   unfold reflectionConductorCost
   positivity
 
-theorem logb_reflectionConductorCost {ι : Type*} [Fintype ι]
+theorem logb_reflectionConductorCost 
     (Z : ℝ) (P : ι → Ideal O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
     Real.logb Z (reflectionConductorCost P j e) = reflectionWidth Z P j e := by
   have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hP i))
@@ -94,7 +98,7 @@ theorem logb_reflectionConductorCost {ι : Type*} [Fintype ι]
   norm_num
   ring
 
-theorem reflection_charge_width {ι : Type*} [Fintype ι]
+theorem reflection_charge_width 
     (I F B R : Ideal O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
@@ -124,8 +128,14 @@ theorem reflection_charge_width {ι : Type*} [Fintype ι]
   unfold normWidth
   norm_num at hh ⊢
   linarith
+end
 
-theorem normWidth_upper (I : Ideal O) (hI : I ≠ 0) (Z C E : ℝ)
+
+section
+variable (I : Ideal O)
+include I
+
+theorem normWidth_upper  (hI : I ≠ 0) (Z C E : ℝ)
     (hZ : 1 < Z) (hC : 0 < C) (h : (Ideal.absNorm I : ℝ) ≤ C * Z ^ E) :
     normWidth Z I ≤ E + Real.logb Z C := by
   have hz0 : 0 < Z := by linarith
@@ -134,12 +144,14 @@ theorem normWidth_upper (I : Ideal O) (hI : I ≠ 0) (Z C E : ℝ)
   unfold normWidth
   linarith
 
-theorem normWidth_lower (I : Ideal O) (Z C E : ℝ)
+theorem normWidth_lower  (Z C E : ℝ)
     (hZ : 1 < Z) (hC : 0 < C) (h : Z ^ E / C ≤ (Ideal.absNorm I : ℝ)) :
     E - Real.logb Z C ≤ normWidth Z I := by
   have hz0 : 0 < Z := by linarith
   have hh := Real.logb_le_logb_of_le hZ (div_pos (Real.rpow_pos_of_pos hz0 E) hC) h
   rwa [Real.logb_div (by positivity) hC.ne', Real.logb_rpow hz0 (ne_of_gt hZ)] at hh
+end
+
 
 def terminalDualWidth {ι : Type*} [Fintype ι] (Z H za Nstar : ℝ)
     (P : ι → Ideal O) (j : ι → ℕ) (e : ι → Fin 3) : ℝ :=
@@ -212,10 +224,14 @@ def reflectedExponent (O₀ H S₀ B₀ za v ell el Td : ℝ) : ℝ :=
   O₀ / 2 + max H (v + ell) - S₀ - B₀ + za - hybridSaving v za - ell -
     2 * el / 3 - max 0 (Td - v - 3 * ell - el) / 2
 
-theorem hybridSaving_nonneg {v za : ℝ} (hv : 0 ≤ v) (hz : 0 ≤ za) :
+section
+variable {v za : ℝ} (hv : 0 ≤ v)
+include v za hv
+
+theorem hybridSaving_nonneg  (hz : 0 ≤ za) :
     0 ≤ hybridSaving v za := by unfold hybridSaving; positivity
 
-theorem hybridSaving_half {v za : ℝ} (hv : 0 ≤ v)
+theorem hybridSaving_half 
     (hu : hybridSaving v za ≠ za) : v / 2 ≤ hybridSaving v za := by
   unfold hybridSaving at *
   rcases le_total v (min za ((v + za) / 3)) with h | h
@@ -226,6 +242,8 @@ theorem hybridSaving_half {v za : ℝ} (hv : 0 ≤ v)
     · exact (hu (min_eq_left hz)).elim
     · rw [min_eq_right hz]
       linarith
+end
+
 
 theorem terminal_width_from_invariant
     {F₀ N V M Q z₀ c O₀ za Nstar hhat d η Td S₀ B₀ : ℝ}
@@ -373,8 +391,8 @@ theorem actual_terminal_saving {ι : Type*} [Fintype ι]
     (normWidth_nonneg Z hZ _ (reflectionExtractedDivisor_ne_zero P (fun i => NeZero.ne (P i)) _ e 2))
     hz hzcap hv hl he hret (by linarith) hT' hc hmargin hd hη hτ hπ
 
-end SevenEighths.InverseTerminalWidths
 
-end
 
-end OAI
+
+
+

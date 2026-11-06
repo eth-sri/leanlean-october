@@ -9,7 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckePrimePowers
-open HeckeFamily UniqueFactorizationMonoid
+open HeckeFamily
 
 theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime : ¬Prime I) :
     CompletedGauss.PowerfulIdeal I := by
@@ -92,8 +92,8 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
     _ = (A.card : ℝ)*B := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right hA hB
 
-end SevenEighths.HeckePrimePowers
 
-end
 
-end OAI
+
+
+

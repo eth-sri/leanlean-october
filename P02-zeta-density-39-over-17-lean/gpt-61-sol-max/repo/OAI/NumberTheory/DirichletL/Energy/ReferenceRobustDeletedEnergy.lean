@@ -12,8 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceRobustDeletedEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily HeckeDyadic
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError
 open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
@@ -21,7 +21,7 @@ open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -43,13 +43,13 @@ theorem deleted_energy_from_low_robust
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi+11*defect/7≤s.width/14 →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi+11*defect/7≤ s.width/14 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
       5*s.width/6-defect≤Real.logb Z (X₁*X₂)+(∑i,w i) →
-      Real.logb Z (X₁*X₂)+(∑i,w i)+(6*κ-1)*(∑i,w i)≤s.width →
+      Real.logb Z (X₁*X₂)+(∑i,w i)+(6*κ-1)*(∑i,w i)≤ s.width →
       ∀D₁∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀D₂∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀F:Finset α,
@@ -130,8 +130,8 @@ theorem deleted_energy_from_low_robust
       · exact hZ.1.le
       · exact hg.2.2.1
 
-end SevenEighths.CenteredMomentEnergyReferenceRobustDeletedEnergy
 
-end
 
-end OAI
+
+
+

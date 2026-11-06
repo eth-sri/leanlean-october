@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem calibrated_physicalRow_w_growth (eps : ℝ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -23,11 +24,11 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
         physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
   obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_positive_growth (1/2) 1 (by norm_num) (by norm_num) S hS hmax
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   let A : T→ℝ := fun P=>961*((P.val.val.absNorm:ℝ)^(1/2:ℝ)+1)
-  let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
+  let L := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
-  let C : ℝ := L*(Cn*N^(3/5+1:ℝ))*(Ch*N)*∏P:T,A P
+  let C := L*(Cn*N^(3/5+1:ℝ))*(Ch*N)*∏P:T,A P
   have hC : 0≤C := by dsimp [C,L,A,N];positivity
   refine ⟨1+C,by linarith,?_⟩
   intro w hw
@@ -82,7 +83,7 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
     _ = C*(3+|w.im|)^2 := by dsimp [C];ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

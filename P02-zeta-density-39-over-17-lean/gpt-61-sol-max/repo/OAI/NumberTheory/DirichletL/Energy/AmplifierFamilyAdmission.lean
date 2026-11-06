@@ -15,12 +15,13 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyAmplifierFamilyAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic
+open HeckeFamily
 open CenteredMomentFirstSourceConductorCaps CenteredMomentAmplificationRadicalFamily
 open CenteredMomentAmplificationActiveFactor CenteredMomentFirstAmplificationChoice
 open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentChildRows
-open CenteredMomentSectorLocalization CenteredMomentFirstAmplifiedFourCoefficients
-local notation "O"=>HeckeFamily.O
+
+open scoped HeckeO
+
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def referenceCost : ℝ := max 1 rayCost
@@ -51,8 +52,8 @@ theorem actual_error_reference_cap (ρ υ:Character)(χ:RayFourExpansion.RayChar
       apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
       exact mul_le_mul_of_nonneg_right (le_max_right 1 rayCost) (Nat.cast_nonneg _)
 
-end SevenEighths.CenteredMomentEnergyAmplifierFamilyAdmission
 
-end
 
-end OAI
+
+
+

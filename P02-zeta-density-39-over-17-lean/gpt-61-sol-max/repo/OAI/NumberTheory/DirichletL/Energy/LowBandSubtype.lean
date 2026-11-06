@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 public import OAI.NumberTheory.DirichletL.Energy.Reindex
 
@@ -10,10 +11,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLowBandSubtype
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentEnergyReferenceLowBands
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot CenteredMomentEnergyReindex
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {α β : Type*} [Fintype α] [Fintype β]
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -29,11 +30,11 @@ theorem positiveLowAt_embedding (e : β↪α)
       η₀ Q degree S C := by
   intro T θ w σ v t height hw hwL hσlo hσhi hheight hv s hQ hs p X₁ X₂
     hX₁ hX₂ hcap₁ hcap₂ hcapacity hlow
-  let E : T≃T.map e := Finset.equivMap e T
-  let θ' : T.map e→RayQuotient.Characters M H := θ∘E.symm
-  let w' : T.map e→ℝ := w∘E.symm
-  let σ' : T.map e→ℝ := σ∘E.symm
-  let v' : T.map e→ℝ := v∘E.symm
+  let E := Finset.equivMap e T
+  let θ' := θ∘E.symm
+  let w' := w∘E.symm
+  let σ' := σ∘E.symm
+  let v' := v∘E.symm
   have hsum : (∑i:T.map e,w' i)=∑i:T,w i := E.symm.sum_comp w
   have hh := h (T.map e) θ' w' σ' v' t height
     (fun i=>hw (E.symm i)) (fun i=>hwL (E.symm i))
@@ -69,8 +70,8 @@ theorem positiveLowAt_subtype (T : Finset α)
   positiveLowAt_embedding M H hH ⟨Subtype.val,Subtype.val_injective⟩ W bslot a b bΦ Bmask L
     Lslot lo hi Mcap ε κ Z η₀ Q degree S C h
 
-end SevenEighths.CenteredMomentEnergyLowBandSubtype
 
-end
 
-end OAI
+
+
+

@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma original_residual_norm_bounds (rows : Finset (Ideal Eis)) (J Q : Ideal Eis)
     (hbad : ∀ P∈fixedBadPrimes,P∣Q) (U : ℝ)
@@ -28,7 +28,7 @@ lemma dyadic_canonical_lower (Z QK : ℝ) (hZ : 1<Z) (hQK : 0<QK)
   rw [Real.rpow_logb (lt_trans zero_lt_one hZ) (ne_of_gt hZ) hQK]
   exact hK
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -13,12 +13,12 @@ namespace SevenEighths.CenteredMomentAllocatedNaturalRadial
 open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory
 open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice
+open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
+open CenteredMomentOriginalRadialComparison
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy
 open CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma profile_support (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) :
     Function.support (V.profile U hU t : ℝ→ℂ)⊆Set.Icc (V.a/max 1 V.b) (max 1 V.b) := by
@@ -199,8 +199,8 @@ theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : �
   rw [←mul_add] at hh
   simpa only [d,commonData,withHeight,hV₁,hV₂] using hh
 
-end SevenEighths.CenteredMomentAllocatedNaturalRadial
 
-end
 
-end OAI
+
+
+

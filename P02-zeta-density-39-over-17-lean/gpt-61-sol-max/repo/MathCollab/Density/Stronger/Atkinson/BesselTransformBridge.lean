@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected literal Y0 Mellin proofs adapted
 from DFIBesselTransformBridge.lean, exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -9,9 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.BesselTransforms
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-set_option autoImplicit false
-noncomputable section
+open Complex MeasureTheory
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 /-- The mixed-sign DFI multiplier is exactly the Mellin transform of the
@@ -26,7 +26,7 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
         (1 - z) := by
   have hq : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
-  let A : ℝ := 4 * Real.pi * Real.sqrt n / q
+  let A := 4 * Real.pi * Real.sqrt n / q
   have hA : 0 < A := by dsimp [A]; positivity
   rw [mellin_dfiBesselK0_mul_sqrt hA hz]
   dsimp [A]
@@ -70,8 +70,7 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
   rw [hsqrtPow]
   have hPiTwo (e : ℂ) : ((Real.pi : ℂ) * 2) ^ e =
       (Real.pi : ℂ) ^ e * (2 : ℂ) ^ e := by
-    simpa only [Complex.ofReal_ofNat] using
-      Complex.mul_cpow_ofReal_nonneg Real.pi_nonneg
+    exact Complex.mul_cpow_ofReal_nonneg Real.pi_nonneg
         (by norm_num : (0 : ℝ) ≤ 2) e
   have hPiTwoSq (e : ℂ) : (((Real.pi : ℂ) * 2) ^ e) ^ 2 =
       (Real.pi : ℂ) ^ (e + e) * (2 : ℂ) ^ (e + e) := by
@@ -95,8 +94,7 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
       ((q : ℂ) ^ e)⁻¹ := by
     rw [Complex.ofReal_inv]
     apply Complex.inv_cpow (q : ℂ) e
-    rw [hqArg]
-    exact Real.pi_ne_zero.symm
+    grind
   rw [hqInvPow]
   ring_nf
   have hq0 : (q : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne q)
@@ -118,7 +116,6 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
     rw [← Complex.cpow_neg_one]
     rw [← Complex.cpow_neg _ (-2 + z * 2)]
     rw [← Complex.cpow_add _ _ hq0]
-    congr 1
     ring
   have h2Left : (2 : ℂ) ^ (-2 + z * 2) * 2 =
       (2 : ℂ) ^ (-1 + z * 2) := by
@@ -134,7 +131,6 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
     rw [← Complex.cpow_add _ _ (by norm_num : (2 : ℂ) ≠ 0)]
     rw [show (8 : ℂ) = (2 : ℂ) ^ (3 : ℂ) by norm_num]
     rw [← Complex.cpow_add _ _ (by norm_num : (2 : ℂ) ≠ 0)]
-    congr 1
     ring
   calc
     (n : ℂ) ^ (-1 + z) * (q : ℂ) * ((q : ℂ) ^ (-z)) ^ 2 *
@@ -142,15 +138,7 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
           Gamma (1 - z) ^ 2 * 2 =
         (n : ℂ) ^ (-1 + z) * (q : ℂ) ^ (1 - 2 * z) *
           (Real.pi : ℂ) ^ (-2 + z * 2) *
-          (2 : ℂ) ^ (-1 + z * 2) * Gamma (1 - z) ^ 2 := by
-            rw [show (n : ℂ) ^ (-1 + z) * (q : ℂ) *
-                ((q : ℂ) ^ (-z)) ^ 2 * (Real.pi : ℂ) ^ (-2 + z * 2) *
-                (2 : ℂ) ^ (-2 + z * 2) * Gamma (1 - z) ^ 2 * 2 =
-              (n : ℂ) ^ (-1 + z) *
-                ((q : ℂ) * ((q : ℂ) ^ (-z)) ^ 2) *
-                (Real.pi : ℂ) ^ (-2 + z * 2) *
-                ((2 : ℂ) ^ (-2 + z * 2) * 2) * Gamma (1 - z) ^ 2 by ring]
-            rw [hqLeft, h2Left]
+          (2 : ℂ) ^ (-1 + z * 2) * Gamma (1 - z) ^ 2 := by grind
     _ = (n : ℂ) ^ (-1 + z) *
           ((q : ℂ)⁻¹ * ((q : ℂ) ^ (-2 + z * 2))⁻¹) *
           (Real.pi : ℂ) ^ (-2 + z * 2) *
@@ -197,17 +185,15 @@ theorem dfiVoronoiPlusTransform_mellin_eq_bessel
     (hg : DFIVoronoiTestFunction g) :
     dfiVoronoiPlusTransform q (mellin g) n =
       dfiVoronoiPlusBesselTransform q g n := by
-  let A : ℝ := 4 * Real.pi * Real.sqrt n / q
-  let h : ℝ → ℂ := fun x => (dfiBesselK0 (A * Real.sqrt x) : ℂ)
+  let A := 4 * Real.pi * Real.sqrt n / q
+  let h := fun x => (dfiBesselK0 (A * Real.sqrt x) : ℂ)
   have hq : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
   have hA : 0 < A := by dsimp [A]; positivity
   have hConv : MellinConvergent h (3 / 2 : ℂ) := by
-    simpa only [h] using
-      (mellinConvergent_dfiBesselK0_mul_sqrt hA
+    exact (mellinConvergent_dfiBesselK0_mul_sqrt hA
         (s := (3 / 2 : ℂ)) (by norm_num))
-  have hMeas : AEStronglyMeasurable h
-      (volume.restrict (Set.Ioi 0)) :=
+  have hMeas :=
     MellinConvergent.aestronglyMeasurable_positive hConv
   have hInt : IntegrableOn (fun x : ℝ => x ^ (1 / 2 : ℝ) * ‖h x‖)
       (Set.Ioi 0) := by
@@ -255,10 +241,7 @@ theorem dfiVoronoiPlusTransform_mellin_eq_bessel
       congr 1
       apply setIntegral_congr_fun measurableSet_Ioi
       intro x hx
-      change g x * h x =
-        g x * (dfiBesselK0
-          (4 * Real.pi * Real.sqrt (x * n) / q) : ℂ)
-      rw [hKernel x hx]
+      grind
 
 /-- The analytically continued Mellin symbol of `Y₀` differs from the
 `K₀` symbol by the classical cosine factor. -/
@@ -276,14 +259,17 @@ theorem dfiBesselY0MellinSymbol_eq_cos_mul_K0 (w : ℂ) :
       _ = (2 : ℂ) ^ (1 : ℂ) * (2 : ℂ) ^ (2 * w - 2) := by
         rw [Complex.cpow_add _ _ (by norm_num : (2 : ℂ) ≠ 0)]
       _ = 2 * (2 : ℂ) ^ (2 * w - 2) := by simp
-  rw [h2]
-  ring
+  grind
+
+section
+variable (q n : ℕ) [NeZero q] (hn : 0 < n)
+include q n hn
 
 /-- Exact analytic-continuation identity for the equal-sign DFI
 multiplier.  The right side is the scaled `Y₀` Mellin symbol before the
 regularized Mellin inversion is applied. -/
 theorem dfiVoronoiMinusMultiplier_eq_scaled_Y0_symbol
-    (q n : ℕ) [NeZero q] (hn : 0 < n) (z : ℂ)
+     (z : ℂ)
     (hz : 0 < (1 - z).re) :
     (n : ℂ) ^ (-(1 - z)) * dfiVoronoiMinusMultiplier q z =
       (-(2 * Real.pi) / (q : ℂ)) *
@@ -318,31 +304,28 @@ theorem dfiVoronoiMinusMultiplier_eq_scaled_Y0_symbol
     rw [hRatio]
     field_simp [Complex.ofReal_ne_zero.mpr Real.pi_ne_zero]
     ring
-  rw [hLeft, hPlus]
-  exact hRight.symm
+  grind
 
 /-- On the interior line `Re z = 13/16`, the equal-sign Mellin--Barnes
 transform is exactly DFI's literal `Y₀` transform.  The interior line is
 essential: it puts `2(1-z)` in the absolute Mellin strip
 `1/4 < Re s < 1/2` of the Neumann kernel. -/
 theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
-    (q n : ℕ) [NeZero q] (hn : 0 < n) {g : ℝ → ℂ}
+     {g : ℝ → ℂ}
     (hg : DFIVoronoiTestFunction g) :
     PointMean.VerticalIntegral' (fun z : ℂ =>
         (n : ℂ) ^ (-(1 - z)) * dfiVoronoiMinusMultiplier q z * mellin g z)
         (13 / 16 : ℝ) =
       dfiVoronoiMinusBesselTransform q g n := by
-  let A : ℝ := 4 * Real.pi * Real.sqrt n / q
-  let h : ℝ → ℂ := fun x => (dfiBesselY0 (A * Real.sqrt x) : ℂ)
+  let A := 4 * Real.pi * Real.sqrt n / q
+  let h := fun x => (dfiBesselY0 (A * Real.sqrt x) : ℂ)
   have hq : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
   have hA : 0 < A := by dsimp [A]; positivity
   have hConv : MellinConvergent h (3 / 16 : ℂ) := by
-    simpa only [h] using
-      (mellinConvergent_dfiBesselY0_mul_sqrt hA
+    exact (mellinConvergent_dfiBesselY0_mul_sqrt hA
         (s := (3 / 16 : ℂ)) (by norm_num) (by norm_num))
-  have hMeas : AEStronglyMeasurable h
-      (volume.restrict (Set.Ioi 0)) :=
+  have hMeas :=
     MellinConvergent.aestronglyMeasurable_positive hConv
   have hInt : IntegrableOn (fun x : ℝ => x ^ (-(13 / 16 : ℝ)) * ‖h x‖)
       (Set.Ioi 0) := by
@@ -359,7 +342,7 @@ theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
           (mellin g ((13 / 16 : ℂ) + (u : ℂ) * I) *
             mellin h
               (1 - ((13 / 16 : ℂ) + (u : ℂ) * I))) := by
-    let z : ℂ := (13 / 16 : ℂ) + (u : ℂ) * I
+    let z := (13 / 16 : ℂ) + (u : ℂ) * I
     have hz : 0 < (1 - z).re := by dsimp [z]; norm_num
     have hMellin := mellin_dfiBesselY0_mul_sqrt hA
       (s := 1 - z) (by dsimp [z]; norm_num) (by dsimp [z]; norm_num)
@@ -367,7 +350,6 @@ theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
     rw [show mellin h (1 - z) =
         2 * (A : ℂ) ^ (-(2 * (1 - z))) *
           dfiBesselY0MellinSymbol (2 * (1 - z)) by simpa only [h] using hMellin]
-    dsimp [z, A]
     ring
   have hKernel (x : ℝ) (hx : x ∈ Set.Ioi (0 : ℝ)) :
       h x = (dfiBesselY0
@@ -396,10 +378,9 @@ theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
       congr 1
       apply setIntegral_congr_fun measurableSet_Ioi
       intro x hx
-      change g x * h x =
-        g x * (dfiBesselY0
-          (4 * Real.pi * Real.sqrt (x * n) / q) : ℂ)
-      rw [hKernel x hx]
+      grind
+end
 
 
-end MathCollab.Density.Stronger.Atkinson
+
+

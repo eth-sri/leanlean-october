@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarIntegral
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                           
@@ -17,7 +16,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                   
 
 
-noncomputable section
+
 
 open MeasureTheory
 open scoped BigOperators ComplexConjugate
@@ -37,12 +36,7 @@ theorem norm_sargosPlanarGramTerm_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
       nlinarith [norm_nonneg z₁,norm_nonneg z₂]
     have hk := norm_integral_sargosPlanarKernelTerm_le_one ha hb c d ξ η
     exact (mul_le_mul hz hk (norm_nonneg _) (by norm_num)).trans_eq (by norm_num)
-  · have hcut : a ≤ |ξ| ∨ b ≤ |η| := by
-      by_cases hx : |ξ| ≤ a
-      · right
-        have hy : ¬|η| ≤ b := fun hy => h ⟨hx,hy⟩
-        exact (lt_of_not_ge hy).le
-      · exact Or.inl (lt_of_not_ge hx).le
+  · have hcut : a ≤ |ξ| ∨ b ≤ |η| := by grind
     rw [integral_sargosPlanarKernelTerm_eq_zero ha hb hcut c d,mul_zero,norm_zero,ite_eq_right h]
 
 theorem sargosWeightedPlanarIntegral_le_nearPairs {ι : Type*}
@@ -78,11 +72,6 @@ theorem sargosWeightedPlanarIntegral_le_nearPairs {ι : Type*}
       have hpI := Finset.mem_product.mp hp
       exact norm_sargosPlanarGramTerm_le ha hb (hz p.1 hpI.1) (hz p.2 hpI.2)
         c d (u p.1-u p.2) (v p.1-v p.2)
-    _ = _ := by
-      simp only [sargosNearPairs,Finset.card_eq_sum_ones,Nat.cast_sum,
-        Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro p hp
-      split_ifs <;> norm_num
+    _ = _ := by aesop
 
-end TaoTrudgianYang2025
+

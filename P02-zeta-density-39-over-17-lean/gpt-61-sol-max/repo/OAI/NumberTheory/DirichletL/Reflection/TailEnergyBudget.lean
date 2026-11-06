@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein
+
+open scoped EisensteinEis
 
 theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -46,7 +46,7 @@ theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
       rw [mul_pow,←pow_mul,←Real.rpow_mul_natCast hz.le,Real.rpow_add hz]
       ring_nf
     _ = _ := by congr 2;ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

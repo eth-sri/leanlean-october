@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.KernelBaseline
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
-open ActualEisensteinCubic CubicEisenstein CompletedGauss
+open ActualEisensteinCubic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 abbrev RawTailIndex := ℕ×NonzeroDualIdeal×NonzeroDualIdeal
 
@@ -44,12 +45,12 @@ theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
     ∀ (β : ℕ→Ideal Eis→Ideal Eis→ℂ),
       (∀ m, ∀ I J : NonzeroDualIdeal, ‖β m I.val J.val‖≤B) →
     ∀ cut : RawTailIndex→Prop,
-      (∀ x, cut x → T≤scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3) →
+      (∀ x, cut x → T≤ scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3) →
     Summable (fun x => ‖if cut x then rawDualKernelTerm V scale ρ q β x else 0‖) ∧
       ‖∑' x, if cut x then rawDualKernelTerm V scale ρ q β x else 0‖≤
         C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V*B*T^(-(A:ℝ))*(scale^2*ρ^6)⁻¹ := by
   obtain ⟨S,C,hC,hkernel⟩ := CubicReflectionKernel.paperKernel_euler_source_power_decay a b ha (A+2) 0
-  let D : ℝ := (∑' x,rawTailWeight q x)+1
+  let D := (∑' x,rawTailWeight q x)+1
   have hsum := rawTailWeight_summable q hq
   have hD : 0<D := by
     have h : 0≤∑' x,rawTailWeight q x := tsum_nonneg (rawTailWeight_nonneg q)
@@ -57,7 +58,7 @@ theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
     linarith
   refine ⟨S,C*D,mul_pos hC hD,?_⟩
   intro V hV scale ρ B T hs hρ hB hT β hβ cut hcut
-  let M : ℝ := C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V*B*T^(-(A:ℝ))*(scale^2*ρ^6)⁻¹
+  let M := C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V*B*T^(-(A:ℝ))*(scale^2*ρ^6)⁻¹
   have hM : 0≤M := by dsimp only [M]; positivity
   have hmajor : ∀ x : RawTailIndex,
       ‖if cut x then rawDualKernelTerm V scale ρ q β x else 0‖≤M*rawTailWeight q x := by
@@ -86,7 +87,7 @@ theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
     _ = M*(∑' x,rawTailWeight q x) := tsum_mul_left
     _ ≤ M*D := mul_le_mul_of_nonneg_left (by dsimp only [D]; linarith) hM
     _ = _ := by dsimp only [M]; ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

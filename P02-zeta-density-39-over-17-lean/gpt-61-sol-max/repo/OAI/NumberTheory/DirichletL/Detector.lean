@@ -96,6 +96,6 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
     nlinarith
   exact ⟨hlength, hlowerA, hlowerB⟩
 
-end SevenEighths.Detector
 
-end OAI
+
+

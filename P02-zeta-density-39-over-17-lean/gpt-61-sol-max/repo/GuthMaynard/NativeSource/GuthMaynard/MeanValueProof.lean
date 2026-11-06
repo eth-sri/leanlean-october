@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.DistLEIntegral
@@ -48,7 +49,7 @@ lemma integral_conj_fourier_term_mul_fourier_term (a b : ℂ) (n m : ℤ) :
         (conj a * b) * Complex.exp (Complex.I * ((m - n : ℤ) : ℂ) * (x : ℂ)) := by
     intro x
     rw [map_mul, ← Complex.exp_conj]
-    simp only [map_mul, conj_I, map_intCast, conj_ofReal, neg_mul]
+    simp
     rw [show (conj a * Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ)))) *
           (b * Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) =
         (conj a * b) * (Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ))) *
@@ -62,9 +63,7 @@ lemma integral_conj_fourier_term_mul_fourier_term (a b : ℂ) (n m : ℤ) :
     (∫ x : ℝ in 0..2 * Real.pi,
         (conj a * b) * Complex.exp (Complex.I * ((m - n : ℤ) : ℂ) * (x : ℂ))) =
         (conj a * b) * (∫ x : ℝ in 0..2 * Real.pi,
-          Complex.exp (Complex.I * ((m - n : ℤ) : ℂ) * (x : ℂ))) := by
-      exact intervalIntegral.integral_const_mul (conj a * b)
-        (fun x : ℝ => Complex.exp (Complex.I * ((m - n : ℤ) : ℂ) * (x : ℂ)))
+          Complex.exp (Complex.I * ((m - n : ℤ) : ℂ) * (x : ℂ))) := by simp_all
     _ = _ := by
       rw [integral_cexp_int (m - n)]
       by_cases hnm : n = m
@@ -74,7 +73,11 @@ lemma integral_conj_fourier_term_mul_fourier_term (a b : ℂ) (n m : ℤ) :
       · have hsub : m - n ≠ 0 := sub_ne_zero.mpr (Ne.symm hnm)
         simp [hnm, hsub]
 
-lemma integral_conj_trigPoly_mul_trigPoly (s : Finset ℤ) (a b : ℤ → ℂ) :
+section
+variable (s : Finset ℤ)
+include s
+
+lemma integral_conj_trigPoly_mul_trigPoly  (a b : ℤ → ℂ) :
     (∫ x : ℝ in 0..2 * Real.pi, conj (trigPoly s a x) * trigPoly s b x) =
       (2 * Real.pi : ℝ) * ∑ n ∈ s, conj (a n) * b n := by
   have hexpand : ∀ x : ℝ,
@@ -106,7 +109,11 @@ lemma integral_conj_trigPoly_mul_trigPoly (s : Finset ℤ) (a b : ℤ → ℂ) :
     apply Continuous.intervalIntegrable
     fun_prop
 
-lemma integral_norm_sq_trigPoly (s : Finset ℤ) (a : ℤ → ℂ) :
+section
+variable (a : ℤ → ℂ)
+include a
+
+lemma integral_norm_sq_trigPoly  :
     (∫ x : ℝ in 0..2 * Real.pi, ‖trigPoly s a x‖ ^ 2) =
       2 * Real.pi * ∑ n ∈ s, ‖a n‖ ^ 2 := by
   apply Complex.ofReal_injective
@@ -125,17 +132,20 @@ lemma integral_norm_sq_trigPoly (s : Finset ℤ) (a : ℤ → ℂ) :
   rw [← Complex.ofReal_pow, ← Complex.normSq_eq_norm_sq,
     Complex.normSq_eq_conj_mul_self]
 
-lemma continuous_trigPoly (s : Finset ℤ) (a : ℤ → ℂ) :
+lemma continuous_trigPoly  :
     Continuous (trigPoly s a) := by
   change Continuous (fun x : ℝ =>
     ∑ n ∈ s, a n * Complex.exp (Complex.I * (n : ℂ) * (x : ℂ)))
   fun_prop
+end
+end
+
 
 lemma integral_sawtooth_cexp (k : ℤ) (hk : k ≠ 0) :
     (∫ x : ℝ in 0..2 * Real.pi,
       ((Real.pi - x : ℝ) : ℂ) * Complex.exp (Complex.I * (k : ℂ) * (x : ℂ))) =
       2 * Real.pi * Complex.I / (k : ℂ) := by
-  let c : ℂ := Complex.I * (k : ℂ)
+  let c := Complex.I * (k : ℂ)
   have hc : c ≠ 0 := mul_ne_zero Complex.I_ne_zero (Int.cast_ne_zero.mpr hk)
   let v : ℝ → ℂ := fun x => Complex.exp (c * (x : ℂ)) / c
   have hv : ∀ x : ℝ, HasDerivAt v (Complex.exp (c * (x : ℂ))) x := by
@@ -178,26 +188,16 @@ lemma integral_sawtooth_cexp (k : ℤ) (hk : k ≠ 0) :
     simp only [v, div_eq_mul_inv]
     calc
       (∫ x : ℝ in 0..2 * Real.pi, Complex.exp (c * (x : ℂ)) * c⁻¹) =
-          (∫ x : ℝ in 0..2 * Real.pi, Complex.exp (c * (x : ℂ))) * c⁻¹ := by
-            exact intervalIntegral.integral_mul_const c⁻¹
-              (fun x : ℝ => Complex.exp (c * (x : ℂ)))
+          (∫ x : ℝ in 0..2 * Real.pi, Complex.exp (c * (x : ℂ))) * c⁻¹ := by simp_all
       _ = 0 := by rw [integral_exp_mul_complex hc, hcexp]; simp
-  have hterm : (∫ x : ℝ in 0..2 * Real.pi, (-1 : ℂ) * v x) = 0 := by
-    calc
-      (∫ x : ℝ in 0..2 * Real.pi, (-1 : ℂ) * v x) =
-          (-1 : ℂ) * (∫ x : ℝ in 0..2 * Real.pi, v x) := by
-            exact intervalIntegral.integral_const_mul (-1 : ℂ) v
-      _ = 0 := by rw [hvint]; simp
+  have hterm : (∫ x : ℝ in 0..2 * Real.pi, (-1 : ℂ) * v x) = 0 := by simp_all
   rw [hv0, hv2]
   calc
     ((Real.pi - 2 * Real.pi : ℝ) : ℂ) * (1 / c) -
           ((Real.pi - 0 : ℝ) : ℂ) * (1 / c) -
           (∫ x : ℝ in 0..2 * Real.pi, (-1 : ℂ) * v x) =
         ((Real.pi - 2 * Real.pi : ℝ) : ℂ) * (1 / c) -
-          ((Real.pi - 0 : ℝ) : ℂ) * (1 / c) - 0 := by
-            exact congrArg
-              (fun z : ℂ => ((Real.pi - 2 * Real.pi : ℝ) : ℂ) * (1 / c) -
-                ((Real.pi - 0 : ℝ) : ℂ) * (1 / c) - z) hterm
+          ((Real.pi - 0 : ℝ) : ℂ) * (1 / c) - 0 := by simp_all
     _ = 2 * Real.pi * Complex.I / (k : ℂ) := by
       simp only [sub_zero]
       dsimp [c]
@@ -241,7 +241,7 @@ lemma integral_sawtooth_conj_fourier_mul_fourier (a b : ℂ) (n m : ℤ) :
         (conj a * b) * Complex.exp (Complex.I * ((m - n : ℤ) : ℂ) * (x : ℂ)) := by
     intro x
     rw [map_mul, ← Complex.exp_conj]
-    simp only [map_mul, conj_I, map_intCast, conj_ofReal, neg_mul]
+    simp
     rw [show (conj a * Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ)))) *
           (b * Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) =
         (conj a * b) * (Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ))) *
@@ -274,8 +274,12 @@ lemma integral_sawtooth_conj_fourier_mul_fourier (a b : ℂ) (n m : ℤ) :
         simp only [hnm, ite_false, hsub]
         ring
 
+section
+variable (s : Finset ℤ) (a b : ℤ → ℂ)
+include s a b
+
 lemma integral_sawtooth_conj_trigPoly_mul_trigPoly
-    (s : Finset ℤ) (a b : ℤ → ℂ) :
+     :
     (∫ x : ℝ in 0..2 * Real.pi,
       ((Real.pi - x : ℝ) : ℂ) * (conj (trigPoly s a x) * trigPoly s b x)) =
       2 * Real.pi * Complex.I * hilbertForm s a b := by
@@ -312,7 +316,7 @@ lemma integral_sawtooth_conj_trigPoly_mul_trigPoly
     fun_prop
 
 lemma norm_sawtooth_conj_trigPoly_mul_trigPoly_le
-    (s : Finset ℤ) (a b : ℤ → ℂ) {x : ℝ}
+     {x : ℝ}
     (hx : x ∈ Set.Icc (0 : ℝ) (2 * Real.pi)) :
     ‖((Real.pi - x : ℝ) : ℂ) * (conj (trigPoly s a x) * trigPoly s b x)‖ ≤
       Real.pi * (‖trigPoly s a x‖ ^ 2 + ‖trigPoly s b x‖ ^ 2) := by
@@ -332,12 +336,12 @@ lemma norm_sawtooth_conj_trigPoly_mul_trigPoly_le
     _ ≤ Real.pi * (‖trigPoly s a x‖ ^ 2 + ‖trigPoly s b x‖ ^ 2) :=
       mul_le_mul_of_nonneg_left huv hpi
 
-theorem hilbertForm_norm_le (s : Finset ℤ) (a b : ℤ → ℂ) :
+theorem hilbertForm_norm_le  :
     ‖hilbertForm s a b‖ ≤
       Real.pi * ((∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖b n‖ ^ 2) := by
-  let F : ℝ → ℂ := fun x =>
+  let F := fun x =>
     ((Real.pi - x : ℝ) : ℂ) * (conj (trigPoly s a x) * trigPoly s b x)
-  let G : ℝ → ℝ := fun x =>
+  let G := fun x =>
     Real.pi * (‖trigPoly s a x‖ ^ 2 + ‖trigPoly s b x‖ ^ 2)
   have htwoPi : 0 ≤ 2 * Real.pi := by positivity
   have htwoPiPos : 0 < 2 * Real.pi := by positivity
@@ -381,23 +385,19 @@ theorem hilbertForm_norm_le (s : Finset ℤ) (a b : ℤ → ℂ) :
       2 * Real.pi * Real.pi *
         ((∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖b n‖ ^ 2) := by
     calc
-      2 * Real.pi * ‖hilbertForm s a b‖ = ‖∫ x : ℝ in 0..2 * Real.pi, F x‖ := by
-        rw [hRepresentation]
-        simp only [norm_mul, norm_real, Real.norm_eq_abs, norm_I]
-        have hnormTwo : ‖(2 : ℂ)‖ = 2 := by norm_num
-        rw [hnormTwo]
-        rw [abs_of_pos Real.pi_pos]
-        ring
+      2 * Real.pi * ‖hilbertForm s a b‖ = ‖∫ x : ℝ in 0..2 * Real.pi, F x‖ := by aesop
       _ ≤ ∫ x : ℝ in 0..2 * Real.pi, ‖F x‖ := hNormIntegral
       _ ≤ ∫ x : ℝ in 0..2 * Real.pi, G x := hPointwiseIntegral
       _ = _ := hGIntegral
   nlinarith
+end
+
 
 theorem nat_hilbertForm_norm_le (s : Finset ℕ) (a b : ℕ → ℂ) :
     ‖∑ m ∈ s, ∑ n ∈ s, if n = m then 0 else
         conj (a n) * b m / (((m : ℤ) - (n : ℤ) : ℤ) : ℂ)‖ ≤
       Real.pi * ((∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖b n‖ ^ 2) := by
-  let sz : Finset ℤ := s.image (fun n : ℕ => (n : ℤ))
+  let sz := s.image (fun n : ℕ => (n : ℤ))
   let az : ℤ → ℂ := fun z => if 0 ≤ z then a z.toNat else 0
   let bz : ℤ → ℂ := fun z => if 0 ≤ z then b z.toNat else 0
   have h := hilbertForm_norm_le sz az bz
@@ -436,11 +436,7 @@ lemma abs_inv_log_sub_sub_div_le_one {x y : ℝ} (hx : 0 < x) (hy : 0 < y)
     rw [abs_le]
     constructor
     · linarith
-    · have hyd : y / d = x / d + 1 := by
-        have hone : (1 : ℝ) = d / d := (div_self hd.ne').symm
-        rw [hone, ← add_div]
-        dsimp [d]
-        ring
+    · have hyd : y / d = x / d + 1 := by grind
       linarith
   · let d := x - y
     have hd : 0 < d := sub_pos.mpr hgt
@@ -475,11 +471,7 @@ lemma abs_inv_log_sub_sub_div_le_one {x y : ℝ} (hx : 0 < x) (hy : 0 < y)
     have hyx : y - x = -d := by dsimp [d]; ring
     rw [hyx, div_neg]
     rw [abs_le]
-    have hxd : x / d = y / d + 1 := by
-      have hone : (1 : ℝ) = d / d := (div_self hd.ne').symm
-      rw [hone, ← add_div]
-      dsimp [d]
-      ring
+    have hxd : x / d = y / d + 1 := by grind
     constructor
     · linarith
     · linarith
@@ -497,27 +489,31 @@ lemma norm_complex_log_kernel_error_le_one {n m : ℕ} (hn : 0 < n) (hm : 0 < m)
   rw [Complex.norm_real, Real.norm_eq_abs]
   norm_cast at hreal ⊢
 
+section
+variable (N : ℕ) (a : ℕ → ℂ)
+include N a
+
 /-- The `logHilbertQuad` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def logHilbertQuad (N : ℕ) (a : ℕ → ℂ) : ℂ :=
+noncomputable def logHilbertQuad  : ℂ :=
   ∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
     if n = m then 0 else
       conj (a n) * a m / (((Real.log m - Real.log n : ℝ) : ℂ))
 
 /-- The `natMainQuad` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def natMainQuad (N : ℕ) (a : ℕ → ℂ) : ℂ :=
+noncomputable def natMainQuad  : ℂ :=
   ∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
     if n = m then 0 else
       conj (a n) * a m * (n : ℂ) /
         (((m : ℤ) - (n : ℤ) : ℤ) : ℂ)
 
 /-- The `logKernelErrorQuad` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def logKernelErrorQuad (N : ℕ) (a : ℕ → ℂ) : ℂ :=
+noncomputable def logKernelErrorQuad  : ℂ :=
   ∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
     if n = m then 0 else conj (a n) * a m *
       (((((Real.log m - Real.log n)⁻¹ : ℝ) : ℂ)) -
         (n : ℂ) / (((m : ℤ) - (n : ℤ) : ℤ) : ℂ))
 
-lemma logHilbertQuad_eq_main_add_error (N : ℕ) (a : ℕ → ℂ) :
+lemma logHilbertQuad_eq_main_add_error  :
     logHilbertQuad N a = natMainQuad N a + logKernelErrorQuad N a := by
   simp only [logHilbertQuad, natMainQuad, logKernelErrorQuad, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
@@ -531,7 +527,7 @@ lemma logHilbertQuad_eq_main_add_error (N : ℕ) (a : ℕ → ℂ) :
     rw [← Complex.ofReal_inv]
     ring
 
-lemma logKernelErrorQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+lemma logKernelErrorQuad_norm_le  (hN : 0 < N) :
     ‖logKernelErrorQuad N a‖ ≤
       (N : ℝ) * ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
   let s := Finset.Ioc N (2 * N)
@@ -568,10 +564,14 @@ lemma logKernelErrorQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
       rw [hcard]
 
 /-- The `natScaledCoeff` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def natScaledCoeff (N : ℕ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
+noncomputable def natScaledCoeff  (n : ℕ) : ℂ :=
   (n : ℂ) / (N : ℂ) * a n
 
-lemma natMainQuad_eq_scaled_hilbert (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+section
+variable (hN : 0 < N)
+include hN
+
+lemma natMainQuad_eq_scaled_hilbert  :
     natMainQuad N a = (N : ℂ) *
       (∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
         if n = m then 0 else conj (natScaledCoeff N a n) * a m /
@@ -587,7 +587,7 @@ lemma natMainQuad_eq_scaled_hilbert (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     have hNC : (N : ℂ) ≠ 0 := by exact_mod_cast hN.ne'
     field_simp
 
-lemma natScaledCoeff_l2_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+lemma natScaledCoeff_l2_le  :
     (∑ n ∈ Finset.Ioc N (2 * N), ‖natScaledCoeff N a n‖ ^ 2) ≤
       4 * ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
   rw [Finset.mul_sum]
@@ -609,12 +609,12 @@ lemma natScaledCoeff_l2_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     _ ≤ 4 * ‖a n‖ ^ 2 :=
       mul_le_mul_of_nonneg_right hrsq (sq_nonneg ‖a n‖)
 
-lemma natMainQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+lemma natMainQuad_norm_le  :
     ‖natMainQuad N a‖ ≤
       (5 * Real.pi) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
   let s := Finset.Ioc N (2 * N)
-  let H : ℂ := ∑ m ∈ s, ∑ n ∈ s,
+  let H := ∑ m ∈ s, ∑ n ∈ s,
     if n = m then 0 else conj (natScaledCoeff N a n) * a m /
       (((m : ℤ) - (n : ℤ) : ℤ) : ℂ)
   have hHilbert : ‖H‖ ≤ Real.pi *
@@ -626,9 +626,7 @@ lemma natMainQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     calc
       ‖H‖ ≤ Real.pi *
           ((∑ n ∈ s, ‖natScaledCoeff N a n‖ ^ 2) + ∑ n ∈ s, ‖a n‖ ^ 2) := hHilbert
-      _ ≤ Real.pi * (4 * (∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖a n‖ ^ 2) := by
-        apply mul_le_mul_of_nonneg_left _ hpi
-        exact add_le_add (by simpa [s] using hScaled) le_rfl
+      _ ≤ Real.pi * (4 * (∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖a n‖ ^ 2) := by nlinarith
       _ = 5 * Real.pi * ∑ n ∈ s, ‖a n‖ ^ 2 := by ring
   rw [natMainQuad_eq_scaled_hilbert N a hN]
   change ‖(N : ℂ) * H‖ ≤ _
@@ -640,7 +638,7 @@ lemma natMainQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     _ = (5 * Real.pi) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by simp [s]; ring
 
-theorem logHilbertQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+theorem logHilbertQuad_norm_le  :
     ‖logHilbertQuad N a‖ ≤
       (5 * Real.pi + 1) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
@@ -654,27 +652,34 @@ theorem logHilbertQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
       add_le_add (natMainQuad_norm_le N a hN) (logKernelErrorQuad_norm_le N a hN)
     _ = (5 * Real.pi + 1) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by ring
+end
+
 
 /-- The `dirichletTime` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def dirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
+noncomputable def dirichletTime  (t : ℝ) : ℂ :=
   ∑ n ∈ Finset.Ioc N (2 * N),
     a n * Complex.exp (-(Complex.I * (t : ℂ) * (Real.log n : ℂ)))
+end
+
+
+section
+variable (T : ℝ) (a : ℕ → ℂ)
+include T a
 
 /-- The `endpointTwist` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def endpointTwist (T : ℝ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
+noncomputable def endpointTwist  (n : ℕ) : ℂ :=
   a n * Complex.exp (-(Complex.I * (T : ℂ) * (Real.log n : ℂ)))
 
-lemma norm_endpointTwist (T : ℝ) (a : ℕ → ℂ) (n : ℕ) :
+lemma norm_endpointTwist  (n : ℕ) :
     ‖endpointTwist T a n‖ = ‖a n‖ := by
   rw [endpointTwist, norm_mul, Complex.norm_exp]
   have hre : (-(Complex.I * (T : ℂ) * (Real.log n : ℂ))).re = 0 := by
-    simp only [Complex.neg_re, Complex.mul_re, Complex.I_re, Complex.I_im,
-      Complex.ofReal_re, Complex.ofReal_im]
+    simp only [neg_re, mul_re, I_re, ofReal_re, I_im, ofReal_im]
     ring
   rw [hre, Real.exp_zero, mul_one]
 
 lemma integral_conj_dirichlet_term_mul_dirichlet_term
-    (T : ℝ) (a : ℕ → ℂ) {n m : ℕ} (hn : 0 < n) (hm : 0 < m) :
+     {n m : ℕ} (hn : 0 < n) (hm : 0 < m) :
     (∫ t : ℝ in 0..T,
       conj (a n * Complex.exp (-(Complex.I * (t : ℂ) * (Real.log n : ℂ)))) *
         (a m * Complex.exp (-(Complex.I * (t : ℂ) * (Real.log m : ℂ))))) =
@@ -765,9 +770,15 @@ lemma integral_conj_dirichlet_term_mul_dirichlet_term
     field_simp [hdC, Complex.I_ne_zero]
     rw [Complex.I_sq]
     ring
+end
+
+
+section
+variable (N : ℕ) (T : ℝ) (a : ℕ → ℂ)
+include N T a
 
 lemma integral_conj_dirichletTime_mul_dirichletTime
-    (N : ℕ) (T : ℝ) (a : ℕ → ℂ) :
+     :
     (∫ t : ℝ in 0..T, conj (dirichletTime N a t) * dirichletTime N a t) =
       (T : ℂ) * ∑ n ∈ Finset.Ioc N (2 * N), conj (a n) * a n +
         Complex.I * (logHilbertQuad N (endpointTwist T a) - logHilbertQuad N a) := by
@@ -838,18 +849,7 @@ lemma integral_conj_dirichletTime_mul_dirichletTime
     have hdiag :
         (∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
           if n = m then (T : ℂ) * (conj (a n) * a n) else 0) =
-        ∑ m ∈ Finset.Ioc N (2 * N), (T : ℂ) * (conj (a m) * a m) := by
-      apply Finset.sum_congr rfl
-      intro m hm
-      calc
-        (∑ n ∈ Finset.Ioc N (2 * N),
-          if n = m then (T : ℂ) * (conj (a n) * a n) else 0) =
-            ∑ n ∈ Finset.Ioc N (2 * N),
-              if n = m then (T : ℂ) * (conj (a m) * a m) else 0 := by
-                apply Finset.sum_congr rfl
-                intro n hn
-                by_cases hnm : n = m <;> simp [hnm]
-        _ = (T : ℂ) * (conj (a m) * a m) := by simp [hm]
+        ∑ m ∈ Finset.Ioc N (2 * N), (T : ℂ) * (conj (a m) * a m) := by simp_all
     rw [hdiag]
     simp only [mul_ite]
     ring_nf
@@ -857,7 +857,7 @@ lemma integral_conj_dirichletTime_mul_dirichletTime
     apply Continuous.intervalIntegrable
     fun_prop
 
-lemma ofReal_integral_norm_sq_dirichletTime (N : ℕ) (T : ℝ) (a : ℕ → ℂ) :
+lemma ofReal_integral_norm_sq_dirichletTime  :
     (((∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2) : ℝ) : ℂ) =
       (T : ℂ) * ∑ n ∈ Finset.Ioc N (2 * N), conj (a n) * a n +
         Complex.I * (logHilbertQuad N (endpointTwist T a) - logHilbertQuad N a) := by
@@ -869,12 +869,12 @@ lemma ofReal_integral_norm_sq_dirichletTime (N : ℕ) (T : ℝ) (a : ℕ → ℂ
     simp_rw [hpoint]
     exact integral_conj_dirichletTime_mul_dirichletTime N T a
 
-theorem integral_norm_sq_dirichletTime_le (N : ℕ) (T : ℝ) (a : ℕ → ℂ)
+theorem integral_norm_sq_dirichletTime_le 
     (hN : 0 < N) (hT : 0 ≤ T) :
     (∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2) ≤
       (T + 2 * (5 * Real.pi + 1) * (N : ℝ)) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
-  let S : ℝ := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
+  let S := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
   have hS : 0 ≤ S := by
     dsimp [S]
     positivity
@@ -909,7 +909,7 @@ theorem integral_norm_sq_dirichletTime_le (N : ℕ) (T : ℝ) (a : ℕ → ℂ)
           logHilbertQuad_norm_le N (endpointTwist T a) hN)
           (by simpa [S] using logHilbertQuad_norm_le N a hN)
       _ = 2 * (5 * Real.pi + 1) * (N : ℝ) * S := by ring
-  let L : ℝ := ∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2
+  let L := ∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2
   have hcast := ofReal_integral_norm_sq_dirichletTime N T a
   change L ≤ (T + 2 * (5 * Real.pi + 1) * (N : ℝ)) * S
   change ((L : ℝ) : ℂ) = _ at hcast
@@ -924,12 +924,14 @@ theorem integral_norm_sq_dirichletTime_le (N : ℕ) (T : ℝ) (a : ℕ → ℂ)
       norm_add_le _ _
     _ ≤ T * S + 2 * (5 * Real.pi + 1) * (N : ℝ) * S := add_le_add (le_of_eq hdiag) hoff
     _ = (T + 2 * (5 * Real.pi + 1) * (N : ℝ)) * S := by ring
+end
+
 
 lemma local_sample_le_energy (g : ℝ → ℂ) (t : ℝ)
     (hg : Differentiable ℝ g) (hgd : Continuous (deriv g)) :
     ‖g t‖ ^ 2 ≤ ∫ x : ℝ in t..t + 1, 2 * ‖g x‖ ^ 2 + ‖deriv g x‖ ^ 2 := by
-  let h : ℝ → ℝ := fun x => ‖g x‖ ^ 2
-  let q : ℝ → ℝ := fun x => ‖g x‖ ^ 2 + ‖deriv g x‖ ^ 2
+  let h := fun x => ‖g x‖ ^ 2
+  let q := fun x => ‖g x‖ ^ 2 + ‖deriv g x‖ ^ 2
   have hhCont : Continuous h := hg.continuous.norm.fun_pow 2
   have hqCont : Continuous q := hg.continuous.norm.fun_pow 2 |>.add (hgd.norm.fun_pow 2)
   have hderivBound : ∀ y : ℝ, ‖deriv h y‖ ≤ q y := by
@@ -967,7 +969,7 @@ lemma local_sample_le_energy (g : ℝ → ℂ) (t : ℝ)
       linarith [neg_le_abs (h x - h t)]
     exact hbasic.trans (by
       simpa [add_comm] using add_le_add_left (hdist.trans hmono) (h x))
-  let Q : ℝ := ∫ y : ℝ in t..t + 1, q y
+  let Q := ∫ y : ℝ in t..t + 1, q y
   have hfInt : IntervalIntegrable (fun _ : ℝ => h t) MeasureTheory.volume t (t + 1) :=
     continuous_const.intervalIntegrable (μ := MeasureTheory.volume) t (t + 1)
   have hgInt : IntervalIntegrable (fun x => h x + Q) MeasureTheory.volume t (t + 1) :=
@@ -1014,9 +1016,7 @@ lemma sum_local_intervalIntegrals_le (T : ℝ) (W : Finset ℝ) (q : ℝ → ℝ
     have hxData : x < z ∧ z ≤ x + 1 := hzx
     have hyData : y < z ∧ z ≤ y + 1 := hzy
     rcases lt_or_gt_of_ne hxy with hxylt | hyxlt
-    · have : 1 ≤ y - x := by
-        rw [abs_of_nonpos (sub_nonpos.mpr hxylt.le)] at hdist
-        simpa only [neg_sub] using hdist
+    · have : 1 ≤ y - x := by grind
       linarith
     · have : 1 ≤ x - y := by
         rw [abs_of_nonneg (sub_nonneg.mpr hyxlt.le)] at hdist
@@ -1056,17 +1056,25 @@ lemma sum_local_intervalIntegrals_le (T : ℝ) (W : Finset ℝ) (q : ℝ → ℝ
     _ = ∫ x : ℝ in 0..T + 1, q x := by
       rw [intervalIntegral.integral_of_le (by linarith)]
 
+section
+variable (N : ℕ) (a : ℕ → ℂ)
+include N a
+
 /-- The `centeredDirichletTime` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
+noncomputable def centeredDirichletTime  (t : ℝ) : ℂ :=
   ∑ n ∈ Finset.Ioc N (2 * N),
     a n * Complex.exp
       (Complex.I * (t : ℂ) * ((Real.log N - Real.log n : ℝ) : ℂ))
 
 /-- The `centeredDerivCoeff` definition used by the source-facing construction in `MeanValueProof`. -/
-noncomputable def centeredDerivCoeff (N : ℕ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
+noncomputable def centeredDerivCoeff  (n : ℕ) : ℂ :=
   a n * (Complex.I * ((Real.log N - Real.log n : ℝ) : ℂ))
 
-lemma centeredDirichletTime_eq (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (t : ℝ)
+include t
+
+lemma centeredDirichletTime_eq  :
     centeredDirichletTime N a t =
       Complex.exp (Complex.I * (t : ℂ) * (Real.log N : ℂ)) * dirichletTime N a t := by
   simp only [centeredDirichletTime, dirichletTime, Finset.mul_sum]
@@ -1081,22 +1089,21 @@ lemma centeredDirichletTime_eq (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   push_cast
   ring_nf
 
-lemma norm_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+lemma norm_centeredDirichletTime  :
     ‖centeredDirichletTime N a t‖ = ‖dirichletTime N a t‖ := by
   rw [centeredDirichletTime_eq, norm_mul, Complex.norm_exp]
   have hre : (Complex.I * (t : ℂ) * (Real.log N : ℂ)).re = 0 := by
-    simp only [Complex.mul_re, Complex.I_re, Complex.I_im, Complex.ofReal_re,
-      Complex.ofReal_im]
+    simp only [mul_re, I_re, ofReal_re, I_im, ofReal_im]
     ring_nf
   rw [hre, Real.exp_zero, one_mul]
 
-lemma hasDerivAt_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+lemma hasDerivAt_centeredDirichletTime  :
     HasDerivAt (centeredDirichletTime N a)
       (centeredDirichletTime N (centeredDerivCoeff N a) t) t := by
   unfold centeredDirichletTime
   apply HasDerivAt.fun_sum
   intro n hn
-  let c : ℂ := Complex.I * ((Real.log N - Real.log n : ℝ) : ℂ)
+  let c := Complex.I * ((Real.log N - Real.log n : ℝ) : ℂ)
   have hexp : HasDerivAt (fun x : ℝ => Complex.exp (c * (x : ℂ)))
       (Complex.exp (c * (t : ℂ)) * c) t := by
     convert (Complex.hasDerivAt_exp (c * (t : ℂ))).comp t
@@ -1109,24 +1116,28 @@ lemma hasDerivAt_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     ring
   · dsimp [centeredDerivCoeff, c]
     ring_nf
+end
 
-lemma differentiable_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) :
+
+lemma differentiable_centeredDirichletTime  :
     Differentiable ℝ (centeredDirichletTime N a) := by
   intro t
   exact (hasDerivAt_centeredDirichletTime N a t).differentiableAt
 
-lemma deriv_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+lemma deriv_centeredDirichletTime  (t : ℝ) :
     deriv (centeredDirichletTime N a) t =
       centeredDirichletTime N (centeredDerivCoeff N a) t :=
   (hasDerivAt_centeredDirichletTime N a t).deriv
 
-lemma continuous_deriv_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) :
+lemma continuous_deriv_centeredDirichletTime  :
     Continuous (deriv (centeredDirichletTime N a)) := by
   rw [show deriv (centeredDirichletTime N a) =
       centeredDirichletTime N (centeredDerivCoeff N a) by
     funext t
     exact deriv_centeredDirichletTime N a t]
   exact differentiable_centeredDirichletTime N (centeredDerivCoeff N a) |>.continuous
+end
+
 
 lemma abs_log_ratio_le_one (N n : ℕ) (hN : 0 < N) (hn : n ∈ Finset.Ioc N (2 * N)) :
     |Real.log N - Real.log n| ≤ 1 := by
@@ -1135,8 +1146,8 @@ lemma abs_log_ratio_le_one (N n : ℕ) (hN : 0 < N) (hn : n ∈ Finset.Ioc N (2 
     (lt_of_le_of_lt (Nat.zero_le N) (Finset.mem_Ioc.mp hn).1)
   have hNn : (N : ℝ) ≤ n := by exact_mod_cast (Finset.mem_Ioc.mp hn).1.le
   have hn2N : (n : ℝ) ≤ 2 * N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
-  have hlogNn : Real.log N ≤ Real.log n := Real.log_le_log hNR hNn
-  have hlogn2N : Real.log n ≤ Real.log (2 * N) := Real.log_le_log hnR hn2N
+  have hlogNn := Real.log_le_log hNR hNn
+  have hlogn2N := Real.log_le_log hnR hn2N
   have hlogTwo : Real.log 2 ≤ 1 := by
     have h := Real.log_le_sub_one_of_pos (x := (2 : ℝ)) (by norm_num)
     norm_num at h ⊢
@@ -1175,12 +1186,12 @@ theorem montgomery_mean_value_estimate (N : ℕ) (T : ℝ) (W : Finset ℝ) (a :
       a n * (n : ℂ) ^ (-(t : ℂ) * Complex.I)‖ ^ 2) ≤
       (3 * (2 + 2 * (5 * Real.pi + 1))) * (T + (N : ℝ)) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
-  let g : ℝ → ℂ := centeredDirichletTime N a
-  let b : ℕ → ℂ := centeredDerivCoeff N a
-  let q : ℝ → ℝ := fun x => 2 * ‖g x‖ ^ 2 + ‖deriv g x‖ ^ 2
-  let S : ℝ := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
-  let K : ℝ := 2 * (5 * Real.pi + 1)
-  let U : ℝ := T + 1
+  let g := centeredDirichletTime N a
+  let b := centeredDerivCoeff N a
+  let q := fun x => 2 * ‖g x‖ ^ 2 + ‖deriv g x‖ ^ 2
+  let S := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
+  let K := 2 * (5 * Real.pi + 1)
+  let U := T + 1
   have hS : 0 ≤ S := by
     dsimp [S]
     positivity
@@ -1257,8 +1268,7 @@ theorem montgomery_mean_value_estimate (N : ℕ) (T : ℝ) (W : Finset ℝ) (a :
       exact Finset.sum_le_sum hLocal
     _ ≤ ∫ x : ℝ in 0..T + 1, q x := hDisjoint
     _ ≤ 3 * (U + K * (N : ℝ)) * S := by simpa [U] using hGlobal
-    _ ≤ 3 * ((2 + K) * (T + (N : ℝ))) * S := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hScale (by norm_num)) hS
+    _ ≤ 3 * ((2 + K) * (T + (N : ℝ))) * S := by nlinarith
     _ = (3 * (2 + 2 * (5 * Real.pi + 1))) * (T + (N : ℝ)) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
       dsimp [K, S]
@@ -1270,4 +1280,4 @@ theorem montgomery_mean_value_native :
   intro N T W a hN hT hSep hBase
   exact montgomery_mean_value_estimate N T W a hN hT hSep hBase
 
-end GuthMaynard.NativeMoment
+

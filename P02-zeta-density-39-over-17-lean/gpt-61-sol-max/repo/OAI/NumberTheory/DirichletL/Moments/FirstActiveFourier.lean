@@ -5,21 +5,25 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstReduced
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
+open CenteredMomentCommonSupport CenteredMomentFourier
 open CenteredMomentFirstMixed CenteredMomentFirstReduced
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem shifted_active_fourier {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
     (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6) (v h : O) :
+    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
+include ι P hcop hg hchar j hj0 hj6
+
+theorem shifted_active_fourier  (v h : O) :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     (∑' x : Residue r,G (Ideal.Quotient.mk _ v*x)*
@@ -40,12 +44,7 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
   change finiteSexticRow P hg j v*(star (finiteSexticRow P hg j h)*canonicalGaussSum P hcop hg j)=_
   ring
 
-theorem tripleFourier_active {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
+theorem tripleFourier_active 
     (a b : O) (ha : a≠0) (hb : b≠0)
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (h : O) :
@@ -74,9 +73,11 @@ theorem tripleFourier_active {ι : Type*} [Fintype ι]
   dsimp only at hs
   rw [tsum_fintype] at hs
   rw [hs]
-
-end SevenEighths.CenteredMomentFirstActiveFourier
-
 end
 
-end OAI
+
+
+
+
+
+

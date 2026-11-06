@@ -52,8 +52,8 @@ theorem reciprocal_norm_le (χ : Character) {σ : ℝ} (hσ : 1 < σ)
       exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one χ I)
     _ ≤ _ := normWeight_le_of_re_ge hs I
 
-end SevenEighths.HeckeReciprocalBound
 
-end
 
-end OAI
+
+
+

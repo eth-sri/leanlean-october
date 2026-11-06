@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.InitialMajorant
 public import OAI.NumberTheory.DirichletL.Detector.MellinScaling
 
@@ -19,21 +20,27 @@ lemma sourceMellinWeight_eq_scale (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x
   unfold sourceMellinWeight sourceScale profile
   ring
 
-lemma sourceScale_continuous (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+section
+variable (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+include X Y Z hX hY hZ
+
+lemma sourceScale_continuous  :
     Continuous (fun q : (ℂ × ℂ) × ℂ =>sourceScale X Y Z q.1.1 q.1.2 q.2) := by
-  have hx : (X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hz : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hx := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hy := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hz := Complex.ofReal_ne_zero.mpr hZ.ne'
   unfold sourceScale
   exact (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>(1/2:ℂ)-q.2)).const_cpow (Or.inl hx)).mul
     (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.1+q.2-1)).const_cpow (Or.inl hz)))) |>.mul
       ((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.2-1)).const_cpow (Or.inl hy))
 
-lemma sourceScale_norm (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (x w z : ℂ) :
+lemma sourceScale_norm  (x w z : ℂ) :
     ‖sourceScale X Y Z x w z‖=X^(1/2-z.re)*Z^(x.re+z.re-1)*Y^(w.re-1) := by
   simp only [sourceScale,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hX,
     Complex.norm_cpow_eq_rpow_re_of_pos hY,Complex.norm_cpow_eq_rpow_re_of_pos hZ]
-  norm_num [Complex.sub_re,Complex.add_re]
+  norm_num
+end
+
 
 theorem sourceMellinWeight_initial_integrable (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -67,7 +74,7 @@ lemma sourceMellinWeight_initial_continuous (W0 W1 : SchwartzMap ℝ ℂ)
   simpa only [Function.comp_def,Pi.mul_def,sourceMellinWeight_eq_scale,onLines] using
     hc.mul (onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ hξ)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

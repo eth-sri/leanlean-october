@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -11,11 +12,10 @@ public import MathCollab.Density.Stronger.Fourth.GammaShiftAmplitude
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -76,13 +76,16 @@ theorem zetaSquareRightKernel_normalized_reflected (t u : ℝ) :
   rw [zetaSquarePoleNormalization_neg]
   ring
 
-theorem norm_rightContour_shift_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
+section
+variable {t u : ℝ} (ht : 4 ≤ t)
+include t u ht
+
+theorem norm_rightContour_shift_le  (hu : |u| ≤ t / 4) :
     ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ t / 2 := by
   have h := norm_add_le (1 : ℂ) ((u : ℂ) * I)
-  simp [Real.norm_eq_abs] at h
-  linarith
+  simp_all <;> nlinarith
 
-private theorem near_shift_exponent_le {t u : ℝ} (ht : 4 ≤ t) :
+private theorem near_shift_exponent_le  :
     zetaGammaShiftError t (1 + (u : ℂ) * I) + u * (Real.pi / 2) ≤ 20 + 10 * u ^ 2 := by
   have ht0 : 0 < t := by linarith
   have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ 1 + |u| := by
@@ -99,7 +102,7 @@ private theorem near_shift_exponent_le {t u : ℝ} (ht : 4 ≤ t) :
 
 /-- The height power in the leading exponential cancels the inverse-height
 relative error. The resulting majorant has no height-dependent constant. -/
-theorem norm_near_pole_gamma_error_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
+theorem norm_near_pole_gamma_error_le  (hu : |u| ≤ t / 4) :
     let w : ℂ := 1 + (u : ℂ) * I
     ‖zetaSquarePoleShift t w * (Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
         Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 - Complex.exp (w * zetaGammaLeadingLog t)‖ ≤
@@ -136,8 +139,7 @@ theorem norm_near_pole_gamma_error_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t
 
 /-- The complete normalized source-kernel error has an integrable Gaussian
 majorant, uniformly for every height `t ≥ 4` on the stated central segment. -/
-theorem norm_zetaSquareRightKernel_sub_leading_near_le {t u : ℝ}
-    (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
+theorem norm_zetaSquareRightKernel_sub_leading_near_le  (hu : |u| ≤ t / 4) :
     ‖zetaSquareRightKernel (-t) u / zetaSquareGammaNormalization t -
       zetaSquareLeadingRightKernel t u‖ ≤
       114375 * Real.exp 120 * Real.exp (-90 * u ^ 2) * (1 + |u|) ^ 10 := by
@@ -176,9 +178,8 @@ theorem norm_zetaSquareRightKernel_sub_leading_near_le {t u : ℝ}
         rw [← Real.exp_add, ← Real.exp_add]
         congr 1
         ring
-      calc
-        _ = 114375 * (Real.exp (100 - 100 * u ^ 2) * Real.exp (20 + 10 * u ^ 2)) *
-            (1 + |u|) ^ 10 := by ring
-        _ = _ := by rw [he]; ring
+      grind
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

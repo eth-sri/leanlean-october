@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFixedDisplacementSafe
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                  
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_fixed_displacement_linear_card_le
@@ -59,5 +58,5 @@ theorem robertSargos_fixed_displacement_linear_card_le
       4*H^2*((A+e)-(A-e))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb
     _ = _ := by dsimp [e]; field_simp; ring
 
-end TaoTrudgianYang2025
+
 

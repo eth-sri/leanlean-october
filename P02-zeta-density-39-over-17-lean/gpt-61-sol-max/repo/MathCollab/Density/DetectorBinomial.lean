@@ -1,16 +1,20 @@
 module
+import Mathlib
 public import MathCollab.Density.DetectorTaylorFamily
 public import Mathlib.Analysis.Analytic.Binomial
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density
 
-theorem detectorTaylorRatio_eq_prod_div (β : ℝ) (j : ℕ) :
+section
+variable (β : ℝ) (j : ℕ)
+include β j
+
+theorem detectorTaylorRatio_eq_prod_div  :
     detectorTaylorRatio β j = (∏ l ∈ Finset.range j, (β+(l : ℝ))) / (j.factorial : ℝ) := by
   unfold detectorTaylorRatio
   rw [Finset.prod_div_distrib]
@@ -18,10 +22,9 @@ theorem detectorTaylorRatio_eq_prod_div (β : ℝ) (j : ℕ) :
   rw [Nat.factorial_eq_prod_range_add_one]
   push_cast
   apply Finset.prod_congr rfl
-  intro l hl
-  ring
+  bound
 
-theorem detector_descPochhammer_neg (β : ℝ) (j : ℕ) :
+theorem detector_descPochhammer_neg  :
     (descPochhammer ℤ j).smeval (-β) =
       (-1 : ℝ)^j * ∏ l ∈ Finset.range j, (β+(l : ℝ)) := by
   induction j with
@@ -33,11 +36,12 @@ theorem detector_descPochhammer_neg (β : ℝ) (j : ℕ) :
     rw [ih, Finset.prod_range_succ, pow_succ]
     ring
 
-theorem choose_neg_eq_detectorTaylorRatio (β : ℝ) (j : ℕ) :
+theorem choose_neg_eq_detectorTaylorRatio  :
     Ring.choose (-β) j = (-1 : ℝ)^j * detectorTaylorRatio β j := by
   rw [Ring.choose_eq_smul, detector_descPochhammer_neg, detectorTaylorRatio_eq_prod_div]
-  simp only [smul_eq_mul]
   ring
+end
+
 
 /-- Exact binomial expansion at every positive block coordinate. -/
 theorem hasSum_detector_binomial {β x : ℝ} (hx : 1 ≤ x) (hx' : x ≤ 2) :
@@ -59,4 +63,4 @@ theorem hasSum_detector_binomial {β x : ℝ} (hx : 1 ≤ x) (hx' : x ≤ 2) :
   have hh : 1+z = 2*x/3 := by dsimp [z]; ring
   simpa only [hc, hh] using h
 
-end MathCollab.Density
+

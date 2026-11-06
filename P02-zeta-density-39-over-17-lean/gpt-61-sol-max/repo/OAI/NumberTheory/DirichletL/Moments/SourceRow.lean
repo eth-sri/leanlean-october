@@ -12,16 +12,20 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentSourceRow
 open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion
 open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem rowWeight_split (η : Character) (m A z : O) (t : ℝ) (I : Ideal O) :
+section
+variable (η : Character) (m A z : O) (t : ℝ)
+include η m A z t
+
+theorem rowWeight_split  (I : Ideal O) :
     rowWeight η m A z t I = rowWeight η m A 1 t I*idealRowHom z I := by
   change (idealCoeff η I*idealRowHom (m^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t) =
     ((idealCoeff η I*idealRowHom (m^6*(A*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t))*idealRowHom z I
   rw [mul_one,← mul_assoc,idealRowHom_argument_mul]
   ring
 
-theorem rowWeight_zero_of_not_supported (η : Character) (m A z : O) (t : ℝ)
+theorem rowWeight_zero_of_not_supported 
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) (I : Ideal O) (hI : ¬Supported I) :
     rowWeight η m A z t I=0 := by
   by_cases h0 : I=0
@@ -38,6 +42,8 @@ theorem rowWeight_zero_of_not_supported (η : Character) (m A z : O) (t : ℝ)
   rw [he] at hz
   change (idealCoeff η I*idealRowHom (m^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t)=0
   rw [hz,zero_mul]
+end
+
 
 def supportedColumns (S : Finset (Ideal O)) : Finset (Ideal O) := S.filter Supported
 
@@ -49,15 +55,25 @@ theorem primary_span_supported (I : Ideal O) (hI : Supported I) : Ideal.span {pr
     simpa only [span_idealGenerator] using hg
   exact (primaryGenerator_spec I hn).1
 
-def sourceGenerator (S : Finset (Ideal O)) (I : supportedColumns S) : O := primaryGenerator I
+section
+variable (S : Finset (Ideal O)) (I : supportedColumns S)
+include S I
 
-theorem sourceGenerator_supported (S : Finset (Ideal O)) (I : supportedColumns S) :
+def sourceGenerator  : O := primaryGenerator I
+
+theorem sourceGenerator_supported  :
     Supported (Ideal.span {sourceGenerator S I}) := by
   have hI := (Finset.mem_filter.mp I.property).2
   rw [sourceGenerator,primary_span_supported I hI]
   exact hI
+end
 
-theorem finite_hecke_sum_eq_rowPolynomial (η : Character) (m A z : O) (t : ℝ)
+
+section
+variable (η : Character)
+include η
+
+theorem finite_hecke_sum_eq_rowPolynomial  (m A z : O) (t : ℝ)
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) :
     (∑ I∈S,c I*rowWeight η m A z t I) =
@@ -77,12 +93,16 @@ theorem finite_hecke_sum_eq_rowPolynomial (η : Character) (m A z : O) (t : ℝ)
   rw [sourceGenerator,primary_span_supported I (Finset.mem_filter.mp I.property).2,rowWeight_split]
   ring
 
-def finiteHeckeEnergy (η : Character) (m A : O) (t : ℝ)
+section
+variable (m A : O) (t : ℝ)
+include m A t
+
+def finiteHeckeEnergy 
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
   ∑' z : O,((‖∑ I∈S,c I*rowWeight η m A z t I‖^2:ℝ):ℂ)*
     W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)
 
-theorem finiteHeckeEnergy_eq (η : Character) (m A : O) (t : ℝ)
+theorem finiteHeckeEnergy_eq 
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     finiteHeckeEnergy η m A t S c W K =
@@ -90,9 +110,12 @@ theorem finiteHeckeEnergy_eq (η : Character) (m A : O) (t : ℝ)
         (fun I : supportedColumns S => c I*rowWeight η m A 1 t I) W K := by
   unfold finiteHeckeEnergy rowEnergy
   simp_rw [finite_hecke_sum_eq_rowPolynomial η m A _ t hmLam hm2 S c]
-
-end SevenEighths.CenteredMomentSourceRow
-
+end
 end
 
-end OAI
+
+
+
+
+
+

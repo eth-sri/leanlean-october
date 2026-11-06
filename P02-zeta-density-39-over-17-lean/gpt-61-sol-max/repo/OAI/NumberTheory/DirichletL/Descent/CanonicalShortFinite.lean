@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.CanonicalShortAttachment
 public import OAI.NumberTheory.DirichletL.Inversion.ReflectedShortNormalizedUniformDegree
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedShortNormalizedUnif
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseMoment InverseTerminalWidths CompletedHeight
+open scoped EisensteinEis
 universe u v
 theorem actual_complete_short_finite_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo) (W : ℝ→ℂ)
@@ -24,7 +25,7 @@ theorem actual_complete_short_finite_uniform_degree
     ∀ (m : Eis),m≠0 → ∀ (Z N V M z₀ margin hcut d : ℝ),
       Z₀≤Z → 0≤N → 0≤V → 0≤M → M≤L → V≤L → z₀≤L → 0≤hcut → hcut≤L →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hcut≤d+eta → d≤cstar/200 →
     ∀ (labels : Finset (Ideal Eis)),
       (∀f∈labels,Supported f ∧ Squarefree f ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
@@ -86,9 +87,8 @@ theorem actual_complete_short_finite_uniform_degree
       abs_of_pos (Real.rpow_pos_of_pos hz _),Complex.norm_real,Real.norm_eq_abs,
       abs_of_nonneg (Real.sqrt_nonneg _),Real.sq_sqrt (Real.rpow_nonneg hz.le _),
       ←Real.rpow_mul_natCast hz.le,←Real.rpow_add hz]
-    congr 1
-    ring
-  have hmark:indexedIdealMark (fun i:primePool F=>i.val) slots lists a=tupleDivisibilityMark ilists iw:=
+    simp
+  have hmark :=
     funext (indexed_mark_eq_tuple F slots lists a)
   rw [hmark]
   change Z^(-V)*(∑f∈labels,secondLabelWeight K f*∑k∈T,
@@ -104,8 +104,8 @@ theorem actual_complete_short_finite_uniform_degree
   intros
   ring
 
-end SevenEighths.InverseCanonicalShortAttachment
 
-end
 
-end OAI
+
+
+

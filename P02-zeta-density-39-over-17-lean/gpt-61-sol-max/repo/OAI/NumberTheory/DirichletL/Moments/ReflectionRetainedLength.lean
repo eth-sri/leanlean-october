@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentReflectionRetainedLength
@@ -57,8 +57,8 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     _≤Z^(xi/2)*Z^(M-a+xi/2) :=mul_le_mul_of_nonneg_right hconst (by positivity)
     _=Z^(M-a+xi) :=by rw [←Real.rpow_add hz];congr 1;ring
 
-end SevenEighths.CenteredMomentReflectionRetainedLength
 
-end
 
-end OAI
+
+
+

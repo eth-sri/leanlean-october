@@ -14,11 +14,11 @@ cutoff; no slope-chart cutoff or uncut amplitude is substituted.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseMorseAmplitude (χ F : ℝ → ℝ) (v z : ℝ) : ℝ :=
   χ (modelPhaseMorseInverse F v z)*deriv (modelPhaseMorseInverse F v) z
@@ -43,4 +43,4 @@ theorem modelPhaseMorseAmplitude_zero
   rw [modelPhaseMorseAmplitude,modelPhaseMorseInverse_zero hσ hδ hF hv,
     (modelPhaseMorseInverse_hasDerivAt_zero hσ hδ hF hv).deriv]
 
-end TaoTrudgianYang2025
+

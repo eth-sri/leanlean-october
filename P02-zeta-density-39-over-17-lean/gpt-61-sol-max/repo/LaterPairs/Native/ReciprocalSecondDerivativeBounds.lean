@@ -4,9 +4,8 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                         
@@ -15,9 +14,9 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                          
 
 
-noncomputable section
 
-open Complex Filter MeasureTheory Set
+
+open Complex Filter MeasureTheory
 open scoped Topology ContDiff
 
 namespace TaoTrudgianYang2025
@@ -36,7 +35,6 @@ theorem iteratedDeriv_two_real_inv {g : ℝ → ℝ} {x : ℝ}
   dsimp only [Pi.neg_apply, Pi.pow_apply] at h
   rw [iteratedDeriv_succ, iteratedDeriv_one, he.deriv_eq, h]
   simp only [iteratedDeriv_succ, iteratedDeriv_zero, Nat.cast_ofNat, Nat.reduceSub, pow_one]
-  field_simp
-  ring
+  grind
 
-end TaoTrudgianYang2025
+

@@ -13,7 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
 open CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency
 open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns
@@ -23,7 +23,7 @@ open CenteredMomentSectorLocalization CenteredMomentActiveSource
 open CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows
 open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
 open CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 abbrev ActiveLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
   ↥(commonLabels (supportedColumns (activeSource S β)) (supportedColumns (activeSource S β)))
@@ -56,8 +56,12 @@ theorem active_kernel_windows (η : Character)
     (sectorPool_supported C hC.1 _ I) (sectorPool_supported D hD.1 _ J)
     A h hA hh W K R hK (fun i=>n i)).symm
 
-theorem sector_finite_blocks (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
+section
+variable (η : Character) (t : ℝ)
+    (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+include η t S β
+
+theorem sector_finite_blocks  (H : ℝ)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (U : Finset (CommonIndex C D)) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
@@ -88,8 +92,7 @@ theorem sector_finite_blocks (η : Character) (t : ℝ)
       (retainedRows_ne_zero R _ h hh) W K R hK,Finset.mul_sum]
   · simp only [hp,ite_false,Finset.sum_const_zero]
 
-theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ))
+theorem original_secondRetainedEnergy_blocks  (W : 𝓢(ℝ,ℂ))
     (K Tsec Z ξ H : ℝ) (hK : 0<K)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H) :
     secondRetainedEnergy η t S β W K Tsec Z ξ=
@@ -112,6 +115,8 @@ theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
   intro U hU
   rw [actual_GV_finite_rows]
   exact sector_finite_blocks η t S β H hH _ _ _ _ U W K _ hK
+end
+
 
 lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal O)
     (hC : C≠0) (hD : D≠0) :
@@ -121,8 +126,8 @@ lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal O)
   have hd := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t D hD
   nlinarith [norm_nonneg (heightCoeff η t C),norm_nonneg (heightCoeff η t D)]
 
-end SevenEighths.CenteredMomentSecondBlockAggregate
 
-end
 
-end OAI
+
+
+

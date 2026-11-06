@@ -1,4 +1,5 @@
 module
+import LaterPairs.Native.ZetaSourceLogScales
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
@@ -10,9 +11,8 @@ public import LaterPairs.Native.SargosDualTentWindow
 public import LaterPairs.Native.SargosWithinDerivativeCalculus
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.PointMean
 
                                                                                 
 
@@ -40,14 +40,18 @@ open scoped BigOperators FourierTransform
 namespace TaoTrudgianYang2025.SquareProductCount
 open LogarithmicSixth
 
-def logSum (S : Finset ℕ) (p : ℝ × ℝ) : ℂ :=
+section
+variable (S : Finset ℕ)
+include S
+
+def logSum  (p : ℝ × ℝ) : ℂ :=
   ∑ n∈S, fordAdditiveCharacter (p.1*(n:ℝ)^2+p.2*Real.log (n:ℝ))
 
-theorem continuous_logSum (S : Finset ℕ) : Continuous (logSum S) := by
+theorem continuous_logSum  : Continuous (logSum S) := by
   unfold logSum fordAdditiveCharacter
   fun_prop
 
-theorem logSum_sixth_eq (S : Finset ℕ) (T : ℝ) :
+theorem logSum_sixth_eq  (T : ℝ) :
     (∫ p : ℝ × ℝ in Icc (0:ℝ) 1 ×ˢ Icc (-T) T, ‖logSum S p‖^6) =
       logarithmicSixMoment T S (fun _ => 1) (fun n => (n:ℤ)) := by
   have hc : Continuous (fun p => ‖logSum S p‖^6) := (continuous_logSum S).norm.pow 6
@@ -57,6 +61,8 @@ theorem logSum_sixth_eq (S : Finset ℕ) (T : ℝ) :
   have hh := integral_prod_symm (fun p => ‖logSum S p‖^6) hi
   rw [Measure.prod_restrict,←Measure.volume_eq_prod] at hh
   simpa only [logSum,logarithmicSixMoment,one_mul,Int.cast_natCast] using hh
+end
+
 
 theorem three_mul_prod_le_sum_cube (a : Fin 3 → ℝ) (ha : ∀j, 0 ≤ a j) :
     3*(∏j, a j) ≤ ∑j, (a j)^3 := by
@@ -65,8 +71,7 @@ theorem three_mul_prod_le_sum_cube (a : Fin 3 → ℝ) (ha : ∀j, 0 ≤ a j) :
       (sq_nonneg (a 2-a 0)))
   simp only [Fin.sum_univ_succ,Fin.prod_univ_succ,
     Fin.sum_univ_zero,Fin.prod_univ_zero,add_zero,mul_one]
-  change 3*(a 0*(a 1*a 2)) ≤ a 0^3+(a 1^3+a 2^3)
-  nlinarith only [hp]
+  grind
 
 theorem normalized_triple_bound (a A : Fin 3 → ℝ) (hA : ∀j, 0 < A j) :
     (∏j, a j^2) ≤ (∏j, A j)/3*∑j, a j^6/(A j)^3 := by
@@ -114,9 +119,7 @@ theorem exists_mixed_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
       simp only [norm_one,Finset.sum_const,nsmul_eq_mul,mul_one]
       have hc : ((S j).filter (fun n : ℕ => (n:ℤ)=k)).card ≤ 1 := by
         apply Finset.card_le_one.mpr
-        intro a ha b hb
-        have he := (Finset.mem_filter.mp ha).2.trans (Finset.mem_filter.mp hb).2.symm
-        exact_mod_cast he
+        grind
       exact_mod_cast hc
     have hh := h (M j) (hM j).1 T hT ℕ (S j) (fun _ => 1) (fun n => (n:ℤ)) 1
       (by norm_num) hm hz
@@ -153,10 +156,14 @@ def logBoxSquare (q : ℤ) (n : Fin 3 → ℕ) : ℝ := (q:ℝ)+∑j, (n j:ℝ)^
 
 def logBoxLog (n : Fin 3 → ℕ) : ℝ := ∑j, Real.log (n j:ℝ)
 
-def logBoxSum (q : ℤ) (S : Fin 3 → Finset ℕ) (p : ℝ × ℝ) : ℂ :=
+section
+variable (q : ℤ) (S : Fin 3 → Finset ℕ) (p : ℝ × ℝ)
+include q S p
+
+def logBoxSum  : ℂ :=
   sargosPlanarSum (Fintype.piFinset S) (fun _ => 1) (logBoxSquare q) logBoxLog p.1 p.2
 
-theorem logBoxSum_eq_product (q : ℤ) (S : Fin 3 → Finset ℕ) (p : ℝ × ℝ) :
+theorem logBoxSum_eq_product  :
     logBoxSum q S p=fordAdditiveCharacter ((q:ℝ)*p.1)*∏j, logSum (S j) p := by
   classical
   unfold logBoxSum sargosPlanarSum logSum
@@ -169,9 +176,11 @@ theorem logBoxSum_eq_product (q : ℤ) (S : Fin 3 → Finset ℕ) (p : ℝ × �
   congr 1
   ring
 
-theorem logBoxSum_norm_sq (q : ℤ) (S : Fin 3 → Finset ℕ) (p : ℝ × ℝ) :
+theorem logBoxSum_norm_sq  :
     ‖logBoxSum q S p‖^2=∏j, ‖logSum (S j) p‖^2 := by
   rw [logBoxSum_eq_product,norm_mul,sargos_character_norm,one_mul,norm_prod,Finset.prod_pow]
+end
+
 
 theorem logSum_periodic (S : Finset ℕ) (t : ℝ) :
     Function.Periodic (fun α => logSum S (α,t)) 1 := by
@@ -216,8 +225,7 @@ theorem logBoxSum_central_integral (q : ℤ) (S : Fin 3 → Finset ℕ) (T : ℝ
     apply Finset.prod_congr rfl
     intro j _hj
     have he := logSum_periodic (S j) t α
-    change logSum (S j) (α+1,t)=logSum (S j) (α,t) at he
-    rw [he]
+    simp_all
   have hinner (t : ℝ) : (∫ α : ℝ in Icc (-1:ℝ) 1, F (α,t))=
       2*∫ α : ℝ in Icc (0:ℝ) 1, F (α,t) :=
     periodic_integral_two _ (hc.comp (continuous_id.prodMk continuous_const)) (hp t)
@@ -236,13 +244,17 @@ def logBoxFamilySquare (q : Fin 2 → ℤ) (v : (_j : Fin 2) × (Fin 3 → ℕ))
 
 def logBoxFamilyLog (v : (_j : Fin 2) × (Fin 3 → ℕ)) : ℝ := logBoxLog v.2
 
-theorem logBoxFamily_sum (q : Fin 2 → ℤ) (S : Fin 2 → Fin 3 → Finset ℕ) (p : ℝ × ℝ) :
+section
+variable (q : Fin 2 → ℤ) (S : Fin 2 → Fin 3 → Finset ℕ) (p : ℝ × ℝ)
+include q S p
+
+theorem logBoxFamily_sum  :
     sargosPlanarSum (logBoxFamily S) (fun _ => 1) (logBoxFamilySquare q) logBoxFamilyLog p.1 p.2=
       ∑j, logBoxSum (q j) (S j) p := by
   simp only [logBoxFamily,logBoxFamilySquare,logBoxFamilyLog,logBoxSum,
     sargosPlanarSum,Finset.sum_sigma]
 
-theorem logBoxFamily_norm_sq_le (q : Fin 2 → ℤ) (S : Fin 2 → Fin 3 → Finset ℕ) (p : ℝ × ℝ) :
+theorem logBoxFamily_norm_sq_le  :
     ‖sargosPlanarSum (logBoxFamily S) (fun _ => 1) (logBoxFamilySquare q) logBoxFamilyLog p.1 p.2‖^2 ≤
       2*∑j, ‖logBoxSum (q j) (S j) p‖^2 := by
   rw [logBoxFamily_sum]
@@ -250,8 +262,9 @@ theorem logBoxFamily_norm_sq_le (q : Fin 2 → ℤ) (S : Fin 2 → Fin 3 → Fin
     (norm_sum_le Finset.univ (fun j => logBoxSum (q j) (S j) p)) 2
   have hh := pow_sum_le_card_mul_sum_pow (s:=Finset.univ)
     (f:=fun j => ‖logBoxSum (q j) (S j) p‖) (fun _ _ => norm_nonneg _) 1
-  norm_num only [Finset.card_univ,Fintype.card_fin,Nat.cast_ofNat,pow_one,Nat.reduceAdd] at hh
-  exact hn.trans hh
+  simp_all <;> nlinarith
+end
+
 
 theorem continuous_logBoxSum (q : ℤ) (S : Fin 3 → Finset ℕ) :
     Continuous (logBoxSum q S) := by
@@ -306,7 +319,11 @@ theorem logBoxFamily_central_le (q : Fin 2 → ℤ)
   simp_rw [hprodH] at hmain
   exact hmain
 
-theorem exists_two_box_central_moment {ε : ℝ} (hε : 0 < ε) :
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+
+theorem exists_two_box_central_moment  :
     ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 ≤ T →
       ∀ (M : Fin 2 → Fin 3 → ℕ), (∀j r, 1 ≤ M j r ∧ M j r ≤ N) →
       ∀ (S : Fin 2 → Fin 3 → Finset ℕ), (∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ M j r) →
@@ -332,7 +349,7 @@ theorem exists_two_box_central_moment {ε : ℝ} (hε : 0 < ε) :
 
                                                                      
                                                                           
-theorem exists_two_box_log_near_count {ε : ℝ} (hε : 0 < ε) :
+theorem exists_two_box_log_near_count  :
     ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 < T →
       ∀ (M : Fin 2 → Fin 3 → ℕ), (∀j r, 1 ≤ M j r ∧ M j r ≤ N) →
       ∀ (S : Fin 2 → Fin 3 → Finset ℕ), (∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ M j r) →
@@ -351,16 +368,21 @@ theorem exists_two_box_log_near_count {ε : ℝ} (hε : 0 < ε) :
   rw [hcoef] at hk
   apply hk.trans ((mul_le_mul_of_nonneg_left hmom (by positivity : 0 ≤ 16/T)).trans_eq ?_)
   field_simp
+end
 
-def logCrossPairs (S : Fin 2 → Fin 3 → Finset ℕ) (q : Fin 2 → ℤ)
-    (δ : ℝ) : Finset ((Fin 3 → ℕ) × (Fin 3 → ℕ)) := by
+
+section
+variable (S : Fin 2 → Fin 3 → Finset ℕ) (q : Fin 2 → ℤ)
+    (δ : ℝ)
+include S q δ
+
+def logCrossPairs  : Finset ((Fin 3 → ℕ) × (Fin 3 → ℕ)) := by
   classical
   exact ((Fintype.piFinset (S 0)) ×ˢ (Fintype.piFinset (S 1))).filter
     (fun p => logBoxSquare (q 0) p.1=logBoxSquare (q 1) p.2 ∧
       |logBoxLog p.1-logBoxLog p.2| ≤ δ)
 
-theorem logCrossPairs_card_le_near (S : Fin 2 → Fin 3 → Finset ℕ)
-    (q : Fin 2 → ℤ) (δ : ℝ) :
+theorem logCrossPairs_card_le_near  :
     (logCrossPairs S q δ).card ≤
       (sargosNearPairs (logBoxFamily S) (logBoxFamilySquare q) logBoxFamilyLog (1/2) δ).card := by
   classical
@@ -386,6 +408,8 @@ theorem logCrossPairs_card_le_near (S : Fin 2 → Fin 3 → Finset ℕ)
     have ha := congrArg (fun v => v.1.2) he
     have hb := congrArg (fun v => v.2.2) he
     exact Prod.ext ha hb
+end
+
 
 theorem exists_logCrossPairs_bound {ε : ℝ} (hε : 0 < ε) :
     ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (δ : ℝ), 0 < δ →
@@ -431,8 +455,7 @@ theorem abs_log_sub_le_gap {a b L P : ℝ} (hL : 0 < L)
       _ ≤ |x-y|/y := div_le_div_of_nonneg_right (le_abs_self _) hy₀.le
       _ ≤ P/L := by gcongr
   have hab := hside ha₀ hb hd
-  have hba := hside hb₀ ha (by simpa only [abs_sub_comm] using hd)
-  exact abs_le.mpr ⟨by linarith,hab⟩
+  grind
 
 theorem logBoxLog_difference_le {a b : Fin 3 → ℕ} (ha : ∀j, 1 ≤ a j)
     (hb : ∀j, 1 ≤ b j) {L P : ℝ} (hL : 0 < L)
@@ -465,15 +488,18 @@ def boxProduct (n : Fin 3 → ℕ) : ℝ := ∏j, (n j:ℝ)
 theorem boxProduct_pos {n : Fin 3 → ℕ} (hn : ∀j, 1 ≤ n j) : 0 < boxProduct n :=
   Finset.prod_pos (fun j _ => by exact_mod_cast hn j)
 
-theorem boxProduct_le_cube {N : ℕ} {n : Fin 3 → ℕ} (hn : ∀j, n j ≤ N) :
+section
+variable {N : ℕ} {n : Fin 3 → ℕ} (hn : ∀j, n j ≤ N)
+include N n hn
+
+theorem boxProduct_le_cube  :
     boxProduct n ≤ (N:ℝ)^3 := by
   have hh := Finset.prod_le_prod₀ (s:=Finset.univ)
     (f:=fun j => (n j:ℝ)) (g:=fun _ => (N:ℝ))
     (fun j _ => Nat.cast_nonneg _) (fun j _ => by change (n j:ℝ) ≤ N; exact_mod_cast hn j)
   simpa only [boxProduct,Finset.prod_const,Finset.card_univ,Fintype.card_fin] using hh
 
-theorem boxProduct_le_square_of_one {N : ℕ} {n : Fin 3 → ℕ}
-    (hn : ∀j, n j ≤ N) (hone : ∃j, n j=1) : boxProduct n ≤ (N:ℝ)^2 := by
+theorem boxProduct_le_square_of_one  (hone : ∃j, n j=1) : boxProduct n ≤ (N:ℝ)^2 := by
   obtain ⟨j,hj⟩ := hone
   have hn₀ : (n 0:ℝ) ≤ N := by exact_mod_cast hn 0
   have hn₁ : (n 1:ℝ) ≤ N := by exact_mod_cast hn 1
@@ -496,6 +522,8 @@ theorem boxProduct_le_square_of_one {N : ℕ} {n : Fin 3 → ℕ}
     change (n 0:ℝ)*((n 1:ℝ)*(n 2:ℝ)) ≤ _
     rw [hj,Nat.cast_one,mul_one]
     exact hbound (Nat.cast_nonneg _) (Nat.cast_nonneg _) hn₀ hn₁
+end
+
 
 theorem boxProduct_comparison {M n : Fin 3 → ℕ}
     (hlow : ∀j, (M j:ℝ) ≤ 2*(n j:ℝ)) (hhigh : ∀j, n j ≤ M j) :
@@ -511,15 +539,18 @@ theorem boxProduct_comparison {M n : Fin 3 → ℕ}
 
 def zeroAdjustedProduct (z : Bool) (n : Fin 3 → ℕ) : ℝ := if z then 0 else boxProduct n
 
-def zeroAdjustedPairs (S : Fin 2 → Fin 3 → Finset ℕ) (q : Fin 2 → ℤ)
-    (z : Fin 2 → Bool) (P : ℝ) : Finset ((Fin 3 → ℕ) × (Fin 3 → ℕ)) := by
+section
+variable (S : Fin 2 → Fin 3 → Finset ℕ) (q : Fin 2 → ℤ)
+    (z : Fin 2 → Bool) (P : ℝ)
+include S q z P
+
+def zeroAdjustedPairs  : Finset ((Fin 3 → ℕ) × (Fin 3 → ℕ)) := by
   classical
   exact ((Fintype.piFinset (S 0)) ×ˢ (Fintype.piFinset (S 1))).filter
     (fun p => logBoxSquare (q 0) p.1=logBoxSquare (q 1) p.2 ∧
       |zeroAdjustedProduct (z 0) p.1-zeroAdjustedProduct (z 1) p.2| ≤ P)
 
-theorem zeroAdjustedPairs_subset_global (S : Fin 2 → Fin 3 → Finset ℕ)
-    (q : Fin 2 → ℤ) (z : Fin 2 → Bool) (P : ℝ) {N : ℕ}
+theorem zeroAdjustedPairs_subset_global  {N : ℕ}
     (hS : ∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ N) :
     zeroAdjustedPairs S q z P ⊆ logCrossPairs S q (1+3*Real.log N) := by
   intro p hp
@@ -528,6 +559,8 @@ theorem zeroAdjustedPairs_subset_global (S : Fin 2 → Fin 3 → Finset ℕ)
   have ha (r : Fin 3) := hS 0 r (p.1 r) (Fintype.mem_piFinset.mp hmem.1 r)
   have hb (r : Fin 3) := hS 1 r (p.2 r) (Fintype.mem_piFinset.mp hmem.2 r)
   exact Finset.mem_filter.mpr ⟨hp,hsq,(logBoxLog_difference_le_global ha hb).trans (by linarith)⟩
+end
+
 
 theorem positive_products_high_log {M : Fin 2 → Fin 3 → ℕ} {a b : Fin 3 → ℕ}
     (ha : ∀r, 1 ≤ a r) (hb : ∀r, 1 ≤ b r)
@@ -537,18 +570,12 @@ theorem positive_products_high_log {M : Fin 2 → Fin 3 → ℕ} {a b : Fin 3 �
     |logBoxLog a-logBoxLog b| ≤ 16*(P+1)/U := by
   have hU₀ : 0 < U := by linarith
   have hab := abs_le.mp hd
-  have hmin : U/16 ≤ boxProduct a ∧ U/16 ≤ boxProduct b := by
-    rcases le_total (boxProduct (M 0)) (boxProduct (M 1)) with h | h
-    · rw [max_eq_right h] at hU
-      constructor <;> linarith
-    · rw [max_eq_left h] at hU
-      constructor <;> linarith
+  have hmin : U/16 ≤ boxProduct a ∧ U/16 ≤ boxProduct b := by grind
   have hh := logBoxLog_difference_le ha hb (show 0 < U/16 by positivity) hmin.1 hmin.2 hd
   have he : P/(U/16)=16*P/U := by ring
   rw [he] at hh
   apply hh.trans
-  apply div_le_div_of_nonneg_right _ hU₀.le
-  linarith
+  bound
 
 theorem zero_product_upper {z₀ z₁ : Bool} {U₀ U₁ A B V P : ℝ}
     (hA : 0 ≤ A) (hB : 0 ≤ B) (hV : 0 ≤ V) (hP : 0 ≤ P)
@@ -556,18 +583,7 @@ theorem zero_product_upper {z₀ z₁ : Bool} {U₀ U₁ A B V P : ℝ}
     (hz₀ : z₀=true → U₀ ≤ V) (hz₁ : z₁=true → U₁ ≤ V)
     (hz : z₀=true ∨ z₁=true)
     (hd : |(if z₀ then 0 else A)-(if z₁ then 0 else B)| ≤ P) :
-    max U₀ U₁ ≤ V+8*P := by
-  cases z₀ <;> cases z₁
-  · simp at hz
-  · have hu := hz₁ rfl
-    have ha : A ≤ P := by simpa only [Bool.false_eq_true,ite_false,ite_true,sub_zero,abs_of_nonneg hA] using hd
-    exact max_le (by linarith) (by linarith)
-  · have hu := hz₀ rfl
-    have hb : B ≤ P := by simpa only [Bool.false_eq_true,ite_false,ite_true,zero_sub,abs_neg,abs_of_nonneg hB] using hd
-    exact max_le (by linarith) (by linarith)
-  · have hu := hz₀ rfl
-    have hv := hz₁ rfl
-    exact max_le (by linarith) (by linarith)
+    max U₀ U₁ ≤ V+8*P := by grind
 
 theorem zeroAdjustedPairs_subset_high
     (S : Fin 2 → Fin 3 → Finset ℕ) (q : Fin 2 → ℤ) (z : Fin 2 → Bool)
@@ -592,13 +608,9 @@ theorem zeroAdjustedPairs_subset_high
         (boxProduct_pos (fun r => (hb r).1)).le (sq_nonneg (N:ℝ)) hP hMa hMb
         (fun h => boxProduct_le_square_of_one (hM 0) (hzero 0 h))
         (fun h => boxProduct_le_square_of_one (hM 1) (hzero 1 h)) hz hprod
-      rw [←hU] at hu
-      nlinarith [sq_nonneg (N:ℝ)]
-    constructor <;> apply Bool.eq_false_iff.mpr
-    · exact fun h => hnot (Or.inl h)
-    · exact fun h => hnot (Or.inr h)
-  have hd : |boxProduct p.1-boxProduct p.2| ≤ P := by
-    simpa only [zeroAdjustedProduct,hfalse.1,hfalse.2,Bool.false_eq_true,ite_false] using hprod
+      nlinarith
+    grind
+  have hd : |boxProduct p.1-boxProduct p.2| ≤ P := by aesop
   have hh := positive_products_high_log (fun r => (ha r).1) (fun r => (hb r).1)
     hMa hMb hU hP (by nlinarith [sq_nonneg (N:ℝ)]) hd
   exact Finset.mem_filter.mpr ⟨hp,hsq,hh⟩
@@ -620,9 +632,7 @@ theorem boxProduct_rpow_budget {N : ℕ} {M : Fin 2 → Fin 3 → ℕ}
     norm_num only [Nat.cast_ofNat] at hpow
     rw [Real.rpow_add hp,Real.rpow_one]
     exact mul_le_mul (hupper j) hpow (Real.rpow_nonneg hp.le _) (hp.le.trans (hupper j))
-  have hh := Finset.sum_le_sum (fun j (_hj : j∈Finset.univ) => hterm j)
-  norm_num only [Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul,Nat.cast_ofNat] at hh
-  exact hh.trans_eq (by ring)
+  norm_num at * <;> nlinarith
 
                                                                       
                                                                          
@@ -692,9 +702,7 @@ theorem exists_zeroAdjustedPairs_box_bound {ε : ℝ} (hε : 0 < ε) :
         nlinarith [pow_nonneg hN₀.le 3]
       have hb' := hb.trans (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hpoly (by positivity : 0 ≤ 2*C)) hK)
-      have hbudget : (2*C*(16*D*N))*K ≤ 96*C*D*N*K*L := by
-        have hh := mul_le_mul_of_nonneg_left hL (show 0 ≤ 96*C*D*N*K by positivity)
-        nlinarith only [hh,mul_nonneg (show 0 ≤ C*D*N by positivity) hK]
+      have hbudget : (2*C*(16*D*N))*K ≤ 96*C*D*N*K*L := by field_simp <;> nlinarith
       exact hb'.trans hbudget
   have he : (N:ℝ)^((1:ℝ)+ε)=(N:ℝ)*K := by rw [Real.rpow_add hN₀,Real.rpow_one]
   rw [he]
@@ -732,35 +740,47 @@ theorem positiveCode_square (a : ℤ) :
     have he : (a.natAbs:ℝ)=|(a:ℝ)| := by rw [Nat.cast_natAbs,Int.cast_abs]
     rw [he,sq_abs]
 
-abbrev SignedBoxLabel (N : ℕ) := Bool × Bool × Fin (Nat.log 2 N+1)
+section
+variable (N : ℕ)
+include N
 
-def signedBoxLabel (N : ℕ) (a : ℤ) : SignedBoxLabel N :=
+abbrev SignedBoxLabel  := Bool × Bool × Fin (Nat.log 2 N+1)
+
+def signedBoxLabel  (a : ℤ) : SignedBoxLabel N :=
   (decide (a=0),decide (a<0),⟨min (Nat.log 2 (positiveCode a)) (Nat.log 2 N),
     (min_le_right _ _).trans_lt (Nat.lt_succ_self _)⟩)
 
-def signedBoxLength (N : ℕ) (l : SignedBoxLabel N) : ℕ :=
+section
+variable (l : SignedBoxLabel N)
+include l
+
+def signedBoxLength  : ℕ :=
   if l.1 then 1 else min N (2^((l.2.2:ℕ)+1))
 
-def signedBoxSet (N : ℕ) (l : SignedBoxLabel N) : Finset ℕ := by
+def signedBoxSet  : Finset ℕ := by
   classical
   exact (Finset.Icc 1 (signedBoxLength N l)).filter (fun n => signedBoxLength N l ≤ 2*n)
+end
+end
 
-theorem signedBoxLength_bounds {N : ℕ} (hN : 1 ≤ N) (l : SignedBoxLabel N) :
+
+section
+variable {N : ℕ}
+include N
+
+theorem signedBoxLength_bounds  (hN : 1 ≤ N) (l : SignedBoxLabel N) :
     1 ≤ signedBoxLength N l ∧ signedBoxLength N l ≤ N := by
   unfold signedBoxLength
-  split_ifs
-  · exact ⟨le_rfl,hN⟩
-  · have hp : 0 < (2:ℕ)^((l.2.2:ℕ)+1) := pow_pos (by norm_num) _
-    exact ⟨le_min hN (by omega),min_le_left _ _⟩
+  bound
 
-theorem signedBoxSet_range {N : ℕ} {l : SignedBoxLabel N} {n : ℕ}
+theorem signedBoxSet_range  {l : SignedBoxLabel N} {n : ℕ}
     (hn : n∈signedBoxSet N l) :
     1 ≤ n ∧ n ≤ signedBoxLength N l ∧ (signedBoxLength N l:ℝ) ≤ 2*n := by
   obtain ⟨hn,hh⟩ := Finset.mem_filter.mp hn
   obtain ⟨hlo,hhi⟩ := Finset.mem_Icc.mp hn
   exact ⟨hlo,hhi,by exact_mod_cast hh⟩
 
-theorem positiveCode_mem_signedBox {N : ℕ} (hN : 1 ≤ N) {a : ℤ} (ha : |a| ≤ N) :
+theorem positiveCode_mem_signedBox  (hN : 1 ≤ N) {a : ℤ} (ha : |a| ≤ N) :
     positiveCode a ∈ signedBoxSet N (signedBoxLabel N a) := by
   have hc := positiveCode_pos a
   have hcN := positiveCode_le hN ha
@@ -785,7 +805,7 @@ theorem positiveCode_mem_signedBox {N : ℕ} (hN : 1 ≤ N) {a : ℤ} (ha : |a| 
       rw [pow_succ] at hm
       omega
 
-theorem positiveCode_inj_of_label {N : ℕ} {a b : ℤ}
+theorem positiveCode_inj_of_label  {a b : ℤ}
     (hl : signedBoxLabel N a=signedBoxLabel N b) (hc : positiveCode a=positiveCode b) : a=b := by
   have hz : (a=0) ↔ (b=0) := by
     have hh := congrArg (fun l : SignedBoxLabel N => l.1) hl
@@ -798,16 +818,31 @@ theorem positiveCode_inj_of_label {N : ℕ} {a b : ℤ}
     _ = if b=0 then 0 else if b<0 then -(positiveCode b:ℤ) else (positiveCode b:ℤ) := by simp only [hz,hs,hc]
     _ = b := (positiveCode_reconstruct b).symm
 
-def signedBoxShift {N : ℕ} (l : Fin 3 → SignedBoxLabel N) : ℤ :=
+section
+variable (l : Fin 3 → SignedBoxLabel N)
+include l
+
+def signedBoxShift  : ℤ :=
   -(∑r, if (l r).1 then 1 else 0)
 
-def signedBoxZero {N : ℕ} (l : Fin 3 → SignedBoxLabel N) : Bool :=
+def signedBoxZero  : Bool :=
   decide (∃r, (l r).1=true)
+end
+end
+
 
 def positiveTriple (a : Fin 3 → ℤ) : Fin 3 → ℕ := fun r => positiveCode (a r)
 
-theorem signedBoxShift_square {N : ℕ} {a : Fin 3 → ℤ} {l : Fin 3 → SignedBoxLabel N}
-    (hl : ∀r, signedBoxLabel N (a r)=l r) :
+section
+variable {N : ℕ}
+include N
+
+section
+variable {a : Fin 3 → ℤ} {l : Fin 3 → SignedBoxLabel N}
+    (hl : ∀r, signedBoxLabel N (a r)=l r)
+include a l hl
+
+theorem signedBoxShift_square  :
     logBoxSquare (signedBoxShift l) (positiveTriple a)=∑r, (a r:ℝ)^2 := by
   have hz (r : Fin 3) : (l r).1=decide (a r=0) :=
     (congrArg (fun v : SignedBoxLabel N => v.1) (hl r)).symm
@@ -819,11 +854,9 @@ theorem signedBoxShift_square {N : ℕ} {a : Fin 3 → ℤ} {l : Fin 3 → Signe
     rw [Finset.sum_sub_distrib]
   rw [hs]
   unfold logBoxSquare positiveTriple
-  rw [hshift]
-  ring
+  bound
 
-theorem signedBoxZero_product {N : ℕ} {a : Fin 3 → ℤ} {l : Fin 3 → SignedBoxLabel N}
-    (hl : ∀r, signedBoxLabel N (a r)=l r) :
+theorem signedBoxZero_product  :
     zeroAdjustedProduct (signedBoxZero l) (positiveTriple a)=|∏r, (a r:ℝ)| := by
   have hz (r : Fin 3) : (l r).1=decide (a r=0) :=
     (congrArg (fun v : SignedBoxLabel N => v.1) (hl r)).symm
@@ -839,11 +872,15 @@ theorem signedBoxZero_product {N : ℕ} {a : Fin 3 → ℤ} {l : Fin 3 → Signe
     apply Finset.prod_congr rfl
     intro r _hr
     simp only [positiveCode,hn r,ite_false,Nat.cast_natAbs,Int.cast_abs]
+end
 
-theorem signedBoxZero_has_unit {N : ℕ} {l : Fin 3 → SignedBoxLabel N}
+
+theorem signedBoxZero_has_unit  {l : Fin 3 → SignedBoxLabel N}
     (hz : signedBoxZero l=true) : ∃r, signedBoxLength N (l r)=1 := by
   obtain ⟨r,hr⟩ := of_decide_eq_true hz
   exact ⟨r,by simp only [signedBoxLength,hr,ite_true]⟩
+end
+
 
 abbrev SignedPair := (Fin 3 → ℤ) × (Fin 3 → ℤ)
 abbrev SignedPairLabel (N : ℕ) := (Fin 3 → SignedBoxLabel N) × (Fin 3 → SignedBoxLabel N)
@@ -854,9 +891,13 @@ def signedPairLabel (N : ℕ) (p : SignedPair) : SignedPairLabel N :=
 def positivePair (p : SignedPair) : (Fin 3 → ℕ) × (Fin 3 → ℕ) :=
   (positiveTriple p.1,positiveTriple p.2)
 
-def signedLabelRow {N : ℕ} (l : SignedPairLabel N) : Fin 2 → Fin 3 → SignedBoxLabel N := ![l.1,l.2]
+section
+variable {N : ℕ}
+include N
 
-theorem positivePair_mem_box {N : ℕ} (hN : 1 ≤ N) {P : ℝ}
+def signedLabelRow  (l : SignedPairLabel N) : Fin 2 → Fin 3 → SignedBoxLabel N := ![l.1,l.2]
+
+theorem positivePair_mem_box  (hN : 1 ≤ N) {P : ℝ}
     {p : SignedPair} {l : SignedPairLabel N} (hl : signedPairLabel N p=l)
     (hbox : ∀r, |p.1 r| ≤ N ∧ |p.2 r| ≤ N)
     (hsq : (∑r, (p.1 r:ℝ)^2)=(∑r, (p.2 r:ℝ)^2))
@@ -893,7 +934,7 @@ theorem positivePair_mem_box {N : ℕ} (hN : 1 ≤ N) {P : ℝ}
       rw [signedBoxZero_product hl₀,signedBoxZero_product hl₁]
       exact (abs_abs_sub_abs_le_abs_sub _ _).trans hprod
 
-theorem positivePair_inj_of_label {N : ℕ} {p r : SignedPair}
+theorem positivePair_inj_of_label  {p r : SignedPair}
     (hl : signedPairLabel N p=signedPairLabel N r) (hc : positivePair p=positivePair r) : p=r := by
   apply Prod.ext
   · funext i
@@ -903,7 +944,7 @@ theorem positivePair_inj_of_label {N : ℕ} {p r : SignedPair}
     exact positiveCode_inj_of_label (congrFun (congrArg Prod.snd hl) i)
       (congrFun (congrArg Prod.snd hc) i)
 
-theorem signed_fiber_card_le_box {N : ℕ} (hN : 1 ≤ N) {P : ℝ}
+theorem signed_fiber_card_le_box  (hN : 1 ≤ N) {P : ℝ}
     (Q : Finset SignedPair) (l : SignedPairLabel N)
     (hbox : ∀p∈Q, ∀r, |p.1 r| ≤ N ∧ |p.2 r| ≤ N)
     (hsq : ∀p∈Q, (∑r, (p.1 r:ℝ)^2)=(∑r, (p.2 r:ℝ)^2))
@@ -920,12 +961,11 @@ theorem signed_fiber_card_le_box {N : ℕ} (hN : 1 ≤ N) {P : ℝ}
   · intro p hp r hr he
     have hl := (Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hr).2.symm
     exact positivePair_inj_of_label hl he
+end
+
 
 theorem signedPairLabel_card (N : ℕ) :
-    Fintype.card (SignedPairLabel N)=(4*(Nat.log 2 N+1))^6 := by
-  simp only [SignedPairLabel,SignedBoxLabel,Fintype.card_prod,Fintype.card_fun,
-    Fintype.card_bool,Fintype.card_fin]
-  ring
+    Fintype.card (SignedPairLabel N)=(4*(Nat.log 2 N+1))^6 := by norm_num at * <;> linarith
 
 theorem exists_signed_square_product_count_log_loss {ε : ℝ} (hε : 0 < ε) :
     ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
@@ -968,8 +1008,7 @@ theorem signed_label_log_budget {η : ℝ} (hη : 0 < η) {N : ℕ} (hN : 1 ≤ 
   have hL : 0 ≤ 1+Real.log N := by linarith [Real.log_nonneg hN₁]
   have hlogtwo : (1/2:ℝ) ≤ Real.log 2 := by
     have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ) < 2)
-    norm_num at hh ⊢
-    exact hh
+    nlinarith
   have hn := Real.natLog_le_logb N 2
   norm_num only [Nat.cast_ofNat,Real.logb] at hn
   have hh := (le_div_iff₀ (Real.log_pos (by norm_num : (1:ℝ) < 2))).mp hn
@@ -986,9 +1025,7 @@ theorem signed_label_log_budget {η : ℝ} (hη : 0 < η) {N : ℕ} (hN : 1 ≤ 
   rw [he] at hl
   have hraised := pow_le_pow_left₀ hL hl 7
   rw [mul_pow,←Real.rpow_mul_natCast hN₀.le] at hraised
-  norm_num only [Nat.cast_ofNat,show η/7*7=η by ring] at hraised
-  exact hfirst.trans ((mul_le_mul_of_nonneg_left hraised
-    (by positivity : (0:ℝ) ≤ 8^6)).trans_eq (by ring))
+  grind
 
                                                                           
                                                        
@@ -1019,10 +1056,7 @@ theorem exists_signed_square_product_count {ε : ℝ} (hε : 0 < ε) :
     congr 1
     ring
   have he' : (C*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε/2))*(D*(N:ℝ)^(ε/2))=
-      C*D*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε) := by
-    calc
-      _ = C*D*((N:ℝ)^2+P+1)*((N:ℝ)^((1:ℝ)+ε/2)*(N:ℝ)^(ε/2)) := by ring
-      _ = _ := by rw [hpow]
+      C*D*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε) := by grind
   rw [he'] at hm
   have hscale : (N:ℝ)^2+P+1 ≤ 2*((N:ℝ)^2+P) := by nlinarith
   apply hm.trans
@@ -1032,16 +1066,22 @@ theorem exists_signed_square_product_count {ε : ℝ} (hε : 0 < ε) :
 
 namespace CubicEight
 
-def hadamardFour (x : Fin 4 → ℤ) : Fin 4 → ℤ :=
+section
+variable (x : Fin 4 → ℤ)
+include x
+
+def hadamardFour  : Fin 4 → ℤ :=
   ![x 0+x 1+x 2+x 3, x 0+x 1-x 2-x 3,
     x 0-x 1+x 2-x 3, x 0-x 1-x 2+x 3]
 
                                                                     
                                                               
-theorem hadamardFour_involution (x : Fin 4 → ℤ) :
+theorem hadamardFour_involution  :
     hadamardFour (hadamardFour x) = fun i => 4*x i := by
   funext i
   fin_cases i <;> simp [hadamardFour] <;> ring
+end
+
 
 theorem hadamardFour_injective : Function.Injective hadamardFour := by
   intro x y hxy
@@ -1064,7 +1104,11 @@ theorem hadamardFour_power_sums (x : Fin 4 → ℤ) :
 
                                                                         
                                                         
-theorem hadamardFour_cubic_resonance (x y : Fin 4 → ℤ)
+section
+variable (x y : Fin 4 → ℤ)
+include x y
+
+theorem hadamardFour_cubic_resonance 
     (hfirst : (∑ i, x i)=∑ i, y i)
     (hsecond : (∑ i, (x i)^2)=∑ i, (y i)^2) :
     hadamardFour x 0=hadamardFour y 0 ∧
@@ -1075,26 +1119,20 @@ theorem hadamardFour_cubic_resonance (x y : Fin 4 → ℤ)
         8*((∑ i, (x i)^3)-∑ i, (y i)^3) := by
   obtain ⟨hx₁,hx₂,hx₃⟩ := hadamardFour_power_sums x
   obtain ⟨hy₁,hy₂,hy₃⟩ := hadamardFour_power_sums y
-  have hzero : hadamardFour x 0=hadamardFour y 0 := by omega
-  have hsq : (hadamardFour x 1)^2+(hadamardFour x 2)^2+(hadamardFour x 3)^2 =
-      (hadamardFour y 1)^2+(hadamardFour y 2)^2+(hadamardFour y 3)^2 := by
-    rw [hzero,hsecond] at hx₂
-    linarith only [hx₂,hy₂]
-  refine ⟨hzero,hsq,?_⟩
-  rw [hzero,hsq] at hx₃
-  linarith only [hx₃,hy₃]
+  grind
 
                                                                
                                              
-theorem hadamardFour_near_product (x y : Fin 4 → ℤ) {P : ℤ}
+theorem hadamardFour_near_product  {P : ℤ}
     (hfirst : (∑ i, x i)=∑ i, y i)
     (hsecond : (∑ i, (x i)^2)=∑ i, (y i)^2)
     (hthird : |(∑ i, (x i)^3)-∑ i, (y i)^3| ≤ P) :
     3*|hadamardFour x 1*hadamardFour x 2*hadamardFour x 3-
       hadamardFour y 1*hadamardFour y 2*hadamardFour y 3| ≤ 8*P := by
   have he := congrArg abs (hadamardFour_cubic_resonance x y hfirst hsecond).2.2
-  simp only [abs_mul,show |(3:ℤ)|=3 by norm_num,show |(8:ℤ)|=8 by norm_num] at he
-  linarith only [he,hthird]
+  simp_all
+end
+
 
                                                                  
 theorem hadamardFour_abs_le (x : Fin 4 → ℤ) {N : ℤ}
@@ -1191,7 +1229,11 @@ theorem cubic_eight_count_le_six (N P : ℕ)
   simpa only [T,Finset.card_product,hcard] using hc
 
 
-theorem exists_sixSquareProductSolutions_bound {ε : ℝ} (hε : 0 < ε) :
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+
+theorem exists_sixSquareProductSolutions_bound  :
     ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℕ),
       ((sixSquareProductSolutions N P).card : ℝ) ≤
         C*((N:ℝ)^2+P)*(N:ℝ)^((1:ℝ)+ε) := by
@@ -1213,7 +1255,7 @@ theorem exists_sixSquareProductSolutions_bound {ε : ℝ} (hε : 0 < ε) :
 
                                                                          
                                                      
-theorem exists_cubic_eight_count {ε : ℝ} (hε : 0 < ε) :
+theorem exists_cubic_eight_count  :
     ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℕ),
       ∀ (S : Finset ((Fin 4 → ℤ) × (Fin 4 → ℤ))),
         (∀p∈S, (∀r, |p.1 r| ≤ (N:ℤ)) ∧ ∀r, |p.2 r| ≤ (N:ℤ)) →
@@ -1240,8 +1282,9 @@ theorem exists_cubic_eight_count {ε : ℝ} (hε : 0 < ε) :
   apply hm.trans (hbound.trans_eq ?_)
   have he : (N:ℝ)^((2:ℝ)+ε)=(N:ℝ)*(N:ℝ)^((1:ℝ)+ε) := by
     rw [show (2:ℝ)+ε=1+(1+ε) by ring,Real.rpow_add hN₀,Real.rpow_one]
-  rw [he]
-  ring
+  grind
+end
+
 
 
 end CubicEight
@@ -1262,8 +1305,7 @@ theorem integer_carry_separation {a b c d B : ℤ} (hB : 0 < B)
       have hg : 1 ≤ |c-d| := by
         have hp := abs_pos.mpr (sub_ne_zero.mpr hn)
         omega
-      have hm := mul_le_mul_of_nonneg_left hg hB.le
-      omega
+      nlinarith
     exact ⟨by rw [hcd] at h; omega,hcd⟩
   · rintro ⟨rfl,rfl⟩
     rfl
@@ -1271,30 +1313,47 @@ theorem integer_carry_separation {a b c d B : ℤ} (hB : 0 < B)
 def cubicTupleSet (N : ℕ) : Finset (Fin 4 → ℤ) :=
   Fintype.piFinset (fun _ => Finset.Icc (1:ℤ) N)
 
-def cubicFirst (n : Fin 4 → ℤ) : ℤ := ∑r, n r
-def cubicSecond (n : Fin 4 → ℤ) : ℤ := ∑r, (n r)^2
-def cubicThird (n : Fin 4 → ℤ) : ℤ := ∑r, (n r)^3
+section
+variable (n : Fin 4 → ℤ)
+include n
+
+def cubicFirst  : ℤ := ∑r, n r
+def cubicSecond  : ℤ := ∑r, (n r)^2
+def cubicThird  : ℤ := ∑r, (n r)^3
+end
+
 def cubicCombined (N : ℕ) (n : Fin 4 → ℤ) : ℤ := cubicFirst n+(8*(N:ℤ)+1)*cubicSecond n
 
-theorem cubicTuple_abs {N : ℕ} {n : Fin 4 → ℤ} (hn : n∈cubicTupleSet N) (r : Fin 4) :
+section
+variable {N : ℕ}
+include N
+
+section
+variable {n : Fin 4 → ℤ} (hn : n∈cubicTupleSet N)
+include n hn
+
+theorem cubicTuple_abs  (r : Fin 4) :
     |n r| ≤ (N:ℤ) := by
   have hh := Finset.mem_Icc.mp (Fintype.mem_piFinset.mp hn r)
-  rw [abs_of_nonneg (by omega)]
-  exact hh.2
+  grind
 
-theorem cubicFirst_abs {N : ℕ} {n : Fin 4 → ℤ} (hn : n∈cubicTupleSet N) :
+theorem cubicFirst_abs  :
     |cubicFirst n| ≤ 4*(N:ℤ) := by
   have hh := (Finset.abs_sum_le_sum_abs (s:=Finset.univ) (f:=n)).trans
     (Finset.sum_le_sum (fun r (_hr : r∈Finset.univ) => cubicTuple_abs hn r))
   simpa only [cubicFirst,Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul,Nat.cast_ofNat] using hh
+end
 
-theorem cubicCombined_collision {N : ℕ} {n m : Fin 4 → ℤ}
+
+theorem cubicCombined_collision  {n m : Fin 4 → ℤ}
     (hn : n∈cubicTupleSet N) (hm : m∈cubicTupleSet N) :
     cubicCombined N n=cubicCombined N m ↔ cubicFirst n=cubicFirst m ∧ cubicSecond n=cubicSecond m := by
   have ha := (abs_sub_le (cubicFirst n) 0 (cubicFirst m)).trans
     (add_le_add (by simpa using cubicFirst_abs hn) (by simpa using cubicFirst_abs hm))
   have hb : 0 < 8*(N:ℤ)+1 := by positivity
   exact integer_carry_separation hb (by linarith only [ha])
+end
+
 
 def cubicSourceSum (N : ℕ) (z : ℤ → ℂ) (α β γ : ℝ) : ℂ :=
   ∑ n∈Finset.Icc (1:ℤ) N,
@@ -1381,7 +1440,11 @@ def cubicTuplePoint (n : Fin 4 → ℤ) : Fin 4 → ℝ :=
 
 def cubicSamplePoint (α β γ : ℝ) : Fin 4 → ℝ := ![α,β,γ,0]
 
-theorem cubicSourceSum_fourth_four (N : ℕ) (z : ℤ → ℂ) (α β γ : ℝ) :
+section
+variable (N : ℕ) (z : ℤ → ℂ) (α β γ : ℝ)
+include N z α β γ
+
+theorem cubicSourceSum_fourth_four  :
     (cubicSourceSum N z α β γ)^4=
       ∑ n∈cubicTupleSet N, cubicTupleCoefficient z n*
         fordAdditiveCharacter (∑ d, cubicTuplePoint n d*cubicSamplePoint α β γ d) := by
@@ -1394,7 +1457,7 @@ theorem cubicSourceSum_fourth_four (N : ℕ) (z : ℤ → ℂ) (α β γ : ℝ) 
   simp [cubicTuplePoint,cubicSamplePoint,Fin.sum_univ_succ]
   ring
 
-theorem cubicSourceSum_fract (N : ℕ) (z : ℤ → ℂ) (α β γ : ℝ) :
+theorem cubicSourceSum_fract  :
     cubicSourceSum N z (Int.fract α) (Int.fract β) γ=cubicSourceSum N z α β γ := by
   unfold cubicSourceSum
   apply Finset.sum_congr rfl
@@ -1402,8 +1465,9 @@ theorem cubicSourceSum_fract (N : ℕ) (z : ℤ → ℂ) (α β γ : ℝ) :
   simp only [fordAdditiveCharacter_add]
   rw [sargos_character_integer_fract]
   have hs := sargos_character_integer_fract (n^2) β
-  push_cast at hs
-  rw [hs]
+  simp_all
+end
+
 
 theorem cubic_sample_eighth_sieve {ι : Type*}
     (S : Finset ι) (N : ℕ) (z : ℤ → ℂ) (α β γ : ι → ℝ)
@@ -1493,7 +1557,6 @@ def cubicSamplingWidth (μ : ℝ) : Fin 4 → ℝ := ![2,2,μ,1]
 
 theorem cubicSamplingScale_pos {N : ℕ} (hN : 1 ≤ N) (d : Fin 4) :
     0 < cubicSamplingScale N d := by
-  have hN₀ : (0:ℝ) < N := by exact_mod_cast (show 0 < N by omega)
   fin_cases d
   · change 0 < 1/(8*(N:ℝ))
     positivity
@@ -1508,7 +1571,11 @@ theorem cubicSamplingWidth_pos {μ : ℝ} (hμ : 0 < μ) (d : Fin 4) :
   fin_cases d <;> norm_num [cubicSamplingWidth]
   exact hμ
 
-theorem cubicTuplePoint_scale {N : ℕ} (hN : 1 ≤ N)
+section
+variable {N : ℕ} (hN : 1 ≤ N)
+include N hN
+
+theorem cubicTuplePoint_scale 
     {n : Fin 4 → ℤ} (hn : n∈cubicTupleSet N) (d : Fin 4) :
     cubicSamplingScale N d*|cubicTuplePoint n d| ≤ 1/2 := by
   have hN₀ : (0:ℝ) < N := by exact_mod_cast (show 0 < N by omega)
@@ -1533,7 +1600,7 @@ theorem cubicTuplePoint_scale {N : ℕ} (hN : 1 ≤ N)
     nlinarith
   · norm_num [cubicSamplingScale,cubicTuplePoint]
 
-theorem cubic_sampling_box_factor {N : ℕ} (hN : 1 ≤ N) {μ : ℝ} (hμ : 0 < μ) :
+theorem cubic_sampling_box_factor  {μ : ℝ} (hμ : 0 < μ) :
     ((∏ d, (cubicSamplingWidth μ d+2*cubicSamplingScale N d))/
       (∏ d, cubicSamplingScale N d)) ≤
       7776*(μ+1/(4*(N:ℝ)^3))*(N:ℝ)^6 := by
@@ -1555,7 +1622,7 @@ theorem cubic_sampling_box_factor {N : ℕ} (hN : 1 ≤ N) {μ : ℝ} (hμ : 0 <
     gcongr
   exact hh.trans_eq (by ring)
 
-theorem cubic_sampling_moment_factor {N : ℕ} (hN : 1 ≤ N) {μ ε : ℝ} (hμ : 0 < μ) :
+theorem cubic_sampling_moment_factor  {μ ε : ℝ} (hμ : 0 < μ) :
     (μ+1/(4*(N:ℝ)^3))*(N:ℝ)^6*((N:ℝ)^2+1/(μ+1/(4*(N:ℝ)^3)))*
       (N:ℝ)^((2:ℝ)+ε) ≤ 2*(1+μ*(N:ℝ)^2)*(N:ℝ)^((8:ℝ)+ε) := by
   have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
@@ -1575,6 +1642,8 @@ theorem cubic_sampling_moment_factor {N : ℕ} (hN : 1 ≤ N) {μ ε : ℝ} (hμ
         ((N:ℝ)^6*(N:ℝ)^((2:ℝ)+ε)) := by ring
     _ = (1+μ*(N:ℝ)^2+1/(4*(N:ℝ)))*(N:ℝ)^((8:ℝ)+ε) := by rw [he,hn]
     _ ≤ _ := mul_le_mul_of_nonneg_right (by nlinarith) (Real.rpow_nonneg (Nat.cast_nonneg N) _)
+end
+
 
 def cubicSamplePairs {ι : Type*} (S : Finset ι) (N : ℕ) (α β γ : ι → ℝ) :
     Finset (ι × ι) := by
@@ -1583,7 +1652,11 @@ def cubicSamplePairs {ι : Type*} (S : Finset ι) (N : ℕ) (α β γ : ι → �
     |cubicSamplePoint (α ij.1) (β ij.1) (γ ij.1) d-
       cubicSamplePoint (α ij.2) (β ij.2) (γ ij.2) d| ≤ 2*cubicSamplingScale N d)
 
-theorem exists_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+
+theorem exists_cubic_sample_bound  :
     ∃ C > (0:ℝ), ∀ (ι : Type) (S : Finset ι) (N : ℕ), 1 ≤ N →
       ∀ (z : ℤ → ℂ) (α β γ : ι → ℝ) (c μ : ℝ), 0 < μ →
       (∀ n∈Finset.Icc (1:ℤ) N, ‖z n‖ ≤ 1) →
@@ -1645,7 +1718,7 @@ theorem exists_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left hm (by positivity)
     _ = _ := by ring
 
-theorem exists_cubic_sample_bound_fract {ε : ℝ} (hε : 0 < ε) :
+theorem exists_cubic_sample_bound_fract  :
     ∃ C > (0:ℝ), ∀ (ι : Type) (S : Finset ι) (N : ℕ), 1 ≤ N →
       ∀ (z : ℤ → ℂ) (α β γ : ι → ℝ) (c μ : ℝ), 0 < μ →
       (∀ n∈Finset.Icc (1:ℤ) N, ‖z n‖ ≤ 1) →
@@ -1660,12 +1733,20 @@ theorem exists_cubic_sample_bound_fract {ε : ℝ} (hε : 0 < ε) :
     (fun i hi => ⟨⟨Int.fract_nonneg _,(Int.fract_lt_one _).le⟩,
       ⟨Int.fract_nonneg _,(Int.fract_lt_one _).le⟩,hγ i hi⟩)
   simpa only [cubicSourceSum_fract] using hh
+end
 
-def cubicPrefixCoefficient (J : ℕ) (n : ℤ) : ℂ := if n ≤ J then 1 else 0
 
-theorem cubicPrefixCoefficient_norm (J : ℕ) (n : ℤ) : ‖cubicPrefixCoefficient J n‖ ≤ 1 := by
+section
+variable (J : ℕ) (n : ℤ)
+include J n
+
+def cubicPrefixCoefficient  : ℂ := if n ≤ J then 1 else 0
+
+theorem cubicPrefixCoefficient_norm  : ‖cubicPrefixCoefficient J n‖ ≤ 1 := by
   unfold cubicPrefixCoefficient
   split_ifs <;> norm_num
+end
+
 
 theorem cubicSourceSum_prefix {J N : ℕ} (hJN : J ≤ N) (α β γ : ℝ) :
     cubicSourceSum N (cubicPrefixCoefficient J) α β γ=
@@ -1753,7 +1834,11 @@ theorem exists_C4_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
   have hh := mul_le_mul_of_nonneg_left hs (pow_nonneg hK.le 8)
   exact hh.trans_eq (by ring)
 
-theorem norm_range_sum_shift_sub (w : ℕ → ℂ) (M n : ℕ)
+section
+variable (w : ℕ → ℂ)
+include w
+
+theorem norm_range_sum_shift_sub  (M n : ℕ)
     (hw : ∀ k, ‖w k‖ ≤ 1) :
     ‖(∑ m∈Finset.range M, w m)-(∑ m∈Finset.range M, w (n+m))‖ ≤ 2*(n:ℝ) := by
   have h₁ := Finset.sum_range_add w M n
@@ -1771,7 +1856,7 @@ theorem norm_range_sum_shift_sub (w : ℕ → ℂ) (M n : ℕ)
   simp only [zero_add] at hzero
   exact (norm_sub_le _ _).trans (by linarith [hb M])
 
-theorem source_shift_average_norm (w : ℕ → ℂ) (M H : ℕ)
+theorem source_shift_average_norm  (M H : ℕ)
     (hw : ∀ k, ‖w k‖ ≤ 1) :
     (H:ℝ)*‖∑ m∈Finset.range M, w m‖ ≤
       (∑ m∈Finset.range M, ‖∑ j∈Finset.range H, w (m+(j+1))‖)+2*(H:ℝ)^2 := by
@@ -1798,8 +1883,9 @@ theorem source_shift_average_norm (w : ℕ → ℂ) (M H : ℕ)
       (fun m => ∑ j∈Finset.range H, w ((j+1)+m))
   have ht := (norm_sub_le ((H:ℂ)*A-Z) (-Z)).trans (add_le_add herr (by simpa using hz))
   simp only [sub_neg_eq_add,sub_add_cancel,norm_mul,Complex.norm_natCast] at ht
-  change (H:ℝ)*‖A‖ ≤ _
-  linarith
+  bound
+end
+
 
 def cubicDerivativePairs (f : ℝ → ℝ) (M H : ℕ) : Finset (ℕ × ℕ) :=
   cubicSamplePairs (Finset.range M) H
@@ -1987,12 +2073,7 @@ theorem finite_slope_values_retained
   let m := (insert b t).min' (Finset.insert_nonempty b t)
   have hm : 0 < m := by
     have hx : m ∈ insert b t := Finset.min'_mem _ _
-    rcases Finset.mem_insert.mp hx with hx | hx
-    · rw [hx]
-      exact hb
-    · obtain ⟨i,hiS,he⟩ := Finset.mem_image.mp hx
-      rw [← he]
-      exact lt_min (sub_pos.mpr (hv i hiS).1) (sub_pos.mpr (hv i hiS).2)
+    grind
   have hmb : m ≤ b := Finset.min'_le _ _ (Finset.mem_insert_self _ _)
   have hm₁ : m ≤ 1 := hmb.trans (min_le_left _ _)
   have hmspan : m ≤ hi-lo := hmb.trans (min_le_right _ _)
@@ -2397,8 +2478,7 @@ theorem positive_slope_chart_compressed_coordinate
       linarith only [hdiv]
   have hzero : A*aProcessShiftPoint η 0 y=v := by
     dsimp only [aProcessShiftPoint,y]
-    field_simp [show A ≠ 0 from hA.ne',hden.ne']
-    ring
+    grind
   refine ⟨hj,hA,hA₂,hη,hη₁,hy,hzero,?_⟩
   have hkA : A*η=k := mul_div_cancel₀ k (show A ≠ 0 from hA.ne')
   calc
@@ -2813,8 +2893,7 @@ theorem actual_displacement_first_chart_count
   have hmesh₂ : 4*mesh ≤ 2 := by
     have hh : (2:ℝ)^(-(σ⁻¹+1)) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by have := inv_pos.mpr hσ; linarith)
-    dsimp [mesh]
-    linarith
+    grind
   let J := positiveSlopeChartIndices mesh
   have hJ : J.Nonempty := ⟨positiveSlopeChartIndex mesh (4*mesh),
     positiveSlopeChartIndex_mem hmesh ⟨le_rfl,hmesh₂⟩⟩
@@ -2934,8 +3013,7 @@ theorem actual_displacement_near_curve_count
   have hmesh₂ : 4*mesh ≤ 2 := by
     have hh : (2:ℝ)^(-σ) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by linarith)
-    dsimp [mesh]
-    linarith
+    grind
   let J := positiveSlopeChartIndices mesh
   have hJ : J.Nonempty := ⟨positiveSlopeChartIndex mesh (4*mesh),
     positiveSlopeChartIndex_mem hmesh ⟨le_rfl,hmesh₂⟩⟩
@@ -3095,10 +3173,7 @@ theorem original_derivative_resonance_displacement
   have hκeq : u+κ=deriv G (x/N) := by
     dsimp only [u]
     rw [(negative_first_derivative_point hF hxq).2,(negative_first_derivative_point hF hx).2]
-    rw [(hd (x+q) hxq).2,(hd x hx).2] at hlevel
-    dsimp only [κ]
-    field_simp [hσ.ne',hT.ne',hN.ne'] at hlevel ⊢
-    nlinarith only [hlevel]
+    grind
   have hu : u∈modelPhaseSlopeRange G := ⟨(x+q)/N,hxq,rfl⟩
   have huk : u+κ∈modelPhaseSlopeRange G := by rw [hκeq]; exact ⟨x/N,hx,rfl⟩
   have hi : modelPhaseInverseSlope G u=(x+q)/N :=
@@ -3209,8 +3284,12 @@ theorem original_second_level_near_curve_count
     _ ≤ C₀*(L*(W*D)+L*((T/N^2)^p*D^(l₀+ε)*W^(-p))+L*(N^2/T)) := by gcongr
     _ = _ := by dsimp [C,p]; ring
 
+section
+variable (f : ℝ → ℝ)
+include f
+
 theorem cubic_second_difference_derivative
-    (f : ℝ → ℝ) {x q B lam : ℝ} (hq : 0 < q)
+     {x q B lam : ℝ} (hq : 0 < q)
     (hf : ∀ t∈Icc x (x+q), ContDiffAt ℝ 4 f t)
     (hfour : ∀ t∈Icc x (x+q),
       -B ≤ iteratedDeriv 4 f t ∧ iteratedDeriv 4 f t ≤ -lam) :
@@ -3243,7 +3322,7 @@ theorem cubic_second_difference_derivative
   constructor <;> nlinarith only [he',hlo,hhi]
 
 theorem cubic_exact_second_difference_level
-    (f : ℝ → ℝ) {n q B lam R δ K : ℝ}
+     {n q B lam R δ K : ℝ}
     (hq : 0 < q) (hR : 0 < R)
     (hbudget : δ ≤ lam*q*R/2)
     (hf : ∀ t∈Icc (n-R) (n+R+q), ContDiffAt ℝ 4 f t)
@@ -3286,7 +3365,7 @@ theorem cubic_exact_second_difference_level
   exact ⟨x,hx,he,abs_le.mpr ⟨by linarith [hx.1],by linarith [hx.2]⟩⟩
 
 theorem cubic_stationary_curve_near_integer
-    (f : ℝ → ℝ) (n K e : ℤ) {x q B lam R δ : ℝ}
+     (n K e : ℤ) {x q B lam R δ : ℝ}
     (hq : 0 < q) (hlam : 0 < lam) (hR : 0 ≤ R)
     (hx : x∈Icc ((n:ℝ)-R) ((n:ℝ)+R))
     (hf : ∀ t∈Icc ((n:ℝ)-R) ((n:ℝ)+R+q), ContDiffAt ℝ 4 f t)
@@ -3317,9 +3396,7 @@ theorem cubic_stationary_curve_near_integer
       have h₀ := hasDerivAt_iteratedDeriv_finite hj ht₀
       have h₁ := hasDerivAt_iteratedDeriv_finite hj ht₁
       convert (h₁.comp t ((hasDerivAt_id t).add_const q)).sub h₀ using 1
-      · funext z
-        simp only [Function.comp_apply,Pi.sub_apply,id_eq,add_comm]
-      · simp only [mul_one]
+      all_goals (bound)
     constructor
     · convert (hd 1 (by norm_num)).sub ((hasDerivAt_id t).const_mul (2*(K:ℝ))) using 1
       · funext z
@@ -3366,8 +3443,12 @@ theorem cubic_stationary_curve_near_integer
   change |G x-((e-2*K*n:ℤ):ℝ)| ≤ _
   exact hh.trans_eq (by ring)
 
+section
+variable {M H : ℕ} {p : ℕ × ℕ}
+include M H p
+
 theorem cubicDerivativePairs_integer_resonances
-    (f : ℝ → ℝ) {M H : ℕ} {p : ℕ × ℕ}
+    
     (hp : p∈cubicDerivativePairs f M H) :
     p.1 < M ∧ p.2 < M ∧
     ∃ e K : ℤ,
@@ -3408,7 +3489,7 @@ theorem cubicDerivativePairs_integer_resonances
     exact he.trans_eq (by ring)
 
 theorem cubicDerivativePairs_displacement
-    (f : ℝ → ℝ) {M H : ℕ} {p : ℕ × ℕ} {lam : ℝ}
+     {lam : ℝ}
     (hH : 1 ≤ H) (hlam : 0 < lam)
     (hp : p∈cubicDerivativePairs f M H) (hlt : p.1 < p.2)
     (hf : ∀ t∈Icc ((p.1:ℝ)+1) ((p.2:ℝ)+1), ContDiffAt ℝ 4 f t)
@@ -3432,9 +3513,11 @@ theorem cubicDerivativePairs_displacement
   have hh : (p.2:ℝ)-p.1 ≤ (3/(2*(H:ℝ)^3))/lam :=
     (le_div_iff₀ hlam).mpr (by nlinarith only [hprod])
   exact hh.trans_eq (by ring)
+end
+
 
 theorem cubic_second_difference_fiber_card
-    (f : ℝ → ℝ) (S : Finset ℤ) {a b q B lam δ K : ℝ}
+     (S : Finset ℤ) {a b q B lam δ K : ℝ}
     (hq : 0 < q) (hlam : 0 < lam) (hδ : 0 ≤ δ)
     (hf : ∀ t∈Icc a (b+q), ContDiffAt ℝ 4 f t)
     (hfour : ∀ t∈Icc a (b+q),
@@ -3489,7 +3572,7 @@ theorem cubic_second_difference_fiber_card
     positivity
 
 theorem cubic_second_level_positive
-    (f : ℝ → ℝ) (K : ℤ) {n q L U δ : ℝ}
+     (K : ℤ) {n q L U δ : ℝ}
     (hq : 1 ≤ q) (hL : 0 < L)
     (hδL : δ ≤ L/4) (hδhalf : δ ≤ 1/2)
     (hf : ∀ t∈Icc n (n+q), ContDiffAt ℝ 3 f t)
@@ -3522,10 +3605,16 @@ theorem cubic_second_level_positive
       (hthree t ⟨ht.1.le,ht.2.le⟩).2
     have hUq : U ≤ U*q := by nlinarith only [mul_le_mul_of_nonneg_left hq hU.le]
     nlinarith only [he',hhi,hab.1,hδL,hLU,hUq,hU]
+end
+
+
+section
+variable {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
+    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1)
+include σ k₀ l₀ ε hσ hpair hε hp
 
 theorem original_joint_level_block_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 2 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ (F : ℝ → ℝ) (T N D a b R B lam δ₁ δ₂ W : ℝ)
@@ -3650,8 +3739,7 @@ theorem original_joint_level_block_count
     _ ≤ _ := mul_le_mul_of_nonneg_left hcountJ (by positivity)
 
 theorem original_joint_dyadic_block_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ (F : ℝ → ℝ) (T N D a b R δ₁ δ₂ W : ℝ) (S : Finset (ℤ × ℕ)),
@@ -3758,6 +3846,8 @@ theorem original_joint_dyadic_block_count
     _ = (J.card:ℝ)*(Z*X) := by simp only [Finset.sum_const,nsmul_eq_mul]
     _ ≤ (2*U*D)*(Z*X) := mul_le_mul_of_nonneg_right hJbound (mul_nonneg hZ hX)
     _ = _ := by dsimp [Z,X]; ring
+end
+
 
 theorem cubic_short_displacement_count
     (f : ℝ → ℝ) (S : Finset (ℤ × ℕ)) {a b D B lam L U δ : ℝ}
@@ -3908,8 +3998,7 @@ theorem cubic_free_width_and_buffer
       dsimp [R]
       field_simp
       ring
-    rw [he]
-    exact div_le_div_of_nonneg_right (le_max_left _ _) (by norm_num)
+    grind
   have hWD : W*D ≤ D/(2*H)+B/(lam^2*H^4)+D/Y := by
     have hsum : W ≤ (1/(2*H)+B/(lam^2*D*H^4))+1/Y := by
       apply max_le
@@ -4159,11 +4248,14 @@ theorem original_full_joint_derivative_count
     _ ≤ A+∑ _j∈Finset.range (M+1), A := add_le_add hshort (Finset.sum_le_sum (fun j _ => hblock j))
     _ = _ := by
       simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul,Nat.cast_add,Nat.cast_one]
-      dsimp only [A]
       ring
 
+section
+variable (f : ℝ → ℝ)
+include f
+
 theorem cubicDerivativePairs_card_le_positive
-    (f : ℝ → ℝ) (M H : ℕ) :
+     (M H : ℕ) :
     (SquareProductCount.CubicSource.cubicDerivativePairs f M H).card ≤ M+
       2*((SquareProductCount.CubicSource.cubicDerivativePairs f M H).filter
         (fun p => p.1<p.2)).card := by
@@ -4176,10 +4268,7 @@ theorem cubicDerivativePairs_card_le_positive
     unfold S SquareProductCount.CubicSource.cubicDerivativePairs
       SquareProductCount.CubicSource.cubicSamplePairs at hp ⊢
     obtain ⟨hbox,hnear⟩ := Finset.mem_filter.mp hp
-    refine Finset.mem_filter.mpr ⟨Finset.mem_product.mpr
-      ⟨(Finset.mem_product.mp hbox).2,(Finset.mem_product.mp hbox).1⟩,?_⟩
-    intro d
-    simpa only [Prod.swap,abs_sub_comm] using hnear d
+    grind
   have hd : diag.card ≤ M := by
     have hinj : Set.InjOn (Prod.fst : ℕ × ℕ → ℕ) diag := by
       intro p hp q hq he
@@ -4194,25 +4283,17 @@ theorem cubicDerivativePairs_card_le_positive
     have hh := Finset.card_le_card hsub
     rwa [Finset.card_image_of_injOn hinj,Finset.card_range] at hh
   have hdown : down.card ≤ up.card := by
-    have hsub : down.image Prod.swap ⊆ up := by
-      intro p hp
-      obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
-      exact Finset.mem_filter.mpr ⟨hswap q (Finset.mem_filter.mp hq).1,(Finset.mem_filter.mp hq).2⟩
+    have hsub : down.image Prod.swap ⊆ up := by grind
     have hh := Finset.card_le_card hsub
     rwa [Finset.card_image_of_injective down Prod.swap_injective] at hh
-  have hcover : S ⊆ (diag∪up)∪down := by
-    intro p hp
-    rcases lt_trichotomy p.1 p.2 with hlt|heq|hgt
-    · exact Finset.mem_union_left _ (Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨hp,hlt⟩))
-    · exact Finset.mem_union_left _ (Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨hp,heq⟩))
-    · exact Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨hp,hgt⟩)
+  have hcover : S ⊆ (diag∪up)∪down := by grind
   have hh := (Finset.card_le_card hcover).trans ((Finset.card_union_le _ _).trans
     (Nat.add_le_add_right (Finset.card_union_le _ _) _))
   change S.card ≤ M+2*up.card
   omega
 
 theorem cubic_shifted_positive_pair_resonances
-    (f : ℝ → ℝ) (A : ℤ) {M H : ℕ} {p : ℕ × ℕ}
+     (A : ℤ) {M H : ℕ} {p : ℕ × ℕ}
     (hp : p∈SquareProductCount.CubicSource.cubicDerivativePairs
       (fun x => f ((A:ℝ)+x)) M H) (hlt : p.1<p.2) :
     let n : ℤ := A+(p.1:ℤ)+1
@@ -4240,10 +4321,16 @@ theorem cubic_shifted_positive_pair_resonances
   · rw [hn]
     have hh : (p.1:ℝ)+1 ≤ M := by exact_mod_cast (show p.1+1 ≤ M by omega)
     linarith only [hh]
+end
+
+
+section
+variable {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
+    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1)
+include σ k₀ l₀ ε hσ hpair hε hp
 
 theorem original_cubicDerivativePairs_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ (F : ℝ → ℝ) (T N Y : ℝ) (A : ℤ) (M H J : ℕ),
@@ -4311,7 +4398,6 @@ theorem original_cubicDerivativePairs_count
     have hsnd := congrArg Prod.snd he
     dsimp only [label] at hfst hsnd
     have hp := (Finset.mem_filter.mp hp).2
-    have hq := (Finset.mem_filter.mp hq).2
     have he₁ : p.1=q.1 := by omega
     exact Prod.ext he₁ (by omega)
   have hcard : S.card=up.card := Finset.card_image_of_injOn hinj
@@ -4352,8 +4438,7 @@ theorem original_cubicDerivativePairs_count
                                                                            
                                                
 theorem exists_original_cubic_eighth_estimate
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 0 < C ∧
         ∀ (F : ℝ → ℝ) (T N Y : ℝ) (A : ℤ) (M H J : ℕ),
@@ -4449,6 +4534,8 @@ theorem exists_original_cubic_eighth_estimate
         nlinarith only [mul_nonneg (show 0 ≤ 2*C₀ by positivity) (pow_nonneg hHpos.le 8)]
       _ = _ := by dsimp [C]; ring
   simpa only [g,f,add_assoc] using hb
+end
+
 
 
 
@@ -4487,8 +4574,7 @@ theorem cubic_source_trim
   have htriangle₂ := norm_add_le (∑ i∈Finset.range (K+1), z (a+i))
     (∑ i∈Finset.range M, z (a+K+i+1))
   dsimp [M] at htriangle
-  dsimp [M] at htriangle₂
-  linarith only [htriangle,htriangle₂,hleft,hright]
+  grind
 
 
                                                                      
@@ -4596,9 +4682,13 @@ theorem exists_complete_cubic_eighth_estimate
       5^8*R^8 ≤ 128*(C₀*Z+5^8*R^8)).trans hmajor)
 
                                                                         
+section
+variable {X T : VariableObject ℝ} {a : ℝ}
+    (hX : IsPowerAsymptotic X T a) (hT : ∀ i, 1 ≤ T i)
+include X T a hX hT
+
 private theorem cubic_power_rpow
-    {X T : VariableObject ℝ} {a : ℝ}
-    (hX : IsPowerAsymptotic X T a) (hT : ∀ i, 1 ≤ T i) (p : ℝ) :
+     (p : ℝ) :
     IsPowerAsymptotic (fun i => (X i)^p) T (a*p) := by
   obtain ⟨e,he,hXe⟩ := hX
   refine ⟨fun i => e i*p,?_,?_⟩
@@ -4611,10 +4701,11 @@ private theorem cubic_power_rpow
     rw [hi,← Real.rpow_mul (zero_le_one.trans (hT i))]
 
 private theorem cubic_power_natpow
-    {X T : VariableObject ℝ} {a : ℝ}
-    (hX : IsPowerAsymptotic X T a) (hT : ∀ i, 1 ≤ T i) (n : ℕ) :
+     (n : ℕ) :
     IsPowerAsymptotic (fun i => (X i)^n) T (a*(n:ℝ)) := by
   simpa only [Real.rpow_natCast] using cubic_power_rpow hX hT (n:ℝ)
+end
+
 
 private theorem cubic_power_const
     {T : VariableObject ℝ} (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded)
@@ -4636,9 +4727,7 @@ private theorem cubic_power_eventually_le
   have hh := hX.eventually_between (Filter.Eventually.of_forall hT)
     (sub_pos.mpr hab)
   filter_upwards [hh] with i hi
-  convert hi.2 using 1
-  congr 1
-  ring
+  simp_all
 
                                                                       
                                                      
@@ -4668,15 +4757,17 @@ private theorem cubic_dyadic_index_bound
     _ = (2*D*2^γ)*(T i)^(η/2) := by
       rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) (by positivity),
         ← Real.rpow_mul hTp.le]
-      have he : q*γ=η/2 := by dsimp [γ]; field_simp
-      rw [he]
-      ring
+      grind
     _ ≤ _ := hconst
 
                                                                         
                                                                             
+section
+variable {T N : VariableObject ℝ}
+include T N
+
 theorem eventually_cubic_bourgain_parameters
-    {T N : VariableObject ℝ} {α σ κ₀ η : ℝ}
+     {α σ κ₀ η : ℝ}
     (hlo : 140/391 ≤ α) (hhi : α < 16/39) (hσ : 0 < σ)
     (hκ₀ : 0 < κ₀) (hη : 0 < η)
     (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded)
@@ -4725,7 +4816,6 @@ theorem eventually_cubic_bourgain_parameters
   have hQ : IsPowerAsymptotic Qcut T q := by
     convert (hc 3 (by norm_num)).div
       (((hc 2 (by norm_num)).mul hlam hT).mul (cubic_power_natpow hH hT 3) hT) hT using 1
-    dsimp [q]
     ring
   have hLH : IsPowerAsymptotic (fun i => L i*(H i:ℝ)^2) T (1-3*α+2*h) := by
     convert hL.mul (cubic_power_natpow hH hT 2) hT using 1
@@ -4777,7 +4867,7 @@ theorem eventually_cubic_bourgain_parameters
                                                                  
                                                                       
 theorem eventually_cubic_bourgain_cost
-    {T N : VariableObject ℝ} {α σ η : ℝ}
+     {α σ η : ℝ}
     (hlo : 140/391 ≤ α) (hhi : α < 16/39) (hσ : 0 < σ) (hη : 0 < η)
     (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded)
     (hNT : IsPowerAsymptotic N T α) :
@@ -4829,7 +4919,6 @@ theorem eventually_cubic_bourgain_cost
   have hQ : IsPowerAsymptotic Qcut T q := by
     convert (hc 3 (by norm_num)).div
       (((hc 2 (by norm_num)).mul hlam hT).mul (cubic_power_natpow hH hT 3) hT) hT using 1
-    dsimp [q]
     ring
   have hV : IsPowerAsymptotic V T (α-2*h) := by
     convert hU.div (hlam.mul (cubic_power_natpow hH hT 2) hT) hT using 1
@@ -4854,7 +4943,6 @@ theorem eventually_cubic_bourgain_cost
       (cubic_power_natpow hNT hT 2) hT) hT (13/84+η)).mul
         (cubic_power_rpow hQ hT (55/84+η)) hT).mul
           (cubic_power_rpow hY hT (13/84+η)) hT) hT).div hNT hT using 1
-    dsimp [q,h,r]
     ring
   have hf₆ : IsPowerAsymptotic f₆ T (2*α-1-2*h) := by
     convert (hV.mul ((cubic_power_natpow hNT hT 2).div hTscale hT) hT).div hNT hT using 1
@@ -4863,7 +4951,6 @@ theorem eventually_cubic_bourgain_cost
       (fun i => (N i)^7*U i*(H i:ℝ)^2*(H i:ℝ)^η) T (8*β+h*η) := by
     convert (((cubic_power_natpow hNT hT 7).mul hU hT).mul
       (cubic_power_natpow hH hT 2) hT).mul (cubic_power_rpow hH hT η) hT using 1
-    dsimp [β,h]
     ring
   have hwidth : IsPowerAsymptotic (fun i => U i*(H i:ℝ)^2) T (1-3*α+2*h) := by
     convert hU.mul (cubic_power_natpow hH hT 2) hT using 1
@@ -4916,7 +5003,6 @@ theorem eventually_cubic_bourgain_cost
       _ = _ := by
         rw [show (T i)^η*N i*(6*(T i)^(2*η)) =
           6*N i*((T i)^η*(T i)^(2*η)) by ring,← Real.rpow_add hTi]
-        congr 2
         ring
   have hone₃ : 1 ≤ (T i)^(3*η) := Real.one_le_rpow (hT i) (by positivity)
   have hNE : N i+E ≤ 7*N i*(T i)^(3*η) := by
@@ -4948,13 +5034,19 @@ theorem eventually_cubic_bourgain_cost
       _ ≤ _ := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le (hT i) (by linarith only [hη])) (by norm_num)
   linarith only [hcost,hH8,hR8]
+end
+
 
 
                                                                          
                                                                        
                                                          
+section
+variable {α : ℝ≥0} (hlo : 140/391 ≤ (α:ℝ)) (hhi : (α:ℝ) < 16/39)
+include α hlo hhi
+
 theorem isExponentSumBound_cubic_bourgain_gap
-    {α : ℝ≥0} (hlo : 140/391 ≤ (α:ℝ)) (hhi : (α:ℝ) < 16/39) :
+     :
     IsExponentSumBound α (18/199+(521/796)*(α:ℝ)) := by
   intro N T F a b _hN hT hTunbounded hNT hF hab
   apply (isPowerBounded_iff_forall_pos
@@ -4977,11 +5069,7 @@ theorem isExponentSumBound_cubic_bourgain_gap
   let C := max 1 (C₀*(15+3^8))
   have hC : 1 ≤ C := le_max_left _ _
   have hC₀C : C₀*(15+3^8) ≤ C := le_max_right _ _
-  have hCpow : C ≤ C^8 := by
-    calc
-      C = C*1 := (mul_one C).symm
-      _ ≤ C*C^7 := mul_le_mul_of_nonneg_left (one_le_pow₀ hC) (zero_le_one.trans hC)
-      _ = _ := by ring
+  have hCpow : C ≤ C^8 := by bound
   refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [happrox,hparameters,hcost] with i hFi hpi hci
   obtain ⟨hNi,hHi,hYi,J,hQi,hQJ,hJ,hcurv,hshift,hTaylor⟩ := hpi
@@ -5010,9 +5098,11 @@ theorem isExponentSumBound_cubic_bourgain_gap
     abs_of_nonneg (Real.rpow_nonneg hTi.le _)] using hh
 
 theorem exponentSumGrowthExponent_le_cubic_bourgain_gap
-    {α : ℝ≥0} (hlo : 140/391 ≤ (α:ℝ)) (hhi : (α:ℝ) < 16/39) :
+     :
     exponentSumGrowthExponent α ≤ 18/199+(521/796)*(α:ℝ) :=
   exponentSumGrowthExponent_le_iff.mpr (isExponentSumBound_cubic_bourgain_gap hlo hhi)
+end
+
 
                                                                          
                                                                             
@@ -5059,9 +5149,13 @@ theorem exponentSumGrowthExponent_le_sargosD_bourgain
   unfold exponentPairLine
   ring
 
+section
+variable {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
+    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1)
+include σ k₀ l₀ ε hσ hpair hε hp
+
 theorem original_joint_level_displacement_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 2 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ (F : ℝ → ℝ) (T N d D a b R B lam δ₁ δ₂ W : ℝ)
@@ -5150,8 +5244,7 @@ theorem original_joint_level_displacement_count
                                                                         
                                    
 theorem original_model_block_source_pair_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 2 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ {ι : Type*} [DecidableEq ι] (S : Finset ι) (V : Finset (ι × ι))
@@ -5260,8 +5353,7 @@ theorem original_model_block_source_pair_count
                                                                          
                                                                              
 theorem original_model_rounded_shift_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ {ι : Type*} [DecidableEq ι] (S : Finset ι) (V : Finset (ι × ι))
@@ -5357,6 +5449,8 @@ theorem original_model_rounded_shift_count
     field_simp
     ring
   rwa [he] at hb
+end
+
 
                                                                          
                                                                                 
@@ -5379,9 +5473,7 @@ theorem rounded_shift_free_width
   have hR : 0 < R := by dsimp only [R]; positivity
   have hDup : D ≤ 2*K/L := by
     have h1 : 1 ≤ K/L := (one_le_div hL).mpr hLK
-    dsimp only [D]
-    rw [mul_div_assoc]
-    linarith
+    grind
   have hraw : 4*B*D*R^2 ≤ 10368*B*U^4/(lam^2*L) := by
     calc
       _ ≤ 4*B*(2*K/L)*R^2 := by gcongr
@@ -5416,9 +5508,13 @@ theorem rounded_shift_free_width
                                                                          
                                                                                
                                  
+section
+variable {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
+    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1)
+include σ k₀ l₀ ε hσ hpair hε hp
+
 theorem original_model_uniform_positive_shift_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ {ι : Type*} [DecidableEq ι] (S : Finset ι) (V : Finset (ι × ι))
@@ -5506,8 +5602,7 @@ theorem original_model_uniform_positive_shift_count
                                                                       
                                                                         
 theorem original_model_all_shifts_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ {ι : Type*} [DecidableEq ι] (S : Finset ι) (R : Finset (ι × ι))
@@ -5647,8 +5742,6 @@ theorem original_model_all_shifts_count
     calc
       _ = 3*∑ n∈J,(1+(D/3)/(n:ℝ)) := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro n _
         ring
       _ ≤ 3*((Kcut:ℝ)+(D/3)*(harmonic Kcut:ℝ)) :=
         mul_le_mul_of_nonneg_left hh (by norm_num)
@@ -5672,8 +5765,7 @@ theorem original_model_all_shifts_count
                                                                         
                                                        
 theorem original_model_four_coordinate_count
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ {ι : Type*} [DecidableEq ι] (S : Finset ι)
@@ -5826,8 +5918,7 @@ theorem original_model_four_coordinate_count
                                                                            
                                                                  
 theorem exists_model_refined_frozen_source
-    {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
+     :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
       ∃ Qphase : ℕ, 3 ≤ Qphase ∧ ∃ C > (0:ℝ), ∃ Cp : ℝ, 1 ≤ Cp ∧
       ∀ (ι : Type*) [DecidableEq ι] (S : Finset ι)
@@ -5920,9 +6011,7 @@ theorem exists_model_refined_frozen_source
   have hW i (hi : i∈S) : N ≤ W i ∧ W i ≤ 3*N ∧ m i+(W i:ℤ)=s+(N:ℤ)*k i := by
     have hh := hspan i hi
     dsimp only [W]
-    constructor
-    · omega
-    · constructor <;> omega
+    omega
   have hWp i (hi : i∈S) : 1 ≤ W i := (Nat.succ_le_iff.mpr hN).trans (hW i hi).1
   have hWr i (hi : i∈S) : (N:ℝ) ≤ W i ∧ (W i:ℝ) ≤ 3*(N:ℝ) := by
     constructor <;> exact_mod_cast (by first | exact (hW i hi).1 | exact (hW i hi).2.1)
@@ -6101,6 +6190,8 @@ theorem exists_model_refined_frozen_source
       simp only [Finset.sum_empty,zero_pow (by norm_num : (12:ℕ)≠0)]
     rw [hsrcempty]
     exact displacement_empty_source_bound C Loss Pair Err Z hZ
+end
+
 
 
                                                                        
@@ -6154,7 +6245,6 @@ theorem refined_count_physical_majorant
         rw [show P*U/u=(P*U)*(1/u) by ring,
           Real.mul_rpow hPU.le (by positivity),
           Real.mul_rpow hd.le (by positivity)]
-        dsimp only [e]
         ring
   have hC₁ : 8*d+c≤C := by dsimp only [C]; linarith
   have hC₂ : d≤C := by dsimp only [C]; linarith
@@ -6162,9 +6252,7 @@ theorem refined_count_physical_majorant
   have hC₄ : u≤C := by dsimp only [C]; linarith
   calc
     _ ≤ ((8*d)*(P*U)+d*(w*(P*Real.sqrt U)))+c*(P*U)+
-        e*((P*U)^p*(P*Real.sqrt U)^q*w^(-p))+u/(P*U) := by
-      rw [hcorr]
-      exact add_le_add (add_le_add (add_le_add hmain le_rfl) hosc) le_rfl
+        e*((P*U)^p*(P*Real.sqrt U)^q*w^(-p))+u/(P*U) := by grind
     _ = (8*d+c)*(P*U)+d*(w*(P*Real.sqrt U))+
         e*((P*U)^p*(P*Real.sqrt U)^q*w^(-p))+u*(1/(P*U)) := by ring
     _ ≤ C*(P*U)+C*(w*(P*Real.sqrt U))+
@@ -6405,10 +6493,7 @@ theorem refined_spacing_physical_product
       (P*U+w*(P*Real.sqrt U)+(P*U)^p*(P*Real.sqrt U)^q*w^(-p)+1/(P*U)) =
     P^12*U^3+w*P^12*U^((5:ℝ)/2)+
       P^(11+p+q)*U^(2+p+q/2)*w^(-p)+P^10*U := by
-  have hbase : P^10*Real.sqrt U*(P*U*Real.sqrt U)=P^11*U^2 := by
-    calc
-      _ = P^11*U*(Real.sqrt U)^2 := by ring
-      _ = _ := by rw [Real.sq_sqrt hU.le]; ring
+  have hbase : P^10*Real.sqrt U*(P*U*Real.sqrt U)=P^11*U^2 := by grind
   have hroot : U^2*Real.sqrt U=U^((5:ℝ)/2) := by
     rw [Real.sqrt_eq_rpow,←Real.rpow_natCast U 2,←Real.rpow_add hU]
     norm_num
@@ -6422,15 +6507,10 @@ theorem refined_spacing_physical_product
       P^(11+p+q)*U^(2+p+q/2) := by
     rw [Real.mul_rpow hP.le hU.le,Real.mul_rpow hP.le (Real.sqrt_nonneg U),
       Real.sqrt_eq_rpow,←Real.rpow_mul hU.le,hpowers,hupowers]
-    rw [show (1/2:ℝ)*q=q/2 by ring]
     ring
   have hinv : P^11*U^2*(1/(P*U))=P^10*U := by
     field_simp
-  rw [hbase]
-  calc
-    _ = P^12*U^3+w*P^12*(U^2*Real.sqrt U)+
-        (P^11*U^2*((P*U)^p*(P*Real.sqrt U)^q))*w^(-p)+P^11*U^2*(1/(P*U)) := by ring
-    _ = _ := by rw [hroot,hdensity,hinv]
+  grind
 
 theorem refined_spacing_physical_product_bound
     {P U w p q : ℝ} (hP : 1≤P) (hU : 0<U) (hw : 0≤w) (hsmall : P*U^2≤1) :
@@ -6439,12 +6519,8 @@ theorem refined_spacing_physical_product_bound
     2*(P^11*U+w*P^12*U^((5:ℝ)/2)+P^(11+p+q)*U^(2+p+q/2)*w^(-p)) := by
   have hPp : 0<P := zero_lt_one.trans_le hP
   rw [refined_spacing_physical_product hPp hU]
-  have hfirst : P^12*U^3≤P^11*U := by
-    have hh := mul_le_mul_of_nonneg_left hsmall (show 0≤P^11*U by positivity)
-    nlinarith only [hh]
-  have hlast : P^10*U≤P^11*U := by
-    have hh := mul_le_mul_of_nonneg_left hP (show 0≤P^10*U by positivity)
-    nlinarith only [hh]
+  have hfirst : P^12*U^3≤P^11*U := by field_simp <;> nlinarith
+  have hlast : P^10*U≤P^11*U := by field_simp <;> nlinarith
   have hmid : 0≤w*P^12*U^((5:ℝ)/2) := by positivity
   have hdensity : 0≤P^(11+p+q)*U^(2+p+q/2)*w^(-p) := by positivity
   linarith only [hfirst,hlast,hmid,hdensity]
@@ -6505,8 +6581,7 @@ theorem exists_refined_uniform_frozen_rhs
   have hZhi' : Z*(Q:ℝ)^2 ≤ B := by
     have hh := mul_le_mul_of_nonneg_right hZhi (sq_nonneg (Q:ℝ))
     convert hh using 1
-    dsimp only [B,J]
-    field_simp
+    field_simp <;> ring
   have hZgeo : Z ≤ Cc*P*J*Real.sqrt U :=
     displacement_cardinality_geometric hU.le hQr hZ hZlo' hZhi'
   have hQpow : (Q:ℝ)^ε ≤ P^ε := Real.rpow_le_rpow hQr.le hQP hε.le
@@ -6608,8 +6683,7 @@ theorem exists_refined_physical_pair_bound
   let Ca := 4+6*Cp*Ce*Ch
   have hCa : 1≤Ca := by
     have hh : 0≤6*Cp*Ce*Ch := by positivity
-    dsimp only [Ca]
-    linarith only [hh]
+    bound
   refine ⟨Ca,hCa,?_⟩
   intro P U M Q Z w hP hU hUsmall hK hM hQ hQM hZ hw
     N L lam D₀ η rho K Dmax Dweight E Count
@@ -6686,13 +6760,11 @@ theorem refined_physical_lifting_domain
   have hlift' : 2*η+10368*(b*U/P)*U^4/(lam^2*L)≤1/2 := by
     have hid : 10368*(b*U/P)*U^4/(lam^2*L)=
         (10368*b/(a^2*l))*(P*U^2) := by dsimp only [lam,L]; field_simp
-    rw [hid]
-    linarith only [hηhi,hlift]
+    grind
   have hleft : P<A-Rmax := by
     have hgap : Rmax < m*(P*Real.sqrt U) := by
       have hh : 0<(2*(n/l+1)+1)*(P*Real.sqrt U) := by positivity
-      dsimp only [m]
-      nlinarith only [hRmax,hh]
+      grind
     linarith only [hA,hgap]
   have hright : B+Rmax+2*Dmax<2*P := by
     have hh : 0<P*Real.sqrt U := by positivity
@@ -6707,9 +6779,13 @@ theorem refined_physical_lifting_domain
                                                                         
                                                                               
                                                                           
+section
+variable {σ k₀ l₀ ε : ℝ} (hσ : 0<σ)
+    (hpair : ExponentPair k₀ l₀) (hε : 0<ε) (hp : k₀+ε<1)
+include σ k₀ l₀ ε hσ hpair hε hp
+
 theorem exists_model_uniform_refined_source_bands
-    {σ k₀ l₀ ε : ℝ} (hσ : 0<σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0<ε) (hp : k₀+ε<1) :
+     :
     let u := modelPhaseJetCoefficient σ 2+1
     let l := modelPhaseJetLower σ 2/u
     let a := modelPhaseJetLower σ 3/u
@@ -6822,10 +6898,7 @@ theorem exists_model_uniform_refined_source_bands
   have hpow := Nat.pow_log_le_self 2 (r i).pos.ne'
   rw [hlog] at hpow
   have hQN : (Q:ℝ)≤2*(N:ℝ) := by
-    have hh : Q≤2*N := by
-      calc
-        Q=2*2^j := by dsimp only [Q]; rw [pow_succ,Nat.mul_comm]
-        _≤2*N := Nat.mul_le_mul_left _ (hpow.trans hiN)
+    have hh : Q≤2*N := by omega
     exact_mod_cast hh
   have hc := hcard P U Q hP hU hUsmall hscale.1 hQ1 hQN
   clear hcard
@@ -6908,8 +6981,7 @@ theorem exists_model_uniform_refined_source_bands
 
                                                                                           
 theorem exists_model_refined_source_global
-    {σ k₀ l₀ ε : ℝ} (hσ : 0<σ)
-    (hpair : ExponentPair k₀ l₀) (hε : 0<ε) (hp : k₀+ε<1) :
+     :
     let u := modelPhaseJetCoefficient σ 2+1
     let l := modelPhaseJetLower σ 2/u
     let a := modelPhaseJetLower σ 3/u
@@ -7081,6 +7153,8 @@ theorem exists_model_refined_source_global
       change _ = (1000^12*C₀)*P^ε*Log^36*E
       dsimp only [Budget]
       ring
+end
+
 
                                                                                   
 theorem refined_integer_source_trim
@@ -7246,8 +7320,12 @@ theorem exists_model_refined_global_bound
         simpa only [Budget,Log,E,mul_assoc] using mul_le_mul_of_nonneg_right hCtrimC hBudget)
 
                                                                                     
+section
+variable {T P : VariableObject ℝ}
+include T P
+
 theorem eventually_refined_bourgain_parameters
-    {T P : VariableObject ℝ} {α σ κ₀ : ℝ}
+     {α σ κ₀ : ℝ}
     (hlo : 2/5<α) (hhi : α<3/7) (hσ : 0<σ) (hκ₀ : 0<κ₀)
     (hT : ∀ i, 1≤T i) (hTunbounded : T.IsUnbounded)
     (hPT : IsPowerAsymptotic P T α) :
@@ -7314,7 +7392,7 @@ theorem eventually_refined_bourgain_parameters
 
                                                                            
 theorem eventually_refined_bourgain_cost
-    {T P : VariableObject ℝ} {α σ η : ℝ}
+     {α σ η : ℝ}
     (hlo : 2/5<α) (hhi : α<3/7) (hσ : 0<σ) (hη : 0<η)
     (hT : ∀ i, 1≤T i) (hTunbounded : T.IsUnbounded)
     (hPT : IsPowerAsymptotic P T α) :
@@ -7408,11 +7486,17 @@ theorem eventually_refined_bourgain_cost
     _ = (1+Real.log (P i))^36*(g₁ i+g₂ i+g₃ i) := by dsimp only [g₁,g₂,g₃]; ring
     _ ≤ (T i)^η*(3*(T i)^(12*β+4*η)) := mul_le_mul hlog hsum hg0 (by positivity)
     _ = _ := by rw [mul_left_comm,←Real.rpow_add hTi]; congr 2; ring
+end
+
 
                                                                       
                                                                              
+section
+variable {α : ℝ≥0} (hlo : 2/5<(α:ℝ)) (hhi : (α:ℝ)<3/7)
+include α hlo hhi
+
 theorem isExponentSumBound_refined_bourgain
-    {α : ℝ≥0} (hlo : 2/5<(α:ℝ)) (hhi : (α:ℝ)<3/7) :
+     :
     IsExponentSumBound α (max (1/12+2*(α:ℝ)/3) (241/1164+425*(α:ℝ)/1164)) := by
   intro P T F a b _hP hT hTunbounded hPT hF hab
   let β := max (1/12+2*(α:ℝ)/3) (241/1164+425*(α:ℝ)/1164)
@@ -7433,11 +7517,7 @@ theorem isExponentSumBound_refined_bourgain
   let C := max 1 (3*C₀)
   have hC : 1≤C := le_max_left _ _
   have hC₀C : 3*C₀≤C := le_max_right _ _
-  have hCpow : C≤C^12 := by
-    calc
-      C=C*1 := (mul_one C).symm
-      _≤C*C^11 := mul_le_mul_of_nonneg_left (one_le_pow₀ hC) (zero_le_one.trans hC)
-      _=C^12 := by ring
+  have hCpow : C≤C^12 := by bound
   refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [happrox,hparameters,hcost] with i hFi hpi hci
   obtain ⟨hPi,hwi,hwhalf,hUsmall,hcurve,hPU,hLsmall,hliftSmall,hlift,hκ⟩ := hpi
@@ -7466,9 +7546,11 @@ theorem isExponentSumBound_refined_bourgain
 
                                                                       
 theorem exponentSumGrowthExponent_le_refined_bourgain
-    {α : ℝ≥0} (hlo : 2/5<(α:ℝ)) (hhi : (α:ℝ)<3/7) :
+     :
     exponentSumGrowthExponent α ≤ max (1/12+2*(α:ℝ)/3) (241/1164+425*(α:ℝ)/1164) :=
   exponentSumGrowthExponent_le_iff.mpr (isExponentSumBound_refined_bourgain hlo hhi)
+end
+
 
 theorem exponentPair_trudgianYang_first :
     ExponentPair (4742/38463) (35731/51284) := by
@@ -7508,4 +7590,4 @@ theorem exponentSumGrowthExponent_le_trudgianYang_sixthRow
   unfold exponentPairLine
   ring
 
-end TaoTrudgianYang2025.CubicJointCount
+

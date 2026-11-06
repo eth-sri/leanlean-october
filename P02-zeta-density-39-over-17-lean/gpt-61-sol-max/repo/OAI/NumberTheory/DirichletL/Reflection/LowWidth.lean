@@ -8,12 +8,16 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+open ActualEisensteinCubic CompletedGauss InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-lemma nonresidual_prime_product_square_dvd {ι : Type*} [Fintype ι]
-    (I Q : Ideal Eis) (hI : I≠0) (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
+section
+variable {ι : Type*} [Fintype ι]
+    (I Q : Ideal Eis) (hI : I≠0)
+include ι I Q hI
+
+lemma nonresidual_prime_product_square_dvd  (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i,P i∣I*Q) (hres : ∀ i,¬P i∣rowResidualPart I Q) :
     (∏ i,P i)^2∣rowPowerfulPart I*Q^2 := by
@@ -26,8 +30,7 @@ lemma nonresidual_prime_product_square_dvd {ι : Type*} [Fintype ι]
       (mul_dvd_mul_left _ (pow_dvd_pow_of_dvd (rowMaskPart_dvd I Q) 2))
   · exact dvd_mul_of_dvd_right (pow_dvd_pow_of_dvd ((hp.dvd_mul.mp (hpool i)).resolve_left hi) 2) _
 
-lemma nonresidual_prime_product_width {ι : Type*} [Fintype ι]
-    (I Q : Ideal Eis) (hI : I≠0) (hQ : Q≠0) (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
+lemma nonresidual_prime_product_width  (hQ : Q≠0) (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i,P i∣I*Q) (hres : ∀ i,¬P i∣rowResidualPart I Q)
     (Z : ℝ) (hZ : 1<Z) :
@@ -43,6 +46,8 @@ lemma nonresidual_prime_product_width {ι : Type*} [Fintype ι]
   rw [Real.logb_pow,Real.logb_mul hpn.ne' (pow_ne_zero 2 hqn.ne'),Real.logb_pow] at hh
   norm_num at hh
   simpa only [normWidth,map_prod,Nat.cast_prod] using hh
+end
+
 
 lemma original_optional_powerful_width (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)
@@ -69,7 +74,7 @@ lemma frozenExtracted_width_le {ι : Type*} [Fintype ι] (G : PrimeFamily ι)
     (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (G.ideal i))) hd
   exact Real.logb_le_logb_of_le hZ (actual_ideal_norm_pos _ (frozenExtracted_ne_zero G j e v)) hn
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

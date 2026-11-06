@@ -5,20 +5,19 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                       
                                                                  
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem harmonic_le_rpow_loss (ε : ℝ) (hε : 0 < ε) {N : ℕ} (hN : 1 ≤ N) :
     (harmonic N:ℝ) ≤ (1+1/ε)*(N:ℝ)^ε := by
   have hN1 : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hone : 1 ≤ (N:ℝ)^ε := Real.one_le_rpow hN1 hε.le
+  have hone := Real.one_le_rpow hN1 hε.le
   calc
     _ ≤ 1+Real.log N := harmonic_le_one_add_log N
     _ ≤ (N:ℝ)^ε+(N:ℝ)^ε/ε :=
@@ -51,15 +50,12 @@ theorem sum_positive_displacement_weight_le
   have hη : 0 < ε/2 := by linarith
   have hN1 : (1:ℝ) ≤ N := by exact_mod_cast hN
   have hNp : (0:ℝ) < N := by linarith
-  have hpow : 1 ≤ (N:ℝ)^(ε/2) := Real.one_le_rpow hN1 hη.le
+  have hpow := Real.one_le_rpow hN1 hη.le
   have hconst : 1 ≤ 1+2/ε := by linarith [div_pos (by norm_num : (0:ℝ) < 2) hε]
   have hh : (harmonic N:ℝ) ≤ (1+2/ε)*(N:ℝ)^(ε/2) := by
     convert harmonic_le_rpow_loss (ε/2) hη hN using 1
     field_simp
-  have hmain : (N:ℝ) ≤ (1+2/ε)*(N:ℝ)^(ε/2)*(N:ℝ) := by
-    have hone : 1 ≤ (1+2/ε)*(N:ℝ)^(ε/2) :=
-      one_le_mul_of_one_le_of_one_le hconst hpow
-    nlinarith only [mul_le_mul_of_nonneg_right hone hNp.le]
+  have hmain : (N:ℝ) ≤ (1+2/ε)*(N:ℝ)^(ε/2)*(N:ℝ) := by field_simp <;> nlinarith
   have hsq : (N:ℝ)^(ε/2)*(N:ℝ)^(ε/2) = (N:ℝ)^ε := by
     rw [← Real.rpow_add hNp]
     congr 1
@@ -74,4 +70,4 @@ theorem sum_positive_displacement_weight_le
     _ = (1+2/ε)*((N:ℝ)^(ε/2)*(N:ℝ)^(ε/2))*((N:ℝ)+A) := by ring
     _ = _ := by rw [hsq]
 
-end TaoTrudgianYang2025
+

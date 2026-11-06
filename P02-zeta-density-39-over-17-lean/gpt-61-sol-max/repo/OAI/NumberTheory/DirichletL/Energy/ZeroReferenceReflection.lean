@@ -7,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceReflection
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily HeckeDyadic QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyZeroReferenceMoments CenteredMomentEnergyReferenceLowWindow
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional
+open scoped HeckeO
 
 theorem reference_from_low
     (a b bΦ epsilon xi saving Lreflect:ℝ)
@@ -75,8 +75,8 @@ theorem reference_from_low
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hbshort)
       (by linarith [hwindow.1])
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceReflection
 
-end
 
-end OAI
+
+
+

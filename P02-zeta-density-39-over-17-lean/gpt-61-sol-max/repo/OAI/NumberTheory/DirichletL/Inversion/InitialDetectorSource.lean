@@ -11,9 +11,9 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ComplexConjugate
 namespace SevenEighths.InverseInitialDetectorSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorCoefficientTransfer
-open InverseInitialRawDictionary InverseInitialConjugateEnergy
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification
+open InverseInitialRawDictionary
+open scoped HeckeO
 
 def baseCharacter (data : RowData) : Character := data.character ⟨1,one_ne_zero⟩
 
@@ -33,8 +33,8 @@ theorem base_nonzero_prime (data : RowData) (P : Ideal O) (hP : Prime P)
 def primeProfile (V : ℝ→ℂ) (D : ℝ) (ζ : ℂ) (P : Ideal O) : ℂ :=
   V ((P.absNorm:ℝ)/D)*(((P.absNorm:ℝ)/D:ℝ):ℂ)^(ζ-1)
 
-end SevenEighths.InverseInitialDetectorSource
 
-end
 
-end OAI
+
+
+

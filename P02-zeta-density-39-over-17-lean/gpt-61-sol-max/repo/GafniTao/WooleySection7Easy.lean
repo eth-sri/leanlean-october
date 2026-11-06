@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPadicSeparation
 
 @[expose] public section
@@ -16,7 +17,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooley_refinement_val_mod_of_le
     {p nu a a' : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
@@ -30,8 +31,12 @@ theorem wooley_refinement_val_mod_of_le
       (Nat.mod_mod_of_dvd z.val hdiv).symm
     _ = xi.val % (p ^ nu) := by rw [ha]
 
+section
+variable {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
+include p nu a a' b hnua haa'
+
 theorem wooley_refinement_left_separated_iff
-    {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
+    
     (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b))
     {z : ZMod (p ^ a')}
     (hz : z ∈ wooleyResidueRefinementFiber p a a' haa' xi) :
@@ -44,7 +49,7 @@ theorem wooley_refinement_left_separated_iff
 The second residue remains at depth `b`, exactly as in the easy branch of
 Wooley Lemma 7.1. -/
 theorem wooley_sum_left_refinement
-    {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
+    
     (F : ZMod (p ^ a') → ZMod (p ^ b) → ℝ) :
     ∑ xi : ZMod (p ^ a),
         ∑ eta : ZMod (p ^ b) with wooleyResiduesSeparated nu xi eta,
@@ -75,35 +80,11 @@ theorem wooley_sum_left_refinement
     have hfiber (xi : ZMod (p ^ a)) :
         fine.filter (fun z => red z = xi) =
           if wooleyResiduesSeparated nu xi eta then
-            wooleyResidueRefinementFiber p a a' haa' xi else ∅ := by
-      ext z
-      simp only [Finset.mem_filter]
-      dsimp [fine]
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      by_cases hxi : wooleyResiduesSeparated nu xi eta
-      · rw [ite_eq_left hxi]
-        constructor
-        · rintro ⟨hzsep, hzred⟩
-          exact (href z xi).2 hzred
-        · intro hz
-          have hzred := (href z xi).1 hz
-          exact ⟨(hsep z eta |>.1 (by simpa only [hzred] using hxi)), hzred⟩
-      · rw [ite_eq_right hxi]
-        simp only [Finset.notMem_empty, iff_false]
-        rintro ⟨hzsep, hzred⟩
-        apply hxi
-        have hzcoarse := (hsep z eta).2 hzsep
-        simpa only [hzred] using hzcoarse
+            wooleyResidueRefinementFiber p a a' haa' xi else ∅ := by grind
     have hgroup := Finset.sum_fiberwise fine red (fun z => F z eta)
     calc
       _ = ∑ xi : ZMod (p ^ a),
-          ∑ z ∈ fine with red z = xi, F z eta := by
-            simp_rw [hfiber]
-            apply Finset.sum_congr rfl
-            intro xi hxiMem
-            by_cases hxi : wooleyResiduesSeparated nu xi eta
-            · simp only [hxi, ite_true]
-            · simp only [hxi, ite_false, Finset.sum_empty]
+          ∑ z ∈ fine with red z = xi, F z eta := by grind
       _ = ∑ z ∈ fine, F z eta := hgroup
       _ = _ := by simp [fine, Finset.sum_filter]
   simp_rw [Finset.sum_filter]
@@ -126,6 +107,8 @@ theorem wooley_sum_left_refinement
         ∑ eta : ZMod (p ^ b),
           if wooleyResiduesSeparated nu z eta then F z eta else 0 :=
       Finset.sum_comm
+end
+
 
 theorem wooleyPolynomial_mixed_left_point_refinement
     {Q p a a' b B k s r : ℕ} [NeZero p] [NeZero (p ^ B)]
@@ -143,7 +126,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
             wooleyWeightedResidueMassSq gamma eta *
               wooleyPolynomialMixedResidueGridMoment
                 phi s r p B a' b gamma z eta := by
-  let scale : ℝ := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
+  let scale := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
   unfold wooleyPolynomialMixedResidueGridMoment
   have hper (alpha : Fin k → ZMod (p ^ B)) :
       wooleyWeightedResidueMassSq gamma xi *
@@ -218,9 +201,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
                         (2 * (s - wooleyTriangular r)))) := by
         simp_rw [Finset.mul_sum, Finset.sum_mul]
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro z hz
-        ring
+        grind
   simp_rw [Finset.mul_sum]
   calc
     ∑ alpha : Fin k → ZMod (p ^ B),
@@ -328,15 +309,13 @@ theorem wooley_section7_easy_exponent_nat
     (hBPrime : wooleySection7BPrimeInt k r a b gamma ≤ (nu : ℤ)) :
     (wooleySection7NextB k r b - a) * wooleyTriangular r ≤
       k ^ 2 * nu := by
-  let n : ℕ := (k - r + 1) * b
-  let d : ℕ := wooleySection7NextB k r b - a
+  let n := (k - r + 1) * b
+  let d := wooleySection7NextB k r b - a
   have hnInt :
       (n : ℤ) - (r : ℤ) * (a : ℤ) -
           ((k - r : ℕ) : ℤ) * (gamma : ℤ) ≤ (nu : ℤ) := by
     simpa [wooleySection7BPrimeInt, n, Nat.cast_mul] using hBPrime
-  have hnNat : n ≤ r * a + (k - r) * gamma + nu := by
-    exact_mod_cast (show (n : ℤ) ≤
-      (r * a + (k - r) * gamma + nu : ℕ) by omega)
+  have hnNat : n ≤ r * a + (k - r) * gamma + nu := by omega
   have htail : (k - r) * gamma + nu ≤ k * nu := by
     have hkr1 : k - r + 1 ≤ k := by omega
     calc
@@ -348,13 +327,6 @@ theorem wooley_section7_easy_exponent_nat
   have hceil := wooley_section7_nextB_mul_upper
     (k := k) (r := r) (b := b) hr
   have hrd : r * d ≤ k * nu + r := by
-    have htotal :
-        r * wooleySection7NextB k r b ≤ r * a + k * nu + r := by
-      calc
-        r * wooleySection7NextB k r b ≤ n + r := by simpa [n] using hceil
-        _ ≤ (r * a + (k - r) * gamma + nu) + r :=
-          Nat.add_le_add_right hnNat r
-        _ ≤ r * a + k * nu + r := by omega
     have hbdecomp : a + d = wooleySection7NextB k r b := by
       exact Nat.add_sub_of_le haa'
     have hmuldecomp :
@@ -368,18 +340,11 @@ theorem wooley_section7_easy_exponent_nat
         exact Nat.mul_div_le _ _
       _ ≤ r * k := Nat.mul_le_mul_left r hrk
   have htwice :
-      2 * (d * wooleyTriangular r) ≤ d * r * k := by
-    calc
-      2 * (d * wooleyTriangular r) = d * (2 * wooleyTriangular r) := by ring
-      _ ≤ d * (r * k) := Nat.mul_le_mul_left d hRtwo
-      _ = d * r * k := by ring
+      2 * (d * wooleyTriangular r) ≤ d * r * k := by simp_all <;> nlinarith
   have hmiddle : d * r * k ≤ (k * nu + r) * k := by
     have := Nat.mul_le_mul_right k hrd
     simpa [Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm] using this
-  have hkk : k * k ≤ k * nu * k := by
-    have hknu : k ≤ k * nu := by
-      simpa only [Nat.mul_one] using Nat.mul_le_mul_left k hnu
-    exact Nat.mul_le_mul_right k hknu
+  have hkk : k * k ≤ k * nu * k := by bound
   have hlast : (k * nu + r) * k ≤ 2 * (k ^ 2 * nu) := by
     calc
       (k * nu + r) * k = k * nu * k + r * k := by ring
@@ -387,9 +352,7 @@ theorem wooley_section7_easy_exponent_nat
         exact Nat.add_le_add_left (Nat.mul_le_mul_right k hrk.le) _
       _ ≤ k * nu * k + k * nu * k := Nat.add_le_add_left hkk _
       _ = 2 * (k ^ 2 * nu) := by ring
-  have htwo : 2 * (d * wooleyTriangular r) ≤
-      2 * (k ^ 2 * nu) := htwice.trans (hmiddle.trans hlast)
-  exact le_of_mul_le_mul_left htwo (by norm_num)
+  grind
 
 theorem wooleyPolynomialMixedGridMean_nonneg
     {Q p B k s r a b nu : ℕ} [NeZero p] [NeZero (p ^ B)]
@@ -448,6 +411,6 @@ theorem wooleyPolynomial_section7_easy
   exact hrefine.trans (mul_le_mul_of_nonneg_right hpow hmean)
 
 
-end
 
-end GafniTao
+
+

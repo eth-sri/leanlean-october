@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionPool
 
 @[expose] public section
@@ -8,81 +9,81 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped Classical
+                     
 
 namespace CubicEisenstein
 
 section
 open ActualEisensteinCubic
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def fixedCuspLevelBound (c:Eis) : ℝ :=
   243*(Ideal.absNorm (Ideal.span {c}):ℝ)^2
@@ -93,8 +94,8 @@ section
 open scoped BigOperators Classical MatrixGroups Matrix
 
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
+open ShortDraftCRT FiniteGaussPhase
+open scoped EisensteinEis
 
 lemma A4_traceLambda_pow_four : ramifiedTraceLambda^4=(9:Eis) := by
   apply eisEmbedding_injective
@@ -127,13 +128,10 @@ end
 
 open scoped BigOperators Classical ContDiff MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
-open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
-namespace PrincipalStratumArithmetic
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis}
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open CubicKubota FiniteGaussPhase
+open scoped EisensteinEis
 
-end PrincipalStratumArithmetic
 
 end CubicEisenstein
 
@@ -143,12 +141,22 @@ namespace CanonicalRowCompletion
 
 section
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-abbrev BasePrimeIndex (I Q:Ideal Eis) := {P:PrimeIndex I // Q≤P.val}
-abbrev FreePrimeIndex (I Q:Ideal Eis) := {P:PrimeIndex I // ¬Q≤P.val}
+section
+variable (I Q:Ideal Eis)
+include I Q
 
-def basePrimeRow (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) : Eis→*ℂ where
+abbrev BasePrimeIndex  := {P:PrimeIndex I // Q≤P.val}
+abbrev FreePrimeIndex  := {P:PrimeIndex I // ¬Q≤P.val}
+end
+
+
+section
+variable (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis)
+include I hI Q
+
+def basePrimeRow  : Eis→*ℂ where
   toFun n:=∏P:BasePrimeIndex I Q,
     (actualSextic P.val.val ((supported_factors_good I hI P.val.val
       (Multiset.mem_toFinset.mp P.val.property)).2.1)^((normalizedFactors I).count P.val.val%6))
@@ -156,7 +164,7 @@ def basePrimeRow (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) : Eis→*ℂ where
   map_one' := by simp only [map_one,Finset.prod_const_one]
   map_mul' x y := by simp only [map_mul,Finset.prod_mul_distrib]
 
-def freePrimeRow (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) : Eis→*ℂ where
+def freePrimeRow  : Eis→*ℂ where
   toFun n:=∏P:FreePrimeIndex I Q,
     (actualSextic P.val.val ((supported_factors_good I hI P.val.val
       (Multiset.mem_toFinset.mp P.val.property)).2.1)^((normalizedFactors I).count P.val.val%6))
@@ -164,7 +172,7 @@ def freePrimeRow (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) : Eis→*ℂ where
   map_one' := by simp only [map_one,Finset.prod_const_one]
   map_mul' x y := by simp only [map_mul,Finset.prod_mul_distrib]
 
-lemma basePrimeRow_norm (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) (n:Eis) :
+lemma basePrimeRow_norm  (n:Eis) :
     ‖basePrimeRow I hI Q n‖≤1 := by
   change ‖∏P:BasePrimeIndex I Q,_‖≤1
   rw [norm_prod]
@@ -172,48 +180,56 @@ lemma basePrimeRow_norm (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) (n:Eis) :
   · intro P hP;exact norm_nonneg _
   · intro P hP;exact FiniteRayExpansion.norm_char_le_one _ _
 
-lemma basePrimeRow_periodic (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) :
+lemma basePrimeRow_periodic  :
     CanonicalCoefficientClass.FactorsModulo Q (basePrimeRow I hI Q) := by
   intro x y hxy
   change (∏P:BasePrimeIndex I Q,_)=∏P:BasePrimeIndex I Q,_
   apply Finset.prod_congr rfl
   intro P hP
-  have he:Ideal.Quotient.mk P.val.val x=Ideal.Quotient.mk P.val.val y:=
+  have he :=
     Ideal.Quotient.eq.mpr (P.property hxy)
   rw [he]
 
-lemma idealRowHom_fixed_conductor_split (I:Ideal Eis) (hI:Supported I) (Q:Ideal Eis) (n:Eis) :
+lemma idealRowHom_fixed_conductor_split  (n:Eis) :
     idealRowHom n I=basePrimeRow I hI Q n*freePrimeRow I hI Q n := by
   rw [idealRowHom_eq_prime_count_product I hI n]
   exact (Fintype.prod_subtype_mul_prod_subtype (fun P:PrimeIndex I=>Q≤P.val)
     (fun P:PrimeIndex I=>(actualSextic P.val ((supported_factors_good I hI P.val
       (Multiset.mem_toFinset.mp P.property)).2.1)^((normalizedFactors I).count P.val%6))
       (Ideal.Quotient.mk P.val n))).symm
+end
 
-lemma freePrimeIndex_pairwise_coprime (I Q:Ideal Eis) :
+
+section
+variable (I Q:Ideal Eis)
+include I Q
+
+lemma freePrimeIndex_pairwise_coprime  :
     Pairwise (Function.onFun IsCoprime (fun P:FreePrimeIndex I Q=>P.val.val)) := by
   intro P R hPR
   exact Ideal.isCoprime_of_isMaximal (fun he=>hPR (Subtype.ext (Subtype.ext he)))
 
-lemma freePrimeIndex_coprime (I Q:Ideal Eis) (P:FreePrimeIndex I Q) :
+lemma freePrimeIndex_coprime  (P:FreePrimeIndex I Q) :
     IsCoprime Q P.val.val := by
   apply Ideal.isCoprime_iff_sup_eq.mpr
   by_contra ht
-  have he:P.val.val=Q⊔P.val.val:=
+  have he :=
     (show P.val.val.IsMaximal from inferInstance).eq_of_le ht le_sup_right
   exact P.property (le_sup_left.trans he.symm.le)
+end
+
 
 end
 section
 
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 end
 
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-open ConcretePrimeRowBridge
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 def goodMaskMovingIdeal (g r:Eis) : Ideal Eis := (Ideal.span {g})^6*Ideal.span {r}
 
@@ -222,24 +238,27 @@ lemma goodMaskMovingIdeal_supported (g r:Eis)
     Supported (goodMaskMovingIdeal g r) := by
   exact (supported_mul_iff _ _).mpr ⟨supported_pow hg 6,hr⟩
 
-lemma good_odd_prime_two_not_mem (P:Ideal Eis) [P.IsMaximal]
+section
+variable (P:Ideal Eis)
+include P
+
+lemma good_odd_prime_two_not_mem  [P.IsMaximal]
     (hodd:ringChar (Eis⧸P)≠2) : (2:Eis)∉P := by
   intro ht
   have he:=maximal_ideal_eq_span_of_mem P inferInstance (2:Eis) twoIdeal_maximal ht
   exact hodd (he ▸ twoIdeal_characteristic)
 
-lemma count_span_eq_zero_of_not_mem (P:Ideal Eis) (x:Eis) (hx:x∉P) :
+lemma count_span_eq_zero_of_not_mem  (x:Eis) (hx:x∉P) :
     (normalizedFactors (Ideal.span {x})).count P=0 := by
   apply Multiset.count_eq_zero.mpr
   intro hm
   have h0:(Ideal.span {x}:Ideal Eis)≠0:=by
     apply Ideal.span_singleton_eq_bot.not.mpr
-    intro he
-    exact hx (he ▸ P.zero_mem)
+    aesop
   exact hx (Ideal.dvd_span_singleton.mp
     ((UniqueFactorizationMonoid.mem_normalizedFactors_iff h0).mp hm).2)
 
-lemma good_factor_count (P:Ideal Eis) [P.IsMaximal]
+lemma good_factor_count  [P.IsMaximal]
     (hgood:lambda∉P) (hodd:ringChar (Eis⧸P)≠2)
     (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r})) :
     (normalizedFactors (Ideal.span {u.val*lambda^a*(2:Eis)^b*r})).count P=
@@ -256,6 +275,8 @@ lemma good_factor_count (P:Ideal Eis) [P.IsMaximal]
     normalizedFactors_mul (mul_ne_zero (pow_ne_zero _ hl) (pow_ne_zero _ ht)) hr.1,
     normalizedFactors_mul (pow_ne_zero _ hl) (pow_ne_zero _ ht)]
   simp only [Multiset.count_add,normalizedFactors_pow,Multiset.count_nsmul,hcl,hct,mul_zero,zero_add]
+end
+
 
 theorem goodMaskMovingIdeal_count (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
     (m f z:Eis) (hf:Ideal.span {f}=F) (hz:Ideal.span {z}=I)
@@ -277,7 +298,7 @@ theorem goodMaskMovingIdeal_count (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
       normalizedFactors_mul (pow_ne_zero 4 hF) hI] at hh
     simpa only [Multiset.count_add,normalizedFactors_pow,Multiset.count_nsmul] using hh.symm
   rw [goodMaskMovingIdeal,normalizedFactors_mul (pow_ne_zero 6 hg.1) hr.1]
-  simp only [Multiset.count_add,normalizedFactors_pow,Multiset.count_nsmul,←hmc,hrc]
+  simp
   omega
 
 lemma squarefree_prime_count_indicator (F P:Ideal Eis) (hF:Squarefree F) (hP:Prime P) :
@@ -306,8 +327,8 @@ theorem goodMaskMovingIdeal_exponent (I F:Ideal Eis) (hI:I≠0) (hF:Squarefree F
   unfold completedLocalExponent
   omega
 
-end CanonicalRowCompletion
 
-end
 
-end OAI
+
+
+

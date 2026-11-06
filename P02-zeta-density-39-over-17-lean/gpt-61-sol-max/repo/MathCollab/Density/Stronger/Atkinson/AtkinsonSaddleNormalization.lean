@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -43,28 +44,31 @@ theorem atkinsonSaddleRoot_sum_neg (A b : ℝ) :
   rw [neg_sq]
   ring
 
-theorem log_atkinsonSaddleRoot_div_sqrt {A : ℝ} (hA : 0 < A) (b : ℝ) :
+section
+variable {A : ℝ} (hA : 0 < A) (b : ℝ)
+include A hA b
+
+theorem log_atkinsonSaddleRoot_div_sqrt  :
     Real.log (atkinsonSaddleRoot A b / Real.sqrt A) = Real.arsinh (b / (2 * Real.sqrt A)) := by
   let r := atkinsonSaddleRoot A b
   have hr : 0 < r := atkinsonSaddleRoot_pos hA b
-  have hs : 0 < Real.sqrt A := Real.sqrt_pos.2 hA
   have he : r ^ 2 - b * r = A := atkinsonSaddleRoot_equation hA b
   have hratio : 0 < r / Real.sqrt A := by positivity
   have hh : Real.sinh (Real.log (r / Real.sqrt A)) = b / (2 * Real.sqrt A) := by
     rw [Real.sinh_eq, Real.exp_log hratio, Real.exp_neg, Real.exp_log hratio]
-    field_simp
-    nlinarith [Real.sq_sqrt hA.le]
+    grind
   have h := congrArg Real.arsinh hh
   simpa only [Real.arsinh_sinh] using h
 
-theorem log_atkinsonSaddleRoot_sq_sub_log {A : ℝ} (hA : 0 < A) (b : ℝ) :
+theorem log_atkinsonSaddleRoot_sq_sub_log  :
     Real.log ((atkinsonSaddleRoot A b) ^ 2) - Real.log A =
       2 * Real.arsinh (b / (2 * Real.sqrt A)) := by
   have h := log_atkinsonSaddleRoot_div_sqrt hA b
   rw [Real.log_div (atkinsonSaddleRoot_pos hA b).ne'
     (Real.sqrt_pos.2 hA).ne', Real.log_sqrt hA.le] at h
-  rw [Real.log_pow]
-  linarith
+  simp_all <;> nlinarith
+end
+
 
 theorem zetaAtkinsonSaddle_log_argument {T : ℝ} (hT : 0 < T) (b : ℝ) :
     Real.log (zetaAtkinsonSaddle T b) - Real.log (T / (2 * Real.pi)) =
@@ -101,4 +105,4 @@ theorem zetaAtkinsonPhase_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
     zetaAtkinsonSaddle, Real.sqrt_sq hr.le, hs]
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

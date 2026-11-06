@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Native q=1 estimates derived from the existing proved Gamma half-line formula,
 beta comparison and actual zeta Abel bound. Existing Gamma/contour Apache
@@ -12,8 +13,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 open Complex
 open MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_Gamma_voronoi_strip_sharp {a t : ℝ}
@@ -42,10 +42,7 @@ theorem norm_Gamma_voronoi_strip_sharp {a t : ℝ}
     exact mul_le_mul hn hhalf (norm_nonneg _) (by positivity)
   have hs := norm_Gamma_stripPoint_le_four_upper (t := t) ha ha'
   change ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * I)‖ ≤ _ at hs
-  calc
-    _ ≤ 4 * ‖Complex.Gamma (stripPoint (3/2) t)‖ := hs
-    _ ≤ 4 * ((1 + |t|) * (3 * Real.exp (-(Real.pi * |t|) / 2))) := by gcongr
-    _ = _ := by ring
+  grind
 
 theorem norm_complex_cos_le_exp_abs_im (z : ℂ) :
     ‖Complex.cos z‖ ≤ Real.exp |z.im| := by
@@ -63,8 +60,12 @@ theorem norm_complex_cos_le_exp_abs_im (z : ℂ) :
   have hm' : ‖Complex.exp (-z * I)‖ ≤ Real.exp |z.im| := by simpa [neg_mul] using hm
   exact (norm_add_le _ _).trans (by linarith)
 
-theorem norm_voronoiFactor_one_le {s : ℂ}
-    (hs : 1/2 ≤ s.re) (hs' : s.re ≤ 3/2) :
+section
+variable {s : ℂ}
+    (hs : 1/2 ≤ s.re) (hs' : s.re ≤ 3/2)
+include s hs hs'
+
+theorem norm_voronoiFactor_one_le  :
     ‖dfiPeriodicArchimedeanFactor 1 s‖ ≤
       12 * (1 + |s.im|) * Real.exp (-(Real.pi * |s.im|) / 2) := by
   have hbase : ‖(2 * Real.pi : ℂ) ^ (-s)‖ ≤ 1 := by
@@ -78,8 +79,7 @@ theorem norm_voronoiFactor_one_le {s : ℂ}
   simpa only [dfiPeriodicArchimedeanFactor, Nat.cast_one, one_cpow, one_mul,
     norm_mul] using (mul_le_of_le_one_left (norm_nonneg (Complex.Gamma s)) hbase).trans hG
 
-theorem norm_voronoiFactor_one_mul_cos_le {s : ℂ}
-    (hs : 1/2 ≤ s.re) (hs' : s.re ≤ 3/2) :
+theorem norm_voronoiFactor_one_mul_cos_le  :
     ‖dfiPeriodicArchimedeanFactor 1 s * Complex.cos (Real.pi * s / 2)‖ ≤
       12 * (1 + |s.im|) := by
   have hc := norm_complex_cos_le_exp_abs_im (Real.pi * s / 2)
@@ -95,6 +95,8 @@ theorem norm_voronoiFactor_one_mul_cos_le {s : ℂ}
       mul_le_mul (norm_voronoiFactor_one_le hs hs') hc (norm_nonneg _) (by positivity)
     _ = _ := by
       rw [mul_assoc, ← Real.exp_add, show -(Real.pi * |s.im|) / 2 + Real.pi * |s.im| / 2 = 0 by ring, Real.exp_zero, mul_one]
+end
+
 
 theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
     (hσ : -(1/2 : ℝ) ≤ σ) (hσ' : σ ≤ 3/2) (hu : 1 ≤ |u|) :
@@ -107,17 +109,14 @@ theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
       (by simpa [him] using hu)
     have hn : ‖z‖ ≤ 2 * (1 + |u|) := by
       have h := Complex.norm_le_abs_re_add_abs_im z
-      rw [hre, him, abs_of_nonneg (by linarith : 0 ≤ σ)] at h
-      nlinarith [abs_nonneg u]
+      grind
     change ‖riemannZeta z‖ ≤ _
     nlinarith [sq_nonneg (1 + |u|), abs_nonneg u]
   · have hz0 : z ≠ 0 := by
       intro h
       have hi := congrArg Complex.im h
       rw [him] at hi
-      simp only [zero_im] at hi
-      have hu0 : 1 ≤ |(0 : ℝ)| := by simpa only [hi] using hu
-      norm_num at hu0
+      simp_all <;> nlinarith
     have hs : 1/2 ≤ (1-z).re := by simp only [sub_re, one_re, hre]; linarith
     have hs' : (1-z).re ≤ 3/2 := by simp only [sub_re, one_re, hre]; linarith
     have hui : |(1-z).im| = |u| := by simp [him]
@@ -125,8 +124,7 @@ theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
       (by rw [hui]; exact hu)
     have hn : ‖1-z‖ ≤ 2 * (1 + |u|) := by
       have h := Complex.norm_le_abs_re_add_abs_im (1-z)
-      rw [hui, abs_of_nonneg (by linarith : 0 ≤ (1-z).re)] at h
-      nlinarith [abs_nonneg u]
+      grind
     have hc := norm_voronoiFactor_one_mul_cos_le hs hs'
     rw [hui] at hc
     change ‖riemannZeta z‖ ≤ _
@@ -142,4 +140,4 @@ theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
         gcongr
       _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson
+

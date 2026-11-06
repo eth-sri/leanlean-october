@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDensity
 public import GuthMaynard.NativeSource.GuthMaynard.ExtractSeparated
 public import GuthMaynard.NativeSource.GuthMaynard.ScaledSeparated
@@ -22,11 +23,15 @@ selection of separated ordinates.
 -/
 
 set_option maxHeartbeats 800000 in
+section
+variable {a H : ℝ} (ha : a < -1) (hH : 0 < H)
+include a H ha hH
+
 /-- Exact symmetric tail integral for a negative real power. -/
-theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
+theorem integral_abs_rpow_compl_Icc  :
     ∫ u : ℝ in (Set.Icc (-H) H)ᶜ, |u| ^ a =
       -2 * H ^ (a + 1) / (a + 1) := by
-  have hPosInt : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi H) :=
+  have hPosInt :=
     integrableOn_Ioi_rpow_of_lt ha hH
   have hNegInt : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Iio (-H)) := by
     have hPosInt' : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi (-(-H))) := by
@@ -44,22 +49,8 @@ theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     change u ^ a = |u| ^ a
     rw [abs_of_pos (hH.trans hu)]
     exact measurableSet_Ioi
-  have hDisjoint : Disjoint (Set.Iio (-H)) (Set.Ioi H) := by
-    rw [Set.disjoint_left]
-    intro u huNeg huPos
-    change u < -H at huNeg
-    change H < u at huPos
-    linarith
-  have hCompl : (Set.Icc (-H) H)ᶜ = Set.Iio (-H) ∪ Set.Ioi H := by
-    ext u
-    simp only [Set.mem_compl_iff, Set.mem_Icc, Set.mem_union, Set.mem_Iio, Set.mem_Ioi]
-    constructor
-    · intro h
-      by_cases hu : u < -H
-      · exact Or.inl hu
-      · exact Or.inr (lt_of_not_ge fun huH => h ⟨le_of_not_gt hu, huH⟩)
-    · intro h hu
-      rcases h with h | h <;> linarith
+  have hDisjoint : Disjoint (Set.Iio (-H)) (Set.Ioi H) := by grind
+  have hCompl : (Set.Icc (-H) H)ᶜ = Set.Iio (-H) ∪ Set.Ioi H := by grind
   rw [hCompl, setIntegral_union hDisjoint measurableSet_Ioi hNegInt hPosAbs]
   have hNegEq :
       ∫ u : ℝ in Set.Iio (-H), |u| ^ a = ∫ u : ℝ in Set.Ioi H, u ^ a := by
@@ -73,14 +64,13 @@ theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
       ∫ u : ℝ in Set.Ioi H, |u| ^ a = ∫ u : ℝ in Set.Ioi H, u ^ a := by
     apply setIntegral_congr_fun measurableSet_Ioi
     intro u hu
-    change |u| ^ a = u ^ a
-    rw [abs_of_pos (hH.trans hu)]
+    grind
   rw [hNegEq, hPosEq, integral_Ioi_rpow_of_lt ha hH]
   ring
 
-theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
+theorem integrableOn_abs_rpow_compl_Icc  :
     IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Icc (-H) H)ᶜ := by
-  have hPosInt : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi H) :=
+  have hPosInt :=
     integrableOn_Ioi_rpow_of_lt ha hH
   have hPosAbs : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Ioi H) := by
     apply hPosInt.congr_fun
@@ -91,24 +81,16 @@ theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
   have hNegAbs : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Iio (-H)) := by
     have hPosInt' : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi (-(-H))) := by
       simpa only [neg_neg] using hPosInt
-    have h : IntegrableOn (fun u : ℝ => (-u) ^ a) (Set.Iio (-H)) :=
+    have h :=
       hPosInt'.comp_neg_Iio (c := -H)
     apply h.congr_fun
     intro u hu
     change (-u) ^ a = |u| ^ a
     rw [abs_of_neg (lt_trans hu (neg_neg_of_pos hH))]
     simp
-  have hCompl : (Set.Icc (-H) H)ᶜ = Set.Iio (-H) ∪ Set.Ioi H := by
-    ext u
-    simp only [Set.mem_compl_iff, Set.mem_Icc, Set.mem_union, Set.mem_Iio, Set.mem_Ioi]
-    constructor
-    · intro h
-      by_cases hu : u < -H
-      · exact Or.inl hu
-      · exact Or.inr (lt_of_not_ge fun huH => h ⟨le_of_not_gt hu, huH⟩)
-    · intro h hu
-      rcases h with h | h <;> linarith
-  rw [hCompl]
-  exact hNegAbs.union hPosAbs
+  have hCompl : (Set.Icc (-H) H)ᶜ = Set.Iio (-H) ∪ Set.Ioi H := by grind
+  simp_all
+end
 
-end GuthMaynard.NativeMoment
+
+

@@ -6,18 +6,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstWindowBudgets
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedWindow
 open CenteredMomentFirstMixedRoot CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
+open CenteredMomentFirstPhysicalSource
+open CenteredMomentCommonRadialData
 open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFirstScale CenteredMomentFirstNonexceptionalPrefactor
-local notation "O"=>HeckeFamily.O
+open CenteredMomentCanonicalFirst CenteredMomentRankinRadical
+open HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentFirstScale
+open scoped HeckeO
 
 theorem original_four_budget_reference {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(R seed:Ideal O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)
@@ -67,8 +67,8 @@ theorem original_four_budget_reference {ι:Type*}[Fintype ι][DecidableEq ι]
   unfold windowBudget
   nlinarith only [hh']
 
-end SevenEighths.CenteredMomentFirstMixedWindow
 
-end
 
-end OAI
+
+
+

@@ -9,14 +9,14 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerPhysical
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialProfile
+
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
+open scoped EisensteinEis
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -106,8 +106,8 @@ theorem actual_physical_block_bound
       rw [hexp]
       ring
 
-end SevenEighths.InverseInitialEnergyCallerPhysical
 
-end
 
-end OAI
+
+
+

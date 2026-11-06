@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -22,7 +23,7 @@ Only strictly positive damping is used for whole-line integrability later.
 
 noncomputable section
 
-open Complex MeasureTheory Set
+open Complex MeasureTheory
 open scoped ContDiff
 
 namespace MathCollab.Density.Stronger.Atkinson
@@ -66,9 +67,7 @@ theorem intervalC1Bound_gaussian_damping {ε a b : ℝ}
 theorem norm_fresnelPhase_integral_le {c a b : ℝ} (hc : 0 < c) (ha : 0 < a) (hab : a ≤ b) :
     ‖∫ x in a..b, Complex.exp (2 * Real.pi * I * ((-c * x ^ 2 : ℝ) : ℂ))‖ ≤
       1 / (2 * c * a * Real.pi) := by
-  have hd (x : ℝ) : deriv (fun y : ℝ => -c * y ^ 2) x = -2 * c * x := by
-    convert (((hasDerivAt_id x).pow 2).const_mul (-c)).deriv using 1 <;> dsimp [id]
-    ring
+  have hd (x : ℝ) : deriv (fun y : ℝ => -c * y ^ 2) x = -2 * c * x := by norm_num at * <;> linarith
   apply norm_phaseIntegral_le_of_negative_slope hab (by positivity : 0 < 2 * c * a)
     (by intros; fun_prop)
   · intro x hx
@@ -88,4 +87,4 @@ theorem norm_integral_fresnelDampedKernel_le {ε c a b : ℝ}
   apply h.trans_eq
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

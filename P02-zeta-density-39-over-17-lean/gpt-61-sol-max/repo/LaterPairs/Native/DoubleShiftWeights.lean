@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ShiftDifferenceWeights
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -47,14 +46,7 @@ theorem sum_double_shift_differences (Q R : ℕ) (f : ℤ → ℤ → ℝ) :
 theorem signed_shift_weight_real {N : ℕ} {q : ℤ}
     (hq : q ∈ Finset.Ioo (-(N:ℤ)) N) :
     ((N-q.natAbs:ℕ):ℝ) = (N:ℝ)-|(q:ℝ)| := by
-  have hqn : q.natAbs ≤ N := by
-    have ht := Finset.mem_Ioo.mp hq
-    have ha : |q| ≤ (N:ℤ) := abs_le.mpr ⟨by omega,by omega⟩
-    rw [← Int.natCast_natAbs] at ha
-    exact_mod_cast ha
-  have habs : (q.natAbs:ℝ) = |(q:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs q)
-  rw [Nat.cast_sub hqn,habs]
+  have hqn : q.natAbs ≤ N := by grind
+  simp_all
 
-end TaoTrudgianYang2025
+

@@ -32,10 +32,14 @@ def wooleyPointCharacter {I : Type*}
     (alpha : Fin k → ZMod q) (x : I) : ℂ :=
   ∏ j, ZMod.stdAddChar (alpha j * value x j)
 
-theorem wooley_tuple_point_character
-    {I : Type*} (q k s : ℕ) [NeZero q]
+section
+variable {I : Type*} (q k s : ℕ) [NeZero q]
     (value : I → Fin k → ZMod q)
-    (alpha : Fin k → ZMod q) (x : WooleyFiniteTuple s I) :
+    (alpha : Fin k → ZMod q)
+include I q k s value alpha
+
+theorem wooley_tuple_point_character
+     (x : WooleyFiniteTuple s I) :
     ∏ i, wooleyPointCharacter q k value alpha (x i) =
       ∏ j, ZMod.stdAddChar
         (alpha j * ∑ i, value (x i) j) := by
@@ -50,9 +54,7 @@ theorem wooley_tuple_point_character
 /-- Product of the positive and conjugated negative tuple phases is the
 character of their displacement. -/
 theorem wooley_tuple_pair_character
-    {I : Type*} (q k s : ℕ) [NeZero q]
-    (value : I → Fin k → ZMod q)
-    (alpha : Fin k → ZMod q)
+    
     (xy : WooleyFiniteTuple s I × WooleyFiniteTuple s I) :
     wooleyTuplePhase s (wooleyPointCharacter q k value alpha) xy =
       ∏ j, ZMod.stdAddChar
@@ -68,6 +70,8 @@ theorem wooley_tuple_pair_character
   congr 1
   simp only [wooleyTupleDisplacement]
   ring
+end
+
 
 /-- Evaluation vector of an integer polynomial system modulo `q`. -/
 def wooleyPolynomialValue {k : ℕ} (phi : WooleyPolynomialSystem k)
@@ -83,6 +87,6 @@ theorem wooleySourcePolynomialPhase_eq_pointCharacter
     wooleyPolynomialValue
   exact wooley_addChar_sum_eq_prod ZMod.stdAddChar _
 
-end
 
-end GafniTao
+
+

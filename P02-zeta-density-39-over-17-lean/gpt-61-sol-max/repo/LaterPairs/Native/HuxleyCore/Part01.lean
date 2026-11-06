@@ -1,4 +1,5 @@
 module
+import LaterPairs.Native.ZetaSourceLogScales
 public import LaterPairs.Native.ExponentPairCorrelationSum
 public import LaterPairs.Native.ExponentPairShiftPhase
 public import TaoTrudgianYang2025.BetaDuality
@@ -21,10 +22,11 @@ public import LaterPairs.Native.RobertSargosInitialDyadicLog
 public import LaterPairs.Native.SargosLocalAffineJets
 public import LaterPairs.Native.SecondDerivativeComposition
 public import LaterPairs.Native.SquareProductCount
-public import LaterPairs.Native.ZetaSourceLogScales
-public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
+public import LaterPairs.Native.ZetaMomentKernel
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
 public import TaoTrudgianYang2025.BetaAmplitudeMonotonicity
 public import TaoTrudgianYang2025.BetaExpandedModelJets
 public import TaoTrudgianYang2025.BetaInverseJets
@@ -33,16 +35,14 @@ public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
 public import TaoTrudgianYang2025.BetaStationaryMain
 public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
 public import TaoTrudgianYang2025.BetaUniformity
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import TaoTrudgianYang2025.HeathBrownModelJetCore
 public import TaoTrudgianYang2025.HeathBrownPhysicalPhase
 public import TaoTrudgianYang2025.ModelEndpointEntry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                     
@@ -189,7 +189,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 
 open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 open Polynomial
 open Set
 open scoped Classical
@@ -197,19 +197,23 @@ open scoped ContDiff
 open scoped FourierTransform BigOperators
 open scoped Topology
 
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+           
+
+               
+        
+                     
+                    
+                                         
+                    
 universe huxleyNarrowV
-noncomputable section
+
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
+section
+variable {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
+include σ c U hσ hc hU
+
 private theorem positive_difference_physical_lower_pair_compression
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ a ≤ 1/2 ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb γ Δ T M : ℝ) (xa xb : Fin 2 → ℝ),
     0 < η → η ≤ η₀ → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
@@ -275,7 +279,7 @@ private theorem positive_difference_physical_lower_pair_compression
     rwa [abs_sub_comm] at hh
 
 private theorem positive_difference_physical_lower_reference_gap_packing
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb γ Δ T M R Uref : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (xa xb : ℝ × ℝ → ℝ),
@@ -351,7 +355,7 @@ private theorem positive_difference_physical_lower_reference_gap_packing
                                                                   
                                                                             
 private theorem positive_difference_physical_upper_pair_compression
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ a C : ℝ, 0 < a ∧ a ≤ 1/2 ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b Δ T M : ℝ) (xa xb : Fin 2 → ℝ),
     0 < η → η ≤ 1/8 → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
@@ -416,7 +420,7 @@ private theorem positive_difference_physical_upper_pair_compression
     rwa [abs_sub_comm] at hh
 
 private theorem positive_difference_physical_upper_reference_gap_packing
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+     :
     ∃ a C : ℝ, 0 < a ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b Δ T M R Uref : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (xa xb : ℝ × ℝ → ℝ),
@@ -488,6 +492,8 @@ private theorem positive_difference_physical_upper_reference_gap_packing
   ring_nf
   simp only [inv_inv]
   ring
+end
+
 
 private theorem upper_reference_gap_source_scale
     {C K Tsrc E T M N R L b Uref : ℝ}
@@ -498,31 +504,24 @@ private theorem upper_reference_gap_source_scale
       C*(K+1)*E^2*M^2/(L^2*N^4*|b| *Uref) := by
   have hRpos : 0 < R := zero_lt_one.trans_le hR
   have hbpos : 0 < |b| := abs_pos.mpr hb
-  have hInv : 1/M ≤ R^2/(L^2*N^2) := by
-    apply (div_le_div_iff₀ hM (by positivity)).mpr
-    have hRR : R ≤ R^2 := by nlinarith only [hR]
-    nlinarith only [hNL,mul_le_mul_of_nonneg_left hRR hM.le]
+  have hInv : 1/M ≤ R^2/(L^2*N^2) := by field_simp <;> nlinarith
   have herr : K*R^2/(L^2*N^2)+1/M ≤ (K+1)*R^2/(L^2*N^2) :=
     (add_le_add le_rfl hInv).trans_eq (by ring)
   have hAmp : Tsrc^2 ≤ E^2*T^2 := by
     have hh := pow_le_pow_left₀ hTsrc.le hsource 2
     nlinarith only [hh]
   calc
-    _ ≤ C*((K+1)*R^2/(L^2*N^2))*(E^2*T^2)*R^2/(M^4*|b| *Uref) := by
-      apply div_le_div_of_nonneg_right _ (by positivity)
-      apply mul_le_mul_of_nonneg_right _ (sq_nonneg R)
-      exact mul_le_mul (mul_le_mul_of_nonneg_left herr hC) hAmp
-        (sq_nonneg Tsrc) (by positivity)
-    _ = _ := by
-      have hTval : T=M^3/(N*R^2) :=
-        (eq_div_iff (by positivity)).mpr (by nlinarith only [hscale])
-      rw [hTval]
-      field_simp
+    _ ≤ C*((K+1)*R^2/(L^2*N^2))*(E^2*T^2)*R^2/(M^4*|b| *Uref) := by bound
+    _ = _ := by grind
 
                                                               
                                                                         
+section
+variable {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
+include σsrc csrc Usrc hσsrc hcsrc hUsrc
+
 private theorem positive_difference_normalized_quartic_lower_reference_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+     :
     ∃ η₀ a Csrc : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < Csrc ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb γ Tsrc : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ))
@@ -708,10 +707,7 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
     · linarith only [(abs_lt.mp (max_lt_iff.mp hl).2).1,hlo]
     · linarith only [(abs_lt.mp (max_lt_iff.mp hu).2).2,hhi]
   have hDmap ab (hab : ab∈Gaps) t :
-      Den ab t 1=Den ab t 0+γ*(e ab 0*t+v ab 0) := by
-    dsimp only [Den]
-    rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
-    ring
+      Den ab t 1=Den ab t 0+γ*(e ab 0*t+v ab 0) := by grind
   have hratio ab (hab : ab∈Gaps) :
       γ*profile ab (z ab)+1=Den ab (z ab) 1/Den ab (z ab) 0 := by
     change γ*(iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2)+1=_
@@ -808,7 +804,7 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
                                                               
                                                                         
 private theorem positive_difference_normalized_quartic_upper_reference_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+     :
     ∃ a Csrc : ℝ, 0 < a ∧ 0 < Csrc ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb b Tsrc E : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ))
@@ -1047,7 +1043,7 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
                                                                   
                                                           
 theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+     :
     ∃ η₀ a Cupper Clower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
@@ -1379,6 +1375,8 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
     have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
     constructor <;> intro _ _ <;>
       dsimp only [Cthird,Kres,Gamma,Cc,Ct,C₂,C₃] <;> positivity
+end
+
 
 private theorem original_block_mass_of_cubic_and_gap_bounds
     {ι : Type*} (Gaps : Finset ι) (S : ι → Finset ℕ) (m0 : ℕ)
@@ -1441,8 +1439,12 @@ private theorem original_block_mass_of_cubic_and_gap_bounds
                                                                      
                                                                        
                                                                 
+section
+variable {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
+include σsrc csrc Usrc hσsrc hcsrc hUsrc
+
 theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+     :
     ∃ η₀ a Cupper Clower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
@@ -1709,7 +1711,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
                                                                    
                                                           
 theorem positive_difference_actual_fourier_triangular_closed_gap_count
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+     :
     ∃ η₀ a Cupper Clower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
@@ -1960,7 +1962,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
                                                                      
                                                                     
 theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+     :
     ∃ η₀ a Cupper Clower Dupper Dlower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
@@ -2222,6 +2224,8 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
     rw [hpartition]
     exact add_le_add (hlong.2 htri hentry)
       (hshortmass.trans (mul_le_mul_of_nonneg_left (hshortcount.2 htri hentry) (Nat.cast_nonneg _)))
+end
+
 
                                                                 
                                                                        
@@ -3933,8 +3937,12 @@ private theorem two_thirds_cube {x : ℝ} (hx : 0 ≤ x) :
 
                                                                  
                                                                         
+section
+variable {M N R U L : ℝ} (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
+include M N R U L hM hN hR
+
 private theorem triangular_translation_source_regime
-    {M N R U L : ℝ} (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
+    
     (hU : 0 ≤ U) (hL : 0 ≤ L) (hRN : R ≤ N)
     (hselected : U ≤ (N/R)^((2:ℝ)/3))
     (hregime : N^4 ≤ M*R^3*L^((3:ℝ)/2)) :
@@ -3973,7 +3981,7 @@ private theorem triangular_translation_source_regime
 
 
 private theorem triangular_physical_regime_costs
-    {M N R U L : ℝ} (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
+    
     (hU : 0 < U) (hL : 0 ≤ L) (hRN : R ≤ N)
     (hselected : U ≤ (N/R)^((2:ℝ)/3))
     (hregime : N^4 ≤ M*R^3*L^((3:ℝ)/2)) :
@@ -4006,6 +4014,8 @@ private theorem triangular_physical_regime_costs
     apply (div_le_div_iff₀ hM (by positivity)).mpr
     have hh := mul_le_mul_of_nonneg_left hshort (sq_nonneg R)
     nlinarith only [hh]
+end
+
 
 
 private theorem triangular_weight_regime_absorption
@@ -5286,8 +5296,12 @@ theorem exists_positive_difference_actual_joint_source_sieve
       (by rw [ht]; exact hsides.1) (by rw [hnumeq]; exact hsides.2.1)
 
 
+section
+variable {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L)
+include σ c U L hσ hc hU hL
+
 private theorem positive_difference_family_bounded_action_source_scale_at_action
-    {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L) :
+     :
     ∃ D : ℝ, 0 < D ∧
       ∀ (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
         (Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ)
@@ -5375,7 +5389,7 @@ private theorem positive_difference_family_bounded_action_source_scale_at_action
     _ = _ := by ring
 
 private theorem positive_difference_family_type_one_source_scale_at_action
-    {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L) :
+     :
     ∃ D : ℝ, 0 < D ∧
       ∀ (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
         (Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ)
@@ -5490,6 +5504,8 @@ private theorem positive_difference_family_type_one_source_scale_at_action
     _ ≤ D₀*((P.image (fun ij => ij.1.1.1)).card:ℝ)*(M/(N:ℝ))*(1+Δ*J)+
         D₁*((P.image (fun ij => ij.1.1.1)).card:ℝ)*(M/(N:ℝ))*(1+Δ*J) := add_le_add h₀' h₁'
     _ = _ := by ring
+end
+
 
 private theorem source_model_large_action_threshold
     {σsrc csrc Usrc E σ δ T M gamma : ℝ}
@@ -5844,9 +5860,13 @@ public  theorem actual_phase_pair_forget_card
     · intro hij
       exact Finset.mem_image.mpr ⟨embed ij,Finset.mem_filter.mpr ⟨hij,by constructor <;> rfl⟩,rfl⟩
 
-private theorem actual_phase_pair_sum_card
-    (S : Finset (ℝ × ℤ))
+section
+variable (S : Finset (ℝ × ℤ))
     (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
+include S P
+
+private theorem actual_phase_pair_sum_card
+    
     (hP : ∀ ij∈P, ij.1.1∈S ∧ ij.2.1∈S) :
     let Y := S.image Prod.fst
     let forget := fun ij : ((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2) =>
@@ -5876,8 +5896,7 @@ private theorem actual_phase_pair_sum_card
 
 
 private theorem actual_type_one_phase_pair_partition
-    (S : Finset (ℝ × ℤ))
-    (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
+    
     (Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ)
     (small : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Prop)
     [DecidablePred small]
@@ -5916,6 +5935,8 @@ private theorem actual_type_one_phase_pair_partition
   rw [hsum,hUpper,hLower,hLarge]
   simp only [Finset.sum_add_distrib]
   rfl
+end
+
 
 
                                                                            
@@ -6650,6 +6671,6 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize hvchoice hUlo
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025.HuxleyRationalPhase
-end
-end
+
+
+

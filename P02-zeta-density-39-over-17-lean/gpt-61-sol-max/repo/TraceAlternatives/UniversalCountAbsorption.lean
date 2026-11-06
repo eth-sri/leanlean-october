@@ -3,8 +3,7 @@ public import DensityEnergyGM.SharpCountAlgebra
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem eighth_gap_count_absorption {R S C : ℝ}
@@ -27,4 +26,4 @@ theorem eighth_gap_count_absorption {R S C : ℝ}
     norm_num
   simpa only [hleft,mul_pow,hright] using hp
 
-end Montgomery.RationalMoment
+

@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceSpectralRaw
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -32,8 +32,7 @@ theorem spectral_prefactor_budget {δ η ε A p P N L : ℝ}
     rw [← Real.rpow_natCast (N^(p*η)) 3, ← Real.rpow_mul hN0.le,
       ← Real.rpow_add hN0]
     apply Real.rpow_le_rpow_of_exponent_le hN1
-    norm_num only [Nat.cast_ofNat]
-    nlinarith
+    grind
   calc
     _ ≤ 4*(P*((1+A)^η*N^(p*η))*(2*N))^3*N^ε := hc
     _ = (32*P^3*((1+A)^η)^3)*((N^(p*η))^3*N^ε)*N^3 := by ring
@@ -112,4 +111,4 @@ theorem source_spectral_scale (w : MathCollab.Density.ComparisonCutoff)
     (spectral_raw_scale_budget hη hε hA hp hP hD hR hN hL hLA hT hB
       (integral_nonneg (fun t => sq_nonneg (μ t))) (norm_nonneg _) hexp)
 
-end GuthMaynard.Improvement
+

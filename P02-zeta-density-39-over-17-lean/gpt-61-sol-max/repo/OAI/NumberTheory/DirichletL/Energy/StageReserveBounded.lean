@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.StageReserve
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyStageReserveBounded
@@ -31,11 +32,10 @@ theorem exists_bounded_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
   intro e he Z hZ s hwidth α _ w hw
   apply le_trans _ (hledger e he Z hZ s hwidth α w hw)
   have hlog:0≤Real.log Z:=Real.log_nonneg hZ
-  have hLp:0≤Mcap+Bmask+xi:=by linarith
   gcongr
 
-end SevenEighths.CenteredMomentEnergyStageReserveBounded
 
-end
 
-end OAI
+
+
+

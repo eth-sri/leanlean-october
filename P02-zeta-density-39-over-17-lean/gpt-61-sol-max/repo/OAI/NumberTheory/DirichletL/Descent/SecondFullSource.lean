@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 open InversePrincipalEnergy InverseSecondPrincipalCaller
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -65,7 +65,7 @@ theorem first_parent_full_second_source
     _ = _ := congrArg (fun v=>v + secondSourceTail p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
         (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K) hret
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

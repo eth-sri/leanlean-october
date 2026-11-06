@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.SourceCoefficient
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss ConcreteTraceCRT CenteredMomentCommonSupport
+open ConcretePrimeRowBridge
+open scoped EisensteinO
 
 lemma finite_fourier_invariant_unit {R : Type*} [CommRing R] [Fintype R]
     (F : R→ℂ) (ψ : AddChar R ℂ) (u : Rˣ) (hF : ∀ x,F ((u:R)*x)=F x) (H : R) :
@@ -29,9 +30,13 @@ lemma supported_sixth_value (A v : O) (hA : Supported (Ideal.span {A}))
     (hcop : IsCoprime A v) : idealRowHom (v^6) (Ideal.span {A})=1 := by
   rw [idealRowHom_sixth_mask _ _ hA, ite_eq_left ((Ideal.isCoprime_span_singleton_iff A v).mpr hcop)]
 
-theorem barePhysicalFourier_sixth_frequency (A s : O)
+section
+variable (A s : O)
     (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (v H : O) (hcop : IsCoprime v (A*s)) :
+    (v H : O) (hcop : IsCoprime v (A*s))
+include A s hA hs v H hcop
+
+theorem barePhysicalFourier_sixth_frequency  :
     barePhysicalFourier A s (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs) (v^6*H) =
       barePhysicalFourier A s (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs) H := by
   have hAs := mul_ne_zero (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs)
@@ -49,15 +54,9 @@ theorem barePhysicalFourier_sixth_frequency (A s : O)
     (quotientTrace (A*s) hAs) u hF (Ideal.Quotient.mk _ H)
   unfold barePhysicalFourier elementFourier
   simp only [tsum_fintype]
-  change (∑ x,movingQuotient A s (supportedElement_ne_zero s hs) x *
-    quotientTrace (A*s) hAs (Ideal.Quotient.mk _ (v^6*H)*x)) =
-    ∑ x,movingQuotient A s (supportedElement_ne_zero s hs) x *
-      quotientTrace (A*s) hAs (Ideal.Quotient.mk _ H*x)
-  simpa only [u,residueUnit_coe,map_mul] using he
+  assumption
 
-theorem bareCongruenceCoefficient_sixth_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (v H : O) (hcop : IsCoprime v (A*s)) :
+theorem bareCongruenceCoefficient_sixth_frequency  :
     bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) (v^6*H) =
       bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H := by
   have he := barePhysicalFourier_sixth_frequency A s hA hs v H hcop
@@ -66,6 +65,8 @@ theorem bareCongruenceCoefficient_sixth_frequency (A s : O)
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
   exact mul_left_cancel₀ hn he
+end
+
 
 theorem bareSourceCoefficient_sixth_frequency (η : HeckeFamily.Character)
     (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O)
@@ -107,7 +108,7 @@ theorem bareSourceCoefficient_product_frequency (η : HeckeFamily.Character) (I 
   rw [hi,hj] at he
   exact he
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

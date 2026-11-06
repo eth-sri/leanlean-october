@@ -1,13 +1,13 @@
 module
+import Mathlib
 /- Adapted from audited Density proofs; reused scalar Taylor weights unchanged. -/
 public import MathCollab.Density.DetectorBlockExpansion
 public import GuthMaynard.Improvement.ShortDetectorTaylorFamily
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
+open Complex Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -15,8 +15,12 @@ def normalizedShortDetectorBlock (ρ : ℂ) (T : ℝ) (N : ℕ) : ℂ :=
   ∑ n ∈ Finset.Ioc N (2*N), shortDetectorCoefficient T n *
     ((((n : ℝ)/N)^(-ρ.re) : ℝ) : ℂ)*dirichletPhase ((n : ℝ)/N) (-ρ.im)
 
+section
+variable {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : ℝ)
+include N hN ρ T
+
 /-- Exact rescaling, including the unit phase of N; no ordinate is shifted. -/
-theorem shortDetectorBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : ℝ) :
+theorem shortDetectorBlock_eq_normalized  :
     shortDetectorBlock ρ T N = (N : ℂ)^(-ρ)*normalizedShortDetectorBlock ρ T N := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
   rw [shortDetectorBlock, normalizedShortDetectorBlock, Finset.mul_sum]
@@ -28,19 +32,18 @@ theorem shortDetectorBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : 
     have hm : ((N : ℝ) : ℂ)*(((n : ℝ)/N : ℝ) : ℂ) = (n : ℂ) := by
       push_cast
       field_simp [show (N : ℂ) ≠ 0 by exact_mod_cast hN.ne']
-    rw [hm, Complex.ofReal_natCast] at hh
-    exact hh
+    simp_all <;> nlinarith
   rw [hsplit, cpow_neg_eq_real_phase (div_pos hnpos hNpos)]
   ring
 
-theorem norm_normalizedShortDetectorBlock {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : ℝ) :
+theorem norm_normalizedShortDetectorBlock  :
     ‖normalizedShortDetectorBlock ρ T N‖ = (N : ℝ)^ρ.re*‖shortDetectorBlock ρ T N‖ := by
   rw [shortDetectorBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re]
   rw [← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
   simp
 
 /-- Genuine summation and finite-sum interchange for the fixed Taylor family. -/
-theorem hasSum_shortDetectorTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : ℝ) :
+theorem hasSum_shortDetectorTaylorPolynomial  :
     HasSum (fun j : ℕ => (detectorTaylorWeight ρ.re j : ℂ)*shortDetectorTaylorPolynomial T N j ρ.im)
       ((((3/2 : ℝ)^ρ.re : ℝ) : ℂ)*normalizedShortDetectorBlock ρ T N) := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
@@ -73,6 +76,8 @@ theorem hasSum_shortDetectorTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (
   · funext j
     simp [shortDetectorTaylorPolynomial, detectingPolynomial, shortDetectorTaylorCoefficient, Finset.mul_sum]
   · rw [normalizedShortDetectorBlock, Finset.mul_sum]
+end
+
 
 /-- The full Taylor combination is at least the beta-rescaled original block. -/
 theorem norm_shortDetectorTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ : 0 ≤ ρ.re) (T : ℝ) :
@@ -83,4 +88,4 @@ theorem norm_shortDetectorTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ 
   have hpow : (1 : ℝ) ≤ (3/2 : ℝ)^ρ.re := Real.one_le_rpow (by norm_num) hβ
   nlinarith [show 0 ≤ (N : ℝ)^ρ.re*‖shortDetectorBlock ρ T N‖ by positivity]
 
-end GuthMaynard.Improvement
+

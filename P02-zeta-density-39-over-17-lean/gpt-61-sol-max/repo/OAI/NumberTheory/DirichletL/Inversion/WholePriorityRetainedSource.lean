@@ -9,11 +9,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRetainedSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
+open ActualEisensteinCubic SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InversePrioritySecondSource
 open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open InverseWholePriorityValidSource RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion InversePrincipalEnergy
+open scoped EisensteinO
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -125,20 +125,19 @@ theorem deleted_lists (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
   simp only [residualLists,InverseMomentWholeRetainedSource.deleted,Finset.mem_sdiff,Finset.mem_union]
   tauto
 
-def wholeRow (hp : ∀ i,p i≠0)
+section
+variable (hp : ∀ i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) : ℂ :=
+    (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0)
+include hp hcop hg extra pool negative Ψ m slots J lists a V X Y ray x
+
+def wholeRow  : ℂ :=
   retainedRow p hp hcop hg pool negative Ψ m slots J (fun i=>lists i\extra x.cube) a V X Y ray x
 
-theorem wholeRow_eq (hp : ∀ i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) :
+theorem wholeRow_eq  :
     wholeRow p hp hcop hg extra pool negative Ψ m slots J lists a V X Y ray x =
       actualSecondSignedWeight p hp hcop hg Ψ
         (m*ConcretePrimeRowBridge.idealGenerator x.quotient) ray x *
@@ -149,6 +148,8 @@ theorem wholeRow_eq (hp : ∀ i,p i≠0)
         a a V V rowMajorant Y X := by
   unfold wholeRow retainedRow
   rw [deleted_lists]
+end
+
 
 theorem whole_retained_sum [Fintype κ] (hp : ∀ i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -241,8 +242,8 @@ theorem fullPhysical_unified [Fintype κ] (hp : ∀ i,p i≠0)
   rw [whole_retained_sum p hp hcop hg extra pool parents w negative Ψ₀ m slots J lists a
     V X Y (fun _=>R) (fun _=>label)]
 
-end SevenEighths.InverseWholePriorityRetainedSource
 
-end
 
-end OAI
+
+
+

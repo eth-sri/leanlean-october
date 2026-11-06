@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownWeylMoment
 public import GafniTao.FordLemma51Fibers
 
@@ -13,12 +14,12 @@ derivative order `j`, the `Fin (k-1)` coordinate `j-1`, and the source range
 `1 <= h <= H`.
 -/
 
-open Complex Finset Set MeasureTheory
+open Complex Finset MeasureTheory
 open scoped BigOperators ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrownReducedTaylorPolynomial_eq_fin_sum
     {k : ℕ} (hk : 1 ≤ k) (f : ℝ → ℝ) (n x : ℝ) :
@@ -32,9 +33,7 @@ theorem heathBrownReducedTaylorPolynomial_eq_fin_sum
     simp only [Finset.mem_Ico, Finset.mem_Icc]
     omega
   rw [hset, ford_sum_Icc_one_eq_fin]
-  apply Finset.sum_congr rfl
-  intro j hj
-  ring
+  grind
 
 theorem fordVinogradovMonomial_center_eq_phase
     {k H : ℕ} (hk : 1 ≤ k) (f : ℝ → ℝ) (n : ℝ) (h : Fin H) :
@@ -58,8 +57,12 @@ theorem fordVinogradovMonomial_center_eq_phase
   push_cast
   ring
 
+section
+variable {k : ℕ} (hk : 1 ≤ k) (H : ℕ) (f : ℝ → ℝ) (n : ℝ)
+include k hk H f n
+
 theorem heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum
-    {k : ℕ} (hk : 1 ≤ k) (H : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+     :
     heathBrownWeylSum k H (heathBrownCoefficientCenter k f n) =
       heathBrownReducedTaylorPolynomialSum k H f n := by
   unfold heathBrownWeylSum fordVinogradovWeylSum
@@ -71,13 +74,15 @@ theorem heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum
     fordVinogradovMonomial_center_eq_phase hk f n h
 
 theorem norm_heathBrownWeylSum_center_eq_TaylorPolynomialSum
-    {k : ℕ} (hk : 1 ≤ k) (H : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+     :
     ‖heathBrownWeylSum k H (heathBrownCoefficientCenter k f n)‖ =
       ‖heathBrownTaylorPolynomialSum k H f n‖ := by
   rw [heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum hk]
   exact (norm_heathBrownTaylorPolynomialSum_eq_reduced hk H f n).symm
-
-
 end
 
-end GafniTao
+
+
+
+
+

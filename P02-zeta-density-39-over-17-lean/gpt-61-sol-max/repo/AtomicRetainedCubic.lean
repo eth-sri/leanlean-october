@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import AtomicBoxBand
 public import GuthMaynard.Improvement.CubicRetainedPartition
 public import GuthMaynard.Improvement.RadialScaleBudget
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace Montgomery.RationalMoment
@@ -32,7 +32,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
     (1/10) 10 (by norm_num) (by norm_num) (by norm_num) hε
   obtain ⟨n,hn⟩ := choose_radial_discard_order hη
   obtain ⟨Cn,Ct,hCn,hCt,hprofile⟩ := radial_profile_sum_bound w n
-  let D : ℝ := 27*Ct*(99/10:ℝ)^2
+  let D := 27*Ct*(99/10:ℝ)^2
   refine ⟨η,2048*Cn*Cs+D,T₀,hη,hη1,by dsimp [D]; positivity,hT₀,?_⟩
   intro T L hT hLl hLu W hsep
   let R : ℝ := W.card
@@ -107,7 +107,6 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
       dsimp [U]
       rw [← mul_pow,mul_div_cancel₀ _ hLp.ne',← Real.rpow_natCast (T^(1+η)) 3,
         ← Real.rpow_mul hTp.le]
-      congr 1
       ring
     rw [he]
     exact Real.rpow_le_rpow_of_exponent_le hT1 (by linarith)
@@ -119,7 +118,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
       _ ≤ _ := by gcongr; exact hn T hT1
   have hsupp : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
     intro x hx
-    have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+    have hz := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
     simp [hz]
   have heq := GuthMaynard.Improvement.AtomicCubic.retained_cubic_radial_assembly
     (finiteTimeMeasure W) w.complex_smooth (by norm_num : (0:ℝ)<1/2)
@@ -144,4 +143,4 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
       nlinarith [mul_nonneg (show 0 ≤ D by dsimp [D]; positivity) (show 0 ≤ T^ε*X by positivity),
         mul_nonneg (show 0 ≤ 2048*Cn*Cs by positivity) (show 0 ≤ T^(-100:ℝ)*R^3 by positivity)]
 
-end Montgomery.RationalMoment
+

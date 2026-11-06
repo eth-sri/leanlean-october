@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.SexticRadialPoisson
 public import OAI.NumberTheory.DirichletL.Fourier.PositiveLogProfiles
 
@@ -10,59 +11,59 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
 
 namespace EisensteinSchwartzPoisson
 
@@ -73,8 +74,8 @@ open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
 def radialTestCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℝ (Function.hasTemperateGrowth_norm_sq ℂ)
     ⟨1, 1, fun z => by
-      simp only [pow_one, one_mul, norm_pow, Real.norm_of_nonneg (norm_nonneg z)]
-      nlinarith [sq_nonneg (‖z‖ - 1)]⟩
+      simp
+      nlinarith⟩
 
 @[simp] theorem radialTestCLM_apply (W : 𝓢(ℝ, ℂ)) : radialTestCLM W = radialTest W := by
   ext z
@@ -96,8 +97,7 @@ theorem paperRadialFourier_eq_plane (W : 𝓢(ℝ, ℂ)) (t : ℝ) :
 theorem paperFrequency_sqrt_norm_sq (t : ℝ) (ht : 0 ≤ t) :
     ‖paperFrequency (Real.sqrt t : ℂ)‖ ^ 2 = (4 / 3 : ℝ) * t := by
   rw [paperFrequency_norm_sq]
-  simp only [Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (Real.sqrt_nonneg t), Real.sq_sqrt ht]
+  simp only [norm_real, norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg t), Real.sq_sqrt ht]
 
 theorem paperRadialFourier_weighted_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ)
     (t : ℝ) (ht : 0 ≤ t) :
@@ -105,7 +105,7 @@ theorem paperRadialFourier_weighted_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ)
       (2 / Real.sqrt 3 : ℝ) * 2 ^ (2 * A) *
         (Finset.Iic (2 * A, 0)).sup (schwartzSeminormFamily ℝ ℂ ℂ)
           (radialFourierCLM W) := by
-  let ξ : ℂ := paperFrequency (Real.sqrt t : ℂ)
+  let ξ := paperFrequency (Real.sqrt t : ℂ)
   have hn : ‖ξ‖ ^ 2 = (4 / 3 : ℝ) * t := paperFrequency_sqrt_norm_sq t ht
   have hscale : 0 ≤ (2 / Real.sqrt 3 : ℝ) := by positivity
   have hpow : (1 + t) ^ A ≤ (1 + ‖ξ‖) ^ (2 * A) := by
@@ -170,7 +170,11 @@ def halfEulerCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
   (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x / 2 : ℝ) : ℂ))).comp
     (SchwartzMap.derivCLM ℂ ℂ)
 
-@[simp] theorem halfEulerCLM_apply (g : 𝓢(ℝ, ℂ)) (s : ℝ) :
+section
+variable (g : 𝓢(ℝ, ℂ))
+include g
+
+@[simp] theorem halfEulerCLM_apply  (s : ℝ) :
     halfEulerCLM g s = (s / 2 : ℝ) • deriv g s := by
   have hg : (fun x : ℝ => ((x / 2 : ℝ) : ℂ)).HasTemperateGrowth := by
     simp only [div_eq_mul_inv]
@@ -179,7 +183,7 @@ def halfEulerCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
     SchwartzMap.smulLeftCLM_apply_apply hg, SchwartzMap.derivCLM_apply]
   rfl
 
-theorem hasDerivAt_halfFlow (g : 𝓢(ℝ, ℂ)) (a t : ℝ) :
+theorem hasDerivAt_halfFlow  (a t : ℝ) :
     HasDerivAt (fun y : ℝ => g (a * Real.exp (y / 2)))
       (halfEulerCLM g (a * Real.exp (t / 2))) t := by
   have hf : HasDerivAt (fun y : ℝ => a * Real.exp (y / 2))
@@ -188,7 +192,7 @@ theorem hasDerivAt_halfFlow (g : 𝓢(ℝ, ℂ)) (a t : ℝ) :
   simpa only [halfEulerCLM_apply, Function.comp_def] using
     (g.hasDerivAt (a * Real.exp (t / 2))).scomp t hf
 
-theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ) :
+theorem iteratedDeriv_halfFlow  (a : ℝ) (j : ℕ) (t : ℝ) :
     iteratedDeriv j (fun y : ℝ => g (a * Real.exp (y / 2))) t =
       ((halfEulerCLM : 𝓢(ℝ, ℂ) → 𝓢(ℝ, ℂ))^[j] g) (a * Real.exp (t / 2)) := by
   induction j generalizing g with
@@ -200,6 +204,8 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
       funext (fun y => (hasDerivAt_halfFlow g a y).deriv)
     rw [hd, ih (halfEulerCLM g),
       Function.iterate_succ_apply]
+end
+
 
  theorem sqrt_exp_half (t : ℝ) : Real.sqrt (Real.exp t) = Real.exp (t / 2) := by
   rw [Real.sqrt_eq_iff_eq_sq (le_of_lt (Real.exp_pos _)) (le_of_lt (Real.exp_pos _))]
@@ -207,7 +213,11 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
   congr 1
   ring
 
- theorem eulerDeriv_sqrt_profile (g : 𝓢(ℝ, ℂ)) (j : ℕ) (x : ℝ) (hx : 0 ≤ x) :
+ section
+variable (g : 𝓢(ℝ, ℂ))
+include g
+
+theorem eulerDeriv_sqrt_profile  (j : ℕ) (x : ℝ) (hx : 0 ≤ x) :
     LocalLogFourier.eulerDeriv (fun s => g (Real.sqrt s)) j x =
       ((halfEulerCLM : 𝓢(ℝ, ℂ) → 𝓢(ℝ, ℂ))^[j] g) (Real.sqrt x) := by
   unfold LocalLogFourier.eulerDeriv
@@ -218,13 +228,13 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
   rw [hflow, iteratedDeriv_halfFlow]
   simp
 
-theorem contDiffOn_sqrt_profile (g : 𝓢(ℝ, ℂ)) :
+theorem contDiffOn_sqrt_profile  :
     ContDiffOn ℝ ∞ (fun x : ℝ => g (Real.sqrt x)) (Set.Ioi 0) := by
   intro x hx
   exact ((g.smooth ⊤).contDiffAt.comp x
     (Real.contDiffAt_sqrt (ne_of_gt hx))).contDiffWithinAt
 
-theorem sqrt_profile_rapid_bound (g : 𝓢(ℝ, ℂ)) (A : ℕ) (x : ℝ) (hx : 0 ≤ x) :
+theorem sqrt_profile_rapid_bound  (A : ℕ) (x : ℝ) (hx : 0 ≤ x) :
     (1 + x) ^ A * ‖g (Real.sqrt x)‖ ≤
       2 ^ A * (SchwartzMap.seminorm ℝ 0 0 g +
         SchwartzMap.seminorm ℝ (2 * A) 0 g) := by
@@ -248,6 +258,8 @@ theorem sqrt_profile_rapid_bound (g : 𝓢(ℝ, ℂ)) (A : ℕ) (x : ℝ) (hx : 
       _ = 2 ^ A * (x ^ A * ‖g (Real.sqrt x)‖) := by rw [mul_pow]; ring
       _ ≤ 2 ^ A * SchwartzMap.seminorm ℝ (2 * A) 0 g := by gcongr
       _ ≤ _ := by gcongr; linarith
+end
+
 
 theorem paperFrequency_real_temperate :
     (fun s : ℝ => paperFrequency (s : ℂ)).HasTemperateGrowth := by
@@ -303,25 +315,31 @@ theorem paperRadialFourier_eq_ray (W : 𝓢(ℝ, ℂ)) :
 def paperEulerCLM (j : ℕ) : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
   (halfEulerIterateCLM j).comp paperFourierRayCLM
 
-theorem paperRadialFourier_eulerDeriv (W : 𝓢(ℝ, ℂ)) (j : ℕ)
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
+theorem paperRadialFourier_eulerDeriv  (j : ℕ)
     (x : ℝ) (hx : 0 ≤ x) :
     LocalLogFourier.eulerDeriv (paperRadialFourier W) j x =
       paperEulerCLM j W (Real.sqrt x) := by
   rw [paperRadialFourier_eq_ray, eulerDeriv_sqrt_profile _ j x hx]
   simp only [paperEulerCLM, ContinuousLinearMap.comp_apply, halfEulerIterateCLM_apply]
 
-theorem paperRadialFourier_contDiffOn (W : 𝓢(ℝ, ℂ)) :
+theorem paperRadialFourier_contDiffOn  :
     ContDiffOn ℝ ∞ (paperRadialFourier W) (Set.Ioi 0) := by
   rw [paperRadialFourier_eq_ray]
   exact contDiffOn_sqrt_profile _
 
-theorem paperRadialFourier_euler_weighted_bound (W : 𝓢(ℝ, ℂ)) (A j : ℕ)
+theorem paperRadialFourier_euler_weighted_bound  (A j : ℕ)
     (x : ℝ) (hx : 0 ≤ x) :
     (1 + x) ^ A * ‖LocalLogFourier.eulerDeriv (paperRadialFourier W) j x‖ ≤
       2 ^ A * (SchwartzMap.seminorm ℝ 0 0 (paperEulerCLM j W) +
         SchwartzMap.seminorm ℝ (2 * A) 0 (paperEulerCLM j W)) := by
   rw [paperRadialFourier_eulerDeriv W j x hx]
   exact sqrt_profile_rapid_bound _ A x hx
+end
+
 
 theorem schwartzCLM_family_finite_seminorm_control
     (T : ℕ → 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ)) (A K : ℕ) :
@@ -333,7 +351,7 @@ theorem schwartzCLM_family_finite_seminorm_control
   let qj : ℕ → Seminorm ℝ 𝓢(ℝ, ℂ) := fun j =>
     (SchwartzMap.seminorm ℝ 0 0 + SchwartzMap.seminorm ℝ (2 * A) 0).comp
       (T j).toLinearMap
-  let q : Seminorm ℝ 𝓢(ℝ, ℂ) := ∑ j ∈ Finset.range (K + 1), qj j
+  let q := ∑ j ∈ Finset.range (K + 1), qj j
   have hqfun : (q : 𝓢(ℝ, ℂ) → ℝ) = fun W => ∑ j ∈ Finset.range (K + 1),
       (SchwartzMap.seminorm ℝ 0 0 (T j W) +
         SchwartzMap.seminorm ℝ (2 * A) 0 (T j W)) := by
@@ -539,8 +557,8 @@ theorem idealSupport_injective_on_squarefree
   rw [← Ideal.prod_normalizedFactors_eq_self hsI.ne_zero,
     ← Ideal.prod_normalizedFactors_eq_self hsJ.ne_zero, hfac]
 
-end ConcretePrimeRowBridge
 
-end
 
-end OAI
+
+
+

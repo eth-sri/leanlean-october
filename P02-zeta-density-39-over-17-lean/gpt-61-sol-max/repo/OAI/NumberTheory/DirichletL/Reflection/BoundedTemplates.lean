@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open ActualEisensteinCubic CubicEisenstein CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def boundedExtension (z : ℂ) : ℂ := if ‖z‖ ≤ 1 then z else 0
@@ -61,7 +61,7 @@ theorem canonical_bounded_cusp_templates {α : Type*} {ι : α → Type*}
     rw [← hA x u m n b]
     exact (boundedExtension_eq _ (actualCuspColumn_norm_le_one (E x) s hc u m n b)).symm
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

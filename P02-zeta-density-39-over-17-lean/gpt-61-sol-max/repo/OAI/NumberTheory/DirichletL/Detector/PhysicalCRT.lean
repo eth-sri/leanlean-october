@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
 open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
 open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
@@ -28,7 +29,7 @@ theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
         quotientTrace b hb (frequencyReduction b (a*b) (dvd_mul_left b a) h*y)) := by
   let ua := residueUnit a b hcop
   let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
+  let e :=
     (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
   have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
       ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
@@ -49,12 +50,12 @@ theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
       frequencyReduction a (a * b) (dvd_mul_right a b) (e x) = Ideal.Quotient.mk _ b * x.1 := by
     have ht := congrArg Prod.fst (hproj (e x))
     rw [heproj] at ht
-    simpa only [ua, residueUnit_coe] using ht
+    exact ht
   have hprojB (x : Residue a × Residue b) :
       frequencyReduction b (a * b) (dvd_mul_left b a) (e x) = Ideal.Quotient.mk _ a * x.2 := by
     have ht := congrArg Prod.snd (hproj (e x))
     rw [heproj] at ht
-    simpa only [ub, residueUnit_coe] using ht
+    exact ht
   rw [← e.sum_comp]
   simp_rw [hprojA, hprojB]
   simp only [ he, mul_add, AddChar.map_add_eq_mul,
@@ -112,9 +113,13 @@ lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
   rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
   ring
 
-theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
+section
+variable (A B s r : O) (hA : A≠0) (hB : B≠0)
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+    (hcop : IsCoprime (A*s) (B*r)) (H : O)
+include A B s r hA hB hs hr hcop H
+
+theorem barePhysicalFourier_product  :
     barePhysicalFourier (A*B) (s*r) (mul_ne_zero hA hB)
       (mul_ne_zero (supportedElement_ne_zero s hs) (supportedElement_ne_zero r hr)) H =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
@@ -122,9 +127,9 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
       (idealRowHom (A*s) (Ideal.span {B}) * (idealRowHom (A*s) (Ideal.span {r}))⁻¹) *
       barePhysicalFourier A s hA (supportedElement_ne_zero s hs) H *
       barePhysicalFourier B r hB (supportedElement_ne_zero r hr) H := by
-  have hsc : IsCoprime s r := hcop.of_mul_left_right.of_mul_right_right
-  have hc1 : IsCoprime (B*r) s := hcop.of_mul_left_right.symm
-  have hc2 : IsCoprime (A*s) r := hcop.of_mul_right_right
+  have hsc := hcop.of_mul_left_right.of_mul_right_right
+  have hc1 := hcop.of_mul_left_right.symm
+  have hc2 := hcop.of_mul_right_right
   have hAs := mul_ne_zero hA (supportedElement_ne_zero s hs)
   have hBr := mul_ne_zero hB (supportedElement_ne_zero r hr)
   let := finite_quotient_span hAs
@@ -175,9 +180,7 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
   rw [elementFourier_const_mul, hexpand]
   ring
 
-theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0)
-    (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+theorem bareCongruenceCoefficient_product  :
     bareCongruenceCoefficient (A*B) (s*r) (mul_ne_zero hA hB) H =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
       (idealRowHom (B*r) (Ideal.span {A}) * (idealRowHom (B*r) (Ideal.span {s}))⁻¹) *
@@ -198,6 +201,8 @@ theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0
   apply mul_left_cancel₀ (mul_ne_zero hns hnr)
   rw [he]
   ring
+end
+
 
 lemma idealRowHom_ne_zero_of_coprime (s a : O)
     (hs : Supported (Ideal.span {s})) (hc : IsCoprime s a) :
@@ -226,7 +231,7 @@ theorem bareCongruenceCoefficient_product_reduced (A B s r : O) (hA : A≠0) (hB
   simp only [idealRowHom_argument_mul]
   field_simp
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

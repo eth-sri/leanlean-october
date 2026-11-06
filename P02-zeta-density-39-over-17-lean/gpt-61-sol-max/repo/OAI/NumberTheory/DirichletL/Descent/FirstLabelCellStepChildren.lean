@@ -8,11 +8,11 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
+open InverseMomentFirstChildWindows InverseFirstPriorityParents
+open InverseMomentGlobalRetainedGates InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -64,7 +64,7 @@ include hp in
 theorem source_row_decrease (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b short : ℝ)
     (hZ : 1<Z) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hterminal : short≤ell+V) (hsmall : eta≤short/16)
+    (hterminal : short≤ell+V) (hsmall : eta≤ short/16)
     (hQ : ∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)) :
     let S := source p pool Q k l j negative J lists Z M r ell V eta tau window b
     ∀d∈keys p S,actualCellRowExponent Z M ell (columnA Z k negative)
@@ -96,7 +96,7 @@ theorem source_mass_gate (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
     (source_outer_caps p hp pool Q k l j negative J lists Z M r ell V eta tau window b Lcol LY Lcap
       hZ hcol hYi hgeom hphysical) hbudget
 
-end SevenEighths.InverseMomentFirstLabelCell
-end
 
-end OAI
+
+
+

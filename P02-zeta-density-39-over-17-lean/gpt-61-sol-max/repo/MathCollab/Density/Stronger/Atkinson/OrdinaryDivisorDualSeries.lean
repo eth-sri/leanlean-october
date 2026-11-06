@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 New native modulus-one absolute dual-series exchange. Exact multiplier
 conventions originate in S. McColm's DFIVoronoiDual.lean, revision
@@ -11,9 +12,8 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
+open Complex MeasureTheory Filter Topology
 open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -47,7 +47,11 @@ theorem integrable_ordinaryDivisorDualTerm {g : ℝ → ℂ} {K : ℂ → ℂ}
     (continuous_divisorDirichletTerm_reflected n).aestronglyMeasurable
   exact Eventually.of_forall fun u => (norm_divisorDirichletTerm_reflected n u).le
 
-theorem integral_norm_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ) (n : ℕ) :
+section
+variable (g : ℝ → ℂ) (K : ℂ → ℂ)
+include g K
+
+theorem integral_norm_ordinaryDivisorDualTerm  (n : ℕ) :
     (∫ u : ℝ, ‖ordinaryDivisorDualTerm g K n u‖) =
       ‖divisorDirichletTerm (3/2) n‖ *
         ∫ u : ℝ, ‖K ((-1/2 : ℂ)+(u : ℂ)*I) * mellin g ((-1/2 : ℂ)+(u : ℂ)*I)‖ := by
@@ -56,12 +60,12 @@ theorem integral_norm_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ
   filter_upwards with u
   rw [ordinaryDivisorDualTerm, norm_mul, norm_divisorDirichletTerm_reflected]
 
-theorem summable_integral_norm_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ) :
+theorem summable_integral_norm_ordinaryDivisorDualTerm  :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖ordinaryDivisorDualTerm g K n u‖) := by
   simp_rw [integral_norm_ordinaryDivisorDualTerm]
   exact (summable_divisorDirichletTerm (s := (3/2 : ℂ)) (by norm_num)).norm.mul_right _
 
-theorem tsum_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ) (u : ℝ) :
+theorem tsum_ordinaryDivisorDualTerm  (u : ℝ) :
     (∑' n : ℕ, ordinaryDivisorDualTerm g K n u) =
       riemannZeta (1-((-1/2 : ℂ)+(u : ℂ)*I))^2 *
         K ((-1/2 : ℂ)+(u : ℂ)*I) * mellin g ((-1/2 : ℂ)+(u : ℂ)*I) := by
@@ -69,6 +73,8 @@ theorem tsum_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ) (u : �
   rw [tsum_mul_right, tsum_divisorDirichletTerm,
     ← riemannZeta_sq_eq_divisorLSeries (by norm_num)]
   ring
+end
+
 
 /-- Full reflected integrand is integrable, not merely each individual term. -/
 theorem integrable_zetaSquare_dualMultiplier {g : ℝ → ℂ} {K : ℂ → ℂ}
@@ -106,21 +112,22 @@ theorem divisorWeight_mul_dualTransform (g : ℝ → ℂ) (K : ℂ → ℂ) (n :
     ring
   simp_rw [h]
   rw [integral_const_mul]
-  simp only [neg_div]
-  ring
+  grind
 
-theorem summable_divisorWeight_dualTransform {g : ℝ → ℂ} {K : ℂ → ℂ}
+section
+variable {g : ℝ → ℂ} {K : ℂ → ℂ}
     (hK : Integrable (fun u : ℝ => K ((-1/2 : ℂ)+(u : ℂ)*I) *
-      mellin g ((-1/2 : ℂ)+(u : ℂ)*I))) :
+      mellin g ((-1/2 : ℂ)+(u : ℂ)*I)))
+include g K hK
+
+theorem summable_divisorWeight_dualTransform  :
     Summable (fun n : ℕ => divisorWeight n * PointMean.VerticalIntegral'
       (fun z : ℂ => (n : ℂ)^(-(1-z)) * K z * mellin g z) (-1/2)) := by
   have h := hasSum_integral_of_summable_integral_norm
     (integrable_ordinaryDivisorDualTerm hK) (summable_integral_norm_ordinaryDivisorDualTerm g K)
   simpa only [divisorWeight_mul_dualTransform] using h.summable.mul_left (1/(2*Real.pi) : ℂ)
 
-theorem tsum_divisorWeight_dualTransform {g : ℝ → ℂ} {K : ℂ → ℂ}
-    (hK : Integrable (fun u : ℝ => K ((-1/2 : ℂ)+(u : ℂ)*I) *
-      mellin g ((-1/2 : ℂ)+(u : ℂ)*I))) :
+theorem tsum_divisorWeight_dualTransform  :
     (∑' n : ℕ, divisorWeight n * PointMean.VerticalIntegral'
       (fun z : ℂ => (n : ℂ)^(-(1-z)) * K z * mellin g z) (-1/2)) =
       PointMean.VerticalIntegral' (fun z : ℂ => riemannZeta (1-z)^2 * K z * mellin g z) (-1/2) := by
@@ -130,5 +137,7 @@ theorem tsum_divisorWeight_dualTransform {g : ℝ → ℂ} {K : ℂ → ℂ}
   rw [verticalIntegral'_eq_realIntegral]
   simp_rw [tsum_ordinaryDivisorDualTerm]
   norm_num only [ofReal_div, ofReal_neg, ofReal_one, ofReal_ofNat]
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

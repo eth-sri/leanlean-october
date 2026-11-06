@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- Adapted from PrimeNumberTheoremAnd/ZetaBounds.lean at upstream revision
 4ecb950126c4290293c5662dfe0e884123171df5 (Apache-2.0). -/
 
@@ -153,8 +154,7 @@ theorem nativeMoment_ZetaSum_aux1 {a b : ℕ} {s : ℂ} (s_ne_one : s ≠ 1) (s_
 theorem nativeMoment_ZetaSum_aux1_3 (x : ℝ) : ‖(⌊x⌋ + 1/2 - x)‖ ≤ 1/2 :=
   abs_le.mpr ⟨(by linarith [Int.lt_floor_add_one x]), (by linarith [Int.floor_le x])⟩
 
-theorem Finset.nativeMoment_Ioc_eq_Ico (M N : ℕ) : Finset.Ioc N M = Finset.Ico (N + 1) (M + 1) := by
-  ext a; simp only [Finset.mem_Ioc, Finset.mem_Ico]; constructor <;> intro ⟨h₁, h₂⟩ <;> omega
+theorem Finset.nativeMoment_Ioc_eq_Ico (M N : ℕ) : Finset.Ioc N M = Finset.Ico (N + 1) (M + 1) := by aesop
 
 theorem nativeMoment_finsetSum_tendsto_tsum {N : ℕ} {f : ℕ → ℂ} (hf : Summable f) :
     Tendsto (fun (k : ℕ) ↦ ∑ n ∈ Finset.Ico N k, f n) atTop (𝓝 (∑' (n : ℕ), f (n + N))) := by
@@ -198,7 +198,11 @@ theorem nativeMoment_ZetaSum_aux3 {N : ℕ} {s : ℂ} (s_re_gt : 1 < s.re) :
   · congr; ext n; simp only [one_div, Nat.cast_add, Nat.cast_one, f]
   · rwa [summable_nat_add_iff (k := 1)]
 
-theorem nativeMoment_integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0 < s.re) :
+section
+variable {N : ℕ} (N_pos : 0 < N) {s : ℂ}
+include N N_pos s
+
+theorem nativeMoment_integrableOn_of_Zeta0_fun  (s_re_gt : 0 < s.re) :
     MeasureTheory.IntegrableOn (fun (x : ℝ) ↦ (⌊x⌋ + 1 / 2 - x) * (x : ℂ) ^ (-(s + 1))) (Ioi N)
     MeasureTheory.volume := by
   obtain ⟨c, hc⟩ := nativeMoment_ZetaSum_aux2a
@@ -209,7 +213,7 @@ theorem nativeMoment_integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : �
   · refine Measurable.add ?_ measurable_const |>.sub (by fun_prop) |>.aestronglyMeasurable
     exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
 
-theorem nativeMoment_ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 1 < s.re) :
+theorem nativeMoment_ZetaSum_aux2  (s_re_gt : 1 < s.re) :
     ∑' (n : ℕ), 1 / (n + N + 1 : ℂ) ^ s =
     (- N ^ (1 - s)) / (1 - s) - N ^ (-s) / 2
       + s * ∫ x in Ioi (N : ℝ), (⌊x⌋ + 1 / 2 - x) * (x : ℂ) ^ (-(s + 1)) := by
@@ -237,6 +241,8 @@ theorem nativeMoment_ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt :
     · exact MeasureTheory.intervalIntegral_tendsto_integral_Ioi (a := N)
         (b := (fun (n : ℕ) ↦ (n : ℝ)))
         (nativeMoment_integrableOn_of_Zeta0_fun N_pos <| by positivity) tendsto_natCast_atTop_atTop
+end
+
 
 theorem nativeMoment_isOpen_aux : IsOpen {z : ℂ | z ≠ 1 ∧ 0 < z.re} := by
   refine IsOpen.inter isOpen_ne ?_
@@ -327,13 +333,13 @@ theorem nativeMoment_hasDerivAt_Zeta0Integral {N : ℕ} (Npos : 0 < N) {s : ℂ}
       refine ⟨{z | 0 < z.re}, fun ⦃a⦄ a ↦ a, isOpen_lt continuous_const Complex.continuous_re, hs⟩
     filter_upwards [this] with z hz
     convert nativeMoment_integrableOn_of_Zeta0_fun Npos hz |>.aestronglyMeasurable using 1
-    simp only [F, f]; ext x; ring_nf
+    grind
   have hF_int : Integrable (F s) μ := by
     convert nativeMoment_integrableOn_of_Zeta0_fun Npos hs |>.integrable using 1
-    simp only [F, f]; ext x; ring_nf
+    grind
   have hF'_meas : AEStronglyMeasurable (F' s) μ := by
     convert nativeMoment_integrableOn_of_Zeta0_fun_log Npos hs |>.aestronglyMeasurable using 1
-    simp only [F', f]; ext x; ring_nf
+    grind
   have IoiSubIoi1 : (Ioi (N : ℝ)) ⊆ {x | 1 < x} :=
       fun x hx ↦ lt_of_le_of_lt (by simp only [Nat.one_le_cast]; omega) <| mem_Ioi.mp hx
   have measSetIoi1 : MeasurableSet {x : ℝ | 1 < x} := (isOpen_lt' 1).measurableSet
@@ -368,8 +374,7 @@ theorem nativeMoment_hasDerivAt_Zeta0Integral {N : ℕ} (Npos : 0 < N) {s : ℂ}
     apply ae_restrict_of_ae_restrict_of_subset IoiSubIoi1
     exact h_bound1
   have bound_integrable : Integrable bound μ := by
-    simpa only [bound, μ, IntegrableOn, Real.norm_eq_abs] using
-      nativeMoment_integrable_log_over_pow (r := -s.re / 2) (by linarith) Npos
+    exact nativeMoment_integrable_log_over_pow (r := -s.re / 2) (by linarith) Npos
   have h_diff : ∀ᵐ x ∂μ, ∀ z ∈ Metric.ball s ε, HasDerivAt (fun w ↦ F w x) (F' z x) z := by
     simp only [F, F', f]
     apply ae_restrict_of_ae_restrict_of_subset IoiSubIoi1
@@ -452,7 +457,6 @@ theorem nativeMoment_HolomorphicOn_riemannZeta0 {N : ℕ} (N_pos : 0 < N) :
 theorem nativeMoment_HolomorphicOn_riemannZeta :
     HolomorphicOn ζ {s : ℂ | s ≠ 1} := by
   intro z hz
-  simp only [Set.mem_ofPred_eq] at hz
   exact (differentiableAt_riemannZeta hz).differentiableWithinAt
 
 theorem nativeMoment_isPathConnected_aux : IsPathConnected {z : ℂ | z ≠ 1 ∧ 0 < z.re} := by
@@ -517,8 +521,7 @@ theorem nativeMoment_Zeta0EqZeta {N : ℕ} (N_pos : 0 < N) {s : ℂ} (reS_pos : 
   let U := {z : ℂ | z ≠ 1 ∧ 0 < z.re}
   have f_an : AnalyticOnNhd ℂ f U := by
     apply (nativeMoment_HolomorphicOn_riemannZeta.analyticOnNhd isOpen_ne).mono
-    simp only [ne_eq, Set.ofPred_subset_ofPred, and_imp, U]
-    exact fun a ha _ ↦ ha
+    grind
   have g_an : AnalyticOnNhd ℂ g U := (nativeMoment_HolomorphicOn_riemannZeta0 N_pos).analyticOnNhd nativeMoment_isOpen_aux
   have preconU : IsPreconnected U := by
     apply IsConnected.isPreconnected
@@ -529,8 +532,7 @@ theorem nativeMoment_Zeta0EqZeta {N : ℕ} (N_pos : 0 < N) {s : ℂ} (reS_pos : 
   have u_mem : {z : ℂ | 1 < z.re} ∈ 𝓝 (2 : ℂ) := by
     apply mem_nhds_iff.mpr
     use {z : ℂ | 1 < z.re}
-    simp only [Set.ofPred_subset_ofPred, imp_self, forall_const, Set.mem_ofPred_eq, re_ofNat,
-      Nat.one_lt_ofNat, and_true, true_and]
+    simp only [ofPred_subset_ofPred, imp_self, forall_const, mem_ofPred_eq, re_ofNat, Nat.one_lt_ofNat, and_true, true_and]
     exact isOpen_lt (by continuity) (by continuity)
   filter_upwards [u_mem]
   intro z hz

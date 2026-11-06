@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ThirdDerivativeRpowScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_physical_shift_scale {lam : ℝ}
@@ -20,9 +19,7 @@ theorem robertSargos_physical_shift_scale {lam : ℝ}
   have he : (1/8192:ℝ) = (2:ℝ)^(-(13:ℝ)) := by norm_num
   have hb := Real.rpow_le_rpow_of_nonpos hlam hsmall
     (show -(2:ℝ)/13 ≤ 0 by norm_num)
-  rw [he,← Real.rpow_mul (by norm_num : (0:ℝ) ≤ 2)] at hb
-  norm_num at hb
-  simpa only [neg_div] using hb
+  nlinarith
 
 theorem robertSargos_physical_floor_shift
     (M : ℕ) {lam : ℝ} (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
@@ -43,4 +40,4 @@ theorem robertSargos_physical_floor_shift
     (show lam ≤ 1 by linarith) (show -(8:ℝ)/13 ≤ -(2:ℝ)/13 by norm_num)).trans hM
   exact ⟨htwo,Nat.floor_le_of_le hRM,by linarith,hfloor⟩
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalRawIntegral
 public import OAI.NumberTheory.DirichletL.Detector.RawArithmetic
 
@@ -11,7 +12,7 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 local instance (S : Finset (Ideal O)) : MeasurableSpace (SourceRawIndex S) := ⊤
@@ -68,7 +69,7 @@ lemma rawPhysicalTotalIntegral_eq_source (η : HeckeFamily.Character)
           ∂((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure) := by
   unfold rawPhysicalTotalIntegral
   congr 1
-  let e : SourceRawIndex S×HeightSpace ≃ᵐ SourceRawIndex S×HeightSpace :=
+  let e :=
     (MeasurableEquiv.refl (SourceRawIndex S)).prodCongr sourceHeightShear.symm
   have hp : MeasurePreserving e ((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure)
       ((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure) :=
@@ -122,7 +123,7 @@ theorem markedPhysicalProbe_eq_raw_triple (η : HeckeFamily.Character)
   exact rawPhysicalTotalIntegral_eq_triple η S hS hpS hbad D W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z hX hY hZ
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

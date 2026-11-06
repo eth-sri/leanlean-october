@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighSeries
 public import OAI.NumberTheory.DirichletL.Detector.SourcePrimeFactor
 public import OAI.NumberTheory.DirichletL.IdealEuler
@@ -10,9 +11,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open ConcretePrimeRowBridge CubicEisenstein ProbeEuler ProbeRow
+open scoped EisensteinO
 
 lemma primaryGenerator_prime_power (p : O) (hp : p≠0) (hprimary : goodLambda^2∣p-1) (e : ℕ) :
     primaryGenerator ((Ideal.span {p})^e)=p^e := by
@@ -21,7 +22,7 @@ lemma primaryGenerator_prime_power (p : O) (hp : p≠0) (hprimary : goodLambda^2
 lemma prime_power_small_squarefree (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (e : ℕ) (he : e≤1) :
     Squarefree ((Ideal.span {p})^e) := by
-  have hP : Prime (Ideal.span {p}:Ideal O) :=
+  have hP :=
     Ideal.prime_of_isPrime (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero) inferInstance
   have hcases : e=0 ∨ e=1 := by omega
   rcases hcases with rfl|rfl
@@ -48,7 +49,7 @@ theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (
   simp only [hA,hH,Ideal.span_singleton_pow]
 
 lemma fullIdealWeight_power (s : ℂ) (I : Ideal O) (n : ℕ) :
-    fullIdealWeight s (I^n)=fullIdealWeight s I^n := (IdealEuler.normWeight s).map_pow I n
+    fullIdealWeight s (I ^n)=fullIdealWeight s I ^n := (IdealEuler.normWeight s).map_pow I n
 
 lemma prime_spectral_weights (p : O) (hp : p≠0) (e l k m : ℕ) (x w z : ℂ) :
     fullIdealWeight (x+1/2) ((Ideal.span {p})^e) *
@@ -84,10 +85,14 @@ def idealHighLocalFactor (η : HeckeFamily.Character) (P : Ideal O) (x w z : ℂ
   ∑ e : Fin 2, ∑' l, ∑' k, ∑' m,
     bareIdealHighSummand η 1 x w z (P^e.val) (P^l) (P^k) (P^m)
 
-theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp : Prime p)
+section
+variable (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (x w z : ℂ) :
+    (hs : Supported (Ideal.span {p})) (x w z : ℂ)
+include η p hp hg hchar hprimary hs x w z
+
+theorem idealHighLocalFactor_eq_source  :
     idealHighLocalFactor η (Ideal.span {p}) x w z =
       sourcePrincipalSeries p hp hg (targetMonoid η p) (actualACube η p) x w z := by
   unfold idealHighLocalFactor sourcePrincipalSeries
@@ -101,10 +106,7 @@ theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp 
   intro m
   exact bareIdealHighSummand_at_prime η p hp hg hchar hprimary hs e.val l k m (by omega) x w z
 
-theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (x w z : ℂ)
+theorem idealHighLocalFactor_euler_identity 
     (hV : ‖coordV (Ideal.absNorm (Ideal.span {p})) z‖<1)
     (hR : ‖coordR (Ideal.absNorm (Ideal.span {p})) ((actualACube η p)^2) x z‖<1)
     (hW : ‖coordW (Ideal.absNorm (Ideal.span {p})) 1 w‖<1)
@@ -115,8 +117,10 @@ theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : O)
         unramifiedClosed Q ((actualACube η p)^2) (targetMonoid η p) 1 x w z := by
   rw [idealHighLocalFactor_eq_source η p hp hg hchar hprimary hs]
   exact sourcePrincipalSeries_euler_identity p hp hg hchar _ _ x w z hV hR hW hD
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

@@ -8,9 +8,8 @@ public import LaterPairs.Native.RobertSargosShiftSupport
 public import LaterPairs.Native.ThirteenthRootScales
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 noncomputable section
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -39,10 +38,18 @@ theorem robertSargos_mixed_jet_zero (f : ℝ → ℝ) (m r q h n : ℝ) :
     iteratedDeriv_zero,pow_zero,one_mul,ite_true]
   ring
 
-theorem hasDerivAt_robertSargos_mixed_jet_q
-    {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
+section
+variable {f : ℝ → ℝ}
+include f
+
+section
+variable {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
-    (hm : ContDiffAt ℝ 4 f (m+(n+q-h))) :
+    (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
+include m r q h n i j k horder hp hm
+
+theorem hasDerivAt_robertSargos_mixed_jet_q
+     :
     HasDerivAt (fun x => robertSargosMixedJet f m r i j k x h n)
       (robertSargosMixedJet f m r (i+1) j k q h n) q := by
   have hd (y : ℝ) (hy : ContDiffAt ℝ 4 f (m+y)) :=
@@ -60,12 +67,13 @@ theorem hasDerivAt_robertSargos_mixed_jet_q
   · simp only [robertSargosMixedJet,Nat.add_assoc,Nat.add_comm,Nat.add_left_comm,
       Nat.add_eq_zero_iff,one_ne_zero,and_false,ite_false,add_zero,mul_one]
 
+section
+variable (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
+    (hrm : ContDiffAt ℝ 4 f (m+(n-h-r)))
+include hrp hrm
+
 theorem hasDerivAt_robertSargos_mixed_jet_n
-    {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
-    (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
-    (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
-    (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
-    (hrm : ContDiffAt ℝ 4 f (m+(n-h-r))) :
+     :
     HasDerivAt (fun x => robertSargosMixedJet f m r i j k q h x)
       (robertSargosMixedJet f m r i j (k+1) q h n) n := by
   have hd (y : ℝ) (hy : ContDiffAt ℝ 4 f (m+y)) :=
@@ -88,11 +96,7 @@ theorem hasDerivAt_robertSargos_mixed_jet_n
     · simp only [robertSargosMixedJet,ite_eq_right hi,Nat.add_assoc,mul_one,add_zero]
 
 theorem hasDerivAt_robertSargos_mixed_jet_h
-    {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
-    (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
-    (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
-    (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
-    (hrm : ContDiffAt ℝ 4 f (m+(n-h-r))) :
+     :
     HasDerivAt (fun x => robertSargosMixedJet f m r i j k q x n)
       (robertSargosMixedJet f m r i (j+1) k q h n) h := by
   have hd (y : ℝ) (hy : ContDiffAt ℝ 4 f (m+y)) :=
@@ -117,9 +121,12 @@ theorem hasDerivAt_robertSargos_mixed_jet_h
     · simp only [robertSargosMixedJet,ite_eq_right hi,add_zero,pow_succ]
       rw [show i+(j+1)+k = i+j+k+1 by omega]
       ring
+end
+end
+
 
 theorem abs_robertSargos_mixed_jet_le
-    {f : ℝ → ℝ} {a b m r q h n B L : ℝ} {i j k : ℕ}
+     {a b m r q h n B L : ℝ} {i j k : ℕ}
     (horder : i+j+k ≤ 4) (hB : 0 ≤ B) (hm : m ∈ Set.Icc a b)
     (hp : ∀ y ∈ ({n+q+h,n+q-h,n+h+r,n-h-r} : Finset ℝ),
       m+y ∈ Set.Icc a b ∧ |y| ≤ L)
@@ -143,7 +150,7 @@ theorem abs_robertSargos_mixed_jet_le
   let g := iteratedDeriv (i+j+k) (robertSargosCubicRemainder f m)
   have ht := abs_sub_le (g (n+q+h)) 0 ((-1:ℝ)^j*g (n+q-h))
   have hu := abs_add_le (-g (n+h+r)) ((-1:ℝ)^j*g (n-h-r))
-  simp only [sub_zero,zero_sub,abs_neg,abs_mul,abs_pow,abs_one,one_pow,one_mul] at ht hu
+  simp at ht hu
   by_cases hi : i = 0
   · have hv := abs_add_le (g (n+q+h)-(-1:ℝ)^j*g (n+q-h))
       (-g (n+h+r)+(-1:ℝ)^j*g (n-h-r))
@@ -153,6 +160,8 @@ theorem abs_robertSargos_mixed_jet_le
   · simp only [robertSargosMixedJet,ite_eq_right hi,add_zero]
     dsimp [g] at ht
     linarith
+end
+
 
 theorem robertSargos_mixed_shift_geometry
     {M H Q m r q h n : ℝ} (hQ : 1 ≤ Q) (hH : 0 ≤ H) (hHQ : 2*H ≤ Q)
@@ -166,12 +175,7 @@ theorem robertSargos_mixed_shift_geometry
   refine ⟨⟨by linarith [hm.1],by linarith [hm.2]⟩,?_⟩
   intro y hy
   simp only [Finset.mem_insert,Finset.mem_singleton] at hy
-  rcases hy with rfl | rfl | rfl | rfl
-  all_goals
-    constructor
-    · constructor <;> linarith [hm.1,hm.2,hqa.1,hqa.2,hh.1,hh.2,hhr.1,hhr.2,hn.1,hn.2]
-    · rw [abs_le]
-      constructor <;> linarith [hqa.1,hqa.2,hh.1,hh.2,hhr.1,hhr.2,hn.1,hn.2]
+  grind
 
 theorem robertSargos_normalized_mixed_jet_bound
     {f : ℝ → ℝ} {M H Q m r q h n C lam : ℝ} {i j k : ℕ}
@@ -188,7 +192,6 @@ theorem robertSargos_normalized_mixed_jet_bound
   have hQ0 : 0 ≤ Q := zero_le_one.trans hQ
   have he : Q^(i+j+k)*(4*(C*lam)*(3*Q)^(4-(i+j+k))) =
       4*C*(3:ℝ)^(4-(i+j+k))*(lam*Q^4) := by
-    rw [mul_pow]
     have hpw : Q^(i+j+k)*Q^(4-(i+j+k)) = Q^4 := by
       rw [← pow_add,Nat.add_sub_of_le horder]
     calc
@@ -230,8 +233,7 @@ theorem robertSargos_floor_fourth_scale {lam : ℝ}
       _ = T^12 := by ring
       _ ≤ _ := h12
   have hmul := mul_le_mul_of_nonneg_left hp hlam.le
-  have ht13 : T^13*lam = 1 := hT.2
-  nlinarith
+  grind
 
 theorem robertSargos_floor_half_height {lam : ℝ} {H : ℕ}
     (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
@@ -276,4 +278,4 @@ theorem robertSargos_physical_mixed_jet_bound
   rw [abs_of_nonneg (hlam.le.trans (hlo x hx))]
   exact hhi x hx
 
-end TaoTrudgianYang2025
+

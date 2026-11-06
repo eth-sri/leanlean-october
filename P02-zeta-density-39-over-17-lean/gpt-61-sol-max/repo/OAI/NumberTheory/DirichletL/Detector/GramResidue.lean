@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPrimeSeparation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open CanonicalQuadraticSieve RayFourExpansion
 open ConcretePrimeRowBridge UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 variable {ι : Type*} [Fintype ι]
 
@@ -67,7 +67,7 @@ theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal
       exact jointExtension_norm S hS σ C k u a b r hr P hg c hc _ _
     · exact jointExtension_mean_zero S hS σ C k u a b r hr P hg c J p hgp hchar e he hJ hcop d
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

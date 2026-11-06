@@ -5,7 +5,6 @@ public import MathCollab.Density.Stronger.SmoothBlockContour
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -49,11 +48,15 @@ theorem integrable_weightedCriticalMean (A : ℕ) (hA : 3 ≤ A) (γ : ℝ) :
 theorem weightedCriticalMean_nonneg (A : ℕ) (γ : ℝ) : 0 ≤ weightedCriticalMean A γ :=
   integral_nonneg (fun t => by positivity)
 
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ}
+    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+    (A : ℕ) (hA : 3 ≤ A)
+include ψ a b hψ ha hb hs A hA
+
 /-- Integrating the actual kernel preserves the sharp square-root mollifier
 factor and the exact scale exponent. -/
-theorem uniform_smoothDetector_critical_integral_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
-    (A : ℕ) (hA : 3 ≤ A) :
+theorem uniform_smoothDetector_critical_integral_bound  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (ρ : ℂ) (X N q : ℝ),
       3/4 ≤ ρ.re → ρ.re ≤ 1 → 0 ≤ X → 0 < N → 0 ≤ q →
       ‖∫ t : ℝ, smoothDetectorKernel ψ ρ X N q
@@ -74,9 +77,7 @@ theorem uniform_smoothDetector_critical_integral_bound {ψ : ℝ → ℝ} {a b :
       simpa only [mul_div_assoc] using h ρ X N q t hβ hβ' hX hN hq
     _ = _ := by rw [integral_const_mul]; rfl
 
-theorem uniform_smoothMollifierBlock_mean_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
-    (A : ℕ) (hA : 3 ≤ A) :
+theorem uniform_smoothMollifierBlock_mean_bound  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (ρ : ℂ) (X N q : ℝ),
       3/4 ≤ ρ.re → ρ.re < 1 → 0 ≤ X → 0 < N → 0 ≤ q →
       ‖smoothMollifierBlock ψ ρ X N q‖ ≤ ‖smoothDetectorResidue ψ ρ X N q‖ +
@@ -91,5 +92,7 @@ theorem uniform_smoothMollifierBlock_mean_bound {ψ : ℝ → ℝ} {a b : ℝ}
   rw [norm_mul]
   have hh := mul_le_mul_of_nonneg_left (h ρ X N q hβ hβ'.le hX hN hq) (norm_nonneg c)
   simpa only [mul_assoc] using hh
+end
 
-end MathCollab.Density.Stronger
+
+

@@ -25,23 +25,29 @@ theorem idealTerm_eq_weighted (χ : Character) (s : ℂ) (I : Ideal O) :
   · simp only [CubicEisenstein.fullIdealWeight, hI, ite_false,
       Complex.cpow_neg, div_eq_mul_inv]
 
-theorem LFunction_eq_series (χ : Character) {s : ℂ} (hs : 1 < s.re) :
+section
+variable (χ : Character) {s : ℂ} (hs : 1 < s.re)
+include χ s hs
+
+theorem LFunction_eq_series  :
     LFunction χ s = IdealEuler.series (idealCoeff χ) s := by
   rw [LFunction_eq_ideal_tsum χ hs]
   exact tsum_congr (idealTerm_eq_weighted χ s)
 
-theorem LFunction_ne_zero_of_one_lt_re (χ : Character) {s : ℂ} (hs : 1 < s.re) :
+theorem LFunction_ne_zero_of_one_lt_re  :
     LFunction χ s ≠ 0 := by
   rw [LFunction_eq_series χ hs]
   exact IdealEuler.series_ne_zero (idealCoeff χ) (idealCoeff_norm_le_one χ) s hs
 
-theorem inverseSeries_mul_LFunction (χ : Character) {s : ℂ} (hs : 1 < s.re) :
+theorem inverseSeries_mul_LFunction  :
     IdealEuler.inverseSeries (idealCoeff χ) s * LFunction χ s = 1 := by
   rw [LFunction_eq_series χ hs]
   exact IdealEuler.inverseSeries_mul_series (idealCoeff χ) (idealCoeff_norm_le_one χ) s hs
-
-end SevenEighths.HeckeFamily
-
 end
 
-end OAI
+
+
+
+
+
+

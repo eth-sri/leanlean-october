@@ -7,13 +7,12 @@ public import LaterPairs.Native.SargosInitialInterval
 public import LaterPairs.Native.SargosSymmetricAveraging
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
-noncomputable section
+
 
 open scoped BigOperators ComplexConjugate
 
@@ -35,4 +34,4 @@ theorem sargos_sum_Ico_add_one {A : Type*} [AddCommMonoid A]
   · intro m hm
     rfl
 
-end TaoTrudgianYang2025
+

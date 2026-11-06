@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.OperatorMixedCentered
 public import GuthMaynard.Improvement.MixedKernelRow
 public import GuthMaynard.Improvement.MixedCutoffEnvelope
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -44,7 +44,7 @@ theorem operator_mixed_bound (w : MathCollab.Density.ReflectionCutoff) :
     (le_max_left 0 B) hwB (by norm_num : (0:ℝ)<1/2) hLp hs b]
   obtain ⟨D,hD,hDb⟩ := centeredKernel_uniform_bound w.complex_smooth
     (by norm_num : (0:ℝ)<1/2) (by norm_num : (1/2:ℝ)≤5) hsc
-  have hc : Measurable (mixedCutoffKernel w) := mixedCutoffKernel_measurable w
+  have hc := mixedCutoffKernel_measurable w
   have hbound := kernelMixed_time_row_bound hm h0 hi h2
     (C := fun s => (L:ℂ)*mixedCutoffKernel w s)
     (K := centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L)
@@ -63,4 +63,4 @@ theorem operator_mixed_bound (w : MathCollab.Density.ReflectionCutoff) :
         _ ≤ L*Q*P*(∫ t, μ t^2)+L*Q*(∫ t, μ t^2) := le_add_of_nonneg_right hn
         _ = _ := by ring
 
-end GuthMaynard.Improvement
+

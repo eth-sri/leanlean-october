@@ -3,9 +3,8 @@ public import DensityEnergyGM.CoprimeFourthNative
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -36,4 +35,4 @@ theorem coprime_fourth_insert_product_le {A : Finset ℕ} {e : ℕ}
   simp only [Finset.sum_insert heA, Finset.sum_add_distrib]
   linarith [hH e e]
 
-end Montgomery.RationalMoment
+

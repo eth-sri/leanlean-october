@@ -6,14 +6,18 @@ public import TaoTrudgianYang2025.AtkinsonPairPhysicalScale
 
 /-! Closed physical budget for the actual general-pair dyadic consumer. -/
 
-noncomputable section
-namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
 
-theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ)
+namespace TaoTrudgianYang2025
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
+
+section
+variable {C H G L k l : ℝ} {N : ℕ} (R : ℕ)
     (hC : 1 ≤ C) (hH : 1 ≤ H) (hG : 1 ≤ G)
     (hL : 0 ≤ L) (hLH : L ≤ H) (hlog : 1 ≤ Real.log (2*H))
     (hpair : InExponentPairTriangle k l)
+include C H G L k l N R hC hH hG hL hLH hlog hpair
+
+theorem atkinsonPairPowerTerm_physical_le 
     (hcut : (N : ℝ) ≤ 74*H*(Real.log (2*H))^2/G^2) :
     G^2*H^(-(1/2:ℝ))*atkinsonPairPowerTerm C k l H G L N R ≤
       10000*C*(Real.log (2*H))^3*
@@ -78,10 +82,7 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
       (mul_le_mul_of_nonneg_right (by linarith) hY)
     _ = _ := by dsimp [X,Y]; ring
 
-theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ)
-    (hC : 1 ≤ C) (hH : 1 ≤ H) (hG : 1 ≤ G)
-    (hL : 0 ≤ L) (hLH : L ≤ H) (hlog : 1 ≤ Real.log (2*H))
-    (hpair : InExponentPairTriangle k l) (hN : (N : ℝ) ≤ H)
+theorem atkinsonPairPowerBudget_physical_log_le  (hN : (N : ℝ) ≤ H)
     (hcut : (N : ℝ) ≤ 74*H*(Real.log (2*H))^2/G^2) :
     G^2*H^(-(1/2:ℝ))*atkinsonPairPowerBudget C k l H G L N R ≤
       (10000*C*(1/Real.log 2+1)^2)*(Real.log (2*H))^5*
@@ -102,5 +103,7 @@ theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R
           ((R : ℝ)*H/G+(R : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l))) :=
       mul_le_mul_of_nonneg_right hj (by positivity)
     _ = _ := by ring
+end
 
-end TaoTrudgianYang2025
+
+

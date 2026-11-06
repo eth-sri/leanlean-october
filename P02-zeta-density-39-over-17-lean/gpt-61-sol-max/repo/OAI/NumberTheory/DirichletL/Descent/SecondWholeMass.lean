@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -27,7 +27,7 @@ theorem assigned_second_triples_subset {Jo : ℕ} (u v : Eisˣ)
   obtain ⟨y,hy,q₁,hq₁,q₂,hq₂,rfl⟩ := (mem_assignedSecondSource source J₁ J₂ L₁ L₂ x).mp hx
   exact Finset.mem_image.mpr ⟨y,hy,rfl⟩
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

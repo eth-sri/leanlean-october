@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gauss
 
 @[expose] public section
@@ -8,8 +9,8 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 lemma primeIndex_product (I : Ideal O) (hI : Admissible I) :
     (∏ P : PrimeIndex I, P.val) = I := by
@@ -26,8 +27,6 @@ theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2
   let c := primaryGenerator I
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hI.2
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
-  let (P : PrimeIndex I) : Fintype (O ⧸ P.val) := Fintype.ofFinite _
-  let (P : PrimeIndex I) : Field (O ⧸ P.val) := Ideal.Quotient.field P.val
   have hc : Ideal.span {c} = ∏ P : PrimeIndex I, P.val :=
     (primaryGenerator_spec I hI.2).1.trans (primeIndex_product I hI).symm
   let e : (O ⧸ Ideal.span {c}) ≃+* ∀ P : PrimeIndex I, O ⧸ P.val :=
@@ -47,9 +46,7 @@ theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2
   have hrow (x : O ⧸ Ideal.span {c}) : (∏ P : PrimeIndex I, χ P (e x P)) =
       CompletedGauss.cubicRow I hI.2 ((Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1) x) := by
     obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
-    dsimp only [c] at z ⊢
-    simp only [e, c, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
-      IdealGaussCRT.quotientProdEquivPi_mk, CompletedGauss.cubicRow_mk, χ]
+    rfl
   simp_rw [hrow] at hnormsq
   have hcard : (Fintype.card (O ⧸ Ideal.span {c}) : ℝ) = ‖eisEmbedding c‖ ^ 2 := by
     symm
@@ -63,7 +60,7 @@ theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2
   rw [norm_div, hnorm, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)]
   exact div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hI.2))
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

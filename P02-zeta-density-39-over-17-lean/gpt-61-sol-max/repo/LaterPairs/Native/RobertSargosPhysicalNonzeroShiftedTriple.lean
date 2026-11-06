@@ -8,13 +8,12 @@ public import LaterPairs.Native.RobertSargosPhysicalCommonShiftBudget
 public import LaterPairs.Native.RobertSargosPhysicalNonzeroATimesA
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                               
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -68,4 +67,4 @@ theorem robertSargos_physical_nonzero_shifted_triple
   dsimp only [Q,R] at he
   nlinarith
 
-end TaoTrudgianYang2025
+

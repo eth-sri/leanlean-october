@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeSlotExponent
 public import OAI.NumberTheory.DirichletL.Detector.CentralDyadicWeight
 
@@ -12,7 +13,7 @@ open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots HeckeDetectorPhysicalSelection
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -25,8 +26,8 @@ theorem classPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N
 theorem actual_class_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hδ : 0<δ)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -56,7 +57,7 @@ theorem actual_class_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
   obtain ⟨C,hC,hbound⟩ := actual_fixed_cube_prime_bound M H hH N n e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss
     he he1 heps hc hcb hA hR hdmin hdmax hdRange hrmin hτ hε hκ hcost hmesh hδ hbudget hgap hmargin hheight hloss
     S hS hfirst hmax ell hell hello hellhi W hWs hW hWB
-  let AA : ℝ := max 1 ((2:ℝ)^(4/25+12*e+eps*(N+8)))
+  let AA := max 1 ((2:ℝ)^(4/25+12*e+eps*(N+8)))
   have hAA : 0<AA := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   refine ⟨C*AA,mul_pos hC hAA,?_⟩
   intro η
@@ -66,20 +67,20 @@ theorem actual_class_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
   intro t ht hq
   have hZp : 0<Z := zero_lt_one.trans_le hZ
   have hd0 : 0<d := hdmin.trans_le hd
-  let Y : Fin N→ℝ := fun j=>Z^(ell j)
-  let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-  let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
-  let α : ℝ := a-1/2+12*e+eps*(N+8)
+  let Y := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+  let z := (17/50:ℂ)+t.1.2*Complex.I
+  let α := a-1/2+12*e+eps*(N+8)
   let F : FreeRow→ℝ := fun u=>‖∑P:(∀j,T j),calibratedTupleValue S hS hmax η u (fun j=>(P j).val)
     (fun j=>classPoolOutside M H S N c b Y j _ (P j).property) W Y
     (((a+16*e:ℝ):ℂ)+t.1.1*Complex.I) (((1-a-6*e:ℝ):ℂ)+t.2*Complex.I) z‖
-  let E : ℝ := C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^loss*Z^(-2/75+q/6+mesh/6)
+  let E := C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^loss*Z^(-2/75+q/6+mesh/6)
   have hE : 0≤E := by dsimp [E];positivity
   have hF (u : FreeRow) (hu : u∈rows) : F u≤E*rowNorm u^α := by
     rcases hrows u hu with ⟨hu1,hulo,hcal,huhi⟩
     have hh := hb d hd hd' u hu1 hulo hcal huhi a i hi ha ha' (hbin u hu) t ht
     dsimp only at hh
-    let g : Fin N→ℝ := fun j=>HeckePrimeAmplitudeBins.amplitude (Y j) (a-1/2) mesh
+    let g := fun j=>HeckePrimeAmplitudeBins.amplitude (Y j) (a-1/2) mesh
       (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z)
     have hp : (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh))=Z^(-2/75+q/6+mesh/6) := by
       rw [show (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh))=
@@ -89,7 +90,7 @@ theorem actual_class_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
       congr 1 ; ring
     have hh' := hh.2
     rw [hp] at hh'
-    convert hh' using 1 ; dsimp [F,E,α,Y,z,g] ; ring
+    convert hh' using 1 ; ring
   have hh := dyadic_weighted_rows_card α (17/50) E (Z^v) (D*(Z^d)^Rcount) hE
     (Real.rpow_pos_of_pos hZp _) rows hcard hnorm F hF z (by simp [z])
   have hsum : ‖cubeArithmeticSum S hS hmax η rows T (classPoolOutside M H S N c b Y) W Y a e t‖≤
@@ -104,7 +105,6 @@ theorem actual_class_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
     simp_rw [←Real.rpow_mul hZp.le]
     rw [←Real.rpow_add hZp,←Real.rpow_add hZp,←Real.rpow_add hZp]
     congr 1
-    dsimp [α]
     ring
   calc
     _ ≤ (D*(Z^d)^Rcount)*E*AA*(Z^v)^(α-17/50) := by gcongr
@@ -114,8 +114,8 @@ theorem actual_class_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
         _ = (C*AA)*D*(η.modulus.absNorm:ℝ)^(2*eps)*
           ((Z^d)^Rcount*Z^loss*Z^(-2/75+q/6+mesh/6)*(Z^v)^(α-17/50)) := by ring
         _ = _ := by rw [hpow]
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

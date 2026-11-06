@@ -7,17 +7,20 @@ public import LaterPairs.Native.RobertSargosGcdSums
 public import LaterPairs.Native.RobertSargosWeightedGcdFibers
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                     
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
-theorem RobertSargosReducedSystem.frequency_gcd_le {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) (hQ : 0 < Q) :
+section
+variable {R H Q δ : ℝ}
+    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) (hQ : 0 < Q)
+include R H Q δ p h hQ
+
+theorem RobertSargosReducedSystem.frequency_gcd_le  :
     (robertSargosFrequencyGcd p:ℝ) ≤ 2*Q := by
   have hqn : p.q₁ ≠ 0 := by
     have hr : (p.q₁:ℝ) ≠ 0 := abs_pos.mp (lt_of_lt_of_le hQ h.q₁_support.1)
@@ -26,17 +29,14 @@ theorem RobertSargosReducedSystem.frequency_gcd_le {R H Q δ : ℝ}
     (integerTripleGcd_dvd p.d p.q₁ p.q₂).2.1
   have hc : robertSargosFrequencyGcd p ≤ p.q₁.natAbs := by
     apply Nat.le_of_dvd (Int.natAbs_pos.mpr hqn)
-    simpa only [Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr hd
+    exact Int.natAbs_dvd_natAbs.mpr hd
   have hcR : (robertSargosFrequencyGcd p:ℝ) ≤ p.q₁.natAbs := by exact_mod_cast hc
-  have he : (p.q₁.natAbs:ℝ) = |(p.q₁:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.q₁)
+  have he : (p.q₁.natAbs:ℝ) = |(p.q₁:ℝ)| := by simp_all
   exact hcR.trans (he.trans_le h.q₁_support.2)
 
 
 
-theorem RobertSargosReducedSystem.gcd_key_mem {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) (hQ : 0 < Q) :
+theorem RobertSargosReducedSystem.gcd_key_mem  :
     robertSargosGcdKey p ∈ (Finset.Icc 1 ⌊R⌋₊) ×ˢ (Finset.Icc 1 ⌊2*Q⌋₊) := by
   have hR : 0 ≤ R := (abs_nonneg (p.r:ℝ)).trans h.r_bound
   apply Finset.mem_product.mpr
@@ -45,6 +45,8 @@ theorem RobertSargosReducedSystem.gcd_key_mem {R H Q δ : ℝ}
       (Nat.le_floor_iff hR).mpr h.coefficient_gcd_le⟩
   · exact Finset.mem_Icc.mpr ⟨h.frequency_gcd_pos,
       (Nat.le_floor_iff (by positivity : 0 ≤ 2*Q)).mpr (h.frequency_gcd_le hQ)⟩
+end
+
 
 
 
@@ -104,5 +106,5 @@ theorem exists_robertSargos_reduced_count (ε : ℝ) (hε : 0 < ε) :
       ring
     _ = _ := by rw [hpow]
 
-end TaoTrudgianYang2025
+
 

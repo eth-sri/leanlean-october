@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import ExtendedHB.CurrentCurve
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open scoped BigOperators
 
 namespace Montgomery.MonotoneCurve
@@ -23,7 +23,6 @@ theorem seven_eighths_right_uniform {ε : ℝ} (hε : 0 < ε) :
   have hm : (zetaDensityCount σ T : ℝ) ≤ (zetaDensityCount (7/8) T : ℝ) := by
     exact_mod_cast zetaDensityCount_mono hσ (le_refl T)
   apply hm.trans
-  convert h T hT using 1
-  norm_num
+  grind
 
-end Montgomery.MonotoneCurve
+

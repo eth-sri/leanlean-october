@@ -12,8 +12,8 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentChildAssembly
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay CenteredMomentMobiusRegroup CenteredMomentRowNorm RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
+open scoped EisensteinO
 
 def divisorCoefficient {α : Type*} (L : Ideal O) (a : α → O) (c : α → ℂ)
     (χ : RayCharacter) (i : α) : ℂ :=
@@ -97,8 +97,8 @@ theorem finite_correlation_children {α β : Type*} (S : Finset α) (T : Finset 
   rw [pair_ray_fubini]
   ring
 
-end SevenEighths.CenteredMomentChildAssembly
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSeparation
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalAnalytic
 public import OAI.NumberTheory.DirichletL.Detector.Windows
@@ -7,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.Windows
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ProbeCompleted ProbeRow CanonicalQuadraticSieve
+open scoped EisensteinO
 
 lemma supportedElement_ne_zero (s : O) (hs : Supported (Ideal.span {s})) : s≠0 := by
   intro h
@@ -42,10 +43,7 @@ theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationDa
     C.residueMonoid m * sexticGauss s (supportedElement_ne_zero s hs) (-m) * W (elementNorm m/K) *
       spectralSummand S D (rowCoefficient η C.Xi s hs m) t p.1 p.2
   have hfin := elementWindow_finite_support W hW K hK
-  have hzero : ∀ m, m∉hfin.toFinset → ∀ p, F m p=0 := by
-    intro m hm p
-    have hz : W (elementNorm m/K)=0 := by simpa only [Set.Finite.mem_toFinset, Function.mem_support, not_not] using hm
-    simp only [F, hz, mul_zero, zero_mul]
+  have hzero : ∀ m, m∉hfin.toFinset → ∀ p, F m p=0 := by aesop
   have hsum (m : O) : Summable (F m) :=
     (spectralRow_summable S D (rowCoefficient η C.Xi s hs m)
       (rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one s hs m) t ht).mul_left _
@@ -65,7 +63,7 @@ theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationDa
       unfold calibratedNumerator
       ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

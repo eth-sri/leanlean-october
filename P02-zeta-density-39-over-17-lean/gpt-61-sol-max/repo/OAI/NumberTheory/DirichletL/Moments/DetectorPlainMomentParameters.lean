@@ -11,12 +11,12 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMomentParameters
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
+open HeckeFamily HeckeDetectorRawFiber
 open CenteredMomentDetectorDictionary
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
-open CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
-local notation "O" => HeckeFamily.O
+open CenteredMomentDetectorPlainUnmarkedState
+open scoped HeckeO
 
 variable {Δ:ℝ}
 
@@ -49,7 +49,11 @@ lemma witness_length_cap (D:Parameters.HighData Δ):
 variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label:Type*}
 variable {U a tstar T heightAllowance:ℝ}{i:ℕ}
 
-theorem actual_fiber_lengths (D:Parameters.HighData Δ)
+section
+variable (D:Parameters.HighData Δ)
+include D
+
+theorem actual_fiber_lengths 
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)(hU:1<U):
     0≤F.m ∧ F.m≤1/2+75*D.ε ∧ F.m≤23/40 ∧
     1≤U^F.m ∧ U^F.m≤U ∧ length U (U^F.m)=F.m := by
@@ -60,9 +64,9 @@ theorem actual_fiber_lengths (D:Parameters.HighData Δ)
       Real.rpow_le_rpow_of_exponent_le hU.le (show F.m≤1 by linarith)
   · exact plain_length_eq F hU
 
-lemma width_bands (D:Parameters.HighData Δ)(m:ℝ)(hm:m≤23/40):
+lemma width_bands (m:ℝ)(hm:m≤23/40):
     1≤1+delta D ∧ 1+delta D≤2 ∧
-    1≤max 1 (2*m)+delta D ∧ max 1 (2*m)+delta D≤2 := by
+    1≤ max 1 (2*m)+delta D ∧ max 1 (2*m)+delta D≤2 := by
   have hδ:0<delta D:=(fixed_parameters D).1
   have hd:delta D≤1/4:=(fixed_parameters D).2.1
   have hmax:max 1 (2*m)≤23/20:=max_le (by norm_num) (by linarith)
@@ -73,7 +77,7 @@ lemma width_bands (D:Parameters.HighData Δ)(m:ℝ)(hm:m≤23/40):
   · linarith
   constructor <;> linarith
 
-theorem unmarked_state_admission (D:Parameters.HighData Δ)
+theorem unmarked_state_admission 
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)
     (η:Character)(Q:Ideal O)(Φ:𝓢(ℝ,ℂ))(bΦ:ℝ)(hU:1<U)
     (hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)(hp:∀x,0≤(Φ x).re)
@@ -81,8 +85,8 @@ theorem unmarked_state_admission (D:Parameters.HighData Δ)
     let s:=state F η Q Φ bΦ (delta D) hU.le (fixed_parameters D).1.le hs hp hη;
     s.character=η ∧ s.fixedModulus=Q ∧ s.puncture=1 ∧
     s.radial.profile=Φ ∧ s.radial.scale=U ∧ s.radial.keep=initialKeep η Q ∧
-    s.width=max 1 (2*F.m)+delta D ∧ 1≤s.width ∧ s.width≤2 ∧
-    1≤U^F.m ∧ U^F.m≤U ∧ 2*length U (U^F.m)≤s.width := by
+    s.width=max 1 (2*F.m)+delta D ∧ 1≤ s.width ∧ s.width≤2 ∧
+    1≤U^F.m ∧ U^F.m≤U ∧ 2*length U (U^F.m)≤ s.width := by
   dsimp only
   have hf:=actual_fiber_lengths D F hU
   have hw:=width_bands D F.m hf.2.2.1
@@ -94,7 +98,7 @@ theorem unmarked_state_admission (D:Parameters.HighData Δ)
   · rw [he,hf.2.2.2.2.2]
     exact (le_max_right 1 (2*F.m)).trans (le_add_of_nonneg_right (fixed_parameters D).1.le)
 
-theorem source_label_fixed_allowance (D:Parameters.HighData Δ)
+theorem source_label_fixed_allowance 
     (S:ProbeFinalAssembly.SourceData D)(η:Character):
     ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀label:Sum Bool (RayQuotient.Characters S.modulus ⊤),∀d:ℝ,(1/200:ℝ)≤d→
@@ -102,12 +106,14 @@ theorem source_label_fixed_allowance (D:Parameters.HighData Δ)
         ≤(Z^d)^(delta D) :=
   source_label_modulus_eventually S η (delta D) (fixed_parameters D).1
 
-lemma final_exponent_budget (D:Parameters.HighData Δ)(base:ℝ):
+lemma final_exponent_budget (base:ℝ):
     base+delta D+stageError D≤base+D.t := by
   linarith [(fixed_parameters D).2.2.2.1]
-
-end SevenEighths.CenteredMomentDetectorPlainMomentParameters
-
 end
 
-end OAI
+
+
+
+
+
+

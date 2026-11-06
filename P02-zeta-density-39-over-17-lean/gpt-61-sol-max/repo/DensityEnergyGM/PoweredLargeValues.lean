@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import DensityEnergyGM.LargeValuesFinal
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalPowering
 
@@ -39,8 +40,7 @@ theorem guthMaynardLargeValues_support_native
     intro t
     unfold dirichletPoly
     apply Finset.sum_congr rfl
-    intro n hn
-    simp only [c, ite_eq_left hn]
+    grind
   apply hGM N V T c W hN hT hV hc hSep hBase
   intro t ht
   rw [heq]
@@ -70,9 +70,7 @@ theorem powered_unit_block_gm_large_values_native
   obtain ⟨C, T₀, hC, hT₀, hGM⟩ := guthMaynardLargeValues_support_native ε hε
   refine ⟨A, C, T₀, hA, hC, hT₀, ?_⟩
   intro N a T L W hN hk hT hL ha hSep hBase hLarge
-  have hDenom : 0 < A * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
-    have hUpper : 0 < 2 ^ k * N ^ k := by positivity
-    exact mul_pos hA (Real.rpow_pos_of_pos (by exact_mod_cast hUpper) _)
+  have hDenom : 0 < A * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by positivity
   obtain ⟨r, hr, W', hsub, hcard, hlarge⟩ :=
     extract_normalized_finite_powered_block N k a 0 A η L W hN hk hL.le hDenom
       (by
@@ -115,4 +113,4 @@ theorem powered_unit_block_gm_large_values_native
       simpa only [Q, V, Real.rpow_zero, one_mul] using hlarge t ht)
   exact ⟨r, hr, W', hsub, hcard, hbound⟩
 
-end GuthMaynard.NativeMoment
+

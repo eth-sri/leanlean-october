@@ -19,7 +19,7 @@ open Set Expdb
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def canonicalTaylorLegendrePhase (F : ℝ → ℝ) (σ A : ℝ) (Q : ℕ) (w h u : ℝ) : ℝ :=
   referenceModelPrimitive σ⁻¹ u+
@@ -94,4 +94,4 @@ theorem canonicalTaylorLegendrePhase_uniformity
     nlinarith
   exact hbound.trans (by nlinarith)
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.SmoothDetector
 public import MathCollab.Density.Stronger.SmoothContourIdentity
 public import MathCollab.Density.MollifierBound
@@ -7,14 +8,17 @@ public import MathCollab.Density.MollifierBound
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
+
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ}
+    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+include ψ a b hψ ha hb hs
 
 /-- Actual block identity after the second contour shift. Both the series
 representation and all contour convergence conditions are discharged. -/
-theorem smoothMollifierBlock_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem smoothMollifierBlock_contour_identity 
     {ρ : ℂ} (X : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q)
     (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re < 1) :
     smoothMollifierBlock ψ ρ X N q = smoothDetectorResidue ψ ρ X N q +
@@ -25,8 +29,7 @@ theorem smoothMollifierBlock_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
 
 /-- Arbitrary-order uniform decay of the genuine zeta-pole residue. The
 constant precedes the cutoff, scale, damping parameter, and zero coordinates. -/
-theorem uniform_smoothDetectorResidue_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem uniform_smoothDetectorResidue_bound 
     (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (ρ : ℂ) (X N q : ℝ),
       3/4 ≤ ρ.re → ρ.re ≤ 1 → 0 ≤ X → 0 < N → 0 ≤ q →
@@ -51,8 +54,7 @@ theorem uniform_smoothDetectorResidue_bound {ψ : ℝ → ℝ} {a b : ℝ}
 
 /-- The critical-line integrand has the manuscript's square-root mollifier
 factor and exact N exponent, uniformly before every zero, scale and frequency. -/
-theorem uniform_smoothDetectorKernel_critical_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem uniform_smoothDetectorKernel_critical_bound 
     (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (ρ : ℂ) (X N q t : ℝ),
       3/4 ≤ ρ.re → ρ.re ≤ 1 → 0 ≤ X → 0 < N → 0 ≤ q →
@@ -70,8 +72,7 @@ theorem uniform_smoothDetectorKernel_critical_bound {ψ : ℝ → ℝ} {a b : �
     (s := ρ+(((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) hX (by simp)
   rw [smoothDetectorKernel, norm_mul, norm_mul, norm_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos hN]
-  simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
-    Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero]
+  simp only [add_re, ofReal_re, mul_re, I_re, mul_zero, ofReal_im, I_im, zero_mul, sub_zero, add_zero]
   calc
     _ ≤ ((N^(1/2-ρ.re)*(B/(1+|t|)^A))*(2*Real.sqrt X))*
         ‖riemannZeta (ρ+(((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I))‖ := by
@@ -79,5 +80,7 @@ theorem uniform_smoothDetectorKernel_critical_bound {ψ : ℝ → ℝ} {a b : �
       exact mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hM
         (norm_nonneg _) (by positivity)
     _ = _ := by rw [he]; ring
+end
 
-end MathCollab.Density.Stronger
+
+

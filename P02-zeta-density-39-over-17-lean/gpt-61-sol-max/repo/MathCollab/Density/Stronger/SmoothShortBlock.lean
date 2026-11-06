@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.GenericTaylorFamily
 public import MathCollab.Density.Stronger.SmoothPartition
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -28,24 +28,28 @@ theorem norm_smoothShortCoefficient_le (X N : ℝ) {Y : ℝ} (hY : 0 < Y) (n : �
         (by positivity) (by positivity)) hw.2 hw.1 (by positivity)
     _ = _ := by ring
 
-theorem smoothShortCoefficient_zero_of_le_half (X Y : ℝ) {N : ℝ} (hN : 0 < N)
-    {n : ℕ} (hn : (n : ℝ) ≤ N/2) : smoothShortCoefficient X Y N n = 0 := by
+section
+variable (X Y : ℝ) {N : ℝ} (hN : 0 < N)
+    {n : ℕ}
+include X Y N hN n
+
+theorem smoothShortCoefficient_zero_of_le_half  (hn : (n : ℝ) ≤ N/2) : smoothShortCoefficient X Y N n = 0 := by
   have hr : (n : ℝ)/N ≤ 5/8 := (div_le_iff₀ hN).mpr (by linarith)
   simp [smoothShortCoefficient, smoothDyadicWeight_zero_of_le hr]
 
-theorem smoothShortCoefficient_zero_of_two_le (X Y : ℝ) {N : ℝ} (hN : 0 < N)
-    {n : ℕ} (hn : 2*N ≤ (n : ℝ)) : smoothShortCoefficient X Y N n = 0 := by
+theorem smoothShortCoefficient_zero_of_two_le  (hn : 2*N ≤ (n : ℝ)) : smoothShortCoefficient X Y N n = 0 := by
   have hr : (3/2 : ℝ) ≤ (n : ℝ)/N := (le_div_iff₀ hN).mpr (by linarith)
   simp [smoothShortCoefficient, smoothDyadicWeight_zero_of_ge hr]
 
-theorem smoothShortCoefficient_support (X Y : ℝ) {N : ℝ} (hN : 0 < N)
-    {n : ℕ} (hn : smoothShortCoefficient X Y N n ≠ 0) :
+theorem smoothShortCoefficient_support  (hn : smoothShortCoefficient X Y N n ≠ 0) :
     N/2 < (n : ℝ) ∧ (n : ℝ) < 2*N := by
   constructor
   · by_contra hh
     exact hn (smoothShortCoefficient_zero_of_le_half X Y hN (le_of_not_gt hh))
   · by_contra hh
     exact hn (smoothShortCoefficient_zero_of_two_le X Y hN (le_of_not_gt hh))
+end
+
 
 /-- A natural even scale splits exactly into (M,2M] and (2M,4M].
 The original smooth weights are retained in both pieces. -/
@@ -53,7 +57,6 @@ theorem smoothShortCoefficient_tsum_split (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM :
     (∑' n : ℕ, smoothShortCoefficient X Y (2*M) n*(n : ℂ)^(-ρ)) =
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) M +
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) (2*M) := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
   have hz : ∀ n ∉ Finset.Ioc M (2*(2*M)),
       smoothShortCoefficient X Y (2*M) n*(n : ℂ)^(-ρ) = 0 := by
     intro n hn
@@ -68,12 +71,7 @@ theorem smoothShortCoefficient_tsum_split (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM :
     rw [hc, zero_mul]
   rw [tsum_eq_sum hz, ← Finset.Ioc_union_Ioc_eq_Ioc (show M ≤ 2*M by omega)
     (show 2*M ≤ 2*(2*M) by omega)]
-  have hd : Disjoint (Finset.Ioc M (2*M)) (Finset.Ioc (2*M) (2*(2*M))) := by
-    apply Finset.disjoint_left.mpr
-    intro n h₁ h₂
-    have h₁' := (Finset.mem_Ioc.mp h₁).2
-    have h₂' := (Finset.mem_Ioc.mp h₂).1
-    omega
+  have hd : Disjoint (Finset.Ioc M (2*M)) (Finset.Ioc (2*M) (2*(2*M))) := by simp_all
   rw [Finset.sum_union hd]
   rfl
 
@@ -89,26 +87,26 @@ theorem norm_smoothShortTaylorCoefficient_le (X N : ℝ) {Y : ℝ} (hY : 0 < Y)
       (n.divisors.card : ℝ) :=
   norm_genericTaylorCoefficient_le (fun n _ => norm_smoothShortCoefficient_le X N hY n) hM hn j
 
+section
+variable (ρ : ℂ) (X Y : ℝ)
+include ρ X Y
+
 /-- Compact smooth support makes every block series summable, for arbitrary rho. -/
-theorem summable_smoothShortTerm (ρ : ℂ) (X Y : ℝ) {N : ℝ} (hN : 0 < N) :
+theorem summable_smoothShortTerm  {N : ℝ} (hN : 0 < N) :
     Summable (fun n : ℕ => smoothShortCoefficient X Y N n*(n : ℂ)^(-ρ)) := by
   apply summable_of_ne_finset_zero (s := Finset.range (⌈2*N⌉₊+1))
   intro n hn
-  have hn' : ⌈2*N⌉₊ ≤ n := by
-    have hh : ⌈2*N⌉₊+1 ≤ n := by simpa only [Finset.mem_range, not_lt] using hn
-    omega
+  have hn' : ⌈2*N⌉₊ ≤ n := by grind
   have hn'' : 2*N ≤ (n : ℝ) := (Nat.le_ceil _).trans (by exact_mod_cast hn')
   rw [smoothShortCoefficient_zero_of_two_le X Y hN hn'', zero_mul]
 
 /-- Exact split for the actual detector tail, whose n=1 term was removed.
 At N=2M with M>=1 the removed term has zero smooth weight. -/
-theorem smoothDetector_tail_half_split (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM : 0 < M) :
+theorem smoothDetector_tail_half_split  {M : ℕ} (hM : 0 < M) :
     (∑' n : ℕ, detectorTerm ρ X Y (n+2)*
       (smoothDyadicWeight (((n+2 : ℕ) : ℝ)/(2*M)) : ℂ)) =
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) M +
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) (2*M) := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
-  have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
   have h0 := smoothShortCoefficient_zero_of_le_half X Y
     (by positivity : 0 < 2*(M : ℝ)) (n := 0) (by norm_num)
   have h1 := smoothShortCoefficient_zero_of_le_half X Y
@@ -121,7 +119,7 @@ theorem smoothDetector_tail_half_split (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM : 0 
   exact (smoothShortCoefficient_term_eq ρ X Y (2*M) (n+2)).symm
 
 /-- One of the two natural half blocks has half the smooth block height. -/
-theorem exists_smoothShort_half (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM : 0 < M) :
+theorem exists_smoothShort_half  {M : ℕ} (hM : 0 < M) :
     ∃ L ∈ ({M, 2*M} : Finset ℕ),
       ‖∑' n : ℕ, detectorTerm ρ X Y (n+2)*
         (smoothDyadicWeight (((n+2 : ℕ) : ℝ)/(2*M)) : ℂ)‖/2 ≤
@@ -137,6 +135,8 @@ theorem exists_smoothShort_half (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM : 0 < M) :
     change ‖B₁+B₂‖/2 ≤ ‖B₂‖
     have hn := norm_add_le B₁ B₂
     linarith
+end
+
 
 /-- Smooth half-block extraction with the same fixed logarithmic Taylor cutoff.
 All coefficients depend only on X,Y,N,M,j; the original ordinate is preserved. -/
@@ -151,4 +151,4 @@ theorem exists_smoothShortTaylor_component (X N : ℝ) {Y T : ℝ} {M : ℕ} {ρ
   exists_genericTaylor_component (fun n _ => norm_smoothShortCoefficient_le X N hY n)
     hT hM hM' hβ hβ' hD hsmall hblock
 
-end MathCollab.Density.Stronger
+

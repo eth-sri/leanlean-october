@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralRowCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds
 open ProbeRowRadicalConductor
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :
     presentationComplexity χ H≤2*(χ.modulus.absNorm:ℝ)^2*(3+|H|)^2 := by
@@ -28,8 +28,12 @@ lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :
       mul_le_mul_of_nonneg_right hn (by positivity)
     _ = _ := by ring
 
-lemma target_complexity_norm_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η : Character) (u : FreeRow) (H : ℝ) (hH : 0≤H) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    (η : Character) (u : FreeRow)
+include S hS η u
+
+lemma target_complexity_norm_bound  (H : ℝ) (hH : 0≤H) :
     presentationComplexity ((targetRow η u).excludePrimes S hS) H≤
       2*((fixedConductorConstant S:ℝ)*η.modulus.absNorm*rowNorm u)^2*(3+H)^2 := by
   have hn : (((targetRow η u).excludePrimes S hS).modulus.absNorm:ℝ)≤
@@ -42,8 +46,7 @@ lemma target_complexity_norm_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P
   apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
   exact mul_le_mul_of_nonneg_left ((sq_le_sq₀ (by positivity) (by unfold rowNorm;positivity)).mpr hn) (by norm_num)
 
-lemma target_complexity_power_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η : Character) (u : FreeRow) (H eps : ℝ) (hH : 0≤H) (heps : 0≤eps) :
+lemma target_complexity_power_bound  (H eps : ℝ) (hH : 0≤H) (heps : 0≤eps) :
     (presentationComplexity ((targetRow η u).excludePrimes S hS) H)^eps≤
       (2*(fixedConductorConstant S:ℝ)^2)^eps*(η.modulus.absNorm:ℝ)^(2*eps)*
         rowNorm u^(2*eps)*(3+H)^(2*eps) := by
@@ -59,10 +62,16 @@ lemma target_complexity_power_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime 
     ←Real.rpow_mul (by positivity : (0:ℝ)≤η.modulus.absNorm),
     ←Real.rpow_mul (rowNorm_ge_one u |>.trans' (by norm_num : (0:ℝ)≤1)),
     ←Real.rpow_mul (by linarith : 0≤3+H)]
+end
 
-theorem centralRemainingScalar_arithmetic_bound (e eps : ℝ)
+
+section
+variable (e eps : ℝ)
     (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S) :
+    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+include e eps he he' heps S hS hfirst
+
+theorem centralRemainingScalar_arithmetic_bound  :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→Character)
       (B a H : ℝ) (i : ℕ),2<B → 51/100≤a → a≤1 → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
@@ -85,9 +94,7 @@ theorem centralRemainingScalar_arithmetic_bound (e eps : ℝ)
       rw [show 3*eps=eps+2*eps by ring,Real.rpow_add hn]
       ring
 
-theorem central_remaining_rowCost_bound (e eps : ℝ)
-    (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S) :
+theorem central_remaining_rowCost_bound  :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→Character)
       (B a H : ℝ) (i : ℕ),2<B → 51/100≤a → a≤1 → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
@@ -114,9 +121,11 @@ theorem central_remaining_rowCost_bound (e eps : ℝ)
         (rowNorm u^(3*eps)*rowNorm u^(a-1/2+12*e+4*eps))*
         ((3+H)^(2*eps)*(3+H)^(2+2*eps)) := by ring
     _ = _ := by rw [hnp,hlp]
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

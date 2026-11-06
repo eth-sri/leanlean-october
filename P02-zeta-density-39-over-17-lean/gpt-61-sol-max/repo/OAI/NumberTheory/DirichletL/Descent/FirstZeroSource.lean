@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 section
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -37,7 +38,7 @@ theorem first_variable_zero_common_bound
   let z (C:Finset ι) (I:Ideal O):ℂ:=canonicalCubeDualZero p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂
     (ConcretePrimeRowBridge.idealGenerator I)
     H₁ H₂ W K
-  let Q:ℝ:=Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)
+  let Q :=Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)
   have hQ:0≤Q:=by dsimp [Q];positivity
   have heq : (∑C∈(pool\b.support).powerset,∑I∈labels,a C I*z C I)=
       ∑C∈boundedPrimeSupports p (pool\b.support) (L),∑I∈labels,a C I*z C I := by
@@ -141,8 +142,8 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
         (mul_le_mul_of_nonneg_left hlabel (by positivity)) hQ
     _ = _ := by dsimp [Q];ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

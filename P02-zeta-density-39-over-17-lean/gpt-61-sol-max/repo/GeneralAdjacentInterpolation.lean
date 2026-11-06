@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GeneralAdjacentCover
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1800000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Geometric interpolation of two adjacent literal moment powers. -/
@@ -29,9 +29,7 @@ theorem adjacent_log_interpolation {U T H R : ℝ} {j : ℕ}
       ((2*(j:ℝ)+1)/(2*j*(j+1)))*Real.log 2+Real.log H+
         Real.log T/(2*(j:ℝ))+(2-(2*(j:ℝ)+1)/(2*j*(j+1)))*Real.log R := by
     convert hw using 1 <;> field_simp <;> ring
-  have hc : (2*(j:ℝ)+1)/(2*j*(j+1)) ≤ 1 := by
-    apply (div_le_one (by positivity : 0 < 2*(j:ℝ)*(j+1))).mpr
-    nlinarith [sq_nonneg ((j:ℝ)-1)]
+  have hc : (2*(j:ℝ)+1)/(2*j*(j+1)) ≤ 1 := by field_simp <;> nlinarith
   have hh := mul_le_mul_of_nonneg_right hc (Real.log_nonneg (by norm_num : (1:ℝ) ≤ 2))
   linarith only [hb,hh]
 
@@ -57,14 +55,7 @@ theorem adjacent_pair_envelope {U T H R : ℝ} {K j : ℕ}
     have hu : U ≤ 2*H*T^(1/(2*(K:ℝ)))*R^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by
       apply (Real.log_le_log_iff hU (by positivity)).mp
       simp (disch := positivity) only [Real.log_mul,Real.log_rpow]
-      dsimp [d] at hc
-      calc
-        Real.log U ≤ Real.log 2+Real.log H+2*Real.log R+
-            (Real.log T/(2*(j:ℝ))-(2*(j:ℝ)+1)/(2*j*(j+1))*Real.log R) := by
-          convert hl using 1; ring
-        _ ≤ Real.log 2+Real.log H+2*Real.log R+
-            (Real.log T/(2*(K:ℝ))-(2*(K:ℝ)+1)/(2*K*(K+1))*Real.log R) := by gcongr
-        _ = _ := by ring
+      grind
     exact hu.trans (by
       have hh : 0 ≤ H*R^2 := by positivity
       linarith)
@@ -72,8 +63,7 @@ theorem adjacent_pair_envelope {U T H R : ℝ} {K j : ℕ}
     have hu : U ≤ 2*H*R^2 := by
       apply (Real.log_le_log_iff hU (by positivity)).mp
       simp (disch := positivity) only [Real.log_mul,Real.log_pow]
-      norm_num only [Nat.cast_ofNat]
-      nlinarith only [hl,hc]
+      grind
     exact hu.trans (by
       have hh : 0 ≤ H*T^(1/(2*(K:ℝ)))*R^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by positivity
       linarith)
@@ -95,6 +85,6 @@ theorem adjacent_high_moment {U H R : ℝ} {K : ℕ}
   have hb : (K:ℝ)*Real.log U ≤
       (K:ℝ)*Real.log 2+2*(K:ℝ)*Real.log H+(2*(K:ℝ)-1)*Real.log R := by
     linarith only [hl,hh]
-  convert hb using 1; field_simp; ring
+  convert hb using 1; grind
 
-end Montgomery.RationalMoment
+

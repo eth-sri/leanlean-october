@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoinDecay
 
 @[expose] public section
@@ -10,7 +11,7 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma continuedRow_horizontal_measurable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -76,7 +77,7 @@ lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr 
     refine ⟨?_,hnorm⟩
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
     exact hi v hv
-  have hj : Integrable (fun q=>∫v,F v q ∂μ) ν := hprod.integral_prod_right
+  have hj := hprod.integral_prod_right
   simp only [intervalIntegral.integral_of_le hlr]
   refine ⟨hj,?_⟩
   calc
@@ -90,8 +91,8 @@ lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr 
       dsimp [μ]
       rw [setIntegral_const,Real.volume_real_Ioc_of_le hlr,smul_eq_mul]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

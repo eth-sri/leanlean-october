@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPolynomialInitial
 
 @[expose] public section
@@ -16,7 +17,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleyPolynomial_mixed_one_point_refinement
     {Q p nu theta qB k s : ℕ} [NeZero p] [NeZero qB]
@@ -60,24 +61,13 @@ theorem wooleyPolynomial_mixed_one_point_refinement
   have hD : D ≤ (p ^ (theta - nu) : ℝ) ^ (s - 1) * DR := by
     simpa only [D, DR] using
       (wooleyPolynomial_lemma_6_2 (w := s - 1) phi hnu hs1 gamma alpha eta)
-  have hAnonneg : 0 ≤ A := by
-    dsimp [A]
-    exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi)
-      (sq_nonneg _)
   have hDnonneg : 0 ≤ D := by
-    dsimp [D]
     exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta)
       (pow_nonneg (norm_nonneg _) _)
   have hARnonneg : 0 ≤ AR := by
-    dsimp [AR]
     exact Finset.sum_nonneg fun xi' hxi' =>
       mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi')
         (sq_nonneg _)
-  have hDRnonneg : 0 ≤ DR := by
-    dsimp [DR]
-    exact Finset.sum_nonneg fun eta' heta' =>
-      mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta')
-        (pow_nonneg (norm_nonneg _) _)
   have hmul : A * D ≤
       ((p ^ (theta - nu) : ℝ) * AR) *
         ((p ^ (theta - nu) : ℝ) ^ (s - 1) * DR) :=
@@ -114,17 +104,17 @@ theorem wooleyPolynomial_mixed_one_point_refinement
               ‖wooleyPolynomialNormalizedResidueGridSum
                 phi qB gamma alpha eta'‖ ^ (2 * (s - 1))) := hmul
     _ = _ := by
-      rw [← hpow]
       simp_rw [Finset.mul_sum, Finset.sum_mul]
       rw [Finset.sum_comm]
       apply Finset.sum_congr rfl
-      intro xi' hxi'
-      apply Finset.sum_congr rfl
-      intro eta' heta'
-      ring
+      grind
+
+section
+variable {Q p nu theta B k s : ℕ} [NeZero p] [NeZero (p ^ B)]
+include Q p nu theta B k s
 
 theorem wooleyPolynomial_mixed_one_refinement
-    {Q p nu theta B k s : ℕ} [NeZero p] [NeZero (p ^ B)]
+    
     (phi : WooleyPolynomialSystem k) (hnu : nu ≤ theta) (hs : 2 ≤ s)
     (gamma : Fin Q → ℂ) :
     wooleyPolynomialMixedGridMean phi s 1 p B nu nu nu gamma ≤
@@ -174,8 +164,6 @@ theorem wooleyPolynomial_mixed_one_refinement
                   ‖wooleyPolynomialNormalizedResidueGridSum
                     phi (p ^ B) gamma alpha eta‖ ^ (2 * (s - 1)))) := by
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
       ring
     simp_rw [hlocal]
     rw [show
@@ -239,7 +227,6 @@ theorem wooleyPolynomial_mixed_one_refinement
         intro xi hxi
         rw [Finset.mul_sum]
   have hP : P nu ≤ (p ^ (theta - nu) : ℝ) ^ s * P theta := by
-    dsimp [P]
     calc
       (∑ alpha : Fin k → ZMod (p ^ B),
           ∑ xi : ZMod (p ^ nu),
@@ -278,7 +265,7 @@ theorem wooleyPolynomial_mixed_one_refinement
 
 /-- Polynomial-system Lemma 6.3 as a consumer of its initial-condition bound. -/
 theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
-    {Q p nu theta B k s : ℕ} [NeZero p] [NeZero (p ^ B)]
+    
     {C : ℝ} (phi : WooleyPolynomialSystem k) (hC : 0 ≤ C)
     (hnu : nu ≤ theta) (hs : 2 ≤ s) (gamma : Fin Q → ℂ)
     (hinitial :
@@ -293,24 +280,6 @@ theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
   have hrefine := wooleyPolynomial_mixed_one_refinement
     (Q := Q) (p := p) (nu := nu) (theta := theta)
       (B := B) (k := k) (s := s) phi hnu hs gamma
-  have hpolyNonneg : 0 ≤ wooleyPolynomialMixedGridMean
-      phi s 1 p B theta theta nu gamma := by
-    unfold wooleyPolynomialMixedGridMean
-    split_ifs
-    · simp
-    · apply mul_nonneg (sq_nonneg _)
-      apply Finset.sum_nonneg
-      intro xi hxi
-      apply Finset.sum_nonneg
-      intro eta heta
-      apply mul_nonneg
-      · exact mul_nonneg
-          (wooleyWeightedResidueMassSq_nonneg gamma xi)
-          (wooleyWeightedResidueMassSq_nonneg gamma eta)
-      · unfold wooleyPolynomialMixedResidueGridMoment
-        apply mul_nonneg (by positivity)
-        exact Finset.sum_nonneg fun alpha halpha =>
-          mul_nonneg (by positivity) (by positivity)
   calc
     wooleyPolynomialWeightedGridMean phi s (p ^ B) gamma ≤
         C * (p ^ nu : ℝ) ^ s *
@@ -335,7 +304,9 @@ theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
               wooleyPolynomialMixedGridMean
                 phi s 1 p B theta theta nu gamma := by rw [mul_pow]; ring
         _ = _ := by rw [hpowers]
-
 end
 
-end GafniTao
+
+
+
+

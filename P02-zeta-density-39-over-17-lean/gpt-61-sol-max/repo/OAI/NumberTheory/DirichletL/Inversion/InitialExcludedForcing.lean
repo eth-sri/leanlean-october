@@ -5,18 +5,18 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedOverlap
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedForcing
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
+open InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool
 open InverseInitialExcludedPool InverseInitialExcludedOverlap
-open InverseInitialCommonTuples InverseInitialCommonTransform
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialCommonTuples
+open scoped EisensteinO
 
 theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
     (hF:∀I∈F,outside E I)(A:Finset (primePool F)):
@@ -102,8 +102,8 @@ theorem original_tuples_excluded_input
     (fun c hc=>hsub (Finset.mem_biUnion.mpr ⟨k,hk,hc⟩)) η hη u]
   ring
 
-end SevenEighths.InverseInitialExcludedForcing
 
-end
 
-end OAI
+
+
+

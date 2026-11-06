@@ -5,19 +5,19 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthBounded
 open CenteredMomentNaturalRowSource
 open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
-open CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyState CenteredMomentEnergyZeroGrowth
+open CenteredMomentEnergyZeroReflectionSupport
+open CenteredMomentEnergyReferenceState
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 open CenteredMomentEnergyZeroGrowthReflection CenteredMomentEnergyZeroGrowthBounds
 
@@ -41,7 +41,7 @@ theorem live_deleted_bounded (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     let Ns:ℝ:=(∏P∈Dshort,P).absNorm;
     let Nl:ℝ:=(∏P∈Dlong,P).absNorm;
     let along:=Real.logb Z (Xlong/Nl);
-    0≤s.width-along+xi→
+    0≤ s.width-along+xi→
     let E:=K*diagonalControl s.radial.profile*Dchild*(sourceControl T Wshort)^2*
       (1+|t|)^(2*n)*Z^(s.width+loss+defect+xi)*Nl;
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false Wlong (Xlong/Nl) 0 t*
@@ -87,8 +87,8 @@ theorem live_deleted_bounded (a b bΦ epsilon xi defect saving Lreflect:ℝ)
         (sourceControl Slong Wlong)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving) by positivity)
     convert he using 1 ; ring
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthBounded
 
-end
 
-end OAI
+
+
+

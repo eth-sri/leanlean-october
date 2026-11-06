@@ -6,9 +6,8 @@ public import GuthMaynard.Improvement.ShortDetectorGamma
 public import MathCollab.Density.DetectorError
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -66,4 +65,4 @@ theorem short_detector_residue_eventually_small {δ : ℝ} (hδ : 0 < δ) :
   intro ρ hβ hβ' hγ hγ'
   exact (short_detector_residue_bound hH hβ hβ' hγ hγ').trans_lt hsmall
 
-end GuthMaynard.Improvement
+

@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 abbrev markedRowFamily {σ : Type*} {m f z : Eis}
@@ -27,7 +27,7 @@ theorem actual_marked_row_overlap_zero {σ : Type*} [Fintype σ]
   exact markedCompletedT_free_overlap_zero D.movingIdeal (Q*Ideal.span {(72:Eis)})
     D.movingSupported S P i hPi (D.fixedFactor Ψ Q) W X
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

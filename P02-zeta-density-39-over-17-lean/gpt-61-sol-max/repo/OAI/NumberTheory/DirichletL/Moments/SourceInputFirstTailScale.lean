@@ -6,14 +6,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstDiscardedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSourceInputFirstTailUniform
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-lemma common_subset_product_dvd_right (I J : Ideal O) (E : Finset (CommonIndex I J)) :
+section
+variable (I J : Ideal O) (E : Finset (CommonIndex I J))
+include I J E
+
+lemma common_subset_product_dvd_right  :
     (∏P∈E,P.val)∣commonPart J I := by
   apply (Finset.prod_dvd_prod_of_subset E Finset.univ
     (fun P : CommonIndex I J=>P.val) (Finset.subset_univ _)).trans
@@ -22,7 +26,7 @@ lemma common_subset_product_dvd_right (I J : Ideal O) (E : Finset (CommonIndex I
   intro P hP
   simpa only [pow_one] using pow_dvd_pow P.val (rightExponent_pos I J P)
 
-theorem first_nominal_scale_le (I J : Ideal O) (E : Finset (CommonIndex I J))
+theorem first_nominal_scale_le 
     (K X : ℝ) (hK : 0<K) :
     firstNominalScale I J (∏P∈E,P.val) K X≤X^2/K := by
   have hC := norm_pos (commonPart I J) (commonPart_ne_zero I J)
@@ -40,9 +44,11 @@ theorem first_nominal_scale_le (I J : Ideal O) (E : Finset (CommonIndex I J))
     (mul_le_mul_of_nonneg_right (mul_le_mul hE hA (by positivity) hD.le) (sq_nonneg X))
     (mul_nonneg (mul_nonneg hK.le hC.le) hD.le)).trans_eq
   field_simp
-
-end SevenEighths.CenteredMomentSourceInputFirstTailUniform
-
 end
 
-end OAI
+
+
+
+
+
+

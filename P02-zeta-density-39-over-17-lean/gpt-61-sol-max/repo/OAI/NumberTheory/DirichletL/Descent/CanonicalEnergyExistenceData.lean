@@ -9,9 +9,9 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CanonicalRowCompletion
+open scoped EisensteinO
 
 def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Prop :=
   ∃degree:ℕ,∃B:ℝ,1≤B ∧
@@ -51,8 +51,8 @@ theorem canonical_energy_of_rank (n:ℕ)(L cstar cutoff eta Mcap Fcap c eps:ℝ)
     (poolPrimary_good F hFa) Finset.univ base slots lists a W Z Mcap (rankRowCap n cutoff)
     Fcap (rankTotalCap n L eta) z c (rankMargin n cstar eta) (rankLoss n eta) C K degree hM hF hc hmom
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

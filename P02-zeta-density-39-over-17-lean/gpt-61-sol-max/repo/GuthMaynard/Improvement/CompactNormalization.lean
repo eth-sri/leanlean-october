@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CompactKernel
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -16,10 +16,7 @@ theorem smooth_support_interval {κ g : ℝ → ℝ} {a b h x : ℝ}
   apply integral_eq_zero_of_ae
   filter_upwards [] with y
   by_cases hy : y ∈ Set.Icc a b
-  · have ht : h < |x-y| := by
-      by_contra hn
-      have hh := abs_le.mp (le_of_not_gt hn)
-      exact hx ⟨by linarith [hy.1], by linarith [hy.2]⟩
+  · have ht : h < |x-y| := by grind
     simp [hκ (x-y) ht]
   · simp [hg y hy]
 
@@ -80,4 +77,4 @@ theorem compact_smoothing_normalized_fourier {a b : ℝ} (hab : a ≤ b) (j : �
     _ ≤ δ⁻¹^j*C*((b-a+4)*U) := mul_le_mul_of_nonneg_left hm' hp
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

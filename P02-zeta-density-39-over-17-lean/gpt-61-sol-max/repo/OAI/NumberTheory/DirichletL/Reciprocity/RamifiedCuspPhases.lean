@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.CubeResidueStrata
 
 @[expose] public section
@@ -9,78 +10,78 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CubicKubota
 
 open scoped Classical MatrixGroups BigOperators
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def actualCubeCuspPhaseSum (A:levelTwo) (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     (w:Fin 4→ℂ) : ℂ :=
@@ -170,7 +171,7 @@ open scoped BigOperators Classical MatrixGroups Matrix
 
 section
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "ramLambda" => (omega-1:Eis)
 
 lemma onceCusp_trace_lambda : ramifiedTraceLambda*ramLambda=3*omega^2 := by
@@ -302,7 +303,7 @@ lemma onceRamified_row_phase (u:Eisˣ) (p:OnceRamifiedData) :
 end
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def diagonalPrimitiveMap (u:Eisˣ) (v:PrimitiveRow) : PrimitiveRow :=
   ⟨![(u:Eis)^2*v.val 0,v.val 1],by
@@ -388,7 +389,7 @@ open MeasureTheory
 open scoped BigOperators Classical MatrixGroups Matrix
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def affineLowerTerm (q r:Eis) (z:ℂ) (v:ℝ) (s:ℂ) (a d:Eis) : ℂ :=
   (eisEmbedding (symbol r d)*eisEmbedding (symbol d a))*
@@ -497,7 +498,7 @@ open Filter MeasureTheory
 open scoped BigOperators Classical Topology
 
 open ConcreteTraceCRT EisensteinEmbedding
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
   inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
@@ -581,7 +582,7 @@ lemma periodic_function_periodSection (f : ℂ→ℂ)
 theorem period_integral_eisenstein_mul (f : ℂ→ℂ) (hf : Measurable f)
     (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (b : ActualEisensteinCubic.O) (hb : b≠0) :
     (∫z in periodDomain,f (eisEmbedding b*z))=∫z in periodDomain,f z := by
-  let F : UnitAddTorus (Fin 2)→ℂ := fun t=>f (periodSection t)
+  let F := fun t=>f (periodSection t)
   have hF : Measurable F := hf.comp periodSection_measurableEmbedding.measurable
   have hm := eisensteinTorusMul_measurePreserving b hb
   have hi : (∫t,F (eisensteinTorusMul b t))=∫t,F t := by
@@ -600,7 +601,7 @@ open scoped BigOperators Classical ENNReal
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem finite_index_period_unfold_of_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrable f)
     (hsum:Summable (fun n:Eis=>∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))) :
@@ -630,7 +631,7 @@ theorem finite_index_period_unfold_of_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) 
   change (∑'n:Eis,I n)=_ at hsplit ⊢
   rw [hsplit]
   change (∑'r:Eis⧸Ideal.span {q},∑'n:((Ideal.Quotient.mk (Ideal.span {q})) ⁻¹' {r}),I n.val)=_
-  simp only [hinner,tsum_fintype,Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
+  simp only [hinner, tsum_fintype, sum_const, card_univ, nsmul_eq_mul]
   congr 1
   change (Fintype.card (Eis⧸Ideal.span {q}):ℂ)=(Nat.card (Eis⧸Ideal.span {q}):ℂ)
   rw [Nat.card_eq_fintype_card]
@@ -660,7 +661,7 @@ lemma finite_index_period_lintegral (q:Eis) (hq:q≠0) (f:ℂ→ℝ≥0∞) :
     exact lintegral_add_right_eq_self f b
   change (∑'n:Eis,I n)=_
   rw [←ENNReal.tsum_fiberwise I (Ideal.Quotient.mk (Ideal.span {q}))]
-  simp only [hinner,tsum_fintype,Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
+  simp only [hinner, tsum_fintype, sum_const, card_univ, nsmul_eq_mul]
   congr 1
   change (Fintype.card (Eis⧸Ideal.span {q}):ℝ≥0∞)=(Nat.card (Eis⧸Ideal.span {q}):ℝ≥0∞)
   rw [Nat.card_eq_fintype_card]
@@ -679,8 +680,8 @@ theorem finite_index_period_unfold (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrab
   finite_index_period_unfold_of_summable q hq f hf
     (finite_index_period_integrals_summable q hq f hf)
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

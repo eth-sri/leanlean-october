@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SourceHybrid
 
 @[expose] public section
@@ -8,10 +9,14 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-private theorem hybrid_log_cost_bound (ε : ℝ) (hε : 0 < ε) :
+open scoped EisensteinEis
+
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+private theorem hybrid_log_cost_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B →
       K ^ (ε / 9) * (K * (N * B) * N) ^ (ε / 9) *
         (columnDyadicLength K + 1 : ℝ) ^ 2 * (columnDyadicLength N + 1 : ℝ) ^ 2 *
@@ -46,12 +51,10 @@ private theorem hybrid_log_cost_bound (ε : ℝ) (hε : 0 < ε) :
   have hpow2 : (Q ^ 2) ^ δ = (Q ^ δ) ^ 2 := by
     rw [← Real.rpow_natCast_mul hQ0.le 2 δ]
     rw [← Real.rpow_natCast, ← Real.rpow_mul hQ0.le]
-    congr 1
     ring
   have hpow9 : (Q ^ δ) ^ 9 = Q ^ ε := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hQ0.le]
     congr 1
-    dsimp only [δ]
     ring
   calc
     _ ≤ Q ^ δ * (Q ^ δ) ^ 2 * (A * Q ^ δ) ^ 2 * (A * Q ^ δ) ^ 2 * (A * Q ^ δ) ^ 2 := by
@@ -64,7 +67,7 @@ private theorem hybrid_log_cost_bound (ε : ℝ) (hε : 0 < ε) :
     _ = A ^ 6 * (Q ^ δ) ^ 9 := by ring
     _ = _ := by rw [hpow9]
 
-theorem supportedHybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem supportedHybridRow_energy_sieve_norm  :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B →
     ∀ (rows : Finset (Ideal Eis)) (S : Finset (Ideal Eis × Ideal Eis))
       (Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ),
@@ -96,7 +99,7 @@ theorem supportedHybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :
             (by positivity)) (by linarith)) hs
     _ = _ := by ring
 
-theorem hybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem hybridRow_energy_sieve_norm  :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B →
     ∀ (rows nset bset Pset : Finset (Ideal Eis))
       (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ),
@@ -121,8 +124,10 @@ theorem hybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :
   have hh := he K N B L hK hN hB rows (nset ×ˢ bset) Pset a beta hrows hprod hP ha
     (fun p hp => hbeta p.1 (Finset.mem_product.mp hp).1 p.2 (Finset.mem_product.mp hp).2)
   simpa only [supportedHybridRow_product] using hh
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

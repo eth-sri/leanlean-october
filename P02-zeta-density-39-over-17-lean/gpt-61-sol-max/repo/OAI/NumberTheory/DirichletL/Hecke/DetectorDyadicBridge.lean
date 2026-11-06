@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierActual
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicSource
 
@@ -9,7 +10,7 @@ namespace OAI
 noncomputable section
 
 open scoped Classical BigOperators Topology
-open Set Complex
+open Complex
 namespace SevenEighths.HeckeDetectorDyadicBridge
 open HeckeFamily HeckeDyadic HeckeDetectorFourier
 
@@ -25,7 +26,7 @@ lemma norm_phase (x D : ℝ) (hx : 0<x) (hD : 0<D) (s : ℂ) (t : ℝ) :
   unfold FourierBridge.logPhase HeckeDyadic.shift
   rw [← Complex.exp_add, ← Complex.exp_add, Real.log_div hx.ne' hD.ne']
   congr 1
-  have hs : s=(s.re : ℂ)+(s.im : ℂ)*I := (Complex.re_add_im s).symm
+  have hs := (Complex.re_add_im s).symm
   rw [hs]
   simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im, mul_zero,
     sub_zero, add_zero, add_im, mul_im, mul_one, zero_add]
@@ -38,7 +39,11 @@ lemma normalization (D : ℝ) (hD : 0<D) (s : ℂ) :
   congr 1
   ring
 
-lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
+section
+variable (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
+include χ inverse W
+
+lemma polynomial_eq_finite 
     (D σ freq : ℝ) (S : Finset (Ideal O))
     (hcover : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
     polynomial χ inverse W D σ freq =
@@ -47,7 +52,7 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
           (((J.absNorm : ℝ)/D : ℝ) : ℂ)^(-HeckeDyadic.shift σ freq) := by
   unfold polynomial
   congr 1
-  let f : Ideal O→ℂ := fun J => coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
+  let f := fun J => coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
     (((J.absNorm : ℝ)/D : ℝ) : ℂ)^(-HeckeDyadic.shift σ freq)
   have hf : Function.support f ⊆ {J : Ideal O | J≠0} := by
     intro J hJ hzero
@@ -69,7 +74,7 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
     exact hJ (hcover J hj hw)
   simp [f,hw]
 
-theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
+theorem phase_sum_eq_polynomial 
     (D : ℝ) (hD : 0<D) (s : ℂ) (t : ℝ) (S : Finset (Ideal O))
     (hS : ∀ J∈S, J≠0)
     (hcover : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
@@ -88,6 +93,8 @@ theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ
     _ = coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
         ((J.absNorm : ℂ)^(-s)*FourierBridge.logPhase t (Real.log ((J.absNorm : ℝ)/D))) := by ring
     _ = _ := by rw [hp]; ring
+end
+
 
 def inverseProfile (V W : ℝ→ℂ) (Dstar D : ℝ) (x : ℝ) : ℂ :=
   V (D*x/Dstar)*W x
@@ -154,8 +161,8 @@ theorem pair_phase_norm (χ : Character) (V W₁ W₂ : ℝ→ℂ) (Dstar D N : 
     norm_mul, norm_mul, normalization_norm D hD s, normalization_norm N hN s]
   ring
 
-end SevenEighths.HeckeDetectorDyadicBridge
 
-end
 
-end OAI
+
+
+

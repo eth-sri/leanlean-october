@@ -11,12 +11,15 @@ open scoped Classical BigOperators
 open CanonicalRowCompletion
 noncomputable section
 
-def sourceDependentExtension {X Y : Type*} {D : Y→Type*}
-    (f : X→Y) (C : ∀ x, D (f x)) (fallback : ∀ y, D y) (y : Y) : D y :=
+section
+variable {X Y : Type*} {D : Y→Type*}
+    (f : X→Y)
+include X Y D f
+
+def sourceDependentExtension  (C : ∀ x, D (f x)) (fallback : ∀ y, D y) (y : Y) : D y :=
   if h : ∃ x, f x=y then h.choose_spec ▸ C h.choose else fallback y
 
-lemma sourceDependentExtension_at {X Y : Type*} {D : Y→Type*}
-    (f : X→Y) (hinj : Function.Injective f) (C : ∀ x, D (f x))
+lemma sourceDependentExtension_at  (hinj : Function.Injective f) (C : ∀ x, D (f x))
     (fallback : ∀ y, D y) (x : X) :
     sourceDependentExtension f C fallback (f x)=C x := by
   have h : ∃ z, f z=f x := ⟨x,rfl⟩
@@ -28,10 +31,16 @@ lemma sourceDependentExtension_at {X Y : Type*} {D : Y→Type*}
     subst x
     rfl
   exact hcast _ _ h.choose_spec he
+end
+
 
 variable {α β γ σ : Type*} [Fintype α] [Fintype β] [Fintype σ]
 
-lemma markedActiveSet_injective (e : α⊕β≃γ) :
+section
+variable (e : α⊕β≃γ)
+include e
+
+lemma markedActiveSet_injective  :
     Function.Injective (fun q : Finset β×Finset σ => markedActiveSet e q.1 q.2) := by
   intro x y he
   have hh := congrArg (optionalPrimeActive (joinedFiberEquiv e)) he
@@ -44,7 +53,7 @@ lemma markedActiveSet_injective (e : α⊕β≃γ) :
   · have h := congrArg Finset.toRight hh
     simpa using h
 
-theorem exists_marked_source_selection (e : α⊕β≃γ)
+theorem exists_marked_source_selection 
     (D : Finset (γ⊕σ)→Type*) (fallback : ∀ A, D A)
     (C : ∀ B : Finset β, ∀ T : Finset σ, D (markedActiveSet e B T)) :
     ∃ E : ∀ A, D A, ∀ B T, E (markedActiveSet e B T)=C B T := by
@@ -53,6 +62,8 @@ theorem exists_marked_source_selection (e : α⊕β≃γ)
   intro B T
   exact sourceDependentExtension_at _ (markedActiveSet_injective e) _ _ (B,T)
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

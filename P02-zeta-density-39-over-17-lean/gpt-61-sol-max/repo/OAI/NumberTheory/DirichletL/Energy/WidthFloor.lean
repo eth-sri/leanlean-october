@@ -13,9 +13,9 @@ open Filter
 namespace SevenEighths.CenteredMomentEnergyWidthFloor
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyWidthSchedule CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
+open CenteredMomentNaturalFixedRaySource
 open QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):
     p.control S≤p.control T:=by
@@ -81,8 +81,8 @@ theorem actual_joint_floor (Mcap B κ ε:ℝ)(hMcap:0≤Mcap)(hB:0≤B)
     gcongr
     exact Real.rpow_nonneg (zero_le_one.trans hZ.1.le) _
 
-end SevenEighths.CenteredMomentEnergyWidthFloor
 
-end
 
-end OAI
+
+
+

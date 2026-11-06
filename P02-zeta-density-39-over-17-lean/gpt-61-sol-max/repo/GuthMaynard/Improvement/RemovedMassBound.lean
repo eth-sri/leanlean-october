@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.RemovedMassDyadic
 public import GuthMaynard.Improvement.ClassicalLevelVolume
 public import GuthMaynard.Improvement.SourceRatioHeightBudget
 public import GuthMaynard.Improvement.FixedCutoffs
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -75,7 +75,6 @@ theorem removed_dyadic_cover {δ : ℝ} (hδ : 0 < δ) :
     rw [Real.log_pow] at hh
     have he : Real.log (2*(2*N)) = Real.log 2+Real.log (2*N) :=
       Real.log_mul (by norm_num) (by positivity)
-    rw [he] at hh
     have hm : Real.log 2 ≤ Real.log (2*N) := Real.log_le_log (by norm_num) (by linarith)
     linarith
   have hj : (J:ℝ) ≤ (2/Real.log 2)*Real.log (2*N) := by
@@ -86,8 +85,7 @@ theorem removed_dyadic_cover {δ : ℝ} (hδ : 0 < δ) :
   have hnp : 1 ≤ N^δ := Real.one_le_rpow (by linarith) hδ.le
   have hm := mul_le_mul_of_nonneg_left hg (show 0 ≤ 2/Real.log 2 by positivity)
   refine ⟨J,hcover,?_⟩
-  dsimp [K]
-  nlinarith
+  grind
 
 /-- Actual removed mass with fixed cutoff and no classical-estimate premise. -/
 theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
@@ -144,15 +142,12 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
       _ = (5*C*N^(ε/2))*(∑ j ∈ Finset.range J, 4*((2:ℝ)^j*U)^2*
           (N^2/((2:ℝ)^j*U)^2+T*N^4/((2:ℝ)^j*U)^6)) := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro j _
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_left (removed_dyadic_classical_sum ht.le hu J) (by positivity)
   have hp : N^(ε/2)*N^(ε/2)=N^ε := by rw [← Real.rpow_add hn]; congr 1; ring
   have hrest : 0 ≤ T*N^4/U^4 := by positivity
   have hscalar : 4*(J:ℝ)*N^2+8*T*N^4/U^4 ≤
       8*(K*N^(ε/2))*(N^2+T*N^4/U^4) := by
-    have hj0 : (0:ℝ) ≤ J := by positivity
     have h1 : 1 ≤ K*N^(ε/2) := by linarith
     have h2 := mul_le_mul_of_nonneg_right
       (show 4*(J:ℝ) ≤ 8*(K*N^(ε/2)) by linarith) (sq_nonneg N)
@@ -163,9 +158,6 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
     _ ≤ (5*C*N^(ε/2))*(4*(J:ℝ)*N^2+8*T*N^4/U^4) := hraw.trans hsum
     _ ≤ (5*C*N^(ε/2))*(8*(K*N^(ε/2))*(N^2+T*N^4/U^4)) :=
       mul_le_mul_of_nonneg_left hscalar (by positivity)
-    _ = _ := by
-      calc
-        _ = 40*C*K*(N^(ε/2)*N^(ε/2))*(N^2+T*N^4/U^4) := by ring
-        _ = _ := by rw [hp]
+    _ = _ := by grind
 
-end GuthMaynard.Improvement
+

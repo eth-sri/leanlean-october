@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -17,25 +18,24 @@ The two additional discrete mean-value endpoints give B=2M+2 <= 4M.
 The actual curvature scales are bounded in terms of Q=M*sqrt(H*M).
 -/
 
-set_option autoImplicit false
-noncomputable section
+
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinson_far_slope_lower {H u M B : ℝ}
-    (hH : 0 < H) (hHu : H ≤ u) (hM : 0 < M) (hB : 0 < B) (hBM : B ≤ 4*M) :
+section
+variable {H u M B : ℝ}
+    (hH : 0 < H) (hHu : H ≤ u)
+include H u M B hH hHu
+
+theorem atkinson_far_slope_lower  (hM : 0 < M) (hB : 0 < B) (hBM : B ≤ 4*M) :
     Real.sqrt (H/M) ≤ atkinsonIndexSlopeLower u B := by
   unfold atkinsonIndexSlopeLower
   apply Real.sqrt_le_sqrt
   rw [div_le_div_iff₀ hM hB]
   have hcoef : B ≤ 2*Real.pi*M := by nlinarith [Real.pi_gt_three]
-  have h1 := mul_le_mul_of_nonneg_left hcoef hH.le
-  have h2 := mul_le_mul_of_nonneg_right hHu
-    (by positivity : 0 ≤ 2*Real.pi*M)
   nlinarith
 
-theorem atkinson_far_box_curvature_bounds {H u M B : ℝ}
-    (hH : 0 < H) (hHu : H ≤ u) (huH : u ≤ 2*H)
+theorem atkinson_far_box_curvature_bounds  (huH : u ≤ 2*H)
     (hM : 0 < M) (hB : 0 < B) (hBM : B ≤ 4*M) :
     1/(320*(M*Real.sqrt (H*M))) ≤ atkinsonIndexBoxCurvatureLower u M B ∧
       atkinsonIndexBoxCurvatureUpper u M B ≤ 4/(M*Real.sqrt (H*M)) := by
@@ -69,6 +69,8 @@ theorem atkinson_far_box_curvature_bounds {H u M B : ℝ}
     rw [div_le_div_iff₀ hDU hQ]
     have hp := mul_le_mul_of_nonneg_right Real.pi_lt_four.le hQ.le
     nlinarith
+end
+
 
 theorem atkinson_far_lambda_bounds {H t u : ℝ} {M : ℕ}
     (hH : 0 < H) (hHu : H ≤ u) (huH : u ≤ 2*H) (htu : u < t) (hM : 0 < M) :
@@ -86,4 +88,4 @@ theorem atkinson_far_lambda_bounds {H t u : ℝ} {M : ℕ}
         (mul_le_mul_of_nonneg_right hb.1 (sub_pos.mpr htu).le)
   · exact (mul_le_mul_of_nonneg_right hb.2 (sub_pos.mpr htu).le).trans_eq (by ring)
 
-end MathCollab.Density.Stronger.Atkinson
+

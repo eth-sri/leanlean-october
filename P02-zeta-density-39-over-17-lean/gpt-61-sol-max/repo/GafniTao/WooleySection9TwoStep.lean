@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection9Admissible
 
 @[expose] public section
@@ -13,7 +14,7 @@ of the two Lemma-9.2 bounds, with both formerly implicit constants retained.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Substitution of one monograde estimate into another. -/
 theorem wooley_monograde_two_step_compose
@@ -24,14 +25,10 @@ theorem wooley_monograde_two_step_compose
     (hsecond : Q ≤ C₂ * R ^ rho₂ * tail₂) :
     P ≤ C₁ * C₂ ^ rho₁ * R ^ (rho₁ * rho₂) *
       tail₂ ^ rho₁ * tail₁ := by
-  have hsecondPow := Real.rpow_le_rpow hQ hsecond hrho₁
   have hRpow : 0 ≤ R ^ rho₂ := Real.rpow_nonneg hR _
-  have hmiddle : 0 ≤ C₁ * tail₁ := mul_nonneg hC₁ htail₁
   calc
     P ≤ C₁ * Q ^ rho₁ * tail₁ := hfirst
-    _ ≤ C₁ * (C₂ * R ^ rho₂ * tail₂) ^ rho₁ * tail₁ := by
-      have := mul_le_mul_of_nonneg_left hsecondPow hC₁
-      exact mul_le_mul_of_nonneg_right this htail₁
+    _ ≤ C₁ * (C₂ * R ^ rho₂ * tail₂) ^ rho₁ * tail₁ := by bound
     _ = C₁ * C₂ ^ rho₁ * R ^ (rho₁ * rho₂) *
         tail₂ ^ rho₁ * tail₁ := by
       rw [Real.mul_rpow (mul_nonneg hC₂ hRpow) htail₂,
@@ -46,11 +43,7 @@ theorem wooley_second_decay_rpow_le_one
     (hrho : 0 ≤ rho) :
     ((p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ)))) ^ rho ≤ 1 := by
   have hpOne : (1 : ℝ) ≤ p := by exact_mod_cast (show 1 ≤ p by omega)
-  have hkR : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
-  have hexp : -(b : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 0 := by
-    have hnum : -(b : ℝ) * Lambda ≤ 0 :=
-      mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (Nat.cast_nonneg _)) hLambda
-    exact div_nonpos_of_nonpos_of_nonneg hnum (by positivity)
+  have hexp : -(b : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 0 := by field_simp <;> nlinarith
   have hbase : (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) ≤ 1 := by
     rw [← Real.rpow_zero (p : ℝ)]
     exact Real.rpow_le_rpow_of_exponent_le hpOne hexp
@@ -81,8 +74,6 @@ theorem wooley_source_two_step_compose
   have hdrop := wooley_second_decay_rpow_le_one
     (p := p) (k := k) (b := b₁) (Lambda := Lambda)
       (rho := wooleyRho k r₁) hp (by omega) hLambda hrho₁
-  have hnonneg : 0 ≤ C₁ * C₂ ^ wooleyRho k r₁ *
-      R ^ (wooleyRho k r₁ * wooleyRho k r₂) := by positivity
   calc
     P ≤ C₁ * C₂ ^ wooleyRho k r₁ *
         R ^ (wooleyRho k r₁ * wooleyRho k r₂) *
@@ -99,6 +90,6 @@ theorem wooley_source_two_step_compose
       simp only [wooleyTwoStepWeight, mul_one]
 
 
-end
 
-end GafniTao
+
+

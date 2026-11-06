@@ -11,13 +11,14 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondInputGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
+open CenteredMomentOriginalCommonHarmonic
+
 open CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
 open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
+
 local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
 def exponent (A D P q ε ξ:ℝ):ℝ:=
@@ -27,7 +28,7 @@ structure Ready {ι:Type*}[Fintype ι](s:Input ι)(R:Ideal O)(K Z ξ B:ℝ):Prop
   puncture_ne : R≠0
   scale_pos : 0<K
   volume_cap : volume s≤Z^B
-  source_nonneg : 0≤sourceRadius s
+  source_nonneg : 0≤ sourceRadius s
   source_cap : sourceRadius s≤Z^B
   conductor_cap : (s.η.modulus.absNorm:ℝ)≤Z^B
   puncture_cap : (R.absNorm:ℝ)≤Z^B
@@ -41,8 +42,8 @@ theorem normalized_zero {ι:Type*}[Fintype ι](s:Input ι)(R seed:Ideal O)
     normalizedGaussSource s R seed W K=0:=by
   simp [normalizedGaussSource,sourceGaussEnergy,gaussEnergy,gaussPolynomial,hz]
 
-end SevenEighths.CenteredMomentFirstSecondInputGates
 
-end
 
-end OAI
+
+
+

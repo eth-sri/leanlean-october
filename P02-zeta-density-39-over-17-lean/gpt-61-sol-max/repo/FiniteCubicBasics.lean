@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.CenteredCubicApprox
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 namespace Montgomery.RationalMoment
@@ -77,4 +76,4 @@ theorem finite_cubic_integral (W : Finset ℝ) {K : ℝ → ℂ} (hK : Measurabl
   simp_rw [integral_prod _ (hip _),finite_time_integral]
   rfl
 
-end Montgomery.RationalMoment
+

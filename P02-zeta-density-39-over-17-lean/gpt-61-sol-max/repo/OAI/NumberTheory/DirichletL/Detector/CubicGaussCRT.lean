@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Detector.PairPhase
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion
+open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition
+open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
+open scoped EisensteinO
 
 lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :
     gaussTwo I hI.2 =
@@ -44,9 +44,13 @@ lemma residueGauss_principalCubicCharacter (I : Ideal O) (hI : CubicSieve.Admiss
   rw [representative_spec] at hc
   rw [hc]
 
-theorem gaussTwo_coprime_product (I J : Ideal O)
+section
+variable (I J : Ideal O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
-    (hIJ : CubicSieve.Admissible (I*J)) (hcop : IsCoprime I J) :
+    (hIJ : CubicSieve.Admissible (I*J)) (hcop : IsCoprime I J)
+include I J hI hJ hIJ hcop
+
+theorem gaussTwo_coprime_product  :
     gaussTwo (I*J) hIJ.2 =
       (CubicSieve.cubicRow I (primaryGenerator J) * CubicSieve.cubicRow J (primaryGenerator I)) *
       gaussTwo I hI.2 * gaussTwo J hJ.2 := by
@@ -108,17 +112,17 @@ theorem gaussTwo_coprime_product (I J : Ideal O)
   rw [hgen, map_mul, norm_mul, Complex.ofReal_mul]
   ring
 
-theorem gaussTwo_coprime_product_sextic (I J : Ideal O)
-    (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
-    (hIJ : CubicSieve.Admissible (I*J)) (hcop : IsCoprime I J) :
+theorem gaussTwo_coprime_product_sextic  :
     gaussTwo (I*J) hIJ.2 =
       ProbePhase.sexticPair (primaryGenerator I) (primaryGenerator J)^2 *
         gaussTwo I hI.2 * gaussTwo J hJ.2 := by
   rw [gaussTwo_coprime_product I J hI hJ hIJ hcop]
   simp only [CubicSieve.cubicRow, ← idealRowHom_square, ProbePhase.sexticPair,
     (primaryGenerator_spec I hI.2).1, (primaryGenerator_spec J hJ.2).1, mul_pow]
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

@@ -12,7 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyOriginalHighReflectionGeometry CenteredMomentEnergyReferenceLowReflectionError
@@ -21,7 +21,7 @@ open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -43,14 +43,14 @@ theorem deleted_original_from_low
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi≤s.width/14 →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi≤ s.width/14 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
-      length Z X₁≤s.width/4 →
+      length Z X₁≤ s.width/4 →
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i) →
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width →
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width →
       ∀D₁∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀D₂∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀F:Finset α,
@@ -131,8 +131,8 @@ theorem deleted_original_from_low
       · exact hZ.1.le
       · exact hg.2.2.1
 
-end SevenEighths.CenteredMomentEnergyOriginalHighReflectionDeleted
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.PrimeRecurrence
 
 @[expose] public section
@@ -11,72 +12,72 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 section
 open Filter MeasureTheory
@@ -84,7 +85,7 @@ open scoped BigOperators Classical Topology MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 lemma unramifiedCubicGaussSeries_prime_two_power (p:Eis) (hp:Prime p)
@@ -191,7 +192,7 @@ end
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma sourceArithmeticResidue_prime_pow_mod (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (h:Eis) (hh:h≠0) (n:ℕ) :
@@ -247,17 +248,9 @@ theorem sourceArithmeticResidue_prime_factor (p:Eis) (hp:Prime p)
     sourceArithmeticResidue (h*p)=
         (q^(-(2/3:ℂ))*q^(-(4/3:ℂ))*q^2)*sourceArithmeticResidue (h*p):=by rw [hpower,one_mul]
     _=q^(-(2/3:ℂ))*q*primeCubicGauss p hp hprimary 2 (9*h)*
-        (q^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 (9*h)*sourceArithmeticResidue (h*p)):=by
-      calc
-        _=q^(-(2/3:ℂ))*q^(-(4/3:ℂ))*q*
-          (primeCubicGauss p hp hprimary 1 (9*h)*primeCubicGauss p hp hprimary 2 (9*h))*
-          sourceArithmeticResidue (h*p):=by rw [hG];ring
-        _=_:=by ring
+        (q^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 (9*h)*sourceArithmeticResidue (h*p)):=by grind []
     _=q^(-(2/3:ℂ))*q*primeCubicGauss p hp hprimary 2 (9*h)*(q⁻¹*sourceArithmeticResidue h):=by rw [hrel]
-    _=_:=by
-      change q^(-(2/3:ℂ))*q*primeCubicGauss p hp hprimary 2 (9*h)*(q⁻¹*sourceArithmeticResidue h)=
-        q^(-(2/3:ℂ))*primeCubicGauss p hp hprimary 2 (9*h)*sourceArithmeticResidue h
-      field_simp [hq]
+    _=_:=by grind []
 
 theorem sourceArithmeticResidue_prime_power_table (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) (n:ℕ) :
@@ -280,7 +273,7 @@ end
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma primeCubicMulChar_inverse (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) :
     (primeCubicMulChar p hp hprimary)⁻¹=primeCubicMulChar p hp hprimary^2 := by
@@ -290,8 +283,6 @@ lemma primeCubicMulChar_inverse (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) :
 lemma primeCubicGauss_two_eq_star (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:Eis) :
     primeCubicGauss p hp hprimary 2 h=star (primeCubicGauss p hp hprimary 1 h) := by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  let:Field (Eis⧸Ideal.span {p}):=Ideal.Quotient.field _
-  let:Fintype (Eis⧸Ideal.span {p}):=Fintype.ofFinite _
   rw [primeCubicGauss_eq_gaussSum,primeCubicGauss_eq_gaussSum,pow_one,star_gaussSum_eq,
     primeCubicMulChar_inverse]
   have he:=mul_gaussSum_inv_eq_gaussSum
@@ -342,7 +333,7 @@ lemma prime_normalizer_powers (p:Eis) (hp:p≠0) :
   rw [←Complex.ofReal_natCast,←eisEmbedding_norm_sq_eq_absNorm_span,pow_two,
     Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg (norm_nonneg _) (norm_nonneg _),
     ←mul_assoc,←Complex.cpow_add _ _ hr,←Complex.cpow_add _ _ hr]
-  convert Complex.cpow_neg_one (‖eisEmbedding p‖:ℂ) using 1 ; congr 1 ; norm_num
+  convert Complex.cpow_neg_one (‖eisEmbedding p‖:ℂ) using 1 ; norm_num
 
 theorem sourceResidualFourierCoefficient_prime_factor (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
@@ -359,7 +350,7 @@ end
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def normalizedCubicUnitGauss (n:Eis) : ℂ :=
   cubicUnitGaussSum 1 n/(‖eisEmbedding n‖:ℂ)
@@ -491,7 +482,7 @@ theorem sourceResidualFourierCoefficient_primary_product {ι:Type*}
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem sourceArithmeticResidue_primary_cube (b:Eis) (hb:b≠0)
     (hbprimary:lambda^2∣b-1) (h:Eis) (hh:h≠0) :
@@ -525,7 +516,7 @@ open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma cubicSymbol_prime_zero (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     (x:Eis) (hpx:p∣x) : symbol x p=0 := by
@@ -620,8 +611,8 @@ theorem normalizedCubicUnitGauss_eq_gaussTwo (I:Ideal Eis)
     rw [(primaryGenerator_spec I hI).1]
   rw [symbol_congr hc,hs,map_one,one_mul]
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

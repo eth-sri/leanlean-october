@@ -1,17 +1,21 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCenteredShell
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+    {η : ℝ} (hη : 0 < η)
+include w η hη
+
 /-- The sharp second moment reflected through every shell of the actual
 centered cutoff kernel, with the original ordered energy. -/
-theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
-    {η : ℝ} (hη : 0 < η) :
+theorem centered_energy_sharp  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 2 ≤ T → Real.sqrt T ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -36,17 +40,11 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
     rw [← Real.rpow_add hTp]
     congr 1
     ring
-  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by
-    obtain ⟨ht1,ht2⟩ := hW t ht
-    obtain ⟨hu1,hu2⟩ := hW u hu
-    exact abs_le.mpr ⟨by linarith,by linarith⟩
+  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by grind
   have hn (v : ℝ) (hv : |v| ≤ Y) : ‖MathCollab.Density.hKernel w L v‖^2 ≤ B₀^2 := by
     have hh := hnear L v hLp hv
     rw [GuthMaynard.Improvement.centeredKernel_eq_density_hKernel w hLp] at hh
-    have hfrac : B₀*L/L^2 ≤ B₀ := by
-      have he : B₀*L/L^2=B₀/L := by field_simp
-      rw [he]
-      exact (div_le_iff₀ hLp).mpr (by nlinarith)
+    have hfrac : B₀*L/L^2 ≤ B₀ := by field_simp <;> nlinarith
     exact pow_le_pow_left₀ (norm_nonneg _) (hh.trans hfrac) 2
   have hnearSum : (∑ p ∈ (W ×ˢ W).filter (fun p => |p.1-p.2| < Y),
       ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) ≤ B₀^2*(W.card:ℝ)^2 := by
@@ -89,11 +87,7 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
           ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) =
           MathCollab.Density.shellEnergy w L H W := by
         simp only [sum_filter,sum_product,MathCollab.Density.shellEnergy,H,pow_succ]
-        congr 1
-        funext t
-        congr 1
-        funext u
-        congr 3; ring
+        ring
       rw [heq]
       calc
         _ ≤ C*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)+
@@ -129,15 +123,13 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
           apply sum_le_sum
           intro t ht
           apply sum_le_sum
-          intro u hu
-          exact hn _ ((hdist t ht u hu).trans (le_of_not_ge hYT))
+          grind
         _ = _ := by simp; ring
     exact hfull.trans (hbase.trans (by gcongr; nlinarith))
 
 /-- The actual squared-cutoff centered matrix satisfies the improved
 quadratic trace bound, with no analytic estimate among the premises. -/
-theorem centered_trace_sharp (w : MathCollab.Density.ReflectionCutoff)
-    {η : ℝ} (hη : 0 < η) :
+theorem centered_trace_sharp  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 2 ≤ T → Real.sqrt T ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -149,5 +141,7 @@ theorem centered_trace_sharp (w : MathCollab.Density.ReflectionCutoff)
   rw [cutoff_centered_trace_identity,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (sum_nonneg (fun _ _ => sum_nonneg (fun _ _ => sq_nonneg _)))]
   exact hbound T t₀ L hT hLs W hW hsep
+end
 
-end Montgomery.RationalMoment
+
+

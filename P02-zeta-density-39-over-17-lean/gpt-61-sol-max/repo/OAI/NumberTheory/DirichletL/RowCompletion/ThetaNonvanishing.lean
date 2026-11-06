@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.MobiusEulerCorrection
 
 @[expose] public section
@@ -8,86 +9,78 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 open scoped BigOperators Classical ContDiff Topology
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O
-open ShortDraftHeckeBridge
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open SixthPowerAverage CompactMellinBridge InitialMeanSquare
 
-end CanonicalRowCompletion
 
-open scoped BigOperators Classical
+                                  
 namespace QuadraticAllOddCRT
 
 section
@@ -240,7 +233,7 @@ lemma localRowValue_square (x : ActualEisensteinCubic.O) (P : Ideal ActualEisens
   · simp
 
 theorem idealRowHom_square (x : ActualEisensteinCubic.O) (I : Ideal ActualEisensteinCubic.O) :
-    idealRowHom x I^2=eisEmbedding (idealSymbol I x) := by
+    idealRowHom x I ^2=eisEmbedding (idealSymbol I x) := by
   have hm (s : Multiset (Ideal ActualEisensteinCubic.O)) :
       (s.map (localRowValue x)).prod^2=eisEmbedding ((s.map (fun P=>primeValue P x)).prod) := by
     induction s using Multiset.induction_on with
@@ -271,7 +264,7 @@ lemma idealRowHom_lambda_prime_cube (p : ActualEisensteinCubic.O) (hp : Prime p)
     (hprimary : lambda^2∣p-1) (hs : Supported (Ideal.span {p})) :
     idealRowHom lambda (Ideal.span {p})^3=lambdaQuadraticCharacter p := by
   let : (Ideal.span {p}).IsMaximal:=PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hmem : Ideal.span {p}∈normalizedFactors (Ideal.span {p}) :=
+  have hmem :=
     (Ideal.mem_normalizedFactors_iff hs.1).mpr ⟨inferInstance,le_rfl⟩
   obtain ⟨hg,hc⟩:=hs.2 _ hmem
   rw [idealRowHom_prime lambda _ hg]
@@ -349,7 +342,7 @@ open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma cuspRemainder_absolute_chart (a b : ℝ) (ha : 1≤a) (hab : a<b)
     (s : ℂ) (hs : 4<s.re) (M : SL(2,ActualEisensteinCubic.O)) (z : ℂ) (hz : ‖z‖≤1)
@@ -359,8 +352,8 @@ lemma cuspRemainder_absolute_chart (a b : ℝ) (ha : 1≤a) (hab : a<b)
     (∑'r : CuspCosets,‖cuspRemainderProfile a b s
       (cosetHeight r (integralComplexMatrix M • upperPoint z v hv0))‖)≤eisensteinRemainderBound b s := by
   let G : ((Fin 2×Fin 2)→ℤ)→ℝ := fun n => (max 5 (2*b))^s.re*‖n‖^(-s.re)
-  let f : CuspCosets→(Fin 2×Fin 2)→ℤ := fun r => rowCoordinates (translatedCuspRow M r)
-  let R : CuspCosets→ℝ := fun r => ‖cuspRemainderProfile a b s
+  let f := fun r => rowCoordinates (translatedCuspRow M r)
+  let R := fun r => ‖cuspRemainderProfile a b s
     (cosetHeight r (integralComplexMatrix M • upperPoint z v hv0))‖
   have hg : Summable G := (summable_integer_four_rpow s.re hs).mul_left _
   have hi : Function.Injective f := rowCoordinates_injective.comp (translatedCuspRow_injective M)
@@ -420,13 +413,13 @@ def weightedHeightProfile (F : ℝ→ℂ) (r : CuspCosets) (p : SpatialCoordinat
   (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) p)
 
 lemma weightedHeightProfile_axis_differentiable (F : ℝ→ℂ)
-    (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v) (r : CuspCosets)
+    (hF : ∀v,0<v→ ContDiffAt ℝ ∞ F v) (r : CuspCosets)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     DifferentiableAt ℝ (axisSlice (weightedHeightProfile F r) p j) (p j) :=
   ((rowProfile_axis_derivatives F hF (embeddedRow r) (embeddedRow_ne_zero r) p hp j).1.const_mul _).differentiableAt
 
 lemma heightPoincare_axis_termwise (F : ℝ→ℂ) (hzero : ∀v≤1,F v=0)
-    (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v)
+    (hF : ∀v,0<v→ ContDiffAt ℝ ∞ F v)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     Summable (fun r => deriv (axisSlice (weightedHeightProfile F r) p j) (p j)) ∧
     HasDerivAt (axisSlice (heightPoincareField F) p j)
@@ -517,7 +510,7 @@ lemma weightedRemainder_scaled_deriv_bound (a b : ℝ) (hab : a<b) (s : ℂ)
     (r : CuspCosets) (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     ‖(p 2:ℂ)*deriv (axisSlice (weightedHeightProfile (cuspRemainderProfile a b s) r) p j) (p j)‖≤
       (‖s‖+C)*‖cuspRemainderProfile (b+1) (b+2) s (rowHeight (embeddedRow r) p)‖ := by
-  let g : SpatialCoordinates→ℂ:=fun q => cuspRemainderProfile a b s (rowHeight (embeddedRow r) q)
+  let g :=fun q => cuspRemainderProfile a b s (rowHeight (embeddedRow r) q)
   have hd := (rowProfile_axis_derivatives (cuspRemainderProfile a b s)
     (cuspRemainderProfile_contDiffAt a b s) (embeddedRow r) (embeddedRow_ne_zero r) p hp j).1
   have hw := hd.const_mul (cosetCharacter r)⁻¹
@@ -593,7 +586,7 @@ theorem kernelEisensteinRemainder_scaled_fderiv_bound (a b : ℝ) (ha : 1<a) (ha
   refine ⟨B,hB,?_⟩
   intro p hp j
   let f : EuclideanSpatial→ℂ:=fun q => kernelEisensteinRemainder a b s (by linarith) (kernelEuclideanProjection q)
-  have hf : ∀q,0<q 2→ContDiffAt ℝ ∞ f q := kernelEisensteinRemainder_euclidean_smooth a b ha hab s (by linarith)
+  have hf : ∀q,0<q 2→ ContDiffAt ℝ ∞ f q := kernelEisensteinRemainder_euclidean_smooth a b ha hab s (by linarith)
   have he : ∀q : SpatialCoordinates,0<q 2→f (WithLp.toLp 2 q)=eisensteinRemainderField a b s q := by
     intro q hq
     exact kernelEisensteinRemainder_euclidean_eq a b s (by linarith) (WithLp.toLp 2 q) hq
@@ -602,8 +595,8 @@ theorem kernelEisensteinRemainder_scaled_fderiv_bound (a b : ℝ) (ha : 1<a) (ha
   rw [←(euclideanAxisSlice_derivatives f hf p hp j).1,heq.deriv_eq]
   exact hbound p.ofLp hp j
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

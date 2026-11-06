@@ -10,20 +10,23 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRectangle
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
 open CenteredMomentHeckeExpansion CenteredMomentMask CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def factorTuple (v : ι → Ideal O) (I J : Ideal O) : (ι ⊕ Fin 2) → Ideal O :=
   Sum.elim v (fun j => if j=0 then I else J)
 
-def selectedPlain (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+section
+variable (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+include D a
+
+def selectedPlain 
     (j : Fin 2) : Ideal O := selectedDivisor D Finset.univ a (Sum.inr j)
 
-def selectedSlot (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+def selectedSlot 
     (i : ι) : Ideal O := selectedDivisor D Finset.univ a (Sum.inl i)
 
-theorem allocationTerm_rectangle (D : Ideal O)
-    (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+theorem allocationTerm_rectangle 
     (v : ι → Ideal O) (I J : Ideal O) :
     allocationTerm D Finset.univ (factorTuple v I J) a =
       allocationSign D Finset.univ a *
@@ -35,6 +38,8 @@ theorem allocationTerm_rectangle (D : Ideal O)
     selectedPlain,selectedSlot]
   simp only [mul_assoc]
   rfl
+end
+
 
 theorem double_selected_reindex (D₁ D₂ : Ideal O) (h₁ : D₁ ≠ 0) (h₂ : D₂ ≠ 0)
     (F : Ideal O → Ideal O → ℂ) :
@@ -121,8 +126,8 @@ theorem allocated_rectangle_reindex (η : Character) (m A z : O) (t : ℝ)
     W₁ W₂ X₁ X₂ Y₁ Y₂ (selectedPlain D a 0) (selectedPlain D a 1)]
   simp only [mul_assoc]
 
-end SevenEighths.CenteredMomentDivisorRectangle
 
-end
 
-end OAI
+
+
+

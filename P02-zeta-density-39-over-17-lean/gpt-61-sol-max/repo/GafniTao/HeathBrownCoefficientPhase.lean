@@ -18,7 +18,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownDisplacementPolynomial
+def heathBrownDisplacementPolynomial
     {k : ℕ} (c α : HeathBrownCoefficientTorus k) (x : ℝ) : ℝ :=
   ∑ j : Fin (k - 1),
     heathBrownCoefficientDisplacement c α j * x ^ ((j : ℕ) + 1)
@@ -35,7 +35,7 @@ theorem fourier_add_point (m : ℤ) (x y : UnitAddCircle) :
           push_cast
           ring
 
-noncomputable def heathBrownCoefficientWeight
+def heathBrownCoefficientWeight
     {k : ℕ} (c α : HeathBrownCoefficientTorus k) (q : ℕ) : ℂ :=
   heathBrownPhase (-heathBrownDisplacementPolynomial c α q)
 
@@ -44,6 +44,6 @@ theorem norm_heathBrownCoefficientWeight
     ‖heathBrownCoefficientWeight c α q‖ = 1 := by
   exact norm_heathBrownPhase _
 
-end
 
-end GafniTao
+
+

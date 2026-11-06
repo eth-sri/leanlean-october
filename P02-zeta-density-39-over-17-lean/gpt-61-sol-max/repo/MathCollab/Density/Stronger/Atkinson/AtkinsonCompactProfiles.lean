@@ -13,10 +13,9 @@ public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeRescaled
 
 @[expose] public section
 
-open Complex MeasureTheory Set
+open Complex MeasureTheory
 open MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -69,4 +68,4 @@ theorem exists_intervalC2Bound_atkinsonPowerRootProfile (α : ℝ) :
   unfold atkinsonPowerProfile zetaMainMellinProfile
   fun_prop (disch := positivity)
 
-end MathCollab.Density.Stronger.Atkinson
+

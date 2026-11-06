@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
 public import Mathlib.Tactic.Bound
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Algebra.Notation.Support
@@ -15,11 +16,7 @@ theorem smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
   have := exists_contMDiff_zero_iff_one_iff_of_isClosed (n := ⊤)
     (modelWithCornersSelf ℝ ℝ) (s := Set.Iic a ∪ Set.Ici d) (t := Set.Icc b c)
     (IsClosed.union isClosed_Iic isClosed_Ici) isClosed_Icc
-    (by
-      simp_rw [Set.disjoint_union_left, Set.disjoint_iff, Set.subset_def,
-        Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc, Set.mem_empty_iff_false,
-        and_imp, imp_false, not_le, Set.mem_Ici]
-      constructor <;> intros <;> linarith)
+    (by grind)
   obtain ⟨Ψ, hΨSmooth, hΨrange, hΨ0, hΨ1⟩ := this
   simp only [Set.mem_union, Set.mem_Iic, Set.mem_Ici, Set.mem_Icc] at *
   use Ψ

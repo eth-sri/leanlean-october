@@ -1,4 +1,5 @@
 module
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.NumberTheory.LSeries.ZetaZeros
 public import Mathlib.Tactic
 
@@ -7,7 +8,6 @@ public import Mathlib.Tactic
 open Filter Set
 open scoped BigOperators Topology
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -89,5 +89,11 @@ theorem zetaSlabCount_mono {σ σ' a a' b b' : ℝ}
 theorem zetaDensityCount_mono {σ σ' T T' : ℝ} (hσ : σ' ≤ σ) (hT : T ≤ T') :
     zetaDensityCount σ T ≤ zetaDensityCount σ' T' :=
   zetaSlabCount_mono hσ (neg_le_neg hT) hT
+
+
+/-- A height-independent positive constant bounding the full zero count by a power. -/
+abbrev ZetaBound (σ p : ℝ) : Prop :=
+  ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+    (zetaDensityCount σ T : ℝ) ≤ C * T ^ p
 
 end MathCollab.Density

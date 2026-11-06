@@ -25,9 +25,13 @@ theorem scaleSupport_cover (W : ℝ→ℂ) (a b upper l : ℝ) (hb : 0≤b)
   have hn : (J.absNorm : ℝ)≤Real.exp upper*b := by nlinarith
   exact_mod_cast hn.trans (Nat.le_ceil _)
 
-theorem rowwise_scales {ι : Type*} (rows : Finset ι) (χ : ι→Character)
+section
+variable {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     (W : ℝ→ℂ) (a b : ℝ) (hb : 0≤b) (hWs : Function.support W⊆Icc a b)
-    (hW : ContDiff ℝ ∞ W) (lo hi E : ℝ) (hlh : lo≤hi) (l : ι→ℝ)
+    (hW : ContDiff ℝ ∞ W) (lo hi E : ℝ) (hlh : lo≤hi)
+include ι rows χ W a b hb hWs hW lo hi E hlh
+
+theorem rowwise_scales  (l : ι→ℝ)
     (hl : ∀ i∈rows, l i∈Icc lo hi)
     (h0 : ∀ t∈Icc lo hi, ∑ i∈rows, ‖polynomial (χ i) true W (Real.exp t) 0 0‖^2≤E)
     (h1 : ∀ t∈Icc lo hi, ∑ i∈rows,
@@ -53,9 +57,7 @@ theorem rowwise_scales {ι : Type*} (rows : Finset ι) (χ : ι→Character)
   intro i hi
   rw [eq0 i (l i) (hl i hi)]
 
-theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Character)
-    (W : ℝ→ℂ) (a b : ℝ) (hb : 0≤b) (hWs : Function.support W⊆Icc a b)
-    (hW : ContDiff ℝ ∞ W) (lo hi E : ℝ) (hlh : lo≤hi)
+theorem exists_scale_majorant 
     (h0 : ∀ t∈Icc lo hi, ∑ i∈rows, ‖polynomial (χ i) true W (Real.exp t) 0 0‖^2≤E)
     (h1 : ∀ t∈Icc lo hi, ∑ i∈rows,
       ‖polynomial (χ i) true (scaleProfile W) (Real.exp t) 0 0‖^2≤E) :
@@ -76,9 +78,11 @@ theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       scaleSum_eq_polynomial (χ i) W S (t i) (scaleSupport_cover W a b hi (t i) hb hWs (ht i).2)] at hh
     exact hh
   · exact rowwise_scales rows χ W a b hb hWs hW lo hi E hlh t (fun i hi => ht i) h0 h1
-
-end SevenEighths.HeckeInverseAmplification
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -17,7 +18,6 @@ open Complex MeasureTheory
 open scoped ComplexConjugate
 open MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -38,7 +38,11 @@ def zetaSquareReflectedGammaPhase (t : ℝ) : ℂ :=
 def zetaSquareGammaFrequency (t : ℝ) : ℝ :=
   Real.log Real.pi - (Complex.digamma (afeCriticalPoint t / 2)).re
 
-theorem norm_zetaSquareReflectedGammaPhase (t : ℝ) :
+section
+variable (t : ℝ)
+include t
+
+theorem norm_zetaSquareReflectedGammaPhase  :
     ‖zetaSquareReflectedGammaPhase t‖ = 1 := by
   rw [zetaSquareReflectedGammaPhase, afeCriticalPoint_neg_eq_star]
   change ‖Complex.Gammaℝ (conj (afeCriticalPoint t)) / Complex.Gammaℝ (afeCriticalPoint t)‖ = 1
@@ -46,19 +50,15 @@ theorem norm_zetaSquareReflectedGammaPhase (t : ℝ) :
   exact norm_ne_zero_iff.mpr (Complex.Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint]))
 
 /-- Factor the exact Gamma normalization in the reflected contour branch. -/
-theorem zetaSquareGammaNormalization_reflected_factor (t : ℝ) (w : ℂ) :
+theorem zetaSquareGammaNormalization_reflected_factor  (w : ℂ) :
     Complex.Gammaℝ (afeCriticalPoint (-t) + w) ^ 2 / zetaSquareGammaNormalization t =
       zetaSquareReflectedGammaPhase t *
         (Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
           Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 := by
-  have hplus := Complex.Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint] :
-    0 < (afeCriticalPoint t).re)
-  have hminus := Complex.Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint] :
-    0 < (afeCriticalPoint (-t)).re)
   unfold zetaSquareGammaNormalization zetaSquareReflectedGammaPhase
   field_simp
 
-private theorem hasDerivAt_gammaCritical (t : ℝ) :
+private theorem hasDerivAt_gammaCritical  :
     HasDerivAt (fun u : ℝ => Complex.Gammaℝ (afeCriticalPoint u))
       (Complex.Gammaℝ (afeCriticalPoint t) *
         ((-Complex.log (Real.pi : ℂ) + Complex.digamma (afeCriticalPoint t / 2)) / 2) * I) t := by
@@ -67,7 +67,7 @@ private theorem hasDerivAt_gammaCritical (t : ℝ) :
   exact ((hasDerivAt_gammaReal (by norm_num [afeCriticalPoint])).comp (t : ℂ) hinner).comp_ofReal
 
 /-- Exact phase differential equation, with a real-valued frequency. -/
-theorem hasDerivAt_zetaSquareReflectedGammaPhase (t : ℝ) :
+theorem hasDerivAt_zetaSquareReflectedGammaPhase  :
     HasDerivAt zetaSquareReflectedGammaPhase
       (I * (zetaSquareGammaFrequency t : ℂ) * zetaSquareReflectedGammaPhase t) t := by
   have hminus := (hasDerivAt_gammaCritical (-t)).scomp t (hasDerivAt_neg t)
@@ -92,6 +92,8 @@ theorem hasDerivAt_zetaSquareReflectedGammaPhase (t : ℝ) :
     rw [Complex.ofReal_sub, Complex.ofReal_log Real.pi_pos.le]
     field_simp
     linear_combination Complex.Gammaℝ (afeCriticalPoint (-t)) * hsum
+end
+
 
 /-- Sharp leading frequency, derived from the actual digamma function. -/
 theorem abs_zetaSquareGammaFrequency_add_log_le {t : ℝ} (ht : 2 ≤ t) :
@@ -107,13 +109,10 @@ theorem abs_zetaSquareGammaFrequency_add_log_le {t : ℝ} (ht : 2 ≤ t) :
   rw [zetaSquareGammaFrequency, hlogs]
   have habs : |Real.log Real.pi - (Complex.digamma (afeCriticalPoint t / 2)).re +
       (Real.log (t / 2) - Real.log Real.pi)| =
-      |(Complex.digamma (afeCriticalPoint t / 2)).re - Real.log (t / 2)| := by
-    rw [show Real.log Real.pi - (Complex.digamma (afeCriticalPoint t / 2)).re +
-      (Real.log (t / 2) - Real.log Real.pi) =
-      -((Complex.digamma (afeCriticalPoint t / 2)).re - Real.log (t / 2)) by ring, abs_neg]
+      |(Complex.digamma (afeCriticalPoint t / 2)).re - Real.log (t / 2)| := by grind
   rw [habs]
   refine h.trans ?_
   field_simp
   norm_num
 
-end MathCollab.Density.Stronger.Atkinson
+

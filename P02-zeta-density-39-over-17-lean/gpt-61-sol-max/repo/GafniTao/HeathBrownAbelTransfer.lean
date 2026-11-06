@@ -11,12 +11,12 @@ source sum.  The error weight is `e(g_n(h))`, with `g_n` defined from the
 literal Taylor polynomial; no abstract bounded coefficient replaces it.
 -/
 
-open Finset Set
+open Finset
 open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrownPhase_taylorError_mul_polynomial
     (k : ℕ) (f : ℝ → ℝ) (n x : ℝ) :
@@ -107,6 +107,6 @@ theorem heathBrown_shifted_source_sum_norm_le_partial
         exact norm_heathBrownTaylorError_weight_succ_sub_le_source
           hk hfat hfd hfon hderiv hj))
 
-end
 
-end GafniTao
+
+

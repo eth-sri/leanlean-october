@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianRemote
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma not_lowRemote_bounds (Z ell ε U : ℝ) (hZ : 0<Z)
@@ -84,7 +84,7 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
           have hh := lowLength_bounds ell hell hsum J
           exact Real.rpow_le_rpow_of_exponent_le hZ.1.le (by nlinarith)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

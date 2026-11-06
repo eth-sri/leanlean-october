@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonRawCost
 open CenteredMomentCommonRawScale CenteredMomentAllocationCost CenteredMomentSourceLiveColumn
 open CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 
 theorem frozen_normalized_cost (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : C≠0)
@@ -40,8 +40,8 @@ theorem frozen_normalized_cost (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal 
         mul_le_mul_of_nonneg_left hi (sq_nonneg _)
       _ = _ := by ring
 
-end SevenEighths.CenteredMomentCommonRawCost
 
-end
 
-end OAI
+
+
+

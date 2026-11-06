@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.OperatorKernel
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
 open scoped InnerProductSpace
@@ -14,11 +13,15 @@ def operatorFrequency (μ ν : Measure ℝ) [IsFiniteMeasure μ]
   operatorIntegral ν (fun x => A x • operatorPhase μ (f x))
     (fun x => operatorPhase μ (f x))
 
-/-- All analytic premises for the nuclear presentation follow from ordinary
-bounded measurable data and finite frequency/time measures. -/
-theorem operator_frequency_inputs (μ ν : Measure ℝ)
+section
+variable (μ ν : Measure ℝ)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     {A : ℝ → ℂ} {f : ℝ → ℝ} {B : ℝ} (hA : Measurable A) (hf : Measurable f)
+include μ ν A f B hA hf
+
+/-- All analytic premises for the nuclear presentation follow from ordinary
+bounded measurable data and finite frequency/time measures. -/
+theorem operator_frequency_inputs 
     (_hB : 0 ≤ B) (hb : ∀ x, ‖A x‖ ≤ B) :
     AEStronglyMeasurable (fun x => A x • operatorPhase μ (f x)) ν ∧
     AEStronglyMeasurable (fun x => operatorPhase μ (f x)) ν ∧
@@ -39,9 +42,7 @@ theorem operator_frequency_inputs (μ ν : Measure ℝ)
 /-- Genuine operator cubic trace equals the independently defined time
 kernel cubic. A countable Hilbert basis is explicit; no spectral basis or
 trace identity is included as a premise. -/
-theorem operator_frequency_cubic (μ ν : Measure ℝ)
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    {A : ℝ → ℂ} {f : ℝ → ℝ} {B : ℝ} (hA : Measurable A) (hf : Measurable f)
+theorem operator_frequency_cubic 
     (hB : 0 ≤ B) (hb : ∀ x, ‖A x‖ ≤ B)
     {ι : Type*} [Countable ι] (b : HilbertBasis ι ℂ (Lp ℂ 2 μ)) :
     operatorDiagonalTrace b ((operatorFrequency μ ν A f)^3) =
@@ -69,5 +70,7 @@ theorem operator_frequency_cubic (μ ν : Measure ℝ)
   filter_upwards with z
   simp only [inner_smul_right,operator_phase_pairing,Q]
   ring
+end
 
-end GuthMaynard.Improvement
+
+

@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstSecondHeightCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseAmbientProfileTower JointLogSeparation FourierBridge
+open InverseFirstGlobalCaps
+open JointLogSeparation
 open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem actual_live_first_height
     (old:ℝ → ℂ)(oldb:ℝ)(hsold:∀y,old y≠0 → y≤oldb)
@@ -71,8 +71,8 @@ theorem actual_live_first_height
     hQ hn hΨ hslots hcard hw hA k hk hchild
   exact he'.trans (hbudget A Z (r+3*ell+V) eta tau pi epschild saving loss hA hZ heta hechild hsave hloss negative z)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

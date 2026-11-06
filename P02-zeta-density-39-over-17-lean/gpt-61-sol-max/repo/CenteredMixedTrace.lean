@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import CenteredShortTrace
 public import MathCollab.Density.ComparisonCutoff
 public import MathCollab.Density.Packing
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
@@ -73,13 +73,13 @@ theorem cutoff_continuous_schur (w : MathCollab.Density.ReflectionCutoff) :
       L*B*(1/(1+|(t:ℝ)-u|)^2) := by
     simp only [cutoffContinuousMatrix,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hL]
     have hh := mul_le_mul_of_nonneg_left (hdec ((t:ℝ)-u)) hL
-    convert hh using 1; ring
+    grind
   have hbound (t : W) : ∑ u : W, L*B*(1/(1+|(t:ℝ)-u|)^2) ≤
       (B*MathCollab.Density.separationMass)*L := by
     rw [← mul_sum,Finset.sum_coe_sort W (fun u => 1/(1+|(t:ℝ)-u|)^2)]
     have hh := mul_le_mul_of_nonneg_left (MathCollab.Density.separated_decay_row hsep (t:ℝ))
       (mul_nonneg hL hB)
-    convert hh using 1; ring
+    nlinarith
   constructor
   · intro t
     exact (sum_le_sum (fun u _ => hpoint t u)).trans (hbound t)
@@ -87,8 +87,7 @@ theorem cutoff_continuous_schur (w : MathCollab.Density.ReflectionCutoff) :
     calc
       _ ≤ ∑ t : W, L*B*(1/(1+|(u:ℝ)-t|)^2) := by
         apply sum_le_sum
-        intro t _
-        simpa only [abs_sub_comm] using hpoint t u
+        grind
       _ ≤ _ := hbound u
 
 /-- The mixed trace for the actual centered matrix has the required L^2
@@ -127,4 +126,4 @@ theorem centered_mixed_trace_short_range (w : MathCollab.Density.ReflectionCutof
     _ = (B*C)*T^η*L^2*(W.card:ℝ)^2 := by ring
     _ ≤ _ := by gcongr; linarith
 
-end Montgomery.RationalMoment
+

@@ -9,7 +9,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ φ τ : Type*} [Fintype σ] [DecidableEq σ] [Fintype τ]
 variable {N a c : Eis} {mode : Bool}
 variable (G : PrimeFamily τ) (FF : φ→Ideal Eis) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
@@ -35,7 +35,7 @@ def originalInactivePhysical
         (G.reflected K.val (hrows K.val K.property)
           (slotChoiceFamily (fun i : T => lists i.val) (fun i => hmax i.val) (fun i => hgood i.val) p.val)).generator_good
         (reflectedExponent jF) (slotIndices τ (PrimeIndex K.val) T) W X
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

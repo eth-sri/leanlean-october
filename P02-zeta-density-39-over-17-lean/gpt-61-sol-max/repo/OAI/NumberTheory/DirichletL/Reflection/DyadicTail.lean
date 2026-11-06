@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CompletedGauss CompletedDyadic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
 def rawDyadicLabel (x : RawTailIndex) : ℕ×ℕ×ℕ :=
@@ -18,7 +18,7 @@ def rawDyadicLabel (x : RawTailIndex) : ℕ×ℕ×ℕ :=
 def rawDyadicCenter (scale : ℝ) (i : ℕ×ℕ×ℕ) : ℝ :=
   scale*(ramifiedScale 1 completedRamifiedStep i.1)^3*(2:ℝ)^i.2.2*((2:ℝ)^i.2.1)^3
 
-lemma rawDyadicCenter_lower (scale : ℝ) (hs : 0≤scale) (x : RawTailIndex) :
+lemma rawDyadicCenter_lower (scale : ℝ) (hs : 0≤ scale) (x : RawTailIndex) :
     rawDyadicCenter scale (rawDyadicLabel x)/16 ≤
       scale*(ramifiedScale 1 completedRamifiedStep x.1)^3*
         (Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3 := by
@@ -46,7 +46,7 @@ theorem tsum_cut_dyadic (f : RawTailIndex→ℂ) (cut : (ℕ×ℕ×ℕ)→Prop)
   · simp only [hl,ite_eq_left hi]
   · simp only [hl,ite_eq_right hi,Finset.sum_const_zero]
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

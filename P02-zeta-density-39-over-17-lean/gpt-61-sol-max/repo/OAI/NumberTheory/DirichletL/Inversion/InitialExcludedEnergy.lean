@@ -10,7 +10,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedEnergy
 open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial
 open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def deletionWeight (χ:Character)(j:Ideal O):ℂ:=
   (moebius j:ℂ)*idealCoeff χ j*(j.absNorm:ℂ)^(-(1/2:ℂ))
@@ -83,8 +83,8 @@ theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
       intro u hu
       ring
 
-end SevenEighths.InverseInitialExcludedEnergy
 
-end
 
-end OAI
+
+
+

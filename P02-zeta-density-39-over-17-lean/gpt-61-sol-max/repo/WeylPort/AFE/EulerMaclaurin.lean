@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.PoissonFourier
 public import WeylPort.Analytic.EulerMaclaurin
@@ -70,7 +71,7 @@ theorem euler_maclaurin_int {a b : ℝ} (hab : a ≤ b) (F : ℝ → ℂ)
     (∑ n ∈ Finset.Ioc ⌊a⌋ ⌊b⌋, F (n : ℝ)) =
       F a * ((Int.fract a - 1 / 2 : ℝ) : ℂ) - F b * ((Int.fract b - 1 / 2 : ℝ) : ℂ) +
         (∫ x in a..b, F x) + ∫ x in a..b, deriv F x * ((Int.fract x - 1 / 2 : ℝ) : ℂ) := by
-  let k : ℤ := ⌊a⌋
+  let k := ⌊a⌋
   have hk : (k : ℝ) ≤ a := Int.floor_le a
   have ha0 : 0 ≤ a - k := sub_nonneg.mpr hk
   have hab' : a - k ≤ b - k := sub_le_sub_right hab _
@@ -82,7 +83,7 @@ theorem euler_maclaurin_int {a b : ℝ} (hab : a ≤ b) (F : ℝ → ℂ)
     (hd _ (hm hx)).comp x (differentiableAt_id.add_const _)
   have hc' : ContinuousOn (deriv (fun u => F (u + k))) (Set.uIcc (a - k) (b - k)) := by
     rw [Set.uIcc_of_le hab']
-    have heq : deriv (fun u => F (u + k)) = fun u => deriv F (u + k) :=
+    have heq :=
       funext (fun u => deriv_comp_add_const F (k : ℝ) u)
     rw [heq]
     exact hc.comp (continuousOn_id.add continuousOn_const) hm
@@ -128,7 +129,7 @@ theorem weighted_sum_eq_fourier {f g : ℝ → ℝ} {a b : ℝ}
   have heq (x : ℝ) (hx : x ∈ Set.Icc a b) :
       waveDerivative f g x = deriv (weightedWave f g) x :=
     waveDerivative_eq_deriv (h.f_differentiable x hx) (h.g_differentiable x hx)
-  have hc : ContinuousOn (deriv (weightedWave f g)) (Set.Icc a b) :=
+  have hc :=
     h.waveDerivative_continuous.congr (fun x hx => (heq x hx).symm)
   have he := euler_maclaurin_int h.lt.le (weightedWave f g) hd hc
   have hi : (∫ x in a..b, deriv (weightedWave f g) x * ((Int.fract x - 1 / 2 : ℝ) : ℂ)) =
@@ -156,4 +157,4 @@ theorem abs_fract_sub_half_le (x : ℝ) : |Int.fract x - 1 / 2| ≤ 1 / 2 := by
   apply abs_le.mpr
   constructor <;> linarith [Int.fract_nonneg x, Int.fract_lt_one x]
 
-end DhimanKadiriQuesadaHerrera2026
+

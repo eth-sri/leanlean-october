@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
@@ -14,8 +14,12 @@ open HeckeFamily FourierBridge EisensteinSchwartzPoisson
 open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
 open CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
 
-theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
+section
+variable (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
+    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ)
+include V M hM hV A J
+
+theorem source_separation  :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀G : 𝓢(ℝ,ℂ),∀D : ℝ,0<D →
       H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤D → ∀s : ℝ,0<s →
       ∃density : 𝓢(ℝ,ℂ),
@@ -38,8 +42,7 @@ theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
   exact ⟨density,(fun y=>by simpa using hid (fun _ : Unit=>y)),hi,
     hm.trans hconst,fun v=>(hp v).trans hconst⟩
 
-theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
+theorem actual_one_uniform  :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type} [Fintype ι],
       ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ι→ℝ),
       (∀i,0<s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
@@ -92,6 +95,8 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
   simp_rw [←hsource] at hh
   convert hh using 1
   ring
+end
+
 
 lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
     (hreal : ∀y,conj (V y)=V y) (X v : ℝ) (hX : 0<X) :
@@ -147,8 +152,8 @@ lemma polynomial_const_mul (χ : Character) (W : ℝ→ℂ) (X σ omega : ℝ) (
   rw [he,tsum_mul_left]
   ring
 
-end SevenEighths.CenteredMomentUniformReflectionProfile
 
-end
 
-end OAI
+
+
+

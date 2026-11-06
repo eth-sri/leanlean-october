@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCoefficient
 
 @[expose] public section
@@ -9,9 +10,9 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
+open scoped EisensteinO
 
 def actualCubeLength (Z:ℝ)(j:ℕ):ℝ:=Real.logb Z (normLogScale j)
 
@@ -33,7 +34,7 @@ theorem actual_long_bin_geometry
         ‖ConcreteTraceCRT.eisEmbedding (primeProduct (poolPrimary F) v.support v)‖^2≤Real.exp 1*Z^ell := by
   dsimp only
   have hz:0<Z:=zero_lt_one.trans hZ
-  have hp:Z^(actualCubeLength Z j)=normLogScale j:=actualCubeLength_power Z hZ j
+  have hp :=actualCubeLength_power Z hZ j
   have hel:0≤actualCubeLength Z j:=Real.logb_nonneg hZ (normLogScale_ge_one j)
   have hnorm (v:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ)
       (hv:v∈activeCubeLogBin S D b (Z^N) j) :
@@ -42,7 +43,7 @@ theorem actual_long_bin_geometry
     rw [hp]
     exact activeCubeLogBin_norms S D b (Z^N) j v hv
   obtain ⟨v,hv⟩:=hne
-  have hvbin: v∈activeCubeLogBin S D b (Z^N) j := (Finset.mem_filter.mp hv).1
+  have hvbin := (Finset.mem_filter.mp hv).1
   have hactive:= (Finset.mem_filter.mp hvbin).1
   have hcube:(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)^3≤b*Z^N :=
     (Finset.mem_filter.mp hactive).2
@@ -62,8 +63,8 @@ theorem actual_long_bin_geometry
   rw [cubeIdeal_primeProduct_norm _ (InitialMeanSquare.outsideSquarefree_admissible S D hbad)]
   exact hnorm u (Finset.mem_filter.mp hu).1
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

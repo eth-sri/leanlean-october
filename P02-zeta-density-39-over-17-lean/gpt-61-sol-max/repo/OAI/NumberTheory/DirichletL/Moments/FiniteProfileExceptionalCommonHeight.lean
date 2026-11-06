@@ -15,15 +15,21 @@ open CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy
 open HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 universe u
 
-def mass {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
-    (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂:ℝ)(J:ℕ):ℝ:=
+section
+variable {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
+include lo hi R ι κ
+
+section
+variable (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂:ℝ)(J:ℕ)
+include s v p q t₁ t₂ θ₁ θ₂ J
+
+def mass :ℝ:=
   p.control R*q.control R*heightCost t₁ θ₁^J*heightCost t₂ θ₂^J*
     slotControl s.toData*slotControl v.toData*
     Real.sqrt (volume s.toData)*Real.sqrt (volume v.toData)
 
-theorem mass_nonneg {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
-    (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂:ℝ)(J:ℕ):
-    0≤mass R s v p q t₁ t₂ θ₁ θ₂ J:=by
+theorem mass_nonneg :
+    0≤ mass R s v p q t₁ t₂ θ₁ θ₂ J:=by
   have hp:=Profiles.control_nonneg p R
   have hq:=Profiles.control_nonneg q R
   have hs:=slotControl_nonneg s.toData
@@ -32,9 +38,10 @@ theorem mass_nonneg {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι]
   have ht₂:=(heightCost_pos t₂ θ₂).le
   unfold mass
   positivity
+end
 
-theorem shifted_mass {lo hi:ℝ} (R:Finset (ℕ×ℕ))
-    {ι κ:Type u}[Fintype ι][Fintype κ][DecidableEq ι][DecidableEq κ]
+
+theorem shifted_mass [DecidableEq ι][DecidableEq κ]
     (s:Input ι)(v:Input κ)(η τ:Character)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂ u w:ℝ)(J:ℕ):
     profileMass R (withHeight s η (t₁+2*Real.pi*(u-θ₁))).toData
       (withHeight v τ (t₂+2*Real.pi*(w-θ₂))).toData p q J≤
@@ -55,8 +62,10 @@ theorem shifted_mass {lo hi:ℝ} (R:Finset (ℕ×ℕ))
     ring
   · simp only [mass,mul_pow]
     ring
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownBlockEnergy
 
 @[expose] public section
@@ -66,7 +67,7 @@ theorem heathBrown_kernel_support
     (hphi : heathBrownTriangularKernel B C x y ≠ 0) :
     heathBrownDistanceToInteger x < B ∧
       heathBrownDistanceToInteger y < C := by
-  have hphiPos : 0 < heathBrownTriangularKernel B C x y :=
+  have hphiPos :=
     lt_of_le_of_ne (heathBrownTriangularKernel_nonneg B C x y) hphi.symm
   have hprod := (mul_pos_iff.mp hphiPos)
   rcases hprod with hpos | hneg
@@ -74,8 +75,12 @@ theorem heathBrown_kernel_support
       heathBrownDistanceToInteger_lt_of_hat_pos hC hpos.2⟩
   · exact False.elim ((not_lt_of_ge (heathBrownHat_nonneg B x)) hneg.1)
 
+section
+variable {N k H K : ℕ} {f : ℝ → ℝ}
+include N k H K f
+
 theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero
-    {N k H K : ℕ} {f : ℝ → ℝ} {p : ℕ × ℕ}
+     {p : ℕ × ℕ}
     (hH : 0 < H)
     (hp : p ∈ heathBrownSameBlockPairs N K)
     (hkernel : heathBrownPairKernel k H f p ≠ 0) :
@@ -97,7 +102,7 @@ theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero
     hsupp.1.le, hsupp.2.le⟩
 
 theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
-    {N k H K : ℕ} {f : ℝ → ℝ}
+    
     (hH : 0 < H) :
     (∑ p ∈ heathBrownSameBlockPairs N K,
         heathBrownPairKernel k H f p) ≤
@@ -114,11 +119,7 @@ theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
         ∑ p ∈ S ∩ T, heathBrownPairKernel k H f p := by
     symm
     apply Finset.sum_subset
-    · exact Finset.inter_subset_left
-    · intro p hpS hpNot
-      exact hzero p hpS (by
-        intro hpT
-        exact hpNot (Finset.mem_inter.mpr ⟨hpS, hpT⟩))
+    all_goals (simp_all)
   rw [hrestrict]
   calc
     (∑ p ∈ S ∩ T, heathBrownPairKernel k H f p) ≤
@@ -137,14 +138,14 @@ theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
 /-- The finite localization conclusion in Heath-Brown Section 3.  The factor
 four is the exact loss from the chosen half-width majorant. -/
 theorem heathBrownPairCountOne_card_le_four_mul_block_mul_pairCountTwo
-    {N k H K : ℕ} {f : ℝ → ℝ}
+    
     (hH : 0 < H) (hK : 0 < K)
     (hwidth₁ : 4 * (((H : ℝ) ^ (k - 2))⁻¹) ≤ 1 / 2)
     (hwidth₂ : 4 * (((H : ℝ) ^ (k - 1))⁻¹) ≤ 1 / 2) :
     ((heathBrownPairCountOne N k H f).card : ℝ) ≤
       4 * K * (heathBrownPairCountTwo N k H K f).card := by
-  let B : ℝ := 4 * (((H : ℝ) ^ (k - 2))⁻¹)
-  let C : ℝ := 4 * (((H : ℝ) ^ (k - 1))⁻¹)
+  let B := 4 * (((H : ℝ) ^ (k - 2))⁻¹)
+  let C := 4 * (((H : ℝ) ^ (k - 1))⁻¹)
   let g₁ : ℕ → ℝ := fun n => heathBrownDerivativeCoordinate f (k - 2) n
   let g₂ : ℕ → ℝ := fun n => heathBrownDerivativeCoordinate f (k - 1) n
   have hB : 0 < B := by dsimp [B]; positivity
@@ -185,8 +186,10 @@ theorem heathBrownPairCountOne_card_le_four_mul_block_mul_pairCountTwo
       _ ≤ (K : ℝ) * (heathBrownPairCountTwo N k H K f).card :=
         mul_le_mul_of_nonneg_left hsame (Nat.cast_nonneg K)
   nlinarith
-
-
 end
 
-end GafniTao
+
+
+
+
+

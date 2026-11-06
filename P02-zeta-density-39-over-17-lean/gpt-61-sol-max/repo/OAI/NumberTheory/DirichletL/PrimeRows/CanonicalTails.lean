@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalSmallTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 
 theorem canonical_small_original_tail (K : ℕ) (e δ a b B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2)
@@ -75,8 +75,8 @@ theorem canonical_large_original_tail (K : ℕ) (δ a b B ζ saving : ℝ)
   have hh := mem_dyadicRows.mp hu
   exact ⟨hh.1,hh.2.1,hh.2.2.le⟩
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

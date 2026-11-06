@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorCutoffBudget
 
@@ -12,13 +13,13 @@ width h and either orientation. Its derivative estimates are derived,
 not supplied. The remaining Taylor data concern the original function.
 -/
 
-noncomputable section
+
 
 open Set
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (f : ℝ → ℝ) (a x h s t M : ℝ),
@@ -32,9 +33,9 @@ theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
   have hpow : 1 ≤ (2 : ℝ)^Q := one_le_pow₀ (by norm_num)
   refine ⟨(2 : ℝ)^Q*B,by nlinarith,?_⟩
   intro f a x h s t M hh hh₁ hs hx hf hb n hn
-  let χ : ℝ → ℝ := fun y => Real.smoothTransition (s*y/h+t)
+  let χ := fun y => Real.smoothTransition (s*y/h+t)
   have hχ : ContDiff ℝ ∞ χ := Real.smoothTransition.contDiff.comp (by fun_prop)
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   have hχb : ∀ i ≤ n, |iteratedDeriv i χ x| ≤ B*(h⁻¹)^i := by
     intro i hi
@@ -63,4 +64,4 @@ theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hmono (zero_le_one.trans hB)) hM
 
-end TaoTrudgianYang2025
+

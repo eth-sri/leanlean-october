@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyTranslatedNormalChange
 
 @[expose] public section
@@ -18,7 +19,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem wooleySection7PositiveDisplacementShifted_eq_intCast
     {k p a b B R S : ℕ} (phi : WooleyPolynomialSystem k)
@@ -71,15 +72,11 @@ theorem wooleySection7_exists_uniform_shifted_forcing
   obtain ⟨G, psi, Error, hchange⟩ :=
     hphi.exists_translated_tail_normal_change hc hpPrime.ne_zero eta
   have hkpos : 1 ≤ k := hr.trans hrk.le
-  have hgamma : gamma ≤ a := by
-    have hle : gamma ≤ gamma * k := by
-      simpa only [Nat.mul_one] using Nat.mul_le_mul_left gamma hkpos
-    exact hle.trans hgammaK
+  have hgamma : gamma ≤ a := by nlinarith
   let M := (k - r + 1) * b
   let bp := wooleySection7BPrimeNat k r a b gamma
   have hsum := wooley_section7_BPrimeNat_add hBPrime
   have hdecomp : M = gamma * k + r * (a - gamma) + bp := by
-    dsimp only [M, bp]
     have hgammaR : gamma * r + (a - gamma) * r = a * r := by
       rw [← Nat.add_mul, Nat.add_sub_of_le hgamma]
     have hsplit : gamma * k = gamma * (k - r) + gamma * r := by
@@ -87,15 +84,7 @@ theorem wooleySection7_exists_uniform_shifted_forcing
       calc
         gamma * k = gamma * ((k - r) + r) := by rw [hkr]
         _ = _ := Nat.mul_add _ _ _
-    rw [hsplit]
-    calc
-      (k - r + 1) * b = bp + r * a + (k - r) * gamma := by
-        simpa only [bp] using hsum.symm
-      _ = gamma * (k - r) + gamma * r + r * (a - gamma) + bp := by
-        rw [Nat.mul_comm (k - r) gamma]
-        have hgammaR' : gamma * r + r * (a - gamma) = r * a := by
-          simpa [Nat.mul_comm] using hgammaR
-        omega
+    grind
   have hgammaM : gamma * k ≤ M := by omega
   have hcommon : r * (a - gamma) ≤ M - gamma * k := by omega
   obtain ⟨Psi, hPsi, huniform⟩ :=
@@ -127,10 +116,8 @@ theorem wooleySection7_exists_uniform_shifted_forcing
             (fun x : ↑right.support =>
               (phi j).eval ((p : ℤ) ^ b * (x : ℤ) + eta)) tuple.2 := by
       rw [ZMod.intCast_zmod_eq_zero_iff_dvd] at hj
-      norm_num only [Nat.cast_pow, Nat.cast_ofNat] at hj
-      exact hj
+      assumption
     unfold wooleyIntegerMixedPolynomialDisplacement
-    dsimp only [swapped]
     rw [wooleyIntegerTupleDisplacement_swap, sub_neg_eq_add]
     exact hsumDiv
   have hdivTranslated : ∀ j : Fin k, (p : ℤ) ^ B ∣
@@ -190,7 +177,6 @@ theorem wooleySection7_exists_uniform_shifted_forcing
       wooleyIntegerTupleDisplacement R
         (fun x : ↑left.support => (Psi i).eval (x : ℤ)) swapped.1 := by
     have hi := hraw i
-    dsimp only [M, bp] at hi hdepth ⊢
     rw [hdepth] at hi
     exact hi
   have hz :
@@ -198,8 +184,7 @@ theorem wooleySection7_exists_uniform_shifted_forcing
         (fun x : ↑left.support => (Psi i).eval (x : ℤ)) swapped.1 :
           ZMod (p ^ bp)) = 0 := by
     rw [ZMod.intCast_zmod_eq_zero_iff_dvd]
-    norm_num only [Nat.cast_pow, Nat.cast_ofNat]
-    exact hdivLow
+    assumption
   rw [wooleyIntegerTupleDisplacement_cast
     (p ^ bp) r R
       (fun x : ↑left.support => fun j => (Psi j).eval (x : ℤ))
@@ -211,9 +196,8 @@ theorem wooleySection7_exists_uniform_shifted_forcing
     rfl
   change wooleyTupleDisplacement (p ^ bp) r R
     (fun n : ↑left.support => wooleyPolynomialValue Psi (p ^ bp) (n : ℤ)) swapped.1 i = 0
-  rw [hfun]
-  exact hz
+  assumption
 
-end
 
-end GafniTao
+
+

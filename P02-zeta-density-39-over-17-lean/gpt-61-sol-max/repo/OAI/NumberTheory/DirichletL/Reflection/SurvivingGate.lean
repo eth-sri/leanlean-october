@@ -9,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein
+
+open scoped EisensteinEis
 universe u
 variable {a c : Eis} {mode : Bool}
 
@@ -47,7 +47,7 @@ theorem actual_surviving_retained_gates
   refine ⟨Real.logb_nonneg hz ((one_le_div (hp 1)).mpr hnorm.1),
     Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),hram Z hz2 i.1,?_⟩
   simpa only [one_mul] using hwidth F jF e Z X QK QP δ i hz1 hX hQK hQP hi
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

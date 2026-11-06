@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.Tactic.Linarith
@@ -12,7 +13,7 @@ namespace SevenEighths.InverseMoment
 
 open scoped BigOperators
 
-noncomputable section
+
 
 theorem fiber_energy_bound {ι κ : Type*} [DecidableEq κ]
     (s : Finset ι) (t : Finset κ) (p : ι → κ) (w : ι → ℝ)
@@ -29,8 +30,7 @@ theorem fiber_energy_bound {ι κ : Type*} [DecidableEq κ]
       intro j hj
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
-      intro i hi
-      rw [(Finset.mem_filter.mp hi).2]
+      grind
     _ ≤ ∑ j ∈ t, D j * E j :=
       Finset.sum_le_sum fun j hj => mul_le_mul_of_nonneg_right (hD j hj) (hE j hj)
 
@@ -79,8 +79,8 @@ theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
       exact ⟨fun hi => ⟨hsub k hk hi, hi⟩, And.right⟩
     _ = _ := by rw [Finset.sum_comm]
 
-end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -9,9 +9,9 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels
+open scoped EisensteinO
 
 def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
     (I:Ideal O)(v:ι→₀ℕ) : ℂ :=
@@ -59,8 +59,8 @@ theorem actualLongCoefficient_complete
   simp only [actualLongCoefficient,cubeIdeal_eq_primeProduct_span _
     (InitialMeanSquare.outsideSquarefree_admissible S D hbad)]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

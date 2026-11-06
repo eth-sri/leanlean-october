@@ -7,11 +7,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 @[ext] structure MarkedSecondSource (ι : Type*) (Jo Jn : ℕ) where
   cube : CubeCoordinates ι
@@ -31,8 +31,12 @@ def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : Secon
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit
     x.quotient x.second.frequency x.oldAssigned x.newAssigned
 
-theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} :
+section
+variable (hp : ∀ i, p i ≠ 0)
+    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ}
+include hp hinj Jo Jn
+
+theorem markedSecondOriginal_injOn  :
     Set.InjOn (markedSecondOriginal (Jo:=Jo) (Jn:=Jn) p) {x | x.cube.Admissible} := by
   intro x hx y hy hxy
   have hc : x.cube = y.cube := by
@@ -59,17 +63,22 @@ theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
   · exact congrArg SecondOriginalSource.oldAssigned hxy
   · exact congrArg SecondOriginalSource.newAssigned hxy
 
-theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : Eisˣ) :
+theorem markedSecondTuple_injOn  (u v : Eisˣ) :
     Set.InjOn (fun x : MarkedSecondSource ι Jo Jn => originalSecondTuple p u v (markedSecondOriginal p x))
       {x | x.cube.Admissible} := by
   intro x hx y hy he
   exact markedSecondOriginal_injOn p hp hinj hx hy
     (originalSecondTuple_injective p hinj u v he)
+end
 
-theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
+
+section
+variable (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+include hp hpr hcop
+
+theorem markedSecondOriginal_valid 
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
@@ -83,9 +92,7 @@ theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit x.cube.support_pos
     x.quotient x.second.frequency x.oldAssigned x.newAssigned hold hnew
 
-theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+theorem actual_marked_second_source_fiber 
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (ha : ∀ x ∈ source, x.cube.Admissible)
@@ -123,8 +130,10 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
   have hb := valid_tuple_card_le_slot_cap (S.image encode) γ f k hf hq ht hr hv K ho hn
   rw [Finset.card_image_iff.mpr hi] at hb
   exact hb
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCanonicalTail
 public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
@@ -12,15 +13,19 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 section
 variable {ι:Type*} [DecidableEq ι]
   (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def firstLocalPhysicalTail (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
+section
+variable (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
+include pool b C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W
+
+def firstLocalPhysicalTail 
     (K:ℝ) (T:Finset ι→Finset O) (D:Finset ι):ℂ :=
   ∑'h:{h:O // h∉T D},actualFirstKernel p hp hcop hg (pool\(b.support∪C)) b.support
     (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit
@@ -28,8 +33,7 @@ def firstLocalPhysicalTail (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (canonicalCubeResidual p hg b C false Ψ₂ m₂ f H₂) W (fun _=>1) (fun _=>1) 1 1 K
     (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) h.val
 
-theorem cube_tail_support_test (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
-    (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
+theorem cube_tail_support_test 
     (K L:ℝ) (T:Finset ι→Finset O)
     (hs:∀U,H₁ U≠0→primeProductNorm p U≤L) (hC:¬primeProductNorm p C≤L) :
     canonicalCubeDualTail p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K T=0 := by
@@ -41,6 +45,8 @@ theorem cube_tail_support_test (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset
     simp only [canonicalCubeResidual,originalLabelColumn,multiplicativeCoreColumn,ite_true,hz,mul_zero,zero_mul]
   simp only [canonicalCubeDualTail,actualFirstKernel,threeGaussRowFactor,hcoef,mul_zero,
     star_zero,zero_mul,ite_self,Finset.sum_const_zero,tsum_zero]
+end
+
 
 end
 
@@ -94,7 +100,7 @@ theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
   have hblock (b:CubeCoordinates ι) (hb:b∈bs) (C:Finset ι)
       (hC:C∈boundedPrimeSupports p (pool\b.support) L) (I:Ideal O) (hI:I∈labels):
       ‖z b C I‖≤128*(L*B^2)*E:=by
-    have hCB:Disjoint C b.support:=Finset.disjoint_left.mpr (fun i hi hib=>
+    have hCB :=Finset.disjoint_left.mpr (fun i hi hib=>
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp (Finset.mem_filter.mp hC).1) hi)).2 hib)
     dsimp only [z,canonicalCubeDualTail]
     rw [norm_mul]
@@ -119,7 +125,7 @@ theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
       symm
       apply Finset.sum_subset (Finset.filter_subset _ _)
       intro C hC hnot
-      have hn:¬primeProductNorm p C≤L:=fun h=>hnot (Finset.mem_filter.mpr ⟨hC,h⟩)
+      have hn :=fun h=>hnot (Finset.mem_filter.mpr ⟨hC,h⟩)
       apply Finset.sum_eq_zero
       intro I hI
       rw [show z b C I=0 from cube_tail_support_test p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ _
@@ -153,8 +159,8 @@ theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
         _=(Cb*128^3)*(B^(1+ε)*B*B^2)*L^2*F*Γ*E:=by ring
         _= _:=by rw [he]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

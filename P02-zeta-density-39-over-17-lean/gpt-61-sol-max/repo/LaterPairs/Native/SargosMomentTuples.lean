@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarWindow
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                        
 
-noncomputable section
+
 
 open GafniTao
 open scoped BigOperators
@@ -27,4 +26,4 @@ theorem sargos_character_finset_prod {ι : Type*} (S : Finset ι) (f : ι → �
   | @insert a S ha ih =>
       rw [Finset.prod_insert ha,Finset.sum_insert ha,ih,fordAdditiveCharacter_add]
 
-end TaoTrudgianYang2025
+

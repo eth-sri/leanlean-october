@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 @[expose] public section
@@ -7,7 +8,7 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -17,17 +18,19 @@ open Finset Complex
 
 open scoped Classical
 
-namespace GaussCRT
 
-end GaussCRT
 
-open scoped Classical
+                     
 
 namespace IdealGaussCRT
 
 variable {T R S : Type*} [CommRing T] [CommRing R] [CommRing S]
 
-def leftAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar R ℂ where
+section
+variable (e : T ≃+* R × S) (ψ : AddChar T ℂ)
+include e ψ
+
+def leftAddChar  : AddChar R ℂ where
   toFun z := ψ (e.symm (z, 0))
   map_zero_eq_one' := by
     change ψ (e.symm (0 : R × S)) = 1
@@ -37,7 +40,7 @@ def leftAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar R ℂ where
     rw [show (z + w, (0 : S)) = (z, 0) + (w, 0) by ext <;> simp,
       map_add, AddChar.map_add_eq_mul]
 
-def rightAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar S ℂ where
+def rightAddChar  : AddChar S ℂ where
   toFun z := ψ (e.symm (0, z))
   map_zero_eq_one' := by
     change ψ (e.symm (0 : R × S)) = 1
@@ -47,7 +50,7 @@ def rightAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar S ℂ where
     rw [show ((0 : R), z + w) = (0, z) + (0, w) by ext <;> simp,
       map_add, AddChar.map_add_eq_mul]
 
-theorem addChar_crt_factor (e : T ≃+* R × S) (ψ : AddChar T ℂ) (x : T) :
+theorem addChar_crt_factor  (x : T) :
     ψ x = leftAddChar e ψ (e x).1 * rightAddChar e ψ (e x).2 := by
   let z := e x
   have hz : (z.1, (0 : S)) + ((0 : R), z.2) = z := by ext <;> simp
@@ -55,6 +58,8 @@ theorem addChar_crt_factor (e : T ≃+* R × S) (ψ : AddChar T ℂ) (x : T) :
     ψ x = ψ (e.symm z) := by simp [z]
     _ = ψ (e.symm (z.1, 0) + e.symm (0, z.2)) := by rw [← map_add, hz]
     _ = _ := by rw [AddChar.map_add_eq_mul]; rfl
+end
+
 
 theorem gauss_sum_crt [Fintype T] [Fintype R] [Fintype S]
     (e : T ≃+* R × S) (χR : MulChar R ℂ) (χS : MulChar S ℂ)
@@ -80,7 +85,11 @@ theorem gauss_sum_crt [Fintype T] [Fintype R] [Fintype S]
       intro w hw
       ring
 
-theorem gauss_sum_ideal_crt {A : Type*} [CommRing A]
+section
+variable {A : Type*} [CommRing A]
+include A
+
+theorem gauss_sum_ideal_crt 
     (I J : Ideal A) (h : IsCoprime I J)
     [Fintype (A ⧸ I * J)] [Fintype (A ⧸ I)] [Fintype (A ⧸ J)]
     (χI : MulChar (A ⧸ I) ℂ) (χJ : MulChar (A ⧸ J) ℂ)
@@ -97,16 +106,17 @@ theorem gauss_sum_ideal_crt {A : Type*} [CommRing A]
   simp only [e, Ideal.quotientMulEquivQuotientProd_fst,
     Ideal.quotientMulEquivQuotientProd_snd]
 
-noncomputable def quotientAddChar {A : Type*} [CommRing A]
-    (I : Ideal A) (ψ : AddChar A ℂ)
-    (hper : ∀ a : A, a ∈ I → ψ a = 1) : AddChar (A ⧸ I) ℂ where
+section
+variable (I : Ideal A) (ψ : AddChar A ℂ)
+    (hper : ∀ a : A, a ∈ I → ψ a = 1)
+include I ψ hper
+
+def quotientAddChar  : AddChar (A ⧸ I) ℂ where
   toFun := fun x => Quotient.liftOn' x ψ (by
     intro a b hab
     have hsub : a - b ∈ I := I.quotientRel_def.mp hab
     have h := ψ.map_add_eq_mul (a - b) b
-    rw [sub_add_cancel] at h
-    rw [hper _ hsub, one_mul] at h
-    exact h)
+    simp_all <;> nlinarith)
   map_zero_eq_one' := by
     change ψ 0 = 1
     exact AddChar.map_zero_eq_one ψ
@@ -116,12 +126,12 @@ noncomputable def quotientAddChar {A : Type*} [CommRing A]
     intro a b
     exact AddChar.map_add_eq_mul ψ a b
 
-@[simp] theorem quotientAddChar_mk {A : Type*} [CommRing A]
-    (I : Ideal A) (ψ : AddChar A ℂ)
-    (hper : ∀ a : A, a ∈ I → ψ a = 1) (a : A) :
+@[simp] theorem quotientAddChar_mk  (a : A) :
     quotientAddChar I ψ hper (Ideal.Quotient.mk I a) = ψ a := rfl
+end
 
-theorem principal_coprime_of_bezout {A : Type*} [CommRing A]
+
+theorem principal_coprime_of_bezout 
     {a b u v : A} (h : u * a + v * b = 1) :
     IsCoprime (Ideal.span {a}) (Ideal.span {b}) := by
   apply Ideal.isCoprime_iff_exists.mpr
@@ -129,7 +139,7 @@ theorem principal_coprime_of_bezout {A : Type*} [CommRing A]
   · exact Ideal.mem_span_singleton.mpr ⟨u, by ring⟩
   · exact Ideal.mem_span_singleton.mpr ⟨v, by ring⟩
 
-theorem bezout_of_principal_coprime {A : Type*} [CommRing A]
+theorem bezout_of_principal_coprime 
     {a b : A} (h : IsCoprime (Ideal.span {a}) (Ideal.span {b})) :
     ∃ u v : A, u * a + v * b = 1 := by
   obtain ⟨x, hx, y, hy, hxy⟩ := Ideal.isCoprime_iff_exists.mp h
@@ -139,15 +149,18 @@ theorem bezout_of_principal_coprime {A : Type*} [CommRing A]
   rw [hu, hv] at hxy
   convert hxy using 1; ring
 
-theorem crt_left_inverse_coordinate {A : Type*} [CommRing A]
-    {a b u v : A} (hbez : u * a + v * b = 1) (x : A) :
+section
+variable {a b u v : A} (hbez : u * a + v * b = 1)
+include a b u v hbez
+
+theorem crt_left_inverse_coordinate  (x : A) :
     (Ideal.quotientMulEquivQuotientProd
       (Ideal.span {a}) (Ideal.span {b})
       (principal_coprime_of_bezout hbez)).symm
         (Ideal.Quotient.mk (Ideal.span {a}) x, 0) =
       Ideal.Quotient.mk ((Ideal.span {a}) * (Ideal.span {b})) (x * v * b) := by
-  let I : Ideal A := Ideal.span {a}
-  let J : Ideal A := Ideal.span {b}
+  let I := Ideal.span {a}
+  let J := Ideal.span {b}
   let e := Ideal.quotientMulEquivQuotientProd I J
     (principal_coprime_of_bezout hbez)
   apply e.injective
@@ -173,15 +186,14 @@ theorem crt_left_inverse_coordinate {A : Type*} [CommRing A]
     apply (Ideal.Quotient.eq_zero_iff_mem).mpr
     exact Ideal.mem_span_singleton.mpr ⟨x * v, by ring⟩
 
-theorem crt_right_inverse_coordinate {A : Type*} [CommRing A]
-    {a b u v : A} (hbez : u * a + v * b = 1) (y : A) :
+theorem crt_right_inverse_coordinate  (y : A) :
     (Ideal.quotientMulEquivQuotientProd
       (Ideal.span {a}) (Ideal.span {b})
       (principal_coprime_of_bezout hbez)).symm
         (0, Ideal.Quotient.mk (Ideal.span {b}) y) =
       Ideal.Quotient.mk ((Ideal.span {a}) * (Ideal.span {b})) (y * u * a) := by
-  let I : Ideal A := Ideal.span {a}
-  let J : Ideal A := Ideal.span {b}
+  let I := Ideal.span {a}
+  let J := Ideal.span {b}
   let e := Ideal.quotientMulEquivQuotientProd I J
     (principal_coprime_of_bezout hbez)
   apply e.injective
@@ -206,18 +218,29 @@ theorem crt_right_inverse_coordinate {A : Type*} [CommRing A]
     calc
       y - y * u * a = y * (u * a + v * b) - y * u * a := by rw [hbez]; ring
       _ = b * (y * v) := by ring
+end
 
-noncomputable def rawTraceChar {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (c : A) : AddChar A ℂ where
+
+section
+variable (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
+include ι ψ lam
+
+section
+variable (c : A)
+include c
+
+def rawTraceChar  : AddChar A ℂ where
   toFun x := ψ (ι x / (ι c * lam))
   map_zero_eq_one' := by simp
   map_add_eq_mul' x y := by
     rw [map_add, add_div, AddChar.map_add_eq_mul]
 
-theorem rawTraceChar_period {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (c : A)
-    (hc : ι c ≠ 0) (hlam : lam ≠ 0)
+section
+variable (hc : ι c ≠ 0) (hlam : lam ≠ 0)
     (hbase : ∀ x : A, ψ (ι x / lam) = 1)
+include hc hlam hbase
+
+theorem rawTraceChar_period 
     (x : A) (hx : x ∈ Ideal.span {c}) :
     rawTraceChar ι ψ lam c x = 1 := by
   obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp hx
@@ -229,26 +252,26 @@ theorem rawTraceChar_period {A : Type*} [CommRing A]
   rw [hfrac]
   exact hbase y
 
-noncomputable def traceModChar {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (c : A)
-    (hc : ι c ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
+def traceModChar  :
     AddChar (A ⧸ Ideal.span {c}) ℂ :=
   quotientAddChar (Ideal.span {c}) (rawTraceChar ι ψ lam c)
     (rawTraceChar_period ι ψ lam c hc hlam hbase)
 
-@[simp] theorem traceModChar_mk {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (c : A)
-    (hc : ι c ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) (x : A) :
+@[simp] theorem traceModChar_mk  (x : A) :
     traceModChar ι ψ lam c hc hlam hbase
       (Ideal.Quotient.mk (Ideal.span {c}) x) =
       ψ (ι x / (ι c * lam)) := rfl
+end
+end
 
-noncomputable def traceProdChar {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (a b : A)
+
+section
+variable (a b : A)
     (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
+    (hbase : ∀ x : A, ψ (ι x / lam) = 1)
+include a b ha hb hlam hbase
+
+def traceProdChar  :
     AddChar (A ⧸ (Ideal.span {a}) * (Ideal.span {b})) ℂ :=
   quotientAddChar ((Ideal.span {a}) * (Ideal.span {b}))
     (rawTraceChar ι ψ lam (a * b)) (by
@@ -259,19 +282,20 @@ noncomputable def traceProdChar {A : Type*} [CommRing A]
         (by simpa only [map_mul] using mul_ne_zero ha hb)
         hlam hbase x hx')
 
-@[simp] theorem traceProdChar_mk {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (a b : A)
-    (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) (x : A) :
+@[simp] theorem traceProdChar_mk  (x : A) :
     traceProdChar ι ψ lam a b ha hb hlam hbase
       (Ideal.Quotient.mk ((Ideal.span {a}) * (Ideal.span {b})) x) =
       ψ (ι x / (ι (a * b) * lam)) := rfl
+end
 
-theorem leftAddChar_traceProd {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
-    {a b u v : A} (hbez : u * a + v * b = 1)
+
+section
+variable {a b u v : A} (hbez : u * a + v * b = 1)
     (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
+    (hbase : ∀ x : A, ψ (ι x / lam) = 1)
+include a b u v hbez ha hb hlam hbase
+
+theorem leftAddChar_traceProd  :
     leftAddChar
       (Ideal.quotientMulEquivQuotientProd (Ideal.span {a}) (Ideal.span {b})
         (principal_coprime_of_bezout hbez))
@@ -289,17 +313,12 @@ theorem leftAddChar_traceProd {A : Type*} [CommRing A]
       (Ideal.Quotient.mk (Ideal.span {a}) v)
       (Ideal.Quotient.mk (Ideal.span {a}) x)
   rw [crt_left_inverse_coordinate hbez x]
-  simp only [traceProdChar_mk, AddChar.mulShift_apply, ← map_mul,
-    traceModChar_mk]
+  simp only [traceProdChar_mk, mulShift_apply, ← map_mul, traceModChar_mk]
   congr 1
   simp only [map_mul]
   field_simp
 
-theorem rightAddChar_traceProd {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
-    {a b u v : A} (hbez : u * a + v * b = 1)
-    (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
+theorem rightAddChar_traceProd  :
     rightAddChar
       (Ideal.quotientMulEquivQuotientProd (Ideal.span {a}) (Ideal.span {b})
         (principal_coprime_of_bezout hbez))
@@ -317,14 +336,23 @@ theorem rightAddChar_traceProd {A : Type*} [CommRing A]
       (Ideal.Quotient.mk (Ideal.span {b}) u)
       (Ideal.Quotient.mk (Ideal.span {b}) y)
   rw [crt_right_inverse_coordinate hbez y]
-  simp only [traceProdChar_mk, AddChar.mulShift_apply, ← map_mul,
-    traceModChar_mk]
+  simp only [traceProdChar_mk, mulShift_apply, ← map_mul, traceModChar_mk]
   congr 1
   simp only [map_mul]
   field_simp
+end
+end
 
-theorem bezout_inverse_left {A : Type*} [CommRing A]
-    {a b u v : A} (hbez : u * a + v * b = 1) :
+
+section
+variable {a b u v : A}
+include a b u v
+
+section
+variable (hbez : u * a + v * b = 1)
+include hbez
+
+theorem bezout_inverse_left  :
     (Ideal.Quotient.mk (Ideal.span {a}) b) *
       (Ideal.Quotient.mk (Ideal.span {a}) v) = 1 := by
   rw [← map_mul]
@@ -336,8 +364,7 @@ theorem bezout_inverse_left {A : Type*} [CommRing A]
     b * v - 1 = b * v - (u * a + v * b) := by rw [hbez]
     _ = a * -u := by ring
 
-theorem bezout_inverse_right {A : Type*} [CommRing A]
-    {a b u v : A} (hbez : u * a + v * b = 1) :
+theorem bezout_inverse_right  :
     (Ideal.Quotient.mk (Ideal.span {b}) a) *
       (Ideal.Quotient.mk (Ideal.span {b}) u) = 1 := by
   rw [← map_mul]
@@ -348,9 +375,10 @@ theorem bezout_inverse_right {A : Type*} [CommRing A]
   calc
     a * u - 1 = a * u - (u * a + v * b) := by rw [hbez]
     _ = b * -v := by ring
+end
 
-theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
-    {a b u v : A} [Fintype (A ⧸ Ideal.span {a})]
+
+theorem gauss_shift_bezout_left  [Fintype (A ⧸ Ideal.span {a})]
     (hbez : u * a + v * b = 1)
     (χ : MulChar (A ⧸ Ideal.span {a}) ℂ)
     (ψ : AddChar (A ⧸ Ideal.span {a}) ℂ) :
@@ -359,7 +387,7 @@ theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
   let mb := Ideal.Quotient.mk (Ideal.span {a}) b
   let mv := Ideal.Quotient.mk (Ideal.span {a}) v
   have hprod : mb * mv = 1 := bezout_inverse_left hbez
-  have hu : IsUnit mv := IsUnit.of_mul_eq_one_right mb hprod
+  have hu := IsUnit.of_mul_eq_one_right mb hprod
   have hχ : χ mb * χ mv = 1 := by rw [← map_mul, hprod, map_one]
   have hshift := gaussSum_mulShift χ ψ hu.unit
   have hshift' : χ mv * gaussSum χ (ψ.mulShift mv) = gaussSum χ ψ := by
@@ -370,8 +398,7 @@ theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
     _ = χ mb * (χ mv * gaussSum χ (ψ.mulShift mv)) := by ring
     _ = χ mb * gaussSum χ ψ := by rw [hshift']
 
-theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
-    {a b u v : A} [Fintype (A ⧸ Ideal.span {b})]
+theorem gauss_shift_bezout_right  [Fintype (A ⧸ Ideal.span {b})]
     (hbez : u * a + v * b = 1)
     (χ : MulChar (A ⧸ Ideal.span {b}) ℂ)
     (ψ : AddChar (A ⧸ Ideal.span {b}) ℂ) :
@@ -380,7 +407,7 @@ theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
   let ma := Ideal.Quotient.mk (Ideal.span {b}) a
   let mu := Ideal.Quotient.mk (Ideal.span {b}) u
   have hprod : ma * mu = 1 := bezout_inverse_right hbez
-  have hu : IsUnit mu := IsUnit.of_mul_eq_one_right ma hprod
+  have hu := IsUnit.of_mul_eq_one_right ma hprod
   have hχ : χ ma * χ mu = 1 := by rw [← map_mul, hprod, map_one]
   have hshift := gaussSum_mulShift χ ψ hu.unit
   have hshift' : χ mu * gaussSum χ (ψ.mulShift mu) = gaussSum χ ψ := by
@@ -390,9 +417,14 @@ theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
         (χ ma * χ mu) * gaussSum χ (ψ.mulShift mu) := by rw [hχ, one_mul]
     _ = χ ma * (χ mu * gaussSum χ (ψ.mulShift mu)) := by ring
     _ = χ ma * gaussSum χ ψ := by rw [hshift']
+end
 
-theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
+
+section
+variable (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
+include ι ψ lam
+
+theorem gauss_sum_trace_crt 
     {a b u v : A} (hbez : u * a + v * b = 1)
     [Fintype (A ⧸ (Ideal.span {a}) * (Ideal.span {b}))]
     [Fintype (A ⧸ Ideal.span {a})]
@@ -411,8 +443,6 @@ theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
       χb (Ideal.Quotient.mk (Ideal.span {b}) a) *
       gaussSum χa (traceModChar ι ψ lam a ha hlam hbase) *
       gaussSum χb (traceModChar ι ψ lam b hb hlam hbase) := by
-  let e := Ideal.quotientMulEquivQuotientProd (Ideal.span {a})
-    (Ideal.span {b}) (principal_coprime_of_bezout hbez)
   have h := gauss_sum_ideal_crt (Ideal.span {a}) (Ideal.span {b})
     (principal_coprime_of_bezout hbez) χa χb
     (traceProdChar ι ψ lam a b ha hb hlam hbase)
@@ -427,8 +457,7 @@ theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
           gaussSum χb (traceModChar ι ψ lam b hb hlam hbase)) := h
     _ = _ := by ring
 
-theorem gauss_sum_trace_crt_of_coprime {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
+theorem gauss_sum_trace_crt_of_coprime 
     (a b : A)
     (hcop : IsCoprime (Ideal.span {a}) (Ideal.span {b}))
     [Fintype (A ⧸ (Ideal.span {a}) * (Ideal.span {b}))]
@@ -450,9 +479,12 @@ theorem gauss_sum_trace_crt_of_coprime {A : Type*} [CommRing A]
       gaussSum χb (traceModChar ι ψ lam b hb hlam hbase) := by
   obtain ⟨u, v, hbez⟩ := bezout_of_principal_coprime hcop
   exact gauss_sum_trace_crt ι ψ lam hbez ha hb hlam hbase χa χb
-
-end IdealGaussCRT
-
+end
 end
 
-end OAI
+
+
+
+
+
+

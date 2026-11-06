@@ -3,9 +3,8 @@ public import DensityEnergyGM.DifferenceLayerCake
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -92,4 +91,4 @@ theorem actual_second_moment_integral_native (ε : ℝ) (hε : 0 < ε) :
       exact hUpper s hs.1
   exact (difference_second_moment_le_peak_integral a W p ha hrep).trans hIntegral
 
-end Montgomery.RationalMoment
+

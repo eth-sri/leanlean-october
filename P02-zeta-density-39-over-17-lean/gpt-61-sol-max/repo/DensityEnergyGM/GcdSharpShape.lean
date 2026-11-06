@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.GcdScaleOptimization
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem sqrt_add_le_sum {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
@@ -88,9 +88,6 @@ theorem sharp_second_shape_sqrt_min {M T R E H K : ℝ}
     _ ≤ Real.sqrt (X + Y) + Real.sqrt Z := sqrt_add_le_sum (add_nonneg hX hY) hZ
     _ ≤ (Real.sqrt X + Real.sqrt Y) + Real.sqrt Z := by
       linarith [sqrt_add_le_sum hX hY]
-    _ ≤ _ := by
-      simpa! only [X, Y, Z, D, Real.rpow_two, mul_add, add_mul, add_assoc, add_comm,
-        add_left_comm, mul_assoc, mul_comm, mul_left_comm] using
-        add_le_add (add_le_add hFirst hSecond) hThird
+    _ ≤ _ := by grind
 
-end Montgomery.RationalMoment
+

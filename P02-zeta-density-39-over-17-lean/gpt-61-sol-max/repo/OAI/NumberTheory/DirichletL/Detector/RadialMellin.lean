@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import Mathlib.Analysis.MellinInversion
 
@@ -14,7 +15,11 @@ namespace SevenEighths.ProbeRadialMellin
 def laplace (f : ℝ → ℂ) (t : ℝ) : ℂ :=
   ∫ r : ℝ in Ioi 0, f r * Complex.exp (-(t*r : ℝ))
 
-lemma mellin_real (f : ℝ → ℂ) (s : ℝ) :
+section
+variable (f : ℝ → ℂ) (s : ℝ)
+include f s
+
+lemma mellin_real  :
     mellin f (s : ℂ) = ∫ r : ℝ in Ioi 0, (r^(s-1) : ℝ) • f r := by
   apply setIntegral_congr_fun measurableSet_Ioi
   intro r hr
@@ -22,7 +27,7 @@ lemma mellin_real (f : ℝ → ℂ) (s : ℝ) :
   rw [show (s:ℂ)-1=((s-1:ℝ):ℂ) by push_cast; rfl,
     ← Complex.ofReal_cpow (le_of_lt hr)]
 
-lemma mellinConvergent_real (f : ℝ → ℂ) (s : ℝ) :
+lemma mellinConvergent_real  :
     MellinConvergent f (s : ℂ) ↔
       IntegrableOn (fun r : ℝ => (r^(s-1) : ℝ) • f r) (Ioi 0) := by
   apply integrable_congr
@@ -30,8 +35,14 @@ lemma mellinConvergent_real (f : ℝ → ℂ) (s : ℝ) :
   change (r:ℂ)^((s:ℂ)-1)*f r = (r^(s-1):ℝ)*f r
   rw [show (s:ℂ)-1=((s-1:ℝ):ℂ) by push_cast; rfl,
     ← Complex.ofReal_cpow (le_of_lt hr)]
+end
 
-lemma gamma_scaled_integrable {s r : ℝ} (hs : 0<s) (hr : 0<r) :
+
+section
+variable {s r : ℝ} (hs : 0<s) (hr : 0<r)
+include s r hs hr
+
+lemma gamma_scaled_integrable  :
     IntegrableOn (fun t : ℝ => t^(s-1)*Real.exp (-(r*t))) (Ioi 0) := by
   have hg : MellinConvergent (fun t : ℝ => (Real.exp (-t) : ℂ)) (s : ℂ) := by
     rw [mellinConvergent_real]
@@ -43,15 +54,21 @@ lemma gamma_scaled_integrable {s r : ℝ} (hs : 0<s) (hr : 0<r) :
   rw [mellinConvergent_real] at hh
   simpa only [RCLike.smul_re, RCLike.ofReal_re] using! hh.re
 
-lemma gamma_scaled_integral {s r : ℝ} (hs : 0<s) (hr : 0<r) :
+lemma gamma_scaled_integral  :
     (∫ t : ℝ in Ioi 0, t^(s-1)*Real.exp (-(r*t))) =
       r^(-s)*Real.Gamma s := by
   rw [Real.integral_rpow_mul_exp_neg_mul_Ioi hs hr, one_div, Real.inv_rpow hr.le,
     Real.rpow_neg hr.le]
+end
 
-lemma laplace_mellin_integrable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
+
+section
+variable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
     (hf : AEStronglyMeasurable f (volume.restrict (Ioi 0)))
-    (hconv : MellinConvergent f (1-s)) :
+    (hconv : MellinConvergent f (1-s))
+include f s hs hf hconv
+
+lemma laplace_mellin_integrable  :
     Integrable (fun p : ℝ×ℝ => f p.1 *
       ((p.2:ℂ)^(s-1)*Complex.exp (-(p.1*p.2:ℝ))))
       ((volume.restrict (Ioi 0)).prod (volume.restrict (Ioi 0))) := by
@@ -64,7 +81,7 @@ lemma laplace_mellin_integrable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
         ‖f r‖*(t^(s.re-1)*Real.exp (-(r*t))) := by
     rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos ht,
       Complex.norm_exp]
-    simp only [Complex.sub_re, Complex.one_re, Complex.neg_re, Complex.ofReal_re]
+    simp
   apply (integrable_prod_iff hm).mpr
   constructor
   · filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
@@ -77,8 +94,7 @@ lemma laplace_mellin_integrable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
       simp only [norm_smul, Complex.norm_cpow_eq_rpow_re_of_pos hr,
         Complex.sub_re, Complex.one_re]
-      congr 2
-      ring
+      simp
     apply (hw.const_mul (Real.Gamma s.re)).congr
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
     have hi : (fun t : ℝ => ‖f r*((t:ℂ)^(s-1)*Complex.exp (-(r*t:ℝ)))‖) =ᵐ[
@@ -89,9 +105,7 @@ lemma laplace_mellin_integrable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
     rw [integral_const_mul, gamma_scaled_integral hs hr]
     ring
 
-lemma mellin_laplace (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
-    (hf : AEStronglyMeasurable f (volume.restrict (Ioi 0)))
-    (hconv : MellinConvergent f (1-s)) :
+lemma mellin_laplace  :
     mellin (laplace f) s = Complex.Gamma s * mellin f (1-s) := by
   have hi := laplace_mellin_integrable f s hs hf hconv
   calc
@@ -125,6 +139,8 @@ lemma mellin_laplace (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
       dsimp only
       rw [show 1-s-1 = -s by ring, smul_eq_mul]
       ring
+end
+
 
 open EisensteinSchwartzPoisson
 
@@ -181,11 +197,15 @@ lemma paper_gaussian_fourier (t : ℝ) (ht : 0<t) (u : ℂ) :
   push_cast
   ring
 
-lemma radial_continuous (W : SchwartzMap ℝ ℂ) : Continuous (paperRadialFourier W) := by
+section
+variable (W : SchwartzMap ℝ ℂ)
+include W
+
+lemma radial_continuous  : Continuous (paperRadialFourier W) := by
   rw [paperRadialFourier_eq_ray]
   exact (paperFourierRayCLM W).continuous.comp Real.continuous_sqrt
 
-lemma radial_isBigO_top (W : SchwartzMap ℝ ℂ) (A : ℕ) :
+lemma radial_isBigO_top  (A : ℕ) :
     paperRadialFourier W =O[atTop] (fun r : ℝ => r^(-(A:ℝ))) := by
   obtain ⟨C, hC, hb⟩ := paperRadialFourier_euler_bound W A 0
   apply isBigO_iff.mpr
@@ -200,7 +220,7 @@ lemma radial_isBigO_top (W : SchwartzMap ℝ ℂ) (A : ℕ) :
     Real.rpow_neg hr.le, Real.rpow_natCast, ← div_eq_mul_inv]
   exact (le_div_iff₀ (pow_pos hr A)).mpr (by simpa [mul_comm] using hp)
 
-lemma radial_isBigO_zero (W : SchwartzMap ℝ ℂ) :
+lemma radial_isBigO_zero  :
     paperRadialFourier W =O[𝓝[>] 0] (fun r : ℝ => r^(-(0:ℝ))) := by
   obtain ⟨C, hC, hb⟩ := paperRadialFourier_euler_bound W 0 0
   apply isBigO_iff.mpr
@@ -208,14 +228,14 @@ lemma radial_isBigO_zero (W : SchwartzMap ℝ ℂ) :
   filter_upwards [self_mem_nhdsWithin] with r hr
   simpa [LocalLogFourier.eulerDeriv] using hb 0 (by omega) r hr
 
-theorem radial_mellin_convergent (W : SchwartzMap ℝ ℂ) (z : ℂ) (hz : 0<z.re) :
+theorem radial_mellin_convergent  (z : ℂ) (hz : 0<z.re) :
     MellinConvergent (paperRadialFourier W) z := by
   obtain ⟨A, hA⟩ := exists_nat_gt z.re
   exact mellinConvergent_of_isBigO_rpow
     ((radial_continuous W).continuousOn.locallyIntegrableOn measurableSet_Ioi)
     (radial_isBigO_top W A) hA (radial_isBigO_zero W) hz
 
-theorem radial_mellin_differentiable (W : SchwartzMap ℝ ℂ) :
+theorem radial_mellin_differentiable  :
     DifferentiableOn ℂ (mellin (paperRadialFourier W)) {z | 0<z.re} := by
   intro z hz
   obtain ⟨A,hA⟩ := exists_nat_gt z.re
@@ -223,7 +243,7 @@ theorem radial_mellin_differentiable (W : SchwartzMap ℝ ℂ) :
     ((radial_continuous W).continuousOn.locallyIntegrableOn measurableSet_Ioi)
     (radial_isBigO_top W A) hA (radial_isBigO_zero W) hz).differentiableWithinAt
 
-lemma radial_laplace_duality (W : SchwartzMap ℝ ℂ) (t : ℝ) (ht : 0<t) :
+lemma radial_laplace_duality  (t : ℝ) (ht : 0<t) :
     laplace (paperRadialFourier W) t =
       (paperConstant/t:ℝ)*laplace W (paperConstant^2/t) := by
   have hf : Integrable (fun z : ℂ => W (‖z‖^2)) := (radialTestCLM W).integrable
@@ -235,8 +255,7 @@ lemma radial_laplace_duality (W : SchwartzMap ℝ ℂ) (t : ℝ) (ht : 0<t) :
       Complex.exp (-(t:ℂ)*‖u‖^2)) = (Real.pi:ℂ)*laplace (paperRadialFourier W) t := by
     simp_rw [paperFourier_radial]
     rw [laplace, ← CubicEisenstein.integral_radial_sq]
-    apply integral_congr_ae
-    exact Eventually.of_forall fun u => by simp [Complex.ofReal_mul]
+    simp
   have hright : (∫ z : ℂ, W (‖z‖^2)*paperFourier
       (fun u : ℂ => Complex.exp (-(t:ℂ)*‖u‖^2)) z) =
       (Real.pi:ℂ)*((paperConstant/t:ℝ)*laplace W (paperConstant^2/t)) := by
@@ -250,6 +269,8 @@ lemma radial_laplace_duality (W : SchwartzMap ℝ ℂ) (t : ℝ) (ht : 0<t) :
       ring
   rw [hleft, hright] at h
   exact mul_left_cancel₀ (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero) h
+end
+
 
 lemma mellin_reciprocal_laplace (W : ℝ → ℂ) (z : ℂ) :
     mellin (fun t : ℝ => (paperConstant/t:ℝ)*laplace W (paperConstant^2/t)) (1-z) =
@@ -264,7 +285,6 @@ lemma mellin_reciprocal_laplace (W : ℝ → ℂ) (z : ℂ) :
   have hh := mellin_comp_inv (fun t : ℝ => laplace W (paperConstant^2*t)) (-z)
   rw [neg_neg] at hh
   rw [hh, mellin_comp_mul_left _ _ (sq_pos_of_pos paperConstant_pos)]
-  simp only [smul_eq_mul]
   ring
 
 theorem radial_mellin_gamma (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
@@ -296,7 +316,7 @@ theorem radial_mellin_gamma (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
 lemma paper_prefactor (z : ℂ) :
     (paperConstant:ℂ)*((paperConstant^2:ℝ):ℂ)^(-z) =
       (paperConstant:ℂ)^(1-2*z) := by
-  have hn : (paperConstant:ℂ)≠0 := Complex.ofReal_ne_zero.mpr paperConstant_pos.ne'
+  have hn := Complex.ofReal_ne_zero.mpr paperConstant_pos.ne'
   have hh := Complex.cpow_nat_mul' (x := (paperConstant:ℂ)) (n := 2)
     (by simp [Complex.arg_ofReal_of_nonneg paperConstant_pos.le, Real.pi_pos])
     (by simp [Complex.arg_ofReal_of_nonneg paperConstant_pos.le, Real.pi_nonneg]) (-z)
@@ -305,16 +325,22 @@ lemma paper_prefactor (z : ℂ) :
     Complex.cpow_one]
   norm_num
 
-theorem radial_mellin_identity (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b) (z : ℂ) (hz : 0<z.re) (hz1 : z.re<1) :
+section
+variable (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
+    (hW : Function.support W ⊆ Icc a b)
+include W a b ha hW
+
+theorem radial_mellin_identity  (z : ℂ) (hz : 0<z.re) (hz1 : z.re<1) :
     mellin (paperRadialFourier W) z =
       ((paperConstant:ℂ)^(1-2*z)*Complex.Gamma z / Complex.Gamma (1-z))*
         mellin W (1-z) := by
   rw [radial_mellin_gamma W a b ha hW z hz hz1, paper_prefactor]
 
-lemma positive_source_mellin (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b)
-    (hreal : ∀r, (W r).im=0) (hnonneg : ∀r, 0≤(W r).re) (hne : W≠0)
+section
+variable (hreal : ∀r, (W r).im=0) (hnonneg : ∀r, 0≤(W r).re) (hne : W≠0)
+include hreal hnonneg hne
+
+lemma positive_source_mellin 
     (s : ℝ) : 0<(mellin W (s:ℂ)).re ∧ (mellin W (s:ℂ)).im=0 := by
   have hc := CubicReflectionKernel.compact_source_mellin_convergent W a b ha hW
     (W.smooth ⊤) (s:ℂ)
@@ -359,9 +385,7 @@ lemma positive_source_mellin (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
   · filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
     exact mul_nonneg (Real.rpow_nonneg hr.le _) (hnonneg r)
 
-theorem radial_mellin_positive (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b)
-    (hreal : ∀r, (W r).im=0) (hnonneg : ∀r, 0≤(W r).re) (hne : W≠0)
+theorem radial_mellin_positive 
     (s : ℝ) (hs : 0<s) (hs1 : s<1) :
     0<(mellin (paperRadialFourier W) (s:ℂ)).re ∧
       (mellin (paperRadialFourier W) (s:ℂ)).im=0 := by
@@ -380,21 +404,20 @@ theorem radial_mellin_positive (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
   exact mul_pos (div_pos (mul_pos (Real.rpow_pos_of_pos paperConstant_pos _)
     (Real.Gamma_pos_of_pos hs)) (Real.Gamma_pos_of_pos (by linarith))) hp
 
-theorem radial_mellin_one_sixth_pos (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b)
-    (hreal : ∀r, (W r).im=0) (hnonneg : ∀r, 0≤(W r).re) (hne : W≠0) :
+theorem radial_mellin_one_sixth_pos  :
     0<(mellin (paperRadialFourier W) (1/6)).re ∧
       (mellin (paperRadialFourier W) (1/6)).im=0 := by
   simpa using radial_mellin_positive W a b ha hW hreal hnonneg hne (1/6)
     (by norm_num) (by norm_num)
+end
 
-theorem radial_mellin_identity_right (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b) (z : ℂ) (hz : 0<z.re) :
+
+theorem radial_mellin_identity_right  (z : ℂ) (hz : 0<z.re) :
     mellin (paperRadialFourier W) z =
       ((paperConstant:ℂ)^(1-2*z)*Complex.Gamma z / Complex.Gamma (1-z))*
         mellin W (1-z) := by
   let D : Set ℂ := {z | 0<z.re}
-  let G : ℂ → ℂ := fun z =>
+  let G := fun z =>
     ((paperConstant:ℂ)^(1-2*z)*Complex.Gamma z / Complex.Gamma (1-z))*
       mellin W (1-z)
   have hop : IsOpen D := isOpen_lt continuous_const Complex.continuous_re
@@ -420,6 +443,8 @@ theorem radial_mellin_identity_right (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha :
     exact radial_mellin_identity W a b ha hW w hw.1 hw.2
   exact hf.eqOn_of_preconnected_of_eventuallyEq (hG.analyticOnNhd hop)
     hcv.isPreconnected (by norm_num [D]) hev hz
+end
+
 
 lemma gamma_quotient_strip (lo hi : ℝ) (hlo : 0<lo) :
     ∃ (n : ℕ) (C : ℝ), 0<C ∧ ∀ σ∈Icc lo hi, ∀t : ℝ,
@@ -433,8 +458,7 @@ lemma gamma_quotient_strip (lo hi : ℝ) (hlo : 0<lo) :
   have hz : (σ:ℂ)+t*Complex.I≠0 := by
     intro he
     have := congrArg Complex.re he
-    simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
-      Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero, Complex.zero_re] at this
+    simp at this
     linarith
   have hh := hb σ ⟨by linarith [hσ.1], by linarith [hσ.2]⟩ t
   norm_num only [Complex.ofReal_one] at hh
@@ -449,7 +473,11 @@ lemma gamma_quotient_strip (lo hi : ℝ) (hlo : 0<lo) :
   apply (le_div_iff₀ hlo).mpr
   simpa [div_mul_eq_mul_div, mul_comm] using hh'
 
-theorem radial_mellin_strip_decay (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
+section
+variable (W : SchwartzMap ℝ ℂ)
+include W
+
+theorem radial_mellin_strip_decay  (a b : ℝ) (ha : 0<a)
     (hW : Function.support W ⊆ Icc a b) (lo hi : ℝ) (hlo : 0<lo) (N : ℕ) :
     ∃ C : ℝ, 0<C ∧ ∀ σ∈Icc lo hi, ∀t : ℝ,
       (1+|t|)^N * ‖mellin (paperRadialFourier W) ((σ:ℂ)+t*Complex.I)‖ ≤ C := by
@@ -466,16 +494,13 @@ theorem radial_mellin_strip_decay (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<
   intro σ hσ t
   have hp : ‖(paperConstant:ℂ)^(1-2*((σ:ℂ)+t*Complex.I))‖≤Cp := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos paperConstant_pos]
-    simp only [Complex.sub_re, Complex.one_re, Complex.mul_re,
-      show (2:ℂ).re=2 by rfl, show (2:ℂ).im=0 by rfl, Complex.add_re, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
+    simp
     exact (hB (mem_image_of_mem _ hσ)).trans (by change B≤|B|+1; linarith [le_abs_self B])
   have hwb := hw (1-σ) ⟨by linarith [hσ.2], by linarith [hσ.1]⟩ (-t)
   rw [abs_neg, show ((1-σ:ℝ):ℂ)+(-t:ℝ)*Complex.I = 1-((σ:ℂ)+t*Complex.I) by
     push_cast; ring] at hwb
   rw [radial_mellin_identity_right W a b ha hW _ (by
-    simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
-      Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
+    simp
     exact hlo.trans_le hσ.1), mul_div_assoc, norm_mul, norm_mul]
   calc
     _ ≤ (1+|t|)^N*(Cp*(Cg*(1+|t|)^n)*
@@ -487,13 +512,17 @@ theorem radial_mellin_strip_decay (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hwb (by positivity)
 
-theorem radial_mellin_analytic (W : SchwartzMap ℝ ℂ) :
+theorem radial_mellin_analytic  :
     AnalyticOnNhd ℂ (mellin (paperRadialFourier W)) {z | 0<z.re} :=
   (radial_mellin_differentiable W).analyticOnNhd
     (isOpen_lt continuous_const Complex.continuous_re)
 
-theorem radial_mellin_vertical_integrable (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b) (σ : ℝ) (hσ : 0<σ) :
+section
+variable (a b : ℝ) (ha : 0<a)
+    (hW : Function.support W ⊆ Icc a b)
+include a b ha hW
+
+theorem radial_mellin_vertical_integrable  (σ : ℝ) (hσ : 0<σ) :
     Complex.VerticalIntegrable (mellin (paperRadialFourier W)) σ := by
   obtain ⟨C,hC,hb⟩ := radial_mellin_strip_decay W a b ha hW σ σ hσ 2
   have hc : Continuous (fun t : ℝ => mellin (paperRadialFourier W) ((σ:ℂ)+t*Complex.I)) := by
@@ -503,11 +532,14 @@ theorem radial_mellin_vertical_integrable (W : SchwartzMap ℝ ℂ) (a b : ℝ) 
     fun_prop
   apply (integrable_inv_one_add_sq.const_mul C).mono' hc.aestronglyMeasurable
   exact Eventually.of_forall fun t => by
-    simpa only [div_eq_mul_inv] using CubicReflectionKernel.weighted_two_to_cauchy
+    exact CubicReflectionKernel.weighted_two_to_cauchy
       (norm_nonneg _) t (hb σ ⟨le_rfl,le_rfl⟩ t)
 
-theorem radial_mellin_inverse_integrable (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b) (σ x : ℝ) (hσ : 0<σ) (hx : 0<x) :
+section
+variable (σ x : ℝ) (hσ : 0<σ) (hx : 0<x)
+include σ x hσ hx
+
+theorem radial_mellin_inverse_integrable  :
     Integrable (fun t : ℝ => (x:ℂ)^(-((σ:ℂ)+t*Complex.I))*
       mellin (paperRadialFourier W) ((σ:ℂ)+t*Complex.I)) := by
   have hi := radial_mellin_vertical_integrable W a b ha hW σ hσ
@@ -521,16 +553,19 @@ theorem radial_mellin_inverse_integrable (W : SchwartzMap ℝ ℂ) (a b : ℝ) (
       rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
       simp
 
-theorem radial_mellin_inversion (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W ⊆ Icc a b) (σ x : ℝ) (hσ : 0<σ) (hx : 0<x) :
+theorem radial_mellin_inversion  :
     mellinInv σ (mellin (paperRadialFourier W)) x = paperRadialFourier W x :=
   mellinInv_mellin_eq σ (paperRadialFourier W) hx
     (radial_mellin_convergent W σ hσ)
     (radial_mellin_vertical_integrable W a b ha hW σ hσ)
     (radial_continuous W).continuousAt
-
-end SevenEighths.ProbeRadialMellin
-
+end
+end
 end
 
-end OAI
+
+
+
+
+
+

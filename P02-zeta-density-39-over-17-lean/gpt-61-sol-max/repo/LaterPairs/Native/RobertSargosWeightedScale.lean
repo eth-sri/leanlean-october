@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosWeightedFiberCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_weighted_sum_scale
@@ -38,5 +37,5 @@ theorem robertSargos_weighted_sum_scale
       rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 9) hQ0]
       ring
 
-end TaoTrudgianYang2025
+
 

@@ -11,7 +11,7 @@ noncomputable section
 namespace SevenEighths.CenteredMomentEnergyCappedRequests
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
+
 
 def requestLength (M B L:ℝ):ℝ:=max L (2*M+B+2)+1
 
@@ -27,7 +27,7 @@ lemma request_bounds (M B L:ℝ)(hM:0≤M)(hB:0≤B)(_hL:0≤L):
 lemma actual_contours (M B L parent rho d:ℝ)(hM:0≤M)(_hB:0≤B)
     (hp:parent≤M)(hr:rho≤M)(hd:d≤1):
     max (max L (parent+B+2*d)+1) (parent+B+rho/100)≤requestLength M B L:=by
-  have hmax:max L (parent+B+2*d)≤max L (2*M+B+2):=by
+  have hmax:max L (parent+B+2*d)≤ max L (2*M+B+2):=by
     apply max_le_max_left
     linarith
   have hh:=le_max_right L (2*M+B+2)
@@ -35,7 +35,7 @@ lemma actual_contours (M B L parent rho d:ℝ)(hM:0≤M)(_hB:0≤B)
   apply max_le <;> linarith
 
 lemma doubled_request (M B L e:ℝ)(hM:0≤M)(hB:0≤B)(hL:0≤L)(he:e≤1):
-    2*requestLength M B L+e≤step M B L:=by
+    2*requestLength M B L+e≤ step M B L:=by
   have hh:max L (2*M+B+2)≤L+2*M+B+2:=by
     apply max_le <;> linarith
   unfold requestLength step
@@ -73,8 +73,8 @@ lemma band_positive (M B ε:ℝ)(hM:0<M)(hB:0≤B)(hε:0<ε)(k:ℕ):
   unfold bandWidth width
   exact lt_min hM (by positivity)
 
-end SevenEighths.CenteredMomentEnergyCappedRequests
 
-end
 
-end OAI
+
+
+

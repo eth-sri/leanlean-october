@@ -1,15 +1,15 @@
 module
+import Mathlib
 public import MathCollab.Density.ProductGrouping
 public import MathCollab.Density.Packing
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators ComplexConjugate
 
-set_option autoImplicit false
 
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- The Gram identity is over all ordered pairs, with no time-pair restriction. -/
@@ -74,9 +74,7 @@ theorem detecting_insertion_bound {N : ℕ} {a : ℕ → ℂ} (U : Finset ℝ)
         field_simp [hD t ht]
       _ = _ := by
         simp only [detectingPolynomial, Finset.sum_mul, Finset.sum_div]
-        apply Finset.sum_congr rfl
-        intro n hn
-        ring
+        grind
   rw [he]
   have hh := norm_sum_mul_sq_le (Finset.Ioc N (2*N)) a
     (fun n => ∑ t ∈ U, dirichletPhase ((n : ℝ)/N) t * g t / detectingPolynomial N a t) ha
@@ -88,8 +86,6 @@ theorem normalized_product_phase {N M n q : ℕ} (hN : 0 < N) (hM : 0 < M)
     dirichletPhase ((n : ℝ)/N) t * dirichletPhase ((q : ℝ)/M) t =
       dirichletPhase (((n*q : ℕ) : ℝ)/((N : ℝ)*M)) t := by
   rw [← dirichletPhase_mul (by positivity) (by positivity)]
-  congr 1
-  push_cast
-  ring
+  grind
 
-end MathCollab.Density
+

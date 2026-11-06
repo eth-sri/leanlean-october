@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -13,7 +14,6 @@ public import MathCollab.Density.Stronger.Fourth.SquareTerm
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 theorem integral_zetaFourthTerm_vertical_eq_of_le
@@ -57,8 +57,7 @@ def zetaFourthContribution (t c : ℝ) (n : ℕ) : ℂ :=
 theorem zetaFourthContribution_one (t : ℝ) (n : ℕ) :
     zetaFourthContribution t 1 n =
       zetaSquareDivisorContribution (-t) n / zetaSquareGammaNormalization t := by
-  simp only [zetaFourthContribution,Complex.ofReal_one,zetaFourthTerm_one,
-    integral_div,zetaSquareDivisorContribution]
+  simp only [zetaFourthContribution, ofReal_one, zetaFourthTerm_one, integral_div, zetaSquareDivisorContribution]
   ring
 
 theorem zetaFourthContribution_line_eq
@@ -76,7 +75,6 @@ theorem hasSum_zetaFourthContribution {t c : ℝ} (ht : 0 ≤ t) (hc : 0 < c) :
     funext n
     rw [zetaFourthContribution_line_eq hc (by norm_num : (0:ℝ)<1) ht n,
       zetaFourthContribution_one]
-  rw [heq,zetaFourthRightPiece]
-  exact h
+  aesop
 
-end MathCollab.Density.Stronger.Fourth
+

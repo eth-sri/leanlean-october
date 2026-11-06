@@ -9,12 +9,16 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def targetRow (η : Character) (u : FreeRow) : Character := η.product (rawRow u).inverse
 
-theorem rowCharacter_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (u : FreeRow)
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
+include S hS hbad
+
+theorem rowCharacter_hasProd  (u : FreeRow)
     (s : ℂ) (hs : 1<s.re) :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S} =>
       (1-idealRowHom u.val P.val.val*CubicEisenstein.fullIdealWeight s P.val.val)⁻¹)
@@ -24,8 +28,7 @@ theorem rowCharacter_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   rw [rowCharacter_coeff S hS hbad,highExclusion_prime]
   split_ifs <;> simp only [zero_mul,one_mul]
 
-theorem targetRow_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow)
+theorem targetRow_hasProd  (η : Character) (u : FreeRow)
     (s : ℂ) (hs : 1<s.re) :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S} =>
       (1-idealCoeff η P.val.val*starRingEnd ℂ (idealRowHom u.val P.val.val)*
@@ -33,6 +36,8 @@ theorem targetRow_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
       (LFunction ((targetRow η u).excludePrimes S hS) s) :=
   LFunction_hasProd_outside _ S (fun P => idealCoeff η P*starRingEnd ℂ (idealRowHom u.val P))
     (target_inverseRow_coeff S hS hbad η u) s hs
+end
+
 
 def localCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   idealRowHighLocalFactor η u.val P.val x w z *
@@ -62,8 +67,8 @@ theorem localCorrection_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have he := ((hF.mul hZ).mul hW).mul hD
   simpa only [localCorrection,inv_inv,div_eq_mul_inv] using he
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.PairPhase
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CubicEisenstein
+open ActualEisensteinCubic ActualEisensteinCoordinates
 open CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma reciprocitySign_star (a b : O) : star (reciprocitySign a b)=reciprocitySign a b := by
   simp only [reciprocitySign, star_intCast]
@@ -98,7 +98,7 @@ theorem completed_cubic_cross_cancel (c n d m : O)
       (EisensteinEPrimaryPhase.odd_mul _ _ (supported_residue_odd d hd)
         (odd_residue_pow m (supported_residue_odd m hm) 3)))
 
-end SevenEighths.ProbePhase
-end
 
-end OAI
+
+
+

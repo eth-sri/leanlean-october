@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 namespace PrimeFamily
@@ -38,8 +38,8 @@ def activeControlled [Fintype ι]
     (G h).denominator_ne_zero (hN h) (G h).primary (G h).coprime
     (P.restrict_pairwise hP A) (fun i => hNp i.val))
 
-end PrimeFamily
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

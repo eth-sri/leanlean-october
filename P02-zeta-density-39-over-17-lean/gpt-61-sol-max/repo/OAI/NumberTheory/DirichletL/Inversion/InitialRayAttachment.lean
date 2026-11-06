@@ -12,9 +12,9 @@ namespace SevenEighths.InverseInitialRayAttachment
 open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
 open CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
 open FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
+open InverseInitialPoissonBridge InverseInitialKernelBridge
 open InverseInitialArithmetic InverseInitialProfile
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def elementCharacter (η : Ideal O →* ℂ) : O →* ℂ where
   toFun x := η (Ideal.span {x})
@@ -27,18 +27,22 @@ theorem elementCharacter_product {ι : Type*} (η : Ideal O →* ℂ)
   change η (Ideal.span {∏ i ∈ A,p i}) = _
   rw [FiniteGaussPhase.span_finset_prod]
 
-theorem poolPrimary_injective (F : Finset (Ideal O)) (hF : ∀ I ∈ F,Admissible I) :
+section
+variable (F : Finset (Ideal O))
+include F
+
+theorem poolPrimary_injective  (hF : ∀ I ∈ F,Admissible I) :
     Function.Injective (fun i : primePool F => Ideal.span {poolPrimary F i}) := by
   intro i k he
   change Ideal.span {poolPrimary F i} = Ideal.span {poolPrimary F k} at he
   rw [poolPrimary_span F hF,poolPrimary_span F hF] at he
   exact Subtype.ext he
 
-theorem poolPrimary_primary (F : Finset (Ideal O)) (hF : ∀ I ∈ F,Admissible I)
+theorem poolPrimary_primary  (hF : ∀ I ∈ F,Admissible I)
     (i : primePool F) : goodLambda^2 ∣ poolPrimary F i-1 :=
   (primaryPrime_spec i.val (poolPrimary_ne_zero F hF i)).2.2.2
 
-theorem selected_mask (F : Finset (Ideal O)) (j : Ideal O) (hj : Admissible j)
+theorem selected_mask  (j : Ideal O) (hj : Admissible j)
     (A : Finset (primePool F)) (hcop : IsCoprime (∏ i ∈ A,i.val) j) :
     rowCoprimeMask (fun i : primePool F => i.val) A (primaryGenerator j)=1 := by
   have hspan := (primaryGenerator_spec j (primaryGenerator_admissible j hj)).1
@@ -53,7 +57,7 @@ theorem selected_mask (F : Finset (Ideal O)) (j : Ideal O) (hj : Admissible j)
     exact False.elim (hp.not_isUnit (hcop.isRelPrime hd hjd))
   · rfl
 
-theorem selected_conjugate_row (F : Finset (Ideal O))
+theorem selected_conjugate_row 
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (hcop : ∀ I ∈ F,IsCoprime I j) (η : Ideal O →* ℂ) (H : Ideal O → ℂ) (u : O) :
     let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -82,6 +86,8 @@ theorem selected_conjugate_row (F : Finset (Ideal O))
     simp only [supportMobius,idealSexticRow,InitialMeanSquare.pool_support_product]
     ring
   · simp only [hAF,ite_false,mul_zero,zero_mul]
+end
+
 
 section RayModes
 variable {ι : Type*} [DecidableEq ι]
@@ -183,10 +189,14 @@ def initialPhysicalMode (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
       (physicalCoordinates (sourceIdeal p G) (sourceIdeal p E) 1
         (sourceIdeal p U) (sourceIdeal p T) h)
 
-theorem normalized_overlap_mode
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
     (hpr : ∀ i,goodLambda^2∣p i-1)
+include hinj hc hpr
+
+theorem normalized_overlap_mode
+    
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
     (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) (G U T E : Finset ι)
     (hGU : Disjoint G U) (hGT : Disjoint G T) (hUT : Disjoint U T) (h : O) :
@@ -209,9 +219,7 @@ theorem normalized_overlap_mode
   ring
 
 theorem initial_input_physical
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
-    (hpr : ∀ i,goodLambda^2∣p i-1)
+    
     (F : Finset ι) (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
     (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) {Z : ℝ} (hZ : 0<Z) (D m : ℝ) :
     (∑' u : O,Φ (‖eisEmbedding u‖^2/Z^m)*
@@ -258,9 +266,7 @@ theorem initial_input_physical
   · simp only [hUT,ite_false,mul_zero]
 
 theorem initialPhysicalMode_summable
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
-    (hpr : ∀ i,goodLambda^2∣p i-1)
+    
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
     (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) {Z : ℝ} (hZ : 0<Z) (D m : ℝ)
     (G U T E : Finset ι) (hGU : Disjoint G U) (hGT : Disjoint G T)
@@ -278,11 +284,13 @@ theorem initialPhysicalMode_summable
     Z D m G U T E hGU hGT hUT h]
   unfold secondPairRadialMode
   ring
-
-end RayModes
-
-end SevenEighths.InverseInitialRayAttachment
-
 end
 
-end OAI
+
+
+
+
+
+
+
+

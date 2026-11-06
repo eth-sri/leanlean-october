@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 variable {ι : Type*} [Fintype ι]
 def activeMarks (A S : Finset ι) : Finset A := Finset.univ.filter (fun i => i.val∈S)
@@ -43,7 +43,7 @@ lemma localActiveWeight_restrict (P : PrimeFamily ι) (j : ι→ℕ) (A S : Fins
   funext x
   exact (mixedPrimeFunction_restrict P j A S i x).symm
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

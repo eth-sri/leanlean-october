@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -18,7 +18,7 @@ open CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupp
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
@@ -40,7 +40,7 @@ theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     let Ns:ℝ:=(∏P∈Dshort,P).absNorm;
     let Nl:ℝ:=(∏P∈Dlong,P).absNorm;
     let along:=Real.logb Z (Xlong/Nl);
-    0≤s.width-along+xi→
+    0≤ s.width-along+xi→
     let E:=K*diagonalControl s.radial.profile*Dchild*(sourceControl T Wshort)^2*
       (1+|t|)^(2*n)*Z^(s.width+loss+defect+xi)*Nl;
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false Wlong (Xlong/Nl) 0 t*
@@ -94,8 +94,8 @@ theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     exact hchild bΦ Bmask L Mcap loss Z Q degree K hK hgrowth hBmask s hQ hs Wshort hsShort
       xi defect Xshort Xlong hxi.le hdefect.le hZ.1 hendpoint.2 hL
       hshort hlong hshortcap hsupport Dshort Dlong hDs hDl hlive j k v t x hx
-end SevenEighths.CenteredMomentEnergyZeroGrowthReflection
 
-end
 
-end OAI
+
+
+

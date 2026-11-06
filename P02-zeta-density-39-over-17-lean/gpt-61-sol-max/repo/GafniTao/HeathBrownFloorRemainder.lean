@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownLemmaOneOpenInterval
 
 @[expose] public section
@@ -15,18 +16,22 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownFourTerm
+def heathBrownFourTerm
     (N k : ℕ) (lambda : ℝ) : ℝ :=
   lambda ^ (-(1 / (k : ℝ))) + heathBrownThreeTerm N k lambda
 
-noncomputable def heathBrownLemmaOneFourTermConstant
+def heathBrownLemmaOneFourTermConstant
     (k : ℕ) (A C epsilon : ℝ) : ℝ :=
   heathBrownLemmaOneSourceConstant k A C epsilon +
     (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ)))
 
+section
+variable {k : ℕ} {A lambda : ℝ}
+    (hA : 0 < A) (hlambda : 0 < lambda)
+include k A lambda hA hlambda
+
 theorem heathBrownHChoice_cast_le_separated_scale
-    {k : ℕ} {A lambda : ℝ}
-    (hA : 0 < A) (hlambda : 0 < lambda) :
+     :
     (heathBrownHChoice k A lambda : ℝ) ≤
       A ^ (-(1 / (k : ℝ))) *
         lambda ^ (-(1 / (k : ℝ))) := by
@@ -39,8 +44,7 @@ theorem heathBrownHChoice_cast_le_separated_scale
       rw [Real.mul_rpow hA.le hlambda.le]
 
 theorem heathBrown_floor_endpoint_remainder_le
-    {k : ℕ} {A lambda : ℝ}
-    (hA : 0 < A) (hlambda : 0 < lambda)
+    
     (hlargeH : 8 ≤ heathBrownHChoice k A lambda) :
     (heathBrownHChoice k A lambda : ℝ) + 2 ≤
       (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ))) *
@@ -49,15 +53,9 @@ theorem heathBrown_floor_endpoint_remainder_le
   have hHReal : (8 : ℝ) ≤ H := by exact_mod_cast hlargeH
   have hHScale := heathBrownHChoice_cast_le_separated_scale
     (k := k) hA hlambda
-  change (H : ℝ) ≤
-    A ^ (-(1 / (k : ℝ))) * lambda ^ (-(1 / (k : ℝ))) at hHScale
-  calc
-    (H : ℝ) + 2 ≤ (5 / 4 : ℝ) * H := by linarith
-    _ ≤ (5 / 4 : ℝ) *
-        (A ^ (-(1 / (k : ℝ))) *
-          lambda ^ (-(1 / (k : ℝ)))) := by gcongr
-    _ = (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ))) *
-        lambda ^ (-(1 / (k : ℝ))) := by ring
+  nlinarith
+end
+
 
 theorem heathBrownLemmaOneFourTermConstant_pos
     {k : ℕ} {A C epsilon : ℝ}
@@ -117,6 +115,6 @@ theorem norm_heathBrownExponentialSum_le_fourTerm_open_of_vmvt
         mul_nonneg hP0 hL0, mul_nonneg hP0 hQ0]
 
 
-end
 
-end GafniTao
+
+

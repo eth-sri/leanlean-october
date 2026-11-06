@@ -6,19 +6,23 @@ public import OAI.NumberTheory.DirichletL.Moments.SupportedZeroEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceZeroEnergy
 open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle
 open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy
-open CenteredMomentFirstLocalization CenteredMomentSourceRow
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceProfileMass
+open CenteredMomentFirstLocalization
 
-theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]
-    (R : Ideal O) (ν : ι → Ideal O → ℂ) (hν : ∀ j I,‖ν j I‖≤1)
+open scoped EisensteinO
+
+section
+variable {ι : Type*} [Fintype ι]
+    (R : Ideal O) (ν : ι → Ideal O → ℂ)
+include ι R ν
+
+theorem profileCoefficient_norm_le  (hν : ∀ j I,‖ν j I‖≤1)
     (Wslot : ι → ℝ → ℂ) (P D : ι → ℝ) (W₁ W₂ : ℝ → ℂ) (D₁ D₂ : ℝ)
     (hD : ∀ j,0≤D j) (hD₁ : 0≤D₁) (hD₂ : 0≤D₂)
     (hslot : ∀ j x,‖Wslot j x‖≤D j)
@@ -53,8 +57,7 @@ theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]
     (hm (s∣finiteTupleProduct v)) (norm_nonneg _) (by positivity)
   simpa only [mul_one] using h.trans_eq (by ring)
 
-theorem profileCoefficient_product_bound {ι : Type*} [Fintype ι]
-    (R : Ideal O) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ)
+theorem profileCoefficient_product_bound  (Wslot : ι → ℝ → ℂ)
     (P b : ι → ℝ) (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ T : ℝ)
     (B₁ B₂ s : Ideal O)
     (hP : ∀ j,0<P j) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hY₁ : 0<Y₁) (hY₂ : 0<Y₂)
@@ -72,7 +75,7 @@ theorem profileCoefficient_product_bound {ι : Type*} [Fintype ι]
       Fin.forall_fin_two,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
       using And.intro (fun j => hz (e.symm j)) (And.intro hz₁ hz₂)
   have hsup : ∀ i x,sourceProfiles (fun j => Wslot (e.symm j)) W₁ W₂ i x≠0 →
-      x≤sourceBounds (fun j => b (e.symm j)) b₁ b₂ i := by
+      x≤ sourceBounds (fun j => b (e.symm j)) b₁ b₂ i := by
     simpa only [Fin.forall_fin_add,sourceProfiles,sourceBounds,Fin.append_left,Fin.append_right,
       Fin.forall_fin_two,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
       using And.intro (fun j => hs (e.symm j)) (And.intro hs₁ hs₂)
@@ -88,6 +91,8 @@ theorem profileCoefficient_product_bound {ι : Type*} [Fintype ι]
     W₁ W₂ b₁ b₂ X₁ X₂ Y₁ Y₂ T B₁ B₂ s (fun j => hP (e.symm j))
     hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hX hY hzero hsup (tupleEquiv e v) hn
   simpa only [tupleProduct_reindex,sourceRadius,e.symm.prod_comp] using hh
+end
+
 
 theorem zeroEnergy_eq_zero_of_subunit {ι : Type*} [Fintype ι]
     (η : Character) (m A : O) (t : ℝ) (S : Finset (Tuple ι)) (β : Tuple ι → ℂ)
@@ -106,8 +111,8 @@ theorem zeroEnergy_eq_zero_of_subunit {ι : Type*} [Fintype ι]
     exact Finset.sum_eq_zero (fun v hv => hb v (Finset.mem_filter.mp hv).1)
   simp only [zeroEnergy,hc,zero_mul,star_zero,mul_zero,Finset.sum_const_zero]
 
-end SevenEighths.CenteredMomentSourceZeroEnergy
 
-end
 
-end OAI
+
+
+

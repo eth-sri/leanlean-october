@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.SupportNorms
 
 @[expose] public section
@@ -11,69 +12,69 @@ namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 section
 
@@ -98,8 +99,12 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
 
 include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
+section
+variable (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ))
+include hU W
+
 theorem HasSieveExponent.original_middle_window
-    (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
+     (P : Ideal O → m → Prop)
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
@@ -139,7 +144,7 @@ theorem HasSieveExponent.original_middle_window
     positivity
 
 theorem HasSieveExponent.dual_middle_window
-    (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
+     (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
@@ -178,6 +183,8 @@ theorem HasSieveExponent.dual_middle_window
     have h3 := divisorEnergyFactor_nonneg ε hε N a₀ b₀
     have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     positivity
+end
+
 
 end
 
@@ -391,7 +398,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
       exact Summable.tsum_finsetSum (fun k _ => (hf j k).1)
     _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
       Finset.sum_le_sum (fun j _ => Finset.sum_le_sum (fun k _ => (hf j k).2))
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, V, pow_two]; ring
+    _ = _ := by simp only [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul, pow_two, V]; ring
 
 end
 
@@ -514,7 +521,7 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
       exact Summable.tsum_finsetSum (fun k _ => (hf j k).1)
     _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
       Finset.sum_le_sum (fun j _ => Finset.sum_le_sum (fun k _ => (hf j k).2))
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, V, pow_two]; ring
+    _ = _ := by simp only [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul, pow_two, V]; ring
 
 end
 
@@ -524,7 +531,7 @@ open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 theorem norm_double_sum_real_factor {n p : Type*} [Fintype n] [Fintype p]
     (u : n → p → ℂ) (z : ℂ) (c : ℝ) (hc : 0 ≤ c) :
     ‖∑ j, ∑ k, u j k * ((c : ℂ) * z)‖ = c * ‖∑ j, ∑ k, u j k * z‖ := by
-  simp only [← Finset.sum_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hc]
+  simp only [← sum_mul, norm_mul, norm_real, norm_eq_abs, abs_of_nonneg hc]
   ring
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
@@ -622,8 +629,8 @@ theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasS
       (a h.val) (b h.val) M P h.val) hdom hs.1
   exact ⟨ht, (ht.tsum_le_tsum hdom hs.1).trans hs.2⟩
 
-end CanonicalQuadraticSieve
 
-end
 
-end OAI
+
+
+

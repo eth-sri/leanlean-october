@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.Parameters
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
@@ -6,8 +7,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 open Filter
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 theorem log_pow_eventually_le_rpow (n : ℕ) {η : ℝ} (hη : 0 < η) :
@@ -24,8 +24,6 @@ theorem long_count_scale_identity {σ δ ε T : ℝ} (hT : 0 < T) :
       T^(2+6*δ+ε+(6-12*σ)*smoothingExponent σ/2) := by
   rw [detectorX,detectorY,← Real.rpow_mul_natCast hT.le,← Real.rpow_mul hT.le,
     ← Real.rpow_add hT,← Real.rpow_sub hT]
-  congr 1
-  norm_num
   ring
 
 /-- A quarter of the original exponent margin remains after a moment loss
@@ -52,4 +50,4 @@ theorem long_count_scalar_log_eventually (n : ℕ) {σ δ ε : ℝ}
       rw [← Real.rpow_add hTp]
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
 
-end MathCollab.Density.Stronger
+

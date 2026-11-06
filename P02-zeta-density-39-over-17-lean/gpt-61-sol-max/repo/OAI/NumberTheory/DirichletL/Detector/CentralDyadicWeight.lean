@@ -9,7 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification ProbePhysical
 
 lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     (R : Finset FreeRow) (hcard : (R.card:ℝ)≤B)
@@ -41,7 +41,7 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     _ = _ := by ring
 
 lemma annular_power_uniform (p pmax : ℝ) (hp : p≤pmax) :
-    ProbeSelectedPrimeSums.annularPower 1 2 p≤max 1 ((2:ℝ)^pmax) := by
+    ProbeSelectedPrimeSums.annularPower 1 2 p≤ max 1 ((2:ℝ)^pmax) := by
   unfold ProbeSelectedPrimeSums.annularPower
   rw [Real.one_rpow]
   exact max_le_max le_rfl (Real.rpow_le_rpow_of_exponent_le (by norm_num) hp)
@@ -65,8 +65,8 @@ lemma dyad_conductor_margin (Z v margin : ℝ) (hZ : 0<Z) (hmargin : 2≤Z^margi
     rowNorm u≤2*Z^v := hR u hu
     _ ≤ Z^margin*Z^v := mul_le_mul_of_nonneg_right hmargin (Real.rpow_nonneg hZ.le _)
     _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

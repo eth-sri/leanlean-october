@@ -15,7 +15,7 @@ not imposed as an extra hypothesis.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The exact real-power rearrangement used between (6.3), Lemma 6.3, and
 the initial inequality in (10.6). -/
@@ -84,6 +84,6 @@ theorem wooley_initial_normalization_algebra
           mul_le_mul_of_nonneg_left hupper (inv_nonneg.mpr hscale.le)
     _ = K := by field_simp
 
-end
 
-end GafniTao
+
+

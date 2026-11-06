@@ -13,8 +13,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonAmplitudeIntegral
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
-open Complex Set
+
+open Complex
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_intervalC1Bound_atkinsonPowerWeight_root (α : ℝ) :
@@ -34,4 +34,4 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight_root (α : ℝ) :
   exact hf.comp_sq (by positivity) (by nlinarith [Real.sqrt_nonneg T])
 
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,13 +1,13 @@
 module
+import Mathlib
 /- Adapted from audited Density.DetectorDyadic; actual short coefficient support. -/
 public import MathCollab.Density.DetectorDyadic
 public import GuthMaynard.Improvement.ShortFiniteDetector
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
+open Complex Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -37,10 +37,7 @@ theorem shortFiniteDetector_eq_dyadic_sum {T : ℝ} (hT : 1 ≤ T) (ρ : ℂ) :
     · intro n hn
       exact Finset.mem_range.mpr (by have := (Finset.mem_Ioc.mp hn).2; omega)
     · intro n hn hn'
-      have hnlow : n ≤ 1 := by
-        have hnr := Finset.mem_range.mp hn
-        have hni : ¬ (1 < n ∧ n ≤ 2^L) := by simpa using hn'
-        omega
+      have hnlow : n ≤ 1 := by simp_all
       have hz : ¬ ⌊2*T^((100:ℝ)⁻¹)⌋₊ < n := by omega
       simp [f, shortDetectorCoefficient, hz]
   change (∑ n ∈ Finset.range K, f n) = _
@@ -79,4 +76,4 @@ theorem shortDetectorBlock_scale_bounds {T : ℝ} {N : ℕ} {ρ : ℂ}
   have hhi : (n : ℝ) ≤ 2*N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
   constructor <;> linarith
 
-end GuthMaynard.Improvement
+

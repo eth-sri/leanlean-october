@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -37,7 +37,7 @@ theorem second_residual_norm_power_bound (E G : Finset ι) (hE : E ⊆ G)
     _ = Z^((g+eta)-(theta-eta)) := (Real.rpow_sub hZ _ _).symm
     _ = _ := by congr 1; ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

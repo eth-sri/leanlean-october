@@ -77,15 +77,18 @@ def wooleyPolynomialNormalizedResidueGridSum {Q k qH : ℕ}
   else ((Real.sqrt (wooleyWeightedResidueMassSq gamma xi) : ℂ)⁻¹) *
     wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi
 
-def wooleyPolynomialWeightedGridMean {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (s q : ℕ) [NeZero q]
+section
+variable {Q k : ℕ}
+    (phi : WooleyPolynomialSystem k)
+include Q k phi
+
+def wooleyPolynomialWeightedGridMean  (s q : ℕ) [NeZero q]
     (gamma : Fin Q → ℂ) : ℝ :=
   ((q ^ k : ℕ) : ℝ)⁻¹ *
     ∑ alpha : Fin k → ZMod q,
       ‖wooleyPolynomialNormalizedGridSum phi q gamma alpha‖ ^ (2 * s)
 
-def wooleyPolynomialConditionedGridMean {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (s qB qH : ℕ)
+def wooleyPolynomialConditionedGridMean  (s qB qH : ℕ)
     [NeZero qB] [NeZero qH] (gamma : Fin Q → ℂ) : ℝ :=
   if wooleyWeightedMassSq gamma = 0 then 0
   else (wooleyWeightedMassSq gamma)⁻¹ *
@@ -97,8 +100,7 @@ def wooleyPolynomialConditionedGridMean {Q k : ℕ}
               phi qB gamma alpha xi‖ ^ (2 * s))
 
 /-- The local polynomial-system version of (3.20). -/
-def wooleyPolynomialMixedResidueGridMoment {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k)
+def wooleyPolynomialMixedResidueGridMoment 
     (s r p B a b : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) (xi : ZMod (p ^ a))
     (eta : ZMod (p ^ b)) : ℝ :=
@@ -109,8 +111,7 @@ def wooleyPolynomialMixedResidueGridMoment {Q k : ℕ}
       ‖wooleyPolynomialNormalizedResidueGridSum phi
         (p ^ B) gamma alpha eta‖ ^ (2 * (s - wooleyTriangular r))
 
-def wooleyPolynomialMixedGridMean {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k)
+def wooleyPolynomialMixedGridMean 
     (s r p B a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (gamma : Fin Q → ℂ) : ℝ :=
   if wooleyWeightedMassSq gamma = 0 then 0
@@ -121,7 +122,9 @@ def wooleyPolynomialMixedGridMean {Q k : ℕ}
           wooleyWeightedResidueMassSq gamma eta *
             wooleyPolynomialMixedResidueGridMoment
               phi s r p B a b gamma xi eta
-
 end
 
-end GafniTao
+
+
+
+

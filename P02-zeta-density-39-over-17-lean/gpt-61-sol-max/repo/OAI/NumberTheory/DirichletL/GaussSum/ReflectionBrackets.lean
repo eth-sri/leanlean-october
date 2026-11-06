@@ -8,73 +8,73 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                        
+                                  
+                                  
+                          
 
 namespace LocalReflectionBrackets
 open scoped Classical BigOperators
-open AddChar MulChar
+open MulChar
 
 section
 variable {F : Type*} [Field F] [Fintype F]
@@ -91,8 +91,8 @@ theorem norm_bracket_zero_le (χ : MulChar F ℂ) (x : F) :
   exact inv_nonneg.mpr rootCard_pos.le
 
 open ActualEisensteinCubic
-noncomputable local instance quotientFieldBounds (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
-noncomputable local instance quotientFintypeBounds (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
+local instance quotientFieldBounds (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
+local instance quotientFintypeBounds (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
 end
 
@@ -114,8 +114,8 @@ theorem zeroFourierCoefficient_nontrivial (χ : MulChar F ℂ) (j : ℕ) (hj : �
   rw [zeroFourierCoefficient, MulChar.sum_eq_zero_of_ne_one hj, mul_zero]
 
 open ActualEisensteinCubic
-noncomputable local instance quotientFieldInactive (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
-noncomputable local instance quotientFintypeInactive (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
+local instance quotientFieldInactive (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
+local instance quotientFintypeInactive (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
 theorem canonical_zeroFourierCoefficient (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) (j : ℕ) (hj6 : j < 6) :
@@ -480,8 +480,8 @@ theorem finiteSexticRow_three_star
   rw [canonicalSextic_pow_three_quadratic]
   simp only [MulChar.ringHomComp_apply, Int.coe_castRingHom, star_intCast]
 
-theorem quadratic_unit_value_eq_of_same_ray
-    {ι κ : Type*} [Fintype ι] [Fintype κ]
+section
+variable {ι κ : Type*} [Fintype ι] [Fintype κ]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
@@ -490,7 +490,11 @@ theorem quadratic_unit_value_eq_of_same_ray
     (hcopq : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {q i})))
     (hgq : ∀ i, lambda ∉ Ideal.span {q i})
     (hcharq : ∀ i, ringChar (O ⧸ Ideal.span {q i}) ≠ 2)
-    (hray : residue (∏ i, p i) = residue (∏ i, q i)) (u : Oˣ) :
+    (hray : residue (∏ i, p i) = residue (∏ i, q i)) (u : Oˣ)
+include ι κ p hp hcop hg hchar q hq hcopq hgq hcharq hray u
+
+theorem quadratic_unit_value_eq_of_same_ray
+     :
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) u.val =
       finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) u.val := by
   have hne : quadraticRayValue (residue (∏ i, p i)) ≠ 0 := by
@@ -502,16 +506,7 @@ theorem quadratic_unit_value_eq_of_same_ray
     quadratic_unit_phase q hq hcopq hgq hcharq, residue_mul, residue_mul, hray]
 
 theorem quadratic_pair_unit_invariant
-    {ι κ : Type*} [Fintype ι] [Fintype κ]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (q : κ → O) (hq : ∀ i, q i ≠ 0) [∀ i, (Ideal.span {q i}).IsMaximal]
-    (hcopq : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {q i})))
-    (hgq : ∀ i, lambda ∉ Ideal.span {q i})
-    (hcharq : ∀ i, ringChar (O ⧸ Ideal.span {q i}) ≠ 2)
-    (hray : residue (∏ i, p i) = residue (∏ i, q i)) (u : Oˣ) (z : O) :
+     (z : O) :
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) (u.val * z) *
       finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) (u.val * z) =
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) z *
@@ -526,9 +521,11 @@ theorem quadratic_pair_unit_invariant
       (finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) z *
         finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) z) := by ring
     _ = _ := by rw [hs, one_mul]
-
-end QuadraticUnitInvariance
-
 end
 
-end OAI
+
+
+
+
+
+

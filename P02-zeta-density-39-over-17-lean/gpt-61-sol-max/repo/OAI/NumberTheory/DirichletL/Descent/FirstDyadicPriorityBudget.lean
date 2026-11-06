@@ -9,16 +9,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open InverseFirstGlobalCaps InverseMomentFirstChildWindows
+open InverseMomentFirstOriginalProfile
+open JointLogSeparation CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_dyadic_priority_budget
     (om Φ:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b) (Lcap:ℝ)(hcap:0≤Lcap)(hb:0≤b):
@@ -95,8 +95,8 @@ theorem original_dyadic_priority_budget
       (firstCellRadius Z M r ell V eta tau k.1 k.2.2) (Real.rpow_pos_of_pos hz _)
     exact (mul_le_mul_of_nonneg_left he' (mul_nonneg (Real.rpow_nonneg hz.le _) (Real.exp_pos _).le)).trans (hright k hk z)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

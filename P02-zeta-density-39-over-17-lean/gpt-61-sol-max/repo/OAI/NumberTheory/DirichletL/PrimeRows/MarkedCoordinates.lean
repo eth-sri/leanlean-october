@@ -10,11 +10,15 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open scoped HeckeO
 
-def continuedMarkedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
-    (x w z : ℂ) : ℂ :=
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
+    (x w z : ℂ)
+include η u P hs x w z
+
+def continuedMarkedLocal  : ℂ :=
   let p := primaryGenerator P.val
   let hp := supported_primeGenerator_prime P hs
   let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
@@ -25,8 +29,7 @@ def continuedMarkedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : S
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ (unitPart u p hp)))
     (multiplicity p u.val)
 
-theorem idealRowMarkedLocalFactor_eq_source (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) :
+theorem idealRowMarkedLocalFactor_eq_source  :
     let p := primaryGenerator P.val
     let hp := supported_primeGenerator_prime P hs
     let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
@@ -69,8 +72,7 @@ theorem idealRowMarkedLocalFactor_eq_source (η : Character) (u : FreeRow) (P : 
       (actualSextic (Ideal.span {p}) hg.1 (Ideal.Quotient.mk _ (unitPart u p hp))) x w z
       (multiplicity p u.val) e.val l k m hzero
 
-theorem continuedMarkedLocal_eq_initial (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ)
+theorem continuedMarkedLocal_eq_initial 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     continuedMarkedLocal η u P hs x w z=idealRowMarkedLocalFactor η u.val P x w z := by
   let p := primaryGenerator P.val
@@ -97,9 +99,11 @@ theorem continuedMarkedLocal_eq_initial (η : Character) (u : FreeRow) (P : Prim
     (actualACube η p) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
     ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
     _ hρ hgeom.1 hR (multiplicity p u.val) (multiplicity_lt_six u p hp)
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

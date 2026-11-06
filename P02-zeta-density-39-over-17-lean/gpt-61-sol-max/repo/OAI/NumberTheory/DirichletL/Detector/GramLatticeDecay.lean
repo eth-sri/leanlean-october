@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
@@ -10,17 +11,23 @@ open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProduct
 
 namespace ProbeGramLatticeDecay
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 abbrev Joint := WithLp 2 (ℂ × ℂ)
 
 def point (x y : ℂ) : Joint := WithLp.toLp 2 (x,y)
 
-def sourceControl (S : Finset (ℕ × ℕ)) (W : 𝓢(Joint, ℂ)) : ℝ :=
+section
+variable (S : Finset (ℕ × ℕ)) (W : 𝓢(Joint, ℂ))
+include S W
+
+def sourceControl  : ℝ :=
   S.sup (schwartzSeminormFamily ℝ Joint ℂ) W
 
-theorem sourceControl_nonneg (S : Finset (ℕ × ℕ)) (W : 𝓢(Joint, ℂ)) :
+theorem sourceControl_nonneg  :
     0 ≤ sourceControl S W := apply_nonneg _ _
+end
+
 
 @[simp] theorem norm_point_sq (x y : ℂ) :
     ‖point x y‖^2 = ‖x‖^2 + ‖y‖^2 := WithLp.prod_norm_sq_eq_of_L2 _
@@ -43,14 +50,20 @@ theorem product_decay (W : 𝓢(Joint, ℂ)) (x y : ℂ) :
   simp only [norm_iteratedFDeriv_zero] at h
   exact (mul_le_mul_of_nonneg_right hpow (norm_nonneg _)).trans h
 
-def physicalPoint (N : ℝ) (m : O × O) : Joint :=
+section
+variable (N : ℝ) (m : O × O)
+include N m
+
+def physicalPoint  : Joint :=
   point (eisEmbedding m.1 / (Real.sqrt N : ℂ))
     (eisEmbedding m.2 / (Real.sqrt N : ℂ))
 
-theorem physicalPoint_eq_smul (N : ℝ) (m : O × O) :
+theorem physicalPoint_eq_smul  :
     physicalPoint N m = (Real.sqrt N)⁻¹ • point (eisEmbedding m.1) (eisEmbedding m.2) := by
   apply WithLp.ofLp_injective
   simp [physicalPoint, point, div_eq_mul_inv, Algebra.smul_def, mul_comm]
+end
+
 
 theorem physical_summable (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N) :
     Summable (fun m : O × O => ‖W (physicalPoint N m)‖) := by
@@ -109,14 +122,20 @@ theorem physical_lattice_bound :
 
 abbrev DualIndex := (ℤ × ℤ) × (ℤ × ℤ)
 
-def dualPoint (p : DualIndex) : Joint :=
+section
+variable (p : DualIndex)
+include p
+
+def dualPoint  : Joint :=
   point (explicitDualFrequency 1 p.1) (explicitDualFrequency 1 p.2)
 
-def dualRow (p : DualIndex) : Fin 2 → O :=
+def dualRow  : Fin 2 → O :=
   ![dualFrequencyEquiv p.1, dualFrequencyEquiv p.2]
 
-def dualCoordinates (p : DualIndex) : (Fin 2 × Fin 2) → ℤ :=
+def dualCoordinates  : (Fin 2 × Fin 2) → ℤ :=
   CubicEisenstein.rowCoordinates (dualRow p)
+end
+
 
 theorem dualCoordinates_injective : Function.Injective dualCoordinates := by
   intro p q hp
@@ -233,7 +252,11 @@ theorem scaledDual_decay (F : 𝓢(Joint, ℂ)) (k : ℕ) (L : ℝ) (hL : 0 < L)
     Real.mul_rpow hL.le (norm_nonneg _)] at hh
   simpa only [mul_assoc] using hh
 
-theorem dual_fourier_summable (A : ℕ) (hA : 2 < A)
+section
+variable (A : ℕ) (hA : 2 < A)
+include A hA
+
+theorem dual_fourier_summable 
     (W : 𝓢(Joint, ℂ)) (L : ℝ) (hL : 0 < L) (u : ℂ) (hu : ‖u‖ = 1) :
     Summable (fun p : {p : DualIndex // p ≠ 0} => ‖(𝓕 W) (scaledDualPoint L u p.val)‖) := by
   have hdim : (4:ℝ) < ((2*A:ℕ):ℝ) := by exact_mod_cast (by omega : 4 < 2*A)
@@ -243,13 +266,13 @@ theorem dual_fourier_summable (A : ℕ) (hA : 2 < A)
   intro p
   exact scaledDual_decay (𝓕 W) (2*A) L hL u hu p.val p.property
 
-theorem dual_fourier_lattice_bound (A : ℕ) (hA : 2 < A) :
+theorem dual_fourier_lattice_bound  :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : 𝓢(Joint, ℂ)) (L : ℝ), 1 ≤ L → ∀ (u : ℂ), ‖u‖ = 1 →
         (∑' p : {p : DualIndex // p ≠ 0}, ‖(𝓕 W) (scaledDualPoint L u p.val)‖) ≤
           C * sourceControl S W * L^(-((2*A:ℕ):ℝ)) := by
   obtain ⟨S,C,hC,hbound⟩ := fourier_seminorm_control (2*A)
-  let mass : ℝ := ∑' p : {p : DualIndex // p ≠ 0}, ‖dualPoint p.val‖^(-((2*A:ℕ):ℝ))
+  let mass := ∑' p : {p : DualIndex // p ≠ 0}, ‖dualPoint p.val‖^(-((2*A:ℕ):ℝ))
   have hm : 0 ≤ mass := tsum_nonneg (fun _ => Real.rpow_nonneg (norm_nonneg _) _)
   refine ⟨S,C*(mass+1),mul_pos hC (by positivity),?_⟩
   intro W L hL u hu
@@ -270,13 +293,15 @@ theorem dual_fourier_lattice_bound (A : ℕ) (hA : 2 < A) :
       · exact hm
       · exact mul_nonneg (mul_nonneg hC.le (sourceControl_nonneg S W)) (Real.rpow_nonneg hLp.le _)
     _ = _ := by ring
+end
+
 
 theorem sourceControl_mono {S T : Finset (ℕ × ℕ)} (hST : S ⊆ T)
     (W : 𝓢(Joint, ℂ)) : sourceControl S W ≤ sourceControl T W :=
   Seminorm.le_def.mp (Finset.sup_mono hST) W
 
-end ProbeGramLatticeDecay
 
-end
 
-end OAI
+
+
+

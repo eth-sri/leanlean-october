@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortTypeICount
 public import GuthMaynard.Improvement.WeakTypeIICount
 public import GuthMaynard.Improvement.ShortDetectorCounting
@@ -8,8 +9,7 @@ public import MathCollab.Density.DensityDyadicSummation
 
 open Complex Filter Set MathCollab.Density
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Actual Type-II zero representatives from the ordinary fourth moment. -/
@@ -67,10 +67,8 @@ theorem short_slab_density
   obtain ⟨CI,hCI,hI⟩ := short_typeI_zero_slab_count hη
   obtain ⟨CII,hCII,hII⟩ := weak_short_typeII_zero_slab_count hη
   obtain ⟨C₀,hC₀,hrestore⟩ := short_slab_count_of_separated_branch_bounds
-  let D : ℝ := Real.log 2+1/(ε/2)
-  have hD : 0 < D := by
-    dsimp [D]
-    exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hη)
+  let D := Real.log 2+1/(ε/2)
+  have hD : 0 < D := by positivity
   refine ⟨C₀*(CI+CII)*D,by positivity,?_⟩
   filter_upwards [eventually_ge_atTop (2:ℝ),hI,hII,hrestore] with H hH hi hii hr
   intro σ hσ hσ'
@@ -93,8 +91,7 @@ theorem short_slab_density
 fixed-sigma dyadic summation is reused, so this constant may depend on sigma. -/
 theorem short_density
     {σ ε : ℝ} (hσ : 9/13 ≤ σ) (hσ' : σ ≤ 5/7) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(18*(1-σ)/(7*σ+3)+ε) := by
+    MathCollab.Density.ZetaBound σ ((18*(1-σ)/(7*σ+3)+ε)) := by
   obtain ⟨C,hC,hslab⟩ := short_slab_density hε
   have hp : 0 < shortDensityExponent σ+ε := by
     have he := (short_density_scale_bounds hσ hσ').2.2.2.2.1
@@ -103,4 +100,4 @@ theorem short_density
   filter_upwards [hslab] with H hh
   exact hh σ hσ hσ'
 
-end GuthMaynard.Improvement
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.AffineScaleTransfer
 public import GuthMaynard.Improvement.PoissonReduction
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
@@ -14,7 +14,7 @@ open RiemannZeta.GuthMaynard
 theorem fourier_norm_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) (ξ : ℝ) :
     ‖𝓕 (fun x => (f (L*(x-1)) : ℂ)) ξ‖ =
       L⁻¹*‖𝓕 (fun x => (f x : ℂ)) (ξ/L)‖ := by
-  let ψ : ℝ → ℂ := fun x => (f (L*x) : ℂ)
+  let ψ := fun x => (f (L*x) : ℂ)
   have heq : ψ = scaledModulated (fun x => (f x : ℂ)) L⁻¹ 0 := by
     funext x
     simp [ψ,scaledModulated,phase,mul_comm]
@@ -28,7 +28,6 @@ theorem fourier_norm_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) (ξ :
   change ‖𝓕 ψ ξ‖ = _
   rw [heq,fourier_scaledModulated _ (inv_pos.mpr hL),norm_smul]
   simp only [sub_zero,Real.norm_eq_abs,abs_of_pos (inv_pos.mpr hL)]
-  congr 2
   ring
 
 /-- Affine changes preserve the literal source supremum. -/
@@ -72,13 +71,17 @@ theorem affine_input_fourier_family (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
       gcongr
     _ = _ := by rw [one_mul,hsup]
 
+section
+variable (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
+include f L hL
+
 /-- Every smooth input supported on [0,L] has the canonical representative.
 This constructs Schwartz structure from compact support, so no extra rapid
 spatial decay or derivative estimates are required. -/
-theorem canonical_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
+theorem canonical_affine_input 
     (hf : ContDiff ℝ ∞ f) (hs : ∀ x, x ∉ Icc (0:ℝ) L → f x = 0) :
     ∃ g : 𝓢(ℝ, ℝ), (∀ x, g x = f (L*(x-1))) ∧ GMAffineSourceSupported g := by
-  let g : ℝ → ℝ := fun x => f (L*(x-1))
+  let g := fun x => f (L*(x-1))
   have hg : ∀ x, x ∉ Icc (1:ℝ) 2 → g x = 0 := by
     intro x hx
     apply hs
@@ -89,14 +92,14 @@ theorem canonical_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
       linarith
     · have : x-1 ≤ 1 := by nlinarith only [hh.2,hL]
       linarith
-  have hc : HasCompactSupport g := HasCompactSupport.intro isCompact_Icc hg
+  have hc := HasCompactSupport.intro isCompact_Icc hg
   have hd : ContDiff ℝ ∞ g := hf.comp (by fun_prop)
   refine ⟨hc.toSchwartzMap hd,fun _ => rfl,?_⟩
   intro x hx
   exact hg x (fun hh => hx ⟨by linarith [hh.1],hh.2⟩)
 
 /-- Exact mass and squared-L2 Jacobians for the support-normalizing change. -/
-theorem affine_input_integrals (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) :
+theorem affine_input_integrals  :
     (∫ x, f (L*(x-1))) = L⁻¹*(∫ x, f x) ∧
     (∫ x, f (L*(x-1))^2) = L⁻¹*(∫ x, f x^2) := by
   constructor
@@ -106,5 +109,7 @@ theorem affine_input_integrals (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) :
   · rw [integral_sub_right_eq_self (fun x => f (L*x)^2) 1,
       Measure.integral_comp_mul_left (fun x => f x^2) L]
     simp [abs_of_pos hL,smul_eq_mul]
+end
 
-end GuthMaynard.Improvement
+
+

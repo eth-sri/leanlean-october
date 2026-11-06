@@ -12,7 +12,7 @@ open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 structure SourceData {Δ : ℝ} (D : HighData Δ) where
   S : Finset (Ideal O)
@@ -46,17 +46,21 @@ instance {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : NeZero F.modulus :=
 instance {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : Finite (O ⧸ F.modulus) :=
   Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne F.modulus)
 
-theorem source_count_parameters {Δ : ℝ} {D : HighData Δ} (F : SourceData D) :
+section
+variable {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
+include Δ D F
+
+theorem source_count_parameters  :
     Nonempty (CountParameters F.modulus ⊤ D.t) := by
   exact exists_count_parameters F.modulus ⊤ le_top F.S F.w F.smooth F.compact
     F.positive_support (fun x=>(F.bounded x).1) F.nonzero 1 2 1 (by norm_num) (by norm_num)
     (by norm_num) F.support (fun x=>(F.bounded x).2) D.t D.t_pos
 
-def SourceData.probe {Δ : ℝ} {D : HighData Δ} (F : SourceData D) (η : Character) : ℝ→ℂ :=
+def SourceData.probe  (η : Character) : ℝ→ℂ :=
   letI : NeZero (∏P∈F.S,P) := ⟨fixedPrimeProduct_ne_zero F.S F.exclusions.prime⟩
   normalizedProbe F.modulus ⊤ F.S F.maximal D.ell 1 2 (fun _=>F.w) F.W F.W η
 
-theorem SourceData.probe_low {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
+theorem SourceData.probe_low 
     (loss : ℝ) (hloss : 0<loss) (η : Character) :
     F.probe η=O[atTop](fun Z : ℝ=>Z^(3/16+loss)) := by
   exact normalizedProbe_low F.modulus ⊤ le_top F.S F.exclusions F.maximal 1 2 1 loss
@@ -64,9 +68,11 @@ theorem SourceData.probe_low {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
     (fun _=>F.w) (fun _=>F.smooth) (fun _=>F.compact) (fun _=>F.support)
     (fun _=>F.bounded) (fun _=>F.nonzero) F.W F.W 1 2 1 2 (by norm_num) (by norm_num)
     F.complex_support F.complex_support F.real F.real F.nonnegative F.nonnegative F.complex_nonzero F.complex_nonzero η
-
-end SevenEighths.ProbeFinalAssembly
-
 end
 
-end OAI
+
+
+
+
+
+

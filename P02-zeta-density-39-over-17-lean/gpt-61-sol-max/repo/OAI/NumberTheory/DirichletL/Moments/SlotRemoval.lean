@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSlotSelection
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentSlotRemoval
 
@@ -33,8 +33,8 @@ theorem whole_slot_removal {α : Type*} (s : Finset α) (length : α → ℝ)
     have hremove : F/(6*κ) ≤ ∑ i ∈ s\T, length i := by linarith
     exact (div_le_iff₀ (by positivity : 0 < 6*κ)).mp hremove |>.trans_eq (mul_comm _ _)
 
-end SevenEighths.CenteredMomentSlotRemoval
 
-end
 
-end OAI
+
+
+

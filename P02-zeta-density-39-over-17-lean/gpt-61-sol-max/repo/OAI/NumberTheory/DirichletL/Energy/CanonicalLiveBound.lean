@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalChildBound
 
 @[expose] public section
@@ -12,9 +13,9 @@ namespace SevenEighths.CenteredMomentEnergyCanonicalLiveBound
 open HeckeFamily ConcreteTraceCRT
 open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
 open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 def LiveChild (η:Character)(r:Radial)(D:Ideal O)
@@ -45,16 +46,16 @@ theorem energy_zero_of_not_live (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠
       simp only [hc,norm_zero,zero_pow (by decide:2≠0),zero_mul]
   · rw [ite_eq_right hk]
 
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyAllocatedClipped
+open CenteredMomentSecondNonexceptionalChosenBlock
+open HeckeFamily CenteredMomentEnergyBands
+
+open CenteredMomentEnergyAllocatedChildren
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
+open CenteredMomentAllocatedNaturalSource
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -75,7 +76,7 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
@@ -137,7 +138,6 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     rw [←hpower,mul_assoc,←Real.rpow_add hz0]
     apply mul_le_mul_of_nonneg_left _ (by
       have hd:0≤diagonalControl rad.profile:=by unfold diagonalControl;positivity
-      have hp:=p.control_nonneg T
       positivity)
     apply Real.rpow_le_rpow_of_exponent_le hz.le
     have hh:=hcost hne
@@ -151,8 +151,8 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     have hp:=p.control_nonneg T
     positivity
 
-end SevenEighths.CenteredMomentEnergyCanonicalLiveBound
 
-end
 
-end OAI
+
+
+

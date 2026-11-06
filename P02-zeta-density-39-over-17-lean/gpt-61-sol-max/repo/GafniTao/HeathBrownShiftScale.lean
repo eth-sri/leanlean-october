@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownRefinedCountChoice
 
 @[expose] public section
@@ -13,16 +14,16 @@ counting theorem itself.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrownShiftBound_cast_le
     {N k H : ℕ} {lambda : ℝ} (hlambda : 0 < lambda) (hH : 0 < H) :
     (heathBrownShiftBound N k H lambda : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) /
         (lambda * (H : ℝ) ^ (k - 1)) := by
-  let x : ℝ := 4 * ((k - 1).factorial : ℝ) /
+  let x := 4 * ((k - 1).factorial : ℝ) /
     (lambda * (H : ℝ) ^ (k - 1))
-  let Q : ℕ := ⌊x⌋₊
+  let Q := ⌊x⌋₊
   change ((min N Q : ℕ) : ℝ) ≤ x
   have hmin : min N Q ≤ Q := min_le_right _ _
   have hminCast : ((min N Q : ℕ) : ℝ) ≤ (Q : ℝ) := by
@@ -37,13 +38,17 @@ theorem inv_pow_succ_le_inv_pow
     {H r : ℕ} (hH : 1 ≤ H) :
     (((H : ℝ) ^ (r + 1))⁻¹) ≤ (((H : ℝ) ^ r)⁻¹) := by
   have hbase : (1 : ℝ) ≤ H := by exact_mod_cast hH
-  have hpow : (H : ℝ) ^ r ≤ (H : ℝ) ^ (r + 1) :=
+  have hpow :=
     pow_le_pow_right₀ hbase (Nat.le_succ r)
   exact inv_anti₀ (by positivity) hpow
 
+section
+variable {N k H : ℕ} {lambda : ℝ}
+    (hk : 3 ≤ k) (hlambda : 0 < lambda) (hH : 1 ≤ H)
+include N k H lambda hk hlambda hH
+
 theorem heathBrownShiftBound_cast_le_previous_power
-    {N k H : ℕ} {lambda : ℝ}
-    (hk : 3 ≤ k) (hlambda : 0 < lambda) (hH : 1 ≤ H) :
+     :
     (heathBrownShiftBound N k H lambda : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) *
         (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by
@@ -66,8 +71,7 @@ theorem heathBrownShiftBound_cast_le_previous_power
       gcongr
 
 theorem heathBrown_shift_plus_c_le
-    {N k H : ℕ} {lambda : ℝ}
-    (hk : 3 ≤ k) (hlambda : 0 < lambda) (hH : 1 ≤ H) :
+     :
     let D := heathBrownShiftBound N k H lambda
     let c := 8 * ((k - 2).factorial : ℝ) *
       (((H : ℝ) ^ (k - 2))⁻¹) / lambda
@@ -79,8 +83,6 @@ theorem heathBrown_shift_plus_c_le
     (N := N) (k := k) (H := H) hk hlambda hH
   have hfactNat : (k - 2).factorial ≤ (k - 1).factorial :=
     Nat.factorial_le (by omega)
-  have hfact : ((k - 2).factorial : ℝ) ≤ (k - 1).factorial := by
-    exact_mod_cast hfactNat
   have hc :
       8 * ((k - 2).factorial : ℝ) *
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda ≤
@@ -97,6 +99,8 @@ theorem heathBrown_shift_plus_c_le
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda := add_le_add hD hc
     _ = 12 * ((k - 1).factorial : ℝ) *
         (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by ring
+end
+
 
 theorem heathBrown_b_plus_aD_le
     {N k H : ℕ} {A lambda : ℝ}
@@ -111,19 +115,11 @@ theorem heathBrown_b_plus_aD_le
   dsimp only
   have hHpos : 0 < H := by omega
   have hpowLower : (8 : ℝ) ≤ (H : ℝ) ^ (k - 2) := by
-    have hHone : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
     have hHcast : (8 : ℝ) ≤ H := by exact_mod_cast hH
-    have hpow : (H : ℝ) ≤ (H : ℝ) ^ (k - 2) := by
-      simpa only [pow_one] using
-        pow_le_pow_right₀ hHone (by omega : 1 ≤ k - 2)
+    have hpow : (H : ℝ) ≤ (H : ℝ) ^ (k - 2) := by bound
     exact hHcast.trans hpow
   have hpowPos : 0 < (H : ℝ) ^ (k - 2) := by positivity
-  have hb : 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3 ≤ 4 := by
-    have h8div : 8 / ((H : ℝ) ^ (k - 2)) ≤ 1 := by
-      rw [div_le_iff₀ hpowPos]
-      simpa only [one_mul] using hpowLower
-    rw [← div_eq_mul_inv]
-    linarith
+  have hb : 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3 ≤ 4 := by field_simp <;> nlinarith
   have hD := heathBrownShiftBound_cast_le
     (N := N) (k := k) (H := H) hlambda hHpos
   have ha : 0 ≤ A * lambda * (N : ℝ) /
@@ -145,10 +141,9 @@ theorem heathBrown_b_plus_aD_le
           (((H : ℝ) ^ (k - 1))⁻¹) := by
     rw [hfact]
     field_simp
-  rw [hsimplify] at haD
-  exact add_le_add hb haD
+  grind
 
 
-end
 
-end GafniTao
+
+

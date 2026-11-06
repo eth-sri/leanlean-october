@@ -33,12 +33,16 @@ theorem sum_Icc_one_eq_sum_range (f : ℕ → ℂ) (N : ℕ) :
   rw [← Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
   simp [Nat.add_comm]
 
+section
+variable (x : ℝ) (n : ℕ)
+include x n
+
 /-- Every actual Fourier mode has unit norm. -/
-theorem norm_expMode (x : ℝ) (n : ℕ) : ‖expMode x n‖ = 1 := by
+theorem norm_expMode  : ‖expMode x n‖ = 1 := by
   exact Complex.norm_exp_I_mul_ofReal _
 
 /-- The Fourier modes are the actual powers of their first mode. -/
-theorem expMode_eq_pow (x : ℝ) (n : ℕ) : expMode x n = expMode x 1 ^ n := by
+theorem expMode_eq_pow  : expMode x n = expMode x 1 ^ n := by
   unfold expMode
   rw [← Complex.exp_nat_mul]
   congr 1
@@ -46,16 +50,22 @@ theorem expMode_eq_pow (x : ℝ) (n : ℕ) : expMode x n = expMode x 1 ^ n := by
   ring
 
 /-- The exact trigonometric size of a mode minus one. -/
-theorem norm_expMode_sub_one (x : ℝ) (n : ℕ) :
+theorem norm_expMode_sub_one  :
     ‖expMode x n - 1‖ = 2 * |Real.sin (Real.pi * x * n)| := by
   unfold expMode
   rw [Complex.norm_exp_I_mul_ofReal_sub_one,
     show (-2 * Real.pi * (n : ℝ) * x) / 2 = -(Real.pi * x * n) by ring,
     Real.sin_neg]
   simp [norm_mul, Real.norm_eq_abs]
+end
+
+
+section
+variable {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0)
+include x hx
 
 /-- The denominator is nonzero whenever the source sine denominator is nonzero. -/
-theorem expMode_one_ne_one {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) :
+theorem expMode_one_ne_one  :
     expMode x 1 ≠ 1 := by
   intro h
   have he := norm_expMode_sub_one x 1
@@ -64,7 +74,7 @@ theorem expMode_one_ne_one {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) :
   exact hx he
 
 /-- The exact sine quotient for every integer cutoff, including the empty sum. -/
-theorem norm_finite_mode_sum {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (N : ℕ) :
+theorem norm_finite_mode_sum  (N : ℕ) :
     ‖∑ n ∈ Finset.Icc 1 N, expMode x n‖ =
       |Real.sin (Real.pi * x * N)| / |Real.sin (Real.pi * x)| := by
   rw [sum_Icc_one_eq_sum_range]
@@ -82,15 +92,17 @@ theorem norm_finite_mode_sum {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (N : 
   rw [mul_div_mul_left _ _ (by norm_num : (2 : ℝ) ≠ 0)]
 
 /-- Lemma 2's exact geometric expression at a real cutoff. -/
-theorem norm_finiteS0 {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (y : ℝ) :
+theorem norm_finiteS0  (y : ℝ) :
     ‖finiteS0 x y‖ = |Real.sin (Real.pi * x * ⌊y⌋₊)| / |Real.sin (Real.pi * x)| :=
   norm_finite_mode_sum hx _
 
 /-- The uniform geometric bound used by the summation-by-parts step. -/
-theorem norm_finiteS0_le {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (y : ℝ) :
+theorem norm_finiteS0_le  (y : ℝ) :
     ‖finiteS0 x y‖ ≤ 1 / |Real.sin (Real.pi * x)| := by
   rw [norm_finiteS0 hx]
   exact div_le_div_of_nonneg_right (Real.abs_sin_le_one _) (abs_nonneg _)
+end
+
 
 /-- Below the first positive integer, both source sums are empty. -/
 theorem finite_sums_eq_zero {x y : ℝ} (hy : y < 1) : finiteS0 x y = 0 ∧ finiteS1 x y = 0 := by
@@ -224,8 +236,12 @@ theorem norm_finiteS1_half_integer (k : ℤ) (y : ℝ) :
       |∑ n ∈ Finset.range ⌊y⌋₊, (-1 : ℝ) ^ n * (1 / ((n : ℝ) + 1))| := by
   rw [finiteS1_half_integer, norm_neg, Complex.norm_real, Real.norm_eq_abs]
 
+section
+variable (k : ℤ) {y : ℝ} (hy : 1 ≤ y)
+include k y hy
+
 /-- The half-integer refinement in Lemma 2, with its full two-sided O-star interpretation. -/
-theorem finiteS1_half_integer_error (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
+theorem finiteS1_half_integer_error  :
     |‖finiteS1 ((k : ℝ) + 1 / 2) y‖ - Real.log 2| ≤ 1 / y := by
   rw [norm_finiteS1_half_integer]
   have hlog : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
@@ -239,9 +255,11 @@ theorem finiteS1_half_integer_error (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
   exact one_div_le_one_div_of_le (by linarith) (Nat.lt_floor_add_one y).le
 
 /-- The corresponding half-integer upper bound used in the Poisson error. -/
-theorem norm_finiteS1_half_integer_le (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
+theorem norm_finiteS1_half_integer_le  :
     ‖finiteS1 ((k : ℝ) + 1 / 2) y‖ ≤ Real.log 2 + 1 / y := by
   have h := (abs_le.mp (finiteS1_half_integer_error k hy)).2
   linarith
+end
 
-end DhimanKadiriQuesadaHerrera2026
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SourceSupportedTailUniform
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 public import OAI.NumberTheory.DirichletL.Moments.NaturalRadialCutoff
@@ -13,13 +14,13 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputTailUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
+open HeckeFamily CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
 open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
 open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
 open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -101,7 +102,7 @@ lemma kernel_inverse_cap (HN Z B Tsec:ℝ)(hZ:1≤Z)(hB:0≤B)(hT:0<Tsec)(hcap:T
     ((min 1 (kernelReference Tsec HN))^2)⁻¹≤
       (1+Real.exp (2*HN))^2*(Z^B)^2:=by
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hpow:1≤Z^B:=Real.one_le_rpow hZ hB
+  have hpow :=Real.one_le_rpow hZ hB
   have he:0<Real.exp (2*HN):=Real.exp_pos _
   have hb:(min 1 (kernelReference Tsec HN))⁻¹≤(1+Real.exp (2*HN))*Z^B:=by
     rw [min_def]
@@ -204,7 +205,7 @@ theorem second_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ
   have ht:=htail s.η s.t (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed)
     Φ K V HN Tsec Z 1 ξ hK hV hZ.1 le_rfl hn hnom (by simpa using hZ.2)
   have hsquare:=pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>norm_nonneg _)) hm 2
-  have hp:0<min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
+  have hp:0< min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
   have hzpos:0<Z:=zero_lt_one.trans hZ.1
   have hzpower:0<Z^(ξ/4):=Real.rpow_pos_of_pos hzpos _
   have hden:0<(min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^Adec:=by positivity
@@ -229,8 +230,8 @@ theorem second_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ
       mul_le_mul_of_nonneg_left hb (by positivity)
     _=_:=by dsimp [C];ring
 
-end SevenEighths.CenteredMomentSourceInputTailUniform
 
-end
 
-end OAI
+
+
+

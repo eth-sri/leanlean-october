@@ -9,15 +9,15 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedRatioScalar
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
-local notation "O" => HeckeFamily.O
+open CenteredMomentSectorLocalization
+open CenteredMomentSecondRadicalBudget
+
+open scoped HeckeO
 
 open CenteredMomentSecondNonexceptionalScalar
 
@@ -38,9 +38,13 @@ theorem ratio_penalty_le (r a:ℝ) (hr:0<r) (_ha:0≤a) (ha1:a≤1) :
 def retainedRatio (n:Fin 4→ℤ):ℝ :=
   dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))
 
-theorem actual_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
+section
+variable (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(_hK:0<K)(n:Fin 4→ℤ)
+    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)
+include η t S β C D hC hD U R rows W K
+
+theorem actual_envelope_scalar_ratio (_hK:0<K)(n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
     (a:ℝ)(ha:0≤a)(ha1:a≤1) :
     (outerScalar C D K n*normalizer C D U)/Real.sqrt ((C.absNorm:ℝ)*D.absNorm)*
@@ -90,9 +94,7 @@ theorem actual_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(�
       simpa only [mul_one] using mul_le_mul_of_nonneg_left hfrac
         (show 0≤(fixedFactor:ℝ)*η.modulus.absNorm*Real.sqrt (dyadicScale (n 2)*dyadicScale (n 3)) by positivity)
 
-theorem actual_source_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
+theorem actual_source_envelope_scalar_ratio (hK:0<K)(n:Fin 4→ℤ)
     (Hsource:ℝ)(hsource:∀I,β I≠0→(I.absNorm:ℝ)≤Hsource)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
     (a:ℝ)(ha:0≤a)(ha1:a≤1) :
@@ -106,9 +108,11 @@ theorem actual_source_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Idea
     (actual_residual_sqrt_cap η t S β C D hC hD U R rows W K n Hsource hsource hne)
     (show 0≤(fixedFactor:ℝ)*η.modulus.absNorm by positivity)
   convert hh using 1 ; ring
-
-end SevenEighths.CenteredMomentSecondRetainedRatioScalar
-
 end
 
-end OAI
+
+
+
+
+
+

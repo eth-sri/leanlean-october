@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Native bounds for the literal DFI Bessel multipliers. Definitions and contour
 target: S. McColm, DFIEquation29.lean, revision
@@ -10,9 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiZetaGrowth
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-set_option autoImplicit false
-noncomputable section
+open Complex MeasureTheory Filter Topology
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
@@ -53,8 +53,12 @@ theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
     change ‖Gamma z‖ ≤ 72*E
     nlinarith [norm_nonneg (Gamma z)]
 
-theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+section
+variable (q : ℕ) [NeZero q]
+    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16)
+include q z hlo hhi
+
+theorem norm_dfiPeriodicArchimedeanFactor_strip_le  :
     ‖dfiPeriodicArchimedeanFactor q (1-z)‖ ≤
       72*(q:ℝ)*(1+|z.im|)*Real.exp (-(Real.pi*|z.im|)/2) := by
   have hq : 1 ≤ (q:ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
@@ -82,8 +86,7 @@ theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
         (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+theorem norm_dfiVoronoiMinusMultiplier_strip_le  :
     ‖dfiVoronoiMinusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
   have hbranch : ‖cexp (Real.pi*I*(1-z)) + cexp (-Real.pi*I*(1-z))‖ ≤
@@ -91,15 +94,12 @@ theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
     have hp : ‖cexp (Real.pi*I*(1-z))‖ ≤ Real.exp (Real.pi*|z.im|) := by
       rw [Complex.norm_exp]
       apply Real.exp_le_exp.mpr
-      simp only [mul_re, mul_im, ofReal_re, ofReal_im, I_re, I_im, mul_zero, zero_mul,
-        sub_zero, zero_sub, mul_one, sub_im, one_im, add_zero, mul_neg, neg_neg]
+      simp
       exact mul_le_mul_of_nonneg_left (le_abs_self _) Real.pi_pos.le
     have hm : ‖cexp (-Real.pi*I*(1-z))‖ ≤ Real.exp (Real.pi*|z.im|) := by
       rw [Complex.norm_exp]
       apply Real.exp_le_exp.mpr
-      simp only [mul_re, mul_im, neg_re, ofReal_re, ofReal_im, I_re, I_im,
-        mul_zero, zero_mul, sub_zero, zero_sub, mul_one, sub_im, one_im, add_zero,
-        neg_mul, neg_neg]
+      simp
       nlinarith [neg_le_abs z.im, Real.pi_pos]
     exact (norm_add_le _ _).trans (by linarith)
   have hF := norm_dfiPeriodicArchimedeanFactor_strip_le q hlo hhi
@@ -116,8 +116,7 @@ theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
       rw [show (2:ℝ)*(-(Real.pi*|z.im|)/2)+Real.pi*|z.im| = 0 by ring,
         Real.exp_zero, mul_one]
 
-theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+theorem norm_dfiVoronoiPlusMultiplier_strip_le  :
     ‖dfiVoronoiPlusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
   have hF := norm_dfiPeriodicArchimedeanFactor_strip_le q hlo hhi
@@ -132,5 +131,7 @@ theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
   calc
     _ ≤ 2*(q:ℝ)*(72*(q:ℝ)*(1+|z.im|))^2 := by gcongr
     _ = _ := by ring
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

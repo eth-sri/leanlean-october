@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceRatioAssembly
 public import GuthMaynard.Improvement.SamplingFourier
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped FourierTransform
@@ -11,8 +11,16 @@ namespace GuthMaynard.Improvement
 
 def sourceRatioFrequency (q : ℕ × ℕ) : ℝ := Real.log ((q.1:ℝ)/q.2)/(2*Real.pi)
 
+section
+variable (S : Finset (ℕ × ℕ))
+include S
+
+section
+variable {Y : ℝ}
+include Y
+
 /-- Primitive separation in the actual 2π-normalized Fourier frequency. -/
-theorem source_ratio_frequency_separated (S : Finset (ℕ × ℕ)) {Y : ℝ}
+theorem source_ratio_frequency_separated 
     (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
       (q.1:ℝ) ≤ Y ∧ (q.2:ℝ) ≤ Y) :
     Pairwise (fun p q : S => (2*Real.pi*Y^2)⁻¹ ≤
@@ -28,10 +36,14 @@ theorem source_ratio_frequency_separated (S : Finset (ℕ × ℕ)) {Y : ℝ}
   simpa [mul_inv_rev,div_eq_mul_inv,mul_comm,mul_left_comm,mul_assoc] using
     div_le_div_of_nonneg_right hh (by positivity : 0 ≤ 2*Real.pi)
 
-/-- Actual square sampling on any finite primitive ratio family. -/
-theorem source_ratio_fourier_square (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 < Y)
+section
+variable (hY : 0 < Y)
     (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
       (q.1:ℝ) ≤ Y ∧ (q.2:ℝ) ≤ Y)
+include hY hS
+
+/-- Actual square sampling on any finite primitive ratio family. -/
+theorem source_ratio_fourier_square 
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ S, ‖𝓕 f (sourceRatioFrequency q)‖^2) ≤
@@ -39,17 +51,14 @@ theorem source_ratio_fourier_square (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 
   have hh := sampling_fourier_square h1 h2 hR hs
     (fun q : S => sourceRatioFrequency q) (by positivity : 0 < (2*Real.pi*Y^2)⁻¹)
     (source_ratio_frequency_separated S hS)
-  have he : (∑ q : S, ‖𝓕 f (sourceRatioFrequency q)‖^2) =
-      ∑ q ∈ S, ‖𝓕 f (sourceRatioFrequency q)‖^2 :=
+  have he :=
     Finset.sum_coe_sort S (fun q => ‖𝓕 f (sourceRatioFrequency q)‖^2)
   rw [← he]
   simpa only [inv_inv] using hh
 
 /-- Squared multiplicity and genuine Fourier square sampling combine by
 finite Cauchy--Schwarz; the height and moment factors remain separate. -/
-theorem source_ratio_fourier_weighted_low (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 < Y)
-    (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
-      (q.1:ℝ) ≤ Y ∧ (q.2:ℝ) ≤ Y) (w : ℕ × ℕ → ℝ) {W : ℝ}
+theorem source_ratio_fourier_weighted_low  (w : ℕ × ℕ → ℝ) {W : ℝ}
     (hW : (∑ q ∈ S, (w q)^2) ≤ W)
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
@@ -59,10 +68,12 @@ theorem source_ratio_fourier_weighted_low (S : Finset (ℕ × ℕ)) {Y : ℝ} (h
     (mul_le_mul (Real.sqrt_le_sqrt hW)
       (Real.sqrt_le_sqrt (source_ratio_fourier_square S hY hS h1 h2 hR hs))
       (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+end
+
 
 /-- High-height sampling with literal normalized frequencies and the
 original restricted Fourier L1 integral. -/
-theorem source_ratio_fourier_first (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 1 ≤ Y)
+theorem source_ratio_fourier_first  (hY : 1 ≤ Y)
     (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
       (q.1:ℝ) ≤ Y ∧ (q.2:ℝ) ≤ Y)
     (hband : ∀ q ∈ S, |sourceRatioFrequency q| ≤ 1)
@@ -74,24 +85,21 @@ theorem source_ratio_fourier_first (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 1 �
   have hd : 0 < (2*Real.pi*Y^2)⁻¹ := by positivity
   have hd1 : (2*Real.pi*Y^2)⁻¹ ≤ 1 := by
     apply inv_le_one_of_one_le₀
-    have hy2 : 1 ≤ Y^2 := by nlinarith
     nlinarith [Real.pi_gt_three]
   have hb : ∀ q : S, Ioc (sourceRatioFrequency q)
-      (sourceRatioFrequency q+(2*Real.pi*Y^2)⁻¹) ⊆ Icc (-2:ℝ) 2 := by
-    intro q t ht
-    have hq := abs_le.mp (hband q q.property)
-    constructor <;> linarith [ht.1,ht.2]
+      (sourceRatioFrequency q+(2*Real.pi*Y^2)⁻¹) ⊆ Icc (-2:ℝ) 2 := by grind
   have hh := sampling_fourier_first_variation h1 h2 hR hs
     (fun q : S => sourceRatioFrequency q) hd (source_ratio_frequency_separated S hS) hb
-  have he : (∑ q : S, ‖𝓕 f (sourceRatioFrequency q)‖) =
-      ∑ q ∈ S, ‖𝓕 f (sourceRatioFrequency q)‖ :=
+  have he :=
     Finset.sum_coe_sort S (fun q => ‖𝓕 f (sourceRatioFrequency q)‖)
   rw [← he]
   simpa only [inv_inv] using hh
+end
+
 
 /-- A shell Q<height≤2Q has multiplicity at most X/Q. This is the exact
 high-shell analytic bound used before geometric summation. -/
-theorem source_ratio_fourier_weighted_shell (S : Finset (ℕ × ℕ)) {Q X : ℝ}
+theorem source_ratio_fourier_weighted_shell  {Q X : ℝ}
     (hQ : 1 ≤ Q) (hX : 0 ≤ X)
     (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
       Q < (max q.1 q.2:ℕ) ∧ (max q.1 q.2:ℕ) ≤ 2*Q)
@@ -120,5 +128,7 @@ theorem source_ratio_fourier_weighted_shell (S : Finset (ℕ × ℕ)) {Q X : ℝ
     _ ≤ (X/Q)*(2*Real.pi*(2*Q)^2*(∫ ξ in Icc (-2:ℝ) 2, ‖𝓕 f ξ‖)+
         4*Real.pi*R*Real.sqrt (∫ t, ‖f t‖^2)) := mul_le_mul_of_nonneg_left hb (div_nonneg hX hQ0.le)
     _ = _ := by field_simp; ring
+end
 
-end GuthMaynard.Improvement
+
+

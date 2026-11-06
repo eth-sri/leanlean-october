@@ -6,9 +6,8 @@ public import LaterPairs.Native.RobertSargosMixedJets
 public import LaterPairs.Native.RobertSargosRectangularAbel
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                        
 
@@ -40,13 +39,17 @@ def robertSargosCharacterJet (f : ℝ → ℝ) (m r : ℝ) (a b c : Bool)
       (t*J 1 1 1+t^2*(J 1 1 0*J 0 0 1+J 1 0 1*J 0 1 0+
         J 0 1 1*J 1 0 0)+t^3*J 1 0 0*J 0 1 0*J 0 0 1)*E
 
+section
+variable {f : ℝ → ℝ} {m r q h n : ℝ}
+include f m r q h n
+
 theorem hasDerivAt_robertSargos_character_jet_q
-    {f : ℝ → ℝ} {m r q h n : ℝ} (b c : Bool)
+     (b c : Bool)
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
     (hm : ContDiffAt ℝ 4 f (m+(n+q-h))) :
     HasDerivAt (fun x => robertSargosCharacterJet f m r false b c x h n)
       (robertSargosCharacterJet f m r true b c q h n) q := by
-  let t : ℂ := 2*Real.pi*Complex.I
+  let t := 2*Real.pi*Complex.I
   have hd (j k : ℕ) (hj : j+k < 4) :
       HasDerivAt (fun x => (robertSargosMixedJet f m r 0 j k x h n : ℂ))
         (robertSargosMixedJet f m r 1 j k q h n : ℂ) q :=
@@ -79,14 +82,14 @@ theorem hasDerivAt_robertSargos_character_jet_q
     all_goals ring
 
 theorem hasDerivAt_robertSargos_character_jet_h
-    {f : ℝ → ℝ} {m r q h n : ℝ} (c : Bool)
+     (c : Bool)
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
     (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
     (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
     (hrm : ContDiffAt ℝ 4 f (m+(n-h-r))) :
     HasDerivAt (fun x => robertSargosCharacterJet f m r false false c q x n)
       (robertSargosCharacterJet f m r false true c q h n) h := by
-  let t : ℂ := 2*Real.pi*Complex.I
+  let t := 2*Real.pi*Complex.I
   have hd (k : ℕ) (hk : k < 4) :
       HasDerivAt (fun x => (robertSargosMixedJet f m r 0 0 k q x n : ℂ))
         (robertSargosMixedJet f m r 0 1 k q h n : ℂ) h :=
@@ -108,7 +111,7 @@ theorem hasDerivAt_robertSargos_character_jet_h
     all_goals ring
 
 theorem hasDerivAt_robertSargos_character_jet_n
-    {f : ℝ → ℝ} {m r q h n : ℝ}
+    
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
     (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
     (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
@@ -123,6 +126,8 @@ theorem hasDerivAt_robertSargos_character_jet_n
   convert hasDerivAt_robertSargos_character hzero using 1
   all_goals dsimp [robertSargosCharacterJet]
   all_goals ring
+end
+
 
 private theorem norm_character_linear_le {t u : ℂ} {T K : ℝ}
     (hT : 0 ≤ T) (hK : 0 ≤ K) (ht : ‖t‖ ≤ T) (hu : ‖u‖ ≤ K) :
@@ -199,7 +204,6 @@ theorem robertSargos_character_jet_bound
   have hE : ‖E‖ = 1 := sargos_character_norm _
   have hU (i j k : ℕ) (hi : i ≤ 1) (hj : j ≤ 1) (hk : k ≤ 1) :
       ‖U i j k‖ ≤ K := by
-    dsimp [U,J]
     rw [norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hQ.le,
       Complex.norm_real,Real.norm_eq_abs]
     exact hJ i hi j hj k hk
@@ -292,7 +296,7 @@ theorem robertSargos_physical_character_jet_bound
     (hhi : ∀ x ∈ Set.Icc (1:ℝ) M, iteratedDeriv 4 f x ≤ C*lam) :
     (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)^(a.toNat+b.toNat+c.toNat)*
       ‖robertSargosCharacterJet f m r a b c q h n‖ ≤ (1+648*Real.pi*C)^3 := by
-  have hQ : 0 < (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) :=
+  have hQ :=
     zero_lt_one.trans_le (robertSargos_floor_fourth_scale hlam hsmall).1
   have hK : 0 ≤ 324*C := by have := zero_le_one.trans hC; positivity
   have hJ (i : ℕ) (hi : i ≤ 1) (j : ℕ) (hj : j ≤ 1) (k : ℕ) (hk : k ≤ 1) :
@@ -308,8 +312,12 @@ def robertSargosAmplitudeJet (f : ℝ → ℝ) (m r Q s : ℝ) (a b c : Bool)
   ((1-s*q/Q : ℝ):ℂ)*robertSargosCharacterJet f m r a b c q h n+
     if a then ((-s/Q : ℝ):ℂ)*robertSargosCharacterJet f m r false b c q h n else 0
 
+section
+variable {f : ℝ → ℝ} {m r Q s q h n : ℝ}
+include f m r Q s q h n
+
 theorem hasDerivAt_robertSargos_amplitude_jet_q
-    {f : ℝ → ℝ} {m r Q s q h n : ℝ} (b c : Bool)
+     (b c : Bool)
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
     (hm : ContDiffAt ℝ 4 f (m+(n+q-h))) :
     HasDerivAt (fun x => robertSargosAmplitudeJet f m r Q s false b c x h n)
@@ -330,7 +338,7 @@ theorem hasDerivAt_robertSargos_amplitude_jet_q
     ring
 
 theorem hasDerivAt_robertSargos_amplitude_jet_h
-    {f : ℝ → ℝ} {m r Q s q h n : ℝ} (c : Bool)
+     (c : Bool)
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
     (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
     (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
@@ -342,7 +350,7 @@ theorem hasDerivAt_robertSargos_amplitude_jet_h
       ((1-s*q/Q : ℝ):ℂ)
 
 theorem hasDerivAt_robertSargos_amplitude_jet_n
-    {f : ℝ → ℝ} {m r Q s q h n : ℝ}
+    
     (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
     (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
     (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
@@ -352,6 +360,8 @@ theorem hasDerivAt_robertSargos_amplitude_jet_n
   simpa [robertSargosAmplitudeJet] using
     (hasDerivAt_robertSargos_character_jet_n hp hm hrp hrm).const_mul
       ((1-s*q/Q : ℝ):ℂ)
+end
+
 
 theorem robertSargos_amplitude_jet_zero (f : ℝ → ℝ) (m r Q s q h n : ℝ)
     (hq : |q| = s*q) :
@@ -386,11 +396,7 @@ theorem robertSargos_amplitude_jet_bound (f : ℝ → ℝ) (m r s q h n : ℝ)
   cases a
   · have ht := hmain false b c
     simpa [robertSargosAmplitudeJet] using ht.trans (show D ≤ 2*D by linarith)
-  · have he (e : ℕ) : Q^(1+e)*Q⁻¹ = Q^e := by
-      rw [pow_add,pow_one]
-      calc
-        _ = Q*Q⁻¹*Q^e := by ring
-        _ = _ := by rw [mul_inv_cancel₀ hQ.ne',one_mul]
+  · have he (e : ℕ) : Q^(1+e)*Q⁻¹ = Q^e := by grind
     have hrem :
         Q^(1+b.toNat+c.toNat)*
           ‖((-s/Q : ℝ):ℂ)*robertSargosCharacterJet f m r false b c q h n‖ ≤ D := by
@@ -592,8 +598,7 @@ theorem robertSargos_abel_variation_of_mixed_derivatives {ι : Type*}
         robertSargosAbelFactor Q Z k := by
     let V := D*robertSargosAbelFactor Q X i*robertSargosAbelFactor Q Y j*
       robertSargosAbelFactor Q Z k
-    have hV : 0 ≤ V := by
-      exact mul_nonneg (mul_nonneg (mul_nonneg hD (hfnonneg X i)) (hfnonneg Y j)) (hfnonneg Z k)
+    have hV : 0 ≤ V := by bound
     have hs : S.sup (fun m => ‖robertSargosAbelCoefficient X Y Z
         (fun x y z => F m false false false (A+x) (B+y) (C+z)) i j k‖₊) ≤
         (⟨V,hV⟩ : NNReal) := by
@@ -656,14 +661,17 @@ private theorem robertSargos_physical_mixed_points
       (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) := by exact_mod_cast hm.2
   have hg := robertSargos_mixed_shift_geometry (M := (M:ℝ)) hQ (Nat.cast_nonneg H) hHQ
     ⟨hml,by linarith⟩ hq hh hhr hn
-  intro u hu
-  exact hf _ (hg.2 u hu).1
+  grind
 
-theorem robertSargos_physical_rectangle_variation
-    (f : ℝ → ℝ) (M H Q X Y N : ℕ) (r A B s : ℝ) {C lam : ℝ}
+section
+variable (f : ℝ → ℝ) (M H Q X Y N : ℕ) (r A B s : ℝ) {C lam : ℝ}
     (hQeq : Q = ⌊lam^(-(3:ℝ)/13)⌋₊)
     (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
     (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
+include f M H Q X Y N r A B s C lam hQeq hC hlam hsmall hH
+
+theorem robertSargos_physical_rectangle_variation
+    
     (hX : X ≤ Q) (hY : Y ≤ Q) (hN : N ≤ Q) (hs : |s| = 1)
     (hq : ∀ x ∈ Icc A (A+X-1), s*x ∈ Icc 0 (Q:ℝ))
     (hBlo : (H:ℝ) ≤ B) (hBhi : B+Y-1 ≤ 2*H)
@@ -687,10 +695,7 @@ theorem robertSargos_physical_rectangle_variation
       |x| ≤ (Q:ℝ) ∧ y ∈ Icc (H:ℝ) (2*H) ∧
         y+r ∈ Icc (H:ℝ) (2*H) ∧ z ∈ Icc 1 (Q:ℝ) := by
     have hqx := hq x hx
-    have habs : |x| = s*x := by
-      calc
-        _ = |s*x| := by rw [abs_mul,hs,one_mul]
-        _ = _ := abs_of_nonneg hqx.1
+    have habs : |x| = s*x := by grind
     refine ⟨by rw [habs]; exact hqx.2,⟨hBlo.trans hy.1,hy.2.trans hBhi⟩,
       ⟨by linarith [hy.1],by linarith [hy.2]⟩,hz.1,?_⟩
     have hN' : (N:ℝ) ≤ Q := by dsimp [Q]; exact_mod_cast hN
@@ -740,10 +745,7 @@ theorem robertSargos_physical_rectangle_variation
 
 
 theorem robertSargos_physical_rectangle_common_prefix
-    (f : ℝ → ℝ) (M H Q X Y N : ℕ) (r A B s : ℝ) {C lam : ℝ}
-    (hQeq : Q = ⌊lam^(-(3:ℝ)/13)⌋₊)
-    (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
-    (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
+    
     (hXp : 0 < X) (hYp : 0 < Y) (hNp : 0 < N)
     (hX : X ≤ Q) (hY : Y ≤ Q) (hN : N ≤ Q) (hs : |s| = 1)
     (hq : ∀ x ∈ Icc A (A+X-1), s*x ∈ Icc 0 (Q:ℝ))
@@ -797,6 +799,8 @@ theorem robertSargos_physical_rectangle_common_prefix
     rw [robertSargos_amplitude_jet_zero f m r Q s (A+x) (B+y) (1+z) habs]
   simp only [he]
   exact hbound.trans (mul_le_mul_of_nonneg_right hvar (Finset.sum_nonneg (fun _ _ => norm_nonneg _)))
+end
 
 
-end TaoTrudgianYang2025
+
+

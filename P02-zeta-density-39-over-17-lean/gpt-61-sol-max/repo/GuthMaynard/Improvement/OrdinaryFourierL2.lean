@@ -2,16 +2,19 @@ module
 public import Mathlib.Analysis.Fourier.LpSpace
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped FourierTransform SchwartzMap ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {f : ℝ → ℂ} (h1 : Integrable f)
+    (h2 : MemLp f 2)
+include f h1 h2
+
 /-- The literal integral Fourier transform agrees almost everywhere with the
 Hilbert-space Fourier transform for ordinary L1/L2 functions. -/
-theorem ordinary_fourier_ae_L2 {f : ℝ → ℂ} (h1 : Integrable f)
-    (h2 : MemLp f 2) :
+theorem ordinary_fourier_ae_L2  :
     ((𝓕 (h2.toLp f) : Lp ℂ 2 volume) : ℝ → ℂ) =ᵐ[volume] 𝓕 f := by
   have hcont : Continuous (𝓕 f) := VectorFourier.fourierIntegral_continuous
     Real.continuous_fourierChar (innerSL ℝ).continuous₂ h1
@@ -45,9 +48,10 @@ theorem ordinary_fourier_ae_L2 {f : ℝ → ℂ} (h1 : Integrable f)
     _ = _ := by simp [G, Complex.real_smul]
 
 /-- Square integrability of the actual integral Fourier transform. -/
-theorem ordinary_fourier_memLp {f : ℝ → ℂ} (h1 : Integrable f)
-    (h2 : MemLp f 2) : MemLp (𝓕 f) 2 :=
+theorem ordinary_fourier_memLp  : MemLp (𝓕 f) 2 :=
   (Lp.memLp (𝓕 (h2.toLp f))).ae_eq (ordinary_fourier_ae_L2 h1 h2)
+end
+
 
 set_option maxHeartbeats 800000 in
 /-- Literal-integral Plancherel, with no regularity assumption on f. -/
@@ -69,4 +73,4 @@ theorem ordinary_fourier_integral_sq {f : ℝ → ℂ} (h1 : Integrable f)
         rw [hx]
   exact_mod_cast he
 
-end GuthMaynard.Improvement
+

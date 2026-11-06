@@ -9,8 +9,8 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap
-local notation "O"=>HeckeFamily.O
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 def assignedIdeal (L:ι→Finset (Ideal O))(J:Finset ι)(x:Assigned L J) : Ideal O :=
@@ -88,8 +88,8 @@ theorem original_selected_grouped_products (S:Finset (Ideal O))
   rw [joinTuple_coefficient_product,joinTuple_product,joinTuple_assigned_product]
   ring
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

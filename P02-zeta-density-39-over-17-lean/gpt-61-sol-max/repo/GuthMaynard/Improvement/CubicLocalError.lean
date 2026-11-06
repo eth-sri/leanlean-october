@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicTimeMeasure
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -15,8 +15,7 @@ theorem tripleMeasure_ae_interval (ν : Measure ℝ) [SFinite ν] {a b : ℝ}
   filter_upwards [hs] with t ht
   apply (Measure.ae_prod_iff_ae_ae (by measurability)).mpr
   filter_upwards [hs] with u hu
-  filter_upwards [hs] with v hv
-  exact ⟨ht,hu,hv⟩
+  simp_all
 
 theorem timeMeasure_ae_interval {μ : ℝ → ℝ} {a b : ℝ}
     (hm : Measurable μ) (hs : ∀ t, t ∉ Icc a b → μ t = 0) :
@@ -35,11 +34,7 @@ theorem kernelCubic_congr_interval (ν : Measure ℝ) [SFinite ν] {a b : ℝ}
   unfold kernelCubic
   apply integral_congr_ae
   filter_upwards [tripleMeasure_ae_interval ν hs] with t ht
-  have hd : ∀ u ∈ Icc a b, ∀ v ∈ Icc a b, |u-v| ≤ b-a := by
-    intro u hu v hv
-    apply abs_le.mpr
-    constructor <;> linarith [hu.1,hu.2,hv.1,hv.2]
-  rw [heq _ (hd _ ht.1 _ ht.2.1),heq _ (hd _ ht.2.1 _ ht.2.2),heq _ (hd _ ht.2.2 _ ht.1)]
+  grind
 
 /-- Local kernel approximation on the time-difference interval suffices
 for the actual homogeneous L2 cubic remainder. -/
@@ -77,4 +72,4 @@ theorem cubic_local_time_perturbation {μ : ℝ → ℝ} {a b : ℝ}
   rw [hkEq,hjEq]
   exact cubic_time_density_perturbation hab hm h0 hi h2 hs (hK.indicator hE) (hJ.indicator hE) hB he hkb hjb heb
 
-end GuthMaynard.Improvement
+

@@ -10,12 +10,16 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open scoped ContDiff
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentLattice
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open QuadraticInitialBound
 
-theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
+theorem radial_zero_mode_error  (t : ℝ) (ht : 0 < t)
     (A : O → ℂ) (B : ℝ) (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :
     ‖t • (∑' h : O, A h * paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)) -
       t • (A 0 * paperRadialFourier W 0)‖ ≤ B * pvControl W := by
@@ -60,7 +64,7 @@ theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
         ‖paperRadialFourier W (t * ‖eisEmbedding h.val‖ ^ 2)‖) := by ring
     _ ≤ B * pvControl W := mul_le_mul_of_nonneg_left (pv_lattice_bound W t ht) hB
 
-theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X)
+theorem periodic_lattice_volume_error  (X : ℝ) (hX : 0 < X)
     (c : O) (hc : c ≠ 0) (P : O ⧸ Ideal.span {c} → ℂ) :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
@@ -92,6 +96,8 @@ theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X
   rw [actual_radial_paper_poisson_trace W X hX c hc P]
   rw [hA0] at h
   simpa only [A, B, ψ, div_mul_eq_mul_div] using h
+end
+
 
 theorem logPhase_eq_normPower (t x : ℝ) (hx : 0 < x) :
     FourierBridge.logPhase (t / (2 * Real.pi)) (Real.log x) =
@@ -104,13 +110,16 @@ theorem logPhase_eq_normPower (t x : ℝ) (hx : 0 < x) :
   push_cast
   field_simp
 
-def normPowerProfile (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+section
+variable (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+include W a b ha hs hW
+
+def normPowerProfile 
     (t : ℝ) : 𝓢(ℝ, ℂ) :=
   CompletedHeight.uniformTwistedSchwartz W a b ha hs hW (t / (2 * Real.pi))
 
-theorem normPowerProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+theorem normPowerProfile_apply 
     (t x : ℝ) :
     normPowerProfile W a b ha hs hW t x = (x : ℂ) ^ (Complex.I * t) * W x := by
   rw [normPowerProfile, CompletedHeight.uniformTwistedSchwartz_apply]
@@ -118,8 +127,10 @@ theorem normPowerProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   by_cases hx : W x = 0
   · simp only [hx, mul_zero]
   · rw [logPhase_eq_normPower t x (lt_of_lt_of_le ha (hs hx).1)]
-
-end SevenEighths.CenteredMomentLattice
 end
 
-end OAI
+
+
+
+
+

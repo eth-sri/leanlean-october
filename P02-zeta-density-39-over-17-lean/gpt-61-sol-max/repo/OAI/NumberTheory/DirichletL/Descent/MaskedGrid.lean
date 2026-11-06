@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ExtractedGrid
 
 @[expose] public section
@@ -9,20 +10,25 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "Grid" => Finset ((Ideal Eis × Ideal Eis) × Ideal Eis)
 
-def maskedGridHybridRow (T : Grid) (Pset : Finset (Ideal Eis))
+section
+variable (T : Grid) (Pset : Finset (Ideal Eis))
     (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k : Ideal Eis) : ℂ :=
+include T Pset a beta
+
+section
+variable (t k : Ideal Eis)
+include t k
+
+def maskedGridHybridRow  : ℂ :=
   ∑ u ∈ T, ∑ P ∈ Pset, (if IsCoprime k (P * u.2) then 1 else 0) *
     (a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) * beta u.2 u.1.1 u.1.2 *
       (quadraticRow k (primaryGenerator (u.1.1 * u.1.2)) * inverseCubicKernel P (u.2 * u.1.1)) *
         (if IsCoprime P (u.1.2 * t) then 1 else 0))
 
-theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k : Ideal Eis) (hk : k ≠ 0) :
+theorem maskedGridHybridRow_mobius  (hk : k ≠ 0) :
     maskedGridHybridRow T Pset a beta t k =
       ∑ D ∈ (idealDivisors k) ×ˢ (idealDivisors k),
         ((moebius D.1 : ℂ) * (moebius D.2 : ℂ)) *
@@ -51,10 +57,11 @@ theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
     intro P hP
     by_cases hRP : D.1 ∣ P <;> simp [hRP]
   · simp [hrc]
+end
+
 
 theorem gridDivisorHybridBlock_zero_of_not_coprime
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
+    
     (t k R r : Ideal Eis) (hRr : ¬ IsCoprime R r)
     (hP : ∀ P ∈ Pset, primaryGenerator P ≠ 0)
     (hT : ∀ u ∈ T, primaryGenerator (u.2 * u.1.1) ≠ 0) :
@@ -73,6 +80,8 @@ theorem gridDivisorHybridBlock_zero_of_not_coprime
       simp
     · simp only [hRP, ite_false]
   · simp only [hrc, ite_false]
+end
+
 
 theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K : ℝ, 1 ≤ K →
@@ -113,11 +122,9 @@ theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
       _ ≤ (C * K ^ (ε / 2)) ^ 2 := pow_le_pow_left₀ (Nat.cast_nonneg _) hd 2
       _ = C ^ 2 * K ^ ε := by
         rw [mul_pow, pow_two (K ^ (ε / 2)), ← Real.rpow_add (by linarith : 0 < K)]
-        congr 1
-        congr 1
-        ring
+        simp
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

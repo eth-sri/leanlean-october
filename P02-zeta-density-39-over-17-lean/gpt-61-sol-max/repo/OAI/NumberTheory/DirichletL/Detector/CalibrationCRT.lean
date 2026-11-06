@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationFourier
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 open CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
@@ -51,12 +52,12 @@ theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
       frequencyReduction a (a * b) (dvd_mul_right a b) (e x) = Ideal.Quotient.mk _ b * x.1 := by
     have ht := congrArg Prod.fst (hproj (e x))
     rw [heproj] at ht
-    simpa only [ua, residueUnit_coe] using ht
+    exact ht
   have hprojB (x : Residue a × Residue b) :
       frequencyReduction b (a * b) (dvd_mul_left b a) (e x) = Ideal.Quotient.mk _ a * x.2 := by
     have ht := congrArg Prod.snd (hproj (e x))
     rw [heproj] at ht
-    simpa only [ub, residueUnit_coe] using ht
+    exact ht
   rw [← e.sum_comp]
   simp_rw [hprojA, hprojB]
   simp only [map_mul, he, mul_add, AddChar.map_add_eq_mul,
@@ -71,9 +72,13 @@ theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   intro x _
   ring
 
-theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
     (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b)
-    (F : Residue b → ℂ) (H : O) :
+    (F : Residue b → ℂ) (H : O)
+include S hS b hb hcop F H
+
+theorem calibration_mixed_fourier  :
     let C := calibrationForSet S hS
     (∑' x : Residue (C.generator*b),
       C.residue (frequencyReduction C.generator (C.generator*b) (dvd_mul_right _ _) x) *
@@ -98,9 +103,7 @@ theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMa
   simp only [frequencyReduction_mk]
   ring
 
-theorem calibration_mixed_fourier_zero (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b)
-    (F : Residue b → ℂ) (H : O) (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
+theorem calibration_mixed_fourier_zero  (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
     let C := calibrationForSet S hS
     (∑' x : Residue (C.generator*b),
       C.residue (frequencyReduction C.generator (C.generator*b) (dvd_mul_right _ _) x) *
@@ -114,8 +117,10 @@ theorem calibration_mixed_fourier_zero (S : Finset (Ideal O)) (hS : ∀ P∈S, P
     exact fun h => hH ((isUnit_quotient_span_iff _ _).mp h)
   rw [hz, star_zero]
   ring
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

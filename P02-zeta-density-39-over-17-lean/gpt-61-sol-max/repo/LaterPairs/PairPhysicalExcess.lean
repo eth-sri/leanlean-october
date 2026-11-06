@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import LaterPairs.PairSlabExcess
 public import TwoTermDyadic
 public import ExcessCompactPrefix
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
-open MathCollab.Density MathCollab.Density.Stronger
+
 open Montgomery.CriticalPeak Montgomery.RationalMoment.RightDetector
 
 /-- Both physical excess terms, with constants uniform before height and amplitude. -/
@@ -24,12 +24,12 @@ theorem ExponentPair.critical_physical_excess_general {k l η ε : ℝ}
   have hp : 1 ≤ 1+ε := by linarith
   have hr : 1 ≤ 1+l/k+ε := by have hh := div_pos hl hk; linarith
   obtain ⟨B₀,hB₀⟩ := eventually_atTop.mp (hpair.critical_slab_excess_general hk hη hε)
-  let B : ℝ := max B₀ 1
+  let B := max B₀ 1
   have hB : 1 ≤ B := le_max_right _ _
   have hB0 : 0 ≤ B := by linarith
   obtain ⟨M,hM⟩ := criticalExcess_compact_prefix hB0
-  let C₁ : ℝ := (2/5)*(6:ℝ)^(1+ε)
-  let C₂ : ℝ := (2/(3+(2+4*l)/k))*(6:ℝ)^(1+l/k+ε)
+  let C₁ := (2/5)*(6:ℝ)^(1+ε)
+  let C₂ := (2/(3+(2+4*l)/k))*(6:ℝ)^(1+l/k+ε)
   have hC₁ : 0 < C₁ := by dsimp [C₁]; positivity
   have hC₂ : 0 < C₂ := by dsimp [C₂]; positivity
   refine ⟨C₁+C₂,by positivity,?_⟩
@@ -47,15 +47,13 @@ theorem ExponentPair.critical_physical_excess_general {k l η ε : ℝ}
         ((2/5)*v^(-5:ℝ))*H^(1+ε)+
           ((2/(3+(2+4*l)/k))*v^(-3-(2+4*l)/k))*H^(1+l/k+ε) := by
     intro H hBH hHT
-    have hH1 : 1 ≤ H := hB.trans hBH
     have hH0 : 0 < H := by linarith
     have hvH : H^(1/8+η) ≤ v :=
       (Real.rpow_le_rpow hH0.le hHT hq.le).trans hvrange
     have hs := hB₀ H (((le_max_left _ _).trans hBH)) v hv hvH
     rw [integral_Icc_eq_integral_Ioc,
       ← intervalIntegral.integral_of_le (by linarith : H ≤ 2*H)] at hs
-    convert hs using 1
-    ring
+    grind
   have hh := integral_zero_le_of_two_dyadic_powers (criticalExcess v)
     (criticalExcess_continuous v) (criticalExcess_nonneg v)
     hp hr hB (by linarith : B ≤ 3*T)
@@ -82,4 +80,4 @@ theorem ExponentPair.critical_physical_excess_general {k l η ε : ℝ}
       have hxy := mul_nonneg (mul_nonneg hC₁.le (Real.rpow_pos_of_pos hT0 ε).le) hy
       have hyx := mul_nonneg (mul_nonneg hC₂.le (Real.rpow_pos_of_pos hT0 ε).le) hx
       nlinarith
-end TaoTrudgianYang2025
+

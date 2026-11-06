@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ExtractedGrid
 public import OAI.NumberTheory.DirichletL.Descent.OriginalBlock
 
@@ -8,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+
+open scoped EisensteinEis
 
 theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
@@ -67,7 +68,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
       p.2 ≠ 0 ∧ (Ideal.absNorm p.2 : ℝ) ≤ H := by
     obtain ⟨u, hu, hup⟩ := Finset.mem_image.mp hp
     obtain ⟨d, hd, he, hdc⟩ := quotientGridSupport_origin r hr D u.1 u.2 hu
-    have he' : (d.residualN, d.residualB) = p := he.trans hup
+    have he' := he.trans hup
     have hm := congrArg Prod.fst he'
     have hh := congrArg Prod.snd he'
     have hdB : d.residualB ≠ 0 :=
@@ -162,7 +163,7 @@ theorem hybrid_extracted_dyadic_block (ε : ℝ) (hε : 0 < ε) :
     have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
     positivity
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

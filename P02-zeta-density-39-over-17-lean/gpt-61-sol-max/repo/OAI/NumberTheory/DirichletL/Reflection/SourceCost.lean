@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveBudget
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalAggregation
 
@@ -9,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 lemma pool_subset_choices_small_power (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (J Q Q₀ : Ideal Eis),J≠0 → Q≠0 →
@@ -19,7 +20,7 @@ lemma pool_subset_choices_small_power (ε : ℝ) (hε : 0<ε) :
   refine ⟨C,hC,?_⟩
   intro J Q Q₀ hJ hQ
   apply le_trans _ (hb J Q Q₀ hJ hQ)
-  simp only [Fintype.card_finset,Fintype.card_fun,Fintype.card_fin,Nat.cast_pow,Nat.cast_ofNat]
+  simp
   exact pow_le_pow_left₀ (by positivity) (pow_le_pow_left₀ (by norm_num) (by norm_num) _) _
 
 theorem original_source_cost {χ : Type*} [Fintype χ] (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
@@ -51,7 +52,7 @@ theorem original_source_cost {χ : Type*} [Fintype χ] (rmax : ℕ) (ε : ℝ) (
       · exact hp J Q Q₀ hJ hQ
       · exact hh H hcard hH
     _ = _ := by dsimp [C];ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

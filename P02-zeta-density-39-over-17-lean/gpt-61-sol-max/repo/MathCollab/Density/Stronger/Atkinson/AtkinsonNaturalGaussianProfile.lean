@@ -13,7 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonRootLogProfile
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 open Complex Set Filter
 open scoped ContDiff Topology
 namespace MathCollab.Density.Stronger.Atkinson
@@ -66,4 +66,4 @@ theorem exists_intervalC2Bound_zetaQuadraticLogGaussian_root_natural :
   exact (zetaQuadraticLogGaussian_root_rescale hT hy G).symm
 
 
-end MathCollab.Density.Stronger.Atkinson
+

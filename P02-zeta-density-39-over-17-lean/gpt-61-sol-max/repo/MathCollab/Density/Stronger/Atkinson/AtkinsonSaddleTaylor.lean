@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -50,8 +51,7 @@ theorem atkinsonRootPhase_sub_quadratic {T y : ℝ} (hT : 0 < T) (hy : 0 < y) (b
   change _ = (T / Real.pi) * (Real.log (1 + (y - r) / r) - (y - r) / r + ((y - r) / r) ^ 2 / 2)
   unfold atkinsonRootPhase
   rw [hlog, show T / Real.pi = 2 * (T / (2 * Real.pi)) by ring, ← he]
-  field_simp
-  ring
+  grind
 
 theorem norm_exp_real_phase_sub_le (a b : ℝ) :
     ‖Complex.exp ((a : ℂ) * I) - Complex.exp ((b : ℂ) * I)‖ ≤ |a - b| := by
@@ -64,4 +64,4 @@ theorem norm_exp_real_phase_sub_le (a b : ℝ) :
   rw [he, norm_mul, show ‖Complex.exp ((b : ℂ) * I)‖ = 1 by simp [Complex.norm_exp], one_mul]
   exact Real.norm_exp_I_mul_ofReal_sub_one_le
 
-end MathCollab.Density.Stronger.Atkinson
+

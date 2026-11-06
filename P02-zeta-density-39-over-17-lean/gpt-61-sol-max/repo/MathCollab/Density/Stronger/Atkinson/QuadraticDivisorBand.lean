@@ -10,11 +10,10 @@ public import MathCollab.Density.Stronger.Atkinson.FrozenDivisorGaussian
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -28,7 +27,11 @@ def zetaShortQuadraticDivisorSum (T G L : ℝ) : ℂ :=
     zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
       zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))
 
-theorem divisor_index_bounds_of_frequency {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
+section
+variable {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
+include T G L hT hG
+
+theorem divisor_index_bounds_of_frequency 
     {n : ℕ} (hn : 0 < n)
     (hfreq : G * |Real.log (n : ℝ) - Real.log (T / (2 * Real.pi))| ≤ L) :
     T / (2 * Real.pi) * Real.exp (-L / G) ≤ (n : ℝ) ∧
@@ -46,7 +49,7 @@ theorem divisor_index_bounds_of_frequency {T G L : ℝ} (hT : 0 < T) (hG : 0 < G
         Real.log (T / (2 * Real.pi)) + L / G by linarith)
     simpa only [Real.exp_add, Real.exp_log ha, Real.exp_log hn0] using h
 
-theorem mem_zetaQuadraticDivisorBand_iff {T G L : ℝ} (hT : 0 < T) (hG : 0 < G) (n : ℕ) :
+theorem mem_zetaQuadraticDivisorBand_iff  (n : ℕ) :
     n ∈ zetaQuadraticDivisorBand T G L ↔
       0 < n ∧ G * |Real.log (n : ℝ) - Real.log (T / (2 * Real.pi))| ≤ L := by
   classical
@@ -57,19 +60,20 @@ theorem mem_zetaQuadraticDivisorBand_iff {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
     refine ⟨Finset.mem_range.mpr (Nat.lt_succ_iff.mpr ?_), h⟩
     exact_mod_cast (divisor_index_bounds_of_frequency hT hG h.1 h.2).2.trans (Nat.le_ceil _)
 
-theorem zetaQuadraticDivisorBand_index_bounds {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
+theorem zetaQuadraticDivisorBand_index_bounds 
     {n : ℕ} (hn : n ∈ zetaQuadraticDivisorBand T G L) :
     T / (2 * Real.pi) * Real.exp (-L / G) ≤ (n : ℝ) ∧
       (n : ℝ) ≤ T / (2 * Real.pi) * Real.exp (L / G) := by
   have h := (mem_zetaQuadraticDivisorBand_iff hT hG n).mp hn
   exact divisor_index_bounds_of_frequency hT hG h.1 h.2
 
-theorem frequency_le_of_not_mem_zetaQuadraticDivisorBand {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) {n : ℕ} (hn : 0 < n)
+theorem frequency_le_of_not_mem_zetaQuadraticDivisorBand  {n : ℕ} (hn : 0 < n)
     (hnot : n ∉ zetaQuadraticDivisorBand T G L) :
     L ≤ G * |Real.log (n : ℝ) - Real.log (T / (2 * Real.pi))| := by
   have h := mt (mem_zetaQuadraticDivisorBand_iff hT hG n).mpr hnot
   exact (lt_of_not_ge (fun hfreq => h ⟨hn, hfreq⟩)).le
+end
+
 
 theorem zetaFrozenDivisorCoefficient_zero (T : ℝ) : zetaFrozenDivisorCoefficient T 0 = 0 := by
   simp [zetaFrozenDivisorCoefficient, divisorDirichletTerm, LSeries.term]
@@ -87,4 +91,4 @@ theorem norm_zetaQuadraticDivisorTerm_off_band_le {T G L : ℝ}
   exact mul_le_mul_of_nonneg_left (norm_zetaGaussianQuadraticIntegral_tail hT hG hGT hL
     (frequency_le_of_not_mem_zetaQuadraticDivisorBand hT hG (Nat.pos_of_ne_zero hn) hnot)) (norm_nonneg _)
 
-end MathCollab.Density.Stronger.Atkinson
+

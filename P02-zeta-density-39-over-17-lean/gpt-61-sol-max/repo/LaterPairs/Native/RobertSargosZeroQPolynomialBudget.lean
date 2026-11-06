@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ThirteenthRootScales
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                    
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem zero_q_twelfth_root_budget {T R lam : ℝ}
@@ -50,7 +49,6 @@ theorem zero_q_physical_polynomial_budgets {T M H Q R lam : ℝ}
   have hxH := mul_le_mul_of_nonneg_right hHQ hx
   have hxQ := mul_le_mul_of_nonneg_right hroot hQ0
   constructor
-  · nlinarith
-  constructor <;> nlinarith
+  all_goals (grind)
 
-end TaoTrudgianYang2025
+

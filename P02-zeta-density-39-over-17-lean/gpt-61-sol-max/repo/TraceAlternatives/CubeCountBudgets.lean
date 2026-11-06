@@ -3,7 +3,6 @@ public import DensityEnergyGM.SharpCountEnergyExpansion
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -55,4 +54,4 @@ theorem cubeTraceEnergyMargin_mono_length {σ a x y : ℝ} (hσ : 13/16 ≤ σ)
   unfold cubeTraceEnergyMargin
   linarith only [h]
 
-end Montgomery.RationalMoment
+

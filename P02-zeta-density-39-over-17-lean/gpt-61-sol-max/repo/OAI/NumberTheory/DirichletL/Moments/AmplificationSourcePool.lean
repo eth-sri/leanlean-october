@@ -5,16 +5,16 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceDomain
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePool
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
+open CenteredMomentAmplificationGlobal
 open CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain
-open CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceRow CenteredMomentFirstSectors
+open CenteredMomentUnequal
+open scoped EisensteinO
 
 theorem residualIdeal_coprime (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :
     IsCoprime (Ideal.span {p}) (residualIdeal p hp I) := by
@@ -69,8 +69,8 @@ theorem residualColumns_eq (S : Finset (Ideal O)) (p : O) (hp : Prime p)
     have hh := residualIdeal_reconstruct p hp J hsJ
     simpa only [hv] using hh
 
-end SevenEighths.CenteredMomentAmplificationSourcePool
 
-end
 
-end OAI
+
+
+

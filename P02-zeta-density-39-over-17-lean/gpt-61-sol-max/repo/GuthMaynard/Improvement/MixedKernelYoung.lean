@@ -1,18 +1,22 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicTimeMeasure
 public import GuthMaynard.Improvement.Smoothing
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+
+open MeasureTheory
 namespace GuthMaynard.Improvement
+
+section
+variable {μ ψ : ℝ → ℝ}
+    (hμm : Measurable μ) (hμ0 : ∀ t, 0 ≤ μ t) (hμ2 : Integrable (fun t => μ t^2))
+    (hψm : Measurable ψ) (hψ0 : ∀ t, 0 ≤ ψ t) (hψi : Integrable ψ)
+include μ ψ hμm hμ0 hμ2 hψm hψ0 hψi
 
 /-- The actual L2 Young pairing follows from 2ab≤a²+b² and translation
 invariance. No convolution norm estimate is assumed. -/
-theorem mixed_young_pairing {μ ψ : ℝ → ℝ}
-    (hμm : Measurable μ) (hμ0 : ∀ t, 0 ≤ μ t) (hμ2 : Integrable (fun t => μ t^2))
-    (hψm : Measurable ψ) (hψ0 : ∀ t, 0 ≤ ψ t) (hψi : Integrable ψ) :
+theorem mixed_young_pairing  :
     Integrable (fun p : ℝ × ℝ => ψ (p.1-p.2)*μ p.1*μ p.2) (volume.prod volume) ∧
     (∫ p : ℝ × ℝ, ψ (p.1-p.2)*μ p.1*μ p.2 ∂volume.prod volume) ≤
       (∫ s, ψ s)*(∫ t, μ t^2) := by
@@ -48,9 +52,7 @@ theorem mixed_young_pairing {μ ψ : ℝ → ℝ}
     _ = _ := by rw [integral_div,integral_add hl hr,hil,hir]; ring
 
 /-- Ordinary density form of the same actual Young pairing. -/
-theorem mixed_timeMeasure_young {μ ψ : ℝ → ℝ}
-    (hμm : Measurable μ) (hμ0 : ∀ t, 0 ≤ μ t) (hμ2 : Integrable (fun t => μ t^2))
-    (hψm : Measurable ψ) (hψ0 : ∀ t, 0 ≤ ψ t) (hψi : Integrable ψ) :
+theorem mixed_timeMeasure_young  :
     (∫ u, ∫ t, ψ (u-t) ∂timeMeasure μ ∂timeMeasure μ) ≤
       (∫ s, ψ s)*(∫ t, μ t^2) := by
   obtain ⟨hi,hb⟩ := mixed_young_pairing hμm hμ0 hμ2 hψm hψ0 hψi
@@ -65,7 +67,8 @@ theorem mixed_timeMeasure_young {μ ψ : ℝ → ℝ}
     apply integral_congr_ae
     filter_upwards with t
     ring
-  rw [he]
-  exact hb
+  simp_all
+end
 
-end GuthMaynard.Improvement
+
+

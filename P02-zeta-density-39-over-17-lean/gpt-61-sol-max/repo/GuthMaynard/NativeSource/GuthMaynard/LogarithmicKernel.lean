@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.Analysis.Real.Pi.Bounds
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
@@ -23,43 +24,44 @@ Halász--Montgomery argument.
 noncomputable def logarithmicKernel (N : ℕ) (t : ℝ) : ℂ :=
   ∑ n ∈ dyadicInterval N, (n : ℂ) ^ (-(t : ℂ) * I)
 
-theorem dyadicInterval_eq_Ico_succ (N : ℕ) :
+section
+variable (N : ℕ)
+include N
+
+theorem dyadicInterval_eq_Ico_succ  :
     dyadicInterval N = Finset.Ico (N + 1) (2 * N + 1) := by
   ext n
   simp only [dyadicInterval, Finset.mem_Ioc, Finset.mem_Ico]
   omega
 
-theorem logarithmicKernel_eq_logarithmicSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
+theorem logarithmicKernel_eq_logarithmicSum  (t : ℝ) (hN : 0 < N) :
     logarithmicKernel N t = logarithmicSum t (N + 1) (2 * N + 1) := by
   rw [logarithmicSum_eq_cpow t (N + 1) (2 * N + 1) (by omega)]
   unfold logarithmicKernel
   rw [dyadicInterval_eq_Ico_succ]
 
-theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
+theorem logarithmicKernel_eq_shifted_phaseSum  (t : ℝ) (hN : 0 < N) :
     logarithmicKernel N t =
       ∑ k ∈ range N, unitaryPhase (logarithmicPhase t (N + 1 + k)) := by
   rw [logarithmicKernel_eq_logarithmicSum N t hN]
   unfold logarithmicSum phaseSum
   rw [sum_Ico_eq_sum_range]
-  have hlength : 2 * N + 1 - (N + 1) = N := by omega
-  rw [hlength]
-  simp only [Nat.cast_add, Nat.cast_one]
+  grind
 
-@[simp] theorem logarithmicKernel_zero (N : ℕ) :
+@[simp] theorem logarithmicKernel_zero  :
     logarithmicKernel N 0 = (N : ℂ) := by
   unfold logarithmicKernel
   rw [dyadicInterval_eq_Ico_succ]
-  simp only [ofReal_zero, neg_zero, zero_mul, Complex.cpow_zero, sum_const,
-    nsmul_eq_mul, Nat.card_Ico, mul_one]
+  simp only [ofReal_zero, neg_zero, zero_mul, cpow_zero, sum_const, Nat.card_Ico, nsmul_eq_mul, mul_one]
   exact_mod_cast (show 2 * N + 1 - (N + 1) = N by omega)
 
-theorem norm_logarithmicKernel_zero (N : ℕ) :
+theorem norm_logarithmicKernel_zero  :
     ‖logarithmicKernel N 0‖ = (N : ℝ) := by
   rw [logarithmicKernel_zero]
   simp
 
 /-- Reversing the frequency conjugates the logarithmic kernel. -/
-theorem logarithmicKernel_neg (N : ℕ) (t : ℝ) :
+theorem logarithmicKernel_neg  (t : ℝ) :
     logarithmicKernel N (-t) = star (logarithmicKernel N t) := by
   unfold logarithmicKernel
   change (∑ n ∈ dyadicInterval N, (n : ℂ) ^ (-((-t : ℝ) : ℂ) * I)) =
@@ -75,15 +77,16 @@ theorem logarithmicKernel_neg (N : ℕ) (t : ℝ) :
   unfold unitaryPhase
   rw [← Complex.exp_conj]
   congr 1
-  simp only [logarithmicPhase, ofReal_neg, ofReal_mul, map_mul, map_neg, conj_I,
-    Complex.conj_ofReal]
+  simp only [logarithmicPhase, ofReal_mul, ofReal_neg, map_mul, conj_I, map_neg, conj_ofReal]
   ring_nf
 
-theorem norm_logarithmicKernel_abs (N : ℕ) (t : ℝ) :
+theorem norm_logarithmicKernel_abs  (t : ℝ) :
     ‖logarithmicKernel N |t|‖ = ‖logarithmicKernel N t‖ := by
   rcases le_total 0 t with ht | ht
   · rw [abs_of_nonneg ht]
   · rw [abs_of_nonpos ht, logarithmicKernel_neg, norm_star]
+end
+
 
 private theorem log_succ_sub_log_bounds (m : ℕ) (hm : 0 < m) :
     1 / ((m : ℝ) + 1) ≤ Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) ∧
@@ -91,9 +94,7 @@ private theorem log_succ_sub_log_bounds (m : ℕ) (hm : 0 < m) :
   have hmReal : 0 < (m : ℝ) := by exact_mod_cast hm
   have hsuccReal : 0 < ((m + 1 : ℕ) : ℝ) := by positivity
   have hratio : 0 < (((m + 1 : ℕ) : ℝ) / (m : ℝ)) := by positivity
-  have hlog :
-      Real.log (((m + 1 : ℕ) : ℝ) / (m : ℝ)) =
-        Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) :=
+  have hlog :=
     Real.log_div hsuccReal.ne' hmReal.ne'
   constructor
   · calc
@@ -200,19 +201,13 @@ theorem norm_logarithmicKernel_le_div
       simp only [logarithmicPhase, Nat.cast_add, Nat.cast_ofNat]
       ring_nf
     have hfinal := mul_le_mul_of_nonpos_left hlogLe (by linarith : -q ≤ 0)
-    rw [← hphaseOne, ← hphaseTwo] at hfinal
-    simpa only [m, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hfinal
+    grind
   have hKL := kusminLandau_interval (fun n : ℕ => logarithmicPhase q n)
     (N + 1) (N - 1)
     (-1) δ hδ
-    (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).1)
-    (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).2)
-    (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hmono n hn)
+    (fun n hn => by simp_all)
+    (fun n hn => by simp_all)
+    (fun n hn => by simp_all)
   have hpred : N - 1 + 1 = N := by omega
   rw [hpred] at hKL
   norm_num only [Nat.cast_add, Nat.cast_one] at hKL
@@ -253,51 +248,29 @@ theorem logarithmicPhase_secondDifference_bounds
       convert (hasDerivAt_inv hyPos.ne').const_mul (-t) using 1
       all_goals simp [div_eq_mul_inv])
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hxiLower : (N : ℝ) ≤ xi := by
-    calc
-      (N : ℝ) ≤ (N : ℝ) + 1 + (n : ℝ) := by
-        have hnNonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-        linarith
-      _ ≤ xi := by
-        have hxilt : (N : ℝ) + 1 + (n : ℝ) < xi := by
-          simpa only [x, Nat.cast_add, Nat.cast_one] using hxi.1
-        exact hxilt.le
+  have hxiLower : (N : ℝ) ≤ xi := by grind
   have hxiUpper : xi ≤ 3 * (N : ℝ) := by
-    have hxi' : xi < (N : ℝ) + 1 + (n : ℝ) + 2 := by
-      simpa only [x, Nat.cast_add, Nat.cast_one] using hxi.2
     have hnUpper : n + 3 ≤ 2 * N := by omega
     have hnUpperReal : ((n + 3 : ℕ) : ℝ) ≤ 2 * (N : ℝ) := by exact_mod_cast hnUpper
-    push_cast at hnUpperReal
-    linarith
+    grind
   have hxiPos : 0 < xi := lt_of_lt_of_le hNreal hxiLower
-  have hlower : t / (9 * (N : ℝ) ^ 2) ≤ t / xi ^ 2 := by
-    apply (div_le_div_iff₀ (by positivity : 0 < 9 * (N : ℝ) ^ 2)
-      (sq_pos_of_pos hxiPos)).2
-    have hsq : xi ^ 2 ≤ 9 * (N : ℝ) ^ 2 := by nlinarith
-    nlinarith [ht]
-  have hupper : t / xi ^ 2 ≤ t / (N : ℝ) ^ 2 := by
-    apply (div_le_div_iff₀ (sq_pos_of_pos hxiPos) (sq_pos_of_pos hNreal)).2
-    have hsq : (N : ℝ) ^ 2 ≤ xi ^ 2 := by nlinarith
-    nlinarith [ht]
+  have hlower : t / (9 * (N : ℝ) ^ 2) ≤ t / xi ^ 2 := by field_simp <;> nlinarith
+  have hupper : t / xi ^ 2 ≤ t / (N : ℝ) ^ 2 := by field_simp <;> nlinarith
   have hEq :
       t / xi ^ 2 =
         (logarithmicPhase t (N + 1 + (n + 2)) -
           logarithmicPhase t (N + 1 + (n + 1))) -
           (logarithmicPhase t (N + 1 + (n + 1)) -
-            logarithmicPhase t (N + 1 + n)) := by
-    norm_num [x] at hxiEq ⊢
-    have h3 : (N : ℝ) + 1 + (n : ℝ) + 2 = (N : ℝ) + (n : ℝ) + 3 := by ring
-    have h2 : (N : ℝ) + 1 + (n : ℝ) + 1 = (N : ℝ) + (n : ℝ) + 2 := by ring
-    have h1 : (N : ℝ) + 1 + (n : ℝ) = (N : ℝ) + (n : ℝ) + 1 := by ring
-    rw [h3, h2, h1] at hxiEq
-    rw [hxiEq]
-    ring_nf
+            logarithmicPhase t (N + 1 + n)) := by grind
   constructor
-  · exact hlower.trans_eq hEq
-  · exact hEq.symm.trans_le hupper
+  all_goals (grind)
+
+section
+variable (N : ℕ) (t : ℝ) (hN : 0 < N)
+include N t hN
 
 theorem logarithmic_B_process_majorant_le
-    (N : ℕ) (t : ℝ) (hN : 0 < N) (hNt : (N : ℝ) ≤ t)
+     (hNt : (N : ℝ) ≤ t)
     (htN : t ≤ (N : ℝ) ^ 2) :
     (((N - 1 : ℕ) : ℝ) * (t / (N : ℝ) ^ 2) / (2 * Real.pi) + 2) *
         (2 * Real.pi / Real.sqrt (t / (9 * (N : ℝ) ^ 2)) +
@@ -313,9 +286,7 @@ theorem logarithmic_B_process_majorant_le
     rw [← Real.sqrt_sq (le_of_lt hNreal)]
     exact Real.sqrt_le_sqrt htN
   have hNLeYSq : (N : ℝ) ≤ y ^ 2 := by simpa only [hySq] using hNt
-  have hsqrtDenom : Real.sqrt (9 * (N : ℝ) ^ 2) = 3 * (N : ℝ) := by
-    rw [show 9 * (N : ℝ) ^ 2 = (3 * (N : ℝ)) ^ 2 by ring,
-      Real.sqrt_sq (by positivity)]
+  have hsqrtDenom : Real.sqrt (9 * (N : ℝ) ^ 2) = 3 * (N : ℝ) := by norm_num
   have hsqrtLambda : Real.sqrt (t / (9 * (N : ℝ) ^ 2)) = y / (3 * (N : ℝ)) := by
     rw [Real.sqrt_div ht.le, hsqrtDenom]
   have hlambdaPos : 0 < t / (9 * (N : ℝ) ^ 2) := by positivity
@@ -326,10 +297,7 @@ theorem logarithmic_B_process_majorant_le
     have htwoPi : 1 ≤ 2 * Real.pi := by nlinarith [Real.pi_gt_three]
     have hcore :
         (((N - 1 : ℕ) : ℝ) * (t / (N : ℝ) ^ 2) / (2 * Real.pi)) ≤
-          t / (N : ℝ) := by
-      rw [div_le_iff₀ (by positivity : 0 < 2 * Real.pi)]
-      field_simp [hNreal.ne']
-      nlinarith
+          t / (N : ℝ) := by field_simp <;> nlinarith
     linarith
   have hsecond :
       (2 * Real.pi / Real.sqrt (t / (9 * (N : ℝ) ^ 2)) +
@@ -349,10 +317,7 @@ theorem logarithmic_B_process_majorant_le
     positivity
   have hfirstUpperNonneg : 0 ≤ t / (N : ℝ) + 2 := by positivity
   have hmul := mul_le_mul hfirst hsecond hsecondNonneg hfirstUpperNonneg
-  have htDiv : t / (N : ℝ) ≤ y := by
-    rw [div_le_iff₀ hNreal]
-    rw [← hySq]
-    simpa only [pow_two] using mul_le_mul_of_nonneg_left hyLeN hy.le
+  have htDiv : t / (N : ℝ) ≤ y := by field_simp <;> nlinarith
   have hNDiv : (N : ℝ) / y ≤ y := by
     rw [div_le_iff₀ hy]
     simpa only [pow_two] using hNLeYSq
@@ -376,7 +341,7 @@ theorem logarithmic_B_process_majorant_le
 /-- The `(1/2,1/2)` exponent-pair estimate for the dyadic logarithmic
 correlation kernel in its finite natural range. -/
 theorem norm_logarithmicKernel_le_sqrt
-    (N : ℕ) (t : ℝ) (hN : 0 < N) (hNt : (N : ℝ) ≤ |t|)
+     (hNt : (N : ℝ) ≤ |t|)
     (htN : |t| ≤ (N : ℝ) ^ 2) :
     ‖logarithmicKernel N t‖ ≤ 100 * Real.sqrt |t| := by
   let q := |t|
@@ -400,12 +365,8 @@ theorem norm_logarithmicKernel_le_sqrt
   have hB := vanDerCorput_B_process
     (fun n => logarithmicPhase q (N + 1 + n)) (N - 1)
     (q / (9 * (N : ℝ) ^ 2)) (q / (N : ℝ) ^ 2) hlambda
-    (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.cast_ofNat, Nat.add_assoc] using
-        hcurvLower n hn)
-    (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.cast_ofNat, Nat.add_assoc] using
-        hcurvUpper n hn)
+    (fun n hn => by simp_all)
+    (fun n hn => by simp_all)
   have hpred : N - 1 + 1 = N := by omega
   rw [hpred] at hB
   have hkernel := logarithmicKernel_eq_shifted_phaseSum N q hN
@@ -413,5 +374,7 @@ theorem norm_logarithmicKernel_le_sqrt
   rw [← hkernel] at hB
   rw [← norm_logarithmicKernel_abs N t]
   exact hB.trans hmajor
+end
 
-end GuthMaynard.NativeMoment
+
+

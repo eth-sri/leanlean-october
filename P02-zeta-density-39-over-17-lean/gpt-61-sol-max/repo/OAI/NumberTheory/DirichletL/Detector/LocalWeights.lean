@@ -39,8 +39,12 @@ lemma weightedScalar_zero (Q eta a G1 C omega X W V : ℂ) (e l k m : ℕ) :
 
 def evenRatio (Q a X V : ℂ) : ℂ := a^2*Q^4*X^6*V
 
-lemma weighted_squarefree_boundary (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
+section
+variable (Q eta a G1 C omega X W V : ℂ)
+    (hQ : Q ≠ 0)
+include Q eta a G1 C omega X W V hQ
+
+lemma weighted_squarefree_boundary  (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
     weightedScalar Q eta a G1 C omega X W V (Q^(6*r)*G1) 1 (2*r) 0 r =
       evenRatio Q a X V ^ r * (-eta*X) := by
   unfold weightedScalar
@@ -51,8 +55,7 @@ lemma weighted_squarefree_boundary (Q eta a G1 C omega X W V : ℂ)
   field_simp
   ring
 
-lemma weighted_even_bulk (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
+lemma weighted_even_bulk  (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
     weightedScalar Q eta a G1 C omega X W V (Q^(6*r+5)*(Q-1))
       0 (2*r+2) 0 (r+1+d) =
       evenRatio Q a X V ^ r * (evenRatio Q a X V*(1-Q⁻¹)*V^d) := by
@@ -64,8 +67,7 @@ lemma weighted_even_bulk (Q eta a G1 C omega X W V : ℂ)
   field_simp
   ring
 
-lemma weighted_even_kone (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
+lemma weighted_even_kone  (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
     weightedScalar Q eta a G1 C omega X W V (Q^(6*r+6))
       0 (2*r+2) 1 (r+1) = evenRatio Q a X V ^ r * (W*evenRatio Q a X V) := by
   unfold weightedScalar
@@ -76,8 +78,7 @@ lemma weighted_even_kone (Q eta a G1 C omega X W V : ℂ)
   field_simp
   ring
 
-lemma weighted_squarefree_bulk (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
+lemma weighted_squarefree_bulk  (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
     weightedScalar Q eta a G1 C omega X W V
       ((omega⁻¹*G1)*(Q^(6*r)*(Q-1))) 1 (2*r) 1 (r+1+d) =
       evenRatio Q a X V ^ r * (-eta*(Q-1)*X*W*V^(d+1)) := by
@@ -89,8 +90,10 @@ lemma weighted_squarefree_bulk (Q eta a G1 C omega X W V : ℂ)
   simp only [mul_pow, div_pow, pow_add, pow_mul]
   field_simp
   ring
-
-end SevenEighths.ProbeEuler
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonGapPhysicalScale
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
@@ -9,11 +10,11 @@ public import GuthMaynard.SecondDerivative
 
 /-! Actual finite Atkinson Gram prefixes with the general exponent-pair bound. -/
 
-noncomputable section
+
 open RiemannZeta.GuthMaynard
 open scoped BigOperators
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
 
 theorem ExponentPair.atkinson_physical_gap_sum_bound {k l ε : ℝ}
     (hpair : ExponentPair k l) (hε : 0 < ε) :
@@ -82,7 +83,7 @@ theorem ExponentPair.atkinson_prefixGramMax_bound {k l ε : ℝ}
     unfold atkinsonPrefixGramMax
     apply Finset.sup'_le
     intro j hj
-    have hjM : j ≤ M := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
+    have hjM := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
     cases j with
     | zero =>
       simp only [atkinsonPrefixGram,Finset.range_zero,Finset.sum_empty,norm_zero]
@@ -100,4 +101,4 @@ theorem ExponentPair.atkinson_prefixGramMax_bound {k l ε : ℝ}
   · rw [abs_of_pos (sub_pos.mpr hut),← atkinsonPrefixGramMax_swap]
     exact ordered H t u M hH hM hu hu2 hut ht2 hsmall
 
-end TaoTrudgianYang2025
+

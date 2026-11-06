@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem cube_height_budget_eventually (n : ℕ) (τ dmin cost : ℝ)
     (hτ : 0<τ) (hc : 0≤cost) (hgap : 2*τ<dmin*cost) :
@@ -55,8 +55,8 @@ theorem ray_cube_conductor_eventually (M : Ideal O) (ν : ℝ) (hν : 0<ν) :
     _ ≤ Z^ν*Z^(d-ν) := mul_le_mul hC hu (by unfold rowNorm;positivity) (Real.rpow_nonneg hZ.le _)
     _ = Z^d := by rw [←Real.rpow_add hZ];congr 1;ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

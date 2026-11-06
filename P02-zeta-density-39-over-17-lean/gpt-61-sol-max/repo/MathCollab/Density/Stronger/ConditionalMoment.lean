@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- Selected high/low moment calculus adapted from Scott McColm, MIT-0,
 exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 The actual fourth-moment and high-value-tail inputs remain explicit parameters.
@@ -12,8 +13,7 @@ public import WeylPort.GrowthAlgebra
 open MeasureTheory Filter Set
 open scoped Interval
 open TaoTrudgianYang2025 (eventually_const_height_log_pow_mul_rpow_le_rpow)
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 theorem log_height_cube_div_le {H A : ℝ} (hH : 1 ≤ H) (hA : 1 ≤ A) :
@@ -22,8 +22,7 @@ theorem log_height_cube_div_le {H A : ℝ} (hH : 1 ≤ H) (hA : 1 ≤ A) :
   have hA0 : 0 < A := by linarith
   rw [Real.log_div (by positivity : H^3 ≠ 0) hA0.ne',Real.log_pow]
   have hlog := Real.log_nonneg hA
-  norm_num
-  linarith
+  simp_all
 
 theorem eventually_zeta_high_log_budget {η ε : ℝ} (hgap : η < ε) :
     ∀ᶠ H : ℝ in atTop,
@@ -110,8 +109,6 @@ theorem zeta_twelfth_dyadic_of_fourth_and_tail
   have hsplit := zeta_twelfth_integral_le_high_add_fourth (V := H^(1/8+η)) hH0.le
   have hv : (H^(1/8+η))^8*H^(1+η) = H^(2+9*η) := by
     rw [← Real.rpow_mul_natCast hH0.le,← Real.rpow_add hH0]
-    congr 1
-    norm_num
     ring
   have he1 : 2+η ≤ 2+ε := by dsimp only [η]; linarith
   have he9 : 2+9*η ≤ 2+ε := by dsimp only [η]; linarith
@@ -149,4 +146,4 @@ theorem zeta_twelfth_physical_of_dyadic {ε D : ℝ} (hε : 0 < ε) (hD : 0 ≤ 
   rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 3) hTp.le]
   ring
 
-end MathCollab.Density.Stronger
+

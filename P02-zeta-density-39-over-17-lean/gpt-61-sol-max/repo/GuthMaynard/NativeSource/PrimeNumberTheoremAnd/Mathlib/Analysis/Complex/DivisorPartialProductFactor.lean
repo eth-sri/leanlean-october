@@ -1,5 +1,9 @@
 module
-public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.DivisorComplement
+import Mathlib
+public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.DivisorIndex
+public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.LocallyUniformLimit
+public import Mathlib.Analysis.Calculus.LogDerivUniformlyOn
+public import Mathlib.Analysis.Normed.Module.MultipliableUniformlyOn
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.DivisorFiber
 public import Mathlib.Analysis.Analytic.Order
 public import Mathlib.Analysis.Analytic.Uniqueness

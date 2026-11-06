@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerBoxCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                        
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem integer_box_quadruples_card_le
@@ -40,15 +39,12 @@ theorem integer_box_quadruples_card_le
     integer_card_le_interval_length_add_one Y h₄ (fun y hy' => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hy'
       exact hw p hp)
-  have hsub : S ⊆ X ×ˢ Y := by
-    intro p hp
-    exact Finset.mem_product.mpr
-      ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,Finset.mem_image.mpr ⟨p,hp,rfl⟩⟩
+  have hsub : S ⊆ X ×ˢ Y := by grind
   have hc : S.card ≤ X.card*Y.card := by
     simpa only [Finset.card_product] using Finset.card_le_card hsub
   have hcR : (S.card:ℝ) ≤ (X.card:ℝ)*(Y.card:ℝ) := by exact_mod_cast hc
   exact hcR.trans (mul_le_mul hX hY (by positivity)
     (mul_nonneg (mul_nonneg (by linarith) (by linarith)) (by linarith)))
 
-end TaoTrudgianYang2025
+
 

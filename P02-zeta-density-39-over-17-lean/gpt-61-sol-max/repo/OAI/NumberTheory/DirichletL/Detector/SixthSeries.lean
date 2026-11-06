@@ -8,8 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve HeckeInverseAmplification ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve HeckeInverseAmplification
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 abbrev SixthInnerIndex := HeckeInverseAmplification.NonzeroIdeal×((Id×Id)×Id)
@@ -24,16 +24,19 @@ def nonzeroLastEquiv : SixthInnerIndex ≃ {p : (Id×Id)×(Id×Id) // p.2.2≠0}
   left_inv _ := rfl
   right_inv _ := rfl
 
-lemma markedIdealHighSummand_last_zero (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K : Id) :
+section
+variable (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
+    (u : O) (x w z : ℂ)
+include S D η u x w z
+
+lemma markedIdealHighSummand_last_zero  (I J K : Id) :
     markedIdealHighSummand S D η u x w z I J K 0=0 := by
   have hz : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (0:Id)) :=
     fun h=>h.2.2.2.2.1 rfl
   simp only [markedIdealHighSummand,bareIdealHighSummand,bareIdealHighCoefficient,
     dite_eq_right hz,zero_mul,mul_zero]
 
-lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) :
+lemma markedIdealHighSeries_eq_sixth_inner  :
     markedIdealHighSeries S D η u x w z=
       ∑'p : SixthInnerIndex,markedIdealHighSummand S D η u x w z p.2.1.1 p.2.1.2 p.2.2 p.1.val := by
   have he := nonzeroLastEquiv.tsum_eq (fun p=>
@@ -49,6 +52,8 @@ lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeF
   apply hp
   change markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2=0
   rw [hz,markedIdealHighSummand_last_zero]
+end
+
 
 theorem rawArithmeticSeries_eq_sixth_high (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (hprime : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S)
@@ -75,7 +80,7 @@ theorem rawArithmeticSeries_eq_sixth_high (S : Finset Id) (hS : ∀P∈S,P.IsMax
   intro p
   exact rawHighCoefficient_sixth S hS hprime hbad D η x w z (u,p.1) p.2.1.1 p.2.1.2 p.2.2
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

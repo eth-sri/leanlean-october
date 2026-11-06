@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowOriginalPools
 
 @[expose] public section
@@ -8,20 +9,30 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeRaySlots
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowUnselectedLength {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) : ℝ := ∑i∈J,ell i
+section
+variable {K : ℕ} (ell : Fin K→ℝ)
+include K ell
 
-def lowSelectedLength {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) : ℝ := ∑i : SelectedSlot J,ell i.val
+section
+variable (J : Finset (Fin K))
+include J
 
-lemma lowLength_sum {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) :
+def lowUnselectedLength  : ℝ := ∑i∈J,ell i
+
+def lowSelectedLength  : ℝ := ∑i : SelectedSlot J,ell i.val
+
+lemma lowLength_sum  :
     lowUnselectedLength ell J+lowSelectedLength ell J=∑i,ell i := by
   rw [lowUnselectedLength,lowSelectedLength,Finset.sum_coe_sort]
   exact Finset.sum_add_sum_compl J ell
+end
 
-lemma lowLength_bounds {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
+
+lemma lowLength_bounds  (hell : ∀i,0≤ell i)
     (hsum : ∑i,ell i≤1/6) (J : Finset (Fin K)) :
     0≤lowUnselectedLength ell J ∧ lowUnselectedLength ell J≤1/6 ∧
     0≤lowSelectedLength ell J ∧ lowSelectedLength ell J≤1/6-lowUnselectedLength ell J := by
@@ -30,7 +41,7 @@ lemma lowLength_bounds {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
   have he := lowLength_sum ell J
   exact ⟨hu,by linarith,hs,by linarith⟩
 
-lemma lowUnselectedProduct_norm_lower {K : ℕ} (ell : Fin K→ℝ)
+lemma lowUnselectedProduct_norm_lower 
     (a Z : ℝ) (ha : 0<a) (hZ : 0<Z) (slots : Fin K→Finset O)
     (hslots : ∀i x,x∈slots i→a*Z^(ell i)≤elementNorm x)
     (J : Finset (Fin K)) (p : LowUnselectedTuple slots J) :
@@ -47,6 +58,8 @@ lemma lowUnselectedProduct_norm_lower {K : ℕ} (ell : Fin K→ℝ)
         ←Real.rpow_sum_of_pos hZ,Finset.sum_coe_sort]
       rfl
     _≤_ := Finset.prod_le_prod₀ (fun _ _=>by positivity) (fun i _=>hslots i.val _ (p i).property)
+end
+
 
 lemma lowPhysicalScale_source (C : CalibrationData) (Z L : ℝ) (hZ : 0<Z) :
     lowPhysicalScale C (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L)=
@@ -60,7 +73,6 @@ lemma lowPhysicalScale_nominal_bound (C : CalibrationData) (Z L c d : ℝ)
     (hZ : 0<Z) (hc : 0<c) (hL : c*Z^d≤L) :
     lowPhysicalScale C (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L)≤
       (elementNorm C.generator/c^2)*Z^(5/6-2*d:ℝ) := by
-  have hl : 0<L := lt_of_lt_of_le (by positivity) hL
   rw [lowPhysicalScale_source C Z L hZ]
   calc
     _≤elementNorm C.generator*Z^(5/6:ℝ)/(c*Z^d)^2 :=
@@ -69,18 +81,20 @@ lemma lowPhysicalScale_nominal_bound (C : CalibrationData) (Z L c d : ℝ)
     _=_ := by
       have hp : (Z^d)^2=Z^(2*d) := by
         rw [←Real.rpow_natCast,←Real.rpow_mul hZ.le]
-        congr 1
-        push_cast
         ring
       rw [mul_pow,hp,Real.rpow_sub hZ]
       ring
 
-lemma lowSelectedScale_product {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K))
+section
+variable {K : ℕ} (ell : Fin K→ℝ)
+include K ell
+
+lemma lowSelectedScale_product  (J : Finset (Fin K))
     (Z : ℝ) (hZ : 0<Z) :
     (∏i∈Finset.univ\J,Z^(ell i))=Z^(lowSelectedLength ell J) := by
   rw [lowSelectedLength,Finset.sum_coe_sort,Real.rpow_sum_of_pos hZ]
 
-lemma lowSelectedCaps_product {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
+lemma lowSelectedCaps_product  (hell : ∀i,0≤ell i)
     (J : Finset (Fin K)) (Z b : ℝ) (hZ : 1≤Z) :
     (∏i : SelectedSlot J,max 1 (b*Z^(ell i.val)))≤
       (max 1 b)^K*Z^(lowSelectedLength ell J) := by
@@ -98,8 +112,10 @@ lemma lowSelectedCaps_product {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell
         ←Real.rpow_sum_of_pos (lt_of_lt_of_le zero_lt_one hZ)]
       rfl
     _≤_ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (le_max_left _ _) hc) (by positivity)
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

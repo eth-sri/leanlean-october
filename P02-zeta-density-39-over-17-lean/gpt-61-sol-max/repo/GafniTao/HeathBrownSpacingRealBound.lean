@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownShiftRange
 
 @[expose] public section
@@ -15,13 +16,13 @@ open Finset
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem int_Icc_floor_ceil_card_cast_le
     {a b : ℝ} (hab : a ≤ b) :
     ((Finset.Icc ⌊a⌋ ⌈b⌉).card : ℝ) ≤ b - a + 3 := by
   have hfloorCeil : ⌊a⌋ ≤ ⌈b⌉ := by
-    have hreal : (⌊a⌋ : ℝ) ≤ (⌈b⌉ : ℝ) :=
+    have hreal :=
       (Int.floor_le a).trans (hab.trans (Int.le_ceil b))
     exact_mod_cast hreal
   have hcardInt : ((Finset.Icc ⌊a⌋ ⌈b⌉).card : ℤ) =
@@ -45,9 +46,9 @@ theorem heathBrown_spacing_card_cast_le
     (hderivUpper : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), deriv g x ≤ M) :
     ((heathBrownSpacingSet N g theta).card : ℝ) ≤
       (2 * theta / mu + 1) * (M * N + 2 * theta + 3) := by
-  let z : ℝ := 2 * theta / mu
-  let lo : ℝ := g 1 - theta
-  let hi : ℝ := g N + theta
+  let z := 2 * theta / mu
+  let lo := g 1 - theta
+  let hi := g N + theta
   have hz : 0 ≤ z := by dsimp [z]; positivity
   have hOneI : (1 : ℝ) ∈ Set.Icc (0 : ℝ) N := by
     exact ⟨by norm_num, by exact_mod_cast hN⟩
@@ -57,9 +58,7 @@ theorem heathBrown_spacing_card_cast_le
     have hslope := heathBrown_lower_slope hg hgd hderivLower hOneI hNI
       (by exact_mod_cast hN)
     have hNge : (1 : ℝ) ≤ N := by exact_mod_cast hN
-    have hnonneg : 0 ≤ mu * ((N : ℝ) - 1) :=
-      mul_nonneg hmu.le (sub_nonneg.mpr hNge)
-    linarith
+    nlinarith
   have hlohi : lo ≤ hi := by dsimp [lo, hi]; linarith
   have hinterval := int_Icc_floor_ceil_card_cast_le hlohi
   have hspread := heathBrown_upper_slope hg hgd hderivUpper hOneI hNI
@@ -93,6 +92,6 @@ theorem heathBrown_spacing_card_cast_le
       dsimp [z]
 
 
-end
 
-end GafniTao
+
+

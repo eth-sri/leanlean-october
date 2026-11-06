@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.IdealEuler
 public import Mathlib.NumberTheory.LSeries.PrimesInAP
@@ -12,7 +13,7 @@ namespace SevenEighths.UnitSexticWitness
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler
 open ConcreteTraceCRT
 open scoped Classical
-noncomputable section
+
 local notation "lambda" => ConcretePrimeRowBridge.goodLambda
 
 lemma idealRowHom_unit_eq_of_norm_mod_seven (P : Ideal O) [P.IsMaximal]
@@ -76,7 +77,7 @@ theorem exists_prime_unit_embedding (S : Finset (Ideal O)) (B : ℕ) :
   have hpmod : p % 3 = 1 := by omega
   obtain ⟨P, hmax, hn⟩ := exists_primeIdeal_norm hp hpmod
   let : P.IsMaximal := hmax
-  have hg : lambda ∉ P := prime_norm_good hp hp3 P hn
+  have hg := prime_norm_good hp hp3 P hn
   have hodd : ringChar (O ⧸ P) ≠ 2 := by
     rw [prime_norm_ringChar hp P hn]
     omega
@@ -106,7 +107,7 @@ theorem exists_unit_witness (u : Oˣ) (hu : u ≠ 1)
     apply Units.ext
     exact eisEmbedding_injective (by simpa using hh)
 
-end
-end SevenEighths.UnitSexticWitness
 
-end OAI
+
+
+

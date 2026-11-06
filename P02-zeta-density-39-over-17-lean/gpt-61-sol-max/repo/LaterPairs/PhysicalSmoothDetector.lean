@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import LaterPairs.PhysicalInitialDetector
 public import RetunedSmoothDetector
 public import RetunedInitialDetector
@@ -6,10 +7,9 @@ public import MathCollab.Density.Stronger.SmoothDetector
 
 @[expose] public section
 
-open Real Complex MeasureTheory Set Filter
+open Real Complex MeasureTheory Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger
 
@@ -40,10 +40,7 @@ theorem smoothDetector_eventually_large {σ a δ : ℝ}
     simpa only [detectorY, Real.rpow_one] using
       Real.rpow_le_rpow_of_exponent_le hT1 (smoothingExponent_lt_one_physical hw).le
   have hR : 1 ≤ detectorY a T*(Real.log T)^2 := by nlinarith
-  have hRT : detectorY a T*(Real.log T)^2 ≤ T^2 := by
-    calc
-      _ ≤ T*T := mul_le_mul hYT hlogSq (sq_nonneg _) hTpos.le
-      _ = _ := by ring
+  have hRT : detectorY a T*(Real.log T)^2 ≤ T^2 := by nlinarith
   have htail := smoothDetectorBlock_scale_tail_le_two_rpow hT1 hlog hX hXT hY hYT
     (show 0 ≤ ρ.re by linarith [hw.sigma_low])
   have hsmall : 2*T^(-2 : ℝ) ≤ (1/4 : ℝ) := by
@@ -69,4 +66,4 @@ theorem smoothDetector_eventually_large {σ a δ : ℝ}
     _ ≤ _ := hheight
 
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

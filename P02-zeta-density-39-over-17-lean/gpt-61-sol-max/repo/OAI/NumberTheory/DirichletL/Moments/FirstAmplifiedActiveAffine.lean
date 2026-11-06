@@ -9,32 +9,33 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale
+open HeckeFamily
+open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
+open CenteredMomentAmplificationChildInput
 open CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity
+open CenteredMomentAllocatedChildCapacity
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
-theorem active_error_slot_logs_le (s : Input ι) (C R : Ideal O)
+section
+variable (s : Input ι) (C R : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
     (Q : Ideal O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v Z : ℝ) (hZ : 1<Z) (hP : ∀i,1≤s.P i) :
+    (υ : Character)
+include s C R B τ t Q k Bp υ
+
+local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
+
+theorem active_error_slot_logs_le  (v Z : ℝ) (hZ : 1<Z) (hP : ∀i,1≤ s.P i) :
     (∑i,Real.logb Z ((errorInput s C R B τ t Q k Bp υ v).P i))≤
       ∑i,Real.logb Z (s.P i) := by
   have hp : ∀i,1≤(activeInput (child s C R B τ t)).P i := fun i=>hP i.val
   have hs := common_slot_logs_le (activeInput (child s C R B τ t)) (Q^k) Bp Z hZ hp
   exact hs.trans (common_slot_logs_le s C B Z hZ hP)
 
-theorem active_error_parent_affine (s : Input ι) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (k : ℕ)
-    (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v Z κ M : ℝ) (hZ : 1<Z) (hκ : 1/6≤κ) (hP : ∀i,1≤s.P i)
+theorem active_error_parent_affine  (v Z κ M : ℝ) (hZ : 1<Z) (hκ : 1/6≤κ) (hP : ∀i,1≤ s.P i)
     (hcap : length Z s.X₁+length Z s.X₂+6*κ*(∑i,Real.logb Z (s.P i))≤M) :
     Real.logb Z (volume s)+(6*κ-1)*
       (∑i,Real.logb Z ((errorInput s C R B τ t Q k Bp υ v).P i))≤M := by
@@ -42,9 +43,11 @@ theorem active_error_parent_affine (s : Input ι) (C R : Ideal O)
   have hs := active_error_slot_logs_le s C R B τ t Q k Bp υ v Z hZ hP
   have hm := mul_le_mul_of_nonneg_left hs (by linarith : 0≤6*κ-1)
   linarith
-
-end SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
-
 end
 
-end OAI
+
+
+
+
+
+

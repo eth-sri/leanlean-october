@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.ParametersSlotLengths
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.Parameters
 
 theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
-    (hR : 0≤R) (hr : 0<rmin) (hm : 0<mesh) (hd : 0<dmin)
+    (hR : 0≤R) (hr : 0<rmin) (hm : 0< mesh) (hd : 0<dmin)
     (hl : 0<loss) (hell : 0<ellMin) (ha : 0<allowance) (hJ : 0≤J) :
     ∃ε e κ cost τ : ℝ,
       0<ε ∧ ε≤1/1000 ∧ ε<rmin*mesh ∧ ε≤allowance ∧
@@ -52,8 +52,8 @@ theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
   · intro eps heps heps1
     have hp := mul_le_mul_of_nonneg_left heps1 ht.le
     nlinarith
-end SevenEighths.Parameters
 
-end
 
-end OAI
+
+
+

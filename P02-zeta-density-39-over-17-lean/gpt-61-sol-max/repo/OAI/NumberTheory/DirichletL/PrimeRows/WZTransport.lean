@@ -12,7 +12,7 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma FirstTail.of_ge_one_fiftieth {S : Finset (Ideal O)} (h : FirstTail (1/4) S)
     {eps : ℝ} (heps : (1/50:ℝ)≤eps) : FirstTail eps S := by
@@ -90,8 +90,8 @@ theorem rowIntegral_wz_transport {K : ℕ}
     X Y Z hX hY hZ
   exact ⟨hi r hr,hphysical.trans (by rw [hinner,hz])⟩
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7LocalBound
 
 @[expose] public section
@@ -17,7 +18,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Equation (7.22) integrated against the unchanged right-hand factor in
 the mixed moment. -/
@@ -47,9 +48,9 @@ theorem wooley_equation_7_22_integrated_native
   let bPrime := wooleySection7NextB k r b
   let hAb : A ≤ bPrime :=
     wooley_section7_a_add_HPrime_le_nextB hr hBPrime
-  let factor : ℝ := (p ^ (bPrime - A) : ℝ) ^ wooleyTriangular r
-  let mass : ℝ := wooleySourceResidueMassSq gamma (p ^ A) kappa
-  let scale : ℝ := ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹
+  let factor := (p ^ (bPrime - A) : ℝ) ^ wooleyTriangular r
+  let mass := wooleySourceResidueMassSq gamma (p ^ A) kappa
+  let scale := ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹
   let rightNorm : (Fin k → ZMod (p ^ B)) → ℝ := fun alpha =>
     ‖wooleySourceNormalizedPolynomialResidueSum phi gamma alpha eta‖ ^
       (2 * (s - wooleyTriangular r))
@@ -113,13 +114,7 @@ theorem wooley_equation_7_22_integrated_native
                   ‖wooleySourceNormalizedPolynomialResidueSum phi gamma alpha eta‖ ^
                     (2 * (s - wooleyTriangular r))) := by
         rw [mul_assoc, sum_mul]
-        apply congrArg (fun x : ℝ =>
-          (p ^ (wooleySection7NextB k r b -
-            (a + wooleySection7HPrime k r a b gammaVal)) : ℝ) ^
-              wooleyTriangular r * x)
-        apply Finset.sum_congr rfl
-        intro xiPrime hxiPrime
-        ring
+        grind
   unfold wooleySourcePolynomialMixedResidueMoment
   have hsum :
       (∑ alpha : Fin k → ZMod (p ^ B),
@@ -195,6 +190,6 @@ theorem wooley_equation_7_22_integrated_native
       rw [Finset.sum_comm]
 
 
-end
 
-end GafniTao
+
+

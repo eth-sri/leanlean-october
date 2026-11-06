@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceCutoffConvolution
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
@@ -29,9 +29,7 @@ theorem source_density_regular {β : ℝ → ℝ} (hβm : Measurable β)
   have hfm : Measurable (fun t => β t*‖D t‖^2) := hβm.mul (hDm.norm.pow_const 2)
   have hfull0 : ∀ t, 0 ≤ β t*‖D t‖^2 := fun t => mul_nonneg (hβ0 t) (sq_nonneg _)
   have hb0 : 0 ≤ B := (norm_nonneg (D 0)).trans (hDb 0)
-  have hp : ∀ t, β t*‖D t‖^2 ≤ β t*B^2 := by
-    intro t
-    exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg _) (hDb t) 2) (hβ0 t)
+  have hp : ∀ t, β t*‖D t‖^2 ≤ β t*B^2 := by bound
   have hfi : Integrable (fun t => β t*‖D t‖^2) := by
     apply (hβi.mul_const (B^2)).mono' hfm.aestronglyMeasurable
     filter_upwards [] with t
@@ -71,12 +69,7 @@ def SourceSamplingBound (D : ℝ → ℂ) (β : ℝ → ℝ) (P Q : ℝ) : Prop 
 theorem source_tail_scalar_absorption {A K Q Λ : ℝ}
     (hA : 0 ≤ A) (hQ : 0 ≤ Q) (hΛ : 0 < Λ) (hthreshold : 2*K ≤ Λ)
     (hbudget : A ≤ K*(A/Λ)+Q*Real.sqrt A) : A ≤ 4*Q^2 := by
-  have hk : K*(A/Λ) ≤ A/2 := by
-    apply (le_div_iff₀ (by norm_num : (0:ℝ)<2)).mpr
-    have hh := mul_le_mul_of_nonneg_right hthreshold (div_nonneg hA hΛ.le)
-    have hc : Λ*(A/Λ)=A := by field_simp
-    rw [hc] at hh
-    nlinarith
+  have hk : K*(A/Λ) ≤ A/2 := by field_simp <;> nlinarith
   have hs := Real.sq_sqrt hA
   have hroot := Real.sqrt_nonneg A
   have hh : Real.sqrt A ≤ 2*Q := by nlinarith
@@ -109,9 +102,7 @@ theorem source_tail_of_sampling {χ : ℝ → ℝ} (hχd : ContDiff ℝ ∞ χ)
     source_smooth_scaled_cutoff_bounds hμi hμ2 hΛ hχd hχc hχ0 hχ1 hT
   have hsupport : Function.support (fun t => (β t:ℂ)*g t) ⊆ Function.support β := by
     intro t ht
-    by_contra hn
-    have hz : β t=0 := by simpa [Function.mem_support] using hn
-    exact ht (by simp [hz])
+    simp_all <;> nlinarith
   have hsample := hsampling (fun t => (β t:ℂ)*g t) hfi hf2 hFfi hsupport
   have hmain : ‖∫ t, (‖D t‖^2:ℂ)*((β t:ℂ)*g t)‖ ≤
       P*(∫ ξ, ‖𝓕 (fun t => (χ t:ℂ)) ξ‖)*(A/Λ)+Q*Real.sqrt A := by
@@ -148,7 +139,6 @@ theorem source_tail_of_sampling {χ : ℝ → ℝ} (hχd : ContDiff ℝ ∞ χ)
     filter_upwards [] with t
     have hd := congrArg (fun x : ℝ => (x:ℂ)) (hdecomp t)
     push_cast at hd
-    dsimp [μ,ρ,g] at hd ⊢
     rw [← add_mul,hd]
     ring
   have hbudget : A ≤ (P*(∫ ξ, ‖𝓕 (fun t => (χ t:ℂ)) ξ‖)+(∫ t,ρ t))*(A/Λ)+Q*Real.sqrt A := by
@@ -159,4 +149,4 @@ theorem source_tail_of_sampling {χ : ℝ → ℝ} (hχd : ContDiff ℝ ∞ χ)
     nlinarith
   exact source_tail_scalar_absorption hA hQ hΛ hthreshold hbudget
 
-end GuthMaynard.Improvement
+

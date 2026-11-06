@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment ActualEisensteinCubic SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -32,8 +33,6 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
       (positiveSource (priorityLogWindow om a b ha hsom true) 1 (-theta))
       (positiveSource (priorityLogWindow om a b ha hsom false) 1 theta) Φ K Y s := by
   intro source
-  let W₁ := fun y=>star (normTwistedSource om theta ((s 0*s 2*s 5*s 7)*y/X))
-  let W₂ := fun y=>normTwistedSource om theta ((s 1*s 2*s 5*s 8)*y/X)
   have he := original_family_profiles p hp hg source pool (fun _=>commonSelector p (fun _=>1) l)
     (coefficient p hp hcop hg Ψ m mark true) (coefficient p hp hcop hg Ψ m mark false)
     (weight p hp hcop hg β cutoff Ψ m) om a b ha hsom Φ
@@ -43,8 +42,8 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
         exact ⟨hh.1,hh.2.1,hh.2.2.1⟩) hX hleft hright
   change _=firstFamilyPhysicalRows p hg source pool _ _ _ _ _ _ Φ _ _ _ _ K _ _ s
   rw [←he]
-  have hl : s 0*s 2*s 5*s 7≠0 := hleft.trans_ne (ne_of_gt hX)
-  have hr : s 1*s 2*s 5*s 8≠0 := hright.trans_ne (ne_of_gt hX)
+  have hl := hleft.trans_ne (ne_of_gt hX)
+  have hr := hright.trans_ne (ne_of_gt hX)
   simp only [firstFamilyPhysicalRows,firstBlockedPhysicalRows,sourceSummand,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro x hx
@@ -53,7 +52,7 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
   simp only [firstNormProfile,mul_div_cancel₀ _ hl,mul_div_cancel₀ _ hr]
   ring
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

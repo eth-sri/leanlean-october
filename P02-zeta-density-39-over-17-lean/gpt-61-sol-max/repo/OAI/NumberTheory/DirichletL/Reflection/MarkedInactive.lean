@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [Fintype ι]
 
 omit [Fintype ι] in
@@ -47,7 +47,7 @@ lemma mixed_inactive_weight (P : PrimeFamily ι)
   intro i hi
   exact mixed_inactive_coefficient P hodd j hj S i
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

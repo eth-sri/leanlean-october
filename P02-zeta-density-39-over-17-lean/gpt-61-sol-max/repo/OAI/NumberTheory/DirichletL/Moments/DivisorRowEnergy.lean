@@ -11,7 +11,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRowEnergy
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRows CenteredMomentDivisorFullMask
 open CenteredMomentDivisorEnergy CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def maskedRectangle (η : Character) (m A z : O) (t : ℝ)
@@ -69,8 +69,8 @@ theorem actual_allocated_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
     _ ≤ _ := mul_le_mul_of_nonneg_right (hcard D hD.ne_zero Finset.univ hc)
       (Finset.sum_nonneg (fun a _ => Finset.sum_nonneg (fun z hz => mul_nonneg (hω z hz) (sq_nonneg _))))
 
-end SevenEighths.CenteredMomentDivisorRowEnergy
 
-end
 
-end OAI
+
+
+

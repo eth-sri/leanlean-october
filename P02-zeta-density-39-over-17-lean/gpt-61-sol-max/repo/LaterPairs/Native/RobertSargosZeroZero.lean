@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRFloorBudgets
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                    
 
-noncomputable section
+
 open GafniTao
 namespace TaoTrudgianYang2025
 
@@ -28,8 +27,7 @@ theorem robertSargos_zero_zero_bound (f : ℝ → ℝ) (M H : ℕ) :
     intro h hh
     have hh0 : 0 ≤ h := by
       have := ((mem_robertSargosHOverlap H h 0).mp hh).1
-      simp only [Finset.mem_Ico] at this
-      omega
+      grind
     have hs : robertSargosMOverlap M h 0 0 ⊆ Finset.Icc (1:ℤ) M := by
       intro m hm
       simp only [robertSargosMOverlap,add_zero,sub_zero,max_self,min_self,Finset.mem_Icc] at hm ⊢
@@ -66,8 +64,7 @@ theorem zero_zero_floor_scale {lam : ℝ} (hlam : 0 < lam) (hsmall : lam ≤ 1/8
   have hh : (H:ℝ) ≤ T^2/2 := by rwa [h2]
   have hs := mul_self_le_mul_self (Nat.cast_nonneg H) hh
   rw [← h3]
-  change (H:ℝ)^2 ≤ (⌊T^3⌋₊:ℝ)*(⌊T⌋₊:ℝ)
-  nlinarith [hprod]
+  grind
 
 theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
     {lam : ℝ} (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
@@ -96,6 +93,6 @@ theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
   rw [div_mul_eq_mul_div]
   apply (div_le_iff₀ (mul_pos hQ hR)).mpr
   have hm := mul_le_mul_of_nonneg_left hs (show 0 ≤ 8*(M:ℝ)^2 by positivity)
-  convert hm using 1; ring
+  grind
 
-end TaoTrudgianYang2025
+

@@ -36,8 +36,12 @@ theorem hasCubicExponent_initial : HasCubicExponent 2 := by
       have hs : 0 ≤ M + N^(2 : ℝ) + (M*N)^(2/3 : ℝ) := by positivity
       nlinarith [mul_nonneg (mul_nonneg (by positivity : 0 ≤ 4*C) hs) (sub_nonneg.mpr hp)]
 
-lemma HasCubicExponent.swapped {ξ : ℝ} (h : HasCubicExponent ξ)
-    (ε : ℝ) (hε : 0 < ε) : ∃ C : ℝ, 0 < C ∧
+section
+variable {ξ : ℝ} (h : HasCubicExponent ξ)
+    (ε : ℝ) (hε : 0 < ε)
+include ξ h ε hε
+
+lemma HasCubicExponent.swapped  : ∃ C : ℝ, 0 < C ∧
       ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
         sieveNorm M N ≤ C*(M*N)^ε*(M^ξ + N + (M*N)^(2/3 : ℝ)) := by
   obtain ⟨C,hC,hb⟩ := h ε hε
@@ -46,8 +50,7 @@ lemma HasCubicExponent.swapped {ξ : ℝ} (h : HasCubicExponent ξ)
   rw [sieveNorm_reciprocity]
   simpa only [mul_comm, add_comm, add_left_comm, add_assoc] using hb N M hN hM
 
-lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
-    (ε : ℝ) (hε : 0 < ε) : ∃ C : ℝ, 0 < C ∧
+lemma HasCubicExponent.doubled  : ∃ C : ℝ, 0 < C ∧
       ∀ X N : ℝ, 1 ≤ X → 1 ≤ N →
         sieveNorm (2*X) N ≤ C*(X*N)^ε*(X^ξ + N + (X*N)^(2/3 : ℝ)) := by
   obtain ⟨C,hC,hb⟩ := h.swapped ε hε
@@ -75,8 +78,10 @@ lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = _ := by
       rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (mul_nonneg hX0 hN0)]
       ring
-
 end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+
+
+

@@ -6,9 +6,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
-open Set
+
 namespace SevenEighths.HeckeDetectorNormalized
 open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles
 open HeckeDetectorDyadicBridge HeckeDetectorDyadicProfiles HeckeDetectorFrequency
@@ -69,8 +69,8 @@ theorem exists_normalized_product (R θ τ : ℝ) (hR : 0≤R)
   rw [phaseProduct_norm χ Dstar U ρ j k t hprod] at hb
   convert hb using 1; ring
 
-end SevenEighths.HeckeDetectorNormalized
 
-end
 
-end OAI
+
+
+

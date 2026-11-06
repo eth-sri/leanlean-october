@@ -3,8 +3,7 @@ public import FiniteCenteredCubic
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -86,4 +85,4 @@ theorem finite_cubic_large_value_bound (w : MathCollab.Density.ComparisonCutoff)
     _ ≤ A*T^(η/2)*((1+B+D)*T^(η/2)*X) := mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = (A*(1+B+D))*T^η*X := by rw [← hp]; ring
 
-end Montgomery.RationalMoment
+

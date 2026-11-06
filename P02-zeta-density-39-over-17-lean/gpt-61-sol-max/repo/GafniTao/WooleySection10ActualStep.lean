@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection9Hierarchy
 public import GafniTao.WooleySection10Step
 public import GafniTao.WooleySection10Chain
@@ -29,7 +30,7 @@ theorem wooley_section10_first_loss_from_global
   rw [le_div_iff₀ hkR]
   have hnat : k * ((r + 1) * k ^ 2 * nu) ≤ k ^ 5 * nu := by
     have hrTop : r + 1 ≤ k := by omega
-    have hfirst : (r + 1) * (k ^ 2 * nu) ≤ k * (k ^ 2 * nu) :=
+    have hfirst :=
       Nat.mul_le_mul_right (k ^ 2 * nu) hrTop
     calc
       k * ((r + 1) * k ^ 2 * nu) ≤ k * (k * (k ^ 2 * nu)) :=
@@ -61,8 +62,7 @@ theorem wooley_section10_second_loss_from_global
   have hnat : k ^ 2 * (((k - rOne) + 1) * k ^ 2 * nu) ≤
       k ^ 5 * nu := by
     have hcoeff : k - rOne + 1 ≤ k := by omega
-    have hfirst : (k - rOne + 1) * (k ^ 2 * nu) ≤
-        k * (k ^ 2 * nu) := Nat.mul_le_mul_right (k ^ 2 * nu) hcoeff
+    have hfirst := Nat.mul_le_mul_right (k ^ 2 * nu) hcoeff
     calc
       k ^ 2 * ((k - rOne + 1) * k ^ 2 * nu) ≤
           k ^ 2 * (k * (k ^ 2 * nu)) :=
@@ -81,16 +81,7 @@ theorem wooley_section10_second_loss_from_global
   have hcombined := hpre.trans hbnext
   have hcancel : (k : ℝ) *
       (2 * ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) * (k : ℝ)) ≤
-      (k : ℝ) * ((wooleyNextB k rOne b : ℝ) * Lambda) := by
-    calc
-    (k : ℝ) *
-        (2 * ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) * (k : ℝ)) =
-      2 * (k : ℝ) ^ 2 *
-        ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) := by ring
-    _ ≤ (b : ℝ) * Lambda := hpre
-    _ ≤ ((k : ℝ) * (wooleyNextB k rOne b : ℝ)) * Lambda := hbnext
-    _ = (k : ℝ) *
-        ((wooleyNextB k rOne b : ℝ) * Lambda) := by ring
+      (k : ℝ) * ((wooleyNextB k rOne b : ℝ) * Lambda) := by linarith
   nlinarith
 
 set_option maxHeartbeats 800000 in
@@ -233,11 +224,7 @@ theorem wooleySourcePolynomial_iterationStep_of_scale_hierarchy
     have hdiv := wooley_nextB_ge_divisor_scale
       (k := k) (r := rOne) (b := b) hrBounds.1 (by omega)
     have hscaleNuPrime : 4 * k ^ 2 * nu ≤ bPrime := by
-      have hmul : k * (4 * k ^ 2 * nu) ≤ k * bPrime := by
-        calc
-          k * (4 * k ^ 2 * nu) = 4 * k ^ 3 * nu := by ring
-          _ ≤ b := hscaleNu
-          _ ≤ k * bPrime := hdiv
+      have hmul : k * (4 * k ^ 2 * nu) ≤ k * bPrime := by linarith
       exact Nat.le_of_mul_le_mul_left hmul hkpos
     have hscaleBPrime : k * bPrime ≤ B := by
       calc
@@ -265,13 +252,9 @@ theorem wooleySourcePolynomial_iterationStep_of_scale_hierarchy
         (k - (k - rOne) + 1) * bPrime := by
       have hlower := wooley_nextB_lower
         (k := k) (r := rOne) (b := b) hrBounds.1
-      have hleft : (k - rOne) * b ≤ (k - rOne + 1) * b := by
-        exact Nat.mul_le_mul_right b (by omega)
       have hright : rOne * bPrime ≤ (rOne + 1) * bPrime :=
         Nat.mul_le_mul_right bPrime (by omega)
-      have hcoef : k - (k - rOne) + 1 = rOne + 1 := by omega
-      rw [hcoef]
-      exact hleft.trans (hlower.trans hright)
+      grind
     have hmarginSecond : tau * ((k * bPrime : ℕ) : ℝ) +
         ((k * nu : ℕ) : ℝ) ≤ (b : ℝ) := by
       have hnat : k * bPrime ≤ k ^ 2 * b := by
@@ -355,7 +338,6 @@ theorem wooleySection10NodeHierarchy_of_global
       ((k : ℝ) ^ 2 * (delta * (thetaNat : ℝ))) * Lambda) :
     WooleySection10NodeHierarchy k B H nu thetaNat m b
       Lambda delta tau epsilon := by
-  have hmle : m ≤ N := hmN.le
   have hpow : k ^ (2 * m) ≤ k ^ (2 * N) :=
     Nat.pow_le_pow_right (by omega : 1 ≤ k) (by omega)
   have hbCap : b ≤ k ^ (2 * N) * thetaNat :=
@@ -380,7 +362,7 @@ theorem wooleySection10NodeHierarchy_of_global
       _ ≤ H := hHScale
   have hcurrent : tau * ((k * b : ℕ) : ℝ) +
       ((k * nu : ℕ) : ℝ) ≤ delta * (thetaNat : ℝ) := by
-    have hnat : k * b ≤ k * (k ^ (2 * N) * thetaNat) :=
+    have hnat :=
       Nat.mul_le_mul_left k hbCap
     have hnatR : ((k * b : ℕ) : ℝ) ≤
         ((k * (k ^ (2 * N) * thetaNat) : ℕ) : ℝ) := by
@@ -389,7 +371,7 @@ theorem wooleySection10NodeHierarchy_of_global
       (le_refl ((k * nu : ℕ) : ℝ))).trans hcurrentMargin
   have hsecond : tau * ((k ^ 2 * b : ℕ) : ℝ) +
       ((k * nu : ℕ) : ℝ) ≤ (b : ℝ) := by
-    have hnat : k ^ 2 * b ≤ k ^ 2 * (k ^ (2 * N) * thetaNat) :=
+    have hnat :=
       Nat.mul_le_mul_left (k ^ 2) hbCap
     have hnatR : ((k ^ 2 * b : ℕ) : ℝ) ≤
         ((k ^ 2 * (k ^ (2 * N) * thetaNat) : ℕ) : ℝ) := by
@@ -399,7 +381,7 @@ theorem wooleySection10NodeHierarchy_of_global
       (le_refl ((k * nu : ℕ) : ℝ))).trans
         (hsecondMargin.trans hstateB)
   have heps : ((k ^ 2 * b : ℕ) : ℝ) * epsilon ^ 2 < (nu : ℝ) := by
-    have hnat : k ^ 2 * b ≤ k ^ 2 * (k ^ (2 * N) * thetaNat) :=
+    have hnat :=
       Nat.mul_le_mul_left (k ^ 2) hbCap
     exact lt_of_le_of_lt
       (mul_le_mul_of_nonneg_right (by exact_mod_cast hnat) (sq_nonneg epsilon))
@@ -516,6 +498,6 @@ theorem wooleySourcePolynomial_iterationChain_of_hierarchy_ledger
   · omega
 
 
-end
 
-end GafniTao
+
+

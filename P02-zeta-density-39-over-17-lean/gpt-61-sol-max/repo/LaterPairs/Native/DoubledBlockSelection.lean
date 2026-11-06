@@ -6,13 +6,12 @@ public import LaterPairs.Native.DoubledBlockPrefixes
 public import LaterPairs.Native.LinearWeightAbel
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -36,4 +35,4 @@ theorem exists_doubled_block_weighted (a : ℕ → ℂ) (H : ℕ) (hH : 2 ≤ H)
   intro l hl hlH
   exact hmax l (Finset.mem_Icc.mpr ⟨by omega,by omega⟩)
 
-end TaoTrudgianYang2025
+

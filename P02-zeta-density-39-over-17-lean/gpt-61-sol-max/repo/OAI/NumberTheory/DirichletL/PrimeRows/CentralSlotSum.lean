@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSplit
 public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeIndexed
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeIndexed
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
+open scoped HeckeO
 
 theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B) :
@@ -31,7 +32,7 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
   let f : T→Ideal O := fun P=>P.val.val
   have hf : Function.Injective f := fun P Q h=>Subtype.ext (Subtype.ext h)
   let E : T→ℂ := fun P=>centralRegularError η u P.val (hT P.val P.property).1 x w z
-  let G : T→ℂ := fun P=>((f P).absNorm:ℂ)^(1/2:ℂ)*E P
+  let G := fun P=>((f P).absNorm:ℂ)^(1/2:ℂ)*E P
   have hnorm (P : T) : ‖G P‖≤1440*(if f P∣Ideal.span {u.val} then ((f P).absNorm:ℝ)^(1:ℝ) else 1) := by
     have hQ : (480:ℝ)≤(f P).absNorm := (hT P.val P.property).2.1
     have hQ0 : (0:ℝ)<(f P).absNorm := by linarith
@@ -69,7 +70,7 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     rw [←mul_assoc,mul_assoc (W _) ,←Complex.cpow_add _ _ hn]
     rw [show (z - 1 / 2) - 1 + 1 / 2 = z - 1 by ring]
   simpa only [heq] using hb
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

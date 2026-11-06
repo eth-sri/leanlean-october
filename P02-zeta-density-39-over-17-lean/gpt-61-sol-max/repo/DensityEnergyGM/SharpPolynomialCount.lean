@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCountScale
 public import DensityEnergyGM.SharpCountTargetWindows
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
-open Finset GuthMaynard.Improvement GuthMaynard.NativeMoment
+
+open Finset GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
 theorem gmTraceExpression_eq_sum (T N L R E : ℝ) :
@@ -123,8 +123,7 @@ theorem sharp_polynomial_count_loss {σ a δ : ℝ}
       rw [mul_pow,← Real.rpow_mul_natCast hTp.le]
       dsimp [S]
       rw [mul_assoc,← Real.rpow_add hTp]
-      congr 2
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -14,7 +15,6 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -40,8 +40,7 @@ theorem zetaQuadraticDivisorTerm_eq_testFunction (T G : ℝ) (n : ℕ) :
     unfold afeCriticalPoint
     push_cast
     ring
-  simp only [zetaFrozenDivisorCoefficient, divisorDirichletTerm_eq_divisorWeight_mul_cpow,
-    hs, zetaShortDivisorTestFunction, zetaDivisorWeightArgument, Complex.ofReal_natCast]
+  simp only [zetaFrozenDivisorCoefficient, divisorDirichletTerm_eq_divisorWeight_mul_cpow, hs, zetaDivisorWeightArgument, zetaShortDivisorTestFunction, ofReal_natCast]
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

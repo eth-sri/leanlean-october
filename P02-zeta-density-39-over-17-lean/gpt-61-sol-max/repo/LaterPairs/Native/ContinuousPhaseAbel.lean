@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosSlowAbel
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                    
 
-noncomputable section
+
 open Set GafniTao
 namespace TaoTrudgianYang2025
 
@@ -89,4 +88,4 @@ theorem norm_continuous_perturbed_phase_prefix
     (by simpa only [Nat.cast_add,Nat.cast_one] using
       continuous_character_range_variation u u' A N hK hu hd)
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.NumberTheory.MulChar.Basic
 public import Mathlib.Basic.NNReal.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
@@ -25,46 +26,21 @@ structure MaskedCharacter (M R : Type*) [CommMonoid M] [CommRing R] where
   keep : M → Prop
   keep_mul : ∀ a b, keep (a * b) ↔ keep a ∧ keep b
 
-def ofResidueMask {S : Type*} [CommRing S] (ρ : M →* R)
-    (χ : MulChar R ℂ) (puncture : M →* S) : MaskedCharacter M R where
-  residue := ρ
-  character := χ
-  keep a := IsUnit (puncture a)
-  keep_mul a b := by
-    rw [map_mul]
-    exact (Commute.all _ _).isUnit_mul_iff
 
-@[simp] theorem ofResidueMask_keep_one {S : Type*} [CommRing S]
-    (ρ : M →* R) (χ : MulChar R ℂ) (puncture : M →* S) :
-    (ofResidueMask ρ χ puncture).keep 1 := by
-  change IsUnit (puncture 1)
-  simp only [map_one, isUnit_one]
 
-def MaskedCharacter.value (d : MaskedCharacter M R) (a : M) : ℂ :=
-  @ite ℂ (d.keep a) (Classical.propDecidable _) (d.character (d.residue a)) 0
 
-@[simp] theorem MaskedCharacter.value_mul (d : MaskedCharacter M R) (a b : M) :
-    d.value (a * b) = d.value a * d.value b := by
-  classical
-  simp only [MaskedCharacter.value, d.keep_mul, map_mul]
-  split_ifs <;> simp_all
 
-def normTwist (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
-  ((N a : ℝ) : ℂ) ^ (Complex.I * t)
 
-@[simp] theorem normTwist_mul (N : M →* ℝ≥0) (t : ℝ) (a b : M) :
-    normTwist N t (a * b) = normTwist N t a * normTwist N t b := by
-  simp only [normTwist, map_mul, NNReal.coe_mul, Complex.ofReal_mul]
-  exact Complex.mul_cpow_ofReal_nonneg (N a).coe_nonneg (N b).coe_nonneg _
 
-def coefficient (d : MaskedCharacter M R) (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
-  d.value a * normTwist N t a
 
-@[simp] theorem coefficient_mul (d : MaskedCharacter M R) (N : M →* ℝ≥0)
-    (t : ℝ) (a b : M) :
-    coefficient d N t (a * b) = coefficient d N t a * coefficient d N t b := by
-  simp only [coefficient, MaskedCharacter.value_mul, normTwist_mul]
-  ring
+
+
+
+
+
+
+
+
 
 def volumeTerm (c I : ℂ) (t X : ℝ) : ℂ :=
   c * (X : ℂ) ^ (1 + Complex.I * t) * I
@@ -171,18 +147,18 @@ theorem centered_saving_of_approx
 theorem normalized_centered_saving (D : ℂ) (T L C E : ℝ)
     (hT : 0 < T) (hbound : ‖D‖ ≤ 4 * E * C * (T / L)) :
     ‖(Real.sqrt T : ℂ)⁻¹ * D‖ ≤ 4 * E * C * (Real.sqrt T / L) := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hT
+  have hs := Real.sqrt_pos.mpr hT
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hs.le]
   calc
     _ ≤ (Real.sqrt T)⁻¹ * (4 * E * C * (T / L)) :=
       mul_le_mul_of_nonneg_left hbound (inv_nonneg.mpr hs.le)
     _ = 4 * E * C * ((T / Real.sqrt T) / L) := by ring
     _ = _ := by
-      have hdiv : T / Real.sqrt T = Real.sqrt T :=
+      have hdiv :=
         (div_eq_iff hs.ne').mpr (Real.mul_self_sqrt hT.le).symm
       rw [hdiv]
 
-end
-end SevenEighths.CenteredMoment
 
-end OAI
+
+
+

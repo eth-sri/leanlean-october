@@ -106,6 +106,6 @@ theorem wooley_equation_7_17_tuple
     h712
 
 
-end
 
-end GafniTao
+
+

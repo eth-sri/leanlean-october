@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownSpacingMonomials
 
 @[expose] public section
@@ -16,7 +17,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownLemmaOneSourceConstant
+def heathBrownLemmaOneSourceConstant
     (k : ℕ) (A C epsilon : ℝ) : ℝ :=
   let r := heathBrownCriticalReciprocal k
   heathBrownLemmaOneCoreConstant k C *
@@ -31,7 +32,6 @@ theorem heathBrown_vmvt_epsilon_identity
   rw [heathBrownCriticalMoment_cast (by omega : 1 ≤ k)]
   unfold heathBrownCriticalReciprocal
   have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hk0 : (k : ℝ) ≠ 0 := by linarith
   have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
   field_simp
 
@@ -53,8 +53,7 @@ theorem heathBrown_epsilon_halves
       (N : ℝ) ^ epsilon := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
   rw [← Real.rpow_add hNpos]
-  congr 1
-  ring
+  simp_all
 
 theorem heathBrownLemmaOneSourceConstant_pos
     {k : ℕ} {A C epsilon : ℝ}
@@ -104,11 +103,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
   have hB0 : 0 ≤ B := by
     dsimp only [B, heathBrownSpacingBase]
     positivity
-  have hL0 : 0 ≤ L := by
-    dsimp only [L]
-    have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-    have := Real.log_nonneg hNReal
-    linarith
+  have hL0 : 0 ≤ L := by positivity
   have hCtwo0 : 0 ≤ heathBrownLemmaTwoConstant k A :=
     (heathBrownLemmaTwoConstant_pos (k := k) hA).le
   have hPExpansion :
@@ -171,9 +166,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
     have hCore0 := (heathBrownLemmaOneCoreConstant_pos hk hC).le
     have hCtwoPower0 :
         0 ≤ (heathBrownLemmaTwoConstant k A) ^ r := by positivity
-    have hPrefix0 : 0 ≤
-        heathBrownLemmaOneCoreConstant k C *
-          (heathBrownLemmaTwoConstant k A) ^ r :=
+    have hPrefix0 :=
       mul_nonneg hCore0 hCtwoPower0
     have hHLRight0 : 0 ≤
         (heathBrownLogConstant epsilon) ^ r *
@@ -225,6 +218,6 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
   exact hcore.trans (add_le_add hMain le_rfl)
 
 
-end
 
-end GafniTao
+
+

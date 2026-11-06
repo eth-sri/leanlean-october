@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainMomentParameters
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainRelativeClass
@@ -17,21 +18,24 @@ namespace SevenEighths.ProbeDetectorPlainMarkedFineField
 open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
 open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ProbeFinalAssembly
 open QuadraticInitialBound CenteredMomentDetectorDictionary
-open CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentInductionEnergy
+open CenteredMomentEnergyBands CenteredMomentEnergyState
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
 open CenteredMomentDetectorPlainMomentParameters CenteredMomentNaturalFixedRaySource
 open CenteredMomentFiniteProfileExceptional CenteredMomentDetectorPlainFiberSource
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
-def PositiveFineSourceInput {Δ:ℝ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ):Prop:=
+section
+variable {Δ:ℝ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ)
+include Δ D S mesh
+
+def PositiveFineSourceInput :Prop:=
   ∀bΦ:ℝ,0<bΦ→∃degree:ℕ,∃seminorms:Finset (ℕ×ℕ),
     ∀η₀:Character,∃C:ℝ,0<C ∧ ∀ᶠU:ℝ in atTop,
       PositiveAt (α:=Fin D.N) S.modulus ⊤ le_top (fun x=>conj (S.W x))
         2 (1/4) (9/4) bΦ 0 1 mesh (33/50) (33/50) 2 (stageError D)
         (kappaPlain D) U η₀ (sourceFixedIdeal S) degree seminorms C
 
-theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
-    (S:SourceData D)(mesh:ℝ)(hmesh:0<mesh)(hfine:∀j,D.ell j≤mesh/200)
+theorem source_batch_plain_marked_fine (hmesh:0< mesh)(hfine:∀j,D.ell j≤ mesh/200)
     (henergy:PositiveFineSourceInput S mesh):
     ∃J:ℕ,∀η:Character,∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
     1<Z ∧ ∀rows:Finset FreeRow,(∀u∈rows,Z^(1/100:ℝ)≤rowNorm u)→
@@ -63,11 +67,11 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
   let Csum:ℝ:=1+∑label,C label
   have hCsum:0<Csum:=by
     have h:=Finset.sum_nonneg (fun label (_:label∈Finset.univ)=>(hC label).le)
-    dsimp [Csum];linarith
+    positivity
   have hClabel (label):C label≤Csum:=by
     have h:=Finset.single_le_sum (fun label (_:label∈Finset.univ)=>(hC label).le)
       (Finset.mem_univ label)
-    dsimp [Csum];linarith
+    linarith
   have hscale:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d→U₀ label≤Z^d:=by
     apply Filter.eventually_all.mpr
     intro label
@@ -86,8 +90,8 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
   have hf:=actual_fiber_lengths D F hU
   have hstate:state.width≤2:=by rw [hwidthstate];exact (width_bands D F.m hf.2.2.1).2.1
   have hw (s:selected):0≤F.widths s.val:=(hwidths s).1.le
-  have hwcap (s:selected):F.widths s.val≤mesh:=by
-    change B.widths s.val≤mesh
+  have hwcap (s:selected):F.widths s.val≤ mesh:=by
+    change B.widths s.val≤ mesh
     rw [hwidth]
     exact (Parameters.fine_slot_widths D (fun _=>mesh) hmesh hfine d hd s.val).2
   have hpos:=hU₀ label (Z^d) (hscale label d hd) selected (fun _=>1)
@@ -129,8 +133,10 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
           apply mul_le_mul _ hnorm (by positivity) (by positivity)
           exact mul_le_mul (hClabel label) (by linarith) hdiag hCsum.le
         _=_:=by dsimp [Cfinal];ring
-end SevenEighths.ProbeDetectorPlainMarkedFineField
-
 end
 
-end OAI
+
+
+
+
+

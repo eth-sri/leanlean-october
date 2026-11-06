@@ -9,7 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentMobiusRegroup
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def divisorPool {β : Type*} (T : Finset β) (B : β → Ideal O) : Finset (Ideal O) :=
   T.biUnion (fun j => idealDivisors (B j))
@@ -96,8 +96,8 @@ theorem finite_correlation_mobius {α β : Type*} (S : Finset α) (T : Finset β
   exact finite_pair_mobius S T (fun i => Ideal.span {a i}) (fun j => Ideal.span {b j})
     (fun j _ => (hb j).1) _
 
-end SevenEighths.CenteredMomentMobiusRegroup
 
-end
 
-end OAI
+
+
+

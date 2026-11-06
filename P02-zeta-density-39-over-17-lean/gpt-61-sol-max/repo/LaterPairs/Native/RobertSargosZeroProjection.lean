@@ -6,9 +6,8 @@ public import LaterPairs.Native.IntegerQuadrupleCount
 public import LaterPairs.Native.RobertSargosSevenSystem
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
 
@@ -38,9 +37,6 @@ theorem robertSargos_zero_image_card_le
     (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q) (hN : 1 ≤ N)
     (hmem : ∀ p ∈ S, RobertSargosSevenSystem R H Q N δ p) :
     ((S.image robertSargosZeroKey).card:ℝ) ≤ 30*R*H*Q*N := by
-  have hR0 : 0 ≤ R := by linarith
-  have hH0 : 0 ≤ H := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
   have hN0 : 0 ≤ N := by linarith
   have hb := integer_box_quadruples_card_le (S.image robertSargosZeroKey)
     (a₁ := -R) (b₁ := R) (a₂ := H) (b₂ := 2*H)
@@ -71,5 +67,5 @@ theorem robertSargos_zero_image_card_le
           (by linarith) (by positivity) (by positivity)) hN0
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

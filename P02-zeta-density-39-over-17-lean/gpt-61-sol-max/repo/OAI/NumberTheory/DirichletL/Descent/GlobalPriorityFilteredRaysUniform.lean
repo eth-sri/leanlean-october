@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredRays
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergyUniform
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergy
@@ -7,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseWholePriorityRetainedSource RayFourExpansion
+open scoped EisensteinEis
 theorem global_priority_filtered_all_rays_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -122,7 +123,7 @@ theorem global_priority_filtered_all_rays_uniform_types
       hhib haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
       ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass
       (hleft z) (hright z)
-    convert h using 1 ; dsimp only [P,S,H] ; ring
+    convert h using 1 ; ring
   calc
     _≤P*∑z:SecondRayIndex,‖S z‖:=mul_le_mul_of_nonneg_left (norm_sum_le _ _) hP
     _=∑z:SecondRayIndex,P*‖S z‖:=Finset.mul_sum _ _ _
@@ -131,8 +132,8 @@ theorem global_priority_filtered_all_rays_uniform_types
     _≤C*A*H*(512*32^2):=mul_le_mul_of_nonneg_left secondRayCoefficient_mass (by positivity)
     _= _:=by dsimp [H];ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

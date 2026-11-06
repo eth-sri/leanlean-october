@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.CanonicalReferenceThreshold
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
@@ -29,8 +29,8 @@ theorem canonical_marked_energy_exists
   canonical_energy_exists_of_references actual_rank_reference_cutoffs actual_rank_reference_thresholds
     Mcap Fcap c eps hM hF hc heps K W lo hi hlo hhi hsW
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

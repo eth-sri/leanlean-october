@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import AtomicRadialAssembly
 public import BoxTimeDensity
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped ContDiff FourierTransform
@@ -14,9 +14,7 @@ def ratioBox : Set (ℝ × ℝ) := Icc (1/10:ℝ) 10 ×ˢ Icc (1/10:ℝ) 10
 
 theorem ratio_box_volume : volume.real ratioBox = (99/10:ℝ)^2 := by
   rw [ratioBox,Measure.real,Measure.volume_eq_prod,Measure.prod_prod,ENNReal.toReal_mul]
-  change volume.real (Icc (1/10:ℝ) 10)*volume.real (Icc (1/10:ℝ) 10) = _
-  rw [Real.volume_real_Icc_of_le (by norm_num)]
-  norm_num
+  bound
 
 /-- Radial cancellation is preserved before comparison of Fourier magnitudes.
 This is the direct finite-profile replacement for a density approximation. -/
@@ -104,4 +102,4 @@ theorem radial_profile_sum_bound (w : MathCollab.Density.ReflectionCutoff) (n : 
         Ct/H^n*M^3*(99/10:ℝ)^2)) := mul_le_mul_of_nonneg_left (sum_le_sum (fun m _ => hmode m)) (by positivity)
     _ = _ := by rw [sum_add_distrib,← mul_sum]; simp only [sum_const,nsmul_eq_mul]; ring
 
-end GuthMaynard.Improvement.AtomicCubic
+

@@ -5,15 +5,19 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEuler
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-lemma highPrimeTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
+section
+variable (η : HeckeFamily.Character) (x w z : ℂ)
+include η x w z
+
+lemma highPrimeTerm_summable_norm 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
     Summable (fun b : HighValuation=>‖highPrimeTerm η x w z P b‖) := by
   have hs := (highValuationTerm_summable_norm η x w z hx hw hz).comp_injective
@@ -21,7 +25,7 @@ lemma highPrimeTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
   simpa only [Function.comp_def,highValuationTerm_eq_prod,
     Finsupp.prod_single_index (highPrimeTerm_zero η x w z P)] using hs
 
-lemma highPrimeTerm_zero_of_two_le (η : HeckeFamily.Character) (x w z : ℂ)
+lemma highPrimeTerm_zero_of_two_le 
     (P : PrimeIdeal) (e l k m : ℕ) (he : 2≤e) :
     highPrimeTerm η x w z P ((e,l),(k,m))=0 := by
   by_contra hn
@@ -29,7 +33,7 @@ lemma highPrimeTerm_zero_of_two_le (η : HeckeFamily.Character) (x w z : ℂ)
   have hc := hs.1.eq_zero_or_one_of_pow_of_not_isUnit P.property.not_isUnit
   omega
 
-theorem highPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (x w z : ℂ)
+theorem highPrimeTerm_tsum_eq_localFactor 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
     (∑' b : HighValuation,highPrimeTerm η x w z P b)=
       idealHighLocalFactor η P.val x w z := by
@@ -45,8 +49,10 @@ theorem highPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (x w z : 
     simp only [highPrimeTerm_zero_of_two_le η x w z P e _ _ _ hh,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

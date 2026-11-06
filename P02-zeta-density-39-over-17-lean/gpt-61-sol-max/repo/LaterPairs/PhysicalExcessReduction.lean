@@ -8,8 +8,7 @@ public import MathCollab.Density.Stronger.LongScalarBudget
 
 open Real Complex Filter MeasureTheory Set
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger MathCollab.Density
 
@@ -128,4 +127,4 @@ theorem smoothLongZeroCount_excess_reduction {σ a δ η : ℝ}
       dsimp [D]
       nlinarith [mul_nonneg (show 0 ≤ 8*Cb*Real.log T by positivity) hI]
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

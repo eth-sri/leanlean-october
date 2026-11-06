@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
+
+open scoped EisensteinEis
 
 lemma maximal_coprime_iff_ne (P Q : Ideal Eis) [P.IsMaximal] [Q.IsMaximal] :
     IsCoprime P Q ↔ P≠Q := by
@@ -63,7 +63,7 @@ theorem original_slot_mask_iff (S : PrimeFamily σ) :
     | inr b =>
       rw [D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
       exact hfixed b t
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

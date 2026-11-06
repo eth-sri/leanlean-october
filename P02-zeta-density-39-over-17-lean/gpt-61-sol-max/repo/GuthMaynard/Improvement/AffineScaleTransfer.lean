@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MixedHeightTheorem
 public import GuthMaynard.Improvement.FourierInputClass
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
@@ -42,12 +42,10 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   let KN := ⌈L*K⌉₊
   have hRN : (RN:ℝ) ≤ P*R := by
     have hh := Nat.ceil_lt_add_one (show 0 ≤ L*R by positivity)
-    dsimp only [RN,P]
-    linarith only [hh,hR]
+    grind
   have hKN : (KN:ℝ) ≤ P*K := by
     have hh := Nat.ceil_lt_add_one (show 0 ≤ L*K by positivity)
-    dsimp only [KN,P]
-    linarith only [hh,hK]
+    grind
   have hKNp : 0 < KN := Nat.ceil_pos.mpr (by positivity)
   have hKNRN : KN ≤ RN := Nat.ceil_mono (by gcongr)
   have h₁N : M₁ ≤ RN := by exact_mod_cast h₁R.trans (Nat.le_ceil _)
@@ -81,4 +79,4 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
     _ ≤ C*(P*T)^ε*(P^6*(R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2))) := by gcongr
     _ = _ := by rw [Real.mul_rpow hPp.le hTp.le]; ring
 
-end GuthMaynard.Improvement
+

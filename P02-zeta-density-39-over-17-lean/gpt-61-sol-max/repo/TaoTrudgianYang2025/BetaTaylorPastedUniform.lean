@@ -12,13 +12,13 @@ chosen before the moving interval, width and original function. Only the
 fixed observation distance D and requested finite order Q affect it.
 -/
 
-noncomputable section
+
 
 open Set
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem taylorPastedExtension_uniform_jets
     (Q : ℕ) {D : ℝ} (hD : 1 ≤ D) :
@@ -64,4 +64,4 @@ theorem taylorPastedExtension_uniform_jets
           exact (abs_iteratedDeriv_finiteTaylorPolynomial_le hn hD hdistR
             (fun j hj => hb _ haR j (by omega))).trans (mul_le_mul_of_nonneg_right hGC hM)
 
-end TaoTrudgianYang2025
+

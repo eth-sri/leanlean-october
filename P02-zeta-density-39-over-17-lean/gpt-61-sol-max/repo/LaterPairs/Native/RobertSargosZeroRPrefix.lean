@@ -6,13 +6,12 @@ public import LaterPairs.Native.ContinuousSecondDerivativeRange
 public import LaterPairs.Native.RobertSargosZeroRCurvature
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                         
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -30,12 +29,7 @@ theorem robertSargos_zero_r_second_derivative_prefix
       12*(C*N*Real.sqrt (2*h*q*lam)+2/Real.sqrt (2*h*q*lam)) := by
   have hin (x : ℝ) (hx : x ∈ Icc A (A+N)) :
       x-h ∈ Icc a b ∧ x+h ∈ Icc a b ∧
-        x+q-h ∈ Icc a b ∧ x+q+h ∈ Icc a b := by
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor <;> constructor <;> linarith [hx.1,hx.2]
+        x+q-h ∈ Icc a b ∧ x+q+h ∈ Icc a b := by grind
   have hj (j : ℕ) (hj : j < 4) (x : ℝ) (hx : x ∈ Icc A (A+N)) :=
     hasDerivAt_robertSargos_zero_r_jet (f := f) (x := x) (h := h) (q := q) hj
       (hf _ (hin x hx).2.1) (hf _ (hin x hx).1)
@@ -55,4 +49,4 @@ theorem robertSargos_zero_r_second_derivative_prefix
     (fun x hx => hj 1 (by norm_num) x hx)
     (fun x hx => (hc x hx).1) (fun x hx => (hc x hx).2)
 
-end TaoTrudgianYang2025
+

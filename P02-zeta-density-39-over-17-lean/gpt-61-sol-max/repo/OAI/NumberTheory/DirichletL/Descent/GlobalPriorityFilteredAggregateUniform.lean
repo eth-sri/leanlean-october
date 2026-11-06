@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregate
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredRaysUniform
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityAggregate
@@ -9,16 +10,16 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseWholePriorityRetainedSource RayFourExpansion
+open scoped EisensteinEis
 theorem global_priority_filtered_aggregate_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -158,13 +159,13 @@ theorem global_priority_filtered_aggregate_uniform_types
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       exact Finset.sum_le_sum fun ray _=>Finset.sum_le_sum fun core _=>Finset.sum_le_sum fun assigned ha=>hb ray core assigned (Finset.mem_powerset.mp ha)
     _=(32*512)*(4:ℝ)^slots.card*(Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)*H:=by
-      simp only [Finset.sum_const,Finset.card_univ,Finset.card_powerset,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
+      simp
       rw [show (4:ℝ)^slots.card=(2:ℝ)^slots.card*(2:ℝ)^slots.card by rw [←mul_pow];norm_num]
       ring
     _≤(32*512)*(4:ℝ)^K*(Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)*H:=by gcongr
     _= _:=by dsimp [Ctot,H];ring
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

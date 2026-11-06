@@ -9,18 +9,28 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
 open CompletedGauss CanonicalRowCompletion CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 variable {ι : Type*}
 
-def markTwist (p : ι → Eis) (T : Finset ι) : Eis →* ℂ :=
+section
+variable (p : ι → Eis)
+include p
+
+section
+variable (T : Finset ι)
+include T
+
+def markTwist  : Eis →* ℂ :=
   ∏ i ∈ T, coprimalityMask (p i)
 
-theorem markTwist_norm (p : ι → Eis) (T : Finset ι) (x : Eis) : ‖markTwist p T x‖ ≤ 1 := by
+theorem markTwist_norm  (x : Eis) : ‖markTwist p T x‖ ≤ 1 := by
   simp only [markTwist, MonoidHom.finsetProd_apply, norm_prod]
   exact Finset.prod_le_one₀ (fun i hi => norm_nonneg _) (fun i hi => coprimalityMask_norm _ _)
+end
 
-theorem markTwist_periodic (p : ι → Eis) (S T : Finset ι) (hTS : T ⊆ S) :
+
+theorem markTwist_periodic  (S T : Finset ι) (hTS : T ⊆ S) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {∏ i ∈ S, p i}) (markTwist p T) := by
   intro x y hxy
   simp only [markTwist, MonoidHom.finsetProd_apply]
@@ -30,12 +40,19 @@ theorem markTwist_periodic (p : ι → Eis) (S T : Finset ι) (hTS : T ⊆ S) :
   apply Ideal.mem_span_singleton.mpr
   exact (Finset.dvd_prod_of_mem p (hTS hi)).trans (Ideal.mem_span_singleton.mp hxy)
 
-def markedThetaQuotient (p : ι → Eis) (S : Finset ι) (Ψ : Eis →* ℂ) (c : Eis)
+section
+variable (S : Finset ι)
+include S
+
+def markedThetaQuotient  (Ψ : Eis →* ℂ) (c : Eis)
     (x : Eis ⧸ Ideal.span {c}) : ℂ :=
   fixedThetaQuotient Ψ c x * ∏ i ∈ S, if p i ∣ Quotient.out x then 1 else 0
 
-theorem markedThetaQuotient_twists (p : ι → Eis) (S : Finset ι)
-    (hp : ∀ i ∈ S, Prime (p i)) (Ψ : Eis →* ℂ) (c : Eis)
+section
+variable (hp : ∀ i ∈ S, Prime (p i)) (Ψ : Eis →* ℂ)
+include hp Ψ
+
+theorem markedThetaQuotient_twists  (c : Eis)
     (x : Eis ⧸ Ideal.span {c}) :
     markedThetaQuotient p S Ψ c x =
       ∑ T ∈ S.powerset, (-1 : ℂ) ^ T.card * fixedThetaQuotient (markTwist p T * Ψ) c x := by
@@ -55,9 +72,7 @@ theorem markedThetaQuotient_twists (p : ι → Eis) (S : Finset ι)
   simp only [fixedThetaQuotient, fixedThetaTwist_mul, markTwist, MonoidHom.finsetProd_apply]
   ring
 
-theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
-    (hp : ∀ i ∈ S, Prime (p i))
-    (Ψ : Eis →* ℂ) (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
+theorem markedCompletedT_canonical_reflection  (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
     (Q : Ideal Eis) (hperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
     (hcQ : Ideal.span {c} ≤ Ideal.span {(9 : Eis)} * (Q * Ideal.span {∏ i ∈ S, p i}))
@@ -110,8 +125,12 @@ theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
       apply Finset.sum_congr rfl
       intro T hT
       ring
-
 end
-end SevenEighths.InverseMoment
+end
+end
 
-end OAI
+
+
+
+
+

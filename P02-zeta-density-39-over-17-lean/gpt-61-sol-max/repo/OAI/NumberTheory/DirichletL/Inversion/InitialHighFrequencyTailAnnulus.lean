@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailGeom
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open InverseInitialProfile
@@ -54,8 +54,8 @@ theorem actual_annulus_high_gate
     _ = Z^(τ+η) := (Real.rpow_add hz τ η).symm
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
-end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
-end OAI
+
+
+

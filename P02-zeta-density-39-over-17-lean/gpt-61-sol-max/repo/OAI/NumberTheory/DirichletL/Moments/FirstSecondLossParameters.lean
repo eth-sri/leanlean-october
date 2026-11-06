@@ -8,7 +8,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentFirstSecondLossParameters
-open CenteredMomentFirstSecondCapacityLedger
+
 
 def depth (Mcap σ:ℝ):ℕ:=⌈2*Mcap/σ⌉₊+1
 
@@ -18,8 +18,8 @@ lemma depth_covers (Mcap σ:ℝ)(hσ:0<σ):Mcap<(depth Mcap σ:ℝ)*σ/2 := by
   simp only [depth,Nat.cast_add,Nat.cast_one]
   nlinarith
 
-end SevenEighths.CenteredMomentFirstSecondLossParameters
 
-end
 
-end OAI
+
+
+

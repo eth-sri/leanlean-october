@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected proof slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -34,8 +35,7 @@ theorem IntervalC2Bound.norm_deriv_sub_le {f : ℝ → ℂ} {a b M R x y : ℝ}
     ((hf.smooth z hz).derivWithin (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have hb (z : ℝ) (hz : z ∈ Icc a b) : ‖deriv (deriv f) z‖ ≤ M * R ^ 2 := by
     simpa only [iteratedDeriv_succ, iteratedDeriv_one, iteratedDeriv_zero] using hf.second_le z hz
-  simpa only [Real.norm_eq_abs] using
-    (convex_Icc a b).norm_image_sub_le_of_norm_deriv_le hd hb hx hy
+  exact (convex_Icc a b).norm_image_sub_le_of_norm_deriv_le hd hb hx hy
 
 theorem IntervalC2Bound.norm_sub_linear_le {f : ℝ → ℂ} {a b M R r H y : ℝ}
     (hf : IntervalC2Bound f a b M R) (hH : 0 ≤ H)
@@ -102,9 +102,13 @@ def atkinsonRootCubicCorrection (T b y : ℝ) : ℝ :=
   (2 * T / 3) * ((y - atkinsonSaddleRoot (T / (2 * Real.pi)) b) /
     atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 3
 
-theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
+section
+variable {T y : ℝ} (hT : 0 < T) (b : ℝ)
     (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
-      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2) :
+      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2)
+include T y hT b hy
+
+theorem abs_atkinsonRootPhase_sub_cubic_le  :
     |2 * Real.pi * (atkinsonRootPhase T b y - atkinsonRootQuadratic T b y) -
       atkinsonRootCubicCorrection T b y| ≤
       4 * T * |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ^ 4 /
@@ -114,9 +118,7 @@ theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
   have hy0 : 0 < y := by change |y-r| ≤ r/2 at hy; linarith [(abs_le.mp hy).1]
   have hz : |(y-r)/r| ≤ 1/2 := by
     rw [abs_div, abs_of_pos hr]
-    apply (div_le_iff₀ hr).2
-    change |y-r| ≤ r/2 at hy
-    linarith
+    field_simp <;> nlinarith
   rw [atkinsonRootPhase_sub_quadratic hT hy0 b]
   change |2 * Real.pi * ((T / Real.pi) *
     (Real.log (1+(y-r)/r) - (y-r)/r + ((y-r)/r)^2/2)) -
@@ -131,9 +133,7 @@ theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
   rw [abs_div, abs_of_pos hr]
   ring
 
-theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
-    (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
-      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2) :
+theorem norm_atkinsonRootKernel_sub_cubic_le  :
     ‖atkinsonRootKernel T b y - atkinsonRootQuadraticKernel T b y *
       (1 + (atkinsonRootCubicCorrection T b y : ℂ) * I)‖ ≤
       4*T*|y-atkinsonSaddleRoot (T/(2*Real.pi)) b|^4 /
@@ -163,9 +163,7 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
     rw [he, ha]
     apply (norm_exp_real_phase_sub_le _ _).trans
     convert abs_atkinsonRootPhase_sub_cubic_le hT b hy using 1
-    congr 1
-    dsimp [q,d]
-    ring
+    grind
   have hsecond : ‖atkinsonRootQuadraticKernel T b y * Complex.exp ((d : ℂ)*I) -
       atkinsonRootQuadraticKernel T b y * (1+(d : ℂ)*I)‖ ≤
         4*T^2*|y-r|^6/r^6 := by
@@ -175,18 +173,12 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
     apply (norm_exp_real_phase_sub_linear_le d).trans
     have hd : d^2 = (4*T^2/9)*|y-r|^6/r^6 := by
       dsimp [d, atkinsonRootCubicCorrection]
-      rw [show |y-r|^6 = (y-r)^6 by
-        calc
-          _ = (|y-r|^2)^3 := by ring
-          _ = ((y-r)^2)^3 := by rw [sq_abs]
-          _ = _ := by ring]
-      ring
+      grind
     rw [hd]
     have hp : 0 ≤ T^2*|y-r|^6/r^6 := by positivity
-    calc
-      _ = (4/3 : ℝ) * (T^2*|y-r|^6/r^6) := by ring
-      _ ≤ 4 * (T^2*|y-r|^6/r^6) := mul_le_mul_of_nonneg_right (by norm_num) hp
-      _ = _ := by ring
+    grind
   exact (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans (add_le_add hfirst hsecond)
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

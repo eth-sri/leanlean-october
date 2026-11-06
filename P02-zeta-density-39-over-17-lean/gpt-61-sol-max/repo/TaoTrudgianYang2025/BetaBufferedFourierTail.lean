@@ -16,11 +16,11 @@ the actual omitted Fourier tail.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseBufferedFarTail (l r η : ℝ) (F : ℝ → ℝ) (T N : ℝ) (R : ℕ) : ℂ :=
   ∑' q : ℤ, if R < q.natAbs then
@@ -86,4 +86,4 @@ theorem modelPhase_buffered_poisson_truncated
       abel
     _ ≤ _ := (norm_add_le _ _).trans (add_le_add hsource.2 hdiff)
 
-end TaoTrudgianYang2025
+

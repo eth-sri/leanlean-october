@@ -6,7 +6,7 @@ public import GafniTao.FordVinogradovIntegral
 open MeasureTheory Finset
 open scoped BigOperators
 namespace GafniTao
-noncomputable section
+
 theorem continuous_fordVinogradovWeylSum (k Q : ℕ) :
     Continuous (fordVinogradovWeylSum k Q) := by
   unfold fordVinogradovWeylSum fordVinogradovMonomial
@@ -32,10 +32,7 @@ theorem ford_vinogradov_lintegral_mean_eq (s k Q : ℕ) :
         ∂Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)) =
         ∫⁻ α : UnitAddTorus (Fin k), ENNReal.ofReal
           (‖fordVinogradovWeylSum k Q α‖ ^ (2 * s))
-          ∂Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle) := by
-      apply lintegral_congr
-      intro α
-      rw [ENNReal.ofReal_pow (norm_nonneg _)]
+          ∂Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle) := by simp_all
     _ = ENNReal.ofReal (∫ α : UnitAddTorus (Fin k),
           ‖fordVinogradovWeylSum k Q α‖ ^ (2 * s)
           ∂Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)) :=
@@ -46,5 +43,5 @@ theorem ford_vinogradov_lintegral_mean_eq (s k Q : ℕ) :
       norm_num
 
 
-end
-end GafniTao
+
+

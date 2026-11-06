@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Algebra.Order.Floor.Semiring
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.Analysis.Real.Pi.Bounds
@@ -14,12 +15,12 @@ theorem exists_balanced_half_cutoff (R : ℝ) (hR : 10 ≤ R) :
     ∃ A M : ℕ, let x : ℝ := A + 1/2; let y : ℝ := R^2/x
       R ≤ x ∧ x ≤ (12/5)*R ∧ (2/5)*R ≤ y ∧ y ≤ R ∧
       (M:ℝ)+1/8 ≤ y ∧ y ≤ (M:ℝ)+1/2 ∧ ⌊y⌋₊ = M := by
-  let M : ℕ := ⌊R/2⌋₊
+  let M := ⌊R/2⌋₊
   let b : ℝ := M + 1/2
-  let u : ℝ := R^2/b
-  let A : ℕ := ⌊u+1/2⌋₊
+  let u := R^2/b
+  let A := ⌊u+1/2⌋₊
   let x : ℝ := A + 1/2
-  let y : ℝ := R^2/x
+  let y := R^2/x
   have hR0 : 0 < R := by linarith
   have hMlo : R/2 < (M:ℝ)+1 := Nat.lt_floor_add_one (R/2)
   have hMhi : (M:ℝ) ≤ R/2 := Nat.floor_le (by positivity)
@@ -91,13 +92,13 @@ theorem exists_afe_cutoffs_all_heights (t : ℝ) (ht : 200*Real.pi ≤ t) :
   have hp : 0 < 2*Real.pi := by positivity
   have ht0 : 0 < t := (by positivity : 0 < 200*Real.pi).trans_le ht
   have hc : 100 ≤ t/(2*Real.pi) := (le_div_iff₀ hp).mpr (by nlinarith)
-  let R : ℝ := Real.sqrt (t/(2*Real.pi))
+  let R := Real.sqrt (t/(2*Real.pi))
   have hR : 10 ≤ R := (Real.le_sqrt (by norm_num) (by positivity)).mpr (by norm_num; exact hc)
   have hRsq : R^2 = t/(2*Real.pi) := Real.sq_sqrt (by positivity)
   have htR : t = 2*Real.pi*R^2 := by rw [hRsq]; field_simp
   obtain ⟨A,M,hxlo,hxhi,hylo,hyhi,hgaplo,hgaphi,hfloor⟩ := exists_balanced_half_cutoff R hR
   let x : ℝ := A+1/2
-  let y : ℝ := t/(2*Real.pi*x)
+  let y := t/(2*Real.pi*x)
   have hx0 : 0 < x := by dsimp [x]; positivity
   have hydef : y = R^2/x := by dsimp [y]; rw [hRsq, div_div]
   change R ≤ x at hxlo
@@ -128,4 +129,4 @@ theorem exists_afe_cutoffs_all_heights (t : ℝ) (ht : 200*Real.pi ≤ t) :
     field_simp
   exact ⟨A,M,hx1,hy1,hscale,hxFloor,hfloor,hgaplo,hgaphi,hA,hM,hxlo,hxhi,hylo,hyhi⟩
 
-end WeylPort
+

@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import TraceAlternatives.CubeSecondMoment
 public import DensityEnergyGM.SharpReflectionSecond
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
-open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
+
+open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
 /-- Fixed height dilations and arbitrary translates cost only an upfront
@@ -21,11 +21,11 @@ theorem ratio_second_cube_uniform_translate (ε B : ℝ)
         C*T^ε*((M:ℝ)^2+T^(1/3:ℝ)*M)*
           (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ) := by
   obtain ⟨C,hC,hBound⟩ := actual_second_moment_cube_native ε hε
-  let D : ℝ := max 1 B
+  let D := max 1 B
   have hD1 : 1 ≤ D := le_max_left _ _
   have hBD : B ≤ D := le_max_right _ _
   have hD : 0 < D := by linarith
-  let q : ℝ := D^(1/3:ℝ)
+  let q := D^(1/3:ℝ)
   have hq : 1 ≤ q := Real.one_le_rpow hD1 (by norm_num)
   refine ⟨C*D^ε*q,by positivity,?_⟩
   intro T t₀ hT M hM hMT W hW
@@ -129,4 +129,4 @@ theorem reflection_complete_pair_energy_cube {η : ℝ} (hη : 0 < η) :
         (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

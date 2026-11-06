@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SourceZeroEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceLowerSupport
 open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
 open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
     (Ideal.absNorm (finiteTupleProduct v):ℝ)=
@@ -21,7 +22,8 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
   simp only [finiteTupleProduct,map_prod,Nat.cast_prod,map_mul,Nat.cast_mul,Fintype.prod_sum_type,Fin.prod_univ_two]
   ring
 
- theorem profile_product_lower {ι:Type*} [Fintype ι]
+ section
+variable {ι:Type*} [Fintype ι]
     (R:Ideal O) (ν:ι→Ideal O→ℂ) (Wslot:ι→ℝ→ℂ) (P a:ι→ℝ)
     (W₁ W₂:ℝ→ℂ) (a₁ a₂ X₁ X₂ Y₁ Y₂ T:ℝ) (B₁ B₂ s:Ideal O)
     (hP:∀i,0<P i) (ha:∀i,0≤a i) (ha₁:0≤a₁) (ha₂:0≤a₂)
@@ -29,12 +31,15 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
     (hB₁:B₁≠0) (hB₂:B₂≠0) (hXT:X₁*X₂=T) (hYT:Y₁*Y₂=T)
     (hs:∀i x,Wslot i x≠0→a i≤x)
     (hs₁:∀x,W₁ x≠0→a₁≤x) (hs₂:∀x,W₂ x≠0→a₂≤x)
+include ι R ν Wslot P a W₁ W₂ a₁ a₂ X₁ X₂ Y₁ Y₂ T B₁ B₂ s hP ha ha₁ ha₂ hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hXT hYT hs hs₁ hs₂
+
+theorem profile_product_lower 
     (v:Tuple ι) (hv:profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v≠0) :
     (∏i,a i)*a₁*a₂*(T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂))*(∏i,P i)≤
       (Ideal.absNorm (finiteTupleProduct v):ℝ) := by
   have hslot:∀i,Wslot i ((Ideal.absNorm (v (Sum.inl i)):ℝ)/P i)≠0:=by
     intro i
-    have hp: (∏j,ν j (v (Sum.inl j))*Wslot j ((Ideal.absNorm (v (Sum.inl j)):ℝ)/P j))≠0 :=
+    have hp :=
       (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).1).1
     exact (mul_ne_zero_iff.mp (Finset.prod_ne_zero_iff.mp hp i (Finset.mem_univ _))).2
   have hrect:idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*v (Sum.inr 0)) (B₂*v (Sum.inr 1))≠0:=
@@ -80,14 +85,7 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
   apply (div_le_iff₀ (mul_pos (hbn B₁ hB₁) (hbn B₂ hB₂))).mpr
   convert hp using 1 ; ring
 
- theorem profile_column_lower {ι:Type*} [Fintype ι]
-    (R:Ideal O) (ν:ι→Ideal O→ℂ) (Wslot:ι→ℝ→ℂ) (P a:ι→ℝ)
-    (W₁ W₂:ℝ→ℂ) (a₁ a₂ X₁ X₂ Y₁ Y₂ T:ℝ) (B₁ B₂ s:Ideal O)
-    (hP:∀i,0<P i) (ha:∀i,0≤a i) (ha₁:0≤a₁) (ha₂:0≤a₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (hY₁:0<Y₁) (hY₂:0<Y₂)
-    (hB₁:B₁≠0) (hB₂:B₂≠0) (hXT:X₁*X₂=T) (hYT:Y₁*Y₂=T)
-    (hs:∀i x,Wslot i x≠0→a i≤x)
-    (hs₁:∀x,W₁ x≠0→a₁≤x) (hs₂:∀x,W₂ x≠0→a₂≤x)
+ theorem profile_column_lower 
     (S:Finset (Tuple ι)) (I:Ideal O)
     (hI:finiteColumnCoefficient S (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) I≠0) :
     (∏i,a i)*a₁*a₂*(T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂))*(∏i,P i)≤
@@ -97,9 +95,11 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
   have hh:=profile_product_lower R ν Wslot P a W₁ W₂ a₁ a₂ X₁ X₂ Y₁ Y₂ T B₁ B₂ s
     hP ha ha₁ ha₂ hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hXT hYT hs hs₁ hs₂ v hv0
   simpa only [he] using hh
-
-end SevenEighths.CenteredMomentSourceLowerSupport
-
 end
 
-end OAI
+
+
+
+
+
+

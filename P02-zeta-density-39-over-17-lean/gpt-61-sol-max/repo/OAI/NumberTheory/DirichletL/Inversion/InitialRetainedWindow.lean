@@ -9,17 +9,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerEmpty
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedWindow
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerSourceMask InverseInitialQuotientGeometry InverseInitialClippedColumns
-open InverseInitialCanonicalState InverseInitialEnergyCallerState FirstPassCubeLabels
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows
+open InverseInitialEnergyCallerSourceMask InverseInitialQuotientGeometry
+open InverseInitialCanonicalState InverseInitialEnergyCallerState
+open scoped EisensteinO
 
 theorem retained_window_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -55,7 +55,7 @@ theorem retained_window_bound
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
       D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→B-θ+2*η≤U→
       radialCenter m H θ D B≤4*η+τ→
@@ -157,8 +157,8 @@ theorem retained_window_bound
     exact InverseInitialCanonicalDomains.actual_window_domains p hp hcop hg (poolPrimary_odd F hFa)
       hprimary S hdiv hf ψ lo hi hψ Z D B v θ H η (zero_lt_one.trans hZp) hhiZ x hx _
 
-end SevenEighths.InverseInitialRetainedWindow
 
-end
 
-end OAI
+
+
+

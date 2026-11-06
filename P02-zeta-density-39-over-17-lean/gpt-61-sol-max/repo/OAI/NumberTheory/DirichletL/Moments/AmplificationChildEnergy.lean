@@ -11,13 +11,13 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationChildEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
+open CanonicalQuadraticSieve
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
+open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 open CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
 open CenteredMomentAmplificationLiveEnergy CenteredMomentAmplificationAllocationScale
 open CenteredMomentAmplificationAllocationCost CenteredMomentGaussNormalization
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -64,8 +64,8 @@ theorem actual_amplification_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal 
     (Finset.sum_le_sum (fun B _ => mul_le_of_le_one_left (hE B) (hf B)))
     (Finset.sum_nonneg (fun B _ => mul_nonneg (sq_nonneg _) (hE B))) (by positivity))
 
-end SevenEighths.CenteredMomentAmplificationChildEnergy
 
-end
 
-end OAI
+
+
+

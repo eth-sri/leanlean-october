@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainSlotProfile
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyUnconditional
@@ -40,8 +40,8 @@ theorem detector_certified_bands:DetectorCertifiedBands:=by
 theorem zeta_nonzero (s:ℂ)(hs:(7/8:ℝ)<s.re):riemannZeta s≠0:=
   zeta_of_certified detector_certified_bands s hs
 
-end SevenEighths.ProbeFinalAssemblyUnconditional
 
-end
 
-end OAI
+
+
+

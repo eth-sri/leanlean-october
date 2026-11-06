@@ -28,5 +28,5 @@ theorem card_fordPowerSolution (s k Q : ℕ) :
   simp only [Finset.mem_filter, Finset.mem_product, Finset.mem_univ,
     true_and, sub_eq_zero]
 
-end
-end GafniTao
+
+

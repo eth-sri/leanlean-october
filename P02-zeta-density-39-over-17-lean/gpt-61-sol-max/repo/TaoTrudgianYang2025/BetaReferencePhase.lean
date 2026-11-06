@@ -14,16 +14,20 @@ including every derivative order and both endpoints of [1,2].
 
 noncomputable section
 
-open Set Expdb Filter
+open Expdb Filter
 open scoped Topology ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def referenceModelPrimitive (σ u : ℝ) : ℝ :=
   if σ = 1 then Real.log u else u^(1-σ)/(1-σ)
 
-theorem referenceModelPrimitive_contDiffAt (σ : ℝ) {u : ℝ} (hu : 0 < u) :
+section
+variable (σ : ℝ) {u : ℝ} (hu : 0 < u)
+include σ u hu
+
+theorem referenceModelPrimitive_contDiffAt  :
     ContDiffAt ℝ ∞ (referenceModelPrimitive σ) u := by
   unfold referenceModelPrimitive
   by_cases hσ : σ = 1
@@ -32,7 +36,7 @@ theorem referenceModelPrimitive_contDiffAt (σ : ℝ) {u : ℝ} (hu : 0 < u) :
   · simp only [ite_eq_right hσ]
     exact (Real.contDiffAt_rpow_const_of_ne hu.ne').div_const (1-σ)
 
-theorem referenceModelPrimitive_hasDerivAt (σ : ℝ) {u : ℝ} (hu : 0 < u) :
+theorem referenceModelPrimitive_hasDerivAt  :
     HasDerivAt (referenceModelPrimitive σ) (u^(-σ)) u := by
   unfold referenceModelPrimitive
   by_cases hσ : σ = 1
@@ -45,12 +49,14 @@ theorem referenceModelPrimitive_hasDerivAt (σ : ℝ) {u : ℝ} (hu : 0 < u) :
     rw [show 1-σ-1 = -σ by ring]
     field_simp
 
-theorem referenceModelPrimitive_iteratedDeriv (σ : ℝ) {u : ℝ} (hu : 0 < u) (p : ℕ) :
+theorem referenceModelPrimitive_iteratedDeriv  (p : ℕ) :
     iteratedDeriv (p+1) (referenceModelPrimitive σ) u =
       iteratedDeriv p (modelPhase σ) u := by
   have he : deriv (referenceModelPrimitive σ) =ᶠ[𝓝 u] modelPhase σ := by
     filter_upwards [isOpen_Ioi.mem_nhds hu] with w hw
     exact (referenceModelPrimitive_hasDerivAt σ hw).deriv
   rw [iteratedDeriv_succ', he.iteratedDeriv_eq p]
+end
 
-end TaoTrudgianYang2025
+
+

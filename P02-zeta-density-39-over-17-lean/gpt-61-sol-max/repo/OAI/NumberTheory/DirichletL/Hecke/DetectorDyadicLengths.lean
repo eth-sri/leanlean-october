@@ -59,8 +59,8 @@ lemma truncation_scale (U t : ℝ) (hU : 2≤U) (ht : 1≤t) (ht' : t≤3/2) :
     simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hU1 ht
   · exact Real.rpow_le_rpow_of_exponent_le hU1 ht'
 
-end SevenEighths.HeckeDetectorDyadicGeometry
 
-end
 
-end OAI
+
+
+

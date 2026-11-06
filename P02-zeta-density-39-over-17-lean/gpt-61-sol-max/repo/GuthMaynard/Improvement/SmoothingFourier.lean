@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SmoothingScale
 public import GuthMaynard.Improvement.PoissonReduction
 
@@ -6,8 +7,7 @@ public import GuthMaynard.Improvement.PoissonReduction
 
 /-! Fourier transfer for actual real smoothing. Constants precede the signal
 and the smoothing width; no positive lower bound on its mass is required. -/
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped FourierTransform Convolution SchwartzMap
 namespace GuthMaynard.Improvement
@@ -18,9 +18,7 @@ theorem complex_smooth (κ g : ℝ → ℝ) :
   funext x
   simp only [smooth, convolution, ContinuousLinearMap.mul_apply', ← integral_complex_ofReal,
     Complex.ofReal_mul]
-  apply integral_congr_ae
-  filter_upwards [] with y
-  ring
+  grind
 
 theorem fourier_smooth {κ g : ℝ → ℝ} (hκ : Integrable κ) (hg : Integrable g) (ξ : ℝ) :
     𝓕 (fun x => (smooth κ g x : ℂ)) ξ =
@@ -62,8 +60,12 @@ theorem fourier_scaled_smooth_mass_bound {φ g : ℝ → ℝ} {δ : ℝ}
   simpa only [fourier_scaledKernel φ hδ] using
     fourier_smooth_mass_bound (scaledKernel_integrable hφ hδ) hg hg0 ξ
 
+section
+variable (φ : 𝓢(ℝ, ℂ)) (j : ℕ)
+include φ j
+
 /-- Fixed-kernel rapid decay, with the constant chosen before every frequency. -/
-theorem schwartz_fourier_power_bound (φ : 𝓢(ℝ, ℂ)) (j : ℕ) :
+theorem schwartz_fourier_power_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ ξ : ℝ, |ξ| ^ j * ‖𝓕 (φ : ℝ → ℂ) ξ‖ ≤ C := by
   obtain ⟨C, hC, h⟩ := (𝓕 φ).decay j 0
   refine ⟨C, hC, ?_⟩
@@ -72,7 +74,7 @@ theorem schwartz_fourier_power_bound (φ : 𝓢(ℝ, ℂ)) (j : ℕ) :
 
 /-- No decay constant depends on delta. The displayed frequency weight keeps
 its dependence exactly, including near frequency zero. -/
-theorem schwartz_scaled_frequency_bound (φ : 𝓢(ℝ, ℂ)) (j : ℕ) :
+theorem schwartz_scaled_frequency_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ δ : ℝ, 0 < δ → ∀ ξ : ℝ,
       |ξ| ^ j * ‖𝓕 (φ : ℝ → ℂ) (δ * ξ)‖ ≤ δ⁻¹ ^ j * C := by
   obtain ⟨C, hC, h⟩ := schwartz_fourier_power_bound φ j
@@ -84,8 +86,9 @@ theorem schwartz_scaled_frequency_bound (φ : 𝓢(ℝ, ℂ)) (j : ℕ) :
     rw [abs_mul, abs_of_pos hδ, mul_pow]
     rw [← mul_assoc, ← mul_assoc, ← mul_pow, inv_mul_cancel₀ hδ.ne']
     simp
-  rw [heq] at hh
-  exact hh
+  nlinarith
+end
+
 
 /-- Actual scaled smoothing has uniform rapid decay weighted by the exact
 input mass. The Schwartz representative is fixed before delta and g. -/
@@ -102,10 +105,6 @@ theorem scaled_smooth_power_bound (φ : ℝ → ℝ) (ψ : 𝓢(ℝ, ℂ))
   have h1 := mul_le_mul_of_nonneg_left
     (fourier_scaled_smooth_mass_bound hφ hg hg0 hδ ξ) (pow_nonneg (abs_nonneg ξ) j)
   have h2 := mul_le_mul_of_nonneg_right (h δ hδ ξ) hm
-  rw [hψ] at h2
-  calc
-    _ ≤ |ξ| ^ j * ((∫ x, g x) * ‖𝓕 (fun x => (φ x : ℂ)) (δ * ξ)‖) := h1
-    _ = (|ξ| ^ j * ‖𝓕 (fun x => (φ x : ℂ)) (δ * ξ)‖) * (∫ x, g x) := by ring
-    _ ≤ _ := h2
+  grind
 
-end GuthMaynard.Improvement
+

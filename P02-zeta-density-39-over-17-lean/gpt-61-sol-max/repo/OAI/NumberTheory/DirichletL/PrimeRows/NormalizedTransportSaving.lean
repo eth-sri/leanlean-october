@@ -9,9 +9,9 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -36,7 +36,7 @@ theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0)
     (sigma : ℝ) (hsigma : 0<sigma)
     (_hgeometric : sigma+8*e+nu≤63/800) (hprincipal : sigma+nu≤17/48000)
-    (hwindow : sigma+e≤(7/8)*ellMin) (hlarge : sigma+nu≤saving+3/16) :
+    (hwindow : sigma+e≤(7/8)*ellMin) (hlarge : sigma+nu≤ saving+3/16) :
     let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∃n : ℕ,0<n ∧ ∀η : Character,∃C : ℝ,0<C ∧ ∀ᶠ Z : ℝ in atTop,
       let Yp := fun j=>Z^(ell j)
@@ -55,7 +55,7 @@ theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving
         detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u)) (3*(idx u+1:ℕ)*Z^τ)<a+2*e ∧
         (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j) s=0 ∧
           ¬((sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j).residue=1 ∧ s=1) ∧
-          a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
+          a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
       (∀u∈rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ)),
         (calibrationForSet S hmax).residueMonoid u.val≠0 →
         (∀θ,(rayCubeFamily M H hH u θ).residue≠1) ∧
@@ -97,8 +97,8 @@ theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving
       mul_le_mul_of_nonneg_left (by linarith) hC.le
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

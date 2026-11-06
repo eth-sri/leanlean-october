@@ -8,24 +8,29 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open MeasureTheory
+open ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def secondProfileIndices {κ ι : Type*} [DecidableEq ι]
-    (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι) :
+section
+variable {κ ι : Type*} [DecidableEq ι]
+    (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι)
+include κ ι source F x
+
+def secondProfileIndices  :
     Finset (Σ _ : κ, Finset ι × Finset ι) :=
   source.sigma (fun j => (F \ (x j).overlap).powerset ×ˢ (F \ (x j).overlap).powerset)
 
-lemma mem_secondProfileIndices {κ ι : Type*} [DecidableEq ι]
-    (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι)
+lemma mem_secondProfileIndices 
     (j : Σ _ : κ, Finset ι × Finset ι) : j ∈ secondProfileIndices source F x ↔
       j.1 ∈ source ∧ j.2.1 ∈ (F \ (x j.1).overlap).powerset ∧
         j.2.2 ∈ (F \ (x j.1).overlap).powerset := by
   simp only [secondProfileIndices,Finset.mem_sigma,Finset.mem_product]
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

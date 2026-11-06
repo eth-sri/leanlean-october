@@ -2,18 +2,18 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFixedQChosenBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalAggregate
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalSourceFamily
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalUniform
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
-public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
-public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaved
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
-public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalKernel
 public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
+public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
+public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
+public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
 
 @[expose] public section
 
@@ -24,36 +24,36 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFixedQSource
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicRowSupport
+open HeckeFamily
+open CenteredMomentCommonRadialData
 
-open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCommonSaving
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
+
+
+open CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
+open RayFourExpansion
+
+
+
+open CenteredMomentFiniteProfileExceptional
+
+open CenteredMomentCanonicalFirst
+
+open CenteredMomentSecondPhysicalBlock
+open CenteredMomentSectorLocalization
+
+
+
+
+open ConcretePrimeRowBridge
+
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalSourceFamily
+open CenteredMomentSecondExceptionalFamily
 open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceLowerSupport
+open CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFiniteProfileExceptionalPhysical
 
 open CenteredMomentSecondExceptionalFixedQChosenBlock CenteredMomentSecondExceptionalAggregate
@@ -67,7 +67,7 @@ theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo h
       ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
       ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
+      (∀i,1≤ s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
       ∀(R0 seed:Ideal O),R0≠0 → Squarefree seed → seed≠0 → sourceRadius s≤Z^B →
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=coefficient s R0 seed
@@ -76,7 +76,7 @@ theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo h
       let R:=frequencyRadius Tsec Z ξ
       0<R → R≤Cr*Z^L →
       (expandedFactor s.η:ℝ)*R0.absNorm*(sourceRadius s)^2*(4*R)≤Z^B →
-      ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
+      ∀r:ℝ,Z^r≤ s.X₁ → Z^r≤ s.X₂ → Z^r≤ s.Y₁ → Z^r≤ s.Y₂ →
       ‖partEnergy true s.η χ₀ Q m s.t S β W Kphys Tsec Z ξ (sourceRadius s)‖/volume s.toData≤
         Ck*profileFactor Sprofile s p J Q K*
           Z^(2*ε+2*δ+2*B*θ-2*max r 0/3)*
@@ -127,7 +127,7 @@ theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo h
     have hs:=commonLabels_supported (activeSource S β) _ _ q.property
     have hcnd:(expandedFactor s.η:ℝ)*R0.absNorm*q.val.1.absNorm*q.val.2.absNorm*(4*R)≤Z^B:=by
       apply le_trans _ hcond
-      have hH:0≤sourceRadius s:=(Nat.cast_nonneg q.val.1.absNorm).trans hg.2.2.2.2.2.1
+      have hH:0≤ sourceRadius s:=(Nat.cast_nonneg q.val.1.absNorm).trans hg.2.2.2.2.2.1
       calc
         _=(expandedFactor s.η:ℝ)*R0.absNorm*((q.val.1.absNorm:ℝ)*q.val.2.absNorm)*(4*R):=by ring
         _≤(expandedFactor s.η:ℝ)*R0.absNorm*(sourceRadius s*sourceRadius s)*(4*R):=by
@@ -155,8 +155,8 @@ theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo h
       (volume s.toData)^(1/3:ℝ)*Kphys^(5/6:ℝ)*((∏i,s.lo i)*wlo*wlo)^(-2/3:ℝ)/(seed.absNorm:ℝ):=by ring
     _=_:=by rw [hp]
 
-end SevenEighths.CenteredMomentSecondExceptionalFixedQSource
 
-end
 
-end OAI
+
+
+

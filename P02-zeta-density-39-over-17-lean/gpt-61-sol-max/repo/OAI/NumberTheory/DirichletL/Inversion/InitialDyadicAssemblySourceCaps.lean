@@ -9,12 +9,12 @@ namespace OAI
 noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
-local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
+open scoped EisensteinEis
+open InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
+
 open InverseInitialKernelBridge InverseSecondChildWindows
 
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
@@ -31,9 +31,13 @@ variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
+section
+variable (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (pool:Finset ι)
+include hpr pool
+
 theorem actual_live_caps
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
+    (S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m b T:ℝ)(hZ:0<Z)
@@ -65,8 +69,7 @@ theorem actual_live_caps
   · exact hT x hx
 
 theorem actual_physical_partition
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
+    (S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m b T:ℝ)(hZ:1<Z)
@@ -80,9 +83,11 @@ theorem actual_physical_partition
     (by intro i; norm_num) w Ψ j marks W₁ W₂ Φ Z D m hZ
     (actual_live_caps p hp hcop hg hpr pool S hdiv hf w Ψ j marks W₁ W₂ Φ Z D m b T
       (by linarith) hW₁ hW₂ hT)
-
-end SevenEighths.InverseInitialDyadicAssembly
-
 end
 
-end OAI
+
+
+
+
+
+

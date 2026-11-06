@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -61,7 +61,7 @@ theorem actual_second_row_radius_one
   have he := nonzeroChildFrequencyBall_empty _ (actualSecondMultiplier_ne_zero p x) R (lt_of_not_ge hR)
   simpa [he] using hrows x hx
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

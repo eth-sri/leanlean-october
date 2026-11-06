@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Moments.Cancellation
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentCounting
-open CenteredMomentPrimary
-open QuadraticInitialBound
+
+
 
 theorem norm_tsum_ideal_ball (f : Ideal O → ℂ) (H M : ℝ)
     (hH : 0 ≤ H) (hM : 0 ≤ M) (hzero : f ⊥ = 0)
@@ -61,7 +61,7 @@ theorem norm_linear_coefficient_le (S : ℝ → ℂ) (v : ℂ) (C E : ℝ) (hE :
   have hb := herror X hX
   nlinarith
 
-end SevenEighths.CenteredMomentCounting
-end
 
-end OAI
+
+
+

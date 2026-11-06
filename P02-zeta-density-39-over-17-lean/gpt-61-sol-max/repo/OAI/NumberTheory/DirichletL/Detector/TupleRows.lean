@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.TupleMellin
 public import OAI.NumberTheory.DirichletL.Detector.TupleProducts
 
@@ -10,7 +11,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma sourceRowSummand_summable (η : HeckeFamily.Character) (S : Finset Id)
@@ -35,18 +36,29 @@ lemma sourceRowSummand_summable (η : HeckeFamily.Character) (S : Finset Id)
   exact tsum_mul_left (a:=star (C.residueMonoid u.val)*frequencyWeight z ⟨u.val,u.property.1⟩)
     (f:=fun c : (Id×Id)×(Id×Id)=>markedIdealHighSummand S D η u.val x w z c.1.1 c.1.2 c.2.1 c.2.2)
 
-def tupleIndexedCoefficient {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
+section
+variable {K : ℕ} (η : HeckeFamily.Character)
+include K η
+
+def tupleIndexedCoefficient  (p : Fin K→O)
     (J : Finset (Fin K)) (x w : ℂ) : ℂ :=
   (-1:ℂ)^J.card*(∏i∈J,(elementNorm (p i):ℂ)^(-w))*
     (∏i∈Finset.univ\J,star (HeckeFamily.elementCoeff η (p i))*(elementNorm (p i):ℂ)^x)
 
-def indexedCompensatedHigh {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
+section
+variable (S : Finset Id)
+include S
+
+def indexedCompensatedHigh 
     (p : Fin K→O) (u : O) (x w z : ℂ) : ℂ :=
   ∑J∈(Finset.univ:Finset (Fin K)).powerset,tupleIndexedCoefficient η p J x w*
     markedIdealHighSeries S (Ideal.span {∏i∈Finset.univ\J,p i}) η u x w z
 
-lemma tupleSourceSeries_common_scale {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
-    (C : CalibrationData) (p : Fin K→O) (hp : ∀i,p i≠0) (x w z : ℂ) :
+section
+variable (C : CalibrationData) (p : Fin K→O) (hp : ∀i,p i≠0) (x w z : ℂ)
+include C p hp x w z
+
+lemma tupleSourceSeries_common_scale  :
     tupleSourceSeries η S C p x w z=
       (∏i,(elementNorm (p i):ℂ)^(z-1))*
         ∑J∈(Finset.univ:Finset (Fin K)).powerset,tupleIndexedCoefficient η p J x w*
@@ -60,8 +72,7 @@ lemma tupleSourceSeries_common_scale {K : ℕ} (η : HeckeFamily.Character) (S :
   linear_combination (-1:ℂ)^J.card*he*
     sourceRowSeries η S C (Ideal.span {∏i∈Finset.univ\J,p i}) x w z
 
-theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
-    (C : CalibrationData) (p : Fin K→O) (hp : ∀i,p i≠0) (x w z : ℂ)
+theorem tupleSourceSeries_eq_rows 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1<z.re) :
     tupleSourceSeries η S C p x w z=
       (∏i,(elementNorm (p i):ℂ)^(z-1))*
@@ -86,10 +97,13 @@ theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Fi
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro J hJ
-  dsimp only [f]
   ring
-
-end SevenEighths.ProbePhysical
+end
+end
 end
 
-end OAI
+
+
+
+
+

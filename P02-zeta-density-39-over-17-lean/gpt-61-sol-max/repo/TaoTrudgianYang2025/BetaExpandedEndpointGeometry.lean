@@ -11,12 +11,12 @@ This includes the original one-sided endpoint convention. It does not
 differentiate an arbitrary exterior extension of the original phase.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseClosedSlope_positive_window
     {F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ}
@@ -42,4 +42,4 @@ theorem modelPhaseClosedSlope_endpoint_width
     modelPhaseClosedSlope_drop hσ hδ hF
       (u := 1) (v := 2) (by norm_num) (by norm_num) (by norm_num)
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from DFIBesselKernel.lean,
 exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -11,15 +12,14 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 open scoped Topology Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 /-- The positive-sign order-zero kernel, in the classical representation
 `K₀(x) = ∫₀∞ exp (-x cosh t) dt` for `x > 0`. -/
-noncomputable def dfiBesselK0 (x : ℝ) : ℝ :=
+def dfiBesselK0 (x : ℝ) : ℝ :=
   ∫ t in Set.Ioi (0 : ℝ), Real.exp (-x * Real.cosh t)
 
 /-- The elementary quadratic lower bound for the hyperbolic cosine. -/
@@ -48,9 +48,13 @@ theorem dfiBesselK0_integrand_le_gaussian
     _ ≤ -(x / 2) * t ^ 2 := by
       nlinarith
 
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+
 /-- The defining integral of `dfiBesselK0` is absolutely integrable for a
 positive argument. -/
-theorem integrableOn_dfiBesselK0_integrand {x : ℝ} (hx : 0 < x) :
+theorem integrableOn_dfiBesselK0_integrand  :
     IntegrableOn (fun t : ℝ => Real.exp (-x * Real.cosh t)) (Set.Ioi 0) := by
   have hgauss : IntegrableOn
       (fun t : ℝ => Real.exp (-(x / 2) * t ^ 2)) (Set.Ioi 0) := by
@@ -64,7 +68,7 @@ theorem integrableOn_dfiBesselK0_integrand {x : ℝ} (hx : 0 < x) :
 
 /-- DFI's source-strength trivial bound `K₀(x) ≪ x⁻¹ᐟ²`, with an explicit
 The constant. -/
-theorem abs_dfiBesselK0_le {x : ℝ} (hx : 0 < x) :
+theorem abs_dfiBesselK0_le  :
     |dfiBesselK0 x| ≤ Real.sqrt (Real.pi / (x / 2)) / 2 := by
   have hInt := integrableOn_dfiBesselK0_integrand hx
   have hGauss : IntegrableOn
@@ -83,14 +87,13 @@ theorem abs_dfiBesselK0_le {x : ℝ} (hx : 0 < x) :
     _ = Real.sqrt (Real.pi / (x / 2)) / 2 := integral_gaussian_Ioi (x / 2)
 
 /-- A simpler power form of the preceding estimate. -/
-theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
+theorem abs_dfiBesselK0_le_two_div_sqrt  :
     |dfiBesselK0 x| ≤ 2 / Real.sqrt x := by
-  have hsqrtPos : 0 < Real.sqrt x := Real.sqrt_pos.2 hx
+  have hsqrtPos := Real.sqrt_pos.2 hx
   have hquotPos : 0 ≤ Real.pi / (x / 2) := by positivity
-  have hsquareA : Real.sqrt (Real.pi / (x / 2)) ^ 2 =
-      Real.pi / (x / 2) := Real.sq_sqrt hquotPos
-  have hsquareX : Real.sqrt x ^ 2 = x := Real.sq_sqrt hx.le
-  have hpi : Real.pi < 4 := Real.pi_lt_four
+  have hsquareA := Real.sq_sqrt hquotPos
+  have hsquareX := Real.sq_sqrt hx.le
+  have hpi := Real.pi_lt_four
   have hprodNonneg :
       0 ≤ Real.sqrt (Real.pi / (x / 2)) * Real.sqrt x := by positivity
   have hprodSq :
@@ -106,6 +109,8 @@ theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
   rw [show 2 / Real.sqrt x * 2 = 4 / Real.sqrt x by ring]
   apply (le_div_iff₀ hsqrtPos).2
   exact hprod
+end
 
 
-end MathCollab.Density.Stronger.Atkinson
+
+

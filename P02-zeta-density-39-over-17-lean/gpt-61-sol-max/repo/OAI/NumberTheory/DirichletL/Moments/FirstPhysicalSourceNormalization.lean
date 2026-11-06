@@ -1,19 +1,20 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourcePool
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic ConcreteTraceCRT
 open CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation CenteredMomentActive
+
+open scoped EisensteinO
 
 theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
     (K A₀ B₀:ℝ)(hK:0<K)(_hA₀:0<A₀)(_hB₀:0<B₀):
@@ -24,7 +25,7 @@ theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
   have he:0<‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖:=
     norm_pos_iff.mpr (eisEmbedding_ne_zero
       (supported_element_ne_zero _ (subsetGenerator_supported C D hC E)))
-  have hk:0<K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2:=
+  have hk :=
     div_pos hK (sq_pos_of_pos he)
   unfold scalar
   rw [norm_mul,norm_div,norm_mul,
@@ -35,8 +36,8 @@ theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
     abs_of_pos hk,abs_of_nonneg (norm_nonneg _),abs_of_nonneg (Real.sqrt_nonneg _)]
   ring
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

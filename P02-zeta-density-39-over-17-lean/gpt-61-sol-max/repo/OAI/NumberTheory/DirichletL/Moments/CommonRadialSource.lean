@@ -11,12 +11,13 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonRadialSource
 open CenteredMomentCommonRadialData CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum
+open CenteredMomentAmplificationLiveMask CenteredMomentCommonRawScale
+open CenteredMomentRestrictedSource CenteredMomentHeckeColumnWindow
+open CenteredMomentFirstSectors CanonicalQuadraticSieve
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
  def sourceEnergy (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O) : ℝ :=
@@ -55,8 +56,8 @@ local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
   · dsimp only [remainingRaw,plainNorm,commonData]
     ring
 
-end SevenEighths.CenteredMomentCommonRadialSource
 
-end
 
-end OAI
+
+
+

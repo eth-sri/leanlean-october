@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Endpoint
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDetectorRowCount
 
 lemma denominator_endpoint (x : ℝ) : denominator x=Endpoint.denominator (1/2-x) := by
@@ -17,8 +17,12 @@ lemma primeWeight_endpoint (x : ℝ) : primeWeight x=Endpoint.primeWeight (1/2-x
   unfold primeWeight Endpoint.primeWeight
   ring
 
-theorem balanced_cutoff_bounds {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) :
+section
+variable {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
+    (hx : 0≤x) (hx' : x≤1/2)
+include δ x hδ hδ' hx hx'
+
+theorem balanced_cutoff_bounds  :
     1≤Endpoint.balancedCutoff δ (1/2-x) ∧ Endpoint.balancedCutoff δ (1/2-x)≤3/2 := by
   have hy : 0≤1/2-x := by linarith
   have hy' : 1/2-x≤1/2 := by linarith
@@ -37,8 +41,7 @@ theorem balanced_cutoff_bounds {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
       (div_le_iff₀ (by positivity)).mpr (by linarith)
     linarith
 
-theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) :
+theorem balanced_count_identity  :
     max (shortExponent δ x (Endpoint.balancedCutoff δ (1/2-x)))
         (longExponent δ (Endpoint.balancedCutoff δ (1/2-x))) =
       Endpoint.balancedRowCount δ (1/2-x) := by
@@ -70,6 +73,8 @@ theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
     rw [hJdef]
     ring
   rw [hl,hs,max_self]
+end
+
 
 theorem high_bin_count {B C U δ r ε γ : ℝ}
     (hC : 0≤C) (hU : 1≤U) (hδ : 5/6≤δ) (hδ' : δ≤1)
@@ -88,8 +93,8 @@ theorem high_bin_count {B C U δ r ε γ : ℝ}
     have hh' := mul_le_mul_of_nonneg_right hδ' hγ
     nlinarith
 
-end SevenEighths.HeckeDetectorRowCount
 
-end
 
-end OAI
+
+
+

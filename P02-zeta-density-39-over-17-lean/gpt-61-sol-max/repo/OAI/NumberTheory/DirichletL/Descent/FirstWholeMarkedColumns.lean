@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedZero
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem primeProductNorm_union_le_mul {ι : Type*} [DecidableEq ι]
     (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal] (A U : Finset ι) :
@@ -44,7 +44,7 @@ theorem whole_cube_marked_test_uniform (ε : ℝ) (hε : 0<ε) :
       mul_le_mul (hmark p hp hcop slots lists a hslots ha _) (hb U) (norm_nonneg _) (by positivity)
     _ ≤ _ := by gcongr
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

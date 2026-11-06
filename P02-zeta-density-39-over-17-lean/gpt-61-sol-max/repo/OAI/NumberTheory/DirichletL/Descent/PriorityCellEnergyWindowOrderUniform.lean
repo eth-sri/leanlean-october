@@ -8,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open SecondPassIntegration JointLogSeparation
+open InverseInitialClippedColumns
+open scoped EisensteinEis
 theorem actual_priority_cell_recursive_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -87,7 +87,7 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
               (1+Y*(scales d 3)/((scales d 1)*(scales d 2)^2*(Z^(secondCellColumnExponent Z X d))^2))^Aker)) := by
   let g:=priorityLogWindow om lo hi hlo hsupport negative
   let mg:=|Real.log lo|+|Real.log hi|
-  have hm:0≤mg:=add_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hm:0≤ mg:=add_nonneg (abs_nonneg _) (abs_nonneg _)
   have hg:Function.support g⊆Set.Icc (-mg) mg:=priorityLogWindow_support om lo hi hlo hsupport negative
   have hcg:Function.support (conjugateProfile g)⊆Set.Icc (-mg) mg:=by
     intro x hx
@@ -125,8 +125,8 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
     (actual_priority_profile_common p hp hcop hg₀ pool (secondInheritedProfile p x Ψ m z)
       slots₁ slots₂ _ _ a₁ a₂ om lo hi hlo hsupport negative t Φ Y X hX)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

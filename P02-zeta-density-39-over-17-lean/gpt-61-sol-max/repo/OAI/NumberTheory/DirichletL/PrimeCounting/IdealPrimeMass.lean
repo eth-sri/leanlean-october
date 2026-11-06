@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.IdealMangoldt
 public import OAI.NumberTheory.DirichletL.PrimeCounting.PrimeMass
 
@@ -63,8 +64,7 @@ theorem classCoeff_eq_prime_add_higher (C : Set (Ideal O)) (n : ℕ) :
 @[simp] theorem higherClassCoeff_zero (C : Set (Ideal O)) : higherClassCoeff C 0 = 0 :=
   coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
 
-@[simp] theorem primeClassCoeff_zero (C : Set (Ideal O)) : primeClassCoeff C 0 = 0 :=
-  coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
+
 
 theorem higherClassCoeff_eq_zero_of_prime (C : Set (Ideal O)) {n : ℕ} (hn : n.Prime) :
     higherClassCoeff C n = 0 := by
@@ -89,7 +89,11 @@ theorem summable_nonprime_vonMangoldt_div :
   simpa only [vonMangoldt.residueClass, Subsingleton.elim (α := ZMod 1) _ 0,
     Set.ofPred_true, Set.indicator_univ] using h
 
-theorem higherClassCoeff_summable_div (C : Set (Ideal O)) :
+section
+variable (C : Set (Ideal O))
+include C
+
+theorem higherClassCoeff_summable_div  :
     Summable (fun n : ℕ => higherClassCoeff C n / n) := by
   apply (summable_nonprime_vonMangoldt_div.mul_left 2).of_nonneg_of_le
   · intro n
@@ -99,12 +103,12 @@ theorem higherClassCoeff_summable_div (C : Set (Ideal O)) :
     exact div_le_div_of_nonneg_right (higherClassCoeff_le_nonprime_vonMangoldt C n)
       (Nat.cast_nonneg n)
 
-theorem higherClassCoeff_ratio_tendsto_zero (C : Set (Ideal O)) :
+theorem higherClassCoeff_ratio_tendsto_zero  :
     Tendsto (fun N : ℕ => cumsum (higherClassCoeff C) N / N) atTop (𝓝 0) :=
   cumsum_div_tendsto_zero_of_summable_div (higherClassCoeff_nonneg C)
     (higherClassCoeff_zero C) (higherClassCoeff_summable_div C)
 
-theorem primeClassCoeff_ratio_tendsto (C : Set (Ideal O)) {A : ℝ}
+theorem primeClassCoeff_ratio_tendsto  {A : ℝ}
     (h : Tendsto (fun N : ℕ => cumsum (classCoeff C) N / N) atTop (𝓝 A)) :
     Tendsto (fun N : ℕ => cumsum (primeClassCoeff C) N / N) atTop (𝓝 A) := by
   have h' := h.sub (higherClassCoeff_ratio_tendsto_zero C)
@@ -119,19 +123,23 @@ theorem primeClassCoeff_ratio_tendsto (C : Set (Ideal O)) {A : ℝ}
     rw [classCoeff_eq_prime_add_higher, add_sub_cancel_right]
   simpa only [heq, sub_zero] using h'
 
-def primeIdealsBelow (C : Set (Ideal O)) (N : ℕ) : Finset (Ideal O) :=
+section
+variable (N : ℕ)
+include N
+
+def primeIdealsBelow  : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_le (S := O) N).toFinset.filter
     (fun P => P ∈ C ∧ Prime P ∧ Ideal.absNorm P < N)
 
-@[simp] theorem mem_primeIdealsBelow (C : Set (Ideal O)) (N : ℕ) (P : Ideal O) :
+@[simp] theorem mem_primeIdealsBelow  (P : Ideal O) :
     P ∈ primeIdealsBelow C N ↔ P ∈ C ∧ Prime P ∧ Ideal.absNorm P < N := by
   simp only [primeIdealsBelow, Finset.mem_filter, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
   exact ⟨fun h => h.2, fun h => ⟨h.2.2.le, h⟩⟩
 
-def primeLogMass (C : Set (Ideal O)) (N : ℕ) : ℝ :=
+def primeLogMass  : ℝ :=
   ∑ P ∈ primeIdealsBelow C N, Real.log (Ideal.absNorm P)
 
-theorem primeLogMass_eq_cumsum (C : Set (Ideal O)) (N : ℕ) :
+theorem primeLogMass_eq_cumsum  :
     primeLogMass C N = cumsum (primeClassCoeff C) N := by
   have hmap : ∀ P ∈ primeIdealsBelow C N, Ideal.absNorm P ∈ Finset.range N := by
     intro P hP
@@ -151,9 +159,12 @@ theorem primeLogMass_eq_cumsum (C : Set (Ideal O)) (N : ℕ) :
       exact ⟨⟨hC, hP, heq ▸ Finset.mem_range.mp hn⟩, heq⟩
   · intro P hP
     rfl
-
+end
 end
 
-end SevenEighths.PNT.IdealPrimeMass
 
-end OAI
+
+
+
+
+

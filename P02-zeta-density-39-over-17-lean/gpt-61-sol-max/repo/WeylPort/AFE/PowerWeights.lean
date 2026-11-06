@@ -85,4 +85,4 @@ theorem afe_derivative_quotient_antitone {sigma c : ℝ} (hsigma : 0 ≤ sigma) 
     (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos hx hxy (by linarith)) hsigma)
     (by positivity) (by linarith)
 
-end DhimanKadiriQuesadaHerrera2026
+

@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss FirstPassCubeLabels
+
+open scoped EisensteinEis
 
  theorem finite_primeSupport_card {ι : Type*} [DecidableEq ι]
     (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -66,7 +66,7 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
     _ ≤ (2:ℝ)^A.card * (C * (primeProductNorm p U)^ε) := mul_le_mul_of_nonneg_left hh (by positivity)
     _ = _ := by ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

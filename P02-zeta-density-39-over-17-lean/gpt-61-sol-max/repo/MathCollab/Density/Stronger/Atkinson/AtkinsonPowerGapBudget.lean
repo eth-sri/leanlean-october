@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -10,20 +11,17 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalizedPowers
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinson_harmonic_mono {m n : ℕ} (hmn : m ≤ n) :
     (harmonic m:ℝ) ≤ (harmonic n:ℝ) := by
   unfold harmonic
-  push_cast
-  exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_mono hmn)
-    (fun _ _ _ => by positivity)
+  gcongr
 
 def atkinsonPowerGapTerm (η H G L : ℝ) (N R : ℕ) : ℝ :=
   (R:ℝ)*(N:ℝ)^(3/2+η)+
@@ -90,4 +88,4 @@ theorem atkinsonLocalizedGapBudget_le_power {H G η L : ℝ} (N R : ℕ)
   have hm := mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)
   exact hm.trans_eq (by simp; ring)
 
-end MathCollab.Density.Stronger.Atkinson
+

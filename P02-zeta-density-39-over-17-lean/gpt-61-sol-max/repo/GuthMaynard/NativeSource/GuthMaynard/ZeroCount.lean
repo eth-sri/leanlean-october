@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.NumberTheory.LSeries.ZetaZeros
 public import Mathlib.Analysis.Complex.Basic
 -- Force rebuild
@@ -22,7 +23,7 @@ open scoped Topology ArithmeticFunction.Moebius ComplexOrder
 
 namespace GuthMaynard.NativeMoment
 
-/-- A precise rectangle in the complex plane: σ_min ≤ Re(s) ≤ σ_max, T_min ≤ Im(s) ≤ T_max -/
+/- A precise rectangle in the complex plane: σ_min ≤ Re(s) ≤ σ_max, T_min ≤ Im(s) ≤ T_max -/
 def ZeroRectangle (σ_min σ_max T_min T_max : ℝ) : Set ℂ :=
   { s : ℂ | σ_min ≤ s.re ∧ s.re ≤ σ_max ∧ T_min ≤ s.im ∧ s.im ≤ T_max }
 
@@ -38,8 +39,7 @@ lemma ZeroRectangle_subset (σ_min1 σ_max1 T_min1 T_max1 σ_min2 σ_max2 T_min2
   ZeroRectangle σ_min1 σ_max1 T_min1 T_max1 ⊆ ZeroRectangle σ_min2 σ_max2 T_min2 T_max2 := by
   intro s hs
   rw [mem_ZeroRectangle] at hs ⊢
-  rcases hs with ⟨h1, h2, h3, h4⟩
-  exact ⟨le_trans h_sigma_min h1, le_trans h2 h_sigma_max, le_trans h_T_min h3, le_trans h4 h_T_max⟩
+  grind
 
 lemma isCompact_ZeroRectangle (σ_min σ_max T_min T_max : ℝ) :
     IsCompact (ZeroRectangle σ_min σ_max T_min T_max) := by
@@ -51,11 +51,11 @@ lemma isCompact_ZeroRectangle (σ_min σ_max T_min T_max : ℝ) :
   rw [hRectangle]
   exact isCompact_Icc.reProdIm isCompact_Icc
 
-/-- Analytic order of vanishing for a complex function. -/
+/- Analytic order of vanishing for a complex function. -/
 noncomputable def analyticVanishingOrder (f : ℂ → ℂ) (s : ℂ) : ℕ :=
   analyticOrderNatAt f s
 
-/-- A finite sum of analytic multiplicities inside a compact preconnected domain is bounded by
+/- A finite sum of analytic multiplicities inside a compact preconnected domain is bounded by
 the corresponding divisor finsum.  This is the bridge between the project's `Finset` zero counts
 and Mathlib's Jensen inequality. -/
 theorem finset_analyticVanishingOrder_le_finsum_divisor {f : ℂ → ℂ} {U : Set ℂ}
@@ -64,20 +64,16 @@ theorem finset_analyticVanishingOrder_le_finsum_divisor {f : ℂ → ℂ} {U : S
     (S : Finset ℂ) (hSU : ∀ u ∈ S, u ∈ U) :
     ((∑ u ∈ S, analyticVanishingOrder f u : ℕ) : ℝ) ≤
       ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := by
-  let g : ℂ → ℝ := fun u => if u ∈ S then (analyticOrderNatAt f u : ℝ) else 0
-  let d : ℂ → ℝ := fun u => (divisor f U u : ℝ)
+  let g := fun u => if u ∈ S then (analyticOrderNatAt f u : ℝ) else 0
+  let d := fun u => (divisor f U u : ℝ)
   have hgFin : Function.HasFiniteSupport g := by
     apply Set.Finite.subset S.finite_toSet
     intro u hu
     simp only [Function.mem_support, ne_eq] at hu
-    by_contra huS
-    have huS' : u ∉ S := by simpa using huS
-    exact hu (by simp [g, huS'])
+    grind
   have hdFin : Function.HasFiniteSupport d := by
     have hfin := (divisor f U).finiteSupport hU
-    exact hfin.subset (by
-      intro u hu
-      simpa only [Function.mem_support, d, Int.cast_eq_zero, ne_eq] using hu)
+    exact hfin.subset (by aesop)
   have hgd : g ≤ d := by
     intro u
     by_cases huS : u ∈ S
@@ -91,12 +87,7 @@ theorem finset_analyticVanishingOrder_le_finsum_divisor {f : ℂ → ℂ} {U : S
       exact_mod_cast hf.divisor_nonneg u
   have hle := finsum_le_finsum hgFin hdFin hgd
   have hgSum : ∑ᶠ u, g u = ∑ u ∈ S, g u :=
-    finsum_eq_sum_of_support_subset g (by
-      intro u hu
-      simp only [Function.mem_support, ne_eq] at hu
-      by_contra huS
-      have huS' : u ∉ S := by simpa using huS
-      exact hu (by simp [g, huS']))
+    finsum_eq_sum_of_support_subset g (by aesop)
   have hdSum : ((∑ᶠ u, divisor f U u : ℤ) : ℝ) = ∑ᶠ u, d u := by
     simpa [d] using map_finsum (Int.castRingHom ℝ) ((divisor f U).finiteSupport hU)
   change ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) ≤ _
@@ -106,19 +97,18 @@ theorem finset_analyticVanishingOrder_le_finsum_divisor {f : ℂ → ℂ} {U : S
     _ ≤ ∑ᶠ u, d u := hle
     _ = ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := hdSum.symm
 
-/-- The zeros of the Riemann zeta function in a compact rectangle form a finite set. -/
+/- The zeros of the Riemann zeta function in a compact rectangle form a finite set. -/
 theorem riemannZeta_finite_zeros_in_rect (σ_min σ_max T_min T_max : ℝ) :
     (ZeroRectangle σ_min σ_max T_min T_max ∩ {s | riemannZeta s = 0}).Finite := by
-  simpa only [riemannZetaZeros, Set.preimage, Set.mem_singleton_iff] using
-    (isCompact_ZeroRectangle σ_min σ_max T_min T_max).inter_riemannZetaZeros_finite
+  exact (isCompact_ZeroRectangle σ_min σ_max T_min T_max).inter_riemannZetaZeros_finite
 
 open scoped BigOperators
 
-/-- The exact finite set of distinct zeros in a bounded rectangle. -/
+/- The exact finite set of distinct zeros in a bounded rectangle. -/
 noncomputable def zerosInRect (σ_min σ_max T_min T_max : ℝ) : Finset ℂ :=
   (riemannZeta_finite_zeros_in_rect σ_min σ_max T_min T_max).toFinset
 
-/-- Number of zeros in the rectangle counting analytical multiplicity. -/
+/- Number of zeros in the rectangle counting analytical multiplicity. -/
 noncomputable def zeroCountRect (σ_min σ_max T_min T_max : ℝ) : ℕ :=
   ∑ s ∈ zerosInRect σ_min σ_max T_min T_max, analyticVanishingOrder riemannZeta s
 
@@ -127,8 +117,7 @@ lemma zerosInRect_subset_of_rect_subset (σ_min1 σ_max1 T_min1 T_max1 σ_min2 �
   zerosInRect σ_min1 σ_max1 T_min1 T_max1 ⊆ zerosInRect σ_min2 σ_max2 T_min2 T_max2 := by
   intro s
   rw [zerosInRect, zerosInRect, Set.Finite.mem_toFinset, Set.Finite.mem_toFinset, Set.mem_inter_iff, Set.mem_inter_iff]
-  rintro ⟨h1, h2⟩
-  exact ⟨h h1, h2⟩
+  bound
 
 lemma zeroCountRect_mono (σ_min1 σ_max1 T_min1 T_max1 σ_min2 σ_max2 T_min2 T_max2 : ℝ)
   (h_sigma_min : σ_min2 ≤ σ_min1)
@@ -149,10 +138,7 @@ lemma zerosInRect_subset (σ_min σ_max T₁ T₂ T₃ : ℝ) :
   rw [zerosInRect, zerosInRect, zerosInRect, Finset.mem_union, Set.Finite.mem_toFinset,
       Set.Finite.mem_toFinset, Set.Finite.mem_toFinset, Set.mem_inter_iff, Set.mem_inter_iff, Set.mem_inter_iff,
       ZeroRectangle, ZeroRectangle, ZeroRectangle, Set.mem_ofPred_eq, Set.mem_ofPred_eq, Set.mem_ofPred_eq]
-  rintro ⟨⟨hσ1, hσ2, hT1, hT3⟩, hzero⟩
-  by_cases h : s.im ≤ T₂
-  · left; exact ⟨⟨hσ1, hσ2, hT1, h⟩, hzero⟩
-  · right; push Not at h; exact ⟨⟨hσ1, hσ2, le_of_lt h, hT3⟩, hzero⟩
+  grind
 
 lemma zeroCountRect_split (σ_min σ_max T₁ T₂ T₃ : ℝ) :
     zeroCountRect σ_min σ_max T₁ T₃ ≤ zeroCountRect σ_min σ_max T₁ T₂ + zeroCountRect σ_min σ_max T₂ T₃ := by
@@ -164,67 +150,19 @@ lemma zeroCountRect_split (σ_min σ_max T₁ T₂ T₃ : ℝ) :
   have h2 : ∑ s ∈ zerosInRect σ_min σ_max T₁ T₂ ∪ zerosInRect σ_min σ_max T₂ T₃, analyticVanishingOrder riemannZeta s + ∑ s ∈ zerosInRect σ_min σ_max T₁ T₂ ∩ zerosInRect σ_min σ_max T₂ T₃, analyticVanishingOrder riemannZeta s = ∑ s ∈ zerosInRect σ_min σ_max T₁ T₂, analyticVanishingOrder riemannZeta s + ∑ s ∈ zerosInRect σ_min σ_max T₂ T₃, analyticVanishingOrder riemannZeta s := Finset.sum_union_inter
   omega
 
-/-- The classical zero-counting function N(σ, T): number of zeros (with analytic multiplicity)
+/- The classical zero-counting function N(σ, T): number of zeros (with analytic multiplicity)
     with Re(s) ≥ σ and |Im(s)| ≤ T (i.e. -T ≤ Im(s) ≤ T). -/
 noncomputable def N (σ T : ℝ) : ℕ :=
   zeroCountRect σ 1 (-T) T
 
-/-- Conjugating both the argument and value of zeta gives an analytic function
+/- Conjugating both the argument and value of zeta gives an analytic function
 on the complement of the pole. -/
 private noncomputable def conjugateRiemannZeta (z : ℂ) : ℂ :=
   (starRingEnd ℂ) (riemannZeta ((starRingEnd ℂ) z))
 
-/-- The Riemann zeta function commutes with complex conjugation away from its
-totalized value at the pole. The proof uses the Dirichlet series on `Re s > 1`
-and analytic continuation on `ℂ \ {1}`. -/
-theorem riemannZeta_conj (z : ℂ) (hz : z ≠ 1) :
-    riemannZeta (star z) = star (riemannZeta z) := by
-  have hAnalyticZeta : AnalyticOnNhd ℂ riemannZeta ({1}ᶜ : Set ℂ) :=
-    analyticOn_riemannZeta
-  have hAnalyticConj : AnalyticOnNhd ℂ conjugateRiemannZeta ({1}ᶜ : Set ℂ) := by
-    rw [Complex.analyticOnNhd_iff_differentiableOn isOpen_compl_singleton]
-    intro w hw
-    have hwNe : w ≠ 1 := by simpa using hw
-    have hstarNe : star w ≠ 1 := by
-      intro h
-      apply hwNe
-      have := congrArg star h
-      simpa using this
-    apply DifferentiableAt.differentiableWithinAt
-    change DifferentiableAt ℂ ((starRingEnd ℂ) ∘ riemannZeta ∘ (starRingEnd ℂ)) w
-    rw [differentiableAt_conj_conj_iff]
-    exact differentiableAt_riemannZeta hstarNe
-  have hAtTwo : riemannZeta =ᶠ[𝓝 (2 : ℂ)] conjugateRiemannZeta := by
-    have hOpen : {w : ℂ | 1 < w.re} ∈ 𝓝 (2 : ℂ) := by
-      apply IsOpen.mem_nhds
-      · exact isOpen_lt continuous_const continuous_re
-      · norm_num
-    filter_upwards [hOpen] with w hw
-    have hstarRe : (star w).re = w.re := by simp
-    rw [zeta_eq_tsum_one_div_nat_add_one_cpow hw]
-    unfold conjugateRiemannZeta
-    rw [zeta_eq_tsum_one_div_nat_add_one_cpow (by simpa [hstarRe] using hw)]
-    rw [Complex.conj_tsum]
-    congr 1
-    funext n
-    simp only [one_div]
-    rw [map_inv₀]
-    congr 1
-    have hBaseArg : (((n + 1 : ℕ) : ℂ)).arg ≠ Real.pi := by
-      change ((((n + 1 : ℕ) : ℝ) : ℂ)).arg ≠ Real.pi
-      rw [Complex.arg_ofReal_of_nonneg (by positivity : (0 : ℝ) ≤ (n + 1 : ℕ))]
-      exact Real.pi_ne_zero.symm
-    simpa using (Complex.cpow_conj ((n + 1 : ℕ) : ℂ) (star w) hBaseArg)
-  have hEq := hAnalyticZeta.eqOn_of_preconnected_of_eventuallyEq hAnalyticConj
-    (isConnected_compl_singleton_of_one_lt_rank (by simp) (1 : ℂ)).isPreconnected
-    (by norm_num : (2 : ℂ) ∈ ({1}ᶜ : Set ℂ)) hAtTwo
-  have hzMem : z ∈ ({1}ᶜ : Set ℂ) := by simpa using hz
-  have h := hEq hzMem
-  unfold conjugateRiemannZeta at h
-  have hs := congrArg star h
-  simp
 
-/-- Iterated complex derivatives commute with conjugating both the input and
+
+/- Iterated complex derivatives commute with conjugating both the input and
 the output. -/
 theorem iteratedDeriv_conj_conj (f : ℂ → ℂ) (n : ℕ) :
     iteratedDeriv n ((starRingEnd ℂ) ∘ f ∘ (starRingEnd ℂ)) =
@@ -235,7 +173,7 @@ theorem iteratedDeriv_conj_conj (f : ℂ → ℂ) (n : ℕ) :
       rw [show n + 1 = n.succ by omega, iteratedDeriv_succ, ih,
         deriv_conj_conj, ← iteratedDeriv_succ]
 
-/-- Conjugating both the input and output of an analytic function preserves
+/- Conjugating both the input and output of an analytic function preserves
 its analytic order. -/
 theorem analyticOrderAt_conj_conj (f : ℂ → ℂ) (z : ℂ)
     (hf : AnalyticAt ℂ f z) :
@@ -251,8 +189,7 @@ theorem analyticOrderAt_conj_conj (f : ℂ → ℂ) (z : ℂ)
         Complex.continuous_conj.continuousAt
       simpa using ht0
     filter_upwards [ht.eventually hfd] with w hw
-    rw [differentiableAt_conj_conj_iff]
-    exact hw
+    simp_all
   apply ENat.eq_of_forall_natCast_le_iff
   intro n
   rw [natCast_le_analyticOrderAt_iff_iteratedDeriv_eq_zero hg,
@@ -266,7 +203,7 @@ theorem analyticOrderAt_conj_conj (f : ℂ → ℂ) (z : ℂ)
     rw [iteratedDeriv_conj_conj f i]
     simp [Function.comp_apply, h i hi]
 
-/-- Analytic multiplicity of a zeta zero is preserved by conjugation. -/
+/- Analytic multiplicity of a zeta zero is preserved by conjugation. -/
 theorem analyticVanishingOrder_conj (z : ℂ) (hz : z ≠ 1) :
     analyticVanishingOrder riemannZeta (star z) =
       analyticVanishingOrder riemannZeta z := by
@@ -279,12 +216,6 @@ theorem analyticVanishingOrder_conj (z : ℂ) (hz : z ≠ 1) :
     have hOpen : ({1}ᶜ : Set ℂ) ∈ 𝓝 (star z) :=
       isOpen_compl_singleton.mem_nhds (by simpa using hzStar)
     filter_upwards [hOpen] with w hw
-    have hwNe : w ≠ 1 := by simpa using hw
-    have hwStarNe : star w ≠ 1 := by
-      intro h
-      apply hwNe
-      have := congrArg star h
-      simpa using this
     unfold conjugateRiemannZeta
     simp
   have hAnalytic : AnalyticAt ℂ riemannZeta z :=
@@ -293,7 +224,7 @@ theorem analyticVanishingOrder_conj (z : ℂ) (hz : z ≠ 1) :
   have hOrderEvent := analyticOrderAt_congr hEvent
   exact congrArg ENat.toNat (hOrderEvent.trans hOrderConj)
 
-/-- Negative and positive ordinate rectangles contain the same zeta-zero
+/- Negative and positive ordinate rectangles contain the same zeta-zero
 multiplicity, by conjugation. -/
 theorem zeroCountRect_neg_eq_pos (σ T : ℝ) :
     zeroCountRect σ 1 (-T) 0 = zeroCountRect σ 1 0 T := by
@@ -304,44 +235,21 @@ theorem zeroCountRect_neg_eq_pos (σ T : ℝ) :
     rcases hz with ⟨hzRect, hzZero⟩
     rw [mem_ZeroRectangle] at hzRect ⊢
     change riemannZeta z = 0 at hzZero
-    have hzNe : z ≠ 1 := by
-      intro h
-      subst z
-      exact riemannZeta_one_ne_zero hzZero
-    refine ⟨⟨by simpa using hzRect.1, by simpa using hzRect.2.1,
-      by simp; linarith, by simp; linarith⟩, ?_⟩
-    change riemannZeta (star z) = 0
-    rw [riemannZeta_conj z hzNe, hzZero]
-    simp
+    simp_all <;> nlinarith
   have hPosNeg : ∀ z ∈ zerosInRect σ 1 0 T, star z ∈ zerosInRect σ 1 (-T) 0 := by
     intro z hz
     rw [zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff] at hz ⊢
     rcases hz with ⟨hzRect, hzZero⟩
     rw [mem_ZeroRectangle] at hzRect ⊢
     change riemannZeta z = 0 at hzZero
-    have hzNe : z ≠ 1 := by
-      intro h
-      subst z
-      exact riemannZeta_one_ne_zero hzZero
-    refine ⟨⟨by simpa using hzRect.1, by simpa using hzRect.2.1,
-      by simp; linarith, by simp; linarith⟩, ?_⟩
-    change riemannZeta (star z) = 0
-    rw [riemannZeta_conj z hzNe, hzZero]
-    simp
+    simp_all
   exact Finset.sum_bij' (fun z _ => star z) (fun z _ => star z)
     hNegPos hPosNeg
     (fun z _ => by simp)
     (fun z _ => by simp)
-    (fun z hz => by
-      have hzNe : z ≠ 1 := by
-        rw [zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff] at hz
-        have hzZero : riemannZeta z = 0 := hz.2
-        intro h
-        subst z
-        exact riemannZeta_one_ne_zero hzZero
-      exact (analyticVanishingOrder_conj z hzNe).symm)
+    (fun z hz => by grind [analyticVanishingOrder_conj])
 
-/-- Iterating `zeroCountRect_split` decomposes a positive-height rectangle into
+/- Iterating `zeroCountRect_split` decomposes a positive-height rectangle into
 the fixed low rectangle `[0,1]` and the first `m` dyadic slabs. -/
 theorem zeroCountRect_zero_two_pow_le (σ : ℝ) (m : ℕ) :
     zeroCountRect σ 1 0 (((2 : ℕ) ^ m : ℕ) : ℝ) ≤
@@ -364,14 +272,14 @@ The partition of the total zero count N(σ, T) into dyadic slabs
 is an internal algebraic step deferred to the AlgebraicCombinationHypothesis proof.
 -/
 
-/-- Bound for zeta in the right half-plane `Re(s) ≥ 2`, obtained by comparing
+/- Bound for zeta in the right half-plane `Re(s) ≥ 2`, obtained by comparing
 the absolutely convergent Dirichlet series termwise with the series at `2`. -/
 theorem zeta_right_half_plane_bound (σ t : ℝ) (hσ : σ ≥ 2) :
     ‖riemannZeta (σ + t * I)‖ ≤ 2 := by
-  let s : ℂ := σ + t * I
+  let s := σ + t * I
   have hsRe : s.re = σ := by simp [s]
   have hs : 1 < s.re := by rw [hsRe]; linarith
-  have hSumS : LSeriesSummable 1 s := LSeriesSummable_one_iff.mpr hs
+  have hSumS := LSeriesSummable_one_iff.mpr hs
   have hSumTwo : LSeriesSummable 1 (2 : ℂ) :=
     LSeriesSummable_one_iff.mpr (by norm_num)
   rw [← LSeries_one_eq_riemannZeta hs, LSeries]
@@ -389,7 +297,7 @@ theorem zeta_right_half_plane_bound (σ t : ℝ) (hσ : σ ≥ 2) :
       have hn : (0 : ℂ) ≤ LSeries.term 1 (2 : ℝ) n :=
         LSeries.term_nonneg (by simp) 2
       have heq := congrArg Complex.re (Complex.norm_of_nonneg' hn)
-      simpa using heq
+      exact heq
     _ = (riemannZeta (2 : ℂ)).re := by
       rw [LSeries_one_eq_riemannZeta (by norm_num)]
     _ = Real.pi ^ 2 / 6 := by
@@ -397,7 +305,7 @@ theorem zeta_right_half_plane_bound (σ t : ℝ) (hσ : σ ≥ 2) :
       norm_cast
     _ ≤ 2 := by nlinarith [Real.pi_lt_d2, Real.pi_pos]
 
-/-- Polynomial zeta bound on the pole-safe Jensen circle.  Abel's integral continuation gives
+/- Polynomial zeta bound on the pole-safe Jensen circle.  Abel's integral continuation gives
 the pointwise estimate in `Re(s) ≥ 1/4`; elementary circle geometry supplies the uniform
 `100 T³` majorant. -/
 theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
@@ -406,7 +314,7 @@ theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
       ‖riemannZeta z‖ ≤ 100 * T ^ (3:ℝ) := by
   intro z hz
   rw [Metric.mem_sphere, dist_eq_norm] at hz
-  let c : ℂ := 2 + I * (t + 1/2)
+  let c := 2 + I * (t + 1/2)
   have hzc : ‖z - c‖ = 7 / 4 := by simpa [c] using hz
   have hreDiff : |z.re - 2| ≤ 7 / 4 := by
     calc
@@ -454,22 +362,20 @@ theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
         _ ≤ 100 * T * T ^ (2 : ℕ) := by nlinarith
         _ = 100 * T ^ (3 : ℕ) := by ring
 
-/-- The complex norm of the Möbius coefficient is at most one. -/
+/- The complex norm of the Möbius coefficient is at most one. -/
 lemma moebius_coeff_norm_le_one (n : ℕ) :
     ‖((ArithmeticFunction.moebius n : ℤ) : ℂ)‖ ≤ ‖(1 : ℂ)‖ := by
-  rw [Complex.norm_intCast, norm_one]
   exact_mod_cast ArithmeticFunction.abs_moebius_le_one (n := n)
 
-/-- On the line `Re(s) = 2`, the Möbius Dirichlet series has norm less than
+/- On the line `Re(s) = 2`, the Möbius Dirichlet series has norm less than
 `5 / 3`, by comparison with `ζ(2) = π² / 6`. -/
 lemma moebius_LSeries_norm_lt_five_thirds (u : ℝ) :
     ‖LSeries (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) (2 + u * I)‖ <
       (5 / 3 : ℝ) := by
-  let s : ℂ := 2 + u * I
+  let s := 2 + u * I
   have hsRe : s.re = 2 := by simp [s]
   have hs : 1 < s.re := by rw [hsRe]; norm_num
-  have hSumM : LSeriesSummable
-      (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) s :=
+  have hSumM :=
     ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs
   have hSumTwo : LSeriesSummable 1 (2 : ℂ) :=
     LSeriesSummable_one_iff.mpr (by norm_num)
@@ -495,17 +401,17 @@ lemma moebius_LSeries_norm_lt_five_thirds (u : ℝ) :
       have hn : (0 : ℂ) ≤ LSeries.term 1 (2 : ℝ) n :=
         LSeries.term_nonneg (by simp) 2
       have heq := congrArg Complex.re (Complex.norm_of_nonneg' hn)
-      simpa using heq
+      exact heq
     _ = Real.pi ^ 2 / 6 := by
       rw [LSeries_one_eq_riemannZeta (by norm_num), riemannZeta_two]
       norm_cast
     _ < 5 / 3 := by nlinarith [Real.pi_lt_d2, Real.pi_pos]
 
-/-- Lower bound on the line `Re(s) = 2`, obtained from the absolutely
+/- Lower bound on the line `Re(s) = 2`, obtained from the absolutely
 convergent Möbius inverse of the zeta Dirichlet series. -/
 theorem euler_product_lower_bound_2 (t : ℝ) :
     (0.6 : ℝ) ≤ ‖riemannZeta (2 + I * (t + 1 / 2))‖ := by
-  let s : ℂ := 2 + I * (t + 1 / 2)
+  let s := 2 + I * (t + 1 / 2)
   have hsRe : s.re = 2 := by simp [s]
   have hs : 1 < s.re := by rw [hsRe]; norm_num
   have hprod :
@@ -517,12 +423,7 @@ theorem euler_product_lower_bound_2 (t : ℝ) :
   have hM : ‖LSeries (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) s‖ ≤ 5 / 3 := by
     have h := moebius_LSeries_norm_lt_five_thirds (t + 1 / 2)
     simpa [s, mul_comm] using h.le
-  have hone : (1 : ℝ) ≤ ‖riemannZeta s‖ * (5 / 3) := by
-    calc
-      (1 : ℝ) = ‖riemannZeta s‖ *
-          ‖LSeries (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) s‖ := hnormprod.symm
-      _ ≤ ‖riemannZeta s‖ * (5 / 3) := by gcongr
   change (0.6 : ℝ) ≤ ‖riemannZeta s‖
   nlinarith [norm_nonneg (riemannZeta s)]
 
-end GuthMaynard.NativeMoment
+

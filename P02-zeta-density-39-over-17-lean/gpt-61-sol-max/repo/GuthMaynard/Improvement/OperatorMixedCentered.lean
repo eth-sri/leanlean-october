@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.OperatorMixedTrace
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set InnerProductSpace
 namespace GuthMaynard.Improvement
 
@@ -60,4 +59,4 @@ theorem operator_centered_mixed (ν : Measure ℝ) [IsFiniteMeasure ν]
   · funext s
     exact operator_centered_frequencyKernel ha hi hl hL hs s
 
-end GuthMaynard.Improvement
+

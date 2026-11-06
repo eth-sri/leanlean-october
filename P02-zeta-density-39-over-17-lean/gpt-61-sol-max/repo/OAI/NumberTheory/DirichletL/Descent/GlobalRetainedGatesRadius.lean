@@ -8,25 +8,29 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
+open InverseMoment InverseFirstPriorityParents
+open InverseWholePriorityRetainedSource
 open InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open ActualEisensteinCubic SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
-def supportedRetainedSource (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
+section
+variable (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ) : Finset (MarkedSecondSource ι (Jo+(J.card+J.card)) 0) :=
+    (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ)
+include extra original negative J lists pool cutoff b X
+
+def supportedRetainedSource  : Finset (MarkedSecondSource ι (Jo+(J.card+J.card)) 0) :=
   geometrySource p (retainedSource p extra original negative J lists pool cutoff) b X
 
-lemma supported_subset (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ) :
+lemma supported_subset  :
     supportedRetainedSource p extra original negative J lists pool cutoff b X⊆
       retainedSource p extra original negative J lists pool cutoff := geometrySource_subset p _ b X
+end
+
 
 lemma supported_conditions (hp : ∀i,p i≠0)
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
@@ -37,9 +41,13 @@ lemma supported_conditions (hp : ∀i,p i≠0)
   ActualSecondSourceConditions.mono p (retained_conditions p hp extra original hvalid hextra negative J lists pool cutoff)
     (supported_subset p extra original negative J lists pool cutoff b X)
 
-lemma supported_frequency_ne_zero
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
+section
+variable (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
+include extra original negative J lists pool
+
+lemma supported_frequency_ne_zero
+    
     (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ) :
     ∀x∈supportedRetainedSource p extra original negative J lists pool cutoff b X,x.second.frequency≠0 := by
   intro x hx
@@ -47,8 +55,7 @@ lemma supported_frequency_ne_zero
     (supported_subset p extra original negative J lists pool cutoff b X hx)
 
 lemma supported_uniform_frequency_gate
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
+    
     (Z delta eta L Y tau b X : ℝ) :
     ∀x∈supportedRetainedSource p extra original negative J lists pool
       (fun G E=>uniformSecondRadius p Z delta eta G E L Y (Z^tau)) b X,
@@ -57,6 +64,8 @@ lemma supported_uniform_frequency_gate
   intro x hx
   exact ((mem_unifiedSource p pool _ _ x).mp
     (supported_subset p extra original negative J lists pool _ b X hx)).2.2.2.2
+end
+
 
 theorem supported_cell_row_gates (hp : ∀i,p i≠0)
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
@@ -77,7 +86,7 @@ theorem supported_cell_row_gates (hp : ∀i,p i≠0)
   intro x hx
   exact hgates (index p x) x (Finset.mem_filter.mpr ⟨hx,rfl⟩)
 
-end SevenEighths.InverseMomentGlobalRetainedGates
-end
 
-end OAI
+
+
+

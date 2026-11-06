@@ -27,4 +27,4 @@ theorem zetaQuadraticLogGaussian_root_rescale {T u : ℝ}
   ring
 
 
-end MathCollab.Density.Stronger.Atkinson
+

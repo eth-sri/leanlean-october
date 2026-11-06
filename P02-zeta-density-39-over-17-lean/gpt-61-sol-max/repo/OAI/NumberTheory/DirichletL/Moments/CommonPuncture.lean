@@ -5,16 +5,20 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonProfile
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonPuncture
 open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
 open CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
- theorem residualBoxes_filter {ι : Type*} [Fintype ι]
-    (S : ι → Finset (Ideal O)) (C : Ideal O) (B : ι → Ideal O) (hB : ∀ i,B i≠0) :
+ section
+variable {ι : Type*} [Fintype ι]
+    (S : ι → Finset (Ideal O)) (C : Ideal O) (B : ι → Ideal O) (hB : ∀ i,B i≠0)
+include ι S C B hB
+
+theorem residualBoxes_filter  :
     residualBoxes S C B hB=
       (Fintype.piFinset (fun i => residualPool (B i) (hB i) (S i))).filter
         (fun u => IsCoprime C (∏ i,u i)) := by
@@ -23,8 +27,7 @@ local notation "O" => ActualEisensteinCubic.O
     IsCoprime.prod_right_iff,Finset.mem_univ,forall_const]
   exact forall_and
 
-theorem residualBoxes_sum {ι : Type*} [Fintype ι]
-    (S : ι → Finset (Ideal O)) (C : Ideal O) (B : ι → Ideal O) (hB : ∀ i,B i≠0)
+theorem residualBoxes_sum 
     (F : (ι → Ideal O) → ℂ) :
     (∑ u∈residualBoxes S C B hB,F u)=
       ∑ u∈Fintype.piFinset (fun i => residualPool (B i) (hB i) (S i)),
@@ -33,6 +36,8 @@ theorem residualBoxes_sum {ι : Type*} [Fintype ι]
   apply Finset.sum_congr rfl
   intro u hu
   split_ifs <;> simp
+end
+
 
 theorem profileCoefficient_puncture {ι : Type*} [Fintype ι]
     (C R : Ideal O) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -45,8 +50,8 @@ theorem profileCoefficient_puncture {ι : Type*} [Fintype ι]
   by_cases hC : IsCoprime (finiteTupleProduct v) C <;>
     by_cases hR : IsCoprime (finiteTupleProduct v) R <;> simp [hC,hR]
 
-end SevenEighths.CenteredMomentCommonPuncture
 
-end
 
-end OAI
+
+
+

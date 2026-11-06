@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.BarrierPotential
 
 @[expose] public section
@@ -9,78 +10,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-namespace SecondPassArithmetic
 
-end SecondPassArithmetic
 
-open scoped BigOperators Classical
+                                  
 namespace CanonicalUnitEuler
 open ActualEisensteinCubic
 open CompletedGauss (actualSextic)
@@ -143,8 +142,12 @@ section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff
 
+section
+variable (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ)
+include K hK C
+
 lemma kernel_mass_le_weighted_mass_add_core
-    (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ)
+    
     (V : KernelQuotient→ℝ) (hV : Continuous V)
     (hlow : ∀q,1-C*(K.indicator (fun _ => (1:ℝ))) q≤V q)
     (f : kernelSmoothTests) :
@@ -161,8 +164,7 @@ lemma kernel_mass_le_weighted_mass_add_core
     by_cases hq : q∈K
     · simp only [Set.indicator_of_mem hq] at hh ⊢
       nlinarith
-    · simp only [Set.indicator_of_notMem hq,mul_zero,sub_zero,one_mul] at hh ⊢
-      exact hh
+    simp_all <;> nlinarith
   have hh := integral_mono (hi.sub (hki.const_mul C)) hw hpoint
   simp only [Pi.sub_apply] at hh
   rw [integral_sub hi (hki.const_mul C),integral_const_mul,integral_indicator hK,
@@ -170,7 +172,7 @@ lemma kernel_mass_le_weighted_mass_add_core
   linarith
 
 lemma kernel_compact_coercivity_extend
-    (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ)
+    
     (hcore : ∀f : kernelSmoothTests,‖kernelSmoothTestsToL2 f‖^2≤kernelDirichletEnergy f+
       C*‖kernelMassRestrictionCLM K hK (kernelSmoothTestsToL2 f)‖^2)
     (u : KernelEnergyGraph) :
@@ -181,6 +183,8 @@ lemma kernel_compact_coercivity_extend
         C*‖kernelMassRestrictionCLM K hK (kernelSmoothTestsToL2 f)‖^2
       rw [kernelGradientToL2_norm_sq]
       exact hcore f)
+end
+
 
 lemma kernel_barrier_coercivity_of_ground_state
     (hground : ∀f : kernelSmoothTests,
@@ -204,8 +208,12 @@ open scoped Topology ComplexConjugate
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-theorem ground_state_test_fderiv (f : E → ℂ) (u : E → ℝ) (x v : E)
-    (hf : DifferentiableAt ℝ f x) (hu : DifferentiableAt ℝ u x) (hux : u x ≠ 0) :
+section
+variable (f : E → ℂ) (u : E → ℝ) (x v : E)
+    (hf : DifferentiableAt ℝ f x) (hu : DifferentiableAt ℝ u x) (hux : u x ≠ 0)
+include f u x v hf hu hux
+
+theorem ground_state_test_fderiv  :
     fderiv ℝ (fun y => ‖f y‖^2/u y) x v =
       (2*(conj (f x)*fderiv ℝ f x v).re*u x - ‖f x‖^2*fderiv ℝ u x v)/(u x)^2 := by
   have hc : HasDerivAt (fun t : ℝ => x+t•v) v 0 := by
@@ -230,11 +238,12 @@ theorem ground_state_test_fderiv (f : E → ℂ) (u : E → ℝ) (x v : E)
   have he := hqc.unique hq
   simpa only [zero_smul,add_zero,real_inner_eq_re_inner ℂ,RCLike.inner_apply',RCLike.re_to_complex] using he
 
-theorem ground_state_fderiv_inequality (f : E → ℂ) (u : E → ℝ) (x v : E)
-    (hf : DifferentiableAt ℝ f x) (hu : DifferentiableAt ℝ u x) (hux : u x ≠ 0) :
+theorem ground_state_fderiv_inequality  :
     fderiv ℝ u x v * fderiv ℝ (fun y => ‖f y‖^2/u y) x v ≤ ‖fderiv ℝ f x v‖^2 := by
   rw [ground_state_test_fderiv f u x v hf hu hux]
   exact ground_state_directional_inequality (u x) (fderiv ℝ u x v) hux (f x) (fderiv ℝ f x v)
+end
+
 
 end CubicEisenstein
 
@@ -244,9 +253,13 @@ namespace CubicEisenstein
 
 section
 
-def kernelGroundStateTest (φ : KernelQuotient → ℝ)
+section
+variable (φ : KernelQuotient → ℝ)
     (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
-    (hpos : ∀ q, 0 < φ q) (f : kernelSmoothTests) : kernelSmoothTests := by
+    (hpos : ∀ q, 0 < φ q) (f : kernelSmoothTests)
+include φ hφ hpos f
+
+def kernelGroundStateTest  : kernelSmoothTests := by
   have hn : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ (fun q => ‖f.1 q‖^2) :=
     (contDiff_norm_sq ℂ).contMDiff.comp f.2.1
   have hg := hn.div₀ hφ (fun q => (hpos q).ne')
@@ -254,38 +267,40 @@ def kernelGroundStateTest (φ : KernelQuotient → ℝ)
   apply HasCompactSupport.of_support_subset_isCompact f.2.2
   intro q hq
   by_contra hh
-  have hz : f.1 q = 0 := image_eq_zero_of_notMem_tsupport hh
+  have hz := image_eq_zero_of_notMem_tsupport hh
   exact hq (by simp [hz])
 
-@[simp] theorem kernelGroundStateTest_apply (φ : KernelQuotient → ℝ)
-    (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
-    (hpos : ∀ q, 0 < φ q) (f : kernelSmoothTests) (q : KernelQuotient) :
+@[simp] theorem kernelGroundStateTest_apply  (q : KernelQuotient) :
     (kernelGroundStateTest φ hφ hpos f).1 q = ((‖f.1 q‖^2/φ q : ℝ) : ℂ) := rfl
 
-theorem kernelGroundStateTest_tsupport (φ : KernelQuotient → ℝ)
-    (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
-    (hpos : ∀ q, 0 < φ q) (f : kernelSmoothTests) :
+theorem kernelGroundStateTest_tsupport  :
     tsupport (kernelGroundStateTest φ hφ hpos f).1 ⊆ tsupport f.1 := by
   apply closure_minimal _ (isClosed_tsupport f.1)
   intro q hq
   by_contra hh
-  have hz : f.1 q = 0 := image_eq_zero_of_notMem_tsupport hh
+  have hz := image_eq_zero_of_notMem_tsupport hh
   exact hq (by simp [hz])
+end
 
-def kernelTruncatedWeight (χ φ : KernelQuotient → ℝ)
+
+section
+variable (χ φ : KernelQuotient → ℝ)
     (hχ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ χ) (hχK : HasCompactSupport χ)
-    (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ) : kernelSmoothTests := by
+    (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
+include χ φ hχ hχK hφ
+
+def kernelTruncatedWeight  : kernelSmoothTests := by
   refine ⟨fun q => ((χ q*φ q : ℝ) : ℂ), Complex.ofRealCLM.contDiff.contMDiff.comp (hχ.mul hφ), ?_⟩
   apply HasCompactSupport.of_support_subset_isCompact hχK
   intro q hq
   by_contra hh
-  have hz : χ q = 0 := image_eq_zero_of_notMem_tsupport hh
+  have hz := image_eq_zero_of_notMem_tsupport hh
   exact hq (by simp [hz])
 
-@[simp] theorem kernelTruncatedWeight_apply (χ φ : KernelQuotient → ℝ)
-    (hχ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ χ) (hχK : HasCompactSupport χ)
-    (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ) (q : KernelQuotient) :
+@[simp] theorem kernelTruncatedWeight_apply  (q : KernelQuotient) :
     (kernelTruncatedWeight χ φ hχ hχK hφ).1 q = ((χ q*φ q : ℝ) : ℂ) := rfl
+end
+
 
 theorem kernelRealLift_contDiffAt (φ : KernelQuotient → ℝ)
     (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
@@ -321,7 +336,7 @@ theorem kernelTruncatedPotential_memLp (χ φ V : KernelQuotient → ℝ)
   apply HasCompactSupport.of_support_subset_isCompact hχK
   intro q hq
   by_contra hh
-  have hz : χ q = 0 := image_eq_zero_of_notMem_tsupport hh
+  have hz := image_eq_zero_of_notMem_tsupport hh
   exact hq (by simp [hz])
 
 open Filter MeasureTheory
@@ -335,8 +350,7 @@ theorem ground_state_ofReal_fderiv {E : Type*} [NormedAddCommGroup E] [NormedSpa
   rfl
 
 theorem ground_state_self_product (z : ℂ) : (star z*z).re = ‖z‖^2 := by
-  simp only [Complex.sq_norm,Complex.normSq_apply,Complex.star_def,Complex.mul_re,
-    Complex.conj_re,Complex.conj_im]
+  simp only [star_def, mul_re, conj_re, conj_im, Complex.sq_norm, normSq_apply]
   ring
 
 theorem kernelEnergyDensity_euclidean (f : kernelSmoothTests)
@@ -349,18 +363,22 @@ theorem kernelEnergyDensity_euclidean (f : kernelSmoothTests)
   simpa only [Complex.ofReal_re,Complex.ofReal_im,
     zero_mul,sub_zero,Complex.re_sum,ground_state_self_product] using hh
 
-theorem kernelGroundState_pair_le_at
-    (χ φ : KernelQuotient → ℝ)
+section
+variable (χ φ : KernelQuotient → ℝ)
     (hχ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ χ) (hχK : HasCompactSupport χ)
     (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
     (hpos : ∀ q, 0 < φ q) (f : kernelSmoothTests)
+include χ φ hχ hχK hφ hpos f
+
+theorem kernelGroundState_pair_le_at
+    
     (p : EuclideanSpatial) (hp : 0 < p 2)
     (hχone : χ =ᶠ[𝓝 (kernelEuclideanProjection p)] (fun _ => 1)) :
     (kernelDirichletPairDensity (kernelTruncatedWeight χ φ hχ hχK hφ)
       (kernelGroundStateTest φ hφ hpos f) (kernelEuclideanProjection p)).re ≤
       kernelQuotientEnergyDensity f (kernelEuclideanProjection p) := by
-  let u : EuclideanSpatial → ℝ := fun q => φ (kernelEuclideanProjection q)
-  let F : EuclideanSpatial → ℂ := kernelTestField f
+  let u := fun q => φ (kernelEuclideanProjection q)
+  let F := kernelTestField f
   have hu : DifferentiableAt ℝ u p := (kernelRealLift_contDiffAt φ hφ p hp).differentiableAt (by simp)
   have hF : DifferentiableAt ℝ F p := (kernelTestField_contDiffAt f p hp).differentiableAt (by simp)
   have hu0 : u p ≠ 0 := (hpos _).ne'
@@ -377,19 +395,14 @@ theorem kernelGroundState_pair_le_at
     change fderiv ℝ (fun q => ((‖F q‖^2/u q : ℝ) : ℂ)) p (euclideanCoordinateVector j) = _
     exact ground_state_ofReal_fderiv _ p _ hG
   rw [kernelDirichletPairDensity_euclidean _ _ p hp,kernelEnergyDensity_euclidean f p hp]
-  simp only [hh,hg,Complex.star_def,Complex.conj_ofReal,← Complex.ofReal_mul,
-    ← Complex.ofReal_pow,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
-    zero_mul,sub_zero,Complex.re_sum]
+  simp only [← ofReal_pow, hh, star_def, conj_ofReal, hg, ← ofReal_mul, mul_re, ofReal_re, re_sum, ofReal_im, zero_mul, sub_zero]
   apply mul_le_mul_of_nonneg_left _ (sq_nonneg _)
   apply Finset.sum_le_sum
   intro j hj
   exact ground_state_fderiv_inequality F u p (euclideanCoordinateVector j) hF hu hu0
 
 theorem kernelGroundState_pair_le
-    (χ φ : KernelQuotient → ℝ)
-    (hχ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ χ) (hχK : HasCompactSupport χ)
-    (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
-    (hpos : ∀ q, 0 < φ q) (f : kernelSmoothTests)
+    
     (hχone : ∀ q ∈ tsupport f.1, χ =ᶠ[𝓝 q] (fun _ => 1)) (q : KernelQuotient) :
     (kernelDirichletPairDensity (kernelTruncatedWeight χ φ hχ hχK hφ)
       (kernelGroundStateTest φ hφ hpos f) q).re ≤ kernelQuotientEnergyDensity f q := by
@@ -406,6 +419,8 @@ theorem kernelGroundState_pair_le
   · rw [kernelDirichletPairDensity_zero_of_notMem _ _ q
       (fun h => hq (kernelGroundStateTest_tsupport φ hφ hpos f h)),Complex.zero_re]
     exact kernelQuotientEnergyDensity_nonneg f q
+end
+
 
 theorem kernel_ground_state_inequality (φ V : KernelQuotient → ℝ)
     (hφ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ φ)
@@ -418,14 +433,14 @@ theorem kernel_ground_state_inequality (φ V : KernelQuotient → ℝ)
   obtain ⟨χ,hχ,hχK,hχone,hχrange⟩ := kernelCompact_smooth_cutoff (tsupport f.1) f.2.2
   let h := kernelTruncatedWeight χ φ hχ hχK hφ
   let g := kernelGroundStateTest φ hφ hpos f
-  let A : KernelQuotient → ℂ := fun q => ((χ q*V q*φ q : ℝ) : ℂ)
+  let A := fun q => ((χ q*V q*φ q : ℝ) : ℂ)
   have hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel) :=
     kernelTruncatedPotential_memLp χ φ V hχ.continuous hχK hφ.continuous hV
   have hcoord : ∀ p : EuclideanSpatial, 0 < p 2 →
       kernelEuclideanProjection p ∈ tsupport g.1 →
       kernelCoordinateLaplacian h p = A (kernelEuclideanProjection p) := by
     intro p hp hpg
-    have hfmem : kernelEuclideanProjection p ∈ tsupport f.1 :=
+    have hfmem :=
       kernelGroundStateTest_tsupport φ hφ hpos f hpg
     have hlocal := hχone (kernelEuclideanProjection p) hfmem
     change positiveEuclideanLaplacian (kernelTestField h) p = _
@@ -455,7 +470,7 @@ theorem kernel_ground_state_inequality (φ V : KernelQuotient → ℝ)
       (fun q => kernelGroundState_pair_le χ φ hχ hχK hφ hpos f hχone q)
   have hreal : (∫ q, (kernelDirichletPairDensity h g q).re
       ∂integralQuotientVolume globalKubotaKernel) = (kernelDirichletForm h g).re := by
-    simpa only [kernelDirichletForm,RCLike.re_to_complex] using integral_re (kernelDirichletPairDensity_integrable h g)
+    exact integral_re (kernelDirichletPairDensity_integrable h g)
   rw [hreal,hgreen,Complex.ofReal_re] at hbound
   exact hbound
 
@@ -482,10 +497,8 @@ theorem kernel_global_exterior_coercivity :
 
 end CubicEisenstein
 
-namespace SecondPassArithmetic
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+

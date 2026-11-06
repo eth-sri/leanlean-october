@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
 public import TaoTrudgianYang2025.BetaBufferedJets
@@ -13,13 +14,13 @@ Taylor remainder. The powers cancel term by term in Leibniz's formula.
 The bound concerns the original function and its constructed polynomial.
 -/
 
-noncomputable section
+
 
 open Set
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
     {χ f : ℝ → ℝ} {a x h A M : ℝ} {n Q : ℕ}
@@ -35,7 +36,7 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
     have hz := hχb 0 (Nat.zero_le n)
     simp only [pow_zero,mul_one] at hz
     exact (abs_nonneg _).trans hz
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   have hR : ContDiffAt ℝ n (fun y => f y-finiteTaylorPolynomial f Q a y) x :=
     ((hf x right_mem_uIcc).sub (finiteTaylorPolynomial_contDiff f Q a).contDiffAt).of_le hN
@@ -48,7 +49,7 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
     _ ≤ ∑ i ∈ Finset.range (n+1), (n.choose i : ℝ)*(A*M*h^(Q+1-n)) := by
       apply Finset.sum_le_sum
       intro i hi
-      have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+      have hin := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
       have hij : n-i ≤ Q := (Nat.sub_le _ _).trans hn
       have hrem := abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le hij hf hb
       have hrem' : |iteratedDeriv (n-i) (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
@@ -72,4 +73,4 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
       rw [← Finset.sum_mul,← Nat.cast_sum,Nat.sum_range_choose,Nat.cast_pow,Nat.cast_ofNat]
       ring
 
-end TaoTrudgianYang2025
+

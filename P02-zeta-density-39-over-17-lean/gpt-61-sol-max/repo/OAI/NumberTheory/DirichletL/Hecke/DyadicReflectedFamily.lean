@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ComplexConjugate
-open Complex Set
+open Complex
 namespace SevenEighths.HeckeDyadicReflection
 open HeckeFamily HeckePresentation HeckeFiniteDeletion
 
 theorem family_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ η : Character,
     FiniteFourier.IsPrimitiveOnIdeals η.residue → η.residue≠1 →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction η s‖≤C*(η.modulus.absNorm : ℝ)^(1/2-s.re)*(3+|s.im|)^2*
       ‖LFunction η (1-conj s)‖ := by
   obtain ⟨C,hC,hbound⟩ := primitive_reflected_bound
@@ -51,7 +51,7 @@ theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
     FiniteFourier.IsPrimitiveOnIdeals ψ.residue → χ.residue≠1 →
     (∀ J : Ideal O, idealCoeff χ J=
       if IsCoprime J χ.modulus then idealCoeff ψ J else 0) →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction χ s‖≤C*(ψ.modulus.absNorm : ℝ)^(1/2-s.re)*(3+|s.im|)^2*
       ‖LFunction χ (1-conj s)‖*
       (‖factors χ.modulus ψ s‖*‖(factors χ.modulus ψ (1-conj s))⁻¹‖) := by
@@ -74,7 +74,7 @@ theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
 
 theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ χ : Character, χ.residue≠1 →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction χ s‖≤C*(χ.modulus.absNorm : ℝ)^(1/2-s.re)*
       ((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+2*ε)*
       (3+|s.im|)^2*‖LFunction χ (1-conj s)‖ := by
@@ -123,8 +123,8 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
       gcongr
     _ = _ := by ring
 
-end SevenEighths.HeckeDyadicReflection
 
-end
 
-end OAI
+
+
+

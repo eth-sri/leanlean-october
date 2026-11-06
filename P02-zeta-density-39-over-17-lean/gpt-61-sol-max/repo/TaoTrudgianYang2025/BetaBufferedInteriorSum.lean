@@ -13,13 +13,13 @@ distances. Summing both reciprocal distances gives two harmonic sums.
 No stationary-image or per-mode error certificate is assumed downstream.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem sum_range_two_edge_reciprocals (L : ℕ) :
     (∑ n ∈ Finset.range L, (1/((n+1 : ℕ) : ℝ)+1/((L-n : ℕ) : ℝ))) =
@@ -156,4 +156,4 @@ theorem modelPhaseBufferedInteriorBlock_error
     rw [hs,hz,Finset.sum_empty,norm_zero,Nat.cast_zero,Real.log_zero,add_zero,mul_one]
     exact zero_le_one.trans hC
 
-end TaoTrudgianYang2025
+

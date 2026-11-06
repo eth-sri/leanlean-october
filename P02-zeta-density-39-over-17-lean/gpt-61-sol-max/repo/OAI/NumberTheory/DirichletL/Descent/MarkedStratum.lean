@@ -9,16 +9,20 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CubicEisenstein LocalReflectionBrackets CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 section Local
 variable {F : Type*} [Field F] [Fintype F]
 
-def markedFrequencyRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+include χ ψ
+
+def markedFrequencyRow 
     (σ ε : Fˣ) (x h : F) : ℂ :=
   finiteAdditiveFourierCoeff ψ zeroMark h * frequencyMultiplier χ ψ σ ε x h
 
-theorem markedFrequencyRow_units (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem markedFrequencyRow_units 
     (σ ε : Fˣ) (x : F) :
     (∑ h : Fˣ, markedFrequencyRow χ ψ σ ε x h) =
       localReflectionActive zeroMark χ ψ σ ε x := by
@@ -29,15 +33,17 @@ theorem markedFrequencyRow_units (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   intro h hh
   ring
 
-def mixedFrequencyRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+def mixedFrequencyRow 
     (marked : Bool) (j : ℕ) (σ ε : Fˣ) (x h : F) : ℂ :=
   if marked then markedFrequencyRow χ ψ σ ε x h else frequencyRow χ ψ j σ ε x h
+end
+
 
 end Local
 
-noncomputable local instance markedStratumField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) :=
+local instance markedStratumField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) :=
   Ideal.Quotient.field P
-noncomputable local instance markedStratumFintype (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) :=
+local instance markedStratumFintype (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) :=
   Fintype.ofFinite _
 
 theorem actual_mixed_frequency_units (P : Ideal Eis) [P.IsMaximal]
@@ -56,7 +62,7 @@ theorem actual_mixed_frequency_units (P : Ideal Eis) [P.IsMaximal]
   · simp only [mixedFrequencyRow, ite_true]
     rw [markedFrequencyRow_units, actual_marked_active_formula P hg hc ψ hψ σ ε x]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

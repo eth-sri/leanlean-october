@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosInitialDyadic
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                           
 
-noncomputable section
+
 open GafniTao
 open scoped BigOperators
 namespace TaoTrudgianYang2025
@@ -56,4 +55,4 @@ theorem exists_robertSargos_initial_dyadic_log (f : ℝ → ℝ) (M H : ℕ)
         (mul_le_mul_of_nonneg_right h₂ (by positivity))
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

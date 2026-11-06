@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicAssembly
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.InverseInitialDyadicAssembly
@@ -47,8 +47,8 @@ theorem window_exponent_eventual_upper (C η:ℝ)(_hC:0<C)(hη:0<η) :
     _≤Z^η*Z^R:=mul_le_mul_of_nonneg_right ht (Real.rpow_nonneg (by positivity) _)
     _=Z^R*Z^η:=mul_comm _ _
 
-end SevenEighths.InverseInitialDyadicAssembly
 
-end
 
-end OAI
+
+
+

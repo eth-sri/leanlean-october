@@ -1,4 +1,5 @@
 module
+import Mathlib
 
 public import Expdb.Basic.PowerAsymptotics
 public import Expdb.ExponentialSums.LogPhase
@@ -30,22 +31,31 @@ namespace Expdb
 
 /-! ## Exponential-sum growth definition -/
 
-/-- The variable exponential sum
+section
+variable (F : VariableFunction (VariableObject.fixed ℝ) ℝ)
+    (T N : VariableObject ℝ) (a b : VariableObject ℕ)
+include F T N a b
+
+/- The variable exponential sum
 `∑ n ∈ [a, b], e(T F(n / N))`. -/
 def exponentialSum
-    (F : VariableFunction (VariableObject.fixed ℝ) ℝ)
-    (T N : VariableObject ℝ) (a b : VariableObject ℕ) :
+     :
     VariableObject ℂ :=
   fun i ↦ exponentialSumAt (F i) (T i) (N i) (a i) (b i)
 
 @[simp] theorem exponentialSum_apply
-    (F : VariableFunction (VariableObject.fixed ℝ) ℝ)
-    (T N : VariableObject ℝ) (a b : VariableObject ℕ) (i : ℕ) :
+     (i : ℕ) :
     exponentialSum F T N a b i = exponentialSumAt (F i) (T i) (N i) (a i) (b i) :=
   rfl
+end
 
-/-- The assertion that `β` is an admissible exponential-sum growth exponent at scale `α`. -/
-def IsExponentSumBound (α : ℝ≥0) (β : ℝ) : Prop :=
+
+section
+variable (α : ℝ≥0)
+include α
+
+/- The assertion that `β` is an admissible exponential-sum growth exponent at scale `α`. -/
+def IsExponentSumBound  (β : ℝ) : Prop :=
   ∀ (N T : VariableObject ℝ)
     (F : VariableFunction (VariableObject.fixed ℝ) ℝ)
     (a b : VariableObject ℕ),
@@ -57,15 +67,15 @@ def IsExponentSumBound (α : ℝ≥0) (β : ℝ) : Prop :=
     (∀ i, N i ≤ (a i : ℝ) ∧ (b i : ℝ) ≤ 2 * N i) →
     IsPowerBounded (exponentialSum F T N a b) T β
 
-/-- The set of admissible exponential-sum growth exponents at scale `α`. -/
-def exponentSumBounds (α : ℝ≥0) : Set ℝ :=
+/- The set of admissible exponential-sum growth exponents at scale `α`. -/
+def exponentSumBounds  : Set ℝ :=
   {β : ℝ | IsExponentSumBound α β}
+end
 
-@[simp] theorem mem_exponentSumBounds {α : ℝ≥0} {β : ℝ} :
-    β ∈ exponentSumBounds α ↔ IsExponentSumBound α β :=
-  Iff.rfl
 
-/-- The exponential sum growth exponent `β(α)` from the blueprint definition `beta-def`. -/
+
+
+/- The exponential sum growth exponent `β(α)` from the blueprint definition `beta-def`. -/
 def exponentSumGrowthExponent (α : ℝ≥0) : ℝ :=
   sInf (exponentSumBounds α)
 
@@ -75,7 +85,7 @@ The candidate set is upward closed, nonempty, and bounded below.
 
 ### Monotonicity -/
 
-/-- Admissible exponential-sum bounds are monotone in the exponent. -/
+/- Admissible exponential-sum bounds are monotone in the exponent. -/
 theorem IsExponentSumBound.mono {α : ℝ≥0} {β γ : ℝ}
     (hβ : IsExponentSumBound α β) (hβγ : β ≤ γ) :
     IsExponentSumBound α γ := by
@@ -100,8 +110,12 @@ private lemma norm_exponentialSum_le_three_mul
       exact_mod_cast Nat.sub_le _ _
     _ ≤ 3 * N i := by linarith [hab i |>.2, hN i]
 
-/-- The triangle inequality gives the admissible exponent `α`. -/
-theorem isExponentSumBound_self (α : ℝ≥0) :
+section
+variable (α : ℝ≥0)
+include α
+
+/- The triangle inequality gives the admissible exponent `α`. -/
+theorem isExponentSumBound_self  :
     IsExponentSumBound α (α : ℝ) := by
   intro N T F a b hN hT _ hNT _ hab
   obtain ⟨exponent, hexponent, hNpower⟩ := hNT
@@ -115,22 +129,24 @@ theorem isExponentSumBound_self (α : ℝ≥0) :
       rw [Real.norm_eq_abs,
         abs_of_nonneg (Real.rpow_nonneg (le_trans zero_le_one (hT i)) _)]
 
-private lemma exponentSumBounds_nonempty (α : ℝ≥0) :
+private lemma exponentSumBounds_nonempty  :
     (exponentSumBounds α).Nonempty :=
   ⟨α, isExponentSumBound_self α⟩
+end
 
-/-- Every admissible exponent at a nonnegative scale is nonnegative. -/
+
+section
+variable {α : ℝ≥0}
+include α
+
+/- Every admissible exponent at a nonnegative scale is nonnegative. -/
 theorem IsExponentSumBound.nonneg
-    {α : ℝ≥0} {β : ℝ} (hβ : IsExponentSumBound α β) :
+     {β : ℝ} (hβ : IsExponentSumBound α β) :
     0 ≤ β := by
   let T : VariableObject ℝ := fun i ↦ (i : ℝ) + 2
   let N : VariableObject ℝ := fun i ↦ T i ^ (α : ℝ)
   let a : VariableObject ℕ := fun i ↦ ⌈N i⌉₊
-  have hT : ∀ i, 1 ≤ T i := by
-    intro i
-    dsimp [T]
-    have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
-    linarith
+  have hT : ∀ i, 1 ≤ T i := by grind
   have hTunbounded : T.IsUnbounded := by
     apply (VariableObject.isUnbounded_iff_tendsto_atTop
       fun i ↦ zero_le_one.trans (hT i)).2
@@ -151,26 +167,31 @@ theorem IsExponentSumBound.nonneg
     hT hTunbounded hbound zero_lt_one
   exact Filter.Eventually.of_forall fun i ↦ by simp
 
-private lemma exponentSumBounds_bddBelow {α : ℝ≥0} :
+private lemma exponentSumBounds_bddBelow  :
     BddBelow (exponentSumBounds α) :=
   ⟨0, fun _ hβ ↦ hβ.nonneg⟩
+end
+
 
 /-! ## The least admissible exponent -/
 
+section
+variable (α : ℝ≥0)
+include α
+
 private lemma exists_isExponentSumBound_lt_add
-    (α : ℝ≥0) {ε : ℝ} (hε : 0 < ε) :
+     {ε : ℝ} (hε : 0 < ε) :
     ∃ β : ℝ, IsExponentSumBound α β ∧
       β < exponentSumGrowthExponent α + ε := by
-  let S : Set ℝ := exponentSumBounds α
+  let S := exponentSumBounds α
   have hS : S.Nonempty := exponentSumBounds_nonempty α
   have hinf_lt : sInf S < sInf S + ε := by linarith
   obtain ⟨β, hβ, hβlt⟩ := exists_lt_of_csInf_lt hS hinf_lt
   change IsExponentSumBound α β at hβ
-  refine ⟨β, hβ, ?_⟩
-  simpa [S, exponentSumGrowthExponent] using hβlt
+  bound
 
-/-- By underspill, the infimum of the admissible exponents is itself admissible. -/
-theorem isExponentSumBound_exponentSumGrowthExponent (α : ℝ≥0) :
+/- By underspill, the infimum of the admissible exponents is itself admissible. -/
+theorem isExponentSumBound_exponentSumGrowthExponent  :
     IsExponentSumBound α (exponentSumGrowthExponent α) := by
   intro N T F a b hN hT hTunbounded hNT hF hab
   apply (isPowerBounded_iff_forall_pos
@@ -191,8 +212,10 @@ theorem isExponentSumBound_exponentSumGrowthExponent (α : ℝ≥0) :
       Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hT0 _)]
     apply Real.rpow_le_rpow_of_exponent_le (hT i)
     linarith
+end
 
-/-- The defining universal property of the exponential sum growth exponent. -/
+
+/- The defining universal property of the exponential sum growth exponent. -/
 theorem exponentSumGrowthExponent_le_iff {α : ℝ≥0} {β : ℝ} :
     exponentSumGrowthExponent α ≤ β ↔ IsExponentSumBound α β := by
   constructor
@@ -202,4 +225,4 @@ theorem exponentSumGrowthExponent_le_iff {α : ℝ≥0} {β : ℝ} :
 
 /-! ## Logarithmic model phase -/
 
-end Expdb
+

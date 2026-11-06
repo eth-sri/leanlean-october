@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -14,8 +15,7 @@ public import MathCollab.Density.Stronger.Fourth.SquarePrefix
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Fourth
 
 
@@ -24,7 +24,7 @@ theorem zeta_fourth_dyadic :
       ∀ H : ℝ, H₀ ≤ H → 0 < H →
         (∫ t in H..2*H, zetaMomentCriticalNorm t^4) ≤ C*H^(1+η) := by
   intro η hη
-  let q : ℝ := min η 1/20
+  let q := min η 1/20
   have hq : 0 < q := by dsimp [q]; positivity
   have hq1 : q ≤ 1 := by
     have h := min_le_right η 1
@@ -47,7 +47,7 @@ theorem zeta_fourth_dyadic :
   obtain ⟨M,hNlower,hNupper⟩ := exists_dyadic_cutoff
     (Real.one_le_rpow hH1 (by positivity : 0 ≤ 1+q))
   have hNlowerNat : H^(1+q) ≤ ((2^M:ℕ):ℝ) := by exact_mod_cast hNlower
-  let F : ℝ → ℝ := fun t =>
+  let F := fun t =>
     ∫ u : ℝ, Real.exp (-98*u^2)*
       ‖dirichletPrefix (2^M) (zetaFourthCoeff q) (u-t)‖^2
   have hFnonneg (t : ℝ) : 0 ≤ F t := integral_nonneg (fun _ => by positivity)
@@ -57,7 +57,7 @@ theorem zeta_fourth_dyadic :
   have hpoint : ∀ t ∈ Icc H (2*H), zetaMomentCriticalNorm t^4 ≤
       8*Kg*(2*H)^(2*q)*F t+8*Kt^2 := by
     intro t ht
-    let P : ℂ := zetaFourthPrefix t q (Finset.range (2^M+1))
+    let P := zetaFourthPrefix t q (Finset.range (2^M+1))
     have hE : ‖zetaFourthRightPiece t-P‖ ≤ Kt :=
       herror H hHHt t ht.1 ht.2 (2^M) hNlowerNat q hq
     have htri : ‖zetaFourthRightPiece t‖ ≤ ‖P‖+‖zetaFourthRightPiece t-P‖ := by
@@ -80,8 +80,7 @@ theorem zeta_fourth_dyadic :
   have hFmean : (∫ t in H..2*H, F t) ≤
       Dp*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q :=
     hmean q hq.le M H hH0.le
-  have hmain : (2*H)^(2*q)*((M:ℝ)+1)^2*
-      (H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q ≤ Db*H^(1+7*q) :=
+  have hmain :=
     hbudget H hH1 M hNupper
   have hlast : H^(1+7*q) ≤ H^(1+η) :=
     Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
@@ -97,7 +96,6 @@ theorem zeta_fourth_dyadic :
     _ = 8*Kg*(2*H)^(2*q)*(∫ t in H..2*H, F t)+8*Kt^2*H := by
       rw [intervalIntegral.integral_add (hFi.const_mul _) intervalIntegrable_const,
         intervalIntegral.integral_const_mul,intervalIntegral.integral_const]
-      simp only [smul_eq_mul]
       ring
     _ ≤ 8*Kg*(2*H)^(2*q)*
         (Dp*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q)+8*Kt^2*H :=
@@ -116,4 +114,4 @@ theorem zeta_fourth_dyadic :
 
 
 
-end MathCollab.Density.Stronger.Fourth
+

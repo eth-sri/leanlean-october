@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.DampedCutoff
 public import Mathlib.Analysis.MellinInversion
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
@@ -15,7 +16,6 @@ and the real part in a fixed vertical strip.
 
 open Real Set MeasureTheory
 open scoped BigOperators ContDiff FourierTransform
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -74,12 +74,16 @@ on the line of real part σ. -/
 def dampedMellinLift (ψ : ℝ → ℝ) (σ q u : ℝ) : ℝ :=
   Real.exp (-σ*u) * dampedCutoff ψ q (Real.exp (-u))
 
-theorem dampedMellinLift_contDiff {ψ : ℝ → ℝ} (hψ : ContDiff ℝ ∞ ψ) (σ q : ℝ) :
+section
+variable {ψ : ℝ → ℝ}
+include ψ
+
+theorem dampedMellinLift_contDiff  (hψ : ContDiff ℝ ∞ ψ) (σ q : ℝ) :
     ContDiff ℝ ∞ (dampedMellinLift ψ σ q) := by
   exact (Real.contDiff_exp.comp (contDiff_const.mul contDiff_id)).mul
     ((dampedCutoff_contDiff hψ q).comp (Real.contDiff_exp.comp contDiff_neg))
 
-theorem dampedMellinLift_tsupport {ψ : ℝ → ℝ} {a b : ℝ}
+theorem dampedMellinLift_tsupport  {a b : ℝ}
     (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b) (σ q : ℝ) :
     tsupport (dampedMellinLift ψ σ q) ⊆ Icc (-Real.log b) (-Real.log a) := by
   apply closure_minimal ?_ isClosed_Icc
@@ -95,12 +99,12 @@ theorem dampedMellinLift_tsupport {ψ : ℝ → ℝ} {a b : ℝ}
     · have h := Real.exp_le_exp.mp
         (show Real.exp (Real.log a) ≤ Real.exp (-u) by simpa [Real.exp_log ha] using hx.1)
       linarith
-  have hz : ψ (Real.exp (-u)) = 0 := image_eq_zero_of_notMem_tsupport
+  have hz := image_eq_zero_of_notMem_tsupport
     (fun hh => hexp (hs hh))
   exact hu (by simp [dampedMellinLift, dampedCutoff, hz])
 
 /-- A single bound before both σ in a fixed strip and q≥0. -/
-theorem dampedMellinLift_uniform_derivatives {ψ : ℝ → ℝ} {a b : ℝ}
+theorem dampedMellinLift_uniform_derivatives  {a b : ℝ}
     (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
     (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q → ∀ u : ℝ,
@@ -137,6 +141,8 @@ theorem dampedMellinLift_uniform_derivatives {ψ : ℝ → ℝ} {a b : ℝ}
         (tsupport_iteratedDeriv_subset _ n hh))
     rw [image_eq_zero_of_notMem_tsupport hn, norm_zero]
     exact hC
+end
+
 
 theorem tsupport_iteratedDeriv_complex_subset (f : ℝ → ℂ) (n : ℕ) :
     tsupport (iteratedDeriv n f) ⊆ tsupport f := by
@@ -164,7 +170,7 @@ theorem uniform_fourier_power_bound {ι : Type*} {f : ι → ℝ → ℂ}
   have hF : ‖𝓕 (iteratedDeriv n (f p)) ξ‖ ≤ B * volume.real (Icc a b) := by
     rw [Real.fourier_real_eq_integral_exp_smul]
     rw [← setIntegral_eq_integral_of_forall_compl_eq_zero (s := Icc a b) (fun x hx => by
-      have hz : iteratedDeriv n (f p) x = 0 :=
+      have hz :=
         image_eq_zero_of_notMem_tsupport (fun hh => hx (hs' n hh))
       rw [hz, smul_zero])]
     apply norm_setIntegral_le_of_norm_le_const_ae' (isCompact_Icc.measure_lt_top)
@@ -194,12 +200,19 @@ theorem dampedCutoff_mellin_eq_fourier (ψ : ℝ → ℝ) (σ q r : ℝ) :
       (fun u => (dampedMellinLift ψ σ q u : ℂ)) := by
     funext u
     simp [dampedMellinLift, Complex.real_smul]
-  rw [hfun]
-  simp
+  simp_all
 
-theorem dampedCutoff_uniform_mellin_power_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ}
+    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a)
+include ψ a b hψ ha
+
+section
+variable (hb : 0 < b)
+    (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ)
+include hb hs s₀ s₁ n
+
+theorem dampedCutoff_uniform_mellin_power_bound  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q → ∀ r : ℝ,
       |r|^n * ‖mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ) + r*Complex.I)‖ ≤ C := by
   let P := {σ : ℝ // σ ∈ Icc s₀ s₁} × {q : ℝ // 0 ≤ q}
@@ -227,9 +240,7 @@ theorem dampedCutoff_uniform_mellin_power_bound {ψ : ℝ → ℝ} {a b : ℝ}
   exact (div_le_iff₀ (pow_pos (by positivity) n)).mp hp'
 
 /-- Literal arbitrary-order decay with a constant uniform in q≥0 and the strip. -/
-theorem dampedCutoff_uniform_mellin_decay {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
+theorem dampedCutoff_uniform_mellin_decay  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q → ∀ r : ℝ,
       ‖mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ) + r*Complex.I)‖ ≤
         C / (1+|r|)^n := by
@@ -255,10 +266,11 @@ theorem dampedCutoff_uniform_mellin_decay {ψ : ℝ → ℝ} {a b : ℝ}
           ((σ : ℂ) + r*Complex.I)‖) := by rw [mul_pow]; ring
       _ ≤ 2^n * Bₙ := mul_le_mul_of_nonneg_left hlarge (by positivity)
       _ ≤ 2^n*(B₀+Bₙ) := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+end
+
 
 /-- Absolute convergence on every Mellin source line, including negative real parts. -/
-theorem dampedCutoff_mellinConvergent {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a)
+theorem dampedCutoff_mellinConvergent 
     (hs : tsupport ψ ⊆ Icc a b) (q : ℝ) (s : ℂ) :
     MellinConvergent (fun y => (dampedCutoff ψ q y : ℂ)) s := by
   let f : ℝ → ℂ := fun y => (y : ℂ)^(s-1) * (dampedCutoff ψ q y : ℂ)
@@ -277,20 +289,23 @@ theorem dampedCutoff_mellinConvergent {ψ : ℝ → ℝ} {a b : ℝ}
   have hf : HasCompactSupport f := by
     apply HasCompactSupport.intro (isCompact_Icc : IsCompact (Icc a b))
     intro y hy
-    have hz : ψ y = 0 := image_eq_zero_of_notMem_tsupport (fun hh => hy (hs hh))
+    have hz := image_eq_zero_of_notMem_tsupport (fun hh => hy (hs hh))
     simp [f, dampedCutoff, hz]
   exact (hc.integrable_of_hasCompactSupport hf).integrableOn
 
+section
+variable (hb : 0 < b)
+    (hs : tsupport ψ ⊆ Icc a b)
+include hb hs
+
 /-- Absolute integrability of the full vertical transform, with no frequency truncation. -/
-theorem dampedCutoff_integrable_mellin_line {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (σ q : ℝ) :
+theorem dampedCutoff_integrable_mellin_line  (σ q : ℝ) :
     Integrable (fun r : ℝ => mellin (fun y => (dampedCutoff ψ q y : ℂ))
       ((σ : ℂ) + r*Complex.I)) := by
   have hs' : HasCompactSupport (fun u => (dampedMellinLift ψ σ q u : ℂ)) :=
     isCompact_Icc.of_isClosed_subset (isClosed_tsupport _) ((tsupport_comp_subset
       (g := fun y : ℝ => (y : ℂ)) rfl _).trans (dampedMellinLift_tsupport ha hb hs σ q))
-  let g : SchwartzMap ℝ ℂ := hs'.toSchwartzMap
+  let g := hs'.toSchwartzMap
     (Complex.ofRealCLM.contDiff.comp (dampedMellinLift_contDiff hψ σ q))
   have hi := (𝓕 g : SchwartzMap ℝ ℂ).integrable.comp_div (by positivity : 2*Real.pi ≠ 0)
   convert hi using 1
@@ -299,9 +314,7 @@ theorem dampedCutoff_integrable_mellin_line {ψ : ℝ → ℝ} {a b : ℝ}
 
 /-- Mellin inversion on every real source line. Both convergence hypotheses
 are proved for the actual damped cutoff. -/
-theorem dampedCutoff_mellin_inversion {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (σ q : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem dampedCutoff_mellin_inversion  (σ q : ℝ) {x : ℝ} (hx : 0 < x) :
     (dampedCutoff ψ q x : ℂ) = ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       (x : ℂ)^(-((σ : ℂ)+r*Complex.I)) *
         mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+r*Complex.I) := by
@@ -311,12 +324,10 @@ theorem dampedCutoff_mellin_inversion {ψ : ℝ → ℝ} {a b : ℝ}
     (Complex.continuous_ofReal.continuousAt.comp
       (dampedCutoff_contDiff hψ q).continuous.continuousAt)
   rw [mellinInv] at h
-  simpa only [Complex.real_smul, smul_eq_mul] using h.symm
+  exact h.symm
 
 /-- Every fixed polynomial weight has a uniformly bounded vertical L¹ mass. -/
-theorem dampedCutoff_uniform_mellin_weighted_L1 {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
+theorem dampedCutoff_uniform_mellin_weighted_L1  (s₀ s₁ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q →
       Integrable (fun r : ℝ => (1+|r|)^n *
         ‖mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+r*Complex.I)‖) ∧
@@ -335,9 +346,8 @@ theorem dampedCutoff_uniform_mellin_weighted_L1 {ψ : ℝ → ℝ} {a b : ℝ}
       apply (le_div_iff₀ (pow_pos hp 2)).2
       simpa only [F, pow_add, mul_assoc, mul_left_comm, mul_comm] using hd
     have hsquare : 1+r^2 ≤ (1+|r|)^2 := by nlinarith [sq_abs r, abs_nonneg r]
-    exact hw.trans (by simpa only [div_eq_mul_inv] using
-      (div_le_div_of_nonneg_left hB (by positivity : (0:ℝ) < 1+r^2) hsquare))
-  have hmajor : Integrable (fun r : ℝ => B*(1+r^2)⁻¹) := integrable_inv_one_add_sq.const_mul B
+    exact hw.trans (by exact (div_le_div_of_nonneg_left hB (by positivity : (0:ℝ) < 1+r^2) hsquare))
+  have hmajor := integrable_inv_one_add_sq.const_mul B
   have hFm : AEStronglyMeasurable F :=
     (show Continuous (fun r : ℝ => (1+|r|)^n) by fun_prop).aestronglyMeasurable.mul
       (dampedCutoff_integrable_mellin_line hψ ha hb hs σ q).norm.aestronglyMeasurable
@@ -348,5 +358,8 @@ theorem dampedCutoff_uniform_mellin_weighted_L1 {ψ : ℝ → ℝ} {a b : ℝ}
   calc
     (∫ r : ℝ, F r) ≤ ∫ r : ℝ, B*(1+r^2)⁻¹ := integral_mono hFi hmajor hbound
     _ = B*Real.pi := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
+end
+end
 
-end MathCollab.Density.Stronger
+
+

@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.BasicPairSecondEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -28,10 +28,9 @@ theorem polynomial_height_log_loss (B δ : ℝ) (hB : 0 < B) (hδ : 0 < δ)
       _ = _ := by
         rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (by positivity),
           ← Real.rpow_mul hTp.le]
-        congr 3
-        field_simp
+        grind
   calc
     _ ≤ T ^ δ + ((2 : ℝ) ^ (δ / B) * T ^ δ) / (δ / B) := add_le_add hOne hLog
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

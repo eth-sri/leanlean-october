@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftJets
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                             
@@ -17,7 +16,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                      
 
 
-noncomputable section
+
 
 open Set Expdb
 
@@ -38,11 +37,7 @@ theorem modelPhase_jet_difference_error
   let f : ℝ → ℝ := fun x => iteratedDeriv (p+1) F x+σ*x*R
   have hxI {x : ℝ} (hx : x ∈ Icc v w) : x ∈ Ioo (1 : ℝ) 2 :=
     ⟨hv.1.trans_le hx.1,hx.2.trans_lt hw.2⟩
-  have hxU {x : ℝ} (hx : x ∈ Icc v w) : |x-u| ≤ η := by
-    have hl := (abs_le.mp hvu).1
-    have hr := (abs_le.mp hwu).2
-    rw [abs_le]
-    constructor <;> linarith [hx.1,hx.2]
+  have hxU {x : ℝ} (hx : x ∈ Icc v w) : |x-u| ≤ η := by grind
   have hd (x : ℝ) (hx : x ∈ Icc v w) :
       HasDerivAt f (iteratedDeriv (p+2) F x+σ*R) x := by
     have hdF := (contDiffAt_iteratedDeriv_infty
@@ -67,7 +62,6 @@ theorem modelPhase_jet_difference_error
       _ = |(iteratedDeriv (p+2) F x-iteratedDeriv (p+1) (modelPhase σ) x)+
           σ*(R-iteratedDeriv p (modelPhase (σ+1)) x)| := by
         rw [modelPhase_iteratedDeriv_succ_parameter σ (zero_lt_one.trans (hxI hx).1) p]
-        congr 1
         ring
       _ ≤ |iteratedDeriv (p+2) F x-iteratedDeriv (p+1) (modelPhase σ) x|+
           |σ*(R-iteratedDeriv p (modelPhase (σ+1)) x)| := abs_add_le _ _
@@ -79,7 +73,6 @@ theorem modelPhase_jet_difference_error
     (fun x hx => (hd x hx).differentiableAt) hb (convex_Icc v w)
     (right_mem_Icc.mpr hvw) (left_mem_Icc.mpr hvw)
   rw [Real.norm_eq_abs,Real.norm_eq_abs,abs_of_nonpos (sub_nonpos.mpr hvw)] at hm
-  convert hm using 1
-  all_goals first | rfl | (unfold f R; congr 1; ring) | ring
+  grind
 
-end TaoTrudgianYang2025
+

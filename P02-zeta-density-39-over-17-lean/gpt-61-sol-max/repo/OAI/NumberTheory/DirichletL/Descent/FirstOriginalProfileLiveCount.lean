@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels InverseMomentFirstChildWindows InverseSecondSourceBlocks
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -53,7 +53,7 @@ theorem liveJointKeys_card_of_norm_cap (S : Finset (OriginalIndex ι)) (pool : F
     Nat.floor_mono (Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) ha haR)
   exact ⟨fun i=>hm _ (h₁ i).1 (h₁ i).2,hm _ h₂.1 h₂.2,hm _ h₃.1 h₃.2⟩
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

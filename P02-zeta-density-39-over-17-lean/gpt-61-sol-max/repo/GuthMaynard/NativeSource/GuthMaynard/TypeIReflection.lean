@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Analysis.Fourier.PoissonSummation
 public import Mathlib.Analysis.MellinInversion
@@ -60,7 +61,7 @@ theorem mellinConvergent_typeIDyadicCutoff_one :
       hasCompactSupport_typeIDyadicCutoffComplex
   simpa using hInt.integrableOn
 
-/-- Logarithmic-coordinate Schwartz kernel for the literal cutoff used in
+/- Logarithmic-coordinate Schwartz kernel for the literal cutoff used in
 the #15 smooth partition. -/
 noncomputable def typeIDyadicMellinKernel (u : ℝ) : ℂ :=
   (Real.exp (-u) : ℂ) * typeIDyadicCutoffComplex (Real.exp (-u))
@@ -97,7 +98,7 @@ theorem hasCompactSupport_typeIDyadicMellinKernel :
       simpa only [inv_eq_one_div] using hinv
   simp [typeIDyadicMellinKernel, typeIDyadicCutoffComplex, hcut]
 
-/-- Schwartz realization of the logarithmic cutoff. -/
+/- Schwartz realization of the logarithmic cutoff. -/
 noncomputable def typeIDyadicMellinSchwartz : 𝓢(ℝ, ℂ) :=
   hasCompactSupport_typeIDyadicMellinKernel.toSchwartzMap
     contDiff_typeIDyadicMellinKernel
@@ -106,7 +107,7 @@ noncomputable def typeIDyadicMellinSchwartz : 𝓢(ℝ, ℂ) :=
 theorem typeIDyadicMellinSchwartz_apply (u : ℝ) :
     typeIDyadicMellinSchwartz u = typeIDyadicMellinKernel u := rfl
 
-/-- Mellin transform of the fixed Type-I cutoff on `Re s = 1`. -/
+/- Mellin transform of the fixed Type-I cutoff on `Re s = 1`. -/
 noncomputable def typeIDyadicCutoffMellin (r : ℝ) : ℂ :=
   mellin typeIDyadicCutoffComplex ((1 : ℂ) + (r : ℂ) * I)
 
@@ -132,13 +133,13 @@ theorem continuous_typeIDyadicCutoffMellin :
   exact (𝓕 typeIDyadicMellinSchwartz).continuous.comp
     (continuous_id.div_const (2 * Real.pi))
 
-/-- The Mellin transform of the fixed Type-I dyadic cutoff has arbitrary
+/- The Mellin transform of the fixed Type-I dyadic cutoff has arbitrary
 polynomial decay, uniformly in its vertical ordinate. -/
 theorem typeIDyadicCutoffMellin_polynomial_decay (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ,
       |r| ^ n * ‖typeIDyadicCutoffMellin r‖ ≤ C := by
   let F : 𝓢(ℝ, ℂ) := 𝓕 typeIDyadicMellinSchwartz
-  let C : ℝ := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
+  let C := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
   have hC : 0 ≤ C := by
     dsimp only [C]
     positivity
@@ -173,14 +174,13 @@ theorem verticalIntegrable_typeIDyadicCutoffMellin :
   have hScaled : Integrable
       (fun u : ℝ => 𝓕 typeIDyadicMellinSchwartz
         (u / (2 * Real.pi))) := by
-    simpa [F, div_eq_mul_inv] using
-      hFourier.comp_mul_right'
+    exact hFourier.comp_mul_right'
         (show (2 * Real.pi)⁻¹ ≠ 0 by positivity)
   apply hScaled.congr
   filter_upwards with u
   exact (typeIDyadicCutoffMellin_eq_fourier u).symm
 
-/-- Exact pointwise Mellin inversion for the actual #15 dyadic cutoff. -/
+/- Exact pointwise Mellin inversion for the actual #15 dyadic cutoff. -/
 theorem typeIDyadicCutoff_mellinInversion {x : ℝ} (hx : 0 < x) :
     mellinInv 1 (mellin typeIDyadicCutoffComplex) x =
       (typeIDyadicCutoff x : ℂ) := by
@@ -189,7 +189,7 @@ theorem typeIDyadicCutoff_mellinInversion {x : ℝ} (hx : 0 < x) :
     verticalIntegrable_typeIDyadicCutoffMellin
     contDiff_typeIDyadicCutoffComplex.continuous.continuousAt
 
-/-- Vertical-line form used inside the exact Type-I reflection formula. -/
+/- Vertical-line form used inside the exact Type-I reflection formula. -/
 theorem typeIDyadicCutoff_eq_verticalMellinIntegral
     {x : ℝ} (hx : 0 < x) :
     (typeIDyadicCutoff x : ℂ) =
@@ -202,7 +202,7 @@ theorem typeIDyadicCutoff_eq_verticalMellinIntegral
   simp only [smul_eq_mul]
   norm_num
 
-/-- Raw two-variable integrand obtained by inserting exact Mellin inversion
+/- Raw two-variable integrand obtained by inserting exact Mellin inversion
 after the change of variables `v = m*x`. -/
 noncomputable def typeIMellinReflectionIntegrand
     (sigma t q v r : ℝ) : ℂ :=
@@ -212,7 +212,7 @@ noncomputable def typeIMellinReflectionIntegrand
         (gmReflectionPowerWeight sigma v *
           Complex.exp (-((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))))
 
-/-- Pointwise insertion of the literal cutoff's Mellin inversion into the
+/- Pointwise insertion of the literal cutoff's Mellin inversion into the
 rescaled logarithmic phase. -/
 theorem typeIDyadicCutoffPhase_eq_mellinIntegral
     (sigma t q : ℝ) {v : ℝ} (hv : 0 < v) (hq : 0 < q) :
@@ -243,18 +243,13 @@ theorem typeIDyadicCutoffPhase_eq_mellinIntegral
     ring
   rw [hsplit, Complex.exp_add, Complex.exp_neg, hExpLog]
   have hRatioInv : (((v / q : ℝ) : ℂ))⁻¹ =
-      (q : ℂ) * (v : ℂ)⁻¹ := by
-    push_cast
-    field_simp [Complex.ofReal_ne_zero.mpr hq.ne',
-      Complex.ofReal_ne_zero.mpr hv.ne']
+      (q : ℂ) * (v : ℂ)⁻¹ := by aesop
   have hRatioInvC : ((v : ℂ) / (q : ℂ))⁻¹ =
-      (q : ℂ) * (v : ℂ)⁻¹ := by
-    field_simp [Complex.ofReal_ne_zero.mpr hq.ne',
-      Complex.ofReal_ne_zero.mpr hv.ne']
+      (q : ℂ) * (v : ℂ)⁻¹ := by simp_all
   rw [hRatioInv]
   rw [hRatioInvC]
 
-/-- Algebraic factorization of the raw Mellin integrand.  All dependence on
+/- Algebraic factorization of the raw Mellin integrand.  All dependence on
 the cutoff dilation `q` is outside the common weighted logarithmic kernel. -/
 theorem typeIMellinReflectionIntegrand_eq_factored
     (sigma t : ℝ) {q v : ℝ} (r : ℝ) (hq : 0 < q) (hv : 0 < v) :
@@ -265,13 +260,11 @@ theorem typeIMellinReflectionIntegrand_eq_factored
             star ((v : ℂ)⁻¹ * Complex.exp
               (((((t + r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))) := by
   unfold typeIMellinReflectionIntegrand
-  have hlog : Real.log (v / q) = Real.log v - Real.log q :=
+  have hlog :=
     Real.log_div hv.ne' hq.ne'
   rw [hlog]
   have hRatioInv : ((v : ℂ) / (q : ℂ))⁻¹ =
-      (q : ℂ) * (v : ℂ)⁻¹ := by
-    field_simp [Complex.ofReal_ne_zero.mpr hq.ne',
-      Complex.ofReal_ne_zero.mpr hv.ne']
+      (q : ℂ) * (v : ℂ)⁻¹ := by aesop
   rw [hRatioInv]
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hq.ne')]
   rw [← Complex.ofReal_log hq.le]
@@ -321,7 +314,7 @@ theorem typeIMellinReflectionIntegrand_eq_factored
               (-(((((t + r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))))) := by
       ring
 
-/-- Absolute integrability needed to exchange the finite physical interval
+/- Absolute integrability needed to exchange the finite physical interval
 with the complete Mellin line.  Compactness of the physical interval and
 Schwartz decay of the literal cutoff are both used explicitly. -/
 theorem integrable_typeIMellinReflectionIntegrand
@@ -332,9 +325,8 @@ theorem integrable_typeIMellinReflectionIntegrand
       ((volume.restrict (Set.uIoc A B)).prod volume) := by
   have hH : Integrable typeIDyadicCutoffMellin := by
     unfold typeIDyadicCutoffMellin
-    simpa only [VerticalIntegrable, Complex.ofReal_one] using
-      verticalIntegrable_typeIDyadicCutoffMellin
-  let C : ℝ := (q / A) * A ^ (-sigma)
+    exact verticalIntegrable_typeIDyadicCutoffMellin
+  let C := (q / A) * A ^ (-sigma)
   have hC : 0 ≤ C := by
     dsimp only [C]
     positivity
@@ -410,7 +402,7 @@ theorem integrable_typeIMellinReflectionIntegrand
       _ = q / A * A ^ (-sigma) * ‖typeIDyadicCutoffMellin r‖ := by
         ring
 
-/-- Common conjugated power-weighted reflection integral produced by the
+/- Common conjugated power-weighted reflection integral produced by the
 exact Mellin transform. -/
 noncomputable def typeIPowerReflectionIntegral
     (sigma tau A B : ℝ) : ℂ :=
@@ -419,7 +411,7 @@ noncomputable def typeIPowerReflectionIntegral
       star ((v : ℂ)⁻¹ * Complex.exp
         (((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))
 
-/-- Uniform weighted B-process bound for the common integral in the exact
+/- Uniform weighted B-process bound for the common integral in the exact
 Mellin reflection formula. -/
 theorem norm_typeIPowerReflectionIntegral_le
     {sigma tau A B : ℝ} (htau : 1 ≤ tau)
@@ -430,10 +422,9 @@ theorem norm_typeIPowerReflectionIntegral_le
           ∫ v in A..B,
             ‖(((-sigma / v : ℝ) : ℂ) *
               gmReflectionPowerWeight sigma v)‖) := by
-  simpa only [typeIPowerReflectionIntegral] using
-    norm_conj_powerWeighted_gmReflectionIntegral_le htau hA hAB
+  exact norm_conj_powerWeighted_gmReflectionIntegral_le htau hA hAB
 
-/-- Exact Mellin form of the rescaled medium Type-I integral.  The right
+/- Exact Mellin form of the rescaled medium Type-I integral.  The right
 side has one common weighted logarithmic reflection integral; the mode scale
 `q` appears only in explicit unitary/Mellin factors. -/
 theorem typeIDyadicRescaledIntegral_eq_mellinReflection
@@ -490,14 +481,14 @@ theorem typeIDyadicRescaledIntegral_eq_mellinReflection
         exact typeIMellinReflectionIntegrand_eq_factored sigma t r hq
           (hA.trans_le hvIcc.1)
 
-/-- Explicit Jacobian and logarithmic scale factor in `v = m*x`. -/
+/- Explicit Jacobian and logarithmic scale factor in `v = m*x`. -/
 noncomputable def typeIReflectionScaleFactor
     (sigma t m : ℝ) : ℂ :=
   ((m : ℂ)⁻¹ *
     Complex.exp (((sigma * Real.log m : ℝ) : ℂ))) *
       Complex.exp ((((t * Real.log m : ℝ) : ℂ) * I))
 
-/-- Physical cutoff integrand at Fourier frequency `m`. -/
+/- Physical cutoff integrand at Fourier frequency `m`. -/
 noncomputable def typeIDyadicPhysicalIntegrand
     (sigma t m Q x : ℝ) : ℂ :=
   (typeIDyadicCutoff (x / Q) : ℂ) *
@@ -505,7 +496,7 @@ noncomputable def typeIDyadicPhysicalIntegrand
       Complex.exp
         (-((((t * Real.log x - 2 * Real.pi * m * x : ℝ) : ℂ) * I))))
 
-/-- Exact physical-to-reflected rescaling before Mellin inversion. -/
+/- Exact physical-to-reflected rescaling before Mellin inversion. -/
 theorem typeIDyadicPhysicalIntegral_rescale
     {sigma t m Q A B : ℝ} (hm : 0 < m) (hQ : 0 < Q)
     (hA : 0 < A) (hAB : A ≤ B) :
@@ -513,7 +504,7 @@ theorem typeIDyadicPhysicalIntegral_rescale
       typeIReflectionScaleFactor sigma t m *
         ∫ v in m * A..m * B,
           typeIDyadicPhysicalIntegrand sigma t 1 (m * Q) v := by
-  let g : ℝ → ℂ := typeIDyadicPhysicalIntegrand sigma t 1 (m * Q)
+  let g := typeIDyadicPhysicalIntegrand sigma t 1 (m * Q)
   have hPointwise : ∀ x ∈ Set.uIcc A B,
       typeIDyadicPhysicalIntegrand sigma t m Q x =
         (Complex.exp (((sigma * Real.log m : ℝ) : ℂ)) *
@@ -522,7 +513,7 @@ theorem typeIDyadicPhysicalIntegral_rescale
     have hxIcc : x ∈ Set.Icc A B := by
       simpa only [Set.uIcc_of_le hAB] using hx
     have hxPos : 0 < x := hA.trans_le hxIcc.1
-    have hlog : Real.log (m * x) = Real.log m + Real.log x :=
+    have hlog :=
       Real.log_mul hm.ne' hxPos.ne'
     have hcut : m * x / (m * Q) = x / Q := by
       field_simp [hm.ne', hQ.ne']
@@ -577,7 +568,7 @@ theorem typeIDyadicPhysicalIntegral_rescale
       push_cast
       ring
 
-/-- A rescaled dyadic integrand is supported strictly between `q/2` and
+/- A rescaled dyadic integrand is supported strictly between `q/2` and
 `2*q`.  Consequently any larger positive interval may be used for its
 integral.  This is the support statement that lets all critical Poisson modes
 share one reflection interval. -/
@@ -607,7 +598,7 @@ theorem integral_typeIDyadicPhysicalIntegrand_eq_interval
     exact hL.trans_lt hqhalf
   · exact ((div_lt_iff₀ hq).mp hupper).le.trans hU
 
-/-- Exact medium Type-I reflection with a mode-independent integration
+/- Exact medium Type-I reflection with a mode-independent integration
 interval.  For every `1 ≤ m ≤ M`, the change of variables `v = m*x` puts the
 support inside `[Q/2, 2*M*Q]`; Mellin inversion then leaves the mode only in
 explicit algebraic factors. -/
@@ -662,12 +653,9 @@ theorem typeIDyadicPhysicalIntegral_eq_common_mellinReflection
     ring_nf
   rw [hFun]
   exact typeIDyadicRescaledIntegral_eq_mellinReflection hsigma
-    (mul_pos hmPos hQ) (by positivity) (by
-      have hMOne : (1 : ℝ) ≤ M := hmOne.trans hmMReal
-      have hscale := mul_le_mul_of_nonneg_right hMOne hQ.le
-      nlinarith)
+    (mul_pos hmPos hQ) (by positivity) (by nlinarith)
 
-/-- One mode of the exact common Mellin-reflection integrand. -/
+/- One mode of the exact common Mellin-reflection integrand. -/
 noncomputable def typeICommonMellinMode
     (sigma t q A B r : ℝ) : ℂ :=
   (q : ℂ) * (q : ℂ) ^ ((r : ℂ) * I) *
@@ -705,7 +693,7 @@ theorem integrable_typeICommonMellinMode
   exact intervalIntegral_typeIMellinReflectionIntegrand_eq_commonMode
     r hq hA hAB
 
-/-- The finite coefficient polynomial produced by exact medium reflection.
+/- The finite coefficient polynomial produced by exact medium reflection.
 The coefficients are independent of the original ordinate except for the
 standard unit-modulus Dirichlet phase. -/
 noncomputable def typeIReflectedMellinPolynomial
@@ -715,7 +703,7 @@ noncomputable def typeIReflectedMellinPolynomial
       (((m : ℝ) * Q : ℝ) : ℂ) *
         (((m : ℝ) * Q : ℝ) : ℂ) ^ ((r : ℂ) * I)
 
-/-- Exact finite B-process assembly.  A whole block of critical modes is one
+/- Exact finite B-process assembly.  A whole block of critical modes is one
 Mellin integral of a fixed finite Dirichlet polynomial against the common
 oscillatory kernel.  No pointwise stationary-phase approximation or hidden
 error term remains. -/
@@ -732,8 +720,8 @@ theorem sum_typeIDyadicPhysicalIntegral_eq_reflectedMellinPolynomial
               typeIPowerReflectionIntegral sigma (t + r)
                 (Q / 2) (2 * M * Q) := by
   let S := Finset.Icc 1 M
-  let A : ℝ := Q / 2
-  let B : ℝ := 2 * M * Q
+  let A := Q / 2
+  let B := 2 * M * Q
   have hA : 0 < A := by dsimp only [A]; positivity
   have hAB : A ≤ B := by
     dsimp only [A, B]
@@ -797,80 +785,22 @@ theorem sum_typeIDyadicPhysicalIntegral_eq_reflectedMellinPolynomial
         intro m hm
         ring
 
-/-- Continuous compactly supported interpolation of a smooth Type-I block. -/
+/- Continuous compactly supported interpolation of a smooth Type-I block. -/
 noncomputable def typeIReflectionKernel
     (Y A r : ℕ) (σ t x : ℝ) : ℂ :=
   (typeISourceSmoothWeight Y A r x : ℂ) *
     Complex.exp ((((-σ * Real.log x : ℝ) : ℂ))) *
     Complex.exp ((((-t * Real.log x : ℝ) : ℂ) * I))
 
-theorem contDiff_typeIReflectionKernel
-    (Y A r : ℕ) (σ t : ℝ) (hY : 0 < Y) :
-    ContDiff ℝ ∞ (typeIReflectionKernel Y A r σ t) := by
-  rw [contDiff_iff_contDiffAt]
-  intro x
-  by_cases hx : x = 0
-  · subst x
-    have hYreal : (0 : ℝ) < Y := by exact_mod_cast hY
-    have hEventually : typeIReflectionKernel Y A r σ t =ᶠ[𝓝 0] 0 := by
-      filter_upwards [Iio_mem_nhds hYreal] with y hy
-      have hy' : y < (Y : ℝ) := hy
-      have hleft : Real.smoothTransition (y - (Y : ℝ)) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by linarith)
-      simp [typeIReflectionKernel, typeISourceSmoothWeight,
-        typeITailBoundary, hleft]
-    exact contDiffAt_const.congr_of_eventuallyEq hEventually
-  · have hweight : ContDiffAt ℝ ∞
-        (fun y : ℝ => (typeISourceSmoothWeight Y A r y : ℂ)) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiff_typeISourceSmoothWeight Y A r).contDiffAt
-    have hlog : ContDiffAt ℝ ∞ Real.log x := Real.contDiffAt_log.2 hx
-    have hsigma : ContDiffAt ℝ ∞
-        (fun y : ℝ => (((-σ * Real.log y : ℝ) : ℂ))) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiffAt_const.mul hlog)
-    have ht : ContDiffAt ℝ ∞
-        (fun y : ℝ => (((-t * Real.log y : ℝ) : ℂ) * I)) x :=
-      (Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiffAt_const.mul hlog)).mul contDiffAt_const
-    exact (hweight.mul hsigma.cexp).mul ht.cexp
 
-theorem hasCompactSupport_typeIReflectionKernel
-    (Y A r : ℕ) (σ t : ℝ) :
-    HasCompactSupport (typeIReflectionKernel Y A r σ t) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) (A + 1)))
-  intro x hx
-  have hboundary : typeITailBoundary Y A x = 0 := by
-    rw [Set.mem_Icc, not_and_or] at hx
-    rcases hx with hx | hx
-    · have hleft : Real.smoothTransition (x - (Y : ℝ)) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by
-          have hYnonneg : (0 : ℝ) ≤ Y := by positivity
-          linarith)
-      rw [typeITailBoundary, hleft, zero_mul]
-    · have hx' : (((A + 1 : ℕ) : ℝ)) ≤ x := by
-        push_cast
-        exact le_of_not_ge hx
-      have hright : Real.smoothTransition
-          (((A + 1 : ℕ) : ℝ) - x) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by linarith)
-      rw [typeITailBoundary, hright, mul_zero]
-  simp [typeIReflectionKernel, typeISourceSmoothWeight, hboundary]
 
-/-- Schwartz realization of the smooth Type-I kernel. -/
-noncomputable def typeIReflectionSchwartz
-    (Y A r : ℕ) (σ t : ℝ) (hY : 0 < Y) : 𝓢(ℝ, ℂ) :=
-  (hasCompactSupport_typeIReflectionKernel Y A r σ t).toSchwartzMap
-    (contDiff_typeIReflectionKernel Y A r σ t hY)
 
-@[simp]
-theorem typeIReflectionSchwartz_apply
-    (Y A r : ℕ) (σ t x : ℝ) (hY : 0 < Y) :
-    typeIReflectionSchwartz Y A r σ t hY x =
-      typeIReflectionKernel Y A r σ t x := rfl
 
-/-- At positive integers the continuous kernel is exactly the source block
+
+
+
+
+/- At positive integers the continuous kernel is exactly the source block
 summand. -/
 theorem typeIReflectionKernel_natCast
     (Y A r n : ℕ) (σ t : ℝ) (hn : 0 < n) :
@@ -888,7 +818,7 @@ theorem typeIReflectionKernel_natCast
   simp only [ofReal_neg, ofReal_mul]
   ring_nf
 
-/-- On an interior medium scale the artificial source boundary is identically
+/- On an interior medium scale the artificial source boundary is identically
 one wherever the fixed dyadic cutoff is nonzero.  Thus the Poisson kernel is
 the genuine boundary-free dyadic kernel, not a silently altered model. -/
 theorem typeISourceSmoothWeight_eq_dyadic_of_interior
@@ -899,15 +829,13 @@ theorem typeISourceSmoothWeight_eq_dyadic_of_interior
     (x : ℝ) :
     typeISourceSmoothWeight Y A r x =
       typeIDyadicCutoff (x / (2 ^ r * Y : ℕ)) := by
-  let Q : ℝ := ((2 ^ r * Y : ℕ) : ℝ)
+  let Q := ((2 ^ r * Y : ℕ) : ℝ)
   by_cases hcut : typeIDyadicCutoff (x / Q) = 0
   · unfold typeISourceSmoothWeight
     change typeITailBoundary Y A x * typeIDyadicCutoff (x / Q) =
       typeIDyadicCutoff (x / Q)
     rw [hcut, mul_zero]
-  · have hQ : 0 < Q := by
-      have hleftPos : (0 : ℝ) < ((Y + 1 : ℕ) : ℝ) := by positivity
-      nlinarith
+  · have hQ : 0 < Q := by grind
     have hxLowerRatio : 1 / 2 < x / Q := by
       by_contra hnot
       exact hcut (typeIDyadicCutoff_eq_zero_of_le_half (le_of_not_gt hnot))
@@ -930,7 +858,7 @@ theorem typeISourceSmoothWeight_eq_dyadic_of_interior
     unfold typeISourceSmoothWeight typeITailBoundary
     rw [hleft, hright, one_mul, one_mul]
 
-/-- Exact removal of the source boundary from the full continuous kernel on
+/- Exact removal of the source boundary from the full continuous kernel on
 an interior medium scale. -/
 theorem typeIReflectionKernel_eq_dyadicPhysical_of_interior
     {Y A r : ℕ} {σ t : ℝ}
@@ -956,14 +884,14 @@ theorem typeIReflectionKernel_eq_dyadicPhysical_of_interior
 
 /-! ## Uniform normalized Fourier tail for interior medium blocks -/
 
-/-- The boundary-free normalized Type-I amplitude on the fixed interval
+/- The boundary-free normalized Type-I amplitude on the fixed interval
 `[1/2,2]`.  Dependence on the physical dyadic scale is recovered by Fourier
 dilation, while `σ` is fixed throughout one zero-density estimate. -/
 noncomputable def typeINormalizedAmplitude (σ x : ℝ) : ℂ :=
   (typeIDyadicCutoff x : ℂ) *
     Complex.exp ((((-σ * Real.log x : ℝ) : ℂ)))
 
-/-- The normalized Type-I amplitude is smooth to every order. -/
+/- The normalized Type-I amplitude is smooth to every order. -/
 theorem contDiff_typeINormalizedAmplitude (σ : ℝ) :
     ContDiff ℝ ∞ (typeINormalizedAmplitude σ) := by
   rw [contDiff_iff_contDiffAt]
@@ -1003,11 +931,9 @@ private noncomputable def typeINormalizedAmplitudeSchwartz (σ : ℝ) : 𝓢(ℝ
   (hasCompactSupport_typeINormalizedAmplitude σ).toSchwartzMap
     (contDiff_typeINormalizedAmplitude σ)
 
-@[simp]
-private theorem typeINormalizedAmplitudeSchwartz_apply (σ x : ℝ) :
-    typeINormalizedAmplitudeSchwartz σ x = typeINormalizedAmplitude σ x := rfl
 
-/-- Normalized oscillatory kernel whose Fourier samples are the Poisson
+
+/- Normalized oscillatory kernel whose Fourier samples are the Poisson
 modes of an interior dyadic block after the change of variables `x=Q*u`. -/
 noncomputable def typeINormalizedKernel (σ t x : ℝ) : ℂ :=
   typeINormalizedAmplitude σ x *
@@ -1046,7 +972,7 @@ theorem hasCompactSupport_typeINormalizedKernel (σ t : ℝ) :
       exact hx ⟨le_of_not_ge hhalf, le_of_not_ge htwo⟩
   simp [typeINormalizedKernel, typeINormalizedAmplitude, hcut]
 
-/-- The `typeINormalizedKernelSchwartz` definition used by the source-facing construction in `TypeIReflection`. -/
+/- The `typeINormalizedKernelSchwartz` definition used by the source-facing construction in `TypeIReflection`. -/
 noncomputable def typeINormalizedKernelSchwartz (σ t : ℝ) : 𝓢(ℝ, ℂ) :=
   (hasCompactSupport_typeINormalizedKernel σ t).toSchwartzMap
     (contDiff_typeINormalizedKernel σ t)
@@ -1059,7 +985,7 @@ private theorem normalizedSchwartz_coe (σ t : ℝ) :
     (typeINormalizedKernelSchwartz σ t : ℝ → ℂ) = typeINormalizedKernel σ t :=
   funext (typeINormalizedKernelSchwartz_apply σ t)
 
-/-- The `typeINormalizedFourier` definition used by the source-facing construction in `TypeIReflection`. -/
+/- The `typeINormalizedFourier` definition used by the source-facing construction in `TypeIReflection`. -/
 noncomputable def typeINormalizedFourier (σ t ξ : ℝ) : ℂ :=
   𝓕 (typeINormalizedKernelSchwartz σ t) ξ
 
@@ -1090,8 +1016,7 @@ private theorem contDiffAt_ofReal_cpow_neg_mul_I
       (fun y : ℝ => Complex.exp ((((-t * Real.log y : ℝ) : ℂ) * I))) x := by
     have hReal : ContDiffAt ℝ n (fun y : ℝ => -t * Real.log y) x :=
       contDiffAt_const.mul (Real.contDiffAt_log.mpr hx.ne')
-    have hComplex : ContDiffAt ℝ n
-        (fun y : ℝ => ((-t * Real.log y : ℝ) : ℂ)) x :=
+    have hComplex :=
       Complex.ofRealCLM.contDiff.contDiffAt.comp x hReal
     exact (hComplex.mul contDiffAt_const).cexp
   exact hExp.congr_of_eventuallyEq hEq
@@ -1128,7 +1053,7 @@ private theorem typeIMellinDerivativePower_le
     (t : ℝ) {k n : ℕ} (hkn : k ≤ n) :
     (|t| + k) ^ k ≤
       (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-  let B : ℝ := (n + 1) * (1 + |t|)
+  let B := (n + 1) * (1 + |t|)
   have hnNonneg : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have hBOne : 1 ≤ B := by
     dsimp only [B]
@@ -1145,14 +1070,14 @@ private theorem typeIMellinDerivativePower_le
       dsimp only [B]
       rw [mul_pow]
 
-/-- Uniform derivative bound for the boundary-free normalized Type-I
+/- Uniform derivative bound for the boundary-free normalized Type-I
 kernel.  The constant may depend on the fixed density line `σ`, but is
 independent of the ordinate and dyadic scale. -/
 theorem typeINormalizedKernel_uniform_iteratedFDeriv (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t x : ℝ,
       ‖iteratedFDeriv ℝ n (typeINormalizedKernel σ t) x‖ ≤
         C * (1 + |t|) ^ n := by
-  let C : ℝ := ∑ i ∈ Finset.range (n + 1),
+  let C := ∑ i ∈ Finset.range (n + 1),
     (n.choose i : ℝ) *
       SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
         2 ^ n * (n + 1 : ℝ) ^ n
@@ -1212,7 +1137,7 @@ theorem typeINormalizedKernel_uniform_iteratedFDeriv (σ : ℝ) (n : ℕ) :
             2 ^ n * (n + 1 : ℝ) ^ n) * (1 + |t|) ^ n := by
       apply Finset.sum_le_sum
       intro i hi
-      have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+      have hin := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
       have hamp := SchwartzMap.le_seminorm' (𝕜 := ℝ) 0 i
         (typeINormalizedAmplitudeSchwartz σ) x
       simp only [pow_zero, one_mul] at hamp
@@ -1271,7 +1196,7 @@ private theorem integral_norm_iteratedFDeriv_typeINormalizedKernel_le
         D * (1 + |t|) ^ p) (t : ℝ) :
     (∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖) ≤
       (3 / 2 : ℝ) * D * (1 + |t|) ^ p := by
-  let f : ℝ → ℝ := fun x =>
+  let f := fun x =>
     ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖
   have hfInt : Integrable f := by
     simpa only [f, pow_zero, one_mul, normalizedSchwartz_coe] using
@@ -1280,11 +1205,7 @@ private theorem integral_norm_iteratedFDeriv_typeINormalizedKernel_le
   have hsupport : Function.support f ⊆ Set.Icc (1 / 2 : ℝ) 2 := by
     intro x hx
     by_contra hnot
-    have hxOutside : x < 1 / 2 ∨ 2 < x := by
-      by_cases hxLow : x < 1 / 2
-      · exact Or.inl hxLow
-      · exact Or.inr (lt_of_not_ge fun hxUpper =>
-          hnot ⟨le_of_not_gt hxLow, hxUpper⟩)
+    have hxOutside : x < 1 / 2 ∨ 2 < x := by grind
     have hzero : typeINormalizedKernel σ t =ᶠ[nhds x] 0 := by
       rcases hxOutside with hxLow | hxHigh
       · filter_upwards [Iio_mem_nhds hxLow] with y hy
@@ -1322,7 +1243,7 @@ private theorem integral_norm_iteratedFDeriv_typeINormalizedKernel_le
       norm_num [max_eq_left]
       ring
 
-/-- Uniform Fourier decay for the source-faithful normalized Type-I kernel.
+/- Uniform Fourier decay for the source-faithful normalized Type-I kernel.
 The constant is independent of both the ordinate and Fourier frequency. -/
 theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t ξ : ℝ,
@@ -1330,7 +1251,7 @@ theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
         C * (1 + |t|) ^ n := by
   choose D hD hDbound using fun p : ℕ =>
     typeINormalizedKernel_uniform_iteratedFDeriv σ p
-  let C : ℝ := 2 ^ n * (3 / 2) * ∑ p ∈ Finset.range (n + 1), D p
+  let C := 2 ^ n * (3 / 2) * ∑ p ∈ Finset.range (n + 1), D p
   have hC : 0 ≤ C := by
     dsimp only [C]
     exact mul_nonneg
@@ -1342,8 +1263,7 @@ theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
       Integrable (fun x : ℝ =>
         ‖x‖ ^ k * ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖) := by
     intro k p _hk _hp
-    simpa only [normalizedSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
+    exact (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
         (typeINormalizedKernelSchwartz σ t) k p)
   have hFourier := pow_mul_norm_iteratedFDeriv_fourier_le
     (f := typeINormalizedKernel σ t)
@@ -1355,11 +1275,7 @@ theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
     Function.Embedding.sectR_apply] at hFourier
   have hFourier' : |ξ| ^ n * ‖typeINormalizedFourier σ t ξ‖ ≤
       2 ^ n * ∑ p ∈ Finset.range (n + 1),
-        ∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖ := by
-    convert hFourier using 1
-    · simp [typeINormalizedFourier, Real.norm_eq_abs, SchwartzMap.fourier_coe, normalizedSchwartz_coe]
-    · congr 1
-      norm_num
+        ∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖ := by aesop
   calc
     |ξ| ^ n * ‖typeINormalizedFourier σ t ξ‖ ≤
         2 ^ n * ∑ p ∈ Finset.range (n + 1),
@@ -1367,7 +1283,7 @@ theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
     _ ≤ 2 ^ n * ∑ p ∈ Finset.range (n + 1),
         ((3 / 2 : ℝ) * D p) * (1 + |t|) ^ n := by
       gcongr with p hp
-      have hpn : p ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
+      have hpn := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
       have hint := integral_norm_iteratedFDeriv_typeINormalizedKernel_le
         σ p (hDbound p) t
       calc
@@ -1383,14 +1299,14 @@ theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
       rw [← Finset.mul_sum]
       ring
 
-/-- The complete scaled Poisson tail outside the symmetric mode window
+/- The complete scaled Poisson tail outside the symmetric mode window
 `|m| ≤ M`.  The physical dilation contributes the factor `Q`. -/
 noncomputable def typeINormalizedFarTail
     (σ t : ℝ) (Q M : ℕ) : ℂ :=
   ∑' m : ℤ, if M < m.natAbs then
     (Q : ℂ) * typeINormalizedFourier σ t ((Q : ℝ) * (m : ℝ)) else 0
 
-/-- Arbitrary-order version of `typeINormalizedFarTail_bound`.  Keeping the
+/- Arbitrary-order version of `typeINormalizedFarTail_bound`.  Keeping the
 order visible is essential in endpoint arguments: the physical cutoff may be
 only `T^d` beyond the stationary window, where `d` is chosen after the final
 epsilon. -/
@@ -1402,23 +1318,20 @@ theorem typeINormalizedFarTail_bound_order (σ : ℝ) (n : ℕ) :
           ((Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n) := by
   obtain ⟨C₀, hC₀, hDecay⟩ :=
     typeINormalizedFourier_uniform_decay σ (n + 2)
-  let C : ℝ := C₀ + 1
+  let C := C₀ + 1
   have hC : 0 < C := by dsimp only [C]; linarith
   have hPSeries : Summable (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) := by
     have hNorm : (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) =
-        fun m : ℤ => |1 / (m : ℝ) ^ 2| := by
-      funext m
-      simp only [norm_div, norm_one, norm_pow, Complex.norm_intCast,
-        abs_div, abs_one, pow_abs]
+        fun m : ℤ => |1 / (m : ℝ) ^ 2| := by simp_all
     rw [hNorm, summable_abs_iff]
     exact Real.summable_one_div_int_pow.mpr (by norm_num)
-  let B : ℝ := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
+  let B := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
   have hB : 0 ≤ B := tsum_nonneg fun m => norm_nonneg _
   refine ⟨C * B + 1, by positivity, ?_⟩
   intro t Q M hQ hM
   have hQr : 0 < (Q : ℝ) := by exact_mod_cast hQ
   have hMr : 0 < (M : ℝ) := by exact_mod_cast hM
-  let scale : ℝ := C * (1 + |t|) ^ (n + 2) /
+  let scale := C * (1 + |t|) ^ (n + 2) /
     ((Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n)
   have hPointwise : ∀ m : ℤ, M < m.natAbs →
       ‖(Q : ℂ) * typeINormalizedFourier σ t
@@ -1426,7 +1339,7 @@ theorem typeINormalizedFarTail_bound_order (σ : ℝ) (n : ℕ) :
         scale * ‖1 / (m : ℂ) ^ 2‖ := by
     intro m hm
     have hmNatPos : 0 < m.natAbs := hM.trans hm
-    have hmNe : m ≠ 0 := Int.natAbs_ne_zero.mp hmNatPos.ne'
+    have hmNe := Int.natAbs_ne_zero.mp hmNatPos.ne'
     have hmReal : (m : ℝ) ≠ 0 := by exact_mod_cast hmNe
     have hmAbsPos : 0 < |(m : ℝ)| := abs_pos.mpr hmReal
     have hmAbs : (M : ℝ) ≤ |(m : ℝ)| := by
@@ -1469,15 +1382,10 @@ theorem typeINormalizedFarTail_bound_order (σ : ℝ) (n : ℕ) :
         rw [show n + 2 = (n + 1) + 1 by omega, pow_succ]
         ring
       _ ≤ C * (1 + |t|) ^ (n + 2) /
-          ((Q : ℝ) ^ (n + 1) * |(m : ℝ)| ^ (n + 2)) := by
-        exact div_le_div_of_nonneg_right
-          (mul_le_mul_of_nonneg_right (by dsimp only [C]; linarith)
-            (by positivity)) hDenLarge.le
+          ((Q : ℝ) ^ (n + 1) * |(m : ℝ)| ^ (n + 2)) := by field_simp <;> nlinarith
       _ ≤ C * (1 + |t|) ^ (n + 2) /
           ((Q : ℝ) ^ (n + 1) *
-            ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by
-        exact div_le_div_of_nonneg_left (by positivity) hDenSmall
-          (mul_le_mul_of_nonneg_left hpow (by positivity))
+            ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by field_simp <;> nlinarith
       _ = scale * (1 / |(m : ℝ)| ^ 2) := by
         dsimp only [scale]
         field_simp [hQr.ne', hMr.ne', hmAbsPos.ne']
@@ -1511,7 +1419,7 @@ theorem typeINormalizedFarTail_bound_order (σ : ℝ) (n : ℕ) :
 
 /-! ## Exact scaled Poisson assembly -/
 
-/-- The `typeINormalizedScaledKernel` definition used by the source-facing construction in `TypeIReflection`. -/
+/- The `typeINormalizedScaledKernel` definition used by the source-facing construction in `TypeIReflection`. -/
 noncomputable def typeINormalizedScaledKernel
     (σ t Q x : ℝ) : ℂ :=
   typeINormalizedKernel σ t (x / Q)
@@ -1545,7 +1453,7 @@ theorem hasCompactSupport_typeINormalizedScaledKernel
   simp [typeINormalizedScaledKernel, typeINormalizedKernel,
     typeINormalizedAmplitude, hcut]
 
-/-- The `typeINormalizedScaledKernelSchwartz` definition used by the source-facing construction in `TypeIReflection`. -/
+/- The `typeINormalizedScaledKernelSchwartz` definition used by the source-facing construction in `TypeIReflection`. -/
 noncomputable def typeINormalizedScaledKernelSchwartz
     (σ t Q : ℝ) (hQ : 0 < Q) : 𝓢(ℝ, ℂ) :=
   (hasCompactSupport_typeINormalizedScaledKernel σ t Q hQ).toSchwartzMap
@@ -1561,27 +1469,19 @@ theorem typeINormalizedScaledKernel_fourier
     (σ t Q ξ : ℝ) (hQ : 0 < Q) :
     𝓕 (typeINormalizedScaledKernelSchwartz σ t Q hQ) ξ =
       (Q : ℂ) * typeINormalizedFourier σ t (Q * ξ) := by
-  let g : ℝ → ℂ := fun y =>
+  let g := fun y =>
     Complex.exp (((-2 * Real.pi * y * (Q * ξ) : ℝ) : ℂ) * I) *
       typeINormalizedKernel σ t y
   have hChange := Measure.integral_comp_div g Q
   rw [abs_of_pos hQ] at hChange
   rw [SchwartzMap.fourier_coe, Real.fourier_eq', typeINormalizedFourier,
     SchwartzMap.fourier_coe, Real.fourier_eq']
-  simp only [Real.inner_apply, typeINormalizedScaledKernelSchwartz_apply,
-    typeINormalizedKernelSchwartz_apply, smul_eq_mul]
+  simp only [inner_apply, typeINormalizedScaledKernelSchwartz_apply, smul_eq_mul, typeINormalizedKernelSchwartz_apply]
   calc
     (∫ x : ℝ,
         Complex.exp (((-2 * Real.pi * (x * ξ) : ℝ) : ℂ) * I) *
           typeINormalizedKernel σ t (x / Q)) =
-        ∫ x : ℝ, g (x / Q) := by
-      apply integral_congr_ae
-      filter_upwards with x
-      dsimp only [g]
-      have hphase : -2 * Real.pi * (x / Q) * (Q * ξ) =
-          -2 * Real.pi * (x * ξ) := by
-        field_simp [hQ.ne']
-      rw [hphase]
+        ∫ x : ℝ, g (x / Q) := by grind
     _ = Q • ∫ y : ℝ, g y := hChange
     _ = (Q : ℂ) * ∫ y : ℝ,
         Complex.exp (((-2 * Real.pi * (y * (Q * ξ)) : ℝ) : ℂ) * I) *
@@ -1595,7 +1495,7 @@ theorem typeINormalizedScaledKernel_fourier
       push_cast
       ring
 
-/-- Poisson summation for the normalized medium Type-I kernel at physical
+/- Poisson summation for the normalized medium Type-I kernel at physical
 scale `Q`. -/
 theorem typeINormalizedKernel_poisson
     (σ t Q : ℝ) (hQ : 0 < Q) :
@@ -1606,7 +1506,7 @@ theorem typeINormalizedKernel_poisson
     (typeINormalizedScaledKernelSchwartz σ t Q hQ) 0
   simpa [typeINormalizedScaledKernel_fourier σ t Q _ hQ] using hPoisson
 
-/-- The finite symmetric retained-mode contribution, represented as a
+/- The finite symmetric retained-mode contribution, represented as a
 finitely supported integer series. -/
 noncomputable def typeINormalizedCentralModes
     (σ t : ℝ) (Q M : ℕ) : ℂ :=
@@ -1638,7 +1538,7 @@ theorem typeINormalizedPoisson_split
     (Q : ℂ) * typeINormalizedFourier σ t
       ((Q : ℝ) * (m : ℝ))
   have hf : Summable f := by
-    simpa only [f, Complex.ofReal_natCast] using typeINormalizedScaledFourier_summable
+    exact typeINormalizedScaledFourier_summable
       σ t (Q : ℝ) hQr
   have hcentral : Summable (fun m : ℤ =>
       if m.natAbs ≤ M then f m else 0) := by
@@ -1663,4 +1563,4 @@ theorem typeINormalizedPoisson_split
   · have hm' : M < m.natAbs := Nat.lt_of_not_ge hm
     simp [hm, hm', f]
 
-end GuthMaynard.NativeMoment
+

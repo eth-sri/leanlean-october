@@ -16,15 +16,19 @@ open CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormal
 open CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation
 open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-abbrev sourcePrimes (χ ψ : Character) := redundantSet χ.modulus ψ.modulus
+section
+variable (χ ψ : Character)
+include χ ψ
 
-def dualScale (χ ψ : Character) (X : ℝ)
+abbrev sourcePrimes  := redundantSet χ.modulus ψ.modulus
+
+def dualScale  (X : ℝ)
     (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) : ℝ :=
   (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D.val,P):ℝ)/(X*norm H.val)
 
-lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
+lemma dualScale_pos  (X : ℝ) (hX : 0<X)
     (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
     0<dualScale χ ψ X D H := by
   have hD : (∏P∈D.val,P : Ideal O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
@@ -35,8 +39,12 @@ lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
   exact div_pos (mul_pos hQ hd) (mul_pos hX (CenteredMomentReflectionDeletion.norm_pos H.val))
 
-def retainedColumn (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
-    (B n : ℕ) (P : ℂ) (a : Index (sourcePrimes χ ψ)) : ℂ :=
+section
+variable (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
+    (B n : ℕ) (P : ℂ)
+include W X R t hX B n P
+
+def retainedColumn  (a : Index (sourcePrimes χ ψ)) : ℂ :=
   if a.2∈retainedAnnuli R (dualScale χ ψ X a.1.1 a.1.2)
       (dualScale_pos χ ψ X hX a.1.1 a.1.2) then
     HeckeDyadic.polynomial χ.inverse false
@@ -44,8 +52,7 @@ def retainedColumn (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
       (dyadicScale a.2*dualScale χ ψ X a.1.1 a.1.2) 0 0 * P
   else 0
 
-theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
+theorem finiteAnnularColumn_normalized 
     (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
     finiteAnnularColumn χ.inverse (paperRadialFourier (CompletedHeight.normTwistedSource W t))
       R (dualScale χ ψ X D H)*P =
@@ -60,11 +67,13 @@ theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
   rw [retainedColumn,ite_eq_left hk,actual_annular_normalization]
   ring
 
-theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
+section
+variable (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
       ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
-        retainedColumn χ ψ W X R t hX B n P a‖)) :
+        retainedColumn χ ψ W X R t hX B n P a‖))
+include hs
+
+theorem retainedOriginal_eq_weighted  :
     retainedOriginal χ ψ W X R t*P =
       (((1+‖t‖)^n:ℝ):ℂ)*∑'a : Index (sourcePrimes χ ψ),
         signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
@@ -88,11 +97,7 @@ theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
   simp only [mul_assoc,tsum_mul_left]
   ring
 
-theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
-      ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
-        retainedColumn χ ψ W X R t hX B n P a‖))
+theorem retainedOriginal_fiber_summable 
     (D : (sourcePrimes χ ψ).powerset) :
     Summable (fun H : SmoothIdeal (sourcePrimes χ ψ)=>
       ‖(coefficient ψ ψ.inverse (sourcePrimes χ ψ) D.val H*
@@ -105,6 +110,10 @@ theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
   rw [mul_assoc,finiteAnnularColumn_normalized χ ψ W X R t hX B n P D H]
   simp only [signedWeight,mul_assoc,tsum_mul_left]
   ring
+end
+end
+end
+
 
 theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],
@@ -161,8 +170,8 @@ theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
       _ ≤ ((1+T)^n)^2*(C*Rcap^ε*E) := mul_le_mul_of_nonneg_left he.2 (sq_nonneg _)
       _ = C*Rcap^ε*(1+T)^(2*n)*E := by rw [←pow_mul,Nat.mul_comm n 2];ring
 
-end SevenEighths.CenteredMomentRetainedWeightedSource
 
-end
 
-end OAI
+
+
+

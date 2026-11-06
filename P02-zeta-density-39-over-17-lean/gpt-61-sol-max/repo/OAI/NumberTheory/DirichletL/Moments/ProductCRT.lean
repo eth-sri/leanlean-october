@@ -45,7 +45,11 @@ def cofactor (a : ι → A) (i : ι) : A := ∏ j ∈ Finset.univ.erase i, a j
 theorem factor_mul_cofactor (a : ι → A) (i : ι) : a i * cofactor a i = ∏ j, a j :=
   Finset.mul_prod_erase Finset.univ a (Finset.mem_univ i)
 
-theorem left_crt_component (a b : ι → A)
+section
+variable (a b : ι → A)
+include a b
+
+theorem left_crt_component 
     (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (x : Residue (∏ i, a i)) (i : ι) :
@@ -59,7 +63,7 @@ theorem left_crt_component (a b : ι → A)
   rw [← factor_mul_cofactor b i]
   ring
 
-theorem right_crt_component (a b : ι → A)
+theorem right_crt_component 
     (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (y : Residue (∏ i, b i)) (i : ι) :
@@ -73,7 +77,7 @@ theorem right_crt_component (a b : ι → A)
   rw [← factor_mul_cofactor a i]
   ring
 
-theorem fullModulusCorrelation_product (a b : ι → A)
+theorem fullModulusCorrelation_product 
     (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -101,8 +105,11 @@ theorem fullModulusCorrelation_product (a b : ι → A)
   simpa only [fullModulusCorrelation, fullCorrelation, crtCharacter_apply, jointCRT_mk,
     RingEquiv.toEquiv_eq_coe, EquivLike.coe_coe] using hcrt
 
-theorem cross_cofactor_coprime (a b : ι → A)
-    (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
+section
+variable (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
+include hab
+
+theorem cross_cofactor_coprime 
     (i : ι) : IsCoprime (a i) (cofactor b i) := by
   unfold cofactor
   apply IsCoprime.prod_right
@@ -111,8 +118,7 @@ theorem cross_cofactor_coprime (a b : ι → A)
   have hij := (Ideal.isCoprime_span_singleton_iff _ _).mp (hab hji.symm)
   exact (IsCoprime.mul_right_iff.mp (IsCoprime.mul_left_iff.mp hij).1).2
 
-theorem local_cofactor_norm (a b : ι → A)
-    (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
+theorem local_cofactor_norm 
     [∀ i, Fintype (Residue (a i))] [∀ i, Fintype (Residue (b i))]
     (χ : ∀ i, MulChar (Residue (a i)) ℂ) (ψ : ∀ i, MulChar (Residue (b i)) ℂ)
     (h : A) (i : ι) :
@@ -132,8 +138,10 @@ theorem local_cofactor_norm (a b : ι → A)
   rw [← hu, ← hv, fullCorrelation_unit_change, norm_mul, norm_mul, norm_star,
     FiniteRayExpansion.norm_char_unit, FiniteRayExpansion.norm_char_unit, one_mul, one_mul]
   rfl
+end
 
-theorem fullModulusCorrelation_product_norm (a b : ι → A)
+
+theorem fullModulusCorrelation_product_norm 
     (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -147,11 +155,13 @@ theorem fullModulusCorrelation_product_norm (a b : ι → A)
   apply Finset.prod_congr rfl
   intro i hi
   exact local_cofactor_norm a b hab χ ψ h i
+end
+
 
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
 open CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 omit [DecidableEq ι] in
 theorem supported_character_product (a : ι → O)
@@ -191,10 +201,10 @@ theorem actualCorrelation_product_norm (a b : ι → O)
   rw [supported_character_product a ha hA hca, supported_character_product b hb hB hcb]
   exact fullModulusCorrelation_product_norm a b hca hcb hcab _ _ h
 
-end Eisenstein
 
-end SevenEighths.CenteredMomentProductCRT
 
-end
 
-end OAI
+
+
+
+

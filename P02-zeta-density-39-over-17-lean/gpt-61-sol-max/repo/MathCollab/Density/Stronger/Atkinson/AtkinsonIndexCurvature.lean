@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof adapted from Scott McColm's Lean repository, revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -25,7 +26,6 @@ estimate in Heath--Brown's argument.
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- The exact real-index slope of the Atkinson phase. -/
@@ -37,8 +37,12 @@ def atkinsonIndexRealCurvature (T x : ℝ) : ℝ :=
   -(Real.pi * T) /
     (x ^ (2 : ℕ) * atkinsonIndexRealSlope T x)
 
+section
+variable {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
+include T x hT hx
+
 theorem atkinsonIndexRealSlope_pos
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+     :
     0 < atkinsonIndexRealSlope T x := by
   unfold atkinsonIndexRealSlope
   apply Real.sqrt_pos.2
@@ -47,7 +51,7 @@ theorem atkinsonIndexRealSlope_pos
 /-- Exact derivative of the phase slope, hence the second derivative of
 the equation-(11) phase. -/
 theorem hasDerivAt_atkinsonIndexRealSlope
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+     :
     HasDerivAt (atkinsonIndexRealSlope T)
       (atkinsonIndexRealCurvature T x) x := by
   have hdiv : HasDerivAt (fun u : ℝ => 2 * Real.pi * T / u)
@@ -56,9 +60,7 @@ theorem hasDerivAt_atkinsonIndexRealSlope
       (hasDerivAt_id x) hx.ne'
   have hradicand : HasDerivAt
       (fun u : ℝ => 2 * Real.pi * T / u + Real.pi ^ (2 : ℕ))
-      (-(2 * Real.pi * T) / x ^ (2 : ℕ)) x := by
-    simpa only [add_zero] using! hdiv.add
-      (hasDerivAt_const x (Real.pi ^ (2 : ℕ)))
+      (-(2 * Real.pi * T) / x ^ (2 : ℕ)) x := by simp_all
   have hpos : 0 < 2 * Real.pi * T / x + Real.pi ^ (2 : ℕ) := by
     positivity
   have hsqrt := hradicand.sqrt hpos.ne'
@@ -66,6 +68,8 @@ theorem hasDerivAt_atkinsonIndexRealSlope
   convert hsqrt using 1
   simp only [atkinsonIndexRealSlope]
   ring
+end
+
 
 /-- Difference of two exact Atkinson phases, with the later height first. -/
 def atkinsonIndexPhaseDifference (t u x : ℝ) : ℝ :=
@@ -81,6 +85,6 @@ theorem hasDerivAt_atkinsonIndexPhaseDifference
   exact (hasDerivAt_atkinsonIndexRealPhase ht hx).sub
     (hasDerivAt_atkinsonIndexRealPhase hu hx)
 
-end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

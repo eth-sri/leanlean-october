@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import DensityEnergyGM.PoweredLargeValues
 public import DensityEnergyGM.SquareLevelBounds
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 open Complex Finset
 namespace GuthMaynard.NativeMoment
@@ -23,14 +23,14 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
           ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) +
             (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
             T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) := by
-  let η : ℝ := ε / 8
-  let δ : ℝ := ε / 2
+  let η := ε / 8
+  let δ := ε / 2
   have hη : 0 < η := by dsimp only [η]; positivity
   have hδ : 0 < δ := by dsimp only [δ]; positivity
   obtain ⟨A, C₀, T₀, hA, hC₀, hT₀, hPowered⟩ :=
     powered_unit_block_gm_large_values_native 2 η δ hη hδ
-  let B : ℝ := max 1 (2 * A * (4 : ℝ) ^ η)
-  let C : ℝ := 32 * C₀ * B ^ 4
+  let B := max 1 (2 * A * (4 : ℝ) ^ η)
+  let C := 32 * C₀ * B ^ 4
   have hBone : 1 ≤ B := le_max_left _ _
   have hBpos : 0 < B := lt_of_lt_of_le zero_lt_one hBone
   refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
@@ -41,7 +41,7 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨r, hr, W', hsub, hcard, hbound⟩ :=
     hPowered M a T U W hM (by norm_num) hT hU ha hSep hBase hLarge
   let q : ℝ := (2 ^ r * M ^ 2 : ℕ)
-  let D : ℝ := 2 * (A * ((2 ^ 2 * M ^ 2 : ℕ) : ℝ) ^ η)
+  let D := 2 * (A * ((2 ^ 2 * M ^ 2 : ℕ) : ℝ) ^ η)
   have hDpos : 0 < D := by dsimp only [D]; positivity
   have hq : 0 ≤ q := by dsimp only [q]; positivity
   have hqx : q ≤ 2 * (M : ℝ) ^ 2 := by
@@ -67,8 +67,7 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
   have hPpow : (B * T ^ η) ^ 4 = B ^ 4 * T ^ (4 * η) := by
     rw [mul_pow, ← Real.rpow_natCast (T ^ η) 4,
       ← Real.rpow_mul hTpos.le]
-    congr 1
-    ring_nf
+    ring
   have hD4 : D ^ 4 ≤ B ^ 4 * T ^ (4 * η) := by
     rw [← hPpow]
     exact pow_le_pow_left₀ hDpos.le hDle 4
@@ -107,13 +106,6 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
     _ = C * T ^ ε *
         ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) +
           (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
-          T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) := by
-      dsimp only [C]
-      rw [show 2 * (C₀ * T ^ δ * (16 * (B ^ 4 * T ^ (4 * η)) *
-          ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) + (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
-            T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)))) =
-          32 * C₀ * B ^ 4 * (T ^ δ * T ^ (4 * η)) *
-            ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) + (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
-              T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) by ring_nf, hbudget]
+          T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) := by grind
 
-end GuthMaynard.NativeMoment
+

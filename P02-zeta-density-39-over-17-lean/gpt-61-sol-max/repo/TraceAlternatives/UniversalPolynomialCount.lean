@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCountScale
 public import TraceAlternatives.UniversalCountTraceExpansion
 public import TraceAlternatives.UniversalCountAbsorption
@@ -7,10 +8,9 @@ public import TraceAlternatives.UniversalTraceExpansion
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
-open Finset GuthMaynard.Improvement GuthMaynard.NativeMoment
+
+open Finset GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
 /-- Actual general-polynomial count from the proved sharp trace and full
@@ -34,7 +34,7 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
   obtain ⟨C,hC,hEnergy⟩ := discrete_energy_five_term_native δ hδ
   let B := (2*A)*(1+15*(1+C))
   have hB : 0 < B := by dsimp [B]; positivity
-  let T₀ : ℝ := max 2 ((2*A)^200)
+  let T₀ := max 2 ((2*A)^200)
   have hT₀ : 2 ≤ T₀ := le_max_left _ _
   refine ⟨1+B^8,T₀,by positivity,hT₀,?_⟩
   intro T t₀ N hTall hlo hhi b hb W hW hSep hLarge
@@ -59,7 +59,7 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
   let R : ℝ := W.card
   have hVp : 0 < V := by dsimp [V]; positivity
   have hSp : 0 < S := by dsimp [S]; positivity
-  have hpδ : 1 ≤ T^δ := Real.one_le_rpow hT1 hδ.le
+  have hpδ := Real.one_le_rpow hT1 hδ.le
   have hOut : 1 ≤ 1+B^8 := by linarith [pow_nonneg hB.le 8]
   by_cases hRsmall : R ≤ S
   · have hPow : S ≤ T^(3*a*(1-σ)+144*δ) :=
@@ -144,4 +144,4 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment
+

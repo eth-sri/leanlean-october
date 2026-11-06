@@ -7,9 +7,8 @@ public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroQFullPrefix
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
@@ -76,4 +75,4 @@ theorem robertSargos_zero_q_source_bound
   · rw [Finset.Icc_eq_empty_of_lt (by omega : b < a),Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025
+

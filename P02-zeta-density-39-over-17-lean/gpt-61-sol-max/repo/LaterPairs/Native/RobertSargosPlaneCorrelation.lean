@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPlaneAveraging
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
                                                                   
@@ -73,4 +72,4 @@ theorem robertSargos_plane_gram_term (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     dsimp only [F]
     congr 2 <;> omega
 
-end TaoTrudgianYang2025
+

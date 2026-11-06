@@ -11,9 +11,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma residual_level_coprime (K Q₀ : Ideal Eis) (hK : Admissible K)
     (c : Eis) (hc : Ideal.span {c}=Ideal.span {(9:Eis)}*Q₀) (hcop : IsCoprime Q₀ K) :
@@ -26,7 +26,7 @@ lemma residual_level_coprime (K Q₀ : Ideal Eis) (hK : Admissible K)
 
 variable {φ σ : Type*} [Fintype σ] [DecidableEq σ]
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

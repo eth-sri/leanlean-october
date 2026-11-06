@@ -5,7 +5,6 @@ public import Mathlib
 
 /- These are parameter theorems only. No zero-density result is asserted
 from the newer rational moment or trace estimates in this module. -/
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 namespace Montgomery.DraftParameters
 
@@ -26,11 +25,6 @@ theorem quadratic_window {s a x : ℝ}
   have hv : 0 ≤ (6*s-4)*(x-a) := mul_nonneg (by linarith) (by linarith)
   have hw : 0 ≤ (4*s-3)*(x-a) := mul_nonneg (by linarith) (by linarith)
   constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  · nlinarith
+  all_goals (grind)
 
-end Montgomery.DraftParameters
+

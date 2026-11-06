@@ -7,23 +7,29 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
-def firstRetainedSource (p : ι→O) (labels : Finset (Ideal O)) (b : CubeCoordinates ι) (Y : ℝ) :
+section
+variable (p : ι→O) (labels : Finset (Ideal O)) (b : CubeCoordinates ι) (Y : ℝ)
+include p labels b Y
+
+def firstRetainedSource  :
     Finset (Ideal O×O) :=
   labels.biUnion (fun f=> (nonzeroChildFrequencyBall
     (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit f) Y).image
       (fun h=>(f,h)))
 
-theorem mem_firstRetainedSource (p : ι→O) (labels : Finset (Ideal O)) (b : CubeCoordinates ι) (Y : ℝ)
+theorem mem_firstRetainedSource 
     (x : Ideal O×O) :
     x∈firstRetainedSource p labels b Y ↔ x.1∈labels ∧ x.2∈nonzeroChildFrequencyBall
       (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit x.1) Y := by
   rcases x with ⟨f,h⟩
   simp [firstRetainedSource]
+end
+
 
 theorem sum_firstRetainedSource {A : Type*} [AddCommMonoid A]
     (p : ι→O) (labels : Finset (Ideal O)) (b : CubeCoordinates ι) (Y : ℝ) (H : Ideal O×O→A) :
@@ -46,7 +52,7 @@ variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -14,20 +14,24 @@ Plateau membership is supplied explicitly here and derived by the
 original-source chart consumer.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem modelPhaseStationaryPoint_taylor_phase
-    {F : ℝ → ℝ} {σ A w h T N r : ℝ} (Q : ℕ)
+
+section
+variable {F : ℝ → ℝ} {σ A w h T N r : ℝ} (Q : ℕ)
     (hA : 0 < A) (hw : 0 < w) (hh : 0 < h)
     (hT : T ≠ 0) (hN : N ≠ 0) (hv : 0 < r*N/T)
     (hplateau : r*N/T ∈ Icc
-      (modelPhaseClosedSlope F 2+2*h) (modelPhaseClosedSlope F 1-2*h)) :
+      (modelPhaseClosedSlope F 2+2*h) (modelPhaseClosedSlope F 1-2*h))
+include F σ A w h T N r Q hA hw hh hT hN hv hplateau
+
+theorem modelPhaseStationaryPoint_taylor_phase
+     :
     modelPhaseFrequencyPhase F T N r (modelPhaseStationaryPoint F T N r) =
       modelPhaseDualOffset F σ A w T -
         modelPhaseDualParameter σ A T *
@@ -41,11 +45,7 @@ theorem modelPhaseStationaryPoint_taylor_phase
   ring
 
 theorem modelPhaseStationaryCharacter_taylor
-    {F : ℝ → ℝ} {σ A w h T N r : ℝ} (Q : ℕ)
-    (hA : 0 < A) (hw : 0 < w) (hh : 0 < h)
-    (hT : T ≠ 0) (hN : N ≠ 0) (hv : 0 < r*N/T)
-    (hplateau : r*N/T ∈ Icc
-      (modelPhaseClosedSlope F 2+2*h) (modelPhaseClosedSlope F 1-2*h)) :
+     :
     modelPhaseStationaryCharacter F T N r =
       (𝐞 (modelPhaseDualOffset F σ A w T-1/8) : ℂ) *
         starRingEnd ℂ (𝐞 (modelPhaseDualParameter σ A T *
@@ -59,6 +59,8 @@ theorem modelPhaseStationaryCharacter_taylor
         -(modelPhaseDualParameter σ A T *
           canonicalTaylorLegendrePhase F σ A Q w h (r/modelPhaseDualScale A T N)) by ring]
   rw [AddChar.map_add_eq_mul,AddChar.map_neg_eq_inv,Circle.coe_mul,Circle.coe_inv_eq_conj]
+end
+
 
 theorem norm_modelPhaseStationaryCharacter_taylor_range
     {F : ℝ → ℝ} {σ A w h T N : ℝ} (Q : ℕ)
@@ -115,4 +117,4 @@ theorem norm_modelPhaseStationaryBlock_le_taylor_prefixMax
       (fun i hi => hv i (hi.trans hjL)) (fun i hi => hplateau i (hi.trans hjL))]
     exact norm_exponentialSumAt_le_prefixMax _ _ _ a L j hjL
 
-end TaoTrudgianYang2025
+

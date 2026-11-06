@@ -53,7 +53,7 @@ theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     Complex.ofReal_ne_zero.mpr (firstRootScale_pos s hs).ne'
   field_simp [hDc]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

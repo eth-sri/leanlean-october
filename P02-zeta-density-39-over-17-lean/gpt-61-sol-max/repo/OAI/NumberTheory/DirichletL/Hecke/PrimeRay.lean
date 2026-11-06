@@ -108,8 +108,8 @@ theorem ray_prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   exact hbound Z d hZ hd hd' hU hT (twistedFamily M H hH ηrow) hχ a i ha ha' hmax
     r σ freq hr hrR hσmin hσmax hlarge θ (hQ θ) hfreq hheight
 
-end SevenEighths.HeckePrimeRay
 
-end
 
-end OAI
+
+
+

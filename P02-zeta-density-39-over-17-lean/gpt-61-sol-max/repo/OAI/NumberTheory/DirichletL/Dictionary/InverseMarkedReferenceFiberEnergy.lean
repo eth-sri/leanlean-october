@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceDeletedEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPhysicalRows
 
@@ -6,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPhysicalRows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile
-open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
+open HeckeDetectorCoefficientTransfer InverseMoment
+open ConcreteTraceCRT
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows
 open InverseInitialPhysicalSlots IdealMobiusDivisorSum
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     (S:ProbeFinalAssembly.SourceData D)
@@ -52,7 +53,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   intro data
   choose C U₀ hC hU₀ hb using fun b:Bool=>hj b data
   let Tbad:=idealDivisors (∏P∈excluded data,P)
-  let Ctotal:ℝ:=((Tbad.card:ℝ)+1)^2*(∑b:Bool,C b)
+  let Ctotal :=((Tbad.card:ℝ)+1)^2*(∑b:Bool,C b)
   have hCsum:0<∑b:Bool,C b:=Finset.sum_pos (fun b _=>hC b) Finset.univ_nonempty
   refine ⟨Ctotal,max (U₀ false) (U₀ true),by dsimp [Ctotal];positivity,
     lt_max_of_lt_left (hU₀ false),?_⟩
@@ -62,8 +63,8 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   have hUone:1<U:=(hU₀ false).trans_le (hUb false)
   have hpr (s:selected):F.profile s=S.W:=hprofile s s.property
   have hup (s:selected):F.upper s=2:=hupper s s.property
-  have hprof:(fun s:selected=>F.profile s)=(fun _=>(S.W:ℝ→ℂ)):=funext hpr
-  have hups:(fun s:selected=>F.upper s)=(fun _=>2):=funext hup
+  have hprof :=funext hpr
+  have hups :=funext hup
   have hslots:∀s∈selected,∀x,F.profile s x≠0 → x∈Set.Icc (1:ℝ) (F.upper s) := by
     intro s hs x hx
     rw [hprofile s hs] at hx
@@ -74,7 +75,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   have hphys:=fiber_child_rows_le_deleted_sources F selected W v bo (fun _=>1) hUone
     (fun x hx=>(hsW hx).2) hslots hlarge'
   rw [hdata] at hphys
-  let rows:Finset O:=F.rows.image (fun u=>u.val)
+  let rows :=F.rows.image (fun u=>u.val)
   have hsum (f:O→ℝ):(∑u∈rows,f u)=∑u∈F.rows,f u.val:=
     Finset.sum_image (fun u _ w _ he=>Subtype.ext he)
   have hrows:∀u∈rows,‖eisEmbedding u‖^2≤U := by
@@ -128,8 +129,8 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
       gcongr
       nlinarith [show 0≤(Tbad.card:ℝ) by positivity]
 
-end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
-end OAI
+
+
+

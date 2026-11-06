@@ -5,8 +5,7 @@ public import Mathlib
 
 /-! A finite, height-independent choice of moment orders in the short-range
 argument. This is an exponent-covering theorem, not a moment estimate. -/
-set_option autoImplicit false
-noncomputable section
+
 
 namespace Montgomery.RationalMoment
 
@@ -31,7 +30,7 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
     have hh : r ≤ 1 / 2 := le_of_not_gt hn
     nlinarith [mul_le_mul_of_nonneg_right hh hden.le]
   have hrpos : 0 < r := by linarith
-  let k : ℕ := ⌊r / m⌋₊
+  let k := ⌊r / m⌋₊
   have hKk : K ≤ k := Nat.le_floor ((le_div_iff₀ hmpos).mpr (by
     have hh := (le_div_iff₀ hKpos).mp hm
     nlinarith))
@@ -50,9 +49,9 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
   have hkδ : (k : ℝ) * δ ≤ 1 := by
     nlinarith [mul_le_mul_of_nonneg_left hδm hkpos.le]
   have hbound : k ≤ ⌈1 / δ⌉₊ := by
-    have hh : (k : ℝ) ≤ (⌈1 / δ⌉₊ : ℝ) :=
+    have hh :=
       ((le_div_iff₀ hδ).mpr hkδ).trans (Nat.le_ceil (1 / δ))
     exact_mod_cast hh
   exact ⟨k, hKk, hbound, hlower, hfloor⟩
 
-end Montgomery.RationalMoment
+

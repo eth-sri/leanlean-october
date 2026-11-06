@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.RayCoefficients
 
 @[expose] public section
@@ -10,69 +11,69 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
 
 section
 open scoped BigOperators Classical MatrixGroups
@@ -85,10 +86,7 @@ open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 def row (M : levelThree) : Fin 2 → O := (M : SL(2,O)) 1
 
 lemma row_mul (M N : levelThree) :
-    row (M*N) = Matrix.vecMul (row M) (N : SL(2,O)) := by
-  funext j
-  simp only [row, Subgroup.coe_mul, Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply, Matrix.vecMul, dotProduct]
+    row (M*N) = Matrix.vecMul (row M) (N : SL(2,O)) := by rfl
 
 lemma row_ne_zero (M : levelThree) : row M ≠ 0 := by
   intro hz
@@ -97,8 +95,7 @@ lemma row_ne_zero (M : levelThree) : row M ≠ 0 := by
   have h : (M : SL(2,O)) 0 0 * (M : SL(2,O)) 1 1 -
       (M : SL(2,O)) 0 1 * (M : SL(2,O)) 1 0 = 1 := by
     simpa only [Matrix.det_fin_two] using (M : SL(2,O)).property
-  simp only [hc, hd, mul_zero, sub_zero] at h
-  exact zero_ne_one h
+  simp_all
 
 lemma character_eq_of_row_eq (M N : levelThree) (hr : row M = row N) :
     complexCharacter M = complexCharacter N := by
@@ -190,8 +187,7 @@ lemma cosetRow_ne_zero (x : CuspCosets) : cosetRow x ≠ 0 := by
 def cosetCharacter : CuspCosets → ℂ :=
   Quotient.lift complexCharacter (fun M N h => character_eq_of_row_eq M N h)
 
-@[simp] lemma cosetCharacter_cosetOf (M : levelThree) :
-    cosetCharacter (cosetOf M) = complexCharacter M := rfl
+
 
 lemma norm_cosetCharacter (x : CuspCosets) : ‖cosetCharacter x‖ = 1 := by
   induction x using Quotient.inductionOn with | _ M => exact norm_complexCharacter M
@@ -202,8 +198,7 @@ def rightTranslate (M : levelThree) : CuspCosets → CuspCosets :=
     change row (A*M) = row (B*M)
     rw [row_mul, row_mul, show row A = row B from h])
 
-@[simp] lemma rightTranslate_cosetOf (M N : levelThree) :
-    rightTranslate M (cosetOf N) = cosetOf (N*M) := rfl
+
 
 lemma rightTranslate_mul (M N : levelThree) (x : CuspCosets) :
     rightTranslate N (rightTranslate M x) = rightTranslate (M*N) x := by
@@ -216,19 +211,25 @@ lemma rightTranslate_mul (M N : levelThree) (x : CuspCosets) :
     change cosetOf (A*1) = cosetOf A
     rw [mul_one]
 
-def rightEquiv (M : levelThree) : CuspCosets ≃ CuspCosets where
+section
+variable (M : levelThree)
+include M
+
+def rightEquiv  : CuspCosets ≃ CuspCosets where
   toFun := rightTranslate M
   invFun := rightTranslate M⁻¹
   left_inv x := by rw [rightTranslate_mul]; simp
   right_inv x := by rw [rightTranslate_mul]; simp
 
-lemma cosetRow_rightEquiv (M : levelThree) (x : CuspCosets) :
+lemma cosetRow_rightEquiv  (x : CuspCosets) :
     cosetRow (rightEquiv M x) = Matrix.vecMul (cosetRow x) (M : SL(2,O)) := by
   induction x using Quotient.inductionOn with | _ N => exact row_mul N M
 
-lemma cosetCharacter_rightEquiv (M : levelThree) (x : CuspCosets) :
+lemma cosetCharacter_rightEquiv  (x : CuspCosets) :
     cosetCharacter (rightEquiv M x) = cosetCharacter x * complexCharacter M := by
   induction x using Quotient.inductionOn with | _ N => exact map_mul _ _ _
+end
+
 
 def complexMatrix : levelThree →* SL(2,ℂ) :=
   (Matrix.SpecialLinearGroup.map (n := Fin 2) eisEmbedding).comp levelThree.subtype
@@ -270,8 +271,7 @@ instance : IsZLattice ℝ integerLattice := by
 def integerPoint (n : (Fin 2 × Fin 2) → ℤ) : integerLattice :=
   ⟨fun i => (n i : ℝ), by
     rw [integerLattice, (Pi.basisFun ℝ (Fin 2 × Fin 2)).mem_span_iff_repr_mem ℤ]
-    intro i
-    exact ⟨n i, by simp⟩⟩
+    simp⟩
 
 lemma integerPoint_injective : Function.Injective integerPoint := by
   intro a b hab
@@ -280,15 +280,7 @@ lemma integerPoint_injective : Function.Injective integerPoint := by
   change (a i : ℝ) = (b i : ℝ) at h
   exact_mod_cast h
 
-lemma integerPoint_norm (n : (Fin 2 × Fin 2) → ℤ) : ‖integerPoint n‖ = ‖n‖ := by
-  change ‖fun i => (n i : ℝ)‖ = ‖n‖
-  apply le_antisymm
-  · apply (pi_norm_le_iff_of_nonneg (norm_nonneg _)).mpr
-    intro i
-    simpa only [Real.norm_eq_abs, ← Int.norm_eq_abs] using norm_le_pi_norm n i
-  · apply (pi_norm_le_iff_of_nonneg (norm_nonneg _)).mpr
-    intro i
-    simpa only [Real.norm_eq_abs, ← Int.norm_eq_abs] using norm_le_pi_norm (fun i => (n i : ℝ)) i
+
 
 lemma summable_integer_four_rpow (k : ℝ) (hk : 4 < k) :
     Summable (fun n : (Fin 2 × Fin 2) → ℤ => ‖n‖ ^ (-k)) := by
@@ -297,9 +289,7 @@ lemma summable_integer_four_rpow (k : ℝ) (hk : 4 < k) :
     simp
   have hs := ZLattice.summable_norm_rpow integerLattice (-k) (by rw [hf]; norm_num; linarith)
   apply (hs.comp_injective integerPoint_injective).congr
-  intro n
-  change ‖integerPoint n‖ ^ (-k) = ‖n‖ ^ (-k)
-  rw [integerPoint_norm]
+  bound
 
 def rowCoordinates (v : Fin 2 → O) : (Fin 2 × Fin 2) → ℤ :=
   fun i => if i.2 = 0 then (ActualEisensteinCoordinates.coords (v i.1)).1
@@ -337,47 +327,62 @@ end
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
-def rowEnergy (v : Fin 2 → ℂ) : ℝ := ‖v 0‖ ^ 2 + ‖v 1‖ ^ 2
+section
+variable (v : Fin 2 → ℂ)
+include v
 
-lemma rowEnergy_nonneg (v : Fin 2 → ℂ) : 0 ≤ rowEnergy v := by
+def rowEnergy  : ℝ := ‖v 0‖ ^ 2 + ‖v 1‖ ^ 2
+
+lemma rowEnergy_nonneg  : 0 ≤ rowEnergy v := by
   unfold rowEnergy; positivity
 
-lemma norm_le_sqrt_rowEnergy (v : Fin 2 → ℂ) : ‖v‖ ≤ Real.sqrt (rowEnergy v) := by
+lemma norm_le_sqrt_rowEnergy  : ‖v‖ ≤ Real.sqrt (rowEnergy v) := by
   apply (pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)).mpr
   intro i
   apply Real.le_sqrt_of_sq_le
   fin_cases i <;> dsimp [rowEnergy] <;> nlinarith [sq_nonneg ‖v 0‖, sq_nonneg ‖v 1‖]
 
-lemma rowEnergy_pos (v : Fin 2 → ℂ) (hv : v ≠ 0) : 0 < rowEnergy v := by
+lemma rowEnergy_pos  (hv : v ≠ 0) : 0 < rowEnergy v := by
   have h := norm_le_sqrt_rowEnergy v
   have hn := norm_pos_iff.mpr hv
   exact Real.sqrt_pos.mp (lt_of_lt_of_le hn h)
+end
 
-def rowOperator (g : SL(2,ℂ)) : (Fin 2 → ℂ) →L[ℂ] (Fin 2 → ℂ) :=
+
+section
+variable (g : SL(2,ℂ))
+include g
+
+def rowOperator  : (Fin 2 → ℂ) →L[ℂ] (Fin 2 → ℂ) :=
   (Matrix.toLinearMapRight' (g : Matrix (Fin 2) (Fin 2) ℂ)).toContinuousLinearMap
 
-@[simp] lemma rowOperator_apply (g : SL(2,ℂ)) (v : Fin 2 → ℂ) :
+@[simp] lemma rowOperator_apply  (v : Fin 2 → ℂ) :
     rowOperator g v = Matrix.vecMul v (g : Matrix (Fin 2) (Fin 2) ℂ) := rfl
+end
+
 
 lemma rowOperator_mul (g h : SL(2,ℂ)) (v : Fin 2 → ℂ) :
-    rowOperator h (rowOperator g v) = rowOperator (g*h) v := by
-  simp only [rowOperator_apply, Matrix.vecMul_vecMul, Matrix.SpecialLinearGroup.coe_mul]
+    rowOperator h (rowOperator g v) = rowOperator (g*h) v := by simp
 
 @[simp] lemma rowOperator_one (v : Fin 2 → ℂ) : rowOperator 1 v = v := by
   simp only [rowOperator_apply, Matrix.SpecialLinearGroup.coe_one, Matrix.vecMul_one]
 
-lemma rowOperator_ne_zero (g : SL(2,ℂ)) (v : Fin 2 → ℂ) (hv : v ≠ 0) :
+section
+variable (g : SL(2,ℂ))
+include g
+
+lemma rowOperator_ne_zero  (v : Fin 2 → ℂ) (hv : v ≠ 0) :
     rowOperator g v ≠ 0 := by
   intro hz
   have h := congrArg (rowOperator g⁻¹) hz
   rw [rowOperator_mul, mul_inv_cancel, rowOperator_one, map_zero] at h
   exact hv h
 
-def rowBound (g : SL(2,ℂ)) : ℝ := 2 * (1 + ‖rowOperator g⁻¹‖)
+def rowBound  : ℝ := 2 * (1 + ‖rowOperator g⁻¹‖)
 
-lemma rowBound_pos (g : SL(2,ℂ)) : 0 < rowBound g := by unfold rowBound; positivity
+lemma rowBound_pos  : 0 < rowBound g := by unfold rowBound; positivity
 
-lemma coordinates_le_transformed_energy (g : SL(2,ℂ)) (v : Fin 2 → O) :
+lemma coordinates_le_transformed_energy  (v : Fin 2 → O) :
     ‖rowCoordinates v‖ ≤ rowBound g *
       Real.sqrt (rowEnergy (rowOperator g (fun i => eisEmbedding (v i)))) := by
   have hi := (rowOperator g⁻¹).le_opNorm (rowOperator g (fun i => eisEmbedding (v i)))
@@ -387,6 +392,8 @@ lemma coordinates_le_transformed_energy (g : SL(2,ℂ)) (v : Fin 2 → O) :
   have hm := mul_le_mul_of_nonneg_left he (norm_nonneg (rowOperator g⁻¹))
   dsimp only [rowBound]
   nlinarith [Real.sqrt_nonneg (rowEnergy (rowOperator g (fun i => eisEmbedding (v i))))]
+end
+
 
 lemma norm_coordinates_ne_zero (x : CuspCosets) : 0 < ‖rowCoordinates (cosetRow x)‖ := by
   apply norm_pos_iff.mpr
@@ -400,23 +407,25 @@ lemma norm_coordinates_ne_zero (x : CuspCosets) : 0 < ‖rowCoordinates (cosetRo
       funext i
       exact map_zero _
     have hh := coordinates_norm_bound (0 : Fin 2 → O)
-    rw [he, norm_zero, mul_zero] at hh
-    exact hh
-  rw [hz0]
-  exact hz
+    simp_all
+  simp_all
 
-def summand (g : SL(2,ℂ)) (s : ℂ) (x : CuspCosets) : ℂ :=
+section
+variable (g : SL(2,ℂ)) (s : ℂ)
+include g s
+
+def summand  (x : CuspCosets) : ℂ :=
   (cosetCharacter x)⁻¹ *
     (rowEnergy (rowOperator g (embeddedRow x)) : ℂ) ^ (-s)
 
-lemma norm_summand (g : SL(2,ℂ)) (s : ℂ) (x : CuspCosets) :
+lemma norm_summand  (x : CuspCosets) :
     ‖summand g s x‖ = rowEnergy (rowOperator g (embeddedRow x)) ^ (-s.re) := by
   rw [summand, norm_mul, norm_inv, norm_cosetCharacter, inv_one, one_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos
       (rowEnergy_pos _ (rowOperator_ne_zero g _ (embeddedRow_ne_zero x)))]
   rfl
 
-lemma norm_summand_bound (g : SL(2,ℂ)) (s : ℂ) (hs : 0 < s.re) (x : CuspCosets) :
+lemma norm_summand_bound  (hs : 0 < s.re) (x : CuspCosets) :
     ‖summand g s x‖ ≤ (rowBound g) ^ (2*s.re) *
       ‖rowCoordinates (cosetRow x)‖ ^ (-(2*s.re)) := by
   rw [norm_summand]
@@ -440,10 +449,14 @@ lemma norm_summand_bound (g : SL(2,ℂ)) (s : ℂ) (hs : 0 < s.re) (x : CuspCose
   simp only [Nat.cast_ofNat, mul_neg, Real.rpow_neg hb.le, div_eq_mul_inv, inv_inv]
   exact mul_comm _ _
 
-theorem summable_norm_summand (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
+section
+variable (hs : 2 < s.re)
+include hs
+
+theorem summable_norm_summand  :
     Summable (fun x : CuspCosets => ‖summand g s x‖) := by
   have hsum := summable_integer_four_rpow (2*s.re) (by linarith)
-  have hinj : Function.Injective (fun x : CuspCosets => rowCoordinates (cosetRow x)) :=
+  have hinj :=
     rowCoordinates_injective.comp cosetRow_injective
   have hcomp : Summable (fun x : CuspCosets => ‖rowCoordinates (cosetRow x)‖ ^ (-(2*s.re))) := by
     apply (hsum.comp_injective hinj).congr
@@ -452,17 +465,25 @@ theorem summable_norm_summand (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
   exact (hcomp.mul_left ((rowBound g) ^ (2*s.re))).of_nonneg_of_le
     (fun _ => norm_nonneg _) (fun x => norm_summand_bound g s (by linarith) x)
 
-theorem summable_summand (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
+theorem summable_summand  :
     Summable (summand g s) := (summable_norm_summand g s hs).of_norm
+end
 
-def eisenstein (g : SL(2,ℂ)) (s : ℂ) : ℂ := ∑' x : CuspCosets, summand g s x
 
-lemma transformedRow_rightEquiv (M : levelThree) (g : SL(2,ℂ)) (x : CuspCosets) :
+def eisenstein  : ℂ := ∑' x : CuspCosets, summand g s x
+end
+
+
+section
+variable (M : levelThree) (g : SL(2,ℂ))
+include M g
+
+lemma transformedRow_rightEquiv  (x : CuspCosets) :
     rowOperator g (embeddedRow (rightEquiv M x)) =
       rowOperator (complexMatrix M * g) (embeddedRow x) := by
   rw [embeddedRow_rightEquiv, ← rowOperator_apply, rowOperator_mul]
 
-lemma summand_automorphy (M : levelThree) (g : SL(2,ℂ)) (s : ℂ) (x : CuspCosets) :
+lemma summand_automorphy  (s : ℂ) (x : CuspCosets) :
     summand (complexMatrix M * g) s x =
       complexCharacter M * summand g s (rightEquiv M x) := by
   have hM : complexCharacter M ≠ 0 := by
@@ -474,14 +495,15 @@ lemma summand_automorphy (M : levelThree) (g : SL(2,ℂ)) (s : ℂ) (x : CuspCos
     mul_inv_rev]
   rw [← mul_assoc, ← mul_assoc, mul_inv_cancel₀ hM, one_mul]
 
-theorem eisenstein_automorphy (M : levelThree) (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
+theorem eisenstein_automorphy  (s : ℂ) (hs : 2 < s.re) :
     eisenstein (complexMatrix M * g) s = complexCharacter M * eisenstein g s := by
   have hleft := summable_summand (complexMatrix M * g) s hs
   have hright := summable_summand g s hs
-  have hreindex : HasSum (fun x : CuspCosets => summand g s (rightEquiv M x))
-      (eisenstein g s) := (rightEquiv M).hasSum_iff.mpr hright.hasSum
+  have hreindex := (rightEquiv M).hasSum_iff.mpr hright.hasSum
   have hscale := hreindex.mul_left (complexCharacter M)
   exact hleft.hasSum.unique (hscale.congr_fun (fun x => summand_automorphy M g s x))
+end
+
 
 lemma norm_summand_strip (g : SL(2,ℂ)) (a b : ℝ) (s : ℂ)
     (ha : a ≤ s.re) (hb : s.re ≤ b) (x : CuspCosets) :
@@ -501,26 +523,45 @@ open scoped BigOperators Classical MatrixGroups Matrix
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
-def upperSection (z : ℂ) (v : ℝ) (hv : 0 < v) : SL(2,ℂ) :=
+section
+variable (z : ℂ) (v : ℝ)
+include z v
+
+section
+variable (hv : 0 < v)
+include hv
+
+def upperSection  : SL(2,ℂ) :=
   ⟨!![(Real.sqrt v : ℂ), z / (Real.sqrt v : ℂ); 0, (Real.sqrt v : ℂ)⁻¹], by
-    have hr : (Real.sqrt v : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hv).ne'
+    have hr := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hv).ne'
     simp [Matrix.det_fin_two, hr]⟩
 
-lemma rowOperator_upperSection_zero (z : ℂ) (v : ℝ) (hv : 0 < v) (u : Fin 2 → ℂ) :
+section
+variable (u : Fin 2 → ℂ)
+include u
+
+lemma rowOperator_upperSection_zero  :
     rowOperator (upperSection z v hv) u 0 = u 0 * (Real.sqrt v : ℂ) := by
   change Matrix.vecMul u (!![(Real.sqrt v : ℂ), z / (Real.sqrt v : ℂ); 0, (Real.sqrt v : ℂ)⁻¹]) _ = _
   simp [Matrix.vecMul, dotProduct, Fin.sum_univ_two]
 
-lemma rowOperator_upperSection_one (z : ℂ) (v : ℝ) (hv : 0 < v) (u : Fin 2 → ℂ) :
+lemma rowOperator_upperSection_one  :
     rowOperator (upperSection z v hv) u 1 = (u 0*z + u 1) / (Real.sqrt v : ℂ) := by
   change Matrix.vecMul u (!![(Real.sqrt v : ℂ), z / (Real.sqrt v : ℂ); 0, (Real.sqrt v : ℂ)⁻¹]) _ = _
   simp [Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   ring
+end
+end
 
-def heightDenominator (z : ℂ) (v : ℝ) (u : Fin 2 → ℂ) : ℝ :=
+
+def heightDenominator  (u : Fin 2 → ℂ) : ℝ :=
   ‖u 0*z + u 1‖ ^ 2 + ‖u 0‖ ^ 2 * v ^ 2
 
-lemma rowEnergy_upperSection (z : ℂ) (v : ℝ) (hv : 0 < v) (u : Fin 2 → ℂ) :
+section
+variable (hv : 0 < v) (u : Fin 2 → ℂ)
+include hv u
+
+lemma rowEnergy_upperSection  :
     rowEnergy (rowOperator (upperSection z v hv) u) = heightDenominator z v u / v := by
   rw [rowEnergy, rowOperator_upperSection_zero, rowOperator_upperSection_one,
     norm_mul, norm_div, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg v),
@@ -529,16 +570,21 @@ lemma rowEnergy_upperSection (z : ℂ) (v : ℝ) (hv : 0 < v) (u : Fin 2 → ℂ
   field_simp
   ring
 
-lemma heightDenominator_pos (z : ℂ) (v : ℝ) (hv : 0 < v)
-    (u : Fin 2 → ℂ) (hu : u ≠ 0) : 0 < heightDenominator z v u := by
+lemma heightDenominator_pos  (hu : u ≠ 0) : 0 < heightDenominator z v u := by
   have h := rowEnergy_pos _ (rowOperator_ne_zero (upperSection z v hv) u hu)
   rw [rowEnergy_upperSection] at h
   exact ((div_pos_iff.mp h).resolve_right (by rintro ⟨_,hneg⟩; linarith)).1
+end
 
-def transformedHeight (z : ℂ) (v : ℝ) (u : Fin 2 → ℂ) : ℝ :=
+
+def transformedHeight  (u : Fin 2 → ℂ) : ℝ :=
   v / heightDenominator z v u
 
-lemma summand_upperSection (z : ℂ) (v : ℝ) (hv : 0 < v) (s : ℂ) (x : CuspCosets) :
+section
+variable (hv : 0 < v) (s : ℂ)
+include hv s
+
+lemma summand_upperSection  (x : CuspCosets) :
     summand (upperSection z v hv) s x = (cosetCharacter x)⁻¹ *
       (transformedHeight z v (embeddedRow x) : ℂ) ^ s := by
   rw [summand, rowEnergy_upperSection]
@@ -549,8 +595,11 @@ lemma summand_upperSection (z : ℂ) (v : ℝ) (hv : 0 < v) (s : ℂ) (x : CuspC
     simp only [transformedHeight, Complex.ofReal_div, inv_div]
   rw [hinv, Complex.inv_cpow_ofReal_nonneg (div_nonneg hq.le hv.le), Complex.cpow_neg]
 
-def upperEisenstein (z : ℂ) (v : ℝ) (hv : 0 < v) (s : ℂ) : ℂ :=
+def upperEisenstein  : ℂ :=
   eisenstein (upperSection z v hv) s
+end
+end
+
 
 lemma ofReal_rowEnergy (u : Fin 2 → ℂ) :
     (rowEnergy u : ℂ) = dotProduct u (star u) := by
@@ -575,8 +624,8 @@ theorem eisenstein_right_unitary (g k : SL(2,ℂ)) (s : ℂ)
   intro x
   simp only [summand, ← rowOperator_mul, rowEnergy_unitary k hk]
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

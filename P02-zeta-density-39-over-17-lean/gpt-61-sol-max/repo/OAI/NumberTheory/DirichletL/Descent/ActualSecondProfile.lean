@@ -11,7 +11,7 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 structure SecondProfileData (ι : Type*) where
   common : Finset ι
@@ -90,7 +90,7 @@ theorem actualSecondProfileRow_eq_whole {ι σ : Type*} [DecidableEq ι] [Decida
     x.rayLeft x.rayRight x.puncture x.quotient x.oldLabel x.oldDivisor x.divisor x.frequency
     slots₁ slots₂ lists₁ lists₂ a₁ a₂ (fun z => W₁ (z/X)) (fun z => W₂ (z/X)) Φ Y
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

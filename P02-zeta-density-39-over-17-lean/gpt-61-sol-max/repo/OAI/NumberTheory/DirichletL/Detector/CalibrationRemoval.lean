@@ -12,7 +12,7 @@ namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
 open CanonicalQuadraticSieve ConcreteTraceCRT
 open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
     (b h : O) (hcop : IsCoprime b s) :
@@ -104,7 +104,7 @@ theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal O))
   rw [he]
   ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

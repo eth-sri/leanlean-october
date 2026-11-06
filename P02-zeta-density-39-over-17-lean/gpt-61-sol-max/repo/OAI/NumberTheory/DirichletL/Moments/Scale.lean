@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentScale
 open CenteredMomentSmooth EisensteinSchwartzPoisson
@@ -44,8 +44,8 @@ theorem wholeKernel_actual (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     logarithmic_kernel_argument K H A B K₀ H₀ A₀ B₀ hK hH hA hB hK₀ hH₀ hA₀ hB₀]
   ring
 
-end SevenEighths.CenteredMomentScale
 
-end
 
-end OAI
+
+
+

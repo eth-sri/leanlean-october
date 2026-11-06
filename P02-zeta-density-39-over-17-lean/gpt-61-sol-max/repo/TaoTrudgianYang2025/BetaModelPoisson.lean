@@ -20,16 +20,26 @@ open Set Expdb Filter MeasureTheory
 open scoped Topology ContDiff FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-def modelPhaseWeightedKernel (χ F : ℝ → ℝ) (T N x : ℝ) : ℂ :=
+
+section
+variable (χ F : ℝ → ℝ)
+include χ F
+
+def modelPhaseWeightedKernel  (T N x : ℝ) : ℂ :=
   (χ (x/N) : ℂ) * (𝐞 (T*F (x/N)) : ℂ)
 
-def modelPhaseFourierMode (χ F : ℝ → ℝ) (T N r : ℝ) : ℂ :=
+def modelPhaseFourierMode  (T N r : ℝ) : ℂ :=
   ∫ x : ℝ, (χ (x/N) : ℂ) * (𝐞 (modelPhaseFrequencyPhase F T N r x) : ℂ)
+end
+
+
+section
+variable {χ F : ℝ → ℝ}
+include χ F
 
 theorem modelPhaseWeightedKernel_contDiff
-    {χ F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ}
+     {σ δ : ℝ} {P : ℕ}
     (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hF : IsApproximateModelPhaseFunction F σ P δ) (T N : ℝ) :
     ContDiff ℝ ∞ (modelPhaseWeightedKernel χ F T N) := by
@@ -51,7 +61,7 @@ theorem modelPhaseWeightedKernel_contDiff
   exact hg.comp (contDiff_id.div_const N)
 
 theorem modelPhaseWeightedKernel_zero_of_not_mem
-    {χ F : ℝ → ℝ} {N x : ℝ}
+     {N x : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hN : 0 < N)
     (hx : x ∉ Icc N (2*N)) (T : ℝ) :
     modelPhaseWeightedKernel χ F T N x = 0 := by
@@ -65,31 +75,31 @@ theorem modelPhaseWeightedKernel_zero_of_not_mem
     Complex.ofReal_zero,zero_mul]
 
 theorem modelPhaseWeightedKernel_hasCompactSupport
-    {χ F : ℝ → ℝ} {N : ℝ}
+     {N : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hN : 0 < N) (T : ℝ) :
     HasCompactSupport (modelPhaseWeightedKernel χ F T N) :=
   HasCompactSupport.intro isCompact_Icc
     (fun _ hx => modelPhaseWeightedKernel_zero_of_not_mem hs hN hx T)
 
-def modelPhaseWeightedSchwartz
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
+section
+variable {σ δ N : ℝ} {P : ℕ}
     (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
+    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N)
+include σ δ N P hχ hs hF hN
+
+def modelPhaseWeightedSchwartz
+     (T : ℝ) :
     SchwartzMap ℝ ℂ :=
   (modelPhaseWeightedKernel_hasCompactSupport hs hN T).toSchwartzMap
     (modelPhaseWeightedKernel_contDiff hχ hs hF T N)
 
 theorem modelPhaseWeightedSchwartz_apply
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T x : ℝ) :
+     (T x : ℝ) :
     modelPhaseWeightedSchwartz hχ hs hF hN T x =
       modelPhaseWeightedKernel χ F T N x := rfl
 
 theorem modelPhaseWeightedSchwartz_fourier
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T r : ℝ) :
+     (T r : ℝ) :
     𝓕 (modelPhaseWeightedSchwartz hχ hs hF hN T) r =
       modelPhaseFourierMode χ F T N r := by
   rw [SchwartzMap.fourier_coe,Real.fourier_eq]
@@ -102,9 +112,11 @@ theorem modelPhaseWeightedSchwartz_fourier
   rw [show T*F (x/N)-r*x = -(r*x)+T*F (x/N) by ring,
     AddChar.map_add_eq_mul,Circle.coe_mul]
   ring
+end
+
 
 theorem modelPhaseWeightedKernel_tsum_eq_finite
-    {χ F : ℝ → ℝ} {N : ℝ}
+     {N : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hN : 0 < N) (T : ℝ) :
     (∑' n : ℤ, modelPhaseWeightedKernel χ F T N n) =
       ∑ n ∈ Finset.Icc ⌈N⌉ ⌊2*N⌋, modelPhaseWeightedKernel χ F T N n := by
@@ -116,7 +128,7 @@ theorem modelPhaseWeightedKernel_tsum_eq_finite
   exact Finset.mem_Icc.mpr ⟨Int.ceil_le.mpr h.1,Int.le_floor.mpr h.2⟩
 
 theorem modelPhase_weighted_poisson
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
+     {σ δ N : ℝ} {P : ℕ}
     (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
     (∑ n ∈ Finset.Icc ⌈N⌉ ⌊2*N⌋, modelPhaseWeightedKernel χ F T N n) =
@@ -125,5 +137,7 @@ theorem modelPhase_weighted_poisson
   have h := SchwartzMap.tsum_eq_tsum_fourier (modelPhaseWeightedSchwartz hχ hs hF hN T) 0
   simpa only [zero_add,AddCircle.coe_zero,fourier_eval_zero,mul_one,
     modelPhaseWeightedSchwartz_fourier,modelPhaseWeightedSchwartz_apply] using h
+end
 
-end TaoTrudgianYang2025
+
+

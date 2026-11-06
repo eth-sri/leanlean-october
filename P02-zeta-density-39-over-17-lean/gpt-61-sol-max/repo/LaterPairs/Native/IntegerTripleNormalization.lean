@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleGcd
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
@@ -55,5 +54,5 @@ theorem integerTripleGcd_quotient_primitive {a b c : ℤ} (ha : a ≠ 0) :
   apply Nat.eq_of_mul_eq_mul_left (integerTripleGcd_pos ha)
   simpa only [Nat.mul_one] using he.symm
 
-end TaoTrudgianYang2025
+
 

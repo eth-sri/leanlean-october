@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyLemma63
 public import GafniTao.WooleyThreeFactorHolder
 
@@ -125,10 +126,10 @@ theorem wooley_pair_mixed_holder
       (∑ i ∈ t, w i) ^ (s - 2) *
         (∑ i ∈ t, w i * u i ^ 2 * v i ^ (2 * (s - 1))) *
           (∑ i ∈ t, w i * v i ^ 2 * u i ^ (2 * (s - 1))) := by
-  let f₀ : ι → ℝ := w
-  let f₁ : ι → ℝ := fun i =>
+  let f₀ := w
+  let f₁ := fun i =>
     w i * u i ^ 2 * v i ^ (2 * (s - 1))
-  let f₂ : ι → ℝ := fun i =>
+  let f₂ := fun i =>
     w i * v i ^ 2 * u i ^ (2 * (s - 1))
   have hf₀ : ∀ i ∈ t, 0 ≤ f₀ i := by
     intro i hi
@@ -206,8 +207,7 @@ theorem wooley_sum_separatedResiduePairs
           wooleyResiduesSeparated nu xi eta, F xi eta := by
   unfold wooleySeparatedResiduePairs
   simp only [Finset.sum_filter]
-  simpa using
-    (Finset.sum_product
+  exact (Finset.sum_product
       (Finset.univ : Finset (ZMod (p ^ nu)))
       (Finset.univ : Finset (ZMod (p ^ nu)))
       (fun xy => if wooleyResiduesSeparated nu xy.1 xy.2 then
@@ -220,7 +220,7 @@ theorem wooley_sum_separatedResiduePairs_apply
       ∑ xi : ZMod (p ^ nu),
         ∑ eta : ZMod (p ^ nu) with
           wooleyResiduesSeparated nu xi eta, F (xi, eta) := by
-  simpa using wooley_sum_separatedResiduePairs
+  exact wooley_sum_separatedResiduePairs
     (p := p) (nu := nu) (fun xi eta => F (xi, eta))
 
 theorem wooleySeparatedResiduePairs_card_le (p nu : ℕ) [NeZero p] :
@@ -260,43 +260,32 @@ theorem wooley_cauchy_three_factor_symmetric
   let G : ℝ := ∑ i ∈ t,
     w i * v i ^ 2 * u i ^ (2 * (s - 1))
   have hS : 0 ≤ S := by
-    dsimp [S]
     exact Finset.sum_nonneg fun i hi =>
       mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) (hu i hi)) (hv i hi)
   have hW : 0 ≤ W := by
     dsimp [W]
     exact Finset.sum_nonneg fun i hi => hw i hi
   have hA : 0 ≤ A := by
-    dsimp [A]
     exact Finset.sum_nonneg fun i hi =>
       mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _)) (sq_nonneg _)
   have hF : 0 ≤ F := by
-    dsimp [F]
     exact Finset.sum_nonneg fun i hi =>
       mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _))
         (pow_nonneg (hv i hi) _)
-  have hG : 0 ≤ G := by
-    dsimp [G]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _))
-        (pow_nonneg (hu i hi) _)
+  have hG : 0 ≤ G := by bound
   have hCauchy : S ^ 2 ≤ (#t : ℝ) * A := by
     have h := sum_mul_sq_le_sq_mul_sq (R := ℝ) t
       (fun _ : ι => 1)
       (fun i => Real.sqrt (w i) * u i * v i)
     have hsquares :
         (∑ i ∈ t, (Real.sqrt (w i) * u i * v i) ^ 2) = A := by
-      dsimp [A]
       apply Finset.sum_congr rfl
       intro i hi
       rw [mul_pow, mul_pow, Real.sq_sqrt (hw i hi)]
-    dsimp [S]
     calc
       (∑ i ∈ t, Real.sqrt (w i) * u i * v i) ^ 2 ≤
           (#t : ℝ) *
-            ∑ i ∈ t, (Real.sqrt (w i) * u i * v i) ^ 2 := by
-        simpa only [one_mul, one_pow, sum_const, nsmul_eq_mul,
-          Nat.cast_ofNat, Nat.cast_card, mul_one] using h
+            ∑ i ∈ t, (Real.sqrt (w i) * u i * v i) ^ 2 := by simp_all <;> nlinarith
       _ = (#t : ℝ) * A := by rw [hsquares]
   have hHolder : A ^ s ≤ W ^ (s - 2) * F * G := by
     simpa only [A, W, F, G] using
@@ -309,11 +298,7 @@ theorem wooley_cauchy_three_factor_symmetric
   have hSquare : (S ^ s) ^ 2 ≤
       (q ^ s * M ^ (s - 2) * F) ^ 2 := by
     calc
-      (S ^ s) ^ 2 = (S ^ 2) ^ s := by
-        calc
-          (S ^ s) ^ 2 = S ^ (s * 2) := (pow_mul S s 2).symm
-          _ = S ^ (2 * s) := by rw [Nat.mul_comm]
-          _ = (S ^ 2) ^ s := pow_mul S 2 s
+      (S ^ s) ^ 2 = (S ^ 2) ^ s := by ring
       _ ≤ ((#t : ℝ) * A) ^ s := hRaised
       _ = (#t : ℝ) ^ s * A ^ s := by rw [mul_pow]
       _ ≤ (#t : ℝ) ^ s * (W ^ (s - 2) * F * G) := by
@@ -322,21 +307,7 @@ theorem wooley_cauchy_three_factor_symmetric
         gcongr
       _ = (q ^ 2) ^ s * ((M ^ 2) ^ (s - 2) * F * F) := by
         rw [show G = F by simpa [G, F] using hsymmetry]
-      _ = (q ^ s * M ^ (s - 2) * F) ^ 2 := by
-        have hqpow : (q ^ 2) ^ s = (q ^ s) ^ 2 := by
-          calc
-            (q ^ 2) ^ s = q ^ (2 * s) := (pow_mul q 2 s).symm
-            _ = q ^ (s * 2) := by rw [Nat.mul_comm]
-            _ = (q ^ s) ^ 2 := pow_mul q s 2
-        have hMpow : (M ^ 2) ^ (s - 2) =
-            (M ^ (s - 2)) ^ 2 := by
-          calc
-            (M ^ 2) ^ (s - 2) = M ^ (2 * (s - 2)) :=
-              (pow_mul M 2 (s - 2)).symm
-            _ = M ^ ((s - 2) * 2) := by rw [Nat.mul_comm]
-            _ = (M ^ (s - 2)) ^ 2 := pow_mul M (s - 2) 2
-        rw [hqpow, hMpow, mul_pow, mul_pow]
-        ring
+      _ = (q ^ s * M ^ (s - 2) * F) ^ 2 := by ring
   have hRight : 0 ≤ q ^ s * M ^ (s - 2) * F :=
     mul_nonneg (mul_nonneg (pow_nonneg hq _) (pow_nonneg hM _)) hF
   exact (sq_le_sq₀ (pow_nonneg hS s) hRight).mp hSquare
@@ -350,8 +321,6 @@ theorem wooley_norm_sum_sq_le_diagonal_add_offDiagonal
         ∑ i ∈ t, ∑ j ∈ t with j ≠ i, ‖z i‖ * ‖z j‖ := by
   have hnorm : ‖∑ i ∈ t, z i‖ ≤ ∑ i ∈ t, ‖z i‖ :=
     norm_sum_le _ _
-  have hnonneg : 0 ≤ ∑ i ∈ t, ‖z i‖ :=
-    Finset.sum_nonneg fun _ _ => norm_nonneg _
   have hsq := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
   calc
     ‖∑ i ∈ t, z i‖ ^ 2 ≤ (∑ i ∈ t, ‖z i‖) ^ 2 := hsq
@@ -425,8 +394,12 @@ theorem wooley_separated_pair_mass_le_square {Q : ℕ}
         simpa [w] using wooley_sum_weightedResidueMassSq
           (q := p ^ nu) gamma]
 
+section
+variable {M : ℝ} {s : ℕ} (hM : 0 < M)
+include M s hM
+
 theorem wooley_inv_pow_mul_pow_pred
-    {M : ℝ} {s : ℕ} (hM : 0 < M) (hs : 1 ≤ s) :
+     (hs : 1 ≤ s) :
     M⁻¹ ^ s * M ^ (s - 1) = M⁻¹ := by
   have hpow : M ^ s = M ^ (s - 1) * M := by
     conv_lhs => rw [← Nat.sub_add_cancel hs, pow_add, pow_one]
@@ -434,12 +407,14 @@ theorem wooley_inv_pow_mul_pow_pred
   field_simp
 
 theorem wooley_inv_pow_mul_pow_sub_two
-    {M : ℝ} {s : ℕ} (hM : 0 < M) (hs : 2 ≤ s) :
+     (hs : 2 ≤ s) :
     M⁻¹ ^ s * M ^ (s - 2) = M⁻¹ ^ 2 := by
   have hpow : M ^ s = M ^ (s - 2) * M ^ 2 := by
     conv_lhs => rw [← Nat.sub_add_cancel hs, pow_add]
   rw [inv_pow, hpow]
   field_simp
+end
+
 
 /-- The elementary convexity estimate used when equation (6.6) is raised
 to the `s`-th power.  The constant is retained explicitly. -/
@@ -471,16 +446,8 @@ theorem wooley_absorb_contraction
     {U K c a : ℝ} (hU : 0 ≤ U)
     (hmain : U ≤ c * (a * U + K))
     (hsmall : 2 * c * a ≤ 1) :
-    U ≤ 2 * c * K := by
-  have hca : c * a ≤ (1 : ℝ) / 2 := by nlinarith
-  have hcontract : c * a * U ≤ ((1 : ℝ) / 2) * U :=
-    mul_le_mul_of_nonneg_right hca hU
-  have hmain' : U ≤ c * a * U + c * K := by
-    calc
-      U ≤ c * (a * U + K) := hmain
-      _ = c * a * U + c * K := by ring
-  nlinarith
+    U ≤ 2 * c * K := by nlinarith
 
-end
 
-end GafniTao
+
+

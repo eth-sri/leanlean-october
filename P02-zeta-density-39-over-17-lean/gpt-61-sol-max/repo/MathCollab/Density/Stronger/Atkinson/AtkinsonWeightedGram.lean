@@ -11,47 +11,66 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-def atkinsonPhaseBlockMax (T : ℝ) (m N : ℕ) : ℝ :=
+section
+variable (T : ℝ)
+include T
+
+def atkinsonPhaseBlockMax  (m N : ℕ) : ℝ :=
   (Finset.range (N+1)).sup' (by simp) (fun j => ‖atkinsonPhaseBlockSum T m j‖)
 
-theorem norm_atkinsonPhaseBlockSum_le_max (T : ℝ) (m N j : ℕ) (hj : j ≤ N) :
+theorem norm_atkinsonPhaseBlockSum_le_max  (m N j : ℕ) (hj : j ≤ N) :
     ‖atkinsonPhaseBlockSum T m j‖ ≤ atkinsonPhaseBlockMax T m N := by
   unfold atkinsonPhaseBlockMax
   exact Finset.le_sup' (fun k => ‖atkinsonPhaseBlockSum T m k‖)
     (Finset.mem_range.mpr (Nat.lt_succ_of_le hj))
 
-theorem atkinsonPhaseBlockMax_nonneg (T : ℝ) (m N : ℕ) :
+theorem atkinsonPhaseBlockMax_nonneg  (m N : ℕ) :
     0 ≤ atkinsonPhaseBlockMax T m N := by
   have h := norm_atkinsonPhaseBlockSum_le_max T m N 0 (Nat.zero_le N)
   simpa only [atkinsonPhaseBlockSum,Finset.sum_range_zero,norm_zero] using h
 
-theorem exists_atkinsonPhaseBlockMax_prefix (T : ℝ) (m N : ℕ) :
+theorem exists_atkinsonPhaseBlockMax_prefix  (m N : ℕ) :
     ∃ j : ℕ, j ≤ N ∧ atkinsonPhaseBlockMax T m N = ‖atkinsonPhaseBlockSum T m j‖ := by
   obtain ⟨j,hj,he⟩ := Finset.exists_mem_eq_sup'
     (s := Finset.range (N+1)) (by simp) (fun j => ‖atkinsonPhaseBlockSum T m j‖)
   exact ⟨j,Nat.le_of_lt_succ (Finset.mem_range.mp hj),he⟩
+end
 
-def atkinsonMaximizingPrefix (m N : ℕ) (T : ℝ) : ℕ :=
+
+section
+variable (m N : ℕ)
+include m N
+
+section
+variable (T : ℝ)
+include T
+
+def atkinsonMaximizingPrefix  : ℕ :=
   Classical.choose (exists_atkinsonPhaseBlockMax_prefix T m N)
 
-theorem atkinsonMaximizingPrefix_le (m N : ℕ) (T : ℝ) :
+theorem atkinsonMaximizingPrefix_le  :
     atkinsonMaximizingPrefix m N T ≤ N :=
   (Classical.choose_spec (exists_atkinsonPhaseBlockMax_prefix T m N)).1
 
-theorem atkinsonMaximizingPrefix_spec (m N : ℕ) (T : ℝ) :
+theorem atkinsonMaximizingPrefix_spec  :
     atkinsonPhaseBlockMax T m N =
       ‖atkinsonPhaseBlockSum T m (atkinsonMaximizingPrefix m N T)‖ :=
   (Classical.choose_spec (exists_atkinsonPhaseBlockMax_prefix T m N)).2
+end
 
-theorem sum_atkinsonPhaseBlockMax_sq_le_selectedGram (m N : ℕ) (W : Finset ℝ) :
+
+section
+variable (W : Finset ℝ)
+include W
+
+theorem sum_atkinsonPhaseBlockMax_sq_le_selectedGram  :
     (∑ t ∈ W, atkinsonPhaseBlockMax t m N)^2 ≤
       atkinsonBlockCoefficientEnergy m N*
         ∑ t ∈ W, ∑ u ∈ W,
@@ -73,7 +92,7 @@ theorem sum_atkinsonPhaseBlockMax_sq_le_selectedGram (m N : ℕ) (W : Finset ℝ
   simp_rw [he,hg,norm_atkinsonAlternatingCoefficient] at h
   simpa only [j,← atkinsonMaximizingPrefix_spec,atkinsonBlockCoefficientEnergy] using h
 
-theorem sum_atkinsonPhaseBlockMax_sq_le_gramMax (m N : ℕ) (W : Finset ℝ) :
+theorem sum_atkinsonPhaseBlockMax_sq_le_gramMax  :
     (∑ t ∈ W, atkinsonPhaseBlockMax t m N)^2 ≤
       atkinsonBlockCoefficientEnergy m N*
         ∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax m N t u := by
@@ -85,5 +104,8 @@ theorem sum_atkinsonPhaseBlockMax_sq_le_gramMax (m N : ℕ) (W : Finset ℝ) :
   intro u _
   exact norm_atkinsonPrefixGram_le_max m N _
     ((min_le_left _ _).trans (atkinsonMaximizingPrefix_le m N t)) t u
+end
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

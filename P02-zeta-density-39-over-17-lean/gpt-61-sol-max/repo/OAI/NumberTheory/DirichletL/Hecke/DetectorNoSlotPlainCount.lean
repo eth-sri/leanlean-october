@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPlainFiberCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorNoSlotPlainCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorDyadicProfiles
 open HeckeDetectorRowwisePolynomial
 
 theorem no_slot_plain_count {Row Label : Type*}
@@ -56,8 +56,8 @@ theorem no_slot_plain_count {Row Label : Type*}
     (max 1 (2*m)+εm) (192*(1+height)*C) hUp hs he'
   convert hh using 1; congr 2; ring
 
-end SevenEighths.HeckeDetectorNoSlotPlainCount
 
-end
 
-end OAI
+
+
+

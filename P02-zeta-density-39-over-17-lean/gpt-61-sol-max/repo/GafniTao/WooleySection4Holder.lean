@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceMixed
 public import GafniTao.WooleySection8
 
@@ -20,7 +21,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The pointwise exponent identity in the Hölder step (4.15). -/
 theorem wooley_equation_4_15_integrand
@@ -29,7 +30,6 @@ theorem wooley_equation_4_15_integrand
     (x ^ (2 * s)) ^ ((R : ℝ) / (s : ℝ)) *
         (y ^ (2 * s)) ^ (1 - (R : ℝ) / (s : ℝ)) =
       x ^ (2 * R) * y ^ (2 * (s - R)) := by
-  have hsR : (0 : ℝ) < s := by exact_mod_cast (show 0 < s by omega)
   have hxid :
       (x ^ (2 * s)) ^ ((R : ℝ) / (s : ℝ)) = x ^ (2 * R) := by
     rw [← Real.rpow_natCast x (2 * s), ← Real.rpow_natCast x (2 * R),
@@ -48,14 +48,17 @@ theorem wooley_equation_4_15_integrand
     field_simp
   rw [hxid, hyid]
 
+section
+variable {A B C : Type*} [Fintype A] [Fintype B] [Fintype C]
+    (wa : A → ℝ) (wb : B → ℝ)
+include A B C wa wb
+
 /-- Factor a three-fold finite sum when the final factor is independent of
 the middle coordinate. -/
 theorem wooley_sum_prod_prod_independent_middle
-    {A B C : Type*} [Fintype A] [Fintype B] [Fintype C]
-    (wa : A → ℝ) (wb : B → ℝ) (F : A → C → ℝ) :
+     (F : A → C → ℝ) :
     (∑ z : A × B × C, wa z.1 * wb z.2.1 * F z.1 z.2.2) =
       (∑ b, wb b) * (∑ a, wa a * ∑ c, F a c) := by
-  rw [Fintype.sum_prod_type]
   simp_rw [Fintype.sum_prod_type]
   simp only [Finset.mul_sum, Finset.sum_mul]
   apply Finset.sum_congr rfl
@@ -64,17 +67,14 @@ theorem wooley_sum_prod_prod_independent_middle
   apply Finset.sum_congr rfl
   intro c hc
   apply Finset.sum_congr rfl
-  intro b hb
-  ring
+  bound
 
 /-- Factor a three-fold finite sum when the final factor is independent of
 the first coordinate. -/
 theorem wooley_sum_prod_prod_independent_first
-    {A B C : Type*} [Fintype A] [Fintype B] [Fintype C]
-    (wa : A → ℝ) (wb : B → ℝ) (G : B → C → ℝ) :
+     (G : B → C → ℝ) :
     (∑ z : A × B × C, wa z.1 * wb z.2.1 * G z.2.1 z.2.2) =
       (∑ a, wa a) * (∑ b, wb b * ∑ c, G b c) := by
-  rw [Fintype.sum_prod_type]
   simp_rw [Fintype.sum_prod_type]
   simp only [Finset.mul_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
@@ -84,8 +84,9 @@ theorem wooley_sum_prod_prod_independent_first
   apply Finset.sum_congr rfl
   intro c hc
   apply Finset.sum_congr rfl
-  intro a ha
-  ring
+  bound
+end
+
 
 /-- Wooley equation (4.15), with the separated mixed mean on the left and
 the two literal conditioned means on the right. -/
@@ -137,7 +138,6 @@ theorem wooleySourcePolynomial_equation_4_15
   · have hs : 1 ≤ s := by
       dsimp [s]
       unfold wooleyTriangular
-      have hkpos : 0 < k := by omega
       have htwo : 2 ≤ k * (k + 1) := by nlinarith
       omega
     have hRs : R ≤ s := by
@@ -156,7 +156,6 @@ theorem wooleySourcePolynomial_equation_4_15
       dsimp [u]
       exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
     have hu1 : u ≤ 1 := by
-      dsimp [u]
       rw [div_le_one (by exact_mod_cast (show 0 < s by omega))]
       exact_mod_cast hRs
     have hw : ∀ z ∈ t, 0 ≤ w z := by
@@ -174,7 +173,6 @@ theorem wooleySourcePolynomial_equation_4_15
       positivity
     have hpoint : ∀ z ∈ t, h z = f z ^ u * g z ^ (1 - u) := by
       intro z hz
-      dsimp [h, f, g, u, R, s]
       symm
       exact wooley_equation_4_15_integrand hs hRs
         (norm_nonneg _) (norm_nonneg _)
@@ -283,8 +281,7 @@ theorem wooleySourcePolynomial_equation_4_15
           rw [Finset.mul_sum]
           rw [Finset.mul_sum, Finset.mul_sum]
           apply Finset.sum_congr rfl
-          intro alpha halpha
-          ring
+          grind
     calc
       wooleySourcePolynomialMixedMean phi s r p B a b nu gamma ≤
           M⁻¹ ^ 2 * (((q ^ k : ℕ) : ℝ)⁻¹) *
@@ -298,6 +295,6 @@ theorem wooleySourcePolynomial_equation_4_15
         rw [hsumA, hsumB]
 
 
-end
 
-end GafniTao
+
+

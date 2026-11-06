@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.PhaseSlopePartition
 
@@ -12,13 +13,13 @@ The central interval is bounded by its length; both outer intervals use the
 checked first-derivative estimate. The threshold is then optimized at sqrt m.
 -/
 
-noncomputable section
+
 
 open Set MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem norm_fourierCharIntegral_le_of_curvature_threshold
     {φ : ℝ → ℝ} {a b m lam : ℝ}
@@ -111,11 +112,11 @@ theorem norm_fourierCharIntegral_le_of_negative_curvature
     (hφ : ∀ x ∈ Icc a b, ContDiffAt ℝ 2 φ x)
     (hcurv : ∀ x ∈ Icc a b, deriv (deriv φ) x ≤ -m) :
     ‖∫ x in a..b, (𝐞 (φ x) : ℂ)‖ ≤ (2/Real.pi+2)/Real.sqrt m := by
-  have hs : 0 < Real.sqrt m := Real.sqrt_pos.mpr hm
+  have hs := Real.sqrt_pos.mpr hm
   have h := norm_fourierCharIntegral_le_of_curvature_threshold hab hm hs hφ hcurv
   convert h using 1
   have he := Real.sq_sqrt hm.le
   field_simp
   nlinarith [Real.pi_pos]
 
-end TaoTrudgianYang2025
+

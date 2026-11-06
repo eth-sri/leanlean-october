@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicStripIntegral
 public import GuthMaynard.Improvement.MixedMaskedAffine
 public import GuthMaynard.Improvement.InverseRatioIntegral
 public import GuthMaynard.Improvement.MaskedBox
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap
@@ -34,7 +34,11 @@ theorem stripInverseIndex_injective : Function.Injective stripInverseIndex := by
   simp only [stripInverseIndex,neg_inj] at h1 h2 h3
   exact Prod.ext h3 (Prod.ext h2 h1)
 
-theorem stripAffine_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v : ℝ) :
+section
+variable (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v : ℝ)
+include S F v
+
+theorem stripAffine_sum  :
     (∑ p ∈ S.image stripAffineIndex, gmAffineTerm F p.1 p.2.1 p.2.2 v) =
       ∑ m ∈ S, F (stripCenter m v) := by
   rw [Finset.sum_image (fun _ _ _ _ h => stripAffineIndex_injective h)]
@@ -42,10 +46,9 @@ theorem stripAffine_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v 
   intro m _
   unfold gmAffineTerm stripAffineIndex stripCenter
   push_cast
-  congr 1
   ring
 
-theorem stripInverse_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v : ℝ) :
+theorem stripInverse_sum  :
     (∑ p ∈ S.image stripInverseIndex, gmAffineTerm F p.1 p.2.1 p.2.2 v) =
       ∑ m ∈ S, F (-((m.2.2:ℝ)*v+(m.1:ℝ))/(m.2.1:ℝ)) := by
   rw [Finset.sum_image (fun _ _ _ _ h => stripInverseIndex_injective h)]
@@ -53,8 +56,9 @@ theorem stripInverse_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v
   intro m _
   unfold gmAffineTerm stripInverseIndex
   push_cast
-  congr 1
   ring
+end
+
 
 theorem finite_affine_memLp (F : 𝓢(ℝ, ℝ)) (S : Finset (ℤ × (ℤ × ℤ)))
     (hS : ∀ p ∈ S, p.1 ≠ 0 ∧ p.2.1 ≠ 0) :
@@ -68,10 +72,14 @@ theorem finite_affine_memLp (F : 𝓢(ℝ, ℝ)) (S : Finset (ℤ × (ℤ × ℤ
   exact (memLp_two_iff_integrable_sq hm.aestronglyMeasurable).mpr
     (integrable_gmAffineTerm_sq hf2 (hS p hp).1 (hS p hp).2)
 
+section
+variable (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
+    (hc : 0 < c) (hcd : c ≤ d) {ε : ℝ} (hε : 0 < ε)
+include a b c d ha hab hc hcd ε hε
+
 /-- Both actual affine energies, including inverse ratio, derived from the
 mixed theorem with exact index injections and ordinary compact input. -/
-theorem cubic_mixed_energies (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
-    (hc : 0 < c) (hcd : c ≤ d) {ε : ℝ} (hε : 0 < ε) :
+theorem cubic_mixed_energies  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T R K B D δ : ℝ) (r : ℝ → ℝ) (S : Finset (ℤ × (ℤ × ℤ))),
       2 ≤ T → 1 ≤ K → K ≤ R → 1 ≤ B → B ≤ R → 1 ≤ D → D ≤ R → R ≤ T^4 →
       0 < δ → δ ≤ 1 → δ ≤ c/4 → δ⁻¹ ≤ T → Measurable r →
@@ -145,8 +153,7 @@ theorem cubic_mixed_energies (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
 /-- Actual strip-box estimate with all affine energies discharged. Both
 numerator signs are allowed; only the denominator is normalized positive.
 The designated first mask remains its exact restricted square mass. -/
-theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
-    (hc : 0 < c) (hcd : c ≤ d) {ε : ℝ} (hε : 0 < ε) :
+theorem cubic_mixed_box  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T R K B D L H : ℝ) (r₀ r : ℝ → ℝ)
       (A₀ : Set ℝ) (S : Finset (ℤ × (ℤ × ℤ))),
       2 ≤ T → 1 ≤ K → K ≤ R → 1 ≤ B → B ≤ R → 1 ≤ D → D ≤ R → R ≤ T^4 →
@@ -176,9 +183,7 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   let F := squareSmoothing (scaledKernel compactKernel w) r
   let W := R^2*K^4*(∫ x, r x^2)^2+R*K^3*(∫ x, r x^4)
   have hR0 : 0 ≤ R := (show 0 ≤ K by linarith).trans hKR
-  have hW : 0 ≤ W := by
-    dsimp only [W]
-    exact add_nonneg (by positivity) (mul_nonneg (by positivity) (integral_nonneg (fun _ => by positivity)))
+  have hW : 0 ≤ W := by positivity
   have hTE : 0 ≤ T^ε*W := mul_nonneg (by positivity) hW
   obtain ⟨hiX,hiY,hX,hY⟩ := he T R K B D w r S hT hK hKR hB hBR hD hDR hRT hw hw1 hwc hwT hr hr2 hr4 hs hbox
   obtain ⟨κB,hκB,hκbound⟩ := compactKernel_bound
@@ -222,12 +227,13 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   have hstrip := ht L H K S A₀ r₀ r hL hH hKp (fun m hm => (hbox m hm).2.2.1)
     hA₀ hr₀ hmem₀ hr₀0 hr hr2 hr0
   refine ⟨hstrip.1,?_⟩
-  have hmasked' : (∫ v in Icc a b, A₀.indicator r₀ v * ∑ m ∈ S, smoothedStripPair r a (H/(L*K)) m v) ≤
-      Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b))*Real.sqrt (P*(T^ε*W)) := hmasked
+  have hmasked' := hmasked
   calc
     _ ≤ (Ct*(H/(L*K))*Real.sqrt b)*
       (Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b))*Real.sqrt (P*(T^ε*W))) :=
         hstrip.2.2.trans (mul_le_mul_of_nonneg_left hmasked' (by positivity))
     _ = _ := by rw [Real.sqrt_mul hP.le]; ring
+end
 
-end GuthMaynard.Improvement
+
+

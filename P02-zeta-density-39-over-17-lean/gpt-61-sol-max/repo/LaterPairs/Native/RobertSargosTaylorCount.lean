@@ -6,14 +6,13 @@ public import LaterPairs.Native.RobertSargosSevenCount
 public import LaterPairs.Native.RobertSargosTaylorSystem
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                 
                                                                        
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargosTaylorQuadratic_eq (r q h n : ℝ) :
@@ -114,7 +113,6 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C,hC,?_⟩
   intro S R H Q N E hR hH hQ hN hE hRH hS
   have hHp : 0 < H := by linarith
-  have hQp : 0 < Q := by linarith
   let δ := (E+12*R*H^2)/(H*Q^2)
   have hδ : 0 ≤ δ := by dsimp [δ]; positivity
   have hscale : E+12*R*H^2 = δ*H*Q^2 := by
@@ -132,4 +130,4 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
     field_simp
   rwa [hcard,hfactor] at ht
 
-end TaoTrudgianYang2025
+

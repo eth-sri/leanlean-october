@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalLargeValues
 public import GuthMaynard.NativeSource.GuthMaynard.TerminalTypeI
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
@@ -56,12 +57,8 @@ theorem norm_logarithmicPhase_prefix_le_sqrt
   have hB := vanDerCorput_B_process
     (fun n => logarithmicPhase t (A + 1 + n)) (L - 1)
     (t / (9 * (A : ℝ) ^ 2)) (t / (A : ℝ) ^ 2) hlambda
-    (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.add_assoc] using
-        hcurvLower n hn)
-    (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.add_assoc] using
-        hcurvUpper n hn)
+    (fun n hn => by simp_all)
+    (fun n hn => by simp_all)
   have hpred : L - 1 + 1 = L := by omega
   rw [hpred] at hB
   have hfirst :
@@ -102,10 +99,7 @@ theorem mediumTypeIBProcess_native
     (100 * Real.sqrt t) hN
     (by
       intro i hi
-      dsimp only [f]
-      split_ifs
-      · positivity
-      · exact le_rfl)
+      positivity)
     hanti
     (by
       intro j hj
@@ -130,4 +124,4 @@ theorem mediumTypeILargeValue_false
   have hUpper := mediumTypeIBProcess_native C N σ t hσ hN hNC hNt htN
   linarith
 
-end GuthMaynard.NativeMoment
+

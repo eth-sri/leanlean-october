@@ -10,11 +10,15 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open scoped HeckeO
 
-lemma continuedCompensatedLocal_ramified_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal)
+    (hs : Supported P.val)
+include η u P hs
+
+lemma continuedCompensatedLocal_ramified_bound  (hP : P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
     (x w z : ℂ) (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
     ‖continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))‖≤
@@ -36,8 +40,7 @@ lemma continuedCompensatedLocal_ramified_bound (η : Character) (u : FreeRow) (P
     (multiplicity p u.val) (multiplicity_lt_six u p hp)
   simpa only [hspan] using hb
 
-lemma continuedCompensatedLocal_unramified_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hP : ¬P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
+lemma continuedCompensatedLocal_unramified_bound  (hP : ¬P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
     (x w z : ℂ) (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
     ‖continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))‖≤961 := by
@@ -66,8 +69,7 @@ lemma continuedCompensatedLocal_unramified_bound (η : Character) (u : FreeRow) 
     rw [←hspan,idealRowHom_prime u.val (Ideal.span {p}) hg.1]
   simpa only [actualUnramifiedSelected,hspan,he,hv] using hb
 
-lemma continuedCompensatedLocal_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm)
+lemma continuedCompensatedLocal_bound  (hQ : (4:ℝ)≤P.val.absNorm)
     (x w z : ℂ) (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
     ‖continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))‖≤
@@ -78,8 +80,10 @@ lemma continuedCompensatedLocal_bound (η : Character) (u : FreeRow) (P : PrimeI
     gcongr
     norm_num
   · simpa only [ite_eq_right hp,mul_one] using continuedCompensatedLocal_unramified_bound η u P hs hp hQ x w z hx hw hz
-
-end SevenEighths.ProbeHighRowFamily
 end
 
-end OAI
+
+
+
+
+

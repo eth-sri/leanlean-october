@@ -7,15 +7,19 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRamified
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open scoped HeckeO
 
-theorem ramifiedCorrection_first_analytic_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (w z : ℂ) (hz : (1/3 : ℝ)≤z.re) :
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal)
+    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm)
+include η u P hs hQ
+
+theorem ramifiedCorrection_first_analytic_x  (w z : ℂ) (hz : (1/3 : ℝ)≤z.re) :
     AnalyticOnNhd ℂ (fun x =>ramifiedCorrection η u P hs x w z) {x : ℂ | 1/2<x.re} := by
   let : (Ideal.span {primaryGenerator P.val}:Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible (supported_primeGenerator_prime P hs).irreducible
@@ -25,8 +29,7 @@ theorem ramifiedCorrection_first_analytic_x (η : Character) (u : FreeRow) (P : 
   · exact actualACube_norm_le η _
   · exact hz
 
-theorem ramifiedCorrection_first_analytic_w (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (x z : ℂ)
+theorem ramifiedCorrection_first_analytic_w  (x z : ℂ)
     (hx : (1/2 : ℝ)≤x.re) (hz : (1/3 : ℝ)≤z.re) :
     Differentiable ℂ (fun w =>ramifiedCorrection η u P hs x w z) := by
   let : (Ideal.span {primaryGenerator P.val}:Ideal O).IsMaximal :=
@@ -38,8 +41,7 @@ theorem ramifiedCorrection_first_analytic_w (η : Character) (u : FreeRow) (P : 
   · exact hx
   · exact hz
 
-theorem ramifiedCorrection_first_analytic_z (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (x w : ℂ) (hx : (1/2 : ℝ)≤x.re) :
+theorem ramifiedCorrection_first_analytic_z  (x w : ℂ) (hx : (1/2 : ℝ)≤x.re) :
     AnalyticOnNhd ℂ (fun z =>ramifiedCorrection η u P hs x w z) {z : ℂ | 1/3<z.re} := by
   let : (Ideal.span {primaryGenerator P.val}:Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible (supported_primeGenerator_prime P hs).irreducible
@@ -49,8 +51,7 @@ theorem ramifiedCorrection_first_analytic_z (η : Character) (u : FreeRow) (P : 
   · exact actualACube_norm_le η _
   · exact hx
 
-theorem ramifiedCorrection_first_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (x w z : ℂ)
+theorem ramifiedCorrection_first_bound  (x w z : ℂ)
     (hx : (51/100 : ℝ)≤x.re) (hw : -(1/100 : ℝ)≤w.re) (hz : (17/50 : ℝ)≤z.re) (hxw : 1≤x.re+w.re) :
     ‖ramifiedCorrection η u P hs x w z‖≤193 := by
   let p := primaryGenerator P.val
@@ -66,6 +67,8 @@ theorem ramifiedCorrection_first_bound (η : Character) (u : FreeRow) (P : Prime
   exact ramifiedClosed_first_region_bound p hp hg.1 hg.2 _ _ _ x w z
     (hspan.symm ▸ hQ) (targetMonoid_norm_le_one η p) ha
     (actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)) hx hw hz hxw _ (multiplicity_lt_six u p hp)
+end
+
 
 theorem ramified_product_first_subpower (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -111,8 +114,8 @@ theorem continuedCorrection_first_subpower (ε : ℝ) (hε : 0<ε) :
   apply (mul_le_mul hR hnorm (norm_nonneg _) (by positivity)).trans
   exact le_of_eq (by ring)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

@@ -4,13 +4,12 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                              
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem inverse_sqrt_succ_le_difference (n : ℕ) :
@@ -50,4 +49,4 @@ theorem sum_shift_sqrt_le (H : ℕ) :
     _ = ((Finset.Icc 1 (H-1)).card:ℝ)*Real.sqrt H := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hc) (Real.sqrt_nonneg _)
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceRayPrime
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 
@@ -15,7 +16,7 @@ open CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion
 open CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile
 open CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
     (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P t : ℝ) :
@@ -50,7 +51,7 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
         (heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
           HeckePrimeAnnular.annularWeight W (Z^(w i)) (σ i) (v i) I) t) (Z^(w i))‖^2 ≤
       C*(1+|t|+T)^degree*Z^(loss+κ*(∑i∈F,w i)) := by
-  let el : ℝ := loss/(F.card+1)
+  let el := loss/(F.card+1)
   have hel : 0<el := div_pos hloss (by positivity)
   obtain ⟨J,C,hC,hbound⟩ := natural_ray_slots_uniform M H hH W a b ha hWs hW
     Lmod Lslot el lo hi κ hLm hLs hel hbeta hκ
@@ -97,8 +98,8 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
     (Real.rpow_le_rpow_of_exponent_le hZ.le hexp) (by positivity) (by positivity)).trans_eq
   rw [mul_pow,←pow_mul]
 
-end SevenEighths.CenteredMomentRayMaskedFloor
 
-end
 
-end OAI
+
+
+

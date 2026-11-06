@@ -9,10 +9,14 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure ProbePhysical
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 
-theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
+section
+variable (χ : Character) (u : FreeRow) (I : Ideal O)
+include χ u I
+
+theorem momentData_product_raw  :
     idealCoeff ((momentData χ).character (momentElement u)) I=
       idealCoeff (χ.product (rawRow u)) I := by
   have he : idealCoeff ((momentData χ).character (momentElement u))=
@@ -23,13 +27,15 @@ theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
     simp
   exact congrArg (fun f : Ideal O→*₀ℂ=>f I) he
 
-theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal O) :
+theorem inverse_row_twist_moment_coeff  :
     idealCoeff ((rawRow u).inverse.product χ) I=
       conj (idealCoeff ((momentData χ.inverse).character (momentElement u)) I) := by
   rw [momentData_product_raw,idealCoeff_product,idealCoeff_product,
     idealCoeff_inverse_conj,idealCoeff_inverse_conj,map_mul]
   simp only [starRingEnd_self_apply]
   ring
+end
+
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -56,8 +62,8 @@ theorem source_family_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P
     · simpa [sourceMomentReverse,sourceMomentData] using denominator_moment_coeff S hS hbad η u I
     · simpa [sourceMomentReverse,sourceMomentData] using numerator_moment_coeff S hS hbad u I
   · exact inverse_row_twist_moment_coeff (HeckeRayQuotient.character M H hH θ) u I
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

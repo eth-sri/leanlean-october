@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -72,16 +73,13 @@ theorem actual_second_extracted_support_killed
   have hb : (∏ j ∈ B,p j) ∣ T := by
     apply (cubeRadical_dvd_jLabel_b0 p B v ε₁ ε₂ hv).trans
     refine ⟨m*r*(∏ j ∈ C,p j)*e*∏ j ∈ V,p j,?_⟩
-    dsimp [T]
     ring
   have hc : (∏ j ∈ C,p j) ∣ T := by
     refine ⟨m*b0Label p B v ε₁ ε₂*r*jLabel p B v ε₁ ε₂*e*∏ j ∈ V,p j,?_⟩
-    dsimp [T]
     ring
   have hg' : (∏ j ∈ G,p j) ∣ T := by
     rw [secondMaskQuotient_spec p E G hEG]
     refine ⟨m*b0Label p B v ε₁ ε₂*(∏ j ∈ C,p j)*jLabel p B v ε₁ ε₂*∏ j ∈ V,p j,?_⟩
-    dsimp [T,r,e]
     ring
   intro i hi
   apply Ideal.mem_span_singleton.mpr
@@ -111,7 +109,6 @@ theorem actual_second_split_fixed_family
   let d := primeSubsetGenerator (fun i => Ideal.span {p i}) D
   let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E
   let r := secondMaskQuotient p E G hEG
-  let c := (∏ i ∈ C,p i)*jLabel p B v ε₁ ε₂
   have hd := actual_first_divisor_dvd_child p B C D V hCB hD v ε₁ ε₂ hv m r e
   have hk := actual_second_extracted_support_killed p B C G E V A hEG hA v ε₁ ε₂ hv m
   have hm : (m*b0Label p B v ε₁ ε₂*d)*r = ((m*b0Label p B v ε₁ ε₂)*r)*d := by ring
@@ -126,7 +123,7 @@ theorem actual_second_split_fixed_family
   rw [finiteCanonicalMarkedRow_drop_puncture p hp hcop hg F Ψ _ d _ _ hd]
   rw [finiteCanonicalMarkedRow_restore_lists p hp hcop hg F A Ψ _ _ _ (slots\J) lists a W X hk]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

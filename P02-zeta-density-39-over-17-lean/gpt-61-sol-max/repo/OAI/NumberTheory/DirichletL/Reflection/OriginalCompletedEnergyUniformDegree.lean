@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem canonical_original_completed_energy_uniform_degree
@@ -23,7 +23,7 @@ theorem canonical_original_completed_energy_uniform_degree
       (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hhat d : ℝ),
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hhat≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
     ∀ (parents : Finset (Ideal Eis)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
       Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ),
@@ -67,7 +67,7 @@ theorem canonical_original_completed_energy_uniform_degree
   exact congrArg (fun z : ℂ => ‖z‖^2) (original_completed_puncture_lists lists hprime S Ψ m
     (ConcretePrimeRowBridge.idealGenerator F) (u.val*ConcretePrimeRowBridge.idealGenerator I)
     (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat)) w)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

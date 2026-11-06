@@ -4,10 +4,9 @@ public import TraceAlternatives.CubeCountTargetWindows
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 noncomputable section
-open Filter Finset GuthMaynard.Improvement GuthMaynard.NativeMoment
+open Filter Finset GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
 /-- Pure numeric conditions for the sharp actual-polynomial count. -/
@@ -46,4 +45,4 @@ theorem cube_polynomial_count_window_loss {σ a δ : ℝ}
       (W.card:ℝ) ≤ C*T^(3*a*(1-σ)+72*δ) :=
   cube_polynomial_count_loss hw.sigma_low hw.sigma_high hw.a_low hw.a_high hδ hδa hw.budgets
 
-end Montgomery.RationalMoment
+

@@ -5,15 +5,18 @@ public import ThirdUpperValues
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 
-theorem third_lower_large_values {σ a p α δ : ℝ}
-    (hw : ThirdWindow σ a p α) (hδ : 0 < δ) :
+section
+variable {σ a p α δ : ℝ}
+    (hw : ThirdWindow σ a p α) (hδ : 0 < δ)
+include σ a p α δ hw hδ
+
+theorem third_lower_large_values  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → T^a ≤ N → N ≤ T^α →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -74,8 +77,7 @@ theorem third_lower_large_values {σ a p α δ : ℝ}
 
 
 
-theorem third_full_window_large_values {σ a p α δ : ℝ}
-    (hw : ThirdWindow σ a p α) (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
+theorem third_full_window_large_values  (hδ' : δ ≤ 1/100) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → 2 ≤ N → T^a ≤ N → N ≤ T^(3*a/2+δ) →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -92,5 +94,7 @@ theorem third_full_window_large_values {σ a p α δ : ℝ}
       (mul_le_mul_of_nonneg_right (by linarith : C ≤ C+D) (by positivity))
   · exact (hhi T N t₀ b W hT hN (le_of_not_ge hm) hu hb hloc hsep hlarge).trans
       (mul_le_mul_of_nonneg_right (by linarith : D ≤ C+D) (by positivity))
+end
 
-end Montgomery.RationalMoment
+
+

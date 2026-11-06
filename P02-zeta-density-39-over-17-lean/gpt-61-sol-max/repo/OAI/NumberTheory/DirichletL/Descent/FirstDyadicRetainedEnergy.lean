@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicLiveRadius
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
@@ -7,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
+open InverseFirstGlobalCaps
 open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open JointLogSeparation CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem original_dyadic_retained_energy
     (om Φ:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b):
@@ -112,14 +113,14 @@ theorem original_dyadic_retained_energy
           (Cp*((1+‖theta‖)^InverseClippingProfiles.momentOrder J*(1+‖theta‖)^InverseClippingProfiles.momentOrder J)):=by
         apply mul_le_mul_of_nonneg_right _ (by positivity)
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow (by positivity)) hB
-      _=_:=by rw [show 2*InverseClippingProfiles.momentOrder J=InverseClippingProfiles.momentOrder J+InverseClippingProfiles.momentOrder J by omega,pow_add];ring
+      _=_:=by ring
   calc
     _≤∑_k∈keys,(Cp*Kp)*Γ^2*Benergy*(1+‖theta‖)^(2*InverseClippingProfiles.momentOrder J)*Z^((2*Fmax+15*eta+tau)*eps):=
       Finset.sum_le_sum hpoint
     _=_:=by simp [mul_comm]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

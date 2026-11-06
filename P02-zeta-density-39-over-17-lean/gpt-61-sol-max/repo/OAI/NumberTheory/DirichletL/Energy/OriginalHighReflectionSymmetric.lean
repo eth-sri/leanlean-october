@@ -1,5 +1,7 @@
 module
-public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionPower
+public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionOriginal
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarReserve
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 
 @[expose] public section
 
@@ -10,15 +12,15 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionPower
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
+open HeckeFamily
+open CenteredMomentEnergyBands CenteredMomentInductionEnergy
+open CenteredMomentEnergyReferenceState
+
+
+
+
 open CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 omit [DecidableEq α] in
@@ -39,7 +41,7 @@ lemma energy_swap (η:Character)(m A:O)(t:ℝ)(W₁ W₂:ℝ→ℂ)
 
 theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width)
     (hX₁:0<X₁)(hX₂:0<X₂)
-    (hshort:width/4≤min (length Z X₁) (length Z X₂)):
+    (hshort:width/4≤ min (length Z X₁) (length Z X₂)):
     Z^(width/4)≤X₁ ∧ Z^(width/4)≤X₂ ∧
     Z^(width/4)≤comparisonFirst Z width ∧
     Z^(width/4)≤comparisonSecond Z width X₁ X₂ ∧
@@ -71,8 +73,8 @@ variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-end SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
 
-end
 
-end OAI
+
+
+

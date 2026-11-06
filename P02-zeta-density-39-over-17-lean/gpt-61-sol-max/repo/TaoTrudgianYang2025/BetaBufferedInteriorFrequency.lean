@@ -13,13 +13,13 @@ the two plateau endpoint slopes to a physical distance of the actual
 critical point. The physical N/T scaling then cancels in the remainder.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseInverseSlope_interior_of_gap
     {F : ℝ → ℝ} {σ δ v a b w : ℝ}
@@ -99,4 +99,4 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
   apply h.trans_eq
   field_simp
 
-end TaoTrudgianYang2025
+

@@ -69,4 +69,4 @@ theorem norm_exponentialSumAt_le_secondDerivative
       (show ((Finset.Icc a b).card : ℝ) ≤ 3 by exact_mod_cast hcard)
     nlinarith
 
-end TaoTrudgianYang2025
+

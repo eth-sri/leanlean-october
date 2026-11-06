@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.SourceTransport
 public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 
@@ -11,28 +12,33 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def finitePhysicalRows {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+section
+variable {K : ℕ} (S : Finset (Ideal O))
+include K S
+
+def finitePhysicalRows  (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
   ∑u∈R,∑P:(∀i,T i),(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax)
       (fun i=>CompletedGauss.primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-def weightedRowOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+section
+variable (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) : ℂ :=
+    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace)
+include hS hmax P hPS η u W Yp W0 W1 X Y Z σ υ r t
+
+def weightedRowOnLines  : ℂ :=
   sourceMellinWeight W0 W1 X Y Z ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)*
     frequencyWeight ((r:ℂ)+t.1.2*I) ⟨u.val,u.property.1⟩*
     calibratedTupleValue S hS hmax η u P hPS W Yp
       ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)
 
-lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) :
+lemma weightedRowOnLines_eq  :
     weightedRowOnLines S hS hmax P hPS η u W Yp W0 W1 X Y Z σ υ r t=
       (∏i,W i (((P i).val.absNorm:ℝ)/Yp i))*
         continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ r t := by
@@ -43,8 +49,11 @@ lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusi
   unfold weightedRowOnLines continuedRowOnLines continuedPhysicalRowKernel calibratedTupleValue
   simp only [hnorm,Finset.prod_mul_distrib]
   ring
+end
+end
 
-section
+
+
 variable {K : ℕ} (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hσ3 : σ≤3)
     (hυ : (1/2:ℝ)≤υ) (hυ3 : υ≤3) (hr : (17/50:ℝ)≤r)
@@ -129,7 +138,7 @@ theorem norm_finitePhysicalRows_le_absolute :
   have hg (t : HeightSpace) : (∑u∈R,∑P:(∀i,T i),‖f u P t‖)=g t := by
     simp only [f,g,weightedRowOnLines,physicalDyadNorm,norm_mul,Finset.mul_sum,mul_assoc]
   have hgi : Integrable g heightMeasure := by
-    have hh : Integrable (fun t=>∑u∈R,∑P:(∀i,T i),‖f u P t‖) heightMeasure :=
+    have hh :=
       integrable_finsetSum R (fun u hu=>integrable_finsetSum Finset.univ (fun P hP=>(hfi u hu P).norm))
     exact hh.congr (Filter.Eventually.of_forall hg)
   obtain ⟨hi,heq⟩ := finitePhysicalRows_eq_integral e σ υ r he he' hσ hσβ hσ3 hυ hυ3 hr S hS hmax
@@ -142,9 +151,9 @@ theorem norm_finitePhysicalRows_le_absolute :
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
   exact (norm_integral_le_integral_norm _).trans (integral_mono hi.norm hgi hp)
 
-end
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+
+

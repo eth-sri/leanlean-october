@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.CommonMasks
 public import OAI.NumberTheory.DirichletL.Eisenstein.QuotientTopology
 
@@ -6,98 +7,76 @@ public import OAI.NumberTheory.DirichletL.Eisenstein.QuotientTopology
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
-open scoped BigOperators Classical
-namespace SecondPassArithmetic
+                                  
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct bit parity retained b0Exponent aLabel jLabel j2Label squarefreeLabel b0Label)
-
-variable {ι : Type*} [DecidableEq ι]
-
-variable (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
-
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end
-
-end SecondPassArithmetic
 
 open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
@@ -119,10 +98,8 @@ theorem maskedPairDualTail_bound (A : ℕ) :
   intro G I J W M N K hG hI hJ hM hN hK hIl hIu hJl hJu
   have hNG : 0<(Ideal.absNorm G:ℝ) := by
     exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun hz => hG (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hNI : 0<(Ideal.absNorm I:ℝ) := by
-    exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hNJ : 0<(Ideal.absNorm J:ℝ) := by
-    exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun hz => hJ (Ideal.absNorm_eq_zero_iff.mp hz))
+  have hNI : 0<(Ideal.absNorm I:ℝ) := by linarith
+  have hNJ : 0<(Ideal.absNorm J:ℝ) := by linarith
   have hN0 : 0<N := by linarith
   let t0 := M/((Ideal.absNorm G:ℝ)*N*N)
   let T := (C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/((min 1 t0)^2*(1+t0*K)^A)
@@ -162,8 +139,7 @@ theorem maskedPairDualTail_bound (A : ℕ) :
     rw [norm_mul]
     exact (mul_le_mul hc hb (norm_nonneg _) (by norm_num)).trans_eq (one_mul _)
   have hpref : ‖(M:ℂ)/(Real.sqrt ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)):ℂ)‖≤2*M/N := by
-    simp only [norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hM.le,
-      abs_of_nonneg (Real.sqrt_nonneg _)]
+    simp only [norm_div, norm_real, norm_eq_abs, abs_of_nonneg hM.le, abs_of_nonneg (Real.sqrt_nonneg _)]
     simpa only [mul_one,one_mul] using
       dual_truncation_prefactor_bound M 1 N (Ideal.absNorm I) (Ideal.absNorm J)
         hM (by norm_num) hN0 ⟨hIl,hIu⟩ ⟨hJl,hJu⟩
@@ -179,14 +155,11 @@ theorem coprime_pair_error_energy {n : Type} [Fintype n]
     ‖∑ j, ∑ k, if IsCoprime (cols j) (cols k) then star (a j)*a k*error j k else 0‖ ≤
       (Fintype.card n:ℝ)*E*∑ j, ‖a j‖^2 := by
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => (1:ℝ))
-  simp only [mul_one,one_pow,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one] at hcs
+  simp only [mul_one, one_pow, sum_const, card_univ, nsmul_eq_mul] at hcs
   have hs : (∑ j, ∑ k, ‖a j‖*‖a k‖*E) = (∑ j, ‖a j‖)^2*E := by
     simp only [pow_two,Finset.sum_mul,Finset.mul_sum,mul_assoc]
     apply Finset.sum_congr rfl
-    intro j _
-    apply Finset.sum_congr rfl
-    intro k _
-    ring
+    grind
   calc
     _ ≤ ∑ j, ∑ k, ‖if IsCoprime (cols j) (cols k) then star (a j)*a k*error j k else 0‖ := by
       exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => norm_sum_le _ _)
@@ -236,27 +209,8 @@ theorem maskedDualTailFamily_bound (A : ℕ) :
 end CanonicalQuadraticSieve
 
 open scoped BigOperators Classical
-namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
 
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end SecondPassArithmetic
-
-end
-
-end OAI

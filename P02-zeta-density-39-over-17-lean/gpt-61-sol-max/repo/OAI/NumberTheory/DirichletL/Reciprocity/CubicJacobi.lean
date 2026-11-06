@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Arithmetic.IdealMobius
 
 @[expose] public section
@@ -8,71 +9,71 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                                                 
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
 
-open scoped BigOperators Classical
+                                  
 
 namespace CubicJacobiGlobal
 abbrev O := ActualEisensteinCubic.O
@@ -95,13 +96,19 @@ def idealSymbol (I : Ideal O) (x : O) : O :=
   if I = 0 then 0 else
     ((UniqueFactorizationMonoid.normalizedFactors I).map (fun P => primeValue P x)).prod
 
-@[simp] theorem idealSymbol_zero (x : O) : idealSymbol 0 x = 0 := by simp [idealSymbol]
-@[simp] theorem idealSymbol_bot (x : O) : idealSymbol ⊥ x = 0 := idealSymbol_zero x
-@[simp] theorem idealSymbol_one (x : O) : idealSymbol 1 x = 1 := by
+section
+variable (x : O)
+include x
+
+@[simp] theorem idealSymbol_zero  : idealSymbol 0 x = 0 := by simp [idealSymbol]
+@[simp] theorem idealSymbol_bot  : idealSymbol ⊥ x = 0 := idealSymbol_zero x
+@[simp] theorem idealSymbol_one  : idealSymbol 1 x = 1 := by
   rw [idealSymbol, ite_eq_right one_ne_zero, UniqueFactorizationMonoid.normalizedFactors_one]
   rfl
-@[simp] theorem idealSymbol_top (x : O) : idealSymbol ⊤ x = 1 := by
+@[simp] theorem idealSymbol_top  : idealSymbol ⊤ x = 1 := by
   simpa only [Ideal.one_eq_top] using idealSymbol_one x
+end
+
 
 theorem idealSymbol_mul (I J : Ideal O) (x : O) :
     idealSymbol (I * J) x = idealSymbol I x * idealSymbol J x := by
@@ -117,7 +124,7 @@ theorem idealSymbol_mul (I J : Ideal O) (x : O) :
 def symbol (x y : O) : O := idealSymbol (Ideal.span {y}) x
 
 @[simp] theorem symbol_one (x : O) : symbol x 1 = 1 := by simp [symbol]
-@[simp] theorem symbol_zero (x : O) : symbol x 0 = 0 := by simp [symbol]
+
 
 theorem symbol_mul_denominator (x y z : O) :
     symbol x (y * z) = symbol x y * symbol x z := by
@@ -132,13 +139,17 @@ theorem idealSymbol_prime (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P) (x 
     UniqueFactorizationMonoid.normalizedFactors_irreducible hp.irreducible]
   simpa using primeValue_eq P hgood x
 
-private theorem factor_good (I : Ideal O) (hI : primaryGenerator I ≠ 0)
+section
+variable (I : Ideal O) (hI : primaryGenerator I ≠ 0)
+include I hI
+
+private theorem factor_good 
     (P : Ideal O) (hP : P ∈ UniqueFactorizationMonoid.normalizedFactors I) :
     P.IsMaximal ∧ lambda ∉ P := by
   exact ⟨(primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI hP)).1,
     (primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI hP)).2.1⟩
 
-theorem idealSymbol_map_mul (I : Ideal O) (hI : primaryGenerator I ≠ 0) (x y : O) :
+theorem idealSymbol_map_mul  (x y : O) :
     idealSymbol I (x * y) = idealSymbol I x * idealSymbol I y := by
   have hI0 := primaryGenerator_ne_zero_ideal I hI
   simp only [idealSymbol, ite_eq_right hI0]
@@ -150,7 +161,7 @@ theorem idealSymbol_map_mul (I : Ideal O) (hI : primaryGenerator I ≠ 0) (x y :
   let : P.IsMaximal := hg.1
   simp only [primeValue_eq P hg.2, map_mul]
 
-theorem idealSymbol_map_one (I : Ideal O) (hI : primaryGenerator I ≠ 0) :
+theorem idealSymbol_map_one  :
     idealSymbol I 1 = 1 := by
   have hI0 := primaryGenerator_ne_zero_ideal I hI
   rw [idealSymbol, ite_eq_right hI0]
@@ -161,12 +172,14 @@ theorem idealSymbol_map_one (I : Ideal O) (hI : primaryGenerator I ≠ 0) :
   let : P.IsMaximal := hg.1
   simp only [primeValue_eq P hg.2, map_one]
 
-theorem idealSymbol_map_multiset_prod (I : Ideal O) (hI : primaryGenerator I ≠ 0)
+theorem idealSymbol_map_multiset_prod 
     (s : Multiset O) :
     idealSymbol I s.prod = (s.map (idealSymbol I)).prod := by
   induction s using Multiset.induction_on with
   | empty => simp [idealSymbol_map_one I hI]
   | @cons a s ih => simp [idealSymbol_map_mul I hI, ih]
+end
+
 
 theorem symbol_prime (p : O) (hp : Prime p) (hprimary : lambda ^ 2 ∣ p - 1) (x : O) :
     symbol x p = primeValue (Ideal.span {p}) x := by
@@ -240,20 +253,25 @@ open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
 
 lemma lambda_def : lambda = omega - 1 := rfl
 
-theorem cubicValue_cube (P : Ideal O) [P.IsMaximal] (hg : lambda ∉ P)
-    (x : O) (hx : x ∉ P) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : lambda ∉ P)
+    (x : O) (hx : x ∉ P)
+include P hg x hx
+
+theorem cubicValue_cube  :
     (cubicChar P hg (Ideal.Quotient.mk P x)) ^ 3 = 1 := by
   rw [← MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), cubicChar_pow_three]
   exact MulChar.one_apply (isUnit_iff_ne_zero.mpr
     (Ideal.Quotient.eq_zero_iff_mem.not.mpr hx))
 
-theorem cubicValue_ne_zero (P : Ideal O) [P.IsMaximal] (hg : lambda ∉ P)
-    (x : O) (hx : x ∉ P) :
+theorem cubicValue_ne_zero  :
     cubicChar P hg (Ideal.Quotient.mk P x) ≠ 0 := by
   have h := cubicValue_cube P hg x hx
   intro hz
   rw [hz, zero_pow (by decide)] at h
   exact zero_ne_one h
+end
+
 
 theorem ramified_comparison
     (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
@@ -379,37 +397,34 @@ open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
 
 def primaryCoord (A B : ℤ) : O := ActualEisensteinCoordinates.eval (1 + 3 * A) (3 * B)
 
-theorem primaryCoord_eq (A B : ℤ) :
+section
+variable (A B : ℤ)
+include A B
+
+theorem primaryCoord_eq  :
     primaryCoord A B = 1 + 3 * (A : O) + 3 * (B : O) * omega := by
   simp only [primaryCoord, ActualEisensteinCoordinates.eval]
   push_cast
   rfl
 
-theorem primaryCoord_primary (A B : ℤ) : lambda ^ 2 ∣ primaryCoord A B - 1 := by
+theorem primaryCoord_primary  : lambda ^ 2 ∣ primaryCoord A B - 1 := by
   rw [primaryCoord_eq]
   apply lambda_sq_dvd_three.trans
   exact ⟨(A : O) + (B : O) * omega, by ring⟩
 
-theorem primaryCoord_ne_zero (A B : ℤ) : primaryCoord A B ≠ 0 := by
+theorem primaryCoord_ne_zero  : primaryCoord A B ≠ 0 := by
   intro hz
   have hcoord : ActualEisensteinCoordinates.eval (1 + 3 * A) (3 * B) =
       ActualEisensteinCoordinates.eval 0 0 := by
     exact hz.trans (by simp [ActualEisensteinCoordinates.eval])
   have h := (ActualEisensteinCoordinates.unique_coordinates hcoord).1
   omega
+end
+
 
 lemma primary_card_exponent (N : ℕ) (A B : ℤ) (hN : 1 < N)
     (hn : (N : ℤ) = 1 + 9*(A^2-A*B+B^2)+3*(2*A-B)) :
-    ((N-1)/3)%3 = ((2*A-B)%3).toNat %3 := by
-  have hsub : ((N-1 : ℕ) : ℤ) = (N : ℤ)-1 := by omega
-  have hdiv : (((N-1)/3 : ℕ) : ℤ) = 3*(A^2-A*B+B^2)+(2*A-B) := by
-    rw [Int.natCast_ediv, hsub]
-    have hh : (N : ℤ)-1 = 3*(3*(A^2-A*B+B^2)+(2*A-B)) := by omega
-    rw [hh]
-    omega
-  have hrem : (((2*A-B)%3).toNat : ℤ) = (2*A-B)%3 :=
-    Int.toNat_of_nonneg (Int.emod_nonneg _ (by norm_num))
-  omega
+    ((N-1)/3)%3 = ((2*A-B)%3).toNat %3 := by grind [toNat]
 
 theorem cubicValue_omega_primary (P : Ideal O) [P.IsMaximal]
     (hg : lambda ∉ P) (A B : ℤ) (hP : P = Ideal.span {primaryCoord A B}) :
@@ -513,8 +528,16 @@ lemma omega_six : omega ^ 6 = 1 := by
     _ = omega ^ 3 * omega ^ 3 := by ring
     _ = 1 := by rw [omega_primitive.pow_eq_one, one_mul]
 
-private theorem supplement_case00 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+section
+variable (P : Ideal O) [P.IsMaximal]
+    (hg : lambda ∉ P)
+include P hg
+
+section
+variable (k l : ℤ)
+include k l
+
+private theorem supplement_case00 
     (hP : P = Ideal.span {primaryCoord (3*k+0) (3*l+0)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 0 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 0 := by
@@ -536,8 +559,7 @@ private theorem supplement_case00 (P : Ideal O) [P.IsMaximal]
     all_goals simp only [  omega_six,
       ]
 
-private theorem supplement_case01 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case01 
     (hP : P = Ideal.span {primaryCoord (3*k+0) (3*l+1)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 0 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 2 := by
@@ -559,8 +581,7 @@ private theorem supplement_case01 (P : Ideal O) [P.IsMaximal]
     all_goals simp only [   omega_five,
        omega_sq_for_norm]
 
-private theorem supplement_case02 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case02 
     (hP : P = Ideal.span {primaryCoord (3*k+0) (3*l+2)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 0 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 1 := by
@@ -579,8 +600,7 @@ private theorem supplement_case02 (P : Ideal O) [P.IsMaximal]
   · simp only [cubicValue_neg,  cubicValue_lambda_seven,
         pow_zero,  map_one]
 
-private theorem supplement_case10 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case10 
     (hP : P = Ideal.span {primaryCoord (3*k+1) (3*l+0)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 1 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 2 := by
@@ -600,8 +620,7 @@ private theorem supplement_case10 (P : Ideal O) [P.IsMaximal]
       cubicValue_omega_two, hw,  pow_one]
     all_goals ring_nf
 
-private theorem supplement_case11 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case11 
     (hP : P = Ideal.span {primaryCoord (3*k+1) (3*l+1)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 1 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 1 := by
@@ -621,8 +640,7 @@ private theorem supplement_case11 (P : Ideal O) [P.IsMaximal]
       cubicValue_omega_seven, hw,  pow_one]
     all_goals ring_nf
 
-private theorem supplement_case12 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case12 
     (hP : P = Ideal.span {primaryCoord (3*k+1) (3*l+2)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 1 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 0 := by
@@ -644,8 +662,7 @@ private theorem supplement_case12 (P : Ideal O) [P.IsMaximal]
     all_goals simp only [   omega_five,
        omega_sq_for_norm]
 
-private theorem supplement_case20 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case20 
     (hP : P = Ideal.span {primaryCoord (3*k+2) (3*l+0)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 2 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 1 := by
@@ -667,8 +684,7 @@ private theorem supplement_case20 (P : Ideal O) [P.IsMaximal]
     all_goals simp only [   omega_five,
        omega_sq_for_norm]
 
-private theorem supplement_case21 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case21 
     (hP : P = Ideal.span {primaryCoord (3*k+2) (3*l+1)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 2 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 0 := by
@@ -687,8 +703,7 @@ private theorem supplement_case21 (P : Ideal O) [P.IsMaximal]
   · simp only [cubicValue_neg,  cubicValue_lambda_two,
         pow_zero,  map_one]
 
-private theorem supplement_case22 (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (k l : ℤ)
+private theorem supplement_case22 
     (hP : P = Ideal.span {primaryCoord (3*k+2) (3*l+2)}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ 2 := by
   have hw : cubicChar P hg (Ideal.Quotient.mk P omega) = omega ^ 2 := by
@@ -706,9 +721,10 @@ private theorem supplement_case22 (P : Ideal O) [P.IsMaximal]
     all_goals ring
   · simp only [  cubicValue_lambda_two,
         pow_zero,  map_one]
+end
 
-theorem cubicValue_lambda_primary (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (A B : ℤ)
+
+theorem cubicValue_lambda_primary  (A B : ℤ)
     (hP : P = Ideal.span {primaryCoord A B}) :
     cubicChar P hg (Ideal.Quotient.mk P lambda) = omega ^ (A % 3).toNat := by
   have hA : A = 3 * (A / 3) + A % 3 := by omega
@@ -752,9 +768,11 @@ theorem cubicValue_lambda_primary (P : Ideal O) [P.IsMaximal]
       rw [show 3*(A/3)+2 = A by omega, show 3*(B/3)+2 = B by omega]
       exact hP
     simpa only [ha, Int.reduceToNat] using supplement_case22 P hg (A/3) (B/3) hp
-
-end CubicRamified
-
 end
 
-end OAI
+
+
+
+
+
+

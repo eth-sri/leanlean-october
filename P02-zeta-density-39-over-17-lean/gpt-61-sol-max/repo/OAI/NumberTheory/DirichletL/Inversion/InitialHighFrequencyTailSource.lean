@@ -12,7 +12,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialPhysicalMeasure
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
 def sourceKey (x : Point ι) : Fin 5→Finset ι :=
@@ -26,12 +26,20 @@ theorem sourcePoint_key (x : Point ι) : sourcePoint (sourceKey x) x.frequency=x
   cases x
   rfl
 
-def sourceKeys (S : Finset (Point ι)) : Finset (Fin 5→Finset ι) := S.image sourceKey
+section
+variable (S : Finset (Point ι))
+include S
 
-def sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) : Finset O :=
+def sourceKeys  : Finset (Fin 5→Finset ι) := S.image sourceKey
+
+section
+variable (k : Fin 5→Finset ι)
+include k
+
+def sourceFrequencies  : Finset O :=
   (S.filter (fun x=>sourceKey x=k)).image Point.frequency
 
-theorem mem_sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) (h : O) :
+theorem mem_sourceFrequencies  (h : O) :
     h∈sourceFrequencies S k ↔ sourcePoint k h∈S := by
   constructor
   · intro hh
@@ -44,8 +52,10 @@ theorem mem_sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) (h
     refine ⟨sourcePoint k h,Finset.mem_filter.mpr ⟨hh,?_⟩,rfl⟩
     funext i
     fin_cases i <;> rfl
+end
 
-theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
+
+theorem source_sum_fibers  (f : Point ι→ℂ) :
     ∑x∈S,f x = ∑k∈sourceKeys S,∑h∈sourceFrequencies S k,f (sourcePoint k h) := by
   rw [←Finset.sum_fiberwise_of_maps_to (s:=S) (t:=sourceKeys S) (g:=sourceKey)
     (fun x hx=>Finset.mem_image.mpr ⟨x,hx,rfl⟩) f]
@@ -58,6 +68,8 @@ theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
   · intro x hx y hy hxy
     have hk := (Finset.mem_filter.mp hx).2.trans (Finset.mem_filter.mp hy).2.symm
     rw [←sourcePoint_key x,←sourcePoint_key y,hk,hxy]
+end
+
 
 theorem sourceKeys_card
     (p : ι→O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -79,8 +91,8 @@ theorem sourceKeys_card
   exact hcast.trans (pow_le_pow_left₀ (by positivity)
     (boundedPrimeSupports_card p hinj pool L hL) 5)
 
-end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
-end OAI
+
+
+

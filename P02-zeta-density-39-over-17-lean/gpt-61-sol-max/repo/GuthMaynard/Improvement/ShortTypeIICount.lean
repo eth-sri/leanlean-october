@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDetectorWindowDetection
 public import GuthMaynard.Improvement.ShortTypeIIPacking
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
@@ -25,13 +25,7 @@ theorem short_typeII_count_by_moment :
   intro σ W ρ hσ hsep hw hρ hlarge
   let J := fun u : ℝ => ∫ v in Icc (-(H/2)) (H/2),
     ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖*(shortTwistedNorm H (u+v))^4
-  have hone (u : ℝ) (hu : u ∈ W) : (1:ℝ) ≤ A*H^(1-2*σ)*J u := by
-    obtain ⟨him,hlo,hhi⟩ := hρ u hu
-    have hγ : |(ρ u).im| ≤ 2*H := by
-      rw [him,abs_of_nonneg (show 0 ≤ u by linarith [(hw u hu).1])]
-      exact (hw u hu).2
-    have hh := hd σ (ρ u) hσ hlo hhi hγ (hlarge u hu)
-    simpa only [him] using hh
+  have hone (u : ℝ) (hu : u ∈ W) : (1:ℝ) ≤ A*H^(1-2*σ)*J u := by grind
   have hs : (W.card:ℝ) ≤ A*H^(1-2*σ)*(∑ u ∈ W,J u) := by
     have hh := Finset.sum_le_sum hone
     simpa only [Finset.sum_const,nsmul_eq_mul,mul_one,← Finset.mul_sum] using hh
@@ -41,4 +35,4 @@ theorem short_typeII_count_by_moment :
       hs.trans (mul_le_mul_of_nonneg_left hp (by positivity))
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

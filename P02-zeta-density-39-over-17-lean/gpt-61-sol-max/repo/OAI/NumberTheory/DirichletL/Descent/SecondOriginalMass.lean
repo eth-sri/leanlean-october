@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondActualMass
 
 @[expose] public section
@@ -7,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
@@ -43,10 +44,9 @@ theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     _ = _ := by
       rw [mul_left_comm,←Real.rpow_add hZ]
       congr 2
-      dsimp only [c]
       ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Exact stationary-source-to-prefix assembly using the narrowly ported McColm
 source at 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1. The actual stationary sum
@@ -12,7 +13,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSourceAssembly
 @[expose] public section
 
 open Complex MeasureTheory
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -56,12 +56,11 @@ theorem localMeanSourceToPrefix_of_stationary (hSource : LocalMeanStationaryInpu
         atkinsonUndampedDyadicPhaseBound t (atkinsonSourceCutoff t G (Real.log t)) := by
     gcongr
   have herror : A*G*Real.log t ≤ C*G*Real.log t := by gcongr
-  have hactual := hsource t G htU hlower hupper hquarter
-  nlinarith
+  grind
 
 /-- Native packet estimates require only the remaining actual source approximation. -/
 theorem localMeanPacketInput_of_stationary (hSource : LocalMeanStationaryInput) :
     Peaks.LocalMeanPacketInput :=
   localMeanPacketInput_of_sourceToPrefix (localMeanSourceToPrefix_of_stationary hSource)
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -12,13 +12,13 @@ The explicit constant is uniform before endpoints, width, phase, height,
 physical scale and frequency. The original factor N is retained.
 -/
 
-noncomputable section
+
 
 open Complex Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseNormalizedMode_eq_fourier (χ F : ℝ → ℝ) (T ξ : ℝ) :
     modelPhaseNormalizedMode χ F T ξ =
@@ -97,4 +97,4 @@ theorem modelPhaseBufferedFourierMode_inverse_square_bound
   apply (mul_le_mul_iff_left₀ hN).mp
   nlinarith
 
-end TaoTrudgianYang2025
+

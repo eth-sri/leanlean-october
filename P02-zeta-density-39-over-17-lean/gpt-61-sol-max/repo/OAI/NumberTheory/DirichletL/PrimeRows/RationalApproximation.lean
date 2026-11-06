@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Poisson.OscillatoryGaussian
 
 @[expose] public section
@@ -8,41 +9,33 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 
 open Filter
 
-namespace RationalQuant
 
-end RationalQuant
 
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+                          
 
-namespace RationalPrimeExtraction
 
-end RationalPrimeExtraction
 
-open ActualEisensteinCubic ShortDraftLatticeCount
+                          
 
-namespace RationalPrimeExtraction
 
-open ActualEisensteinCubic ShortDraftLatticeCount
-
-end RationalPrimeExtraction
 
 namespace OscSpecial
 
-noncomputable def phaseBoundConstant (a b : ℝ) : ℝ :=
+def phaseBoundConstant (a b : ℝ) : ℝ :=
   2 * (|a - b| + |a| + |b|) + 1
 
 theorem phaseBoundConstant_pos (a b : ℝ) :
@@ -53,7 +46,7 @@ theorem phaseBoundConstant_pos (a b : ℝ) :
 theorem quadratic_phase_abs_le (a b k l : ℝ) :
     |(a - b) * k ^ 2 + 2 * a * k * l + b * l ^ 2| ≤
       phaseBoundConstant a b * (k ^ 2 + k * l + l ^ 2) := by
-  let Q : ℝ := k ^ 2 + k * l + l ^ 2
+  let Q := k ^ 2 + k * l + l ^ 2
   have hQ : 0 ≤ Q := by
     dsimp [Q]
     nlinarith [sq_nonneg (k + l), sq_nonneg k, sq_nonneg l]
@@ -118,23 +111,23 @@ end GaussianMoment
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open ConcreteTraceCRT Complex
 
 private theorem breveE_period_div_lam_O (z : O) :
     ShortDraftTrace.breveE (eisEmbedding z / eisLam) = 1 := by
   let a := (ActualEisensteinCoordinates.coords z).1
   let b := (ActualEisensteinCoordinates.coords z).2
-  have hz : z = ActualEisensteinCoordinates.eval a b :=
+  have hz :=
     (ActualEisensteinCoordinates.eval_coords z).symm
   rw [hz, eisEmbedding_eval]
   exact ConcreteBreveE.breveE_period_coordinates a b
 
-noncomputable def fixedDualPhase (c y : O) : ℂ :=
+def fixedDualPhase (c y : O) : ℂ :=
   ShortDraftTrace.breveE (eisEmbedding (-(c*y^2)) / eisLam / (4 : ℂ))
 
 theorem fixedDualPhase_period_two (c y w : O) :
     fixedDualPhase c (y + 2*w) = fixedDualPhase c y := by
-  let d : O := -(c * (y*w+w^2))
+  let d := -(c * (y*w+w^2))
   have hO : -(c * (y + 2*w)^2) = -(c*y^2) + 4*d := by
     dsimp [d]
     ring
@@ -205,7 +198,7 @@ namespace OscSpecial
 open scoped Topology
 open Filter
 
-noncomputable def dualScale (η a b : ℝ) : ℝ :=
+def dualScale (η a b : ℝ) : ℝ :=
   η * q a b / (4 * r η a b)
 
 theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
@@ -266,8 +259,8 @@ theorem abel_mass_dual_scale (a b : ℝ) (hq : 0 < q a b)
     field_simp [hqC, hrC]
   exact hprod.congr' (heq.mono fun η h => h.symm)
 
-end OscSpecial
 
-end
 
-end OAI
+
+
+

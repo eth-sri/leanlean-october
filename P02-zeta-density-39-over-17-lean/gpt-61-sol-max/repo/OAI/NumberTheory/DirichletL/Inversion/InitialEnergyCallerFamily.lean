@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerCanonical
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFamily
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -125,8 +125,8 @@ theorem fresh_initial_split_fixed_family
       intro J hJ
       rw [hnorm F Ψ j h (slots\J) lists a W X]
 
-end SevenEighths.InverseInitialEnergyCallerFamily
 
-end
 
-end OAI
+
+
+

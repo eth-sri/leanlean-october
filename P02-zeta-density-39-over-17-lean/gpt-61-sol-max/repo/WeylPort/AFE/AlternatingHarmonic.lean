@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.HarmonicDigamma
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
@@ -42,9 +43,7 @@ theorem digamma_two_mul {z : ℂ} (hz : 0 < z.re) :
   have hdp : DifferentiableAt ℂ (fun w : ℂ => (2 : ℂ) ^ (1 - 2 * w)) z :=
     ((differentiableAt_const (1 : ℂ)).sub (differentiableAt_id.const_mul 2)).const_cpow
       (Or.inl (by norm_num))
-  have he : (fun w : ℂ => Complex.Gamma w * Complex.Gamma (w + 1 / 2)) =
-      (fun w => Complex.Gamma (2 * w) * (2 : ℂ) ^ (1 - 2 * w) *
-        (Real.sqrt Real.pi : ℂ)) := funext Complex.Gamma_mul_Gamma_add_half
+  have he := funext Complex.Gamma_mul_Gamma_add_half
   have h := congrArg (fun f : ℂ → ℂ => logDeriv f z) he
   rw [logDeriv_fun_mul (f := Complex.Gamma) (g := fun w => Complex.Gamma (w + 1 / 2))
     z (Complex.Gamma_ne_zero (ne_pole_of_re_pos hz))
@@ -106,7 +105,11 @@ private theorem reciprocal_sub_succ {u : ℝ} (hu : 0 < u) :
   field_simp
   ring
 
-private theorem hasSum_reciprocal_unit_difference {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+
+private theorem hasSum_reciprocal_unit_difference  :
     HasSum (fun n : ℕ => 1 / ((n : ℝ) + x) - 1 / ((↑(n + 1) : ℝ) + x)) (1 / x) := by
   have hlim : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + x)) atTop (𝓝 0) := by
     simpa only [one_div, Pi.inv_def] using
@@ -122,7 +125,7 @@ private theorem hasSum_reciprocal_unit_difference {x : ℝ} (hx : 0 < x) :
     (tendsto_const_nhds (x := 1 / x)).sub hlim
 
 /-- Elementary upper and lower bounds on the paired reciprocal value. -/
-theorem paired_reciprocal_bounds {x : ℝ} (hx : 0 < x) :
+theorem paired_reciprocal_bounds  :
     0 ≤ ((Complex.digamma ((x + 1) / 2 : ℝ)).re -
         (Complex.digamma (x / 2 : ℝ)).re) / 2 ∧
       ((Complex.digamma ((x + 1) / 2 : ℝ)).re -
@@ -148,7 +151,7 @@ theorem paired_reciprocal_bounds {x : ℝ} (hx : 0 < x) :
     gcongr <;> linarith
 
 /-- Duplication puts the paired reciprocal value in exactly the source's variables. -/
-theorem paired_reciprocal_source_eq {x : ℝ} (hx : 0 < x) :
+theorem paired_reciprocal_source_eq  :
     ((Complex.digamma ((x + 1) / 2 : ℝ)).re -
       (Complex.digamma (x / 2 : ℝ)).re) / 2 =
         Real.log 2 + (Complex.digamma ((x + 1) / 2 : ℝ)).re -
@@ -157,6 +160,8 @@ theorem paired_reciprocal_source_eq {x : ℝ} (hx : 0 < x) :
   rw [show 2 * (x / 2) = x by ring,
     show x / 2 + 1 / 2 = (x + 1) / 2 by ring] at h
   linarith
+end
+
 
 private theorem tsum_pair_nat {f : ℕ → ℝ} (hf : Summable f) :
     (∑' n, f n) = ∑' n, (f (2 * n) + f (2 * n + 1)) := by
@@ -264,4 +269,4 @@ theorem real_digamma_eq_deriv_Gamma_div {x : ℝ} (hx : 0 < x) :
   rw [Complex.digamma_def, logDeriv_apply, Complex.Gamma_ofReal]
   simp [← h]
 
-end DhimanKadiriQuesadaHerrera2026
+

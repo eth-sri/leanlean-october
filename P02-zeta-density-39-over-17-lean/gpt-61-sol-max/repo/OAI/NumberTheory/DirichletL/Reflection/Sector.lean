@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.Split
+public import OAI.NumberTheory.DirichletL.Reflection.Partition
 
 @[expose] public section
 
@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
+open ActualEisensteinCubic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem separate_product_congruence {A : Type*} [CommRing A]
     (M f r r₀ P P₀ : A) (hr : M^2 ∣ r-r₀) (hP : M^2 ∣ P-P₀) :
@@ -54,7 +54,7 @@ theorem controlled_bad_phase_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
   congr 1
   exact Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr he)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

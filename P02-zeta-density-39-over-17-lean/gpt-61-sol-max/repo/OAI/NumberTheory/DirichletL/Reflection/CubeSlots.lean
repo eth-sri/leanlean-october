@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma prime_dvd_cube_mul (P H A : Ideal Eis) (hP : Prime P) :
     P∣H^3*A ↔ P∣H ∨ P∣A := by
@@ -41,7 +41,7 @@ lemma cube_shifted_mark (H A : Ideal Eis) (S : PrimeFamily σ) :
   · simp only [hh,true_or,ite_true,not_true_eq_false,ite_false]
   · simp only [hh,false_or,not_false_eq_true,ite_true]
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

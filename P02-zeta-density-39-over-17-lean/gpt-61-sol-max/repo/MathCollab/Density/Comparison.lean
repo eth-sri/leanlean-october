@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import MathCollab.Density.ComparisonExpansion
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators ComplexConjugate
 
-set_option autoImplicit false
 
-noncomputable section
+
 namespace MathCollab.Density
 
 /-- The detecting polynomial, original product grouping, and nonnegative extension. -/
@@ -67,9 +67,7 @@ theorem detecting_pair_division_bound {T V : ℝ} {N : ℕ} {a : ℕ → ℂ}
     nlinarith [mul_le_mul ht hu hV.le (norm_nonneg (detectingPolynomial N a t))]
   rw [norm_div, norm_mul, Complex.norm_conj]
   calc
-    _ ≤ (N : ℝ)*(divisorMaximum T : ℝ)*(‖z‖/V^2) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      exact div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) hden
+    _ ≤ (N : ℝ)*(divisorMaximum T : ℝ)*(‖z‖/V^2) := by bound
     _ = _ := by dsimp [bootstrapScalar]; ring
 
 theorem bootstrapScalar_nonneg (T V : ℝ) (N : ℕ) : 0 ≤ bootstrapScalar T N V := by
@@ -100,16 +98,12 @@ theorem comparison_continuous_bound (w : ComparisonCutoff) {C T V : ℝ} {N M : 
           conj (dyadicPolynomial M (t-u))‖ :=
         detecting_pair_division_bound hV (hlarge t ht) (hlarge u hu) _
       _ = b*((N : ℝ)*M)*‖cutoffIntegral w.toReflectionCutoff (t-u)‖*
-          ‖dyadicPolynomial M (t-u)‖ := by
-        rw [norm_mul, norm_mul, Complex.norm_conj, Complex.norm_real, Real.norm_eq_abs,
-          abs_of_nonneg (by positivity : (0 : ℝ) ≤ (N : ℝ)*M)]
-        ring
+          ‖dyadicPolynomial M (t-u)‖ := by norm_num at * <;> linarith
       _ ≤ b*((N : ℝ)*M)*(C/(1+|t-u|)^2)*(M : ℝ) := by
         apply mul_le_mul
         · exact mul_le_mul_of_nonneg_left (hdecay (t-u)) (by positivity)
         · exact dyadicPolynomial_norm_le M (t-u)
-        · exact norm_nonneg _
-        · positivity
+        all_goals (positivity)
       _ = _ := by ring
   calc
     _ = ∑ t ∈ U, ∑ u ∈ U,
@@ -201,4 +195,4 @@ theorem uniform_comparison (w : ComparisonCutoff) :
   simp only [Finset.sum_add_distrib, mul_add] at hh hext
   nlinarith
 
-end MathCollab.Density
+

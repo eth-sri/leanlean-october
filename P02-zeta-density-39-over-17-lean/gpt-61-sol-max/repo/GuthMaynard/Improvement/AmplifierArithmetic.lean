@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.Target
 public import GuthMaynard.Improvement.CenteredKernelBridge
 public import GuthMaynard.Improvement.DivisorMultiplicity
 public import MathCollab.Density.DivisorGrowth
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -26,7 +26,11 @@ theorem amplifier_source_bounds {N : ℝ} (hN : 0 < N) {n : ℕ}
   obtain ⟨h₁,h₂⟩ := mem_Ioc.mp hn
   exact ⟨(Nat.floor_lt hN.le).mp h₁,(Nat.le_floor_iff (by positivity)).mp h₂⟩
 
-theorem amplifier_column_bounds {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) {q : ℕ}
+section
+variable {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
+include N L hN hNL
+
+theorem amplifier_column_bounds  {q : ℕ}
     (hq : q ∈ amplifierColumns N L) :
     0 < q ∧ L/N ≤ (q:ℝ) ∧ (q:ℝ) ≤ 2*L/N := by
   obtain ⟨h₁,h₂⟩ := mem_Icc.mp hq
@@ -35,7 +39,7 @@ theorem amplifier_column_bounds {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) {q : �
   have hhi : (q:ℝ) ≤ 2*L/N := (Nat.le_floor_iff (by positivity)).mp h₂
   exact ⟨by exact_mod_cast (lt_of_lt_of_le (div_pos hL hN) hlo),hlo,hhi⟩
 
-theorem amplifier_product_plateau {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
+theorem amplifier_product_plateau 
     {q n : ℕ} (hq : q ∈ amplifierColumns N L) (hn : n ∈ amplifierSource N) :
     1 ≤ ((q*n:ℕ):ℝ)/L ∧ ((q*n:ℕ):ℝ)/L ≤ 4 := by
   obtain ⟨hq0,hqlo,hqhi⟩ := amplifier_column_bounds hN hNL hq
@@ -50,6 +54,8 @@ theorem amplifier_product_plateau {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
   · apply (div_le_iff₀ hL).mpr
     push_cast
     nlinarith [mul_le_mul_of_nonneg_left hnhi (Nat.cast_nonneg q)]
+end
+
 
 theorem amplifier_product_row {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
     (hl : l ≤ 1) (hu : 4 ≤ u) {q n : ℕ}
@@ -81,24 +87,16 @@ theorem amplifier_columns_card {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) :
     unfold amplifierColumns
     change ((Icc ⌈x⌉₊ ⌊2*L/N⌋₊).card:ℝ) = _
     rw [he,Nat.card_Icc,Nat.cast_sub (by omega)]
-    push_cast
-    rfl
+    simp_all
   have hf : (⌊2*x⌋₊:ℝ) ≤ 2*x := Nat.floor_le (by linarith)
   have hf' : 2*x < (⌊2*x⌋₊:ℝ)+1 := Nat.lt_floor_add_one (2*x)
   have hone : 1 ≤ ((amplifierColumns N L).card:ℝ) := by
     have hp : 0 < (amplifierColumns N L).card := Finset.card_pos.mpr ⟨⌈x⌉₊,by
       unfold amplifierColumns
-      rw [show 2*L/N=2*x by dsimp [x]; ring]
-      exact mem_Icc.mpr ⟨le_rfl,hcf⟩⟩
+      grind⟩
     exact_mod_cast hp
   constructor
-  · change x/2 ≤ _
-    by_cases hh : x ≤ 2
-    · linarith
-    · rw [hcard]
-      linarith
-  · rw [hcard,show 2*L/N=2*x by dsimp [x]; ring]
-    linarith
+  all_goals (grind)
 
 /-- The source has at most N+1 terms, uniformly for real N. -/
 theorem amplifier_source_card {N : ℝ} (hN : 0 ≤ N) :
@@ -159,7 +157,7 @@ theorem amplifier_column_identity {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro n hn
-  have hn' : n ∈ amplifierSource N := hn
+  have hn' := hn
   have hp := amplifier_product_plateau hN hNL hq hn'
   have hq0 := (amplifier_column_bounds hN hNL hq).1
   have hn0 : 0 < n := by
@@ -170,7 +168,6 @@ theorem amplifier_column_identity {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
   rw [hww,Complex.ofReal_one,one_mul]
   have hh := amplifier_product_phase hN (hN.trans_le hNL) hq0 hn0 t
   push_cast at hh
-  rw [hh]
-  ring
+  grind
 
-end GuthMaynard.Improvement
+

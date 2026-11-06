@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
@@ -15,8 +16,16 @@ noncomputable section
 
 def factor (N : ℝ) (a s : ℂ) : ℂ := 1 - a * (N : ℂ) ^ (-s)
 
-theorem norm_term_lt_one {N : ℝ} (hN : 1 < N) {a s : ℂ}
-    (ha : ‖a‖ ≤ 1) (hs : 0 < s.re) : ‖a * (N : ℂ) ^ (-s)‖ < 1 := by
+section
+variable {N : ℝ}
+include N
+
+section
+variable (hN : 1 < N) {a s : ℂ}
+    (ha : ‖a‖ ≤ 1) (hs : 0 < s.re)
+include hN a s ha hs
+
+theorem norm_term_lt_one  : ‖a * (N : ℂ) ^ (-s)‖ < 1 := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N),
     Complex.neg_re]
   calc
@@ -24,31 +33,35 @@ theorem norm_term_lt_one {N : ℝ} (hN : 1 < N) {a s : ℂ}
       mul_le_mul_of_nonneg_right ha (Real.rpow_nonneg (by linarith) _)
     _ < 1 := by simpa using Real.rpow_lt_one_of_one_lt_of_neg hN (neg_neg_of_pos hs)
 
-theorem factor_ne_zero {N : ℝ} (hN : 1 < N) {a s : ℂ}
-    (ha : ‖a‖ ≤ 1) (hs : 0 < s.re) : factor N a s ≠ 0 := by
+theorem factor_ne_zero  : factor N a s ≠ 0 := by
   intro h
   have heq : a * (N : ℂ) ^ (-s) = 1 := (sub_eq_zero.mp h).symm
   have hlt := norm_term_lt_one hN ha hs
-  rw [heq, norm_one] at hlt
-  exact (lt_irrefl _ hlt)
+  simp_all
+end
 
-theorem differentiable_factor {N : ℝ} (hN : 0 < N) (a : ℂ) :
+
+theorem differentiable_factor  (hN : 0 < N) (a : ℂ) :
     Differentiable ℂ (factor N a) := by
   exact (differentiable_const (1 : ℂ)).sub ((differentiable_const a).mul
     (differentiable_id.neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hN.ne'))))
+end
 
-def deletedProduct {ι : Type*} (S : Finset ι) (N : ι → ℝ) (a : ι → ℂ)
+
+section
+variable {ι : Type*} (S : Finset ι) (N : ι → ℝ) (a : ι → ℂ)
+include ι S N a
+
+def deletedProduct 
     (s : ℂ) : ℂ := ∏ p ∈ S, factor (N p) (a p) s
 
-theorem deletedProduct_ne_zero {ι : Type*} (S : Finset ι) (N : ι → ℝ)
-    (a : ι → ℂ) (hN : ∀ p ∈ S, 1 < N p) (ha : ∀ p ∈ S, ‖a p‖ ≤ 1)
+theorem deletedProduct_ne_zero  (hN : ∀ p ∈ S, 1 < N p) (ha : ∀ p ∈ S, ‖a p‖ ≤ 1)
     {s : ℂ} (hs : 0 < s.re) : deletedProduct S N a s ≠ 0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro p hp
   exact factor_ne_zero (hN p hp) (ha p hp) hs
 
-theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → ℝ)
-    (a : ι → ℂ) (hN : ∀ p ∈ S, 0 < N p) :
+theorem differentiable_deletedProduct  (hN : ∀ p ∈ S, 0 < N p) :
     Differentiable ℂ (deletedProduct S N a) := by
   classical
   induction S using Finset.induction_on with
@@ -64,9 +77,11 @@ theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → �
       simp only [deletedProduct, Finset.prod_insert hp]
     rw [heq]
     exact (differentiable_factor hpN (a p)).mul (ih hSN)
-
 end
 
-end SevenEighths.EulerFactors
 
-end OAI
+
+
+
+
+

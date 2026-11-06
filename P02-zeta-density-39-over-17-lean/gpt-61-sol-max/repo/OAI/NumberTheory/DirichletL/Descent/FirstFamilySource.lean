@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstBalancedSource
 
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι κ : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -34,15 +35,18 @@ theorem integrable_first_block_density (F : Finset ι) (selector C₁ C₂ : Fin
     simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro j hj
-    dsimp only [coef]
     ring
   rw [he]
   exact integrable_finsetSum _ (fun j hj => (integrable_density_mode density hDensity
     firstLeftSlope firstRightSlope firstKernelSlope
     (firstRelativeLog (firstCommonNorms p A₁ A₂ C R d h j) s)).const_mul (coef j))
 
-theorem first_family_density_sum (source : Finset κ) (F : Finset ι)
+section
+variable (source : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
+include source F selector C₁ C₂ w
+
+theorem first_family_density_sum 
     (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → Eis) (s : Fin 9 → ℝ)
     (density : Frequency × (Fin 9 → ℝ) → ℂ) (hDensity : Integrable density) :
     (∑ x∈source,w x*∫ z : Frequency × (Fin 9 → ℝ),density z*
@@ -61,13 +65,14 @@ theorem first_family_density_sum (source : Finset κ) (F : Finset ι)
   intro x hx
   ring
 
-def firstFamilyPhysicalRows (source : Finset κ) (F : Finset ι)
-    (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
+def firstFamilyPhysicalRows 
     (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R : κ → ℝ) (K : ℝ)
     (d h : κ → Eis) (s : Fin 9 → ℝ) : ℂ :=
   ∑ x∈source,w x*firstBlockedPhysicalRows p hg F (selector x) (C₁ x) (C₂ x)
     (fun y => W₁ (y/(s 0*s 2*s 5*s 7))) (fun y => W₂ (y/(s 1*s 2*s 5*s 8)))
     Φ (A₁ x) (A₂ x) (C x) (R x) K (d x) (h x)
+end
+
 
 theorem actual_first_balanced_family (hp : ∀ i,p i ≠ 0)
     (source : Finset κ) (F : Finset ι) (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
@@ -111,7 +116,7 @@ theorem actual_first_balanced_family (hp : ∀ i,p i ≠ 0)
       Φ (A₁ x) (A₂ x) (C x) (R x) K (d x) (h x)) := by ring
     _ = _ := by rw [hb x hx]; ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

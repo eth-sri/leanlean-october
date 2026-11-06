@@ -1,15 +1,16 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFamilies
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma gaussValuationTable_above (Q G : ℂ) (r n j : ℕ) (hj : n+1≤j) :
     gaussValuationTable Q G r n j=if 6∣r then Q^(n+1)-Q^n else 0 := by
@@ -34,7 +35,7 @@ theorem positiveScalar_stable_large (p : O) (hp : Prime p)
 end SevenEighths.ProbePrimePower
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 include hc
@@ -47,7 +48,6 @@ theorem rowMarkedTerm_base_tail (eta a X W V rho : ℂ)
   rw [ite_eq_right (by omega),ite_eq_right (by omega),
     SevenEighths.ProbePrimePower.positiveScalar_stable_large p hp hg hc (e+3*l-1) k (j+6*(m+2)) (j+6*2) (by omega) (by omega)]
   unfold rowWeightedScalar weightedScalar
-  rw [pow_add V m 2]
   ring
 
 theorem rowInner_base_rational (eta a X W V rho : ℂ) (hV : ‖V‖<1)
@@ -73,7 +73,7 @@ theorem rowInner_base_rational (eta a X W V rho : ℂ) (hV : ‖V‖<1)
   rw [rowInner_two,hsum 0,hsum 1]
   simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one]
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

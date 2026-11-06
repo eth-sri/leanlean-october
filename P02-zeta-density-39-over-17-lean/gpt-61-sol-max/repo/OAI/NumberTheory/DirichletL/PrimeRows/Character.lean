@@ -13,7 +13,7 @@ open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
 open CanonicalQuadraticSieve ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def rowMaskElement : O := 2*λ₀
@@ -33,8 +33,15 @@ theorem rawRow_coeff (u : FreeRow) (I : Ideal O) :
       rowMaskElement_ne_zero one_ne_zero u.property.1 (dvd_mul_left _ _) (dvd_mul_right _ _))).2
   simpa only [one_pow,mul_one] using idealCoeff_eq_row _ (rawRow u) rowMaskElement 1 u.val he I
 
-theorem outside_good_coprime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (P : PrimeIdeal) (hP : P.val∉S) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+include S hS
+
+section
+variable (hbad : fixedBadPrimes⊆S)
+include hbad
+
+theorem outside_good_coprime  (P : PrimeIdeal) (hP : P.val∉S) :
     λ₀∉P.val ∧ IsCoprime P.val (Ideal.span {rowMaskElement}) := by
   let : P.val.IsMaximal := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
   have hn : P.val∉fixedBadPrimes := fun hh => hP (hbad hh)
@@ -48,8 +55,7 @@ theorem outside_good_coprime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   rw [←Ideal.span_singleton_mul_span_singleton]
   exact (hc _ h2).mul_right (hc _ hLam)
 
-theorem rawRow_prime_outside (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (u : FreeRow) (P : PrimeIdeal) (hP : P.val∉S) :
+theorem rawRow_prime_outside  (u : FreeRow) (P : PrimeIdeal) (hP : P.val∉S) :
     idealCoeff (rawRow u) P.val=idealRowHom u.val P.val := by
   let : P.val.IsMaximal := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
   obtain ⟨hg,hc⟩ := outside_good_coprime S hS hbad P hP
@@ -57,15 +63,19 @@ theorem rawRow_prime_outside (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   rw [ite_eq_right (by simp),one_mul]
   rw [idealRowHom_argument_mul,idealRowHom_prime_sixth_mask rowMaskElement P.val hg,
     ite_eq_left hc,one_mul]
+end
 
-def rowCharacter (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow) : Character :=
+
+def rowCharacter  (u : FreeRow) : Character :=
   (rawRow u).excludePrimes S hS
 
-def sourceRowCoeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow) : Ideal O→*₀ℂ where
+def sourceRowCoeff  (u : FreeRow) : Ideal O→*₀ℂ where
   toFun I := highExclusion S hS I*idealRowHom u.val I
   map_zero' := by rw [(idealRowHom u.val).map_zero, mul_zero]
   map_one' := by rw [map_one,map_one,mul_one]
   map_mul' I J := by simp only [map_mul]; ring
+end
+
 
 theorem hom_eq_of_primes (f g : Ideal O→*₀ℂ) (h : ∀P : PrimeIdeal,f P.val=g P.val) : f=g := by
   ext I
@@ -82,8 +92,12 @@ theorem hom_eq_of_primes (f g : Ideal O→*₀ℂ) (h : ∀P : PrimeIdeal,f P.va
   intro P hP
   exact h ⟨P,UniqueFactorizationMonoid.prime_of_normalized_factor P hP⟩
 
-theorem rowCharacter_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (u : FreeRow) (I : Ideal O) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    (hbad : fixedBadPrimes⊆S)
+include S hS hbad
+
+theorem rowCharacter_coeff  (u : FreeRow) (I : Ideal O) :
     idealCoeff (rowCharacter S hS u) I=highExclusion S hS I*idealRowHom u.val I := by
   have he : idealCoeff (rowCharacter S hS u)=sourceRowCoeff S hS u := by
     apply hom_eq_of_primes
@@ -97,17 +111,18 @@ theorem rowCharacter_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
       exact rawRow_prime_outside S hS hbad u P hP
   exact congrArg (fun F : Ideal O→*₀ℂ => F I) he
 
-theorem target_inverseRow_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (η : Character) (u : FreeRow) (P : PrimeIdeal) :
+theorem target_inverseRow_coeff  (η : Character) (u : FreeRow) (P : PrimeIdeal) :
     idealCoeff ((η.product (rawRow u).inverse).excludePrimes S hS) P.val=
       if P.val∈S then 0 else idealCoeff η P.val*starRingEnd ℂ (idealRowHom u.val P.val) := by
   rw [excludedTarget_prime,idealCoeff_product,idealCoeff_inverse_conj]
   by_cases hP : P.val∈S
   · simp only [ite_eq_left hP]
   · rw [ite_eq_right hP,ite_eq_right hP,rawRow_prime_outside S hS hbad u P hP]
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

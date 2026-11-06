@@ -7,14 +7,13 @@ public import LaterPairs.Native.RobertSargosPhysicalInitialReduction
 public import LaterPairs.Native.RobertSargosPolynomialSieve
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                       
                                                                              
 
-noncomputable section
+
 open GafniTao Set
 open scoped BigOperators ContDiff
 namespace TaoTrudgianYang2025
@@ -54,8 +53,7 @@ theorem robertSargos_physical_shift_half_height (H : ℕ) {lam : ℝ}
     ring_nf
     positivity
   have huR : u+2 = (R:ℝ) := by dsimp [u]; ring
-  rw [huR] at hpoly
-  linarith
+  grind
 
                                                                     
                                                                            
@@ -111,10 +109,7 @@ theorem exists_robertSargos_physical_sieve_reduction (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨hH0,hQ0,hR0,_,_⟩ :=
     robertSargos_physical_a_times_a_ranges M H hlam hsmall hM hHmin hHmax
   have hRH := robertSargos_physical_shift_half_height H hlam hsmall hHmin
-  have hM1 : 1 ≤ M := by
-    have h := (one_le_pow₀ hT1 : 1 ≤ T^8)
-    rw [h8] at h
-    exact_mod_cast h.trans hM
+  have hM1 : 1 ≤ M := by omega
   have hCpos : 0 < C := by linarith
   obtain ⟨positive,X,Y,N,hprefix,hbase⟩ :=
     robertSargos_physical_polynomial_reduction f M H hC hlam hsmall hM hHmin hHmax hf hlo hhi
@@ -191,7 +186,7 @@ theorem robertSargos_taylor_factor_budget {T lam M C R H Q ε : ℝ}
       (R*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*H^2)/(H*Q)) =
       (R*Q*H*Q)^ε*(R*Q*H*Q+R*Q*(1/(C*lam*M))+12*R^2*Q*H^2) := by
     rw [add_comm 1 ε,Real.rpow_add_one (by positivity : R*Q*H*Q ≠ 0)]
-    field_simp; ring
+    grind
   rw [hexpand]
   calc
     _ ≤ (T^9)^ε*(14*T^9) := by
@@ -263,7 +258,7 @@ theorem robertSargos_root_power_budget {T M ε : ℝ}
     rw [← Real.rpow_natCast M 2,← Real.rpow_mul hMp.le]
     norm_num only [Nat.cast_ofNat]
     rw [mul_comm (2:ℝ) ε,Real.rpow_mul hMp.le]
-    norm_num only [Real.rpow_two]
+    norm_num
   rwa [he] at h
 
 
@@ -298,8 +293,12 @@ theorem robertSargos_sieve_radicand_budget {T lam M C R H Q K J L W ε : ℝ}
       simp only [mul_pow,Real.sq_sqrt (show 0 ≤ 1568*K by positivity)]
       ring
 
-theorem exists_robertSargos_large_block_log_bound (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+    (C : ℝ) (hC : 1 ≤ C)
+include ε hε C hC
+
+theorem exists_robertSargos_large_block_log_bound  :
     ∃ D : ℝ, 0 < D ∧ ∀ (f : ℝ → ℝ) (M H : ℕ) (lam : ℝ),
     0 < lam → lam ≤ 1/8192 → lam^(-(8:ℝ)/13) ≤ M →
     lam^(-(1:ℝ)/7) ≤ H → (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2 →
@@ -414,8 +413,7 @@ theorem exists_robertSargos_large_block_log_bound (ε : ℝ) (hε : 0 < ε)
   change _ ≤ (D₀+D₁)*(M:ℝ)^2*L^2*(M:ℝ)^ε
   convert htotal using 1; ring
 
-theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+theorem exists_robertSargos_large_block_bound  :
     ∃ D : ℝ, 0 < D ∧ ∀ (f : ℝ → ℝ) (M H : ℕ) (lam : ℝ),
     0 < lam → lam ≤ 1/8192 → lam^(-(8:ℝ)/13) ≤ M →
     lam^(-(1:ℝ)/7) ≤ H → (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2 →
@@ -455,8 +453,7 @@ theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
   have ht : 0 ≤ Real.sqrt D*(1+2/ε)*(M:ℝ)^(1+ε) := by positivity
   nlinarith only [hs,hn,ht]
 
-theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+theorem exists_robertSargos_fourth_derivative_long_range_small  :
     ∃ K : ℝ, 0 < K ∧ ∀ (f : ℝ → ℝ) (M : ℕ) (lam : ℝ),
     0 < lam → lam ≤ 1/8192 → lam^(-(8:ℝ)/13) ≤ M →
     (∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t) →
@@ -475,8 +472,8 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
     (Real.one_le_rpow_of_pos_of_le_one_of_nonpos hlam
       (by linarith : lam ≤ 1) (by norm_num : -(8:ℝ)/13 ≤ 0)).trans hM
   have hMp : (0:ℝ) < M := zero_lt_one.trans_le hM1
-  have hpow : 1 ≤ (M:ℝ)^ε := Real.one_le_rpow hM1 hε.le
-  have hlogM : 0 ≤ Real.log (M:ℝ) := Real.log_nonneg hM1
+  have hpow := Real.one_le_rpow hM1 hε.le
+  have hlogM := Real.log_nonneg hM1
   let S := ∑ m ∈ Finset.Icc (1:ℤ) M, fordAdditiveCharacter (f m)
   have hcoarse : ‖S‖^2 ≤ B*(Real.log M/Real.log 2)*(M:ℝ)^2*lam^((2:ℝ)/13)*(M:ℝ)^ε := by
     rcases robertSargos_physical_initial_reduction f M hC hlam hsmall hM hf hlo hhi
@@ -528,7 +525,7 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
     have h := one_add_log_le_rpow_budget hM1 hε
     have h' : Real.log (M:ℝ) ≤ (1+1/ε)*(M:ℝ)^ε := by linarith
     have hd := div_le_div_of_nonneg_right h' hlog2.le
-    convert hd using 1; ring
+    grind
   have hmul := mul_le_mul_of_nonneg_left hlog (show 0 ≤
       B*(M:ℝ)^2*lam^((2:ℝ)/13)*(M:ℝ)^ε by positivity)
   have hsq :
@@ -547,8 +544,7 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
   nlinarith only [hsq,hn,ht]
 
                                                                            
-theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+theorem exists_robertSargos_fourth_derivative_long_range  :
     ∃ K : ℝ, 0 < K ∧ ∀ (f : ℝ → ℝ) (M : ℕ) (lam : ℝ),
     0 < lam → lam^(-(8:ℝ)/13) ≤ M →
     (∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t) →
@@ -574,10 +570,7 @@ theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < �
   have hlower : (1/2:ℝ) ≤ lam^((1:ℝ)/13) := by
     have h := Real.rpow_le_rpow (by norm_num : (0:ℝ) ≤ 1/8192)
       (le_of_lt (lt_of_not_ge hsmall)) (by norm_num : (0:ℝ) ≤ 1/13)
-    have he : (1/8192:ℝ)^((1:ℝ)/13) = 1/2 := by
-      rw [show (1/8192:ℝ) = (2:ℝ)^(-(13:ℝ)) by norm_num,
-        ← Real.rpow_mul (by norm_num : (0:ℝ) ≤ 2)]
-      norm_num
+    have he : (1/8192:ℝ)^((1:ℝ)/13) = 1/2 := by norm_num
     rwa [he] at h
   have hpower : (M:ℝ) ≤ (M:ℝ)^(1+ε) := by
     rw [Real.rpow_add hMp,Real.rpow_one]
@@ -589,5 +582,7 @@ theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < �
     _ ≤ (M:ℝ)^(1+ε) := hpower
     _ ≤ 2*(M:ℝ)^(1+ε)*lam^((1:ℝ)/13) := by nlinarith only [hprod]
     _ ≤ _ := by gcongr; linarith
+end
 
-end TaoTrudgianYang2025
+
+

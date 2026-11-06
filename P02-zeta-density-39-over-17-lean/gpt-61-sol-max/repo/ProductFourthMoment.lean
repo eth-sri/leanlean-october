@@ -3,8 +3,7 @@ public import WeightedFourthMoment
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -100,4 +99,4 @@ theorem restrict_fourth_bound {ι κ τ : Type*} [Fintype ι] [Fintype κ] [Fint
   simp_rw [hpoly] at hh
   rwa [henergy] at hh
 
-end Montgomery.RationalMoment
+

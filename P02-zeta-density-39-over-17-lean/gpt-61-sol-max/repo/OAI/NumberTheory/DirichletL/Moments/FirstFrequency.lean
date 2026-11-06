@@ -9,17 +9,21 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstFrequency
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
 open CenteredMomentFirstNormalization CenteredMomentFirstReduced CenteredMomentFirstAssembly
-open CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentPrimitive CenteredMomentGaussEnergy CenteredMomentChildAssembly CenteredMomentMobiusRegroup
-open RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation
+open CenteredMomentGaussEnergy
 
-theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
+open scoped EisensteinO
+
+section
+variable {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
+include ι P hcop hg
+
+theorem normalized_dilated_frequency 
     (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
     (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
     (e a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
@@ -55,10 +59,7 @@ theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
       simp only [originalPhase,Complex.star_def,map_div₀,Complex.conj_ofReal]
       ring
 
-def dilatedFrequency {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i) (j : ι → ℕ)
+def dilatedFrequency  (j : ι → ℕ)
     (e a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (k : ℝ) (h : O) : ℂ :=
   let r := finitePrimeModulus P
@@ -67,9 +68,11 @@ def dilatedFrequency {ι : Type*} [Fintype ι]
     ((k/‖eisEmbedding (a*(b*r))‖^2:ℝ):ℂ)*
     tripleFourier a b r (supported_element_ne_zero a ha) (supported_element_ne_zero b hb)
       (finitePrimeModulus_ne_zero P) (supportedModulusCharacter a ha) (supportedModulusCharacter b hb)⁻¹ G h
-
-end SevenEighths.CenteredMomentFirstFrequency
-
 end
 
-end OAI
+
+
+
+
+
+

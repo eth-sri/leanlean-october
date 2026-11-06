@@ -1,12 +1,12 @@
 module
+import Mathlib
 /- Adapted from audited Density proofs; reused scalar Taylor weights unchanged. -/
 public import GuthMaynard.Improvement.ShortDetectorDyadic
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
+open Complex Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -47,10 +47,7 @@ theorem norm_shortDetectorTaylorPolynomial_le {T : ℝ} {N : ℕ}
       have hc : (n.divisors.card : ℝ) ≤ n := by exact_mod_cast Nat.card_divisors_le_self n
       have hn' : (n : ℝ) ≤ 2*N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
       exact (norm_shortDetectorTaylorCoefficient_le hT hN hn j).trans (hc.trans hn')
-    _ = _ := by
-      simp only [Finset.sum_const, Nat.card_Ioc, nsmul_eq_mul]
-      rw [show 2*N-N = N by omega]
-      ring
+    _ = _ := by simp_all <;> nlinarith
 
 /-- The tail of the actual fixed polynomial family has geometric decay.
 Identifying its full weighted series with the beta-dependent block is separate. -/
@@ -74,4 +71,4 @@ theorem norm_shortDetectorTaylor_tail_le {T β : ℝ} {N : ℕ}
     _ ≤ ∑' j : ℕ, ‖(detectorTaylorWeight β (j+J) : ℂ)*shortDetectorTaylorPolynomial T N (j+J) t‖ := norm_tsum_le_tsum_norm hn
     _ ≤ _ := (hn.tsum_le_tsum hb hg.summable).trans_eq (by rw [hg.tsum_eq]; norm_num; ring)
 
-end GuthMaynard.Improvement
+

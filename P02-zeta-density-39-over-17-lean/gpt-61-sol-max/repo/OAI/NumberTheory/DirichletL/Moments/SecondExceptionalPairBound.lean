@@ -12,21 +12,22 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalPairBound
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
+open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn
+open CenteredMomentSecondSectorColumns
 open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
+open CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonExceptionalWindow
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairDictionary
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
+open CenteredMomentCommonHeightEnvelope
+
+
+open scoped HeckeO
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def originalPair (s:Input ι)(η:Character)(χ ξ:RayCharacter)(A:O)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O)
@@ -52,8 +53,8 @@ lemma window_withHeight (s:Input ι)(τ η:Character)(v t θ X:ℝ)(C:Ideal O)(h
     windowColumn (withHeight s τ v) C hC R seed L η t θ X V z=
       windowColumn s C hC R seed L η t θ X V z:=rfl
 
-end SevenEighths.CenteredMomentSecondExceptionalPairBound
 
-end
 
-end OAI
+
+
+

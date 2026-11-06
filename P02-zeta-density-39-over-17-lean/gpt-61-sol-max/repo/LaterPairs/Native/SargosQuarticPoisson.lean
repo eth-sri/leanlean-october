@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosQuarticPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                          
                                                                           
@@ -30,7 +29,11 @@ theorem sargos_ford_character_eq_fourier (x : ℝ) :
 def sargosQuarticWeightedKernel (χ : ℝ → ℝ) (N α γ x : ℝ) : ℂ :=
   (χ (x/N) : ℂ)*(𝐞 (sargosQuarticPhase α γ x) : ℂ)
 
-theorem sargosQuarticWeightedKernel_contDiff {χ : ℝ → ℝ}
+section
+variable {χ : ℝ → ℝ}
+include χ
+
+theorem sargosQuarticWeightedKernel_contDiff 
     (hχ : ContDiff ℝ ∞ χ) (N α γ : ℝ) :
     ContDiff ℝ ∞ (sargosQuarticWeightedKernel χ N α γ) := by
   unfold sargosQuarticWeightedKernel sargosQuarticPhase
@@ -40,7 +43,7 @@ theorem sargosQuarticWeightedKernel_contDiff {χ : ℝ → ℝ}
   exact (Complex.ofRealCLM.contDiff.comp hw).mul
     (((Complex.ofRealCLM.contDiff.comp hp).mul contDiff_const).cexp)
 
-theorem sargosQuarticWeightedKernel_zero_of_not_mem {χ : ℝ → ℝ} {N x : ℝ}
+theorem sargosQuarticWeightedKernel_zero_of_not_mem  {N x : ℝ}
     (hs : tsupport χ ⊆ Ioo 1 2) (hN : 0 < N) (hx : x ∉ Icc N (2*N)) (α γ : ℝ) :
     sargosQuarticWeightedKernel χ N α γ x = 0 := by
   have hnot : x/N ∉ tsupport χ := by
@@ -52,10 +55,12 @@ theorem sargosQuarticWeightedKernel_zero_of_not_mem {χ : ℝ → ℝ} {N x : �
   simp only [sargosQuarticWeightedKernel,image_eq_zero_of_notMem_tsupport hnot,
     Complex.ofReal_zero,zero_mul]
 
-theorem sargosQuarticWeightedKernel_hasCompactSupport {χ : ℝ → ℝ} {N : ℝ}
+theorem sargosQuarticWeightedKernel_hasCompactSupport  {N : ℝ}
     (hs : tsupport χ ⊆ Ioo 1 2) (hN : 0 < N) (α γ : ℝ) :
     HasCompactSupport (sargosQuarticWeightedKernel χ N α γ) :=
   HasCompactSupport.intro isCompact_Icc
     (fun _ hx => sargosQuarticWeightedKernel_zero_of_not_mem hs hN hx α γ)
+end
 
-end TaoTrudgianYang2025
+
+

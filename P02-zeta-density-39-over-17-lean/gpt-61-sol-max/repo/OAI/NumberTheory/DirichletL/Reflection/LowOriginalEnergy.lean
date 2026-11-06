@@ -13,9 +13,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
@@ -70,7 +70,7 @@ theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
   exact congrArg (fun z : ℂ => ‖z‖^2) (original_completed_actual_puncture_lists lists hprime Ψ m
     (ConcretePrimeRowBridge.idealGenerator F) (u.val*ConcretePrimeRowBridge.idealGenerator I)
     (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift)) w)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

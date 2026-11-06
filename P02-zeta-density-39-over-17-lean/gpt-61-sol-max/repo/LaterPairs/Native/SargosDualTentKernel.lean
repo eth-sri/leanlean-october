@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarGram
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                           
 
@@ -18,16 +17,19 @@ open scoped BigOperators ComplexConjugate
 
 namespace TaoTrudgianYang2025
 
-theorem integral_sargosRealTent_character_positive {w : ℝ}
-    (hw : 0 < w) (ξ : ℝ) :
+section
+variable {w : ℝ}
+    (hw : 0 < w) (ξ : ℝ)
+include w hw ξ
+
+theorem integral_sargosRealTent_character_positive  :
     (∫ x : ℝ, (sargosRealTent w x : ℂ)*fordAdditiveCharacter (ξ*x)) =
       (sargosSincKernel w ξ : ℂ) := by
   have h := fourier_sargosRealTent hw (-ξ)
   rw [sargos_fourier_eq_character] at h
   simpa only [neg_mul,neg_neg,sargosSincKernel,mul_neg,Real.sinc_neg] using h
 
-theorem integrable_sargosRealTent_character_positive {w : ℝ}
-    (hw : 0 < w) (ξ : ℝ) :
+theorem integrable_sargosRealTent_character_positive  :
     Integrable (fun x : ℝ => (sargosRealTent w x : ℂ)*fordAdditiveCharacter (ξ*x)) := by
   have hc : Continuous (fun x : ℝ =>
       (sargosRealTent w x : ℂ)*fordAdditiveCharacter (ξ*x)) := by
@@ -38,19 +40,24 @@ theorem integrable_sargosRealTent_character_positive {w : ℝ}
   exact Filter.Eventually.of_forall (fun x => by
     rw [norm_mul,sargos_character_norm,mul_one,Complex.norm_real,Real.norm_eq_abs,
       abs_of_nonneg (sargosRealTent_nonneg w x)])
+end
+
 
 def sargosTentKernelTerm (a b ξ η : ℝ) (p : ℝ × ℝ) : ℂ :=
   ((sargosRealTent a p.1 : ℂ)*fordAdditiveCharacter (ξ*p.1))*
     ((sargosRealTent b p.2 : ℂ)*fordAdditiveCharacter (η*p.2))
 
-theorem integrable_sargosTentKernelTerm {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (ξ η : ℝ) :
+section
+variable {a b : ℝ}
+    (ha : 0 < a) (hb : 0 < b) (ξ η : ℝ)
+include a b ha hb ξ η
+
+theorem integrable_sargosTentKernelTerm  :
     Integrable (sargosTentKernelTerm a b ξ η) (volume.prod volume) :=
   (integrable_sargosRealTent_character_positive ha ξ).mul_prod
     (integrable_sargosRealTent_character_positive hb η)
 
-theorem integral_sargosTentKernelTerm {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (ξ η : ℝ) :
+theorem integral_sargosTentKernelTerm  :
     (∫ p : ℝ × ℝ, sargosTentKernelTerm a b ξ η p ∂(volume.prod volume)) =
       (sargosSincKernel a ξ : ℂ)*(sargosSincKernel b η : ℂ) := by
   unfold sargosTentKernelTerm
@@ -59,14 +66,19 @@ theorem integral_sargosTentKernelTerm {a b : ℝ}
     (fun y : ℝ => (sargosRealTent b y : ℂ)*fordAdditiveCharacter (η*y)),
     integral_sargosRealTent_character_positive ha ξ,
     integral_sargosRealTent_character_positive hb η]
+end
 
-def sargosTentPlanarIntegrand {ι : Type*} (S : Finset ι) (u v : ι → ℝ)
-    (a b : ℝ) (p : ℝ × ℝ) : ℝ :=
+
+section
+variable {ι : Type*} (S : Finset ι) (u v : ι → ℝ)
+    (a b : ℝ) (p : ℝ × ℝ)
+include ι S u v a b p
+
+def sargosTentPlanarIntegrand  : ℝ :=
   sargosRealTent a p.1*sargosRealTent b p.2*
     ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖^2
 
-theorem sargosTentPlanarIntegrand_eq_gram {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) (a b : ℝ) (p : ℝ × ℝ) :
+theorem sargosTentPlanarIntegrand_eq_gram  :
     (sargosTentPlanarIntegrand S u v a b p : ℂ) =
       ∑ q ∈ S ×ˢ S, sargosTentKernelTerm a b (u q.1-u q.2) (v q.1-v q.2) p := by
   unfold sargosTentPlanarIntegrand
@@ -77,5 +89,7 @@ theorem sargosTentPlanarIntegrand_eq_gram {ι : Type*}
   unfold sargosTentKernelTerm
   rw [fordAdditiveCharacter_add]
   ring
+end
 
-end TaoTrudgianYang2025
+
+

@@ -13,14 +13,14 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReflectionSupport
 open HeckeFamily Filter CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
-open CenteredMomentReflectionMass CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentReflectionDeletion CenteredMomentReflectionWeightedEnergy
+open CenteredMomentReflectionMass
+open CenteredMomentReflectionDeletion
 open CenteredMomentReflectedChoiceEnergy CenteredMomentReflectedTruncation
 open CenteredMomentOriginalReflectionApproximation CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow
+open CenteredMomentEnergyBands
+open CenteredMomentEnergyReferenceLowWindow
 open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def naturalDualScale (χ ψ : Character) (X : ℝ)
     (D : Finset (Ideal O)) (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus)) : ℝ :=
@@ -38,7 +38,11 @@ lemma naturalDualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
   unfold naturalDualScale
   positivity
 
-theorem eventually_natural_choice_range (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
+section
+variable (C xi : ℝ) (hC : 0<C) (hxi : 0<xi)
+include C xi hC hxi
+
+theorem eventually_natural_choice_range  :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm →
       (χ.modulus.absNorm:ℝ)≤C*Z^M →
@@ -54,7 +58,7 @@ theorem eventually_natural_choice_range (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
   have hm : 0≤(M-a+xi)*Real.log Z := h.2.1.trans h.2.2
   nlinarith
 
-theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
+theorem eventually_natural_source_zero  :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm →
       (χ.modulus.absNorm:ℝ)≤C*Z^M → M+xi<a →
@@ -119,6 +123,8 @@ theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
       finiteAnnularColumn χ.inverse (paperRadialFourier G) (Z^(xi/4))
         (naturalDualScale χ ψ (Z^a) D H))=0
     rw [hz,tsum_zero]
+end
+
 
 lemma deleted_short_length (Z b Xshort Xlong Nshort : ℝ)
     (hZ : 1<Z)(_hb : 0<b)(hshort : 0<Xshort)(hlong : Xshort≤Xlong)
@@ -128,7 +134,7 @@ lemma deleted_short_length (Z b Xshort Xlong Nshort : ℝ)
   have hn : 0<Nshort := zero_lt_one.trans_le hN
   have hd : Xshort/Nshort≤Xlong := (div_le_self hshort.le hN).trans hlong
   have hlog := Real.logb_le_logb_of_le hZ (div_pos hshort hn) hd
-  have hprod : 1≤max 1 b*Xlong := hsupport.trans
+  have hprod : 1≤ max 1 b*Xlong := hsupport.trans
     (mul_le_mul_of_nonneg_right (le_max_right _ _) hx.le)
   have hzero := Real.logb_nonneg hZ hprod
   rw [Real.logb_mul (ne_of_gt (zero_lt_one.trans_le (le_max_left 1 b))) hx.ne'] at hzero
@@ -161,8 +167,8 @@ theorem eventually_endpoint_defect (b epsilon : ℝ) (hepsilon : 0<epsilon) :
   have hh := (div_le_iff₀ hepsilon).mp hz
   nlinarith
 
-end SevenEighths.CenteredMomentEnergyZeroReflectionSupport
 
-end
 
-end OAI
+
+
+

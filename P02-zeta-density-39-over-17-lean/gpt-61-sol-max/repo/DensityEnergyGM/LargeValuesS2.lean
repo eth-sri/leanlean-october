@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.HeathBrownReflection
 public import DensityEnergyGM.QuantitativeSmoothReflection
 
 @[expose] public section
 
-open Complex Finset Filter MeasureTheory Real Set
+open Complex Finset Filter MeasureTheory Real
 open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
@@ -17,11 +18,19 @@ It records the exact conjugation and cyclic identities before applying the
 quantitative reflection theorem and the native Heath--Brown estimate.
 -/
 
-/-- Reversing an ordinate difference conjugates the complete scaled
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
+
+section
+variable (N : ℕ)
+include N
+
+/- Reversing an ordinate difference conjugates the complete scaled
 nonzero-frequency series.  The proof reindexes the complete integer sum by
 `m ↦ -m`; no truncation or triangle inequality is involved. -/
 theorem gmTraceNonzeroTailAt_neg_eq_star
-    (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ) :
+     (t : ℝ) :
     gmTraceNonzeroTailAt cutoff N (-t) =
       star (gmTraceNonzeroTailAt cutoff N t) := by
   unfold gmTraceNonzeroTailAt
@@ -42,38 +51,45 @@ theorem gmTraceNonzeroTailAt_neg_eq_star
     rw [hFreq, gmTraceFourier_neg_eq_conj cutoff (-t), neg_neg]
     simp
 
-/-- Norm form of the exact reversal identity. -/
+/- Norm form of the exact reversal identity. -/
 theorem norm_gmTraceNonzeroTailAt_neg
-    (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ) :
+     (t : ℝ) :
     ‖gmTraceNonzeroTailAt cutoff N (-t)‖ =
       ‖gmTraceNonzeroTailAt cutoff N t‖ := by
   rw [gmTraceNonzeroTailAt_neg_eq_star cutoff N, norm_star]
 
-/-- The second `S₂` summand is the first one after the cyclic permutation
+section
+variable {W : Finset ℝ}
+include W
+
+section
+variable (t u v : GMRow W)
+include t u v
+
+/- The second `S₂` summand is the first one after the cyclic permutation
 `(t,u,v) ↦ (v,t,u)`. -/
 theorem gmCubicS2SecondSummand_eq_first_cyclic
-    (cutoff : GMSmoothCutoff) (N : ℕ) {W : Finset ℝ}
-    (t u v : GMRow W) :
+     :
     gmCubicS2SecondSummand cutoff N t u v =
       gmCubicS2FirstSummand cutoff N v t u := by
   unfold gmCubicS2SecondSummand gmCubicS2FirstSummand
   ring
 
-/-- The third `S₂` summand is the first one after the cyclic permutation
+/- The third `S₂` summand is the first one after the cyclic permutation
 `(t,u,v) ↦ (u,v,t)`. -/
 theorem gmCubicS2ThirdSummand_eq_first_cyclic
-    (cutoff : GMSmoothCutoff) (N : ℕ) {W : Finset ℝ}
-    (t u v : GMRow W) :
+     :
     gmCubicS2ThirdSummand cutoff N t u v =
       gmCubicS2FirstSummand cutoff N u v t := by
   unfold gmCubicS2ThirdSummand gmCubicS2FirstSummand
   ring
+end
 
-/-- On the diagonal selected by the zero mode, the first cyclic product has
+
+/- On the diagonal selected by the zero mode, the first cyclic product has
 exactly the squared norm of one complete nonzero tail. -/
 theorem norm_gmCubicS2FirstSummand_diagonal
-    (cutoff : GMSmoothCutoff) (N : ℕ)
-    {W : Finset ℝ} (t u : GMRow W) :
+     (t u : GMRow W) :
     ‖gmCubicS2FirstSummand cutoff N t u t‖ =
       ‖gmTraceZeroMode cutoff N 0‖ *
         ‖gmTraceNonzeroTailAt cutoff N ((t : ℝ) - (u : ℝ))‖ ^ 2 := by
@@ -82,17 +98,22 @@ theorem norm_gmCubicS2FirstSummand_diagonal
   have hReverse : (u : ℝ) - (t : ℝ) = -((t : ℝ) - (u : ℝ)) := by ring
   rw [hReverse, norm_gmTraceNonzeroTailAt_neg cutoff N]
   ring
+end
 
-/-- The complete first cyclic contribution to `S₂`. -/
-noncomputable def gmCubicS2First (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) : ℂ :=
+
+section
+variable (W : Finset ℝ)
+include W
+
+/- The complete first cyclic contribution to `S₂`. -/
+noncomputable def gmCubicS2First  : ℂ :=
   ∑ t : GMRow W, ∑ u : GMRow W, ∑ v : GMRow W,
     gmCubicS2FirstSummand cutoff N t u v
 
-/-- The complete second cyclic sum equals the first one by a literal cyclic
+/- The complete second cyclic sum equals the first one by a literal cyclic
 reindexing of the three finite row variables. -/
 theorem gmCubicS2Second_sum_eq_first
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     (∑ t : GMRow W, ∑ u : GMRow W, ∑ v : GMRow W,
         gmCubicS2SecondSummand cutoff N t u v) =
       gmCubicS2First cutoff N W := by
@@ -111,9 +132,9 @@ theorem gmCubicS2Second_sum_eq_first
       rw [Finset.sum_comm]
     _ = _ := by rfl
 
-/-- The complete third cyclic sum equals the first one. -/
+/- The complete third cyclic sum equals the first one. -/
 theorem gmCubicS2Third_sum_eq_first
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     (∑ t : GMRow W, ∑ u : GMRow W, ∑ v : GMRow W,
         gmCubicS2ThirdSummand cutoff N t u v) =
       gmCubicS2First cutoff N W := by
@@ -132,10 +153,10 @@ theorem gmCubicS2Third_sum_eq_first
       rw [Finset.sum_comm]
     _ = _ := by rfl
 
-/-- Exact cyclic symmetry identity used at the start of the proof of
+/- Exact cyclic symmetry identity used at the start of the proof of
 Guth--Maynard Proposition 6.1. -/
 theorem gmCubicS2_eq_three_mul_first
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     gmCubicS2 cutoff N W = 3 * gmCubicS2First cutoff N W := by
   unfold gmCubicS2 gmCubicS2Summand
   simp_rw [Finset.sum_add_distrib]
@@ -143,22 +164,22 @@ theorem gmCubicS2_eq_three_mul_first
   unfold gmCubicS2First
   ring
 
-/-- Diagonal part of the first cyclic contribution (`v=t`). -/
+/- Diagonal part of the first cyclic contribution (`v=t`). -/
 noncomputable def gmCubicS2FirstDiagonal
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) : ℂ :=
+     : ℂ :=
   ∑ t : GMRow W, ∑ u : GMRow W,
     gmCubicS2FirstSummand cutoff N t u t
 
-/-- Complement of the `v=t` diagonal in the first cyclic contribution. -/
+/- Complement of the `v=t` diagonal in the first cyclic contribution. -/
 noncomputable def gmCubicS2FirstOffDiagonal
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) : ℂ :=
+     : ℂ :=
   ∑ t : GMRow W, ∑ u : GMRow W,
     ∑ v ∈ (Finset.univ.erase t : Finset (GMRow W)),
       gmCubicS2FirstSummand cutoff N t u v
 
-/-- Exact diagonal/off-diagonal split of the first cyclic contribution. -/
+/- Exact diagonal/off-diagonal split of the first cyclic contribution. -/
 theorem gmCubicS2First_eq_diagonal_add_offDiagonal
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     gmCubicS2First cutoff N W =
       gmCubicS2FirstDiagonal cutoff N W +
         gmCubicS2FirstOffDiagonal cutoff N W := by
@@ -180,16 +201,16 @@ theorem gmCubicS2First_eq_diagonal_add_offDiagonal
     _ = _ := by
       simp_rw [Finset.sum_add_distrib]
 
-/-- Ordered difference moment of the literal complete nonzero Poisson tail
+/- Ordered difference moment of the literal complete nonzero Poisson tail
 which remains on the `v = t` diagonal of the first cyclic contribution. -/
 noncomputable def gmTraceNonzeroDifferenceMoment
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) : ℝ :=
+     : ℝ :=
   ∑ t : GMRow W, ∑ u : GMRow W,
     ‖gmTraceNonzeroTailAt cutoff N ((t : ℝ) - (u : ℝ))‖ ^ 2
 
-/-- Source-finset presentation of the same ordered moment. -/
+/- Source-finset presentation of the same ordered moment. -/
 theorem gmTraceNonzeroDifferenceMoment_eq_source
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     gmTraceNonzeroDifferenceMoment cutoff N W =
       ∑ t ∈ W, ∑ u ∈ W,
         ‖gmTraceNonzeroTailAt cutoff N (t - u)‖ ^ 2 := by
@@ -213,11 +234,11 @@ theorem gmTraceNonzeroDifferenceMoment_eq_source
       conv_rhs => rw [← Finset.sum_attach]
       rw [Finset.univ_eq_attach W]
 
-/-- The first cyclic diagonal is exactly controlled by the zero mode at the
+/- The first cyclic diagonal is exactly controlled by the zero mode at the
 origin times the ordered nonzero-tail moment.  This is the finite triangle
 inequality step at the start of Guth--Maynard Proposition 6.1. -/
 theorem norm_gmCubicS2FirstDiagonal_le
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     ‖gmCubicS2FirstDiagonal cutoff N W‖ ≤
       ‖gmTraceZeroMode cutoff N 0‖ *
         gmTraceNonzeroDifferenceMoment cutoff N W := by
@@ -246,10 +267,13 @@ theorem norm_gmCubicS2FirstDiagonal_le
           ‖gmTraceNonzeroTailAt cutoff N
             ((t : ℝ) - (u : ℝ))‖ ^ 2) := by
       simp_rw [Finset.mul_sum]
+end
+end
 
-/-- Quantitative zero-mode insertion in the cyclic diagonal. -/
+
+/- Quantitative zero-mode insertion in the cyclic diagonal. -/
 theorem gmCubicS2FirstDiagonal_le_zeroModeConstant
-    (cutoff : GMSmoothCutoff) :
+     :
     ∃ B : ℝ, 0 < B ∧ ∀ (N : ℕ) (W : Finset ℝ),
       ‖gmCubicS2FirstDiagonal cutoff N W‖ ≤
         B * (N : ℝ) * gmTraceNonzeroDifferenceMoment cutoff N W := by
@@ -270,31 +294,35 @@ theorem gmCubicS2FirstDiagonal_le_zeroModeConstant
 
 /-! ## Literal nonzero-tail reflection on dyadic difference bins -/
 
-/-- The squared literal nonzero Poisson tail on one dyadic displacement
+section
+variable (N : ℕ) (W : Finset ℝ)
+include N W
+
+/- The squared literal nonzero Poisson tail on one dyadic displacement
 fiber.  Unlike the Heath--Brown trace moment, this quantity contains no zero
 mode. -/
 noncomputable def gmNonzeroTailBinMoment
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (j : ℕ) : ℝ :=
+     (j : ℕ) : ℝ :=
   ∑ p ∈ heathBrownDifferenceBin W j,
     ‖gmTraceNonzeroTailAt cutoff N (p.1 - p.2)‖ ^ 2
 
-/-- The literal diagonal part of the complete nonzero-tail difference
+/- The literal diagonal part of the complete nonzero-tail difference
 moment.  It is kept separate because Lemma 6.2 is used only at nonzero
 displacements. -/
 noncomputable def gmTraceNonzeroDiagonalMoment
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) : ℝ :=
+     : ℝ :=
   ∑ t ∈ W, ‖gmTraceNonzeroTailAt cutoff N (t - t)‖ ^ 2
 
-/-- The literal off-diagonal part of the complete nonzero-tail difference
+/- The literal off-diagonal part of the complete nonzero-tail difference
 moment, represented as the filtered ordered product used by the common
 dyadic displacement partition. -/
 noncomputable def gmTraceNonzeroOffDiagonalMoment
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) : ℝ :=
+     : ℝ :=
   ∑ p ∈ heathBrownOffDiagonalPairs W,
     ‖gmTraceNonzeroTailAt cutoff N (p.1 - p.2)‖ ^ 2
 
 theorem gmTraceNonzeroOffDiagonalMoment_eq_nested
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     gmTraceNonzeroOffDiagonalMoment cutoff N W =
       ∑ t ∈ W, ∑ u ∈ W.erase t,
         ‖gmTraceNonzeroTailAt cutoff N (t - u)‖ ^ 2 := by
@@ -316,10 +344,10 @@ theorem gmTraceNonzeroOffDiagonalMoment_eq_nested
       intro u hu
       simp [(Finset.ne_of_mem_erase hu).symm]
 
-/-- Exact diagonal/off-diagonal decomposition of the complete literal tail
+/- Exact diagonal/off-diagonal decomposition of the complete literal tail
 moment used by the cyclic `S₂` diagonal. -/
 theorem gmTraceNonzeroDifferenceMoment_eq_diagonal_add_offDiagonal
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) :
+     :
     gmTraceNonzeroDifferenceMoment cutoff N W =
       gmTraceNonzeroDiagonalMoment cutoff N W +
         gmTraceNonzeroOffDiagonalMoment cutoff N W := by
@@ -327,31 +355,39 @@ theorem gmTraceNonzeroDifferenceMoment_eq_diagonal_add_offDiagonal
     orderedPairSum_eq_diagonal_add_offDiagonal,
     gmTraceNonzeroOffDiagonalMoment_eq_nested]
   rfl
+end
+end
 
-/-- Exact finite dyadic expansion of the literal nonzero-tail off-diagonal
+
+section
+variable {T : ℝ} {W : Finset ℝ} (hSep : IsSeparated 1 W)
+    (hInterval : InBaseInterval T W) (cutoff : GMSmoothCutoff) (N : ℕ)
+include T W hSep hInterval cutoff N
+
+/- Exact finite dyadic expansion of the literal nonzero-tail off-diagonal
 moment. -/
 theorem gmTraceNonzeroOffDiagonalMoment_eq_sum_bins
-    {T : ℝ} {W : Finset ℝ} (hSep : IsSeparated 1 W)
-    (hInterval : InBaseInterval T W) (cutoff : GMSmoothCutoff) (N : ℕ) :
+     :
     gmTraceNonzeroOffDiagonalMoment cutoff N W =
       ∑ j ∈ Finset.range (Nat.log 2 (Nat.floor T) + 1),
         gmNonzeroTailBinMoment cutoff N W j := by
   unfold gmTraceNonzeroOffDiagonalMoment gmNonzeroTailBinMoment
   exact sum_heathBrownOffDiagonalPairs_eq_sum_differenceBins hSep hInterval _
 
-/-- Exact source identity combining the diagonal and every finite dyadic
+/- Exact source identity combining the diagonal and every finite dyadic
 displacement fiber. -/
 theorem gmTraceNonzeroDifferenceMoment_eq_diagonal_add_bins
-    {T : ℝ} {W : Finset ℝ} (hSep : IsSeparated 1 W)
-    (hInterval : InBaseInterval T W) (cutoff : GMSmoothCutoff) (N : ℕ) :
+     :
     gmTraceNonzeroDifferenceMoment cutoff N W =
       gmTraceNonzeroDiagonalMoment cutoff N W +
         ∑ j ∈ Finset.range (Nat.log 2 (Nat.floor T) + 1),
           gmNonzeroTailBinMoment cutoff N W j := by
   rw [gmTraceNonzeroDifferenceMoment_eq_diagonal_add_offDiagonal,
     gmTraceNonzeroOffDiagonalMoment_eq_sum_bins hSep hInterval]
+end
 
-/-- Uniform sum of the Mellin-tail and omitted-frequency errors on a dyadic
+
+/- Uniform sum of the Mellin-tail and omitted-frequency errors on a dyadic
 displacement fiber. -/
 noncomputable def gmNonzeroTailBinError
     (q N M : ℕ) (H U K L : ℝ) : ℝ :=
@@ -359,7 +395,7 @@ noncomputable def gmNonzeroTailBinError
     (N : ℝ) * L * (1 + U) ^ (q + 2) /
       ((N : ℝ) ^ (q + 2) * (M : ℝ) ^ q)
 
-/-- Exact fixed-length reflection estimate for the literal nonzero tail on
+/- Exact fixed-length reflection estimate for the literal nonzero tail on
 one dyadic displacement fiber.  The common cutoff `M` is essential: after
 Cauchy--Schwarz the translated prefix coefficients are independent of the
 pair, so the native Heath--Brown difference-set theorem applies. -/
@@ -379,10 +415,10 @@ theorem gmNonzeroTailBinMoment_le_reflection
     gmCompleteSmoothReflection_bound_order cutoff q hq
   refine ⟨C, K, L, hC, hK, hL, ?_⟩
   intro W j N M H hSep hj hH hHupper hN hM
-  let T₀ : ℝ := ((2 ^ j : ℕ) : ℝ)
-  let U : ℝ := ((2 ^ (j + 1) : ℕ) : ℝ)
-  let A : ℝ := (N : ℝ) * C / Real.sqrt T₀
-  let E : ℝ := gmNonzeroTailBinError q N M H U K L
+  let T₀ := ((2 ^ j : ℕ) : ℝ)
+  let U := ((2 ^ (j + 1) : ℕ) : ℝ)
+  let A := (N : ℝ) * C / Real.sqrt T₀
+  let E := gmNonzeroTailBinError q N M H U K L
   have hT₀ : 4 ≤ T₀ := by
     have hNat : 4 ≤ 2 ^ j := by
       change 2 ^ 2 ≤ 2 ^ j
@@ -494,95 +530,18 @@ theorem gmNonzeroTailBinMoment_le_reflection
       · exact le_rfl
     _ = _ := by rfl
 
-/-- The native Heath--Brown theorem inserted into the complete dyadic
-prefix majorant.  All logarithmic factors remain explicit at this stage;
-they are absorbed only in the later epsilon-budget theorem. -/
-theorem heathBrownReflectionDyadicMoment_le_native
-    (η : ℝ) (hη : 0 < η) :
-    ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
-      ∀ {M : ℕ} {T : ℝ} (W : Finset ℝ),
-        0 < M → T_min ≤ T → IsSeparated 1 W → InBaseInterval T W →
-        heathBrownReflectionDyadicMoment W M ≤
-          2 * ((Nat.clog 2 M : ℝ) + 1) *
-            ((W.card : ℝ) ^ 2 +
-              (Nat.clog 2 M : ℝ) * C * T ^ η *
-                ((W.card : ℝ) ^ 2 * M +
-                  (W.card : ℝ) * M ^ 2 +
-                  (W.card : ℝ) ^ (5 / 4 : ℝ) *
-                    T ^ (1 / 2 : ℝ) * M)) := by
-  obtain ⟨C, T_min, hC, hT_min, hHB⟩ :=
-    heathBrownCoefficientOneMeanSquare_native η hη
-  refine ⟨C, T_min, hC, hT_min, ?_⟩
-  intro M T W hM hT hSep hBase
-  have hTOne : 1 ≤ T := hT_min.trans hT
-  have hTNonneg : 0 ≤ T := zero_le_one.trans hTOne
-  let k : ℕ := Nat.clog 2 M
-  let R : ℝ := W.card
-  let B : ℝ := C * T ^ η *
-    (R ^ 2 * M + R * M ^ 2 +
-      R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * M)
-  have hBNonneg : 0 ≤ B := by
-    dsimp only [B, R]
-    positivity
-  have hCTNonneg : 0 ≤ C * T ^ η :=
-    mul_nonneg hC.le (Real.rpow_nonneg hTNonneg η)
-  have hRTailNonneg : 0 ≤
-      R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) := by
-    exact mul_nonneg (Real.rpow_nonneg (by dsimp only [R]; positivity) _)
-      (Real.rpow_nonneg hTNonneg _)
-  have hEach : ∀ r ∈ Finset.range k,
-      heathBrownCoefficientOneMoment (2 ^ r) W ≤ B := by
-    intro r hr
-    have hrk : r < k := Finset.mem_range.mp hr
-    have hScaleNat : 2 ^ r ≤ M :=
-      (Nat.pow_lt_of_lt_clog hrk).le
-    have hScale : ((2 ^ r : ℕ) : ℝ) ≤ M := by exact_mod_cast hScaleNat
-    have hScaleSq : (((2 ^ r : ℕ) : ℝ)) ^ 2 ≤ (M : ℝ) ^ 2 := by
-      exact pow_le_pow_left₀ (by positivity) hScale 2
-    have hAt := hHB (2 ^ r) T W (by positivity) hT hSep hBase
-    calc
-      heathBrownCoefficientOneMoment (2 ^ r) W ≤
-          C * T ^ η *
-            ((R ^ 2 * ((2 ^ r : ℕ) : ℝ)) +
-              (R * (((2 ^ r : ℕ) : ℝ)) ^ 2) +
-              (R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) *
-                ((2 ^ r : ℕ) : ℝ))) := by
-        simpa only [heathBrownCoefficientOneMoment, R] using hAt
-      _ ≤ C * T ^ η *
-            (R ^ 2 * M + R * M ^ 2 +
-              R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * M) := by
-        gcongr
-      _ = B := by rfl
-  have hSum :
-      (∑ r ∈ Finset.range k,
-          heathBrownCoefficientOneMoment (2 ^ r) W) ≤ (k : ℝ) * B := by
-    calc
-      _ ≤ ∑ _r ∈ Finset.range k, B := Finset.sum_le_sum hEach
-      _ = (k : ℝ) * B := by simp
-  rw [heathBrownReflectionDyadicMoment_eq]
-  dsimp only [k] at hSum ⊢
-  calc
-    2 * ((Nat.clog 2 M : ℝ) + 1) *
-        ((W.card : ℝ) ^ 2 +
-          ∑ r ∈ Finset.range (Nat.clog 2 M),
-            heathBrownCoefficientOneMoment (2 ^ r) W) ≤
-      2 * ((Nat.clog 2 M : ℝ) + 1) *
-        ((W.card : ℝ) ^ 2 + (Nat.clog 2 M : ℝ) * B) := by
-          gcongr
-    _ = _ := by
-      dsimp only [B, R]
-      ring
+
 
 /-! ## The arbitrary-coefficient powering step, equations (6.2)--(6.3) -/
 
-/-- Ordered difference moment of an arbitrary dyadic Dirichlet polynomial.
+/- Ordered difference moment of an arbitrary dyadic Dirichlet polynomial.
 This is the quantity on the right of the reflected estimate (6.1). -/
 noncomputable def gmDifferenceMoment
     (M : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) : ℝ :=
   ∑ t ∈ W, ∑ u ∈ W,
     ‖sourceDirichletPoly M a (t - u)‖ ^ 2
 
-/-- The `2k`-th ordered difference moment used in (6.2). -/
+/- The `2k`-th ordered difference moment used in (6.2). -/
 noncomputable def gmDifferencePowerMoment
     (M k : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) : ℝ :=
   ∑ t ∈ W, ∑ u ∈ W,
@@ -594,9 +553,13 @@ theorem gmDifferenceMoment_nonneg
   unfold gmDifferenceMoment
   positivity
 
-/-- Literal finite Hölder inequality in Guth--Maynard (6.2). -/
+section
+variable (M k : ℕ)
+include M k
+
+/- Literal finite Hölder inequality in Guth--Maynard (6.2). -/
 theorem gmDifferenceMoment_pow_le
-    (M k : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) (hk : 0 < k) :
+     (W : Finset ℝ) (a : ℕ → ℂ) (hk : 0 < k) :
     gmDifferenceMoment M W a ^ k ≤
       ((W.card : ℝ) ^ 2) ^ (k - 1) *
         gmDifferencePowerMoment M k W a := by
@@ -625,12 +588,16 @@ theorem gmDifferenceMoment_pow_le
   have hCard :
       (W.card : ℝ) * (W.card : ℝ) = (W.card : ℝ) ^ 2 := by ring
   rw [hCard] at h
-  simpa only [gmDifferenceMoment] using h
+  exact h
 
-/-- The source positive-phase polynomial raised to the `k`-th power is
+section
+variable (a : ℕ → ℂ) (y : ℝ)
+include a y
+
+/- The source positive-phase polynomial raised to the `k`-th power is
 the generic finite-powered polynomial at the matching imaginary point. -/
 theorem sourceDirichletPoly_pow_eq_finitePowPoly
-    (M k : ℕ) (a : ℕ → ℂ) (y : ℝ) :
+     :
     (sourceDirichletPoly M a y) ^ k =
       finitePowPoly M k a (-((y : ℂ) * I)) := by
   unfold sourceDirichletPoly finitePowPoly
@@ -638,9 +605,9 @@ theorem sourceDirichletPoly_pow_eq_finitePowPoly
   funext n
   simp
 
-/-- Exact wide-support form of the powered arbitrary-coefficient block. -/
+/- Exact wide-support form of the powered arbitrary-coefficient block. -/
 theorem gmPoweredWide_eq
-    (M k : ℕ) (a : ℕ → ℂ) (y : ℝ)
+    
     (hM : 0 < M) (hk : 0 < k) :
     wideDirichletPoly (M ^ k) k (finitePowCoeff M k a) (-y) =
       (sourceDirichletPoly M a y) ^ k := by
@@ -655,10 +622,16 @@ theorem gmPoweredWide_eq
   congr 2
   push_cast
   ring
+end
 
-/-- Moment form of the exact powered expansion. -/
+
+section
+variable (W : Finset ℝ) (a : ℕ → ℂ)
+include W a
+
+/- Moment form of the exact powered expansion. -/
 theorem sum_norm_gmPoweredWide_sq
-    (M k : ℕ) (W : Finset ℝ) (a : ℕ → ℂ)
+    
     (hM : 0 < M) (hk : 0 < k) :
     (∑ t ∈ W, ∑ u ∈ W,
       ‖wideDirichletPoly (M ^ k) k (finitePowCoeff M k a)
@@ -673,10 +646,10 @@ theorem sum_norm_gmPoweredWide_sq
   congr 1
   omega
 
-/-- Cauchy--Schwarz after decomposing the powered support into its exact
+/- Cauchy--Schwarz after decomposing the powered support into its exact
 `k` ordinary dyadic blocks. -/
 theorem sum_norm_gmPoweredWide_sq_le_blocks
-    (M k : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) :
+     :
     (∑ t ∈ W, ∑ u ∈ W,
       ‖wideDirichletPoly (M ^ k) k (finitePowCoeff M k a)
         (-(t - u))‖ ^ 2) ≤
@@ -717,13 +690,17 @@ theorem sum_norm_gmPoweredWide_sq_le_blocks
                 ‖sourceDirichletPoly (2 ^ r * M ^ k)
                   (finitePowCoeff M k a) (t - u)‖ ^ 2 := by
           rw [Finset.sum_comm]
+end
 
-/-- Unit normalization of the literal powered coefficients used in the
+
+/- Unit normalization of the literal powered coefficients used in the
 Section 6 application of Heath--Brown's theorem. -/
 noncomputable def gmNormalizedPoweredCoeffs
-    (M k : ℕ) (a : ℕ → ℂ) (C η : ℝ) (m : ℕ) : ℂ :=
+     (a : ℕ → ℂ) (C η : ℝ) (m : ℕ) : ℂ :=
   finitePowCoeff M k a m /
     ((C * ((2 ^ k * M ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ)
+end
+
 
 theorem norm_gmNormalizedPoweredCoeffs_le_one
     (M k m : ℕ) (a : ℕ → ℂ) (C η : ℝ)
@@ -748,7 +725,7 @@ theorem norm_gmNormalizedPoweredCoeffs_le_one
     div_le_one hDenomPos]
   exact hCoeff.trans (mul_le_mul_of_nonneg_left hRpow hC.le)
 
-/-- Scaling the normalized coefficients back recovers the powered block
+/- Scaling the normalized coefficients back recovers the powered block
 exactly, including the complex phase. -/
 theorem sourceDirichletPoly_gmNormalizedPoweredCoeffs
     (Q M k : ℕ) (a : ℕ → ℂ) (C η y : ℝ)
@@ -767,7 +744,7 @@ theorem sourceDirichletPoly_gmNormalizedPoweredCoeffs
     exact_mod_cast hDenom.ne'
   field_simp [hDenomC]
 
-/-- Moment scaling identity for one normalized powered dyadic block. -/
+/- Moment scaling identity for one normalized powered dyadic block. -/
 theorem gmDifferenceMoment_normalizedPowered
     (Q M k : ℕ) (W : Finset ℝ) (a : ℕ → ℂ) (C η : ℝ)
     (hDenom : 0 < C * ((2 ^ k * M ^ k : ℕ) : ℝ) ^ η) :
@@ -786,7 +763,7 @@ theorem gmDifferenceMoment_normalizedPowered
     Q M k a C η (t - u) hDenom, norm_mul, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos hDenom, mul_pow]
 
-/-- Guth--Maynard (6.2)--(6.3), before taking the `k`-th root.  The
+/- Guth--Maynard (6.2)--(6.3), before taking the `k`-th root.  The
 factorization constant is uniform in `M` and the base coefficients, and
 the actual native arbitrary-coefficient Heath--Brown theorem is applied to
 every powered dyadic block. -/
@@ -807,7 +784,7 @@ theorem gmDifferenceMoment_pow_le_heathBrown
   obtain ⟨A, hA, hCoeff⟩ := finitePowCoeff_bound_uniform k η hη
   obtain ⟨B, T_min, hB, hT_min, hHB⟩ :=
     heathBrownDifferenceSetMeanSquare_native η hη
-  let C : ℝ := max A B
+  let C := max A B
   refine ⟨C, T_min, lt_of_lt_of_le hA (le_max_left _ _), hT_min, ?_⟩
   intro M T W a hM hT hSep hBase ha
   have hC_A : A ≤ C := le_max_left _ _
@@ -817,8 +794,8 @@ theorem gmDifferenceMoment_pow_le_heathBrown
     intro m hm
     exact (hCoeff M a ha m hm).trans
       (mul_le_mul_of_nonneg_right hC_A (Real.rpow_nonneg (by positivity) _))
-  let U : ℕ := 2 ^ k * M ^ k
-  let D : ℝ := C * (U : ℝ) ^ η
+  let U := 2 ^ k * M ^ k
+  let D := C * (U : ℝ) ^ η
   have hU : 0 < U := by dsimp only [U]; positivity
   have hD : 0 < D := by
     dsimp only [D, U]
@@ -832,8 +809,8 @@ theorem gmDifferenceMoment_pow_le_heathBrown
             (W.card : ℝ) * U ^ 2 +
             (W.card : ℝ) ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * U)) := by
     intro r hr
-    have hrk : r < k := Finset.mem_range.mp hr
-    let Q : ℕ := 2 ^ r * M ^ k
+    have hrk := Finset.mem_range.mp hr
+    let Q := 2 ^ r * M ^ k
     have hQ : 0 < Q := by dsimp only [Q]; positivity
     have hQU : Q ≤ U := by
       dsimp only [Q, U]
@@ -941,7 +918,7 @@ theorem le_rpow_inv_nat_of_pow_le
     x = (x ^ k) ^ (1 / (k : ℝ)) := by
       rw [← Real.rpow_natCast]
       rw [← Real.rpow_mul hx]
-      have hkNe : (k : ℝ) ≠ 0 := ne_of_gt hkR
+      have hkNe := ne_of_gt hkR
       have hExp : (k : ℝ) * (1 / (k : ℝ)) = 1 := by
         field_simp
       rw [hExp, Real.rpow_one]
@@ -951,7 +928,7 @@ theorem pow_rpow_inv_nat
     {x : ℝ} {k : ℕ} (hx : 0 ≤ x) (hk : 0 < k) :
     (x ^ k) ^ (1 / (k : ℝ)) = x := by
   have hkR : (0 : ℝ) < k := by exact_mod_cast hk
-  have hkNe : (k : ℝ) ≠ 0 := ne_of_gt hkR
+  have hkNe := ne_of_gt hkR
   rw [← Real.rpow_natCast]
   rw [← Real.rpow_mul hx]
   have hExp : (k : ℝ) * (1 / (k : ℝ)) = 1 := by field_simp
@@ -975,8 +952,12 @@ theorem gm_first_root_identity
     pow_rpow_inv_nat hRsq hk]
   ring
 
+section
+variable {R : ℝ} {k : ℕ} (hR : 0 < R) (hk : 0 < k)
+include R k hR hk
+
 theorem gm_r_exponent_second_identity
-    {R : ℝ} {k : ℕ} (hR : 0 < R) (hk : 0 < k) :
+     :
     ((R ^ 2) ^ (k - 1) * R) ^ (1 / (k : ℝ)) =
       R ^ (2 - 1 / (k : ℝ)) := by
   have hkR : (0 : ℝ) < k := by exact_mod_cast hk
@@ -999,7 +980,7 @@ theorem gm_r_exponent_second_identity
   ring
 
 theorem gm_r_exponent_third_identity
-    {R : ℝ} {k : ℕ} (hR : 0 < R) (hk : 0 < k) :
+     :
     ((R ^ 2) ^ (k - 1) * R ^ (5 / 4 : ℝ)) ^
         (1 / (k : ℝ)) =
       R ^ (2 - 3 / (4 * (k : ℝ))) := by
@@ -1018,8 +999,10 @@ theorem gm_r_exponent_third_identity
   rw [hkSub]
   field_simp
   ring
+end
 
-/-- The second Heath--Brown contribution after taking the fixed `k`-th
+
+/- The second Heath--Brown contribution after taking the fixed `k`-th
 root.  This is the exact source exponent `2 - 1/k` in (6.4). -/
 theorem gm_second_root_identity
     {P R U : ℝ} {k : ℕ}
@@ -1044,7 +1027,7 @@ theorem gm_second_root_identity
   rw [hUExp]
   ring
 
-/-- The third Heath--Brown contribution after taking the fixed `k`-th
+/- The third Heath--Brown contribution after taking the fixed `k`-th
 root.  Both the `R^(2-3/(4k))` and `T^(1/(2k))` factors are retained
 literally. -/
 theorem gm_third_root_identity
@@ -1094,10 +1077,14 @@ theorem rpow_inv_nat_add_three_le
       exact Real.rpow_add_le_add_rpow hA hB hExp0 hExp1
     _ = _ := by ring
 
-/-- Root form of (6.2)--(6.3), with the three Heath--Brown contributions
+section
+variable (k : ℕ) (η : ℝ) (hk : 0 < k) (hη : 0 < η)
+include k η hk hη
+
+/- Root form of (6.2)--(6.3), with the three Heath--Brown contributions
 kept separate for the subsequent exponent calculation. -/
 theorem gmDifferenceMoment_le_heathBrown_roots
-    (k : ℕ) (η : ℝ) (hk : 0 < k) (hη : 0 < η) :
+     :
     ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
       ∀ {M : ℕ} {T : ℝ} (W : Finset ℝ) (a : ℕ → ℂ),
         0 < M → T_min ≤ T → IsSeparated 1 W → InBaseInterval T W →
@@ -1117,7 +1104,7 @@ theorem gmDifferenceMoment_le_heathBrown_roots
   intro M T W a hM hT hSep hBase ha
   let R : ℝ := W.card
   let U : ℝ := (2 ^ k * M ^ k : ℕ)
-  let F : ℝ := (R ^ 2) ^ (k - 1) * (k : ℝ) ^ 2 *
+  let F := (R ^ 2) ^ (k - 1) * (k : ℝ) ^ 2 *
     C * T ^ η * (C * U ^ η) ^ 2
   have hTOne : 1 ≤ T := hT_min.trans hT
   have hTNonneg : 0 ≤ T := zero_le_one.trans hTOne
@@ -1146,11 +1133,11 @@ theorem gmDifferenceMoment_le_heathBrown_roots
             (1 / (k : ℝ)) :=
       rpow_inv_nat_add_three_le hA hB hD hk
 
-/-- Source-exponent form of equations (6.2)--(6.3).  The sole common
+/- Source-exponent form of equations (6.2)--(6.3).  The sole common
 factor `P^(1/k)` contains the fixed-power divisor loss and is isolated for
 the subsequent epsilon budget. -/
 theorem gmDifferenceMoment_le_heathBrown_source_exponents
-    (k : ℕ) (η : ℝ) (hk : 0 < k) (hη : 0 < η) :
+     :
     ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
       ∀ {M : ℕ} {T : ℝ} (W : Finset ℝ) (a : ℕ → ℂ),
         0 < M → T_min ≤ T → IsSeparated 1 W → InBaseInterval T W →
@@ -1171,7 +1158,7 @@ theorem gmDifferenceMoment_le_heathBrown_source_exponents
   intro M T W a hM hT hSep hBase hW ha
   let R : ℝ := W.card
   let U : ℝ := (2 ^ k * M ^ k : ℕ)
-  let P : ℝ := (k : ℝ) ^ 2 * C * T ^ η * (C * U ^ η) ^ 2
+  let P := (k : ℝ) ^ 2 * C * T ^ η * (C * U ^ η) ^ 2
   have hTOne : 1 ≤ T := hT_min.trans hT
   have hTNonneg : 0 ≤ T := zero_le_one.trans hTOne
   have hP : 0 ≤ P := by dsimp only [P, U]; positivity
@@ -1203,8 +1190,10 @@ theorem gmDifferenceMoment_le_heathBrown_source_exponents
         gm_second_root_identity hP hR hU hk,
         gm_third_root_identity hP hR hTNonneg hU hk]
       ring
+end
 
-/-- Common source-exponent majorant for an arbitrary coefficient block.
+
+/- Common source-exponent majorant for an arbitrary coefficient block.
 The scale argument is monotone and will be replaced by the terminal prefix
 length after the exact dyadic decomposition. -/
 noncomputable def gmPoweredDifferenceSourceBound
@@ -1240,9 +1229,13 @@ theorem gmPoweredDifferenceSourceBound_mono_scale
   dsimp only
   gcongr
 
-/-- Uniform terminal-scale form of equations (6.2)--(6.3). -/
+section
+variable (k : ℕ) (η : ℝ) (hk : 0 < k) (hη : 0 < η)
+include k η hk hη
+
+/- Uniform terminal-scale form of equations (6.2)--(6.3). -/
 theorem gmDifferenceMoment_le_heathBrown_terminal_scale
-    (k : ℕ) (η : ℝ) (hk : 0 < k) (hη : 0 < η) :
+     :
     ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
       ∀ {M M' : ℕ} {T : ℝ} (W : Finset ℝ) (a : ℕ → ℂ),
         0 < M → M ≤ M' → T_min ≤ T →
@@ -1259,12 +1252,12 @@ theorem gmDifferenceMoment_le_heathBrown_terminal_scale
     (gmPoweredDifferenceSourceBound_mono_scale hC.le hk hη.le
       hTNonneg hMM')
 
-/-- The reflected-prefix moment after the genuine arbitrary-coefficient
+/- The reflected-prefix moment after the genuine arbitrary-coefficient
 powering argument.  Every dyadic prefix block is bounded at the common
 terminal scale `M`; the two displayed logarithmic factors are the exact
 finite dyadic losses preceding epsilon absorption. -/
 theorem heathBrownReflectionDyadicMoment_le_powered
-    (k : ℕ) (η : ℝ) (hk : 0 < k) (hη : 0 < η) :
+     :
     ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
       ∀ {M : ℕ} {T : ℝ} (W : Finset ℝ),
         0 < M → T_min ≤ T → IsSeparated 1 W →
@@ -1278,8 +1271,8 @@ theorem heathBrownReflectionDyadicMoment_le_powered
     gmDifferenceMoment_le_heathBrown_terminal_scale k η hk hη
   refine ⟨C, T_min, hC, hT_min, ?_⟩
   intro M T W hM hT hSep hBase hW
-  let L : ℕ := Nat.clog 2 M
-  let B : ℝ := gmPoweredDifferenceSourceBound C k η T W M
+  let L := Nat.clog 2 M
+  let B := gmPoweredDifferenceSourceBound C k η T W M
   have hB : 0 ≤ B := by
     exact gmPoweredDifferenceSourceBound_nonneg hC.le hk
       (zero_le_one.trans (hT_min.trans hT))
@@ -1291,7 +1284,7 @@ theorem heathBrownReflectionDyadicMoment_le_powered
     have hScale : 2 ^ r ≤ M := (Nat.pow_lt_of_lt_clog hrL).le
     have hAt := hTerminal W (fun _ => (1 : ℂ)) (by positivity) hScale
       hT hSep hBase hW (by intro n hn; simp)
-    simpa only [heathBrownCoefficientOneMoment, gmDifferenceMoment, B] using hAt
+    exact hAt
   have hSum :
       (∑ r ∈ Finset.range L,
           heathBrownCoefficientOneMoment (2 ^ r) W) ≤ (L : ℝ) * B := by
@@ -1301,8 +1294,10 @@ theorem heathBrownReflectionDyadicMoment_le_powered
   rw [heathBrownReflectionDyadicMoment_eq]
   dsimp only [L, B] at hSum ⊢
   gcongr
+end
 
-/-- Fixed-bin form of Guth--Maynard (6.1) with the powered
+
+/- Fixed-bin form of Guth--Maynard (6.1) with the powered
 Heath--Brown estimate inserted.  This theorem consumes the literal complete
 nonzero Fourier tail and retains the two quantitative reflection errors. -/
 theorem gmNonzeroTailBinMoment_le_powered_reflection
@@ -1351,7 +1346,7 @@ theorem gmNonzeroTailBinMoment_le_powered_reflection
                 (((2 ^ (j + 1) : ℕ) : ℝ)) K L) ^ 2 := by
       gcongr
 
-/-- Elementary contribution of coincident ordinates to the complete
+/- Elementary contribution of coincident ordinates to the complete
 nonzero-tail difference moment. -/
 theorem gmTraceNonzeroDiagonalMoment_le
     (cutoff : GMSmoothCutoff) (q : ℕ) (hq : 2 ≤ q) :
@@ -1373,7 +1368,7 @@ theorem gmTraceNonzeroDiagonalMoment_le
         (pow_le_pow_left₀ (norm_nonneg _) hAt 2)
     _ = (W.card : ℝ) * (B / (N : ℝ) ^ (q - 1)) ^ 2 := by simp
 
-/-- The explicit powered-reflection majorant attached to one physical
+/- The explicit powered-reflection majorant attached to one physical
 difference bin. -/
 noncomputable def gmS2PoweredBinBound
     (A K L C : ℝ) (q k : ℕ) (η : ℝ)
@@ -1390,7 +1385,7 @@ noncomputable def gmS2PoweredBinBound
         (((2 ^ (j + 1) : ℕ) : ℝ)) K L) ^ 2
 
 set_option maxHeartbeats 400000 in
-/-- Quantitative off-diagonal bound for the first cyclic `S₂` term.  The
+/- Quantitative off-diagonal bound for the first cyclic `S₂` term.  The
 two complete nonzero tails use Lemma 4.3 with order two, while the zero
 mode on `v ≠ t` uses arbitrary-order separation decay. -/
 theorem gmCubicS2FirstOffDiagonal_quantitative
@@ -1403,12 +1398,12 @@ theorem gmCubicS2FirstOffDiagonal_quantitative
           K * (W.card : ℝ) ^ 3 * T ^ 5 / δ ^ q := by
   obtain ⟨B, hB, hTail⟩ := gmTraceNonzeroTailAt_bound cutoff 2 (by norm_num)
   obtain ⟨C, hC, hZero⟩ := gmTraceZeroMode_separated_bound cutoff q
-  let K : ℝ := 16 * B ^ 2 * C
+  let K := 16 * B ^ 2 * C
   refine ⟨K, by dsimp only [K]; positivity, ?_⟩
   intro N T δ W hN hT hNT hδ hSep hBase
   have hTPos : 0 < T := zero_lt_one.trans_le hT
   have hNOne : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  let major : ℝ := K * T ^ 5 / δ ^ q
+  let major := K * T ^ 5 / δ ^ q
   have hMajorNonneg : 0 ≤ major := by dsimp only [major, K]; positivity
   have hTerm : ∀ (t u v : GMRow W), v ≠ t →
       ‖gmCubicS2FirstSummand cutoff N t u v‖ ≤ major := by
@@ -1453,7 +1448,7 @@ theorem gmCubicS2FirstOffDiagonal_quantitative
       have hvtReal : (v : ℝ) ≠ (t : ℝ) := by
         intro h
         exact hvt (Subtype.ext h)
-      simpa only [Real.dist_eq] using hSep v v.property t t.property hvtReal
+      exact hSep v v.property t t.property hvtReal
     have hZeroVt := hZero N hδ htvSep
     have hZeroVt' : ‖gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))‖ ≤
         T * C / δ ^ q := by
@@ -1514,7 +1509,7 @@ theorem gmCubicS2FirstOffDiagonal_quantitative
       dsimp only [major]
       ring
 
-/-- With the source `T^ε` separation, the off-diagonal zero-mode terms are
+/- With the source `T^ε` separation, the off-diagonal zero-mode terms are
 `O(T⁻¹⁰)`. -/
 theorem gmCubicS2FirstOffDiagonal_power_decay
     (cutoff : GMSmoothCutoff) (ε : ℝ) (hε : 0 < ε) :
@@ -1532,8 +1527,8 @@ theorem gmCubicS2FirstOffDiagonal_power_decay
   refine ⟨8 * K₀, by positivity, ?_⟩
   intro N T W hN hT hNT hSep hBase
   have hTPos : 0 < T := zero_lt_one.trans_le hT
-  have hScalePos : 0 < T ^ ε := Real.rpow_pos_of_pos hTPos ε
-  have hScaleOne : 1 ≤ T ^ ε := Real.one_le_rpow hT hε.le
+  have hScalePos := Real.rpow_pos_of_pos hTPos ε
+  have hScaleOne := Real.one_le_rpow hT hε.le
   have hOneSep : IsSeparated 1 W := by
     intro x hx y hy hxy
     exact hScaleOne.trans (hSep x hx y hy hxy)
@@ -1571,11 +1566,15 @@ theorem gmCubicS2FirstOffDiagonal_power_decay
         _ ≤ 8 * K₀ * T ^ (ε * (q : ℝ)) := by gcongr
     _ = _ := by rfl
 
-/-- The powered dyadic scale in equations (6.2)--(6.3) has the exact
+section
+variable (k M : ℕ) (hk : 0 < k)
+include k M hk
+
+/- The powered dyadic scale in equations (6.2)--(6.3) has the exact
 `k`-th root `2M`.  Keeping this identity explicit prevents the later
 epsilon budget from obscuring the physical reflected length. -/
 theorem gm_powered_scale_rpow_inv
-    (k M : ℕ) (hk : 0 < k) :
+     :
     (((2 ^ k * M ^ k : ℕ) : ℝ)) ^ (1 / (k : ℝ)) = 2 * M := by
   have hM : (0 : ℝ) ≤ M := by positivity
   norm_num only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat]
@@ -1589,9 +1588,9 @@ theorem gm_powered_scale_rpow_inv
   rw [pow_rpow_inv_nat (by norm_num : (0 : ℝ) ≤ 2) hk,
     pow_rpow_inv_nat hM hk]
 
-/-- The corresponding squared scale is `4M²`. -/
+/- The corresponding squared scale is `4M²`. -/
 theorem gm_powered_scale_rpow_two_inv
-    (k M : ℕ) (hk : 0 < k) :
+     :
     (((2 ^ k * M ^ k : ℕ) : ℝ)) ^ (2 / (k : ℝ)) = 4 * (M : ℝ) ^ 2 := by
   have hU : (0 : ℝ) ≤ ((2 ^ k * M ^ k : ℕ) : ℝ) := by positivity
   calc
@@ -1604,8 +1603,10 @@ theorem gm_powered_scale_rpow_two_inv
       ring
     _ = (2 * (M : ℝ)) ^ 2 := by rw [gm_powered_scale_rpow_inv k M hk]
     _ = 4 * (M : ℝ) ^ 2 := by ring
+end
 
-/-- Equation (6.3) with the artificial powered scale eliminated.  The
+
+/- Equation (6.3) with the artificial powered scale eliminated.  The
 remaining common factor is exactly the fixed-power divisor/epsilon loss. -/
 theorem gmPoweredDifferenceSourceBound_eq_physical
     (C : ℝ) (k : ℕ) (η T : ℝ) (W : Finset ℝ) (M : ℕ) (hk : 0 < k) :
@@ -1622,7 +1623,7 @@ theorem gmPoweredDifferenceSourceBound_eq_physical
   rw [gm_powered_scale_rpow_inv k M hk,
     gm_powered_scale_rpow_two_inv k M hk]
 
-/-- Exact factorization of the common loss in (6.3). -/
+/- Exact factorization of the common loss in (6.3). -/
 theorem gm_powered_common_factor_eq
     {C η T : ℝ} {k M : ℕ} (hC : 0 ≤ C) (hT : 0 ≤ T)
     (hk : 0 < k) :
@@ -1631,7 +1632,7 @@ theorem gm_powered_common_factor_eq
           (1 / (k : ℝ))) =
       (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) *
         T ^ (η / (k : ℝ)) * (2 * (M : ℝ)) ^ (2 * η) := by
-  let U : ℝ := ((2 ^ k * M ^ k : ℕ) : ℝ)
+  let U := ((2 ^ k * M ^ k : ℕ) : ℝ)
   have hU : 0 ≤ U := by dsimp only [U]; positivity
   have hconst : 0 ≤ (k : ℝ) ^ 2 * C ^ 3 := by positivity
   have hTpow : 0 ≤ T ^ η := Real.rpow_nonneg hT _
@@ -1661,19 +1662,23 @@ theorem gm_powered_common_factor_eq
 
 /-! ## Physical-scale bounds for the dyadic Proposition 6.1 sum -/
 
-/-- The stationary coefficient which precedes the powered difference-set
+section
+variable (A : ℝ) (N H j : ℕ)
+include A N H j
+
+/- The stationary coefficient which precedes the powered difference-set
 moment on one physical displacement bin. -/
 noncomputable def gmS2ReflectionCoefficient
-    (A : ℝ) (N H j : ℕ) : ℝ :=
+     : ℝ :=
   2 * (((N : ℝ) * A / Real.sqrt ((2 ^ j : ℕ) : ℝ)) ^ 2) *
     (2 * (H : ℝ)) ^ 2
 
 theorem gmS2ReflectionCoefficient_eq
-    (A : ℝ) (N H j : ℕ) :
+     :
     gmS2ReflectionCoefficient A N H j =
       8 * (N : ℝ) ^ 2 * A ^ 2 * H ^ 2 /
         ((2 ^ j : ℕ) : ℝ) := by
-  let X : ℝ := ((2 ^ j : ℕ) : ℝ)
+  let X := ((2 ^ j : ℕ) : ℝ)
   have hX : 0 < X := by dsimp only [X]; positivity
   unfold gmS2ReflectionCoefficient
   change 2 * (((N : ℝ) * A / Real.sqrt X) ^ 2) *
@@ -1681,13 +1686,19 @@ theorem gmS2ReflectionCoefficient_eq
   rw [div_pow, Real.sq_sqrt hX.le]
   field_simp
   ring
+end
 
-/-- A single reflected length cancels one power of the source polynomial
+
+section
+variable {A X n h m : ℝ} (hX : 0 < X) (hn : 0 < n)
+    (hh : 0 ≤ h)
+include A X n h m hX hn hh
+
+/- A single reflected length cancels one power of the source polynomial
 scale.  This is the first and third physical terms of (6.4), before the
 dyadic geometric sum and epsilon absorption. -/
 theorem gmS2ReflectionCoefficient_mul_length_le
-    {A X n h m : ℝ} (hX : 0 < X) (hn : 0 < n)
-    (hh : 0 ≤ h) (hM : m ≤ X * h / n + 1) :
+     (hM : m ≤ X * h / n + 1) :
     (8 * n ^ 2 * A ^ 2 * h ^ 2 / X) * m ≤
       8 * A ^ 2 * (n * h ^ 3 + n ^ 2 * h ^ 2 / X) := by
   have hCoeff : 0 ≤ 8 * n ^ 2 * A ^ 2 * h ^ 2 / X := by positivity
@@ -1698,15 +1709,14 @@ theorem gmS2ReflectionCoefficient_mul_length_le
     _ = 8 * A ^ 2 * (n * h ^ 3 + n ^ 2 * h ^ 2 / X) := by
       field_simp
 
-/-- The squared reflected length leaves one growing dyadic scale and one
+/- The squared reflected length leaves one growing dyadic scale and one
 inverse dyadic scale.  Their sums are respectively bounded by the physical
 height and a geometric constant. -/
 theorem gmS2ReflectionCoefficient_mul_length_sq_le
-    {A X n h m : ℝ} (hX : 0 < X) (hn : 0 < n)
-    (hh : 0 ≤ h) (hm : 0 ≤ m) (hM : m ≤ X * h / n + 1) :
+     (hm : 0 ≤ m) (hM : m ≤ X * h / n + 1) :
     (8 * n ^ 2 * A ^ 2 * h ^ 2 / X) * m ^ 2 ≤
       16 * A ^ 2 * (X * h ^ 4 + n ^ 2 * h ^ 2 / X) := by
-  let y : ℝ := X * h / n
+  let y := X * h / n
   have hy : 0 ≤ y := by dsimp only [y]; positivity
   have hmSq : m ^ 2 ≤ 2 * y ^ 2 + 2 := by
     calc
@@ -1722,8 +1732,10 @@ theorem gmS2ReflectionCoefficient_mul_length_sq_le
       dsimp only [y]
       field_simp
       ring
+end
 
-/-- Coarse but source-shaped bound for the powered moment after multiplication
+
+/- Coarse but source-shaped bound for the powered moment after multiplication
 by the stationary coefficient on one bin.  The first and third terms retain
 the inverse dyadic gain; the middle term retains the growing dyadic scale. -/
 noncomputable def gmS2PhysicalBinSourceBound
@@ -1750,12 +1762,12 @@ theorem gmS2ReflectionCoefficient_mul_source_le_physical
         gmPoweredDifferenceSourceBound C k η T W
           (heathBrownFixedReflectionLength N H j) ≤
       gmS2PhysicalBinSourceBound A C k η T W N H j := by
-  let X : ℝ := ((2 ^ j : ℕ) : ℝ)
+  let X := ((2 ^ j : ℕ) : ℝ)
   let n : ℝ := N
   let h : ℝ := H
   let m : ℝ := heathBrownFixedReflectionLength N H j
   let R : ℝ := W.card
-  let F : ℝ := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) *
+  let F := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) *
     T ^ (η / (k : ℝ)) * (2 * m) ^ (2 * η)
   have hX : 0 < X := by dsimp only [X]; positivity
   have hn : 0 < n := by
@@ -1819,7 +1831,7 @@ theorem gmS2ReflectionCoefficient_mul_source_le_physical
       gcongr
     _ = _ := by ring
 
-/-- One-bin majorant after eliminating the powered scale.  The reflection
+/- One-bin majorant after eliminating the powered scale.  The reflection
 errors are retained verbatim; no asymptotic notation has yet been used. -/
 noncomputable def gmS2PhysicalBinBound
     (A K L C : ℝ) (q k : ℕ) (η : ℝ)
@@ -1868,30 +1880,34 @@ theorem gmS2PoweredBinBound_le_physical
       ring]
   gcongr
 
-/-- Every occupied reflected length is bounded by the common dyadic target. -/
-theorem gmS2FixedReflectionLength_le_target
-    {T : ℝ} {N H j : ℕ}
+section
+variable {T : ℝ} {N H j : ℕ}
     (hj : j ∈ Finset.range (Nat.log 2 (Nat.floor T) + 1))
-    (hjTwo : 2 ≤ j) :
+    (hjTwo : 2 ≤ j)
+include T N H j hj hjTwo
+
+/- Every occupied reflected length is bounded by the common dyadic target. -/
+theorem gmS2FixedReflectionLength_le_target
+     :
     heathBrownFixedReflectionLength N H j ≤
       heathBrownReflectionTargetScale N H T := by
   exact (heathBrownFixedReflectionLength_le_common (Q := N) (H := H) hj hjTwo).trans
     (heathBrownCommonReflectionLength_le_target N H T)
 
-/-- The local dyadic-prefix logarithm is at most the common corrected
+/- The local dyadic-prefix logarithm is at most the common corrected
 exponent used by the source epsilon profile. -/
 theorem gmS2FixedClog_add_one_le_commonExponent
-    {T : ℝ} {N H j : ℕ}
-    (hj : j ∈ Finset.range (Nat.log 2 (Nat.floor T) + 1))
-    (hjTwo : 2 ≤ j) :
+     :
     Nat.clog 2 (heathBrownFixedReflectionLength N H j) + 1 ≤
       heathBrownCorrectedCommonExponent N H T := by
   have hM := heathBrownFixedReflectionLength_le_common (Q := N) (H := H) hj hjTwo
   have hClog := Nat.clog_mono_right 2 hM
   unfold heathBrownCorrectedCommonExponent
   omega
+end
 
-/-- The complete fixed-length factor occurring in the powered common loss is
+
+/- The complete fixed-length factor occurring in the powered common loss is
 absorbed by two powers of the explicit local recurrence profile. -/
 theorem gmS2FixedLengthEpsilonLoss_le_profile_sq
     {η T : ℝ} {N H j : ℕ}
@@ -1900,9 +1916,9 @@ theorem gmS2FixedLengthEpsilonLoss_le_profile_sq
     (hjTwo : 2 ≤ j) :
     (2 * (heathBrownFixedReflectionLength N H j : ℝ)) ^ (2 * η) ≤
       heathBrownLocalRecurrenceProfile η T N H ^ 2 := by
-  let M : ℕ := heathBrownFixedReflectionLength N H j
-  let P : ℕ := heathBrownCorrectedCommonScale N H T
-  let G : ℝ := heathBrownLocalRecurrenceProfile η T N H
+  let M := heathBrownFixedReflectionLength N H j
+  let P := heathBrownCorrectedCommonScale N H T
+  let G := heathBrownLocalRecurrenceProfile η T N H
   have hMTarget := gmS2FixedReflectionLength_le_target (N := N) (H := H) hj hjTwo
   have hTwoM : (2 * M : ℝ) ≤ P := by
     have hNat : 2 * M ≤ P := by
@@ -1921,7 +1937,7 @@ theorem gmS2FixedLengthEpsilonLoss_le_profile_sq
     simpa only [Nat.cast_mul, Nat.cast_ofNat] using
       (heathBrownLocalRecurrenceProfile_components
         (η := η) (T := T) (Q := N) (H := H)).2.2.2.2
-  have hPowG : (2 * (M : ℝ)) ^ η ≤ G := hPow.trans hComponent
+  have hPowG := hPow.trans hComponent
   have hLeft : (2 * (M : ℝ)) ^ (2 * η) =
       ((2 * (M : ℝ)) ^ η) ^ 2 := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
@@ -1932,13 +1948,17 @@ theorem gmS2FixedLengthEpsilonLoss_le_profile_sq
 
 /-! ## Nonstationary part of the literal Section 6 schedule -/
 
-/-- On the Mellin core `|r| \le N`, every retained signed Fourier mode is
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
+
+/- On the Mellin core `|r| \le N`, every retained signed Fourier mode is
 uniformly to the right of its stationary point when `|t| \le N`.  Keeping
 the finite Dirichlet polynomial inside the aggregate integral and using the
 fixed Mellin `L^1` mass gives a factor `M / N`; the complementary Mellin
 range is controlled at order five. -/
 theorem gmRetainedSignedReflection_near_bound
-    (cutoff : GMSmoothCutoff) :
+     :
     ∃ C K : ℝ, 0 < C ∧ 0 < K ∧
       ∀ {N M : ℕ} {t : ℝ}, 0 < N → 0 < M → |t| ≤ (N : ℝ) →
         ‖∑ m ∈ Finset.Icc 1 M,
@@ -1950,10 +1970,9 @@ theorem gmRetainedSignedReflection_near_bound
     gmPositiveMellinTail_bound_order cutoff 5 (by norm_num)
   have hMellin : Integrable (gmCutoffMellin cutoff) := by
     unfold gmCutoffMellin
-    simpa only [VerticalIntegrable, Complex.ofReal_one] using
-      verticalIntegrable_mellin_gmCutoffSq_one cutoff
-  let L₁ : ℝ := ∫ r : ℝ, ‖gmCutoffMellin cutoff r‖
-  let C : ℝ := 2 * (L₁ / (2 * Real.pi)) + 1
+    exact verticalIntegrable_mellin_gmCutoffSq_one cutoff
+  let L₁ := ∫ r : ℝ, ‖gmCutoffMellin cutoff r‖
+  let C := 2 * (L₁ / (2 * Real.pi)) + 1
   have hL₁ : 0 ≤ L₁ := by
     dsimp only [L₁]
     exact integral_nonneg fun _ => norm_nonneg _
@@ -1962,20 +1981,18 @@ theorem gmRetainedSignedReflection_near_bound
   intro N M t hN hM htN
   have hNr : (0 : ℝ) < N := by exact_mod_cast hN
   have hMr : (0 : ℝ) < M := by exact_mod_cast hM
-  let fpos : ℝ → ℝ := fun r =>
+  let fpos := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly t N M r‖
-  let fneg : ℝ → ℝ := fun r =>
+  let fneg := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (-t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly (-t) N M r‖
   have hPosInt : Integrable fpos := by
-    simpa only [fpos] using
-      integrable_norm_gmPositiveDualAggregate cutoff t (M := M) hN
+    exact integrable_norm_gmPositiveDualAggregate cutoff t (M := M) hN
   have hNegInt : Integrable fneg := by
-    simpa only [fneg] using
-      integrable_norm_gmPositiveDualAggregate cutoff (-t) (M := M) hN
+    exact integrable_norm_gmPositiveDualAggregate cutoff (-t) (M := M) hN
   have hAB : (N : ℝ) ≤ 2 * N * M := by
     have hMOne : (1 : ℝ) ≤ M := by exact_mod_cast hM
     nlinarith
@@ -2031,7 +2048,7 @@ theorem gmRetainedSignedReflection_near_bound
         · exact (hMellin.norm.const_mul
             (1 / (2 * Real.pi))).mul_const ((M : ℝ) / (2 * N))
       _ ≤ (L₁ / (2 * Real.pi)) * (M : ℝ) / (N : ℝ) := by
-        have hPi : 0 < Real.pi := Real.pi_pos
+        have hPi := Real.pi_pos
         field_simp [hPi.ne', hNr.ne']
         nlinarith [mul_nonneg hL₁ hMr.le]
   have hCoreNeg : ∫ r : ℝ in Set.Icc (-(N : ℝ)) N, fneg r ≤
@@ -2096,7 +2113,7 @@ theorem gmRetainedSignedReflection_near_bound
         · exact (hMellin.norm.const_mul
             (1 / (2 * Real.pi))).mul_const ((M : ℝ) / (2 * N))
       _ ≤ (L₁ / (2 * Real.pi)) * (M : ℝ) / (N : ℝ) := by
-        have hPi : 0 < Real.pi := Real.pi_pos
+        have hPi := Real.pi_pos
         field_simp [hPi.ne', hNr.ne']
         nlinarith [mul_nonneg hL₁ hMr.le]
   have hTailPos := hTail t (N : ℝ) N M (by exact_mod_cast hN) hN hM
@@ -2106,8 +2123,7 @@ theorem gmRetainedSignedReflection_near_bound
         (gmTraceFourier cutoff t ((N : ℝ) * m) +
           gmTraceFourier cutoff t (-((N : ℝ) * m)))‖ ≤
         (∫ r : ℝ, fpos r) + ∫ r : ℝ, fneg r := by
-      simpa only [fpos, fneg] using
-        norm_gmTraceFourier_signed_sum_le_dualPoly cutoff t hN
+      exact norm_gmTraceFourier_signed_sum_le_dualPoly cutoff t hN
     _ = ((∫ r : ℝ in Set.Icc (-(N : ℝ)) N, fpos r) +
           ∫ r : ℝ in (Set.Icc (-(N : ℝ)) N)ᶜ, fpos r) +
         ((∫ r : ℝ in Set.Icc (-(N : ℝ)) N, fneg r) +
@@ -2118,7 +2134,7 @@ theorem gmRetainedSignedReflection_near_bound
         (2 * K₀) * (M : ℝ) ^ 2 * (N : ℝ) ^ (-4 : ℝ) := by
       have hPieces := add_le_add
         (add_le_add hCorePos hTailPos) (add_le_add hCoreNeg hTailNeg)
-      simpa only [fpos, fneg, Nat.cast_ofNat] using hPieces.trans_eq (by ring_nf)
+      exact hPieces.trans_eq (by ring_nf)
     _ ≤ C * (M : ℝ) / (N : ℝ) +
         (2 * K₀) * (M : ℝ) ^ 2 * (N : ℝ) ^ (-4 : ℝ) := by
       have hCoeff : 2 * (L₁ / (2 * Real.pi)) ≤ C := by
@@ -2126,24 +2142,24 @@ theorem gmRetainedSignedReflection_near_bound
         linarith
       gcongr
 
-/-- The complete *scaled* nonzero Poisson tail is of square-root size below
+/- The complete *scaled* nonzero Poisson tail is of square-root size below
 the first stationary scale.  The truncation `Nat.sqrt N + 1` balances the
 retained nonstationary reflection integral against the omitted Fourier
 frequencies.  This is the source-sharp `M = 1` input in Proposition 6.1. -/
 theorem exists_norm_gmTraceNonzeroTailAt_le_sqrt_near
-    (cutoff : GMSmoothCutoff) :
+     :
     ∃ D : ℝ, 0 < D ∧ ∀ (N : ℕ) (t : ℝ), 0 < N →
       |t| ≤ (N : ℝ) →
       ‖gmTraceNonzeroTailAt cutoff N t‖ ≤ D * Real.sqrt N := by
   obtain ⟨C, K, hC, hK, hRetained⟩ :=
     gmRetainedSignedReflection_near_bound cutoff
   obtain ⟨L, hL, hFar⟩ := gmTraceFourierFarTail_bound_order cutoff 2
-  let D : ℝ := 2 * C + 4 * K + 16 * L + 1
+  let D := 2 * C + 4 * K + 16 * L + 1
   have hD : 0 < D := by dsimp only [D]; positivity
   refine ⟨D, hD, ?_⟩
   intro N t hN htN
-  let M : ℕ := Nat.sqrt N + 1
-  let S : ℝ := Real.sqrt N
+  let M := Nat.sqrt N + 1
+  let S := Real.sqrt N
   have hNr : (0 : ℝ) < N := by exact_mod_cast hN
   have hNOne : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hS : 0 < S := by
@@ -2287,12 +2303,12 @@ theorem exists_norm_gmTraceNonzeroTailAt_le_sqrt_near
       dsimp only [D]
       nlinarith
 
-/-- All dyadic fibers whose *upper* endpoint lies below `N` are bounded
+/- All dyadic fibers whose *upper* endpoint lies below `N` are bounded
 together, not one at a time.  The exact fiber partition prevents a spurious
 logarithmic or local-density loss and produces the paper's `N * R^2`
 difference moment. -/
 theorem gmNearScaleBinSum_le_sqrt
-    (cutoff : GMSmoothCutoff) {D : ℝ}
+     {D : ℝ}
     (hTail : ∀ (N : ℕ) (t : ℝ), 0 < N → |t| ≤ (N : ℝ) →
       ‖gmTraceNonzeroTailAt cutoff N t‖ ≤ D * Real.sqrt N)
     {T : ℝ} {W : Finset ℝ} (hSep : IsSeparated 1 W)
@@ -2377,8 +2393,10 @@ theorem gmNearScaleBinSum_le_sqrt
     _ ≤ (W.card : ℝ) ^ 2 * (D ^ 2 * (N : ℝ)) :=
       mul_le_mul_of_nonneg_right hCard (by positivity)
     _ = D ^ 2 * (N : ℝ) * (W.card : ℝ) ^ 2 := by ring
+end
 
-/-- The stationary part of the exact Section 6 bin schedule.  Empty fibers
+
+/- The stationary part of the exact Section 6 bin schedule.  Empty fibers
 and fibers lying wholly below the physical polynomial scale contribute zero;
 the latter are estimated *together* by `gmNearScaleBinSum_le_sqrt`. -/
 noncomputable def gmS2SourceScheduledBinBound
@@ -2390,7 +2408,7 @@ noncomputable def gmS2SourceScheduledBinBound
     else gmS2PhysicalBinBound A K L C q k η N T W H j
   else 0
 
-/-- Exact diagonal/nonstationary/stationary reduction of the literal
+/- Exact diagonal/nonstationary/stationary reduction of the literal
 nonzero Poisson-tail moment in Proposition 6.1.  The nonstationary fibers
 are aggregated through the exact dyadic partition, yielding `N * R^2`
 rather than the false local-density majorant from the provisional schedule. -/
@@ -2529,8 +2547,12 @@ theorem gmS2_not_near_inverse_scale
   have hNReal : 0 ≤ (N : ℝ) := by positivity
   nlinarith
 
+section
+variable {W : Finset ℝ} {k : ℕ} (hW : W.Nonempty) (hk : 0 < k)
+include W k hW hk
+
 theorem gmS2_card_rpow_sub_inv_le_sq
-    {W : Finset ℝ} {k : ℕ} (hW : W.Nonempty) (hk : 0 < k) :
+     :
     (W.card : ℝ) ^ (2 - 1 / (k : ℝ)) ≤ (W.card : ℝ) ^ 2 := by
   have hR : (1 : ℝ) ≤ W.card := by exact_mod_cast hW.card_pos
   have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
@@ -2543,7 +2565,7 @@ theorem gmS2_card_rpow_sub_inv_le_sq
     _ = (W.card : ℝ) ^ 2 := by norm_num
 
 theorem gmS2_card_rpow_sub_three_quarter_inv_le_sq
-    {W : Finset ℝ} {k : ℕ} (hW : W.Nonempty) (hk : 0 < k) :
+     :
     (W.card : ℝ) ^ (2 - 3 / (4 * (k : ℝ))) ≤ (W.card : ℝ) ^ 2 := by
   have hR : (1 : ℝ) ≤ W.card := by exact_mod_cast hW.card_pos
   have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
@@ -2554,8 +2576,10 @@ theorem gmS2_card_rpow_sub_three_quarter_inv_le_sq
         have hInv : 0 ≤ 3 / (4 * (k : ℝ)) := by positivity
         linarith)
     _ = (W.card : ℝ) ^ 2 := by norm_num
+end
 
-/-- The three source terms in Proposition 6.1 before reinserting the outer
+
+/- The three source terms in Proposition 6.1 before reinserting the outer
 zero mode. -/
 noncomputable def gmS2TracePaperShape
     (k N : ℕ) (T : ℝ) (W : Finset ℝ) : ℝ :=
@@ -2570,7 +2594,7 @@ theorem gmS2TracePaperShape_nonneg
   unfold gmS2TracePaperShape
   positivity
 
-/-- An occupied source-schedule bin above the nonstationary cutoff satisfies
+/- An occupied source-schedule bin above the nonstationary cutoff satisfies
 the two stationary hypotheses required by the reflection theorem.  The
 factor `4H` is exactly the spacing reserved in the Section 6 extraction. -/
 theorem gmS2_occupied_far_stationary
@@ -2607,7 +2631,7 @@ theorem gmS2_occupied_far_stationary
   · exact hjTwo
   · exact_mod_cast (show (2 : ℝ) * H ≤ (2 ^ j : ℕ) by linarith)
 
-/-- After excluding the nonstationary range, one reflected physical bin has
+/- After excluding the nonstationary range, one reflected physical bin has
 exactly the three scale shapes appearing in equation (6.4), up to the
 explicit fixed-power and epsilon profile. -/
 theorem gmS2PhysicalBinSourceBound_le_paperShape
@@ -2623,13 +2647,13 @@ theorem gmS2PhysicalBinSourceBound_le_paperShape
         T ^ (η / (k : ℝ)) *
         heathBrownLocalRecurrenceProfile η T N H ^ 6 *
         gmS2TracePaperShape k N T W := by
-  let X : ℝ := ((2 ^ j : ℕ) : ℝ)
+  let X := ((2 ^ j : ℕ) : ℝ)
   let n : ℝ := N
   let h : ℝ := H
   let R : ℝ := W.card
-  let G : ℝ := heathBrownLocalRecurrenceProfile η T N H
-  let D : ℝ := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ)))
-  let F : ℝ := D * T ^ (η / (k : ℝ)) *
+  let G := heathBrownLocalRecurrenceProfile η T N H
+  let D := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ)))
+  let F := D * T ^ (η / (k : ℝ)) *
     (2 * (heathBrownFixedReflectionLength N H j : ℝ)) ^ (2 * η)
   have hX : 0 < X := by dsimp only [X]; positivity
   have hn : 0 < n := by dsimp only [n]; exact_mod_cast hN
@@ -2756,7 +2780,7 @@ theorem gmS2PhysicalBinSourceBound_le_paperShape
       mul_le_mul hF hBracket (by positivity) (by positivity)
     _ = _ := by ring
 
-/-- The stationary main term inside one physical scheduled bin, separated
+/- The stationary main term inside one physical scheduled bin, separated
 from the two complete reflection-error terms. -/
 noncomputable def gmS2PhysicalBinMain
     (A C : ℝ) (k : ℕ) (η T : ℝ) (W : Finset ℝ)
@@ -2778,7 +2802,7 @@ theorem gmS2PhysicalBinBound_eq_main_add_error
             (((2 ^ (j + 1) : ℕ) : ℝ)) K L) ^ 2 := by
   rfl
 
-/-- Uniform source-shaped estimate for one stationary main bin.  Every
+/- Uniform source-shaped estimate for one stationary main bin.  Every
 dyadic logarithm, smoothing height and finite-power coefficient is kept in
 the common recurrence profile so that it can later be absorbed by `T^ε`. -/
 theorem gmS2PhysicalBinMain_le_paperShape
@@ -2793,11 +2817,11 @@ theorem gmS2PhysicalBinMain_le_paperShape
             T ^ (η / (k : ℝ))) *
         heathBrownLocalRecurrenceProfile η T N H ^ 8 *
           gmS2TracePaperShape k N T W := by
-  let M : ℕ := heathBrownFixedReflectionLength N H j
+  let M := heathBrownFixedReflectionLength N H j
   let ell : ℝ := Nat.clog 2 M
-  let G : ℝ := heathBrownLocalRecurrenceProfile η T N H
-  let P : ℝ := gmS2TracePaperShape k N T W
-  let J : ℝ := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) *
+  let G := heathBrownLocalRecurrenceProfile η T N H
+  let P := gmS2TracePaperShape k N T W
+  let J := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) *
     A ^ 2 * T ^ (η / (k : ℝ))
   have hGOne : 1 ≤ G := by
     dsimp only [G]
@@ -2880,7 +2904,7 @@ theorem gmS2PhysicalBinMain_le_paperShape
       nlinarith [mul_nonneg (mul_nonneg hG0 (pow_nonneg hG0 7)) hP0,
         mul_nonneg hJ0 (mul_nonneg (pow_nonneg hG0 8) hP0)]
 
-/-- The `gmS2ScheduledMain` definition used by the source-facing construction in `LargeValuesS2`. -/
+/- The `gmS2ScheduledMain` definition used by the source-facing construction in `LargeValuesS2`. -/
 noncomputable def gmS2ScheduledMain
     (A C : ℝ) (k : ℕ) (η : ℝ)
     (N : ℕ) (T : ℝ) (W : Finset ℝ) (H j : ℕ) : ℝ :=
@@ -2889,7 +2913,7 @@ noncomputable def gmS2ScheduledMain
     else gmS2PhysicalBinMain A C k η T W N H j
   else 0
 
-/-- The `gmS2ScheduledError` definition used by the source-facing construction in `LargeValuesS2`. -/
+/- The `gmS2ScheduledError` definition used by the source-facing construction in `LargeValuesS2`. -/
 noncomputable def gmS2ScheduledError
     (K L : ℝ) (q : ℕ)
     (N : ℕ) (W : Finset ℝ) (H j : ℕ) : ℝ :=
@@ -2918,7 +2942,7 @@ theorem gmS2SourceScheduledBinBound_eq_main_add_error
   · simp [gmS2SourceScheduledBinBound, gmS2ScheduledMain,
       gmS2ScheduledError, hOcc]
 
-/-- Summation of all stationary main bins.  The number of dyadic fibers is
+/- Summation of all stationary main bins.  The number of dyadic fibers is
 itself one component of the local recurrence profile. -/
 theorem sum_gmS2ScheduledMain_le_paperShape
     {A C η T δ : ℝ} {k N H : ℕ} {W : Finset ℝ}
@@ -2933,8 +2957,8 @@ theorem sum_gmS2ScheduledMain_le_paperShape
             T ^ (η / (k : ℝ))) *
         heathBrownLocalRecurrenceProfile η T N H ^ 9 *
           gmS2TracePaperShape k N T W := by
-  let G : ℝ := heathBrownLocalRecurrenceProfile η T N H
-  let B : ℝ := 400 * (1 + A ^ 2 +
+  let G := heathBrownLocalRecurrenceProfile η T N H
+  let B := 400 * (1 + A ^ 2 +
       (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) * A ^ 2 *
         T ^ (η / (k : ℝ))) * G ^ 8 * gmS2TracePaperShape k N T W
   have hG0 : 0 ≤ G := by
@@ -2979,7 +3003,7 @@ theorem gmNonzeroTailBinError_eq_reflectionBinError_zero
   unfold gmNonzeroTailBinError heathBrownReflectionBinError
   ring
 
-/-- Complete summation of the Mellin and omitted-frequency errors in the
+/- Complete summation of the Mellin and omitted-frequency errors in the
 stationary schedule.  Arbitrary-order decay is specialized to the source
 smoothing height with two spare powers of `T`. -/
 theorem sum_gmS2ScheduledError_le_decay
@@ -2998,9 +3022,9 @@ theorem sum_gmS2ScheduledError_le_decay
           ((16 * K + L * (3 : ℝ) ^
               (heathBrownReflectionDerivativeOrder 2 η + 2)) *
             T ^ (-(2 : ℝ))) ^ 2) := by
-  let q : ℕ := heathBrownReflectionDerivativeOrder 2 η
-  let E : ℝ := 16 * K + L * (3 : ℝ) ^ (q + 2)
-  let B : ℝ := 8 * (W.card : ℝ) * T *
+  let q := heathBrownReflectionDerivativeOrder 2 η
+  let E := 16 * K + L * (3 : ℝ) ^ (q + 2)
+  let B := 8 * (W.card : ℝ) * T *
     (E * T ^ (-(2 : ℝ))) ^ 2
   have hTOne : 1 ≤ T := by linarith
   have hT0 : 0 ≤ T := zero_le_one.trans hTOne
@@ -3075,7 +3099,7 @@ theorem sum_gmS2ScheduledError_le_decay
     _ = _ := by rfl
 
 set_option maxHeartbeats 1000000 in
-/-- Proposition 6.1 at the trace-difference level, with every finite loss
+/- Proposition 6.1 at the trace-difference level, with every finite loss
 displayed in one tenth-power recurrence profile. -/
 theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
     (cutoff : GMSmoothCutoff) {k : ℕ} (hk : 0 < k)
@@ -3091,25 +3115,25 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
           Q₀ * (1 + T ^ (η / (k : ℝ))) *
             heathBrownLocalRecurrenceProfile η T N H ^ 10 *
               gmS2TracePaperShape k N T W := by
-  let q : ℕ := heathBrownReflectionDerivativeOrder 2 η
+  let q := heathBrownReflectionDerivativeOrder 2 η
   have hq : 2 ≤ q := heathBrownReflectionDerivativeOrder_two_le 2 η
   obtain ⟨D, A, K, L, C, B, T_ref, hD, hA, hK, hL, hC, hB,
       hT_ref, hSource⟩ :=
     gmTraceNonzeroDifferenceMoment_le_source_schedule
       cutoff q k hq η hk hη
-  let J₀ : ℝ := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) * A ^ 2
-  let E : ℝ := 16 * K + L * (3 : ℝ) ^ (q + 2)
-  let Q₀ : ℝ := 2 + D ^ 2 + B ^ 2 + 400 * (1 + A ^ 2 + J₀) + 8 * E ^ 2
-  let T_min : ℝ := max 2 T_ref
+  let J₀ := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) * A ^ 2
+  let E := 16 * K + L * (3 : ℝ) ^ (q + 2)
+  let Q₀ := 2 + D ^ 2 + B ^ 2 + 400 * (1 + A ^ 2 + J₀) + 8 * E ^ 2
+  let T_min := max 2 T_ref
   have hQ₀ : 0 < Q₀ := by dsimp only [Q₀]; positivity
   have hTmin : 2 ≤ T_min := le_max_left _ _
   refine ⟨Q₀, T_min, hQ₀, hTmin, ?_⟩
   intro N T δ W hT hN hNT hW
   dsimp only
   intro hHδ hSep hBase
-  let H : ℕ := heathBrownSmoothingHeight T η
-  let G : ℝ := heathBrownLocalRecurrenceProfile η T N H
-  let P : ℝ := gmS2TracePaperShape k N T W
+  let H := heathBrownSmoothingHeight T η
+  let G := heathBrownLocalRecurrenceProfile η T N H
+  let P := gmS2TracePaperShape k N T W
   have hTTwo : 2 ≤ T := hTmin.trans hT
   have hTOne : 1 ≤ T := by linarith
   have hTref : T_ref ≤ T := (le_max_right _ _).trans hT
@@ -3320,7 +3344,7 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
         _ = (2 + D ^ 2 + B ^ 2 + 400 * (1 + A ^ 2 + J₀) + 8 * E ^ 2) *
               (1 + T ^ (η / (k : ℝ))) * G ^ 10 * P := by ring
 
-/-- A source `T^ε`-separated set has enough room for the integral
+/- A source `T^ε`-separated set has enough room for the integral
 `T^η` smoothing height as soon as `η < ε`.  This is the exact spacing
 bridge used when Proposition 6.1 consumes the trace estimate above. -/
 theorem exists_gmS2SmoothingThreshold
@@ -3333,7 +3357,7 @@ theorem exists_gmS2SmoothingThreshold
     hTend.eventually (eventually_ge_atTop 8)
   rw [eventually_atTop] at hEventually
   obtain ⟨Tgap, hTgap⟩ := hEventually
-  let T₀ : ℝ := max 2 Tgap
+  let T₀ := max 2 Tgap
   refine ⟨T₀, le_max_left _ _, ?_⟩
   intro T hT
   have hTTwo : 2 ≤ T := (le_max_left _ _).trans hT
@@ -3355,7 +3379,7 @@ theorem exists_gmS2SmoothingThreshold
     _ ≤ T ^ ε := hFactor
 
 set_option maxHeartbeats 1000000 in
-/-- Epsilon-absorbed trace form of Guth--Maynard Proposition 6.1.  The
+/- Epsilon-absorbed trace form of Guth--Maynard Proposition 6.1.  The
 separation exponent is the caller's `ε`; internally a strictly smaller
 `η = min(ε/44,1/2)` pays for smoothing, dyadic recurrence, Mellin tails,
 and the finite powering loss. -/
@@ -3368,7 +3392,7 @@ theorem gmTraceNonzeroDifferenceMoment_estimate
         IsSeparated (T ^ ε) W → InBaseInterval T W →
         gmTraceNonzeroDifferenceMoment cutoff N W ≤
           C * T ^ ε * gmS2TracePaperShape k N T W := by
-  let η : ℝ := min (ε / 44) (1 / 2)
+  let η := min (ε / 44) (1 / 2)
   have hη : 0 < η := by
     dsimp only [η]
     exact lt_min (div_pos hε (by norm_num)) (by norm_num)
@@ -3387,8 +3411,8 @@ theorem gmTraceNonzeroDifferenceMoment_estimate
       η hη hηOne
   obtain ⟨Tsmooth, hTsmooth, hSmooth⟩ :=
     exists_gmS2SmoothingThreshold hη.le hηε
-  let C : ℝ := 2 * Q * Cp
-  let T₀ : ℝ := max Ttrace (max Tprofile Tsmooth)
+  let C := 2 * Q * Cp
+  let T₀ := max Ttrace (max Tprofile Tsmooth)
   have hC : 0 < C := by dsimp only [C]; positivity
   have hT₀ : 2 ≤ T₀ := by
     exact hTtrace.trans (le_max_left _ _)
@@ -3402,7 +3426,7 @@ theorem gmTraceNonzeroDifferenceMoment_estimate
   have hTTwo : 2 ≤ T := hT₀.trans hT
   have hTOne : 1 ≤ T := by linarith
   have hTPos : 0 < T := by linarith
-  let H : ℕ := heathBrownSmoothingHeight T η
+  let H := heathBrownSmoothingHeight T η
   have hH : 0 < H := heathBrownSmoothingHeight_pos T η
   have hNTTwo : (N : ℝ) ≤ 2 * T := by linarith
   have hSpacing : 4 * (H : ℝ) ≤ T ^ ε := by
@@ -3415,11 +3439,11 @@ theorem gmTraceNonzeroDifferenceMoment_estimate
   have hkOneNat : 1 ≤ k := hk
   have hkOne : (1 : ℝ) ≤ (k : ℝ) := by exact_mod_cast hkOneNat
   have hExp : η / (k : ℝ) ≤ η := div_le_self hη.le hkOne
-  have hPowK : T ^ (η / (k : ℝ)) ≤ T ^ η :=
+  have hPowK :=
     Real.rpow_le_rpow_of_exponent_le hTOne hExp
-  have hPowOne : 1 ≤ T ^ η := Real.one_le_rpow hTOne hη.le
+  have hPowOne := Real.one_le_rpow hTOne hη.le
   have hOneAdd : 1 + T ^ (η / (k : ℝ)) ≤ 2 * T ^ η := by linarith
-  have hPowBudget : T ^ (21 * η) ≤ T ^ ε :=
+  have hPowBudget :=
     Real.rpow_le_rpow_of_exponent_le hTOne hBudget
   have hPowMul : T ^ η * T ^ (20 * η) = T ^ (21 * η) := by
     rw [← Real.rpow_add hTPos]
@@ -3441,14 +3465,18 @@ theorem gmTraceNonzeroDifferenceMoment_estimate
       ring
     _ ≤ C * T ^ ε * gmS2TracePaperShape k N T W := by gcongr
 
-/-- The exact three-term right-hand side of Guth--Maynard Proposition 6.1,
+section
+variable (k N : ℕ) (T : ℝ) (W : Finset ℝ)
+include k N T W
+
+/- The exact three-term right-hand side of Guth--Maynard Proposition 6.1,
 after reinserting the outer zero mode. -/
 noncomputable def gmS2PaperShape
-    (k N : ℕ) (T : ℝ) (W : Finset ℝ) : ℝ :=
+     : ℝ :=
   (N : ℝ) * gmS2TracePaperShape k N T W
 
 theorem gmS2PaperShape_eq
-    (k N : ℕ) (T : ℝ) (W : Finset ℝ) :
+     :
     gmS2PaperShape k N T W =
       (N : ℝ) ^ 2 * (W.card : ℝ) ^ 2 +
         T * (N : ℝ) * (W.card : ℝ) ^ (2 - 1 / (k : ℝ)) +
@@ -3456,6 +3484,8 @@ theorem gmS2PaperShape_eq
           T ^ (1 / (2 * (k : ℝ))) := by
   unfold gmS2PaperShape gmS2TracePaperShape
   ring
+end
+
 
 theorem gmS2PaperShape_nonneg
     {k N : ℕ} {T : ℝ} {W : Finset ℝ} (hT : 0 ≤ T) :
@@ -3464,7 +3494,7 @@ theorem gmS2PaperShape_nonneg
   exact mul_nonneg (Nat.cast_nonneg N) (gmS2TracePaperShape_nonneg hT)
 
 set_option maxHeartbeats 1000000 in
-/-- Guth--Maynard Proposition 6.1 in its source epsilon-separated form.
+/- Guth--Maynard Proposition 6.1 in its source epsilon-separated form.
 This theorem consumes the literal cubic `S₂`, all three cyclic summands,
 the zero-mode factor, the complete nonzero integer-frequency moment, and
 the off-diagonal `v ≠ t` decay. -/
@@ -3481,7 +3511,7 @@ theorem gmCubicS2_estimate
     gmTraceNonzeroDifferenceMoment_estimate cutoff hk ε hε
   obtain ⟨B, hB, hDiag⟩ := gmCubicS2FirstDiagonal_le_zeroModeConstant cutoff
   obtain ⟨K, hK, hOff⟩ := gmCubicS2FirstOffDiagonal_power_decay cutoff ε hε
-  let C : ℝ := 3 * (B * Ct + K + 1)
+  let C := 3 * (B * Ct + K + 1)
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, Tt, hC, hTt, ?_⟩
   intro N T W hN hT hNT hSep hBase
@@ -3570,4 +3600,4 @@ theorem gmCubicS2_estimate
       positivity
     simpa [gmCubicS2] using hRhs0
 
-end GuthMaynard.NativeMoment
+

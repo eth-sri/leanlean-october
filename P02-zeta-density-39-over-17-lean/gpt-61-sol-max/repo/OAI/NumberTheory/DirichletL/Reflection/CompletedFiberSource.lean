@@ -11,7 +11,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 variable (parents : Finset (Ideal Eis)) (J F : Ideal Eis) (hJ : J≠0) (hF : Squarefree F)
     (m : Eis) (hm : m≠0) (hparents : ∀ I∈parents,I≠0) (v : Eisˣ)
@@ -97,7 +97,7 @@ theorem original_completed_residual_source
     (fun h A T b p => D h A T K b p)
     w W hWcompact lo hi hlo hsupp hW X hX
   exact he
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import MathCollab.Density.CutoffTransforms
 
 @[expose] public section
 
-open Real Complex Set MeasureTheory
+open Real Complex MeasureTheory
 open scoped BigOperators ContDiff
 
 noncomputable section
@@ -39,27 +40,27 @@ theorem tsum_retainedMode_eq_finite (w : ℝ → ℂ) (L H v : ℝ) :
 def bandContribution (w : ReflectionCutoff) (L H v : ℝ) : ℂ :=
   (L : ℂ) * ∑' m : ℤ, retainedMode (fun x => (w x : ℂ)) L H v m
 
-theorem summable_retainedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v : ℝ) :
+section
+variable (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v : ℝ)
+include w L hL H v
+
+theorem summable_retainedMode  :
     Summable (retainedMode (fun x => (w x : ℂ)) L H v) := by
   apply (summable_modeIntegral w.complex_smooth w.complex_support hL v).norm.of_norm_bounded
     (f := retainedMode (fun x => (w x : ℂ)) L H v)
   intro m
   unfold retainedMode
-  split_ifs
-  · exact le_rfl
-  · simpa only [norm_zero] using
-      norm_nonneg (modeIntegral (fun x => (w x : ℂ)) v ((m : ℝ) * L))
+  bound
 
-theorem summable_discardedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v : ℝ) :
+theorem summable_discardedMode  :
     Summable (discardedMode (fun x => (w x : ℂ)) L H v) := by
   apply (summable_modeIntegral w.complex_smooth w.complex_support hL v).norm.of_norm_bounded
     (f := discardedMode (fun x => (w x : ℂ)) L H v)
   intro m
   unfold discardedMode
-  split_ifs
-  · exact le_rfl
-  · simpa only [norm_zero] using
-      norm_nonneg (modeIntegral (fun x => (w x : ℂ)) v ((m : ℝ) * L))
+  bound
+end
+
 
 theorem nonzeroMode_eq_retained_add_discarded (w : ℝ → ℂ) (L H v : ℝ) (m : ℤ) :
     nonzeroMode w L v m = retainedMode w L H v m + discardedMode w L H v m := by
@@ -98,4 +99,4 @@ theorem uniform_fixedBand_and_diagonal_error (w : ReflectionCutoff) {A : ℕ} (h
     exact div_le_div_of_nonneg_right
       (mul_le_mul_of_nonneg_right (le_max_right K₁ K₂) hL.le) (pow_nonneg hL.le A)
 
-end MathCollab.Density
+

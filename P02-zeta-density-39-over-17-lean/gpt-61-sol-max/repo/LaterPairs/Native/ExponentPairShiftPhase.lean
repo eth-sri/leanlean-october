@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.BetaModelJetEstimates
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                      
@@ -27,8 +26,12 @@ namespace TaoTrudgianYang2025
 def aProcessShiftPoint (η t u : ℝ) : ℝ :=
   (1-η)*u+(1+t)*η
 
-theorem aProcessShiftPoint_mem_Icc {η t u : ℝ}
-    (hη : 0 ≤ η) (hη₁ : η ≤ 1) (ht : t ∈ Icc (0 : ℝ) 1)
+section
+variable {η t u : ℝ}
+    (hη : 0 ≤ η)
+include η t u hη
+
+theorem aProcessShiftPoint_mem_Icc  (hη₁ : η ≤ 1) (ht : t ∈ Icc (0 : ℝ) 1)
     (hu : u ∈ Icc (1 : ℝ) 2) :
     aProcessShiftPoint η t u ∈ Icc (1 : ℝ) 2 := by
   have hleft := mul_nonneg (by linarith : 0 ≤ 1-η) (by linarith [hu.1] : 0 ≤ u-1)
@@ -37,8 +40,7 @@ theorem aProcessShiftPoint_mem_Icc {η t u : ℝ}
   have htcη := mul_nonneg (by linarith [ht.2] : 0 ≤ 1-t) hη
   constructor <;> dsimp [aProcessShiftPoint] <;> nlinarith
 
-theorem aProcessShiftPoint_mem_Ioo {η t u : ℝ}
-    (hη : 0 ≤ η) (hη₁ : η < 1) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem aProcessShiftPoint_mem_Ioo  (hη₁ : η < 1) (ht : t ∈ Icc (0 : ℝ) 1)
     (hu : u ∈ Ioo (1 : ℝ) 2) :
     aProcessShiftPoint η t u ∈ Ioo (1 : ℝ) 2 := by
   have hleft := mul_pos (by linarith : 0 < 1-η) (by linarith [hu.1] : 0 < u-1)
@@ -47,14 +49,15 @@ theorem aProcessShiftPoint_mem_Ioo {η t u : ℝ}
   have htcη := mul_nonneg (by linarith [ht.2] : 0 ≤ 1-t) hη
   constructor <;> dsimp [aProcessShiftPoint] <;> nlinarith
 
-theorem aProcessShiftPoint_distance {η t u : ℝ}
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem aProcessShiftPoint_distance  (ht : t ∈ Icc (0 : ℝ) 1)
     (hu : u ∈ Icc (1 : ℝ) 2) :
     |aProcessShiftPoint η t u-u| ≤ η := by
   have hlo := mul_nonneg (by linarith [ht.1,hu.2] : 0 ≤ 2+t-u) hη
   have hhi := mul_nonneg (by linarith [ht.2,hu.1] : 0 ≤ u-t) hη
   rw [abs_le]
   constructor <;> dsimp [aProcessShiftPoint] <;> nlinarith
+end
+
 
 def aProcessShiftPhase (F : ℝ → ℝ) (σ η u : ℝ) : ℝ :=
   (F (aProcessShiftPoint η 0 u)-F (aProcessShiftPoint η 1 u))/(σ*η)
@@ -112,4 +115,4 @@ theorem aProcessShiftPhase_physical {F : ℝ → ℝ} {σ T N r m : ℝ}
     (aProcessShiftPoint_physical (m := m) hN hNr).2]
   field_simp
 
-end TaoTrudgianYang2025
+

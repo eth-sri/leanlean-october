@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyMomentInput
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison
-open HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorFiberPartition
-open ProbeMellinBoundary
+
+
 
 theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     (D : HighData (HeckeZeroSupremum.beta-7/8)) (F : SourceData D)
@@ -94,8 +94,8 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
   · simp
   · simpa using htheight.2.trans hheight
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

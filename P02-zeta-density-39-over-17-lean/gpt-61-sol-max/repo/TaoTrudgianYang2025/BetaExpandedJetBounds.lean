@@ -13,13 +13,13 @@ Each actual coordinate is compared with the explicit reciprocal reference
 using the original finite-order errors, including reciprocal curvature.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem expandedReferenceInverseJet_uniform_bound
     {σ : ℝ} (hσ : 0 < σ) (K : ℕ) :
@@ -101,4 +101,4 @@ theorem modelPhaseInverseJet_expanded_reference_error
       intro F δ P _ hpos _ hF hj v hv
       exact hbound F δ P hpos hF (by omega) v hv
 
-end TaoTrudgianYang2025
+

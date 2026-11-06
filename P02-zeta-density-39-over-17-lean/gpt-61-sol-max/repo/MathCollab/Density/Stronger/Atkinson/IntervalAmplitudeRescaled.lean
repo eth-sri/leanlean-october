@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -12,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeBounds
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
@@ -55,13 +55,8 @@ theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
       rw [hd x hx, norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity : 0 < 1 / T)]
       have h := mul_le_mul_of_nonneg_left ((hN (x / T) (hscale x hx)).trans hNC)
         (by positivity : 0 ≤ 1 / T)
-      convert h using 1
-      ring
+      grind
     _ = (T - T / 16) * (C / T) := by rw [intervalIntegral.integral_const, smul_eq_mul]
-    _ ≤ C := by
-      have hfac : 0 ≤ C / T := by positivity
-      calc
-        _ ≤ T * (C / T) := mul_le_mul_of_nonneg_right (by linarith) hfac
-        _ = C := by field_simp
+    _ ≤ C := by field_simp <;> nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

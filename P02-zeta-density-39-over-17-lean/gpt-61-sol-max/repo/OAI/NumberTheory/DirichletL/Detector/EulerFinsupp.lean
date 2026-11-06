@@ -6,7 +6,7 @@ public import Mathlib.Analysis.Normed.Group.Tannery
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeEulerFinsupp
@@ -60,7 +60,11 @@ lemma finitePi {α β : Type*} [Fintype α] (f : α→β→ℂ)
 
 variable {α β : Type*} [AddCommMonoid β]
 
-lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
+section
+variable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
+include f h0
+
+lemma finiteEuler 
     (hf : ∀a,Summable (fun b=>‖f a b‖)) (S : Finset α) :
     (∑' v : {v : α→₀β // (v.support:Set α)⊆S},v.val.prod f)=
       ∏ a∈S,∑' b,f a b := by
@@ -75,7 +79,7 @@ lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
   rw [(finitePi (fun a:S=>f a.val) (fun a=>hf a.val)).2]
   exact Finset.prod_coe_sort S (fun a=>∑' b,f a b)
 
-theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
+theorem hasProd_of_summable 
     (hs : Summable (fun v : α→₀β=>‖v.prod f‖)) :
     HasProd (fun a=>∑' b,f a b) (∑' v : α→₀β,v.prod f) := by
   have hf (a : α) : Summable (fun b=>‖f a b‖) := by
@@ -103,8 +107,10 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (fun v=>v.prod f)).symm
   change Tendsto (fun S : Finset α=>∏a∈S,∑' b,f a b) atTop _
   simpa only [he] using ht
-
-end SevenEighths.ProbeEulerFinsupp
 end
 
-end OAI
+
+
+
+
+

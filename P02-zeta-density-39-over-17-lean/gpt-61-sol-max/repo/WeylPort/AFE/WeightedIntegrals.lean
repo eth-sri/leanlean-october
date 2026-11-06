@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.FirstDerivativeTest
 public import WeylPort.AFE.WeightedIntegralSums
@@ -85,8 +86,12 @@ theorem integral_cpow_linear_wave_parts {z : ℂ} (hz : 0 < z.re) {x : ℝ} (hx 
   rw [he₁, he₂] at h
   exact eq_sub_iff_add_eq.mpr h
 
+section
+variable {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) (m : ℝ)
+include s hs x hx m
+
 /-- One integration by parts for the actual J integral, with its vanishing lower boundary proved. -/
-theorem weightedIntegral_parts {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) (m : ℝ) :
+theorem weightedIntegral_parts  :
     (1 - s) * weightedIntegral s 0 x m =
       (x : ℂ) ^ (1 - s) * exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (x : ℂ)) -
         (2 * (Real.pi : ℂ) * I * (m : ℂ)) * weightedIntegral (s - 1) 0 x m := by
@@ -94,7 +99,7 @@ theorem weightedIntegral_parts {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) 
   simpa only [weightedIntegral, neg_sub, show (1 - s) - 1 = -s by ring] using h
 
 /-- Two integrations by parts give every term of the source J(0,x,m) identity. -/
-theorem weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) (m : ℝ) :
+theorem weightedIntegral_parts_twice  :
     weightedIntegral s 0 x m =
       (x : ℂ) ^ (1 - s) * exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (x : ℂ)) / (1 - s) -
         (2 * (Real.pi : ℂ) * I * (m : ℂ)) * (x : ℂ) ^ (2 - s) *
@@ -114,7 +119,7 @@ theorem weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0
     have hr := congrArg Complex.re h
     norm_num at hr
     linarith
-  let A : ℂ := 2 * (Real.pi : ℂ) * I * (m : ℂ)
+  let A := 2 * (Real.pi : ℂ) * I * (m : ℂ)
   have hprod : (1 - s) * (2 - s) * weightedIntegral s 0 x m =
       (2 - s) * (x : ℂ) ^ (1 - s) * exp (A * (x : ℂ)) -
         A * (x : ℂ) ^ (2 - s) * exp (A * (x : ℂ)) + A ^ 2 * weightedIntegral (s - 2) 0 x m := by
@@ -129,6 +134,8 @@ theorem weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0
   dsimp only [A] at hprod
   field_simp
   linear_combination hprod
+end
+
 
 /-- The positive-frequency endpoint wave has the exact alternating sign at every half-integer. -/
 theorem linear_wave_half_integer (k : ℤ) (m : ℕ) :
@@ -156,4 +163,4 @@ theorem weightedIntegral_parts_twice_half_integer {s : ℂ} (hs : s.re < 1)
     exact linear_wave_half_integer k m
   simpa only [Complex.ofReal_natCast, hw] using weightedIntegral_parts_twice hs hx (m : ℝ)
 
-end DhimanKadiriQuesadaHerrera2026
+

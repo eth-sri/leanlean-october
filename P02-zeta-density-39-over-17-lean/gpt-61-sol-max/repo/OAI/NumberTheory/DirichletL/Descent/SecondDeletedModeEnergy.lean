@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondModeParentLists
 public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingSupported
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
@@ -9,10 +10,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open JointLogSeparation
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -73,10 +74,9 @@ theorem actual_second_deleted_mode_branch_energy
   intro x hx
   rw [secondModeBranch_parent_lists_restore p hp hcop hg hpr x (hs.admissible x hx)
     (hs.second_divisor x hx) u v (deleted₁ x) (deleted₂ x) (hd₁ x hx) (hd₂ x hx)]
-  dsimp only [phase]
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

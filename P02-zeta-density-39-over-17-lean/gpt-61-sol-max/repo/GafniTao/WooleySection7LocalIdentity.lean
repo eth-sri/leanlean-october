@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7ShiftedMoment
 public import GafniTao.WooleySection7Coefficient
 public import GafniTao.WooleyPadicSeparation
@@ -93,11 +94,7 @@ theorem wooley_equation_7_19_outer_native
             wooleySourcePolynomialConditionedMean R qPrime qH Psi
               (wooleySourceTwist left
                 (fun n => wooleySourcePolynomialPhase leftPhi alpha n))) *
-            ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^ (2 * S) := by
-      apply mul_le_mul_of_nonneg_left _ hscale
-      apply Finset.sum_le_sum
-      intro alpha halpha
-      exact mul_le_mul_of_nonneg_right (hpoint alpha) (by positivity)
+            ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^ (2 * S) := by bound
     _ = ((((q ^ k : ℕ) : ℝ))⁻¹) * (C * loss) *
         (∑ alpha : Fin k → ZMod q,
           wooleySourcePolynomialConditionedMean R qPrime qH Psi
@@ -121,11 +118,8 @@ theorem wooley_equation_7_19_outer_native
                   ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^
                     (2 * S) := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro alpha halpha
         ring
-      rw [hsum]
-      ring
+      nlinarith
     _ = C * loss *
         (((((q ^ k : ℕ) : ℝ))⁻¹) *
           ∑ alpha : Fin k → ZMod q,
@@ -135,6 +129,6 @@ theorem wooley_equation_7_19_outer_native
               ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^
                 (2 * S)) := by ring
 
-end
 
-end GafniTao
+
+

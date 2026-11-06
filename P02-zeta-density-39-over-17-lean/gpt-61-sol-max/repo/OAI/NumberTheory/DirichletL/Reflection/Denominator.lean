@@ -23,13 +23,16 @@ lemma sqrt_extraction_identity (A B C r U V : ℝ)
   field_simp
   nlinarith [Real.sq_sqrt hB.le]
 
-def extractedOutsideScalar (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
-    (r U B R : ℝ) : ℝ :=
+section
+variable (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
+    (r U B R : ℝ)
+include F jF e r U B R
+
+def extractedOutsideScalar  : ℝ :=
   smallScalar R / (r*Real.sqrt ((Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*U)*
     ((Ideal.absNorm (frozenExtracted F jF e 2):ℝ)*B))
 
-theorem extractedOutsideScalar_scale (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
-    (r U B R : ℝ) (hr : 0<r) (hU : 0<U) (hB : 0<B) :
+theorem extractedOutsideScalar_scale  (hr : 0<r) (hU : 0<U) (hB : 0<B) :
     extractedOutsideScalar F jF e r U B R * frozenBranchScale F jF e =
       smallScalar R / (r*Real.sqrt U*B*
         Real.sqrt ((Ideal.absNorm (frozenExtracted F jF e 0):ℝ)*
@@ -45,6 +48,8 @@ theorem extractedOutsideScalar_scale (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
       (r*Real.sqrt ((Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*U)*
         ((Ideal.absNorm (frozenExtracted F jF e 2):ℝ)*B))) := by ring
     _ = _ := by rw [hh]; ring
+end
+
 
 lemma power_normalizer {Z : ℝ} (hZ : 1≤Z) (v ell el S₀ B₀ Td : ℝ) :
     smallScalar (Z^(v+3*ell+el-Td)) /
@@ -81,7 +86,7 @@ theorem extractedOutsideScalar_log_widths (F : PrimeFamily φ) (jF : φ→ℕ) (
     Real.rpow_logb hz0 (ne_of_gt hZ) hB,Real.rpow_logb hz0 (ne_of_gt hZ) hR,
     Real.rpow_logb hz0 (ne_of_gt hZ) (hn 0),Real.rpow_logb hz0 (ne_of_gt hZ) (hn 2)]
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

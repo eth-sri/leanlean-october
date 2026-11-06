@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.SecondModeEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
+public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 
 @[expose] public section
 
@@ -7,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseSecondFibers ActualEisensteinCubic
+open MeasureTheory SchwartzMap
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -38,7 +39,7 @@ theorem second_geometric_energy_of_bound (K : ℕ) (labels : Finset (Ideal Eis))
         (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     _ = _ := Real.mul_self_sqrt (mul_nonneg hE (Finset.sum_nonneg (fun γ _ => tripleDivisorWeight_nonneg K γ)))
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

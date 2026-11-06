@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicMaskedRadial
 public import GuthMaynard.Improvement.CubicModeCount
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
@@ -63,8 +63,7 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
     rw [ENNReal.toReal_mul]
     change volume.real (Icc v₀ v₁)*volume.real (Icc y₀ y₁) = _
     rw [Real.volume_real_Icc_of_le hv,Real.volume_real_Icc_of_le hy]
-  rw [hvol] at hh
-  exact hh
+  grind
 
 def maskedRadialNear (a : ℝ → ℂ) (μ : ℝ → ℝ) (A B C : Set ℝ) (L H : ℝ)
     (m : ℤ × (ℤ × ℤ)) (p : ℝ × ℝ) : ℂ :=
@@ -135,9 +134,7 @@ theorem masked_radial_near_discard (a : ℝ → ℂ) (μ : ℝ → ℝ) (A B C :
     radialKernel a L m p*ratioFourierProduct μ p*ratioMaskProduct A B C p =
       maskedRadialNear a μ A B C L H m p + radialDiscard a μ L H m p*ratioMaskProduct A B C p := by
   unfold maskedRadialNear radialDiscard
-  by_cases h : |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H
-  · simp only [ite_eq_left h,ite_eq_right (not_lt_of_ge h),zero_mul,add_zero]
-  · simp only [ite_eq_right h,ite_eq_left (lt_of_not_ge h),zero_add]
+  grind
 
 /-- The actual summed discarded complex integral has the same mask-uniform tail. -/
 theorem masked_radial_total_discard_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
@@ -159,4 +156,4 @@ theorem masked_radial_total_discard_bound {a : ℝ → ℂ} (ha : ContDiff ℝ �
       exact Finset.sum_le_sum (fun m _ => (h L H m μ A B Cmask hH hA hB hCmask hm h0 hi).2)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; ring
 
-end GuthMaynard.Improvement
+

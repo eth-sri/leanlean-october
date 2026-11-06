@@ -7,22 +7,22 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedFourier
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualTupleEnergy
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
+open InverseInitialQuotientGeometry
+open Filter
+open scoped EisensteinO
+
+open SecondPassArithmetic InverseInitialRayAttachment
 open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
 open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
+open InverseInitialPoissonBridge InverseInitialExcludedPool
 open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_tuple_energy
     (Woriginal W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)
@@ -55,11 +55,11 @@ theorem original_residual_tuple_energy
     ∀χ:Ideal O→*ℂ,(∀u,‖elementCharacter χ u‖≤1)→
       FactorsModulo (fixedBaseConductor q) (elementCharacter χ)→
       (∀c,¬outside (reflectionExcludedPrimes q) c→χ c=0)→
-    ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
+    ∀(D m r:ℝ),0≤ m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
       D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
     ∀(rows:Finset O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
@@ -148,8 +148,8 @@ theorem original_residual_tuple_energy
       (primaryGenerator j) (assignedElement assigned qelem) hgj]
   simpa only [hid] using he
 
-end SevenEighths.InverseInitialResidualTupleEnergy
 
-end
 
-end OAI
+
+
+

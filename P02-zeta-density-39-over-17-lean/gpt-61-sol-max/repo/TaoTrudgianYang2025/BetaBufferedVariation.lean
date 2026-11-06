@@ -14,12 +14,12 @@ buffered cutoff. Sampling uses the actual antitone inverse slope.
 No plateau hypothesis is imposed on this original source cutoff.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem modelPhaseBufferedCutoff_eq_band {η : ℝ} (hη : 0 < η) (l r u : ℝ) :
     modelPhaseBufferedCutoff l r η u =
@@ -28,4 +28,4 @@ theorem modelPhaseBufferedCutoff_eq_band {η : ℝ} (hη : 0 < η) (l r u : ℝ)
   rw [show l+2*η-(l+η) = η by ring,show r-η-(r-2*η) = η by ring]
   congr 2 <;> field_simp [hη.ne'] <;> ring
 
-end TaoTrudgianYang2025
+

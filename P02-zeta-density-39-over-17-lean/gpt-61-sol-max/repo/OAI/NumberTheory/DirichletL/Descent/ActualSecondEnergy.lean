@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -51,12 +51,16 @@ structure ActualSecondSourceConditions {Jo Jn : ℕ}
   new_support : ∀ x ∈ source, ∀ i, x.newAssigned i ∈ x.second.sourceCommon∪x.second.overlap
   quotient_nonzero : ∀ x ∈ source, x.quotient ≠ 0
 
-theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
+section
+variable (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source) (c : SecondChild)
+    (hs : ActualSecondSourceConditions p source)
+include hp hpr hcop hinj Jo Jn u v source hs
+
+theorem actual_second_fiber_weight  (c : SecondChild)
     (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
     (w : MarkedSecondSource ι Jo Jn → ℝ) (hw : ∀ x ∈ source, w x ≤ 1) :
     ∑ x ∈ source with actualSecondChild p u v x = c, w x ≤ secondDivisorWeight K c := by
@@ -80,16 +84,14 @@ theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
     unfold secondDivisorWeight
     positivity
 
-theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
+section
+variable (labels : Finset (Ideal Eis)) (rows : Finset Eis)
     (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
       (actualSecondChild p u v x).2.2 ∈ rows)
     (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
+include labels rows hchild K ho hn
+
+theorem actual_second_energy_projection 
     (w : MarkedSecondSource ι Jo Jn → ℝ) (hw : ∀ x ∈ source, w x ≤ 1) (F : SecondChild → ℂ) :
     ∑ x ∈ source, w x * ‖F (actualSecondChild p u v x)‖^2 ≤
       ∑ γ ∈ actualSecondTriples p u v source,
@@ -111,16 +113,7 @@ theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
   intro k hk
   ring
 
-theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
-      (actualSecondChild p u v x).2.2 ∈ rows)
-    (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
+theorem actual_second_weighted_count 
     (w : MarkedSecondSource ι Jo Jn → ℂ) (hw : ∀ x ∈ source, ‖w x‖ ≤ 1)
     (F G : SecondChild → ℂ) :
     ‖∑ x ∈ source, w x * F (actualSecondChild p u v x) * star (G (actualSecondChild p u v x))‖ ≤
@@ -134,8 +127,11 @@ theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw F))
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw G))
     (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-
 end
-end SevenEighths.InverseMoment
+end
 
-end OAI
+
+
+
+
+

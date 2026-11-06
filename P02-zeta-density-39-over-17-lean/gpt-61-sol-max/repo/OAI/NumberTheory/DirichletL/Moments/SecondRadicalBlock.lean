@@ -8,21 +8,21 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondRadicalBlock
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
 open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
+open CenteredMomentRestrictedEnergy
+open CenteredMomentMobiusRegroup
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
+open CenteredMomentSecondMaskedWindow CenteredMomentSecondWindowBudget
 open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
 open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem actual_block_from_masked_source (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
     ∃B:ℝ,0≤B ∧ ∀r:ℝ,0<r →
@@ -82,8 +82,8 @@ theorem actual_block_from_masked_source (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : �
       (by simpa only [normValue_eq_embedding] using hΦ) (E₂ L) (hE₂ L) (hright L hL χ)).trans
         (conjugate_shifted_window_budget J₂ t w (E₂ L) (hE₂ L))
 
-end SevenEighths.CenteredMomentSecondRadicalBlock
 
-end
 
-end OAI
+
+
+

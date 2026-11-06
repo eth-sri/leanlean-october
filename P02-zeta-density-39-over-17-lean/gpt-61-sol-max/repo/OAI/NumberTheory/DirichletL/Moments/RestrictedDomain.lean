@@ -10,11 +10,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
+open CenteredMomentSourceLiveColumn CenteredMomentSourceMass
+open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
 open CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem source_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O) :
     rowPolynomial Finset.univ (sourceGenerator S)
@@ -76,8 +76,8 @@ theorem live_restrictedEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (live_rowPolynomial S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
       X₁ X₂ Y₁ Y₂ B₁ B₂ f z)
 
-end SevenEighths.CenteredMomentRestrictedDomain
 
-end
 
-end OAI
+
+
+

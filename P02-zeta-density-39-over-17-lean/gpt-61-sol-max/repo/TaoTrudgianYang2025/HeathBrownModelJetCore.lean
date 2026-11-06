@@ -3,7 +3,6 @@ public import Mathlib
 public import TaoTrudgianYang2025.ExponentPair
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Set Expdb
 open scoped ContDiff
@@ -34,4 +33,4 @@ theorem approximateModelPhase_iteratedDeriv_error
   exact he
 
 
-end TaoTrudgianYang2025
+

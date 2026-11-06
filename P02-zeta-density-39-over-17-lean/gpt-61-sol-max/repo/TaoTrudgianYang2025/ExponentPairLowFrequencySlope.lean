@@ -11,7 +11,7 @@ Positive first derivatives and physical increment bounds are derived
 from the actual closed-interval model. No exterior phase values enter.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped ContDiff
@@ -66,4 +66,4 @@ theorem betaModelSample_firstDifference_bounds
   ring_nf at he hlo hhi ⊢
   constructor <;> linarith
 
-end TaoTrudgianYang2025
+

@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology
-open Filter Set Metric
+open Filter
 namespace SevenEighths.ProbePhysical
 
 def gaussianLog (z : ℂ) : ℂ :=
@@ -28,7 +28,7 @@ lemma gaussianLog_scaled_analytic (r : ℝ) (hr : 0<r) (z : ℂ) (hz : 0<z.re) :
   have h : 0<((r:ℂ)*z).re := by simpa using mul_pos hr hz
   exact (gaussianLog_analytic _ h).comp (analyticAt_const.mul analyticAt_id)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

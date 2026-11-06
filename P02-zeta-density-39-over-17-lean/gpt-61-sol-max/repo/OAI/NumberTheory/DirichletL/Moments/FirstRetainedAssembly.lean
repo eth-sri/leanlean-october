@@ -9,14 +9,14 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedAssembly
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstRetainedPhysical CenteredMomentFirstRetainedSector
 open CenteredMomentFirstRetainedBlock CenteredMomentFirstSectorTransform CenteredMomentFirstSectors
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion
+open CenteredMomentSourceRow
+open CenteredMomentHeckeExpansion
 open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def infiniteSector (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):ℂ:=
@@ -80,8 +80,8 @@ theorem original_retained_physical
   exact original_retained_dyadic s Rbad seed hz₁ hz₂ m A t S p.val.1 p.val.2
     (commonLabels_supported S p).1 (commonLabels_supported S p).2 E W K _ hK
 
-end SevenEighths.CenteredMomentFirstRetainedAssembly
 
-end
 
-end OAI
+
+
+

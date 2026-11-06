@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.ConductorPresentation
 
 @[expose] public section
@@ -7,25 +8,29 @@ namespace OAI
 
 namespace SevenEighths.ResidueCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
+
+
 open scoped Classical
 
 noncomputable section
 
 variable {A : Type*} [CommRing A]
 
-def inflate {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ) :
+section
+variable {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+include M L hML χ
+
+def inflate  :
     MulChar (A ⧸ M) ℂ :=
   MulChar.ofUnitHom (χ.toUnitHom.comp
     (Units.map (Ideal.Quotient.factor hML).toMonoidHom))
 
-theorem inflate_apply_unit {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+theorem inflate_apply_unit 
     (u : (A ⧸ M)ˣ) :
     inflate hML χ u = χ (Ideal.Quotient.factor hML (u : A ⧸ M)) :=
   MulChar.ofUnitHom_coe _ u
 
-theorem inflate_apply {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+theorem inflate_apply 
     (x : A ⧸ M) :
     inflate hML χ x = if IsUnit x then χ (Ideal.Quotient.factor hML x) else 0 := by
   by_cases hx : IsUnit x
@@ -33,19 +38,25 @@ theorem inflate_apply {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) �
     simpa only [u.isUnit, ite_true] using inflate_apply_unit hML χ u
   · simp only [hx, ite_false, MulChar.map_nonunit _ hx]
 
-theorem inflate_mk {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ) (a : A) :
+theorem inflate_mk  (a : A) :
     inflate hML χ (Ideal.Quotient.mk M a) =
       if IsUnit (Ideal.Quotient.mk M a) then χ (Ideal.Quotient.mk L a) else 0 := by
-  simpa only [Ideal.Quotient.factor_mk] using inflate_apply hML χ (Ideal.Quotient.mk M a)
+  exact inflate_apply hML χ (Ideal.Quotient.mk M a)
 
-theorem inflate_global_units {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+theorem inflate_global_units 
     (hχ : ∀ u : Aˣ, χ (Ideal.Quotient.mk L u) = 1) :
     ∀ u : Aˣ, inflate hML χ (Ideal.Quotient.mk M u) = 1 := by
   intro u
   rw [inflate_mk]
   simp only [u.isUnit.map (Ideal.Quotient.mk M), ite_true, hχ]
+end
 
-theorem isUnit_mk_inf_iff (I J : Ideal A) (a : A) :
+
+section
+variable (I J : Ideal A)
+include I J
+
+theorem isUnit_mk_inf_iff  (a : A) :
     IsUnit (Ideal.Quotient.mk (I ⊓ J) a) ↔
       IsUnit (Ideal.Quotient.mk I a) ∧ IsUnit (Ideal.Quotient.mk J a) := by
   constructor
@@ -72,7 +83,7 @@ theorem isUnit_mk_inf_iff (I J : Ideal A) (a : A) :
     rw [hid]
     exact ⟨I.neg_mem (I.mul_mem_right _ hbI), J.neg_mem (J.mul_mem_left _ hcJ)⟩
 
-theorem finite_quotient_inf (I J : Ideal A) [Finite (A ⧸ I)] [Finite (A ⧸ J)] :
+theorem finite_quotient_inf  [Finite (A ⧸ I)] [Finite (A ⧸ J)] :
     Finite (A ⧸ I ⊓ J) := by
   let f : A ⧸ I ⊓ J →+* (A ⧸ I) × (A ⧸ J) :=
     (Ideal.Quotient.factor inf_le_left).prod (Ideal.Quotient.factor inf_le_right)
@@ -84,11 +95,15 @@ theorem finite_quotient_inf (I J : Ideal A) [Finite (A ⧸ I)] [Finite (A ⧸ J)
   exact ⟨Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.fst hx),
     Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.snd hx)⟩
 
-def product (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ) (ψ : MulChar (A ⧸ J) ℂ) :
+section
+variable (χ : MulChar (A ⧸ I) ℂ) (ψ : MulChar (A ⧸ J) ℂ)
+include χ ψ
+
+def product  :
     MulChar (A ⧸ I ⊓ J) ℂ :=
   inflate inf_le_left χ * inflate inf_le_right ψ
 
-theorem product_mk (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ) (ψ : MulChar (A ⧸ J) ℂ)
+theorem product_mk 
     (a : A) :
     product I J χ ψ (Ideal.Quotient.mk (I ⊓ J) a) =
       χ (Ideal.Quotient.mk I a) * ψ (Ideal.Quotient.mk J a) := by
@@ -102,22 +117,20 @@ theorem product_mk (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ) (ψ : MulChar (A
       rw [MulChar.map_nonunit _ hJ, mul_zero]
     · rw [MulChar.map_nonunit _ hI, zero_mul]
 
-theorem product_global_units (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ)
-    (ψ : MulChar (A ⧸ J) ℂ)
+theorem product_global_units 
     (hχ : ∀ u : Aˣ, χ (Ideal.Quotient.mk I u) = 1)
     (hψ : ∀ u : Aˣ, ψ (Ideal.Quotient.mk J u) = 1) :
     ∀ u : Aˣ, product I J χ ψ (Ideal.Quotient.mk (I ⊓ J) u) = 1 := by
   intro u
   rw [product_mk, hχ, hψ, one_mul]
-
-section PrimitiveProduct
-
-variable [IsDedekindDomain A] [Infinite A]
-
-end PrimitiveProduct
-
+end
 end
 
-end SevenEighths.ResidueCharacter
 
-end OAI
+
+
+
+
+
+
+

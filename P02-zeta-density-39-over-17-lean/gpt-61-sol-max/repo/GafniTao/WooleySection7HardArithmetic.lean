@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Easy
 
 @[expose] public section
@@ -43,7 +44,6 @@ theorem wooley_section7_BPrimeNat_le_zero
     wooleySection7BPrimeNat k r a b gamma ≤
       wooleySection7BPrimeNat k r a b 0 := by
   unfold wooleySection7BPrimeNat wooleySection7BPrimeInt
-  apply Int.toNat_le_toNat
   omega
 
 /-- The defining lower ceiling inequality `B' ≤ r H'`. -/
@@ -53,12 +53,16 @@ theorem wooley_section7_BPrime_le_mul_HPrime
       r * wooleySection7HPrime k r a b gamma := by
   exact le_smul_ceilDiv (by omega : 0 < r)
 
+section
+variable {k r a b gamma nu : ℕ}
+    (hr : 1 ≤ r)
+include k r a b gamma nu hr
+
 /-- The refinement depth in (7.22) is ordered correctly:
 `a + H' ≤ b'`.  This follows from the two literal ceiling definitions and
 the signed identity (7.3); no real-valued rounding argument is used. -/
 theorem wooley_section7_a_add_HPrime_le_nextB
-    {k r a b gamma nu : ℕ}
-    (hr : 1 ≤ r)
+    
     (hBPrime : (nu : ℤ) < wooleySection7BPrimeInt k r a b gamma) :
     a + wooleySection7HPrime k r a b gamma ≤
       wooleySection7NextB k r b := by
@@ -69,7 +73,6 @@ theorem wooley_section7_a_add_HPrime_le_nextB
   have hid := wooley_section7_BPrimeNat_add hBPrime
   change bp + r * a + (k - r) * gamma = n at hid
   have hncover : n ≤ r * nb := by
-    dsimp only [n, nb, wooleySection7NextB]
     exact le_smul_ceilDiv (by omega : 0 < r)
   have hra : r * a ≤ r * nb := by
     omega
@@ -79,15 +82,12 @@ theorem wooley_section7_a_add_HPrime_le_nextB
     rw [Nat.mul_sub_left_distrib]
     omega
   have hH : hp ≤ nb - a := by
-    dsimp only [hp, wooleySection7HPrime]
     exact (ceilDiv_le_iff_le_mul (by omega : 0 < r)).2 hbp
-  change a + hp ≤ nb
   omega
 
 /-- Equation (7.13), with all ceiling losses explicit. -/
 theorem wooley_equation_7_13
-    {k r a b gamma nu : ℕ}
-    (hr : 1 ≤ r)
+    
     (hBPrime : (nu : ℤ) < wooleySection7BPrimeInt k r a b gamma) :
     (wooleySection7NextB k r b : ℝ) -
         (wooleySection7HPrime k r a b gamma : ℝ) ≤
@@ -130,8 +130,7 @@ theorem wooley_equation_7_13
 /-- The triangular-number contribution following (7.13) is strictly less
 than `k^2 nu / 2`, exactly as in the source. -/
 theorem wooley_section7_hard_triangular_loss
-    {k r a b gamma nu : ℕ}
-    (hr : 1 ≤ r) (hrk : r < k) (hnu : 1 ≤ nu)
+     (hrk : r < k) (hnu : 1 ≤ nu)
     (hgamma : gamma < nu)
     (hBPrime : (nu : ℤ) < wooleySection7BPrimeInt k r a b gamma) :
     (wooleyTriangular r : ℝ) *
@@ -145,9 +144,9 @@ theorem wooley_section7_hard_triangular_loss
   have hRtwo : 2 * (wooleyTriangular r : ℝ) ≤
       (r : ℝ) * ((r : ℝ) + 1) := by
     exact_mod_cast hRtwoNat
-  have hkrPos : 0 < k - r := Nat.sub_pos_of_lt hrk
+  have hkrPos := Nat.sub_pos_of_lt hrk
   have htailStrict : r + (k - r) * gamma < k * nu := by
-    have hmul : (k - r) * gamma < (k - r) * nu :=
+    have hmul :=
       Nat.mul_lt_mul_of_pos_left hgamma hkrPos
     have hrnu : r ≤ r * nu := by
       simpa only [Nat.mul_one] using Nat.mul_le_mul_left r hnu
@@ -171,7 +170,7 @@ theorem wooley_section7_hard_triangular_loss
           ((r : ℝ) + ((k - r : ℕ) : ℝ) * (gamma : ℝ)) <
         (k : ℝ) * ((k : ℝ) * (nu : ℝ)) := by
     exact_mod_cast hprodNat
-  let d : ℝ :=
+  let d :=
     (wooleySection7NextB k r b : ℝ) - (a : ℝ) -
       (wooleySection7HPrime k r a b gamma : ℝ)
   have hd : d ≤ 1 + ((k - r : ℕ) : ℝ) * (gamma : ℝ) / (r : ℝ) := by
@@ -197,7 +196,9 @@ theorem wooley_section7_hard_triangular_loss
     have : (wooleyTriangular r : ℝ) * d ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos hR hdNeg.le
     exact this.trans_lt (by positivity)
-
 end
 
-end GafniTao
+
+
+
+

@@ -22,8 +22,8 @@ lemma scaleCLM_apply (W : 𝓢(ℝ,ℂ)) (x : ℝ) : scaleCLM W x=scaleProfile W
   push_cast
   ring
 
-end SevenEighths.DetectorDictionaryInverseUniform
 
-end
 
-end OAI
+
+
+

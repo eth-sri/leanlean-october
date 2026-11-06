@@ -1,79 +1,80 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothTests
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SecondPassArithmetic
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
 
 section
 
@@ -91,7 +92,7 @@ lemma parity_pair_norm_bounds (s u : Ideal O) (B : ℝ) (hB : 0<B)
   have hu1 : 1≤(Ideal.absNorm u : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hu (Ideal.absNorm_eq_zero_iff.mp hz))
   have hs0 : 0<(Ideal.absNorm s : ℝ) := by linarith
-  have hsqrt : 0<Real.sqrt (Ideal.absNorm s : ℝ) := Real.sqrt_pos.mpr hs0
+  have hsqrt := Real.sqrt_pos.mpr hs0
   refine ⟨(le_mul_of_one_le_left hs0.le (one_le_pow₀ hu1)).trans h,?_⟩
   apply (le_div_iff₀ hsqrt).mpr
   have hh : ((Ideal.absNorm u : ℝ)*Real.sqrt (Ideal.absNorm s : ℝ))^2≤B^2 := by
@@ -142,7 +143,7 @@ theorem parity_ideal_pair_count (S : Finset (Ideal O × Ideal O)) (B H : ℝ)
       1/Real.sqrt (Ideal.absNorm s : ℝ)≤H/(Ideal.absNorm s : ℝ) := by
     have hs0 : 0<(Ideal.absNorm s : ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (fun hz => (hA s hs).1 (Ideal.absNorm_eq_zero_iff.mp hz))
-    have hroot : 0<Real.sqrt (Ideal.absNorm s : ℝ) := Real.sqrt_pos.mpr hs0
+    have hroot := Real.sqrt_pos.mpr hs0
     have hrootle : Real.sqrt (Ideal.absNorm s : ℝ)≤H := by nlinarith [Real.sq_sqrt hs0.le,(hA s hs).2.2]
     apply (div_le_div_iff₀ hroot hs0).mpr
     nlinarith [Real.sq_sqrt hs0.le]
@@ -243,14 +244,12 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
         congr 1
         rw [←Real.rpow_natCast,←Real.rpow_mul (sq_nonneg B),
           ←Real.rpow_natCast,←Real.rpow_mul hB0.le]
-        congr 1
         ring
   have hqcard := parity_ideal_pair_count Q B H hB0 hH hQ hQactive
   have hlog := descent_normLogBin_small_power (ε/4) (by positivity) (B^2) (one_le_pow₀ hB)
   have hlog' : (normLogBin (B^2)+1 : ℝ)≤(1+1/(ε/4))*B^(ε/2) := by
     convert hlog using 1
     rw [←Real.rpow_natCast,←Real.rpow_mul hB0.le]
-    congr 2
     ring
   have hsum : (s.card : ℝ)=∑q∈Q,((s.filter (fun x => cubeParityKey p x=q)).card : ℝ) := by
     calc
@@ -274,13 +273,7 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
 
 end
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct cubeActiveSupport)
-open ConcreteTraceCRT (eisEmbedding)
-open IdealMobiusDivisorSum (idealDivisors)
 
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm cubeActiveSupport)
@@ -297,15 +290,10 @@ open FirstPassCubeLabels (primeProductNorm primeProduct cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
-end
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

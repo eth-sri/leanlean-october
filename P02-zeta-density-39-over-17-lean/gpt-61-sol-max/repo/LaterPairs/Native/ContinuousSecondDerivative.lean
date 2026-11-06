@@ -6,13 +6,12 @@ public import LaterPairs.Native.ContinuousDerivativeBounds
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                 
 
-noncomputable section
+
 open Set GafniTao RiemannZeta.GuthMaynard
 namespace TaoTrudgianYang2025
 
@@ -58,4 +57,4 @@ theorem continuous_second_derivative_bound
     (by positivity) (Real.sqrt_pos.mpr hα) hlo' hhi').trans
       (second_derivative_scale_bound (Nat.cast_nonneg N) hC hα hα1)
 
-end TaoTrudgianYang2025
+

@@ -3,8 +3,7 @@ public import DensityEnergyGM.DifferenceFloorEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -57,4 +56,4 @@ theorem difference_floor_residue_separated {x y : ℝ} {i j : ℤ}
     have h := le_abs_self (x - y)
     linarith
 
-end Montgomery.RationalMoment
+

@@ -14,12 +14,13 @@ open HeckeFamily QuadraticInitialBound CenteredMomentEnergyState CenteredMomentE
 open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
 open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
-open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
-open CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
+open CenteredMomentEnergyBandMonotonicity
+
+open scoped HeckeO
 
 open CenteredMomentEnergyZeroGrowthSource (PhysicalGrowthAt)
+
+local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 theorem actual_growth_from_physical
     (a b bΦ rho ε Mcap Bmask B L εdiag ξ saving:ℝ)
@@ -75,7 +76,7 @@ theorem actual_growth_from_physical
     have hp0:=p.control_nonneg S
     have hj:degree≤Jout:=Nat.le_add_right _ _
     have hpow:=pow_le_pow_right₀ hbase hj
-    have hloss:s.width+e≤max s.width (length Z X₁+length Z X₂)+efinal:=by
+    have hloss:s.width+e≤ max s.width (length Z X₁+length Z X₂)+efinal:=by
       linarith [le_max_left s.width (length Z X₁+length Z X₂)]
     have hex:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hloss
     have hcoeff:K≤Cfixed*(K+Cmass+Cprevious+1):=by dsimp [Cfixed];nlinarith [mul_nonneg hCh.le hK,mul_nonneg hCh.le hCm,mul_nonneg hCh.le hCp]
@@ -111,8 +112,8 @@ theorem actual_growth_from_physical
   rw [Real.norm_eq_abs]
   gcongr
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthSourceControlled
 
-end
 
-end OAI
+
+
+

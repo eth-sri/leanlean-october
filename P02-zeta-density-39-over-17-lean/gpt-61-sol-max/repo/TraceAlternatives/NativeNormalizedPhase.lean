@@ -4,8 +4,7 @@ public import GuthMaynard.Improvement.RealIntegerSource
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset Complex GuthMaynard.NativeMoment GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
@@ -40,4 +39,4 @@ theorem norm_boundedPolynomial_native_conjugate {M : ℕ} (hM : 0<M)
     ring
   rw [hSum,norm_sourceDirichletPoly_conjugateCoeffs]
 
-end Montgomery.RationalMoment
+

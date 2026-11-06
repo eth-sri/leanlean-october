@@ -45,8 +45,8 @@ theorem exists_primitive_product_character (χ ψ : Character) :
       χ.residue ψ.residue χ.unit_trivial ψ.unit_trivial
   exact ⟨Character.ofResidue M hM₀ φ hφ, hM, hprim, hnorm, hmask⟩
 
-end SevenEighths.HeckeFamily
 
-end
 
-end OAI
+
+
+

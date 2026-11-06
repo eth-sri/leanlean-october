@@ -4,10 +4,9 @@ public import MathCollab.Density.Stronger.SmoothDetector
 
 @[expose] public section
 
-open Real Complex MeasureTheory Set Filter
+open Real Complex MeasureTheory Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
 
@@ -67,4 +66,4 @@ theorem smoothDetector_eventually_large {σ a δ : ℝ}
     _ ≤ _ := hheight
 
 
-end Montgomery.RationalMoment.RightDetector
+

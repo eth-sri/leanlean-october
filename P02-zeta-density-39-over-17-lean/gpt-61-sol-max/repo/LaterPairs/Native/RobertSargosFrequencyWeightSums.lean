@@ -6,13 +6,12 @@ public import LaterPairs.Native.IntegerFixedDisplacementCount
 public import LaterPairs.Native.RobertSargosSignedDisplacementSums
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                 
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem sum_affine_frequency_weight_le
@@ -37,10 +36,7 @@ theorem sum_affine_frequency_weight_le
     apply integer_fixed_displacement_band_card_le _ hQ hB
     · intro p hp
       exact (Finset.mem_filter.mp hp).2
-    · intro p hp
-      exact hq p (Finset.mem_filter.mp hp).1
-    · intro p hp
-      exact hband p (Finset.mem_filter.mp hp).1
+    all_goals (grind)
   calc
     _ = ∑ d ∈ D, ∑ _p ∈ S.filter (fun p => p.1 = d), f d.natAbs :=
       (Finset.sum_fiberwise_of_maps_to' hmaps (fun d => f d.natAbs)).symm
@@ -72,5 +68,5 @@ theorem sum_affine_frequency_rpow_weight_le
           (by norm_num)) (by positivity)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

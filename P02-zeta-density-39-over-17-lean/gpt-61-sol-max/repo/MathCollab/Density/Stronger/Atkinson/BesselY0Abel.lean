@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected literal Y0 Mellin proofs adapted
 from DFIY0Abel.lean, exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -18,15 +19,18 @@ absolutely convergent; the undamped Neumann transform will be recovered by
 a dominated Abel limit.
 -/
 
-open Complex Set MeasureTheory Filter
+open Complex MeasureTheory Filter
 open scoped Topology Interval
 
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε)
+include s hs ε a hε
+
 theorem integral_cpow_mul_damped_cexp_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+     :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) *
           cexp (-((ε : ℂ) * x)) * cexp (I * (a * x))) =
@@ -45,11 +49,10 @@ theorem integral_cpow_mul_damped_cexp_Ioi
     (x : ℂ) ^ (s - 1) *
       (cexp (-((ε : ℂ) * x)) * cexp (I * ((a : ℂ) * x))) by ring,
     ← Complex.exp_add]
-  congr 2
   ring
 
 theorem integral_cpow_mul_damped_cexp_neg_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+     :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) *
           cexp (-((ε : ℂ) * x)) * cexp (-(I * (a * x)))) =
@@ -68,11 +71,10 @@ theorem integral_cpow_mul_damped_cexp_neg_Ioi
     (x : ℂ) ^ (s - 1) *
       (cexp (-((ε : ℂ) * x)) * cexp (-(I * ((a : ℂ) * x)))) by ring,
     ← Complex.exp_add]
-  congr 2
   ring
 
 theorem integral_cpow_mul_damped_sin_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+     :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) * Real.sin (a * x)) =
       (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
@@ -127,25 +129,25 @@ theorem integral_cpow_mul_damped_sin_Ioi
           field_simp
           ring
         simpa only [Complex.ofReal_mul] using hSin (a * x)]
-      rw [hExp]
-      ring
+      grind
     _ = (∫ x : ℝ in Set.Ioi 0, P x - M x) / (2 * I) := by
       rw [MeasureTheory.integral_div]
     _ = ((∫ x : ℝ in Set.Ioi 0, P x) -
         ∫ x : ℝ in Set.Ioi 0, M x) / (2 * I) := by
       rw [MeasureTheory.integral_sub hPInt hMInt]
     _ = (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
-        (2 * I) * Gamma s := by
-      rw [show (∫ x : ℝ in Set.Ioi 0, P x) =
-          ((ε : ℂ) - I * a) ^ (-s) * Gamma s by exact hp,
-        show (∫ x : ℝ in Set.Ioi 0, M x) =
-          ((ε : ℂ) + I * a) ^ (-s) * Gamma s by exact hm]
-      field_simp
+        (2 * I) * Gamma s := by grind
+end
+
+
+section
+variable (s : ℂ) {a : ℝ} (ha : 0 < a)
+include s a ha
 
 /-- The two damped complex powers have their expected nontangential Abel
 limit at the imaginary axis. -/
 theorem tendsto_dfiDampedSineFactor
-    (s : ℂ) {a : ℝ} (ha : 0 < a) :
+     :
     Tendsto (fun ε : ℝ =>
         (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) / (2 * I))
       (𝓝[>] 0)
@@ -175,10 +177,10 @@ theorem tendsto_dfiDampedSineFactor
 /-- The boundary value of the damped sine factor.  This is the exact
 oscillatory Mellin factor used in the Schläfli representation of `Y₀`. -/
 theorem dfiDampedSineFactor_limit_eq
-    (s : ℂ) {a : ℝ} (ha : 0 < a) :
+     :
     (((-I * a) ^ (-s) - (I * a) ^ (-s)) / (2 * I)) =
       (a : ℂ) ^ (-s) * Complex.sin (Real.pi * s / 2) := by
-  have haC : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ha.ne'
+  have haC := Complex.ofReal_ne_zero.mpr ha.ne'
   have hnegI : (-I : ℂ) ≠ 0 := by simp
   have hI : (I : ℂ) ≠ 0 := by simp
   rw [Complex.cpow_def_of_ne_zero (mul_ne_zero hnegI haC),
@@ -205,7 +207,8 @@ theorem dfiDampedSineFactor_limit_eq
   rw [hp, hm]
   field_simp
   have hIsq : I ^ 2 = (-1 : ℂ) := by rw [pow_two, Complex.I_mul_I]
-  rw [hIsq]
-  ring
+  simp_all
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

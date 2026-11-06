@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
@@ -39,8 +39,8 @@ theorem two_pass_scalar (C Cz Ct Γ A Z F M r ell eta tau _pi epsFirst loss Lcap
       _≤_:=mul_le_mul_of_nonneg_left hR (by positivity)
   nlinarith [add_le_add (add_le_add hp hr) ht]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

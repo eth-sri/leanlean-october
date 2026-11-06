@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.CappedLowStage
 public import OAI.NumberTheory.DirichletL.Energy.NaturalHighStage
 public import OAI.NumberTheory.DirichletL.Energy.NaturalZeroStage
 public import OAI.NumberTheory.DirichletL.Energy.CappedSuccessorPacking
 public import OAI.NumberTheory.DirichletL.Energy.CappedRequests
-public import OAI.NumberTheory.DirichletL.Energy.CappedBandTransport
+public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 
 @[expose] public section
 
@@ -15,8 +16,8 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedAnalyticSuccessor
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighBound
+open HeckeFamily
+
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
 open CenteredMomentEnergyCappedWidthInduction
@@ -24,7 +25,7 @@ open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCappedRequests
 open CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -54,7 +55,6 @@ theorem actual_successor
   have hr:0<r:=(bounds Mcap Bs κ ε hMcap.le hBs hκ0 hε).2.2.2.1
   have hr1:r/4≤1:=by
     have hh:=bounds Mcap Bs κ ε hMcap.le hBs hκ0 hε
-    have hrs:r≤amplification ε/100:=min_le_left _ _
     linarith [hh.2.1]
   have hMp:0≤Mp:=bandWidth_nonneg Mcap Bs ε hMcap.le hBs hε _
   have hMc:0<Mc:=band_positive Mcap Bs ε hMcap hBs hε k
@@ -81,7 +81,6 @@ theorem actual_successor
     hMcap.le hmask hMpM hr1 k hk
   have hhighL:max Lc Mp≤Lp:=by
     have hh:max Lc Mp≤Lreq:=max_le hreq.2.1 (hMpM.trans hreq.2.2)
-    have hg:0≤max Lreq Mp:=hreq.1.trans (le_max_left _ _)
     have hx:=le_max_left Lreq Mp
     linarith
   have href:Mp+Bmask+Mc/100≤Lreq:=by
@@ -106,7 +105,6 @@ theorem actual_successor
   have hLgrowLow:Lgrow≤Llow:=by rw [hLlow];exact le_max_left _ _
   have hLgrowReq:Lgrow≤Lreq:=hLgrowLow.trans hLlowReq
   have hzeroCap:max Mp (2*Lgrow)≤Lp:=by
-    have hm:Mp≤Lreq:=hMpM.trans hreq.2.2
     have hh:=le_max_left Lreq Mp
     apply max_le <;> linarith
   have hzeroReady:readyBudget (max Mp (2*Lgrow)) Bmask≤Bs:=by
@@ -176,8 +174,8 @@ theorem actual_successor
       (Finset.Subset.refl _) hClow.le le_rfl hl.2.1
     exact hh.2 _ C₀ C₁ Clow le_rfl hC₀.le hC₁.le hClow.le hzSmall hpSmall hlRestricted
 
-end SevenEighths.CenteredMomentEnergyCappedAnalyticSuccessor
 
-end
 
-end OAI
+
+
+

@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.SourceTailConditional
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -64,4 +63,4 @@ theorem source_removed_mass_dyadic {β : ℝ → ℝ} (hβm : Measurable β)
       intro j _
       rw [integral_const_mul]
 
-end GuthMaynard.Improvement
+

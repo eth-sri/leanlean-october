@@ -11,9 +11,9 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
-local notation "O"=>HeckeFamily.O
+open HeckeFamily InverseInitialDetectorSource
+open HeckeDetectorBatch HeckeDetectorRawFiber
+open scoped HeckeO
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -35,8 +35,8 @@ theorem sourceMoment_fiber_large_eventually
   rw [hdata,hw,one_mul]
   exact hZ.2 d hd j s
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

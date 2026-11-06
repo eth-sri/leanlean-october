@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GramClassification
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeWindow
 
@@ -9,9 +10,9 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
+open ConcreteTraceCRT
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def canonicalLatticeBlock (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
@@ -43,7 +44,7 @@ theorem canonical_nonexceptional_block (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
   have hg := outside_exceptional_good S hS C p hp hout
   have hd := outside_exceptional_not_dvd S hS C p hp hout
   have hcspan := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).1
-  have hf : Ideal.span {primaryGenerator C.val}=∏i : GramPrime C,gramPrime C i^gramExponent C i := hcspan.trans (gramPrime_product C)
+  have hf := hcspan.trans (gramPrime_product C)
   have hh := hsource S hS σ (primaryGenerator C.val) k.val
     (supported_primaryGenerator_ne_zero _ C.property) k.property
     (gramNumeratorData k).unit (gramNumeratorData k).lambdaExponent (gramNumeratorData k).twoExponent
@@ -52,7 +53,7 @@ theorem canonical_nonexceptional_block (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     p hp.ne_zero hg.1 hg.2 hd.1 hd.2 he U v T hT d N hN
   simpa only [canonicalLatticeBlock,canonicalJoint,hcspan] using hh.2
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

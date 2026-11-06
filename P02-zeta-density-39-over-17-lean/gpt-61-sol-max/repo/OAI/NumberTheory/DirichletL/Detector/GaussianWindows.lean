@@ -21,7 +21,7 @@ lemma gaussianDyadicProfile_Vstar (Z : ℝ) (j : ℕ) (y : ℝ) (hy : 0<y) :
   simp only [Vstar,gaussianDyadicProfile]
   field_simp
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpShellBudget
 public import DensityEnergyGM.DifferenceEnergyGeometry
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -17,8 +17,7 @@ theorem card_sq_le_twice_sharpCenteredBudget {T t₀ L : ℝ}
   have hBase : InBaseInterval T (translateSet t₀ W) := by
     intro t ht
     obtain ⟨u,hu,rfl⟩ := mem_image.mp ht
-    obtain ⟨hl,hh⟩ := hW u hu
-    exact ⟨by linarith,by linarith⟩
+    grind
   have hE := card_four_le_four_height_energy hT hBase
   rw [translateSet_card,discrete_energy_translateSet] at hE
   have hEn : (0:ℝ) ≤ discreteAdditiveEnergy W := Nat.cast_nonneg _
@@ -77,4 +76,4 @@ theorem centered_shell_sharp (w : MathCollab.Density.ReflectionCutoff)
     linarith
   exact hReflected.trans (add_le_add (hMain.trans hCoeff) le_rfl)
 
-end Montgomery.RationalMoment
+

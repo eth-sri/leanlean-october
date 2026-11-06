@@ -7,15 +7,14 @@ public import LaterPairs.Native.RobertSargosFrequencyFibers
 public import LaterPairs.Native.RobertSargosFrequencyWeightSums
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                   
                                                                                   
                                                           
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem RobertSargosPrimitiveSystem.displacement_natAbs_mem
@@ -23,9 +22,7 @@ theorem RobertSargosPrimitiveSystem.displacement_natAbs_mem
     (h : RobertSargosPrimitiveSystem R H Q δ p)
     (hH : 0 < H) (hQ : 0 < Q) (hδ : δ ≤ 1) :
     p.d.natAbs ∈ Finset.Icc 1 ⌊9*Q⌋₊ := by
-  have hd : (p.d.natAbs:ℝ) = |(p.d:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.d)
+  have hd : (p.d.natAbs:ℝ) = |(p.d:ℝ)| := by simp_all
   apply Finset.mem_Icc.mpr
   constructor
   · exact Nat.one_le_iff_ne_zero.mpr (Int.natAbs_ne_zero.mpr h.d_ne_zero)
@@ -78,4 +75,4 @@ theorem robertSargos_card_le_weighted_frequency_sum
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hs hC
 
-end TaoTrudgianYang2025
+

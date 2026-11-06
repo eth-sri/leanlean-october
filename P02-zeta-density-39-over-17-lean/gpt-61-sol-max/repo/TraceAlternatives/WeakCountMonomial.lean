@@ -3,9 +3,8 @@ public import TraceAlternatives.WeakPowerInterpolation
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- An exact weak-count monomial-to-weighted-square conversion. The weight
@@ -54,4 +53,4 @@ theorem weak_count_monomial_bound {R E K M T U mass a b w : ℝ}
     ring
   exact hh.trans_eq hId
 
-end Montgomery.RationalMoment
+

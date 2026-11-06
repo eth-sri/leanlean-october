@@ -11,12 +11,12 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
+open CompletedGauss RayFourExpansion
 open CenteredMomentAmplificationShortening CenteredMomentFixedRay
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=
   (QuadraticAllOddCRT.quadraticRaySign (ActualEisensteinCoordinates.residue p)
@@ -53,8 +53,8 @@ theorem original_column_family (η : Character) (m p : O) (k : ℕ)
       (β (C*I)*(rowWeight η m 1 1 t I*residualCharacter p k (primaryGenerator I))) := by ring
     _ = _ := by rw [hτ I hI t,Finset.mul_sum];congr 1;apply Finset.sum_congr rfl;intro χ hχ;ring
 
-end SevenEighths.CenteredMomentAmplificationFamily
 
-end
 
-end OAI
+
+
+

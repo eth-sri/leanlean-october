@@ -12,7 +12,6 @@ public import Mathlib.NumberTheory.LSeries.RiemannZeta
 
 open MeasureTheory Filter Set
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -37,7 +36,11 @@ theorem continuous_zetaMomentCriticalNorm : Continuous zetaMomentCriticalNorm :=
 def pointValueSuperlevel (H V : ℝ) : Set ℝ :=
   {t | H ≤ t ∧ t ≤ 2*H ∧ V ≤ zetaMomentCriticalNorm t}
 
-theorem isClosed_pointValueSuperlevel (H V : ℝ) :
+section
+variable (H V : ℝ)
+include H V
+
+theorem isClosed_pointValueSuperlevel  :
     IsClosed (pointValueSuperlevel H V) := by
   have hs : IsClosed (Icc H (2*H) ∩ {t | V ≤ zetaMomentCriticalNorm t}) :=
     isClosed_Icc.inter
@@ -47,19 +50,21 @@ theorem isClosed_pointValueSuperlevel (H V : ℝ) :
   simp only [pointValueSuperlevel,Set.mem_ofPred_eq,Set.mem_inter_iff,Set.mem_Icc]
   tauto
 
-theorem measurableSet_pointValueSuperlevel (H V : ℝ) :
+theorem measurableSet_pointValueSuperlevel  :
     MeasurableSet (pointValueSuperlevel H V) :=
   (isClosed_pointValueSuperlevel H V).measurableSet
 
 
-theorem pointValueSuperlevel_subset_Icc (H V : ℝ) :
+theorem pointValueSuperlevel_subset_Icc  :
     pointValueSuperlevel H V ⊆ Icc H (2*H) :=
   fun _ ht => ⟨ht.1,ht.2.1⟩
 
-theorem integrableOn_zeta_twelfth_pointValueSuperlevel (H V : ℝ) :
+theorem integrableOn_zeta_twelfth_pointValueSuperlevel  :
     IntegrableOn (fun t => zetaMomentCriticalNorm t^12) (pointValueSuperlevel H V) :=
   ((continuous_zetaMomentCriticalNorm.pow 12).continuousOn.integrableOn_Icc).mono_set
     (pointValueSuperlevel_subset_Icc H V)
+end
+
 
 theorem pointValue_power_tail_measure_le {H V s C : ℝ}
     (hV : 0 < V) (hs : 0 < s) (hC : 0 ≤ C)
@@ -161,4 +166,4 @@ theorem zeta_twelfth_integral_le_high_add_fourth {H V : ℝ}
   linarith
 
 
-end MathCollab.Density.Stronger
+

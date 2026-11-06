@@ -12,12 +12,12 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondSourceDiagonal
-open HeckeFamily CanonicalQuadraticSieve
+open HeckeFamily
 open CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass
+open CenteredMomentSourceMass
 open CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
@@ -32,8 +32,8 @@ theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
   obtain ⟨C,hC,hbound⟩:=profile_second_zero_energy N ε hε
   refine ⟨C,hC,?_⟩
   intro ι _ _ hcard a b ha hb s p hw1 hw2 R seed hseed κ
-  have hM (i:ι):0≤s.M i:=zero_le_one.trans (s.M_ge_one i)
-  have hhi (i:ι):0≤max 0 (s.hi i):=le_max_left _ _
+  have hM (i:ι):0≤ s.M i:=zero_le_one.trans (s.M_ge_one i)
+  have hhi (i:ι):0≤ max 0 (s.hi i):=le_max_left _ _
   have hz (i:Fin 2):p.profile i 0=0:=by
     by_contra hn
     exact (not_le_of_gt ha) (p.support i hn).1
@@ -58,8 +58,8 @@ theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
     Complex.norm_real,Real.norm_eq_abs,abs_of_pos hV,abs_of_pos s.X₁_pos,abs_of_pos s.X₂_pos,
     abs_of_pos (Finset.prod_pos (fun i _=>s.P_pos i)),mul_div_assoc,div_mul_eq_mul_div] using hh
 
-end SevenEighths.CenteredMomentSecondSourceDiagonal
 
-end
 
-end OAI
+
+
+

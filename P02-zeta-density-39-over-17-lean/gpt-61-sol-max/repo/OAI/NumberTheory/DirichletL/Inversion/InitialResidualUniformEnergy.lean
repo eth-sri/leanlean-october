@@ -7,22 +7,22 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialResidualPool
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualUniformEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
-open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
+open InverseInitialQuotientGeometry
+open Filter
+open scoped EisensteinO
+
+open InverseInitialRayAttachment
+open MeasureTheory
+open InverseInitialCommonRatios
+open InverseInitialPoissonBridge InverseInitialExcludedPool
 open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_uniform_energy
     (Woriginal:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
@@ -45,11 +45,11 @@ theorem original_residual_uniform_energy
     ∀χ:Ideal O→*ℂ,(∀u,‖elementCharacter χ u‖≤1)→
       FactorsModulo (fixedBaseConductor q) (elementCharacter χ)→
       (∀c,¬outside (reflectionExcludedPrimes q) c→χ c=0)→
-    ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
+    ∀(D m r:ℝ),0≤ m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
       D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
     ∀(rows:Finset O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
@@ -94,8 +94,8 @@ theorem original_residual_uniform_energy
     (hFresh (all\assigned) ((Finset.card_le_card Finset.sdiff_subset).trans hK) Woriginal hso)
     hP hcopTuple hPE hcover θ
 
-end SevenEighths.InverseInitialResidualUniformEnergy
 
-end
 
-end OAI
+
+
+

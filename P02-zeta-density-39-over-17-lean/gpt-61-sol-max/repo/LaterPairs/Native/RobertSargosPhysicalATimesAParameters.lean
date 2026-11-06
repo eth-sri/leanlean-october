@@ -5,18 +5,21 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQFloorBudgets
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_physical_a_times_a_ranges (M H : ℕ) {lam : ℝ}
+section
+variable (M H : ℕ) {lam : ℝ}
     (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
     (hM : lam^(-(8:ℝ)/13) ≤ M)
+include M H lam hlam hsmall hM
+
+theorem robertSargos_physical_a_times_a_ranges 
     (hHmin : lam^(-(1:ℝ)/7) ≤ H) (hHmax : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2) :
     0 < H ∧ 0 < ⌊lam^(-(3:ℝ)/13)⌋₊ ∧ 0 < ⌊lam^(-(1:ℝ)/13)⌋₊ ∧
       ⌊lam^(-(3:ℝ)/13)⌋₊ ≤ M ∧ ⌊lam^(-(1:ℝ)/13)⌋₊ ≤ 2*H := by
@@ -35,9 +38,7 @@ theorem robertSargos_physical_a_times_a_ranges (M H : ℕ) {lam : ℝ}
   exact ⟨hH,hQ,hR,by exact_mod_cast hQM,by exact_mod_cast (show
     (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ 2*(H:ℝ) by linarith [Nat.cast_nonneg (α := ℝ) H])⟩
 
-theorem robertSargos_physical_endpoint_budget (M H : ℕ) {lam : ℝ}
-    (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
-    (hM : lam^(-(8:ℝ)/13) ≤ M) (hHmax : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2) :
+theorem robertSargos_physical_endpoint_budget  (hHmax : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2) :
     16*(M:ℝ)*(H:ℝ)^2*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ 4*(M:ℝ)^2 := by
   let T := lam^(-(1:ℝ)/13)
   have hT : 2 ≤ T := (thirteenth_root_physical_scale hlam hsmall).1
@@ -59,5 +60,7 @@ theorem robertSargos_physical_endpoint_budget (M H : ℕ) {lam : ℝ}
   have hHR : (H:ℝ)^2*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ (M:ℝ)/4 := by nlinarith
   have he := mul_le_mul_of_nonneg_left hHR (show 0 ≤ 16*(M:ℝ) by positivity)
   nlinarith
+end
 
-end TaoTrudgianYang2025
+
+

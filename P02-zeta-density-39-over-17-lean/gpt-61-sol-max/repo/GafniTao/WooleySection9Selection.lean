@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection9Arithmetic
 public import Mathlib.Analysis.MeanInequalities
 
@@ -39,13 +40,16 @@ theorem wooleyGradeRange_nonempty {r : ℕ} (hr : 1 ≤ r) :
   simp only [wooleyGradeRange, mem_Icc, le_refl, true_and]
   exact hr
 
+section
+variable {r : ℕ} (hr : 1 ≤ r) (Y : ℕ → ℝ)
+    (hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j)
+include r hr Y hY
+
 /-- Equal-weight AM--GM on the source grade interval. -/
 theorem wooley_grade_geometric_le_average
-    {r : ℕ} (hr : 1 ≤ r) (Y : ℕ → ℝ)
-    (hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j) :
+     :
     ∏ j ∈ wooleyGradeRange r, (Y j) ^ (1 / (r : ℝ)) ≤
       (1 / (r : ℝ)) * ∑ j ∈ wooleyGradeRange r, Y j := by
-  have hrR : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
   have hweights :
       ∑ _j ∈ wooleyGradeRange r, (1 / (r : ℝ)) = 1 := by
     rw [sum_const, wooleyGradeRange_card, nsmul_eq_mul]
@@ -58,8 +62,7 @@ theorem wooley_grade_geometric_le_average
 
 /-- Some actual grade dominates the equal-weight geometric mean. -/
 theorem exists_wooley_grade_ge_geometric
-    {r : ℕ} (hr : 1 ≤ r) (Y : ℕ → ℝ)
-    (hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j) :
+     :
     ∃ j ∈ wooleyGradeRange r,
       ∏ i ∈ wooleyGradeRange r, (Y i) ^ (1 / (r : ℝ)) ≤ Y j := by
   let S : ℝ := ∑ i ∈ wooleyGradeRange r, Y i
@@ -68,16 +71,13 @@ theorem exists_wooley_grade_ge_geometric
       ∑ _j ∈ wooleyGradeRange r, S / (r : ℝ) ≤
         ∑ j ∈ wooleyGradeRange r, Y j := by
     rw [sum_const, wooleyGradeRange_card, nsmul_eq_mul]
-    dsimp [S]
-    have hrR : (r : ℝ) ≠ 0 := by positivity
-    field_simp
-    exact le_rfl
+    field_simp <;> nlinarith
   obtain ⟨j, hj, hjdom⟩ :=
     Finset.exists_le_of_sum_le (wooleyGradeRange_nonempty hr) hsum
   refine ⟨j, hj, havg.trans ?_⟩
-  have hrR : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
-  dsimp [S] at hjdom ⊢
-  simpa only [one_div, inv_mul_eq_div] using hjdom
+  grind
+end
+
 
 /-- Source form of the elementary inequality used in Lemma 9.2, with
 `Y_j = X_j ^ rho_j`. -/
@@ -102,7 +102,6 @@ theorem exists_wooley_grade_for_weighted_product
         intro i hi
         dsimp [Y]
         rw [← Real.rpow_mul (hX i hi)]
-        congr 1
         ring
     _ ≤ Y j := hgeom
 
@@ -129,30 +128,16 @@ theorem wooley_section9_decay_exponent
   have hkpos : (0 : ℝ) < k := by positivity
   have hrpos : (0 : ℝ) < r := by positivity
   have hweight :
-      1 / (k : ℝ) ≤ (1 - 1 / (k : ℝ)) / (r : ℝ) := by
-    rw [div_le_div_iff₀ hkpos hrpos]
-    have hident : (1 - 1 / (k : ℝ)) * (k : ℝ) = (k : ℝ) - 1 := by
-      field_simp
-    rw [one_mul, hident]
-    exact hrkR
+      1 / (k : ℝ) ≤ (1 - 1 / (k : ℝ)) / (r : ℝ) := by field_simp <;> nlinarith
   have hbLambda : 0 ≤ (b : ℝ) * Lambda :=
     mul_nonneg (Nat.cast_nonneg _) hLambda
   have hweighted :
       (b : ℝ) * Lambda / (k : ℝ) ≤
-        (b : ℝ) * ((1 - 1 / (k : ℝ)) * Lambda / (r : ℝ)) := by
-    calc
-      (b : ℝ) * Lambda / (k : ℝ) =
-          ((b : ℝ) * Lambda) * (1 / (k : ℝ)) := by ring
-      _ ≤ ((b : ℝ) * Lambda) *
-          ((1 - 1 / (k : ℝ)) / (r : ℝ)) :=
-        mul_le_mul_of_nonneg_left hweight hbLambda
-      _ = (b : ℝ) * ((1 - 1 / (k : ℝ)) * Lambda / (r : ℝ)) := by
-        ring
+        (b : ℝ) * ((1 - 1 / (k : ℝ)) * Lambda / (r : ℝ)) := by field_simp <;> nlinarith
   have hhalf :
       -(b : ℝ) * Lambda / (2 * (k : ℝ)) =
         -((b : ℝ) * Lambda / (k : ℝ)) / 2 := by ring
-  rw [hhalf]
-  linarith
+  grind
 
 /-- The power-of-`p` form of the Lemma 9.2 loss absorption. -/
 theorem wooley_section9_loss_absorption
@@ -171,10 +156,9 @@ theorem wooley_section9_loss_absorption
   apply Real.rpow_le_rpow_of_exponent_le
     (by exact_mod_cast (show 1 ≤ p by omega))
   have h := wooley_section9_decay_exponent hk hr hrk hLambda hhierarchy
-  convert h using 1
-  all_goals ring
+  grind
 
 
-end
 
-end GafniTao
+
+

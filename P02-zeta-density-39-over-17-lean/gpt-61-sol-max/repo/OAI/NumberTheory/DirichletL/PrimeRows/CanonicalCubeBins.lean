@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalCubeReduction
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology
-open MeasureTheory Set Filter
+open MeasureTheory Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
@@ -26,7 +26,7 @@ theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
       detectorMaximum (sourceDetectorFamily S hS η u (ψ u)) (3*(idx u+1:ℕ)*B)<a+2*e ∧
       (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS η u (ψ u) j) s=0 ∧
         ¬((sourceDetectorFamily S hS η u (ψ u) j).residue=1 ∧ s=1) ∧
-        a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*B) := by
+        a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*B) := by
   have hex (u : FreeRow) := exists_detector_buffered_bin (sourceDetectorFamily S hS η u (ψ u)) B e hB he n hn hwidth
   choose idx grid hspec using hex
   refine ⟨idx,grid,?_⟩
@@ -56,8 +56,8 @@ theorem source_cube_height_eventually (τ : ℝ) (hτ : 0<τ) :
     (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop (2:ℝ))] with Z hZ hpow
   exact ⟨hZ,hpow⟩
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

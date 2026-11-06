@@ -8,24 +8,30 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseMoment
+open ActualEisensteinCubic CubicEisenstein InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι→Eis} {N a c : Eis} {mode : Bool}
 
-lemma reindexControlled_matrix_one (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι) :
+section
+variable (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι)
+include D e
+
+lemma reindexControlled_matrix_one  :
     (reindexControlled D e).matrix (fun _ => 1)=D.matrix (fun _ => 1) := by
   change D.matrix (unitFrequencyEquiv p e (fun _ => 1))=_
   rw [unitFrequencyEquiv_one]
 
-lemma reindexControlled_fixedFactor (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι) :
+lemma reindexControlled_fixedFactor  :
     (reindexControlled D e).fixedFactor=D.fixedFactor := by
   unfold ControlledStratumArithmetic.fixedFactor
   rw [reindexControlled_matrix_one]
 
-lemma reindexControlled_U (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι) :
+lemma reindexControlled_U  :
     (reindexControlled D e).U=D.U := rfl
+end
+
 
 def reindexMarks (e : κ≃ι) (S : Finset ι) : Finset κ := Finset.univ.filter (fun k => e k∈S)
 
@@ -33,8 +39,12 @@ omit [Fintype ι] in
 lemma mem_reindexMarks (e : κ≃ι) (S : Finset ι) (k : κ) : k∈reindexMarks e S ↔ e k∈S := by
   simp [reindexMarks]
 
-lemma mixedActiveBracket_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι)
+include D e
+
+lemma mixedActiveBracket_reindex 
     (hp : ∀ i, p i≠0) (hg : ∀ i, λ₀∉Ideal.span {p i})
     (j : ι→ℕ) (S : Finset ι) (k : κ) (x : Eis) :
     mixedActiveBracket (fun k => hp (e k)) (fun k => hg (e k)) (fun k => j (e k))
@@ -42,8 +52,7 @@ lemma mixedActiveBracket_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
   simp only [mixedActiveBracket,mem_reindexMarks]
   rfl
 
-theorem mixedReflectedValue_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι)
+theorem mixedReflectedValue_reindex 
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i≠0) (hc : c≠0) (hg : ∀ i, λ₀∉Ideal.span {p i})
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
@@ -57,6 +66,8 @@ theorem mixedReflectedValue_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
   simp only [mixedReflectedValue,e.prod_comp p,reindexControlled_fixedFactor,
     reindexControlled_matrix_one,reindexControlled_U,hprod]
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

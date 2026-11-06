@@ -10,24 +10,27 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def idealMarkedLocalFactor (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   ∑e : Fin 2,∑'l,∑'k,∑'m,
     completedValuationMark P ((e.val,l),(k,m))*highPrimeTerm η x w z P ((e.val,l),(k,m))
 
-lemma markedPrimeTerm_summable_norm (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+section
+variable (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
+    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re)
+include η P x w z hx hw hz
+
+lemma markedPrimeTerm_summable_norm  :
     Summable (fun b : HighValuation=>‖completedValuationMark P b*highPrimeTerm η x w z P b‖) := by
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ (highPrimeTerm_summable_norm η x w z hx hw hz P)
   intro b
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (completedValuationMark_norm P b)
 
-lemma markedPrimeTerm_tsum (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+lemma markedPrimeTerm_tsum  :
     (∑'b : HighValuation,completedValuationMark P b*highPrimeTerm η x w z P b)=
       idealMarkedLocalFactor η P x w z := by
   have hs := (markedPrimeTerm_summable_norm η P x w z hx hw hz).of_norm
@@ -41,6 +44,8 @@ lemma markedPrimeTerm_tsum (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z 
     simp only [highPrimeTerm_zero_of_two_le η x w z P e _ _ _ hh,mul_zero,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
+end
+
 
 lemma selectedLocal_outside (S : Finset Id) (hS : ∀P∈S,Prime P) (T : Finset PrimeIdeal)
     (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
@@ -101,7 +106,7 @@ lemma idealMarkedLocalFactor_eq_source (η : HeckeFamily.Character) (P : PrimeId
   · simp only [completedValuationMark,ht,ne_eq,not_false_eq_true,ite_true,one_mul]
     simpa only [hspan] using sourcePrincipalTerm_pos p hp hg.1 (targetMonoid η p) (actualACube η p) x w z e.val l k m ht
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

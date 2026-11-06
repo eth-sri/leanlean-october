@@ -1,15 +1,16 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CompletedGauss CubicEisenstein FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma gaussianAnnulus_norm_le_one (y : ℝ) : ‖gaussianAnnulus y‖≤1 := by
@@ -30,7 +31,11 @@ lemma gaussianAnnulus_scaled_square (N T : ℝ) (hN : 0<N) (hT : 0<T) :
     _ ≤ N^2 := mul_le_of_le_one_right (sq_nonneg _) (gaussianAnnulus_norm_le_one _)
     _ ≤ _ := by nlinarith
 
-lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+section
+variable (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+include S D Ψ
+
+lemma gaussianFixedWindow_spectral_identity 
     (T t : ℝ) (hT : 0<T) (I J : Id) (hI : I≠0) (hJ : J≠0) :
     correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J=
       spectralSummand S D Ψ 2 I J*
@@ -50,7 +55,7 @@ lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*
   push_cast
   field_simp
 
-lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+lemma gaussianFixedWindow_summand_crude 
     (hΨ : ∀n,‖Ψ n‖≤1) (T t : ℝ) (hT : 0<T) (I J : Id) :
     ‖correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J‖≤
       4*T^2*rowMajorant 2 (I,J) := by
@@ -77,12 +82,14 @@ lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
       spectralSummand_vertical_bound S D Ψ hΨ 2 0 (I,J)
   have hn := gaussianAnnulus_scaled_square _ T hN hT
   exact (mul_le_mul hs hn (by positivity) (by unfold rowMajorant;positivity)).trans_eq (by ring)
+end
+
 
 theorem gaussianFixedWindow_completed_crude :
     ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀D : Id,∀Ψ : O→*ℂ,
       (∀n,‖Ψ n‖≤1)→∀T t : ℝ,0<T→
       ‖correctedCompletedT S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T‖≤C*T^2 := by
-  let M : ℝ := ∑'p : Id×Id,rowMajorant 2 p
+  let M := ∑'p : Id×Id,rowMajorant 2 p
   have hM : 0≤M := tsum_nonneg (fun p=>by unfold rowMajorant;positivity)
   refine ⟨4*M+1,by positivity,?_⟩
   intro S D Ψ hΨ T t hT
@@ -96,7 +103,7 @@ theorem gaussianFixedWindow_completed_crude :
     _ = (4*M)*T^2 := by rw [tsum_mul_left];dsimp only [M];ring
     _ ≤ _ := by nlinarith [sq_nonneg T]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramIdealSummation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "SupportedIdeal" => {I : Ideal O // Supported I}
 
 lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
@@ -26,7 +26,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
     apply Subtype.ext
     exact congrArg (fun I : SupportedIdeal=>I.val) h
   have he : (∑a : canonicalSlotSupport T,elementNorm a.val^(-2:ℝ))=
-      ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I^(-2:ℝ) := by
+      ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I ^(-2:ℝ) := by
     rw [Finset.sum_image (fun P _ Q _ h=>hf h)]
     have hh := (canonicalSlotEquiv T hT).sum_comp (fun a=>elementNorm a.val^(-2:ℝ))
     rw [←hh]
@@ -84,7 +84,7 @@ theorem lowUnselectedMass_bound (K : ℕ) (M : ℝ) (hM : 0≤M) :
       simp only [Finset.prod_const,Finset.card_univ,Fintype.card_coe]
       exact pow_le_pow_right₀ (le_max_left _ _) (by simpa using Finset.card_le_card (Finset.subset_univ J))
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

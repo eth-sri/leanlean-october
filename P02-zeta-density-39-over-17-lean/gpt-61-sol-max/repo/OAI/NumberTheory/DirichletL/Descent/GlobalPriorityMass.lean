@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityBranches
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 
@@ -6,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
-open InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
@@ -37,8 +38,6 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
   let Cr:ℝ:=Fintype.card (RayCharacter×RayCharacter)
   let Cc:ℝ:=Fintype.card FirstCoreIndex
   refine ⟨(32*512)*Cr*Cc*coefficientBound*Cm^2,by
-    have hr:0<Cr:=by dsimp [Cr];exact_mod_cast Fintype.card_pos
-    have hc:0<Cc:=by dsimp [Cc];exact_mod_cast Fintype.card_pos
     have:=coefficientBound_pos;positivity,?_⟩
   intro ι σ _ _ p hp _ hg hcop Jo original extra negative Ψ m w slots lists a B hslots ha hΨ hw hB U hU0 hU
   let N:=fun x:Source ι Jo=>(primeProductNorm p (wholeExtractedSupport (fun x=>extra x.cube) negative x))^(2*ε)
@@ -82,10 +81,9 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
       simp only [Finset.sum_const,Finset.card_univ,Finset.card_powerset,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
       have he:((2:ℝ)^slots.card)^2=(4:ℝ)^slots.card:=by rw [←pow_mul,pow_mul'];norm_num
       rw [←he]
-      dsimp only [Cr,Cc,N]
       ring
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

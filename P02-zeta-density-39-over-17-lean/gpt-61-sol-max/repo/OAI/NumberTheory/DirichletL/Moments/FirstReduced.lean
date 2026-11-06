@@ -11,41 +11,54 @@ open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstReduced
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentActive
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonSupport CenteredMomentFourier
+open CenteredMomentActive
+open scoped EisensteinO
 
-def tripleRow (a b r : O) (χa : MulChar (Residue a) ℂ)
-    (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ) (z : O) : ℂ :=
+section
+variable (a b r : O)
+include a b r
+
+section
+variable (χa : MulChar (Residue a) ℂ)
+    (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ)
+include χa χb G
+
+def tripleRow  (z : O) : ℂ :=
   χa (Ideal.Quotient.mk _ z)*χb (Ideal.Quotient.mk _ z)*G (Ideal.Quotient.mk _ z)
 
-def tripleResidue (a b r : O) (χa : MulChar (Residue a) ℂ)
-    (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ) (x : Residue (a*(b*r))) : ℂ :=
+def tripleResidue  (x : Residue (a*(b*r))) : ℂ :=
   χa (frequencyReduction a _ (dvd_mul_right _ _) x)*
     χb (frequencyReduction b _ (dvd_mul_of_dvd_right (dvd_mul_right _ _) _) x)*
     G (frequencyReduction r _ (dvd_mul_of_dvd_right (dvd_mul_left _ _) _) x)
 
-@[simp] theorem tripleResidue_mk (a b r : O) (χa : MulChar (Residue a) ℂ)
-    (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ) (z : O) :
+@[simp] theorem tripleResidue_mk  (z : O) :
     tripleResidue a b r χa χb G (Ideal.Quotient.mk _ z)=tripleRow a b r χa χb G z := by
   simp only [tripleResidue,tripleRow,frequencyReduction_mk]
 
-theorem tripleRow_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
-    (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ)
+theorem tripleRow_mul 
     (hG : ∀ x y,G (x*y)=G x*G y) (x y : O) :
     tripleRow a b r χa χb G (x*y)=tripleRow a b r χa χb G x*tripleRow a b r χa χb G y := by
   simp only [tripleRow,map_mul,hG]
   ring
+end
 
-def tripleFourier (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
+
+section
+variable (ha : a≠0) (hb : b≠0) (hr : r≠0)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (h : O) : ℂ :=
+    (G : Residue r → ℂ)
+include ha hb hr χa χb G
+
+def tripleFourier  (h : O) : ℂ :=
   ∑' x : Residue (a*(b*r)),tripleResidue a b r χa χb G x*
     quotientTrace (a*(b*r)) (mul_ne_zero ha (mul_ne_zero hb hr)) (Ideal.Quotient.mk _ h*x)
 
-theorem tripleRow_radial_summable (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include W K hK
+
+theorem tripleRow_radial_summable  :
     Summable (fun z : O => tripleRow a b r χa χb G z*W (‖eisEmbedding z‖^2/K)) := by
   let := finite_quotient_span (mul_ne_zero ha (mul_ne_zero hb hr))
   let : Fintype (Residue (a*(b*r))) := Fintype.ofFinite _
@@ -53,9 +66,7 @@ theorem tripleRow_radial_summable (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r�
     (Ideal.Quotient.mk (Ideal.span {a*(b*r)})) (tripleResidue a b r χa χb G)
   simpa only [tripleResidue_mk,scaledRadialTest_apply] using hh
 
-theorem tripleRow_poisson (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+theorem tripleRow_poisson  :
     (∑' z : O,tripleRow a b r χa χb G z*W (‖eisEmbedding z‖^2/K)) =
       ((K/‖eisEmbedding (a*(b*r))‖^2:ℝ):ℂ)*∑' h : O,
         tripleFourier a b r ha hb hr χa χb G h*
@@ -65,6 +76,10 @@ theorem tripleRow_poisson (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
   have hh := actual_radial_paper_poisson_trace W K hK (a*(b*r))
     (mul_ne_zero ha (mul_ne_zero hb hr)) (tripleResidue a b r χa χb G)
   simpa only [tripleResidue_mk,tripleFourier,quotientTrace,tsum_fintype,Complex.real_smul] using hh
+end
+end
+end
+
 
 theorem masked_triple_poisson {α : Type*} (P : α → Ideal O)
     [∀ i,(P i).IsMaximal] (hinj : Function.Injective P) (S : Finset α)
@@ -86,7 +101,11 @@ theorem masked_triple_poisson {α : Type*} (P : α → Ideal O)
   intro E hE
   rw [tripleRow_poisson a b r ha hb hr χa χb G W _ (primeSubset_reducedScale_pos P E hK)]
 
-theorem principalSexticRow_mul {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*}
+include ι
+
+theorem principalSexticRow_mul  [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P)) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
     (j : ι → ℕ) (r : O) (hr : Ideal.span {r}=∏ i,P i) (x y : Residue r) :
@@ -98,7 +117,7 @@ theorem principalSexticRow_mul {ι : Type*} [Fintype ι]
     principalSexticRow_mk P hcop hg j r hr x,principalSexticRow_mk P hcop hg j r hr y,
     finiteSexticRow_mul P hg j x y]
 
-theorem common_residual_reduced_poisson {ι : Type*}
+theorem common_residual_reduced_poisson 
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal] (hinj : Function.Injective P)
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i) (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
     (B : Finset ι) (c d : ι → ℕ) (hc : ∀ i∈B,c i≠0) (hd : ∀ i∈B,d i≠0)
@@ -132,9 +151,11 @@ theorem common_residual_reduced_poisson {ι : Type*}
     (activePrimes_pairwise_coprime P hinj B c d) (fun i => hg i.val)
     (fun i => netExponent (c i.val) (d i.val)) _ (span_finitePrimeModulus _) z]
   ring
-
-end SevenEighths.CenteredMomentFirstReduced
-
 end
 
-end OAI
+
+
+
+
+
+

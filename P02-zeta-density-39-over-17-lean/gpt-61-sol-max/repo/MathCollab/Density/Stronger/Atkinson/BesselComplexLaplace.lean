@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected literal Y0 Mellin proofs adapted
 from DFIComplexLaplace.lean, exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -21,10 +22,9 @@ the full right half-plane.  The proof differentiates under the integral and
 uses analytic continuation from positive real damping parameters.
 -/
 
-open Complex Set MeasureTheory Filter
+open Complex MeasureTheory Filter
 open scoped Topology
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -47,7 +47,7 @@ theorem integrableOn_cpow_mul_cexp_neg_complex_mul_Ioi
     exact le_rfl
 
 /-- The `dfiComplexLaplace` definition used by the source-facing construction in `DFIComplexLaplace`. -/
-noncomputable def dfiComplexLaplace (s a : ℂ) : ℂ :=
+def dfiComplexLaplace (s a : ℂ) : ℂ :=
   ∫ x : ℝ in Set.Ioi 0, (x : ℂ) ^ (s - 1) * cexp (-(a * x))
 
 theorem hasDerivAt_dfiComplexLaplace
@@ -59,9 +59,9 @@ theorem hasDerivAt_dfiComplexLaplace
     (x : ℂ) ^ (s - 1) * cexp (-(b * x))
   let F' : ℂ → ℝ → ℂ := fun b x =>
     (x : ℂ) ^ (s - 1) * (-x) * cexp (-(b * x))
-  let r : ℝ := a.re / 2
+  let r := a.re / 2
   have hr : 0 < r := half_pos ha
-  have hball : Metric.ball a r ∈ 𝓝 a := Metric.ball_mem_nhds a hr
+  have hball := Metric.ball_mem_nhds a hr
   have hMeas : ∀ᶠ b in 𝓝 a,
       AEStronglyMeasurable (F b) (volume.restrict (Set.Ioi 0)) := by
     filter_upwards with b
@@ -82,7 +82,7 @@ theorem hasDerivAt_dfiComplexLaplace
         (Or.inr hx.ne')).mul (by fun_prop)).mul
           (Complex.continuous_exp.continuousAt.comp (by fun_prop))
     exact hcont.aestronglyMeasurable measurableSet_Ioi
-  let bound : ℝ → ℝ := fun x => x ^ s.re * Real.exp (-(r * x))
+  let bound := fun x => x ^ s.re * Real.exp (-(r * x))
   have hBoundInt : Integrable bound (volume.restrict (Set.Ioi 0)) := by
     have h := integrableOn_rpow_mul_exp_neg_mul_rpow
       (p := (1 : ℝ)) (s := s.re) (b := r) (by linarith) (by norm_num) hr
@@ -96,16 +96,12 @@ theorem hasDerivAt_dfiComplexLaplace
     have hbre : r ≤ b.re := by
       have hre : |b.re - a.re| < r :=
         (abs_re_le_norm (b - a)).trans_lt (by simpa [dist_eq_norm] using hb)
-      dsimp [r]
-      have hlower := (abs_lt.mp hre).1
-      dsimp [r] at hlower
-      linarith
+      grind
     dsimp [F', bound]
     rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0,
       norm_neg, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hx0,
       Complex.norm_exp]
-    simp only [sub_re, one_re, neg_re, mul_re, ofReal_re, ofReal_im,
-      mul_zero, sub_zero]
+    simp
     have hexp : Real.exp (-(b.re * x)) ≤ Real.exp (-(r * x)) :=
       Real.exp_le_exp.mpr (by nlinarith)
     rw [show x ^ (s.re - 1) * x = x ^ s.re by
@@ -160,9 +156,9 @@ theorem dfiComplexLaplace_ofReal
 theorem dfiComplexLaplace_eq
     {s a : ℂ} (hs : 0 < s.re) (ha : 0 < a.re) :
     dfiComplexLaplace s a = a ^ (-s) * Gamma s := by
-  let U : Set ℂ := {b : ℂ | 0 < b.re}
-  let F : ℂ → ℂ := dfiComplexLaplace s
-  let G : ℂ → ℂ := fun b => b ^ (-s) * Gamma s
+  let U := {b : ℂ | 0 < b.re}
+  let F := dfiComplexLaplace s
+  let G := fun b => b ^ (-s) * Gamma s
   have hF : AnalyticOnNhd ℂ F U := by
     simpa only [F, U] using analyticOnNhd_dfiComplexLaplace hs
   have hGDiff : DifferentiableOn ℂ G U := by
@@ -175,7 +171,7 @@ theorem dfiComplexLaplace_eq
   have hUOpen : IsOpen U := by
     dsimp [U]
     exact isOpen_lt continuous_const continuous_re
-  have hG : AnalyticOnNhd ℂ G U := hGDiff.analyticOnNhd hUOpen
+  have hG := hGDiff.analyticOnNhd hUOpen
   have hReal : ∃ᶠ (x : ℝ) in 𝓝[≠] (1 : ℝ), F x = G x := by
     have hEventually : ∀ᶠ x : ℝ in 𝓝 (1 : ℝ), F x = G x := by
       filter_upwards [Ioi_mem_nhds (show (0 : ℝ) < 1 by norm_num)] with x hx
@@ -197,4 +193,4 @@ theorem dfiComplexLaplace_eq
     (z₀ := (1 : ℂ)) (by simp [U]) hFreq
   exact hEq ha
 
-end MathCollab.Density.Stronger.Atkinson
+

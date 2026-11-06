@@ -7,18 +7,22 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open MeasureTheory InverseKernelSourceUniform CompletedDyadic
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+
+open scoped EisensteinEis
 universe u v w
 variable {N a c : Eis} {mode : Bool}
 
-theorem actual_reflected_finite_source_uniform_type_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
+section
+variable (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
     (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
     (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+    (hW : ContDiff ℝ ∞ W) (J : ℕ)
+include a₀ b₀ ha₀ windows M hM hwindows W hWsupport hW J
+
+theorem actual_reflected_finite_source_uniform_type_uniform
+     :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -64,10 +68,7 @@ theorem actual_reflected_finite_source_uniform_type_uniform
   simpa only [actualKernelSourceTerm_numeric,mul_assoc] using hh
 
 theorem weighted_finite_physical_row_common_measure_type_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+     :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -119,10 +120,7 @@ theorem weighted_finite_physical_row_common_measure_type_uniform
   ring
 
 theorem weighted_finite_physical_row_branch_measure_type_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+     :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -170,8 +168,10 @@ theorem weighted_finite_physical_row_branch_measure_type_uniform
   congr 1
   exact weightedPhysicalReflectedRow_eq_branches F K hK S jF Pset nset bset hprod D hcop
     G0 D0 s hc hκ hA hbgen _ _ _ unit m
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

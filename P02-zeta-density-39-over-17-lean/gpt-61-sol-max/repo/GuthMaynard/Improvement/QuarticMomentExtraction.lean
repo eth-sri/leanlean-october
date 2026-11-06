@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceQuarticTail
 public import GuthMaynard.Improvement.QuarticCellGeometry
 public import GuthMaynard.Improvement.TruncatedSourceAttachment
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -107,7 +107,7 @@ theorem quartic_moment_extraction (q : ℕ) :
     have hv4 := pow_le_pow_left₀ hV.le (hv w (hGW hg)) 4
     have hh := mul_le_mul_of_nonneg_left (hnear.trans (add_le_add_right htail _)) hA
     dsimp only [A,μ] at hh ⊢
-    convert (hv4.trans hrep).trans hh using 1; ring
+    grind
   have hall := Finset.sum_le_sum hone
   simp only [Finset.sum_add_distrib,Finset.sum_const,nsmul_eq_mul,← Finset.mul_sum] at hall
   have hs := mul_le_mul_of_nonneg_left hsum hA
@@ -117,9 +117,7 @@ theorem quartic_moment_extraction (q : ℕ) :
     apply mul_le_mul_of_nonneg_right _ (by positivity)
     dsimp [C]
     nlinarith
-  have hcount : (G.card:ℝ)*V^4 ≤ 2*A*B*M := by
-    have ht := mul_le_mul_of_nonneg_left hsmall' (show 0 ≤ (G.card:ℝ) by positivity)
-    nlinarith
+  have hcount : (G.card:ℝ)*V^4 ≤ 2*A*B*M := by nlinarith
   have hcount' : (G.card:ℝ) ≤ C*M/V^4 := by
     apply (le_div_iff₀ (pow_pos hV 4)).mpr
     have hc : 2*A*B ≤ C := by dsimp [C]; nlinarith
@@ -130,4 +128,4 @@ theorem quartic_moment_extraction (q : ℕ) :
   dsimp only [K] at hz
   linarith
 
-end GuthMaynard.Improvement
+

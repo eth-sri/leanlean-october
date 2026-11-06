@@ -13,19 +13,20 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferencePhysicalBounded
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceLiveBounded CenteredMomentEnergyOriginalSource
+open CenteredMomentEnergyZeroReferenceLiveBounded
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
+
+open scoped HeckeO
 
 open CenteredMomentEnergyZeroReferencePhysical
+
+local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 theorem actual_positive_source_entry (a b bΦ rho ε Mcap Bmask B εdiag ξ saving:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
@@ -38,7 +39,7 @@ theorem actual_positive_source_entry (a b bΦ rho ε Mcap Bmask B εdiag ξ savi
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤ s.width →s.width≤Mcap →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂),X₁*X₂≤Z^B →
       5*s.width/6≤length Z X₁+length Z X₂ →
       let inp:=balancedInput s p ha t X₁ X₂ hX₁ hX₂;
@@ -77,8 +78,8 @@ theorem actual_positive_source_entry (a b bΦ rho ε Mcap Bmask B εdiag ξ savi
     dsimp only [inp] at hphysical
     linarith only [hphysical,hreference]
 
-end SevenEighths.CenteredMomentEnergyZeroReferencePhysicalBounded
 
-end
 
-end OAI
+
+
+

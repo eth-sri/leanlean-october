@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceRatioSampling
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped FourierTransform
@@ -50,9 +50,13 @@ theorem source_ratio_image_data {N : ℝ} (hN : 0 ≤ N) {q : ℕ × ℕ}
   exact ⟨hp.1,hp.2.1,hp.2.2.1,hp.2.2.2,
     (show ((max q.1 q.2:ℕ):ℝ) ≤ (⌊2*N⌋₊:ℝ) by exact_mod_cast hp.2.2.2).trans (Nat.floor_le (by positivity)),hband,by unfold sourceRatioWeight; positivity,hweight⟩
 
+section
+variable {N : ℝ} (hN : 2 ≤ N)
+include N hN
+
 /-- The global square-weight budget dominates every actual low-height subset.
 Its logarithm is the source length log(2N), avoiding an artificial floor loss. -/
-theorem source_ratio_image_square_weight {N : ℝ} (hN : 2 ≤ N)
+theorem source_ratio_image_square_weight 
     (S : Finset (ℕ × ℕ)) (hS : S ⊆ sourceRatioImage N) :
     (∑ q ∈ S, (sourceRatioWeight N q)^2) ≤ 16*N^2*Real.log (2*N) := by
   have hN0 : 0 ≤ N := by linarith
@@ -80,7 +84,7 @@ theorem source_ratio_image_square_weight {N : ℝ} (hN : 2 ≤ N)
     _ = _ := by ring
 
 /-- Exact low-height estimate for actual gcd fibers. -/
-theorem source_actual_ratio_low {N : ℝ} (hN : 2 ≤ N) {Y : ℝ} (hY : 0 < Y)
+theorem source_actual_ratio_low  {Y : ℝ} (hY : 0 < Y)
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ (sourceRatioImage N).filter (fun q => (max q.1 q.2:ℕ) ≤ Y),
@@ -96,7 +100,7 @@ theorem source_actual_ratio_low {N : ℝ} (hN : 2 ≤ N) {Y : ℝ} (hY : 0 < Y)
   · exact (show (q.2:ℝ) ≤ (max q.1 q.2:ℕ) by exact_mod_cast (le_max_right q.1 q.2)).trans hheight
 
 /-- Actual high-shell estimate with no arithmetic premise left open. -/
-theorem source_actual_ratio_shell {N : ℝ} (hN : 2 ≤ N) {Q : ℝ} (hQ : 1 ≤ Q)
+theorem source_actual_ratio_shell  {Q : ℝ} (hQ : 1 ≤ Q)
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ (sourceRatioImage N).filter (fun q => Q < (max q.1 q.2:ℕ) ∧ (max q.1 q.2:ℕ) ≤ 2*Q),
@@ -113,6 +117,8 @@ theorem source_actual_ratio_shell {N : ℝ} (hN : 2 ≤ N) {Q : ℝ} (hQ : 1 ≤
     (sourceRatioWeight N)
     (fun q hq => (source_ratio_image_data (by linarith : 0 ≤ N) (mem_filter.mp hq).1).2.2.2.2.2.2.2)
     h1 h2 hR hs
-  convert hh using 1; ring
+  grind
+end
 
-end GuthMaynard.Improvement
+
+

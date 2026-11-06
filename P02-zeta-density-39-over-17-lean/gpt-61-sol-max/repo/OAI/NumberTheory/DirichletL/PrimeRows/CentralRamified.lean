@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
@@ -23,7 +23,7 @@ theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : P
         (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w)) /
         ramifiedCorrection η u P hs x w z‖≤
       800*(P.val.absNorm:ℝ)^(-(1/2:ℝ))+
-        (if 2≤multiplicity (primaryGenerator P.val) u.val then 12*(P.val.absNorm:ℝ)^(-w.re) else 0) := by
+        (if 2≤ multiplicity (primaryGenerator P.val) u.val then 12*(P.val.absNorm:ℝ)^(-w.re) else 0) := by
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
@@ -47,7 +47,7 @@ theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : P
       halpha halpha1 heps heps1 hx hw hz (multiplicity p u.val) (multiplicity_lt_six u p hp)
     dsimp only at hb
     simpa only [ramifiedCorrection,p,hnorm] using hb
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

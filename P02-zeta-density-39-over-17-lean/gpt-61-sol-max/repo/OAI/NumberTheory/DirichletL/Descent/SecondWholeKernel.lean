@@ -9,11 +9,15 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (e k : Eis)
+open scoped EisensteinEis
+
+section
+variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
+    (p : ι → Eis)
+include ι σ p
+
+lemma secondSourcePairKernel_mark_factors  (e k : Eis)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (A₁ A₂ : Finset ι) (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ,ℂ)) (Y : ℝ) (S T : Finset ι) :
     secondSourcePairKernel p e k
@@ -24,8 +28,7 @@ lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [Deci
   simp only [secondSourcePairKernel,star_mul]
   ring
 
-theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem secondChildKernelPair_whole_profile  (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (F G V A₁ A₂ : Finset ι) (Ψ₁ Ψ₂ : Eis →* ℂ) (m r c d e k : Eis)
@@ -60,8 +63,10 @@ theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [De
   have hp := secondSourcePairKernel_profile p hp G V N M hVN hVM e k W₁ W₂ Φ Y
   rw [← hp]
   ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

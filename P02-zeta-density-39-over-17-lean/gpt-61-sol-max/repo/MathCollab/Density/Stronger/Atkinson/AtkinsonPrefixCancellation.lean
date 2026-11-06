@@ -20,7 +20,6 @@ bounds for every shorter prefix, including zero, without a common
 maximizer or a terminal-block substitution.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex
@@ -34,8 +33,12 @@ def atkinsonPrefixBProcessMajorant (M N : ℕ) (t u : ℝ) : ℝ :=
       2*(Real.sqrt (atkinsonIndexBProcessLambda t u M N)/
         atkinsonIndexBProcessLambda t u M N+1))
 
-theorem atkinsonIndexBProcessLambdaUpper_pos {M N : ℕ} {t u : ℝ}
-    (hu : 0 < u) (htu : u < t) (hM : 0 < M) :
+section
+variable {M N : ℕ} {t u : ℝ}
+    (hu : 0 < u) (htu : u < t) (hM : 0 < M)
+include M N t u hu htu hM
+
+theorem atkinsonIndexBProcessLambdaUpper_pos  :
     0 < atkinsonIndexBProcessLambdaUpper t u M N := by
   unfold atkinsonIndexBProcessLambdaUpper atkinsonIndexBoxCurvatureUpper
   exact mul_pos
@@ -44,13 +47,14 @@ theorem atkinsonIndexBProcessLambdaUpper_pos {M N : ℕ} {t u : ℝ}
         exact_mod_cast (show 0 < M+N+2 by omega)))))
     (sub_pos.mpr htu)
 
-theorem atkinsonPrefixBProcessMajorant_nonneg {M N : ℕ} {t u : ℝ}
-    (hu : 0 < u) (htu : u < t) (hM : 0 < M) :
+theorem atkinsonPrefixBProcessMajorant_nonneg  :
     0 ≤ atkinsonPrefixBProcessMajorant M N t u := by
   have hl := atkinsonIndexBProcessLambda_pos (N := N) hu htu hM
   have hU := atkinsonIndexBProcessLambdaUpper_pos (N := N) hu htu hM
   unfold atkinsonPrefixBProcessMajorant
   positivity
+end
+
 
 theorem norm_atkinsonPrefixGram_le_bProcess {M N j : ℕ} {t u : ℝ}
     (hu : 0 < u) (htu : u < t) (hM : 0 < M)
@@ -129,8 +133,12 @@ theorem norm_atkinsonPrefixGram_le_firstDerivative {M N j : ℕ} {t u : ℝ}
       rw [atkinsonPrefixGram_swap,Complex.norm_conj] at hraw
       exact hraw
 
-theorem atkinsonPrefixGramMax_le_firstDerivative {M N : ℕ} {t u : ℝ}
+section
+variable {M N : ℕ} {t u : ℝ}
     (hu : 0 < u) (htu : u < t) (hM : 0 < M)
+include M N t u hu htu hM
+
+theorem atkinsonPrefixGramMax_le_firstDerivative 
     (hblock : ((M+N+2:ℕ):ℝ) ≤ u) (htUpper : t ≤ 2*u)
     (hsmall : atkinsonIndexFirstDerivativeUpper u t M ((M:ℝ)+(N:ℝ)+1) ≤ Real.pi) :
     atkinsonPrefixGramMax M N t u ≤ atkinsonPrefixFirstDerivativeMajorant M N t u := by
@@ -140,13 +148,14 @@ theorem atkinsonPrefixGramMax_le_firstDerivative {M N : ℕ} {t u : ℝ}
   exact norm_atkinsonPrefixGram_le_firstDerivative hu htu hM hblock htUpper hsmall
     (Nat.le_of_lt_succ (Finset.mem_range.mp hj))
 
-theorem atkinsonPrefixFirstDerivativeMajorant_eq_gap {M N : ℕ} {t u : ℝ}
-    (hu : 0 < u) (htu : u < t) (hM : 0 < M) :
+theorem atkinsonPrefixFirstDerivativeMajorant_eq_gap  :
     atkinsonPrefixFirstDerivativeMajorant M N t u =
       2*((M:ℝ)+(N:ℝ)+1)*atkinsonIndexSlopeUpper u M/(t-u) := by
   have hs := atkinsonIndexSlopeUpper_pos (x := (M:ℝ)) hu (by exact_mod_cast hM)
   have hB : (0:ℝ) < (M:ℝ)+(N:ℝ)+1 := by positivity
   unfold atkinsonPrefixFirstDerivativeMajorant atkinsonIndexFirstDerivativeLower
   field_simp [Real.pi_ne_zero,hs.ne',hB.ne',sub_ne_zero.mpr htu.ne']
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

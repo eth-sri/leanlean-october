@@ -13,13 +13,13 @@ original finite-order model bounds therefore control every requested
 averaged-curvature derivative, uniformly in the phase and stationary slope.
 -/
 
-noncomputable section
+
 
 open Set Expdb Filter MeasureTheory
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem iteratedDeriv_segmentTaylorAverage
     {f : ℝ → ℝ} {l r a x : ℝ}
@@ -70,8 +70,12 @@ theorem approximateModelPhase_iteratedDeriv_abs_le
       (iteratedDeriv_modelPhase_abs_le hσ hu p)
     _ = _ := by ring
 
+section
+variable {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+include F σ δ v u P
+
 theorem iteratedDeriv_modelPhaseAveragedCurvature
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+    
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) (k : ℕ) :
     iteratedDeriv k (modelPhaseAveragedCurvature F v) u =
@@ -85,7 +89,7 @@ theorem iteratedDeriv_modelPhaseAveragedCurvature
     (modelPhaseInverseSlope_mem hv) hu,Nat.zero_add]
 
 theorem abs_iteratedDeriv_modelPhaseAveragedCurvature_le
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+    
     (hσ : 0 ≤ σ) (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
     (k : ℕ) (hk : k+1 ≤ P) :
@@ -98,5 +102,7 @@ theorem abs_iteratedDeriv_modelPhaseAveragedCurvature_le
   intro x hx
   simpa only [iteratedDeriv_succ'] using
     approximateModelPhase_iteratedDeriv_abs_le hσ hF hx (k+1) hk
+end
 
-end TaoTrudgianYang2025
+
+

@@ -13,9 +13,9 @@ namespace SevenEighths.CenteredMomentRestrictedSource
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRowNorm
 open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedDomain
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
+open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 open CenteredMomentOriginalChildEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem rowPolynomial_allocation {α γ : Type*} [Fintype γ]
     (S : Finset α) (a : α → O) (b : γ → ℂ) (d : γ → α → ℂ) (z : O) :
@@ -111,8 +111,8 @@ theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O
     (Finset.mem_filter.mp B.property).1 (Finset.mem_filter.mp B.property).2
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ f keep W K)
 
-end SevenEighths.CenteredMomentRestrictedSource
 
-end
 
-end OAI
+
+
+

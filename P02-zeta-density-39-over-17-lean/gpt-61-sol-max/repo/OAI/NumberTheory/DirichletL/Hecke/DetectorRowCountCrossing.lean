@@ -72,8 +72,8 @@ lemma plain_at_crossing (δ x t : ℝ) (hd : denominator x≠0) :
   ring
 
 theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2) :
-    (r≤crossing x t → plainExponent δ x t r≤shortExponent δ x t) ∧
-      (crossing x t≤r → inverseExponent δ x r≤shortExponent δ x t) := by
+    (r≤crossing x t → plainExponent δ x t r≤ shortExponent δ x t) ∧
+      (crossing x t≤r → inverseExponent δ x r≤ shortExponent δ x t) := by
   have hd : denominator x≠0 := ne_of_gt (lt_of_lt_of_le (by norm_num) (denominator_lower hx'))
   constructor
   · intro hr
@@ -88,14 +88,14 @@ theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' 
     nlinarith [mul_nonneg hδ (sub_nonneg.mpr hh)]
 
 lemma short_ge_base {δ x t : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2)
-    (ht : t≤3/2) : 1-δ≤shortExponent δ x t := by
+    (ht : t≤3/2) : 1-δ≤ shortExponent δ x t := by
   have hd : 0<denominator x := lt_of_lt_of_le (by norm_num) (denominator_lower hx')
   have hp : 0≤primeWeight x := mul_nonneg (by linarith) (by linarith)
   unfold shortExponent
   exact le_add_of_nonneg_right (mul_nonneg (div_nonneg (mul_nonneg hδ hp) hd.le) (by linarith))
 
 theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
-    (hm : 1/3-γ≤m) (hm' : m≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hγ : 0≤γ) :
+    (hm : 1/3-γ≤ m) (hm' : m≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hγ : 0≤γ) :
     2*q*(1-2*m)*(2/9-1/(9/2+12*Δ))≤Δ/4+2*γ := by
   have hd : 0<9/2+12*Δ := by linarith
   have hden : (16 : ℝ)≤(9/2)*(9/2+12*Δ) := by nlinarith
@@ -112,8 +112,8 @@ theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
 
 theorem plain_capacity_comparison {δ x Δ t r m γ : ℝ}
     (hδ : 0≤δ) (hδ' : δ≤1) (hx : 0≤x) (hx' : x≤1/2)
-    (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hm : 1/3-γ≤m) (hm' : m≤1/2)
-    (hγ : 0≤γ) (hlength : t-r-γ≤m) :
+    (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hm : 1/3-γ≤ m) (hm' : m≤1/2)
+    (hγ : 0≤γ) (hlength : t-r-γ≤ m) :
     1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ)≤plainExponent δ x t r+Δ/4+4*γ := by
   have hq : 0≤δ*x := mul_nonneg hδ hx
   have hq' : δ*x≤1/2 := (mul_le_mul hδ' hx' hx (by norm_num)).trans_eq (by ring)
@@ -153,8 +153,8 @@ lemma long_count_bound {δ r t γ : ℝ} (hδ : δ≤5/6) (_hγ : 0≤γ)
   unfold longExponent
   nlinarith
 
-end SevenEighths.HeckeDetectorRowCount
 
-end
 
-end OAI
+
+
+

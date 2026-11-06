@@ -18,7 +18,7 @@ open Set Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseTaylorExtension (F : ℝ → ℝ) (σ : ℝ) (Q : ℕ) (w h : ℝ) : ℝ → ℝ :=
   taylorPastedExtension (anchoredLegendreError F σ w) Q
@@ -76,4 +76,4 @@ theorem modelPhaseTaylorExtension_uniformity
   exact (hpaste (anchoredLegendreError F σ w) _ _ h v (A*δ)
     hh hh₁ hgap hf hb hdistL hdistR n hn).trans_eq (by ring)
 
-end TaoTrudgianYang2025
+

@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceLiveBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyZeroReferenceBounded CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem balanced_reference_live (a b bΦ rho ε Mcap Bmask:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
@@ -25,7 +25,7 @@ theorem balanced_reference_live (a b bΦ rho ε Mcap Bmask:ℝ)
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤ s.width →s.width≤Mcap →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →
       5*s.width/6≤length Z X₁+length Z X₂ →
       s.plainEnergy p t X₁ X₂=0 ∨
@@ -52,8 +52,8 @@ theorem balanced_reference_live (a b bΦ rho ε Mcap Bmask:ℝ)
     have hh:=hdft.2.trans (hendpoint Z hZZ)
     linarith
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceLiveBounded
 
-end
 
-end OAI
+
+
+

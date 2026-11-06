@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.QuarticExtraction
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -45,7 +45,7 @@ theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
   have hT : 0 < T := hN0.trans_le hNT
   have hm : 0 ≤ M := (integral_nonneg (fun t => sq_nonneg
     (sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t))).trans hM
-  have hp : 1 ≤ N^ε := Real.one_le_rpow hN1 hε.le
+  have hp := Real.one_le_rpow hN1 hε.le
   have hx : 0 ≤ N^2/U^2+T*N^4/U^6 := by positivity
   have hy : 0 ≤ M/V^4 := by positivity
   by_cases hlarge : N₀ ≤ N
@@ -87,11 +87,7 @@ theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
         (mul_le_mul_of_nonneg_right hcoef (by positivity)) (add_nonneg hx hy)
   · have hNN : N ≤ N₀ := le_of_not_ge hlarge
     have hN₀ : 0 ≤ N₀ := hN0.le.trans hNN
-    have hspan := MathCollab.Density.intervalSpan_le_of_forall hT.le (U := W) (by
-      intro t ht s hs
-      obtain ⟨ht0,htT⟩ := hw t ht
-      obtain ⟨hs0,hsT⟩ := hw s hs
-      exact abs_le.mpr ⟨by linarith,by linarith⟩)
+    have hspan := MathCollab.Density.intervalSpan_le_of_forall hT.le (U := W) (by grind)
     have hcard := MathCollab.Density.separated_card_le_localDiameter hsep
     unfold MathCollab.Density.localDiameter at hcard
     have hcount : (W.card:ℝ) ≤ 2*N₀^2 := by
@@ -109,4 +105,4 @@ theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
     have hh := mul_le_mul_of_nonneg_left hbudget (show 0 ≤ C*N^ε by positivity)
     nlinarith
 
-end GuthMaynard.Improvement
+

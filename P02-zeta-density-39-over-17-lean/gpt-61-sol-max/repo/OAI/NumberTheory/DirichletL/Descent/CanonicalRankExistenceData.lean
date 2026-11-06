@@ -11,9 +11,9 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CanonicalRowCompletion
+open scoped EisensteinO
 
 def CompletePoolRankMoments (q D:ℕ) {σ:Type}[DecidableEq σ]
     (slots:Finset σ)
@@ -74,8 +74,8 @@ theorem actual_rank_successor_caps (n:ℕ)(L cstar cutoff eta M F c:ℝ)
   push_cast at *
   constructor <;> first | linarith | constructor <;> linarith
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

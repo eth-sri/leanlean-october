@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- Adapted from the audited MathCollab.Density.DetectorIdentity at
  eff263d7b957f99e73fd226f84b83dd826941151. Only the independently proved
  lower-real-part components are substituted; the literal detector is preserved. -/
@@ -8,11 +9,10 @@ public import MathCollab.Density.DetectorIdentity
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
+open Complex MeasureTheory Filter
 open MathCollab.Density MathCollab.Density.Contour
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- The exact infinite contour identity, with no Weyl premise or fixed relation
@@ -23,11 +23,11 @@ theorem short_smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
     smoothedDetector ρ X (1/Y) = detectorResidue ρ X Y +
       (((1/(2*Real.pi) : ℝ) : ℂ) * ∫ t : ℝ,
         detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
-  let a : ℝ := 1/2-ρ.re
+  let a := 1/2-ρ.re
   let F := detectorKernel ρ X Y
-  let Jl : ℂ := ∫ t : ℝ, F ((a : ℂ)+(t : ℂ)*I)
-  let Jr : ℂ := ∫ t : ℝ, F (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)
-  let c : ℂ := 1/(2*Real.pi*I)
+  let Jl := ∫ t : ℝ, F ((a : ℂ)+(t : ℂ)*I)
+  let Jr := ∫ t : ℝ, F (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)
+  let c := 1/(2*Real.pi*I)
   have hYpos : 0 < Y := lt_of_lt_of_le zero_lt_one hY
   have hl := intervalIntegral_tendsto_integral
     (short_integrable_detectorKernel_left (X := X) hYpos hβ hβ'.le)
@@ -49,7 +49,7 @@ theorem short_smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
       ((a : ℂ)-(R : ℂ)*I) (((1/2 : ℝ) : ℂ)+(R : ℂ)*I) = detectorResidue ρ X Y := by
     filter_upwards [eventually_gt_atTop |ρ.im|] with R hR
     exact short_detector_finite_rectangle_kernel_nine_thirteenths hYpos hβ hβ' hR hZero
-  have he : c*(I*Jr-I*Jl) = detectorResidue ρ X Y :=
+  have he :=
     tendsto_nhds_unique hlim ((tendsto_congr' heq).mpr tendsto_const_nhds)
   rw [short_smoothedDetector_eq_rightContour hYpos hβ]
   change (((1/(2*Real.pi) : ℝ) : ℂ)*Jr) = detectorResidue ρ X Y +
@@ -60,4 +60,4 @@ theorem short_smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
   field_simp
   ring
 
-end GuthMaynard.Improvement
+

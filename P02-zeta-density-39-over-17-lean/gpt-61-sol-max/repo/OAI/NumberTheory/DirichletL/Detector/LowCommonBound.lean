@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussianSum
 public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma low_window_log_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -49,7 +50,6 @@ theorem compensatedPhysicalProbe_low (η : HeckeFamily.Character) (S : Finset Id
   let C0 := (∑A∈(Finset.univ : Finset (Fin K)).powerset,C A)+1
   have hC0 : 0<C0 := by
     have hn := Finset.sum_nonneg (fun A (_ : A∈(Finset.univ : Finset (Fin K)).powerset)=>(hC A).le)
-    dsimp only [C0]
     linarith
   refine ⟨C0,hC0,?_⟩
   filter_upwards [Filter.eventually_all.mpr he] with Z hZ
@@ -106,7 +106,7 @@ theorem original_ray_compensatedPhysicalProbe_low (η : HeckeFamily.Character)
   have hh := ProbeRaySlots.pool_norm_bounds R S ha.le hab (Real.rpow_pos_of_pos hz _) P hP
   simpa only [mul_comm] using And.intro hh.1.le hh.2
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

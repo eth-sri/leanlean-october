@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.LogFourierDecay
 public import GuthMaynard.Improvement.PoissonTails
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -74,7 +74,6 @@ theorem logModulated_poisson_tail {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   obtain ⟨hi,hb'⟩ := poisson_remainder_of_fourier_bound (logModulated a s) j
     (by positivity) (hb s) R α H hR hH
   refine ⟨hi,?_⟩
-  convert hb' using 1
-  ring
+  grind
 
-end GuthMaynard.Improvement
+

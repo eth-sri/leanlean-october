@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.QuadraticDivisor
 public import Mathlib.Data.Int.GCD
 
@@ -19,17 +20,8 @@ open Classical
 
 namespace GuthMaynard.NativeMoment
 
-/-- CRT on the unit groups, including componentwise inversion. -/
-noncomputable def kloostermanCRTUnits (m n : ℕ) (h : m.Coprime n) :
-    (ZMod (m * n))ˣ ≃ (ZMod m)ˣ × (ZMod n)ˣ :=
-  ((Units.mapEquiv (ZMod.chineseRemainder h).toMulEquiv).trans
-    MulEquiv.prodUnits).toEquiv
 
-@[simp]
-theorem kloostermanCRTUnits_inv (m n : ℕ) (h : m.Coprime n)
-    (d : (ZMod (m * n))ˣ) :
-    kloostermanCRTUnits m n h d⁻¹ =
-      ((kloostermanCRTUnits m n h d).1⁻¹,
-        (kloostermanCRTUnits m n h d).2⁻¹) := rfl
 
-end GuthMaynard.NativeMoment
+
+
+

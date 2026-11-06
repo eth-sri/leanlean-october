@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownTaylorRemainder
 
 @[expose] public section
@@ -12,7 +13,7 @@ This file proves that normalization bridge, including the index shift and
 factorials.
 -/
 
-open Set Finset
+open Finset
 open scoped BigOperators
 
 namespace GafniTao
@@ -20,7 +21,7 @@ namespace GafniTao
 noncomputable section
 
 /-- The derivative polynomial occurring in the source definition of `g_n'`. -/
-noncomputable def heathBrownTaylorDerivativePolynomial
+def heathBrownTaylorDerivativePolynomial
     (k : ℕ) (f : ℝ → ℝ) (n x : ℝ) : ℝ :=
   ∑ j ∈ Finset.range (k - 1),
     iteratedDeriv (j + 1) f n * x ^ j / (j.factorial : ℝ)
@@ -41,7 +42,6 @@ theorem taylorWithinEval_univ_eq_heathBrownTaylorPolynomial
   apply Finset.sum_congr rfl
   intro j hj
   rw [iteratedDerivWithin_univ]
-  simp only [smul_eq_mul]
   ring
 
 /-- Exact identification of the source derivative polynomial with
@@ -68,9 +68,8 @@ theorem taylorWithinEval_deriv_eq_heathBrownTaylorDerivativePolynomial
     exact_mod_cast hjle
   rw [iteratedDerivWithin_eq_iteratedDeriv hud hfj hn]
   rw [iteratedDeriv_deriv_eq_succ]
-  simp only [smul_eq_mul]
   ring
 
-end
 
-end GafniTao
+
+

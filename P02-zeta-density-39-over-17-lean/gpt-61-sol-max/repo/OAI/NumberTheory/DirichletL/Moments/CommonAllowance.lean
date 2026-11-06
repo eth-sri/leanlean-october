@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.Active
 public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
 
@@ -10,7 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentCommonAllowance
 open CenteredMomentActive CenteredMomentSecondLedger CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def activeIndicator (c d : ℕ) : ℝ := if netExponent c d ≠ 0 then 1 else 0
 
@@ -58,9 +59,7 @@ theorem weighted_allowance (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
   have h₂ := weighted_positive_part (fun i => 3*(d i:ℝ)-5*(c i:ℝ)-activeIndicator (c i) (d i)) w hw
   have hsum := Finset.sum_le_sum (s := Finset.univ) (fun i _ =>
     mul_le_mul_of_nonneg_right (local_allowance (c i) (d i) (hc i) (hd i)) (hw i))
-  simp only [sub_mul, add_mul, div_mul_eq_mul_div, mul_assoc,
-    Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.mul_sum,
-    ] at h₁ h₂ hsum ⊢
+  simp only [sub_mul, mul_assoc, Finset.sum_sub_distrib, add_mul, div_mul_eq_mul_div, Finset.sum_add_distrib, Finset.mul_sum] at h₁ h₂ hsum ⊢
   simp only [← Finset.sum_div] at hsum
   linarith
 
@@ -82,8 +81,8 @@ theorem actual_common_support_allowance (p : ι → O)
       (fun i => Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ))
       (fun i => Real.logb_nonneg hZ (by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))))
 
-end SevenEighths.CenteredMomentCommonAllowance
 
-end
 
-end OAI
+
+
+

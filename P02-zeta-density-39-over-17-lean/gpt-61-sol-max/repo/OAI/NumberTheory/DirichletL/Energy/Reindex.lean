@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Energy.SlotHeight
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyReindex
 open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 variable {α β:Type*}[Fintype α][Fintype β]
 
@@ -43,8 +43,8 @@ theorem energy_subset_map (e:α↪β)(T:Finset α)(η:Character)(m A:O)(W₁ W�
     (fun i:T.map e=>pool i) (fun i:T.map e=>coeff i) (fun i:T.map e=>P i)
     t X₁ X₂ keep Φ K
 
-end SevenEighths.CenteredMomentEnergyReindex
 
-end
 
-end OAI
+
+
+

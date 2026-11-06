@@ -15,11 +15,11 @@ The approximation of Fourier integrals by these main terms remains separate.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseStationaryBlock (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) : ℂ :=
   ∑ r ∈ Finset.Icc a (a+L), modelPhaseStationaryMainTerm F T N r
@@ -31,4 +31,4 @@ theorem modelPhaseStationaryBlock_eq_range (F : ℝ → ℝ) (T N : ℝ) (a L : 
     (Nat.le_add_right a L)]
   simp only [Nat.add_sub_cancel_left,Nat.cast_add]
 
-end TaoTrudgianYang2025
+

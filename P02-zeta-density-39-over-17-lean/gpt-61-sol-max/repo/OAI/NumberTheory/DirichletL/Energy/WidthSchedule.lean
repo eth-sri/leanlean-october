@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SuccessorPaidParameters
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 
@@ -23,7 +24,7 @@ def loss (M B ε:ℝ)(k:ℕ):ℝ := reserve M B ε+64*(k:ℝ)*reserve M B ε
 
 theorem bounds (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε):
     0<amplification ε ∧ amplification ε≤1 ∧ amplification ε≤ε/16000 ∧
-    0<reserve M B ε ∧ 0<mesh M B κ ε ∧ mesh M B κ ε≤reserve M B ε ∧
+    0<reserve M B ε ∧ 0< mesh M B κ ε ∧ mesh M B κ ε≤reserve M B ε ∧
     κ*mesh M B κ ε≤reserve M B ε ∧
     20*reserve M B ε≤amplification ε/2 ∧
     M<width M B ε (count M ε) ∧
@@ -38,15 +39,15 @@ theorem bounds (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε):
   have hre:reserve M B ε≤ε/(1000000*scale M B ε):=min_le_right _ _
   have hp:reserve M B ε*(1000000*scale M B ε)≤ε:=
     (le_div_iff₀ (by positivity)).mp hre
-  have hnL:(count M ε:ℝ)≤scale M B ε:=by unfold scale;linarith
-  have h1L:1≤scale M B ε:=by unfold scale;linarith
+  have hnL:(count M ε:ℝ)≤ scale M B ε:=by unfold scale;linarith
+  have h1L:1≤ scale M B ε:=by unfold scale;linarith
   have hnR:(count M ε:ℝ)*reserve M B ε≤ε/1000000:=by
     have hh:=mul_le_mul_of_nonneg_right hnL hr.le
     nlinarith
   have hR:reserve M B ε≤ε/1000000:=by
     have hh:=mul_le_mul_of_nonneg_right h1L hr.le
     nlinarith
-  have hm:0<mesh M B κ ε:=by unfold mesh;positivity
+  have hm:0< mesh M B κ ε:=by unfold mesh;positivity
   have hmr:mesh M B κ ε≤reserve M B ε:=by
     unfold mesh
     apply (div_le_iff₀ (by positivity)).mpr
@@ -62,14 +63,13 @@ theorem bounds (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε):
   linarith
 
 lemma reserve_cost (M B ε c:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε)
-    (hc:c≤scale M B ε):c*reserve M B ε≤ε/1000000:=by
+    (hc:c≤ scale M B ε):c*reserve M B ε≤ε/1000000:=by
   have hL:0<scale M B ε:=by unfold scale;positivity
   have hs:0<amplification ε:=lt_min (by norm_num) (by positivity)
   have hr:0<reserve M B ε:=lt_min (by positivity) (by positivity)
   have hre:reserve M B ε≤ε/(1000000*scale M B ε):=min_le_right _ _
   have hp:reserve M B ε*(1000000*scale M B ε)≤ε:=
     (le_div_iff₀ (by positivity)).mp hre
-  have hh:=mul_le_mul_of_nonneg_right hc hr.le
   nlinarith
 
 theorem one_time_losses (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
@@ -92,16 +92,22 @@ theorem one_time_losses (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε
   · unfold diagonal
     nlinarith
 
-lemma width_zero (M B ε:ℝ):width M B ε 0=reserve M B ε/16:=by simp [width]
-lemma loss_zero (M B ε:ℝ):loss M B ε 0=reserve M B ε:=by simp [loss]
-lemma width_succ (M B ε:ℝ)(k:ℕ):
+section
+variable (M B ε:ℝ)
+include M B ε
+
+lemma width_zero :width M B ε 0=reserve M B ε/16:=by simp [width]
+lemma loss_zero :loss M B ε 0=reserve M B ε:=by simp [loss]
+lemma width_succ (k:ℕ):
     width M B ε (k+1)-amplification ε/2=width M B ε k:=by
   simp only [width,Nat.cast_add,Nat.cast_one]
   ring
-lemma loss_succ (M B ε:ℝ)(k:ℕ):
+lemma loss_succ (k:ℕ):
     loss M B ε (k+1)=loss M B ε k+64*reserve M B ε:=by
   simp only [loss,Nat.cast_add,Nat.cast_one]
   ring
+end
+
 
 lemma child_band (M B ε parent child:ℝ)(k:ℕ)
     (hp:parent≤width M B ε (k+1))(hc:child≤parent-amplification ε/2):
@@ -109,31 +115,33 @@ lemma child_band (M B ε parent child:ℝ)(k:ℕ)
   rw [←width_succ M B ε k]
   linarith
 
-lemma loss_le_final (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
-    (k:ℕ)(hk:k≤count M ε):loss M B ε k≤ε/1000:=by
+section
+variable (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
+    (k:ℕ)
+include M B κ ε hM hB hκ hε k
+
+lemma loss_le_final (hk:k≤count M ε):loss M B ε k≤ε/1000:=by
   have hb:=bounds M B κ ε hM hB hκ hε
   have hr:=hb.2.2.2.1
-  have hk':(k:ℝ)≤(count M ε:ℝ):=by exact_mod_cast hk
   apply le_trans _ hb.2.2.2.2.2.2.2.2.2
   unfold loss
   gcongr
 
-lemma next_paid_loss (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
-    (k:ℕ)(er d e d1 d2 theta other:ℝ)
+lemma next_paid_loss (er d e d1 d2 theta other:ℝ)
     (her:er≤reserve M B ε)(hd:d≤reserve M B ε)(he:e≤reserve M B ε)
     (hd1:d1≤reserve M B ε)(hd2:d2≤reserve M B ε)(ht:theta≤reserve M B ε)
     (ho:other≤50*reserve M B ε):
     loss M B ε k+edge 0 er d e d1 d2 theta κ (mesh M B κ ε)+other≤
       loss M B ε (k+1):=by
   have hb:=bounds M B κ ε hM hB hκ hε
-  have hr:=hb.2.2.2.1
-  have hm:=hb.2.2.2.2.2.2.1
   rw [loss_succ]
   unfold edge
   linarith
-
-end SevenEighths.CenteredMomentEnergyWidthSchedule
-
 end
 
-end OAI
+
+
+
+
+
+

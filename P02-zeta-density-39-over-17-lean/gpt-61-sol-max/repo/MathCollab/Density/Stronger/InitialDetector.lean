@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.Parameters
 public import MathCollab.Density.DetectorTruncation
 public import MathCollab.Density.WeylInput
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
+open Complex MeasureTheory Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -124,8 +124,7 @@ theorem detectorTail_eventually_large {σ δ : ℝ}
     have hexp := Real.add_one_le_exp (-1 / detectorY σ T)
     have hinv : 1 / detectorY σ T ≤ (1/4 : ℝ) :=
       (div_le_iff₀ (by linarith : 0 < detectorY σ T)).2 (by linarith)
-    rw [neg_div] at hexp ⊢
-    linarith
+    grind
   have hn : ‖(Real.exp (-1 / detectorY σ T) : ℂ)‖ ≤
       ‖smoothedDetector ρ (detectorX δ T) (1 / detectorY σ T)‖ +
         ‖detectorTail ρ (detectorX δ T) (detectorY σ T)‖ := by
@@ -135,7 +134,6 @@ theorem detectorTail_eventually_large {σ δ : ℝ}
     rw [hh]
     exact norm_sub_le _ _
   rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)] at hn
-  have hm := hs ρ hβ hβ' hγ hγ' hzero
-  linarith
+  grind
 
-end MathCollab.Density.Stronger
+

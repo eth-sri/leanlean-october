@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Poisson.QuadraticProfiles
 
 @[expose] public section
@@ -8,94 +9,71 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-namespace FirstPassCubeLabels
-
-section
-
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
+                        
+                                  
+                                  
+                          
 
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
-open ConcreteTraceCRT (eisEmbedding)
 
-end
-
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge (conjugateIdealRowSum mobiusIdealColumn
-  primePool mem_primePool_iff)
-open FirstCauchyArithmetic (supportIdealFamily supportIdealFamily_pos supportIdealFamily_good
-  recoveredSupport supportRay)
-open RayFourExpansion (RayCharacter)
-open ConcreteTraceCRT (eisEmbedding)
-
-end FirstPassCubeLabels
 
 namespace SecondPassArithmetic
 
@@ -203,17 +181,7 @@ theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
     (convertedColumnBlock_restore p hp hcop hg hc hpr T).2, hr e, hr k]
   simp only [secondColumnMinus, secondColumnPlus, star_mul, star_star,
     FirstCauchyArithmetic.star_supportMobius]
-  calc
-    _ = (supportMobius (fun i => Ideal.span {p i}) S * supportMobius (fun i => Ideal.span {p i}) S) *
-      (supportMobius (fun i => Ideal.span {p i}) T * supportMobius (fun i => Ideal.span {p i}) T) *
-      (quadraticCrossPhase p hg T S *
-        (star (columnCoefficient p hp hcop hg S) * columnG p hp hcop hg S * star (C₁ S) *
-          finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S e *
-          star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S k)) *
-        (columnCoefficient p hp hcop hg T * finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T (-1) *
-          star (columnG p hp hcop hg T) * C₂ T * star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T e) *
-          finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T k)) := by ring
-    _ = _ := by rw [hmS, hmT]; ring
+  grind
 
 end
 section
@@ -254,8 +222,7 @@ theorem second_child_masked (m r c d e k v : O) :
       finiteSquarefreeRow P hg S c ^ 4 * finiteSquarefreeRow P hg S v ^ 4 := by ring
     _ = _ := by
       rw [mask_star_row]
-      have hh := congrArg (fun z : ℂ => (rowCoprimeMask P S m * rowCoprimeMask P S r) * z) hr
-      convert hh using 1 <;> ring
+      grind
 end Masks
 
 variable {ι : Type*} [DecidableEq ι]
@@ -263,7 +230,11 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-def secondPreColumn (Ψ : O →* ℂ) (m c d e k : O)
+section
+variable (Ψ : O →* ℂ)
+include Ψ
+
+def secondPreColumn  (m c d e k : O)
     (H : Finset ι → ℂ) (S : Finset ι) : ℂ :=
   columnCoefficient p hp hcop hg S * Ψ (∏ i ∈ S, p i) *
     rowCoprimeMask (fun i => Ideal.span {p i}) S m *
@@ -272,12 +243,14 @@ def secondPreColumn (Ψ : O →* ℂ) (m c d e k : O)
     star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S e) *
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S k * H S
 
-def secondChildColumn (Ψ : O →* ℂ) (m f y : O)
+def secondChildColumn  (m f y : O)
     (H : Finset ι → ℂ) (S : Finset ι) : ℂ :=
   columnCoefficient p hp hcop hg S * Ψ (∏ i ∈ S, p i) *
     rowCoprimeMask (fun i => Ideal.span {p i}) S m *
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S f ^ 4 *
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S y * H S
+end
+
 
 theorem secondPreColumn_union
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
@@ -294,22 +267,7 @@ theorem secondPreColumn_union
   simp only [secondPreColumn, secondChildColumn, hA, Finset.prod_union hd,
     map_mul, row_union _ hg V N hd, mask_union _ hg V N hd,
     mul_pow, star_mul, mul_one]
-  calc
-    _ = (columnCoefficient p hp hcop hg V * Ψ (∏ i ∈ V, p i) *
-      rowCoprimeMask (fun i => Ideal.span {p i}) V (m * (e * r)) *
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V c ^ 4 *
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V d *
-      star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V e) *
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V k) *
-      (columnCoefficient p hp hcop hg N * Ψ (∏ i ∈ N, p i) *
-        (rowCoprimeMask (fun i => Ideal.span {p i}) N (m * (e * r)) *
-          star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N e) *
-          finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N d *
-          finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N k *
-          finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N c ^ 4 *
-          finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N (∏ i ∈ V, p i) ^ 4) *
-        H (V ∪ N)) := by ring
-    _ = _ := by rw [hrow]; ring
+  grind
 
 end
 
@@ -332,8 +290,8 @@ def secondChildSum (F V : Finset ι) (Ψ : O →* ℂ)
     secondChildColumn p hp hcop hg Ψ (m * r) (c * e * ∏ i ∈ V, p i) (d * e * k)
       (fun U => H (V ∪ U)) N
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

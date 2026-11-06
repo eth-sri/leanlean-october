@@ -7,10 +7,10 @@ public import TaoTrudgianYang2025.HeathBrownPairSecants
 
 /-! The three actual derivative-error exponents lie below the local secant. -/
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem heathBrownPairK_le_derivative {r : ℝ} (hr : 3 ≤ r) :
     heathBrownPairK r ≤ 1/(r*(r-1)) := by
@@ -33,7 +33,11 @@ theorem heathBrownPairRight_derivative {r : ℝ} (hr : 3 ≤ r) :
   field_simp
   ring
 
-theorem heathBrownPairSecant_first_term {r τ : ℝ} (hr : 3 ≤ r)
+section
+variable {r τ : ℝ} (hr : 3 ≤ r)
+include r τ hr
+
+theorem heathBrownPairSecant_first_term 
     (hτ : τ ≤ heathBrownPairRight r) :
     (τ-r)/(r*(r-1)) ≤ heathBrownPairSecant r τ := by
   have hjoin := heathBrownPairSecant_right hr
@@ -45,7 +49,7 @@ theorem heathBrownPairSecant_first_term {r τ : ℝ} (hr : 3 ≤ r)
   simp only [div_eq_mul_inv] at hm hright hjoin ⊢
   nlinarith only [hm,hjoin,hright]
 
-theorem heathBrownPairSecant_second_term {r τ : ℝ} (hr : 3 ≤ r)
+theorem heathBrownPairSecant_second_term 
     (hτ : heathBrownPairLeft r ≤ τ) :
     -1/(r*(r-1)) ≤ heathBrownPairSecant r τ := by
   have hleft := heathBrownPairSecant_left hr
@@ -54,7 +58,7 @@ theorem heathBrownPairSecant_second_term {r τ : ℝ} (hr : 3 ≤ r)
   unfold heathBrownPairSecant at hleft ⊢
   linarith
 
-theorem heathBrownPairSecant_third_term {r τ : ℝ} (hr : 3 ≤ r)
+theorem heathBrownPairSecant_third_term 
     (hτ : heathBrownPairLeft r ≤ τ) :
     -2*τ/(r^2*(r-1)) ≤ heathBrownPairSecant r τ := by
   have h0 : 0 < r := by linarith
@@ -67,12 +71,14 @@ theorem heathBrownPairSecant_third_term {r τ : ℝ} (hr : 3 ≤ r)
     exact div_le_div_of_nonneg_right (by linarith) (by positivity)
   exact hle.trans (heathBrownPairSecant_second_term hr hτ)
 
-theorem heathBrownPairSecant_derivative_max {r τ : ℝ} (hr : 3 ≤ r)
+theorem heathBrownPairSecant_derivative_max 
     (hl : heathBrownPairLeft r ≤ τ) (hu : τ ≤ heathBrownPairRight r) :
     max ((τ-r)/(r*(r-1))) (max (-1/(r*(r-1))) (-2*τ/(r^2*(r-1)))) ≤
       heathBrownPairSecant r τ :=
   max_le (heathBrownPairSecant_first_term hr hu)
     (max_le (heathBrownPairSecant_second_term hr hl)
       (heathBrownPairSecant_third_term hr hl))
+end
 
-end TaoTrudgianYang2025
+
+

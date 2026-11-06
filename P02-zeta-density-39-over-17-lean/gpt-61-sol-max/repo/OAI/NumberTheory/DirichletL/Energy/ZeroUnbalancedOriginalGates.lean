@@ -32,8 +32,8 @@ lemma raw_short_bound (Z M X:ℝ)(hZ:1<Z)(hX:0<X)
   rw [length_eq_max_log Z X hZ hX] at hshort
   exact (le_max_right _ _).trans hshort
 
-end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalGates
 
-end
 
-end OAI
+
+
+

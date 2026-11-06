@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowReflectionError
@@ -7,16 +8,20 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowReflectionError
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLiveClippingDefect
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy
 open CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
-    (W : ℝ → ℂ) (t X : ℝ) (h : rowTwistedSum η m A z W t X ≠ 0) :
+section
+variable (η : Character) (m A z : O)
+    (W : ℝ → ℂ)
+include η m A z W
+
+theorem rowTwistedSum_support_witness  (t X : ℝ) (h : rowTwistedSum η m A z W t X ≠ 0) :
     ∃ I : Ideal O, I ≠ 0 ∧ W ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
   by_contra hn
   push Not at hn
@@ -32,14 +37,15 @@ theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
       · rw [hn I hI, mul_zero]
     _ = 0 := tsum_zero
 
-theorem rowTwistedSum_support_scale (η : Character) (m A z : O)
-    (W : ℝ → ℂ) (t X b : ℝ) (hX : 0 < X)
+theorem rowTwistedSum_support_scale  (t X b : ℝ) (hX : 0 < X)
     (hs : Function.support W ⊆ Set.Iic b)
     (h : rowTwistedSum η m A z W t X ≠ 0) : 1 ≤ b * X := by
   obtain ⟨I, hI, hW⟩ := rowTwistedSum_support_witness η m A z W t X h
   have hn : (1 : ℝ) ≤ Ideal.absNorm I := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   exact hn.trans ((div_le_iff₀ hX).mp (hs hW))
+end
+
 
 variable {ι : Type*} [Fintype ι]
 
@@ -111,8 +117,7 @@ theorem total_clipping_defect_nonneg (Z X₁ X₂ : ℝ) (hZ : 1 < Z)
   have h1 := Real.logb_le_logb_of_le hZ hX₁ (le_max_right (1 : ℝ) X₁)
   have h2 := Real.logb_le_logb_of_le hZ hX₂ (le_max_right (1 : ℝ) X₂)
   rw [Real.logb_mul hX₁.ne' hX₂.ne']
-  dsimp only [length]
-  linarith
+  bound
 
 theorem positiveSlotRow_zero_or_defect (η : Character) (m A z : O)
     {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
@@ -138,14 +143,7 @@ theorem energy_support_witness (η : Character) (m A : O) (t : ℝ)
   push Not at hn
   apply h
   unfold CenteredMomentInductionEnergy.energy
-  calc
-    _ = ∑' _z : O, (0 : ℝ) := by
-      apply tsum_congr
-      intro z
-      by_cases hk : keep z
-      · simp only [ite_eq_left hk, hn z hk, norm_zero, zero_pow (by norm_num : 2 ≠ 0), zero_mul]
-      · simp only [ite_eq_right hk]
-    _ = 0 := tsum_zero
+  simp_all
 
 theorem energy_zero_or_defect (η : Character) (m A : O) (t : ℝ)
     {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
@@ -178,8 +176,6 @@ theorem robust_slot_budgets (M total ell kappa defect : ℝ)
     (hlarge : 5*M/6-defect ≤ total+ell)
     (hcap : total+ell+(6*kappa-1)*ell ≤ M) :
     ell ≤ M/21+2*defect/7 ∧ (6*kappa-1)*ell ≤ M/6+defect := by
-  have hkell : 7/2*ell ≤ (6*kappa-1)*ell :=
-    mul_le_mul_of_nonneg_right (by linarith) hell
   constructor <;> nlinarith
 
 theorem robust_defect_le_width (M xi defect : ℝ) (hM : 0 ≤ M) (hxi : 0 ≤ xi)
@@ -278,8 +274,8 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
     rw [← CenteredMomentEnergyReferenceLowBranchGeometry.length_eq_max_log Z _ hZ hlongpos]
     exact lt_of_not_ge hlo
 
-end SevenEighths.CenteredMomentEnergyLiveClippingDefect
 
-end
 
-end OAI
+
+
+

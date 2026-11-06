@@ -11,13 +11,13 @@ The proof is ordinary integration by parts. Unlike the root-phase
 specialization, this theorem consumes a carrier on any open interval.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem IntervalC1Bound.integral_mul_of_primitive_bound
     {f k : ℝ → ℂ} {a b M B : ℝ} {J : Set ℝ}
@@ -70,4 +70,4 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
       (norm_nonneg _) hf.nonneg
   linarith
 
-end TaoTrudgianYang2025
+

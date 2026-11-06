@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongGeometry
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
@@ -46,8 +46,8 @@ theorem actual_long_uniform_parent_cost (Z ell N V L epsilon Ccoef C A loss:ℝ)
         (Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)):=by ring
     _=_:=by rw [hpow]
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

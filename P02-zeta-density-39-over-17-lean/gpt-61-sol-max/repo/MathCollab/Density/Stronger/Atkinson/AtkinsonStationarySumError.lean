@@ -12,7 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteSourceError
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 open Complex Filter
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -49,4 +49,4 @@ theorem exists_atkinsonLeadingSum_sub_stationary_above_fourthRoot {δ κ : ℝ}
   apply (hbound T G hT hlower hupper hq).trans
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

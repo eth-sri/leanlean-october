@@ -20,9 +20,13 @@ def normalizer (S : Finset (Ideal O)) (W : ℝ → ℝ) (x : ℝ) : ℝ :=
 
 include hH
 
-theorem eventually_lower_bound (S : Finset (Ideal O)) (W : ℝ → ℝ)
+section
+variable (S : Finset (Ideal O)) (W : ℝ → ℝ)
     (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W ⊆ Set.Ioi 0)
-    (hW0 : ∀ y, 0 ≤ W y) (hWne : W ≠ 0) :
+    (hW0 : ∀ y, 0 ≤ W y) (hWne : W ≠ 0)
+include S W hW hc hp hW0 hWne
+
+theorem eventually_lower_bound  :
     ∃ c : ℝ, 0 < c ∧ ∀ᶠ x : ℝ in atTop,
       c * x ^ (1/6 : ℝ) / Real.log x ≤ normalizer M H S W x := by
   apply PNT.AnnularPrimeMass.weightedPrimeSumDeleted_eventually_lower_bound _ S
@@ -30,17 +34,17 @@ theorem eventually_lower_bound (S : Finset (Ideal O)) (W : ℝ → ℝ)
       exact_mod_cast RayQuotient.classNumber_pos M H))
     (HeckeRayPrimes.quotientClassCoeff_ratio_tendsto M H hH) W hW hc hp hW0 hWne
 
-theorem eventually_pos (S : Finset (Ideal O)) (W : ℝ → ℝ)
-    (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W ⊆ Set.Ioi 0)
-    (hW0 : ∀ y, 0 ≤ W y) (hWne : W ≠ 0) :
+theorem eventually_pos  :
     ∀ᶠ x : ℝ in atTop, 0 < normalizer M H S W x := by
   apply PNT.AnnularPrimeMass.weightedPrimeSumDeleted_eventually_pos _ S
     (show 0 < (RayQuotient.classNumber M H : ℝ)⁻¹ from inv_pos.mpr (by
       exact_mod_cast RayQuotient.classNumber_pos M H))
     (HeckeRayPrimes.quotientClassCoeff_ratio_tendsto M H hH) W hW hc hp hW0 hWne
-
-end SevenEighths.RayPrimeNormalizer
-
 end
 
-end OAI
+
+
+
+
+
+

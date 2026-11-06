@@ -14,12 +14,18 @@ open scoped Topology
 namespace SevenEighths.ProbeMellinBoundary
 open PrincipalMellinResidues HeckeFamily EisensteinSchwartzPoisson
 
-def height (t : ℝ) : ℝ := 1+|t|
-lemma height_pos (t : ℝ) : 0<height t := by unfold height; positivity
-lemma height_one_le (t : ℝ) : 1≤height t := by simp [height]
+section
+variable (t : ℝ)
+include t
 
-def cauchy (t : ℝ) : ℝ := (1+t^2)⁻¹
-lemma cauchy_nonneg (t : ℝ) : 0≤cauchy t := by unfold cauchy; positivity
+def height  : ℝ := 1+|t|
+lemma height_pos  : 0<height t := by unfold height; positivity
+lemma height_one_le  : 1≤height t := by simp [height]
+
+def cauchy  : ℝ := (1+t^2)⁻¹
+lemma cauchy_nonneg  : 0≤cauchy t := by unfold cauchy; positivity
+end
+
 lemma cauchy_integrable : Integrable cauchy := integrable_inv_one_add_sq
 lemma cauchy_tendsto : Tendsto cauchy atTop (𝓝 0) := by
   exact tendsto_inv_atTop_zero.comp
@@ -109,14 +115,14 @@ theorem boundaryControl_of_pole_product (F V G : ℂ → ℂ) {a b p C D δ : �
 def scaleBound (q lo hi : ℝ) : ℝ := Real.exp (max (Real.log q*lo) (Real.log q*hi))
 lemma scaleBound_pos (q lo hi : ℝ) : 0<scaleBound q lo hi := Real.exp_pos _
 lemma rpow_le_scaleBound {q lo hi x : ℝ} (hq : 0<q) (hx : x∈Icc lo hi) :
-    q^x≤scaleBound q lo hi := by
+    q^x≤ scaleBound q lo hi := by
   rw [Real.rpow_def_of_pos hq]
   apply Real.exp_le_exp.mpr
   by_cases hl : 0≤Real.log q
   · exact (mul_le_mul_of_nonneg_left hx.2 hl).trans (le_max_right _ _)
   · exact (mul_le_mul_of_nonpos_left hx.1 (le_of_not_ge hl)).trans (le_max_left _ _)
 lemma cpow_le_scaleBound {q lo hi : ℝ} (hq : 0<q) (z : ℂ) (hz : z.re∈Icc lo hi) :
-    ‖(q:ℂ)^z‖≤scaleBound q lo hi := by
+    ‖(q:ℂ)^z‖≤ scaleBound q lo hi := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hq]
   exact rpow_le_scaleBound hq hz
 
@@ -202,14 +208,24 @@ lemma gaussian_strip_norm_le (s : ℂ) {a b x : ℝ} (ha : 0<a) (hx : x∈Icc a 
   rw [sq_abs] at hsq
   nlinarith [sq_nonneg (s.im+t)]
 
-def zScalar (W1 : SchwartzMap ℝ ℂ) (X Z : ℝ) (eta : Character) (s z : ℂ) : ℂ :=
+section
+variable (W1 : SchwartzMap ℝ ℂ)
+include W1
+
+section
+variable (X Z : ℝ) (eta : Character)
+include X Z eta
+
+def zScalar  (s z : ℂ) : ℂ :=
   (X:ℂ)^(1/2-z)*(Z:ℂ)^(s+z-1)*Complex.exp ((s+z-1)^2)*mellin W1 1 / LFunction eta s
 
-def zScaleBound (W1 : SchwartzMap ℝ ℂ) (X Z : ℝ) (eta : Character) (s : ℂ) (a b : ℝ) : ℝ :=
+def zScaleBound  (s : ℂ) (a b : ℝ) : ℝ :=
   scaleBound X (1/2-b) (1/2-a) * scaleBound Z (s.re+a-1) (s.re+b-1) *
     Real.exp ((|s.re|+b+1)^2) * ‖mellin W1 1‖ / ‖LFunction eta s‖
+end
 
-lemma zScalar_continuous (W1 : SchwartzMap ℝ ℂ) {X Z : ℝ} (hX : 0<X) (hZ : 0<Z)
+
+lemma zScalar_continuous  {X Z : ℝ} (hX : 0<X) (hZ : 0<Z)
     (eta : Character) (s : ℂ) : Continuous (zScalar W1 X Z eta s) := by
   unfold zScalar
   apply Continuous.div_const
@@ -221,7 +237,7 @@ lemma zScalar_continuous (W1 : SchwartzMap ℝ ℂ) {X Z : ℝ} (hX : 0<X) (hZ :
       (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))))
   · fun_prop
 
-lemma zScalar_norm_le (W1 : SchwartzMap ℝ ℂ) {X Z a b x : ℝ}
+lemma zScalar_norm_le  {X Z a b x : ℝ}
     (hX : 0<X) (hZ : 0<Z) (ha : 0<a) (hx : x∈Icc a b)
     (eta : Character) (s : ℂ) (t : ℝ) :
     ‖zScalar W1 X Z eta s ((x:ℂ)+t*I)‖≤zScaleBound W1 X Z eta s a b := by
@@ -234,15 +250,21 @@ lemma zScalar_norm_le (W1 : SchwartzMap ℝ ℂ) {X Z a b x : ℝ}
     · apply cpow_le_scaleBound hX
       simpa using And.intro (sub_le_sub_left hx.2 (1/2)) (sub_le_sub_left hx.1 (1/2))
     · apply cpow_le_scaleBound hZ
-      simpa using And.intro (by linarith [hx.1] : s.re+a-1≤s.re+x-1)
-        (by linarith [hx.2] : s.re+x-1≤s.re+b-1)
+      simpa using And.intro (by linarith [hx.1] : s.re+a-1≤ s.re+x-1)
+        (by linarith [hx.2] : s.re+x-1≤ s.re+b-1)
     · exact norm_nonneg _
     · exact (scaleBound_pos _ _ _).le
   · exact gaussian_strip_norm_le s ha hx t
   · exact norm_nonneg _
   · exact mul_nonneg (scaleBound_pos _ _ _).le (scaleBound_pos _ _ _).le
+end
 
-theorem source_z_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 : ℝ)
+
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ)
+include W0 W1
+
+theorem source_z_boundary  (a0 b0 : ℝ)
     (ha0 : 0<a0) (hW0 : Function.support W0⊆Icc a0 b0)
     (M : Ideal HeckeFamily.O) [NeZero M] (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z)
     (eta : Character) (s : ℂ) (hEta : LFunction eta s≠0) (H B : ℂ → ℂ → ℂ) {e AH AL : ℝ}
@@ -315,17 +337,23 @@ theorem source_z_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 : ℝ)
           (hLbd x (hu ▸ hx) t hboundary) (norm_nonneg _) (by positivity)
       _ = _ := by rw [pow_add]; ring
 
-def profile (W0 W1 : SchwartzMap ℝ ℂ) (s w z : ℂ) : ℂ :=
+def profile  (s w z : ℂ) : ℂ :=
   Complex.exp ((s+z-1)^2) * mellin (paperRadialFourier W0) z * mellin W1 w
+end
+
 
 def jointHeight (t v w : ℝ) : ℝ := 1+|t|+|v|+|w|
 lemma jointHeight_pos (t v w : ℝ) : 0<jointHeight t v w := by unfold jointHeight; positivity
 
-def gaussianMoment (n : ℕ) (u : ℝ) : ℝ := height u^n*Real.exp (-(u^2))
-lemma gaussianMoment_nonneg (n : ℕ) (u : ℝ) : 0≤gaussianMoment n u := by
+section
+variable (n : ℕ)
+include n
+
+def gaussianMoment  (u : ℝ) : ℝ := height u^n*Real.exp (-(u^2))
+lemma gaussianMoment_nonneg  (u : ℝ) : 0≤gaussianMoment n u := by
   unfold gaussianMoment height
   positivity
-lemma gaussianMoment_integrable (n : ℕ) : Integrable (gaussianMoment n) := by
+lemma gaussianMoment_integrable  : Integrable (gaussianMoment n) := by
   apply ((Continuation.polynomialGaussian_integrable n).const_mul ((2:ℝ)^(n-1))).mono'
   · unfold gaussianMoment height
     exact (by fun_prop : Continuous _).aestronglyMeasurable
@@ -335,6 +363,8 @@ lemma gaussianMoment_integrable (n : ℕ) : Integrable (gaussianMoment n) := by
     have h := add_pow_le (by norm_num : (0:ℝ)≤1) (abs_nonneg u) n
     simpa [gaussianMoment,height,Continuation.polynomialGaussian,mul_assoc] using
       mul_le_mul_of_nonneg_right h (Real.exp_pos (-(u^2))).le
+end
+
 
 lemma jointHeight_le_shear (t v w : ℝ) :
     jointHeight t v w≤2*height (t+v)*height v*height w := by
@@ -399,10 +429,18 @@ lemma jointEnvelope_integrable (J : ℕ) : Integrable (jointEnvelope J) heightMe
   have hi := ((gaussianMoment_integrable J).mul_prod cauchy_integrable).mul_prod cauchy_integrable
   exact ht.integrable_comp_of_integrable hi
 
-def onLines (W0 W1 : SchwartzMap ℝ ℂ) (σ ξ υ : ℝ) (p : HeightSpace) : ℂ :=
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ)
+include W0 W1
+
+section
+variable (σ ξ υ : ℝ) (p : HeightSpace)
+include σ ξ υ p
+
+def onLines  : ℂ :=
   profile W0 W1 ((σ:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)
 
-lemma onLines_norm (W0 W1 : SchwartzMap ℝ ℂ) (σ ξ υ : ℝ) (p : HeightSpace) :
+lemma onLines_norm  :
     ‖onLines W0 W1 σ ξ υ p‖ = Real.exp ((σ+ξ-1)^2)*Real.exp (-((p.1.1+p.1.2)^2))*
       ‖mellin (paperRadialFourier W0) ((ξ:ℂ)+p.1.2*I)‖ *
       ‖mellin W1 ((υ:ℂ)+p.2*I)‖ := by
@@ -411,8 +449,10 @@ lemma onLines_norm (W0 W1 : SchwartzMap ℝ ℂ) (σ ξ υ : ℝ) (p : HeightSpa
   have hr : ((((σ:ℂ)+p.1.1*I)+((ξ:ℂ)+p.1.2*I)-1)^2).re =
       (σ+ξ-1)^2+(-((p.1.1+p.1.2)^2)) := by simp [pow_two]; ring
   rw [hr,Real.exp_add]
+end
 
-lemma onLines_continuous (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
+
+lemma onLines_continuous  (a1 b1 : ℝ)
     (ha1 : 0<a1) (hW1 : Function.support W1⊆Icc a1 b1)
     (σ ξ υ : ℝ) (hξ : 0<ξ) : Continuous (onLines W0 W1 σ ξ υ) := by
   have hR : Continuous (fun t : ℝ => mellin (paperRadialFourier W0) ((ξ:ℂ)+t*I)) :=
@@ -426,6 +466,8 @@ lemma onLines_continuous (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
     · fun_prop
     · exact hR.comp (continuous_snd.comp continuous_fst)
   · exact hW.comp (by fun_prop)
+end
+
 
 def realGaussianBound (slo shi zlo zhi : ℝ) : ℝ :=
   Real.exp ((|slo|+|shi|+|zlo|+|zhi|+1)^2)
@@ -446,7 +488,11 @@ lemma realGaussian_le {slo shi zlo zhi σ ξ : ℝ} (hσ : σ∈Icc slo shi) (h�
   have hp := pow_le_pow_left₀ (abs_nonneg (σ+ξ-1)) hh 2
   simpa [sq_abs] using hp
 
-lemma profile_moment_majorant (W0 W1 : SchwartzMap ℝ ℂ) (J : ℕ)
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ)
+include W0 W1
+
+lemma profile_moment_majorant  (J : ℕ)
     {slo shi zlo zhi σ ξ υ C D : ℝ} (hσ : σ∈Icc slo shi) (hξ : ξ∈Icc zlo zhi)
     (hC : 0≤C) (hD : 0≤D)
     (hR : ∀v : ℝ, height v^(J+2)*‖mellin (paperRadialFourier W0) ((ξ:ℂ)+v*I)‖≤C)
@@ -468,7 +514,7 @@ lemma profile_moment_majorant (W0 W1 : SchwartzMap ℝ ℂ) (J : ℕ)
         (realGaussianBound_pos _ _ _ _).le
     _ = _ := by unfold jointEnvelope; ring
 
-theorem profile_uniform_moments (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
+theorem profile_uniform_moments  (a0 b0 a1 b1 : ℝ)
     (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
     (hW1 : Function.support W1⊆Icc a1 b1)
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J : ℕ) :
@@ -505,6 +551,8 @@ theorem profile_uniform_moments (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ
     _ ≤ _ := by
       have hh := le_abs_self (∫p, jointEnvelope J p ∂heightMeasure)
       exact mul_le_mul_of_nonneg_left (by linarith) hA.le
+end
+
 
 def outsideBox (T : ℝ) : Set HeightSpace :=
   {p | T < |p.1.1| ∨ T < |p.1.2| ∨ T < |p.2|}
@@ -526,9 +574,13 @@ lemma weighted_tail_pointwise (f : HeightSpace → ℂ) (J N : ℕ) {T : ℝ} (h
     (mul_nonneg (pow_nonneg (jointHeight_pos p.1.1 p.1.2 p.2).le J) (norm_nonneg (f p)))
   convert hh using 1 ; rw [pow_add] ; ring
 
-theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
     (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
     (hW1 : Function.support W1⊆Icc a1 b1)
+include W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+
+theorem profile_uniform_tails 
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi, ∀T : ℝ, 0≤T →
       (∫p : HeightSpace in outsideBox T, jointHeight p.1.1 p.1.2 p.2^J*
@@ -558,9 +610,7 @@ theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
         (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _))
     _ ≤ _ := div_le_div_of_nonneg_right hb (by positivity)
 
-theorem profile_arithmetic_integrable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1) (σ ξ υ : ℝ) (hξ : 0<ξ)
+theorem profile_arithmetic_integrable  (σ ξ υ : ℝ) (hξ : 0<ξ)
     (G : HeightSpace → ℂ) (hG : AEStronglyMeasurable G heightMeasure) (A : ℝ) (J : ℕ)
     (hbound : ∀p, ‖G p‖≤A*jointHeight p.1.1 p.1.2 p.2^J) :
     Integrable (fun p => G p*onLines W0 W1 σ ξ υ p) heightMeasure := by
@@ -573,23 +623,31 @@ theorem profile_arithmetic_integrable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1
     intro p
     rw [norm_mul]
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hbound p) (norm_nonneg _)
+end
+
 
 inductive SliceAxis where
   | s | z | w
 
-def sliceMap (axis : SliceAxis) (T : ℝ) (q : ℝ×ℝ) : HeightSpace :=
+section
+variable (axis : SliceAxis) (T : ℝ)
+include axis T
+
+def sliceMap  (q : ℝ×ℝ) : HeightSpace :=
   match axis with
   | .s => ((T,q.1),q.2)
   | .z => ((q.1,T),q.2)
   | .w => ((q.1,q.2),T)
 
-lemma sliceMap_continuous (axis : SliceAxis) (T : ℝ) : Continuous (sliceMap axis T) := by
+lemma sliceMap_continuous  : Continuous (sliceMap axis T) := by
   cases axis <;> unfold sliceMap <;> fun_prop
 
-lemma slice_height_le (axis : SliceAxis) (T : ℝ) (q : ℝ×ℝ) :
+lemma slice_height_le  (q : ℝ×ℝ) :
     height T≤jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2 := by
   cases axis <;> unfold sliceMap height jointHeight <;>
     linarith [abs_nonneg q.1,abs_nonneg q.2]
+end
+
 
 lemma cauchy_le_one (t : ℝ) : cauchy t≤1 := by
   simpa [cauchy] using inv_anti₀ (by norm_num : (0:ℝ)<1)
@@ -603,7 +661,7 @@ def sliceEnvelope (axis : SliceAxis) (J : ℕ) (T : ℝ) (q : ℝ×ℝ) : ℝ :=
 def sliceMass (J : ℕ) : ℝ := (∫u : ℝ, gaussianMoment J u)*(∫v : ℝ, cauchy v)
 
 lemma jointEnvelope_slice_le (axis : SliceAxis) (J : ℕ) (T : ℝ) (q : ℝ×ℝ) :
-    jointEnvelope J (sliceMap axis T q)≤sliceEnvelope axis J T q := by
+    jointEnvelope J (sliceMap axis T q)≤ sliceEnvelope axis J T q := by
   cases axis
   · change gaussianMoment J (T+q.1)*cauchy q.1*cauchy q.2 ≤ gaussianMoment J (T+q.1)*cauchy q.2
     have hh := mul_le_mul_of_nonneg_right
@@ -625,14 +683,18 @@ lemma pairEnvelope_integrable (J : ℕ) :
   have hi := hp1.integrable_comp_of_integrable ((gaussianMoment_integrable J).mul_prod cauchy_integrable)
   simpa only [Function.comp_def,Prod.swap,add_comm] using! hi
 
-lemma sliceEnvelope_integrable (axis : SliceAxis) (J : ℕ) (T : ℝ) :
+section
+variable (axis : SliceAxis) (J : ℕ) (T : ℝ)
+include axis J T
+
+lemma sliceEnvelope_integrable  :
     Integrable (sliceEnvelope axis J T) (volume.prod volume) := by
   cases axis
   · exact ((gaussianMoment_integrable J).comp_add_left T).mul_prod cauchy_integrable
   · exact ((gaussianMoment_integrable J).comp_add_left T).mul_prod cauchy_integrable
   · exact pairEnvelope_integrable J
 
-lemma sliceEnvelope_integral (axis : SliceAxis) (J : ℕ) (T : ℝ) :
+lemma sliceEnvelope_integral  :
     (∫q : ℝ×ℝ, sliceEnvelope axis J T q ∂volume.prod volume)=sliceMass J := by
   cases axis
   · change (∫q : ℝ×ℝ, gaussianMoment J (T+q.1)*cauchy q.2 ∂volume.prod volume)=_
@@ -645,6 +707,8 @@ lemma sliceEnvelope_integral (axis : SliceAxis) (J : ℕ) (T : ℝ) :
     rw [integral_prod_symm _ (pairEnvelope_integrable J)]
     simp_rw [integral_mul_const,integral_add_right_eq_self]
     exact integral_const_mul _ _
+end
+
 
 lemma weighted_slice_pointwise (f : HeightSpace → ℂ) (axis : SliceAxis) (J N : ℕ) (T : ℝ) (q : ℝ×ℝ) :
     jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^J*
@@ -658,10 +722,14 @@ lemma weighted_slice_pointwise (f : HeightSpace → ℂ) (axis : SliceAxis) (J N
       (sliceMap axis T q).1.2 (sliceMap axis T q).2).le J) (norm_nonneg (f (sliceMap axis T q))))
   convert hh using 1 ; rw [pow_add] ; ring
 
-theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
     (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
     (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ)
+include W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 slo shi zlo zhi wlo whi hzlo J N
+
+theorem profile_uniform_slices  :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀axis : SliceAxis, ∀T : ℝ,
       Integrable (fun q : ℝ×ℝ =>
@@ -712,10 +780,7 @@ theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
       linarith [le_abs_self (sliceMass (J+N))]
     _ = _ := by ring
 
-theorem profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+theorem profile_arithmetic_tails  :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀A : ℝ, 0≤A → ∀G : HeightSpace → ℂ,
       AEStronglyMeasurable G heightMeasure →
@@ -748,10 +813,7 @@ theorem profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : �
     _ ≤ A*(K/(1+T)^N) := mul_le_mul_of_nonneg_left (hT σ hσ ξ hξ υ hυ T hT0) hA
     _ = _ := by ring
 
-theorem profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+theorem profile_arithmetic_slices  :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀axis : SliceAxis, ∀T A : ℝ, 0≤A → ∀G : ℝ×ℝ → ℂ,
       AEStronglyMeasurable G (volume.prod volume) →
@@ -788,9 +850,11 @@ theorem profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : �
       integral_const_mul _ _
     _ ≤ A*(K/height T^N) := mul_le_mul_of_nonneg_left hmb hA
     _ = _ := by ring
-
-end SevenEighths.ProbeMellinBoundary
-
 end
 
-end OAI
+
+
+
+
+
+

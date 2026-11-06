@@ -5,15 +5,18 @@ public import Mathlib
 
 /-! Measure-theoretic parts of the candidate gate. No affine or trace estimate
 is assumed in these inequalities. -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter
 open scoped ENNReal
 
 namespace GuthMaynard.Improvement
 
-theorem integral_cauchy_schwarz_nonneg {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} {f g : α → ℝ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ)
+section
+variable {α : Type*} [MeasurableSpace α]
+    {μ : Measure α}
+include α μ
+
+theorem integral_cauchy_schwarz_nonneg  {f g : α → ℝ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ)
     (hf0 : ∀ x, 0 ≤ f x) (hg0 : ∀ x, 0 ≤ g x) :
     (∫ x, f x * g x ∂μ) ≤
       Real.sqrt (∫ x, f x ^ 2 ∂μ) * Real.sqrt (∫ x, g x ^ 2 ∂μ) := by
@@ -25,8 +28,7 @@ theorem integral_cauchy_schwarz_nonneg {α : Type*} [MeasurableSpace α]
 
 /-- The integral analogue of the two outer Cauchy–Schwarz steps.
 The first factor r is unchanged, and the measure may itself be restricted. -/
-theorem outer_integral_bound {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} {r X Y : α → ℝ}
+theorem outer_integral_bound  {r X Y : α → ℝ}
     (hr : MemLp r 2 μ) (hX : MemLp X 2 μ) (hY : MemLp Y 2 μ)
     (hr0 : ∀ x, 0 ≤ r x) (hX0 : ∀ x, 0 ≤ X x) (hY0 : ∀ x, 0 ≤ Y x) :
     (∫ x, r x * (Real.sqrt (X x) * Real.sqrt (Y x)) ∂μ) ≤
@@ -56,8 +58,7 @@ theorem outer_integral_bound {α : Type*} [MeasurableSpace α]
     (Real.sqrt_nonneg _))
 
 /-- The mask mass is the exact restricted integral, not an unrestricted norm. -/
-theorem masked_outer_integral_bound {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} {r X Y : α → ℝ} {A : Set α} (hA : MeasurableSet A)
+theorem masked_outer_integral_bound  {r X Y : α → ℝ} {A : Set α} (hA : MeasurableSet A)
     (hr : MemLp r 2 μ) (hX : MemLp X 2 μ) (hY : MemLp Y 2 μ)
     (hr0 : ∀ x, 0 ≤ r x) (hX0 : ∀ x, 0 ≤ X x) (hY0 : ∀ x, 0 ≤ Y x) :
     (∫ x, A.indicator r x * (Real.sqrt (X x) * Real.sqrt (Y x)) ∂μ) ≤
@@ -71,6 +72,8 @@ theorem masked_outer_integral_bound {α : Type*} [MeasurableSpace α]
     by_cases hx : x ∈ A <;> simp [hx]
   rw [hid, integral_indicator hA] at h
   exact h
+end
+
 
 def squareSmoothing (κ r : ℝ → ℝ) (z : ℝ) : ℝ :=
   ∫ y, κ (z - y) * r y ^ 2
@@ -95,14 +98,18 @@ theorem local_square_mass_le {r k : ℝ → ℝ} {s : Set ℝ} {D : ℝ}
           mul_nonneg hD (mul_nonneg (hk0 y) (sq_nonneg _))))
     _ = D * ∫ y, k y * r y ^ 2 := integral_const_mul _ _
 
-theorem squareSmoothing_nonneg {κ r : ℝ → ℝ} (hκ : ∀ y, 0 ≤ κ y) (z : ℝ) :
+section
+variable {κ r : ℝ → ℝ}
+include κ r
+
+theorem squareSmoothing_nonneg  (hκ : ∀ y, 0 ≤ κ y) (z : ℝ) :
     0 ≤ squareSmoothing κ r z :=
   integral_nonneg (fun _ => mul_nonneg (hκ _) (sq_nonneg _))
 
 /-- Measurability and a uniform boundedness bound on κ suffice for existence
 of every smoothing integral. Smoothness and mask-boundary regularity are not
 needed by this theorem. -/
-theorem squareSmoothing_integrable {κ r : ℝ → ℝ} {B : ℝ}
+theorem squareSmoothing_integrable  {B : ℝ}
     (hκ : Measurable κ) (hb : ∀ y, ‖κ y‖ ≤ B)
     (hr : Integrable (fun y => r y ^ 2)) (z : ℝ) :
     Integrable (fun y => κ (z - y) * r y ^ 2) := by
@@ -112,7 +119,7 @@ theorem squareSmoothing_integrable {κ r : ℝ → ℝ} {B : ℝ}
 /-- A change of variables contributes exactly v in the second square mass.
 The same measurable r is used in both factors; it may already contain a mask.
 The two kernel lower bounds are local on s, not assumptions of the conclusion. -/
-theorem transverse_of_kernel_bounds {κ r : ℝ → ℝ} {s : Set ℝ} {B D v z : ℝ}
+theorem transverse_of_kernel_bounds  {s : Set ℝ} {B D v z : ℝ}
     (hs : MeasurableSet s) (hκ : Measurable κ) (hb : ∀ y, ‖κ y‖ ≤ B)
     (hκ0 : ∀ y, 0 ≤ κ y) (hr : Measurable r)
     (hr2 : Integrable (fun y => r y ^ 2)) (hr0 : ∀ y, 0 ≤ r y)
@@ -160,7 +167,7 @@ theorem transverse_of_kernel_bounds {κ r : ℝ → ℝ} {s : Set ℝ} {B D v z 
 measurable nonnegative kernel with the displayed lower bound. In particular
 this theorem imposes no regularity on the boundary of a mask included in r.
 The constant C*sqrt(b) precedes r,z,v; the radius multiplier depends only on a. -/
-theorem transverse_smoothing_uniform {κ r : ℝ → ℝ} {B C δ a b v z : ℝ}
+theorem transverse_smoothing_uniform  {B C δ a b v z : ℝ}
     (hκ : Measurable κ) (hb : ∀ y, ‖κ y‖ ≤ B) (hκ0 : ∀ y, 0 ≤ κ y)
     (hC : 0 ≤ C) (hδ : 0 ≤ δ) (ha : 0 < a) (hav : a ≤ v) (hvb : v ≤ b)
     (hlower : ∀ t, |t| ≤ max 1 (1 / a) * δ → 1 ≤ (C * δ) * κ t)
@@ -201,7 +208,7 @@ theorem transverse_smoothing_uniform {κ r : ℝ → ℝ} {B C δ a b v z : ℝ}
 
 /-- Applying the transverse theorem to an arbitrary measurable mask needs
 no assumptions about the geometry or regularity of its boundary. -/
-theorem masked_transverse_smoothing {κ r : ℝ → ℝ} {A : Set ℝ}
+theorem masked_transverse_smoothing  {A : Set ℝ}
     {B C δ a b v z : ℝ} (hA : MeasurableSet A)
     (hκ : Measurable κ) (hb : ∀ y, ‖κ y‖ ≤ B) (hκ0 : ∀ y, 0 ≤ κ y)
     (hC : 0 ≤ C) (hδ : 0 ≤ δ) (ha : 0 < a) (hav : a ≤ v) (hvb : v ≤ b)
@@ -219,5 +226,7 @@ theorem masked_transverse_smoothing {κ r : ℝ → ℝ} {A : Set ℝ}
     exact hr2.indicator hA
   exact transverse_smoothing_uniform hκ hb hκ0 hC hδ ha hav hvb hlower
     (hr.indicator hA) hmasked (fun y => by by_cases hy : y ∈ A <;> simp [hy, hr0])
+end
 
-end GuthMaynard.Improvement
+
+

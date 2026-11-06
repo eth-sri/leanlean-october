@@ -11,21 +11,25 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRetainedEnergy
 open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile
 open CenteredMomentDivisorRawEnergy HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def positiveSlotRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
+section
+variable (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
     (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (t X₁ X₂ : ℝ) : ℂ :=
+    (t X₁ X₂ : ℝ)
+include η m A z W₁ W₂ S β P t X₁ X₂
+
+def positiveSlotRow  : ℂ :=
   (Real.sqrt (X₁*X₂*∏ i,P i):ℂ)⁻¹ *
     ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂)*
       ∏ i,rowSlot η m A z (S i) (β i) t)
 
-def retainedPositiveRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (t X₁ X₂ : ℝ) : ℂ :=
+def retainedPositiveRow  : ℂ :=
   positiveSlotRow η m A z (dilated W₁ (clipDilation X₁)) (dilated W₂ (clipDilation X₂))
     S β P t (clippedScale X₁) (clippedScale X₂)
+end
+
 
 omit [DecidableEq ι] in
 theorem retained_rectangle_raw_energy (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
@@ -95,8 +99,8 @@ theorem centered_to_retained_uniform_energy (η : Character) (m A z : O) (W₁ W
   nlinarith [sq_nonneg (‖positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂‖-
     ‖positiveSlotRow η m A z W₁ W₂ S β P t Y₁ Y₂‖)]
 
-end SevenEighths.CenteredMomentRetainedEnergy
 
-end
 
-end OAI
+
+
+

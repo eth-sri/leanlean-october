@@ -12,13 +12,13 @@ Only the support interval [l+eta,r-eta] is used. Stationary points
 elsewhere in the original model interval do not obstruct these estimates.
 -/
 
-noncomputable section
+
 
 open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseBufferedNormalizedMode_eq_interval
     {l r η : ℝ} (hη : 0 < η) (F : ℝ → ℝ) (T q : ℝ) :
@@ -72,12 +72,16 @@ theorem norm_modelPhaseBufferedFourierMode_of_support_gap
   apply (mul_le_mul_of_nonneg_left h hN.le).trans_eq
   field_simp
 
-theorem sum_norm_bufferedModes_support_right_le_harmonic
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
+section
+variable {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
     (hl : 1 ≤ l) (hr : r ≤ 2) (hsep : l+2*η ≤ r)
+include F σ δ T N l r η hσ hδ hF hT hN hη hl hr hsep
+
+theorem sum_norm_bufferedModes_support_right_le_harmonic
+    
     (Q : ℤ) (hQ : (T/N)*deriv F (l+η) ≤ (Q : ℝ)) (L : ℕ) :
     (∑ n ∈ Finset.range L,
       ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -97,11 +101,7 @@ theorem sum_norm_bufferedModes_support_right_le_harmonic
       simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
 
 theorem sum_norm_bufferedModes_support_left_le_harmonic
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
-    (hl : 1 ≤ l) (hr : r ≤ 2) (hsep : l+2*η ≤ r)
+    
     (Q : ℤ) (hQ : (Q : ℝ) ≤ (T/N)*deriv F (r-η)) (L : ℕ) :
     (∑ n ∈ Finset.range L,
       ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -121,11 +121,7 @@ theorem sum_norm_bufferedModes_support_left_le_harmonic
       simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
 
 theorem norm_bufferedModes_support_blocks_le_log
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
-    (hl : 1 ≤ l) (hr : r ≤ 2) (hsep : l+2*η ≤ r)
+    
     (Lminus Lplus : ℕ) :
     ‖(∑ n ∈ Finset.range Lminus,
       modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -147,5 +143,7 @@ theorem norm_bufferedModes_support_blocks_le_log
       add_le_add (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lminus) (by positivity))
         (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lplus) (by positivity))
     _ = _ := by ring
+end
 
-end TaoTrudgianYang2025
+
+

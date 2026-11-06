@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourcePhysical
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceCharacters
+public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySource
 
 @[expose] public section
@@ -10,13 +11,13 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
+open HeckeFamily
 open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
-open CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
+open CenteredMomentHeckeHeight
+
 open ProbeHighRowFamily ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma rowMaskElement_eq_fixed : rowMaskElement=fixedBadMask := by
   unfold rowMaskElement fixedBadMask
@@ -43,8 +44,8 @@ local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZer
 variable {H : Subgroup (O⧸M)ˣ} (hH : RayOrthogonality.globalUnits M≤H)
 variable {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-end SevenEighths.CenteredMomentNaturalFixedRaySource
 
-end
 
-end OAI
+
+
+

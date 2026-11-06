@@ -12,22 +12,22 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalSource
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
+open HeckeFamily ConcretePrimeRowBridge
 open CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
 open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
+open CenteredMomentSourceMass CenteredMomentSourceRow
 open CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
 open CenteredMomentHeckeHeight
 open CenteredMomentDivisorRowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceRectangleEnergy
+open CenteredMomentOriginalCommonHarmonic
 open CenteredMomentPositiveSummability CenteredMomentPlainEnergy CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 local instance energyOriginalSourceDecidableSum : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def completeInput (s : Data ι) (hz₁ : s.W₁ 0=0) (hz₂ : s.W₂ 0=0)
-    (hν : ∀i I,‖s.ν i I‖≤1) (hW : ∀i x,‖s.W i x‖≤s.M i)
-    (lo hi : ℝ) (hlo : 0<lo) (hl : ∀i,lo≤s.lo i) (hh : ∀i,s.hi i≤hi) : Input ι where
+    (hν : ∀i I,‖s.ν i I‖≤1) (hW : ∀i x,‖s.W i x‖≤ s.M i)
+    (lo hi : ℝ) (hlo : 0<lo) (hl : ∀i,lo≤ s.lo i) (hh : ∀i,s.hi i≤hi) : Input ι where
   toData := s
   plain₁ := plainSupportPool s.b₁ s.X₁ s.Y₁
   plain₂ := plainSupportPool s.b₂ s.X₂ s.Y₂
@@ -57,7 +57,11 @@ lemma input_tuplePool (s : Input ι) :
   ext v
   simp only [Fintype.mem_piFinset,tuplePool,tuplePools,Input.pools]
 
-lemma input_polynomial_difference (s : Input ι) (R : Ideal O) (z : O) :
+section
+variable (s : Input ι) (R : Ideal O) (z : O)
+include s R z
+
+lemma input_polynomial_difference  :
     (∑I∈finiteColumns (Fintype.piFinset s.pools),coefficient s R 1 I*
       rowWeight s.η fixedBadMask 1 z s.t I)=
     (rowTwistedSum s.η (fixedBadMask*idealGenerator R) 1 z s.W₁ s.t s.X₁*
@@ -76,7 +80,7 @@ lemma input_polynomial_difference (s : Input ι) (R : Ideal O) (z : O) :
     s.toData.coefficient s.t s.W₁ s.W₂ s.b₁ s.b₂ s.X₁ s.X₂ s.Y₁ s.Y₂
     s.support₁ s.support₂ s.X₁_pos s.X₂_pos s.Y₁_pos s.Y₂_pos
 
-lemma normalized_input_difference (s : Input ι) (R : Ideal O) (z : O) :
+lemma normalized_input_difference  :
     positiveSlotRow s.η (fixedBadMask*idealGenerator R) 1 z s.W₁ s.W₂ s.slots
       s.toData.coefficient s.P s.t s.X₁ s.X₂-
     positiveSlotRow s.η (fixedBadMask*idealGenerator R) 1 z s.W₁ s.W₂ s.slots
@@ -88,6 +92,8 @@ lemma normalized_input_difference (s : Input ι) (R : Ideal O) (z : O) :
   unfold positiveSlotRow CenteredMomentAmplificationChildInput.volume
   rw [s.same_product]
   ring
+end
+
 
 omit [DecidableEq ι] in
 lemma input_energy_hasSum (s : Input ι) (R : Ideal O) (Φ : 𝓢(ℝ,ℂ))
@@ -248,9 +254,9 @@ def naturalInput : Input ι :=
     (fun i I=>idealCoeff_norm_le_one (ν i) I) hWslot aslot bslot haslot
     (fun _=>le_refl _) (fun _=>le_refl _)
 
-end Natural
-end SevenEighths.CenteredMomentEnergyOriginalSource
 
-end
 
-end OAI
+
+
+
+

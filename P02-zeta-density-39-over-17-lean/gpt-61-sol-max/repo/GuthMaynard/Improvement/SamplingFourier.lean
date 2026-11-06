@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceFourierDerivative
 public import GuthMaynard.Improvement.SamplingVariation
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set InnerProductSpace
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -33,14 +33,18 @@ theorem sampling_square_variation {F G : ℝ → ℂ} (hF : MemLp F 2) (hG : Mem
         (fun t => norm_nonneg (F t)) (fun t => norm_nonneg (G t))) (by norm_num)
     _ = _ := by ring
 
-/-- Separated sampling of the literal Fourier transform squared. No L1
-hypothesis on the Fourier transform is used. The spacing δ is in mathlib's
-actual Fourier frequency, with no hidden normalization change. -/
-theorem sampling_fourier_square {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R)
     (x : ι → ℝ) {δ : ℝ} (hδ : 0 < δ)
-    (hsep : Pairwise (fun i j => δ ≤ |x i-x j|)) :
+    (hsep : Pairwise (fun i j => δ ≤ |x i-x j|))
+include ι f h1 h2 R hR hs x δ hδ hsep
+
+/-- Separated sampling of the literal Fourier transform squared. No L1
+hypothesis on the Fourier transform is used. The spacing δ is in mathlib's
+actual Fourier frequency, with no hidden normalization change. -/
+theorem sampling_fourier_square  :
     (∑ i, ‖𝓕 f (x i)‖^2) ≤ (δ⁻¹+4*Real.pi*R)*(∫ t, ‖f t‖^2) := by
   have hF := ordinary_fourier_memLp h1 h2
   obtain ⟨hd,hG,hGb⟩ := source_fourier_derivative_l2 h1 h2 hR hs
@@ -74,11 +78,7 @@ theorem sampling_fourier_square {ι : Type*} [Fintype ι]
 
 /-- High-height first-variation sampling retains the actual Fourier L1 mass
 on [-2,2]. Only the sampling intervals must lie inside that fixed band. -/
-theorem sampling_fourier_first_variation {ι : Type*} [Fintype ι]
-    {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
-    {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R)
-    (x : ι → ℝ) {δ : ℝ} (hδ : 0 < δ)
-    (hsep : Pairwise (fun i j => δ ≤ |x i-x j|))
+theorem sampling_fourier_first_variation 
     (hband : ∀ i, Ioc (x i) (x i+δ) ⊆ Icc (-2:ℝ) 2) :
     (∑ i, ‖𝓕 f (x i)‖) ≤ δ⁻¹*(∫ ξ in Icc (-2:ℝ) 2, ‖𝓕 f ξ‖)+
       4*Real.pi*R*Real.sqrt (∫ t, ‖f t‖^2) := by
@@ -86,8 +86,8 @@ theorem sampling_fourier_first_variation {ι : Type*} [Fintype ι]
   have hFi := (source_l2_interval_l1 (ordinary_fourier_memLp h1 h2)).1
   obtain ⟨hGi,hGb⟩ := source_fourier_derivative_interval_l1 h1 h2 hR hs
   have hh := sampling_separated_norm x hδ (fun ξ => (hd ξ).hasDerivAt) hsep hband hFi hGi
-  have hb : (∫ ξ in Icc (-2:ℝ) 2, ‖deriv (𝓕 f) ξ‖) ≤
-      4*Real.pi*R*Real.sqrt (∫ t, ‖f t‖^2) := by convert hGb using 1; ring
-  exact hh.trans (add_le_add le_rfl hb)
+  nlinarith
+end
 
-end GuthMaynard.Improvement
+
+

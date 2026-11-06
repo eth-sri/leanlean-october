@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -12,16 +13,13 @@ public import MathCollab.Density.Stronger.Atkinson.GammaQuadratic
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem integrable_physical_gaussian {G : ℝ} (hG : G ≠ 0) :
     Integrable (fun x : ℝ => Real.exp (-(x / G) ^ 2)) := by
   convert integrable_exp_neg_mul_sq (b := 1 / G ^ 2) (by positivity) using 1
-  funext x
-  congr 1
-  ring
+  grind
 
 /-- A uniform physical Gaussian tail; its constant retains the width `G`. -/
 theorem physical_gaussian_tail_le {G r : ℝ} (hG : 0 < G) (hr : 0 ≤ r) :
@@ -39,20 +37,13 @@ theorem physical_gaussian_tail_le {G r : ℝ} (hG : 0 < G) (hr : 0 ≤ r) :
       apply integral_mono_ae (integrable_physical_gaussian hG.ne').integrableOn
         (hK.const_mul _).integrableOn
       filter_upwards [ae_restrict_mem measurableSet_Ioc.compl] with x hx
-      have hrx : r ≤ |x| := by
-        simp only [mem_compl_iff, mem_Ioc, not_and_or, not_lt, not_le] at hx
-        rcases hx with hx | hx
-        · exact (show r ≤ -x by linarith).trans (neg_le_abs x)
-        · exact hx.le.trans (le_abs_self x)
+      have hrx : r ≤ |x| := by grind
       have hs : r ^ 2 ≤ x ^ 2 := by nlinarith [sq_abs x]
       dsimp only [K]
       rw [← Real.exp_add]
       apply Real.exp_le_exp.mpr
       have hd := div_le_div_of_nonneg_right hs (sq_nonneg G)
-      simp only [div_pow]
-      calc
-        _ ≤ -(r ^ 2 / G ^ 2) / 2 - (x ^ 2 / G ^ 2) / 2 := by linarith
-        _ = _ := by ring
+      field_simp <;> nlinarith
     _ = Real.exp (-(r / G) ^ 2 / 2) * ∫ x in (Ioc (-r) r)ᶜ, K x := integral_const_mul _ _
     _ ≤ Real.exp (-(r / G) ^ 2 / 2) * ∫ x : ℝ, K x :=
       mul_le_mul_of_nonneg_left (setIntegral_le_integral hK
@@ -101,9 +92,7 @@ private theorem norm_quadratic_gaussian_integrand (T v x : ℝ) {G : ℝ} (hG : 
   have hunit : ‖Complex.exp (I * (v : ℂ) * (x : ℂ))‖ = 1 := by simp [Complex.norm_exp]
   rw [hunit, one_mul, Complex.norm_exp]
   congr 1
-  simp only [Complex.mul_re, Complex.neg_re, Complex.neg_im, ← Complex.ofReal_pow,
-    Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
-    zetaGaussianQuadraticCoefficient_re]
+  simp only [← ofReal_pow, mul_re, neg_re, zetaGaussianQuadraticCoefficient_re, ofReal_re, neg_im, ofReal_im, mul_zero, sub_zero]
   field_simp
 
 /-- The actual Gamma-phase transform is approximated by the proved quadratic
@@ -142,4 +131,4 @@ theorem norm_zetaSquareGammaGaussianTransform_sub_quadratic_le {T G r : ℝ}
       zetaGaussianQuadraticIntegral T G (v - Real.log (T / (2 * Real.pi))))
   linarith
 
-end MathCollab.Density.Stronger.Atkinson
+

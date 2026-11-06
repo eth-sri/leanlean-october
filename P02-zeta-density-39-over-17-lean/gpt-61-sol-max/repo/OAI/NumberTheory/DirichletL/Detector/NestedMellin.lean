@@ -10,8 +10,8 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped EisensteinO
 
 def nestedMellinPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
     (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ υ : ℝ) : ℂ :=
@@ -54,7 +54,7 @@ theorem markedPhysicalProbe_eq_nested_mellin (η : HeckeFamily.Character)
     ring
   · simp only [mul_zero]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

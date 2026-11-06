@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.ContinuationInversion
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
@@ -37,8 +38,7 @@ theorem vertical_integral_eq_of_horizontal_vanish (F : ℂ → ℂ) {a b : ℝ}
     ((intervalIntegral_tendsto_integral ha tendsto_neg_atTop_atBot tendsto_id).const_mul I)
   have hzero : (0 : ℂ) - 0 + I * (∫ y : ℝ, F ((b : ℂ) + y * I)) -
       I * (∫ y : ℝ, F ((a : ℂ) + y * I)) = 0 :=
-    tendsto_nhds_unique hlim (by simpa only [id_eq, hrect] using
-      (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℂ)) atTop (𝓝 0)))
+    tendsto_nhds_unique hlim (by simp_all)
   have heq : I * (∫ y : ℝ, F ((b : ℂ) + y * I)) =
       I * (∫ y : ℝ, F ((a : ℂ) + y * I)) := by simpa using sub_eq_zero.mp hzero
   exact (mul_left_cancel₀ I_ne_zero heq).symm
@@ -109,8 +109,8 @@ theorem gaussianContourIntegrand_differentiableOn {G : ℂ → ℂ} {U : Set ℂ
       (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).differentiableOn
   · exact (((differentiable_id.sub_const (5 / 6 : ℂ)).pow 2).cexp).differentiableOn
 
-end SevenEighths.Continuation
 
-end
 
-end OAI
+
+
+

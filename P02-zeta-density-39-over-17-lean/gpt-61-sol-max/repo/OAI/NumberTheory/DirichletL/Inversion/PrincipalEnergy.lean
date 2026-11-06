@@ -11,7 +11,7 @@ namespace SevenEighths.InversePrincipalEnergy
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
 open InverseMoment
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 section
 variable {ι : Type*} [DecidableEq ι]
@@ -54,34 +54,49 @@ theorem mask_card_le_divisors (G : Finset ι) :
   · intro E _ D _ h
     exact FirstCauchyArithmetic.family_product_injective (fun i => Ideal.span {p i}) hinj h
 
-def principalFrequency (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
-    (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) : ℂ :=
+section
+variable (hp : ∀ i, p i ≠ 0)
+include hp
+
+section
+variable (Ψ : Eis →* ℂ)
+include Ψ
+
+section
+variable (m r c d e k : Eis)
+    (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ)
+include m r c d e k H₁ H₂ W Y
+
+def principalFrequency  : ℂ :=
   ((Y : ℂ) / (‖eisEmbedding (∏ i ∈ (∅ : Finset ι) ∪ ∅, p i)‖ : ℂ)) *
     paperRadialFourier W (Y * ‖eisEmbedding k‖ ^ 2 /
       (‖eisEmbedding e‖ ^ 2 * primeProductNorm p ((∅ : Finset ι) ∪ ∅))) *
     secondGaussTerm p hp hg hinj Ψ Ψ m r c d e k H₁ H₂ ∅ ∅
 
-theorem principalFrequency_eq (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
-    (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) :
+theorem principalFrequency_eq  :
     principalFrequency p hg hinj hp Ψ m r c d e k H₁ H₂ W Y =
       (Y : ℂ) * paperRadialFourier W (Y * ‖eisEmbedding k‖ ^ 2 / ‖eisEmbedding e‖ ^ 2) *
         (star (H₁ ∅) * H₂ ∅) := by
   simp only [principalFrequency, Finset.union_empty, Finset.prod_empty, map_one, norm_one,
     Complex.ofReal_one, div_one, primeProductNorm, one_pow, mul_one,
     secondGaussTerm_empty (p := p) (hp := hp) (hg := hg) (hinj := hinj)]
+end
 
-def restorationTerm (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (m c d : Eis)
+
+section
+variable (m c d : Eis)
     (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ)
-    (G : Finset ι) (E : G.powerset) (k : Eis) : ℂ :=
+    (G : Finset ι) (E : G.powerset) (k : Eis)
+include m c d H W Y G E k
+
+def restorationTerm  : ℂ :=
   secondSourceCommonCoefficient p hg Ψ m c d G E.val *
     principalFrequency p hg hinj hp Ψ m
       (secondMaskQuotient p E.val G (Finset.mem_powerset.mp E.property)) c d
       (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) k
       (fun U => H (G ∪ U)) (fun U => H (G ∪ U)) W Y
 
-theorem restorationTerm_eq (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ)
-    (G : Finset ι) (E : G.powerset) (k : Eis) :
+theorem restorationTerm_eq  :
     restorationTerm p hg hinj hp Ψ m c d H W Y G E k =
       (‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) G‖ ^ 2 : ℝ) *
       (‖H G‖ ^ 2 : ℝ) * (UniqueFactorizationMonoid.moebius (supportIdeal p E.val) : ℂ) *
@@ -97,11 +112,16 @@ theorem restorationTerm_eq (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (m c d : 
       (Y / (Ideal.absNorm (∏ i ∈ E.val, Ideal.span {p i}) : ℝ)) * ‖eisEmbedding k‖ ^ 2 := by ring
   rw [harg]
   ring
+end
 
-theorem restorationTerm_mask_norm_le (hp : ∀ i, p i ≠ 0)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
+
+section
+variable (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
     (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (G : Finset ι) (E : G.powerset) (k : Eis) (θ : ℂ) (hθ : ‖θ‖ ≤ 1) :
+    (G : Finset ι) (E : G.powerset)
+include hΨ m c d H W Y hY G E
+
+theorem restorationTerm_mask_norm_le  (k : Eis) (θ : ℂ) (hθ : ‖θ‖ ≤ 1) :
     ‖θ * restorationTerm p hg hinj hp Ψ m c d H W Y G E k‖ ≤
       ‖H G‖ ^ 2 * (Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ)) *
         ‖paperRadialFourier W ((Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ)) * ‖eisEmbedding k‖ ^ 2)‖ := by
@@ -117,11 +137,12 @@ theorem restorationTerm_mask_norm_le (hp : ∀ i, p i ≠ 0)
         ‖paperRadialFourier W ((Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ)) * ‖eisEmbedding k‖ ^ 2)‖) := by gcongr
     _ = _ := by ring
 
-theorem restorationTerm_mask_summable_norm (hp : ∀ i, p i ≠ 0)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (G : Finset ι) (E : G.powerset) (θ : Eis → ℂ)
-    (hθ : ∀ k : {k : Eis // k ≠ 0}, ‖θ k.val‖ ≤ 1) :
+section
+variable (θ : Eis → ℂ)
+    (hθ : ∀ k : {k : Eis // k ≠ 0}, ‖θ k.val‖ ≤ 1)
+include θ hθ
+
+theorem restorationTerm_mask_summable_norm  :
     Summable (fun k : {k : Eis // k ≠ 0} =>
       ‖θ k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val‖) := by
   have ht := div_pos hY (supportIdeal_norm_pos p E.val)
@@ -130,11 +151,7 @@ theorem restorationTerm_mask_summable_norm (hp : ∀ i, p i ≠ 0)
     (fun k => restorationTerm_mask_norm_le p hg hinj hp Ψ hΨ m c d H W Y hY G E k.val (θ k.val) (hθ k))
     (hs.mul_left (‖H G‖ ^ 2 * (Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ))))
 
-theorem restoration_divisor_abs_le (hp : ∀ i, p i ≠ 0)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (G : Finset ι) (E : G.powerset) (θ : Eis → ℂ)
-    (hθ : ∀ k : {k : Eis // k ≠ 0}, ‖θ k.val‖ ≤ 1) :
+theorem restoration_divisor_abs_le  :
     (∑' k : {k : Eis // k ≠ 0},
       ‖θ k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val‖) ≤
         QuadraticInitialBound.pvControl W * ‖H G‖ ^ 2 := by
@@ -160,19 +177,29 @@ theorem restoration_divisor_abs_le (hp : ∀ i, p i ≠ 0)
     _ ≤ ‖H G‖ ^ 2 * QuadraticInitialBound.pvControl W :=
       mul_le_mul_of_nonneg_left (QuadraticInitialBound.pv_lattice_bound W _ ht) (sq_nonneg ‖H G‖)
     _ = _ := mul_comm _ _
+end
+end
+end
 
-def principalRestoration (hp : ∀ i, p i ≠ 0)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis)
+
+section
+variable (F : Finset ι) (Ψ : Eis →* ℂ)
+include F Ψ
+
+def principalRestoration  (m c d : Eis)
     (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ)
     (θ : Finset ι → Finset ι → Eis → ℂ) : ℂ :=
   ∑ G ∈ F.powerset, ∑ E : G.powerset, ∑' k : {k : Eis // k ≠ 0},
     θ G E.val k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val
 
-theorem principalRestoration_abs_le (hp : ∀ i, p i ≠ 0)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
+section
+variable (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
     (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
     (θ : Finset ι → Finset ι → Eis → ℂ)
-    (hθ : ∀ G ∈ F.powerset, ∀ E : G.powerset, ∀ k : {k : Eis // k ≠ 0}, ‖θ G E.val k.val‖ ≤ 1) :
+    (hθ : ∀ G ∈ F.powerset, ∀ E : G.powerset, ∀ k : {k : Eis // k ≠ 0}, ‖θ G E.val k.val‖ ≤ 1)
+include hΨ m c d H W Y hY θ hθ
+
+theorem principalRestoration_abs_le  :
     (∑ G ∈ F.powerset, ∑ E : G.powerset, ∑' k : {k : Eis // k ≠ 0},
       ‖θ G E.val k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val‖) ≤
       QuadraticInitialBound.pvControl W *
@@ -191,11 +218,7 @@ theorem principalRestoration_abs_le (hp : ∀ i, p i ≠ 0)
         (mul_nonneg (QuadraticInitialBound.pvControl_nonneg W) (sq_nonneg _))
     _ = _ := by ring
 
-theorem principalRestoration_norm_le (hp : ∀ i, p i ≠ 0)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (θ : Finset ι → Finset ι → Eis → ℂ)
-    (hθ : ∀ G ∈ F.powerset, ∀ E : G.powerset, ∀ k : {k : Eis // k ≠ 0}, ‖θ G E.val k.val‖ ≤ 1) :
+theorem principalRestoration_norm_le  :
     ‖principalRestoration p hg hinj hp F Ψ m c d H W Y θ‖ ≤
       QuadraticInitialBound.pvControl W *
         ∑ G ∈ F.powerset, ((idealDivisors (supportIdeal p G)).card : ℝ) * ‖H G‖ ^ 2 := by
@@ -208,6 +231,10 @@ theorem principalRestoration_norm_le (hp : ∀ i, p i ≠ 0)
   intro E _
   exact norm_tsum_le_tsum_norm (restorationTerm_mask_summable_norm p hg hinj hp Ψ hΨ m c d H W Y hY G E
     (θ G E.val) (hθ G hG E))
+end
+end
+end
+
 
 def markedRadial {σ : Type*} [DecidableEq σ]
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
@@ -422,8 +449,8 @@ theorem marked_principal_energy (ε : ℝ) (hε : 0 < ε) :
         (mul_nonneg (le_trans zero_le_one hY) (mul_nonneg hCr.le (apply_nonneg _ _)))
     _ = _ := by ring
 
-end SevenEighths.InversePrincipalEnergy
 
-end
 
-end OAI
+
+
+

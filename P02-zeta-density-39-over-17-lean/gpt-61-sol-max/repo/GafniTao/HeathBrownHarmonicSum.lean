@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownShiftFiberBound
 public import Mathlib.NumberTheory.Harmonic.Bounds
 
@@ -17,7 +18,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic_total
     {N k H K D d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -42,7 +43,6 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic_total
     let a := A * lambda * N / ((k - 2).factorial : ℝ)
     ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ) ≤
       ((D : ℝ) + c) * (b + a * D) / d := by
-  dsimp only
   have hdN : d ≤ N := hdD.trans hDN
   by_cases hdStrict : d < N
   · have hNsub : 1 ≤ N - d := by omega
@@ -83,7 +83,6 @@ theorem heathBrown_positiveShiftFiber_sum_cast_le_harmonic
     (∑ d ∈ Finset.Icc 1 D,
         ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ)) ≤
       ((D : ℝ) + c) * (b + a * D) * (harmonic D : ℝ) := by
-  dsimp only
   let Q : ℝ :=
     ((D : ℝ) +
       8 * ((k - 2).factorial : ℝ) *
@@ -98,8 +97,7 @@ theorem heathBrown_positiveShiftFiber_sum_cast_le_harmonic
     have h := heathBrownPositiveShiftFiber_card_cast_le_harmonic_total
       (H := H) (K := K) hk hd'.1 hDN hd'.2 hA hlambda hcoord hcoordd
       hraw hrawd hkBounds
-    dsimp only at h
-    simpa only [Q, div_eq_mul_inv] using h
+    assumption
   calc
     (∑ d ∈ Finset.Icc 1 D,
         ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ)) ≤
@@ -149,7 +147,6 @@ theorem heathBrownPairCountTwo_card_cast_le_harmonic
     ((heathBrownPairCountTwo N k H
       (heathBrownBlockParameter A lambda N) f).card : ℝ) ≤
       N + 2 * (((D : ℝ) + c) * (b + a * D) * (harmonic D : ℝ)) := by
-  dsimp only
   let D := heathBrownShiftBound N k H lambda
   have hcountNat := heathBrownPairCountTwo_card_le_restricted_shift_sum
     N k H f (by omega : 1 ≤ k) hA hlambda hsmall
@@ -165,12 +162,9 @@ theorem heathBrownPairCountTwo_card_cast_le_harmonic
     (H := H) (K := heathBrownBlockParameter A lambda N) hk
     (heathBrownShiftBound_le_N N k H lambda) hA hlambda
     hcoordLow hcoordLowD hraw hrawd hkBounds
-  dsimp only at hsum
-  have hsum' := add_le_add_right
-    (mul_le_mul_of_nonneg_left hsum (by norm_num : (0 : ℝ) ≤ 2)) (N : ℝ)
-  simpa only [D] using hcount.trans hsum'
+  grind
 
 
-end
 
-end GafniTao
+
+

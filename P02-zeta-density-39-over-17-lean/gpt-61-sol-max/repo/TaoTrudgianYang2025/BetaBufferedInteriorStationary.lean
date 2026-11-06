@@ -19,7 +19,7 @@ open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def bufferedInteriorStationaryConstant (σ : ℝ) : ℝ :=
   8*Real.sqrt (σ+1)/(modelPhaseCurvatureLower σ*Real.pi)+
@@ -143,4 +143,4 @@ theorem modelPhaseBufferedFourierMode_interior_uniform
   exact (mul_le_mul_of_nonneg_left
     (hR l r η d hl hr hη hd F δ (q*N/T) T hδ hF hv hT hleft hright) hN.le).trans_eq (by ring)
 
-end TaoTrudgianYang2025
+

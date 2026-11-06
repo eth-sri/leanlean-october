@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.RayNormalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical
+open HeckeFamily
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma annular_power_separation (a b r s : ℝ) (ha : 0<a) (hrs : r<s) :
@@ -24,9 +24,13 @@ lemma annular_power_separation (a b r s : ℝ) (ha : 0<a) (hrs : r<s) :
     b*Z^r < (a*Z^(s-r))*Z^r := mul_lt_mul_of_pos_right ht hp
     _=a*Z^s := by rw [mul_assoc,←Real.rpow_add hZ0];congr 1;congr 1;ring
 
-theorem power_pools_eventually_disjoint {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     (C : Set Id) (S : Finset Id) (a b ell : ι→ℝ)
-    (ha : ∀i,0<a i) (hab : ∀i,a i≤b i) (hell : Function.Injective ell) :
+    (ha : ∀i,0<a i) (hab : ∀i,a i≤b i) (hell : Function.Injective ell)
+include ι C S a b ell ha hab hell
+
+theorem power_pools_eventually_disjoint  :
     ∀ᶠZ : ℝ in atTop,∀i j, i≠j→Disjoint (pool C S (a i) (b i) (Z^(ell i)))
       (pool C S (a j) (b j) (Z^(ell j))) := by
   apply Filter.eventually_all.mpr
@@ -52,9 +56,7 @@ theorem power_pools_eventually_disjoint {ι : Type*} [Fintype ι]
     have hj := pool_norm_bounds C S (ha j).le (hab j) (Real.rpow_pos_of_pos hZ _) P hPj
     nlinarith
 
-theorem power_pool_tuples_eventually_injective {ι : Type*} [Fintype ι]
-    (C : Set Id) (S : Finset Id) (a b ell : ι→ℝ)
-    (ha : ∀i,0<a i) (hab : ∀i,a i≤b i) (hell : Function.Injective ell) :
+theorem power_pool_tuples_eventually_injective  :
     ∀ᶠZ : ℝ in atTop,∀P:(∀i,pool C S (a i) (b i) (Z^(ell i))),
       Function.Injective (fun i=>(P i).val) := by
   filter_upwards [power_pools_eventually_disjoint C S a b ell ha hab hell] with Z hZ P
@@ -62,7 +64,9 @@ theorem power_pool_tuples_eventually_injective {ι : Type*} [Fintype ι]
   by_contra hn
   have hq : (P i).val=(P j).val := heq
   exact Finset.disjoint_left.mp (hZ i j hn) (P i).property (by rw [hq];exact (P j).property)
-end SevenEighths.ProbeRaySlots
 end
 
-end OAI
+
+
+
+

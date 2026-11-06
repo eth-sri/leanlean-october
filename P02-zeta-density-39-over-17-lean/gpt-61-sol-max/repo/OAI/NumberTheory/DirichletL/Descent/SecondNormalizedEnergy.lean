@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.SecondModeEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
+public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 
 @[expose] public section
@@ -8,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open InverseSecondFibers ActualEisensteinCubic SecondPassArithmetic CompletedGauss
 open JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma child_ball_neg (R : ℝ) (k : Eis) :
     -k ∈ nonzeroChildFrequencyBall 1 R ↔ k ∈ nonzeroChildFrequencyBall 1 R := by
@@ -97,7 +98,7 @@ theorem normalized_child_energy_radical_puncture
   intro k hk
   rw [finiteCanonicalMarkedRow_radical_puncture p hp hcop hg pool Ψ m (primaryGenerator f) k slots lists a W X]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -5,17 +5,21 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open CenteredMomentSupportedCorrelation CenteredMomentCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
 
-theorem jointExtension_source (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+include S hS
+
+theorem jointExtension_source  (σ : RayRing)
     (C k : O) (hC : Supported (Ideal.span {C}))
     (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
     (hpr : λ₀^2∣r-1) (hk : k=u.val*λ₀^a*(2:O)^b*r)
@@ -37,7 +41,7 @@ theorem jointExtension_source (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : 
     movingNumeratorRow,MonoidHom.coe_mk,OneHom.coe_mk,star_mul]
   ring
 
-lemma lowGramCoefficient_eq_primary (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+lemma lowGramCoefficient_eq_primary 
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (s : {I : Id // Supported I}) :
     lowGramCoefficient (calibrationForSet S hS) σ s=
       primaryCoefficient S hS σ (primaryGenerator s.val) := by
@@ -45,8 +49,10 @@ lemma lowGramCoefficient_eq_primary (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (supported_primaryGenerator_ne_zero s.val s.property)).2
   rw [primaryCoefficient,ite_eq_left hp]
   exact lowGramCoefficient_eq_extension S hS hbad σ s
-
-end SevenEighths.ProbeGramCommon
 end
 
-end OAI
+
+
+
+
+

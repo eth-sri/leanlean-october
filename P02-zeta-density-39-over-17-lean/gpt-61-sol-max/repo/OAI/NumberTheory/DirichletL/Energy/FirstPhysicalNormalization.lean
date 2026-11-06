@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstReferenceEnergy
 public import OAI.NumberTheory.DirichletL.Moments.FirstWindowBudgets
 
@@ -41,7 +42,6 @@ theorem pairedBudget_le_cap (J₁ J₂ : ℕ) (t H : ℝ) (EL ER : Fin 4 → ℝ
       window_pair_le J₁ J₂ t (EL i) (ER j) H hH (hL i) (hR j)))
   apply hh.trans_eq
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  norm_num
   ring
 
 theorem pairedBudget_le_powers (J₁ J₂ : ℕ) (t Z F Mdecl M₀ ell : ℝ)
@@ -172,7 +172,6 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
   have hm₁ := profileMoment_nonneg J₁
   have hm₂ := profileMoment_nonneg J₂
   have hconst := (normalizationConstant_pos lowerProduct hlower).le
-  have hz := zero_lt_one.trans hZ
   apply hh.trans
   calc
     _ ≤ normalizationConstant lowerProduct * F * Z ^ (Mdecl + ell) *
@@ -183,9 +182,10 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
           (by positivity)) hm₁) hm₂
     _ = _ := by unfold polynomialConstant; ring
 
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
+open Filter CenteredMomentFirstSourceReduction
+open CenteredMomentFirstReferenceSource
+open CenteredMomentFirstNonexceptionalWeightSum
+
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : ℕ)
@@ -238,8 +238,8 @@ theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : �
         Real.rpow_add hz (Mdecl + ell) ε]
       ring
 
-end SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization
 
-end
 
-end OAI
+
+
+

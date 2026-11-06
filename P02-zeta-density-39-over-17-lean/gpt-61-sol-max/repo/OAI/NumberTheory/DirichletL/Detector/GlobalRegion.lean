@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 
 theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
@@ -70,7 +70,7 @@ theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
       _ = _ := by ring
   nlinarith
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

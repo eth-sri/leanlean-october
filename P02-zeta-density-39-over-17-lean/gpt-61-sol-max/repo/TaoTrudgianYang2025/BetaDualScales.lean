@@ -16,11 +16,11 @@ phase factor and the Fourier conjugation convention.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseDualScale (A T N : ℝ) : ℝ := A*T/N
 
@@ -51,4 +51,4 @@ theorem modelPhaseDualParameter_cancel (σ : ℝ) {A : ℝ}
     A^(1-σ⁻¹)*T*A^(σ⁻¹-1) = (A^(1-σ⁻¹)*A^(σ⁻¹-1))*T := by ring
     _ = T := by rw [h,one_mul]
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorTail
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorPartition
 
@@ -11,20 +12,30 @@ open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorFinite
 open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition
 open CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def pairSet (U : ℝ) : Finset (Ideal O × Ideal O) :=
   (idealsUpTo ⌈2*U⌉₊) ×ˢ (idealsUpTo ⌈2*U⌉₊)
 
-lemma pairCoefficient_zero_left (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (J : Ideal O) :
+section
+variable (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
+include χ V T D Y U
+
+section
+variable (s : ℂ) (J : Ideal O)
+include s J
+
+lemma pairCoefficient_zero_left  :
     pairCoefficient χ V T D Y U s (0,J) = 0 := by
   simp only [pairCoefficient,zero_mul,map_zero,mul_zero]
 
-lemma pairCoefficient_zero_right (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (J : Ideal O) :
+lemma pairCoefficient_zero_right  :
     pairCoefficient χ V T D Y U s (J,0) = 0 := by
   simp only [pairCoefficient,mul_zero,map_zero,zero_mul]
+end
 
-theorem pairCoefficient_support (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
+
+theorem pairCoefficient_support 
     (hU : 0 < U) (hT : ∀ x : ℝ, 2 ≤ x → T x = 0) (s : ℂ)
     (p : Ideal O × Ideal O) (hp : p ∉ pairSet U) :
     pairCoefficient χ V T D Y U s p = 0 := by
@@ -36,15 +47,15 @@ theorem pairCoefficient_support (χ : Character) (V T : ℝ → ℂ) (D Y U : �
   · change pairCoefficient χ V T D Y U s (p.1,p.2) = 0
     rw [h2]
     exact pairCoefficient_zero_right χ V T D Y U s p.1
-  have hprod : p.1*p.2 ≠ 0 := mul_ne_zero h1 h2
+  have hprod := mul_ne_zero h1 h2
   have hnpos : 0 < Ideal.absNorm (p.1*p.2) := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hprod)
   have hnorm : 2*U ≤ (Ideal.absNorm (p.1*p.2) : ℝ) := by
     by_contra h
     have hb : Ideal.absNorm (p.1*p.2) ≤ ⌈2*U⌉₊ := by
       exact_mod_cast (le_trans (lt_of_not_ge h).le (Nat.le_ceil (2*U)))
-    have hh1 : Ideal.absNorm p.1 ≤ Ideal.absNorm (p.1*p.2) :=
+    have hh1 :=
       Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm (dvd_mul_right p.1 p.2))
-    have hh2 : Ideal.absNorm p.2 ≤ Ideal.absNorm (p.1*p.2) :=
+    have hh2 :=
       Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm (dvd_mul_left p.2 p.1))
     apply hp
     exact Finset.mem_product.mpr
@@ -53,7 +64,7 @@ theorem pairCoefficient_support (χ : Character) (V T : ℝ → ℂ) (D Y U : �
   have hz := hT ((Ideal.absNorm (p.1*p.2) : ℝ)/U) ((le_div_iff₀ hU).mpr hnorm)
   simp only [pairCoefficient,hz,mul_zero]
 
-theorem pair_fiber (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal O) :
+theorem pair_fiber  (s : ℂ) (I : Ideal O) :
     (∑' p : MulFiber I, pairCoefficient χ V T D Y U s p.val) =
       terminalTerm χ V T D Y U s I := by
   have h := weighted_fiber χ V D s I
@@ -63,7 +74,7 @@ theorem pair_fiber (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) 
   intro p
   simp only [pairCoefficient,p.property]
 
-theorem terminal_sum_eq_pair_sum (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
+theorem terminal_sum_eq_pair_sum 
     (hU : 0 < U) (hT : ∀ x : ℝ, 2 ≤ x → T x = 0) (s : ℂ) :
     (∑' I : Ideal O, terminalTerm χ V T D Y U s I) =
       ∑ p ∈ pairSet U, pairCoefficient χ V T D Y U s p := by
@@ -80,15 +91,18 @@ theorem terminal_sum_eq_pair_sum (χ : Character) (V T : ℝ → ℂ) (D Y U : �
   rw [hsum.tsum_eq]
   exact tsum_eq_sum (pairCoefficient_support χ V T D Y U hU hT s)
 
-def dyadicBlock (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (j k : ℕ) : ℂ :=
+def dyadicBlock  (s : ℂ) (j k : ℕ) : ℂ :=
   ∑ p ∈ pairSet U, pairCoefficient χ V T D Y U s p *
     DyadicTransfer.annularCutoff V ((Ideal.absNorm p.1 : ℝ)/(2 : ℝ)^j) *
     DyadicTransfer.annularCutoff V ((Ideal.absNorm p.2 : ℝ)/(2 : ℝ)^k)
 
-theorem terminal_sum_eq_dyadic (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
-    (hU : 0 < U) (hT : ∀ x : ℝ, 2 ≤ x → T x = 0)
+section
+variable (hU : 0 < U) (hT : ∀ x : ℝ, 2 ≤ x → T x = 0)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) :
+    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ)
+include hU hT hV hVzero s
+
+theorem terminal_sum_eq_dyadic  :
     (∑' I : Ideal O, terminalTerm χ V T D Y U s I) =
       ∑ j ∈ Finset.range (length (⌈2*U⌉₊ : ℝ)+1),
         ∑ k ∈ Finset.range (length (⌈2*U⌉₊ : ℝ)+1), dyadicBlock χ V T D Y U s j k := by
@@ -102,10 +116,7 @@ theorem terminal_sum_eq_dyadic (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ
   exact ⟨Ideal.absNorm_eq_zero_iff.not.mp (by omega),
     Ideal.absNorm_eq_zero_iff.not.mp (by omega),by exact_mod_cast hp1b,by exact_mod_cast hp2b⟩
 
-theorem exists_dyadic_block (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
-    (hU : 0 < U) (hT : ∀ x : ℝ, 2 ≤ x → T x = 0)
-    (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (c : ℝ)
+theorem exists_dyadic_block  (c : ℝ)
     (hc : c ≤ ‖∑' I : Ideal O, terminalTerm χ V T D Y U s I‖) :
     ∃ j ∈ Finset.range (length (⌈2*U⌉₊ : ℝ)+1),
       ∃ k ∈ Finset.range (length (⌈2*U⌉₊ : ℝ)+1),
@@ -114,8 +125,10 @@ theorem exists_dyadic_block (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
   obtain ⟨j,hj,k,hk,hb⟩ := exists_large_pair (length (⌈2*U⌉₊ : ℝ))
     (length (⌈2*U⌉₊ : ℝ)) (dyadicBlock χ V T D Y U s)
   exact ⟨j,hj,k,hk,by simpa only [pow_two] using hc.trans hb⟩
+end
 
-theorem nonzero_block_scale_bounds (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ)
+
+theorem nonzero_block_scale_bounds 
     (hD : 0 < D) (hU : 0 < U)
     (hT : ∀ x : ℝ, 2 ≤ x → T x = 0)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
@@ -134,9 +147,11 @@ theorem nonzero_block_scale_bounds (χ : Character) (V T : ℝ → ℂ) (D Y U :
     hD hU j k hj hk hfirst
   · simpa only [map_mul,Nat.cast_mul] using hproduct
   · simpa only [map_mul,Nat.cast_mul] using hterminal
-
-end SevenEighths.HeckeDetectorFinite
-
 end
 
-end OAI
+
+
+
+
+
+

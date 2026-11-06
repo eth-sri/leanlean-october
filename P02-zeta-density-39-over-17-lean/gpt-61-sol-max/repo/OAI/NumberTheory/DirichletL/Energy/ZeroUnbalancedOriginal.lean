@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginalGates
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
 open CenteredMomentEnergyZeroUnbalancedOriginalPower
 open CenteredMomentEnergyZeroUnbalancedOriginalGates
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem original_unbalanced_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
@@ -27,9 +27,9 @@ theorem original_unbalanced_from_zero_low
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤ s.width →s.width≤Mcap →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →
-      min (length Z X₁) (length Z X₂)≤s.width/4 →
+      min (length Z X₁) (length Z X₂)≤ s.width/4 →
       5*s.width/6≤length Z X₁+length Z X₂ →
       s.plainEnergy p t X₁ X₂ ≤
         C*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*
@@ -44,7 +44,7 @@ theorem original_unbalanced_from_zero_low
   refine ⟨hZ.1,?_⟩
   intro e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ hshort hlarge
   have hordered (p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
-      (hshort:length Z X₁≤s.width/4)
+      (hshort:length Z X₁≤ s.width/4)
       (hlarge:5*s.width/6≤length Z X₁+length Z X₂):
       s.plainEnergy p t X₁ X₂≤
         C*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*
@@ -82,8 +82,8 @@ theorem original_unbalanced_from_zero_low
     have hh:=hordered p' X₂ X₁ hX₂ hX₁ hshort (by linarith)
     simpa only [hswap,hpcontrol] using hh
 
-end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
 
-end
 
-end OAI
+
+
+

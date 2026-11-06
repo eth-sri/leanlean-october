@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationSum
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -32,4 +31,4 @@ theorem robertSargos_symmetric_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
   convert hs using 1
   ring
 
-end TaoTrudgianYang2025
+

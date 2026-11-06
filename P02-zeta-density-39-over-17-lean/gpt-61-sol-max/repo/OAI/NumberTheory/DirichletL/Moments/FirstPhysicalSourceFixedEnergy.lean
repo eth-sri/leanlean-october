@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceDyadicWindo
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
+open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
+open CenteredMomentCanonicalFirst
 open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*}[Fintype ι]
 variable {η:Character}{C D:Ideal O}{hC:Supported C}
   {E:Finset (CommonIndex C D)}{ξ₁ ξ₂:RayCharacter}
@@ -38,8 +38,8 @@ theorem FixedPair.right_window_energy (F:FixedPair η C D hC E ξ₁ ξ₂)(hD:S
   exact column_star_dyadic_window_energy s C D hC.1 hD hCD F.right t θ X hX L _
     (F.right_column hD s t L) U K hK hU J B hB hsource
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

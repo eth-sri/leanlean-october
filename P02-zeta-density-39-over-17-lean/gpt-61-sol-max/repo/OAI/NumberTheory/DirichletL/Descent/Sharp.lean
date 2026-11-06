@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.HybridBound
 public import OAI.NumberTheory.DirichletL.CubicSieve.Sharp
 
@@ -9,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
@@ -29,7 +30,7 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
   have hNL : N * L ≤ Q := by
     have hKB : 1 ≤ K * B := one_le_mul_of_one_le_of_one_le hK hB
     have hh := le_mul_of_one_le_left (by positivity : 0 ≤ N * L) hKB
-    convert hh using 1 ; dsimp only [Q] ; ring
+    linarith
   have hdouble (t : ℝ) : (N * (2 * L)) ^ t = (2 : ℝ) ^ t * (N * L) ^ t := by
     rw [show N * (2 * L) = 2 * (N * L) by ring, Real.mul_rpow (by norm_num) (by positivity)]
   have h23 : (2 : ℝ) ^ (2 / 3 : ℝ) ≤ 2 := by
@@ -43,10 +44,7 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
     linarith
   have hcost : (K * N * B) ^ (ε / 2) * (N * L) ^ (ε / 2) ≤ Q ^ ε := by
     calc
-      _ ≤ Q ^ (ε / 2) * Q ^ (ε / 2) := by
-        exact mul_le_mul (Real.rpow_le_rpow (by positivity) hKNB (by positivity))
-          (Real.rpow_le_rpow (by positivity) hNL (by positivity))
-          (Real.rpow_nonneg (by positivity) _) (Real.rpow_nonneg hQ0.le _)
+      _ ≤ Q ^ (ε / 2) * Q ^ (ε / 2) := by gcongr
       _ = _ := by rw [← Real.rpow_add hQ0]; congr 1; ring
   have hh := hb N (2 * L) hN (by linarith)
   calc
@@ -83,7 +81,7 @@ theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
     (show 0 ≤ C0 * (K + N * B) * B by positivity)
   convert hh using 1 <;> ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import DensityEnergyGM.DifferenceLevelCount
 public import DensityEnergyGM.FiniteLayerCake
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -58,8 +58,7 @@ theorem difference_second_moment_le_peak_integral {M : ℕ} (a : ℕ → ℂ)
   have hLayer' : (∑ j ∈ S, (differenceFloorCount W j : ℝ) * f j) =
       ∫ s in Set.Ioc 0 ((M : ℝ) ^ 2),
         ∑ j ∈ S.filter (fun j => s ≤ f j), (differenceFloorCount W j : ℝ) := by
-    have hsum : (∑ j : S, (differenceFloorCount W j : ℝ) * f j) =
-        ∑ j ∈ S, (differenceFloorCount W j : ℝ) * f j :=
+    have hsum :=
       Finset.sum_coe_sort S (fun j => (differenceFloorCount W j : ℝ) * f j)
     rw [hsum] at hLayer
     refine hLayer.trans ?_
@@ -81,4 +80,4 @@ theorem difference_second_moment_le_peak_integral {M : ℕ} (a : ℕ → ℂ)
     _ = ∑ j ∈ S, (differenceFloorCount W j : ℝ) * f j := sum_differenceFloor_values W f
     _ = _ := hLayer'
 
-end Montgomery.RationalMoment
+

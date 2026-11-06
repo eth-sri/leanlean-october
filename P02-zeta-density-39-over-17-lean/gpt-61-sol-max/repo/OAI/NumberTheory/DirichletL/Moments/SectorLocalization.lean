@@ -10,33 +10,43 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSectorLocalization
-open CubicEisenstein ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
-local notation "O" => ActualEisensteinCubic.O
+open ConcreteTraceCRT EisensteinSchwartzPoisson
+open scoped EisensteinO
 
-def cutoff (x : ℝ) : ℝ := Real.smoothTransition (2-2*x)
+section
+variable (x : ℝ)
+include x
 
-theorem cutoff_one (x : ℝ) (hx : x ≤ 1/2) : cutoff x=1 :=
+def cutoff  : ℝ := Real.smoothTransition (2-2*x)
+
+theorem cutoff_one  (hx : x ≤ 1/2) : cutoff x=1 :=
   Real.smoothTransition.one_of_one_le (by linarith)
 
-theorem cutoff_zero (x : ℝ) (hx : 1 ≤ x) : cutoff x=0 :=
+theorem cutoff_zero  (hx : 1 ≤ x) : cutoff x=0 :=
   Real.smoothTransition.zero_of_nonpos (by linarith)
 
-theorem cutoff_bounds (x : ℝ) : 0 ≤ cutoff x ∧ cutoff x ≤ 1 :=
+theorem cutoff_bounds  : 0 ≤ cutoff x ∧ cutoff x ≤ 1 :=
   ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
+end
+
 
 theorem cutoff_antitone : Antitone cutoff := by
   intro x y hxy
   exact Real.smoothTransition.monotone (by linarith)
 
-def annulus (x : ℝ) : ℝ := cutoff x-cutoff (2*x)
+section
+variable (x : ℝ)
+include x
 
-theorem annulus_zero_low (x : ℝ) (hx : x ≤ 1/4) : annulus x=0 := by
+def annulus  : ℝ := cutoff x-cutoff (2*x)
+
+theorem annulus_zero_low  (hx : x ≤ 1/4) : annulus x=0 := by
   rw [annulus, cutoff_one x (by linarith),cutoff_one (2*x) (by linarith),sub_self]
 
-theorem annulus_zero_high (x : ℝ) (hx : 1 ≤ x) : annulus x=0 := by
+theorem annulus_zero_high  (hx : 1 ≤ x) : annulus x=0 := by
   rw [annulus,cutoff_zero x hx,cutoff_zero (2*x) (by linarith),sub_self]
 
-theorem annulus_bounds (x : ℝ) : 0 ≤ annulus x ∧ annulus x ≤ 1 := by
+theorem annulus_bounds  : 0 ≤ annulus x ∧ annulus x ≤ 1 := by
   by_cases hx : x ≤ 1/4
   · rw [annulus_zero_low x hx]; constructor <;> norm_num
   have hm := cutoff_antitone (show x ≤ 2*x by linarith)
@@ -44,50 +54,68 @@ theorem annulus_bounds (x : ℝ) : 0 ≤ annulus x ∧ annulus x ≤ 1 := by
   have h₂ := cutoff_bounds (2*x)
   unfold annulus
   constructor <;> linarith
+end
+
 
 theorem annulus_smooth : ContDiff ℝ ∞ annulus := by
   have hc : ContDiff ℝ ∞ cutoff :=
     Real.smoothTransition.contDiff.comp (contDiff_const.sub (contDiff_const.mul contDiff_id))
   exact hc.sub (hc.comp (contDiff_const.mul contDiff_id))
 
-def dyadicScale (n : ℤ) : ℝ := (2:ℝ)^n
+section
+variable (n : ℤ)
+include n
 
-theorem dyadicScale_pos (n : ℤ) : 0 < dyadicScale n := by
+def dyadicScale  : ℝ := (2:ℝ)^n
+
+theorem dyadicScale_pos  : 0 < dyadicScale n := by
   unfold dyadicScale
   positivity
 
-theorem dyadicScale_add (n : ℤ) : dyadicScale (n+1)=2*dyadicScale n := by
+theorem dyadicScale_add  : dyadicScale (n+1)=2*dyadicScale n := by
   simp only [dyadicScale,zpow_add₀ (by norm_num : (2:ℝ) ≠ 0),zpow_one]
   ring
 
-def dyadicWeight (n : ℤ) (q : ℝ) : ℝ := annulus (q/dyadicScale n)
+section
+variable (q : ℝ)
+include q
 
-theorem dyadicWeight_bounds (n : ℤ) (q : ℝ) :
+def dyadicWeight  : ℝ := annulus (q/dyadicScale n)
+
+theorem dyadicWeight_bounds  :
     0 ≤ dyadicWeight n q ∧ dyadicWeight n q ≤ 1 := annulus_bounds _
 
-theorem dyadicWeight_zero_low (n : ℤ) (q : ℝ) (hq : q ≤ dyadicScale n/4) :
+theorem dyadicWeight_zero_low  (hq : q ≤ dyadicScale n/4) :
     dyadicWeight n q=0 := by
   apply annulus_zero_low
   apply (div_le_iff₀ (dyadicScale_pos n)).mpr
   linarith
 
-theorem dyadicWeight_zero_high (n : ℤ) (q : ℝ) (hq : dyadicScale n ≤ q) :
+theorem dyadicWeight_zero_high  (hq : dyadicScale n ≤ q) :
     dyadicWeight n q=0 := by
   apply annulus_zero_high
   exact (le_div_iff₀ (dyadicScale_pos n)).mpr (by simpa using hq)
+end
 
-theorem dyadicWeight_support (n : ℤ) :
+
+theorem dyadicWeight_support  :
     Function.support (dyadicWeight n) ⊆ Set.Ioo (dyadicScale n/4) (dyadicScale n) := by
   intro q hq
   constructor
   · exact lt_of_not_ge (fun h => hq (dyadicWeight_zero_low n q h))
   · exact lt_of_not_ge (fun h => hq (dyadicWeight_zero_high n q h))
 
-theorem dyadicWeight_tsupport (n : ℤ) :
+theorem dyadicWeight_tsupport  :
     tsupport (dyadicWeight n) ⊆ Set.Icc (dyadicScale n/4) (dyadicScale n) :=
   closure_minimal (fun _ h => Set.Ioo_subset_Icc_self (dyadicWeight_support n h)) isClosed_Icc
+end
 
-theorem dyadicWeight_outside_pair (q : ℝ) (k : ℤ)
+
+section
+variable (q : ℝ)
+include q
+
+theorem dyadicWeight_outside_pair  (k : ℤ)
     (hlo : dyadicScale k ≤ q) (hhi : q < dyadicScale (k+1))
     (n : ℤ) (hn : n ∉ ({k+1,k+2} : Finset ℤ)) : dyadicWeight n q=0 := by
   have hn₁ : n ≠ k+1 := by simpa using fun h => hn (by simp [h])
@@ -104,7 +132,7 @@ theorem dyadicWeight_outside_pair (q : ℝ) (k : ℤ)
     rw [he] at hmono
     linarith
 
-theorem dyadicWeight_finite (q : ℝ) : (Function.support (fun n => dyadicWeight n q)).Finite := by
+theorem dyadicWeight_finite  : (Function.support (fun n => dyadicWeight n q)).Finite := by
   by_cases hq : 0 < q
   · obtain ⟨k,hlo,hhi⟩ := exists_mem_Ico_zpow hq (by norm_num : (1:ℝ) < 2)
     apply (Set.toFinite (({k+1,k+2} : Finset ℤ) : Set ℤ)).subset
@@ -115,10 +143,10 @@ theorem dyadicWeight_finite (q : ℝ) : (Function.support (fun n => dyadicWeight
       dyadicWeight_zero_low n q ((le_of_not_gt hq).trans (div_nonneg (dyadicScale_pos n).le (by norm_num)))
     simp [hz]
 
-theorem dyadicWeight_summable (q : ℝ) : Summable (fun n => dyadicWeight n q) :=
+theorem dyadicWeight_summable  : Summable (fun n => dyadicWeight n q) :=
   summable_of_hasFiniteSupport (dyadicWeight_finite q)
 
-theorem dyadicWeight_partition (q : ℝ) (hq : 0 < q) : ∑' n,dyadicWeight n q=1 := by
+theorem dyadicWeight_partition  (hq : 0 < q) : ∑' n,dyadicWeight n q=1 := by
   obtain ⟨k,hlo,hhi⟩ := exists_mem_Ico_zpow hq (by norm_num : (1:ℝ) < 2)
   rw [tsum_eq_sum (s := {k+1,k+2}) (dyadicWeight_outside_pair q k hlo hhi)]
   change dyadicScale k ≤ q at hlo
@@ -137,57 +165,75 @@ theorem dyadicWeight_partition (q : ℝ) (hq : 0 < q) : ∑' n,dyadicWeight n q=
     linarith
   rw [cutoff_one _ hs]
   ring
+end
+
 
 def Retained (R : ℝ) (n : ℤ) : Prop :=
   ∃ q : ℝ, 0 < q ∧ q ≤ R ∧ q ∈ tsupport (dyadicWeight n)
 
-def retainedWeight (R q : ℝ) : ℝ := ∑' n : ℤ, if Retained R n then dyadicWeight n q else 0
+section
+variable (R q : ℝ)
+include R q
 
-def discardedWeight (R q : ℝ) : ℝ := ∑' n : ℤ, if Retained R n then 0 else dyadicWeight n q
+def retainedWeight  : ℝ := ∑' n : ℤ, if Retained R n then dyadicWeight n q else 0
 
-theorem retained_summable (R q : ℝ) :
+def discardedWeight  : ℝ := ∑' n : ℤ, if Retained R n then 0 else dyadicWeight n q
+
+theorem retained_summable  :
     Summable (fun n : ℤ => if Retained R n then dyadicWeight n q else 0) :=
   (dyadicWeight_summable q).indicator {n | Retained R n}
 
-theorem discarded_summable (R q : ℝ) :
+theorem discarded_summable  :
     Summable (fun n : ℤ => if Retained R n then 0 else dyadicWeight n q) := by
   have h := (dyadicWeight_summable q).sub (retained_summable R q)
   convert h using 1
   ext n
   split_ifs <;> simp
 
-theorem retained_add_discarded (R q : ℝ) (hq : 0 < q) :
+theorem retained_add_discarded  (hq : 0 < q) :
     retainedWeight R q+discardedWeight R q=1 := by
   rw [retainedWeight,discardedWeight,← (retained_summable R q).tsum_add (discarded_summable R q)]
   convert dyadicWeight_partition q hq using 1
   apply tsum_congr
   intro n
   split_ifs <;> simp
+end
+
 
 theorem dyadicWeight_zero_nonpos (n : ℤ) (q : ℝ) (hq : q ≤ 0) : dyadicWeight n q=0 :=
   dyadicWeight_zero_low n q (hq.trans (div_nonneg (dyadicScale_pos n).le (by norm_num)))
 
-theorem retainedWeight_zero_nonpos (R q : ℝ) (hq : q ≤ 0) : retainedWeight R q=0 := by
+section
+variable (R q : ℝ)
+include R q
+
+section
+variable (hq : q ≤ 0)
+include hq
+
+theorem retainedWeight_zero_nonpos  : retainedWeight R q=0 := by
   simp [retainedWeight,dyadicWeight_zero_nonpos _ q hq]
 
-theorem discardedWeight_zero_nonpos (R q : ℝ) (hq : q ≤ 0) : discardedWeight R q=0 := by
+theorem discardedWeight_zero_nonpos  : discardedWeight R q=0 := by
   simp [discardedWeight,dyadicWeight_zero_nonpos _ q hq]
+end
 
-theorem retainedWeight_nonneg (R q : ℝ) : 0 ≤ retainedWeight R q := by
+
+theorem retainedWeight_nonneg  : 0 ≤ retainedWeight R q := by
   apply tsum_nonneg
   intro n
   split_ifs
   · exact (dyadicWeight_bounds n q).1
   · exact le_rfl
 
-theorem discardedWeight_nonneg (R q : ℝ) : 0 ≤ discardedWeight R q := by
+theorem discardedWeight_nonneg  : 0 ≤ discardedWeight R q := by
   apply tsum_nonneg
   intro n
   split_ifs
   · exact le_rfl
   · exact (dyadicWeight_bounds n q).1
 
-theorem retainedWeight_bounds (R q : ℝ) : 0 ≤ retainedWeight R q ∧ retainedWeight R q ≤ 1 := by
+theorem retainedWeight_bounds  : 0 ≤ retainedWeight R q ∧ retainedWeight R q ≤ 1 := by
   refine ⟨retainedWeight_nonneg R q,?_⟩
   by_cases hq : 0 < q
   · have hp := retained_add_discarded R q hq
@@ -195,20 +241,26 @@ theorem retainedWeight_bounds (R q : ℝ) : 0 ≤ retainedWeight R q ∧ retaine
     linarith
   · rw [retainedWeight_zero_nonpos R q (le_of_not_gt hq)]; norm_num
 
-theorem discardedWeight_bounds (R q : ℝ) : 0 ≤ discardedWeight R q ∧ discardedWeight R q ≤ 1 := by
+theorem discardedWeight_bounds  : 0 ≤ discardedWeight R q ∧ discardedWeight R q ≤ 1 := by
   refine ⟨discardedWeight_nonneg R q,?_⟩
   by_cases hq : 0 < q
   · have hp := retained_add_discarded R q hq
     have hd := retainedWeight_nonneg R q
     linarith
   · rw [discardedWeight_zero_nonpos R q (le_of_not_gt hq)]; norm_num
+end
+
 
 theorem retained_scale_le (R : ℝ) (n : ℤ) (hn : Retained R n) : dyadicScale n ≤ 4*R := by
   obtain ⟨q,hq,hqR,hs⟩ := hn
   have hb := (dyadicWeight_tsupport n hs).1
   linarith
 
-theorem retainedWeight_zero_above (R q : ℝ) (hq : 4*R ≤ q) : retainedWeight R q=0 := by
+section
+variable (R q : ℝ)
+include R q
+
+theorem retainedWeight_zero_above  (hq : 4*R ≤ q) : retainedWeight R q=0 := by
   unfold retainedWeight
   trans ∑' _n : ℤ, (0:ℝ)
   · apply tsum_congr
@@ -218,12 +270,12 @@ theorem retainedWeight_zero_above (R q : ℝ) (hq : 4*R ≤ q) : retainedWeight 
     · rfl
   · exact tsum_zero
 
-theorem retainedWeight_enclosure (R q : ℝ) (hq : retainedWeight R q ≠ 0) : 0 < q ∧ q ≤ 4*R := by
+theorem retainedWeight_enclosure  (hq : retainedWeight R q ≠ 0) : 0 < q ∧ q ≤ 4*R := by
   constructor
   · exact lt_of_not_ge (fun h => hq (retainedWeight_zero_nonpos R q h))
   · exact le_of_not_gt (fun h => hq (retainedWeight_zero_above R q h.le))
 
-theorem discardedWeight_zero_below (R q : ℝ) (hq : q ≤ R) : discardedWeight R q=0 := by
+theorem discardedWeight_zero_below  (hq : q ≤ R) : discardedWeight R q=0 := by
   by_cases hp : 0 < q
   · unfold discardedWeight
     trans ∑' _n : ℤ, (0:ℝ)
@@ -236,8 +288,10 @@ theorem discardedWeight_zero_below (R q : ℝ) (hq : q ≤ R) : discardedWeight 
     · exact tsum_zero
   · exact discardedWeight_zero_nonpos R q (le_of_not_gt hp)
 
-theorem discardedWeight_support (R q : ℝ) (hq : discardedWeight R q ≠ 0) : R < q :=
+theorem discardedWeight_support  (hq : discardedWeight R q ≠ 0) : R < q :=
   lt_of_not_ge (fun h => hq (discardedWeight_zero_below R q h))
+end
+
 
 theorem finite_retained_integral_dyads (R : ℝ) :
     {n : ℤ | Retained R n ∧ ∃ q : ℝ, 1 ≤ q ∧ dyadicWeight n q ≠ 0}.Finite := by
@@ -287,15 +341,21 @@ theorem normValue_eq_embedding (h : O) : normValue h=‖eisEmbedding h‖^2 :=
 theorem normValue_mul (v h : O) : normValue (v*h)=normValue v*normValue h := by
   simp only [normValue,← Ideal.span_singleton_mul_span_singleton,map_mul,Nat.cast_mul]
 
-theorem normValue_pos (h : O) (hh : h ≠ 0) : 0 < normValue h := by
+section
+variable (h : O) (hh : h ≠ 0)
+include h hh
+
+theorem normValue_pos  : 0 < normValue h := by
   unfold normValue
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hh))
 
-theorem normValue_ge_one (h : O) (hh : h ≠ 0) : 1 ≤ normValue h := by
+theorem normValue_ge_one  : 1 ≤ normValue h := by
   unfold normValue
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hh))
+end
+
 
 theorem retained_norm_enclosure (R : ℝ) (v h : O) (hv : v ≠ 0)
     (hne : retainedWeight R (normValue (v*h)) ≠ 0) : normValue h ≤ 4*R/normValue v := by
@@ -439,8 +499,8 @@ theorem finite_retained_above (R a : ℝ) (ha : 0 < a) :
       simpa only [zpow_natCast,dyadicScale] using hu.trans_lt hl
     exact ((zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h).le
 
-end SevenEighths.CenteredMomentSectorLocalization
 
-end
 
-end OAI
+
+
+

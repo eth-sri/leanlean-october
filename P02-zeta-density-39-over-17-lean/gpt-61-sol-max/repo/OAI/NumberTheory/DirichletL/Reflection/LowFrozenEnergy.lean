@@ -9,9 +9,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths
+
+open scoped EisensteinEis
 universe v
 variable {Nlevel : Eis}
 
@@ -145,7 +145,7 @@ theorem low_original_frozen_energy
       rw [Real.rpow_add hzp]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)) (by positivity)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

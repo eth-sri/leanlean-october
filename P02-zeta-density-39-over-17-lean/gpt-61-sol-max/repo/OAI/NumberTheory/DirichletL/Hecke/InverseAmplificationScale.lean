@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationEnergy
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePlain
 
@@ -34,12 +35,16 @@ theorem scaleProfile_support (W : ℝ→ℂ) (a b : ℝ)
     exact fun h => hn ((closure_minimal hs isClosed_Icc) h)
   exact hy (by simp [scaleProfile,hw,hd])
 
-theorem scaleSum_continuous (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
+section
+variable (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
+include χ W S
+
+theorem scaleSum_continuous 
     (hW : Continuous W) : Continuous (scaleSum χ W S) := by
   unfold scaleSum
   fun_prop
 
-theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
+theorem scaleSum_deriv 
     (hW : Differentiable ℝ W) (l : ℝ) :
     HasDerivAt (scaleSum χ W S) (scaleSum χ (scaleProfile W) S l) l := by
   have hE : HasDerivAt (fun t : ℝ => Complex.exp (-(t : ℂ)/2))
@@ -71,6 +76,8 @@ theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
     intro J hJ
     push_cast
     ring
+end
+
 
 theorem scale_normalization (l : ℝ) :
     ((Real.exp l : ℝ) : ℂ)^(-(1/2 : ℂ))=Complex.exp (-(l : ℂ)/2) := by
@@ -83,15 +90,15 @@ theorem scaleSum_eq_polynomial (χ : Character) (W : ℝ→ℂ) (S : Finset (Ide
     (l : ℝ) (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈S) :
     scaleSum χ W S l=polynomial χ true W (Real.exp l) 0 0 := by
   rw [polynomial_eq_finite χ true W (Real.exp l) 0 0 S hc,scale_normalization]
-  simp only [HeckeDyadic.shift,ofReal_zero,zero_mul,sub_self,neg_zero,Complex.cpow_zero,mul_one]
+  simp only [shift, ofReal_zero, zero_mul, sub_self, neg_zero, cpow_zero, mul_one]
   unfold scaleSum
   congr 1
   apply Finset.sum_congr rfl
   intro J hJ
   rw [Real.exp_neg,div_eq_mul_inv]
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

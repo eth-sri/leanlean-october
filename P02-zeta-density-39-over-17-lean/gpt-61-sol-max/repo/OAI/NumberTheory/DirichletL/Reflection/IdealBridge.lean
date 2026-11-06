@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.Branch
+public import OAI.NumberTheory.DirichletL.Reflection.Brackets
 
 @[expose] public section
 
@@ -7,12 +7,12 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
+open ActualEisensteinCubic CompletedGauss LocalReflectionBrackets
 open CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance idealBridgeFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+local instance idealBridgeFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem admissible_primeIndex_product (K : Ideal Eis) (hK : Admissible K) :
     (∏ P : PrimeIndex K, P.val) = K := by
@@ -33,9 +33,13 @@ theorem idealRowHom_cube_eq_quadratic (K : Ideal Eis) (hK : Admissible K) (z : E
   intro P hP
   rw [idealRowHom_prime z P.val (admissiblePrimeGood K hK P)]
 
-theorem residual_bracket_finset {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
     (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (R : Finset ι) (hR : Admissible (∏ i ∈ R, P i))
+    (hg : ∀ i, λ₀ ∉ P i)
+include ι P hg
+
+theorem residual_bracket_finset  (R : Finset ι) (hR : Admissible (∏ i ∈ R, P i))
     (n b : Ideal Eis) :
     (∏ i ∈ R, bracket (actualSextic (P i) (hg i)) 1
       (Ideal.Quotient.mk (P i) (primaryGenerator n*(primaryGenerator b)^3))) =
@@ -48,9 +52,7 @@ theorem residual_bracket_finset {ι : Type*} [Fintype ι]
   simp_rw [hl]
   rw [Finset.prod_pow,← map_prod,idealRowHom_cube_eq_quadratic _ hR]
 
-theorem marked_bracket_finset {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (S : Finset ι) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
+theorem marked_bracket_finset  (S : Finset ι) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
     (∏ i ∈ S, bracket (actualSextic (P i) (hg i)) 0
       (Ideal.Quotient.mk (P i) (primaryGenerator n*(primaryGenerator b)^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i ∈ S, P i) : ℝ) : ℂ)⁻¹ *
@@ -66,9 +68,7 @@ theorem marked_bracket_finset {ι : Type*} [Fintype ι]
   rw [hl] at he
   simpa only [Finset.prod_coe_sort] using he
 
-theorem full_branch_sum_hybrid {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (R S F : Finset ι)
+theorem full_branch_sum_hybrid  (R S F : Finset ι)
     (hRS : Disjoint R S) (hF : Disjoint (R ∪ S) F) (hu : (R ∪ S) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hSj : ∀ i ∈ S, j i = 0)
     (hR : Admissible (∏ i ∈ R, P i)) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
@@ -102,8 +102,10 @@ theorem full_branch_sum_hybrid {ι : Type*} [Fintype ι]
   change (∏ i, v i) = _
   rw [hv,hr,hs]
   ring
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

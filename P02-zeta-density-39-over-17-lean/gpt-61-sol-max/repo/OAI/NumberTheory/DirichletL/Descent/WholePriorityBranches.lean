@@ -1,5 +1,9 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.WholePriorityCollapse
+public import OAI.NumberTheory.DirichletL.Descent.WholePriorityRays
+public import OAI.NumberTheory.DirichletL.Descent.SecondVariablePrincipal
+public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCubePriority
+public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
+public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRapidTail
 
 @[expose] public section
 
@@ -9,11 +13,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic
+
+
+open InversePrioritySecondSource
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
 variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -39,8 +43,8 @@ def priorityTailParent (hp:∀i,p i≠0) (hinj:Function.Injective (fun i=>Ideal.
       (residualLists p negative (fun i=>lists i\extra y.cube) y) a ∅ V X)
     rowMajorant Y (secondVariableCutoff p y R)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

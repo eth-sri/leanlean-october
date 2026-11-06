@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def sourceOuterEquiv (S : Finset (Ideal O)) : SourceOuter S ≃
     {K : {I : Ideal O // Supported I} // ∀P∈S,¬P∣K.val} where
@@ -32,7 +32,7 @@ lemma sourceOuter_tsum (S : Finset (Ideal O)) (f : {I : Ideal O // Supported I}�
       split_ifs <;> rfl
     _ = _ := hs.symm.trans he.symm
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

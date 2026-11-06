@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.FourierCoefficients
 public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyBlocks
 
@@ -9,70 +10,70 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
 
 open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
@@ -95,43 +96,11 @@ theorem secondGaussTerm_test_factors (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O
 end SecondPassArithmetic
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace SecondPassIntegration
 
-section
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0)
-
-variable [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-section
-open JointLogSeparation
-
-end
-
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
-
-end SecondPassIntegration
 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (jLabel)
-open SecondPassIntegration (elementNorm)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
 
 open ActualEisensteinCubic
 open FiniteGaussPhase (canonicalProductGauss_cross_factors)
@@ -148,7 +117,7 @@ theorem activeGaussRowFactor_zero_of_ne (S T : Finset ι) (hne : S ≠ T) (e : O
   have hs : (activeSupport S T).Nonempty := by
     by_contra hn
     apply hne
-    have he : activeSupport S T = ∅ := Finset.not_nonempty_iff_eq_empty.mp hn
+    have he := Finset.not_nonempty_iff_eq_empty.mp hn
     simp only [activeSupport, Finset.union_eq_empty, Finset.sdiff_eq_empty_iff_subset] at he
     exact Finset.Subset.antisymm he.1 he.2
   let : Nonempty (activeSupport S T) := hs.to_subtype
@@ -194,10 +163,7 @@ theorem secondFrequencyKernel_zero (F : Finset ι)
     apply Finset.sum_eq_zero
     intro T hT
     by_cases hd : Disjoint S T
-    · have hneq : S ≠ T := by
-        intro heq
-        subst T
-        exact hne ((show S = ∅ by simpa using Finset.disjoint_iff_inter_eq_empty.mp hd))
+    · have hneq : S ≠ T := by grind
       rw [hz S T hneq]
       simp
     · simp [hd]
@@ -205,7 +171,7 @@ theorem secondFrequencyKernel_zero (F : Finset ι)
 
 end SecondPassArithmetic
 
-open MeasureTheory Set Filter
+open MeasureTheory Filter
 open scoped BigOperators Classical
 
 namespace CubicEisenstein
@@ -261,25 +227,33 @@ lemma row_symbol_congr_modulus (c d e : O) (hlevel : (3:O) ∣ c)
   rw [hd]
   exact row_symbol_shift c e n hlevel he
 
-lemma denominatorRep_product_congr (c t : O) (r : DenominatorResidue c) :
+section
+variable (c t : O)
+include c t
+
+lemma denominatorRep_product_congr  (r : DenominatorResidue c) :
     3*c ∣ denominatorRep c (Ideal.Quotient.mk (Ideal.span {3*c}) t*r)-t*denominatorRep c r := by
   apply Ideal.mem_span_singleton.mp
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
   rw [denominatorRep_spec,map_mul,denominatorRep_spec]
 
-def residueMultiplication (c t : O) (ht : denominatorCondition c t)
+section
+variable (ht : denominatorCondition c t)
+include ht
+
+def residueMultiplication 
     (r : AdmissibleResidue c) : AdmissibleResidue c :=
   ⟨Ideal.Quotient.mk (Ideal.span {3*c}) t*r.1,
     (denominatorCondition_congr c _ _ (denominatorRep_product_congr c t r.1)).2
       (denominatorCondition_mul c t _ ht r.2)⟩
 
-lemma denominatorCondition_coprime_modulus (c t : O) (ht : denominatorCondition c t) :
+lemma denominatorCondition_coprime_modulus  :
     IsCoprime (3*c) t := by
   obtain ⟨n,hn⟩ := ht.2
   have h3 : IsCoprime (3:O) t := ⟨-n,1,by linear_combination hn⟩
   exact h3.mul_left ht.1
 
-lemma residueMultiplication_injective (c t : O) (ht : denominatorCondition c t) :
+lemma residueMultiplication_injective  :
     Function.Injective (residueMultiplication c t ht) := by
   have hunit : IsUnit (Ideal.Quotient.mk (Ideal.span {3*c}) t) := by
     have hh := (denominatorCondition_coprime_modulus c t ht).map
@@ -290,15 +264,22 @@ lemma residueMultiplication_injective (c t : O) (ht : denominatorCondition c t) 
   intro r q heq
   apply Subtype.ext
   exact hunit.mul_left_cancel (congrArg Subtype.val heq)
+end
+end
 
-def residueMultiplicationEquiv (c : O) (hc : c ≠ 0) (t : O)
+
+section
+variable (c : O)
+include c
+
+def residueMultiplicationEquiv  (hc : c ≠ 0) (t : O)
     (ht : denominatorCondition c t) : AdmissibleResidue c ≃ AdmissibleResidue c := by
   letI : Finite (AdmissibleResidue c) := finite_admissibleResidue c hc
   exact Equiv.ofBijective (residueMultiplication c t ht)
     ⟨residueMultiplication_injective c t ht,
       Finite.surjective_of_injective (residueMultiplication_injective c t ht)⟩
 
-lemma residueMultiplication_phase (c : O) (hlevel : (3:O) ∣ c) (t : O)
+lemma residueMultiplication_phase  (hlevel : (3:O) ∣ c) (t : O)
     (ht : denominatorCondition c t) (r : AdmissibleResidue c) :
     symbol c (denominatorRep c (residueMultiplication c t ht r).1)=
       symbol c t*symbol c (denominatorRep c r.1) := by
@@ -308,13 +289,17 @@ lemma residueMultiplication_phase (c : O) (hlevel : (3:O) ∣ c) (t : O)
     (denominatorCondition_mul c t _ ht r.2).2 (denominatorRep_product_congr c t r.1)]
   exact symbol_mul_denominator c t (denominatorRep c r.1)
 
-lemma arithmeticResidueSum_zero (c : O) :
+lemma arithmeticResidueSum_zero  :
     arithmeticResidueSum 0 c=∑' r : AdmissibleResidue c,
       eisEmbedding (symbol c (denominatorRep c r.1)) := by
   simp only [arithmeticResidueSum,cuspFrequency,map_zero,zero_div,zero_mul,
     AddChar.map_zero_eq_one,mul_one]
 
-theorem arithmeticResidueSum_constant_eigen (c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ c)
+section
+variable (hc : c ≠ 0) (hlevel : (3:O) ∣ c)
+include hc hlevel
+
+theorem arithmeticResidueSum_constant_eigen 
     (t : O) (ht : denominatorCondition c t) :
     eisEmbedding (symbol c t)*arithmeticResidueSum 0 c=arithmeticResidueSum 0 c := by
   rw [arithmeticResidueSum_zero]
@@ -329,18 +314,20 @@ theorem arithmeticResidueSum_constant_eigen (c : O) (hc : c ≠ 0) (hlevel : (3:
       intro r
       exact congrArg eisEmbedding (residueMultiplication_phase c hlevel t ht r).symm
 
-theorem arithmeticResidueSum_ne_zero_forces_trivial (c : O) (hc : c ≠ 0)
-    (hlevel : (3:O) ∣ c) (hA : arithmeticResidueSum 0 c ≠ 0) :
+theorem arithmeticResidueSum_ne_zero_forces_trivial  (hA : arithmeticResidueSum 0 c ≠ 0) :
     ∀ t : O, denominatorCondition c t → symbol c t=1 := by
   intro t ht
   apply eisEmbedding_injective
   rw [map_one]
   apply (mul_right_cancel₀ hA)
   rw [arithmeticResidueSum_constant_eigen c hc hlevel t ht,one_mul]
+end
+end
+
 
 end CubicEisenstein
 
-open MeasureTheory Set Filter
+open MeasureTheory Filter
 open scoped BigOperators Classical
 
 namespace CubicEisenstein
@@ -364,7 +351,7 @@ theorem constant_coefficient_primary_prime_exponent (c p b : O) (n : ℕ)
     (hpb : ¬p ∣ b) (hfactor : c=p^n*b) (hA : arithmeticResidueSum 0 c ≠ 0) :
     3 ∣ n := by
   by_contra hn
-  let P : Ideal O := Ideal.span {p}
+  let P := Ideal.span {p}
   let : P.IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ P := primary_maximal_divisor_good p hprimary P (Ideal.subset_span (by simp []))
   have hchar : (cubicChar P hg)^n ≠ 1 := by
@@ -377,9 +364,9 @@ theorem constant_coefficient_primary_prime_exponent (c p b : O) (n : ℕ)
   obtain ⟨x,hx⟩ := Ideal.Quotient.mk_surjective (u : O ⧸ P)
   have hp9 : IsCoprime p (9:O) := by
     simpa only [show (3:O)^2=9 by norm_num] using (primary_coprime_three p hprimary).pow_right (n := 2)
-  have hpm : IsCoprime p (9*b) := hp9.mul_right (hp.coprime_iff_not_dvd.mpr hpb)
+  have hpm := hp9.mul_right (hp.coprime_iff_not_dvd.mpr hpb)
   obtain ⟨t,htm,htp⟩ := exists_one_mod_and_prescribed p (9*b) x hpm
-  have h9 : (9:O) ∣ t-1 := (dvd_mul_right 9 b).trans htm
+  have h9 := (dvd_mul_right 9 b).trans htm
   have hb : b ∣ t-1 := (dvd_mul_left b 9).trans htm
   have h3 : (3:O) ∣ t-1 := (show (3:O) ∣ 9 from ⟨3,by norm_num⟩).trans h9
   have htprimary : lambda^2 ∣ t-1 := lambda_sq_dvd_three.trans h3
@@ -392,7 +379,7 @@ theorem constant_coefficient_primary_prime_exponent (c p b : O) (n : ℕ)
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hdiv)
     rw [htu] at hz
     exact Units.ne_zero u hz)
-  have hbt : IsCoprime b t := coprime_of_dvd_sub_one b t hb
+  have hbt := coprime_of_dvd_sub_one b t hb
   have hct : IsCoprime c t := by
     rw [hfactor]
     exact hpt.pow_left.mul_left hbt
@@ -408,8 +395,8 @@ theorem constant_coefficient_primary_prime_exponent (c p b : O) (n : ℕ)
     hbsym,mul_one,hpsym] at htriv
   exact hu htriv
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

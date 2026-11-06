@@ -12,25 +12,26 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighAssemblyBounded
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyPositiveHighSource (balancedInput)
 open CenteredMomentEnergyOriginalHighReflectionSymmetric (balanced_four_scale_gates)
 open CenteredMomentEnergyPositiveHighSourceBounded CenteredMomentEnergyOriginalHighReflectionSymmetricBounded
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+open CenteredMomentCommonRadialData
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+
+open CenteredMomentNaturalFixedRaySource
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveHighAssembly (low_restrict)
+
+local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 
 theorem actual_high_source_split
     (Wslot:ℝ→ ℂ)(aslot bslot lo hi:ℝ)
@@ -51,10 +52,10 @@ theorem actual_high_source_split
       ∀(θ:α→ RayQuotient.Characters M H)(w σ freq:α→ ℝ)(t height:ℝ),
       (∀i,0≤w i)→ (∀i,w i≤Lslot)→ ∀hσlo:(∀i,lo≤σ i),∀hσhi:(∀i,σ i≤hi),
       0≤height→ (∀i,|freq i|≤height)→ 3/4≤κ→
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤s.width→ s.width≤Mcap→
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤ s.width→ s.width≤Mcap→
       ∀(p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂),
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i)→
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
       let inp:=balancedInput M H hH η₀ θ Wslot hcSlot aslot bslot lo hi haslot hsSlot
         w σ freq (fun i=>⟨hσlo i,hσhi i⟩) s p ha t X₁ X₂ hX₁ hX₂;
       energy s.character s.mask 1 t (p.profile 0) (p.profile 1) inp.slots inp.toData.coefficient inp.P
@@ -94,7 +95,7 @@ theorem actual_high_source_split
     Lslot lo hi Mcap e e κ Z η₀ Q degree S K hzu.1.le (le_max_left _ _) le_rfl hK hlow
   have hlr:=low_restrict (α:=α) M H hH Wslot bslot a b bΦ Bmask (max Lu Lr) Lr
     Lslot lo hi Mcap e e κ Z η₀ Q degree S K hzu.1.le (le_max_right _ _) le_rfl hK hlow
-  by_cases hshort:min (length Z X₁) (length Z X₂)≤s.width/4
+  by_cases hshort:min (length Z X₁) (length Z X₂)≤ s.width/4
   · left
     exact hzu.2 e Lslot κ η₀ Q K he hK hlu θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
       s hQ hslo hs (p.profile 0) (p.profile 1) (p.support 0) (p.support 1)
@@ -109,8 +110,8 @@ theorem actual_high_source_split
       have hz:=zero_lt_one.trans hzu.1
       positivity
     · exact Or.inr ⟨⟨hfour.1,hfour.2.1,hfour.2.2.1,hfour.2.2.2.1⟩,hsource⟩
-end SevenEighths.CenteredMomentEnergyPositiveHighAssemblyBounded
 
-end
 
-end OAI
+
+
+

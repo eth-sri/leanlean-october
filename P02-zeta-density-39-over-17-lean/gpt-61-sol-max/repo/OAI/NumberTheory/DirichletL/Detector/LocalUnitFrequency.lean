@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalLocalEuler
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss ConcreteTraceCRT CenteredMomentCommonSupport
+open ConcretePrimeRowBridge
+open scoped EisensteinO
 
 lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]
     (F : R → ℂ) (ψ : AddChar R ℂ) (u : Rˣ) (c : ℂ) (hc : c ≠ 0)
@@ -27,9 +27,13 @@ lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]
     ring
   rw [he, ← mul_assoc, inv_mul_cancel₀ hc, one_mul]
 
-theorem barePhysicalFourier_unit_frequency (A s : O)
+section
+variable (A s : O)
     (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (b H : O) (hcop : IsCoprime b (A*s)) :
+    (b H : O) (hcop : IsCoprime b (A*s))
+include A s hA hs b H hcop
+
+theorem barePhysicalFourier_unit_frequency  :
     barePhysicalFourier A s (supportedElement_ne_zero A hA)
         (supportedElement_ne_zero s hs) (b*H) =
       ((idealRowHom b (Ideal.span {A}))⁻¹ * idealRowHom b (Ideal.span {s})) *
@@ -57,9 +61,7 @@ theorem barePhysicalFourier_unit_frequency (A s : O)
         quotientTrace (A*s) hAs (Ideal.Quotient.mk _ H*x)
   simpa only [u, residueUnit_coe, map_mul, mul_inv_rev, inv_inv, mul_comm] using he
 
-theorem bareCongruenceCoefficient_unit_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (b H : O) (hcop : IsCoprime b (A*s)) :
+theorem bareCongruenceCoefficient_unit_frequency  :
     bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) (b*H) =
       ((idealRowHom b (Ideal.span {A}))⁻¹ * idealRowHom b (Ideal.span {s})) *
         bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H := by
@@ -71,6 +73,8 @@ theorem bareCongruenceCoefficient_unit_frequency (A s : O)
   apply mul_left_cancel₀ hn
   rw [he]
   ring
+end
+
 
 lemma supported_element_power (p : O) (hs : Supported (Ideal.span {p})) (n : ℕ) :
     Supported (Ideal.span {p^n}) := by
@@ -83,7 +87,7 @@ lemma idealRowHom_prime_power_value (p b : O) [(Ideal.span {p} : Ideal O).IsMaxi
       (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^n := by
   rw [← Ideal.span_singleton_pow, map_pow, idealRowHom_prime _ _ hg]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

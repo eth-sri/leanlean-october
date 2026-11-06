@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.WhittakerContinuation
 
 @[expose] public section
@@ -10,92 +11,96 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def cubicBesselNormalizer (h : ActualEisensteinCubic.O) : ℂ :=
+section
+variable (h : ActualEisensteinCubic.O)
+include h
+
+def cubicBesselNormalizer  : ℂ :=
   (2*Real.pi:ℂ)/Complex.Gamma (4/3)*(2*Real.pi*‖cuspFrequency h‖:ℂ)^(1/3:ℂ)
 
-def cubicResidualFourierCoefficient (h : ActualEisensteinCubic.O) : ℂ :=
+def cubicResidualFourierCoefficient  : ℂ :=
   cubicBesselNormalizer h*nonzeroScatteringResidue h
 
-lemma sourceFourierKernel_cubic_height (h : ActualEisensteinCubic.O) (hh : h≠0) (v : ℝ) (hv : 0<v) :
+lemma sourceFourierKernel_cubic_height  (hh : h≠0) (v : ℝ) (hv : 0<v) :
     (v:ℂ)^(-(4/3:ℂ)-1)*sourceFourierKernel (4/3) (cuspFrequency h*v)=
       cubicBesselNormalizer h*
         (schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)/(v:ℂ)^2) := by
-  have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
+  have hv0 := Complex.ofReal_ne_zero.mpr hv.ne'
   rw [sourceFourierKernel_four_thirds _ (mul_ne_zero (cuspFrequency_ne_zero h hh) hv0)]
   have hnorm : ‖cuspFrequency h*(v:ℂ)‖=‖cuspFrequency h‖*v := by
     rw [norm_mul,Complex.norm_of_nonneg hv.le]
@@ -121,24 +126,26 @@ lemma sourceFourierKernel_cubic_height (h : ActualEisensteinCubic.O) (hh : h≠0
         ((v:ℂ)^(-(4/3:ℂ)-1)*(v:ℂ)^(1/3:ℂ))*
           schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v) := by ring
     _ = _ := by rw [hvpow]; ring
+end
+
 
 end
 
 section
 open Filter MeasureTheory
 open scoped Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 end
 
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma upperVertical_tendsto_cubic_punctured :
     Tendsto (fun t : ℝ => (4/3:ℂ)+(t:ℂ)*Complex.I)
@@ -162,7 +169,7 @@ section
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma denominatorRep_mk_congr (c d : Eis) :
     3*c ∣ denominatorRep c (Ideal.Quotient.mk (Ideal.span {3*c}) d)-d := by
@@ -179,7 +186,11 @@ lemma isCoprime_right_congr_of_dvd (c d e : Eis) (h : c ∣ d-e) :
 abbrev CubicUnitResidue (b : Eis) :=
   {r : Eis ⧸ Ideal.span {b} // IsUnit r}
 
-def denominatorCRTMap (a b : Eis) (r : AdmissibleResidue (a*b)) :
+section
+variable (a b : Eis)
+include a b
+
+def denominatorCRTMap  (r : AdmissibleResidue (a*b)) :
     AdmissibleResidue a × CubicUnitResidue b :=
   let d:=denominatorRep (a*b) r.1
   (⟨Ideal.Quotient.mk (Ideal.span {3*a}) d,
@@ -188,7 +199,11 @@ def denominatorCRTMap (a b : Eis) (r : AdmissibleResidue (a*b)) :
    ⟨Ideal.Quotient.mk (Ideal.span {b}) d,
       (isUnit_quotient_span_iff b d).mpr r.2.1.of_mul_left_right⟩)
 
-lemma denominatorCRTMap_injective (a b : Eis) (hab : IsCoprime (3*a) b) :
+section
+variable (hab : IsCoprime (3*a) b)
+include hab
+
+lemma denominatorCRTMap_injective  :
     Function.Injective (denominatorCRTMap a b) := by
   intro r t he
   have h1:=congrArg (fun z : AdmissibleResidue a × CubicUnitResidue b => z.1.1) he
@@ -205,7 +220,7 @@ lemma denominatorCRTMap_injective (a b : Eis) (hab : IsCoprime (3*a) b) :
   rw [←denominatorRep_spec (a*b) r.1,←denominatorRep_spec (a*b) t.1]
   exact (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr (Ideal.mem_span_singleton.mpr hdiv)
 
-lemma denominatorCRTMap_surjective (a b : Eis) (hab : IsCoprime (3*a) b) :
+lemma denominatorCRTMap_surjective  :
     Function.Surjective (denominatorCRTMap a b) := by
   rintro ⟨r,t⟩
   obtain ⟨u,v,huv⟩ := hab
@@ -223,8 +238,8 @@ lemma denominatorCRTMap_surjective (a b : Eis) (hab : IsCoprime (3*a) b) :
   have hxi : IsCoprime b xi := by
     apply (isUnit_quotient_span_iff b xi).mp
     simpa only [xi,GaussianShiftedPartition.representative_spec] using t.2
-  have had : denominatorCondition a d := (denominatorCondition_congr a d delta hda).mpr r.2
-  have hbd : IsCoprime b d := (isCoprime_right_congr_of_dvd b d xi hdb).mpr hxi
+  have had := (denominatorCondition_congr a d delta hda).mpr r.2
+  have hbd := (isCoprime_right_congr_of_dvd b d xi hdb).mpr hxi
   have hd : denominatorCondition (a*b) d := ⟨had.1.mul_left hbd,had.2⟩
   let q : AdmissibleResidue (a*b):=⟨Ideal.Quotient.mk (Ideal.span {3*(a*b)}) d,
     (denominatorCondition_congr (a*b) _ d (denominatorRep_mk_congr (a*b) d)).mpr hd⟩
@@ -244,10 +259,13 @@ lemma denominatorCRTMap_surjective (a b : Eis) (hab : IsCoprime (3*a) b) :
       exact (show b ∣ 3*(a*b) from ⟨3*a,by ring⟩).trans (denominatorRep_mk_congr (a*b) d)
     simpa only [sub_add_sub_cancel] using dvd_add hh hdb
 
-def denominatorCRTEquiv (a b : Eis) (hab : IsCoprime (3*a) b) :
+def denominatorCRTEquiv  :
     AdmissibleResidue (a*b) ≃ AdmissibleResidue a × CubicUnitResidue b :=
   Equiv.ofBijective (denominatorCRTMap a b)
     ⟨denominatorCRTMap_injective a b hab,denominatorCRTMap_surjective a b hab⟩
+end
+end
+
 
 def residueAdditive (h c d : Eis) : ℂ :=
   ShortDraftTrace.breveE (cuspFrequency h*eisEmbedding d/eisEmbedding c)
@@ -256,7 +274,7 @@ lemma residueAdditive_congr (h c d e : Eis) (hc : c≠0) (hde : 3*c ∣ d-e) :
     residueAdditive h c d=residueAdditive h c e := by
   obtain ⟨n,hn⟩:=hde
   have hd:d=e+3*c*n:=by linear_combination hn
-  have he:eisEmbedding c≠0:=eisEmbedding_ne_zero hc
+  have he :=eisEmbedding_ne_zero hc
   unfold residueAdditive
   rw [hd]
   have hh : cuspFrequency h*eisEmbedding (e+3*c*n)/eisEmbedding c=
@@ -274,7 +292,7 @@ lemma residueAdditive_three_congr (h b d e : Eis) (hb : b≠0) (hde : b ∣ d-e)
     residueAdditive (3*h) b d=residueAdditive (3*h) b e := by
   obtain ⟨n,hn⟩:=hde
   have hd:d=e+b*n:=by linear_combination hn
-  have he:eisEmbedding b≠0:=eisEmbedding_ne_zero hb
+  have he :=eisEmbedding_ne_zero hb
   unfold residueAdditive
   rw [hd]
   have hh : cuspFrequency (3*h)*eisEmbedding (e+b*n)/eisEmbedding b=
@@ -298,9 +316,13 @@ lemma residueAdditive_crt (h a b alpha beta d : Eis) (ha : a≠0) (hb : b≠0)
   field_simp [hae,hbe,eisLam_ne_zero]
   linear_combination -(eisEmbedding h*eisEmbedding d)*hbeq
 
-lemma arithmetic_crt_summand (h a b alpha beta : Eis)
+section
+variable (h a b alpha beta : Eis)
     (ha : a≠0) (hb : b≠0) (halevel : (3:Eis)∣a)
     (hbprimary : lambda^2∣b-1) (hbez : alpha*b+beta*(3*a)=1)
+include h a b alpha beta ha hb halevel hbprimary hbez
+
+lemma arithmetic_crt_summand 
     (r : AdmissibleResidue (a*b)) :
     eisEmbedding (symbol (a*b) (denominatorRep (a*b) r.1))*
       residueAdditive h (a*b) (denominatorRep (a*b) r.1)=
@@ -330,9 +352,7 @@ lemma arithmetic_crt_summand (h a b alpha beta : Eis)
     residueAdditive_three_congr (h*beta) b xi d hb hxi]
   ring
 
-theorem arithmeticResidueSum_crt (h a b alpha beta : Eis)
-    (ha : a≠0) (hb : b≠0) (halevel : (3:Eis)∣a)
-    (hbprimary : lambda^2∣b-1) (hbez : alpha*b+beta*(3*a)=1) :
+theorem arithmeticResidueSum_crt  :
     arithmeticResidueSum h (a*b)=
       arithmeticResidueSum (h*alpha) a*cubicUnitGaussSum (h*beta) b := by
   have hab : IsCoprime (3*a) b:=⟨beta,alpha,by linear_combination hbez⟩
@@ -356,12 +376,14 @@ theorem arithmeticResidueSum_crt (h a b alpha beta : Eis)
     (∑' r : AdmissibleResidue a,f r)*(∑' t : CubicUnitResidue b,g t)
   simp only [tsum_fintype,Fintype.sum_prod_type,Finset.mul_sum,Finset.sum_mul]
   exact Finset.sum_comm
+end
+
 
 end
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma residueAdditive_mul (h c t d : Eis) :
     residueAdditive h c (t*d)=residueAdditive (h*t) c d := by
@@ -426,25 +448,35 @@ lemma cubicUnitGaussSum_frequency_congr (h k b : Eis) (hb : b≠0)
   rw [he h,he k]
   exact residueAdditive_three_congr _ b h k hb hh
 
-def cubicUnitResidueMul (b t : Eis) (ht : IsCoprime b t) (r : CubicUnitResidue b) :
+section
+variable (b t : Eis)
+include b t
+
+section
+variable (ht : IsCoprime b t)
+include ht
+
+def cubicUnitResidueMul  (r : CubicUnitResidue b) :
     CubicUnitResidue b :=
   ⟨Ideal.Quotient.mk (Ideal.span {b}) t*r.1,
     ((isUnit_quotient_span_iff b t).mpr ht).mul r.2⟩
 
-lemma cubicUnitResidueMul_injective (b t : Eis) (ht : IsCoprime b t) :
+lemma cubicUnitResidueMul_injective  :
     Function.Injective (cubicUnitResidueMul b t ht) := by
   intro r q heq
   apply Subtype.ext
   exact ((isUnit_quotient_span_iff b t).mpr ht).mul_left_cancel (congrArg Subtype.val heq)
+end
 
-def cubicUnitResidueMulEquiv (b t : Eis) (hb : b≠0) (ht : IsCoprime b t) :
+
+def cubicUnitResidueMulEquiv  (hb : b≠0) (ht : IsCoprime b t) :
     CubicUnitResidue b ≃ CubicUnitResidue b := by
   letI : Finite (Eis ⧸ Ideal.span {b}):=finite_quotient_span hb
   exact Equiv.ofBijective (cubicUnitResidueMul b t ht)
     ⟨cubicUnitResidueMul_injective b t ht,
       Finite.surjective_of_injective (cubicUnitResidueMul_injective b t ht)⟩
 
-lemma cubicUnitResidueMul_rep_congr (b t : Eis) (ht : IsCoprime b t)
+lemma cubicUnitResidueMul_rep_congr  (ht : IsCoprime b t)
     (r : CubicUnitResidue b) :
     b∣GaussianShiftedPartition.representative b (cubicUnitResidueMul b t ht r).1-
       t*GaussianShiftedPartition.representative b r.1 := by
@@ -453,6 +485,8 @@ lemma cubicUnitResidueMul_rep_congr (b t : Eis) (ht : IsCoprime b t)
   rw [GaussianShiftedPartition.representative_spec,map_mul,
     GaussianShiftedPartition.representative_spec]
   rfl
+end
+
 
 theorem cubicUnitGaussSum_frequency_twist (h b t : Eis) (hb : b≠0)
     (hbprimary : lambda^2∣b-1) (ht : IsCoprime b t) :
@@ -504,8 +538,8 @@ theorem arithmeticResidueSum_coprime_product (h a b : Eis)
   rw [arithmeticResidueSum_crt h a b alpha beta ha hb halevel hbprimary hbez',←hA,←hB]
   ring
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

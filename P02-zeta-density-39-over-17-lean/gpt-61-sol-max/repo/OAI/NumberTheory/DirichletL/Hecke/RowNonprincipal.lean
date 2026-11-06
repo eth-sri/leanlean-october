@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 public import OAI.NumberTheory.DirichletL.Hecke.LocalRamification
 public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeRowNonprincipal
 open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical
@@ -51,7 +52,7 @@ theorem nonprincipal_of_local_factor (χ : Character)
     rw [← canonicalPrimePowerCharacter_mk P hg hc n, hnP]
   have hv0 : elementCoeff χ n ≠ 0 := hv ▸ (MulChar.apply_ne_zero_iff.mpr u.isUnit)
   intro hχ
-  have hunit : IsUnit (Ideal.Quotient.mk χ.modulus n) := MulChar.apply_ne_zero_iff.mp hv0
+  have hunit := MulChar.apply_ne_zero_iff.mp hv0
   have hv1 : elementCoeff χ n = 1 := by
     change χ.residue _ = 1
     rw [hχ, MulChar.one_apply hunit]
@@ -130,7 +131,7 @@ theorem principal_row_multiplicity (η χ : Character) (m f z : O)
   have hgood := supported_factors_good (Ideal.span {r}) hr P hP
   let : P.IsMaximal := hgood.1
   obtain ⟨J, hsplit, hJ, hJP⟩ := extract_prime_power _ hr P hP
-  have hc : 1 ≤ (normalizedFactors (Ideal.span {r})).count P := Multiset.count_pos.mpr hP
+  have hc := Multiset.count_pos.mpr hP
   exact actual_row_nonprincipal η χ m f z hmLam hm2 u a b r hr hpr hx P J
     hgood.2.1 hgood.2.2 hJ hc hc6 hsplit ((hcop.mul_left hJP).pow_right) hχ hprincipal
 
@@ -168,8 +169,8 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
   have hd := principal_row_multiplicity η χ m f z hmLam hm2 u a b r hr hpr hx hχ hprincipal P hP hcop
   exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) (hfree P hP) hd
 
-end SevenEighths.HeckeRowNonprincipal
 
-end
 
-end OAI
+
+
+

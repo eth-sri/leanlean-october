@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 
@@ -10,9 +11,9 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -61,7 +62,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
         detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u)) (3*(idx u+1:ℕ)*Z^τ)<a+2*e ∧
         (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j) s=0 ∧
           ¬((sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j).residue=1 ∧ s=1) ∧
-          a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
+          a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
       (∀u∈rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ)),
         (calibrationForSet S hmax).residueMonoid u.val≠0 →
         (∀θ,(rayCubeFamily M H hH u θ).residue≠1) ∧
@@ -93,7 +94,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
     a b B ellMin ha hab hB hmin ell hell hellinj hellsum W hW hcompact hsupp hWB hne
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 e nu he he'.le hnu
     (by linarith) (by linarith)
-  let D : ℝ := Ca*(η.modulus.absNorm:ℝ)^2*Cn
+  let D := Ca*(η.modulus.absNorm:ℝ)^2*Cn
   have hD : 0≤D := by dsimp [D];positivity
   refine ⟨D+Cp,by positivity,?_⟩
   filter_upwards [hcanonical,hnormalizer,hprincipal,
@@ -101,10 +102,10 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
       (fun _ : Fin K=>a) (fun _=>b) ell (fun _=>ha) (fun _=>hab) hellinj,
     eventually_gt_atTop (0:ℝ)] with Z hcan hnorm hprincipal hdis hZ
   dsimp only at hnorm hprincipal ⊢
-  let Yp : Fin K→ℝ := fun j=>Z^(ell j)
-  let T : Fin K→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
+  let Yp := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
   let hT := transportPoolOutside M H S K a b Yp
-  let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
+  let WC := fun j y=>(W j y:ℂ)
   have hWS (j : Fin K) : Function.support (WC j)⊆Icc a b := by
     intro y hy
     apply Ioo_subset_Icc_self (hsupp j _)
@@ -136,8 +137,8 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
       gcongr
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

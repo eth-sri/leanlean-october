@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 
 @[expose] public section
@@ -9,7 +10,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CenteredExceptionalCount IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def lowGramRemainders (F : Finset O) : Finset Id :=
@@ -78,14 +79,13 @@ theorem lowGramExceptional_count (ε : ℝ) (hε : 0<ε) :
       _ ≤ (C*(Ideal.absNorm G:ℝ)^(ε/3))^3 := pow_le_pow_left₀ (by positivity) (hb G hG) 3
       _ = _ := by
         rw [mul_pow,←Real.rpow_mul_natCast (Nat.cast_nonneg (Ideal.absNorm G))]
-        congr 2
-        norm_num
+        simp
   apply (lowGramExceptional_raw_count F G H hH hF hres hN).trans
   calc
     _ ≤ 768*(C^3*(Ideal.absNorm G:ℝ)^ε)*H^(1/6:ℝ) := by gcongr
     _ = _ := by ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

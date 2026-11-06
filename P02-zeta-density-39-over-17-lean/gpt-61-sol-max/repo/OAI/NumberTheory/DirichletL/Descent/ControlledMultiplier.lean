@@ -8,13 +8,13 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance controlledField (P : Ideal Eis) [P.IsMaximal] :
+local instance controlledField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis ⧸ P) := Ideal.Quotient.field _
-noncomputable local instance controlledFintype (P : Ideal Eis) [P.IsMaximal] :
+local instance controlledFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
@@ -75,8 +75,12 @@ theorem controlled_local_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
   simp only [fullLocalFourierWeight, Finset.prod_mul_distrib]
   ring
 
-def mixedActiveBracket [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+include hp hg
+
+def mixedActiveBracket 
     (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
     (i : ι) (x : Eis) : ℂ :=
   if i ∈ S then
@@ -89,8 +93,7 @@ def mixedActiveBracket [∀ i, (Ideal.span {p i}).IsMaximal]
     phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) (j i) (D.epsilon i) *
       bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i) (Ideal.Quotient.mk _ x)
 
-theorem mixedActiveBracket_eq_units [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+theorem mixedActiveBracket_eq_units 
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι)
     (D : ControlledStratumArithmetic p N a0 c0 mode) (i : ι) (x : Eis) :
@@ -111,6 +114,8 @@ theorem mixedActiveBracket_eq_units [∀ i, (Ideal.span {p i}).IsMaximal]
       ite_true, markedFrequencyRow] using hh
   · simpa only [hi, decide_false, mixedFrequencyRow, mixedPrimeFunction, mixedActiveBracket,
       Bool.false_eq_true, ite_false, frequencyRow] using hh
+end
+
 
 theorem controlled_mixed_multiplier (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -133,7 +138,7 @@ theorem controlled_mixed_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
   intro i hi
   exact mixedActiveBracket_eq_units hp hg hc j hj S D i x
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

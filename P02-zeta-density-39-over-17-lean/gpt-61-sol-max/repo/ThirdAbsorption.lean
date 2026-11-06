@@ -3,9 +3,8 @@ public import ThirdWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Scalar absorption of the actual energy and signed-amplifier inequalities.
@@ -155,4 +154,4 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ = _ := by dsimp [Y]; ring
   exact le_of_mul_le_mul_right hh (by positivity)
 
-end Montgomery.RationalMoment
+

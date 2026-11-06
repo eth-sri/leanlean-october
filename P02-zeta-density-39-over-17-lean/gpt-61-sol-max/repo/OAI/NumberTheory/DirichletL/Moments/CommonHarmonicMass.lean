@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.RankinLabels
 public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 
@@ -14,7 +15,7 @@ open IdealMobiusDivisorSum UniqueFactorizationMonoid
 open CenteredMomentRankinRadical CenteredMomentRankinLabels
 open CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell
 open CenteredMomentDyadicCount CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 abbrev Label := (Ideal O × Ideal O) × Finset (Ideal O)
 
 def Valid (s : Ideal O) (v : Label) : Prop :=
@@ -49,7 +50,7 @@ lemma min_le_sqrt_mul (x y : ℝ) (hx : 0≤x) (hy : 0≤y) :
 lemma shell_scalar (e Y x y : ℝ) (he : 0<e) (hx : 0<x) (hy : 0<y)
     (hY : min x y ≤ Y) :
     (2*min x y)^(1+e)/Real.sqrt (x*y) ≤ 2^(1+e)*Y^e := by
-  have hm : 0<min x y := lt_min hx hy
+  have hm : 0< min x y := lt_min hx hy
   have hsqrt : 0<Real.sqrt (x*y) := Real.sqrt_pos.2 (mul_pos hx hy)
   rw [Real.mul_rpow (by norm_num : (0:ℝ)≤2) hm.le,
     Real.rpow_add hm,Real.rpow_one]
@@ -110,7 +111,7 @@ lemma norm_scale_bounds (I : Ideal O) (hI : I≠0) (Y : ℝ) (hY : (I.absNorm:�
   have hk : 0≤normKey I := Int.floor_nonneg.mpr
     (Real.logb_nonneg (by norm_num : (1:ℝ)<2) hn)
   refine ⟨?_,((normKey_eq_iff I hI _).mp rfl).1.trans hY⟩
-  simpa only [dyadicScale,zpow_zero] using zpow_le_zpow_right₀ (by norm_num : (1:ℝ)≤2) hk
+  exact zpow_le_zpow_right₀ (by norm_num : (1:ℝ)≤2) hk
 
 lemma shell_norm_bounds (S : Finset Label) (n : ℤ×ℤ) (v : Label)
     (hv : v∈shell S n) (hC : v.1.1≠0) (hD : v.1.2≠0) :
@@ -129,7 +130,7 @@ lemma keys_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
     (h0 : ∀v∈S,v.1.1≠0 ∧ v.1.2≠0)
     (hN : ∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) :
     ((keys S).card:ℝ)≤(3+B/Real.log 2)^2*(1+Real.log Z)^2 := by
-  have hY : 1≤Z^B := Real.one_le_rpow hZ hB
+  have hY := Real.one_le_rpow hZ hB
   have hsub : keys S ⊆ (indices 1 (Z^B))×ˢ(indices 1 (Z^B)) := by
     intro n hn
     obtain ⟨v,hv,rfl⟩ := Finset.mem_image.mp hn
@@ -158,7 +159,7 @@ theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,weight v)≤C*Z^(3*B*e)*(1+Real.log Z)^2/(s.absNorm:ℝ) := by
   obtain ⟨C,hC,hbound⟩ := shell_bound e he
-  let K : ℝ := 3+B/Real.log 2
+  let K := 3+B/Real.log 2
   have hK : 0<K := by dsimp [K]; positivity
   refine ⟨C*K^2,by positivity,?_⟩
   intro Z hZ s hs hs0 S hS hN
@@ -190,12 +191,12 @@ theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
 
 lemma log_square_subpower (d : ℝ) (hd : 0<d) :
     ∃C : ℝ,0<C ∧ ∀Z : ℝ,1≤Z → (1+Real.log Z)^2≤C*Z^d := by
-  let a : ℝ := d/2
+  let a := d/2
   have ha : 0<a := by dsimp [a]; positivity
   refine ⟨(1+1/a)^2,by positivity,?_⟩
   intro Z hZ
   have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hp : 1≤Z^a := Real.one_le_rpow hZ ha.le
+  have hp := Real.one_le_rpow hZ ha.le
   have hl := Real.log_le_rpow_div hz.le ha
   have hh : 1+Real.log Z≤(1+1/a)*Z^a := by
     calc
@@ -214,7 +215,7 @@ theorem common_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
       ∀S : Finset Label,(∀v∈S,Valid s v) →
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,1/Real.sqrt ((v.1.1.absNorm:ℝ)*v.1.2.absNorm))≤C*Z^δ/(s.absNorm:ℝ) := by
-  let e : ℝ := δ/(6*(B+1))
+  let e := δ/(6*(B+1))
   have he : 0<e := by dsimp [e]; positivity
   have hbudget : 3*B*e+δ/2≤δ := by
     have hh : e*(6*(B+1))=δ := div_mul_cancel₀ δ (by positivity)
@@ -235,8 +236,8 @@ theorem common_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
       exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hZ1 hbudget) (mul_pos hC hD).le) hsn.le
 
-end SevenEighths.CenteredMomentCommonHarmonicMass
 
-end
 
-end OAI
+
+
+

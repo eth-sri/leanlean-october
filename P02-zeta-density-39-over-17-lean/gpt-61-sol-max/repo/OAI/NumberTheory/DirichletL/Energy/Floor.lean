@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.State
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyState
 open HeckeFamily CenteredMomentNaturalMaskedFloor
@@ -22,8 +23,7 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
       have hinc:Bmask≤Bmask+1:=by linarith
       have hh:=mul_le_mul_of_nonneg_left hinc he.le
       have hid:e*(Bmask+1)=ε/4:=by dsimp [e];field_simp
-      rw [hid] at hh
-      exact hh
+      simp_all <;> nlinarith
     linarith
   obtain ⟨degree,S,C,hC,hfloor⟩:=natural_masked_floor a b e ha hb he
   refine ⟨degree,S,C*bΦ^4,mul_pos hC (pow_pos hbΦ _),?_⟩
@@ -55,8 +55,8 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
       (Z^(Bmask*e)*Z^(s.width+4*(ε/16))):=by ring
     _≤_:=mul_le_mul_of_nonneg_left hp (by positivity)
 
-end SevenEighths.CenteredMomentEnergyState
 
-end
 
-end OAI
+
+
+

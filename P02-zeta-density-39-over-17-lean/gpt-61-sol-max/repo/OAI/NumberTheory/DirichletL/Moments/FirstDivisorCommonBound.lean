@@ -16,26 +16,34 @@ namespace SevenEighths.CenteredMomentFirstDivisorCommonBound
 open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
+open CenteredMomentFirstDivisorSupport
+open CenteredMomentCanonicalFirst RayFourExpansion
+open CenteredMomentSecondWindowBudget
 open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
 open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def pairMajorant {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (b : α→ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
+section
+variable {α : Type*} (S : Finset α) (a : α→O)
+    (ha : ∀i,Supported (Ideal.span {a i}))
+include α S a ha
+
+section
+variable (b : α→ℝ)
+include b
+
+def pairMajorant  (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
   ∑i∈S,∑j∈S,b i*b j*‖∑'z:O,(gaussRow (a i) (ha i) z*star (gaussRow (a j) (ha j) z))*
     W (‖eisEmbedding z‖^2/K)‖
 
-lemma pairMajorant_nonneg {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (b : α→ℝ) (hb : ∀i∈S,0≤b i)
+lemma pairMajorant_nonneg  (hb : ∀i∈S,0≤b i)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) : 0≤pairMajorant S a ha b W K :=
   Finset.sum_nonneg (fun i hi=>Finset.sum_nonneg (fun j hj=>
     mul_nonneg (mul_nonneg (hb i hi) (hb j hj)) (norm_nonneg _)))
+end
 
-lemma gaussEnergy_pair_bound {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (b : α→ℝ)
+
+lemma gaussEnergy_pair_bound  (c : α→ℂ) (b : α→ℝ)
     (hc : ∀i∈S,‖c i‖≤b i) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
     (gaussEnergy S a ha c W K).re≤pairMajorant S a ha b W K := by
   apply (Complex.re_le_norm _).trans
@@ -50,21 +58,25 @@ lemma gaussEnergy_pair_bound {α : Type*} (S : Finset α) (a : α→O)
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul (hc i hi) (hc j hj) (norm_nonneg _) ((norm_nonneg _).trans (hc i hi)))
     (norm_nonneg _)
+end
+
 
 variable {ι : Type*} [Fintype ι]
 
-def coarse (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
+section
+variable (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
+    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ)
+include s C hC L W K
+
+def coarse  : ℝ :=
   pairMajorant Finset.univ (sourceGenerator (residualPool C hC.1 s.columns))
     (sourceGenerator_supported _) (fun I:supportedColumns (residualPool C hC.1 s.columns)=>
       ‖if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then s.beta (C*I) else 0‖) W K
 
-lemma coarse_nonneg (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : 0≤coarse s C hC L W K :=
+lemma coarse_nonneg  : 0≤coarse s C hC L W K :=
   pairMajorant_nonneg _ _ _ _ (fun _ _=>norm_nonneg _) _ _
 
-lemma commonEnergy_coarse (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) (τ : Character) (v : ℝ) :
+lemma commonEnergy_coarse  (hK : 0<K) (τ : Character) (v : ℝ) :
     (commonEnergy s C hC τ v L W K).re≤coarse s C hC L W K := by
   apply gaussEnergy_pair_bound _ _ _ _ _ _ W K hK
   intro I hI
@@ -72,10 +84,16 @@ lemma commonEnergy_coarse (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
   exact mul_le_of_le_one_right (norm_nonneg _)
     (CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one τ v I
       (Finset.mem_filter.mp I.property).2.1)
+end
+
 
 universe u
 
-theorem actual_supported_annular_block (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
+section
+variable (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ)
+include W decay J₁ J₂
+
+theorem actual_supported_annular_block  :
     ∃ Cbound : ℝ, 0≤Cbound ∧ ∀ {ι : Type u} [Fintype ι],
     ∀ (η : Character) (s : OriginalData ι) (t : ℝ)
       (C D : Ideal O) (hC : Supported C) (hD : Supported D),
@@ -159,7 +177,7 @@ theorem actual_supported_annular_block (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : �
         simp only [F₂,ite_eq_right ha,live,ite_eq_right hl,windowBudget,Real.sqrt_zero,zero_mul,mul_zero]
   exact hh.trans_eq (by rw [he]; ring)
 
-theorem actual_supported_annular_harmonic (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ)
+theorem actual_supported_annular_harmonic 
     (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     ∃ Cbound : ℝ, 0<Cbound ∧ ∀ᶠZ : ℝ in atTop,1<Z ∧ ∀ {ι : Type u} [Fintype ι],
     ∀ (η : Character) (s : OriginalData ι) (t : ℝ)
@@ -207,9 +225,11 @@ theorem actual_supported_annular_harmonic (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
         _ ≤ ‖scalar C D hC E K (dyadicScale (n 2)) (dyadicScale (n 3))‖*(Cb+1)*Cm*Z^δ*
           (windowBudget J₁ t E₁*windowBudget J₂ t E₂) := by gcongr
         _ = _ := by ring
-
-end SevenEighths.CenteredMomentFirstDivisorCommonBound
-
 end
 
-end OAI
+
+
+
+
+
+

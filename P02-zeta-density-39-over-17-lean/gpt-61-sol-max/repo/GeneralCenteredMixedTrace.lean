@@ -3,8 +3,7 @@ public import GeneralCenteredTrace
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
@@ -45,4 +44,4 @@ theorem centered_mixed_trace_general (w : MathCollab.Density.ReflectionCutoff)
       gcongr
       linarith
 
-end Montgomery.RationalMoment
+

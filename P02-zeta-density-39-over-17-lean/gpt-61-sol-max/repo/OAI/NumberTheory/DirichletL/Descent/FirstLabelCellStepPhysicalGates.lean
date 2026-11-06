@@ -9,11 +9,11 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstLabelCell
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondUniformCutoff InversePrioritySecondSource
+open InverseMomentFirstChildWindows InverseFirstPriorityParents
+
+open InverseSecondUniformCutoff
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0)
 
@@ -26,7 +26,7 @@ lemma parentWeight_norm (l : ℕ) (x : Source ι 0) : ‖parentWeight p l x‖�
 
 lemma secondCutoff_nonneg (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (l j : ℕ)
     (negative : Bool) (hZ : 0<Z) (G E : Finset ι) :
-    0≤secondCutoff p Z M r ell V eta tau window k l j negative G E := by
+    0≤ secondCutoff p Z M r ell V eta tau window k l j negative G E := by
   apply uniformSecondRadius_nonneg _ _ _ _ _ _ _ _ _ hZ.le
   · unfold firstCellRadius
     positivity
@@ -72,7 +72,7 @@ theorem parent_tail_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
     (fun i=>y.cube.leftExponent i+y.cube.rightExponent i) y.cube.leftBit y.cube.rightBit,p i))
   nlinarith
 
-end SevenEighths.InverseMomentFirstLabelCell
-end
 
-end OAI
+
+
+

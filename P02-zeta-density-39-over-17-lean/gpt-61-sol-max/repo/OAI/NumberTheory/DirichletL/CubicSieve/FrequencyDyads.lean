@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualShell
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def frequencyDyad (j : ℕ) : Finset O :=
   (elementRange ((2 : ℝ)^j)).filter (fun h => Nat.clog 2 (Ideal.absNorm (Ideal.span {h})) = j)
@@ -46,9 +47,7 @@ def frequencyDyadicEquiv : {h : O // h ≠ 0} ≃ Σ j : ℕ, frequencyDyad j wh
   right_inv h := by
     rcases h with ⟨j, h, hh⟩
     have hj := ((mem_frequencyDyad h j).mp hh).2
-    dsimp only
-    subst j
-    rfl
+    bound
 
 theorem tsum_frequencyDyads_with_zero (f : O → ℂ) (hf : Summable f) :
     (∑' h : O, f h) = f 0 + ∑' j : ℕ, ∑ h : frequencyDyad j, f h.val := by
@@ -72,7 +71,7 @@ theorem tsum_frequencyDyads_with_zero (f : O → ℂ) (hf : Summable f) :
       rw [tsum_fintype]
       rfl
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

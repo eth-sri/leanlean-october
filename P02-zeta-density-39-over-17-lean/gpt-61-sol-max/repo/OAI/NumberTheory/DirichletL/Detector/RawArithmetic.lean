@@ -8,15 +8,19 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow ProbeCompleted CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 
-def rawArithmeticSeries (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
+section
+variable (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
+include S D η
+
+def rawArithmeticSeries 
     (C : CalibrationData) (x w z : ℂ) : ℂ :=
   ∑'p : RawHighIndex,fullHighCoefficient S D η (fun H=>star (C.residueMonoid H.val))
     x w z (rawHighEmbedding p)
 
-lemma rawHighCoefficient_outer_support (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
+lemma rawHighCoefficient_outer_support 
     (mask : NonzeroFrequency→ℂ) (x w z : ℂ) (p : RawHighIndex)
     (hp : fullHighCoefficient S D η mask x w z (rawHighEmbedding p)≠0) :
     Supported p.2.2 ∧ ∀P∈S,¬P∣p.2.2 := by
@@ -32,7 +36,7 @@ lemma rawHighCoefficient_outer_support (S : Finset (Ideal O)) (D : Ideal O) (η 
   by_contra hn
   exact hp (by simp [fullHighCoefficient,rawHighEmbedding,markedIdealHighSummand,highIdealMask,hn])
 
-lemma rawArithmeticSeries_eq_sourceRaw (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
+lemma rawArithmeticSeries_eq_sourceRaw 
     (C : CalibrationData) (x w z : ℂ) :
     rawArithmeticSeries S D η C x w z=
       ∑'i : SourceRawIndex S,fullHighCoefficient S D η (fun H=>star (C.residueMonoid H.val))
@@ -45,8 +49,10 @@ lemma rawArithmeticSeries_eq_sourceRaw (S : Finset (Ideal O)) (D : Ideal O) (η 
     (s:={p : RawHighIndex | Supported p.2.2 ∧ ∀P∈S,¬P∣p.2.2})
   intro p hp
   exact rawHighCoefficient_outer_support S D η _ x w z p hp
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

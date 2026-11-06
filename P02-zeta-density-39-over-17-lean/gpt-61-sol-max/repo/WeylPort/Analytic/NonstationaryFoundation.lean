@@ -8,12 +8,16 @@ public import Mathlib
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 namespace ZetaAppendix
-open Real Complex MeasureTheory Finset Filter Topology Set Summable
+open Real Complex MeasureTheory Finset Filter Topology Set
 private noncomputable def e (α : ℝ) : ℂ := exp (2 * π * I * α)
+section
+variable {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
+    (hg : ContDiffOn ℝ 1 g (Icc a b))
+include a b hab g F hg
+
 /-- For C¹ functions `g` and `F`, the error in integration by parts is bounded by
 `sup ‖F‖ · ∫ |g'|`. -/
-private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
-    (hg : ContDiffOn ℝ 1 g (Icc a b)) (hF : ContDiffOn ℝ 1 F (Icc a b)) :
+private theorem lemma_IBP_bound_C1  (hF : ContDiffOn ℝ 1 F (Icc a b)) :
     ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
         (⨆ t ∈ Icc a b, ‖F t‖) * ∫ t in Icc a b, |deriv g t| := by
   have hint_parts : ∫ t in Icc a b, (g t) * (deriv F t) =
@@ -138,8 +142,7 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
 
 /-- Integration by parts bound for `C¹` monotone functions.
 For `C¹` monotone `g` and `C¹` `F`, `‖∫ g F' - [gF]‖ ≤ sup ‖F‖ · (g(b) - g(a))`. -/
-private theorem lemma_IBP_bound_C1_monotone {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
-    (hg : ContDiffOn ℝ 1 g (Icc a b)) (hg_mono : MonotoneOn g (Icc a b))
+private theorem lemma_IBP_bound_C1_monotone  (hg_mono : MonotoneOn g (Icc a b))
     (hF : ContDiffOn ℝ 1 F (Icc a b)) :
     ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
     (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by
@@ -175,6 +178,8 @@ private theorem lemma_IBP_bound_C1_monotone {a b : ℝ} (hab : a < b) (g : ℝ �
     rw [abs_of_nonneg (hderiv_nonneg x hx)]
   rw [hint_abs, hint_deriv] at hbound
   exact hbound
+end
+
 
 open scoped unitInterval in
 /-- The Bernstein approximation of a monotone function is monotone. -/
@@ -280,9 +285,13 @@ private theorem lemma_approx_monotone_C1_I (f : C(I, ℝ)) (hf_mono : Monotone f
   · rw [abs_sub_comm, hP x x.2]
     exact lt_of_le_of_lt (ContinuousMap.norm_coe_le_norm (bernsteinApproximation n f - f) x) hn
 
+section
+variable {a b : ℝ} (hab : a < b) (g : ℝ → ℝ)
+include a b hab g
+
 /-- Continuous monotone functions on a compact interval can be uniformly approximated by `C¹`
 monotone functions. -/
-private theorem lemma_approx_monotone_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ)
+private theorem lemma_approx_monotone_C1 
     (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mono : MonotoneOn g (Set.Icc a b)) :
     ∀ ε > 0, ∃ g' : ℝ → ℝ, ContDiffOn ℝ 1 g' (Set.Icc a b) ∧ MonotoneOn g' (Set.Icc a b) ∧
       ∀ x ∈ Set.Icc a b, |g x - g' x| < ε := by
@@ -316,7 +325,7 @@ private theorem lemma_approx_monotone_C1 {a b : ℝ} (hab : a < b) (g : ℝ → 
 
 /-- Integration by parts bound for continuous monotone functions.
 For continuous monotone `g` and `C¹` `F`, `‖∫ g F' - [gF]‖ ≤ sup ‖F‖ · (g(b) - g(a))`. -/
-private theorem lemma_IBP_bound_monotone {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
+private theorem lemma_IBP_bound_monotone  (F : ℝ → ℂ)
     (hg_cont : ContinuousOn g (Icc a b))
     (hg_mono : MonotoneOn g (Icc a b))
     (hF_C1 : ContDiffOn ℝ 1 F (Icc a b)) :
@@ -383,7 +392,7 @@ private theorem lemma_IBP_bound_monotone {a b : ℝ} (hab : a < b) (g : ℝ → 
 
 /-- Integration by parts bound for continuous functions with antitone absolute value.
 If `|g|` is antitone, `‖∫ g F'‖ ≤ sup ‖F‖ · 2 |g(a)|`. -/
-private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
+private theorem lemma_IBP_bound_abs_antitone  (F : ℝ → ℂ)
     (hgcont : ContinuousOn g (Icc a b)) (hganti : AntitoneOn (|g ·|) (Icc a b))
     (hF : ContDiffOn ℝ 1 F (Icc a b)) :
     ‖∫ t in Icc a b, (g t : ℂ) * deriv F t‖ ≤ (⨆ t ∈ Icc a b, ‖F t‖) * (2 * |g a|) := by
@@ -459,12 +468,18 @@ private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ 
     convert hbd₃ using 1
     rw [abs_of_nonpos (hsign b <| right_mem_Icc.mpr hab.le), abs_of_nonpos (hsign a <| left_mem_Icc.mpr hab.le)]
     ring
+end
+
 
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
+section
+variable {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
     (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t)
-    (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
+    (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b))
+include a b ha φ hφ_C1 hφ'_ne0 h g hg hg_cont hg_mon
+
+private theorem lemma_aachmonophase  :
     ‖∫ t in Set.Icc a b, h t * e (φ t)‖ ≤ |g a| / π := by
   let F : ℝ → ℂ := fun t ↦ (1 / (2 * Real.pi * I)) * (exp (2 * Real.pi * I * φ t))
   have h_integral_bound : ‖∫ t in Set.Icc a b, (g t : ℂ) * (deriv F t)‖ ≤ (⨆ t ∈ Set.Icc a b, ‖F t‖) * (2 * |g a|) :=
@@ -500,16 +515,13 @@ private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) 
 /-- Public form of the non-stationary phase estimate used in the sharp-zeta
 Poisson argument.  This wrapper exposes the proved first-derivative test
 without exposing the appendix's private notation `e`. -/
-theorem nonstationary_phase_integral_bound {a b : ℝ} (ha : a < b)
-    (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
-    (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0)
-    (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t)
-    (hg_cont : ContinuousOn g (Set.Icc a b))
-    (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
+theorem nonstationary_phase_integral_bound  :
     ‖∫ t in Set.Icc a b,
         (h t : ℂ) * Complex.exp (2 * Real.pi * I * (φ t : ℂ))‖ ≤
       |g a| / Real.pi := by
   simpa only [e] using
     lemma_aachmonophase ha φ hφ_C1 hφ'_ne0 h g hg hg_cont hg_mon
+end
 
-end ZetaAppendix
+
+

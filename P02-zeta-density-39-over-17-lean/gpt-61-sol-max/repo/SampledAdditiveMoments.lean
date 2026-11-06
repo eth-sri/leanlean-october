@@ -3,7 +3,6 @@ public import BoxFourierKernel
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform Convolution
@@ -12,9 +11,13 @@ namespace Montgomery.RationalMoment
 def centeredCharacter (W : Finset ℝ) (t₀ ξ : ℝ) : ℂ :=
   ∑ w ∈ W, GuthMaynard.Improvement.phase (-ξ*(w-t₀))
 
+section
+variable (W : Finset ℝ)
+include W
+
 /-- The time translate is a unit phase; the actual logarithmic rational sum
 has exactly the same norm. -/
-theorem centered_character_norm (W : Finset ℝ) (t₀ r : ℝ) :
+theorem centered_character_norm  (t₀ r : ℝ) :
     ‖centeredCharacter W t₀ (Real.log r/(2*Real.pi))‖ = ‖∑ t ∈ W, phase r t‖ := by
   have he : centeredCharacter W t₀ (Real.log r/(2*Real.pi)) =
       GuthMaynard.Improvement.phase ((Real.log r/(2*Real.pi))*t₀)*star (∑ t ∈ W, phase r t) := by
@@ -38,7 +41,7 @@ theorem centered_character_norm (W : Finset ℝ) (t₀ r : ℝ) :
 
 /-- The convolution smoothing has the square of the original character
 sum, without coefficient collisions or a change of energy definition. -/
-theorem centered_pair_character (W : Finset ℝ) (t₀ ξ : ℝ) :
+theorem centered_pair_character  (t₀ ξ : ℝ) :
     (∑ p ∈ W ×ˢ W, GuthMaynard.Improvement.phase (-ξ*(p.1+p.2-2*t₀))) =
       (centeredCharacter W t₀ ξ)^2 := by
   rw [pow_two,centeredCharacter,sum_mul]
@@ -52,7 +55,7 @@ theorem centered_pair_character (W : Finset ℝ) (t₀ ξ : ℝ) :
   ring
 
 /-- Narrow single-point smoothing has no overlap on a one-separated set. -/
-theorem point_smoothing_energy (W : Finset ℝ) (t₀ : ℝ)
+theorem point_smoothing_energy  (t₀ : ℝ)
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) :
     (∫ t, ‖finiteSmooth W (fun w => w-t₀) energyBox t‖^2) ≤ 32*(W.card:ℝ) := by
   have hh := finite_smooth_l2_energy W (fun w => w-t₀) energy_box_integrable
@@ -77,7 +80,7 @@ theorem point_smoothing_energy (W : Finset ℝ) (t₀ : ℝ)
   exact hh
 
 /-- Pair-sum smoothing is bounded by the literal quadruple count. -/
-theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
+theorem pair_smoothing_energy  (t₀ : ℝ) :
     (∫ t, ‖finiteSmooth (W ×ˢ W) (fun p => p.1+p.2-2*t₀) energyPairBox t‖^2) ≤
       64*(discreteAdditiveEnergy W:ℝ) := by
   have hh := finite_smooth_l2_energy (W ×ˢ W) (fun p => p.1+p.2-2*t₀)
@@ -109,11 +112,17 @@ theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
       split_ifs <;> norm_num
   rw [show (2:ℝ)*(1/32)*32^2=64 by norm_num] at hh
   exact hh.trans (mul_le_mul_of_nonneg_left hc (by norm_num))
+end
 
-/-- Sampled second moment from the existing Fourier-square sampling theorem. -/
-theorem sampled_character_second {ι : Type*} [Fintype ι]
+
+section
+variable {ι : Type*} [Fintype ι]
     {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
     (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+include ι T t₀ δ hT hδ W hW
+
+/-- Sampled second moment from the existing Fourier-square sampling theorem. -/
+theorem sampled_character_second 
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|)
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
@@ -147,9 +156,7 @@ theorem sampled_character_second {ι : Type*} [Fintype ι]
     _ = _ := by ring
 
 /-- Sampled fourth moment has the actual additive energy on the right. -/
-theorem sampled_character_fourth {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_fourth 
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
     (∑ i, ‖centeredCharacter W t₀ (x i)‖^4) ≤
@@ -188,9 +195,7 @@ theorem sampled_character_fourth {ι : Type*} [Fintype ι]
 
 /-- The separated cubic estimate needed for the small-gcd argument follows
 from the two proved sampled moments. No general L3 sampling theorem is assumed. -/
-theorem sampled_character_cubic {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_cubic 
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|)
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
@@ -235,5 +240,7 @@ theorem sampled_character_cubic {ι : Type*} [Fintype ι]
   convert hr using 1
   dsimp [D]
   ring
+end
 
-end Montgomery.RationalMoment
+
+

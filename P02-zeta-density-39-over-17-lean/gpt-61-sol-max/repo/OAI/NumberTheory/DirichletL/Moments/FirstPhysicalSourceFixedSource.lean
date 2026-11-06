@@ -12,18 +12,19 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstColumns CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredMomentFirstMaskedFamily CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstNonexceptionalPrefactor CenteredMomentCommonSupport CenteredMomentConjugateWindow
-open CenteredMomentChildAssembly RayFourExpansion CompletedGauss CenteredMomentGaussEnergy FourierBridge
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst
+open CenteredMomentFirstColumns CenteredMomentHeckeColumnWindow
+open CenteredMomentFirstAmplificationChoice
+
+open CenteredMomentChildAssembly RayFourExpansion
+open scoped EisensteinO
 variable {ι:Type*}[Fintype ι]
-local instance firstFixedSourceDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 variable {η:Character}{C D:Ideal O}{hC:Supported C}
   {E:Finset (CommonIndex C D)}{ξ₁ ξ₂:RayCharacter}
+
+local instance firstFixedSourceDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem FixedPair.left_column (F:FixedPair η C D hC E ξ₁ ξ₂)(s:OriginalData ι)(t:ℝ)(L:Ideal O)
     (I:columns C C hC.1 s.columns):
@@ -47,8 +48,8 @@ theorem FixedPair.right_column (F:FixedPair η C D hC E ξ₁ ξ₂)(hD:Supporte
   fixed_divisor_column s η F.right D _ ξ₂ F.right_height L I
     (column_supported C D hD.1 s.columns I) t
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import WeylPort.AFE.SecondCoeffBounds
 public import WeylPort.AFE.UniformElementary
 
@@ -47,7 +48,7 @@ theorem minus_coefficients_uniform {M : ℕ} {y : ℝ} (hy : 1 ≤ y)
   change -4 ≤ (Complex.digamma (δ:ℂ)).re ∧ (Complex.digamma (δ:ℂ)).re ≤ 0 at hψ
   have hMs : 1 ≤ (M:ℝ)+1 := by linarith [Nat.cast_nonneg (α := ℝ) M]
   have hM0 : 0 < (M:ℝ)+1 := by positivity
-  have hlog0 : 0 ≤ Real.log ((M:ℝ)+1) := Real.log_nonneg hMs
+  have hlog0 := Real.log_nonneg hMs
   have hlog : Real.log ((M:ℝ)+1) ≤ y := by
     have := Real.log_le_sub_one_of_pos hM0
     dsimp [δ] at hδ1
@@ -88,4 +89,4 @@ theorem minus_coefficients_uniform {M : ℕ} {y : ℝ} (hy : 1 ≤ y)
     simp only [div_eq_mul_inv] at ha hb hc ⊢
     linarith
 
-end WeylPort
+

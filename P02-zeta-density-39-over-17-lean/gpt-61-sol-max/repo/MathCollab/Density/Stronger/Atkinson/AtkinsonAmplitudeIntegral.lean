@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -21,14 +22,18 @@ The weighted carrier bound consumes a concrete C1 amplitude and the
 proved frequency-uniform root-kernel estimate.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 open scoped ContDiff
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem IntervalC1Bound.comp_sq {f : ℝ → ℂ} {a c M : ℝ}
+section
+variable {f : ℝ → ℂ}
+include f
+
+theorem IntervalC1Bound.comp_sq  {a c M : ℝ}
     (hf : IntervalC1Bound f (a ^ 2) (c ^ 2) M) (ha : 0 ≤ a) (hac : a ≤ c) :
     IntervalC1Bound (fun y => f (y ^ 2)) a c M := by
   have hmem (y : ℝ) (hy : y ∈ Icc a c) : y ^ 2 ∈ Icc (a ^ 2) (c ^ 2) := by
@@ -61,12 +66,12 @@ theorem IntervalC1Bound.comp_sq {f : ℝ → ℂ} {a c M : ℝ}
   rw [heq, he]
   exact hf.variation_le
 
-theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound {f : ℝ → ℂ} {a c M T B : ℝ}
+theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound  {a c M T B : ℝ}
     (hf : IntervalC1Bound f a c M) (b : ℝ) (ha : 0 < a) (hac : a ≤ c)
     (hprimitive : ∀ x ∈ Icc a c, ‖∫ y in a..x, atkinsonRootKernel T b y‖ ≤ B) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ 2 * B * M := by
   have hB : 0 ≤ B := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
-  let F : ℝ → ℂ := fun x => ∫ y in a..x, atkinsonRootKernel T b y
+  let F := fun x => ∫ y in a..x, atkinsonRootKernel T b y
   have hk : ContinuousOn (atkinsonRootKernel T b) (Ioi 0) :=
     fun x hx => (continuousAt_atkinsonRootKernel T b hx).continuousWithinAt
   have hd (x : ℝ) (hx : x ∈ Icc a c) :
@@ -110,12 +115,14 @@ theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound {f : ℝ → ℂ} {a c M
       (norm_nonneg _) hf.nonneg
   linarith
 
-theorem IntervalC1Bound.atkinsonRoot {f : ℝ → ℂ} {a c M T : ℝ}
+theorem IntervalC1Bound.atkinsonRoot  {a c M T : ℝ}
     (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
     (ha : 0 < a) (hac : a ≤ c) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ 8 * M := by
   have h := hf.atkinsonRoot_of_primitive_bound (B := 4) b ha hac
     (fun x hx => norm_atkinsonRootKernel_integral_le_four hT b ha hx.1)
   simpa only [show (2 : ℝ) * 4 = 8 by norm_num] using h
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

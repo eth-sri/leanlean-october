@@ -9,13 +9,17 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-def actualMixedCoefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+section
+variable (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
     (S : PrimeFamily σ) (jF : φ → ℕ)
     (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
+include F K hK S jF D s hc
+
+def actualMixedCoefficient 
     (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
   s.amplitude u m n b *
     (star D.fixedFactor * ShortDraftCusp.A4BadPhase c hc (D.matrix (fun _ => 1) 1 1) D.U
@@ -24,10 +28,7 @@ def actualMixedCoefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible
       (F.reflected K hK S).generator_good (reflectedExponent jF)
       (slotIndices φ (PrimeIndex K) σ) D i (s.modelDualNumerator u m n b)
 
-theorem actualMixedCoefficient_factor (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
-    (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
+theorem actualMixedCoefficient_factor 
     (hcop : Pairwise (Function.onFun IsCoprime (F.reflected K hK S).ideal))
     (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
     actualMixedCoefficient F K hK S jF D s hc u m n b =
@@ -67,8 +68,10 @@ theorem actualMixedCoefficient_factor (F : PrimeFamily φ) (K : Ideal Eis) (hK :
   rw [hcard,sourceRowPhase_eq_actual,sourceSlotPhase_eq_actual,
     F.reflected_residual_product K hK S,F.reflected_slot_product K hK S] at he
   exact he
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

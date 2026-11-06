@@ -13,13 +13,13 @@ open Filter
 namespace SevenEighths.CenteredMomentExceptionalMaskedSource
 open HeckeFamily UniqueFactorizationMonoid CenteredMomentEligibleEnergy
 open CenteredMomentDivisorRowEnergy CenteredMomentActiveAllocation
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentExceptionalWholeSource
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentHeckeExpansion CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+open CenteredMomentAllocatedDetectorAmplitude
+
+
+
+
+
+open scoped HeckeO
 universe u
 variable {ι κ:Type u} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
@@ -65,8 +65,8 @@ theorem whole_masked_le (s:Data ι)(v:Data κ)(Ds:Finset (Ideal O))(rows:Finset 
     apply paired_masked_le s v D
     exact CenteredMomentWholeDivisorShell.squarefree_of_moebius_ne_zero D hμ
 
-end SevenEighths.CenteredMomentExceptionalMaskedSource
 
-end
 
-end OAI
+
+
+

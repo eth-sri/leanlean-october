@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorChildren
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily CenteredMomentSupport
-open CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
+open CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondSectorColumns CenteredMomentSupport
+open CenteredMomentSecondScaled CenteredMomentChildAssembly
 open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem sector_correlation_children (η : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O → ℂ) (C D : Ideal O)
@@ -61,8 +61,8 @@ theorem sector_correlation_children (η : Character) (t : ℝ)
   simp_rw [hcop,sectorElement_span] at he
   simpa only [idealCorrelation,primaryGenerator_mul,sectorElement] using he
 
-end SevenEighths.CenteredMomentSecondSectorChildren
 
-end
 
-end OAI
+
+
+

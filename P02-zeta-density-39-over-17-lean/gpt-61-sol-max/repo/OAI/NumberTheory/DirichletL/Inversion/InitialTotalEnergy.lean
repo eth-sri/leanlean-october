@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroModeBudget
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialProfile
+
+open InverseInitialQuotientGeometry
+open InverseInitialProfileBounds Filter
+open scoped EisensteinO
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
 theorem original_input_bound
@@ -47,11 +47,11 @@ theorem original_input_bound
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
     ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
-    ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
+    ∀(D m r:ℝ),0≤ m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
       D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
     ∀(c θ:ℝ),1≤c→c≤bcap→
@@ -126,8 +126,8 @@ theorem original_input_bound
   change ‖physicalFrequency _ _ _ _ _ _ _ _ _ _ _ _ _ 0‖+_≤_
   exact (add_le_add (hz0.trans hz1) hn).trans_eq (by ring)
 
-end SevenEighths.InverseInitialTotalEnergy
 
-end
 
-end OAI
+
+
+

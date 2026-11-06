@@ -10,12 +10,12 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic
+
+
+
+open InverseWholePriorityRetainedSource RayFourExpansion
+open scoped EisensteinEis
 variable {ι σ:Type} [DecidableEq ι] [DecidableEq σ]
 def globalPriorityRetainedAggregate
     (p:ι→Eis)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -32,8 +32,8 @@ def globalPriorityRetainedAggregate
         wholeRow p hp hcop hg extra pool negative (firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core)
           m slots J lists a V X Y z x‖
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.Boundary
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
 public import OAI.NumberTheory.DirichletL.Hecke.Operations
@@ -7,10 +8,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.Operations
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeFamily
 
-theorem LFunction_one_ne_zero_quadratic (χ : Character)
+section
+variable (χ : Character)
+include χ
+
+theorem LFunction_one_ne_zero_quadratic 
     (hχ : χ.residue ≠ 1) (hquad : χ.residue ^ 2 = 1) : LFunction χ 1 ≠ 0 := by
   let : Finite (O ⧸ χ.modulus) :=
     Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
@@ -18,19 +23,13 @@ theorem LFunction_one_ne_zero_quadratic (χ : Character)
     χ.unit_trivial hquad (LFunction χ) (LFunction_entire_nonprincipal χ hχ)
       (fun s hs => LFunction_eq_series χ hs)
 
-theorem LFunction_boundary_ne_zero (χ : Character) (t : ℝ)
+theorem LFunction_boundary_ne_zero  (t : ℝ)
     (hpole : t ≠ 0 ∨ χ.residue ≠ 1)
     (hsquare : t ≠ 0 ∨ χ.residue ^ 2 ≠ 1) :
     LFunction χ (1 + Complex.I * t) ≠ 0 := by
   let : Finite (O ⧸ χ.modulus) :=
     Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
-  have h1 (t : ℝ) (ht : t ≠ 0) : (1 + Complex.I * t : ℂ) ≠ 1 := by
-    intro h
-    have hi := congrArg Complex.im h
-    simp only [Complex.add_im, Complex.one_im, Complex.mul_im, Complex.I_re,
-      Complex.ofReal_im, Complex.I_im, Complex.ofReal_re, zero_mul, one_mul,
-      zero_add] at hi
-    exact ht hi
+  have h1 (t : ℝ) (ht : t ≠ 0) : (1 + Complex.I * t : ℂ) ≠ 1 := by simp_all
   have h0 (t : ℝ) : (1 + Complex.I * t : ℂ) ≠ 0 := by
     intro h
     have hr := congrArg Complex.re h
@@ -51,14 +50,14 @@ theorem LFunction_boundary_ne_zero (χ : Character) (t : ℝ)
     · exact Or.inl (h1 (2*t) (mul_ne_zero (by norm_num) ht))
     · exact Or.inr hsq
 
-theorem LFunction_one_ne_zero_nonprincipal (χ : Character) (hχ : χ.residue ≠ 1) :
+theorem LFunction_one_ne_zero_nonprincipal  (hχ : χ.residue ≠ 1) :
     LFunction χ 1 ≠ 0 := by
   by_cases hquad : χ.residue ^ 2 = 1
   · exact LFunction_one_ne_zero_quadratic χ hχ hquad
   · simpa only [Complex.ofReal_zero, mul_zero, add_zero] using
       LFunction_boundary_ne_zero χ 0 (Or.inr hχ) (Or.inr hquad)
 
-theorem LFunction_ne_zero_of_re_eq_one (χ : Character) {s : ℂ}
+theorem LFunction_ne_zero_of_re_eq_one  {s : ℂ}
     (hs : s.re = 1) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
   have heq : s = 1 + Complex.I * s.im := by
     apply Complex.ext <;> simp [hs]
@@ -69,14 +68,16 @@ theorem LFunction_ne_zero_of_re_eq_one (χ : Character) {s : ℂ}
   · rw [heq]
     exact LFunction_boundary_ne_zero χ s.im (Or.inl ht) (Or.inl ht)
 
-theorem LFunction_ne_zero_of_one_le_re (χ : Character) {s : ℂ}
+theorem LFunction_ne_zero_of_one_le_re  {s : ℂ}
     (hs : 1 ≤ s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
   rcases eq_or_lt_of_le hs with h | h
   · exact LFunction_ne_zero_of_re_eq_one χ h.symm hpole
   · exact LFunction_ne_zero_of_one_lt_re χ h
-
-end SevenEighths.HeckeFamily
-
 end
 
-end OAI
+
+
+
+
+
+

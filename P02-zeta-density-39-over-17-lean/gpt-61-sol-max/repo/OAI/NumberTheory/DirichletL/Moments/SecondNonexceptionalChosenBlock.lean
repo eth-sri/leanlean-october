@@ -17,34 +17,35 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalNonunit
+
+open CenteredMomentRestrictedEnergy
+
+open CenteredMomentSectorLocalization RayFourExpansion
+
+
+
+open scoped EisensteinO
 
 open Filter
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentSecondOriginalChildren CenteredMomentSecondSupportedChildren
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentSecondPhysicalCost CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
+open CenteredMomentRadialEligibleEnergy
+
+variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
+open CenteredMomentSecondOriginalChildren
+
+
+
 
 open CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondEnergySplit
-open CenteredMomentSecondDyadicRowSupport CenteredMomentFirstAmplificationChoice
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSecondExceptionalFamily
+open CenteredMomentFirstAmplificationChoice
+
+
+local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def canonicalRadial (τ:Character)(Q:Ideal O)(n:Fin 4→ℤ):Radial:=
   sourceRadial (fun z=>z≠0 ∧ ¬CenteredExceptionalProfile.FixedInducingRow τ Q fixedBadMask 1 z)
@@ -64,8 +65,8 @@ lemma sourceRadial_eq_canonical {η:Character}{C D:Ideal O}{hC:Supported C}{hD:S
     exact propext (h.nonexceptional_iff χ Q m z hm hml hm2)
   simp only [canonicalRadial,he]
 
-end SevenEighths.CenteredMomentSecondNonexceptionalChosenBlock
 
-end
 
-end OAI
+
+
+

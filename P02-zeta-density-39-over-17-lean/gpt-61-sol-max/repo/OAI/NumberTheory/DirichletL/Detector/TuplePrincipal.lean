@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.TuplePrime
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.Character)
@@ -35,7 +35,7 @@ theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.C
   rw [spectralCompensatedHigh_continued S hS (Finset.univ.image P) ht η x w z _ _ hx hw hz,
     Finset.prod_image hP.injOn]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

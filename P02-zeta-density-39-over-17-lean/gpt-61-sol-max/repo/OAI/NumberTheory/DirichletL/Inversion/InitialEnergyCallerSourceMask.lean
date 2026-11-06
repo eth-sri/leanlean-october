@@ -8,12 +8,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerSourceMask
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialEnergyCallerGeometry
+open scoped EisensteinEis
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -76,8 +76,8 @@ theorem child_label_mem (S:Finset (Source (ι:=ι) 0))
     (initialChild (toTuple p (sectorSource u x))).2.1∈childLabels p S :=
   Finset.mem_image.mpr ⟨x,hx,rfl⟩
 
-end SevenEighths.InverseInitialEnergyCallerSourceMask
 
-end
 
-end OAI
+
+
+

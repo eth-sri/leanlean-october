@@ -10,17 +10,21 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityPhysical
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 open InverseMomentWholePriorityParents InversePrioritySecondSource
 open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
 variable {Jo : ℕ} (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
+
+def fullPhysical 
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
@@ -40,11 +44,14 @@ def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     secondSourceTail p hp hg hinj pool Ψ₀ (secondParentPuncture p m y)
       (secondParentLabel p y) (secondParentDivisor p y) H rowMajorant Y K
 
-theorem whole_parent_full
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+section
+variable (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
+include hc hpr extra pool
+
+theorem whole_parent_full
+    
     (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
@@ -59,10 +66,7 @@ theorem whole_parent_full
     (fun i=>lists i\extra y.cube) a om lo hi hlo hs X t Y hX hY r core R label
 
 theorem whole_signed_source_full
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
+    
     (source : Finset (Source ι Jo)) (w : Source ι Jo→ℂ)
     (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
@@ -91,9 +95,12 @@ theorem whole_signed_source_full
     rw [quotientSupport_attach p hinj];rfl
   exact whole_parent_full p hp hcop hg hinj hc hpr extra pool negative Ψ m slots J lists a
     om lo hi hlo hs X t Y hX hY r core R label (attach p J (x,q)) hquot
-
-end SevenEighths.InverseMomentWholePriorityPhysical
-
+end
 end
 
-end OAI
+
+
+
+
+
+

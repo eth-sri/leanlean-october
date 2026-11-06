@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectedBranches
 
 @[expose] public section
@@ -9,69 +10,69 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
@@ -130,27 +131,32 @@ lemma kernelGradientAt_norm_sq (w : HyperbolicSpace) (f : kernelSmoothTests) :
     ‖kernelGradientAt w f‖^2=kernelTestEnergyDensity f w := by
   rw [PiLp.norm_sq_eq_of_L2,kernelTestEnergyDensity_eq_partials]
   change (∑j:Fin 3,‖(hyperbolicHeight w:ℂ)*kernelTestPartial f w j‖^2)=_
-  simp only [norm_mul,mul_pow,Complex.norm_real,Real.norm_of_nonneg (hyperbolicHeight_pos w).le,
-    Finset.mul_sum]
+  simp only [norm_mul, norm_real, Real.norm_of_nonneg (hyperbolicHeight_pos w).le, mul_pow, mul_sum]
 
-def kernelDirichletPairDensity (f g : kernelSmoothTests) (q : KernelQuotient) : ℂ :=
+section
+variable (f g : kernelSmoothTests)
+include f g
+
+def kernelDirichletPairDensity  (q : KernelQuotient) : ℂ :=
   ((kernelQuotientEnergyDensity (f+g) q:ℂ)-(kernelQuotientEnergyDensity (f-g) q:ℂ)+
     ((kernelQuotientEnergyDensity (f-Complex.I•g) q:ℂ)-
       (kernelQuotientEnergyDensity (f+Complex.I•g) q:ℂ))*Complex.I)/4
 
-lemma kernelDirichletPairDensity_coordinate (f g : kernelSmoothTests) (w : HyperbolicSpace) :
+lemma kernelDirichletPairDensity_coordinate  (w : HyperbolicSpace) :
     kernelDirichletPairDensity f g (integralOrbitProjection globalKubotaKernel w)=
       inner ℂ (kernelGradientAt w f) (kernelGradientAt w g) := by
   rw [inner_eq_sum_norm_sq_div_four]
   simp only [←map_add,←map_sub,←map_smul,RCLike.ofReal_eq_complex_ofReal,←Complex.ofReal_pow,kernelGradientAt_norm_sq]
   rfl
 
-lemma kernelDirichletPairDensity_integrable (f g : kernelSmoothTests) :
+lemma kernelDirichletPairDensity_integrable  :
     Integrable (kernelDirichletPairDensity f g) (integralQuotientVolume globalKubotaKernel) := by
   have hf : ∀h : kernelSmoothTests,Integrable (fun q => (kernelQuotientEnergyDensity h q:ℂ))
       (integralQuotientVolume globalKubotaKernel) := fun h =>
     (kernelQuotientEnergyDensity_integrable h).ofReal
   exact ((hf (f+g)).sub (hf (f-g)) |>.add (((hf (f-Complex.I•g)).sub (hf (f+Complex.I•g))).mul_const _)).div_const _
+end
+
 
 lemma kernelDirichletPairDensity_add_right (f g h : kernelSmoothTests) (q : KernelQuotient) :
     kernelDirichletPairDensity f (g+h) q=kernelDirichletPairDensity f g q+kernelDirichletPairDensity f h q := by
@@ -252,10 +258,14 @@ end
 section
 open ActualEisensteinCubic CanonicalQuadraticSieve
 
-def completedRowFiber (S : Finset (Ideal O)) (Q A T : Ideal O) : Finset (Ideal O) :=
+section
+variable (S : Finset (Ideal O)) (Q A T : Ideal O)
+include S Q A T
+
+def completedRowFiber  : Finset (Ideal O) :=
   S.filter (fun I => rowPowerfulPart I=A ∧ rowMaskPart I Q=T)
 
-theorem rowResidualPart_injective_on_fiber (S : Finset (Ideal O)) (Q A T : Ideal O)
+theorem rowResidualPart_injective_on_fiber 
     (hS : ∀I∈S,I≠0) : Set.InjOn (fun I => rowResidualPart I Q) (completedRowFiber S Q A T) := by
   intro I hI J hJ he
   change rowResidualPart I Q=rowResidualPart J Q at he
@@ -266,7 +276,7 @@ theorem rowResidualPart_injective_on_fiber (S : Finset (Ideal O)) (Q A T : Ideal
     _ = rowPowerfulPart J*rowMaskPart J Q*rowResidualPart J Q := by rw [hIA,hJA,hIT,hJT,he]
     _ = J := row_powerful_mask_residual_product J Q (hS J hJS)
 
-theorem completedRowFiber_residual_range (S : Finset (Ideal O)) (Q A T : Ideal O)
+theorem completedRowFiber_residual_range 
     (hbad : ∀P∈fixedBadPrimes,P∣Q) (K : ℝ)
     (hS : ∀I∈S,I≠0 ∧ (Ideal.absNorm I:ℝ)≤K) (I : Ideal O)
     (hI : I∈completedRowFiber S Q A T) :
@@ -276,6 +286,8 @@ theorem completedRowFiber_residual_range (S : Finset (Ideal O)) (Q A T : Ideal O
   refine ⟨rowResidualPart_admissible I Q hbad,?_⟩
   rw [rowResidualPart_norm I Q (hS I hIS).1,hIA,hIT]
   exact div_le_div_of_nonneg_right (hS I hIS).2 (by positivity)
+end
+
 
 end
 
@@ -292,27 +304,16 @@ open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
-def initialLogProfile (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) : 𝓢(ℝ,ℂ) :=
-  ((CubicReflectionKernel.logProfile_compact W a b ha hs).mul_left
-    (f := fun t : ℝ => (Real.exp (t/2) : ℂ))).toSchwartzMap (by
-      change ContDiff ℝ ∞ (fun t : ℝ => (Real.exp (t/2) : ℂ)*W (Real.exp t))
-      have he : ContDiff ℝ ∞ (fun t : ℝ => Real.exp (t/2)) :=
-        Real.contDiff_exp.comp (contDiff_id.div_const 2)
-      exact (Complex.ofRealCLM.contDiff.comp he).mul
-        (hW.comp Real.contDiff_exp))
 
-@[simp] lemma initialLogProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) :
-    initialLogProfile W a b ha hs hW t =
-      (Real.exp (t/2) : ℂ)*W (Real.exp t) := rfl
+
+
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-end InitialMeanSquare
 
-end
 
-end OAI
+
+
+

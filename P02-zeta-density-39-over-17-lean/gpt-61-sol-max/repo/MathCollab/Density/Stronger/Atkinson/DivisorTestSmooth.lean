@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -11,12 +12,11 @@ public import MathCollab.Density.Stronger.Atkinson.ShortDivisorGeometry
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem contDiff_zetaGaussianQuadraticIntegral (T : ℝ) {G : ℝ} (hG : G ≠ 0) :
@@ -46,7 +46,7 @@ theorem contDiffAt_zetaShortDivisorTestFunction (T : ℝ) {G x : ℝ}
     ContDiffAt ℝ ∞ (zetaShortDivisorTestFunction T G) x := by
   have hlog : ContDiffAt ℝ ∞ Real.log x := Real.contDiffAt_log.mpr hx.ne'
   have hpow := contDiffAt_ofReal_cpow_positive ((-1 / 2 : ℂ) + (T : ℂ) * I) hx
-  have hcastlog : ContDiffAt ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) x :=
+  have hcastlog :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x hlog
   have hweight : ContDiffAt ℝ ∞
       (fun y : ℝ => zetaDivisorWeight ((Real.log y : ℂ) - zetaGammaLeadingLog T)) x :=
@@ -55,4 +55,4 @@ theorem contDiffAt_zetaShortDivisorTestFunction (T : ℝ) {G x : ℝ}
   unfold zetaShortDivisorTestFunction
   fun_prop
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongTotal
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseReflectedPhase InverseTerminalWidths CompletedHeight
-open InverseCanonicalShortAttachment InverseSecondFibers FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseTerminalWidths CompletedHeight
+open InverseCanonicalShortAttachment
+open scoped EisensteinO
 universe v
 
 theorem actual_complete_state_from_live_bins
@@ -26,7 +26,7 @@ theorem actual_complete_state_from_live_bins
       Z₀≤Z → 0≤N → N≤L → 0≤V → V≤L → 0≤M → M≤L → z₀≤L →
       0≤cutoff → cutoff≤L → cutoff≤cstar/200 →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
     ∀labels:Finset (Ideal O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
     ∀D:ℕ,hi*Z^N≤D → ∀slots:Finset σ,slots.card≤rmax →
     ∀(lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)))(H:σ→ℝ),
@@ -98,8 +98,8 @@ theorem actual_complete_state_from_live_bins
   have hB:0≤Z^eps*E:=by positivity
   nlinarith
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

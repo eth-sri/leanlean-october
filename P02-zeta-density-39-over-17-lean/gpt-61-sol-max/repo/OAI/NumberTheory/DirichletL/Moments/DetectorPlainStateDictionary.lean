@@ -5,17 +5,17 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainExceptional
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainStateDictionary
-open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular
+open HeckeFamily HeckeDetectorRawFiber
 open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
 open CenteredMomentDetectorPlainSource CenteredMomentDetectorEnergyInitialState
 open CenteredMomentDetectorDictionary CenteredMomentEnergyState
 open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
 open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
@@ -59,8 +59,8 @@ theorem retainedSourceEnergy_empty_eq_plainEnergy
   intro z
   simp [initialState,NaturalState.mask,detectorProfiles,positiveSlotRow]
 
-end SevenEighths.CenteredMomentDetectorPlainStateDictionary
 
-end
 
-end OAI
+
+
+

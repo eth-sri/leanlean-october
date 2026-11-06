@@ -7,13 +7,12 @@ public import LaterPairs.Native.RobertSargosZeroRRootBudget
 public import LaterPairs.Native.RobertSargosZeroRWeighted
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                 
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -41,4 +40,4 @@ theorem robertSargos_zero_r_physical_a_times_a
     (by exact_mod_cast hH) (by exact_mod_cast hQ) (by exact_mod_cast hR)
     hC hlam hdiag hpos hinv)
 
-end TaoTrudgianYang2025
+

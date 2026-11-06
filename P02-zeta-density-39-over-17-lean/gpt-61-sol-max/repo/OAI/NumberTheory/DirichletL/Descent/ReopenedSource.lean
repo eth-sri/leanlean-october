@@ -10,7 +10,7 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem bounded_row_square_expansion {β : Type*}
     (C : Finset β) (a : β→ℂ) (r : β→O→ℂ) (hr : ∀b∈C,∀z,‖r b z‖≤1)
@@ -123,7 +123,7 @@ theorem varying_reopened_smoothed_expand
   rw [ht]
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

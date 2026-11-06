@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveDomain
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSource
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
+open scoped EisensteinO
 
  theorem primeRoot_ne_zero (p : O) (hp : p ≠ 0) (k : ℕ) : primeRoot p k ≠ 0 := by
   unfold primeRoot
@@ -82,8 +82,8 @@ theorem source_error_shortening (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   exact (primaryGenerator_spec I (supported_primaryGenerator_ne_zero I
     (Finset.mem_filter.mp I.property).2)).2
 
-end SevenEighths.CenteredMomentAmplificationSource
 
-end
 
-end OAI
+
+
+

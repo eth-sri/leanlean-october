@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicCentralBudget
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDyadic
 
 theorem central_squared_exponents (R a e κ η ε r m : ℝ)
     (hR : 0≤R) (he : 0≤e) (hκ : 0≤κ) (_hη : 0≤η)
-    (hr : r≤R) (hm : 0≤m)
+    (hr : r≤R) (hm : 0≤ m)
     (hbudget : 12*e*(R+2)+8*κ+2*η≤ε) :
     2*((a-1/2+6*e)*r+2*κ+η)≤(2*a-1)*r+ε ∧
     2*((a-1/2)*(1-m)+6*e*(2-m)+4*κ+η)≤(2*a-1)*(1-m)+ε := by
@@ -62,8 +62,8 @@ theorem squared_bound_of_central_and_error (z : ℂ) (U C E p b ε : ℝ)
         ring
       rw [mul_pow,hp]
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

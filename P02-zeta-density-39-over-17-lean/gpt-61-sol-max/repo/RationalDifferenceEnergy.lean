@@ -6,8 +6,7 @@ public import Mathlib
 
 /-! An unconditional finite Gram identity and its coefficient bound.
 These apply to the actual phase kernel in the difference-sum argument. -/
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 
 namespace Montgomery.RationalMoment
@@ -22,8 +21,12 @@ theorem square_sum_expansion (A : Finset ι) (f : ι → ℂ) :
   simp only [star_sum, sum_mul, mul_sum]
   rw [sum_comm]
 
-theorem gram_energy_identity (A : Finset ι) (W : Finset τ)
-    (K : ι → τ → ℂ) (a : ι → ℂ) :
+section
+variable (A : Finset ι) (W : Finset τ)
+    (K : ι → τ → ℂ) (a : ι → ℂ)
+include A W K a
+
+theorem gram_energy_identity  :
     ((∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ A, a n * K n t * star (K n u)‖ ^ 2 : ℝ) : ℂ) =
       ∑ n ∈ A, ∑ m ∈ A, (a n * star (a m)) *
         ((‖∑ t ∈ W, K n t * star (K m t)‖ ^ 2 : ℝ) : ℂ) := by
@@ -57,8 +60,7 @@ theorem gram_energy_identity (A : Finset ι) (W : Finset τ)
 
 /-- Coefficients of modulus at most one cannot increase this difference
 energy beyond the corresponding sum over all ordered frequency pairs. -/
-theorem gram_energy_le (A : Finset ι) (W : Finset τ)
-    (K : ι → τ → ℂ) (a : ι → ℂ) (ha : ∀ n ∈ A, ‖a n‖ ≤ 1) :
+theorem gram_energy_le  (ha : ∀ n ∈ A, ‖a n‖ ≤ 1) :
     (∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ A, a n * K n t * star (K n u)‖ ^ 2) ≤
       ∑ n ∈ A, ∑ m ∈ A, ‖∑ t ∈ W, K n t * star (K m t)‖ ^ 2 := by
   let E : ℝ := ∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ A, a n * K n t * star (K n u)‖ ^ 2
@@ -78,6 +80,8 @@ theorem gram_energy_le (A : Finset ι) (W : Finset τ)
     nlinarith [ha n hn, ha m hm, norm_nonneg (a n), norm_nonneg (a m),
       mul_nonneg (sub_nonneg.mpr (ha n hn)) (sub_nonneg.mpr (ha m hm))]
   exact (mul_le_mul_of_nonneg_right hab (sq_nonneg _)).trans_eq (one_mul _)
+end
+
 
 theorem phase_time_difference (r t u : ℝ) :
     phase r t * star (phase r u) = phase r (t - u) := by
@@ -120,4 +124,4 @@ theorem dirichlet_difference_energy_le (A : Finset ℕ)
       intro t _
       exact phase_frequency_ratio (by exact_mod_cast hA n hn) (by exact_mod_cast hA m hm) t
 
-end Montgomery.RationalMoment
+

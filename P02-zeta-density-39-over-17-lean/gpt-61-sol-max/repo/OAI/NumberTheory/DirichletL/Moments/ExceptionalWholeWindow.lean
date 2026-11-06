@@ -5,15 +5,15 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalIndexedWindow
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWholeWindow
-open CenteredMomentExceptionalIndexedWindow CenteredMomentPlainWindowEnergy
+open CenteredMomentExceptionalIndexedWindow
 open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily
+open scoped EisensteinO
 
 theorem rowPolynomial_factor {α:Type*}(S:Finset α)(a:α→O)(c:α→ℂ)(v:ℂ)(z:O):
     rowPolynomial S a (fun i=>v*c i) z=v*rowPolynomial S a c z:=by
@@ -46,8 +46,8 @@ theorem whole_plain_window_pair {γ α β:Type*}
     simpa only [mul_assoc,rowPolynomial_factor,norm_mul,
       Finset.sum_product,Finset.mul_sum,mul_assoc] using hpair u v
 
-end SevenEighths.CenteredMomentExceptionalWholeWindow
 
-end
 
-end OAI
+
+
+

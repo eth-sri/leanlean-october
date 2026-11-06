@@ -1,20 +1,20 @@
 module
+import Mathlib
 public import LaterPairs.Native.ParabolaBilinearLocalization.Part02
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open GafniTao Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open MeasureTheory
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open MeasureTheory GafniTao
-open MeasureTheory GafniTao Set
-open MeasureTheory Set
+open MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open Set
+                                                                             
+open MeasureTheory
+open MeasureTheory FourierTransform SchwartzMap Set
+                  
+open MeasureTheory Set
+                      
+        
 open scoped BigOperators
 open scoped BigOperators ComplexConjugate
 open scoped BigOperators ContDiff
@@ -28,12 +28,12 @@ open scoped ContDiff BigOperators
 open scoped ContDiff FourierTransform
 open scoped ContDiff Topology
 open scoped Matrix
-noncomputable section
+
 open Set Filter MeasureTheory
 open scoped ContDiff Topology FourierTransform BigOperators
 namespace TaoTrudgianYang2025
 open scoped ComplexConjugate
-open scoped ComplexConjugate
+                            
 universe v
 open Expdb
 open Filter Expdb
@@ -75,7 +75,7 @@ theorem actual_four_coordinate_constraints
   have hQ : (0:ℝ) < Q := hqr.trans_le hqQr
   have hU : 0 < U := hμ.trans_le hμU
   have hs : 0 < Real.sqrt (U*(Q:ℝ)^3) := Real.sqrt_pos.mpr (by positivity)
-  have hsM : 0 < Real.sqrt (M:ℝ) := Real.sqrt_pos.mpr hMr
+  have hsM := Real.sqrt_pos.mpr hMr
   let κ := 1/Real.sqrt (U*(Q:ℝ)^3)
   have hκ : 0 < κ := by dsimp only [κ]; positivity
   have hK : κ ≤ |K| := dual_coefficient_lower hμ hqr hμU hqQr
@@ -139,7 +139,7 @@ private theorem affine_lattice_strip
       |(γ:ℝ)*ℓ-e₁| ≤ q'*δ₁+|(γ:ℝ)|/q ∧
       |(ℓ'-(α:ℝ)*ℓ-e₂)+((a':ℝ)/q')*((γ:ℝ)*ℓ-e₁)| ≤ 2*D/q' := by
   intro γ α
-  let w : ℤ := ⌊-(R:ℝ)*b/q⌋-⌊-(R':ℝ)*b'/q'⌋
+  let w := ⌊-(R:ℝ)*b/q⌋-⌊-(R':ℝ)*b'/q'⌋
   let E := -(R:ℝ)*b/q+(R':ℝ)*b'/q'-(w:ℝ)
   have hE : |E| ≤ δ₁ := by
     convert hfirst using 1
@@ -147,8 +147,8 @@ private theorem affine_lattice_strip
     push_cast
     congr 1
     ring
-  let e₁ : ℤ := R'*(b'-b)-d'*w
-  let e₂ : ℤ := a'*w+B'*(b-b')
+  let e₁ := R'*(b'-b)-d'*w
+  let e₂ := a'*w+B'*(b-b')
   have hγ : (γ:ℝ)=q'*(R:ℝ)-q*(R':ℝ) := by
     dsimp only [γ]
     push_cast
@@ -175,10 +175,7 @@ private theorem affine_lattice_strip
       push_cast
       rw [hd,hd']
       field_simp
-      nlinarith only [hinv',hb,hb',
-        congrArg (fun x : ℝ => (b:ℝ)*x) hinv',
-        congrArg (fun x : ℝ => (b':ℝ)*x) hinv',
-        congrArg (fun x : ℝ => q*ℓ*x) hinv']
+      grind
     rw [he,abs_div,abs_mul,abs_of_pos hq']
     norm_num
     exact div_le_div_of_nonneg_right (by linarith only [htau]) hq'.le
@@ -233,17 +230,12 @@ private theorem inverse_curvature_derivative
   have hh := (hd'.comp v hcder).div_const 2
   convert hh using 1
   · rfl
-  · change iteratedDeriv 2 f (c v)/2=v at he
-    calc
-      _ = 2*(iteratedDeriv 2 f (c v)/2)/iteratedDeriv 3 f (c v) :=
-        congrArg (fun t : ℝ => 2*t/iteratedDeriv 3 f (c v)) he.symm
-      _ = _ := by ring
+  grind
 
 private theorem inverse_lift_fract (q : ℕ) (hq : 0 < q) (r R b : ℤ)
     (hR : (q:ℤ) ∣ R-r) :
     Int.fract (-(R:ℝ)*b/q)=Int.fract (-(r:ℝ)*b/q) := by
   obtain ⟨t,ht⟩ := hR
-  have hqr : (q:ℝ) ≠ 0 := by exact_mod_cast hq.ne'
   have hR' : (R:ℝ)=(r:ℝ)+(q:ℝ)*t := by exact_mod_cast (by linarith only [ht] : R=r+(q:ℤ)*t)
   have he : -(R:ℝ)*b/q=-(r:ℝ)*b/q-((t*b:ℤ):ℝ) := by
     rw [hR']
@@ -409,7 +401,7 @@ private theorem rounded_displacement_strip
       _ ≤ |2*(n-y)|+|2*t*(m-x)|+|c*e| := by
         have h₁ := abs_sub (2*(n-y)-2*t*(m-x)) (c*e)
         have h₂ := abs_sub (2*(n-y)) (2*t*(m-x))
-        linarith only [h₁,h₂]
+        linarith
       _ = 2*|n-y|+2*t*|m-x|+|c| *|e| := by
         simp only [abs_mul,abs_of_pos htpos,abs_of_pos (by norm_num : (0:ℝ)<2)]
       _ ≤ 2*(1/2)+2*2*(1/2)+|c| *(3*U/4) := by gcongr
@@ -435,7 +427,7 @@ private theorem displacement_elementary_twelfth {P U C Y ε r : ℝ}
   have hJ : 1 ≤ 1+Real.log P := by linarith only [hlogP]
   have hUexp : U^(r*12) ≤ U^((8:ℝ)/3) :=
     Real.rpow_le_rpow_of_exponent_ge hU hU1 (by linarith only [hr])
-  have hPε : 1 ≤ P^ε := Real.one_le_rpow hP hε
+  have hPε := Real.one_le_rpow hP hε
   have hJpow := pow_le_pow_right₀ hJ (by norm_num : 12 ≤ 24)
   calc
     _ ≤ (C*P*U^r*(1+Real.log P))^12 := pow_le_pow_left₀ hY hbound 12
@@ -632,7 +624,7 @@ private theorem finite_near_integer_count_fourier
       _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg hTS
         (fun i _hi _hnot => GafniTao.heathBrownHat_nonneg B (φ i))
   change (T.card:ℝ) ≤ 2*∑' r : ℤ, c r*‖Z r‖
-  linarith only [hlower,hupper]
+  linarith
 
 private theorem inverse_curvature_ratio_derivatives
     (f : ℝ → ℝ) {A B L v : ℝ} (hL : 0 < L)
@@ -782,7 +774,7 @@ private theorem hat_fourier_positive_moment
       rw [ite_eq_left hr]
       exact hh.trans (le_add_of_nonneg_left (mul_nonneg (hc r) (by positivity)))
     · have hle : |(r:ℝ)| ≤ (R:ℝ) := by
-        have hh : r.natAbs ≤ R := Nat.le_of_not_gt hr
+        have hh := Nat.le_of_not_gt hr
         have hh' : (r.natAbs:ℝ) ≤ R := by exact_mod_cast hh
         simpa only [Nat.cast_natAbs,Int.cast_abs] using hh'
       change c r*|(r:ℝ)|^p ≤ c r*(R:ℝ)^p+(1/B)*(if R < r.natAbs then |(r:ℝ)|^(p-2) else 0)
@@ -830,7 +822,7 @@ theorem source_four_coordinate_integer_shift_bound
   have hqr : 0 < (q:ℝ) := by exact_mod_cast hq
   have hqQr : (q:ℝ) ≤ Q := by exact_mod_cast hqQ
   have hqQ'r : (q':ℝ) ≤ Q := by exact_mod_cast hqQ'
-  have hsM : 0 < Real.sqrt (M:ℝ) := Real.sqrt_pos.mpr hMr
+  have hsM := Real.sqrt_pos.mpr hMr
   have hsmall : (1/(6*(M:ℝ)^2))*(q:ℝ)*q' < 1 := by
     have hh : (q:ℝ)*q' < 6*(M:ℝ)^2 :=
       (mul_le_mul hqQr hqQ'r (by positivity) (by positivity)).trans_lt
@@ -1078,9 +1070,7 @@ private theorem short_second_derivative_remainder
   have hR z (hz : z∈uIcc a b) : HasDerivAt R (G₁ z-G₁ a) z := by
     convert ((hG z hz).sub_const (G a)).sub
       (((hasDerivAt_id z).sub_const a).const_mul (G₁ a)) using 1
-    · funext t
-      dsimp only [R,Pi.sub_apply,id_eq]
-    · ring
+    all_goals (bound)
   have hh := (convex_uIcc a b).norm_image_sub_le_of_norm_hasDerivWithin_le
     (fun z hz => (hR z hz).hasDerivWithinAt)
     (fun z hz => by simpa only [Real.norm_eq_abs] using hfirst z hz)
@@ -1140,7 +1130,7 @@ private theorem hat_fourier_half_moment
     Summable (fun r : ℤ => c r*|(r:ℝ)|^((1:ℝ)/2)) ∧
     (∑' r : ℤ, c r*|(r:ℝ)|^((1:ℝ)/2)) ≤ 6*B^(-(1:ℝ)/2) := by
   intro c
-  let R : ℕ := ⌈1/B⌉₊
+  let R := ⌈1/B⌉₊
   have hRlo : 1/B ≤ (R:ℝ) := Nat.le_ceil _
   have hR : 0 < R := by
     have hh : (0:ℝ) < R := (one_div_pos.mpr hB).trans_le hRlo
@@ -1238,7 +1228,7 @@ private theorem finite_near_integer_count_half
       _ = _ := by ring
   have hcount := finite_near_integer_count_fourier S T φ hB hBHalf hTS hnear
   change (T.card:ℝ) ≤ 2*∑' r : ℤ, c r*‖Z r‖ at hcount
-  linarith only [hcount,hupper]
+  linarith
 
 private theorem positive_second_derivative_near_integer_count
     (G G₁ G₂ : ℝ → ℝ) (a : ℝ) (N : ℕ) (I : Finset ℕ)
@@ -1327,8 +1317,7 @@ private theorem triangular_displacement_derivative_bounds
   have hxy : c v < c (v+k) := by
     by_contra hnot
     have hh := hmono.monotoneOn hy.2.1 hx.2.1 (le_of_not_gt hnot)
-    rw [hx.1,hy.1] at hh
-    linarith only [hh,hk]
+    linarith
   have hlevel : iteratedDeriv 2 f (c (v+k))/2-iteratedDeriv 2 f (c v)/2=k := by
     change h (c (v+k))-h (c v)=k
     rw [hx.1,hy.1]
@@ -1444,13 +1433,7 @@ private theorem positive_second_derivative_integer_set_count
     have hI : I ⊆ Finset.range N := by
       intro n hn
       obtain ⟨a,ha,rfl⟩ := Finset.mem_image.mp hn
-      have haJ := (Finset.mem_erase.mp ha).2
-      have hne := (Finset.mem_erase.mp ha).1
-      have hl := hlo a haJ
-      have hh := hhi a haJ
-      apply Finset.mem_range.mpr
-      dsimp only [N]
-      omega
+      grind
     have hinj : Set.InjOn (fun a : ℤ => (a-a₀).toNat) (↑(J.erase a₁):Set ℤ) := by
       intro a ha b hb he
       have haJ := (Finset.mem_erase.mp ha).2
@@ -1489,8 +1472,12 @@ private theorem positive_second_derivative_integer_set_count
     rw [he,Finset.card_empty,Nat.cast_zero]
     positivity
 
+section
+variable (f : ℝ → ℝ)
+include f
+
 private theorem triangular_resonance_curve_data
-    (f : ℝ → ℝ) {A B L U F lam k a b : ℝ}
+     {A B L U F lam k a b : ℝ}
     (hL : 0 < L) (hU : 0 < U) (hF : 0 < F) (hlam : 0 < lam) (hk : 0 < k)
     (hf : ∀ x∈Ioo A B, ContDiffAt ℝ 5 f x)
     (hthree : ∀ x∈Ioo A B, L ≤ iteratedDeriv 3 f x ∧ iteratedDeriv 3 f x ≤ 6*U)
@@ -1554,7 +1541,7 @@ private theorem triangular_resonance_curve_data
       exact hupper.trans (mul_le_mul_of_nonneg_right (le_max_right 1 _) (by dsimp only [μ]; positivity))
 
 private theorem triangular_resonance_curve_rounded_point
-    (f : ℝ → ℝ) {A B L U F lam a b x y ε : ℝ} (m n k e : ℤ)
+     {A B L U F lam a b x y ε : ℝ} (m n k e : ℤ)
     (hL : 0 < L) (hU : 0 < U) (hF : 0 < F) (hlam : 0 < lam) (hk : 0 < k)
     (hf : ∀ t∈Ioo A B, ContDiffAt ℝ 5 f t)
     (hthree : ∀ t∈Ioo A B, L ≤ iteratedDeriv 3 f t ∧ iteratedDeriv 3 f t ≤ 6*U)
@@ -1595,7 +1582,7 @@ private theorem triangular_resonance_curve_rounded_point
   have hslope : G₁ (y-x)=2*(h x+k) := by dsimp only [G₁]; rw [hleft]
   have hpoint : y-x∈D '' Ioo a b := ⟨h x,hxparam,hD⟩
   have hsegment := hd.1.uIcc_subset hpoint hdpoint
-  have hroundsegment : uIcc x (m:ℝ) ∪ uIcc y (n:ℝ) ⊆ Ioo A B :=
+  have hroundsegment :=
     union_subset ((convex_Ioo A B).ordConnected.uIcc_subset hx hmI)
       ((convex_Ioo A B).ordConnected.uIcc_subset hy hnI)
   apply rounded_triangular_curve_near_integer f G G₁ G₂ m n k e
@@ -1615,7 +1602,7 @@ private theorem triangular_resonance_curve_rounded_point
     exact hb.2.2.2
 
 private theorem fixed_displacement_level_spacing
-    (f : ℝ → ℝ) {A B lam d m n k ε : ℝ}
+     {A B lam d m n k ε : ℝ}
     (hlam : 0 < lam) (hd : 0 < d)
     (hf : ∀ t∈Ioo A B, ContDiffAt ℝ 4 f t)
     (hfour : ∀ t∈Ioo A B, iteratedDeriv 4 f t ≤ -lam)
@@ -1682,7 +1669,7 @@ private theorem fixed_displacement_level_spacing
 
                                                                                       
 theorem rounded_curvature_difference_error
-    (f : ℝ → ℝ) {x y m n U k : ℝ}
+     {x y m n U k : ℝ}
     (hf : ∀ t∈uIcc x m ∪ uIcc y n, ContDiffAt ℝ 3 f t)
     (hb : ∀ t∈uIcc x m ∪ uIcc y n, |iteratedDeriv 3 f t| ≤ 6*U)
     (hm : |m-x| ≤ 1/2) (hn : |n-y| ≤ 1/2)
@@ -1712,9 +1699,15 @@ theorem rounded_curvature_difference_error
     _ = |(h n-h y)-(h m-h x)| := by rw [←hlevel]; dsimp only [h]; congr 1; ring
     _ ≤ |h n-h y|+|h m-h x| := abs_sub _ _
     _ ≤ _ := by linarith only [hmx,hny]
+end
+
+
+section
+variable {ι : Type*} [DecidableEq ι] (S : Finset ι)
+include ι S
 
 private theorem block_cloud_card_of_center_interval
-    {ι : Type*} [DecidableEq ι] (S : Finset ι) (center block : ι → ℤ)
+     (center block : ι → ℤ)
     (H Bmul : ℕ) (s : ℤ) {c ρ : ℝ} (hH : 0 < H) (hρ : 0 ≤ ρ)
     (hspan : ∀ i∈S, (H:ℤ) ≤ s+(H:ℤ)*block i-center i ∧
       s+(H:ℤ)*block i-center i ≤ 3*(H:ℤ))
@@ -1750,7 +1743,7 @@ private theorem block_cloud_card_of_center_interval
 
                                                                                       
 theorem fixed_displacement_source_pair_fibers
-    {ι : Type*} [DecidableEq ι] (S : Finset ι) (R : Finset (ι × ι))
+     (R : Finset (ι × ι))
     (center block : ι → ℤ) (H Bmul : ℕ) (s : ℤ) (f : ℝ → ℝ)
     {A B lam d k ε : ℝ} (hH : 0 < H) (hlam : 0 < lam) (hd : 0 < d) (hε : 0 ≤ ε)
     (hspan : ∀ i∈S, (H:ℤ) ≤ s+(H:ℤ)*block i-center i ∧
@@ -1772,9 +1765,7 @@ theorem fixed_displacement_source_pair_fibers
   have hsubmul (T : Finset ι) (hTS : T ⊆ S) (j : ℤ) :
       (T.filter (fun i => block i=j)).card ≤ Bmul := by
     apply (Finset.card_le_card ?_).trans (hmul j)
-    intro i hi
-    obtain ⟨hi,he⟩ := Finset.mem_filter.mp hi
-    exact Finset.mem_filter.mpr ⟨hTS hi,he⟩
+    gcongr
   have hrow i : ((R.filter (fun p => p.1=i)).card:ℝ) ≤ 3*Bmul := by
     let T := (R.filter (fun p => p.1=i)).image Prod.snd
     have hinj : Set.InjOn Prod.snd (↑(R.filter (fun p => p.1=i)):Set (ι × ι)) := by
@@ -1792,7 +1783,7 @@ theorem fixed_displacement_source_pair_fibers
       rw [show (center p.2:ℝ)-((center i:ℝ)+d)=0 by linarith only [hh],abs_zero]
     have hb := block_cloud_card_of_center_interval T center block H Bmul s hH le_rfl
       (fun j hj => hspan j (hTS hj)) (hsubmul T hTS) hdist
-    have hc : T.card=(R.filter (fun p => p.1=i)).card := Finset.card_image_of_injOn hinj
+    have hc := Finset.card_image_of_injOn hinj
     rw [hc] at hb
     simpa only [mul_zero,zero_mul,zero_div,add_zero,mul_comm] using hb
   by_cases hR : R.Nonempty
@@ -1823,6 +1814,8 @@ theorem fixed_displacement_source_pair_fibers
       _ = _ := by dsimp only [ρ]; ring
   · rw [Finset.not_nonempty_iff_eq_empty.mp hR,Finset.card_empty,Nat.cast_zero]
     positivity
+end
+
 
                                                                                       
 theorem rounded_positive_curvature_shift_bounds
@@ -1850,7 +1843,7 @@ theorem rounded_positive_curvature_shift_bounds
     by_contra hnot
     have hh := hmono.monotoneOn hy hx (le_of_not_gt hnot)
     change h y-h x=k at hlevel
-    linarith only [hh,hlevel,hkp]
+    linarith
   have hseg : Icc x y ⊆ Ioo A B := (convex_Ioo A B).ordConnected.out hx hy
   obtain ⟨t,ht,he⟩ := exists_hasDerivAt_eq_slope h (fun t => iteratedDeriv 3 f t/2) hxy
     (fun t ht => (hd t (hseg ht)).continuousAt.continuousWithinAt)
@@ -1871,9 +1864,13 @@ theorem rounded_positive_curvature_shift_bounds
     linarith only [hh,hround.2]
 
                                                                                       
+section
+variable {ι : Type*} [DecidableEq ι] (S : Finset ι) (R : Finset (ι × ι))
+    (center block : ι → ℤ) (z : ι → ℝ) (H Bmul : ℕ)
+include ι S R center block z H Bmul
+
 theorem rounded_shift_source_pair_count_of_displacements
-    {ι : Type*} [DecidableEq ι] (S : Finset ι) (R : Finset (ι × ι))
-    (center block : ι → ℤ) (z : ι → ℝ) (H Bmul : ℕ) (s : ℤ)
+     (s : ℤ)
     (f : ℝ → ℝ) (J : Finset ℤ) {A B L U lam k : ℝ}
     (hH : 0 < H) (hL : 0 < L) (hU : 0 < U) (hlam : 0 < lam) (hk : 6*U ≤ k)
     (hspan : ∀ i∈S, (H:ℤ) ≤ s+(H:ℤ)*block i-center i ∧
@@ -1941,8 +1938,7 @@ theorem rounded_shift_source_pair_count_of_displacements
     _ = _ := by simp [mul_comm]
 
 private theorem triangular_interior_fixed_shift_source_count
-    {ι : Type*} [DecidableEq ι] (S : Finset ι) (R : Finset (ι × ι))
-    (center block : ι → ℤ) (z : ι → ℝ) (H Bmul : ℕ) (s k : ℤ)
+     (s k : ℤ)
     (f : ℝ → ℝ) {A B L U F lam ε a b : ℝ}
     (hH : 0 < H) (hL : 0 < L) (hU : 0 < U) (hF : 0 < F) (hlam : 0 < lam)
     (hk : 0 < k) (hkU : 6*U ≤ k) (hε : 0 ≤ ε)
@@ -2017,12 +2013,14 @@ private theorem triangular_interior_fixed_shift_source_count
       have hi' := hJbounds i hi
       have hj' := hJbounds j hj
       have hjpos : (0:ℝ) < j := (div_pos hkr (by positivity)).trans_le hj'.1
-      linarith only [hi'.2,hjpos]) hJnear
+      linarith) hJnear
   have hRcard := rounded_shift_source_pair_count_of_displacements S R center block z H Bmul s f J
     hH hL hU hlam hkU hspan hmul (fun t ht => (hf t ht).of_le (by norm_num))
     hthree (fun t ht => (hfour t ht).2) hcenter hz hround hRS hlevel
     (fun p hp => Finset.mem_image_of_mem _ hp)
   exact hRcard.trans (mul_le_mul_of_nonneg_left hJcard (by positivity))
+end
+
 
 private theorem outside_interval_near_integer_card
     (J : Finset ℤ) {S : Set ℝ} (hS : S.OrdConnected)
@@ -2048,22 +2046,10 @@ private theorem outside_interval_near_integer_card
       linarith only [hxi,hijR,(abs_le.mp hd).2]
     have hL : (J.filter (fun (j : ℤ) => (j:ℝ)<x₀)).card ≤ 1 := by
       apply Finset.card_le_one.mpr
-      intro i hi j hj
-      obtain ⟨hi,hi₀⟩ := Finset.mem_filter.mp hi
-      obtain ⟨hj,hj₀⟩ := Finset.mem_filter.mp hj
-      rcases lt_trichotomy i j with hij | hij | hji
-      · exact (hleft i hi j hj hj₀ hij).elim
-      · exact hij
-      · exact (hleft j hj i hi hi₀ hji).elim
+      grind
     have hR : (J.filter (fun (j : ℤ) => ¬(j:ℝ)<x₀)).card ≤ 1 := by
       apply Finset.card_le_one.mpr
-      intro i hi j hj
-      obtain ⟨hi,hi₀⟩ := Finset.mem_filter.mp hi
-      obtain ⟨hj,hj₀⟩ := Finset.mem_filter.mp hj
-      rcases lt_trichotomy i j with hij | hij | hji
-      · exact (hright i hi j hj (le_of_not_gt hi₀) hij).elim
-      · exact hij
-      · exact (hright j hj i hi (le_of_not_gt hj₀) hji).elim
+      grind
     have hc := Finset.card_filter_add_card_filter_not (s:=J) (fun (j : ℤ) => (j:ℝ)<x₀)
     omega
   · rw [Finset.not_nonempty_iff_eq_empty.mp hJ,Finset.card_empty]
@@ -2218,7 +2204,7 @@ private theorem triangular_fixed_shift_source_count
       (fun p hp => Finset.mem_image_of_mem _ hp)
     exact hb.trans (mul_le_mul_of_nonneg_left (by exact_mod_cast hJ) (by positivity))
   have hc : (R.card:ℝ)=Rgood.card+Rbad.card := by
-    have hcNat : Rgood.card+Rbad.card=R.card :=
+    have hcNat :=
       Finset.card_filter_add_card_filter_not (s:=R) (fun p => (center p.2:ℝ)-center p.1∈I)
     have hcReal := congrArg (fun n : ℕ => (n:ℝ)) hcNat
     simp only [Nat.cast_add] at hcReal
@@ -2262,8 +2248,12 @@ private theorem displacement_curve_uniform_shift_majorant
       rw [mul_assoc,he]
     _ ≤ _ := by gcongr
 
+section
+variable {ι : Type*} [DecidableEq ι] (S : Finset ι)
+include ι S
+
 private theorem triangular_all_shifts_source_count
-    {ι : Type*} [DecidableEq ι] (S : Finset ι) (R : Finset (ι × ι))
+     (R : Finset (ι × ι))
     (center block : ι → ℤ) (z : ι → ℝ) (H Bmul N : ℕ) (s : ℤ)
     (f : ℝ → ℝ) {A B L U F lam ε : ℝ}
     (hH : 0 < H) (hL : 0 < L) (hU : 0 < U) (hF : 0 < F) (hlam : 0 < lam)
@@ -2369,7 +2359,7 @@ private theorem triangular_all_shifts_source_count
         intro p hp
         have he := (hshiftNat p (hEmem p hp).1).2.1
         rw [(hEmem p hp).2] at he
-        simpa only [Int.cast_natCast] using he)
+        exact he)
       (fun p hp => hnear p (hpmem p (hEmem p hp).1).1)
     have hμeq : L^3/(2*F*((n:ℤ):ℝ))=m/n := by
       simp only [Int.cast_natCast]
@@ -2421,7 +2411,7 @@ private theorem triangular_all_shifts_source_count
 
                                                                                                                                                                    
 theorem four_coordinate_displacement_source_count
-    {ι : Type*} [DecidableEq ι] (S : Finset ι)
+    
     (center block label inverse : ι → ℤ) (z : ι → ℝ) (q : ι → ℕ)
     (parity : ι → Fin 2) (H Bmul M Qden : ℕ) [NeZero M] (s : ℤ)
     (f : ℝ → ℝ) {A B L U F lam : ℝ}
@@ -2533,6 +2523,8 @@ theorem four_coordinate_displacement_source_count
   exact triangular_all_shifts_source_count S R center block z H Bmul N s f
     hH hL hU hF hlam hUsmall hε hspan hmul hf hthree hfour hcenter hz hround
     (fun _ hp => (Finset.mem_filter.mp hp).1) hRsym hshift hnear
+end
+
 
                                                                           
 theorem model_displacement_derivative_data {σ : ℝ} (hσ : 0 < σ) :
@@ -2621,7 +2613,7 @@ theorem model_displacement_derivative_data {σ : ℝ} (hσ : 0 < σ) :
       have he := abs_add_le (iteratedDeriv 2 F (x/P)-iteratedDeriv 1 (Expdb.modelPhase σ) (x/P))
         (iteratedDeriv 1 (Expdb.modelPhase σ) (x/P))
       rw [sub_add_cancel] at he
-      linarith only [he,hh,hr,hδ1]
+      linarith
     rw [hd x hx 2,abs_div,abs_mul,abs_of_pos (by positivity : 0<T/P^2)]
     rw [abs_of_pos (by norm_num : (0:ℝ)<2)]
     exact div_le_div_of_nonneg_right
@@ -2637,7 +2629,7 @@ theorem raw_displacement_window_scales
     4*D₀/Q ≤ 4*Real.sqrt U ∧ rho ≤ 16*U*Real.sqrt U/lam := by
   intro D₀ rho
   have hMp : 0 < M := zero_lt_one.trans_le hM
-  have hsM : 0 < Real.sqrt M := Real.sqrt_pos.mpr hMp
+  have hsM := Real.sqrt_pos.mpr hMp
   have hrootQ : Real.sqrt Q ≤ 2*Real.sqrt M := by
     have hh := Real.sqrt_le_sqrt hQM
     rw [Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 4)] at hh
@@ -2696,7 +2688,7 @@ theorem displacement_block_scale
       let M := ⌈63*U*(Q:ℝ)*(H:ℝ)^2⌉₊+1
       (7/16:ℝ)*Q ≤ M ∧ (M:ℝ) ≤ 3*Q ∧ (Q:ℝ)^2 < 6*(M:ℝ)^2 := by
   intro H
-  have hs : 0 < Real.sqrt U := Real.sqrt_pos.mpr hU
+  have hs := Real.sqrt_pos.mpr hU
   have hsq := Real.sq_sqrt hU.le
   have hroot : Real.sqrt U ≤ (1:ℝ)/60 := by nlinarith only [hsq,hsmall,hs.le]
   have he : (1/(10*Real.sqrt U))*Real.sqrt U=(1:ℝ)/10 := by field_simp
@@ -2775,8 +2767,7 @@ theorem displacement_prescribed_source_error
     have hh := one_div_le_one_div_of_le (by positivity : 0 < L*(N:ℝ)*Q/12) hprod
     apply Real.sqrt_le_sqrt
     convert hh using 1
-    · simp only [one_div]
-    · field_simp
+    all_goals (ring)
   linarith only [herr,hcap]
 
                                                                             
@@ -2867,9 +2858,7 @@ private theorem exists_displacement_frozen_physical_source
   have hW i (hi : i∈S) : N ≤ W i ∧ W i ≤ 3*N ∧ m i+(W i:ℤ)=s+(N:ℤ)*k i := by
     have hh := hspan i hi
     dsimp only [W]
-    constructor
-    · omega
-    · constructor <;> omega
+    omega
   have hWp i (hi : i∈S) : 1 ≤ W i := (Nat.succ_le_iff.mpr hN).trans (hW i hi).1
   have hWr i (hi : i∈S) : (N:ℝ) ≤ W i ∧ (W i:ℝ) ≤ 3*(N:ℝ) := by
     constructor <;> exact_mod_cast (by first | exact (hW i hi).1 | exact (hW i hi).2.1)
@@ -3141,8 +3130,7 @@ private theorem displacement_count_physical_majorant
         _ = (7*n*P*U)*(Real.sqrt U)^2 := by ring
         _ = _ := by rw [Real.sq_sqrt hU.le]; ring
     rw [he] at hh
-    dsimp only [a]
-    nlinarith only [hh]
+    linarith
   have hthird : (m*P*U^2)^((1:ℝ)/3)*K^((2:ℝ)/3) ≤ b*P*U^((5:ℝ)/3) := by
     have hh := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow hK hKhi (by norm_num : (0:ℝ) ≤ 2/3))
@@ -3151,7 +3139,7 @@ private theorem displacement_count_physical_majorant
     norm_num at he
     convert hh using 1
     rw [show n*(P*U*Real.sqrt U)=n*P*U*Real.sqrt U by ring]
-    simpa only [b] using he.symm
+    exact he.symm
   have hhalf : (m*P*U^2)^(-(1:ℝ)/2)*K^((1:ℝ)/2) ≤ c*U^(-(1:ℝ)/4) := by
     have hh := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow hK hKhi (by norm_num : (0:ℝ) ≤ 1/2))
@@ -3211,7 +3199,7 @@ theorem displacement_harmonic_weight
   have hlogn := Real.log_nonneg hn
   have hlogP := Real.log_nonneg hP
   have hK : P*U*Real.sqrt U ≤ P := by
-    have hs : Real.sqrt U ≤ 1 := Real.sqrt_le_one.mpr hU1
+    have hs := Real.sqrt_le_one.mpr hU1
     calc
       _ ≤ P*1*1 := mul_le_mul (mul_le_mul_of_nonneg_left hU1 hPp.le) hs
         (Real.sqrt_nonneg U) (by positivity)
@@ -3298,7 +3286,7 @@ private theorem exists_displacement_physical_weighted_count
   refine ⟨C₁*C₂,mul_pos hC₁ hC₂,?_⟩
   intro P U M Q hP hU hUsmall hK hM hQ hQM H L F lam D₀ η rho N mu ratio D Count
   have hU1 : U ≤ 1 := by linarith only [hUsmall]
-  have hs : Real.sqrt U ≤ 1 := Real.sqrt_le_one.mpr hU1
+  have hs := Real.sqrt_le_one.mpr hU1
   have hUsqrt : U ≤ Real.sqrt U := by
     nlinarith only [Real.sq_sqrt hU.le,hs,Real.sqrt_nonneg U]
   have hP1 : 1 ≤ P := by
@@ -3477,7 +3465,7 @@ private theorem displacement_denominator_elimination
       apply (le_div_iff₀ hd).mpr
       have he : (1+c/(v*q^2))*(v*q^2)=v*q^2+c := by field_simp
       rw [he]
-      linarith only [hsmall]
+      linarith
     calc
       _ ≤ ((1+c)/(v*q^2))^13*q^6*(B*v^2*q^2)^10 := by gcongr
       _ = _ := by field_simp
@@ -3559,7 +3547,7 @@ theorem exists_displacement_frozen_loss_bound
       _ = _ := by dsimp only [cd]; field_simp; norm_num
   have hV : V=756/l := by dsimp only [V,L]; field_simp
   have hlogQ : 0 ≤ Real.log Q := Real.log_nonneg (by exact_mod_cast hQ)
-  have hlogM : 0 ≤ Real.log M := Real.log_nonneg hM1
+  have hlogM := Real.log_nonneg hM1
   have hlog : 6*(3+8*Real.pi*V)*(1+Real.log M) ≤ cv*(1+Real.log Q) := by
     have hh := Real.log_le_log hMp hMhi
     rw [Real.log_mul (by norm_num : (3:ℝ) ≠ 0) hQr.ne'] at hh
@@ -3888,9 +3876,7 @@ private theorem exists_displacement_source_bands
     have hhi := Nat.lt_pow_succ_log_self (by norm_num : 1<(2:ℕ)) (r i).den
     rw [hj] at hlo hhi
     refine ⟨hhi.le,?_,(Finset.mem_filter.mp hi').2⟩
-    calc
-      Q=2*2^j := by dsimp only [Q]; rw [pow_succ,Nat.mul_comm]
-      _ ≤ _ := Nat.mul_le_mul_left _ hlo
+    omega
   have hsmall := displacement_taylor_smallness hb hP hU hUsmall hbPU
   have hdir := hdirect ι G f r z (fun i => round (z i)) k H N Q 1 s A B L F U X
     hN hQ hL hF hU hX hsmall.1 hsmall.2 hf₄ hthree hfourAbs
@@ -3978,7 +3964,7 @@ theorem exists_displacement_frozen_error_majorant {l : ℝ} (hl : 0 < l) :
   let C := Real.sqrt 3*L₀+864/l+12/Real.sqrt l
   have hlog6 : 0 ≤ Real.log 6 := Real.log_nonneg (by norm_num)
   have hL₀ : 0 < L₀ := by dsimp only [L₀]; positivity
-  have hrootl : 0 < Real.sqrt l := Real.sqrt_pos.mpr hl
+  have hrootl := Real.sqrt_pos.mpr hl
   refine ⟨C,by dsimp only [C]; positivity,?_⟩
   intro P U Q hP hU hUsmall hPU hQ N
   have hU1 : U ≤ 1 := by linarith only [hUsmall]
@@ -3997,7 +3983,6 @@ theorem exists_displacement_frozen_error_majorant {l : ℝ} (hl : 0 < l) :
       _ = U^(-(1:ℝ)/2) := by
         dsimp only [w]
         rw [←Real.rpow_mul_natCast hU.le]
-        congr 1
         norm_num
       _ = _ := by
         rw [show (-(1:ℝ)/2)= -((1:ℝ)/2) by ring,Real.rpow_neg hU.le]
@@ -4116,8 +4101,7 @@ private theorem exists_displacement_uniform_frozen_rhs
   have hZhi' : Z*(Q:ℝ)^2 ≤ B := by
     have hh := mul_le_mul_of_nonneg_right hZhi (sq_nonneg (Q:ℝ))
     convert hh using 1
-    dsimp only [B,J]
-    field_simp
+    field_simp <;> ring
   have hZgeo : Z ≤ Cc*P*J*Real.sqrt U :=
     displacement_cardinality_geometric hU.le hQr hZ hZlo' hZhi'
   have hR : R ≤ (Cc+2)*V₂*J := by
@@ -4128,7 +4112,7 @@ private theorem exists_displacement_uniform_frozen_rhs
     dsimp only [R]
     change Z+_ * J ≤ _
     nlinarith only [ht,hv,hZgeo]
-  have hQpow : (Q:ℝ)^ε ≤ P^ε := Real.rpow_le_rpow hQr.le hQP hε.le
+  have hQpow := Real.rpow_le_rpow hQr.le hQP hε.le
   have hlogQ : 0 ≤ 1+Real.log Q := by
     have hh := Real.log_nonneg hQ1
     positivity
@@ -4167,7 +4151,7 @@ private theorem exists_displacement_uniform_frozen_rhs
     norm_num
   have hU3 : U^(3:ℝ) ≤ U^((8:ℝ)/3) :=
     Real.rpow_le_rpow_of_exponent_ge hU hU1 (by norm_num)
-  have hPe : 1 ≤ P^ε := Real.one_le_rpow hP1 hε.le
+  have hPe := Real.one_le_rpow hP1 hε.le
   have herror₀ : (Z*Err)^12 ≤ (Cc*Ce)^12*P^12*U^((8:ℝ)/3)*J^24 := by
     calc
       _ ≤ (Cc*Ce*P*U^((1:ℝ)/4)*J^2)^12 := pow_le_pow_left₀ (by positivity) hZE 12
@@ -4267,10 +4251,7 @@ private theorem exists_displacement_uniform_source_bands
   have hp := Nat.pow_log_le_self 2 (r i).pos.ne'
   rw [hlog] at hp
   have hQN : (Q:ℝ) ≤ 2*(N:ℝ) := by
-    have hh : Q ≤ 2*N := by
-      calc
-        Q=2*2^j := by dsimp only [Q]; rw [pow_succ,Nat.mul_comm]
-        _ ≤ 2*N := Nat.mul_le_mul_left _ (hp.trans hiN)
+    have hh : Q ≤ 2*N := by omega
     exact_mod_cast hh
   have hc := hcard P U Q hP hU hUsmall hscale.1 hQ1 hQN
   have hZlo : (G.card:ℝ) ≤ Cc*P*U*(Q:ℝ)^2 := hband.1.trans hc.1
@@ -4321,7 +4302,7 @@ theorem exists_displacement_small_band_cutoff {l : ℝ} (hl : 0 < l) :
       exact (Real.sqrt_eq_rpow U).symm
     have hn3 := pow_le_pow_left₀ (by norm_num : (0:ℝ) ≤ 1/12) hblock.2.1 3
     have hden : v/1728 ≤ U^2*(N:ℝ)^3 := by
-      have hh : v*(1/12)^3 ≤ v*((N:ℝ)*v)^3 := mul_le_mul_of_nonneg_left hn3 hv.le
+      have hh := mul_le_mul_of_nonneg_left hn3 hv.le
       have hid : ((N:ℝ)*v)^3*v=U^2*(N:ℝ)^3 := by
         calc
           _ = (v^2)^2*(N:ℝ)^3 := by ring
@@ -4512,7 +4493,7 @@ theorem displacement_finite_moment_budget
       boundary_and_bands_twelfth B A g J hB hA hg
     _ ≤ ((J:ℝ)+2)^11*(((J:ℝ)+2)*K) := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
-      nlinarith only [hBK,hAK,hs]
+      nlinarith
     _ = _ := by ring
 
                                                                                                                                                                                 
@@ -4620,7 +4601,7 @@ theorem exists_displacement_physical_source_global
     exact (displacement_elementary_twelfth hscale.2.1 hU hU1 (by positivity)
       hε.le (by norm_num : (2:ℝ)/9 ≤ 1/2) hh).trans (hbudget _ hCb₀)
   have hbands (j : ℕ) : (g j)^12 ≤ Budget := by
-    let Q : ℕ := 2^(j+1)
+    let Q := 2^(j+1)
     have hQ1 : (1:ℝ) ≤ Q := by dsimp only [Q]; exact_mod_cast (one_le_pow₀ (by norm_num : (1:ℕ) ≤ 2) : 1 ≤ 2^(j+1))
     have hQ : (0:ℝ) < Q := lt_of_lt_of_le zero_lt_one hQ1
     by_cases hlarge : 1 ≤ j ∧ 12 ≤ L*(Q:ℝ)*(N:ℝ)^2 ∧ 384 ≤ L^2*(Q:ℝ)^3*(N:ℝ)^3
@@ -4692,15 +4673,12 @@ theorem exists_displacement_model_global_bound {σ ε : ℝ}
   let u := c₂/6
   have hc₂ : 0 < c₂ := by
     have hh := modelPhaseJetCoefficient_nonneg σ 2
-    dsimp only [c₂]
     positivity
   have hc₃ : 0 < c₃ := by
     have hh := modelPhaseJetCoefficient_nonneg σ 3
-    dsimp only [c₃]
     positivity
   have hc₁ : 0 < c₁ := by
     have hh := modelPhaseJetCoefficient_nonneg σ 1
-    dsimp only [c₁]
     positivity
   have hl : 0 < l := by
     have hh := modelPhaseJetLower_pos hσ 2
@@ -4832,7 +4810,7 @@ private theorem eventually_displacement_piecewise_majorant {C a δ η ε : ℝ}
   have hlogP := Real.log_nonneg hP
   have hlogT := Real.log_nonneg hT
   have hlogPT := Real.log_le_log hPp hPT
-  have hPe : P^η ≤ T^η := Real.rpow_le_rpow hPp.le hPT hη.le
+  have hPe := Real.rpow_le_rpow hPp.le hPT hη.le
   let d := 12*(max ((1:ℝ)/12+2/3*a) (2/9+a/3))+8*δ
   have hmain₁ : T*P^8 ≤ T^d := by
     calc
@@ -4859,8 +4837,12 @@ private theorem eventually_displacement_piecewise_majorant {C a δ η ε : ℝ}
 
 
                                                                                                                                                      
+section
+variable {α : NNReal} (hα : (1:ℝ)/3 < (α:ℝ))
+include α hα
+
 theorem isExponentSumBoundNonAsymptotic_bourgain_piecewise
-    {α : NNReal} (hα : (1:ℝ)/3 < (α:ℝ)) (hαupper : (α:ℝ) < 3/7) :
+     (hαupper : (α:ℝ) < 3/7) :
     IsExponentSumBoundNonAsymptotic α (max ((1:ℝ)/12+2/3*(α:ℝ)) (2/9+(α:ℝ)/3)) := by
   intro ε hε σ hσ
   let η := min ((1:ℝ)/1000) (ε/100)
@@ -4927,12 +4909,14 @@ theorem isExponentSumBoundNonAsymptotic_bourgain_piecewise
 
                                                                                    
 theorem exponentSumGrowthExponent_le_bourgain_table_first
-    {α : NNReal} (hα : (1:ℝ)/3 < (α:ℝ)) (hαupper : (α:ℝ) ≤ 5/12) :
+     (hαupper : (α:ℝ) ≤ 5/12) :
     exponentSumGrowthExponent α ≤ 2/9+(α:ℝ)/3 := by
   have h := exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (isExponentSumBoundNonAsymptotic_bourgain_piecewise hα (by linarith only [hαupper]))
   rw [max_eq_right (by linarith only [hαupper])] at h
   exact h
+end
+
 
                                                                                  
 theorem exponentSumGrowthExponent_le_bourgain_table_second
@@ -4981,7 +4965,7 @@ theorem cubic_hat_fourier_power_moment
     Summable (fun r : ℤ => c r*|(r:ℝ)|^p) ∧
     (∑' r : ℤ, c r*|(r:ℝ)|^p) ≤ (2+2/(1-p))*B^(-p) := by
   intro c
-  let R : ℕ := ⌈1/B⌉₊
+  let R := ⌈1/B⌉₊
   have hRlo : 1/B ≤ (R:ℝ) := Nat.le_ceil _
   have hR : 0 < R := by
     have hh : (0:ℝ) < R := (one_div_pos.mpr hB).trans_le hRlo
@@ -5011,8 +4995,7 @@ theorem cubic_hat_fourier_power_moment
         (one_div_pos.mpr hB) hRlo (by linarith)
       _ = _ := by
         rw [one_div,Real.inv_rpow hB.le,←Real.rpow_neg hB.le]
-        congr 1
-        ring
+        simp
   have htail : (2/B)*(R:ℝ)^(p-1)/(1-p) ≤ (2/(1-p))*B^(-p) := by
     calc
       _ ≤ (2/B)*B^(1-p)/(1-p) := by gcongr
@@ -5078,7 +5061,6 @@ theorem cubic_near_integer_count_power
   change (T.card:ℝ) ≤ 2*∑' r : ℤ, c r*‖Z r‖ at hcount
   exact hcount.trans ((mul_le_mul_of_nonneg_left hupper (by norm_num : (0:ℝ) ≤ 2)).trans_eq (by ring))
 
-end CubicNearCurve
 
 
 
@@ -5105,8 +5087,9 @@ end CubicNearCurve
 
 
 
-end TaoTrudgianYang2025
+
+
 
 -- Generated closures: source context is replayed in the next part.
-end
-end
+
+

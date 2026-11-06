@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Moments.ChildEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedChild
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
 open CenteredMomentSmooth CenteredMomentChildEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -76,8 +76,8 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
       mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
     _ = _ := by rw [pow_add]; ring
 
-end SevenEighths.CenteredMomentReflectedChild
 
-end
 
-end OAI
+
+
+

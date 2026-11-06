@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 Adam Benenson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
@@ -28,11 +29,11 @@ namespace Sobolev
 namespace Euclidean
 
 open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open MeasureTheory
 
 noncomputable section
 
-section
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
 
@@ -83,14 +84,13 @@ theorem norm_translateL2_sub_h1ToL2_le (a : E) (u : ↥(h1 (μ := μ) (E := E)))
         Continuous fun v : V =>
           ‖a‖ * ‖v.2‖ := by
       have hsnd : Continuous fun v : V => v.2 := continuous_snd
-      have hnorm : Continuous fun v : V => ‖v.2‖ := continuous_norm.comp hsnd
+      have hnorm := continuous_norm.comp hsnd
       exact (continuous_const.mul hnorm)
     exact isClosed_le hf hg
   have hRange : (LinearMap.range (graph (μ := μ) (E := E)) : Set V) ⊆ S := by
     rintro v ⟨f, rfl⟩
     -- Reduce to the `C¹_c` estimate.
-    simpa [S, graph, toL2Linear, toL2GradLinear] using
-      norm_translateL2_sub_toL2_le (μ := μ) (E := E) a f
+    exact norm_translateL2_sub_toL2_le (μ := μ) (E := E) a f
   have hClosure :
       closure (LinearMap.range (graph (μ := μ) (E := E)) : Set V) ⊆ S :=
     closure_minimal hRange hS_closed
@@ -101,7 +101,7 @@ theorem norm_translateL2_sub_h1ToL2_le (a : E) (u : ↥(h1 (μ := μ) (E := E)))
         (u : V) ∈
           ((LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure :
             Set V) := by
-      have hu0 : (u : V) ∈ h1 (μ := μ) (E := E) := u.2
+      have hu0 := u.2
       dsimp [h1] at hu0
       exact hu0
     have hu1 :
@@ -114,12 +114,12 @@ theorem norm_translateL2_sub_h1ToL2_le (a : E) (u : ↥(h1 (μ := μ) (E := E)))
   -- Unpack membership in `S` and rewrite in terms of the bundled maps `h1ToL2` and `h1ToL2Grad`.
   simpa [S, V, h1ToL2, h1ToL2Grad] using huS
 
-end
 
-end
 
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov
+
+
+
+
+
+
+

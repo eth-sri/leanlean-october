@@ -3,9 +3,8 @@ public import ThirdWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 open Finset
@@ -91,4 +90,4 @@ theorem third_upper_large_values {σ a p α δ : ℝ}
 
 
 
-end Montgomery.RationalMoment
+

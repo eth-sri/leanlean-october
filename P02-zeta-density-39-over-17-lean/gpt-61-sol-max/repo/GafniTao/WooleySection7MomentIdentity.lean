@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyNormalFormChange
 
 @[expose] public section
@@ -110,19 +111,24 @@ theorem wooleySourceRawMixedComplexAverage_eq_tuple
     apply Finset.prod_congr rfl
     intro j hj
     rw [← AddChar.map_add_eq_mul]
-    congr 1
     ring
-  rw [← hphase]
-  ring
+  grind
 
-/-- The raw auxiliary sum in (7.16), with the `alpha`-dependent coefficient
-twist and the lower system both explicit. -/
-def wooleySection7AuxiliaryRawSum {k r : ℕ}
-    (leftPhi : WooleyPolynomialSystem k)
+section
+variable {k r : ℕ}
+include k r
+
+section
+variable (leftPhi : WooleyPolynomialSystem k)
     (Psi : WooleyPolynomialSystem r)
     (left : WooleySourceSequence)
     {q qPrime : ℕ} [NeZero q] [NeZero qPrime]
-    (alpha : Fin k → ZMod q) (beta : Fin r → ZMod qPrime) : ℂ :=
+    (alpha : Fin k → ZMod q) (beta : Fin r → ZMod qPrime)
+include leftPhi Psi left q qPrime alpha beta
+
+/-- The raw auxiliary sum in (7.16), with the `alpha`-dependent coefficient
+twist and the lower system both explicit. -/
+def wooleySection7AuxiliaryRawSum  : ℂ :=
   ∑ n ∈ left.support,
     left n * (wooleySourcePolynomialPhase leftPhi alpha n *
       wooleySourcePolynomialPhase Psi beta n)
@@ -130,10 +136,7 @@ def wooleySection7AuxiliaryRawSum {k r : ℕ}
 /-- The raw auxiliary sum is the ordinary polynomial sum of the exact
 twisted coefficient sequence from (7.14)--(7.16). -/
 theorem wooleySection7AuxiliaryRawSum_eq_twistedPolynomialSum
-    {k r : ℕ} (leftPhi : WooleyPolynomialSystem k)
-    (Psi : WooleyPolynomialSystem r) (left : WooleySourceSequence)
-    {q qPrime : ℕ} [NeZero q] [NeZero qPrime]
-    (alpha : Fin k → ZMod q) (beta : Fin r → ZMod qPrime) :
+     :
     wooleySection7AuxiliaryRawSum leftPhi Psi left alpha beta =
       wooleySourcePolynomialSum Psi
         (wooleySourceTwist left
@@ -145,13 +148,18 @@ theorem wooleySection7AuxiliaryRawSum_eq_twistedPolynomialSum
   intro n hn
   rw [wooleySourceTwist_apply]
   ring
+end
 
-/-- Raw complex double average on the right side of (7.17). -/
-def wooleySourceInsertedComplexAverage {k r : ℕ}
-    (leftPhi rightPhi : WooleyPolynomialSystem k)
+
+section
+variable (leftPhi rightPhi : WooleyPolynomialSystem k)
     (Psi : WooleyPolynomialSystem r)
     (q qPrime R S : ℕ) [NeZero q] [NeZero qPrime]
-    (left right : WooleySourceSequence) : ℂ :=
+    (left right : WooleySourceSequence)
+include leftPhi rightPhi Psi q qPrime R S left right
+
+/-- Raw complex double average on the right side of (7.17). -/
+def wooleySourceInsertedComplexAverage  : ℂ :=
   ((((q ^ k : ℕ) : ℂ))⁻¹) *
     ((((qPrime ^ r : ℕ) : ℂ))⁻¹) *
       ∑ alpha : Fin k → ZMod q,
@@ -164,10 +172,7 @@ def wooleySourceInsertedComplexAverage {k r : ℕ}
 
 /-- Exact ordered-tuple expansion of the inserted double average. -/
 theorem wooleySourceInsertedComplexAverage_eq_tuple
-    {k r : ℕ} (leftPhi rightPhi : WooleyPolynomialSystem k)
-    (Psi : WooleyPolynomialSystem r)
-    (q qPrime R S : ℕ) [NeZero q] [NeZero qPrime]
-    (left right : WooleySourceSequence) :
+     :
     wooleySourceInsertedComplexAverage
         leftPhi rightPhi Psi q qPrime R S left right =
       ((((q ^ k : ℕ) : ℂ))⁻¹) *
@@ -228,10 +233,11 @@ theorem wooleySourceInsertedComplexAverage_eq_tuple
     apply Finset.prod_congr rfl
     intro j hj
     rw [← AddChar.map_add_eq_mul]
-    congr 1
     ring
-  rw [← hphase]
-  ring
+  grind
+end
+end
+
 
 /-- Real raw mixed average represented by the complex tuple expansion. -/
 def wooleySourceRawMixedRealAverage {k : ℕ}
@@ -359,8 +365,7 @@ theorem wooleySourceNormalizedMixedRealAverage_eq_mass_mul_raw
     apply Finset.sum_congr rfl
     intro alpha halpha
     ring
-  rw [hsum]
-  ring
+  grind
 
 theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
     {k r : ℕ} (leftPhi rightPhi : WooleyPolynomialSystem k)
@@ -467,9 +472,8 @@ theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
                     ‖wooleySourcePolynomialSum rightPhi right alpha‖ ^
                       (2 * S))
               ((↑(qPrime ^ r))⁻¹ : ℝ)).symm
-  rw [hsum]
-  ring
+  grind
 
-end
 
-end GafniTao
+
+

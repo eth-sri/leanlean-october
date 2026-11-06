@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyChosenData
 public import OAI.NumberTheory.DirichletL.Detector.DetectorInverseFields
 public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainMarkedFineField
@@ -14,14 +15,14 @@ open scoped Classical BigOperators SchwartzMap ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeFinalAssemblyCertifiedBands
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeFamily HeckeDetectorBatch
 open ProbeFinalAssembly ProbeHighRowFamily Parameters
-open CenteredMomentEnergyBands CenteredMomentEnergyState
+open CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters
 open CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource
 open ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def detectorMesh (Δ t:ℝ):ℝ:=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
 
@@ -39,7 +40,11 @@ def DetectorCertifiedBands:Prop:=
       2 (1/4) (9/4) bΦ 0 1 (33/50) (33/50) 2 (kappaPlain D) (stageError D)
       (count 2 (stageError D))
 
-theorem plain_inputs {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
+section
+variable {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
+include Δ D F
+
+theorem plain_inputs 
     (hcert:∀bΦ:ℝ,0<bΦ→CertifiedBand (α:=Fin D.N) F.modulus ⊤ le_top
       (fun x=>conj (F.W x)) 2 (1/4) (9/4) bΦ 0 1 (33/50) (33/50) 2
       (kappaPlain D) (stageError D) (count 2 (stageError D))):
@@ -80,9 +85,9 @@ theorem plain_inputs {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
     obtain ⟨Cz,Cp,hCz,hCp,h⟩:=h η₀
     exact ⟨Cz,hCz,h.mono (fun U h=>h.1)⟩
 
-theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
-    (counts:CountParameters F.modulus ⊤ D.t)(mesh:ℝ)(hmesh:0<mesh)
-    (hfine:∀j,D.ell j≤mesh/200)
+theorem source_moments 
+    (counts:CountParameters F.modulus ⊤ D.t)(mesh:ℝ)(hmesh:0< mesh)
+    (hfine:∀j,D.ell j≤ mesh/200)
     (hpositive:PositiveFineSourceInput F mesh)
     (hzero:∃degree:ℕ,∃control:Finset (ℕ×ℕ),∀η₀:Character,∃A:ℝ,0<A ∧ ∀ᶠU:ℝ in atTop,
       ZeroAt (internalQ (sourceFixedIdeal F) η₀) (1/4) (9/4) radialSupportUpper
@@ -102,7 +107,7 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
   intro τ hτ hτ1
   filter_upwards [hi,hm,hu] with Z hi hm hu
   have hZ:0<Z:=zero_lt_one.trans hi.1
-  let height:ℝ:=Z^(2*τ)
+  let height :=Z^(2*τ)
   have hh:0≤height:=Real.rpow_nonneg hZ.le _
   have hbase:1≤1+height:=by linarith
   have hCi':Ci*(1+height)^Ji≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=by
@@ -137,6 +142,8 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
   · intro j k hjk σ hσ t ht
     exact (hunmarked j k hjk σ hσ t ht).1.trans
       (mul_le_mul_of_nonneg_right hCu' (Real.rpow_nonneg hU _))
+end
+
 
 theorem fine_moments_of_certified (h:DetectorCertifiedBands):FineMomentInput:=by
   intro hβ
@@ -153,8 +160,8 @@ theorem chosen_moments_of_certified (h:DetectorCertifiedBands):ChosenMomentInput
 theorem zeta_of_certified (h:DetectorCertifiedBands)(s:ℂ)(hs:(7/8:ℝ)<s.re):riemannZeta s≠0:=
   zeta_of_chosen_moments (chosen_moments_of_certified h) s hs
 
-end SevenEighths.ProbeFinalAssemblyCertifiedBands
 
-end
 
-end OAI
+
+
+

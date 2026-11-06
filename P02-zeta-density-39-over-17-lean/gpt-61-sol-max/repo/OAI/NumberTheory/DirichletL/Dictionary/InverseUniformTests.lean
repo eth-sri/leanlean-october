@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformFamily
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
 
@@ -11,7 +12,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
-open HeckeInverseAmplification HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
+open HeckeInverseAmplification HeckeDetectorProfiles HeckeDetectorDyadicProfiles
 
 def sourceOperator (scaled : Bool) : 𝓢(ℝ,ℂ)→L[ℝ]𝓢(ℝ,ℂ) :=
   if scaled then scaleCLM else ContinuousLinearMap.id ℝ _
@@ -32,8 +33,7 @@ lemma inverseDetectorTest_apply (scaled reverse : Bool) (n : ℕ) (R σ t x : �
     inverseDetectorTest scaled reverse n R σ t x=
       if scaled then scaleProfile (twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t) x
       else twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t x := by
-  have he : (inverseDetectorSchwartz reverse n R σ t : ℝ→ℂ)=
-      twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t :=
+  have he :=
     funext (inverseDetectorSchwartz_apply reverse n R σ t)
   cases scaled
   · exact inverseDetectorSchwartz_apply _ _ _ _ _ _
@@ -62,8 +62,8 @@ theorem inverseDetectorTest_uniform (S : Finset (ℕ×ℕ)) :
   exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hdegree)
     (by positivity) (by linarith))
 
-end SevenEighths.DetectorDictionaryInverseUniform
 
-end
 
-end OAI
+
+
+

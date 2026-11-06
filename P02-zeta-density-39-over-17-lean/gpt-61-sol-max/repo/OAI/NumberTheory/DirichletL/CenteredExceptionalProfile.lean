@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.RowNonprincipal
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 
@@ -12,8 +13,8 @@ namespace SevenEighths.CenteredExceptionalProfile
 open UniqueFactorizationMonoid HeckeFamily CanonicalRowCompletion
 open ConcretePrimeRowBridge hiding O
 open CompletedGauss hiding O
-open ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+
+open scoped HeckeO
 open CenteredExceptionalCount CenteredMomentCanonical
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -100,14 +101,18 @@ def InducedBy (χ ψ : Character) : Prop :=
   ∀ I : Ideal O, idealCoeff χ I =
     if IsCoprime I χ.modulus then idealCoeff ψ I else 0
 
-theorem elementCoeff_eq_of_inducedBy (χ ψ : Character) (h : InducedBy χ ψ)
+section
+variable (χ ψ : Character) (h : InducedBy χ ψ)
+include χ ψ h
+
+theorem elementCoeff_eq_of_inducedBy 
     (n : O) (hn : n ≠ 0) (hc : IsCoprime (Ideal.span {n}) χ.modulus) :
     elementCoeff χ n = elementCoeff ψ n := by
   have he := h (Ideal.span {n})
   simp only [hc, ite_true, idealCoeff_span χ hn, idealCoeff_span ψ hn] at he
   exact he
 
-theorem elementCoeff_eq_one_of_inducedBy (χ ψ : Character) (h : InducedBy χ ψ)
+theorem elementCoeff_eq_one_of_inducedBy 
     (Q : Ideal O) (hQ : Q ≠ ⊤) (hψ : Q ≤ ψ.modulus)
     (n : O) (hn : n - 1 ∈ Q) (hc : IsCoprime (Ideal.span {n}) χ.modulus) :
     elementCoeff χ n = 1 := by
@@ -118,6 +123,8 @@ theorem elementCoeff_eq_one_of_inducedBy (χ ψ : Character) (h : InducedBy χ �
   rw [elementCoeff_eq_of_inducedBy χ ψ h n hn0 hc]
   change ψ.residue (Ideal.Quotient.mk ψ.modulus n) = 1
   rw [(Ideal.Quotient.mk_eq_one_iff_sub_mem _).mpr (hψ hn), map_one]
+end
+
 
 theorem local_rows_profile (η χ₁ χ₂ ψ₁ ψ₂ : Character)
     (h₁ : InducedBy χ₁ ψ₁) (h₂ : InducedBy χ₂ ψ₂)
@@ -254,7 +261,11 @@ theorem actual_rows_profile (η χ₁ χ₂ ψ₁ ψ₂ : Character)
     (Ideal.span_singleton_eq_bot.not.mpr (pow_ne_zero _ hf))
     (Ideal.span_singleton_eq_bot.not.mpr hz₁) (Ideal.span_singleton_eq_bot.not.mpr hz₂) h
 
-theorem local_row_valuation_zero (η χ ψ : Character) (h : InducedBy χ ψ)
+section
+variable (η χ ψ : Character) (h : InducedBy χ ψ)
+include η χ ψ h
+
+theorem local_row_valuation_zero 
     (Q K I P : Ideal O) (hQ : Q ≠ ⊤) (hK : K ≠ 0)
     (hψ : Q ≤ ψ.modulus) (hI : CanonicalQuadraticSieve.Supported I)
     [P.IsMaximal] (hg : λ₀ ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
@@ -267,7 +278,7 @@ theorem local_row_valuation_zero (η χ ψ : Character) (h : InducedBy χ ψ)
   rw [← hzero]
   apply valuation_mod_six_of_unit_agreement (Q * η.modulus) (K * χ.modulus) I 1 P
     (mul_ne_zero hK χ.modulus_ne_bot) hI
-    (by constructor; exact one_ne_zero; simp only [normalizedFactors_one, Multiset.notMem_zero, false_implies, implies_true]) hg hchar
+    (by constructor; all_goals (norm_num)) hg hchar
     (hQP.mul_left hηP)
   intro n hn hc
   obtain ⟨hcK, hcχ⟩ := IsCoprime.mul_right_iff.mp hc
@@ -279,8 +290,11 @@ theorem local_row_valuation_zero (η χ ψ : Character) (h : InducedBy χ ψ)
   rw [hrow n hnQ hcK, hη, one_mul] at he
   simpa only [map_one] using he
 
-theorem actual_row_numerator_valuation_zero (η χ ψ : Character) (h : InducedBy χ ψ)
-    (Q : Ideal O) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)}) (hψ : Q ≤ ψ.modulus)
+section
+variable (Q : Ideal O) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)}) (hψ : Q ≤ ψ.modulus)
+include Q hQ hQ72 hψ
+
+theorem actual_row_numerator_valuation_zero 
     (m f z : O) (hm : m ≠ 0) (hf : f ≠ 0) (hz : z ≠ 0)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m f z n)
@@ -296,11 +310,13 @@ theorem actual_row_numerator_valuation_zero (η χ ψ : Character) (h : InducedB
   intro n hn hc
   exact actual_row_on_fixed_units η χ m f z hmLam hm2 u a b r hr hpr hx hχ n (hQ72 hn) hc
 
-theorem actual_row_forced_residue_four (η χ ψ : Character) (h : InducedBy χ ψ)
-    (Q : Ideal O) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)}) (hψ : Q ≤ ψ.modulus)
-    (m A z : O) (hm : m ≠ 0) (hA : A ≠ 0) (hz : z ≠ 0)
+section
+variable (m A z : O) (hm : m ≠ 0) (hA : A ≠ 0) (hz : z ≠ 0)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m 1 (A * z) n)
+include m A z hm hA hz hmLam hm2 hχ
+
+theorem actual_row_forced_residue_four 
     (P : Ideal O) [P.IsMaximal] (hg : λ₀ ∉ P) (h2 : (2 : O) ∉ P)
     (hQP : IsCoprime Q P) (hηP : IsCoprime η.modulus P)
     (hA2 : valuation (Ideal.span {A}) P % 6 = 2) :
@@ -313,11 +329,7 @@ theorem actual_row_forced_residue_four (η χ ψ : Character) (h : InducedBy χ 
     Nat.add_mod, hA2] at he
   omega
 
-theorem actual_forced_fourth_power (η χ ψ : Character) (h : InducedBy χ ψ)
-    (Q : Ideal O) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)}) (hψ : Q ≤ ψ.modulus)
-    (m A z : O) (hm : m ≠ 0) (hA : A ≠ 0) (hz : z ≠ 0)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
-    (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m 1 (A * z) n)
+theorem actual_forced_fourth_power 
     (D : Ideal O) (hD : Squarefree D)
     (hgood : ∀ P ∈ normalizedFactors D, λ₀ ∉ P ∧ (2 : O) ∉ P ∧
       IsCoprime Q P ∧ IsCoprime η.modulus P ∧ valuation (Ideal.span {A}) P % 6 = 2) :
@@ -331,17 +343,28 @@ theorem actual_forced_fourth_power (η χ ψ : Character) (h : InducedBy χ ψ)
     exact actual_row_forced_residue_four η χ ψ h Q hQ hQ72 hψ m A z hm hA hz hmLam hm2 hχ
       P hg h2 hQP hηP hA2
   exact ⟨forced_fourth_power_dvd _ D hD hf, forced_fourth_power_norm_le _ D hD hf⟩
+end
+end
+end
+
 
 def FixedInducingRow (η : Character) (Q : Ideal O) (m A z : O) : Prop :=
   ∃ χ ψ : Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
     InducedBy χ ψ ∧ Q ≤ ψ.modulus ∧
     ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m 1 (A * z) n
 
-theorem fixed_inducing_rows_profile (η : Character) (Q : Ideal O)
+section
+variable (η : Character) (Q : Ideal O)
     (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)})
-    (m A z₁ z₂ : O) (hm : m ≠ 0) (hA : A ≠ 0) (hz₁ : z₁ ≠ 0) (hz₂ : z₂ ≠ 0)
+include η Q hQ hQ72
+
+section
+variable (m A z₁ z₂ : O) (hm : m ≠ 0) (hA : A ≠ 0) (hz₁ : z₁ ≠ 0) (hz₂ : z₂ ≠ 0)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (h₁ : FixedInducingRow η Q m A z₁) (h₂ : FixedInducingRow η Q m A z₂)
+include m A z₁ z₂ hm hA hz₁ hz₂ hmLam hm2 h₁ h₂
+
+theorem fixed_inducing_rows_profile 
     (P : Ideal O) [P.IsMaximal] (hg : λ₀ ∉ P) (h2 : (2 : O) ∉ P)
     (hQP : IsCoprime Q P) :
     valuation (Ideal.span {z₁}) P % 6 = valuation (Ideal.span {z₂}) P % 6 := by
@@ -354,11 +377,7 @@ theorem fixed_inducing_rows_profile (η : Character) (Q : Ideal O)
   exact valuation_mod_six_cancel_frozen _ _ _ P (Ideal.span_singleton_eq_bot.not.mpr hA)
     (Ideal.span_singleton_eq_bot.not.mpr hz₁) (Ideal.span_singleton_eq_bot.not.mpr hz₂) he
 
-theorem fixed_inducing_rows_same_remainder (η : Character) (Q : Ideal O)
-    (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)})
-    (m A z₁ z₂ : O) (hm : m ≠ 0) (hA : A ≠ 0) (hz₁ : z₁ ≠ 0) (hz₂ : z₂ ≠ 0)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
-    (h₁ : FixedInducingRow η Q m A z₁) (h₂ : FixedInducingRow η Q m A z₂)
+theorem fixed_inducing_rows_same_remainder 
     (S : Finset (Ideal O))
     (houtside : ∀ P : Ideal O, Prime P → P ∉ S →
       λ₀ ∉ P ∧ (2 : O) ∉ P ∧ IsCoprime Q P)
@@ -373,15 +392,19 @@ theorem fixed_inducing_rows_same_remainder (η : Character) (Q : Ideal O)
     obtain ⟨hg, h2, hQP⟩ := houtside P hP hPS
     exact fixed_inducing_rows_profile η Q hQ hQ72 m A z₁ z₂ hm hA hz₁ hz₂ hmLam hm2
       h₁ h₂ P hg h2 hQP
+end
 
-theorem fixed_inducing_remainder_card (η : Character) (Q : Ideal O)
-    (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)})
-    (m A : O) (hm : m ≠ 0) (hA : A ≠ 0) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+
+section
+variable (m A : O) (hm : m ≠ 0) (hA : A ≠ 0) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (S : Finset (Ideal O))
     (houtside : ∀ P : Ideal O, Prime P → P ∉ S →
       λ₀ ∉ P ∧ (2 : O) ∉ P ∧ IsCoprime Q P)
     (T : Finset O) (hT : ∀ z ∈ T, z ≠ 0)
-    (hex : ∀ z ∈ T, FixedInducingRow η Q m A z) :
+    (hex : ∀ z ∈ T, FixedInducingRow η Q m A z)
+include m A hm hA hmLam hm2 S houtside T hT hex
+
+theorem fixed_inducing_remainder_card  :
     (T.image (fun z => sixthRemainder (Ideal.span {z}))).card ≤ 6 ^ S.card := by
   let Rs := T.image (fun z => sixthRemainder (Ideal.span {z}))
   let code : Ideal O → (S → Fin 6) :=
@@ -399,14 +422,7 @@ theorem fixed_inducing_remainder_card (η : Character) (Q : Ideal O)
     (fun _ _ => Finset.mem_univ _) hinj
   simpa only [Finset.card_univ, Fintype.card_fun, Fintype.card_fin, Fintype.card_coe, Rs] using hc
 
-theorem fixed_inducing_row_count (η : Character) (Q : Ideal O)
-    (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)})
-    (m A : O) (hm : m ≠ 0) (hA : A ≠ 0) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
-    (S : Finset (Ideal O))
-    (houtside : ∀ P : Ideal O, Prime P → P ∉ S →
-      λ₀ ∉ P ∧ (2 : O) ∉ P ∧ IsCoprime Q P)
-    (T : Finset O) (hT : ∀ z ∈ T, z ≠ 0)
-    (hex : ∀ z ∈ T, FixedInducingRow η Q m A z)
+theorem fixed_inducing_row_count 
     (D : Ideal O) (hD : Squarefree D)
     (hgood : ∀ P ∈ normalizedFactors D, λ₀ ∉ P ∧ (2 : O) ∉ P ∧
       IsCoprime Q P ∧ IsCoprime η.modulus P ∧ valuation (Ideal.span {A}) P % 6 = 2)
@@ -428,8 +444,6 @@ theorem fixed_inducing_row_count (η : Character) (Q : Ideal O)
     calc
       Z ^ (2 * F) = (Z ^ (F / 2)) ^ (4 : ℕ) := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hZ.le]
-        congr 1
-        norm_num
         ring
       _ ≤ (Ideal.absNorm D : ℝ) ^ (4 : ℕ) := pow_le_pow_left₀ (Real.rpow_nonneg hZ.le _) hDnorm _
       _ ≤ _ := hf
@@ -439,6 +453,9 @@ theorem fixed_inducing_row_count (η : Character) (Q : Ideal O)
     exact_mod_cast fixed_inducing_remainder_card η Q hQ hQ72 m A hm hA hmLam hm2 S houtside T hT hex
   apply hcount.trans
   gcongr
+end
+end
+
 
 theorem outside_fixed_support (Q : Ideal O) (hQ : Q ≠ 0)
     (hQ72 : Q ≤ Ideal.span {(72 : O)}) (P : Ideal O) (hP : Prime P)
@@ -448,7 +465,7 @@ theorem outside_fixed_support (Q : Ideal O) (hQ : Q ≠ 0)
   have hcop : IsCoprime Q P := by
     apply Ideal.coprime_of_no_prime_ge
     intro J hQJ hPJ hJ
-    have hPJ' : P = J := (inferInstance : P.IsMaximal).eq_of_le hJ.ne_top hPJ
+    have hPJ' := (inferInstance : P.IsMaximal).eq_of_le hJ.ne_top hPJ
     apply hPS
     apply Multiset.mem_toFinset.mpr
     apply (Ideal.mem_normalizedFactors_iff hQ).mpr
@@ -488,8 +505,8 @@ theorem fixed_support_exceptional_count (η : Character) (Q : Ideal O)
     (normalizedFactors Q).toFinset (outside_fixed_support Q hQ0 hQ72) T hT hex
     D hD hgood Z C M F hZ hC hDnorm hN
 
-end SevenEighths.CenteredExceptionalProfile
 
-end
 
-end OAI
+
+
+

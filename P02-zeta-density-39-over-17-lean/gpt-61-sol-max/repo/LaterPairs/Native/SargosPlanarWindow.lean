@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarRegularity
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                    
@@ -16,14 +15,18 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                       
 
 
-noncomputable section
+
 
 open MeasureTheory Set
 
 namespace TaoTrudgianYang2025
 
-theorem sargosPlanarNormSq_window_le_weighted {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) {δ lambda c d α γ : ℝ}
+section
+variable {ι : Type*} (S : Finset ι)
+    (z : ι → ℂ) (u v : ι → ℝ)
+include ι S z u v
+
+theorem sargosPlanarNormSq_window_le_weighted  {δ lambda c d α γ : ℝ}
     (hδ : 0 < δ) (hlambda : 0 < lambda)
     (hα : α ∈ Icc c (c+δ)) (hγ : γ ∈ Icc d (d+lambda)) :
     ‖sargosPlanarSum S z u v α γ‖^2 ≤
@@ -35,8 +38,7 @@ theorem sargosPlanarNormSq_window_le_weighted {ι : Type*} (S : Finset ι)
   have hm := mul_le_mul_of_nonneg_right h (sq_nonneg ‖sargosPlanarSum S z u v α γ‖)
   simpa only [sargosWeightedPlanarIntegrand,one_mul,mul_assoc,mul_left_comm,mul_comm] using hm
 
-theorem sargosPlanarNormSq_window_inner_le_weighted {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) {δ lambda c d α : ℝ}
+theorem sargosPlanarNormSq_window_inner_le_weighted  {δ lambda c d α : ℝ}
     (hδ : 0 < δ) (hlambda : 0 < lambda) (hα : α ∈ Icc c (c+δ)) :
     (∫ γ in Icc d (d+lambda), ‖sargosPlanarSum S z u v α γ‖^2) ≤
       (16*δ*lambda)*∫ γ : ℝ, sargosWeightedPlanarIntegrand S z u v
@@ -61,8 +63,7 @@ theorem sargosPlanarNormSq_window_inner_le_weighted {ι : Type*} (S : Finset ι)
         (Filter.Eventually.of_forall (fun γ => mul_nonneg hC (hn γ)))
     _ = _ := integral_const_mul _ _
 
-theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
+theorem sargosPlanar_window_le_nearPairs  (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
     {δ lambda : ℝ} (hδ : 0 < δ) (hlambda : 0 < lambda) (c d : ℝ) :
     (∫ α in Icc c (c+δ), ∫ γ in Icc d (d+lambda),
       ‖sargosPlanarSum S z u v α γ‖^2) ≤
@@ -92,5 +93,7 @@ theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
         (1/δ) (1/lambda) (c+δ/2) (d+lambda/2) α γ) := integral_const_mul _ _
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (sargosWeightedPlanarIntegral_le_nearPairs S z u v hz hA hB (c+δ/2) (d+lambda/2)) hC
+end
 
-end TaoTrudgianYang2025
+
+

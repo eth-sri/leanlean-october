@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownCoefficientPhase
 public import Mathlib.Algebra.Order.Ring.Abs
 
@@ -13,12 +14,12 @@ source edge `q → q+1`, the associated polynomial phase changes by at most
 `2π k²/H`.  These are the quantitative inputs to the second Abel summation.
 -/
 
-open Finset Set
+open Finset
 open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem abs_natCast_succ_pow_sub_pow_le
     {q d H : ℕ} (hqH : q + 1 ≤ H) :
@@ -39,18 +40,21 @@ theorem abs_natCast_succ_pow_sub_pow_le
     _ ≤ (d : ℝ) * (H : ℝ) ^ (d - 1) := by
       gcongr
 
-theorem cell_displacement_mul_powerDifference_le
-    {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
+section
+variable {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
     {α : HeathBrownCoefficientTorus k}
     (hα : α ∈ heathBrownCoefficientCell k H f n)
-    {q : ℕ} (hqH : q + 1 ≤ H) (j : Fin (k - 1)) :
+    {q : ℕ} (hqH : q + 1 ≤ H)
+include k H hH f n α hα q hqH
+
+theorem cell_displacement_mul_powerDifference_le
+     (j : Fin (k - 1)) :
     |heathBrownCoefficientDisplacement
         (heathBrownCoefficientCenter k f n) α j| *
         |((q : ℝ) + 1) ^ ((j : ℕ) + 1) -
           (q : ℝ) ^ ((j : ℕ) + 1)| ≤
       (k : ℝ) / H := by
   let d : ℕ := (j : ℕ) + 1
-  have hd : 1 ≤ d := by simp [d]
   have hdk : d ≤ k := by
     dsimp [d]
     have hj := j.isLt
@@ -58,7 +62,6 @@ theorem cell_displacement_mul_powerDifference_le
   have hHpos : (0 : ℝ) < H := by positivity
   have hβ := abs_heathBrownCoefficientDisplacement_le_radius hα j
   have hpow := abs_natCast_succ_pow_sub_pow_le (d := d) hqH
-  have hpowNonneg : (0 : ℝ) ≤ (d : ℝ) * (H : ℝ) ^ (d - 1) := by positivity
   calc
     |heathBrownCoefficientDisplacement
         (heathBrownCoefficientCenter k f n) α j| *
@@ -76,10 +79,7 @@ theorem cell_displacement_mul_powerDifference_le
       exact div_le_div_of_nonneg_right (by exact_mod_cast hdk) hHpos.le
 
 theorem abs_heathBrownDisplacementPolynomial_succ_sub_le
-    {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
-    {α : HeathBrownCoefficientTorus k}
-    (hα : α ∈ heathBrownCoefficientCell k H f n)
-    {q : ℕ} (hqH : q + 1 ≤ H) :
+     :
     |heathBrownDisplacementPolynomial
           (heathBrownCoefficientCenter k f n) α (q + 1) -
         heathBrownDisplacementPolynomial
@@ -125,18 +125,10 @@ theorem abs_heathBrownDisplacementPolynomial_succ_sub_le
     _ ≤ (k : ℝ) ^ 2 / H := by
       rw [Finset.sum_const, nsmul_eq_mul, Finset.card_univ, Fintype.card_fin]
       have hcard : ((k - 1 : ℕ) : ℝ) ≤ k := by exact_mod_cast Nat.sub_le k 1
-      have hdiv : 0 ≤ (k : ℝ) / H := by positivity
-      calc
-        ((k - 1 : ℕ) : ℝ) * ((k : ℝ) / H) ≤
-            (k : ℝ) * ((k : ℝ) / H) :=
-          mul_le_mul_of_nonneg_right hcard hdiv
-        _ = (k : ℝ) ^ 2 / H := by ring
+      field_simp <;> nlinarith
 
 theorem norm_heathBrownCoefficientWeight_succ_sub_le
-    {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
-    {α : HeathBrownCoefficientTorus k}
-    (hα : α ∈ heathBrownCoefficientCell k H f n)
-    {q : ℕ} (hqH : q + 1 ≤ H) :
+     :
     ‖heathBrownCoefficientWeight (heathBrownCoefficientCenter k f n) α (q + 1) -
         heathBrownCoefficientWeight (heathBrownCoefficientCenter k f n) α q‖ ≤
       2 * Real.pi * ((k : ℝ) ^ 2 / H) := by
@@ -170,8 +162,10 @@ theorem norm_heathBrownCoefficientWeight_succ_sub_le
     _ ≤ 2 * Real.pi * ((k : ℝ) ^ 2 / H) := by
       gcongr
       exact abs_heathBrownDisplacementPolynomial_succ_sub_le hH hα hqH
-
-
 end
 
-end GafniTao
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 public import OAI.NumberTheory.DirichletL.Detector.Windows
 
@@ -10,7 +11,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CanonicalQuadraticSieve CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 abbrev PhysicalRowIndex := {I : Id // Supported I}×O
@@ -34,18 +35,23 @@ lemma physicalRowMonoid_norm (η : HeckeFamily.Character) (C : CalibrationData)
     (r : PhysicalRowIndex) (n : O) : ‖physicalRowMonoid η C r n‖≤1 :=
   rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one _ _ r.2 n
 
-lemma physicalRowWeight_outer_zero (C : CalibrationData) (W0 W1 : ℝ→ℂ)
-    (X Y : ℝ) (r : PhysicalRowIndex) (h : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)=0) :
+section
+variable (C : CalibrationData) (W0 W1 : ℝ→ℂ)
+    (X Y : ℝ) (r : PhysicalRowIndex)
+include C W0 W1 X Y r
+
+lemma physicalRowWeight_outer_zero  (h : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)=0) :
     physicalRowWeight C W0 W1 X Y r=0 := by
   unfold physicalRowWeight
   split_ifs <;> simp [h]
 
-lemma physicalRowWeight_inner_zero (C : CalibrationData) (W0 W1 : ℝ→ℂ)
-    (X Y : ℝ) (r : PhysicalRowIndex)
+lemma physicalRowWeight_inner_zero 
     (h : W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))=0) :
     physicalRowWeight C W0 W1 X Y r=0 := by
   unfold physicalRowWeight
   split_ifs <;> simp [h]
+end
+
 
 lemma physicalRowScale_pos (C : CalibrationData) (X : ℝ) (hX : 0<X)
     (s : {I : Id // Supported I}) : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := by
@@ -57,9 +63,13 @@ lemma physicalRowScale_pos (C : CalibrationData) (X : ℝ) (hX : 0<X)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
   positivity
 
-theorem physicalRowWeight_finite_support (C : CalibrationData) (W0 W1 : ℝ→ℂ)
+section
+variable (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) :
+    (X Y : ℝ) (hX : 0<X) (hY : 0<Y)
+include C W0 W1 hW0 hW1 X Y hX hY
+
+theorem physicalRowWeight_finite_support  :
     (Function.support (physicalRowWeight C W0 W1 X Y)).Finite := by
   have ho := (idealWindow_finite_support W1 hW1 Y hY).preimage
     (f:=fun s : {I : Id // Supported I}=>s.val) Subtype.val_injective.injOn
@@ -78,18 +88,21 @@ theorem physicalRowWeight_finite_support (C : CalibrationData) (W0 W1 : ℝ→�
     apply physicalRowWeight_inner_zero C W0 W1 X Y r
     simpa only [he] using hz
 
-lemma physicalRowWeight_mul_summable (C : CalibrationData) (W0 W1 : ℝ→ℂ)
-    (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (F : PhysicalRowIndex→ℂ) :
+lemma physicalRowWeight_mul_summable  (F : PhysicalRowIndex→ℂ) :
     Summable (fun r=>physicalRowWeight C W0 W1 X Y r*F r) := by
   apply summable_of_hasFiniteSupport
   apply (physicalRowWeight_finite_support C W0 W1 hW0 hW1 X Y hX hY).subset
-  intro r hr hz
-  exact hr (by dsimp only; rw [hz,zero_mul])
+  simp
+end
 
-theorem markedPhysicalProbe_eq_rows (η : HeckeFamily.Character) (C : CalibrationData)
+
+section
+variable (η : HeckeFamily.Character) (C : CalibrationData)
     (D : Id) (W0 W1 : ℝ→ℂ) (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) :
+    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y)
+include η C D W0 W1 hW0 hW1 X Y Z hX hY
+
+theorem markedPhysicalProbe_eq_rows  :
     markedPhysicalProbe η C D W0 W1 X Y Z=
       ∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 X Y r*
         verticalIntegral 4 (fun t=>(Z:ℂ)^t*Complex.exp (t^2)*spectralRow C.excluded D (physicalRowMonoid η C r) t) := by
@@ -112,9 +125,7 @@ theorem markedPhysicalProbe_eq_rows (η : HeckeFamily.Character) (C : Calibratio
     try dsimp only
     simp only [ite_eq_right hc,zero_mul,mul_zero,tsum_zero]
 
-theorem markedPhysicalProbe_eq_gaussian_rows (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Id) (W0 W1 : ℝ→ℂ) (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+theorem markedPhysicalProbe_eq_gaussian_rows  (hZ : 0<Z) :
     markedPhysicalProbe η C D W0 W1 X Y Z=
       ∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 X Y r*
         correctedCompletedT C.excluded D (physicalRowMonoid η C r) gaussianCompletedProfile Z := by
@@ -122,8 +133,10 @@ theorem markedPhysicalProbe_eq_gaussian_rows (η : HeckeFamily.Character) (C : C
   apply tsum_congr
   intro r
   rw [spectralRow_eq_gaussianCompleted _ _ _ (physicalRowMonoid_norm η C r) 4 (by norm_num) Z hZ]
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

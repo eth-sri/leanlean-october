@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.NaturalLowStage
 public import OAI.NumberTheory.DirichletL.Energy.CappedRequests
 
@@ -11,14 +12,14 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedLowStage
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule
 open CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -63,10 +64,8 @@ theorem actual_capped_low
   have hκ0:0≤κ:=by linarith
   have hbounds:=bounds Mcap Bs κ ε hMcap hBs hκ0 hε
   have hmesh:0≤fineMesh Mcap Bmask L κ ε:=hbounds.2.2.2.2.1.le
-  have hr:0<reserve Mcap Bs ε:=hbounds.2.2.2.1
+  have hr :=hbounds.2.2.2.1
   have hr4:reserve Mcap Bs ε/4≤1:=by
-    have hh:reserve Mcap Bs ε≤amplification ε/100:=min_le_left _ _
-    have hs:=hbounds.2.1
     linarith
   have hready:CenteredMomentEnergyFirstLiveAdmission.readyBudget Ag Bmask≤Bs:=
     readyBudget_le_schedule Mcap Bmask L ε Ag Bmask hMcap hmask le_rfl le_rfl
@@ -104,8 +103,8 @@ theorem actual_capped_low
       hCp.le le_rfl hp
   exact ⟨hs.1,hs.2 (stageLoss Mcap Bs ε k) Cz Cp le_rfl hCz.le hCp.le hz' hp'⟩
 
-end SevenEighths.CenteredMomentEnergyCappedLowStage
 
-end
 
-end OAI
+
+
+

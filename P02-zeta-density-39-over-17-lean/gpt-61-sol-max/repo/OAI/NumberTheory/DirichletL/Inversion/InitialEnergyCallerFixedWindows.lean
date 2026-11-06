@@ -5,16 +5,16 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerFixedWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
+open InverseInitialArithmetic InverseInitialPhysicalMeasure
+open InverseInitialEnergyCallerSource
+open InverseInitialEnergyCallerWindows InverseInitialProfile
 open InverseSecondChildWindows InverseSecondProfileUniform
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
     (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W) :
@@ -100,8 +100,8 @@ theorem exists_actual_initial_windows
       (by simp) (hblock x hx) hl' hr' i
     simpa only [add_zero,relativeLog] using he
 
-end SevenEighths.InverseInitialEnergyCallerFixedWindows
 
-end
 
-end OAI
+
+
+

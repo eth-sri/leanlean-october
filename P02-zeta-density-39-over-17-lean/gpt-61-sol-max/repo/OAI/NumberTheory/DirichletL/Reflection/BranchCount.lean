@@ -8,8 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open CompletedGauss
-noncomputable section
+
+
 variable {φ : Type*} [Fintype φ]
 
 lemma primeFamily_support_card (F : PrimeFamily φ)
@@ -60,7 +60,7 @@ theorem surviving_branch_count_small_power (ε : ℝ) (hε : 0<ε) :
     exact_mod_cast Finset.card_le_univ _
   exact (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2).trans (hb F hF)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

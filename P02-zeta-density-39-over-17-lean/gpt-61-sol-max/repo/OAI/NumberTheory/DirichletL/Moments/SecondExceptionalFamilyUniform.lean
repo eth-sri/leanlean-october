@@ -9,13 +9,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap Topology
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFamilyUniform
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondHeightFamily
-open CenteredMomentSecondRadicalBudget CenteredMomentSecondLiveBlock
-open CenteredMomentSecondPhysicalBlock CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentReflectedSource CenteredMomentSecondExceptionalFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+
+open CenteredMomentSecondHeightFamily
+open CenteredMomentSecondRadicalBudget
+
+open CenteredMomentSecondExceptionalFamily
+open scoped HeckeO
 
 def fixedExpandedCost : ℝ :=
   1296*(fixedFactor:ℝ)*(Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm
@@ -26,8 +26,8 @@ theorem expandedFactor_real (η:Character) :
   push_cast
   ring
 
-end SevenEighths.CenteredMomentSecondExceptionalFamilyUniform
 
-end
 
-end OAI
+
+
+

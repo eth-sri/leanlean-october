@@ -8,18 +8,22 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-def rowInner (eta a X W V rho : ℂ) (j e l : ℕ) : ℂ :=
+section
+variable (eta a X W V rho : ℂ)
+include eta a X W V rho
+
+def rowInner  (j e l : ℕ) : ℂ :=
   ∑' k, ∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l k m
 
-def rowMarkedSeries (eta a X W V rho : ℂ) (j : ℕ) : ℂ :=
+def rowMarkedSeries  (j : ℕ) : ℂ :=
   ∑ e : Fin 2, ∑' l,rowInner p hp hg eta a X W V rho j e.val l
 
-lemma rowInner_two (eta a X W V rho : ℂ) (j e l : ℕ) :
+lemma rowInner_two  (j e l : ℕ) :
     rowInner p hp hg eta a X W V rho j e l=
       (∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l 0 m)+
       (∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l 1 m) := by
@@ -27,9 +31,11 @@ lemma rowInner_two (eta a X W V rho : ℂ) (j e l : ℕ) :
   intro k
   simp only [rowMarkedTerm_higher_outer,tsum_zero]
 
-@[simp] lemma rowInner_zero (eta a X W V rho : ℂ) (j : ℕ) :
+@[simp] lemma rowInner_zero  (j : ℕ) :
     rowInner p hp hg eta a X W V rho j 0 0=0 := by
   simp only [rowInner,rowMarkedTerm,mul_zero,add_zero,ite_true,tsum_zero]
+end
+
 
 include hc in
 theorem rowInner_family_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
@@ -83,7 +89,7 @@ theorem rowMarkedSeries_four_families (eta a X W V rho : ℂ) (hρ : rho^6=1)
   rw [(he0.even_add_odd ho0).tsum_eq,(he1.even_add_odd ho1).tsum_eq]
   ring
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

@@ -6,8 +6,7 @@ public import GuthMaynard.Improvement.ShortDetectorAlternative
 
 open Complex Filter Set MathCollab.Density
 open scoped Topology BigOperators
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- The actual detector alternatives restore all zero multiplicities once
@@ -63,4 +62,4 @@ theorem short_slab_count_of_separated_branch_bounds :
   exact hcount.trans (mul_le_mul_of_nonneg_left hsum
     (mul_nonneg hC.le (Real.log_nonneg (by linarith))))
 
-end GuthMaynard.Improvement
+

@@ -11,35 +11,36 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseWholePriorityRetainedSource InverseInitialArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
-def retainedSource (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) : Finset (MarkedSecondSource ι (Jo+(J.card+J.card)) 0) :=
-  unifiedSource p pool (wholeAssignedParents p (fun x=>extra x.cube) original negative J lists) (fun _=>cutoff)
-
-lemma original_parent_witness
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
+section
+variable (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
     (cutoff : Finset ι→Finset ι→ℝ)
-    (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
-    (hx : x∈retainedSource p extra original negative J lists pool cutoff) :
+include extra original negative J lists pool cutoff
+
+def retainedSource  : Finset (MarkedSecondSource ι (Jo+(J.card+J.card)) 0) :=
+  unifiedSource p pool (wholeAssignedParents p (fun x=>extra x.cube) original negative J lists) (fun _=>cutoff)
+
+section
+variable (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
+    (hx : x∈retainedSource p extra original negative J lists pool cutoff)
+include x hx
+
+lemma original_parent_witness
+     :
     ∃y∈original,forgetAppended (Jo:=Jo) (secondParentOf x)=parent p y := by
   have hp := ((mem_unifiedSource p pool _ (fun _=>cutoff) x).mp hx).1
   obtain ⟨y,hy,q,hq,he⟩ := (mem_wholeAssignedParents p (fun x=>extra x.cube) original negative J lists _).mp hp
   exact ⟨y,hy,by simpa only [forget_attach] using congrArg (forgetAppended (Jo:=Jo)) he.symm⟩
 
 lemma original_coordinates
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ)
-    (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
-    (hx : x∈retainedSource p extra original negative J lists pool cutoff) :
+     :
     ∃y∈original,x.cube=y.cube ∧ x.firstCommon=y.firstCommon ∧
       x.firstDivisor=y.firstDivisor ∧ x.quotient=sourceIdeal p y.quotientSupport ∧
       (∀i:Fin Jo,x.oldAssigned (Fin.castAdd (J.card+J.card) i)=y.oldAssigned i) := by
@@ -47,6 +48,9 @@ lemma original_coordinates
   exact ⟨y,hy,congrArg SecondParentSource.cube he,congrArg SecondParentSource.firstCommon he,
     congrArg SecondParentSource.firstDivisor he,congrArg SecondParentSource.quotient he,
     fun i=>congrArg (fun z=>z.oldAssigned i) he⟩
+end
+end
+
 
 lemma retained_conditions (hp : ∀i,p i≠0)
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
@@ -88,7 +92,7 @@ lemma original_numeric_gates (extra : CubeCoordinates ι→Finset ι)
   refine ⟨hB₁ y hy,hB₂ y hy,hA y hy,hC y hy,?_,(hJ y hy).1,(hJ y hy).2,hD y hy⟩
   simpa only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm] using hQ y hy
 
-end SevenEighths.InverseMomentGlobalRetainedGates
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected finite exponential-overlap/point-mean consumer proofs adapted from
 Scott McColm, PointMeanEquation44.lean, exact revision
@@ -13,8 +14,7 @@ public import MathCollab.Density.Stronger.PointMean.IntegralOverlap
 
 open Finset MeasureTheory
 open scoped BigOperators Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- The complete source equation-(44) inequality, with its absolute constant
@@ -37,7 +37,7 @@ theorem heathBrown_equation44_of_lemmaThree
   refine ⟨C, hC, ?_⟩
   intro T V center G L W hT hV hG hL hSep hRange hLow hHigh
     hLogRadius hFit hLarge
-  let q : ℝ → ℝ := fun t ↦
+  let q := fun t ↦
     ∫ u in t - L..t + L,
       Real.exp (-|t - u|) * zetaMomentCriticalNorm u ^ (2 : ℕ)
   have hPer : ∀ t ∈ W,
@@ -50,7 +50,7 @@ theorem heathBrown_equation44_of_lemmaThree
     have hTPos : 0 < T := lt_of_lt_of_le (by norm_num) hT
     have hlogt : 0 ≤ Real.log t := Real.log_nonneg (by linarith)
     have hlogT : 0 ≤ Real.log T := Real.log_nonneg (by linarith)
-    have hlogMono : Real.log t ≤ Real.log T := Real.log_le_log htPos htT
+    have hlogMono := Real.log_le_log htPos htT
     have hqNonneg : 0 ≤ q t := by
       dsimp [q]
       exact intervalIntegral.integral_nonneg (by linarith) fun u hu ↦ by
@@ -66,12 +66,8 @@ theorem heathBrown_equation44_of_lemmaThree
       V ^ (2 : ℕ) ≤ zetaMomentCriticalNorm t ^ (2 : ℕ) := hVzeta
       _ ≤ C * Real.log t *
           (1 + heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ))) := hSource
-      _ ≤ C * Real.log t * (1 + q t) := by
-        exact mul_le_mul_of_nonneg_left (add_le_add_right hMoment 1)
-          (mul_nonneg hC.le hlogt)
-      _ ≤ C * Real.log T * (1 + q t) := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hlogMono hC.le) (by linarith)
+      _ ≤ C * Real.log t * (1 + q t) := by field_simp <;> nlinarith
+      _ ≤ C * Real.log T * (1 + q t) := by field_simp <;> nlinarith
   have hSummed :
       ∑ t ∈ W, V ^ (2 : ℕ) ≤
         ∑ t ∈ W, C * Real.log T * (1 + q t) :=
@@ -87,13 +83,10 @@ theorem heathBrown_equation44_of_lemmaThree
       simp [mul_comm]
     _ ≤ ∑ t ∈ W, C * Real.log T * (1 + q t) := hSummed
     _ = C * Real.log T * ((W.card : ℝ) + ∑ t ∈ W, q t) := by
-      simp only [mul_add, Finset.sum_add_distrib,
-        Finset.sum_const, nsmul_eq_mul, Finset.mul_sum]
+      simp only [mul_add, sum_add_distrib, sum_const, nsmul_eq_mul, mul_sum]
       ring
     _ ≤ C * Real.log T *
-        ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ))) := by
-      exact mul_le_mul_of_nonneg_left
-        (add_le_add_right hOverlap (W.card : ℝ)) hCoeff
+        ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ))) := by nlinarith
 
 
 /-- Heath--Brown (1978), equation (44), obtained from the proved contour,
@@ -113,4 +106,4 @@ theorem heathBrown_equation44_native :
             ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ))) :=
   heathBrown_equation44_of_lemmaThree heathBrownLemmaThree_native
 
-end MathCollab.Density.Stronger.PointMean
+

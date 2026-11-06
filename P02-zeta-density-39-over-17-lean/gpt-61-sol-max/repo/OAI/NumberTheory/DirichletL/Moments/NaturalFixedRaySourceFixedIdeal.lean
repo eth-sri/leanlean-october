@@ -9,21 +9,25 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
+open HeckeFamily HeckeInverseAmplification
+
 open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}
 
-def sourceFixedIdeal (F : ProbeFinalAssembly.SourceData D) : Ideal O :=
+section
+variable (F : ProbeFinalAssembly.SourceData D)
+include F
+
+def sourceFixedIdeal  : Ideal O :=
   F.modulus⊓Ideal.span {(72:O)}
 
-lemma sourceFixedIdeal_ne_zero (F : ProbeFinalAssembly.SourceData D) : sourceFixedIdeal F≠0 :=
+lemma sourceFixedIdeal_ne_zero  : sourceFixedIdeal F≠0 :=
   Ideal.inf_ne_bot_of_ne_bot (NeZero.ne F.modulus)
     (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0))
 
-lemma sourceFixedIdeal_ne_top (F : ProbeFinalAssembly.SourceData D) : sourceFixedIdeal F≠⊤ := by
+lemma sourceFixedIdeal_ne_top  : sourceFixedIdeal F≠⊤ := by
   have hmem : Ideal.span {goodLambda}∈F.S := by
     apply F.exclusions.bad
     change Ideal.span {goodLambda}∈({Ideal.span {goodLambda},Ideal.span {(2:O)}} : Finset (Ideal O))
@@ -35,15 +39,17 @@ lemma sourceFixedIdeal_ne_top (F : ProbeFinalAssembly.SourceData D) : sourceFixe
   intro h
   exact hprime.ne_top (top_le_iff.mp (h ▸ (inf_le_left.trans hle : sourceFixedIdeal F≤Ideal.span {goodLambda})))
 
-lemma sourceFixedIdeal_le_modulus (F : ProbeFinalAssembly.SourceData D) : sourceFixedIdeal F≤F.modulus := inf_le_left
-lemma sourceFixedIdeal_le_72 (F : ProbeFinalAssembly.SourceData D) : sourceFixedIdeal F≤Ideal.span {(72:O)} := inf_le_right
+lemma sourceFixedIdeal_le_modulus  : sourceFixedIdeal F≤F.modulus := inf_le_left
+lemma sourceFixedIdeal_le_72  : sourceFixedIdeal F≤Ideal.span {(72:O)} := inf_le_right
 
-def sourceExceptional (F : ProbeFinalAssembly.SourceData D) (η : Character) (u : FreeRow) : Prop :=
+def sourceExceptional  (η : Character) (u : FreeRow) : Prop :=
   FixedInducingRow η (internalQ (sourceFixedIdeal F) η)
     (fixedBadMask*idealGenerator 1) 1 u.val
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
 end
 
-end OAI
+
+
+
+
+
+

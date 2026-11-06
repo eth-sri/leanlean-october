@@ -10,9 +10,9 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
-open InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriorityParents InverseMomentWholePriorityParents
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents
+open scoped EisensteinO
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 def globalPriorityZeroAggregate
     (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -62,8 +62,8 @@ theorem global_priority_zero_aggregate (ε:ℝ)(hε:0<ε):
       (fun u=>(firstCoreTwist_norm_le negative _ Ψ core u).trans (hΨ u))
       om lo hi hlo hs X M Y t R hX hhi hY hR (parent p x))
   convert hh using 1 <;> dsimp only [globalPriorityZeroAggregate,B] ; ring
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

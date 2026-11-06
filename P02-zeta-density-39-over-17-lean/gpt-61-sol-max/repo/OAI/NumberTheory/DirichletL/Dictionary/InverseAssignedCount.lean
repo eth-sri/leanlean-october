@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.SourceMass
 
 @[expose] public section
@@ -9,15 +10,20 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.DetectorDictionaryInverseAssignedCount
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def assignedTuples {ι : Type*} [Fintype ι]
-    (L : ι → Finset (Ideal O)) : Finset (ι → Ideal O) := Fintype.piFinset L
+section
+variable {ι : Type*} [Fintype ι]
+    (L : ι → Finset (Ideal O))
+include ι L
 
-@[simp] theorem mem_assignedTuples {ι : Type*} [Fintype ι]
-    (L : ι → Finset (Ideal O)) (q : ι → Ideal O) :
+def assignedTuples  : Finset (ι → Ideal O) := Fintype.piFinset L
+
+@[simp] theorem mem_assignedTuples  (q : ι → Ideal O) :
     q ∈ assignedTuples L ↔ ∀ i, q i ∈ L i := by
   simp [assignedTuples]
+end
+
 
 def assignedConstant (K : ℕ) (b : ℝ) : ℝ := (128*b)^K
 
@@ -41,7 +47,6 @@ theorem assigned_card_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i)) :
     ((assignedTuples L).card : ℝ) ≤ assignedConstant K b * U^(∑ i, ell i) := by
   have hUp : 0 < U := lt_of_lt_of_le zero_lt_one hU
-  have hb0 : 0 ≤ b := le_trans zero_le_one hb
   have hbase : 1 ≤ 128*b := by linarith
   simp only [assignedTuples, Fintype.card_piFinset, Nat.cast_prod]
   calc
@@ -56,10 +61,14 @@ theorem assigned_card_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
       exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hbase hK)
         (Real.rpow_nonneg hUp.le _)
 
-def assignedCoefficient {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+
+def assignedCoefficient 
     (a : ι → Ideal O → ℂ) (q : ι → Ideal O) : ℂ := ∏ i, a i (q i)
 
-theorem assignedCoefficient_norm_le_one {ι : Type*} [Fintype ι]
+theorem assignedCoefficient_norm_le_one 
     (L : ι → Finset (Ideal O)) (a : ι → Ideal O → ℂ)
     (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
     (q : ι → Ideal O) (hq : q ∈ assignedTuples L) :
@@ -67,13 +76,22 @@ theorem assignedCoefficient_norm_le_one {ι : Type*} [Fintype ι]
   rw [assignedCoefficient, norm_prod]
   simpa using Finset.prod_le_prod₀ (fun i _ => norm_nonneg (a i (q i)))
     (fun i _ => ha i (q i) ((mem_assignedTuples L q).mp hq i))
+end
 
-theorem restricted_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
+
+section
+variable (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
     (ell : ι → ℝ) (L : ι → Finset (Ideal O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
     (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
+include K b U hb hU ι hK ell L hL a ha
+
+section
+variable (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L)
+include T hT
+
+theorem restricted_mass_le  :
     (∑ q ∈ T, ‖assignedCoefficient a q‖) ≤
       assignedConstant K b * U^(∑ i, ell i) := by
   calc
@@ -83,12 +101,7 @@ theorem restricted_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     _ ≤ ((assignedTuples L).card : ℝ) := Nat.cast_le.mpr (Finset.card_le_card hT)
     _ ≤ _ := assigned_card_le K hb hU hK ell L hL
 
-theorem restricted_normalized_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
-    {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
-    (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
+theorem restricted_normalized_mass_le  :
     (∑ q ∈ T, ‖assignedCoefficient a q‖) * U^(-(∑ i, ell i)) ≤
       assignedConstant K b := by
   have hUp : 0 < U := lt_of_lt_of_le zero_lt_one hU
@@ -98,28 +111,23 @@ theorem restricted_normalized_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU :
         (Real.rpow_nonneg hUp.le _)
     _ = _ := by rw [mul_assoc, ← Real.rpow_add hUp]; simp
 
-theorem restricted_sum_normalized_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
-    {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
-    (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
+theorem restricted_sum_normalized_le  :
     (∑ q ∈ T, ‖assignedCoefficient a q‖ * U^(-(∑ i, ell i))) ≤
       assignedConstant K b := by
   rw [← Finset.sum_mul]
   exact restricted_normalized_mass_le K hb hU hK ell L hL a ha T hT
+end
 
-theorem assigned_sum_normalized_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
-    {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
-    (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1) :
+
+theorem assigned_sum_normalized_le  :
     (∑ q ∈ assignedTuples L, ‖assignedCoefficient a q‖ * U^(-(∑ i, ell i))) ≤
       assignedConstant K b :=
   restricted_sum_normalized_le K hb hU hK ell L hL a ha _ (Finset.Subset.refl _)
-
-end SevenEighths.DetectorDictionaryInverseAssignedCount
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormalizedTransportSaving
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSupportedSplit
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorCollected
@@ -11,9 +12,9 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -38,10 +39,10 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0)
     (sigma : ℝ) (hsigma : 0<sigma)
     (hgeometric : sigma+8*e+nu≤63/800) (hprincipal : sigma+nu≤17/48000)
-    (hwindow : sigma+e≤(7/8)*ellMin) (hlarge : sigma+nu≤saving+3/16)
+    (hwindow : sigma+e≤(7/8)*ellMin) (hlarge : sigma+nu≤ saving+3/16)
     (eps R dmin dmax rmin ε κ cost mesh margin loss : ℝ)
     (heps : 0<eps) (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax)
-    (hrmin : 0<rmin) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hmargin : 0<margin)
+    (hrmin : 0<rmin) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hmargin : 0< margin)
     (hphasebudget : 8*e*R+κ≤ε) (hphasegap : ε<rmin*mesh)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (hcap : 13/16+ζ≤dmax-margin)
@@ -65,7 +66,7 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
         detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u)) (3*(idx u+1:ℕ)*Z^τ)<a+2*e ∧
         (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j) s=0 ∧
           ¬((sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j).residue=1 ∧ s=1) ∧
-          a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
+          a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
       (∀u∈rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ)),
         (calibrationForSet S hmax).residueMonoid u.val≠0 →
         (∀θ,(rayCubeFamily M H hH u θ).residue≠1) ∧
@@ -103,10 +104,10 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
   dsimp only at ht ⊢
   obtain ⟨hnorm,idx,grid,hlabels,hbins,hray,herror⟩ := ht
   refine ⟨hnorm,idx,grid,hlabels,hbins,hray,?_⟩
-  let Yp : Fin K→ℝ := fun j=>Z^(ell j)
-  let T : Fin K→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
+  let Yp := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
   let hT := nonfloorTransportPoolOutside M H S K a b Yp
-  let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
+  let WC := fun j y=>(W j y:ℂ)
   let rows := rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ))
   let floors := supportedFloorRows S hmax rows grid
   have hrows : ∀u∈floors,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧
@@ -139,8 +140,8 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
       (Cf*(η.modulus.absNorm:ℝ)^(2*eps))*Z^(HeckeZeroSupremum.beta-11/16-sigma) := by gcongr
     _ = _ := by dsimp [C];ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

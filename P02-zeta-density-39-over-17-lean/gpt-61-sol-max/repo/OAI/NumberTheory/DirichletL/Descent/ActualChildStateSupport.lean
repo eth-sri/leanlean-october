@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open InverseSecondFibers
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 include hp
@@ -47,7 +47,7 @@ theorem actual_cell_triple_puncture_nonzero
   exact radicalGenerator_ne_zero _ (actual_second_inherited_puncture_ne_zero p hp hpr x
     (hs.quotient_nonzero x (cell_subset p source d hx)) 1 1 m hm)
 
-end SevenEighths.InverseMoment
-end
 
-end OAI
+
+
+

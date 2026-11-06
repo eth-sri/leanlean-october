@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
 
 @[expose] public section
@@ -8,74 +9,74 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+open ConcreteTraceCRT
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 
-open scoped BigOperators Classical
+                        
+
+                                  
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+
 
 section
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
@@ -111,8 +112,7 @@ theorem primeIdealProduct_exponents_eq
     by_cases h : i ∈ B <;> simp [h,hv i]
   have hC : (if i ∈ C then (w i : ℕ∞) else 0) = (w i : ℕ∞) := by
     by_cases h : i ∈ C <;> simp [h,hw i]
-  rw [hB,hC] at he
-  exact_mod_cast he
+  simp_all
 
 end
 
@@ -133,8 +133,8 @@ open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcreteTraceCRT
+open IdealMobiusDivisorSum
 
 theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
     (f : Ideal O → Ideal O → ℝ) (C : ℝ) (hC : 0 ≤ C)
@@ -154,7 +154,7 @@ theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
         · exact hb j k hS hT
         · simpa only [Finset.not_nonempty_iff_eq_empty.mp hT, Finset.sum_empty, Finset.sum_const_zero] using hC
       · simpa only [Finset.not_nonempty_iff_eq_empty.mp hS, Finset.sum_empty] using hC
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, pow_two]; ring
+    _ = _ := by simp; ring
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -188,8 +188,12 @@ lemma largePrincipalWindow_le (S T : Finset (Ideal O))
   intro i _
   split_ifs <;> first | exact le_rfl | positivity
 
-theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExponent α)
+section
+variable {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
+include α hexp deltaLoss hδ ε hε S T
+
+theorem HasSieveExponent.large_principal_window 
     (D₁ D₂ B N M V : ℝ) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂) (hB : 1 ≤ B) (hN : 1 ≤ N)
     (hM : 0 < M) (hV : 0 ≤ V) (hD₁N : D₁ ≤ N) (hD₂N : D₂ ≤ N)
     (hS : ∀ D ∈ S, D₁ ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ 2*D₁)
@@ -234,8 +238,7 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
     have hd := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     positivity
 
-theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponent α)
-    (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
+theorem HasSieveExponent.large_principal_pool 
     (B N M V : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hV : 0 ≤ V)
     (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D:ℝ) ∧ (Ideal.absNorm D:ℝ) ≤ N)
     (hT : ∀ E ∈ T, 1 ≤ (Ideal.absNorm E:ℝ) ∧ (Ideal.absNorm E:ℝ) ≤ N)
@@ -264,11 +267,13 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
       (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
       rows left right hr hl hri hrows hleft hright a b P
       (fun D hD E hE i hp => hP D (Finset.mem_filter.mp hD).1 E (Finset.mem_filter.mp hE).1 i hp)
+end
+
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcreteTraceCRT
+open IdealMobiusDivisorSum
 
 theorem finite_principal_triangle
     {m n p D : Type*} [Fintype m] [Fintype n] [Fintype p] [Fintype D]
@@ -403,10 +408,10 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
   let T := columnDivisorPool right
   let pairCols : n × p → Ideal O := fun x => left x.1*right x.2
   let K := columnDivisorPool pairCols
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  have hl0 := fun j => (hleft j).1.1
+  have hr0 := fun k => (hright k).1.1
   have hp0 : ∀ x, pairCols x ≠ 0 := fun x => mul_ne_zero (hl0 x.1) (hr0 x.2)
-  have hk : ∀ j k d, d ∣ left j*right k → d ∈ K :=
+  have hk :=
     fun j k d hd => mem_columnDivisorPool_of_dvd pairCols hp0 (j,k) d hd
   calc
     _ ≤ largePrincipalProductAt K rows left right a b M P :=
@@ -426,7 +431,7 @@ open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+
 open FirstPassCubeLabels (primeProduct aLabel b0Label jLabel cubeActiveSupport primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -439,31 +444,51 @@ open ConcreteTraceCRT (eisEmbedding)
 namespace CubeCoordinates
 variable {ι : Type*} [DecidableEq ι]
 
-def support (x : CubeCoordinates ι) : Finset ι :=
+section
+variable (x : CubeCoordinates ι)
+include x
+
+def support  : Finset ι :=
   x.leftExponent.support ∪ x.rightExponent.support
 
-def leftBit (x : CubeCoordinates ι) (i : ι) : Bool := decide (i ∈ x.leftDivisor)
-def rightBit (x : CubeCoordinates ι) (i : ι) : Bool := decide (i ∈ x.rightDivisor)
+def leftBit  (i : ι) : Bool := decide (i ∈ x.leftDivisor)
+def rightBit  (i : ι) : Bool := decide (i ∈ x.rightDivisor)
 
-def Admissible (x : CubeCoordinates ι) : Prop :=
+def Admissible  : Prop :=
   x.leftDivisor ⊆ x.support ∧ x.rightDivisor ⊆ x.support
 
-theorem support_pos (x : CubeCoordinates ι) (i : ι) (hi : i ∈ x.support) :
+section
+variable (i : ι)
+include i
+
+theorem support_pos  (hi : i ∈ x.support) :
     0 < x.leftExponent i+x.rightExponent i := by
   simp only [support,Finset.mem_union,Finsupp.mem_support_iff] at hi
   omega
 
-theorem left_off (x : CubeCoordinates ι) (i : ι) (hi : i ∉ x.support) :
+section
+variable (hi : i ∉ x.support)
+include hi
+
+theorem left_off  :
     x.leftExponent i=0 := by
   by_contra hv
   exact hi (Finset.mem_union_left _ (Finsupp.mem_support_iff.mpr hv))
 
-theorem right_off (x : CubeCoordinates ι) (i : ι) (hi : i ∉ x.support) :
+theorem right_off  :
     x.rightExponent i=0 := by
   by_contra hv
   exact hi (Finset.mem_union_right _ (Finsupp.mem_support_iff.mpr hv))
+end
+end
+end
 
-theorem aLabel_left (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) :
+
+section
+variable (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
+include p x hx
+
+theorem aLabel_left  :
     aLabel p x.support x.leftBit = ∏ i ∈ x.leftDivisor,p i := by
   simp only [aLabel,primeProduct,leftBit,FirstPassCubeLabels.bit,decide_eq_true_eq]
   simp_rw [apply_ite, pow_one, pow_zero]
@@ -474,7 +499,7 @@ theorem aLabel_left (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) 
     exact and_iff_right_of_imp (fun hi => hx.1 hi)
   rw [he]
 
-theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) :
+theorem aLabel_right  :
     aLabel p x.support x.rightBit = ∏ i ∈ x.rightDivisor,p i := by
   simp only [aLabel,primeProduct,rightBit,FirstPassCubeLabels.bit,decide_eq_true_eq]
   simp_rw [apply_ite, pow_one, pow_zero]
@@ -484,6 +509,8 @@ theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
     simp only [Finset.mem_filter]
     exact and_iff_right_of_imp (fun hi => hx.2 hi)
   rw [he]
+end
+
 
 end CubeCoordinates
 
@@ -499,7 +526,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
+
 open FirstPassCubeLabels (primeProduct aLabel)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -507,8 +534,8 @@ variable {ι : Type*} [DecidableEq ι]
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 include hinj
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

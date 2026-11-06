@@ -10,9 +10,9 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 
 def wholeExtractedSupport (extra : Source ι Jo→Finset ι)
@@ -20,17 +20,26 @@ def wholeExtractedSupport (extra : Source ι Jo→Finset ι)
 
 variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-def wholeAssignmentSource (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
-    (J : Finset σ) (lists : σ→Finset ι) :
+section
+variable (extra : Source ι Jo→Finset ι)
+include extra
+
+section
+variable (source : Finset (Source ι Jo)) (negative : Bool)
+    (J : Finset σ) (lists : σ→Finset ι)
+include source negative J lists
+
+def wholeAssignmentSource  :
     Finset (Source ι Jo × ((∀ i∈J,ι)×(∀ i∈J,ι))) :=
   (source ×ˢ ((J.pi lists)×ˢ(J.pi lists))).filter
     (fun q=>∀ i,pairedSlotAssignment J J q.2 i∈wholeExtractedSupport extra negative q.1)
 
-def wholeAssignedParents (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
-    (J : Finset σ) (lists : σ→Finset ι) : Finset (SecondParentSource ι (Jo+(J.card+J.card))) :=
+def wholeAssignedParents  : Finset (SecondParentSource ι (Jo+(J.card+J.card))) :=
   (wholeAssignmentSource extra source negative J lists).image (attach p J)
+end
 
-theorem sum_wholeAssignmentSource (extra : Source ι Jo→Finset ι) {A : Type*} [AddCommMonoid A]
+
+theorem sum_wholeAssignmentSource  {A : Type*} [AddCommMonoid A]
     (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
     (H : Source ι Jo × ((∀ i∈J,ι)×(∀ i∈J,ι))→A) :
     ∑ q∈wholeAssignmentSource extra source negative J lists,H q =
@@ -43,7 +52,11 @@ theorem sum_wholeAssignmentSource (extra : Source ι Jo→Finset ι) {A : Type*}
   dsimp only
   rw [paired_assignment_filter]
 
-theorem sum_wholeAssignedParents (extra : Source ι Jo→Finset ι) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
+
+theorem sum_wholeAssignedParents 
     {A : Type*} [AddCommMonoid A] (source : Finset (Source ι Jo)) (negative : Bool)
     (J : Finset σ) (lists : σ→Finset ι) (H : SecondParentSource ι (Jo+(J.card+J.card))→A) :
     ∑ y∈wholeAssignedParents p extra source negative J lists,H y =
@@ -52,9 +65,12 @@ theorem sum_wholeAssignedParents (extra : Source ι Jo→Finset ι) (hinj : Func
   rw [wholeAssignedParents,Finset.sum_image (fun _ _ _ _ h=>attach_injective p hinj J h)]
   exact sum_wholeAssignmentSource extra source negative J lists _
 
-theorem wholePaired_parent_sum (extra : Source ι Jo→Finset ι) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
-    (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (H : SecondParentSource ι Jo→ℂ) :
+section
+variable (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
+    (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (H : SecondParentSource ι Jo→ℂ)
+include source negative J lists a w H
+
+theorem wholePaired_parent_sum  :
     (∑ x∈source,w x*(star (primeMark J lists a (wholeExtractedSupport extra negative x))*
       primeMark J lists a (wholeExtractedSupport extra negative x))*H (parent p x)) =
     ∑ y∈wholeAssignedParents p extra source negative J lists,
@@ -65,17 +81,22 @@ theorem wholePaired_parent_sum (extra : Source ι Jo→Finset ι) (hinj : Functi
   rw [paired_primeMark_assignments]
   simp only [Finset.mul_sum,Finset.sum_mul,coefficient_attach p hinj,forget_attach]
 
-theorem wholePaired_parent_sq_sum (extra : Source ι Jo→Finset ι) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
-    (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (H : SecondParentSource ι Jo→ℂ) :
+theorem wholePaired_parent_sq_sum  :
     (∑ x∈source,w x*(‖primeMark J lists a (wholeExtractedSupport extra negative x)‖^2 : ℝ)*H (parent p x)) =
     ∑ y∈wholeAssignedParents p extra source negative J lists,
       coefficient p J a w y*H (forgetAppended y) := by
   simpa only [Complex.sq_norm,Complex.normSq_eq_conj_mul_self,starRingEnd_apply] using
     wholePaired_parent_sum p extra hinj source negative J lists a w H
+end
+end
 
-lemma mem_wholeAssignmentSource (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
+
+section
+variable (source : Finset (Source ι Jo)) (negative : Bool)
     (J : Finset σ) (lists : σ→Finset ι)
+include source negative J lists
+
+lemma mem_wholeAssignmentSource 
     (x : Source ι Jo) (q : (∀ i∈J,ι)×(∀ i∈J,ι)) :
     (x,q)∈wholeAssignmentSource extra source negative J lists ↔ x∈source ∧
       q∈(J.pi (fun i=>lists i∩wholeExtractedSupport extra negative x))×ˢ
@@ -84,8 +105,7 @@ lemma mem_wholeAssignmentSource (extra : Source ι Jo→Finset ι) (source : Fin
   simp only [wholeAssignmentSource,Finset.mem_filter,Finset.mem_product]
   tauto
 
-theorem mem_wholeAssignedParents (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
-    (J : Finset σ) (lists : σ→Finset ι) (y : SecondParentSource ι (Jo+(J.card+J.card))) :
+theorem mem_wholeAssignedParents  (y : SecondParentSource ι (Jo+(J.card+J.card))) :
     y∈wholeAssignedParents p extra source negative J lists ↔
       ∃ x∈source,∃ q∈(J.pi (fun i=>lists i∩wholeExtractedSupport extra negative x))×ˢ
         (J.pi (fun i=>lists i∩wholeExtractedSupport extra negative x)),attach p J (x,q)=y := by
@@ -96,8 +116,10 @@ theorem mem_wholeAssignedParents (extra : Source ι Jo→Finset ι) (source : Fi
       q,(mem_wholeAssignmentSource extra source negative J lists x q).mp hq |>.2,he⟩
   · rintro ⟨x,hx,q,hq,he⟩
     exact ⟨(x,q),(mem_wholeAssignmentSource extra source negative J lists x q).mpr ⟨hx,hq⟩,he⟩
+end
 
-theorem whole_extracted_prime_dvd (extra : Source ι Jo→Finset ι)
+
+theorem whole_extracted_prime_dvd 
     (x : Source ι Jo) (hx : x.cube.Admissible) (he : extra x⊆x.cube.support)
     (negative : Bool) (i : ι) (hi : i∈wholeExtractedSupport extra negative x) :
     (sourcePrime p i).val∣sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*
@@ -106,7 +128,7 @@ theorem whole_extracted_prime_dvd (extra : Source ι Jo→Finset ι)
   · exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (source_prime_dvd p _ i (he hi)) _) _
   · exact extracted_prime_dvd p x hx negative i hi
 
-theorem whole_attach_old_support (extra : Source ι Jo→Finset ι)
+theorem whole_attach_old_support 
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
     (x : Source ι Jo) (hx : SourceValid p x) (he : extra x⊆x.cube.support)
     (q : (∀ i∈J,ι)×(∀ i∈J,ι))
@@ -125,6 +147,8 @@ theorem whole_attach_old_support (extra : Source ι Jo→Finset ι)
   · simpa only [attach,appendParent,parent,Fin.addCases_left] using hx.old_support k
   · simpa only [attach,appendParent,parent,Fin.addCases_right] using
       whole_extracted_prime_dvd p extra x hx.admissible he negative _ (hh k)
+end
+
 
 theorem whole_assigned_family_conditions (hp : ∀ i,p i≠0)
     (extra : Source ι Jo→Finset ι)
@@ -154,8 +178,8 @@ theorem whole_assigned_family_conditions (hp : ∀ i,p i≠0)
     obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
     exact sourceIdeal_ne_zero p hp x.quotientSupport
 
-end SevenEighths.InverseMomentWholePriorityParents
 
-end
 
-end OAI
+
+
+

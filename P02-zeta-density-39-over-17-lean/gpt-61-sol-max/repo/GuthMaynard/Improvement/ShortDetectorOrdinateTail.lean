@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDetectorLocalMass
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -79,10 +79,7 @@ theorem short_detector_ordinate_tail :
     _ ≤ ∫ t : ℝ, (B*Real.exp (-R/2))*detectorGammaMajorant (t/2) :=
       setIntegral_le_integral hm (Filter.Eventually.of_forall (fun t => by unfold detectorGammaMajorant; positivity))
     _ = (B*Real.exp (-R/2))*J := integral_const_mul _ _
-    _ ≤ _ := by
-      have hh : 0 ≤ (⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*Real.exp (-R/2) := by positivity
-      dsimp [B]
-      nlinarith
+    _ ≤ _ := by field_simp <;> nlinarith
 
 /-- A single height threshold controls the actual discarded ordinate integral
 for every beta and every ordinate in the slab, independently of a zero set. -/
@@ -97,12 +94,7 @@ theorem short_detector_ordinate_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) 
     have hd : Tendsto (fun H : ℝ => H/4) atTop atTop :=
       Filter.Tendsto.atTop_div_const (by norm_num) tendsto_id
     have hh := ((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 2).comp hd).const_mul (96*C)
-    convert hh using 1
-    · funext H
-      dsimp only [Function.comp_def]
-      rw [neg_div]
-      ring
-    · simp
+    grind
   have hs := hlim.eventually (gt_mem_nhds hδ)
   filter_upwards [eventually_ge_atTop (1:ℝ),hs] with H hH hsmall
   intro ρ hβ hβ' hγ
@@ -120,4 +112,4 @@ theorem short_detector_ordinate_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) 
     _ ≤ C*(2*H)*(3*H)*Real.exp (-H/4) := by gcongr; linarith
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

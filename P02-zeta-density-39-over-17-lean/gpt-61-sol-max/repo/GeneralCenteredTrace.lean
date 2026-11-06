@@ -1,18 +1,22 @@
 module
+import Mathlib
 public import GeneralCenteredReflection
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
+
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+    {K : ℕ} (hK : 1 ≤ K) {η : ℝ} (hη : 0 < η)
+include w K hK η hη
 
 /-- The full discrete centered energy; near-diagonal terms and shell-count
 losses have been discharged. Fixed reflected-length factors are absorbed
 in the constant; the exact undilated length T/L governs the hypothesis. -/
-theorem centered_energy_general (w : MathCollab.Density.ReflectionCutoff)
-    {K : ℕ} (hK : 1 ≤ K) {η : ℝ} (hη : 0 < η) :
+theorem centered_energy_general  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 1 < T → 1 ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -21,32 +25,26 @@ theorem centered_energy_general (w : MathCollab.Density.ReflectionCutoff)
   have hδ : 0 < η/2 := by positivity
   obtain ⟨C,B,hC,hB,hshell⟩ := centered_shell_general w hK (A := 2) (by norm_num) hδ
   obtain ⟨B₀,hB₀,hnear⟩ := GuthMaynard.Improvement.centeredKernel_near w (A := 2) (by norm_num)
-  let D : ℝ := 4+1/((η/2)*Real.log 2)
+  let D := 4+1/((η/2)*Real.log 2)
   have htwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
   have hD : 0 < D := by dsimp [D]; positivity
   refine ⟨1+B₀^2+D*(C+B),by positivity,?_⟩
   intro T t₀ L hT hL W hW hsep
   have hTp : 0 < T := by linarith
   have hLp : 0 < L := by linarith
-  let Y : ℝ := Real.pi*L/8
+  let Y := Real.pi*L/8
   have hYp : 0 < Y := by dsimp [Y]; positivity
-  have hd1 : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
-  have hη1 : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hd1 := Real.one_le_rpow hT.le hδ.le
+  have hη1 := Real.one_le_rpow hT.le hη.le
   have hpow : T^(η/2)*T^(η/2)=T^η := by
     rw [← Real.rpow_add hTp]
     congr 1
     ring
-  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by
-    obtain ⟨ht1,ht2⟩ := hW t ht
-    obtain ⟨hu1,hu2⟩ := hW u hu
-    exact abs_le.mpr ⟨by linarith,by linarith⟩
+  have hdist (t : ℝ) (ht : t ∈ W) (u : ℝ) (hu : u ∈ W) : |t-u| ≤ T := by grind
   have hn (v : ℝ) (hv : |v| ≤ Y) : ‖MathCollab.Density.hKernel w L v‖^2 ≤ B₀^2 := by
     have hh := hnear L v hLp hv
     rw [GuthMaynard.Improvement.centeredKernel_eq_density_hKernel w hLp] at hh
-    have hfrac : B₀*L/L^2 ≤ B₀ := by
-      have he : B₀*L/L^2=B₀/L := by field_simp
-      rw [he]
-      exact (div_le_iff₀ hLp).mpr (by nlinarith)
+    have hfrac : B₀*L/L^2 ≤ B₀ := by field_simp <;> nlinarith
     exact pow_le_pow_left₀ (norm_nonneg _) (hh.trans hfrac) 2
   have hnearSum : (∑ p ∈ (W ×ˢ W).filter (fun p => |p.1-p.2| < Y),
       ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) ≤ B₀^2*(W.card:ℝ)^2 := by
@@ -89,11 +87,7 @@ theorem centered_energy_general (w : MathCollab.Density.ReflectionCutoff)
           ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) =
           MathCollab.Density.shellEnergy w L H W := by
         simp only [sum_filter,sum_product,MathCollab.Density.shellEnergy,H,pow_succ]
-        congr 1
-        funext t
-        congr 1
-        funext u
-        congr 3; ring
+        ring
       rw [heq]
       calc
         _ ≤ C*T^(η/2)*adjacentCenteredBudget K T L W.card+B*(W.card:ℝ)^2*L^(2-2*(2:ℝ)) := hh
@@ -124,15 +118,13 @@ theorem centered_energy_general (w : MathCollab.Density.ReflectionCutoff)
           apply sum_le_sum
           intro t ht
           apply sum_le_sum
-          intro u hu
-          exact hn _ ((hdist t ht u hu).trans (le_of_not_ge hYT))
+          grind
         _ = _ := by simp; ring
     exact hfull.trans (hbase.trans (by gcongr; nlinarith))
 
 /-- The actual squared-cutoff centered matrix satisfies the improved
 quadratic trace bound, with no analytic estimate among the premises. -/
-theorem centered_trace_general (w : MathCollab.Density.ReflectionCutoff)
-    {K : ℕ} (hK : 1 ≤ K) {η : ℝ} (hη : 0 < η) :
+theorem centered_trace_general  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 1 < T → 1 ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -144,5 +136,7 @@ theorem centered_trace_general (w : MathCollab.Density.ReflectionCutoff)
   rw [cutoff_centered_trace_identity,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (sum_nonneg (fun _ _ => sum_nonneg (fun _ _ => sq_nonneg _)))]
   exact hbound T t₀ L hT hL W hW hsep
+end
 
-end Montgomery.RationalMoment
+
+

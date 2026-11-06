@@ -10,22 +10,32 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-abbrev Tuple (L:ι→Finset (Ideal O)) := ∀i,↥(L i)
-abbrev Assigned (L:ι→Finset (Ideal O))(J:Finset ι) := ∀i:↥J,↥(L i.val)
-abbrev Remaining (L:ι→Finset (Ideal O))(J:Finset ι) := ∀i:{i:ι // i∉J},↥(L i.val)
+section
+variable (L:ι→Finset (Ideal O))
+include L
 
-def joinTuple (L:ι→Finset (Ideal O))(J:Finset ι)(x:Assigned L J)(y:Remaining L J) : Tuple L :=
+abbrev Tuple  := ∀i,↥(L i)
+section
+variable (J:Finset ι)
+include J
+
+abbrev Assigned  := ∀i:↥J,↥(L i.val)
+abbrev Remaining  := ∀i:{i:ι // i∉J},↥(L i.val)
+
+def joinTuple (x:Assigned L J)(y:Remaining L J) : Tuple L :=
   (Equiv.piEquivPiSubtypeProd (fun i=>i∈J) (fun i=>↥(L i))).symm (x,y)
 
-theorem sum_tuple_split (L:ι→Finset (Ideal O))(J:Finset ι)(f:Tuple L→ℂ) :
+theorem sum_tuple_split (f:Tuple L→ℂ) :
     (∑q:Tuple L,f q)=∑x:Assigned L J,∑y:Remaining L J,f (joinTuple L J x y) := by
   rw [←(Equiv.piEquivPiSubtypeProd (fun i=>i∈J) (fun i=>↥(L i))).symm.sum_comp]
   exact Fintype.sum_prod_type _
+end
 
-theorem sum_tuple_original (L:ι→Finset (Ideal O))(f:(ι→Ideal O)→ℂ) :
+
+theorem sum_tuple_original (f:(ι→Ideal O)→ℂ) :
     (∑q:Tuple L,f (fun i=>(q i).val))=∑q∈Fintype.piFinset L,f q := by
   symm
   apply Finset.sum_bij (fun q hq i=>⟨q i,Fintype.mem_piFinset.mp hq i⟩)
@@ -41,18 +51,24 @@ theorem sum_tuple_original (L:ι→Finset (Ideal O))(f:(ι→Ideal O)→ℂ) :
   · intro q hq
     rfl
 
-theorem tuple_injective (L:ι→Finset (Ideal O))
+theorem tuple_injective 
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(q:Tuple L) :
     Function.Injective (fun i=>(q i).val) := by
   intro i j he
   by_contra hij
   exact Finset.disjoint_left.mp (hdis (Finset.mem_univ i) (Finset.mem_univ j) hij)
     (q i).property (by simpa only [he] using (q j).property)
+end
 
-theorem original_selected_subset_sum (S:Finset (Ideal O))
+
+section
+variable (S:Finset (Ideal O))
     (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(hZ:0<Z)(u:O) :
+    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(hZ:0<Z)(u:O)
+include S L hprime hdis coeff η a W Z r z hZ u
+
+theorem original_selected_subset_sum  :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
       originalTotalPolynomial S (∏i,(q i).val) η a W Z r z u)=
     ∑J∈Finset.univ.powerset,∑q:Tuple L,(∏i,coeff i (q i).val)*
@@ -66,10 +82,7 @@ theorem original_selected_subset_sum (S:Finset (Ideal O))
         (tuple_injective L hdis q) η a W Z r z hZ u,Finset.mul_sum]
     _ = _ := Finset.sum_comm
 
-theorem original_selected_grouped (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(hZ:0<Z)(u:O) :
+theorem original_selected_grouped  :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
       originalTotalPolynomial S (∏i,(q i).val) η a W Z r z u)=
     ∑J∈Finset.univ.powerset,∑x:Assigned L J,∑y:Remaining L J,
@@ -80,9 +93,11 @@ theorem original_selected_grouped (S:Finset (Ideal O))
   apply Finset.sum_congr rfl
   intro J hJ
   exact sum_tuple_split L J _
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
 end
 
-end OAI
+
+
+
+
+
+

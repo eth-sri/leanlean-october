@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.WeylExplicit
 
 @[expose] public section
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators
 
 namespace RiemannZeta.GuthMaynard
@@ -137,12 +138,7 @@ theorem norm_criticalLineWeylBlock_le
     rw [Real.sqrt_mul (Nat.cast_nonneg A)]
   have hsqrtA : 0 < Real.sqrt (A : Real) := Real.sqrt_pos.2 (Nat.cast_pos.mpr hA)
   have hsimplify : f 0 * (30 * Real.sqrt ((A : Real) * Y)) =
-      30 * Real.sqrt Y := by
-    dsimp only [f]
-    simp only [Nat.cast_zero, add_zero]
-    rw [hbase]
-    field_simp [hsqrtA.ne']
-  rw [hsimplify] at hweighted
-  exact hweighted
+      30 * Real.sqrt Y := by grind
+  grind
 
-end RiemannZeta.GuthMaynard
+

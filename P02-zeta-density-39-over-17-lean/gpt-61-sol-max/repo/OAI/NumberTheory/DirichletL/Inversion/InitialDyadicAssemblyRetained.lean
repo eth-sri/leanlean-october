@@ -13,24 +13,30 @@ namespace SevenEighths.InverseInitialDyadicAssembly
 open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount
 open Filter
 
-def retainedWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
+section
+variable (a b:Fin 4→ℝ)(Z D m L:ℝ)
+include a b Z D m L
+
+def retainedWindows  : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>radialCenter m (exponent Z (k 3).val)
     (exponent Z (k 1).val) D (exponent Z (k 0).val)≤L)
 
-def tailWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
+def tailWindows  : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>L<radialCenter m (exponent Z (k 3).val)
     (exponent Z (k 1).val) D (exponent Z (k 0).val))
 
-theorem window_sum_split (a b:Fin 4→ℝ)(Z D m L:ℝ)(f:Windows a b→ℂ) :
+theorem window_sum_split (f:Windows a b→ℂ) :
     (∑k,f k)=(∑k∈retainedWindows a b Z D m L,f k)+
       ∑k∈tailWindows a b Z D m L,f k := by
   simpa only [retainedWindows,tailWindows,not_le] using
     (Finset.sum_filter_add_sum_filter_not (Finset.univ:Finset (Windows a b))
       (fun k=>radialCenter m (exponent Z (k 3).val) (exponent Z (k 1).val) D
         (exponent Z (k 0).val)≤L) f).symm
+end
+
 
 theorem retained_exponents_eventually (b R Λ:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ) :
-    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀D m L T:ℝ,D≤R→0≤m→L≤Λ→0<T→
+    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀D m L T:ℝ,D≤R→0≤ m→L≤Λ→0<T→
       ∀k∈retainedWindows (fun _=>1) (physicalCaps b Z D T) Z D m L,
         ∀i,exponent Z (k i).val∈Set.Icc 0 (3*R+Λ+1) := by
   filter_upwards [window_exponent_eventual_upper b 1 hb (by norm_num)] with Z hZ
@@ -80,7 +86,7 @@ theorem retained_card_of_exponents (a b:Fin 4→ℝ)(Z D m L A:ℝ)(hZ:1<Z)
 
 theorem retained_card_subpower (b R Λ ε:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)(hε:0<ε) :
     ∃A:ℝ,0<A ∧ ∀ᶠZ:ℝ in atTop,
-      ∀D m L T:ℝ,D≤R→0≤m→L≤Λ→0<T→
+      ∀D m L T:ℝ,D≤R→0≤ m→L≤Λ→0<T→
         ((retainedWindows (fun _=>1) (physicalCaps b Z D T) Z D m L).card:ℝ)≤A*Z^ε := by
   obtain ⟨A,hA,hcount⟩:=windows_card_subpower 1 (3*R+Λ+1) ε (by norm_num) (by positivity) hε
   refine ⟨A,hA,?_⟩
@@ -96,8 +102,8 @@ theorem retained_card_subpower (b R Λ ε:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)(hε
     (hc (fun _=>1) (fun _=>Z^(3*R+Λ+1)) (by intro i; norm_num)
       (fun _=>hp) (by intro i; simp))
 
-end SevenEighths.InverseInitialDyadicAssembly
 
-end
 
-end OAI
+
+
+

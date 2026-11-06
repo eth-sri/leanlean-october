@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.CubicScaledStrip
 public import GuthMaynard.Improvement.RatioFourierInput
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -105,4 +104,4 @@ theorem cubic_fourier_moments (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     _ ≤ C*T^ε*(J*Real.sqrt FA)*(T^2*(J*FD)+T*L*(J*Real.sqrt ED)) := by gcongr
     _ = _ := by dsimp only [FA,FD,ED]; ring
 
-end GuthMaynard.Improvement
+

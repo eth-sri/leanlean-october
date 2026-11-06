@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyMixedRadix
 public import GafniTao.WooleyAffineComposition
 
@@ -58,11 +59,15 @@ theorem wooleySourceMassSq_mul_conditionedMean
     simp
   · rw [ite_eq_right hmass, ← mul_assoc, mul_inv_cancel₀ hmass, one_mul]
 
+section
+variable {k s q q₁ : ℕ} [NeZero q] [NeZero q₁]
+    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+include k s q q₁ phi gamma
+
 /-- Equation (4.2) after Fourier averaging: a residue-class mean is the
 ordinary mean of the affine pullback sequence and affine polynomial system. -/
 theorem wooleySourcePolynomialMean_affinePullback
-    {k s q q₁ : ℕ} [NeZero q] [NeZero q₁]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+    
     (xi : ZMod q₁) :
     wooleySourcePolynomialMean s q
         (wooleyAffinePolynomialSystem phi q₁ xi.val)
@@ -73,14 +78,11 @@ theorem wooleySourcePolynomialMean_affinePullback
   apply Finset.sum_congr rfl
   intro alpha halpha
   rw [wooleySourceNormalizedPolynomialSum_affinePullback]
-  have hxi : (((xi.val : ℕ) : ℤ) : ZMod q₁) = xi := by
-    simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val xi
-  rw [hxi]
+  simp_all
 
 /-- Exact equation (4.2) summed over the initial residue classes. -/
 theorem wooleySourceMassSq_mul_conditionedMean_eq_affineSum
-    {k s q q₁ : ℕ} [NeZero q] [NeZero q₁]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) :
+     :
     wooleySourceMassSq gamma *
         wooleySourcePolynomialConditionedMean s q q₁ phi gamma =
       ∑ xi : ZMod q₁,
@@ -92,6 +94,8 @@ theorem wooleySourceMassSq_mul_conditionedMean_eq_affineSum
   apply Finset.sum_congr rfl
   intro xi hxi
   rw [wooleySourcePolynomialMean_affinePullback]
+end
+
 
 /-- The local residue mass after an affine pullback is the mass of the
 corresponding mixed-radix residue in the original sequence. -/
@@ -124,10 +128,14 @@ theorem wooleySourceResidueMassSq_affinePullback_mixedRadix
       push_cast
       ring
 
+section
+variable {k s q q₁ q₂ : ℕ} [NeZero q] [NeZero q₁] [NeZero q₂]
+    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+include k s q q₁ q₂ phi gamma
+
 /-- The local normalized residue mean is likewise transported exactly. -/
 theorem wooleySourcePolynomialResidueMean_affinePullback_mixedRadix
-    {k s q q₁ q₂ : ℕ} [NeZero q] [NeZero q₁] [NeZero q₂]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+    
     (xi : ZMod q₁) (eta : ZMod q₂) :
     wooleySourcePolynomialResidueMean s q q₂
         (wooleyAffinePolynomialSystem phi q₁ xi.val)
@@ -167,8 +175,7 @@ theorem wooleySourcePolynomialResidueMean_affinePullback_mixedRadix
 /-- Exact conditioning tower: the double sum over `(xi,eta)` in (4.14)
 is the single sum over `zeta` modulo the product modulus. -/
 theorem wooleySourcePolynomialConditionedMean_tower
-    {k s q q₁ q₂ : ℕ} [NeZero q] [NeZero q₁] [NeZero q₂]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) :
+     :
     ∑ xi : ZMod q₁,
         wooleySourceResidueMassSq gamma q₁ xi *
           wooleySourcePolynomialConditionedMean s q q₂
@@ -191,9 +198,7 @@ theorem wooleySourcePolynomialConditionedMean_tower
       apply Finset.sum_congr rfl
       intro xi hxi
       rw [wooleySourceMassSq_affinePullback]
-      have hxiCast : (((xi.val : ℕ) : ℤ) : ZMod q₁) = xi := by
-        simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val xi
-      rw [hxiCast]
+      simp_all
     _ = ∑ xi : ZMod q₁, ∑ eta : ZMod q₂,
         wooleySourceResidueMassSq
             (wooleyAffinePullback gamma q₁ (NeZero.pos q₁) xi.val) q₂ eta *
@@ -225,6 +230,8 @@ theorem wooleySourcePolynomialConditionedMean_tower
     _ = wooleySourceMassSq gamma *
         wooleySourcePolynomialConditionedMean s q (q₂ * q₁) phi gamma :=
       (wooleySourceMassSq_mul_conditionedMean phi gamma).symm
+end
+
 
 /-- Prime-power form of the conditioning tower, with the exact identity
 `p^(H-h) * p^h = p^H`. -/
@@ -244,6 +251,6 @@ theorem wooleySourcePolynomialConditionedMean_power_tower
       (q₁ := p ^ h) (q₂ := p ^ (H - h)) phi gamma)
 
 
-end
 
-end GafniTao
+
+

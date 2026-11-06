@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -107,7 +107,7 @@ theorem sourceRowSeries_eq_closed (eta a rho x w z : ℂ) (hρ : rho^6=1)
   rw [←hc']
   ring
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ShortDensityConditional
 public import GuthMaynard.Improvement.ShortDensityUniform
 
 @[expose] public section
 
 open MathCollab.Density
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -13,8 +13,7 @@ namespace GuthMaynard.Improvement
  depend on sigma and epsilon; this definition asserts no proof of Ingham. -/
 def InghamLowerDensity : Prop :=
   ∀ σ : ℝ, 1/2 ≤ σ → σ ≤ 9/13 → ∀ ε : ℝ, 0 < ε →
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(3*(1-σ)/(2-σ)+ε)
+    MathCollab.Density.ZetaBound σ ((3*(1-σ)/(2-σ)+ε))
 
 /-- Exact coefficient comparisons covering the entire critical half-strip. -/
 theorem global_density_coefficient_comparisons {σ : ℝ} :
@@ -33,4 +32,4 @@ theorem global_density_coefficient_comparisons {σ : ℝ} :
     apply (div_le_iff₀ (by linarith : 0 < 3+5*σ)).mpr
     nlinarith [mul_nonneg (show 0 ≤ 1-σ by linarith) (show 0 ≤ σ-5/7 by linarith)]
 
-end GuthMaynard.Improvement
+

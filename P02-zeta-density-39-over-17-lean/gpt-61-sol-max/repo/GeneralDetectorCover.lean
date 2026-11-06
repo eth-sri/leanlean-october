@@ -3,12 +3,11 @@ public import DensityWindowBudgets
 
 @[expose] public section
 
-open Real Complex Set Filter Finset MathCollab.Density GuthMaynard.Improvement
+open Real Complex Filter Finset MathCollab.Density GuthMaynard.Improvement
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Uniform logarithmic buffer for the entire compact target exponent range. -/
@@ -72,4 +71,4 @@ theorem general_powered_cover {η : ℝ} (hη : 0 < η) :
 
 
 
-end Montgomery.RationalMoment
+

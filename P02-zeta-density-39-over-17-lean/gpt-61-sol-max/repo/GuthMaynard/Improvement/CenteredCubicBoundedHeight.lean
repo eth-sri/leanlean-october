@@ -3,17 +3,20 @@ public import GuthMaynard.Improvement.CenteredKernelBridge
 public import GuthMaynard.Improvement.CubicTimeMeasure
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
+    (hs : ∀ x, x ∉ Icc l u → a x = 0)
+include a ha l u hl hlu hs
+
 /-- Actual centered cubic, with its full homogeneous mass cubed and
 L cubed. The kernel bound is derived from the fixed smooth cutoff. -/
-theorem centered_cubic_mass_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0) :
+theorem centered_cubic_mass_bound  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (L : ℝ) (μ : ℝ → ℝ),
       1 ≤ L → Measurable μ → (∀ t, 0 ≤ μ t) → Integrable μ →
       Integrable (fun t : Triple => centeredKernel a l u L (t.1-t.2.1)*
@@ -46,9 +49,7 @@ theorem centered_cubic_mass_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
 /-- Uniform bounded-height absorption. The constant is chosen after the
 fixed height cutoff T0 and before T,L,the interval and the ordinary density.
 There is no assumed pointwise kernel bound and no positive-mass division. -/
-theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
+theorem centered_cubic_bounded_height 
     (T₀ : ℝ) (_hT₀ : 1 ≤ T₀) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (T L t₀ t₁ : ℝ) (μ : ℝ → ℝ),
       1 ≤ T → T ≤ T₀ → 1 ≤ L → L ≤ T → t₀ ≤ t₁ → t₁-t₀ ≤ T →
@@ -76,5 +77,7 @@ theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
     _ = D*(L^3*T^3)*Real.sqrt (∫ t, μ t^2)^3 := by ring
     _ ≤ D*(T₀^4*T^2)*Real.sqrt (∫ t, μ t^2)^3 := by gcongr
     _ = _ := by ring
+end
 
-end GuthMaynard.Improvement
+
+

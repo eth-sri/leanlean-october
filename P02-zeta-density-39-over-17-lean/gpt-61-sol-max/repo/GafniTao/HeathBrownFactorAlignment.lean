@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownFloorRemainder
 
 @[expose] public section
@@ -14,7 +15,7 @@ that monomial does not already make the trivial bound sufficient.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrownKthDerivativeFactor_eq_critical
     {k : ℕ} (hk : 2 ≤ k) (N lambda : ℝ) :
@@ -24,17 +25,7 @@ theorem heathBrownKthDerivativeFactor_eq_critical
         N ^ (-2 * r) * lambda ^ (-2 * r / (k : ℝ)) := by
   dsimp only
   unfold heathBrownKthDerivativeFactor heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hk0 : (k : ℝ) ≠ 0 := by linarith
-  have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
-  congr 1
-  · congr 1
-    field_simp
-  · congr 1
-    · congr 1
-      field_simp
-    · congr 1
-      field_simp
+  grind
 
 theorem heathBrownThreeTerm_scaled_identity
     {N k : ℕ} (hN : 1 ≤ N) (hk : 2 ≤ k)
@@ -88,8 +79,7 @@ theorem heathBrownThreeTerm_scaled_identity
   unfold heathBrownThreeTerm
   dsimp only
   rw [mul_add, mul_add, mul_add, mul_add]
-  rw [hfirst, hmiddle, hlast]
-  ring
+  grind
 
 theorem heathBrown_lambda_power_identity
     {k : ℕ} (hk : 2 ≤ k) {lambda : ℝ} (hlambda : 0 < lambda) :
@@ -97,11 +87,8 @@ theorem heathBrown_lambda_power_identity
     (lambda ^ (-(1 / (k : ℝ)))) ^ (2 * r) =
       lambda ^ (-2 * r / (k : ℝ)) := by
   dsimp only
-  let r := heathBrownCriticalReciprocal k
-  have hk0 : (k : ℝ) ≠ 0 := by positivity
   rw [← Real.rpow_mul hlambda.le]
-  congr 1
-  field_simp
+  ring
 
 /-- Source final case split: below the trivial range, the extra
 `lambda^(-1/k)` term is bounded by the third displayed monomial. -/
@@ -125,7 +112,7 @@ theorem heathBrown_lambda_term_le_third_of_third_le_N
   have hLpos : 0 < L := by dsimp only [L]; positivity
   have hlambdaPower : L ^ (2 * r) =
       lambda ^ (-2 * r / (k : ℝ)) := by
-    simpa only [L, r] using heathBrown_lambda_power_identity
+    exact heathBrown_lambda_power_identity
       (by omega : 2 ≤ k) hlambda
   have hNsplit :
       (N : ℝ) = (N : ℝ) ^ (1 - 2 * r) *
@@ -143,8 +130,7 @@ theorem heathBrown_lambda_term_le_third_of_third_le_N
     nlinarith
   have hLN : L ≤ (N : ℝ) :=
     (Real.rpow_le_rpow_iff hLpos.le hNpos.le (by positivity : 0 < 2 * r)).mp hpower
-  have hbasePower : L ^ (1 - 2 * r) ≤
-      (N : ℝ) ^ (1 - 2 * r) :=
+  have hbasePower :=
     Real.rpow_le_rpow hLpos.le hLN hq
   calc
     lambda ^ (-(1 / (k : ℝ))) = L := rfl
@@ -157,6 +143,6 @@ theorem heathBrown_lambda_term_le_third_of_third_le_N
     _ = _ := by rfl
 
 
-end
 
-end GafniTao
+
+

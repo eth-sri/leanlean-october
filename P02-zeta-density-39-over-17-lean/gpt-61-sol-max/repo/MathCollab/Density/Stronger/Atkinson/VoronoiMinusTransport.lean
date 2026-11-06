@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Canonical minus contour transport for the literal DFI Bessel multiplier.
 Target and selected rectangle-limit proof pattern: Scott McColm,
@@ -12,11 +13,10 @@ public import MathCollab.Density.Stronger.Atkinson.BesselTransformBridge
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
+open Complex MeasureTheory Filter Topology
 open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 private theorem tendsto_rectangleIntegral'_vertical_sub
@@ -29,7 +29,7 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
       (nhds (VerticalIntegral' f b - VerticalIntegral' f a)) := by
-  let c : ℂ := (((1 / (2 * Real.pi) : ℝ) : ℂ))
+  let c := (((1 / (2 * Real.pi) : ℝ) : ℂ))
   have hRight : Tendsto (fun R : ℝ =>
       c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) atTop
       (nhds (c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I))) :=
@@ -56,7 +56,6 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
     refine hExpanded.congr' ?_
     filter_upwards with R
     rw [pintz2023_RectangleIntegral'_eq_edges]
-    dsimp only [c]
     ring
   have hVerticalB : VerticalIntegral' f b =
       c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I) := by
@@ -64,16 +63,14 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
     dsimp only [c]
     simp [smul_eq_mul]
     ring_nf
-    rw [Complex.I_sq]
-    ring
+    bound
   have hVerticalA : VerticalIntegral' f a =
       c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
     unfold VerticalIntegral' VerticalIntegral
     dsimp only [c]
     simp [smul_eq_mul]
     ring_nf
-    rw [Complex.I_sq]
-    ring
+    bound
   simpa only [hVerticalB, hVerticalA] using hRectangle
 
 private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
@@ -92,8 +89,12 @@ private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
   have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
   exact tendsto_nhds_unique hLimit hLimitA
 
-theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero q]
+section
+variable (q : ℕ) [NeZero q]
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+include q g hg n hn
+
+theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle 
     (H : ℝ) :
     RectangleIntegral' (dfiVoronoiMinusIntegrand q g n)
       ((-(1/2) : ℂ)-(H:ℂ)*I) ((13/16 : ℂ)+(H:ℂ)*I) = 0 := by
@@ -105,14 +106,11 @@ theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero
       intro z hz
       have hzre := hz.1
       change z.re ∈ Set.uIcc _ _ at hzre
-      norm_num at hzre
-      change z.re < 1
-      linarith [hzre.2])
+      norm_num at * <;> nlinarith)
   simp only [RectangleIntegral', hr, smul_zero]
 
 theorem DFIVoronoiTestFunction.minusTransform_eq_thirteenSixteenths
-    (q : ℕ) [NeZero q] {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
-    {n : ℕ} (hn : 0<n) :
+     :
     dfiVoronoiMinusTransform q (mellin g) n =
       PointMean.VerticalIntegral' (dfiVoronoiMinusIntegrand q g n) (13/16) := by
   obtain ⟨htop,hbottom⟩ := hg.minusIntegrand_horizontal_limits q hn
@@ -124,6 +122,8 @@ theorem DFIVoronoiTestFunction.minusTransform_eq_thirteenSixteenths
     (A := 0) (Eventually.of_forall fun H => by
       simpa using hg.minusIntegrand_finite_rectangle q hn H)
   exact (sub_eq_zero.mp h).symm
+end
+
 
 /-- Canonical Mellin--Barnes minus transform equals the literal Schläfli Y₀
 transform. All line integrability and horizontal decay are discharged. -/
@@ -133,4 +133,4 @@ theorem dfiVoronoiMinusTransform_mellin_eq_bessel (q n : ℕ) [NeZero q]
   rw [hg.minusTransform_eq_thirteenSixteenths q hn]
   exact verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel q n hn hg
 
-end MathCollab.Density.Stronger.Atkinson
+

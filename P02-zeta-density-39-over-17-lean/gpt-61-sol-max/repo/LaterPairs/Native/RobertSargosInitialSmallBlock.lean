@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosInitialDyadicLog
 public import LaterPairs.Native.RobertSargosSmallBlock
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                              
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -55,4 +54,4 @@ theorem robertSargos_initial_small_or_large_block
       _ = _ := by ring
   · exact Or.inr ⟨k,hk,hkH,lt_of_not_ge hsmall,hbound⟩
 
-end TaoTrudgianYang2025
+

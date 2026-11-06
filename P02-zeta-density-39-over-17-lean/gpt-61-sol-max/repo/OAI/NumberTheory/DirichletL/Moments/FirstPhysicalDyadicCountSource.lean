@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
     (K V Z B ξ:ℝ)(hK:0<K)(hV:0≤V)(hZ:1≤Z)
@@ -55,8 +55,12 @@ theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
 open CenteredMomentExceptionalAmplitudePair
 
-lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
-    (hi:ι→ℝ)(b₁ b₂ B Z:ℝ)(s:Input ι)
+section
+variable {ι:Type*}[Fintype ι][DecidableEq ι]
+    (hi:ι→ℝ)
+include ι hi
+
+lemma input_radius_cap (b₁ b₂ B Z:ℝ)(s:Input ι)
     (hhi:∀i,|s.hi i|≤hi i)(hb₁:|s.b₁|≤b₁)(hb₂:|s.b₂|≤b₂)
     (hZ:1≤Z)(hfixed:(∏i,hi i)*b₁*b₂≤Z)
     (hV:volume s.toData≤Z^B):sourceRadius s≤Z^(B+1) := by
@@ -79,8 +83,7 @@ lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
     _≤Z*Z^B:=mul_le_mul hcoeff hV hVol.le (zero_le_one.trans hZ)
     _=Z^(B+1):=by rw [Real.rpow_add_one (ne_of_gt (zero_lt_one.trans_le hZ))];ring
 
-theorem original_input_local_blocks_subpower {ι:Type*}[Fintype ι][DecidableEq ι]
-    (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)(hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
+theorem original_input_local_blocks_subpower (b₁ b₂ B ξ ε:ℝ)(hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
     ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀s:Input ι,(∀i,|s.hi i|≤hi i)→|s.b₁|≤b₁→|s.b₂|≤b₂→0<sourceRadius s→
       ∀(C D:Ideal O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K:ℝ),
@@ -96,9 +99,11 @@ theorem original_input_local_blocks_subpower {ι:Type*}[Fintype ι][DecidableEq 
   intro s hhi hb₁ hb₂ hH C D hC hD E K hK hV hKi
   exact hcount C D hC hD E K _ _ hK (volume_pos s.toData).le hH hV hKi
     (input_radius_cap hi b₁ b₂ B Z s hhi hb₁ hb₂ hZ hfixed hV)
-
-end SevenEighths.CenteredMomentFirstPhysicalDyadicCount
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 public import OAI.NumberTheory.DirichletL.Descent.Fibers
 public import OAI.NumberTheory.DirichletL.CubicSieve.Ideal
@@ -12,9 +13,9 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
+open ActualEisensteinCubic
 
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def inverseCubicKernel (P n : Ideal Eis) : ℂ :=
   star (ConcreteTraceCRT.eisEmbedding
@@ -90,8 +91,7 @@ theorem inverseCubicKernel_mul_right (P n m : Ideal Eis)
     inverseCubicKernel P (n * m) = inverseCubicKernel P n * inverseCubicKernel P m := by
   change star (CubicSieve.idealNumeratorHom P hP (n * m)) =
     star (CubicSieve.idealNumeratorHom P hP n) * star (CubicSieve.idealNumeratorHom P hP m)
-  rw [map_mul, star_mul]
-  ring
+  simp
 
 theorem inverseCubicKernel_quotients (R P' r c' m : Ideal Eis)
     (hP' : CompletedGauss.primaryGenerator P' ≠ 0) :
@@ -197,7 +197,6 @@ theorem normalized_ideal_product_weight (R P : Ideal Eis) (z : ℂ) :
       (Real.sqrt (Ideal.absNorm R : ℝ) : ℂ)⁻¹ *
         (z / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ)) := by
   rw [map_mul, Nat.cast_mul, Real.sqrt_mul (Nat.cast_nonneg _), Complex.ofReal_mul]
-  simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
 theorem hybrid_extracted_block_identity
@@ -231,8 +230,8 @@ def hybridRow (Pset nset bset : Finset (Ideal Eis))
   ∑ P ∈ Pset, a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) *
     (if IsCoprime k P then 1 else 0) * hybridInner nset bset beta k P
 
-end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 
 namespace OAI
 
-noncomputable section
+
 open Filter
 open scoped Topology
 namespace SevenEighths.HeckePrimeAmplitudeBins
 
 theorem upper_allowance_eventually (C dmin rmin ε mesh : ℝ)
-    (hd : 0<dmin) (hmesh : 0<mesh) (hgap : ε<rmin*mesh) :
+    (hd : 0<dmin) (hmesh : 0< mesh) (hgap : ε<rmin*mesh) :
     ∀ᶠ Z : ℝ in atTop, ∀ d r cap : ℝ, dmin≤d → rmin≤r →
       C*(Z^d)^(cap*r+ε)≤((Z^d)^r)^(cap+mesh) := by
   have hh := HeckeDyadic.constant_absorbed_eventually C (dmin*(rmin*mesh-ε))
@@ -37,7 +37,7 @@ theorem upper_allowance_eventually (C dmin rmin ε mesh : ℝ)
       ring
 
 theorem actual_bins_eventually (C dmin rmin ε mesh : ℝ)
-    (hd : 0<dmin) (hr : 0<rmin) (hmesh : 0<mesh) (hgap : ε<rmin*mesh) :
+    (hd : 0<dmin) (hr : 0<rmin) (hmesh : 0< mesh) (hgap : ε<rmin*mesh) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d → ∀ r cap : ℝ, rmin≤r → 0≤cap →
       ∀ Q : ℂ, ‖Q‖≤C*(Z^d)^(cap*r+ε) →
       0≤amplitude ((Z^d)^r) cap mesh Q ∧
@@ -56,8 +56,8 @@ theorem actual_bins_eventually (C dmin rmin ε mesh : ℝ)
     amplitude_upper _ cap mesh Q hP hmesh (hQ.trans (hallow d r cap hd' hr')),
     squared_spike (Z^d) r cap mesh Q hU (hr.trans_le hr') hmesh⟩
 
-end SevenEighths.HeckePrimeAmplitudeBins
 
-end
 
-end OAI
+
+
+

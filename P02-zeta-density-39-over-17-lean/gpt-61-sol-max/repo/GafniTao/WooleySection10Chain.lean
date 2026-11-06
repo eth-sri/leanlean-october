@@ -77,6 +77,6 @@ theorem wooley_iterationChain_exists_bounded
         (ih (m := m + 1) (by omega) hbPrimeUpper haPrime hbPrime
           hrelPrime hrPrime hrPrimeTop)
 
-end
 
-end GafniTao
+
+

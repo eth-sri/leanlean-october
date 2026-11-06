@@ -9,8 +9,8 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
@@ -141,7 +141,7 @@ theorem original_selected_reflected_expansion
   congr 1
   exact original_controlled_source_sum D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
     S hSodd (C h) (CC h) (hCC h) (G h).shape (G h).denominator_ne_zero W X
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

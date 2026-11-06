@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.ParametersHighData
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 
 namespace SevenEighths.Parameters
 
 theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
-    (hmesh:∀t:ℝ,0<t→0<mesh t):
-    ∃D:HighData Δ,∀j,D.ell j≤mesh D.t/200:=by
+    (hmesh:∀t:ℝ,0<t→0< mesh t):
+    ∃D:HighData Δ,∀j,D.ell j≤ mesh D.t/200:=by
   obtain ⟨t,ht,htΔ,ht1,_,_,hgeo,hdtop,ht3,hω,hωΔ,hhigh,hallow⟩ := exists_central_budget Δ hΔ
   obtain ⟨N,hN,ell,rmin,hr,hell,hsum,hbounds,_⟩ :=
     exists_physical_slot_lengths (1/200) (7/8) (min t (mesh t)) t (by norm_num) (by norm_num)
@@ -32,7 +32,7 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
       ht.le hr ht (by norm_num) ht hmin hsmall (by norm_num)
   let eps := small/2
   have heps : 0<eps := by dsimp [eps];positivity
-  have hepss : eps≤small := by dsimp [eps];linarith only [hsmall]
+  have hepss : eps≤ small := by dsimp [eps];linarith only [hsmall]
   have heps1 : eps≤1 := by linarith only [hepss, hst0, ht1]
   have hbud' := hbud ε e eps hε.le (hεa.trans hsa) he.le (hea.trans hsa)
     heps.le (hepss.trans hsa)
@@ -72,23 +72,23 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
       by nlinarith only [hτJ, hprod, htau],by nlinarith only [hτJ, hprod, htau],
       by nlinarith only [hτJ, hprod, hprodeps, htau]⟩
   · intro j
-    change ell j≤mesh t/200
+    change ell j≤ mesh t/200
     calc
       ell j≤(1/200:ℝ)*min t (mesh t):=(hbounds j).2.2.1
       _≤(1/200:ℝ)*mesh t:=mul_le_mul_of_nonneg_left (min_le_right _ _) (by norm_num)
       _=mesh t/200:=by ring
 
 theorem fine_slot_widths {Δ:ℝ}(D:HighData Δ)(mesh:ℝ→ℝ)
-    (hmesh:0<mesh D.t)(hfine:∀j,D.ell j≤mesh D.t/200)
+    (hmesh:0< mesh D.t)(hfine:∀j,D.ell j≤ mesh D.t/200)
     (d:ℝ)(hd:(1/200:ℝ)≤d)(j:Fin D.N):
-    0<D.ell j/d ∧ D.ell j/d≤mesh D.t:=by
+    0<D.ell j/d ∧ D.ell j/d≤ mesh D.t:=by
   have hd0:0<d:=by linarith
   refine ⟨div_pos (D.slots_bounds j).1 hd0,(div_le_iff₀ hd0).mpr ?_⟩
   have hh:=hfine j
   nlinarith
 
-end SevenEighths.Parameters
 
-end
 
-end OAI
+
+
+

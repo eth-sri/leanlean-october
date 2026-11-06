@@ -13,8 +13,8 @@ namespace SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
 open HeckeFamily CenteredMomentFiniteProfileExceptional
 open CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent
 open CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFirstAmplifiedFourCoefficients
+open scoped HeckeO
 
 def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:ℝ)
     (J:ℕ)(Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ)):Fin 4→ℝ:=
@@ -23,16 +23,19 @@ def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:
     Cd*‖EisensteinSchwartzPoisson.paperRadialFourier W 0‖,
     Ct*Sf.sup (schwartzSeminormFamily ℝ ℝ ℂ) W/seed]
 
-lemma coefficients_mul {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ):
+section
+variable {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
+    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ)
+include a b N upper b1 b2 A Sp p J Q K t epsilon seed f g
+
+lemma coefficients_mul :
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed (fun j=>f j*g j) j=
       CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j*g j:=by
   intro j
   fin_cases j <;> simp [CenteredMomentSecondChildPowerBudget.coefficients] <;> ring
 
-lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ)
-    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤K)(hseed:0≤seed)
+lemma coefficients_mono 
+    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤K)(hseed:0≤ seed)
     (hfg:∀j,f j≤g j):
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j≤
       CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed g j:=by
@@ -49,6 +52,8 @@ lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ)
     gcongr
   · gcongr
   · gcongr
+end
+
 
 theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
     ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
@@ -81,12 +86,16 @@ theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t
   · simp only [seededFactors,physicalFactors,fixedFactors,mainPowers,Fin.isValue,Matrix.cons_val,Fin.reduceFinMk]
     exact le_of_eq (by ring)
 
-theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
+section
+variable {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
+include a b N upper b1 b2 A Sp
+
+theorem main_coefficients 
     (p:Profiles a b)(Jprofile:ℕ)(Q:Ideal O)(Kfix:ℝ)
     (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
       ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
     (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
-    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤seed)
+    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤ seed)
     (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
     let E:=Ebase*Z^(ell+deficit/6+paid);
@@ -104,12 +113,12 @@ theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
   intro j
   exact (hh j).trans_eq (coefficients_mul N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed _ _ j)
 
-theorem error_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
+theorem error_coefficients 
     (profiles:Profiles a b)(Jprofile:ℕ)(Q:Ideal O)(Kfix:ℝ)(prime:O)(k:ℕ)
     (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
       deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
     (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
-    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤seed)
+    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤ seed)
     (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
     let E:=Ebase*Z^(CenteredMomentFirstAmplificationChoice.errorRemoval prime Z k+deficit/6+paid);
@@ -134,9 +143,11 @@ theorem error_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
   have hhj:=hh j
   rw [hid] at hhj
   simpa only [mul_assoc] using hhj
-
-end SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
-
 end
 
-end OAI
+
+
+
+
+
+

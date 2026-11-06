@@ -14,7 +14,7 @@ open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -33,7 +33,7 @@ lemma remaining_energy_bound
     (hheight:0≤height)(hv:∀i,|v i|≤height)
     (s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=internalQ Q η₀)(hs:s.width≤Mcap)
     (p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(hc₁:X₁≤Z^L)(hc₂:X₂≤Z^L)
-    (hcapacity:R=J ∨ length Z X₁+length Z X₂+6*κ*(∑i∈J\R,w i)≤s.width):
+    (hcapacity:R=J ∨ length Z X₁+length Z X₂+6*κ*(∑i∈J\R,w i)≤ s.width):
     energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
       (fun i:↥(J\R)=>primePool M H bslot (Z^(w i)))
       (fun (i:↥(J\R)) I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -78,8 +78,8 @@ lemma remaining_energy_bound
           (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hC₀) hd) hp)
         (pow_nonneg (by positivity) _)) hz
 
-end SevenEighths.CenteredMomentEnergyPaidBands
 
-end
 
-end OAI
+
+
+

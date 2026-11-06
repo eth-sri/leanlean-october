@@ -12,13 +12,13 @@ from the original model envelope. These estimates keep their physical
 N,T dependence and include floor/ceiling and empty-log conventions.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseCore_natAbs_bounds
     {σ δ T N : ℝ} (hσ : 0 ≤ σ) (hδ : 0 ≤ δ) (hδ₁ : δ ≤ 1)
@@ -167,4 +167,4 @@ theorem three_scale_le_polynomial_budget {C T N : ℝ}
   have hc := mul_nonneg hC (pow_nonneg (show 0 ≤ T+1 by linarith) 3)
   nlinarith
 
-end TaoTrudgianYang2025
+

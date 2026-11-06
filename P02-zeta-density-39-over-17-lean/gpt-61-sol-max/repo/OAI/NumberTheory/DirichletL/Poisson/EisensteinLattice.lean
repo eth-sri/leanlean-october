@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.SecondPoissonScale
 
 @[expose] public section
@@ -9,49 +10,49 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
 
@@ -100,8 +101,7 @@ def translateSchwartz (f : 𝓢(ℂ, ℂ)) (b : ℂ) : 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLMOfAntilipschitz ℂ (g := fun z : ℂ => z + b)
     (by fun_prop) (isometry_add_right b).antilipschitzWith f
 
-@[simp] theorem translateSchwartz_apply (f : 𝓢(ℂ, ℂ)) (b z : ℂ) :
-    translateSchwartz f b z = f (z + b) := rfl
+
 
 theorem fourier_translate (f : ℂ → ℂ) (b w : ℂ) :
     𝓕 (fun z => f (z + b)) w =
@@ -196,8 +196,7 @@ def complexMulEquiv (c : ℂ) (hc : c ≠ 0) : ℂ ≃L[ℝ] ℂ :=
 @[simp] theorem complexMulEquiv_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
     complexMulEquiv c hc z = c * z := rfl
 
-@[simp] theorem complexMulEquiv_symm_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
-    (complexMulEquiv c hc).symm z = c⁻¹ * z := rfl
+
 
 theorem complexMulEquiv_det (c : ℂ) (hc : c ≠ 0) :
     LinearMap.det ((complexMulEquiv c hc) : ℂ →ₗ[ℝ] ℂ) = Complex.normSq c := by
@@ -226,15 +225,19 @@ open MeasureTheory EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
 open scoped FourierTransform SchwartzMap RealInnerProductSpace
 abbrev O := ActualEisensteinCubic.O
 
-def eisensteinLatticeMap (c : ℂ) (hc : c ≠ 0) : ℂ ≃L[ℝ] ℂ :=
+section
+variable (c : ℂ) (hc : c ≠ 0)
+include c hc
+
+def eisensteinLatticeMap  : ℂ ≃L[ℝ] ℂ :=
   scaledBasisEquiv omega3 omega3_im_ne_zero c hc
 
-theorem eisensteinLatticeMap_point (c : ℂ) (hc : c ≠ 0) (p : ℤ × ℤ) :
+theorem eisensteinLatticeMap_point  (p : ℤ × ℤ) :
     eisensteinLatticeMap c hc (complexPoint (p.1 : ℝ) (p.2 : ℝ)) =
       c * eisEmbedding (ActualEisensteinCoordinates.eval p.1 p.2) := by
   simp [eisensteinLatticeMap, complexPoint, eisEmbedding_eval, mul_comm]
 
-theorem eisenstein_inverseJacobian (c : ℂ) (hc : c ≠ 0) :
+theorem eisenstein_inverseJacobian  :
     inverseJacobian (eisensteinLatticeMap c hc) = 2 / (Real.sqrt 3 * ‖c‖ ^ 2) := by
   have hs : 0 < Real.sqrt 3 := Real.sqrt_pos.mpr (by norm_num)
   have hn : 0 < ‖c‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr hc)
@@ -243,10 +246,20 @@ theorem eisenstein_inverseJacobian (c : ℂ) (hc : c ≠ 0) :
   rw [abs_of_pos (inv_pos.mpr (mul_pos hn (div_pos hs (by norm_num))))]
   field_simp
 
-def eisensteinDualFrequency (c : ℂ) (hc : c ≠ 0) (p : ℤ × ℤ) : ℂ :=
+def eisensteinDualFrequency  (p : ℤ × ℤ) : ℂ :=
   dualMap (eisensteinLatticeMap c hc) (complexPoint (p.1 : ℝ) (p.2 : ℝ))
+end
 
-theorem actual_eisenstein_coset_poisson (f : 𝓢(ℂ, ℂ)) (b c : O) (hc : c ≠ 0) :
+
+section
+variable (f : 𝓢(ℂ, ℂ))
+include f
+
+section
+variable (b c : O) (hc : c ≠ 0)
+include b c hc
+
+theorem actual_eisenstein_coset_poisson  :
     (∑' z : O, f (eisEmbedding (b + c * z))) =
       (2 / (Real.sqrt 3 * ‖eisEmbedding c‖ ^ 2)) • ∑' p : ℤ × ℤ,
         Real.fourierChar (inner ℝ (eisEmbedding b)
@@ -271,7 +284,7 @@ theorem actual_eisenstein_coset_poisson (f : 𝓢(ℂ, ℂ)) (b c : O) (hc : c �
       exact add_comm _ _
     _ = _ := h
 
-theorem actual_eisenstein_coset_summable_norm (f : 𝓢(ℂ, ℂ)) (b c : O) (hc : c ≠ 0) :
+theorem actual_eisenstein_coset_summable_norm  :
     Summable (fun z : O => ‖f (eisEmbedding (b + c * z))‖) := by
   let A := eisensteinLatticeMap (eisEmbedding c) (eisEmbedding_ne_zero hc)
   have hp := plane_lattice_summable_norm (affinePullback f A (eisEmbedding b))
@@ -288,12 +301,14 @@ theorem actual_eisenstein_coset_summable_norm (f : 𝓢(ℂ, ℂ)) (b c : O) (hc
     rw [← eisensteinLatticeMap_point]
     exact add_comm _ _
   exact (latticeCoordEquiv.symm.summable_iff).mp hpair
+end
 
-theorem actual_eisenstein_summable_norm (f : 𝓢(ℂ, ℂ)) :
+
+theorem actual_eisenstein_summable_norm  :
     Summable (fun z : O => ‖f (eisEmbedding z)‖) := by
   simpa using actual_eisenstein_coset_summable_norm f 0 1 one_ne_zero
 
-theorem actual_eisenstein_periodic_summable (f : 𝓢(ℂ, ℂ))
+theorem actual_eisenstein_periodic_summable 
     {R : Type*} [Fintype R] (q : O → R) (P : R → ℂ) :
     Summable (fun z : O => P (q z) * f (eisEmbedding z)) := by
   classical
@@ -307,7 +322,7 @@ theorem actual_eisenstein_periodic_summable (f : 𝓢(ℂ, ℂ))
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_right (hP (q z)) (norm_nonneg _)
 
-theorem actual_eisenstein_periodic_poisson (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c ≠ 0)
+theorem actual_eisenstein_periodic_poisson  (c : O) (hc : c ≠ 0)
     (P : O ⧸ Ideal.span {c} → ℂ) :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
@@ -332,6 +347,8 @@ theorem actual_eisenstein_periodic_poisson (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
     (GaussianShiftedPartition.representative_spec c r)
     (fun z => f (eisEmbedding z))).trans
       (actual_eisenstein_coset_poisson f _ c hc)
+end
+
 
 theorem inverseJacobian_pos (A : ℂ ≃L[ℝ] ℂ) : 0 < inverseJacobian A :=
   abs_pos.mpr (inv_ne_zero A.toLinearEquiv.isUnit_det'.ne_zero)
@@ -414,12 +431,19 @@ theorem dual_basis_apply (w : ℂ) (hw : w.im ≠ 0) (z : ℂ) :
   intro v
   rw [dualMap, ContinuousLinearMap.adjoint_inner_right]
   change inner ℝ ((basisEquiv w hw).symm v) z = _
-  simp only [basisEquiv_symm_apply, Complex.inner, complexPoint,
-    Complex.mul_re,  Complex.conj_re, Complex.conj_im]
+  simp only [basisEquiv_symm_apply, complexPoint, Complex.inner, mul_re, conj_re, conj_im]
   field_simp [hw]
   ring
 
-theorem dual_mul_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
+section
+variable (c : ℂ)
+include c
+
+section
+variable (hc : c ≠ 0)
+include hc
+
+theorem dual_mul_apply  (z : ℂ) :
     dualMap (complexMulEquiv c hc) z = (starRingEnd ℂ c)⁻¹ * z := by
   apply ext_inner_left ℝ
   intro v
@@ -429,7 +453,7 @@ theorem dual_mul_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
   congr 1
   ring
 
-theorem eisensteinDualFrequency_explicit (c : ℂ) (hc : c ≠ 0) (p : ℤ × ℤ) :
+theorem eisensteinDualFrequency_explicit  (p : ℤ × ℤ) :
     eisensteinDualFrequency c hc p =
       complexPoint (p.1 : ℝ) (((p.1 : ℝ) + 2 * (p.2 : ℝ)) / Real.sqrt 3) /
         starRingEnd ℂ c := by
@@ -447,10 +471,14 @@ theorem eisensteinDualFrequency_explicit (c : ℂ) (hc : c ≠ 0) (p : ℤ × �
       ring
   rw [he]
   ring
+end
 
-def explicitDualFrequency (c : ℂ) (p : ℤ × ℤ) : ℂ :=
+
+def explicitDualFrequency  (p : ℤ × ℤ) : ℂ :=
   complexPoint (p.1 : ℝ) (((p.1 : ℝ) + 2 * (p.2 : ℝ)) / Real.sqrt 3) /
     starRingEnd ℂ c
+end
+
 
 theorem actual_eisenstein_poisson_explicit (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c ≠ 0)
     (P : O ⧸ Ideal.span {c} → ℂ) :
@@ -472,19 +500,15 @@ open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
 def radialTest (W : 𝓢(ℝ, ℂ)) : 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℂ (Function.hasTemperateGrowth_norm_sq ℂ)
     ⟨1, 1, fun z => by
-      simp only [pow_one, one_mul, norm_pow, Real.norm_of_nonneg (norm_nonneg z)]
+      simp
       nlinarith [sq_nonneg (‖z‖ - 1)]⟩ W
 
 @[simp] theorem radialTest_apply (W : 𝓢(ℝ, ℂ)) (z : ℂ) :
     radialTest W z = W (‖z‖ ^ 2) := rfl
 
-def compactRadialTest (W : ℝ → ℂ) (hWc : HasCompactSupport W)
-    (hWs : ContDiff ℝ ∞ W) : 𝓢(ℂ, ℂ) :=
-  radialTest (hWc.toSchwartzMap hWs)
 
-@[simp] theorem compactRadialTest_apply (W : ℝ → ℂ) (hWc : HasCompactSupport W)
-    (hWs : ContDiff ℝ ∞ W) (z : ℂ) :
-    compactRadialTest W hWc hWs z = W (‖z‖ ^ 2) := rfl
+
+
 
 end EisensteinSchwartzPoisson
 
@@ -492,7 +516,11 @@ open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 
-noncomputable def coordinateAddChar {ι T : Type*} [Fintype ι]
+section
+variable {ι T : Type*}
+include ι T
+
+def coordinateAddChar  [Fintype ι]
     (R : ι → Type*) [CommRing T] [∀ i, CommRing (R i)]
     (e : T ≃+* ∀ i, R i) (ψ : AddChar T ℂ) (i : ι) : AddChar (R i) ℂ := by
   classical
@@ -503,7 +531,7 @@ noncomputable def coordinateAddChar {ι T : Type*} [Fintype ι]
       intro z w
       rw [Pi.single_add, map_add, AddChar.map_add_eq_mul] }
 
-private theorem addChar_finite_sum {ι T : Type*} [AddCommMonoid T]
+private theorem addChar_finite_sum  [AddCommMonoid T]
     (ψ : AddChar T ℂ) (s : Finset ι) (f : ι → T) :
     ψ (∑ i ∈ s, f i) = ∏ i ∈ s, ψ (f i) := by
   classical
@@ -511,8 +539,12 @@ private theorem addChar_finite_sum {ι T : Type*} [AddCommMonoid T]
   | empty => simp
   | @insert a s ha ih => simp [ha, AddChar.map_add_eq_mul, ih]
 
-theorem addChar_finite_crt_factor {ι T : Type*} [Fintype ι]
-    (R : ι → Type*) [CommRing T] [∀ i, CommRing (R i)]
+section
+variable [Fintype ι]
+    (R : ι → Type*) [CommRing T]
+include R
+
+theorem addChar_finite_crt_factor  [∀ i, CommRing (R i)]
     (e : T ≃+* ∀ i, R i) (ψ : AddChar T ℂ) (x : T) :
     ψ x = ∏ i, coordinateAddChar R e ψ i (e x i) := by
   classical
@@ -523,12 +555,15 @@ theorem addChar_finite_crt_factor {ι T : Type*} [Fintype ι]
     _ = ∏ i, ψ (e.symm (Pi.single i (e x i))) := addChar_finite_sum ψ _ _
     _ = _ := rfl
 
-theorem gauss_transform_finite_crt {ι T : Type*} [Fintype ι]
-    (R : ι → Type*) [CommRing T] [∀ i, Field (R i)]
+section
+variable [∀ i, Field (R i)]
     [Fintype T] [∀ i, Fintype (R i)]
     (e : T ≃+* ∀ i, R i)
     (χ : ∀ i, MulChar (R i) ℂ) (ψ : AddChar T ℂ)
-    (hχ : ∀ i, χ i ≠ 1) (h : T) :
+    (hχ : ∀ i, χ i ≠ 1) (h : T)
+include e χ ψ hχ h
+
+theorem gauss_transform_finite_crt  :
     (∑ x : T, (∏ i, χ i (e x i)) * ψ (h * x)) =
       ∏ i, if e h i = 0 then 0 else
         (χ i (e h i))⁻¹ * gaussSum (χ i) (coordinateAddChar R e ψ i) := by
@@ -548,12 +583,7 @@ theorem gauss_transform_finite_crt {ι T : Type*} [Fintype ι]
     _ = _ := ShortDraftFiniteGaussFourier.product_gauss_transform
       R χ (coordinateAddChar R e ψ) hχ (e h)
 
-theorem gauss_transform_finite_crt_scalar {ι T : Type*} [Fintype ι]
-    (R : ι → Type*) [CommRing T] [∀ i, Field (R i)]
-    [Fintype T] [∀ i, Fintype (R i)]
-    (e : T ≃+* ∀ i, R i)
-    (χ : ∀ i, MulChar (R i) ℂ) (ψ : AddChar T ℂ)
-    (hχ : ∀ i, χ i ≠ 1) (h : T) :
+theorem gauss_transform_finite_crt_scalar  :
     (∑ x : T, (∏ i, χ i (e x i)) * ψ (h * x)) =
       (∏ i, χ i (e h i))⁻¹ *
         ∑ x : T, (∏ i, χ i (e x i)) * ψ x := by
@@ -571,31 +601,39 @@ theorem gauss_transform_finite_crt_scalar {ι T : Type*} [Fintype ι]
     · rfl
   simp_rw [hlocal]
   rw [Finset.prod_mul_distrib, Finset.prod_inv_distrib]
+end
+end
+end
 
-theorem finite_prod_eq_iInf {ι A : Type*} [Fintype ι] [CommRing A]
-    (P : ι → Ideal A) (hc : Pairwise (Function.onFun IsCoprime P)) :
+
+section
+variable {ι A : Type*} [Fintype ι] [CommRing A]
+    (P : ι → Ideal A) (hc : Pairwise (Function.onFun IsCoprime P))
+include ι A P hc
+
+theorem finite_prod_eq_iInf  :
     (∏ i, P i) = ⨅ i, P i := by
   simpa using (Ideal.prod_eq_iInf_of_pairwise_isCoprime
     (s := Finset.univ) (J := P) (by
       intro i _ j _ hij
       exact hc hij))
 
-noncomputable def quotientProdEquivPi {ι A : Type*} [Fintype ι] [CommRing A]
-    (P : ι → Ideal A) (hc : Pairwise (Function.onFun IsCoprime P)) :
+def quotientProdEquivPi  :
     (A ⧸ ∏ i, P i) ≃+* ∀ i, A ⧸ P i :=
   (Ideal.quotEquivOfEq (finite_prod_eq_iInf P hc)).trans
     (Ideal.quotientInfRingEquivPiQuotient P hc)
 
-@[simp] theorem quotientProdEquivPi_mk {ι A : Type*} [Fintype ι] [CommRing A]
-    (P : ι → Ideal A) (hc : Pairwise (Function.onFun IsCoprime P))
+@[simp] theorem quotientProdEquivPi_mk 
     (a : A) (i : ι) :
     quotientProdEquivPi P hc (Ideal.Quotient.mk (∏ j, P j) a) i =
       Ideal.Quotient.mk (P i) a := by
   simp only [quotientProdEquivPi, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk]
   rfl
-
-end IdealGaussCRT
-
 end
 
-end OAI
+
+
+
+
+
+

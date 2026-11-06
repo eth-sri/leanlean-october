@@ -11,13 +11,13 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
 open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -27,9 +27,9 @@ theorem certified_from_stages
     (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
     (ha:0<a)(hmask:0≤Bmask)(hMcap:0≤Mcap)(hκ:0≤κ)(hε:0<ε)(k:ℕ)
     (ez el eh:ℝ)
-    (hez:ez≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
-    (hel:el≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
-    (heh:eh≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
+    (hez:ez≤ stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
+    (hel:el≤ stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
+    (heh:eh≤ stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
     (hold:CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε k)
     (hzero:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
@@ -60,7 +60,7 @@ theorem certified_from_stages
     CenteredMomentEnergyProfiles.lower_antitone a b ha (by unfold remaining;omega)
   have hlength:lengthAt Mcap Bmask L ε (k+1)≤lengthAt Mcap Bmask L ε k:=
     range_mono Mcap Bmask L hMcap hmask (by unfold remaining;omega)
-  have hloss:stageLoss Mcap Bs ε k≤stageLoss Mcap Bs ε (k+1):=by
+  have hloss:stageLoss Mcap Bs ε k≤ stageLoss Mcap Bs ε (k+1):=by
     unfold stageLoss
     rw [loss_succ]
     linarith
@@ -107,8 +107,8 @@ theorem certified_from_stages
         _ _ _ _ _ _ _ _ η₀ Q Jh J Sh S Ch Cp hold.1.le
         le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl heh hJh hSh hCh.le hCh' hh
 
-end SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
 
-end
 
-end OAI
+
+
+

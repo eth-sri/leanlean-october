@@ -12,9 +12,9 @@ namespace SevenEighths.CenteredMomentCommonLiveHeight
 open HeckeFamily CenteredMomentCommonRadialSource CenteredMomentCommonRadialData
 open CenteredMomentCommonRadialPointwise CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
+open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
 open CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
@@ -48,8 +48,8 @@ open CenteredMomentSourceLiveColumn
   unfold envelope
   ring
 
-end SevenEighths.CenteredMomentCommonLiveHeight
 
-end
 
-end OAI
+
+
+

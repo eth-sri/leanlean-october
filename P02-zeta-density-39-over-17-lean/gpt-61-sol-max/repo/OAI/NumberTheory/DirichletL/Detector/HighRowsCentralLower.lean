@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralDefect
 
 namespace OAI
 
-noncomputable section
+
 open scoped Topology
 open Filter
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 
 theorem central_correction_threshold (eps : ℝ) (heps : 0<eps) :
     ∃Q0 : ℝ,480≤Q0 ∧ ∀Q : ℝ,Q0≤Q→198*Q^(-10*eps)≤1/2 := by
@@ -40,7 +40,7 @@ theorem ramifiedClosed_central_lower (eta a rho x w z : ℂ) (alpha eps : ℝ)
     (ramifiedClosed p hp hg eta a rho x w z j)
   rw [sub_add_cancel,norm_one,norm_sub_rev] at hh
   linarith
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

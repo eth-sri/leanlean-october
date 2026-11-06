@@ -7,7 +7,7 @@ public import GuthMaynard.SecondDerivative
 /-! Finite exponential sums at the physical source scales. The sign and
 radians conversion is proved, and the three boundary terms are retained. -/
 
-noncomputable section
+
 
 open Expdb RiemannZeta.GuthMaynard
 open scoped FourierTransform
@@ -74,4 +74,4 @@ theorem norm_sum_Icc_le_interior_add_three
         linarith
     _ ≤ _ := by linarith [hz a,hz (a+L+2),hz (a+L+3)]
 
-end TaoTrudgianYang2025
+

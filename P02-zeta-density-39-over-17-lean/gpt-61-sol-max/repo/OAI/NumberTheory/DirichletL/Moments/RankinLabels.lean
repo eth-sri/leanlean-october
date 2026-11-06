@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 public import OAI.NumberTheory.DirichletL.Moments.RankinSubset
 
@@ -6,13 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinSubset
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinLabels
 open IdealMobiusDivisorSum CenteredMomentRankinRadical CenteredMomentRankinSubset
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
+section
+variable (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε)
+include a ε ha hε
+
+theorem common_pair_count  :
     ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
       ∀ S : Finset (Ideal O × Ideal O),
       (∀ v ∈ S,v.1 ≠ 0 ∧ v.2 ≠ 0) →
@@ -56,7 +61,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right hrad (by positivity)
     _ = _ := by rw [Real.rpow_add hY,Real.rpow_one]; ring
 
-theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
+theorem partitioned_common_pair_count  :
     ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
       ∀ S : Finset ((Ideal O × Ideal O) × Finset (Ideal O)),
       (∀ v ∈ S,v.1.1 ≠ 0 ∧ v.1.2 ≠ 0) →
@@ -97,7 +102,7 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       exact_mod_cast hb
     obtain ⟨w,hw,hwe⟩ := Finset.mem_image.mp hv
     have hb := hpow (commonRadical v.1 v.2) (commonRadical_ne_zero _ _)
-    have hn : (Ideal.absNorm (commonRadical v.1 v.2):ℝ) ≤ Y := hwe ▸ hR w hw
+    have hn := hwe ▸ hR w hw
     exact hc.trans (hb.trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) hn (by positivity)) hD.le))
   have he := Finset.card_eq_sum_card_fiberwise
@@ -110,9 +115,11 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right hpairs (by positivity)
     _ = (C*D)*X₁^a*X₂^a*(Y^(1+ε/2)*Y^(ε/2))/(Ideal.absNorm s:ℝ) := by ring
     _ = _ := by rw [← Real.rpow_add hY]; congr 3; ring
-
-end SevenEighths.CenteredMomentRankinLabels
-
 end
 
-end OAI
+
+
+
+
+
+

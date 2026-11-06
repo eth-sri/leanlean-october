@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceFiberEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedUniform
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
@@ -11,11 +12,11 @@ noncomputable section
 
 open scoped Classical BigOperators Topology SchwartzMap ContDiff
 namespace SevenEighths.ProbeDetectorInverseMarkedField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
+open HeckeFamily HeckeDyadic InverseMoment
+open HeckeDetectorRawFiber HeckeDetectorBatch
 open ProbeHighRowFamily ProbeFinalAssembly Filter
 open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -54,10 +55,10 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   let Csum:ℝ:=1+∑label,C label
   have hCsum:0<Csum:=by
     have hh:=Finset.sum_nonneg (fun label (_:label∈Finset.univ)=>(hC label).le)
-    dsimp [Csum];linarith
+    positivity
   have hClabel (label):C label≤Csum:=by
     have hh:=Finset.single_le_sum (fun label (_:label∈Finset.univ)=>(hC label).le) (Finset.mem_univ label)
-    dsimp [Csum];linarith
+    linarith
   have hscale:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d → U₀ label≤Z^d := by
     apply Filter.eventually_all.mpr
     intro label
@@ -107,8 +108,8 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     n hn s hs height t hheight ht
   convert hh using 1 ; ring
 
-end SevenEighths.ProbeDetectorInverseMarkedField
 
-end
 
-end OAI
+
+
+

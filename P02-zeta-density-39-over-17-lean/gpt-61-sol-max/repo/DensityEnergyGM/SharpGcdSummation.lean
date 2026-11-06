@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpCoprimeCubic
 public import RationalLargeGcdEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -51,17 +51,14 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
           C * T ^ ε * N * sharpCubicProfile T W := by
   obtain ⟨C, T₀, hC, hT₀, hCubic⟩ :=
     real_scale_coprime_cubic_sharp_native (ε / 2) (by positivity)
-  let L : ℝ := 1 + (4 : ℝ) ^ (ε / 2) / (ε / 2)
+  let L := 1 + (4 : ℝ) ^ (ε / 2) / (ε / 2)
   have hL : 0 < L := by dsimp only [L]; positivity
   refine ⟨C * L, T₀, by positivity, hT₀, ?_⟩
   intro T N P W hT hN hTN hNT hP hSep hBase
   have hTtwo : 2 ≤ T := hT₀.trans hT
   have hTpos : 0 < T := by linarith
   have hGeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
-      N < p.1 ∧ (p.1 : ℝ) ≤ 2 * N ∧ N < p.2 ∧ (p.2 : ℝ) ≤ 2 * N := by
-    intro p hp
-    obtain ⟨h1, h2, hl1, hu1, hl2, hu2, hd⟩ := hP p hp
-    exact ⟨h1, h2, hl1, hu1, hl2, hu2⟩
+      N < p.1 ∧ (p.1 : ℝ) ≤ 2 * N ∧ N < p.2 ∧ (p.2 : ℝ) ≤ 2 * N := by grind
   have hBlock : ∀ d ∈ gcdValues P,
       (∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖ ^ 3) ≤
         (C * T ^ (ε / 2) * sharpCubicProfile T W) * (N / d) := by
@@ -69,7 +66,7 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     obtain ⟨p, hp, he⟩ := Finset.mem_image.mp hd
     have hdPos : 0 < d := he ▸ Nat.gcd_pos_of_pos_left _ (hP p hp).1
     have hdR : (0 : ℝ) < d := by exact_mod_cast hdPos
-    have hdLower : N ^ 2 / T ≤ (d : ℝ) := he ▸ (hP p hp).2.2.2.2.2.2
+    have hdLower := he ▸ (hP p hp).2.2.2.2.2.2
     have hDiv : N / (d : ℝ) ≤ T / N := by
       have hh := div_le_div_of_nonneg_left hN.le (show 0 < N ^ 2 / T by positivity) hdLower
       have hid : N / (N ^ 2 / T) = T / N := by field_simp
@@ -125,4 +122,4 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     _ = (C * L) * (T ^ (ε / 2) * T ^ (ε / 2)) * N * sharpCubicProfile T W := by ring
     _ = _ := by rw [hPower]
 
-end Montgomery.RationalMoment
+

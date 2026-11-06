@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Growth
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+
+open scoped EisensteinO
 
 theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hε : 0 ≤ ε) (hA : 0 ≤ A) (hM : 1 ≤ M) (hN : 1 ≤ N)
@@ -24,8 +25,7 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
   have hRne : R.Nonempty := by
     refine ⟨1, ?_⟩
     rw [mem_elementRange]
-    refine ⟨one_ne_zero, ?_⟩
-    simpa using hM
+    simp_all
   have hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
     fun z hz => (mem_elementRange M z).mp hz
   apply FiniteSieveOperator.squared_norm_le_of_energy (elementMatrix M N)
@@ -78,7 +78,7 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       elementSieveNorm M N ≤ C*(M*N)^ε*(M^(1/3 : ℝ)*N + M^ξ) := by
   obtain ⟨A,hA,hb⟩ := h.doubled (ε/2) (by positivity)
-  let D : ℝ := 2 + 1/((ε/4)*Real.log 2)
+  let D := 2 + 1/((ε/4)*Real.log 2)
   have hD : 0 < D := by
     dsimp [D]
     have : 0 < Real.log 2 := Real.log_pos (by norm_num)
@@ -91,9 +91,7 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
   have hLP : (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 ≤ D^2*M^(ε/2) := by
     have hh := pow_le_pow_left₀ (by positivity) hlog 2
     rw [mul_pow, ← Real.rpow_mul_natCast hM0.le] at hh
-    have he : (ε/4)*(2:ℕ) = ε/2 := by push_cast; ring
-    rw [he] at hh
-    exact hh
+    grind
   have hMP : M^(ε/2) ≤ (M*N)^(ε/2) := Real.rpow_le_rpow hM0.le
     (by nlinarith) (by positivity)
   have hprod : (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 * (M*N)^(ε/2) ≤
@@ -106,8 +104,7 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
           (Real.rpow_nonneg (by positivity) _)
       _ = _ := by
         rw [mul_assoc, ← Real.rpow_add (mul_pos hM0 hN0)]
-        congr 2
-        ring
+        simp
   have he := elementSieveNorm_two_power_log ξ (ε/2) A M N hξ (by positivity) hA.le hM hN
     (fun X hX => hb X N hX hN)
   calc
@@ -121,7 +118,7 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hprod (by positivity)) (by positivity)
     _ = _ := by ring
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

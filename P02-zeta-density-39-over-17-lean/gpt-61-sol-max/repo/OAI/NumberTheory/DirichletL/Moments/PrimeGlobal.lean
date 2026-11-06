@@ -66,8 +66,8 @@ theorem ray_prime_global_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       (Real.rpow_le_rpow_of_exponent_le (by linarith : 1≤Z^d)
         (by nlinarith [mul_le_mul_of_nonneg_right hκ hr])) (sq_nonneg _)
 
-end SevenEighths.CenteredMomentPrimeGlobal
 
-end
 
-end OAI
+
+
+

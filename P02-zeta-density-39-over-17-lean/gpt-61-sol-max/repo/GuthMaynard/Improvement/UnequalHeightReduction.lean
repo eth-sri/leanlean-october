@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.UnequalPoissonBridge
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
@@ -17,4 +16,4 @@ def unequalAdaptive (T δ : ℝ) (K R : ℕ) (f : 𝓢(ℝ, ℝ)) (hT : 0 < T) :
     (div_pos (gmAffineSecondPoissonCutoff_pos hT (Real.rpow_pos_of_pos hT _))
       (Real.rpow_pos_of_pos hT _)) f
 
-end GuthMaynard.Improvement
+

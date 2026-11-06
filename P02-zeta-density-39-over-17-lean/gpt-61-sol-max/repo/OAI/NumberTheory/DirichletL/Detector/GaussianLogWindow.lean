@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.GaussianFlow
 
 @[expose] public section
@@ -7,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap FourierTransform
-open Filter Set MeasureTheory
+open Filter MeasureTheory
 namespace SevenEighths.ProbePhysical
 
 lemma gaussianFlow_real_smooth (R : ℝ) : ContDiff ℝ ∞ (fun s : ℝ=>gaussianFlow R (s:ℂ)) := by
@@ -16,14 +17,21 @@ lemma gaussianFlow_real_smooth (R : ℝ) : ContDiff ℝ ∞ (fun s : ℝ=>gaussi
   have hf : ContDiffAt ℂ ∞ (gaussianFlow R) (s:ℂ) := (gaussianFlow_analytic R _).contDiffAt
   exact (hf.restrict_scalars ℝ).comp s Complex.ofRealCLM.contDiff.contDiffAt
 
-def gaussianLogWindow (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ)) (R : ℝ) : SchwartzMap ℝ ℂ :=
+section
+variable (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
+include V hV
+
+def gaussianLogWindow  (R : ℝ) : SchwartzMap ℝ ℂ :=
   (hV.mul_right (f':=fun s : ℝ=>gaussianFlow R (s:ℂ))).toSchwartzMap
     (V.smooth'.mul (gaussianFlow_real_smooth R))
-@[simp] lemma gaussianLogWindow_apply (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
+@[simp] lemma gaussianLogWindow_apply 
     (R s : ℝ) : gaussianLogWindow V hV R s=V s*gaussianFlow R (s:ℂ) := rfl
 
-lemma gaussianLogWindow_derivative_outside (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (L : ℝ) (hbox : ∀s,V s≠0→|s|≤L) (R y : ℝ) (hy : L < |y|) (n : ℕ) :
+section
+variable (L : ℝ)
+include L
+
+lemma gaussianLogWindow_derivative_outside  (hbox : ∀s,V s≠0→|s|≤L) (R y : ℝ) (hy : L < |y|) (n : ℕ) :
     iteratedDeriv n (gaussianLogWindow V hV R) y=0 := by
   have he : (gaussianLogWindow V hV R:ℝ→ℂ)=ᶠ[𝓝 y](fun _=>0) := by
     have hu : {x : ℝ | L < |x|}∈𝓝 y := (isOpen_lt continuous_const continuous_abs).mem_nhds hy
@@ -33,8 +41,11 @@ lemma gaussianLogWindow_derivative_outside (V : SchwartzMap ℝ ℂ) (hV : HasCo
   rw [he.iteratedDeriv_eq n]
   simp
 
-lemma gaussianLogWindow_derivative_bound (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (L : ℝ) (hL : 0≤L) (a : ℝ) (n : ℕ) :
+section
+variable (hL : 0≤L)
+include hL
+
+lemma gaussianLogWindow_derivative_bound  (a : ℝ) (n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→∀y : ℝ,|y|≤L→
       ‖iteratedDeriv n (gaussianLogWindow V hV R) y‖≤C*R^(-a) := by
   choose B hB hbound using fun i : ℕ=>gaussianFlow_derivative_bound a L hL i
@@ -62,8 +73,11 @@ lemma gaussianLogWindow_derivative_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
     _ = C*R^(-a) := by simp only [C,Finset.sum_mul]; apply Finset.sum_congr rfl; intros; ring
     _ ≤ (C+1)*R^(-a) := by nlinarith [Real.rpow_pos_of_pos hR (-a)]
 
-theorem gaussianLogWindow_seminorm (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (L : ℝ) (hL : 0≤L) (hbox : ∀s,V s≠0→|s|≤L) (a : ℝ) (k n : ℕ) :
+section
+variable (hbox : ∀s,V s≠0→|s|≤L) (a : ℝ)
+include hbox a
+
+theorem gaussianLogWindow_seminorm  (k n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→
       SchwartzMap.seminorm ℝ k n (gaussianLogWindow V hV R)≤C*R^(-a) := by
   obtain ⟨B,hB,hbound⟩ := gaussianLogWindow_derivative_bound V hV L hL a n
@@ -79,8 +93,7 @@ theorem gaussianLogWindow_seminorm (V : SchwartzMap ℝ ℂ) (hV : HasCompactSup
   · rw [gaussianLogWindow_derivative_outside V hV L hbox R y (lt_of_not_ge hy) n,norm_zero,mul_zero]
     positivity
 
-theorem gaussianLogWindow_fourier_moment (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (L : ℝ) (hL : 0≤L) (hbox : ∀s,V s≠0→|s|≤L) (a : ℝ) (J : ℕ) :
+theorem gaussianLogWindow_fourier_moment  (J : ℕ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→
       (∫t : ℝ,(1+‖t‖)^J*‖(𝓕 (gaussianLogWindow V hV R)) t‖)≤C*R^(-a) := by
   let p := (MeasureTheory.volume : MeasureTheory.Measure ℝ).integrablePower
@@ -90,7 +103,7 @@ theorem gaussianLogWindow_fourier_moment (V : SchwartzMap ℝ ℂ) (hV : HasComp
   have hC : 0<C := by
     have hh : 0≤∑i∈Finset.range (K+1),(B (0,i)+B (p,i)) :=
       Finset.sum_nonneg (fun i _=>add_nonneg (hB _).le (hB _).le)
-    dsimp only [C]; linarith
+    positivity
   let D := (2:ℝ)^J*(FourierBridge.coefficientMomentBound 0 C+FourierBridge.coefficientMomentBound J C)
   have hD : 0≤D := mul_nonneg (by positivity)
     (add_nonneg (FourierBridge.coefficientMomentBound_nonneg _ _ hC.le)
@@ -105,7 +118,7 @@ theorem gaussianLogWindow_fourier_moment (V : SchwartzMap ℝ ℂ) (hV : HasComp
       have hh := Finset.single_le_sum (s:=Finset.range (K+1)) (a:=i)
         (f:=fun i=>B (0,i)+B (p,i))
         (fun i _=>add_nonneg (hB _).le (hB _).le) (Finset.mem_range.mpr (by dsimp only [K,p]; omega))
-      dsimp only [C]; linarith
+      linarith
     calc
       _ ≤ R^a*(B (0,i)*R^(-a)+B (p,i)*R^(-a)) :=
         mul_le_mul_of_nonneg_left (add_le_add (hb (0,i) R hR) (hb (p,i) R hR)) (by positivity)
@@ -120,8 +133,13 @@ theorem gaussianLogWindow_fourier_moment (V : SchwartzMap ℝ ℂ) (hV : HasComp
   have hc' : R^(-a)*R^a=1 := by rw [mul_comm,hcancel]
   rw [←mul_assoc,hc',one_mul] at hp
   exact hp.trans (by nlinarith [Real.rpow_pos_of_pos hR (-a)])
-
-end SevenEighths.ProbePhysical
+end
+end
+end
 end
 
-end OAI
+
+
+
+
+

@@ -5,7 +5,6 @@ public import GeneralDetectorCover
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -44,4 +43,4 @@ lemma affine_nonneg_between {a b x q r : ℝ} (ha : a ≤ x) (hb : x ≤ b)
   · have := mul_le_mul_of_nonpos_left hb (le_of_not_ge hq)
     linarith
 
-end Montgomery.RationalMoment
+

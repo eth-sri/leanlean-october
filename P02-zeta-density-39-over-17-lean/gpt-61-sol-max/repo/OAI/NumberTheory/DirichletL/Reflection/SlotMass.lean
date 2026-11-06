@@ -7,12 +7,16 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
-lemma inactive_choices_mass (L : σ→Finset (Ideal Eis)) (T : Finset σ) :
+section
+variable (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+include L T
+
+lemma inactive_choices_mass  :
     (∑ b : ∀ i : {i // i∉T}, L i.val,
       ‖∏ i : {i // i∉T}, (Ideal.absNorm (b i).val:ℂ)⁻¹‖)=
     ∏ i : {i // i∉T}, ∑ P∈L i.val, (Ideal.absNorm P:ℝ)⁻¹ := by
@@ -22,7 +26,7 @@ lemma inactive_choices_mass (L : σ→Finset (Ideal Eis)) (T : Finset σ) :
   intro i hi
   exact Finset.sum_coe_sort (L i.val) (fun P => (Ideal.absNorm P:ℝ)⁻¹)
 
-lemma inactive_choices_mass_bound (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma inactive_choices_mass_bound 
     (H : σ→ℝ) (hzero : ∀ i, ∀ P∈L i, P≠0)
     (hH : ∀ i, ∀ P∈L i, (Ideal.absNorm P:ℝ)≤H i) :
     (∑ b : ∀ i : {i // i∉T}, L i.val,
@@ -34,8 +38,10 @@ lemma inactive_choices_mass_bound (L : σ→Finset (Ideal Eis)) (T : Finset σ)
     positivity
   · intro i hi
     simpa only [one_div] using finite_inverse_norm_sum (L i.val) (H i.val) (hzero i.val) (hH i.val)
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

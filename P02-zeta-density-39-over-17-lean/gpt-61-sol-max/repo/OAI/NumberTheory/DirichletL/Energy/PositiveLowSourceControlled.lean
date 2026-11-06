@@ -13,20 +13,21 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
-open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
+open HeckeFamily
+open CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
+
+
+open CenteredMomentNaturalFixedRaySource
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveLowBandSource (PhysicalLowAt)
 open CenteredMomentEnergyBandMonotonicity
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem actual_low_stages_from_physical
     (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi a b bΦ Mcap εdiag ξ saving:ℝ)
@@ -85,8 +86,8 @@ theorem actual_low_stages_from_physical
   have hh:=hZ.2 Bmask L Lslot rho κ e η₀ Q S J Cm hκ hCm he hsave hold' hmass'
   simpa only [heq] using hh
 
-end SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
 
-end
 
-end OAI
+
+
+

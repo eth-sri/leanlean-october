@@ -42,10 +42,10 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
   bin : Slot→ℝ
   mesh : ℝ
   binWidth : ℝ
-  mesh_nonneg : 0≤mesh
+  mesh_nonneg : 0≤ mesh
   binWidth_pos : 0<binWidth
   widths_pos : ∀ s∈slots,0<widths s
-  widths_mesh : ∀ s∈slots,widths s≤mesh
+  widths_mesh : ∀ s∈slots,widths s≤ mesh
   supply : 7/37≤∑ s∈slots,widths s
   fixed_bin : ∀ u∈rows,∀ s∈slots,
     HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) binWidth
@@ -54,13 +54,19 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-def Fiber.r (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := Real.logb U ((2 : ℝ)^F.left.val)
-def Fiber.m (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := Real.logb U ((2 : ℝ)^F.right.val)
-def Fiber.q (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := weightedMean F.slots F.widths F.bin
-def Fiber.inverseProfile (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ→ℂ := inverseTest U tstar F.r
-def Fiber.physicalProduct (F : Fiber M H Label Slot U a ε tstar T allowance i)
+section
+variable (F : Fiber M H Label Slot U a ε tstar T allowance i)
+include F
+
+def Fiber.r  : ℝ := Real.logb U ((2 : ℝ)^F.left.val)
+def Fiber.m  : ℝ := Real.logb U ((2 : ℝ)^F.right.val)
+def Fiber.q  : ℝ := weightedMean F.slots F.widths F.bin
+def Fiber.inverseProfile  : ℝ→ℂ := inverseTest U tstar F.r
+def Fiber.physicalProduct 
     (selected : Finset Slot) (u : FreeRow) : ℂ :=
   ∏ s∈selected,physical M H (fun u : FreeRow => u.val) F.profile F.upper F.widths F.external U u s
+end
+
 
 structure Moments (F : Fiber M H Label Slot U a ε tstar T allowance i)
     (Δ c κ C height εm : ℝ) : Prop where
@@ -92,8 +98,8 @@ theorem Fiber.mean_bounds (F : Fiber M H Label Slot U a ε tstar T allowance i) 
   rw [←F.fixed_bin u hu s hs]
   exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
 
-end SevenEighths.HeckeDetectorRawFiber
 
-end
 
-end OAI
+
+
+

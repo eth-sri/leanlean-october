@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.Euler
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ComplexConjugate
 open Complex
 namespace SevenEighths.HeckeFamily
@@ -54,8 +54,8 @@ theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ)
     exact tsum_congr (idealTerm_inverse_conj χ z)
   exact congr_fun he s
 
-end SevenEighths.HeckeFamily
 
-end
 
-end OAI
+
+
+

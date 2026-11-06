@@ -8,8 +8,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss CanonicalRowCompletion
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem markedCompletedT_monoid (Ψ φ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ) :
     markedCompletedT Ψ W X (fun A => φ (primaryGenerator A)) = completedT (φ * Ψ) W X := by
@@ -65,7 +65,7 @@ theorem markedCompletedT_prime_product_twists {ι : Type*}
   intro T hT
   rw [markedCompletedT_const_mul, markedCompletedT_monoid]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -14,7 +15,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSampleGeometry
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -69,8 +69,7 @@ theorem finiteVariationBound_saddleCutoff {T G L : ℝ}
   have hm : Antitone (fun i : ℕ => zetaAtkinsonSaddle T (-Real.sqrt ((m+i:ℕ):ℝ))) := by
     intro i j hij
     apply zetaAtkinsonSaddle_monotone hT
-    apply neg_le_neg
-    exact Real.sqrt_le_sqrt (by exact_mod_cast Nat.add_le_add_left hij m)
+    gcongr
   exact ⟨finiteVariationBound_zetaBandCutoff_sample (he (by linarith)) (he (by linarith))
     _ N (Or.inl (hp.monotoneOn (Iic N))),
     finiteVariationBound_zetaBandCutoff_sample (he (by linarith)) (he (by linarith))
@@ -94,4 +93,4 @@ theorem exists_finiteVariationBound_saddleResidual :
     · rfl
     · ring
 
-end MathCollab.Density.Stronger.Atkinson
+

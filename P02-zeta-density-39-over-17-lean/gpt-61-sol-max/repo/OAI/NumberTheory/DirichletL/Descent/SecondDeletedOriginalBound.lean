@@ -9,10 +9,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open JointLogSeparation
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -67,7 +67,7 @@ theorem actual_second_deleted_mode_original_bound
   exact mul_le_mul_of_nonneg_left
     (Finset.sum_le_sum_of_subset_of_nonneg hΓ (fun γ _ _=>tripleDivisorWeight_nonneg K γ)) hA
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

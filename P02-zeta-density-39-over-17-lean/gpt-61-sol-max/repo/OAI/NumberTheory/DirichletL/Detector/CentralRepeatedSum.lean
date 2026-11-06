@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedChoices
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedSum
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedChoices
 open ProbeSelectedPrimeSums
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
@@ -84,8 +84,8 @@ theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
     _ ≤ (D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps)*(C*E*R*∏j,(Y j)^(-(4/25:ℝ))) :=
       mul_le_mul_of_nonneg_right (hcount k hk u T W Y) (by positivity)
     _ = _ := by dsimp [R];ring
-end SevenEighths.ProbeCentralRepeatedSum
 
-end
 
-end OAI
+
+
+

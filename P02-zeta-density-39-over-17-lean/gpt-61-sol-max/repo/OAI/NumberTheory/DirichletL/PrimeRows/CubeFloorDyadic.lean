@@ -8,7 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 lemma bounded_dyadic_power_sum (p : ℝ) (hp : 0<p) :
     ∃C : ℝ,0<C ∧ ∀H : ℝ,0<H → ∀F : Finset ℕ,
@@ -60,8 +60,8 @@ lemma retained_dyadic_sum {A : Type*} [AddCommMonoid A] (rows : Finset FreeRow) 
   intro m hm n hn hmn
   exact (dyadicRows_disjoint 1 (by norm_num) hmn).mono (Finset.inter_subset_right) (Finset.inter_subset_right)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

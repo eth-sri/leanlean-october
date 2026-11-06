@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection10TwoLossContradiction
 public import GafniTao.WooleySection10HierarchySelection
 
@@ -16,7 +17,7 @@ the earlier loss `eta`.
 
 namespace GafniTao
 
-noncomputable section
+
 
 set_option maxHeartbeats 1000000 in
 /-- A complete Section-10 hierarchy subordinate to an already selected
@@ -40,7 +41,7 @@ theorem wooley_section10_separatedHierarchy_exists
     hetaMu, hscaleSlope, hnuThetaSlope, hnuScaleSlope,
     hcurrentCap, hsecondCap, hetaSlope, hhierarchySlope⟩ :=
       wooley_section10_slopeHierarchy_exists (N := N) hk hLambda
-  let tau : ℝ := min tauCap (tau0 / 2)
+  let tau := min tauCap (tau0 / 2)
   have htauCap : 0 < tauCap := lt_trans heta hetaTauCap
   have htau : 0 < tau := by dsimp [tau]; positivity
   have htauLeCap : tau ≤ tauCap := by dsimp [tau]; exact min_le_left _ _
@@ -53,10 +54,7 @@ theorem wooley_section10_separatedHierarchy_exists
     have hraw : 4 * eta / Lambda < 1 := hnuThetaSlope.trans hmuOne
     rw [div_lt_one hLambda] at hraw
     linarith
-  have htauScale : 4 * tau * (k : ℝ) ^ 2 ≤ 1 := by
-    have hfactor : (0 : ℝ) ≤ 4 * (k : ℝ) ^ 2 := by positivity
-    have := mul_le_mul_of_nonneg_left htauLeCap hfactor
-    nlinarith [htauCapScale]
+  have htauScale : 4 * tau * (k : ℝ) ^ 2 ≤ 1 := by field_simp <;> nlinarith
   have hcurrent :
       (tau * (k : ℝ) ^ (2 * N + 1)) * mu +
           (k : ℝ) * (4 * eta / Lambda) < delta * mu := by
@@ -78,8 +76,8 @@ theorem wooley_section10_separatedHierarchy_exists
           (k : ℝ) * (4 * eta / Lambda) := by
             gcongr
       _ < ((k : ℝ) ^ 2 * delta) * mu := hsecondCap
-  let epsilonCap : ℝ := min eta tau
-  let epsilon : ℝ := epsilonCap / 2
+  let epsilonCap := min eta tau
+  let epsilon := epsilonCap / 2
   have hepsilonCap : 0 < epsilonCap := by dsimp [epsilonCap]; positivity
   have hepsilon : 0 < epsilon := by dsimp [epsilon]; linarith
   have hepsilonLtCap : epsilon < epsilonCap := by dsimp [epsilon]; linarith
@@ -108,14 +106,10 @@ theorem wooley_initialNu_twoLoss_lower
     (hepsilonEta : epsilon ≤ eta) :
     2 * (eta + epsilon) * (H : ℝ) / Lambda ≤
       (wooleyInitialNu eta Lambda H : ℝ) := by
-  have heta0 : 0 ≤ eta := hepsilon.trans hepsilonEta
   have hfour := wooley_initialNu_lower
     (epsilon := eta) (Lambda := Lambda) (H := H)
   have htwo : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤
-      4 * eta * (H : ℝ) / Lambda := by
-    have hH0 : (0 : ℝ) ≤ H := by positivity
-    apply div_le_div_of_nonneg_right _ hLambda.le
-    nlinarith
+      4 * eta * (H : ℝ) / Lambda := by field_simp <;> nlinarith
   exact htwo.trans hfour
 
 /-- Every fixed natural threshold is eventually below the selected
@@ -178,7 +172,6 @@ theorem wooley_initial_twoLoss_absorption_eventually
     simpa only [wooley_natPrimePower_rpow p H (eta + epsilon) hpPos] using hbound
   have hneg : -(eta + epsilon) * (H : ℝ) =
       -((H : ℝ) * (eta + epsilon)) := by ring
-  dsimp only [C] at hbound' ⊢
   rw [hneg, Real.rpow_neg (by positivity : (0 : ℝ) ≤ p),
     ← div_eq_mul_inv, div_le_one hpowerPos]
   exact hbound'
@@ -195,8 +188,7 @@ theorem wooley_constant_le_prime_pow_iterationTheta_eventually
       (Filter.eventually_ge_atTop C))
   obtain ⟨H0, hH0⟩ := wooley_iterationTheta_eventually_ge hmu n0
   refine ⟨H0, ?_⟩
-  intro H hH
-  exact hn0 _ (hH0 H hH)
+  simp_all
 
 /-- A lower bound on `B` transfers to the terminal height
 `H=ceil(B/k)`. -/
@@ -208,6 +200,6 @@ theorem wooley_le_ceilDiv_of_mul_le
   exact Nat.le_of_mul_le_mul_left (hB.trans hBceil) (by omega)
 
 
-end
 
-end GafniTao
+
+

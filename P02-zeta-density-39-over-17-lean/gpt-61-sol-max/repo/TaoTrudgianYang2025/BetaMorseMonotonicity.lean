@@ -12,13 +12,13 @@ and its sign follows from the original phase's strict negative curvature.
 This supplies invertibility through the critical point.
 -/
 
-noncomputable section
+
 
 open Set Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseStationaryDeficit_hasDerivAt
     {F : ℝ → ℝ} {σ δ u : ℝ} {P : ℕ}
@@ -33,11 +33,15 @@ theorem modelPhaseStationaryDeficit_hasDerivAt
   · rfl
   · ring
 
-theorem modelPhaseMorseCoordinate_deriv_mul
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
+section
+variable {F : ℝ → ℝ} {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
+include F σ δ v u hσ hδ hF hv hu
+
+theorem modelPhaseMorseCoordinate_deriv_mul
+     :
     modelPhaseMorseCoordinate F v u * deriv (modelPhaseMorseCoordinate F v) u =
       v-deriv F u := by
   have hd := ((modelPhaseMorseCoordinate_contDiffAt hσ hδ hF hv hu).differentiableAt
@@ -52,10 +56,7 @@ theorem modelPhaseMorseCoordinate_deriv_mul
   nlinarith only [h]
 
 theorem modelPhaseMorseCoordinate_deriv_pos
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+     :
     0 < deriv (modelPhaseMorseCoordinate F v) u := by
   by_cases heq : u = modelPhaseInverseSlope F v
   · rw [heq,(modelPhaseMorseCoordinate_hasDerivAt_inverse hF hv).deriv]
@@ -76,6 +77,8 @@ theorem modelPhaseMorseCoordinate_deriv_pos
       have h := hmono (modelPhaseInverseSlope_mem hv) hu hgt
       rw [deriv_modelPhaseInverseSlope_apply hv] at h
       nlinarith
+end
+
 
 theorem modelPhaseMorseCoordinate_strictMonoOn
     {F : ℝ → ℝ} {σ δ v : ℝ}
@@ -88,5 +91,5 @@ theorem modelPhaseMorseCoordinate_strictMonoOn
   · intro u hu
     exact modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv (by simpa using hu)
 
-end TaoTrudgianYang2025
+
 

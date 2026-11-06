@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.FirstGaussianProfileWeights
 public import OAI.NumberTheory.DirichletL.Energy.FirstHighNormalizedGaussianPowers
 
@@ -6,21 +7,21 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstHighNormalizedGaussianPowe
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighGaussianUniformPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
+open CenteredMomentCanonicalFirst
+open CenteredMomentSecondHeightFamily
+open CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondChildPowerBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFiniteProfileExceptional
-open QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSecondChildPowerBudget
+
+
+open scoped HeckeO
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
 lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ)
@@ -44,7 +45,6 @@ lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ
   apply Finset.sum_le_sum
   intro j _
   have hj0:=hH j
-  have hu0:0≤upper:=zero_le_one.trans hupper
   calc
     _≤Z^(eps*Bcommon)*(upper^N*(G*(F*Z^(srcLoss j)/seed)*Z^(deficit+actualLoss j+primeLoss))):=by
       apply mul_le_mul hncPow _ (by positivity) (by positivity)
@@ -111,8 +111,8 @@ theorem actual_high_homogeneous_four_powers
     hupper (Nat.cast_nonneg _) hZ heps heps1 hncap (by positivity) hF hseed H
     srcLoss (lossVector sigma delta reserve paid eps Mcap saving) hH hbound
 
-end SevenEighths.CenteredMomentEnergyFirstHighGaussianUniformPowers
 
-end
 
-end OAI
+
+
+

@@ -8,7 +8,7 @@ namespace OAI
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-noncomputable section
+
 
 lemma frequency_interval_compl (R : ℝ) :
     (Set.Icc (-R) R)ᶜ = {t : ℝ | R < ‖t‖} := by
@@ -92,8 +92,12 @@ private theorem schwartz_tail_le (g : SchwartzMap ℝ ℂ) (R : ℝ)
   simpa only [pow_zero, one_mul, Nat.zero_add, mul_comm] using
     schwartz_weighted_tail g 0 N R hR
 
-private theorem separated_pair_tail_of_bound {α β : Type*} (S : Finset α) (T : Finset β)
+section
+variable {α β : Type*} (S : Finset α) (T : Finset β)
     (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
+include α β S T a b x y
+
+private theorem separated_pair_tail_of_bound 
     (w : ℝ → ℂ) (R M : ℝ) (N : ℕ)
     (hi : Integrable (fun u => w u * phasePolynomial S a x u * phasePolynomial T b y u))
     (hw : Integrable w) (hbound : (∫ u : ℝ in {u | R < ‖u‖}, ‖w u‖) ≤ M / R^N) :
@@ -113,9 +117,11 @@ private theorem separated_pair_tail_of_bound {α β : Type*} (S : Finset α) (T 
     _ ≤ E * (M / R^N) := mul_le_mul_of_nonneg_left hbound hE
     _ = _ := by rw [div_mul_eq_mul_div, mul_div_assoc]
 
-theorem separated_pair_tail {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
-    (g : SchwartzMap ℝ ℂ) (R : ℝ) (hR : 0 < R) (N : ℕ) :
+section
+variable (g : SchwartzMap ℝ ℂ) (R : ℝ) (hR : 0 < R) (N : ℕ)
+include g R hR N
+
+theorem separated_pair_tail  :
     ‖(∫ u : ℝ, (𝓕 g) u*phasePolynomial S a x u*phasePolynomial T b y u) -
       (∫ u : ℝ in Set.Icc (-R) R,
         (𝓕 g) u*phasePolynomial S a x u*phasePolynomial T b y u)‖ ≤
@@ -126,9 +132,7 @@ theorem separated_pair_tail {α β : Type*} (S : Finset α) (T : Finset β)
     (separated_pair_integrable S T a b x y g) (𝓕 g).integrable
     (schwartz_tail_le g R hR N)
 
-theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
-    (g : SchwartzMap ℝ ℂ) (R : ℝ) (hR : 0 < R) (N : ℕ) :
+theorem exists_bounded_frequency  :
     ∃ t : ℝ, ‖t‖ ≤ R ∧
       ‖∑ i ∈ S, ∑ j ∈ T, a i*b j*g (x i+y j)‖ ≤
       ((∑ i ∈ S, ‖a i‖)*(∑ j ∈ T, ‖b j‖))/R^N *
@@ -140,8 +144,11 @@ theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
   rw [finite_pair_separation]
   have htail := separated_pair_tail S T a b x y g R hR N
   exact (norm_le_norm_sub_add _ _).trans (add_le_add htail hb)
-
 end
-end SevenEighths.HeckeDetectorFourier
+end
 
-end OAI
+
+
+
+
+

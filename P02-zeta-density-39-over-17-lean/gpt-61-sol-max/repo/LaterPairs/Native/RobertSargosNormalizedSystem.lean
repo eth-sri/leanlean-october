@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNormalizationGeometry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                          
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
@@ -74,5 +73,5 @@ theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
         div_le_div_of_nonneg_right h.near (by positivity)
       _ = _ := by field_simp
 
-end TaoTrudgianYang2025
+
 

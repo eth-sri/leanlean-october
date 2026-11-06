@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.Family
 public import Mathlib.Data.ZMod.Basic
 
@@ -45,36 +46,40 @@ theorem coordinateElement_surjective :
   simp only [pb.basis_eq_pow] at hsum
   simpa [a, b, i0, i1, pb_gen, coordinateElement, smul_eq_mul, mul_comm] using hsum
 
-def intQuotientHom (χ : Character) : ℤ →+ (O ⧸ χ.modulus) :=
+section
+variable (χ : Character)
+include χ
+
+def intQuotientHom  : ℤ →+ (O ⧸ χ.modulus) :=
   (Ideal.Quotient.mk χ.modulus).toAddMonoidHom.comp (Int.castAddHom O)
 
-def zmodQuotientHom (χ : Character) : ZMod χ.period →+ (O ⧸ χ.modulus) :=
+def zmodQuotientHom  : ZMod χ.period →+ (O ⧸ χ.modulus) :=
   ZMod.lift χ.period ⟨intQuotientHom χ, by
     change Ideal.Quotient.mk χ.modulus ((χ.period : ℤ) : O) = 0
-    simpa only [Int.cast_natCast] using quotient_period χ⟩
+    exact quotient_period χ⟩
 
-@[simp] theorem zmodQuotientHom_intCast (χ : Character) (a : ℤ) :
+@[simp] theorem zmodQuotientHom_intCast  (a : ℤ) :
     zmodQuotientHom χ (a : ZMod χ.period) = Ideal.Quotient.mk χ.modulus (a : O) :=
   ZMod.lift_coe _ _ _
 
-@[simp] theorem zmodQuotientHom_natCast (χ : Character) (a : ℕ) :
+@[simp] theorem zmodQuotientHom_natCast  (a : ℕ) :
     zmodQuotientHom χ (a : ZMod χ.period) = Ideal.Quotient.mk χ.modulus (a : O) := by
   simpa only [Int.cast_natCast] using zmodQuotientHom_intCast χ (a : ℤ)
 
-def coordinateQuotientHom (χ : Character) :
+def coordinateQuotientHom  :
     (ZMod χ.period × ZMod χ.period) →+ (O ⧸ χ.modulus) where
   toFun p := zmodQuotientHom χ p.1 +
     zmodQuotientHom χ p.2 * Ideal.Quotient.mk χ.modulus HeckeFamily.omega
   map_zero' := by simp
   map_add' x y := by simp only [Prod.fst_add, Prod.snd_add, map_add]; ring
 
-@[simp] theorem coordinateQuotientHom_intCast (χ : Character) (a b : ℤ) :
+@[simp] theorem coordinateQuotientHom_intCast  (a b : ℤ) :
     coordinateQuotientHom χ (a, b) =
       Ideal.Quotient.mk χ.modulus (coordinateElement a b) := by
   simp only [coordinateQuotientHom, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
     zmodQuotientHom_intCast, coordinateElement, map_add, map_mul]
 
-theorem coordinateQuotientHom_surjective (χ : Character) :
+theorem coordinateQuotientHom_surjective  :
     Function.Surjective (coordinateQuotientHom χ) := by
   intro x
   obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -82,14 +87,16 @@ theorem coordinateQuotientHom_surjective (χ : Character) :
   change coordinateElement a b = z at hab
   exact ⟨(a,b), by rw [coordinateQuotientHom_intCast, hab]⟩
 
-theorem coefficients_eq_quotient_character (χ : Character)
+theorem coefficients_eq_quotient_character 
     (a : Fin χ.period × Fin χ.period) :
     coefficients χ a = χ.residue (coordinateQuotientHom χ (a.1, a.2)) := by
   simp [HeckeFamily.coefficients, HeckeFamily.elementCoeff, coordinateQuotientHom,
     coordinateElement]
-
-end SevenEighths.HeckeCoordinates
-
 end
 
-end OAI
+
+
+
+
+
+

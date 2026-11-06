@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss
+
+open scoped EisensteinO
 
 lemma gcd_generator_left (I J : SupportedIdeal) :
     primaryGenerator I.val=primaryGenerator (gcdCommon I J).val*primaryGenerator (gcdLeft I J).val := by
@@ -21,7 +21,7 @@ lemma gcd_generator_right (I J : SupportedIdeal) :
     primaryGenerator J.val=primaryGenerator (gcdCommon I J).val*primaryGenerator (gcdRight I J).val := by
   rw [←primaryGenerator_mul,gcd_common_right]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

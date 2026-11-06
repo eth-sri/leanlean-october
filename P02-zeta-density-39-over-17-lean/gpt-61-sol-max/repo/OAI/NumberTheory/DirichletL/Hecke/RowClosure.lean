@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.IdealOperations
 
 @[expose] public section
@@ -11,7 +12,11 @@ namespace SevenEighths.HeckeRowClosure
 open HeckeFamily
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem periodic_of_primary (M : Ideal O)
+section
+variable (M : Ideal O)
+include M
+
+theorem periodic_of_primary 
     (hM : M ≤ Ideal.span {λ₀ ^ 2}) (G F : O →* ℂ)
     (hF : CanonicalCoefficientClass.FactorsModulo M F)
     (hu : ∀ (u : Oˣ) x, G ((u : O) * x) = G x)
@@ -29,7 +34,7 @@ theorem periodic_of_primary (M : Ideal O)
     have hspec := CompletedGauss.primaryGenerator_spec (Ideal.span {x}) hg
     obtain ⟨u, hu'⟩ := Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
     have hp : λ₀ ^ 2 ∣ (u : O) * x - 1 := by
-      have hp' : λ₀ ^ 2 ∣ CompletedGauss.primaryGenerator (Ideal.span {x}) - 1 := hspec.2
+      have hp' := hspec.2
       rwa [mul_comm, hu']
     have hq : λ₀ ^ 2 ∣ (u : O) * y - 1 := by
       have hd := hdiff.trans (dvd_mul_left (x-y) (u : O))
@@ -38,24 +43,25 @@ theorem periodic_of_primary (M : Ideal O)
     apply hF
     simpa only [mul_sub] using M.mul_mem_left (u : O) hxy
 
-def quotientRow (M : Ideal O) (G : O →* ℂ)
-    (hG : CanonicalCoefficientClass.FactorsModulo M G) : (O ⧸ M) →* ℂ where
+section
+variable (G : O →* ℂ)
+    (hG : CanonicalCoefficientClass.FactorsModulo M G)
+include G hG
+
+def quotientRow  : (O ⧸ M) →* ℂ where
   toFun x := Quotient.liftOn' x G (fun a b hab => hG a b (M.quotientRel_def.mp hab))
   map_one' := G.map_one
   map_mul' x y := by
     refine Quotient.inductionOn₂' x y ?_
     exact G.map_mul
 
-@[simp] theorem quotientRow_mk (M : Ideal O) (G : O →* ℂ)
-    (hG : CanonicalCoefficientClass.FactorsModulo M G) (z : O) :
+@[simp] theorem quotientRow_mk  (z : O) :
     quotientRow M G hG (Ideal.Quotient.mk M z) = G z := rfl
 
-def residueRow (M : Ideal O) (G : O →* ℂ)
-    (hG : CanonicalCoefficientClass.FactorsModulo M G) : MulChar (O ⧸ M) ℂ :=
+def residueRow  : MulChar (O ⧸ M) ℂ :=
   MulChar.ofUnitHom (Units.map (quotientRow M G hG))
 
-theorem residueRow_mk (M : Ideal O) (G : O →* ℂ)
-    (hG : CanonicalCoefficientClass.FactorsModulo M G) (z : O) :
+theorem residueRow_mk  (z : O) :
     residueRow M G hG (Ideal.Quotient.mk M z) =
       if IsUnit (Ideal.Quotient.mk M z) then G z else 0 := by
   by_cases hz : IsUnit (Ideal.Quotient.mk M z)
@@ -67,47 +73,62 @@ theorem residueRow_mk (M : Ideal O) (G : O →* ℂ)
     rw [hu, quotientRow_mk]
   · rw [ite_eq_right hz]
     exact MulChar.map_nonunit _ hz
+end
 
-def rowCharacter (M : Ideal O) (hM : M ≠ ⊥) (G : O →* ℂ)
+
+section
+variable (hM : M ≠ ⊥) (G : O →* ℂ)
     (hG : CanonicalCoefficientClass.FactorsModulo M G)
-    (hu : ∀ u : Oˣ, G (u : O) = 1) : Character :=
+    (hu : ∀ u : Oˣ, G (u : O) = 1)
+include hM G hG hu
+
+def rowCharacter  : Character :=
   Character.ofResidue M hM (residueRow M G hG) (by
     intro u
     rw [residueRow_mk, ite_eq_left (u.isUnit.map (Ideal.Quotient.mk M)), hu])
 
-theorem elementCoeff_rowCharacter (M : Ideal O) (hM : M ≠ ⊥) (G : O →* ℂ)
-    (hG : CanonicalCoefficientClass.FactorsModulo M G)
-    (hu : ∀ u : Oˣ, G (u : O) = 1) (z : O) :
+theorem elementCoeff_rowCharacter  (z : O) :
     elementCoeff (rowCharacter M hM G hG hu) z =
       if IsUnit (Ideal.Quotient.mk M z) then G z else 0 := residueRow_mk M G hG z
+end
+end
 
-def elementHom (η : Character) : O →* ℂ where
+
+section
+variable (η : Character)
+include η
+
+def elementHom  : O →* ℂ where
   toFun := elementCoeff η
   map_one' := elementCoeff_one η
   map_mul' := elementCoeff_mul η
 
-theorem elementHom_periodic (η : Character) :
+theorem elementHom_periodic  :
     CanonicalCoefficientClass.FactorsModulo η.modulus (elementHom η) := by
   intro x y hxy
   apply congrArg η.residue
   exact Ideal.Quotient.eq.mpr hxy
 
-theorem elementHom_norm (η : Character) (x : O) : ‖elementHom η x‖ ≤ 1 := by
+theorem elementHom_norm  (x : O) : ‖elementHom η x‖ ≤ 1 := by
   let : Finite (O ⧸ η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Fintype (O ⧸ η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue _
 
-theorem rowTwist_unit_mul (η : Character) (m f z : O) (u : Oˣ) (n : O) :
+section
+variable (m f z : O)
+include m f z
+
+theorem rowTwist_unit_mul  (u : Oˣ) (n : O) :
     CanonicalRowCompletion.rowTwist (elementHom η) m f z ((u : O)*n) =
       CanonicalRowCompletion.rowTwist (elementHom η) m f z n := by
   change elementCoeff η ((u : O)*n) * CanonicalRowCompletion.idealRowHom (m^6*f^4*z) (Ideal.span {(u : O)*n}) = elementCoeff η n * CanonicalRowCompletion.idealRowHom (m^6*f^4*z) (Ideal.span {n})
   rw [elementCoeff_unit_mul, Ideal.span_singleton_mul_left_unit u.isUnit]
 
-theorem rowTwist_unit (η : Character) (m f z : O) (u : Oˣ) :
+theorem rowTwist_unit  (u : Oˣ) :
     CanonicalRowCompletion.rowTwist (elementHom η) m f z (u : O) = 1 := by
   simpa using rowTwist_unit_mul η m f z u 1
 
-theorem rowTwist_periodic (η : Character) (m f z : O)
+theorem rowTwist_periodic 
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
     (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
@@ -129,9 +150,15 @@ theorem rowTwist_periodic (η : Character) (m f z : O)
     exact ((CanonicalQuadraticSieve.supported_span_iff n).mp hs).1 hn
   · exact CanonicalRowCompletion.rowTwist_eq_actualPeriodicRow_primary
       _ _ _ _ hmLam hm2 u a b r hr hpr hx
+end
 
-theorem rowTwist_nonzero_coprime (η : Character) (m f z n : O)
+
+section
+variable (m f z n : O)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+include m f z n hmLam hm2
+
+theorem rowTwist_nonzero_coprime 
     (hn : CanonicalRowCompletion.rowTwist (elementHom η) m f z n ≠ 0) :
     CanonicalQuadraticSieve.Supported (Ideal.span {n}) ∧ IsCoprime n (m^6*f^4*z) := by
   have hs : CanonicalQuadraticSieve.Supported (Ideal.span {n}) := by
@@ -147,8 +174,7 @@ theorem rowTwist_nonzero_coprime (η : Character) (m f z n : O)
   · exact (Ideal.isCoprime_span_singleton_iff _ _).mp hc
   · simp [hc] at hp
 
-theorem rowTwist_nonzero_unit (η : Character) (m f z n : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+theorem rowTwist_nonzero_unit 
     (u : Oˣ) (a b : ℕ) (r : O)
     (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r)
     (hn : CanonicalRowCompletion.rowTwist (elementHom η) m f z n ≠ 0) :
@@ -173,8 +199,14 @@ theorem rowTwist_nonzero_unit (η : Character) (m f z n : O)
   exact ⟨⟨⟨hη, (Ideal.isCoprime_span_singleton_iff _ _).mpr hm⟩,
     (Ideal.isCoprime_span_singleton_iff _ _).mpr h72⟩,
     (Ideal.isCoprime_span_singleton_iff _ _).mpr hr⟩
+end
 
-theorem exists_row_character (η : Character) (m f z : O)
+
+section
+variable (m f z : O)
+include m f z
+
+theorem exists_row_character 
     (hm : m ≠ 0) (hf : f ≠ 0) (hz : z ≠ 0)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
     ∃ χ : Character, ∀ n : O, elementCoeff χ n =
@@ -192,11 +224,11 @@ theorem exists_row_character (η : Character) (m f z : O)
   · rfl
   · exact Eq.symm (not_not.mp (fun h => hn (rowTwist_nonzero_unit η m f z n hmLam hm2 u a b r hx h)))
 
-def rowConductorBound (η : Character) (m f z : O) : ℕ :=
+def rowConductorBound  : ℕ :=
   η.modulus.absNorm * (Ideal.span {m}).absNorm * (Ideal.span {(72 : O)}).absNorm *
     ((Ideal.span {f}).absNorm ^ 4 * (Ideal.span {z}).absNorm)
 
-theorem row_modulus_norm_le (η : Character) (m f z : O)
+theorem row_modulus_norm_le 
     (hf : f ≠ 0) (hz : z ≠ 0) (u : Oˣ) (a b : ℕ) (r : O)
     (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r) :
     (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}).absNorm ≤
@@ -216,7 +248,7 @@ theorem row_modulus_norm_le (η : Character) (m f z : O)
     Nat.mul_le_mul_left
       (η.modulus.absNorm * (Ideal.span {m}).absNorm * (Ideal.span {(72 : O)}).absNorm) hn
 
-theorem exists_row_character_with_conductor (η : Character) (m f z : O)
+theorem exists_row_character_with_conductor 
     (hm : m ≠ 0) (hf : f ≠ 0) (hz : z ≠ 0)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
     ∃ χ : Character, χ.modulus.absNorm ≤ rowConductorBound η m f z ∧
@@ -235,6 +267,9 @@ theorem exists_row_character_with_conductor (η : Character) (m f z : O)
   split_ifs with hn
   · rfl
   · exact Eq.symm (not_not.mp (fun h => hn (rowTwist_nonzero_unit η m f z n hmLam hm2 u a b r hx h)))
+end
+end
+
 
 theorem idealCoeff_eq_row (η χ : Character) (m f z : O)
     (heq : ∀ n : O, elementCoeff χ n =
@@ -251,8 +286,8 @@ theorem idealCoeff_eq_row (η χ : Character) (m f z : O)
   rw [idealCoeff_span η hn]
   rfl
 
-end SevenEighths.HeckeRowClosure
 
-end
 
-end OAI
+
+
+

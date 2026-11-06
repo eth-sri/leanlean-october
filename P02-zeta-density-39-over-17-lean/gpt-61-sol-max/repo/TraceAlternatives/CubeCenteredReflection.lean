@@ -3,7 +3,6 @@ public import TraceAlternatives.CubeReflectionSecond
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
@@ -73,4 +72,4 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
       exact_mod_cast reflectionBlocks_card_le hLp hH
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

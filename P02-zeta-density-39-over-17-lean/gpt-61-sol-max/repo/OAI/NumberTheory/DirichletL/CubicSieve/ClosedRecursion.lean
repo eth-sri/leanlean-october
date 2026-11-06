@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopeningBounds
 public import OAI.NumberTheory.DirichletL.CubicSieve.CutoffOrders
 
@@ -6,97 +7,81 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.CutoffOrders
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField UniqueFactorizationMonoid
+                                          
+                                          
+                                          
+                                          
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace SecondPassArithmetic
+                                                       
 
-section
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open JointLogSeparation (frequencyTwist)
 
-end
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open JointLogSeparation (frequencyTwist)
-
-end SecondPassArithmetic
-
-open scoped BigOperators Classical
+                                  
 namespace CompletedGauss
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
@@ -177,10 +162,10 @@ lemma compact_estimate_prod_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G) (A
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr (norm_snd_le (T u,K u))
   have hh : ‖u‖^2≤R*‖(T.prod K) u‖^2 := calc
     _ ≤A*‖T u‖^2+B*‖K u‖^2 := hest u
-    _ ≤max A 0*‖T u‖^2+max B 0*‖K u‖^2 :=
+    _ ≤ max A 0*‖T u‖^2+max B 0*‖K u‖^2 :=
       add_le_add (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
         (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
-    _ ≤max A 0*‖(T.prod K) u‖^2+max B 0*‖(T.prod K) u‖^2 :=
+    _ ≤ max A 0*‖(T.prod K) u‖^2+max B 0*‖(T.prod K) u‖^2 :=
       add_le_add (mul_le_mul_of_nonneg_left hT (le_max_right _ _))
         (mul_le_mul_of_nonneg_left hK (le_max_right _ _))
     _ = _ := by dsimp only [R]; ring
@@ -188,9 +173,13 @@ lemma compact_estimate_prod_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G) (A
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
   simpa only [mul_pow,Real.sq_sqrt hR] using hh
 
-lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
+section
+variable (T : E→L[ℂ]F) (K : E→L[ℂ]G)
     (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
+    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2)
+include T K hK A B hest
+
+lemma finiteDimensional_ker_of_compact_estimate  :
     FiniteDimensional ℂ T.ker := by
   let : CompleteSpace T.ker := T.isClosed_ker.completeSpace_coe
   have hc : IsCompactOperator (K.comp T.ker.subtypeL) := hK.comp_clm T.ker.subtypeL
@@ -200,16 +189,14 @@ lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ
     have ht : T (u:E)=0 := u.2
     have hh := hest (u:E)
     rw [ht,norm_zero,zero_pow (by decide : 2≠0),mul_zero,zero_add] at hh
-    have hh' : ‖u‖^2≤max B 0*‖K (u:E)‖^2 :=
+    have hh' : ‖u‖^2≤ max B 0*‖K (u:E)‖^2 :=
       hh.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
     change ‖u‖≤Real.sqrt (max B 0)*‖K (u:E)‖
     apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
     simpa only [mul_pow,Real.sq_sqrt (le_max_right B 0)] using hh'
   exact FiniteDimensional.of_isCompactOperator_id hid
 
-lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) (hT : Function.Injective T) :
+lemma antilipschitz_of_injective_compact_estimate  (hT : Function.Injective T) :
     ∃D : NNReal,AntilipschitzWith D T := by
   by_contra hanti
   have hex (ε : ℝ) (hε : 0<ε) : ∃u : E,‖u‖=1 ∧ ‖T u‖<ε := by
@@ -237,18 +224,16 @@ lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[�
   have hvlim : Tendsto (fun n => u (seq n)) atTop (𝓝 v) := by
     apply (hD.isInducing P.continuous).tendsto_nhds_iff.mpr
     change Tendsto (fun n => P (u (seq n))) atTop (𝓝 (P v))
-    rw [hv]
-    exact hlim
-  have hvzero : v=0 := hT (by
-    have hh := congrArg Prod.fst hv
-    change T v=0 at hh
-    simpa only [map_zero] using hh)
+    simp_all <;> nlinarith
+  have hvzero : v=0 := hT (by aesop)
   have hnorm : ‖v‖=1 := tendsto_nhds_unique hvlim.norm (by simpa only [hunorm] using tendsto_const_nhds)
   rw [hvzero,norm_zero] at hnorm
   norm_num at hnorm
-
-end CubicEisenstein
-
 end
 
-end OAI
+
+
+
+
+
+

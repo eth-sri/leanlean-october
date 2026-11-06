@@ -6,13 +6,12 @@ public import LaterPairs.Native.IntegerBoxCount
 public import LaterPairs.Native.RobertSargosPrimitiveProjection
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_coefficient_image_card_le_box
@@ -47,5 +46,5 @@ theorem robertSargos_coefficient_image_card_le
     _ ≤ (3*R)*(2*H)^2 := mul_le_mul (by linarith) hsq (sq_nonneg _) (by linarith)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

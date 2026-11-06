@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.RowCaps
 
 @[expose] public section
@@ -9,69 +10,69 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 namespace CubicEisenstein
 
@@ -127,12 +128,7 @@ lemma kernelProjection_contMDiff : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(�
       (kernelCoordinateTransition (integralOrbitProjection globalKubotaKernel w).out) Set.univ
       (hyperbolicSpatialCoordinates w) :=
     (kernelCoordinateTransition_contDiffAt _ _ hp hq).contDiffWithinAt
-  unfold kernelCoordinateTransition at h
-  simpa only [extChartAt_coe,extChartAt_coe_symm,modelWithCornersSelf_coe,
-    modelWithCornersSelf_coe_symm,Function.id_comp,Function.comp_id,Set.range_id,
-    kernelSpatial_chartAt,hyperbolicSpatial_chartAt,kernelCoordinateTransition,
-    kernelQuotientChart,OpenPartialHomeomorph.trans_apply,Function.comp_def,
-    hyperbolicSpatialChart_apply,id_eq] using h
+  aesop
 
 end
 
@@ -163,9 +159,9 @@ lemma kernelL2_smooth_compact_approx (f : KernelQuotientL2) (ε : ℝ) (hε : 0<
         ENNReal.ofReal ε := by
   obtain ⟨g,hgK,hfg,hgc,hgLp⟩ := kernelL2_continuous_compact_approx f
     (ENNReal.ofReal (ε/2)) (by positivity)
-  let mass : ℝ≥0∞ := (integralQuotientVolume globalKubotaKernel Set.univ)^((2:ℝ≥0∞).toReal⁻¹)
+  let mass := (integralQuotientVolume globalKubotaKernel Set.univ)^((2:ℝ≥0∞).toReal⁻¹)
   have hm : mass≠(∞:ℝ≥0∞) := ENNReal.rpow_ne_top_of_nonneg (by norm_num) (measure_ne_top _ _)
-  let deltaLoss : ℝ := ε/(2*(mass.toReal+1))
+  let deltaLoss := ε/(2*(mass.toReal+1))
   have hδ : 0<deltaLoss := div_pos hε (by positivity)
   obtain ⟨k,hkg,hksupp⟩ := hgc.exists_contMDiff_approx 𝓘(ℝ,SpatialCoordinates) ⊤
     (ε := fun _ => deltaLoss) continuous_const (fun _ => hδ)
@@ -180,7 +176,7 @@ lemma kernelL2_smooth_compact_approx (f : KernelQuotientL2) (ε : ℝ) (hε : 0<
     have hmul : mass.toReal*deltaLoss≤ε/2 := by
       have he : deltaLoss*(2*(mass.toReal+1))=ε := div_mul_cancel₀ _ (by positivity)
       have hp := ENNReal.toReal_nonneg (a := mass)
-      nlinarith [mul_nonneg hp hδ.le]
+      nlinarith
     calc
       _ ≤ mass*ENNReal.ofReal deltaLoss := eLpNorm_le_of_ae_bound (hgc.sub k.contMDiff.continuous).aestronglyMeasurable hb
       _ = ENNReal.ofReal (mass.toReal*deltaLoss) := by
@@ -239,31 +235,13 @@ open ActualEisensteinCubic SecondPassArithmetic
 open SecondPassIntegration (elementNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
-variable (hp : ∀i,p i≠0)
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end
 
 lemma normCharacter_norm_le_one {q : ℕ} (χ : DirichletCharacter ℂ q) (a : O) :
     ‖normCharacter χ a‖≤1 := χ.norm_le_one _
 
 end
-section
 
-open ActualEisensteinCubic SecondPassArithmetic
-open FirstPassCubeLabels (primeProductNorm columnLog)
-open SecondPassIntegration (elementNorm)
-
-section
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-end
-
-end
 
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
@@ -350,8 +328,8 @@ theorem cubeParityKey_product (x : CubeCoordinates ι) :
   have h := FirstPassCubeLabels.cube_pair_product_decomposition p x.support
     x.leftExponent x.rightExponent x.leftBit x.rightBit x.support_pos
   have h' := congrArg (fun z : O => (Ideal.span {z} : Ideal O)) h
-  simp only [cubeProductIdeal,cubeParityKey,pow_two,←Ideal.span_singleton_mul_span_singleton] at h' ⊢
-  convert h' using 1 ; congr 1 ; ring
+  simp only [← span_singleton_mul_span_singleton, pow_two, cubeProductIdeal, cubeParityKey] at h' ⊢
+  convert h' using 1 ; ring
 
 omit [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem cubeDivisorKey_dvd (x : CubeCoordinates ι) (i : Fin 3) :
@@ -426,8 +404,8 @@ theorem cubeParityKey_fiber_card (s : Finset (CubeCoordinates ι)) (q : Ideal O 
       exact congrArg Subtype.val (congrFun he i)
   simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_fin,D] using Fintype.card_le_of_injective encode hi
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+

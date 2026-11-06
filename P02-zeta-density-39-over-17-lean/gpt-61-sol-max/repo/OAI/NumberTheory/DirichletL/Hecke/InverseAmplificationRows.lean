@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
 
 @[expose] public section
@@ -28,9 +29,9 @@ theorem ideal_decomposition_unique {I J A B : Ideal O}
     have hi := hIf P
     have hj := hJf P
     omega
-  have hIJ : normalizedFactors I=normalizedFactors J :=
+  have hIJ :=
     Multiset.ext.mpr (fun P => (hcounts P).1)
-  have hAB : normalizedFactors A=normalizedFactors B :=
+  have hAB :=
     Multiset.ext.mpr (fun P => (hcounts P).2)
   constructor
   · simpa only [Ideal.prod_normalizedFactors_eq_self hI,Ideal.prod_normalizedFactors_eq_self hJ]
@@ -76,8 +77,8 @@ theorem rowMap_norm (p : FreeRow×NonzeroIdeal) :
     (Ideal.span {rowMap p}).absNorm=(Ideal.span {p.1.val}).absNorm*p.2.val.absNorm^6 := by
   rw [rowMap_span,map_mul,map_pow]
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

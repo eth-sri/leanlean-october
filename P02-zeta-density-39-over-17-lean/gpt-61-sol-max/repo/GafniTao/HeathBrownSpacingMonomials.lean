@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownLogAbsorption
 
 @[expose] public section
@@ -15,12 +16,12 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownSpacingBase
+def heathBrownSpacingBase
     (N k : ℕ) (lambda : ℝ) : ℝ :=
   (N : ℝ) + lambda * (N : ℝ) ^ 2 +
     lambda ^ (-(2 / (k : ℝ)))
 
-noncomputable def heathBrownThreeTerm
+def heathBrownThreeTerm
     (N k : ℕ) (lambda : ℝ) : ℝ :=
   let r := heathBrownCriticalReciprocal k
   (N : ℝ) ^ (1 - r) +
@@ -50,9 +51,7 @@ theorem heathBrown_three_sum_rpow_le
     have hxPower : 0 ≤ x ^ r := Real.rpow_nonneg hx _
     have hyPower : 0 ≤ y ^ r := Real.rpow_nonneg hy _
     have hzPower : 0 ≤ z ^ r := Real.rpow_nonneg hz _
-    apply max_le
-    · linarith
-    · apply max_le <;> linarith
+    grind
   exact hpow.trans
     (mul_le_mul_of_nonneg_left hmaxSum (by positivity))
 
@@ -82,7 +81,6 @@ theorem heathBrown_spacing_monomial_identity
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
   have hlambdaNonneg : 0 ≤ lambda := hlambda.le
   have hNnonneg : (0 : ℝ) ≤ N := hNpos.le
-  have hkr : (k : ℝ) ≠ 0 := by positivity
   rw [mul_add, mul_add]
   have hfirst :
       (N : ℝ) ^ (1 - 2 * r) * (N : ℝ) ^ r =
@@ -125,8 +123,7 @@ theorem heathBrown_spacing_monomial_identity
           lambda ^ (-2 * r / (k : ℝ)) := by
     rw [hlastPower]
   unfold heathBrownThreeTerm
-  dsimp only
-  rw [hfirst, hmiddle, hlast]
+  grind
 
 theorem heathBrownThreeTerm_pos
     {N k : ℕ} (hN : 1 ≤ N)
@@ -136,6 +133,6 @@ theorem heathBrownThreeTerm_pos
   positivity
 
 
-end
 
-end GafniTao
+
+

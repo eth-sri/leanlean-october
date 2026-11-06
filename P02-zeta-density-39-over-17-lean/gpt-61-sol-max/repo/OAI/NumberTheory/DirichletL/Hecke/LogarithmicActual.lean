@@ -50,7 +50,11 @@ theorem actual_inner_log (η : Character) (t : ℝ) :
     unfold innerBound
     linarith
 
-theorem disk_control (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+section
+variable (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε)
+include e ε he he' hε
+
+theorem disk_control  :
     ∃ D B : ℝ, 0<D ∧ 0≤B ∧ ∀ (η : Character),
       FiniteFourier.IsPrimitiveOnIdeals η.residue → ∀ a t : ℝ,
       1/2≤a → a≤1 →
@@ -65,8 +69,7 @@ theorem disk_control (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
   obtain ⟨hE,hEL,hEb⟩ := actual_inner_log η t
   exact hb η hp a t (eulerLog η) ha ha' hzero hE hEL hEb
 
-theorem primitive_reciprocal_subpower (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+theorem primitive_reciprocal_subpower  :
     ∃ D : ℝ, 0<D ∧ ∀ (η : Character), FiniteFourier.IsPrimitiveOnIdeals η.residue →
       ∀ s : ℂ, HeckeZeroSupremum.beta+8*e ≤ s.re →
         ‖HeckeReciprocal.reciprocal η s‖ ≤ D*(complexity η s.im)^ε := by
@@ -93,9 +96,11 @@ theorem primitive_reciprocal_subpower (e ε : ℝ)
     have hp0 : 0 ≤ D+HeckeReciprocalBound.bound 2 := by linarith
     exact hr.trans ((by linarith : HeckeReciprocalBound.bound 2 ≤ D+HeckeReciprocalBound.bound 2).trans
       (le_mul_of_one_le_right hp0 hcomp))
-
-end SevenEighths.HeckeLogarithmicActual
-
 end
 
-end OAI
+
+
+
+
+
+

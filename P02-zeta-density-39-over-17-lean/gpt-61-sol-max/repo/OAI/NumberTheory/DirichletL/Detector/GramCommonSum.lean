@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCommonParam
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation
@@ -37,7 +37,7 @@ theorem fullModulusCorrelation_parameter (C n₁ n₂ a b k : A) (hC : C≠0) (h
   symm
   exact Fintype.sum_equiv (solutionEquiv C n₁ n₂ a b k hC hn₁ hab) _ _ (fun _=>rfl)
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

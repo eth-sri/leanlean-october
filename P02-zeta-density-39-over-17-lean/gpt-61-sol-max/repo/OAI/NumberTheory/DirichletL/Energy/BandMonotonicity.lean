@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.Bands
 
 @[expose] public section
@@ -10,8 +11,8 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyBandMonotonicity
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional QuadraticInitialBound
+open scoped HeckeO
 
 def widenState {Z B b B' b':ℝ}(s:NaturalState Z B b)(hB:B≤B')(hb:b≤b'):
     NaturalState Z B' b':=
@@ -33,13 +34,13 @@ lemma profile_control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(hst:
 theorem zeroAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
     (a' b' radial' mask' L' Mcap' eps':ℝ)
     (J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
-    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
+    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤ mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
     (hC:0≤C)(hCC:C≤C')
     (h:ZeroAt Q a b radial mask L Mcap eps Z J S C):
     ZeroAt Q a' b' radial' mask' L' Mcap' eps' Z J' T C':=by
   intro s hQ hwidth p t X₁ X₂ hX₁ hX₂ hcap₁ hcap₂
-  have hcap:Z^L'≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
+  have hcap :=Real.rpow_le_rpow_of_exponent_le hZ hL
   have hh:=h (widenState s hm hr) hQ (hwidth.trans hM) (widenProfiles p ha hb)
     t X₁ X₂ hX₁ hX₂ (hcap₁.trans hcap) (hcap₂.trans hcap)
   change s.plainEnergy p t X₁ X₂≤C*diagonalControl s.radial.profile*(p.control S)^2*
@@ -62,14 +63,14 @@ omit [Fintype α] [DecidableEq α] in
 theorem positiveAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi Mcap eps κ Z:ℝ)
     (a' b' radial' mask' L' Mcap' eps':ℝ)
     (η₀:Character)(Q:Ideal O)(J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
-    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
+    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤ mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
     (hC:0≤C)(hCC:C≤C')
     (h:PositiveAt (α:=α) M H hH W bslot a b radial mask L Lslot lo hi Mcap eps κ Z η₀ Q J S C):
     PositiveAt (α:=α) M H hH W bslot a' b' radial' mask' L' Lslot lo hi Mcap' eps' κ Z η₀ Q J' T C':=by
   intro A θ w σ freq t height hw hwL hσlo hσhi hheight hfreq s hQ hwidth
     p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂ hcapacity
-  have hcap:Z^L'≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
+  have hcap :=Real.rpow_le_rpow_of_exponent_le hZ hL
   have hh:=h A θ w σ freq t height hw hwL hσlo hσhi hheight hfreq
     (widenState s hm hr) hQ (hwidth.trans hM) (widenProfiles p ha hb)
     X₁ X₂ hX₁ hX₂ (hcap₁.trans hcap) (hcap₂.trans hcap) hcapacity
@@ -85,8 +86,8 @@ theorem positiveAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi M
   apply hh.trans
   gcongr
 
-end SevenEighths.CenteredMomentEnergyBandMonotonicity
 
-end
 
-end OAI
+
+
+

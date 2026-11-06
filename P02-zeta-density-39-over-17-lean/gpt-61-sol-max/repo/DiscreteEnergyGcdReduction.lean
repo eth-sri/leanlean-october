@@ -4,7 +4,6 @@ public import RationalLargeGcdEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -63,4 +62,4 @@ theorem discrete_energy_small_gcd_reduction {K : ℕ} (hK : 1 ≤ K)
     dsimp only [F] at *
     nlinarith [mul_nonneg (hC₀.le) (mul_nonneg hC₁.le h0)])
 
-end Montgomery.RationalMoment
+

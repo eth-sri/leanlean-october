@@ -9,16 +9,17 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstColumnPairing
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve RayFourExpansion
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceEnergy
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst
-open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy
-open CenteredMomentFirstMixedAllowance CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentSecondRetainedAggregate CenteredMomentChildAssembly
+open CenteredMomentFirstReferenceEnergy
+open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
+open CenteredMomentAmplificationChildInput
+open CenteredMomentFirstMixedAllowance CenteredMomentSectorLocalization
+
 open CenteredMomentFirstNonexceptionalWeightSum
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
+
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma fixed_pair_moduli (η:Character)(C D:Ideal O)(hC:Supported C)
@@ -43,7 +44,7 @@ theorem column_bounds_of_reference_sums
     (s:Input ι)(R seed:Ideal O)(Z:ℝ)(Jleft Jright:ℕ)
     (frontLeft frontRight:ℝ)(lossLeft lossRight:Fin 4→ℝ)
     (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))(n:Fin 4→ℤ)
-    (hleft:∀L:Ideal O,(L.absNorm:ℝ)≤sourceRadius s/(p.val.2.absNorm:ℝ)→
+    (hleft:∀L:Ideal O,(L.absNorm:ℝ)≤ sourceRadius s/(p.val.2.absNorm:ℝ)→
       Squarefree L→∀χ:RayCharacter,∀v:ℝ,
       (commonEnergy (original s R seed) p.val.1 (supported s R seed p).1
         (fixedPair s.η p.val.1 p.val.2 (supported s R seed p).1 E χ χ).left v L
@@ -51,7 +52,7 @@ theorem column_bounds_of_reference_sums
         (((fixedPair s.η p.val.1 p.val.2 (supported s R seed p).1 E χ χ).left.modulus.absNorm:ℝ)*
             (CenteredMomentExceptionalAmplitudePair.volume s.toData/(p.val.1.absNorm:ℝ))^2*Z^(allowance p.val.1 p.val.2 Z)/(L.absNorm:ℝ))*
           (frontLeft*∑j:Fin 4,Z^(lossLeft j))*(1+|v|)^(2*Jleft))
-    (hright:∀L:Ideal O,(L.absNorm:ℝ)≤sourceRadius s/(p.val.2.absNorm:ℝ)→
+    (hright:∀L:Ideal O,(L.absNorm:ℝ)≤ sourceRadius s/(p.val.2.absNorm:ℝ)→
       Squarefree L→∀χ:RayCharacter,∀v:ℝ,
       (commonEnergy (original s R seed) p.val.2 (supported s R seed p).2
         (fixedPair s.η p.val.1 p.val.2 (supported s R seed p).1 E χ χ).right v L
@@ -71,8 +72,8 @@ theorem column_bounds_of_reference_sums
     rw [(fixed_pair_moduli s.η p.val.1 p.val.2 (supported s R seed p).1 E χ).2] at hh
     exact hh.trans_eq (reference_sum _ _ _ _ _ _ _)
 
-end SevenEighths.CenteredMomentEnergyFirstColumnPairing
 
-end
 
-end OAI
+
+
+

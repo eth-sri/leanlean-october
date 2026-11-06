@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 variable {ι : Type*} [Fintype ι]
 
@@ -86,8 +86,8 @@ theorem calibrated_physicalRow_buffered_height_growth
       exact mul_le_mul hl hrec (norm_nonneg _) hL
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

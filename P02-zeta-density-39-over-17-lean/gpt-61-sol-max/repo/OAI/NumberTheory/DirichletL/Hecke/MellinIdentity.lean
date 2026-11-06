@@ -7,7 +7,7 @@ public import Mathlib.NumberTheory.LSeries.AbstractFuncEq
 namespace OAI
 
 noncomputable section
-open Set Filter
+open Filter
 open scoped Topology
 namespace SevenEighths.HeckeMellinIdentity
 
@@ -28,7 +28,11 @@ theorem regularized_eq (P : WeakFEPair ℂ) (hk : P.k = 1) {s : ℂ}
   field_simp
   ring
 
-theorem scaled_eq (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
+section
+variable (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
+include P Q hP hQ
+
+theorem scaled_eq 
     (A : ℝ) (hA : 0 < A)
     (hright : ∀ s : ℂ, 1 < s.re → P.Λ s = (A : ℂ)^(-s) * Q.Λ s)
     {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
@@ -51,7 +55,7 @@ theorem scaled_eq (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
     s * (s - 1) * P.Λ s = (A : ℂ)^(-s) * (s * (s-1) * Q.Λ s) := heq
     _ = s * (s-1) * ((A : ℂ)^(-s) * Q.Λ s) := by ring
 
-theorem eq_of_f (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
+theorem eq_of_f 
     (hf : ∀ t : ℝ, 0 < t → P.f t = Q.f t) (hf₀ : P.f₀ = Q.f₀)
     {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) : P.Λ s = Q.Λ s := by
   have h := scaled_eq P Q hP hQ 1 zero_lt_one (fun z hz => by
@@ -63,9 +67,11 @@ theorem eq_of_f (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
     dsimp only
     rw [hf t ht, hf₀]) h0 h1
   simpa only [Complex.ofReal_one, Complex.one_cpow, one_mul] using h
-
-end SevenEighths.HeckeMellinIdentity
-
 end
 
-end OAI
+
+
+
+
+
+

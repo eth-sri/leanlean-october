@@ -11,16 +11,19 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 
 @[expose] public section
 
-open Complex MeasureTheory Set
+open Complex MeasureTheory
 open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 def zetaAtkinsonTwoTermSum (T G L : ℝ) : ℂ := ∑' n : ℕ, zetaAtkinsonTwoTerm T G L n
 
-theorem zetaAtkinsonY0Term_eq_native {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (n : ℕ) :
+section
+variable {T G L : ℝ}
+    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
+include T G L hT hG hL
+
+theorem zetaAtkinsonY0Term_eq_native  (n : ℕ) :
     zetaAtkinsonY0Term T G L n =
       divisorWeight n * dfiVoronoiMinusTransform 1 (mellin (zetaAtkinsonDivisorTest T G L)) n := by
   by_cases hn : n = 0
@@ -32,13 +35,14 @@ theorem zetaAtkinsonY0Term_eq_native {T G L : ℝ}
   simp only [zetaAtkinsonY0Term, zetaAtkinsonY0Integrand, dfiVoronoiMinusBesselTransform,
     Nat.cast_one, div_one, mul_assoc]
 
-theorem summable_zetaAtkinsonY0Term {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) :
+theorem summable_zetaAtkinsonY0Term  :
     Summable (zetaAtkinsonY0Term T G L) := by
   have h := (zetaAtkinsonDivisorVoronoiTest hT hG hL).summable_divisorWeight_voronoiMinus
   apply h.congr
   intro n
   exact (zetaAtkinsonY0Term_eq_native hT hG hL n).symm
+end
+
 
 theorem zetaAtkinsonBesselMinus_sub_twoTerm {T G L : ℝ}
     (hT : 16 ≤ T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
@@ -62,4 +66,4 @@ theorem exists_norm_zetaAtkinsonBesselMinus_sub_twoTerm_le :
   rw [zetaAtkinsonBesselMinus_sub_twoTerm hT hG hGT hL hwidth]
   exact hbound T G L hT hG hGT hL hwidth
 
-end MathCollab.Density.Stronger.Atkinson
+

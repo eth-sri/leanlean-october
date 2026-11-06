@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Native q=1 contour convergence from proved actual-zeta growth and genuine
 compact-test Mellin decay. McColm's selected strip-tail proof pattern is
@@ -12,10 +13,9 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology Asymptotics
+open Complex MeasureTheory Filter Topology Asymptotics
 open MathCollab.Density.Contour
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem DFIVoronoiTestFunction.exists_ordinaryDivisorMellin_strip_decay
@@ -43,10 +43,9 @@ theorem DFIVoronoiTestFunction.continuous_ordinaryDivisorMellin_vertical
   have hz : (σ : ℂ)+(u : ℂ)*I ≠ 1 := by
     intro h
     have hr := congrArg Complex.re h
-    simpa using hσ (by simpa using hr)
+    exact hσ (by simpa using hr)
   have hv : ContinuousAt (fun v : ℝ => (σ : ℂ)+(v : ℂ)*I) u := by fun_prop
-  simpa only [Function.comp_def, Pi.mul_apply, Pi.pow_apply, ordinaryDivisorMellinIntegrand] using
-    ContinuousAt.comp (f := fun v : ℝ => (σ : ℂ)+(v : ℂ)*I)
+  exact ContinuousAt.comp (f := fun v : ℝ => (σ : ℂ)+(v : ℂ)*I)
       (g := riemannZeta ^ 2 * mellin g)
       (((differentiableAt_riemannZeta hz).pow 2).mul
         (hg.differentiable_mellin _)).continuousAt hv
@@ -91,10 +90,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
     have hInt := intervalIntegral.norm_integral_le_of_norm_le_const
       (a := -(1/2 : ℝ)) (b := (3/2 : ℝ))
       (f := fun x : ℝ => ordinaryDivisorMellinIntegrand g ((x : ℂ)+(H : ℂ)*I))
-      (C := C/(1+|H|)^2) (fun x hx => by
-        have hx' := Set.uIoc_subset_uIcc hx
-        rw [Set.uIcc_of_le (by norm_num : -(1/2 : ℝ) ≤ 3/2)] at hx'
-        exact hdecay x hx'.1 hx'.2 H hH)
+      (C := C/(1+|H|)^2) (fun x hx => by grind)
     convert hInt using 1 <;> norm_num [HIntegral]
   have hEnv : Tendsto (fun H : ℝ => C/(1+|H|)^2*2) atTop (𝓝 0) := by
     have ha : Tendsto (fun H : ℝ => |H|) atTop atTop :=
@@ -114,9 +110,9 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
     rw [tendsto_zero_iff_norm_tendsto_zero]
     apply squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) _ hEnv
     filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
-    simpa only [abs_neg] using hbound (-H) (by rw [abs_neg, abs_of_nonneg (by linarith)]; exact hH)
+    grind
   constructor
   · simpa [HIntegral'] using htop.const_smul (1/(2*Real.pi*I) : ℂ)
   · simpa [HIntegral'] using hbottom.const_smul (1/(2*Real.pi*I) : ℂ)
 
-end MathCollab.Density.Stronger.Atkinson
+

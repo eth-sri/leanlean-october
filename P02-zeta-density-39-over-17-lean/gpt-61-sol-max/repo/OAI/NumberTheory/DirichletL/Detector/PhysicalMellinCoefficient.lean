@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Detector.MellinPowers
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma completedIndex_norm (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
     elementNorm (completedIndex I J)=(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by
@@ -66,7 +66,7 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
       (supportedElement_ne_zero _ hA) H) hn
   convert he using 1 <;> ring_nf
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

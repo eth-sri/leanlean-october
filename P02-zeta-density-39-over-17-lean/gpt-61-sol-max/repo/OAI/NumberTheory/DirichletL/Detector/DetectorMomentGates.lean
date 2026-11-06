@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentData
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
+public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalSlots
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedElement
 
@@ -13,10 +14,10 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve
-open InverseInitialRayAttachment CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open HeckeFamily InverseInitialDetectorSource
+
+
+open scoped HeckeO
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -52,8 +53,8 @@ theorem sourceMoment_large_eventually (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(
   rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
   exact (sourceMomentConductor_le M H hH S hS η j).trans (ht s)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

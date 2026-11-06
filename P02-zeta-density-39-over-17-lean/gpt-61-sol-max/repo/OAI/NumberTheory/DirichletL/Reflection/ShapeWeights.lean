@@ -10,7 +10,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 @[simp] lemma shapeArgument_one : shapeArgument (1:Eis)=1 := by
   simp [shapeArgument,Ideal.span_singleton_one]
@@ -38,7 +38,7 @@ lemma row_shape_weight_norm (r : Ideal Eis→ℂ) (K : Ideal Eis) (hK : Admissib
 lemma slot_shape_weight_norm (aw : Ideal Eis→ℂ) (P : Ideal Eis) (hP : CubicSieve.Admissible P) :
     ‖aw P*shapeArgument (primaryGenerator P)‖=‖aw P‖ := by
   rw [norm_mul,shapeArgument_norm _ hP.2,mul_one]
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

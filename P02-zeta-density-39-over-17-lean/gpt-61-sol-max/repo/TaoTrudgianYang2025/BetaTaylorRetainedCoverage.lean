@@ -17,7 +17,7 @@ noncomputable section
 open Set Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseTaylorWidth (σ η : ℝ) : ℝ :=
   min (modelPhaseCurvatureLower σ) 1*η/4
@@ -48,8 +48,12 @@ theorem modelPhaseTaylorWidth_admissible
   dsimp [modelPhaseTaylorWidth]
   linarith
 
+section
+variable {F : ℝ → ℝ} {σ δ T N : ℝ} {a b : ℕ}
+include F σ δ T N a b
+
 theorem modelPhaseSharpStationarySet_taylor_plateau
-    {F : ℝ → ℝ} {σ δ T N : ℝ} {a b : ℕ} {q : ℤ}
+     {q : ℤ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (ha : N ≤ (a : ℝ)) (hb : (b : ℝ) ≤ 2*N)
@@ -78,7 +82,7 @@ theorem modelPhaseSharpStationarySet_taylor_plateau
   constructor <;> nlinarith
 
 theorem modelPhaseTaylorWidth_source_admissible
-    {F : ℝ → ℝ} {σ δ T N : ℝ} {a b : ℕ}
+    
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (ha : N ≤ (a : ℝ)) (hb : (b : ℝ) ≤ 2*N)
@@ -92,5 +96,7 @@ theorem modelPhaseTaylorWidth_source_admissible
   have hb' : (b : ℝ)/N ≤ 2 := (div_le_iff₀ hN).mpr hb
   have hη₁ : (Real.sqrt T)⁻¹ < 1 := by linarith
   exact modelPhaseTaylorWidth_admissible hσ hδ hF hη hη₁
+end
 
-end TaoTrudgianYang2025
+
+

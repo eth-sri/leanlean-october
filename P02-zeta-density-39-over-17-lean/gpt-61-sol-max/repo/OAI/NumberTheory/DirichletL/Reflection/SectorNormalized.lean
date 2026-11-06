@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
+open MeasureTheory
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {N a c : Eis} {mode : Bool}
@@ -73,7 +73,7 @@ theorem sector_normalized_physical_energy
     E.referencePrimes E.referenceArithmetic u m T θ QK QP Qn Qb hT hQK hQP hQn hQb hsX hsY hsB hsL
     rows nset bset Pset S hrows E.completion r₀ aw₀ w₀ hrowcop hproducts hScop hSN hSchar hn hb hP
     E.fixedFactor_eq E.cuspColumn_eq hr₀ haw₀ hw₀
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

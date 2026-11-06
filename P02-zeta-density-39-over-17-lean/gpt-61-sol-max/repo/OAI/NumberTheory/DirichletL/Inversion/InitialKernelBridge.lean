@@ -10,31 +10,43 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve
+open EisensteinSchwartzPoisson UniqueFactorizationMonoid
 open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap
 open SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialKernelBridge
 
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "N" => fun I : Ideal Eis => (Ideal.absNorm I : ℝ)
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal Eis)
   [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
   (hg : ∀ i, goodLambda ∉ P i)
 
-def pairRow (S T : Finset ι) (h : Eis) : ℂ :=
+section
+variable (S T : Finset ι)
+include S T
+
+def pairRow  (h : Eis) : ℂ :=
   finiteSexticRow (activePrimes P S T) (fun i => hg i.val) (activeExponent S T) h
 
-def pairGauss (S T : Finset ι) : ℂ :=
+def pairGauss  : ℂ :=
   canonicalNormalizedGauss (activePrimes P S T)
     (activePrimes_pairwise_isCoprime P hinj S T) (fun i => hg i.val) (activeExponent S T)
+end
 
-def pairCoordinates (S T E : Finset ι) (h : Eis) : Fin 6 → ℝ :=
+
+section
+variable (S T E : Finset ι) (h : Eis)
+include S T E h
+
+def pairCoordinates  : Fin 6 → ℝ :=
   ![N (∏ i ∈ S∩T,P i), N (∏ i ∈ E,P i), 1, ‖eisEmbedding h‖^2,
     N (∏ i ∈ S\T,P i), N (∏ i ∈ T\S,P i)]
 
-def pairArithmetic (S T E : Finset ι) (h : Eis) : ℂ :=
+def pairArithmetic  : ℂ :=
   pairGauss P hinj hg S T * (moebius (∏ i ∈ E,P i) : ℂ) *
     pairRow P hg S T (primeSubsetGenerator P E) * star (pairRow P hg S T h)
+end
+
 
 private theorem physicalKernel_vector (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (Z D m q₀ q₁ q₂ q₃ q₄ q₅ : ℝ) :
@@ -43,12 +55,18 @@ private theorem physicalKernel_vector (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,�
         W₁ (q₀*q₂*q₄/Z^D)*W₂ (q₀*q₂*q₅/Z^D)*
           paperRadialFourier Φ (Z^m*q₃/(q₁*q₂^2*q₄*q₅)) := rfl
 
-def bareOverlapCoefficient (P j : Ideal Eis) (η : Ideal Eis →* ℂ)
+section
+variable (P j : Ideal Eis)
+include P j
+
+def bareOverlapCoefficient  (η : Ideal Eis →* ℂ)
     (a : Ideal Eis → ℂ) (c : Ideal Eis) : ℂ :=
   (moebius c : ℂ)*η c*a (reconstruct P j c)
 
-def residualOverlapWindow (P j : Ideal Eis) (W : ℝ → ℂ) (Z z G : ℝ) (x : ℝ) : ℂ :=
+def residualOverlapWindow  (W : ℝ → ℂ) (Z z G : ℝ) (x : ℝ) : ℂ :=
   W (((N j/Z^G)*x)/((N (residual P j))/Z^(z-G)))
+end
+
 
 theorem overlapCoefficient_residual (P j c : Ideal Eis) (η : Ideal Eis →* ℂ)
     (a : Ideal Eis → ℂ) (W : ℝ → ℂ) (Z r z G : ℝ) :
@@ -56,10 +74,14 @@ theorem overlapCoefficient_residual (P j c : Ideal Eis) (η : Ideal Eis →* ℂ
       bareOverlapCoefficient P j η a c *
         residualOverlapWindow P j W Z z G (N c/Z^(r+z-2*G)) := rfl
 
-def physicalCoordinates (C d s n₁ n₂ : Ideal Eis) (h : Eis) : Fin 6 → ℝ :=
+section
+variable (C d s n₁ n₂ : Ideal Eis) (h : Eis)
+include C d s n₁ n₂ h
+
+def physicalCoordinates  : Fin 6 → ℝ :=
   ![N C,N d,N s,‖eisEmbedding h‖^2,N n₁,N n₂]
 
-theorem physicalCoordinates_pos (C d s n₁ n₂ : Ideal Eis) (h : Eis)
+theorem physicalCoordinates_pos 
     (hC : C ≠ 0) (hd : d ≠ 0) (hs : s ≠ 0) (h₁ : n₁ ≠ 0) (h₂ : n₂ ≠ 0) (hh : h ≠ 0) :
     ∀ i, 0 < physicalCoordinates C d s n₁ n₂ h i := by
   have hp (I : Ideal Eis) (hI : I ≠ 0) : 0 < N I := by
@@ -74,7 +96,7 @@ theorem physicalCoordinates_pos (C d s n₁ n₂ : Ideal Eis) (h : Eis)
   · exact hp n₁ h₁
   · exact hp n₂ h₂
 
-theorem physicalKernel_common_factor (C d s n₁ n₂ : Ideal Eis) (h : Eis)
+theorem physicalKernel_common_factor 
     (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) :
     physicalKernel W₁ W₂ Φ Z D m (physicalCoordinates C d 1 (s*n₁) (s*n₂) h) =
       physicalKernel W₁ W₂ Φ Z D m (physicalCoordinates C d s n₁ n₂ h) := by
@@ -92,16 +114,18 @@ theorem physicalKernel_common_factor (C d s n₁ n₂ : Ideal Eis) (h : Eis)
   rw [hl,hr,hk]
   push_cast
   ring_nf
+end
 
-open InverseInitialArithmetic SecondPassArithmetic
+
+
 
 omit [DecidableEq ι] [∀ i, (P i).IsMaximal] in
 theorem pairDivisor_span (E : Finset ι) :
     Ideal.span {primeSubsetGenerator P E} = ∏ i ∈ E,P i :=
   span_idealGenerator _
 
-end SevenEighths.InverseInitialKernelBridge
 
-end
 
-end OAI
+
+
+

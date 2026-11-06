@@ -12,28 +12,32 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceEnergy
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily RayFourExpansion
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceBlock
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
 open CenteredMomentFirstSourceReduction CenteredMomentFirstInactiveRadicalMass
-open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
-open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy CenteredMomentChildAssembly
-open CenteredMomentCommonSupport CenteredMomentMobiusRegroup CenteredMomentFirstCanonicalFamily
+open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource
+open CenteredMomentSourceMass CenteredMomentCanonicalFirst
+open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentAmplificationChildInput
+open CenteredMomentMobiusRegroup
 open CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-abbrev supported (s:Input ι)(R seed:Ideal O)(p:Labels s R seed):=
+section
+variable (s:Input ι)(R seed:Ideal O)
+include s R seed
+
+abbrev supported (p:Labels s R seed):=
   commonLabels_supported (activeSource (finiteColumns (Fintype.piFinset s.pools))
     (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)) _ _ p.property
 
-def ColumnBounds (s:Input ι)(R seed:Ideal O)(Z:ℝ)(J₁ J₂:ℕ)(EL ER:Fin 4→ℝ)
+def ColumnBounds (Z:ℝ)(J₁ J₂:ℕ)(EL ER:Fin 4→ℝ)
     (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))(n:Fin 4→ℤ):Prop:=
   let C:=p.val.1; let D:=p.val.2; let h:=supported s R seed p
   let F:=fixedPair s.η C D h.1 E 1 1
@@ -42,28 +46,36 @@ def ColumnBounds (s:Input ι)(R seed:Ideal O)(Z:ℝ)(J₁ J₂:ℕ)(EL ER:Fin 4�
   let refR:=(F.right.modulus.absNorm:ℝ)*(V/(D.absNorm:ℝ))^2*Z^(allowance D C Z)
   (∀L∈divisorPool (Finset.univ:Finset (columns C D h.2.1 (original s R seed).columns))
     (fun b=>Ideal.span {element C D h.2.1 (original s R seed).columns b}),
-    (L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
+    (L.absNorm:ℝ)≤ sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
     (commonEnergy (original s R seed) C h.1 (fixedPair s.η C D h.1 E χ χ).left v L
       CenteredMomentFirstAnnularMajorant.profile (dyadicScale (n 1))).re≤
       ((∑i,refL*EL i)/(L.absNorm:ℝ))*(1+‖v‖)^(2*J₁)) ∧
   (∀L∈divisorPool (Finset.univ:Finset (columns C D h.2.1 (original s R seed).columns))
     (fun b=>Ideal.span {element C D h.2.1 (original s R seed).columns b}),
-    (L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
+    (L.absNorm:ℝ)≤ sourceRadius s/(D.absNorm:ℝ)→Squarefree L→∀χ:RayCharacter,∀v:ℝ,
     (commonEnergy (original s R seed) D h.2 (fixedPair s.η C D h.1 E χ χ).right v L
       CenteredMomentFirstAnnularMajorant.profile (dyadicScale (n 1))).re≤
       ((∑i,refR*ER i)/(L.absNorm:ℝ))*(1+‖v‖)^(2*J₂))
+end
 
-def pairedBudget (J₁ J₂:ℕ)(t:ℝ)(EL ER:Fin 4→ℝ):ℝ:=
+
+section
+variable (J₁ J₂:ℕ)(t:ℝ)(EL ER:Fin 4→ℝ)
+include J₁ J₂ t EL ER
+
+def pairedBudget :ℝ:=
   ∑i:Fin 4,∑j:Fin 4,windowBudget J₁ t (EL i)*windowBudget J₂ t (ER j)
-lemma pairedBudget_nonneg (J₁ J₂:ℕ)(t:ℝ)(EL ER:Fin 4→ℝ):0≤pairedBudget J₁ J₂ t EL ER:=
+lemma pairedBudget_nonneg :0≤pairedBudget J₁ J₂ t EL ER:=
   Finset.sum_nonneg (fun _i _=>Finset.sum_nonneg (fun _j _=>mul_nonneg
     (windowBudget_nonneg _ _ _) (windowBudget_nonneg _ _ _)))
+end
+
 
 def sourceFactor (s:Input ι)(a₁ a₂ K:ℝ):ℝ:=
   (Real.exp (Real.log 4)/((∏i,s.lo i)*a₁*a₂))*fixedPresentationCost*K*(s.η.modulus.absNorm:ℝ)
 omit [DecidableEq ι] in
 lemma sourceFactor_nonneg (s:Input ι)(a₁ a₂ K:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)(hK:0<K):
-    0≤sourceFactor s a₁ a₂ K:=by
+    0≤ sourceFactor s a₁ a₂ K:=by
   have hlo:0<∏i,s.lo i:=Finset.prod_pos (fun i _=>s.lo_pos i)
   have hf:=fixedPresentationCost_pos
   unfold sourceFactor
@@ -78,7 +90,7 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
       volume s.toData≤Z^B→K⁻¹≤Z^B→∀EL ER:Fin 4→ℝ,(∀i,0≤EL i)→(∀i,0≤ER i)→
       (∀p:Labels s R seed,∀E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets p.val.1 p.val.2,
         ∀n:SourceBlocks s R seed K Z ξ p E,
-        CenteredMomentFirstReferenceSource.originalBlock s R seed W K Z ξ p E n≠0→ColumnBounds s R seed Z J₁ J₂ EL ER p E (fun i => (n i).val))→
+        CenteredMomentFirstReferenceSource.originalBlock s R seed W K Z ξ p E n≠0→ ColumnBounds s R seed Z J₁ J₂ EL ER p E (fun i => (n i).val))→
       physicalMass s R seed fixedBadMask 1 W K Z ξ/volume s.toData≤
         C*Z^ε/(seed.absNorm:ℝ)*sourceFactor s a₁ a₂ K*pairedBudget J₁ J₂ s.t EL ER:=by
   obtain ⟨Cs,hCs,hsum⟩:=original_block_sum hi b₁ b₂ B ξ (ε/2) hB hξ (by linarith)
@@ -135,8 +147,8 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
       dsimp [A]
       ring
 
-end SevenEighths.CenteredMomentFirstReferenceEnergy
 
-end
 
-end OAI
+
+
+

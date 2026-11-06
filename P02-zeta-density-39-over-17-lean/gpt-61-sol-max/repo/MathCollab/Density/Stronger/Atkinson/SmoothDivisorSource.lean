@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,12 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTail
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Topology
+open MathCollab.Density.Stronger
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_zetaSquareLocalMean_le_smooth_divisor {δ : ℝ} (hδ : 0 < δ) :
@@ -47,7 +47,6 @@ theorem exists_zetaSquareLocalMean_le_smooth_divisor {δ : ℝ} (hδ : 0 < δ) :
     nlinarith
   obtain ⟨T₁, hT₁⟩ := eventually_atTop.mp hev
   refine ⟨C + 2 * Real.exp 1, by positivity, max 8 T₁, le_max_left _ _, ?_⟩
-  intro T G hT hG hwidth
-  exact hT₁ T ((le_max_right _ _).trans hT) G hG hwidth
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

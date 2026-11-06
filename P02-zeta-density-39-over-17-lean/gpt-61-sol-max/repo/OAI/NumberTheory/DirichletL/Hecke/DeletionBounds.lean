@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.FiniteDeletion
 
 @[expose] public section
@@ -38,20 +39,22 @@ theorem localBound_pos {σ : ℝ} (hσ : 0 < σ) : 0 < localBound σ := by
   unfold localBound
   exact inv_pos.mpr (sub_pos.mpr (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)))
 
-theorem term_bound {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
-    {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
+section
+variable {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
+    {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re)
+include σ N hσ hN a s ha hs
+
+theorem term_bound  :
     ‖a*(N : ℂ)^(-s)‖ ≤ (2 : ℝ)^(-σ) := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N), Complex.neg_re]
   apply (mul_le_of_le_one_left (Real.rpow_nonneg (by linarith) _) ha).trans
   apply (Real.rpow_le_rpow_of_exponent_le (by linarith : 1 ≤ N) (by linarith : -s.re ≤ -σ)).trans
   exact Real.rpow_le_rpow_of_nonpos (by norm_num) hN (by linarith)
 
-theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
-    {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
+theorem factor_bounds  :
     ‖EulerFactors.factor N a s‖ ≤ localBound σ ∧
       ‖(EulerFactors.factor N a s)⁻¹‖ ≤ localBound σ := by
   have hδ : (2 : ℝ)^(-σ) < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  have hδ0 : 0 ≤ (2 : ℝ)^(-σ) := Real.rpow_nonneg (by norm_num) _
   have ht := term_bound hσ hN ha hs
   have hl : 1-(2 : ℝ)^(-σ) ≤ ‖EulerFactors.factor N a s‖ := by
     have hh := norm_sub_le (1-a*(N : ℂ)^(-s)) (-a*(N : ℂ)^(-s))
@@ -70,6 +73,8 @@ theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
   · rw [norm_inv]
     exact (inv_le_inv₀ (by linarith : 0 < ‖EulerFactors.factor N a s‖)
       (by linarith : 0 < 1-(2 : ℝ)^(-σ))).mpr hl
+end
+
 
 theorem factors_bound_pow (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
     (ψ : Character) {s : ℂ} (hs : σ ≤ s.re) :
@@ -185,8 +190,8 @@ theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hR.le _)
     _ = _ := by rw [Real.rpow_add hR]; ring
 
-end SevenEighths.HeckeDeletionBounds
 
-end
 
-end OAI
+
+
+

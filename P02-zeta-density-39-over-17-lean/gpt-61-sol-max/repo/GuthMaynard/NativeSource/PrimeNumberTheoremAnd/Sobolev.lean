@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.Calculus.Deriv.Support
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Order.Filter.ZeroAndBoundedAtFilter
@@ -122,14 +123,20 @@ instance : CoeFun trunc (fun _ => ℝ → ℝ) where coe f := f.toFun
 
 instance : Coe trunc (CS 2 ℝ) where coe := trunc.toCS
 
-lemma nonneg (g : trunc) (x : ℝ) : 0 ≤ g x := (Set.indicator_nonneg (by simp) x).trans (g.h3 x)
+section
+variable (g : trunc)
+include g
 
-lemma le_one (g : trunc) (x : ℝ) : g x ≤ 1 :=
+lemma nonneg  (x : ℝ) : 0 ≤ g x := (Set.indicator_nonneg (by simp) x).trans (g.h3 x)
+
+lemma le_one  (x : ℝ) : g x ≤ 1 :=
   (g.h4 x).trans <| Set.indicator_le_self' (by simp) x
 
-lemma zero (g : trunc) : g =ᶠ[𝓝 0] 1 := by
+lemma zero  : g =ᶠ[𝓝 0] 1 := by
   have : Set.Icc (-1) 1 ∈ 𝓝 (0 : ℝ) := by apply Icc_mem_nhds <;> linarith
   exact eventually_of_mem this (fun x hx => le_antisymm (g.le_one x) (by simpa [hx] using g.h3 x))
+end
+
 
 @[simp] lemma zero_at {g : trunc} : g 0 = 1 := g.zero.eq_of_nhds
 
@@ -294,7 +301,7 @@ theorem W21_approximation (f : W21) (g : trunc) :
           (dh R v).ofReal_comp.mul (df v)
         have l5 : HasDerivAt (fun v => h' R v * f v) (h'' R v * f v + h' R v * f' v) v :=
           (dh' R v).ofReal_comp.mul (df v)
-        have l7 : HasDerivAt (fun v => h R v * f' v) (h' R v * f' v + h R v * f'' v) v :=
+        have l7 :=
           (dh R v).ofReal_comp.mul (df' v)
         have d1 : deriv (fun v => h R v * f v) = fun v => h' R v * f v + h R v * f' v :=
           funext (fun v => (l3 v).deriv)

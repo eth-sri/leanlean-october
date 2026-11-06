@@ -6,13 +6,12 @@ public import LaterPairs.Native.AdditiveEnergy
 public import LaterPairs.Native.PrimitiveCongruenceSpacing
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                    
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
@@ -43,10 +42,7 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     intro x hx y hy hxy
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hy
-    have hpq : (p.1,p.2) ≠ (q.1,q.2) := by
-      intro he
-      apply hxy
-      exact congrArg f (Prod.ext (congrArg Prod.fst he) (congrArg Prod.snd he))
+    have hpq : (p.1,p.2) ≠ (q.1,q.2) := by grind
     have hs := primitive_linear_congruence_ratio_spacing hprim hc hV
       (hden p hp).1 (hden q hq).1 (hden p hp).2 (hden q hq).2
       (hpair p hp) (hpair q hq) (hcong p hp) (hcong q hq) hpq
@@ -67,4 +63,4 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     (S.card:ℝ) ≤ β/ε-α/ε+1 := hb
     _ = 1+4*V^2*(β-α)/c := by dsimp [ε]; field_simp; ring
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.ActiveGaussFactorization
 
 @[expose] public section
@@ -9,62 +10,62 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
 
 namespace ActualEisensteinCubic
 
@@ -155,15 +156,19 @@ theorem card_cast_ne_zero (F F' : Type*) [Field F] [Fintype F]
   have hd := (CharP.cast_eq_zero_iff F' (ringChar F') (ringChar F)).mp hz
   exact hchar ((Nat.prime_dvd_prime_iff_eq (CharP.char_is_prime F' _) hp).mp hd)
 
-theorem gaussSum_pow_card (F F' E : Type*) [Field F] [Fintype F]
+section
+variable (F F' E : Type*) [Field F] [Fintype F]
     [Field F'] [Fintype F'] [Field E] [Algebra F' E]
+include F F' E
+
+theorem gaussSum_pow_card 
     (χ : MulChar F F') (ψ : AddChar F E) :
     gaussSum (χ.ringHomComp (algebraMap F' E)) ψ ^ Fintype.card F' =
       gaussSum (χ.ringHomComp (algebraMap F' E))
         (ψ.mulShift (Fintype.card F' : F)) := by
   obtain ⟨n, hp, hcard⟩ := FiniteField.card F' (ringChar F')
   have hchar := Algebra.ringChar_eq F' E
-  have hpE : (ringChar E).Prime := hchar ▸ hp
+  have hpE := hchar ▸ hp
   let : Fact (ringChar E).Prime := ⟨hpE⟩
   have hcardE : Fintype.card F' = ringChar E ^ (n : ℕ) := by simpa only [hchar] using hcard
   unfold gaussSum
@@ -175,8 +180,7 @@ theorem gaussSum_pow_card (F F' E : Type*) [Field F] [Fintype F]
   rw [← map_pow, FiniteField.pow_card, ← AddChar.mulShift_spec']
   rfl
 
-theorem gauss_cube_residue_relation (F F' E : Type*) [Field F] [Fintype F]
-    [Field F'] [Fintype F'] [Field E] [Algebra F' E]
+theorem gauss_cube_residue_relation 
     (hchar : ringChar F' ≠ ringChar F)
     (χ : MulChar F F') (hχ : χ ≠ 1) (ψ : AddChar F E) (hψ : ψ.IsPrimitive)
     (a : F') (m : ℕ) (hm : Fintype.card F' = 3 * m + 1)
@@ -188,7 +192,7 @@ theorem gauss_cube_residue_relation (F F' E : Type*) [Field F] [Fintype F]
     rw [← map_natCast (algebraMap F' E)]
     exact (map_ne_zero (algebraMap F' E)).mpr (card_cast_ne_zero F F' hchar)
   have hg : gaussSum ξ ψ ≠ 0 := gaussSum_ne_zero_of_nontrivial hcard hξ hψ
-  have hq : (Fintype.card F' : F) ≠ 0 := card_cast_ne_zero F' F hchar.symm
+  have hq := card_cast_ne_zero F' F hchar.symm
   let u : Fˣ := (isUnit_iff_ne_zero.mpr hq).unit
   have hu : (u : F) = Fintype.card F' := (isUnit_iff_ne_zero.mpr hq).unit_spec
   have hshift := gaussSum_mulShift ξ ψ u
@@ -202,14 +206,20 @@ theorem gauss_cube_residue_relation (F F' E : Type*) [Field F] [Fintype F]
     simpa only [mul_assoc, one_mul] using hshift
   apply (algebraMap F' E).injective
   simpa only [ξ, map_mul, map_one, MulChar.ringHomComp_apply] using hone
+end
+
 
 end CubicFrobenius
 
 namespace ActualEisensteinCubic
 
-theorem cubic_primary_frobenius_relation (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
+section
+variable (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
     (hPgood : lambda ∉ P) (hQgood : lambda ∉ Q)
     (hchar : ringChar (O ⧸ Q) ≠ ringChar (O ⧸ P))
+include P Q hPgood hQgood hchar
+
+theorem cubic_primary_frobenius_relation 
     (p : O) (hP : P = Ideal.span {p}) (hprimary : lambda ^ 2 ∣ p - 1) :
     cubicChar P hPgood (Nat.card (O ⧸ Q) : O ⧸ P) *
       cubicChar Q hQgood (Ideal.Quotient.mk Q (p * (Nat.card (O ⧸ P) : O))) = 1 := by
@@ -275,9 +285,7 @@ theorem cubic_primary_frobenius_relation (P Q : Ideal O) [P.IsMaximal] [Q.IsMaxi
   simpa only [Nat.card_eq_fintype_card] using hprod
 
 theorem cubic_reciprocity_distinct_residue_char
-    (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
-    (hPgood : lambda ∉ P) (hQgood : lambda ∉ Q)
-    (hchar : ringChar (O ⧸ Q) ≠ ringChar (O ⧸ P))
+    
     (p q : O) (hP : P = Ideal.span {p}) (hQ : Q = Ideal.span {q})
     (hpprimary : lambda ^ 2 ∣ p - 1) (hqprimary : lambda ^ 2 ∣ q - 1) :
     cubicChar P hPgood (Ideal.Quotient.mk P q) =
@@ -296,6 +304,8 @@ theorem cubic_reciprocity_distinct_residue_char
     rw [hz, mul_zero] at hA
     exact zero_ne_one hA
   exact mul_right_cancel₀ hUV (hA.trans hB.symm)
+end
+
 
 end ActualEisensteinCubic
 
@@ -361,10 +371,7 @@ theorem principal_gauss_sum_unit_change {ι : Type*} [Fintype ι]
   let ū : (O ⧸ Ideal.span {n})ˣ := Units.map (Ideal.Quotient.mk (Ideal.span {n})).toMonoidHom u
   let e : (O ⧸ Ideal.span {n}) ≃ (O ⧸ Ideal.span {c}) := ū.mulLeft.trans e₀.toEquiv
   have he (a : O) : e (Ideal.Quotient.mk (Ideal.span {n}) a) =
-      Ideal.Quotient.mk (Ideal.span {c}) ((u : O) * a) := by
-    change e₀ (Ideal.Quotient.mk (Ideal.span {n}) (u : O) *
-      Ideal.Quotient.mk (Ideal.span {n}) a) = _
-    rw [← map_mul, Ideal.quotEquivOfEq_mk]
+      Ideal.Quotient.mk (Ideal.span {c}) ((u : O) * a) := by rfl
   rw [← Equiv.sum_comp e, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro x _
@@ -399,8 +406,12 @@ theorem principalNormalizedGauss_unit_change {ι : Type*} [Fintype ι]
   rw [hcn, norm_eisEmbedding_unit_mul]
   ring
 
-theorem principalNormalizedGauss_eq_product {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
+section
+variable {ι : Type*} [Fintype ι]
+    (p : ι → O)
+include ι p
+
+theorem principalNormalizedGauss_eq_product  (hp : ∀ i, p i ≠ 0)
     [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) :
@@ -408,13 +419,15 @@ theorem principalNormalizedGauss_eq_product {ι : Type*} [Fintype ι]
       (span_finset_prod Finset.univ p) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)) =
       canonicalProductGauss p hp hcop hgood j := rfl
 
-theorem exists_modulus_unit {ι : Type*} [Fintype ι] (p : ι → O) :
+theorem exists_modulus_unit  :
     ∃ u : Oˣ, finitePrimeModulus (fun i => Ideal.span {p i}) = (u : O) * ∏ i, p i := by
   have hs : Ideal.span {∏ i, p i} =
       Ideal.span {finitePrimeModulus (fun i => Ideal.span {p i})} := by
     rw [span_finitePrimeModulus, span_finset_prod]
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs
   exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
+end
+
 
 def modulusUnit {ι : Type*} [Fintype ι] (p : ι → O) : Oˣ :=
   Classical.choose (exists_modulus_unit p)
@@ -430,13 +443,7 @@ theorem canonicalNormalizedGauss_eq_product {ι : Type*} [Fintype ι]
     (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) :
     canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hgood j =
       finiteSexticRow (fun i => Ideal.span {p i}) hgood j (modulusUnit p : O) *
-        canonicalProductGauss p hp hcop hgood j := by
-  rw [canonicalNormalizedGauss_eq_principal,
-    principalNormalizedGauss_unit_change (fun i => Ideal.span {p i}) hcop hgood j
-      (finitePrimeModulus (fun i => Ideal.span {p i})) (∏ i, p i)
-      (span_finitePrimeModulus _) (span_finset_prod Finset.univ p)
-      (finitePrimeModulus_ne_zero _) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i))
-      (modulusUnit p) (modulusUnit_spec p), principalNormalizedGauss_eq_product]
+        canonicalProductGauss p hp hcop hgood j := by solve_by_elim (maxDepth := 4) only [canonicalNormalizedGauss_eq_principal, principalNormalizedGauss_unit_change, modulusUnit_spec, principalNormalizedGauss_eq_product]
 
 theorem canonicalNormalizedGauss_frequency_transport {ι : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
@@ -509,8 +516,8 @@ theorem finitePrimeModulus_norm_eq_product {ι : Type*} [Fintype ι] (p : ι →
 
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
 
-end GaussGeneratorTransport
 
-end
 
-end OAI
+
+
+

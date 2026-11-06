@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosKernelBasic
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                               
@@ -18,9 +17,9 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                        
 
 
-noncomputable section
 
-open MeasureTheory Set GafniTao
+
+open MeasureTheory GafniTao
 
 namespace TaoTrudgianYang2025
 
@@ -32,14 +31,18 @@ theorem sargosSincKernel_eq_sin {w ξ : ℝ} (hw : w ≠ 0) (hξ : ξ ≠ 0) :
     Real.sinc_of_ne_zero (mul_ne_zero (mul_ne_zero Real.pi_ne_zero hξ) hw)]
   field_simp
 
+section
+variable {w : ℝ} (hw : 0 < w) (ξ : ℝ)
+include w hw ξ
+
 theorem sargos_integral_symmetric_tent_character
-    {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+     :
     (∫ x in -w..w,
         ((1 - |x| / w : ℝ) : ℂ) *
           fordAdditiveCharacter (-(ξ * x))) =
       ((2 * ∫ x in (0 : ℝ)..w,
           (1 - x / w) * Real.cos (2 * Real.pi * ξ * x) : ℝ) : ℂ) := by
-  let f : ℝ → ℂ := fun x =>
+  let f := fun x =>
     ((1 - |x| / w : ℝ) : ℂ) * fordAdditiveCharacter (-(ξ * x))
   have hchar : Continuous fordAdditiveCharacter := by
     unfold fordAdditiveCharacter
@@ -57,7 +60,7 @@ theorem sargos_integral_symmetric_tent_character
     rw [intervalIntegral.integral_comp_neg, neg_zero]
   have hfneg : IntervalIntegrable (fun x : ℝ => f (-x))
       MeasureTheory.volume 0 w := by
-    have hc : Continuous (fun x : ℝ => f (-x)) := hfcont.comp continuous_neg
+    have hc := hfcont.comp continuous_neg
     exact hc.intervalIntegrable 0 w
   rw [← hneg, ← intervalIntegral.integral_add
     hfneg (hf 0 w)]
@@ -86,7 +89,7 @@ theorem sargos_integral_symmetric_tent_character
 
 
 theorem sargos_integral_symmetric_tent_character_eq_kernel
-    {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+     :
     (∫ x in -w..w,
         ((1-|x|/w : ℝ) : ℂ)*fordAdditiveCharacter (-(ξ*x))) =
       (sargosSincKernel w ξ : ℂ) := by
@@ -101,10 +104,8 @@ theorem sargos_integral_symmetric_tent_character_eq_kernel
       have hquot : IntervalIntegrable (fun x : ℝ => x/w) volume 0 w :=
         (by fun_prop : Continuous fun x : ℝ => x/w).intervalIntegrable 0 w
       rw [intervalIntegral.integral_sub hone hquot]
-      simp only [intervalIntegral.integral_const,intervalIntegral.integral_div,
-        integral_id,sub_zero,smul_eq_mul,pow_succ]
-      field_simp [hw.ne']
-      ring
+      simp
+      grind
     rw [hlinear]
     norm_cast
     ring
@@ -117,5 +118,7 @@ theorem sargos_integral_symmetric_tent_character_eq_kernel
       nlinarith [Real.sin_sq_add_cos_sq (Real.pi*ξ*w)]
     rw [htrig]
     field_simp [Real.pi_ne_zero,hw.ne',hξ]
+end
 
-end TaoTrudgianYang2025
+
+

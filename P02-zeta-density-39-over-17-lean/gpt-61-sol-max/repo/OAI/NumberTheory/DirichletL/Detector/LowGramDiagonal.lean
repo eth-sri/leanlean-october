@@ -10,19 +10,22 @@ noncomputable section
 open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
+open CanonicalQuadraticSieve RayFourExpansion
 open CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowGramZeroMode (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) : ℂ :=
+section
+variable (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
+    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ)
+include C W1 hW1 Y hY σ v U Q
+
+def lowGramZeroMode  : ℂ :=
   (Q:ℂ)*paperRadialFourier U 0*
     secondZeroEnergy (lowGaussColumns W1 hW1 Y hY) (fun s=>primaryGenerator s.val)
       (fun s=>(supported_span_primaryGenerator_iff s.val).mpr s.property) (lowGaussColumn C W1 Y σ v)
 
-lemma lowGramZeroMode_eq_source (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) :
+lemma lowGramZeroMode_eq_source  :
     lowGramZeroMode C W1 hW1 Y hY σ v U Q=
       ((Q/Y^3:ℝ):ℂ)*
         ∑s∈lowGaussColumns W1 hW1 Y hY,∑t∈lowGaussColumns W1 hW1 Y hY,
@@ -46,8 +49,7 @@ lemma lowGramZeroMode_eq_source (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : Ha
         actualCorrelation (primaryGenerator s.val) (primaryGenerator t.val) _ _ 0*paperRadialFourier U 0 := by ring
     _ = _ := by rw [lowGram_pair_prefactor C W1 Y hY σ v Q s t];ring
 
-lemma lowGramZeroMode_bound (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0≤Q) :
+lemma lowGramZeroMode_bound  (hQ : 0≤Q) :
     ‖lowGramZeroMode C W1 hW1 Y hY σ v U Q‖≤
       Q*‖paperRadialFourier U 0‖*∑s∈lowGaussColumns W1 hW1 Y hY,‖lowGaussColumn C W1 Y σ v s‖^2 := by
   rw [lowGramZeroMode,norm_mul,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hQ]
@@ -61,6 +63,8 @@ lemma lowGramZeroMode_bound (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCom
     have het := (primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1
     rw [←hes,←het]
     exact congrArg (fun z : O=>Ideal.span {z}) h
+end
+
 
 theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
@@ -78,7 +82,7 @@ theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
       exact mul_le_mul_of_nonneg_left (hb S hS W1 hW1 hWS hWB Y hY σ v) (by positivity)
     _ = _ := by ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

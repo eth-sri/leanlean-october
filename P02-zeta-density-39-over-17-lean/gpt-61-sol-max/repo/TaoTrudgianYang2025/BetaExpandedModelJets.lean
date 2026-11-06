@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedInverseStability
 
@@ -19,7 +20,7 @@ open Set Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem iteratedDeriv_modelPhase_positive_compact_lipschitz
     {l r : ℝ} (hl : 0 < l) (σ : ℝ) (p : ℕ) :
@@ -40,7 +41,7 @@ theorem iteratedDeriv_modelPhase_positive_compact_lipschitz
     (fun z hz => (hf z hz).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0))
     (fun z hz => (hB z hz).trans (le_max_right 1 B))
     (convex_Icc l r) hy hx
-  simpa only [Real.norm_eq_abs] using h
+  exact h
 
 def expandedModelPointLower (σ : ℝ) : ℝ := min 1 ((2 : ℝ)^(-σ⁻¹))
 
@@ -98,4 +99,4 @@ theorem modelPhaseInverse_iteratedDeriv_expanded_reference_error
       (h.trans (mul_le_mul_of_nonneg_left hd (zero_le_one.trans hB)))
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

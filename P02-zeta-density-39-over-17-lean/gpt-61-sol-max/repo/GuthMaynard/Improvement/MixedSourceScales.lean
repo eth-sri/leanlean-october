@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.UnequalSourceScales
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
@@ -94,4 +93,4 @@ theorem mixed_source_retained_core {ε T Q Y : ℝ}
       SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual^3*Q^2*(8*Q*((R:ℝ)*K))*H := by gcongr
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

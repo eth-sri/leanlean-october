@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowCount
 public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalLargeTail
 
@@ -10,14 +11,14 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification
+open scoped HeckeO
 
 def rowNorm (u : FreeRow) : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
 
 lemma rowNorm_ge_one (u : FreeRow) : 1≤rowNorm u := by
   unfold rowNorm
-  have hn : (Ideal.span {u.val}:Ideal O)≠⊥ := Ideal.span_singleton_eq_bot.not.mpr u.property.1
+  have hn := Ideal.span_singleton_eq_bot.not.mpr u.property.1
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hn)
 
 lemma finite_bounded_freeRows (H : ℝ) : {u : FreeRow | rowNorm u≤H}.Finite := by
@@ -51,7 +52,11 @@ lemma mem_dyadicRows {A : ℝ} {n : ℕ} {u : FreeRow} :
   simp only [dyadicRows,mem_rowBand,pow_succ]
   ring_nf
 
-lemma dyadicRows_disjoint (A : ℝ) (hA : 0<A) : Pairwise (fun m n=>Disjoint (dyadicRows A m) (dyadicRows A n)) := by
+section
+variable (A : ℝ) (hA : 0<A)
+include A hA
+
+lemma dyadicRows_disjoint  : Pairwise (fun m n=>Disjoint (dyadicRows A m) (dyadicRows A n)) := by
   intro m n hmn
   apply Finset.disjoint_left.mpr
   intro u hm hn
@@ -64,7 +69,7 @@ lemma dyadicRows_disjoint (A : ℝ) (hA : 0<A) : Pairwise (fun m n=>Disjoint (dy
   · exact not_lt_of_ge ((hpow m n h).trans hn.2.1) hm.2.2
   · exact not_lt_of_ge ((hpow n m h).trans hm.2.1) hn.2.2
 
-lemma exists_dyadicRows (A : ℝ) (hA : 0<A) (u : FreeRow) (hu : u.val≠1) (hU : A≤rowNorm u) :
+lemma exists_dyadicRows  (u : FreeRow) (hu : u.val≠1) (hU : A≤rowNorm u) :
     ∃n : ℕ,u∈dyadicRows A n := by
   obtain ⟨n,hn,hn'⟩ := exists_nat_pow_near ((le_div_iff₀ hA).mpr (by simpa using hU)) (by norm_num : (1:ℝ)<2)
   refine ⟨n,mem_dyadicRows.mpr ⟨hu,?_,?_⟩⟩
@@ -73,7 +78,7 @@ lemma exists_dyadicRows (A : ℝ) (hA : 0<A) (u : FreeRow) (hu : u.val≠1) (hU 
   · have hh := (div_lt_iff₀ hA).mp hn'
     simpa only [pow_succ,mul_assoc,mul_comm,mul_left_comm] using hh
 
-def dyadicRowEquiv (A : ℝ) (hA : 0<A) :
+def dyadicRowEquiv  :
     (Σn : ℕ,dyadicRows A n) ≃ {u : FreeRow // u.val≠1 ∧ A≤rowNorm u} :=
   Equiv.ofBijective (fun p=>⟨p.2.val,(mem_dyadicRows.mp p.2.property).1,
     (le_mul_of_one_le_right hA.le (one_le_pow₀ (by norm_num : (1:ℝ)≤2))).trans (mem_dyadicRows.mp p.2.property).2.1⟩) (by
@@ -89,7 +94,7 @@ def dyadicRowEquiv (A : ℝ) (hA : 0<A) :
       obtain ⟨n,hn⟩ := exists_dyadicRows A hA u.val u.property.1 u.property.2
       exact ⟨⟨n,⟨u.val,hn⟩⟩,rfl⟩)
 
-theorem tsum_dyadicRows (A : ℝ) (hA : 0<A) (f : FreeRow→ℂ) (hf : Summable f) :
+theorem tsum_dyadicRows  (f : FreeRow→ℂ) (hf : Summable f) :
     Summable (fun n=>∑u∈dyadicRows A n,f u) ∧
       (∑'u : FreeRow,if u.val≠1 ∧ A≤rowNorm u then f u else 0)=
         ∑'n : ℕ,∑u∈dyadicRows A n,f u := by
@@ -112,9 +117,11 @@ theorem tsum_dyadicRows (A : ℝ) (hA : 0<A) (f : FreeRow→ℂ) (hf : Summable 
       · rfl
     _ = ∑'p : Σn : ℕ,dyadicRows A n,f p.2.val := (e.tsum_eq (fun u=>f u.val)).symm
     _ = _ := by rw [hs.tsum_sigma];simp_rw [Finset.tsum_subtype]
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

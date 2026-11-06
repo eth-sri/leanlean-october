@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthConclusion
 public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -14,13 +15,13 @@ namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalRowSource QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)
     (hA:0≤A)(hB:0≤B)(hP:0≤P):
     P*(A*Z^(w+ell+d+d)+B)≤Z^ell*(P*(A*Z^(w+d+d+d)+B)):=by
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hp:1≤Z^ell:=Real.one_le_rpow hZ hell
+  have hp :=Real.one_le_rpow hZ hell
   have hm:Z^(w+ell+d+d)≤Z^ell*Z^(w+d+d+d):=by
     rw [←Real.rpow_add hz]
     exact Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
@@ -69,7 +70,7 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
     (hε:0<ε)(hM:0≤Mcap)(hB:0≤Bmask):
     ∃d L:ℝ,0<d ∧ d≤1 ∧ 0<L ∧ Loriginal≤L ∧
       L=max Loriginal (Mcap+Bmask+2*d)+1 ∧
-      L≤max Loriginal (Mcap+Bmask+2)+1 ∧
+      L≤ max Loriginal (Mcap+Bmask+2)+1 ∧
       ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(ell:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤ell→0≤K→
@@ -91,7 +92,7 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
   refine ⟨hZ.1,?_⟩
   intro ell Q degree K hell hK hgrowth s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
   have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hscale:Z^Loriginal≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLoriginal
+  have hscale :=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLoriginal
   have hh:=hZ.2 Bmask L Mcap ell Q degree K hK hgrowth hB hroom
     (by linarith) s hQ hs p t X₁ X₂ hX₁ hX₂ (hc₁.trans hscale) (hc₂.trans hscale)
   let Rcap:=max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)
@@ -118,11 +119,11 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
     _≤Csource*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J*
         (Cledger*Z^(s.width+(ell+ε))):=by
       apply hh.trans
-      convert mul_le_mul_of_nonneg_left htotal hfront using 1 ; dsimp only [P,A,B,Rcap] ; ring
+      convert mul_le_mul_of_nonneg_left htotal hfront using 1 ; ring
     _=_:=by rw [Real.norm_eq_abs];ring
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
 
-end
 
-end OAI
+
+
+

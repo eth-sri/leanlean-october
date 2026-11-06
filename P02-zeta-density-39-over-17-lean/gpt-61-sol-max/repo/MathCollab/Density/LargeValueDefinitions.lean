@@ -4,10 +4,9 @@ public import Mathlib.NumberTheory.Divisors
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators ContDiff
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -75,4 +74,4 @@ theorem kernelEnergy_nonneg (w : ReflectionCutoff) (L : ℝ) (U : Finset ℝ) :
 theorem oneSeparated_subset {U W : Finset ℝ} (hW : oneSeparated W) (hU : U ⊆ W) : oneSeparated U :=
   fun t ht u hu hne => hW t (hU ht) u (hU hu) hne
 
-end MathCollab.Density
+

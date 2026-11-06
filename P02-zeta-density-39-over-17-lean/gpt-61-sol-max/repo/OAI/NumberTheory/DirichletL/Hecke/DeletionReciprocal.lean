@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.HeckeDeletionReciprocal
 open HeckeFamily HeckeFiniteDeletion HeckeReciprocal HeckeDeletionBounds
@@ -44,8 +44,8 @@ theorem exists_primitive_reciprocal_reduction (σ ε : ℝ) (hσ : 0 < σ) (hε 
     linarith [norm_nonneg (factors χ.modulus ψ s)]
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hfb (norm_nonneg (reciprocal ψ s))
 
-end SevenEighths.HeckeDeletionReciprocal
 
-end
 
-end OAI
+
+
+

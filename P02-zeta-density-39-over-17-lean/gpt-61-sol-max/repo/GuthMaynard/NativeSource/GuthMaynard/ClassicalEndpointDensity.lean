@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointSlab
 public import GuthMaynard.NativeSource.GuthMaynard.MediumTypeIEndpoint
 public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
@@ -6,7 +7,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
 @[expose] public section
 
 open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Complex Finset MeasureTheory Real
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
@@ -51,13 +52,7 @@ theorem classicalMHHExponent_le_endpoint_of_short_gap
           exact mul_lt_mul_of_pos_left hτ₀ (by positivity)).le
   have hCore : classicalMHHExponent σ τ ≤ (5 / 2) * (1 - σ) := by
     rw [classicalMHHExponent, max_le_iff]
-    constructor
-    · nlinarith
-    · by_cases hGap : 1 / 5 ≤ 1 - σ
-      · exact (min_le_left _ _).trans (by linarith)
-      · exact (min_le_right _ _).trans (by
-          have hGap' : 1 - σ < 1 / 5 := lt_of_not_ge hGap
-          linarith)
+    grind
   exact hCore.trans hTarget
 
 /-- Power form of the preceding short-gap exponent comparison at the actual
@@ -118,15 +113,15 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
             C * T ^ ε * T ^ (3 * (1 - σ) / τ₀) := by
   intro ε hε
   have hσ : 0 < σ := by linarith
-  let εs : ℝ := ε / 100
+  let εs := ε / 100
   have hεs : 0 < εs := by dsimp only [εs]; positivity
   let d := classicalEndpointLossParameter σ τ₀ εs
   have hdSpec := classicalEndpointLossParameter_spec hσLower hσUpper hcert.tau0_pos hεs
   dsimp only at hdSpec
   rcases hdSpec with ⟨hd, hdEps, hdEpsTau, _hdReflected, _hdHalfGap, _hdUpperGap, _hdSigma,
     hdSmall, _hdHalf, hdOne, _hdSigmaStrict⟩
-  let s : ℝ := d ^ 2
-  let u : ℝ := d ^ 4
+  let s := d ^ 2
+  let u := d ^ 4
   have hs : 0 < s := by dsimp only [s]; positivity
   have hu : 0 < u := by dsimp only [u]; positivity
   have huLeD : u ≤ d := by
@@ -152,12 +147,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
       typeIDirectPowerLossConstant_pos.le hK.le hd hu hcert.tau0_pos hε
       (by omega) hdEpsFull huEpsTau
   obtain ⟨Tscale, hTscale, hScale⟩ := eventually_typeI_logarithmic_scale_upper s hs
-  have hdOneStrict : d < 1 := by
-    have hDen : 0 < 1000 * (1 + τ₀) := by nlinarith [hcert.tau0_pos]
-    have hSmallStrict : 1 / (1000 * (1 + τ₀)) < 1 := by
-      rw [div_lt_one hDen]
-      nlinarith [hcert.tau0_pos]
-    exact hdSmall.trans_lt hSmallStrict
+  have hdOneStrict : d < 1 := by linarith
   obtain ⟨Thalf, hThalf, hHalf⟩ := eventually_rpow_le_half_self d hdOneStrict
   let T₀ := max Tloss (max Tscale Thalf)
   refine ⟨Closs, hCloss, T₀, hTloss.trans (le_max_left _ _), ?_⟩
@@ -170,7 +160,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
   have hTHalf : Thalf ≤ T := (le_max_right _ _).trans hRest
   have hTEight : 8 ≤ T := hTloss.trans hTLoss
   have hTPos : 0 < T := by linarith
-  have hDisp : T ^ d ≤ T / 2 := hHalf T hTHalf
+  have hDisp := hHalf T hTHalf
   let Y := ⌊T ^ s⌋₊
   let A := ⌊sharpZetaCutoff T⌋₊
   let N := 2 ^ r * Y
@@ -190,7 +180,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
     have hNC : N < A := by
       have hLPos : 0 < L := by
         dsimp only [L]
-        have hClog : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hAOne
+        have hClog := Nat.clog_pos Nat.one_lt_two hAOne
         positivity
       exact typeI_start_lt_cutoff_of_positive_large_value A N σ t L hLPos
         (by simpa only [L, N, Y, A, u, s] using hLarge t ht)
@@ -229,7 +219,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
           simpa only [L, u] using hThresholdDirect
     have hLPos : 0 < L := by
       dsimp only [L]
-      have hClog : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hAOne
+      have hClog := Nat.clog_pos Nat.one_lt_two hAOne
       positivity
     have hMHHAt := hMHH A N σ d T L W hσ.le hN (by linarith)
       hLPos hDisp hSep (by simpa only [L, N, Y, A, u, s] using hRange)
@@ -294,7 +284,7 @@ theorem classical_endpoint_positive_slab_of_medium_native
     (hcert : EndpointScaleCertificate σ τ₀) :
     ClassicalEndpointPositiveSlabDensity σ τ₀ := by
   intro ε hε
-  let εs : ℝ := ε / 100
+  let εs := ε / 100
   have hεs : 0 < εs := by dsimp only [εs]; positivity
   let d := classicalEndpointLossParameter σ τ₀ εs
   have hdSpec := classicalEndpointLossParameter_spec hσLower hσUpper hcert.tau0_pos hεs
@@ -306,14 +296,8 @@ theorem classical_endpoint_positive_slab_of_medium_native
   have hdSqOne : d ^ 2 ≤ 1 := by
     have hdLeOne : d ≤ 1 := by simpa only [d] using hdOne
     nlinarith [sq_nonneg d]
-  have hOrder : d ^ 4 / 2 ≤ d ^ 2 := by
-    have hdSqNonneg : 0 ≤ d ^ 2 := sq_nonneg d
-    have hdFourthLe : d ^ 4 ≤ d ^ 2 := by nlinarith [sq_nonneg (d ^ 2)]
-    linarith
-  have hdFourSigma : d ^ 4 < σ := by
-    have hdLeOne : d ≤ 1 := by simpa only [d] using hdOne
-    have hdFourthLe : d ^ 4 ≤ d := by nlinarith
-    exact hdFourthLe.trans_lt (by simpa only [d] using hdSigmaStrict)
+  have hOrder : d ^ 4 / 2 ≤ d ^ 2 := by nlinarith
+  have hdFourSigma : d ^ 4 < σ := by nlinarith
   obtain ⟨Tdich, hTdich, hDich⟩ := classical_typeI_typeII_dichotomy_native
     σ d (d ^ 2) (d ^ 4) hσLower hσUpper.le hd hdTwo hdFour
       hOrder hdSqOne hdFourSigma
@@ -334,8 +318,8 @@ theorem classical_endpoint_positive_slab_of_medium_native
   obtain ⟨Ci, hCi, Ti, hTi, hTypeII⟩ :=
     actual_typeII_dichotomy_witness_consumer
       hσLower hσUpper hcert εs hεs
-  let C : ℝ := max Cb (max Cp (max Cl (max Cs (max Cm Ci))))
-  let T₀ : ℝ := max 8
+  let C := max Cb (max Cp (max Cl (max Cs (max Cm Ci))))
+  let T₀ := max 8
     (max Tdich (max Tb (max Tp (max Tl (max Ts (max Tm Ti))))))
   apply IsBigO.of_bound C
   filter_upwards [eventually_ge_atTop T₀] with T hT
@@ -511,4 +495,4 @@ theorem ingham_endpoint_positive_slab_native
   classical_endpoint_positive_slab_native hσLower hσUpper
     (ingham_endpoint_scale_certificate hσLower hσUpper)
 
-end GuthMaynard.NativeMoment
+

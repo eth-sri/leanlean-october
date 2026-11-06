@@ -11,7 +11,7 @@ open scoped Classical BigOperators Topology
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 private lemma norm_mul_seven_le {a b c d e f g : ℂ} {A B C D E F G : ℝ}
     (ha : ‖a‖≤A) (hb : ‖b‖≤B) (hc : ‖c‖≤C) (hd : ‖d‖≤D)
@@ -33,8 +33,12 @@ def zRowScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
     (∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(z-1))*
     frequencyWeight z ⟨u.val,u.property.1⟩
 
-lemma continuedPhysicalRowKernel_z_factor {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+section
+variable {K : ℕ}
+    (S : Finset (Ideal O)) (hS : SourceExclusions S)
+include K S hS
+
+lemma continuedPhysicalRowKernel_z_factor  (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
@@ -44,8 +48,7 @@ lemma continuedPhysicalRowKernel_z_factor {K : ℕ}
   unfold continuedPhysicalRowKernel zRowScalar sourceMellinWeight
   ring
 
-lemma zRowScalar_bounded {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S)
+lemma zRowScalar_bounded 
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (u : FreeRow)
     (W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z)
     (x w : ℂ) (l r : ℝ) (hl : 0<l) :
@@ -57,7 +60,7 @@ lemma zRowScalar_bounded {K : ℕ}
     (∏i,B i)*scaleBound (elementNorm u.val) (-r) (-l)
   have hB (i : Fin K) : 0≤B i := (scaleBound_pos _ _ _).le
   have hBP : 0≤∏i,B i := Finset.prod_nonneg (fun i _=>hB i)
-  have hscale (a b c : ℝ) : 0≤scaleBound a b c := (scaleBound_pos _ _ _).le
+  have hscale (a b c : ℝ) : 0≤ scaleBound a b c := (scaleBound_pos _ _ _).le
   refine ⟨max A 0,le_max_right _ _,?_⟩
   intro v hv t
   have hXb := cpow_le_scaleBound hX (1/2-((v:ℂ)+t*I))
@@ -75,10 +78,12 @@ lemma zRowScalar_bounded {K : ℕ}
     apply cpow_le_scaleBound
       (elementNorm_pos _ (supported_primeGenerator_prime (P i) (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero)
     simpa using And.intro (sub_le_sub_right hv.1 1) (sub_le_sub_right hv.2 1)
-  have hFb : ‖frequencyWeight (((v:ℂ)+t*I)) ⟨u.val,u.property.1⟩‖≤scaleBound (elementNorm u.val) (-r) (-l) := by
+  have hFb : ‖frequencyWeight (((v:ℂ)+t*I)) ⟨u.val,u.property.1⟩‖≤ scaleBound (elementNorm u.val) (-r) (-l) := by
     apply cpow_le_scaleBound (elementNorm_pos _ u.property.1)
     simpa using And.intro (neg_le_neg hv.2) (neg_le_neg hv.1)
   exact (norm_mul_seven_le hXb hZb le_rfl hGb le_rfl hPb hFb).trans (le_max_left A 0)
+end
+
 
 theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
     (eps : ℝ) (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -109,8 +114,8 @@ theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
       hr (norm_nonneg _) (mul_nonneg hA (mul_nonneg hD.le (cauchy_nonneg t)))
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

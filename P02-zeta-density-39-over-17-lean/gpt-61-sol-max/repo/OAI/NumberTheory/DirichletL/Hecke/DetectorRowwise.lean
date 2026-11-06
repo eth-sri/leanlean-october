@@ -6,7 +6,7 @@ public import Mathlib.Analysis.InnerProductSpace.Calculus
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open MeasureTheory Set
 namespace SevenEighths.HeckeDetectorRowwise
@@ -90,8 +90,8 @@ theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
     (fun i hi x => hdx 0 i hi x (py i)) a b ((1+2*(d-c))*E) hab px hpx
     (he 0) (he 1)
 
-end SevenEighths.HeckeDetectorRowwise
 
-end
 
-end OAI
+
+
+

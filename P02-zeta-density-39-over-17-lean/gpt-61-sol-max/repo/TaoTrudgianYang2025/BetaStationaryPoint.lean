@@ -19,7 +19,7 @@ open Set Expdb Filter
 open scoped Topology ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseFrequencyPhase (F : ℝ → ℝ) (T N r x : ℝ) : ℝ :=
   T * F (x/N) - r*x
@@ -74,4 +74,4 @@ theorem modelPhaseFrequencyPhase_secondDeriv
   rw [heq.deriv_eq, hh.deriv]
   ring
 
-end TaoTrudgianYang2025
+

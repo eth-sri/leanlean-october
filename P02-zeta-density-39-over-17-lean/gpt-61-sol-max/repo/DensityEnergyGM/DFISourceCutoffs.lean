@@ -1,4 +1,5 @@
 module
+public import GuthMaynard.AffineSource.Foundation
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 public import Mathlib.Analysis.Calculus.Deriv.Support
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
@@ -9,7 +10,7 @@ public import DensityEnergyGM.DFIEquation21
 
 @[expose] public section
 
-open Complex Set
+open Complex
 open scoped ContDiff Topology
 
 namespace GuthMaynard.NativeMoment
@@ -24,22 +25,17 @@ derivative constants are obtained from compact support, so no analytic
 existence assumption is introduced.
 -/
 
-/-- The centered bump used for the redundant factor before DFI equation
-(21). -/
-noncomputable def dfiStandardRedundantBump (U : ℝ) (hU : 0 < U) :
-    ContDiffBump (0 : ℝ) :=
-  ⟨U / 2, U, by positivity, by linarith⟩
+
 
 /-! ## A genuinely scale-uniform redundant-cutoff family -/
 
-/-- One fixed unit-scale bump.  Rescaling this function, rather than choosing
+/- One fixed unit-scale bump.  Rescaling this function, rather than choosing
 a new bump at every physical scale, preserves one family of derivative
 constants. -/
-noncomputable def dfiUnitRedundantBump : ContDiffBump (0 : ℝ) :=
-  ⟨1 / 2, 1, by norm_num, by norm_num⟩
+export RiemannZeta.GuthMaynard (dfiUnitRedundantBump)
 
 /-! ## A genuinely scale-uniform equation-(9) family -/
 
 /-! ## Uniform quotient profile for the canonical equation-(9) family -/
 
-end GuthMaynard.NativeMoment
+

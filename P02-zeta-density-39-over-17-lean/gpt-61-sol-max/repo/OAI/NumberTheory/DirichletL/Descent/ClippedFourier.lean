@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation
+open InverseInitialClippedColumns InverseInitialOverlapFourier JointLogSeparation
 open ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
     (hW:Function.support W⊆Set.Icc lo hi):
@@ -74,9 +74,13 @@ variable {ι σ:Type*}[DecidableEq ι]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem canonical_clipped_mode_integrable
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+section
+variable (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+include hpr pool Ψ m f k slots lists a
+
+theorem canonical_clipped_mode_integrable
+    
     (g:𝓢(ℝ,ℂ))(wFresh:ℝ→ℂ)(c θ X:ℝ):
     Integrable (fun t:ℝ=>density g (Real.log c) t*
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (childLogTest wFresh (θ+t)) X):=by
@@ -92,8 +96,7 @@ theorem canonical_clipped_mode_integrable
   ring
 
 theorem canonical_clipped_fourier
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    
     (W:ℝ→ℂ)(lo hi:ℝ)(hlo:0<lo)(hs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
     (wFresh:ℝ→ℂ)(c θ X:ℝ)(hc:0<c)(hX:0<X)(hwFresh:∀y,0<y→wFresh y*W (c*y)=W (c*y)):
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (clippedTest W c θ) X=
@@ -121,9 +124,11 @@ theorem canonical_clipped_fourier
   apply integral_congr_ae
   filter_upwards with t
   ring
-
-end SevenEighths.InverseMoment
-
 end
 
-end OAI
+
+
+
+
+
+

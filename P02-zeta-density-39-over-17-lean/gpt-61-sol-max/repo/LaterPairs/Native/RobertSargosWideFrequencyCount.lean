@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosCoefficientFibers
 public import LaterPairs.Native.RobertSargosCoefficientProjection
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                               
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 0 < ε) :
@@ -57,4 +56,4 @@ theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 
       mul_le_mul_of_nonneg_right hU (by positivity)
     _ = _ := by field_simp
 
-end TaoTrudgianYang2025
+

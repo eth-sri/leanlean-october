@@ -9,11 +9,11 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorAmplitudeFirst
-open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorFiberPartition
-open HeckeDetectorPhysicalSelection HeckeDetectorAdaptiveCutoff
+open HeckeDetectorFiberPartition
+open HeckeDetectorPhysicalSelection
 
 def amplitudeRows {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
-    (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
+    (U cap mesh : ℝ) (hm : 0< mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
     (bin : BinLabel slots cap mesh) : Finset Row :=
   rows.filter (fun u => amplitudeLabel slots U cap mesh hm widths physical u=bin)
 
@@ -25,8 +25,12 @@ def classMean {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ)
     (widths : Slot→ℝ) (bin : BinLabel slots cap mesh) : ℝ :=
   weightedMean slots widths (binValue slots cap mesh bin)
 
-theorem rowMean_eq {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
-    (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
+section
+variable {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
+include Row Slot rows slots
+
+theorem rowMean_eq 
+    (U cap mesh : ℝ) (hm : 0< mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
     (bin : BinLabel slots cap mesh) (u : Row)
     (hu : u∈amplitudeRows rows slots U cap mesh hm widths physical bin) :
     rowMean slots U cap mesh widths physical u=classMean slots cap mesh widths bin := by
@@ -41,8 +45,8 @@ theorem rowMean_eq {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     simpa only [amplitudeLabel,binValue,dite_eq_left hs] using hv
   exact congrArg (fun x => widths s*x) hval
 
-theorem classMean_bounds {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
-    (U δ mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
+theorem classMean_bounds 
+    (U δ mesh : ℝ) (hm : 0< mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
     (bin : BinLabel slots (δ/2) mesh) (hδ : 0≤δ)
     (hw : ∀ s∈slots,0≤widths s) (hsupply : 0<∑ s∈slots,widths s)
     (hne : (amplitudeRows rows slots U (δ/2) mesh hm widths physical bin).Nonempty) :
@@ -52,9 +56,11 @@ theorem classMean_bounds {Row Slot : Type*} (rows : Finset Row) (slots : Finset 
   apply weightedMean_bounds slots widths _ δ hw hsupply
   intro s hs
   exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
-
-end SevenEighths.HeckeDetectorAmplitudeFirst
-
 end
 
-end OAI
+
+
+
+
+
+

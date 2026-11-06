@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstIdealFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalRowCompletion
 open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow
 open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion
+open scoped EisensteinO
 
 theorem rowWeight_one_primary (η : Character) (m : O) (t : ℝ)
     (I : Ideal O) (hI : Supported I) :
@@ -82,8 +82,8 @@ theorem exists_first_ideal_pair (η : Character) (m : O) (hm : m≠0)
     rw [h₂ n hn hp]
     ring
 
-end SevenEighths.CenteredMomentFirstIdealFamily
 
-end
 
-end OAI
+
+
+

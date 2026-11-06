@@ -2,7 +2,6 @@ module
 public import DetectorPowerRange
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -86,4 +85,4 @@ theorem rightSolid_tail_budgets {σ : ℝ} (hl : 7/9 ≤ σ) (hr : σ ≤ 4/5) :
   · linarith
   · nlinarith
   · nlinarith
-end Montgomery.RationalMoment
+

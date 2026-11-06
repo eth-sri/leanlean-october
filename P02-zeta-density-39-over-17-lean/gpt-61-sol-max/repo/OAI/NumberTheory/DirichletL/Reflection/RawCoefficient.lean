@@ -8,14 +8,18 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
-def literalRawCoefficient (G : PrimeFamily ι)
+section
+variable (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+include G D s hc
+
+def literalRawCoefficient 
     (j : ι→ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
   if Squarefree n ∧ primaryGenerator n≠0 ∧ primaryGenerator b≠0 then
     (s.amplitude u m n b *
@@ -24,9 +28,7 @@ def literalRawCoefficient (G : PrimeFamily ι)
         ((ramifiedScale 1 completedRamifiedStep m*Real.sqrt (Ideal.absNorm n:ℝ)*(Ideal.absNorm b:ℝ):ℝ):ℂ)
   else 0
 
-lemma literalRawCoefficient_norm (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+lemma literalRawCoefficient_norm 
     (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (u : Eisˣ) (m : ℕ) (n b : NonzeroDualIdeal) :
@@ -46,8 +48,10 @@ lemma literalRawCoefficient_norm (G : PrimeFamily ι)
     exact div_le_self (Nat.cast_nonneg _) hden
   · simp only [norm_zero]
     exact Nat.cast_nonneg _
-
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+
+

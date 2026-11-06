@@ -47,6 +47,6 @@ theorem exists_prime_strictly_above (k : ℕ) :
   exact ⟨p, hp, by omega⟩
 
 
-end
 
-end GafniTao
+
+

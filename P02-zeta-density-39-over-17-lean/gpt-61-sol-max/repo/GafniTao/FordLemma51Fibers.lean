@@ -18,10 +18,7 @@ theorem ford_sum_Icc_one_eq_fin
     simp
   rw [hset, Finset.sum_Ico_eq_sum_range]
   rw [Fin.sum_univ_eq_sum_range (fun n => f (n + 1)) M]
-  apply Finset.sum_congr rfl
-  intro a ha
-  congr 1
-  omega
+  grind
 
 theorem fordAdditiveCharacter_add (x y : ℝ) :
     fordAdditiveCharacter (x + y) =
@@ -44,5 +41,5 @@ theorem fordAdditiveCharacter_sum
       rw [fordAdditiveCharacter_add, ih]
 
 
-end
-end GafniTao
+
+

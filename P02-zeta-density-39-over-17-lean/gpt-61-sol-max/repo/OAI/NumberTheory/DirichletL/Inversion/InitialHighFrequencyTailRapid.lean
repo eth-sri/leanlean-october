@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailPowe
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialPhysicalMeasure
+open scoped EisensteinO
 
 theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
@@ -50,7 +50,7 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
   have hb := hraw p hp hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L (Z^τ) Γ B₁ B₂ hz hL (by positivity) hΓ hB₁ hB₂ hW₁ hW₂
     pool S w hvalid hw hpool hnorm hleft hright htail
-  have hs : 0≤s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ := apply_nonneg _ _
+  have hs : 0≤ s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ := apply_nonneg _ _
   apply hb.trans
   calc
     _ = ((128*L)^7*Z^(m-D)/((min 1 (Z^m/L^3))^2*(1+Z^τ)^A))*
@@ -62,8 +62,8 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
       linarith
     _ = _ := by ring
 
-end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
-end OAI
+
+
+

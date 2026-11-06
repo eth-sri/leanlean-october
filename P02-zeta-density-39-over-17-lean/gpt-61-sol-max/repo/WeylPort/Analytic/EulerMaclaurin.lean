@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- From PNT pin 4ecb950126c4290293c5662dfe0e884123171df5, Apache-2.0. -/
 
 public import Mathlib.NumberTheory.AbelSummation
@@ -57,8 +58,12 @@ lemma intervalIntegrable_deriv_mul_B1 (ha : 0 ≤ a) (hab : a ≤ b) (h_cont : C
   norm_cast
   exact abs_B1_le_half (by linarith)
 
-lemma integral_deriv_mul_floor_add_one (ha : 0 ≤ a) (hab : a ≤ b)
-    (hf_diff : ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (h_cont : ContinuousOn (deriv f) [[a, b]]) :
+section
+variable (ha : 0 ≤ a) (hab : a ≤ b)
+    (hf_diff : ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (h_cont : ContinuousOn (deriv f) [[a, b]])
+include ha hab hf_diff h_cont
+
+lemma integral_deriv_mul_floor_add_one  :
     ∫ t in a..b, deriv f t * (⌊t⌋₊ + 1) = (b + 1 / 2) * f b - (a + 1 / 2) * f a - (∫ t in a..b, f t) - ∫ t in a..b, deriv f t * B1 t := by
   calc
   _ = ∫ t in a..b, (deriv f t * (t + 1 / 2) -deriv f t * B1 t) := by
@@ -73,16 +78,15 @@ lemma integral_deriv_mul_floor_add_one (ha : 0 ≤ a) (hab : a ≤ b)
     conv => lhs; arg 1; arg 1; ext; rw [mul_comm]
     rw [integral_deriv_mul_add_const _ hab h_cont.intervalIntegrable hf_diff]
 
-theorem sum_eq_integral_add_integral_deriv (ha : 0 ≤ a) (hab : a ≤ b)
-    (hf_diff : ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t)
-    (h_cont : ContinuousOn (deriv f) [[a, b]]) :
+theorem sum_eq_integral_add_integral_deriv  :
     ∑ k ∈ Ioc ⌊a⌋₊ ⌊b⌋₊, f k =
       f a * B1 a - f b * B1 b + (∫ t in a..b, f t) + ∫ t in a..b, deriv f t * B1 t  := by
   have := sum_mul_eq_sub_sub_integral_mul (fun _ ↦ 1) ha hab hf_diff (Set.uIcc_of_le hab ▸ h_cont).integrableOn_Icc
-  simp only [mul_one, sum_const, Nat.card_Icc, tsub_zero, nsmul_eq_mul, Nat.cast_add,
-    Nat.cast_one] at this
+  simp at this
   rw [this, ← intervalIntegral.integral_of_le hab]
   rw [integral_deriv_mul_floor_add_one ha hab hf_diff h_cont]
   unfold B1
   push_cast
   ring
+end
+

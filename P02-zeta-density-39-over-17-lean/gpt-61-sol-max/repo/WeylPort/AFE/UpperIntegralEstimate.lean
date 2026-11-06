@@ -32,8 +32,12 @@ theorem upper_phase_derivative_lower {t m a u : ℝ} (hm : 0 < m) (ha : 0 < a)
   have hdiv := (div_lt_iff₀ hu).mpr hmul
   linarith
 
+section
+variable {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
+include t m a b hm ha
+
 /-- The reciprocal of the positive derivative is monotone, in one direction for each sign. -/
-theorem upper_phase_reciprocal_monotone {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
+theorem upper_phase_reciprocal_monotone 
     (hcut : t < Real.pi * m * a) :
     MonotoneOn (fun u => |1 / (2 * Real.pi * m - t / u)|) (Set.Icc a b) ∨
       AntitoneOn (fun u => |1 / (2 * Real.pi * m - t / u)|) (Set.Icc a b) := by
@@ -57,7 +61,7 @@ theorem upper_phase_reciprocal_monotone {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a
     linarith
 
 /-- The actual unweighted oscillatory primitive is uniformly bounded above the signed cutoff. -/
-theorem norm_integral_upper_phase_le {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
+theorem norm_integral_upper_phase_le 
     (hab : a ≤ b) (hcut : t < Real.pi * m * a) :
     ‖∫ u in a..b, Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ))‖ ≤
       2 / (Real.pi * m) := by
@@ -79,6 +83,8 @@ theorem norm_integral_upper_phase_le {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
     simpa only [mul_one_div] using mul_le_mul_of_nonneg_left
       (max_le (he a (Set.left_mem_Icc.mpr hab)) (he b (Set.right_mem_Icc.mpr hab)))
         (by norm_num : (0 : ℝ) ≤ 2))
+end
+
 
 /-- The oscillatory phase factor is continuous on its actual positive domain. -/
 theorem continuousOn_upper_phase (t m : ℝ) :
@@ -184,4 +190,4 @@ theorem sum_reciprocals_floor_le {y : ℝ} (hy : 1 ≤ y) :
   simpa only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast,
     one_div, add_comm] using h
 
-end DhimanKadiriQuesadaHerrera2026
+

@@ -6,8 +6,7 @@ public import MathCollab.Density.Stronger.LongMeanCounting
 
 open Real Complex Filter MeasureTheory
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
 open MathCollab.Density
@@ -75,4 +74,4 @@ theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
   · exact Or.inr hshort
 
 
-end Montgomery.RationalMoment.RightDetector
+

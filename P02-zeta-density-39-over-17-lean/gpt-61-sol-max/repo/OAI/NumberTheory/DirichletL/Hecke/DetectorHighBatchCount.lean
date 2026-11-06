@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorHighBatchCount
 open HeckeDetectorBatch
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorRowCount
+open HeckeFamily HeckeDetectorRawFiber
 
 theorem high_batch_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -42,8 +42,8 @@ theorem high_batch_count_from_raw_moments
       exact hcount a ε T allowance Δ C height i hU ha ha' hε hε' hC hh hf
         (B.fiber bin j J K hne) (moments bin j J K hne))
   simpa only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_assoc] using hb
-end SevenEighths.HeckeDetectorHighBatchCount
 
-end
 
-end OAI
+
+
+

@@ -5,18 +5,22 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialDetectorSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialMarkedDictionary
 open HeckeFamily HeckeDyadic InverseInitialRawDictionary InverseInitialConjugateEnergy
 open InverseInitialPoissonBridge UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-theorem indexed_mark_initial {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)
+section
+variable {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)
     (η : Ideal O →* ℂ) (χ : Character) (u : O)
     (hrow : ∀I,idealCoeff χ I=η I*CanonicalRowCompletion.idealRowHom u I)
     (W : ℝ→ℂ) (Z r z σ freq : ℝ) (hZ : 0<Z) (S : Finset (Ideal O))
-    (hc : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S) :
+    (hc : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S)
+include ι T P A η χ u hrow W Z r z σ freq hZ S hc
+
+theorem indexed_mark_initial  :
     polynomial χ true W (Z^r) σ freq*(Z^(-z/2):ℝ)*
       (∑i∈T,A i*idealCoeff χ (P i))=
       ∑i∈T,A i*originalTotalPolynomial S (P i) η (fun _=>1)
@@ -41,11 +45,7 @@ theorem indexed_mark_initial {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A 
       twistedProfile W σ freq ((I.absNorm:ℝ)/Z^r))) := by ring
     _ = _ := by rw [hn];ring
 
-theorem indexed_conjugate_mark_norm {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)
-    (η : Ideal O →* ℂ) (χ : Character) (u : O)
-    (hrow : ∀I,idealCoeff χ I=η I*CanonicalRowCompletion.idealRowHom u I)
-    (W : ℝ→ℂ) (Z r z σ freq : ℝ) (hZ : 0<Z) (S : Finset (Ideal O))
-    (hc : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S)
+theorem indexed_conjugate_mark_norm 
     (hη : ∀i∈T,A i≠0 → η (P i)≠0) :
     ‖polynomial χ true W (Z^r) σ freq*(Z^(-z/2):ℝ)*
       (∑i∈T,A i*star (CanonicalRowCompletion.idealRowHom u (P i)))‖=
@@ -62,6 +62,8 @@ theorem indexed_conjugate_mark_norm {ι : Type*} (T : Finset ι) (P : ι→Ideal
       field_simp [hη i hi ha]
   rw [←indexed_mark_initial T P (fun i=>star (A i)/η (P i)) η χ u hrow W Z r z σ freq hZ S hc,hm]
   simp only [norm_mul,norm_star]
+end
+
 
 theorem conjugate_mark_product {ι : Type*} [Fintype ι]
     (T : ι→Finset (Ideal O)) (A : ι→Ideal O→ℂ) (u : O) :
@@ -73,8 +75,8 @@ theorem conjugate_mark_product {ι : Type*} [Fintype ι]
   intro p hp
   rw [Finset.prod_mul_distrib,map_prod,star_prod]
 
-end SevenEighths.InverseInitialMarkedDictionary
 
-end
 
-end OAI
+
+
+

@@ -19,29 +19,39 @@ open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-def pair (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+section
+variable (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+include D alloc
+
+def pair 
     {a b:ℝ}(ha:0<a)(p:Profiles a b)(v X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):
     Profiles (a/max 1 b) b :=
   retainedPair a b ha p ![rawScale D alloc X₁ 0,rawScale D alloc X₂ 1]
     (by intro i;fin_cases i;exact rawScale_pos D alloc X₁ hX₁ 0;exact rawScale_pos D alloc X₂ hX₂ 1) v
 
-def scale (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (X:ℝ)(j:Fin 2)(F:Finset (Ideal O)):ℝ:=
+section
+variable (X:ℝ)(j:Fin 2)(F:Finset (Ideal O))
+include X j F
+
+def scale :ℝ:=
   clippedScale (rawScale D alloc X j)/((∏I∈F,I).absNorm:ℝ)
 
-lemma scale_pos (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (X:ℝ)(j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):0<scale D alloc X j F:=by
+lemma scale_pos (hF:∀I∈F,I≠0):0<scale D alloc X j F:=by
   have hn:0<((∏I∈F,I).absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.prod_ne_zero_iff.mpr hF))
   exact div_pos (by unfold clippedScale;positivity) hn
+end
 
-lemma scale_cap (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+
+lemma scale_cap 
     (Z L X:ℝ)(hZ:1≤Z)(hL:0≤L)(hX:0<X)(hc:X≤Z^L)
     (j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):scale D alloc X j F≤Z^L:=
   (allocatedScale_le D alloc X hX j F hF).trans (max_le (Real.one_le_rpow hZ hL) hc)
+end
+
 
 lemma allocated_pair {Z Bmask bΦ a b:ℝ}(st:NaturalState Z Bmask bΦ)(hunit:st.puncture=1)
     (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
@@ -77,7 +87,7 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
@@ -116,8 +126,8 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
     (scale_cap D alloc Z L X₁ st.base_ge_one hL hX₁ hc₁ 0 F₁ hF₁)
     (scale_cap D alloc Z L X₂ st.base_ge_one hL hX₂ hc₂ 1 F₂ hF₂)
 
-end SevenEighths.CenteredMomentEnergyAllocatedClipped
 
-end
 
-end OAI
+
+
+

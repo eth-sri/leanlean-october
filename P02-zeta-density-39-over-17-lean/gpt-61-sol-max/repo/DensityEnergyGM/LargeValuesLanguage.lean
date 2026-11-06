@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Combinatorics.Additive.Energy
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesDefinitions
 public import GuthMaynard.NativeSource.GuthMaynard.Separated
@@ -28,8 +29,12 @@ the large-values energy argument. -/
 noncomputable def gmTranslate (c : ℝ) (W : Finset ℝ) : Finset ℝ :=
   W.image (fun x => x + c)
 
-theorem mapAdditiveQuadruple_translate_mem (η c : ℝ) (W : Finset ℝ)
+section
+variable (η c : ℝ) (W : Finset ℝ)
     (q : (ℝ × ℝ) × (ℝ × ℝ))
+include η c W q
+
+theorem mapAdditiveQuadruple_translate_mem 
     (hq : q ∈ approximateAdditiveQuadruples η W) :
     mapAdditiveQuadruple (fun x => x + c) q ∈
       approximateAdditiveQuadruples η (gmTranslate c W) := by
@@ -51,8 +56,7 @@ theorem mapAdditiveQuadruple_translate_mem (η c : ℝ) (W : Finset ℝ)
         ring]
     exact hd
 
-theorem mapAdditiveQuadruple_untranslate_mem (η c : ℝ) (W : Finset ℝ)
-    (q : (ℝ × ℝ) × (ℝ × ℝ))
+theorem mapAdditiveQuadruple_untranslate_mem 
     (hq : q ∈ approximateAdditiveQuadruples η (gmTranslate c W)) :
     mapAdditiveQuadruple (fun x => x - c) q ∈
       approximateAdditiveQuadruples η W := by
@@ -81,6 +85,8 @@ theorem mapAdditiveQuadruple_untranslate_mem (η c : ℝ) (W : Finset ℝ)
         simp only [mapAdditiveQuadruple]
         ring]
     exact hd
+end
+
 
 /-- Approximate additive energy is translation invariant. -/
 theorem approxAddEnergy_translate (η c : ℝ) (W : Finset ℝ) :
@@ -125,9 +131,6 @@ theorem floor_injective_on_of_separated (W : Finset ℝ)
   have hxylt : x - y < 1 := by
     rw [hfloor] at hxupper
     linarith
-  have hyxlt : -(1 : ℝ) < x - y := by
-    rw [← hfloor] at hyupper
-    linarith
-  exact (not_lt_of_ge hsep) (abs_lt.mpr ⟨hyxlt, hxylt⟩)
+  grind
 
-end GuthMaynard.NativeMoment
+

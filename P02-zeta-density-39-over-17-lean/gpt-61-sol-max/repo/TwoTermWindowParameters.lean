@@ -3,7 +3,6 @@ public import DensityWindowBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
 namespace Montgomery.RationalMoment
 
@@ -149,4 +148,4 @@ theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/
       linarith only [hh]
   }
 
-end Montgomery.RationalMoment
+

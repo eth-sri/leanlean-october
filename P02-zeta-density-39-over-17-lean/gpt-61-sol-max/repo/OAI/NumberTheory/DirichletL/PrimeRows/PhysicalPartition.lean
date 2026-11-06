@@ -11,16 +11,23 @@ open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CompletedGauss CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def physicalRowValue {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (T : Fin K→Finset PrimeIdeal) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+section
+variable {K : ℕ} (S : Finset (Ideal O))
+include K S
+
+section
+variable (hmax : ∀P∈S,P.IsMaximal)
+    (η : Character) (T : Fin K→Finset PrimeIdeal)
+include hmax η T
+
+def physicalRowValue  (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (u : FreeRow) : ℂ :=
   ∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
+theorem physicalRowValue_summable  (hT : ∀i P,P∈T i→Supported P.val)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -38,9 +45,10 @@ theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P�
     | empty => simp
     | @insert P F hP ih => simpa only [Finset.sum_insert hP] using (hs P).add ih
   exact hh Finset.univ
+end
 
-theorem canonical_physical_probe_partition {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+
+theorem canonical_physical_probe_partition  (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -71,9 +79,11 @@ theorem canonical_physical_probe_partition {K : ℕ}
   congr 1
   · dsimp [f,physicalRowValue]
     simp only [rowIntegral_principal]
-
-end SevenEighths.ProbeHighRowFamily
-
 end
 
-end OAI
+
+
+
+
+
+

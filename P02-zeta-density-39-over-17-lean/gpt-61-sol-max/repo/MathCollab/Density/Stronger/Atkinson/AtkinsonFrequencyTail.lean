@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -12,23 +13,25 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-noncomputable section
+
 open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinsonRootSlope_far_positive {T b y : ℝ} (hT : 0 < T)
+section
+variable {T b y : ℝ} (hT : 0 < T)
     (hy : y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
-    (hb : 8 * Real.sqrt T ≤ b) :
+    (hb : 8 * Real.sqrt T ≤ b)
+include T b y hT hy hb
+
+theorem atkinsonRootSlope_far_positive  :
     b ≤ atkinsonRootSlope T b y := by
   have hy0 : 0 < y := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
   have hp : 0 ≤ T / (Real.pi * y) := by positivity
   unfold atkinsonRootSlope
   nlinarith [Real.sqrt_nonneg T, hy.2]
 
-theorem atkinsonRootSlope_far_negative {T b y : ℝ} (hT : 0 < T)
-    (hy : y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
-    (hb : 8 * Real.sqrt T ≤ b) :
+theorem atkinsonRootSlope_far_negative  :
     atkinsonRootSlope T (-b) y ≤ -b := by
   have hy0 : 0 < y := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
   have hs : Real.sqrt (T / 16) = Real.sqrt T / 4 := by
@@ -40,11 +43,11 @@ theorem atkinsonRootSlope_far_negative {T b y : ℝ} (hT : 0 < T)
     have hpi : 1 ≤ Real.pi := by linarith [Real.pi_gt_three]
     have hprod := mul_le_mul_of_nonneg_left hsy (Real.sqrt_nonneg T)
     rw [Real.mul_self_sqrt hT.le] at hprod
-    have hmul := mul_le_mul_of_nonneg_left hpi
-      (show 0 ≤ 4 * Real.sqrt T * y by positivity)
     nlinarith
   unfold atkinsonRootSlope
   linarith [Real.sqrt_nonneg T]
+end
+
 
 theorem norm_atkinsonRootKernel_integral_far {T b c : ℝ} (hT : 0 < T)
     (hc : c ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
@@ -85,9 +88,7 @@ theorem exists_norm_atkinsonPowerIntegral_far_le (α : ℝ) :
   have hab : Real.sqrt (T / 16) ≤ Real.sqrt T := Real.sqrt_le_sqrt (by linarith)
   have ha : 0 < Real.sqrt (T / 16) := Real.sqrt_pos.2 (by positivity)
   have hf : IntervalC1Bound (atkinsonPowerWeight T G L α)
-      ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by
-    simpa only [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] using
-      hweight T G L hT hG hGT hL
+      ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by grind
   have hw := hf.comp_sq ha.le hab
   have hp (u : ℝ)
       (hu : ∀ x ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T),
@@ -101,4 +102,4 @@ theorem exists_norm_atkinsonPowerIntegral_far_le (α : ℝ) :
   exact ⟨hp b (fun x hx => (norm_atkinsonRootKernel_integral_far hT hx hb).1),
     hp (-b) (fun x hx => (norm_atkinsonRootKernel_integral_far hT hx hb).2)⟩
 
-end MathCollab.Density.Stronger.Atkinson
+

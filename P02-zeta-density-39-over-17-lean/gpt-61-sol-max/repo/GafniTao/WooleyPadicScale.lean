@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPadicConcentration
 public import Mathlib.Algebra.Order.Archimedean.Basic
 
@@ -16,13 +17,12 @@ source `p^(B*delta)` loss into `Q^epsilon`.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem fordVinogradovKappa_pos {k : ℕ} (hk : 1 ≤ k) :
     0 < fordVinogradovKappa k := by
   unfold fordVinogradovKappa
-  have hdiv : 2 ≤ k * (k + 1) := by nlinarith
-  exact Nat.div_pos hdiv (by omega)
+  simp_all <;> nlinarith
 
 theorem fordVinogradovKappa_one_le {k : ℕ} (hk : 1 ≤ k) :
     1 ≤ fordVinogradovKappa k :=
@@ -47,11 +47,7 @@ theorem exists_wooleyPadicScale
   have hbaseStrict : s * Q < p ^ (b + 1) := hbUpper
   have hpowMono : p ^ (b + 1) ≤ p ^ h := by
     exact Nat.pow_le_pow_right hpPos (by dsimp [h]; omega)
-  have hQph : Q < p ^ h := by
-    calc
-      Q ≤ s * Q := by nlinarith
-      _ < p ^ (b + 1) := hbaseStrict
-      _ ≤ p ^ h := hpowMono
+  have hQph : Q < p ^ h := by nlinarith
   have hsPow : s ≤ s ^ k := le_self_pow₀ hs (by omega : k ≠ 0)
   have hleft : s * Q ^ k ≤ (s * Q) ^ k := by
     rw [mul_pow]
@@ -83,6 +79,6 @@ theorem exists_wooleyPadicScale
     _ ≤ k * h := Nat.mul_le_mul_right h hk
 
 
-end
 
-end GafniTao
+
+

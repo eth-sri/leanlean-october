@@ -36,7 +36,7 @@ lemma nonexceptional_scale_loss (M P Y δ : ℝ) (hM : 1≤M) (hP : 1≤P) (hY :
       (mul_le_mul hmp hpp (by positivity) hm.le) (by positivity)
     _=_ := by rw [Real.rpow_add hY,Real.rpow_neg_one];ring
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

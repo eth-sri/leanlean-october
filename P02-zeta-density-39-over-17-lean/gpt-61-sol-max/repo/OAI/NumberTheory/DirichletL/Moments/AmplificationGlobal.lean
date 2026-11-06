@@ -11,10 +11,10 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationGlobal
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy
 open CenteredMomentAmplification ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
@@ -36,14 +36,17 @@ theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
       mul_comm (p^6) h,gauss_prime_power_unchanged p hp hs hg hc n
         (by omega) (by omega) (by omega) h hph]
 
-def amplificationError {α : Type*} (S : Finset α) (a : α → O)
+section
+variable {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+include α S a ha c
+
+def amplificationError 
     (ν : α → ℕ) (p : O) (k : ℕ) (h : O) : ℂ :=
   ∑ i ∈ S, if ν i = k then c i *
     (gaussRow (a i) (ha i) h - gaussRow (a i) (ha i) (p^6*h)) else 0
 
-theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+theorem polynomial_amplification 
     (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -72,21 +75,35 @@ theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
         have he := full_column_unchanged p hp hs hg hc (ν i) h1 h6 h7
           (r i) (hr i) (hcop i hi) h hph
         simpa only [hfactor i hi] using he.symm
+end
 
-def primeRemainder (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) : O :=
+
+section
+variable (p : O) (hp : Prime p) (a : O)
+include p hp a
+
+section
+variable (ha : a ≠ 0)
+include ha
+
+def primeRemainder  : O :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_spec (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) :
+theorem primeRemainder_spec  :
     a = p^(multiplicity p a)*primeRemainder p hp a ha ∧ ¬p ∣ primeRemainder p hp a ha :=
   Classical.choose_spec ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
+end
 
-theorem primeRemainder_supported (p : O) (hp : Prime p) (a : O)
+
+theorem primeRemainder_supported 
     (ha : Supported (Ideal.span {a})) :
     Supported (Ideal.span {primeRemainder p hp a (supported_element_ne_zero a ha)}) := by
   have hs := ha
   rw [(primeRemainder_spec p hp a (supported_element_ne_zero a ha)).1,
     ← Ideal.span_singleton_mul_span_singleton,supported_mul_iff] at hs
   exact hs.2
+end
+
 
 theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -151,8 +168,8 @@ theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)
   exact polynomial_amplification_actual S a ha c p (hp p hpP) (hs p hpP)
     (hgood p hpP) (hc p hpP) h (hph p hpP)
 
-end SevenEighths.CenteredMomentAmplificationGlobal
 
-end
 
-end OAI
+
+
+

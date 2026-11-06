@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedGaussSeries
 public import OAI.NumberTheory.DirichletL.Reciprocity.KubotaCharacter
 
@@ -10,103 +11,107 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 namespace CubicEisenstein
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 private theorem finite_tsum_comp_addHom {R S : Type*} [AddGroup R] [AddGroup S]
     [Finite R] [Finite S] (f:R→+S) (hf:Function.Surjective f) (F:S→ℂ) :
     (∑'x:R,F (f x))=(Nat.card f.ker:ℂ)*∑'y:S,F y := by
   let:Fintype R:=Fintype.ofFinite _
   let:Fintype S:=Fintype.ofFinite _
-  let:Fintype f.ker:=Fintype.ofFinite _
   rw [tsum_fintype,tsum_fintype,←Fintype.sum_fiberwise' f F]
   have hc (y:S):Fintype.card {x:R//f x=y}=Fintype.card f.ker:=
     Fintype.card_congr (AddMonoidHom.fiberEquivKerOfSurjective hf y)
-  simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,hc,Nat.card_eq_fintype_card]
+  simp only [sum_const, card_univ, hc, nsmul_eq_mul, Nat.card_eq_fintype_card]
   rw [Finset.mul_sum]
 
-lemma ramified_affine_isUnit (u:Eisˣ) (n:ℕ)
+section
+variable (u:Eisˣ) (n:ℕ)
+include u n
+
+lemma ramified_affine_isUnit 
     (x:Eis⧸Ideal.span {u.val*lambda^n}) : IsUnit (1+3*x) := by
   obtain ⟨d,rfl⟩:=Ideal.Quotient.mk_surjective x
   have hh:denominatorCondition (u.val*lambda^n) (1+3*d):=
     ramified_denominator_condition u n _ ⟨d,by ring⟩
-  simpa only [map_add,map_one,map_mul,map_ofNat] using
-    (isUnit_quotient_span_iff _ _).mpr hh.1
+  exact (isUnit_quotient_span_iff _ _).mpr hh.1
 
-def ramifiedAffineEquiv (u:Eisˣ) (n:ℕ) :
+def ramifiedAffineEquiv  :
     (Eis⧸Ideal.span {u.val*lambda^n})≃AdmissibleResidue (u.val*lambda^n):=
   (Equiv.subtypeUnivEquiv (ramified_affine_isUnit u n)).symm.trans (affineResidueEquiv _)
+end
+
 
 theorem ramified_arithmetic_affine (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
     arithmeticResidueSum h (u.val*lambda^n)=
@@ -128,16 +133,20 @@ theorem ramified_arithmetic_affine (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
   rw [row_symbol_congr_modulus a _ d (ramifiedElement_level u n hn) hd hrep,
     residueAdditive_congr h a _ d (ramifiedElement_ne_zero u n) hrep]
 
-def ramifiedReduction (u:Eisˣ) (n:ℕ) (hn:2≤n) :
+section
+variable (u:Eisˣ) (n:ℕ) (hn:2≤n)
+include u n hn
+
+def ramifiedReduction  :
     (Eis⧸Ideal.span {u.val*lambda^n})→+*(Eis⧸Ideal.span {(3:Eis)}):=
   Ideal.Quotient.factor (Ideal.span_singleton_le_span_singleton.mpr
     (ramifiedElement_level u n hn))
 
-lemma ramifiedReduction_surjective (u:Eisˣ) (n:ℕ) (hn:2≤n) :
+lemma ramifiedReduction_surjective  :
     Function.Surjective (ramifiedReduction u n hn):=
   Ideal.Quotient.factor_surjective _
 
-lemma ramifiedReduction_rep (u:Eisˣ) (n:ℕ) (hn:2≤n)
+lemma ramifiedReduction_rep 
     (x:Eis⧸Ideal.span {u.val*lambda^n}) :
     (3:Eis)∣GaussianShiftedPartition.representative (u.val*lambda^n) x-
       GaussianShiftedPartition.representative 3 (ramifiedReduction u n hn x) := by
@@ -147,6 +156,8 @@ lemma ramifiedReduction_rep (u:Eisˣ) (n:ℕ) (hn:2≤n)
   have hh:=congrArg (ramifiedReduction u n hn)
     (GaussianShiftedPartition.representative_spec (u.val*lambda^n) x)
   exact hh
+end
+
 
 lemma residueAdditive_ramified_scale (h k a d:Eis) (ha:a≠0) (hk:3*h=a*k) :
     residueAdditive h a d=residueAdditive k 3 d := by
@@ -154,7 +165,7 @@ lemma residueAdditive_ramified_scale (h k a d:Eis) (ha:a≠0) (hk:3*h=a*k) :
   congr 1
   have he:=congrArg eisEmbedding hk
   simp only [map_mul,map_ofNat] at he
-  have ha':eisEmbedding a≠0:=eisEmbedding_ne_zero ha
+  have ha' :=eisEmbedding_ne_zero ha
   simp only [map_ofNat]
   field_simp
   linear_combination eisLam⁻¹*eisEmbedding d*he
@@ -185,7 +196,7 @@ theorem ramified_arithmetic_nine_sum (h k:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n)
       ((3^(n-2):ℕ):ℂ)*ramifiedNineSum k u n := by
   let a:=u.val*lambda^n
   let f:=ramifiedReduction u n hn
-  let F:Eis⧸Ideal.span {(3:Eis)}→ℂ:=fun x=>
+  let F :=fun x=>
     eisEmbedding (symbol a (1+3*GaussianShiftedPartition.representative 3 x))*
       residueAdditive k 3 (1+3*GaussianShiftedPartition.representative 3 x)
   have hpoint (x:Eis⧸Ideal.span {a}):
@@ -214,9 +225,13 @@ theorem ramified_arithmetic_nine_sum (h k:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n)
 end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def ramifiedLinearChar (u:Eisˣ) (n:ℕ):AddChar Eis ℂ where
+section
+variable (u:Eisˣ) (n:ℕ)
+include u n
+
+def ramifiedLinearChar :AddChar Eis ℂ where
   toFun x:=eisEmbedding (symbol (u.val*lambda^n) (1+3*x))
   map_zero_eq_one':=by simp
   map_add_eq_mul':=by
@@ -227,30 +242,36 @@ def ramifiedLinearChar (u:Eisˣ) (n:ℕ):AddChar Eis ℂ where
       ((1+3*x)*(1+3*y)) (hp _) hprod ⟨-x*y,by ring⟩,
       symbol_mul_denominator,map_mul]
 
-lemma ramifiedLinearChar_period (u:Eisˣ) (n:ℕ) (x:Eis)
+lemma ramifiedLinearChar_period  (x:Eis)
     (hx:x∈Ideal.span {(3:Eis)}) : ramifiedLinearChar u n x=1 := by
   obtain ⟨w,rfl⟩:=Ideal.mem_span_singleton.mp hx
   change eisEmbedding (symbol (u.val*lambda^n) (1+3*(3*w)))=1
   rw [ramified_symbol_congr_mod_nine u n _ 1 ⟨3*w,by ring⟩ (by simp) ⟨w,by ring⟩]
   simp
 
-def ramifiedQuotientChar (u:Eisˣ) (n:ℕ):AddChar (Eis⧸Ideal.span {(3:Eis)}) ℂ:=
+def ramifiedQuotientChar :AddChar (Eis⧸Ideal.span {(3:Eis)}) ℂ:=
   IdealGaussCRT.quotientAddChar _ (ramifiedLinearChar u n) (ramifiedLinearChar_period u n)
 
-lemma ramifiedQuotientChar_rep (u:Eisˣ) (n:ℕ) (x:Eis⧸Ideal.span {(3:Eis)}) :
+lemma ramifiedQuotientChar_rep  (x:Eis⧸Ideal.span {(3:Eis)}) :
     ramifiedQuotientChar u n x=
       eisEmbedding (symbol (u.val*lambda^n)
         (1+3*GaussianShiftedPartition.representative 3 x)) := by
   conv_lhs => rw [←GaussianShiftedPartition.representative_spec 3 x]
   rfl
+end
 
-def ramifiedFrequencyChar (k:Eis) (u:Eisˣ) (n:ℕ):
+
+section
+variable (k:Eis) (u:Eisˣ) (n:ℕ)
+include k u n
+
+def ramifiedFrequencyChar :
     AddChar (Eis⧸Ideal.span {(3:Eis)}) ℂ:=
   ramifiedQuotientChar u n *
     (eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates
       3 (by norm_num)).mulShift (Ideal.Quotient.mk _ k)
 
-lemma ramifiedFrequencyChar_rep (k:Eis) (u:Eisˣ) (n:ℕ)
+lemma ramifiedFrequencyChar_rep 
     (x:Eis⧸Ideal.span {(3:Eis)}) :
     ramifiedFrequencyChar k u n x=
       eisEmbedding (symbol (u.val*lambda^n)
@@ -259,13 +280,12 @@ lemma ramifiedFrequencyChar_rep (k:Eis) (u:Eisˣ) (n:ℕ)
   rw [ramifiedFrequencyChar,AddChar.mul_apply,ramifiedQuotientChar_rep]
   congr 1
   conv_lhs => rw [←GaussianShiftedPartition.representative_spec 3 x]
-  simp only [AddChar.mulShift_apply,←map_mul,eisTraceModChar,IdealGaussCRT.traceModChar_mk]
+  simp only [eisTraceModChar, mulShift_apply, ← map_mul, IdealGaussCRT.traceModChar_mk]
   unfold residueAdditive cuspFrequency
   simp only [map_mul,map_ofNat]
-  congr 1
-  field_simp
+  ring
 
-theorem ramifiedNineSum_eq_character_test (k:Eis) (u:Eisˣ) (n:ℕ) :
+theorem ramifiedNineSum_eq_character_test  :
     ramifiedNineSum k u n=
       if ramifiedFrequencyChar k u n=1 then 9*residueAdditive k 3 1 else 0 := by
   let:Finite (Eis⧸Ideal.span {(3:Eis)}):=finite_quotient_span (by norm_num)
@@ -273,8 +293,7 @@ theorem ramifiedNineSum_eq_character_test (k:Eis) (u:Eisˣ) (n:ℕ) :
   have hcard:(Fintype.card (Eis⧸Ideal.span {(3:Eis)}):ℂ)=9:=by
     have hh:=three_absNorm
     change Nat.card (Eis⧸Ideal.span {(3:Eis)})=9 at hh
-    exact_mod_cast (show Fintype.card (Eis⧸Ideal.span {(3:Eis)})=9 by
-      simpa only [Nat.card_eq_fintype_card] using hh)
+    simp_all
   have he:ramifiedNineSum k u n=residueAdditive k 3 1*
       ∑'x:Eis⧸Ideal.span {(3:Eis)},ramifiedFrequencyChar k u n x:=by
     rw [ramifiedNineSum,←tsum_mul_left]
@@ -287,6 +306,8 @@ theorem ramifiedNineSum_eq_character_test (k:Eis) (u:Eisˣ) (n:ℕ) :
   · rw [AddChar.sum_eq_card_of_eq_one hchar,hcard]
     ring
   · rw [AddChar.sum_eq_zero_of_ne_one hchar,mul_zero]
+end
+
 
 theorem ramified_arithmetic_character_test (h k:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n)
     (hk:3*h=(u.val*lambda^n)*k) :
@@ -482,17 +503,27 @@ def rationalCosetEquiv : RationalBruhatIndex ≃ (levelTwo ⧸ levelThreeInTwo) 
 
 instance sourceQuotientFintype : Fintype (levelTwo ⧸ levelThreeInTwo) := Fintype.ofFinite _
 
-def sourceRationalSection (q : levelTwo ⧸ levelThreeInTwo) : SL(2,ℤ) :=
+section
+variable (q : levelTwo ⧸ levelThreeInTwo)
+include q
+
+def sourceRationalSection  : SL(2,ℤ) :=
   rationalBruhatRep (rationalCosetEquiv.symm q)
 
-lemma sourceRationalSection_spec (q : levelTwo ⧸ levelThreeInTwo) :
+lemma sourceRationalSection_spec  :
     rationalQuotient (sourceRationalSection q)=q := rationalCosetEquiv.apply_symm_apply q
+end
 
-def sourceProjection (f : HyperbolicSpace→ℂ) (w : HyperbolicSpace) : ℂ :=
+
+section
+variable (f : HyperbolicSpace→ℂ)
+include f
+
+def sourceProjection  (w : HyperbolicSpace) : ℂ :=
   (24:ℂ)⁻¹ * ∑q : levelTwo ⧸ levelThreeInTwo,
     f (integralComplexMatrix (rationalEmbedding (sourceRationalSection q)) • w)
 
-lemma sourceProjection_eq_twentyFour (f : HyperbolicSpace→ℂ) (w : HyperbolicSpace) :
+lemma sourceProjection_eq_twentyFour  (w : HyperbolicSpace) :
     sourceProjection f w=(24:ℂ)⁻¹ * ∑i : RationalBruhatIndex,
       f (integralComplexMatrix (rationalEmbedding (rationalBruhatRep i)) • w) := by
   unfold sourceProjection
@@ -500,8 +531,11 @@ lemma sourceProjection_eq_twentyFour (f : HyperbolicSpace→ℂ) (w : Hyperbolic
   rw [←rationalCosetEquiv.sum_comp]
   simp only [sourceRationalSection,Equiv.symm_apply_apply]
 
-lemma sourceSection_translate (f : HyperbolicSpace→ℂ)
-    (hf : ∀n : levelThree,∀w,f (complexMatrix n • w)=complexCharacter n*f w)
+section
+variable (hf : ∀n : levelThree,∀w,f (complexMatrix n • w)=complexCharacter n*f w)
+include hf
+
+lemma sourceSection_translate 
     (q : levelTwo ⧸ levelThreeInTwo) (g : levelTwo) (w : HyperbolicSpace) :
     f (integralComplexMatrix (rationalEmbedding (sourceRationalSection q)) •
       (integralComplexMatrix (g:SL(2,ActualEisensteinCubic.O)) • w)) =
@@ -510,7 +544,7 @@ lemma sourceSection_translate (f : HyperbolicSpace→ℂ)
         (q*QuotientGroup.mk' levelThreeInTwo g))) • w) := by
   let r := sourceRationalSection q
   let s := sourceRationalSection (q*QuotientGroup.mk' levelThreeInTwo g)
-  let n2 : levelTwo := rationalLift r*g*(rationalLift s)⁻¹
+  let n2 := rationalLift r*g*(rationalLift s)⁻¹
   have hn2 : n2∈levelThreeInTwo := by
     apply (QuotientGroup.eq_one_iff (N:=levelThreeInTwo) n2).mp
     change QuotientGroup.mk' levelThreeInTwo (rationalLift r*g*(rationalLift s)⁻¹)=1
@@ -534,8 +568,7 @@ lemma sourceSection_translate (f : HyperbolicSpace→ℂ)
     levelTwoComplexCharacter g*f (integralComplexMatrix (rationalEmbedding s) • w)
   rw [←mul_smul,←map_mul,he,map_mul,integralComplexMatrix_levelThree,mul_smul,hf,hc]
 
-theorem sourceProjection_automorphy (f : HyperbolicSpace→ℂ)
-    (hf : ∀n : levelThree,∀w,f (complexMatrix n • w)=complexCharacter n*f w)
+theorem sourceProjection_automorphy 
     (g : levelTwo) (w : HyperbolicSpace) :
     sourceProjection f (integralComplexMatrix (g:SL(2,ActualEisensteinCubic.O)) • w)=
       levelTwoComplexCharacter g * sourceProjection f w := by
@@ -546,11 +579,14 @@ theorem sourceProjection_automorphy (f : HyperbolicSpace→ℂ)
     (Group.mulRight_bijective (QuotientGroup.mk' levelThreeInTwo g))
     (fun q => f (integralComplexMatrix (rationalEmbedding (sourceRationalSection q)) • w))]
   ring
+end
+end
+
 
 def sourceEisenstein (s : ℂ) : HyperbolicSpace→ℂ := sourceProjection (hyperbolicEisenstein s)
 
-end CubicKubota
 
-end
 
-end OAI
+
+
+

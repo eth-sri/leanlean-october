@@ -6,13 +6,12 @@ public import LaterPairs.Native.ContinuousSecondDerivative
 public import LaterPairs.Native.ThirdDerivativeShift
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 open Set GafniTao
 namespace TaoTrudgianYang2025
 
@@ -33,8 +32,7 @@ theorem continuous_third_derivative_correlation
     have hlenR : (L:ℝ)+1+(r:ℝ) = N := by
       exact_mod_cast (show L+1+r = N by dsimp [L]; omega)
     have hin (x : ℝ) (hx : x ∈ Icc A (A+L+1)) :
-        x ∈ Icc A (A+N) ∧ x+r ∈ Icc A (A+N) := by
-      constructor <;> constructor <;> linarith [Nat.cast_nonneg (α := ℝ) r,hx.1,hx.2]
+        x ∈ Icc A (A+N) ∧ x+r ∈ Icc A (A+N) := by grind
     have hcurv (x : ℝ) (hx : x ∈ Icc A (A+L+1)) :
         (r:ℝ)*μ ≤ F'' (x+r)-F'' x ∧ F'' (x+r)-F'' x ≤ C*((r:ℝ)*μ) := by
       have hb := third_derivative_shift_curvature F'' F'''
@@ -50,13 +48,9 @@ theorem continuous_third_derivative_correlation
         (hF' (x+r) (hin x hx).2))
       (fun x hx => (hcurv x hx).1) (fun x hx => (hcurv x hx).2)
     rw [hlen]
-    exact hb.trans (by
-      have hLN : (L:ℝ) ≤ N := by exact_mod_cast (show L ≤ N by dsimp [L]; omega)
-      have hm := mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hLN hC) (Real.sqrt_nonneg ((r:ℝ)*μ))
-      linarith)
+    exact hb.trans (by simp_all <;> nlinarith)
   · have he : N-r = 0 := by omega
     rw [he,Finset.sum_range_zero,norm_zero]
     positivity
 
-end TaoTrudgianYang2025
+

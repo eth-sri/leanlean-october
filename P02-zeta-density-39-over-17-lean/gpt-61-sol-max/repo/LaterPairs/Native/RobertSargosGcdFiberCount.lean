@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosNormalizedFrequency
 public import LaterPairs.Native.RobertSargosPrimitiveCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
@@ -49,5 +48,5 @@ theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
+
 

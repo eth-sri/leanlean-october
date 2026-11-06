@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.OperatorSpectralComparison
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory InnerProductSpace Filter Set
 open scoped InnerProductSpace Topology
 namespace GuthMaynard.Improvement
@@ -67,4 +66,4 @@ theorem operator_centered_spectral_comparison (μ : Measure ℝ) [IsFiniteMeasur
     (operator_continuous_norm_product μ hi L)
     (operator_centered_eq μ hi hl hL hs).symm rfl v hv hk hB hw
 
-end GuthMaynard.Improvement
+

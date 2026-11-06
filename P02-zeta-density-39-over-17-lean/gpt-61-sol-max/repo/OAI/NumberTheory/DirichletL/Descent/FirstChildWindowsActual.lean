@@ -9,8 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstChildWindows
 open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic
-open FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open FirstPassCubeLabels
+open scoped EisensteinO
 
 def actualOuterRatios {ι : Type*} (p : ι→O) (A₁ A₂ C R : ℝ) (d h : O)
     (j : FirstCommonIndex ι) (s : Fin 9→ℝ) (i : Fin 7) : ℝ :=
@@ -18,7 +18,7 @@ def actualOuterRatios {ι : Type*} (p : ι→O) (A₁ A₂ C R : ℝ) (d h : O)
 
 theorem actual_first_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (lo hi : Fin 7→ℝ) (Bρ : Fin 9→ℝ)
-    (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
+    (hm₁ : 0≤ m₁) (hm₂ : 0≤ m₂)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂)
     (hlo : ∀i,0<lo i) (hhi : ∀i,lo i≤hi i) (hBρ : ∀i,0≤Bρ i) :
@@ -70,7 +70,7 @@ theorem actual_first_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap :
     exact hcut (fun i=>firstCommonNorms p (A₁ x) (A₂ x) (C x) (R x) (d x) (h x) j i/s i)
       ρ hρ (hblock x hx j hj hn) hw₁ hw₂ i
 
-end SevenEighths.InverseMomentFirstChildWindows
-end
 
-end OAI
+
+
+

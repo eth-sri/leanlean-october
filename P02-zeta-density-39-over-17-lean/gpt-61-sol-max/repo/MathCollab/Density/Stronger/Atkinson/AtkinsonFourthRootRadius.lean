@@ -29,23 +29,29 @@ namespace MathCollab.Density.Stronger.Atkinson
 def atkinsonSymmetricRadiusScale (T G : ℝ) : ℝ :=
   T^(1/4 : ℝ)/Real.sqrt G
 
-theorem atkinsonSymmetricRadiusScale_pos {T G : ℝ} (hT : 0 < T) (hG : 0 < G) :
+section
+variable {T G : ℝ} (hT : 0 < T) (hG : 0 < G)
+include T G hT hG
+
+theorem atkinsonSymmetricRadiusScale_pos  :
     0 < atkinsonSymmetricRadiusScale T G := by
   unfold atkinsonSymmetricRadiusScale
   positivity
 
-theorem atkinsonSymmetricRadiusScale_sq {T G : ℝ} (hT : 0 < T) (hG : 0 < G) :
+theorem atkinsonSymmetricRadiusScale_sq  :
     (atkinsonSymmetricRadiusScale T G)^2 = Real.sqrt T/G := by
   unfold atkinsonSymmetricRadiusScale
   rw [div_pow,Real.sq_sqrt hG.le,← Real.rpow_natCast,← Real.rpow_mul hT.le,
     Real.sqrt_eq_rpow]
   norm_num
 
-theorem atkinsonSymmetricRadiusScale_fourth {T G : ℝ} (hT : 0 < T) (hG : 0 < G) :
+theorem atkinsonSymmetricRadiusScale_fourth  :
     (atkinsonSymmetricRadiusScale T G)^4 = T/G^2 := by
   rw [show (atkinsonSymmetricRadiusScale T G)^4 =
     ((atkinsonSymmetricRadiusScale T G)^2)^2 by ring,
     atkinsonSymmetricRadiusScale_sq hT hG,div_pow,Real.sq_sqrt hT.le]
+end
+
 
 theorem atkinsonSymmetricRadiusScale_balance {T G : ℝ} (hT : 1 ≤ T)
     (hlower : T^(1/4 : ℝ) ≤ G) (hupper : G ≤ Real.sqrt T) :
@@ -113,4 +119,4 @@ theorem exists_atkinsonPowerIntegral_fourthRoot_pair (α : ℝ) :
   exact ⟨hbound T G L (Real.sqrt n) hT hlower hupper hL hwidth hb,
     hbound T G L (-Real.sqrt n) hT hlower hupper hL hwidth (by simpa only [abs_neg])⟩
 
-end MathCollab.Density.Stronger.Atkinson
+

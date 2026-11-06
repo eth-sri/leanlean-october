@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proof slice at revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -9,11 +10,10 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory
+
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem besselK0_source_power_absorb {C T A : ℝ} {k : ℕ}
@@ -49,11 +49,10 @@ theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A :
     have hp := mul_le_mul_of_nonneg_left
       (besselK0_source_power_absorb (by linarith [hsupport.1]) hTC hkA) hG.le
     apply hb.trans
-    convert hp using 1
-    ring
+    grind
   obtain ⟨T₁, hT₁⟩ := eventually_atTop.mp hev
   refine ⟨max 16 T₁, le_max_left _ _, ?_⟩
   intro T G hT hlower hupper
   exact hT₁ T ((le_max_right _ _).trans hT) G hlower hupper
 
-end MathCollab.Density.Stronger.Atkinson
+

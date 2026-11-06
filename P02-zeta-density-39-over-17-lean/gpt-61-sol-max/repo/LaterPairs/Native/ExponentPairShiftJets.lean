@@ -6,9 +6,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                
@@ -18,7 +17,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                           
 
 
-noncomputable section
+
 
 open Set Expdb Filter
 open scoped ContDiff Topology
@@ -61,4 +60,4 @@ theorem aProcessShiftPhase_iteratedDeriv
     hc _ hF _ (hi 0 (by norm_num)),hc _ hF _ (hi 1 (by norm_num))] at h
   exact h
 
-end TaoTrudgianYang2025
+

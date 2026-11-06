@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerGeometry
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialProfile InverseInitialClippedColumns ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
+
+open ConcreteTraceCRT
+open scoped EisensteinEis
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -86,8 +86,8 @@ theorem initial_child_enclosures
     congr 1
     ring
 
-end SevenEighths.InverseInitialEnergyCallerGeometry
 
-end
 
-end OAI
+
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import DensityEnergyGM.LargeValuesEnergy
 public import DensityEnergyGM.CoprimeFourthEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 set_option maxRecDepth 4096
 noncomputable section
@@ -75,8 +75,7 @@ theorem nativeCoprimeFourth_le_short_energy
     rw [native_ratio_sum_eq_phase W
       (div_pos (by exact_mod_cast hpgeom.1) (by exact_mod_cast hpgeom.2.1))]
     simp only [pairRatio, Rat.cast_div, Rat.cast_natCast]
-  rw [heq]
-  exact hbound
+  nlinarith
 
 /-- The complete reduced fourth-moment minimum needed by the stronger
 energy argument. Both alternatives concern the same actual exponential sum
@@ -130,14 +129,12 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
     let E : ℝ := discreteAdditiveEnergy W
     have hEpos : 0 < E := by
       have hdiag := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
-      rw [native_approx_energy_eq] at hdiag
       have hdiagReal : (W.card : ℝ) ^ 2 ≤ E := by
         dsimp only [E]
         exact_mod_cast hdiag
       exact lt_of_lt_of_le (by positivity) hdiagReal
     have hEupper : E ≤ (W.card : ℝ) ^ 4 := by
       have h := approxAddEnergy_le_card_pow_four 1 W
-      rw [native_approx_energy_eq] at h
       dsimp only [E]
       exact_mod_cast h
     have hQuarter : E ^ (1 / 4 : ℝ) ≤ (W.card : ℝ) := by
@@ -158,14 +155,7 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
             E ^ (3 / 4 : ℝ) * E ^ (1 / 4 : ℝ) * (M : ℝ) * M := by
           rw [← hEprod]
           ring
-        _ ≤ E ^ (3 / 4 : ℝ) * (W.card : ℝ) * Real.sqrt T * M := by
-          have hpE : 0 ≤ E ^ (3 / 4 : ℝ) := Real.rpow_nonneg hEpos.le _
-          have hq := mul_le_mul_of_nonneg_left hQuarter hpE
-          have hq' := mul_le_mul_of_nonneg_right hq (mul_nonneg hMzero hMzero)
-          have hm := mul_le_mul_of_nonneg_left hMroot
-            (mul_nonneg hpE (Nat.cast_nonneg W.card))
-          have hm' := mul_le_mul_of_nonneg_right hm hMzero
-          nlinarith
+        _ ≤ E ^ (3 / 4 : ℝ) * (W.card : ℝ) * Real.sqrt T * M := by field_simp <;> nlinarith
     have hFull := hFull M T W hM ((le_max_left _ _).trans hT) hMleT hSep hBase
     rw [native_approx_energy_eq] at hFull
     have hshape : (W.card : ℝ) ^ 4 * M + E * (M : ℝ) ^ 2 +
@@ -187,11 +177,7 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
             (mul_nonneg (mul_nonneg (Real.rpow_nonneg hTpos.le _)
               (Nat.cast_nonneg _)) (Real.rpow_nonneg hEpos.le _)))
         have hprod := mul_le_mul_of_nonneg_right hcoef hS0
-        change C₀ * T ^ ε * (2 * ((M : ℝ) * ((W.card : ℝ) ^ 4 +
-            T ^ (1 / 2 : ℝ) * (W.card : ℝ) * E ^ (3 / 4 : ℝ)))) ≤
-          C * T ^ ε * ((M : ℝ) * ((W.card : ℝ) ^ 4 +
-            T ^ (1 / 2 : ℝ) * (W.card : ℝ) * E ^ (3 / 4 : ℝ)))
-        nlinarith
+        grind
   by_cases h : (M : ℝ) * ((W.card : ℝ) ^ 4 + T ^ (1 / 2 : ℝ) *
       (W.card : ℝ) * (discreteAdditiveEnergy W : ℝ) ^ (3 / 4 : ℝ)) ≤
         T * (discreteAdditiveEnergy W : ℝ)
@@ -200,4 +186,4 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
   · rw [min_eq_right (le_of_not_ge h)]
     exact hShort
 
-end Montgomery.RationalMoment
+

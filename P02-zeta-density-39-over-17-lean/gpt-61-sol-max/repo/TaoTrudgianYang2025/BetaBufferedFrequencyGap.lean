@@ -13,15 +13,19 @@ The final inverse-distance bound is independent of N, eta and the endpoints;
 moving boundary strips and summation of the infinite tail remain separate.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
+
+section
+variable {F : ℝ → ℝ}
+include F
 
 theorem approximateModelPhase_firstDeriv_bounds
-    {F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ} (hσ : 0 < σ)
+     {σ δ : ℝ} {P : ℕ} (hσ : 0 < σ)
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     (2 : ℝ)^(-σ)-δ ≤ deriv F u ∧ deriv F u ≤ 1+δ := by
@@ -33,7 +37,7 @@ theorem approximateModelPhase_firstDeriv_bounds
   constructor <;> linarith [he.1,he.2]
 
 theorem norm_modelPhaseBufferedFourierMode_of_envelope_gap
-    {F : ℝ → ℝ} {σ δ T N q l r η lam : ℝ}
+     {σ δ T N q l r η lam : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
@@ -53,7 +57,7 @@ theorem norm_modelPhaseBufferedFourierMode_of_envelope_gap
     nlinarith
 
 theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap
-    {F : ℝ → ℝ} {σ δ T N q l r η d : ℝ}
+     {σ δ T N q l r η d : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
@@ -76,5 +80,7 @@ theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap
     (mul_pos hN hd) hg
   apply h.trans_eq
   field_simp
+end
 
-end TaoTrudgianYang2025
+
+

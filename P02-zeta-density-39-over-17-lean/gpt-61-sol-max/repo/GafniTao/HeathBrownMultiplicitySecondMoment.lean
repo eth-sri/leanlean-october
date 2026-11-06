@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownMultiplicity
 
 @[expose] public section
@@ -19,7 +20,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownOverlappingCellPairs
+def heathBrownOverlappingCellPairs
     (N k H : ℕ) (f : ℝ → ℝ) : Finset (ℕ × ℕ) := by
   classical
   exact
@@ -28,7 +29,7 @@ noncomputable def heathBrownOverlappingCellPairs
         (heathBrownCoefficientCell k H f p.1 ∩
           heathBrownCoefficientCell k H f p.2).Nonempty
 
-noncomputable def heathBrownCellIntersectionIndicator
+def heathBrownCellIntersectionIndicator
     (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) :
     HeathBrownCoefficientTorus k → ℝ :=
   (heathBrownCoefficientCell k H f p.1 ∩
@@ -72,8 +73,12 @@ theorem heathBrownNu_sq_eq_pair_sum
           (heathBrownInteriorIndices N H)
           (fun p => heathBrownCellIntersectionIndicator k H f p α)).symm
 
+section
+variable (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ)
+include k H f p
+
 theorem integrable_heathBrownCellIntersectionIndicator
-    (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) :
+     :
     Integrable (heathBrownCellIntersectionIndicator k H f p)
       (heathBrownCoefficientMeasure k) := by
   let : IsFiniteMeasure (heathBrownCoefficientMeasure k) := by
@@ -85,7 +90,7 @@ theorem integrable_heathBrownCellIntersectionIndicator
       (measurableSet_heathBrownCoefficientCell k H f p.2))
 
 theorem integral_heathBrownCellIntersectionIndicator
-    (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) :
+     :
     ∫ α, heathBrownCellIntersectionIndicator k H f p α
         ∂(heathBrownCoefficientMeasure k) =
       (heathBrownCoefficientMeasure k).real
@@ -95,6 +100,8 @@ theorem integral_heathBrownCellIntersectionIndicator
   exact integral_indicator_one
     ((measurableSet_heathBrownCoefficientCell k H f p.1).inter
       (measurableSet_heathBrownCoefficientCell k H f p.2))
+end
+
 
 theorem integral_heathBrownNu_sq_eq_intersections
     (N k H : ℕ) (f : ℝ → ℝ) :
@@ -168,11 +175,9 @@ theorem integral_heathBrownNu_sq_le_overlap_count
         simp only [P, heathBrownOverlappingCellPairs, Finset.mem_filter] at hp
         exact hp.1
       rw [← Finset.sum_filter]
-      rw [Finset.filter_mem_eq_inter]
-      rw [Finset.inter_eq_right.mpr hPS]
-      simp [nsmul_eq_mul]
+      simp_all
 
 
-end
 
-end GafniTao
+
+

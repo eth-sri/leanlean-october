@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import QuadraticLargeValueBound
 public import GuthMaynard.Improvement.SeparatedSecondMoment
 public import DensityEnergyGM.PolynomialHeightSecondEnergy
@@ -6,9 +7,8 @@ public import DensityEnergyGM.LargeValuesFinal
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement GuthMaynard.NativeMoment
@@ -22,7 +22,7 @@ theorem universal_quadratic_classical_mass (η : ℝ) (hη : 0 < η) :
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       ∀ V : ℝ, 0 ≤ V → (∀ t ∈ W, V ≤ ‖boundedPolynomial N a t‖) →
       (W.card:ℝ)*V^2 ≤ K*T^η*T*N := by
-  let H : ℝ := 1+(2:ℝ)^η/η
+  let H := 1+(2:ℝ)^η/η
   have hH : 0 < H := by dsimp [H]; positivity
   refine ⟨12+48*H,by positivity,?_⟩
   intro T t₀ N hT hN hNT a ha W hW hsep V hV hlarge
@@ -75,15 +75,15 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
       (W.card:ℝ) ≤ C*T^ε*(N^2*V^(-2:ℝ)+
         N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
         N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)) := by
-  let η : ℝ := ε/3
+  let η := ε/3
   have hη : 0 < η := by dsimp [η]; positivity
   obtain ⟨Q,hQ,hquad⟩ := finite_quadratic_large_value_second MathCollab.Density.comparisonCutoff hη
   obtain ⟨K,hK,hmass⟩ := universal_quadratic_classical_mass η hη
-  let A : ℝ := K+8*Q+8
-  let B : ℝ := (4*Q*A)^(2/3:ℝ)
-  let F : ℝ := (4*Q)^(12/5:ℝ)
-  let C : ℝ := A+B+F+1
-  let D : ℝ := 8*Q+1
+  let A := K+8*Q+8
+  let B := (4*Q*A)^(2/3:ℝ)
+  let F := (4*Q)^(12/5:ℝ)
+  let C := A+B+F+1
+  let D := 8*Q+1
   have hA : 0 < A := by dsimp [A]; positivity
   have hA1 : 1 ≤ A := by dsimp [A]; linarith
   have hAK : K ≤ A := by dsimp [A]; linarith
@@ -109,7 +109,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
     change R ≤ _
     rw [he]
     positivity
-  let L : ℝ := R*V^2/(A*T^η*N)
+  let L := R*V^2/(A*T^η*N)
   have hLp : 0 < L := by dsimp [L]; positivity
   have hm : R*V^2 ≤ K*T^η*T*N := hmass T t₀ N hT hN hNT a ha W hW hsep V hV.le hlarge
   have hLT : L ≤ T := by
@@ -118,7 +118,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
       calc
         K*T^η*T*N ≤ A*T^η*T*N := by gcongr
         _ = T*(A*T^η*N) := by ring_nf)
-  let Z : ℝ := N^2*V^(-2:ℝ)+N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
+  let Z := N^2*V^(-2:ℝ)+N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
     N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)
   have hZ : 0 ≤ Z := by dsimp [Z]; positivity
   by_cases hNL : N ≤ L
@@ -212,4 +212,4 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
           show 0≤N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ) by positivity,
           show 0≤N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ) by positivity]
 
-end Montgomery.RationalMoment
+

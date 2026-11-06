@@ -19,16 +19,20 @@ def characters (H : Subgroup Rˣ) : Subgroup (MulChar R ℂ) :=
 
 instance (H : Subgroup Rˣ) : Fintype (characters H) := Fintype.ofFinite _
 
-theorem mem_characters_iff (H : Subgroup Rˣ) (χ : MulChar R ℂ) :
+section
+variable (H : Subgroup Rˣ)
+include H
+
+theorem mem_characters_iff  (χ : MulChar R ℂ) :
     χ ∈ characters H ↔ ∀ u ∈ H, χ u = 1 :=
   MulChar.mem_subgroupOrderIsoSubgroupMulChar_iff
 
-theorem card_characters (H : Subgroup Rˣ) :
+theorem card_characters  :
     Fintype.card (characters H) = Nat.card (Rˣ ⧸ H) := by
   rw [← Nat.card_eq_fintype_card]
   exact MulChar.card_subgroupOrderIsoSubgroupMulChar
 
-theorem exists_character_ne_one (H : Subgroup Rˣ) {u : Rˣ} (hu : u ∉ H) :
+theorem exists_character_ne_one  {u : Rˣ} (hu : u ∉ H) :
     ∃ χ : characters H, (χ : MulChar R ℂ) u ≠ 1 := by
   by_contra hn
   apply hu
@@ -39,7 +43,7 @@ theorem exists_character_ne_one (H : Subgroup Rˣ) {u : Rˣ} (hu : u ∉ H) :
   have hh := (MulChar.mem_subgroupOrderIsoSubgroupMulChar_symm_iff).mpr hall
   simpa only [characters, OrderDual.toDual_ofDual, OrderIso.symm_apply_apply] using hh
 
-theorem sum_characters_unit (H : Subgroup Rˣ) (u : Rˣ) :
+theorem sum_characters_unit  (u : Rˣ) :
     ∑ χ : characters H, (χ : MulChar R ℂ) u =
       if u ∈ H then (Nat.card (Rˣ ⧸ H) : ℂ) else 0 := by
   by_cases hu : u ∈ H
@@ -56,10 +60,10 @@ theorem sum_characters_unit (H : Subgroup Rˣ) (u : Rˣ) :
     simp only [Finset.mul_sum, ← MulChar.mul_apply]
     exact Fintype.sum_bijective _ (Group.mulLeft_bijective χ) _ _ fun χ' ↦ rfl
 
-def inUnitSubgroup (H : Subgroup Rˣ) (r : R) : Prop :=
+def inUnitSubgroup  (r : R) : Prop :=
   ∃ u : Rˣ, (u : R) = r ∧ u ∈ H
 
-theorem sum_characters (H : Subgroup Rˣ) (r : R) :
+theorem sum_characters  (r : R) :
     ∑ χ : characters H, (χ : MulChar R ℂ) r =
       if inUnitSubgroup H r then (Nat.card (Rˣ ⧸ H) : ℂ) else 0 := by
   by_cases hr : IsUnit r
@@ -76,8 +80,10 @@ theorem sum_characters (H : Subgroup Rˣ) (r : R) :
     simp only [hn, ite_false]
     exact Finset.sum_eq_zero fun χ _ ↦ MulChar.map_nonunit χ.val hr
 
-theorem ray_card_pos (H : Subgroup Rˣ) : 0 < Nat.card (Rˣ ⧸ H) :=
+theorem ray_card_pos  : 0 < Nat.card (Rˣ ⧸ H) :=
   Nat.card_pos
+end
+
 
 end FiniteMonoid
 
@@ -102,21 +108,27 @@ theorem mem_rayCharacters_iff (χ : MulChar (A ⧸ M) ℂ) :
 section PrincipalIdeals
 variable [IsDomain A] [IsPrincipalIdealRing A]
 
-def idealCharacter (χ : rayCharacters M) : Ideal A →*₀ ℂ :=
+section
+variable (χ : rayCharacters M)
+include χ
+
+def idealCharacter  : Ideal A →*₀ ℂ :=
   IdealCharacter.ofResidue M χ ((mem_rayCharacters_iff M χ).mp χ.property)
 
-theorem norm_idealCharacter_le_one (χ : rayCharacters M) (I : Ideal A) :
+theorem norm_idealCharacter_le_one  (I : Ideal A) :
     ‖idealCharacter M χ I‖ ≤ 1 := IdealCharacter.norm_ofResidue_le_one M χ _ I
+end
+
 
 theorem idealCharacter_one (I : Ideal A) :
     idealCharacter M 1 I =
       if I = ⊥ then 0 else if IsCoprime I M then 1 else 0 :=
   IdealCharacter.ofResidue_one M I
 
-end PrincipalIdeals
-end Residues
 
-end
-end SevenEighths.RayOrthogonality
 
-end OAI
+
+
+
+
+

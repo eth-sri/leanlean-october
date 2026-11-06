@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MiddleLowLargeValues
 public import GuthMaynard.Improvement.SourceTranslation
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Set
+
+
 namespace GuthMaynard.Improvement
 
 /-- Full bounded-coefficient middle-range large-values theorem, including all
@@ -36,9 +36,7 @@ theorem middle_range_large_values : CandidateMiddleRangeEstimate := by
     by_cases hsmall : V < 1
     · have hh := middle_large_values_small (t₀ := 0) hN ht.le hTN hV hsmall Z
         (by intro t ht; simpa using hZ t ht) hZsep
-      have h2 : 2 ≤ C*N^ε := by
-        have hc2 : 2 ≤ C := by dsimp [C]; linarith
-        exact hc2.trans (le_mul_of_one_le_right hC.le hpow)
+      have h2 : 2 ≤ C*N^ε := by nlinarith
       calc
         _ ≤ 2*N^2/V^2 := hh
         _ = 2*(N^2/V^2) := by ring
@@ -63,4 +61,4 @@ theorem middle_range_large_values : CandidateMiddleRangeEstimate := by
           (mul_le_mul_of_nonneg_right hc hp0) hB)
   exact source_large_values_translation horigin t₀ a W ha hloc hsep hlarge
 
-end GuthMaynard.Improvement
+

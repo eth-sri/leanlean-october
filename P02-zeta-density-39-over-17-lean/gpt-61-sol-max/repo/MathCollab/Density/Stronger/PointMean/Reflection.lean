@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected actual displaced reflection proofs adapted from Scott McColm,
 PointMeanReflection.lean and PointMeanOffCriticalStrong.lean, exact revision
@@ -15,8 +16,7 @@ public import MathCollab.Density.Stronger.PointMean.OffCriticalPositive
 open Complex
 open MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem norm_GammaR_real_im (r t : ℝ) :
@@ -60,8 +60,8 @@ theorem heathBrown_zeta_displaced_reflection
           (((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I)) *
         riemannZeta
           (((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I) := by
-  let sL : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
-  let sR : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
+  let sL := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
+  let sR := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
   have hsLRe : 0 < sL.re := by simp [sL]; linarith
   have hsRRe : 0 < sR.re := by simp [sR]; linarith
   have hOneSub : 1 - sL = sR := by
@@ -70,18 +70,9 @@ theorem heathBrown_zeta_displaced_reflection
   have hFE := completedRiemannZeta_one_sub sL
   rw [hOneSub, completedRiemannZeta_eq_zeta_mul_GammaR hsRRe,
     completedRiemannZeta_eq_zeta_mul_GammaR hsLRe] at hFE
-  have hGammaL : Complex.Gammaℝ sL ≠ 0 :=
+  have hGammaL :=
     Complex.Gammaℝ_ne_zero_of_re_pos hsLRe
-  change riemannZeta sL =
-    (Complex.Gammaℝ sR / Complex.Gammaℝ sL) * riemannZeta sR
-  calc
-    riemannZeta sL =
-        (riemannZeta sL * Complex.Gammaℝ sL) / Complex.Gammaℝ sL := by
-      field_simp
-    _ = (riemannZeta sR * Complex.Gammaℝ sR) / Complex.Gammaℝ sL := by
-      rw [hFE]
-    _ = (Complex.Gammaℝ sR / Complex.Gammaℝ sL) * riemannZeta sR := by
-      field_simp
+  grind
 
 /-- The archimedean quotient in the displaced functional equation. -/
 theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
@@ -97,7 +88,7 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
       (a := (1 / 8 : ℝ)) (b := (1 : ℝ)) (by norm_num) (by norm_num)
   refine ⟨D, hD, ?_⟩
   intro delta t hdelta hdeltaUpper ht
-  let z : ℂ := (((1 / 2 - delta) / 2 : ℝ) : ℂ) +
+  let z := (((1 / 2 - delta) / 2 : ℝ) : ℂ) +
     ((t / 2 : ℝ) : ℂ) * I
   have hzRe : z.re = (1 / 2 - delta) / 2 := by simp [z]
   have hzIm : |z.im| = t / 2 := by
@@ -143,7 +134,6 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
         Real.pi ^ (-(1 / 2 - delta) / 2) = Real.pi ^ (-delta) := by
     rw [div_eq_mul_inv, ← Real.rpow_neg Real.pi_pos.le,
       ← Real.rpow_add Real.pi_pos]
-    congr 1
     ring
   calc
     (Real.pi ^ (-(1 / 2 + delta) / 2) *
@@ -179,13 +169,12 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
     exists_norm_GammaR_heathBrown_reflection_ratio_le
   refine ⟨P, D, hP, hD, ?_⟩
   intro delta t hdelta hdeltaUpper ht
-  let sP : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
-  let sR : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
-  let sL : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
-  let q : ℂ := Complex.Gammaℝ sR / Complex.Gammaℝ sL
+  let sP := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  let sR := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
+  let sL := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
+  let q := Complex.Gammaℝ sR / Complex.Gammaℝ sL
   have hReflect : riemannZeta sL = q * riemannZeta sR := by
-    simpa only [sL, sR, q] using
-      heathBrown_zeta_displaced_reflection hdelta (by linarith)
+    exact heathBrown_zeta_displaced_reflection hdelta (by linarith)
   have hsRConj : sR = conj sP := by
     apply Complex.ext <;> simp [sR, sP]
   have hZetaConj : ‖riemannZeta sR‖ = ‖riemannZeta sP‖ := by
@@ -208,10 +197,8 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
   calc
     ‖q‖ ^ (2 : ℕ) * ‖riemannZeta sP‖ ^ (2 : ℕ) ≤
         Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
-          (P * (1 + heathBrownStrongMellinCriticalMoment delta t)) := by
-      exact mul_le_mul hqSq (by simpa only [sP] using hplus)
-        (by positivity) (by positivity)
+          (P * (1 + heathBrownStrongMellinCriticalMoment delta t)) := by nlinarith
     _ = P * Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
           (1 + heathBrownStrongMellinCriticalMoment delta t) := by ring
 
-end MathCollab.Density.Stronger.PointMean
+

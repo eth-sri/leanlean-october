@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open MeasureTheory Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma physicalCompensatedRow_first_z (eps : ℝ) (heps : 0<eps)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
@@ -36,8 +37,8 @@ lemma physicalCompensatedRow_first_z (eps : ℝ) (heps : 0<eps)
 lemma sourceMellinWeight_differentiableAt_z (W0 W1 : SchwartzMap ℝ ℂ)
     (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) (x w z : ℂ) (hz : 0<z.re) :
     DifferentiableAt ℂ (fun z=>sourceMellinWeight W0 W1 X Y Z x w z) z := by
-  have hxc : (X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hzc : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hxc := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hzc := Complex.ofReal_ne_zero.mpr hZ.ne'
   have hm := (ProbeRadialMellin.radial_mellin_analytic W0 z hz).differentiableAt
   unfold sourceMellinWeight
   fun_prop (disch := first | exact Or.inl hxc | exact Or.inl hzc)
@@ -59,13 +60,13 @@ theorem continuedPhysicalRowKernel_differentiableAt_z {K : ℕ}
       Complex.ofReal_ne_zero.mpr (elementNorm_pos _ hp0).ne'
     exact (differentiable_id.sub_const 1).const_cpow (Or.inl hn)
   have hNu : (elementNorm u.val:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (elementNorm_pos _ u.property.1).ne'
-  have hfreq : Differentiable ℂ (fun z=>frequencyWeight z ⟨u.val,u.property.1⟩) :=
+  have hfreq :=
     differentiable_id.neg.const_cpow (Or.inl hNu)
   exact ((hm.mul (hp z)).mul (hfreq z)).mul
     ((physicalCompensatedRow_first_z eps heps S hS hfirst _ (contourTupleOutside S P hPS) η u x w z hx hw hz hxw).const_mul _)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

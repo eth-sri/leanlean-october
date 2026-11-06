@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceRestriction
 
 @[expose] public section
@@ -18,22 +19,25 @@ namespace GafniTao
 
 noncomputable section
 
+section
+variable (q : ℕ) (hq : 0 < q)
+include q hq
+
 /-- The arithmetic-progression embedding `y ↦ q*y+xi`. -/
-def wooleyAffineEmbedding (q : ℕ) (hq : 0 < q) (xi : ℤ) : ℤ ↪ ℤ where
+def wooleyAffineEmbedding  (xi : ℤ) : ℤ ↪ ℤ where
   toFun y := (q : ℤ) * y + xi
   inj' := by
     intro y z h
-    have hmul : (q : ℤ) * y = (q : ℤ) * z := by linarith
-    exact mul_left_cancel₀ (by exact_mod_cast hq.ne') hmul
+    nlinarith
 
 @[simp] theorem wooleyAffineEmbedding_apply
-    (q : ℕ) (hq : 0 < q) (xi y : ℤ) :
+     (xi y : ℤ) :
     wooleyAffineEmbedding q hq xi y = (q : ℤ) * y + xi :=
   rfl
 
 /-- The image of the progression embedding is exactly one residue class. -/
 theorem mem_range_wooleyAffineEmbedding_iff
-    (q : ℕ) (hq : 0 < q) (xi n : ℤ) :
+     (xi n : ℤ) :
     n ∈ Set.range (wooleyAffineEmbedding q hq xi) ↔
       (n : ZMod q) = (xi : ZMod q) := by
   constructor
@@ -46,18 +50,26 @@ theorem mem_range_wooleyAffineEmbedding_iff
     refine ⟨-d, ?_⟩
     change (q : ℤ) * (-d) + xi = n
     linarith
+end
+
+
+section
+variable (gamma : WooleySourceSequence)
+    (q : ℕ) (hq : 0 < q)
+include gamma q hq
 
 /-- Pull the original coefficients back along the selected progression. -/
-def wooleyAffinePullback (gamma : WooleySourceSequence)
-    (q : ℕ) (hq : 0 < q) (xi : ℤ) : WooleySourceSequence :=
+def wooleyAffinePullback  (xi : ℤ) : WooleySourceSequence :=
   Finsupp.comapDomain (wooleyAffineEmbedding q hq xi) gamma
     (wooleyAffineEmbedding q hq xi).injective.injOn
 
 @[simp] theorem wooleyAffinePullback_apply
-    (gamma : WooleySourceSequence) (q : ℕ) (hq : 0 < q)
+    
     (xi y : ℤ) :
     wooleyAffinePullback gamma q hq xi y = gamma ((q : ℤ) * y + xi) :=
   rfl
+end
+
 
 theorem WooleySourceSequence.Admissible.affinePullback
     {gamma : WooleySourceSequence} (hgamma : gamma.Admissible)
@@ -67,10 +79,14 @@ theorem WooleySourceSequence.Admissible.affinePullback
   rw [wooleyAffinePullback_apply]
   exact hgamma _
 
+section
+variable (gamma : WooleySourceSequence) (q : ℕ) (hq : 0 < q) (xi : ℤ)
+include gamma q hq xi
+
 /-- The support of the pullback maps bijectively to the part of the source
 support in the selected residue class. -/
 theorem wooleyAffineEmbedding_bijOn_support
-    (gamma : WooleySourceSequence) (q : ℕ) (hq : 0 < q) (xi : ℤ) :
+     :
     Set.BijOn (wooleyAffineEmbedding q hq xi)
       ((wooleyAffineEmbedding q hq xi) ⁻¹'
         (↑(gamma.support.filter fun n : ℤ =>
@@ -92,7 +108,7 @@ theorem wooleyAffineEmbedding_bijOn_support
 
 /-- Equation (4.3) preserves the `L²` mass exactly. -/
 theorem wooleySourceMassSq_affinePullback
-    (gamma : WooleySourceSequence) (q : ℕ) (hq : 0 < q) (xi : ℤ) :
+     :
     wooleySourceMassSq (wooleyAffinePullback gamma q hq xi) =
       wooleySourceResidueMassSq gamma q (xi : ZMod q) := by
   unfold wooleySourceMassSq wooleySourceResidueMassSq wooleyAffinePullback
@@ -103,38 +119,42 @@ theorem wooleySourceMassSq_affinePullback
         (gamma.support.filter fun n : ℤ =>
           (n : ZMod q) = (xi : ZMod q)).preimage
             (wooleyAffineEmbedding q hq xi)
-            (wooleyAffineEmbedding q hq xi).injective.injOn := by
-    ext y
-    simp only [Finset.mem_preimage, Finset.mem_filter]
-    constructor
-    · intro hy
-      exact ⟨hy,
-        (mem_range_wooleyAffineEmbedding_iff q hq xi _).mp ⟨y, rfl⟩⟩
-    · exact fun hy => hy.1
+            (wooleyAffineEmbedding q hq xi).injective.injOn := by aesop
   rw [hsupp]
   exact Finset.sum_preimage_of_bij
     (wooleyAffineEmbedding q hq xi)
     (gamma.support.filter fun n : ℤ => (n : ZMod q) = (xi : ZMod q))
     (wooleyAffineEmbedding_bijOn_support gamma q hq xi)
     (fun n => ‖gamma n‖ ^ 2)
+end
+
+
+section
+variable {k : ℕ}
+    (phi : WooleyPolynomialSystem k) (q : ℕ)
+include k phi q
 
 /-- Substitute `t = q*y+xi` in every polynomial.  Constants are retained;
 this is the literal system occurring in (4.2)--(4.5), before the invertible
 triangular normalization used to obtain (4.8). -/
-def wooleyAffinePolynomialSystem {k : ℕ}
-    (phi : WooleyPolynomialSystem k) (q : ℕ) (xi : ℤ) :
+def wooleyAffinePolynomialSystem  (xi : ℤ) :
     WooleyPolynomialSystem k :=
   fun j => (phi j).comp (Polynomial.C (q : ℤ) * Polynomial.X +
     Polynomial.C xi)
 
-theorem wooleyAffinePolynomialSystem_eval {k : ℕ}
-    (phi : WooleyPolynomialSystem k) (q : ℕ) (xi y : ℤ) (j : Fin k) :
+theorem wooleyAffinePolynomialSystem_eval  (xi y : ℤ) (j : Fin k) :
     (wooleyAffinePolynomialSystem phi q xi j).eval y =
       (phi j).eval ((q : ℤ) * y + xi) := by
   simp [wooleyAffinePolynomialSystem]
+end
+
+
+section
+variable {k qB q : ℕ} [NeZero qB]
+include k qB q
 
 theorem wooleySourcePolynomialPhase_affine
-    {k qB q : ℕ} [NeZero qB]
+    
     (phi : WooleyPolynomialSystem k) (alpha : Fin k → ZMod qB)
     (xi y : ℤ) :
     wooleySourcePolynomialPhase (wooleyAffinePolynomialSystem phi q xi)
@@ -143,11 +163,15 @@ theorem wooleySourcePolynomialPhase_affine
   unfold wooleySourcePolynomialPhase
   simp_rw [wooleyAffinePolynomialSystem_eval]
 
+section
+variable (hq : 0 < q)
+    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+    (alpha : Fin k → ZMod qB) (xi : ℤ)
+include hq phi gamma alpha xi
+
 /-- Exact sum-level form of (4.2)--(4.3). -/
 theorem wooleySourcePolynomialSum_affinePullback
-    {k qB q : ℕ} [NeZero qB] (hq : 0 < q)
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod qB) (xi : ℤ) :
+     :
     wooleySourcePolynomialSum (wooleyAffinePolynomialSystem phi q xi)
         (wooleyAffinePullback gamma q hq xi) alpha =
       wooleySourcePolynomialResidueSum phi gamma alpha (xi : ZMod q) := by
@@ -160,14 +184,7 @@ theorem wooleySourcePolynomialSum_affinePullback
         (gamma.support.filter fun n : ℤ =>
           (n : ZMod q) = (xi : ZMod q)).preimage
             (wooleyAffineEmbedding q hq xi)
-            (wooleyAffineEmbedding q hq xi).injective.injOn := by
-    ext y
-    simp only [Finset.mem_preimage, Finset.mem_filter]
-    constructor
-    · intro hy
-      exact ⟨hy,
-        (mem_range_wooleyAffineEmbedding_iff q hq xi _).mp ⟨y, rfl⟩⟩
-    · exact fun hy => hy.1
+            (wooleyAffineEmbedding q hq xi).injective.injOn := by aesop
   rw [hsupp]
   simpa only [Finsupp.comapDomain_apply, wooleyAffineEmbedding_apply,
     wooleySourcePolynomialPhase_affine] using
@@ -180,9 +197,7 @@ theorem wooleySourcePolynomialSum_affinePullback
 
 /-- Exact normalized form of the progression reindexing. -/
 theorem wooleySourceNormalizedPolynomialSum_affinePullback
-    {k qB q : ℕ} [NeZero qB] (hq : 0 < q)
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod qB) (xi : ℤ) :
+     :
     wooleySourceNormalizedPolynomialSum
         (wooleyAffinePolynomialSystem phi q xi)
         (wooleyAffinePullback gamma q hq xi) alpha =
@@ -192,24 +207,27 @@ theorem wooleySourceNormalizedPolynomialSum_affinePullback
     wooleySourceNormalizedPolynomialResidueSum
   rw [wooleySourceMassSq_affinePullback,
     wooleySourcePolynomialSum_affinePullback]
+end
+end
+
+
+section
+variable (gamma : WooleySourceSequence) (q : ℕ) (z : ZMod q) (t : ℤ)
+include gamma q z t
 
 /-- Restriction commutes with an integral translation, with the residue
 label translated by the same amount. -/
 theorem wooleySourceResidueSequence_affinePullback_one
-    (gamma : WooleySourceSequence) (q : ℕ) (z : ZMod q) (t : ℤ) :
+     :
     wooleySourceResidueSequence
         (wooleyAffinePullback gamma 1 (by norm_num) t) q z =
       wooleyAffinePullback
         (wooleySourceResidueSequence gamma q (z + (t : ZMod q)))
-        1 (by norm_num) t := by
-  ext y
-  simp only [wooleySourceResidueSequence_apply,
-    wooleyAffinePullback_apply]
-  norm_num
+        1 (by norm_num) t := by aesop
 
 /-- Residue masses are permuted, not changed, by translation. -/
 theorem wooleySourceResidueMassSq_affinePullback_one
-    (gamma : WooleySourceSequence) (q : ℕ) (z : ZMod q) (t : ℤ) :
+     :
     wooleySourceResidueMassSq
         (wooleyAffinePullback gamma 1 (by norm_num) t) q z =
       wooleySourceResidueMassSq gamma q (z + (t : ZMod q)) := by
@@ -218,6 +236,8 @@ theorem wooleySourceResidueMassSq_affinePullback_one
     wooleySourceMassSq_affinePullback,
     wooleySourceResidueMassSq_mod_one,
     wooleySourceMassSq_residueSequence]
+end
+
 
 /-- The normalized residue sum is likewise permuted by a simultaneous
 translation of coefficients and polynomials. -/
@@ -270,6 +290,6 @@ theorem wooleySourcePolynomialConditionedMean_affinePullback_one
     exact congrArg (fun x : ℝ => (wooleySourceMassSq gamma)⁻¹ * x) hsum
 
 
-end
 
-end GafniTao
+
+

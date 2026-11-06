@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected proof slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -23,7 +24,7 @@ its true amplitude and a uniform constant for each fixed power.
 
 noncomputable section
 
-open Complex MeasureTheory Set
+open Complex MeasureTheory
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -84,8 +85,7 @@ theorem exists_atkinsonPowerIntegral_finite_symmetric_approximation (α : ℝ) :
     atkinsonPowerIntegral_eq_root hT hG0 hL0 hwidth α b,hs]
   have he (x y z : ℂ) : 2*x-2*y*z = 2*(x-y*z) := by ring
   rw [he,norm_mul,Complex.norm_ofNat]
-  apply (mul_le_mul_of_nonneg_left h (by norm_num : (0:ℝ) ≤ 2)).trans_eq
-  ring
+  grind
 
 theorem exists_atkinsonPowerIntegral_symmetric_approximation (α : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L b H : ℝ, 0 < T → 1 ≤ G → G^2 ≤ 2*T →
@@ -109,4 +109,4 @@ theorem exists_atkinsonPowerIntegral_symmetric_approximation (α : ℝ) :
   apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add hf hm').trans_eq ?_)
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

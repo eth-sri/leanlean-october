@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+
+open scoped EisensteinEis
 universe u v
 
 theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
@@ -82,7 +82,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)
   · positivity
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

@@ -11,10 +11,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainUnmarkedState
-open HeckeFamily HeckeDetectorRawFiber CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily HeckeDetectorRawFiber CenteredMomentEnergyState
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainStateDictionary
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
-local notation "O"=>HeckeFamily.O
+open CenteredMomentDetectorPlainExceptional
+open scoped HeckeO
 
 def allowance (δ m:ℝ):ℝ:=δ+max 0 (2*m-1)
 
@@ -56,8 +56,8 @@ theorem actual_source_eq (F:Fiber M H Label Slot U a ε tstar T heightAllowance 
   retainedSourceEnergy_empty_eq_plainEnergy F η Q Φ bΦ (allowance δ F.m)
     hU (allowance_nonneg _ _ hδ) hs hp (padded_modulus η U δ F.m hU hη) j k σ t
 
-end SevenEighths.CenteredMomentDetectorPlainUnmarkedState
 
-end
 
-end OAI
+
+
+

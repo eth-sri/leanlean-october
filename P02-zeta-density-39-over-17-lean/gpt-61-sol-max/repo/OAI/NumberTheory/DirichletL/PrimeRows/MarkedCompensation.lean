@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def compensatedLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (x w z B q : ℂ) : ℂ :=
@@ -49,8 +49,8 @@ theorem spectralCompensatedRow_original_L_factorization
   rw [←hn,globalNormalization]
   field_simp
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

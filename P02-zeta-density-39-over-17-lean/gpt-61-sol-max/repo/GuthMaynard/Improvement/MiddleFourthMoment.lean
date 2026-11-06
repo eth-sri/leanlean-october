@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MiddleMomentRaw
 public import GuthMaynard.Improvement.RemovedMassBound
 public import GuthMaynard.Improvement.MomentScalarClosure
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -68,9 +68,8 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
       _ ≤ (J*N^θ)^2 := hh
       _ = _ := by
         rw [mul_pow,← Real.rpow_natCast (N^θ) 2,← Real.rpow_mul hn.le]
-        congr 2
         ring
-  have hX : 1 ≤ N^θ := Real.one_le_rpow hn1 hθ.le
+  have hX := Real.one_le_rpow hn1 hθ.le
   have hY : 1 ≤ N^(2*θ) := Real.one_le_rpow hn1 (by positivity)
   have hb := raw_moment_normalized_budget hn.le hNL ht.le hP hM hS.le hC.le hD.le
     (show 0 ≤ 2*K by positivity) (show 0 ≤ (5:ℝ)^θ by positivity)
@@ -79,9 +78,7 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
     (hr N T hN hlo hhi a ha)
   have he : N^θ*N^θ*N^(2*θ)*N^(2*θ)=N^ε := by
     rw [← Real.rpow_add hn,← Real.rpow_add hn,← Real.rpow_add hn]
-    congr 1
-    dsimp [θ]
-    ring
+    grind
   have hnorm : M^3 ≤ Q*N^ε*(P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M) := by
     change M^3 ≤ Q*N^θ*N^θ*N^(2*θ)*N^(2*θ)*
       (P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M) at hb
@@ -91,4 +88,4 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
       _ = _ := by rw [he]
   exact normalized_moment_power_absorption hM hP hQ hn1 hε.le hnorm
 
-end GuthMaynard.Improvement
+

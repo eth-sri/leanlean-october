@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.ReflectionAbsoluteShell
 public import GuthMaynard.Improvement.ReflectionDyadicIntegral
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -68,4 +67,4 @@ theorem centered_source_row (w : MathCollab.Density.ReflectionCutoff)
   rw [horient]
   exact hfull.trans (by nlinarith [show 0 ≤ N^ε*L*N*T by positivity])
 
-end GuthMaynard.Improvement
+

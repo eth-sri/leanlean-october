@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceQuarticKernel
 public import GuthMaynard.Improvement.SeparatedLevelVolume
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -37,19 +37,12 @@ theorem occupiedRealCells_card {S : Set ℝ} {a b B : ℝ}
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
     rw [← (hfJ k hk).2,← (hfJ l hl).2,he]
-  have hb := hcard (J.image f) (by
-    intro x hx
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    exact (hfJ k hk).1) (by
+  have hb := hcard (J.image f) (by simp_all) (by
     intro x hx y hy hxy
     obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy
     apply MathCollab.Density.same_parity_bins_separated
-    · rw [(hfJ k hk).2,(hfJ l hl).2]
-      intro he
-      exact hxy (congrArg f he)
-    · rw [(hfJ k hk).2,(hfJ l hl).2]
-      exact hpar k hk l hl)
+    all_goals (grind))
   rw [Finset.card_image_of_injOn hinj] at hb
   have hc : (K.card:ℝ) ≤ 2*(J.card:ℝ) := by exact_mod_cast hcount
   linarith
@@ -72,13 +65,7 @@ theorem quarticDeleted_card {W : Finset ℝ} (hsep : MathCollab.Density.oneSepar
   have hlocal (k : ℤ) : ((W.filter (fun w => |w-(k:ℝ)| ≤ R+1)).card:ℝ) ≤ 2*R+3 := by
     let V := W.filter (fun w => |w-(k:ℝ)| ≤ R+1)
     have hv : MathCollab.Density.oneSeparated V := MathCollab.Density.oneSeparated_subset hsep (Finset.filter_subset _ _)
-    have hd := MathCollab.Density.intervalSpan_le_of_forall (by positivity : 0 ≤ 2*(R+1)) (U := V) (by
-      intro t ht u hu
-      have ht' := (Finset.mem_filter.mp ht).2
-      have hu' := (Finset.mem_filter.mp hu).2
-      have hh := abs_sub_le t (k:ℝ) u
-      rw [abs_sub_comm (k:ℝ) u] at hh
-      linarith)
+    have hd := MathCollab.Density.intervalSpan_le_of_forall (by positivity : 0 ≤ 2*(R+1)) (U := V) (by grind)
     have hc := MathCollab.Density.separated_card_le_localDiameter hv
     unfold MathCollab.Density.localDiameter at hc
     linarith
@@ -119,4 +106,4 @@ theorem quartic_good_neighborhood {N T R U w t : ℝ} (hT : 0 < T)
     · apply (div_le_iff₀ hT).mpr
       linarith [htI.2]
 
-end GuthMaynard.Improvement
+

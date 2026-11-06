@@ -57,8 +57,12 @@ theorem norm_sum_dual_powers_le {σ t y : ℝ} (hσ : 0 ≤ σ) (hy : 1 ≤ y) :
       add_le_add (le_refl _) (mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg (by linarith) _))
     _ = _ := by ring
 
+section
+variable {σ t y t₀ : ℝ} (hσ : σ ∈ Set.Ioo 0 1)
+include σ t y t₀ hσ
+
 /-- The actual improper integral main terms sum to the exact chi factor times the dual polynomial. -/
-theorem sum_weightedIntegralTail_zero_eq_chi {σ t y t₀ : ℝ} (hσ : σ ∈ Set.Ioo 0 1)
+theorem sum_weightedIntegralTail_zero_eq_chi 
     (ht₀ : 0 < t₀) (ht : t₀ ≤ |t|) :
     (∑ m ∈ Finset.Icc 1 ⌊y⌋₊, weightedIntegralTail ((σ : ℂ) + (t : ℂ) * I) 0 (m : ℝ)) =
       chi ((σ : ℂ) + (t : ℂ) * I) * (1 + gammaChiError ((σ : ℂ) + (t : ℂ) * I)) *
@@ -70,7 +74,7 @@ theorem sum_weightedIntegralTail_zero_eq_chi {σ t y t₀ : ℝ} (hσ : σ ∈ S
   simpa only [Complex.ofReal_natCast] using weightedIntegralTail_zero_eq_chi hσ hmpos ht₀ ht
 
 /-- The error in replacing the actual main integrals by the dual polynomial has the printed logarithmic size. -/
-theorem norm_sum_weightedIntegralTail_sub_chi_le {σ t y t₀ : ℝ} (hσ : σ ∈ Set.Ioo 0 1)
+theorem norm_sum_weightedIntegralTail_sub_chi_le 
     (hy : 1 ≤ y) (ht₀ : 0 < t₀) (ht : t₀ ≤ |t|) :
     ‖(∑ m ∈ Finset.Icc 1 ⌊y⌋₊, weightedIntegralTail ((σ : ℂ) + (t : ℂ) * I) 0 (m : ℝ)) -
       chi ((σ : ℂ) + (t : ℂ) * I) *
@@ -93,5 +97,7 @@ theorem norm_sum_weightedIntegralTail_sub_chi_le {σ t y t₀ : ℝ} (hσ : σ �
   exact mul_le_mul (mul_le_mul_of_nonneg_left he (norm_nonneg _))
     (norm_sum_dual_powers_le hσ.1.le hy) (norm_nonneg _)
     (mul_nonneg (norm_nonneg _) ((norm_nonneg _).trans he))
+end
 
-end DhimanKadiriQuesadaHerrera2026
+
+

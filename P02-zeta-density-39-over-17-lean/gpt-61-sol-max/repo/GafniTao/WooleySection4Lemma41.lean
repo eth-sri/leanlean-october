@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection4Arithmetic
 public import GafniTao.WooleyExponent
 
@@ -18,7 +19,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The local progression estimate underlying Lemma 4.1.  This theorem keeps
 the uniform critical-exponent estimate explicit so that its finite sum
@@ -117,8 +118,6 @@ theorem wooleySourcePolynomial_lemma_4_1_local
       rw [hceil]
       unfold wooleySection4ConditionedInsertedAverage
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
       ring
     _ = C * (((p ^ (H - h) : ℕ) : ℝ) ^ Lambda) *
         wooleySourcePolynomialConditionedMean (wooleyTriangular k) (p ^ B)
@@ -160,7 +159,6 @@ theorem wooleySourcePolynomial_lemma_4_1
   have hBN₂ : N₂ ≤ B := le_trans (le_max_right _ _) hB
   have htauB : (1 : ℝ) ≤ tau * B := by
     have hN₁B : (N₁ : ℝ) ≤ B := by exact_mod_cast hBN₁
-    have htauNonzero : tau ≠ 0 := ne_of_gt htau
     have : 1 / tau ≤ (B : ℝ) := hN₁.trans hN₁B
     rw [div_le_iff₀ htau] at this
     simpa only [one_mul, mul_comm] using this
@@ -170,10 +168,7 @@ theorem wooleySourcePolynomial_lemma_4_1
       hN₂.trans hN₂B
     rw [div_le_iff₀ (lt_trans htau htauDelta)] at this
     simpa only [mul_comm] using this
-  have hlarge : (k : ℝ) ≤ delta * B := by
-    have : (k : ℝ) ≤ (Bcrit + k : ℕ) := by
-      exact_mod_cast (Nat.le_add_left k Bcrit)
-    exact this.trans hdeltaB
+  have hlarge : (k : ℝ) ≤ delta * B := by grind
   obtain ⟨hkhB, hmargin⟩ := wooley_section4_depth_margin
     hk (lt_trans htau htauDelta) hdeltaOne hh hlarge
   have hBcrit : Bcrit ≤ B - k * h := by
@@ -239,8 +234,7 @@ theorem wooleySourcePolynomial_lemma_4_1
                     (pow_pos hpPositive h) xi.val)) := by
           rw [Finset.mul_sum]
           apply Finset.sum_congr rfl
-          intro xi hxi
-          ring
+          grind
         _ = C * (((p ^ (B ⌈/⌉ k - h) : ℕ) : ℝ) ^
               (wooleyCriticalExponent k p + epsilon)) *
             (wooleySourceMassSq gamma *
@@ -256,6 +250,6 @@ theorem wooleySourcePolynomial_lemma_4_1
       (lt_of_le_of_ne (wooleySourceMassSq_nonneg gamma) (Ne.symm hmass))
 
 
-end
 
-end GafniTao
+
+

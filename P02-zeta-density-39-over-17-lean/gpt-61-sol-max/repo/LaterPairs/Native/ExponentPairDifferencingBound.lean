@@ -6,13 +6,12 @@ public import LaterPairs.Native.ExponentPairCorrelationSum
 public import LaterPairs.Native.ExponentPairSourceWeyl
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
-noncomputable section
+
 
 open Expdb
 
@@ -37,11 +36,7 @@ theorem weyl_correlation_sum_majorant
       _ ≤ (L+H)*(H*L+2*H*S) := hweyl
       _ ≤ 3*N*(H*L+2*H*S) :=
         mul_le_mul_of_nonneg_right (by linarith) hright
-      _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        have h₁ := mul_le_mul_of_nonneg_left hLN hH.le
-        have h₂ := mul_le_mul_of_nonneg_left hsum' (show 0 ≤ 2*H by positivity)
-        nlinarith
+      _ ≤ _ := by field_simp <;> nlinarith
   have hCB : 1 ≤ C*B := by nlinarith
   have hnonneg := mul_nonneg (show 0 ≤ H*N^2 by positivity)
     (sub_nonneg.mpr hCB)
@@ -50,8 +45,7 @@ theorem weyl_correlation_sum_majorant
       12*C*(H*N^2*B+H^2*N*V) := by
     field_simp
   apply (mul_le_mul_iff_right₀ (sq_pos_of_pos hH)).mp
-  rw [heq]
-  nlinarith
+  grind
 
 theorem source_exponentialSum_differencing_bound
     {k l σ ε : ℝ} (hkl : ExponentPair k l) (hσ : 0 < σ) (hε : 0 < ε) :
@@ -94,7 +88,6 @@ theorem source_exponentialSum_differencing_bound
     hNpos hHpos (show 0 ≤ (L : ℝ)+1 by positivity) hL hHN' hNT hB
     (show 1 ≤ 1+Real.log N by have := Real.log_nonneg (by linarith : 1 ≤ N); linarith)
     hw hsum
-  convert hm using 1
-  ring
+  grind
 
-end TaoTrudgianYang2025
+

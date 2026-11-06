@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass
 open CenteredMomentReflectionDeletion UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 lemma product_norm_ge_one (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
     (1:ℝ)≤(∏I∈D,I).absNorm:=by
@@ -99,7 +100,7 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
   let delta:=eps/(2*((F.card:ℝ)+1))
   have hd:0<delta:=div_pos heps (by positivity)
   obtain ⟨Ce,hCe,heuler⟩:=euler_mass_subpower delta hd
-  let A:ℝ:=∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)
+  let A :=∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)
   have hA:0<A:=Finset.prod_pos (fun i _=>lt_of_lt_of_le zero_lt_one (le_max_left _ _))
   refine ⟨Cc*A*Ce^F.card,by positivity,?_⟩
   intro R hR t ht
@@ -144,11 +145,10 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
     _=(Cc*A*Ce^F.card)*N^eps:=by
       rw [show (Cc*N^(eps/2))*(A*(Ce^F.card*N^(eps/2)))=
         (Cc*A*Ce^F.card)*(N^(eps/2)*N^(eps/2)) by ring,←Real.rpow_add hN0]
-      congr 2
-      ring
+      simp
 
-end SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
 
-end
 
-end OAI
+
+
+

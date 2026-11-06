@@ -2,8 +2,7 @@ module
 public import IntervalExcessTransfer
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
@@ -22,4 +21,4 @@ theorem criticalExcess_compact_prefix {B : ℝ} (hB : 0 ≤ B) :
     exact max_eq_right (by linarith)
   rw [intervalIntegral.integral_congr hz]
   simp
-end Montgomery.RationalMoment.RightDetector
+

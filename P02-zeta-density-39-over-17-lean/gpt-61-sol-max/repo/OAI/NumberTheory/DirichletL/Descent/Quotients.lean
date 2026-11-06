@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CanonicalQuadraticSieve CompletedGauss
+open CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def quotientSupport (D : Ideal Eis) (S : Finset (Ideal Eis)) : Finset (Ideal Eis) :=
   (S.filter (fun I => D ∣ I)).image (idealQuotient D)
@@ -39,28 +39,29 @@ theorem sum_quotientSupport {A : Type*} [AddCommMonoid A]
     exact idealQuotient_injective_on D (Finset.mem_filter.mp hI).2
       (Finset.mem_filter.mp hJ).2 he
 
-theorem quotientSupport_nonzero (D : Ideal Eis) (hD : D ≠ 0)
-    (S : Finset (Ideal Eis)) (hS : ∀ I ∈ S, I ≠ 0)
+section
+variable (D : Ideal Eis) (hD : D ≠ 0)
+    (S : Finset (Ideal Eis))
+include D hD S
+
+theorem quotientSupport_nonzero  (hS : ∀ I ∈ S, I ≠ 0)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) : J ≠ 0 := by
   have h := hS (D * J) ((mem_quotientSupport D J hD S).mp hJ)
   exact (mul_ne_zero_iff.mp h).2
 
-theorem quotientSupport_quadratic_admissible (D : Ideal Eis) (hD : D ≠ 0)
-    (S : Finset (Ideal Eis)) (hS : ∀ I ∈ S, CanonicalQuadraticSieve.Admissible I)
+theorem quotientSupport_quadratic_admissible  (hS : ∀ I ∈ S, CanonicalQuadraticSieve.Admissible I)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
     CanonicalQuadraticSieve.Admissible J :=
   admissible_of_dvd (hS (D * J) ((mem_quotientSupport D J hD S).mp hJ))
     (dvd_mul_left _ _)
 
-theorem quotientSupport_cubic_admissible (D : Ideal Eis) (hD : D ≠ 0)
-    (S : Finset (Ideal Eis)) (hS : ∀ I ∈ S, CubicSieve.Admissible I)
+theorem quotientSupport_cubic_admissible  (hS : ∀ I ∈ S, CubicSieve.Admissible I)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
     CubicSieve.Admissible J :=
   CubicSieve.cubic_admissible_of_dvd
     (hS (D * J) ((mem_quotientSupport D J hD S).mp hJ)) (dvd_mul_left _ _)
 
-theorem quotientSupport_norm_le (D : Ideal Eis) (hD : D ≠ 0)
-    (S : Finset (Ideal Eis)) (N : ℝ)
+theorem quotientSupport_norm_le  (N : ℝ)
     (hS0 : ∀ I ∈ S, I ≠ 0) (hS : ∀ I ∈ S, (Ideal.absNorm I : ℝ) ≤ N)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
     (Ideal.absNorm J : ℝ) ≤ N := by
@@ -71,8 +72,7 @@ theorem quotientSupport_norm_le (D : Ideal Eis) (hD : D ≠ 0)
     · exact map_dvd Ideal.absNorm (dvd_mul_left J D)
   exact (Nat.cast_le.mpr hn).trans (hS _ hDJ)
 
-theorem quotientSupport_shell (D : Ideal Eis) (hD : D ≠ 0)
-    (S : Finset (Ideal Eis)) (L : ℝ)
+theorem quotientSupport_shell  (L : ℝ)
     (hS0 : ∀ I ∈ S, I ≠ 0)
     (hS : ∀ I ∈ S, L ≤ (Ideal.absNorm I : ℝ) ∧ (Ideal.absNorm I : ℝ) ≤ 2 * L)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
@@ -96,6 +96,8 @@ theorem quotientSupport_shell (D : Ideal Eis) (hD : D ≠ 0)
         simpa only [mul_comm] using hs.2)
       simpa only [mul_div_assoc] using hj
     exact hj.trans (mul_le_mul_of_nonneg_left (le_max_right _ _) (by norm_num))
+end
+
 
 theorem quotient_hybridCubicCoefficient_energy
     (R r h t : Ideal Eis) (hR : R ≠ 0) (S : Finset (Ideal Eis)) (L : ℝ)
@@ -109,7 +111,7 @@ theorem quotient_hybridCubicCoefficient_energy
   · intro P hP
     exact ha (R * P) ((mem_quotientSupport R P hR S).mp hP)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

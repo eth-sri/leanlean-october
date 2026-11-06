@@ -16,7 +16,7 @@ open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeRayCharacterFamily
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -128,8 +128,8 @@ theorem source_nonprincipal_maximum_dominates {ι : Type*} [Fintype ι]
   rw [←detectorMaximum_eq_nonprincipal ψ hψ T]
   exact source_maximum_dominates S hS η u ψ T
 
-end SevenEighths.ProbeRayCharacterFamily
 
-end
 
-end OAI
+
+
+

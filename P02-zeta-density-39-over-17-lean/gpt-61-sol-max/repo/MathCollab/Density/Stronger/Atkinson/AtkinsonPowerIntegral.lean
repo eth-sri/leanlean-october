@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -80,10 +81,7 @@ theorem atkinsonPowerIntegral_eq_root {T G L : ℝ}
     (g := atkinsonPowerIntegrand T G L α b) (f := fun y : ℝ => y ^ 2)
     (f' := fun y : ℝ => 2 * y) (a := Real.sqrt (T / 16)) (b := Real.sqrt T)
     (by fun_prop) (fun y _ => by simpa using! (hasDerivAt_id y).pow 2)
-    (fun y hy => by
-      rw [min_eq_left hab, max_eq_right hab] at hy
-      have := ha.trans hy.1
-      positivity)
+    (fun y hy => by grind)
   rw [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] at hc
   rw [he, ← hc, ← intervalIntegral.integral_const_mul]
   apply intervalIntegral.integral_congr
@@ -101,13 +99,10 @@ theorem exists_norm_atkinsonPowerIntegral_le (α : ℝ) :
   have hab : Real.sqrt (T / 16) ≤ Real.sqrt T := Real.sqrt_le_sqrt (by linarith)
   have ha : 0 < Real.sqrt (T / 16) := Real.sqrt_pos.2 (by positivity)
   have hf : IntervalC1Bound (atkinsonPowerWeight T G L α)
-      ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by
-    simpa only [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] using
-      hweight T G L hT hG hGT hL
+      ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by grind
   have h := (hf.comp_sq ha.le hab).atkinsonRoot hT b ha hab
   rw [atkinsonPowerIntegral_eq_root hT hG hL hwidth α b, norm_mul, norm_ofNat]
   have hfin := mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)
-  convert hfin using 1
-  ring
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

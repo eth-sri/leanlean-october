@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicFullEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation FourierBridge CompletedHeight
-local notation "O"=>ActualEisensteinCubic.O
+open FirstPassCubeLabels SecondPassArithmetic
+open JointLogSeparation CompletedHeight
+open scoped EisensteinO
 
 theorem long_frequency_profile
     {ι:Type*}(p:ι→O)(hp:∀i,p i≠0)
@@ -62,9 +62,13 @@ theorem marked_long_filter
     exact hn (Finset.mem_filter.mpr ⟨hv,(largeCubeCoefficient_support H₀ _ hh).2⟩)
   simp only [hz,zero_mul]
 
-theorem long_cube_progress
-    (S:Finset (Ideal O))(D:ℕ)
+section
+variable (S:Finset (Ideal O))(D:ℕ)
     (Q:Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ))
+include S D Q
+
+theorem long_cube_progress
+    
     (Z cutoff V ell:ℝ)(hZ:1<Z)
     (hne:(progressingCubes S D (Z^(cutoff-V)) Q).Nonempty)
     (hupper:∀v∈Q,(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)≤
@@ -82,8 +86,7 @@ theorem long_cube_progress
   linarith
 
 theorem long_cube_progress_with_slack
-    (S:Finset (Ideal O))(D:ℕ)
-    (Q:Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ))
+    
     (Z cutoff V ell eta:ℝ)(hZ:1<Z)(hlog:1≤eta*Real.log Z)
     (hne:(progressingCubes S D (Z^(cutoff-V)) Q).Nonempty)
     (hupper:∀v∈Q,(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)≤
@@ -92,6 +95,8 @@ theorem long_cube_progress_with_slack
   have h:=long_cube_progress S D Q Z cutoff V ell hZ hne hupper
   have hh:1/Real.log Z≤eta:=(div_le_iff₀ (Real.log_pos hZ)).mpr (by simpa only [mul_comm] using hlog)
   linarith
+end
+
 
 theorem short_sum_zero_of_label_large
     (Ψ:O→*ℂ)(W:ℝ→ℂ)(mark:Ideal O→ℂ)(X Z cutoff V:ℝ)
@@ -110,8 +115,8 @@ theorem short_sum_zero_of_label_large
     rw [ite_eq_right (not_lt.mpr (ht.trans (norm_at_least_one I hi)))]
   · exact tsum_zero
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

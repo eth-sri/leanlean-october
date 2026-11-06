@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.PrincipalStrip
 
 @[expose] public section
@@ -7,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical Topology
-open Set
+
 namespace SevenEighths.HeckeLogarithmicInput
 open HeckeFamily
 
@@ -22,7 +23,7 @@ theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
   have hplus : s+1 ≠ 0 := by
     intro h
     have he := congrArg Complex.re h
-    simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
+    simp at he
     linarith
   by_cases hη : η.residue = 1
   · have he : regular η = HeckePrincipalStrip.sourceNormalized η := by
@@ -39,7 +40,7 @@ theorem regular_ne_zero (η : Character) {s : ℂ}
   have hplus : s+1 ≠ 0 := by
     intro h
     have he := congrArg Complex.re h
-    simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
+    simp at he
     linarith
   by_cases hη : η.residue = 1
   · simp only [regular, ite_eq_left hη, HeckePrincipalStrip.sourceNormalized]
@@ -86,11 +87,15 @@ theorem uniformConstant_nonneg : 0 ≤ uniformConstant := by
   unfold uniformConstant
   positivity
 
-theorem modulus_norm_ge_one (η : Character) : 1 ≤ (η.modulus.absNorm : ℝ) := by
+section
+variable (η : Character)
+include η
+
+theorem modulus_norm_ge_one  : 1 ≤ (η.modulus.absNorm : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
 
-theorem regular_strip_bound (η : Character)
+theorem regular_strip_bound 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (z : ℂ)
     (hz : z ∈ HeckeStrip.closedStrip) :
     ‖regular η z‖ ≤ uniformConstant * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
@@ -105,7 +110,7 @@ theorem regular_strip_bound (η : Character)
     unfold uniformConstant
     gcongr ; norm_num
 
-theorem regular_right_growth (η : Character)
+theorem regular_right_growth 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) {z : ℂ}
     (hz : -(1/10 : ℝ) ≤ z.re) :
     ‖regular η z‖ ≤ uniformConstant * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
@@ -123,7 +128,7 @@ theorem regular_right_growth (η : Character)
     exact hC.trans ((le_mul_of_one_le_right uniformConstant_nonneg hQ).trans
       (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by linarith : 0 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ))) hT))
 
-theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
+theorem regular_ne_zero_on_disk  (a e t : ℝ)
     (ha : HeckeZeroSupremum.beta ≤ a) (he : 0 < e) {z : ℂ}
     (hz : z ∈ Metric.ball ((2 : ℂ)+t*Complex.I) (2-a-2*e)) :
     regular η z ≠ 0 := by
@@ -135,7 +140,7 @@ theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
   norm_num [Complex.sub_re, Complex.add_re, Complex.mul_re] at hr hrl
   linarith
 
-theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
+theorem reciprocal_norm_le_regular_inverse  {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) :
     ‖HeckeReciprocal.reciprocal η s‖ ≤ ‖(regular η s)⁻¹‖ := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
@@ -148,7 +153,7 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
     have hp : s+1 ≠ 0 := by
       intro h
       have he := congrArg Complex.re h
-      simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
+      simp at he
       linarith
     have hL := HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inl h1)
     have he : HeckeReciprocal.reciprocal η s =
@@ -163,7 +168,7 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
     exact (div_le_one (norm_pos_iff.mpr hp)).mpr (principal_regular_factor_bound hs0.le)
   · simp only [HeckeReciprocal.reciprocal, regular, ite_eq_right hη, le_refl]
 
-theorem regular_disk_growth (η : Character)
+theorem regular_disk_growth 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (a e t : ℝ)
     (ha : (1/2 : ℝ) ≤ a) (he : 0 ≤ e) {z : ℂ}
     (hz : z ∈ Metric.closedBall ((2 : ℂ)+t*Complex.I) (2-a-2*e)) :
@@ -191,9 +196,11 @@ theorem regular_disk_growth (η : Character)
     _ ≤ uniformConstant*(η.modulus.absNorm : ℝ)^(3/5 : ℝ)*(4*(3+|t|)^2) :=
       mul_le_mul_of_nonneg_left hsq (mul_nonneg uniformConstant_nonneg (Real.rpow_nonneg (by positivity) _))
     _ = _ := by ring
-
-end SevenEighths.HeckeLogarithmicInput
-
 end
 
-end OAI
+
+
+
+
+
+

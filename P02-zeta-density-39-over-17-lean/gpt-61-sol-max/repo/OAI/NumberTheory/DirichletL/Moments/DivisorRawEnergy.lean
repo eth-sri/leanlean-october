@@ -11,7 +11,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRawEnergy
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
 open CenteredMomentDivisorRaw CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem normalized_norm_sq (T : ℝ) (hT : 0 < T) (x : ℂ) :
@@ -20,8 +20,12 @@ theorem normalized_norm_sq (T : ℝ) (hT : 0 < T) (x : ℂ) :
     Real.sq_sqrt hT.le]
   ring
 
-def residualCenteredRow (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
+    (S : ι → Finset (Ideal O))
+include η m A z t S
+
+def residualCenteredRow  (β : ι → Ideal O → ℂ) (P : ι → ℝ)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ T : ℝ) : ℂ :=
   centeredSlotRow η m A z W₁ W₂
@@ -31,8 +35,7 @@ def residualCenteredRow (η : Character) (m A z : O) (t : ℝ)
     (Y₁/Ideal.absNorm (selectedPlain D a 0)) (Y₂/Ideal.absNorm (selectedPlain D a 1))
     (T/selectedNorm D a)
 
-theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+theorem allocated_raw_energy  (hS : ∀ i,∀ I∈S i,Prime I)
     (β : ι → Ideal O → ℂ) (M P : ι → ℝ) (hM : ∀ i,0 ≤ M i) (hP : ∀ i,0 < P i)
     (hβ : ∀ i,∀ I∈S i,‖β i I‖ ≤ M i)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
@@ -76,9 +79,11 @@ theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
     _ = _ := by
       rw [← raw_scale_identity D a T P,mul_pow]
       field_simp [hraw.ne',hformal.ne']
-
-end SevenEighths.CenteredMomentDivisorRawEnergy
-
 end
 
-end OAI
+
+
+
+
+
+

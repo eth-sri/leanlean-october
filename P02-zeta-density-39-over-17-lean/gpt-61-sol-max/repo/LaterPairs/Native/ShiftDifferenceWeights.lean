@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPlaneAveraging
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                
                                                                       
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -80,13 +79,7 @@ theorem sum_signed_shift_differences (N : ℕ) (f : ℤ → ℝ) :
       ∑ q ∈ Finset.Ioo (-(N:ℤ)) N, ((N-q.natAbs:ℕ):ℝ)*f q := by
   classical
   have hmap : ∀ p ∈ Finset.range N ×ˢ Finset.range N,
-      (p.1:ℤ)-p.2 ∈ Finset.Ioo (-(N:ℤ)) N := by
-    intro p hp
-    have ht := Finset.mem_product.mp hp
-    have hs := Finset.mem_range.mp ht.1
-    have ht' := Finset.mem_range.mp ht.2
-    apply Finset.mem_Ioo.mpr
-    omega
+      (p.1:ℤ)-p.2 ∈ Finset.Ioo (-(N:ℤ)) N := by grind
   rw [← Finset.sum_product (Finset.range N) (Finset.range N)
     (fun p : ℕ × ℕ => f ((p.1:ℤ)-p.2)),
     ← Finset.sum_fiberwise_of_maps_to' hmap f]
@@ -94,4 +87,4 @@ theorem sum_signed_shift_differences (N : ℕ) (f : ℤ → ℝ) :
   intro q _
   simp only [Finset.sum_const,nsmul_eq_mul,card_signed_shift_difference]
 
-end TaoTrudgianYang2025
+

@@ -8,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationProfiles
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
+open CenteredMomentHeckeHeight CenteredMomentHeckeTwist
 open CenteredMomentRetainedEnergy CenteredMomentWholeSlotDeletion
 open CenteredMomentPrimeSlot CenteredMomentSlotNormalization
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma plain_zero_height (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
     polynomial χ false W X 0 0 = (Real.sqrt X:ℂ)⁻¹*twistedIdealSum χ W 0 X := by
@@ -66,8 +66,8 @@ theorem oriented_twist_support (reverse : Bool) (W : ℝ→ℂ) (σ t : ℝ) :
   · intro x hx hzero
     exact hx (by simp only [hzero,map_zero])
 
-end SevenEighths.CenteredMomentDetectorDictionary
 
-end
 
-end OAI
+
+
+

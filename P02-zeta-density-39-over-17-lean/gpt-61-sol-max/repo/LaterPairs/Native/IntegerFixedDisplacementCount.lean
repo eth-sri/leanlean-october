@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem integer_affine_band_pairs_card_le
@@ -24,9 +23,7 @@ theorem integer_affine_band_pairs_card_le
   let X := S.image Prod.fst
   have hX : (X.card:ℝ) ≤ 4*Q+1 := by
     have hb := integer_card_le_of_abs_sub_le X (a := 0) (by positivity : 0 ≤ 2*Q)
-      (fun n hn => by
-        obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hn
-        simpa only [sub_zero] using hq p hp)
+      (fun n hn => by aesop)
     nlinarith
   have hfiber : ∀ x : ℤ, ((S.filter (fun p => p.1 = x)).card:ℝ) ≤ 2*B+1 := by
     intro x
@@ -37,11 +34,7 @@ theorem integer_affine_band_pairs_card_le
       exact Prod.ext ((Finset.mem_filter.mp hp).2.trans
         (Finset.mem_filter.mp hq).2.symm) he
     have hcard : Y.card = T.card := Finset.card_image_of_injOn hinj
-    have hmem : ∀ n ∈ Y, |(n:ℝ)-(2*d+(x:ℝ))| ≤ B := by
-      intro n hn
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hn
-      rw [abs_sub_comm,← (Finset.mem_filter.mp hp).2]
-      exact hband p (Finset.mem_filter.mp hp).1
+    have hmem : ∀ n ∈ Y, |(n:ℝ)-(2*d+(x:ℝ))| ≤ B := by grind
     have hb := integer_card_le_of_abs_sub_le Y hB hmem
     rwa [hcard] at hb
   have hmaps : Set.MapsTo (Prod.fst : ℤ × ℤ → ℤ) S X := by
@@ -74,10 +67,7 @@ theorem integer_fixed_displacement_band_card_le
     (fun p hp => by
       obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hp
       exact hq z hz)
-    (fun p hp => by
-      obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hp
-      rw [← hd z hz]
-      exact hband z hz)
+    (fun p hp => by grind)
   rwa [hcard] at hb
 
-end TaoTrudgianYang2025
+

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicTailBudget
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology ContDiff
 open Set Complex
@@ -75,8 +75,8 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       apply add_le_add (le_refl _)
       exact le_mul_of_one_le_right (by positivity) (Real.one_le_rpow hU hp)
 
-end SevenEighths.HeckePrimeDyadic
 
-end
 
-end OAI
+
+
+

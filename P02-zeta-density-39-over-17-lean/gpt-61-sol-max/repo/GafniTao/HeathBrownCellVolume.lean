@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownCoefficientCells
 public import Mathlib.Basic.ENNReal.BigOperators
 
@@ -17,7 +18,7 @@ open scoped BigOperators ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem sum_range_succ_eq_heathBrownCriticalMoment (k : ℕ) :
     (∑ j ∈ Finset.range (k - 1), (j + 1)) = heathBrownCriticalMoment k := by
@@ -49,8 +50,12 @@ theorem prod_two_mul_heathBrownCellRadius
   simp only [Finset.card_univ, Fintype.card_fin]
   rw [prod_heathBrownCellRadius]
 
+section
+variable {k H : ℕ} (hH : 2 ≤ H) (f : ℝ → ℝ) (n : ℝ)
+include k H hH f n
+
 theorem measure_heathBrownCoefficientCell_exact
-    {k H : ℕ} (hH : 2 ≤ H) (f : ℝ → ℝ) (n : ℝ) :
+     :
     Measure.pi (fun _ : Fin (k - 1) => AddCircle.haarAddCircle)
         (heathBrownCoefficientCell k H f n) =
       ENNReal.ofReal
@@ -63,15 +68,16 @@ theorem measure_heathBrownCoefficientCell_exact
       (le_of_lt (heathBrownCellRadius_pos (by omega) j))
 
 theorem measureReal_heathBrownCoefficientCell_exact
-    {k H : ℕ} (hH : 2 ≤ H) (f : ℝ → ℝ) (n : ℝ) :
+     :
     (Measure.pi (fun _ : Fin (k - 1) => AddCircle.haarAddCircle)).real
         (heathBrownCoefficientCell k H f n) =
       (2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹) := by
   unfold Measure.real
   rw [measure_heathBrownCoefficientCell_exact hH f n]
-  rw [ENNReal.toReal_ofReal]
-  exact mul_nonneg (by positivity) (by positivity)
-
+  simp_all
 end
 
-end GafniTao
+
+
+
+

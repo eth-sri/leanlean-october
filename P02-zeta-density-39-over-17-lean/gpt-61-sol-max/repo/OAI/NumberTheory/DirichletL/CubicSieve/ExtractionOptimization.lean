@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
 
 @[expose] public section
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-noncomputable section
+
 
 lemma cube_scale_power (M T a : ℝ) (hT : 0 < T) (hTM : T ≤ M) (ha : (1/3 : ℝ) ≤ a) :
     (M/T)^(1/3 : ℝ) * T^a ≤ M^a := by
@@ -34,8 +35,7 @@ lemma extracted_linear_le (W T : ℝ) (hW : 0 ≤ W) (hWT : W^3 ≤ T) :
     W ≤ T^(1/3 : ℝ) := by
   have hh := Real.rpow_le_rpow (pow_nonneg hW 3) hWT (by norm_num : (0 : ℝ) ≤ 1/3)
   rw [← Real.rpow_natCast_mul hW] at hh
-  norm_num at hh
-  exact hh
+  simp_all
 
 lemma extraction_selected_shape (M N W U T ξ : ℝ) (hN : 0 ≤ N)
     (hW : 1 ≤ W) (hU : 0 ≤ U) (hT : 0 < T) (hTM : T ≤ M)
@@ -120,8 +120,7 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
         (mul_le_mul_of_nonneg_left hNM hM0.le) (by norm_num)
       _ = M^(4/3 : ℝ) := by
         rw [Real.mul_rpow hM0.le hM0.le, ← Real.rpow_add hM0]
-        congr 1
-        ring
+        bound
       _ ≤ M^ξ := Real.rpow_le_rpow_of_exponent_le hM hξ
 
 theorem extraction_min_two_power (M N X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
@@ -133,7 +132,7 @@ theorem extraction_min_two_power (M N X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N
   have hc := cubic_cross_shape_absorb M N ξ hM hN hξ
   linarith
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

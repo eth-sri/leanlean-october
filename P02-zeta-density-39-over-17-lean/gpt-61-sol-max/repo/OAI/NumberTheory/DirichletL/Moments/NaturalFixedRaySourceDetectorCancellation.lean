@@ -1,24 +1,2 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDetectorProfile
-
-set_option linter.privateModule false
-
-@[expose] public section
-
-namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
-
-namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification HeckeDetectorCoefficientTransfer
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorDictionary
-open CenteredMomentLattice CenteredMomentHeckeCancellation CenteredMomentHeckeTwist
-open ConcretePrimeRowBridge CenteredMomentHeckeVolume
-local notation "O" => HeckeFamily.O
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

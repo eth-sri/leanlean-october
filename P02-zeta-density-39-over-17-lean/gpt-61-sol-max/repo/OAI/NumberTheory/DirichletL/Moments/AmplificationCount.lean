@@ -6,15 +6,19 @@ public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationCount
-open UniqueFactorizationMonoid CenteredExceptionalCount
-local notation "O" => ActualEisensteinCubic.O
+open CenteredExceptionalCount
+open scoped EisensteinO
 
-theorem primeDivisors_product_dvd (S : Finset (Ideal O))
-    (hP : ∀ P ∈ S, Prime P) (I : Ideal O) (hd : ∀ P ∈ S, P ∣ I) :
+section
+variable (S : Finset (Ideal O))
+    (hP : ∀ P ∈ S, Prime P) (I : Ideal O)
+include S hP I
+
+theorem primeDivisors_product_dvd  (hd : ∀ P ∈ S, P ∣ I) :
     (∏ P ∈ S, P) ∣ I := by
   apply Finset.prod_dvd_of_coprime _ hd
   intro P hPS Q hQS hPQ
@@ -22,8 +26,7 @@ theorem primeDivisors_product_dvd (S : Finset (Ideal O))
   let : Q.IsMaximal := (Ideal.isPrime_of_prime (hP Q hQS)).isMaximal (hP Q hQS).ne_zero
   exact Ideal.isCoprime_of_isMaximal hPQ
 
-theorem large_prime_divisor_count (S : Finset (Ideal O)) (hP : ∀ P ∈ S, Prime P)
-    (I : Ideal O) (hI : I ≠ 0) (hd : ∀ P ∈ S, P ∣ I)
+theorem large_prime_divisor_count  (hI : I ≠ 0) (hd : ∀ P ∈ S, P ∣ I)
     (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ)
     (hlower : ∀ P ∈ S, Z^ℓ ≤ (Ideal.absNorm P : ℝ))
     (hupper : (Ideal.absNorm I : ℝ) ≤ Z^B) : (S.card : ℝ) ≤ B/ℓ := by
@@ -39,6 +42,8 @@ theorem large_prime_divisor_count (S : Finset (Ideal O)) (hP : ∀ P ∈ S, Prim
   have he := (Real.rpow_le_rpow_left_iff hZ).mp hpow
   apply (le_div_iff₀ hℓ).mpr
   simpa only [mul_comm] using he
+end
+
 
 theorem indexed_large_prime_divisor_count {α : Type*} (S : Finset α) (P : α → Ideal O)
     (hinj : Set.InjOn P S) (hp : ∀ i ∈ S, Prime (P i))
@@ -98,8 +103,8 @@ theorem positive_pushforward_bound {α β : Type*} [DecidableEq β]
       rw [(Finset.mem_filter.mp hx).2]
     _ ≤ _ := mul_le_mul_of_nonneg_right (hf y hy) (hg y hy)
 
-end SevenEighths.CenteredMomentAmplificationCount
 
-end
 
-end OAI
+
+
+

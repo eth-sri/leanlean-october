@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Arithmetic
 public import Mathlib.Data.Nat.MaxPowDiv
 
@@ -17,22 +18,25 @@ namespace GafniTao
 
 noncomputable section
 
-def wooleyResidueDifference {p a b : ℕ}
-    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) : ℤ :=
+section
+variable {p a b : ℕ}
+    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b))
+include p a b xi eta
+
+def wooleyResidueDifference  : ℤ :=
   (xi.val : ℤ) - (eta.val : ℤ)
 
-def wooleyResidueValuation {p a b : ℕ}
-    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) : ℕ :=
+def wooleyResidueValuation  : ℕ :=
   padicValNat p (wooleyResidueDifference xi eta).natAbs
 
-def wooleyResidueUnitNat {p a b : ℕ}
-    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) : ℕ :=
+def wooleyResidueUnitNat  : ℕ :=
   Nat.divMaxPow (wooleyResidueDifference xi eta).natAbs p
 
-def wooleyResidueUnit {p a b : ℕ}
-    (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) : ℤ :=
+def wooleyResidueUnit  : ℤ :=
   Int.sign (wooleyResidueDifference xi eta) *
     (wooleyResidueUnitNat xi eta : ℤ)
+end
+
 
 theorem wooleyResidueDifference_ne_zero_of_separated
     {p a b nu : ℕ} {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
@@ -49,10 +53,9 @@ theorem wooleyResidueDifference_factorization
       wooleyResidueUnit xi eta *
         (p : ℤ) ^ wooleyResidueValuation xi eta := by
   let d := wooleyResidueDifference xi eta
-  have hnat :
-      p ^ padicValNat p d.natAbs * Nat.divMaxPow d.natAbs p = d.natAbs :=
+  have hnat :=
     Nat.pow_padicValNat_mul_divMaxPow p d.natAbs
-  have hsign : (Int.sign d) * (d.natAbs : ℤ) = d :=
+  have hsign :=
     Int.sign_mul_natAbs d
   change d =
     (Int.sign d * (Nat.divMaxPow d.natAbs p : ℤ)) *
@@ -66,10 +69,14 @@ theorem wooleyResidueDifference_factorization
       exact_mod_cast (by simpa only [Nat.mul_comm] using hnat.symm)
     _ = _ := by ring
 
-theorem wooleyResidueUnitNat_coprime
-    {p a b nu : ℕ} (hp : p.Prime)
+section
+variable {p a b nu : ℕ} (hp : p.Prime)
     {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
-    (hsep : wooleyResiduesSeparated nu xi eta) :
+    (hsep : wooleyResiduesSeparated nu xi eta)
+include p a b nu hp xi eta hsep
+
+theorem wooleyResidueUnitNat_coprime
+     :
     Nat.Coprime p (wooleyResidueUnitNat xi eta) := by
   rw [hp.coprime_iff_not_dvd]
   exact Nat.not_dvd_divMaxPow hp.one_lt
@@ -77,13 +84,11 @@ theorem wooleyResidueUnitNat_coprime
       (wooleyResidueDifference_ne_zero_of_separated hsep))
 
 theorem wooleyResidueValuation_lt
-    {p a b nu : ℕ} (hp : p.Prime)
-    {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
-    (hsep : wooleyResiduesSeparated nu xi eta) :
+     :
     wooleyResidueValuation xi eta < nu := by
   let d := wooleyResidueDifference xi eta
   have hd : d ≠ 0 := wooleyResidueDifference_ne_zero_of_separated hsep
-  have hn : d.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hd
+  have hn := Int.natAbs_ne_zero.mpr hd
   have hnotdvd : ¬ p ^ nu ∣ d.natAbs := by
     intro hdvd
     have hdvdInt : ((p ^ nu : ℕ) : ℤ) ∣ d := by
@@ -100,9 +105,7 @@ theorem wooleyResidueValuation_lt
   exact Nat.lt_of_not_ge hnotle
 
 theorem wooley_padic_separation
-    {p a b nu : ℕ} (hp : p.Prime)
-    {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
-    (hsep : wooleyResiduesSeparated nu xi eta) :
+     :
     ∃ gamma : ℕ, ∃ omega : ℤ,
       gamma < nu ∧ Nat.Coprime p omega.natAbs ∧
         wooleyResidueDifference xi eta = omega * (p : ℤ) ^ gamma := by
@@ -110,12 +113,14 @@ theorem wooley_padic_separation
     wooleyResidueUnit xi eta, wooleyResidueValuation_lt hp hsep, ?_,
     wooleyResidueDifference_factorization xi eta⟩
   have hcop := wooleyResidueUnitNat_coprime hp hsep
-  have hd : wooleyResidueDifference xi eta ≠ 0 :=
+  have hd :=
     wooleyResidueDifference_ne_zero_of_separated hsep
   simpa [wooleyResidueUnit, wooleyResidueUnitNat,
     Int.natAbs_mul, Int.natAbs_sign, hd] using hcop
-
-
 end
 
-end GafniTao
+
+
+
+
+

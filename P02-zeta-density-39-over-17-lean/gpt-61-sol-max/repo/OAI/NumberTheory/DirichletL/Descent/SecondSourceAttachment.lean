@@ -1,5 +1,9 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeIntegral
+public import OAI.NumberTheory.DirichletL.Descent.SecondWholeMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 
 @[expose] public section
 
@@ -7,10 +11,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 @[ext] structure SecondParentSource (ι : Type*) (Jo : ℕ) where
@@ -110,7 +114,7 @@ theorem secondExpansionSource_attached
   intro x hx
   rw [attached_inherited_profile,attached_signed_weight]
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

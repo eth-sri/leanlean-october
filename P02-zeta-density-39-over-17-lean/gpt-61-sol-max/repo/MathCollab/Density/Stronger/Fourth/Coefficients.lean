@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -12,28 +13,33 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open Complex Set Finset MeasureTheory Filter
+open Complex Finset MeasureTheory Filter
 open scoped BigOperators Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
-noncomputable def divisorWeight (n : ℕ) : ℂ :=
+def divisorWeight (n : ℕ) : ℂ :=
   (n.divisors.card : ℂ)
-noncomputable def afeCriticalPoint (t : ℝ) : ℂ := (1 / 2 : ℂ) + (t : ℂ) * I
+def afeCriticalPoint (t : ℝ) : ℂ := (1 / 2 : ℂ) + (t : ℂ) * I
+section
+variable (s : ℂ) (n : ℕ)
+include s n
+
 /-- One term of the ordinary divisor Dirichlet series. -/
-noncomputable def divisorDirichletTerm (s : ℂ) (n : ℕ) : ℂ :=
+def divisorDirichletTerm  : ℂ :=
   LSeries.term (fun k : ℕ => (k.divisors.card : ℂ)) s n
 
 /-- On positive indices the opened divisor series is literally the DFI
 divisor coefficient times the corresponding complex power. -/
 theorem divisorDirichletTerm_eq_divisorWeight_mul_cpow
-    (s : ℂ) (n : ℕ) :
+     :
     divisorDirichletTerm s n =
       divisorWeight n * (n : ℂ) ^ (-s) := by
   unfold divisorDirichletTerm divisorWeight
   rw [LSeries.term_def₀]
   simp
+end
+
 
 
 theorem norm_fourth_divisorTerm_vertical (t c u : ℝ) (n : ℕ) :
@@ -50,21 +56,31 @@ theorem norm_fourth_divisorTerm_vertical (t c u : ℝ) (n : ℕ) :
   norm_num [afeCriticalPoint]
 
 
-def zetaFourthCoeff (c : ℝ) (n : ℕ) : ℂ :=
+section
+variable (c : ℝ)
+include c
+
+def zetaFourthCoeff  (n : ℕ) : ℂ :=
   divisorDirichletTerm ((1/2+c:ℝ):ℂ) n
 
-theorem zetaFourthCoeff_zero (c : ℝ) : zetaFourthCoeff c 0 = 0 := by
+theorem zetaFourthCoeff_zero  : zetaFourthCoeff c 0 = 0 := by
   simp [zetaFourthCoeff,divisorDirichletTerm]
 
-theorem zetaFourthCoeff_one (c : ℝ) : zetaFourthCoeff c 1 = 1 := by
+theorem zetaFourthCoeff_one  : zetaFourthCoeff c 1 = 1 := by
   simp [zetaFourthCoeff,divisorDirichletTerm_eq_divisorWeight_mul_cpow,divisorWeight]
 
-theorem norm_zetaFourthCoeff (c : ℝ) (n : ℕ) :
+theorem norm_zetaFourthCoeff  (n : ℕ) :
     ‖zetaFourthCoeff c n‖ = (n.divisors.card:ℝ)*(n:ℝ)^(-(1/2+c)) := by
   simpa [zetaFourthCoeff,afeCriticalPoint] using norm_fourth_divisorTerm_vertical 0 c 0 n
+end
 
 
-theorem exists_norm_sq_zetaFourthCoeff_le {ε : ℝ} (hε : 0 < ε) :
+
+section
+variable {ε : ℝ}
+include ε
+
+theorem exists_norm_sq_zetaFourthCoeff_le  (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ c : ℝ, 0 ≤ c → ∀ n : ℕ, 0 < n →
       ‖zetaFourthCoeff c n‖^2 ≤ D*(n:ℝ)^(ε-1) := by
   obtain ⟨C,hC₁,hdiv⟩ := MathCollab.Density.divisor_card_subpower (show 0 < ε/2 by positivity)
@@ -84,14 +100,12 @@ theorem exists_norm_sq_zetaFourthCoeff_le {ε : ℝ} (hε : 0 < ε) :
       pow_le_pow_left₀ (norm_nonneg _) hbase 2
     _ = C^2*(n:ℝ)^(ε-1-2*c) := by
       rw [mul_pow,← Real.rpow_mul_natCast hn0.le]
-      congr 2
-      norm_num
       ring
     _ ≤ C^2*(n:ℝ)^(ε-1) :=
       mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hn1 (by linarith)) (sq_nonneg C)
 
-theorem sum_rpow_sub_one_dyadic_le {ε : ℝ} (hε : 0 ≤ ε)
+theorem sum_rpow_sub_one_dyadic_le  (hε : 0 ≤ ε)
     {N : ℕ} (hN : 0 < N) :
     (∑ n ∈ Finset.Ioc N (2*N), (n:ℝ)^(ε-1)) ≤ (2*(N:ℝ))^ε := by
   have hN0 : (0:ℝ) < N := by exact_mod_cast hN
@@ -108,11 +122,9 @@ theorem sum_rpow_sub_one_dyadic_le {ε : ℝ} (hε : 0 ≤ ε)
       Finset.sum_le_sum hpoint
     _ = _ := by
       simp only [Finset.sum_const,Nat.card_Ioc,nsmul_eq_mul]
-      have heq : 2*N-N = N := by omega
-      rw [heq]
-      field_simp
+      grind
 
-theorem exists_sum_sq_zetaFourthCoeff_dyadic_le {ε : ℝ} (hε : 0 < ε) :
+theorem exists_sum_sq_zetaFourthCoeff_dyadic_le  (hε : 0 < ε) :
     ∃ D : ℝ, 1 ≤ D ∧ ∀ c : ℝ, 0 ≤ c → ∀ N : ℕ, 0 < N →
       (∑ n ∈ Finset.Ioc N (2*N), ‖zetaFourthCoeff c n‖^2) ≤
         D*(2*(N:ℝ))^ε := by
@@ -127,5 +139,7 @@ theorem exists_sum_sq_zetaFourthCoeff_dyadic_le {ε : ℝ} (hε : 0 < ε) :
     _ = D*(∑ n ∈ Finset.Ioc N (2*N), (n:ℝ)^(ε-1)) := (Finset.mul_sum ..).symm
     _ ≤ D*(2*(N:ℝ))^ε :=
       mul_le_mul_of_nonneg_left (sum_rpow_sub_one_dyadic_le hε.le hN) hD.le
+end
 
-end MathCollab.Density.Stronger.Fourth
+
+

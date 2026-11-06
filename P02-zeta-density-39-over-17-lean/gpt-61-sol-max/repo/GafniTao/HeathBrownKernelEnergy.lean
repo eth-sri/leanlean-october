@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownBlocks
 public import GafniTao.FordEquation54Expansion
 public import GafniTao.FordFiniteAMGM
@@ -59,10 +60,14 @@ theorem heathBrownFourierAtom_mul_conj
           fordAdditiveCharacter ((rs.2 : ℝ) * (g₂ m - g₂ n)) := by
         rw [fordAdditiveCharacter_add]
 
-theorem hasSum_heathBrownPairKernelFourier
-    {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
+section
+variable {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
     (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
-    (g₁ g₂ : ℕ → ℝ) (m n : ℕ) :
+    (g₁ g₂ : ℕ → ℝ)
+include B C hB hBHalf hC hCHalf g₁ g₂
+
+theorem hasSum_heathBrownPairKernelFourier
+     (m n : ℕ) :
     HasSum
       (fun rs : ℤ × ℤ =>
         (heathBrownTriangularFourierCoefficient B C rs.1 rs.2 : ℂ) *
@@ -85,9 +90,7 @@ theorem hasSum_heathBrownPairKernelFourier
   ring_nf
 
 theorem hasSum_heathBrownFinitePairKernelFourier
-    {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
-    (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
-    (g₁ g₂ : ℕ → ℝ) (S : Finset ℕ) :
+     (S : Finset ℕ) :
     HasSum
       (fun rs : ℤ × ℤ =>
         ∑ m ∈ S, ∑ n ∈ S,
@@ -110,6 +113,8 @@ theorem hasSum_heathBrownFinitePairKernelFourier
       (fun n _hn => hasSum_heathBrownPairKernelFourier
         hB hBHalf hC hCHalf g₁ g₂ m n)
   simpa using hasSum_sum (s := S) (fun m _hm => hn m)
+end
+
 
 theorem heathBrownFinitePairLatticeTerm_eq_energy
     (B C : ℝ) (g₁ g₂ : ℕ → ℝ) (S : Finset ℕ) (rs : ℤ × ℤ) :
@@ -146,8 +151,7 @@ theorem heathBrownFinitePairLatticeTerm_eq_energy
       rw [show c * Z * conj Z = c * (Z * conj Z) by ring_nf,
         Complex.mul_conj']
       simp only [c, Z, heathBrownFrequencyEnergy]
-      push_cast
-      ring_nf
+      simp_all
 
 /-- Exact real-valued form of the finite kernel energy identity. -/
 theorem hasSum_heathBrownFrequencyEnergy
@@ -164,9 +168,8 @@ theorem hasSum_heathBrownFrequencyEnergy
       hB hBHalf hC hCHalf g₁ g₂ S)
     (fun rs => (heathBrownFinitePairLatticeTerm_eq_energy
       B C g₁ g₂ S rs).symm) using 1
-  push_cast
-  rfl
+  simp_all
 
-end
 
-end GafniTao
+
+

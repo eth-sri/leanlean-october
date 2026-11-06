@@ -13,30 +13,42 @@ namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open CanonicalQuadraticSieve InitialMeanSquare ProbeCompleted
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def targetMonoid (η : HeckeFamily.Character) : O →* ℂ where
+section
+variable (η : HeckeFamily.Character)
+include η
+
+def targetMonoid  : O →* ℂ where
   toFun := HeckeFamily.elementCoeff η
   map_one' := HeckeFamily.elementCoeff_one η
   map_mul' := HeckeFamily.elementCoeff_mul η
 
-theorem targetMonoid_norm_le_one (η : HeckeFamily.Character) (a : O) :
+theorem targetMonoid_norm_le_one  (a : O) :
     ‖targetMonoid η a‖ ≤ 1 := by
   let : Finite (O ⧸ η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Fintype (O ⧸ η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue (Ideal.Quotient.mk η.modulus a)
 
-def rowCoefficient (η : HeckeFamily.Character) (Xi : O →* ℂ)
-    (s : O) (hs : Supported (Ideal.span {s})) (m : O) : O →* ℂ :=
+section
+variable (Xi : O →* ℂ)
+include Xi
+
+section
+variable (s : O) (hs : Supported (Ideal.span {s}))
+include s hs
+
+def rowCoefficient  (m : O) : O →* ℂ :=
   targetMonoid η * conjugateMonoid Xi * reciprocityPhaseMonoid s hs *
     (idealRowHom m).toMonoidHom.comp principalIdealHom.toMonoidHom
 
-theorem rowCoefficient_apply (η : HeckeFamily.Character) (Xi : O →* ℂ)
-    (s : O) (hs : Supported (Ideal.span {s})) (m a : O) :
+theorem rowCoefficient_apply  (m a : O) :
     rowCoefficient η Xi s hs m a = HeckeFamily.elementCoeff η a * star (Xi a) *
       sexticReciprocityPhase s a * idealRowHom m (Ideal.span {a}) := rfl
+end
 
-theorem rowCoefficient_norm_le_one (η : HeckeFamily.Character) (Xi : O →* ℂ)
+
+theorem rowCoefficient_norm_le_one 
     (hXi : ∀ a, ‖Xi a‖ ≤ 1) (s : O) (hs : Supported (Ideal.span {s})) (m a : O) :
     ‖rowCoefficient η Xi s hs m a‖ ≤ 1 := by
   rw [rowCoefficient_apply]
@@ -44,18 +56,28 @@ theorem rowCoefficient_norm_le_one (η : HeckeFamily.Character) (Xi : O →* ℂ
   refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (idealRowHom_norm _ _)
   refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (sexticReciprocityPhase_norm _ _)
   exact (mul_le_of_le_one_left (norm_nonneg _) (targetMonoid_norm_le_one η a)).trans (hXi a)
+end
+end
 
-def spectralSummand (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
+
+section
+variable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
+include S D Ψ
+
+def spectralSummand 
     (t : ℂ) (I J : Ideal O) : ℂ :=
   (completedMask S D I J * completedCorrection I J *
     (columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I) : ℂ)) * cubeWeight Ψ J) *
       (CubicEisenstein.fullIdealWeight t I * CubicEisenstein.fullIdealWeight (3 * t) J)
 
-def spectralRow (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ) (t : ℂ) : ℂ :=
+def spectralRow  (t : ℂ) : ℂ :=
   ∑' p : Ideal O × Ideal O, spectralSummand S D Ψ t p.1 p.2
 
-theorem spectralSummand_norm_le (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (t : ℂ) (I J : Ideal O) :
+section
+variable (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (t : ℂ)
+include hΨ t
+
+theorem spectralSummand_norm_le  (I J : Ideal O) :
     ‖spectralSummand S D Ψ t I J‖ ≤
       2 * (‖CubicEisenstein.fullIdealWeight t I‖ *
         ‖CubicEisenstein.fullIdealWeight (3 * t) J‖) := by
@@ -75,8 +97,7 @@ theorem spectralSummand_norm_le (S : Finset (Ideal O)) (D : Ideal O)
     (norm_nonneg (CubicEisenstein.fullIdealWeight t I))
     (norm_nonneg (CubicEisenstein.fullIdealWeight (3 * t) J)))
 
-theorem spectralRow_summable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (t : ℂ) (ht : 1 < t.re) :
+theorem spectralRow_summable  (ht : 1 < t.re) :
     Summable (fun p : Ideal O × Ideal O => spectralSummand S D Ψ t p.1 p.2) := by
   have ht3 : 1 < (3 * t).re := by
     norm_num [Complex.mul_re]
@@ -87,8 +108,11 @@ theorem spectralRow_summable (S : Finset (Ideal O)) (D : Ideal O)
   exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
     (fun p => spectralSummand_norm_le S D Ψ hΨ t p.1 p.2)
     ((h1.mul_of_nonneg h3 (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)).mul_left 2)
-
-end SevenEighths.ProbeRow
+end
 end
 
-end OAI
+
+
+
+
+

@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem third_derivative_weyl_normalize {S N H C μ : ℝ}
@@ -20,8 +19,6 @@ theorem third_derivative_weyl_normalize {S N H C μ : ℝ}
       24*H*(C*N*Real.sqrt μ*(H*Real.sqrt H)+4*Real.sqrt H/Real.sqrt μ))) :
     S^2 ≤ 2*N^2/H+48*C*N^2*Real.sqrt μ*Real.sqrt H+
       192*N/(Real.sqrt H*Real.sqrt μ) := by
-  have hk : 0 < Real.sqrt H := Real.sqrt_pos.mpr hH
-  have hm : 0 < Real.sqrt μ := Real.sqrt_pos.mpr hμ
   have hinner : 0 ≤ H*N+
       24*H*(C*N*Real.sqrt μ*(H*Real.sqrt H)+4*Real.sqrt H/Real.sqrt μ) := by positivity
   have hbound := hb.trans (mul_le_mul_of_nonneg_right
@@ -32,12 +29,7 @@ theorem third_derivative_weyl_normalize {S N H C μ : ℝ}
       (2*N*(H*N+24*H*(C*N*Real.sqrt μ*(H*Real.sqrt H)+
         4*Real.sqrt H/Real.sqrt μ)))/H^2 =
       2*N^2/H+48*C*N^2*Real.sqrt μ*Real.sqrt H+
-        192*N/(Real.sqrt H*Real.sqrt μ) := by
-    generalize he : Real.sqrt H = k at *
-    have hk2 : k^2 = H := by rw [← he,Real.sq_sqrt hH.le]
-    rw [← hk2]
-    field_simp
-    ring
+        192*N/(Real.sqrt H*Real.sqrt μ) := by grind
   exact hd.trans_eq hid
 
-end TaoTrudgianYang2025
+

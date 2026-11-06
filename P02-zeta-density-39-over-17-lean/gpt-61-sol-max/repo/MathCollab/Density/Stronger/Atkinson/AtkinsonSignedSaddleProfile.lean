@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonRootIntegral
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
+open Complex
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -45,4 +44,4 @@ theorem atkinsonPowerWeight_at_neg_saddle {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0
   unfold atkinsonPowerWeight atkinsonSaddleProfile
   rw [zetaGaussianQuadraticIntegral_at_neg_saddle hT hG n]
 
-end MathCollab.Density.Stronger.Atkinson
+

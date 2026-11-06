@@ -3,10 +3,9 @@ public import MathCollab.Density.BootstrapShell
 
 @[expose] public section
 
-open Real Set
+open Real
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -121,4 +120,4 @@ theorem kernelEnergy_le_dyadic_shells (w : ReflectionCutoff) (L : ℝ)
       · simp_rw [Finset.sum_comm (s := U) (t := shellIndices U)]
         rfl
 
-end MathCollab.Density
+

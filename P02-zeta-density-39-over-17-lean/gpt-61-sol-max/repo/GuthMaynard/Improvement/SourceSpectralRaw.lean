@@ -4,8 +4,7 @@ public import GuthMaynard.Improvement.OperatorSourceMixed
 public import GuthMaynard.Improvement.FixedCutoffs
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -49,4 +48,4 @@ theorem source_spectral_raw (w : MathCollab.Density.ComparisonCutoff)
   exact (hraw N L (by linarith) hNL a ha μ hm hi h2 h0 B hB hμ S b _
     (hreal.trans hmixed)).2
 
-end GuthMaynard.Improvement
+

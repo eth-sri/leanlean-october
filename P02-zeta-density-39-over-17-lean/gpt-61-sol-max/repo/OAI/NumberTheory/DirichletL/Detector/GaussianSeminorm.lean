@@ -7,7 +7,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap
-open Filter Set
+open Filter
 namespace SevenEighths.ProbePhysical
 
 def gaussianFixedWindow (y : ℝ) : ℂ := gaussianAnnulus y/(Real.sqrt y:ℂ)
@@ -51,7 +51,7 @@ lemma gaussianDyadicProfile_factor (Z : ℝ) (j : ℕ) :
   rw [show (2:ℝ)^j*y/Z=((2:ℝ)^j/Z)*y by ring]
   ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

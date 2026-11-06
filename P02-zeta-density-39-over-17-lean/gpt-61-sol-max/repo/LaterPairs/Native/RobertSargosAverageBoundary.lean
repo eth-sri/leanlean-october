@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosShiftBoundary
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -26,9 +25,7 @@ theorem norm_integer_average_le (v : ℤ → ℂ) (N : ℕ) (hN : 0 < N) (B : �
       mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ ≤ (N:ℝ)⁻¹*∑ _n ∈ Finset.Icc (1:ℤ) N, B :=
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum hv) (by positivity)
-    _ = B := by
-      simp only [Finset.sum_const,hc,nsmul_eq_mul]
-      rw [← mul_assoc,inv_mul_cancel₀ hn,one_mul]
+    _ = B := by simp_all
 
 theorem norm_robertSargos_common_shift_error (w : ℤ → ℂ) (M H Q N : ℕ) (h q : ℤ)
     (hN : 0 < N) (hh : h ∈ Finset.Ico (H:ℤ) (2*H))
@@ -42,4 +39,4 @@ theorem norm_robertSargos_common_shift_error (w : ℤ → ℂ) (M H Q N : ℕ) (
   intro n hn
   exact norm_robertSargos_shifted_boundary w M H Q N h q n hh hq hn hw
 
-end TaoTrudgianYang2025
+

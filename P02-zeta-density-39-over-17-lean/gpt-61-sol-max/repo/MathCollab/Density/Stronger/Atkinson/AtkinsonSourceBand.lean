@@ -20,7 +20,7 @@ a sum of stationary approximations with an assumed summed error.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex Filter MeasureTheory
 
@@ -56,4 +56,4 @@ theorem exists_atkinsonLeading_source_band_bound {δ : ℝ} (hδ : 0 < δ) :
   intro T G hT hlower hupper N hN
   exact hB T ((le_max_right _ _).trans hT) G hlower hupper N hN
 
-end MathCollab.Density.Stronger.Atkinson
+

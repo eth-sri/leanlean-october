@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownCoefficientVariation
 
 @[expose] public section
@@ -19,7 +20,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownNaturalMonomial
+def heathBrownNaturalMonomial
     (k h : ℕ) (α : HeathBrownCoefficientTorus k) : ℂ :=
   UnitAddTorus.mFourier
     (fun j : Fin (k - 1) => (h ^ ((j : ℕ) + 1) : ℤ)) α
@@ -30,11 +31,7 @@ theorem heathBrownWeylSum_eq_natural_sum
       ∑ h ∈ Finset.Icc 1 Q, heathBrownNaturalMonomial k h α := by
   unfold heathBrownWeylSum fordVinogradovWeylSum
   rw [ford_sum_Icc_one_eq_fin]
-  apply Finset.sum_congr rfl
-  intro h hh
-  unfold heathBrownNaturalMonomial fordVinogradovMonomial
-    fordVinogradovExponent
-  congr 2
+  rfl
 
 theorem heathBrownNaturalMonomial_eq_center_mul_displacementPhase
     {k h : ℕ} (c α : HeathBrownCoefficientTorus k) :
@@ -171,6 +168,6 @@ theorem norm_heathBrown_centerWeyl_le
     _ = _ := by rw [← Finset.mul_sum]
 
 
-end
 
-end GafniTao
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDensity
 public import GuthMaynard.NativeSource.GuthMaynard.ZetaTruncation
 public import GuthMaynard.NativeSource.GuthMaynard.ArithmeticCoefficients
@@ -21,11 +22,7 @@ noncomputable def truncatedZeta (A : ℕ) : ArithmeticFunction ℂ where
 theorem truncatedZeta_hasFiniteSupport (A : ℕ) :
     Function.HasFiniteSupport (truncatedZeta A) := by
   apply Set.Finite.subset (Icc 1 A).finite_toSet
-  intro n hn
-  simp only [Function.mem_support, ne_eq] at hn
-  by_contra hnMem
-  have hnMem' : n ∉ Icc 1 A := by simpa using hnMem
-  exact hn (by rw [truncatedZeta_apply, ite_eq_right hnMem'])
+  simp_all
 
 theorem truncatedZeta_LSeriesSummable (A : ℕ) (s : ℂ) :
     LSeriesSummable (truncatedZeta A) s := by
@@ -67,7 +64,7 @@ theorem sharpMollifiedCoeff_eq_ite (A X n : ℕ) (hn : 0 < n)
     apply Finset.sum_congr rfl
     intro p hp
     obtain ⟨hpMul, _hnNe⟩ := Nat.mem_divisorsAntidiagonal.mp hp
-    have hnNe : n ≠ 0 := Nat.ne_of_gt hn
+    have hnNe := Nat.ne_of_gt hn
     have hpLeftNe : p.1 ≠ 0 := by
       intro hpZero
       apply hnNe
@@ -76,10 +73,10 @@ theorem sharpMollifiedCoeff_eq_ite (A X n : ℕ) (hn : 0 < n)
       intro hpZero
       apply hnNe
       rw [← hpMul, hpZero, mul_zero]
-    have hpLeftPos : 0 < p.1 := Nat.pos_of_ne_zero hpLeftNe
-    have hpRightPos : 0 < p.2 := Nat.pos_of_ne_zero hpRightNe
-    have hpLeftOne : 1 ≤ p.1 := Nat.one_le_iff_ne_zero.mpr hpLeftNe
-    have hpRightOne : 1 ≤ p.2 := Nat.one_le_iff_ne_zero.mpr hpRightNe
+    have hpLeftPos := Nat.pos_of_ne_zero hpLeftNe
+    have hpRightPos := Nat.pos_of_ne_zero hpRightNe
+    have hpLeftOne := Nat.one_le_iff_ne_zero.mpr hpLeftNe
+    have hpRightOne := Nat.one_le_iff_ne_zero.mpr hpRightNe
     have hpLeftLeN : p.1 ≤ n := by
       rw [← hpMul]
       exact Nat.le_mul_of_pos_right p.1 hpRightPos
@@ -108,8 +105,7 @@ theorem zetaPartialSum_mul_zetaMollifier_eq_LSeries (A X : ℕ) (s : ℂ) :
   have hMul :
       LSeries (sharpMollifiedCoeff A X) s =
         LSeries (truncatedZeta A) s * LSeries (truncatedMoebius X) s := by
-    simpa only [sharpMollifiedCoeff] using
-      ArithmeticFunction.LSeries_mul' (f := truncatedZeta A)
+    exact ArithmeticFunction.LSeries_mul' (f := truncatedZeta A)
         (g := truncatedMoebius X) (s := s) hLeft hRight
   rw [zetaPartialSum_eq_LSeries, zetaMollifier_eq_LSeries, hMul]
 
@@ -125,7 +121,7 @@ theorem sharpMollifiedCoeff_eq_zero_of_mul_lt (A X n : ℕ) (hn : A * X < n) :
   by_cases hpA : p.1 ∈ Icc 1 A
   · have hpX : p.2 ∉ Icc 1 X := by
       intro hpX
-      have hpLe : p.1 * p.2 ≤ A * X :=
+      have hpLe :=
         Nat.mul_le_mul (Finset.mem_Icc.mp hpA).2 (Finset.mem_Icc.mp hpX).2
       omega
     simp [hpA, hpX]
@@ -135,7 +131,6 @@ theorem sharpMollifiedCoeff_eq_zero_of_mul_lt (A X n : ℕ) (hn : A * X < n) :
 divisors of its index. -/
 theorem norm_sharpMollifiedCoeff_le_divisors_card (A X n : ℕ) :
     ‖sharpMollifiedCoeff A X n‖ ≤ (n.divisors.card : ℝ) := by
-  rw [sharpMollifiedCoeff, ArithmeticFunction.mul_apply]
   calc
     ‖∑ p ∈ n.divisorsAntidiagonal, truncatedZeta A p.1 * truncatedMoebius X p.2‖
         ≤ ∑ p ∈ n.divisorsAntidiagonal,
@@ -184,10 +179,7 @@ theorem sharpMollifiedCoeff_LSeries_eq_sum (A X : ℕ) (s : ℂ) :
     rw [LSeries.term_def₀ (sharpMollifiedCoeff A X).map_zero]
     by_cases hnZero : n = 0
     · simp [hnZero]
-    · have hnLt : A * X < n := by
-        have hnNot : ¬(1 ≤ n ∧ n ≤ A * X) := by
-          simpa [Finset.mem_Icc] using hn
-        omega
+    · have hnLt : A * X < n := by grind
       rw [sharpMollifiedCoeff_eq_zero_of_mul_lt A X n hnLt, zero_mul]
 
 /-- Exact cancellation removes every nonconstant coefficient up through the
@@ -209,8 +201,7 @@ theorem zetaPartialSum_mul_zetaMollifier_eq_one_add_tail
     omega
   rw [hUnion, Finset.sum_union (by
     rw [Finset.disjoint_left]
-    intro n hnLow hnHigh
-    exact (not_lt_of_ge (Finset.mem_Icc.mp hnLow).2) (Finset.mem_Ioc.mp hnHigh).1)]
+    grind)]
   have hLow :
       (∑ n ∈ Icc 1 X, sharpMollifiedCoeff A X n * (n : ℂ) ^ (-s)) = 1 := by
     rw [Finset.sum_eq_single 1]
@@ -240,9 +231,8 @@ theorem norm_zetaMollifier_le_sum_rpow (X : ℕ) (s : ℂ) :
       intro n hn
       rw [norm_mul, Complex.norm_natCast_cpow_of_pos]
       · have hμ : ‖((ArithmeticFunction.moebius n : ℤ) : ℂ)‖ ≤ 1 := by
-          rw [Complex.norm_intCast]
           exact_mod_cast ArithmeticFunction.abs_moebius_le_one (n := n)
         exact mul_le_of_le_one_left (Real.rpow_nonneg (Nat.cast_nonneg n) _) hμ
       · exact lt_of_lt_of_le Nat.zero_lt_one (Finset.mem_Icc.mp hn).1
 
-end GuthMaynard.NativeMoment
+

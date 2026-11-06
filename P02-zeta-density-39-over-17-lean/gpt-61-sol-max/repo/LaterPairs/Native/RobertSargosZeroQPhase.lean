@@ -6,14 +6,13 @@ public import LaterPairs.Native.RobertSargosSymmetricQuadratic
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
 
 noncomputable section
-open Set GafniTao
+open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 
@@ -31,8 +30,12 @@ theorem robertSargos_zero_q_phase_identity (f : ℝ → ℝ) (h r x : ℝ) :
   unfold robertSargosZeroQLeading robertSargosZeroQRemainder
   ring
 
+section
+variable {f : ℝ → ℝ}
+include f
+
 theorem hasDerivAt_robertSargos_zero_q_remainder
-    {f : ℝ → ℝ} {h r x : ℝ}
+     {h r x : ℝ}
     (hx : ContDiffAt ℝ 4 f x)
     (hp : ContDiffAt ℝ 4 f (x+h)) (hm : ContDiffAt ℝ 4 f (x-h))
     (hrp : ContDiffAt ℝ 4 f (x+(h+r))) (hrm : ContDiffAt ℝ 4 f (x-(h+r))) :
@@ -44,11 +47,10 @@ theorem hasDerivAt_robertSargos_zero_q_remainder
   have hdr := hasDerivAt_robertSargos_symmetric_jet (by norm_num : 0 < 4) hrp hrm
   have hd1 := (hasDerivAt_iteratedDeriv_finite (by norm_num : 1 < 4) hx).const_mul (2*r)
   convert (hdp.sub hdr).add hd1 using 1
-  funext y
-  simp only [robertSargosZeroQRemainder,iteratedDeriv_zero,Pi.add_apply,Pi.sub_apply]
+  rfl
 
 theorem abs_robertSargos_zero_q_remainder_derivative_le
-    {f : ℝ → ℝ} {a b x h r B : ℝ} (hh : 0 ≤ h) (hhr : 0 ≤ h+r)
+     {a b x h r B : ℝ} (hh : 0 ≤ h) (hhr : 0 ≤ h+r)
     (ha : a ≤ x-h) (hb : x+h ≤ b)
     (har : a ≤ x-(h+r)) (hbr : x+(h+r) ≤ b)
     (hf : ∀ y ∈ Icc a b, ContDiffAt ℝ 4 f y)
@@ -79,9 +81,11 @@ theorem abs_robertSargos_zero_q_remainder_derivative_le
   nlinarith
 
 theorem hasDerivAt_robertSargos_zero_q_leading_jet
-    {f : ℝ → ℝ} {x r : ℝ} {j : ℕ} (hj : j < 3) (hf : ContDiffAt ℝ 4 f x) :
+     {x r : ℝ} {j : ℕ} (hj : j < 3) (hf : ContDiffAt ℝ 4 f x) :
     HasDerivAt (fun y => -2*r*iteratedDeriv (j+1) f y)
       (-2*r*iteratedDeriv (j+2) f x) x := by
   exact (hasDerivAt_iteratedDeriv_finite (show j+1 < 4 by omega) hf).const_mul (-2*r)
+end
 
-end TaoTrudgianYang2025
+
+

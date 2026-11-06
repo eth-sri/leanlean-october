@@ -6,22 +6,22 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyLiveClippingDefect
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hZ:1<Z)(hB:0≤Bmask)(Mcap L X₁ X₂ ell z κ xi e:ℝ)
     (hwidth:s.width≤Mcap)(hL:Mcap+Bmask+xi≤L)
     (hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hz:0≤z)(hze:z≤ell)
-    (hκ:3/4≤κ)(hxi:0≤xi)(he:0≤e)(hreserve:xi+11*e/7≤s.width/14)
+    (hκ:3/4≤κ)(hxi:0≤xi)(he:0≤e)(hreserve:xi+11*e/7≤ s.width/14)
     (hlarge:5*s.width/6-e≤Real.logb Z (X₁*X₂)+ell)
-    (hcap:Real.logb Z (X₁*X₂)+ell+(6*κ-1)*ell≤s.width)
+    (hcap:Real.logb Z (X₁*X₂)+ell+(6*κ-1)*ell≤ s.width)
     (D₁ D₂:Finset (Ideal O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
@@ -29,12 +29,12 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     let along:=Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏P∈D₂,P).absNorm:ℝ);
     Z^short=comparisonFirst Z s.width/((∏P∈D₁,P).absNorm:ℝ) ∧
     Z^along=comparisonSecond Z s.width X₁ X₂/((∏P∈D₂,P).absNorm:ℝ) ∧
-    short≤s.width/4 ∧ short≤L ∧ along≤L ∧
+    short≤ s.width/4 ∧ short≤L ∧ along≤L ∧
     s.width≤(Mcap+Bmask)+along ∧ max 0 (s.width-along+xi)≤L ∧
     ((length Z (Z^short)+length Z (Z^along)+z≤5*s.width/6 ∧
-        length Z (Z^short)+length Z (Z^along)+6*κ*z≤s.width) ∨
+        length Z (Z^short)+length Z (Z^along)+6*κ*z≤ s.width) ∨
       (max 0 (s.width-along+xi)+length Z (Z^short)+z≤5*s.width/6 ∧
-        max 0 (s.width-along+xi)+length Z (Z^short)+6*κ*z≤s.width)):= by
+        max 0 (s.width-along+xi)+length Z (Z^short)+6*κ*z≤ s.width)):= by
   have hbase : 0 < Z := zero_lt_one.trans hZ
   have hb := robust_balanced_long_nonneg s.width (Real.logb Z (X₁*X₂)) ell κ xi e
     s.width_nonneg hell hκ hxi hlarge hcap hreserve
@@ -79,8 +79,8 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       he hreserve hc.2.1 hc.2.2
     simpa only [hd₁.2.2] using hh
 
-end SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
 
-end
 
-end OAI
+
+
+

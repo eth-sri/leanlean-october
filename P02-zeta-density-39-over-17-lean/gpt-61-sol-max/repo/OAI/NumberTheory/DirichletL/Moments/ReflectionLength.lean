@@ -11,7 +11,7 @@ open Filter
 namespace SevenEighths.CenteredMomentComparisonReflection
 
 lemma reflected_scale_bound (Z M n xi C Q R d h s : ℝ)
-    (hZ : 1<Z) (_hC : 0≤C) (hQ : 0≤Q) (hd : 0≤d) (_hs : 0≤s)
+    (hZ : 1<Z) (_hC : 0≤C) (hQ : 0≤Q) (hd : 0≤d) (_hs : 0≤ s)
     (hcap : Q*R≤C*Z^M) (hdR : d≤R) (hh : 1≤h) (hsmax : s≤Z^(xi/2)) :
     s*(Q*d/(Z^n*h))≤C*Z^(M-n+xi/2) := by
   have hz : 0<Z := zero_lt_one.trans hZ
@@ -27,8 +27,8 @@ lemma reflected_scale_bound (Z M n xi C Q R d h s : ℝ)
       rw [Real.rpow_add hz,Real.rpow_sub hz]
       ring
 
-end SevenEighths.CenteredMomentComparisonReflection
 
-end
 
-end OAI
+
+
+

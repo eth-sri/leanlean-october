@@ -18,7 +18,7 @@ open Set Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def modelPhaseAveragedCurvature (F : ℝ → ℝ) (v u : ℝ) : ℝ :=
   -2*segmentTaylorAverage (deriv (deriv F)) (modelPhaseInverseSlope F v) 0 u
@@ -30,10 +30,22 @@ theorem modelPhaseAveragedCurvature_at_inverse (F : ℝ → ℝ) (v : ℝ) :
   unfold modelPhaseCurvatureAt
   ring
 
-theorem modelPhaseAveragedCurvature_contDiffAt
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+section
+variable {F : ℝ → ℝ}
+include F
+
+section
+variable {σ δ v u : ℝ}
+include σ δ v u
+
+section
+variable {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
+include P hF hv hu
+
+theorem modelPhaseAveragedCurvature_contDiffAt
+     :
     ContDiffAt ℝ ∞ (modelPhaseAveragedCurvature F v) u := by
   have hj : ∀ x ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
     intro x hx
@@ -43,9 +55,7 @@ theorem modelPhaseAveragedCurvature_contDiffAt
     (modelPhaseInverseSlope_mem hv) 0).contDiffAt (isOpen_Ioo.mem_nhds hu))
 
 theorem modelPhaseStationaryDeficit_eq_averagedCurvature
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
-    (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+     :
     modelPhaseStationaryDeficit F v u =
       (u-modelPhaseInverseSlope F v)^2/2*modelPhaseAveragedCurvature F v u := by
   have h := segmentTaylorAverage_second (fun x hx => approximateModelPhase_contDiffAt hF hx)
@@ -53,12 +63,17 @@ theorem modelPhaseStationaryDeficit_eq_averagedCurvature
   rw [deriv_modelPhaseInverseSlope_apply hv] at h
   unfold modelPhaseStationaryDeficit modelPhaseAveragedCurvature
   nlinarith only [h]
+end
+
+
+section
+variable (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
+    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
+    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
+include hσ hδ hF hv hu
 
 theorem modelPhaseAveragedCurvature_bounds
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+     :
     modelPhaseCurvatureLower σ ≤ modelPhaseAveragedCurvature F v u ∧
       modelPhaseAveragedCurvature F v u ≤ σ+1 := by
   by_cases heq : u = modelPhaseInverseSlope F v
@@ -71,15 +86,14 @@ theorem modelPhaseAveragedCurvature_bounds
     constructor <;> nlinarith [h.1,h.2]
 
 theorem modelPhaseAveragedCurvature_pos
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+     :
     0 < modelPhaseAveragedCurvature F v u :=
   (modelPhaseCurvatureLower_pos hσ).trans_le (modelPhaseAveragedCurvature_bounds hσ hδ hF hv hu).1
+end
+
 
 theorem modelPhaseMorseCoordinate_eq_smooth
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+     {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseMorseCoordinate F v u =
@@ -95,7 +109,7 @@ theorem modelPhaseMorseCoordinate_eq_smooth
   · rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt h))]
 
 theorem modelPhaseMorseCoordinate_contDiffAt
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
+    
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -108,13 +122,17 @@ theorem modelPhaseMorseCoordinate_contDiffAt
   apply h.congr_of_eventuallyEq
   filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx
   exact modelPhaseMorseCoordinate_eq_smooth hF hv hx
+end
+
 
 theorem modelPhaseMorseCoordinate_contDiffOn
-    {F : ℝ → ℝ} {σ δ v : ℝ}
+     {σ δ v : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
     ContDiffOn ℝ ∞ (modelPhaseMorseCoordinate F v) (Ioo (1 : ℝ) 2) :=
   fun _ hu => (modelPhaseMorseCoordinate_contDiffAt hσ hδ hF hv hu).contDiffWithinAt
+end
 
-end TaoTrudgianYang2025
+
+

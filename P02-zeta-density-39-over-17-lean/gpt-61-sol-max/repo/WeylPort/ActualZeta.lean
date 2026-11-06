@@ -108,4 +108,4 @@ theorem exists_riemannZeta_critical_weyl_all_heights {ε : ℝ} (hε : 0 < ε) :
     have hBC : B ≤ C := le_max_right _ _
     exact hb.trans (by nlinarith)
 
-end WeylPort
+

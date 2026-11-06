@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import DensityEnergyGM.SharpEnergyReduction
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
@@ -55,15 +55,13 @@ theorem sharp_cubic_profile_expansion {T R E : ℝ}
     have h := Real.rpow_add_le_add_rpow (by positivity : 0 ≤ R ^ 4)
       (by positivity : 0 ≤ T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ))
       (by norm_num : (0 : ℝ) ≤ 1 / 10) (by norm_num : (1 / 10 : ℝ) ≤ 1)
-    rw [hR4a, hOtherA] at h
-    exact h
+    grind
   have hKb : K ^ (2 / 5 : ℝ) ≤ R ^ (8 / 5 : ℝ) +
       T ^ (1 / 5 : ℝ) * R ^ (2 / 5 : ℝ) * E ^ (3 / 10 : ℝ) := by
     have h := Real.rpow_add_le_add_rpow (by positivity : 0 ≤ R ^ 4)
       (by positivity : 0 ≤ T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ))
       (by norm_num : (0 : ℝ) ≤ 2 / 5) (by norm_num : (2 / 5 : ℝ) ≤ 1)
-    rw [hR4b, hOtherB] at h
-    exact h
+    grind
   have hE34 : E ^ (3 / 4 : ℝ) = E ^ (1 / 4 : ℝ) * E ^ (1 / 2 : ℝ) := by
     rw [← Real.rpow_add hE]; congr 1; norm_num
   have hR9 : R ^ (9 / 10 : ℝ) = R ^ (1 / 2 : ℝ) * R ^ (2 / 5 : ℝ) := by
@@ -121,7 +119,6 @@ theorem sharpCubicProfile_le_expanded {T : ℝ} (hT : 1 ≤ T) (W : Finset ℝ) 
   · have hR : (0 : ℝ) < W.card := by exact_mod_cast Finset.card_pos.mpr hW
     have hE : (0 : ℝ) < discreteAdditiveEnergy W := by
       have h := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
-      rw [native_approx_energy_eq] at h
       have hd : (W.card : ℝ) ^ 2 ≤ (discreteAdditiveEnergy W : ℝ) := by exact_mod_cast h
       nlinarith
     exact sharp_cubic_profile_expansion hT hR hE
@@ -161,4 +158,4 @@ theorem discrete_energy_sublinear_native (ε : ℝ) (hε : 0 < ε) :
       simp only [expandedSharpCubicProfile, Real.sqrt_eq_rpow]
       ring
 
-end Montgomery.RationalMoment
+

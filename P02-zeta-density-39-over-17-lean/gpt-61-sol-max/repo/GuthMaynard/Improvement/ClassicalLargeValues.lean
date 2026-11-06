@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SeparatedSecondMoment
 public import GuthMaynard.Improvement.RealIntegerSource
 public import GuthMaynard.Improvement.ReflectionNearRow
 public import MathCollab.Density.LargeValues
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 namespace GuthMaynard.Improvement
@@ -62,8 +62,7 @@ theorem classical_log_budget {N δ : ℝ} (hN : 1 ≤ N) (hδ : 0 < δ) :
   have hpow : 1 ≤ N^δ := Real.one_le_rpow hN hδ.le
   have hm := mul_le_mul_of_nonneg_left hpow (Real.log_nonneg (by norm_num : (1:ℝ) ≤ 2))
   have he : N^δ/δ=(1/δ)*N^δ := by ring
-  rw [he] at hlog
-  nlinarith
+  bound
 
 /-- Low-height scalar closure of the actual separated second moment. -/
 theorem classical_low_scalar {ε N T V R : ℝ} (hε : 0 < ε) (hN : 2 ≤ N)
@@ -76,8 +75,6 @@ theorem classical_low_scalar {ε N T V R : ℝ} (hε : 0 < ε) (hN : 2 ≤ N)
     have hh := pow_le_pow_left₀ hV.le hlow 4
     have he : (N^(3/4+ε/8:ℝ))^4=N^(3+ε/2:ℝ) := by
       rw [← Real.rpow_natCast,← Real.rpow_mul hN0.le]
-      congr 1
-      norm_num
       ring
     simpa only [mul_pow,he] using hh
   have hlog := classical_log_budget (show 1 ≤ N by linarith) (show 0 < ε/2 by linarith)
@@ -92,9 +89,7 @@ theorem classical_low_scalar {ε N T V R : ℝ} (hε : 0 < ε) (hN : 2 ≤ N)
       _ ≤ (204*T*N*Real.log (2*N))*(16^4*N^(3+ε/2:ℝ)) :=
         mul_le_mul hmoment hv4 (by positivity) (by positivity)
       _ ≤ (204*T*N*((Real.log 2+1/(ε/2))*N^(ε/2:ℝ)))*(16^4*N^(3+ε/2:ℝ)) := by gcongr
-      _ = _ := by
-        have he := congrArg (fun x => (204*16^4*(Real.log 2+1/(ε/2)))*T*x) hpow
-        nlinarith [he]
+      _ = _ := by grind
   have hC : 0 ≤ (204*16^4*(Real.log 2+1/(ε/2)))*N^ε := by positivity
   have hh := (le_div_iff₀ (pow_pos hV 6)).mpr hrv
   calc
@@ -151,7 +146,6 @@ theorem classical_large_values {ε : ℝ} (hε : 0 < ε) :
         have hp := Real.rpow_le_rpow hT hTN (show 0 ≤ ε/2 by positivity)
         have he : (N^2)^(ε/2:ℝ)=N^ε := by
           rw [← Real.rpow_natCast,← Real.rpow_mul hN0.le]
-          congr 1
           ring
         exact hp.trans_eq he
       have hbudget := classical_old_budget (Nat.cast_nonneg ⌊N⌋₊) hMhi hT hV
@@ -170,4 +164,4 @@ theorem classical_large_values {ε : ℝ} (hε : 0 < ε) :
   · rw [Finset.not_nonempty_iff_eq_empty.mp hne,Finset.card_empty,Nat.cast_zero]
     positivity
 
-end GuthMaynard.Improvement
+

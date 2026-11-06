@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthMoments
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthWindow
@@ -14,10 +15,10 @@ open HeckeFamily HeckeDyadic QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
 open CenteredMomentEnergyZeroGrowthMoments CenteredMomentEnergyZeroReflectionSupport
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceLowBranchGeometry
+open CenteredMomentEnergyReferenceLowBranchGeometry
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (S:Finset (ℕ×ℕ)):
@@ -34,7 +35,7 @@ theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     Dlong∈(CompletedGauss.primeSupport s.puncture).powerset→
     let Nshort:ℝ:=(∏P∈Dshort,P).absNorm;
     let Nlong:ℝ:=(∏P∈Dlong,P).absNorm;
-    0≤s.width-Real.logb Z (Xlong/Nlong)+xi→
+    0≤ s.width-Real.logb Z (Xlong/Nlong)+xi→
     ∀(j k:Fin 2)(v t x:ℝ),
     x∈Set.Icc 0 (max 0 (s.width-Real.logb Z (Xlong/Nlong)+xi)*Real.log Z)→
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false
@@ -53,7 +54,7 @@ theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   obtain ⟨hNl,hNlcap⟩:=divisor_norm s Dlong hDl
   have hpS:0<((∏P∈Dshort,P).absNorm:ℝ):=zero_lt_one.trans_le hNs
   have hpL:0<((∏P∈Dlong,P).absNorm:ℝ):=zero_lt_one.trans_le hNl
-  have hlogN:Real.logb Z ((∏P∈Dlong,P).absNorm:ℝ)≤Bmask:=
+  have hlogN :=
     (Real.logb_le_iff_le_rpow hZ hpL).mpr hNlcap
   have hlen:=live_deleted_growth Z b s.width xi Xshort Xlong _ _ hZ (by linarith)
     s.width_nonneg hshort hlong hNs hNl hsupport hlive x hx
@@ -77,8 +78,8 @@ theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   have hbnd:=mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hp hcoef)
     (show 0≤(1+‖v‖)^(2*n) by positivity)
   convert hbnd using 1 ; ring
-end SevenEighths.CenteredMomentEnergyZeroGrowthWindow
 
-end
 
-end OAI
+
+
+

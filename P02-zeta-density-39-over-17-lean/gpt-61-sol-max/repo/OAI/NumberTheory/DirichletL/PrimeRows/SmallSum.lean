@@ -36,7 +36,7 @@ lemma small_dyadic_square_sum : ∃C : ℝ,0<C ∧ ∀H : ℝ,0<H → ∀F : Fin
     _ ≤ 8*(C*(H⁻¹)^(-2:ℝ)) := mul_le_mul_of_nonneg_left hb (by norm_num)
     _ = _ := by rw [Real.inv_rpow hH.le,Real.rpow_neg hH.le,inv_inv];ring
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

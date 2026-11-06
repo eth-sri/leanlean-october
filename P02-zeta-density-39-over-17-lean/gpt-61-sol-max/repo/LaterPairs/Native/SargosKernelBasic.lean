@@ -4,9 +4,8 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                               
@@ -40,8 +39,7 @@ theorem sargos_sinc_sq_majorant (x : ℝ) :
   have ht : Real.sin x^2 ≤ 1 := by
     nlinarith [Real.neg_one_le_sin x,Real.sin_le_one x]
   have he := congrArg (fun y : ℝ => y^2) (sargos_mul_sinc x)
-  apply (le_div_iff₀ (by positivity : 0 < 1+x^2)).mpr
-  nlinarith only [hs,ht,he]
+  field_simp <;> nlinarith
 
 theorem integrable_sargos_sinc_sq :
     Integrable (fun x : ℝ => Real.sinc x^2) := by
@@ -73,8 +71,7 @@ theorem sargosRealTent_le_one {w : ℝ} (hw : 0 < w) (x : ℝ) :
 theorem sargosRealTent_zero_of_le_abs {w x : ℝ} (hw : 0 < w) (hx : w ≤ |x|) :
     sargosRealTent w x = 0 := by
   apply max_eq_left
-  have h : 1 ≤ |x|/w := (le_div_iff₀ hw).mpr (by simpa using hx)
-  linarith
+  field_simp <;> nlinarith
 
 theorem sargosRealTent_eq_of_abs_le {w x : ℝ} (hw : 0 < w) (hx : |x| ≤ w) :
     sargosRealTent w x = 1-|x|/w := by
@@ -90,12 +87,11 @@ theorem hasCompactSupport_sargosRealTent {w : ℝ} (hw : 0 < w) :
   apply HasCompactSupport.intro (K := Icc (-w) w) isCompact_Icc
   intro x hx
   apply sargosRealTent_zero_of_le_abs hw
-  by_contra h
-  exact hx (abs_le.mp (le_of_lt (lt_of_not_ge h)))
+  grind
 
 theorem integrable_sargosRealTent {w : ℝ} (hw : 0 < w) :
     Integrable (sargosRealTent w) :=
   (continuous_sargosRealTent w).integrable_of_hasCompactSupport
     (hasCompactSupport_sargosRealTent hw)
 
-end TaoTrudgianYang2025
+

@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramDiagonal
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT RayFourExpansion
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma original_pair_zero_split (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0<Q) :
     (∑'h : O,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
@@ -55,7 +55,7 @@ theorem original_energy_nonzero (C : CalibrationData) (W : ℝ→ℂ) (hW : HasC
   intro J hJ
   ring
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,8 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorBandCutoff
 
 open Complex Set Filter Topology
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem support_iteratedDeriv_smoothTransition {j : ℕ} (hj : 0 < j) :
@@ -69,8 +69,7 @@ theorem iteratedDeriv_two_smoothTransition_quadratic (c d x : ℝ) :
     iteratedDeriv 2 (fun y => Real.smoothTransition (c * y ^ 2 + d)) x =
       (2 * c * x) ^ 2 * iteratedDeriv 2 Real.smoothTransition (c * x ^ 2 + d) +
         (2 * c) * deriv Real.smoothTransition (c * x ^ 2 + d) := by
-  have he : deriv (fun y => Real.smoothTransition (c * y ^ 2 + d)) =
-      fun y => (2 * c * y) * deriv Real.smoothTransition (c * y ^ 2 + d) :=
+  have he :=
     funext (deriv_smoothTransition_quadratic c d)
   have hq := (((hasDerivAt_id x).pow 2).const_mul c).add_const d
   have hd := ((Real.smoothTransition.contDiff : ContDiff ℝ 2 Real.smoothTransition).differentiable_deriv_two
@@ -88,7 +87,7 @@ theorem exists_intervalC2Bound_quadraticTransition :
         (1 / 4) 1 M R := by
   obtain ⟨A, hA, hfirst⟩ := exists_norm_iteratedDeriv_smoothTransition_le 1
   obtain ⟨B, hB, hsecond⟩ := exists_norm_iteratedDeriv_smoothTransition_le 2
-  let M : ℝ := 1 + 4 * A + 4 * B
+  let M := 1 + 4 * A + 4 * B
   have hM : 0 < M := by dsimp [M]; positivity
   refine ⟨M, hM, ?_⟩
   intro c d R hR hc
@@ -134,4 +133,4 @@ theorem exists_intervalC2Bound_quadraticTransition :
           (mul_le_mul (by nlinarith : 2 * |c| ≤ 2 * R) hb1 (abs_nonneg _) (by positivity))
       _ ≤ M * R ^ 2 := by dsimp [M]; nlinarith [mul_nonneg hA.le (show 0 ≤ R ^ 2 - R by nlinarith)]
 
-end MathCollab.Density.Stronger.Atkinson
+

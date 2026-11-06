@@ -7,13 +7,12 @@ public import LaterPairs.Native.RobertSargosZeroQFloorBudgets
 public import LaterPairs.Native.RobertSargosZeroQWeighted
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                    
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -41,4 +40,4 @@ theorem robertSargos_zero_q_physical_a_times_a
   exact hm.trans (zero_q_a_times_a_column_budget
     (Nat.cast_nonneg M) (by exact_mod_cast hQ) (by exact_mod_cast hR) hC hdiag herr hroot)
 
-end TaoTrudgianYang2025
+

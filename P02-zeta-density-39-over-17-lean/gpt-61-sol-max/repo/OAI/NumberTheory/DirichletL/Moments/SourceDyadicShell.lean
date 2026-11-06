@@ -10,8 +10,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceDyadicShell
-open CenteredMomentSectorLocalization CenteredMomentSourceLowerSupport
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSectorLocalization
+open scoped EisensteinO
 
 lemma residual_window_bounds (C I:Ideal O) (hC:C≠0) (L U:ℝ) (n:ℤ)
     (hL:L≤(Ideal.absNorm (C*I):ℝ)) (hU:(Ideal.absNorm (C*I):ℝ)≤U)
@@ -39,8 +39,8 @@ lemma raw_window_lower (C I:Ideal O) (hC:C≠0) (a H:ℝ) (ha:0<a) (n:ℤ)
   apply (div_le_div_iff₀ hc ha).mpr
   nlinarith
 
-end SevenEighths.CenteredMomentSourceDyadicShell
 
-end
 
-end OAI
+
+
+

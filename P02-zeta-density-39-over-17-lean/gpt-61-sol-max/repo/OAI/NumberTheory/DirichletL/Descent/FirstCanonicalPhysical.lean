@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedColumns
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalCommon
 
@@ -10,8 +11,8 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -87,12 +88,12 @@ theorem canonical_first_kernel_physical
     (fun y=>star (W₁ (A₁*primeProductNorm p C*Real.exp y)))
     (fun y=>W₂ (A₂*primeProductNorm p C*Real.exp y))
     (fun N hN=>by simpa only [star_star,ite_true,A₁,B₁] using hwindow true Ψ₁ m₁ H₁ W₁ N hN)
-    (fun N hN=>by simpa only [Bool.false_eq_true,ite_false,A₂,B₂] using hwindow false Ψ₂ m₂ H₂ W₂ N hN)]
+    (fun N hN=>by exact hwindow false Ψ₂ m₂ H₂ W₂ N hN)]
   exact actual_first_physical_common p hp hcop hg hinj hc hpr F b.support
     (hdis.mono_right Finset.subset_union_left) _ _ _ B₁ B₂
     (fun x=>star (W₁ x)) W₂ Φ A₁ A₂ (primeProductNorm p C) K d h
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

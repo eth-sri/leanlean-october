@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosReducedCount
 public import LaterPairs.Native.RobertSargosSevenMultiplicity
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_quadratic_difference {r q₁ q₂ h₁ h₂ n₁ n₂ : ℝ}
@@ -26,15 +25,18 @@ theorem robertSargos_quadratic_difference {r q₁ q₂ h₁ h₂ n₁ n₂ : ℝ
   nlinarith only [mul_eq_zero_of_left hl (2*n₂)]
 
 
-theorem RobertSargosSevenSystem.linear_real {R H Q N δ : ℝ}
-    {p : RobertSargosSevenPoint} (h : RobertSargosSevenSystem R H Q N δ p) :
+section
+variable {R H Q N δ : ℝ}
+    {p : RobertSargosSevenPoint} (h : RobertSargosSevenSystem R H Q N δ p)
+include R H Q N δ p h
+
+theorem RobertSargosSevenSystem.linear_real  :
     robertSargosLinear p.r p.q₁ p.h₁ p.n₁ =
       robertSargosLinear p.r p.q₂ p.h₂ p.n₂ := by
   unfold robertSargosLinear
   exact_mod_cast h.linear
 
-theorem RobertSargosSevenSystem.to_reduced {R H Q N δ : ℝ}
-    {p : RobertSargosSevenPoint} (h : RobertSargosSevenSystem R H Q N δ p)
+theorem RobertSargosSevenSystem.to_reduced 
     (hne : p.n₁ ≠ p.n₂) :
     RobertSargosReducedSystem R H Q δ (robertSargosDisplacementPoint p) := by
   refine ⟨h.r_ne_zero,h.r_bound,h.q₁_support,h.q₂_support,h.h₁_support,
@@ -45,6 +47,8 @@ theorem RobertSargosSevenSystem.to_reduced {R H Q N δ : ℝ}
       δ*H*Q^2
     rw [Int.cast_sub,← robertSargos_quadratic_difference h.linear_real]
     exact h.near
+end
+
 
 
 
@@ -78,5 +82,5 @@ theorem exists_robertSargos_seven_nonzero_count (ε : ℝ) (hε : 0 < ε) :
           (robertSargos_count_multiplicity_algebra hN hB hε.le) hC.le) (by positivity)
     _ = _ := by rw [show N*(R*H*Q) = R*N*H*Q from by ring]
 
-end TaoTrudgianYang2025
+
 

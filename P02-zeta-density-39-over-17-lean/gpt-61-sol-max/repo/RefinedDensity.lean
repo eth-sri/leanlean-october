@@ -1,12 +1,29 @@
 module
-public import GuthMaynard.Improvement.UpperCurveDensity
-public import GuthMaynard.Improvement.CombinedDensityCurve
+import Mathlib
+public import GuthMaynard.Improvement.ClassicalLargeValues
+public import GuthMaynard.Improvement.MiddleLargeValues
+public import GuthMaynard.Improvement.RealIntegerSource
+public import GuthMaynard.Improvement.SeparatedSecondMoment
+public import GuthMaynard.Improvement.ShortDensityHeight
+public import GuthMaynard.Improvement.ShortDensityScale
+public import GuthMaynard.Improvement.ShortDetectorCounting
+public import GuthMaynard.Improvement.ShortDetectorPowerScales
+public import GuthMaynard.Improvement.ShortDetectorPoweredHeight
+public import GuthMaynard.Improvement.ShortFiniteDetector
+public import GuthMaynard.Improvement.ShortFixedDetectorFamily
+public import GuthMaynard.Improvement.ShortPoweredDetectorFamily
+public import GuthMaynard.Improvement.SourceRatioAssembly
+public import GuthMaynard.Improvement.Target
+public import GuthMaynard.Improvement.UpperWindowBudgets
+public import GuthMaynard.Improvement.WeakShortDensity
+public import MathCollab.Density.DensityDyadicSummation
+public import MathCollab.Density.LargeValueDefinitions
+public import MathCollab.Density.ZetaCounting
 
 @[expose] public section
 
 open Real Complex Set Filter Finset MathCollab.Density GuthMaynard.Improvement
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 1000000
 noncomputable section
@@ -85,8 +102,12 @@ theorem refined_length_budgets {σ H N δ : ℝ}
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH (by
         nlinarith [mul_nonneg hδ (show 0 ≤ σ by linarith)])
 
-theorem refined_padded_time {σ H N : ℝ}
-    (hσ : 5/7 ≤ σ) (hσ' : σ ≤ 3/4) (hH : 1 ≤ H) (hN : 2 ≤ N)
+section
+variable {σ H N : ℝ}
+    (hσ : 5/7 ≤ σ) (hσ' : σ ≤ 3/4) (hH : 1 ≤ H)
+include σ H N hσ hσ' hH
+
+theorem refined_padded_time  (hN : 2 ≤ N)
     (hlo : H^(shortDensityA σ) ≤ N) (hhi : N ≤ H^(refinedSplit σ)) :
     ∃ S : ℝ, N^(6/5:ℝ) ≤ S ∧ S ≤ N^(5/3:ℝ) ∧ H ≤ S ∧
       N^(18/7-4*σ)*S^(6/7:ℝ) ≤ H^(shortDensityExponent σ) := by
@@ -124,8 +145,7 @@ theorem refined_padded_time {σ H N : ℝ}
         _ = H^(refinedSplit σ*(18/5-4*σ)) := by rw [← Real.rpow_mul hH0.le]
         _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH (refined_split_budgets hσ hσ').1
 
-theorem refined_mean_budget {σ H N : ℝ}
-    (hσ : 5/7 ≤ σ) (hσ' : σ ≤ 3/4) (hH : 1 ≤ H)
+theorem refined_mean_budget 
     (hlo : H^(refinedSplit σ) ≤ N) :
     H*N^(1-2*σ) ≤ H^(shortDensityExponent σ) := by
   have hH0 : 0 < H := by linarith
@@ -137,6 +157,8 @@ theorem refined_mean_budget {σ H N : ℝ}
       nth_rw 1 [← Real.rpow_one H]
       rw [← Real.rpow_add hH0]
     _ = _ := by rw [(refined_split_budgets hσ hσ').2]
+end
+
 /-- Uniform logarithmic buffer for the entire compact target exponent range. -/
 theorem refined_power_buffer_eventually :
     ∀ᶠ T : ℝ in atTop, ∀ a : ℝ, 8/11 ≤ a → a ≤ 4/5 →
@@ -209,7 +231,7 @@ theorem refined_large_values {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
       (∀ t ∈ W, N^σ*H^(-2*δ) ≤ ‖boundedPolynomial N a t‖) →
       (W.card:ℝ) ≤ C*H^(shortDensityExponent σ+10*δ) := by
   obtain ⟨C,hC,hmid⟩ := middle_range_large_values δ hδ
-  let D : ℝ := Real.log 2+1/δ
+  let D := Real.log 2+1/δ
   have hD : 0 < D := by
     dsimp [D]
     exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hδ)
@@ -293,9 +315,13 @@ theorem refined_large_values {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
     exact (hc.trans hbudget).trans
       (mul_le_mul_of_nonneg_right (by linarith : 102*(1+D) ≤ 2*C+102*(1+D)) hp)
 
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+
 /-- Actual Type-I detection of an ordinate-injective separated finite family.
 The constant and height threshold precede sigma, translation and the family. -/
-theorem refined_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
+theorem refined_typeI_separated_count  :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ t₀ : ℝ) (R : Finset ℂ),
       5/7 ≤ σ → σ ≤ 3/4 →
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
@@ -332,7 +358,7 @@ theorem refined_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
   have hWj : ∀ p ∈ J, ((Wj p).card:ℝ) ≤ C*H^(shortDensityExponent σ+10*η) := by
     intro p hp
     obtain ⟨hp,hlow,hhigh,hsupport⟩ := Finset.mem_filter.mp hp
-    have hN : 2 ≤ (shortPoweredDetectorScale p:ℝ) :=
+    have hN :=
       hlength.trans ((Real.rpow_le_rpow_of_exponent_le hHa hsc.1).trans hlow)
     have hupper : (shortPoweredDetectorScale p:ℝ) ≤ H^(shortDensityB σ+η) := by
       calc
@@ -389,7 +415,7 @@ theorem refined_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le
 
 /-- The Type-I branch count on actual zero-slab representatives. -/
-theorem refined_typeI_zero_slab_count {ε : ℝ} (hε : 0 < ε) :
+theorem refined_typeI_zero_slab_count  :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ : ℝ) (R : Finset ℂ),
       5/7 ≤ σ → σ ≤ 3/4 → R ⊆ zetaZeroFinset σ H (2*H) →
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
@@ -408,7 +434,7 @@ theorem refined_typeI_zero_slab_count {ε : ℝ} (hε : 0 < ε) :
 Both separated branch estimates, contour detection and analytic multiplicity
 restoration are proved dependencies. -/
 theorem refined_slab_density
-    {ε : ℝ} (hε : 0 < ε) :
+     :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ σ : ℝ,
       5/7 ≤ σ → σ ≤ 3/4 →
       (zetaSlabCount σ H (2*H):ℝ) ≤ C*H^((shortDensityExponent σ)+ε) := by
@@ -416,7 +442,7 @@ theorem refined_slab_density
   obtain ⟨CI,hCI,hI⟩ := refined_typeI_zero_slab_count hη
   obtain ⟨CII,hCII,hII⟩ := weak_short_typeII_zero_slab_count hη
   obtain ⟨C₀,hC₀,hrestore⟩ := short_slab_count_of_separated_branch_bounds
-  let D : ℝ := Real.log 2+1/(ε/2)
+  let D := Real.log 2+1/(ε/2)
   have hD : 0 < D := by
     dsimp [D]
     exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hη)
@@ -439,13 +465,14 @@ theorem refined_slab_density
     _ ≤ C₀*(D*H^(ε/2))*(CI*H^((shortDensityExponent σ)+ε/2)+CII*H^((shortDensityExponent σ)+ε/2)) := by gcongr
     _ = (C₀*(CI+CII)*D)*(H^(ε/2)*H^((shortDensityExponent σ)+ε/2)) := by ring
     _ = _ := by rw [← Real.rpow_add hH0]; congr 2; ring
+end
+
 
 /-- All actual zeros with analytic multiplicity and both signs. The audited
 fixed-sigma dyadic summation is reused, so this constant may depend on sigma. -/
 theorem refined_density
     {σ ε : ℝ} (hσ : 5/7 ≤ σ) (hσ' : σ ≤ 3/4) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(shortDensityExponent σ+ε) := by
+    MathCollab.Density.ZetaBound σ ((shortDensityExponent σ+ε)) := by
   obtain ⟨C,hC,hslab⟩ := refined_slab_density hε
   have hp : 0 < (shortDensityExponent σ)+ε := by
     have he := (refined_scale_bounds hσ hσ').2.2.2.2.1
@@ -456,10 +483,9 @@ theorem refined_density
 
 theorem refined_density_middle {σ ε : ℝ}
     (hσ : 9/13 ≤ σ) (hσ' : σ ≤ 3/4) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(18*(1-σ)/(7*σ+3)+ε) := by
+    MathCollab.Density.ZetaBound σ ((18*(1-σ)/(7*σ+3)+ε)) := by
   by_cases hs : σ ≤ 5/7
   · exact short_density hσ hs hε
   · exact refined_density (by linarith) hσ' hε
 
-end Montgomery.Refined
+

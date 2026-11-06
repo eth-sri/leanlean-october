@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.BoundaryIntegration
 public import OAI.NumberTheory.DirichletL.Detector
 public import Mathlib.Analysis.Analytic.Order
@@ -19,14 +20,22 @@ def rectangle (T : ℝ) : Set ℂ :=
 theorem rectangle_compact (T : ℝ) : IsCompact (rectangle T) := by
   have heq : rectangle T = Set.Icc (51/100 : ℝ) 1 ×ℂ Set.Icc (-T) T := by
     ext z
-    simp only [rectangle, Set.mem_ofPred_eq, Complex.mem_reProdIm, Set.mem_Icc, abs_le]
+    simp only [rectangle, abs_le, mem_ofPred_eq, Complex.mem_reProdIm, mem_Icc]
     tauto
   rw [heq]
   exact isCompact_Icc.reProdIm isCompact_Icc
 
-def zeros (χ : Character) (T : ℝ) : Set ℂ := {s ∈ rectangle T | LFunction χ s = 0}
+section
+variable (χ : Character)
+include χ
 
-theorem zeros_finite (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) :
+def zeros  (T : ℝ) : Set ℂ := {s ∈ rectangle T | LFunction χ s = 0}
+
+section
+variable (hχ : χ.residue ≠ 1) (T : ℝ)
+include hχ T
+
+theorem zeros_finite  :
     (zeros χ T).Finite := by
   have ha : AnalyticOnNhd ℂ (LFunction χ) Set.univ :=
     Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ hχ)
@@ -39,41 +48,50 @@ theorem zeros_finite (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) :
   ext s
   simp [zeros]
 
-def zeroFinset (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) : Finset ℂ :=
+def zeroFinset  : Finset ℂ :=
   (zeros_finite χ hχ T).toFinset
 
-@[simp] theorem mem_zeroFinset (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) (s : ℂ) :
+@[simp] theorem mem_zeroFinset  (s : ℂ) :
     s ∈ zeroFinset χ hχ T ↔
       (51/100 : ℝ) ≤ s.re ∧ s.re ≤ 1 ∧ |s.im| ≤ T ∧ LFunction χ s = 0 := by
-  simp only [zeroFinset, Set.Finite.mem_toFinset, zeros, rectangle, Set.mem_ofPred_eq]
+  simp only [zeroFinset, zeros, rectangle, mem_ofPred_eq, Finite.mem_toFinset]
   tauto
+end
+end
+
 
 variable {ι : Type*} [Fintype ι]
 
-def familyZeros (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) :
+section
+variable (χ : ι → Character)
+include χ
+
+section
+variable (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ)
+include hχ T
+
+def familyZeros  :
     Finset (ι × ℂ) :=
   Finset.univ.biUnion (fun i => (zeroFinset (χ i) (hχ i) T).image (fun s => (i,s)))
 
-@[simp] theorem mem_familyZeros (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1)
-    (T : ℝ) (i : ι) (s : ℂ) :
+@[simp] theorem mem_familyZeros  (i : ι) (s : ℂ) :
     (i,s) ∈ familyZeros χ hχ T ↔
       (51/100 : ℝ) ≤ s.re ∧ s.re ≤ 1 ∧ |s.im| ≤ T ∧ LFunction (χ i) s = 0 := by
   simp [familyZeros]
 
-def realParts (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) : Finset ℝ :=
+def realParts  : Finset ℝ :=
   insert (51/100) ((familyZeros χ hχ T).image (fun p => p.2.re))
 
-theorem realParts_nonempty (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) :
+theorem realParts_nonempty  :
     (realParts χ hχ T).Nonempty := Finset.insert_nonempty _ _
 
-def zeroMaximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) : ℝ :=
+def zeroMaximum  : ℝ :=
   (realParts χ hχ T).max' (realParts_nonempty χ hχ T)
 
-theorem zeroMaximum_mem (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) :
+theorem zeroMaximum_mem  :
     zeroMaximum χ hχ T ∈ realParts χ hχ T := Finset.max'_mem _ _
 
-theorem zero_re_le_maximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1)
-    (T : ℝ) (i : ι) {s : ℂ} (hs : (51/100 : ℝ) ≤ s.re)
+theorem zero_re_le_maximum  (i : ι) {s : ℂ} (hs : (51/100 : ℝ) ≤ s.re)
     (ht : |s.im| ≤ T) (hz : LFunction (χ i) s = 0) : s.re ≤ zeroMaximum χ hχ T := by
   have hle : s.re ≤ 1 := by
     by_contra hn
@@ -82,7 +100,7 @@ theorem zero_re_le_maximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue 
   exact Finset.mem_insert_of_mem (Finset.mem_image.mpr
     ⟨(i,s), (mem_familyZeros χ hχ T i s).mpr ⟨hs, hle, ht, hz⟩, rfl⟩)
 
-theorem maximum_attained (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ)
+theorem maximum_attained 
     (hmax : (51/100 : ℝ) < zeroMaximum χ hχ T) :
     ∃ i s, LFunction (χ i) s = 0 ∧ |s.im| ≤ T ∧ s.re = zeroMaximum χ hχ T := by
   have hm := zeroMaximum_mem χ hχ T
@@ -91,8 +109,10 @@ theorem maximum_attained (χ : ι → Character) (hχ : ∀ i, (χ i).residue �
   · obtain ⟨⟨i,s⟩, hs, heq⟩ := Finset.mem_image.mp hm
     have hz := (mem_familyZeros χ hχ T i s).mp hs
     exact ⟨i,s,hz.2.2.2,hz.2.2.1,heq⟩
+end
 
-theorem nonzero_on_buffered_disk (χ : ι → Character) (hχ : ∀ j, (χ j).residue ≠ 1)
+
+theorem nonzero_on_buffered_disk  (hχ : ∀ j, (χ j).residue ≠ 1)
     (T a e : ℝ) (i : ℕ) (hT : 2 < T) (ha : (51/100 : ℝ) ≤ a) (he : 0 < e)
     (hmax : zeroMaximum χ hχ (3*(i+1 : ℕ)*T) < a+2*e)
     (j : ι) (t : ℝ) (ht : |t| ≤ (3*i+2 : ℕ)*T)
@@ -112,9 +132,11 @@ theorem nonzero_on_buffered_disk (χ : ι → Character) (hχ : ∀ j, (χ j).re
   intro hz
   have hle := zero_re_le_maximum χ hχ (3*(i+1 : ℕ)*T) j (by linarith) him hz
   linarith
-
-end SevenEighths.HeckeDetectorZeros
-
 end
 
-end OAI
+
+
+
+
+
+

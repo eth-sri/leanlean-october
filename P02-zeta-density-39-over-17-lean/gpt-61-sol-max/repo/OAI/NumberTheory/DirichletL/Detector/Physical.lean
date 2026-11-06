@@ -13,9 +13,9 @@ open scoped BigOperators Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open CubicEisenstein ProbeCompleted ProbeRow
+open CubicEisenstein ProbeRow
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 structure CalibrationData where
   excluded : Finset (Ideal O)
@@ -88,7 +88,7 @@ def compensatedPhysicalProbe {K : ℕ} (η : HeckeFamily.Character) (C : Calibra
     (∏ i : Fin K, slotWindow i (elementNorm (p i).val / slotScale i)) *
       compensatedTuple η C W₀ W₁ (fun i => (p i).val) X Y Z
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

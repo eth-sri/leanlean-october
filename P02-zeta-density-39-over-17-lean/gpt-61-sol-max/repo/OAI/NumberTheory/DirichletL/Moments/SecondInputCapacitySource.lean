@@ -11,31 +11,36 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondInputCapacitySource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAllocatedChildCapacity
-open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentSourceLiveColumn
-open CenteredMomentSecondCapacitySourceShift CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
+open HeckeFamily
+open CenteredMomentCommonRadialData
+open CenteredMomentAmplificationChildInput
+
+
+
+
 open CenteredMomentFirstPhysicalSourceSupport CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonHeightEnvelope
-local notation "O"=>HeckeFamily.O
+
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι]
+
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 def lowerFactor (N:ℕ)(slotLower plainLower:ℝ):ℝ:=
   (min 1 slotLower)^N*plainLower^2
 
-lemma lowerFactor_pos (N:ℕ)(slotLower plainLower:ℝ)(hs:0<slotLower)(hp:0<plainLower):
+section
+variable (N:ℕ)(slotLower plainLower:ℝ)(hs:0<slotLower)(hp:0<plainLower)
+include N slotLower plainLower hs hp
+
+lemma lowerFactor_pos :
     0<lowerFactor N slotLower plainLower:=by unfold lowerFactor;positivity
 
-theorem actual_lower_support (N:ℕ)(slotLower plainLower:ℝ)(hs:0<slotLower)(hp:0<plainLower)
-    (s:Input ι)(hc:Fintype.card ι≤N)(hlo:slotLower≤s.lower)
+theorem actual_lower_support 
+    (s:Input ι)(hc:Fintype.card ι≤N)(hlo:slotLower≤ s.lower)
     (hW₁:∀x,s.W₁ x≠0→plainLower≤x)(hW₂:∀x,s.W₂ x≠0→plainLower≤x)
     (R seed I:Ideal O)(hne:coefficient s R seed I≠0):
     lowerFactor N slotLower plainLower*volume s≤(I.absNorm:ℝ):=by
-  have hm:0≤min 1 slotLower:=(lt_min zero_lt_one hs).le
+  have hm:0≤ min 1 slotLower:=(lt_min zero_lt_one hs).le
   have hprod:(min 1 slotLower)^N≤∏i,s.lo i:=by
     apply (pow_le_pow_of_le_one hm (min_le_left _ _) hc).trans
     have hh:=Finset.prod_le_prod₀ (s:=Finset.univ) (f:=fun _:ι=>min 1 slotLower)
@@ -48,9 +53,11 @@ theorem actual_lower_support (N:ℕ)(slotLower plainLower:ℝ)(hs:0<slotLower)(h
   have hv:0≤volume s:=(volume_pos s).le
   unfold lowerFactor
   nlinarith [mul_le_mul_of_nonneg_right hprod (mul_nonneg (sq_nonneg plainLower) hv)]
-
-end SevenEighths.CenteredMomentSecondInputCapacitySource
-
 end
 
-end OAI
+
+
+
+
+
+

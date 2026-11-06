@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {N a c : Eis} {mode : Bool}
@@ -94,7 +94,7 @@ theorem sector_normalized_literal_energy
       (fun P hP => (hPr P hP).2) W θ T r aw]
   rw [he]
   simpa only [Real.sqrt_one,mul_one] using hh
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

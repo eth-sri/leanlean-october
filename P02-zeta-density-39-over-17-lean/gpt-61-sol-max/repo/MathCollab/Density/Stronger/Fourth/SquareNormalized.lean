@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- Narrow actual normalized-zeta source and kernel port from Scott McColm,
 MIT-0, exact pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 See ../../../../../third_party/twelfth/SQUARE_NORMALIZED_MANIFEST.json
@@ -11,7 +12,6 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped ComplexConjugate Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -19,8 +19,7 @@ theorem gammaReal_conj (z : ℂ) : Complex.Gammaℝ (conj z) = conj (Complex.Gam
   have hpow := Complex.cpow_conj (Real.pi : ℂ) (-z / 2)
     (by rw [Complex.arg_ofReal_of_nonneg Real.pi_pos.le]; exact Real.pi_ne_zero.symm)
   simp only [map_div₀, map_neg, map_ofNat, conj_ofReal] at hpow
-  simp only [Complex.Gammaℝ, map_mul, ← Complex.Gamma_conj,
-    map_div₀, map_ofNat, hpow]
+  simp only [Gammaℝ, hpow, map_mul, ← Gamma_conj, map_div₀, map_ofNat]
 
 theorem continuous_GammaR_afe_vertical
     (t : ℝ) {c : ℝ} (hc : 0 < 1 / 2 + c) :
@@ -60,15 +59,14 @@ theorem continuous_zetaSquareRightKernel (t : ℝ) :
   dsimp only
   have haux := differentiable_hughesYoungAuxiliaryZero.continuous
   apply Continuous.div ?_ (by fun_prop) hw
-  apply Continuous.div_const
-  fun_prop (disch := assumption)
+  fun_prop
 
 theorem zetaSquareContourIntegrand_eq_rightKernel_mul_divisor (t u : ℝ) :
     zetaSquareContourIntegrand t (1 + (u : ℂ) * I) =
       zetaSquareRightKernel t u *
         LSeries (fun n : ℕ => (n.divisors.card : ℂ))
           (afeCriticalPoint t + (1 + (u : ℂ) * I)) := by
-  let w : ℂ := 1 + (u : ℂ) * I
+  let w := 1 + (u : ℂ) * I
   let s := afeCriticalPoint t + w
   have hsre : 1 < s.re := by norm_num [s, w, afeCriticalPoint]
   have hs0 : s ≠ 0 := by intro h; have := congrArg Complex.re h; simp at this; linarith
@@ -89,8 +87,7 @@ theorem zetaSquareRightKernel_conj (t u : ℝ) :
   unfold zetaSquareRightKernel
   dsimp only
   rw [hw, hs, ← map_add, gammaReal_conj]
-  simp only [hughesYoungAuxiliaryZero, zetaSquarePoleNormalization_eq,
-    map_div₀, map_mul, map_pow, map_sub, map_ofNat, map_one, conj_ofReal, ← Complex.exp_conj]
+  simp only [hughesYoungAuxiliaryZero, zetaSquarePoleNormalization_eq, map_div₀, map_mul, ← exp_conj, map_ofNat, map_pow, map_sub, map_one, conj_ofReal]
   simp only [neg_sq]
 
 def zetaSquareDivisorIntegral (t : ℝ) : ℂ := zetaSquareVerticalIntegral t 1
@@ -114,7 +111,11 @@ theorem zetaSquareContour_right_conj (t u : ℝ) :
     zetaSquareRightKernel_conj, hs, riemannZeta_conj]
   simp
 
-theorem zetaSquareDivisorIntegral_conj (t : ℝ) :
+section
+variable (t : ℝ)
+include t
+
+theorem zetaSquareDivisorIntegral_conj  :
     zetaSquareDivisorIntegral (-t) = conj (zetaSquareDivisorIntegral t) := by
   unfold zetaSquareDivisorIntegral zetaSquareVerticalIntegral
   simp only [Complex.ofReal_one]
@@ -123,14 +124,14 @@ theorem zetaSquareDivisorIntegral_conj (t : ℝ) :
   simp_rw [zetaSquareContour_right_conj, integral_conj]
   simp only [map_mul, map_div₀, map_one, map_ofNat, conj_ofReal]
 
-theorem conj_zetaSquareGammaNormalization (t : ℝ) :
+theorem conj_zetaSquareGammaNormalization  :
     conj (zetaSquareGammaNormalization t) = zetaSquareGammaNormalization t := by
   have hs : afeCriticalPoint (-t) = conj (afeCriticalPoint t) := afeCriticalPoint_neg_eq_star t
   simp only [zetaSquareGammaNormalization, hs, gammaReal_conj, map_mul, conj_conj]
   ring
 
-/-- The full source entry, not just its reflected branch. -/
-theorem zetaSquareNorm_eq_reflected_source (t : ℝ) :
+/- The full source entry, not just its reflected branch. -/
+theorem zetaSquareNorm_eq_reflected_source  :
     zetaMomentCriticalNorm t ^ 2 =
       2 * (zetaSquareDivisorIntegral (-t) / zetaSquareGammaNormalization t).re := by
   have h : ((zetaMomentCriticalNorm t ^ 2 : ℝ) : ℂ) =
@@ -145,27 +146,22 @@ theorem zetaSquareNorm_eq_reflected_source (t : ℝ) :
   have hr := congrArg Complex.re h
   simpa only [Complex.ofReal_re, Complex.add_re, Complex.conj_re, two_mul] using hr
 
-def zetaFourthRightPiece (t : ℝ) : ℂ :=
+def zetaFourthRightPiece  : ℂ :=
   zetaSquareDivisorIntegral (-t) / zetaSquareGammaNormalization t
 
-theorem zetaSquareNorm_eq_two_re_fourthRightPiece (t : ℝ) :
+theorem zetaSquareNorm_eq_two_re_fourthRightPiece  :
     zetaMomentCriticalNorm t^2 = 2*(zetaFourthRightPiece t).re :=
   zetaSquareNorm_eq_reflected_source t
 
-theorem zetaFourthRightPiece_re_nonneg (t : ℝ) :
-    0 ≤ (zetaFourthRightPiece t).re := by
-  have h := zetaSquareNorm_eq_two_re_fourthRightPiece t
-  nlinarith [sq_nonneg (zetaMomentCriticalNorm t)]
 
-theorem zeta_fourth_le_four_mul_rightPiece_sq (t : ℝ) :
+
+theorem zeta_fourth_le_four_mul_rightPiece_sq  :
     zetaMomentCriticalNorm t^4 ≤ 4*‖zetaFourthRightPiece t‖^2 := by
   have h := zetaSquareNorm_eq_two_re_fourthRightPiece t
   have hre := Complex.re_le_norm (zetaFourthRightPiece t)
-  have hn := zetaFourthRightPiece_re_nonneg t
-  have hs := pow_le_pow_left₀ hn hre 2
-  nlinarith [sq_nonneg (zetaMomentCriticalNorm t^2 - 2*(zetaFourthRightPiece t).re)]
+  nlinarith
 
-theorem norm_zetaSquareGammaNormalization (t : ℝ) :
+theorem norm_zetaSquareGammaNormalization  :
     ‖zetaSquareGammaNormalization t‖ =
       ‖Complex.Gammaℝ (afeCriticalPoint (-t))‖^2 := by
   have he : ‖Complex.Gammaℝ (afeCriticalPoint (-t))‖ =
@@ -175,7 +171,7 @@ theorem norm_zetaSquareGammaNormalization (t : ℝ) :
     rw [hs, gammaReal_conj, Complex.norm_conj]
   rw [zetaSquareGammaNormalization, norm_mul, he, pow_two]
 
-theorem norm_gammaSquare_div_zetaSquareGammaNormalization (t : ℝ) (w : ℂ) :
+theorem norm_gammaSquare_div_zetaSquareGammaNormalization  (w : ℂ) :
     ‖Complex.Gammaℝ (afeCriticalPoint (-t)+w)^2 /
         zetaSquareGammaNormalization t‖ =
       ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
@@ -183,25 +179,25 @@ theorem norm_gammaSquare_div_zetaSquareGammaNormalization (t : ℝ) (w : ℂ) :
   rw [norm_div, norm_pow, norm_zetaSquareGammaNormalization,
     norm_pow, norm_div, div_pow]
 
-def zetaSquarePoleShift (t : ℝ) (w : ℂ) : ℂ :=
+def zetaSquarePoleShift  (w : ℂ) : ℂ :=
   ((afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
     (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t)))) ^ 2
 
-theorem criticalPoint_pole_product (t : ℝ) :
+theorem criticalPoint_pole_product  :
     afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t)) = ((1 / 4 + t ^ 2 : ℝ) : ℂ) := by
   unfold afeCriticalPoint
   push_cast
   ring_nf
   simp
 
-theorem zetaSquarePoleShift_eq_source (t : ℝ) (w : ℂ) :
+theorem zetaSquarePoleShift_eq_source  (w : ℂ) :
     zetaSquarePoleShift t w =
       ((afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w))) ^ 2 /
         zetaSquarePoleNormalization t := by
   rw [← zetaSquarePoleNormalization_neg]
   exact div_pow _ _ _
 
-theorem poleShift_sub_one_identity (t : ℝ) (w : ℂ) :
+theorem poleShift_sub_one_identity  (w : ℂ) :
     (afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
         (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t))) - 1 =
       (2 * (t : ℂ) * I * w - w ^ 2) / ((1 / 4 + t ^ 2 : ℝ) : ℂ) := by
@@ -214,9 +210,15 @@ theorem poleShift_sub_one_identity (t : ℝ) (w : ℂ) :
   push_cast
   ring_nf
   simp
+end
 
-theorem norm_poleShift_linear_sub_one_le {t : ℝ} (ht : 0 < t)
-    {w : ℂ} (hw : ‖w‖ ≤ t / 2) :
+
+section
+variable {t : ℝ} (ht : 0 < t)
+    {w : ℂ} (hw : ‖w‖ ≤ t / 2)
+include t ht w hw
+
+theorem norm_poleShift_linear_sub_one_le  :
     ‖(afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
         (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t))) - 1‖ ≤ 3 * ‖w‖ / t := by
   rw [poleShift_sub_one_identity, norm_div]
@@ -231,8 +233,7 @@ theorem norm_poleShift_linear_sub_one_le {t : ℝ} (ht : 0 < t)
   nlinarith [norm_nonneg w,
     mul_nonneg (norm_nonneg w) (show 0 ≤ t ^ 2 - ‖w‖ * t by nlinarith)]
 
-theorem norm_zetaSquarePoleShift_le {t : ℝ} (ht : 0 < t)
-    {w : ℂ} (hw : ‖w‖ ≤ t / 2) : ‖zetaSquarePoleShift t w‖ ≤ 9 := by
+theorem norm_zetaSquarePoleShift_le  : ‖zetaSquarePoleShift t w‖ ≤ 9 := by
   have h := norm_poleShift_linear_sub_one_le ht hw
   have hfrac : 3 * ‖w‖ / t ≤ 3 / 2 := (div_le_iff₀ ht).mpr (by linarith)
   have hn := norm_le_norm_sub_add
@@ -244,16 +245,14 @@ theorem norm_zetaSquarePoleShift_le {t : ℝ} (ht : 0 < t)
     (1 - (afeCriticalPoint (-t) + w)) /
       (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t))))]
 
-theorem norm_zetaSquarePoleShift_sub_one_le {t : ℝ} (ht : 0 < t)
-    {w : ℂ} (hw : ‖w‖ ≤ t / 2) : ‖zetaSquarePoleShift t w - 1‖ ≤ 12 * ‖w‖ / t := by
+theorem norm_zetaSquarePoleShift_sub_one_le  : ‖zetaSquarePoleShift t w - 1‖ ≤ 12 * ‖w‖ / t := by
   let p := (afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
     (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t)))
   have h : ‖p - 1‖ ≤ 3 * ‖w‖ / t := norm_poleShift_linear_sub_one_le ht hw
   have hfrac : 3 * ‖w‖ / t ≤ 3 / 2 := (div_le_iff₀ ht).mpr (by linarith)
   have hp : ‖p‖ ≤ 5 / 2 := by
     have hn := norm_le_norm_sub_add p (1 : ℂ)
-    simp only [norm_one] at hn
-    linarith
+    norm_num at * <;> nlinarith
   have hpadd : ‖p + 1‖ ≤ 4 := by
     have hn := norm_add_le p (1 : ℂ)
     simp only [norm_one] at hn
@@ -263,6 +262,8 @@ theorem norm_zetaSquarePoleShift_sub_one_le {t : ℝ} (ht : 0 < t)
   calc
     _ ≤ (3 * ‖w‖ / t) * 4 := mul_le_mul h hpadd (norm_nonneg _) (by positivity)
     _ = _ := by ring
+end
+
 
 def zetaFourthKernel (t : ℝ) (w : ℂ) : ℂ :=
   Complex.exp (100*w^2) * hughesYoungAuxiliaryZero w *
@@ -278,7 +279,6 @@ theorem zetaFourthKernel_one (t u : ℝ) :
   unfold zetaSquareRightKernel
   dsimp only
   rw [zetaSquarePoleNormalization_neg]
-  simp only [div_eq_mul_inv]
   ring
 
 theorem continuous_zetaFourthKernel_vertical (t : ℝ) {c : ℝ} (hc : 0 < c) :
@@ -291,8 +291,7 @@ theorem continuous_zetaFourthKernel_vertical (t : ℝ) {c : ℝ} (hc : 0 < c) :
     norm_num at he
     linarith
   unfold zetaFourthKernel zetaSquarePoleShift
-  apply Continuous.div ?_ (by fun_prop) hw
-  fun_prop (disch := assumption)
+  fun_prop
 
 theorem norm_zetaFourthKernel_vertical (t c u : ℝ) :
     ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ =
@@ -309,4 +308,4 @@ theorem norm_zetaFourthKernel_vertical (t c u : ℝ) :
   rw [norm_div, norm_mul, norm_mul, norm_mul, Complex.norm_exp, he,
     norm_gammaSquare_div_zetaSquareGammaNormalization]
 
-end MathCollab.Density.Stronger.Fourth
+

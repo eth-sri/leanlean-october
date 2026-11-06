@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.AtkinsonHeightCover
 
 @[expose] public section
@@ -11,7 +12,6 @@ The localized packet bound remains an explicit theorem hypothesis.
 No physical Atkinson estimate or point-mean theorem is imported or asserted.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Global cardinality from locally absorbed packets
@@ -21,7 +21,7 @@ The finite step is conditional on the displayed localized packet inequality.
 It does not assert that the actual zeta-source packets satisfy that hypothesis.
 -/
 
-noncomputable section
+
 
 
 namespace MathCollab.Density.Stronger
@@ -69,7 +69,6 @@ theorem atkinson_count_exponent_budget {D H G Y ν : ℝ}
     _ ≤ _ := by
       have h1 : 0 ≤ 2*D*H^ν*(H^2/Y^6) := by positivity
       have h2 : 0 ≤ 32*D^3*H^ν*(H/(G*Y^2)) := by positivity
-      ring_nf at h1 h2 ⊢
-      nlinarith
+      grind
 
-end MathCollab.Density.Stronger
+

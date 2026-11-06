@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.PSeries
 public import Mathlib.Tactic
 
@@ -11,7 +12,6 @@ Mathlib dependencies retain Apache-2.0 attribution.
 This module imports only the displayed local/mathlib dependencies, not the upstream project.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Exact occupancy recovery from finite superlevels
@@ -21,7 +21,7 @@ An inverse-square superlevel bound is summable without any loss
 depending on the maximal occupancy or the physical cluster width.
 -/
 
-noncomputable section
+
 
 open Finset
 
@@ -38,11 +38,7 @@ theorem sum_nat_occupancy_eq_sum_superlevel
   apply Finset.sum_congr rfl
   intro x hx
   have hf : (Finset.Icc 1 M).filter (fun m => m ≤ f x) =
-      Finset.Icc 1 (f x) := by
-    ext m
-    simp only [Finset.mem_filter, Finset.mem_Icc]
-    have := hM x hx
-    omega
+      Finset.Icc 1 (f x) := by grind
   rw [← Finset.sum_filter, hf]
   simp
 
@@ -72,11 +68,10 @@ theorem sum_nat_occupancy_le_of_superlevels
   calc
     _ ≤ ∑ m ∈ Finset.Icc 1 M, B / (m : ℝ)^2 := by
       apply Finset.sum_le_sum
-      intro m hm
-      exact hcount m (by have := (Finset.mem_Icc.mp hm).1; omega)
+      grind
     _ = B * ∑ m ∈ Finset.Icc 1 M, ((m : ℝ)^2)⁻¹ := by
       simp only [div_eq_mul_inv, Finset.mul_sum]
     _ ≤ B*2 := mul_le_mul_of_nonneg_left (sum_pos_nat_inv_sq_le_two M) hB
     _ = 2*B := by ring
 
-end MathCollab.Density.Stronger
+

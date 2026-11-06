@@ -1,16 +1,17 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem initial_denominator_bound (C d v n₁ n₂ L : ℝ)
     (hC : 1≤C) (_hd : 0≤d) (hv : 0≤v) (hn₁ : 0≤n₁) (hn₂ : 0≤n₂)
@@ -28,7 +29,7 @@ theorem initial_scalar_bound (Z D m d v n₁ n₂ : ℝ) (hZ : 0<Z)
   have hroot : 1≤Real.sqrt (n₁*n₂) := by
     rw [Real.one_le_sqrt]
     exact one_le_mul_of_one_le_of_one_le hn₁ hn₂
-  have hden : 1≤d*v*Real.sqrt (n₁*n₂) :=
+  have hden :=
     one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hd hv) hroot
   rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by positivity)]
   have h := div_le_self (show 0≤Z^(-D)*Z^m by positivity) hden
@@ -74,8 +75,8 @@ theorem physical_frequency_tail_uniform (A : ℕ) :
       gcongr
     _ = _ := by ring
 
-end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
-end OAI
+
+
+

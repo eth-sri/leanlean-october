@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -14,7 +15,6 @@ public import Mathlib.Tactic
 
 open Complex Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -109,7 +109,7 @@ theorem exists_intervalC2Bound_fixed {f : ℝ → ℂ} {a b : ℝ}
   obtain ⟨A, hA⟩ := isCompact_Icc.exists_bound_of_continuousOn h0
   obtain ⟨B, hB⟩ := isCompact_Icc.exists_bound_of_continuousOn h1
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn h2
-  let M : ℝ := 1 + |A| + |B| + |C|
+  let M := 1 + |A| + |B| + |C|
   have hM : 0 < M := by dsimp [M]; positivity
   have hAM : A ≤ M := by dsimp [M]; linarith [le_abs_self A, abs_nonneg B, abs_nonneg C]
   have hBM : B ≤ M := by dsimp [M]; linarith [le_abs_self B, abs_nonneg A, abs_nonneg C]
@@ -125,6 +125,6 @@ theorem IntervalC2Bound.norm_sub_le {f : ℝ → ℂ} {a b M R x y : ℝ}
     ‖f y - f x‖ ≤ M * R * |y - x| := by
   have h := (convex_Icc a b).norm_image_sub_le_of_norm_deriv_le
     (fun z hz => (hf.smooth z hz).differentiableAt (by norm_num)) hf.deriv_le hx hy
-  simpa only [Real.norm_eq_abs] using h
+  exact h
 
-end MathCollab.Density.Stronger.Atkinson
+

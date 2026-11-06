@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import RationalGeometricShortRange
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -83,7 +83,7 @@ theorem rational_energy_dilated_cover {K : ℕ} (hK : 1 ≤ K)
   intro T t₀ r m hT hr1 hr hδm hm H hH hHpow A hA W hRpow hW hsep
   obtain ⟨k, hKk, hkJ, hlo, hhi⟩ := finite_moment_cover hK hδ hδm hr1 hr hm
   have hk : 1 ≤ k := hK.trans hKk
-  have hki : k-1+1 = k := Nat.sub_add_cancel hk
+  have hki := Nat.sub_add_cancel hk
   have hCk : C (k-1) ≤ D := by
     have hh : C (k-1) ≤ ∑ n ∈ range J, C n :=
       single_le_sum (fun n _ => (hC n).le) (mem_range.mpr (by dsimp [J]; omega))
@@ -181,4 +181,4 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
     rw [hAe, rationalEnergy, sum_empty]
     positivity
 
-end Montgomery.RationalMoment
+

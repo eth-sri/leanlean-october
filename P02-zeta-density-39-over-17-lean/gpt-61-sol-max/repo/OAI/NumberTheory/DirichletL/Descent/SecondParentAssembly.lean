@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
 
 @[expose] public section
@@ -7,15 +8,14 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 omit [DecidableEq ι] in
-@[simp] theorem secondParentOf_attach {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) : secondParentOf (attachSecondExpansion parent x) = parent := rfl
+
 
 def attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSource ι Jo))
     (source : SecondParentSource ι Jo → Finset (SecondExpansionData ι)) :
@@ -79,7 +79,7 @@ theorem attached_family_conditions {Jo : ℕ} (parents : Finset (SecondParentSou
   · intro x hx i; exact Fin.elim0 i
   · intro x hx; exact hq (secondParentOf x) (h x hx).1
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.FordLemma34Terminal
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
@@ -27,12 +28,12 @@ namespace GafniTao
 noncomputable section
 
 /-- The standard analytic-number-theory phase `e(x) = exp(2 pi i x)`. -/
-noncomputable def heathBrownPhase (x : ℝ) : ℂ :=
+def heathBrownPhase (x : ℝ) : ℂ :=
   Complex.exp (((2 * Real.pi * x : ℝ) : ℂ) * Complex.I)
 
 /-- The literal source sum `sum_{n <= N} e(f(n))`, with positive integral
 indices represented by `Icc 1 N`. -/
-noncomputable def heathBrownExponentialSum (N : ℕ) (f : ℝ → ℝ) : ℂ :=
+def heathBrownExponentialSum (N : ℕ) (f : ℝ → ℝ) : ℂ :=
   ∑ n ∈ Finset.Icc 1 N, heathBrownPhase (f n)
 
 /-- The critical number of variables used with degree `k - 1`. -/
@@ -57,8 +58,7 @@ theorem heathBrownCriticalMoment_degree_identity
     {k : ℕ} (hk : 1 ≤ k) :
     (k - 1) * ((k - 1) + 1) / 2 = heathBrownCriticalMoment k := by
   unfold heathBrownCriticalMoment
-  have hsucc : k - 1 + 1 = k := by omega
-  rw [hsucc, Nat.mul_comm]
+  grind
 
 /-- At the critical index, Ford's exact real exponent is `s + epsilon`. -/
 theorem heathBrownCriticalMoment_lambda
@@ -74,11 +74,9 @@ theorem heathBrownCriticalMoment_lambda
     rw [Nat.cast_div
       (even_iff_two_dvd.mp (Nat.even_mul_pred_self k))
       (by norm_num : (2 : ℝ) ≠ 0)]
-    push_cast
-    rw [hsub]
+    simp_all
   unfold fordLambda34
-  rw [hcrit, hsub]
-  ring
+  grind
 
 theorem HeathBrownVMVTMainConjecture.critical
     (hvmvt : HeathBrownVMVTMainConjecture)
@@ -89,7 +87,7 @@ theorem HeathBrownVMVTMainConjecture.critical
 
 /-- The three terms in Heath-Brown Theorem 1, before multiplication by
 `N^(1+epsilon)`. -/
-noncomputable def heathBrownKthDerivativeFactor
+def heathBrownKthDerivativeFactor
     (k : ℕ) (N lambda : ℝ) : ℝ :=
   lambda ^ (1 / ((k : ℝ) * (k - 1))) +
     N ^ (-1 / ((k : ℝ) * (k - 1))) +
@@ -169,6 +167,6 @@ theorem norm_heathBrownExponentialSum_le (N : ℕ) (f : ℝ → ℝ) :
       simp [Nat.card_Icc]
 
 
-end
 
-end GafniTao
+
+

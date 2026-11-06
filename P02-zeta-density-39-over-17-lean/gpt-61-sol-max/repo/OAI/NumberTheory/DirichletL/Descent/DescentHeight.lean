@@ -7,8 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-noncomputable section
+open MeasureTheory FourierBridge JointLogSeparation
+
 
 theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ θ : ℝ,
@@ -37,7 +37,7 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     ring
   simpa only [one_mul, hlin, add_mul, C, H, K, mul_assoc, mul_add] using hh
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

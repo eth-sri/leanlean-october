@@ -1,3 +1,0 @@
-module
-public import GuthMaynard.Improvement.FullDensityCurve
-public import GuthMaynard.Improvement.CurveUniformization

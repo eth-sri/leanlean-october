@@ -8,8 +8,7 @@ public import MathCollab.Density.DensityDyadicSummation
 
 open Complex Filter Set MathCollab.Density
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Actual Type-II zero representatives from the ordinary fourth moment. -/
@@ -48,4 +47,4 @@ theorem half_loss_typeII_zero_slab_count
   simpa only [W,hcard] using hc
 
 
-end GuthMaynard.Improvement
+

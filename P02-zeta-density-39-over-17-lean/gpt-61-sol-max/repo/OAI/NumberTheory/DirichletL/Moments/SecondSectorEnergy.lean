@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSectorEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentRestrictedSource CenteredMomentRestrictedDomain CenteredMomentRestrictedEnergy
-open CenteredMomentLiveDomain CenteredMomentFirstSectors RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion
+open CenteredMomentSourceRow
+open CenteredMomentSecondSectorColumns
+open CenteredMomentRowNorm
+open CenteredMomentRestrictedDomain
+open CenteredMomentLiveDomain CenteredMomentFirstSectors
+open scoped EisensteinO
 
 theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (C : Ideal O) (hC : Supported C) (z : O) :
@@ -34,8 +34,8 @@ theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   intro I hI
   split_ifs <;> simp
 
-end SevenEighths.CenteredMomentSecondSectorEnergy
 
-end
 
-end OAI
+
+
+

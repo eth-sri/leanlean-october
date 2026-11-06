@@ -6,9 +6,8 @@ public import LaterPairs.Native.SargosSymmetricAveraging
 public import LaterPairs.Native.TriangularShiftBounds
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                  
 
@@ -20,7 +19,11 @@ def robertSargosCenteredCorrelation (a : ℤ → ℂ) (M : ℕ) (h : ℤ) : ℝ 
   ∑ m ∈ Finset.Ico (0:ℤ) M,
     ⟪sargosPaddedSequence a M (m+h),sargosPaddedSequence a M (m-h)⟫_ℝ
 
-theorem robertSargos_centered_correlation_neg (a : ℤ → ℂ) (M : ℕ) (h : ℤ) :
+section
+variable (a : ℤ → ℂ)
+include a
+
+theorem robertSargos_centered_correlation_neg  (M : ℕ) (h : ℤ) :
     robertSargosCenteredCorrelation a M (-h) = robertSargosCenteredCorrelation a M h := by
   unfold robertSargosCenteredCorrelation
   simp only [sub_neg_eq_add,← sub_eq_add_neg]
@@ -28,7 +31,7 @@ theorem robertSargos_centered_correlation_neg (a : ℤ → ℂ) (M : ℕ) (h : �
   intro m _
   exact real_inner_comm _ _
 
-theorem robertSargos_centered_correlation_zero (a : ℤ → ℂ) (M : ℕ) :
+theorem robertSargos_centered_correlation_zero  (M : ℕ) :
     robertSargosCenteredCorrelation a M 0 =
       ∑ m ∈ Finset.Ico (0:ℤ) M, ‖a m‖^2 := by
   unfold robertSargosCenteredCorrelation
@@ -37,7 +40,7 @@ theorem robertSargos_centered_correlation_zero (a : ℤ → ℂ) (M : ℕ) :
   intro m hm
   rw [sargosPaddedSequence_eq a M hm]
 
-theorem robertSargos_even_gram_term (a : ℤ → ℂ) (M H s t : ℕ)
+theorem robertSargos_even_gram_term  (M H s t : ℕ)
     (hs : s < H) (ht : t < H) :
     (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M,
       ⟪sargosPaddedSequence a M (n+2*s),sargosPaddedSequence a M (n+2*t)⟫_ℝ) =
@@ -59,9 +62,7 @@ theorem robertSargos_even_gram_term (a : ℤ → ℂ) (M H s t : ℕ)
       · by_contra hn'
         simp only [F,sargosPaddedSequence,ite_eq_right hn',inner_zero_right] at hn
         exact hn rfl
-    change n+(s:ℤ)+t ∈ Finset.Ico (0:ℤ) M
-    simp only [Finset.mem_Ico] at hsupp ⊢
-    constructor <;> omega
+    grind
   change (∑ n ∈ B, F n) = _
   rw [← hfilt]
   unfold robertSargosCenteredCorrelation
@@ -86,7 +87,7 @@ theorem robertSargos_even_gram_term (a : ℤ → ℂ) (M H s t : ℕ)
     dsimp only [F]
     congr 2 <;> omega
 
-theorem robertSargos_even_gram (a : ℤ → ℂ) (M H : ℕ) :
+theorem robertSargos_even_gram  (M H : ℕ) :
     (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M,
       ‖∑ s ∈ Finset.range H, sargosPaddedSequence a M (n+2*s)‖^2) =
       ∑ h ∈ Finset.Ioo (-(H:ℤ)) H,
@@ -114,5 +115,7 @@ theorem robertSargos_even_gram (a : ℤ → ℂ) (M H : ℕ) :
       exact robertSargos_even_gram_term a M H s t
         (Finset.mem_range.mp hs) (Finset.mem_range.mp ht)
     _ = _ := sum_signed_shift_differences H (robertSargosCenteredCorrelation a M)
+end
 
-end TaoTrudgianYang2025
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ReflectionKernelBridge
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 theorem centeredKernel_norm_neg (w : MathCollab.Density.ReflectionCutoff)
@@ -22,7 +22,6 @@ theorem reflectionBand_empty_near {L H : ℝ} (hL : 0 < L)
   have hmpos := hh.1
   have hm1 : (1:ℝ) ≤ m := by exact_mod_cast (show (1:ℤ) ≤ m by omega)
   have hu := (le_div_iff₀ (mul_pos Real.pi_pos hL)).mp hh.2.2
-  have hlo := mul_le_mul_of_nonneg_right hm1 (mul_pos Real.pi_pos hL).le
   nlinarith [mul_pos Real.pi_pos hL]
 
 /-- The exact centered kernel has a rapidly decreasing error in the whole
@@ -51,4 +50,4 @@ theorem centeredKernel_near (w : MathCollab.Density.ReflectionCutoff)
     exact (h L 1 1 hL (by norm_num) le_rfl (by norm_num)).2
   · exact hp v hpv (by simpa only [abs_of_pos hpv] using hv)
 
-end GuthMaynard.Improvement
+

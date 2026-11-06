@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
 
@@ -9,11 +10,11 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform
+open InverseMomentFirstProfileUniform
 open InverseSecondChildWindows
 
 theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
-    (lo hi : Fin 3→ℝ) (hm : 0≤m)
+    (lo hi : Fin 3→ℝ) (hm : 0≤ m)
     (hg : Function.support g⊆Set.Icc (-m) m)
     (hlo : ∀i,0<lo i) (hhi : ∀i,lo i≤hi i) :
     ∃(w : 𝓢(ℝ,ℂ))(a b : ℝ),0<a ∧ a≤b ∧ HasCompactSupport (w : ℝ→ℂ) ∧
@@ -60,7 +61,7 @@ def outerIndex (i : Fin 7) : Fin 9 := i.castLE (by decide)
 
 theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (lo hi : Fin 7→ℝ) (Bρ : Fin 9→ℝ)
-    (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
+    (hm₁ : 0≤ m₁) (hm₂ : 0≤ m₂)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂)
     (hlo : ∀i,0<lo i) (hhi : ∀i,lo i≤hi i) (hBρ : ∀i,0≤Bρ i) :
@@ -95,8 +96,7 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     · exact hlo 4
     · exact hlo 5
     · exact hlo 6
-    · exact ha₁
-    · exact ha₂
+    all_goals (assumption)
   let H (i : Fin 9) := |Real.log (l i)|+|Real.log (u i)|+Bρ i
   have hH (i : Fin 9) : 0≤H i := by dsimp [H];exact add_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (hBρ i)
   choose V hVc hVs hVone hVsupport hVzero using
@@ -123,7 +123,7 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
       · exact hws₂ (subset_tsupport _ hw₂)
     exact hVone i _ (translated_log_bound _ _ _ _ _ (hl i) (hq i) (hρ i))
 
-end SevenEighths.InverseMomentFirstChildWindows
-end
 
-end OAI
+
+
+

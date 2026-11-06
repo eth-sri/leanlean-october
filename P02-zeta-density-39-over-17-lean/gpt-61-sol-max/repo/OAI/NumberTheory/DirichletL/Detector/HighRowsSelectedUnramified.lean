@@ -9,11 +9,15 @@ noncomputable section
 namespace SevenEighths.ProbeEuler
 open ProbeLocal
 
-def unramifiedSelected (Q : ℝ) (A eta v x w z : ℂ) : ℂ :=
+section
+variable (Q : ℝ)
+include Q
+
+def unramifiedSelected  (A eta v x w z : ℂ) : ℂ :=
   compensatedReplacement (coordV Q z) (coordW Q v w) (coordD Q eta v x)
     (unramifiedMarked Q A eta v x w z) (star eta*(Q:ℂ)^x) ((Q:ℂ)^(-w))
 
-lemma selected_phase_identities (Q : ℝ) (eta v x w : ℂ)
+lemma selected_phase_identities  (eta v x w : ℂ)
     (hQ : 0<Q) (heta : ‖eta‖=1) (hv : ‖v‖=1) :
     (star eta*(Q:ℂ)^x)*coordD Q eta v x=star v ∧
       star v*coordW Q v w=(Q:ℂ)^(-w) := by
@@ -26,9 +30,13 @@ lemma selected_phase_identities (Q : ℝ) (eta v x w : ℂ)
   · unfold coordW
     rw [←mul_assoc,PrincipalSlotEstimate.unit_phase_inverse v hv,one_mul]
 
-lemma unramifiedSelected_error_bound (Q : ℝ) (A eta v x w z : ℂ)
+section
+variable (A eta v x w z : ℂ)
     (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1)
-    (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
+    (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
+include A eta v x w z hQ hA heta hv hx hw hz
+
+lemma unramifiedSelected_error_bound  :
     ‖unramifiedSelected Q A eta v x w z+unramifiedClosed Q A eta v x w z*star v‖≤720 := by
   have hQ0 : 0<Q := by linarith
   have hQ1 : 1≤Q := by linarith
@@ -50,9 +58,7 @@ lemma unramifiedSelected_error_bound (Q : ℝ) (A eta v x w z : ℂ)
     (by simpa using he.1) (by simpa using he.2) (by rw [norm_star,hv]) hi.1 hi.2
   simpa only [mul_one,unramifiedSelected,unramifiedClosed,unramifiedMarked] using hh
 
-lemma unramifiedSelected_bound (Q : ℝ) (A eta v x w z : ℂ)
-    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1)
-    (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
+lemma unramifiedSelected_bound  :
     ‖unramifiedSelected Q A eta v x w z‖≤961 := by
   have hd := unramifiedClosed_first_region_bound Q A eta v x w z (1/4) hQ hA heta.le hv.le
     (by norm_num) (by linarith) hz (by linarith) (by linarith)
@@ -68,15 +74,17 @@ lemma unramifiedSelected_bound (Q : ℝ) (A eta v x w z : ℂ)
     (unramifiedClosed Q A eta v x w z*star v)
   rw [add_sub_cancel_right,norm_mul,norm_star,hv,mul_one] at hh
   linarith
+end
 
-lemma unramifiedSelected_zero (Q : ℝ) (v x w z : ℂ) :
+
+lemma unramifiedSelected_zero  (v x w z : ℂ) :
     unramifiedSelected Q 0 0 v x w z= -(Q:ℂ)^(-w)*(1-coordV Q z*coordW Q v w) := by
   simp only [unramifiedSelected,unramifiedMarked,coordR,coordD,coordK,zero_mul,
     neg_zero,add_zero,markedFactor,zero_sub,sub_zero,div_one,mul_zero,
     star_zero,compensatedReplacement]
   ring
 
-lemma unramifiedSelected_zero_bound (Q : ℝ) (v x w z : ℂ)
+lemma unramifiedSelected_zero_bound  (v x w z : ℂ)
     (hQ : 4≤Q) (hv : ‖v‖≤1) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
     ‖unramifiedSelected Q 0 0 v x w z‖≤2 := by
   have hQ0 : 0<Q := by linarith
@@ -94,8 +102,10 @@ lemma unramifiedSelected_zero_bound (Q : ℝ) (v x w z : ℂ)
   rw [norm_one,norm_mul] at ht
   have hp : ‖coordV Q z‖*‖coordW Q v w‖≤1 := by nlinarith [norm_nonneg (coordV Q z)]
   nlinarith [norm_nonneg (1-coordV Q z*coordW Q v w)]
-
-end SevenEighths.ProbeEuler
 end
 
-end OAI
+
+
+
+
+

@@ -1,27 +1,32 @@
 module
+import Mathlib
 public import SignedOperatorAmplifier
 public import GuthMaynard.Improvement.AmplifierQuantitative
 public import CenteredShortTrace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory InnerProductSpace
 open scoped InnerProductSpace
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 
+section
+variable (w : ℝ → ℝ) (L : ℝ) (W : Finset ℝ) (M : Finset ℤ)
+include w L W M
+
 /-- The divisor amplifier evaluated at the literal finite time set. -/
-def finiteAmplifierSynthesis (w : ℝ → ℝ) (L : ℝ) (W : Finset ℝ) (M : Finset ℤ) :
+def finiteAmplifierSynthesis  :
     EuclideanSpace ℂ M →L[ℂ] EuclideanSpace ℂ W :=
   (Matrix.toEuclideanLin (fun (t : W) (m : M) =>
     (w ((m:ℝ)/L):ℂ)*GuthMaynard.Improvement.phase ((t:ℝ)*mellinFrequency ((m:ℝ)/L)))).toContinuousLinearMap
 
-theorem finite_amplifier_synthesis_apply (w : ℝ → ℝ) (L : ℝ) (W : Finset ℝ)
-    (M : Finset ℤ) (z : EuclideanSpace ℂ M) (t : W) :
+theorem finite_amplifier_synthesis_apply  (z : EuclideanSpace ℂ M) (t : W) :
     finiteAmplifierSynthesis w L W M z t =
       ∑ m : M, (w ((m:ℝ)/L):ℂ)*GuthMaynard.Improvement.phase ((t:ℝ)*mellinFrequency ((m:ℝ)/L))*z m := rfl
+end
+
 
 /-- Every divisor column has the exact discrete polynomial mass. -/
 theorem finite_amplifier_column_norm {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
@@ -48,33 +53,44 @@ theorem finite_amplifier_column_norm {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L
     ring
   rw [he',norm_mul,phase_norm,one_mul]
 
-theorem finite_amplifier_synthesis_basis (w : ℝ → ℝ) (L : ℝ) (W : Finset ℝ)
-    (M : Finset ℤ) (m : M) (t : W) :
+section
+variable (w : ℝ → ℝ)
+include w
+
+section
+variable (L : ℝ) (W : Finset ℝ)
+    (M : Finset ℤ)
+include L W M
+
+theorem finite_amplifier_synthesis_basis  (m : M) (t : W) :
     finiteAmplifierSynthesis w L W M (EuclideanSpace.basisFun M ℂ m) t =
       (w ((m:ℝ)/L):ℂ)*GuthMaynard.Improvement.phase ((t:ℝ)*mellinFrequency ((m:ℝ)/L)) := by
   classical
   rw [finite_amplifier_synthesis_apply]
   simp [EuclideanSpace.basisFun_apply]
 
-theorem finite_amplifier_synthesis_adjoint (w : ℝ → ℝ) (L : ℝ) (W : Finset ℝ)
-    (M : Finset ℤ) (z : EuclideanSpace ℂ W) (m : M) :
+theorem finite_amplifier_synthesis_adjoint  (z : EuclideanSpace ℂ W) (m : M) :
     (finiteAmplifierSynthesis w L W M).adjoint z m =
       ∑ t : W, star ((w ((m:ℝ)/L):ℂ)*
         GuthMaynard.Improvement.phase ((t:ℝ)*mellinFrequency ((m:ℝ)/L)))*z t := by
   rw [← EuclideanSpace.basisFun_inner,ContinuousLinearMap.adjoint_inner_right]
   simp only [PiLp.inner_apply,finite_amplifier_synthesis_basis,RCLike.inner_apply,starRingEnd_apply]
-  apply sum_congr rfl
-  intro t _
-  ring
+  grind
+end
+
+
+section
+variable (L l u : ℝ) (W : Finset ℝ)
+include L l u W
 
 /-- Literal finite Gram operator, before any use of the continuous correction. -/
-def finiteCutoffGram (w : ℝ → ℝ) (L l u : ℝ) (W : Finset ℝ) :
+def finiteCutoffGram  :
     EuclideanSpace ℂ W →L[ℂ] EuclideanSpace ℂ W :=
   let B := finiteAmplifierSynthesis w L W (Icc ⌈l*L⌉ ⌊u*L⌋)
   B.comp B.adjoint
 
 /-- Every entry of BB* is the literal signed-integer cutoff Gram sum. -/
-theorem finite_cutoff_gram_entry (w : ℝ → ℝ) (L l u : ℝ) (W : Finset ℝ)
+theorem finite_cutoff_gram_entry 
     (t u' : W) :
     finiteCutoffGram w L l u W (EuclideanSpace.basisFun W ℂ u') t =
       ∑ m ∈ Icc ⌈l*L⌉ ⌊u*L⌋, ((w ((m:ℝ)/L))^2:ℂ)*
@@ -92,6 +108,9 @@ theorem finite_cutoff_gram_entry (w : ℝ → ℝ) (L l u : ℝ) (W : Finset ℝ
   rw [show (((t:ℝ)-u')*mellinFrequency ((m:ℝ)/L)) =
     (t:ℝ)*mellinFrequency ((m:ℝ)/L)+(-((u':ℝ)*mellinFrequency ((m:ℝ)/L))) by ring,phase_add]
   ring
+end
+end
+
 
 /-- Actual orthonormal divisor witness for the finite time set; no density,
 rank hypothesis, spectral premise, or large-value estimate is assumed. -/
@@ -135,4 +154,4 @@ theorem finite_amplifier_quantitative_witness {η : ℝ} (hη : 0 < η) :
   apply (div_le_iff₀ hD).mpr
   simpa only [finiteCutoffGram,ContinuousLinearMap.comp_apply,mul_comm,B,M] using hb
 
-end Montgomery.RationalMoment
+

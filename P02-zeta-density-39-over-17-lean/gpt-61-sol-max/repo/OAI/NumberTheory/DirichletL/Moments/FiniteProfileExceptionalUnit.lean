@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalVolume
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
+open HeckeFamily CenteredMomentHeckeTwist
 open CenteredMomentHeckeCancellation CenteredMomentLattice
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem rectangle_source_unit (a b ε B : ℝ)
     (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
@@ -74,8 +74,8 @@ theorem rectangle_source_unit (a b ε B : ℝ)
     _ ≤ (1+8*D*V)*Z^ε*(1+‖t‖)^J*(Real.sqrt T/L) := by
       gcongr
       linarith
-end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
 
-end OAI
+
+
+

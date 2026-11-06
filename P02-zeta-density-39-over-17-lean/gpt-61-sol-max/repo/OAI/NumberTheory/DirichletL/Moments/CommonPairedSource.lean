@@ -13,13 +13,21 @@ open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve
 open CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι κ:Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
-def normalizedColumn (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)(z:O):ℂ:=
+section
+variable (s:Input ι)
+include s
+
+section
+variable (C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
+include C hC R seed L
+
+def normalizedColumn (z:O):ℂ:=
   (Real.sqrt (volume s.toData):ℂ)⁻¹*sourceColumn s C hC R seed L z
 
-theorem norm_column (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
+theorem norm_column 
     (hseed:seed∣C)(z:O):
     ‖normalizedColumn s C hC R seed L z‖≤
       ∑B:actualAllocations s.pools C,‖commonScalar s C R B‖*
@@ -29,8 +37,14 @@ theorem norm_column (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
   simpa only [norm_mul] using norm_sum_le
     (Finset.univ:Finset (actualAllocations s.pools C))
     (fun B=>commonScalar s C R B*maskedAmplitude (commonData s C R B) L z)
+end
 
-theorem paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+
+section
+variable (v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+include v C D hC hD
+
+theorem paired_columns 
     (R seed L:Ideal O)(hsC:seed∣C)(hsD:seed∣D)(rows:Finset O):
     (∑z∈rows,‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
       ∑B:actualAllocations s.pools C,∑E:actualAllocations v.pools D,
@@ -60,7 +74,7 @@ theorem paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:
       intro z hz
       ring
 
-theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem whole_paired_columns 
     (R seed:Ideal O)(hsC:seed∣C)(hsD:seed∣D)(Ds:Finset (Ideal O))(rows:Finset O):
     (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
       ‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
@@ -90,9 +104,12 @@ theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported 
       apply Finset.sum_congr rfl
       intro z hz
       ring
-
-end SevenEighths.CenteredMomentCommonPairedSource
-
+end
 end
 
-end OAI
+
+
+
+
+
+

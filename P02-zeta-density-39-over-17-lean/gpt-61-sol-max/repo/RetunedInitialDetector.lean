@@ -3,11 +3,10 @@ public import RetunedDetectorParameters
 
 @[expose] public section
 
-open Real Complex MeasureTheory Set Filter
+open Real Complex MeasureTheory Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
 open MathCollab.Density
@@ -92,4 +91,4 @@ theorem detectorTail_eventually_large {σ a δ : ℝ}
   linarith
 
 
-end Montgomery.RationalMoment.RightDetector
+

@@ -11,14 +11,14 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyChildState
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve RayFourExpansion
 open CenteredMomentEnergyState CenteredMomentSecondNonexceptionalChosenBlock
 open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
+open CenteredMomentSecondPhysicalBlock
 open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
 open CenteredMomentCanonicalFirst
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma ball_support : Function.support (ballProfile:ℝ→ℂ)⊆Set.Iic (2:ℝ):=by
   intro x hx
@@ -36,9 +36,13 @@ lemma canonical_mask_nonexceptional (τ:Character)(Q R:Ideal O)(hR:R≠0)
     (ConcretePrimeRowBridge.idealGenerator_ne_zero R hR) one_ne_zero hz.1
     (dvd_mul_right _ _) (dvd_mul_left _ _)).mp hh)
 
-def canonicalState (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
+section
+variable (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
     (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)
-    (hn:1≤dyadicScale (n 1)):NaturalState Z Bmask 2 where
+    (hn:1≤dyadicScale (n 1))
+include Z Bmask hZ τ Q R hR hRN n hn
+
+def canonicalState :NaturalState Z Bmask 2 where
   character:=τ
   fixedModulus:=Q
   puncture:=R
@@ -59,13 +63,11 @@ def canonicalState (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
   row_ne_zero:=fun _ hz=>hz.1
   nonexceptional:=canonical_mask_nonexceptional τ Q R hR n
 
-lemma canonicalState_width (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
-    (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)(hn:1≤dyadicScale (n 1)):
+lemma canonicalState_width :
     (canonicalState Z Bmask hZ τ Q R hR hRN n hn).width=
       Real.logb Z (dyadicScale (n 1))+Real.logb Z (τ.modulus.absNorm:ℝ):=rfl
 
-lemma canonicalState_power (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
-    (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)(hn:1≤dyadicScale (n 1)):
+lemma canonicalState_power :
     Z^(canonicalState Z Bmask hZ τ Q R hR hRN n hn).width=
       (τ.modulus.absNorm:ℝ)*dyadicScale (n 1):=by
   rw [canonicalState_width,Real.rpow_add (zero_lt_one.trans hZ),
@@ -73,6 +75,8 @@ lemma canonicalState_power (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
     Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (show 0<(τ.modulus.absNorm:ℝ) by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot))]
   ring
+end
+
 
 section Actual
 variable {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
@@ -89,9 +93,9 @@ lemma actual_dyad_ge_one : 1≤dyadicScale (n 1):=by
     radius rows W K n hne
   exact (normValue_ge_one z hz0).trans (dyadicRows_norm rows n z hz).2.le
 
-end Actual
-end SevenEighths.CenteredMomentEnergyChildState
 
-end
 
-end OAI
+
+
+
+

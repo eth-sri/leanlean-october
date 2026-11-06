@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CentralAllSlots
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralTargetCost
 
@@ -6,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralTargetCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralPrimeSum
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve ProbeCentralAllSlots
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
@@ -39,7 +40,7 @@ theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
   obtain ⟨Cb,hCb,hcost⟩ := central_remaining_rowCost_bound e eps he he1 heps S hS hfirst
   refine ⟨Ca*Cb,mul_pos hCa hCb,?_⟩
   intro u hu ι _ η twists T0 a i hT0 ha ha1 hbin T hPS hdis hη hQ hsmall W Y hY hWS hW x w z hx hw hz hxi hwi p hp hphase
-  let hs : ∀j P,P∈T j→Supported P.val := fun j P hP=>outside_prime_supported S hS.bad P (hPS j P hP)
+  let hs := fun j P hP=>outside_prime_supported S hS.bad P (hPS j P hP)
   have hinj (P : ∀j,T j) : Function.Injective (fun j=>(P j).val) := by
     intro j l hh
     change (P j).val=(P l).val at hh
@@ -77,8 +78,8 @@ theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
         _ = Ca*Cb*(η.modulus.absNorm:ℝ)^(2*eps)*(rowNorm u^(a-1/2+12*e+7*eps)*rowNorm u^(eps*(N+1)))*
           (3+(3*i+2:ℕ)*T0)^(2+4*eps)*(∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j) := by ring
         _ = _ := by rw [hpow]
-end SevenEighths.ProbeCentralPrimeSum
 
-end
 
-end OAI
+
+
+

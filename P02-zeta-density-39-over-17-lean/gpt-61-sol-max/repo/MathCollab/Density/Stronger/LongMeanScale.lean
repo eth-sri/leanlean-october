@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.WeightedCriticalMean
 
 @[expose] public section
 
 open Real
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- Division-free form of the detecting mean inequality, convenient for
@@ -20,16 +20,12 @@ theorem weightedCriticalMean_detecting_scale {A : ℕ} {C X N T β γ : ℝ}
     simp
   have hh := mul_le_mul_of_nonneg_right hmean (Real.rpow_nonneg hN.le (β-1/2))
   have he : (C*Real.sqrt X*N^(1/2-β)*weightedCriticalMean A γ)*N^(β-1/2) =
-      C*Real.sqrt X*weightedCriticalMean A γ := by
-    calc
-      _ = C*Real.sqrt X*weightedCriticalMean A γ*(N^(1/2-β)*N^(β-1/2)) := by ring
-      _ = _ := by rw [hp,mul_one]
+      C*Real.sqrt X*weightedCriticalMean A γ := by grind
   rw [he] at hh
   have hd : N^(β-1/2)/(48*Real.log T) ≤ C*Real.sqrt X*weightedCriticalMean A γ := by
     simpa only [one_div,inv_mul_eq_div] using hh
   have hh' := (div_le_iff₀ (by positivity : 0 < 48*Real.log T)).mp hd
-  convert hh' using 1
-  ring
+  grind
 
 /-- A long block N≥sqrt(Y) gives the precise lower scale power needed by the
 twelfth-moment counting argument; this lemma assumes no moment estimate. -/
@@ -48,4 +44,4 @@ theorem weightedCriticalMean_long_scale {A : ℕ} {C X N Y T σ β γ : ℝ}
     _ ≤ N^(β-1/2) := Real.rpow_le_rpow_of_exponent_le hN (by linarith)
     _ ≤ _ := weightedCriticalMean_detecting_scale hT hNp hmean
 
-end MathCollab.Density.Stronger
+

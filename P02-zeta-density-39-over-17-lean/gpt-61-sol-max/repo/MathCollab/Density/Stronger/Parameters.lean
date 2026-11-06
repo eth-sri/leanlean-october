@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.DetectorParameters
 
 @[expose] public section
@@ -6,7 +7,6 @@ public import MathCollab.Density.DetectorParameters
 open Filter
 open scoped Topology
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -23,31 +23,35 @@ def detectorX (δ T : ℝ) : ℝ := T ^ δ
 
 def detectorY (σ T : ℝ) : ℝ := T ^ smoothingExponent σ
 
-theorem smoothingExponent_pos {σ : ℝ} (hσ : 3/4 < σ) :
+section
+variable {σ : ℝ}
+include σ
+
+theorem smoothingExponent_pos  (hσ : 3/4 < σ) :
     0 < smoothingExponent σ := by
   have : 0 < σ := by linarith
   unfold smoothingExponent
   positivity
 
-theorem smoothingExponent_lt_one {σ : ℝ} (hσ : 3/4 < σ) :
+theorem smoothingExponent_lt_one  (hσ : 3/4 < σ) :
     smoothingExponent σ < 1 := by
   unfold smoothingExponent
   apply (div_lt_one (by linarith : 0 < 4 * σ)).2
   linarith
 
-theorem smoothingExponent_eq {σ : ℝ} :
+theorem smoothingExponent_eq  :
     smoothingExponent σ = 3 * lowerExponent σ / 2 := by
   unfold smoothingExponent lowerExponent
   ring
 
-theorem densityExponent_pos {σ : ℝ} (hσ : 3/4 < σ) (hσ' : σ < 1) :
+theorem densityExponent_pos  (hσ : 3/4 < σ) (hσ' : σ < 1) :
     0 < densityExponent σ := by
   have : 0 < σ := by linarith
   unfold densityExponent
   positivity
 
 /-- The mollifier exponent is chosen before T and all later small losses. -/
-theorem exists_detector_exponent {σ : ℝ} (hσ : 3/4 < σ) :
+theorem exists_detector_exponent  (hσ : 3/4 < σ) :
     ∃ δ : ℝ, 0 < δ ∧ δ < 1/8 ∧
       δ < (1 - smoothingExponent σ) / 12 := by
   refine ⟨min (1/16) ((1 - smoothingExponent σ) / 24), ?_, ?_, ?_⟩
@@ -57,19 +61,21 @@ theorem exists_detector_exponent {σ : ℝ} (hσ : 3/4 < σ) :
     exact (min_le_right _ _).trans_lt (by linarith)
 
 /-- Exact balance of the two short-piece large-value exponents. -/
-theorem short_exponent_identities {σ : ℝ} (hσ : 0 < σ) :
+theorem short_exponent_identities  (hσ : 0 < σ) :
     2 * (1 - σ) * smoothingExponent σ = densityExponent σ ∧
       1/2 + (3 - 4 * σ) * lowerExponent σ = densityExponent σ := by
   unfold smoothingExponent lowerExponent densityExponent
   constructor <;> field_simp [hσ.ne'] <;> ring
 
 /-- The long-piece exponent retains a positive saving before mollifier losses. -/
-theorem long_exponent_identity {σ : ℝ} (hσ : 0 < σ) :
+theorem long_exponent_identity  (hσ : 0 < σ) :
     2 + (6 - 12 * σ) * smoothingExponent σ / 2 =
       densityExponent σ - (1 - smoothingExponent σ) := by
   unfold smoothingExponent densityExponent
   field_simp [hσ.ne']
   ring
+end
+
 
 theorem long_exponent_saving {σ δ : ℝ}
     (hσ : 3/4 < σ) (hδ : δ < (1 - smoothingExponent σ) / 12) :
@@ -86,9 +92,7 @@ theorem detector_error_scale {σ δ T β η : ℝ}
   have hTpos : 0 < T := by linarith
   have hproduct : (1/4 : ℝ) ≤ smoothingExponent σ * (β - 1/2) := by
     unfold smoothingExponent
-    rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ (by linarith : 0 < 4 * σ)).2
-    nlinarith
+    field_simp <;> nlinarith
   have hsqrt : Real.sqrt (detectorX δ T) = T ^ (δ/2) := by
     rw [detectorX, Real.sqrt_eq_rpow, ← Real.rpow_mul hTpos.le]
     congr 1
@@ -98,4 +102,4 @@ theorem detector_error_scale {σ δ T β η : ℝ}
   apply Real.rpow_le_rpow_of_exponent_le hT
   nlinarith
 
-end MathCollab.Density.Stronger
+

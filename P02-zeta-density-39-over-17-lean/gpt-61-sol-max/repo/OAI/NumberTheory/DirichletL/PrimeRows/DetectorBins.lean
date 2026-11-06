@@ -7,22 +7,26 @@ namespace OAI
 
 noncomputable section
 open scoped Classical Topology
-open Set Filter
+open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily
 variable {ι : Type*} [Fintype ι]
 
-lemma detector_nonzero_on_buffered_disk (χ : ι→Character)
+section
+variable (χ : ι→Character)
     (T a e : ℝ) (i : ℕ) (hT : 2<T) (ha : (51/100:ℝ)≤a) (he : 0<e)
     (hmax : detectorMaximum χ (3*(i+1:ℕ)*T)<a+2*e)
     (j : ι) (t : ℝ) (ht : |t|≤(3*i+2:ℕ)*T)
     {s : ℂ} (hs : s∈Metric.closedBall ((2:ℂ)+t*Complex.I) (2-a-2*e))
+include χ T a e i hT ha he hmax j t ht s hs
+
+lemma detector_nonzero_on_buffered_disk 
     (hpole : ¬((χ j).residue=1 ∧ s=1)) : LFunction (χ j) s≠0 := by
   have hn : ‖s-((2:ℂ)+t*Complex.I)‖≤2-a-2*e := by simpa only [Metric.mem_closedBall,dist_eq_norm] using hs
   have hr := Complex.abs_re_le_norm (s-((2:ℂ)+t*Complex.I))
   have hi := Complex.abs_im_le_norm (s-((2:ℂ)+t*Complex.I))
   norm_num at hr hi
-  have hre : a+2*e≤s.re := by linarith [(abs_le.mp (hr.trans hn)).1]
+  have hre : a+2*e≤ s.re := by linarith [(abs_le.mp (hr.trans hn)).1]
   have him : |s.im|≤3*(i+1:ℕ)*T := by
     have ht' := abs_add_le (s.im-t) t
     rw [sub_add_cancel] at ht'
@@ -30,11 +34,7 @@ lemma detector_nonzero_on_buffered_disk (χ : ι→Character)
     nlinarith [hi.trans hn]
   exact detector_nonzero_above_maximum χ _ j (hmax.trans_le hre) him hpole
 
-lemma detectorEntire_nonzero_on_buffered_disk (χ : ι→Character)
-    (T a e : ℝ) (i : ℕ) (hT : 2<T) (ha : (51/100:ℝ)≤a) (he : 0<e)
-    (hmax : detectorMaximum χ (3*(i+1:ℕ)*T)<a+2*e)
-    (j : ι) (t : ℝ) (ht : |t|≤(3*i+2:ℕ)*T)
-    {s : ℂ} (hs : s∈Metric.closedBall ((2:ℂ)+t*Complex.I) (2-a-2*e)) :
+lemma detectorEntire_nonzero_on_buffered_disk  :
     detectorEntire (χ j) s≠0 := by
   have hn : ‖s-((2:ℂ)+t*Complex.I)‖≤2-a-2*e := by simpa only [Metric.mem_closedBall,dist_eq_norm] using hs
   have hr := Complex.abs_re_le_norm (s-((2:ℂ)+t*Complex.I))
@@ -43,6 +43,8 @@ lemma detectorEntire_nonzero_on_buffered_disk (χ : ι→Character)
   intro hz
   obtain ⟨hL,hpole⟩ := (detectorEntire_zero_iff (χ j) hre).mp hz
   exact detector_nonzero_on_buffered_disk χ T a e i hT ha he hmax j t ht hs hpole hL
+end
+
 
 lemma exists_detector_buffered_bin (χ : ι→Character)
     (T e : ℝ) (hT : 2<T) (he : 0<e) (n : ℕ) (hn : 0<n)
@@ -53,7 +55,7 @@ lemma exists_detector_buffered_bin (χ : ι→Character)
       detectorMaximum χ (3*i*T)<a+e ∧
       detectorMaximum χ (3*(i+1:ℕ)*T)<a+2*e ∧
       (51/100<a → ∃j s,LFunction (χ j) s=0 ∧ ¬((χ j).residue=1 ∧ s=1) ∧
-        a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*i*T) ∧
+        a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*i*T) ∧
       (∀j t,|t|≤(3*i+2:ℕ)*T → ∀s∈Metric.closedBall ((2:ℂ)+t*Complex.I) (2-a-2*e),
         detectorEntire (χ j) s≠0) := by
   let M : ℕ→ℝ := fun j=>detectorMaximum χ (3*(j+1:ℕ)*T)
@@ -78,8 +80,8 @@ lemma detectorMaximum_eq_nonprincipal (χ : ι→Character) (hχ : ∀i,(χ i).r
   unfold detectorMaximum HeckeDetectorZeros.zeroMaximum
   simp only [hr]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

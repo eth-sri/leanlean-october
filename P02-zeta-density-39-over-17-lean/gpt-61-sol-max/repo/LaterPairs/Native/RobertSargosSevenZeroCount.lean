@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroFibers
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                         
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
@@ -47,10 +46,7 @@ theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
       (fun p hp => hmem p (Finset.mem_filter.mp hp).1)
       (fun p hp => (Finset.mem_filter.mp hp).2)
       (fun p hp => hzero p (Finset.mem_filter.mp hp).1)
-  have hHQ : H*Q ≤ R*N*H*Q := by
-    have hm := mul_le_mul_of_nonneg_right
-      (one_le_mul_of_one_le_of_one_le hR hN) (mul_nonneg hHp.le hQp.le)
-    nlinarith only [hm]
+  have hHQ : H*Q ≤ R*N*H*Q := by field_simp <;> nlinarith
   have hpow : (4*H*Q)^ε ≤ (4:ℝ)^ε*(R*N*H*Q)^ε := by
     calc
       _ = (4:ℝ)^ε*(H*Q)^ε := by
@@ -68,5 +64,5 @@ theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hpow hC.le) (by positivity)
     _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
 
-end TaoTrudgianYang2025
+
 

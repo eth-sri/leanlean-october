@@ -8,75 +8,75 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical SchwartzMap
+                                              
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
@@ -134,8 +134,12 @@ def canonicalCubeDualZero (pool : Finset ι) (b : CubeCoordinates ι) (C : Finse
         W (fun _=>1) (fun _=>1) 1 1 K
         (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) 0
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
+
 theorem canonicalCubeDualZero_eq_density
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    
     (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
@@ -164,7 +168,7 @@ theorem canonicalCubeDualZero_eq_density
   · simp only [mul_zero,Finset.sum_const_zero]
 
 theorem canonicalCubeDualZero_norm_le
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
     (Ψ₁ Ψ₂ : O→*ℂ) (hΨ₁ : ∀u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀u,‖Ψ₂ u‖≤1)
@@ -197,6 +201,8 @@ theorem canonicalCubeDualZero_norm_le
           (show 0≤(1*(‖H₁ (b.rightDivisor∪C)‖*‖H₂ (b.leftDivisor∪C)‖)*|K| *‖paperRadialFourier W 0‖) by positivity)
           (primeDensity_nonneg_le_one (fun i=>Ideal.span {p i}) M).2
   · simp
+end
+
 
 end
 
@@ -263,33 +269,13 @@ end FirstPassCubeLabels
 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open EisensteinSchwartzPoisson (paperRadialFourier)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-  (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-  (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-
-include hinj
-
-include hc
-
-end
-
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
-section
+
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -328,10 +314,10 @@ lemma originalLabelColumn_core_test_ne_zero
   apply h
   simp only [originalLabelColumn,multiplicativeCoreColumn,hz,mul_zero,zero_mul]
 
-end
 
-end SecondPassArithmetic
 
-end
 
-end OAI
+
+
+
+

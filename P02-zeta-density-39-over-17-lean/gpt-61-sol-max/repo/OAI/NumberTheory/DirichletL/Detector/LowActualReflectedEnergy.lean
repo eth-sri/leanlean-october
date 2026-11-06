@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -85,7 +85,7 @@ theorem lowSelectedInverseRow_actual_reflected_energy {K : ℕ} (η : HeckeFamil
       (fun i I=>lowSingleSlotWeight η (W i.val) (Y i.val) t (primaryGenerator I)) Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) X)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

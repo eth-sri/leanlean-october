@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicLengths
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology
 open Filter
@@ -14,11 +14,15 @@ namespace SevenEighths.HeckeDetectorSimultaneousSupport
 open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
 open HeckeDetectorDyadicGeometry HeckeDetectorSaturation HeckeDetectorNormalized
 
-theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
+section
+variable (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
     (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
     (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
-    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2) :
+    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2)
+include dmin dmax τ ε e κ η I hdmin hdmax hτ hτzero hτheight hε he he' hκ hκ' hη hbudget
+
+theorem from_actual_zero  :
     ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀≤Z → ∀ d : ℝ, dmin≤d → d≤dmax →
       ∀ {ι : Type*} [Fintype ι] (χ : ι→Character) (hχ : ∀ j, (χ j).residue≠1)
         (a : ℝ) (i : ℕ), i≤I → 51/100≤a → a≤1 →
@@ -30,7 +34,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
           ∃ K∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z^d)^21⌉₊ : ℝ)+1),
             ∃ ν r m : ℝ,
               ‖ν‖≤(Z^d)^(τ/(2*dmax)) ∧ (Z^d)^r=(2 : ℝ)^J ∧ (Z^d)^m=(2 : ℝ)^K ∧
-              tstar-1/2-76*ε≤r ∧ r≤tstar+ε ∧ 0≤m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤m ∧
+              tstar-1/2-76*ε≤r ∧ r≤tstar+ε ∧ 0≤ m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤ m ∧
               (Z^d)^((2*a-1)*r-2*ε)≤
                 ‖polynomial (χ j) true
                   (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular ((Z^d)^tstar) ((Z^d)^r))
@@ -99,11 +103,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (by linarith [hsupport.2]),hs.2.1,hs.2.2⟩
   linarith [hsupport.2,hs.1]
 
-theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
-    (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
-    (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
-    (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
-    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2) :
+theorem from_actual_maximum  :
     ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀≤Z → ∀ d : ℝ, dmin≤d → d≤dmax →
       ∀ {ι : Type*} [Fintype ι] (χ : ι→Character) (hχ : ∀ j, (χ j).residue≠1)
         (a : ℝ) (i : ℕ), i≤I → 51/100<a → a≤1 →
@@ -116,7 +116,7 @@ theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
           ∃ K∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z^d)^21⌉₊ : ℝ)+1),
             ∃ ν r m : ℝ,
               ‖ν‖≤(Z^d)^(τ/(2*dmax)) ∧ (Z^d)^r=(2 : ℝ)^J ∧ (Z^d)^m=(2 : ℝ)^K ∧
-              tstar-1/2-76*ε≤r ∧ r≤tstar+ε ∧ 0≤m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤m ∧
+              tstar-1/2-76*ε≤r ∧ r≤tstar+ε ∧ 0≤ m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤ m ∧
               (Z^d)^((2*a-1)*r-2*ε)≤
                 ‖polynomial (χ j) true
                   (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular ((Z^d)^tstar) ((Z^d)^r))
@@ -132,9 +132,11 @@ theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   have hρ : a≤ρ.re := by rw [heq]; exact hcurrent
   exact ⟨j,ρ,hzero,hρ,him,hZ₀ Z hZ d hd hd' χ hχ a i hi ha.le ha' hnext j
     (hQ j) ρ hzero hρ him tstar ht ht'⟩
-
-end SevenEighths.HeckeDetectorSimultaneousSupport
-
 end
 
-end OAI
+
+
+
+
+
+

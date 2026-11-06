@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 universe v
 
 theorem canonical_original_inactive_energy_uniform_degree
@@ -34,7 +34,7 @@ theorem canonical_original_inactive_energy_uniform_degree
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hhat≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm R:ℝ)≤Z^L →
       0≤O₀ → O₀≤M → Z^O₀≤(Ideal.absNorm (rowPowerfulPart J):ℝ) →
-      CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤ margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
     ∀ (parents rows : Finset (Ideal Eis)),
       (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
@@ -128,7 +128,7 @@ theorem canonical_original_inactive_energy_uniform_degree
     hH w hw f (C*(1+‖θ‖)^degree*Z^(N+V-cstar/8-O₀/2)) (by positivity)
   intro b
   exact hDb b θ (fun i : T => w i.val) (fun i P => hw i.val P)
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

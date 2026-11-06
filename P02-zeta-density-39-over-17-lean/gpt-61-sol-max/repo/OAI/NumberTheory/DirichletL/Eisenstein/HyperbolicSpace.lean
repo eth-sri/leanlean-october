@@ -1,4 +1,6 @@
 module
+public import Mathlib.Combinatorics.SimpleGraph.AdjMatrix
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.Rows
 
 @[expose] public section
@@ -11,67 +13,67 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+           
+                    
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                    
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+           
+                    
+                    
+                                                       
+                                     
+                    
+                       
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+                                                               
+                                                               
+                                                               
+                                                               
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
 section
@@ -89,13 +91,11 @@ def compactSubgroup : Subgroup (SL(2,ℂ)) where
   inv_mem' := by
     intro k hk
     have hinv : (k⁻¹ : SL(2,ℂ)) * k = 1 := inv_mul_cancel k
-    have hmat : ((k⁻¹ : SL(2,ℂ)) : Matrix (Fin 2) (Fin 2) ℂ) *
-        (k : Matrix (Fin 2) (Fin 2) ℂ) = 1 := congrArg
+    have hmat := congrArg
           (fun a : SL(2,ℂ) => (a : Matrix (Fin 2) (Fin 2) ℂ)) hinv
     have he := Matrix.left_inv_eq_left_inv hmat (Matrix.mem_unitaryGroup_iff'.mp hk)
     change ((k⁻¹ : SL(2,ℂ)) : Matrix (Fin 2) (Fin 2) ℂ) ∈ Matrix.unitaryGroup (Fin 2) ℂ
-    rw [he]
-    exact Unitary.star_mem hk
+    simp_all
 
 abbrev HyperbolicSpace := SL(2,ℂ) ⧸ compactSubgroup
 
@@ -107,8 +107,7 @@ def hyperbolicEisenstein (s : ℂ) : HyperbolicSpace → ℂ :=
     rw [hh]
     exact (eisenstein_right_unitary g (g⁻¹*h) s hk).symm)
 
-@[simp] lemma hyperbolicEisenstein_mk (s : ℂ) (g : SL(2,ℂ)) :
-    hyperbolicEisenstein s (g : HyperbolicSpace) = eisenstein g s := rfl
+
 
 theorem hyperbolicEisenstein_automorphy (M : levelThree) (s : ℂ) (hs : 2 < s.re)
     (w : HyperbolicSpace) :
@@ -126,24 +125,26 @@ lemma hyperbolicEisenstein_upperPoint (s : ℂ) (z : ℂ) (v : ℝ) (hv : 0 < v)
 def complexBottomRow (g : SL(2,ℂ)) : Fin 2 → ℂ := g 1
 
 lemma complexBottomRow_mul (g h : SL(2,ℂ)) :
-    complexBottomRow (g*h) = rowOperator h (complexBottomRow g) := by
-  funext j
-  simp only [complexBottomRow, rowOperator_apply, Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply, Matrix.vecMul, dotProduct]
+    complexBottomRow (g*h) = rowOperator h (complexBottomRow g) := by rfl
 
-lemma complexBottomRow_ne_zero (g : SL(2,ℂ)) : complexBottomRow g ≠ 0 := by
+section
+variable (g : SL(2,ℂ))
+include g
+
+lemma complexBottomRow_ne_zero  : complexBottomRow g ≠ 0 := by
   intro hz
   have hc : g 1 0 = 0 := congrFun hz 0
   have hd : g 1 1 = 0 := congrFun hz 1
   have h : g 0 0 * g 1 1 - g 0 1 * g 1 0 = 1 := by
     simpa only [Matrix.det_fin_two] using g.property
-  simp only [hc, hd, mul_zero, sub_zero] at h
-  exact zero_ne_one h
+  simp_all
 
-def liftedHeight (g : SL(2,ℂ)) : ℝ := (rowEnergy (complexBottomRow g))⁻¹
+def liftedHeight  : ℝ := (rowEnergy (complexBottomRow g))⁻¹
 
-lemma liftedHeight_pos (g : SL(2,ℂ)) : 0 < liftedHeight g :=
+lemma liftedHeight_pos  : 0 < liftedHeight g :=
   inv_pos.mpr (rowEnergy_pos _ (complexBottomRow_ne_zero g))
+end
+
 
 lemma liftedHeight_right_unitary (g k : SL(2,ℂ)) (hk : k ∈ compactSubgroup) :
     liftedHeight (g*k) = liftedHeight g := by
@@ -157,8 +158,7 @@ def hyperbolicHeight : HyperbolicSpace → ℝ :=
     rw [hh]
     exact (liftedHeight_right_unitary g (g⁻¹*h) hk).symm)
 
-@[simp] lemma hyperbolicHeight_mk (g : SL(2,ℂ)) :
-    hyperbolicHeight (g : HyperbolicSpace) = liftedHeight g := rfl
+
 
 lemma hyperbolicHeight_pos (w : HyperbolicSpace) : 0 < hyperbolicHeight w := by
   induction w using Quotient.inductionOn with | _ g => exact liftedHeight_pos g
@@ -214,7 +214,11 @@ end
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
-def upperTranslation (a : O) : levelThree := by
+section
+variable (a : O)
+include a
+
+def upperTranslation  : levelThree := by
   let M : SL(2,O) := ⟨!![1, 3*a; 0, 1], by simp⟩
   refine ⟨M, ?_⟩
   change Matrix.SpecialLinearGroup.map (n := Fin 2)
@@ -227,11 +231,11 @@ def upperTranslation (a : O) : levelThree := by
     (1 : Matrix (Fin 2) (Fin 2) (O ⧸ Ideal.span {(3 : O)})) i j
   fin_cases i <;> fin_cases j <;> simp [h3, map_mul]
 
-lemma complexCharacter_upperTranslation (a : O) : complexCharacter (upperTranslation a) = 1 := by
+lemma complexCharacter_upperTranslation  : complexCharacter (upperTranslation a) = 1 := by
   change eisEmbedding (value (upperTranslation a)) = 1
   rw [value_zero_lower_left _ (by rfl), map_one]
 
-lemma upperTranslation_section (a : O) (z : ℂ) (v : ℝ) (hv : 0 < v) :
+lemma upperTranslation_section  (z : ℂ) (v : ℝ) (hv : 0 < v) :
     complexMatrix (upperTranslation a) * upperSection z v hv =
       upperSection (z + 3*eisEmbedding a) v hv := by
   apply Subtype.ext
@@ -243,56 +247,56 @@ lemma upperTranslation_section (a : O) (z : ℂ) (v : ℝ) (hv : 0 < v) :
   fin_cases i <;> fin_cases j <;>
     simp [Matrix.mul_apply, Fin.sum_univ_two, map_mul] ;
     norm_num only [map_ofNat] ; ring
+end
+
 
 end
 
 open MeasureTheory Set Filter
 open scoped BigOperators Classical
 
-lemma integral_radial_sq (f : ℝ → ℂ) :
+section
+variable (f : ℝ → ℂ)
+include f
+
+lemma integral_radial_sq  :
     (∫ z : ℂ, f (‖z‖ ^ 2)) = (Real.pi : ℂ) * ∫ t : ℝ in Set.Ioi 0, f t := by
   have hball : (volume : Measure ℂ).real (Metric.ball 0 1) = Real.pi := by
     simp [Measure.real, Complex.volume_ball]
   have hpolar := integral_fun_norm_addHaar (volume : Measure ℂ) (fun r : ℝ => f (r^2))
   have hsub := integral_comp_rpow_Ioi (E := ℂ) f (p := 2) (by norm_num)
   norm_num [Real.rpow_two, Real.rpow_one] at hsub
-  simp only [Complex.finrank_real_complex, hball, Nat.reduceSub, pow_one,
-    nsmul_eq_mul, Complex.real_smul, ] at hpolar hsub
+  simp only [finrank_real_complex, hball, Nat.reduceSub, pow_one, real_smul, nsmul_eq_mul] at hpolar hsub
   rw [hpolar]
   rw [← hsub]
   rw [show (fun x : ℝ => (2:ℂ)*x*f (x^2)) =
       (fun x : ℝ => (2:ℂ)*(x*f (x^2))) by funext x; ring, integral_const_mul]
   ring
 
-lemma integrable_radial_sq_iff (f : ℝ → ℂ) :
+lemma integrable_radial_sq_iff  :
     Integrable (fun z : ℂ => f (‖z‖ ^ 2)) ↔ IntegrableOn f (Set.Ioi 0) := by
   rw [integrable_fun_norm_addHaar (volume : Measure ℂ) (f := fun r : ℝ => f (r^2))]
   have h := integrableOn_Ioi_comp_rpow_iff' (E := ℂ) f (p := 2) (by norm_num)
   simpa only [Complex.finrank_real_complex, Nat.reduceSub, pow_one,
     show (2:ℝ)-1=1 by norm_num, Real.rpow_one, Real.rpow_two] using h
+end
 
-lemma add_one_image_Ioi : (fun x : ℝ => x+1) '' Set.Ioi 0 = Set.Ioi 1 := by
-  ext y
-  constructor
-  · rintro ⟨x,hx,rfl⟩
-    simp only [Set.mem_Ioi] at *
-    linarith
-  · intro hy
-    refine ⟨y-1, ?_, by ring⟩
-    simp only [Set.mem_Ioi] at *
-    linarith
 
-lemma integrable_add_one_Ioi_iff (f : ℝ → ℂ) :
+lemma add_one_image_Ioi : (fun x : ℝ => x+1) '' Set.Ioi 0 = Set.Ioi 1 := by simp
+
+section
+variable (f : ℝ → ℂ)
+include f
+
+lemma integrable_add_one_Ioi_iff  :
     IntegrableOn (fun x : ℝ => f (x+1)) (Set.Ioi 0) ↔ IntegrableOn f (Set.Ioi 1) := by
   have h := integrableOn_image_iff_integrableOn_abs_deriv_smul
     measurableSet_Ioi
     (fun x (hx : x ∈ Set.Ioi (0:ℝ)) => (hasDerivAt_id x |>.add_const 1).hasDerivWithinAt)
     (fun x hx y hy hxy => by dsimp at hxy; linarith : InjOn (fun x : ℝ => x+1) (Set.Ioi 0)) f
-  simp only [id_eq] at h
-  rw [add_one_image_Ioi] at h
-  simpa only [abs_one, one_smul] using h.symm
+  simp_all
 
-lemma integral_add_one_Ioi (f : ℝ → ℂ) :
+lemma integral_add_one_Ioi  :
     (∫ x : ℝ in Set.Ioi 0, f (x+1)) = ∫ x : ℝ in Set.Ioi 1, f x := by
   have h := integral_image_eq_integral_abs_deriv_smul
     measurableSet_Ioi
@@ -301,10 +305,20 @@ lemma integral_add_one_Ioi (f : ℝ → ℂ) :
   simp only [id_eq] at h
   rw [add_one_image_Ioi] at h
   simpa only [abs_one, one_smul] using h.symm
+end
 
-def hyperbolicKernel (s : ℂ) (z : ℂ) : ℂ := ((1+‖z‖^2 : ℝ) : ℂ) ^ (-s)
 
-lemma hyperbolicKernel_integrable (s : ℂ) (hs : 1 < s.re) :
+section
+variable (s : ℂ)
+include s
+
+def hyperbolicKernel  (z : ℂ) : ℂ := ((1+‖z‖^2 : ℝ) : ℂ) ^ (-s)
+
+section
+variable (hs : 1 < s.re)
+include hs
+
+lemma hyperbolicKernel_integrable  :
     Integrable (hyperbolicKernel s) := by
   unfold hyperbolicKernel
   rw [integrable_radial_sq_iff (fun t : ℝ => ((1+t : ℝ) : ℂ)^(-s))]
@@ -312,7 +326,7 @@ lemma hyperbolicKernel_integrable (s : ℂ) (hs : 1 < s.re) :
     (integrableOn_Ioi_cpow_of_lt (by simpa using neg_lt_neg hs) (by norm_num : (0:ℝ)<1))
   simpa only [add_comm] using h
 
-theorem integral_hyperbolicKernel (s : ℂ) (hs : 1 < s.re) :
+theorem integral_hyperbolicKernel  :
     (∫ z : ℂ, hyperbolicKernel s z) = (Real.pi : ℂ) / (s-1) := by
   unfold hyperbolicKernel
   rw [integral_radial_sq (fun t : ℝ => ((1+t : ℝ) : ℂ)^(-s))]
@@ -324,6 +338,9 @@ theorem integral_hyperbolicKernel (s : ℂ) (hs : 1 < s.re) :
     rw [show -s+1=-(s-1) by ring, inv_neg]
   simp only [div_eq_mul_inv, hn]
   ring
+end
+end
+
 
 open MeasureTheory Set Filter
 open scoped BigOperators Classical FourierTransform RealInnerProductSpace
@@ -331,9 +348,7 @@ open scoped BigOperators Classical FourierTransform RealInnerProductSpace
 lemma breveE_norm (z : ℂ) : ‖ShortDraftTrace.breveE z‖ = 1 := by
   change ‖Complex.exp (2 * Real.pi * Complex.I * (z + starRingEnd ℂ z))‖ = 1
   rw [Complex.norm_exp]
-  have hre : (2 * Real.pi * Complex.I * (z + starRingEnd ℂ z)).re = 0 := by
-    simp [Complex.mul_re, Complex.mul_im]
-  rw [hre, Real.exp_zero]
+  simp
 
 def sourceFourierKernel (s freq : ℂ) : ℂ :=
   ∫ z : ℂ, hyperbolicKernel s z * ShortDraftTrace.breveE (-freq*z)
@@ -403,11 +418,23 @@ lemma source_gaussian_fourier (t : ℝ) (ht : 0 < t) (freq : ℂ) :
   push_cast
   ring
 
-def gaussianMixture (s freq : ℂ) (t : ℝ) (z : ℂ) : ℂ :=
+section
+variable (s freq : ℂ)
+include s freq
+
+section
+variable (t : ℝ)
+include t
+
+def gaussianMixture  (z : ℂ) : ℂ :=
   (t : ℂ)^(s-1) * Complex.exp (-t) *
     Complex.exp (-(t : ℂ)*‖z‖^2) * ShortDraftTrace.breveE (-freq*z)
 
-lemma norm_gaussianMixture (s freq : ℂ) (t : ℝ) (ht : 0 < t) (z : ℂ) :
+section
+variable (ht : 0 < t)
+include ht
+
+lemma norm_gaussianMixture  (z : ℂ) :
     ‖gaussianMixture s freq t z‖ =
       t ^ (s.re-1) * Real.exp (-t) * Real.exp (-t*‖z‖^2) := by
   simp only [gaussianMixture, norm_mul, breveE_norm, mul_one,
@@ -415,7 +442,7 @@ lemma norm_gaussianMixture (s freq : ℂ) (t : ℝ) (ht : 0 < t) (z : ℂ) :
     Complex.norm_exp, Complex.neg_re, Complex.ofReal_re, Complex.mul_re,
     Complex.ofReal_im, ← Complex.ofReal_pow, Complex.neg_im, neg_zero, zero_mul, sub_zero]
 
-lemma gaussianMixture_slice_integrable (s freq : ℂ) (t : ℝ) (ht : 0 < t) :
+lemma gaussianMixture_slice_integrable  :
     Integrable (gaussianMixture s freq t) := by
   have hg : Integrable (fun z : ℂ => Complex.exp (-(t : ℂ)*‖z‖^2)) := by
     simpa only [zero_mul, add_zero] using GaussianFourier.integrable_cexp_neg_mul_sq_norm_add
@@ -429,7 +456,7 @@ lemma gaussianMixture_slice_integrable (s freq : ℂ) (t : ℝ) (ht : 0 < t) :
   · exact Eventually.of_forall fun z => by
       simp only [gaussianMixture, norm_mul, breveE_norm, mul_one, le_refl]
 
-lemma integral_norm_gaussianMixture (s freq : ℂ) (t : ℝ) (ht : 0 < t) :
+lemma integral_norm_gaussianMixture  :
     (∫ z : ℂ, ‖gaussianMixture s freq t z‖) =
       Real.pi * (Real.exp (-t)*t^(s.re-2)) := by
   simp_rw [norm_gaussianMixture s freq t ht]
@@ -444,8 +471,11 @@ lemma integral_norm_gaussianMixture (s freq : ℂ) (t : ℝ) (ht : 0 < t) :
   calc
     t^(s.re-1)*Real.exp (-t)*(Real.pi/t) = Real.pi*(Real.exp (-t)*(t^(s.re-1)/t)) := by ring
     _ = _ := by rw [hp]
+end
+end
 
-theorem gaussianMixture_integrable (s freq : ℂ) (hs : 1 < s.re) :
+
+theorem gaussianMixture_integrable  (hs : 1 < s.re) :
     Integrable (fun p : ℝ × ℂ => gaussianMixture s freq p.1 p.2)
       ((volume.restrict (Set.Ioi 0)).prod volume) := by
   have hmeas : AEStronglyMeasurable (fun p : ℝ × ℂ => gaussianMixture s freq p.1 p.2)
@@ -465,11 +495,17 @@ theorem gaussianMixture_integrable (s freq : ℂ) (hs : 1 < s.re) :
     rw [integral_norm_gaussianMixture s freq t ht]
     congr 2
     ring_nf
+end
+
 
 open MeasureTheory Set Filter
 open scoped BigOperators Classical FourierTransform RealInnerProductSpace
 
-lemma gaussianMixture_laplace_form (s freq : ℂ) (t : ℝ) (z : ℂ) :
+section
+variable (s freq : ℂ)
+include s freq
+
+lemma gaussianMixture_laplace_form  (t : ℝ) (z : ℂ) :
     gaussianMixture s freq t z =
       ((t : ℂ)^(s-1) * Complex.exp (-((1+‖z‖^2 : ℝ) : ℂ)*t)) *
         ShortDraftTrace.breveE (-freq*z) := by
@@ -484,13 +520,13 @@ lemma gaussianMixture_laplace_form (s freq : ℂ) (t : ℝ) (z : ℂ) :
         ShortDraftTrace.breveE (-freq*z) := by unfold gaussianMixture; ring
     _ = _ := by rw [he]
 
-lemma integral_gaussianMixture_t (s freq : ℂ) (hs : 0 < s.re) (z : ℂ) :
+lemma integral_gaussianMixture_t  (hs : 0 < s.re) (z : ℂ) :
     (∫ t : ℝ in Set.Ioi 0, gaussianMixture s freq t z) =
       (hyperbolicKernel s z * Complex.Gamma s)*ShortDraftTrace.breveE (-freq*z) := by
   simp_rw [gaussianMixture_laplace_form]
   rw [integral_mul_const, ← hyperbolicKernel_laplace s hs z]
 
-lemma integral_gaussianMixture_z (s freq : ℂ) (t : ℝ) (ht : 0 < t) :
+lemma integral_gaussianMixture_z  (t : ℝ) (ht : 0 < t) :
     (∫ z : ℂ, gaussianMixture s freq t z) =
       (Real.pi : ℂ) * ((t : ℂ)^(s-2) *
         Complex.exp (-(t : ℂ) - (4*Real.pi^2*‖freq‖^2 : ℝ)/t)) := by
@@ -511,7 +547,7 @@ lemma integral_gaussianMixture_z (s freq : ℂ) (t : ℝ) (ht : 0 < t) :
         (Complex.exp (-(t : ℂ))*Complex.exp (-(4*Real.pi^2*‖freq‖^2 : ℝ)/t))) := by ring
     _ = _ := by rw [hp, ← Complex.exp_add]; congr 2; ring_nf
 
-theorem sourceFourierKernel_gamma (s freq : ℂ) (hs : 1 < s.re) :
+theorem sourceFourierKernel_gamma  (hs : 1 < s.re) :
     sourceFourierKernel s freq * Complex.Gamma s =
       (Real.pi : ℂ) * ∫ t : ℝ in Set.Ioi 0,
         (t : ℂ)^(s-2) * Complex.exp (-(t : ℂ) - (4*Real.pi^2*‖freq‖^2 : ℝ)/t) := by
@@ -532,12 +568,18 @@ theorem sourceFourierKernel_gamma (s freq : ℂ) (hs : 1 < s.re) :
       apply setIntegral_congr_fun measurableSet_Ioi
       intro t ht
       exact integral_gaussianMixture_z s freq t ht
+end
 
-def schlafliIntegral (ν : ℂ) (x : ℝ) : ℂ :=
+
+section
+variable (ν : ℂ) (x : ℝ)
+include ν x
+
+def schlafliIntegral  : ℂ :=
   ∫ t : ℝ in Set.Ioi 0, (t : ℂ)^(ν-1)*
     Complex.exp (-(t : ℂ) - (x : ℂ)^2/(4*t))
 
-lemma schlafliIntegral_integrable (ν : ℂ) (x : ℝ) (hν : 0 < ν.re) :
+lemma schlafliIntegral_integrable  (hν : 0 < ν.re) :
     IntegrableOn (fun t : ℝ => (t : ℂ)^(ν-1)*
       Complex.exp (-(t : ℂ)-(x : ℂ)^2/(4*t))) (Set.Ioi 0) := by
   apply (Real.GammaIntegral_convergent hν).mono'
@@ -553,10 +595,16 @@ lemma schlafliIntegral_integrable (ν : ℂ) (x : ℝ) (hν : 0 < ν.re) :
     have hb := mul_le_mul_of_nonneg_left he (Real.rpow_nonneg ht.le (ν.re-1))
     simpa only [mul_comm] using hb
 
-def schlafliBesselK (ν : ℂ) (x : ℝ) : ℂ :=
+def schlafliBesselK  : ℂ :=
   (1/2 : ℂ)*(x/2 : ℂ)^(-ν)*schlafliIntegral ν x
+end
 
-lemma sourceFourierKernel_gamma_schlafli (s freq : ℂ) (hs : 1 < s.re) :
+
+section
+variable (s freq : ℂ) (hs : 1 < s.re)
+include s freq hs
+
+lemma sourceFourierKernel_gamma_schlafli  :
     sourceFourierKernel s freq * Complex.Gamma s =
       (Real.pi : ℂ)*schlafliIntegral (s-1) (4*Real.pi*‖freq‖) := by
   rw [sourceFourierKernel_gamma s freq hs]
@@ -568,15 +616,13 @@ lemma sourceFourierKernel_gamma_schlafli (s freq : ℂ) (hs : 1 < s.re) :
   push_cast
   ring
 
-theorem sourceFourierKernel_bessel (s freq : ℂ) (hs : 1 < s.re) (hf : freq ≠ 0) :
+theorem sourceFourierKernel_bessel  (hf : freq ≠ 0) :
     sourceFourierKernel s freq =
       (2*Real.pi : ℂ)/Complex.Gamma s *
         (2*Real.pi*‖freq‖ : ℂ)^(s-1) *
         schlafliBesselK (s-1) (4*Real.pi*‖freq‖) := by
   have hg := Complex.Gamma_ne_zero_of_re_pos (show 0 < s.re by linarith)
-  have hz : (2*Real.pi*‖freq‖ : ℂ) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
-      (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr hf))
+  have hz : (2*Real.pi*‖freq‖ : ℂ) ≠ 0 := by simp_all
   have hp : (2*Real.pi*‖freq‖ : ℂ)^(s-1) * (2*Real.pi*‖freq‖ : ℂ)^(-(s-1)) = 1 := by
     rw [← Complex.cpow_add _ _ hz, add_neg_cancel, Complex.cpow_zero]
   have hreorder : (2*Real.pi : ℂ)/Complex.Gamma s *
@@ -591,6 +637,8 @@ theorem sourceFourierKernel_bessel (s freq : ℂ) (hs : 1 < s.re) (hf : freq ≠
   have hhalf : (4*(Real.pi : ℂ)*‖freq‖)/2 = 2*Real.pi*‖freq‖ := by ring
   rw [hhalf]
   linear_combination -((Real.pi : ℂ)*schlafliIntegral (s-1) (4*Real.pi*‖freq‖))*hp
+end
+
 
 theorem sourceFourierKernel_four_thirds (freq : ℂ) (hf : freq ≠ 0) :
     sourceFourierKernel (4/3 : ℂ) freq =
@@ -599,8 +647,8 @@ theorem sourceFourierKernel_four_thirds (freq : ℂ) (hf : freq ≠ 0) :
         schlafliBesselK (1/3) (4*Real.pi*‖freq‖) := by
   convert sourceFourierKernel_bessel (4/3) freq (by norm_num) hf using 1 ; norm_num
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

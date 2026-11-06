@@ -6,36 +6,43 @@ public import LaterPairs.Native.SargosDualTentGram
 public import LaterPairs.Native.SargosPrefixFourthMajorant
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
 
-open MeasureTheory Set GafniTao
+
+open MeasureTheory Set
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
 
-theorem sargosTentPlanarIntegrand_zero_outside {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
-    (p : ℝ × ℝ) (hp : p ∉ (Icc (-a) a) ×ˢ (Icc (-b) b)) :
+section
+variable {ι : Type*}
+    (S : Finset ι) (u v : ι → ℝ)
+include ι S u v
+
+section
+variable {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
+include a b ha hb
+
+section
+variable (p : ℝ × ℝ)
+include p
+
+theorem sargosTentPlanarIntegrand_zero_outside  (hp : p ∉ (Icc (-a) a) ×ˢ (Icc (-b) b)) :
     sargosTentPlanarIntegrand S u v a b p = 0 := by
   have hzero {w x : ℝ} (hw : 0 < w) (hx : x ∉ Icc (-w) w) :
       sargosRealTent w x = 0 := by
     apply sargosRealTent_zero_of_le_abs hw
-    by_contra h
-    exact hx (abs_le.mp (le_of_lt (lt_of_not_ge h)))
+    grind
   by_cases hpa : p.1 ∈ Icc (-a) a
   · have hpb : p.2 ∉ Icc (-b) b := fun h => hp ⟨hpa,h⟩
     simp only [sargosTentPlanarIntegrand,hzero hb hpb,mul_zero,zero_mul]
   · simp only [sargosTentPlanarIntegrand,hzero ha hpa,zero_mul]
 
-theorem sargosTentPlanarIntegrand_le_norm_sq {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
-    (p : ℝ × ℝ) :
+theorem sargosTentPlanarIntegrand_le_norm_sq  :
     sargosTentPlanarIntegrand S u v a b p ≤
       ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖^2 := by
   have ht : sargosRealTent a p.1*sargosRealTent b p.2 ≤ 1 := by
@@ -45,9 +52,10 @@ theorem sargosTentPlanarIntegrand_le_norm_sq {ι : Type*}
       _ = _ := one_mul 1
   simpa only [sargosTentPlanarIntegrand,one_mul] using
     mul_le_mul_of_nonneg_right ht (sq_nonneg ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖)
+end
 
-theorem sargosTentPlanarIntegral_le_central {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+
+theorem sargosTentPlanarIntegral_le_central  :
     (∫ p : ℝ × ℝ, sargosTentPlanarIntegrand S u v a b p ∂(volume.prod volume)) ≤
       ∫ α in Icc (-a) a, ∫ γ in Icc (-b) b,
         ‖sargosPlanarSum S (fun _ => 1) u v α γ‖^2 := by
@@ -74,9 +82,10 @@ theorem sargosTentPlanarIntegral_le_central {ι : Type*}
     _ = _ := by
       rw [← Measure.prod_restrict]
       exact integral_prod _ hi
+end
 
-theorem sargosNearPairs_card_le_central {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {Δ μ : ℝ} (hΔ : 0 < Δ) (hμ : 0 < μ) :
+
+theorem sargosNearPairs_card_le_central  {Δ μ : ℝ} (hΔ : 0 < Δ) (hμ : 0 < μ) :
     ((sargosNearPairs S u v (1/Δ) (1/μ)).card : ℝ) ≤
       (64/(Δ*μ))*(∫ α in Icc (-(Δ/2)) (Δ/2), ∫ γ in Icc (-(μ/2)) (μ/2),
         ‖sargosPlanarSum S (fun _ => 1) u v α γ‖^2) := by
@@ -94,5 +103,7 @@ theorem sargosNearPairs_card_le_central {ι : Type*}
     (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using h)
   convert hd using 1
   field_simp
+end
 
-end TaoTrudgianYang2025
+
+

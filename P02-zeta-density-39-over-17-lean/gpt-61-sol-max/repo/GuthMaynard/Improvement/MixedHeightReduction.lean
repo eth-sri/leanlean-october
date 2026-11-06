@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.MixedPoissonBridge
 public import GuthMaynard.Improvement.UnequalHeightReduction
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
@@ -28,7 +28,6 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   obtain ⟨n, hn⟩ := exists_nat_mul_ge_of_pos (eta := gmAffineIterationEta δ) (A := 31) hη
   have hnreal : (31:ℝ) ≤ n := hn.trans (by
     have hu := gmAffineIterationEta_le_one δ
-    have hn0 : (0:ℝ) ≤ n := by positivity
     nlinarith)
   have hn1 : 1 ≤ n := by exact_mod_cast (show (1:ℝ) ≤ n by linarith)
   have hn20 : 20 ≤ n := by exact_mod_cast (show (20:ℝ) ≤ n by linarith)
@@ -46,7 +45,7 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   have hTp : 0 < T := by linarith
   have hTone : 1 ≤ T := by linarith
   have hR : 0 < R := hK.trans_le hKR
-  have hQ : 1 ≤ T ^ gmAffineIterationEta δ := one_le_rpow_gmAffineIterationEta hδ hTone
+  have hQ := one_le_rpow_gmAffineIterationEta hδ hTone
   have hY : 0 < T ^ (6:ℕ) := by positivity
   have hQM := gmAffineIterationQ_mul_M_le_four_Y (delta := δ) hTone hRT
   have hXY := gmAffineFirstPoissonRadius_le_of_scale h₁R h₃
@@ -74,9 +73,9 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
     have hk1 : (1:ℝ) ≤ K := by exact_mod_cast hK
     have hr2 : (1:ℝ) ≤ (R:ℝ)^2 := one_le_pow₀ hr1
     have hk4 : (1:ℝ) ≤ (K:ℝ)^4 := one_le_pow₀ hk1
-    have hprod1 : (1:ℝ) ≤ (R:ℝ)^2*(K:ℝ)^4 := one_le_mul_of_one_le_of_one_le hr2 hk4
+    have hprod1 := one_le_mul_of_one_le_of_one_le hr2 hk4
     exact (le_mul_of_one_le_left (sq_nonneg _) hprod1)
-  have hTδ : 1 ≤ T^δ := Real.one_le_rpow hTone hδ.le
+  have hTδ := Real.one_le_rpow hTone hδ.le
   have hbound : gmAffineTransformIntegral f M₁ M₂ M₃ ≤
       a*T^δ*X+b*T^δ*Z+c*(∫ x, f x)^2 := by
     apply hr.trans
@@ -100,4 +99,4 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
           (show b ≤ a+b+c+1 by linarith only [ha,hc]) (by positivity)) hZ)
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

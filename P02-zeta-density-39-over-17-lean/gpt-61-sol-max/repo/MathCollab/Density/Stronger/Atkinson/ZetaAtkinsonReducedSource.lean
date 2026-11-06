@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices and native assembly using revision
@@ -23,7 +24,7 @@ a separately supplied error hypothesis.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
+
 
 open Complex Filter MeasureTheory
 
@@ -58,7 +59,6 @@ theorem exists_zetaSquareLocalMean_le_atkinson_reduced {δ : ℝ} (hδ : 0 < δ)
     nlinarith
   obtain ⟨T₁, hT₁⟩ := eventually_atTop.mp hev
   refine ⟨C + 2 * Real.exp 1, by positivity, max 16 T₁, le_max_left _ _, ?_⟩
-  intro T G hT hlower hupper
-  exact hT₁ T ((le_max_right _ _).trans hT) G hlower hupper
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

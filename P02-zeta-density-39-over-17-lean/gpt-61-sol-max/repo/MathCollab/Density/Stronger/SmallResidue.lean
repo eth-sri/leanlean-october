@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.SmoothBlockContour
 
 @[expose] public section
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- Uniform negligible residue before every zero and every admissible scale.
@@ -43,9 +43,6 @@ theorem smoothDetectorResidue_eventually_small {ψ : ℝ → ℝ} {a b : ℝ}
     _ = T^(-100 : ℝ) := by
       rw [Real.rpow_neg hTp.le, show (100 : ℝ) = ((100 : ℕ) : ℝ) by norm_num,
         Real.rpow_natCast]
-      apply (div_eq_iff (pow_ne_zero 104 hTp.ne')).2
-      rw [inv_mul_eq_div]
-      apply (eq_div_iff (pow_ne_zero 100 hTp.ne')).2
-      rw [← pow_add]
+      field_simp <;> ring
 
-end MathCollab.Density.Stronger
+

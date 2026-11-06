@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
@@ -14,20 +14,22 @@ namespace SevenEighths.CenteredMomentRestrictedWindow
 open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy
 open CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
 open HeckeFamily FourierBridge CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-theorem restricted_hasSum_weighted {α : Type*} (keep : O → Prop)
+section
+variable {α : Type*} (keep : O → Prop)
     (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
-    (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+    (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include α keep S a ha c U K hK
+
+theorem restricted_hasSum_weighted  :
     HasSum (fun z : O => ‖rowPolynomial S a c z‖^2*
       (if keep z then (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0))
       (restrictedEnergy keep S a c U K) := by
   simpa only [mul_ite,mul_zero,restrictedEnergy] using
     (restricted_summable keep S a ha c U K hK).hasSum
 
-theorem finite_weighted_le_restricted {α : Type*} (keep : O → Prop)
-    (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
-    (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+theorem finite_weighted_le_restricted 
     (hU : ∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) (rows : Finset O) :
     (∑ z∈rows,‖rowPolynomial S a c z‖^2*
       (if keep z then (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0))≤
@@ -38,14 +40,20 @@ theorem finite_weighted_le_restricted {α : Type*} (keep : O → Prop)
   split_ifs
   · exact hU z
   · exact le_rfl
+end
 
-theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
+
+section
+variable {α : Type*} (keep : O → Prop)
     (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)
     (J : ℕ) (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
     (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
     (hU : ∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
     (E : ℝ) (hE : 0≤E)
+include α keep V hVc hVs J S a ha β τ t θ X hX U K hK hU E hE
+
+theorem restricted_window_energy_from_shifted 
     (henergy : ∀ w : ℝ,(restrictedEnergy keep S a
       (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) U K)≤E*(1+‖w‖)^(2*J)) :
     (restrictedEnergy keep S a (fun i => β i*heightCoeff τ t (Ideal.span {a i})*
@@ -108,13 +116,7 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
   rw [← hs.tsum_eq]
   exact Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hu z)) hfin
 
-theorem restricted_window_energy_from_height {α : Type*} (keep : O → Prop)
-    (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)
-    (J : ℕ) (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
-    (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
-    (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hU : ∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
-    (E : ℝ) (hE : 0≤E)
+theorem restricted_window_energy_from_height 
     (henergy : ∀ v : ℝ,(restrictedEnergy keep S a
       (fun i => β i*heightCoeff τ v (Ideal.span {a i})) U K)≤E*(1+‖v‖)^(2*J)) :
     (restrictedEnergy keep S a (fun i => β i*heightCoeff τ t (Ideal.span {a i})*
@@ -128,9 +130,11 @@ theorem restricted_window_energy_from_height {α : Type*} (keep : O → Prop)
     _ ≤ E*(heightCost t θ*(1+‖w‖))^(2*J) :=
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (norm_height_shift t θ w) _) hE
     _ = _ := by rw [mul_pow,mul_assoc]
-
-end SevenEighths.CenteredMomentRestrictedWindow
-
 end
 
-end OAI
+
+
+
+
+
+

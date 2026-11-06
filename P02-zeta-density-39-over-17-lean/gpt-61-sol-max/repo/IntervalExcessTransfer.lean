@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import TwoPowerTailTransfer
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set Filter
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density
@@ -31,9 +31,7 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
     have hset : {x : ℝ | t ≤ criticalExcess v x}={x : ℝ | v+t ≤ zetaMomentCriticalNorm x} := by
       ext x
       simp only [mem_ofPred_eq,criticalExcess,le_max_iff]
-      constructor
-      · rintro (h|h) <;> linarith
-      · intro h; exact Or.inl (by linarith)
+      grind
     have hm : MeasurableSet {x : ℝ | v+t ≤ zetaMomentCriticalNorm x} :=
       measurableSet_le measurable_const continuous_zetaMomentCriticalNorm.measurable
     rw [hset]
@@ -47,8 +45,7 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
   apply hb.trans_eq
   rw [integral_add (h₆.1.const_mul A) (hq'.1.const_mul D),integral_const_mul,
     integral_const_mul,h₆.2,hq'.2]
-  norm_num
   ring
 
 
-end Montgomery.RationalMoment.RightDetector
+

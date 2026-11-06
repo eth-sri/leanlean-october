@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                     
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem third_derivative_root_scale {R H μ : ℝ}
@@ -52,9 +51,7 @@ theorem third_derivative_optimized_square_scale {S N H R C μ : ℝ}
     S^2 ≤ 52*C*N^2/R+384*N*R := by
   have hH : 0 < H := lt_of_lt_of_le (by positivity) hlo
   have hs := third_derivative_root_scale hR hμ hlo hhi hscale
-  have hfirst : 2*N^2/H ≤ 4*N^2/R := by
-    apply (div_le_div_iff₀ hH hR).mpr
-    nlinarith [mul_le_mul_of_nonneg_right hlo (sq_nonneg N)]
+  have hfirst : 2*N^2/H ≤ 4*N^2/R := by field_simp <;> nlinarith
   have hsecond := mul_le_mul_of_nonneg_left hs.1
     (show 0 ≤ 48*C*N^2 by positivity)
   have hthird := mul_le_mul_of_nonneg_left hs.2
@@ -69,4 +66,4 @@ theorem third_derivative_optimized_square_scale {S N H R C μ : ℝ}
       simp only [div_eq_mul_inv] at hCfirst ⊢
       nlinarith
 
-end TaoTrudgianYang2025
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection4Insertion
 public import GafniTao.WooleySection7ConditionedExpansion
 
@@ -69,8 +70,6 @@ theorem wooleySection4ConditionedInsertedAverage_expand
               (wooleySourceTwist gamma
                 (fun n => wooleySourcePolynomialPhase theta alpha n)) := by
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
       ring
     _ = (((q ^ k : ℕ) : ℝ)⁻¹) *
         ∑ alpha : Fin k → ZMod q,
@@ -79,18 +78,10 @@ theorem wooleySection4ConditionedInsertedAverage_expand
               wooleySourcePolynomialMean s qPrime Psi
                 (wooleySourceTwist
                   (wooleySourceResidueSequence gamma qH zeta)
-                  (fun n => wooleySourcePolynomialPhase theta alpha n)) := by
-      apply congrArg (fun x : ℝ => ((q ^ k : ℕ) : ℝ)⁻¹ * x)
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      exact hexpand alpha
+                  (fun n => wooleySourcePolynomialPhase theta alpha n)) := by simp_all
     _ = _ := by
       rw [Finset.sum_comm]
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro zeta hzeta
-      apply Finset.sum_congr rfl
-      intro alpha halpha
       ring
 
 /-- Equation (4.14) after the lower critical-exponent estimate: the
@@ -146,21 +137,14 @@ theorem wooleySection4_conditionedInsertedAverage_eq_of_equation_4_12
                   (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta)
                   (fun n => wooleySourcePolynomialPhase theta alpha n)) =
           wooleySourcePolynomialMean s (p ^ B) theta
-            (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta) := by
-      symm
-      exact h412
-        (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta)
+            (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta) := by simp_all
     have hexpand' : wooleySourceMassSq gamma *
         wooleySection4ConditionedInsertedAverage
           theta Psi (p ^ B) (p ^ (B - k * h)) (p ^ (H - h)) s gamma =
       ∑ zeta : ZMod (p ^ (H - h)),
         wooleySourceResidueMassSq gamma (p ^ (H - h)) zeta *
           wooleySourcePolynomialMean s (p ^ B) theta
-            (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta) := by
-      rw [hexpand]
-      apply Finset.sum_congr rfl
-      intro zeta hzeta
-      rw [h412Residue]
+            (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta) := by simp_all
     have hconditioned :=
       wooleySourcePolynomialConditionedMean_polynomialTwist_expand
         (q := p ^ B) (qPrime := p ^ B) (qH := p ^ (H - h))
@@ -194,6 +178,6 @@ theorem wooleySection4_conditionedInsertedAverage_eq_of_equation_4_12
       exact hconditioned.symm
     exact (mul_left_cancel₀ hmass hmul)
 
-end
 
-end GafniTao
+
+

@@ -5,10 +5,9 @@ public import TraceAlternatives.CubeQuadraticLargeValues
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
-open Finset GuthMaynard.Improvement GuthMaynard.NativeMoment
+
+open Finset GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
 theorem cubeTraceExpression_eq_sum (T N L R E : ℝ) :
@@ -126,4 +125,4 @@ theorem cube_polynomial_count_loss {σ a δ : ℝ}
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment
+

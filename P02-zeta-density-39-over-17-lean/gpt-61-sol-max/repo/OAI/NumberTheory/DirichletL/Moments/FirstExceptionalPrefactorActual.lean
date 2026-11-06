@@ -10,11 +10,11 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstExceptionalPrefactor
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentRankinRadical
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstScale IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
+
+open CenteredMomentFirstScale IdealMobiusDivisorSum
+open scoped EisensteinO
 
 lemma commonPart_of_equal_support (C D:Ideal O)(hC:C≠0)
     (hCD:primeSupport C=primeSupport D):commonPart C D=C := by
@@ -30,12 +30,12 @@ lemma nominal_equal_support (C D E:Ideal O)(hC:C≠0)(hD:D≠0)
   rw [firstNominalScale,commonPart_of_equal_support C D hC hCD,
     commonPart_of_equal_support D C hD hCD.symm]
 
-open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentSupportedCorrelation
 
-end SevenEighths.CenteredMomentFirstExceptionalPrefactor
 
-end
 
-end OAI
+
+
+
+
+
+

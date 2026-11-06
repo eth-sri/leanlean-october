@@ -1,21 +1,19 @@
 module
+import Mathlib
 public import MathCollab.Density.ReflectionAssembly
 
 @[expose] public section
 
-open Real Complex Set MeasureTheory
+open Real Complex MeasureTheory
 open scoped BigOperators ContDiff ComplexConjugate
 
-noncomputable section
+
 namespace MathCollab.Density
 
 theorem dirichletPhase_neg (x v : ℝ) : dirichletPhase x (-v) = conj (dirichletPhase x v) := by
   unfold dirichletPhase
   rw [← Complex.exp_conj]
-  congr 1
-  simp only [map_mul, Complex.conj_I, Complex.conj_ofReal]
-  push_cast
-  ring
+  simp_all
 
 theorem hKernel_neg (w : ReflectionCutoff) (L v : ℝ) :
     hKernel w L (-v) = conj (hKernel w L v) := by
@@ -45,30 +43,21 @@ theorem shellEnergy_eq_twice_positive (w : ReflectionCutoff) (L : ℝ)
       ∑ t ∈ U, ∑ u ∈ U, if H ≤ t-u ∧ t-u < 2*H then ‖hKernel w L (t-u)‖ ^ 2 else 0 := by
     rw [Finset.sum_comm]
     simp only [neg_sub]
-  rw [hs]
-  ring
+  nlinarith
 
 theorem positiveShell_add (H : ℝ) (U : Finset ℝ) (F G : ℝ → ℝ) :
     positiveShell H U (fun v => F v + G v) = positiveShell H U F + positiveShell H U G := by
   unfold positiveShell
   simp only [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
-  intro t _
-  apply Finset.sum_congr rfl
-  intro u _
-  split_ifs <;> simp
+  grind
 
 theorem positiveShell_const_le (H : ℝ) (U : Finset ℝ) {c : ℝ} (hc : 0 ≤ c) :
     positiveShell H U (fun _ => c) ≤ (U.card : ℝ)^2 * c := by
   calc
     _ ≤ ∑ t ∈ U, ∑ u ∈ U, c := by
       apply Finset.sum_le_sum
-      intro t _
-      apply Finset.sum_le_sum
-      intro u _
-      split_ifs
-      · exact le_rfl
-      · exact hc
+      bound
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
 
 /-- The squared uniform error in the manuscript's real-power notation. -/
@@ -132,4 +121,4 @@ theorem uniform_reflection (w : ReflectionCutoff) {A : ℕ} (hA : 1 < A) :
     rw [hpow] at hh
     convert hh using 1; ring
 
-end MathCollab.Density
+

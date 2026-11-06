@@ -6,13 +6,17 @@ public import TaoTrudgianYang2025.AtkinsonPairPowerAlgebra
 
 /-! Removal of actual phase sums and divisor energies from the dyadic budget. -/
 
-noncomputable section
-open RiemannZeta.GuthMaynard
-namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
 
-theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
-    (hpair : ExponentPair k l) (hε : 0 < ε) :
+
+namespace TaoTrudgianYang2025
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
+
+section
+variable {k l ε : ℝ}
+    (hpair : ExponentPair k l) (hε : 0 < ε)
+include k l ε hpair hε
+
+theorem ExponentPair.atkinson_pair_nominal_gram  :
     ∃ η : ℝ, 0 < η ∧ ∃ C : ℝ, 1 ≤ C ∧
       ∀ (H G L : ℝ) (M : ℕ) (W : Finset ℝ),
         1 ≤ H → 0 < G → 0 < L → L ≤ H → 0 < M → (M : ℝ) ≤ H →
@@ -58,8 +62,7 @@ theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
       dsimp [X,B]
       rw [atkinson_pair_power_term_eq hH0 hM hL.le]
 
-theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
-    (hpair : ExponentPair k l) (hε : 0 < ε) :
+theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget  :
     ∃ η : ℝ, 0 < η ∧ ∃ C : ℝ, 1 ≤ C ∧ ∃ D : ℝ, 0 < D ∧
       ∀ (H G L : ℝ) (N : ℕ) (W : Finset ℝ),
         1 ≤ H → 0 < G → 0 < L → L ≤ H → (N : ℝ) ≤ H →
@@ -133,5 +136,7 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
   have hb := mul_le_mul_of_nonneg_left hs
     (Nat.cast_nonneg (Nat.clog 2 N) : (0 : ℝ) ≤ _)
   exact hb.trans_eq (by simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul]; ring)
+end
 
-end TaoTrudgianYang2025
+
+

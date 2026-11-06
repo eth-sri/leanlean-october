@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see ../../../../../third_party/twelfth/LICENSE-MIT-0.
@@ -11,10 +12,9 @@ public import Mathlib.Analysis.PSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -33,7 +33,7 @@ theorem exists_norm_zetaFourthContribution_le {c : ℝ} (hc : 0 < c) :
   let B : ℝ := ‖(1/(2*Real.pi):ℂ)‖
   have hB : 0 < B := by
     apply norm_pos_iff.mpr
-    exact one_div_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
+    simp_all <;> nlinarith
   let K : ℝ := B*A*Real.sqrt (Real.pi/98)
   refine ⟨K,by dsimp [K]; positivity,?_⟩
   intro t ht hct n
@@ -90,19 +90,24 @@ theorem zetaFourthPrefix_eq_integral {t c : ℝ} (ht : 0 ≤ t) (hc : 0 < c)
   filter_upwards [] with u
   simp only [zetaFourthTerm,Finset.sum_mul]
 
-theorem zetaFourthPrefix_line_eq {t a b : ℝ} (ht : 0 ≤ t)
-    (ha : 0 < a) (hb : 0 < b) (S : Finset ℕ) :
+section
+variable {t a b : ℝ} (ht : 0 ≤ t)
+    (ha : 0 < a) (hb : 0 < b) (S : Finset ℕ)
+include t a b ht ha hb S
+
+theorem zetaFourthPrefix_line_eq  :
     zetaFourthPrefix t a S = zetaFourthPrefix t b S := by
   apply Finset.sum_congr rfl
   intro n _
   exact zetaFourthContribution_line_eq ha hb ht n
 
-theorem zetaFourthRightPiece_eq_prefix_add_tail {t a b : ℝ} (ht : 0 ≤ t)
-    (ha : 0 < a) (hb : 0 < b) (S : Finset ℕ) :
+theorem zetaFourthRightPiece_eq_prefix_add_tail  :
     zetaFourthRightPiece t = zetaFourthPrefix t a S + zetaFourthTail t b S := by
   rw [zetaFourthPrefix_line_eq ht ha hb S,zetaFourthPrefix,zetaFourthTail,
     (hasSum_zetaFourthContribution ht hb).summable.sum_add_tsum_subtype_compl S,
     (hasSum_zetaFourthContribution ht hb).tsum_eq]
+end
+
 
 theorem summable_norm_zetaFourthTail {t c : ℝ} (ht : 0 ≤ t) (hc : 0 < c)
     (S : Finset ℕ) :
@@ -130,4 +135,4 @@ theorem exists_norm_zetaFourthTail_le {c : ℝ} (hc : 3/2 < c) :
         (summable_norm_zetaFourthTail ht0 hc0 S) (hs.mul_left (K*t^c))
     _ = _ := tsum_mul_left
 
-end MathCollab.Density.Stronger.Fourth
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerBranch
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerMass
 
@@ -6,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerMass
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAllSlots
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
+open InverseInitialProfile
 open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
 open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -116,15 +117,15 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     _≤∑_J₁∈slots.powerset,∑_J₂∈slots.powerset,bound :=
       Finset.sum_le_sum fun J₁ hJ₁=>Finset.sum_le_sum fun J₂ hJ₂=>hb J₁ hJ₁ J₂ hJ₂
     _=(4:ℝ)^slots.card*bound := by
-      simp only [Finset.sum_const,Finset.card_powerset,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
+      simp
       rw [show (4:ℝ)=2*2 by norm_num,mul_pow]
       ring
     _≤(4:ℝ)^N*bound := mul_le_mul_of_nonneg_right
       (pow_le_pow_right₀ (by norm_num) hslots) (by dsimp [bound];positivity)
     _=_ := by dsimp [bound];ring
 
-end SevenEighths.InverseInitialEnergyCallerAllSlots
 
-end
 
-end OAI
+
+
+

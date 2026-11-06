@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceSize
 
 @[expose] public section
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceSize
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 
 lemma second_tail_fixed_cap (Y L cap B P H : ℝ) (order : ℕ)
     (hY : 0<Y) (hL : 0≤L) (hc : 1≤cap) (_hB : 0≤B) (hP : 0≤P) (hH : 0≤H)
@@ -43,7 +44,6 @@ theorem choose_second_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau :
       _ = Z^(13*Lcap-tau*(order:ℝ)) := by
         rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le,←Real.rpow_sub hz]
         congr 1
-        norm_num
         ring
       _ ≤ _ := by
         apply Real.rpow_le_rpow_of_exponent_le hZ
@@ -54,7 +54,7 @@ theorem choose_second_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau :
     _ = ((4*128^4)*B^2*P)*((Z^Lcap)^13/(1+Z^tau)^order) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hdecay (by positivity)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorRetained
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
@@ -15,7 +15,7 @@ open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeS
 open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained
 open CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation
 open ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
     (hs:Function.support W⊆Set.Iic b) (hX:0<X) :
@@ -58,8 +58,12 @@ lemma bounded_radial_summable (F:O→ℂ) (B:ℝ) (hF:∀z,‖F z‖≤B)
       positivity
   · exact (radial_norm_summable Φ K hK).mul_left _
 
-lemma product_bounded {ι:Type*} [Fintype ι]
-    (η:Character) (m A:O) (t:ℝ) (c:ℂ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
+section
+variable {ι:Type*} [Fintype ι]
+    (η:Character) (m A:O) (t:ℝ)
+include ι η m A t
+
+lemma product_bounded  (c:ℂ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
     (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) :
     ∃B:ℝ,∀z:O,‖c*((rowTwistedSum η m A z W₁ t X₁*
@@ -77,8 +81,7 @@ lemma product_bounded {ι:Type*} [Fintype ι]
   · positivity
   · positivity
 
- theorem retained_positive_summable {ι:Type*} [Fintype ι]
-    (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
+ theorem retained_positive_summable  (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
     (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (P:ι→ℝ)
     (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
@@ -91,6 +94,8 @@ lemma product_bounded {ι:Type*} [Fintype ι]
     (Real.sqrt (clippedScale X₁*clippedScale X₂*∏i,P i):ℂ)⁻¹
     W₁ W₂ b₁ b₂ X₁ X₂ hs₁ hs₂ hX₁ hX₂ S β
   exact bounded_radial_summable _ B hB keep Φ K hK
+end
+
 
 theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
     (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
@@ -107,8 +112,8 @@ theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
   exact retained_positive_summable η m A t W₁ W₂ b₁ b₂ _ _ hs₁ hs₂
     (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1)) _ _ _ keep Φ K hK
 
-end SevenEighths.CenteredMomentPositiveSummability
 
-end
 
-end OAI
+
+
+

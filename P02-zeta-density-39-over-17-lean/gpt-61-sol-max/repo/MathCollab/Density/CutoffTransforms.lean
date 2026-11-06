@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import MathCollab.Density.ReflectionDefinitions
 public import MathCollab.Density.AnalyticTransforms
 
@@ -13,14 +14,19 @@ namespace MathCollab.Density
 /-- Smooth, compactly supported extension of the positive logarithmic modulation. -/
 def logCutoff (w : ℝ → ℂ) (v x : ℝ) : ℂ := w x * dirichletPhase x v
 
-theorem compactSupport_of_cutoff_support {w : ℝ → ℂ}
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) : HasCompactSupport w :=
+section
+variable {w : ℝ → ℂ}
+    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+include w hws
+
+theorem compactSupport_of_cutoff_support  : HasCompactSupport w :=
   isCompact_Icc.of_isClosed_subset (isClosed_tsupport w) hws
 
-theorem logCutoff_hasCompactSupport {w : ℝ → ℂ}
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (v : ℝ) :
+theorem logCutoff_hasCompactSupport  (v : ℝ) :
     HasCompactSupport (logCutoff w v) :=
   (compactSupport_of_cutoff_support hws).mul_right
+end
+
 
 theorem logCutoff_contDiff {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (v : ℝ) :
@@ -45,12 +51,7 @@ theorem fourier_logCutoff (w : ℝ → ℂ)
   rw [Real.fourier_real_eq_integral_exp_smul]
   unfold modeIntegral
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => by
-    have hn : x ∉ tsupport w := by
-      intro hh
-      have hpos := (hws hh).1
-      apply hx
-      change 0 < x
-      linarith
+    have hn : x ∉ tsupport w := by grind
     simp only [image_eq_zero_of_notMem_tsupport hn, zero_mul])]
   apply integral_congr_ae
   filter_upwards with x
@@ -60,9 +61,13 @@ theorem fourier_logCutoff (w : ℝ → ℂ)
   push_cast
   ring
 
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
+    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+include w hw hws
+
 /-- Scaled Poisson specialized to the manuscript's logarithmic phase. -/
-theorem scaled_log_poisson {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
+theorem scaled_log_poisson  {L : ℝ} (hL : 0 < L) (v : ℝ) :
     (∑' n : ℤ, w ((n : ℝ) / L) * dirichletPhase ((n : ℝ) / L) v) =
       (L : ℂ) * ∑' m : ℤ, modeIntegral w v ((m : ℝ) * L) := by
   have hh := Transforms.scaled_modulated_poisson (logCutoff w v)
@@ -72,8 +77,7 @@ theorem scaled_log_poisson {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     logCutoff, div_eq_mul_inv, mul_comm (L⁻¹), fourier_logCutoff w hws] using hh
 
 /-- Absolute integrability of the full Mellin line, without a Mellin-frequency cutoff. -/
-theorem integrable_mellin_line_one {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) :
+theorem integrable_mellin_line_one  :
     Integrable (fun r : ℝ => mellin w ((1 : ℂ) + r * Complex.I)) := by
   have hs : ∀ x, x ∉ Icc (1 / 2 : ℝ) 5 → w x = 0 :=
     fun x hx => image_eq_zero_of_notMem_tsupport (fun hh => hx (hws hh))
@@ -86,8 +90,7 @@ theorem integrable_mellin_line_one {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   exact Transforms.mellin_line_one_eq_fourier_logLift w r
 
 /-- Mellin inversion with convergence and vertical integrability discharged. -/
-theorem cutoff_mellin_inversion {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {x : ℝ} (hx : 0 < x) :
+theorem cutoff_mellin_inversion  {x : ℝ} (hx : 0 < x) :
     w x = ((1 / (2 * Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       (x : ℂ) ^ (-((1 : ℂ) + r * Complex.I)) * mellin w ((1 : ℂ) + r * Complex.I) := by
   apply Transforms.mellin_inversion_line_one w hx
@@ -96,10 +99,9 @@ theorem cutoff_mellin_inversion {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   · exact integrable_mellin_line_one hw hws
   · exact hw.continuous.continuousAt
 
-theorem summable_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
+theorem summable_modeIntegral  {L : ℝ} (hL : 0 < L) (v : ℝ) :
     Summable (fun m : ℤ => modeIntegral w v ((m : ℝ) * L)) := by
-  let psi : 𝓢(ℝ, ℂ) := (logCutoff_hasCompactSupport hws v).toSchwartzMap
+  let psi := (logCutoff_hasCompactSupport hws v).toSchwartzMap
     (logCutoff_contDiff hw hws v)
   let g : 𝓢(ℝ, ℂ) := SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
     (ContinuousLinearEquiv.unitsEquivAut ℝ (Units.mk0 L hL.ne')) (𝓕 psi)
@@ -109,6 +111,8 @@ theorem summable_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   convert hh using 1
   funext m
   exact (fourier_logCutoff w hws v ((m : ℝ) * L)).symm
+end
+
 
 theorem summable_nat_logCutoff {w : ℝ → ℂ}
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
@@ -117,7 +121,7 @@ theorem summable_nat_logCutoff {w : ℝ → ℂ}
   intro n hn
   have hn' : ⌈5 * L⌉₊ < n := by simpa using hn
   have hbig : 5 < (n : ℝ) / L := (lt_div_iff₀ hL).2 (Nat.lt_of_ceil_lt hn')
-  have hnot : (n : ℝ) / L ∉ tsupport w := fun hh => (not_le.mpr hbig) (hws hh).2
+  have hnot := fun hh => (not_le.mpr hbig) (hws hh).2
   simp only [logCutoff, image_eq_zero_of_notMem_tsupport hnot, zero_mul]
 
 set_option maxHeartbeats 800000 in
@@ -129,9 +133,8 @@ theorem tsum_int_logCutoff_eq_nat {w : ℝ → ℂ}
     have hx : (((-((n : ℤ) + 1) : ℤ) : ℝ) / L) < 1 / 2 := by
       apply (div_lt_iff₀ hL).2
       push_cast
-      have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
       linarith
-    have hnot : (((-((n : ℤ) + 1) : ℤ) : ℝ) / L) ∉ tsupport w :=
+    have hnot :=
       fun hh => (not_le.mpr hx) (hws hh).1
     simp only [logCutoff, image_eq_zero_of_notMem_tsupport hnot, zero_mul]
   have hn : Summable (fun n : ℕ => logCutoff w v (((-((n : ℤ) + 1) : ℤ) : ℝ) / L)) := by
@@ -156,23 +159,29 @@ theorem poisson_nonzero_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   rw [hh]
   simp only [nonzeroMode, mul_add, add_sub_cancel_left]
 
-theorem ReflectionCutoff.complex_smooth (w : ReflectionCutoff) :
+section
+variable (w : ReflectionCutoff)
+include w
+
+theorem ReflectionCutoff.complex_smooth  :
     ContDiff ℝ ∞ (fun x : ℝ => (w x : ℂ)) := by
   exact Complex.ofRealCLM.contDiff.comp w.smooth
 
-theorem ReflectionCutoff.complex_support (w : ReflectionCutoff) :
+theorem ReflectionCutoff.complex_support  :
     tsupport (fun x : ℝ => (w x : ℂ)) ⊆ Icc (1 / 2 : ℝ) 5 :=
   (tsupport_comp_subset (g := fun x : ℝ => (x : ℂ)) rfl w.toFun).trans w.support
 
-theorem modeIntegral_zero_frequency (w : ReflectionCutoff) (v : ℝ) :
+theorem modeIntegral_zero_frequency  (v : ℝ) :
     modeIntegral (fun x => (w x : ℂ)) v 0 = cutoffIntegral w v := by
   unfold modeIntegral cutoffIntegral dirichletPhase
   simp only [mul_zero, zero_mul, sub_zero, mul_comm Complex.I]
 
 /-- Exact Poisson formula for the manuscript kernel. -/
-theorem hKernel_poisson (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (v : ℝ) :
+theorem hKernel_poisson  {L : ℝ} (hL : 0 < L) (v : ℝ) :
     hKernel w L v = (L : ℂ) * ∑' m : ℤ, nonzeroMode (fun x => (w x : ℂ)) L v m := by
   simpa only [modeIntegral_zero_frequency, hKernel] using
     poisson_nonzero_modes w.complex_smooth w.complex_support hL v
+end
 
-end MathCollab.Density
+
+

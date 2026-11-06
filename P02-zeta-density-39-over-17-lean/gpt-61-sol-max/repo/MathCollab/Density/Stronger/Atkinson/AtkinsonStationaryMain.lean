@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -52,13 +53,11 @@ theorem exists_norm_atkinsonFiniteStationaryMain_sub_main_le (α : ℝ) :
   have hW := (hbound T G L hT hG hGT hL).norm_le _ hr
   have hF := norm_atkinsonQuadraticWindow_sub_gaussianValue_le (by linarith : 0 <
     atkinsonSaddleCurvature T b) hH
-  have htail : 2 / (atkinsonSaddleCurvature T b * H * Real.pi) ≤ 2 / (H * Real.pi) := by
-    apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
-    nlinarith [mul_pos hH Real.pi_pos]
+  have htail : 2 / (atkinsonSaddleCurvature T b * H * Real.pi) ≤ 2 / (H * Real.pi) := by field_simp <;> nlinarith
   unfold atkinsonFiniteStationaryMain atkinsonStationaryMain
   rw [← mul_sub, norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, norm_atkinsonRootKernel, mul_one]
   apply (mul_le_mul (mul_le_mul_of_nonneg_left hW (by norm_num : (0 : ℝ) ≤ 2))
     (hF.trans htail) (norm_nonneg _) (by positivity)).trans_eq
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

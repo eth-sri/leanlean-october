@@ -17,7 +17,11 @@ lemma frequencyMajorant_nonneg (M N : ℝ) (hM : 0 ≤ M) (j : ℕ) :
   unfold frequencyMajorant
   exact div_nonneg (elementSieveNorm_nonneg _ _) (by positivity)
 
-lemma frequencyMajorant_geometric (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) (j : ℕ) :
+section
+variable (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N)
+include M N hM hN
+
+lemma frequencyMajorant_geometric  (j : ℕ) :
     frequencyMajorant M N j ≤
       (QuadraticInitialBound.initialSieveConstant * (1 + (⌈N⌉₊ : ℝ)^2) /
         (M / N^2)^3) * ((1 / 4 : ℝ)^j) := by
@@ -50,14 +54,16 @@ lemma frequencyMajorant_geometric (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) (j : �
     _ = (C*(1+Q)/c^3) * (K^2)⁻¹ := by field_simp
     _ = _ := by rw [hgeom]
 
-theorem frequencyMajorant_summable (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) :
+theorem frequencyMajorant_summable  :
     Summable (frequencyMajorant M N) := by
   have hg : Summable (fun j : ℕ => (1/4 : ℝ)^j) :=
     summable_geometric_of_lt_one (by norm_num) (by norm_num)
   exact (hg.mul_left _).of_nonneg_of_le
     (frequencyMajorant_nonneg M N hM.le) (frequencyMajorant_geometric M N hM hN)
-
 end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+
+
+

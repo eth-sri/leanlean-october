@@ -5,10 +5,10 @@ public import Mathlib
 
 @[expose] public section
 noncomputable section
-open Complex Set
+open Complex
 open scoped ContDiff
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 def atkinsonPhaseExponential (T v : ℝ) : ℂ := Complex.exp ((T * v : ℝ) * I)
 
 theorem hasDerivAt_atkinsonPhaseExponential (T v : ℝ) :
@@ -23,8 +23,7 @@ theorem hasDerivAt_atkinsonPhaseExponential (T v : ℝ) :
 theorem iteratedDeriv_two_atkinsonPhaseExponential (T v : ℝ) :
     iteratedDeriv 2 (atkinsonPhaseExponential T) v =
       ((T : ℂ) * I) ^ 2 * atkinsonPhaseExponential T v := by
-  have he : deriv (atkinsonPhaseExponential T) =
-      fun w => (T : ℂ) * I * atkinsonPhaseExponential T w :=
+  have he :=
     funext (fun w => (hasDerivAt_atkinsonPhaseExponential T w).deriv)
   have h := (hasDerivAt_atkinsonPhaseExponential T v).const_mul ((T : ℂ) * I)
   rw [iteratedDeriv_succ, iteratedDeriv_one, he]
@@ -44,4 +43,4 @@ theorem norm_atkinsonPhaseExponential_derivatives (T v : ℝ) :
     simp only [norm_mul, norm_pow, hn, Complex.norm_I, Complex.norm_real,
       Real.norm_eq_abs, mul_one, sq_abs]
 
-end TaoTrudgianYang2025
+

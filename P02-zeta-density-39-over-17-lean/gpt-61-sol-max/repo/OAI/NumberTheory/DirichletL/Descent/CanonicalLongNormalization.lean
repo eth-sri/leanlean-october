@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+
+
+open scoped EisensteinO
 
 theorem child_ball_unit_mem (u:Oˣ)(R:ℝ)(k:O) :
     (u:O)*k∈nonzeroChildFrequencyBall 1 R ↔ k∈nonzeroChildFrequencyBall 1 R := by
@@ -59,8 +59,8 @@ theorem canonical_ball_generator_energy
   simp only [he]
   exact hrot.symm
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

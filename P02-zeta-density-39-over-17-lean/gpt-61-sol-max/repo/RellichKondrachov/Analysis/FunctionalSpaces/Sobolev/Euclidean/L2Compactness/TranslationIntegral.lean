@@ -33,7 +33,7 @@ namespace Euclidean
 namespace L2Compactness
 
 open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open MeasureTheory
 
 noncomputable section
 
@@ -135,13 +135,13 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
     simpa [Real.norm_eq_abs, hμreal, mul_one] using this
   simpa [abs_of_nonneg hnonneg_int, μ] using habs
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov
+
+
+
+
+
+
+
+

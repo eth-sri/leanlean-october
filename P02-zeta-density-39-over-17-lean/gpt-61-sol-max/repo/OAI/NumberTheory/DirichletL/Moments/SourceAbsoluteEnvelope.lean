@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceAbsoluteEnvelope
-open HeckeFamily CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
+open HeckeFamily CenteredMomentRestrictedSource
 open CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentSourceRectangleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeHeight CenteredMomentPositiveSummability
+open CenteredMomentHeckeColumnWindow CenteredMomentPositiveSummability
 open CenteredMomentAbsoluteEnergy QuadraticInitialBound ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
  theorem actual_source_absolute (Q:Finset (Ideal O)) (c:Ideal O→ℂ) (η:Character) (t:ℝ)
     (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
@@ -42,8 +42,8 @@ local notation "O" => ActualEisensteinCubic.O
   apply hh.trans
   exact (mul_le_mul_of_nonneg_left (radial_weight_lattice_bound_all Φ K hK) (sq_nonneg B)).trans_eq (by ring)
 
-end SevenEighths.CenteredMomentSourceAbsoluteEnvelope
 
-end
 
-end OAI
+
+
+

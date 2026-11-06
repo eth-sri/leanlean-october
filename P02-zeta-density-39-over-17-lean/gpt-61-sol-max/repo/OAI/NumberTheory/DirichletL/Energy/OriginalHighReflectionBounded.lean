@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionOriginal
 public import OAI.NumberTheory.DirichletL.Energy.StageReserveBounded
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
@@ -12,16 +13,16 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionOriginal CenteredMomentEnergyReferenceScalarReserve
+open CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyOriginalHighReflectionOriginal
 open CenteredMomentEnergyStageReserveBounded
 open CenteredMomentEnergyReferenceProfileBudget
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
+
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -43,14 +44,14 @@ theorem original_high_power
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → rho≤s.width → s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → rho≤ s.width → s.width≤Mcap →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
-      length Z X₁≤s.width/4 →
+      length Z X₁≤ s.width/4 →
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i) →
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width →
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width →
       energy s.character s.mask 1 t W₁ W₂
         (fun i=>primePool M H bslot (Z^(w i)))
         (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -73,7 +74,7 @@ theorem original_high_power
   refine ⟨hZ.1,?_⟩
   intro e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
     s hQ hslo hs W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hshort hlarge hcap
-  have hxiM:xi≤s.width/14:=by linarith
+  have hxiM:xi≤ s.width/14:=by linarith
   have hh:=hZ.2 Lslot e κ η₀ Q K hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
     s hQ hs hxiM W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hshort hlarge hcap
   have hsum:0≤∑i,w i:=Finset.sum_nonneg (fun i _=>hw i)
@@ -111,7 +112,7 @@ theorem original_high_power
   have herr:Dref*(sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*
       ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁)^2*diagonalControl s.radial.profile≤E:=by
     have ht:=mul_le_mul_of_nonneg_left hp.2.2 hdiag
-    have hk:diagonalControl s.radial.profile*A≤E:=
+    have hk :=
       mul_le_mul_of_nonneg_right
         (le_mul_of_one_le_left hdiag (le_add_of_nonneg_left hK)) hA
     apply le_trans _ hk
@@ -138,8 +139,8 @@ theorem original_high_power
   · dsimp only [E,A]
     ring
 
-end SevenEighths.CenteredMomentEnergyOriginalHighReflectionBounded
 
-end
 
-end OAI
+
+
+

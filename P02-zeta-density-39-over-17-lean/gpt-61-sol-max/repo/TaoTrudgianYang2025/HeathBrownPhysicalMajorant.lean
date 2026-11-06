@@ -34,7 +34,11 @@ theorem heathBrownDerivativeMajorant_expand (k : ℕ) (η lambda : ℝ)
     Real.rpow_add hL (1+η) (-2*heathBrownDerivativeExponent k)]
   ring
 
-theorem heathBrownDerivativeMajorant_mono_length {k : ℕ} (hk : 3 ≤ k)
+section
+variable {k : ℕ} (hk : 3 ≤ k)
+include k hk
+
+theorem heathBrownDerivativeMajorant_mono_length 
     {η L N lambda : ℝ} (hη : 0 ≤ η) (hL : 0 < L) (hLN : L ≤ N) (hlambda : 0 < lambda) :
     heathBrownDerivativeMajorant k η L lambda ≤ heathBrownDerivativeMajorant k η N lambda := by
   have hN := hL.trans_le hLN
@@ -51,8 +55,11 @@ theorem heathBrownDerivativeMajorant_mono_length {k : ℕ} (hk : 3 ≤ k)
       (Real.rpow_le_rpow hL.le hLN (by linarith))
       (Real.rpow_nonneg hlambda.le _)
 
-theorem heathBrownDerivativeMajorant_physical {k : ℕ} (hk : 3 ≤ k)
-    {c T N : ℝ} (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) (η : ℝ) :
+section
+variable {c T N : ℝ} (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) (η : ℝ)
+include c T N hc hT hN η
+
+theorem heathBrownDerivativeMajorant_physical  :
     heathBrownDerivativeMajorant k η N (c*T/N^k) =
       N^η * (c^(heathBrownDerivativeExponent k)*T^(heathBrownDerivativeExponent k)*
         N^(1-(k : ℝ)*heathBrownDerivativeExponent k) +
@@ -76,8 +83,7 @@ theorem heathBrownDerivativeMajorant_physical {k : ℕ} (hk : 3 ≤ k)
   rw [h₂]
   ring
 
-theorem heathBrownDerivativeMajorant_le_powerMajorant {k : ℕ} (hk : 3 ≤ k)
-    {c T N : ℝ} (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) (η : ℝ) :
+theorem heathBrownDerivativeMajorant_le_powerMajorant  :
     heathBrownDerivativeMajorant k η N (c*T/N^k) ≤
       (c^(heathBrownDerivativeExponent k)+1+c^(-heathBrownInverseExponent k))*
         heathBrownPowerMajorant k η T N := by
@@ -100,8 +106,10 @@ theorem heathBrownDerivativeMajorant_le_powerMajorant {k : ℕ} (hk : 3 ≤ k)
       mul_nonneg h₃ ha,mul_nonneg h₃ hb]
   have hm := mul_le_mul_of_nonneg_left hinner (Real.rpow_nonneg hN.le η)
   convert hm using 1 <;> ring
+end
 
-theorem one_le_heathBrownPowerMajorant {k : ℕ} (hk : 3 ≤ k)
+
+theorem one_le_heathBrownPowerMajorant 
     {η T N : ℝ} (hη : 0 ≤ η) (hT : 0 < T) (hN : 1 ≤ N) :
     1 ≤ heathBrownPowerMajorant k η T N := by
   have hd := (heathBrownDerivativeExponent_bounds hk).2.2
@@ -116,5 +124,7 @@ theorem one_le_heathBrownPowerMajorant {k : ℕ} (hk : 3 ≤ k)
       N^(1-(k : ℝ)*heathBrownDerivativeExponent k) := by positivity
   have hb : 0 ≤ N*T^(-heathBrownInverseExponent k) := by positivity
   linarith
+end
 
-end TaoTrudgianYang2025
+
+

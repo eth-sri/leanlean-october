@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import DensityEnergyGM.RealScaleFourthMoment
 public import DensityEnergyGM.GcdSharpShape
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
@@ -53,7 +53,7 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
           C * T ^ ε * M * sharpCubicProfile T W := by
   obtain ⟨C₂, T₂, hC₂, hT₂, hSecond⟩ := real_scale_ratio_second_sharp_native ε hε
   obtain ⟨C₄, T₄, hC₄, hT₄, hFourth⟩ := real_scale_coprime_fourth_min_native ε hε
-  let C : ℝ := Real.sqrt (C₂ * C₄)
+  let C := Real.sqrt (C₂ * C₄)
   have hC : 0 < C := Real.sqrt_pos.mpr (mul_pos hC₂ hC₄)
   refine ⟨C, max T₂ T₄, hC, hT₂.trans (le_max_left _ _), ?_⟩
   intro M T Q W hM hT hMT hQ hSep hBase
@@ -68,11 +68,11 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     exact mul_nonneg (by positivity) (sharpCubicProfile_nonneg hTpos.le ∅)
   let R : ℝ := W.card
   let E : ℝ := discreteAdditiveEnergy W
-  let K : ℝ := R ^ 4 + T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ)
-  let H : ℝ := T * E
-  let S : ℝ := M ^ 2 * E ^ (1 / 2 : ℝ) +
+  let K := R ^ 4 + T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ)
+  let H := T * E
+  let S := M ^ 2 * E ^ (1 / 2 : ℝ) +
     R * E ^ (1 / 4 : ℝ) * (M ^ (9 / 5 : ℝ) + T ^ (1 / 4 : ℝ) * M ^ (6 / 5 : ℝ))
-  let D : ℝ := min (M * K) H
+  let D := min (M * K) H
   have hR : 0 < R := by dsimp only [R]; exact_mod_cast Finset.card_pos.mpr hW
   have hE : 0 < E := by
     have h := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
@@ -119,4 +119,4 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left hOptimized (by positivity)
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

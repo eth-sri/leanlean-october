@@ -6,8 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCaps
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open InverseMoment InverseTerminalWidths
-noncomputable section
+open InverseMoment
+
 
 theorem canonical_reflection_parameters (L c η : ℝ)
     (hL : 0≤L) (hc : 0<c) (hη : 0<η) (hη1 : η≤1) (hηc : η≤c/100000) :
@@ -37,11 +37,11 @@ theorem canonical_reflection_parameters (L c η : ℝ)
 
 lemma canonical_reflected_target_positive (F M Q z margin c O : ℝ)
     (h : CanonicalMargins F M Q z margin) (hM : 0≤M) (hQ : 0≤Q) (hz : 0≤z)
-    (hc : 0<c) (hm : c/2≤margin) (hO : O≤M) :
+    (hc : 0<c) (hm : c/2≤ margin) (hO : O≤M) :
     0<F-3*c/16-O/2 := by
   obtain ⟨hfirst,hsecond⟩ := h
   linarith
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

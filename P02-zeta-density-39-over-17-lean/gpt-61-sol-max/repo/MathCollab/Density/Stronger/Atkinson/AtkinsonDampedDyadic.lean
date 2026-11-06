@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonDyadicGramBudget
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
+open Complex
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -58,4 +57,4 @@ theorem atkinsonFullDyadicPhaseBound_le_undamped {T : ℝ} (hT : 0 < T) (G : ℝ
         (atkinsonPhaseBlockMax_nonneg _ _ _)
     _ = _ := by rw [mul_one]
 
-end MathCollab.Density.Stronger.Atkinson
+

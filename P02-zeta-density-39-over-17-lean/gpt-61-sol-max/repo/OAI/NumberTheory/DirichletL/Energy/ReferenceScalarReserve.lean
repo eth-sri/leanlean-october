@@ -1,15 +1,16 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
+open CenteredMomentEnergyState CenteredMomentNaturalRowSource
 open CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
@@ -94,7 +95,6 @@ theorem exists_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
   have hL:0≤L:=by dsimp only [L];positivity
   have hmain:d*(Bmask+Mcap+2)≤ε:=by
     dsimp only [d]
-    have hp:0<Bmask+Mcap+2:=by positivity
     field_simp
     nlinarith
   have herror:Bmask*d+Mcap*(2*d)-2*saving+5*Mcap/4≤ε:=by
@@ -103,8 +103,8 @@ theorem exists_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
   obtain ⟨C,hC,hledger⟩:=ledger_bound Mcap Bmask bΦ L d saving ε hM hB hL hd hmain herror
   exact ⟨d,xi,saving,L,C,hd,hxi,hsave,hC,le_rfl,by dsimp only [L];linarith,hledger⟩
 
-end SevenEighths.CenteredMomentEnergyReferenceScalarReserve
 
-end
 
-end OAI
+
+
+

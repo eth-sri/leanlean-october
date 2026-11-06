@@ -11,20 +11,27 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialCommonCutoff
-open InverseMoment InverseInitialCommonProfile InverseInitialCommonRatios
+open InverseInitialCommonProfile InverseInitialCommonRatios
 open InverseInitialOverlapIdealFourier InverseInitialOverlapSource
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ:Type*} [DecidableEq σ]
 
-def tupleProfile (I:Finset σ)(L:σ→Finset (Ideal Eis))(a:σ→Ideal Eis→ℂ)
+section
+variable (I:Finset σ)(L:σ→Finset (Ideal Eis))(a:σ→Ideal Eis→ℂ)
+include I L a
+
+def tupleProfile 
     (Z:ℝ)(ell:σ→ℝ)(W:ℝ→ℂ)(yj yc:ℝ)(c:Ideal Eis) : ℂ :=
   ∑q∈I.pi L,(∏i∈I.attach,a i.val (q i.val i.property))*
     (if survivingProduct I q∣c then
       W (yj*yc/(∏i∈I.attach,slotRatio Z ell i.val (q i.val i.property))) else 0)
 
-theorem tupleProfile_gates (I:Finset σ)(L:σ→Finset (Ideal Eis))(a:σ→Ideal Eis→ℂ)
-    (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime (fun i:I=>q i.val i.property)))
-    (Z:ℝ)(ell:σ→ℝ)(W:ℝ→ℂ)(yj yc:ℝ)(c:Ideal Eis) :
+section
+variable (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime (fun i:I=>q i.val i.property)))
+    (Z:ℝ)
+include hcop Z
+
+theorem tupleProfile_gates (ell:σ→ℝ)(W:ℝ→ℂ)(yj yc:ℝ)(c:Ideal Eis) :
     tupleProfile I L a Z ell W yj yc c=
       ∑q∈I.pi L,
         (∏i∈I.attach,if q i.val i.property∈activeIndices id I L c then a i.val (q i.val i.property) else 0)*
@@ -44,9 +51,7 @@ theorem tupleProfile_gates (I:Finset σ)(L:σ→Finset (Ideal Eis))(a:σ→Ideal
   split_ifs <;> simp
 
 theorem tupleProfile_insert_fresh
-    (I:Finset σ)(L:σ→Finset (Ideal Eis))(a:σ→Ideal Eis→ℂ)
-    (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime (fun i:I=>q i.val i.property)))
-    (Z:ℝ)(ell lo hi:σ→ℝ)(W wFresh:ℝ→ℂ)(a₀ b₀ jlo jhi:ℝ)
+    (ell lo hi:σ→ℝ)(W wFresh:ℝ→ℂ)(a₀ b₀ jlo jhi:ℝ)
     (hs:Function.support W⊆Set.Icc a₀ b₀)
     (ha:∀i∈I,∀q∈L i,a i q≠0→slotRatio Z ell i q∈Set.Icc (lo i) (hi i))
     (hFresh:∀(v:σ→ℝ)(yj yc:ℝ),(∀i∈I,v i∈Set.Icc (lo i) (hi i))→
@@ -56,9 +61,12 @@ theorem tupleProfile_insert_fresh
   rw [tupleProfile_gates I L a hcop]
   exact insert_original_fresh I L a (slotRatio Z ell) lo hi W wFresh a₀ b₀ jlo jhi
     hs ha hFresh (activeIndices id I L c) yj yc hj hc
-
-end SevenEighths.InverseInitialCommonCutoff
-
+end
 end
 
-end OAI
+
+
+
+
+
+

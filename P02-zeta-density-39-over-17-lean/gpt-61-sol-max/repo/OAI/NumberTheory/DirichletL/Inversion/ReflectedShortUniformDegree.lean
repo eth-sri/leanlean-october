@@ -1,17 +1,18 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.CubeCompletedEnergyUniformDegree
 
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 universe u v
 
 theorem canonical_short_completed_energy_uniform_degree
@@ -24,7 +25,7 @@ theorem canonical_short_completed_energy_uniform_degree
       (m:Eis)(_hm:m≠0)(Z N V M z₀ margin hcut d:ℝ),
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hcut≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hcut≤d+eta → d≤cstar/200 →
     ∀(parents:Finset (Ideal Eis)),(∀I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
       Fintype.card σ≤rmax → ∀(lists:σ→Finset (Ideal Eis))(H:σ→ℝ),
@@ -51,7 +52,7 @@ theorem canonical_short_completed_energy_uniform_degree
     Ψ hΨ hperiod u θ w hw
   have hZ1:1<Z:=lt_of_lt_of_le hZ₀ hZ
   have hz:0<Z:=zero_lt_one.trans hZ1
-  have htw:HasCompactSupport (normTwistedSource W θ):=
+  have htw :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc ((normTwistedSource_support W θ).trans hWs)
   have hcompleted (J:Ideal Eis) (hJ:J∈shortCubeRange (Z^hcut)):
       (∑I∈parents,‖markedCompletedT
@@ -61,7 +62,7 @@ theorem canonical_short_completed_energy_uniform_degree
       C*(1+‖θ‖)^degree*Z^(N+V-cstar/64):=by
     obtain ⟨hJ0,hJnorm⟩:=(mem_shortCubeRange _ J).mp hJ
     have hn:0<(Ideal.absNorm J:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (fun hn=>hJ0 (Ideal.absNorm_eq_zero_iff.mp hn))
-    have hc:Real.logb Z (Ideal.absNorm J:ℝ)≤hcut:=
+    have hc :=
       (Real.logb_le_iff_le_rpow hZ1 hn).mpr hJnorm.le
     have hjpow:(Ideal.absNorm J:ℝ)≤Z^(Real.logb Z (Ideal.absNorm J:ℝ)):=by
       rw [Real.rpow_logb hz (ne_of_gt hZ1) hn]
@@ -87,8 +88,8 @@ theorem canonical_short_completed_energy_uniform_degree
         (Z^N) (Z^hcut) (tupleDivisibilityMark lists w)‖^2)] at hh
   exact hh
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

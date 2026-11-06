@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSourceCenteredPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                  
 
@@ -20,19 +19,22 @@ def robertSargosWeightedSymmetricPhase (f : ℝ → ℝ) (M H : ℕ) : ℂ :=
   ∑ h ∈ Finset.Ioo (0:ℤ) H,
     ((1-(h:ℝ)/H : ℝ):ℂ)*robertSargosSourceCenteredPhase f M h
 
-theorem robertSargos_weighted_symmetric_re (f : ℝ → ℝ) (M H : ℕ) :
+section
+variable (f : ℝ → ℝ) (M H : ℕ)
+include f M H
+
+theorem robertSargos_weighted_symmetric_re  :
     (∑ h ∈ Finset.Ioo (0:ℤ) H,
       (1-(h:ℝ)/H)*robertSargosCenteredCorrelation
         (fun n => fordAdditiveCharacter (f (n+1))) M h) =
       (robertSargosWeightedSymmetricPhase f M H).re := by
   unfold robertSargosWeightedSymmetricPhase
-  simp only [Complex.re_sum,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
-    zero_mul,sub_zero]
+  simp
   apply Finset.sum_congr rfl
   intro h hh
   rw [robertSargos_centered_phase_sum f M h (le_of_lt (Finset.mem_Ioo.mp hh).1)]
 
-theorem robertSargos_initial_source_a_process (f : ℝ → ℝ) (M H : ℕ) (hH : 0 < H) :
+theorem robertSargos_initial_source_a_process  (hH : 0 < H) :
     ‖∑ m ∈ Finset.Icc (1:ℤ) M, fordAdditiveCharacter (f m)‖^2 ≤
       (((M:ℝ)+2*H)/H)*((M:ℝ)+2*‖robertSargosWeightedSymmetricPhase f M H‖) := by
   have hs := robertSargos_conjugate_a_process
@@ -51,7 +53,7 @@ theorem robertSargos_initial_source_a_process (f : ℝ → ℝ) (M H : ℕ) (hH 
     (add_le_add_right (mul_le_mul_of_nonneg_left (Complex.re_le_norm _) (by norm_num)) _)
     (by positivity))
 
-theorem robertSargos_initial_source_a_process_range (f : ℝ → ℝ) (M H : ℕ)
+theorem robertSargos_initial_source_a_process_range 
     (hH : 0 < H) (hHM : H ≤ M) :
     ‖∑ m ∈ Finset.Icc (1:ℤ) M, fordAdditiveCharacter (f m)‖^2 ≤
       3*(M:ℝ)^2/H+(6*(M:ℝ)/H)*‖robertSargosWeightedSymmetricPhase f M H‖ := by
@@ -65,5 +67,7 @@ theorem robertSargos_initial_source_a_process_range (f : ℝ → ℝ) (M H : ℕ
     _ ≤ (3*(M:ℝ)/H)*((M:ℝ)+2*‖robertSargosWeightedSymmetricPhase f M H‖) :=
       mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by ring
+end
 
-end TaoTrudgianYang2025
+
+

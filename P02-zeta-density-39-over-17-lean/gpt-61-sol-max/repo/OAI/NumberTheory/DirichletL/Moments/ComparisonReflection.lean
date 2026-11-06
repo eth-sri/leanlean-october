@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.Primitive
 public import OAI.NumberTheory.DirichletL.Hecke.Dyadic
 public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT
 open EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma residue_nontrivial (c : O) (χ : MulChar (O⧸Ideal.span {c}) ℂ) (hχ : χ≠1) :
@@ -31,7 +32,11 @@ lemma residue_zero (c : O) [NeZero c] (χ : MulChar (O⧸Ideal.span {c}) ℂ)
   change χ (Ideal.Quotient.mk (Ideal.span {c}) 0)=0
   rw [map_zero,χ.map_zero]
 
-theorem radial_ideal_reindex (η : Character) (W : ℝ→ℂ) (X : ℝ)
+section
+variable (η : Character) (W : ℝ→ℂ) (X : ℝ)
+include η W X
+
+theorem radial_ideal_reindex 
     (hzero : elementCoeff η 0=0)
     (hs : Summable (fun z : O => elementCoeff η z*W (‖eisEmbedding z‖^2/X))) :
     (∑' z : O,elementCoeff η z*W (‖eisEmbedding z‖^2/X))=
@@ -49,7 +54,7 @@ theorem radial_ideal_reindex (η : Character) (W : ℝ→ℂ) (X : ℝ)
   exact (IdealCharacter.ofResidue_of_generator η.modulus η.residue η.unit_trivial
     I.property (span_idealGenerator I.val)).symm
 
-lemma bounded_radial_summable (η : Character) (W : ℝ→ℂ) (X : ℝ)
+lemma bounded_radial_summable 
     (hs : Summable (fun z : O => ‖W (‖eisEmbedding z‖^2/X)‖)) :
     Summable (fun z : O => elementCoeff η z*W (‖eisEmbedding z‖^2/X)) := by
   apply Summable.of_norm
@@ -60,6 +65,8 @@ lemma bounded_radial_summable (η : Character) (W : ℝ→ℂ) (X : ℝ)
   let : Finite (O⧸η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Fintype (O⧸η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue _
+end
+
 
 theorem primitive_plain_reflection (c : O) [NeZero c]
     (χ : MulChar (O⧸Ideal.span {c}) ℂ)
@@ -128,8 +135,8 @@ theorem primitive_normalized_reflection (c : O) [NeZero c]
     polynomial_plain _ _ _ hY]
   have hs : Real.sqrt (‖eisEmbedding c‖^2/X)=‖eisEmbedding c‖/Real.sqrt X := by
     rw [Real.sqrt_div (sq_nonneg _),Real.sqrt_sq hc.le]
-  have hx : (Real.sqrt X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hX).ne'
-  have hcn : (‖eisEmbedding c‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hc.ne'
+  have hx := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hX).ne'
+  have hcn := Complex.ofReal_ne_zero.mpr hc.ne'
   have hsq : (Real.sqrt X:ℂ)^2=(X:ℂ) := by exact_mod_cast Real.sq_sqrt hX.le
   have hfac : (Real.sqrt X:ℂ)⁻¹*((X:ℂ)*TraceCharacter.normalizedGauss c χ/(‖eisEmbedding c‖:ℂ))=
       TraceCharacter.normalizedGauss c χ*(Real.sqrt (‖eisEmbedding c‖^2/X):ℂ)⁻¹ := by
@@ -138,8 +145,8 @@ theorem primitive_normalized_reflection (c : O) [NeZero c]
     rw [hsq]
   rw [←mul_assoc,hfac,mul_assoc]
 
-end SevenEighths.CenteredMomentComparisonReflection
 
-end
 
-end OAI
+
+
+

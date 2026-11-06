@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 public import OAI.NumberTheory.DirichletL.Descent.SecondSharpPuncture
 public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
@@ -13,7 +14,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def actualCellLabelExponent (Z B j eta : ℝ) (d : BlockIndex) : ℝ :=
   secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta
@@ -57,7 +58,7 @@ theorem actual_cell_norm_centers {Jo Jn : ℕ}
   have hlo := (le_div_iff₀ (dyadScale_pos (d i))).mp hr.1
   have hhi := (div_le_iff₀ (dyadScale_pos (d i))).mp hr.2.le
   constructor
-  · apply (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith : secondCellExponent Z d i-eta≤secondCellExponent Z d i)).trans
+  · apply (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith : secondCellExponent Z d i-eta≤ secondCellExponent Z d i)).trans
     simpa only [second_cell_scale_rpow Z d i hZ,one_mul,scales] using hlo
   · calc
       _ ≤ 2*scales d i := hhi
@@ -89,8 +90,7 @@ theorem actual_cell_child_margins
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j _ eta hZ hparent hA ht hV hj
     (by unfold actualCellClipping;have := le_max_right 0 (secondCellColumnExponent Z (Z^(r-A-B-t)) d);linarith)
     heta hQ h1 h2 hT
-  · simpa only [outerNorms,Matrix.cons_val_zero] using hG
-  · simpa only [outerNorms,Matrix.cons_val_one,Matrix.cons_val_zero] using hD
+  all_goals (assumption)
 
 theorem actual_cell_child_total_upper {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source)
@@ -120,7 +120,7 @@ theorem actual_cell_child_total_upper {Jo Jn : ℕ}
   unfold childF decrease actualCellClipping
   linarith
 
-end SevenEighths.InverseMoment
-end
 
-end OAI
+
+
+

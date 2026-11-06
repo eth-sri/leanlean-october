@@ -12,7 +12,7 @@ namespace SevenEighths.InverseInitialCanonicalState
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
 open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
 open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -34,9 +34,9 @@ theorem actual_window_state
     (hthreshold:(∏i∈assigned,b i)≤Z^η)
     {t:Ideal O}(ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H))
     (m r τ c₁ c₂:ℝ)(hD:D=r+assignedCenter all z-2*assignedCenter assigned z)
-    (h₁:r+2*assignedCenter all z≤m-c₁)
+    (h₁:r+2*assignedCenter all z≤ m-c₁)
     (h₂:2*r+8*assignedCenter all z≤3*m-c₂)
-    (hc:0≤min c₁ c₂)(hηsmall:η≤min c₁ c₂/100)(hτ:τ≤min c₁ c₂/100)
+    (hc:0≤ min c₁ c₂)(hηsmall:η≤ min c₁ c₂/100)(hτ:τ≤ min c₁ c₂/100)
     (hcut:radialCenter m H θ D B≤4*η+τ)
     (hclip:max 0 (D-B-v)-(D-B-v)≤3*η):
     let N:=max 0 (D-B-v)
@@ -81,13 +81,13 @@ theorem actual_window_state
   have hF:max 0 (D-B-v)+(θ+v+2*η)≤r+assignedCenter all z+7*η:=by
     rw [hD] at hclip ⊢
     linarith [hreg.1]
-  have hMF:θ+H+2*η≤max 0 (D-B-v)+(θ+v+2*η):=by
+  have hMF:θ+H+2*η≤ max 0 (D-B-v)+(θ+v+2*η):=by
     have hh:=hactual.1
     linarith [hreg.2.1]
   exact ⟨hm,le_max_left _ _,hV,hM,hQ0,hnorm,hactual,hF,hMF.trans hF,by ring⟩
 
-end SevenEighths.InverseInitialCanonicalState
 
-end
 
-end OAI
+
+
+

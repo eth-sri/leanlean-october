@@ -11,43 +11,54 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedRightTransport
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentSecondHeightFamily
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstMixedRoot
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstMixedCommonRadius CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius CenteredMomentDescentLedger
-local notation "O" => ActualEisensteinCubic.O
 
-def swapIndex (C D : Ideal O) : CommonIndex C D ≃ CommonIndex D C where
+
+open CenteredMomentFirstScale
+open scoped EisensteinO
+
+section
+variable (C D : Ideal O)
+include C D
+
+def swapIndex  : CommonIndex C D ≃ CommonIndex D C where
   toFun P := ⟨P.val,by rw [commonSupport_comm];exact P.property⟩
   invFun P := ⟨P.val,by rw [commonSupport_comm];exact P.property⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
-@[simp] lemma swapIndex_val (C D : Ideal O) (P : CommonIndex C D) :
+@[simp] lemma swapIndex_val  (P : CommonIndex C D) :
     (swapIndex C D P).val=P.val := rfl
 
-def swapSubset (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+section
+variable (E : Finset (CommonIndex C D))
+include E
+
+def swapSubset  :
     Finset (CommonIndex D C) := E.map (swapIndex C D).toEmbedding
 
-lemma swapSubset_product (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+lemma swapSubset_product  :
     (∏P∈swapSubset C D E,P.val)=∏P∈E,P.val := by
   simp only [swapSubset,Finset.prod_map,Equiv.toEmbedding_apply,swapIndex_val]
 
-lemma swapSubset_generator (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+lemma swapSubset_generator  :
     primeSubsetGenerator (fun P : CommonIndex D C=>P.val) (swapSubset C D E)=
       primeSubsetGenerator (fun P : CommonIndex C D=>P.val) E := by
   unfold primeSubsetGenerator
   rw [swapSubset_product]
 
-lemma swapped_modulus_factor (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+lemma swapped_modulus_factor  :
     Ideal.span {(primeSubsetGenerator (fun P : CommonIndex D C=>P.val)
       (swapSubset C D E)*activeConductor D C)}=
     Ideal.span {primeSubsetGenerator (fun P : CommonIndex C D=>P.val) E*activeConductor C D} := by
   rw [swapSubset_generator,←Ideal.span_singleton_mul_span_singleton,
     ←Ideal.span_singleton_mul_span_singleton,active_span_swap]
+end
+end
+
 
 theorem right_modulus (η : Character) (C D : Ideal O) (hC : Supported C)
     (E : Finset (CommonIndex C D)) (ξ₁ ξ₂ : RayFourExpansion.RayCharacter)
@@ -65,8 +76,8 @@ lemma nominal_swap (C D E : Ideal O) (K X : ℝ) :
   congr 1
   ring
 
-end SevenEighths.CenteredMomentFirstMixedRightTransport
 
-end
 
-end OAI
+
+
+

@@ -6,30 +6,36 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularEnergy
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
 open CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
-local notation "O"=>HeckeFamily.O
+open CenteredMomentSmoothedWindowEnergy
+open scoped HeckeO
 
 variable {α:Type*}
 
-lemma dyadic_summable (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {a i}))
-    (c:α→ℂ)(j:ℤ):Summable (fun z:O=>dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2):=by
+section
+variable (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {a i}))
+    (c:α→ℂ)
+include S a ha c
+
+lemma dyadic_summable (j:ℤ):Summable (fun z:O=>dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2):=by
   have hs:=gaussEnergy_hasSum_re S a ha c CenteredMomentEnergyProfiles.annulusTemplate.profile
     (dyadicScale j) (dyadicScale_pos j)
   simpa only [CenteredMomentEnergyProfiles.annulusTemplate_apply,Complex.ofReal_re,
     dyadicWeight,normValue_eq_embedding,mul_comm] using hs.summable
 
-lemma weighted_summable (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {a i}))
-    (c:α→ℂ)(H:ℝ)(hH:0<H):
+section
+variable (H:ℝ)(hH:0<H)
+include H hH
+
+lemma weighted_summable :
     Summable (fun z:O=>‖gaussPolynomial S a ha c z‖^2*(profile (normValue z/H)).re):=by
   simpa only [normValue_eq_embedding] using (gaussEnergy_hasSum_re S a ha c profile H hH).summable
 
-theorem energy_partition (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {a i}))
-    (c:α→ℂ)(H:ℝ)(hH:0<H):
+theorem energy_partition :
     (gaussEnergy S a ha c profile H).re=
       ∑j∈bands H,∑'z:O,dyadicWeight j (normValue z)*
         (‖gaussPolynomial S a ha c z‖^2*(profile (normValue z/H)).re):=by
@@ -59,8 +65,7 @@ theorem energy_partition (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {
       tsum_congr he
     _ = _ := Summable.tsum_finsetSum (fun j _=>hj j)
 
-theorem energy_le_dyadic (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {a i}))
-    (c:α→ℂ)(H:ℝ)(hH:0<H):
+theorem energy_le_dyadic :
     (gaussEnergy S a ha c profile H).re≤
       ∑j∈bands H,∑'z:O,dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2:=by
   rw [energy_partition S a ha c H hH]
@@ -77,9 +82,12 @@ theorem energy_le_dyadic (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {
     hs.of_nonneg_of_le (fun z=>mul_nonneg (dyadicWeight_bounds j _).1
       (mul_nonneg (sq_nonneg _) (profile_nonneg _))) hdom
   exact hl.tsum_le_tsum hdom hs
-
-end SevenEighths.CenteredMomentFirstAnnularEnergy
-
+end
 end
 
-end OAI
+
+
+
+
+
+

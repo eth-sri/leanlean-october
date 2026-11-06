@@ -11,21 +11,20 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPositiveBalancedAdmission
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource
+open HeckeFamily
+open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentEnergyReferenceState
+
 open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyOriginalHighReflectionSymmetric
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+
+
+
+
+open CenteredMomentFiniteProfileExceptional
+
+
+open scoped HeckeO
 variable {α:Type*}[Fintype α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -39,8 +38,10 @@ variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "balancedSource" => balancedInput M H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ s p ha t X₁ X₂ hX₁ hX₂
 
-open CenteredMomentEnergyPositiveHighParameters
-open CenteredMomentEnergyNaturalInputMatches CenteredMomentAmplificationChildInput
+
+open CenteredMomentAmplificationChildInput
+
+local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 
 theorem fixed_lower_product (N:ℕ)(hN:Fintype.card α≤N) :
     0<(min 1 aslot)^N*a*a ∧
@@ -50,7 +51,7 @@ theorem fixed_lower_product (N:ℕ)(hN:Fintype.card α≤N) :
   exact ⟨by positivity,mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hh ha.le) ha.le⟩
 
 theorem four_upper_scales (κ L:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
-    (hcap:length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width)(hs:s.width≤L) :
+    (hcap:length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width)(hs:s.width≤L) :
     (balancedSource).X₁≤Z^L ∧ (balancedSource).X₂≤Z^L ∧
     (balancedSource).Y₁≤Z^L ∧ (balancedSource).Y₂≤Z^L := by
   have hp:0<Z:=zero_lt_one.trans hZ
@@ -71,8 +72,8 @@ theorem four_upper_scales (κ L:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
   · change X₁*X₂/comparisonFirst Z s.width≤Z^L
     exact (div_le_self (mul_pos hX₁ hX₂).le hY).trans (hxy.trans hv)
 
-end SevenEighths.CenteredMomentEnergyPositiveBalancedAdmission
 
-end
 
-end OAI
+
+
+

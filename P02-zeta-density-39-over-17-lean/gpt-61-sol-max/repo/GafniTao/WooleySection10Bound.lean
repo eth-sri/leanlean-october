@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection10Chain
 
 @[expose] public section
@@ -14,7 +15,7 @@ than folded into asymptotic notation.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Exact finite composition of (10.8), including the endpoint state,
 product weight, accumulated constant, and accumulated decay. -/
@@ -69,7 +70,6 @@ theorem WooleyIterationChain.composed_bound
       have hCaccUpper : Cacc ≤ D ^ (n + 1) := by
         have hpowLe : Ctail ^ rho ≤ Ctail :=
           Real.rpow_le_self_of_one_le hCtail hrhoOne.le
-        dsimp [Cacc]
         calc
           D * Ctail ^ rho ≤ D * Ctail :=
             mul_le_mul_of_nonneg_left hpowLe (le_trans (by norm_num) hD)
@@ -80,14 +80,11 @@ theorem WooleyIterationChain.composed_bound
       have hE : ((n + 1 : ℕ) : ℝ) * (b : ℝ) ≤ E := by
         have hEtail' : (n : ℝ) * (bPrime : ℝ) ≤ Etail := hEtail
         have hmul := mul_le_mul_of_nonneg_left hEtail' hrhoNonneg
-        have hbnonneg : (0 : ℝ) ≤ b := by positivity
         have hnnonneg : (0 : ℝ) ≤ n := by positivity
         have hweightedN : (n : ℝ) * (b : ℝ) ≤
             (n : ℝ) * (rho * (bPrime : ℝ)) :=
           mul_le_mul_of_nonneg_left hweighted hnnonneg
-        dsimp [E]
-        push_cast
-        nlinarith
+        grind
       have hKPrime : 0 ≤ K rPrime aPrime bPrime := hK _ _ _
       have hraised :
           (K rPrime aPrime bPrime) ^ rho ≤
@@ -126,7 +123,6 @@ theorem WooleyIterationChain.composed_bound
               (-((b : ℝ) + rho * Etail) * Lambda /
                 (2 * (k : ℝ))) := by
         rw [← Real.rpow_mul hpReal.le, ← Real.rpow_add hpReal]
-        congr 1
         ring
       have hrearrange :
           D *
@@ -136,7 +132,6 @@ theorem WooleyIterationChain.composed_bound
                 (2 * (k : ℝ))) =
             Cacc * (K rFinal aFinal bFinal) ^ R' *
               (p : ℝ) ^ (-E * Lambda / (2 * (k : ℝ))) := by
-        dsimp [Cacc, R', E]
         calc
           _ = D *
               (Ctail ^ rho *
@@ -174,12 +169,10 @@ theorem WooleyIterationChain.composed_bound
           bFinal ≤ k ^ (2 * n) * bPrime := hscaleTail
           _ ≤ k ^ (2 * n) * (k ^ 2 * b) :=
             Nat.mul_le_mul_left _ hupper
-          _ = k ^ (2 * (n + 1)) * b := by
-            rw [show 2 * (n + 1) = 2 * n + 2 by omega, pow_add]
-            simp only [mul_assoc]
+          _ = k ^ (2 * (n + 1)) * b := by ring
       · exact hsubstitute.trans_eq hrearrange
 
 
-end
 
-end GafniTao
+
+

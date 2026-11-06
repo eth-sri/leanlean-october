@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRoot
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalizationActual
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
+open CenteredMomentFirstExceptionalPrefactor
 open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance
 open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
-open CenteredMomentFirstScale ConcreteTraceCRT
+open CenteredMomentFirstScale
 open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
     (E:Finset (CommonIndex C D))(K Z:ℝ)(_hK:0<K)(_hZ:1<Z)
@@ -37,9 +37,13 @@ theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
   simp (disch := positivity) only [Real.logb_mul]
   ring
 
-theorem actual_exceptional_reference (η τ:Character)(C D:Ideal O)
+section
+variable (η τ:Character)(C D:Ideal O)
     (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z j g w wo ell:ℝ)
+    (E:Finset (CommonIndex C D))
+include η τ C D hC hD hCD E
+
+theorem actual_exceptional_reference (K V Z j g w wo ell:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
@@ -64,9 +68,7 @@ theorem actual_exceptional_reference (η τ:Character)(C D:Ideal O)
   rw [nominal_equal_support C D _ hC.1 hD.1 hCD K V]
   exact hh
 
-theorem actual_error_reference_le (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z j g:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)
+theorem actual_error_reference_le (K V Z j g:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
@@ -94,9 +96,11 @@ theorem actual_error_reference_le (η τ:Character)(C D:Ideal O)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   exact mul_le_mul_of_nonneg_left (actual_error_weight p hp Z hZ k hk) (by positivity)
-
-end SevenEighths.CenteredMomentFirstMixedNormalizationActual
-
 end
 
-end OAI
+
+
+
+
+
+

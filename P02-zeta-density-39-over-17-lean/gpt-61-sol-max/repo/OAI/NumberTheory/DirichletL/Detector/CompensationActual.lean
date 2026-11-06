@@ -5,14 +5,18 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralCompensation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
+section
+variable (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
+include η P x w z
+
+lemma initialPrime_denominators 
     (hx : 0<x.re) (hw : 0<w.re) (hz : 0<z.re) :
     let Q : ℝ := Ideal.absNorm P.val
     (1-coordV Q z≠0) ∧ (1-coordW Q 1 w≠0) ∧
@@ -34,10 +38,12 @@ lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x
     apply (coordD_norm_le _ hQ0 _ 1 x (HeckeFamily.idealCoeff_norm_le_one η P.val) (by simp)).trans_lt
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ (by linarith)
 
-lemma idealClosedCorrection_eq_continued (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) :
+lemma idealClosedCorrection_eq_continued  :
     let Q : ℝ := Ideal.absNorm P.val
     idealClosedCorrection η P x w z=continuedCorrection (coordV Q z) (coordW Q 1 w)
       (coordD Q (HeckeFamily.idealCoeff η P.val) 1 x) (idealMarkedClosed η P x w z) := rfl
+end
+
 
 lemma standardFactor_times_continued (V W D M : ℂ)
     (hV : 1-V≠0) (hW : 1-W≠0) (hD : 1-D≠0) :
@@ -105,7 +111,7 @@ theorem spectralCompensatedHigh_continued (S : Finset Id) (hS : SourceExclusions
   intro P hP
   exact idealCompensatedRatio_eq_continued S hS η P (hT P hP) x w z (B P) (q P) hx hw hz
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

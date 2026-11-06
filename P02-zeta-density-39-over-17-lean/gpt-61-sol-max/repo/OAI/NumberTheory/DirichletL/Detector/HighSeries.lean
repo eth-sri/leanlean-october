@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.SourceBounds
 
 @[expose] public section
@@ -8,12 +9,16 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def bareIdealHighCoefficient (η : HeckeFamily.Character) (u : O) (I J K L : Id) : ℂ :=
+section
+variable (η : HeckeFamily.Character) (u : O)
+include η u
+
+def bareIdealHighCoefficient  (I J K L : Id) : ℂ :=
   if h : Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported L then
     bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I h.2.1)
       (primaryGenerator I * primaryGenerator J^3) (primaryGenerator K)
@@ -22,7 +27,7 @@ def bareIdealHighCoefficient (η : HeckeFamily.Character) (u : O) (I J K L : Id)
       (u*primaryGenerator L^6)
   else 0
 
-theorem bareIdealHighCoefficient_norm_le (η : HeckeFamily.Character) (u : O) (I J K L : Id) :
+theorem bareIdealHighCoefficient_norm_le  (I J K L : Id) :
     ‖bareIdealHighCoefficient η u I J K L‖ ≤ (K.absNorm:ℝ)*(I.absNorm:ℝ)*(J.absNorm:ℝ)^3 := by
   unfold bareIdealHighCoefficient
   split_ifs with h
@@ -41,9 +46,11 @@ theorem bareIdealHighCoefficient_norm_le (η : HeckeFamily.Character) (u : O) (I
   · simp only [norm_zero]
     positivity
 
-def bareIdealHighSummand (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (I J K L : Id) : ℂ :=
+def bareIdealHighSummand  (x w z : ℂ) (I J K L : Id) : ℂ :=
   bareIdealHighCoefficient η u I J K L * fullIdealWeight (x+1/2) I *
     fullIdealWeight (1+3*x) J * fullIdealWeight w K * fullIdealWeight (6*z) L
+end
+
 
 lemma fullIdealWeight_nat_scale (s : ℂ) (I : Id) (hI : I≠0) (k : ℕ) :
     (I.absNorm:ℝ)^k * ‖fullIdealWeight s I‖ = ‖fullIdealWeight (s-k) I‖ := by
@@ -57,7 +64,11 @@ lemma fullIdealWeight_nat_scale (s : ℂ) (I : Id) (hI : I≠0) (k : ℕ) :
   congr 1
   ring
 
-theorem bareIdealHighSummand_norm_le (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (I J K L : Id) :
+section
+variable (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+include η u x w z
+
+theorem bareIdealHighSummand_norm_le  (I J K L : Id) :
     ‖bareIdealHighSummand η u x w z I J K L‖ ≤
       ‖fullIdealWeight (x-1/2) I‖ * ‖fullIdealWeight (3*x-2) J‖ *
       ‖fullIdealWeight (w-1) K‖ * ‖fullIdealWeight (6*z) L‖ := by
@@ -81,13 +92,12 @@ theorem bareIdealHighSummand_norm_le (η : HeckeFamily.Character) (u : O) (x w z
   · simp only [bareIdealHighSummand,bareIdealHighCoefficient,dite_eq_right h,zero_mul,norm_zero]
     positivity
 
-theorem bareIdealHighSummand_summable (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+theorem bareIdealHighSummand_summable 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun p : (Id×Id)×(Id×Id) =>
       bareIdealHighSummand η u x w z p.1.1 p.1.2 p.2.1 p.2.2) := by
   have h1 := fullIdealWeight_summable_norm (x-1/2) (by
-    simp only [Complex.sub_re,Complex.div_re,Complex.one_re,Complex.one_im,
-      show (2:ℂ).re=2 by rfl,show (2:ℂ).im=0 by rfl]
+    simp
     norm_num
     linarith)
   have h2 := fullIdealWeight_summable_norm (3*x-2) (by
@@ -108,8 +118,10 @@ theorem bareIdealHighSummand_summable (η : HeckeFamily.Character) (u : O) (x w 
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ hall
   intro p
   simpa only [mul_assoc] using bareIdealHighSummand_norm_le η u x w z p.1.1 p.1.2 p.2.1 p.2.2
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

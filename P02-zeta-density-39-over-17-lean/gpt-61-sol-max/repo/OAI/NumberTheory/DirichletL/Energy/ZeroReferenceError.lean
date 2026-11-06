@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneousError
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceError
 open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound
-open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
+open CenteredMomentOriginalRadialComparison
 open CenteredMomentEnergyReferenceHomogeneousError
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem short_energy_bound (b:ℝ):
     ∃C:ℝ,0<C ∧ ∀W:𝓢(ℝ,ℂ),Function.support (W:ℝ→ℂ)⊆Set.Iic b →
@@ -28,8 +28,8 @@ theorem short_energy_bound (b:ℝ):
     (fun _=>1) t X K Φ keep hX hK (by simp) (by simp) (by simp) (by simp) hΦ
   simpa only [Finset.prod_empty,mul_one] using hh
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceError
 
-end
 
-end OAI
+
+
+

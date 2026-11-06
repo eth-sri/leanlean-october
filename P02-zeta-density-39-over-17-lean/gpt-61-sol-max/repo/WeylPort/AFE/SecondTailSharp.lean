@@ -98,4 +98,4 @@ theorem second_endpoint_half_integer_sharp {M : ℕ} {x y : ℝ}
   simpa only [add_div] using add_le_add (norm_negativeTail_half_integer_sharp k hy hδ)
     (norm_positiveTail_half_integer_sharp k hy)
 
-end DhimanKadiriQuesadaHerrera2026
+

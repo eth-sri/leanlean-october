@@ -44,8 +44,8 @@ theorem quotientClassCoeff_ratio_tendsto
       atTop (𝓝 ((RayQuotient.classNumber M H : ℝ)⁻¹)) :=
   PNT.RayAsymptotic.quotientClassCoeff_ratio_tendsto M H hH (analytic_family M)
 
-end SevenEighths.HeckeRayPrimes
 
-end
 
-end OAI
+
+
+

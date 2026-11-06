@@ -8,17 +8,17 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedChild
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks
+
+open InverseInitialClippedColumns
+open InverseFirstPriorityParents
+open InverseWholePriorityRetainedSource RayFourExpansion
+open scoped EisensteinEis
 theorem global_priority_fixed_child_step_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -201,8 +201,8 @@ theorem global_priority_fixed_child_step_uniform_types
           (mul_le_mul_of_nonneg_right (le_max_right C₁ C₂) hE) hH using 1 ; ring
     all_goals assumption
   convert hnew using 1 ; ring
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

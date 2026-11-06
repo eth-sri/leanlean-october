@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.ScalarTable
 public import OAI.NumberTheory.DirichletL.Detector.PrimeConstants
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.PrimeConstants
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -34,20 +35,18 @@ theorem unramified_squarefree_kzero (r m : ℕ) :
         primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 else 0 := by
   rw [positiveScalar_kzero, actualSextic_primePowerGauss_at_pow p hp hg hc,
     ite_eq_right (by omega : ¬6 ∣ 6*r+1), actualSextic_pow_six_mul_add _ hg hc, pow_one]
-  by_cases hm : m=r
-  · rw [ite_eq_left hm, ite_eq_left (by omega)]
-  · rw [ite_eq_right hm, ite_eq_right (by omega)]
+  simp
 
 theorem unramified_squarefree_kone (r m : ℕ) :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r) 1 (6*m) =
-      if r<m then
+      if r< m then
         ((actualSextic (Ideal.span {p}) hg (-1))⁻¹ *
           primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1) *
           ((Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r) * ((Ideal.absNorm (Ideal.span {p}):ℂ)-1))
       else 0 := by
   rw [positiveScalar_actual_table p hp hg hc]
   rw [ite_eq_right (by decide : (1:ℕ) ≠ 0)]
-  by_cases hm : r<m
+  by_cases hm : r< m
   · rw [ite_eq_left ⟨rfl, by omega⟩, ite_eq_left hm, gaussValuationTable,
       ite_eq_left (by omega : 6 ∣ 6*r), ite_eq_left (by omega), ite_eq_left (by omega), pow_succ]
     ring
@@ -101,7 +100,7 @@ theorem unramified_even_kone (r m : ℕ) :
     · rw [ite_eq_left ⟨rfl, by omega⟩, gaussValuationTable,
         ite_eq_right (by omega : ¬6 ∣ 6*r+5), ite_eq_right (by omega), mul_zero]
 
-end SevenEighths.ProbePrimePower
-end
 
-end OAI
+
+
+

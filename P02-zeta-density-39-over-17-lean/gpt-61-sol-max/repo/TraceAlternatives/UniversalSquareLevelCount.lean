@@ -1,13 +1,13 @@
 module
+import Mathlib
 public import TraceAlternatives.UniversalNativeLevelCount
 public import TraceAlternatives.SquareLevelMonomial
 public import DensityEnergyGM.PoweredLargeValues
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
-noncomputable section
+
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -24,13 +24,13 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
         (W.card:ℝ) ≤ C*T^ε*((M:ℝ)^4*U^(-4:ℝ)+
           T^(2/3:ℝ)*(M:ℝ)^(16/3:ℝ)*U^(-8:ℝ)+
           T^(3/5:ℝ)*(M:ℝ)^(72/5:ℝ)*U^(-96/5:ℝ)) := by
-  let ν : ℝ := ε/100
+  let ν := ε/100
   have hν : 0 < ν := by dsimp only [ν]; positivity
   obtain ⟨A,hA,hCoeff⟩ := finitePowCoeff_bound_uniform 2 ν hν
   obtain ⟨C₀,D₀,hC₀,hD₀,hCount⟩ := universal_native_quadratic_level_count ν hν
-  let B : ℝ := max 1 (2*A*(4:ℝ)^ν)
-  let C : ℝ := 1024*C₀*(2:ℝ)^ν*B^10
-  let D : ℝ := 8*D₀*(2:ℝ)^ν*B^4
+  let B := max 1 (2*A*(4:ℝ)^ν)
+  let C := 1024*C₀*(2:ℝ)^ν*B^10
+  let D := 8*D₀*(2:ℝ)^ν*B^4
   have hB : 1 ≤ B := le_max_left _ _
   have hBp : 0 < B := by linarith
   refine ⟨C,D,by dsimp only [C]; positivity,by dsimp only [D]; positivity,?_⟩
@@ -38,7 +38,7 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
   have hTp : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
   have hMp : (0:ℝ) < M := by exact_mod_cast hM
-  let d : ℝ := 2*(A*((2^2*M^2:ℕ):ℝ)^ν)
+  let d := 2*(A*((2^2*M^2:ℕ):ℝ)^ν)
   have hd : 0 < d := by dsimp only [d]; positivity
   have hDen : 0 < A*((2^2*M^2:ℕ):ℝ)^ν := by positivity
   obtain ⟨r,hr,W',hsub,hcard,hLarge'⟩ :=
@@ -46,8 +46,8 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
       hU.le hDen (by
         intro t ht
         simpa [dirichletPoly,dyadicInterval,mul_comm] using hLarge t ht)
-  let Q : ℕ := 2^r*M^2
-  let V : ℝ := U^2/d
+  let Q := 2^r*M^2
+  let V := U^2/d
   have hQ : 0 < Q := by dsimp only [Q]; positivity
   have hV : 0 < V := by dsimp only [V]; positivity
   have hQle : (Q:ℝ) ≤ 2*(M:ℝ)^2 := by
@@ -164,4 +164,4 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
       ring_nf
     _ ≤ _ := by gcongr
 
-end Montgomery.RationalMoment
+

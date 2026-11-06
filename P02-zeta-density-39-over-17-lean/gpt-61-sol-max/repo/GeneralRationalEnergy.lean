@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GeneralAdjacentInterpolation
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -30,17 +30,14 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
   let D : ℝ := 1+C (K-1)+∑ n ∈ range (J+1), C n
   have hD : 1 ≤ D := by
     have hs : 0 ≤ ∑ n ∈ range (J+1), C n := sum_nonneg (fun n _ => (hC n).le)
-    dsimp [D]
-    linarith [hC (K-1)]
+    grind
   have hDK : C (K-1) ≤ D := by
     have hs : 0 ≤ ∑ n ∈ range (J+1), C n := sum_nonneg (fun n _ => (hC n).le)
-    dsimp [D]
-    linarith
+    nlinarith
   have hDn (n : ℕ) (hn : n ≤ J) : C n ≤ D := by
     have hh := single_le_sum (s:=range (J+1)) (f:=C)
       (fun i _ => (hC i).le) (mem_range.mpr (by omega : n < J+1))
-    dsimp [D]
-    linarith [hC (K-1)]
+    grind
   let F : ℝ := 3+2*D*B^(η/2)
   have hF : 0 < F := by dsimp [F]; positivity
   refine ⟨F,hF,?_⟩
@@ -136,9 +133,7 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
           rw [hpow]
           calc
             T = T^(1:ℝ) := (Real.rpow_one T).symm
-            _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT.le (by
-              norm_num only [Nat.cast_mul,Nat.cast_add,Nat.cast_one,Nat.cast_ofNat]
-              exact hhi)
+            _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT.le (by grind)
         have hm₁ : U^j ≤ 2*T*(W.card:ℝ)^(2*j-1) :=
           (hscaled j hj (hDn (j-1) (by omega))).trans (by gcongr; linarith)
         have hm₂ : U^(j+1) ≤ 2*(H:ℝ)^(2*(j+1))*(W.card:ℝ)^(2*j+1) := by
@@ -162,4 +157,4 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
         convert hh' using 1; ring
       _ ≤ _ := by gcongr
 
-end Montgomery.RationalMoment
+

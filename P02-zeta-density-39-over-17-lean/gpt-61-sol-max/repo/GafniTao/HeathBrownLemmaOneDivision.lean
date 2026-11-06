@@ -11,14 +11,14 @@ positive volume and averaging factor.  The resulting bound is still literal:
 no fixed `k`, `A`, or epsilon factor is hidden in asymptotic notation.
 -/
 
-open Set
+
 open scoped ENNReal
 
 namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownLemmaOneInsertedTerm
+def heathBrownLemmaOneInsertedTerm
     (N k : ℕ) (A lambda epsilon C : ℝ) : ENNReal :=
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
@@ -38,7 +38,7 @@ noncomputable def heathBrownLemmaOneInsertedTerm
 /-- The exact normalized right side obtained from the finite coefficient-cell
 argument.  This definition is an explicit expression, not an assumed
 estimate. -/
-noncomputable def heathBrownLemmaOneRawBound
+def heathBrownLemmaOneRawBound
     (N k : ℕ) (A lambda epsilon C : ℝ) : ENNReal :=
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
@@ -97,6 +97,6 @@ theorem heathBrown_lemma_one_raw_of_source
     H, s, V, mul_comm, mul_left_comm, mul_assoc] using hassembled
 
 
-end
 
-end GafniTao
+
+

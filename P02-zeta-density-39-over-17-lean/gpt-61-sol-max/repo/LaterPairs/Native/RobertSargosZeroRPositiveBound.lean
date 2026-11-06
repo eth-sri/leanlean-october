@@ -6,14 +6,13 @@ public import LaterPairs.Native.RobertSargosZeroRPrefix
 public import LaterPairs.Native.RobertSargosZeroRSource
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                          
                                                            
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -46,10 +45,7 @@ theorem robertSargos_zero_r_source_positive_bound
         12*(C*L*Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)+
           2/Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)) ≤
         12*(C*M*Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)+
-          2/Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)) := by
-      have hb := mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hLM hC) (Real.sqrt_nonneg (2*(h:ℝ)*(q:ℝ)*lam))
-      linarith
+          2/Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)) := by simp_all <;> nlinarith
     rw [sum_integer_Icc_eq_range_add _ _ _ hab]
     have hp' : ‖∑ n ∈ Finset.range ((M:ℤ)-h-q-(h+1)).toNat,
         fordAdditiveCharacter
@@ -67,4 +63,4 @@ theorem robertSargos_zero_r_source_positive_bound
       Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025
+

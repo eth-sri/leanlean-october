@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceMoments
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily HeckeDyadic QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
+
 open CenteredMomentEnergyZeroReferenceChild CenteredMomentEnergyReferenceLowControl
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
 open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (S:Finset (ℕ×ℕ)):
@@ -51,8 +51,8 @@ theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   apply hh.trans
   convert hmul using 1 ; ring
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceMoments
 
-end
 
-end OAI
+
+
+

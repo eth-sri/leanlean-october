@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceCommonMask
 open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentSourceMass CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 
  theorem profile_nonzero_masks
@@ -26,8 +26,8 @@ variable {ι : Type*} [Fintype ι]
   · by_contra hn
     exact hne (by simp only [profileCoefficient,hn,ite_false,mul_zero])
 
-end SevenEighths.CenteredMomentSourceCommonMask
 
-end
 
-end OAI
+
+
+

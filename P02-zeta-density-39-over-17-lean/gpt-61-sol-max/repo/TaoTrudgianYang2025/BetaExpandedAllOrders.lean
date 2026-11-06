@@ -12,13 +12,13 @@ proved positive-axis reference jet. No fixed strict-interior reference
 window is assumed.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem inversePhaseEval_modelPhaseInverseJet_expanded_error
     {σ : ℝ} (hσ : 0 < σ) (e : InversePhaseExpression) :
@@ -82,4 +82,4 @@ theorem modelPhaseLegendreDual_expanded_allOrder_uniformity
     iteratedDeriv_modelPhase_expanded_inverseJet_formula hσ hvpos n]
   exact hbound F δ _ hδ hpos hP hF (by omega) v hv
 
-end TaoTrudgianYang2025
+

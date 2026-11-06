@@ -77,8 +77,12 @@ theorem paired_assignment_filter (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Fin
       · simpa only [pairedSlotAssignment,Fin.addCases_right] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₂ L₂ _ q.2 hq₂ k)).2
 
-theorem assignedSecondSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
+section
+variable {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)
+include Jo source J₁ J₂ L₁ L₂
+
+theorem assignedSecondSource_sum 
     (F : MarkedSecondSource ι Jo (J₁.card+J₂.card) → ℂ) :
     ∑ x ∈ assignedSecondSource source J₁ J₂ L₁ L₂, F x =
       ∑ y ∈ source, ∑ q ∈
@@ -93,9 +97,7 @@ theorem assignedSecondSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource
   dsimp only
   rw [paired_assignment_filter]
 
-theorem assignedSecondCoefficient_norm_le_one {Jo : ℕ}
-    (source : Finset (MarkedSecondSource ι Jo 0)) (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
+theorem assignedSecondCoefficient_norm_le_one  (a₁ a₂ : σ → ι → ℂ)
     (ha₁ : ∀ i ∈ J₁, ∀ p ∈ L₁ i, ‖a₁ i p‖ ≤ 1)
     (ha₂ : ∀ i ∈ J₂, ∀ p ∈ L₂ i, ‖a₂ i p‖ ≤ 1)
     (x : MarkedSecondSource ι Jo (J₁.card+J₂.card))
@@ -105,8 +107,10 @@ theorem assignedSecondCoefficient_norm_le_one {Jo : ℕ}
   rw [assignedSecondCoefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ (q₁,q₂)
     (Finset.mem_product.mpr ⟨hq₁,hq₂⟩) ha₁ ha₂
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

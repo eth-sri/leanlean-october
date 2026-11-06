@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma bounded_row_multiplier_energy {κ : Type*} (rows : Finset κ) (r f : κ→ℂ)
     (hr : ∀ k∈rows,‖r k‖≤1) :
@@ -21,7 +21,7 @@ lemma bounded_row_multiplier_energy {κ : Type*} (rows : Finset κ) (r f : κ→
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (hr k hk)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

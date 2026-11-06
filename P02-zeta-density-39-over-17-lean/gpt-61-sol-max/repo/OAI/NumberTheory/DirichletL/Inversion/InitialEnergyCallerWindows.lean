@@ -9,13 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerWindows
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
+
 open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
 def sourceRelative (x:Source (ι:=ι) 0)(Z D B v θ H:ℝ) : Fin 6→ℝ :=
@@ -76,8 +76,8 @@ theorem physicalBlock_windowSource
       mul_zero,zero_mul,Finset.sum_const_zero]
   · rw [ite_eq_left ho]
 
-end SevenEighths.InverseInitialEnergyCallerWindows
 
-end
 
-end OAI
+
+
+

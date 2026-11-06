@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
+import Mathlib
+public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 @[expose] public section
 
@@ -7,13 +8,11 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 
-namespace ShortDraftMellin
 
-end ShortDraftMellin
 
 namespace FiniteRingSieve
 
@@ -79,29 +78,13 @@ namespace ProductResidueSieve
 
 variable {R S : Type*} [CommRing R] [CommRing S]
 
-def mulCharProd (χ : MulChar R ℂ) (η : MulChar S ℂ) : MulChar (R × S) ℂ where
-  toFun x := χ x.1 * η x.2
-  map_one' := by simp
-  map_mul' x y := by simp [mul_mul_mul_comm]
-  map_nonunit' x hx := by
-    rw [Prod.isUnit_iff] at hx
-    by_cases h₁ : IsUnit x.1
-    · have h₂ : ¬IsUnit x.2 := by tauto
-      simp [MulChar.map_nonunit η h₂]
-    · simp [MulChar.map_nonunit χ h₁]
 
-def addCharProd (ψ : AddChar R ℂ) (φ : AddChar S ℂ) : AddChar (R × S) ℂ where
-  toFun x := ψ x.1 * φ x.2
-  map_zero_eq_one' := by simp
-  map_add_eq_mul' x y := by
-    simp only [Prod.fst_add, Prod.snd_add, AddChar.map_add_eq_mul]
-    ring
 
-@[simp] theorem mulCharProd_apply (χ : MulChar R ℂ) (η : MulChar S ℂ) (x : R × S) :
-    mulCharProd χ η x = χ x.1 * η x.2 := rfl
 
-@[simp] theorem addCharProd_apply (ψ : AddChar R ℂ) (φ : AddChar S ℂ) (x : R × S) :
-    addCharProd ψ φ x = ψ x.1 * φ x.2 := rfl
+
+
+
+
 
 end ProductResidueSieve
 
@@ -118,7 +101,7 @@ theorem schwartz_log_inversion (g : 𝓢(ℝ, ℂ)) (y : ℝ) :
   have hinv : (𝓕⁻ (𝓕 g) : 𝓢(ℝ, ℂ)) = g := by simp
   have h := congrArg (fun f : 𝓢(ℝ, ℂ) => f y) hinv
   rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq'] at h
-  simpa only [smul_eq_mul] using h.symm
+  exact h.symm
 
 theorem fourier_coefficient_moment (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
     ∫ t : ℝ, ‖t‖ ^ J * ‖(𝓕 g) t‖ ≤
@@ -196,7 +179,7 @@ theorem derivative_scale_absorption
         mul_le_mul_of_nonneg_left hpowR (by positivity)
       _ = (m * (1 + R)) ^ (A + n) := by rw [mul_pow]
       _ ≤ (1 + u) ^ (A + n) := by gcongr
-  let Q : ℝ := (j.factorial : ℝ) * CF * (H ^ 2) ^ j
+  let Q := (j.factorial : ℝ) * CF * (H ^ 2) ^ j
   have hQ : 0 ≤ Q := by dsimp [Q]; positivity
   have hQscale : Q * (m ^ (A + n) * (1 + R) ^ A * (1 + R) ^ j) ≤
       Q * (1 + u) ^ (A + n) := mul_le_mul_of_nonneg_left hscale hQ
@@ -262,7 +245,7 @@ theorem uniform_fourier_seminorm_transfer
       (2 : ℝ) ^ k * (k + 1) *
         (2 ^ (volume : Measure ℝ).integrablePower *
           ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)) * C := by
-  let V : ℝ := 2 ^ (volume : Measure ℝ).integrablePower *
+  let V := 2 ^ (volume : Measure ℝ).integrablePower *
     ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)
   have hV : 0 ≤ V := by dsimp [V]; positivity
   have hI (i : ℕ) (hi : i ≤ k) :
@@ -301,7 +284,7 @@ theorem uniform_fourier_seminorm_transfer
       have hp0 : p.1 = 0 := by
         have hlt := Finset.mem_range.mp (Finset.mem_product.mp hp).1
         omega
-      have hp2 : p.2 ≤ k := Nat.lt_succ_iff.mp
+      have hp2 := Nat.lt_succ_iff.mp
         (Finset.mem_range.mp (Finset.mem_product.mp hp).2)
       simpa [hp0] using hI p.2 hp2
     _ = (2 : ℝ) ^ k * (k + 1) * V * C := by
@@ -328,7 +311,7 @@ theorem uniform_fourier_coefficient_moment
           (2 ^ (volume : Measure ℝ).integrablePower *
             ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)) * C) := by
   let p := (volume : Measure ℝ).integrablePower
-  let V : ℝ := 2 ^ p * ∫ t : ℝ, (1 + ‖t‖) ^ (-(p : ℝ))
+  let V := 2 ^ p * ∫ t : ℝ, (1 + ‖t‖) ^ (-(p : ℝ))
   let K := J + p
   have hV : 0 ≤ V := by dsimp [V]; positivity
   have hfourier_zero := uniform_fourier_seminorm_transfer g 0 S C hS hC
@@ -472,8 +455,8 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
       (∀ s, |s| ≤ T → V s = 1) ∧
       tsupport V ⊆ Set.Icc (-(T + 1)) (T + 1) ∧
       V 0 = 1 := by
-  let U : Set ℝ := Set.Ioo (-(T + 1)) (T + 1)
-  let K : Set ℝ := Set.Icc (-T) T
+  let U := Set.Ioo (-(T + 1)) (T + 1)
+  let K := Set.Icc (-T) T
   have hU : IsOpen U := isOpen_Ioo
   have hK : IsClosed K := isClosed_Icc
   have hKU : K ⊆ U := by
@@ -482,7 +465,7 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
     constructor <;> linarith
   obtain ⟨f, hf, _, hsupport, hone⟩ :=
     exists_contDiff_support_eq_eq_one_iff (n := ⊤) hU hK hKU
-  let V : ℝ → ℂ := fun s => (f s : ℂ)
+  let V := fun s => (f s : ℂ)
   have hf' : ContDiff ℝ ∞ f := by simpa using hf
   have hVs : ContDiff ℝ ∞ V := Complex.ofRealCLM.contDiff.comp hf'
   have hVsupport : Function.support V = Function.support f := by
@@ -496,12 +479,12 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
   have hVtsupportI : tsupport V ⊆
       Set.Icc (-(T + 1)) (T + 1) :=
     closure_minimal hVsupportI isClosed_Icc
-  have hVc : HasCompactSupport V :=
+  have hVc :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hVsupportI
   have hone' : ∀ s, |s| ≤ T → V s = 1 := by
     intro s hs
     have hsK : s ∈ K := by simpa [K, abs_le] using hs
-    have hfs : f s = 1 := (hone s).mp hsK
+    have hfs := (hone s).mp hsK
     simp [V, hfs]
   exact ⟨V, hVc, hVs, hone', hVtsupportI,
     hone' 0 (by simpa using hT)⟩
@@ -556,9 +539,9 @@ theorem schwartz_derivative_decay_finite
     (1 + u) ^ (A + j) * ‖iteratedFDeriv ℝ i F u‖ ≤
       schwartzDerivativeDecayConstant F (A + K) K := by
   let M := A + K
-  let T : ℝ := (SchwartzMap.seminorm ℝ 0 i) F +
+  let T := (SchwartzMap.seminorm ℝ 0 i) F +
     (SchwartzMap.seminorm ℝ M i) F
-  let N : ℝ := ‖iteratedFDeriv ℝ i F u‖
+  let N := ‖iteratedFDeriv ℝ i F u‖
   have hN : 0 ≤ N := by dsimp [N]; positivity
   have hpow : (1 + u) ^ (A + j) ≤ (1 + u) ^ M :=
     pow_le_pow_right₀ (by linarith) (by dsimp [M]; omega)
@@ -606,6 +589,6 @@ theorem schwartz_derivative_decay_finite
       mul_le_mul_of_nonneg_left hTsum (by positivity)
     _ = schwartzDerivativeDecayConstant F (A + K) K := rfl
 
-end FourierBridge
 
-end OAI
+
+

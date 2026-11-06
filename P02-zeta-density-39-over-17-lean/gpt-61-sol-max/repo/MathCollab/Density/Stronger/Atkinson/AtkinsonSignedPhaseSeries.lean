@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -15,7 +16,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 open Complex Set Filter
 open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -57,9 +57,7 @@ theorem norm_atkinsonCommonMainPhase_le (T : ℝ) :
 theorem atkinsonNegativePhaseTerm_eq_conj (T : ℝ) (n : ℕ) :
     atkinsonNegativePhaseTerm T n = (starRingEnd ℂ) (atkinsonPositivePhaseTerm T n) := by
   unfold atkinsonNegativePhaseTerm atkinsonPositivePhaseTerm divisorWeight
-  simp only [map_mul,map_pow,map_neg,map_one,map_natCast,← Complex.exp_conj,
-    Complex.conj_ofReal,Complex.conj_I]
-  congr 2
-  ring
+  simp only [map_mul, map_natCast, map_pow, map_neg, map_one, ← exp_conj, conj_ofReal, conj_I]
+  simp_all
 
-end MathCollab.Density.Stronger.Atkinson
+

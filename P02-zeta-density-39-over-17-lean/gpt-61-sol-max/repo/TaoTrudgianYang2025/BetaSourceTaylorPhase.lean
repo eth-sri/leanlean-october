@@ -13,12 +13,12 @@ extension plateau. Membership in an individual multiplicative chart
 remains the separate finite-cover/partition obligation.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhase_source_canonicalTaylorPhase
     {σ A : ℝ} (hσ : 0 < σ) (hA : 0 < A) (hA₂ : A ≤ 2)
@@ -62,4 +62,4 @@ theorem modelPhase_source_canonicalTaylorPhase
   exact canonicalTaylorLegendrePhase_agrees Q hA hwpos hvpos hadmissible.1
     (modelPhaseSharpStationarySet_taylor_plateau hσ hsmall hF₁ hT hN ha hb hq)
 
-end TaoTrudgianYang2025
+

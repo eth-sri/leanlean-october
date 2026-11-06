@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannRayFactorization.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -19,7 +20,6 @@ The angular phase, arithmetic normalization and entire amplitude
 are retained exactly.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set
@@ -64,9 +64,7 @@ theorem neumannContourKernel_unit_ray (x : ℝ) {t : ℝ} (ht : 0 < t) :
     norm_num at hh
   have hpow : (t : ℂ) ^ (-(1 / 2 : ℂ)) = ((t ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) := by
     have h := Complex.ofReal_cpow ht.le (-(1 / 2 : ℝ))
-    norm_num only [Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one,
-      Complex.ofReal_ofNat] at h
-    exact h.symm
+    simp_all
   have he : Complex.exp (I * (x : ℂ) * (1 + (t : ℂ) * I)) =
       Complex.exp (I * (x : ℂ)) * (Real.exp (-x * t) : ℝ) := by
     have harg : I * (x : ℂ) * (1 + (t : ℂ) * I) =
@@ -120,4 +118,4 @@ theorem dfiBesselY0_eq_neumannLaplaceIntegral {x : ℝ} (hx : 0 < x) :
       (Complex.exp (I * (x : ℂ)) * neumannRayCoefficient * neumannLaplaceIntegral x).re := by
   rw [dfiBesselY0_eq_neumannVerticalIntegral hx, neumannVerticalIntegral_one_eq_laplace]
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentAbsoluteEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion
-open CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
+open ActualEisensteinCubic HeckeFamily
+open CenteredMomentHeckeExpansion
+
 open ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)
     (I : Ideal O) : ‖rowWeight η m A z t I‖ ≤ 1 := by
@@ -24,12 +24,16 @@ theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)
     norm_num
   · exact CenteredMomentFirstTailAggregate.rowWeight_norm_le_one η m A z t I hI
 
-theorem radial_norm_summable (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include Φ K hK
+
+theorem radial_norm_summable  :
     Summable (fun z : O => ‖Φ (‖eisEmbedding z‖^2/K)‖) := by
   simpa only [scaledRadialTest_apply] using
     actual_eisenstein_summable_norm (scaledRadialTest Φ K hK)
 
-theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+theorem radial_weight_lattice_bound_all  :
     (∑' z : O, ‖Φ (‖eisEmbedding z‖^2/K)‖) ≤ diagonalControl Φ*max 1 K := by
   by_cases hlarge : 1≤K
   · simpa only [max_eq_right hlarge] using radial_weight_lattice_bound Φ K hlarge
@@ -63,6 +67,8 @@ theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K
   dsimp only [B] at ht
   unfold diagonalControl
   nlinarith
+end
+
 
 theorem finite_hecke_polynomial_norm (η : Character) (m A z : O) (t : ℝ)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) :
@@ -87,8 +93,8 @@ theorem finite_hecke_energy_summable (η : Character) (m A : O) (t : ℝ)
       (norm_nonneg _)
   · exact (radial_norm_summable Φ K hK).mul_left _
 
-end SevenEighths.CenteredMomentAbsoluteEnergy
 
-end
 
-end OAI
+
+
+

@@ -8,9 +8,9 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
+open scoped EisensteinEis
 
 theorem first_fresh_energy_small_power (ε : ℝ) (hε : 0 < ε) :
     ∃ K : ℝ,0 < K ∧ ∀ {ι : Type*} [DecidableEq ι]
@@ -60,7 +60,7 @@ theorem first_fresh_energy_small_power (ε : ℝ) (hε : 0 < ε) :
       mul_le_of_le_one_left (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hr
     _ ≤ _ := mul_le_of_le_one_left (norm_nonneg _) hb
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

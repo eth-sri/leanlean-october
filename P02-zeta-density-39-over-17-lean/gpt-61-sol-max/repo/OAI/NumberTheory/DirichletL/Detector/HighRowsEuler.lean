@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsMultiplicative
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CubicEisenstein ProbePhase
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 @[simp] theorem bareIdealHighCoefficient_row_one (η : HeckeFamily.Character) (u : O) :
@@ -34,7 +34,7 @@ local notation "Id" => Ideal O
   have hw (t : ℂ) : fullIdealWeight t (1:Ideal O)=1 := (IdealEuler.normWeight t).map_one
   simp only [bareIdealHighSummand,bareIdealHighCoefficient_row_one,hw,one_mul]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

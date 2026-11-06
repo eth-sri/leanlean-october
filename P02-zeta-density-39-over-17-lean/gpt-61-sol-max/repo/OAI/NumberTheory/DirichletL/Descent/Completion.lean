@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 
@@ -13,31 +14,40 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss
 
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def markedCompletedT (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
+section
+variable (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
+include Ψ W
+
+def markedCompletedT  (X : ℝ)
     (d : Ideal Eis → ℂ) : ℂ :=
   ∑' I : Ideal Eis, ∑' J : Ideal Eis, summand Ψ W X I J * d (I * J ^ 3)
 
-theorem markedCompletedT_summable (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
+section
+variable (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ)
+include hW X hX d
+
+theorem markedCompletedT_summable  :
     Summable (fun p : Ideal Eis × Ideal Eis =>
       summand Ψ W X p.1 p.2 * d (p.1 * p.2 ^ 3)) := by
   apply summable_of_hasFiniteSupport
   apply (completedT_finite_support Ψ W hW X hX).subset
-  intro p hp hz
-  exact hp (by simp only [hz, zero_mul])
+  simp
 
-theorem markedCompletedT_eq_tsum (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
+theorem markedCompletedT_eq_tsum  :
     markedCompletedT Ψ W X d = ∑' p : Ideal Eis × Ideal Eis,
       summand Ψ W X p.1 p.2 * d (p.1 * p.2 ^ 3) :=
   (markedCompletedT_summable Ψ W hW X hX d).tsum_prod.symm
+end
 
-theorem markedCompletedT_const_mul (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
+
+theorem markedCompletedT_const_mul  (X : ℝ)
     (c : ℂ) (d : Ideal Eis → ℂ) :
     markedCompletedT Ψ W X (fun A => c * d A) = c * markedCompletedT Ψ W X d := by
   simp only [markedCompletedT, mul_left_comm _ c, tsum_mul_left]
+end
+
 
 theorem markedCompletedT_finset_sum {ι : Type*} (s : Finset ι)
     (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W)
@@ -47,11 +57,15 @@ theorem markedCompletedT_finset_sum {ι : Type*} (s : Finset ι)
   simp only [markedCompletedT_eq_tsum Ψ W hW X hX, Finset.mul_sum]
   exact Summable.tsum_finsetSum (fun i _ => markedCompletedT_summable Ψ W hW X hX (d i))
 
-def markedExpandedTerm (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
+section
+variable (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
+include Ψ W
+
+def markedExpandedTerm  (X : ℝ)
     (d : Ideal Eis → ℂ) (I H J : Ideal Eis) : ℂ :=
   expandedTerm Ψ W X I H J * d (I * (H * J) ^ 3)
 
-theorem markedExpandedTerm_finite_support (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
+theorem markedExpandedTerm_finite_support 
     (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
     (Function.support (fun p : Ideal Eis × Ideal Eis × Ideal Eis =>
       markedExpandedTerm Ψ W X d p.1 p.2.1 p.2.2)).Finite := by
@@ -60,8 +74,12 @@ theorem markedExpandedTerm_finite_support (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
   apply hp
   simp only [markedExpandedTerm, hz, zero_mul]
 
-theorem markedExpandedTerm_scale (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
-    (d : Ideal Eis → ℂ) (I H J : Ideal Eis) :
+section
+variable (X : ℝ)
+    (d : Ideal Eis → ℂ)
+include X d
+
+theorem markedExpandedTerm_scale  (I H J : Ideal Eis) :
     (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
       (summand Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) I J * d (H ^ 3 * (I * J ^ 3))) =
       markedExpandedTerm Ψ W X d I H J := by
@@ -70,20 +88,24 @@ theorem markedExpandedTerm_scale (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
   congr 2
   ring
 
-theorem weighted_markedCompletedT_reopen (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
-    (d : Ideal Eis → ℂ) (H : Ideal Eis) :
+theorem weighted_markedCompletedT_reopen  (H : Ideal Eis) :
     (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
       markedCompletedT Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) (fun A => d (H ^ 3 * A)) =
       ∑' I : Ideal Eis, ∑' J : Ideal Eis, markedExpandedTerm Ψ W X d I H J := by
   simp only [markedCompletedT, ← tsum_mul_left, markedExpandedTerm_scale]
+end
 
-theorem marked_cube_inner_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X)
-    (d : Ideal Eis → ℂ) (I : Ideal Eis) :
+
+section
+variable (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X)
+    (d : Ideal Eis → ℂ)
+include hW X hX d
+
+theorem marked_cube_inner_inverse  (I : Ideal Eis) :
     (∑' H : Ideal Eis, ∑' J : Ideal Eis, markedExpandedTerm Ψ W X d I H J) =
       (columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) *
         Vstar W ((Ideal.absNorm I : ℝ) / X)) * d I := by
-  let f : Ideal Eis → ℂ := fun B =>
+  let f := fun B =>
     columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) *
       Vstar W ((Ideal.absNorm I : ℝ) * (Ideal.absNorm B : ℝ) ^ 3 / X) * d (I * B ^ 3)
   have heq (H J : Ideal Eis) :
@@ -102,8 +124,7 @@ theorem marked_cube_inner_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
     (by simpa only [heq] using hp)
   simpa only [heq, f, map_one, Nat.cast_one, one_pow, mul_one] using hgeneric
 
-theorem marked_cube_inverse_vstar (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
+theorem marked_cube_inverse_vstar  :
     (∑' H : Ideal Eis, (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
       markedCompletedT Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) (fun A => d (H ^ 3 * A))) =
     ∑' I : Ideal Eis, (columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) *
@@ -136,8 +157,7 @@ theorem marked_cube_inverse_vstar (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
       exact (hF.prod_factor I).tsum_prod
     _ = _ := tsum_congr (marked_cube_inner_inverse Ψ W hW X hX d)
 
-theorem marked_cube_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
+theorem marked_cube_inverse  :
     (Real.sqrt X : ℂ)⁻¹ *
       (∑' I : Ideal Eis, columnWeight Ψ I * d I * W ((Ideal.absNorm I : ℝ) / X)) =
     ∑' H : Ideal Eis, (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
@@ -147,9 +167,12 @@ theorem marked_cube_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
   intro I
   rw [vstar_source_normalization Ψ W X hX I]
   ring
-
+end
 end
 
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

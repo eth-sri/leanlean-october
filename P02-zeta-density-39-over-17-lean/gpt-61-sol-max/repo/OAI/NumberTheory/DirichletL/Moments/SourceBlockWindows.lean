@@ -6,19 +6,23 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceDyadicShell
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceBlockWindows
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
 open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
 open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
- theorem physicalBlock_column_witnesses (η:Character) (t:ℝ)
+ section
+variable (η:Character) (t:ℝ)
     (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
     (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+include η t S β C D hC hD U R rows W K n
+
+theorem physicalBlock_column_witnesses 
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     ∃I:sectorPool C hC.1 S,∃J:sectorPool D hD.1 S,
       β (C*I)≠0 ∧ β (D*J)≠0 ∧
@@ -40,9 +44,7 @@ local notation "O" => ActualEisensteinCubic.O
     exact ⟨I,J,hl,hr,(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hw).1).2,(mul_ne_zero_iff.mp hw).2⟩
   · exact False.elim (hz rfl)
 
- theorem physicalBlock_scale_lower (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+ theorem physicalBlock_scale_lower 
     (a H:ℝ) (ha:0<a) (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     H/(Ideal.absNorm C:ℝ)≤dyadicScale (n 2)/a ∧
@@ -50,9 +52,11 @@ local notation "O" => ActualEisensteinCubic.O
   obtain ⟨I,J,hI,hJ,hwi,hwj⟩:=physicalBlock_column_witnesses η t S β C D hC hD U R rows W K n hne
   exact ⟨raw_window_lower C I hC.1 a H ha (n 2) (hlower _ hI) hwi,
     raw_window_lower D J hD.1 a H ha (n 3) (hlower _ hJ) hwj⟩
-
-end SevenEighths.CenteredMomentSourceBlockWindows
-
 end
 
-end OAI
+
+
+
+
+
+

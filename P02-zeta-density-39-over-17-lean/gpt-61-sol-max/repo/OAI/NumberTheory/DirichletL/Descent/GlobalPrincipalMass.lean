@@ -9,26 +9,34 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
+open InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 abbrev Core (ι : Type*) := CubeCoordinates ι×Finset ι×Finset ι
 
-def core {ι : Type*} {Jo : ℕ} (x : Source ι Jo) : Core ι :=
+section
+variable {ι : Type*}
+include ι
+
+def core  {Jo : ℕ} (x : Source ι Jo) : Core ι :=
   (x.cube,x.firstCommon,x.quotientSupport)
 
-def divisorTarget {ι : Type*} [DecidableEq ι] (p : ι→O) (q : Core ι) : Ideal O :=
+section
+variable [DecidableEq ι] (p : ι→O)
+include p
+
+def divisorTarget  (q : Core ι) : Ideal O :=
   sourceIdeal p q.1.support*sourceIdeal p q.2.1*sourceIdeal p q.2.2
 
-lemma divisorTarget_ne_zero {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+lemma divisorTarget_ne_zero  (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) : divisorTarget p q≠0 :=
   mul_ne_zero (mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _))
     (sourceIdeal_ne_zero p hp _)
 
-lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
+lemma firstDivisor_dvd_target 
     [∀i,(Ideal.span {p i}).IsMaximal] {Jo : ℕ} (x : Source ι Jo) (hx : SourceValid p x) :
     sourceIdeal p x.firstDivisor∣divisorTarget p (core x) := by
   have hd := sourceIdeal_dvd p _ _ hx.first_divisor
@@ -39,7 +47,7 @@ lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
   rw [mul_comm (sourceIdeal p x.firstCommon)]
   exact dvd_mul_right _ _
 
-theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+theorem core_fiber_card  (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i})) {Jo : ℕ}
     (S : Finset (Source ι Jo)) (q : Core ι)
@@ -68,6 +76,9 @@ theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p 
       (congrArg (fun q=>q.2.2) hk) ho
   have hh := Fintype.card_le_of_injective encode hi
   simpa only [Fintype.card_coe,Fintype.card_prod,Fintype.card_fun,Fintype.card_fin,D,pow_succ,mul_comm] using hh
+end
+end
+
 
 theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
@@ -108,7 +119,7 @@ lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : 
     hC (primeProductNorm_pos p hp _).le (sq_nonneg _)) ht (primeProductNorm_pos p hp _).le
     (mul_nonneg (sq_nonneg _) hV)
 
-end SevenEighths.InverseMomentGlobalPrincipalMass
-end
 
-end OAI
+
+
+

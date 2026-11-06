@@ -11,16 +11,16 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainSource
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
+open HeckeFamily ConcretePrimeRowBridge
+open CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform
 open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
 open CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion
 open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy
-open CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy
+open CenteredMomentRetainedEnergy CenteredMomentSourceRectangleEnergy
 open CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def completePool (slots : ι→Finset (Ideal O)) (b₁ b₂ X₁ X₂ : ℝ) : Finset (Tuple ι) :=
@@ -45,14 +45,18 @@ lemma comparison_row_zero (η : Character) (m A z : O) (t : ℝ)
       simpa only [one_mul,mul_zero] using congrArg (fun v : ℂ=>rowWeight η m A z t I*v) h
     _ = 0 := tsum_zero
 
-theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
     (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
     (slots : ι→Finset (Ideal O)) (R : Ideal O)
     (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
     (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
-    (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+    (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂) (hX₁ : 0<X₁) (hX₂ : 0<X₂)
+include η m A z t hmLam hm2 slots R ν Wslot P W₁ W₂ a₁ b₁ a₂ b₂ X₁ X₂ ha₁ ha₂ hs₁ hs₂ hX₁ hX₂
+
+theorem complete_source_polynomial  :
     (∑ I∈finiteColumns (completePool slots b₁ b₂ X₁ X₂),
       finiteColumnCoefficient (completePool slots b₁ b₂ X₁ X₂)
         (uncenteredProfileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ 1 1 1) I *
@@ -84,14 +88,7 @@ theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
   rw [hr,comparison_row_zero η (m*idealGenerator R) A z t W₁ a₁ b₁ ha₁ hs₁,
     zero_mul,sub_zero]
 
-theorem positiveSlotRow_eq_complete_source (η : Character) (m A z : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
-    (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
-    (ha₁ : 0<a₁) (ha₂ : 0<a₂)
-    (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
-    (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+theorem positiveSlotRow_eq_complete_source  :
     positiveSlotRow η (m*idealGenerator R) A z W₁ W₂ slots
       (fun i I=>ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)) P t X₁ X₂=
       (Real.sqrt (X₁*X₂*∏ i,P i):ℂ)⁻¹*
@@ -102,6 +99,8 @@ theorem positiveSlotRow_eq_complete_source (η : Character) (m A z : O) (t : ℝ
   rw [complete_source_polynomial η m A z t hmLam hm2 slots R ν Wslot P W₁ W₂
     a₁ b₁ a₂ b₂ X₁ X₂ ha₁ ha₂ hs₁ hs₂ hX₁ hX₂]
   rfl
+end
+
 
 theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O→Prop)
     (slots : ι→Finset (Ideal O)) (R : Ideal O)
@@ -135,8 +134,8 @@ theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O�
     ring
   · simp only [ite_eq_right hk,zero_div]
 
-end SevenEighths.CenteredMomentDetectorPlainSource
 
-end
 
-end OAI
+
+
+

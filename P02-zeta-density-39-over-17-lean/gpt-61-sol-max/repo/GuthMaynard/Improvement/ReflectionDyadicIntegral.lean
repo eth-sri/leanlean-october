@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.SourceRatioAssembly
 public import GuthMaynard.Improvement.SourceRatioHeightBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set Finset
 namespace GuthMaynard.Improvement
 
@@ -19,8 +18,12 @@ theorem reflection_dyadic_indicator (F : ℝ → ℝ) (u t : ℝ)
   simpa only [sum_filter,sum_singleton] using
     source_height_dyadic_prefix {()} (fun _ => |t-u|) (fun _ => F t) hY J
 
+section
+variable {F : ℝ → ℝ} (hi : Integrable F) (u : ℝ)
+include F hi u
+
 /-- Exact ordinary integral decomposition, with no shell-count loss. -/
-theorem reflection_dyadic_integral {F : ℝ → ℝ} (hi : Integrable F) (u : ℝ)
+theorem reflection_dyadic_integral 
     {Y : ℝ} (hY : 0 ≤ Y) (J : ℕ) :
     (∫ t in {t | |t-u| ≤ (2:ℝ)^J*Y}, F t) =
       (∫ t in {t | |t-u| ≤ Y}, F t) +
@@ -49,8 +52,7 @@ theorem reflection_dyadic_integral {F : ℝ → ℝ} (hi : Integrable F) (u : �
 
 /-- Uniform geometric shell assembly. Analytic near/shell budgets are
 explicit helper premises; their sum costs no logarithmic factor. -/
-theorem reflection_dyadic_integral_bound {F : ℝ → ℝ} (hi : Integrable F)
-    (u : ℝ) {Y T E B : ℝ} (hY : 0 < Y) (hYT : Y ≤ T) (hB : 0 ≤ B)
+theorem reflection_dyadic_integral_bound  {Y T E B : ℝ} (hY : 0 < Y) (hYT : Y ≤ T) (hB : 0 ≤ B)
     (hs : ∀ t, T < |t-u| → F t = 0)
     (hnear : (∫ t in {t | |t-u| ≤ Y}, F t) ≤ E)
     (hband : ∀ H : ℝ, Y ≤ H → H < T →
@@ -75,5 +77,7 @@ theorem reflection_dyadic_integral_bound {F : ℝ → ℝ} (hi : Integrable F)
   refine hsum.trans ?_
   rw [source_height_geometric_sum]
   nlinarith
+end
 
-end GuthMaynard.Improvement
+
+

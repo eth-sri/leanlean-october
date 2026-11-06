@@ -12,7 +12,7 @@ namespace SevenEighths.CenteredMomentSourceLiveColumn
 open CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox CenteredMomentCommonProfile
 open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentCommonAllocationBox CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -97,8 +97,8 @@ theorem original_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   simp only [finiteColumnCoefficient, Finset.sum_filter] at h
   exact h
 
-end SevenEighths.CenteredMomentSourceLiveColumn
 
-end
 
-end OAI
+
+
+

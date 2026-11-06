@@ -12,13 +12,13 @@ Their power windows and large-parameter threshold follow from the
 original N,T window; chart scale factors enter only the uniform constant.
 -/
 
-noncomputable section
 
-open Set Expdb Filter
+
+open Expdb Filter
 open scoped NNReal BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem sourceStationaryChart_physical_bound
     {α : ℝ≥0} {β σ : ℝ}
@@ -69,4 +69,4 @@ theorem sourceStationaryChart_physical_bound
       mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right hBK (by positivity)) (Real.rpow_nonneg hT.le _)
 
-end TaoTrudgianYang2025
+

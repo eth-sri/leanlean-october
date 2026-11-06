@@ -9,16 +9,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 def unitBudgetState {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)(hB:0≤Bmask):
     NaturalState Z Bmask bΦ:=
@@ -42,7 +42,7 @@ theorem reflected_child_from_low
     (s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=internalQ Q η₀)(hs:s.width≤Mcap)
     (Wshort:𝓢(ℝ,ℂ))(hsW:Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b)
     (j k:Fin 2)(v X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(hc₁:X₁≤Z^L)(hc₂:X₂≤Z^L)
-    (hcapacity:length Z X₁+length Z X₂+6*κ*(∑i∈F,w i)≤s.width)
+    (hcapacity:length Z X₁+length Z X₂+6*κ*(∑i∈F,w i)≤ s.width)
     (hsmall:length Z X₁+length Z X₂+(∑i∈F,w i)≤5*s.width/6):
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false
       (scaleTest (fun y:ℝ=>(annulus y:ℂ)) j) X₁ 0 (-2*Real.pi*v)*
@@ -73,8 +73,8 @@ theorem reflected_child_from_low
   simpa only [unitBudgetState,unpuncturedState,NaturalState.width,
     NaturalState.mask,effectiveState,effectiveRadial,abs_zero,add_zero,add_assoc] using hh
 
-end SevenEighths.CenteredMomentEnergyReferenceLowChild
 
-end
 
-end OAI
+
+
+

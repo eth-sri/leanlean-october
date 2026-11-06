@@ -12,9 +12,8 @@ public import MathCollab.Density.Stronger.MomentFromPeaks
 
 @[expose] public section
 
-open Filter MeasureTheory Set
-set_option autoImplicit false
-noncomputable section
+open Filter MeasureTheory
+
 namespace MathCollab.Density.Stronger
 
 /-- Every finite one-separated set of actual high zeta values obeys the native
@@ -37,4 +36,4 @@ theorem pointValue_volume_native :
   intro V hV hVH
   exact pointValue_volume_le_of_peak_card hV (hH V hV hVH)
 
-end MathCollab.Density.Stronger
+

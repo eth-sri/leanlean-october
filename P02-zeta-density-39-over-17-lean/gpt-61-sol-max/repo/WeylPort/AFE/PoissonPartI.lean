@@ -41,9 +41,13 @@ theorem hasDerivAt_expMode (n : ℕ) (x : ℝ) :
   convert ht using 1
   ring
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ}
+    (h : PartIRegularity f g a b)
+include f g a b h
+
 /-- The regularity hypotheses provide the exact derivative of the source wave on the interval. -/
-theorem PartIRegularity.wave_hasDerivAt {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) (x : ℝ) (hx : x ∈ Set.uIcc a b) :
+theorem PartIRegularity.wave_hasDerivAt  (x : ℝ) (hx : x ∈ Set.uIcc a b) :
     HasDerivAt (weightedWave f g) (waveDerivative f g x) x := by
   rw [Set.uIcc_of_le h.lt.le] at hx
   unfold weightedWave waveDerivative
@@ -51,8 +55,7 @@ theorem PartIRegularity.wave_hasDerivAt {f g : ℝ → ℝ} {a b : ℝ}
     weighted_wave_hasDerivAt (h.f_differentiable x hx) (h.g_differentiable x hx)
 
 /-- Integration by parts for one actual frequency in the finite head. -/
-theorem negativeCoefficient_eq_boundary_add_integral {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) {n : ℕ} (hn : 0 < n) :
+theorem negativeCoefficient_eq_boundary_add_integral  {n : ℕ} (hn : 0 < n) :
     negativeCoefficient f g a b n =
       weightedWave f g b * expMode b n / (2 * Real.pi * Complex.I * n) -
       weightedWave f g a * expMode a n / (2 * Real.pi * Complex.I * n) +
@@ -79,6 +82,8 @@ theorem negativeCoefficient_eq_boundary_add_integral {f g : ℝ → ℝ} {a b : 
   have hπ : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   field_simp
   ring
+end
+
 
 /-- The finite endpoint expression is exactly the sum of the endpoint Fourier coefficients. -/
 theorem poissonHeadBoundary_eq_sum (f g : ℝ → ℝ) (x : ℝ) (M : ℕ) :
@@ -118,9 +123,13 @@ theorem poissonMain_eq_zero_add_head (f g : ℝ → ℝ) (a b : ℝ) (M : ℕ) :
     Complex.exp_zero, mul_one]
   rw [add_comm]
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ}
+    (h : PartIRegularity f g a b) (M : ℕ)
+include f g a b h M
+
 /-- Absolute convergence permits the exact finite-head and infinite-tail decomposition. -/
-theorem negativeCoefficient_sum_eq_head_add_tail {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) (M : ℕ) :
+theorem negativeCoefficient_sum_eq_head_add_tail  :
     (∑' n, negativeCoefficient f g a b n) =
       (∑ n ∈ Finset.Icc 1 M, negativeCoefficient f g a b n) +
         ∑' n : ℕ, negativeCoefficient f g a b (n + M + 1) := by
@@ -130,8 +139,7 @@ theorem negativeCoefficient_sum_eq_head_add_tail {f g : ℝ → ℝ} {a b : ℝ}
     Nat.add_assoc] using he.symm
 
 /-- Exact truncated Poisson identity with the actual main sum and both infinite tails. -/
-theorem weighted_sum_eq_poissonMain_add_remainder {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) (M : ℕ) :
+theorem weighted_sum_eq_poissonMain_add_remainder  :
     (∑ n ∈ Finset.Ioc ⌊a⌋ ⌊b⌋, weightedWave f g (n : ℝ)) - poissonMain f g a b M =
       poissonHeadBoundary f g b M - poissonHeadBoundary f g a M +
         (∑' n : ℕ, negativeCoefficient f g a b (n + M + 1)) -
@@ -139,6 +147,8 @@ theorem weighted_sum_eq_poissonMain_add_remainder {f g : ℝ → ℝ} {a b : ℝ
   rw [weighted_sum_eq_fourier h, negativeCoefficient_sum_eq_head_add_tail h M,
     sum_negativeCoefficient_head h M, poissonMain_eq_zero_add_head]
   ring
+end
+
 
 /-- The finite endpoint expression has precisely the expected amplitude times S₁ norm. -/
 theorem norm_poissonHeadBoundary {f g : ℝ → ℝ} {x : ℝ} (hg : 0 ≤ g x) (M : ℕ) :
@@ -167,4 +177,4 @@ theorem norm_poissonHeadBoundary_half_integer_le {f g : ℝ → ℝ} {x y : ℝ}
   obtain ⟨k, rfl⟩ := hx
   exact norm_finiteS1_half_integer_le_of_pos k hy
 
-end DhimanKadiriQuesadaHerrera2026
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.FordZeroRepresentation
 public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Analysis.Fourier.AddCircleMulti
@@ -30,20 +31,26 @@ noncomputable section
 /-- The `s` source variables, each ranging over the integers `1, ..., Q`. -/
 abbrev FordVinogradovTuple (s Q : ℕ) := Fin s → Fin Q
 
+section
+variable (s k Q : ℕ)
+include s k Q
+
 /-- The vector `(∑ᵢ xᵢ, ..., ∑ᵢ xᵢ^k)` attached to a source tuple. -/
-def fordVinogradovPowerVector (s k Q : ℕ) (x : FordVinogradovTuple s Q) :
+def fordVinogradovPowerVector  (x : FordVinogradovTuple s Q) :
     Fin k → ℤ :=
   fun j => ∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ ((j : ℕ) + 1)
 
 /-- Ford's shifted solution count `J_{s,k}(P; h)` with `Q = floor P`. -/
 def fordVinogradovShiftedCountNat
-    (s k Q : ℕ) (h : Fin k → ℤ) : ℕ :=
+     (h : Fin k → ℤ) : ℕ :=
   fordRepresentationCount (Finset.univ : Finset (FordVinogradovTuple s Q))
     (fordVinogradovPowerVector s k Q) h
 
 /-- The combinatorial form (1.4) of Ford's complete Vinogradov mean value. -/
-def fordVinogradovMomentNat (s k Q : ℕ) : ℕ :=
+def fordVinogradovMomentNat  : ℕ :=
   fordVinogradovShiftedCountNat s k Q 0
+end
+
 
 /-- Ford's conventional abbreviation `k(k+1)/2`. -/
 def fordVinogradovKappa (k : ℕ) : ℕ := k * (k + 1) / 2
@@ -53,16 +60,13 @@ theorem fordVinogradovPowerVector_bounds
     (s : ℤ) ≤ fordVinogradovPowerVector s k Q x j ∧
       fordVinogradovPowerVector s k Q x j ≤
         (s : ℤ) * (Q : ℤ) ^ ((j : ℕ) + 1) := by
-  let d : ℕ := (j : ℕ) + 1
+  let d := (j : ℕ) + 1
   have htermLower (i : Fin s) :
       (1 : ℤ) ≤ ((x i : ℕ) + 1 : ℤ) ^ d := by
     apply one_le_pow₀
     omega
   have htermUpper (i : Fin s) :
-      ((x i : ℕ) + 1 : ℤ) ^ d ≤ (Q : ℤ) ^ d := by
-    have hbase : (x i : ℕ) + 1 ≤ Q := Nat.succ_le_iff.mpr (x i).isLt
-    have hpow : ((x i : ℕ) + 1) ^ d ≤ Q ^ d := Nat.pow_le_pow_left hbase d
-    exact_mod_cast hpow
+      ((x i : ℕ) + 1 : ℤ) ^ d ≤ (Q : ℤ) ^ d := by bound
   constructor
   · change (s : ℤ) ≤ ∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d
     calc
@@ -79,14 +83,20 @@ theorem fordVinogradovPowerVector_bounds
 
 /-! ## The normalized-Haar identity, equation (1.3) -/
 
+section
+variable {k Q : ℕ} (n : Fin Q)
+include k Q n
+
 /-- The degree vector contributed by one source integer `1 ≤ n ≤ Q`. -/
-def fordVinogradovExponent {k Q : ℕ} (n : Fin Q) : Fin k → ℤ :=
+def fordVinogradovExponent  : Fin k → ℤ :=
   fun j => (((n : ℕ) + 1) ^ ((j : ℕ) + 1) : ℕ)
 
 /-- One exponential monomial in Ford's complete Weyl sum. -/
-def fordVinogradovMonomial {k Q : ℕ} (n : Fin Q)
+def fordVinogradovMonomial 
     (α : UnitAddTorus (Fin k)) : ℂ :=
   UnitAddTorus.mFourier (fordVinogradovExponent n) α
+end
+
 
 /-- The complete Weyl sum over the literal integer range `1, ..., Q`. -/
 def fordVinogradovWeylSum (k Q : ℕ) (α : UnitAddTorus (Fin k)) : ℂ :=
@@ -120,15 +130,19 @@ theorem ford_integral_mFourier_pi_haar_eq {k : ℕ} (h : Fin k → ℤ) :
     rw [ite_eq_right]
     simpa [funext_iff] using hh
 
+section
+variable {s k Q : ℕ} (x : FordVinogradovTuple s Q)
+include s k Q x
+
 theorem fordVinogradovPowerVector_eq_sum_exponent
-    {s k Q : ℕ} (x : FordVinogradovTuple s Q) :
+     :
     fordVinogradovPowerVector s k Q x =
       ∑ i : Fin s, fordVinogradovExponent (x i) := by
   ext j
   simp [fordVinogradovPowerVector, fordVinogradovExponent]
 
 theorem ford_prod_monomial_eq
-    {s k Q : ℕ} (x : FordVinogradovTuple s Q) (α : UnitAddTorus (Fin k)) :
+     (α : UnitAddTorus (Fin k)) :
     ∏ i : Fin s, fordVinogradovMonomial (x i) α =
       UnitAddTorus.mFourier (fordVinogradovPowerVector s k Q x) α := by
   classical
@@ -139,9 +153,15 @@ theorem ford_prod_monomial_eq
       rw [Finset.prod_insert ha, Finset.sum_insert ha]
       rw [UnitAddTorus.mFourier_add]
       exact congrArg (fun z => fordVinogradovMonomial (x a) α * z) ih
+end
+
+
+section
+variable (s k Q : ℕ) (α : UnitAddTorus (Fin k))
+include s k Q α
 
 theorem ford_vinogradov_weyl_pow
-    (s k Q : ℕ) (α : UnitAddTorus (Fin k)) :
+     :
     fordVinogradovWeylSum k Q α ^ s =
       ∑ x : FordVinogradovTuple s Q,
         UnitAddTorus.mFourier (fordVinogradovPowerVector s k Q x) α := by
@@ -151,12 +171,14 @@ theorem ford_vinogradov_weyl_pow
   exact ford_prod_monomial_eq x α
 
 theorem ford_conj_vinogradov_weyl_pow
-    (s k Q : ℕ) (α : UnitAddTorus (Fin k)) :
+     :
     conj (fordVinogradovWeylSum k Q α) ^ s =
       ∑ y : FordVinogradovTuple s Q,
         UnitAddTorus.mFourier (-fordVinogradovPowerVector s k Q y) α := by
   have h := congrArg conj (ford_vinogradov_weyl_pow s k Q α)
   simpa only [map_pow, map_sum, UnitAddTorus.mFourier_neg] using h
+end
+
 
 theorem ford_pair_character
     {s k Q : ℕ} (x y : FordVinogradovTuple s Q)
@@ -224,9 +246,7 @@ theorem ford_vinogradov_torus_mean_eq (s k Q : ℕ) :
         intro y hy
         exact ford_integral_mFourier_pi_haar_eq _
     _ = (fordVinogradovMomentNat s k Q : ℂ) := by
-        simp only [fordVinogradovMomentNat, fordVinogradovShiftedCountNat,
-          fordRepresentationCount, Finset.card_filter, Nat.cast_sum, Nat.cast_ite,
-          Nat.cast_one, Nat.cast_zero]
+        simp only [fordVinogradovMomentNat, fordVinogradovShiftedCountNat, fordRepresentationCount, card_filter, Nat.cast_sum, Nat.cast_ite, Nat.cast_one, Nat.cast_zero]
         rw [Finset.sum_product]
 
 theorem ford_pow_mul_conj_pow (z : ℂ) (s : ℕ) :
@@ -260,6 +280,6 @@ theorem ford_integrable_mFourier_pi_haar {k : ℕ} (h : Fin k → ℤ) :
   exact (UnitAddTorus.mFourier h).continuous.continuousOn.integrableOn_compact
     isCompact_univ
 
-end
 
-end GafniTao
+
+

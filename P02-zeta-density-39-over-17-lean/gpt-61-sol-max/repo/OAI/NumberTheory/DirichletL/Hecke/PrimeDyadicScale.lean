@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeDeletionBounds HeckeLogarithmic
 
@@ -49,8 +49,8 @@ theorem binCost_le_power (χ : Character) (B U H η ε : ℝ)
     (Real.log_le_rpow_div (by linarith : 0≤U) hε) hc
   convert hh using 1 ; ring
 
-end SevenEighths.HeckePrimeDyadic
 
-end
 
-end OAI
+
+
+

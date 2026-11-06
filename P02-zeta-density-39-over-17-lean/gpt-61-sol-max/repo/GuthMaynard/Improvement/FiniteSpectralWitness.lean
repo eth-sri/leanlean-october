@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.FiniteSpectral
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- Weighted convexity for positive cubic eigenvalues. The total witness
@@ -57,4 +56,4 @@ theorem finite_diagonal_positive_trace {ι : Type*} [Fintype ι]
     _ = (∑ i, (e i)^3)+∑ i, c i*(e i)^2 := Finset.sum_add_distrib
     _ ≤ _ := add_le_add (le_abs_self (∑ i, (e i)^3)) le_rfl
 
-end GuthMaynard.Improvement
+

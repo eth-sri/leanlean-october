@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected exact source slices and native assembly using revision
@@ -11,7 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationarySourceAssem
 
 @[expose] public section
 
-noncomputable section
+
 open Complex Filter MeasureTheory
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -54,12 +55,11 @@ theorem exists_zetaSquareLocalMean_le_atkinson_stationary {δ κ : ℝ}
   obtain ⟨U, hU⟩ := eventually_atTop.mp hev
   refine ⟨C + 2 * Real.exp 1 * D, by positivity,
     max 40000 U, le_max_left _ _, ?_⟩
-  intro T G hT hlower hupper hquarter
-  exact hU T ((le_max_right _ _).trans hT) G hlower hupper hquarter
+  grind
 
 /-- The final local-mean producer has no analytic premise. -/
 theorem localMeanStationaryInput_native : LocalMeanStationaryInput := by
   intro δ κ hδ hκ
   exact exists_zetaSquareLocalMean_le_atkinson_stationary hδ hκ
 
-end MathCollab.Density.Stronger.Atkinson
+

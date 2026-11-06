@@ -6,13 +6,12 @@ public import LaterPairs.Native.FiniteSmoothThirdDerivative
 public import LaterPairs.Native.RobertSargosCubicPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                   
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -77,4 +76,4 @@ theorem robertSargos_symmetric_third_derivative_prefix
     (fun x hx => hj 2 (by norm_num) x hx)
     (fun x hx => (hc x hx).1) (fun x hx => (hc x hx).2)
 
-end TaoTrudgianYang2025
+

@@ -6,14 +6,13 @@ public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.TriangularShiftBounds
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
                                     
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -26,11 +25,7 @@ theorem signed_triangular_double_endpoint_error (Q R : ℕ) (hQ : 0 < Q) (hR : 0
         (C*(∑ r ∈ Finset.Ioo (-(R:ℤ)) R, (1-|(r:ℝ)|/R)*|(r:ℝ)|)) := by
       simp only [Finset.sum_mul,Finset.mul_sum]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro q _
-      apply Finset.sum_congr rfl
-      intro r _
-      ring
+      grind
     _ ≤ (Q:ℝ)*(C*(R:ℝ)^2) := by
       rw [sum_signed_triangular_weights Q hQ]
       exact mul_le_mul_of_nonneg_left
@@ -38,8 +33,12 @@ theorem signed_triangular_double_endpoint_error (Q R : ℕ) (hQ : 0 < Q) (hR : 0
         (Nat.cast_nonneg Q)
     _ = _ := by ring
 
-theorem robertSargos_weighted_endpoint_error (f : ℝ → ℝ) (M H Q R : ℕ)
-    (hQ : 0 < Q) (hR : 0 < R) :
+section
+variable (f : ℝ → ℝ) (M H Q R : ℕ)
+    (hQ : 0 < Q) (hR : 0 < R)
+include f M H Q R hQ hR
+
+theorem robertSargos_weighted_endpoint_error  :
     (∑ q ∈ Finset.Ioo (-(Q:ℤ)) Q, ∑ r ∈ Finset.Ioo (-(R:ℤ)) R,
       (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*(robertSargosMixedCorrelation f M H q r).re) ≤
     (∑ q ∈ Finset.Ioo (-(Q:ℤ)) Q, ∑ r ∈ Finset.Ioo (-(R:ℤ)) R,
@@ -65,8 +64,7 @@ theorem robertSargos_weighted_endpoint_error (f : ℝ → ℝ) (M H Q R : ℕ)
       exact add_le_add_right
         (signed_triangular_double_endpoint_error Q R hQ hR (2*(H:ℝ)) (by positivity)) _
 
-theorem robertSargos_trimmed_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
-    (hQ : 0 < Q) (hR : 0 < R) (hQM : Q ≤ M) (hRH : R ≤ 2*H) :
+theorem robertSargos_trimmed_a_times_a  (hQM : Q ≤ M) (hRH : R ≤ 2*H) :
     ‖robertSargosSymmetricSum f M H‖^2 ≤
       (8*(M:ℝ)*H/((Q:ℝ)*R))*
         (∑ q ∈ Finset.Ioo (-(Q:ℤ)) Q, ∑ r ∈ Finset.Ioo (-(R:ℤ)) R,
@@ -77,12 +75,9 @@ theorem robertSargos_trimmed_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
   have he := mul_le_mul_of_nonneg_left (robertSargos_weighted_endpoint_error f M H Q R hQ hR)
     (show 0 ≤ 8*(M:ℝ)*H/((Q:ℝ)*R) by positivity)
   have hcancel : (8*(M:ℝ)*H/((Q:ℝ)*R))*(2*(H:ℝ)*Q*(R:ℝ)^2) =
-      16*(M:ℝ)*(H:ℝ)^2*R := by
-    have hq : (Q:ℝ) ≠ 0 := by positivity
-    have hr : (R:ℝ) ≠ 0 := by positivity
-    field_simp
-    ring
-  rw [mul_add,hcancel] at he
-  exact hs.trans he
+      16*(M:ℝ)*(H:ℝ)^2*R := by field_simp <;> ring
+  grind
+end
 
-end TaoTrudgianYang2025
+
+

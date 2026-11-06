@@ -9,9 +9,9 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic
+
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -108,7 +108,7 @@ theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
       intro D hD
       ring_nf
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

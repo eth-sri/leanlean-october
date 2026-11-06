@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -19,7 +20,7 @@ The chain rule is proved from local smoothness and derivative
 identities. It retains both terms of the second derivative.
 -/
 
-noncomputable section
+
 
 open Complex Filter Set Topology
 open scoped ContDiff
@@ -74,7 +75,6 @@ theorem IntervalC2Bound.congr_of_eventuallyEq {f g : ℝ → ℂ} {a b M R : ℝ
 theorem IntervalC2Bound.absorb_scale {f : ℝ → ℂ} {a b M K R : ℝ}
     (hf : IntervalC2Bound f a b M (K * R)) (hK : 1 ≤ K) (hR : 0 ≤ R) :
     IntervalC2Bound f a b (M * K ^ 2) R := by
-  have hK0 : 0 ≤ K := by linarith
   have hKsq : K ≤ K ^ 2 := by nlinarith
   refine ⟨mul_nonneg hf.nonneg (sq_nonneg _), hR, hf.smooth, ?_, ?_, ?_⟩
   · intro x hx
@@ -100,13 +100,11 @@ theorem exists_real_profile_derivative_bound {v : ℝ → ℝ} {a b : ℝ}
     have he := iteratedDeriv_ofReal_fun ((hv u hu).of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2))
     simp only [iteratedDeriv_one] at he
     have hb := hm.deriv_le u hu
-    rw [he, Complex.norm_real, Real.norm_eq_abs, mul_one] at hb
-    exact hb
+    simp_all <;> nlinarith
   have hv2 (u : ℝ) (hu : u ∈ Icc a b) : |iteratedDeriv 2 v u| ≤ M := by
     have he := iteratedDeriv_ofReal_fun (hv u hu)
     have hb := hm.second_le u hu
-    rw [he, Complex.norm_real, Real.norm_eq_abs, one_pow, mul_one] at hb
-    exact hb
+    simp_all <;> nlinarith
   exact ⟨M, hM, fun u hu => ⟨hv0 u hu, hv1 u hu, hv2 u hu⟩⟩
 
-end MathCollab.Density.Stronger.Atkinson
+

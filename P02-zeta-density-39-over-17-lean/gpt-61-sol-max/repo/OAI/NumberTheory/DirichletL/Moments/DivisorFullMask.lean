@@ -6,13 +6,13 @@ public import Mathlib.Algebra.FiniteSupport.Basic
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorFullMask
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
 open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
  theorem annular_hasFiniteSupport (W : ℝ → ℂ) (b X : ℝ) (hX : 0 < X)
     (hs : Function.support W ⊆ Set.Iic b) :
@@ -91,8 +91,8 @@ theorem full_mask_eq_allocated_rectangles (η : Character) (m A z : O) (t : ℝ)
   rw [Finset.sum_comm]
   rfl
 
-end SevenEighths.CenteredMomentDivisorFullMask
 
-end
 
-end OAI
+
+
+

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalKernel
@@ -15,7 +15,7 @@ open CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
 open CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm
 open CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy
 open CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
     (M : Fin 4→ℝ) (hM : ∀i,0≤M i)
@@ -169,9 +169,9 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     _=(256*C)*E0:=by ring
 
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentRestrictedEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentLogDyadic CenteredMomentSupport
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentChildRows CenteredExceptionalProfile
 
 theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O)
@@ -273,8 +273,8 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
         IsCoprime (I:Ideal O) (J:Ideal O):=hcop I J
   simpa only [sectorElement_span,idealCorrelation,primaryGenerator_mul,sectorElement,hcop'] using he'
 
-end SevenEighths.CenteredMomentSecondExceptionalKernel
 
-end
 
-end OAI
+
+
+

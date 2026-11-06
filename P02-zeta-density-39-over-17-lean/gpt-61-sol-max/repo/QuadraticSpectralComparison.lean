@@ -3,8 +3,7 @@ public import FiniteCutoffOperators
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open InnerProductSpace
 open scoped InnerProductSpace
 namespace Montgomery.RationalMoment
@@ -102,4 +101,4 @@ theorem operator_finite_quadratic_comparison [FiniteDimensional ℂ E]
     simp [← Complex.ofReal_pow]
   simpa only [hdiag] using hp
 
-end Montgomery.RationalMoment
+

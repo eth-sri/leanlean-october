@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalParentSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic RayFourExpansion
 open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource
 open InversePrioritySecondSource
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -107,8 +107,8 @@ theorem global_second_energy_source
   apply Finset.sum_congr rfl
   intro D hD
   ring
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

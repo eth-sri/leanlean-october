@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeRow
 
@@ -6,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeRow
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
+open HeckeFamily PNT.AnnularPrimeMass
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ) :
@@ -17,10 +18,7 @@ lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ)
   apply Finset.sum_bij (fun P _=>P.val)
   · intro P hP;exact Finset.mem_subtype.mp hP
   · intro P hP Q hQ he;exact Subtype.ext he
-  · intro P hP
-    have hp : Prime P := ((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1
-    exact ⟨⟨P,hp⟩,Finset.mem_subtype.mpr hP,rfl⟩
-  · intro P hP;rfl
+  all_goals (simp_all <;> nlinarith)
 
 theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
     (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (_hab : a≤b) (hD : 0<D)
@@ -64,11 +62,15 @@ theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
       linarith
   simp only [hw,zero_mul]
 
-theorem central_phase_eq_amplitude (M : Id) [NeZero M]
+section
+variable (M : Id) [NeZero M]
     [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
     (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ)
     (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
-    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
+    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ)
+include M H S u W a b D ha hab hD hW hS z
+
+theorem central_phase_eq_amplitude  :
     (∑P∈pool (RayQuotient.identityClass M H) S a b D,
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val)))=
@@ -91,11 +93,7 @@ theorem central_phase_eq_amplitude (M : Id) [NeZero M]
   simp only [starRingEnd_apply,Complex.ofReal_natCast]
   ring
 
-theorem central_phase_norm (M : Id) [NeZero M]
-    [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
-    (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ)
-    (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
-    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
+theorem central_phase_norm  :
     ‖∑P∈pool (RayQuotient.identityClass M H) S a b D,
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val))‖=
@@ -103,6 +101,8 @@ theorem central_phase_norm (M : Id) [NeZero M]
   rw [central_phase_eq_amplitude M H S u W a b D ha hab hD hW hS z,
     norm_mul,norm_neg,Complex.norm_cpow_eq_rpow_re_of_pos hD]
   norm_num
+end
+
 
 theorem power_fixed_exclusions (S : Finset Id) (a ellMin : ℝ) (ha : 0<a) (hmin : 0<ellMin)
     {ι : Type*} (ell : ι→ℝ) (hell : ∀j,ellMin≤ell j) :
@@ -116,7 +116,7 @@ theorem power_fixed_exclusions (S : Finset Id) (a ellMin : ℝ) (ha : 0<a) (hmin
     _ ≤ a*Z^(ell j) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ (hell j)) ha.le
 
-end SevenEighths.ProbeRaySlots
-end
 
-end OAI
+
+
+

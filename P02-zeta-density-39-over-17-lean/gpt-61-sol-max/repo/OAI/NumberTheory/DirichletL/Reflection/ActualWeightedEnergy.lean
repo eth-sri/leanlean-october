@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CubicEisenstein InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
@@ -24,7 +24,7 @@ def weightedReflectedBranchHybridRow (F : PrimeFamily φ) (jF : φ → ℕ) (e :
     hybridRow Pset nset bset (fun P => actualSlotPhase F (S P) jF s u m*aw P)
       (frozenBranchColumn F jF e (fun n b => A n b*w n b)) K
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

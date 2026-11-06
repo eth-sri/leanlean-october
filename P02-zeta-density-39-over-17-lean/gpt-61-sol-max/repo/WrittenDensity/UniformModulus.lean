@@ -3,8 +3,7 @@ public import WrittenDensity.AllWritten
 public import GuthMaynard.Improvement.CurveUniformization
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.WrittenDensity
 
 /-- Uniform modulus for all linear fractional source exponents after their
@@ -32,4 +31,4 @@ theorem linear_fraction_modulus {a b c d x y : ℝ}
   rw [← he] at hh
   linarith
 
-end Montgomery.WrittenDensity
+

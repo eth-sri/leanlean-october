@@ -7,10 +7,10 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open MeasureTheory Complex
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 lemma central_source_crude_scale {Z a e : ℝ} (hZ : 1≤Z) (ha : 0≤a) (he : 0≤e) :
@@ -52,8 +52,8 @@ lemma central_arithmetic_cost_bound {K : ℕ} (η : Character) (u : FreeRow) (P 
       norm_num only [Nat.cast_ofNat]
       ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

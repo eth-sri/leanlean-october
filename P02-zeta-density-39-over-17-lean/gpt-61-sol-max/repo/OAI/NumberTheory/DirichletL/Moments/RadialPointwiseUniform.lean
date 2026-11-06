@@ -12,7 +12,7 @@ namespace SevenEighths.CenteredMomentRadialPointwiseUniform
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell
 open CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
@@ -68,8 +68,8 @@ def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
       (Real.rpow_nonneg hz.le _) (by positivity)
     _=_:=by ring
 
-end SevenEighths.CenteredMomentRadialPointwiseUniform
 
-end
 
-end OAI
+
+
+

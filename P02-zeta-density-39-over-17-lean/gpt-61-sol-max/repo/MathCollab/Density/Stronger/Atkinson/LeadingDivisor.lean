@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,11 +11,10 @@ public import MathCollab.Density.Stronger.Atkinson.KernelApproximation
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -116,7 +116,6 @@ theorem exists_norm_zetaSquareDivisorIntegral_sub_leading_le :
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaSquareDivisorContribution_error_le
   have hs := (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (3 / 2) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
   refine ⟨1 + C * S, by positivity, ?_⟩
   intro t ht
   let e : ℕ → ℂ := fun n => zetaSquareDivisorContribution (-t) n / zetaSquareGammaNormalization t -
@@ -135,4 +134,4 @@ theorem exists_norm_zetaSquareDivisorIntegral_sub_leading_le :
     _ = C * S := tsum_mul_left
     _ ≤ _ := by linarith
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proof slice at revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -9,11 +10,10 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
+open Complex Filter MeasureTheory
 open MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_divisorDirichletTerm_two (n : ℕ) :
@@ -35,11 +35,9 @@ theorem exists_norm_zetaAtkinsonBesselPlusTerm_le {k : ℕ} (hk : 2 ≤ k) :
   · simp [hn, zetaAtkinsonBesselPlusTerm, divisorWeight, divisorDirichletTerm, LSeries.term]
   have hnpos := Nat.pos_of_ne_zero hn
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hnpos
-  have hnk : (n : ℝ) ^ 2 ≤ (n : ℝ) ^ k := pow_le_pow_right₀ hn1 hk
+  have hnk := pow_le_pow_right₀ hn1 hk
   have hsmall : C * G * T / (T ^ k * (n : ℝ) ^ k) ≤
-      C * G * T / (T ^ k * (n : ℝ) ^ 2) := by
-    exact div_le_div_of_nonneg_left (by positivity) (by positivity)
-      (mul_le_mul_of_nonneg_left hnk (by positivity))
+      C * G * T / (T ^ k * (n : ℝ) ^ 2) := by field_simp <;> nlinarith
   unfold zetaAtkinsonBesselPlusTerm
   rw [norm_mul, norm_mul, norm_divisorDirichletTerm_two]
   norm_num only [norm_ofNat]
@@ -60,7 +58,7 @@ theorem exists_norm_zetaAtkinsonBesselPlus_le {k : ℕ} (hk : 2 ≤ k) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
       0 < L → 8 * L ≤ G → ‖zetaAtkinsonBesselPlus T G L‖ ≤ C * G * T / T ^ k := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaAtkinsonBesselPlusTerm_le hk
-  let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm 2 n‖
+  let S := ∑' n : ℕ, ‖divisorDirichletTerm 2 n‖
   have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
@@ -73,10 +71,6 @@ theorem exists_norm_zetaAtkinsonBesselPlus_le {k : ℕ} (hk : 2 ≤ k) :
     _ ≤ ∑' n : ℕ, (C * G * T / T ^ k) * ‖divisorDirichletTerm 2 n‖ :=
       hs.norm.tsum_le_tsum (hbound T G L hT hG hGT hL hwidth) (hd.mul_left _)
     _ = (C * G * T / T ^ k) * S := tsum_mul_left
-    _ ≤ _ := by
-      have hpos : 0 ≤ C * G * T / T ^ k := by positivity
-      have h := mul_le_mul_of_nonneg_left (show S ≤ 1 + S by linarith) hpos
-      convert h using 1
-      ring
+    _ ≤ _ := by field_simp <;> nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

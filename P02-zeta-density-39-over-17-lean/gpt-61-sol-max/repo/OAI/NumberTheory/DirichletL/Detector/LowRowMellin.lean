@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LowMellin
 
 @[expose] public section
@@ -10,10 +11,14 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowAdditiveCoefficient (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
+section
+variable (C : CalibrationData)
+include C
+
+def lowAdditiveCoefficient  (W1 : ℝ→ℂ) (Y : ℝ)
     (s : {I : Id // Supported I}) (m : O) (v : ℝ) : ℂ :=
   if ∀P∈C.excluded,¬P∣s.val then
     let a := primaryGenerator s.val
@@ -23,29 +28,33 @@ def lowAdditiveCoefficient (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
       ((q/Y:ℝ):ℂ)^(-(1/2:ℂ)+(v:ℂ)*Complex.I)*(Real.sqrt q:ℂ)⁻¹*sexticGauss a ha (-m)
   else 0
 
-def lowPhysicalScale (C : CalibrationData) (X Y : ℝ) : ℝ := elementNorm C.generator*X*Y
+def lowPhysicalScale  (X Y : ℝ) : ℝ := elementNorm C.generator*X*Y
 
-def lowRowMellinIntegrand (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
+def lowRowMellinIntegrand  (W0 W1 Ω : ℝ→ℂ)
     (X Y : ℝ) (r : PhysicalRowIndex) (v : ℝ) : ℂ :=
   mellin W0 ((v:ℂ)*Complex.I)*Ω (elementNorm r.2/lowPhysicalScale C X Y)*C.residueMonoid r.2*
     ((elementNorm r.2/lowPhysicalScale C X Y:ℝ):ℂ)^(-((v:ℂ)*Complex.I))*
       lowAdditiveCoefficient C W1 Y r.1 r.2 v
 
-lemma calibration_elementNorm_pos (C : CalibrationData) : 0<elementNorm C.generator := by
+lemma calibration_elementNorm_pos  : 0<elementNorm C.generator := by
   unfold elementNorm
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
 
-lemma lowPhysicalScale_pos (C : CalibrationData) (X Y : ℝ) (hX : 0<X) (hY : 0<Y) :
+lemma lowPhysicalScale_pos  (X Y : ℝ) (hX : 0<X) (hY : 0<Y) :
     0<lowPhysicalScale C X Y := mul_pos (mul_pos (calibration_elementNorm_pos C) hX) hY
 
-lemma lowAdditiveCoefficient_outer_zero (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
+lemma lowAdditiveCoefficient_outer_zero  (W1 : ℝ→ℂ) (Y : ℝ)
     (s : {I : Id // Supported I}) (m : O) (v : ℝ) (h : W1 ((Ideal.absNorm s.val:ℝ)/Y)=0) :
     lowAdditiveCoefficient C W1 Y s m v=0 := by
   unfold lowAdditiveCoefficient
   split_ifs <;> simp [h]
 
-lemma lowRowMellinIntegrand_nonzero_form (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
+section
+variable (W0 W1 Ω : ℝ→ℂ)
+include W0 W1 Ω
+
+lemma lowRowMellinIntegrand_nonzero_form 
     (X Y : ℝ) (hY : 0<Y) (r : PhysicalRowIndex) (v : ℝ)
     (hc : ∀P∈C.excluded,¬P∣r.1.val) :
     lowRowMellinIntegrand C W0 W1 Ω X Y r v=
@@ -59,14 +68,14 @@ lemma lowRowMellinIntegrand_nonzero_form (C : CalibrationData) (W0 W1 Ω : ℝ�
           (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)^((v:ℂ)*Complex.I)*mellin W0 ((v:ℂ)*Complex.I)) := by
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
-  have hqc : (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne'
+  have hqc := Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne'
   unfold lowRowMellinIntegrand lowAdditiveCoefficient
   rw [ite_eq_left hc]
   dsimp only
   rw [Complex.cpow_add _ _ hqc]
   ring
 
-lemma lowRowMellinIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
+lemma lowRowMellinIntegrand_integrable 
     (a0 b0 : ℝ) (ha0 : 0<a0) (hW0 : Function.support W0⊆Set.Icc a0 b0)
     (hWs : ContDiff ℝ ∞ W0) (hΩ : Ω 0=0) (X Y : ℝ) (hX : 0<X) (hY : 0<Y)
     (r : PhysicalRowIndex) : Integrable (lowRowMellinIntegrand C W0 W1 Ω X Y r) := by
@@ -91,8 +100,10 @@ lemma lowRowMellinIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→�
       simp [lowRowMellinIntegrand,lowAdditiveCoefficient,hc]
     rw [he]
     exact integrable_zero _ _ _
+end
 
-theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
+
+theorem physicalRowWeight_low_mellin  (W0 W1 : ℝ→ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hWs : ContDiff ℝ ∞ W0) (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : PhysicalRowIndex) :
@@ -136,12 +147,12 @@ theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
         exact Filter.Eventually.of_forall (fun v=>by dsimp only [Ω]; ring)
   · simp [physicalRowWeight,lowRowMellinIntegrand,lowAdditiveCoefficient,hc]
 
-def lowArithmeticCoefficient (C : CalibrationData) (s : {I : Id // Supported I}) : ℂ :=
+def lowArithmeticCoefficient  (s : {I : Id // Supported I}) : ℂ :=
   if ∀P∈C.excluded,¬P∣s.val then
     idealRowHom C.generator s.val/(C.tau*C.residueMonoid (primaryGenerator s.val))
   else 0
 
-lemma calibration_residue_inverse_norm (C : CalibrationData) (a : O) : ‖(C.residueMonoid a)⁻¹‖≤1 := by
+lemma calibration_residue_inverse_norm  (a : O) : ‖(C.residueMonoid a)⁻¹‖≤1 := by
   let : Finite (O ⧸ Ideal.span {C.generator}) := Ring.HasFiniteQuotients.finiteQuotient
     (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
   let : Fintype (O ⧸ Ideal.span {C.generator}) := Fintype.ofFinite _
@@ -149,7 +160,7 @@ lemma calibration_residue_inverse_norm (C : CalibrationData) (a : O) : ‖(C.res
   simpa only [MulChar.inv_apply_eq_inv'] using
     FiniteRayExpansion.norm_char_le_one C.residue⁻¹ (Ideal.Quotient.mk (Ideal.span {C.generator}) a)
 
-lemma lowArithmeticCoefficient_norm (C : CalibrationData) (s : {I : Id // Supported I}) :
+lemma lowArithmeticCoefficient_norm  (s : {I : Id // Supported I}) :
     ‖lowArithmeticCoefficient C s‖≤‖C.tau‖⁻¹ := by
   unfold lowArithmeticCoefficient
   split_ifs
@@ -159,6 +170,8 @@ lemma lowArithmeticCoefficient_norm (C : CalibrationData) (s : {I : Id // Suppor
     have hh := (mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg _)) (idealRowHom_norm C.generator s.val)).trans hi
     simpa only [mul_assoc] using mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg C.tau)) hh
   · simp
+end
+
 
 lemma lowArithmeticCoefficient_source_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (s : {I : Id // Supported I}) : ‖lowArithmeticCoefficient (calibrationForSet S hS) s‖≤1 := by
@@ -175,7 +188,7 @@ lemma lowAdditiveCoefficient_eq (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
   split_ifs <;> simp only [mul_zero,zero_mul]
   ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

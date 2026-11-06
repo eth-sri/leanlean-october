@@ -8,11 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open JointLogSeparation MeasureTheory
+
+open scoped EisensteinEis
+open InverseMomentFirstProfileUniform
 theorem actual_first_moving_family_two_energies_uniform
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -122,7 +122,7 @@ theorem first_global_retained_push_uniform (ε:ℝ)(hε:0<ε):
     (d k) (labels k) (a k) Γ Y hΓ hY (hs k hk) (hn k hk) (ha k hk)
     negative (H k) (selector k) ω X t hX
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

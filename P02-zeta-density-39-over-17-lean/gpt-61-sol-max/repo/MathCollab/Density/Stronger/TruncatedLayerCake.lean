@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -13,8 +14,7 @@ public import Mathlib.Tactic
 
 open MeasureTheory Filter Set
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 theorem continuous_const_div_max {A C : ℝ} (hA : 0 < A) :
@@ -32,8 +32,7 @@ theorem integral_const_div_max {A M C : ℝ}
         apply intervalIntegral.integral_congr
         intro t ht
         rw [Set.uIcc_of_le hA.le] at ht
-        dsimp only
-        rw [max_eq_left ht.2]
+        simp_all
       _ = C := by simp; field_simp
   have hhi : (∫ t in A..M, C/max A t) = C*Real.log (M/A) := by
     calc
@@ -41,12 +40,8 @@ theorem integral_const_div_max {A M C : ℝ}
         apply intervalIntegral.integral_congr
         intro t ht
         rw [Set.uIcc_of_le hAM] at ht
-        dsimp only
-        rw [max_eq_right ht.1]
-        ring
-      _ = C*Real.log (M/A) := by
-        rw [intervalIntegral.integral_const_mul,
-          integral_one_div_of_pos hA (hA.trans_le hAM)]
+        grind
+      _ = C*Real.log (M/A) := by simp_all
   rw [← intervalIntegral.integral_add_adjacent_intervals
     (hcont.intervalIntegrable 0 A) (hcont.intervalIntegrable A M),hlo,hhi]
   ring
@@ -75,4 +70,4 @@ theorem integral_le_log_of_truncated_tail
     _ = C*(1+Real.log (M/A)) := integral_const_div_max hA hAM
 
 
-end MathCollab.Density.Stronger
+

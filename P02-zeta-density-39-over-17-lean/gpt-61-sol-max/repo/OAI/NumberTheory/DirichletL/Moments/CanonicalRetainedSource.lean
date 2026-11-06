@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SmoothedRetainedSource
-public import OAI.NumberTheory.DirichletL.Moments.SecondSourceCost
+public import OAI.NumberTheory.DirichletL.Moments.SecondLiveEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RestrictedSourceNormalization
 public import OAI.NumberTheory.DirichletL.Moments.SourceRectangle
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 
@@ -12,16 +13,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCanonicalRetainedSource
-open CanonicalQuadraticSieve CenteredMomentFirstSectors
-open HeckeFamily ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentDivisorRetained
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRaw
-open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationLiveMask CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CenteredMomentCommonRawScale CenteredMomentRestrictedSourceNormalization
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstSectors
+
+open CenteredMomentSourceRectangle
+
+
+
+open CenteredMomentSourceLiveColumn
+open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -41,10 +42,9 @@ theorem liveBox_original_pools (S : (ι⊕Fin 2)→Finset (Ideal O)) (B : Tuple 
   rw [liveBox_eq_tuplePool]
   simp_rw [live_residual_pool]
 
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-end SevenEighths.CenteredMomentCanonicalRetainedSource
 
-end
 
-end OAI
+
+
+

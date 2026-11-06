@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.SecondDerivative
 
 @[expose] public section
 
-open Set
+
 
 namespace RiemannZeta.GuthMaynard
 
@@ -40,10 +41,7 @@ theorem second_order_mean_value
     convert (((hF' y hy).sub_const a).sub
       ((((hasDerivAt_id y).sub_const x).add
         (((hasDerivAt_id y).sub_const x).sub_const 1)).const_mul (D / 2))) using 1
-    · funext z
-      simp only [Pi.sub_apply, Pi.add_apply]
-      dsimp only [a, id_eq]
-    · ring
+    all_goals (bound)
   have hq0 : q x = 0 := by dsimp only [q]; ring
   have hq1 : q (x + 1) = 0 := by dsimp only [q, a]; ring
   have hq2 : q (x + 2) = 0 := by dsimp only [q, a, D]; ring
@@ -63,7 +61,6 @@ theorem second_order_mean_value
     (fun y hy => hq' y ⟨(by linarith [hc₁.1, hy.1]),
       (by linarith [hc₂.2, hy.2])⟩)
   refine ⟨xi, ⟨hc₁.1.trans hxi.1, hxi.2.trans hc₂.2⟩, ?_⟩
-  dsimp only [D] at hxizero ⊢
-  linarith
+  bound
 
-end RiemannZeta.GuthMaynard
+

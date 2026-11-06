@@ -10,7 +10,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 lemma sum_subtype_dite {α : Type*} [Fintype α] (p : α→Prop) (f : ∀ x,p x→ℂ) :
@@ -23,12 +23,20 @@ lemma sum_subtype_dite {α : Type*} [Fintype α] (p : α→Prop) (f : ∀ x,p x�
   rw [hz,add_zero] at hh
   simpa only [Subtype.property,dite_eq_left] using hh
 
-def literalPairEntry (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
+section
+variable (F : PrimeFamily φ)
+include F
+
+section
+variable (rows Pset : Finset (Ideal Eis))
     (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) (K P : Ideal Eis) : ℂ :=
+    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ)
+include rows Pset S hrows jF D s hc W θ X r aw
+
+def literalPairEntry  (K P : Ideal Eis) : ℂ :=
   if hK:K∈rows then if hP:P∈Pset then if hp:IsCoprime K P then
     r K*aw P*mixedReflectedValue (D ⟨K,hK⟩ ⟨P,hP⟩ hp) s
       (F.reflected K (hrows K hK) (S P)).generator_ne_zero hc
@@ -36,12 +44,7 @@ def literalPairEntry (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
       (slotIndices φ (PrimeIndex K) σ) (CompletedHeight.normTwistedSource W θ) X
   else 0 else 0 else 0
 
-lemma literalWholeRow_eq_pairs (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
-    (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
-      ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) (K : rows) :
+lemma literalWholeRow_eq_pairs  (K : rows) :
     literalWholeRow F K.val (hrows K.val K.property) S jF Pset (D K) s hc W θ X r aw=
       ∑ P∈Pset,literalPairEntry F rows Pset S hrows jF D s hc W θ X r aw K.val P := by
   let f := fun (P : Pset) (hp : IsCoprime K.val P.val) => r K.val*aw P.val*
@@ -54,8 +57,10 @@ lemma literalWholeRow_eq_pairs (F : PrimeFamily φ) (rows Pset : Finset (Ideal E
   apply Finset.sum_congr rfl
   intro P hP
   simp only [literalPairEntry,dite_eq_left K.property,dite_eq_left P.property,f]
+end
 
-lemma literalPairEntry_restrict (F : PrimeFamily φ) (rows Pset rows' Pset' : Finset (Ideal Eis))
+
+lemma literalPairEntry_restrict  (rows Pset rows' Pset' : Finset (Ideal Eis))
     (hrow : rows'⊆rows) (hP : Pset'⊆Pset) (S : Ideal Eis→PrimeFamily σ)
     (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
@@ -71,6 +76,8 @@ lemma literalPairEntry_restrict (F : PrimeFamily φ) (rows Pset rows' Pset' : Fi
   · simp only [dite_eq_left hcop,hE]
   · simp only [dite_eq_right hcop]
 end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

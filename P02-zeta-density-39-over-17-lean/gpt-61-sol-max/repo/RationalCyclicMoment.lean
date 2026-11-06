@@ -4,15 +4,18 @@ public import CyclicProductMoment
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
-def primeCoordinates {d : ℕ} (p : Fin d → ℕ) (r : ℚ) : Fin d → ℤ :=
+section
+variable {d : ℕ} (p : Fin d → ℕ)
+include d p
+
+def primeCoordinates  (r : ℚ) : Fin d → ℤ :=
   fun j => rationalExponent r (p j)
 
-theorem primeCoordinates_injective_on {d : ℕ} (p : Fin d → ℕ) (A : Finset ℚ)
+theorem primeCoordinates_injective_on  (A : Finset ℚ)
     (hA : ∀ r ∈ A, 0 < r)
     (hP : ∀ r ∈ A, r.num.natAbs.primeFactors ∪ r.den.primeFactors ⊆ univ.image p) :
     Set.InjOn (primeCoordinates p) (↑A : Set ℚ) := by
@@ -24,17 +27,23 @@ theorem primeCoordinates_injective_on {d : ℕ} (p : Fin d → ℕ) (A : Finset 
     exact congrFun hrs j
   · rw [rationalExponent_zero_outside (fun h => hq (hP r hr h)),
       rationalExponent_zero_outside (fun h => hq (hP s hs h))]
+end
 
-def rationalCyclicPhase {N d : ℕ} [NeZero N] (p : Fin d → ℕ)
+
+section
+variable {N d : ℕ} [NeZero N] (p : Fin d → ℕ)
+include N d p
+
+def rationalCyclicPhase 
     (r : ℚ) (x : Fin d → ZMod N) : ℂ := productCyclicPhase (primeCoordinates p r) x
 
-theorem rationalCyclicPhase_mul {N d : ℕ} [NeZero N] (p : Fin d → ℕ)
+theorem rationalCyclicPhase_mul 
     {r s : ℚ} (hr : r ≠ 0) (hs : s ≠ 0) (x : Fin d → ZMod N) :
     rationalCyclicPhase p (r*s) x = rationalCyclicPhase p r x*rationalCyclicPhase p s x := by
   simp only [rationalCyclicPhase, productCyclicPhase, primeCoordinates,
     rationalExponent_mul hr hs, cyclicPhase_add, prod_mul_distrib]
 
-theorem rationalCyclicPhase_product {N d : ℕ} [NeZero N] (p : Fin d → ℕ)
+theorem rationalCyclicPhase_product 
     {ι : Type*} (S : Finset ι) (r : ι → ℚ) (hr : ∀ i ∈ S, r i ≠ 0)
     (x : Fin d → ZMod N) :
     (∏ i ∈ S, rationalCyclicPhase p (r i) x) = rationalCyclicPhase p (∏ i ∈ S, r i) x := by
@@ -48,7 +57,7 @@ theorem rationalCyclicPhase_product {N d : ℕ} [NeZero N] (p : Fin d → ℕ)
         (prod_ne_zero_iff.mpr (fun j hj => hr j (mem_insert_of_mem hj))),
       ih (fun j hj => hr j (mem_insert_of_mem hj))]
 
-theorem rational_cyclic_power_expansion {N d : ℕ} [NeZero N] (p : Fin d → ℕ)
+theorem rational_cyclic_power_expansion 
     (A : Finset ℚ) (c : ℚ → ℂ) (k : ℕ) (hA : ∀ r ∈ A, 0 < r)
     (x : Fin d → ZMod N) :
     (∑ r ∈ A, c r*rationalCyclicPhase p r x)^k =
@@ -74,8 +83,7 @@ theorem rational_cyclic_power_expansion {N d : ℕ} [NeZero N] (p : Fin d → �
 
 /-- The arithmetic weighted fourth moment, realized on a finite product of
 cyclic groups. No hypercontractivity or torus-moment premise is used. -/
-theorem rational_cyclic_weighted_fourth {N d : ℕ} [NeZero N]
-    (p : Fin d → ℕ) (hp : Function.Injective p) (A : Finset ℚ)
+theorem rational_cyclic_weighted_fourth  (hp : Function.Injective p) (A : Finset ℚ)
     (hA : ∀ r ∈ A, 0 < r)
     (hP : ∀ r ∈ A, r.num.natAbs.primeFactors ∪ r.den.primeFactors ⊆ univ.image p)
     (hN : ∀ r ∈ A, ∀ j, (rationalExponent r (p j)).natAbs < N) (c : ℚ → ℂ) :
@@ -106,8 +114,7 @@ theorem rational_cyclic_weighted_fourth {N d : ℕ} [NeZero N]
     (prod_nonneg (fun j _ => integerFourthWeight_nonneg _)) (sq_nonneg _)))
   exact sum_le_sum (fun r hr => mul_le_mul_of_nonneg_right (hb r hr) (sq_nonneg _))
 
-theorem rational_cyclic_parseval {N d : ℕ} [NeZero N]
-    (p : Fin d → ℕ) (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < r)
+theorem rational_cyclic_parseval  (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < r)
     (hP : ∀ r ∈ A, r.num.natAbs.primeFactors ∪ r.den.primeFactors ⊆ univ.image p)
     (hN : ∀ r ∈ A, ∀ s ∈ A, ∀ j,
       (rationalExponent r (p j)-rationalExponent s (p j)).natAbs < N) (c : ℚ → ℂ) :
@@ -126,6 +133,8 @@ theorem rational_cyclic_parseval {N d : ℕ} [NeZero N]
   · have hn : primeCoordinates p r ≠ primeCoordinates p s :=
       fun he => h (primeCoordinates_injective_on p A hA hP hr hs he)
     simp [h, hn]
+end
+
 
 theorem rational_products_positive (A : Finset ℚ) (k : ℕ) (hA : ∀ r ∈ A, 0 < r) :
     ∀ q ∈ rationalProducts A k, 0 < q := by
@@ -153,4 +162,4 @@ theorem rational_cyclic_moment_identity {N d : ℕ} [NeZero N]
   congr 2
   omega
 
-end Montgomery.RationalMoment
+

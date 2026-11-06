@@ -8,14 +8,18 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-theorem nonprincipal_positive_growth (σ δ : ℝ) (hσ : 0<σ) (hδ : 0<δ) :
-    ∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 → ∀s : ℂ,σ≤s.re →
+section
+variable (σ δ : ℝ) (hσ : 0<σ) (hδ : 0<δ)
+include σ δ hσ hδ
+
+theorem nonprincipal_positive_growth  :
+    ∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 → ∀s : ℂ,σ≤ s.re →
       ‖HeckeOrigin.continued χ s‖≤C*(χ.modulus.absNorm:ℝ)^(3/5+δ)*(3+|s.im|)^2 := by
   obtain ⟨Cd,hCd,hdel⟩ := HeckeDeletionBounds.factors_subpower_bound σ δ hσ hδ
   refine ⟨(1+HeckeLogarithmicInput.uniformConstant)*Cd,
@@ -23,7 +27,7 @@ theorem nonprincipal_positive_growth (σ δ : ℝ) (hσ : 0<σ) (hδ : 0<δ) :
   intro χ hχ s hs
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue≠1 := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
-  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤s.re)
+  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤ s.re)
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
   have hd : ‖HeckeFiniteDeletion.factors χ.modulus ψ s‖≤Cd*(χ.modulus.absNorm:ℝ)^δ :=
     (le_add_of_nonneg_right (norm_nonneg _)).trans (hdel χ.modulus χ.modulus_ne_bot ψ s hs)
@@ -41,9 +45,9 @@ theorem nonprincipal_positive_growth (σ δ : ℝ) (hσ : 0<σ) (hδ : 0<δ) :
         (Cd*(χ.modulus.absNorm:ℝ)^δ) := by gcongr;linarith
     _ = _ := by rw [Real.rpow_add hN];ring
 
-theorem calibrated_numerator_positive_growth (σ δ : ℝ) (hσ : 0<σ) (hδ : 0<δ)
+theorem calibrated_numerator_positive_growth 
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) :
-    ∃C : ℝ,0<C ∧ ∀(u : FreeRow),u.val≠1 → ∀s : ℂ,σ≤s.re →
+    ∃C : ℝ,0<C ∧ ∀(u : FreeRow),u.val≠1 → ∀s : ℂ,σ≤ s.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤
         C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(3/5+δ)*(3+|s.im|)^2 := by
@@ -77,8 +81,10 @@ theorem calibrated_numerator_positive_growth (σ δ : ℝ) (hσ : 0<σ) (hδ : 0
         calc
           _ = C*A^(3/5+δ)*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(3/5+δ)*(3+|s.im|)^2 := by ring
           _ ≤ _ := by gcongr;linarith
-
-end SevenEighths.ProbeHighRowFamily
 end
 
-end OAI
+
+
+
+
+

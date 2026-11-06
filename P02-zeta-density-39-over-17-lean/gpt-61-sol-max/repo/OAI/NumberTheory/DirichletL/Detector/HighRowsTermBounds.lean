@@ -7,8 +7,8 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinO
 
 lemma sourceWeightedScalar_norm_le (Q : ℝ) (hQ : 0<Q)
     (eta a gamma C omega x w z scalar : ℂ) (heta : ‖eta‖≤1) (ha : ‖a‖≤1)
@@ -28,7 +28,7 @@ lemma sourceWeightedScalar_norm_le (Q : ℝ) (hQ : 0<Q)
   rw [he]
   exact mul_le_mul_of_nonneg_right (mul_le_of_le_one_left (norm_nonneg _) hn) (by positivity)
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

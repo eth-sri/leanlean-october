@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.NaturalLowPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveLowSourceControlled
 public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
@@ -16,26 +17,27 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowStage
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource
-open CenteredMomentEnergyNaturalSourceAdmission
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
+open HeckeFamily
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
+
+open CenteredMomentNaturalFixedRaySource
+open CenteredMomentEnergyPositiveLowBandSource
+
+
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
-local notation "O"=>HeckeFamily.O
+open CenteredMomentEnergyStageMargins
+open CenteredMomentEnergyFirstLiveAdmission
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyNaturalLowPhysical CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyBandMonotonicity
+
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem actual_low_from_bands
     (W:ℝ→ℂ)(hW:ContDiff ℝ ∞ W)(aslot bslot lo hi a b bΦ:ℝ)
@@ -47,14 +49,14 @@ theorem actual_low_from_bands
     (hMA:Mparent≤A)(hready:readyBudget A Bmask≤B)
     (hκ:(3/4:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(hε:0<ε)
-    (hslot:Lslot≤mesh Mglobal B κ ε)
+    (hslot:Lslot≤ mesh Mglobal B κ ε)
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃Uout:Finset (ℕ×ℕ),∃Jout:ℕ,
     ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
+    ∀εchild C₀ C₁:ℝ,εchild≤ stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b bΦ Bmask (2*max Lgoal Mparent+reserve Mglobal B ε/4)
         Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask (2*max Lgoal Mparent+reserve Mglobal B ε/4)
@@ -125,7 +127,7 @@ theorem actual_low_from_bands
     apply hh.trans
     gcongr
   have hsave:-(2*amplification ε+1)≤physicalLoss Mglobal B ε k:=by
-    have hs:0<amplification ε:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
+    have hs :=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
     linarith [hmarg.1]
   have hout:=he.2 Bmask Lgoal Lslot Mchild κ (physicalLoss Mglobal B ε k) η₀ Q Umerge Jmerge
     (Cp*(C₀+C₁+1)) C₁ hκsmall (by positivity) hC₁ hmarg.2.2.1 hsave hold hm'
@@ -146,8 +148,8 @@ theorem actual_low_from_bands
       le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (Finset.Subset.refl _)
       (by positivity) hC hout.2
 
-end SevenEighths.CenteredMomentEnergyNaturalLowStage
 
-end
 
-end OAI
+
+
+

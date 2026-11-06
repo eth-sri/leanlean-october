@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Poisson.BinaryGaussian
 
 @[expose] public section
@@ -8,44 +9,36 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 
 namespace ActualEisensteinCubic
 
-theorem principal_absNorm_pow (p : O) (k : ℕ) :
-    Ideal.absNorm (Ideal.span {p ^ k}) =
-      (Ideal.absNorm (Ideal.span {p})) ^ k := by
-  rw [← Ideal.span_singleton_pow]
-  exact map_pow Ideal.absNorm (Ideal.span {p}) k
+
 
 end ActualEisensteinCubic
 namespace OscillatoryDeterminant
 
 open Complex
 
-def q (a b : ℂ) : ℂ := a*a-a*b+b*b
+
 
 end OscillatoryDeterminant
 
-namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
-
-end ActualEisensteinCubic
 namespace EisensteinFiberShift
 
 def Q (x y : ℝ) : ℝ := x*x-x*y+y*y
 def q (a b : ℝ) : ℝ := Q a b
-noncomputable def shiftX (a b x y : ℝ) : ℝ := ((a-b)*x+b*y)/q a b
-noncomputable def shiftY (a b x y : ℝ) : ℝ := (-b*x+a*y)/q a b
+def shiftX (a b x y : ℝ) : ℝ := ((a-b)*x+b*y)/q a b
+def shiftY (a b x y : ℝ) : ℝ := (-b*x+a*y)/q a b
 
 theorem exact_shift (a b x y m n : ℝ) (hq : q a b ≠ 0) :
     Q (x+a*m-b*n) (y+b*m+(a-b)*n) =
@@ -61,7 +54,7 @@ namespace ShortDraftLatticeCount
 
 open ActualEisensteinCoordinates
 
-noncomputable def rowNormBall (H : ℕ) : Finset O := by
+def rowNormBall (H : ℕ) : Finset O := by
   classical
   let I : Finset ℤ := Finset.Icc (-((H : ℤ) + 1)) ((H : ℤ) + 1)
   exact (I.product I).image (fun v => eval v.1 v.2)
@@ -117,14 +110,7 @@ theorem eta_times_prefactor (η q : ℝ) (hη : 0 < η) (hq : 0 < q) :
       (1 / Real.sqrt (3*(η*q)/4)) =
       2 / (Real.sqrt 3 * q) := by
   have ht : 0 < η*q := mul_pos hη hq
-  have hsqrt : Real.sqrt (η*q) * Real.sqrt (3*(η*q)/4) =
-      Real.sqrt 3 * (η*q) / 2 := sqrt_product (η*q) ht.le
-  have hne1 : Real.sqrt (η*q) ≠ 0 := ne_of_gt (Real.sqrt_pos.2 ht)
-  have hne2 : Real.sqrt (3*(η*q)/4) ≠ 0 := by
-    apply ne_of_gt
-    apply Real.sqrt_pos.2
-    positivity
-  have hne3 : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.2 (by norm_num))
+  have hsqrt := sqrt_product (η*q) ht.le
   calc
     η * (1 / Real.sqrt (η*q)) *
         (1 / Real.sqrt (3*(η*q)/4)) =
@@ -137,7 +123,7 @@ end EisensteinGaussianPrefactor
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open ConcreteTraceCRT Complex
 
 theorem actual_oscillatory_gaussian_coordinate
     (a b m n : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
@@ -163,7 +149,6 @@ theorem actual_oscillatory_gaussian_coordinate
   rw [hnormC]
   rw [← Complex.exp_add]
   congr 1
-  push_cast
   ring
 
 end ActualEisensteinCubic
@@ -198,14 +183,12 @@ theorem complex_eta_times_prefactor (η q : ℝ) (hη : 0 < η) (hq : 0 < q) :
 
 end EisensteinGaussianPrefactor
 
-namespace ActualEisensteinCubic
 
-end ActualEisensteinCubic
 namespace OscillatoryDeterminant
 
 open Complex
 
-noncomputable def r (t a b : ℂ) : ℂ := 1 + 3 * q a b * t^2 / 16
+
 
 end OscillatoryDeterminant
 open Filter Real Asymptotics
@@ -220,7 +203,7 @@ open RankTwoPoisson RankTwoEisShift Filter
 
 private theorem eisQ_nonneg (z : ℤ × ℤ) : 0 ≤ RankTwoPoisson.eisQ z := by
   have h := RankTwoPoisson.eisQ_lower z
-  nlinarith [sq_nonneg (z.1 : ℝ), sq_nonneg (z.2 : ℝ)]
+  nlinarith
 
 private theorem eisQ_pos {z : ℤ × ℤ} (hz : z ≠ (0,0)) :
     0 < RankTwoPoisson.eisQ z := by
@@ -240,10 +223,10 @@ private theorem eisGauss_norm (T : ℝ) (z : ℤ × ℤ) :
       Real.exp (-Real.pi * T * RankTwoPoisson.eisQ z) := by
   simp [RankTwoPoisson.eisGauss, Complex.norm_exp]
 
-noncomputable def dualTerm (T : ℝ) (x y : ℝ) (z : ℤ × ℤ) : ℂ :=
+def dualTerm (T : ℝ) (x y : ℝ) (z : ℤ × ℤ) : ℂ :=
   RankTwoPoisson.eisGauss T (z.1,-z.2) * RankTwoEisShift.dualPhase z.1 z.2 x y
 
-noncomputable def limitTerm (z : ℤ × ℤ) : ℂ :=
+def limitTerm (z : ℤ × ℤ) : ℂ :=
   if z = (0,0) then 1 else 0
 
 private theorem dualTerm_tendsto (x y : ℝ) (z : ℤ × ℤ) :
@@ -252,12 +235,7 @@ private theorem dualTerm_tendsto (x y : ℝ) (z : ℤ × ℤ) :
   · subst z
     simp [dualTerm, limitTerm, RankTwoPoisson.eisGauss,
       RankTwoPoisson.eisQ, RankTwoEisShift.dualPhase]
-  · have hz' : (z.1,-z.2) ≠ ((0,0) : ℤ × ℤ) := by
-      intro h
-      apply hz
-      have h1 : z.1 = 0 := by simpa using congrArg Prod.fst h
-      have h2 : z.2 = 0 := by simpa using congrArg Prod.snd h
-      exact Prod.ext h1 h2
+  · have hz' : (z.1,-z.2) ≠ ((0,0) : ℤ × ℤ) := by grind
     have hq := eisQ_pos hz'
     have hneg : -Real.pi * RankTwoPoisson.eisQ (z.1,-z.2) < 0 := by
       nlinarith [mul_pos Real.pi_pos hq]
@@ -289,7 +267,7 @@ private theorem dualTerm_tendsto (x y : ℝ) (z : ℤ × ℤ) :
 theorem dual_sum_tendsto_one (x y : ℝ) :
     Tendsto (fun T : ℝ => ∑' z : ℤ × ℤ, dualTerm T x y z)
       atTop (𝓝 (1 : ℂ)) := by
-  let e : ℤ × ℤ ≃ ℤ × ℤ :=
+  let e :=
     Equiv.prodCongr (Equiv.refl ℤ) (Equiv.neg ℤ)
   have hE : Summable (fun z : ℤ × ℤ =>
       RankTwoPoisson.eisGauss 1 (z.1,-z.2)) :=
@@ -300,7 +278,7 @@ theorem dual_sum_tendsto_one (x y : ℝ) :
     rw [dualTerm, norm_mul, RankTwoEisShift.dualPhase_norm, mul_one,
       eisGauss_norm, eisGauss_norm]
     have hq := eisQ_nonneg (z.1,-z.2)
-    have hpq : 0 ≤ Real.pi * RankTwoPoisson.eisQ (z.1,-z.2) :=
+    have hpq :=
       mul_nonneg Real.pi_pos.le hq
     have hm := mul_le_mul_of_nonneg_right hT hpq
     apply Real.exp_le_exp.mpr
@@ -323,8 +301,8 @@ theorem dual_sum_tendsto_one_small_t (x y : ℝ) :
   have h := (dual_sum_tendsto_one x y).comp hT
   simpa [Function.comp_def, div_eq_mul_inv, mul_inv_rev, mul_assoc, mul_comm, mul_left_comm] using h
 
-end RankTwoLimit
 
-end
 
-end OAI
+
+
+

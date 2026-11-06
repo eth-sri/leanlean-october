@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDetector
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalLargeValues
 public import GuthMaynard.NativeSource.GuthMaynard.BetaDependence
@@ -6,25 +7,33 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 
 @[expose] public section
 
-open Complex Finset Set Topology
+open Complex Finset Topology
 open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
-open Filter Asymptotics PhragmenLindelof
+open Filter Asymptotics
+
+section
+variable (S : Finset ℕ)
+include S
+
+section
+variable (a : ℕ → ℂ)
+include a
 
 /-- A Dirichlet polynomial on an arbitrary finite positive support. -/
 noncomputable def finiteDirichletSeries
-    (S : Finset ℕ) (a : ℕ → ℂ) (s : ℂ) : ℂ :=
+     (s : ℂ) : ℂ :=
   ∑ n ∈ S, a n * (n : ℂ) ^ (-s)
 
 /-- The coefficient mass used to bound a finite Dirichlet polynomial in the
 closed right half-plane. -/
-noncomputable def finiteDirichletMass (S : Finset ℕ) (a : ℕ → ℂ) : ℝ :=
+noncomputable def finiteDirichletMass  : ℝ :=
   ∑ n ∈ S, ‖a n‖
 
 theorem norm_finiteDirichletSeries_le_mass
-    (S : Finset ℕ) (a : ℕ → ℂ) (s : ℂ)
+     (s : ℂ)
     (hS : ∀ n ∈ S, 0 < n) (hs : 0 ≤ s.re) :
     ‖finiteDirichletSeries S a s‖ ≤ finiteDirichletMass S a := by
   unfold finiteDirichletSeries finiteDirichletMass
@@ -40,7 +49,7 @@ theorem norm_finiteDirichletSeries_le_mass
           (by exact_mod_cast (hS n hn)) (by simp [hs])
 
 theorem differentiable_finiteDirichletSeries_add
-    (S : Finset ℕ) (a : ℕ → ℂ) (z : ℂ) (hS : ∀ n ∈ S, 0 < n) :
+     (z : ℂ) (hS : ∀ n ∈ S, 0 < n) :
     Differentiable ℂ (fun w : ℂ => finiteDirichletSeries S a (z + w)) := by
   intro w
   apply AnalyticAt.differentiableAt
@@ -53,19 +62,23 @@ theorem differentiable_finiteDirichletSeries_add
   rw [hEq]
   apply Finset.analyticAt_sum
   intro n hn
-  have hnPos : 0 < n := hS n hn
+  have hnPos := hS n hn
   have hpow : AnalyticAt ℂ (fun u : ℂ => (n : ℂ) ^ (-(z + u))) w :=
     analyticAt_const.cpow ((analyticAt_const.add analyticAt_id).neg)
       (Complex.natCast_mem_slitPlane.mpr hnPos.ne')
   exact analyticAt_const.mul hpow
 
+section
+variable (k : ℕ)
+include k
+
 /-- Rational localization of a finite Dirichlet polynomial. -/
 noncomputable def localizedFiniteDirichlet
-    (S : Finset ℕ) (a : ℕ → ℂ) (k : ℕ) (z : ℂ) (H : ℝ) (w : ℂ) : ℂ :=
+     (z : ℂ) (H : ℝ) (w : ℂ) : ℂ :=
   (((H : ℂ) / (H + w)) ^ k) * finiteDirichletSeries S a (z + w)
 
 theorem localizedFiniteDirichlet_le_mass
-    (S : Finset ℕ) (a : ℕ → ℂ) (k : ℕ) (z w : ℂ) (H : ℝ)
+     (z w : ℂ) (H : ℝ)
     (hS : ∀ n ∈ S, 0 < n) (hH : 0 < H) (hz : 0 ≤ z.re) (hw : 0 ≤ w.re) :
     ‖localizedFiniteDirichlet S a k z H w‖ ≤ finiteDirichletMass S a := by
   rw [localizedFiniteDirichlet, norm_mul]
@@ -78,7 +91,7 @@ theorem localizedFiniteDirichlet_le_mass
     _ = finiteDirichletMass S a := one_mul _
 
 theorem localizedFiniteDirichlet_halfPlane_bound
-    (S : Finset ℕ) (a : ℕ → ℂ) (k : ℕ) (z : ℂ) (H C : ℝ)
+     (z : ℂ) (H C : ℝ)
     (hS : ∀ n ∈ S, 0 < n) (hH : 0 < H) (hz : 0 ≤ z.re)
     (hBoundary : ∀ y : ℝ,
       ‖localizedFiniteDirichlet S a k z H (y * I)‖ ≤ C)
@@ -93,10 +106,7 @@ theorem localizedFiniteDirichlet_halfPlane_bound
       have hne : (H : ℂ) + u ≠ 0 := by
         intro h
         have hre := congrArg Complex.re h
-        simp only [add_re, ofReal_re, zero_re] at hre
-        rw [closure_setOfPred_lt_re] at hu
-        change 0 ≤ u.re at hu
-        linarith
+        norm_num at * <;> nlinarith
       exact ((((differentiableAt_const (c := (H : ℂ))).div
         ((differentiableAt_const (c := (H : ℂ))).add differentiableAt_id) hne).pow k).mul
           (differentiable_finiteDirichletSeries_add S a z hS u)).differentiableWithinAt)
@@ -111,13 +121,15 @@ theorem localizedFiniteDirichlet_halfPlane_bound
     rw [eventually_map]
     exact Filter.eventually_atTop.mpr ⟨0, fun x hx =>
       localizedFiniteDirichlet_le_mass S a k z x H hS hH hz (by simpa using hx)⟩
-  · exact hBoundary
-  · exact hw
+  all_goals (assumption)
+end
+end
+
 
 /-- A large value to the right of a fixed vertical line produces a comparably
 large value on that line after a controlled ordinate displacement. -/
 theorem exists_nearby_large_value_finiteDirichlet
-    (S : Finset ℕ) (coeff : ℕ → ℂ) (k : ℕ) (z : ℂ) (H R A a : ℝ)
+     (coeff : ℕ → ℂ) (k : ℕ) (z : ℂ) (H R A a : ℝ)
     (hS : ∀ n ∈ S, 0 < n) (hH : 0 < H) (hR : 0 < R) (hA : 0 < A)
     (hz : 0 ≤ z.re) (ha : 0 ≤ a)
     (hLarge : A ≤ ‖finiteDirichletSeries S coeff (z + a)‖)
@@ -153,28 +165,29 @@ theorem exists_nearby_large_value_finiteDirichlet
   have hPL := localizedFiniteDirichlet_halfPlane_bound
     S coeff k z H ((3 / 4) * A) hS hH hz hBoundary (a : ℂ) (by simpa using ha)
   rw [localizedFiniteDirichlet, norm_mul] at hPL
-  have hStrict : (3 / 4) * A <
-      ‖((H : ℂ) / (H + (a : ℂ))) ^ k‖ *
-        ‖finiteDirichletSeries S coeff (z + a)‖ := by
-    calc
-      (3 / 4) * A < ‖((H : ℂ) / (H + (a : ℂ))) ^ k‖ * A := by gcongr
-      _ ≤ ‖((H : ℂ) / (H + (a : ℂ))) ^ k‖ *
-          ‖finiteDirichletSeries S coeff (z + a)‖ := by gcongr
-  exact (not_lt_of_ge hPL) hStrict
+  nlinarith
+end
+
+
+section
+variable (A X : ℕ)
+include A X
 
 /-- The actual support of the nonconstant sharp zeta--Möbius convolution. -/
-noncomputable def sharpMollifiedTailSupport (A X : ℕ) : Finset ℕ :=
+noncomputable def sharpMollifiedTailSupport  : Finset ℕ :=
   Ioc X (A * X)
 
 /-- The finite analytic tail to which exact beta removal is applied. -/
-noncomputable def sharpMollifiedTail (A X : ℕ) (s : ℂ) : ℂ :=
+noncomputable def sharpMollifiedTail  (s : ℂ) : ℂ :=
   finiteDirichletSeries (sharpMollifiedTailSupport A X)
     (sharpMollifiedCoeff A X) s
 
-theorem sharpMollifiedTail_apply (A X : ℕ) (s : ℂ) :
+theorem sharpMollifiedTail_apply  (s : ℂ) :
     sharpMollifiedTail A X s =
       ∑ n ∈ Ioc X (A * X),
         sharpMollifiedCoeff A X n * (n : ℂ) ^ (-s) := rfl
+end
+
 
 theorem sharpMollifiedTailSupport_pos (A X n : ℕ)
     (hn : n ∈ sharpMollifiedTailSupport A X) : 0 < n := by
@@ -223,7 +236,6 @@ theorem sharpMollifiedLineCoeff_term (A X n : ℕ) (σ t : ℝ) (hn : 0 < n) :
         (n : ℂ) ^ (-((σ : ℂ) + I * (t : ℂ))) := by
   rw [sharpMollifiedLineCoeff, mul_assoc,
     ← Complex.cpow_add _ _ (by exact_mod_cast hn.ne')]
-  congr 2
   ring
 
 theorem sharpMollifiedTail_eq_wideDirichletPoly
@@ -245,10 +257,7 @@ theorem sharpMollifiedTail_eq_wideDirichletPoly
           sharpMollifiedLineCoeff A X σ n * (n : ℂ) ^ (-(t : ℂ) * I) := by
     apply Finset.sum_subset hSubset
     intro n hnBig hnSmall
-    have hnAX : A * X < n := by
-      rw [Finset.mem_Ioc] at hnBig
-      by_contra h
-      exact hnSmall (Finset.mem_Ioc.mpr ⟨hnBig.1, Nat.le_of_not_gt h⟩)
+    have hnAX : A * X < n := by simp_all
     rw [sharpMollifiedLineCoeff,
       sharpMollifiedCoeff_eq_zero_of_mul_lt A X n hnAX]
     simp
@@ -266,7 +275,7 @@ theorem exists_sharpMollified_large_dyadic_block
     ∃ r ∈ Finset.range (Nat.clog 2 A),
       V / Nat.clog 2 A ≤
         ‖dirichletPoly (2 ^ r * X) (sharpMollifiedLineCoeff A X σ) t‖ := by
-  have hk : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hA
+  have hk := Nat.clog_pos Nat.one_lt_two hA
   apply exists_large_dyadic_block X (Nat.clog 2 A)
     (sharpMollifiedLineCoeff A X σ) t V hk
   rw [← sharpMollifiedTail_eq_wideDirichletPoly A X σ t]
@@ -295,19 +304,11 @@ theorem finite_shifted_dyadic_witness_extraction {α : Type*} [DecidableEq α]
     if hx : x ∈ S then Classical.choose (hEach x hx) else ordinate x
   have hShiftSpec : ∀ x ∈ S,
       |ordinate x - shift x| ≤ H ∧ inInterval (shift x) ∧
-        ∃ r ∈ Finset.range k, large r (shift x) := by
-    intro x hx
-    dsimp [shift]
-    rw [dite_eq_left hx]
-    exact Classical.choose_spec (hEach x hx)
+        ∃ r ∈ Finset.range k, large r (shift x) := by grind
   let scale (x : α) : ℕ :=
     if hx : x ∈ S then Classical.choose (hShiftSpec x hx).2.2 else 0
   have hScaleSpec : ∀ x ∈ S,
-      scale x ∈ Finset.range k ∧ large (scale x) (shift x) := by
-    intro x hx
-    dsimp [scale]
-    rw [dite_eq_left hx]
-    exact Classical.choose_spec (hShiftSpec x hx).2.2
+      scale x ∈ Finset.range k ∧ large (scale x) (shift x) := by grind
   have hFiberLocal : ∀ r ∈ Finset.range k, ∀ z : ℤ,
       ∑ t ∈ ((S.filter (fun x => scale x = r)).image shift).filter
           (fun u => (z : ℝ) ≤ u ∧ u < (z : ℝ) + 1),
@@ -367,8 +368,6 @@ theorem norm_normalizedSharpMollifiedLineCoeff_le_one
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   have hnUpper : (n : ℝ) ≤ 2 * N := by exact_mod_cast hnData.2
   have hnLower : (N : ℝ) ≤ n := by exact_mod_cast hnData.1.le
-  have hPowCoeff : (n : ℝ) ^ ε ≤ (2 * N : ℝ) ^ ε :=
-    Real.rpow_le_rpow (by positivity) hnUpper hε
   have hWeight : (n : ℝ) ^ (-σ) ≤ (N : ℝ) ^ (-σ) :=
     Real.rpow_le_rpow_of_nonpos hNreal hnLower (by linarith)
   have hLine : ‖sharpMollifiedLineCoeff A X σ n‖ ≤
@@ -391,8 +390,6 @@ theorem dirichletPoly_normalizedSharpMollifiedLineCoeff
         ((C * (2 * N : ℝ) ^ ε * (N : ℝ) ^ (-σ) : ℝ) : ℂ) := by
   unfold dirichletPoly normalizedSharpMollifiedLineCoeff
   rw [Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro n _
-  rw [div_mul_eq_mul_div]
+  grind
 
-end GuthMaynard.NativeMoment
+

@@ -5,18 +5,18 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonCutoff
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
+open MeasureTheory FourierBridge ActualEisensteinCubic
+open ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonTransform
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
-open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialEnergyCallerWindow
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialCommonLists InverseInitialCommonProfile
+open InverseInitialCommonCutoff InverseInitialOverlapFourier
+
+
+
+open scoped EisensteinEis
 variable {σ:Type*} [DecidableEq σ]
 
 theorem original_profile_point
@@ -45,8 +45,8 @@ theorem original_profile_point
   unfold childLogTest
   ring
 
-end SevenEighths.InverseInitialCommonTransform
 
-end
 
-end OAI
+
+
+

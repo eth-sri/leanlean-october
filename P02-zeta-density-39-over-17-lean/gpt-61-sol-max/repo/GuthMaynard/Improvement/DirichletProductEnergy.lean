@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.DirichletMeanValue
 public import GuthMaynard.Improvement.SourceRatioAssembly
 public import GuthMaynard.Improvement.DivisorMultiplicity
 public import MathCollab.Density.DivisorGrowth
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -113,9 +113,7 @@ theorem dirichlet_product_energy_subpower {η : ℝ} (hη : 0 < η) :
     _ ≤ (D:ℝ)*(∑ p ∈ dirichletProductPairs N X, ‖a p.1*b p.2‖^2) := dirichlet_product_energy_raw hN X a b K
     _ ≤ (C*(1+2*N*X)^η)*(((sourceRatioIndices N).card:ℝ)*X) :=
       mul_le_mul hD hpair (sum_nonneg (fun _ _ => sq_nonneg _)) (by positivity)
-    _ ≤ _ := by
-      rw [← mul_assoc]
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hsource (by positivity)) (Nat.cast_nonneg X)
+    _ ≤ _ := by field_simp <;> nlinarith
 
 /-- Exact phase multiplication for positive integer frequencies. -/
 theorem dirichlet_phase_product {n m : ℕ} (hn : 0 < n) (hm : 0 < m) (t : ℝ) :
@@ -163,4 +161,4 @@ theorem dirichlet_product_polynomial {N : ℝ} (hN : 0 ≤ N) (X : ℕ)
   rw [← dirichlet_phase_product hn0 hm0]
   ring
 
-end GuthMaynard.Improvement
+

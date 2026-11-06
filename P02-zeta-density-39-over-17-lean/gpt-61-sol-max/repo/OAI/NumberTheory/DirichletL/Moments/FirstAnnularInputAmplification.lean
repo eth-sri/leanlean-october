@@ -10,22 +10,23 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentFirstAnnularInput
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
+open RayFourExpansion
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
+open CenteredMomentPrimePool CenteredMomentPrimeElements
+
+
+open CenteredMomentAmplificationErrorEnergy
+open CenteredMomentSectorLocalization
 open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open CenteredMomentChildRows
+open scoped EisensteinO
 
 open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
 open CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily
+
+local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem eventually_input_amplification {ι : Type*} [Fintype ι]
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -95,8 +96,8 @@ theorem eventually_input_amplification {ι : Type*} [Fintype ι]
   exact (original_childEnergy_eq_inputs (activeInput s) R seed (τ p i) p.val hd.1.ne_zero hcop
     (errorIndex i) s.t _).symm
 
-end SevenEighths.CenteredMomentFirstAnnularInput
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.RelativeCapacityRemoval
 public import OAI.NumberTheory.DirichletL.Energy.State
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFiber
@@ -19,7 +20,7 @@ open CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval
 open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
 open CenteredMomentSecondHeightFamily CenteredMomentEnergyState
 open CenteredExceptionalProfile CenteredMomentFixedRowMask
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ))
@@ -30,7 +31,7 @@ theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,�
   intro z hz
   have hΦ : Φ (‖eisEmbedding z‖^2/K)=0 := by
     by_contra hn
-    have hh : ‖eisEmbedding z‖^2≤(N:ℝ):=((div_le_iff₀ hK).mp (hs hn)).trans hN
+    have hh :=((div_le_iff₀ hK).mp (hs hn)).trans hN
     apply hz
     apply ShortDraftLatticeCount.mem_rowNormBall_of_absNorm_le
     exact_mod_cast (show ((Ideal.span {z}).absNorm:ℝ)≤N by
@@ -47,8 +48,7 @@ theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : O)
         (fun i:J=>P i) t X₁ X₂ := by
   have hh:=selectedProduct_univ η m A z W₁ W₂
     (fun i:J=>S i) (fun i:J=>β i) (fun i:J=>P i) t X₁ X₂ hX (fun i=>hP i)
-  have hp : (∏i:J,normalizedSlot η m A z (S i) (β i) t (P i))=
-      ∏i∈J,normalizedSlot η m A z (S i) (β i) t (P i) :=
+  have hp :=
     Finset.prod_coe_sort J (fun i=>normalizedSlot η m A z (S i) (β i) t (P i))
   unfold selectedProduct at hh ⊢
   rw [hp] at hh
@@ -114,8 +114,8 @@ theorem actual_state_capacity_removal
     (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
     (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀ν:ι→Character,∃Z₀:ℝ,1<Z₀ ∧
-    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
-      (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤ mesh →
+      (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     ∃R:Finset ι,R⊆J ∧ (R=J ∨ n₁+n₂+6*κ*(∑i∈J\R,w i)≤width) ∧
       κ*(∑i∈R,w i)≤CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh ∧
     ∀Z:ℝ,Z₀≤Z → ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
@@ -194,8 +194,8 @@ theorem actual_relative_state_capacity_removal
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀η₀:Character,∀θ:ι→RayQuotient.Characters M H,
     let ν:=fun i=>relativeCharacter M H hH η₀ (θ i);
     ∃Z₀:ℝ,1<Z₀ ∧
-    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
-      (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤ mesh →
+      (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     ∃R:Finset ι,R⊆J ∧ (R=J ∨ n₁+n₂+6*κ*(∑i∈J\R,w i)≤width) ∧
       κ*(∑i∈R,w i)≤CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh ∧
     ∀Z:ℝ,Z₀≤Z → ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
@@ -228,8 +228,8 @@ theorem actual_relative_state_capacity_removal
     (fun i=>relativeCharacter_fixedQ M H hH η₀ (θ i) (internalQ Q η₀)
       (inf_le_left.trans hQM) inf_le_right)
 
-end SevenEighths.CenteredMomentEnergyCapacityRemoval
 
-end
 
-end OAI
+
+
+

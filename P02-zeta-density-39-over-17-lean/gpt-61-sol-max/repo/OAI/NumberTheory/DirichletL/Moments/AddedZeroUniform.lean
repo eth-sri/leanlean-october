@@ -9,22 +9,36 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+
+open CenteredMomentAddedZero CenteredMomentRectangle
+open scoped EisensteinO
 
 abbrev Tuple (ι : Type*) := (ι ⊕ Fin 2) → Ideal O
 
-def coordinateEquiv {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) :
+section
+variable {ι : Type*}
+include ι
+
+section
+variable {n : ℕ} (e : ι ≃ Fin n)
+include n e
+
+def coordinateEquiv  :
     ι ⊕ Fin 2 ≃ Fin (n + 2) := (e.sumCongr (Equiv.refl (Fin 2))).trans finSumFinEquiv
 
-def tupleEquiv {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) :
+def tupleEquiv  :
     Tuple ι ≃ (Fin (n + 2) → Ideal O) :=
   (coordinateEquiv e).arrowCongr (Equiv.refl (Ideal O))
+end
 
-def finiteTupleProduct {ι : Type*} [Fintype ι] (v : Tuple ι) : Ideal O := ∏ i, v i
 
-lemma tupleEquiv_slot {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (i : ι) :
+def finiteTupleProduct  [Fintype ι] (v : Tuple ι) : Ideal O := ∏ i, v i
+
+section
+variable {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι)
+include n e v
+
+lemma tupleEquiv_slot  (i : ι) :
     tupleEquiv e v ((e i).castAdd 2) = v (Sum.inl i) := by
   change v ((coordinateEquiv e).symm _) = _
   have h : coordinateEquiv e (Sum.inl i) = (e i).castAdd 2 := by
@@ -32,20 +46,22 @@ lemma tupleEquiv_slot {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (
       Sum.map_inl, finSumFinEquiv_apply_left]
   rw [← h, Equiv.symm_apply_apply]
 
-lemma tupleEquiv_plain {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (j : Fin 2) :
+lemma tupleEquiv_plain  (j : Fin 2) :
     tupleEquiv e v (j.natAdd n) = v (Sum.inr j) := by
   change v ((coordinateEquiv e).symm _) = _
   have h : coordinateEquiv e (Sum.inr j) = j.natAdd n := by
     simp only [coordinateEquiv, Equiv.trans_apply, Equiv.sumCongr_apply,
       Sum.map_inr, finSumFinEquiv_apply_right, Equiv.refl_apply]
   rw [← h, Equiv.symm_apply_apply]
+end
 
-theorem tupleProduct_reindex {ι : Type*} [Fintype ι] {n : ℕ}
+
+theorem tupleProduct_reindex  [Fintype ι] {n : ℕ}
     (e : ι ≃ Fin n) (v : Tuple ι) :
     tupleProduct (tupleEquiv e v) = finiteTupleProduct v := by
   exact (coordinateEquiv e).symm.prod_comp v
 
-def originalFiniteCoefficient {ι : Type*} [Fintype ι]
+def originalFiniteCoefficient  [Fintype ι]
     (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (R : Ideal O) (t : ℝ)
     (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (b₁ b₂ s : Ideal O) (v : Tuple ι) : ℂ :=
@@ -54,7 +70,7 @@ def originalFiniteCoefficient {ι : Type*} [Fintype ι]
     idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (b₁ * v (Sum.inr 0)) (b₂ * v (Sum.inr 1)) *
     (if s ∣ finiteTupleProduct v then 1 else 0)
 
-theorem originalCoefficient_reindex {ι : Type*} [Fintype ι] {n : ℕ}
+theorem originalCoefficient_reindex  [Fintype ι] {n : ℕ}
     (e : ι ≃ Fin n) (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (R : Ideal O) (t : ℝ) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (b₁ b₂ s : Ideal O) (v : Tuple ι) :
@@ -68,9 +84,11 @@ theorem originalCoefficient_reindex {ι : Type*} [Fintype ι] {n : ℕ}
   simp only [originalCoefficient, originalFiniteCoefficient, tupleProduct_reindex,
     hslot, hp₀, hp₁, tupleEquiv_plain]
   rw [e.symm.prod_comp (fun j => ν j (v (Sum.inl j)) * Wslot j ((Ideal.absNorm (v (Sum.inl j)) : ℝ) / P j))]
-
-end SevenEighths.CenteredMomentAddedZeroUniform
-
 end
 
-end OAI
+
+
+
+
+
+

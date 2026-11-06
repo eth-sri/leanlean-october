@@ -10,12 +10,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalParents
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open FirstCauchyArithmetic RayFourExpansion InverseMoment
-open InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InversePrioritySecondSource
+open ActualEisensteinCubic SecondPassArithmetic
+open InverseMoment
+open InverseFirstPriorityParents
+
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def ofOriginal (k : FirstOriginalOuter ι) : Source ι 0 where
@@ -57,12 +57,15 @@ omit [DecidableEq ι] in
     (k : FirstOriginalOuter ι) : originalSelector selector (ofOriginal k)=selector k :=
   funext (originalSelector_ofOriginal selector k)
 
-def originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) : Finset (Source ι 0) :=
+section
+variable (pool : Finset ι) (Q : Finset (ι→₀ℕ))
+    (selector : FirstOriginalOuter ι→Finset ι→ℂ)
+include pool Q selector
+
+def originalParentSource  : Finset (Source ι 0) :=
   globalParentSource (originalOuterSource pool Q) pool (originalSelector selector)
 
-theorem mem_originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) (x : Source ι 0) :
+theorem mem_originalParentSource  (x : Source ι 0) :
     x∈originalParentSource pool Q selector ↔
       ∃k∈firstOriginalOuter pool Q,∃D∈pool.powerset,
         selector k D≠0 ∧ fillFirstQuotient (ofOriginal k) D=x := by
@@ -73,6 +76,8 @@ theorem mem_originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     exact ⟨k,hk,D,hD,by simpa using hs,he⟩
   · rintro ⟨k,hk,D,hD,hs,he⟩
     exact ⟨ofOriginal k,⟨k,hk,rfl⟩,D,⟨hD,by simpa using hs⟩,he⟩
+end
+
 
 theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (k : FirstOriginalOuter ι) (hk : k∈firstOriginalOuter pool Q) (D : Finset ι) :
@@ -89,8 +94,8 @@ variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-end SevenEighths.InverseFirstGlobalParents
 
-end
 
-end OAI
+
+
+

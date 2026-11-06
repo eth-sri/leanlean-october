@@ -4,8 +4,7 @@ public import MathCollab.Density.Packing
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -95,4 +94,4 @@ theorem coprime_dyadic_short_range {K : ℕ} (hK : 1 ≤ K)
   rw [coprime_pair_den h2 hc]
   exact hu2
 
-end Montgomery.RationalMoment
+

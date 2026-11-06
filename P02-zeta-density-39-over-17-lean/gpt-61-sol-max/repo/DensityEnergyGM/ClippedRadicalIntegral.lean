@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.Tactic
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 noncomputable section
 open MeasureTheory Set
@@ -26,9 +26,6 @@ theorem clippedRadicalTail_mono {R K K' A B s : ℝ}
 
 theorem clippedRadicalTail_integrable (R K A B Y : ℝ) :
     IntegrableOn (clippedRadicalTail R K A B) (Ioc 0 Y) := by
-  have hfinite : volume (Ioc (0 : ℝ) Y) < ⊤ := by simp
-  let : IsFiniteMeasure (volume.restrict (Ioc (0 : ℝ) Y)) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using hfinite⟩
   have hmeas : Measurable (clippedRadicalTail R K A B) := by
     unfold clippedRadicalTail
     fun_prop
@@ -54,22 +51,14 @@ theorem radical_tail_le_rational {K A B s : ℝ}
   have hCross : 0 ≤ 2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by positivity
   have hSq : (Real.sqrt K * (A * s⁻¹ + Real.sqrt B * s⁻¹ ^ 2)) ^ 2 =
       K * (A ^ 2 / s ^ 2 + B / s ^ 4) +
-        2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by
-    rw [mul_pow]
-    rw [hKs]
-    calc
-      K * (A * s⁻¹ + Real.sqrt B * s⁻¹ ^ 2) ^ 2 =
-          K * (A ^ 2 * s⁻¹ ^ 2 + Real.sqrt B ^ 2 * s⁻¹ ^ 4) +
-            2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by ring
-      _ = _ := by rw [hBs]; simp only [div_eq_mul_inv, inv_pow]
+        2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by grind
   nlinarith
 
 theorem integral_inv_sq_of_pos {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (∫ s in x..Y, (s⁻¹) ^ 2) = x⁻¹ - Y⁻¹ := by
   have h := integral_zpow (a := x) (b := Y) (n := (-2 : ℤ))
     (Or.inr ⟨by norm_num, notMem_uIcc_of_lt hx hY⟩)
-  norm_num [zpow_neg, one_div] at h ⊢
-  linarith
+  norm_num at * <;> nlinarith
 
 /-- Explicit scalar cutoff bound before optimization. -/
 theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
@@ -79,7 +68,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
       R ^ 2 * x + Real.sqrt K *
         (A * Real.log (Y / x) + Real.sqrt B / x) := by
   have hY : 0 < Y := hx.trans_le hxY
-  have hWhole : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
+  have hWhole :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hY.le).mpr
       (clippedRadicalTail_integrable R K A B Y)
   have hLow : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 x := by
@@ -117,12 +106,11 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
   rw [← intervalIntegral.integral_of_le hY.le,
     ← intervalIntegral.integral_add_adjacent_intervals hLow hHigh]
   have hDiscard : 0 ≤ Real.sqrt K * Real.sqrt B * Y⁻¹ := by positivity
-  simp only [div_eq_mul_inv] at hHighBound ⊢
-  nlinarith
+  grind
 
 theorem clipped_radical_integral_cap {R K A B Y : ℝ} (hY : 0 ≤ Y) :
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤ R ^ 2 * Y := by
-  have hInt : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
+  have hInt :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hY).mpr
       (clippedRadicalTail_integrable R K A B Y)
   rw [← intervalIntegral.integral_of_le hY]
@@ -149,12 +137,7 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
   have hLog : 0 ≤ Real.sqrt K * A * max 0 (Real.log (Y * R / Q)) := by positivity
   by_cases hxY : x ≤ Y
   · have h := clipped_radical_integral_cutoff (R := R) hK.le hA hB.le hx hxY
-    have hTail : Real.sqrt K * (Real.sqrt B / x) = R * Q := by
-      dsimp only [x]
-      calc
-        Real.sqrt K * (Real.sqrt B / (Q / R)) =
-            (Real.sqrt K * Real.sqrt B) * R / Q := by field_simp
-        _ = R * Q := by rw [← hQsq]; field_simp
+    have hTail : Real.sqrt K * (Real.sqrt B / x) = R * Q := by grind
     have hArg : Y / x = Y * R / Q := by dsimp only [x]; field_simp
     rw [mul_add, hScale, hTail, hArg] at h
     have hLogMono := mul_le_mul_of_nonneg_left
@@ -162,9 +145,7 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
       (mul_nonneg (Real.sqrt_nonneg K) hA)
     nlinarith
   · have hcap := clipped_radical_integral_cap (R := R) (K := K) (A := A) (B := B) hY
-    have hLow : R ^ 2 * Y ≤ R * Q := by
-      rw [← hScale]
-      exact mul_le_mul_of_nonneg_left (le_of_not_ge hxY) (sq_nonneg R)
+    have hLow : R ^ 2 * Y ≤ R * Q := by nlinarith
     have hRQ : 0 ≤ R * Q := mul_nonneg hR.le hQ.le
     linarith
 
@@ -206,4 +187,4 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
     _ ≤ 2 * R * Q + Real.sqrt K * A * (3 * Real.log T) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

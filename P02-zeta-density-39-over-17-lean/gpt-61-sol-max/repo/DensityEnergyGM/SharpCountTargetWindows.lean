@@ -3,8 +3,7 @@ public import DensityEnergyGM.SharpCountBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem gmTraceEnergyMargin_affine_length (σ P Q C t : ℝ)
@@ -90,4 +89,4 @@ theorem gmTraceEnergyMargin_row8 {σ x : ℝ}
       norm_num [gmTraceA,gmTraceB,gmTraceG,gmTraceD,gmEnergyU,gmEnergyV,gmEnergyW,gmEnergyR] <;>
       linarith
 
-end Montgomery.RationalMoment
+

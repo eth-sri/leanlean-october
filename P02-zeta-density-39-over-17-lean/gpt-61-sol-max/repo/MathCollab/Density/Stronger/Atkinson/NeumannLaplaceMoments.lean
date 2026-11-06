@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proofs adapted from NeumannLaplaceMoments.lean,
 exact source revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -18,7 +19,6 @@ The three actual Laplace moments give the two leading terms and the
 integrable quadratic remainder. All identities hold for every x > 0.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex MeasureTheory Set
@@ -48,10 +48,13 @@ theorem neumannLaplaceMomentIntegrand_eq_mul (x : ℝ) (k : ℕ) {t : ℝ} (ht :
       neumannLaplaceMomentIntegrand x 0 t * t ^ k := by
   unfold neumannLaplaceMomentIntegrand
   rw [show (k : ℝ) - 1 / 2 = -(1 / 2 : ℝ) + k by ring, Real.rpow_add ht, Real.rpow_natCast]
-  norm_num
   ring
 
-theorem neumannLaplaceMoment_eq_gamma {x : ℝ} (hx : 0 < x) (k : ℕ) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+
+theorem neumannLaplaceMoment_eq_gamma  (k : ℕ) :
     neumannLaplaceMoment x k =
       x ^ (-((k : ℝ) + 1 / 2)) * Real.Gamma ((k : ℝ) + 1 / 2) := by
   have h := Real.integral_rpow_mul_exp_neg_mul_Ioi
@@ -61,21 +64,19 @@ theorem neumannLaplaceMoment_eq_gamma {x : ℝ} (hx : 0 < x) (k : ℕ) :
   simpa only [neumannLaplaceMoment, neumannLaplaceMomentIntegrand, neg_mul,
     one_div, Real.inv_rpow hx.le, Real.rpow_neg hx.le] using h
 
-theorem neumannLaplaceMoment_zero {x : ℝ} (hx : 0 < x) :
+theorem neumannLaplaceMoment_zero  :
     neumannLaplaceMoment x 0 = Real.sqrt Real.pi * x ^ (-(1 / 2 : ℝ)) := by
   rw [neumannLaplaceMoment_eq_gamma hx]
   norm_num [Real.Gamma_one_half_eq, mul_comm]
 
-theorem neumannLaplaceMoment_one {x : ℝ} (hx : 0 < x) :
+theorem neumannLaplaceMoment_one  :
     neumannLaplaceMoment x 1 = (Real.sqrt Real.pi / 2) * x ^ (-(3 / 2 : ℝ)) := by
   have hg := Real.Gamma_add_one (s := (1 / 2 : ℝ)) (by norm_num)
   rw [Real.Gamma_one_half_eq] at hg
   rw [neumannLaplaceMoment_eq_gamma hx]
-  norm_num at hg ⊢
-  rw [hg]
-  ring
+  grind
 
-theorem neumannLaplaceMoment_two {x : ℝ} (hx : 0 < x) :
+theorem neumannLaplaceMoment_two  :
     neumannLaplaceMoment x 2 = (3 * Real.sqrt Real.pi / 4) * x ^ (-(5 / 2 : ℝ)) := by
   have hg := Real.Gamma_add_one (s := (1 / 2 : ℝ)) (by norm_num)
   have hg' := Real.Gamma_add_one (s := (3 / 2 : ℝ)) (by norm_num)
@@ -84,8 +85,9 @@ theorem neumannLaplaceMoment_two {x : ℝ} (hx : 0 < x) :
   rw [hg] at hg'
   rw [neumannLaplaceMoment_eq_gamma hx]
   norm_num
-  rw [hg']
-  ring
+  grind
+end
+
 
 theorem neumannRayCoefficient_eq : neumannRayCoefficient = (1 + I) / 2 := by
   have hp := neumann_cpow_positive_real_mul (by norm_num : (0 : ℝ) < 2)
@@ -98,10 +100,7 @@ theorem neumannRayCoefficient_eq : neumannRayCoefficient = (1 + I) / 2 := by
   unfold neumannRayCoefficient
   rw [mul_comm, ← hp, ← hsq, Complex.cpow_neg, one_div,
     Complex.sq_cpow_two_inv (by simp : 0 < (1 - I).re)]
-  apply inv_eq_of_mul_eq_one_right
-  calc
-    _ = (1 - I * I) / 2 := by ring
-    _ = 1 := by rw [I_mul_I]; norm_num
+  grind
 
 theorem norm_neumannRayCoefficient_le_one : ‖neumannRayCoefficient‖ ≤ 1 := by
   rw [neumannRayCoefficient_eq, norm_div]
@@ -109,4 +108,4 @@ theorem norm_neumannRayCoefficient_le_one : ‖neumannRayCoefficient‖ ≤ 1 :=
   norm_num at h ⊢
   linarith
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -15,11 +15,11 @@ Canonical-domain extension and the transformed-sum theorem remain separate.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def legendreFiniteInputOrder (Q : ℕ) : ℕ :=
   ∑ n ∈ Finset.range (Q+1), (inversePhaseOrder (inversePhaseDerivativeExpression n)+1)
@@ -31,4 +31,4 @@ theorem legendreFiniteInputOrder_le {Q n : ℕ} (hn : n ≤ Q) :
     (inversePhaseOrder (inversePhaseDerivativeExpression k)+1))
     (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hn))
 
-end TaoTrudgianYang2025
+

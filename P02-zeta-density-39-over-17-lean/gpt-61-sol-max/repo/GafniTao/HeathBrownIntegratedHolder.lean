@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownHolder
 public import GafniTao.FordMomentInterpolation
 
@@ -18,7 +19,7 @@ open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem integrable_heathBrownNu_sq
     (N k H : ℕ) (f : ℝ → ℝ) :
@@ -35,8 +36,12 @@ theorem integrable_heathBrownNu_sq
   filter_upwards [] with α
   exact (heathBrownNu_sq_eq_pair_sum N k H f α).symm
 
+section
+variable (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ)
+include N k H hH f
+
 theorem lintegral_heathBrownNu_eq
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
+     :
     ∫⁻ α, ENNReal.ofReal (heathBrownNu N k H f α)
         ∂(heathBrownCoefficientMeasure k) =
       ENNReal.ofReal
@@ -50,7 +55,7 @@ theorem lintegral_heathBrownNu_eq
       heathBrownNu_nonneg N k H f α)).symm
 
 theorem lintegral_heathBrownNu_sq_le
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
+     :
     ∫⁻ α, (ENNReal.ofReal (heathBrownNu N k H f α)) ^ 2
         ∂(heathBrownCoefficientMeasure k) ≤
       ENNReal.ofReal
@@ -80,7 +85,7 @@ on the right are respectively `J_{s,k-1}(H)`, the source pair count
 `mathcal N`, and the number of interior source indices, each with the exact
 coefficient-cell volume. -/
 theorem heathBrown_integratedWeyl_le_source_moments
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ)
+    
     {Q s : ℕ} (hQH : Q ≤ H) (hs : 1 ≤ s) :
     ∫⁻ α : HeathBrownCoefficientTorus k,
         ENNReal.ofReal ‖heathBrownWeylSum k Q α‖ *
@@ -98,9 +103,9 @@ theorem heathBrown_integratedWeyl_le_source_moments
             ((2 : ℝ) ^ (k - 1) *
               (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))) ^
           (1 - 1 / (s : ℝ)) := by
-  let A : HeathBrownCoefficientTorus k → ENNReal := fun α =>
+  let A := fun α =>
     ENNReal.ofReal ‖heathBrownWeylSum k Q α‖
-  let B : HeathBrownCoefficientTorus k → ENNReal := fun α =>
+  let B := fun α =>
     ENNReal.ofReal (heathBrownNu N k H f α)
   have hA : AEMeasurable A (heathBrownCoefficientMeasure k) := by
     exact (ENNReal.continuous_ofReal.comp
@@ -131,8 +136,10 @@ theorem heathBrown_integratedWeyl_le_source_moments
     _ ≤ _ := by
       gcongr
       · exact_mod_cast fordVinogradovMomentNat_mono s (k - 1) hQH
-
-
 end
 
-end GafniTao
+
+
+
+
+

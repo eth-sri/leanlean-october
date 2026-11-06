@@ -5,15 +5,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSectorRetained
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedPair
-open CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSupport CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
+open CenteredMomentSecondSectorRetained CenteredMomentSupport
 open CenteredMomentSecondWholeKernel CenteredMomentFirstLocalization CenteredMomentSectorLocalization
 open CenteredMomentSecondLocalization CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem physical_pair_summable (C D I J : Ideal O) (hI : Supported (C*I)) (hJ : Supported (D*J))
     (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
@@ -55,8 +55,8 @@ theorem retainedPair_positive_frequency (I J : Ideal O) (hI : Supported I) (hJ :
   simp only [idealCorrelation,normValue_eq_embedding]
   ring
 
-end SevenEighths.CenteredMomentSecondRetainedPair
 
-end
 
-end OAI
+
+
+

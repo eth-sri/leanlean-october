@@ -16,7 +16,7 @@ open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- Cancelling a visible prime-power factor in an integer divisibility
 relation.  No coprimality is needed because this is cancellation in the
@@ -37,6 +37,6 @@ theorem pow_dvd_of_mul_pow_dvd
     simpa [mul_assoc] using hw
   exact ⟨w, hz⟩
 
-end
 
-end GafniTao
+
+

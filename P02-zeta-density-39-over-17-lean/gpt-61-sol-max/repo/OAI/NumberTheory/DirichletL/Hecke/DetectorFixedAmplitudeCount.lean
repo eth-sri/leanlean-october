@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatchCount
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorClassBudget
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorFixedAmplitudeCount
@@ -18,13 +19,17 @@ open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRow
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : ℝ)
+section
+variable (B : Batch M H Label Slot U a ε tstar T allowance i)
+include B
+
+lemma fiber_mean_eq  (q : ℝ)
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
       (physical M H (fun u : FreeRow=>u.val) B.profile B.upper B.widths B.external U) u=q)
     (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))
     (hne : (B.fiberRows bin j J K).Nonempty) : (B.fiber bin j J K hne).q=q := by
   let u := hne.choose
-  have hu : u ∈ B.fiberRows bin j J K := hne.choose_spec
+  have hu := hne.choose_spec
   have huR : u∈B.rows := (Finset.mem_filter.mp hu).1
   rw [←hq u huR]
   unfold Fiber.q rowMean weightedMean
@@ -33,7 +38,7 @@ lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : �
   intro s hs
   exact congrArg (fun g=>B.widths s*g) ((B.fiber bin j J K hne).fixed_bin u hu s hs).symm
 
-lemma batch_mean_bounds (B : Batch M H Label Slot U a ε tstar T allowance i)
+lemma batch_mean_bounds 
     (hne : B.rows.Nonempty) (ha : 1/2≤a) (q : ℝ)
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
       (physical M H (fun u : FreeRow=>u.val) B.profile B.upper B.widths B.external U) u=q) :
@@ -44,6 +49,8 @@ lemma batch_mean_bounds (B : Batch M H Label Slot U a ε tstar T allowance i)
     (fun s hs=>(B.widths_pos s hs).le) (by linarith [B.supply])
   intro s hs
   exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
+end
+
 
 theorem fixed_amplitude_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -82,8 +89,8 @@ theorem fixed_amplitude_count_from_raw_moments
       rw [fiber_mean_eq B q hq bin j J K hne] at hc'
       exact hc')
   simpa only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_assoc] using hb
-end SevenEighths.HeckeDetectorFixedAmplitudeCount
 
-end
 
-end OAI
+
+
+

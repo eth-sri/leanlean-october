@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.InitialScales
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
@@ -40,12 +41,12 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
     slo shi zlo zhi wlo whi hzlo 4
   refine ⟨81*D,by positivity,?_⟩
   intro σ hσ r hr υ hυ X Y Z hX hY hZ A hA F hF hF0 hFb
-  let E : ℝ := X^(1/2-r)*Z^(σ+r-1)*Y^(υ-1)
+  let E := X^(1/2-r)*Z^(σ+r-1)*Y^(υ-1)
   have hE : 0≤E := by dsimp [E];positivity
-  let M : HeightSpace→ℝ := fun p=>jointHeight p.1.1 p.1.2 p.2^4*‖onLines W0 W1 σ r υ p‖
+  let M := fun p=>jointHeight p.1.1 p.1.2 p.2^4*‖onLines W0 W1 σ r υ p‖
   have hMi : Integrable M heightMeasure := (hM σ hσ r hr υ hυ).1
   have hMb : (∫p,M p ∂heightMeasure)≤D := (hM σ hσ r hr υ hυ).2
-  let f : HeightSpace→ℝ := fun p=>‖sourceMellinWeight W0 W1 X Y Z
+  let f := fun p=>‖sourceMellinWeight W0 W1 X Y Z
     ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*F p
   have hfm : AEStronglyMeasurable f heightMeasure :=
     (sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1 X Y Z hX hY hZ
@@ -74,7 +75,7 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
     _ ≤ (E*A*81)*D := mul_le_mul_of_nonneg_left hMb (by positivity)
     _ = _ := by ring
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

@@ -11,22 +11,27 @@ noncomputable section
 open scoped Classical ContDiff SchwartzMap
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowCommonDyad {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
     (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (J : Finset (Fin K)) (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) : ℂ :=
+    (J : Finset (Fin K))
+include K η C W0 W1 slots W Yp J
+
+section
+variable (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
+    (hV : HasCompactSupport (V:ℝ→ℂ))
+include X Y U R V hV
+
+def lowCommonDyad  : ℂ :=
   ∫t : ℝ,(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
     compensationRowTest η C W0 W1 (fun i=>(p i).val) J X Y U t*
       selectedSlotFactor W Yp (fun i=>(p i).val) J t)*gaussianJointDensity V hV (U/R) t
 
-lemma lowCommonDyad_eq_family {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (J : Finset (Fin K)) (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) :
+lemma lowCommonDyad_eq_family  :
     lowCommonDyad η C W0 W1 slots W Yp J X Y U R V hV=
     gaussianPhysicalFamilyIntegral η C W0 W1 (Finset.univ : Finset (∀i,slots i))
       (fun p=>compensationSubsetWeight η W Yp (fun i=>(p i).val) J)
@@ -35,10 +40,10 @@ lemma lowCommonDyad_eq_family {K : ℕ} (η : HeckeFamily.Character) (C : Calibr
       (fun p=>Y/elementNorm (slotProduct (fun i=>(p i).val) J))
       (fun i : SelectedSlot J=>W i.val)
       (fun p i=>elementNorm (p i.val).val/Yp i.val) V hV U R := rfl
+end
 
-lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (J : Finset (Fin K)) (X Y U R B : ℝ) (degree : ℕ) (V : SchwartzMap ℝ ℂ)
+
+lemma lowCommonDyad_norm_of_bound  (X Y U R B : ℝ) (degree : ℕ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ))
     (hb : ∀t : ℝ,‖∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
       compensationRowTest η C W0 W1 (fun i=>(p i).val) J X Y U t*
@@ -56,6 +61,8 @@ lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : Ca
       (norm_nonneg (gaussianJointDensity V hV (U/R) t))
   have hh := norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hmajor)
   simpa only [f,lowCommonDyad,gaussianJointMoment,integral_const_mul] using hh
+end
+
 
 theorem low_central_gaussian_dyad (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
@@ -87,7 +94,7 @@ theorem low_central_gaussian_dyad (η : HeckeFamily.Character) (S : Finset Id)
   intro t
   simpa only [mul_assoc,mul_left_comm,mul_comm] using hZ.2 T hT hout hdis hnorm J U hU hlo hhi W hW t
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

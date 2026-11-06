@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Descent.Marks
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseMoment
+
+
 namespace SevenEighths.InverseInitialEnergyCallerSelector
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 theorem mask_nonzero_coprime (F : Finset (Ideal Eis)) (j : Ideal Eis) (hj : Admissible j)
     (A : Finset (primePool F))
@@ -37,8 +37,8 @@ theorem mask_nonzero_coprime (F : Finset (Ideal Eis)) (j : Ideal Eis) (hj : Admi
   unfold rowCoprimeMask
   exact ite_eq_left ⟨i,hi,hmem⟩
 
-end SevenEighths.InverseInitialEnergyCallerSelector
 
-end
 
-end OAI
+
+
+

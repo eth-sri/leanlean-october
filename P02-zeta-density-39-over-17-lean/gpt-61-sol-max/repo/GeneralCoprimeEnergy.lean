@@ -4,9 +4,8 @@ public import RationalLargeGcdEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -61,4 +60,4 @@ theorem coprime_dyadic_adjacent_general {K : ℕ} (hK : 1 ≤ K) {η B : ℝ} (h
     positivity
 
 
-end Montgomery.RationalMoment
+

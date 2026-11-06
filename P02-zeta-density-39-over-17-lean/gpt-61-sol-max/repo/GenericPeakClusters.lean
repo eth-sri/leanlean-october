@@ -1,4 +1,5 @@
 module
+import Mathlib
 /- Generalized from the attributed McColm peak-cluster proof in the verified baseline.
 The actual native point-mean theorem is supplied here; the general-pair local count
 remains an internal interface to be discharged by the analytic pair producer. -/
@@ -6,8 +7,7 @@ public import GenericMeanCounting
 public import MathCollab.Density.Stronger.PointMean.PeaksInput
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.CriticalPeak
 open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
@@ -34,9 +34,9 @@ theorem exists_pointCluster_superlevel_count
     hCount δ κ ν hδ hκ hν
   refine ⟨P,C,D,H₀,hP,hC,hD,hH₀,?_⟩
   intro H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
-  let A : ℝ := V^2/(16*P*Real.log (3*H))
-  let Y : ℝ := (m:ℝ)*A
-  let S : Finset ℕ := pointClusterSuperlevel H G W m
+  let A := V^2/(16*P*Real.log (3*H))
+  let Y := (m:ℝ)*A
+  let S := pointClusterSuperlevel H G W m
   have hHlarge : 20 ≤ H := by linarith [hH₀.trans hH]
   have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith)
   have hA : 0 < A := by dsimp only [A]; positivity
@@ -62,8 +62,8 @@ theorem exists_pointCluster_superlevel_count
       intro t ht
       obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp ht
       have hc := pointClusterCenter_range hG hrange (hbase n hn)
-      have hnS : n ∈ S := (Finset.mem_filter.mp hn).1
-      have hocc : m ≤ (pointCluster H G W n).card := (Finset.mem_filter.mp hnS).2
+      have hnS := (Finset.mem_filter.mp hn).1
+      have hocc := (Finset.mem_filter.mp hnS).2
       have hlog : Real.log (pointClusterCenter H G n) ≤ Real.log (3*H) :=
         Real.log_le_log (by linarith [hc.1]) (by linarith [hc.2])
       have herror : C*G*Real.log (pointClusterCenter H G n) ≤ A :=
@@ -96,9 +96,7 @@ theorem occupancy_inverse_power_budget {a g b H G A m : ℝ}
   calc
     _ ≤ H/(G*(m^2*A^2))+H^a/(G^g*(m^2*A^b)) := by
       apply add_le_add le_rfl
-      apply div_le_div_of_nonneg_left (Real.rpow_pos_of_pos hH a).le (by positivity)
-      exact mul_le_mul_of_nonneg_left
-        (mul_le_mul_of_nonneg_right hp (by positivity)) (by positivity)
+      field_simp <;> nlinarith
     _ = _ := by field_simp
 
 theorem exists_pointValue_card_le_with_width
@@ -122,8 +120,8 @@ theorem exists_pointValue_card_le_with_width
     (exists_pointCluster_superlevel_count hCount) hδ hκ hν
   refine ⟨P,C,4*D,H₀,hP,hC,by positivity,hH₀,?_⟩
   intro H G V W hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge
-  let A : ℝ := V^2/(16*P*Real.log (3*H))
-  let B : ℝ := 2*D*H^ν*(H/(G*A^2)+H^a/(G^g*A^b))
+  let A := V^2/(16*P*Real.log (3*H))
+  let B := 2*D*H^ν*(H/(G*A^2)+H^a/(G^g*A^b))
   have hHpos : 0 < H := by linarith [hH₀.trans hH]
   have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith [hH₀.trans hH])
   have hA : 0 < A := by dsimp only [A]; positivity
@@ -152,4 +150,4 @@ theorem exists_pointValue_card_le_with_width
 
 
 
-end Montgomery.CriticalPeak
+

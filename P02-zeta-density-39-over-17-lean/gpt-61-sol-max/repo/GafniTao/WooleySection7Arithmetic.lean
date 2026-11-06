@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleyPolynomialLemma63
 public import GafniTao.WooleyIterationArithmetic
 
@@ -32,7 +33,6 @@ theorem wooleySection7NextB_eq_wooleyNextB
 theorem wooley_section7_nextB_mul_upper
     {k r b : ℕ} (hr : 1 ≤ r) :
     r * wooleySection7NextB k r b ≤ (k - r + 1) * b + r := by
-  have hrPos : 0 < r := by omega
   let n := (k - r + 1) * b
   have hdiv : r * ((n + r - 1) / r) ≤ n + r - 1 := by
     simpa [Nat.mul_comm] using Nat.div_mul_le_self (n + r - 1) r
@@ -58,6 +58,6 @@ theorem wooleySection7BPrimeNat_cast
   exact Int.toNat_of_nonneg
     (wooley_section7_BPrimeInt_pos_toNat hBPrime).le
 
-end
 
-end GafniTao
+
+

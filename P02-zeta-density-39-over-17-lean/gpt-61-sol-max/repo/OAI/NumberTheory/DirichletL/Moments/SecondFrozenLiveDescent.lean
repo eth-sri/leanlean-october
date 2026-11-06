@@ -12,29 +12,29 @@ open Filter
 open SevenEighths.CenteredMomentSecondNonexceptionalScalar
 
 namespace SevenEighths.CenteredMomentSecondFrozenLiveDescent
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondFrozenRatioCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
+open HeckeFamily RayFourExpansion
+open CenteredMomentCommonRadialData CenteredMomentSourceMass
+open CenteredMomentOriginalCommonHarmonic
+open CenteredMomentSecondNonexceptionalChosenBlock
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
+open CenteredMomentSecondBlockAggregate
 open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
+open CenteredMomentSecondPhysicalBlock CenteredMomentCanonicalFirst
+open CenteredMomentSectorLocalization
+open CenteredMomentSecondSectorColumns
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
 open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
+open CenteredMomentHeckeColumnWindow
 open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
 open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
+
 open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
+open CenteredMomentOriginalChildEnergy
 open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
 theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
@@ -45,9 +45,9 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
       ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
       ∃Kc:ℝ,0<Kc ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
+      (∀i,1≤ s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
       ∀(R0 seed:Ideal O),R0≠0 → Squarefree seed → seed≠0 →
-      0≤sourceRadius s → sourceRadius s≤Z^B →
+      0≤ sourceRadius s → sourceRadius s≤Z^B →
       (s.η.modulus.absNorm:ℝ)≤Z^B → (R0.absNorm:ℝ)≤Z^B →
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=coefficient s R0 seed
@@ -69,7 +69,7 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
         (fun i=>(n i:ℤ))≠0→
       ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
         (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
+      (D0.absNorm:ℝ)≤ sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.1,
       frozenCoefficient b.val q.val.1 R0 s.ν s.W s.P≠0 →
       ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.1 R0 b).toSource.active D0,
@@ -86,7 +86,7 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
         (fun i=>(n i:ℤ))≠0→
       ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
         (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
+      (D0.absNorm:ℝ)≤ sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.2,
       frozenCoefficient b.val q.val.2 R0 s.ν s.W s.P≠0 →
       ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.2 R0 b).toSource.active D0,
@@ -94,7 +94,7 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
         (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
           E₂*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
           (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₂))→
-    ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
+    ∀r:ℝ,Z^r≤ s.X₁ → Z^r≤ s.X₂ → Z^r≤ s.Y₁ → Z^r≤ s.Y₂ →
     ‖sourceGaussEnergy S β (heightCoeff s.η s.t) W Kphys‖/volume s.toData≤
       Cmain*Z^(2*δ+ε)*profileCost s*(s.η.modulus.absNorm:ℝ)*sourceRadius s*
         Real.sqrt (E₁*E₂)*heightEnvelope s.t^(J₁+J₂)*profileMoment J₁*profileMoment J₂/
@@ -146,8 +146,8 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     simpa only [←add_sub_assoc, add_sub_cancel_left] using h
   exact ht.trans ((add_le_add hn he).trans_eq (by ring))
 
-end SevenEighths.CenteredMomentSecondFrozenLiveDescent
 
-end
 
-end OAI
+
+
+

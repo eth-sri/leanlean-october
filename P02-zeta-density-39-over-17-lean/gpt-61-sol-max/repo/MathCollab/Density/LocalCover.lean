@@ -1,9 +1,10 @@
 module
+import Mathlib
 public import MathCollab.Density.CompletePairs
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators
 
 noncomputable section
@@ -12,7 +13,11 @@ namespace MathCollab.Density
 def localIndices (U : Finset ℝ) (H : ℝ) : Finset ℤ :=
   U.biUnion (fun t => Finset.Icc (⌊t/H⌋-2) ⌊t/H⌋)
 
-theorem mem_localSet_iff_floor {U : Finset ℝ} {H t : ℝ} (hH : 0 < H) (j : ℤ) :
+section
+variable {U : Finset ℝ}
+include U
+
+theorem mem_localSet_iff_floor  {H t : ℝ} (hH : 0 < H) (j : ℤ) :
     t ∈ localSet U H j ↔ t ∈ U ∧ ⌊t/H⌋-2 ≤ j ∧ j ≤ ⌊t/H⌋ := by
   simp only [localSet, Finset.mem_filter]
   constructor
@@ -31,7 +36,7 @@ theorem mem_localSet_iff_floor {U : Finset ℝ} {H t : ℝ} (hH : 0 < H) (j : �
       have hh : ((⌊t/H⌋ : ℤ) : ℝ) + 1 ≤ (j : ℝ)+3 := by exact_mod_cast (show ⌊t/H⌋+1 ≤ j+3 by omega)
       exact hf.trans_le hh
 
-theorem mem_localIndices_iff {U : Finset ℝ} {H : ℝ} (hH : 0 < H) (j : ℤ) :
+theorem mem_localIndices_iff  {H : ℝ} (hH : 0 < H) (j : ℤ) :
     j ∈ localIndices U H ↔ ∃ t ∈ U, t ∈ localSet U H j := by
   simp only [localIndices, Finset.mem_biUnion, Finset.mem_Icc]
   constructor
@@ -40,14 +45,14 @@ theorem mem_localIndices_iff {U : Finset ℝ} {H : ℝ} (hH : 0 < H) (j : ℤ) :
   · rintro ⟨t, ht, hj⟩
     exact ⟨t, ht, ((mem_localSet_iff_floor hH j).1 hj).2⟩
 
-theorem localSet_eq_empty_of_notMem {U : Finset ℝ} {H : ℝ} (hH : 0 < H)
+theorem localSet_eq_empty_of_notMem  {H : ℝ} (hH : 0 < H)
     {j : ℤ} (hj : j ∉ localIndices U H) : localSet U H j = ∅ := by
   apply Finset.eq_empty_iff_forall_notMem.mpr
   intro t ht
   exact hj ((mem_localIndices_iff hH j).2 ⟨t, (Finset.mem_filter.mp ht).1, ht⟩)
 
 /-- Every pair at distance less than 2H lies in one complete local pair set. -/
-theorem pair_mem_localSet {U : Finset ℝ} {H t u : ℝ} (hH : 0 < H)
+theorem pair_mem_localSet  {H t u : ℝ} (hH : 0 < H)
     (ht : t ∈ U) (hu : u ∈ U) (hclose : |t-u| < 2*H) :
     ∃ j ∈ localIndices U H, t ∈ localSet U H j ∧ u ∈ localSet U H j := by
   let j : ℤ := ⌊min t u / H⌋
@@ -56,39 +61,32 @@ theorem pair_mem_localSet {U : Finset ℝ} {H t u : ℝ} (hH : 0 < H)
   have hdist := abs_lt.mp hclose
   have htj : t ∈ localSet U H j := by
     apply Finset.mem_filter.mpr
-    refine ⟨ht, hlo.trans (min_le_left _ _), ?_⟩
-    rcases le_total t u with htu | hut
-    · rw [min_eq_left htu] at hhi
-      nlinarith
-    · rw [min_eq_right hut] at hhi
-      nlinarith [hdist.2]
+    grind
   have huj : u ∈ localSet U H j := by
     apply Finset.mem_filter.mpr
-    refine ⟨hu, hlo.trans (min_le_right _ _), ?_⟩
-    rcases le_total t u with htu | hut
-    · rw [min_eq_left htu] at hhi
-      nlinarith [hdist.1]
-    · rw [min_eq_right hut] at hhi
-      nlinarith
+    grind
   exact ⟨j, (mem_localIndices_iff hH j).2 ⟨t, ht, htj⟩, htj, huj⟩
+end
+
 
 /-- Extending a complete pair sum to an ambient finite set with zero indicators. -/
 theorem sum_pairs_indicator {E : Type*} [AddCommMonoid E] {U V : Finset ℝ}
     (hVU : V ⊆ U) (F : ℝ → ℝ → E) :
     (∑ t ∈ U, ∑ u ∈ U, if t ∈ V ∧ u ∈ V then F t u else 0) =
       ∑ t ∈ V, ∑ u ∈ V, F t u := by
-  have he : U.filter (fun t => t ∈ V) = V := by
-    ext t
-    simp only [Finset.mem_filter]
-    exact ⟨fun h => h.2, fun h => ⟨hVU h, h⟩⟩
+  have he : U.filter (fun t => t ∈ V) = V := by simp_all
   conv_rhs => rw [← he]
   simp only [Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro t _
   by_cases ht : t ∈ V <;> simp [ht]
 
+section
+variable {U : Finset ℝ}
+include U
+
 /-- A shell may be enlarged to complete local pairs before coefficient domination. -/
-theorem close_pairs_le_local_pairs {U : Finset ℝ} {H : ℝ} (hH : 0 < H)
+theorem close_pairs_le_local_pairs  {H : ℝ} (hH : 0 < H)
     (F : ℝ → ℝ → ℝ) (hF : ∀ t u, 0 ≤ F t u) :
     (∑ t ∈ U, ∑ u ∈ U, if |t-u| < 2*H then F t u else 0) ≤
       ∑ j ∈ localIndices U H, ∑ t ∈ localSet U H j, ∑ u ∈ localSet U H j, F t u := by
@@ -116,7 +114,7 @@ theorem close_pairs_le_local_pairs {U : Finset ℝ} {H : ℝ} (hH : 0 < H)
       intro j _
       exact sum_pairs_indicator (Finset.filter_subset _ _) F
 
-theorem tsum_completePairEnergy_localSet {U : Finset ℝ} {H : ℝ} (hH : 0 < H) (M : ℕ) :
+theorem tsum_completePairEnergy_localSet  {H : ℝ} (hH : 0 < H) (M : ℕ) :
     (∑' j : ℤ, completePairEnergy M (localSet U H j)) =
       ∑ j ∈ localIndices U H, completePairEnergy M (localSet U H j) := by
   apply tsum_eq_sum
@@ -124,7 +122,7 @@ theorem tsum_completePairEnergy_localSet {U : Finset ℝ} {H : ℝ} (hH : 0 < H)
   simp only [localSet_eq_empty_of_notMem hH hj, completePairEnergy, Finset.sum_empty]
 
 /-- Each original point belongs to exactly three consecutive local sets. -/
-theorem localIndices_filter_point {U : Finset ℝ} {H t : ℝ} (hH : 0 < H) (ht : t ∈ U) :
+theorem localIndices_filter_point  {H t : ℝ} (hH : 0 < H) (ht : t ∈ U) :
     (localIndices U H).filter (fun j => t ∈ localSet U H j) =
       Finset.Icc (⌊t/H⌋-2) ⌊t/H⌋ := by
   ext j
@@ -136,7 +134,7 @@ theorem localIndices_filter_point {U : Finset ℝ} {H t : ℝ} (hH : 0 < H) (ht 
     have hmem := (mem_localSet_iff_floor hH j).2 ⟨ht, hj⟩
     exact ⟨(mem_localIndices_iff hH j).2 ⟨t, ht, hmem⟩, hmem⟩
 
-theorem sum_card_localSet {U : Finset ℝ} {H : ℝ} (hH : 0 < H) :
+theorem sum_card_localSet  {H : ℝ} (hH : 0 < H) :
     (∑ j ∈ localIndices U H, (localSet U H j).card) = 3*U.card := by
   have he (j : ℤ) : (localSet U H j).card = ∑ t ∈ U, if t ∈ localSet U H j then 1 else 0 := by
     rw [← Finset.sum_filter]
@@ -144,8 +142,7 @@ theorem sum_card_localSet {U : Finset ℝ} {H : ℝ} (hH : 0 < H) :
       ext t
       simp only [Finset.mem_filter]
       exact ⟨fun h => h.2, fun h => ⟨(Finset.mem_filter.mp h).1, h⟩⟩
-    rw [hh]
-    simp
+    simp_all
   simp_rw [he]
   rw [Finset.sum_comm]
   calc
@@ -157,11 +154,12 @@ theorem sum_card_localSet {U : Finset ℝ} {H : ℝ} (hH : 0 < H) :
     _ = _ := by simp only [Finset.sum_const, smul_eq_mul]; omega
 
 /-- The local interval has diameter at most 3H, with no separation premise. -/
-theorem localSet_pair_distance {U : Finset ℝ} {H : ℝ} {j : ℤ} {t u : ℝ}
+theorem localSet_pair_distance  {H : ℝ} {j : ℤ} {t u : ℝ}
     (ht : t ∈ localSet U H j) (hu : u ∈ localSet U H j) : |t-u| < 3*H := by
   have htt := (Finset.mem_filter.mp ht).2
   have huu := (Finset.mem_filter.mp hu).2
-  apply abs_lt.mpr
-  constructor <;> nlinarith [htt.1, htt.2, huu.1, huu.2]
+  grind
+end
 
-end MathCollab.Density
+
+

@@ -402,13 +402,17 @@ theorem source_powered_threshold_loss_le_envelope
 
 set_option maxHeartbeats 1200000
 
+section
+variable {σ τ₀ : ℝ} (hσLower : 1 / 2 < σ) (hσUpper : σ < 1)
+    (hcert : EndpointScaleCertificate σ τ₀)
+include σ τ₀ hσLower hσUpper hcert
+
 /-- Endpoint consumer for either of the two literal bottom blocks selected
 from the source-smooth decomposition.  The proof chooses the natural power
 from the physical scale, performs both real finite extractions, and returns
 to the multiplicity-weighted zero count. -/
 theorem actual_lower_source_family_endpoint_consumer
-    {σ τ₀ : ℝ} (hσLower : 1 / 2 < σ) (hσUpper : σ < 1)
-    (hcert : EndpointScaleCertificate σ τ₀) :
+     :
     ∀ ε : ℝ, 0 < ε →
       ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 8 ≤ T₀ ∧ ∀ T : ℝ, T₀ ≤ T →
         let d := classicalEndpointLossParameter σ τ₀ (ε / 100)
@@ -774,8 +778,7 @@ The natural power is selected after the literal dyadic block is known.  Thus
 the scale divided by `k`, the powered coefficients and the final MHH length
 all refer to the same finite object. -/
 theorem actual_source_near_endpoint_consumer
-    {σ τ₀ : ℝ} (hσLower : 1 / 2 < σ) (hσUpper : σ < 1)
-    (hcert : EndpointScaleCertificate σ τ₀) :
+     :
     ∀ ε : ℝ, 0 < ε →
       ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 8 ≤ T₀ ∧ ∀ T : ℝ, T₀ ≤ T →
         let d := classicalEndpointLossParameter σ τ₀ (ε / 100)
@@ -1127,6 +1130,8 @@ theorem actual_source_near_endpoint_consumer
               T ^ (3 * (1 - σ) / τ₀) := by ring
         _ ≤ (Closs * Ccover * ((2 : ℝ) ^ B) ^ (2 : ℕ)) *
             T ^ ε * T ^ (3 * (1 - σ) / τ₀) := by gcongr
+end
+
 
 /-! ## Source-facing medium witness contract -/
 
@@ -1732,12 +1737,16 @@ theorem natCast_eq_rpow_inv_of_rpow_eq
   have hmul : tau * (1 / tau) = 1 := by field_simp [htau.ne']
   rw [hmul, Real.rpow_one]
 
+section
+variable {T d tau : ℝ} {Q : ℕ}
+    (hT : 8 ≤ T)
+include T d tau Q hT
+
 /-- On a medium scale the expanded dual cutoff is still below the literal
 sharp zeta cutoff.  Consequently its `Nat.clog` loss is already covered by
 the source-selection logarithmic budget. -/
 theorem mediumTypeIDualCutoff_le_sharpZetaCutoff
-    {T d tau : ℝ} {Q : ℕ}
-    (hT : 8 ≤ T) (_hd : 0 ≤ d) (hdHalf : d ≤ 1 / 2)
+     (_hd : 0 ≤ d) (hdHalf : d ≤ 1 / 2)
     (hQ : 1 < Q) (_htau : 0 < tau) (htauTwo : tau < 2)
     (hScale : (Q : ℝ) ^ tau = T) :
     mediumTypeIDualCutoff T d Q ≤ ⌊sharpZetaCutoff T⌋₊ := by
@@ -1765,8 +1774,7 @@ theorem mediumTypeIDualCutoff_le_sharpZetaCutoff
 threshold.  No new logarithmic estimate is required once the dual cutoff is
 proved to lie below the sharp cutoff. -/
 theorem medium_reflected_clog_product_le
-    {T d tau : ℝ} {Q : ℕ}
-    (hT : 8 ≤ T) (hd : 0 ≤ d) (hdHalf : d ≤ 1 / 2)
+     (hd : 0 ≤ d) (hdHalf : d ≤ 1 / 2)
     (hQ : 1 < Q) (htau : 0 < tau) (htauTwo : tau < 2)
     (hScale : (Q : ℝ) ^ tau = T) :
     ((Nat.clog 2 ⌊sharpZetaCutoff T⌋₊ + 1 : ℕ) : ℝ) *
@@ -1780,6 +1788,8 @@ theorem medium_reflected_clog_product_le
       Nat.clog 2 (⌊sharpZetaCutoff T⌋₊ + 1) :=
     Nat.clog_mono_right 2 (hM.trans hA)
   gcongr
+end
+
 
 /-- The fixed constant in the normalized reflected-threshold lower bound. -/
 noncomputable def mediumReflectedThresholdConstant (Clog CK : ℝ) : ℝ :=
@@ -3143,16 +3153,20 @@ theorem eventually_medium_dual_cutoff_product_bounds
   simpa only using medium_dual_cutoff_product_bounds hTOne hd.le hQ
     htauOne hScale hRatio
 
+section
+variable {sigma d u : ℝ} (hsigma : 1 / 2 < sigma) (hsigmaUpper : sigma < 1)
+    (hd : 0 < d) (hdOne : d ≤ 1)
+    (hdGap : d ≤ (sigma - 1 / 2) / 1000)
+    (hu : 0 ≤ u) (huD : u ≤ d)
+include sigma d u hsigma hsigmaUpper hd hdOne hdGap hu huD
+
 /-- Every genuinely interior source family is converted, point by point,
 to one of the two exact normalized reflected wide polynomials.  The same
 family, displacement window, natural dual cutoff, detector threshold and
 kernel occur in the conclusion; no cardinality or multiplicity is lost at
 this analytic stage. -/
 theorem eventually_interior_source_family_reflects
-    {sigma d u : ℝ} (hsigma : 1 / 2 < sigma) (hsigmaUpper : sigma < 1)
-    (hd : 0 < d) (hdOne : d ≤ 1)
-    (hdGap : d ≤ (sigma - 1 / 2) / 1000)
-    (hu : 0 ≤ u) (huD : u ≤ d) :
+     :
     ∃ T₀ : ℝ, 8 ≤ T₀ ∧
       ∀ {T tau : ℝ} {Y A r : ℕ} (W : Finset ℝ), T₀ ≤ T →
         A = ⌊sharpZetaCutoff T⌋₊ → 0 < Y → 2 ≤ r →
@@ -3315,10 +3329,7 @@ the sign and bounded-displacement selections, exposes the literal dyadic
 block and proves both of its physical scale bounds from its actual retained
 threshold. -/
 theorem eventually_interior_source_reflected_dyadic_data
-    {sigma d u : ℝ} (hsigma : 1 / 2 < sigma)
-    (hsigmaUpper : sigma < 1) (hd : 0 < d) (hdOne : d ≤ 1)
-    (hdGap : d ≤ (sigma - 1 / 2) / 1000)
-    (hu : 0 ≤ u) (huD : u ≤ d) :
+     :
     ∃ Clog : ℝ, 0 < Clog ∧
       let CK := 32 * 2 ^ sigma +
         (20 * (4 * Real.pi) ^ sigma + 4 * Real.pi ^ sigma) *
@@ -3501,6 +3512,8 @@ theorem eventually_interior_source_reflected_dyadic_data
     ?_, hOrdinate, hPOne, hPLtM, hTauPLower, ?_, hThresholdExact, hThreshold⟩
   · simpa only [L, S, R, V, Q, M] using hLargeU
   · simpa only [Uscale] using hTauPUpper
+end
+
 
 /-- The literal quadratic and cubic side conditions needed by the reflected
 Weyl A--B process hold uniformly on the far dyadic branch. -/
@@ -4474,13 +4487,17 @@ theorem eventually_medium_source_tau_ge_two_impossible
     · have hBound : 4 * τ₀ / 3 ≤ 4 * (3 * σ - 1) / 3 := by gcongr
       nlinarith
 
+section
+variable {σ τ₀ : ℝ} (hσ : 1 / 2 < σ) (hσUpper : σ < 1)
+    (hcert : EndpointScaleCertificate σ τ₀)
+include σ τ₀ hσ hσUpper hcert
+
 /-- Complete consumer for the genuinely reflected source range.  It invokes
 the actual pointwise Poisson reflection, selects its common signed dyadic
 block, and then dispatches the exhaustive powered/Weyl scale split while
 retaining the original multiplicity-weighted count. -/
 theorem actual_interior_reflected_endpoint_consumer
-    {σ τ₀ : ℝ} (hσ : 1 / 2 < σ) (hσUpper : σ < 1)
-    (hcert : EndpointScaleCertificate σ τ₀) :
+     :
     ∀ ε : ℝ, 0 < ε →
       ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 8 ≤ T₀ ∧ ∀ T : ℝ, T₀ ≤ T →
         let d := classicalEndpointLossParameter σ τ₀ (ε / 100)
@@ -4612,8 +4629,7 @@ direct powering, the terminal family is impossible, a near extracted dyadic
 scale uses finite powering, and the remaining interior scale is either ruled
 out by Weyl or consumed by the reflected B-process. -/
 theorem actual_selected_source_endpoint_consumer
-    {σ τ₀ : ℝ} (hσ : 1 / 2 < σ) (hσUpper : σ < 1)
-    (hcert : EndpointScaleCertificate σ τ₀) :
+     :
     ∀ ε : ℝ, 0 < ε →
       ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 8 ≤ T₀ ∧ ∀ T : ℝ, T₀ ≤ T →
         let d := classicalEndpointLossParameter σ τ₀ (ε / 100)
@@ -4817,6 +4833,8 @@ theorem actual_selected_source_endpoint_consumer
               (by simpa only [d] using hRange)
               (by simpa only [Y, A, d] using hLarge)
               (by simpa only [Y, A, d] using hCount)
+end
+
 
 /-- The exact medium Type-I branch which remains after the direct and raised
 scale consumers.  The long-tail lower bound is part of the same witness
@@ -4910,7 +4928,7 @@ theorem classical_medium_typeI_witness_consumer_native :
     exact mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTPos.le ε))
       (Real.rpow_nonneg hTPos.le (3 * (1 - σ) / τ₀))
 
-end GuthMaynard.NativeMoment
+
 
 -- Generated closures: source context is replayed in the next part.
-end
+

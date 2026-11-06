@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceTwist
 
 @[expose] public section
@@ -19,7 +20,7 @@ namespace GafniTao
 
 noncomputable section
 
-/-- The exact sequence
+/- The exact sequence
 `c_y(alpha) = gamma_{p^a y+xi} e(psi(p^a y+xi;alpha))`
 from the line following (7.14). -/
 def wooleySection7Coefficient {k : ℕ}
@@ -32,17 +33,9 @@ def wooleySection7Coefficient {k : ℕ}
   wooleySourceTwist pullback
     (fun y => wooleySourcePolynomialPhase translated alpha y)
 
-@[simp] theorem wooleySection7Coefficient_apply
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (gamma : WooleySourceSequence) (p a : ℕ) (hp : 0 < p) (xi : ℤ)
-    {q : ℕ} [NeZero q] (alpha : Fin k → ZMod q) (y : ℤ) :
-    wooleySection7Coefficient phi gamma p a hp xi alpha y =
-      gamma ((p ^ a : ℕ) * y + xi) *
-        wooleySourcePolynomialPhase phi alpha
-          ((p ^ a : ℕ) * y + xi) := by
-  simp [wooleySection7Coefficient, wooleySourcePolynomialPhase_affine]
 
-/-- Admissibility is preserved by the Section 7 coefficient construction. -/
+
+/- Admissibility is preserved by the Section 7 coefficient construction. -/
 theorem WooleySourceSequence.Admissible.section7Coefficient
     {k : ℕ} {gamma : WooleySourceSequence}
     (hgamma : gamma.Admissible) (phi : WooleyPolynomialSystem k)
@@ -54,6 +47,6 @@ theorem WooleySourceSequence.Admissible.section7Coefficient
   intro y
   rw [wooleySourcePolynomialPhase_norm]
 
-end
 
-end GafniTao
+
+

@@ -9,8 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedUniformPair
-open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
+open EisensteinSchwartzPoisson
+open CenteredMomentReflectedProfileMeasure
 
 def heightScale (A n : ℕ) (s t : ℝ) : ℝ := (1+s)^A/(1+‖t‖)^n
 
@@ -28,20 +28,26 @@ lemma envelope_pos (C : ℝ) (hC : 0<C) (J : ℕ) (v : ℝ) : 0<envelope C J v :
   unfold envelope
   positivity
 
-lemma envelope_weight (C : ℝ) (J : ℕ) (v : ℝ) :
+section
+variable (C : ℝ) (J : ℕ)
+include C J
+
+lemma envelope_weight  (v : ℝ) :
     envelope C J v*(1+‖v‖)^J=C/(1+v^2) := by
   unfold envelope
   field_simp
 
-lemma envelope_integrable (C : ℝ) (J : ℕ) :
+lemma envelope_integrable  :
     Integrable (fun v : ℝ=>envelope C J v*(1+‖v‖)^J) := by
   simp_rw [envelope_weight,div_eq_mul_inv]
   exact integrable_inv_one_add_sq.const_mul C
 
-lemma envelope_integral (C : ℝ) (J : ℕ) :
+lemma envelope_integral  :
     (∫v : ℝ,envelope C J v*(1+‖v‖)^J)=C*Real.pi := by
   simp_rw [envelope_weight,div_eq_mul_inv]
   rw [integral_const_mul,integral_univ_inv_one_add_sq]
+end
+
 
 lemma normalized_density_bound (A n J : ℕ) (s t C : ℝ) (hs : 0<s)
     (b : 𝓢(ℝ,ℂ))
@@ -61,8 +67,8 @@ lemma normalized_density_bound (A n J : ℕ) (s t C : ℝ) (hs : 0<s)
   apply (le_div_iff₀ hv).mpr
   simpa only [envelope,mul_comm] using hb
 
-end SevenEighths.CenteredMomentReflectedUniformPair
 
-end
 
-end OAI
+
+
+

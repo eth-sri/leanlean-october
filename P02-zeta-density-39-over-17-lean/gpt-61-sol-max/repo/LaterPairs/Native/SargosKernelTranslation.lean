@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosKernelWindow
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                           
 
-noncomputable section
+
 
 open MeasureTheory GafniTao
 
@@ -24,8 +23,12 @@ theorem integrable_sargosSincKernel_shift {w : ℝ} (hw : 0 < w) (c : ℝ) :
     Integrable (fun x : ℝ => sargosSincKernel w (x-c)) := by
   simpa only [sub_eq_add_neg] using (integrable_sargosSincKernel hw).comp_add_right (-c)
 
-theorem integrable_sargosSincKernel_shift_character {w : ℝ}
-    (hw : 0 < w) (c ξ : ℝ) :
+section
+variable {w : ℝ}
+    (hw : 0 < w) (c ξ : ℝ)
+include w hw c ξ
+
+theorem integrable_sargosSincKernel_shift_character  :
     Integrable (fun x : ℝ =>
       (sargosSincKernel w (x-c) : ℂ)*fordAdditiveCharacter (-(ξ*x))) := by
   have hc : Continuous (fun x : ℝ =>
@@ -37,8 +40,7 @@ theorem integrable_sargosSincKernel_shift_character {w : ℝ}
     rw [norm_mul,sargos_character_norm,mul_one,Complex.norm_real,
       Real.norm_eq_abs,abs_of_nonneg (sargosSincKernel_nonneg hw.le (x-c))])
 
-theorem integral_sargosSincKernel_shift_character {w : ℝ}
-    (hw : 0 < w) (c ξ : ℝ) :
+theorem integral_sargosSincKernel_shift_character  :
     (∫ x : ℝ, (sargosSincKernel w (x-c) : ℂ)*fordAdditiveCharacter (-(ξ*x))) =
       fordAdditiveCharacter (-(ξ*c))*(sargosRealTent w ξ : ℂ) := by
   let f : ℝ → ℂ := fun x =>
@@ -59,17 +61,17 @@ theorem integral_sargosSincKernel_shift_character {w : ℝ}
       integral_const_mul _ _
     _ = _ := by rw [integral_sargosSincKernel_character hw ξ]
 
-theorem integral_sargosSincKernel_shift_character_positive {w : ℝ}
-    (hw : 0 < w) (c ξ : ℝ) :
+theorem integral_sargosSincKernel_shift_character_positive  :
     (∫ x : ℝ, (sargosSincKernel w (x-c) : ℂ)*fordAdditiveCharacter (ξ*x)) =
       fordAdditiveCharacter (ξ*c)*(sargosRealTent w ξ : ℂ) := by
   have h := integral_sargosSincKernel_shift_character hw c (-ξ)
   simpa only [neg_mul,neg_neg,sargosRealTent,abs_neg] using h
 
-theorem integrable_sargosSincKernel_shift_character_positive {w : ℝ}
-    (hw : 0 < w) (c ξ : ℝ) :
+theorem integrable_sargosSincKernel_shift_character_positive  :
     Integrable (fun x : ℝ =>
       (sargosSincKernel w (x-c) : ℂ)*fordAdditiveCharacter (ξ*x)) := by
   simpa only [neg_mul,neg_neg] using integrable_sargosSincKernel_shift_character hw c (-ξ)
+end
 
-end TaoTrudgianYang2025
+
+

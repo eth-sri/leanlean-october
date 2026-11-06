@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Combinatorics.Pigeonhole
 public import Mathlib.NumberTheory.Harmonic.Bounds
@@ -46,7 +47,6 @@ theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
         rw [← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
       _ = (‖z‖ : ℂ) := by
         push_cast
-        have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
         field_simp
 
 /-- Coordinate Cauchy--Schwarz for a finite complex sum. -/
@@ -92,8 +92,7 @@ theorem sum_norm_sq_sum_le_gram {ι κ : Type*} [DecidableEq ι] [DecidableEq κ
     apply Finset.sum_congr rfl
     intro u hu
     apply Finset.sum_congr rfl
-    intro n hn
-    ring
+    grind
   have hre := congrArg Complex.re hexpand
   simp only [ofReal_re] at hre
   rw [hre]
@@ -188,11 +187,7 @@ theorem halasz_montgomery_duality
         ∑ n ∈ dyadicInterval N, a n * (∑ t ∈ W, c t * y t n) := by
     simp only [D, dirichletPoly_eq_logarithmicPhase, y, Finset.mul_sum]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro n hn
-    apply Finset.sum_congr rfl
-    intro t ht
-    ring
+    grind
   have hcs := norm_sum_mul_sq_le (dyadicInterval N) a
     (fun n => ∑ t ∈ W, c t * y t n)
   rw [← hexpand] at hcs
@@ -204,23 +199,11 @@ theorem halasz_montgomery_duality
     exact logarithmicPhase_gram_eq_kernel N t u
   have hgram' :
       (∑ n ∈ dyadicInterval N, ‖∑ t ∈ W, c t * y t n‖ ^ 2) ≤
-        ∑ t ∈ W, ∑ u ∈ W, ‖logarithmicKernel N (u - t)‖ := by
-    calc
-      _ ≤ ∑ t ∈ W, ∑ u ∈ W,
-          ‖∑ n ∈ dyadicInterval N, conj (y t n) * y u n‖ := hgram
-      _ = _ := by
-        apply Finset.sum_congr rfl
-        intro t ht
-        apply Finset.sum_congr rfl
-        intro u hu
-        rw [hcorr t ht u hu]
+        ∑ t ∈ W, ∑ u ∈ W, ‖logarithmicKernel N (u - t)‖ := by simp_all
   have henergy : 0 ≤ ∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2 := by positivity
   calc
     ((W.card : ℝ) * V) ^ 2 ≤ ‖∑ t ∈ W, c t * D t‖ ^ 2 := by
-      rw [halign]
-      have hleft : 0 ≤ (W.card : ℝ) * V := mul_nonneg (by positivity) hV
-      have hright : 0 ≤ ∑ t ∈ W, ‖D t‖ := by positivity
-      nlinarith
+      bound
     _ ≤ (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) *
         (∑ n ∈ dyadicInterval N, ‖∑ t ∈ W, c t * y t n‖ ^ 2) := hcs
     _ ≤ (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) *
@@ -243,47 +226,28 @@ theorem separated_annulus_card_le_two
     (W : Finset ℝ) (t : ℝ) (k : ℕ) (hSep : IsSeparated 1 W) :
     ({u ∈ W | u ≠ t ∧ (k : ℝ) ≤ |u - t| ∧ |u - t| < (k : ℝ) + 1}).card ≤ 2 := by
   let S := {u ∈ W | u ≠ t ∧ (k : ℝ) ≤ |u - t| ∧ |u - t| < (k : ℝ) + 1}
-  let P : ℝ → Prop := fun u => t ≤ u
+  let P := fun u => t ≤ u
   have hpos : (S.filter P).card ≤ 1 := by
     apply separated_subset_card_le_one_of_diameter W (S.filter P) hSep
-    · intro u hu
-      exact (Finset.mem_filter.mp hu).1 |> Finset.mem_filter.mp |>.1
-    · intro x hx y hy
-      have hxData := Finset.mem_filter.mp hx
-      have hyData := Finset.mem_filter.mp hy
-      have hxS := Finset.mem_filter.mp hxData.1
-      have hyS := Finset.mem_filter.mp hyData.1
-      rw [abs_of_nonneg (sub_nonneg.mpr hxData.2)] at hxS
-      rw [abs_of_nonneg (sub_nonneg.mpr hyData.2)] at hyS
-      rw [abs_lt]
-      constructor <;> linarith [hxS.2.2, hyS.2.2]
+    all_goals (grind)
   have hneg : (S.filter (fun u => ¬ P u)).card ≤ 1 := by
     apply separated_subset_card_le_one_of_diameter W (S.filter (fun u => ¬ P u)) hSep
-    · intro u hu
-      exact (Finset.mem_filter.mp hu).1 |> Finset.mem_filter.mp |>.1
-    · intro x hx y hy
-      have hxData := Finset.mem_filter.mp hx
-      have hyData := Finset.mem_filter.mp hy
-      have hxS := Finset.mem_filter.mp hxData.1
-      have hyS := Finset.mem_filter.mp hyData.1
-      have hxt : x - t ≤ 0 := by linarith
-      have hyt : y - t ≤ 0 := by linarith
-      rw [abs_of_nonpos hxt] at hxS
-      rw [abs_of_nonpos hyt] at hyS
-      rw [abs_lt]
-      constructor <;> linarith [hxS.2.2, hyS.2.2]
+    all_goals (grind)
   have hsplit := Finset.card_filter_add_card_filter_not (s := S) P
-  change S.card ≤ 2
-  omega
+  nlinarith
+
+section
+variable (N : ℕ)
+include N
 
 /-- The reciprocal distances from one point to the other separated points in
 its `N`-neighborhood have harmonic, rather than linear, total mass. -/
 theorem sum_inv_distance_near_le_harmonic
-    (N : ℕ) (W : Finset ℝ) (t : ℝ) (hSep : IsSeparated 1 W) (ht : t ∈ W) :
+     (W : Finset ℝ) (t : ℝ) (hSep : IsSeparated 1 W) (ht : t ∈ W) :
     (∑ u ∈ {u ∈ W | u ≠ t ∧ |u - t| ≤ (N : ℝ)}, 1 / |u - t|) ≤
       2 * (((harmonic N : ℚ) : ℝ)) := by
   let S := {u ∈ W | u ≠ t ∧ |u - t| ≤ (N : ℝ)}
-  let shell : ℝ → ℕ := fun u => Nat.floor |u - t|
+  let shell := fun u => Nat.floor |u - t|
   have hmaps : ∀ u ∈ S, shell u ∈ Finset.Icc 1 N := by
     intro u hu
     have huData := Finset.mem_filter.mp hu
@@ -330,7 +294,6 @@ theorem sum_inv_distance_near_le_harmonic
           apply Finset.sum_le_sum
           intro u hu
           have huData := Finset.mem_filter.mp hu
-          have huS := Finset.mem_filter.mp huData.1
           have hfloor := huData.2
           have hqNonneg : 0 ≤ |u - t| := abs_nonneg _
           have hkq : (k : ℝ) ≤ |u - t| := by
@@ -352,7 +315,7 @@ The near terms contribute a harmonic loss; the far terms are controlled by
 the B-process and are small enough to be absorbed after choosing the interval
 length. -/
 theorem logarithmicKernel_row_sum_le
-    (N : ℕ) (W : Finset ℝ) (t A L : ℝ) (hN : 0 < N)
+     (W : Finset ℝ) (t A L : ℝ) (hN : 0 < N)
     (hSep : IsSeparated 1 W) (ht : t ∈ W)
     (hInterval : ∀ u ∈ W, u ∈ Set.Icc A (A + L))
     (hLN : L ≤ (N : ℝ) ^ 2) :
@@ -415,7 +378,7 @@ theorem logarithmicKernel_row_sum_le
 
 /-- Localized large-value count after absorption of the B-process term. -/
 theorem local_classical_large_values
-    (N : ℕ) (V A L : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
+     (V A L : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
     (hN : 0 < N) (hV : 0 < V)
     (hSep : IsSeparated 1 W)
     (hInterval : ∀ t ∈ W, t ∈ Set.Icc A (A + L))
@@ -434,8 +397,8 @@ theorem local_classical_large_values
     simp only [Finset.card_empty, Nat.cast_zero]
     positivity
   let R : ℝ := W.card
-  let G : ℝ := ∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2
-  let B : ℝ := (N : ℝ) + 12 * Real.pi * (N : ℝ) * (((harmonic N : ℚ) : ℝ))
+  let G := ∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2
+  let B := (N : ℝ) + 12 * Real.pi * (N : ℝ) * (((harmonic N : ℚ) : ℝ))
   have hR : 0 < R := by
     dsimp only [R]
     exact_mod_cast (Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr hW))
@@ -455,36 +418,22 @@ theorem local_classical_large_values
       _ ≤ ∑ t ∈ W, (B + 100 * R * Real.sqrt L) := by
         apply Finset.sum_le_sum
         intro t ht
-        simpa only [B, R] using
-          logarithmicKernel_row_sum_le N W t A L hN hSep ht hInterval hLN
+        exact logarithmicKernel_row_sum_le N W t A L hN hSep ht hInterval hLN
       _ = R * (B + 100 * R * Real.sqrt L) := by
         simp only [sum_const, nsmul_eq_mul, R]
   have hmain : (R * V) ^ 2 ≤ G * (R * (B + 100 * R * Real.sqrt L)) := by
     exact hdual.trans (mul_le_mul_of_nonneg_left hrows hG)
   have hhalf :
-      100 * G * R ^ 2 * Real.sqrt L ≤ (V ^ 2 / 2) * R ^ 2 := by
-    have habs : 100 * G * Real.sqrt L ≤ V ^ 2 / 2 := by
-      change 200 * G * Real.sqrt L ≤ V ^ 2 at hAbsorb
-      nlinarith
-    calc
-      100 * G * R ^ 2 * Real.sqrt L =
-          (100 * G * Real.sqrt L) * R ^ 2 := by ring
-      _ ≤ (V ^ 2 / 2) * R ^ 2 :=
-        mul_le_mul_of_nonneg_right habs (sq_nonneg R)
-  have hcancel : R * V ^ 2 ≤ 2 * G * B := by
-    have hquad : R ^ 2 * V ^ 2 ≤ 2 * G * R * B := by
-      nlinarith [hmain, hhalf]
-    have hfactored : R * (R * V ^ 2) ≤ R * (2 * G * B) := by
-      nlinarith
-    exact le_of_mul_le_mul_left hfactored hR
+      100 * G * R ^ 2 * Real.sqrt L ≤ (V ^ 2 / 2) * R ^ 2 := by nlinarith
+  have hcancel : R * V ^ 2 ≤ 2 * G * B := by nlinarith
   change R ≤ 2 * G * B / V ^ 2
   rw [le_div_iff₀ (sq_pos_of_pos hV)]
-  simpa only [mul_assoc] using hcancel
+  exact hcancel
 
 /-- Subdivision of `[0,T]` into equal real intervals transfers the local
 absorbed estimate to the full separated set. -/
 theorem classical_large_values_of_local_scale
-    (N : ℕ) (T V L : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
+     (T V L : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
     (hN : 0 < N) (hV : 0 < V) (hL : 0 < L)
     (hLN : L ≤ (N : ℝ) ^ 2)
     (hSep : IsSeparated 1 W) (hBase : InBaseInterval T W)
@@ -494,16 +443,15 @@ theorem classical_large_values_of_local_scale
       ((Nat.floor (T / L) + 1 : ℕ) : ℝ) *
         (2 * (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) *
           ((N : ℝ) + 12 * Real.pi * (N : ℝ) * (((harmonic N : ℚ) : ℝ))) / V ^ 2) := by
-  let bin : ℝ → ℕ := fun t => Nat.floor (t / L)
-  let K : ℕ := Nat.floor (T / L) + 1
+  let bin := fun t => Nat.floor (t / L)
+  let K := Nat.floor (T / L) + 1
   have hmaps : ∀ t ∈ W, bin t ∈ Finset.range K := by
     intro t ht
     have htBase := hBase t ht
     have hquot : t / L ≤ T / L := (div_le_div_iff_of_pos_right hL).2 htBase.2
     have hfloor := Nat.floor_mono hquot
     dsimp only [bin, K]
-    rw [Finset.mem_range]
-    omega
+    simp_all
   have hfiber (k : ℕ) (hk : k ∈ Finset.range K) :
       (({t ∈ W | bin t = k}).card : ℝ) ≤
         2 * (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) *
@@ -532,7 +480,7 @@ theorem classical_large_values_of_local_scale
     change (Wk.card : ℝ) ≤ _
     exact local_classical_large_values N V ((k : ℝ) * L) L Wk a hN hV hWkSep
       hWkInterval hLN hWkLarge hAbsorb
-  have hcard : W.card = ∑ k ∈ Finset.range K, ({t ∈ W | bin t = k}).card :=
+  have hcard :=
     Finset.card_eq_sum_card_fiberwise hmaps
   calc
     (W.card : ℝ) = ∑ k ∈ Finset.range K, (({t ∈ W | bin t = k}).card : ℝ) := by
@@ -547,26 +495,22 @@ theorem classical_large_values_of_local_scale
       simp only [sum_const, card_range, nsmul_eq_mul, K]
 
 theorem dyadic_energy_le_length
-    (N : ℕ) (a : ℕ → ℂ)
+     (a : ℕ → ℂ)
     (ha : ∀ n ∈ dyadicInterval N, ‖a n‖ ≤ 1) :
     (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) ≤ (N : ℝ) := by
   calc
     (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) ≤
-        ∑ n ∈ dyadicInterval N, (1 : ℝ) := by
-      apply Finset.sum_le_sum
-      intro n hn
-      nlinarith [ha n hn, norm_nonneg (a n)]
+        ∑ n ∈ dyadicInterval N, (1 : ℝ) := by bound
     _ = (N : ℝ) := by
       simp only [sum_const, nsmul_eq_mul, mul_one, dyadicInterval,
         Nat.card_Ioc]
-      have hle : N ≤ 2 * N := by omega
       norm_num
       omega
 
 /-- A nonempty set of values of height at least `V` forces the coefficient
 energy to be at least `V²/N`. -/
 theorem threshold_sq_le_length_mul_energy
-    (N : ℕ) (V : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
+     (V : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
     (hV : 0 ≤ V) (hW : W.Nonempty)
     (hLarge : ∀ t ∈ W, V ≤ ‖dirichletPoly N a t‖) :
     V ^ 2 ≤ (N : ℝ) * (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) := by
@@ -579,17 +523,15 @@ theorem threshold_sq_le_length_mul_energy
         (N : ℝ) := by
     simp only [norm_unitaryPhase, one_pow, sum_const, nsmul_eq_mul, mul_one,
       dyadicInterval, Nat.card_Ioc]
-    have hle : N ≤ 2 * N := by omega
     norm_num
     omega
   rw [hphase] at hcs
   have hlarge := hLarge t ht
-  have hnorm : 0 ≤ ‖dirichletPoly N a t‖ := norm_nonneg _
   nlinarith
 
 /-- The Huxley (`V⁻⁶`) branch for bounded coefficients. -/
 theorem classical_large_values_sixth_branch
-    (N : ℕ) (T V : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
+     (T V : ℝ) (W : Finset ℝ) (a : ℕ → ℂ)
     (hN : 0 < N) (hT : 0 ≤ T) (hV : 0 < V)
     (ha : ∀ n ∈ dyadicInterval N, ‖a n‖ ≤ 1)
     (hSep : IsSeparated 1 W) (hBase : InBaseInterval T W)
@@ -605,7 +547,7 @@ theorem classical_large_values_sixth_branch
       positivity
     simp only [Finset.card_empty, Nat.cast_zero]
     positivity
-  let G : ℝ := ∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2
+  let G := ∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2
   have hG : 0 ≤ G := by dsimp only [G]; positivity
   have hGleN : G ≤ (N : ℝ) := by
     dsimp only [G]
@@ -614,11 +556,9 @@ theorem classical_large_values_sixth_branch
     dsimp only [G]
     exact threshold_sq_le_length_mul_energy N V W a hV.le
       (Finset.nonempty_iff_ne_empty.mpr hW) hLarge
-  have hGpos : 0 < G := by
-    have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-    nlinarith [sq_pos_of_pos hV]
-  let x : ℝ := V ^ 2 / (200 * G)
-  let L : ℝ := x ^ 2
+  have hGpos : 0 < G := by nlinarith
+  let x := V ^ 2 / (200 * G)
+  let L := x ^ 2
   have hx : 0 < x := by dsimp only [x]; positivity
   have hL : 0 < L := by dsimp only [L]; positivity
   have hsqrtL : Real.sqrt L = x := by
@@ -652,11 +592,7 @@ theorem classical_large_values_sixth_branch
   have hlocalFactor :
       2 * G * ((N : ℝ) + 12 * Real.pi * (N : ℝ) * (((harmonic N : ℚ) : ℝ))) /
           V ^ 2 ≤
-        98 * (1 + (((harmonic N : ℚ) : ℝ))) * G * (N : ℝ) / V ^ 2 := by
-    have htwoG : 0 ≤ 2 * G := by positivity
-    have hmul := mul_le_mul_of_nonneg_left hB htwoG
-    apply (div_le_div_iff_of_pos_right (sq_pos_of_pos hV)).2
-    nlinarith
+        98 * (1 + (((harmonic N : ℚ) : ℝ))) * G * (N : ℝ) / V ^ 2 := by field_simp <;> nlinarith
   have hqNonneg : 0 ≤ T / L := div_nonneg hT hL.le
   have hK : ((Nat.floor (T / L) + 1 : ℕ) : ℝ) ≤ T / L + 1 := by
     have hf := Nat.floor_le hqNonneg
@@ -694,6 +630,8 @@ theorem classical_large_values_sixth_branch
     field_simp [hV.ne']
     nlinarith [hfirst, hsecond]
   exact hrough.trans htarget
+end
+
 
 /-- The basic Montgomery mean-value branch, normalized to bounded
 coefficients and the same algebraic shape as the sixth-power branch. -/
@@ -710,9 +648,7 @@ theorem classical_large_values_second_branch :
   refine ⟨2 * C, by positivity, ?_⟩
   intro N T V W a hN hT hNT hV ha hSep hBase hLarge
   have hRawLarge : ∀ t ∈ W,
-      V ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖ := by
-    intro t ht
-    simpa only [dirichletPoly, dyadicInterval, ofReal_neg, ofReal_mul] using hLarge t ht
+      V ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖ := by assumption
   have hbound := hHM N T V W a hN hT hV hSep hBase hRawLarge
   have henergy := dyadic_energy_le_length N a ha
   have henergy' : (∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2) ≤ (N : ℝ) := by
@@ -727,11 +663,7 @@ theorem classical_large_values_second_branch :
         ∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2 := hbound
     _ ≤ C * (2 * T) * (1 / V ^ 2) * (N : ℝ) := by
       gcongr
-    _ ≤ (2 * C) * ((N : ℝ) ^ 2 / V ^ 2 + T * (N : ℝ) / V ^ 2) := by
-      have hNreal : 0 ≤ (N : ℝ) := by positivity
-      have hV2 : 0 < V ^ 2 := sq_pos_of_pos hV
-      field_simp [hV.ne']
-      nlinarith [sq_nonneg (N : ℝ)]
+    _ ≤ (2 * C) * ((N : ℝ) ^ 2 / V ^ 2 + T * (N : ℝ) / V ^ 2) := by field_simp <;> nlinarith
 
 /-- The mean-value branch does not intrinsically require `N ≤ T`. Keeping the
 `N²/V²` diagonal term separately absorbs the additional `N` in `T+N`. This is
@@ -750,9 +682,7 @@ theorem classical_large_values_second_branch_unrestricted :
   refine ⟨C, hC, ?_⟩
   intro N T V W a hN hT hV ha hSep hBase hLarge
   have hRawLarge : ∀ t ∈ W,
-      V ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖ := by
-    intro t ht
-    simpa only [dirichletPoly, dyadicInterval, ofReal_neg, ofReal_mul] using hLarge t ht
+      V ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖ := by assumption
   have hbound := hHM N T V W a hN hT hV hSep hBase hRawLarge
   have henergy := dyadic_energy_le_length N a ha
   have henergy' : (∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2) ≤ (N : ℝ) := by
@@ -798,9 +728,7 @@ theorem classical_large_values_with_harmonic_unrestricted :
       positivity
     have hCscale : C₂ ≤ C * (1 + (((harmonic N : ℚ) : ℝ))) := by
       have hCnonneg : 0 ≤ C := (lt_of_lt_of_le hC₂ (le_max_left _ _)).le
-      exact (le_max_left C₂ 4000000).trans <| by
-        simpa only [mul_one] using
-          mul_le_mul_of_nonneg_left (by linarith : 1 ≤ 1 + (((harmonic N : ℚ) : ℝ))) hCnonneg
+      exact (le_max_left C₂ 4000000).trans <| by nlinarith
     exact hbasic'.trans (mul_le_mul_of_nonneg_right hCscale hinner)
   · rw [min_eq_right (le_of_not_ge hBD)]
     have hsixth := classical_large_values_sixth_branch N T V W a hN
@@ -854,10 +782,7 @@ theorem classical_large_values_with_harmonic :
         have hinner : 0 ≤ (N : ℝ) ^ 2 / V ^ 2 + T * ((N : ℝ) / V ^ 2) := by
           positivity
         have hC : 0 ≤ C := (lt_of_lt_of_le hC₂ hC₂C).le
-        have hCscale : C ≤ C * (1 + (((harmonic N : ℚ) : ℝ))) := by
-          simpa only [mul_one] using
-            mul_le_mul_of_nonneg_left
-              (by linarith : 1 ≤ 1 + (((harmonic N : ℚ) : ℝ))) hC
+        have hCscale : C ≤ C * (1 + (((harmonic N : ℚ) : ℝ))) := by nlinarith
         exact mul_le_mul_of_nonneg_right (hC₂C.trans hCscale) hinner
   · rw [min_eq_right (le_of_not_ge hBD)]
     have hsixth := classical_large_values_sixth_branch N T V W a hN
@@ -873,10 +798,7 @@ theorem classical_large_values_with_harmonic :
           ((N : ℝ) ^ 2 / V ^ 2 + T * ((N : ℝ) ^ 4 / V ^ 6)) := by
         have hinner : 0 ≤ (N : ℝ) ^ 2 / V ^ 2 + T * ((N : ℝ) ^ 4 / V ^ 6) := by
           positivity
-        have hcoef : 4000000 * (1 + (((harmonic N : ℚ) : ℝ))) ≤
-            C * (1 + (((harmonic N : ℚ) : ℝ))) :=
-          mul_le_mul_of_nonneg_right (le_max_right _ _) (by linarith)
-        exact mul_le_mul_of_nonneg_right hcoef hinner
+        bound
 
 /-- The full finite Montgomery--Halász--Huxley estimate required by Package C
 of Shitlist #15. -/
@@ -900,9 +822,9 @@ theorem classical_montgomery_halasz_huxley_native :
   refine ⟨C₀ * (2 + 1 / ε), by positivity, ?_⟩
   intro N T V W a hN hT hNT hV ha hSep hBase hLarge
   have hraw := hBound N T V W a hN hT hNT hV ha hSep hBase hLarge
-  have hHlog : (((harmonic N : ℚ) : ℝ)) ≤ 1 + Real.log N :=
+  have hHlog :=
     harmonic_le_one_add_log N
-  have hlogPow : Real.log N ≤ (N : ℝ) ^ ε / ε :=
+  have hlogPow :=
     Real.log_natCast_le_rpow_div N hε
   have hpowMono : (N : ℝ) ^ ε ≤ T ^ ε :=
     Real.rpow_le_rpow (Nat.cast_nonneg N) hNT hε.le
@@ -915,15 +837,10 @@ theorem classical_montgomery_halasz_huxley_native :
       1 + (((harmonic N : ℚ) : ℝ)) ≤ 2 + Real.log N := by linarith
       _ ≤ 2 + (N : ℝ) ^ ε / ε := add_le_add_right hlogPow 2
       _ ≤ 2 + T ^ ε / ε := add_le_add_right hdivMono 2
-      _ ≤ 2 * T ^ ε + T ^ ε / ε := by
-        simpa only [add_comm] using
-          add_le_add_right (by nlinarith [hpowOne] : (2 : ℝ) ≤ 2 * T ^ ε)
-            (T ^ ε / ε)
+      _ ≤ 2 * T ^ ε + T ^ ε / ε := by simp_all
       _ = (2 + 1 / ε) * T ^ ε := by ring
   have hinner : 0 ≤ (N : ℝ) ^ 2 / V ^ 2 +
-      T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) := by
-    have hmin : 0 ≤ min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) := by positivity
-    positivity
+      T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) := by positivity
   calc
     (W.card : ℝ) ≤ C₀ * (1 + (((harmonic N : ℚ) : ℝ))) *
         ((N : ℝ) ^ 2 / V ^ 2 +
@@ -935,4 +852,4 @@ theorem classical_montgomery_halasz_huxley_native :
       have hmul := mul_le_mul_of_nonneg_right hscale hinner
       simpa only [mul_assoc, mul_left_comm, mul_comm] using hmul
 
-end GuthMaynard.NativeMoment
+

@@ -7,13 +7,12 @@ public import LaterPairs.Native.PrimitiveDivisorGrowth
 public import LaterPairs.Native.RobertSargosSameSignCount
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                   
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_fixed_coeff_divisor_bound (ε : ℝ) (hε : 0 < ε) :
@@ -59,13 +58,11 @@ theorem exists_robertSargos_fixed_coeff_bound (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hdiv⟩ := exists_robertSargos_fixed_coeff_divisor_bound ε hε
   refine ⟨C,hC,?_⟩
   intro S r h₁ h₂ H Q δ hc hr hH hQ hδ hrH hh₁ hh₂ hq₁ hq₂ hs hp hl hn
-  have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs r)
+  have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by norm_num
   have hrH' : (r.natAbs:ℝ) ≤ H := by rw [hrc]; linarith
   have hb := robertSargos_primitive_fixed_coeff_card_le S hc hr hH hQ hδ hrH
     hh₁ hh₂ hq₁ hq₂ hs hp hl hn
   rw [← hrc] at hb
   exact hb.trans (hdiv r.natAbs H Q δ (Int.natAbs_pos.mpr hr) hH hrH' hδ)
 
-end TaoTrudgianYang2025
+

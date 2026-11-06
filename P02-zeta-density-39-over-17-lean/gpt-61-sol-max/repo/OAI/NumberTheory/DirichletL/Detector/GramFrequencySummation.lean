@@ -10,7 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.ProbeGramFrequencySummation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def frequencyNorm (k : O) : ℝ := Ideal.absNorm (Ideal.span {k})
 
@@ -124,8 +124,8 @@ theorem exceptional_frequency_weighted_sum (ε : ℝ) (hε : 0<ε) :
   convert hh using 1
   ring
 
-end SevenEighths.ProbeGramFrequencySummation
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedDetectorCapped
 public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
 
@@ -11,10 +12,10 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorAmplitude
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
-open CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary
-open ConcretePrimeRowBridge CenteredMomentDivisorRows
-local notation "O" => HeckeFamily.O
+
+
+open CenteredMomentDivisorRows
+open scoped HeckeO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def amplitude (s:Data ι) (D:Ideal O)
@@ -26,14 +27,14 @@ def slotControl (s:Data ι):ℝ:=
   (∏i,s.M i)*(∏i,max 1 (128*max 0 (s.hi i)*s.M i))
 
 omit [DecidableEq ι] in
-lemma slotControl_nonneg (s:Data ι):0≤slotControl s:=by
+lemma slotControl_nonneg (s:Data ι):0≤ slotControl s:=by
   unfold slotControl
   exact mul_nonneg (Finset.prod_nonneg (fun i _=>(zero_le_one.trans (s.M_ge_one i))))
     (Finset.prod_nonneg (fun i _=>zero_le_one.trans (le_max_left _ _)))
 
 lemma slot_product_bound (s:Data ι) (D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))):
-    (∏i∈frozenIndices D a,s.M i)*(∏i:liveIndices D a,128*max 0 (s.hi i)*s.M i)≤slotControl s:=by
+    (∏i∈frozenIndices D a,s.M i)*(∏i:liveIndices D a,128*max 0 (s.hi i)*s.M i)≤ slotControl s:=by
   have hf:(∏i∈frozenIndices D a,s.M i)≤∏i,s.M i:=
     Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
       (fun i _=>zero_le_one.trans (s.M_ge_one i)) (fun i _ _=>s.M_ge_one i)
@@ -49,12 +50,12 @@ lemma slot_product_bound (s:Data ι) (D:Ideal O)
 
 omit [DecidableEq ι] in
 lemma coefficient_support (s:Data ι) (i:ι) (I:Ideal O) (hI:s.coefficient i I≠0):
-    (Ideal.absNorm I:ℝ)≤max 0 (s.hi i)*s.P i:=by
-  have hw:s.W i ((Ideal.absNorm I:ℝ)/s.P i)≠0:=right_ne_zero_of_mul hI
+    (Ideal.absNorm I:ℝ)≤ max 0 (s.hi i)*s.P i:=by
+  have hw :=right_ne_zero_of_mul hI
   exact (div_le_iff₀ (s.P_pos i)).mp ((s.support i hw).2.trans (le_max_right _ _))
 
-end SevenEighths.CenteredMomentAllocatedDetectorAmplitude
 
-end
 
-end OAI
+
+
+

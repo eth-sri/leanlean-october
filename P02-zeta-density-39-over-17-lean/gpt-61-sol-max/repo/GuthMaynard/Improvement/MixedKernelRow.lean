@@ -3,9 +3,8 @@ public import GuthMaynard.Improvement.OperatorMixedTrace
 public import GuthMaynard.Improvement.MixedKernelYoung
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 /-- Actual mixed kernel estimate from a row budget. Evenness is required
@@ -116,4 +115,4 @@ theorem kernelMixed_time_row_bound {μ ψ : ℝ → ℝ} {C K : ℝ → ℂ} {L 
       mul_le_mul_of_nonneg_left (mixed_timeMeasure_young hm h0 h2 hψ hψ0 hψi) (mul_nonneg hL hQ)
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

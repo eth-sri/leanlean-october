@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCommonBound
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma compensatedPhysicalProbe_window_scale {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
@@ -74,7 +74,7 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
     _≤D^K*(C*Z^(3/16+loss)) := by gcongr
     _=_ := by ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

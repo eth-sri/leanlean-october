@@ -12,7 +12,7 @@ open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 open HeckeDetectorSupportedWitness
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -22,7 +22,7 @@ theorem supported_witnesses_from_source_cube (dmin dmax τ ε e κ heightCost ma
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
     (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*heightCost)
     (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hheightCost : 0≤heightCost)
-    (hmargin : 0<margin)
+    (hmargin : 0< margin)
     (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*heightCost≤ε/2) :
     ∀ᶠ Z : ℝ in atTop,∀ d : ℝ,dmin≤d → d≤dmax →
       ∀ (U : ℝ) (rows : Finset FreeRow),rows⊆rowBand (Z^(1/100:ℝ)) U →
@@ -51,8 +51,8 @@ theorem supported_witnesses_from_source_cube (dmin dmax τ ε e κ heightCost ma
     (fun u=>by rw [←heq u];exact hcurrent u)
     (fun u=>hcond u.val d (hrow u.val u.property)) tstar ht ht'
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

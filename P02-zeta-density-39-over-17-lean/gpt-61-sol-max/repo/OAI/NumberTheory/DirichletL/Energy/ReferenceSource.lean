@@ -9,13 +9,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceSource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
+open CenteredMomentAllocatedNaturalRadial
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
 open CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 def signedCommonSource {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
@@ -29,13 +29,17 @@ def signedCommonSource {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
        polynomial χ false W₂ (X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t *
        ∏i∈Finset.univ\J,naturalSlot χ (pool i) (heightCoefficient (β i) t) (P i))
 
-lemma original_row_eq_signed {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
+section
+variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     (W₁ W₂:𝓢(ℝ,ℂ))(ha:0<a)
     (hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b)
     (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b)
     (pool:α→Finset (Ideal O))(hp:∀i,∀I∈pool i,Prime I)
     (β:α→Ideal O→ℂ)(P:α→ℝ)(hP:∀i,0<P i)
-    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(z:O)(hz:z≠0):
+    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
+include Z Bmask bΦ a b s W₁ W₂ ha hs₁ hs₂ pool hp β P hP t X₁ X₂ hX₁ hX₂
+
+lemma original_row_eq_signed (z:O)(hz:z≠0):
     positiveSlotRow s.character s.mask 1 z W₁ W₂ pool β P t X₁ X₂=
       ((X₁:ℂ)^(Complex.I*t)*(X₂:ℂ)^(Complex.I*t))*
         signedCommonSource s W₁ W₂ pool β P t X₁ X₂ z:=by
@@ -47,13 +51,7 @@ lemma original_row_eq_signed {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     CenteredMomentNaturalMaskedFloor.twist_polynomial _ W₂ a b ha hs₂ t] at hh
   simpa only [NaturalState.mask,signedCommonSource,naturalCharacter_eq s.character z hz] using hh
 
-theorem original_energy_eq_signed {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
-    (W₁ W₂:𝓢(ℝ,ℂ))(ha:0<a)
-    (hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b)
-    (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b)
-    (pool:α→Finset (Ideal O))(hp:∀i,∀I∈pool i,Prime I)
-    (β:α→Ideal O→ℂ)(P:α→ℝ)(hP:∀i,0<P i)
-    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):
+theorem original_energy_eq_signed :
     energy s.character s.mask 1 t W₁ W₂ pool β P X₁ X₂
       s.radial.keep s.radial.profile s.radial.scale=
     radialEnergy (signedCommonSource s W₁ W₂ pool β P t X₁ X₂)
@@ -69,9 +67,11 @@ theorem original_energy_eq_signed {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask b
       z (s.row_ne_zero z hz),norm_mul,norm_mul,
       positive_height_phase_norm X₁ t hX₁,positive_height_phase_norm X₂ t hX₂,one_mul,one_mul]
   · simp only [ite_eq_right hz]
-
-end SevenEighths.CenteredMomentEnergyReferenceSource
-
 end
 
-end OAI
+
+
+
+
+
+

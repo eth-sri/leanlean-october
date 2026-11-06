@@ -7,12 +7,16 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedDyadic
 
-lemma familyRawScale_reciprocal {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
+open scoped EisensteinEis
+
+section
+variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
     (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+include φ a c mode F s
+
+lemma familyRawScale_reciprocal 
     (X QK QP : ℝ) :
     (familyRawScale F s X QK QP^2)⁻¹=
       (27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2)^2*
@@ -22,8 +26,7 @@ lemma familyRawScale_reciprocal {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bo
   simp only [div_eq_mul_inv,mul_inv_rev,inv_inv,mul_pow,inv_pow]
   ring
 
-lemma family_tail_polynomial_cap {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
-    (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+lemma family_tail_polynomial_cap 
     (Z X QK QP Lcap : ℝ) (hZ : 0<Z) (hQK : 0≤QK) (hQP : 0≤QP) (hX : 0<X)
     (hF : (Ideal.absNorm (∏ i,F.ideal i):ℝ)≤Z^Lcap)
     (hK : QK≤Z^Lcap) (hP : QP≤Z^Lcap) (hXi : X⁻¹≤Z^Lcap) :
@@ -39,6 +42,8 @@ lemma family_tail_polynomial_cap {φ : Type*} [Fintype φ] {a c : Eis} {mode : B
       rw [←pow_add,←pow_add,←pow_add,←Real.rpow_mul_natCast hZ.le]
       norm_num only [Nat.reduceAdd,Nat.cast_ofNat]
       rw [mul_comm Lcap 17]
+end
+
 
 theorem choose_rapid_tail_order (Lcap δ saving : ℝ) (hδ : 0<δ) :
     ∃ A : ℕ, ∀ Z : ℝ, 1≤Z →
@@ -63,7 +68,7 @@ theorem choose_weighted_rapid_tail_order (Lcap Lextra δ saving : ℝ) (hδ : 0<
     _ ≤ Z^Lextra*(Z^δ)^(-(A:ℝ))*Z^Lcap := by gcongr
     _ = (Z^δ)^(-(A:ℝ))*Z^(Lcap+Lextra) := by rw [Real.rpow_add hz]; ring
     _ ≤ _ := hA Z hZ
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

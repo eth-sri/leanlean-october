@@ -4,7 +4,6 @@ public import CenteredMixedTrace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 noncomputable section
 open Finset MeasureTheory
@@ -14,20 +13,30 @@ namespace Montgomery.RationalMoment
 def adjacentCenteredBudget (K : ℕ) (T L R : ℝ) : ℝ :=
   L*R^2+T*R^(2-1/(K:ℝ))+L*T^(1/(2*(K:ℝ)))*R^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))
 
-lemma adjacentCenteredBudget_nonneg (K : ℕ) {T L R : ℝ} (hT : 0 ≤ T) (hL : 0 ≤ L) (hR : 0 ≤ R) :
+section
+variable (K : ℕ) {T L R : ℝ} (hT : 0 ≤ T) (hL : 0 ≤ L) (hR : 0 ≤ R)
+include K T L R hT hL hR
+
+lemma adjacentCenteredBudget_nonneg  :
     0 ≤ adjacentCenteredBudget K T L R := by
   unfold adjacentCenteredBudget
   positivity
 
-lemma adjacentCenteredBudget_first (K : ℕ) {T L R : ℝ} (hT : 0 ≤ T) (hL : 0 ≤ L) (hR : 0 ≤ R) :
+lemma adjacentCenteredBudget_first  :
     L*R^2 ≤ adjacentCenteredBudget K T L R := by
   unfold adjacentCenteredBudget
   have : 0 ≤ T*R^(2-1/(K:ℝ)) := by positivity
   have : 0 ≤ L*T^(1/(2*(K:ℝ)))*R^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by positivity
   linarith
+end
 
-theorem reflection_complete_pair_general {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+
+section
+variable {K : ℕ} (hK : 1 ≤ K)
+    {η : ℝ} (hη : 0 < η)
+include K hK η hη
+
+theorem reflection_complete_pair_general  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ : ℝ, 1 < T → ∀ M : ℕ, 0 < M → (M:ℝ) ≤ 4*T →
       ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
@@ -75,8 +84,7 @@ theorem reflection_complete_pair_general {K : ℕ} (hK : 1 ≤ K)
         T^(1/(2*(K:ℝ)))*(W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) := by gcongr <;> linarith
     _ = _ := by ring
 
-theorem reflection_local_energy_general {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+theorem reflection_local_energy_general  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L H : ℝ, 1 < T → 1 ≤ L → 0 < H → H ≤ 2*T →
       ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
@@ -133,6 +141,8 @@ theorem reflection_local_energy_general {K : ℕ} (hK : 1 ≤ K)
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact_mod_cast reflectionBlocks_card_le hLp hH
     _ = _ := by ring
+end
+
 
 theorem centered_shell_general (w : MathCollab.Density.ReflectionCutoff)
     {K A : ℕ} (hK : 1 ≤ K) (hA : 1 < A) {η : ℝ} (hη : 0 < η) :
@@ -174,4 +184,4 @@ theorem centered_shell_general (w : MathCollab.Density.ReflectionCutoff)
     gcongr
     linarith)) le_rfl)
 
-end Montgomery.RationalMoment
+

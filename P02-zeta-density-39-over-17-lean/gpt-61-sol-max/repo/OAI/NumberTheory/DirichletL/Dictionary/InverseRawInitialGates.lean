@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawGeometry
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRadial
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedElement
@@ -16,24 +17,28 @@ namespace SevenEighths.DetectorDictionaryInverseRawInitialGates
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
 open InverseInitialRawDictionary InverseInitialRayAttachment InverseInitialExcludedPeriod
 open InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialExcludedPolynomial
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve ConcreteTraceCRT
+open CanonicalRowCompletion CanonicalCoefficientClass
 open ConcretePrimeRowBridge UniqueFactorizationMonoid IdealMobiusDivisorSum
 open DetectorDictionaryInverseRawGeometry
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
-def basePeriod (data:RowData):ℕ:=(baseCharacter data).period
+section
+variable (data:RowData)
+include data
 
-def excluded (data:RowData):Finset (Ideal O):=reflectionExcludedPrimes (basePeriod data)
+def basePeriod :ℕ:=(baseCharacter data).period
 
-def deletedBase (data:RowData):Character:=
+def excluded :Finset (Ideal O):=reflectionExcludedPrimes (basePeriod data)
+
+def deletedBase :Character:=
   (baseCharacter data).excludePrimes (excluded data) (reflectionExcludedPrimes_prime (basePeriod data))
 
-theorem basePeriod_ne_zero (data:RowData):basePeriod data≠0:=Nat.ne_of_gt (Character.period_pos _)
+theorem basePeriod_ne_zero :basePeriod data≠0:=Nat.ne_of_gt (Character.period_pos _)
 
-theorem basePeriod_le (data:RowData):Ideal.span {(basePeriod data:O)}≤(baseCharacter data).modulus:=
+theorem basePeriod_le :Ideal.span {(basePeriod data:O)}≤(baseCharacter data).modulus:=
   Ideal.span_le.mpr (Set.singleton_subset_iff.mpr (Character.period_mem _))
 
-theorem raw_base_gates (data:RowData):
+theorem raw_base_gates :
     deletedPeriod (basePeriod data)≠0 ∧
     reflectionExcludedPrimes (deletedPeriod (basePeriod data))=excluded data ∧
     (∀x,‖elementCharacter (idealCoeff (deletedBase data)).toMonoidHom x‖≤1) ∧
@@ -42,18 +47,25 @@ theorem raw_base_gates (data:RowData):
   deleted_physical_base_gates (baseCharacter data) (basePeriod data)
     (basePeriod_ne_zero data) (basePeriod_le data)
 
-theorem actual_row_fixed_base (data:RowData)(u:NonzeroElement)(I:Ideal O):
+section
+variable (u:NonzeroElement)(I:Ideal O)
+include u I
+
+theorem actual_row_fixed_base :
     idealCoeff (data.character u) I=idealCoeff (baseCharacter data) I*idealRowHom u.val I:=by
   rw [baseCharacter_coeff]
   exact fixedBase_row data.η (data.character u) data.m data.f u.val (data.character_spec u) I
 
-theorem actual_deleted_row (data:RowData)(u:NonzeroElement)(I:Ideal O):
+theorem actual_deleted_row :
     idealCoeff ((data.character u).excludePrimes (excluded data)
       (reflectionExcludedPrimes_prime (basePeriod data))) I=
       idealCoeff (deletedBase data) I*idealRowHom u.val I:=by
   unfold deletedBase excluded
   rw [idealCoeff_excludePrimes,idealCoeff_excludePrimes,actual_row_fixed_base]
   split_ifs <;> simp
+end
+end
+
 
 def completeCutoff (H b Btree cap:ℝ):ℕ:=⌈max (Btree*H^(cap+1)) (b*H)⌉₊
 
@@ -68,7 +80,11 @@ theorem completeCutoff_columns (H b Btree cap D n:ℝ)(hb:0≤b)(hD:0≤D)
   exact (mul_le_mul_of_nonneg_left (hdn.trans hDH) hb).trans
     ((le_max_right _ _).trans (Nat.le_ceil _))
 
-theorem excluded_divisor_norm (data:RowData)(j:Ideal O)
+section
+variable (data:RowData)
+include data
+
+theorem excluded_divisor_norm (j:Ideal O)
     (hj:j∈idealDivisors (∏P∈excluded data,P)):
     1≤(j.absNorm:ℝ) ∧ (j.absNorm:ℝ)≤((∏P∈excluded data,P).absNorm:ℝ):=by
   have hP:Squarefree (∏P∈excluded data,P):=
@@ -80,7 +96,7 @@ theorem excluded_divisor_norm (data:RowData)(j:Ideal O)
   · exact_mod_cast Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)) (map_dvd Ideal.absNorm hd)
 
-theorem shifted_raw_geometry_eventually (data:RowData)(c eta:ℝ)(hc:0<c)(heta:0<eta):
+theorem shifted_raw_geometry_eventually (c eta:ℝ)(hc:0<c)(heta:0<eta):
     ∀ᶠH:ℝ in atTop,1<H ∧ ∀D:ℝ,1≤D→D^(1+c)≤H→
       ∀j∈idealDivisors (∏P∈excluded data,P),
       let r:=Real.logb H (D/(j.absNorm:ℝ));
@@ -112,7 +128,7 @@ theorem shifted_raw_geometry_eventually (data:RowData)(c eta:ℝ)(hc:0<c)(heta:0
       _≤H^1:=Real.rpow_le_rpow_of_exponent_le hH.le (by linarith [(capacityGap_pos c hc).le])
       _=H:=Real.rpow_one _
 
-theorem deleted_row_complete_polynomial (data:RowData)(u:NonzeroElement)
+theorem deleted_row_complete_polynomial (u:NonzeroElement)
     (W:ℝ→ℂ)(H r sigma freq b:ℝ)(hH:0<H)
     (hW:∀x,W x≠0→x≤b)(Dpool:ℕ)(hbudget:b*H^r≤(Dpool:ℝ)):
     polynomial ((data.character u).excludePrimes (excluded data)
@@ -154,13 +170,9 @@ theorem deleted_row_complete_polynomial (data:RowData)(u:NonzeroElement)
   intro I hI
   rw [actual_deleted_row]
   simp only [twistedProfile,InverseInitialPoissonBridge.heckeIdealCharacter_apply]
-  change (moebius I:ℂ) * (idealCoeff (deletedBase data) I * idealRowHom u.val I) *
-      (W ((I.absNorm:ℝ)/H^r)*(((I.absNorm:ℝ)/H^r:ℝ):ℂ)^(-shift sigma freq)) =
-    (moebius I:ℂ) * (idealCoeff (deletedBase data) I * idealRowHom u.val I) *
-      (W ((I.absNorm:ℝ)/H^r)*(((I.absNorm:ℝ)/H^r:ℝ):ℂ)^(-shift sigma freq))
-  ring
+  rfl
 
-theorem raw_complete_pool (data:RowData)(H D c b Btree cap:ℝ)
+theorem raw_complete_pool (H D c b Btree cap:ℝ)
     (hH:1<H)(hD:1≤D)(hc:0<c)(hcap:D^(1+c)≤H)(hb:0≤b)
     (W:ℝ→ℂ)(hW:∀x,W x≠0→x≤b):
     Btree*H^(cap+1)≤(completeCutoff H b Btree cap:ℝ) ∧
@@ -193,9 +205,11 @@ theorem raw_complete_pool (data:RowData)(H D c b Btree cap:ℝ)
     exact completeCutoff_columns H b Btree cap D _ hb hD0.le hDH hn
   simpa only [hex] using deleted_row_complete_polynomial data u W H
     (Real.logb H (D/(j.absNorm:ℝ))) sigma freq b hH0 hW _ hbudget
-
-end SevenEighths.DetectorDictionaryInverseRawInitialGates
-
 end
 
-end OAI
+
+
+
+
+
+

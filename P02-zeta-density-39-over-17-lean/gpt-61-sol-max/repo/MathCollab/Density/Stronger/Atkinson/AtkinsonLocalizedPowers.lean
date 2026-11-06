@@ -10,12 +10,11 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalizedGapBudget
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
-noncomputable section
+
+
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinson_far_radical_eq_rpow {H M : ℝ} (hH : 0 < H) (hM : 0 < M) (L : ℝ) :
@@ -44,18 +43,24 @@ theorem atkinson_weighted_diagonal_power {M : ℝ} (hM : 0 < M) (η : ℝ) :
     _ = M^(1/2+η)*M^(1:ℝ) := by rw [Real.rpow_one]
     _ = _ := by rw [← Real.rpow_add hM]; congr 1; ring
 
-theorem atkinson_weighted_near_power {H M : ℝ} (hH : 0 < H) (hM : 0 < M) (η : ℝ) :
+section
+variable {H M : ℝ} (hH : 0 < H) (hM : 0 < M)
+include H M hH hM
+
+theorem atkinson_weighted_near_power  (η : ℝ) :
     M^(1/2+η)*Real.sqrt (H*M) = Real.sqrt H*M^(1+η) := by
   rw [Real.sqrt_mul hH.le,Real.sqrt_eq_rpow M]
   calc
     _ = Real.sqrt H*(M^(1/2+η)*M^(1/2:ℝ)) := by ring
     _ = _ := by rw [← Real.rpow_add hM]; congr 1; congr 1; ring
 
-theorem atkinson_weighted_far_power {H M : ℝ} (hH : 0 < H) (hM : 0 < M) (η L : ℝ) :
+theorem atkinson_weighted_far_power  (η L : ℝ) :
     M^(1/2+η)*Real.sqrt (M*L/Real.sqrt (H*M)) =
       H^(-(1/4:ℝ))*Real.sqrt L*M^(3/4+η) := by
   rw [atkinson_far_radical_eq_rpow hH hM L]
   calc
     _ = H^(-(1/4:ℝ))*Real.sqrt L*(M^(1/2+η)*M^(1/4:ℝ)) := by ring
     _ = _ := by rw [← Real.rpow_add hM]; congr 1; congr 1; ring
-end MathCollab.Density.Stronger.Atkinson
+end
+
+

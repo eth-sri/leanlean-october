@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
 
 @[expose] public section
@@ -7,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (idealQuotient totalQuotient gcdPool)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def elementQuotient (d z : O) : O := if h : d ∣ z then h.choose else 0
 
@@ -22,10 +23,14 @@ lemma elementQuotient_injective (d : O) : Set.InjOn (elementQuotient d) {z | d �
   intro x hx y hy he
   rw [← elementQuotient_mul d x hx, ← elementQuotient_mul d y hy, he]
 
-def dividedRows (R : Finset O) (d : O) : Finset O :=
+section
+variable (R : Finset O) (d : O)
+include R d
+
+def dividedRows  : Finset O :=
   (R.filter (fun z => d ∣ z)).image (elementQuotient d)
 
-lemma sum_divisible_rows (R : Finset O) (d : O) (f : O → ℂ) :
+lemma sum_divisible_rows  (f : O → ℂ) :
     (∑ z ∈ R, if d ∣ z then f z else 0) =
       ∑ w ∈ dividedRows R d, f (d * w) := by
   rw [← Finset.sum_filter]
@@ -37,6 +42,8 @@ lemma sum_divisible_rows (R : Finset O) (d : O) (f : O → ℂ) :
   apply Finset.sum_congr rfl
   intro z hz
   rw [elementQuotient_mul d z (Finset.mem_filter.mp hz).2]
+end
+
 
 lemma cubicRow_mul_argument (I : Ideal O) (hI : primaryGenerator I ≠ 0) (x y : O) :
     cubicRow I (x * y) = cubicRow I x * cubicRow I y := by
@@ -50,17 +57,25 @@ lemma totalQuotient_cubic_admissible (D I : Ideal O) (hI : Admissible I) :
   · rw [totalQuotient, ite_eq_right h]
     exact ⟨squarefree_one, by rw [primaryGenerator_one]; exact one_ne_zero⟩
 
-def descendedCoefficient {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+section
+variable {n : Type*}
+include n
+
+def descendedCoefficient  (D : Ideal O) (cols : n → Ideal O)
     (a : n → ℂ) (d : O) (j : n) : ℂ :=
   cubicRow (totalQuotient D (cols j)) d * (if D ∣ cols j then a j else 0)
 
-def residualGram {n : Type*} [Fintype n] (D : Ideal O) (cols : n → Ideal O)
+section
+variable [Fintype n] (D : Ideal O) (cols : n → Ideal O)
+include D cols
+
+def residualGram 
     (a : n → ℂ) (z : O) : ℂ :=
   ∑ j, ∑ k, if IsCoprime (totalQuotient D (cols j)) (totalQuotient D (cols k)) then
     star (cubicRow (totalQuotient D (cols j)) z * a j) *
       (cubicRow (totalQuotient D (cols k)) z * a k) else 0
 
-lemma residualGram_rescale {n : Type*} [Fintype n] (D : Ideal O) (cols : n → Ideal O)
+lemma residualGram_rescale 
     (hcols : ∀ j, Admissible (cols j)) (a : n → ℂ) (d w : O) :
     residualGram D cols (fun j => if D ∣ cols j then a j else 0) (d * w) =
       residualGram D cols (descendedCoefficient D cols a d) w := by
@@ -75,6 +90,9 @@ lemma residualGram_rescale {n : Type*} [Fintype n] (D : Ideal O) (cols : n → I
     simp only [descendedCoefficient, star_mul]
     ring
   · rfl
+end
+end
+
 
 lemma ideal_dvd_span_iff_generator (E : Ideal O) (z : O) :
     E ∣ Ideal.span {z} ↔ idealGenerator E ∣ z := by
@@ -83,8 +101,12 @@ lemma ideal_dvd_span_iff_generator (E : Ideal O) (z : O) :
     Ideal.mem_span_singleton
   rwa [span_idealGenerator] at he
 
-lemma sum_dividedRows_residualGram_rescale {n : Type*} [Fintype n]
-    (D : Ideal O) (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
+section
+variable {n : Type*} [Fintype n]
+    (D : Ideal O)
+include n D
+
+lemma sum_dividedRows_residualGram_rescale  (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
     (a : n → ℂ) (R : Finset O) (w : O → ℂ) (d : O) :
     (∑ z ∈ dividedRows R d,
       w (d * z) * residualGram D cols (fun j => if D ∣ cols j then a j else 0) (d * z)) =
@@ -94,8 +116,7 @@ lemma sum_dividedRows_residualGram_rescale {n : Type*} [Fintype n]
   intro z _
   rw [residualGram_rescale D cols hcols a]
 
-theorem cubic_gcd_mobius_descent {n : Type*} [Fintype n]
-    (D : Ideal O) (hD : primaryGenerator D ≠ 0)
+theorem cubic_gcd_mobius_descent  (hD : primaryGenerator D ≠ 0)
     (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
     (a : n → ℂ) (R : Finset O) (w : O → ℂ) :
     (∑ z ∈ R, w z * ∑ j, ∑ k, cubicGcdTerm D cols a z j k) =
@@ -104,7 +125,7 @@ theorem cubic_gcd_mobius_descent {n : Type*} [Fintype n]
           ∑ z ∈ dividedRows R (idealGenerator E),
             w (idealGenerator E * z) *
               residualGram D cols (descendedCoefficient D cols a (idealGenerator E)) z := by
-  let b : n → ℂ := fun j => if D ∣ cols j then a j else 0
+  let b := fun j => if D ∣ cols j then a j else 0
   have ht (z : O) : (∑ j, ∑ k, cubicGcdTerm D cols a z j k) =
       (star (cubicRow D z) * cubicRow D z) * residualGram D cols b z := by
     simp only [cubicGcdTerm_eq_quotient D (primaryGenerator_ne_zero_ideal D hD),
@@ -131,8 +152,10 @@ theorem cubic_gcd_mobius_descent {n : Type*} [Fintype n]
       rw [sum_divisible_rows]
       exact congrArg ((UniqueFactorizationMonoid.moebius E : ℂ) * ·)
         (sum_dividedRows_residualGram_rescale D cols hcols a R w (idealGenerator E))
-
 end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+
+
+

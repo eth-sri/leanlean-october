@@ -36,7 +36,7 @@ namespace Euclidean
 namespace L2Compactness
 
 open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open MeasureTheory
 
 noncomputable section
 
@@ -104,13 +104,13 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
     exact hsub.trans hf_tsupp
   exact ⟨ψ, hψc, hψcs, hψ0, hψint, hψ_tsupp⟩
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov
+
+
+
+
+
+
+
+

@@ -5,17 +5,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSourceFrequency
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
 open CenteredMomentSecondLocalization CenteredMomentSecondSourceRetained CenteredMomentSecondSourceFrequency
 open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentHeckeColumnWindow CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem commonLabels_supported (S : Finset (Ideal O)) (C D : Ideal O)
     (h : (C,D)∈commonLabels (supportedColumns S) (supportedColumns S)) :
@@ -49,8 +49,8 @@ theorem original_retained_energy_GV (η : Character) (t : ℝ)
     (commonLabels_supported S _ _ p.property).1 (commonLabels_supported S _ _ p.property).2
     (commonLabels_data _ _ _ _ p.property).2.2 W K Tsec Z ξ hK
 
-end SevenEighths.CenteredMomentSecondRetainedAggregate
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSource
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfilePhysical
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
@@ -11,13 +12,17 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment ActualEisensteinCubic SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open JointLogSeparation
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 
-def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+section
+variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+include p hp
+
+def refinedChildEnergy 
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l : ℕ)
@@ -28,7 +33,7 @@ def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i})
       (mark (if negative then x.1.rightExponent else x.1.leftExponent))
       (commonSelector p (fun _=>1) l) omega T t Y
 
-def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+def refinedCellRows 
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
@@ -42,9 +47,11 @@ def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).Is
     (weight p hp hcop hg β cutoff Ψ m) W₁ W₂ Φ
     (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p) K
     (fun x=>divisorElement p x.1) (fun x=>x.2.2) s
+end
+
 
 theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m₁ m₂ : ℝ)
-    (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
+    (hm₁ : 0≤ m₁) (hm₂ : 0≤ m₂)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂) :
     ∃(omega₁ omega₂ : 𝓢(ℝ,ℂ))(lo hi : ℝ),0<lo ∧ lo≤hi ∧
@@ -118,10 +125,9 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
     (by simpa [refinedChildEnergy,rawScales] using hleft)
     (by simpa [refinedChildEnergy,rawScales] using hright)
   unfold refinedCellRows
-  unfold SevenEighths.InverseMomentFirstOriginalProfile.coefficient SevenEighths.InverseMomentFirstOriginalProfile.weight
-  simpa [source,rawScales] using hb
+  assumption
 
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
 
-end OAI
+
+
+

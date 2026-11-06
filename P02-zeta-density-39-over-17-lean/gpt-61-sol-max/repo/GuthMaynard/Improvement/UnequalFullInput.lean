@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.AffineBox
 public import GuthMaynard.Improvement.AffineSupportTransfer
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped SchwartzMap ContDiff
 namespace GuthMaynard.Improvement
 open RiemannZeta.GuthMaynard
@@ -24,8 +24,7 @@ theorem supportIndexMap_injective {L : ℕ} (hL : 0 < L) : Function.Injective (s
   have hq : p.2.1 = q.2.1 := mul_left_cancel₀ hLi h₂
   apply Prod.ext h₁
   apply Prod.ext hq
-  rw [hq] at h₃
-  exact add_right_cancel h₃
+  simp_all
 
 /-- No Jacobian in u: only the integer denominator and translation change. -/
 theorem supportIndexMap_term {L : ℕ} (hL : 0 < L) {f g : ℝ → ℝ}
@@ -36,9 +35,6 @@ theorem supportIndexMap_term {L : ℕ} (hL : 0 < L) {f g : ℝ → ℝ}
   rw [hg]
   congr 1
   push_cast
-  have hLr : (L:ℝ) ≠ 0 := by exact_mod_cast hL.ne'
-  have hqr : (p.2.1:ℝ) ≠ 0 := by exact_mod_cast hq
-  field_simp [hLr,hqr]
-  ring
+  field_simp <;> ring
 
-end GuthMaynard.Improvement
+

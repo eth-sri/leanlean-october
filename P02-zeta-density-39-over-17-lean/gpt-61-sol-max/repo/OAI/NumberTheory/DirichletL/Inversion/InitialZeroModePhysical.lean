@@ -1,18 +1,19 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroMode
 
 @[expose] public section
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
+open ActualEisensteinCubic SecondPassArithmetic
+open ConcreteTraceCRT EisensteinSchwartzPoisson
 open InverseInitialRayAttachment FirstCauchyArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -22,8 +23,12 @@ variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
 
 include hinj hc hpr
 
+section
+variable (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
+include Ψ j σ W Φ Z D m
+
 theorem physical_zero_off_diagonal
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
+    
     (G U T E:Finset ι)(hGU:Disjoint G U)(hGT:Disjoint G T)(hUT:Disjoint U T)(hne:U≠T):
     initialPhysicalMode p hp hcop hg Ψ j σ W Φ Z D m G U T E 0=0 := by
   rw [←normalized_overlap_mode p hp hcop hg hinj hc hpr Ψ j σ W Φ Z D m
@@ -32,7 +37,7 @@ theorem physical_zero_off_diagonal
   simp
 
 theorem physical_zero_empty
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
+    
     (G E:Finset ι):
     initialPhysicalMode p hp hcop hg Ψ j σ W Φ Z D m G ∅ ∅ E 0=
     ((Z^(-D):ℝ):ℂ)*(Z^m:ℝ)*paperRadialFourier Φ 0*
@@ -52,9 +57,10 @@ theorem physical_zero_empty
   have hempty:activeSupport (∅:Finset ι) ∅=∅:=by simp [activeSupport]
   let:IsEmpty (activeSupport (∅:Finset ι) ∅):=⟨fun ⟨x,hx⟩=>by
     simp only [activeSupport,Finset.sdiff_self,Finset.union_self,Finset.notMem_empty] at hx⟩
-  simp only [Fintype.prod_empty,map_one,norm_one,Complex.ofReal_one,div_one,map_zero,norm_zero,
-    zero_pow (by decide:2≠0),mul_zero,zero_div,mul_one]
+  simp
   ring
+end
+
 
 theorem physical_zero_sum
     (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ):
@@ -100,8 +106,8 @@ theorem physical_zero_sum
     · rfl
   · simp
 
-end SevenEighths.InverseInitialZeroMode
 
-end
 
-end OAI
+
+
+

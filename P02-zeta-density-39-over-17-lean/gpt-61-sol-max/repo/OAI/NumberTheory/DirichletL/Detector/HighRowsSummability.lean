@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSeries
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsDiagonal
 
@@ -6,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsDiagonal
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma geometric_indicator_summable (V A : ℂ) (hV : ‖V‖<1) (p : ℕ→Prop) :
     Summable (fun m=>(if p m then A else 0)*V^m) := by
   convert (((hasSum_geometric_of_norm_lt_one hV).summable.mul_left A).indicator {m | p m}) using 1
-  funext m
-  by_cases hm : p m <;> simp [hm]
+  aesop
 
 lemma gaussValuationTable_geometric_summable (Q G V : ℂ) (hV : ‖V‖<1)
     (r n : ℕ) (j : ℕ→ℕ) :
@@ -53,12 +53,16 @@ theorem positiveScalar_geometric_summable (p : O) (hp : Prime p)
 end SevenEighths.ProbePrimePower
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 include hc
 
-theorem rowMarkedTerm_frequency_summable (eta a X W V rho : ℂ) (hV : ‖V‖<1)
+section
+variable (eta a X W V rho : ℂ)
+include eta a X W V rho
+
+theorem rowMarkedTerm_frequency_summable  (hV : ‖V‖<1)
     (j e l k : ℕ) : Summable (fun m=>rowMarkedTerm p hp hg eta a X W V rho j e l k m) := by
   by_cases ht : e+3*l=0
   · simp only [rowMarkedTerm,ite_eq_left ht,summable_zero]
@@ -72,14 +76,14 @@ theorem rowMarkedTerm_frequency_summable (eta a X W V rho : ℂ) (hV : ‖V‖<1
     funext m
     ring
 
-theorem rowMarkedTerm_zero_lower_edge (eta a X W V rho : ℂ)
+theorem rowMarkedTerm_zero_lower_edge 
     (j e l k : ℕ) (hj : j<6) (ht : 0<e+3*l) :
     rowMarkedTerm p hp hg eta a X W V rho j e (l+2) k 0=0 := by
   unfold rowMarkedTerm
   rw [ite_eq_right (by omega),positiveScalar_zero_below p hp hg hc _ _ _ (by omega),
     rowWeightedScalar_zero]
 
-theorem rowMarkedFamily_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
+theorem rowMarkedFamily_hasSum  (hρ : rho^6=1)
     (hV : ‖V‖<1) (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1)
     (j e l k : ℕ) (hj : j<6) (ht : 0<e+3*l) :
     HasSum (fun r=>∑' m,rowMarkedTerm p hp hg eta a X W V rho j e (l+2*r) k m)
@@ -94,8 +98,10 @@ theorem rowMarkedFamily_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
     exact rowMarkedTerm_zero_lower_edge p hp hg hc eta a X W V rho j e (l+2*r) k hj (by omega)
   · simpa only [mul_zero,add_zero] using rowMarkedTerm_frequency_summable p hp hg hc eta a X W V rho hV j e l k
   · exact hR
-
-end SevenEighths.ProbeEuler
 end
 
-end OAI
+
+
+
+
+

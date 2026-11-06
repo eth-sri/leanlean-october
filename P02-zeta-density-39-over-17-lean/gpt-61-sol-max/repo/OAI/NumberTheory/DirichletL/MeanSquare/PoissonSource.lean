@@ -8,100 +8,84 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace InitialMeanSquare
-
-section
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic
-open FirstPassCubeLabels (columnLog)
-
-end
-
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FirstPassCubeLabels (primeProductNorm columnLog)
-open ConcreteTraceCRT (eisEmbedding)
+                        
+                                  
+                                  
+                          
+                        
 
-section
-variable {ι : Type*} [DecidableEq ι] (p : ι → O)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+                                                       
 
-end
 
-end InitialMeanSquare
-
-open scoped BigOperators
+                        
 namespace FiniteOverlapDecomposition
 variable {ι : Type*} [DecidableEq ι]
 
-theorem sum_powerset_split {β : Type*} [AddCommMonoid β]
-    (F B : Finset ι) (hB : B⊆F) (f : Finset ι→β) :
+section
+variable {β : Type*} [AddCommMonoid β]
+    (F B : Finset ι) (hB : B⊆F)
+include β F B hB
+
+theorem sum_powerset_split  (f : Finset ι→β) :
     (∑S∈F.powerset,f S)=∑A∈B.powerset,∑U∈(F\B).powerset,f (A∪U) := by
   have hsplit (S : Finset ι) : S∩B∪S\B=S := by
     ext i
@@ -136,8 +120,7 @@ theorem sum_powerset_split {β : Type*} [AddCommMonoid β]
       rw [hsplit]
   simpa only [Finset.sum_product] using he
 
-theorem sum_pair_split_cube {β : Type*} [AddCommMonoid β]
-    (F B : Finset ι) (hB : B⊆F) (f : Finset ι→Finset ι→β) :
+theorem sum_pair_split_cube  (f : Finset ι→Finset ι→β) :
     (∑S∈F.powerset,∑T∈F.powerset,f S T)=
       ∑A₂∈B.powerset,∑A₁∈B.powerset,∑C∈(F\B).powerset,
         ∑N∈((F\B)\C).powerset,∑P∈((F\B)\C).powerset,
@@ -151,6 +134,8 @@ theorem sum_pair_split_cube {β : Type*} [AddCommMonoid β]
   intro A₁ hA₁
   rw [sum_pair_eq_overlap]
   simp only [Finset.union_assoc]
+end
+
 
 end FiniteOverlapDecomposition
 
@@ -277,18 +262,20 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
 
-def canonicalPairMode (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
+section
+variable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
-    (X₁ X₂ K : ℝ) (d h : O) : ℂ :=
+    (X₁ X₂ K : ℝ)
+include N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K
+
+def canonicalPairMode  (d h : O) : ℂ :=
   (V₁ (columnLog p X₁ N)*V₂ (columnLog p X₂ P))*
     ((K:ℂ)/(‖eisEmbedding (∏i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,p i)‖:ℂ))*
     paperRadialFourier W (K*‖eisEmbedding h‖^2/
       (‖eisEmbedding d‖^2*primeProductNorm p ((N∪P)∪cubeActiveSupport B v ε₁ ε₂)))*
     threeGaussRowFactor p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d h
 
-lemma canonicalPairMode_summable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
-    (X₁ X₂ K : ℝ) (hK : 0<K) (d : O) (hd : d≠0) :
+lemma canonicalPairMode_summable  (hK : 0<K) (d : O) (hd : d≠0) :
     Summable (canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d) := by
   let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
   let e := threeBlockExponent N P v ε₁ ε₂
@@ -315,6 +302,8 @@ lemma canonicalPairMode_summable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂
         primeProductNorm p ((N∪P)∪cubeActiveSupport B v ε₁ ε₂)) := by ring
   rw [ht']
   ring
+end
+
 
 lemma actualFirstKernel_summable (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
@@ -453,16 +442,22 @@ def canonicalCubeSourcePair (B S T : Finset ι) (v₁ v₂ : ι→ℕ)
       star (multiplicityRow (fun i=>Ideal.span {p i}) hg B v₂ z^3)*
       multiplicityRow (fun i=>Ideal.span {p i}) hg B v₁ z^3)*W (‖eisEmbedding z‖^2/K)
 
-def canonicalCubeOuter (b : CubeCoordinates ι) (C : Finset ι)
+section
+variable (b : CubeCoordinates ι) (C : Finset ι)
+include b C
+
+def canonicalCubeOuter 
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) : ℂ :=
   star (canonicalSourceCoefficient p hp hcop hg Ψ₁ m₁ f (fun _=>1) (b.rightDivisor∪C))*
     canonicalSourceCoefficient p hp hcop hg Ψ₂ m₂ f (fun _=>1) (b.leftDivisor∪C)
 
-def canonicalCubeResidual (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
+def canonicalCubeResidual  (negative : Bool)
     (Ψ : O→*ℂ) (m f : O) (H : Finset ι→ℂ) : Finset ι→ℂ :=
   originalLabelColumn p hg b.support b.leftBit b.rightBit negative
     (multiplicativeCoreColumn p Ψ m (fun S=>H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪S)))
     (∏i∈C,p i) f
+end
+
 
 def canonicalCubeBeforePoisson (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
@@ -475,17 +470,23 @@ def canonicalCubeBeforePoisson (pool : Finset ι) (b : CubeCoordinates ι) (C : 
       (canonicalCubeResidual p hg b C false Ψ₂ m₂ f H₂)
       W (fun _=>1) (fun _=>1) 1 1 K
 
-lemma cube_filter_left (b : CubeCoordinates ι) (hb : b.Admissible) :
+section
+variable (b : CubeCoordinates ι) (hb : b.Admissible)
+include b hb
+
+lemma cube_filter_left  :
     b.support.filter (fun i=>b.leftBit i)=b.leftDivisor := by
   ext i
   simp only [CubeCoordinates.leftBit,Finset.mem_filter,decide_eq_true_eq]
   exact and_iff_right_of_imp (fun hi=>hb.1 hi)
 
-lemma cube_filter_right (b : CubeCoordinates ι) (hb : b.Admissible) :
+lemma cube_filter_right  :
     b.support.filter (fun i=>b.rightBit i)=b.rightDivisor := by
   ext i
   simp only [CubeCoordinates.rightBit,Finset.mem_filter,decide_eq_true_eq]
   exact and_iff_right_of_imp (fun hi=>hb.2 hi)
+end
+
 
 theorem canonicalCubeSourcePair_factor
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -524,8 +525,12 @@ def canonicalCubeCorrelation (pool B : Finset ι) (v₁ v₂ : ι→ℕ)
   ∑S∈pool.powerset,∑T∈pool.powerset,
     canonicalCubeSourcePair p hp hcop hg B S T v₁ v₂ Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
+
 theorem canonicalCubeCorrelation_eq_blocks
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    
     (hpr : ∀i,lambda^2∣p i-1) (pool : Finset ι) (v₁ v₂ : ι→₀ℕ)
     (hB : v₁.support∪v₂.support⊆pool)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
@@ -572,7 +577,7 @@ theorem canonicalCubeCorrelation_eq_blocks
   · simp only [hNP,ite_false,mul_zero]
 
 theorem canonicalCubeBeforePoisson_eq_all_modes
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ)
@@ -589,9 +594,15 @@ theorem canonicalCubeBeforePoisson_eq_all_modes
           (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) h := by
   unfold canonicalCubeBeforePoisson
   rw [disjointCanonicalSource_poisson p hp hcop hg hinj hc _ _ _ _ _ _ _ _ _ _ _ _ _ _ hK]
+end
+
+
+section
+variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+include hc
 
 lemma canonicalSourceCoefficient_norm_le_one
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    
     (Ψ:O→*ℂ) (hΨ:∀u,‖Ψ u‖≤1) (m f:O) (S:Finset ι) :
     ‖canonicalSourceCoefficient p hp hcop hg Ψ m f (fun _=>1) S‖≤1 := by
   have hm : ‖rowCoprimeMask (fun i=>Ideal.span {p i}) S m‖≤1 := by
@@ -609,7 +620,7 @@ lemma canonicalSourceCoefficient_norm_le_one
     _ = 1 := by norm_num
 
 lemma canonicalCubeOuter_norm_le_one
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    
     (b:CubeCoordinates ι) (C:Finset ι) (Ψ₁ Ψ₂:O→*ℂ)
     (hΨ₁:∀u,‖Ψ₁ u‖≤1) (hΨ₂:∀u,‖Ψ₂ u‖≤1) (m₁ m₂ f:O) :
     ‖canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ f‖≤1 := by
@@ -617,9 +628,11 @@ lemma canonicalCubeOuter_norm_le_one
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (canonicalSourceCoefficient_norm_le_one p hp hcop hg hc Ψ₁ hΨ₁ m₁ f _)).trans
     (canonicalSourceCoefficient_norm_le_one p hp hcop hg hc Ψ₂ hΨ₂ m₂ f _)
-
-end SecondPassArithmetic
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -14,17 +15,20 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem zetaDivisorWeight_finiteRectangle (q : ℂ) {H : ℝ} (hH : 0 < H) :
+section
+variable (q : ℂ)
+include q
+
+theorem zetaDivisorWeight_finiteRectangle  {H : ℝ} (hH : 0 < H) :
     RectangleIntegral' (zetaDivisorWeightKernel q)
       ((-1 : ℂ) - (H : ℂ) * I) ((1 : ℂ) + (H : ℂ) * I) = 1 := by
   change RectangleIntegral' (fun u => zetaDivisorWeightNumerator q u / u) _ _ = 1
   let F := zetaDivisorWeightNumerator q
-  let z : ℂ := -1 - (H : ℂ) * I
-  let w : ℂ := 1 + (H : ℂ) * I
+  let z := -1 - (H : ℂ) * I
+  let w := 1 + (H : ℂ) * I
   have hzero : Rectangle z w ∈ 𝓝 (0 : ℂ) := by
     rw [rectangle_mem_nhds_iff, mem_reProdIm,
       uIoo_of_le (by simp [z, w] : z.re ≤ w.re),
@@ -48,19 +52,17 @@ theorem zetaDivisorWeight_finiteRectangle (q : ℂ) {H : ℝ} (hH : 0 < H) :
     hzero hdslope hprincipal
   simpa only [F, z, w, zetaDivisorWeightNumerator_zero] using h
 
-theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
+theorem norm_zetaDivisorWeightKernel_horizontal_le 
     {H x : ℝ} (hH : 1 ≤ H) (hx : |x| ≤ 1) :
     ‖zetaDivisorWeightKernel q ((x : ℂ) + (H : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + |q.re| + q.im ^ 2 / 2)) *
         Real.exp (-99 * H ^ 2) * (2 + H) ^ 8 := by
-  let w : ℂ := (x : ℂ) + (H : ℂ) * I
+  let w := (x : ℂ) + (H : ℂ) * I
   have hH0 : 0 ≤ H := by linarith
   have hw : ‖w‖ ≤ 2 + H := by
     have h := norm_add_le (x : ℂ) ((H : ℂ) * I)
-    simp only [norm_mul, norm_I, mul_one, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg hH0] at h
-    dsimp [w]
-    linarith
+    simp only [norm_real, Real.norm_eq_abs, norm_mul, abs_of_nonneg hH0, norm_I, mul_one] at h
+    bound
   have haux := norm_hughesYoungAuxiliaryZero_le_polynomial (show 1 ≤ 2 + H by linarith) hw
   have hwl : 1 ≤ ‖w‖ := by
     have h := Complex.abs_im_le_norm w
@@ -92,9 +94,9 @@ theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
         (100 + |q.re| + q.im ^ 2 / 2) + (-99 * H ^ 2) by ring, Real.exp_add]
       ring
 
-theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
+theorem tendsto_zetaDivisorWeight_horizontal_zero  :
     Tendsto (fun H : ℝ => HIntegral' (zetaDivisorWeightKernel q) (-1) 1 H) atTop (𝓝 0) := by
-  let C : ℝ := 625 * Real.exp (100 + |q.re| + q.im ^ 2 / 2)
+  let C := 625 * Real.exp (100 + |q.re| + q.im ^ 2 / 2)
   have hC : 0 < C := by dsimp [C]; positivity
   have hExp : Tendsto (fun H : ℝ => Real.exp (-(1 / 2 : ℝ) * H)) atTop (𝓝 0) :=
     Real.tendsto_exp_atBot.comp
@@ -117,8 +119,7 @@ theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
           have hpoint (x : ℝ) (hx : x ∈ uIoc (-1 : ℝ) 1) :
               ‖zetaDivisorWeightKernel q ((x : ℂ) + (H : ℂ) * I)‖ ≤
                 C * Real.exp (-99 * H ^ 2) * (2 + H) ^ 8 := by
-            have hx' : x ∈ Icc (-1 : ℝ) 1 := by
-              simpa only [uIcc_of_le (by norm_num : (-1 : ℝ) ≤ 1)] using uIoc_subset_uIcc hx
+            have hx' : x ∈ Icc (-1 : ℝ) 1 := by grind
             exact norm_zetaDivisorWeightKernel_horizontal_le q (by linarith) (abs_le.mpr hx')
           convert intervalIntegral.norm_integral_le_of_norm_le_const hpoint using 1
           norm_num
@@ -134,7 +135,7 @@ theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
   unfold HIntegral'
   simpa using htop.const_smul (1 / (2 * Real.pi * I))
 
-theorem hIntegral_zetaDivisorWeight_bottom (q : ℂ) (H : ℝ) :
+theorem hIntegral_zetaDivisorWeight_bottom  (H : ℝ) :
     HIntegral (zetaDivisorWeightKernel q) (-1) 1 (-H) =
       -HIntegral (zetaDivisorWeightKernel (-q)) (-1) 1 H := by
   have hpoint (x : ℝ) :
@@ -144,16 +145,14 @@ theorem hIntegral_zetaDivisorWeight_bottom (q : ℂ) (H : ℝ) :
     exact zetaDivisorWeightKernel_neg q _
   unfold HIntegral
   calc
-    _ = -∫ x in (-1 : ℝ)..1, zetaDivisorWeightKernel (-q) (((-x : ℝ) : ℂ) + (H : ℂ) * I) := by
-      rw [← intervalIntegral.integral_neg]
-      exact intervalIntegral.integral_congr (fun x _ => by simpa only [ofReal_neg] using hpoint x)
+    _ = -∫ x in (-1 : ℝ)..1, zetaDivisorWeightKernel (-q) (((-x : ℝ) : ℂ) + (H : ℂ) * I) := by simp_all
     _ = _ := by
       have h := intervalIntegral.integral_comp_neg
         (f := fun x : ℝ => zetaDivisorWeightKernel (-q) ((x : ℂ) + (H : ℂ) * I))
         (a := (-1 : ℝ)) (b := 1)
       simpa only [neg_neg] using congrArg Neg.neg h
 
-theorem vIntegral_zetaDivisorWeight_left (q : ℂ) (H : ℝ) :
+theorem vIntegral_zetaDivisorWeight_left  (H : ℝ) :
     VIntegral (zetaDivisorWeightKernel q) (-1) (-H) H =
       -VIntegral (zetaDivisorWeightKernel (-q)) 1 (-H) H := by
   have hpoint (y : ℝ) :
@@ -164,19 +163,15 @@ theorem vIntegral_zetaDivisorWeight_left (q : ℂ) (H : ℝ) :
   have hraw : (∫ y in -H..H, zetaDivisorWeightKernel q ((-1 : ℂ) + (y : ℂ) * I)) =
       -(∫ y in -H..H, zetaDivisorWeightKernel (-q) (1 + (y : ℂ) * I)) := by
     calc
-      _ = -∫ y in -H..H, zetaDivisorWeightKernel (-q) (1 + ((-y : ℝ) : ℂ) * I) := by
-        rw [← intervalIntegral.integral_neg]
-        exact intervalIntegral.integral_congr (fun y _ => hpoint y)
+      _ = -∫ y in -H..H, zetaDivisorWeightKernel (-q) (1 + ((-y : ℝ) : ℂ) * I) := by simp_all
       _ = _ := by
         have h := intervalIntegral.integral_comp_neg
           (f := fun y : ℝ => zetaDivisorWeightKernel (-q) (1 + (y : ℂ) * I)) (a := -H) (b := H)
         simpa only [neg_neg] using congrArg Neg.neg h
   unfold VIntegral
-  norm_num only [ofReal_neg, ofReal_one]
-  rw [hraw]
-  simp
+  simp_all
 
-theorem zetaDivisorWeight_truncated_reflection (q : ℂ) {H : ℝ} (hH : 0 < H) :
+theorem zetaDivisorWeight_truncated_reflection  {H : ℝ} (hH : 0 < H) :
     VIntegral' (zetaDivisorWeightKernel q) 1 (-H) H +
       VIntegral' (zetaDivisorWeightKernel (-q)) 1 (-H) H -
       HIntegral' (zetaDivisorWeightKernel q) (-1) 1 H -
@@ -196,7 +191,7 @@ theorem zetaDivisorWeight_truncated_reflection (q : ℂ) {H : ℝ} (hH : 0 < H) 
     ring] at hrect
   exact hrect
 
-theorem tendsto_zetaDivisorWeight_vertical (q : ℂ) :
+theorem tendsto_zetaDivisorWeight_vertical  :
     Tendsto (fun H : ℝ => VIntegral' (zetaDivisorWeightKernel q) 1 (-H) H)
       atTop (𝓝 (zetaDivisorWeight q)) := by
   have h := (intervalIntegral_tendsto_integral (integrable_zetaDivisorWeightKernel_right q)
@@ -212,7 +207,7 @@ theorem tendsto_zetaDivisorWeight_vertical (q : ℂ) :
 
 /-- The small-argument estimate comes from the actual residue and both
 complete vertical contours, not a declared cutoff convention. -/
-theorem zetaDivisorWeight_add_neg (q : ℂ) : zetaDivisorWeight q + zetaDivisorWeight (-q) = 1 := by
+theorem zetaDivisorWeight_add_neg  : zetaDivisorWeight q + zetaDivisorWeight (-q) = 1 := by
   have h := (((tendsto_zetaDivisorWeight_vertical q).add (tendsto_zetaDivisorWeight_vertical (-q))).sub
     (tendsto_zetaDivisorWeight_horizontal_zero q)).sub (tendsto_zetaDivisorWeight_horizontal_zero (-q))
   simp only [sub_zero] at h
@@ -221,6 +216,8 @@ theorem zetaDivisorWeight_add_neg (q : ℂ) : zetaDivisorWeight q + zetaDivisorW
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with H hH
     exact zetaDivisorWeight_truncated_reflection q hH
   exact tendsto_nhds_unique hconst tendsto_const_nhds
+end
+
 
 /-- Bounded on the small side and exponentially decaying on the large
 side, uniformly across the entire specified horizontal strip. -/
@@ -246,4 +243,4 @@ theorem exists_norm_zetaDivisorWeight_min_le {B : ℝ} (hB : 0 ≤ B) :
     simp only [norm_one] at hn
     nlinarith
 
-end MathCollab.Density.Stronger.Atkinson
+

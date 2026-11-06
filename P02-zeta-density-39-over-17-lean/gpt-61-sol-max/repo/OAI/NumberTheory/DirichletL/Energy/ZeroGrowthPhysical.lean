@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthPhysicalReindex
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighPhysical
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
@@ -13,19 +14,19 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSecondHeightFamily
+open HeckeFamily CenteredMomentSecondHeightFamily
 open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyZeroGrowthPhysicalReindex CenteredMomentSourceInputReindex
+
+open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyZeroGrowthPhysicalReindex
 open CenteredMomentEnergyZeroBalancedAdmission CenteredMomentEnergyZeroBalancedDictionary
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission
 open CenteredMomentEnergyCanonicalHighPhysical CenteredMomentEnergyZeroGrowthSource
 open CenteredMomentEnergyStageMargins CenteredMomentNaturalFixedRaySource
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
+
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceReduction
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -47,7 +48,7 @@ theorem actual_growth_physical
     ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z→
-    ∀(k:ℕ)(εchild C₀ C₁ rho:ℝ),εchild≤stageLoss Mschedule Bschedule ε k→
+    ∀(k:ℕ)(εchild C₀ C₁ rho:ℝ),εchild≤ stageLoss Mschedule Bschedule ε k→
       0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 Lchild Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 Lchild Lslot lo hi
@@ -89,7 +90,7 @@ theorem actual_growth_physical
   intro Z hZZ k εchild C₀ C₁ rho hchild hC₀ hC₁ hzero hpos
   have hZbaseLe:Zbase≤Z:=(le_max_left _ _).trans hZZ
   have hn:=hZnum Z ((le_max_right _ _).trans hZZ)
-  have hZ:1<Z:=hn.1.1
+  have hZ :=hn.1.1
   intro s hQ hsLower hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hlarge
   dsimp only
   intro hfour
@@ -124,8 +125,7 @@ theorem actual_growth_physical
     (columnLoss Mschedule Bschedule ε k) hr.le hdecl
     (by
       change length Z X₁+length Z X₂+6*κ*(∑i:(∅:Finset α),(0:ℝ))≤_
-      simpa only [Finset.sum_const_zero,mul_zero,add_zero] using
-        le_max_right s.width (length Z X₁+length Z X₂))
+      simp)
     (hgate.2.1.trans (le_max_left _ _)) hgate.2.1 (by linarith)
     hn.2.2 (by simp [lowerFactor]) (le_max_left _ _)
     hfour.1 hfour.2.1 hfour.2.2.1 hfour.2.2.2 (hn.1.2 k εchild hchild)
@@ -141,8 +141,8 @@ theorem actual_growth_physical
   simpa only [map_one,Nat.cast_one,div_one,add_zero,
     show (src).t=t from rfl,heq] using hbound
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthPhysical
 
-end
 
-end OAI
+
+
+

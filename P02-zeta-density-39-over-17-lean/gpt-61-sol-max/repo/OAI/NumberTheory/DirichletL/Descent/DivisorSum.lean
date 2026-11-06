@@ -9,15 +9,19 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
-def hybridDivisorPool (rows : Finset (Ideal Eis)) : Finset (Ideal Eis) :=
+section
+variable (rows : Finset (Ideal Eis))
+include rows
+
+def hybridDivisorPool  : Finset (Ideal Eis) :=
   rows.biUnion idealDivisors
 
-def hybridDivisorPairPool (rows : Finset (Ideal Eis)) : Finset (Ideal Eis × Ideal Eis) :=
+def hybridDivisorPairPool  : Finset (Ideal Eis × Ideal Eis) :=
   rows.biUnion fun k => (idealDivisors k) ×ˢ (idealDivisors k)
 
-theorem hybridDivisorPool_bounds (rows : Finset (Ideal Eis)) (K : ℝ)
+theorem hybridDivisorPool_bounds  (K : ℝ)
     (hrows : ∀ k ∈ rows, k ≠ 0 ∧ (Ideal.absNorm k : ℝ) ≤ K)
     (D : Ideal Eis) (hD : D ∈ hybridDivisorPool rows) :
     D ≠ 0 ∧ (Ideal.absNorm D : ℝ) ≤ K := by
@@ -26,7 +30,7 @@ theorem hybridDivisorPool_bounds (rows : Finset (Ideal Eis)) (K : ℝ)
   exact ⟨ne_zero_of_dvd_ne_zero (hrows k hk).1 hdiv,
     (QuadraticMainBoundary.norm_le_of_dvd (hrows k hk).1 hdiv).trans (hrows k hk).2⟩
 
-theorem hybridDivisorPairPool_subset (rows : Finset (Ideal Eis)) :
+theorem hybridDivisorPairPool_subset  :
     hybridDivisorPairPool rows ⊆ (hybridDivisorPool rows) ×ˢ (hybridDivisorPool rows) := by
   intro D hD
   obtain ⟨k, hk, hDk⟩ := Finset.mem_biUnion.mp hD
@@ -35,7 +39,7 @@ theorem hybridDivisorPairPool_subset (rows : Finset (Ideal Eis)) :
       Finset.mem_biUnion.mpr ⟨k, hk, (Finset.mem_product.mp hDk).2⟩⟩
 
 theorem hybrid_divisor_pair_inverse_norm_sum
-    (rows : Finset (Ideal Eis)) (K : ℝ)
+     (K : ℝ)
     (hrows : ∀ k ∈ rows, k ≠ 0 ∧ (Ideal.absNorm k : ℝ) ≤ K) :
     (∑ D ∈ hybridDivisorPairPool rows,
       1 / ((Ideal.absNorm D.1 : ℝ) * (Ideal.absNorm D.2 : ℝ))) ≤
@@ -57,8 +61,10 @@ theorem hybrid_divisor_pair_inverse_norm_sum
       intro r hr
       ring
     _ ≤ _ := pow_le_pow_left₀ (Finset.sum_nonneg fun _ _ => by positivity) hsum 2
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

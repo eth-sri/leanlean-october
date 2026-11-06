@@ -12,11 +12,12 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAllocationGaussEnergy CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentSourceMass
+open CenteredMomentCommonRadialData
+open CenteredMomentAmplificationChildInput
 open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι]
+
 local instance firstAllocationControlDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 lemma frozen_live_control (B : Tuple ι) (M : ι→ℝ) :
@@ -64,8 +65,8 @@ theorem allocated_control_mass (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hs hN.le) (sq_nonneg _)
     _ = _ := by rw [Real.rpow_sub hN,Real.rpow_one];ring
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

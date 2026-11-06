@@ -12,10 +12,9 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
-noncomputable section
+open Complex Filter
+
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonStationaryLeadingFiniteSum_eq_dyadic (T G L : ℝ) (N : ℕ) :
@@ -32,7 +31,11 @@ theorem norm_atkinsonStationaryLeadingFiniteSum_le_blocks (T G L : ℝ) (N : ℕ
   rw [atkinsonStationaryLeadingFiniteSum_eq_dyadic]
   exact norm_sum_le _ _
 
-theorem exists_norm_atkinsonStationarySum_le_dyadic {δ : ℝ} (hδ : 0 < δ) :
+section
+variable {δ : ℝ} (hδ : 0 < δ)
+include δ hδ
+
+theorem exists_norm_atkinsonStationarySum_le_dyadic  :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) →
       ‖atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
@@ -56,7 +59,7 @@ theorem exists_norm_atkinsonStationarySum_le_dyadic {δ : ℝ} (hδ : 0 < δ) :
     (pow_pos (by norm_num) _) (truncatedDyadic_endpoint_le (Finset.mem_range.mp hj))).trans_eq
   ring
 
-theorem exists_norm_atkinsonStationarySum_le_fullDyadic {δ : ℝ} (hδ : 0 < δ) :
+theorem exists_norm_atkinsonStationarySum_le_fullDyadic  :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) →
       ‖atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
@@ -71,7 +74,7 @@ theorem exists_norm_atkinsonStationarySum_le_fullDyadic {δ : ℝ} (hδ : 0 < δ
     (atkinsonDyadicPhaseBound_le_full T G _) (by positivity))
 
 /-- The complete literal stationary source is controlled by native undamped phase prefixes. -/
-theorem exists_norm_atkinsonStationarySum_le_undamped {δ : ℝ} (hδ : 0 < δ) :
+theorem exists_norm_atkinsonStationarySum_le_undamped  :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) →
       ‖atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
@@ -84,5 +87,7 @@ theorem exists_norm_atkinsonStationarySum_le_undamped {δ : ℝ} (hδ : 0 < δ) 
   have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
   exact (hbound T G hT hlower hupper).trans (mul_le_mul_of_nonneg_left
     (atkinsonFullDyadicPhaseBound_le_undamped hT0 G _) (by positivity))
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

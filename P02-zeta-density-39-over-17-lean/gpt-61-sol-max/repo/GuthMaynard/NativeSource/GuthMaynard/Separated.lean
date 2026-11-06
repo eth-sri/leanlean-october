@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Order.Interval.Set.Basic
@@ -6,7 +7,7 @@ public import Mathlib.Topology.MetricSpace.Basic
 
 @[expose] public section
 
-open Set Metric
+open Set
 
 namespace GuthMaynard.NativeMoment
 
@@ -46,10 +47,7 @@ theorem translateSet_card (c : ℝ) (W : Finset ℝ) : (translateSet c W).card =
   unfold translateSet
   apply Finset.card_image_of_injective
   intro x y hxy
-  change x - c = y - c at hxy
-  have h1 : x - c + c = y - c + c := by rw [hxy]
-  ring_nf at h1
-  exact h1
+  simp_all
 
 /-- 
 Combinatorial separation extraction hypothesis. 
@@ -68,12 +66,7 @@ theorem separated_selection : SeparatedSelectionProp := by
   intro S L hL
   let S_even := S.filter (fun t => Even ⌊t⌋)
   let S_odd := S.filter (fun t => Odd ⌊t⌋)
-  have H : S_even ∪ S_odd = S := by
-    ext a
-    dsimp [S_even, S_odd]
-    simp only [Finset.mem_union, Finset.mem_filter]
-    have : Even ⌊a⌋ ∨ Odd ⌊a⌋ := Int.even_or_odd ⌊a⌋
-    tauto
+  have H : S_even ∪ S_odd = S := by grind
   have H_card : S_even.card + S_odd.card = S.card := by
     rw [← Finset.card_union_of_disjoint]
     · rw [H]
@@ -91,8 +84,7 @@ theorem separated_selection : SeparatedSelectionProp := by
       simp only [Finset.mem_filter]
       apply and_congr_right'
       exact Int.floor_eq_iff
-    rw [H_eq]
-    exact this
+    simp_all
   have H_card_le : S.card ≤ 2 * S_even.card ∨ S.card ≤ 2 * S_odd.card := by
     omega
 
@@ -106,7 +98,7 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have W_even_sub_S : W_even ⊆ S := by
     intro x hx
-    have hx2 : x ∈ (S_even.image (fun t => ⌊t⌋)).image g_even := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
     rw [Finset.mem_image] at hz
@@ -116,14 +108,8 @@ theorem separated_selection : SeparatedSelectionProp := by
     · case isTrue h =>
       have H_max := Finset.max'_mem _ h
       simp only [Finset.mem_filter] at H_max
-      have ht_in : t ∈ S := by
-        have : t ∈ S_even := ht
-        simp only [Finset.mem_filter, S_even] at this
-        exact this.1
-      have H_max_in : (S_even.filter (fun t_1 => ⌊t_1⌋ = ⌊t⌋)).max' h ∈ S_even := by
-        have H_max2 := Finset.max'_mem _ h
-        simp only [Finset.mem_filter] at H_max2
-        exact H_max2.1
+      have ht_in : t ∈ S := by aesop
+      have H_max_in : (S_even.filter (fun t_1 => ⌊t_1⌋ = ⌊t⌋)).max' h ∈ S_even := by simp_all
       simp only [Finset.mem_filter, S_even] at H_max_in
       exact H_max_in.1
     · case isFalse h =>
@@ -140,8 +126,7 @@ theorem separated_selection : SeparatedSelectionProp := by
       rw [Finset.mem_image] at hz
       rcases hz with ⟨t, ht, rfl⟩
       use t
-      rw [Finset.mem_filter]
-      exact ⟨ht, rfl⟩
+      simp_all
     split
     · case isTrue h =>
       have H_max := Finset.max'_mem _ h
@@ -152,29 +137,18 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have H_floor : ∀ x ∈ W_even, ⌊x⌋ ∈ S_even.image (fun t => ⌊t⌋) ∧ x = g_even ⌊x⌋ := by
     intro x hx
-    have hx2 : x ∈ (S_even.image (fun t => ⌊t⌋)).image g_even := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
-    have hz2 : ⌊g_even z⌋ = z := g_even_floor z hz
-    rw [hz2]
-    exact ⟨hz, rfl⟩
+    have hz2 := g_even_floor z hz
+    simp_all <;> nlinarith
 
   have W_even_sep : GuthMaynard.NativeMoment.IsSeparated 1 W_even := by
     intro x hx y hy hxy
     have hx_fl := H_floor x hx
     have hy_fl := H_floor y hy
-    have hx_even : Even ⌊x⌋ := by
-      have h1 := hx_fl.1
-      simp only [Finset.mem_image, Finset.mem_filter, S_even] at h1
-      rcases h1 with ⟨t, ht, ht2⟩
-      rw [← ht2]
-      exact ht.2
-    have hy_even : Even ⌊y⌋ := by
-      have h1 := hy_fl.1
-      simp only [Finset.mem_image, Finset.mem_filter, S_even] at h1
-      rcases h1 with ⟨t, ht, ht2⟩
-      rw [← ht2]
-      exact ht.2
+    have hx_even : Even ⌊x⌋ := by grind
+    have hy_even : Even ⌊y⌋ := by grind
     have h_neq : ⌊x⌋ ≠ ⌊y⌋ := by
       intro hc
       have : x = y := by
@@ -187,10 +161,7 @@ theorem separated_selection : SeparatedSelectionProp := by
     dsimp [dist]
     cases le_total ⌊x⌋ ⌊y⌋ with
     | inl hle =>
-      have H_le : ⌊y⌋ - ⌊x⌋ ≥ 2 := by
-        rcases hx_even with ⟨k, hk⟩
-        rcases hy_even with ⟨m, hm⟩
-        omega
+      have H_le : ⌊y⌋ - ⌊x⌋ ≥ 2 := by grind
       have : (⌊y⌋ : ℝ) - (⌊x⌋ : ℝ) ≥ 2 := by exact_mod_cast H_le
       have H_yx : y - x ≥ 1 := by linarith
       have H_abs : y - x ≤ |x - y| := by
@@ -198,10 +169,7 @@ theorem separated_selection : SeparatedSelectionProp := by
         exact le_abs_self (y - x)
       linarith
     | inr hle =>
-      have H_le : ⌊x⌋ - ⌊y⌋ ≥ 2 := by
-        rcases hx_even with ⟨k, hk⟩
-        rcases hy_even with ⟨m, hm⟩
-        omega
+      have H_le : ⌊x⌋ - ⌊y⌋ ≥ 2 := by grind
       have : (⌊x⌋ : ℝ) - (⌊y⌋ : ℝ) ≥ 2 := by exact_mod_cast H_le
       have H_xy : x - y ≥ 1 := by linarith
       have H_abs : x - y ≤ |x - y| := by
@@ -211,45 +179,29 @@ theorem separated_selection : SeparatedSelectionProp := by
   have W_even_card : W_even.card = (S_even.image (fun t => ⌊t⌋)).card := by
     apply Finset.card_image_of_injOn
     intro z1 hz1 z2 hz2 hz
-    have hz1_eq := g_even_floor z1 hz1
-    have hz2_eq := g_even_floor z2 hz2
-    rw [hz] at hz1_eq
-    rw [← hz2_eq, hz1_eq]
+    grind
 
   have S_even_card_le : S_even.card ≤ L * W_even.card := by
-    have eq1 : S_even = (S_even.image (fun t => ⌊t⌋)).biUnion (fun z => S_even.filter (fun t => ⌊t⌋ = z)) := by
-      ext a
-      simp only [Finset.mem_biUnion, Finset.mem_image, Finset.mem_filter]
-      constructor
-      · intro ha
-        use ⌊a⌋
-        exact ⟨⟨a, ha, rfl⟩, ha, rfl⟩
-      · rintro ⟨z, ⟨_, _, rfl⟩, ha, eq⟩
-        exact ha
+    have eq1 : S_even = (S_even.image (fun t => ⌊t⌋)).biUnion (fun z => S_even.filter (fun t => ⌊t⌋ = z)) := by grind
     have eq2 : S_even.card = ∑ z ∈ S_even.image (fun t => ⌊t⌋), (S_even.filter (fun t => ⌊t⌋ = z)).card := by
       nth_rw 1 [eq1]
       apply Finset.card_biUnion
       intro x hx y hy hxy
       simp only [Finset.disjoint_filter]
       intro a ha hax hay
-      rw [hax] at hay
-      exact hxy hay
+      omega
     rw [W_even_card]
     rw [eq2]
     have eq3 : ∑ z ∈ S_even.image (fun t => ⌊t⌋), (S_even.filter (fun t => ⌊t⌋ = z)).card ≤ ∑ z ∈ S_even.image (fun t => ⌊t⌋), L := by
       apply Finset.sum_le_sum
       intro i hi
       have H_L_i := H_L i
-      have sub_S : S_even.filter (fun t => ⌊t⌋ = i) ⊆ S.filter (fun t => ⌊t⌋ = i) := by
-        intro t ht
-        simp only [Finset.mem_filter] at ht ⊢
-        exact ⟨(Finset.mem_filter.mp ht.1).1, ht.2⟩
+      have sub_S : S_even.filter (fun t => ⌊t⌋ = i) ⊆ S.filter (fun t => ⌊t⌋ = i) := by grind
       exact le_trans (Finset.card_le_card sub_S) H_L_i
     have eq4 : ∑ z ∈ S_even.image (fun t => ⌊t⌋), L = L * (S_even.image (fun t => ⌊t⌋)).card := by
       simp only [Finset.sum_const, smul_eq_mul]
       ring
-    rw [eq4] at eq3
-    exact eq3
+    omega
 
   let g_odd (z : ℤ) : ℝ :=
     if h : (S_odd.filter (fun t => ⌊t⌋ = z)).Nonempty then
@@ -261,7 +213,7 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have W_odd_sub_S : W_odd ⊆ S := by
     intro x hx
-    have hx2 : x ∈ (S_odd.image (fun t => ⌊t⌋)).image g_odd := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
     rw [Finset.mem_image] at hz
@@ -271,14 +223,8 @@ theorem separated_selection : SeparatedSelectionProp := by
     · case isTrue h =>
       have H_max := Finset.max'_mem _ h
       simp only [Finset.mem_filter] at H_max
-      have ht_in : t ∈ S := by
-        have : t ∈ S_odd := ht
-        simp only [Finset.mem_filter, S_odd] at this
-        exact this.1
-      have H_max_in : (S_odd.filter (fun t_1 => ⌊t_1⌋ = ⌊t⌋)).max' h ∈ S_odd := by
-        have H_max2 := Finset.max'_mem _ h
-        simp only [Finset.mem_filter] at H_max2
-        exact H_max2.1
+      have ht_in : t ∈ S := by grind
+      have H_max_in : (S_odd.filter (fun t_1 => ⌊t_1⌋ = ⌊t⌋)).max' h ∈ S_odd := by simp_all
       simp only [Finset.mem_filter, S_odd] at H_max_in
       exact H_max_in.1
     · case isFalse h =>
@@ -295,8 +241,7 @@ theorem separated_selection : SeparatedSelectionProp := by
       rw [Finset.mem_image] at hz
       rcases hz with ⟨t, ht, rfl⟩
       use t
-      rw [Finset.mem_filter]
-      exact ⟨ht, rfl⟩
+      grind
     split
     · case isTrue h =>
       have H_max := Finset.max'_mem _ h
@@ -307,10 +252,10 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have H_floor_odd : ∀ x ∈ W_odd, ⌊x⌋ ∈ S_odd.image (fun t => ⌊t⌋) ∧ x = g_odd ⌊x⌋ := by
     intro x hx
-    have hx2 : x ∈ (S_odd.image (fun t => ⌊t⌋)).image g_odd := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
-    have hz2 : ⌊g_odd z⌋ = z := g_odd_floor z hz
+    have hz2 := g_odd_floor z hz
     rw [hz2]
     exact ⟨hz, rfl⟩
 
@@ -322,14 +267,12 @@ theorem separated_selection : SeparatedSelectionProp := by
       have h1 := hx_fl.1
       simp only [Finset.mem_image, Finset.mem_filter, S_odd] at h1
       rcases h1 with ⟨t, ht, ht2⟩
-      rw [← ht2]
-      exact ht.2
+      grind
     have hy_odd : Odd ⌊y⌋ := by
       have h1 := hy_fl.1
       simp only [Finset.mem_image, Finset.mem_filter, S_odd] at h1
       rcases h1 with ⟨t, ht, ht2⟩
-      rw [← ht2]
-      exact ht.2
+      grind
     have h_neq : ⌊x⌋ ≠ ⌊y⌋ := by
       intro hc
       have : x = y := by
@@ -342,10 +285,7 @@ theorem separated_selection : SeparatedSelectionProp := by
     dsimp [dist]
     cases le_total ⌊x⌋ ⌊y⌋ with
     | inl hle =>
-      have H_le : ⌊y⌋ - ⌊x⌋ ≥ 2 := by
-        rcases hx_odd with ⟨k, hk⟩
-        rcases hy_odd with ⟨m, hm⟩
-        omega
+      have H_le : ⌊y⌋ - ⌊x⌋ ≥ 2 := by grind
       have : (⌊y⌋ : ℝ) - (⌊x⌋ : ℝ) ≥ 2 := by exact_mod_cast H_le
       have H_yx : y - x ≥ 1 := by linarith
       have H_abs : y - x ≤ |x - y| := by
@@ -353,10 +293,7 @@ theorem separated_selection : SeparatedSelectionProp := by
         exact le_abs_self (y - x)
       linarith
     | inr hle =>
-      have H_le : ⌊x⌋ - ⌊y⌋ ≥ 2 := by
-        rcases hx_odd with ⟨k, hk⟩
-        rcases hy_odd with ⟨m, hm⟩
-        omega
+      have H_le : ⌊x⌋ - ⌊y⌋ ≥ 2 := by grind
       have : (⌊x⌋ : ℝ) - (⌊y⌋ : ℝ) ≥ 2 := by exact_mod_cast H_le
       have H_xy : x - y ≥ 1 := by linarith
       have H_abs : x - y ≤ |x - y| := by
@@ -368,8 +305,7 @@ theorem separated_selection : SeparatedSelectionProp := by
     intro z1 hz1 z2 hz2 hz
     have hz1_eq := g_odd_floor z1 hz1
     have hz2_eq := g_odd_floor z2 hz2
-    rw [hz] at hz1_eq
-    rw [← hz2_eq, hz1_eq]
+    grind
 
   have S_odd_card_le : S_odd.card ≤ L * W_odd.card := by
     have eq1 : S_odd = (S_odd.image (fun t => ⌊t⌋)).biUnion (fun z => S_odd.filter (fun t => ⌊t⌋ = z)) := by
@@ -387,24 +323,19 @@ theorem separated_selection : SeparatedSelectionProp := by
       intro x hx y hy hxy
       simp only [Finset.disjoint_filter]
       intro a ha hax hay
-      rw [hax] at hay
-      exact hxy hay
+      omega
     rw [W_odd_card]
     rw [eq2]
     have eq3 : ∑ z ∈ S_odd.image (fun t => ⌊t⌋), (S_odd.filter (fun t => ⌊t⌋ = z)).card ≤ ∑ z ∈ S_odd.image (fun t => ⌊t⌋), L := by
       apply Finset.sum_le_sum
       intro i hi
       have H_L_i := H_L i
-      have sub_S : S_odd.filter (fun t => ⌊t⌋ = i) ⊆ S.filter (fun t => ⌊t⌋ = i) := by
-        intro t ht
-        simp only [Finset.mem_filter] at ht ⊢
-        exact ⟨(Finset.mem_filter.mp ht.1).1, ht.2⟩
+      have sub_S : S_odd.filter (fun t => ⌊t⌋ = i) ⊆ S.filter (fun t => ⌊t⌋ = i) := by grind
       exact le_trans (Finset.card_le_card sub_S) H_L_i
     have eq4 : ∑ z ∈ S_odd.image (fun t => ⌊t⌋), L = L * (S_odd.image (fun t => ⌊t⌋)).card := by
       simp only [Finset.sum_const, smul_eq_mul]
       ring
-    rw [eq4] at eq3
-    exact eq3
+    omega
 
   cases H_card_le with
   | inl h_even =>
@@ -413,9 +344,7 @@ theorem separated_selection : SeparatedSelectionProp := by
     · exact W_even_sub_S
     · constructor
       · exact W_even_sep
-      · have : S.card ≤ 2 * (L * W_even.card) := by
-          calc S.card ≤ 2 * S_even.card := h_even
-          _ ≤ 2 * (L * W_even.card) := by omega
+      · have : S.card ≤ 2 * (L * W_even.card) := by omega
         have H_mul : 2 * (L * W_even.card) = 2 * L * W_even.card := by ring
         rw [H_mul] at this
         exact this
@@ -425,9 +354,7 @@ theorem separated_selection : SeparatedSelectionProp := by
     · exact W_odd_sub_S
     · constructor
       · exact W_odd_sep
-      · have : S.card ≤ 2 * (L * W_odd.card) := by
-          calc S.card ≤ 2 * S_odd.card := h_odd
-          _ ≤ 2 * (L * W_odd.card) := by omega
+      · have : S.card ≤ 2 * (L * W_odd.card) := by omega
         have H_mul : 2 * (L * W_odd.card) = 2 * L * W_odd.card := by ring
         rw [H_mul] at this
         exact this
@@ -450,16 +377,8 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
   let S_odd := S.filter (fun t => Odd ⌊t⌋)
   have hDisjoint : Disjoint S_even S_odd := by
     rw [Finset.disjoint_filter]
-    intro x hx hEven hOdd
-    rcases hEven with ⟨k, hk⟩
-    rcases hOdd with ⟨m, hm⟩
-    omega
-  have hUnion : S_even ∪ S_odd = S := by
-    ext a
-    dsimp [S_even, S_odd]
-    simp only [Finset.mem_union, Finset.mem_filter]
-    have hParity : Even ⌊a⌋ ∨ Odd ⌊a⌋ := Int.even_or_odd ⌊a⌋
-    tauto
+    simp_all
+  have hUnion : S_even ∪ S_odd = S := by grind
   have hWeightSplit :
       (∑ t ∈ S_even, weight t) + (∑ t ∈ S_odd, weight t) = ∑ t ∈ S, weight t := by
     rw [← Finset.sum_union hDisjoint, hUnion]
@@ -476,8 +395,7 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
       simp only [Finset.mem_filter]
       apply and_congr_right'
       exact Int.floor_eq_iff
-    rw [hEq]
-    exact hL z
+    simp_all
 
   let representative (A : Finset ℝ) (z : ℤ) : ℝ :=
     if h : (A.filter (fun t => ⌊t⌋ = z)).Nonempty then
@@ -509,12 +427,7 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
     · exact (Finset.mem_filter.mp (Finset.max'_mem _ hNonempty)).2
     · contradiction
 
-  have chooseBins_subset (A : Finset ℝ) : chooseBins A ⊆ A := by
-    intro x hx
-    dsimp [chooseBins] at hx
-    rw [Finset.mem_image] at hx
-    rcases hx with ⟨z, hz, rfl⟩
-    exact representative_mem A z hz
+  have chooseBins_subset (A : Finset ℝ) : chooseBins A ⊆ A := by grind
 
   have chooseBins_floor (A : Finset ℝ) :
       ∀ x ∈ chooseBins A,
@@ -524,18 +437,14 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
     rw [Finset.mem_image] at hx
     rcases hx with ⟨z, hz, rfl⟩
     have hzFloor := representative_floor A z hz
-    rw [hzFloor]
-    exact ⟨hz, rfl⟩
+    simp_all <;> nlinarith
 
   have chooseBins_card (A : Finset ℝ) :
       (chooseBins A).card = (A.image (fun t => ⌊t⌋)).card := by
     dsimp [chooseBins]
     apply Finset.card_image_of_injOn
     intro z₁ hz₁ z₂ hz₂ hRep
-    have h₁ := representative_floor A z₁ hz₁
-    have h₂ := representative_floor A z₂ hz₂
-    rw [hRep] at h₁
-    exact h₁.symm.trans h₂
+    grind
 
   have separated_of_parity (A : Finset ℝ)
       (hParity : (∀ x ∈ A, Even ⌊x⌋) ∨ (∀ x ∈ A, Odd ⌊x⌋)) :
@@ -547,34 +456,20 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
       intro hEq
       apply hxy
       rw [hxData.2, hyData.2, hEq]
-    have hxMem : x ∈ A := chooseBins_subset A hx
-    have hyMem : y ∈ A := chooseBins_subset A hy
+    have hxMem := chooseBins_subset A hx
+    have hyMem := chooseBins_subset A hy
     have hxBounds : (⌊x⌋ : ℝ) ≤ x ∧ x < (⌊x⌋ : ℝ) + 1 :=
       ⟨Int.floor_le x, Int.lt_floor_add_one x⟩
     have hyBounds : (⌊y⌋ : ℝ) ≤ y ∧ y < (⌊y⌋ : ℝ) + 1 :=
       ⟨Int.floor_le y, Int.lt_floor_add_one y⟩
     dsimp [dist]
     by_cases hxyFloor : ⌊x⌋ ≤ ⌊y⌋
-    · have hInt : 2 ≤ ⌊y⌋ - ⌊x⌋ := by
-        rcases hParity with hEven | hOdd
-        · rcases hEven x hxMem with ⟨kx, hkx⟩
-          rcases hEven y hyMem with ⟨ky, hky⟩
-          omega
-        · rcases hOdd x hxMem with ⟨kx, hkx⟩
-          rcases hOdd y hyMem with ⟨ky, hky⟩
-          omega
+    · have hInt : 2 ≤ ⌊y⌋ - ⌊x⌋ := by grind
       have hReal : (2 : ℝ) ≤ (⌊y⌋ : ℝ) - (⌊x⌋ : ℝ) := by exact_mod_cast hInt
       have hYX : 1 ≤ y - x := by linarith
       rw [abs_sub_comm]
       exact hYX.trans (le_abs_self (y - x))
-    · have hInt : 2 ≤ ⌊x⌋ - ⌊y⌋ := by
-        rcases hParity with hEven | hOdd
-        · rcases hEven x hxMem with ⟨kx, hkx⟩
-          rcases hEven y hyMem with ⟨ky, hky⟩
-          omega
-        · rcases hOdd x hxMem with ⟨kx, hkx⟩
-          rcases hOdd y hyMem with ⟨ky, hky⟩
-          omega
+    · have hInt : 2 ≤ ⌊x⌋ - ⌊y⌋ := by grind
       have hReal : (2 : ℝ) ≤ (⌊x⌋ : ℝ) - (⌊y⌋ : ℝ) := by exact_mod_cast hInt
       have hXY : 1 ≤ x - y := by linarith
       exact hXY.trans (le_abs_self (x - y))
@@ -584,10 +479,7 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
     have hFiber :
         (∑ z ∈ A.image (fun t => ⌊t⌋),
           ∑ t ∈ A.filter (fun u => ⌊u⌋ = z), weight t) = ∑ t ∈ A, weight t := by
-      have hAll : A.filter (fun t => ⌊t⌋ ∈ A.image (fun u => ⌊u⌋)) = A := by
-        apply Finset.filter_eq_self.mpr
-        intro t ht
-        exact Finset.mem_image.mpr ⟨t, ht, rfl⟩
+      have hAll : A.filter (fun t => ⌊t⌋ ∈ A.image (fun u => ⌊u⌋)) = A := by grind
       have hFiberwise := Finset.sum_fiberwise_eq_sum_filter
         A (A.image (fun t => ⌊t⌋)) (fun t => ⌊t⌋) weight
       rw [hAll] at hFiberwise
@@ -600,9 +492,7 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
             apply Finset.sum_le_sum
             intro z hz
             exact le_trans (Finset.sum_le_sum_of_subset_of_nonneg
-              (fun t ht => by
-                simp only [Finset.mem_filter] at ht ⊢
-                exact ⟨hAS ht.1, ht.2⟩)
+              (fun t ht => by grind)
               (fun _ _ _ => Nat.zero_le _)) (hBinWeight z)
       _ = L * (A.image (fun t => ⌊t⌋)).card := by
         simp [mul_comm]
@@ -632,4 +522,4 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
         Nat.mul_le_mul_left 2 (weighted_by_bins S_odd odd_subset)
       _ = 2 * L * (chooseBins S_odd).card := by ring
 
-end GuthMaynard.NativeMoment
+

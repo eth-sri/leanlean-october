@@ -6,14 +6,13 @@ public import LaterPairs.Native.RobertSargosFixedCoefficientLoss
 public import LaterPairs.Native.RobertSargosPrimitiveProjection
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                            
                                                        
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_coefficient_fiber_bound (ε : ℝ) (hε : 0 < ε) :
@@ -83,5 +82,5 @@ theorem exists_robertSargos_coefficient_fiber_bound (ε : ℝ) (hε : 0 < ε) :
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
+
 

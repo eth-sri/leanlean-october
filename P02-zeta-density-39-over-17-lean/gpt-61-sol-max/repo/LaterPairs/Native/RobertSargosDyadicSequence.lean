@@ -6,9 +6,8 @@ public import LaterPairs.Native.DoubledBlockSelection
 public import LaterPairs.Native.RobertSargosSourceAProcess
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
@@ -20,7 +19,11 @@ namespace TaoTrudgianYang2025
 def robertSargosPhaseSequence (f : ℝ → ℝ) (M n : ℕ) : ℂ :=
   if n = 0 then 0 else robertSargosSourceCenteredPhase f M n
 
-theorem robertSargos_source_centered_phase_norm (f : ℝ → ℝ) (M : ℕ) (h : ℤ)
+section
+variable (f : ℝ → ℝ)
+include f
+
+theorem robertSargos_source_centered_phase_norm  (M : ℕ) (h : ℤ)
     (hh : 0 ≤ h) : ‖robertSargosSourceCenteredPhase f M h‖ ≤ M := by
   have hc : (Finset.Icc (h+1) ((M:ℤ)-h)).card ≤ M := by
     rw [Int.card_Icc]
@@ -33,14 +36,14 @@ theorem robertSargos_source_centered_phase_norm (f : ℝ → ℝ) (M : ℕ) (h :
       simp only [sargos_character_norm,Finset.sum_const,nsmul_eq_mul,mul_one]
     _ ≤ M := by exact_mod_cast hc
 
-theorem robertSargos_phase_sequence_norm (f : ℝ → ℝ) (M n : ℕ) :
+theorem robertSargos_phase_sequence_norm  (M n : ℕ) :
     ‖robertSargosPhaseSequence f M n‖ ≤ M := by
   unfold robertSargosPhaseSequence
   split_ifs
   · simpa only [norm_zero] using Nat.cast_nonneg (α := ℝ) M
   · exact robertSargos_source_centered_phase_norm f M n (Nat.cast_nonneg n)
 
-theorem robertSargos_phase_sequence_block (f : ℝ → ℝ) (M k : ℕ) (hk : 0 < k) :
+theorem robertSargos_phase_sequence_block  (M k : ℕ) (hk : 0 < k) :
     (∑ j ∈ Finset.range k, robertSargosPhaseSequence f M (k+j)) =
       robertSargosSymmetricSum f M k := by
   unfold robertSargosSymmetricSum
@@ -61,7 +64,7 @@ theorem robertSargos_phase_sequence_block (f : ℝ → ℝ) (M k : ℕ) (hk : 0 
     unfold robertSargosSourceCenteredPhase
     simp only [Nat.cast_add]
 
-theorem robertSargos_phase_sequence_weighted (f : ℝ → ℝ) (M H : ℕ) :
+theorem robertSargos_phase_sequence_weighted  (M H : ℕ) :
     (∑ n ∈ Finset.range H, ((1-(n:ℝ)/H : ℝ):ℂ)*robertSargosPhaseSequence f M n) =
       robertSargosWeightedSymmetricPhase f M H := by
   classical
@@ -95,5 +98,7 @@ theorem robertSargos_phase_sequence_weighted (f : ℝ → ℝ) (M H : ℕ) :
     dsimp only [F]
     rw [robertSargosPhaseSequence,ite_eq_right (by omega)]
     simp only [Int.cast_natCast]
+end
 
-end TaoTrudgianYang2025
+
+

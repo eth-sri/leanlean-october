@@ -49,9 +49,13 @@ noncomputable def negativeTail (N : ℕ) (x y : ℝ) : ℂ :=
 noncomputable def positiveTail (x y : ℝ) : ℂ :=
   ∑' ν : ℕ, if 0 < ν then expMode x ν / (((ν : ℝ) * ((ν : ℝ) + y) : ℝ) : ℂ) else 0
 
+section
+variable {N : ℕ} {y : ℝ} (hy : 0 < y)
+    (hNy : y < (N : ℝ) + 1) (x : ℝ)
+include N y hy hNy x
+
 /-- The mixed negative-shift denominator makes the actual series absolutely convergent. -/
-theorem summable_negative_tail_shift {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) (x : ℝ) :
+theorem summable_negative_tail_shift  :
     Summable (fun n : ℕ => expMode x (n + N + 1) /
       (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) : ℝ)) := by
   have hw (n : ℕ) : 0 ≤ 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y)) := by
@@ -62,8 +66,7 @@ theorem summable_negative_tail_shift {N : ℕ} {y : ℝ} (hy : 0 < y)
   simpa [Complex.real_smul, mul_comm, div_eq_mul_inv] using h
 
 /-- Reindexing the actual negative tail preserves its first included frequency. -/
-theorem negativeTail_eq_shift {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) (x : ℝ) :
+theorem negativeTail_eq_shift  :
     negativeTail N x y = ∑' n : ℕ,
       (1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y))) • expMode x (n + N + 1) := by
   unfold negativeTail
@@ -73,9 +76,15 @@ theorem negativeTail_eq_shift {N : ℕ} {y : ℝ} (hy : 0 < y)
   apply tsum_congr
   intro n
   simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
+end
+
+
+section
+variable {y : ℝ} (hy : 0 < y) (x : ℝ)
+include y hy x
 
 /-- Absolute convergence of the actual positive-shift series. -/
-theorem summable_positive_tail_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
+theorem summable_positive_tail_shift  :
     Summable (fun n : ℕ => expMode x (n + 1) /
       (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) : ℝ)) := by
   have hw (n : ℕ) : 0 ≤ 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y)) := by positivity
@@ -83,7 +92,7 @@ theorem summable_positive_tail_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
   simpa [Complex.real_smul, mul_comm, div_eq_mul_inv] using h
 
 /-- Reindexing the positive tail starts at one, not zero or two. -/
-theorem positiveTail_eq_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
+theorem positiveTail_eq_shift  :
     positiveTail x y = ∑' n : ℕ,
       (1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y))) • expMode x (n + 1) := by
   unfold positiveTail
@@ -94,6 +103,8 @@ theorem positiveTail_eq_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
   apply tsum_congr
   intro n
   simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
+end
+
 
 /-- Differentiating the actual Gamma reflection identity gives the real digamma reflection. -/
 theorem real_digamma_one_sub {x : ℝ} (hx : 0 < x) (hx1 : x < 1) :
@@ -188,4 +199,4 @@ theorem positiveTail_half_integer (k : ℤ) (y : ℝ) :
     simp
   · simp
 
-end DhimanKadiriQuesadaHerrera2026
+

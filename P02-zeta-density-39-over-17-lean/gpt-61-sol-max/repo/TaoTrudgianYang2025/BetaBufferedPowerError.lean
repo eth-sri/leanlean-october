@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedUniformError
 
@@ -15,16 +16,16 @@ not a replacement of the phase or source by a constant.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem one_add_log_add_one_le_rpow {T ε : ℝ} (hT : 1 ≤ T) (hε : 0 < ε) :
     1+Real.log (T+1) ≤ (1+(2 : ℝ)^ε/ε)*T^ε := by
   have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
+  have hp := Real.one_le_rpow hT hε.le
   have hlog := Real.log_le_rpow_div (show 0 ≤ T+1 by linarith) hε
   have hpow := Real.rpow_le_rpow (show 0 ≤ T+1 by linarith)
     (show T+1 ≤ 2*T by linarith) hε.le
@@ -77,8 +78,12 @@ def modelPhaseSharpStationarySet (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) : Fin
       (modelPhaseBufferedPlateauUpper F ((a : ℝ)/N) ((Real.sqrt T)⁻¹) T N)
   else ∅
 
+section
+variable {F : ℝ → ℝ} {T N : ℝ} {a b : ℕ}
+include F T N a b
+
 theorem modelPhaseSharpStationarySet_of_long
-    {F : ℝ → ℝ} {T N : ℝ} {a b : ℕ}
+    
     (hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N) :
     modelPhaseSharpStationarySet F T N a b =
       Finset.Ioo
@@ -87,10 +92,12 @@ theorem modelPhaseSharpStationarySet_of_long
   simp only [modelPhaseSharpStationarySet,ite_eq_left hlong]
 
 theorem modelPhaseSharpStationarySet_of_short
-    {F : ℝ → ℝ} {T N : ℝ} {a b : ℕ}
+    
     (hshort : (b : ℝ)/N ≤ (a : ℝ)/N+4*(Real.sqrt T)⁻¹) :
     modelPhaseSharpStationarySet F T N a b = ∅ := by
   simp only [modelPhaseSharpStationarySet,ite_eq_right (not_lt.mpr hshort)]
+end
+
 
 theorem modelPhase_source_sharp_comparison
     {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
@@ -108,7 +115,7 @@ theorem modelPhase_source_sharp_comparison
   have hNpos : 0 < N := zero_lt_one.trans_le hN
   have hTpos : 0 < T := zero_lt_one.trans_le hT
   have hx : 0 ≤ N/Real.sqrt T := by positivity
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
+  have hp := Real.one_le_rpow hT hε.le
   by_cases hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N
   · rw [modelPhaseSharpStationarySet_of_long hlong]
     exact (hsource N T a b hN hT ha hb hlong F δ hδ hF).trans
@@ -122,4 +129,4 @@ theorem modelPhase_source_sharp_comparison
       _ ≤ 5*(N/Real.sqrt T+T^ε) := by nlinarith
       _ ≤ _ := mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity)
 
-end TaoTrudgianYang2025
+

@@ -13,13 +13,13 @@ It determines the signed square-root coordinate's slope at the critical
 point, including the removable zero in the divided deficit.
 -/
 
-noncomputable section
+
 
 open Set Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem modelPhaseMorseCoordinate_at_inverse (F : ℝ → ℝ) (v : ℝ) :
     modelPhaseMorseCoordinate F v (modelPhaseInverseSlope F v) = 0 := by
@@ -88,10 +88,14 @@ theorem modelPhaseMorseCoordinate_slope (F : ℝ → ℝ) (v u : ℝ) :
   · rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt h))]
     ring
 
-theorem modelPhaseMorseCoordinate_hasDerivAt_inverse
-    {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}
+section
+variable {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+    (hv : v ∈ modelPhaseSlopeRange F)
+include F σ δ v P hF hv
+
+theorem modelPhaseMorseCoordinate_hasDerivAt_inverse
+     :
     HasDerivAt (modelPhaseMorseCoordinate F v) (Real.sqrt (modelPhaseCurvatureAt F v))
       (modelPhaseInverseSlope F v) := by
   apply hasDerivAt_iff_tendsto_slope.mpr
@@ -100,12 +104,12 @@ theorem modelPhaseMorseCoordinate_hasDerivAt_inverse
   exact h.congr' (Eventually.of_forall (fun u => (modelPhaseMorseCoordinate_slope F v u).symm))
 
 theorem modelPhaseMorseCoordinate_reciprocal_derivative_amplitude
-    {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}
-    (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+     :
     (deriv (modelPhaseMorseCoordinate F v) (modelPhaseInverseSlope F v))⁻¹ =
       modelPhaseStationaryAmplitude F v := by
   rw [(modelPhaseMorseCoordinate_hasDerivAt_inverse hF hv).deriv]
   rfl
+end
 
-end TaoTrudgianYang2025
+
+

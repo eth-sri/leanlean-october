@@ -8,7 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def logWindow (a b : ℝ) : ℝ := max |Real.log a| |Real.log b|
 
@@ -54,8 +54,8 @@ theorem frozen_subset_ratio_bound (entrance frozen : Finset ι) (hsub : frozen �
     _ ≤ _ := div_le_div_of_nonneg_right (Finset.sum_le_sum_of_subset_of_nonneg hsub
       (fun i _ _ => logWindow_nonneg (a i) (b i))) (Real.log_pos hZ).le
 
-end SevenEighths.CenteredMomentSlotRatios
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationPrimePool
 
 @[expose] public section
@@ -30,7 +31,7 @@ theorem amplified_exponent (c r : ℝ) :
     ring
 
 theorem amplified_exponent_le (c r R : ℝ) (hc : 0≤c) (hrR : r≤R)
-    (hR : 0≤R) : 1+5*amplificationPower c r≤sourceExponent r+5*c*R/6 := by
+    (hR : 0≤R) : 1+5*amplificationPower c r≤ sourceExponent r+5*c*R/6 := by
   rw [amplified_exponent]
   apply max_le
   · have hh := le_max_left 1 ((1+5*r)/6)
@@ -67,8 +68,8 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
     ∃ K : ℝ, 0≤K ∧ ∀ᶠ U : ℝ in atTop, ∀ p : ℝ, 0≤p → p≤P →
       (1+2*Real.log (b*(A*U^p)))*Real.log (A*U^p)≤K*U^η := by
   let K := (1+2*Real.log (b*A)+2*P)*(Real.log A+P)
-  have hLA : 0≤Real.log A := Real.log_nonneg hA
-  have hLB : 0≤Real.log (b*A) := Real.log_nonneg hbA
+  have hLA := Real.log_nonneg hA
+  have hLB := Real.log_nonneg hbA
   have hK : 0≤K := mul_nonneg (by positivity) (by positivity)
   have hlog := (isLittleO_log_rpow_rpow_atTop (2 : ℝ) hη).bound (by norm_num : (0 : ℝ)<1)
   refine ⟨K,hK,?_⟩
@@ -100,8 +101,8 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
     _ = K*(Real.log U)^2 := by dsimp [K]; ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hsq hK
 
-end SevenEighths.HeckeInverseAmplification
 
-end
 
-end OAI
+
+
+

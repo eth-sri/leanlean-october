@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection9Admissible
 
 @[expose] public section
@@ -16,7 +17,7 @@ they are not retained as opaque hypotheses.
 
 namespace GafniTao
 
-noncomputable section
+
 
 /-- The signed Section-7 depth is never larger than the ambient numerator
 `(k-r+1)b`, hence (for `r>=1`) never larger than `kb`. -/
@@ -28,12 +29,7 @@ theorem wooleySection7BPrimeNat_le_k_mul
   have htoNat :
       (((((k - r + 1) * b : ℕ) : ℤ) - ((r * a : ℕ) : ℤ) -
           (((k - r) * gammaVal : ℕ) : ℤ)).toNat) ≤
-        ((k - r + 1) * b : ℕ) := by
-    rw [Int.toNat_le]
-    exact_mod_cast (show
-      (((k - r + 1) * b : ℕ) : ℤ) - ((r * a : ℕ) : ℤ) -
-          (((k - r) * gammaVal : ℕ) : ℤ) ≤
-        (((k - r + 1) * b : ℕ) : ℤ) by omega)
+        ((k - r + 1) * b : ℕ) := by omega
   exact htoNat.trans (Nat.mul_le_mul_right b hcoeff)
 
 /-- A compact collection of scale inequalities implies every field of the
@@ -97,10 +93,7 @@ theorem wooleySection9Admissible_of_scale_hierarchy
   · intro hall gammaVal hgamma
     have hhard := hall gammaVal hgamma
     have hcast := wooleySection7BPrimeNat_cast hhard
-    have hnuBp : nu < wooleySection7BPrimeNat k r a b gammaVal := by
-      exact_mod_cast (show (nu : ℤ) <
-        (wooleySection7BPrimeNat k r a b gammaVal : ℤ) by
-          simpa only [hcast] using hhard)
+    have hnuBp : nu < wooleySection7BPrimeNat k r a b gammaVal := by omega
     exact hB0nu.trans hnuBp.le
 
 /-- The strong scale hierarchy used in Section 10 makes admissibility stable
@@ -122,19 +115,8 @@ theorem wooleySection9Admissible_predecessor
   have hdivisor := wooley_nextB_ge_divisor_scale
     (k := k) (r := r) (b := b) hrOne hrk.le
   have hkpos : 0 < k := by omega
-  have hknuNext : k * nu ≤ wooleyNextB k r b := by
-    have hfour : 4 * k * (k * nu) ≤ k * wooleyNextB k r b := by
-      calc
-        4 * k * (k * nu) = 4 * k ^ 2 * nu := by ring
-        _ ≤ b := hscaleNu
-        _ ≤ k * wooleyNextB k r b := hdivisor
-    have hsmall : k * (k * nu) ≤ 4 * k * (k * nu) := by nlinarith
-    have : k * (k * nu) ≤ k * wooleyNextB k r b := hsmall.trans hfour
-    exact Nat.le_of_mul_le_mul_left this hkpos
-  have hrb : r ≤ b := by
-    have hkSq : k ≤ k ^ 2 := by nlinarith
-    have hkScale : k ^ 2 ≤ 4 * k ^ 2 * nu := by nlinarith
-    exact hrk.le.trans (hkSq.trans (hkScale.trans hscaleNu))
+  have hknuNext : k * nu ≤ wooleyNextB k r b := by nlinarith
+  have hrb : r ≤ b := by nlinarith
   have hnextMul := wooley_section7_nextB_mul_upper
     (k := k) (r := r) (b := b) hrOne
   have hrelPred :
@@ -178,11 +160,7 @@ theorem wooleySection9Admissible_predecessor
           (wooleyNextB k r b : ℝ) := by
       exact_mod_cast (show 4 * (k * nu) ≤ wooleyNextB k r b by
         have hmul : k * (4 * (k * nu)) ≤
-            k * wooleyNextB k r b := by
-          calc
-            k * (4 * (k * nu)) = 4 * k ^ 2 * nu := by ring
-            _ ≤ b := hscaleNu
-            _ ≤ k * wooleyNextB k r b := hdivisor
+            k * wooleyNextB k r b := by linarith
         exact Nat.le_of_mul_le_mul_left hmul hkpos)
     nlinarith
   have hnuScale : nu ≤ 4 * k ^ 2 * nu := by
@@ -245,13 +223,8 @@ theorem wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
     have hdiv := wooley_nextB_ge_divisor_scale
       (k := k) (r := r) (b := b) hr hrk.le
     have hkpos : 0 < k := by omega
-    have hnuB : k * nu ≤ b := by
-      have hkSq : k ≤ k ^ 2 := by nlinarith
-      have hfirst : k * nu ≤ k ^ 2 * nu := Nat.mul_le_mul_right nu hkSq
-      have hsecond : k ^ 2 * nu ≤ 4 * k ^ 2 * nu := by nlinarith
-      have : k * nu ≤ 4 * k ^ 2 * nu := hfirst.trans hsecond
-      exact this.trans hscaleNu
-    have hmul : k * nu ≤ k * wooleyNextB k r b := hnuB.trans hdiv
+    have hnuB : k * nu ≤ b := by simp_all <;> nlinarith
+    have hmul := hnuB.trans hdiv
     exact Nat.le_of_mul_le_mul_left hmul hkpos
   have hnub : nu ≤ b := by
     have hcoeff : 1 ≤ 4 * k ^ 2 := by nlinarith
@@ -268,10 +241,9 @@ theorem wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
   · intro r a hr hrk hadm
     exact wooleySection9Admissible_predecessor hk hr hrk hnu hB0nu
       hscaleNu hscaleB htau htauSmall hepsilonSmall
-  · exact hupper
-  · exact hloss
+  all_goals (assumption)
 
 
-end
 
-end GafniTao
+
+

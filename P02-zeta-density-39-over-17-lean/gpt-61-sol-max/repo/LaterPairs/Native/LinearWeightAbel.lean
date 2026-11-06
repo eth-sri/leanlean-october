@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.AtkinsonMainPartialSummation
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
@@ -19,7 +18,6 @@ theorem norm_linear_weighted_range_le (a : ℕ → ℂ) (H : ℕ) (hH : 0 < H)
     (B : ℝ) (hp : ∀ L ≤ H, ‖∑ n ∈ Finset.range L, a n‖ ≤ B) :
     ‖∑ n ∈ Finset.range H, ((1-(n:ℝ)/H : ℝ):ℂ)*a n‖ ≤ B := by
   let w : ℕ → ℂ := fun n => ((1-(n:ℝ)/H : ℝ):ℂ)
-  have hpos : (0:ℝ) < H := by exact_mod_cast hH
   have hlast : ‖w (H-1)‖ = 1/(H:ℝ) := by
     have he : 1-((H-1:ℕ):ℝ)/H = 1/(H:ℝ) := by
       rw [Nat.cast_sub (by omega),Nat.cast_one]
@@ -55,4 +53,4 @@ theorem norm_linear_weighted_range_le (a : ℕ → ℂ) (H : ℕ) (hH : 0 < H)
       field_simp
       ring
 
-end TaoTrudgianYang2025
+

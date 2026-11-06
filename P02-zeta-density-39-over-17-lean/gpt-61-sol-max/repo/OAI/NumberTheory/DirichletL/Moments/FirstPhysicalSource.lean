@@ -12,43 +12,59 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSourceRow CenteredMomentRowNorm
+open HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentSourceRow
 open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
+open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
+open CenteredMomentSupportedCorrelation CenteredMomentActive
 open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentFirstAssembly CenteredMomentGaussEnergy
+open CenteredMomentSmooth IdealMobiusDivisorSum
+open scoped EisensteinO
 
-def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
+section
+variable (C D:Ideal O)
+include C D
+
+section
+variable (hD:D≠0)(S:Finset (Ideal O))
+include hD S
+
+def columns :Finset (Ideal O):=
   (residualPool D hD (supportedColumns S)).filter (fun I=>IsCoprime C I)
 
-lemma column_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))
-    (a:columns C D hD S):Supported (a:Ideal O):=
+section
+variable (a:columns C D hD S)
+include a
+
+lemma column_supported :Supported (a:Ideal O):=
   residualPool_supported D hD S ⟨a.val,(Finset.mem_filter.mp a.property).1⟩
 
-def element (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):O:=
+def element :O:=
   CompletedGauss.primaryGenerator a
 
-lemma element_span (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_span :
     Ideal.span {element C D hD S a}=a:=primary_span_supported a (column_supported C D hD S a)
 
-lemma element_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_supported :
     Supported (Ideal.span {element C D hD S a}):=by
   rw [element_span];exact column_supported C D hD S a
 
-lemma element_primary (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_primary :
     goodLambda^2∣element C D hD S a-1:=
   (CompletedGauss.primaryGenerator_spec a (supported_primaryGenerator_ne_zero a
     (column_supported C D hD S a))).2
+end
+end
 
-lemma active_span_dvd (C D:Ideal O)(hC:C≠0)(hD:D≠0)
+
+lemma active_span_dvd (hC:C≠0)(hD:D≠0)
     (hCD:primeSupport C=primeSupport D):Ideal.span {activeConductor C D}∣C:=by
   have hh:=activeConductor_span_dvd C D
   rw [(fixed_common_parts C D hC hD hCD).1] at hh
   exact hh
+end
+
 
 lemma element_coprime_active (C D B:Ideal O)(hC:C≠0)(hD:D≠0)(hB:B≠0)
     (hCD:primeSupport C=primeSupport D)(S:Finset (Ideal O))(a:columns C B hB S):
@@ -156,8 +172,8 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
       _=_:=by rw [hh];dsimp only [activeConductor];ring
   · simp [hab,hcop]
 
-end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
-end OAI
+
+
+

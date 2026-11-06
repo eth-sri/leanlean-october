@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import MathCollab.Density.LargeValueDefinitions
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace GuthMaynard.Improvement
 
@@ -14,7 +14,6 @@ theorem source_floor_bounds {N : ℝ} (hN : 2 ≤ N) :
   have hM : 2 ≤ ⌊N⌋₊ := Nat.le_floor hN
   have hlo := Nat.floor_le (by linarith : 0 ≤ N)
   have hhi := Nat.lt_floor_add_one N
-  have hm : (2:ℝ) ≤ ⌊N⌋₊ := by exact_mod_cast hM
   exact ⟨hM,by linarith,hlo⟩
 
 /-- Exactly zero or one endpoint lies beyond the integer dyadic source. -/
@@ -41,7 +40,6 @@ theorem detectingPolynomial_eq_boundedPolynomial (M : ℕ) (a : ℕ → ℂ) (t 
   apply sum_congr rfl
   intro n _
   unfold MathCollab.Density.dirichletPhase
-  congr 2
   ring
 
 /-- Remove only a unit phase; the integer-frequency coefficient sum is literal. -/
@@ -84,8 +82,7 @@ theorem boundedPolynomial_le_detecting_floor_add_one {N : ℝ} (hN : 2 ≤ N)
   · rw [he,sum_Ioc_succ_top (by omega : ⌊N⌋₊ ≤ 2*⌊N⌋₊)]
     have ha' : ‖a (2*⌊N⌋₊+1)‖ ≤ 1 := ha _ (by
       unfold sourceRatioIndices
-      rw [he]
-      exact mem_Ioc.mpr ⟨by omega,le_rfl⟩)
+      grind)
     have ht : ‖a (2*⌊N⌋₊+1)*dirichletPhase (2*⌊N⌋₊+1) t‖ ≤ 1 := by
       simpa only [norm_mul,dirichletPhase_norm,mul_one] using ha'
     exact (norm_add_le _ _).trans (add_le_add le_rfl ht)
@@ -99,4 +96,4 @@ theorem detecting_floor_large_value {N V : ℝ} (hN : 2 ≤ N) (hV : 2 ≤ V)
   have hh := boundedPolynomial_le_detecting_floor_add_one hN a ha t
   linarith
 
-end GuthMaynard.Improvement
+

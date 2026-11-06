@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
@@ -9,19 +10,25 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredExceptionalCount
 open UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def valuation (I P : Ideal O) : ℕ := (normalizedFactors I).count P
 
-def factorMultiset (I : Ideal O) (e : ℕ → ℕ) : Multiset (Ideal O) :=
+section
+variable (I : Ideal O) (e : ℕ → ℕ)
+include I e
+
+def factorMultiset  : Multiset (Ideal O) :=
   ∑ P ∈ (normalizedFactors I).toFinset, Multiset.replicate (e (valuation I P)) P
 
-theorem factorMultiset_subset (I : Ideal O) (e : ℕ → ℕ) :
+theorem factorMultiset_subset  :
     factorMultiset I e ⊆ normalizedFactors I := by
   intro P hP
   obtain ⟨Q, hQ, hPQ⟩ := Multiset.mem_sum.mp hP
   have he : P = Q := (Multiset.mem_replicate.mp hPQ).2
   exact he ▸ Multiset.mem_toFinset.mp hQ
+end
+
 
 theorem factorMultiset_count (I P : Ideal O) (e : ℕ → ℕ) (he : e 0 = 0) :
     (factorMultiset I e).count P = e (valuation I P) := by
@@ -33,10 +40,16 @@ theorem factorMultiset_count (I P : Ideal O) (e : ℕ → ℕ) (he : e 0 = 0) :
       (fun h => hP (Multiset.mem_toFinset.mpr h))
     rw [hz, he]
 
-def factorPart (I : Ideal O) (e : ℕ → ℕ) : Ideal O := (factorMultiset I e).prod
+section
+variable (I : Ideal O) (e : ℕ → ℕ)
+include I e
 
-theorem factorPart_ne_zero (I : Ideal O) (e : ℕ → ℕ) : factorPart I e ≠ 0 :=
+def factorPart  : Ideal O := (factorMultiset I e).prod
+
+theorem factorPart_ne_zero  : factorPart I e ≠ 0 :=
   prod_ne_zero_of_subset_normalizedFactors (factorMultiset_subset I e)
+end
+
 
 theorem factorPart_valuation (I P : Ideal O) (e : ℕ → ℕ) (he : e 0 = 0) :
     valuation (factorPart I e) P = e (valuation I P) := by
@@ -44,20 +57,32 @@ theorem factorPart_valuation (I P : Ideal O) (e : ℕ → ℕ) (he : e 0 = 0) :
   rw [normalizedFactors_prod_eq_self_of_subset (factorMultiset_subset I e)]
   exact factorMultiset_count I P e he
 
-def sixthRemainder (I : Ideal O) : Ideal O := factorPart I (fun n => n % 6)
+section
+variable (I : Ideal O)
+include I
 
-def sixthQuotient (I : Ideal O) : Ideal O := factorPart I (fun n => n / 6)
+def sixthRemainder  : Ideal O := factorPart I (fun n => n % 6)
 
-theorem sixthRemainder_ne_zero (I : Ideal O) : sixthRemainder I ≠ 0 := factorPart_ne_zero I _
-theorem sixthQuotient_ne_zero (I : Ideal O) : sixthQuotient I ≠ 0 := factorPart_ne_zero I _
+def sixthQuotient  : Ideal O := factorPart I (fun n => n / 6)
 
-@[simp] theorem sixthRemainder_valuation (I P : Ideal O) :
+theorem sixthRemainder_ne_zero  : sixthRemainder I ≠ 0 := factorPart_ne_zero I _
+theorem sixthQuotient_ne_zero  : sixthQuotient I ≠ 0 := factorPart_ne_zero I _
+end
+
+
+section
+variable (I P : Ideal O)
+include I P
+
+@[simp] theorem sixthRemainder_valuation  :
     valuation (sixthRemainder I) P = valuation I P % 6 :=
   factorPart_valuation I P _ (by norm_num)
 
-@[simp] theorem sixthQuotient_valuation (I P : Ideal O) :
+@[simp] theorem sixthQuotient_valuation  :
     valuation (sixthQuotient I) P = valuation I P / 6 :=
   factorPart_valuation I P _ (by norm_num)
+end
+
 
 theorem valuation_mul (I J P : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0) :
     valuation (I * J) P = valuation I P + valuation J P := by
@@ -94,8 +119,7 @@ theorem sixthQuotient_injective_on_remainder {I J : Ideal O}
 theorem sixthRemainder_eq_of_profile {I R : Ideal O} (hR : R ≠ 0)
     (hprofile : ∀ P, valuation I P % 6 = valuation R P) : sixthRemainder I = R := by
   apply ideal_eq_of_valuation_eq (sixthRemainder_ne_zero I) hR
-  intro P
-  simpa only [sixthRemainder_valuation] using hprofile P
+  simp_all
 
 theorem forced_fourth_power_dvd (I D : Ideal O) (hD : Squarefree D)
     (hfour : ∀ P ∈ normalizedFactors D, valuation I P % 6 = 4) :
@@ -114,11 +138,17 @@ theorem forced_fourth_power_dvd (I D : Ideal O) (hD : Squarefree D)
   · have hz : valuation D P = 0 := Multiset.count_eq_zero.mpr hP
     simp only [hz, mul_zero, Nat.zero_le]
 
-theorem norm_pos {I : Ideal O} (hI : I ≠ 0) : 0 < (Ideal.absNorm I : ℝ) := by
+section
+variable {I : Ideal O} (hI : I ≠ 0)
+include I hI
+
+theorem norm_pos  : 0 < (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.pos_of_ne_zero (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
 
-theorem norm_one_le {I : Ideal O} (hI : I ≠ 0) : 1 ≤ (Ideal.absNorm I : ℝ) := by
+theorem norm_one_le  : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
+end
+
 
 theorem norm_le_of_dvd {I J : Ideal O} (hJ : J ≠ 0) (hIJ : I ∣ J) :
     (Ideal.absNorm I : ℝ) ≤ (Ideal.absNorm J : ℝ) := by
@@ -132,13 +162,17 @@ theorem forced_fourth_power_norm_le (I D : Ideal O) (hD : Squarefree D)
   simpa only [map_pow, Nat.cast_pow] using
     norm_le_of_dvd (sixthRemainder_ne_zero I) (forced_fourth_power_dvd I D hD hfour)
 
-theorem sixth_normal_form_norm (I : Ideal O) (hI : I ≠ 0) :
+section
+variable (I : Ideal O) (hI : I ≠ 0)
+include I hI
+
+theorem sixth_normal_form_norm  :
     (Ideal.absNorm (sixthRemainder I) : ℝ) *
       (Ideal.absNorm (sixthQuotient I) : ℝ) ^ 6 = (Ideal.absNorm I : ℝ) := by
   have h := congrArg (fun J : Ideal O => (Ideal.absNorm J : ℝ)) (sixth_normal_form I hI)
   simpa only [map_mul, map_pow, Nat.cast_mul, Nat.cast_pow] using h
 
-theorem sixthQuotient_norm_le (I : Ideal O) (hI : I ≠ 0) {H : ℝ} (hH : 0 ≤ H)
+theorem sixthQuotient_norm_le  {H : ℝ} (hH : 0 ≤ H)
     (hNI : (Ideal.absNorm I : ℝ) ≤ H) :
     (Ideal.absNorm (sixthQuotient I) : ℝ) ≤
       (H / Ideal.absNorm (sixthRemainder I)) ^ (1 / 6 : ℝ) := by
@@ -151,6 +185,8 @@ theorem sixthQuotient_norm_le (I : Ideal O) (hI : I ≠ 0) {H : ℝ} (hH : 0 ≤
   simpa only [one_div] using
     (Real.le_rpow_inv_iff_of_pos (Nat.cast_nonneg _) (div_nonneg hH hr.le)
       (by norm_num : (0 : ℝ) < 6)).mpr hp
+end
+
 
 theorem ideal_count_fixed_remainder (S : Finset (Ideal O)) (R : Ideal O) (hR : R ≠ 0)
     (H : ℝ) (hH : 0 ≤ H) (hS : ∀ I ∈ S, I ≠ 0)
@@ -178,21 +214,24 @@ theorem ideal_count_fixed_remainder (S : Finset (Ideal O)) (R : Ideal O) (hR : R
   · rw [Finset.not_nonempty_iff_eq_empty.mp hne, Finset.card_empty, Nat.cast_zero]
     exact mul_nonneg (by norm_num) (Real.rpow_nonneg (div_nonneg hH (norm_pos hR).le) _)
 
-theorem element_count_le_six_ideal_count (S : Finset O) (hS : ∀ z ∈ S, z ≠ 0) :
+section
+variable (S : Finset O)
+include S
+
+theorem element_count_le_six_ideal_count  (hS : ∀ z ∈ S, z ≠ 0) :
     (S.card : ℝ) ≤ 6 * ((S.image (fun z => Ideal.span {z})).card : ℝ) := by
   have h := CompletedUnitRows.sum_nonzero_element_le_units S hS (fun _ => 1)
     (fun _ => by norm_num)
   simpa only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one,
     CompletedUnitRows.unit_card, Nat.cast_ofNat] using h
 
-theorem element_count_fixed_remainder (S : Finset O) (R : Ideal O) (hR : R ≠ 0)
+theorem element_count_fixed_remainder  (R : Ideal O) (hR : R ≠ 0)
     (H : ℝ) (hH : 0 ≤ H) (hS : ∀ z ∈ S, z ≠ 0)
     (hrem : ∀ z ∈ S, sixthRemainder (Ideal.span {z}) = R)
     (hN : ∀ z ∈ S, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ H) :
     (S.card : ℝ) ≤ 768 * (H / Ideal.absNorm R) ^ (1 / 6 : ℝ) := by
   have hc := ideal_count_fixed_remainder (S.image (fun z => Ideal.span {z})) R hR H hH
-    (by intro I hI; obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-        exact Ideal.span_singleton_eq_bot.not.mpr (hS z hz))
+    (by simp_all)
     (by intro I hI; obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
         exact hrem z hz)
     (by intro I hI; obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
@@ -203,7 +242,7 @@ theorem element_count_fixed_remainder (S : Finset O) (R : Ideal O) (hR : R ≠ 0
     _ ≤ 6 * (128 * (H / Ideal.absNorm R) ^ (1 / 6 : ℝ)) := by gcongr
     _ = 768 * (H / Ideal.absNorm R) ^ (1 / 6 : ℝ) := by ring
 
-theorem element_count_remainder_family (S : Finset O) (Rs : Finset (Ideal O))
+theorem element_count_remainder_family  (Rs : Finset (Ideal O))
     (hRs : ∀ R ∈ Rs, R ≠ 0) (H : ℝ) (hH : 0 ≤ H)
     (hS : ∀ z ∈ S, z ≠ 0) (hrem : ∀ z ∈ S, sixthRemainder (Ideal.span {z}) ∈ Rs)
     (hN : ∀ z ∈ S, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ H) :
@@ -217,15 +256,13 @@ theorem element_count_remainder_family (S : Finset O) (Rs : Finset (Ideal O))
     (fun z hz => (Finset.mem_filter.mp hz).2)
     (fun z hz => hN z (Finset.mem_filter.mp hz).1)
 
-theorem element_count_power_scale (S : Finset O) (R : Ideal O) (hR : R ≠ 0)
+theorem element_count_power_scale  (R : Ideal O) (hR : R ≠ 0)
     (Z C m d : ℝ) (hZ : 0 < Z) (hC : 0 ≤ C)
     (hRnorm : Z ^ d ≤ (Ideal.absNorm R : ℝ)) (hS : ∀ z ∈ S, z ≠ 0)
     (hrem : ∀ z ∈ S, sixthRemainder (Ideal.span {z}) = R)
     (hN : ∀ z ∈ S, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ C * Z ^ m) :
     (S.card : ℝ) ≤ 768 * C ^ (1 / 6 : ℝ) * Z ^ ((m - d) / 6) := by
   have hM : 0 ≤ C * Z ^ m := mul_nonneg hC (Real.rpow_nonneg hZ.le _)
-  have hdiv : (C * Z ^ m) / Ideal.absNorm R ≤ (C * Z ^ m) / Z ^ d :=
-    div_le_div_of_nonneg_left hM (Real.rpow_pos_of_pos hZ _) hRnorm
   calc
     (S.card : ℝ) ≤ 768 * ((C * Z ^ m) / Ideal.absNorm R) ^ (1 / 6 : ℝ) :=
       element_count_fixed_remainder S R hR _ hM hS hrem hN
@@ -234,6 +271,8 @@ theorem element_count_power_scale (S : Finset O) (R : Ideal O) (hR : R ≠ 0)
       rw [mul_div_assoc, ← Real.rpow_sub hZ, Real.mul_rpow hC (Real.rpow_nonneg hZ.le _),
         ← Real.rpow_mul hZ.le]
       rw [show (m - d) * (1 / 6 : ℝ) = (m - d) / 6 by ring, mul_assoc]
+end
+
 
 theorem sixthRemainder_eq_of_prime_profile {I R : Ideal O} (hR : R ≠ 0)
     (hprofile : ∀ P, Prime P → valuation I P % 6 = valuation R P) :
@@ -270,7 +309,7 @@ theorem element_count_power_scale_family (S : Finset O) (Rs : Finset (Ideal O))
         (fun z hz => hN z (Finset.mem_filter.mp hz).1)
     _ = _ := by rw [Finset.sum_const, nsmul_eq_mul]; ring
 
-end SevenEighths.CenteredExceptionalCount
-end
 
-end OAI
+
+
+

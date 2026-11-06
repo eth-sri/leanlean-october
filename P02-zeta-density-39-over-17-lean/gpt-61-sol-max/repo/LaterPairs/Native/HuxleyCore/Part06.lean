@@ -1,28 +1,28 @@
 module
+import Mathlib
 public import LaterPairs.Native.HuxleyCore.Part05
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 open Polynomial
 open Set
 open scoped Classical
 open scoped ContDiff
 open scoped FourierTransform BigOperators
 open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+           
+
+               
+        
+                     
+                    
+                                         
+                    
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
@@ -32,8 +32,12 @@ open Set Expdb TaoTrudgianYang2025
 open scoped BigOperators FourierTransform ContDiff Classical NNReal
 
 
+section
+variable {α : ℝ≥0}
+include α
+
 public  theorem capped_short_nonAsymptotic_of_window_margins
-    {α : ℝ≥0} {β h g₀ ν₀ ν₁ δw μ : ℝ}
+     {β h g₀ ν₀ ν₁ δw μ : ℝ}
     (hδw : 0<δw) (hμ : 0<μ)
     (hWindows : ∀ u : ℝ, u∈Icc (0:ℝ) 1 →
       let ℓ := (α:ℝ)-δw
@@ -142,10 +146,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   have hLargeD : Clarge≤D :=
     (le_add_of_nonneg_left (by norm_num : (0:ℝ)≤1)).trans (le_add_of_nonneg_right hCsmall)
   have hSmallD : Csmall≤D := le_add_of_nonneg_left (add_nonneg zero_le_one hClarge)
-  have hCtotal : 0≤Ctotal := by
-    dsimp only [Ctotal]
-    exact mul_nonneg (pow_nonneg (by norm_num : (0:ℝ)≤2) 287)
-      (add_nonneg (pow_nonneg (by norm_num : (0:ℝ)≤6) 288) (zero_le_one.trans hD))
+  have hCtotal : 0≤Ctotal := by positivity
   have hPhys := eventually_double_difference_capped_physical_window
     hB hCsrc hw₀ hμ hμℓ hℓv hμh hWidth
   have hLog := middleOriginal_eventually_uniform_clog_power_loss_72 hCtotal hζ
@@ -188,7 +189,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   by_cases hba : b<a
   · rw [Expdb.exponentialSumAt_of_lt hba,norm_zero]
     exact Real.rpow_nonneg hXp.le _
-  have hab : a≤b := Nat.le_of_not_gt hba
+  have hab := Nat.le_of_not_gt hba
   let L := b-a
   have hEnd : a+L=b := Nat.add_sub_of_le hab
   have ha := setup.scale_le_start
@@ -204,7 +205,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
       _ = X^(2*h) := by
         simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le h 2).symm
       _ ≤ X^β := Real.rpow_le_rpow_of_exponent_le hX (by linarith only [hShort,hμ])
-  have hLong : H^2≤L+1 := Nat.le_of_not_gt hShortL
+  have hLong := Nat.le_of_not_gt hShortL
   obtain ⟨Fext,hSharp,hFamily⟩ := hSource M F hM hF
   obtain ⟨pick,k,hk,hkH,hpick,hZcap,hWeyl⟩ :=
     hWeylSource Fext σ X M a L H hσ hX hM hH2 hLong hHcube (hW.trans hw₀cap) ha hb
@@ -226,7 +227,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     exact_mod_cast (show k≤H^3 by omega)
   have hQ : 0≤A*X^εs*Log :=
     mul_nonneg (mul_nonneg hA0 (Real.rpow_nonneg hXp.le _)) hLog0
-  have hξPower : 1≤X^ξ := Real.one_le_rpow hX hξ
+  have hξPower := Real.one_le_rpow hX hξ
   have hLossPower : 1≤X^(78*εs) := Real.one_le_rpow hX (by positivity)
   have hCommon :
       ‖Expdb.exponentialSumAt Fext X M a (a+L)‖^288 ≤ D*Log^72*X^(78*εs)*X^ξ := by
@@ -400,10 +401,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           mul_le_mul_of_nonneg_left hPoly' (by
             clear * - hA0 hCsrc0 hLog0 hXp
             positivity)
-        _ = Clarge*Log^72*X^(78*εs)*X^ξ := by
-          dsimp only [Clarge]
-          have heq (a b c d e f z : ℝ) : (a*b*c)*d*e*(f*z)=(a*b*c*f)*d*e*z := by ring
-          exact heq _ _ _ _ _ _ _
+        _ = Clarge*Log^72*X^(78*εs)*X^ξ := by field_simp <;> ring
         _ ≤ D*Log^72*X^(78*εs)*X^ξ := by gcongr
   have hSharp' := hSharp X a (a+L) ha hb
   have hOriginal : ‖Expdb.exponentialSumAt F X M a (a+L)‖≤
@@ -428,10 +426,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           D*Log^72*X^(78*εs)*X^ξ) :=
         mul_le_mul_of_nonneg_left (add_le_add hSix hCommon)
           (pow_nonneg (by norm_num : (0:ℝ)≤2) 287)
-      _ = (Ctotal*Log^72)*X^(78*εs)*X^ξ := by
-        dsimp only [Ctotal]
-        have heq (a b c d e f : ℝ) : a*(b*(d*e*f)+c*d*e*f)=((a*(b+c))*d)*e*f := by ring
-        exact heq _ _ _ _ _ _
+      _ = (Ctotal*Log^72)*X^(78*εs)*X^ξ := by field_simp <;> ring
       _ ≤ X^ζ*X^(78*εs)*X^ξ :=
         mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right hLogLoss (Real.rpow_nonneg hXp.le _))
@@ -448,7 +443,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
 
 
 private theorem fourth_pair_capped_short_nonAsymptotic
-    {α : ℝ≥0} {t : ℝ} (ht : t∈Icc (0:ℝ) 1)
+     {t : ℝ} (ht : t∈Icc (0:ℝ) 1)
     (hα : (α:ℝ)=(1-t)*(890/3277)+t*(17604372/60424193)) :
     Expdb.IsExponentSumBoundNonAsymptotic α (89/3478+(7441/8695)*(α:ℝ)) := by
   let h := ((1-t)*2749411+t*3296917)/100000000
@@ -494,7 +489,6 @@ private theorem fourth_pair_capped_short_nonAsymptotic
         72*(g u)-216*h+284*v-24*(ν u)+μ≤288*β ∧
         504*v-72-216*h+72*(ν u)+μ≤288*β := by
     have hh := fourth_pair_capped_full_window_margins ht hu
-    dsimp only at hh
     rw [←hα] at hh
     exact hh
   exact capped_short_nonAsymptotic_of_window_margins hδw hμ hMargins
@@ -503,27 +497,27 @@ private theorem fourth_pair_capped_short_nonAsymptotic
                                                                       
                                                               
 theorem exponentSumGrowthExponent_le_huxley_fourthPair_shortRange
-    {α : ℝ≥0} (hα : (890:ℝ)/3277≤(α:ℝ))
+     (hα : (890:ℝ)/3277≤(α:ℝ))
     (hα₁ : (α:ℝ)≤(17604372:ℝ)/60424193) :
     Expdb.exponentSumGrowthExponent α≤89/3478+(7441/8695)*(α:ℝ) := by
   let t := ((α:ℝ)-(890:ℝ)/3277)/((17604372:ℝ)/60424193-(890:ℝ)/3277)
   have hden : 0<(17604372:ℝ)/60424193-(890:ℝ)/3277 := by norm_num
-  have ht : t∈Icc (0:ℝ) 1 := by
-    refine ⟨div_nonneg (sub_nonneg.mpr hα) hden.le,?_⟩
-    exact (div_le_one hden).mpr (by linarith only [hα₁])
+  have ht : t∈Icc (0:ℝ) 1 := by grind
   have hαeq : (α:ℝ)=(1-t)*(890/3277)+t*(17604372/60424193) := by
     dsimp only [t]
     ring
   exact Expdb.exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (fourth_pair_capped_short_nonAsymptotic ht hαeq)
+end
+
 
 
                                                                                  
 
 abbrev nativeHuxleyCore_capped_short_nonAsymptotic_of_window_margins := @capped_short_nonAsymptotic_of_window_margins
 
-end TaoTrudgianYang2025.HuxleyRationalPhase
+
 
 -- Generated closures: source context is replayed in the next part.
-end
-end
+
+

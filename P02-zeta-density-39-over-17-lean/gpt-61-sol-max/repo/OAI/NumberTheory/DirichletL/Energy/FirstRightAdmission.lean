@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.FirstLiveAdmission
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRightTransport
 
@@ -11,13 +12,13 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstRightAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
 open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
@@ -27,10 +28,10 @@ open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
 open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
 open CenteredMomentPrimePool CenteredMomentPrimeElements
 open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
+open CenteredMomentChildRows RayFourExpansion
+open CenteredMomentLogDyadic
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTransport
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 lemma main_radius_right (C D : Ideal O) (E : Finset (CommonIndex C D))
@@ -90,9 +91,7 @@ theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
     true B t hB
   refine ⟨right_modulus s.η C D hC E ξ₁ ξ₂ F, ?_,
     main_lower_support N l a hl ha s hc hs hW₁ hW₂ D R innerL B F.right t⟩
-  have hr : Ready (child s D R B F.right t) (R*D)
-      (columnMainRadius C D E K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve true)
-      Z ξ (readyBudget A P) := hh.1
+  have hr := hh.1
   rw [main_radius_right] at hr
   exact hr
 
@@ -203,8 +202,8 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   exact ⟨ready_mono _ _ Ke Z ξ _ _ hz.le (error_exponent_le A P σ ξ hA hP hσ1 hξ1) hr,
     error_lower_support N l a hl ha s hc hs hW₁ hW₂ D R innerL B F.right t _ k Bp υ v⟩
 
-end SevenEighths.CenteredMomentEnergyFirstRightAdmission
 
-end
 
-end OAI
+
+
+

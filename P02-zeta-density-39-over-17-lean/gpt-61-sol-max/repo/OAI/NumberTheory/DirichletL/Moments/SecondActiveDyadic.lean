@@ -11,20 +11,24 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActiveDyadic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSectorLocalization
 open CenteredMomentSecondDyadicPartition CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth
-open CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSecondRetainedRows
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentActiveSource
+open scoped EisensteinO
 
-def sourceLower (C D : Ideal O) (A : O) (K : ℝ) : Fin 4→ℝ :=
+section
+variable (C D : Ideal O) (A : O)
+include C D A
+
+def sourceLower  (K : ℝ) : Fin 4→ℝ :=
   ![secondEffectiveScale C D A K,1,1,1]
 
-def sourceUpper (C D : Ideal O) (A : O) (K R H : ℝ) : Fin 4→ℝ :=
+def sourceUpper  (K R H : ℝ) : Fin 4→ℝ :=
   ![secondEffectiveScale C D A K,max 1 (4*R/normValue A),
     max 1 (H/(Ideal.absNorm C:ℝ)),max 1 (H/(Ideal.absNorm D:ℝ))]
 
-def dyadicKernel (C D : Ideal O) (A : O) (W : 𝓢(ℝ,ℂ)) (K R : ℝ)
+def dyadicKernel  (W : 𝓢(ℝ,ℂ)) (K R : ℝ)
     (n : Fin 4→ℤ) (h : O) (I J : Ideal O) : ℂ :=
   ((K:ℂ)/((Real.sqrt (Ideal.absNorm C:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm D:ℝ):ℂ)*
     (Real.sqrt (dyadicScale (n 2)):ℂ)*(Real.sqrt (dyadicScale (n 3)):ℂ)))*
@@ -35,6 +39,8 @@ def dyadicKernel (C D : Ideal O) (A : O) (W : 𝓢(ℝ,ℂ)) (K R : ℝ)
         (Real.log (normValue h/dyadicScale (n 1)))
         (Real.log ((Ideal.absNorm I:ℝ)/dyadicScale (n 2)))
         (Real.log ((Ideal.absNorm J:ℝ)/dyadicScale (n 3)))
+end
+
 
 theorem active_sector_norm (S : Finset (Ideal O)) (β : Ideal O→ℂ)
     (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
@@ -82,8 +88,8 @@ theorem active_physical_kernel_partition (_η : Character)
     (sectorPool_supported C hC.1 _ I) (sectorPool_supported D hD.1 _ J)
     A h hA hh W K R hK _ _ (sourceLower_pos C D hC.1 hD.1 A hA K hK) hb
 
-end SevenEighths.CenteredMomentSecondActiveDyadic
 
-end
 
-end OAI
+
+
+

@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
-open FirstPassCubeLabels
+open MeasureTheory ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
+
 namespace SevenEighths.InverseInitialOverlapInputFourier
-open InverseMoment InverseInitialOverlapFourier InverseInitialArithmetic InverseInitialRayAttachment
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialArithmetic
+open scoped EisensteinEis
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -40,8 +40,8 @@ theorem input_integral (F : Finset ι) (Ψ : Eis→*ℂ) (j u : Eis)
   intro A hA
   ring
 
-end SevenEighths.InverseInitialOverlapInputFourier
 
-end
 
-end OAI
+
+
+

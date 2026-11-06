@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.OperatorCentered
 public import GuthMaynard.Improvement.OperatorTraceConvergence
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace
 open scoped InnerProductSpace
@@ -83,7 +83,6 @@ theorem mixedFrequencyIntegrand_time_integral (μ : Measure ℝ) [SFinite μ]
       phase (-(g x.2.2-f x.1)*t.1)*phase (-(f x.1-g x.2.1)*t.2.1)*
         phase (-(g x.2.1-g x.2.2)*t.2.2) := by
       rw [← phase_add,← phase_add,← phase_add,← phase_add]
-      congr 1
       ring
     calc
       _ = (A x.1*B x.2.1*B x.2.2)*
@@ -95,13 +94,17 @@ theorem mixedFrequencyIntegrand_time_integral (μ : Measure ℝ) [SFinite μ]
     (fun t => phase (-(g x.2.1-g x.2.2)*t))]
   rfl
 
-/-- Actual mixed scalar Fourier identity, with Fubini justified by finite
-measures and bounded measurable amplitudes. -/
-theorem frequencyKernel_mixed (μ ν₀ ν₁ : Measure ℝ)
+section
+variable (μ ν₀ ν₁ : Measure ℝ)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν₀] [IsFiniteMeasure ν₁]
     {A B : ℝ → ℂ} {f g : ℝ → ℝ} {B₀ B₁ : ℝ}
     (hA : Measurable A) (hB : Measurable B) (hf : Measurable f) (hg : Measurable g)
-    (hB₀ : 0 ≤ B₀) (hB₁ : 0 ≤ B₁) (hbA : ∀ x, ‖A x‖ ≤ B₀) (hbB : ∀ x, ‖B x‖ ≤ B₁) :
+    (hB₀ : 0 ≤ B₀) (hB₁ : 0 ≤ B₁) (hbA : ∀ x, ‖A x‖ ≤ B₀) (hbB : ∀ x, ‖B x‖ ≤ B₁)
+include μ ν₀ ν₁ A B f g B₀ B₁ hA hB hf hg hB₀ hB₁ hbA hbB
+
+/-- Actual mixed scalar Fourier identity, with Fubini justified by finite
+measures and bounded measurable amplitudes. -/
+theorem frequencyKernel_mixed  :
     kernelMixed μ (frequencyKernel ν₀ A f) (frequencyKernel ν₁ B g) =
       ∫ x : Triple, (A x.1*B x.2.1*B x.2.2)*
         (measureFourier μ (g x.2.2-f x.1)*measureFourier μ (f x.1-g x.2.1)*
@@ -125,11 +128,7 @@ theorem frequencyKernel_mixed (μ ν₀ ν₁ : Measure ℝ)
 
 /-- The actual ambient Hilbert-basis mixed trace equals the independently
 specified time-kernel cycle. No operator commutation or positivity is assumed. -/
-theorem operator_frequency_mixed (μ ν₀ ν₁ : Measure ℝ)
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν₀] [IsFiniteMeasure ν₁]
-    {A B : ℝ → ℂ} {f g : ℝ → ℝ} {B₀ B₁ : ℝ}
-    (hA : Measurable A) (hB : Measurable B) (hf : Measurable f) (hg : Measurable g)
-    (hB₀ : 0 ≤ B₀) (hB₁ : 0 ≤ B₁) (hbA : ∀ x, ‖A x‖ ≤ B₀) (hbB : ∀ x, ‖B x‖ ≤ B₁)
+theorem operator_frequency_mixed 
     {ι : Type*} [Countable ι] (b : HilbertBasis ι ℂ (Lp ℂ 2 μ)) :
     operatorDiagonalTrace b (operatorFrequency μ ν₀ A f*(operatorFrequency μ ν₁ B g)^2) =
       kernelMixed μ (frequencyKernel ν₀ A f) (frequencyKernel ν₁ B g) := by
@@ -156,5 +155,7 @@ theorem operator_frequency_mixed (μ ν₀ ν₁ : Measure ℝ)
   filter_upwards with z
   simp only [inner_smul_right,operator_phase_pairing,Q]
   ring
+end
 
-end GuthMaynard.Improvement
+
+

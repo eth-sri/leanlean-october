@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosWeightedScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                   
                                                         
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_primitive_count_conic_weight (ε : ℝ) (hε : 0 < ε) :
@@ -75,5 +74,5 @@ theorem exists_robertSargos_primitive_count_linear_weight (ε : ℝ) (hε : 0 < 
         (robertSargos_weighted_sum_scale hQ (by positivity) hε (by positivity)) hC.le
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

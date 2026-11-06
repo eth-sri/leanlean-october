@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.ShortFixedFamily
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -25,7 +25,6 @@ theorem smoothTaylorIndices_card_le_log {σ T : ℝ}
     (hlog : 1 ≤ Real.log T) :
     ((smoothTaylorIndices σ T).card : ℝ) ≤ 144*(Real.log T)^2 := by
   have hJ := detectorTaylorCutoff_le_log hlog
-  have h0 : 0 ≤ Real.log T := by linarith
   calc
     _ = ((smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card : ℝ)*
         (2*(detectorTaylorCutoff T+1 : ℕ)) := by simp [smoothTaylorIndices]
@@ -45,8 +44,7 @@ theorem shortTaylor_cutoff_error_eventually :
   rw [Real.rpow_neg_one]
   apply (le_div_iff₀ (by positivity : 0 < 96*Real.log T)).mpr
   have he : 3*T⁻¹*(96*Real.log T) = (288*Real.log T)/T := by ring
-  rw [he]
-  exact (div_le_one hTpos).mpr (by linarith)
+  grind
 
 /-- The detected short block produces a member of a fixed finite family;
 only the selected index depends on rho. -/
@@ -104,10 +102,6 @@ theorem smooth_long_or_short_Taylor_cover {σ δ : ℝ}
   filter_upwards [smoothDetector_eventually_large hσ hδ hδ', smooth_short_Taylor_cover (δ := δ) hσ]
     with T hdet hshort
   intro ρ hβ hβ' hγ hγ' hzero
-  obtain ⟨j, hj, hlo, hh⟩ := hdet ρ hβ hβ' hγ hγ' hzero
-  by_cases hs : (2 : ℝ)^j ≤ T^(smoothingExponent σ/2)
-  · obtain ⟨p, hp, _, hp0, hp1, hp2⟩ := hshort ρ j hβ hβ'.le hj hlo hs hh
-    exact Or.inr ⟨p, hp, hp0, hp1, hp2⟩
-  · exact Or.inl ⟨j, hj, lt_of_not_ge hs, hh⟩
+  grind
 
-end MathCollab.Density.Stronger
+

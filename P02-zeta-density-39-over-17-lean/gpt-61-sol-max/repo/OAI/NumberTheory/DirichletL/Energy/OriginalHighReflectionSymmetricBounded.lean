@@ -11,15 +11,15 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetricBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyOriginalHighReflectionBounded
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
+open CenteredMomentNaturalFixedRaySource
+
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-open CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 open CenteredMomentEnergyOriginalHighReflectionSymmetric
@@ -44,14 +44,14 @@ theorem original_unbalanced_from_low
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → rho≤s.width → s.width≤Mcap →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → rho≤ s.width → s.width≤Mcap →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
-      min (length Z X₁) (length Z X₂)≤s.width/4 →
+      min (length Z X₁) (length Z X₂)≤ s.width/4 →
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i) →
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width →
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width →
       energy s.character s.mask 1 t W₁ W₂
         (fun i=>primePool M H bslot (Z^(w i)))
         (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -79,8 +79,8 @@ theorem original_unbalanced_from_low
       s hQ hslo hs W₂ W₁ hs₂ hs₁ X₂ X₁ hX₂ hX₁ hshort (by linarith) (by linarith)
     simpa only [mul_comm (sourceControl U W₂) (sourceControl U W₁)] using hh
 
-end SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetricBounded
 
-end
 
-end OAI
+
+
+

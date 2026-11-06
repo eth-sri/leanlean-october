@@ -8,10 +8,14 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open scoped EisensteinO
 
-lemma elementCoeff_zero_or_norm_one (eta : HeckeFamily.Character) (p : O) :
+section
+variable (eta : HeckeFamily.Character)
+include eta
+
+lemma elementCoeff_zero_or_norm_one  (p : O) :
     HeckeFamily.elementCoeff eta p=0 ∨ ‖HeckeFamily.elementCoeff eta p‖=1 := by
   by_cases h : HeckeFamily.elementCoeff eta p=0
   · exact Or.inl h
@@ -24,14 +28,17 @@ lemma elementCoeff_zero_or_norm_one (eta : HeckeFamily.Character) (p : O) :
     rw [←hu]
     exact FiniteRayExpansion.norm_char_unit eta.residue u
 
-def actualUnramifiedSelected (eta : HeckeFamily.Character) (p u : O)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (x w z : ℂ) : ℂ :=
+section
+variable (p u : O)
+    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+include p u hg
+
+def actualUnramifiedSelected  (x w z : ℂ) : ℂ :=
   unramifiedSelected (Ideal.absNorm (Ideal.span {p})) (actualAPhase eta p)
     (HeckeFamily.elementCoeff eta p)
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ u)) x w z
 
-theorem actualUnramifiedSelected_bound (eta : HeckeFamily.Character) (p u : O)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+theorem actualUnramifiedSelected_bound 
     (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hu : IsCoprime u p)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p})) (x w z : ℂ)
     (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
@@ -43,8 +50,11 @@ theorem actualUnramifiedSelected_bound (eta : HeckeFamily.Character) (p u : O)
     rw [heta,hA]
     exact (unramifiedSelected_zero_bound _ _ x w z hQ hv.le hw hz).trans (by norm_num)
   · exact unramifiedSelected_bound _ _ _ _ x w z hQ (actualAPhase_norm_le_one eta p) heta hv hx hw hz
-
-end SevenEighths.ProbeEuler
+end
 end
 
-end OAI
+
+
+
+
+

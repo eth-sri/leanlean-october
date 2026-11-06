@@ -13,11 +13,11 @@ Constants depend only on sigma and that order, on the full moving Morse image.
 
 noncomputable section
 
-open Set Expdb
+open Expdb
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 def morseInverseJetMagnitude (σ : ℝ) : ℕ → ℝ
   | 0 => 2
@@ -70,9 +70,13 @@ theorem morseInverseDerivativeBound_nonneg {σ : ℝ} (hσ : 0 < σ) (n : ℕ) :
     0 ≤ morseInverseDerivativeBound σ n :=
   inversePhaseMagnitude_nonneg _ (Finset.sum_nonneg fun j _ => morseInverseJetMagnitude_nonneg hσ j)
 
-theorem modelPhaseMorseInverseJet_abs_le
-    {F : ℝ → ℝ} {σ δ v z : ℝ} {P : ℕ}
+section
+variable {F : ℝ → ℝ} {σ δ v z : ℝ} {P : ℕ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
+include F σ δ v z P hσ hδ
+
+theorem modelPhaseMorseInverseJet_abs_le
+    
     (hP : 1 ≤ P) (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
     (j : ℕ) (hj : morseInverseJetOrder j ≤ P) :
@@ -93,8 +97,7 @@ theorem modelPhaseMorseInverseJet_abs_le
       exact modelPhaseMorseCoordinate_iteratedDeriv_bound hσ hδ hF hv hu (n+1) hj
 
 theorem modelPhaseMorseInverse_iteratedDeriv_bound
-    {F : ℝ → ℝ} {σ δ v z : ℝ} {P : ℕ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
+    
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
     (n : ℕ) (hP : morseInverseDerivativeOrder n ≤ P) :
@@ -108,5 +111,7 @@ theorem modelPhaseMorseInverse_iteratedDeriv_bound
   exact (modelPhaseMorseInverseJet_abs_le hσ hδ hP₁ hF hv hz j
     ((morseInverseJetOrder_le_derivativeOrder hj).trans hP)).trans
       (morseInverseJetMagnitude_le_budget hσ hj)
+end
 
-end TaoTrudgianYang2025
+
+

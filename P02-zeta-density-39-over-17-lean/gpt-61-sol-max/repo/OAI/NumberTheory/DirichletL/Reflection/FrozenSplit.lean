@@ -9,10 +9,10 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance frozenSplitFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+local instance frozenSplitFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 def frozenArgument [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) : Eis →* ℂ :=
@@ -69,7 +69,7 @@ theorem frozenArgument_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
     · exact FiniteRayExpansion.norm_char_le_one ((actualSextic (Ideal.span {p i}) (hg i))^(2*j i+2))
         (Ideal.Quotient.mk (Ideal.span {p i}) z)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

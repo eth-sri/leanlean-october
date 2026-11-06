@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 
 @[expose] public section
@@ -9,29 +10,38 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource
+open HeckeFamily
+open CenteredMomentFirstAmplifiedPaidAdmission
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentSecondRadicalBudget
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
+
+section
+variable (N:ℕ)
+include N
+
+section
+variable (lower upper cost0 a0:ℝ)
+include lower upper cost0 a0
+
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
-def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ):ℝ :=
+def fixedNumerator :ℝ :=
   (N:ℝ)*|Real.log (min 1 lower)|+(N:ℝ)*|Real.log (max 1 upper)|+
     |Real.log fixedPresentationCost|+|Real.log cost0|+
     |Real.log (4/((fixedFactor:ℝ)*a0^2))|
 
-lemma fixedNumerator_nonneg (N:ℕ)(lower upper cost0 a0:ℝ):
+lemma fixedNumerator_nonneg :
     0≤fixedNumerator N lower upper cost0 a0 := by unfold fixedNumerator;positivity
 
-theorem source_reserve_bound (N:ℕ)(lower upper cost0 a0:ℝ)
+theorem source_reserve_bound 
     (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)
     {ι α:Type*}[Fintype ι][Fintype α](s:Input ι)(input:Input α)
     (hn:Fintype.card ι≤N)(hnc:Fintype.card α≤N)
-    (hl:lower≤s.lower)(hu:input.upper≤upper)
+    (hl:lower≤ s.lower)(hu:input.upper≤upper)
     (C D:Ideal O)(hC:C≠0)(hD:D≠0)(Z delta reserve cost a:ℝ)
     (hZ:1<Z)(hd:0≤delta)(hr:0≤reserve)(hc:cost0≤cost)(ha:a0≤a):
     sourceReserve s input C D Z delta reserve cost a≤
@@ -64,7 +74,7 @@ theorem source_reserve_bound (N:ℕ)(lower upper cost0 a0:ℝ)
   have harg:=Real.logb_le_logb_of_le hZ (by positivity:0<4/((fixedFactor:ℝ)*a^2)) hfrac
   have hCN:(1:ℝ)≤C.absNorm:=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hC)
   have hDN:(1:ℝ)≤D.absNorm:=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD)
-  have hcommon:0≤min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ)):=
+  have hcommon:0≤ min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ)):=
     le_min (Real.logb_nonneg hZ hCN) (Real.logb_nonneg hZ hDN)
   have habs:
       (N:ℝ)*(-Real.logb Z (min 1 lower))+(N:ℝ)*Real.logb Z (max 1 upper)-
@@ -86,12 +96,18 @@ theorem source_reserve_bound (N:ℕ)(lower upper cost0 a0:ℝ)
   apply max_le
   · linarith
   · exact add_nonneg (add_nonneg hd hr) (div_nonneg (fixedNumerator_nonneg _ _ _ _ _) hz.le)
+end
 
-theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
-    (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)(htheta:0<theta):
+
+section
+variable (lower upper cost0 a0 theta:ℝ)
+    (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)(htheta:0<theta)
+include lower upper cost0 a0 theta hlower hcost0 ha0 htheta
+
+theorem eventually_source_reserve :
     ∃Z0:ℝ,1<Z0 ∧ ∀Z:ℝ,Z0≤Z→
       ∀{ι α:Type*}[Fintype ι][Fintype α],∀(s:Input ι)(input:Input α),
-      Fintype.card ι≤N→Fintype.card α≤N→lower≤s.lower→input.upper≤upper→
+      Fintype.card ι≤N→Fintype.card α≤N→lower≤ s.lower→input.upper≤upper→
       ∀(C D:Ideal O),C≠0→D≠0→∀delta reserve cost a:ℝ,
       0≤delta→0≤reserve→cost0≤cost→a0≤a→
       sourceReserve s input C D Z delta reserve cost a≤delta+reserve+theta := by
@@ -114,11 +130,10 @@ theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
     hn hnc hl hu C D hC hD Z delta reserve cost a hZ hd hr hc ha
   exact hb.trans (by change delta+reserve+L/Real.log Z≤_;linarith)
 
-theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:ℝ)
-    (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)(htheta:0<theta):
+theorem eventually_actual_amplified_reserves :
     ∃Z0:ℝ,1<Z0 ∧ ∀Z:ℝ,Z0≤Z→
       ∀{ι:Type*}[Fintype ι],∀s:Input ι,
-      Fintype.card ι≤N→lower≤s.lower→s.upper≤upper→
+      Fintype.card ι≤N→lower≤ s.lower→s.upper≤upper→
       ∀(C D R:Ideal O),C≠0→D≠0→∀B:actualAllocations s.pools C,
       ∀(τ:Character)(t delta reserve cost a:ℝ),
       0≤delta→0≤reserve→cost0≤cost→a0≤a→
@@ -132,16 +147,19 @@ theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:
     hlower hcost0 ha0 htheta
   refine ⟨Z0,hZ0,?_⟩
   intro Z hZZ ι _ s hn hl hu C D R hC hD B τ t delta reserve cost a hd hr hc ha
-  have hchild:Fintype.card (liveIndices B.val)≤N:=(live_card_le B.val).trans hn
+  have hchild :=(live_card_le B.val).trans hn
   refine ⟨hbound Z hZZ s (child s C R B τ t) hn hchild hl hu C D hC hD
     delta reserve cost a hd hr hc ha,?_⟩
   intro Q k Bp υ v
-  have herr:Fintype.card (liveIndices Bp.val)≤N:=(live_card_le Bp.val).trans hchild
+  have herr :=(live_card_le Bp.val).trans hchild
   exact hbound Z hZZ s (errorInput s C R B τ t Q k Bp υ v) hn herr hl hu C D hC hD
     delta reserve cost a hd hr hc ha
-
-end SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-
+end
 end
 
-end OAI
+
+
+
+
+
+

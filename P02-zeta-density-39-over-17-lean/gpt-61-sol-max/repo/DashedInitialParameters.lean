@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import RightSolidTailBudgets
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem dashed_first_quadratic_window {σ : ℝ}
@@ -17,12 +17,7 @@ theorem dashed_first_quadratic_window {σ : ℝ}
     linarith
   · apply (div_lt_iff₀ hd).mpr
     linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
+  all_goals (field_simp <;> nlinarith)
 
 theorem dashed_second_quadratic_window {σ : ℝ}
     (hl : 289/358 ≤ σ) (hr : σ ≤ 163/198) :
@@ -35,20 +30,11 @@ theorem dashed_second_quadratic_window {σ : ℝ}
     linarith
   · apply (div_lt_iff₀ hd).mpr
     linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
+  all_goals (field_simp <;> nlinarith)
 
 theorem fraction_detector_threshold {σ n d : ℝ} (hd : 0 < d)
     (hm : d/2 < 3*n*(σ-1/2)) :
-    1/8 < (3*(n/d)/4)*(σ-1/2) := by
-  have he : (3*(n/d)/4)*(σ-1/2)=3*n*(σ-1/2)/(4*d) := by field_simp
-  rw [he]
-  apply (lt_div_iff₀ (by positivity : 0 < 4*d)).mpr
-  linarith
+    1/8 < (3*(n/d)/4)*(σ-1/2) := by field_simp <;> nlinarith
 
 theorem dashed_first_tail_budgets {σ : ℝ}
     (hl : 4/5 ≤ σ) (_hr : σ ≤ 289/358) :
@@ -81,4 +67,4 @@ theorem dashed_second_tail_budgets {σ : ℝ}
   apply tail_budgets_of_fraction hd
   · linarith
   · nlinarith
-end Montgomery.RationalMoment
+

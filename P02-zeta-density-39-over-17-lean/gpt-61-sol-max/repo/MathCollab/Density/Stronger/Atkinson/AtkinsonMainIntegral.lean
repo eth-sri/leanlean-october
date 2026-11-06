@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected proof slice at revision
 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0.
@@ -12,10 +13,9 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 @[expose] public section
 
 open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem zetaAtkinsonVoronoiMain_eq_reflection {T G L : ℝ}
@@ -54,7 +54,6 @@ theorem exists_norm_zetaAtkinsonVoronoiMain_le :
   rw [zetaAtkinsonVoronoiMain_eq_reflection hT0 hG hL hwidth]
   have h := (hweight T G L hT hlog hG hGT hL).reflection_source hT0
   convert h using 1
-  have hs : Real.sqrt T ≠ 0 := ne_of_gt (Real.sqrt_pos.2 hT0)
   field_simp
 
 theorem exists_zetaAtkinsonVoronoiMain_log_bound {δ : ℝ} (hδ : 0 < δ) :
@@ -66,13 +65,9 @@ theorem exists_zetaAtkinsonVoronoiMain_log_bound {δ : ℝ} (hδ : 0 < δ) :
       ‖zetaAtkinsonVoronoiMain T G (Real.log T)‖ ≤ C * G * Real.log T := by
     filter_upwards [eventually_zetaSmoothDivisorTest_support_physical hδ,
       eventually_zeta_source_log_window_scales hδ] with T hsupport hscale
-    intro G hlower hupper
-    obtain ⟨hG, hlog, hwidth, _⟩ := hsupport.2 G hlower
-    exact hbound T G (Real.log T) hsupport.1 hscale.2.1 hG
-      (hscale.2.2 G hG hupper).1 hlog hwidth
+    grind
   obtain ⟨B, hB⟩ := eventually_atTop.mp hev
   refine ⟨C, hC, max 16 B, le_max_left _ _, ?_⟩
-  intro T G hT hlower hupper
-  exact hB T ((le_max_right _ _).trans hT) G hlower hupper
+  grind
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySection7Omega
 public import GafniTao.WooleySection7HardArithmetic
 public import GafniTao.WooleyPadicSeparation
@@ -30,7 +31,7 @@ theorem wooleySection7_unit_isUnit_primePower
     (hcop : Nat.Coprime p omega.natAbs) :
     IsUnit (omega : ZMod (p ^ L)) := by
   rw [ZMod.coe_int_isUnit_iff_isCoprime, Int.isCoprime_iff_nat_coprime]
-  simpa using hcop.pow_left L
+  exact hcop.pow_left L
 
 /-- Exact integer divisibility cancellation underlying the passage from
 modulus `p^(d+L)` to modulus `p^L`.  The coprime factor costs no modulus. -/
@@ -58,12 +59,12 @@ theorem wooleySection7_primePower_unit_cancel_to_common
     (hdiv : (p : ℤ) ^ M ∣ (p : ℤ) ^ e * omega * z) :
     (p : ℤ) ^ (M - d) ∣ z := by
   have heM : e ≤ M := hed.trans hdM
-  have hrewrite : M = e + (M - e) := (Nat.add_sub_of_le heM).symm
+  have hrewrite := (Nat.add_sub_of_le heM).symm
   have hfirst : (p : ℤ) ^ (M - e) ∣ z := by
     apply wooleySection7_primePower_unit_cancel_dvd hp hcop
     rw [← hrewrite]
     exact hdiv
-  have hle : M - d ≤ M - e := Nat.sub_le_sub_left hed M
+  have hle := Nat.sub_le_sub_left hed M
   exact dvd_trans (pow_dvd_pow (p : ℤ) hle) hfirst
 
 /-- Integral tuple displacement, before reduction modulo the Fourier
@@ -96,6 +97,6 @@ theorem wooleySection7LowerSystem_spaced
     (wooleySection7LowerSystem r p d Xi).Spaced p d := by
   exact ⟨Xi, fun _ => rfl⟩
 
-end
 
-end GafniTao
+
+

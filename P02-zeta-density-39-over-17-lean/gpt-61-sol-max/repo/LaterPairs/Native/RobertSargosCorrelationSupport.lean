@@ -5,9 +5,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSymmetricArray
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                 
                                                                  
@@ -36,7 +35,11 @@ theorem mem_robertSargosMOverlap (M : ℕ) (m h q r : ℤ) :
   simp only [robertSargosMOverlap,Finset.mem_Icc,max_le_iff,le_min_iff]
   omega
 
-theorem robertSargos_symmetric_array_product (f : ℝ → ℝ) (M H : ℕ) (m h q r : ℤ) :
+section
+variable (f : ℝ → ℝ) (M H : ℕ) (m h q r : ℤ)
+include f M H m h q r
+
+theorem robertSargos_symmetric_array_product  :
     robertSargosSymmetricArray f M H (m+q) h*
       conj (robertSargosSymmetricArray f M H m (h+r)) =
       if h ∈ robertSargosHOverlap H r ∧ m ∈ robertSargosMOverlap M h q r then
@@ -60,7 +63,7 @@ theorem robertSargos_symmetric_array_product (f : ℝ → ℝ) (M H : ℕ) (m h 
         ite_true,ite_false,map_zero,mul_zero]
   · simp only [robertSargosSymmetricArray,hh,false_and,ite_false,zero_mul]
 
-theorem robertSargos_symmetric_array_inner (f : ℝ → ℝ) (M H : ℕ) (m h q r : ℤ) :
+theorem robertSargos_symmetric_array_inner  :
     ⟪robertSargosSymmetricArray f M H (m+q) h,
       robertSargosSymmetricArray f M H m (h+r)⟫_ℝ =
       if h ∈ robertSargosHOverlap H r ∧ m ∈ robertSargosMOverlap M h q r then
@@ -73,5 +76,7 @@ theorem robertSargos_symmetric_array_inner (f : ℝ → ℝ) (M H : ℕ) (m h q 
     conj (robertSargosSymmetricArray f M H m (h+r))).re = _
   rw [robertSargos_symmetric_array_product]
   split_ifs <;> rfl
+end
 
-end TaoTrudgianYang2025
+
+

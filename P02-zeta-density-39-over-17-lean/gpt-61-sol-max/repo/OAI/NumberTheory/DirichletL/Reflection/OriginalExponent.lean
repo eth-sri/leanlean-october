@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 variable {a c₀ : Eis} {mode : Bool}
 
 theorem original_surviving_energy_exponent
@@ -34,7 +34,7 @@ theorem original_surviving_energy_exponent
       Nstar=N-3*hhat → V≤d → hhat≤d+η →
       H=Real.logb Z (kK*QK) → za=Real.logb Z (kP*QP) → Nstar=Real.logb Z X →
       0≤M → 0≤O₀ → 0≤za → za≤z₀ →
-      0<cstar → cstar/2≤margin → d≤cstar/200 →
+      0<cstar → cstar/2≤ margin → d≤cstar/200 →
       η≤cstar/1000 → δ+η≤cstar/1000 → π≤cstar/1000 →
       0≤ε → (kK*QK)≤Z^Lrow → (kP*QP)≤Z^Lslot →
       Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
@@ -72,7 +72,7 @@ theorem original_surviving_energy_exponent
   have he := mul_le_mul_of_nonneg_left hb hε
   dsimp only [G,j] at hs hb he
   linarith
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

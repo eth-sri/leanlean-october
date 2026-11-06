@@ -14,9 +14,9 @@ open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelo
 open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
 open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
 open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
-local notation "O" => HeckeFamily.O
+
+
+open scoped HeckeO
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
@@ -116,9 +116,9 @@ theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
 
 omit h
 
-end RayData
-end SevenEighths.CenteredMomentAllocatedRayDictionary
 
-end
 
-end OAI
+
+
+
+

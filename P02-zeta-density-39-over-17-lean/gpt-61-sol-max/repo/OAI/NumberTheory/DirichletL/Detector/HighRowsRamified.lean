@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Detector.HighRowsFiniteBounds
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsTermBounds
+public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 @[expose] public section
 
@@ -7,8 +8,8 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -32,7 +33,7 @@ theorem sourceRowSeries_ramified (eta a rho x w z : ℂ) (hρ : rho^6=1)
   have hn := one_sub_ne_zero_of_norm_lt_one _ hV
   field_simp
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

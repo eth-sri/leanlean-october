@@ -19,7 +19,7 @@ open Set Filter
 open scoped ContDiff BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem smoothTransition_finite_jet_bound (Q : ℕ) :
     ∃ M : ℝ, 1 ≤ M ∧ ∀ x : ℝ, ∀ j ≤ Q,
@@ -66,8 +66,12 @@ theorem modelPhaseBufferedCutoff_contDiff (l r η : ℝ) :
   (Real.smoothTransition.contDiff.comp (by fun_prop)).mul
     (Real.smoothTransition.contDiff.comp (by fun_prop))
 
-theorem modelPhaseBufferedCutoff_zero_left {l r η u : ℝ}
-    (hη : 0 < η) (hu : u ≤ l+η) :
+section
+variable {l r η u : ℝ}
+    (hη : 0 < η)
+include l r η u hη
+
+theorem modelPhaseBufferedCutoff_zero_left  (hu : u ≤ l+η) :
     modelPhaseBufferedCutoff l r η u = 0 := by
   unfold modelPhaseBufferedCutoff
   rw [Real.smoothTransition.zero_of_nonpos
@@ -75,8 +79,7 @@ theorem modelPhaseBufferedCutoff_zero_left {l r η u : ℝ}
       have h := (div_le_one hη).mpr (show u-l ≤ η by linarith)
       linarith),zero_mul]
 
-theorem modelPhaseBufferedCutoff_zero_right {l r η u : ℝ}
-    (hη : 0 < η) (hu : r-η ≤ u) :
+theorem modelPhaseBufferedCutoff_zero_right  (hu : r-η ≤ u) :
     modelPhaseBufferedCutoff l r η u = 0 := by
   unfold modelPhaseBufferedCutoff
   rw [Real.smoothTransition.zero_of_nonpos
@@ -84,8 +87,7 @@ theorem modelPhaseBufferedCutoff_zero_right {l r η u : ℝ}
       have h := (div_le_one hη).mpr (show r-u ≤ η by linarith)
       linarith),mul_zero]
 
-theorem modelPhaseBufferedCutoff_one {l r η u : ℝ}
-    (hη : 0 < η) (hl : l+2*η ≤ u) (hr : u ≤ r-2*η) :
+theorem modelPhaseBufferedCutoff_one  (hl : l+2*η ≤ u) (hr : u ≤ r-2*η) :
     modelPhaseBufferedCutoff l r η u = 1 := by
   unfold modelPhaseBufferedCutoff
   rw [Real.smoothTransition.one_of_one_le
@@ -96,8 +98,14 @@ theorem modelPhaseBufferedCutoff_one {l r η u : ℝ}
       (show 1 ≤ (r-u)/η-1 by
         have h := (le_div_iff₀ hη).mpr (show 2*η ≤ r-u by linarith)
         linarith),one_mul]
+end
 
-theorem modelPhaseBufferedCutoff_tsupport {l r η : ℝ} (hη : 0 < η) :
+
+section
+variable {l r η : ℝ} (hη : 0 < η)
+include l r η hη
+
+theorem modelPhaseBufferedCutoff_tsupport  :
     tsupport (modelPhaseBufferedCutoff l r η) ⊆ Icc (l+η) (r-η) := by
   apply closure_minimal _ isClosed_Icc
   intro u hu
@@ -107,15 +115,16 @@ theorem modelPhaseBufferedCutoff_tsupport {l r η : ℝ} (hη : 0 < η) :
   · by_contra h
     exact hu (modelPhaseBufferedCutoff_zero_right hη (le_of_not_ge h))
 
-theorem modelPhaseBufferedCutoff_hasCompactSupport {l r η : ℝ} (hη : 0 < η) :
+theorem modelPhaseBufferedCutoff_hasCompactSupport  :
     HasCompactSupport (modelPhaseBufferedCutoff l r η) :=
   isCompact_Icc.of_isClosed_subset isClosed_closure (modelPhaseBufferedCutoff_tsupport hη)
 
-theorem modelPhaseBufferedCutoff_tsupport_model {l r η : ℝ}
-    (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) :
+theorem modelPhaseBufferedCutoff_tsupport_model  (hl : 1 ≤ l) (hr : r ≤ 2) :
     tsupport (modelPhaseBufferedCutoff l r η) ⊆ Ioo (1 : ℝ) 2 := by
   intro u hu
   have h := modelPhaseBufferedCutoff_tsupport hη hu
   constructor <;> linarith [h.1,h.2]
+end
 
-end TaoTrudgianYang2025
+
+

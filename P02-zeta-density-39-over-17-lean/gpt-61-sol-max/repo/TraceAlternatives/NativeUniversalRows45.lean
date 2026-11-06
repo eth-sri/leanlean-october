@@ -1,12 +1,12 @@
 module
+import Mathlib
 public import TraceAlternatives.PhysicalUniversalActualDensity
 public import TraceAlternatives.NativeCubeRows34
 public import LaterPairs.NativeSharpRow5Suffix
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem universal_row5_tail_budgets {σ : ℝ}
@@ -32,8 +32,7 @@ open MathCollab.Density
 multiplicity, arbitrary positive epsilon and every real height at least2. -/
 theorem density_universal_row4 {σ ε : ℝ}
     (hlo : 7873/9370 ≤ σ) (hhi : σ ≤ 2018/2375) (hε : 0<ε) :
-    ∃ C : ℝ, 0<C ∧ ∀ T : ℝ, 2≤T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(1261710*(1-σ)/(1447460*σ-465509)+ε) := by
+    MathCollab.Density.ZetaBound σ ((1261710*(1-σ)/(1447460*σ-465509)+ε)) := by
   obtain ⟨hf,hs⟩ := cube_row4_tail_budgets hlo hhi
   simpa only [cube_row4_density_exponent] using
     density_of_pair_universal_window TaoTrudgianYang2025.exponentPair_BTTY3 (by norm_num)
@@ -43,11 +42,10 @@ theorem density_universal_row4 {σ ε : ℝ}
 cardinality term are discharged inside the actual count producer. -/
 theorem density_universal_row5 {σ ε : ℝ}
     (hlo : 2018/2375 ≤ σ) (hhi : σ ≤ 1959705/2298302) (hε : 0<ε) :
-    ∃ C : ℝ, 0<C ∧ ∀ T : ℝ, 2≤T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(3066*(1-σ)/(3616*σ-1215)+ε) := by
+    MathCollab.Density.ZetaBound σ ((3066*(1-σ)/(3616*σ-1215)+ε)) := by
   obtain ⟨hf,hs⟩ := universal_row5_tail_budgets hlo hhi
   simpa only [sharp_row5_density_exponent] using
     density_of_pair_universal_window TaoTrudgianYang2025.exponentPair_BATY2 (by norm_num)
       (physicalDetectorWindow_row5 hlo hhi) (universalCountWindow_row5 hlo hhi) hf hs hε
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

@@ -8,12 +8,16 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentSupportedCorrelation
 open CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentCorrelation CenteredMomentCommonSupport
 
-def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
+section
+variable (d : O) (hd : Supported (Ideal.span {d}))
+include d hd
+
+def supportedModulusCharacter  :
     MulChar (Residue d) ℂ where
   toFun x := Quotient.liftOn' x (fun z => idealRowHom z (Ideal.span {d})) (by
     intro x y hxy
@@ -37,32 +41,42 @@ def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
       exact (pow_ne_zero 6 hn) hm
     exact hx (isUnit_residue_of_coprime d x hcop)
 
-@[simp] theorem supportedModulusCharacter_mk (d : O)
-    (hd : Supported (Ideal.span {d})) (x : O) :
+@[simp] theorem supportedModulusCharacter_mk  (x : O) :
     supportedModulusCharacter d hd (Ideal.Quotient.mk _ x) = idealRowHom x (Ideal.span {d}) := rfl
+end
 
-lemma supported_mul_elements (d a : O)
-    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a})) :
+
+section
+variable (d a : O)
+    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a}))
+include d a hd ha
+
+lemma supported_mul_elements  :
     Supported (Ideal.span {d * a}) := by
   rw [← Ideal.span_singleton_mul_span_singleton]
   exact (supported_mul_iff _ _).mpr ⟨hd, ha⟩
 
-theorem supportedModulusCharacter_mul (d a : O)
-    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a})) (x : O) :
+theorem supportedModulusCharacter_mul  (x : O) :
     supportedModulusCharacter (d * a) (supported_mul_elements d a hd ha) (Ideal.Quotient.mk _ x) =
       supportedModulusCharacter d hd (Ideal.Quotient.mk _ x) *
         supportedModulusCharacter a ha (Ideal.Quotient.mk _ x) := by
   simp only [supportedModulusCharacter_mk, ← Ideal.span_singleton_mul_span_singleton, map_mul]
+end
 
-lemma sexticReciprocityPhase_symm (a b : O) :
+
+section
+variable (a b : O)
+include a b
+
+lemma sexticReciprocityPhase_symm  :
     sexticReciprocityPhase a b = sexticReciprocityPhase b a := by
   exact congrArg (fun z : ℤ => (z : ℂ)) (QuadraticAllOddCRT.quadraticRaySign_symm _ _)
 
-@[simp] lemma star_sexticReciprocityPhase (a b : O) :
+@[simp] lemma star_sexticReciprocityPhase  :
     star (sexticReciprocityPhase a b) = sexticReciprocityPhase a b := by
   simp only [sexticReciprocityPhase, star_intCast]
 
-theorem supported_opposite_phase (a b : O)
+theorem supported_opposite_phase 
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (hpa : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a - 1)
     (hpb : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b - 1)
@@ -80,6 +94,8 @@ theorem supported_opposite_phase (a b : O)
     rw [MulChar.star_apply', MulChar.inv_apply_eq_inv']
     exact mul_inv_cancel₀ hn
   rw [heq, mul_one]
+end
+
 
 def supportedCorrelation (u v : O)
     (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v}))
@@ -162,7 +178,7 @@ theorem actual_complete_common_support (D E a b : O)
   let : Fintype (Residue (E * b)) := Fintype.ofFinite _
   exact supported_complete_common_support D E a b hD hE ha hb hpD hpE hpa hpb hcopA hcopB hab j
 
-end SevenEighths.CenteredMomentSupportedCorrelation
-end
 
-end OAI
+
+
+

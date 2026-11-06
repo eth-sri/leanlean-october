@@ -44,7 +44,7 @@ lemma sourceMellinWeight_rescaled (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q : ℝ)
         Complex.exp ((x+z-1)^2)*mellin (paperRadialFourier W0) z*mellin W1 w) := by ring_nf
     _ = _ := by rw [he]; simp only [div_eq_mul_inv]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

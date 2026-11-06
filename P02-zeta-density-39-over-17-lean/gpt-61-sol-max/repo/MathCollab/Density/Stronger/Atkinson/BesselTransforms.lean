@@ -10,12 +10,11 @@ public import MathCollab.Density.Stronger.Atkinson.BesselMellinPairing
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-set_option autoImplicit false
+open Complex MeasureTheory
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-noncomputable def dfiVoronoiPlusBesselTransform
+def dfiVoronoiPlusBesselTransform
     (q : ℕ) [NeZero q] (g : ℝ → ℂ) (n : ℕ) : ℂ :=
   (4 / (q : ℂ)) * ∫ x in Set.Ioi (0 : ℝ),
     g x * (dfiBesselK0
@@ -24,11 +23,11 @@ noncomputable def dfiVoronoiPlusBesselTransform
 /-- The literal equal-sign Bessel transform in DFI Proposition 1. -/
 -- The parameter records the source-domain or uniformity contract even though the body is independent of it.
 @[nolint unusedArguments]
-noncomputable def dfiVoronoiMinusBesselTransform
+def dfiVoronoiMinusBesselTransform
     (q : ℕ) [NeZero q] (g : ℝ → ℂ) (n : ℕ) : ℂ :=
   (-(2 * Real.pi) / (q : ℂ)) * ∫ x in Set.Ioi (0 : ℝ),
     g x * (dfiBesselY0
       (4 * Real.pi * Real.sqrt (x * n) / q) : ℂ)
 
 
-end MathCollab.Density.Stronger.Atkinson
+

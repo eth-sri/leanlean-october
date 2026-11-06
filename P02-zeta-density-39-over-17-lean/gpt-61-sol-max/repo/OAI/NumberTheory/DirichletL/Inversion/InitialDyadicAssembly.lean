@@ -9,13 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialDyadicAssembly
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseInitialKernelBridge InverseSecondChildWindows
+open InverseSecondChildWindows
 open CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 abbrev Windows (a b : Fin 4→ℝ) := ∀ i:Fin 4,↥(indices (a i) (b i))
@@ -63,7 +63,7 @@ theorem source_weight_cutoff (Z D:ℝ) (hZ:1<Z) (k:Fin 4→ℤ)
 
 omit [DecidableEq ι] in
 theorem sourceNorms_one_le (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal] (x:Source (ι:=ι) 0)
-    (hf:x.frequency≠0) : ∀i,1≤sourceNorms p x i := by
+    (hf:x.frequency≠0) : ∀i,1≤ sourceNorms p x i := by
   have hi (I:Ideal Eis) (hI:I≠0) : (1:ℝ)≤(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   intro i
@@ -124,8 +124,8 @@ theorem physicalBlock_window_partition
   simp_rw [source_weight_cutoff p Z D hZ]
   exact physicalBlock_windowSource p hp hcop hg pool S cutoff Z D _ _ _ _ m w Ψ j marks W₁ W₂ Φ
 
-end SevenEighths.InverseInitialDyadicAssembly
 
-end
 
-end OAI
+
+
+

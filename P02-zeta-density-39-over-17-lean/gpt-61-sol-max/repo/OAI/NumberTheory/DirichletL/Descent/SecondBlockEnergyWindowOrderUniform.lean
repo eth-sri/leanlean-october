@@ -7,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical ContDiff SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory InverseInitialClippedColumns
-open InverseSecondProfileUniform InverseAmbientProfileTower
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseSecondProfileUniform
+open scoped EisensteinEis
 theorem actual_second_fixed_block_recursive_window_order_uniform_types
     (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (lo hi : Fin 4→ℝ) (B₀ : Fin 6→ℝ)
-    (hm₁ : 0≤m₁) (hm₂ : 0≤m₂) (hcap : 1≤bcap)
+    (hm₁ : 0≤ m₁) (hm₂ : 0≤ m₂) (hcap : 1≤bcap)
     (hlo : ∀ i,0<lo i) (hhi : ∀ i,lo i≤hi i) (hB₀ : ∀ i,0≤B₀ i)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂) (Aker K : ℕ) (εmass : ℝ) (hεmass : 0 < εmass) :
@@ -108,8 +108,8 @@ theorem actual_second_fixed_block_recursive_window_order_uniform_types
     hrows hω₁ hω₂ hcut hcube₁ hcube₂ hactive hj hquot hcommon hdiv
     hΨ hw ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hleft hright
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

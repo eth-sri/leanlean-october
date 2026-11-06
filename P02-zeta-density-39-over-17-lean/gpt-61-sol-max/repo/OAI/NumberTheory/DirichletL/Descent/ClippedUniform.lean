@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge
+open MeasureTheory
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem canonical_clipped_uniform
     (W:ℝ→ℂ)(lo hi b:ℝ)(hlo:0<lo)(hb:1≤b)
@@ -44,8 +44,8 @@ theorem canonical_clipped_uniform
   have hn:0≤E*(1+‖θ‖)^(2*J):=by positivity
   nlinarith
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

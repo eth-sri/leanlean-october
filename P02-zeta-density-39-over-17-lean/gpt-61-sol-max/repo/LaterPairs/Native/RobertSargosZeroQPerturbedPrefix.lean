@@ -6,13 +6,12 @@ public import LaterPairs.Native.ContinuousPhaseAbel
 public import LaterPairs.Native.RobertSargosZeroQLeading
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                       
 
-noncomputable section
+
 open Set GafniTao
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -38,14 +37,7 @@ theorem robertSargos_zero_q_perturbed_prefix
   have hCp : 0 ≤ C := zero_le_one.trans hC
   have hin (x : ℝ) (hx : x ∈ Icc A (A+N)) :
       x ∈ Icc a b ∧ x+h ∈ Icc a b ∧ x-h ∈ Icc a b ∧
-        x+(h+r) ∈ Icc a b ∧ x-(h+r) ∈ Icc a b := by
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor <;> constructor <;> linarith [hx.1,hx.2]
+        x+(h+r) ∈ Icc a b ∧ x-(h+r) ∈ Icc a b := by grind
   have hp (n : ℕ) (hn : n ≤ N) :
       ‖∑ j ∈ Finset.range n, fordAdditiveCharacter (robertSargosZeroQLeading f r (A+j))‖ ≤ B := by
     have hnc : (n:ℝ) ≤ N := by exact_mod_cast hn
@@ -79,4 +71,4 @@ theorem robertSargos_zero_q_perturbed_prefix
     (show 0 ≤ K by dsimp [K]; positivity) hp hu hd
   simpa only [← robertSargos_zero_q_phase_identity] using ht
 
-end TaoTrudgianYang2025
+

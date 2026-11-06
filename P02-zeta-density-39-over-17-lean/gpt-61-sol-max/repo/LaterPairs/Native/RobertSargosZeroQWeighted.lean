@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosZeroQBlock
 public import LaterPairs.Native.RobertSargosZeroRWeighted
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                              
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -59,10 +58,7 @@ theorem robertSargos_zero_q_weighted_column_bound
       _ ≤ ‖robertSargosTrimmedCorrelation f M H 0 r‖ := by
         simpa only [one_mul] using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
       _ ≤ B := hb
-  have hcard : ((Finset.Ioo (-(R:ℤ)) R).erase 0).card ≤ 2*R := by
-    have he := Finset.card_le_card (Finset.erase_subset 0 (Finset.Ioo (-(R:ℤ)) R))
-    rw [Int.card_Ioo] at he
-    omega
+  have hcard : ((Finset.Ioo (-(R:ℤ)) R).erase 0).card ≤ 2*R := by simp_all <;> nlinarith
   calc
     _ ≤ ∑ _r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, B := Finset.sum_le_sum hpoint
     _ ≤ 2*(R:ℝ)*B := by
@@ -70,4 +66,4 @@ theorem robertSargos_zero_q_weighted_column_bound
       exact mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) hB
     _ = _ := rfl
 
-end TaoTrudgianYang2025
+

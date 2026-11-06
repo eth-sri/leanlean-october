@@ -1,8 +1,8 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SmoothingFourier
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform ContDiff
@@ -45,8 +45,8 @@ theorem compactKernel_schwartz : ∃ ψ : 𝓢(ℝ, ℂ),
     (ψ : ℝ → ℂ) = fun x => (compactKernel x : ℂ) := by
   have hc : HasCompactSupport (fun x => (compactKernel x : ℂ)) :=
     compactKernel_compact.comp_left (g := Complex.ofReal) (by simp)
-  have hd : ContDiff ℝ ∞ (fun x => (compactKernel x : ℂ)) :=
+  have hd :=
     Complex.ofRealCLM.contDiff.comp compactKernel_smooth
   exact ⟨hc.toSchwartzMap hd, rfl⟩
 
-end GuthMaynard.Improvement
+

@@ -4,24 +4,29 @@ public import RationalFrequencySeparation
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
 def positiveRatPair (r : ℚ) : ℕ × ℕ := (r.num.natAbs, r.den)
 
-theorem positiveRatPair_ratio {r : ℚ} (hr : 0 < r) : pairRatio (positiveRatPair r) = r := by
+section
+variable {r : ℚ} (hr : 0 < r)
+include r hr
+
+theorem positiveRatPair_ratio  : pairRatio (positiveRatPair r) = r := by
   have hn : (r.num.natAbs : ℤ) = r.num := by
     rw [Int.natCast_natAbs, abs_of_nonneg (Rat.num_nonneg.mpr hr.le)]
   have hn' : (r.num.natAbs : ℚ) = (r.num : ℚ) := by
     simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z : ℚ)) hn
   simp only [pairRatio, positiveRatPair, hn', Rat.num_div_den]
 
-theorem positiveRatPair_properties {r : ℚ} (hr : 0 < r) :
+theorem positiveRatPair_properties  :
     0 < (positiveRatPair r).1 ∧ 0 < (positiveRatPair r).2 ∧
       Nat.Coprime (positiveRatPair r).1 (positiveRatPair r).2 := by
   exact ⟨Int.natAbs_pos.mpr (Rat.num_pos.mpr hr).ne', r.pos, r.reduced⟩
+end
+
 
 theorem positive_rational_log_gap {r s : ℚ} (hr : 0 < r) (hs : 0 < s) (hne : r ≠ s)
     {H L : ℝ} (hrH : (r.den : ℝ) ≤ H) (hsH : (s.den : ℝ) ≤ H)
@@ -50,9 +55,13 @@ theorem exponentialPhase_log (r t : ℝ) : exponentialPhase (Real.log r) t = pha
   push_cast
   ring
 
+section
+variable (A : Finset ℚ)
+include A
+
 /-- Actual finite-height second moment for positive rational frequencies of
 bounded denominator. All frequency separation and mean-value input is proved. -/
-theorem rational_finite_height_mean_value (A : Finset ℚ) (c : ℚ → ℂ)
+theorem rational_finite_height_mean_value  (c : ℚ → ℂ)
     {H L T t₀ : ℝ} (hH : 0 < H) (hL : 0 ≤ L) (hT : 0 ≤ T)
     (hA : ∀ r ∈ A, 0 < r ∧ (r.den : ℝ) ≤ H ∧ |Real.log (r : ℝ)| ≤ L)
     (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T))
@@ -72,14 +81,26 @@ theorem rational_finite_height_mean_value (A : Finset ℚ) (c : ℚ → ℂ)
     hδ hL hT (fun r hr => (hA r hr).2.2) hf W hW hsep
   simpa only [exponentialPolynomial, exponentialPhase_log] using hh
 
-def rationalTuples (A : Finset ℚ) (k : ℕ) : Finset (Fin k → ℚ) :=
+section
+variable (k : ℕ)
+include k
+
+def rationalTuples  : Finset (Fin k → ℚ) :=
   Fintype.piFinset (fun _ => A)
-def rationalProducts (A : Finset ℚ) (k : ℕ) : Finset ℚ :=
+def rationalProducts  : Finset ℚ :=
   (rationalTuples A k).image (fun x => ∏ j, x j)
-def rationalPowerCoefficient (A : Finset ℚ) (k : ℕ) (c : ℚ → ℂ) (q : ℚ) : ℂ :=
+section
+variable (c : ℚ → ℂ)
+include c
+
+def rationalPowerCoefficient  (q : ℚ) : ℂ :=
   ∑ x ∈ (rationalTuples A k).filter (fun x => ∏ j, x j = q), ∏ j, c (x j)
-def rationalCoefficientEnergy (A : Finset ℚ) (k : ℕ) (c : ℚ → ℂ) : ℝ :=
+def rationalCoefficientEnergy  : ℝ :=
   ∑ q ∈ rationalProducts A k, ‖rationalPowerCoefficient A k c q‖ ^ 2
+end
+end
+end
+
 
 theorem phase_product {κ : Type*} (S : Finset κ) (r : κ → ℝ)
     (hr : ∀ j ∈ S, 0 < r j) (t : ℝ) :
@@ -133,7 +154,11 @@ theorem rational_product_denominator {κ : Type*} (S : Finset κ) (r : κ → �
     exact (Nat.le_of_dvd (Nat.mul_pos (r i).pos (∏ j ∈ S, r j).pos)
       (Rat.mul_den_dvd _ _)).trans (Nat.mul_le_mul_left _ ih)
 
-theorem rational_product_bounds (A : Finset ℚ) (k H : ℕ) {L : ℝ}
+section
+variable (A : Finset ℚ)
+include A
+
+theorem rational_product_bounds  (k H : ℕ) {L : ℝ}
     (hA : ∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ L)
     {q : ℚ} (hq : q ∈ rationalProducts A k) :
     0 < q ∧ q.den ≤ H ^ k ∧ |Real.log (q : ℝ)| ≤ (k : ℝ) * L := by
@@ -154,7 +179,7 @@ theorem rational_product_bounds (A : Finset ℚ) (k H : ℕ) {L : ℝ}
 /-- Full finite-height transfer for every integer moment order. The right side
 contains the exact grouped-product coefficient energy, not an assumed torus
 moment. The small-power bound for that arithmetic energy is a separate task. -/
-theorem rational_finite_height_moment (A : Finset ℚ) (c : ℚ → ℂ) (k H : ℕ)
+theorem rational_finite_height_moment  (c : ℚ → ℂ) (k H : ℕ)
     (hH : 1 ≤ H) {L T t₀ : ℝ} (hL : 0 ≤ L) (hT : 0 ≤ T)
     (hA : ∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ L)
     (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T))
@@ -182,5 +207,7 @@ theorem rational_finite_height_moment (A : Finset ℚ) (c : ℚ → ℂ) (k H : 
   rw [← rational_power_expansion A c k (fun r hr => (hA r hr).1), norm_pow, ← pow_mul]
   congr 1
   omega
+end
 
-end Montgomery.RationalMoment
+
+

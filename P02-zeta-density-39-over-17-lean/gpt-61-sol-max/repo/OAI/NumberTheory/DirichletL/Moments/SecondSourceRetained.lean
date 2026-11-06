@@ -11,10 +11,10 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentSecondSourceRetained
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSourceRow CenteredMomentSecondLocalization CenteredMomentSecondSourceEnergy
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns
+open CenteredMomentFirstSectors CenteredMomentSecondSectorColumns
 open CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair
-open CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupport CenteredMomentSectorLocalization
+open scoped EisensteinO
 
 def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
   if hI : Supported I then if hJ : Supported J then secondRetainedPair I J hI hJ W K Tsec Z ξ else 0 else 0
@@ -24,8 +24,12 @@ theorem retainedKernel_eq (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     retainedKernel I J W K Tsec Z ξ=secondRetainedPair I J hI hJ W K Tsec Z ξ := by
   simp only [retainedKernel,dite_eq_left hI,dite_eq_left hJ]
 
-theorem retainedEnergy_common_sectors (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) :
+section
+variable (η : Character) (t : ℝ)
+    (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+include η t S β
+
+theorem retainedEnergy_common_sectors  (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) :
     secondRetainedEnergy η t S β W K Tsec Z ξ=
       ∑ p∈commonLabels (supportedColumns S) (supportedColumns S),
         ∑ q∈pairSector p.1 p.2 (supportedColumns S) (supportedColumns S),
@@ -48,8 +52,7 @@ theorem retainedEnergy_common_sectors (η : Character) (t : ℝ)
   rw [Finset.sum_coe_sort (supportedColumns S) (fun I=>∑ J∈supportedColumns S,F I J)]
   exact sum_common_sectors _ _ F
 
-theorem retained_sector_independent (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : C≠0) (hD : D≠0)
+theorem retained_sector_independent  (C D : Ideal O) (hC : C≠0) (hD : D≠0)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) :
     (∑ q∈pairSector C D (supportedColumns S) (supportedColumns S),
@@ -75,6 +78,8 @@ theorem retained_sector_independent (η : Character) (t : ℝ)
   intro J hJ
   split_ifs <;> simp only [heightCoeff_mul,star_mul,mul_zero]
   ring
+end
+
 
 theorem retainedKernel_physical (C D I J : Ideal O) (hI : Supported (C*I)) (hJ : Supported (D*J))
     (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) :
@@ -84,8 +89,8 @@ theorem retainedKernel_physical (C D I J : Ideal O) (hI : Supported (C*I)) (hJ :
   rw [retainedKernel_eq _ _ hI hJ,retainedPair_positive_frequency]
   simp only [physicalKernel,one_mul]
 
-end SevenEighths.CenteredMomentSecondSourceRetained
 
-end
 
-end OAI
+
+
+

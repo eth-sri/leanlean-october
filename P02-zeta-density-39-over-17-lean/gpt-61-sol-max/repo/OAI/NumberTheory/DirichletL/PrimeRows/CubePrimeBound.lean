@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CentralPrimeSum
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubePhaseBins
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeThresholds
@@ -14,7 +15,7 @@ open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -27,8 +28,8 @@ theorem poolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→�
 theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hδ : 0<δ)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal) (W : Fin N→ℝ→ℂ)
@@ -70,18 +71,18 @@ theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε 
   intro d hd hd' u hu hulo hcal huhi a i hi ha ha1 hbin r hr hr'
   dsimp only
   intro hdis t ht
-  let Y : Fin N→ℝ := fun j=>(Z^d)^(r j)
-  let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-  let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
-  let g : Fin N→ℝ := fun j=>amplitude (Y j) (a-1/2) mesh
+  let Y := fun j=>(Z^d)^(r j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+  let z := (17/50:ℂ)+t.1.2*Complex.I
+  let g := fun j=>amplitude (Y j) (a-1/2) mesh
     (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z)
-  have hU : 2≤Z^d := hscaleZ d hd
+  have hU := hscaleZ d hd
   have hUp : 0<Z^d := by linarith
   have hY (j : Fin N) : 1≤Y j := Real.one_le_rpow (by linarith) (hrmin.trans_le (hr j)).le
   have hYp (j : Fin N) : 0<Y j := zero_lt_one.trans_le (hY j)
   have hphase (j : Fin N) := hb j d hd hd' hU hZ.2 η u hulo hcal huhi a i hi ha ha1 hbin (r j) t (hr j) (hr' j) ht
   refine ⟨fun j=>⟨(hphase j).1,(hphase j).2.1,(hphase j).2.2.1,(hphase j).2.2.2.1,(hphase j).2.2.2.2.1⟩,?_⟩
-  let p : Fin N→ℝ := fun j=>(Y j)^(g j+mesh)
+  let p := fun j=>(Y j)^(g j+mesh)
   have hp (j : Fin N) : 1≤p j := Real.one_le_rpow (hY j) (by have := (hphase j).1;dsimp [g];linarith)
   have hph (j : Fin N) : ‖phaseSlot u (T j) (W j) (Y j) z‖≤(Y j)^(-(4/25:ℝ))*p j := by
     have hj := (hphase j).2.2.2.2.2
@@ -130,8 +131,8 @@ theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε 
       exact mul_le_mul_of_nonneg_left (hheightZ i hi) (by unfold rowNorm;positivity)
     _ = _ := by rw [hprod]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

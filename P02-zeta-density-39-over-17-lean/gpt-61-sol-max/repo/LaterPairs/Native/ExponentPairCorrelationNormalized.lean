@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairCorrelationAllHeights
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                           
 
-noncomputable section
+
 
 open Expdb
 
@@ -25,11 +24,7 @@ theorem compressedHeight_main_le
       (2*σ)^q*((T/N^2)^q*N^p*r^q) := by
   have hNr : 0 < N-r := by linarith
   have hdual : 0 < σ*T*r/N := by positivity
-  have hratio : (σ*T*r/N)/(N-r) ≤ (2*σ)*(T/N^2)*r := by
-    calc
-      _ ≤ (σ*T*r/N)/(N/2) :=
-        div_le_div_of_nonneg_left hdual.le (by positivity) (by linarith)
-      _ = _ := by field_simp
+  have hratio : (σ*T*r/N)/(N-r) ≤ (2*σ)*(T/N^2)*r := by field_simp <;> nlinarith
   have hpow := Real.rpow_le_rpow (div_nonneg hdual.le hNr.le) hratio hq
   have hscale := Real.rpow_le_rpow hNr.le (show N-r ≤ N by linarith) hp
   calc
@@ -43,11 +38,7 @@ theorem compressedHeight_main_le
 theorem compressedHeight_inverse_le
     {σ T N r : ℝ} (hσ : 0 < σ) (hT : 0 < T)
     (hN : 0 < N) (hr : 0 < r) :
-    (N-r)/(σ*T*r/N) ≤ (1/σ)*(N^2/(T*r)) := by
-  have hdual : 0 < σ*T*r/N := by positivity
-  calc
-    _ ≤ N/(σ*T*r/N) := div_le_div_of_nonneg_right (by linarith) hdual.le
-    _ = _ := by field_simp
+    (N-r)/(σ*T*r/N) ≤ (1/σ)*(N^2/(T*r)) := by field_simp <;> nlinarith
 
 theorem sourceShiftCorrelation_normalized_bound
     {k l σ ε : ℝ} (hkl : ExponentPair k l) (hσ : 0 < σ) (hε : 0 < ε) :
@@ -91,4 +82,4 @@ theorem sourceShiftCorrelation_normalized_bound
         (zero_le_one.trans hB)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

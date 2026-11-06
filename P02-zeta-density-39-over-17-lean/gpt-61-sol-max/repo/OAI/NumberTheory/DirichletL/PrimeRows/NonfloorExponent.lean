@@ -11,7 +11,7 @@ namespace SevenEighths.ProbeHighRowFamily
 lemma adaptive_mixed_saving (N : ℕ) (a q Δ ε εm slotMesh ν ζ μ v d e eps loss mesh overhead saving : ℝ)
     (ha : 1/2<a) (ha' : a≤1) (hq : 0≤q) (hq' : q≤(2*a-1)/2)
     (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hε : 0≤ε) (hεm : 0≤εm)
-    (hslot : 0≤slotMesh) (hν : 0≤ν)
+    (hslot : 0≤ slotMesh) (hν : 0≤ν)
     (hcount : 159*ε+εm+slotMesh+7*ν≤1/32)
     (hζ : 0≤ζ) (hζ' : ζ≤3/16) (hv : v≤13/16+ζ)
     (hμ : 0≤μ) (hdv : d-v≤μ) (he : 0≤e) (heps : 0≤eps)
@@ -48,8 +48,8 @@ lemma central_class_exponent_identity (N : ℕ) (a v d R q e eps loss mesh overh
   unfold mixedSourceExponent ProbeCentralExponent.sourceExponent ProbeCentralExponent.realLoss
   ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

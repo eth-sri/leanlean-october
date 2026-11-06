@@ -1,18 +1,22 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.CubicDyadicCover
 public import GuthMaynard.Improvement.CubicModeSymmetry
 public import GuthMaynard.Improvement.CubicScaleClosure
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
-/-- Each actual dyadic fiber lies in its literal signed shell box. -/
-theorem cubic_dyadic_fiber_box {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
+section
+variable {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
     (hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U)
-    (k : ℕ × (ℕ × ℕ)) :
+    (k : ℕ × (ℕ × ℕ))
+include U S hS k
+
+/-- Each actual dyadic fiber lies in its literal signed shell box. -/
+theorem cubic_dyadic_fiber_box  :
     ∀ m ∈ S.filter (fun m => cubicDyadicClass m = k),
       InSignedCubicBox ((2:ℝ)^k.1) ((2:ℝ)^k.2.1) ((2:ℝ)^k.2.2) m := by
   intro m hm
@@ -31,9 +35,7 @@ theorem cubic_dyadic_fiber_box {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
 
 /-- Nonempty retained fibers have all three shell parameters at most the
 actual real truncation scale U. No enlarged or mask-dependent cover. -/
-theorem cubic_dyadic_fiber_scales {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
-    (hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U)
-    (k : ℕ × (ℕ × ℕ)) (hne : (S.filter (fun m => cubicDyadicClass m = k)).Nonempty) :
+theorem cubic_dyadic_fiber_scales  (hne : (S.filter (fun m => cubicDyadicClass m = k)).Nonempty) :
     (2:ℝ)^k.1 ≤ U ∧ (2:ℝ)^k.2.1 ≤ U ∧ (2:ℝ)^k.2.2 ≤ U := by
   obtain ⟨m,hm⟩ := hne
   have hb := cubic_dyadic_fiber_box S hS k m hm
@@ -41,6 +43,8 @@ theorem cubic_dyadic_fiber_scales {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
   exact ⟨hb.1.trans ((mem_poissonModes U m.1).mp h₁).2,
     hb.2.2.1.trans ((mem_poissonModes U m.2.1).mp h₂).2,
     hb.2.2.2.2.1.trans ((mem_poissonModes U m.2.2).mp h₃).2⟩
+end
+
 
 /-- Uniform sufficient width conditions for every denominator shell. -/
 theorem cubic_dyadic_width {a c T L H U K : ℝ} (_ha : 0 < a)
@@ -55,10 +59,7 @@ theorem cubic_dyadic_width {a c T L H U K : ℝ} (_ha : 0 < a)
   have hq : 0 < max 1 (1/a) := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   have hK0 : 0 < K := by linarith
   have hw : 0 < max 1 (1/a)*(H/(L*K)) := by positivity
-  have hle : max 1 (1/a)*(H/(L*K)) ≤ max 1 (1/a)*(H/L) := by
-    apply mul_le_mul_of_nonneg_left _ hq.le
-    apply div_le_div_of_nonneg_left hH.le hL
-    nlinarith
+  have hle : max 1 (1/a)*(H/(L*K)) ≤ max 1 (1/a)*(H/L) := by field_simp <;> nlinarith
   refine ⟨hle.trans h1,hle.trans hc,?_⟩
   apply (inv_le_iff_one_le_mul₀ hw).mpr
   have he : T*(max 1 (1/a)*(H/(L*K))) = (max 1 (1/a)*H*T)/(L*K) := by ring
@@ -133,4 +134,4 @@ theorem cubic_dyadic_strip_assembly (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     _ ≤ ∑ _k ∈ cubicDyadicClasses U, Z := Finset.sum_le_sum (fun k _ => (hf k).2)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; dsimp [Z]; ring
 
-end GuthMaynard.Improvement
+

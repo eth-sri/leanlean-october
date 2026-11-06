@@ -1,10 +1,11 @@
 module
+import Mathlib
 public import DensityEnergyGM.LargeValuesCubic
 public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
 
 @[expose] public section
 
-open Complex Finset Filter MeasureTheory Real Set
+open Complex Finset Filter MeasureTheory Real
 open ComplexConjugate
 open scoped BigOperators Interval
 
@@ -29,7 +30,11 @@ noncomputable def gmTraceFourierFarTail
   ∑' m : ℤ, if M < m.natAbs then
     gmTraceFourier cutoff t ((N : ℝ) * (m : ℝ)) else 0
 
-theorem gmTraceFourier_summable (cutoff : GMSmoothCutoff)
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
+
+theorem gmTraceFourier_summable 
     (N : ℕ) (hN : 0 < N) (t : ℝ) :
     Summable (fun m : ℤ =>
       gmTraceFourier cutoff t ((N : ℝ) * (m : ℝ))) := by
@@ -40,7 +45,7 @@ theorem gmTraceFourier_summable (cutoff : GMSmoothCutoff)
 
 /-- Exact sign decomposition of the finite nonzero integer window. -/
 theorem gmTraceFourierCentral_eq_signed
-    (cutoff : GMSmoothCutoff) (N M : ℕ) (t : ℝ) :
+     (N M : ℕ) (t : ℝ) :
     (∑ z ∈ Finset.Icc (-(M : ℤ)) (M : ℤ),
         if z = 0 then 0 else
           gmTraceFourier cutoff t ((N : ℝ) * (z : ℝ))) =
@@ -55,10 +60,7 @@ theorem gmTraceFourierCentral_eq_signed
           gmTraceFourier cutoff t ((N : ℝ) * (z : ℝ))
       have hInt : Finset.Icc (-(M.succ : ℤ)) (M.succ : ℤ) =
           insert (-(M.succ : ℤ))
-            (insert (M.succ : ℤ) (Finset.Icc (-(M : ℤ)) (M : ℤ))) := by
-        ext z
-        simp only [Finset.mem_Icc, Finset.mem_insert, Int.natCast_succ]
-        omega
+            (insert (M.succ : ℤ) (Finset.Icc (-(M : ℤ)) (M : ℤ))) := by grind
       have hNat : Finset.Icc 1 M.succ =
           insert M.succ (Finset.Icc 1 M) := by
         ext n
@@ -97,7 +99,7 @@ theorem gmTraceFourierCentral_eq_signed
 /-- Exact decomposition of the complete nonzero integer series into the
 retained signed window and its absolutely summable complement. -/
 theorem gmTraceNonzeroFourierSum_eq_signed_add_far
-    (cutoff : GMSmoothCutoff) (N M : ℕ) (hN : 0 < N) (t : ℝ) :
+     (N M : ℕ) (hN : 0 < N) (t : ℝ) :
     gmTraceNonzeroFourierSum cutoff N t =
       (∑ m ∈ Finset.Icc 1 M,
         (gmTraceFourier cutoff t ((N : ℝ) * m) +
@@ -128,15 +130,7 @@ theorem gmTraceNonzeroFourierSum_eq_signed_add_far
     change (∑' m : ℤ, if m = 0 then 0 else f m) = _
     rw [← hcentral.tsum_add hfar]
     congr 1
-    funext m
-    by_cases hm : m.natAbs ≤ M
-    · simp [hm, Nat.not_lt_of_ge hm]
-    · have hm' : M < m.natAbs := Nat.lt_of_not_ge hm
-      have hm0 : m ≠ 0 := by
-        intro hzero
-        subst m
-        simp at hm'
-      simp [hm, hm', hm0]
+    grind
   rw [hsplit]
   congr 1
   · rw [tsum_eq_sum (s := Finset.Icc (-(M : ℤ)) (M : ℤ))]
@@ -146,10 +140,7 @@ theorem gmTraceNonzeroFourierSum_eq_signed_add_far
             ∑ z ∈ Finset.Icc (-(M : ℤ)) (M : ℤ),
               if z = 0 then 0 else f z := by
                 apply Finset.sum_congr rfl
-                intro z hz
-                rw [ite_eq_left]
-                have hzData := Finset.mem_Icc.mp hz
-                omega
+                grind
         _ = _ := by
           simpa only [f] using gmTraceFourierCentral_eq_signed cutoff N M t
     · intro z hz
@@ -162,36 +153,33 @@ theorem gmTraceNonzeroFourierSum_eq_signed_add_far
 /-- Arbitrary-order summation of the omitted integer frequencies.  The
 summable `|m|^-2` factor is retained before taking the `tsum`. -/
 theorem gmTraceFourierFarTail_bound_order
-    (cutoff : GMSmoothCutoff) (n : ℕ) :
+     (n : ℕ) :
     ∃ K : ℝ, 0 < K ∧ ∀ (N M : ℕ), 0 < N → 0 < M → ∀ t : ℝ,
       ‖gmTraceFourierFarTail cutoff N M t‖ ≤
         K * (1 + |t|) ^ (n + 2) /
           ((N : ℝ) ^ (n + 2) * (M : ℝ) ^ n) := by
   obtain ⟨C₀, hC₀, hDecay⟩ := gmTraceFourier_uniform_decay cutoff (n + 2)
-  let C : ℝ := C₀ + 1
+  let C := C₀ + 1
   have hC : 0 < C := by dsimp only [C]; linarith
   have hPSeries : Summable (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) := by
     have hNorm : (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) =
-        fun m : ℤ => |1 / (m : ℝ) ^ 2| := by
-      funext m
-      simp only [norm_div, norm_one, norm_pow, Complex.norm_intCast,
-        abs_div, abs_one, pow_abs]
+        fun m : ℤ => |1 / (m : ℝ) ^ 2| := by simp_all
     rw [hNorm, summable_abs_iff]
     exact Real.summable_one_div_int_pow.mpr (by norm_num)
-  let B : ℝ := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
+  let B := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
   have hB : 0 ≤ B := tsum_nonneg fun m => norm_nonneg _
   refine ⟨C * B + 1, by positivity, ?_⟩
   intro N M hN hM t
   have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
   have hMr : 0 < (M : ℝ) := by exact_mod_cast hM
-  let scale : ℝ := C * (1 + |t|) ^ (n + 2) /
+  let scale := C * (1 + |t|) ^ (n + 2) /
     ((N : ℝ) ^ (n + 2) * (M : ℝ) ^ n)
   have hPointwise : ∀ m : ℤ, M < m.natAbs →
       ‖gmTraceFourier cutoff t ((N : ℝ) * (m : ℝ))‖ ≤
         scale * ‖1 / (m : ℂ) ^ 2‖ := by
     intro m hm
     have hmNatPos : 0 < m.natAbs := hM.trans hm
-    have hmNe : m ≠ 0 := Int.natAbs_ne_zero.mp hmNatPos.ne'
+    have hmNe := Int.natAbs_ne_zero.mp hmNatPos.ne'
     have hmReal : (m : ℝ) ≠ 0 := by exact_mod_cast hmNe
     have hmAbsPos : 0 < |(m : ℝ)| := abs_pos.mpr hmReal
     have hmAbs : (M : ℝ) ≤ |(m : ℝ)| := by
@@ -229,9 +217,7 @@ theorem gmTraceFourierFarTail_bound_order
             (by positivity)) (by positivity)
       _ ≤ C * (1 + |t|) ^ (n + 2) /
           ((N : ℝ) ^ (n + 2) *
-            ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by
-        exact div_le_div_of_nonneg_left (by positivity) (by positivity)
-          (mul_le_mul_of_nonneg_left hpow (by positivity))
+            ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by field_simp <;> nlinarith
       _ = scale * (1 / |(m : ℝ)| ^ 2) := by
         dsimp only [scale]
         field_simp [hNr.ne', hMr.ne', hmAbsPos.ne']
@@ -260,11 +246,17 @@ theorem gmTraceFourierFarTail_bound_order
       apply (div_le_div_iff_of_pos_right hDen).2
       have hpowNonneg : 0 ≤ (1 + |t|) ^ (n + 2) := by positivity
       nlinarith
+end
+
 
 /-! ## The cancellation-preserving Mellin core and tail -/
 
+section
+variable (t : ℝ) (M : ℕ)
+include t M
+
 theorem continuous_gmReflectionDirichletPoly
-    (t : ℝ) (M : ℕ) : Continuous (gmReflectionDirichletPoly t M) := by
+     : Continuous (gmReflectionDirichletPoly t M) := by
   unfold gmReflectionDirichletPoly
   apply continuous_finsetSum
   intro m hm
@@ -275,16 +267,22 @@ theorem continuous_gmReflectionDirichletPoly
       exact (lt_of_lt_of_le Nat.zero_lt_one (Finset.mem_Icc.mp hm).1).ne')
 
 theorem integral_norm_gmReflectionDirichletPoly_comp_neg
-    (t : ℝ) (M : ℕ) (H : ℝ) :
+     (H : ℝ) :
     (∫ u in -H..H, ‖gmReflectionDirichletPoly t M (-u)‖) =
       ∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖ := by
   simpa using (intervalIntegral.integral_comp_neg
     (f := fun u : ℝ => ‖gmReflectionDirichletPoly t M u‖)
     (a := -H) (b := H))
+end
+
+
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
 
 /-- The positive-frequency core of Lemma 6.2, with the coefficient-one
 polynomial retained inside the integral. -/
-theorem gmPositiveMellinCore_bound (cutoff : GMSmoothCutoff) :
+theorem gmPositiveMellinCore_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ {t T₀ H : ℝ} {N M : ℕ},
       4 ≤ T₀ → T₀ ≤ t → 0 < H → H ≤ T₀ / 2 →
       0 < N → 0 < M →
@@ -295,7 +293,7 @@ theorem gmPositiveMellinCore_bound (cutoff : GMSmoothCutoff) :
         C / Real.sqrt T₀ *
           ∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖ := by
   obtain ⟨C₀, hC₀, hMellin⟩ := gmCutoffMellin_polynomial_decay cutoff 0
-  let C : ℝ := 20 * (C₀ + 1) / (2 * Real.pi)
+  let C := 20 * (C₀ + 1) / (2 * Real.pi)
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro t T₀ H N M hT₀ ht hH hHT hN hM
@@ -304,7 +302,7 @@ theorem gmPositiveMellinCore_bound (cutoff : GMSmoothCutoff) :
   have hAB : (N : ℝ) ≤ 2 * N * M := by
     have hMr : (1 : ℝ) ≤ M := by exact_mod_cast hM
     nlinarith
-  have hSqrtPos : 0 < Real.sqrt T₀ := Real.sqrt_pos.2 hT₀Pos
+  have hSqrtPos := Real.sqrt_pos.2 hT₀Pos
   have hHalfPos : 0 < Real.sqrt (T₀ / 2) := Real.sqrt_pos.2 (by positivity)
   have hSqrtCompare : Real.sqrt T₀ / 2 ≤ Real.sqrt (T₀ / 2) := by
     have hsq0 := Real.sq_sqrt hT₀Pos.le
@@ -374,7 +372,7 @@ theorem gmPositiveMellinCore_bound (cutoff : GMSmoothCutoff) :
 /-- Uniform Mellin-tail estimate.  The polynomial is bounded by `M` only
 on this omitted range; no mode-cardinality loss enters the core. -/
 theorem gmPositiveMellinTail_bound_order
-    (cutoff : GMSmoothCutoff) (q : ℕ) (hq : 2 ≤ q) :
+     (q : ℕ) (hq : 2 ≤ q) :
     ∃ K : ℝ, 0 < K ∧ ∀ (t H : ℝ) (N M : ℕ),
       1 ≤ H → 0 < N → 0 < M →
       ∫ r : ℝ in (Set.Icc (-H) H)ᶜ,
@@ -383,7 +381,7 @@ theorem gmPositiveMellinTail_bound_order
               ‖gmPositiveDualDirichletPoly t N M r‖ ≤
         K * (M : ℝ) ^ 2 * H ^ (1 - (q : ℝ)) := by
   obtain ⟨C₀, hC₀, hDecay⟩ := gmCutoffMellin_polynomial_decay cutoff q
-  let K : ℝ := max 1 (C₀ / Real.pi * (2 / ((q : ℝ) - 1)))
+  let K := max 1 (C₀ / Real.pi * (2 / ((q : ℝ) - 1)))
   have hK : 0 < K := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   refine ⟨K, hK, ?_⟩
   intro t H N M hH hN hM
@@ -428,11 +426,7 @@ theorem gmPositiveMellinTail_bound_order
       rw [Real.rpow_neg hrPos.le]
       simp
     have hMellin' : ‖gmCutoffMellin cutoff r‖ ≤
-        C₀ * |r| ^ (-(q : ℝ)) := by
-      calc
-        ‖gmCutoffMellin cutoff r‖ ≤ C₀ / |r| ^ q := hMellin
-        _ = C₀ * (1 / |r| ^ q) := by ring
-        _ = C₀ * |r| ^ (-(q : ℝ)) := by rw [hRpow]
+        C₀ * |r| ^ (-(q : ℝ)) := by aesop
     calc
       (1 / (2 * Real.pi)) * ‖gmCutoffMellin cutoff r‖ *
             ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
@@ -477,7 +471,7 @@ theorem gmPositiveMellinTail_bound_order
 
 /-- The negative-frequency core, expressed with the same coefficient-one
 polynomial as the positive half. -/
-theorem gmNegativeMellinCore_bound (cutoff : GMSmoothCutoff) :
+theorem gmNegativeMellinCore_bound  :
     ∃ C : ℝ, 0 < C ∧ ∀ {t T₀ H : ℝ} {N M : ℕ},
       4 ≤ T₀ → T₀ ≤ t → 0 < H → H ≤ T₀ / 2 →
       0 < N → 0 < M →
@@ -488,7 +482,7 @@ theorem gmNegativeMellinCore_bound (cutoff : GMSmoothCutoff) :
         C / Real.sqrt T₀ *
           ∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖ := by
   obtain ⟨C₀, hC₀, hMellin⟩ := gmCutoffMellin_polynomial_decay cutoff 0
-  let C : ℝ := 20 * (C₀ + 1) / (2 * Real.pi)
+  let C := 20 * (C₀ + 1) / (2 * Real.pi)
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro t T₀ H N M hT₀ ht hH hHT hN hM
@@ -497,7 +491,7 @@ theorem gmNegativeMellinCore_bound (cutoff : GMSmoothCutoff) :
   have hAB : (N : ℝ) ≤ 2 * N * M := by
     have hMr : (1 : ℝ) ≤ M := by exact_mod_cast hM
     nlinarith
-  have hSqrtPos : 0 < Real.sqrt T₀ := Real.sqrt_pos.2 hT₀Pos
+  have hSqrtPos := Real.sqrt_pos.2 hT₀Pos
   have hHalfPos : 0 < Real.sqrt (T₀ / 2) := Real.sqrt_pos.2 (by positivity)
   have hSqrtCompare : Real.sqrt T₀ / 2 ≤ Real.sqrt (T₀ / 2) := by
     have hsq0 := Real.sq_sqrt hT₀Pos.le
@@ -564,7 +558,7 @@ theorem gmNegativeMellinCore_bound (cutoff : GMSmoothCutoff) :
 /-- Finite retained signed window with both Mellin tails removed at an
 arbitrary order. -/
 theorem gmRetainedSignedReflection_bound_order
-    (cutoff : GMSmoothCutoff) (q : ℕ) (hq : 2 ≤ q) :
+     (q : ℕ) (hq : 2 ≤ q) :
     ∃ C K : ℝ, 0 < C ∧ 0 < K ∧
       ∀ {t T₀ H : ℝ} {N M : ℕ},
         4 ≤ T₀ → T₀ ≤ t → 1 ≤ H → H ≤ T₀ / 2 →
@@ -580,11 +574,11 @@ theorem gmRetainedSignedReflection_bound_order
   obtain ⟨K₀, hK₀, hTail⟩ := gmPositiveMellinTail_bound_order cutoff q hq
   refine ⟨C₁ + C₂, 2 * K₀, by positivity, by positivity, ?_⟩
   intro t T₀ H N M hT₀ ht hH hHT hN hM
-  let fpos : ℝ → ℝ := fun r =>
+  let fpos := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly t N M r‖
-  let fneg : ℝ → ℝ := fun r =>
+  let fneg := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (-t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly (-t) N M r‖
@@ -594,9 +588,6 @@ theorem gmRetainedSignedReflection_bound_order
   have hNegInt : Integrable fneg := by
     simpa only [fneg] using
       integrable_norm_gmPositiveDualAggregate cutoff (-t) (M := M) hN
-  have hSourceNonneg : 0 ≤
-      ∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖ := by
-    exact intervalIntegral.integral_nonneg (by linarith) fun u _ => norm_nonneg _
   have hCorePos := hPos hT₀ ht (zero_lt_one.trans_le hH) hHT hN hM
   have hCoreNeg := hNeg hT₀ ht (zero_lt_one.trans_le hH) hHT hN hM
   have hTailPos := hTail t H N M hH hN hM
@@ -616,18 +607,19 @@ theorem gmRetainedSignedReflection_bound_order
         integral_add_compl measurableSet_Icc hNegInt]
     _ ≤ (C₁ + C₂) / Real.sqrt T₀ *
           (∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖) +
-        (2 * K₀) * (M : ℝ) ^ 2 * H ^ (1 - (q : ℝ)) := by
-      have hPieces := add_le_add
-        (add_le_add hCorePos hTailPos) (add_le_add hCoreNeg hTailNeg)
-      simpa only [fpos, fneg] using hPieces.trans_eq (by ring)
+        (2 * K₀) * (M : ℝ) ^ 2 * H ^ (1 - (q : ℝ)) := by grind
 
 /-! ## Ordinate symmetry -/
+
+section
+variable (N : ℕ) (t : ℝ)
+include N t
 
 /-- The complete nonzero-frequency series at the opposite ordinate is its
 complex conjugate.  The proof reindexes the entire integer `tsum`; no finite
 window or cardinality estimate is involved. -/
 theorem gmTraceNonzeroFourierSum_neg_eq_conj
-    (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ) :
+     :
     gmTraceNonzeroFourierSum cutoff N (-t) =
       star (gmTraceNonzeroFourierSum cutoff N t) := by
   unfold gmTraceNonzeroFourierSum
@@ -652,11 +644,14 @@ theorem gmTraceNonzeroFourierSum_neg_eq_conj
     simp
 
 theorem norm_gmTraceNonzeroFourierSum_neg
-    (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ) :
+     :
     ‖gmTraceNonzeroFourierSum cutoff N (-t)‖ =
       ‖gmTraceNonzeroFourierSum cutoff N t‖ := by
   rw [gmTraceNonzeroFourierSum_neg_eq_conj]
   exact norm_star _
+end
+end
+
 
 theorem integral_norm_gmReflectionDirichletPoly_neg_time
     (t H : ℝ) (M : ℕ) :
@@ -757,22 +752,28 @@ noncomputable def gmReflectionEta (ε : ℝ) : ℝ :=
 noncomputable def gmReflectionHeight (T ε : ℝ) : ℝ :=
   T ^ gmReflectionEta ε
 
-theorem gmReflectionEta_pos {ε : ℝ} (hε : 0 < ε) :
+section
+variable {ε : ℝ}
+include ε
+
+theorem gmReflectionEta_pos  (hε : 0 < ε) :
     0 < gmReflectionEta ε := by
   unfold gmReflectionEta
   exact lt_min (by positivity) (by norm_num)
 
-theorem gmReflectionEta_le_one {ε : ℝ} :
+theorem gmReflectionEta_le_one  :
     gmReflectionEta ε ≤ 1 := by
   unfold gmReflectionEta
   exact (min_le_right _ _).trans (by norm_num)
 
-theorem gmReflectionEta_lt_eps {ε : ℝ} (hε : 0 < ε) :
+theorem gmReflectionEta_lt_eps  (hε : 0 < ε) :
     gmReflectionEta ε < ε := by
   have hle : gmReflectionEta ε ≤ ε / 16 := by
     unfold gmReflectionEta
     exact min_le_left _ _
   nlinarith
+end
+
 
 /-- The `gmReflectionDecayOrder` definition used by the source-facing construction in `QuantitativeSmoothReflection`. -/
 noncomputable def gmReflectionDecayOrder (A ε : ℝ) : ℕ :=
@@ -788,7 +789,6 @@ theorem gmReflectionDecayOrder_budget {A ε : ℝ}
     A + 5 ≤ gmReflectionEta ε *
       ((gmReflectionDecayOrder A ε : ℝ) - 1) := by
   have hη := gmReflectionEta_pos hε
-  have hRatioNonneg : 0 ≤ (A + 6) / gmReflectionEta ε := by positivity
   have hceil : (A + 6) / gmReflectionEta ε ≤
       (Nat.ceil ((A + 6) / gmReflectionEta ε) : ℝ) := Nat.le_ceil _
   have hscaled : A + 6 ≤ gmReflectionEta ε *
@@ -796,27 +796,30 @@ theorem gmReflectionDecayOrder_budget {A ε : ℝ}
     rw [div_le_iff₀ hη] at hceil
     simpa only [mul_comm] using hceil
   unfold gmReflectionDecayOrder
-  push_cast
-  nlinarith
+  grind
 
 /-! ## Public Guth--Maynard Lemma 6.2 theorem -/
+
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ)
+include cutoff N t
 
 /-- The scaled cubic-trace tail is exactly `N` times the unscaled complete
 nonzero-frequency series. -/
 theorem gmTraceNonzeroTailAt_eq_scale_mul
-    (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ) :
+     :
     gmTraceNonzeroTailAt cutoff N t =
       (N : ℂ) * gmTraceNonzeroFourierSum cutoff N t := by
   unfold gmTraceNonzeroTailAt gmTraceNonzeroFourierSum gmScaledTraceMode
   rw [← tsum_mul_left]
-  apply tsum_congr
-  intro m
-  by_cases hm : m = 0 <;> simp [hm]
+  simp_all
 
 theorem norm_gmTraceNonzeroTailAt_eq
-    (cutoff : GMSmoothCutoff) (N : ℕ) (t : ℝ) :
+     :
     ‖gmTraceNonzeroTailAt cutoff N t‖ =
       (N : ℝ) * ‖gmTraceNonzeroFourierSum cutoff N t‖ := by
   rw [gmTraceNonzeroTailAt_eq_scale_mul, norm_mul, Complex.norm_natCast]
+end
 
-end GuthMaynard.NativeMoment
+
+

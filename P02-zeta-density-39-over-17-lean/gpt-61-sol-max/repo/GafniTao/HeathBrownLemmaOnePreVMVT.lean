@@ -18,7 +18,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownIntegratedMajorant
+def heathBrownIntegratedMajorant
     (N k H s : ℕ) (f : ℝ → ℝ) : ENNReal :=
   (fordVinogradovMomentNat s (k - 1) H : ENNReal) ^
       (1 / (2 * (s : ℝ))) *
@@ -94,6 +94,6 @@ theorem heathBrown_centerWeyl_sum_preVMVT
         heathBrownIntegratedMajorant N k H s f := by ring
 
 
-end
 
-end GafniTao
+
+

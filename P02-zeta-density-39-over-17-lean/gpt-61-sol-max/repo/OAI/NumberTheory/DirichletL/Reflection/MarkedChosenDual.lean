@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein InverseMoment
+
+open scoped EisensteinEis
 namespace PrimeFamily
 variable {ι : Type*} [Fintype ι] (P : PrimeFamily ι)
 
@@ -97,8 +97,8 @@ theorem marked_reflected_source_of_controlled
   · exact hsupp
   · exact hW
   · exact hX
-end PrimeFamily
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+
+

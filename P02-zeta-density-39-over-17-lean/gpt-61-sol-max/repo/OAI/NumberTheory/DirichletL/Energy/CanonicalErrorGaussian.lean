@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalErrorUniform
 public import OAI.NumberTheory.DirichletL.Moments.FirstNestedSeededGaussianPower
 public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
@@ -18,53 +19,53 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalErrorGaussian
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily
+
+
+
+
+open scoped HeckeO
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
-open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+
+
+open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
+
+
+open HeckeFamily CenteredMomentEnergyBands
+
+
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum
+
+
+open CenteredMomentAllocatedRayDictionary
+
+open CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
+
+open CenteredMomentFirstAmplifiedCapacityCommon
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentSecondPhysicalBlock CanonicalQuadraticSieve CompletedGauss
+open ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
 
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
 open RayFourExpansion CenteredMomentSourceMass CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondEnergySplit CenteredMomentGaussNormalization
+open CenteredMomentSecondEnergySplit
 open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentActiveSource
-open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondWindowSource
+open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate
 open CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondReferenceNormalization
+open CenteredMomentSecondSourceSeededPowerDescent
 open CenteredMomentFirstNestedSeededGaussianPower CenteredMomentFirstSecondInputGates
 
 theorem actual_error_gaussian_from_bands
@@ -91,19 +92,19 @@ theorem actual_error_gaussian_from_bands
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:α→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) →
+    ∀(w σ freq:α→ℝ)(height mesh:ℝ),0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) →
     (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     (∀i,src.lo i=lows i) → (∀i,src.hi i=highs i) →
-    Fintype.card α≤N → lower≤src.lower → src.upper≤upper →
-    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
+    Fintype.card α≤N → lower≤ src.lower → src.upper≤upper →
+    0≤ src.b₁ → 0≤ src.b₂ → src.b₁≤ max 1 b → src.b₂≤ max 1 b →
     ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
     τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
-    ∀K sigma delta reserve cost asource:ℝ,0<K → 0≤sigma → 1≤cost → 0<asource →
+    ∀K sigma delta reserve cost asource:ℝ,0<K → 0≤ sigma → 1≤cost → 0<asource →
     0≤delta → 0≤reserve → a0≤asource →
     ∀(prime:O),prime≠0 → ∀k:ℕ,(k=1 ∨ k=6 ∨ k=7) →
     sigma/6≤Real.logb Z (normValue prime) →
@@ -190,15 +191,15 @@ theorem actual_error_gaussian_from_bands
     (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve prime k
   have hZmZ:Zm≤Z:=(le_max_left _ _).trans hZ
   have hgZ:=hZg Z ((le_max_right _ _).trans hZ)
-  have hz:1<Z:=hgZ.1
+  have hz :=hgZ.1
   have hP:∀i,1≤ input.P i:=by
     intro i
-    change 1≤src.P i.val.val
+    change 1≤ src.P i.val.val
     rw [hmatch.scale]
     exact Real.one_le_rpow hz.le (hw i.val.val)
   have hcardInput:Fintype.card (CenteredMomentCommonProfile.liveIndices Bp.val)≤N:=
     (child_card Bp.val).trans ((child_card B.val).trans hcard)
-  have hmass:mass input≤mass src:=
+  have hmass:mass input≤ mass src:=
     (child_mass (activeInput (child src C R0 B τ t)) ((Ideal.span {prime})^k) (R0*C) Bp υ v0).trans
       (child_mass src C R0 B τ t)
   have hsource:=hgZ.2 ⟨CenteredMomentCommonProfile.liveIndices B.val,CenteredMomentCommonProfile.liveIndices Bp.val⟩ input p
@@ -273,8 +274,8 @@ theorem actual_error_gaussian_from_bands
       (hg.2.2.2.2.2.2.trans hready.source_cap) B₂ hB₂ D0 alloc p hp₁ hp₂
       hX₁ hX₂ hY₁ hY₂ Mdecl θclip hθclip hcap hMdecl hclip
 
-end SevenEighths.CenteredMomentEnergyCanonicalErrorGaussian
 
-end
 
-end OAI
+
+
+

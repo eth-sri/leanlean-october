@@ -49,9 +49,13 @@ private theorem amplitude_coefficient_normalize (A B d : ℂ) :
   simp only [Complex.I_sq]
   ring
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ}
+    (h : PartIRegularity f g a b)
+include f g a b h
+
 /-- The actual positive Poisson coefficient is the two normalized amplitude modes with the correct factors. -/
-theorem positiveCoefficient_eq_secondModes {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) (n : ℕ) :
+theorem positiveCoefficient_eq_secondModes  (n : ℕ) :
     positiveCoefficient f g a b (n + 1) =
       secondModeTerm f (deriv g) a b n / I +
       (2 * (Real.pi : ℂ)) * secondModeTerm f (fun u => g u * deriv f u) a b n := by
@@ -60,8 +64,7 @@ theorem positiveCoefficient_eq_secondModes {f g : ℝ → ℝ} {a b : ℝ}
   exact amplitude_coefficient_normalize _ _ _
 
 /-- The actual upper Poisson coefficient uses exactly the two modes above the same cutoff. -/
-theorem negativeCoefficient_eq_upperModes {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) (M n : ℕ) :
+theorem negativeCoefficient_eq_upperModes  (M n : ℕ) :
     negativeCoefficient f g a b (n + M + 1) =
       upperModeTerm f (deriv g) a b M n / I +
       (2 * (Real.pi : ℂ)) * upperModeTerm f (fun u => g u * deriv f u) a b M n := by
@@ -70,8 +73,7 @@ theorem negativeCoefficient_eq_upperModes {f g : ℝ → ℝ} {a b : ℝ}
   exact amplitude_coefficient_normalize _ _ _
 
 /-- Summing the actual positive coefficients retains both independently convergent amplitude series. -/
-theorem tsum_positiveCoefficient_eq_secondModes {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b)
+theorem tsum_positiveCoefficient_eq_secondModes 
     (hg : Summable (secondModeTerm f (deriv g) a b))
     (hgf : Summable (secondModeTerm f (fun u => g u * deriv f u) a b)) :
     (∑' n : ℕ, positiveCoefficient f g a b n) =
@@ -84,8 +86,7 @@ theorem tsum_positiveCoefficient_eq_secondModes {f g : ℝ → ℝ} {a b : ℝ}
   rw [(hg.div_const I).tsum_add (hgf.mul_left _), tsum_div_const, tsum_mul_left]
 
 /-- Summing the actual upper coefficients retains both amplitude series and their precise first frequency. -/
-theorem tsum_negativeCoefficient_eq_upperModes {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) (M : ℕ)
+theorem tsum_negativeCoefficient_eq_upperModes  (M : ℕ)
     (hg : Summable (upperModeTerm f (deriv g) a b M))
     (hgf : Summable (upperModeTerm f (fun u => g u * deriv f u) a b M)) :
     (∑' n : ℕ, negativeCoefficient f g a b (n + M + 1)) =
@@ -93,5 +94,7 @@ theorem tsum_negativeCoefficient_eq_upperModes {f g : ℝ → ℝ} {a b : ℝ}
         (2 * (Real.pi : ℂ)) * ∑' n : ℕ, upperModeTerm f (fun u => g u * deriv f u) a b M n := by
   simp_rw [negativeCoefficient_eq_upperModes h]
   rw [(hg.div_const I).tsum_add (hgf.mul_left _), tsum_div_const, tsum_mul_left]
+end
 
-end DhimanKadiriQuesadaHerrera2026
+
+

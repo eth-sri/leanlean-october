@@ -6,11 +6,11 @@ public import Mathlib.MeasureTheory.Integral.Prod
 
 namespace OAI
 
-noncomputable section
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem initialHigh_counting_product_integrable {ι : Type*} [Countable ι]
     [MeasurableSpace ι] [MeasurableSingletonClass ι]
@@ -36,7 +36,7 @@ theorem initialHigh_counting_product_integrable {ι : Type*} [Countable ι]
     exact mul_le_mul_of_nonneg_right
       (initialHighOnLines_norm_le S D η mask hm σ υ ξ (e p.1) p.2) (norm_nonneg _)
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

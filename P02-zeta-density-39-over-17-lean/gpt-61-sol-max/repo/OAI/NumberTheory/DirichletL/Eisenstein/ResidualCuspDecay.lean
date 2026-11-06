@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.BesselMellinTransform
 public import OAI.NumberTheory.DirichletL.Eisenstein.TranslatedFourierResidues
 
@@ -9,80 +10,80 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
 namespace CubicEisenstein
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset MulChar
 
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def residualCuspDecayRate : ℝ := Real.pi*‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹/4
 
@@ -119,8 +120,8 @@ open scoped BigOperators Classical
 namespace ShortDraftCusp
 
 section
-open ActualEisensteinCubic CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicJacobiGlobal
+open scoped EisensteinEis
 
 theorem A3_principal_global (a c0 r : Eis)
     (ha : lambda^2∣a-1) (hr : lambda^2∣r-1) :
@@ -191,8 +192,8 @@ theorem A3_unramified_global_factor (a b c0 r d : Eis)
 
 end
 
-open ActualEisensteinCubic CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicJacobiGlobal
+open scoped EisensteinEis
 
 theorem A3_ramified_fixed_factor_congr (M c0 u a a0 b b0 : Eis)
     (h9M : (9:Eis)∣M) (hcM : c0∣M) (huM : u∣M)
@@ -248,13 +249,12 @@ open scoped BigOperators Classical
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 lemma cubicUnitGaussSum_norm_le (h c:Eis) (hc:c≠0) (hp:lambda^2∣c-1):
     ‖cubicUnitGaussSum h c‖≤Ideal.absNorm (Ideal.span {c}):=by
   let:Finite (Eis⧸Ideal.span {c}):=finite_quotient_span hc
   let:Fintype (Eis⧸Ideal.span {c}):=Fintype.ofFinite _
-  let:Fintype (CubicUnitResidue c):=Fintype.ofFinite _
   have hs (r:CubicUnitResidue c):
       ‖eisEmbedding (symbol (GaussianShiftedPartition.representative c r.val) c)‖=1:=by
     apply Complex.norm_eq_one_of_pow_eq_one (n:=3) _ (by decide)
@@ -296,22 +296,34 @@ def unramifiedPrimeDeletedSeries (p:Eis) (s:ℂ) (h:Eis):ℂ:=
     cubicUnitGaussSum h (primaryGenerator I.val.val)
 
 lemma primaryGenerator_pow (I:Ideal Eis) (n:ℕ):
-    primaryGenerator (I^n)=primaryGenerator I^n:=
+    primaryGenerator (I ^n)=primaryGenerator I ^n:=
   map_pow primaryGeneratorHom I n
 
-lemma gaussPrimeIdeal_prime (p:Eis) (hp:Prime p):Prime (Ideal.span {p}:Ideal Eis):=
+section
+variable (p:Eis)
+include p
+
+section
+variable (hp:Prime p)
+include hp
+
+lemma gaussPrimeIdeal_prime :Prime (Ideal.span {p}:Ideal Eis):=
   Ideal.prime_of_isPrime (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
     ((Ideal.span_singleton_prime hp.ne_zero).mpr hp)
 
-def gaussPrimeFactorMap (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+section
+variable (hprimary:lambda^2∣p-1)
+include hprimary
+
+def gaussPrimeFactorMap 
     (q:ℕ×PrimeDeletedIdeal p):GoodIdeal:=
   ⟨(Ideal.span {p})^q.1*q.2.val.val,by
     rw [primaryGenerator_mul,primaryGenerator_pow,primaryGenerator_span p hp.ne_zero hprimary]
     exact mul_ne_zero (pow_ne_zero _ hp.ne_zero) q.2.val.2⟩
 
-lemma gaussPrimeFactorMap_bijective (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+lemma gaussPrimeFactorMap_bijective :
     Function.Bijective (gaussPrimeFactorMap p hp hprimary):=by
-  let P:Ideal Eis:=Ideal.span {p}
+  let P :=Ideal.span {p}
   have hP:Prime P:=gaussPrimeIdeal_prime p hp
   constructor
   · rintro ⟨n,I⟩ ⟨m,J⟩ heq
@@ -336,12 +348,14 @@ lemma gaussPrimeFactorMap_bijective (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-
     refine ⟨(multiplicity P I.val,⟨⟨J,hgood⟩,hnot⟩),?_⟩
     exact Subtype.ext hJ.symm
 
-def gaussPrimeFactorEquiv (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+def gaussPrimeFactorEquiv :
     ℕ×PrimeDeletedIdeal p≃GoodIdeal:=
   Equiv.ofBijective (gaussPrimeFactorMap p hp hprimary)
     (gaussPrimeFactorMap_bijective p hp hprimary)
+end
 
-lemma primeDeleted_generator_coprime (p:Eis) (hp:Prime p) (I:PrimeDeletedIdeal p):
+
+lemma primeDeleted_generator_coprime  (I:PrimeDeletedIdeal p):
     IsCoprime p (primaryGenerator I.val.val):=by
   apply hp.coprime_iff_not_dvd.mpr
   intro hd
@@ -349,13 +363,23 @@ lemma primeDeleted_generator_coprime (p:Eis) (hp:Prime p) (I:PrimeDeletedIdeal p
   rw [Ideal.dvd_iff_le,←(primaryGenerator_spec I.val.val I.val.2).1,
     Ideal.span_singleton_le_span_singleton]
   exact hd
+end
 
-lemma primary_pow_congruence (p:Eis) (hprimary:lambda^2∣p-1) (n:ℕ):
+
+lemma primary_pow_congruence  (hprimary:lambda^2∣p-1) (n:ℕ):
     lambda^2∣p^n-1:=by
   simpa only [one_pow] using hprimary.trans (sub_dvd_pow_sub_pow p 1 n)
 
-lemma gaussPrimeFactor_term (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
-    (s:ℂ) (h:Eis) (n:ℕ) (I:PrimeDeletedIdeal p):
+section
+variable (hp:Prime p)
+include hp
+
+section
+variable (hprimary:lambda^2∣p-1)
+    (s:ℂ)
+include hprimary s
+
+lemma gaussPrimeFactor_term  (h:Eis) (n:ℕ) (I:PrimeDeletedIdeal p):
     (Ideal.absNorm (gaussPrimeFactorMap p hp hprimary (n,I)).val:ℂ)^(-s)*
       cubicUnitGaussSum h (primaryGenerator (gaussPrimeFactorMap p hp hprimary (n,I)).val)=
     ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^n*cubicUnitGaussSum h (p^n)*
@@ -373,8 +397,7 @@ lemma gaussPrimeFactor_term (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
   rw [he]
   ring
 
-theorem unramifiedCubicGaussSeries_prime_reindex (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (s:ℂ) (hs:2<s.re) (h:Eis):
+theorem unramifiedCubicGaussSeries_prime_reindex  (hs:2<s.re) (h:Eis):
     unramifiedCubicGaussSeries s h=
       ∑'n:ℕ,((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^n*cubicUnitGaussSum h (p^n)*
         unramifiedPrimeDeletedSeries p s (h*p^n):=by
@@ -396,17 +419,22 @@ theorem unramifiedCubicGaussSeries_prime_reindex (p:Eis) (hp:Prime p)
     cubicUnitGaussSum h (primaryGenerator (gaussPrimeFactorMap p hp hprimary (n,I)).val))=_
   simp_rw [gaussPrimeFactor_term p hp hprimary s h n]
   exact tsum_mul_left
+end
 
-lemma unramifiedPrimeDeletedSeries_cube_shift (p:Eis) (hp:Prime p) (s:ℂ) (h:Eis):
+
+lemma unramifiedPrimeDeletedSeries_cube_shift  (s:ℂ) (h:Eis):
     unramifiedPrimeDeletedSeries p s (h*p^3)=unramifiedPrimeDeletedSeries p s h:=by
   apply tsum_congr
   intro I
   congr 1
   exact cubicUnitGaussSum_cube_shift h _ p I.val.2
     (primaryGenerator_spec I.val.val I.val.2).2 (primeDeleted_generator_coprime p hp I).symm
-
-end CubicEisenstein
-
+end
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Tactic
 
@@ -6,8 +7,7 @@ public import Mathlib.Tactic
 
 open Real Filter
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
+
 
 namespace MathCollab.Density.Stronger
 
@@ -42,7 +42,7 @@ theorem bounded_power_scale {T M a d : ℝ}
     (hlo : T^d ≤ M) (hhi : M ≤ T^(3*a/4)) :
     ∃ k : ℕ, 1 ≤ k ∧ k ≤ ⌈a/d⌉₊ ∧ T^a ≤ M^k ∧ M^k ≤ T^(3*a/2) := by
   have hTpos : 0 < T := by linarith
-  have hlogT : 0 < Real.log T := Real.log_pos hT
+  have hlogT := Real.log_pos hT
   have hMpos : 0 < M := (Real.rpow_pos_of_pos hTpos d).trans_le hlo
   let x := Real.log M / Real.log T
   have hxlo : d ≤ x := by
@@ -118,4 +118,4 @@ theorem fixed_scale_factor_eventually_below_height {C c : ℝ} (hc : c < 1) :
     C*T^c ≤ T^(1-c)*T^c := mul_le_mul_of_nonneg_right hlarge (by positivity)
     _ = T := by rw [← Real.rpow_add hT]; norm_num
 
-end MathCollab.Density.Stronger
+

@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalSource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open HeckeFamily QuadraticInitialBound
+open CenteredMomentEnergyState
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroUnbalancedOriginalDeleted
 open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+
+open CenteredMomentFiniteProfileExceptional
+open scoped HeckeO
 
 theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
     (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
@@ -29,8 +29,8 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
-      ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →Real.logb Z X₁≤s.width/4 →1≤X₂ →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤ s.width/6 →
+      ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →Real.logb Z X₁≤ s.width/4 →1≤X₂ →
       s.plainEnergy p t X₁ X₂ ≤
       Cweight*(s.puncture.radical.absNorm:ℝ)^epsilonDelete*(
         K*diagonalControl s.radial.profile*
@@ -72,8 +72,8 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
       hZ.2 ε Q degree K hK hlow s hQ hs hxiM (p.profile 0) (p.profile 1)
         (p.support 0) (p.support 1) t X₁ X₂ hX₁ hX₂ hshort hlong D₁ hD₁ D₂ hD₂
 
-end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalSource
 
-end
 
-end OAI
+
+
+

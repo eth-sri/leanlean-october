@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.ReflectionSignedShell
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -42,4 +41,4 @@ theorem reflection_signed_shell_budget (w : MathCollab.Density.ReflectionCutoff)
       have hn : 0 ≤ N^ε*L*N*H := by positivity
       nlinarith
 
-end GuthMaynard.Improvement
+

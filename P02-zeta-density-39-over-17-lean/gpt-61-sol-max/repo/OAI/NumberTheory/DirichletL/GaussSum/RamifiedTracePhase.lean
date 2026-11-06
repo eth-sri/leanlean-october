@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.GaussSum.LocalProductAssembly
 
 @[expose] public section
@@ -9,14 +10,14 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 
 namespace TraceLambdaPhase
 
@@ -33,7 +34,6 @@ theorem exp_minus_four_pi_div_three :
       Complex.exp ((2 : ℂ) * Real.pi * Complex.I / 3) := by
     apply Complex.exp_eq_exp_iff_exists_int.mpr
     refine ⟨-1, ?_⟩
-    push_cast
     ring
   rw [hshift]
   have harg : ((2 : ℂ) * Real.pi * Complex.I / 3) =
@@ -50,26 +50,15 @@ theorem exp_minus_four_pi_div_three :
 
 end TraceLambdaPhase
 
-namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
 
-end ActualEisensteinCubic
 
-namespace PoissonFirstLocal
-open scoped Classical
-
-end PoissonFirstLocal
 
 namespace ActualEisensteinCubic
 
-section
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
 
-end
-
-noncomputable def finiteSquarefreeRow
+def finiteSquarefreeRow
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (u : O) : ℂ :=
   ∏ i ∈ S, canonicalSextic (P i) (hgood i) (Ideal.Quotient.mk (P i) u)
@@ -93,54 +82,25 @@ theorem finiteSquarefreeRow_sixth_power
     rw [canonicalSextic_sixth_power_mask]
     simp [show a ∉ P i by intro hai; exact hex ⟨i, hi, hai⟩]
 
-theorem finiteSquarefreeRow_difference
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    (∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6)) =
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), weight n := by
-  classical
-  rw [← Finset.sum_sub_distrib]
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [finiteSquarefreeRow_sixth_power]
-  by_cases h : ∃ i ∈ support n, a ∈ P i <;> simp [h]
 
-theorem finiteSquarefreeRow_difference_norm
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6))‖ ≤
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), ‖weight n‖ := by
-  rw [finiteSquarefreeRow_difference]
-  exact norm_sum_le _ _
+
+
 
 end ActualEisensteinCubic
 
-namespace AnalyticBridge
 
-end AnalyticBridge
 
-namespace ShortDraftCusp
 
-variable {R : Type*} [CommRing R]
-
-end ShortDraftCusp
 
 namespace ActualEisensteinCubic
 
 open EisensteinEmbedding ConcreteTraceCRT Complex
 
-theorem breveE_quarter_trace (a b : ℤ) :
+section
+variable (a b : ℤ)
+include a b
+
+theorem breveE_quarter_trace  :
     ShortDraftTrace.breveE
       ((((a : ℂ) + (b : ℂ) * omega3) / eisLam) / 4) =
       Complex.I ^ b := by
@@ -164,14 +124,14 @@ theorem breveE_quarter_trace (a b : ℤ) :
     ring
   rw [harg, Complex.exp_int_mul, Complex.exp_pi_div_two_mul_I]
 
-noncomputable def breveGaussianFourTerms (a b : ℤ) : ℂ :=
+def breveGaussianFourTerms  : ℂ :=
   let c : ℂ := (a : ℂ) + (b : ℂ) * omega3
   (ShortDraftTrace.breveE (0 : ℂ) +
       ShortDraftTrace.breveE (((-c) / eisLam) / 4) +
       ShortDraftTrace.breveE (((-c * omega3 ^ 2) / eisLam) / 4) +
       ShortDraftTrace.breveE (((-c * (1 + omega3) ^ 2) / eisLam) / 4)) / 2
 
-theorem breveGaussianFourTerms_formula (a b : ℤ) :
+theorem breveGaussianFourTerms_formula  :
     breveGaussianFourTerms a b =
       (1 + Complex.I ^ (-b) + Complex.I ^ a + Complex.I ^ (b-a)) / 2 := by
   let c : ℂ := (a : ℂ) + (b : ℂ) * omega3
@@ -208,9 +168,11 @@ theorem breveGaussianFourTerms_formula (a b : ℤ) :
   dsimp [breveGaussianFourTerms]
   rw [hfirst, hsecond, hthird]
   simp only [map_zero_eq_one]
-
-end ActualEisensteinCubic
-
 end
 
-end OAI
+
+
+
+
+
+

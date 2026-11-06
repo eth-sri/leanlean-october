@@ -8,8 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open RayFourExpansion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open RayFourExpansion
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 def lowCorrectionEnergy : ℝ := ∑χ : RayCharacter,‖ProbeCompleted.correctionCoeff χ‖^2
@@ -31,7 +31,7 @@ lemma fixed_correction_energy {ι κ : Type*} [Fintype ι] (R : Finset κ) (c : 
         _≤_ := Finset.sum_mul_sq_le_sq_mul_sq _ _ _
     _=_ := by rw [←Finset.mul_sum,Finset.sum_comm]
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

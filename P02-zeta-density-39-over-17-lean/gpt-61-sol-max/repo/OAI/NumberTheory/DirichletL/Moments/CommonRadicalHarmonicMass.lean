@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.CommonHarmonicMass
 
 @[expose] public section
@@ -9,11 +10,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadicalHarmonicMass
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+
 open CenteredMomentRankinRadical CenteredMomentRankinLabels
 open CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
 open CenteredMomentCommonHarmonicMass (Label Valid commonRadical_norm_le norm_scale_bounds log_square_subpower)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def weight (v : Label) : ℝ := 1/(Ideal.absNorm (commonRadical v.1.1 v.1.2):ℝ)
 def key (v : Label) : ℤ := normKey (commonRadical v.1.1 v.1.2)
@@ -76,7 +77,7 @@ lemma keys_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
     (h0 : ∀v∈S,v.1.1≠0 ∧ v.1.2≠0)
     (hN : ∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) :
     ((keys S).card:ℝ)≤(3+B/Real.log 2)*(1+Real.log Z) := by
-  have hY : 1≤Z^B := Real.one_le_rpow hZ hB
+  have hY := Real.one_le_rpow hZ hB
   have hsub : keys S ⊆ indices 1 (Z^B) := by
     intro n hn
     obtain ⟨v,hv,rfl⟩ := Finset.mem_image.mp hn
@@ -97,7 +98,7 @@ theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,weight v)≤C*Z^(3*B*e)*(1+Real.log Z)/(s.absNorm:ℝ) := by
   obtain ⟨C,hC,hbound⟩ := shell_bound e he
-  let K : ℝ := 3+B/Real.log 2
+  let K := 3+B/Real.log 2
   have hK : 0<K := by dsimp [K]; positivity
   refine ⟨C*K,by positivity,?_⟩
   intro Z hZ s hs hs0 S hS hN
@@ -132,7 +133,7 @@ theorem common_radical_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
       ∀S : Finset Label,(∀v∈S,Valid s v) →
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,1/(Ideal.absNorm (commonRadical v.1.1 v.1.2):ℝ))≤C*Z^δ/(s.absNorm:ℝ) := by
-  let e : ℝ := δ/(6*(B+1))
+  let e := δ/(6*(B+1))
   have he : 0<e := by dsimp [e]; positivity
   have hbudget : 3*B*e+δ/2≤δ := by
     have hh : e*(6*(B+1))=δ := div_mul_cancel₀ δ (by positivity)
@@ -156,8 +157,8 @@ theorem common_radical_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
       exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hZ1 hbudget) (mul_pos hC hD).le) hsn.le
 
-end SevenEighths.CenteredMomentCommonRadicalHarmonicMass
 
-end
 
-end OAI
+
+
+

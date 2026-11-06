@@ -9,7 +9,7 @@ namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open HeckeDetectorProfiles
-noncomputable section
+
 
 theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
     (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
@@ -55,7 +55,7 @@ theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
       mul_le_mul_of_nonneg_right hp (by positivity)
     _ = _ := by rw [pow_add]; ring
 
-end
-end SevenEighths.HeckeDetectorFourier
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
@@ -8,7 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
-noncomputable section
+
 
 lemma schwartz_logPhase_inversion (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
     g x = ∫ t : ℝ, logPhase t x * (𝓕 g) t := by
@@ -72,10 +73,13 @@ theorem descent_profile_identity {ι : Type*} [Fintype ι]
     ring
   simp_rw [hmid]
   rw [integral_mul_const, integral_mul_const, ← schwartz_logPhase_inversion]
-  dsimp only [P, x₁, x₂, xk]
   ring
 
-theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+section
+variable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ)
+include b₁ b₂ b₃ J
+
+theorem tripleCoefficient_weighted_integrable  :
     Integrable (fun t : Frequency =>
       ((1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J) *
         ‖tripleCoefficient b₁ b₂ b₃ t‖) := by
@@ -87,7 +91,7 @@ theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) 
   simp only [tripleCoefficient, norm_mul]
   ring
 
-theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem tripleCoefficient_weighted_integral  :
     (∫ t : Frequency,
       ((1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J) *
         ‖tripleCoefficient b₁ b₂ b₃ t‖) =
@@ -109,8 +113,10 @@ theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J
   rw [MeasureTheory.integral_prod_mul
     (fun t : ℝ => (1 + ‖t‖)^J * ‖b₂ t‖) (fun t : ℝ => (1 + ‖t‖)^J * ‖b₃ t‖)]
   ring
-
 end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+
+
+

@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open InverseInitialProfile
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)
     (hF : ∀ h ∈ F, P h) (b : O → ℝ) (hb : ∀ h, 0 ≤ b h)
@@ -99,8 +99,8 @@ theorem correlated_scale_lower (Y C d v n₁ n₂ L : ℝ)
   have hh := mul_le_mul h₁ h₂ (by positivity) hL.le
   nlinarith [mul_le_mul_of_nonneg_left hh (show 0≤Y*d by positivity)]
 
-end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
-end OAI
+
+
+

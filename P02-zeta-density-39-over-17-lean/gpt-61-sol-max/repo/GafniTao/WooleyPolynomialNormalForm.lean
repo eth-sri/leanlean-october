@@ -21,19 +21,25 @@ namespace GafniTao
 
 noncomputable section
 
+section
+variable (d : ℕ) (f : Polynomial ℤ)
+include d f
+
 /-- Remainder after division by `X^d`: the coefficients below degree `d`. -/
-def wooleyPolynomialLowPart (d : ℕ) (f : Polynomial ℤ) : Polynomial ℤ :=
+def wooleyPolynomialLowPart  : Polynomial ℤ :=
   f %ₘ (X ^ d)
 
 /-- Quotient after division by `X^d`: the exact high-degree tail. -/
-def wooleyPolynomialTail (d : ℕ) (f : Polynomial ℤ) : Polynomial ℤ :=
+def wooleyPolynomialTail  : Polynomial ℤ :=
   f /ₘ (X ^ d)
 
 theorem wooleyPolynomial_low_add_tail
-    (d : ℕ) (f : Polynomial ℤ) :
+     :
     wooleyPolynomialLowPart d f +
         X ^ d * wooleyPolynomialTail d f = f := by
   exact modByMonic_add_div f (X ^ d)
+end
+
 
 /-- Division by `X^d` does not alter a coefficient below degree `d`. -/
 theorem wooleyPolynomialLowPart_coeff
@@ -50,6 +56,6 @@ def wooleyPolynomialSystemLowMatrix {k : ℕ}
     (phi : WooleyPolynomialSystem k) : Matrix (Fin k) (Fin k) ℤ :=
   fun i j => (wooleyPolynomialLowPart (k + 1) (phi j)).coeff ((i : ℕ) + 1)
 
-end
 
-end GafniTao
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.OperatorPositiveCompact
 public import GuthMaynard.Improvement.OrdinaryFourierL2
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory InnerProductSpace
 open scoped InnerProductSpace FourierTransform
 namespace GuthMaynard.Improvement
@@ -17,9 +17,13 @@ theorem operator_L2_integral_sq (ν : Measure ℝ) (f : Lp ℂ 2 ν) :
   simp only [inner_self_eq_norm_sq_to_K] at hh
   exact_mod_cast hh
 
-/-- Multiplying an actual density-L2 vector by its density produces ordinary L1 data. -/
-theorem operator_density_vector_integrable {μ : ℝ → ℝ}
+section
+variable {μ : ℝ → ℝ}
     [IsFiniteMeasure (timeMeasure μ)] (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
+include μ hm h0
+
+/-- Multiplying an actual density-L2 vector by its density produces ordinary L1 data. -/
+theorem operator_density_vector_integrable 
     (f : Lp ℂ 2 (timeMeasure μ)) : Integrable (fun t => (μ t:ℂ)*f t) := by
   have hi : Integrable (fun t => f t) (timeMeasure μ) := (Lp.memLp f).integrable (by norm_num)
   have hh := (integrable_withDensity_iff_integrable_smul' hm.ennreal_ofReal
@@ -27,8 +31,7 @@ theorem operator_density_vector_integrable {μ : ℝ → ℝ}
   simpa only [ENNReal.toReal_ofReal (h0 _), Complex.real_smul] using hh
 
 /-- Bounded ordinary density gives the crucial B, rather than total-mass, L2 cost. -/
-theorem operator_density_vector_L2 {μ : ℝ → ℝ}
-    [IsFiniteMeasure (timeMeasure μ)] (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
+theorem operator_density_vector_L2 
     {B : ℝ} (_hB : 0 ≤ B) (hb : ∀ t, μ t ≤ B) (f : Lp ℂ 2 (timeMeasure μ)) :
     MemLp (fun t => (μ t:ℂ)*f t) 2 ∧
       (∫ t, ‖(μ t:ℂ)*f t‖^2) ≤ B*‖f‖^2 := by
@@ -51,16 +54,14 @@ theorem operator_density_vector_L2 {μ : ℝ → ℝ}
     nlinarith [mul_le_mul_of_nonneg_right (hb t) (mul_nonneg (h0 t) (sq_nonneg ‖f t‖))]
   have hg : Integrable (fun t => ‖(μ t:ℂ)*f t‖^2) := by
     apply (hw.const_mul B).mono' (hi.aestronglyMeasurable.norm.pow 2)
-    filter_upwards with t
-    simpa only [Pi.pow_apply, Real.norm_eq_abs, abs_pow, abs_norm] using hp t
+    simp_all <;> nlinarith
   refine ⟨(memLp_two_iff_integrable_sq_norm hi.aestronglyMeasurable).mpr hg, ?_⟩
   calc
     _ ≤ ∫ t, B*(μ t*‖f t‖^2) := integral_mono hg (hw.const_mul B) hp
     _ = B*‖f‖^2 := by rw [integral_const_mul, he]
 
 /-- Actual phase pairing is the literal Fourier transform of the density-weighted vector. -/
-theorem operator_density_phase_pairing {μ : ℝ → ℝ}
-    [IsFiniteMeasure (timeMeasure μ)] (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
+theorem operator_density_phase_pairing 
     (f : Lp ℂ 2 (timeMeasure μ)) (ξ : ℝ) :
     inner ℂ (operatorPhase (timeMeasure μ) ξ) f = 𝓕 (fun t => (μ t:ℂ)*f t) ξ := by
   rw [L2.inner_def]
@@ -70,7 +71,6 @@ theorem operator_density_phase_pairing {μ : ℝ → ℝ}
     filter_upwards [operator_phase_coe (timeMeasure μ) ξ] with t ht
     rw [ht]
     simp only [RCLike.inner_apply, operator_phase_conj]
-    rw [show -(t*ξ) = -ξ*t by ring]
     ring
   rw [he]
   change (∫ t, phase (-ξ*t)*f t ∂volume.withDensity (fun t => ENNReal.ofReal (μ t))) = _
@@ -80,5 +80,7 @@ theorem operator_density_phase_pairing {μ : ℝ → ℝ}
   filter_upwards with t
   simp only [ENNReal.toReal_ofReal (h0 _), Complex.real_smul]
   ring
+end
 
-end GuthMaynard.Improvement
+
+

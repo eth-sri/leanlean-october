@@ -1,35 +1,41 @@
 module
+import Mathlib
 public import RetunedShortZeroCount
 public import MathCollab.Density.Stronger.LongMeanCounting
 
 @[expose] public section
 
-open Real Complex Set Filter MeasureTheory
+open Real Complex Filter MeasureTheory
 open scoped BigOperators Topology
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density
 
+section
+variable (η σ a δ T : ℝ)
+include η σ a δ T
+
 /-- Actual slab zeros outside the already counted short family. -/
-def smoothLongZeroFinset (η σ a δ T : ℝ) : Finset ℂ :=
+def smoothLongZeroFinset  : Finset ℂ :=
   zetaZeroFinset σ T (2*T) \ smoothShortZeroFinset η σ a δ T
 
 /-- The complementary part keeps the original analytic multiplicity. -/
-def smoothLongZeroCount (η σ a δ T : ℝ) : ℕ :=
+def smoothLongZeroCount  : ℕ :=
   ∑ ρ ∈ smoothLongZeroFinset η σ a δ T, zetaMultiplicity ρ
 
-theorem smoothLongZeroFinset_subset (η σ a δ T : ℝ) :
+theorem smoothLongZeroFinset_subset  :
     smoothLongZeroFinset η σ a δ T ⊆ zetaZeroFinset σ T (2*T) := Finset.sdiff_subset
 
 /-- Exact partition of every actual slab zero and all its analytic multiplicity. -/
-theorem smooth_zeroCount_partition (η σ a δ T : ℝ) :
+theorem smooth_zeroCount_partition  :
     zetaSlabCount σ T (2*T) = smoothShortZeroCount η σ a δ T + smoothLongZeroCount η σ a δ T := by
   unfold zetaSlabCount smoothShortZeroCount smoothLongZeroCount smoothLongZeroFinset
   have hs := Finset.sum_sdiff (smoothShortZeroFinset_subset η σ a δ T)
     (f := zetaMultiplicity)
   omega
+end
+
 
 /-- One critical-mean constant precedes the height and every complementary zero. -/
 theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
@@ -43,9 +49,9 @@ theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
   intro ρ hρ
   obtain ⟨hzmem, hnot⟩ := Finset.mem_sdiff.mp hρ
   obtain ⟨hz, hβ, hγ, hγ'⟩ := mem_zetaZeroFinset.mp hzmem
-  have habs : |ρ.im| = ρ.im := abs_of_nonneg (hT.trans hγ)
+  have habs := abs_of_nonneg (hT.trans hγ)
   rcases hc ρ hβ hz.2.2 (by rwa [habs]) (by rwa [habs]) hz.1 with hmean | hshort
   · exact hmean
   · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hzmem, hshort⟩))
 
-end Montgomery.RationalMoment.RightDetector
+

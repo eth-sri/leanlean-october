@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected proof slices adapted from Scott McColm, MIT-0,
 commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -17,7 +18,6 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -51,15 +51,15 @@ theorem exists_zetaSquareNumerator_strip_gaussian (t c : ℝ) (hc : 0 ≤ c) :
     ∃ K : ℝ, 0 < K ∧ ∀ x u : ℝ, |x| ≤ c →
       ‖zetaSquareContourNumerator t ((x : ℂ)+(u : ℂ)*I)‖ ≤ K*gaussianPolynomial u := by
   obtain ⟨C,hC,hxi⟩ := exists_completedXiNumerator_strip_cubic hc
-  let A : ℝ := 2+|t|+c
+  let A := 2+|t|+c
   have hA : 1 ≤ A := by dsimp [A]; linarith [abs_nonneg t]
   have hp : 0 < ‖zetaSquarePoleNormalization t‖ :=
     norm_pos_iff.mpr (zetaSquarePoleNormalization_ne_zero t)
   refine ⟨Real.exp (100*c^2)*625*C^2*A^14/‖zetaSquarePoleNormalization t‖,
     by positivity, ?_⟩
   intro x u hx
-  let w : ℂ := (x : ℂ)+(u : ℂ)*I
-  let R : ℝ := A*(1+|u|)
+  let w := (x : ℂ)+(u : ℂ)*I
+  let R := A*(1+|u|)
   have hR : 1 ≤ R := one_le_mul_of_one_le_of_one_le hA (by linarith [abs_nonneg u])
   have hwn : ‖w‖ ≤ R := by
     have hn : ‖w‖ ≤ |x|+|u| := by
@@ -125,10 +125,7 @@ theorem gaussianPolynomial_le (u : ℝ) :
         _ = (2 : ℝ)^14*u^14 := by rw [mul_pow, heven]
         _ ≤ _ := by nlinarith
   unfold gaussianPolynomial
-  calc
-    _ ≤ ((2 : ℝ)^14*(1+u^14))*Real.exp (-100*u^2) :=
-      mul_le_mul_of_nonneg_right hpoly (Real.exp_pos _).le
-    _ = _ := by ring
+  field_simp <;> nlinarith
 
 theorem integrable_gaussianPolynomial : Integrable gaussianPolynomial := by
   have h0 := integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 100)
@@ -194,13 +191,11 @@ theorem tendsto_hIntegral_zetaSquare_top_zero (t c : ℝ) (hc : 0 ≤ c) :
       unfold HIntegral
       apply intervalIntegral.norm_integral_le_of_norm_le_const
       intro x hx
-      have hx' : x ∈ Icc (-c) c := by
-        have h := Set.uIoc_subset_uIcc hx
-        rwa [uIcc_of_le (by linarith : -c ≤ c)] at h
+      have hx' : x ∈ Icc (-c) c := by grind
       have hden : 1 ≤ ‖(x : ℂ)+(H : ℂ)*I‖ := by
         have h := Complex.abs_im_le_norm ((x : ℂ)+(H : ℂ)*I)
         have hH0 : 0 ≤ H := by linarith
-        simpa [abs_of_nonneg hH0] using hH.trans (by simpa [abs_of_nonneg hH0] using h)
+        exact hH.trans (by simpa [abs_of_nonneg hH0] using h)
       simpa using norm_zetaSquareContour_le_of_lower hK.le zero_lt_one
         (hbound x H (abs_le.mpr hx')) hden)
   simpa using (tendsto_gaussianPolynomial_zero.const_mul K).mul_const |c-(-c)|
@@ -218,7 +213,7 @@ theorem zetaSquareAFE_vertical_limit (t : ℝ) {c : ℝ} (hc : 0 < c) :
       VIntegral' (zetaSquareContourIntegrand t) c (-H) H +
       VIntegral' (zetaSquareContourIntegrand (-t)) c (-H) H)
       atTop (𝓝 (completedRiemannZeta (afeCriticalPoint t)^2)) := by
-  let F : ℂ := completedRiemannZeta (afeCriticalPoint t)^2
+  let F := completedRiemannZeta (afeCriticalPoint t)^2
   have ht := tendsto_hIntegral'_zetaSquare_top_zero t c hc.le
   have hmt := tendsto_hIntegral'_zetaSquare_top_zero (-t) c hc.le
   have htarget : Tendsto (fun H : ℝ => F +
@@ -229,13 +224,16 @@ theorem zetaSquareAFE_vertical_limit (t : ℝ) {c : ℝ} (hc : 0 < c) :
   apply htarget.congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with H hH
   have hfinite := zetaSquareAFE_truncated_native t hc hH
-  change F = _ at hfinite
-  linear_combination hfinite
+  grind
 
 def zetaSquareVerticalIntegral (t c : ℝ) : ℂ :=
   (1/(2*Real.pi) : ℂ)*∫ u : ℝ, zetaSquareContourIntegrand t ((c : ℂ)+(u : ℂ)*I)
 
-theorem tendsto_zetaSquare_vertical_integral (t : ℝ) {c : ℝ} (hc : 0 < c) :
+section
+variable (t : ℝ) {c : ℝ} (hc : 0 < c)
+include t c hc
+
+theorem tendsto_zetaSquare_vertical_integral  :
     Tendsto (fun H : ℝ => VIntegral' (zetaSquareContourIntegrand t) c (-H) H)
       atTop (𝓝 (zetaSquareVerticalIntegral t c)) := by
   unfold zetaSquareVerticalIntegral
@@ -249,11 +247,13 @@ theorem tendsto_zetaSquare_vertical_integral (t : ℝ) {c : ℝ} (hc : 0 < c) :
   rfl
 
 /-- Exact infinite-height actual-zeta identity; no contour limit is assumed. -/
-theorem completedZeta_square_eq_vertical_integrals (t : ℝ) {c : ℝ} (hc : 0 < c) :
+theorem completedZeta_square_eq_vertical_integrals  :
     completedRiemannZeta (afeCriticalPoint t)^2 =
       zetaSquareVerticalIntegral t c + zetaSquareVerticalIntegral (-t) c := by
   exact tendsto_nhds_unique (zetaSquareAFE_vertical_limit t hc)
     ((tendsto_zetaSquare_vertical_integral t hc).add
       (tendsto_zetaSquare_vertical_integral (-t) hc))
+end
 
-end MathCollab.Density.Stronger.Fourth
+
+

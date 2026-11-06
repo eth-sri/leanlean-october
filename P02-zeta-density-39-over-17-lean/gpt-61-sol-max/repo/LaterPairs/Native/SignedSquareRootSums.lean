@@ -6,13 +6,12 @@ public import LaterPairs.Native.SignedEvenSum
 public import LaterPairs.Native.SquareRootShiftSums
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem sum_positive_int_eq_nat_Icc (f : ℤ → ℝ) (Q : ℕ) :
@@ -59,4 +58,4 @@ theorem sum_signed_inverse_sqrt_le (Q : ℕ) :
     subst Q
     simp
 
-end TaoTrudgianYang2025
+

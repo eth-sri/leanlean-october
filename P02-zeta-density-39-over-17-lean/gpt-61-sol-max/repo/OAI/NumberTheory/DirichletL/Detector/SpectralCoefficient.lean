@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CoefficientDirect
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSeparation
 
@@ -6,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralSeparation
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow ProbePhase ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ProbeCompleted ProbeRow ProbePhase CubicEisenstein
+open scoped EisensteinO
 
 lemma rayMask_supported (a : O) (ha : Supported (Ideal.span {a})) : RayFourExpansion.rayMask a=1 := by
   let : (Ideal.span {(2:O)}).IsMaximal := by
     simpa only [cubicTwoIdeal,Ideal.span_singleton_neg] using cubicTwoIdeal_isMaximal
-  let : Field (O⧸Ideal.span {(2:O)}) := Ideal.Quotient.field _
   have h2 : IsCoprime (2:O) a := by
     apply (isUnit_quotient_span_iff _ _).mp
     apply isUnit_iff_ne_zero.mpr
@@ -84,7 +84,7 @@ theorem spectralSummand_source_coefficient (S : Finset (Ideal O)) (D I J : Ideal
       ((Real.sqrt (Ideal.absNorm I):ℂ)*(Ideal.absNorm J:ℂ))*(fullIdealWeight t I*fullIdealWeight (3*t) J) := by ring
     _ = _ := by rw [hm];ring
 
-end SevenEighths.ProbePhysical
-end
 
-end OAI
+
+
+

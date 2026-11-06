@@ -7,22 +7,26 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWeights
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialEnergyCallerSector
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
+open InverseInitialEnergyCallerModes
 open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-local notation "Eis"=>ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
+section
+variable (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+include hpr
+
 theorem markedModeColumn_sector
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    
     (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:Eisˣ)
     (hu:unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
@@ -40,7 +44,7 @@ theorem markedModeColumn_sector
   rfl
 
 theorem markedModeColumn_negative_sector
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    
     (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:Eisˣ)
     (hu:unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
@@ -56,9 +60,11 @@ theorem markedModeColumn_negative_sector
   simp only [child,negativeChild,initialChild,toTuple,sectorSource,sourceTuple]
   rw [source_quotient p hp x.common x.divisor hdiv]
   simp only [quotient,sourcePoint,mul_neg]
-
-end SevenEighths.InverseInitialEnergyCallerSector
-
 end
 
-end OAI
+
+
+
+
+
+

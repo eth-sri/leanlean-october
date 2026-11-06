@@ -5,18 +5,22 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialTotalEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialInputRadial
 open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT
-open InverseInitialConjugateEnergy
-local notation "O"=>ActualEisensteinCubic.O
+
+open scoped EisensteinO
 variable {ι:Type*}[DecidableEq ι](p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem input_energy_summable (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι→ℂ)
-    (a:ℂ)(Φ:𝓢(ℝ,ℂ))(Y:ℝ)(hY:0<Y):
+section
+variable (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι→ℂ)
+    (a:ℂ)(Φ:𝓢(ℝ,ℂ))
+include pool Ψ j test a Φ
+
+theorem input_energy_summable (Y:ℝ)(hY:0<Y):
     Summable (fun u:O=>Φ (‖eisEmbedding u‖^2/Y)*
       (‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2:ℝ)):=by
   let c:Finset ι→ℂ:=fun S=>a*supportMobius (fun i=>Ideal.span {p i}) S*
@@ -31,8 +35,7 @@ theorem input_energy_summable (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι�
   exact finiteSquarefreeRow_smoothed_mean_square_summable (fun i=>Ideal.span {p i}) hg
     pool.powerset id (fun S=>star (c S)) Φ Y hY
 
-theorem finite_rows_le_input_norm (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι→ℂ)
-    (a:ℂ)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)
+theorem finite_rows_le_input_norm (hΦ:∀x,0≤(Φ x).re)
     (hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
     (Y:ℝ)(hY:0<Y)(rows:Finset O)(hrows:∀u∈rows,‖eisEmbedding u‖^2≤Y):
     (∑u∈rows,‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2)≤
@@ -53,9 +56,11 @@ theorem finite_rows_le_input_norm (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset
     exact Complex.re_le_norm _
   · simp only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,mul_zero,sub_zero]
     exact mul_nonneg (hΦ _) (sq_nonneg _)
-
-end SevenEighths.InverseInitialInputRadial
-
 end
 
-end OAI
+
+
+
+
+
+

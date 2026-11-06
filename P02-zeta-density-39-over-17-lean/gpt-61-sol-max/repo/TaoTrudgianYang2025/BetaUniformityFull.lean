@@ -5,12 +5,11 @@ public import TaoTrudgianYang2025.BetaUniformity
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Set Filter Expdb
 open scoped Topology ContDiff NNReal
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 theorem exponentPair_rhs_eq_logb_power {T N : ℝ}
     (hT : 1 < T) (hN : 0 < N) (k l ε : ℝ) :
     (T/N)^(k+ε)*N^(l+ε) =
@@ -28,12 +27,16 @@ theorem exponentPair_rhs_eq_logb_power {T N : ℝ}
       rw [← Real.rpow_mul hTpos.le, ← Real.rpow_add hTpos]
     _ = _ := by congr 1; unfold exponentPairLine; ring
 
+section
+variable {k l : ℝ} (htri : InExponentPairTriangle k l)
+    (hβ : ∀ α : ℝ≥0, (α : ℝ) ≤ 1 →
+      exponentSumGrowthExponent α ≤ exponentPairLine k l α)
+include k l htri hβ
+
 /-- One uniform fixed-parameter estimate follows from beta bounds at every
 scale in [0,1]. The phase exponent and epsilon precede every constant. -/
 theorem isExponentPairEstimateNonAsymptotic_of_beta_bound
-    {k l : ℝ} (htri : InExponentPairTriangle k l)
-    (hβ : ∀ α : ℝ≥0, (α : ℝ) ≤ 1 →
-      exponentSumGrowthExponent α ≤ exponentPairLine k l α) :
+     :
     IsExponentPairEstimateNonAsymptotic k l := by
   classical
   intro ε hε σ hσ
@@ -113,12 +116,12 @@ theorem isExponentPairEstimateNonAsymptotic_of_beta_bound
 
 /-- The full converse in the source beta-duality lemma, including both
 scale endpoints and the uniform constants in the exponent-pair definition. -/
-theorem exponentPair_of_beta_bound {k l : ℝ} (htri : InExponentPairTriangle k l)
-    (hβ : ∀ α : ℝ≥0, (α : ℝ) ≤ 1 →
-      exponentSumGrowthExponent α ≤ exponentPairLine k l α) :
+theorem exponentPair_of_beta_bound  :
     ExponentPair k l :=
   ⟨htri,isExponentPairEstimate_iff_nonAsymptotic.mpr
     (isExponentPairEstimateNonAsymptotic_of_beta_bound htri hβ)⟩
+end
 
 
-end TaoTrudgianYang2025
+
+

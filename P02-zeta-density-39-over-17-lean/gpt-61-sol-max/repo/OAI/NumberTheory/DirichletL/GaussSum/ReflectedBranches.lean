@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.NormalizedMass
 
 @[expose] public section
@@ -8,85 +9,91 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+                          
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
 
-open scoped BigOperators Classical
+                                  
 namespace CompletedGauss
 
 section
 open ActualEisensteinCubic LocalReflectionBrackets
 
-def reflectedLocalPiece (P : Ideal O) [P.IsMaximal] (hg : lambda∉P)
+section
+variable (P : Ideal O) [P.IsMaximal]
+include P
+
+def reflectedLocalPiece  (hg : lambda∉P)
     (j : ℕ) (e : Fin 3) (n b : O) : ℂ :=
   if j=4 then exceptionalPiece P e n b
   else if e=0 then bracket (actualSextic P hg) j (Ideal.Quotient.mk P (n*b^3)) else 0
 
-def reflectedLocalSize (P : Ideal O) [P.IsMaximal] (j : ℕ) (e : Fin 3) : ℝ :=
+def reflectedLocalSize  (j : ℕ) (e : Fin 3) : ℝ :=
   if j=4 then (if e=0 then (rootCard (O ⧸ P))⁻¹ else rootCard (O ⧸ P))
   else if j=0 then (rootCard (O ⧸ P))⁻¹ else 1
+end
+
 
 def reflectedBranch {ι : Type*} [Fintype ι] (P : ι→Ideal O) [∀i,(P i).IsMaximal]
     (hg : ∀i,lambda∉P i) (j : ι→ℕ) (e : ι→Fin 3) (n b : O) : ℂ :=
@@ -107,8 +114,7 @@ theorem prod_bracket_eq_full_branches {ι : Type*} [Fintype ι]
     (∏i,bracket (actualSextic (P i) (hg i)) (j i) (Ideal.Quotient.mk (P i) (n*b^3)))=
       ∑e : ι→Fin 3,reflectedBranch P hg j e n b := by
   simp_rw [bracket_eq_sum_reflectedLocalPiece]
-  simpa only [Fintype.piFinset_univ,reflectedBranch] using
-    Finset.prod_univ_sum (fun _ : ι => (Finset.univ : Finset (Fin 3)))
+  exact Finset.prod_univ_sum (fun _ : ι => (Finset.univ : Finset (Fin 3)))
       (fun i e => reflectedLocalPiece (P i) (hg i) (j i) e n b)
 
 theorem reflectedLocalPiece_norm_le (P : Ideal O) [P.IsMaximal] (hg : lambda∉P)
@@ -128,8 +134,12 @@ theorem reflectedLocalPiece_norm_le (P : Ideal O) [P.IsMaximal] (hg : lambda∉P
     · simp only [reflectedLocalPiece,ite_eq_right hj4,ite_eq_right he,norm_zero,reflectedLocalSize]
       split_ifs <;> positivity
 
-theorem sqrt_norm_reflectionExtractedDivisor {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) [∀i,(P i).IsMaximal] (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
+section
+variable {ι : Type*} [Fintype ι]
+    (P : ι→Ideal O)
+include ι P
+
+theorem sqrt_norm_reflectionExtractedDivisor  [∀i,(P i).IsMaximal] (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
     Real.sqrt (Ideal.absNorm (reflectionExtractedDivisor P j e v):ℝ)=
       ∏i,if (j i=4 ∧ e i=v) ∨ (j i=0 ∧ v=0) then rootCard (O ⧸ P i) else 1 := by
   rw [reflectionExtractedDivisor,map_prod,Nat.cast_prod,Real.sqrt_prod]
@@ -142,8 +152,7 @@ theorem sqrt_norm_reflectionExtractedDivisor {ι : Type*} [Fintype ι]
   · intro i _
     exact Nat.cast_nonneg _
 
-theorem reflectedBranch_norm_bound {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
+theorem reflectedBranch_norm_bound  [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
     (j : ι→ℕ) (e : ι→Fin 3) (n b : O) :
     ‖reflectedBranch P hg j e n b‖≤
       Real.sqrt (Ideal.absNorm (reflectionExtractedDivisor P j e 1):ℝ)*
@@ -166,8 +175,7 @@ theorem reflectedBranch_norm_bound {ι : Type*} [Fintype ι]
     · simp [reflectedLocalSize,hj0]
     · simp [reflectedLocalSize,hj4,hj0]
 
-theorem reflectionExtractedDivisor_ne_zero {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) (hP : ∀i,P i≠0) (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
+theorem reflectionExtractedDivisor_ne_zero  (hP : ∀i,P i≠0) (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
     reflectionExtractedDivisor P j e v≠0 := by
   unfold reflectionExtractedDivisor
   apply Finset.prod_ne_zero_iff.mpr
@@ -177,8 +185,7 @@ theorem reflectionExtractedDivisor_ne_zero {ι : Type*} [Fintype ι]
   · exact hP i
   · exact one_ne_zero
 
-theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
+theorem reflectedBranch_divisibility  [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
     (hcop : Pairwise (fun i k => IsCoprime (P i) (P k)))
     (j : ι→ℕ) (e : ι→Fin 3) (n b : O) (hne : reflectedBranch P hg j e n b≠0) :
     reflectionExtractedDivisor P j e 1∣Ideal.span {n} ∧
@@ -223,6 +230,8 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
     rcases hi with ⟨hj,he⟩|⟨hj,he⟩
     · exact (hmemb i hj he).2
     · norm_num at he
+end
+
 
 end
 
@@ -259,16 +268,11 @@ def vstarSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   (HasCompactSupport.of_support_subset_isCompact isCompact_Icc (Vstar_support W a b hsupp)).toSchwartzMap
     (Vstar_contDiff W a b ha hsupp hW)
 
-@[simp] theorem vstarSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hsupp : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W) (x : ℝ) :
-    vstarSchwartz W a b ha hsupp hW x=Vstar W x := rfl
+
 
 end CompletedGauss
 
-namespace InitialMeanSquare
-open SecondPassArithmetic
 
-end InitialMeanSquare
 
 namespace CubicEisenstein
 open Filter MeasureTheory
@@ -284,7 +288,7 @@ lemma hyperbolicEuclideanCoordinates_upperPoint (z : ℂ) (v : ℝ) (hv : 0<v) :
 
 lemma euclideanToHyperbolic_coordinates (w : HyperbolicSpace) :
     euclideanToHyperbolic (hyperbolicEuclideanCoordinates w)=w := by
-  have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
+  have hp := hyperbolicHeight_pos w
   rw [euclideanToHyperbolic_positive _ hp]
   change upperPoint ((hyperbolicSpatialCoordinates w 0:ℂ)+Complex.I*(hyperbolicSpatialCoordinates w 1:ℂ))
     (hyperbolicSpatialCoordinates w 2) hp=w
@@ -297,13 +301,19 @@ lemma hyperbolicEuclideanCoordinates_toHyperbolic (p : EuclideanSpatial) (hp : 0
   funext j
   fin_cases j <;> simp
 
-def euclideanAction (g : SL(2,ℂ)) (p : EuclideanSpatial) : EuclideanSpatial :=
+section
+variable (g : SL(2,ℂ)) (p : EuclideanSpatial)
+include g p
+
+def euclideanAction  : EuclideanSpatial :=
   hyperbolicEuclideanCoordinates (g•euclideanToHyperbolic p)
 
-lemma euclideanAction_positive (g : SL(2,ℂ)) (p : EuclideanSpatial) :
+lemma euclideanAction_positive  :
     0<euclideanAction g p 2 := by
   change 0<hyperbolicHeight (g•euclideanToHyperbolic p)
   exact hyperbolicHeight_pos _
+end
+
 
 lemma euclideanAction_mul (g h : SL(2,ℂ)) :
     euclideanAction (g*h)=euclideanAction g ∘ euclideanAction h := by
@@ -333,7 +343,6 @@ lemma euclideanAction_diagonal (b : ℂ) (hb : b≠0) (p : EuclideanSpatial) (hp
 lemma euclideanAction_weyl (p : EuclideanSpatial) (hp : 0<p 2) :
     euclideanAction complexWeyl p=euclideanWeylAction p := by
   have hn : ‖p‖≠0 := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
-  have hnc : (‖p‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn
   have hq : 0<euclideanWeylAction p 2 := by
     rw [(euclideanWeylAction_apply p).2.2]
     exact mul_pos (sq_pos_of_ne_zero (one_div_ne_zero hn)) hp
@@ -516,19 +525,22 @@ lemma hyperbolicEuclideanCoordinates_continuous : Continuous hyperbolicEuclidean
   (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin 3 => ℝ)).symm.continuous.comp
     hyperbolicSpatialCoordinates_continuous
 
-lemma hyperbolicSpatialChart_toHyperbolic (p : EuclideanSpatial) (hp : 0<p 2) :
+section
+variable (p : EuclideanSpatial) (hp : 0<p 2)
+include p hp
+
+lemma hyperbolicSpatialChart_toHyperbolic  :
     hyperbolicSpatialChart (euclideanToHyperbolic p)=p.ofLp :=
   congrArg WithLp.ofLp (hyperbolicEuclideanCoordinates_toHyperbolic p hp)
 
-lemma euclideanToHyperbolic_contMDiffAt (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma euclideanToHyperbolic_contMDiffAt  :
     ContMDiffAt 𝓘(ℝ,EuclideanSpatial) 𝓘(ℝ,SpatialCoordinates) ∞ euclideanToHyperbolic p := by
   have ht : p.ofLp∈hyperbolicSpatialChart.target := by
     rw [←hyperbolicSpatialChart_toHyperbolic p hp]
     exact hyperbolicSpatialChart.map_source (Set.mem_univ _)
   have hs : ContMDiffOn 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,SpatialCoordinates) ∞
       hyperbolicSpatialChart.symm hyperbolicSpatialChart.target := by
-    simpa only [hyperbolicSpatial_chartAt] using
-      (contMDiffOn_chart_symm (I := 𝓘(ℝ,SpatialCoordinates)) (n := ∞) (x := euclideanToHyperbolic p))
+    exact (contMDiffOn_chart_symm (I := 𝓘(ℝ,SpatialCoordinates)) (n := ∞) (x := euclideanToHyperbolic p))
   have hd := (hs.contMDiffAt (hyperbolicSpatialChart.open_target.mem_nhds ht)).comp p
     (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin 3 => ℝ)).contDiff.contDiffAt.contMDiffAt
   apply hd.congr_of_eventuallyEq
@@ -536,42 +548,59 @@ lemma euclideanToHyperbolic_contMDiffAt (p : EuclideanSpatial) (hp : 0<p 2) :
     with q hq
   change euclideanToHyperbolic q=hyperbolicSpatialChart.symm q.ofLp
   rw [←hyperbolicSpatialChart_toHyperbolic q hq,hyperbolicSpatialChart.left_inv (Set.mem_univ _)]
+end
 
-def kernelTestField (f : kernelSmoothTests) (p : EuclideanSpatial) : ℂ :=
+
+section
+variable (f : kernelSmoothTests)
+include f
+
+section
+variable (p : EuclideanSpatial)
+include p
+
+def kernelTestField  : ℂ :=
   f.1 (integralOrbitProjection globalKubotaKernel (euclideanToHyperbolic p))
 
-lemma kernelTestField_contDiffAt (f : kernelSmoothTests) (p : EuclideanSpatial) (hp : 0<p 2) :
+section
+variable (hp : 0<p 2)
+include hp
+
+lemma kernelTestField_contDiffAt  :
     ContDiffAt ℝ ∞ (kernelTestField f) p :=
   (((f.2.1.comp kernelProjection_contMDiff) (euclideanToHyperbolic p)).comp p
     (euclideanToHyperbolic_contMDiffAt p hp)).contDiffAt
 
-lemma kernelTestField_re_contDiffAt (f : kernelSmoothTests) (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma kernelTestField_re_contDiffAt  :
     ContDiffAt ℝ ∞ (fun p => (kernelTestField f p).re) p :=
   Complex.reCLM.contDiff.contDiffAt.comp p (kernelTestField_contDiffAt f p hp)
 
-lemma kernelTestField_im_contDiffAt (f : kernelSmoothTests) (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma kernelTestField_im_contDiffAt  :
     ContDiffAt ℝ ∞ (fun p => (kernelTestField f p).im) p :=
   Complex.imCLM.contDiff.contDiffAt.comp p (kernelTestField_contDiffAt f p hp)
+end
+end
 
-lemma kernelTestField_invariant (f : kernelSmoothTests) (M : globalKubotaKernel) (p : EuclideanSpatial) :
+
+lemma kernelTestField_invariant  (M : globalKubotaKernel) (p : EuclideanSpatial) :
     kernelTestField f (euclideanAction (integralComplexMatrix M) p)=kernelTestField f p := by
   simp only [kernelTestField,euclideanAction,euclideanToHyperbolic_coordinates,integralOrbitProjection_eq]
 
-def kernelTestEnergyDensity (f : kernelSmoothTests) (w : HyperbolicSpace) : ℝ :=
+def kernelTestEnergyDensity  (w : HyperbolicSpace) : ℝ :=
   euclideanScalarDirichletDensity (fun p => (kernelTestField f p).re) (hyperbolicEuclideanCoordinates w)+
   euclideanScalarDirichletDensity (fun p => (kernelTestField f p).im) (hyperbolicEuclideanCoordinates w)
 
-lemma kernelTestEnergyDensity_nonneg (f : kernelSmoothTests) (w : HyperbolicSpace) :
+lemma kernelTestEnergyDensity_nonneg  (w : HyperbolicSpace) :
     0≤kernelTestEnergyDensity f w := by
   unfold kernelTestEnergyDensity euclideanScalarDirichletDensity
   positivity
 
-lemma kernelTestEnergyDensity_invariant (f : kernelSmoothTests) (M : globalKubotaKernel) (w : HyperbolicSpace) :
+lemma kernelTestEnergyDensity_invariant  (M : globalKubotaKernel) (w : HyperbolicSpace) :
     kernelTestEnergyDensity f (integralComplexMatrix M•w)=kernelTestEnergyDensity f w := by
   have he : hyperbolicEuclideanCoordinates (integralComplexMatrix M•w)=
       euclideanAction (integralComplexMatrix M) (hyperbolicEuclideanCoordinates w) := by
     simp only [euclideanAction,euclideanToHyperbolic_coordinates]
-  have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
+  have hp := hyperbolicHeight_pos w
   unfold kernelTestEnergyDensity
   rw [he]
   congr 1
@@ -584,14 +613,14 @@ lemma kernelTestEnergyDensity_invariant (f : kernelSmoothTests) (M : globalKubot
     · funext p
       exact congrArg Complex.im (kernelTestField_invariant f M p)
 
-def kernelQuotientEnergyDensity (f : kernelSmoothTests) : KernelQuotient→ℝ :=
+def kernelQuotientEnergyDensity  : KernelQuotient→ℝ :=
   Quotient.lift (kernelTestEnergyDensity f) (by
     intro u v huv
     obtain ⟨M,hM⟩ := huv
     rw [←hM]
     exact (kernelTestEnergyDensity_invariant f M u).symm)
 
-lemma kernelTestEnergyDensity_continuous (f : kernelSmoothTests) : Continuous (kernelTestEnergyDensity f) := by
+lemma kernelTestEnergyDensity_continuous  : Continuous (kernelTestEnergyDensity f) := by
   rw [continuous_iff_continuousAt]
   intro w
   have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
@@ -601,19 +630,19 @@ lemma kernelTestEnergyDensity_continuous (f : kernelSmoothTests) : Continuous (k
   exact (((ht.pow 2).mul (hr.norm.pow 2)).add ((ht.pow 2).mul (hi.norm.pow 2))).comp
     hyperbolicEuclideanCoordinates_continuous.continuousAt
 
-lemma kernelQuotientEnergyDensity_continuous (f : kernelSmoothTests) : Continuous (kernelQuotientEnergyDensity f) :=
+lemma kernelQuotientEnergyDensity_continuous  : Continuous (kernelQuotientEnergyDensity f) :=
   (kernelTestEnergyDensity_continuous f).quotient_lift _
 
-lemma kernelQuotientEnergyDensity_nonneg (f : kernelSmoothTests) (q : KernelQuotient) :
+lemma kernelQuotientEnergyDensity_nonneg  (q : KernelQuotient) :
     0≤kernelQuotientEnergyDensity f q := by
   induction q using Quotient.inductionOn with
   | _ w => exact kernelTestEnergyDensity_nonneg f w
 
-lemma kernelQuotientEnergyDensity_support (f : kernelSmoothTests) :
+lemma kernelQuotientEnergyDensity_support  :
     Function.support (kernelQuotientEnergyDensity f)⊆tsupport f.1 := by
   intro q hq
   by_contra hn
-  have hz : f.1=ᶠ[𝓝 q]0 := notMem_tsupport_iff_eventuallyEq.mp hn
+  have hz := notMem_tsupport_iff_eventuallyEq.mp hn
   induction q using Quotient.inductionOn with
   | _ w =>
     have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
@@ -635,23 +664,25 @@ lemma kernelQuotientEnergyDensity_support (f : kernelSmoothTests) :
     simp only [kernelTestEnergyDensity,euclideanScalarDirichletDensity,hzr.fderiv_eq,hzi.fderiv_eq,
       fderiv_zero,Pi.zero_apply,norm_zero,zero_pow (by decide : 2≠0),mul_zero,add_zero]
 
-lemma kernelQuotientEnergyDensity_hasCompactSupport (f : kernelSmoothTests) :
+lemma kernelQuotientEnergyDensity_hasCompactSupport  :
     HasCompactSupport (kernelQuotientEnergyDensity f) :=
   HasCompactSupport.of_support_subset_isCompact f.2.2 (kernelQuotientEnergyDensity_support f)
 
-lemma kernelQuotientEnergyDensity_integrable (f : kernelSmoothTests) :
+lemma kernelQuotientEnergyDensity_integrable  :
     Integrable (kernelQuotientEnergyDensity f) (integralQuotientVolume globalKubotaKernel) :=
   (kernelQuotientEnergyDensity_continuous f).integrable_of_hasCompactSupport
     (kernelQuotientEnergyDensity_hasCompactSupport f)
 
-def kernelDirichletEnergy (f : kernelSmoothTests) : ℝ :=
+def kernelDirichletEnergy  : ℝ :=
   ∫q,kernelQuotientEnergyDensity f q ∂integralQuotientVolume globalKubotaKernel
 
-lemma kernelDirichletEnergy_nonneg (f : kernelSmoothTests) : 0≤kernelDirichletEnergy f :=
+lemma kernelDirichletEnergy_nonneg  : 0≤kernelDirichletEnergy f :=
   integral_nonneg (kernelQuotientEnergyDensity_nonneg f)
-
-end CubicEisenstein
-
 end
 
-end OAI
+
+
+
+
+
+

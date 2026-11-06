@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownFactorAlignment
 
 @[expose] public section
@@ -15,13 +16,13 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownThirdTerm
+def heathBrownThirdTerm
     (N k : ℕ) (lambda : ℝ) : ℝ :=
   let r := heathBrownCriticalReciprocal k
   (N : ℝ) ^ (1 - 2 * r) *
     lambda ^ (-2 * r / (k : ℝ))
 
-noncomputable def heathBrownLemmaOneGoodConstant
+def heathBrownLemmaOneGoodConstant
     (k : ℕ) (A C epsilon : ℝ) : ℝ :=
   1 + 2 * heathBrownLemmaOneFourTermConstant k A C epsilon
 
@@ -29,12 +30,7 @@ theorem heathBrownThirdTerm_le_threeTerm
     {N k : ℕ} (hN : 1 ≤ N) {lambda : ℝ} (hlambda : 0 < lambda) :
     heathBrownThirdTerm N k lambda ≤ heathBrownThreeTerm N k lambda := by
   unfold heathBrownThirdTerm heathBrownThreeTerm
-  dsimp only
-  have hfirst : 0 ≤
-      (N : ℝ) ^ (1 - heathBrownCriticalReciprocal k) := by positivity
-  have hmiddle : 0 ≤
-      (N : ℝ) * lambda ^ heathBrownCriticalReciprocal k := by positivity
-  linarith
+  bound
 
 theorem heathBrownFourTerm_le_two_threeTerm
     {N k : ℕ} (hN : 1 ≤ N) (hk : 3 ≤ k)
@@ -105,8 +101,6 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
             ((N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda) := by ring
       _ ≤ heathBrownLemmaOneGoodConstant k A C epsilon *
             ((N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda) := by
-        have hfourPos := heathBrownLemmaOneFourTermConstant_pos
-          hk hA hC hepsilon
         unfold heathBrownLemmaOneGoodConstant
         exact mul_le_mul_of_nonneg_right (by linarith) hproduct0
       _ = heathBrownLemmaOneGoodConstant k A C epsilon *
@@ -142,6 +136,6 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
         ring
 
 
-end
 
-end GafniTao
+
+

@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 namespace SevenEighths.CenteredMomentTail
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open CenteredMomentCommonSupport CenteredMomentCorrelation
 open CenteredMomentSupportedCorrelation
 
 theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
@@ -110,7 +110,7 @@ theorem uniform_sector_lattice_tail (A : ℕ) :
     (by have : 0 < min 1 K₀ := lt_min zero_lt_one hK₀; positivity)
   gcongr
 
-end SevenEighths.CenteredMomentTail
-end
 
-end OAI
+
+
+

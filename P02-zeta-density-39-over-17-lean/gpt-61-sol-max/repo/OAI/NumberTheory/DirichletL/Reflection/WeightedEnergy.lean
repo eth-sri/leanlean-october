@@ -7,9 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open ActualEisensteinCubic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {φ ι : Type*} [Fintype φ] [Fintype ι] {N a c : Eis} {mode : Bool}
 
 lemma actualCuspWeightedColumn_norm_le_one {ι : Type*} [Fintype ι]
@@ -21,7 +21,7 @@ lemma actualCuspWeightedColumn_norm_le_one {ι : Type*} [Fintype ι]
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (actualCuspColumn_norm_le_one D0 s hc u m n b)).trans (hw n b)
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

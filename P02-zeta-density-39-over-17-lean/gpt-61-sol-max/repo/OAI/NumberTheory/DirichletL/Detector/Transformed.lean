@@ -8,11 +8,15 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped EisensteinO
 
-def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
+section
+variable (η : HeckeFamily.Character) (C : CalibrationData)
+    (D : Ideal O) (W₀ W₁ : ℝ → ℂ)
+include η C D W₀ W₁
+
+def poissonPhysicalProbe  (X Y Z : ℝ) : ℂ :=
   (Y:ℂ)⁻¹ * ∑' s : {I : Ideal O // Supported I},
     if ∀ p∈C.excluded, ¬p∣s.val then
       let a := primaryGenerator s.val
@@ -25,8 +29,7 @@ def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
           (elementNorm C.generator*q_s*X) t p.1 p.2)
     else 0
 
-theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (hWc : HasCompactSupport W₀)
+theorem markedPhysicalProbe_eq_poisson  (hWc : HasCompactSupport W₀)
     (hWs : ContDiff ℝ ∞ W₀) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) :
     markedPhysicalProbe η C D W₀ W₁ X Y Z = poissonPhysicalProbe η C D W₀ W₁ X Y Z := by
   unfold markedPhysicalProbe poissonPhysicalProbe
@@ -51,8 +54,10 @@ theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : Calibra
     simpa only [hn] using inner_mellin_poisson η C D (primaryGenerator s.val) has
       W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z hK hZ
   · rfl
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

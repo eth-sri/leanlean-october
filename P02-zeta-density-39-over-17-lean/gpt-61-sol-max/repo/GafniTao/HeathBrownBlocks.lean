@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownKernelFourier
 public import GafniTao.HeathBrownBlockParameter
 
@@ -34,8 +35,8 @@ theorem heathBrownBlockLength_pos (N K : ℕ) :
 theorem heathBrownBlockIndex_lt
     {N K n : ℕ} (hK : 0 < K) (hnOne : 1 ≤ n) (hnN : n ≤ N) :
     heathBrownBlockIndex N K n < K := by
-  have hmod : N % K < K := Nat.mod_lt N hK
-  have hdecomp : K * (N / K) + N % K = N := Nat.div_add_mod N K
+  have hmod := Nat.mod_lt N hK
+  have hdecomp := Nat.div_add_mod N K
   have hnsub : n - 1 < N := by omega
   rw [heathBrownBlockIndex, Nat.div_lt_iff_lt_mul (heathBrownBlockLength_pos N K)]
   simp only [heathBrownBlockLength]
@@ -46,10 +47,14 @@ theorem mem_heathBrownBlock {N K i n : ℕ} :
       1 ≤ n ∧ n ≤ N ∧ heathBrownBlockIndex N K n = i := by
   simp [heathBrownBlock, and_assoc]
 
-theorem heathBrownBlock_pair_distance
-    {N K i m n : ℕ}
+section
+variable {N K i m n : ℕ}
     (hm : m ∈ heathBrownBlock N K i)
-    (hn : n ∈ heathBrownBlock N K i) :
+    (hn : n ∈ heathBrownBlock N K i)
+include N K i m n hm hn
+
+theorem heathBrownBlock_pair_distance
+     :
     Nat.dist m n ≤ heathBrownBlockLength N K := by
   rw [mem_heathBrownBlock] at hm hn
   let L := heathBrownBlockLength N K
@@ -80,11 +85,11 @@ theorem heathBrownBlock_pair_distance
     omega
 
 theorem heathBrownBlock_pair_source_distance
-    {N K i m n : ℕ}
-    (hm : m ∈ heathBrownBlock N K i)
-    (hn : n ∈ heathBrownBlock N K i) :
+     :
     Nat.dist m n ≤ 1 + N / K := by
   exact heathBrownBlock_pair_distance hm hn
+end
+
 
 theorem heathBrown_sum_over_blocks
     {M : Type*} [AddCommMonoid M]
@@ -96,7 +101,7 @@ theorem heathBrown_sum_over_blocks
   apply Finset.sum_congr rfl
   intro n hn
   have hn' := Finset.mem_Icc.mp hn
-  have hi : heathBrownBlockIndex N K n ∈ Finset.range K :=
+  have hi :=
     Finset.mem_range.mpr (heathBrownBlockIndex_lt hK hn'.1 hn'.2)
   simp [Finset.sum_ite_eq, hi]
 
@@ -111,6 +116,6 @@ theorem heathBrown_block_sum_eq
   rfl
 
 
-end
 
-end GafniTao
+
+

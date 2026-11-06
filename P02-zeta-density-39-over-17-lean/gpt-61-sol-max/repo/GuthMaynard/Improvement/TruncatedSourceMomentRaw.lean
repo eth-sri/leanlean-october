@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.TruncatedSourceCubic
 public import GuthMaynard.Improvement.SpectralScaleBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -51,4 +50,4 @@ theorem fixed_truncated_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 
   apply hh.trans
   convert hout using 1 <;> ring
 
-end GuthMaynard.Improvement
+

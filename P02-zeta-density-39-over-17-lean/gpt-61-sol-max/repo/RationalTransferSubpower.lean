@@ -1,9 +1,9 @@
 module
+import Mathlib
 public import RationalFiniteHeight
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -13,9 +13,13 @@ def momentTransferCost (k H : ℕ) (T : ℝ) : ℝ :=
     (T+1+4*Real.exp (k : ℝ)*(H : ℝ)^(2*k)*
       (1+Real.log ⌊2*(k : ℝ)*Real.exp (k : ℝ)*(H : ℝ)^(2*k)⌋₊))
 
+section
+variable {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η)
+include k hk η hη
+
 /-- The logarithmic finite-height cost is uniformly a small power of H.
 The constant is chosen before H and T. -/
-theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem moment_transfer_cost_subpower  :
     ∃ C : ℝ, 0 < C ∧ ∀ H : ℕ, 1 ≤ H → ∀ T : ℝ, 0 ≤ T →
       momentTransferCost k H T ≤ C * (T + (H : ℝ)^(2*k)) * (H : ℝ)^η := by
   have hkR : (1 : ℝ) ≤ k := by exact_mod_cast hk
@@ -33,7 +37,7 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
   let Z := (H : ℝ)^η
   have hP : 1 ≤ P := one_le_pow₀ hHR
   have hZ : 1 ≤ Z := Real.one_le_rpow hHR hη.le
-  have he : 1 ≤ Real.exp (k : ℝ) := Real.one_le_exp_iff.mpr hkpos.le
+  have he := Real.one_le_exp_iff.mpr hkpos.le
   let X := 2*(k : ℝ)*Real.exp (k : ℝ)*P
   have hX1 : 1 ≤ X := by
     have hke : 1 ≤ 2*(k : ℝ)*Real.exp (k : ℝ) := by
@@ -80,7 +84,7 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
 /-- Coefficient-energy transfer with the exact asymptotic shape needed in the
 research argument. The arithmetic small-power estimate for the coefficient
 energy is not assumed or proved by this theorem. -/
-theorem rational_moment_transfer_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem rational_moment_transfer_subpower  :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℕ), 1 ≤ H → ∀ (T t₀ : ℝ), 0 ≤ T →
       ∀ (A : Finset ℚ) (c : ℚ → ℂ),
       (∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ 1) →
@@ -105,5 +109,7 @@ theorem rational_moment_transfer_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (h
     ring
   exact hb.trans (mul_le_mul_of_nonneg_right (hcost H hH T hT)
     (sum_nonneg (fun _ _ => sq_nonneg _)))
+end
 
-end Montgomery.RationalMoment
+
+

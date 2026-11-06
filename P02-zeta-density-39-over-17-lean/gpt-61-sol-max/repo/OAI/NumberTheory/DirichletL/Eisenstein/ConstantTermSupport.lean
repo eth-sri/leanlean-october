@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.FixedProfiles
 
 @[expose] public section
@@ -8,70 +9,70 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 namespace CubicEisenstein
 open MeasureTheory Set Filter
@@ -97,7 +98,6 @@ lemma multiset_cube_remainder {α : Type*} [DecidableEq α] (s : Multiset α) (p
     exact (Nat.mul_div_cancel' (hdiv q hq)).symm
 
 lemma residue_lambda_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
   exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
 
 lemma constant_coefficient_unramified_count [NormalizationMonoid O]
@@ -212,8 +212,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
   obtain ⟨u,r,a,hr,hfactor⟩ := constant_coefficient_cube_reduction c hc hlevel hA
   have ha : a ≠ 0 := by
     intro hz
-    rw [hz,zero_pow (by decide : (3:ℕ) ≠ 0),mul_zero] at hfactor
-    exact hc hfactor
+    simp_all
   have h01 := constant_coefficient_ramified_equation c hc hlevel hA u r a ha hfactor 0 1
   have husign := unit_eq_sign_of_symbol_class u (by
     simpa only [cubicExp_zero,one_pow,mul_one] using h01)
@@ -224,7 +223,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
         cubicExp,Int.reduceMod,Int.toNat_one,pow_one] using h10
     · simpa only [hu,symbol_neg_one _ (primaryCoord_primary 1 0),one_mul,
         cubicExp,Int.reduceMod,Int.toNat_one,pow_one] using h10
-  have hdiv : 3 ∣ r := (omega_primitive.pow_eq_one_iff_dvd r).mp hωr
+  have hdiv := (omega_primitive.pow_eq_one_iff_dvd r).mp hωr
   have hr0 : r=0 := by omega
   rw [hr0,pow_zero,mul_one] at hfactor
   rcases husign with hu | hu
@@ -254,19 +253,22 @@ namespace CanonicalQuadraticSieve
 section
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 
-def idealZeroMask (D : Ideal O) (z : O) : ℂ :=
+section
+variable (D : Ideal O)
+include D
+
+def idealZeroMask  (z : O) : ℂ :=
   if ∃ P ∈ UniqueFactorizationMonoid.normalizedFactors D, z ∈ P then 0 else 1
 
-theorem idealSupport_singleton_univ (D : Ideal O) :
+theorem idealSupport_singleton_univ  :
     idealSupport {D} D = Finset.univ := by
   apply Finset.eq_univ_of_forall
   intro P
   apply (mem_idealSupport_iff {D} D P).mpr
   obtain ⟨I, hI, hP⟩ := mem_primePool_iff.mp P.property
-  have hID : I = D := Finset.mem_singleton.mp hI
-  simpa only [hID] using hP
+  simp_all
 
-theorem singleton_rowCoprimeMask_eq_idealZeroMask (D : Ideal O) (z : O) :
+theorem singleton_rowCoprimeMask_eq_idealZeroMask  (z : O) :
     rowCoprimeMask (fun P : primePool {D} => P.val) Finset.univ z = idealZeroMask D z := by
   have he : (∃ P ∈ (Finset.univ : Finset (primePool {D})), z ∈ P.val) ↔
       ∃ P ∈ UniqueFactorizationMonoid.normalizedFactors D, z ∈ P := by
@@ -280,7 +282,11 @@ theorem singleton_rowCoprimeMask_eq_idealZeroMask (D : Ideal O) (z : O) :
       exact ⟨⟨P, hp⟩, Finset.mem_univ _, hz⟩
   simp only [rowCoprimeMask, idealZeroMask, he]
 
-theorem canonical_quadraticRow_star (D : Ideal O) (hD : Admissible D) (z : O) :
+section
+variable (hD : Admissible D) (z : O)
+include hD z
+
+theorem canonical_quadraticRow_star  :
     star (quadraticRow D z) = quadraticRow D z := by
   let F : Finset (Ideal O) := {D}
   have hF : ∀ I ∈ F, Admissible I := by
@@ -290,7 +296,7 @@ theorem canonical_quadraticRow_star (D : Ideal O) (hD : Admissible D) (z : O) :
   rw [quadraticRow_eq_pool F hF D (Finset.mem_singleton_self D)]
   exact QuadraticInitialBound.quadraticRow_star _ _ _ _
 
-theorem canonical_quadraticRow_squared (D : Ideal O) (hD : Admissible D) (z : O) :
+theorem canonical_quadraticRow_squared  :
     quadraticRow D z * quadraticRow D z = idealZeroMask D z := by
   let F : Finset (Ideal O) := {D}
   have hF : ∀ I ∈ F, Admissible I := by
@@ -301,10 +307,14 @@ theorem canonical_quadraticRow_squared (D : Ideal O) (hD : Admissible D) (z : O)
   rw [← QuadraticSquarefreeKernel.quadraticRow_mul _ _ _ z z, ← pow_two,
     QuadraticSquarefreeKernel.quadraticRow_square, idealSupport_singleton_univ]
   exact singleton_rowCoprimeMask_eq_idealZeroMask D z
+end
 
-def gcdMaskPrimes (D : Ideal O) : Finset (Ideal O) :=
+
+def gcdMaskPrimes  : Finset (Ideal O) :=
   {Ideal.span {lambda}, Ideal.span {(2 : O)}} ∪
     (UniqueFactorizationMonoid.normalizedFactors D).toFinset
+end
+
 
 instance gcdMaskPrimes_maximal (D : Ideal O) (P : gcdMaskPrimes D) : P.val.IsMaximal := by
   rcases Finset.mem_union.mp P.property with hp | hp
@@ -368,9 +378,7 @@ theorem canonical_same_ray_pair_poisson
   have hF : ∀ lengthScale ∈ F, Admissible lengthScale := by
     intro lengthScale hL
     rcases Finset.mem_insert.mp hL with rfl | hL
-    · exact hI
-    · have hLJ := Finset.mem_singleton.mp hL
-      simpa only [hLJ] using hJ
+    all_goals (simp_all)
   have hIF : I ∈ F := by simp [F]
   have hJF : J ∈ F := by simp [F]
   let p := poolPrimary F
@@ -405,12 +413,7 @@ theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : 
     quadraticRow I (u.val * z) * quadraticRow J (u.val * z) =
       quadraticRow I z * quadraticRow J z := by
   let F : Finset (Ideal O) := {I, J}
-  have hF : ∀ lengthScale ∈ F, Admissible lengthScale := by
-    intro lengthScale hL
-    rcases Finset.mem_insert.mp hL with rfl | hL
-    · exact hI
-    · have hLJ := Finset.mem_singleton.mp hL
-      simpa only [hLJ] using hJ
+  have hF : ∀ lengthScale ∈ F, Admissible lengthScale := by aesop
   have hIF : I ∈ F := by simp [F]
   have hJF : J ∈ F := by simp [F]
   let p := poolPrimary F
@@ -439,8 +442,15 @@ theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : 
     (quadraticRow_eq_primarySubset F hF J hJF w).symm
   simpa only [hrowI, hrowJ] using h
 
-theorem canonical_masked_pair_summable {α : Type*} (R : α → Ideal O) (S : Finset α)
-    (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+section
+variable {α : Type*} (R : α → Ideal O) (S : Finset α)
+include α R S
+
+section
+variable (I J : Ideal O)
+include I J
+
+theorem canonical_masked_pair_summable  (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     Summable (fun z : O => rowCoprimeMask R S z *
       (quadraticRow I z * quadraticRow J z) * W (‖eisEmbedding z‖ ^ 2 / M)) := by
   have hW : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
@@ -459,8 +469,7 @@ theorem canonical_masked_pair_summable {α : Type*} (R : α → Ideal O) (S : Fi
     _ = _ := by ring
 
 theorem canonical_pair_lattice_eq_primary_ideal_sum
-    {α : Type*} (R : α → Ideal O) (S : Finset α)
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+     (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     (∑' z : O, if lambda ∣ z then 0 else rowCoprimeMask R S z *
       (quadraticRow I z * quadraticRow J z) * W (‖eisEmbedding z‖ ^ 2 / M)) =
@@ -482,9 +491,11 @@ theorem canonical_pair_lattice_eq_primary_ideal_sum
   change (∑' z : O, if lambda ∣ z then (0 : ℂ) else _) = _ at ht
   have hn (lengthScale : GoodIdeal) := primaryGenerator_norm_sq lengthScale.val lengthScale.property
   simpa only [hn] using ht
+end
+
 
 theorem canonical_mask_lattice_eq_six_all_ideals
-    {α : Type*} (R : α → Ideal O) (S : Finset α)
+    
     (hmask : ∀ z : O, lambda ∣ z → rowCoprimeMask R S z = 0)
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
@@ -525,6 +536,8 @@ theorem canonical_mask_lattice_eq_six_all_ideals
     dsimp only [f]
     rw [hz, hmask 0 (dvd_zero _)]
     simp only [zero_mul]
+end
+
 
 end
 
@@ -551,11 +564,15 @@ theorem badPrime_injective : Function.Injective badPrime := by
     exact Ideal.subset_span (by simp)
   · rfl
 
-theorem supported_primaryGenerator_ne_zero (lengthScale : Ideal O) (hL : Supported lengthScale) :
+section
+variable (lengthScale : Ideal O)
+include lengthScale
+
+theorem supported_primaryGenerator_ne_zero  (hL : Supported lengthScale) :
     primaryGenerator lengthScale ≠ 0 :=
   primaryGenerator_ne_zero_of_good_factors lengthScale hL.1 (fun P hP => (hL.2 P hP).1)
 
-theorem supported_span_primaryGenerator_iff (lengthScale : Ideal O) :
+theorem supported_span_primaryGenerator_iff  :
     Supported (Ideal.span {primaryGenerator lengthScale}) ↔ Supported lengthScale := by
   constructor
   · intro h
@@ -568,12 +585,14 @@ theorem supported_span_primaryGenerator_iff (lengthScale : Ideal O) :
     rw [(primaryGenerator_spec lengthScale (supported_primaryGenerator_ne_zero lengthScale h)).1]
     exact h
 
-theorem badPrime_mask_primaryGenerator (lengthScale : Ideal O) :
+theorem badPrime_mask_primaryGenerator  :
     rowCoprimeMask badPrime Finset.univ (primaryGenerator lengthScale) = if Supported lengthScale then 1 else 0 := by
   rw [badPrime_mask, supported_span_primaryGenerator_iff]
-
-end CanonicalQuadraticSieve
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -4,8 +4,7 @@ public import IntervalExcessTransfer
 public import MathCollab.Density.Stronger.SeparatedVolume
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
 open MathCollab.Density MathCollab.Density.Stronger
@@ -57,4 +56,4 @@ theorem ExponentPair.critical_slab_excess {k l η ε : ℝ}
   have hh := critical_excess_integral_le_two_tails_interval hv hq htail
   convert hh using 1
   congr 1 <;> ring_nf
-end TaoTrudgianYang2025
+

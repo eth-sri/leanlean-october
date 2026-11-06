@@ -9,12 +9,16 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
-def ramifiedIndices (S : Finset (Ideal O)) (u : FreeRow) : Finset {P : PrimeIdeal // P.val∉S} :=
+section
+variable (S : Finset (Ideal O))
+include S
+
+def ramifiedIndices  (u : FreeRow) : Finset {P : PrimeIdeal // P.val∉S} :=
   (SmoothMobiusCorrection.primeSet (Ideal.span {u.val})).subtype (fun P => P.val∉S)
 
-theorem mem_ramifiedIndices (S : Finset (Ideal O)) (u : FreeRow)
+theorem mem_ramifiedIndices  (u : FreeRow)
     (P : {P : PrimeIdeal // P.val∉S}) : P∈ramifiedIndices S u ↔ P.val.val∣Ideal.span {u.val} := by
   simp only [ramifiedIndices,Finset.mem_subtype,SmoothMobiusCorrection.mem_primeSet,
     IdealMobiusDivisorSum.primeSupport,Multiset.mem_toFinset,
@@ -22,13 +26,16 @@ theorem mem_ramifiedIndices (S : Finset (Ideal O)) (u : FreeRow)
       (show (Ideal.span {u.val}:Ideal O)≠0 from Ideal.span_singleton_eq_bot.not.mpr u.property.1),
     P.val.property,true_and]
 
-def ramifiedFactor (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (η : Character) (u : FreeRow) (P : {P : PrimeIdeal // P.val∉S}) (x w z : ℂ) : ℂ :=
+section
+variable (hS : SourceExclusions S)
+    (η : Character) (u : FreeRow)
+include hS η u
+
+def ramifiedFactor  (P : {P : PrimeIdeal // P.val∉S}) (x w z : ℂ) : ℂ :=
   if P.val.val∣Ideal.span {u.val} then
     ramifiedCorrection η u P.val (outside_prime_supported S hS.bad P.val P.property) x w z else 1
 
-theorem ramifiedFactor_hasProd (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (η : Character) (u : FreeRow) (x w z : ℂ) :
+theorem ramifiedFactor_hasProd  (x w z : ℂ) :
     HasProd (fun P =>ramifiedFactor S hS η u P x w z) (ramifiedProduct S hS η u x w z) := by
   have he : (∏ P∈ramifiedIndices S u,ramifiedFactor S hS η u P x w z)=
       ramifiedProduct S hS η u x w z := by
@@ -48,6 +55,9 @@ theorem ramifiedFactor_hasProd (S : Finset (Ideal O)) (hS : SourceExclusions S)
   apply hasProd_prod_of_ne_finset_one
   intro P hP
   exact ite_eq_right (fun hd => hP ((mem_ramifiedIndices S u P).mpr hd))
+end
+end
+
 
 theorem supported_prime_coprime (P : PrimeIdeal) (hs : Supported P.val) (u : O)
     (hn : ¬P.val∣Ideal.span {u}) : IsCoprime P.val (Ideal.span {u}) := by
@@ -85,8 +95,8 @@ theorem continuedCorrection_eq_initial (S : Finset (Ideal O)) (hS : SourceExclus
     simpa only [hlocal,continuedCorrection,unramifiedProduct] using he
   exact hh.tprod_eq.symm
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

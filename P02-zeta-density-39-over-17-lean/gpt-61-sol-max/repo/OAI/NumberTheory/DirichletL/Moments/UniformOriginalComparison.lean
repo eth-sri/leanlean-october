@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformOriginalEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformOriginalComparison
@@ -66,8 +66,8 @@ theorem actual_original_comparison (epsilon Cscale xi saving L : ℝ)
   have hh := he.trans (add_le_add (mul_le_mul_of_nonneg_left hretained (by norm_num : (0:ℝ)≤2)) le_rfl)
   convert hh using 1 ; ring
 
-end SevenEighths.CenteredMomentUniformOriginalComparison
 
-end
 
-end OAI
+
+
+

@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalCubeBins
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 theorem canonical_probe_exists_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
@@ -36,7 +36,7 @@ theorem canonical_probe_exists_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
         detectorMaximum (sourceDetectorFamily S hS.prime η u (ψ u)) (3*(idx u+1:ℕ)*Z^τ)<a+2*e ∧
         (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS.prime η u (ψ u) j) s=0 ∧
           ¬((sourceDetectorFamily S hS.prime η u (ψ u) j).residue=1 ∧ s=1) ∧
-          a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
+          a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*Z^τ)) ∧
       let alpha : FreeRow→ℝ := fun u=>51/100+e*grid u
       let H : FreeRow→ℝ := fun u=>(3*idx u+1:ℕ)*Z^τ
       ‖compensatedPhysicalProbe η (calibrationForSet S hmax) W0 W1
@@ -66,8 +66,8 @@ theorem canonical_probe_exists_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
     have : 0≤Z^τ := Real.rpow_nonneg (by linarith) _
     linarith
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

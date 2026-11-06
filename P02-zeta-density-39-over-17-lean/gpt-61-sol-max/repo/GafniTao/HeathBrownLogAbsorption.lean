@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownCriticalExponents
 
 @[expose] public section
@@ -15,7 +16,7 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownLogConstant (epsilon : ℝ) : ℝ :=
+def heathBrownLogConstant (epsilon : ℝ) : ℝ :=
   1 + 2 / epsilon
 
 theorem heathBrownLogConstant_pos
@@ -32,7 +33,7 @@ theorem heathBrown_one_add_log_le
         (N : ℝ) ^ (epsilon / 2) := by
   have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hhalf : 0 < epsilon / 2 := by positivity
-  have hone : (1 : ℝ) ≤ (N : ℝ) ^ (epsilon / 2) :=
+  have hone :=
     Real.one_le_rpow hNReal hhalf.le
   have hlog := Real.log_le_rpow_div
     (show (0 : ℝ) ≤ N by positivity) hhalf
@@ -74,6 +75,6 @@ theorem heathBrown_one_add_log_rpow_le
   exact hmain.trans (mul_le_mul_of_nonneg_left hpower (by positivity))
 
 
-end
 
-end GafniTao
+
+

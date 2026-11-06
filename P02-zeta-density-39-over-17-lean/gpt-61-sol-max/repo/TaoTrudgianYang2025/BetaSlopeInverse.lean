@@ -21,27 +21,41 @@ open Set Expdb Filter
 open scoped Topology ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-def modelPhaseSlopeRange (F : ℝ → ℝ) : Set ℝ :=
+
+section
+variable (F : ℝ → ℝ)
+include F
+
+def modelPhaseSlopeRange  : Set ℝ :=
   deriv F '' Ioo (1 : ℝ) 2
 
-def modelPhaseInverseSlope (F : ℝ → ℝ) : ℝ → ℝ :=
+def modelPhaseInverseSlope  : ℝ → ℝ :=
   Function.invFunOn (deriv F) (Ioo (1 : ℝ) 2)
+end
 
-theorem approximateModelPhase_contDiffAt {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
+
+section
+variable {σ δ : ℝ}
+include σ δ
+
+section
+variable {P : ℕ} {F : ℝ → ℝ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
-    {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
+    {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2)
+include P F hF u hu
+
+theorem approximateModelPhase_contDiffAt  :
     ContDiffAt ℝ ∞ F u :=
   hF.1.contDiffAt (Icc_mem_nhds hu.1 hu.2)
 
-theorem approximateModelPhase_deriv_contDiffAt {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
-    (hF : IsApproximateModelPhaseFunction F σ P δ)
-    {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
+theorem approximateModelPhase_deriv_contDiffAt  :
     ContDiffAt ℝ ∞ (deriv F) u := by
   exact (approximateModelPhase_contDiffAt hF hu).derivWithin (by simp)
+end
 
-theorem approximateModelPhase_deriv_strictAntiOn {σ δ : ℝ} {F : ℝ → ℝ}
+
+theorem approximateModelPhase_deriv_strictAntiOn  {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ) :
     StrictAntiOn (deriv F) (Ioo (1 : ℝ) 2) := by
@@ -53,36 +67,47 @@ theorem approximateModelPhase_deriv_strictAntiOn {σ δ : ℝ} {F : ℝ → ℝ}
     have hb := (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hui).1
     have hp := modelPhaseCurvatureLower_pos hσ
     linarith
+end
 
-theorem modelPhaseInverseSlope_mem {F : ℝ → ℝ} {v : ℝ}
-    (hv : v ∈ modelPhaseSlopeRange F) :
+
+section
+variable {F : ℝ → ℝ} {v : ℝ}
+    (hv : v ∈ modelPhaseSlopeRange F)
+include F v hv
+
+theorem modelPhaseInverseSlope_mem  :
     modelPhaseInverseSlope F v ∈ Ioo (1 : ℝ) 2 :=
   Function.invFunOn_mem hv
 
-theorem deriv_modelPhaseInverseSlope_apply {F : ℝ → ℝ} {v : ℝ}
-    (hv : v ∈ modelPhaseSlopeRange F) :
+theorem deriv_modelPhaseInverseSlope_apply  :
     deriv F (modelPhaseInverseSlope F v) = v :=
   Function.invFunOn_eq hv
+end
 
-theorem modelPhaseInverseSlope_deriv {σ δ : ℝ} {F : ℝ → ℝ}
+
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
+include σ δ F hσ hδ hF
+
+section
+variable {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2)
+include u hu
+
+theorem modelPhaseInverseSlope_deriv  :
     modelPhaseInverseSlope F (deriv F u) = u :=
   (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).injOn.leftInvOn_invFunOn hu
 
-theorem approximateModelPhase_secondDeriv_ne_zero {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
+theorem approximateModelPhase_secondDeriv_ne_zero  :
     deriv (deriv F) u ≠ 0 := by
   have hb := (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hu).1
   have hp := modelPhaseCurvatureLower_pos hσ
   linarith
+end
 
-theorem modelPhaseInverseSlope_hasStrictDerivAt {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
+
+theorem modelPhaseInverseSlope_hasStrictDerivAt 
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
     HasStrictDerivAt (modelPhaseInverseSlope F)
       (deriv (deriv F) (modelPhaseInverseSlope F v))⁻¹ v := by
@@ -94,9 +119,7 @@ theorem modelPhaseInverseSlope_hasStrictDerivAt {σ δ : ℝ} {F : ℝ → ℝ}
   filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx
   exact modelPhaseInverseSlope_deriv hσ hδ hF hx
 
-theorem modelPhaseSlopeRange_isOpen {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ) :
+theorem modelPhaseSlopeRange_isOpen  :
     IsOpen (modelPhaseSlopeRange F) := by
   apply isOpen_iff_mem_nhds.mpr
   rintro v ⟨u, hu, rfl⟩
@@ -105,9 +128,7 @@ theorem modelPhaseSlopeRange_isOpen {σ δ : ℝ} {F : ℝ → ℝ}
   have hi := Filter.image_mem_map (m := deriv F) (isOpen_Ioo.mem_nhds hu)
   rwa [hd.map_nhds_eq (approximateModelPhase_secondDeriv_ne_zero hσ hδ hF hu)] at hi
 
-theorem modelPhaseInverseSlope_contDiffAt {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
+theorem modelPhaseInverseSlope_contDiffAt 
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
     ContDiffAt ℝ ∞ (modelPhaseInverseSlope F) v := by
   rcases hv with ⟨u, hu, rfl⟩
@@ -120,5 +141,7 @@ theorem modelPhaseInverseSlope_contDiffAt {σ δ : ℝ} {F : ℝ → ℝ}
     exact modelPhaseInverseSlope_deriv hσ hδ hF hx
   exact (hc.to_localInverse he.hasFDerivAt (by simp)).congr_of_eventuallyEq
     (he.localInverse_unique hg)
+end
 
-end TaoTrudgianYang2025
+
+

@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorWitness
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorActualBoundary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRows
 open CenteredMomentDivisorRaw CenteredMomentDivisorWitness CenteredMomentSlotRatios HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem selected_log_identity (D : Ideal O)
@@ -30,8 +30,12 @@ theorem selected_log_identity (D : Ideal O)
   rw [Finset.sum_sub_distrib]
   ring
 
-theorem nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
     (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+include η m A z t S hS
+
+theorem nonzero_row_formal_boundary 
     (β : ι → Ideal O → ℂ) (W : ι → ℝ → ℂ) (lo hi P : ι → ℝ)
     (hlo : ∀ i,0 < lo i) (hP : ∀ i,0 < P i)
     (hW : ∀ i,Function.support (W i) ⊆ Set.Icc (lo i) (hi i))
@@ -63,8 +67,7 @@ theorem nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
   have hh := (le_abs_self (∑ i∈frozenIndices D a,Real.logb Z ((Ideal.absNorm (v i:Ideal O):ℝ)/P i))).trans hr
   linarith
 
-theorem original_nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+theorem original_nonzero_row_formal_boundary 
     (ν : ι → Ideal O → ℂ) (W : ι → ℝ → ℂ) (lo hi P : ι → ℝ)
     (hlo : ∀ i,0 < lo i) (hP : ∀ i,0 < P i)
     (hW : ∀ i,Function.support (W i) ⊆ Set.Icc (lo i) (hi i))
@@ -77,9 +80,11 @@ theorem original_nonzero_row_formal_boundary (η : Character) (m A z : O) (t : �
       (∑ i,logWindow (lo i) (hi i))/Real.log Z :=
   nonzero_row_formal_boundary η m A z t S hS _ W lo hi P hlo hP hW
     (fun _i _I h => (mul_ne_zero_iff.mp h).2) D hD a W₁ W₂ X₁ X₂ Y₁ Y₂ Z hZ hne
-
-end SevenEighths.CenteredMomentDivisorActualBoundary
-
 end
 
-end OAI
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.ChildState
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalRadial
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFiber
@@ -12,16 +13,16 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight
+open CenteredMomentDetectorDictionary
+open CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -45,8 +46,7 @@ lemma natural_product_eq_positive {η:Character}{z:O}(F:NaturalRow η z)
   have he:heightCoefficient (β i) 0=β i:=by
     funext I
     simp only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one]
-  rw [he] at hs
-  exact hs
+  simp_all <;> nlinarith
 
 lemma natural_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠0)
     (W₁ W₂:ℝ→ℂ)(pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
@@ -86,10 +86,14 @@ lemma natural_subset_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z�
   simp_rw [hp] at hh
   exact hh
 
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
 
-def allocatedEnergy (η:Character)(r:Radial)(D:Ideal O)
+section
+variable (η:Character)(r:Radial)
+include η r
+
+def allocatedEnergy (D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2))) (V₁ V₂:Plain)
     (pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
     (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(D₁ D₂:Finset (Ideal O))(J:Finset α):ℝ:=
@@ -103,7 +107,7 @@ def allocatedEnergy (η:Character)(r:Radial)(D:Ideal O)
     (clippedScale (rawScale D a X₂ 1)/(Ideal.absNorm (∏I∈D₂,I):ℝ))
     r.keep r.profile r.scale
 
-lemma child_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠0)
+lemma child_radial_eq_energy (hz:∀z,r.keep z→z≠0)
     (D:Ideal O)(a:Allocation D (Finset.univ:Finset (α⊕Fin 2))) (V₁ V₂:Plain)
     (pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)(hP:∀i,0<P i)
     (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(D₁ D₂:Finset (Ideal O))(J:Finset α)
@@ -123,11 +127,17 @@ lemma child_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠0)
     (clippedScale (rawScale D a X₂ 1)/(Ideal.absNorm (∏I∈D₂,I):ℝ))
     (div_pos (by unfold clippedScale;positivity) hd₁)
     (div_pos (by unfold clippedScale;positivity) hd₂) (fun i _=>hP i)
+end
 
-def commonAllocatedEnergy (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
+
+section
+variable (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
     (B:actualAllocations s.pools C)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (V₁ V₂:Plain)(r:Radial)(left:Bool)(D₁ D₂:Finset (Ideal O))
+    (V₁ V₂:Plain)(r:Radial)
+include s τ v C R B D a V₁ V₂ r
+
+def commonAllocatedEnergy (left:Bool)(D₁ D₂:Finset (Ideal O))
     (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)):ℝ:=
   let d:=commonData (withHeight s τ v) C R B
   if left then allocatedEnergy τ r D a V₁ V₂ d.slots d.coefficient d.P
@@ -135,10 +145,7 @@ def commonAllocatedEnergy (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
   else allocatedEnergy τ r D a V₁ V₂ d.slots d.coefficient d.P
     v d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos D₁ D₂ J
 
-lemma commonChild_energy (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
-    (B:actualAllocations s.pools C)(D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (V₁ V₂:Plain)(r:Radial)(hz:∀z,r.keep z→z≠0)(left:Bool)(D₁ D₂:Finset (Ideal O))
+lemma commonChild_energy (hz:∀z,r.keep z→z≠0)(left:Bool)(D₁ D₂:Finset (Ideal O))
     (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
     (hD₁:∀I∈D₁,I≠0)(hD₂:∀I∈D₂,I≠0):
     radialEnergy (fun z=>commonChild s τ v C R B D a V₁ V₂ left z D₁ D₂ J)
@@ -149,9 +156,11 @@ lemma commonChild_energy (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
       v d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos D₁ D₂ J hD₁ hD₂
   · exact child_radial_eq_energy τ r hz D a V₁ V₂ d.slots d.coefficient d.P d.P_pos
       v d.X₁ d.X₂ d.X₁_pos d.X₂_pos D₁ D₂ J hD₁ hD₂
-
-end SevenEighths.CenteredMomentEnergyAllocatedChildren
-
 end
 
-end OAI
+
+
+
+
+
+

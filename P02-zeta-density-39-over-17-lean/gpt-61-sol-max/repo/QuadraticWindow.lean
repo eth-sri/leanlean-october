@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import QuadraticScalarAbsorption
 public import DraftParameters
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -30,8 +30,8 @@ theorem quadratic_monomial_budgets {σ a δ T N : ℝ}
     N^3*T/L ≤ Q*S^((1:ℝ)/2)*V^4 ∧
     N^3*T^((1:ℝ)/4) ≤ Q*S^((5:ℝ)/12)*V^4 := by
   have hTp : 0 < T := by linarith
-  have ht : 0 < Real.log T := Real.log_pos hT
-  let x : ℝ := Real.logb T N
+  have ht := Real.log_pos hT
+  let x := Real.logb T N
   have hNx : T^x=N := Real.rpow_logb hTp (by linarith) hN
   have hxa : a ≤ x := by
     have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
@@ -89,4 +89,4 @@ theorem quadratic_monomial_budgets {σ a δ T N : ℝ}
   · have hh := mul_nonneg (show 0 ≤ (5/12)*p+(4*σ-3)*x-1/4 by linarith only [hb2]) ht.le
     nlinarith only [hh,hd]
 
-end Montgomery.RationalMoment
+

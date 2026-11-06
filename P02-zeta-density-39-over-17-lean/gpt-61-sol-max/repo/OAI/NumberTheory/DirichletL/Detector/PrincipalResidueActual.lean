@@ -11,8 +11,8 @@ open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalResidueActual
 open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
-open ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Continuation
-open ActualEisensteinCubic CompletedGauss
+open ProbeFiniteProductBounds ProbeEuler HeckeSignal ProbePhysical
+open CompletedGauss
 
 def residueWeights {κ : Type*} (W : κ → ℝ → ℝ) (scale : κ → ℝ)
     (j : κ) (p : PrimeIdeal) : ℝ :=
@@ -69,7 +69,7 @@ theorem normalized_actual_window_residue {κ : Type*}
   · intro t
     exact actual_window_residue η S T W scale _
 
-end SevenEighths.ProbePrincipalResidueActual
-end
 
-end OAI
+
+
+

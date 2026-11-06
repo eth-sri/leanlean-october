@@ -12,16 +12,20 @@ actual inverse on their full open domains. No compactness constant
 depending on the individual phase is used in these bounds.
 -/
 
-noncomputable section
+
 
 open Set Expdb
 open scoped ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
+
+section
+variable {F : ℝ → ℝ}
+include F
 
 theorem approximateModelPhase_slope_gap_upper_abs
-    {F : ℝ → ℝ} {σ δ u w : ℝ}
+     {σ δ u w : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2) :
@@ -40,7 +44,7 @@ theorem approximateModelPhase_slope_gap_upper_abs
     (convex_Ioo (1 : ℝ) 2).norm_image_sub_le_of_norm_hasDerivWithin_le hd hb hw hu
 
 theorem modelPhaseMorseCoordinate_deriv_bounds
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
+     {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -90,7 +94,7 @@ theorem modelPhaseMorseCoordinate_deriv_bounds
       nlinarith only [h]
 
 theorem modelPhaseMorseInverse_deriv_bounds
-    {F : ℝ → ℝ} {σ δ v z : ℝ}
+     {σ δ v z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v) :
@@ -106,5 +110,7 @@ theorem modelPhaseMorseInverse_deriv_bounds
     simpa only [one_div,inv_div] using h'
   · have h' := one_div_le_one_div_of_le (div_pos hc (Real.sqrt_pos.mpr hC)) h.1
     simpa only [one_div,inv_div] using h'
+end
 
-end TaoTrudgianYang2025
+
+

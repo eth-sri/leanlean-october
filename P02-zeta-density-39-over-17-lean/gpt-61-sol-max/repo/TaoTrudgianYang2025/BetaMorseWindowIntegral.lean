@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedMorseLocal
 
@@ -12,13 +13,13 @@ closed quadratic window. The change of variables uses the actual smooth
 inverse and its actual positive Jacobian.
 -/
 
-noncomputable section
+
 
 open Set Expdb Filter MeasureTheory
 open scoped ContDiff Topology FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem integral_inverseMorse_window
     {F : ℝ → ℝ} {σ δ v H : ℝ}
@@ -42,7 +43,7 @@ theorem integral_inverseMorse_window
     rintro u ⟨z,hz,rfl⟩
     exact modelPhaseMorseInverse_mem (hs' hz)
   have he := intervalIntegral.integral_deriv_smul_comp' hd hc (hg.mono hi)
-  simpa only [Function.comp_def,Complex.real_smul] using he.symm
+  exact he.symm
 
 theorem modelPhaseMorse_window_integral
     {χ F : ℝ → ℝ} {σ δ v H : ℝ}
@@ -73,4 +74,4 @@ theorem modelPhaseMorse_window_integral
   rw [modelPhaseMorseWeight_eq hz']
   exact modelPhaseMorse_integrand hσ hδ hF hv hz' T
 
-end TaoTrudgianYang2025
+

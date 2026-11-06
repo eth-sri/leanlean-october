@@ -26,11 +26,19 @@ theorem wooleySection7Node_succ_le
   unfold wooleySection7Node
   omega
 
+section
+variable {k r p c : ℕ}
+include k r p c
+
+section
+variable (hrk : r ≤ k) (h : ℤ) (hh : h ≠ 0)
+    (psi : Fin r → Polynomial ℤ)
+include hrk h hh psi
+
 /-- The integral coefficient supplied by the Laurent Taylor factorization
 for row `i`, column `l` of the source matrix. -/
 def wooleySection7OmegaEntry
-    {k r p c : ℕ} (hrk : r ≤ k) (h : ℤ) (hh : h ≠ 0)
-    (psi : Fin r → Polynomial ℤ) (i l : Fin r) : ℤ :=
+     (i l : Fin r) : ℤ :=
   Classical.choose
     (wooley_taylorCoefficient_exists_laurent_omega
       (p := p) (c := c) (i := (i : ℕ) + 1)
@@ -40,13 +48,11 @@ def wooleySection7OmegaEntry
 /-- The source matrix `A=(Omega_il)`, with rows indexed by Taylor degree and
 columns indexed by the top `r` source equations. -/
 def wooleySection7OmegaMatrix
-    {k r p c : ℕ} (hrk : r ≤ k) (h : ℤ) (hh : h ≠ 0)
-    (psi : Fin r → Polynomial ℤ) : Matrix (Fin r) (Fin r) ℤ :=
+     : Matrix (Fin r) (Fin r) ℤ :=
   fun i l => wooleySection7OmegaEntry (p := p) (c := c) hrk h hh psi i l
 
 theorem wooleySection7OmegaEntry_spec
-    {k r p c : ℕ} (hrk : r ≤ k) (h : ℤ) (hh : h ≠ 0)
-    (psi : Fin r → Polynomial ℤ) (i l : Fin r) :
+     (i l : Fin r) :
     let j := wooleySection7Node k r l + 1
     let degree := (i : ℕ) + 1
     ((taylor h
@@ -61,16 +67,20 @@ theorem wooleySection7OmegaEntry_spec
       (p := p) (c := c) (i := (i : ℕ) + 1)
       (j := wooleySection7Node k r l + 1) (k := k)
       h hh (wooleySection7Node_succ_le hrk l) (psi l))
+end
+
 
 theorem wooleySection7OmegaMatrix_mod_prime
-    {k r p c : ℕ} (hc : 1 ≤ c) (hrk : r ≤ k)
+     (hc : 1 ≤ c) (hrk : r ≤ k)
     (h : ℤ) (hh : h ≠ 0) (psi : Fin r → Polynomial ℤ)
     (i l : Fin r) :
     ((wooleySection7OmegaMatrix (p := p) (c := c) hrk h hh psi i l : ℤ) : ZMod p) =
       (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p) := by
   exact wooley_taylorOmega_mod_prime hc
     (wooleySection7OmegaEntry_spec (p := p) (c := c) hrk h hh psi i l).2
-
 end
 
-end GafniTao
+
+
+
+

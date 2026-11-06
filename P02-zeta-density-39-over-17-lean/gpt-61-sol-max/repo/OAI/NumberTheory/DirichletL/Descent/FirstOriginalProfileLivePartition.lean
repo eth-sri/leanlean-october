@@ -11,7 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -44,21 +44,26 @@ lemma sum_live_joint_cells (S : Finset (OriginalIndex ι)) (pool : Finset ι)
       Finset.mem_image.mpr ⟨(x,j),Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨hx,hj⟩,hz⟩,rfl⟩
     simp [hk]
 
-lemma sourceSummand_zero_of_weight (hp : ∀i,p i≠0)
+section
+variable (hp : ∀i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+include hp hcop hg
+
+lemma sourceSummand_zero_of_weight 
     (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
     (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
     (x : OriginalIndex ι) (j : FirstCommonIndex ι) (hx : firstOriginalWeight p β cutoff x.1 x.2=0) :
     sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K x j=0 := by
   simp [sourceSummand,weight,retainedCubeWeight,hx]
 
-lemma joint_cell_eq_refined (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
+section
+variable (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
     (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
     (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
+include pool Q labels β cutoff Ψ m mark W Φ K Y
+
+lemma joint_cell_eq_refined 
     (k : JointKey) :
     let S := firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y
     let term := sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K
@@ -78,12 +83,7 @@ lemma joint_cell_eq_refined (hp : ∀i,p i≠0)
       · simp [jointKey,hs,hj,labelGate,Prod.ext_iff]
     · simp [jointKey,hs,Prod.ext_iff]
 
-theorem original_retained_joint_partition (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
-    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
+theorem original_retained_joint_partition 
     (s : Fin 9→ℝ) (hs : ∀i,0<s i) :
     let S := firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y
     let term := sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K
@@ -97,8 +97,11 @@ theorem original_retained_joint_partition (hp : ∀i,p i≠0)
   apply Finset.sum_congr rfl
   intro k hk
   exact joint_cell_eq_refined p hp hcop hg pool Q labels β cutoff Ψ m mark W Φ K Y k
-
-end SevenEighths.InverseMomentFirstOriginalProfile
+end
 end
 
-end OAI
+
+
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -14,8 +15,7 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -28,9 +28,7 @@ theorem exists_norm_zetaShortDivisorTestFunction_le :
   intro T G x hT hG hGT hx
   have hx0 : 0 < x := by linarith
   have harg : |((Real.log x : ℂ) - zetaGammaLeadingLog T).im| ≤ Real.pi / 2 := by
-    simp only [zetaGammaLeadingLog, Complex.sub_im, Complex.ofReal_im,
-      Complex.mul_im, Complex.ofReal_re, Complex.I_im, Complex.I_re, mul_one,
-      mul_zero, add_zero, zero_sub, neg_neg, abs_of_pos (by positivity : 0 < Real.pi / 2)]
+    simp only [zetaGammaLeadingLog, sub_im, ofReal_im, mul_im, ofReal_re, I_im, mul_one, I_re, mul_zero, add_zero, zero_sub, neg_neg, abs_of_pos (by positivity : 0 < Real.pi / 2)]
     rfl
   have hw := (hweight ((Real.log x : ℂ) - zetaGammaLeadingLog T) harg).trans
     (mul_le_of_le_one_right hC.le (min_le_left _ _))
@@ -64,13 +62,16 @@ theorem exists_norm_zetaSmoothDivisorTest_le :
   apply (mul_le_of_le_one_left (norm_nonneg _) (zetaBandCutoff_le_one _ _ _ _ _)).trans
   exact hbound T G x (by linarith) hG hGT hx1
 
-theorem integrable_zetaSmoothDivisorTest {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) : Integrable (zetaSmoothDivisorTest T G L) := by
+section
+variable {T G L : ℝ}
+    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
+include T G L hT hG hL
+
+theorem integrable_zetaSmoothDivisorTest  : Integrable (zetaSmoothDivisorTest T G L) := by
   let hg := zetaSmoothDivisorVoronoiTest hT hG hL
   exact hg.continuous.integrable_of_hasCompactSupport hg.hasCompactSupport
 
-theorem zetaSmoothDivisorTest_integral_norm_eq_physical {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
+theorem zetaSmoothDivisorTest_integral_norm_eq_physical  (hwidth : 8 * L ≤ G) :
     (∫ x : ℝ in Ioi 0, ‖zetaSmoothDivisorTest T G L x‖) =
       ∫ x : ℝ in Icc (T / 16) T, ‖zetaSmoothDivisorTest T G L x‖ := by
   apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
@@ -80,6 +81,8 @@ theorem zetaSmoothDivisorTest_integral_norm_eq_physical {T G L : ℝ}
     by_contra hn
     exact hx.2 (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hn)
   simp only [hzero, norm_zero]
+end
+
 
 theorem exists_integral_norm_zetaSmoothDivisorTest_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
@@ -98,4 +101,4 @@ theorem exists_integral_norm_zetaSmoothDivisorTest_le :
   apply hi.trans
   nlinarith [mul_pos hC hG]
 
-end MathCollab.Density.Stronger.Atkinson
+

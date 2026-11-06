@@ -11,15 +11,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
-open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentAllocatedRayDictionary
-open CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentEligibleEnergy CenteredMomentCommonHeightEnvelope
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots
+open CenteredMomentCommonMaskEnergy
+open CenteredMomentEligibleEnergy
+
+open scoped HeckeO
 variable {α : Type*} [Fintype α]
+
 local instance {β : Type*} : DecidableEq β := Classical.decEq _
 
 lemma active_pools_subset (s : Input α) (j : α⊕Fin 2) :
@@ -106,9 +107,9 @@ theorem restoredError_matches (h : Matches M H hH s η₀ θ w σ freq W bslot Z
       (fun i=>freq i.val.val) W bslot Z :=
   matches_twiceChild M H hH h C R B τ t Q k (restoreAllocation (child s C R B τ t) (Q^k) Bp) υ v
 
-end Ray
-end SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
 
-end
 
-end OAI
+
+
+
+

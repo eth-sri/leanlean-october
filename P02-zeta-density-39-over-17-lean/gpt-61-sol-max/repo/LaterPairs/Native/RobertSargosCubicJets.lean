@@ -5,14 +5,13 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCubicPhase
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                              
                                                               
 
-noncomputable section
+
 open scoped ContDiff
 namespace TaoTrudgianYang2025
 
@@ -26,8 +25,12 @@ theorem iteratedDeriv_four_cubic_polynomial (f : ℝ → ℝ) (m x : ℝ) :
   rw [show 4 = 3+1 by rfl,iteratedDeriv_succ,he]
   exact deriv_const x _
 
+section
+variable {f : ℝ → ℝ}
+include f
+
 theorem abs_iteratedDeriv_robertSargosCubicRemainder_le
-    {f : ℝ → ℝ} {m y B : ℝ} {j : ℕ} (hj : j ≤ 3)
+     {m y B : ℝ} {j : ℕ} (hj : j ≤ 3)
     (hf : ∀ x ∈ Set.uIcc m (m+y), ContDiffAt ℝ 4 f x)
     (hb : ∀ x ∈ Set.uIcc m (m+y), |iteratedDeriv 4 f x| ≤ B) :
     |iteratedDeriv j (robertSargosCubicRemainder f m) y| ≤ B*|y|^(4-j) := by
@@ -39,7 +42,7 @@ theorem abs_iteratedDeriv_robertSargosCubicRemainder_le
       (f := f) (a := m) (x := m+y) (M := B) (Q := 3) hj hf hb
 
 theorem iteratedDeriv_four_robertSargosCubicRemainder
-    {f : ℝ → ℝ} {m y : ℝ} (hf : ContDiffAt ℝ 4 f (m+y)) :
+     {m y : ℝ} (hf : ContDiffAt ℝ 4 f (m+y)) :
     iteratedDeriv 4 (robertSargosCubicRemainder f m) y = iteratedDeriv 4 f (m+y) := by
   change iteratedDeriv 4
     (fun z => (fun x => f x-finiteTaylorPolynomial f 3 m x) (m+z)) y = _
@@ -51,7 +54,7 @@ theorem iteratedDeriv_four_robertSargosCubicRemainder
     iteratedDeriv_four_cubic_polynomial,sub_zero]
 
 theorem robertSargos_cubic_remainder_radius_jets
-    {f : ℝ → ℝ} {m y B L : ℝ} {j : ℕ} (hj : j ≤ 4)
+     {m y B L : ℝ} {j : ℕ} (hj : j ≤ 4)
     (hy : |y| ≤ L)
     (hf : ∀ x ∈ Set.uIcc m (m+y), ContDiffAt ℝ 4 f x)
     (hb : ∀ x ∈ Set.uIcc m (m+y), |iteratedDeriv 4 f x| ≤ B) :
@@ -64,5 +67,7 @@ theorem robertSargos_cubic_remainder_radius_jets
     subst j
     rw [iteratedDeriv_four_robertSargosCubicRemainder (hf _ Set.right_mem_uIcc)]
     simpa only [Nat.sub_self,pow_zero,mul_one] using hb (m+y) Set.right_mem_uIcc
+end
 
-end TaoTrudgianYang2025
+
+

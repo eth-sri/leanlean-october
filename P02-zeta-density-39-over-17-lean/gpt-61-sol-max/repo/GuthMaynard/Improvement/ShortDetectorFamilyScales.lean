@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import MathCollab.Density.DetectorFamilyScales
 public import GuthMaynard.Improvement.ShortDetectorDyadic
 public import Mathlib.Analysis.Complex.ExponentialBounds
 
 @[expose] public section
 
-open Real Set Filter MathCollab.Density
+open Real Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 /-- A coarse natural-cutoff bound, sufficient for all family counts. -/
@@ -38,8 +38,7 @@ theorem shortDetectorDyadicCount_le_log {T : ℝ} (hT : 1 ≤ T) (hlog : 1 ≤ R
   have hnonneg : (0 : ℝ) ≤ Nat.log 2 K := by positivity
   have hprod := mul_le_mul_of_nonneg_left htwo hnonneg
   change ((Nat.log 2 K+1 : ℕ) : ℝ) ≤ _
-  push_cast
-  linarith
+  grind
 
 /-- All scales are selected before beta, gamma or an actual zero varies. -/
 theorem short_detector_family_scales_eventually :
@@ -64,4 +63,4 @@ theorem short_detector_family_scales_eventually :
   apply (div_le_iff₀ hTpos).2
   nlinarith
 
-end GuthMaynard.Improvement
+

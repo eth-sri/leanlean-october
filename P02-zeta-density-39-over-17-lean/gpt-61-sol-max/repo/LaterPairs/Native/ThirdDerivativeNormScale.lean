@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem third_derivative_norm_of_square {S N R C : ℝ}
@@ -42,4 +41,4 @@ theorem third_derivative_norm_of_square {S N R C : ℝ}
   change S ≤ 20*C*(u+v)
   nlinarith
 
-end TaoTrudgianYang2025
+

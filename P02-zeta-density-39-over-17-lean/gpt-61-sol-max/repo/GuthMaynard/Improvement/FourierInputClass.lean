@@ -1,24 +1,28 @@
 module
+import Mathlib
 public import GuthMaynard.AffineSource.LargeValuesAffineHeight
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
 open RiemannZeta.GuthMaynard
 
+section
+variable (D : ℝ → ℕ → ℝ)
+include D
+
 /-- The manuscript's fixed family of supremum-normalized Fourier constants.
 D is fixed before T and f; the condition is imposed only at nonzero frequency. -/
-def FourierSupFamily (D : ℝ → ℕ → ℝ) (T : ℝ) (f : 𝓢(ℝ, ℝ)) : Prop :=
+def FourierSupFamily  (T : ℝ) (f : 𝓢(ℝ, ℝ)) : Prop :=
   ∀ β : ℝ, 0 < β → ∀ n : ℕ, ∀ ξ : ℝ, ξ ≠ 0 →
     ‖𝓕 (gmAffineComplexify f) ξ‖ ≤ D β n*T^β*(T/|ξ|)^n*
       SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f)
 
 /-- Extension across frequency zero and conversion to the actual Fourier
 Schwartz seminorm; no derivative seminorm is imposed. -/
-theorem fourier_sup_family_seminorm (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
+theorem fourier_sup_family_seminorm  (hD : ∀ β n, 0 ≤ D β n)
     {T β : ℝ} (hT : 0 ≤ T) (hβ : 0 < β) {f : 𝓢(ℝ, ℝ)}
     (hf : FourierSupFamily D T f) (n : ℕ) :
     SchwartzMap.seminorm ℝ n 0 (𝓕 (gmAffineComplexify f)) ≤
@@ -44,11 +48,16 @@ theorem fourier_sup_family_seminorm (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
   apply SchwartzMap.seminorm_le_bound' (𝕜 := ℝ) n 0 _ (by
     have hd := hD β n
     positivity)
-  intro ξ
-  simpa only [iteratedDeriv_zero,Real.norm_eq_abs,F,C] using hall ξ
+  assumption
+end
+
+
+section
+variable (f : 𝓢(ℝ, ℝ))
+include f
 
 /-- Fourier inversion bounds the source supremum by the Fourier L1 norm. -/
-theorem source_sup_le_fourier_l1 (f : 𝓢(ℝ, ℝ)) :
+theorem source_sup_le_fourier_l1  :
     SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) ≤
       ∫ ξ, ‖𝓕 (gmAffineComplexify f) ξ‖ := by
   apply SchwartzMap.seminorm_le_bound' (𝕜 := ℝ) 0 0 _
@@ -63,7 +72,7 @@ theorem source_sup_le_fourier_l1 (f : 𝓢(ℝ, ℝ)) :
 
 /-- Splitting at U gives the uniform mass/supremum interpolation used to
 replace supremum-normalized decay by a height-mass Fourier profile. -/
-theorem fourier_l1_le_mass_and_tail (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x)
+theorem fourier_l1_le_mass_and_tail  (hf : ∀ x, 0 ≤ f x)
     {U B : ℝ} (hU : 0 < U)
     (hdec : ∀ ξ : ℝ, ξ ≠ 0 → ‖𝓕 (gmAffineComplexify f) ξ‖ ≤ B/|ξ|^2) :
     (∫ ξ, ‖𝓕 (gmAffineComplexify f) ξ‖) ≤ 2*U*(∫ x, f x)+2*B/U := by
@@ -107,12 +116,17 @@ theorem fourier_l1_le_mass_and_tail (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x)
     simp [gmAffineLowFrequencyRegion,gmAffineHighFrequencyRegion]
   have hsplit := integral_add_compl (measurableSet_gmAffineLowFrequencyRegion U) hFi
   rw [hcompl] at hsplit
-  rw [← hsplit]
-  exact add_le_add hlo hhi
+  nlinarith
+end
+
+
+section
+variable (D : ℝ → ℕ → ℝ)
+include D
 
 /-- A uniform supremum-to-mass estimate derived from order-two Fourier
  decay. It includes zero input without dividing by mass or supremum. -/
-theorem fourier_sup_le_height_mass (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
+theorem fourier_sup_le_height_mass  (hD : ∀ β n, 0 ≤ D β n)
     {T β : ℝ} (hT : 0 < T) (hβ : 0 < β) (f : 𝓢(ℝ, ℝ))
     (hf : ∀ x, 0 ≤ f x) (hp : FourierSupFamily D T f) :
     SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) ≤
@@ -135,26 +149,26 @@ theorem fourier_sup_le_height_mass (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 �
   change S ≤ _
   have hlast : S ≤ 16*A*(∫ x, f x) := by linarith only [hbound]
   convert hlast using 1
-  dsimp only [A]
   ring
 
 /-- The fixed mass-normalized profile derived from the manuscript constants. -/
-def massProfile (D : ℝ → ℕ → ℝ) (β : ℝ) (n : ℕ) : ℝ :=
+def massProfile  (β : ℝ) (n : ℕ) : ℝ :=
   16*D (β/2) n*(D (β/2) 2+1)
 
-theorem massProfile_nonneg (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n) :
+section
+variable (hD : ∀ β n, 0 ≤ D β n)
+include hD
+
+theorem massProfile_nonneg  :
     ∀ β n, 0 ≤ massProfile D β n := by
   intro β n
   unfold massProfile
-  have h1 := hD (β/2) n
-  have h2 := hD (β/2) 2
-  positivity
+  bound
 
 /-- Full input-class bridge: the manuscript's supremum-normalized decay
 implies the audited height-family premise, with one fixed profile before
 all heights and all nonnegative Schwartz inputs. No smoothing-class premise. -/
-theorem fourier_sup_family_to_height_mass (D : ℝ → ℕ → ℝ)
-    (hD : ∀ β n, 0 ≤ D β n) {T : ℝ} (hT : 0 < T)
+theorem fourier_sup_family_to_height_mass  {T : ℝ} (hT : 0 < T)
     (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x) (hp : FourierSupFamily D T f) :
     GMAffineHeightFourierMassFamilyAtDepth T (massProfile D) 0 f := by
   intro β hβ n
@@ -175,5 +189,8 @@ theorem fourier_sup_family_to_height_mass (D : ℝ → ℕ → ℝ)
     _ = (16*D (β/2) n*(D (β/2) 2+1))*(T^(β/2)*T^(β/2))*
         (T^n*T^2)*(∫ x, f x) := by ring
     _ = _ := by rw [hpow,← pow_add]; rfl
+end
+end
 
-end GuthMaynard.Improvement
+
+

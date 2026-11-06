@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.QuarticMomentExtraction
 public import GuthMaynard.Improvement.QuarticBadCells
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -45,12 +45,10 @@ theorem quartic_extraction {ε : ℝ} (hε : 0 < ε) (q : ℕ) :
       he.trans (add_le_add (mul_le_mul_of_nonneg_left hk (show 0 ≤ 2*R+3 by positivity)) le_rfl)
     _ ≤ C*((R+1)*N^ε*(N^2/U^2+T*N^4/U^6))+C*(M/V^4) := by
       apply add_le_add
-      · have hcoeff : (2*R+3)*D ≤ C*(R+1) := by
-          have hh := mul_le_mul_of_nonneg_right hDC (show 0 ≤ R+1 by positivity)
-          nlinarith
+      · have hcoeff : (2*R+3)*D ≤ C*(R+1) := by field_simp <;> nlinarith
         convert mul_le_mul_of_nonneg_right hcoeff hx using 1 <;> ring
       · rw [div_eq_mul_inv,div_eq_mul_inv]
         convert mul_le_mul_of_nonneg_right hBC (show 0 ≤ M*(V^4)⁻¹ by positivity) using 1; ring
     _ = _ := by ring
 
-end GuthMaynard.Improvement
+

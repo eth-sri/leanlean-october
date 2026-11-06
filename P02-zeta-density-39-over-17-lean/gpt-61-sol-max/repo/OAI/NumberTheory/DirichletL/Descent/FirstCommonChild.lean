@@ -8,9 +8,9 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic FourierBridge
+open FourierBridge
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -51,13 +51,16 @@ theorem firstCommonColumn_eq_rayIdealRow
 
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
 
-def firstBareCubeCoefficient (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (C : Finset ι → ℂ) (d : Eis) : Finset ι → ℂ :=
+section
+variable (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
+    (negative : Bool) (C : Finset ι → ℂ)
+include B v ε₁ ε₂ negative C
+
+def firstBareCubeCoefficient  (d : Eis) : Finset ι → ℂ :=
   if negative then cubeMinusCoefficient p hp hcop hg B v ε₁ ε₂ C d
   else cubePlusCoefficient p hp hcop hg B v ε₁ ε₂ C d
 
-theorem firstBareCubeCoefficient_window (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (d : Eis) :
+theorem firstBareCubeCoefficient_window  (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (d : Eis) :
     (fun S => firstBareCubeCoefficient p hp hg hcop B v ε₁ ε₂ negative C d S *
       if negative then star (V (y S)*logPhase t (y S)) else V (y S)*logPhase t (y S)) =
     cubeLogCoefficient p hp hcop hg B v ε₁ ε₂ negative C V y (-t) d := by
@@ -71,6 +74,8 @@ theorem firstBareCubeCoefficient_window (B : Finset ι) (v : ι → ℕ) (ε₁ 
     simp only [firstBareCubeCoefficient,cubeLogCoefficient,cubeMinusCoefficient,cubePlusCoefficient,
       firstPassColumnMinus,firstPassColumnPlus,logTwistMinus,logTwistPlus,
       Bool.false_eq_true,ite_false,ite_true,ht] <;> ring
+end
+
 
 theorem firstCommonColumn_original_labels
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
@@ -92,7 +97,7 @@ theorem firstCommonColumn_original_labels
     rayIdealRow_cube_labels p hp hinj hcop hg F D B v ε₁ ε₂ hv]
   rfl
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

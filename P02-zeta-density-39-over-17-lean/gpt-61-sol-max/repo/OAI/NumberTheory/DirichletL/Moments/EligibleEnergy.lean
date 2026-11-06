@@ -9,10 +9,10 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEligibleEnergy
-open HeckeFamily CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation
+open CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
 open CenteredMomentDivisorRowEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 structure Data (ι:Type*) [Fintype ι] extends Source ι where
   M : ι→ℝ
@@ -33,28 +33,40 @@ structure Data (ι:Type*) [Fintype ι] extends Source ι where
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def Data.coefficient (s:Data ι) (i:ι) (I:Ideal O) : ℂ :=
+section
+variable (s:Data ι)
+include s
+
+def Data.coefficient  (i:ι) (I:Ideal O) : ℂ :=
   s.ν i I*s.W i ((Ideal.absNorm I:ℝ)/s.P i)
 
-def Data.energy (s:Data ι) (D:Ideal O) : ℝ :=
+section
+variable (D:Ideal O)
+include D
+
+def Data.energy  : ℝ :=
   ∑z∈s.rows,s.weight z*‖(Real.sqrt (s.X₁*s.X₂*∏i,s.P i):ℂ)⁻¹*
     maskedRectangle s.η s.m s.A z s.t s.slots s.coefficient D s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂‖^2
 
-def Data.childEnergy (s:Data ι) (D:Ideal O)
+def Data.childEnergy 
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : ℝ :=
   ∑z∈s.rows,s.weight z*
     (‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.X₁ s.X₂‖^2+
      ‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.Y₁ s.Y₂‖^2)
+end
 
-def Data.profileFactor (s:Data ι) : ℝ :=
+
+def Data.profileFactor  : ℝ :=
   (2*(max 1 s.b₁*max 1 s.b₂))*(∏i,s.M i)^2
 
-lemma Data.child_nonneg (s:Data ι) (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : 0≤s.childEnergy D a :=
+lemma Data.child_nonneg  (D:Ideal O)
+    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : 0≤ s.childEnergy D a :=
   Finset.sum_nonneg (fun z hz=>mul_nonneg (s.weight_nonneg z hz) (add_nonneg (sq_nonneg _) (sq_nonneg _)))
+end
+
 
 omit [DecidableEq ι] in
-lemma Data.profile_nonneg (s:Data ι) : 0≤s.profileFactor :=by
+lemma Data.profile_nonneg (s:Data ι) : 0≤ s.profileFactor :=by
   unfold Data.profileFactor
   exact mul_nonneg (by positivity) (sq_nonneg _)
 
@@ -96,8 +108,8 @@ theorem actual_source_from_children (N:ℕ) (hslots:Fintype.card ι≤N) (ε:ℝ
       intro a ha
       ring
 
-end SevenEighths.CenteredMomentEligibleEnergy
 
-end
 
-end OAI
+
+
+

@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.QuarticCellGeometry
 public import GuthMaynard.Improvement.ClassicalLargeValues
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -30,14 +30,7 @@ theorem separated_three_intervals {T B : ℝ} (W : Finset ℝ)
   have h₃ : (Z₃.card:ℝ) ≤ B := hb Z₃ T hsub₃ (by
     intro t ht; simpa only [two_mul] using (Finset.mem_filter.mp ht).2)
     (MathCollab.Density.oneSeparated_subset hsep hsub₃)
-  have hcover : W ⊆ Z₁ ∪ Z₂ ∪ Z₃ := by
-    intro t ht
-    obtain ⟨hlo,hhi⟩ := hw t ht
-    by_cases h0 : t ≤ 0
-    · exact Finset.mem_union_left _ (Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨ht,hlo,h0⟩))
-    · by_cases hT : t ≤ T
-      · exact Finset.mem_union_left _ (Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨ht,by linarith,hT⟩))
-      · exact Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨ht,by linarith,hhi⟩)
+  have hcover : W ⊆ Z₁ ∪ Z₂ ∪ Z₃ := by grind
   have hcard : W.card ≤ Z₁.card+Z₂.card+Z₃.card :=
     (Finset.card_le_card hcover).trans ((Finset.card_union_le _ _).trans
       (Nat.add_le_add_right (Finset.card_union_le _ _) _))
@@ -61,6 +54,6 @@ theorem quartic_bad_cells_bound {ε : ℝ} (hε : 0 < ε) :
       intro Z s hZW hs hZsep
       exact hclass N T U s hN hNT hTN hU a Z ha hs hZsep
         (fun t ht => (hw t (hZW ht)).1.le))
-  convert hh using 1; ring
+  grind
 
-end GuthMaynard.Improvement
+

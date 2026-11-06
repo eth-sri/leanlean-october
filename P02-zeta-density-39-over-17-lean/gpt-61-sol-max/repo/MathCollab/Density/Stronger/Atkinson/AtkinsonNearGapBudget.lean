@@ -11,11 +11,10 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonGapArithmetic
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+
+
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -27,9 +26,13 @@ def atkinsonNearRowBound (H G : ℝ) (M : ℕ) : ℝ :=
   (M:ℝ)+120*Real.sqrt (H*(M:ℝ))/G*
     (harmonic (Nat.ceil (Real.sqrt (H*(M:ℝ))/G)):ℝ)
 
-theorem atkinson_near_gap_row_le {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
+section
+variable {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
     (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W)
-    (ht : t ∈ W) (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H) :
+    (ht : t ∈ W) (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H)
+include H G M W t hH hG hM hSep ht hrange
+
+theorem atkinson_near_gap_row_le  :
     (∑ u ∈ W with u ≠ t ∧ |u-t| ≤ Real.sqrt (H*(M:ℝ)),
       atkinsonPrefixGapMajorant M M t u) ≤
       120*Real.sqrt (H*(M:ℝ))/G*
@@ -53,9 +56,7 @@ theorem atkinson_near_gap_row_le {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ
     (by positivity : 0 ≤ 60*Real.sqrt (H*(M:ℝ)))
   exact (hb.trans hm).trans_eq (by ring)
 
-theorem atkinson_gap_row_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W)
-    (ht : t ∈ W) (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H) :
+theorem atkinson_gap_row_le_near_add_far  :
     (∑ u ∈ W, atkinsonPrefixGapMajorant M M t u) ≤
       atkinsonNearRowBound H G M+atkinsonFarGapRow H M W t := by
   classical
@@ -83,6 +84,8 @@ theorem atkinson_gap_row_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finset ℝ} 
   have hn := atkinson_near_gap_row_le hH hG hM hSep ht hrange
   unfold atkinsonNearRowBound
   linarith
+end
+
 
 theorem atkinson_gap_double_sum_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finset ℝ}
     (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W)
@@ -111,4 +114,4 @@ theorem atkinsonArithmeticGapBudget_le_separated {H G η : ℝ} {N : ℕ} {W : F
   exact mul_le_mul_of_nonneg_left
     (atkinson_gap_double_sum_le_near_add_far hH hG (pow_pos (by norm_num) _) hSep hrange)
     (by positivity)
-end MathCollab.Density.Stronger.Atkinson
+

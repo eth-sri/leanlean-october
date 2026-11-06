@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalPool
 public import OAI.NumberTheory.DirichletL.Descent.ActiveReflection
 
@@ -10,7 +11,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem markedCompletedT_twist_congr_primary (Ψ Φ : Eis→*ℂ)
@@ -61,8 +62,7 @@ lemma unmarked_sum_twist {ι σ : Type*} [Fintype ι] [Fintype σ]
   unfold unmarkedSexticTwist
   change (∏ i∈Finset.univ\markedSumSlots, _) = _
   rw [hset,Finset.prod_filter,Fintype.prod_sum_type]
-  simp only [Sum.isLeft_inl,Sum.isLeft_inr,Bool.false_eq_true,ite_false,ite_true,
-    Finset.prod_const_one,mul_one,Sum.elim_inl]
+  simp
   apply Finset.prod_congr rfl
   intro i hi
   exact actual_sextic_power_congr _ _ ((G.sum S).generator_good (Sum.inl i)) (G.good i)
@@ -79,7 +79,7 @@ theorem free_row_eq_joined_unmarked {σ : Type*} [Fintype σ]
   rw [unmarked_sum_twist]
   rfl
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

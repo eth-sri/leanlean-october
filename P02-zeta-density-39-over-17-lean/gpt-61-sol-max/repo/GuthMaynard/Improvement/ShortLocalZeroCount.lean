@@ -1,15 +1,15 @@
 module
+import Mathlib
 /- Adapted from audited Density.LocalZeroCount at eff263d7, whose Jensen
  proof derives from Scott McColm (MIT). The same actual zero count and
  multiplicities are retained; a radius3/2 disk also covers Re(rho)>=3/5. -/
 public import MathCollab.Density.LocalZeroCount
 
 @[expose] public section
-open Complex Filter Set MeasureTheory MathCollab.Density
+open Complex Filter MeasureTheory MathCollab.Density
 open scoped Topology BigOperators
 open MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
-noncomputable section
+
 namespace GuthMaynard.Improvement
 
 theorem short_zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
@@ -30,7 +30,6 @@ theorem short_zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
       norm_num
     have hM : 1 ≤ 100 * T ^ (3 : ℝ) := by
       norm_num [Real.rpow_natCast]
-      have hT2 : 1 ≤ T ^ (2 : ℕ) := by nlinarith
       calc
         1 ≤ 100 * T := by nlinarith
         _ ≤ 100 * T * T ^ (2 : ℕ) := by nlinarith
@@ -46,10 +45,7 @@ theorem short_zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
         riemannZeta ρ₀ = 0 := by
       obtain ⟨hz, hs, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρ₀Data.1
       exact ⟨⟨hs, hz.2.2.le, hlo, hhi⟩, hz.1⟩
-    have hzRange : (z : ℝ) ∈ Set.Icc (T - 1) (2 * T) := by
-      constructor
-      · linarith [hρ₀Rect.1.2.2.1, hρ₀Data.2.2]
-      · linarith [hρ₀Rect.1.2.2.2, hρ₀Data.2.1]
+    have hzRange : (z : ℝ) ∈ Set.Icc (T - 1) (2 * T) := by grind
     let c : ℂ := 2 + I * (((z : ℝ) + 1/2 : ℝ) : ℂ)
     let U : Set ℂ := Metric.closedBall c (7/4 : ℝ)
     have hUCompact : IsCompact U := isCompact_closedBall c (7/4 : ℝ)
@@ -238,9 +234,6 @@ theorem short_zeta_separated_representatives :
     (Real.log_nonneg (by linarith))
   obtain ⟨R, hR, hcard, hsep, hcount⟩ :=
     zetaSlab_separated_representatives σ T (2*T) hB (hlocal σ T hσ hT)
-  refine ⟨R, hR, hcard, hsep, ?_⟩
-  calc
-    _ ≤ 2*(C*Real.log (2*T))*(R.card : ℝ) := hcount
-    _ = _ := by ring
+  grind
 
-end GuthMaynard.Improvement
+

@@ -10,8 +10,8 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+open scoped EisensteinEis
 
 theorem finite_squarefree_quadratic_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
@@ -123,7 +123,7 @@ theorem quadratic_squarefree_product_energy_fixed_factor (ε : ℝ) (hε : 0 < �
   exact (quadratic_fixed_factor_energy rows pairs (fun k hk => (hrows k hk).1) B a).trans
     (hb K X hK hX rows pairs hrows hpairs a)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

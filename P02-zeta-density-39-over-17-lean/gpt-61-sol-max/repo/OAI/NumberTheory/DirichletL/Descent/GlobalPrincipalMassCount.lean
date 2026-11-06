@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
+open InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
@@ -101,7 +101,7 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
       mul_le_mul_of_nonneg_right hQcard (by positivity)
     _ = _ := by ring
 
-end SevenEighths.InverseMomentGlobalPrincipalMass
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Selected exponential-tail truncation and compact-height extension proofs
 adapted from Scott McColm, PointMeanLemmaThreeTail.lean, exact revision
@@ -12,11 +13,10 @@ public import MathCollab.Density.Stronger.PointMean.Statement
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.ZetaGrowth
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- The critical-line zeta norm has a global quadratic majorant.  The compact
@@ -27,7 +27,7 @@ theorem exists_zetaMomentCriticalNorm_sq_le_quadratic :
       zetaMomentCriticalNorm y ^ (2 : ℕ) ≤ C * (1 + y ^ (2 : ℕ)) := by
   obtain ⟨B, hB⟩ := isCompact_Icc.bddAbove_image
     (continuous_zetaMomentCriticalNorm.pow 2).continuousOn
-  let C : ℝ := max 100 B
+  let C := max 100 B
   refine ⟨C, lt_of_lt_of_le (by norm_num) (le_max_left 100 B), ?_⟩
   intro y
   by_cases hy : |y| ≤ 1
@@ -56,8 +56,7 @@ theorem exists_zetaMomentCriticalNorm_sq_le_quadratic :
         _ ≤ 2 * |y| := by linarith
     have hzeta' : zetaMomentCriticalNorm y ≤ 10 * |y| := by
       unfold zetaMomentCriticalNorm
-      change ‖riemannZeta z‖ ≤ _
-      exact hzeta.trans (by nlinarith)
+      bound
     have hsq : zetaMomentCriticalNorm y ^ (2 : ℕ) ≤ 100 * y ^ (2 : ℕ) := by
       calc
         zetaMomentCriticalNorm y ^ (2 : ℕ) ≤ (10 * |y|) ^ (2 : ℕ) :=
@@ -94,11 +93,7 @@ theorem integrable_exp_neg_half_abs_heathBrown :
     Integrable (fun x : ℝ => Real.exp (-|x| / 2)) := by
   have h := integrable_exp_neg_abs_heathBrown.comp_mul_left'
     (by norm_num : (1 / 2 : ℝ) ≠ 0)
-  convert h using 1
-  funext x
-  rw [abs_mul]
-  norm_num
-  ring
+  grind
 
 /-- Beyond the source radius `(log t)^2`, the polynomial vertical growth of
 zeta is swallowed by half of the exponential kernel. -/
@@ -132,15 +127,9 @@ theorem heathBrown_fullMoment_tail_pointwise
     rw [Real.one_le_exp_iff]
     positivity
   have hquad : 1 + (t + u) ^ (2 : ℕ) ≤
-      19 * Real.exp (|u| / 2) := by
-    have hadd : (t + u) ^ (2 : ℕ) ≤
-        2 * t ^ (2 : ℕ) + 2 * u ^ (2 : ℕ) := by
-      nlinarith [sq_nonneg (t - u)]
-    nlinarith
+      19 * Real.exp (|u| / 2) := by nlinarith
   have hzeta := hC (t + u)
-  have hCnonneg : 0 ≤ C := by
-    have hz0 := hC 0
-    simpa using (le_trans (sq_nonneg (zetaMomentCriticalNorm 0)) hz0)
+  have hCnonneg : 0 ≤ C := by nlinarith
   calc
     Real.exp (-|u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤
         Real.exp (-|u|) * (C * (1 + (t + u) ^ (2 : ℕ))) := by
@@ -163,13 +152,13 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
       heathBrownFullCriticalMoment t ≤
         heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ)) + D := by
   obtain ⟨C, hCpos, hC⟩ := exists_zetaMomentCriticalNorm_sq_le_quadratic
-  let D : ℝ := 4 * (19 * C)
+  let D := 4 * (19 * C)
   refine ⟨D, by dsimp only [D]; positivity, ?_⟩
   intro t ht hlog
-  let H : ℝ := Real.log t ^ (2 : ℕ)
-  let f : ℝ → ℝ := fun u =>
+  let H := Real.log t ^ (2 : ℕ)
+  let f := fun u =>
     Real.exp (-|u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
-  let g : ℝ → ℝ := fun u => (19 * C) * Real.exp (-|u| / 2)
+  let g := fun u => (19 * C) * Real.exp (-|u| / 2)
   have hH : 0 ≤ H := by dsimp only [H]; positivity
   have hf : Integrable f := by
     simpa only [f] using integrable_heathBrownFullCriticalMoment t
@@ -177,17 +166,8 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
     integrable_exp_neg_half_abs_heathBrown.const_mul (19 * C)
   have htail : ∀ u ∈ (Set.Ioc (-H) H)ᶜ, f u ≤ g u := by
     intro u hu
-    have huCases : u ≤ -H ∨ H < u := by
-      simpa only [Set.mem_compl_iff, Set.mem_Ioc, not_and_or, not_lt, not_le]
-        using hu
-    have huAbs : H ≤ |u| := by
-      rcases huCases with huLeft | huRight
-      · have huNonpos : u ≤ 0 := by linarith
-        rw [abs_of_nonpos huNonpos]
-        linarith
-      · have huPos : 0 < u := lt_of_le_of_lt hH huRight
-        rw [abs_of_pos huPos]
-        exact huRight.le
+    have huCases : u ≤ -H ∨ H < u := by grind
+    have huAbs : H ≤ |u| := by grind
     dsimp only [f, g]
     exact heathBrown_fullMoment_tail_pointwise hC ht hlog
       (by simpa only [H] using huAbs)
@@ -210,8 +190,7 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
   unfold heathBrownFullCriticalMoment heathBrownLemmaThreeMoment
   change (∫ u : ℝ, f u) ≤ (∫ u in -H..H, f u) + D
   rw [intervalIntegral.integral_of_le (by linarith)]
-  rw [← hsplit]
-  exact add_le_add_right htailIntegral _
+  bound
 
 theorem heathBrownLemmaThreeMoment_nonneg
     {t L : ℝ} (hL : 0 ≤ L) :
@@ -230,13 +209,13 @@ theorem exists_eventually_heathBrownLemmaThree_truncated :
     exists_eventually_heathBrownLemmaThree_fullMoment
   obtain ⟨D, hDpos, hTail⟩ :=
     exists_heathBrownFullCriticalMoment_le_truncated
-  let C : ℝ := C₀ * (1 + D)
+  let C := C₀ * (1 + D)
   refine ⟨C, by dsimp only [C]; positivity, ?_⟩
   have hLogEventually : ∀ᶠ t : ℝ in atTop, 4 ≤ Real.log t :=
     Real.tendsto_log_atTop.eventually (eventually_ge_atTop 4)
   filter_upwards [hFull, eventually_ge_atTop (10 : ℝ), hLogEventually]
     with t hFullT ht hlog
-  let M : ℝ := heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ))
+  let M := heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ))
   have hM : 0 ≤ M := by
     dsimp only [M]
     exact heathBrownLemmaThreeMoment_nonneg (by positivity)
@@ -262,21 +241,19 @@ theorem heathBrownLemmaThree_native : HeathBrownLemmaThree := by
   obtain ⟨C₀, hC₀pos, hEventually⟩ :=
     exists_eventually_heathBrownLemmaThree_truncated
   obtain ⟨T₀, hT₀⟩ := eventually_atTop.1 hEventually
-  let K : ℝ := max 10 T₀
+  let K := max 10 T₀
   obtain ⟨B, hB⟩ := isCompact_Icc.bddAbove_image
     (K := Set.Icc (10 : ℝ) K)
     (continuous_zetaMomentCriticalNorm.pow 2).continuousOn
-  let C : ℝ := max C₀ (max 1 B)
-  have hCpos : 0 < C := by
-    exact lt_of_lt_of_le zero_lt_one
-      ((le_max_left 1 B).trans (le_max_right C₀ (max 1 B)))
+  let C := max C₀ (max 1 B)
+  have hCpos : 0 < C := by positivity
   refine ⟨C, hCpos, ?_⟩
   intro t ht
-  let M : ℝ := heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ))
+  let M := heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ))
   have hM : 0 ≤ M := by
     dsimp only [M]
     exact heathBrownLemmaThreeMoment_nonneg (by positivity)
-  have hlogTwo : 2 < Real.log t := two_lt_log_of_ten_le ht
+  have hlogTwo := two_lt_log_of_ten_le ht
   have hlogNonneg : 0 ≤ Real.log t := by linarith
   have hOneM : 0 ≤ 1 + M := by linarith
   by_cases hlarge : T₀ ≤ t
@@ -285,13 +262,8 @@ theorem heathBrownLemmaThree_native : HeathBrownLemmaThree := by
     calc
       zetaMomentCriticalNorm t ^ (2 : ℕ) ≤
           C₀ * Real.log t * (1 + M) := by simpa only [M] using hSource
-      _ ≤ C * Real.log t * (1 + M) := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_right hC₀C hlogNonneg) hOneM
-  · have htMem : t ∈ Set.Icc (10 : ℝ) K := by
-      refine ⟨ht, ?_⟩
-      dsimp only [K]
-      exact le_max_of_le_right (le_of_not_ge hlarge)
+      _ ≤ C * Real.log t * (1 + M) := by nlinarith
+  · have htMem : t ∈ Set.Icc (10 : ℝ) K := by grind
     have htB : zetaMomentCriticalNorm t ^ (2 : ℕ) ≤ B :=
       hB ⟨t, htMem, rfl⟩
     have hBC : B ≤ C :=
@@ -301,9 +273,6 @@ theorem heathBrownLemmaThree_native : HeathBrownLemmaThree := by
       zetaMomentCriticalNorm t ^ (2 : ℕ) ≤ B := htB
       _ ≤ C := hBC
       _ = C * 1 * 1 := by ring
-      _ ≤ C * Real.log t * (1 + M) := by
-        exact mul_le_mul
-          (mul_le_mul_of_nonneg_left (by linarith) hCnonneg)
-          (by linarith) (by norm_num) (mul_nonneg hCnonneg hlogNonneg)
+      _ ≤ C * Real.log t * (1 + M) := by field_simp <;> nlinarith
 
-end MathCollab.Density.Stronger.PointMean
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.CorrectionBounds
 public import OAI.NumberTheory.DirichletL.Detector.Row
 
@@ -9,65 +10,86 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def coordV (Q : ℝ) (z : ℂ) : ℂ := (Q : ℂ) ^ (-6*z)
-def coordR (Q : ℝ) (A x z : ℂ) : ℂ := A * (Q : ℂ) ^ (4-6*x-6*z)
-def coordW (Q : ℝ) (v w : ℂ) : ℂ := v * (Q : ℂ) ^ (-w)
-def coordD (Q : ℝ) (eta v x : ℂ) : ℂ := eta * star v * (Q : ℂ) ^ (-x)
-def coordK (Q : ℝ) (eta x w : ℂ) : ℂ := eta * (Q-1) * (Q : ℂ) ^ (-x-w)
+section
+variable (Q : ℝ)
+include Q
 
-def unramifiedClosed (Q : ℝ) (A eta v x w z : ℂ) : ℂ :=
+def coordV  (z : ℂ) : ℂ := (Q : ℂ) ^ (-6*z)
+def coordR  (A x z : ℂ) : ℂ := A * (Q : ℂ) ^ (4-6*x-6*z)
+def coordW  (v w : ℂ) : ℂ := v * (Q : ℂ) ^ (-w)
+def coordD  (eta v x : ℂ) : ℂ := eta * star v * (Q : ℂ) ^ (-x)
+def coordK  (eta x w : ℂ) : ℂ := eta * (Q-1) * (Q : ℂ) ^ (-x-w)
+
+def unramifiedClosed  (A eta v x w z : ℂ) : ℂ :=
   let V := coordV Q z
   let R := coordR Q A x z
   let W := coordW Q v w
   let D := coordD Q eta v x
   let K := coordK Q eta x w
   ProbeLocal.continuedCorrection V W D (markedFactor R V (Q:ℂ)⁻¹ K (-D+W*R) 1)
+end
 
-def actualAPhase (eta : HeckeFamily.Character) (p : O) : ℂ :=
+
+section
+variable (eta : HeckeFamily.Character)
+include eta
+
+def actualAPhase  (p : O) : ℂ :=
   star (FiniteGaussPhase.angularFactor p) ^ 6 * HeckeFamily.elementCoeff eta p ^ 6
 
-def actualUnramifiedClosed (eta : HeckeFamily.Character) (p u : O)
+def actualUnramifiedClosed  (p u : O)
     [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p}) (x w z : ℂ) : ℂ :=
   unramifiedClosed (Ideal.absNorm (Ideal.span {p})) (actualAPhase eta p)
     (HeckeFamily.elementCoeff eta p)
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ u)) x w z
 
-lemma actualAPhase_norm_le_one (eta : HeckeFamily.Character) (p : O) :
+lemma actualAPhase_norm_le_one  (p : O) :
     ‖actualAPhase eta p‖ ≤ 1 := by
   simp only [actualAPhase, norm_mul, norm_pow, norm_star]
   exact (mul_le_of_le_one_left (by positivity)
     (pow_le_one₀ (norm_nonneg _) (CompletedGauss.angularFactor_norm_le_one p))).trans
     (pow_le_one₀ (norm_nonneg _) (ProbeRow.targetMonoid_norm_le_one eta p))
+end
 
-lemma coordV_norm (Q : ℝ) (hQ : 0 < Q) (z : ℂ) :
+
+section
+variable (Q : ℝ)
+include Q
+
+section
+variable (hQ : 0 < Q)
+include hQ
+
+lemma coordV_norm  (z : ℂ) :
     ‖coordV Q z‖ = Q ^ (-6*z.re) := by
   rw [coordV, Complex.norm_cpow_eq_rpow_re_of_pos hQ]
   simp
 
-lemma coordR_norm_le (Q : ℝ) (hQ : 0 < Q) (A x z : ℂ) (hA : ‖A‖ ≤ 1) :
+lemma coordR_norm_le  (A x z : ℂ) (hA : ‖A‖ ≤ 1) :
     ‖coordR Q A x z‖ ≤ Q ^ (4-6*x.re-6*z.re) := by
   rw [coordR, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ]
-  simp only [Complex.sub_re, Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat,
-    zero_mul, sub_zero]
+  simp
   exact mul_le_of_le_one_left (Real.rpow_nonneg hQ.le _) hA
 
-lemma coordW_norm_le (Q : ℝ) (hQ : 0 < Q) (v w : ℂ) (hv : ‖v‖ ≤ 1) :
+lemma coordW_norm_le  (v w : ℂ) (hv : ‖v‖ ≤ 1) :
     ‖coordW Q v w‖ ≤ Q ^ (-w.re) := by
   rw [coordW, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.rpow_nonneg hQ.le _) hv
 
-lemma coordD_norm_le (Q : ℝ) (hQ : 0 < Q) (eta v x : ℂ)
+lemma coordD_norm_le  (eta v x : ℂ)
     (he : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1) :
     ‖coordD Q eta v x‖ ≤ Q ^ (-x.re) := by
   rw [coordD, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ, Complex.neg_re]
   apply mul_le_of_le_one_left (Real.rpow_nonneg hQ.le _)
   rw [norm_mul, norm_star]
   exact (mul_le_of_le_one_left (norm_nonneg _) he).trans hv
+end
 
-lemma coordK_norm_le (Q : ℝ) (hQ : 1 ≤ Q) (eta x w : ℂ) (he : ‖eta‖ ≤ 1) :
+
+lemma coordK_norm_le  (hQ : 1 ≤ Q) (eta x w : ℂ) (he : ‖eta‖ ≤ 1) :
     ‖coordK Q eta x w‖ ≤ Q ^ (1-x.re-w.re) := by
   have hQ0 : 0 < Q := lt_of_lt_of_le zero_lt_one hQ
   have hsub : ‖(Q:ℂ)-1‖ = Q-1 := by
@@ -80,8 +102,10 @@ lemma coordK_norm_le (Q : ℝ) (hQ : 1 ≤ Q) (eta x w : ℂ) (he : ‖eta‖ �
   gcongr
   calc ‖eta‖*(Q-1) ≤ 1*(Q-1) := mul_le_mul_of_nonneg_right he (sub_nonneg.mpr hQ)
        _ ≤ Q := by linarith
-
-end SevenEighths.ProbeEuler
 end
 
-end OAI
+
+
+
+
+

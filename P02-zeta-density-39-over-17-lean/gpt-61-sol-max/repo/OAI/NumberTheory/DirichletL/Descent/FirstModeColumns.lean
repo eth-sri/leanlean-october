@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FourierBridge JointLogSeparation
+open ActualEisensteinCubic FourierBridge JointLogSeparation
 open MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 
 def firstCoordinates (a : Fin 7 → ℝ) (x y : ℝ) : Fin 9 → ℝ :=
   ![a 0,a 1,a 2,a 3,a 4,a 5,a 6,x,y]
@@ -34,7 +34,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

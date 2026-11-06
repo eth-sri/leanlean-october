@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteDensityTransfer
 
 @[expose] public section
@@ -47,8 +48,7 @@ theorem classicalZetaLongTailSupport_pos (Y A n : ℕ)
 theorem classicalZetaLongTail_mass_le (Y A : ℕ) :
     finiteDirichletMass (classicalZetaLongTailSupport Y A) (fun _n => 1) ≤ A := by
   unfold finiteDirichletMass classicalZetaLongTailSupport
-  simp only [norm_one, sum_const, nsmul_eq_mul, mul_one]
-  exact_mod_cast (show (Ioc Y A).card ≤ A by simp)
+  simp_all
 
 /-- Fixed-line coefficients of the ordinary Type-I tail, extended by zero
 beyond the sharp upper cutoff. -/
@@ -62,7 +62,6 @@ theorem classicalZetaLongLineCoeff_term
       (n : ℂ) ^ (-((σ : ℂ) + I * (t : ℂ))) := by
   rw [classicalZetaLongLineCoeff, ite_eq_left hnA,
     ← Complex.cpow_add _ _ (by exact_mod_cast hn.ne')]
-  congr 2
   ring
 
 /-- The fixed-line Type-I tail is one wide polynomial starting at `Y`. -/
@@ -73,16 +72,9 @@ theorem classicalZetaLongTail_eq_wideDirichletPoly
         (classicalZetaLongLineCoeff A σ) t := by
   have hCover : A ≤ 2 ^ Nat.clog 2 A :=
     (Nat.clog_le_iff_le_pow Nat.one_lt_two).mp le_rfl
-  have hUpper : A ≤ 2 ^ Nat.clog 2 A * Y := by
-    calc
-      A ≤ 2 ^ Nat.clog 2 A := hCover
-      _ ≤ 2 ^ Nat.clog 2 A * Y :=
-        Nat.le_mul_of_pos_right _ (lt_of_lt_of_le Nat.zero_lt_one hY)
+  have hUpper : A ≤ 2 ^ Nat.clog 2 A * Y := by nlinarith
   have hSubset : Finset.Ioc Y A ⊆
-      Finset.Ioc Y (2 ^ Nat.clog 2 A * Y) := by
-    intro n hn
-    exact Finset.mem_Ioc.mpr ⟨(Finset.mem_Ioc.mp hn).1,
-      (Finset.mem_Ioc.mp hn).2.trans hUpper⟩
+      Finset.Ioc Y (2 ^ Nat.clog 2 A * Y) := by grind
   rw [classicalZetaLongTail, wideDirichletPoly]
   have hExtend :
       (∑ n ∈ Finset.Ioc Y A,
@@ -91,10 +83,7 @@ theorem classicalZetaLongTail_eq_wideDirichletPoly
           classicalZetaLongLineCoeff A σ n * (n : ℂ) ^ (-(t : ℂ) * I) := by
     apply Finset.sum_subset hSubset
     intro n hnBig hnSmall
-    have hnA : A < n := by
-      by_contra h
-      exact hnSmall (Finset.mem_Ioc.mpr
-        ⟨(Finset.mem_Ioc.mp hnBig).1, Nat.le_of_not_gt h⟩)
+    have hnA : A < n := by simp_all
     rw [classicalZetaLongLineCoeff, ite_eq_right (by omega), zero_mul]
   rw [← hExtend]
   apply Finset.sum_congr rfl
@@ -112,7 +101,7 @@ theorem exists_classicalZetaLong_large_dyadic_block
       V / Nat.clog 2 A ≤
         ‖dirichletPoly (2 ^ r * Y)
           (classicalZetaLongLineCoeff A σ) t‖ := by
-  have hk : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hA
+  have hk := Nat.clog_pos Nat.one_lt_two hA
   apply exists_large_dyadic_block Y (Nat.clog 2 A)
     (classicalZetaLongLineCoeff A σ) t V hk
   rw [← classicalZetaLongTail_eq_wideDirichletPoly Y A σ t hY]
@@ -130,9 +119,7 @@ theorem classicalZetaPartialSum_eq_short_add_long
   rw [classicalZetaPartialSum, classicalZetaPartialSum,
     classicalZetaLongTail, hUnion, sum_union]
   rw [disjoint_left]
-  intro n hnShort hnLong
-  exact (not_lt_of_ge (Finset.mem_Icc.mp hnShort).2)
-    (Finset.mem_Ioc.mp hnLong).1
+  simp_all
 
 theorem classical_typeI_of_short_sum_large
     (A Y : ℕ) (s : ℂ) (e q : ℝ) (hYA : Y ≤ A)
@@ -166,8 +153,7 @@ theorem classical_typeII_of_short_sum_small
   have hProductIdentity :
       classicalZetaPartialSum Y s * zetaMollifier X s =
         1 + sharpMollifiedTail Y X s := by
-    simpa only [classicalZetaPartialSum, sharpMollifiedTail_apply] using
-      zetaPartialSum_mul_zetaMollifier_eq_one_add_tail Y X s hY hX hXY
+    exact zetaPartialSum_mul_zetaMollifier_eq_one_add_tail Y X s hY hX hXY
   have hTriangle :
       (1 : ℝ) ≤
         ‖classicalZetaPartialSum Y s * zetaMollifier X s‖ +
@@ -207,11 +193,15 @@ noncomputable instance (Y : ℕ) (q : ℝ) (ρ : ℂ) :
     Decidable (ChoosesClassicalTypeI Y q ρ) :=
   inferInstanceAs (Decidable (q ≤ ‖classicalZetaPartialSum Y ρ‖))
 
+section
+variable {α : Type*} [DecidableEq α] (S : Finset α) (weight : α → ℕ)
+    (P : α → Prop) [DecidablePred P]
+include α S weight P
+
 /-- Splitting a finite set by a decidable predicate preserves its full
 natural-valued weight exactly. -/
 theorem sum_filter_add_sum_filter_not_eq_sum
-    {α : Type*} [DecidableEq α] (S : Finset α) (weight : α → ℕ)
-    (P : α → Prop) [DecidablePred P] :
+     :
     (∑ x ∈ S.filter P, weight x) +
         (∑ x ∈ S.filter (fun y => ¬ P y), weight x) =
       ∑ x ∈ S, weight x := by
@@ -220,21 +210,12 @@ theorem sum_filter_add_sum_filter_not_eq_sum
 /-- One side of a finite binary partition carries at least half the total
 natural-valued weight. -/
 theorem exists_multiplicity_dominant_binary_branch
-    {α : Type*} [DecidableEq α] (S : Finset α) (weight : α → ℕ)
-    (P : α → Prop) [DecidablePred P] :
+     :
     (∑ x ∈ S, weight x ≤ 2 * ∑ x ∈ S.filter P, weight x) ∨
       (∑ x ∈ S, weight x ≤
-        2 * ∑ x ∈ S.filter (fun y => ¬ P y), weight x) := by
-  let leftWeight := ∑ x ∈ S.filter P, weight x
-  let rightWeight := ∑ x ∈ S.filter (fun y => ¬ P y), weight x
-  have hSplit : leftWeight + rightWeight = ∑ x ∈ S, weight x := by
-    simpa only [leftWeight, rightWeight] using
-      sum_filter_add_sum_filter_not_eq_sum S weight P
-  rcases le_total rightWeight leftWeight with h | h
-  · left
-    omega
-  · right
-    omega
+        2 * ∑ x ∈ S.filter (fun y => ¬ P y), weight x) := by grind [sum_filter_add_sum_filter_not_eq_sum]
+end
+
 
 /-- Polynomial coefficient mass and a power-sized lower threshold are
 compatible with the rational localizer after increasing its degree. -/
@@ -305,8 +286,8 @@ theorem finiteDirichlet_beta_removal_power_threshold :
   have hTpos : 0 < T := by linarith
   have hHpos : 0 < T ^ (δ / 2) := Real.rpow_pos_of_pos hTpos _
   have hRpos : 0 < T ^ δ := Real.rpow_pos_of_pos hTpos _
-  let displacement : ℝ := ρ.re - σ
-  let z : ℂ := (σ : ℂ) + I * (ρ.im : ℂ)
+  let displacement := ρ.re - σ
+  let z := (σ : ℂ) + I * (ρ.im : ℂ)
   have hDisplacement : 0 ≤ displacement := by
     dsimp [displacement]
     linarith
@@ -321,9 +302,7 @@ theorem finiteDirichlet_beta_removal_power_threshold :
     apply Complex.ext
     · simp [z, displacement]
     · simp [z, displacement]
-  have hFactor : 3 / 4 <
-      ‖(((T ^ (δ / 2) : ℝ) : ℂ) /
-        (((T ^ (δ / 2) : ℝ) : ℂ) + (displacement : ℂ))) ^ k‖ :=
+  have hFactor :=
     localizer_factor_gt_three_fourths k (T ^ (δ / 2)) displacement
       hHpos hDisplacement hDisplacementOne (hTfactor T hTFactor)
   have hExterior :
@@ -396,25 +375,18 @@ theorem finite_common_scale_binary_branch_extraction
       omega
     have hSINonempty : SI.Nonempty := by
       by_contra hEmpty
-      have hEq : SI = ∅ := Finset.not_nonempty_iff_eq_empty.mp hEmpty
-      rw [hEq] at hBranchPos
-      simp at hBranchPos
+      have hEq := Finset.not_nonempty_iff_eq_empty.mp hEmpty
+      grind
     have hEach : ∀ x ∈ SI, ∃ t : ℝ,
         |ordinate x - t| ≤ H ∧ inInterval t ∧
-          ∃ r ∈ Finset.range kI, largeI r t := by
-      intro x hx
-      have hxData := Finset.mem_filter.mp hx
-      exact hEachI x hxData.1 hxData.2
+          ∃ r ∈ Finset.range kI, largeI r t := by aesop
     have hLocalI : ∀ z : ℤ,
         ∑ x ∈ SI.filter
           (fun y => (z : ℝ) ≤ ordinate y ∧ ordinate y < (z : ℝ) + 1),
           weight x ≤ L := by
       intro z
       apply (Finset.sum_le_sum_of_subset ?_).trans (hLocal z)
-      intro x hx
-      have hxData := Finset.mem_filter.mp hx
-      have hxSI := Finset.mem_filter.mp hxData.1
-      exact Finset.mem_filter.mpr ⟨hxSI.1, hxData.2⟩
+      grind
     obtain ⟨r, hr, W, hSep, hLarge, hInterval, hBranchBound⟩ :=
       finite_shifted_dyadic_witness_extraction SI weight ordinate kI L H
         largeI inInterval hSINonempty hEach hLocalI
@@ -432,25 +404,18 @@ theorem finite_common_scale_binary_branch_extraction
       omega
     have hSIINonempty : SII.Nonempty := by
       by_contra hEmpty
-      have hEq : SII = ∅ := Finset.not_nonempty_iff_eq_empty.mp hEmpty
-      rw [hEq] at hBranchPos
-      simp at hBranchPos
+      have hEq := Finset.not_nonempty_iff_eq_empty.mp hEmpty
+      grind
     have hEach : ∀ x ∈ SII, ∃ t : ℝ,
         |ordinate x - t| ≤ H ∧ inInterval t ∧
-          ∃ r ∈ Finset.range kII, largeII r t := by
-      intro x hx
-      have hxData := Finset.mem_filter.mp hx
-      exact hEachII x hxData.1 hxData.2
+          ∃ r ∈ Finset.range kII, largeII r t := by aesop
     have hLocalII : ∀ z : ℤ,
         ∑ x ∈ SII.filter
           (fun y => (z : ℝ) ≤ ordinate y ∧ ordinate y < (z : ℝ) + 1),
           weight x ≤ L := by
       intro z
       apply (Finset.sum_le_sum_of_subset ?_).trans (hLocal z)
-      intro x hx
-      have hxData := Finset.mem_filter.mp hx
-      have hxSII := Finset.mem_filter.mp hxData.1
-      exact Finset.mem_filter.mpr ⟨hxSII.1, hxData.2⟩
+      grind
     obtain ⟨r, hr, W, hSep, hLarge, hInterval, hBranchBound⟩ :=
       finite_shifted_dyadic_witness_extraction SII weight ordinate kII L H
         largeII inInterval hSIINonempty hEach hLocalII
@@ -532,14 +497,7 @@ theorem extract_classical_dichotomy_of_scale_bounds :
     have hTpos : 0 < T := by linarith
     have hqPos : 0 < q := by
       exact Real.rpow_pos_of_pos hTpos _
-    have hA : 1 < A := by
-      have hCutNonneg : 0 ≤ sharpZetaCutoff T :=
-        (four_mul_lt_sharpZetaCutoff T).le.trans'
-          (mul_nonneg (by norm_num) hTpos.le)
-      have hTwo : (2 : ℝ) ≤ sharpZetaCutoff T := by
-        linarith [four_mul_lt_sharpZetaCutoff T]
-      have hTwoNat : 2 ≤ A := (Nat.le_floor_iff hCutNonneg).mpr hTwo
-      omega
+    have hA : 1 < A := by omega
     have hY : 1 ≤ Y := hX.trans hXY
     have hTotalPos : 0 < ∑ ρ ∈ S, analyticVanishingOrder riemannZeta ρ := by
       simpa only [S, zeroCountRect] using Nat.pos_of_ne_zero hCountZero
@@ -560,14 +518,11 @@ theorem extract_classical_dichotomy_of_scale_bounds :
         have hBase' : ‖classicalZetaPartialSum A ρ‖ ≤
             149 * sharpZetaCutoff T ^ (-ρ.re) := by
           simpa only [A, classicalZetaPartialSum] using hBase
-        have hError' : 149 * sharpZetaCutoff T ^ (-ρ.re) ≤ q / 2 := by
-          simpa only [q, S] using hError ρ hρ
-        exact hBase'.trans hError'
+        grind
       have hLong : q / 2 ≤ ‖classicalZetaLongTail Y A ρ‖ := by
         have hRaw := classical_typeI_of_short_sum_large A Y ρ (q / 2) q
           (by simpa only [A] using hYA) hSharp hChoice
-        convert hRaw using 1
-        ring
+        grind
       have hRect := hρ
       dsimp only [S] at hRect
       rw [zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff,
@@ -579,9 +534,7 @@ theorem extract_classical_dichotomy_of_scale_bounds :
         (by simpa only [A] using hMassI)
         (by simpa only [q, neg_add, sub_eq_add_neg] using hThresholdI)
         (by simpa only [classicalZetaLongTail_eq_finiteDirichletSeries] using hLong)
-      have htInterval : T - T ^ δ ≤ t ∧ t ≤ 2 * T + T ^ δ := by
-        rw [abs_le] at htShift
-        constructor <;> linarith [hRect.1.2.2.1, hRect.1.2.2.2]
+      have htInterval : T - T ^ δ ≤ t ∧ t ≤ 2 * T + T ^ δ := by grind
       have htLarge' : (3 / 4) * (q / 2) ≤
           ‖classicalZetaLongTail Y A ((σ : ℂ) + I * (t : ℂ))‖ := by
         simpa only [classicalZetaLongTail_eq_finiteDirichletSeries] using htLarge
@@ -614,9 +567,7 @@ theorem extract_classical_dichotomy_of_scale_bounds :
         hσ.le hσUpper hT₂' hRect.1.1 hRect.1.2.1
         (sharpMollifiedTailSupport_pos Y X) hMassII hThresholdII
         (by simpa only [sharpMollifiedTail] using hTail)
-      have htInterval : T - T ^ δ ≤ t ∧ t ≤ 2 * T + T ^ δ := by
-        rw [abs_le] at htShift
-        constructor <;> linarith [hRect.1.2.2.1, hRect.1.2.2.2]
+      have htInterval : T - T ^ δ ≤ t ∧ t ≤ 2 * T + T ^ δ := by grind
       have htLarge' : (3 / 4) * (3 / 4) ≤
           ‖sharpMollifiedTail Y X ((σ : ℂ) + I * (t : ℂ))‖ := by
         simpa only [sharpMollifiedTail] using htLarge
@@ -629,8 +580,7 @@ theorem extract_classical_dichotomy_of_scale_bounds :
           (fun y => (z : ℝ) ≤ y.im ∧ y.im < (z : ℝ) + 1),
           analyticVanishingOrder riemannZeta ρ ≤ classicalLocalMultiplicityCap T := by
       intro z
-      simpa only [S, zeroUnitBin] using
-        zeroUnitBin_multiplicity_le_cap σ T z hσ.le hTEight
+      exact zeroUnitBin_multiplicity_le_cap σ T z hσ.le hTEight
     have hExtract := finite_common_scale_binary_branch_extraction S
       (analyticVanishingOrder riemannZeta) Complex.im
       (ChoosesClassicalTypeI Y q) kI kII
@@ -671,7 +621,7 @@ theorem eventually_classical_dichotomy_cutoffs
       let Y := ⌊T ^ δ₁⌋₊
       1 ≤ X ∧ 1 < Y ∧ X ≤ Y ∧ Y ≤ ⌊sharpZetaCutoff T⌋₊ ∧
         (X : ℝ) ≤ T ∧ (Y : ℝ) ≤ T := by
-  have hTendsto : Tendsto (fun T : ℝ => T ^ δ₁) atTop atTop :=
+  have hTendsto :=
     tendsto_rpow_atTop hδ₁
   have hEventually : ∀ᶠ T : ℝ in atTop, (2 : ℝ) ≤ T ^ δ₁ :=
     hTendsto.eventually (eventually_ge_atTop 2)
@@ -687,7 +637,7 @@ theorem eventually_classical_dichotomy_cutoffs
   have hTnonneg : 0 ≤ T := by linarith
   have hXpowOne : 1 ≤ T ^ (δ₂ / 2) :=
     Real.one_le_rpow hTone (by positivity)
-  have hYpowTwo : (2 : ℝ) ≤ T ^ δ₁ := hTscale T hTscale'
+  have hYpowTwo := hTscale T hTscale'
   have hYpowOne : 1 ≤ T ^ δ₁ := hYpowTwo.trans' one_le_two
   have hX : 1 ≤ ⌊T ^ (δ₂ / 2)⌋₊ :=
     (Nat.one_le_floor_iff _).mpr hXpowOne
@@ -695,7 +645,7 @@ theorem eventually_classical_dichotomy_cutoffs
     have hTwo : 2 ≤ ⌊T ^ δ₁⌋₊ :=
       (Nat.le_floor_iff (Real.rpow_nonneg hTnonneg _)).mpr hYpowTwo
     omega
-  have hPowXY : T ^ (δ₂ / 2) ≤ T ^ δ₁ :=
+  have hPowXY :=
     Real.rpow_le_rpow_of_exponent_le hTone hδOrder
   have hXY : ⌊T ^ (δ₂ / 2)⌋₊ ≤ ⌊T ^ δ₁⌋₊ :=
     Nat.floor_mono hPowXY
@@ -716,12 +666,7 @@ theorem eventually_classical_dichotomy_cutoffs
     Nat.floor_le (Real.rpow_nonneg hTnonneg _)
   have hYcastFloor : (⌊T ^ δ₁⌋₊ : ℝ) ≤ T ^ δ₁ :=
     Nat.floor_le (Real.rpow_nonneg hTnonneg _)
-  have hXpowT : T ^ (δ₂ / 2) ≤ T := by
-    have hHalfOne : δ₂ / 2 ≤ 1 := hδOrder.trans hδ₁One
-    simpa only [Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hTone hHalfOne
-  exact ⟨hX, hY, hXY, hYA, hXcastFloor.trans hXpowT,
-    hYcastFloor.trans hYpowT⟩
+  grind
 
 /-- Structural mass and localization-threshold bounds for admissible
 classical cutoffs. -/
@@ -765,12 +710,7 @@ theorem classical_dichotomy_mass_and_threshold_bounds
       _ ≤ T ^ (-δ₂) * (1 / 8) :=
         mul_le_mul_of_nonneg_left hInv hDeltaPow.le
       _ ≤ T ^ (-δ₂) / 2 := by nlinarith
-  have hYX : ((Y * X : ℕ) : ℝ) ≤ T ^ 2 := by
-    push_cast
-    calc
-      (Y : ℝ) * (X : ℝ) ≤ T * T :=
-        mul_le_mul hYT hXT (Nat.cast_nonneg X) hTnonneg
-      _ = T ^ 2 := by ring
+  have hYX : ((Y * X : ℕ) : ℝ) ≤ T ^ 2 := by simp_all <;> nlinarith
   have hMassII :
       finiteDirichletMass (sharpMollifiedTailSupport Y X)
           (sharpMollifiedCoeff Y X) ≤ T ^ (4 : ℝ) := by
@@ -840,7 +780,7 @@ theorem eventually_sharp_full_error_le_split_threshold
         149 * sharpZetaCutoff T ^ (-ρ.re) ≤ T ^ (-δ₂) / 2 := by
   let d := σ - δ₂
   have hd : 0 < d := by dsimp only [d]; linarith
-  have hCore : Tendsto (fun T : ℝ => T ^ (-d)) atTop (𝓝 0) :=
+  have hCore :=
     tendsto_rpow_neg_atTop hd
   have hScaled : Tendsto
       (fun T : ℝ => (149 * (4 : ℝ) ^ (-σ)) * T ^ (-d))
@@ -867,9 +807,7 @@ theorem eventually_sharp_full_error_le_split_threshold
           (149 * 4 ^ (-σ)) * (T ^ (-σ) * T ^ δ₂) := by ring
       _ = (149 * 4 ^ (-σ)) * T ^ (-d) := by
         rw [← Real.rpow_add hTpos]
-        congr 2
-        dsimp only [d]
-        ring
+        grind
   have hProduct : 149 * (4 * T) ^ (-σ) * T ^ δ₂ ≤ 1 / 2 := by
     rw [hIdentity]
     exact (hTscale T hTscale').le
@@ -957,6 +895,6 @@ theorem classical_typeI_typeII_dichotomy_native :
   have hResult := hBranch T ⌊T ^ δ₁⌋₊ ⌊T ^ (δ₂ / 2)⌋₊ hTbranch'
     hX hY hXY hYA (hError T hTerror') (hProduct T hTproduct')
     hMassI hThresholdI hMassII hThresholdII
-  simpa only [ClassicalTypeITypeIIDichotomyConclusion] using hResult
+  exact hResult
 
-end GuthMaynard.NativeMoment
+

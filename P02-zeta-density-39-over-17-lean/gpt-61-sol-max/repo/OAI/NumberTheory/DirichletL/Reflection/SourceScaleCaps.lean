@@ -7,12 +7,16 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedDyadic
 
-lemma familyRawScale_inverse {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
+open scoped EisensteinEis
+
+section
+variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
     (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+include φ a c mode F s
+
+lemma familyRawScale_inverse 
     (X QK QP : ℝ) :
     (familyRawScale F s X QK QP)⁻¹=
       (27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2)*
@@ -22,8 +26,7 @@ lemma familyRawScale_inverse {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
   simp only [div_eq_mul_inv,mul_inv_rev,inv_inv,mul_pow]
   ring
 
-lemma familyRawScale_inverse_cap {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
-    (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+lemma familyRawScale_inverse_cap 
     (Z X QK QP Lcap : ℝ) (hZ : 0<Z) (hX : 0<X) (hK : 0≤QK) (hP : 0≤QP)
     (hFcap : (Ideal.absNorm (∏ i,F.ideal i):ℝ)≤Z^Lcap)
     (hKcap : QK≤Z^Lcap) (hPcap : QP≤Z^Lcap) (hXcap : X⁻¹≤Z^Lcap) :
@@ -38,6 +41,8 @@ lemma familyRawScale_inverse_cap {φ : Type*} [Fintype φ] {a c : Eis} {mode : B
       rw [←Real.rpow_mul_natCast hZ.le]
       congr 2
       ring
+end
+
 
 theorem geometry_source_scale_cap {γ : Type*} [Fintype γ]
     (a c : γ→Eis) (mode : γ→Bool)
@@ -64,7 +69,7 @@ theorem geometry_source_scale_cap {γ : Type*} [Fintype γ]
   calc
     _ ≤ Z*Z^(7*Lcap) := mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hzpos.le _)
     _ = _ := by rw [Real.rpow_add hzpos,Real.rpow_one];ring
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

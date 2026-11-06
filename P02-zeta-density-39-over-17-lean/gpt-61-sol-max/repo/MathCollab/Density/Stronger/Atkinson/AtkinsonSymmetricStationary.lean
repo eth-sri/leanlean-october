@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Released under the MIT-0 license.
 Selected proof slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -20,7 +21,7 @@ the phase's cubic term. The remaining estimate is on the actual local
 integral and consumes the constructed second derivative bounds.
 -/
 
-noncomputable section
+
 
 open Complex MeasureTheory Set
 
@@ -40,7 +41,7 @@ theorem integral_atkinsonRootQuadratic_odd (T b H : ℝ) {k : ℕ} (hk : Odd k) 
         (((y-atkinsonSaddleRoot (T/(2*Real.pi)) b)^k : ℝ) : ℂ) *
           atkinsonRootQuadraticKernel T b y) = 0 := by
   let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
-  let F : ℝ → ℂ := fun y => (((y-r)^k : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y
+  let F := fun y => (((y-r)^k : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y
   have hodd (y : ℝ) : F (2*r-y) = -F y := by
     dsimp [F]
     rw [show 2*r-y-r = -(y-r) by ring, hk.neg_pow,
@@ -51,8 +52,7 @@ theorem integral_atkinsonRootQuadratic_odd (T b H : ℝ) {k : ℕ} (hk : Odd k) 
   have hright : 2*r-(r-H) = r+H := by ring
   simp_rw [hodd] at h
   rw [intervalIntegral.integral_neg, hleft, hright] at h
-  change (∫ y in r-H..r+H, F y) = 0
-  linear_combination -h / 2
+  grind
 
 theorem abs_atkinsonRootCubicCorrection_le {T y H : ℝ} (hT : 0 < T) (b : ℝ)
     (hH : 0 ≤ H) (hy : |y-atkinsonSaddleRoot (T/(2*Real.pi)) b| ≤ H) :
@@ -88,7 +88,7 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
   have hmem {y : ℝ} (hy : y ∈ Icc (r-H) (r+H)) : y ∈ Icc a c :=
     ⟨hleft.trans hy.1, hy.2.trans hright⟩
   have hrmem : r ∈ Icc a c := hmem ⟨by linarith, by linarith⟩
-  let P : ℝ → ℂ := fun y =>
+  let P := fun y =>
     f r * atkinsonRootQuadraticKernel T b y +
     deriv f r * (((y-r : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y) +
     ((2*T/(3*r^3) : ℝ) : ℂ) * I * f r *
@@ -153,8 +153,7 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
     rw [he]
     apply (norm_add_le _ _).trans
     apply (add_le_add (norm_add_le _ _) le_rfl).trans
-    simp only [norm_mul, norm_atkinsonRootQuadraticKernel, norm_I, mul_one,
-      Complex.norm_real, Real.norm_eq_abs]
+    simp only [norm_mul, norm_atkinsonRootQuadraticKernel, mul_one, norm_real, Real.norm_eq_abs, norm_I]
     exact add_le_add (add_le_add ha (mul_le_mul hb hd (abs_nonneg _)
       (mul_nonneg (mul_nonneg hf.nonneg hf.scale_nonneg) hH)))
       (mul_le_mul (hf.norm_le y (hmem hy)) hk (norm_nonneg _) hf.nonneg)
@@ -169,4 +168,4 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
   rw [abs_of_nonneg (by linarith : 0 ≤ r+H-(r-H))]
   ring
 
-end MathCollab.Density.Stronger.Atkinson
+

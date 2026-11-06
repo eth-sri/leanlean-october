@@ -8,12 +8,16 @@ public import TaoTrudgianYang2025.ExponentPair
 
 /-! Triangle and slope of Heath--Brown's exact family, including the first order. -/
 
-noncomputable section
+
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem heathBrownPair_slope {r : ℝ} (hr : 3 ≤ r) :
+
+section
+variable {r : ℝ} (hr : 3 ≤ r)
+include r hr
+
+theorem heathBrownPair_slope  :
     1/2 ≤ heathBrownPairL r-heathBrownPairK r := by
   have h0 : 0 < r := by linarith
   have h1 : 0 < r-1 := by linarith
@@ -30,7 +34,7 @@ theorem heathBrownPair_slope {r : ℝ} (hr : 3 ≤ r) :
     positivity
   linarith
 
-theorem heathBrownPair_sum_le {r : ℝ} (hr : 3 ≤ r) :
+theorem heathBrownPair_sum_le  :
     heathBrownPairK r+heathBrownPairL r ≤ 1 := by
   have h0 : 0 < r := by linarith
   have h1 : 0 < r-1 := by linarith
@@ -47,12 +51,14 @@ theorem heathBrownPair_sum_le {r : ℝ} (hr : 3 ≤ r) :
     positivity
   linarith
 
-theorem heathBrownPair_inTriangle {r : ℝ} (hr : 3 ≤ r) :
+theorem heathBrownPair_inTriangle  :
     InExponentPairTriangle (heathBrownPairK r) (heathBrownPairL r) := by
   have hp := heathBrownPairK_pos hr
   have hs := heathBrownPair_slope hr
   have hsum := heathBrownPair_sum_le hr
   exact ⟨hp.le,by linarith,by linarith,by linarith,hsum⟩
+end
 
-end TaoTrudgianYang2025
+
+
 

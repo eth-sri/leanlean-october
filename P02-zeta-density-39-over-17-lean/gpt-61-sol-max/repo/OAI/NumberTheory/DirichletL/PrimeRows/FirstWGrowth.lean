@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedFirstBounds
 public import OAI.NumberTheory.DirichletL.PrimeRows.PrincipalMask
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
-    ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤s.re →
+    ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤ s.re →
       ‖HeckeOrigin.continued χ s‖≤C*(3+|s.im|)^2 := by
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue≠1 := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
@@ -26,11 +27,11 @@ theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
       (Ideal.absNorm_eq_zero_iff.not.mpr (HeckeDeletionBounds.radical_ne_zero χ.modulus))
   have hU := HeckeLogarithmicInput.uniformConstant_nonneg
-  let C : ℝ := HeckeLogarithmicInput.uniformConstant*(ψ.modulus.absNorm:ℝ)^(3/5:ℝ)*Cd*R^(101/100:ℝ)
+  let C := HeckeLogarithmicInput.uniformConstant*(ψ.modulus.absNorm:ℝ)^(3/5:ℝ)*Cd*R^(101/100:ℝ)
   have hC : 0≤C := by dsimp [C];positivity
   refine ⟨1+C,by linarith,?_⟩
   intro s hs
-  have hl := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤s.re)
+  have hl := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤ s.re)
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hl
   have hdel : ‖HeckeFiniteDeletion.factors χ.modulus ψ s‖≤Cd*R^(101/100:ℝ) := by
     apply (hd χ.modulus ψ s).trans
@@ -45,7 +46,7 @@ theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
 
 theorem calibrated_numerator_first_growth (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (u : FreeRow) (hu : u.val≠1) :
-    ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤s.re →
+    ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤ s.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤C*(3+|s.im|)^2 := by
   by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
@@ -72,11 +73,11 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
         physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
   obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_first_growth S hS hmax u hu
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm x.re
-  let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
+  let L := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
-  let C : ℝ := L*Cn*(Ch*N)*∏P:T,A P
+  let C := L*Cn*(Ch*N)*∏P:T,A P
   have hA (P : T) : 0≤A P := selectedFirstBound_nonneg _ _ (by positivity)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
   have hC : 0≤C := by dsimp [C,L,N];positivity
@@ -119,8 +120,8 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
     _ = C*(3+|w.im|)^2 := by dsimp [C];ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

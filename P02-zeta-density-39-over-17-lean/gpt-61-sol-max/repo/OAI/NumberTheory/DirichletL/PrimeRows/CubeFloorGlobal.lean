@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorArithmetic
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorDyadic
 
@@ -11,8 +12,8 @@ open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection
-local notation "O" => HeckeFamily.O
+open ProbeRaySlots
+open scoped HeckeO
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -25,8 +26,8 @@ theorem globalFloorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y :
 theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0< mesh) (hδ : 0<δ)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -52,7 +53,7 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
   obtain ⟨C,hC,hbound⟩ := actual_floor_cube_arithmetic M H hH N n e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss
     he he1 heps hc hcb hA hR hdmin hdmax hdRange hrmin hτ hε hκ hcost hmesh hδ hbudget hgap hmargin hheight hloss
     S hS hfirst hmax ell hell hello hellhi W hWs hW hWB hellsum
-  let θ : ℝ := 67/100+12*e+eps*(N+8)
+  let θ := 67/100+12*e+eps*(N+8)
   have hθ : 0<θ := by dsimp [θ];positivity
   obtain ⟨Cg,hCg,hgeom⟩ := bounded_dyadic_power_sum θ hθ
   refine ⟨C*Cg,mul_pos hC hCg,?_⟩
@@ -62,15 +63,15 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
   dsimp only
   intro t ht
   have hZp : 0<Z := zero_lt_one.trans hZ
-  let Y : Fin N→ℝ := fun j=>Z^(ell j)
-  let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-  let Rn : ℕ→Finset FreeRow := fun k=>rows∩dyadicRows 1 k
+  let Y := fun j=>Z^(ell j)
+  let T := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+  let Rn := fun k=>rows∩dyadicRows 1 k
   let term : FreeRow→ℂ := fun u=>frequencyWeight ((17/50:ℂ)+t.1.2*Complex.I) ⟨u.val,u.property.1⟩*
     ∑P:(∀j,T j),calibratedTupleValue S hS hmax η u (fun j=>(P j).val)
       (fun j=>globalFloorPoolOutside M H S N c b Y j _ (P j).property) W Y
       (((51/100+16*e:ℝ):ℂ)+t.1.1*Complex.I) (((1-51/100-6*e:ℝ):ℂ)+t.2*Complex.I)
       ((17/50:ℂ)+t.1.2*Complex.I)
-  let D : ℝ := C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(loss-1/40+mesh/6)
+  let D := C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(loss-1/40+mesh/6)
   have hD : 0≤D := by dsimp [D];positivity
   have hdyad (k : ℕ) : ‖∑u∈Rn k,term u‖≤D*((2:ℝ)^k)^θ := by
     let vk := Real.logb Z ((2:ℝ)^k)
@@ -111,8 +112,8 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
         _ = (C*Cg)*(η.modulus.absNorm:ℝ)^(2*eps)*(Z^(loss-1/40+mesh/6)*(Z^v)^θ) := by ring
         _ = _ := by rw [hp]
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

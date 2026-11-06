@@ -3,9 +3,8 @@ public import MathCollab.Density.Stronger.ShortPoweredHeight
 
 @[expose] public section
 
-open Real Complex Set Filter
+open Real Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -142,4 +141,4 @@ theorem smooth_long_or_short_powered_cover {σ δ η : ℝ}
     refine Or.inr ⟨(p,k,l), ?_, hh⟩
     exact mem_smoothPoweredIndices.mpr ⟨hp, hk, hkK', Finset.mem_range.mp hl, hklo, hupper⟩
 
-end MathCollab.Density.Stronger
+

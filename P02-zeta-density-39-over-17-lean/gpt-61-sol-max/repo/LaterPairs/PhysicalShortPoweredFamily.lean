@@ -6,10 +6,9 @@ public import MathCollab.Density.Stronger.ShortPoweredHeight
 
 @[expose] public section
 
-open Real Complex Set Filter
+open Real Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger
 open MathCollab.Density
@@ -127,4 +126,4 @@ theorem smooth_long_or_short_powered_cover {σ a δ η : ℝ}
     refine Or.inr ⟨(p,k,l), ?_, hh⟩
     exact mem_smoothPoweredIndices.mpr ⟨hp, hk, hkK', Finset.mem_range.mp hl, hklo, hupper⟩
 
-end Montgomery.RationalMoment.RightDetector.Physical
+

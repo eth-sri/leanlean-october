@@ -1,19 +1,23 @@
 module
+import Mathlib
 public import TwoTermAbsorption
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 
+section
+variable {σ a p α δ : ℝ}
+    (hw : TwoTermWindow σ a p α) (hδ : 0 < δ)
+include σ a p α δ hw hδ
+
 /-- The proved energy theorem and actual signed finite cubic bound imply the
 large-value count uniformly over every real length in the lower window. -/
-theorem two_term_lower_large_values {σ a p α δ : ℝ}
-    (hw : TwoTermWindow σ a p α) (hδ : 0 < δ) :
+theorem two_term_lower_large_values  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → T^a ≤ N → N ≤ T^α →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -74,8 +78,7 @@ theorem two_term_lower_large_values {σ a p α δ : ℝ}
 
 /-- The upper detecting window is covered by the ordinary second moment,
 including lengths greater than the observation time. -/
-theorem two_term_upper_large_values {σ a p α δ : ℝ}
-    (hw : TwoTermWindow σ a p α) (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
+theorem two_term_upper_large_values  (hδ' : δ ≤ 1/100) :
     ∃ C : ℝ, 0 < C ∧ ∀ (H N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ H → 2 ≤ N → H^α ≤ N → N ≤ H^(3*a/2+δ) →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -83,7 +86,7 @@ theorem two_term_upper_large_values {σ a p α δ : ℝ}
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∀ t ∈ W, N^σ*H^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
       (W.card:ℝ) ≤ C*H^(p+18*δ) := by
-  let D : ℝ := Real.log 2+1/δ
+  let D := Real.log 2+1/δ
   have hD : 0 < D := by
     dsimp [D]
     exact add_pos_of_nonneg_of_pos (Real.log_nonneg (by norm_num)) (one_div_pos.mpr hδ)
@@ -156,8 +159,7 @@ theorem two_term_upper_large_values {σ a p α δ : ℝ}
 
 
 /-- Uniform count for every actual detecting length, with no intermediate gap. -/
-theorem two_term_full_window_large_values {σ a p α δ : ℝ}
-    (hw : TwoTermWindow σ a p α) (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
+theorem two_term_full_window_large_values  (hδ' : δ ≤ 1/100) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → 2 ≤ N → T^a ≤ N → N ≤ T^(3*a/2+δ) →
       (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
@@ -174,5 +176,7 @@ theorem two_term_full_window_large_values {σ a p α δ : ℝ}
       (mul_le_mul_of_nonneg_right (by linarith : C ≤ C+D) (by positivity))
   · exact (hhi T N t₀ b W hT hN (le_of_not_ge hm) hu hb hloc hsep hlarge).trans
       (mul_le_mul_of_nonneg_right (by linarith : D ≤ C+D) (by positivity))
+end
 
-end Montgomery.RationalMoment
+
+

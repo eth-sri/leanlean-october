@@ -6,9 +6,8 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.AdditiveEnergy
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                                 
@@ -20,7 +19,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Finset MeasureTheory Set
+open Finset MeasureTheory
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
@@ -31,10 +30,14 @@ theorem zetaMomentKernel_pos (t u : ℝ) : 0 < zetaMomentKernel t u := by
   unfold zetaMomentKernel
   positivity
 
-theorem sum_zetaMomentKernel_le_harmonic
-    (W : Finset ℝ) (u : ℝ) (N : ℕ)
+section
+variable (W : Finset ℝ) (u : ℝ) (N : ℕ)
     (hSep : MathCollab.Density.Stronger.Atkinson.IsSeparated 1 W)
-    (hRange : ∀ t ∈ W, |t - u| ≤ N) :
+    (hRange : ∀ t ∈ W, |t - u| ≤ N)
+include W u N hSep hRange
+
+theorem sum_zetaMomentKernel_le_harmonic
+     :
     (∑ t ∈ W, zetaMomentKernel t u) ≤ 1 + 2 * (harmonic (N + 1) : ℝ) := by
   let S := W.erase u
   let shell : ℝ → ℕ := fun t => ⌊|t - u|⌋₊
@@ -43,8 +46,7 @@ theorem sum_zetaMomentKernel_le_harmonic
     have hr := hRange t (Finset.mem_of_mem_erase ht)
     have hfloor : ((shell t : ℕ) : ℝ) ≤ (N : ℝ) :=
       (Nat.floor_le (abs_nonneg _)).trans hr
-    have : shell t ≤ N := by exact_mod_cast hfloor
-    simpa only [Finset.mem_range] using Nat.lt_succ_of_le this
+    simp_all
   have hoff : (∑ t ∈ S, zetaMomentKernel t u) ≤ 2 * (harmonic (N + 1) : ℝ) := by
     rw [← Finset.sum_fiberwise_of_maps_to hmaps (fun t => zetaMomentKernel t u)]
     calc
@@ -73,8 +75,7 @@ theorem sum_zetaMomentKernel_le_harmonic
               exact Nat.floor_le (abs_nonneg _)
             unfold zetaMomentKernel
             rw [abs_sub_comm u t]
-            apply one_div_le_one_div_of_le (by positivity)
-            linarith
+            field_simp <;> nlinarith
           _ = (({t ∈ S | shell t = k}).card : ℝ) * (1 / ((k : ℝ) + 1)) := by simp
           _ ≤ 2 * (1 / ((k : ℝ) + 1)) := by
             apply mul_le_mul_of_nonneg_right _ (by positivity)
@@ -95,15 +96,14 @@ theorem sum_zetaMomentKernel_le_harmonic
     linarith
 
 theorem sum_zetaMomentKernel_le_log
-    (W : Finset ℝ) (u : ℝ) (N : ℕ)
-    (hSep : MathCollab.Density.Stronger.Atkinson.IsSeparated 1 W)
-    (hRange : ∀ t ∈ W, |t - u| ≤ N) :
+     :
     (∑ t ∈ W, zetaMomentKernel t u) ≤ 3 + 2 * Real.log (N + 1) := by
   have h := sum_zetaMomentKernel_le_harmonic W u N hSep hRange
   have hh := harmonic_le_one_add_log (N + 1)
-  push_cast at hh
-  linarith
+  grind
+end
+
 
                                                                    
                       
-end TaoTrudgianYang2025
+

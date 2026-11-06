@@ -10,27 +10,36 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentActiveAllocation
-open HeckeFamily CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
+open HeckeFamily CenteredMomentDivisorAllocation
 open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
-open CenteredMomentSlotRatios CenteredMomentDivisorActualBoundary CenteredMomentDivisorRectangle
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
+open CenteredMomentSlotRatios CenteredMomentDivisorActualBoundary
+open scoped EisensteinO
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def activeAllocations (η:Character) (m A:O) (t:ℝ) (S:ι→Finset (Ideal O))
-    (β:ι→Ideal O→ℂ) (D:Ideal O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ) :
+section
+variable (η:Character)
+include η
+
+section
+variable (m A:O) (t:ℝ) (S:ι→Finset (Ideal O))
+    (β:ι→Ideal O→ℂ) (D:Ideal O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ)
+include m A t S β D W₁ W₂ X₁ X₂ Y₁ Y₂
+
+def activeAllocations  :
     Finset (Allocation D (Finset.univ:Finset (ι⊕Fin 2))) :=
   Finset.univ.filter (fun a=>∃z:O,allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂≠0)
 
-theorem inactive_zero (η:Character) (m A:O) (t:ℝ) (S:ι→Finset (Ideal O))
-    (β:ι→Ideal O→ℂ) (D:Ideal O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ)
+theorem inactive_zero 
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
     (ha:a∉activeAllocations η m A t S β D W₁ W₂ X₁ X₂ Y₁ Y₂) (z:O) :
     allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂=0 := by
   by_contra hn
   exact ha (Finset.mem_filter.mpr ⟨Finset.mem_univ _,z,hn⟩)
+end
 
-theorem masked_eq_active_allocations (η:Character) (m A z:O) (t:ℝ)
+
+theorem masked_eq_active_allocations  (m A z:O) (t:ℝ)
     (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (D:Ideal O) (hD:Squarefree D)
     (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
@@ -44,9 +53,15 @@ theorem masked_eq_active_allocations (η:Character) (m A z:O) (t:ℝ)
   symm
   exact Finset.sum_subset (Finset.subset_univ _) (fun a _ ha=>inactive_zero η m A t S β D
     W₁ W₂ X₁ X₂ Y₁ Y₂ a ha z)
+end
 
-theorem active_allocated_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
-    (ε : ℝ) (hε : 0 < ε) :
+
+section
+variable (N : ℕ) (hslots : Fintype.card ι ≤ N)
+    (ε : ℝ) (hε : 0 < ε)
+include N hslots ε hε
+
+theorem active_allocated_energy  :
     ∃ C : ℝ,0 < C ∧ ∀ (η : Character) (m A : O) (t : ℝ)
       (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
       (D : Ideal O),Squarefree D → ∀ (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ),
@@ -67,8 +82,7 @@ theorem active_allocated_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
   intro a ha hn
   simp only [inactive_zero η m A t S β D W₁ W₂ X₁ X₂ Y₁ Y₂ a hn,norm_zero,zero_pow (by norm_num:2≠0),mul_zero,Finset.sum_const_zero]
 
-theorem active_raw_to_retained_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
-    (ε : ℝ) (hε : 0 < ε) :
+theorem active_raw_to_retained_energy  :
     ∃ C : ℝ,0 < C ∧ ∀ (η : Character) (m A : O) (t : ℝ)
       (S : ι → Finset (Ideal O)),(∀ i,∀ I∈S i,Prime I) →
       ∀ (β : ι → Ideal O → ℂ) (M P : ι → ℝ),(∀ i,0 ≤ M i) → (∀ i,0 < P i) →
@@ -110,6 +124,8 @@ theorem active_raw_to_retained_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
     (allocated_to_retained_energy η m A z t S hS β M P hM hP hβ D a W₁ W₂
       b₁ b₂ X₁ X₂ Y₁ Y₂ T hW₁ hW₂ hX₁ hX₂ hY₁ hY₂ hX hY) (hω z hz)
   convert hb using 1 ; ring
+end
+
 
 theorem active_formal_boundary (η : Character) (m A : O) (t : ℝ)
     (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
@@ -127,8 +143,8 @@ theorem active_formal_boundary (η : Character) (m A : O) (t : ℝ)
   exact original_nonzero_row_formal_boundary η m A z t S hS ν W lo hi P hlo hP hW
     D hD a W₁ W₂ X₁ X₂ Y₁ Y₂ Z hZ hz
 
-end SevenEighths.CenteredMomentActiveAllocation
 
-end
 
-end OAI
+
+
+

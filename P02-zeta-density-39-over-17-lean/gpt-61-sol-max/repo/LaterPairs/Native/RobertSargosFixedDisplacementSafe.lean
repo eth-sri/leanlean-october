@@ -6,13 +6,12 @@ public import LaterPairs.Native.PrimitiveTripleSignedCount
 public import LaterPairs.Native.RobertSargosConicOrientation
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                      
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem robertSargos_fixed_displacement_safe_card_le
@@ -43,9 +42,7 @@ theorem robertSargos_fixed_displacement_safe_card_le
       exact_mod_cast hh
     have hb := robertSargos_coefficient_conic_ratio_gap hH hQ hδ
       (hh₂ p hp).1 hq₁ hsafe hl (hnear p hp)
-    change |(p.1:ℝ)/p.2.1-A| ≤ δ at hb
-    rcases abs_le.mp hb with ⟨hlow,hupp⟩
-    constructor <;> linarith
+    grind
   have hb := primitive_linear_triple_card_le_abs_modulus S hc hd hH
     (by linarith : A-δ ≤ A+δ) (fun p hp => hh₂ p hp) hp
     (fun p hp => by have hl := hline p hp; nlinarith only [hl]) hratio
@@ -54,5 +51,5 @@ theorem robertSargos_fixed_displacement_safe_card_le
       4*H^2*((A+δ)-(A-δ))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

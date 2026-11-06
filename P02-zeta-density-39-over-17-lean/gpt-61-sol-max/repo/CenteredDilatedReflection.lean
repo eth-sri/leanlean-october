@@ -1,16 +1,20 @@
 module
+import Mathlib
 public import CenteredShortReflection
 public import RationalDilatedDifference
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
-theorem reflection_complete_pair_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+section
+variable {K : ℕ} (hK : 1 ≤ K)
+    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B)
+include K hK η B hη hB
+
+theorem reflection_complete_pair_dilated_short_range  :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ : ℝ), 1 < T → ∀ M : ℕ, 0 < M → ∀ U : ℝ, 0 ≤ U → (M:ℝ) ≤ B*U →
       ∀ W : Finset ℝ,
       T^(((K : ℝ)+1)/(2*K+1)) ≤ W.card → U^K ≤ W.card →
@@ -54,8 +58,7 @@ theorem reflection_complete_pair_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
 
 /-- Fixed dilations in the reflected band are absorbed in the constant,
 not imposed on the cardinality threshold. -/
-theorem reflection_local_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem reflection_local_energy_dilated_short_range  :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L H : ℝ, 1 < T → 0 < L → 0 < H →
       ∀ W : Finset ℝ,
       T^(((K:ℝ)+1)/(2*K+1)) ≤ W.card → (H/(B*L))^K ≤ W.card →
@@ -83,8 +86,7 @@ theorem reflection_local_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
         apply (div_le_div_iff₀ (by positivity : 0 < Real.pi*L) hL).mpr
         nlinarith [Real.pi_gt_three,mul_pos hH hL]
       have he : (2*B)*U=2*H/L := by dsimp [U]; field_simp
-      rw [he]
-      exact hMhi.trans hpi
+      grind
     refine (reflection_local_pair_le_three hH M W).trans ?_
     apply mul_le_mul_of_nonneg_left _ (by norm_num : (0:ℝ) ≤ 3)
     exact (hbound T t₀ hT M hM0 U hU hMU W hR hlen hW hsep).trans (by gcongr)
@@ -97,6 +99,8 @@ theorem reflection_local_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact_mod_cast reflectionBlocks_card_le hL hH
     _ = _ := by ring
+end
+
 
 theorem centered_shell_dilated_short_range (w : MathCollab.Density.ReflectionCutoff)
     {K A : ℕ} (hK : 1 ≤ K) (hA : 1 < A) {η D : ℝ} (hη : 0 < η) (hD : 1 ≤ D) :
@@ -124,4 +128,4 @@ theorem centered_shell_dilated_short_range (w : MathCollab.Density.ReflectionCut
   exact he.trans (add_le_add (hm.trans (by gcongr; linarith)) le_rfl)
 
 
-end Montgomery.RationalMoment
+

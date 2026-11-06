@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedOriginalRow
 
 @[expose] public section
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedOriginalRow
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion
 open CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -65,7 +66,6 @@ theorem varying_canonical_bin_separation
       rw [fixedChildRow_coefficient_expansion p hp hcop hg, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro T hT
-      dsimp only [A]
       ring
     _ = _ := by
       rw [hsep]
@@ -81,7 +81,7 @@ theorem varying_canonical_bin_separation
       dsimp only [columnLog]
       ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

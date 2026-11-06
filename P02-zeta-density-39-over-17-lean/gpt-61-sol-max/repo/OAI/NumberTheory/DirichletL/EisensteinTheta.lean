@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.ThetaProduct
 public import Mathlib.Logic.Equiv.Fin.Basic
 public import Mathlib.Tactic.FieldSimp
@@ -55,7 +56,7 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   have hF : Summable F :=
     (summable_prod_of_nonneg (fun _ => (Real.exp_pos _).le)).2
       ⟨hreal, (hasSum_fintype _).summable⟩
-  have hFC : Summable (fun p => (F p : ℂ)) := Complex.summable_ofReal.mpr hF
+  have hFC := Complex.summable_ofReal.mpr hF
   have hid (p : Fin 2 × (ℤ × ℤ)) :
       Real.exp (-Real.pi * normForm
         (a + L * (parityEquiv.symm p).1) (b + L * (parityEquiv.symm p).2) * t) = F p := by
@@ -74,8 +75,7 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   rw [hFC.tsum_prod, tsum_fintype]
   exact (Finset.sum_congr rfl (fun e _ => (hsum e).tsum_eq)).symm
 
-@[simp] theorem parityPair_k (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
-    (parityPair a b L hL e).k = 1 := rectangularPair_k _ _ _ _ _ _
+
 
 def cosetConstant (a b L : ℝ) (hL : 0 < L) : ℂ :=
   ∑ e : Fin 2, (parityPair a b L hL e).f₀
@@ -127,8 +127,8 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
     simp only [hxiff, and_true]
   · rw [ite_eq_right (fun h => hb (hy0iff.mp h)), mul_zero, ite_eq_right (fun h => hb h.2)]
 
-end SevenEighths.EisensteinTheta
 
-end
 
-end OAI
+
+
+

@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import AdjacentWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 /-- Scalar absorption of the actual energy and signed-amplifier inequalities.
@@ -47,7 +47,7 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ = Y^2 := by dsimp [Y]; ring
   have hb5 : N^4*L*R^2 ≤ Y := by
     have hh := mul_le_mul_of_nonneg_right h5 (sq_nonneg R)
-    convert hh using 1; dsimp [Y]; ring
+    grind
   have he3 : N^12*T^2*R^2/V^4 ≤ Q^2*S^2*R^4*V^12 := by
     calc
       _ ≤ (Q^2*S^4*V^16)*R^2/V^4 := by gcongr
@@ -69,8 +69,7 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ = (Q^2*S^2*R^((7:ℝ)/2)*V^12)*S^((1:ℝ)/2) := by rw [hs]; field_simp
       _ ≤ (Q^2*S^2*R^((7:ℝ)/2)*V^12)*R^((1:ℝ)/2) :=
         mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hS.le hSR (by norm_num)) (by positivity)
-      _ = _ := by rw [show (Q^2*S^2*R^((7:ℝ)/2)*V^12)*R^((1:ℝ)/2)=
-          Q^2*S^2*(R^((7:ℝ)/2)*R^((1:ℝ)/2))*V^12 by ring,hr]
+      _ = _ := by grind
   have he7 : N^9*T^((9:ℝ)/4)*R^((43:ℝ)/12)/V^2 ≤ Q^2*S^2*R^4*V^12 := by
     have hs : S^((29:ℝ)/12)=S^2*S^((5:ℝ)/12) := by
       convert Real.rpow_add hS (2:ℝ) ((5:ℝ)/12) using 1 <;> norm_num
@@ -82,8 +81,7 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ = (Q^2*S^2*R^((43:ℝ)/12)*V^12)*S^((5:ℝ)/12) := by rw [hs]; field_simp
       _ ≤ (Q^2*S^2*R^((43:ℝ)/12)*V^12)*R^((5:ℝ)/12) :=
         mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hS.le hSR (by norm_num)) (by positivity)
-      _ = _ := by rw [show (Q^2*S^2*R^((43:ℝ)/12)*V^12)*R^((5:ℝ)/12)=
-          Q^2*S^2*(R^((43:ℝ)/12)*R^((5:ℝ)/12))*V^12 by ring,hr]
+      _ = _ := by grind
   have hesq : (N^4*T*Real.sqrt R*Real.sqrt E)^2 ≤ 4*B*Λ*Y^2 := by
     calc
       _ = N^8*T^2*R*E := by
@@ -102,10 +100,7 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
         have ht9 : T^2*T^((1:ℝ)/4)=T^((9:ℝ)/4) := by
           rw [← Real.rpow_natCast T 2,← Real.rpow_add hT]
           norm_num
-        rw [mul_add,mul_add,mul_add]
-        ring_nf
-        simp only [← hr5,← hr31,← ht9]
-        ring
+        grind
       _ ≤ B*Λ*(4*(Q^2*S^2*R^4*V^12)) := by gcongr; linarith only [he3,he4,he6,he7]
       _ = _ := by dsimp [Y]; ring
   have hbE : N^4*T*Real.sqrt R*Real.sqrt E ≤ (1+4*B)*Λ*Y := by
@@ -131,4 +126,4 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ = _ := by dsimp [Y]; ring
   exact le_of_mul_le_mul_right hh (by positivity)
 
-end Montgomery.RationalMoment
+

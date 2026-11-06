@@ -28,8 +28,8 @@ theorem average_idealCoeff (I : Ideal O) :
   simp only [idealCoeff_character]
   simpa only [div_eq_mul_inv, mul_comm] using RayQuotient.average_idealCharacters M H hH I
 
-end SevenEighths.HeckeRayQuotient
 
-end
 
-end OAI
+
+
+

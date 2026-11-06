@@ -9,14 +9,18 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def castControlled {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
+section
+variable {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
+include ι p q N a c mode
+
+def castControlled 
     (h : p=q) (D : ControlledStratumArithmetic p N a c mode) :
     ControlledStratumArithmetic q N a c mode := h ▸ D
 
-lemma mixedReflectedValue_cast {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
+lemma mixedReflectedValue_cast 
     [∀ i, (Ideal.span {p i}).IsMaximal] [∀ i, (Ideal.span {q i}).IsMaximal]
     (h : p=q) (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -27,6 +31,8 @@ lemma mixedReflectedValue_cast {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c
       mixedReflectedValue D s hp hc hgp j S W X := by
   subst q
   rfl
+end
+
 
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -53,7 +59,7 @@ lemma original_active_marks_eq_slots :
     | inl a => simp [slotIndices]
     | inr t => simp [slotIndices]
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

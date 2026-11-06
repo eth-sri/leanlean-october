@@ -16,11 +16,11 @@ open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
 open CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry
+open CenteredMomentSecondHeightFamily
+
+
 open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -66,8 +66,8 @@ theorem original_low_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
   rw [comparison_energy_zero s hz₁ hz₂ R r,mul_zero,add_zero,zeroInput_volume,zero_control] at hh
   exact hh
 
-end SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
 
-end
 
-end OAI
+
+
+

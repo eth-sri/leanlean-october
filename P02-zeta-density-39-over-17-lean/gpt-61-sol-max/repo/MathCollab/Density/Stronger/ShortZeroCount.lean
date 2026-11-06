@@ -1,14 +1,14 @@
 module
+import Mathlib
 public import MathCollab.Density.Stronger.ShortExponentAccounting
 public import MathCollab.Density.IndexedZeroLargeValues
 public import MathCollab.Density.LocalZeroCount
 
 @[expose] public section
 
-open Real Complex Set Filter
+open Real Complex Filter
 open scoped BigOperators Topology
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density.Stronger
@@ -37,9 +37,7 @@ theorem zetaSubset_large_values_cover_indexed {ι : Type*} {κ ε : ℝ} (hκ : 
   have hbin (k : ℤ) : (∑ ρ ∈ S.filter (fun ρ => ordinateBin ρ = k),
       (zetaMultiplicity ρ : ℝ)) ≤ B := by
     have hs : S.filter (fun ρ => ordinateBin ρ = k) ⊆
-        (zetaZeroFinset σ lo hi).filter (fun ρ => ordinateBin ρ = k) := by
-      intro ρ hρ
-      exact Finset.mem_filter.mpr ⟨hS (Finset.mem_filter.mp hρ).1, (Finset.mem_filter.mp hρ).2⟩
+        (zetaZeroFinset σ lo hi).filter (fun ρ => ordinateBin ρ = k) := by grind
     exact (Finset.sum_le_sum_of_subset_of_nonneg hs (fun _ _ _ => by positivity)).trans (hlocal k)
   obtain ⟨R, hR, hcard, hsep, hcount⟩ := weighted_separated_extraction S
     (fun ρ => (zetaMultiplicity ρ : ℝ)) hB hbin
@@ -59,12 +57,7 @@ theorem zetaSubset_large_values_cover_indexed {ι : Type*} {κ ε : ℝ} (hκ : 
       exact hsep t (Finset.mem_filter.mp ht).1 u (Finset.mem_filter.mp hu).1 htu
     · intro t ht
       exact (Finset.mem_filter.mp ht).2
-  have hsub : W ⊆ J.biUnion Wj := by
-    intro t ht
-    obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp ht
-    obtain ⟨j, hj, hdetect⟩ := hcover ρ (hR hρ)
-    exact Finset.mem_biUnion.mpr ⟨j, hj, Finset.mem_filter.mpr
-      ⟨Finset.mem_image.mpr ⟨ρ, hρ, rfl⟩, hdetect⟩⟩
+  have hsub : W ⊆ J.biUnion Wj := by grind
   have hc : (W.card : ℝ) ≤ ∑ j ∈ J, ((Wj j).card : ℝ) := by
     exact_mod_cast (Finset.card_le_card hsub).trans (Finset.card_biUnion_le)
   have hsum : (W.card : ℝ) ≤ C*H^ε*∑ j ∈ J, F j := by
@@ -135,8 +128,6 @@ theorem smoothShortZeroCount_bound {σ η : ℝ}
           (smoothPoweredFamilyScale q : ℝ)^3*Real.sqrt (densityAmbient T)/
             ((smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η))^4))) := by ring
     _ ≤ (Cv*Cb)*(A*T^(densityExponent σ+12*η)) := hh
-    _ ≤ ((A+1)*Cv*Cb)*T^(densityExponent σ+12*η) := by
-      have hp : 0 ≤ (Cv*Cb)*T^(densityExponent σ+12*η) := by positivity
-      nlinarith
+    _ ≤ ((A+1)*Cv*Cb)*T^(densityExponent σ+12*η) := by field_simp <;> nlinarith
 
-end MathCollab.Density.Stronger
+

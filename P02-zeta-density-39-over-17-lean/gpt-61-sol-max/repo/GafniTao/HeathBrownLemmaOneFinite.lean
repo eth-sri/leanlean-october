@@ -11,12 +11,12 @@ summations.  This is the final finite analytic inequality before inserting
 the Vinogradov mean-value and derivative-pair-count estimates.
 -/
 
-open Complex Finset Set
+open Complex Finset
 open scoped BigOperators ENNReal
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrown_H_mul_exponentialSum_norm_le
     {N H : ℕ} (hHN : H ≤ N) (f : ℝ → ℝ) :
@@ -88,6 +88,6 @@ theorem heathBrown_lemma_one_finite_preVMVT
       V * ENNReal.ofReal ((H : ℝ) ^ 2) := by gcongr
 
 
-end
 
-end GafniTao
+
+

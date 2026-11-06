@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.SourceReproducingKernel
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped FourierTransform SchwartzMap
 namespace GuthMaynard.Improvement
 
@@ -15,7 +15,6 @@ def sourceQuarticWeight (t : ℝ) : ℝ := ‖sourceReproducingKernel t‖
 theorem source_quartic_weight_decay (q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ t, sourceQuarticWeight t ≤ C/(1+|t|)^q := by
   let C := 2^q*(Finset.Iic (q,0)).sup (fun m => SchwartzMap.seminorm ℝ m.1 m.2) sourceReproducingKernel
-  have hC : 0 ≤ C := by dsimp [C]; positivity
   refine ⟨C+1,by positivity,?_⟩
   intro t
   have hh := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
@@ -23,7 +22,6 @@ theorem source_quartic_weight_decay (q : ℕ) :
   simp only [norm_iteratedFDeriv_zero,Real.norm_eq_abs] at hh
   apply (le_div_iff₀ (by positivity : 0 < (1+|t|)^q)).mpr
   dsimp [sourceQuarticWeight]
-  have he : (1+|t|)^q*‖sourceReproducingKernel t‖ ≤ C := hh
   nlinarith
 
 /-- Bounded overlap is the audited separated-decay packing theorem,
@@ -84,4 +82,4 @@ theorem boundedPolynomial_quartic_reproduce {N : ℝ} (hN : 0 < N)
   simp only [← pow_mul] at hsq hh
   nlinarith
 
-end GuthMaynard.Improvement
+

@@ -13,11 +13,11 @@ parameters. Compactness chooses one perturbation radius before both
 the height ratio and the summation coordinate.
 -/
 
-noncomputable section
+
 open Set Filter
 open scoped ContDiff Topology
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson
+
 
 theorem contDiffAt_atkinsonGapSlopeProfile_jet (n : ℕ)
     {q r x : ℝ} (hr : 0 < r) (hx : 0 < x)
@@ -109,4 +109,4 @@ theorem atkinsonGapSlopeProfile_uniform_finite_jets (P : ℕ)
       subst n
       exact hb' q r x (hq.trans_le (min_le_right _ _)) hr hx
 
-end TaoTrudgianYang2025
+

@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                               
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem zero_r_physical_polynomial_budgets {T M H Q R lam : ℝ}
@@ -54,12 +53,8 @@ theorem zero_r_physical_polynomial_budgets {T M H Q R lam : ℝ}
     have hprodQ := mul_le_mul hprod hQmin
       (by positivity : 0 ≤ T^3/2) (mul_nonneg (sq_nonneg M) (sq_nonneg R))
     have hprodLam := mul_le_mul_of_nonneg_right hprodQ hlam.le
-    have he : (T^8/8) = (T^8)^2*(T/2)^2*(T^3/2)*lam := by
-      calc
-        _ = (T^8/8)*(T^13*lam) := by rw [hscale,mul_one]
-        _ = _ := by ring
-    have hlow : T^8/8 ≤ M^2*R^2*Q*lam := he.trans_le hprodLam
-    nlinarith
+    have he : (T^8/8) = (T^8)^2*(T/2)^2*(T^3/2)*lam := by grind
+    grind
   exact ⟨hcurv,hdiag,hpos,hinv⟩
 
-end TaoTrudgianYang2025
+

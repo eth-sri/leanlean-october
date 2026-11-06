@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.InitialMajorant
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
@@ -11,31 +12,41 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
-def initialHighOnLines (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
-    (mask : NonzeroFrequency→ℂ) (σ υ ξ : ℝ) (i : FullHighIndex) (p : HeightSpace) : ℂ :=
+section
+variable (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
+    (mask : NonzeroFrequency→ℂ)
+include S D η mask
+
+section
+variable (σ υ ξ : ℝ) (i : FullHighIndex)
+include σ υ ξ i
+
+def initialHighOnLines  (p : HeightSpace) : ℂ :=
   fullHighCoefficient S D η mask ((σ:ℂ)+p.1.1*Complex.I)
     ((υ:ℂ)+p.2*Complex.I) ((ξ:ℂ)+p.1.2*Complex.I) i
 
-lemma initialHighOnLines_continuous (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
-    (mask : NonzeroFrequency→ℂ) (σ υ ξ : ℝ) (i : FullHighIndex) :
+lemma initialHighOnLines_continuous  :
     Continuous (initialHighOnLines S D η mask σ υ ξ i) := by
   unfold initialHighOnLines
   have hc : Continuous (fun p : HeightSpace =>
       (((σ:ℂ)+p.1.1*Complex.I,(υ:ℂ)+p.2*Complex.I),(ξ:ℂ)+p.1.2*Complex.I)) := by fun_prop
   have hh := (fullHighCoefficient_continuous S D η mask i).comp hc
-  simpa only [Function.comp_def] using hh
+  exact hh
+end
 
-lemma initialHighOnLines_norm_le (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
-    (mask : NonzeroFrequency→ℂ) (hm : ∀H,‖mask H‖≤1) (σ υ ξ : ℝ)
+
+lemma initialHighOnLines_norm_le  (hm : ∀H,‖mask H‖≤1) (σ υ ξ : ℝ)
     (i : FullHighIndex) (p : HeightSpace) :
     ‖initialHighOnLines S D η mask σ υ ξ i p‖≤ initialHighMajorant σ υ ξ i := by
   exact fullHighCoefficient_norm_le S D η mask hm _ _ _ σ υ ξ (by simp) (by simp) (by simp) i
-
-end SevenEighths.ProbePhysical
 end
 
-end OAI
+
+
+
+
+

@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointProfile
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve RayFourExpansion
 open ConcretePrimeRowBridge UniqueFactorizationMonoid ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
 lemma jointProfile_physicalPoint (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
@@ -69,7 +69,7 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     rw [jointProfile_physicalPoint W U a₀ b₀ ha₀ hab hs hW v T hT N hN m]
   rw [hfun] at hb
   refine ⟨hb.1,hb.2.trans ?_⟩
-  have hm : 0≤min (1:ℝ) (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
+  have hm : 0≤ min (1:ℝ) (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
       Ideal.absNorm (Ideal.span {k})/N)^A) := by positivity
   have hh := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right
@@ -77,7 +77,7 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
         (Nat.cast_nonneg (Ideal.absNorm (Ideal.span {C})))) (sq_nonneg N)) hm
   convert hh using 1 ; ring
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

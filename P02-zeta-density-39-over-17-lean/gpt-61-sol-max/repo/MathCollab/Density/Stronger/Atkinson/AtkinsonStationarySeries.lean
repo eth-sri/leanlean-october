@@ -12,40 +12,48 @@ public import MathCollab.Density.Stronger.Fourth.Coefficients
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-def atkinsonStationaryLeadingIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
+section
+variable (T G L : ℝ)
+include T G L
+
+def atkinsonStationaryLeadingIntegral  (n : ℕ) : ℂ :=
   (Real.sqrt Real.pi/Real.pi : ℂ)*(atkinsonBesselScale (1/4) n : ℂ) *
     (neumannLeadingPlus*atkinsonStationaryMain T G L (1/4) (Real.sqrt n) +
       neumannLeadingMinus*atkinsonStationaryMain T G L (1/4) (-Real.sqrt n))
 
-def atkinsonStationaryLeadingTerm (T G L : ℝ) (n : ℕ) : ℂ :=
+def atkinsonStationaryLeadingTerm  (n : ℕ) : ℂ :=
   divisorWeight n * (-(2*Real.pi) : ℂ) * atkinsonStationaryLeadingIntegral T G L n
 
-def atkinsonStationaryLeadingFiniteSum (T G L : ℝ) (N : ℕ) : ℂ :=
+def atkinsonStationaryLeadingFiniteSum  (N : ℕ) : ℂ :=
   ∑ n ∈ Finset.range N, atkinsonStationaryLeadingTerm T G L n
 
-def atkinsonStationaryLeadingSum (T G L : ℝ) : ℂ :=
+def atkinsonStationaryLeadingSum  : ℂ :=
   ∑' n : ℕ, atkinsonStationaryLeadingTerm T G L n
 
-theorem atkinsonStationaryLeadingTerm_zero (T G L : ℝ) :
+theorem atkinsonStationaryLeadingTerm_zero  :
     atkinsonStationaryLeadingTerm T G L 0 = 0 := by
   simp [atkinsonStationaryLeadingTerm,divisorWeight]
+end
 
-theorem atkinsonStationaryLeadingTerm_eq_zero_after_cutoff {T G L : ℝ}
+
+section
+variable {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8*L ≤ G)
+include T G L hT hG hL hwidth
+
+theorem atkinsonStationaryLeadingTerm_eq_zero_after_cutoff 
     {n : ℕ} (hn : atkinsonSourceCutoff T G L ≤ n) :
     atkinsonStationaryLeadingTerm T G L n = 0 := by
   obtain ⟨hp,hm⟩ := atkinsonStationaryMain_pair_eq_zero_after_cutoff hT hG hL hwidth (1/4) n hn
   simp only [atkinsonStationaryLeadingTerm,atkinsonStationaryLeadingIntegral,hp,hm,
     mul_zero,add_zero]
 
-theorem hasSum_atkinsonStationaryLeadingTerm {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8*L ≤ G) :
+theorem hasSum_atkinsonStationaryLeadingTerm  :
     HasSum (atkinsonStationaryLeadingTerm T G L)
       (atkinsonStationaryLeadingFiniteSum T G L (atkinsonSourceCutoff T G L)) := by
   apply hasSum_sum_of_ne_finset_zero
@@ -53,10 +61,11 @@ theorem hasSum_atkinsonStationaryLeadingTerm {T G L : ℝ}
   apply atkinsonStationaryLeadingTerm_eq_zero_after_cutoff hT hG hL hwidth
   exact Nat.le_of_not_gt (by simpa only [Finset.mem_range] using hn)
 
-theorem atkinsonStationaryLeadingSum_eq_finite {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8*L ≤ G) :
+theorem atkinsonStationaryLeadingSum_eq_finite  :
     atkinsonStationaryLeadingSum T G L =
       atkinsonStationaryLeadingFiniteSum T G L (atkinsonSourceCutoff T G L) :=
   (hasSum_atkinsonStationaryLeadingTerm hT hG hL hwidth).tsum_eq
+end
 
-end MathCollab.Density.Stronger.Atkinson
+
+

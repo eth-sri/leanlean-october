@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open ActualEisensteinCubic CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
 def actualPuncturePrimes (lists : σ→Finset (Ideal Eis)) (m : Eis) : Finset (Ideal Eis) :=
@@ -49,7 +49,7 @@ theorem original_completed_actual_puncture_lists (lists : σ→Finset (Ideal Eis
     (hprime i _ (p i).property) hm W X (fun A => ∏ j,if (p j).val∣A then (1:ℂ) else 0)
     (fun A hA => Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hA))
   exact mul_eq_zero_of_right _ hz
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

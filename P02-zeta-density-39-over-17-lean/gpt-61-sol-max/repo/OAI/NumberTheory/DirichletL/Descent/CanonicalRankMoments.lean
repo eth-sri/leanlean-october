@@ -11,9 +11,9 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialClippedColumns InverseSecondFibers InverseSecondSourceBlocks
-open CanonicalCoefficientClass InverseMomentFirstLabelCell InverseMomentFirstChildWindows InverseFirstGlobalCaps
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialClippedColumns
+open CanonicalCoefficientClass InverseMomentFirstLabelCell InverseMomentFirstChildWindows
+open scoped EisensteinO
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -84,8 +84,8 @@ theorem canonical_rank_moments_children
     intro I hI
     exact ⟨actual_cell_labels_admissible p hp hg hc S d I hI,(hlabels.2 d I hI).2.2⟩
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

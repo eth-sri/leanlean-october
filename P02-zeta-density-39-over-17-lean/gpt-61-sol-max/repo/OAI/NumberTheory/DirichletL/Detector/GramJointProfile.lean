@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeDecay
 public import OAI.NumberTheory.DirichletL.Detector.GramAnnularLattice
@@ -15,11 +16,17 @@ open MeasureTheory Set FourierBridge
 namespace ProbeGramJointProfile
 open ProbeGramLatticeDecay EisensteinSchwartzPoisson
 
-def rayControl (B n : ℕ) (g : 𝓢(ℝ, ℂ)) : ℝ :=
+section
+variable (B n : ℕ) (g : 𝓢(ℝ, ℂ))
+include B n g
+
+def rayControl  : ℝ :=
   (Finset.Iic (2*B+n,n)).sup (schwartzSeminormFamily ℝ ℝ ℂ) g
 
-lemma rayControl_nonneg (B n : ℕ) (g : 𝓢(ℝ, ℂ)) :
+lemma rayControl_nonneg  :
     0 ≤ rayControl B n g := apply_nonneg _ _
+end
+
 
 lemma mul_derivative_bound {f g : Joint → ℂ} (n : ℕ)
     (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g) (x : Joint)
@@ -73,8 +80,7 @@ lemma scaled_argument_derivative {h : Joint → ℝ} (hh : ContDiff ℝ ∞ h)
     (x : Joint) (hb : ‖iteratedFDeriv ℝ i h x‖ ≤ D) :
     ‖iteratedFDeriv ℝ i (fun y => R*h y) x‖ ≤ (D^2*(1+R))^i := by
   have he : iteratedFDeriv ℝ i (fun y => R*h y) x = R • iteratedFDeriv ℝ i h x :=
-    by simpa only [smul_eq_mul] using
-      (iteratedFDeriv_const_smul_apply' (a := R) (i := i) (x := x)
+    by exact (iteratedFDeriv_const_smul_apply' (a := R) (i := i) (x := x)
         ((hh.of_le (by exact_mod_cast le_top)).contDiffAt))
   rw [he, norm_smul, Real.norm_of_nonneg hR]
   have hDi : D ≤ D^i := by
@@ -175,11 +181,17 @@ lemma kernel_derivative_bound {h : Joint → ℝ} (hh : ContDiff ℝ ∞ h)
   apply (le_div_iff₀ (by positivity : 0 < m^(2*B+n))).mpr
   convert hbound using 1 <;> ring
 
-def amplitudeControl (n : ℕ) (A : 𝓢(Joint, ℂ)) : ℝ :=
+section
+variable (n : ℕ) (A : 𝓢(Joint, ℂ))
+include n A
+
+def amplitudeControl  : ℝ :=
   (Finset.Iic (0,n)).sup (schwartzSeminormFamily ℝ Joint ℂ) A
 
-lemma amplitudeControl_nonneg (n : ℕ) (A : 𝓢(Joint, ℂ)) :
+lemma amplitudeControl_nonneg  :
     0 ≤ amplitudeControl n A := apply_nonneg _ _
+end
+
 
 lemma amplitude_derivative_bound (n i : ℕ) (hi : i ≤ n)
     (A : 𝓢(Joint, ℂ)) (x : Joint) :
@@ -211,9 +223,9 @@ theorem compact_profile_seminorm
   have hL : 1 ≤ L := le_max_left _ _
   have hDp : 0 < D := lt_of_lt_of_le zero_lt_one hD
   have hLp : 0 < L := lt_of_lt_of_le zero_lt_one hL
-  let Cg : ℝ := (n.factorial : ℝ)*2^(2*B+n)*(D^2)^n/m^(2*B+n)
+  let Cg := (n.factorial : ℝ)*2^(2*B+n)*(D^2)^n/m^(2*B+n)
   have hCg : 0 < Cg := by dsimp [Cg]; positivity
-  let Cp : ℝ := (n.factorial : ℝ)*D^n
+  let Cp := (n.factorial : ℝ)*D^n
   have hCp : 0 < Cp := by dsimp [Cp]; positivity
   refine ⟨L^k*2^n*2^n*Cp*Cg, by positivity, ?_⟩
   intro A hA g v R hR F hF
@@ -221,8 +233,7 @@ theorem compact_profile_seminorm
     (JointLogSeparation.logPhase_temperate _).1.comp hφ
   have hg : ContDiff ℝ ∞ (fun y => g (R*h y)) :=
     (g.smooth ⊤).comp (contDiff_const.mul hh)
-  have hFfun : (F : Joint → ℂ) =
-      fun x => A x * logPhase (v/(2*Real.pi)) (φ x) * g (R*h x) := funext hF
+  have hFfun := funext hF
   have hFs : tsupport (F : Joint → ℂ) ⊆ K := by
     rw [hFfun]
     exact (tsupport_mul_subset_left.trans tsupport_mul_subset_left).trans hA
@@ -271,15 +282,11 @@ theorem compact_profile_seminorm
 
 lemma amplitudeControl_mono {n N : ℕ} (hn : n ≤ N) (A : 𝓢(Joint, ℂ)) :
     amplitudeControl n A ≤ amplitudeControl N A := by
-  exact Seminorm.le_def.mp (Finset.sup_mono (by
-    intro p hp
-    exact Finset.mem_Iic.mpr (le_trans (Finset.mem_Iic.mp hp) ⟨le_rfl, hn⟩))) A
+  exact Seminorm.le_def.mp (Finset.sup_mono (by simp_all)) A
 
 lemma rayControl_mono (B : ℕ) {n N : ℕ} (hn : n ≤ N) (g : 𝓢(ℝ, ℂ)) :
     rayControl B n g ≤ rayControl B N g := by
-  exact Seminorm.le_def.mp (Finset.sup_mono (by
-    intro p hp
-    exact Finset.mem_Iic.mpr (le_trans (Finset.mem_Iic.mp hp) ⟨by omega, hn⟩))) g
+  exact Seminorm.le_def.mp (Finset.sup_mono (by simp_all)) g
 
 def heightOrder (H : Finset (ℕ × ℕ)) : ℕ := H.sup Prod.snd
 
@@ -296,11 +303,10 @@ theorem compact_profile_finite
           (1+|v|)^(heightOrder H)/(1+R)^(2*B) := by
   have hc (p : ℕ × ℕ) := compact_profile_seminorm hK hφ hh hhpos B p.1 p.2
   choose C hC hbound using hc
-  let D : ℝ := 1+∑ p ∈ H, C p
+  let D := 1+∑ p ∈ H, C p
   have hD : 0 < D := by
     have hs : 0 ≤ ∑ p ∈ H, C p := Finset.sum_nonneg (fun p _ => (hC p).le)
-    dsimp [D]
-    linarith
+    positivity
   refine ⟨D, hD, ?_⟩
   intro A hA g v R hR F hF
   have hAn := amplitudeControl_nonneg (heightOrder H) A
@@ -310,7 +316,6 @@ theorem compact_profile_finite
   have hn : p.2 ≤ heightOrder H := Finset.le_sup hp
   have hCD : C p ≤ D := by
     have hs := Finset.single_le_sum (fun p _ => (hC p).le) hp
-    dsimp [D]
     linarith
   exact (hbound p A hA g v R hR F hF).trans (by
     apply div_le_div_of_nonneg_right _ (by positivity)
@@ -370,8 +375,12 @@ theorem compact_fourier_profile_finite
 
 open ProbeGramJointConstruction
 
-theorem jointProfile_homogeneous (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (B : ℕ) (H : Finset (ℕ × ℕ)) :
+section
+variable (a b : ℝ) (ha : 0 < a) (hab : a < b)
+    (B : ℕ) (H : Finset (ℕ × ℕ))
+include a b ha hab B H
+
+theorem jointProfile_homogeneous  :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : ℝ → ℂ) (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W)
         (U : 𝓢(ℝ, ℂ)) (v T : ℝ) (hT : 0 ≤ T),
@@ -389,8 +398,7 @@ theorem jointProfile_homogeneous (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (jointProfile W U a b ha hab hs hW v T hT)
     (jointProfile_factorization W U a b ha hab hs hW v T hT)
 
-theorem jointProfile_uniform_degree (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (B : ℕ) (H : Finset (ℕ × ℕ)) :
+theorem jointProfile_uniform_degree  :
     ∃ (J : ℕ) (S : Finset (ℕ × ℕ)),
       ∀ (W : ℝ → ℂ) (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W),
       ∃ C : ℝ, 0 < C ∧ ∀ (U : 𝓢(ℝ, ℂ)) (v T : ℝ) (hT : 0 ≤ T),
@@ -404,15 +412,12 @@ theorem jointProfile_uniform_degree (a b : ℝ) (ha : 0 < a) (hab : a < b)
   refine ⟨C*(1+A), by positivity, ?_⟩
   intro U v T hT
   have hU : 0 ≤ S.sup (schwartzSeminormFamily ℝ ℝ ℂ) U := apply_nonneg _ _
-  exact (hb W hs hW U v T hT).trans (by
-    apply div_le_div_of_nonneg_right _ (by positivity)
-    apply mul_le_mul_of_nonneg_right _ (by positivity)
-    exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left (by dsimp [A]; linarith :
-        amplitudeControl (heightOrder H) (amplitudeSchwartz W a b ha hab hs hW) ≤ 1+A) hC.le) hU)
-
-end ProbeGramJointProfile
-
+  exact (hb W hs hW U v T hT).trans (by field_simp <;> nlinarith)
 end
 
-end OAI
+
+
+
+
+
+

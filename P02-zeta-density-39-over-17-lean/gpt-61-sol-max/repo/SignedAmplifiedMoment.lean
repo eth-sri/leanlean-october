@@ -3,8 +3,7 @@ public import SignedFiniteLargeValues
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -78,4 +77,4 @@ theorem finite_signed_amplified_moment (w : MathCollab.Density.ComparisonCutoff)
     _ ≤ _ := hfinal
     _ = (4*C₀*(D^3+2))*T^η*((N*L)^3+(N^4/L)*Z) := by rw [← he]; ring
 
-end Montgomery.RationalMoment
+

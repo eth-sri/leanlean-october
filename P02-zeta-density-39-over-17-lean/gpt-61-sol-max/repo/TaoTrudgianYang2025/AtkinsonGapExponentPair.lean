@@ -13,14 +13,18 @@ finite endpoint are consumed here. The reciprocal low-frequency term
 is retained. No gap-sum estimate is accepted as an extra hypothesis.
 -/
 
-noncomputable section
+
 open Expdb RiemannZeta.GuthMaynard
 open scoped FourierTransform BigOperators
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
 
-theorem atkinsonGap_oscillatory_identity {M t u : ℝ}
-    (hM : 0 < M) (hu : 0 < u) (htu : u < t) (n : ℕ) :
+section
+variable {M t u : ℝ}
+    (hM : 0 < M) (hu : 0 < u) (htu : u < t)
+include M t u hM hu htu
+
+theorem atkinsonGap_oscillatory_identity  (n : ℕ) :
     oscillatory (atkinsonNormalizedGapPhase M t u)
       (atkinsonGapFrequency M t u/(2*Real.pi)) M n =
       unitaryPhase (atkinsonSourcePhase t n-atkinsonSourcePhase u n) := by
@@ -37,14 +41,15 @@ theorem atkinsonGap_oscillatory_identity {M t u : ℝ}
   push_cast
   field_simp
 
-theorem atkinsonGap_exponentialSum_identity {M t u : ℝ}
-    (hM : 0 < M) (hu : 0 < u) (htu : u < t) (a b : ℕ) :
+theorem atkinsonGap_exponentialSum_identity  (a b : ℕ) :
     exponentialSumAt (atkinsonNormalizedGapPhase M t u)
       (atkinsonGapFrequency M t u/(2*Real.pi)) M a b =
       ∑ n ∈ Finset.Icc a b,
         unitaryPhase (atkinsonSourcePhase t n-atkinsonSourcePhase u n) := by
   unfold exponentialSumAt
   exact Finset.sum_congr rfl (fun n _ => atkinsonGap_oscillatory_identity hM hu htu n)
+end
+
 
 theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
     (hpair : ExponentPair k l) (hε : 0 < ε) :
@@ -69,4 +74,4 @@ theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
   convert h using 1
   congr 2 <;> field_simp
 
-end TaoTrudgianYang2025
+

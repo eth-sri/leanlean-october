@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GuthMaynard.Improvement.FixedCutoffs
 public import GuthMaynard.Improvement.SourceDirichletPairing
 public import GuthMaynard.Improvement.SourceCutoffConvolution
@@ -6,7 +7,6 @@ public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import MathCollab.Density.Packing
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform SchwartzMap ContDiff
@@ -57,9 +57,7 @@ theorem source_kernel_phase_integral (κ : ℝ → ℂ) (ξ w : ℝ) :
   calc
     _ = phase (w*ξ)*(∫ t, phase (t*ξ)*κ t) := by
       rw [← integral_const_mul]
-      apply integral_congr_ae
-      filter_upwards with t
-      ring
+      grind
     _ = _ := by
       rw [fourier_eq_phase_integral]
       simp only [neg_neg,mul_comm ξ]
@@ -87,11 +85,9 @@ theorem boundedPolynomial_reproduce {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ) (w 
   have hc : (∫ t, sourceReproducingKernel (t-w)*(a n*phase (t*mellinFrequency ((n:ℝ)/N)))) =
       a n*(∫ t, sourceReproducingKernel (t-w)*phase (t*mellinFrequency ((n:ℝ)/N))) := by
     rw [← integral_const_mul]
-    apply integral_congr_ae
-    filter_upwards with t
-    ring
+    grind
   rw [hc,source_kernel_phase_integral,sourceReproducingKernel_fourier,
     fixedTimeCutoff_one (source_reproducing_frequency hN hn)]
   simp only [Complex.ofReal_one,mul_one]
 
-end GuthMaynard.Improvement
+

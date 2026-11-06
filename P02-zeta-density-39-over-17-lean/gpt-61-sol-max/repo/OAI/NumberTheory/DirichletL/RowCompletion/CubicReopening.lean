@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.UnitNormalization
 
 @[expose] public section
@@ -8,75 +9,75 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                                                 
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+                        
+                        
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+                                  
 
-open scoped BigOperators Classical
+                                  
 namespace CanonicalRowCompletion
 
 section
@@ -86,8 +87,12 @@ open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
 
-theorem cubeIdeal_eq_primeProduct_span (F : Finset (Ideal ActualEisensteinCubic.O))
-    (hF : ∀I∈F,Admissible I) (v : primePool F→₀ℕ) :
+section
+variable (F : Finset (Ideal ActualEisensteinCubic.O))
+    (hF : ∀I∈F,Admissible I) (v : primePool F→₀ℕ)
+include F hF v
+
+theorem cubeIdeal_eq_primeProduct_span  :
     Ideal.span {primeProduct (poolPrimary F) v.support v}=cubeIdeal F v := by
   rw [primeProduct,FiniteGaussPhase.span_finset_prod]
   simp only [←Ideal.span_singleton_pow,poolPrimary_span F hF]
@@ -96,11 +101,12 @@ theorem cubeIdeal_eq_primeProduct_span (F : Finset (Ideal ActualEisensteinCubic.
   intro i hi hni
   rw [Finsupp.notMem_support_iff.mp hni,pow_zero]
 
-theorem cubeIdeal_primeProduct_norm (F : Finset (Ideal ActualEisensteinCubic.O))
-    (hF : ∀I∈F,Admissible I) (v : primePool F→₀ℕ) :
+theorem cubeIdeal_primeProduct_norm  :
     ‖ConcreteTraceCRT.eisEmbedding (primeProduct (poolPrimary F) v.support v)‖^2=
       (Ideal.absNorm (cubeIdeal F v):ℝ) := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span,cubeIdeal_eq_primeProduct_span F hF]
+end
+
 
 end
 
@@ -109,7 +115,7 @@ open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
+
 open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion
@@ -207,10 +213,14 @@ theorem unitSupplement_periodic (u : ActualEisensteinCubic.Oˣ) (x y : ActualEis
       (supported_good _ hx) (supported_good _ hy) (norm_residue_congruent 36 x y hxy)
   · rw [ite_eq_right hx,ite_eq_right (fun hy=>hx (hs.mpr hy))]
 
-private lemma rowTwist_zero_of_common_prime (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z n : ActualEisensteinCubic.O)
+section
+variable (Ψ : ActualEisensteinCubic.O→*ℂ)
+include Ψ
+
+private lemma rowTwist_zero_of_common_prime  (m f z n : ActualEisensteinCubic.O)
     (P : Ideal ActualEisensteinCubic.O) (hp : Prime P) (hm : m∈P) (hn : n∈P) :
     rowTwist Ψ m f z n=0 := by
-  have hPI:P∣Ideal.span {n}:=Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hn))
+  have hPI :=Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hn))
   have hm6:m^6∈P:=by
     rw [show m^6=m^5*m by ring]
     exact P.mul_mem_left _ hm
@@ -218,7 +228,7 @@ private lemma rowTwist_zero_of_common_prime (Ψ : ActualEisensteinCubic.O→*ℂ
   change Ψ n*idealRowHom _ (Ideal.span {n})=0
   rw [idealRowHom_zero_of_dvd _ hp hPI hx,mul_zero]
 
-theorem rowTwist_unitSupplement (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ)
+theorem rowTwist_unitSupplement  (m f z : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ)
     (hmLam : lambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m) :
     rowTwist Ψ m f (u.val*z)=unitSupplement u*rowTwist Ψ m f z := by
   ext n
@@ -243,6 +253,8 @@ theorem rowTwist_unitSupplement (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : A
           (Ideal.mem_span_singleton.mpr hm2) (Ideal.mem_span_singleton.mpr h2)
     change rowTwist Ψ m f (u.val*z) n=(if Supported (Ideal.span {n}) then _ else 0)*_
     rw [hz,ite_eq_right hn,zero_mul]
+end
+
 
 end CanonicalUnitEuler
 
@@ -278,34 +290,44 @@ def kernelExhaustionProfile (n : ℕ) (v : ℝ) : ℝ :=
 def kernelExhaustionCutoff (n : ℕ) (q : KernelQuotient) : ℝ :=
   kernelExhaustionProfile n (kernelQuotientBarrier 2 3 q)
 
-lemma kernelExhaustionProfile_smooth (n : ℕ) :
+section
+variable (n : ℕ)
+include n
+
+lemma kernelExhaustionProfile_smooth  :
     ContDiff ℝ ∞ (kernelExhaustionProfile n) := by
   unfold kernelExhaustionProfile cuspTransition
   fun_prop
 
-lemma kernelExhaustionCutoff_smooth (n : ℕ) :
+lemma kernelExhaustionCutoff_smooth  :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ (kernelExhaustionCutoff n) :=
   (kernelExhaustionProfile_smooth n).contMDiff.comp
     (kernelQuotientBarrier_contMDiff 2 3 (by norm_num) (by norm_num))
 
-lemma kernelExhaustionProfile_bounds (n : ℕ) (v : ℝ) :
+section
+variable (v : ℝ)
+include v
+
+lemma kernelExhaustionProfile_bounds  :
     0≤kernelExhaustionProfile n v ∧ kernelExhaustionProfile n v≤1 := by
   have h0 := Real.smoothTransition.nonneg ((v/((n:ℝ)+1)-1)/(2-1))
   have h1 := Real.smoothTransition.le_one ((v/((n:ℝ)+1)-1)/(2-1))
   change 0≤1-Real.smoothTransition _ ∧ 1-Real.smoothTransition _≤1
   constructor <;> linarith
 
-lemma kernelExhaustionProfile_one (n : ℕ) (v : ℝ) (hv : v≤(n:ℝ)+1) :
+lemma kernelExhaustionProfile_one  (hv : v≤(n:ℝ)+1) :
     kernelExhaustionProfile n v=1 := by
   rw [kernelExhaustionProfile,cuspTransition_zero 1 2 _ (by norm_num)
     ((div_le_one (by positivity)).mpr hv),sub_zero]
 
-lemma kernelExhaustionProfile_zero (n : ℕ) (v : ℝ) (hv : 2*((n:ℝ)+1)≤v) :
+lemma kernelExhaustionProfile_zero  (hv : 2*((n:ℝ)+1)≤v) :
     kernelExhaustionProfile n v=0 := by
   rw [kernelExhaustionProfile,cuspTransition_one 1 2 _ (by norm_num)
     ((le_div_iff₀ (by positivity)).mpr hv),sub_self]
+end
 
-lemma kernelExhaustionCutoff_hasCompactSupport (n : ℕ) :
+
+lemma kernelExhaustionCutoff_hasCompactSupport  :
     HasCompactSupport (kernelExhaustionCutoff n) := by
   apply HasCompactSupport.of_support_subset_isCompact
     (kernelBarrier_sublevel_isCompact (2*((n:ℝ)+1)))
@@ -314,9 +336,11 @@ lemma kernelExhaustionCutoff_hasCompactSupport (n : ℕ) :
   by_contra h
   exact hq (kernelExhaustionProfile_zero n _ (le_of_not_ge h))
 
-lemma kernelExhaustionCutoff_bounds (n : ℕ) (q : KernelQuotient) :
+lemma kernelExhaustionCutoff_bounds  (q : KernelQuotient) :
     0≤kernelExhaustionCutoff n q ∧ kernelExhaustionCutoff n q≤1 :=
   kernelExhaustionProfile_bounds n _
+end
+
 
 lemma kernelExhaustionCutoff_eventually_one (q : KernelQuotient) :
     ∀ᶠn : ℕ in atTop,kernelExhaustionCutoff n q=1 := by
@@ -342,7 +366,11 @@ end
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff MatrixGroups
 
-lemma cuspTransition_euler_bounded (a b : ℝ) (hab : a<b) :
+section
+variable (a b : ℝ)
+include a b
+
+lemma cuspTransition_euler_bounded  (hab : a<b) :
     ∃C : ℝ,0≤C ∧ ∀v,|v*deriv (cuspTransition a b) v|≤C := by
   have hc : HasCompactSupport (fun v => v*deriv (cuspTransition a b) v) := by
     apply HasCompactSupport.of_support_subset_isCompact isCompact_Icc
@@ -350,16 +378,24 @@ lemma cuspTransition_euler_bounded (a b : ℝ) (hab : a<b) :
     by_contra hnot
     have hout : v<a ∨ b<v := by simpa only [Set.mem_Icc,not_and_or,not_le] using hnot
     exact hv (by change v*deriv (cuspTransition a b) v=0; rw [(cuspTransition_derivatives a b v hab hout).1,mul_zero])
-  have hcont : Continuous (fun v => v*deriv (cuspTransition a b) v) :=
+  have hcont :=
     continuous_id.mul ((contDiff_infty_iff_deriv.mp (cuspTransition_contDiff a b)).2.continuous)
   obtain ⟨C,hC⟩ := hc.exists_bound_of_continuous hcont
   exact ⟨max C 0,le_max_right _ _,fun v => (hC v).trans (le_max_left _ _)⟩
 
-lemma cuspRemainderProfile_contDiffAt (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) :
+section
+variable (s : ℂ)
+include s
+
+section
+variable (v : ℝ) (hv : 0<v)
+include v hv
+
+lemma cuspRemainderProfile_contDiffAt  :
     ContDiffAt ℝ ∞ (cuspRemainderProfile a b s) v :=
   (positiveHeightPower_contDiffAt s v hv.ne').sub (cuspSeedProfile_contDiffAt a b s v hv)
 
-lemma cuspRemainderProfile_euler (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) :
+lemma cuspRemainderProfile_euler  :
     (v:ℂ)*deriv (cuspRemainderProfile a b s) v=
       positiveHeightPower s v *
         (((1-cuspTransition a b v:ℝ):ℂ)*s-((v*deriv (cuspTransition a b) v:ℝ):ℂ)) := by
@@ -370,8 +406,10 @@ lemma cuspRemainderProfile_euler (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) :
   simp only [Complex.ofReal_sub,Complex.ofReal_one,Complex.ofReal_mul]
   field_simp [Complex.ofReal_ne_zero.mpr hv.ne']
   ; ring
+end
 
-lemma cuspRemainderProfile_euler_bound (a b : ℝ) (s : ℂ) (C : ℝ)
+
+lemma cuspRemainderProfile_euler_bound  (C : ℝ)
     (hC : ∀v,|v*deriv (cuspTransition a b) v|≤C) (v : ℝ) (hv : 0<v) :
     ‖(v:ℂ)*deriv (cuspRemainderProfile a b s) v‖≤(‖s‖+C)*v^s.re := by
   rw [cuspRemainderProfile_euler a b s v hv,norm_mul,
@@ -390,12 +428,15 @@ lemma cuspRemainderProfile_euler_bound (a b : ℝ) (s : ℂ) (C : ℝ)
   have hh := mul_le_mul_of_nonneg_left hfactor (Real.rpow_nonneg hv.le s.re)
   simpa only [mul_comm (v^s.re)] using hh
 
-lemma cuspRemainderProfile_deriv_zero (a b : ℝ) (s : ℂ) (v : ℝ)
+lemma cuspRemainderProfile_deriv_zero  (v : ℝ)
     (hab : a<b) (hv : 0<v) (hbv : b<v) : deriv (cuspRemainderProfile a b s) v=0 := by
   have he : cuspRemainderProfile a b s =ᶠ[𝓝 v] (fun _ => 0) := by
     filter_upwards [Ioi_mem_nhds hv,Ioi_mem_nhds hbv] with y hy hyb
     exact cuspRemainderProfile_zero a b s y hab hy hyb.le
   exact he.deriv_eq.trans (deriv_const v 0)
+end
+end
+
 
 lemma rowLogD_hyperbolic_bound (u : Fin 2→ℂ) (hu : u≠0)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) : |p 2*rowLogD u p j|≤1 := by
@@ -432,16 +473,8 @@ end CubicEisenstein
 
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
 
-end CanonicalRowCompletion
 
-end
 
-end OAI
+
+

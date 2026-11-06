@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseMarked
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePlain
@@ -113,8 +113,8 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
   simpa only [M,ite_true,Q,Function.iterate_zero,id_eq] using
     chain_rowwise rows M cm dx dy a b c d (16*E) hab hcd σ freq hσ hf he
 
-end SevenEighths.HeckeDetectorRowwisePlain
 
-end
 
-end OAI
+
+
+

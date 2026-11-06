@@ -9,7 +9,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalBudget
 
 noncomputable section
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson
 
 theorem atkinson_pair_epsilon_loss {H M L k l ε : ℝ}
     (hH : 1 ≤ H) (hM : 1 ≤ M) (hMH : M ≤ H)
@@ -116,4 +116,4 @@ theorem atkinsonPairPowerTerm_mono_index {C H G L k l : ℝ} {M N : ℕ}
   · exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hMN0 (by positivity)) hh
 
-end TaoTrudgianYang2025
+

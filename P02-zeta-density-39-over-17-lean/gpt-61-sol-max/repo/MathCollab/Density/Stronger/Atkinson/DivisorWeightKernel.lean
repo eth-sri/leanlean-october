@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,11 +11,10 @@ public import MathCollab.Density.Stronger.Atkinson.LeadingDivisor
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -77,10 +77,14 @@ theorem norm_zetaDivisorWeightNumerator_right (q : ℂ) (u : ℝ) :
       ring
     _ = _ := by rw [he]
 
+section
+variable {B : ℝ} (hB : 0 ≤ B)
+    {q : ℂ} (hq : |q.im| ≤ B) (u : ℝ)
+include B hB q hq u
+
 /-- Uniform in the real logarithmic argument; the imaginary argument is
 bounded explicitly so both signs of the source phase are covered. -/
-theorem norm_zetaDivisorWeightNumerator_right_le {B : ℝ} (hB : 0 ≤ B)
-    {q : ℂ} (hq : |q.im| ≤ B) (u : ℝ) :
+theorem norm_zetaDivisorWeightNumerator_right_le  :
     ‖zetaDivisorWeightNumerator q (1 + (u : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + B ^ 2 / 2)) * Real.exp (-q.re) * zetaDivisorWeightEnvelope u := by
   have haux := norm_hughesYoungAuxiliaryZero_le_polynomial
@@ -93,8 +97,7 @@ theorem norm_zetaDivisorWeightNumerator_right_le {B : ℝ} (hB : 0 ≤ B)
       (100 + B ^ 2 / 2) - q.re - 99 * u ^ 2 := by nlinarith [sq_nonneg (q.im - u)]
   rw [norm_zetaDivisorWeightNumerator_right]
   calc
-    _ ≤ Real.exp ((100 + B ^ 2 / 2) - q.re - 99 * u ^ 2) * (625 * (1 + |u|) ^ 8) := by
-      exact mul_le_mul (Real.exp_le_exp.mpr he) haux (norm_nonneg _) (Real.exp_pos _).le
+    _ ≤ Real.exp ((100 + B ^ 2 / 2) - q.re - 99 * u ^ 2) * (625 * (1 + |u|) ^ 8) := by bound
     _ = _ := by
       unfold zetaDivisorWeightEnvelope
       rw [show (100 + B ^ 2 / 2) - q.re - 99 * u ^ 2 =
@@ -102,8 +105,7 @@ theorem norm_zetaDivisorWeightNumerator_right_le {B : ℝ} (hB : 0 ≤ B)
         Real.exp_add, Real.exp_add]
       ring
 
-theorem norm_zetaDivisorWeightKernel_right_le {B : ℝ} (hB : 0 ≤ B)
-    {q : ℂ} (hq : |q.im| ≤ B) (u : ℝ) :
+theorem norm_zetaDivisorWeightKernel_right_le  :
     ‖zetaDivisorWeightKernel q (1 + (u : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + B ^ 2 / 2)) * Real.exp (-q.re) * zetaDivisorWeightEnvelope u := by
   have hw : 1 ≤ ‖(1 : ℂ) + (u : ℂ) * I‖ := by
@@ -112,6 +114,8 @@ theorem norm_zetaDivisorWeightKernel_right_le {B : ℝ} (hB : 0 ≤ B)
   calc
     _ ≤ ‖zetaDivisorWeightNumerator q (1 + (u : ℂ) * I)‖ / 1 := by gcongr
     _ ≤ _ := by rw [div_one]; exact norm_zetaDivisorWeightNumerator_right_le hB hq u
+end
+
 
 theorem integrable_zetaDivisorWeightKernel_right (q : ℂ) :
     Integrable (fun u : ℝ => zetaDivisorWeightKernel q (1 + (u : ℂ) * I)) := by
@@ -144,4 +148,4 @@ theorem exists_norm_zetaDivisorWeight_le {B : ℝ} (hB : 0 ≤ B) :
     _ = (M * J / (2 * Real.pi)) * Real.exp (-q.re) := by dsimp [J]; ring
     _ ≤ _ := by nlinarith [Real.exp_pos (-q.re)]
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -4,9 +4,8 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Base
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -108,4 +107,4 @@ theorem finite_dyadic_weighted_square_bound {ι : Type*} (S : Finset ι)
       · gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment
+

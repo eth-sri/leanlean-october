@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Moments.CanonicalFirst
 public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
 public import OAI.NumberTheory.DirichletL.Moments.Primitive
@@ -7,20 +8,20 @@ public import OAI.NumberTheory.DirichletL.Moments.Primitive
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNormalization
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT
+open CanonicalQuadraticSieve CenteredMomentFourier
 open CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier
 open CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem residueGauss_eq_norm_mul_gaussRow (a : O) (ha : Supported (Ideal.span {a})) (h : O) :
     residueGauss a (supported_element_ne_zero a ha) (supportedModulusCharacter a ha) (Ideal.Quotient.mk _ h)=
       (‖eisEmbedding a‖:ℂ)*gaussRow a ha h := by
-  have hn : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr
+  have hn := Complex.ofReal_ne_zero.mpr
     (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero a ha)))
   rw [gaussRow,residueGauss_supported_mk,sqrt_absNorm]
   field_simp
@@ -61,8 +62,8 @@ theorem normalized_active_coefficient {ι : Type*} [Fintype ι]
     Complex.conj_ofReal,Complex.ofReal_pow,Complex.ofReal_mul]
   field_simp
 
-end SevenEighths.CenteredMomentFirstNormalization
 
-end
 
-end OAI
+
+
+

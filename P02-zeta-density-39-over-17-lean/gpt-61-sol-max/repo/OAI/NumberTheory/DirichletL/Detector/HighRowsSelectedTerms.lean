@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -53,12 +53,12 @@ theorem sourceRowTerm_selected_base (eta a rho x w z : ℂ)
     dsimp only [Q]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
-  have hm0 : (0:ℝ)≤m := Nat.cast_nonneg m
-  have hb0 : (0:ℝ)≤max (1-w.re) 0 := le_max_right _ _
-  have hb1 : 1-w.re≤max (1-w.re) 0 := le_max_left _ _
+  have hm0 : (0:ℝ)≤ m := Nat.cast_nonneg m
+  have hb0 : (0:ℝ)≤ max (1-w.re) 0 := le_max_right _ _
+  have hb1 : 1-w.re≤ max (1-w.re) 0 := le_max_left _ _
   have hzm : 0≤6*z.re*(m:ℝ) := by positivity
   have hzm1 (hm : m≠0) : 6*z.re≤6*z.re*(m:ℝ) := by
-    have hm1 : (1:ℝ)≤m := by exact_mod_cast (by omega : 1≤m)
+    have hm1 : (1:ℝ)≤ m := by exact_mod_cast (by omega : 1≤ m)
     nlinarith
   have hrelax (v : ℝ) : Q^v≤2*Q^v := by nlinarith [Real.rpow_nonneg hQ.le v]
   have hz0 (t k : ℕ) (ht : t≠0) : sourceScalar p hp hg t k (j+6*m)=
@@ -142,7 +142,7 @@ theorem sourceRowTerm_selected_base (eta a rho x w z : ℂ)
       · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
         linarith
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

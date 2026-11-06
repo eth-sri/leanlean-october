@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Detector.LocalWeights
 
 @[expose] public section
@@ -13,8 +14,7 @@ lemma localCubePhase_step_two (C omega : ℂ) (hC : C^2=omega) (ho : omega^2=1)
   have hchoose : (l+2).choose 2=l.choose 2+2*l+1 := by
     rw [show l+2=(l+1)+1 by omega,Nat.choose_succ_succ,Nat.choose_one_right,
       Nat.choose_succ_succ,Nat.choose_one_right]
-    change l+1+(l+l.choose 2)=l.choose 2+2*l+1
-    omega
+    ring
   unfold localCubePhase
   rw [pow_add C l 2,hC,hchoose]
   have he : (e+3*(l+2))*k+e*(l+2)+(l.choose 2+2*l+1)=
@@ -32,10 +32,7 @@ theorem weightedScalar_step_two (Q eta a G1 C omega X W V scalar : ℂ)
       evenRatio Q a X V*weightedScalar Q eta a G1 C omega X W V scalar e l k m := by
   unfold weightedScalar evenRatio
   rw [localCubePhase_step_two C omega hC ho]
-  rw [pow_add (a*X^3/Q) l 2,pow_succ V m]
-  have hbase : (a*X^3/Q)^2*Q^6=a^2*Q^4*X^6 := by
-    field_simp
-  linear_combination (-eta*X/G1)^e*(a*X^3/Q)^l*localCubePhase C omega e l k*scalar*W^k*V^m*V*hbase
+  grind
 
 def rowWeightedScalar (Q eta a G1 C omega X W V rho scalar : ℂ) (e l k m : ℕ) : ℂ :=
   (rho^k/rho^(e+3*l))*weightedScalar Q eta a G1 C omega X W V scalar e l k m
@@ -49,7 +46,6 @@ theorem rowWeightedScalar_parameters (Q eta a G1 C omega X W V rho scalar : ℂ)
     rowWeightedScalar Q eta a G1 C omega X W V rho scalar e l k m=
       weightedScalar Q (eta/rho) (a/rho^3) G1 C omega X (rho*W) V scalar e l k m := by
   unfold rowWeightedScalar weightedScalar
-  simp only [pow_add,pow_mul,mul_pow,div_eq_mul_inv,mul_inv_rev,inv_pow]
   ring
 
 theorem evenRatio_unit (Q a X V rho : ℂ) (hρ : rho^6=1) :
@@ -65,7 +61,7 @@ theorem rowWeightedScalar_step_two (Q eta a G1 C omega X W V rho scalar : ℂ)
     weightedScalar_step_two Q (eta/rho) (a/rho^3) G1 C omega X (rho*W) V scalar hQ hC ho,
     evenRatio_unit Q a X V rho hρ]
 
-end SevenEighths.ProbeEuler
-end
 
-end OAI
+
+
+

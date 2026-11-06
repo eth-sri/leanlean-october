@@ -6,9 +6,8 @@ public import LaterPairs.Native.ExponentPairEpsilonBudget
 public import LaterPairs.Native.ExponentPairIntegerOptimization
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                               
@@ -18,7 +17,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                           
 
 
-noncomputable section
+
 
 open Expdb
 
@@ -44,7 +43,7 @@ theorem source_exponentialSum_aProcess_bound
   have hN₁ : 1 ≤ N := by linarith
   have hNpos : 0 < N := by linarith
   have hT := hNpos.trans_le hNT
-  have hk : 0 ≤ k := hkl.inTriangle.1
+  have hk := hkl.inTriangle.1
   have hl : 0 ≤ l := by linarith [hkl.inTriangle.2.2.1]
   have hq : 0 ≤ k+ε := by linarith
   have hp : 0 ≤ l+ε := by linarith
@@ -62,11 +61,7 @@ theorem source_exponentialSum_aProcess_bound
   have hopt := integer_shift_optimization hNpos hM hR hq hRN hη
     (show η ≤ 1 by linarith) hB
     (show 1 ≤ 1+Real.log N by have := Real.log_nonneg hN₁; linarith)
-    hbalance htrivial (fun H hH hHN => by
-      have hh := hbound F T N a L H hN hNT hH hHN ha hb hF
-      dsimp [M]
-      convert hh using 1
-      ring)
+    hbalance htrivial (fun H hH hHN => by grind)
   have hcost : N^2/R =
       (T/N)^((k+ε)/(k+ε+1))*N^(1+(l+ε)/(k+ε+1)) :=
     aProcessOptimizationScale_cost hq hT hNpos
@@ -81,4 +76,4 @@ theorem source_exponentialSum_aProcess_bound
         (zero_le_one.trans hC₀)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

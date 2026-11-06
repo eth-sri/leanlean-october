@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWShift
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 lemma FirstTail.mono_parameter {eps eps' : ℝ} {S : Finset (Ideal O)}
     (h : FirstTail eps S) (hle : eps≤eps') : FirstTail eps' S := by
@@ -90,8 +90,8 @@ theorem rowIntegral_central_start {K : ℕ}
     S hS hmax (hfirst.mono_parameter (by linarith)) P hP hPS η u hu W0 W1
     a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

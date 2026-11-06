@@ -1,6 +1,7 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
-public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
+public import OAI.NumberTheory.DirichletL.CubicSieve.ArithmeticBins
 
 @[expose] public section
 
@@ -9,70 +10,70 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
-open ActualEisensteinCubic
+
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+
+
+           
+                    
+open ConcreteTraceCRT
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField
+                      
+                      
+                      
+                      
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+
+                        
 
 namespace CanonicalQuadraticSieve
 
@@ -106,7 +107,7 @@ theorem poisson_nine_terms_box
     1536*d*ct*tail +
     lk*(2*uh*d*ln^2*f*e*(4*N/T+a) + 2*d*ln^2*lat*du*f*e*(N+2*T*a) +
       32768*cs*eS) + uh*d^2*cp*b ≤ 262144*U^8*S := by
-  let budget : List ℝ := [d,lk,ln,f,e,vh,vz,dv,uh,du,lat,cd,cs,ct,cp]
+  let budget := [d,lk,ln,f,e,vh,vz,dv,uh,du,lat,cd,cs,ct,cp]
   have hp (xs : List ℝ) (hx : ∀x∈xs, x∈budget) (hn : xs.length≤8) : xs.prod≤U^8 :=
     list_prod_budget xs budget U hU hbudget hx hn
   have hc1 : d*lk*vh*ln^2*f*e≤U^8 := by
@@ -140,7 +141,7 @@ theorem poisson_nine_terms_box
   have hdiv : N/T≤N := div_le_self hN hT
   have h1 : M+a≤2*S := by linarith only [hMS, haS]
   have h2 : M+2*T*a≤3*S := by nlinarith only [hMS, hTa]
-  have h3 : M+2*T*a≤3*S := h2
+  have h3 := h2
   have h6 : 4*N/T+a≤5*S := by rw [mul_div_assoc]; linarith only [hdiv, hNS, haS]
   have h7 : N+2*T*a≤3*S := by nlinarith only [hNS, hTa]
   have hU8 : 0≤U^8 := by positivity
@@ -155,7 +156,7 @@ theorem poisson_nine_terms_box
   have ht9 := mul_le_mul hc9 hb.2 hb.1 hU8
   nlinarith only [ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, mul_nonneg hU8 hS]
 
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+open IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 def poissonUnitBudget
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
@@ -221,28 +222,7 @@ theorem poissonComparisonMajorant_unit_box
 end CanonicalQuadraticSieve
 
 open scoped BigOperators Classical
-namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end SecondPassArithmetic
 
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups Matrix
@@ -339,8 +319,8 @@ lemma matrixFrobenius_continuous : Continuous matrixFrobenius := by
 lemma hyperbolicFrobenius_continuous : Continuous hyperbolicFrobenius :=
   matrixFrobenius_continuous.quotient_lift _
 
-end CubicEisenstein
 
-end
 
-end OAI
+
+
+

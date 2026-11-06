@@ -9,10 +9,10 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks
+open ActualEisensteinCubic SecondPassArithmetic
+
 open InverseMomentFirstOriginalProfile CompletedHeight
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def actualLongSourceKeys {ι σ:Type}[DecidableEq ι][DecidableEq σ]
     (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -30,8 +30,8 @@ def actualLongSourceKeys {ι σ:Type}[DecidableEq ι][DecidableEq σ]
   liveJointKeys p source pool (sourceSummand p hp hcop hg
     (actualLongCoefficient p Ψ mCoef H₀ (Z^ell) ξ) cutoff Ψ m mark W rowMajorant (Z^M))
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. Selected literal Y0 Mellin proofs adapted
 from DFIY0Mellin.lean, exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
@@ -12,11 +13,10 @@ public import Mathlib.Analysis.SpecialFunctions.Arsinh
 
 @[expose] public section
 
-open Complex Set MeasureTheory
+open Complex MeasureTheory
 open scoped Topology Interval
 
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem image_sin_Ioo_zero_halfPi :
@@ -24,9 +24,7 @@ theorem image_sin_Ioo_zero_halfPi :
   ext y
   constructor
   · rintro ⟨x, hx, rfl⟩
-    have hxIcc : x ∈ Set.Icc (-(Real.pi / 2)) (Real.pi / 2) := by
-      exact ⟨(neg_nonpos.mpr (by positivity : 0 ≤ Real.pi / 2)).trans hx.1.le,
-        hx.2.le⟩
+    have hxIcc : x ∈ Set.Icc (-(Real.pi / 2)) (Real.pi / 2) := by grind
     have hzero : (0 : ℝ) ∈ Set.Icc (-(Real.pi / 2)) (Real.pi / 2) := by
       constructor <;> linarith [Real.pi_pos]
     have hhalf : Real.pi / 2 ∈ Set.Icc (-(Real.pi / 2)) (Real.pi / 2) := by
@@ -40,14 +38,18 @@ theorem image_sin_Ioo_zero_halfPi :
     refine ⟨Real.arcsin y, ?_, Real.sin_arcsin (by linarith [hy.1]) hy.2.le⟩
     exact ⟨Real.arcsin_pos.2 hy.1, Real.arcsin_lt_pi_div_two.2 hy.2⟩
 
+section
+variable (s : ℂ)
+include s
+
 theorem cos_mul_one_sub_sin_sq_cpow
-    (s : ℂ) {u : ℝ} (hu : u ∈ Set.Ioo (0 : ℝ) (Real.pi / 2)) :
+     {u : ℝ} (hu : u ∈ Set.Ioo (0 : ℝ) (Real.pi / 2)) :
     |Real.cos u| •
         (((1 - Real.sin u ^ 2 : ℝ) : ℂ) ^ (-(s + 1) / 2)) =
       (Real.cos u : ℂ) ^ (-s) := by
   have hneg : -(Real.pi / 2) < u :=
     (neg_nonpos.mpr (by positivity : 0 ≤ Real.pi / 2)).trans_lt hu.1
-  have hcos : 0 < Real.cos u := Real.cos_pos_of_mem_Ioo ⟨hneg, hu.2⟩
+  have hcos := Real.cos_pos_of_mem_Ioo ⟨hneg, hu.2⟩
   rw [abs_of_pos hcos, Complex.real_smul]
   have htrig : 1 - Real.sin u ^ 2 = Real.cos u ^ 2 := by
     nlinarith [Real.sin_sq_add_cos_sq u]
@@ -57,14 +59,13 @@ theorem cos_mul_one_sub_sin_sq_cpow
     push_cast
     ring
   rw [hcast]
-  have hC : (Real.cos u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hcos.ne'
+  have hC := Complex.ofReal_ne_zero.mpr hcos.ne'
   rw [← Complex.cpow_nat_mul' (n := 2) (x := (Real.cos u : ℂ)) (by
       rw [Complex.arg_ofReal_of_nonneg hcos.le]
       norm_num
       exact Real.pi_pos) (by
       rw [Complex.arg_ofReal_of_nonneg hcos.le]
-      norm_num
-      exact Real.pi_pos.le)]
+      grind)]
   calc
     (Real.cos u : ℂ) * (Real.cos u : ℂ) ^
         ((2 : ℂ) * (-(s + 1) / 2)) =
@@ -76,7 +77,7 @@ theorem cos_mul_one_sub_sin_sq_cpow
       apply congrArg ((Real.cos u : ℂ) ^ ·)
       ring
 
-theorem integral_cos_cpow_neg_eq_beta (s : ℂ) :
+theorem integral_cos_cpow_neg_eq_beta  :
     (∫ u : ℝ in Set.Ioo 0 (Real.pi / 2),
         (Real.cos u : ℂ) ^ (-s)) =
       (1 / 2 : ℂ) * Complex.betaIntegral (1 / 2) ((1 - s) / 2) := by
@@ -109,14 +110,14 @@ theorem integral_cos_cpow_neg_eq_beta (s : ℂ) :
       ring_nf
 
 theorem abs_two_mul_smul_sq_cpow_general
-    (s : ℂ) {x : ℝ} (hx : x ∈ Set.Ioo (0 : ℝ) 1) :
+     {x : ℝ} (hx : x ∈ Set.Ioo (0 : ℝ) 1) :
     |2 * x| •
         ((((x ^ 2 : ℝ) : ℂ) ^ ((1 - s) / 2 - 1)) *
           (1 - ((x ^ 2 : ℝ) : ℂ)) ^ (s / 2 - 1)) =
       2 * ((x : ℂ) ^ (-s) *
         (((1 - x ^ 2 : ℝ) : ℂ) ^ (s / 2 - 1))) := by
   rw [abs_of_pos (mul_pos (by norm_num) hx.1), Complex.real_smul]
-  have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.1.ne'
+  have hxC := Complex.ofReal_ne_zero.mpr hx.1.ne'
   have hcast : (((x ^ 2 : ℝ) : ℂ)) = (x : ℂ) ^ (2 : ℕ) := by
     push_cast
     ring
@@ -146,11 +147,9 @@ theorem abs_two_mul_smul_sq_cpow_general
         have hone : (((1 - x ^ 2 : ℝ) : ℂ)) = 1 - (x : ℂ) ^ 2 := by
           push_cast
           ring
-        rw [hone]
-        congr 3
-        ring
+        grind
 
-theorem integral_beta_tail_Ioo (s : ℂ) :
+theorem integral_beta_tail_Ioo  :
     (∫ x : ℝ in Set.Ioo 0 1,
         (x : ℂ) ^ (-s) * (((1 - x ^ 2 : ℝ) : ℂ) ^ (s / 2 - 1))) =
       (1 / 2 : ℂ) * Complex.betaIntegral ((1 - s) / 2) (s / 2) := by
@@ -167,16 +166,15 @@ theorem integral_beta_tail_Ioo (s : ℂ) :
   ring_nf
 
 theorem tanh_jacobian_beta_integrand
-    (s : ℂ) {t : ℝ} (ht : 0 < t) :
+     {t : ℝ} (ht : 0 < t) :
     |1 / Real.cosh t ^ 2| •
         ((Real.tanh t : ℂ) ^ (-s) *
           (((1 - Real.tanh t ^ 2 : ℝ) : ℂ) ^ (s / 2 - 1))) =
       (Real.sinh t : ℂ) ^ (-s) := by
-  have hcosh : 0 < Real.cosh t := Real.cosh_pos t
+  have hcosh := Real.cosh_pos t
   have htanh : 0 < Real.tanh t := by
     rw [Real.tanh_eq_sinh_div_cosh]
     exact div_pos (Real.sinh_pos_iff.2 ht) hcosh
-  have hsinh : 0 < Real.sinh t := Real.sinh_pos_iff.2 ht
   rw [abs_of_pos (by positivity : 0 < 1 / Real.cosh t ^ 2), Complex.real_smul]
   rw [one_sub_tanh_sq_eq_inv_cosh_sq]
   rw [show ((1 / Real.cosh t ^ 2 : ℝ) : ℂ) *
@@ -194,7 +192,7 @@ theorem tanh_jacobian_beta_integrand
   rw [Real.tanh_eq_sinh_div_cosh]
   field_simp [hcosh.ne']
 
-theorem integral_sinh_cpow_neg_Ioi_eq_beta (s : ℂ) :
+theorem integral_sinh_cpow_neg_Ioi_eq_beta  :
     (∫ t : ℝ in Set.Ioi 0, (Real.sinh t : ℂ) ^ (-s)) =
       (1 / 2 : ℂ) * Complex.betaIntegral ((1 - s) / 2) (s / 2) := by
   have h := integral_image_eq_integral_abs_deriv_smul
@@ -218,6 +216,8 @@ theorem integral_sinh_cpow_neg_Ioi_eq_beta (s : ℂ) :
         (y : ℂ) ^ (-s) * (((1 - y ^ 2 : ℝ) : ℂ) ^ (s / 2 - 1)) := h.symm
     _ = (1 / 2 : ℂ) * Complex.betaIntegral ((1 - s) / 2) (s / 2) :=
       integral_beta_tail_Ioo s
+end
+
 
 theorem image_sinh_Ioi_zero :
     Real.sinh '' Set.Ioi (0 : ℝ) = Set.Ioi 0 := by
@@ -234,16 +234,14 @@ theorem sinh_tail_jacobian
         ((Real.sinh u : ℂ) ^ (-s) /
           Real.sqrt (1 + Real.sinh u ^ 2)) =
       (Real.sinh u : ℂ) ^ (-s) := by
-  have hcosh : 0 < Real.cosh u := Real.cosh_pos u
+  have hcosh := Real.cosh_pos u
   have hsqrt : Real.sqrt (1 + Real.sinh u ^ 2) = Real.cosh u := by
     rw [show 1 + Real.sinh u ^ 2 = Real.cosh u ^ 2 by
       nlinarith [Real.cosh_sq_sub_sinh_sq u], Real.sqrt_sq_eq_abs,
       abs_of_pos hcosh]
   rw [abs_of_pos hcosh, Complex.real_smul, hsqrt]
-  have hcoshC : (Real.cosh u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hcosh.ne'
-  change (Real.cosh u : ℂ) *
-      ((Real.sinh u : ℂ) ^ (-s) / (Real.cosh u : ℂ)) = _
-  field_simp [hcoshC]
+  have hcoshC := Complex.ofReal_ne_zero.mpr hcosh.ne'
+  grind
 
 theorem integral_tail_power_eq_beta (s : ℂ) :
     (∫ t : ℝ in Set.Ioi 0,
@@ -270,4 +268,4 @@ theorem integral_tail_power_eq_beta (s : ℂ) :
     _ = (1 / 2 : ℂ) * Complex.betaIntegral ((1 - s) / 2) (s / 2) :=
       integral_sinh_cpow_neg_Ioi_eq_beta s
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -28,33 +28,44 @@ noncomputable section
 is sufficient for every application in Sections 4--12. -/
 abbrev WooleySourceSequence := ℤ →₀ ℂ
 
+section
+variable (gamma : WooleySourceSequence)
+include gamma
+
 /-- The pointwise bound in Wooley's class `D_0`.  Absolute summability is
 automatic for `Finsupp`. -/
-def WooleySourceSequence.Admissible (gamma : WooleySourceSequence) : Prop :=
+def WooleySourceSequence.Admissible  : Prop :=
   ∀ n : ℤ, ‖gamma n‖ ≤ 1
 
 /-- The square of `rho_0` in (3.2). -/
-def wooleySourceMassSq (gamma : WooleySourceSequence) : ℝ :=
+def wooleySourceMassSq  : ℝ :=
   ∑ n ∈ gamma.support, ‖gamma n‖ ^ 2
 
 /-- The square of `rho_h(xi)` in (3.2). -/
-def wooleySourceResidueMassSq (gamma : WooleySourceSequence)
+def wooleySourceResidueMassSq 
     (q : ℕ) (xi : ZMod q) : ℝ :=
   ∑ n ∈ gamma.support.filter (fun n : ℤ => (n : ZMod q) = xi),
     ‖gamma n‖ ^ 2
+end
+
+
+section
+variable {k q : ℕ} [NeZero q]
+    (phi : WooleyPolynomialSystem k)
+include k q phi
 
 /-- The polynomial phase in (3.3), on the exact integer support. -/
-def wooleySourcePolynomialPhase {k q : ℕ} [NeZero q]
-    (phi : WooleyPolynomialSystem k) (alpha : Fin k → ZMod q)
+def wooleySourcePolynomialPhase  (alpha : Fin k → ZMod q)
     (n : ℤ) : ℂ :=
   ZMod.stdAddChar
     (∑ j : Fin k, alpha j * (((phi j).eval n : ℤ) : ZMod q))
 
 /-- The unnormalised global exponential sum. -/
-def wooleySourcePolynomialSum {k q : ℕ} [NeZero q]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
+def wooleySourcePolynomialSum  (gamma : WooleySourceSequence)
     (alpha : Fin k → ZMod q) : ℂ :=
   ∑ n ∈ gamma.support, gamma n * wooleySourcePolynomialPhase phi alpha n
+end
+
 
 /-- The unnormalised residue-class exponential sum. -/
 def wooleySourcePolynomialResidueSum {k q qH : ℕ} [NeZero q]
@@ -79,16 +90,20 @@ def wooleySourceNormalizedPolynomialResidueSum {k q qH : ℕ} [NeZero q]
   else ((Real.sqrt (wooleySourceResidueMassSq gamma qH xi) : ℂ)⁻¹) *
     wooleySourcePolynomialResidueSum phi gamma alpha xi
 
+section
+variable {k : ℕ}
+include k
+
 /-- The finite Fourier-average realization of `U^B_{s,k}` in (3.6), with
 the modulus supplied explicitly. -/
-def wooleySourcePolynomialMean {k : ℕ} (s q : ℕ) [NeZero q]
+def wooleySourcePolynomialMean  (s q : ℕ) [NeZero q]
     (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) : ℝ :=
   ((q ^ k : ℕ) : ℝ)⁻¹ *
     ∑ alpha : Fin k → ZMod q,
       ‖wooleySourceNormalizedPolynomialSum phi gamma alpha‖ ^ (2 * s)
 
 /-- The finite Fourier-average realization of `U^{B,h}_{s,k}` in (3.8). -/
-def wooleySourcePolynomialConditionedMean {k : ℕ}
+def wooleySourcePolynomialConditionedMean 
     (s q qH : ℕ) [NeZero q] [NeZero qH]
     (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) : ℝ :=
   if wooleySourceMassSq gamma = 0 then 0
@@ -102,9 +117,11 @@ def wooleySourcePolynomialConditionedMean {k : ℕ}
 
 /-- The exact source class `Phi_tau(B)`: some coefficient depth `c` is at
 least `tau B`, and the system is `p^c`-spaced. -/
-def WooleyPolynomialSystem.InPhiTau {k : ℕ}
+def WooleyPolynomialSystem.InPhiTau 
     (phi : WooleyPolynomialSystem k) (p B : ℕ) (tau : ℝ) : Prop :=
   ∃ c : ℕ, phi.Spaced p c ∧ tau * (B : ℝ) ≤ (c : ℝ)
+end
+
 
 /-- The exact finite-support form of Wooley Corollary 3.2 at fixed `k,p`.
 This is a target proposition, not a postulate.  Its eventual proof is the
@@ -128,17 +145,21 @@ def WooleyPolynomialCorollary32 : Prop :=
   ∀ (k p : ℕ) (hp : Nat.Prime p), 1 ≤ k → k < p →
     @WooleyPolynomialCorollary32At k p ⟨hp.ne_zero⟩
 
-theorem wooleySourceMassSq_nonneg (gamma : WooleySourceSequence) :
+section
+variable (gamma : WooleySourceSequence)
+include gamma
+
+theorem wooleySourceMassSq_nonneg  :
     0 ≤ wooleySourceMassSq gamma := by
   exact Finset.sum_nonneg fun _ _ => sq_nonneg _
 
-theorem wooleySourceResidueMassSq_nonneg (gamma : WooleySourceSequence)
+theorem wooleySourceResidueMassSq_nonneg 
     (q : ℕ) (xi : ZMod q) :
     0 ≤ wooleySourceResidueMassSq gamma q xi := by
   exact Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 /-- Residue classes partition the source sequence's `L²` mass exactly. -/
-theorem wooleySource_sum_residueMassSq (gamma : WooleySourceSequence)
+theorem wooleySource_sum_residueMassSq 
     (q : ℕ) [NeZero q] :
     ∑ xi : ZMod q, wooleySourceResidueMassSq gamma q xi =
       wooleySourceMassSq gamma := by
@@ -147,7 +168,9 @@ theorem wooleySource_sum_residueMassSq (gamma : WooleySourceSequence)
     (s := gamma.support)
     (g := fun n : ℤ => (n : ZMod q))
     (f := fun n : ℤ => ‖gamma n‖ ^ 2)]
-
 end
 
-end GafniTao
+
+
+
+

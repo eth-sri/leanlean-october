@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Reflection.TerminalThreshold
 public import OAI.NumberTheory.DirichletL.Reflection.RamifiedWidth
 
@@ -8,7 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open CompletedDyadic CompletedGauss
-noncomputable section
+
 
 lemma fixed_abs_log_threshold (C η : ℝ) (hη : 0<η) :
     ∃ Z₀ : ℝ, 1<Z₀ ∧ ∀ Z : ℝ, Z₀≤Z → |Real.logb Z C|≤η := by
@@ -16,7 +17,7 @@ lemma fixed_abs_log_threshold (C η : ℝ) (hη : 0<η) :
     (Real.exp |Real.log C|) η (Real.exp_pos _) hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro Z hZ
-  have hz : 0<Real.log Z := Real.log_pos (lt_of_lt_of_le hZ₀ hZ)
+  have hz := Real.log_pos (lt_of_lt_of_le hZ₀ hZ)
   have hh := h Z hZ
   simpa only [Real.logb,Real.log_exp,abs_div,abs_of_pos hz] using hh
 
@@ -53,7 +54,7 @@ theorem literal_threshold_error_uniform (C η : ℝ) (hC : 0<C) (hη : 0<η) :
   exact hh.trans (reflectedExponent_threshold_error O₀ H S₀ B₀ za v ell
     (InverseTerminalWidths.ramifiedWidth Z m) Td (Real.logb Z (C/81)) η (herr Z hZ))
 
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

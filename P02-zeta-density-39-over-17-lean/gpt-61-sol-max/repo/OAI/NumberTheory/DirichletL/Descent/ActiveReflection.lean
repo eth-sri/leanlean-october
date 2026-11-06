@@ -7,11 +7,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open CompletedGauss CubicEisenstein CanonicalRowCompletion
+open CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance activeReflectionQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
+local instance activeReflectionQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem markedCompletedT_fixed_active_strata {ι : Type*} [Fintype ι]
@@ -59,7 +59,7 @@ theorem markedCompletedT_fixed_active_strata {ι : Type*} [Fintype ι]
     fixedThetaTwist_mul, mixedPrimeFunction_product]
   ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

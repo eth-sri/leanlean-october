@@ -3,8 +3,7 @@ public import GuthMaynard.Improvement.CenteredKernelBridge
 public import GuthMaynard.Improvement.CubicLocalError
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -67,4 +66,4 @@ theorem centered_cubic_approximation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     (show 0 ≤ (D+E)*L by positivity) (show 0 ≤ E*T^(-200:ℝ) by positivity) hk hj he
   exact hp.trans (poisson_cubic_error_budget hT hLp.le hLT hE (by positivity) hlen)
 
-end GuthMaynard.Improvement
+

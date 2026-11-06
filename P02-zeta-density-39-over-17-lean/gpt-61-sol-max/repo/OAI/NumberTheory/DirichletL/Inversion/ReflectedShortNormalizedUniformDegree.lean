@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedShortGeneratorUnifo
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion
+open InverseMoment InverseTerminalWidths CompletedHeight
+open scoped EisensteinEis
 universe u v
 
 theorem canonical_short_normalized_energy_uniform_degree
@@ -23,7 +23,7 @@ theorem canonical_short_normalized_energy_uniform_degree
     ∀ (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hcut d : ℝ),
       Z₀≤Z → 0≤N → 0≤V → 0≤M → M≤L → V≤L → z₀≤L → 0≤hcut → hcut≤L →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
-      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
+      CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤ margin →
       V≤d → hcut≤d+eta → d≤cstar/200 →
     ∀ (labels : Finset (Ideal Eis)),
       (∀ f∈labels,Squarefree f ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
@@ -55,8 +55,8 @@ theorem canonical_short_normalized_energy_uniform_degree
     (fun f _ => ConcretePrimeRowBridge.span_idealGenerator f) T hT hcard lists H hdis hmax hgood hprime hodd
     hH1 hH hprod Ψ hΨ hperiod θ w hw
 
-end SevenEighths.InverseShortCanonicalNormalization
 
-end
 
-end OAI
+
+
+

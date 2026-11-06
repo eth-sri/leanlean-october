@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import MathCollab.Density.FixedBandError
 public import MathCollab.Density.CompletePairs
 public import Mathlib.Data.Nat.Log
 
 @[expose] public section
 
-open Real Complex Set
+open Real Complex
 open scoped BigOperators
 
 noncomputable section
@@ -76,7 +77,11 @@ theorem dyadicExponent_scale_bounds {L H : ℝ} (hL : 0 < L) (_hH : 0 < H)
     nlinarith [mul_lt_mul_of_pos_right hmhi (show 0 < 20*Real.pi*L by positivity)]
   · exact hmlo.trans hhi
 
-theorem dyadicExponents_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
+section
+variable {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
+include L H hL hH
+
+theorem dyadicExponents_card_le  :
     (dyadicExponents L H).card ≤ 10 := by
   by_cases hn : (dyadicExponents L H).Nonempty
   · let j₀ := (dyadicExponents L H).min' hn
@@ -100,16 +105,18 @@ theorem dyadicExponents_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
     exact (Finset.card_le_card hs).trans (by simp; omega)
   · simp only [Finset.not_nonempty_iff_eq_empty.mp hn, Finset.card_empty, Nat.zero_le]
 
-theorem reflectionBlocks_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
+theorem reflectionBlocks_card_le  :
     (reflectionBlocks L H).card ≤ 10 :=
   Finset.card_image_le.trans (dyadicExponents_card_le hL hH)
 
-theorem reflectionBlock_scale_bounds {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
+theorem reflectionBlock_scale_bounds 
     {M : ℕ} (hM : M ∈ reflectionBlocks L H) :
     0 < M ∧ H/(40*Real.pi*L) ≤ (M : ℝ) ∧ (M : ℝ) ≤ 4*H/(Real.pi*L) := by
   obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hM
   have hh := dyadicExponent_scale_bounds hL hH hj
   exact ⟨by positivity, by exact_mod_cast hh.1, by exact_mod_cast hh.2⟩
+end
+
 
 theorem log2_eq_iff_block {m j : ℕ} (hm : 0 < m) :
     m.log2 = j ↔ 2^j ≤ m ∧ m < 2*(2^j) := by
@@ -174,10 +181,7 @@ theorem fiber_phaseSum_eq {L : ℝ} (hL : 0 < L) (H v r : ℝ) (j : ℕ) :
   by_cases hqb : q ∈ reflectionNatBand L H
   · simp only [hqb, ↓reduceIte, blockCoefficient]
     have hM : (0 : ℝ) < (2^j : ℕ) := by positivity
-    have hqpos : (0 : ℝ) < q := by
-      have hle := (Finset.mem_Ico.mp hq).1
-      have : 0 < q := (by positivity : 0 < 2^j).trans_le hle
-      exact_mod_cast this
+    have hqpos : (0 : ℝ) < q := by norm_num at * <;> linarith
     have he : (q : ℝ)*L = ((q : ℝ)/(2^j : ℕ))*(((2^j : ℕ) : ℝ)*L) := by field_simp
     rw [sub_eq_add_neg, dirichletPhase_add]
     have hp : dirichletPhase ((q : ℝ)*L) (-v) =
@@ -192,7 +196,6 @@ theorem fiber_phaseSum_eq {L : ℝ} (hL : 0 < L) (H v r : ℝ) (j : ℕ) :
 theorem sum_reflectionBlocks {E : Type*} [AddCommMonoid E] (L H : ℝ) (f : ℕ → E) :
     (∑ M ∈ reflectionBlocks L H, f M) = ∑ j ∈ dyadicExponents L H, f (2^j) := by
   apply Finset.sum_image
-  intro j _ k _ he
-  exact Nat.pow_right_injective (by norm_num : 2 ≤ 2) he
+  simp_all
 
-end MathCollab.Density
+

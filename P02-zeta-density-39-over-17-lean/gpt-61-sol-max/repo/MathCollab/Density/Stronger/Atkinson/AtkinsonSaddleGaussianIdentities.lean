@@ -11,9 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSaddlePhase
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
-noncomputable section
+open Complex
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem zetaGaussianQuadraticIntegral_neg (T : ℝ) {G : ℝ} (hG : G ≠ 0) (v : ℝ) :
@@ -37,4 +36,4 @@ theorem zetaGaussianQuadraticIntegral_at_neg_saddle {T G : ℝ} (hT : 0 < T) (hG
     zetaGaussianQuadraticIntegral_neg T hG, atkinson_sqrt_frequency_normalized hT n]
   rfl
 
-end MathCollab.Density.Stronger.Atkinson
+

@@ -2,14 +2,12 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.AtkinsonNaturalAmplitude
 public import LaterPairs.Native.IntervalAmplitudeBounds
 public import LaterPairs.Native.ReciprocalSecondDerivativeBounds
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                       
@@ -19,10 +17,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                              
 
 
-noncomputable section
+
 
 open Complex
-open RiemannZeta.GuthMaynard
+
 
 namespace TaoTrudgianYang2025
 
@@ -38,4 +36,4 @@ theorem norm_sum_mul_le_discrete_parts (w a : ℕ → ℂ) (N : ℕ) :
   rw [norm_mul]
   exact add_le_add le_rfl ((norm_sum_le _ _).trans_eq (by simp only [norm_mul]))
 
-end TaoTrudgianYang2025
+

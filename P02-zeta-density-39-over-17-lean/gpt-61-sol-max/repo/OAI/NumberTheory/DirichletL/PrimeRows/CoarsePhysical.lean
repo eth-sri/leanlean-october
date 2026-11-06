@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 variable {ι : Type*} [Fintype ι]
 
 theorem buffered_denominator_polynomial_growth (e : ℝ) (he : 0<e) (he' : e<1/1000)
@@ -162,8 +162,8 @@ theorem calibrated_physicalRow_first_joint_polynomial_growth
       exact mul_le_mul hl hrec (norm_nonneg _) hL
     _ = _ := by dsimp [N];ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

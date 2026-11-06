@@ -9,8 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic
+open scoped EisensteinO
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -51,8 +51,8 @@ theorem canonical_rank_height_constant (pool:Finset ι)(base:O→*ℂ)(slots:Fin
   · positivity
   · positivity
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

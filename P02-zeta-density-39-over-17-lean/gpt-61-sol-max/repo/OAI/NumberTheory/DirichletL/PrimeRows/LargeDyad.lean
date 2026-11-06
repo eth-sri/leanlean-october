@@ -5,12 +5,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+open scoped HeckeO
 
 theorem large_physical_dyad_bound (K : ℕ) (δ a b B r : ℝ)
     (hδ : 0<δ) (hδ' : δ≤1) (hr : (17/50:ℝ)≤r)
@@ -46,7 +46,7 @@ theorem large_physical_dyad_bound (K : ℕ) (δ a b B r : ℝ)
       ((∏i,(Z^(length i))^r)*((Z^(17/48:ℝ))^(1/2-r)*Z^(2+r-1)*(Z^(23/48:ℝ))^((2:ℝ)-1))) := by ring
     _ = _ := by rw [large_source_scale Z hZ0 length hl r];ring
 
-end SevenEighths.ProbeHighRowFamily
-end
 
-end OAI
+
+
+

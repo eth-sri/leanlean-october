@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalBlockBudget
 
@@ -13,18 +14,29 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondSourceBlocks InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
-def secondCellExponent (Z:ℝ) (d:BlockIndex) (i:Fin 4):ℝ:=Real.logb Z (scales d i)
+section
+variable (Z:ℝ) (d:BlockIndex) (i:Fin 4)
+include Z d i
 
-theorem secondCellExponent_nonneg (Z:ℝ) (d:BlockIndex) (i:Fin 4) (hZ:1<Z):
-    0≤secondCellExponent Z d i := by
+def secondCellExponent :ℝ:=Real.logb Z (scales d i)
+
+section
+variable (hZ:1<Z)
+include hZ
+
+theorem secondCellExponent_nonneg :
+    0≤ secondCellExponent Z d i := by
   apply Real.logb_nonneg hZ
   exact one_le_pow₀ (by norm_num : (1:ℝ)≤2)
 
-theorem second_cell_scale_rpow (Z:ℝ) (d:BlockIndex) (i:Fin 4) (hZ:1<Z):
+theorem second_cell_scale_rpow :
     Z^(secondCellExponent Z d i)=scales d i :=
   Real.rpow_logb (by linarith) (ne_of_gt hZ) (dyadScale_pos _)
+end
+end
+
 
 theorem second_cell_formal_column (Z r A B t:ℝ) (d:BlockIndex) (hZ:1<Z):
     secondCellColumnExponent Z (Z^(r-A-B-t)) d=
@@ -38,8 +50,12 @@ theorem second_cell_formal_column (Z r A B t:ℝ) (d:BlockIndex) (hZ:1<Z):
   unfold secondFormalColumn
   ring
 
-theorem actual_second_child_label_norm {ι:Type*} [DecidableEq ι]
-    (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+section
+variable {ι:Type*} [DecidableEq ι]
+    (p:ι→O)
+include ι p
+
+theorem actual_second_child_label_norm  [∀i,(Ideal.span {p i}).IsMaximal]
     {Jo Jn:ℕ} (x:MarkedSecondSource ι Jo Jn) (u v:Oˣ):
     (Ideal.absNorm (actualSecondChild p u v x).2.1:ℝ)=
       ‖eisEmbedding (jLabel p x.cube.support
@@ -47,18 +63,20 @@ theorem actual_second_child_label_norm {ι:Type*} [DecidableEq ι]
       primeProductNorm p x.firstCommon*primeProductNorm p x.second.divisor*
       primeProductNorm p x.second.overlap := by
   have hn(S:Finset ι):(Ideal.absNorm (sourceIdeal p S):ℝ)=primeProductNorm p S:=by
-    simpa only [sourceIdeal,primeProductNorm,map_prod] using
-      (eisEmbedding_norm_sq_eq_absNorm_span (∏i∈S,p i)).symm
+    exact (eisEmbedding_norm_sq_eq_absNorm_span (∏i∈S,p i)).symm
   change (Ideal.absNorm (Ideal.span {(jLabel p x.cube.support
       (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} *
       sourceIdeal p x.firstCommon * sourceIdeal p x.second.divisor * sourceIdeal p x.second.overlap):ℝ)=_
   simp only [map_mul,Nat.cast_mul,hn,←eisEmbedding_norm_sq_eq_absNorm_span]
 
-theorem actual_cell_child_label_bound {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+section
+variable (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
     (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex)
-    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ):
+    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ)
+include hp Jo Jn source hk d x hx u v
+
+theorem actual_cell_child_label_bound :
     (Ideal.absNorm (actualSecondChild p u v x).2.1:ℝ)≤
       4*‖eisEmbedding (jLabel p x.cube.support
         (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)‖^2*
@@ -80,11 +98,7 @@ theorem actual_cell_child_label_bound {ι:Type*} [DecidableEq ι]
       gcongr
     _ = _ := by ring
 
-theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
-    (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex)
-    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ)
+theorem actual_cell_child_label_power 
     (Z B j eta:ℝ) (hZ:1<Z) (hbin:2≤Z^eta)
     (hC:primeProductNorm p x.firstCommon≤Z^(B+eta))
     (hJ:‖eisEmbedding (jLabel p x.cube.support
@@ -100,8 +114,8 @@ theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
   calc
     _≤Z^(2*eta)*Z^(j+eta)*Z^(B+eta)*scales d 1*scales d 2:=by
       have hc0:0≤primeProductNorm p x.firstCommon:=(primeProductNorm_pos p hp _).le
-      have hs1:0≤scales d 1:=(dyadScale_pos _).le
-      have hs2:0≤scales d 2:=(dyadScale_pos _).le
+      have hs1:0≤ scales d 1:=(dyadScale_pos _).le
+      have hs2:0≤ scales d 2:=(dyadScale_pos _).le
       gcongr
     _= _:=by
       rw [←second_cell_scale_rpow Z d 1 hZ,←second_cell_scale_rpow Z d 2 hZ,
@@ -109,6 +123,9 @@ theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
       congr 1
       unfold secondFormalLabel
       ring
+end
+end
+
 
 theorem second_cell_clipping_width (Z X b eta:ℝ) (d:BlockIndex)
     (hZ:1<Z) (hX:0<X) (hb:1≤b)
@@ -117,8 +134,8 @@ theorem second_cell_clipping_width (Z X b eta:ℝ) (d:BlockIndex)
   exact (Real.rpow_le_rpow_left_iff hZ).mp
     ((second_cell_clipping_ratio Z X b d hZ hX hb hsource).2.trans hthreshold)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

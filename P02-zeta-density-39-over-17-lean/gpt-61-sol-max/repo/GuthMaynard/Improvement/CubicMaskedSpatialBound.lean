@@ -2,8 +2,7 @@ module
 public import GuthMaynard.Improvement.CubicMaskedTailBudget
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
@@ -75,4 +74,4 @@ theorem masked_spatial_near_tail_bound {a : ℝ → ℂ}
   rw [Finset.sum_add_distrib,mul_add]
   exact (norm_add_le _ _).trans (add_le_add hnear hfar)
 
-end GuthMaynard.Improvement
+

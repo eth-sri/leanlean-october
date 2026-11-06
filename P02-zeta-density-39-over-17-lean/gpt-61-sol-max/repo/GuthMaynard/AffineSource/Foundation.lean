@@ -4,7 +4,7 @@ public import Mathlib
 public import MathCollab.Density.DivisorGrowth
 
 @[expose] public section
-open Complex Finset Filter FourierTransform MeasureTheory Real Set
+open Complex Finset Filter FourierTransform MeasureTheory Real
 open scoped ContDiff FourierTransform Topology
 namespace RiemannZeta.GuthMaynard
 
@@ -42,8 +42,7 @@ theorem gmCubicLocalBump_one {x : ℝ} (hx : |x| ≤ 1) :
   rw [Metric.mem_closedBall, Real.dist_eq]
   rw [sub_zero, show dfiUnitRedundantBump.rIn = (1 / 2 : ℝ) by rfl]
   rw [abs_div]
-  norm_num
-  linarith
+  bound
 
 theorem gmCubicLocalBump_le_one (x : ℝ) : gmCubicLocalBump x ≤ 1 :=
   dfiUnitRedundantBump.le_one
@@ -57,8 +56,7 @@ theorem gmCubicLocalBump_eq_zero_of_two_le_abs
   simp only [sub_zero, show dfiUnitRedundantBump.rOut = (1 : ℝ) by rfl] at hsupp
   have habs : |x / 2| = |x| / 2 := by
     rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-  rw [habs] at hsupp
-  linarith
+  bound
 
 theorem norm_sum_sq_le_card_mul_sum_norm_sq {ι : Type*} [DecidableEq ι]
     (s : Finset ι) (a : ι → ℂ) :
@@ -79,4 +77,4 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
   obtain ⟨C,hC,h⟩ := MathCollab.Density.divisor_card_subpower hε
   exact ⟨C,by linarith,h⟩
 
-end RiemannZeta.GuthMaynard
+

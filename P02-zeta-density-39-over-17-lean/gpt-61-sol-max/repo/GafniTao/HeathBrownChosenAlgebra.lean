@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownRefinedScaleBound
 
 @[expose] public section
@@ -15,29 +16,46 @@ namespace GafniTao
 
 noncomputable section
 
-noncomputable def heathBrownChosenFirstConstant (k : ℕ) (A : ℝ) : ℝ :=
+section
+variable (k : ℕ)
+include k
+
+section
+variable (A : ℝ)
+include A
+
+def heathBrownChosenFirstConstant  : ℝ :=
   12 * ((k - 1).factorial : ℝ) * (2 : ℝ) ^ (k - 2) *
     A ^ (((k - 2 : ℕ) : ℝ) / k)
 
-noncomputable def heathBrownChosenSecondConstant (k : ℕ) (A : ℝ) : ℝ :=
+def heathBrownChosenSecondConstant  : ℝ :=
   4 * A * (k - 1 : ℕ) * (2 : ℝ) ^ (k - 1) *
     A ^ (((k - 1 : ℕ) : ℝ) / k)
 
-noncomputable def heathBrownChosenTotalConstant (k : ℕ) (A : ℝ) : ℝ :=
+def heathBrownChosenTotalConstant  : ℝ :=
   4 * heathBrownChosenFirstConstant k A +
     heathBrownChosenFirstConstant k A * heathBrownChosenSecondConstant k A
+end
+
+
+section
+variable {A : ℝ} (hA : 0 ≤ A)
+include A hA
 
 theorem heathBrownChosenFirstConstant_nonneg
-    (k : ℕ) {A : ℝ} (hA : 0 ≤ A) :
+     :
     0 ≤ heathBrownChosenFirstConstant k A := by
   unfold heathBrownChosenFirstConstant
   positivity
 
 theorem heathBrownChosenSecondConstant_nonneg
-    (k : ℕ) {A : ℝ} (hA : 0 ≤ A) :
+     :
     0 ≤ heathBrownChosenSecondConstant k A := by
   unfold heathBrownChosenSecondConstant
   positivity
+end
+end
+
 
 theorem heathBrownChosenFirstFactor_eq
     {k : ℕ} {A lambda : ℝ}
@@ -47,7 +65,6 @@ theorem heathBrownChosenFirstFactor_eq
           (A * lambda) ^ (((k - 2 : ℕ) : ℝ) / k)) =
       heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ))) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
   have heq : (-1 : ℝ) + ((k - 2 : ℕ) : ℝ) / k =
       -(2 / (k : ℝ)) := by
     rw [Nat.cast_sub (by omega : 2 ≤ k)]
@@ -74,15 +91,18 @@ theorem heathBrownChosenFirstFactor_eq
     _ = heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ))) := by rw [heq]
 
+section
+variable {k N : ℕ} {A lambda : ℝ}
+    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
+include k N A lambda hk hA hlambda
+
 theorem heathBrownChosenSecondFactor_eq
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+     :
     4 * A * (k - 1 : ℕ) * N *
         ((2 : ℝ) ^ (k - 1) *
           (A * lambda) ^ (((k - 1 : ℕ) : ℝ) / k)) =
       heathBrownChosenSecondConstant k A * N *
         lambda ^ (1 - 1 / (k : ℝ)) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
   have heq : ((k - 1 : ℕ) : ℝ) / k =
       1 - 1 / (k : ℝ) := by
     rw [Nat.cast_sub (by omega : 1 ≤ k)]
@@ -93,8 +113,7 @@ theorem heathBrownChosenSecondFactor_eq
   ring
 
 theorem heathBrownChosenShiftFactor_eq_source
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+     :
     heathBrownChosenShiftFactor N k A lambda =
       (heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ)))) *
@@ -105,8 +124,7 @@ theorem heathBrownChosenShiftFactor_eq_source
     heathBrownChosenSecondFactor_eq hk hA hlambda]
 
 theorem heathBrownChosenShiftFactor_le_source_sum
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
+    
     (hlambdaOne : lambda ≤ 1) :
     heathBrownChosenShiftFactor N k A lambda ≤
       heathBrownChosenTotalConstant k A *
@@ -121,8 +139,7 @@ theorem heathBrownChosenShiftFactor_le_source_sum
   have hL : 0 ≤ L := by dsimp only [L]; positivity
   have hexp : 0 ≤ 1 - 3 / (k : ℝ) := by
     have hkReal : (3 : ℝ) ≤ k := by exact_mod_cast hk
-    rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < k)]
-    exact hkReal
+    bound
   have hq : q ≤ 1 := by
     dsimp only [q]
     exact Real.rpow_le_one hlambda.le hlambdaOne hexp
@@ -144,17 +161,14 @@ theorem heathBrownChosenShiftFactor_le_source_sum
     rw [← hcombine]
     ring
   rw [hexpand]
-  have hterm₂a : C₁ * C₂ * (N : ℝ) * q ≤ C₁ * C₂ * N := by
-    have hcoeff : 0 ≤ C₁ * C₂ * (N : ℝ) := by positivity
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hq hcoeff
+  have hterm₂a : C₁ * C₂ * (N : ℝ) * q ≤ C₁ * C₂ * N := by bound
   have hcoeff₁ : 4 * C₁ ≤ heathBrownChosenTotalConstant k A := by
     change 4 * C₁ ≤ 4 * C₁ + C₁ * C₂
     nlinarith [mul_nonneg hC₁ hC₂]
   have hcoeff₂ : C₁ * C₂ ≤ heathBrownChosenTotalConstant k A := by
     change C₁ * C₂ ≤ 4 * C₁ + C₁ * C₂
     nlinarith
-  have hterm₁ : 4 * C₁ * L ≤
-      heathBrownChosenTotalConstant k A * L :=
+  have hterm₁ :=
     mul_le_mul_of_nonneg_right hcoeff₁ hL
   have hterm₂b : C₁ * C₂ * (N : ℝ) ≤
       heathBrownChosenTotalConstant k A * N := by
@@ -165,8 +179,10 @@ theorem heathBrownChosenShiftFactor_le_source_sum
           heathBrownChosenTotalConstant k A * N :=
       add_le_add hterm₁ (hterm₂a.trans hterm₂b)
     _ = heathBrownChosenTotalConstant k A * (L + N) := by ring
-
-
 end
 
-end GafniTao
+
+
+
+
+

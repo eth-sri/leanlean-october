@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Selected proof slices adapted from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
@@ -11,9 +12,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryMain
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
-noncomputable section
+open Complex
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exp_positive_saddle_mul_fresnel (f : ℝ) :
@@ -27,9 +27,7 @@ theorem exp_positive_saddle_mul_fresnel (f : ℝ) :
 theorem exp_negative_saddle_mul_fresnel (f : ℝ) :
     Complex.exp (((-f - Real.pi / 4 : ℝ) : ℂ) * I) *
       Complex.exp (((-Real.pi / 4 : ℝ) : ℂ) * I) = (-I) * Complex.exp ((-f : ℂ) * I) := by
-  have hquarter : Complex.exp (((-Real.pi / 2 : ℝ) : ℂ) * I) = -I := by
-    simpa only [Complex.ofReal_div, Complex.ofReal_neg, Complex.ofReal_ofNat] using
-      Complex.exp_neg_pi_div_two_mul_I
+  have hquarter : Complex.exp (((-Real.pi / 2 : ℝ) : ℂ) * I) = -I := by simp_all
   rw [← hquarter, ← Complex.exp_add, ← Complex.exp_add]
   congr 1
   push_cast
@@ -73,4 +71,4 @@ theorem atkinsonStationaryMain_neg_sqrt {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0)
             (Real.sqrt (2 * atkinsonSaddleCurvature T (-Real.sqrt n)) : ℂ) := by ring
     _ = _ := by rw [exp_negative_saddle_mul_fresnel]; ring
 
-end MathCollab.Density.Stronger.Atkinson
+

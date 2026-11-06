@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under the MIT-0 license. See third_party/twelfth/LICENSE-MIT-0.
@@ -11,10 +12,9 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -51,10 +51,7 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
       ring
     rw [heq]
     apply (norm_sub_le _ _).trans
-    have hc := hcrit (-t)
-    rw [abs_neg] at hc
-    dsimp [R]
-    linarith
+    grind
   have hpoly : ‖(s * (1 - s)) ^ 2‖ ≤ R ^ 4 := by
     rw [norm_pow, norm_mul]
     calc
@@ -99,9 +96,7 @@ theorem integrable_zetaSquareRightKernel (t : ℝ) : Integrable (zetaSquareRight
           show -(100*u^2) = -100*u^2 by ring]
         have hg : Real.exp (-100*u^2)*Real.exp (u^2) = Real.exp (-99*u^2) := by
           rw [← Real.exp_add]; congr 1; ring
-        calc
-          _ = (C*Real.exp 100*D)*(Real.exp (-100*u^2)*Real.exp (u^2)) := by ring
-          _ = _ := by rw [hg]
+        grind
   apply ((integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 99)).const_mul
     (C*Real.exp 100*D)).mono' (continuous_zetaSquareRightKernel t).aestronglyMeasurable
   exact Filter.Eventually.of_forall hpoint
@@ -134,13 +129,17 @@ def zetaSquareDivisorTerm (t : ℝ) (n : ℕ) (u : ℝ) : ℂ :=
   divisorDirichletTerm (afeCriticalPoint t + (1 + (u : ℂ) * I)) n *
     zetaSquareRightKernel t u
 
-theorem norm_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) (u : ℝ) :
+section
+variable (t : ℝ) (n : ℕ)
+include t n
+
+theorem norm_zetaSquareDivisorTerm  (u : ℝ) :
     ‖zetaSquareDivisorTerm t n u‖ =
       ‖divisorDirichletTerm (3 / 2) n‖ * ‖zetaSquareRightKernel t u‖ := by
   simp only [zetaSquareDivisorTerm, norm_mul, divisorDirichletTerm, LSeries.norm_term_eq]
   norm_num [afeCriticalPoint]
 
-theorem integrable_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) :
+theorem integrable_zetaSquareDivisorTerm  :
     Integrable (zetaSquareDivisorTerm t n) := by
   unfold zetaSquareDivisorTerm
   apply (integrable_zetaSquareRightKernel t).bdd_mul
@@ -150,11 +149,13 @@ theorem integrable_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) :
     simp only [divisorDirichletTerm, LSeries.norm_term_eq]
     norm_num [afeCriticalPoint]
 
-theorem integral_norm_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) :
+theorem integral_norm_zetaSquareDivisorTerm  :
     (∫ u : ℝ, ‖zetaSquareDivisorTerm t n u‖) =
       ‖divisorDirichletTerm (3 / 2) n‖ * ∫ u : ℝ, ‖zetaSquareRightKernel t u‖ := by
   simp_rw [norm_zetaSquareDivisorTerm]
   exact integral_const_mul _ _
+end
+
 
 theorem summable_integral_norm_zetaSquareDivisorTerm (t : ℝ) :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖zetaSquareDivisorTerm t n u‖) := by
@@ -180,6 +181,6 @@ theorem hasSum_zetaSquareDivisorContribution (t : ℝ) :
   change HasSum (fun n : ℕ => (1/(2*Real.pi) : ℂ)*∫ u : ℝ, zetaSquareDivisorTerm t n u)
     ((1/(2*Real.pi) : ℂ)*∫ u : ℝ,
       zetaSquareContourIntegrand t (((1 : ℝ) : ℂ)+(u : ℂ)*I))
-  simpa only [Complex.ofReal_one] using h.mul_left (1/(2*Real.pi) : ℂ)
+  exact h.mul_left (1/(2*Real.pi) : ℂ)
 
-end MathCollab.Density.Stronger.Fourth
+

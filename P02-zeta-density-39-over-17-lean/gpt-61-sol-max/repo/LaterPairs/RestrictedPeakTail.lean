@@ -1,10 +1,10 @@
 module
+import Mathlib
 public import GenericPeakWidth
 public import TaoTrudgianYang2025.AtkinsonPairNativePacket
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open Filter Finset
 open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace Montgomery.CriticalPeak
@@ -18,7 +18,7 @@ theorem restricted_peak_tail_of_count_log_cap {a g b η ε : ℝ} (m : ℕ)
         (∀ t ∈ W, H ≤ t ∧ t ≤ 2*H) →
         (∀ t ∈ W, V ≤ zetaMomentCriticalNorm t) →
         (W.card:ℝ) ≤ H^ε*(H/V^6+H^a/V^(2*g+2*b)) := by
-  let κ : ℝ := min η (1/1000)
+  let κ := min η (1/1000)
   have hκ : 0 < κ := lt_min hη (by norm_num)
   have hκη : κ ≤ η := min_le_left _ _
   have hκcap : κ ≤ 1/48 := (min_le_right _ _).trans (by norm_num)
@@ -41,16 +41,14 @@ theorem restricted_peak_tail_of_count_log_cap {a g b η ε : ℝ} (m : ℕ)
   · simp only [Finset.card_empty,Nat.cast_zero]
     positivity
   have hVgrowth : V ≤ H^(1/6+κ) :=
-    (hlarge t ht).trans (hg t (by
-      rw [abs_of_nonneg (by linarith [(hrange t ht).1] : 0 ≤ t)]
-      exact (hrange t ht).2)).le
+    (hlarge t ht).trans (hg t (by grind)).le
   have hVl : H^(1/8+κ) ≤ V :=
     (Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)).trans hVlower
   have hVsq := pow_le_pow_left₀ (by positivity : 0 ≤ H^(1/8+κ)) hVl 2
   have hVupper := pow_le_pow_left₀ hV.le hVgrowth 2
   have hc := hcount H V W hH hV (hl.trans hVsq) (hVupper.trans hu.2)
     hsep hrange hlarge
-  have hL1 : 1 ≤ Real.log (3*H) := hlog.2.1
+  have hL1 := hlog.2.1
   have hL0 : 0 ≤ Real.log (3*H) := by linarith
   have h4 : (Real.log (3*H))^4 ≤ (Real.log (3*H))^m :=
     pow_le_pow_right₀ hL1 hm
@@ -96,4 +94,4 @@ theorem ExponentPair.restricted_critical_peak_tail_general {k l η ε : ℝ}
     (a := 1+l/k) (g := (2*l-1)/k) (b := 2+2/k)
     (localMeanCount_of_pair_packet hk hpair.localMeanPacket_native) hη hε
   simpa only [hf] using hh
-end TaoTrudgianYang2025
+

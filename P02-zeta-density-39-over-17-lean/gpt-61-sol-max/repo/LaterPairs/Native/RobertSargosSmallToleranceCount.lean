@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosComplementaryAlgebra
 public import LaterPairs.Native.RobertSargosWideFrequencyBound
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                           
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_primitive_count_narrow_frequency (ε : ℝ) (hε : 0 < ε) :
@@ -70,17 +69,13 @@ theorem exists_robertSargos_primitive_count_small_tolerance (ε : ℝ) (hε : 0 
   · calc
       _ ≤ Cw*(R*H*Q)^(1+ε)*(1+δ*Q) :=
         hw S R H Q δ hR hH hQ hδ0 hRH hHQ hmem
-      _ ≤ (Cw+Cn)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by
-        rw [mul_assoc]
-        exact mul_le_mul_of_nonneg_right (by linarith only [hCn]) hnonneg
+      _ ≤ (Cw+Cn)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by nlinarith
       _ = _ := by ring
   · calc
       _ ≤ Cn*(R*H*Q)^(1+ε)*(1+δ*Q) :=
         hn S R H Q δ hR hH hQ hδ hQH hmem
-      _ ≤ (Cw+Cn)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by
-        rw [mul_assoc]
-        exact mul_le_mul_of_nonneg_right (by linarith only [hCw]) hnonneg
+      _ ≤ (Cw+Cn)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by nlinarith
       _ = _ := by ring
 
-end TaoTrudgianYang2025
+
 

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighAssemblyBounded
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighParameters
 public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
@@ -15,20 +16,19 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyPositiveHighSource (balancedInput)
 open CenteredMomentEnergyOriginalHighReflectionSymmetric (balanced_four_scale_gates)
-open CenteredMomentEnergyPositiveHighSourceBounded CenteredMomentEnergyOriginalHighReflectionSymmetricBounded
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+
+open CenteredMomentCommonRadialData
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+
+open CenteredMomentNaturalFixedRaySource
+open scoped HeckeO
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -37,6 +37,8 @@ open CenteredMomentEnergyPositiveHighAssembly (low_restrict)
 
 open CenteredMomentEnergyPositiveHighAssemblyBounded CenteredMomentEnergyPositiveHighParameters
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyNaturalInputMatches
+
+local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 
 theorem actual_high_from_physical
     (Wslot:ℝ→ ℂ)(aslot bslot lo hi:ℝ)
@@ -57,10 +59,10 @@ theorem actual_high_from_physical
       ∀(θ:α→ RayQuotient.Characters M H)(w σ freq:α→ ℝ)(t height:ℝ),
       (∀i,0≤w i)→ (∀i,w i≤Lslot)→ ∀hσlo:(∀i,lo≤σ i),∀hσhi:(∀i,σ i≤hi),
       0≤height→ (∀i,|freq i|≤height)→ 3/4≤κ→
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤s.width→ s.width≤Mcap→
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤ s.width→ s.width≤Mcap→
       ∀(p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂),
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i)→
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
       let inp:=balancedInput M H hH η₀ θ Wslot hcSlot aslot bslot lo hi haslot hsSlot
         w σ freq (fun i=>⟨hσlo i,hσhi i⟩) s p ha t X₁ X₂ hX₁ hX₂;
       ((Z^(s.width/4)≤ inp.X₁ ∧ Z^(s.width/4)≤ inp.X₂ ∧
@@ -78,16 +80,16 @@ theorem actual_high_from_physical
   refine ⟨L,hL,hLupper,Ψ,hsΨ,hnΨ,?_⟩
   intro degree S Jmass Smass
   obtain ⟨Ju,Jr,Uu,Ur,Cu,Cr,hCu,hCr,hbound⟩:=hstage degree S
-  let U:Finset (ℕ×ℕ):=insert (0,0) (Smass∪Uu∪Ur)
-  let Jout:ℕ:=Jmass+Ju+Jr
-  let P:ℝ:=(profileBound Wslot hcSlot aslot bslot lo hi haslot hsSlot)^(2*Fintype.card α)
-  let D:ℝ:=Cdiag*P*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
-  let T:ℝ:=Ctail*P*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
+  let U :=insert (0,0) (Smass∪Uu∪Ur)
+  let Jout :=Jmass+Ju+Jr
+  let P :=(profileBound Wslot hcSlot aslot bslot lo hi haslot hsSlot)^(2*Fintype.card α)
+  let D :=Cdiag*P*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
+  let T :=Ctail*P*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
   have hP:0≤P:=pow_nonneg (zero_le_one.trans
     (profileBound_ge_one Wslot hcSlot aslot bslot lo hi haslot hsSlot)) _
   have hD:0≤D:=by dsimp [D];positivity
   have hT:0≤T:=by dsimp [T];positivity
-  let Cfixed:ℝ:=Cu+2*Cr+2*D+2*T+2
+  let Cfixed :=Cu+2*Cr+2*D+2*T+2
   have hCfixed:0<Cfixed:=by dsimp [Cfixed];positivity
   refine ⟨Jout,U,Cfixed,hCfixed,?_⟩
   filter_upwards [hbound] with Z hZ
@@ -102,17 +104,17 @@ theorem actual_high_from_physical
   have hh:=hZ.2 e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi
     hheight hfreq hκ s hQ hwidthLo hwidth p X₁ X₂ hX₁ hX₂ hlarge hcap
   have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hscale:0≤s.radial.scale:=s.radial.scale_pos.le
+  have hscale:0≤ s.radial.scale:=s.radial.scale_pos.le
   have hdg:=diagonalControl_nonneg s.radial.profile
   have hbase:1≤1+|t|+height:=by linarith [abs_nonneg t]
-  let F:ℝ:=(p.control U)^2*(1+|t|+height)^Jout*Z^(s.width+efinal)
+  let F :=(p.control U)^2*(1+|t|+height)^Jout*Z^(s.width+efinal)
   have hF:0≤F:=by dsimp [F];positivity
   have henv (Sj:Finset (ℕ×ℕ))(jj:ℕ)(ej:ℝ)(hSj:Sj⊆U)(hjj:jj≤Jout)(hej:ej≤efinal):
       (p.control Sj)^2*(1+|t|+height)^jj*Z^(s.width+ej)≤F:=by
     have hp:=profile_control_mono p hSj
     have hp0:=p.control_nonneg Sj
     have hj:=pow_le_pow_right₀ hbase hjj
-    have hex:=Real.rpow_le_rpow_of_exponent_le hZ.1.le (show s.width+ej≤s.width+efinal by linarith)
+    have hex:=Real.rpow_le_rpow_of_exponent_le hZ.1.le (show s.width+ej≤ s.width+efinal by linarith)
     dsimp [F]
     gcongr
   have hu:Uu⊆U:=by intro x hx;simp only [U,Finset.mem_insert,Finset.mem_union];tauto
@@ -187,8 +189,8 @@ theorem actual_high_from_physical
     rw [hex]
     nlinarith only [hsum,href,hfinish]
 
-end SevenEighths.CenteredMomentEnergyPositiveHighBound
 
-end
 
-end OAI
+
+
+

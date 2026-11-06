@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open HeckeFamily
+open scoped HeckeO
 
 theorem cube_height_power_eventually (n : ℕ) (τ p loss : ℝ)
     (hτ : 0<τ) (hp : 0≤p) (hgap : τ*p<loss) :
@@ -31,8 +31,8 @@ theorem cube_height_power_eventually (n : ℕ) (τ p loss : ℝ)
     _ ≤ Z^(loss-τ*p)*Z^(τ*p) := mul_le_mul_of_nonneg_right hC (Real.rpow_nonneg hZp.le _)
     _ = Z^loss := by rw [←Real.rpow_add hZp];congr 1;ring
 
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

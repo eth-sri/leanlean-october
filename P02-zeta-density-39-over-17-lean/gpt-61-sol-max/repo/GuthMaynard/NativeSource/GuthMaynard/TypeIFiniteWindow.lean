@@ -1,11 +1,12 @@
 module
+import Mathlib
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteScaleAssembly
 public import GuthMaynard.NativeSource.GuthMaynard.TypeIFiniteEstimates
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteDensityEndpoint
 
 @[expose] public section
 
-open Finset Set
+open Finset
 
 namespace GuthMaynard.NativeMoment
 
@@ -63,8 +64,6 @@ theorem dirichletPoly_normalizedClassicalTypeICoeff
         dirichletPoly N (classicalZetaLongLineCoeff C σ) t := by
   unfold dirichletPoly normalizedClassicalTypeICoeff
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro n _
   ring
 
 /-- A large value of the actual sharp Type-I polynomial becomes a large
@@ -116,16 +115,7 @@ theorem actual_typeI_normalized_dichotomy_witness_mhh_native :
   intro C N σ δ T V W hσ hN hT hV hShift hSep hInterval hLarge
   have hBase : InBaseInterval (3 * T) W := by
     intro t ht
-    rw [Set.mem_Icc]
-    have htRange := hInterval t ht
-    constructor
-    · calc
-        (0 : ℝ) ≤ T / 2 := by linarith
-        _ ≤ T - T ^ δ := by linarith
-        _ ≤ t := htRange.1
-    · calc
-        t ≤ 2 * T + T ^ δ := htRange.2
-        _ ≤ 3 * T := by linarith
+    grind
   have hThreshold : 0 < (N : ℝ) ^ σ * V := by positivity
   exact hMHH N (3 * T) ((N : ℝ) ^ σ * V) W
     (normalizedClassicalTypeICoeff C N σ) hN (by linarith) hThreshold
@@ -173,9 +163,6 @@ theorem powered_actual_typeI_block_large_values_bound_bounded_uniform
               (n : ℂ) ^ (-(0 + Complex.I * t)) =
           dirichletPoly N (normalizedClassicalTypeICoeff C N σ) t := by
       unfold dirichletPoly dyadicInterval
-      apply Finset.sum_congr rfl
-      intro n _
-      congr 2
       ring
     rw [hEq]
     exact normalizedClassicalTypeICoeff_large C N σ t V hN (hLarge t ht)
@@ -188,4 +175,4 @@ theorem powered_actual_typeI_block_large_values_bound_bounded_uniform
   · simpa only [Real.rpow_zero, one_mul] using hLarge'
   · simpa only [Real.rpow_zero, one_mul] using hBound
 
-end GuthMaynard.NativeMoment
+

@@ -1,5 +1,7 @@
 module
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorPrimeFamily
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeNonprincipal
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorFamilyInclusion
 
 @[expose] public section
 
@@ -8,7 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorRelativePrime
-open HeckeFamily HeckeDetectorPrimeFamily
+open HeckeFamily
 
 theorem idealCoeff_ne_zero_of_coprime (ν : Character) (J : Ideal O)
     (hJ : J≠0) (hc : IsCoprime J ν.modulus) : idealCoeff ν J≠0 := by
@@ -31,8 +33,8 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-end SevenEighths.HeckeDetectorRelativePrime
 
-end
 
-end OAI
+
+
+

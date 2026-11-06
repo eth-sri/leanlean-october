@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -10,12 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.SourceErrorScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Topology
+open MathCollab.Density.Stronger
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 /-- One height threshold precedes every permitted positive Gaussian
@@ -47,7 +47,7 @@ theorem exists_zetaSquareGaussianMean_short_approximation {δ : ℝ} (hδ : 0 < 
       rw [← mul_sub, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       apply le_trans ?_ hd
-      simpa only [Complex.sub_re] using Complex.abs_re_le_norm
+      exact Complex.abs_re_le_norm
         (zetaFrozenDivisorQuadraticSum T G - zetaShortQuadraticDivisorSum T G (Real.log T))
     have htri₁ := abs_sub_le (zetaSquareGaussianMean T G)
       (zetaSquareGaussianWindow T G (Real.log T)) (2 * (zetaShortQuadraticDivisorSum T G (Real.log T)).re)
@@ -92,4 +92,4 @@ theorem exists_zetaSquareLocalMean_le_short_divisor {δ : ℝ} (hδ : 0 < δ) :
   intro T G hT hG hwidth
   exact hT₁ T ((le_max_right _ _).trans hT) G hG hwidth
 
-end MathCollab.Density.Stronger.Atkinson
+

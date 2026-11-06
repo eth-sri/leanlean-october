@@ -9,9 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -70,7 +70,7 @@ theorem primary_ideal_pair_tsum (f : O→O→ℂ)
   intro n hn
   simp only [hl n _ hn,tsum_zero]
 
-end SevenEighths.ProbeGramCommon
-end
 
-end OAI
+
+
+

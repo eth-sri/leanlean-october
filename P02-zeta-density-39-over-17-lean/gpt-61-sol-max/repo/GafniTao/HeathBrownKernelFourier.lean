@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.HeathBrownTriangularKernel
 public import GafniTao.FordTentSeries
 
@@ -16,7 +17,7 @@ kernel, rather than an independently chosen majorant.
 
 namespace GafniTao
 
-noncomputable section
+
 
 theorem heathBrownDistanceToInteger_eq_unitAddCircle_norm (x : ℝ) :
     heathBrownDistanceToInteger x = ‖(x : UnitAddCircle)‖ := by
@@ -27,12 +28,14 @@ theorem heathBrownHat_eq_fordTent (B x : ℝ) :
     heathBrownHat B x = fordTent x B := by
   unfold heathBrownHat fordTent
   rw [heathBrownDistanceToInteger_eq_unitAddCircle_norm]
-  simp only [div_eq_mul_inv]
-  rw [mul_comm B⁻¹ ‖(x : UnitAddCircle)‖]
-  rw [max_comm]
+  grind
+
+section
+variable {B : ℝ} (hB : 0 < B)
+include B hB
 
 theorem heathBrownHatFourierCoefficient_eq_fordTent
-    {B : ℝ} (hB : 0 < B) (r : ℤ) :
+     (r : ℤ) :
     (heathBrownHatFourierCoefficient B r : ℂ) =
       fordTentFourierCoefficient B r := by
   by_cases hr : r = 0
@@ -48,7 +51,7 @@ theorem heathBrownHatFourierCoefficient_eq_fordTent
 
 /-- The exact one-dimensional Fourier series of Heath-Brown's tent. -/
 theorem hasSum_heathBrownHatFourierSeries
-    {B : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2) (x : ℝ) :
+     (hBHalf : B ≤ 1 / 2) (x : ℝ) :
     HasSum
       (fun r : ℤ => (heathBrownHatFourierCoefficient B r : ℂ) *
         fordAdditiveCharacter ((r : ℝ) * x))
@@ -59,7 +62,7 @@ theorem hasSum_heathBrownHatFourierSeries
   · rw [heathBrownHat_eq_fordTent]
 
 theorem summable_norm_heathBrownHatFourierTerm
-    {B : ℝ} (hB : 0 < B) (x : ℝ) :
+     (x : ℝ) :
     Summable (fun r : ℤ =>
       ‖(heathBrownHatFourierCoefficient B r : ℂ) *
         fordAdditiveCharacter ((r : ℝ) * x)‖) := by
@@ -70,6 +73,8 @@ theorem summable_norm_heathBrownHatFourierTerm
   unfold fordAdditiveCharacter
   rw [Complex.norm_exp]
   simp
+end
+
 
 /-- The exact absolutely convergent two-dimensional Fourier expansion of
 Heath-Brown's kernel `phi(x,y)`. -/
@@ -82,15 +87,15 @@ theorem hasSum_heathBrownTriangularFourierSeries
           fordAdditiveCharacter ((rs.1 : ℝ) * x) *
           fordAdditiveCharacter ((rs.2 : ℝ) * y))
       (heathBrownTriangularKernel B C x y : ℂ) := by
-  let f : ℤ → ℂ := fun r =>
+  let f := fun r =>
     (heathBrownHatFourierCoefficient B r : ℂ) *
       fordAdditiveCharacter ((r : ℝ) * x)
-  let g : ℤ → ℂ := fun s =>
+  let g := fun s =>
     (heathBrownHatFourierCoefficient C s : ℂ) *
       fordAdditiveCharacter ((s : ℝ) * y)
-  have hf : HasSum f (heathBrownHat B x : ℂ) :=
+  have hf :=
     hasSum_heathBrownHatFourierSeries hB hBHalf x
-  have hg : HasSum g (heathBrownHat C y : ℂ) :=
+  have hg :=
     hasSum_heathBrownHatFourierSeries hC hCHalf y
   have habsF : Summable (fun r : ℤ => ‖f r‖) :=
     summable_norm_heathBrownHatFourierTerm hB x
@@ -108,6 +113,6 @@ theorem hasSum_heathBrownTriangularFourierSeries
     rfl
 
 
-end
 
-end GafniTao
+
+

@@ -11,7 +11,7 @@ open scoped Classical
 open Filter
 
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison
+open HeckeFamily ProbePhysical Parameters PrincipalSignalComparison
 
 def ChosenMomentInput:Prop:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
@@ -23,8 +23,8 @@ def ChosenMomentInput:Prop:=
 
 def FineMomentInput:Prop:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
-    ∃mesh:ℝ→ℝ,(∀t:ℝ,0<t→0<mesh t) ∧
-    ∀D:HighData (HeckeZeroSupremum.beta-7/8),(∀j,D.ell j≤mesh D.t/200)→
+    ∃mesh:ℝ→ℝ,(∀t:ℝ,0<t→0< mesh t) ∧
+    ∀D:HighData (HeckeZeroSupremum.beta-7/8),(∀j,D.ell j≤ mesh D.t/200)→
     ∀F:SourceData D,∀counts:CountParameters F.modulus ⊤ D.t,
     ∃J:ℝ,0≤J ∧ ∀η:Character,∃C:ℝ,0<C ∧
       ∀τ:ℝ,0<τ→τ≤1→∀ᶠZ:ℝ in atTop,
@@ -81,8 +81,8 @@ theorem zeta_of_chosen_moments (hmom : ChosenMomentInput) (s : ℂ) (hs : (7/8:�
     riemannZeta s≠0 :=
   HeckeCommonProbe.zeta_of_common_probe (common_probe_of_chosen_moments hmom) s hs
 
-end SevenEighths.ProbeFinalAssembly
 
-end
 
-end OAI
+
+
+

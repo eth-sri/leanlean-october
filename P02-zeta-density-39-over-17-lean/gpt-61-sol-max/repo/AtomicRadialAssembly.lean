@@ -1,24 +1,27 @@
 module
+import Mathlib
 public import AtomicRadialFubini
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement.AtomicCubic
 
-theorem spatialCubicMode_measurable {a : ℝ → ℂ} {F : ℝ → ℂ}
+section
+variable {a : ℝ → ℂ}
+include a
+
+theorem spatialCubicMode_measurable  {F : ℝ → ℂ}
     (ha : Measurable a) (hF : Continuous F) (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
     Measurable (fun x : Triple => spatialCubicMode a F L m x.1 x.2.1 x.2.2) := by
   have hp := phase_measurable
-  have hf := hF.measurable
   have hm : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
   unfold spatialCubicMode
   fun_prop
 
-theorem spatialCubicMode_support {a : ℝ → ℂ} {l u : ℝ}
+theorem spatialCubicMode_support  {l u : ℝ}
     (hs : ∀ x, x ∉ Icc l u → a x = 0) (F : ℝ → ℂ) (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
     Function.support (fun x : Triple => spatialCubicMode a F L m x.1 x.2.1 x.2.2) ⊆
       Icc l u ×ˢ (Icc l u ×ˢ Icc l u) := by
@@ -27,7 +30,7 @@ theorem spatialCubicMode_support {a : ℝ → ℂ} {l u : ℝ}
   have h : x.1 ∉ Icc l u ∨ x.2.1 ∉ Icc l u ∨ x.2.2 ∉ Icc l u := by simpa only [Set.mem_prod,not_and_or] using hn
   rcases h with h | h | h <;> exact hx (by simp [spatialCubicMode,hs _ h])
 
-theorem spatialCubicMode_integrable {a : ℝ → ℂ} {F : ℝ → ℂ}
+theorem spatialCubicMode_integrable  {F : ℝ → ℂ}
     (ha : Continuous a) {l u : ℝ} (hs : ∀ x, x ∉ Icc l u → a x = 0)
     (hF : Continuous F) {M : ℝ} (hM : 0 ≤ M) (hbF : ∀ ξ, ‖F ξ‖ ≤ M)
     (L : ℝ) (m : ℤ × (ℤ × ℤ)) :
@@ -46,7 +49,7 @@ theorem spatialCubicMode_integrable {a : ℝ → ℂ} {F : ℝ → ℂ}
     _ = _ := by ring
 
 /-- Actual coordinate reordering followed by the proved radial Fubini identity. -/
-theorem spatialCubicMode_integral_radial {a : ℝ → ℂ} {F : ℝ → ℂ}
+theorem spatialCubicMode_integral_radial  {F : ℝ → ℂ}
     (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
     (hs : ∀ x, x ∉ Icc l u → a x = 0)
     (hF : Continuous F) {M : ℝ} (hM : 0 ≤ M) (hbF : ∀ ξ, ‖F ξ‖ ≤ M)
@@ -71,6 +74,8 @@ theorem spatialCubicMode_integral_radial {a : ℝ → ℂ} {F : ℝ → ℂ}
     exact integral_prod _ hr
   rw [hh]
   exact spatialCubicMode_radial_fubini ha hl hlu hs hF hM hbF L m
+end
+
 
 /-- Complete retained finite cubic kernel, with all three actual Fourier
 factors, equals its finite sum of compact-ratio radial integrals. -/
@@ -125,4 +130,4 @@ theorem retained_cubic_radial_assembly (ν : Measure ℝ) [IsFiniteMeasure ν] {
     (fun hn => hx (spatialCubicMode_support hs (measureFourier ν) L (m₁,m₂,m₃) hn)))]
   exact spatialCubicMode_integral_radial ha hl hlu hs hF hM hbF L (m₁,m₂,m₃)
 
-end GuthMaynard.Improvement.AtomicCubic
+

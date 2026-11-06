@@ -22,7 +22,7 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
     (hM:0≤M)(hB:0≤Bcap)(hκ:0≤κ)(hε:0<ε)
     (k:ℕ)(ell epsSrc epsMask deltaSrc thetaSrc deltaAmp reserveAmp thetaSource thetaClip
       er primeLoss physicalLoss highReflection zeroReflection saving:ℝ)
-    (hell:ell≤stageLoss M Bcap ε k)
+    (hell:ell≤ stageLoss M Bcap ε k)
     (he0:0≤epsSrc)(he:epsSrc≤reserve M Bcap ε)
     (hemask:(Bcap+Bcap)*epsMask≤reserve M Bcap ε)
     (hdsrc:deltaSrc≤reserve M Bcap ε)(htsrc:thetaSrc≤reserve M Bcap ε)
@@ -32,7 +32,7 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
     (hcommon:epsSrc*Bcommon≤reserve M Bcap ε)
     (hprime:primeLoss≤reserve M Bcap ε)(hphysical:physicalLoss≤reserve M Bcap ε)
     (hhigh:highReflection≤reserve M Bcap ε)(hzero:zeroReflection≤reserve M Bcap ε)
-    (hsaving:2*amplification ε+deltaAmp+reserveAmp≤saving):
+    (hsaving:2*amplification ε+deltaAmp+reserveAmp≤ saving):
     ∀j:Fin 4,
       losses epsSrc deltaSrc thetaSrc Bcap j+
         lossVector (amplification ε) deltaAmp reserveAmp
@@ -73,8 +73,8 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
     linarith [hdiag.2]
   · linarith
 
-end SevenEighths.CenteredMomentEnergyFirstStageLossBudget
 
-end
 
-end OAI
+
+
+

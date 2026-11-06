@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch HeckeDetectorSupportedWitness ProbePhysical
-local notation "O" => HeckeFamily.O
+open scoped HeckeO
 
 def retainedProjection (R : Finset FreeRow) (u0 : FreeRow) (u : FreeRow) : FreeRow :=
   if u∈R then u else u0
@@ -37,8 +37,8 @@ def retainedSourceBatch {Slot : Type*}
       (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u)) U a ε tstar T allowance i)
     (hrow : ∀u∈R,rowNorm u≤U)
     (slots : Finset Slot) (profile : Slot→ℝ→ℂ) (upper widths : Slot→ℝ) (external : Slot→ℂ)
-    (mesh binWidth : ℝ) (hm : 0≤mesh) (hb : 0<binWidth)
-    (hwpos : ∀s∈slots,0<widths s) (hwmesh : ∀s∈slots,widths s≤mesh)
+    (mesh binWidth : ℝ) (hm : 0≤ mesh) (hb : 0<binWidth)
+    (hwpos : ∀s∈slots,0<widths s) (hwmesh : ∀s∈slots,widths s≤ mesh)
     (hsupply : 7/37≤∑s∈slots,widths s) :
     Batch M H (Sum Bool (RayQuotient.Characters M H)) Slot U a ε tstar T allowance i where
   rows := R
@@ -69,9 +69,9 @@ lemma physical_slot_widths {N : ℕ} (ell : Fin N→ℝ) (d dmin mesh : ℝ)
     (hdmin : 0<dmin) (hd : dmin≤d) (hdtop : d≤37/42)
     (hell : ∀j,0<ell j) (hsmall : ∀j,ell j≤dmin*mesh)
     (hsum : ∑j,ell j=1/6) :
-    (∀j,0<ell j/d) ∧ (∀j,ell j/d≤mesh) ∧ 7/37≤∑j,ell j/d := by
+    (∀j,0<ell j/d) ∧ (∀j,ell j/d≤ mesh) ∧ 7/37≤∑j,ell j/d := by
   have hd0 : 0<d := hdmin.trans_le hd
-  have hm : 0≤mesh := by
+  have hm : 0≤ mesh := by
     by_contra hn
     have hm : mesh<0 := lt_of_not_ge hn
     have hn : (∑j,ell j)≤0 := Finset.sum_nonpos fun j _=>
@@ -90,8 +90,8 @@ lemma physical_slot_scale {N : ℕ} (ell : Fin N→ℝ) (Z d : ℝ) (hZ : 0<Z) (
   rw [←Real.rpow_mul hZ.le]
   congr 1
   field_simp
-end SevenEighths.ProbeHighRowFamily
 
-end
 
-end OAI
+
+
+

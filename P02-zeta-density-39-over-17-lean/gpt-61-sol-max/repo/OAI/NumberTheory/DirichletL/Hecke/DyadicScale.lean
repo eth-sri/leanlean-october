@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedPointwise
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeDeletionBounds HeckeReciprocalGrowth HeckeLogarithmic
@@ -61,8 +61,8 @@ theorem reflected_scale_exponent (U a e ε m : ℝ) (hU : 0<U) :
   congr 1
   ring
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

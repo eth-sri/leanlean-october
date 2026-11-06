@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicMellin
 
 @[expose] public section
@@ -16,14 +17,18 @@ def integrand (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
   mellin W s * (D : ℂ)^(s+shift σ freq-(1/2 : ℂ)) *
     series χ inverse (s+shift σ freq)
 
-theorem series_norm_le (χ : Character) (inverse : Bool) {b : ℝ} (hb : 1<b)
-    {s : ℂ} (hs : b≤s.re) :
+section
+variable (χ : Character)
+include χ
+
+theorem series_norm_le  (inverse : Bool) {b : ℝ} (hb : 1<b)
+    {s : ℂ} (hs : b≤ s.re) :
     ‖series χ inverse s‖ ≤ HeckeReciprocalBound.bound b := by
   cases inverse
   · exact HeckeStripActual.LFunction_norm_le χ hb hs
   · exact HeckeReciprocalBound.reciprocal_norm_le χ hb hs
 
-theorem series_differentiableAt_right (χ : Character) (inverse : Bool) {s : ℂ}
+theorem series_differentiableAt_right  (inverse : Bool) {s : ℂ}
     (hs : 1<s.re) : DifferentiableAt ℂ (series χ inverse) s := by
   cases inverse
   · exact LFunction_differentiableAt χ
@@ -31,7 +36,7 @@ theorem series_differentiableAt_right (χ : Character) (inverse : Bool) {s : ℂ
   · exact HeckeReciprocal.reciprocal_differentiableAt χ
       (lt_of_le_of_lt HeckeZeroSupremum.beta_le_one hs)
 
-theorem series_differentiableAt_nonprincipal (χ : Character) (hχ : χ.residue≠1)
+theorem series_differentiableAt_nonprincipal  (hχ : χ.residue≠1)
     (inverse : Bool) {s : ℂ} (hz : inverse=true → LFunction χ s≠0) :
     DifferentiableAt ℂ (series χ inverse) s := by
   cases inverse
@@ -42,7 +47,11 @@ theorem series_differentiableAt_nonprincipal (χ : Character) (hχ : χ.residue�
     rw [he]
     exact (LFunction_entire_nonprincipal χ hχ s).inv (hz rfl)
 
-theorem integrand_differentiableAt (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
+section
+variable (inverse : Bool) (W : ℝ → ℂ)
+include inverse W
+
+theorem integrand_differentiableAt 
     (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (D σ freq : ℝ) (hD : 0<D) {s : ℂ}
     (hseries : DifferentiableAt ℂ (series χ inverse) (s+shift σ freq)) :
@@ -54,7 +63,7 @@ theorem integrand_differentiableAt (χ : Character) (inverse : Bool) (W : ℝ �
         (Or.inl (Complex.ofReal_ne_zero.mpr hD.ne'))
   · exact hseries.comp s (differentiableAt_id.add_const (shift σ freq))
 
-theorem integrand_norm (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
+theorem integrand_norm 
     (D σ freq : ℝ) (hD : 0<D) (s : ℂ) :
     ‖integrand χ inverse W D σ freq s‖ =
       ‖mellin W s‖*D^(s.re+σ-1/2)*‖series χ inverse (s+shift σ freq)‖ := by
@@ -62,7 +71,7 @@ theorem integrand_norm (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
   rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hD]
   simp
 
-theorem integrand_vertical_integrable (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
+theorem integrand_vertical_integrable 
     (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (D c σ freq : ℝ) (hD : 0<D) (hc : 1<c+σ) :
     Integrable (fun t : ℝ => integrand χ inverse W D σ freq ((c : ℂ)+t*I)) := by
@@ -78,17 +87,22 @@ theorem integrand_vertical_integrable (χ : Character) (inverse : Bool) (W : ℝ
   apply ae_of_all
   intro t
   rw [integrand_norm χ inverse W D σ freq hD]
-  simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, I_im, zero_mul,
-    sub_self, add_zero]
+  simp
   rw [← mul_assoc]
   apply mul_le_mul_of_nonneg_left
     (series_norm_le χ inverse hc (by simp))
   positivity
+end
 
-theorem finite_rectangle (χ : Character) (hχ : χ.residue≠1) (inverse : Bool)
+
+section
+variable (hχ : χ.residue≠1) (inverse : Bool)
     (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (D σ freq l r T : ℝ) (hD : 0<D)
+include hχ inverse W a b ha hWs hW D σ freq l r T hD
+
+theorem finite_rectangle 
     (hz : ∀ s ∈ (uIcc l r ×ℂ uIcc (-T) T), inverse=true →
       LFunction χ (s+shift σ freq)≠0) :
     (∫ t : ℝ in -T..T, integrand χ inverse W D σ freq ((r : ℂ)+t*I)) =
@@ -114,10 +128,7 @@ theorem finite_rectangle (χ : Character) (hχ : χ.residue≠1) (inverse : Bool
   simp only [I_sq] at hh
   linear_combination hh
 
-theorem polynomial_finite_shift (χ : Character) (hχ : χ.residue≠1) (inverse : Bool)
-    (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (D σ freq l r T : ℝ) (hD : 0<D) (hr : 1<r+σ) (hT : 0≤T)
+theorem polynomial_finite_shift  (hr : 1<r+σ) (hT : 0≤T)
     (hz : ∀ s ∈ (uIcc l r ×ℂ uIcc (-T) T), inverse=true →
       LFunction χ (s+shift σ freq)≠0) :
     polynomial χ inverse W D σ freq = (1/(2*Real.pi) : ℂ)*
@@ -131,9 +142,12 @@ theorem polynomial_finite_shift (χ : Character) (hχ : χ.residue≠1) (inverse
     (integrand_vertical_integrable χ inverse W a b ha hWs hW D r σ freq hD hr)]
   rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by linarith : -T≤T)]
   rw [finite_rectangle χ hχ inverse W a b ha hWs hW D σ freq l r T hD hz]
-
-end SevenEighths.HeckeDyadic
-
+end
 end
 
-end OAI
+
+
+
+
+
+

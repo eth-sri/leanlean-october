@@ -9,27 +9,29 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstSectorLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open ActualEisensteinCubic EisensteinSchwartzPoisson
 open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
+open CenteredMomentCanonicalFirst CenteredMomentFirstReduced
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
 open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 open CenteredMomentFirstLocalization
 
-def retainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+section
+variable (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ)
+include I J hI hJ W K X Z ξ
+
+def retainedPair  : ℂ :=
   ∑ E∈inactiveSubsets I J,canonicalRetainedTerm I J hI hJ E W K
     (firstNominalScale I J (∏ P∈E,P.val) K X) Z ξ
 
-def discardedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+def discardedPair  : ℂ :=
   ∑ E∈inactiveSubsets I J,canonicalDiscardedTerm I J hI hJ E W K
     (firstNominalScale I J (∏ P∈E,P.val) K X) Z ξ
 
-theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) (hK : 0<K) :
+theorem reducedFirstSum_sector_split  (hK : 0<K) :
     reducedFirstSum I J hI hJ W K=canonicalZeroPair I J hI hJ W K+
       retainedPair I J hI hJ W K X Z ξ+discardedPair I J hI hJ W K X Z ξ := by
   unfold reducedFirstSum canonicalZeroPair retainedPair discardedPair
@@ -68,22 +70,32 @@ theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Su
   simp_rw [heq]
   rw [hh]
   ring
+end
 
-def retainedEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+
+section
+variable (η : Character) (m A : O) (t : ℝ)
+include η m A t
+
+section
+variable (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ)
+include S c W K X Z ξ
+
+def retainedEnergy  : ℂ :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       retainedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K X Z ξ
 
-def discardedEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+def discardedEnergy  : ℂ :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       discardedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K X Z ξ
+end
 
-theorem finiteHeckeEnergy_sector_localized (η : Character) (m A : O) (t : ℝ)
+
+theorem finiteHeckeEnergy_sector_localized 
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:O)∣m)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ))
     (K X Z ξ : ℝ) (hK : 0<K) :
@@ -93,9 +105,11 @@ theorem finiteHeckeEnergy_sector_localized (η : Character) (m A : O) (t : ℝ)
   rw [finiteHeckeEnergy_reduced_poisson η m A t hmLam hm2 S c W K hK]
   simp_rw [reducedFirstSum_sector_split _ _ _ _ W K X Z ξ hK,mul_add,Finset.sum_add_distrib]
   rfl
-
-end SevenEighths.CenteredMomentFirstSectorLocalization
-
 end
 
-end OAI
+
+
+
+
+
+

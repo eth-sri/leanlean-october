@@ -5,13 +5,12 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairCorrelationNormalized
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                         
 
-noncomputable section
+
 
 open Expdb
 
@@ -56,7 +55,6 @@ theorem sum_sourceShiftCorrelation_le
     sourceShiftCorrelation_normalized_bound hkl hσ hε
   refine ⟨δ,hδ,P,hP,η₀,hη₀,hηhalf,C,hC,?_⟩
   intro F T N a L H hT hN hHN ha hb hF
-  have hNpos : 0 < N := by linarith
   have hM : 0 ≤ (T/N^2)^(k+ε)*N^(l+ε) := by positivity
   have hI : 0 ≤ N^2/T := by positivity
   calc
@@ -72,9 +70,6 @@ theorem sum_sourceShiftCorrelation_le
       rw [← Finset.mul_sum]
       congr 1
       rw [Finset.sum_add_distrib,Finset.mul_sum,Finset.mul_sum]
-      congr 1
-      apply Finset.sum_congr rfl
-      intro r hr
       ring
     _ ≤ C*((T/N^2)^(k+ε)*N^(l+ε)*((H : ℝ)*(H : ℝ)^(k+ε))+
         (N^2/T)*(1+Real.log H)) := by
@@ -85,4 +80,4 @@ theorem sum_sourceShiftCorrelation_le
         (mul_le_mul_of_nonneg_left (sum_shift_inv_le H) hI)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
+

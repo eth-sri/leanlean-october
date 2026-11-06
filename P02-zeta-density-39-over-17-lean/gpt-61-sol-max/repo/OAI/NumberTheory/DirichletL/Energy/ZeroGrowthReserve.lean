@@ -5,11 +5,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
+open CenteredMomentEnergyState CenteredMomentNaturalRowSource
 open CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
@@ -64,8 +64,8 @@ theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
       simpa only [mul_add] using add_le_add hreflect herr
     _=_:=by ring
 
-end SevenEighths.CenteredMomentEnergyZeroGrowthReserve
 
-end
 
-end OAI
+
+
+

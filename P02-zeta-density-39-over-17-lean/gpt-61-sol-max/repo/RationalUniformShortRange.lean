@@ -4,8 +4,7 @@ public import RationalMomentCover
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -41,4 +40,4 @@ theorem rational_card_le_height (A : Finset ℚ) (H : ℕ)
     rw [← positiveRatPair_ratio (hA r hr).1, ← positiveRatPair_ratio (hA s hs).1, h]
   simpa using card_le_card_of_injOn positiveRatPair hmaps hinj
 
-end Montgomery.RationalMoment
+

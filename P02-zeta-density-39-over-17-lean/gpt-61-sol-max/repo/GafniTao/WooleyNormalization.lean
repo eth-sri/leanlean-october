@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import GafniTao.WooleySourceSection8
 
 @[expose] public section
@@ -37,20 +38,19 @@ def wooleySourceNormalizedMixedMean {k : ℕ}
       wooleySourceNormalizationScale phi p B H s Delta gamma) ^
     wooleyNormalizationExponent k r
 
+section
+variable {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k)
+include k r hr hrk
+
 theorem wooleyNormalizationExponent_pos
-    {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
+     :
     0 < wooleyNormalizationExponent k r := by
   unfold wooleyNormalizationExponent
   have hk : 1 < k := lt_of_le_of_lt hr hrk
-  have hkr : 0 < k - r := Nat.sub_pos_of_lt hrk
-  have hnum : (0 : ℝ) < (k - 1 : ℕ) := by
-    exact_mod_cast Nat.sub_pos_of_lt hk
-  have hden : (0 : ℝ) < (r : ℝ) * (k - r : ℕ) := by
-    positivity
-  exact div_pos hnum hden
+  bound
 
 theorem wooleyNormalizationExponent_le_one
-    {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
+     :
     wooleyNormalizationExponent k r ≤ 1 := by
   unfold wooleyNormalizationExponent
   have hkr : 1 ≤ k - r := Nat.one_le_iff_ne_zero.mpr
@@ -63,13 +63,9 @@ theorem wooleyNormalizationExponent_le_one
     exact_mod_cast (Nat.add_sub_of_le hrk.le).symm
   have hprod := mul_nonneg (sub_nonneg.mpr hrR) (sub_nonneg.mpr hkrR)
   rw [Nat.cast_sub (show 1 ≤ k by omega)]
-  have hid :
-      (r : ℝ) * (k - r : ℕ) - ((k : ℝ) - 1) =
-        ((r : ℝ) - 1) * ((k - r : ℕ) - 1) := by
-    rw [hsplit]
-    ring
-  norm_num only [Nat.cast_one] at *
-  nlinarith [hprod]
+  grind
+end
+
 
 theorem wooleyNormalizationExponent_symm
     {k r : ℕ} (hrk : r ≤ k) :
@@ -83,13 +79,11 @@ theorem wooleyNormalizationExponent_one
     {k : ℕ} (hk : 2 ≤ k) :
     wooleyNormalizationExponent k 1 = 1 := by
   unfold wooleyNormalizationExponent
-  rw [Nat.cast_one, one_mul]
   have hk1 : 1 ≤ k := by omega
   rw [Nat.cast_sub hk1]
   norm_num
   have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  intro hzero
-  linarith
+  bound
 
 theorem wooleyNormalizationExponent_pred
     {k : ℕ} (hk : 2 ≤ k) :
@@ -109,11 +103,7 @@ theorem wooley_normalization_pred_exponent
     Nat.cast_add, Nat.cast_one]
   have hkR : (r : ℝ) < k := by exact_mod_cast hrk
   have hrR : (1 : ℝ) < r := by exact_mod_cast hr
-  have hkr0 : (k : ℝ) - r ≠ 0 := by linarith
-  have hkr10 : (k : ℝ) - r + 1 ≠ 0 := by linarith
-  have hr0 : (r : ℝ) ≠ 0 := by linarith
-  have hr10 : (r : ℝ) - 1 ≠ 0 := by linarith
-  field_simp [hkr0, hkr10, hr0, hr10]
+  grind
 
 /-- The complementary exponent in (8.3) is `1-1/(k-r+1)`. -/
 theorem wooley_section8_raw_complement
@@ -123,8 +113,12 @@ theorem wooley_section8_raw_complement
   symm
   exact wooley_section8_weight_complement hrk
 
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
+include k phi
+
 theorem wooleySourceNormalizationScale_nonneg
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (p B H s : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Delta : ℝ) (gamma : WooleySourceSequence) :
     0 ≤ wooleySourceNormalizationScale phi p B H s Delta gamma := by
@@ -141,7 +135,7 @@ theorem wooleySourceNormalizationScale_nonneg
             (Finset.sum_nonneg fun alpha halpha => pow_nonneg (norm_nonneg _) _)))
 
 theorem wooleySourcePolynomialConditionedMean_nonneg
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (s q qH : ℕ) [NeZero q] [NeZero qH]
     (gamma : WooleySourceSequence) :
     0 ≤ wooleySourcePolynomialConditionedMean s q qH phi gamma := by
@@ -155,7 +149,7 @@ theorem wooleySourcePolynomialConditionedMean_nonneg
         (Finset.sum_nonneg fun alpha halpha => pow_nonneg (norm_nonneg _) _))
 
 theorem wooleySourceNormalizedMixedMean_nonneg
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
+    
     (p B H s r a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Delta : ℝ) (gamma : WooleySourceSequence) :
     0 ≤ wooleySourceNormalizedMixedMean
@@ -165,6 +159,8 @@ theorem wooleySourceNormalizedMixedMean_nonneg
     (wooleySourcePolynomialMixedMean_nonneg
       phi s r p B a b nu gamma)
     (wooleySourceNormalizationScale_nonneg phi p B H s Delta gamma)) _
+end
+
 
 /-- Quotient-normalized two-factor interpolation.  This is the abstract
 algebra behind the passage from Lemma 8.1 to Lemma 8.2. -/
@@ -177,26 +173,16 @@ theorem wooley_normalized_two_factor
     (A / Z) ^ e ≤
       D ^ e * (X / Z) ^ (u * e) * (Y / Z) ^ (v * e) := by
   have hAZ : 0 ≤ A / Z := div_nonneg hA hZ.le
-  have hright : 0 ≤ D * (X ^ u * Y ^ v) / Z := by positivity
-  have hdiv : A / Z ≤ D * (X ^ u * Y ^ v) / Z :=
+  have hdiv :=
     div_le_div_of_nonneg_right hmain hZ.le
   have hpow := Real.rpow_le_rpow hAZ hdiv he
-  have hZne : Z ≠ 0 := ne_of_gt hZ
   have hrewrite :
       D * (X ^ u * Y ^ v) / Z =
         D * ((X / Z) ^ u * (Y / Z) ^ v) := by
     rw [Real.div_rpow hX hZ.le, Real.div_rpow hY hZ.le]
     have hzpow : Z ^ u * Z ^ v = Z := by
       rw [← Real.rpow_add hZ, huv, Real.rpow_one]
-    have hzInv : (Z ^ u)⁻¹ * (Z ^ v)⁻¹ = Z⁻¹ := by
-      rw [← mul_inv, hzpow]
-    simp only [div_eq_mul_inv]
-    calc
-      D * (X ^ u * Y ^ v) * Z⁻¹ =
-          D * (X ^ u * Y ^ v) * ((Z ^ u)⁻¹ * (Z ^ v)⁻¹) := by
-        rw [hzInv]
-      _ = D * (X ^ u * (Z ^ u)⁻¹ * (Y ^ v * (Z ^ v)⁻¹)) := by
-        ring
+    grind
   calc
     (A / Z) ^ e ≤ (D * (X ^ u * Y ^ v) / Z) ^ e := hpow
     _ = (D * ((X / Z) ^ u * (Y / Z) ^ v)) ^ e := by rw [hrewrite]
@@ -215,6 +201,6 @@ theorem wooley_normalized_two_factor
         Real.rpow_mul (div_nonneg hY hZ.le)]
 
 
-end
 
-end GafniTao
+
+

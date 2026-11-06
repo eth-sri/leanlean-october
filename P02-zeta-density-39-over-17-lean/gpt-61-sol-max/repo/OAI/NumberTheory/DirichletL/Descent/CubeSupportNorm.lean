@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
@@ -12,7 +13,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀ i,p i≠0)
 
 include hp in
@@ -27,8 +28,7 @@ theorem cube_whole_support_norm (b : CubeCoordinates ι) :
   have hn := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hne))
     (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp hd))
   have he : (Ideal.absNorm (sourceIdeal p b.support):ℝ)=primeProductNorm p b.support := by
-    simpa only [sourceIdeal,primeProductNorm,map_prod] using
-      (eisEmbedding_norm_sq_eq_absNorm_span (∏i∈b.support,p i)).symm
+    exact (eisEmbedding_norm_sq_eq_absNorm_span (∏i∈b.support,p i)).symm
   have hh : primeProductNorm p b.support≤
       ‖eisEmbedding (primeProduct p b.support (fun i=>b.leftExponent i+b.rightExponent i))‖^2 := by
     rw [eisEmbedding_norm_sq_eq_absNorm_span,←he]
@@ -42,8 +42,8 @@ theorem cube_whole_support_dyad (b : CubeCoordinates ι) (B : ℝ) (hB : 0≤B)
     primeProductNorm p b.support≤B^2 :=
   (cube_whole_support_norm p hp b).trans ((mul_le_mul hl hr (sq_nonneg _) hB).trans_eq (pow_two B).symm)
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

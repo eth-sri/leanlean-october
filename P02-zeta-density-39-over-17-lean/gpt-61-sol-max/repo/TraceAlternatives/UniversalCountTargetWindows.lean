@@ -3,7 +3,6 @@ public import TraceAlternatives.UniversalCountBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 
@@ -94,4 +93,4 @@ theorem universalLowMargin_row5 {σ x : ℝ} (hlo : 2018/2375 ≤ σ) (_hhi : σ
   unfold universalLowMargin
   nlinarith only [hBase,hMono]
 
-end Montgomery.RationalMoment
+

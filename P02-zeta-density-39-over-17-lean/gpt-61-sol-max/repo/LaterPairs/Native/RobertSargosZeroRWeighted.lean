@@ -6,13 +6,12 @@ public import LaterPairs.Native.RobertSargosZeroRBlock
 public import LaterPairs.Native.RobertSargosZeroRMajorant
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                   
 
-noncomputable section
+
 open Set
 open scoped ContDiff
 namespace TaoTrudgianYang2025
@@ -58,4 +57,4 @@ theorem robertSargos_zero_r_weighted_row_bound
         (by intro q _ _; dsimp [B]; positivity)
     _ ≤ _ := sum_robertSargos_zero_r_majorant M H Q hC hlam.le
 
-end TaoTrudgianYang2025
+

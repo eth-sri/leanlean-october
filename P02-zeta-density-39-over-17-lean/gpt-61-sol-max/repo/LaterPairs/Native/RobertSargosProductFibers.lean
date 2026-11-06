@@ -6,13 +6,12 @@ public import LaterPairs.Native.IntegerProductCount
 public import LaterPairs.Native.RobertSargosProductProjection
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
                                                                                             
 
-noncomputable section
+
 namespace TaoTrudgianYang2025
 
 theorem exists_robertSargos_product_fiber_bound (ε : ℝ) (hε : 0 < ε) :
@@ -55,9 +54,7 @@ theorem exists_robertSargos_product_fiber_bound (ε : ℝ) (hε : 0 < ε) :
       rw [← hprod p₀ hp₀]
       exact mul_ne_zero (ne_of_gt (hpos p₀ hp₀)) hqne
     have hM : (m.natAbs:ℝ) ≤ 4*H*Q := by
-      have hcast : (m.natAbs:ℝ) = |(m:ℝ)| := by
-        simpa only [Int.cast_natCast,Int.cast_abs] using
-          congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs m)
+      have hcast : (m.natAbs:ℝ) = |(m:ℝ)| := by norm_num
       have hh : (0:ℝ) < p₀.h₂ := by exact_mod_cast hpos p₀ hp₀
       rw [hcast,← hprod p₀ hp₀,Int.cast_mul,abs_mul,abs_of_pos hh]
       calc
@@ -82,4 +79,4 @@ theorem exists_robertSargos_product_fiber_bound (ε : ℝ) (hε : 0 < ε) :
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
+

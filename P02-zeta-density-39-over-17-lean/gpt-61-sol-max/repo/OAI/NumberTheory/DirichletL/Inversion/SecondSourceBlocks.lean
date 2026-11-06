@@ -1,6 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 
 @[expose] public section
 
@@ -10,9 +12,9 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondSourceBlocks
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment
-open InverseSecondFibers InversePrioritySecondSource
+
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 
 abbrev BlockIndex := Fin 4 → ℕ
@@ -56,14 +58,25 @@ theorem dyadIndex_bounds (r : ℝ) (hr : 1 ≤ r) :
       simpa only [Nat.cast_add,Nat.cast_one,dyadIndex] using h
     simpa only [dyadScale,pow_succ,mul_comm] using ht
 
-def index (p : ι → O) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : BlockIndex :=
+section
+variable (p : ι → O) {Jo Jn : ℕ}
+include p Jo Jn
+
+def index  (x : MarkedSecondSource ι Jo Jn) : BlockIndex :=
   fun i => dyadIndex (outerNorms p x i)
 
-def keys (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) : Finset BlockIndex :=
+section
+variable (source : Finset (MarkedSecondSource ι Jo Jn))
+include source
+
+def keys  : Finset BlockIndex :=
   source.image (index p)
 
-def cell (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
+def cell 
     (d : BlockIndex) : Finset (MarkedSecondSource ι Jo Jn) := source.filter (fun x => index p x = d)
+end
+end
+
 
 omit [DecidableEq ι] in
 @[simp] theorem mem_cell (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
@@ -161,14 +174,22 @@ theorem keys_card_le_product (p : ι → O) (hp : ∀ i,p i ≠ 0)
   have h := Finset.card_le_card (keys_subset_capBox p hp source hk A Z hcaps)
   simpa [capBox,Fintype.card_piFinset] using h
 
-def capConstant (A : Fin 4 → ℝ) : ℝ := (∑ i,A i)/Real.log 2
+section
+variable (A : Fin 4 → ℝ)
+include A
 
-theorem capConstant_nonneg (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) :
+def capConstant  : ℝ := (∑ i,A i)/Real.log 2
+
+section
+variable (hA : ∀ i,0 ≤ A i)
+include hA
+
+theorem capConstant_nonneg  :
     0 ≤ capConstant A := by
   unfold capConstant
   exact div_nonneg (Finset.sum_nonneg (fun i _ => hA i)) (Real.log_pos (by norm_num)).le
 
-theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ : 2 ≤ Z)
+theorem cap_bin_bound  (Z : ℝ) (hZ : 2 ≤ Z)
     (i : Fin 4) : (dyadIndex (Z^(A i)) : ℝ)+1 ≤ 1+capConstant A*Real.log Z := by
   have hZ0 : 0 < Z := by linarith
   have hZi : 1 ≤ Z^(A i) := Real.one_le_rpow (by linarith) (hA i)
@@ -183,6 +204,9 @@ theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ :
       rw [Real.logb_rpow_eq_mul_logb_of_pos hZ0,Real.logb]
       ring
     _ ≤ _ := by linarith
+end
+end
+
 
 omit [DecidableEq ι] in
 @[simp] theorem keys_empty (p : ι → O) (Jo Jn : ℕ) :
@@ -192,8 +216,8 @@ omit [DecidableEq ι] in
 @[simp] theorem cell_empty (p : ι → O) (Jo Jn : ℕ) (d : BlockIndex) :
     cell p (∅ : Finset (MarkedSecondSource ι Jo Jn)) d = ∅ := by simp [cell]
 
-end SevenEighths.InverseSecondSourceBlocks
 
-end
 
-end OAI
+
+
+

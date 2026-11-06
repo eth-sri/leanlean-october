@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseClippedUniform
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseClippedUniform
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
+open HeckeInverseAmplification InverseMoment
 open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseRawFourier
 
@@ -70,12 +71,12 @@ theorem raw_pair_uniform (J : ℕ) :
       twistProfile (logTest (HeckeDetectorCoefficientTransfer.orientedProfile reverse
         (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t := by
     funext x
-    simpa only [Bool.false_eq_true,ite_false] using inverseSourceSchwartz_apply false reverse n U tstar r σ t x
+    exact inverseSourceSchwartz_apply false reverse n U tstar r σ t x
   have hetrue : (inverseSourceSchwartz true reverse n U tstar r σ t:ℝ→ℂ)=
       scaleProfile (twistProfile (logTest (HeckeDetectorCoefficientTransfer.orientedProfile reverse
         (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t) := by
     funext x
-    simpa only [Bool.true_eq,ite_true] using inverseSourceSchwartz_apply true reverse n U tstar r σ t x
+    exact inverseSourceSchwartz_apply true reverse n U tstar r σ t x
   exact ⟨hefalse ▸ hb data c κ A hA href false reverse n hn U hU tstar r σ hσ t,
     hetrue ▸ hb data c κ A hA href true reverse n hn U hU tstar r σ hσ t⟩
 
@@ -99,8 +100,8 @@ theorem raw_pair_height_uniform (J : ℕ) :
   exact ⟨rawMoment_mono data _ c κ _ _ hbound hh.1,
     rawMoment_mono data _ c κ _ _ hbound hh.2⟩
 
-end SevenEighths.DetectorDictionaryInverseRawUniform
 
-end
 
-end OAI
+
+
+

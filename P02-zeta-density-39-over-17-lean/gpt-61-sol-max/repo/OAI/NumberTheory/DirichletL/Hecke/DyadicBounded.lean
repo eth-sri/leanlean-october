@@ -5,7 +5,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
@@ -56,8 +56,8 @@ theorem buffered_polynomial_bound (e ε : ℝ)
   dsimp only [K] at hbound
   convert hbound using 1 ; congr 2 <;> ring_nf
 
-end SevenEighths.HeckeDyadic
 
-end
 
-end OAI
+
+
+

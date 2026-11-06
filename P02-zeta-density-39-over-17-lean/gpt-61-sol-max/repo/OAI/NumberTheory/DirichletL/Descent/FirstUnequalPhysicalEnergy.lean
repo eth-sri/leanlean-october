@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation MeasureTheory
+
+open scoped EisensteinEis
 variable {ι κ : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -70,7 +70,7 @@ theorem actual_first_family_two_energies (hp : ∀ i,p i ≠ 0)
   rw [hn']
   exact mul_le_mul_of_nonneg_left hb (by have := firstRootScale_pos s hs; positivity)
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

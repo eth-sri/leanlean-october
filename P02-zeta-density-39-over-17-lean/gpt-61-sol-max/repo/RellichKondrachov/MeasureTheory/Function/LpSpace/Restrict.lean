@@ -46,7 +46,7 @@ variable {p : ℝ≥0∞} [Fact (1 ≤ p)]
 variable {s : Set α} (hs : MeasurableSet s)
 
 /-- Extend an Lp function from a restricted measure by zero outside the set. -/
-noncomputable def extendByZeroFun (f : Lp E p (μ.restrict s)) : Lp E p μ :=
+def extendByZeroFun (f : Lp E p (μ.restrict s)) : Lp E p μ :=
   let hf : MemLp (fun x : α => f x) p (μ.restrict s) := Lp.memLp f
   let hfi : MemLp (s.indicator fun x : α => f x) p μ :=
     (memLp_indicator_iff_restrict (μ := μ) (p := p) (s := s) (f := fun x : α => f x) hs).2 hf
@@ -59,7 +59,7 @@ private lemma extendByZeroFun_coe (f : Lp E p (μ.restrict s)) :
   exact MemLp.coeFn_toLp _
 
 /-- Extension-by-zero as a linear map `Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ`. -/
-noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ where
+def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ where
   toFun := extendByZeroFun (μ := μ) (p := p) (s := s) hs
   map_add' f g := by
     classical
@@ -166,7 +166,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
             simpa using hcx.symm
 
 /-- Extension-by-zero as a linear isometry. -/
-noncomputable def extendByZeroₗᵢ : Lp E p (μ.restrict s) →ₗᵢ[ℝ] Lp E p μ where
+def extendByZeroₗᵢ : Lp E p (μ.restrict s) →ₗᵢ[ℝ] Lp E p μ where
   toLinearMap := extendByZeroₗ (μ := μ) (p := p) (s := s) hs
   norm_map' f := by
     classical
@@ -197,8 +197,8 @@ lemma extendByZeroₗᵢ_ae_eq (f : Lp E p (μ.restrict s)) :
   simpa [extendByZeroₗᵢ, extendByZeroₗ] using
     (extendByZeroFun_coe (μ := μ) (p := p) (s := s) hs f)
 
-end
 
-end Lp
 
-end MeasureTheory
+
+
+

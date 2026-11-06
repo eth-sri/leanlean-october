@@ -9,8 +9,7 @@ public import MathCollab.Density.Stronger.NativePeaks
 @[expose] public section
 
 open Filter MeasureTheory Set
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger
 
 /-- The actual critical-line twelfth moment on every sufficiently high dyadic
@@ -30,4 +29,4 @@ theorem zeta_twelfth_physical_native :
   obtain ⟨D, hD, hdyadic⟩ := zeta_twelfth_dyadic_native ε hε
   exact zeta_twelfth_physical_of_dyadic hε hD.le hdyadic
 
-end MathCollab.Density.Stronger
+

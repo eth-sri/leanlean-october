@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDetectorRowCount
 
 theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
     (hC : 0≤C) (hU : 1≤U) (hδ : 0≤δ) (hδ' : δ≤5/6)
     (hx : 0≤x) (hx' : x≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8)
     (ht : 1≤t) (ht' : t≤3/2) (hν : 0≤ν) (hγ : 0≤γ)
-    (hleft : t-r-γ≤m) (hright : r≤t+γ)
+    (hleft : t-r-γ≤ m) (hright : r≤t+γ)
     (hI0 : B≤C*U^(max 1 ((1+5*r)/6)-δ*r+ε))
     (hP0 : B≤C*U^(1-2*δ*m+ε))
     (hI : 23/37≤r → r<1 → ν<(1-r)/2 → B≤C*U^(inverseExponent δ x r+ε))
@@ -21,8 +21,8 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
       B≤C*U^(1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ)+ε)) :
     B≤C*U^(max (shortExponent δ x t) (longExponent δ t)+Δ/4+ε+6*ν+5*γ) := by
   let target := max (shortExponent δ x t) (longExponent δ t)+Δ/4+ε+6*ν+5*γ
-  have hshort : shortExponent δ x t≤max (shortExponent δ x t) (longExponent δ t) := le_max_left _ _
-  have hlong : longExponent δ t≤max (shortExponent δ x t) (longExponent δ t) := le_max_right _ _
+  have hshort : shortExponent δ x t≤ max (shortExponent δ x t) (longExponent δ t) := le_max_left _ _
+  have hlong : longExponent δ t≤ max (shortExponent δ x t) (longExponent δ t) := le_max_right _ _
   have hbase := short_ge_base hδ hx hx' ht'
   have hcross := crossing_bounds hx hx' ht ht'
   have hchoose := selected_short_bound (t:=t) (r:=r) hδ hx hx'
@@ -51,7 +51,7 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
       dsimp [target]
       linarith
   have hrc' : r≤crossing x t := (lt_of_not_ge hrc).le
-  by_cases hm : 1/2≤m
+  by_cases hm : 1/2≤ m
   · apply promote _ hP0
     have hm' := mul_le_mul_of_nonneg_left hm hδ
     dsimp [target]
@@ -67,15 +67,15 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
     dsimp [target]
     linarith
   · apply promote _ (hP hrc' hm' (lt_of_not_ge hcap))
-    have hmm : 1/3-γ≤m := by linarith [hcross.2.2.1]
+    have hmm : 1/3-γ≤ m := by linarith [hcross.2.2.1]
     have hp := plain_capacity_comparison hδ (show δ≤1 by linarith) hx hx' hΔ hΔ'
       hmm hm'.le hγ hleft
     have hs := hchoose.1 hrc'
     dsimp [target]
     linarith
 
-end SevenEighths.HeckeDetectorRowCount
 
-end
 
-end OAI
+
+
+

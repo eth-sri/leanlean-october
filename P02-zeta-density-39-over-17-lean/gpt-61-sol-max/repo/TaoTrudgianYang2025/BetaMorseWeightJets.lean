@@ -13,13 +13,13 @@ odd coordinates are derivatives of the actual inverse. The finite product
 and chain calculus is proved against these functions before use in bounds.
 -/
 
-noncomputable section
 
-open Set Expdb Filter
+
+open Expdb Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem iteratedDeriv_modelPhaseMorseWeight_eq
     {χ F : ℝ → ℝ} {σ δ v z : ℝ}
@@ -32,4 +32,4 @@ theorem iteratedDeriv_modelPhaseMorseWeight_eq
   filter_upwards [(modelPhaseMorseRange_isOpen hσ hδ hF hv).mem_nhds hz] with x hx
   exact modelPhaseMorseWeight_eq hx
 
-end TaoTrudgianYang2025
+

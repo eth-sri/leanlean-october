@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Energy.FirstDeclaredCapacityLossBudget
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
@@ -49,14 +50,14 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
     0<es ∧ es≤1 ∧ 0<em ∧ 0<r/4 ∧ r/4≤amplification ε/4 ∧
     ∀ᶠ Z:ℝ in atTop,1<Z ∧
       0≤frequencyLoss Z 32 (r/4) ∧ frequencyLoss Z 32 (r/4)≤r/4 ∧
-      ∀(k:ℕ)(ell highReflection zeroReflection:ℝ),ell≤stageLoss M Bcap ε k→
+      ∀(k:ℕ)(ell highReflection zeroReflection:ℝ),ell≤ stageLoss M Bcap ε k→
         highReflection≤r→zeroReflection≤r→∀j:Fin 4,
         losses es (r/4) (r/4) Bcap j+
           lossVector (amplification ε) (frequencyLoss Z 32 (r/4)) (r/4)
             (sourcePaid Bcap em ell (r/4) (frequencyLoss Z 32 (r/4))
               (r/4) (r/4) (r/4) κ (mesh M Bcap κ ε))
             es A (2*amplification ε+1) j+
-          es*Bcommon+r/4+r/4+highReflection+zeroReflection≤stageLoss M Bcap ε (k+1):=by
+          es*Bcommon+r/4+r/4+highReflection+zeroReflection≤ stageLoss M Bcap ε (k+1):=by
   dsimp only
   let r:=reserve M Bcap ε
   let es:=r/(4*(Bcommon+A+1))
@@ -65,7 +66,6 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
     hM hA hB hBc hκ hε
   have hb:=bounds M Bcap κ ε hM hB hκ hε
   have hr:0<r:=hb.2.2.2.1
-  have hrs:r≤amplification ε/100:=min_le_left _ _
   refine ⟨hes,hes1,hem,by positivity,by linarith [hb.1],?_⟩
   filter_upwards [eventually_frequency_loss r hr] with Z hZ
   refine ⟨hZ.1,hZ.2.1,hZ.2.2,?_⟩
@@ -77,8 +77,8 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
   change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_ at hfixed ⊢
   linarith only [hfixed,hmono]
 
-end SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrincipalMajorants
 
 @[expose] public section
@@ -10,70 +11,70 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                          
+                          
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open NumberField
+                
+                
+                
+                
+                       
+                                     
+                    
+open Filter Asymptotics NumberField
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
+                          
+                        
 
 section
 
@@ -83,10 +84,14 @@ section
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
-def primePoolDensity (G : Ideal O) : ℂ :=
+section
+variable (G : Ideal O)
+include G
+
+def primePoolDensity  : ℂ :=
   ∏ P : primePool {G}, (1-(1:ℂ)/(Ideal.absNorm P.val:ℂ))
 
-theorem principalTruncation_scaled (G : Ideal O) (hG : Squarefree G)
+theorem principalTruncation_scaled  (hG : Squarefree G)
     (W : ℝ → ℂ) (c X Z : ℝ) :
     (c:ℂ)*principalTruncation (fun P : primePool {G} => P.val) Finset.univ W X Z =
       ((c*X:ℝ):ℂ)*paperRadialFourier W 0*primePoolDensity G -
@@ -118,6 +123,8 @@ theorem principalTruncation_scaled (G : Ideal O) (hG : Squarefree G)
   unfold primePoolDensity
   push_cast
   ring
+end
+
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -259,7 +266,7 @@ theorem unrestrictedDualPrincipal_error_uniform (l : ℕ) :
   intro m n _ _ _ _ ε hε B N M F T hB hN hM hF hT rows cols hr hc hrows hcols a W
   let E₀ := (supportConstant ε hε * (N * N) ^ ε) *
     (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) / T ^ l
-  let error : m → n → n → ℂ := fun i j k =>
+  let error := fun i j k =>
     (((M / (Real.sqrt ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) * F) : ℝ) : ℂ) *
       truncationError (fun P : primePool {cols j * cols k} => P.val) Finset.univ W
         (Real.sqrt (F * (Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ) /
@@ -412,8 +419,15 @@ lemma sum_ideal_subtype_dyadic {A : Type*} [AddCommMonoid A]
   rw [Finset.sum_coe_sort S f,sum_divisorDyadicBins S K f]
   exact Finset.sum_congr rfl (fun j _ => (Finset.sum_coe_sort (divisorDyadicBin S K j) f).symm)
 
-def retainedDualMajorant {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (l : ℕ)
+section
+variable {n : Type} [Fintype n]
+include n
+
+section
+variable (s : Finset (ℕ×ℕ)) (C : ℝ)
+include s C
+
+def retainedDualMajorant  (l : ℕ)
     {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
     (ε : ℝ) (hε : 0<ε) (B N M F T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ)) : ℝ :=
   ‖paperRadialFourier W 0‖*(4*smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F (1/2) a a) +
@@ -422,9 +436,12 @@ def retainedDualMajorant {n : Type} [Fintype n]
   16384*B*N*((2*M/(F*N))*((supportConstant ε hε*(N*N)^ε)*
     (C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/T^l))*∑ j, ‖a j‖^2
 
-lemma retainedDualMajorant_nonneg {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
+section
+variable (hC : 0≤C) (l : ℕ)
+    {α : ℝ} (hexp : HasSieveExponent α)
+include hC l α hexp
+
+lemma retainedDualMajorant_nonneg  (deltaLoss : ℝ) (hδ : 0<deltaLoss)
     (ε : ℝ) (hε : 0<ε) (B N M F T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
     (hB : 0≤B) (hN : 0≤N) (hM : 0≤M) (hF : 0≤F) (hT : 0≤T) :
     0≤retainedDualMajorant s C l hexp deltaLoss hδ ε hε B N M F T a W := by
@@ -435,9 +452,7 @@ lemma retainedDualMajorant_nonneg {n : Type} [Fintype n]
   unfold retainedDualMajorant
   positivity
 
-lemma retainedDualMajorant_mono {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
-    {α : ℝ} (hexp : HasSieveExponent α) (hα : 1/2≤α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
+lemma retainedDualMajorant_mono  (hα : 1/2≤α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
     (ε : ℝ) (hε : 0<ε) (B' B N M F T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
     (hB' : 0≤B') (hB : B'≤B) (hN : 0≤N) (hM : 0≤M) (hF : 0≤F) (hT : 0≤T) :
     retainedDualMajorant s C l hexp deltaLoss hδ ε hε B' N M F T a W ≤
@@ -451,8 +466,11 @@ lemma retainedDualMajorant_mono {n : Type} [Fintype n]
   have hW := dualMiddleDecayConstant_nonneg W
   unfold retainedDualMajorant smallPrincipalMajorant dualMiddleMajorant
   gcongr
+end
+end
 
-lemma retainedDualPrincipalDifference_dyadic {n : Type} [Fintype n] [DecidableEq n]
+
+lemma retainedDualPrincipalDifference_dyadic  [DecidableEq n]
     (W : 𝓢(ℝ,ℂ)) (S : Finset (Ideal O)) (K : ℝ) (cols : n → Ideal O) (a : n → ℂ) (M F : ℝ) :
     (6:ℂ)*retainedDualPrincipalSum W (fun I : S => I.val) cols a M F -
       paperRadialFourier W 0*unrestrictedPrincipalDensity (fun I : S => I.val) cols cols a a (M/F) =
@@ -466,6 +484,8 @@ lemma retainedDualPrincipalDifference_dyadic {n : Type} [Fintype n] [DecidableEq
       paperRadialFourier W 0*unrestrictedPrincipalDensity (fun _ : Unit => I) cols cols a a (M/F))
   simpa only [retainedDualPrincipalSum,unrestrictedPrincipalDensity,unrestrictedPairTerm,
     Finset.mul_sum,←Finset.sum_sub_distrib,Fintype.sum_unique] using h
+end
+
 
 theorem retained_dual_principal_global (l : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -531,9 +551,13 @@ end
 open scoped BigOperators Classical
 open ActualEisensteinCubic QuadraticSquarefreeKernel CompletedGauss
 
-def highSquareParts (M K : ℝ) : Finset (Ideal O) := (highKernelRange M K).image squarePart
+section
+variable (M K : ℝ)
+include M K
 
-theorem highSquareParts_bounds (M K : ℝ) (hK : 0 < K) (A : Ideal O)
+def highSquareParts  : Finset (Ideal O) := (highKernelRange M K).image squarePart
+
+theorem highSquareParts_bounds  (hK : 0 < K) (A : Ideal O)
     (hA : A ∈ highSquareParts M K) :
     Supported A ∧ 1 ≤ (Ideal.absNorm A : ℝ) ∧
     (Ideal.absNorm A : ℝ) ≤ Real.sqrt (M/K) ∧
@@ -559,7 +583,7 @@ theorem highSquareParts_bounds (M K : ℝ) (hK : 0 < K) (A : Ideal O)
   apply (le_div_iff₀ (by positivity : 0 < (Ideal.absNorm (squarePart I) : ℝ)^2)).mpr
   nlinarith
 
-theorem highSquarePart_fiber_row_bounds (M K : ℝ) (A I : Ideal O)
+theorem highSquarePart_fiber_row_bounds  (A I : Ideal O)
     (hI : I ∈ highKernelRange M K) (hA : squarePart I = A) :
     Admissible (squarefreePart I) ∧
       (Ideal.absNorm (squarefreePart I) : ℝ) ≤ M/(Ideal.absNorm A : ℝ)^2 := by
@@ -574,8 +598,10 @@ theorem highSquarePart_fiber_row_bounds (M K : ℝ) (A I : Ideal O)
     exact_mod_cast norm_decomposition I
   simpa only [mul_comm,he] using (mem_highKernelRange.mp hI).2.1
 
-def highSquarePartFiber (M K : ℝ) (A : Ideal O) : Finset (Ideal O) :=
+def highSquarePartFiber  (A : Ideal O) : Finset (Ideal O) :=
   (highKernelRange M K).filter (fun I => squarePart I = A)
+end
+
 
 theorem highSquarePartFiber_energy (M N K : ℝ) (A : Ideal O)
     (a : idealRange N → ℂ) :
@@ -583,7 +609,7 @@ theorem highSquarePartFiber_energy (M N K : ℝ) (A : Ideal O)
       ‖∑ J : idealRange N, quadraticRow J.val (primaryGenerator I) * a J‖^2) ≤
       sieveNorm (M/(Ideal.absNorm A : ℝ)^2) N * ∑ J, ‖a J‖^2 := by
   let S := highSquarePartFiber M K A
-  let b : idealRange N → ℂ := fun J => idealZeroMask J.val (primaryGenerator A) * a J
+  let b := fun J => idealZeroMask J.val (primaryGenerator A) * a J
   let B : Matrix S (idealRange N) ℂ := fun I J =>
     quadraticRow J.val (primaryGenerator (squarefreePart I.val))
   have hinj : Function.Injective (fun I : S => squarefreePart I.val) := by
@@ -650,8 +676,8 @@ theorem highKernelNorm_le_squarePart_sum (M N K : ℝ) :
       exact highSquarePartFiber_energy M N K A a
     _ = _ := (Finset.sum_mul _ _ _).symm
 
-end CanonicalQuadraticSieve
 
-end
 
-end OAI
+
+
+

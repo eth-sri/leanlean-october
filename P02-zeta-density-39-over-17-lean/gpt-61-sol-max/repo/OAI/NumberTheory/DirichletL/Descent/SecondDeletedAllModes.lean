@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedOriginalBound
 public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
 
@@ -8,36 +9,34 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open JointLogSeparation MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped EisensteinEis
 local instance inverseSecondDeletedAllModesUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def secondDeletedFullModeSum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
+section
+variable {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
     (ω₁ ω₂ : ℝ → ℂ) (G E V B X : ℝ) (w : MarkedSecondSource ι Jo 0 → ℂ)
-    (t : Frequency × (Fin 6 → ℝ)) : ℂ :=
+    (t : Frequency × (Fin 6 → ℝ))
+include Jo source sector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂ ω₁ ω₂ G E V B X w t
+
+def secondDeletedFullModeSum  : ℂ :=
   ∑ uv : Eisˣ × Eisˣ,∑ J₁∈slots₁.powerset,∑ J₂∈slots₂.powerset,
     ∑ x∈secondSourceSector source sector uv,
       actualSecondSignedWeight p hp hcop hg Ψ (m*ConcretePrimeRowBridge.idealGenerator x.quotient) z x * w x *
         secondModeBranch p hp hcop hg x uv.1 uv.2 pool Ψ m z slots₁ slots₂ J₁ J₂ (fun i=>lists₁ i\deleted₁ x) (fun i=>lists₂ i\deleted₂ x) a₁ a₂
           ω₁ ω₂ G E V B X t
 
-theorem secondDeletedFullModeSum_physical {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
-    (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
-    (ω₁ ω₂ : ℝ → ℂ) (G E V B X : ℝ) (w : MarkedSecondSource ι Jo 0 → ℂ)
-    (t : Frequency × (Fin 6 → ℝ)) :
+theorem secondDeletedFullModeSum_physical  :
     secondDeletedFullModeSum p hp hcop hg source sector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂
       ω₁ ω₂ G E V B X w t =
     ∑ uv : Eisˣ × Eisˣ,∑ x∈secondSourceSector source sector uv,
@@ -59,6 +58,8 @@ theorem secondDeletedFullModeSum_physical {Jo : ℕ} (source : Finset (MarkedSec
   apply Finset.sum_congr rfl
   intro x hx
   ring
+end
+
 
 theorem actual_second_deleted_all_modes_bound
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
@@ -126,8 +127,7 @@ theorem actual_second_deleted_all_modes_bound
       intro uv huv
       apply (norm_sum_le _ _).trans
       apply Finset.sum_le_sum
-      intro J₁ hJ₁
-      exact norm_sum_le _ _
+      bound
     _ ≤ ∑ _uv : Eisˣ × Eisˣ,∑ _J₁∈slots₁.powerset,∑ _J₂∈slots₂.powerset,A*mass := by
       apply Finset.sum_le_sum
       intro uv huv
@@ -139,7 +139,7 @@ theorem actual_second_deleted_all_modes_bound
         second_unit_sector_card,Nat.cast_pow,Nat.cast_ofNat,mass]
       ring
 
-end
-end SevenEighths.InverseMoment
 
-end OAI
+
+
+

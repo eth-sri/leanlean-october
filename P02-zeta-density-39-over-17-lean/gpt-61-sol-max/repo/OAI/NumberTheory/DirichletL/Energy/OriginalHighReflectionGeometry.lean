@@ -5,14 +5,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
+open CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 
 lemma original_long_positive (Z M X₁ X₂ ell κ:ℝ)(hZ:1<Z)(hM:0<M)
     (_hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hκ:3/4≤κ)
@@ -42,10 +42,10 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hZ:1<Z)(hM:0<s.width)(hB:0≤Bmask)(Mcap L X₁ X₂ ell z κ xi:ℝ)
     (hwidth:s.width≤Mcap)(hL:Mcap+Bmask+xi≤L)
     (hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hz:0≤z)(hze:z≤ell)
-    (hκ:3/4≤κ)(hxi:0≤xi)(hxiM:xi≤s.width/14)
-    (hshort:length Z X₁≤s.width/4)
+    (hκ:3/4≤κ)(hxi:0≤xi)(hxiM:xi≤ s.width/14)
+    (hshort:length Z X₁≤ s.width/4)
     (hlarge:5*s.width/6≤length Z X₁+length Z X₂+ell)
-    (hcap:length Z X₁+length Z X₂+6*κ*ell≤s.width)
+    (hcap:length Z X₁+length Z X₂+6*κ*ell≤ s.width)
     (D₁ D₂:Finset (Ideal O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
@@ -53,12 +53,12 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     let along:=Real.logb Z (X₂/((∏P∈D₂,P).absNorm:ℝ));
     Z^short=X₁/((∏P∈D₁,P).absNorm:ℝ) ∧
     Z^along=X₂/((∏P∈D₂,P).absNorm:ℝ) ∧
-    short≤s.width/4 ∧ short≤L ∧ along≤L ∧
+    short≤ s.width/4 ∧ short≤L ∧ along≤L ∧
     s.width≤(Mcap+Bmask)+along ∧ max 0 (s.width-along+xi)≤L ∧
     ((length Z (Z^short)+length Z (Z^along)+z≤5*s.width/6 ∧
-        length Z (Z^short)+length Z (Z^along)+6*κ*z≤s.width) ∨
+        length Z (Z^short)+length Z (Z^along)+6*κ*z≤ s.width) ∨
       (max 0 (s.width-along+xi)+length Z (Z^short)+z≤5*s.width/6 ∧
-        max 0 (s.width-along+xi)+length Z (Z^short)+6*κ*z≤s.width)):=by
+        max 0 (s.width-along+xi)+length Z (Z^short)+6*κ*z≤ s.width)):=by
   dsimp only
   have hZ0:=zero_lt_one.trans hZ
   obtain ⟨hn₁,hc₁⟩:=divisor_norm s D₁ hD₁
@@ -102,8 +102,8 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       (by rw [←length_eq_max_log Z _ hZ hp₂];exact lt_of_not_ge hd) le_rfl
     exact Or.inr (reflected_low_admissible s.width xi _ _ z κ hxiM hlow.2.1 hlow.2.2)
 
-end SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
 
-end
 
-end OAI
+
+
+

@@ -11,13 +11,13 @@ The anchor may move. Its original finite jet bounds and a bound on the
 observation distance give uniform polynomial and derivative estimates.
 -/
 
-noncomputable section
 
-open Set
+
+
 open scoped BigOperators ContDiff
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
 theorem abs_finiteTaylorPolynomial_le
     {f : ℝ → ℝ} {a x D M : ℝ} (Q : ℕ)
@@ -64,4 +64,4 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_le
     rw [iteratedDeriv_real_comp_order]
     exact hb (j+n) (by omega)
 
-end TaoTrudgianYang2025
+

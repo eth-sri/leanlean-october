@@ -7,10 +7,10 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalQuadraticSieve IdealMobiusDivisorSum DivisorBlockCauchy
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+open scoped EisensteinO
 
 lemma descendedCoefficient_norm_le {n : Type*} (D : Ideal O) (cols : n → Ideal O)
     (hc : ∀ j, Admissible (cols j)) (a : n → ℂ) (d : O) (j : n) :
@@ -60,7 +60,7 @@ theorem descended_energy_small_power {n : Type*} [Fintype n]
       (divisor_mask_energy_small_power ε hε _ cols hc0 N hN a) hB
     _ = _ := by dsimp [B]; ring
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

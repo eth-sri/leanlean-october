@@ -4,8 +4,7 @@ public import TraceAlternatives.UniversalCenteredTrace
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -64,4 +63,4 @@ theorem finite_quadratic_large_value_universal (w : MathCollab.Density.Compariso
     _ = _ := by rw [← he]; ring
 
 
-end Montgomery.RationalMoment
+

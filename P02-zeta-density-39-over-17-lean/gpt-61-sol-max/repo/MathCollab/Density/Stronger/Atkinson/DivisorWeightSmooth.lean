@@ -1,4 +1,5 @@
 module
+import Mathlib
 /-
 Copyright (c) 2026 S. McColm. All rights reserved.
 Released under MIT-0; see repository-root third_party/twelfth/LICENSE-MIT-0.
@@ -12,12 +13,11 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
+
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -42,10 +42,7 @@ theorem norm_zetaDivisorWeightNumerator_local_le (q₀ : ℂ) {q : ℂ}
     exact (Complex.abs_re_le_norm (q - q₀)).trans_lt hdist
   have him : |q.im - q₀.im| < 1 := by
     exact (Complex.abs_im_le_norm (q - q₀)).trans_lt hdist
-  have hqim : |q.im| ≤ |q₀.im| + 1 := by
-    have h := abs_add_le (q.im - q₀.im) q₀.im
-    simp only [sub_add_cancel] at h
-    linarith
+  have hqim : |q.im| ≤ |q₀.im| + 1 := by grind
   apply (norm_zetaDivisorWeightNumerator_right_le (by positivity) hqim u).trans
   have henv : 0 ≤ zetaDivisorWeightEnvelope u := by unfold zetaDivisorWeightEnvelope; positivity
   gcongr
@@ -86,4 +83,4 @@ theorem contDiff_zetaDivisorWeight_complex : ContDiff ℂ ∞ zetaDivisorWeight 
 theorem contDiff_zetaDivisorWeight : ContDiff ℝ ∞ zetaDivisorWeight :=
   contDiff_zetaDivisorWeight_complex.restrict_scalars ℝ
 
-end MathCollab.Density.Stronger.Atkinson
+

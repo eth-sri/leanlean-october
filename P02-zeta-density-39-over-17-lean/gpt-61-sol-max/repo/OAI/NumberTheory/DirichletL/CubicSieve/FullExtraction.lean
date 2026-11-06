@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.CubicSieve.Elements
 
 @[expose] public section
@@ -7,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def firstImage (R : Finset O) : Finset (Ideal O) :=
   R.image (fun z => goodPart (firstPart (Ideal.span {z})))
@@ -41,10 +42,10 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
   let T := D × secondImage R × firstImage R
   let reconstruct : T → O := fun p => primaryGenerator p.2.2.val *
     primaryGenerator p.2.1.val ^ 2 * sourceFactor R p.1
-  let E : O → ℝ := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2
+  let E := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2
   have hcover : R ⊆ Finset.univ.image reconstruct := by
     intro z hz
-    let I : Ideal O := Ideal.span {z}
+    let I := Ideal.span {z}
     obtain ⟨u, hu⟩ := element_cubic_extraction z (hR z hz)
     obtain ⟨e, he⟩ := badPart_sector (firstPart I)
     obtain ⟨f, hf⟩ := badPart_sector (secondPart I)
@@ -59,8 +60,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
     rw [hu]
     change _ = u.val * extractedGenerator I
     unfold extractedGenerator
-    rw [he, hf]
-    ring
+    grind
   have hsum : (∑ z ∈ R, E z) ≤ ∑ p : T, E (reconstruct p) := by
     calc
       _ ≤ ∑ z ∈ Finset.univ.image reconstruct, E z :=
@@ -86,7 +86,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
   convert hb using 1
   simp only [hcard, Nat.cast_mul, Nat.cast_ofNat, Fintype.card_coe]
 
-end
-end SevenEighths.CubicSieve
 
-end OAI
+
+
+

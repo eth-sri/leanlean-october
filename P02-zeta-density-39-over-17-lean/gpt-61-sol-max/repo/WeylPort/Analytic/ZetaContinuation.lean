@@ -81,13 +81,21 @@ lemma ZetaSum_aux1₁ {a b : ℕ} {s : ℂ} (s_ne_one : s ≠ 1) (ha : a ∈ Ioo
   · right; refine ⟨(by grind), ?_⟩
     exact fun hx ↦ (lt_self_iff_false 0).mp <| xpos_of_uIcc ha hx
 
-lemma ZetaSum_aux1φDiff {s : ℂ} {x : ℝ} (xpos : 0 < x) :
+section
+variable {s : ℂ}
+include s
+
+lemma ZetaSum_aux1φDiff  {x : ℝ} (xpos : 0 < x) :
     HasDerivAt (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) (deriv (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) x) x := by
   exact hasDerivAt_deriv_iff.mpr <|
     DifferentiableAt.div (differentiableAt_const _)
       (Real.differentiableAt_cpow_const_of_ne s xpos) (by simp [cpow_eq_zero_iff, xpos.ne'])
 
-lemma ZetaSum_aux1φderiv {s : ℂ} (s_ne_zero : s ≠ 0) {x : ℝ} (xpos : 0 < x) :
+section
+variable (s_ne_zero : s ≠ 0)
+include s_ne_zero
+
+lemma ZetaSum_aux1φderiv  {x : ℝ} (xpos : 0 < x) :
     deriv (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) x = (fun (x : ℝ) ↦ -s * (x : ℂ) ^ (-(s + 1))) x := by
   let r := -s - 1
   have r_add1_ne_zero : r + 1 ≠ 0 := fun hr ↦ by simp [neg_ne_zero.mpr s_ne_zero, r] at hr
@@ -105,12 +113,15 @@ lemma ZetaSum_aux1φderiv {s : ℂ} (s_ne_zero : s ≠ 0) {x : ℝ} (xpos : 0 < 
   · simp only [r]
     ring_nf
 
-lemma ZetaSum_aux1derivφCont {s : ℂ} (s_ne_zero : s ≠ 0) {a b : ℕ} (ha : a ∈ Ioo 0 b) :
+lemma ZetaSum_aux1derivφCont  {a b : ℕ} (ha : a ∈ Ioo 0 b) :
     ContinuousOn (deriv (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s)) [[a, b]] := by
   have : EqOn _ (fun (t : ℝ) ↦ -s * (t : ℂ) ^ (-(s + 1))) [[a, b]] :=
     fun x hx ↦ ZetaSum_aux1φderiv s_ne_zero <| xpos_of_uIcc ha hx
   refine continuous_ofReal.continuousOn.cpow_const ?_ |>.const_smul (c := -s) |>.congr this
   exact fun x hx ↦ ofReal_mem_slitPlane.mpr <| xpos_of_uIcc ha hx
+end
+end
+
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -136,11 +147,17 @@ lemma ZetaSum_aux1 {a b : ℕ} {s : ℂ} (s_ne_one : s ≠ 1) (s_ne_zero : s ≠
     simp only [φ, one_div] at φderiv
     intro x hx; simp_rw [φderiv x hx, φ']; ring_nf
 
-lemma ZetaSum_aux1_1' {a b x : ℝ} (apos : 0 < a) (hx : x ∈ Icc a b) : 0 < x :=
+section
+variable {a b x : ℝ} (apos : 0 < a)
+include a b x apos
+
+lemma ZetaSum_aux1_1'  (hx : x ∈ Icc a b) : 0 < x :=
   lt_of_lt_of_le apos hx.1
 
-lemma ZetaSum_aux1_1 {a b x : ℝ} (apos : 0 < a) (a_lt_b : a < b) (hx : x ∈ [[a, b]]) : 0 < x :=
+lemma ZetaSum_aux1_1  (a_lt_b : a < b) (hx : x ∈ [[a, b]]) : 0 < x :=
   lt_of_lt_of_le apos (uIcc_of_le a_lt_b.le ▸ hx).1
+end
+
 
 lemma ZetaSum_aux1_2 {a b : ℝ} {c : ℝ} (apos : 0 < a) (a_lt_b : a < b)
     (h : c ≠ 0 ∧ 0 ∉ [[a, b]]) :
@@ -163,23 +180,29 @@ lemma ZetaSum_aux1_4' (x : ℝ) (hx : 0 < x) (s : ℂ) :
   simp_rw [norm_div, Complex.norm_cpow_eq_rpow_re_of_pos hx, ← norm_real]
   simp
 
-lemma ZetaSum_aux1_4 {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} :
+section
+variable {a b : ℝ} (apos : 0 < a)
+include a b apos
+
+lemma ZetaSum_aux1_4  (a_lt_b : a < b) {s : ℂ} :
   ∫ (x : ℝ) in a..b, ‖(↑⌊x⌋ + (1 : ℝ) / 2 - ↑x) / (x : ℂ) ^ (s + 1)‖ =
     ∫ (x : ℝ) in a..b, |⌊x⌋ + 1 / 2 - x| / x ^ (s + 1).re := by
   apply intervalIntegral.integral_congr
   exact fun x hx ↦ ZetaSum_aux1_4' x (ZetaSum_aux1_1 apos a_lt_b hx) s
 
-lemma ZetaSum_aux1_5a {a b : ℝ} (apos : 0 < a) {s : ℂ} (x : ℝ)
+lemma ZetaSum_aux1_5a  {s : ℂ} (x : ℝ)
   (h : x ∈ Icc a b) : |↑⌊x⌋ + 1 / 2 - x| / x ^ (s.re + 1) ≤ 1 / x ^ (s.re + 1) := by
   apply div_le_div_of_nonneg_right _ _
   · exact le_trans (ZetaSum_aux1_3 x) (by norm_num)
   · apply Real.rpow_nonneg <| le_of_lt (ZetaSum_aux1_1' apos h)
 
-lemma ZetaSum_aux1_5b {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos : 0 < s.re) :
+lemma ZetaSum_aux1_5b  (a_lt_b : a < b) {s : ℂ} (σpos : 0 < s.re) :
   IntervalIntegrable (fun u ↦ 1 / u ^ (s.re + 1)) MeasureTheory.volume a b := by
   refine continuousOn_const.div ?_ ?_ |>.intervalIntegrable_of_Icc (le_of_lt a_lt_b)
   · exact continuousOn_id.rpow_const fun x hx ↦ Or.inl (ne_of_gt <| ZetaSum_aux1_1' apos hx)
   · exact fun x hx h ↦ by rw [Real.rpow_eq_zero] at h <;> linarith [ZetaSum_aux1_1' apos hx]
+end
+
 
 open MeasureTheory in
 lemma measurable_floor_add_half_sub : Measurable fun (u : ℝ) ↦ ↑⌊u⌋ + 1 / 2 - u := by
@@ -187,7 +210,11 @@ lemma measurable_floor_add_half_sub : Measurable fun (u : ℝ) ↦ ↑⌊u⌋ + 
   exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
 
 open MeasureTheory in
-lemma ZetaSum_aux1_5c {a b : ℝ} {s : ℂ} :
+section
+variable {a b : ℝ}
+include a b
+
+lemma ZetaSum_aux1_5c  {s : ℂ} :
     let g : ℝ → ℝ := fun u ↦ |↑⌊u⌋ + 1 / 2 - u| / u ^ (s.re + 1);
     AEStronglyMeasurable g
       (Measure.restrict volume (Ι a b)) := by
@@ -195,17 +222,21 @@ lemma ZetaSum_aux1_5c {a b : ℝ} {s : ℂ} :
   refine (Measurable.div ?_ <| measurable_id.pow_const _).aestronglyMeasurable
   exact _root_.continuous_abs.measurable.comp measurable_floor_add_half_sub
 
-lemma ZetaSum_aux1_5d {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos : 0 < s.re) :
+section
+variable (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos : 0 < s.re)
+include apos a_lt_b s σpos
+
+lemma ZetaSum_aux1_5d  :
   IntervalIntegrable (fun u ↦ |↑⌊u⌋ + 1 / 2 - u| / u ^ (s.re + 1)) MeasureTheory.volume a b := by
   set g : ℝ → ℝ := (fun u ↦ |↑⌊u⌋ + 1 / 2 - u| / u ^ (s.re + 1))
   apply ZetaSum_aux1_5b apos a_lt_b σpos |>.mono_fun ZetaSum_aux1_5c ?_
   filter_upwards with x
-  simp only [Real.norm_eq_abs, one_div, norm_inv, abs_div, _root_.abs_abs]
+  simp
   conv => rw [div_eq_mul_inv, ← one_div]; rhs; rw [← one_mul |x ^ (s.re + 1)|⁻¹]
   refine mul_le_mul ?_ (le_refl _) (by simp) <| by norm_num
   exact le_trans (ZetaSum_aux1_3 x) <| by norm_num
 
-lemma ZetaSum_aux1_5 {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos : 0 < s.re) :
+lemma ZetaSum_aux1_5  :
   ∫ (x : ℝ) in a..b, |⌊x⌋ + 1 / 2 - x| / x ^ (s.re + 1) ≤
     ∫ (x : ℝ) in a..b, 1 / x ^ (s.re + 1) := by
   apply intervalIntegral.integral_mono_on (le_of_lt a_lt_b) ?_ ?_
@@ -213,7 +244,7 @@ lemma ZetaSum_aux1_5 {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpo
   · exact ZetaSum_aux1_5d apos a_lt_b σpos
   · exact ZetaSum_aux1_5b apos a_lt_b σpos
 
-lemma ZetaBnd_aux1a {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos : 0 < s.re) :
+lemma ZetaBnd_aux1a  :
     ∫ x in a..b, ‖(⌊x⌋ + 1 / 2 - x) / (x : ℂ) ^ (s + 1)‖ ≤
       (a ^ (-s.re) - b ^ (-s.re)) / s.re := by
   calc
@@ -222,6 +253,9 @@ lemma ZetaBnd_aux1a {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos
     _ = (a ^ (-s.re) - b ^ (-s.re)) / s.re := ?_
   refine ZetaSum_aux1_2 (c := s.re) apos a_lt_b ⟨ne_of_gt σpos, ?_⟩
   exact fun h ↦ (lt_self_iff_false 0).mp <| ZetaSum_aux1_1 apos a_lt_b h
+end
+end
+
 
 lemma Finset.Ioc_eq_Ico (M N : ℕ) : Finset.Ioc N M = Finset.Ico (N + 1) (M + 1) := by
   ext a; simp only [Finset.mem_Ioc, Finset.mem_Ico]; constructor <;> intro ⟨h₁, h₂⟩ <;> omega
@@ -256,7 +290,11 @@ lemma Complex.cpow_inv_tendsto {s : ℂ} (hs : 0 < s.re) :
 lemma ZetaSum_aux2a : ∃ C, ∀ (x : ℝ), ‖⌊x⌋ + 1 / 2 - x‖ ≤ C := by
   use 1 / 2; exact ZetaSum_aux1_3
 
-lemma ZetaSum_aux3 {N : ℕ} {s : ℂ} (s_re_gt : 1 < s.re) :
+section
+variable {N : ℕ}
+include N
+
+lemma ZetaSum_aux3  {s : ℂ} (s_re_gt : 1 < s.re) :
     Tendsto (fun k ↦ ∑ n ∈ Finset.Ioc N k, 1 / (n : ℂ) ^ s) atTop
     (𝓝 (∑' (n : ℕ), 1 / (n + N + 1 : ℂ) ^ s)) := by
   let f := fun (n : ℕ) ↦ 1 / (n : ℂ) ^ s
@@ -268,7 +306,11 @@ lemma ZetaSum_aux3 {N : ℕ} {s : ℂ} (s_re_gt : 1 < s.re) :
   · congr; ext n; simp only [one_div, Nat.cast_add, Nat.cast_one, f]
   · rwa [summable_nat_add_iff (k := 1)]
 
-lemma integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0 < s.re) :
+section
+variable (N_pos : 0 < N) {s : ℂ}
+include N_pos s
+
+lemma integrableOn_of_Zeta0_fun  (s_re_gt : 0 < s.re) :
     MeasureTheory.IntegrableOn (fun (x : ℝ) ↦ (⌊x⌋ + 1 / 2 - x) * (x : ℂ) ^ (-(s + 1))) (Ioi N)
     MeasureTheory.volume := by
   obtain ⟨c, hc⟩ := ZetaSum_aux2a
@@ -279,7 +321,7 @@ lemma integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0
   · refine Measurable.add ?_ measurable_const |>.sub (by fun_prop) |>.aestronglyMeasurable
     exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
 
-lemma ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 1 < s.re) :
+lemma ZetaSum_aux2  (s_re_gt : 1 < s.re) :
     ∑' (n : ℕ), 1 / (n + N + 1 : ℂ) ^ s =
     (- N ^ (1 - s)) / (1 - s) - N ^ (-s) / 2
       + s * ∫ x in Ioi (N : ℝ), (⌊x⌋ + 1 / 2 - x) * (x : ℂ) ^ (-(s + 1)) := by
@@ -307,6 +349,9 @@ lemma ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 1 < s.re) :
     · exact MeasureTheory.intervalIntegral_tendsto_integral_Ioi (a := N)
         (b := (fun (n : ℕ) ↦ (n : ℝ)))
         (integrableOn_of_Zeta0_fun N_pos <| by positivity) tendsto_natCast_atTop_atTop
+end
+end
+
 
 open MeasureTheory in
 

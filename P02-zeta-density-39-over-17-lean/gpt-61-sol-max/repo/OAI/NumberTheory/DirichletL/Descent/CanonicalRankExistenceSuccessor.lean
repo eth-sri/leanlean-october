@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankExistenceData
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankFamilyGates
 
@@ -6,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankFamilyGates
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths
+open MeasureTheory ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CanonicalRowCompletion
 open CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
-local notation "O"=>ActualEisensteinCubic.O
+open scoped EisensteinO
 
 theorem rank_energy_exists_succ_of_reference
     (n:ℕ)(L cstar cutoff eta:ℝ)(K:ℕ)
@@ -117,10 +118,10 @@ theorem rank_energy_exists_succ_of_reference
   have hssdis:(ss:Set σ).PairwiseDisjoint lists:=by
     intro i hi j hj hij
     exact hdis (hss hi) (hss hj) hij
-  have hssH:∀i∈ss,1≤H i:=fun i hi=>hH i (hss hi)
+  have hssH :=fun i hi=>hH i (hss hi)
   have hssP:∀i∈ss,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i:=fun i hi=>hP i (hss hi)
-  have hssa:∀i∈ss,∀P∈lists i,‖a i P‖≤1:=fun i hi=>ha i (hss hi)
-  have hssprod:(∏i∈ss,H i)≤Z^z:=canonical_rank_subslot_cap slots ss H Z z hss hH hprod
+  have hssa :=fun i hi=>ha i (hss hi)
+  have hssprod :=canonical_rank_subslot_cap slots ss H Z z hss hH hprod
   obtain ⟨hsmallM,hsmallF,hsmallc⟩:=actual_rank_successor_caps n L cstar cutoff eta M (N+V)
     (rankMargin (n+1) cstar eta) hMc hFc le_rfl
   have lift (w:𝓢(ℝ,ℂ))(Cw:ℝ)(Jw:ℕ)(hCw:0≤Cw)(hCwA:Cw≤A)(hJw:Jw≤J)
@@ -182,8 +183,8 @@ theorem rank_energy_exists_succ_of_reference
     (Real.rpow_nonneg hZ0.le (N+V+rankLoss (n+1) eta))
   convert hx using 1 ; ring
 
-end SevenEighths.InverseMoment
 
-end
 
-end OAI
+
+
+

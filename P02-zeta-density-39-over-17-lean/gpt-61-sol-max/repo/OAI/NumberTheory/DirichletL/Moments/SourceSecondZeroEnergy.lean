@@ -15,7 +15,7 @@ open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
 open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
-local notation "O" => ActualEisensteinCubic.O
+open scoped EisensteinO
 
 def sourceSecondZero (S : Finset (Ideal O)) (β : Ideal O→ℂ) (η : Character) (t : ℝ) : ℂ :=
   secondZeroEnergy Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
@@ -49,18 +49,22 @@ theorem secondZeroEnergy_filter {α : Type*} (S : Finset α) (a : α→O)
     · simp only [ite_eq_right hpj,hc j hj hpj,star_zero,mul_zero,zero_mul]
   · simp only [ite_eq_right hpi,hc i hi hpi,zero_mul,Finset.sum_const_zero]
 
-lemma sourceGenerator_span (S : Finset (Ideal O)) (I : supportedColumns S) :
+section
+variable (S : Finset (Ideal O))
+include S
+
+lemma sourceGenerator_span  (I : supportedColumns S) :
     Ideal.span {sourceGenerator S I}=(I:Ideal O) :=
   primary_span_supported I (Finset.mem_filter.mp I.property).2
-lemma sourceGenerator_primary (S : Finset (Ideal O)) (I : supportedColumns S) :
+lemma sourceGenerator_primary  (I : supportedColumns S) :
     ConcretePrimeRowBridge.goodLambda^2∣sourceGenerator S I-1 :=
   (primaryGenerator_spec I (supported_primaryGenerator_ne_zero I (Finset.mem_filter.mp I.property).2)).2
-lemma sourceGenerator_injective (S : Finset (Ideal O)) : Function.Injective (sourceGenerator S) := by
+lemma sourceGenerator_injective  : Function.Injective (sourceGenerator S) := by
   intro I J h
   apply Subtype.ext
   rw [←sourceGenerator_span S I,←sourceGenerator_span S J,h]
 
-theorem sourceSecondZero_divisor_bound (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+theorem sourceSecondZero_divisor_bound  (β : Ideal O→ℂ)
     (η : Character) (t B Y : ℝ) (hB : 0≤B) (hY : 0≤Y)
     (s : Ideal O) (hs : s≠0)
     (hc : ∀ I∈supportedColumns S,β I≠0→‖β I‖≤B)
@@ -85,7 +89,7 @@ theorem sourceSecondZero_divisor_bound (S : Finset (Ideal O)) (β : Ideal O→�
     rw [sourceGenerator_span]
     exact hN I I.property (Finset.mem_filter.mp hI).2
 
-theorem sourceSecondZero_eq_zero_of_subunit (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+theorem sourceSecondZero_eq_zero_of_subunit  (β : Ideal O→ℂ)
     (η : Character) (t Y : ℝ) (hY : Y<1)
     (hN : ∀ I∈supportedColumns S,β I≠0→(Ideal.absNorm I:ℝ)≤Y) :
     sourceSecondZero S β η t=0 := by
@@ -96,8 +100,14 @@ theorem sourceSecondZero_eq_zero_of_subunit (S : Finset (Ideal O)) (β : Ideal O
         (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.mem_filter.mp I.property).2.1)
     linarith [hN I I.property hn]
   simp only [sourceSecondZero,secondZeroEnergy,hc,zero_mul,star_zero,mul_zero,Finset.sum_const_zero]
+end
 
-theorem tuple_second_zero_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
+
+section
+variable (N : ℕ) (ε : ℝ) (hε : 0<ε)
+include N ε hε
+
+theorem tuple_second_zero_bound  :
     ∃ C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι], Fintype.card ι≤N →
       ∀ (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (η : Character) (t B Y : ℝ),
       0≤B → 1≤Y → (∀ v∈S,finiteTupleProduct v≠0→‖β v‖≤B) →
@@ -154,7 +164,7 @@ theorem tuple_second_zero_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     _ = (128*((1+D)^(N+2))^2)*B^2*((Y^(ε/2))^2*Y)/(Ideal.absNorm s:ℝ) := by ring
     _ = _ := by rw [hp]
 
-theorem normalized_tuple_second_zero_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
+theorem normalized_tuple_second_zero_bound  :
     ∃ C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι], Fintype.card ι≤N →
       ∀ (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (η : Character) (t B L T : ℝ),
       0≤B → 0<L → 0<T → (∀ v∈S,finiteTupleProduct v≠0→‖β v‖≤B) →
@@ -183,6 +193,8 @@ theorem normalized_tuple_second_zero_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
   apply (mul_le_mul_of_nonneg_left hb (div_nonneg (norm_nonneg _) hT.le)).trans_eq
   rw [Real.mul_rpow hL.le hT.le,Real.rpow_add hT,Real.rpow_one]
   field_simp
+end
+
 
 lemma profileCoefficient_dvd {ι : Type*} [Fintype ι]
     (R : Ideal O) (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
@@ -241,8 +253,8 @@ theorem profile_second_zero_energy (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       (fun v _ hv=>profileCoefficient_dvd R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v hv)
       (fun v _ hv=>(hN v hv).trans (mul_le_mul_of_nonneg_right (by linarith : L≤1+L) hraw.le))).2
 
-end SevenEighths.CenteredMomentSourceSecondZeroEnergy
 
-end
 
-end OAI
+
+
+

@@ -1,4 +1,5 @@
 module
+import Mathlib
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrincipalTruncation
 
 @[expose] public section
@@ -8,70 +9,70 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
+                        
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+                     
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+                                                 
+           
+                    
+open ConcreteTraceCRT ActualEisensteinCubic
+            
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+           
+            
+            
+                                                       
+                                     
+                    
+                       
+open Ideal NumberField UniqueFactorizationMonoid
+                                                
+                                                
+                                                
+                                                
+                       
+                                     
+                    
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+           
+                                     
+                    
+                                     
+                    
+                                     
+                    
+                       
 open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                  
+                                  
 open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+                                                       
+                                  
+                                                       
+                                  
+                                                       
+                                                       
+                                                       
+                                  
+                                                       
+open MeasureTheory
+                        
+                                  
+                                  
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+                        
 
 open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
@@ -119,9 +120,13 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
-def truncatedSecondZero (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
+section
+variable (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
     (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ)
-    (K : Finset ι → Finset ι → Finset O) : ℂ :=
+    (K : Finset ι → Finset ι → Finset O)
+include F Ψ m c d H W Y K
+
+def truncatedSecondZero  : ℂ :=
   (Y : ℂ) * paperRadialFourier W 0 *
     ∑ G ∈ F.powerset,
       (‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) G‖ ^ 2 : ℝ) * star (H G) * H G *
@@ -131,8 +136,7 @@ def truncatedSecondZero (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
         else 0
 
 theorem truncatedSecondSource_eq_nonzero_add_zero
-    (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O) :
+     :
     truncatedSecondSource p hp hg hinj F Ψ m c d H W Y K =
       truncatedSecondSource p hp hg hinj F Ψ m c d H W Y (fun G E => (K G E).erase 0) +
         truncatedSecondZero p hg F Ψ m c d H W Y K := by
@@ -151,6 +155,8 @@ theorem truncatedSecondSource_eq_nonzero_add_zero
       secondSourceCommonCoefficient]
     ring
   · simp only [Finset.erase_eq_of_notMem h0, ite_eq_right h0, mul_zero, add_zero]
+end
+
 
 end
 
@@ -221,7 +227,7 @@ def lambdaFactorEquiv : ℕ × GoodIdeal ≃ NonzeroIdeal :=
   Equiv.ofBijective lambdaFactorMap lambdaFactorMap_bijective
 
 lemma ideal_pow_injective {n : ℕ} (hn : n ≠ 0) :
-    Function.Injective (fun I : Ideal O => I^n) := by
+    Function.Injective (fun I : Ideal O => I ^n) := by
   intro I J h
   dsimp only at h
   apply le_antisymm
@@ -287,15 +293,19 @@ def cubeColumn (b : Bool) (n : ℕ) (I : GoodIdeal) : O := cubeSign b*(cubeBase 
 lemma cubeBase_ne_zero (n : ℕ) (I : GoodIdeal) : cubeBase n I ≠ 0 :=
   mul_ne_zero (pow_ne_zero _ residue_lambda_prime.ne_zero) I.2
 
-lemma cubeColumn_ne_zero (b : Bool) (n : ℕ) (I : GoodIdeal) : cubeColumn b n I ≠ 0 :=
+section
+variable (b : Bool) (n : ℕ) (I : GoodIdeal)
+include b n I
+
+lemma cubeColumn_ne_zero  : cubeColumn b n I ≠ 0 :=
   mul_ne_zero (cubeSign_isUnit b).ne_zero (pow_ne_zero 3 (cubeBase_ne_zero n I))
 
-lemma cubeColumn_cube (b : Bool) (n : ℕ) (I : GoodIdeal) :
+lemma cubeColumn_cube  :
     cubeColumn b n I=(cubeSign b*cubeBase n I)^3 := by
   rw [mul_pow,cubeSign_cube]
   rfl
 
-lemma cubeColumn_level (b : Bool) (n : ℕ) (I : GoodIdeal) : (3:O) ∣ cubeColumn b n I := by
+lemma cubeColumn_level  : (3:O) ∣ cubeColumn b n I := by
   have h3 : (3:O) ∣ lambda^(3*(n+1)) := three_dvd_lambda_sq.trans (pow_dvd_pow lambda (by omega))
   have heq : cubeColumn b n I=cubeSign b*(lambda^(3*(n+1))*(primaryGenerator I.1)^3) := by
     simp only [cubeColumn,cubeBase,mul_pow,← pow_mul]
@@ -304,12 +314,14 @@ lemma cubeColumn_level (b : Bool) (n : ℕ) (I : GoodIdeal) : (3:O) ∣ cubeColu
   rw [heq]
   exact (h3.mul_right _).mul_left _
 
-lemma cubeColumn_span (b : Bool) (n : ℕ) (I : GoodIdeal) :
+lemma cubeColumn_span  :
     Ideal.span {cubeColumn b n I}=(ramifiedIdeal^(n+1)*I.1)^3 := by
   rw [cubeColumn,Ideal.span_singleton_mul_left_unit (cubeSign_isUnit b),
     ← Ideal.span_singleton_pow]
   change (Ideal.span {lambda^(n+1)*primaryGenerator I.1})^3=_
   rw [lambdaFactor_generator_span]
+end
+
 
 abbrev CubeLower := {c : LevelLower // c.1 ≠ 0 ∧ ∃ a : O,c.1=a^3}
 
@@ -326,13 +338,12 @@ lemma cubeColumnMap_injective : Function.Injective cubeColumnMap := by
   have hr := ideal_pow_injective (by decide : (3:ℕ) ≠ 0) hs
   have hp : lambdaFactorMap (n+1,I)=lambdaFactorMap (m+1,J) := Subtype.ext hr
   have he := lambdaFactorMap_bijective.1 hp
-  have hnm : n=m := Nat.succ.inj (congrArg Prod.fst he)
+  have hnm := Nat.succ.inj (congrArg Prod.fst he)
   have hIJ : I=J := congrArg Prod.snd he
   subst m; subst J
-  have hbd : b=d := cubeSign_injective (mul_right_cancel₀
+  have hbd := cubeSign_injective (mul_right_cancel₀
     (pow_ne_zero 3 (cubeBase_ne_zero n I)) hc)
-  subst d
-  rfl
+  simp_all
 
 lemma cubeColumnMap_surjective : Function.Surjective cubeColumnMap := by
   intro c
@@ -371,13 +382,16 @@ lemma cubeColumnMap_surjective : Function.Surjective cubeColumnMap := by
 def cubeColumnEquiv : Bool × ℕ × GoodIdeal ≃ CubeLower :=
   Equiv.ofBijective cubeColumnMap ⟨cubeColumnMap_injective,cubeColumnMap_surjective⟩
 
-lemma cubeColumn_expanded (b : Bool) (n : ℕ) (I : GoodIdeal) :
+section
+variable (b : Bool) (n : ℕ) (I : GoodIdeal)
+include b n I
+
+lemma cubeColumn_expanded  :
     cubeColumn b n I=lambda^(3*(n+1))*(cubeSign b*primaryGenerator I.1)^3 := by
   simp only [cubeColumn,cubeBase,mul_pow,cubeSign_cube,← pow_mul]
-  rw [Nat.mul_comm (n+1) 3]
   ring
 
-lemma cubeColumn_arithmetic_sum (b : Bool) (n : ℕ) (I : GoodIdeal) :
+lemma cubeColumn_arithmetic_sum  :
     arithmeticResidueSum 0 (cubeColumn b n I)=
       (3^(3*(n+1))*Ideal.absNorm I.1^2*idealTotient I.1:ℕ) := by
   have ha : cubeSign b*cubeBase n I ≠ 0 :=
@@ -392,14 +406,20 @@ lemma cubeColumn_arithmetic_sum (b : Bool) (n : ℕ) (I : GoodIdeal) :
     rw [Ideal.span_singleton_mul_left_unit (cubeSign_isUnit b),(primaryGenerator_spec I.1 I.2).1]
   rw [card_admissible_cube_product (n+1) _ (mul_ne_zero (cubeSign_isUnit b).ne_zero I.2) hc,hs]
 
-lemma cubeColumn_norm (b : Bool) (n : ℕ) (I : GoodIdeal) :
+lemma cubeColumn_norm  :
     Ideal.absNorm (Ideal.span {cubeColumn b n I})=3^(3*(n+1))*Ideal.absNorm I.1^3 := by
   rw [cubeColumn_span,map_pow,map_mul,map_pow,ramifiedIdeal_absNorm,mul_pow,← pow_mul]
   rw [Nat.mul_comm (n+1) 3]
+end
 
-def ramifiedRatio (s : ℂ) : ℂ := (3:ℂ)^(3-3*s)
 
-lemma cube_norm_weight_algebra (s : ℂ) (n N : ℕ) (hN : N ≠ 0) :
+section
+variable (s : ℂ)
+include s
+
+def ramifiedRatio  : ℂ := (3:ℂ)^(3-3*s)
+
+lemma cube_norm_weight_algebra  (n N : ℕ) (hN : N ≠ 0) :
     ((3^(3*(n+1))*N^3:ℕ):ℂ)^(-s) * (3^(3*(n+1))*N^2:ℕ) =
       ramifiedRatio s^(n+1) * (N:ℂ)^(-(3*s-2)) := by
   have hNc : (N:ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hN
@@ -410,10 +430,9 @@ lemma cube_norm_weight_algebra (s : ℂ) (n N : ℕ) (hN : N ≠ 0) :
     simp only [Nat.cast_pow,Nat.cast_ofNat] at hm
     rw [hm]
     have h3 : ((3:ℂ)^(3*(n+1):ℕ))^(-s)=(3:ℂ)^((3*(n+1):ℕ)*(-s)) := by
-      simpa only [Nat.cast_ofNat] using
-        (Complex.natCast_cpow_natCast_mul 3 (3*(n+1)) (-s)).symm
+      exact (Complex.natCast_cpow_natCast_mul 3 (3*(n+1)) (-s)).symm
     have hN' : ((N:ℂ)^3)^(-s)=(N:ℂ)^(3*(-s)) := by
-      simpa only [Nat.cast_ofNat] using (Complex.natCast_cpow_natCast_mul N 3 (-s)).symm
+      exact (Complex.natCast_cpow_natCast_mul N 3 (-s)).symm
     rw [h3,hN']
   rw [hsplit]
   have hpoly : (3:ℂ)^(3*(n+1):ℕ)*(N:ℂ)^2 =
@@ -430,7 +449,7 @@ lemma cube_norm_weight_algebra (s : ℂ) (n N : ℕ) (hN : N ≠ 0) :
       rw [← Complex.cpow_mul_nat]
       congr 1 <;> congr 1 <;> push_cast <;> ring
 
-lemma cubeColumn_dirichletTerm (s : ℂ) (b : Bool) (n : ℕ) (I : GoodIdeal) :
+lemma cubeColumn_dirichletTerm  (b : Bool) (n : ℕ) (I : GoodIdeal) :
     arithmeticDirichletTerm s 0 (cubeColumnMap (b,n,I)).1 =
       ramifiedRatio s^(n+1) * ((idealTotient I.1:ℂ)*unramifiedNormWeight (3*s-2) I.1) := by
   have hI : Ideal.absNorm I.1 ≠ 0 :=
@@ -449,9 +468,11 @@ lemma cubeColumn_dirichletTerm (s : ℂ) (b : Bool) (n : ℕ) (I : GoodIdeal) :
     _ = (ramifiedRatio s^(n+1)*(Ideal.absNorm I.1:ℂ)^(-(3*s-2)))*(idealTotient I.1:ℂ) := by
       rw [cube_norm_weight_algebra s n (Ideal.absNorm I.1) hI]
     _ = _ := by ring
-
-end CubicEisenstein
-
 end
 
-end OAI
+
+
+
+
+
+

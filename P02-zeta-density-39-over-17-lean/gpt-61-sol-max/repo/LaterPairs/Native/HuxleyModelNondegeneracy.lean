@@ -6,9 +6,8 @@ public import LaterPairs.Native.BetaModelJetEstimates
 public import LaterPairs.Native.ExponentPairShiftUniformity
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+
 
  
                                                           
@@ -66,7 +65,6 @@ theorem tests_monomial_ne_zero {a z x : ℝ}
     tests ![z*x^3,-a*z*x^2,a*(a+1)*z*x,-a*(a+1)*(a+2)*z] i ≠ 0 := by
   rw [tests_monomial]
   have ha0 : 0 < a := by linarith
-  have ha1 : 0 < a+1 := by linarith
   have ha2 : 0 < 2*a-1 := by linarith
   fin_cases i <;> dsimp
   · positivity
@@ -121,9 +119,7 @@ theorem reference_tests_positive {σ x : ℝ} (hσ : 0 < σ) (hx : 0 < x) (i : F
   have hp (n : ℕ) (hn : n ≤ 5) :
       x^(-σ-(n:ℝ))=x^(5-n)*x^(-σ-5) := by
     rw [←Real.rpow_natCast,←Real.rpow_add hx]
-    congr 1
-    rw [Nat.cast_sub hn]
-    norm_num
+    simp_all
   let z := σ*(σ+1)*x^(-σ-5)
   have he : (fun j : Fin 4 => iteratedDeriv (j.val+2) (Expdb.modelPhase σ) x) =
       ![z*x^3,-(σ+2)*z*x^2,(σ+2)*(σ+3)*z*x,-(σ+2)*(σ+3)*(σ+4)*z] := by
@@ -252,4 +248,4 @@ theorem caseTwoTests_uniform_stability {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c
     exfalso
     exact hSne ⟨_,hmem v y hv h₅ h₆ hy⟩
 
-end TaoTrudgianYang2025.HuxleyModel
+

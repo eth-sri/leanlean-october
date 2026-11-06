@@ -4,9 +4,8 @@ public import MathCollab.Density.Stronger.ShortPoweredHeight
 
 @[expose] public section
 
-open Complex Set Filter
+open Complex Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger
@@ -114,4 +113,4 @@ theorem smooth_long_or_short_Taylor_cover {σ a δ : ℝ}
     exact Or.inr ⟨p, hp, hp0, hp1, hp2⟩
   · exact Or.inl ⟨j, hj, lt_of_not_ge hs, hh⟩
 
-end Montgomery.RationalMoment.RightDetector
+

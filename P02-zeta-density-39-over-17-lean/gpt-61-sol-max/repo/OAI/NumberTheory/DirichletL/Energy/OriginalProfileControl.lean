@@ -13,9 +13,9 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalProfileControl
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open CenteredMomentSourceInputTailUniform
+open CenteredMomentEnergyNaturalInputMatches
+open CenteredMomentEnergyState
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -48,15 +48,15 @@ lemma plain_control_sq_le {a b:ℝ}(s:Input ι)(p:Profiles a b)(S:Finset (ℕ×�
 
 omit [DecidableEq ι] in
 lemma lower_product (s:Input ι)(N:ℕ)(a:ℝ)(ha:0<a)
-    (hN:Fintype.card ι≤N)(hlo:∀i,a≤s.lo i):
+    (hN:Fintype.card ι≤N)(hlo:∀i,a≤ s.lo i):
     (min 1 a)^N≤∏i,s.lo i := by
-  have hm:0≤min 1 a:=le_min zero_le_one ha.le
+  have hm:0≤ min 1 a:=le_min zero_le_one ha.le
   calc
     _≤(min 1 a)^(Fintype.card ι):=pow_le_pow_of_le_one hm (min_le_left _ _) hN
     _=∏_i:ι,min 1 a:=by simp
     _≤∏i,s.lo i:=Finset.prod_le_prod₀ (fun _ _=>hm) (fun i _=>(min_le_right _ _).trans (hlo i))
 
-local notation "O"=>HeckeFamily.O
+open scoped HeckeO
 section Input
 variable {ι : Type*} [Fintype ι]
 variable (Q : Ideal O) [NeZero Q]
@@ -75,9 +75,9 @@ variable (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) (hsame : Y₁ * Y₂ = X₁ * X�
 local notation "inp" => CenteredMomentEnergyNaturalInputMatches.input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
 
-end Input
-end SevenEighths.CenteredMomentEnergyOriginalProfileControl
 
-end
 
-end OAI
+
+
+
+

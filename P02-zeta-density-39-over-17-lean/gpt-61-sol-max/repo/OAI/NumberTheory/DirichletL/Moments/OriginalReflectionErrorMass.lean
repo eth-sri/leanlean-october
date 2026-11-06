@@ -13,10 +13,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentOriginalReflectionErrorMass
-open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open QuadraticInitialBound ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckePrimeAnnular
+open CenteredMomentCounting CenteredMomentComparisonReflection
+
+open scoped HeckeO
 
 lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
     (I : Ideal O) (hI : I≠0) :
@@ -26,7 +26,11 @@ lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
   rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (div_pos hn hD)]
   simp only [Complex.neg_re,shift_re,neg_zero,Real.rpow_zero,mul_one]
 
-lemma actual_coefficient_norm (χ : Character) (W : ℝ→ℂ) (D freq B : ℝ)
+section
+variable (χ : Character) (W : ℝ→ℂ)
+include χ W
+
+lemma actual_coefficient_norm  (D freq B : ℝ)
     (hD : 0<D) (hB : 0≤B) (hW : ∀x,‖W x‖≤B) (I : Ideal O) :
     ‖idealCoeff χ I*annularWeight W D 0 freq I‖≤B := by
   by_cases hI:I=0
@@ -35,17 +39,17 @@ lemma actual_coefficient_norm (χ : Character) (W : ℝ→ℂ) (D freq B : ℝ)
   rw [norm_mul,annularWeight_zero_norm W D freq hD I hI]
   exact (mul_le_mul (idealCoeff_norm_le_one χ I) (hW _) (norm_nonneg _) zero_le_one).trans_eq (one_mul B)
 
-lemma actual_coefficient_support (χ : Character) (W : ℝ→ℂ) (b D freq : ℝ)
+lemma actual_coefficient_support  (b D freq : ℝ)
     (hD : 0<D) (hs : Function.support W⊆Set.Iic b) (I : Ideal O)
     (hne : idealCoeff χ I*annularWeight W D 0 freq I≠0) :
-    (I.absNorm:ℝ)≤max 1 b*D := by
+    (I.absNorm:ℝ)≤ max 1 b*D := by
   have hw : W ((I.absNorm:ℝ)/D)≠0:=by
     intro hz
     exact hne (by simp only [annularWeight,hz,zero_mul,mul_zero])
   exact ((div_le_iff₀ hD).mp (hs hw)).trans
     (mul_le_mul_of_nonneg_right (le_max_right 1 b) hD.le)
 
-lemma polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
+lemma polynomial_all_ideals  (D freq : ℝ) :
     polynomial χ false W D 0 freq=
       (D:ℂ)^(-(1/2:ℂ))*∑'I:Ideal O,idealCoeff χ I*annularWeight W D 0 freq I := by
   unfold polynomial
@@ -59,6 +63,8 @@ lemma polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
     exact hI (by simp only [idealCoeff_zero,zero_mul])
   simpa only [summand,coefficient,Bool.false_eq_true,ite_false,HeckeDyadic.norm,
     annularWeight,mul_assoc] using he
+end
+
 
 lemma normalized_linear_bound (D c : ℝ) (hD : 0<D) (v : ℂ)
     (hv : ‖v‖≤c*D) : ‖(D:ℂ)^(-(1/2:ℂ))*v‖≤c*Real.sqrt D := by
@@ -87,14 +93,20 @@ theorem plain_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : �
     (actual_coefficient_support χ W b D freq hD hs)
   convert hh using 1; ring
 
-def errorConstant {α : Type*} (F : Finset α) (bshort Bshort : ℝ) (b B : α→ℝ) : ℝ :=
+section
+variable {α : Type*} (F : Finset α) (bshort Bshort : ℝ) (b B : α→ℝ)
+include α F bshort Bshort b B
+
+def errorConstant  : ℝ :=
   (1+(128*max 1 bshort*Bshort)^2)*∏j∈F,max 1 ((128*max 1 (b j)*B j)^2)
 
-lemma errorConstant_pos {α : Type*} (F : Finset α) (bshort Bshort : ℝ) (b B : α→ℝ) :
+lemma errorConstant_pos  :
     0<errorConstant F bshort Bshort b B := by
   apply mul_pos
   · positivity
   · exact Finset.prod_pos (fun j _=>zero_lt_one.trans_le (le_max_left _ _))
+end
+
 
 lemma compact_norm_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Set.Icc a b) (hW : Continuous W) :
@@ -106,8 +118,8 @@ lemma compact_norm_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   · simpa only [hx,norm_zero] using hB.le
   · simpa using hbound 0 (by simp) x (hs hx)
 
-end SevenEighths.CenteredMomentOriginalReflectionErrorMass
 
-end
 
-end OAI
+
+
+

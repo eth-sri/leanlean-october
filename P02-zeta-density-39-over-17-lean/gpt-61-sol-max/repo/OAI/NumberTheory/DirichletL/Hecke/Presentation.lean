@@ -16,36 +16,42 @@ def generator (η : Character) : O := ConcretePrimeRowBridge.idealGenerator η.m
 instance (η : Character) : NeZero (generator η) :=
   ⟨ConcretePrimeRowBridge.idealGenerator_ne_zero η.modulus η.modulus_ne_bot⟩
 
-theorem span_generator (η : Character) : Ideal.span {generator η} = η.modulus :=
+section
+variable (η : Character)
+include η
+
+theorem span_generator  : Ideal.span {generator η} = η.modulus :=
   ConcretePrimeRowBridge.span_idealGenerator η.modulus
 
-def quotientEquiv (η : Character) : (O ⧸ Ideal.span {generator η}) ≃+* (O ⧸ η.modulus) :=
+def quotientEquiv  : (O ⧸ Ideal.span {generator η}) ≃+* (O ⧸ η.modulus) :=
   Ideal.quotEquivOfEq (span_generator η)
 
-def principalResidue (η : Character) : MulChar (O ⧸ Ideal.span {generator η}) ℂ :=
+def principalResidue  : MulChar (O ⧸ Ideal.span {generator η}) ℂ :=
   CharacterTransport.pullback (quotientEquiv η) η.residue
 
-@[simp] theorem principalResidue_mk (η : Character) (z : O) :
+@[simp] theorem principalResidue_mk  (z : O) :
     principalResidue η (Ideal.Quotient.mk (Ideal.span {generator η}) z) =
       elementCoeff η z := by
   simp only [principalResidue, CharacterTransport.pullback_apply, quotientEquiv,
     Ideal.quotEquivOfEq_mk, elementCoeff]
 
-theorem principalResidue_unit (η : Character) (u : Oˣ) :
+theorem principalResidue_unit  (u : Oˣ) :
     principalResidue η (Ideal.Quotient.mk (Ideal.span {generator η}) (u : O)) = 1 := by
   rw [principalResidue_mk]
   exact η.unit_trivial u
 
-def principalCharacter (η : Character) : Character :=
+def principalCharacter  : Character :=
   HeckePrimitive.character (generator η) (principalResidue η) (principalResidue_unit η)
 
-@[simp] theorem principalCharacter_elementCoeff (η : Character) (z : O) :
+@[simp] theorem principalCharacter_elementCoeff  (z : O) :
     elementCoeff (principalCharacter η) z = elementCoeff η z := principalResidue_mk η z
 
-theorem principalResidue_primitive (η : Character)
+theorem principalResidue_primitive 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) :
     FiniteFourier.IsPrimitiveOnIdeals (principalResidue η) :=
   CharacterTransport.primitive_pullback (quotientEquiv η) η.residue hp
+end
+
 
 private theorem pullback_one {R S : Type*} [CommRing R] [CommRing S] (e : R ≃+* S) :
     CharacterTransport.pullback e (1 : MulChar S ℂ) = 1 := by
@@ -61,14 +67,22 @@ private theorem pullback_one {R S : Type*} [CommRing R] [CommRing S] (e : R ≃+
       simpa using h.map e.symm.toMonoidHom
     rw [MulChar.map_nonunit _ he, MulChar.map_nonunit _ hx]
 
-theorem principalResidue_ne_one (η : Character) (hη : η.residue ≠ 1) :
+section
+variable (η : Character)
+include η
+
+section
+variable (hη : η.residue ≠ 1)
+include hη
+
+theorem principalResidue_ne_one  :
     principalResidue η ≠ 1 := by
   intro h
   have he := congrArg (CharacterTransport.pullback (quotientEquiv η).symm) h
   rw [principalResidue, CharacterTransport.pullback_symm, pullback_one] at he
   exact hη he
 
-theorem LFunction_principalCharacter (η : Character) (hη : η.residue ≠ 1) (s : ℂ) :
+theorem LFunction_principalCharacter  (s : ℂ) :
     LFunction (principalCharacter η) s = LFunction η s := by
   have hp : (principalCharacter η).residue ≠ 1 := principalResidue_ne_one η hη
   have ha := LFunction_entire_nonprincipal (principalCharacter η) hp
@@ -82,8 +96,10 @@ theorem LFunction_principalCharacter (η : Character) (hη : η.residue ≠ 1) (
     apply continuedLattice_eq_of_elementCoeff_eq _ _ (principalCharacter_elementCoeff η)
       (by linarith) (by intro h; norm_num [h] at hz)
   exact congr_fun he s
+end
 
-theorem uniform_strip_bound (η : Character)
+
+theorem uniform_strip_bound 
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (hη : η.residue ≠ 1)
     (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
     ‖LFunction η z‖ ≤
@@ -94,9 +110,11 @@ theorem uniform_strip_bound (η : Character)
   change ‖LFunction (principalCharacter η) z‖ ≤ _ at h
   rw [LFunction_principalCharacter η hη z] at h
   simpa only [HeckeStripActual.conductor, span_generator] using h
-
-end SevenEighths.HeckePresentation
-
 end
 
-end OAI
+
+
+
+
+
+

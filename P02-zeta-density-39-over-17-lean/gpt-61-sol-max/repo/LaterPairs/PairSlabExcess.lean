@@ -1,11 +1,11 @@
 module
+import Mathlib
 public import LaterPairs.RestrictedPeakTail
 public import IntervalExcessTransfer
 public import MathCollab.Density.Stronger.SeparatedVolume
 
 @[expose] public section
-set_option autoImplicit false
-noncomputable section
+
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
 open MathCollab.Density MathCollab.Density.Stronger
@@ -20,8 +20,7 @@ theorem ExponentPair.critical_slab_excess_general {k l η ε : ℝ}
           (2/(3+(2+4*l)/k))*H^(1+l/k+ε)*v^(-3-(2+4*l)/k) := by
   have hq : 1 < 4+(2+4*l)/k := by
     have hl : 1/2 ≤ l := hpair.inTriangle.2.2.1
-    have hp : 0 < (2+4*l)/k := div_pos (by linarith) hk
-    linarith
+    field_simp <;> nlinarith
   filter_upwards [hpair.restricted_critical_peak_tail_general hk hη hε,
     eventually_ge_atTop (1:ℝ)] with H hsource hH
   intro v hv hvrange
@@ -55,6 +54,5 @@ theorem ExponentPair.critical_slab_excess_general {k l η ε : ℝ}
     · rw [← hfirst,← hsecond]
       ring
   have hh := critical_excess_integral_le_two_tails_interval hv hq htail
-  convert hh using 1
-  congr 1 <;> ring_nf
-end TaoTrudgianYang2025
+  grind
+

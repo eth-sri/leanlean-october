@@ -13,7 +13,7 @@ is therefore the concrete Vinogradov solution count, and monotonicity permits
 the replacement `Q <= H` used in the source.
 -/
 
-open Finset Set MeasureTheory
+open Finset MeasureTheory
 open scoped BigOperators ENNReal
 
 namespace GafniTao
@@ -24,6 +24,6 @@ abbrev heathBrownWeylSum (k Q : ℕ)
     (α : HeathBrownCoefficientTorus k) : ℂ :=
   fordVinogradovWeylSum (k - 1) Q α
 
-end
 
-end GafniTao
+
+

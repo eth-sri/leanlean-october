@@ -54,8 +54,8 @@ theorem elementCoeff_power_of_unit (χ : Character) (n : ℕ) (z : O)
   rw [← hu, MulChar.pow_apply_coe, hu]
   rfl
 
-end SevenEighths.HeckeFamily
 
-end
 
-end OAI
+
+
+

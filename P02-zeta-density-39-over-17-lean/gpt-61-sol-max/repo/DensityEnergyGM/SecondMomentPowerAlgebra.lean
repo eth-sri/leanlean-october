@@ -4,9 +4,8 @@ public import Mathlib.Analysis.MeanInequalitiesPow
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 namespace Montgomery.RationalMoment
 
 theorem double_sqrt_eq_quarter_rpow {x : ℝ} (hx : 0 ≤ x) :
@@ -43,4 +42,4 @@ theorem energy_height_rpow {E C T : ℝ} (δ p : ℝ)
     Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hT]
   ring
 
-end Montgomery.RationalMoment
+

@@ -6,7 +6,7 @@ public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Summable
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.LatticeSummability
 open EisensteinTheta
 
@@ -84,8 +84,8 @@ theorem summable_weighted_normForm {w : ℤ × ℤ → ℂ} {C σ : ℝ}
   simpa only [mul_one_div] using
     div_le_div_of_nonneg_right (hw n) (Real.rpow_nonneg (normForm_nonneg _ _) _)
 
-end SevenEighths.LatticeSummability
 
-end
 
-end OAI
+
+
+

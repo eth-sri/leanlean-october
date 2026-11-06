@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseTerminalWidths InverseMoment
+
+open scoped EisensteinEis
 variable {a c₀ : Eis} {mode : Bool}
 
 theorem original_surviving_terminal_saving
@@ -34,7 +34,7 @@ theorem original_surviving_terminal_saving
       Nstar=N-3*hhat → V≤d → hhat≤d+η →
       H=Real.logb Z (kK*QK) → za=Real.logb Z (kP*QP) → Nstar=Real.logb Z X →
       0≤M → 0≤O₀ → 0≤za → za≤z₀ →
-      0<cstar → cstar/2≤margin → d≤cstar/200 →
+      0<cstar → cstar/2≤ margin → d≤cstar/200 →
       η≤cstar/1000 → δ+η≤cstar/1000 → π≤cstar/1000 →
       let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
       let j := fun b : A => completedLocalExponent J F b.val.val
@@ -66,7 +66,7 @@ theorem original_surviving_terminal_saving
     (lt_of_lt_of_le hZ₀ hZ) hCk hCO hCH hCf hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
     hM hO hz hzcap hv hell hel (by simpa only [add_assoc] using hwidth)
     hc hmargin hd hη hτ hπ
-end
-end SevenEighths.InverseReflectedPhase
 
-end OAI
+
+
+

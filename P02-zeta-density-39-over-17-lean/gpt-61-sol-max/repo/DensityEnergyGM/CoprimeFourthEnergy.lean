@@ -3,15 +3,18 @@ public import SmallGcdCubicEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
+
 open Finset
 namespace Montgomery.RationalMoment
 
+section
+variable {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
+include T t₀ M hT hM
+
 /-- Distinct reduced fractions retain the actual fourth energy in the
 sampling estimate. No lower bound on the ordinate cardinality is required. -/
-theorem coprime_dyadic_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
+theorem coprime_dyadic_fourth_energy 
     (Q : Finset (ℕ × ℕ))
     (hQ : ∀ q ∈ Q, 0 < q.1 ∧ 0 < q.2 ∧ Nat.Coprime q.1 q.2 ∧
       M < q.1 ∧ (q.1:ℝ) ≤ 2*M ∧ M < q.2 ∧ (q.2:ℝ) ≤ 2*M)
@@ -56,7 +59,7 @@ theorem coprime_dyadic_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
 
 /-- The reduced fourth moment at every short real scale, including small
 scales and the exact tolerance-one energy. -/
-theorem coprime_short_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
+theorem coprime_short_fourth_energy 
     (hMT : M ^ 2 ≤ T) (Q : Finset (ℕ × ℕ))
     (hQ : ∀ q ∈ Q, 0 < q.1 ∧ 0 < q.2 ∧ Nat.Coprime q.1 q.2 ∧
       M < q.1 ∧ (q.1 : ℝ) ≤ 2 * M ∧ M < q.2 ∧ (q.2 : ℝ) ≤ 2 * M)
@@ -68,5 +71,7 @@ theorem coprime_short_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
   have hscale : 16 * Real.pi * M ^ 2 + 12 * Real.pi * T ≤ 28 * Real.pi * T := by
     nlinarith [Real.pi_pos]
   exact h.trans (by nlinarith [mul_le_mul_of_nonneg_right hscale he])
+end
 
-end Montgomery.RationalMoment
+
+

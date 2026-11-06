@@ -12,19 +12,23 @@ Integer blocks outside the proved physical slope envelope have harmonic
 rather than linear cost. The original cutoff width does not enter.
 -/
 
-noncomputable section
 
-open Set Expdb
+
+open Expdb
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem sum_norm_bufferedModes_right_le_harmonic
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
+
+section
+variable {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
+include F σ δ T N l r η hσ hδ hF hT hN hη hl hr
+
+theorem sum_norm_bufferedModes_right_le_harmonic
+    
     (Q : ℤ) (hQ : (T/N)*(1+δ) ≤ (Q : ℝ)) (L : ℕ) :
     (∑ n ∈ Finset.range L,
       ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -44,10 +48,7 @@ theorem sum_norm_bufferedModes_right_le_harmonic
       simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
 
 theorem sum_norm_bufferedModes_left_le_harmonic
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
+    
     (Q : ℤ) (hQ : (Q : ℝ) ≤ (T/N)*((2 : ℝ)^(-σ)-δ)) (L : ℕ) :
     (∑ n ∈ Finset.range L,
       ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -67,10 +68,7 @@ theorem sum_norm_bufferedModes_left_le_harmonic
       simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
 
 theorem norm_bufferedModes_exterior_blocks_le_log
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
+    
     (Lminus Lplus : ℕ) :
     ‖(∑ n ∈ Finset.range Lminus,
       modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -92,5 +90,7 @@ theorem norm_bufferedModes_exterior_blocks_le_log
       add_le_add (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lminus) (by positivity))
         (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lplus) (by positivity))
     _ = _ := by ring
+end
 
-end TaoTrudgianYang2025
+
+

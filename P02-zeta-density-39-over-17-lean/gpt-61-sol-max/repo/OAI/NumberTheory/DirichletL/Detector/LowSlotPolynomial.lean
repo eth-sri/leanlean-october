@@ -7,28 +7,32 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff
-open MeasureTheory CompletedGauss
+open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open scoped EisensteinO
 local notation "Id" => Ideal O
 
-def lowUnselectedWeight {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
+section
+variable {K : ℕ}
+include K
+
+def lowUnselectedWeight  (slots : Fin K→Finset O) (J : Finset (Fin K))
     (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (a : LowUnselectedTuple slots J) : ℂ :=
   (-1:ℂ)^J.card*((elementNorm (∏i : J,(a i).val)^(-(3/2:ℝ)):ℝ):ℂ)*
     ∏i : J,W i.val (elementNorm (a i).val/P i.val)
 
-def lowSelectedWeight {K : ℕ} (η : HeckeFamily.Character) (slots : Fin K→Finset O)
+def lowSelectedWeight  (η : HeckeFamily.Character) (slots : Fin K→Finset O)
     (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (t : ℝ)
     (b : LowSelectedTuple slots J) : ℂ :=
   star (HeckeFamily.elementCoeff η (∏i : SelectedSlot J,(b i).val))*
     ∏i : SelectedSlot J,W i.val (elementNorm (b i).val/P i.val)*
       FourierBridge.logPhase (-t) (Real.log (elementNorm (b i).val/P i.val))
 
-def lowSelectedIdeal {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
+def lowSelectedIdeal  (slots : Fin K→Finset O) (J : Finset (Fin K))
     (b : LowSelectedTuple slots J) : Id := Ideal.span {∏i : SelectedSlot J,(b i).val}
 
-lemma lowSlotJoin_weight {K : ℕ} (η : HeckeFamily.Character) (slots : Fin K→Finset O)
+lemma lowSlotJoin_weight  (η : HeckeFamily.Character) (slots : Fin K→Finset O)
     (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (t : ℝ)
     (a : LowUnselectedTuple slots J) (b : LowSelectedTuple slots J) :
     compensationSubsetWeight η W P (lowSlotJoin slots J a b) J*
@@ -41,18 +45,22 @@ lemma lowSlotJoin_weight {K : ℕ} (η : HeckeFamily.Character) (slots : Fin K�
   unfold lowUnselectedWeight lowSelectedWeight
   ring
 
-lemma lowUnselectedProduct_norm_pos {K : ℕ} (slots : Fin K→Finset O)
+lemma lowUnselectedProduct_norm_pos  (slots : Fin K→Finset O)
     (hslots : ∀i x,x∈slots i→x≠0) (J : Finset (Fin K)) (a : LowUnselectedTuple slots J) :
     0<elementNorm (∏i : J,(a i).val) := by
   apply physicalElementNorm_pos
   exact Finset.prod_ne_zero_iff.mpr (fun i _=>hslots i.val _ (a i).property)
 
-lemma compensationRowTest_join_low {K : ℕ} (η : HeckeFamily.Character)
+section
+variable (η : HeckeFamily.Character)
     (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
     (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hWs : ContDiff ℝ ∞ W0) (slots : Fin K→Finset O) (hslots : ∀i x,x∈slots i→x≠0)
-    (J : Finset (Fin K)) (a : LowUnselectedTuple slots J) (b : LowSelectedTuple slots J)
+    (J : Finset (Fin K))
+include η S hS hbad W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs slots hslots J
+
+lemma compensationRowTest_join_low  (a : LowUnselectedTuple slots J) (b : LowSelectedTuple slots J)
     (X Y T t : ℝ) (hX : 0<X) (hY : 0<Y) (hT : 0<T) :
     compensationRowTest η (calibrationForSet S hS) W0 W1 (lowSlotJoin slots J a b) J X Y T t=
       (Real.sqrt (lowPhysicalScale (calibrationForSet S hS)
@@ -65,12 +73,7 @@ lemma compensationRowTest_join_low {K : ℕ} (η : HeckeFamily.Character)
     compensationRowTest_low_separated η S hS hbad W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs
       (lowSlotJoin slots J a b) (lowSlotJoin_nonzero slots hslots J a b) J X Y T t hX hY hT
 
-theorem compensation_tuple_low_polynomial {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (hWs : ContDiff ℝ ∞ W0) (slots : Fin K→Finset O) (hslots : ∀i x,x∈slots i→x≠0)
-    (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ)
+theorem compensation_tuple_low_polynomial  (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ)
     (X Y T t : ℝ) (hX : 0<X) (hY : 0<Y) (hT : 0<T) :
     (∑p : (∀i,↥(slots i)),compensationSubsetWeight η W P (fun i=>(p i).val) J*
       compensationRowTest η (calibrationForSet S hS) W0 W1 (fun i=>(p i).val) J X Y T t*
@@ -119,8 +122,11 @@ theorem compensation_tuple_low_polynomial {K : ℕ} (η : HeckeFamily.Character)
         C W0 W1 Ω a0 b0 ha0 hW0 hWs hW1c hΩc hΩ0 (X/L) (Y/L)
         (div_pos hX hL) (div_pos hY hL)]
       rfl
-
-end SevenEighths.ProbePhysical
+end
 end
 
-end OAI
+
+
+
+
+
