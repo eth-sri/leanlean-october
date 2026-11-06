@@ -6,13 +6,3 @@ Authors: Ben Keene
 module
 
 public import SemigroupBetti.Basic
-public import SemigroupBetti.Defs
-public import SemigroupBetti.Fiber
-public import SemigroupBetti.Critical
-public import SemigroupBetti.Bridge
-public import SemigroupBetti.Partition
-public import SemigroupBetti.Identities
-public import SemigroupBetti.Antichain
-public import SemigroupBetti.Arith
-public import SemigroupBetti.Exceptional
-public import SemigroupBetti.Main

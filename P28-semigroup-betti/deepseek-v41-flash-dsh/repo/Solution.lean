@@ -76,29 +76,29 @@ def normalizedWidth (n : Fin 4 → ℕ) : ℕ :=
 
 /-- **Main theorem.** For a minimally four-generated numerical semigroup, the first Betti number
 is at most `2W`, `W` the normalized width. -/
-theorem beta1_le_two_mul_normalizedWidth (K : Type*) [Field K] (n : Fin 4 → ℕ)
-    (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
-    (hmin : MinimallyGenerates n) :
-    (toricIdeal K n).spanRank ≤ (2 * normalizedWidth n : ℕ) := by
-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
-  have hW : normalizedWidth n = G.W := rfl
+theorem beta1_le_two_mul_normalizedWidth (K : Type*) [Field K] (v : Fin 4 → ℕ)
+    (hpos : 0 < v 0) (hmono : StrictMono v) (hgcd : Finset.univ.gcd v = 1)
+    (hmin : MinimallyGenerates v) :
+    (toricIdeal K v).spanRank ≤ (2 * normalizedWidth v : ℕ) := by
+  letI : GenData := ofChallenge v hpos hmono hgcd
+  have hn : n = v := ofChallenge_n v hpos hmono hgcd
+  have hb : (toricIdeal K v).spanRank ≤ (beta1 : Cardinal) := by
+    rw [← hn]; exact spanRank_toricKer_le_beta1 K
+  have hW : normalizedWidth v = W := rfl
   refine hb.trans ?_
-  rw [hW]
-  exact_mod_cast G.beta1_le_two_W
+  rw [hW]; exact_mod_cast beta1_le_two_W
 
 /-- The first Betti number is at most twice the width. -/
-theorem beta1_le_two_mul_width (K : Type*) [Field K] (n : Fin 4 → ℕ)
-    (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
-    (hmin : MinimallyGenerates n) :
-    (toricIdeal K n).spanRank ≤ (2 * (n 3 - n 0) : ℕ) := by
-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
-  have hw : n 3 - n 0 = G.w := rfl
+theorem beta1_le_two_mul_width (K : Type*) [Field K] (v : Fin 4 → ℕ)
+    (hpos : 0 < v 0) (hmono : StrictMono v) (hgcd : Finset.univ.gcd v = 1)
+    (hmin : MinimallyGenerates v) :
+    (toricIdeal K v).spanRank ≤ (2 * (v 3 - v 0) : ℕ) := by
+  letI : GenData := ofChallenge v hpos hmono hgcd
+  have hn : n = v := ofChallenge_n v hpos hmono hgcd
+  have hb : (toricIdeal K v).spanRank ≤ (beta1 : Cardinal) := by
+    rw [← hn]; exact spanRank_toricKer_le_beta1 K
+  have hw : v 3 - v 0 = w := rfl
   refine hb.trans ?_
-  rw [hw]
-  exact_mod_cast G.beta1_le_two_w
+  rw [hw]; exact_mod_cast beta1_le_two_w
 
 end SemigroupBetti
