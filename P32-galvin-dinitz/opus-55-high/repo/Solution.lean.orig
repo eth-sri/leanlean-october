@@ -1,0 +1,206 @@
+module
+
+public import Mathlib
+
+@[expose] public section
+
+open Finset SimpleGraph
+
+namespace ListEdgeColouring
+
+
+theorem gs {M W β γ : Type*} [Finite M] [Finite W] [LinearOrder β] [LinearOrder γ]
+    (rm : M → W → β) (rw : W → M → γ) (E : M → W → Prop)
+    (hrm : ∀ m, Set.InjOn (rm m) {w | E m w}) (hrw : ∀ w, Set.InjOn (rw w) {m | E m w}) :
+    ∃ μ : M → W → Prop, (∀ m w, μ m w → E m w) ∧
+      (∀ m w w', μ m w → μ m w' → w = w') ∧ (∀ m m' w, μ m w → μ m' w → m = m') ∧
+      ∀ m w, E m w → ¬ μ m w →
+        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) := by
+  induction E using WellFoundedLT.induction with | _ E ih =>
+  let T m w := E m w ∧ ∀ v, E m v → rm m w ≤ rm m v
+  by_cases h : ∃ m₁ m₂ w, T m₁ w ∧ T m₂ w ∧ rw w m₁ < rw w m₂
+  · obtain ⟨m₁, m₂, w, h₁, h₂, hlt⟩ := h
+    obtain ⟨μ, hs, hm, hw, hst⟩ := ih (fun m v => E m v ∧ ¬(m = m₂ ∧ v = w))
+      ⟨fun _ _ => And.left, fun h => (h _ _ h₂.1).2 ⟨rfl, rfl⟩⟩
+      (fun m => (hrm m).mono fun _ => And.left) fun v => (hrw v).mono fun _ => And.left
+    refine ⟨μ, fun m v h => (hs m v h).1, hm, hw, fun m v hE hn => ?_⟩
+    by_cases hr : m = m₂ ∧ v = w
+    · obtain ⟨rfl, rfl⟩ := hr
+      have := hst m₁ v ⟨h₁.1, fun h => hlt.ne (h.1 ▸ rfl)⟩
+      grind
+    · exact hst m v ⟨hE, hr⟩ hn
+  push Not at h
+  have := fun m (v : W) (hE : E m v) => Set.exists_min_image {w | E m w} (rm m) (Set.toFinite _) ⟨v, hE⟩
+  refine ⟨T, ?_, ?_, ?_, ?_⟩ <;> grind [Set.InjOn]
+
+theorem gale_shapley {M W : Type*} [Finite M] [Finite W] (E : M → W → Prop)
+    (rm : M → W → ℕ) (rw : W → M → ℕ) (hrm : ∀ m, Function.Injective (rm m))
+    (hrw : ∀ w, Function.Injective (rw w)) :
+    ∃ μ : M → W → Prop, (∀ m w, μ m w → E m w) ∧
+      (∀ m w w', μ m w → μ m w' → w = w') ∧ (∀ m m' w, μ m w → μ m' w → m = m') ∧
+      ∀ m w, E m w → ¬ μ m w →
+        (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) :=
+  gs rm rw E (fun m => (hrm m).injOn) fun w => (hrw w).injOn
+
+theorem kernel {α C : Type*} (G : SimpleGraph α) (D : α → α → Prop) [DecidableRel D]
+    (hK : ∀ S : Finset α, ∃ K ⊆ S, (∀ x ∈ K, ∀ y ∈ K, ¬ G.Adj x y) ∧ ∀ x ∈ S, x ∉ K → ∃ y ∈ K, D x y)
+    (c₀ : α → C) (U : Finset α) (L : α → Finset C) (hL : ∀ x ∈ U, #(U.filter (D x)) < #(L x)) :
+    ∃ c : α → C, ∀ x ∈ U, c x ∈ L x ∧ ∀ y ∈ U, G.Adj x y → c x ≠ c y := by
+  classical
+  induction U using Finset.strongInduction generalizing L with | H U ih =>
+  rcases U.eq_empty_or_nonempty with rfl | ⟨x₀, hx₀⟩
+  · exact ⟨c₀, by simp⟩
+  obtain ⟨κ, hκ⟩ := card_pos.1 (hL x₀ hx₀).pos
+  obtain ⟨K, hKS, hKi, hKa⟩ := hK (U.filter (κ ∈ L ·))
+  have hKU : K ⊆ U := hKS.trans (filter_subset _ _)
+  obtain ⟨c, hc⟩ := ih (U \ K) (sdiff_ssubset hKU (by by_contra! h; simp_all)) (fun x => (L x).erase κ)
+    fun x hx => by
+      rw [mem_sdiff] at hx
+      by_cases hκx : κ ∈ L x
+      · obtain ⟨y, hy, hD⟩ := hKa x (mem_filter.2 ⟨hx.1, hκx⟩) hx.2
+        have := card_lt_card ((ssubset_iff_of_subset (filter_subset_filter _ sdiff_subset)).2
+          ⟨y, mem_filter.2 ⟨hKU hy, hD⟩, fun h => (mem_sdiff.1 (mem_filter.1 h).1).2 hy⟩)
+        have := hL x hx.1
+        rw [card_erase_of_mem hκx]
+        omega
+      · rw [erase_eq_of_notMem hκx]
+        exact (card_le_card (filter_subset_filter _ sdiff_subset)).trans_lt (hL x hx.1)
+  refine ⟨fun x => if x ∈ K then κ else c x, fun x hx => ?_⟩
+  grind [mem_sdiff, mem_filter, mem_erase, subset_iff]
+theorem konig {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
+    (s : G.Coloring (Fin 2)) (S : Finset (Sym2 V)) (hS : ↑S ⊆ G.edgeSet) :
+    ∃ φ : Sym2 V → ℕ, ∀ u v w, s(u, v) ∈ S → s(u, w) ∈ S →
+      φ s(u, v) < G.maxDegree ∧ (φ s(u, v) = φ s(u, w) → v = w) := by
+  classical
+  induction S using Finset.induction_on with
+  | empty => simp
+  | insert e S he ih =>
+  obtain ⟨φ, hφ⟩ := ih fun _ h => hS (mem_insert_of_mem h)
+  have hS' : ∀ {u v}, s(u, v) ∈ S → G.Adj u v := fun h => hS (mem_insert_of_mem h)
+  have free : ∀ x y, s(x, y) ∉ S → G.Adj x y →
+      ∃ a < G.maxDegree, ∀ v, s(x, v) ∈ S → φ s(x, v) ≠ a := by
+    intro x y hxy hadj
+    by_contra! h
+    have := (card_le_card (t := ((G.neighborFinset x).erase y).image (φ s(x, ·))) fun a ha => by
+      obtain ⟨v, hv, rfl⟩ := h a (mem_range.1 ha)
+      grind [mem_image, mem_erase, mem_neighborFinset]).trans card_image_le
+    have := G.degree_le_maxDegree x
+    have := (G.degree_pos_iff_exists_adj x).2 ⟨y, hadj⟩
+    simp [card_erase_of_mem, hadj] at *
+    omega
+  induction e using Sym2.ind with | _ x y =>
+  have hxy : G.Adj x y := hS (mem_insert_self _ _)
+  obtain ⟨a, ha, hax⟩ := free x y he hxy
+  obtain ⟨b, hb, hby⟩ := free y x (by rwa [Sym2.eq_swap]) hxy.symm
+  obtain ⟨H, hH⟩ : ∃ H : SimpleGraph V, ∀ u v, H.Adj u v ↔ (s(u, v) ∈ S ∧ (φ s(u, v) = a ∨ φ s(u, v) = b)) ∧ u ≠ v :=
+    ⟨fromEdgeSet {e | e ∈ S ∧ (φ e = a ∨ φ e = b)}, by simp⟩
+  have par : ∀ u z (p : H.Walk u z), z = y → p.IsPath → u ≠ y → (φ s(u, p.snd) = a ↔ s u ≠ s y) := by
+    intro u z p
+    induction p with
+    | nil => simp +contextual
+    | @cons u w z h p ih =>
+      intro hz hp hu
+      subst z
+      rw [hH] at h
+      have := s.valid (hS' h.1.1)
+      by_cases hw : w = y
+      · have := hby u
+        grind [Sym2.eq_swap, Walk.snd_cons]
+      have h2 := p.adj_snd (Walk.not_nil_of_ne hw)
+      rw [hH] at h2
+      rw [Walk.cons_isPath_iff] at hp
+      have := ih rfl hp.1 hw
+      have := hφ w u p.snd (Sym2.eq_swap ▸ h.1.1)
+      have := p.getVert_mem_support 1
+      grind [Sym2.eq_swap, Walk.snd_cons]
+  have hx : ¬ H.Reachable y x := fun ⟨p⟩ => by
+    obtain ⟨q, hq⟩ := p.reverse.toPath
+    have := (hH _ _).1 (q.adj_snd (Walk.not_nil_of_ne hxy.ne))
+    have := par x y q rfl hq hxy.ne
+    have := s.valid hxy
+    grind
+  let ψ : Sym2 V → ℕ := fun e => if ∃ v ∈ e, H.Reachable y v then Equiv.swap a b (φ e) else φ e
+  have hψ : ∀ u v, s(u, v) ∈ S →
+      ψ s(u, v) = if H.Reachable y u then Equiv.swap a b (φ s(u, v)) else φ s(u, v) := by
+    intro u v huv
+    have := (hH v u).2
+    have := (hS' huv).ne
+    have : H.Reachable y v → H.Adj v u → H.Reachable y u := fun h h' => h.trans h'.reachable
+    simp [ψ, Equiv.swap_apply_def]
+    grind [Sym2.eq_swap]
+  refine ⟨fun e => if e = s(x, y) then a else ψ e, fun u v w h1 h2 => ?_⟩
+  have := hψ u v
+  have := hψ u w
+  have := hφ u v w
+  have := hφ u v v
+  have := hax v
+  have := hax w
+  have := hby v
+  have := hby w
+  simp only [Equiv.swap_apply_def] at *
+  grind [Sym2.congr_right, Sym2.eq_iff, Reachable.refl]
+
+theorem galvin {V Color : Type*} [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hG : G.Colorable 2) (lists : G.edgeSet → Finset Color)
+    (hLists : ∀ e, G.maxDegree ≤ (lists e).card) :
+    ∃ coloring : G.lineGraph.Coloring Color, ∀ e, coloring e ∈ lists e := by
+  classical
+  obtain ⟨s⟩ := hG
+  obtain ⟨φ, hφ⟩ := konig s G.edgeFinset (by simp)
+  simp only [mem_edgeFinset, mem_edgeSet] at hφ
+  let D (e f : G.edgeSet) : Prop := ∃ v ∈ e.1, v ∈ f.1 ∧ if s v = 0 then φ f < φ e else φ e < φ f
+  have hb : ∀ f : G.edgeSet, φ f < G.maxDegree := fun ⟨f, hf⟩ => by
+    induction f using Sym2.ind
+    exact (hφ _ _ _ hf hf).1
+  have hdeg (e : G.edgeSet) : #(univ.filter (D e)) < G.maxDegree := by
+    have := card_le_card_of_injOn (s := univ.filter (D e)) (fun f => φ f) (t := (range G.maxDegree).erase (φ e)) (fun f hf => ?_) (fun ⟨f, hf⟩ hff ⟨f', hf'⟩ hff' h => ?_)
+    · have := hb e
+      grind [card_erase_of_mem, card_range, mem_range]
+    · simp [hb]
+      grind
+    · obtain ⟨v, hv, hvf, h1⟩ := (mem_filter.1 hff).2
+      obtain ⟨v', hv', hvf', h2⟩ := (mem_filter.1 hff').2
+      by_cases hvv : v = v'
+      · grind [mem_edgeSet, Sym2.mem_iff_exists]
+      · have : s v ≠ s v' := s.valid (G.mem_edgeSet.1 ((Sym2.mem_and_mem_iff hvv).1 ⟨hv, hv'⟩ ▸ e.2))
+        grind
+  have hK : ∀ S : Finset G.edgeSet, ∃ K ⊆ S, (∀ x ∈ K, ∀ y ∈ K, ¬ G.lineGraph.Adj x y) ∧
+      ∀ x ∈ S, x ∉ K → ∃ y ∈ K, D x y := by
+    intro S
+    let E m w := s m = 0 ∧ ∃ e ∈ S, e.1 = s(m, w)
+    have hE : ∀ {m w}, E m w → G.Adj m w := fun ⟨_, e, _, h⟩ => G.mem_edgeSet.1 (h ▸ e.2)
+    obtain ⟨μ, hs, hm, hw, hst⟩ := gs (fun m w => φ s(m, w))
+      (fun w m => -(φ s(m, w) : ℤ)) E
+      (fun m w h w' h' => (hφ m w w' (hE h) (hE h')).2)
+      (fun w m h m' h' e => (hφ w m m' (hE h).symm (hE h').symm).2 (by simpa [Sym2.eq_swap] using e))
+    refine ⟨S.filter fun e => ∃ m w, μ m w ∧ e.1 = s(m, w), filter_subset _ _, ?_, ?_⟩
+    · have := fun m w h => s.valid (hE (hs m w h))
+      grind [lineGraph_adj_iff_exists, mem_filter]
+    · rintro ⟨e, he⟩ hS hK
+      obtain ⟨m, w, rfl, hm0⟩ : ∃ m w, e = s(m, w) ∧ s m = 0 := by
+        induction e using Sym2.ind with | _ x y =>
+        have : s x ≠ s y := s.valid he
+        grind [Sym2.eq_swap]
+      have : s m ≠ s w := s.valid he
+      rcases hst m w ⟨hm0, _, hS, rfl⟩ (fun h => hK (mem_filter.2 ⟨hS, m, w, h, rfl⟩)) with
+        ⟨w', h, hlt⟩ | ⟨m', h, hlt⟩ <;> obtain ⟨-, f, hf, hf'⟩ := hs _ _ h <;>
+        exact ⟨f, by grind [mem_filter]⟩
+  obtain ⟨c, hc⟩ := kernel G.lineGraph D hK (fun e => (card_pos.1 ((hdeg e).trans_le (hLists e)).pos).choose) univ lists (fun e _ => (hdeg e).trans_le (hLists e))
+  exact ⟨Coloring.mk c fun h => (hc _ (mem_univ _)).2 _ (mem_univ _) h, fun e => (hc e (mem_univ _)).1⟩
+
+theorem dinitz {Symbol : Type*} (n : ℕ) (lists : Fin n → Fin n → Finset Symbol)
+    (hLists : ∀ i j, n ≤ (lists i j).card) :
+    ∃ f : Fin n → Fin n → Symbol, (∀ i j, f i j ∈ lists i j) ∧
+      (∀ i j j', j ≠ j' → f i j ≠ f i j') ∧ (∀ i i' j, i ≠ i' → f i j ≠ f i' j) := by
+  classical
+  have h (e : (completeBipartiteGraph (Fin n) (Fin n)).edgeSet) := edgeSet_completeBipartiteGraph.subset e.2
+  obtain ⟨col, hcol⟩ := galvin _ (CompleteBipartiteGraph.bicoloring _ _).colorable
+    (fun e => lists.uncurry (h e).choose) fun e => (maxDegree_le_of_forall_degree_le _ _ fun v => by
+      cases v <;> simp [← card_neighborFinset_eq_degree, neighborFinset_eq_filter, card_filter, Fintype.sum_sum_type, -sum_boole]).trans (hLists _ _)
+  refine ⟨fun i j => col ⟨s(.inl i, .inr j), by simp⟩, fun i j => ?_,
+    fun i j j' hj => col.valid ?_, fun i i' j hi => col.valid ?_⟩ <;> simp [lineGraph_adj_iff_exists, *]
+  have := (h ⟨s(.inl i, .inr j), by simp⟩).choose_spec
+  have := hcol ⟨s(.inl i, .inr j), by simp⟩
+  simp_all [Function.uncurry]
+
+end ListEdgeColouring
