@@ -17,7 +17,7 @@ P01-DedekindZetaZeroFree/
   ...
 ```
 
-Problems are numbered largest first by baseline tokens. Source trees leave out hidden paths (`.lake`, `.gitignore`, agent scratch files), as in scoring. Graphs are lean-strip `preprocessing_dependency_graph_v3` JSON; one over 50 MB is stored gzipped (`graph.json.gz`), for GitHub's file size limit.
+Problems are numbered largest first by baseline tokens. Source trees leave out hidden paths (`.lake`, `.gitignore`, agent scratch files), as in scoring. Graphs are created by lean-strip.
 
 A failed submission is scored at its latest saved checkpoint that passes final verification, and `repo/` holds that checkpoint (`result.json` has a `verification_note`). A `failed` status means no checkpoint passed: the submission gets no credit and has no `graph.json`.
 
