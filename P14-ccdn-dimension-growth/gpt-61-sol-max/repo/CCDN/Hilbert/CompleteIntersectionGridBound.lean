@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.Degrees
 import CCDN.Algebra.BinomialSectionBound
 import CCDN.Algebra.GridPointInterpolation
@@ -14,9 +16,8 @@ import Mathlib.Data.Nat.Choose.Bounds
 constant depends only on the ambient dimension; the degree dependence
 is quadratic. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If `f` is prime, `g` is not divisible by `f`, and both have total degree at most `d`, then the
@@ -41,14 +42,11 @@ theorem proper_intersection_grid_card_le {K ι : Type*} [Field K]
     simpa only [Fintype.card_coe, Fintype.card_piFinset, Finset.prod_const,
       Finset.card_univ, Fintype.card_fin, L] using Fintype.card_le_of_injective ψ hinj
   by_cases hL : L = 0
-  · have hz0 : Fintype.card ι = 0 :=
-      Nat.eq_zero_of_le_zero (by simpa only [hL, pow_succ, mul_zero] using hbox)
-    rw [hz0]
-    exact Nat.zero_le _
+  · simp_all
   have hL1 : 1 ≤ L := by omega
   let N := (n + 2) * (L - 1)
   by_cases hN : f.totalDegree + g.totalDegree ≤ N
-  · let I : Ideal (MvPolynomial (Fin (n + 2)) K) := Ideal.span {f, g}
+  · let I := Ideal.span {f, g}
     have hIf : f ∈ I := Ideal.subset_span (by simp)
     have hIg : g ∈ I := Ideal.subset_span (by simp)
     have hzI (i : ι) (q : MvPolynomial (Fin (n + 2)) K) (hq : q ∈ I) :
@@ -58,22 +56,17 @@ theorem proper_intersection_grid_card_le {K ι : Type*} [Field K]
         intro p hp
         rcases Set.mem_insert_iff.mp hp with rfl | hp
         · exact hzf i
-        · have hp' : p = g := Set.mem_singleton_iff.mp hp
-          subst p
-          exact hzg i
+        · simp_all
       exact hker hq
     have hlower : Fintype.card ι ≤ Module.finrank K (filteredCoordinateSpace I N) :=
-      grid_points_filtered_lower I S z hz hzS hzI (by simp only [Fintype.card_fin]; rfl)
+      grid_points_filtered_lower I S z hz hzS hzI (by aesop)
     have hupper := filteredCoordinateSpace_codim_two_bound hf hfg I hIf hIg hN
     have hchoose : (n + N).choose n ≤ ((n + 2) * L) ^ n := by
       calc
         _ ≤ (N + 1) ^ n := by
           simpa only [Nat.add_comm n N] using Nat.choose_add_le_add_one_pow N n
         _ ≤ _ := Nat.pow_le_pow_left (by
-          have he : (n + 2) * (L - 1) + (n + 2) = (n + 2) * L := by
-            rw [← Nat.mul_add_one, Nat.sub_add_cancel hL1]
-          dsimp only [N]
-          omega) n
+          aesop) n
     calc
       _ ≤ f.totalDegree * g.totalDegree * (n + N).choose n := hlower.trans hupper
       _ ≤ d * d * (((n + 2) * L) ^ n) :=
@@ -90,5 +83,4 @@ theorem proper_intersection_grid_card_le {K ι : Type*} [Field K]
       _ ≤ (n + 2) ^ n * (d ^ 2 * L ^ n) := Nat.le_mul_of_pos_left _ hconst
       _ = _ := by rw [Nat.mul_assoc]
 
-end
 end CCDN

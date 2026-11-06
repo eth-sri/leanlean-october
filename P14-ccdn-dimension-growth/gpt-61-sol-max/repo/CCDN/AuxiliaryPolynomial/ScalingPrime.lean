@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Analysis.PrimeCutoff
 import CCDN.AuxiliaryPolynomial.BadPrimeCharge
 
@@ -14,12 +16,14 @@ logarithmic height. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Finset Real
 
+variable {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+
+include hL hLT in
 /-- Lower bound from the first Mertens estimate: for `1 ≤ L ≤ T`, the sum of `log p / p` over the
 primes `p` with `L < p ≤ T` is at least `log T - log L - 2 mertensError`. -/
-lemma prime_interval_weight_lower {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) :
+lemma prime_interval_weight_lower  :
     Real.log T - Real.log L - 2 * mertensError ≤
       ∑ p ∈ ((Ioc 0 ⌊T⌋₊).filter Nat.Prime) \ ((Ioc 0 ⌊L⌋₊).filter Nat.Prime),
         Real.log p / p := by
@@ -38,24 +42,19 @@ lemma prime_interval_weight_lower {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) :
   change _ ≤ ∑ p ∈ V \ U, Real.log p / p
   linarith
 
-private theorem exists_prime_interval_not_dvd {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+include hL hLT in
+private theorem exists_prime_interval_not_dvd 
     {D : ℤ} (hD : 0 < D)
     (hheight : Real.log D / L < Real.log T - Real.log L - 2 * mertensError) :
-    ∃ p : ℕ, p.Prime ∧ L < p ∧ (p : ℝ) ≤ T ∧ ¬ (p : ℤ) ∣ D := by
+    ∃ p : ℕ, p.Prime ∧ L < p ∧ ↑p ≤ T ∧ ¬ ↑p ∣ D := by
   classical
   let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
   let V := (Ioc 0 ⌊T⌋₊).filter Nat.Prime
-  have hmem (p : ℕ) (hp : p ∈ V \ U) : p.Prime ∧ L < p ∧ (p : ℝ) ≤ T := by
-    have hpV := (mem_sdiff.mp hp).1
-    have hpP := (mem_filter.mp hpV).2
-    refine ⟨hpP, ?_, (prime_mem_upto_iff (by linarith) hpP).mp hpV⟩
-    by_contra hle
-    exact (mem_sdiff.mp hp).2 ((prime_mem_upto_iff (by linarith) hpP).mpr (le_of_not_gt hle))
+  have hmem (p : ℕ) (hp : p ∈ V \ U) : p.Prime ∧ L < p ∧ ↑p ≤ T := by
+    grind [prime_mem_upto_iff]
   by_contra hnone
-  have hdiv : ∀ p ∈ V \ U, (p : ℤ) ∣ D := by
-    intro p hp
-    by_contra hnd
-    exact hnone ⟨p, (hmem p hp).1, (hmem p hp).2.1, (hmem p hp).2.2, hnd⟩
+  have hdiv : ∀ p ∈ V \ U, ↑p ∣ D := by
+    simp_all
   have hupper := prime_divisor_charge_le (V \ U) hD (fun p hp => (hmem p hp).1) hdiv
     (show 0 < L by linarith) (fun p hp => (hmem p hp).2.1.le)
   have hlower := prime_interval_weight_lower hL hLT
@@ -64,7 +63,7 @@ private theorem exists_prime_interval_not_dvd {L T : ℝ} (hL : 1 ≤ L) (hLT : 
 /-- The absolute constant `A = exp (2 mertensError + 2)` such that a prime in the interval
 `(B / A, B]` can be found avoiding the prime divisors of any nonzero integer `D` with
 `log |D| < B / A`. -/
-def scalingPrimeRatio : ℝ := Real.exp (2 * mertensError + 2)
+noncomputable def scalingPrimeRatio  := Real.exp (2 * mertensError + 2)
 
 /-- The scaling-prime ratio is at least one. -/
 lemma scalingPrimeRatio_one_le : 1 ≤ scalingPrimeRatio := by
@@ -76,25 +75,23 @@ lemma scalingPrimeRatio_one_le : 1 ≤ scalingPrimeRatio := by
 /-- A prime of size comparable to B avoids D when log |D| < B/A, where
 A=exp(2*mertensError+2) is an absolute constant. -/
 theorem exists_scaling_prime {B : ℝ} (hB : scalingPrimeRatio ≤ B)
-    {D : ℤ} (hD : D ≠ 0) (hheight : Real.log |(D : ℝ)| < B / scalingPrimeRatio) :
-    ∃ p : ℕ, p.Prime ∧ B / scalingPrimeRatio < p ∧ (p : ℝ) ≤ B ∧ ¬ (p : ℤ) ∣ D := by
+    {D : ℤ} (hD : D ≠ 0) (hheight : Real.log |↑D| < B / scalingPrimeRatio) :
+    ∃ p : ℕ, p.Prime ∧ B / scalingPrimeRatio < p ∧ ↑p ≤ B ∧ ¬ ↑p ∣ D := by
   have hA := scalingPrimeRatio_one_le
   have hA0 : 0 < scalingPrimeRatio := by linarith
   have hB0 : 0 < B := by linarith
   have hL : 1 ≤ B / scalingPrimeRatio := (le_div_iff₀ hA0).mpr (by linarith)
   have hLB : B / scalingPrimeRatio ≤ B := by
-    apply (div_le_iff₀ hA0).mpr
-    nlinarith
+    simp_all [div_le_iff₀]
   have hwidth : Real.log B - Real.log (B / scalingPrimeRatio) - 2 * mertensError = 2 := by
     rw [Real.log_div hB0.ne' hA0.ne']
     simp only [scalingPrimeRatio, Real.log_exp]
     ring
   have hheight' : Real.log (|D| : ℤ) / (B / scalingPrimeRatio) <
       Real.log B - Real.log (B / scalingPrimeRatio) - 2 * mertensError := by
-    rw [hwidth]
-    have he : ((|D| : ℤ) : ℝ) = |(D : ℝ)| := by norm_cast
+    have he : ((|D| : ℤ) : ℝ) = |↑D| := by norm_cast
     rw [he]
-    have hh : Real.log |(D : ℝ)| / (B / scalingPrimeRatio) < 1 :=
+    have hh :=
       (div_lt_one (by positivity)).mpr hheight
     linarith
   obtain ⟨p, hp, hlo, hhi, hnd⟩ := exists_prime_interval_not_dvd hL hLB (abs_pos.mpr hD) hheight'
@@ -102,5 +99,4 @@ theorem exists_scaling_prime {B : ℝ} (hB : scalingPrimeRatio ≤ B)
   intro hdiv
   exact hnd ((dvd_abs _ _).mpr hdiv)
 
-end
 end CCDN

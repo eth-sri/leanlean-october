@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 import CCDN.ForMathlib.Polynomial
 import CCDN.Hilbert.PolynomialComparison
@@ -13,13 +15,14 @@ import CCDN.Hilbert.PolynomialComparison
 affine variety. Multiplication by the section is injective in the original
 coordinate domain and is killed in the section quotient. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K] [Fintype σ]
+
 private theorem proper_section_filtered_hilbert_drop
-    {K σ : Type*} [Field K] [Fintype σ]
+    
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
     (f : MvPolynomial σ K) (hf : f ∉ I) (N : ℕ) :
     Module.finrank K (filteredCoordinateSpace (I ⊔ Ideal.span {f}) (f.totalDegree + N)) +
@@ -48,49 +51,45 @@ private theorem proper_section_filtered_hilbert_drop
   have hUker : U ≤ ψ.toLinearMap.ker := by
     rintro x hx
     obtain ⟨b, _, rfl⟩ := Submodule.mem_map.mp hx
-    apply LinearMap.mem_ker.mpr
     change ψ (q f * b) = 0
     rw [map_mul, hψ, Ideal.Quotient.eq_zero_iff_mem.mpr
       ((show Ideal.span {f} ≤ J from le_sup_right) (Ideal.subset_span (by simp))), zero_mul]
-  have hf0 : q f ≠ 0 :=
+  have hf0 :=
     fun h => hf (Ideal.Quotient.eq_zero_iff_mem.mp h)
-  have hUdim : Module.finrank K U = Module.finrank K W :=
+  have hUdim :=
     (Submodule.equivMapOfInjective (LinearMap.mulLeft K (q f))
       (fun a b h => mul_left_cancel₀ hf0 h) W).finrank_eq.symm
   have hmap : V.map ψ.toLinearMap =
       filteredCoordinateSpace J (f.totalDegree + N) := by
-    ext x
-    constructor
-    · rintro ⟨a, ⟨g, hg, rfl⟩, rfl⟩
-      exact Submodule.mem_map.mpr ⟨g, hg, rfl⟩
-    · rintro ⟨g, hg, rfl⟩
-      exact Submodule.mem_map.mpr ⟨q g, Submodule.mem_map.mpr ⟨g, hg, rfl⟩, rfl⟩
+    dsimp only [V, filteredCoordinateSpace]
+    rw [← Submodule.map_comp]
+    rfl
   have h := finrank_map_add_kernel_subspace_le ψ.toLinearMap V U hUV hUker
   rw [hmap, hUdim] at h
   exact h
 
+variable [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
+
 /-- The Hilbert polynomial of the section is bounded by the finite
 difference of the original Hilbert polynomial, with the necessary shift. -/
 theorem proper_section_hilbert_polynomial_difference
-    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
-    (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
+     
     (f : MvPolynomial σ K) (hf : f ∉ I) :
     ∃ M : ℕ, ∀ N ≥ M,
       ((filteredHilbertPolynomial (I ⊔ Ideal.span {f})).comp
-        (Polynomial.X + Polynomial.C (f.totalDegree : ℚ))).eval (N : ℚ) ≤
+        (Polynomial.X + Polynomial.C (f.totalDegree : ℚ))).eval ↑N ≤
       ((filteredHilbertPolynomial I).comp
         (Polynomial.X + Polynomial.C (f.totalDegree : ℚ)) -
-          filteredHilbertPolynomial I).eval (N : ℚ) := by
+          filteredHilbertPolynomial I).eval ↑N := by
   obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
   obtain ⟨L, hL⟩ := filteredHilbertPolynomial_spec (I ⊔ Ideal.span {f})
   refine ⟨max M L, fun N hN => ?_⟩
-  have hMN : M ≤ N := (le_max_left _ _).trans hN
+  have hMN := (le_max_left _ _).trans hN
   have hLN : L ≤ f.totalDegree + N := by
-    have := (le_max_right M L).trans hN
     omega
   simp only [Polynomial.eval_comp, Polynomial.eval_add, Polynomial.eval_X,
     Polynomial.eval_C, Polynomial.eval_sub]
-  rw [show (N : ℚ) + f.totalDegree = ((f.totalDegree + N : ℕ) : ℚ) by push_cast; ring,
+  rw [show ↑N + f.totalDegree = ((f.totalDegree + N : ℕ) : ℚ) by push_cast; ring,
     hM _ (by omega), hM _ hMN, hL _ hLN]
   have h := proper_section_filtered_hilbert_drop I f hf N
   have hQ : (Module.finrank K
@@ -104,8 +103,7 @@ theorem proper_section_hilbert_polynomial_difference
 dimension by at least one. In the maximal remaining dimension its leading
 coefficient is at most the expected intersection degree. -/
 theorem proper_section_hilbert_dimension_leadingCoeff
-    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
-    (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
+     
     (m : ℕ) (hdim : (filteredHilbertPolynomial I).natDegree = m + 1)
     (f : MvPolynomial σ K) (hf : f ∉ I) (hfdeg : 0 < f.totalDegree)
     (hsection : I ⊔ Ideal.span {f} ≠ ⊤) :
@@ -124,27 +122,18 @@ theorem proper_section_hilbert_dimension_leadingCoeff
       (filteredHilbertPolynomial (I ⊔ Ideal.span {f})).leadingCoeff :=
     Polynomial.leadingCoeff_taylor _ _
   have hPpos : 0 < P.leadingCoeff := by
-    rw [hPlc]
-    exact filteredHilbertPolynomial_leadingCoeff_pos _ hsection
+    simp_all [filteredHilbertPolynomial_leadingCoeff_pos]
   have hs : (f.totalDegree : ℚ) ≠ 0 := by exact_mod_cast hfdeg.ne'
   have hQdeg :=
     Polynomial.natDegree_comp_X_add_C_sub_self (filteredHilbertPolynomial I) hdim _ hs
   have hQlc :=
     Polynomial.leadingCoeff_comp_X_add_C_sub_self (filteredHilbertPolynomial I) hdim _ hs
   have hQpos : 0 < Q.leadingCoeff := by
-    rw [show Q.leadingCoeff = _ from hQlc]
-    exact mul_pos (mul_pos
-      (filteredHilbertPolynomial_leadingCoeff_pos I (Ideal.IsPrime.ne_top ‹I.IsPrime›))
-      (by positivity))
-      (by exact_mod_cast hfdeg)
+    grind [mul_pos, filteredHilbertPolynomial_leadingCoeff_pos, Ideal.IsPrime.ne_top]
   have hle := proper_section_hilbert_polynomial_difference I f hf
   constructor
   · have h := polynomial_natDegree_le_of_eventual_nat_eval_le P Q hPpos hle
     simpa only [hPdeg, show Q.natDegree = m from hQdeg] using h
-  · intro hdimsection
-    have h := polynomial_leadingCoeff_le_of_eventual_nat_eval_le P Q hPpos hQpos
-      (by rw [hPdeg, hdimsection]; exact hQdeg.symm) hle
-    simpa only [hPlc, show Q.leadingCoeff = _ from hQlc] using h
+  · grind [polynomial_leadingCoeff_le_of_eventual_nat_eval_le]
 
-end
 end CCDN

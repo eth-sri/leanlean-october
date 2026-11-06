@@ -23,20 +23,18 @@ into power series over the extension field. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open scoped TensorProduct
 
+variable {K L A : Type*} [Field K] [Field L] [Algebra K L] [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K)
+
 /-- Extend a power-series-valued algebra map by scalars. -/
-private def formalBranchBaseChange {K L A : Type*} [Field K] [Field L] [Algebra K L]
-    [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K) :
-    L ⊗[K] A →ₐ[L] PowerSeries L :=
+private noncomputable def formalBranchBaseChange   :=
   AlgHom.liftEquiv K L A (PowerSeries L)
     ((PowerSeries.mapAlgHom (Algebra.ofId K L)).comp ψ)
 
 /-- Scalar extension of a faithful formal branch is faithful. -/
 private theorem formalBranchBaseChange_injective
-    {K L A : Type*} [Field K] [Field L] [Algebra K L]
-    [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K)
+    
     (hψ : Function.Injective ψ) :
     Function.Injective (formalBranchBaseChange (L := L) ψ) := by
   let b := Module.Free.chooseBasis K A
@@ -49,10 +47,9 @@ private theorem formalBranchBaseChange_injective
 /-- Any algebra admitting a faithful power-series branch stays a domain under
 an arbitrary extension of its coefficient field. -/
 private theorem isDomain_tensor_of_faithful_formal_branch
-    {K L A : Type*} [Field K] [Field L] [Algebra K L]
-    [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K)
+    
     (hψ : Function.Injective ψ) : IsDomain (L ⊗[K] A) :=
-  Function.Injective.isDomain (formalBranchBaseChange (L := L) ψ)
+  Function.Injective.isDomain (formalBranchBaseChange  ψ)
     (formalBranchBaseChange_injective ψ hψ)
 
 /-- The coordinate algebra of an irreducible plane curve with a smooth
@@ -65,7 +62,7 @@ theorem isDomain_tensor_plane_quotient_of_smooth_point
     (hj : MvPolynomial.eval z (MvPolynomial.pderiv j f) ≠ 0) :
     IsDomain (L ⊗[K] (MvPolynomial (Fin 2) K ⧸ Ideal.span {f})) := by
   obtain ⟨ψ, _, _, hψ⟩ := exists_faithful_formal_plane_branch f hf z j hz hj
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have hkill : ∀ a ∈ I, ψ a = 0 := by
     intro a ha
     exact (hψ a).mpr (Ideal.mem_span_singleton.mp ha)
@@ -76,5 +73,4 @@ theorem isDomain_tensor_plane_quotient_of_smooth_point
     exact Ideal.mem_span_singleton.mpr ((hψ a).mp ha)
   exact isDomain_tensor_of_faithful_formal_branch φ hφ
 
-end
 end CCDN

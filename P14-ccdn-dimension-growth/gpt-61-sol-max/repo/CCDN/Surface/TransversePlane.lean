@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Plane.FiniteFieldBadPlanes
 import CCDN.Algebra.PrimitiveNormalization
@@ -24,34 +28,33 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [CommRing K]
+
 /-- The algebra map restricting a polynomial to the plane parametrized by
 `(s, t) ↦ a + s b + t c`, sending `Xᵢ` to `aᵢ + bᵢ X 0 + cᵢ X 1`. -/
-def affinePlaneMap {K σ : Type*} [CommRing K] (a b c : σ → K) :
+def affinePlaneMap  (a b c : σ → K) :
     MvPolynomial σ K →ₐ[K] MvPolynomial (Fin 2) K :=
   aeval (fun i => C (a i) + C (b i) * X 0 + C (c i) * X 1)
 
 /-- Evaluating the restriction of `f` to the plane `a + s b + t c` at `z` gives the value of
 `f` at `a + z 0 • b + z 1 • c`. -/
-lemma affinePlaneMap_eval {K σ : Type*} [CommRing K] (a b c : σ → K)
+lemma affinePlaneMap_eval  (a b c : σ → K)
     (f : MvPolynomial σ K) (z : Fin 2 → K) :
     eval z (affinePlaneMap a b c f) =
       eval (fun i => a i + b i * z 0 + c i * z 1) f := by
   have he : (eval z).comp (affinePlaneMap a b c).toRingHom =
       eval (fun i => a i + b i * z 0 + c i * z 1) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r; simp [affinePlaneMap]
-    · intro i; simp [affinePlaneMap]
+    aesop (add simp [affinePlaneMap])
   exact RingHom.congr_fun he f
 
 /-- Restricting a polynomial to an affine plane does not increase its total degree. -/
-lemma affinePlaneMap_totalDegree_le {K σ : Type*} [CommRing K]
+lemma affinePlaneMap_totalDegree_le 
     (a b c : σ → K) (f : MvPolynomial σ K) :
     (affinePlaneMap a b c f).totalDegree ≤ f.totalDegree := by
-  change (eval₂Hom C (fun i => C (a i) + C (b i) * X 0 + C (c i) * X 1) f).totalDegree ≤ _
   apply linear_eval₂_totalDegree_le (RingHom.id K) _ _ f
   intro i
   have hx (j : Fin 2) : (X j : MvPolynomial (Fin 2) K).totalDegree ≤ 1 := by
-    simpa [X] using totalDegree_monomial_le (Finsupp.single j 1) (1 : K)
+    simpa [X] using totalDegree_monomial_le (Finsupp.single j 1) 1
   apply (totalDegree_add _ _).trans
   apply max_le
   · apply (totalDegree_add _ _).trans
@@ -64,8 +67,7 @@ private lemma affinePlaneMap_rename {K σ τ : Type*} [CommRing K]
     (e : σ → τ) (a b c : τ → K) (f : MvPolynomial σ K) :
     affinePlaneMap a b c (rename e f) =
       affinePlaneMap (a ∘ e) (b ∘ e) (c ∘ e) f := by
-  change eval₂Hom _ _ (rename e f) = eval₂Hom _ _ f
-  simp only [eval₂Hom_rename, Function.comp_def]
+  solve_by_elim [eval₂Hom_rename, Function.comp_def]
 
 private lemma map_affinePlaneMap {K L σ : Type*} [CommRing K] [CommRing L]
     (φ : K →+* L) (a b c : σ → K) (f : MvPolynomial σ K) :
@@ -73,19 +75,17 @@ private lemma map_affinePlaneMap {K L σ : Type*} [CommRing K] [CommRing L]
       affinePlaneMap (φ ∘ a) (φ ∘ b) (φ ∘ c) (map φ f) := by
   have he : (map φ).comp (affinePlaneMap a b c).toRingHom =
       (affinePlaneMap (φ ∘ a) (φ ∘ b) (φ ∘ c)).toRingHom.comp (map φ) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r; simp [affinePlaneMap]
-    · intro i; simp [affinePlaneMap]
+    aesop (add simp [affinePlaneMap])
   exact RingHom.congr_fun he f
 
-private lemma universalPlaneSection_eq_affinePlaneMap {K σ : Type*} [CommRing K]
+private lemma universalPlaneSection_eq_affinePlaneMap 
     (f : MvPolynomial σ K) (u : PlaneParameters σ → K) :
     universalPlaneSection f u = bivariatePolynomialEquiv K
       (affinePlaneMap (fun i => u (i,0)) (fun i => u (i,1)) (fun i => u (i,2)) f) := by
   have he : eval u = planeParameterEval (RingHom.id K)
       (fun i => u (i,0)) (fun i => u (i,1)) (fun i => u (i,2)) := by
     apply MvPolynomial.ringHom_ext
-    · intro r; simp [planeParameterEval]
+    · simp_all [planeParameterEval]
     · intro i
       rcases i with ⟨i,j⟩
       fin_cases j <;> simp [planeParameterEval]
@@ -98,11 +98,11 @@ def planeDirectionMatrix {K : Type*} [CommRing K] (b c v : Fin 3 → K) :
     Matrix (Fin 3) (Fin 3) K :=
   fun i j => ![b i, c i, v i] j
 
-private def planeTransversalityPolynomial (v : Fin 3 → ℚ) :
+private def planeTransversalityPolynomial (v : CCDN.RatPoint 3) :
     MvPolynomial (PlaneParameters (Fin 3)) ℚ :=
   (planeDirectionMatrix (fun i => X (i,1)) (fun i => X (i,2)) (fun i => C (v i))).det
 
-private lemma planeTransversalityPolynomial_eval (v : Fin 3 → ℚ)
+private lemma planeTransversalityPolynomial_eval (v : CCDN.RatPoint 3)
     (u : PlaneParameters (Fin 3) → ℚ) :
     eval u (planeTransversalityPolynomial v) =
       (planeDirectionMatrix (fun i => u (i,1)) (fun i => u (i,2)) v).det := by
@@ -111,11 +111,11 @@ private lemma planeTransversalityPolynomial_eval (v : Fin 3 → ℚ)
   ext i j
   fin_cases j <;> simp [planeDirectionMatrix, Matrix.map_apply]
 
-private lemma planeTransversalityPolynomial_ne_zero (v : Fin 3 → ℚ) (hv : v ≠ 0) :
+private lemma planeTransversalityPolynomial_ne_zero (v : CCDN.RatPoint 3) (hv : v ≠ 0) :
     planeTransversalityPolynomial v ≠ 0 := by
   obtain ⟨j, hj⟩ := Function.ne_iff.mp hv
   intro he
-  have hz (b c : Fin 3 → ℚ) : (planeDirectionMatrix b c v).det = 0 := by
+  have hz (b c : CCDN.RatPoint 3) : (planeDirectionMatrix b c v).det = 0 := by
     let u : PlaneParameters (Fin 3) → ℚ := fun i => ![0, b i.1, c i.1] i.2
     have hh := congrArg (eval u) he
     rw [planeTransversalityPolynomial_eval, map_zero] at hh
@@ -131,17 +131,18 @@ private lemma planeTransversalityPolynomial_ne_zero (v : Fin 3 → ℚ) (hv : v 
     simp [planeDirectionMatrix, Matrix.det_fin_three] at hh
     exact hj hh
 
+variable (f : CCDN.IntegerPolynomial 3) (hir : AbsolutelyIrreducible f) (hd : 0 < f.totalDegree)
+
+include hir hd in
 /-- The integer specialization theorem, reindexed to three
 coordinates, can avoid any nonzero rational parameter polynomial. -/
 private theorem exists_good_rational_plane_avoiding
-    (f : MvPolynomial (Fin 3) ℤ)
-    (hir : AbsolutelyIrreducible f)
-    (hd : 0 < f.totalDegree)
+    
     (P : MvPolynomial (PlaneParameters (Fin 3)) ℚ) (hP : P ≠ 0) :
-    ∃ a b c : Fin 3 → ℚ,
+    ∃ a b c : CCDN.RatPoint 3,
       eval (fun i => ![a i.1, b i.1, c i.1] i.2) P ≠ 0 ∧
-      Irreducible (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)) ∧
-      (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)).totalDegree = f.totalDegree := by
+      Irreducible (affinePlaneMap a b c (CCDN.rationalPolynomial f)) ∧
+      (affinePlaneMap a b c (CCDN.rationalPolynomial f)).totalDegree = f.totalDegree := by
   classical
   let e : Fin 3 ≃ Option (Fin 2) := finSuccEquiv' 0
   let ep : PlaneParameters (Fin 3) ≃ PlaneParameters (Option (Fin 2)) :=
@@ -153,29 +154,26 @@ private theorem exists_good_rational_plane_avoiding
   have hFd : F.totalDegree = f.totalDegree := totalDegree_renameEquiv e f
   obtain ⟨PZ, t, _, ht, hmodel⟩ := exists_primitive_integer_model P hP
   have hPZ : PZ ≠ 0 := by
-    intro h
-    rw [h, map_zero] at hmodel
-    exact mul_ne_zero (C_eq_zero.not.mpr ht) hP hmodel.symm
-  have hren : rename ep PZ ≠ 0 :=
+    aesop
+  have hren :=
     (map_ne_zero_iff _ (rename_injective ep ep.injective)).mpr hPZ
-  obtain ⟨u, _, hu, _, hdeg, hgood⟩ :=
+  obtain ⟨u, hu, hdeg, hgood⟩ :=
     exists_integer_geometrically_good_plane_avoiding F hF (hFd ▸ hd) (rename ep PZ) hren
-  let a : Fin 3 → ℤ := fun i => u (e i,0)
-  let b : Fin 3 → ℤ := fun i => u (e i,1)
-  let c : Fin 3 → ℤ := fun i => u (e i,2)
-  let q : MvPolynomial (Fin 2) ℤ := affinePlaneMap a b c f
+  let a : CCDN.IntPoint 3 := fun i => u (e i,0)
+  let b : CCDN.IntPoint 3 := fun i => u (e i,1)
+  let c : CCDN.IntPoint 3 := fun i => u (e i,2)
+  let q : CCDN.IntegerPolynomial 2 := affinePlaneMap a b c f
   have hsection : universalPlaneSection F u = bivariatePolynomialEquiv ℤ q := by
     rw [universalPlaneSection_eq_affinePlaneMap]
     congr 1
     exact affinePlaneMap_rename e _ _ _ f
   rw [hsection, bivariatePolynomialEquiv_map] at hgood hdeg
-  have hqir : AbsolutelyIrreducible q :=
+  have hqir :=
     (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv _)).mp hgood
   have hqd : q.totalDegree = f.totalDegree := by
     rw [bivariateTotalDegree_equiv] at hdeg
-    have hm : (map (Int.castRingHom (AlgebraicClosure ℚ)) q).totalDegree = q.totalDegree :=
-        totalDegree_map_of_injective Int.cast_injective _
-    simpa only [hm, hFd] using hdeg
+    exact have hm := totalDegree_map_of_injective Int.cast_injective q;
+    Eq.mp (congr (congrArg Eq hm) hFd) hdeg
   refine ⟨(Int.castRingHom ℚ) ∘ a, (Int.castRingHom ℚ) ∘ b,
     (Int.castRingHom ℚ) ∘ c, ?_, ?_, ?_⟩
   · have hu' : eval (fun i => ![a i.1, b i.1, c i.1] i.2) PZ ≠ 0 := by
@@ -189,7 +187,7 @@ private theorem exists_good_rational_plane_avoiding
     have hmap : eval
         (fun i => ![((Int.castRingHom ℚ) ∘ a) i.1,
           ((Int.castRingHom ℚ) ∘ b) i.1, ((Int.castRingHom ℚ) ∘ c) i.1] i.2)
-        (map (Int.castRingHom ℚ) PZ) ≠ 0 := by
+        (CCDN.rationalPolynomial PZ) ≠ 0 := by
       have hh : (Int.castRingHom ℚ)
           (eval (fun i => ![a i.1, b i.1, c i.1] i.2) PZ) ≠ 0 :=
         (map_ne_zero_iff _ Int.cast_injective).mpr hu'
@@ -206,19 +204,18 @@ private theorem exists_good_rational_plane_avoiding
   · rw [← map_affinePlaneMap]
     exact (rational_map_totalDegree q).trans hqd
 
+include hir hd in
 /-- A geometrically irreducible surface admits a transverse plane
 whose restriction of any prescribed nonzero second equation is nonzero. -/
 theorem exists_surface_transverse_plane
-    (f : MvPolynomial (Fin 3) ℤ)
-    (hir : AbsolutelyIrreducible f)
-    (hd : 0 < f.totalDegree) (v : Fin 3 → ℚ) (hv : v ≠ 0)
-    (g : MvPolynomial (Fin 3) ℚ) (hg : g ≠ 0) :
-    ∃ a b c : Fin 3 → ℚ,
+     (v : CCDN.RatPoint 3) (hv : v ≠ 0)
+    (g : CCDN.CoordinatePolynomial 3) (hg : g ≠ 0) :
+    ∃ a b c : CCDN.RatPoint 3,
       (planeDirectionMatrix b c v).det ≠ 0 ∧
-      Irreducible (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)) ∧
-      (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)).totalDegree = f.totalDegree ∧
+      Irreducible (affinePlaneMap a b c (CCDN.rationalPolynomial f)) ∧
+      (affinePlaneMap a b c (CCDN.rationalPolynomial f)).totalDegree = f.totalDegree ∧
       affinePlaneMap a b c g ≠ 0 := by
-  let P := planeTransversalityPolynomial v * rename (fun i : Fin 3 => (i, (0 : Fin 3))) g
+  let P := planeTransversalityPolynomial v * rename (fun i : Fin 3 => (i, 0)) g
   have hP : P ≠ 0 := mul_ne_zero (planeTransversalityPolynomial_ne_zero v hv)
     ((map_ne_zero_iff _ (rename_injective _ (by intro i j h; exact congrArg Prod.fst h))).mpr hg)
   obtain ⟨a,b,c,havoid,hgood,hdegree⟩ := exists_good_rational_plane_avoiding f hir hd P hP
@@ -226,7 +223,7 @@ theorem exists_surface_transverse_plane
   obtain ⟨htrans, hbase⟩ := mul_ne_zero_iff.mp havoid
   refine ⟨a,b,c,htrans,hgood,hdegree,?_⟩
   intro hz
-  have hh := affinePlaneMap_eval a b c g (0 : Fin 2 → ℚ)
+  have hh := affinePlaneMap_eval a b c g 0
   rw [hz, map_zero] at hh
   change eval a g ≠ 0 at hbase
   apply hbase

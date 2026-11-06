@@ -19,7 +19,6 @@ The good-section bound uses the proved Stepanov theorem over the prime field. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Evaluating the nested-polynomial form of a bivariate polynomial `f` at `(t 0, t 1)` agrees
@@ -31,25 +30,22 @@ lemma bivariateEval_equiv {K : Type*} [CommRing K]
     apply MvPolynomial.ringHom_ext
     · intro r
       simp [bivariateEval, bivariatePolynomialEquiv_C]
-    · intro i
-      fin_cases i <;> simp [bivariateEval,
-        bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one]
+    · simp_all [bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one, bivariateEval]
   exact RingHom.congr_fun he f
+
+variable {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) (v : PlaneParameters σ → K)
 
 /-- The plane section `universalPlaneSection f v` as a polynomial in two variables
 (`MvPolynomial (Fin 2)`), the presentation used by point counting. -/
-def planeSectionPolynomial {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) : MvPolynomial (Fin 2) K :=
+noncomputable def planeSectionPolynomial   :=
   (bivariatePolynomialEquiv K).symm (universalPlaneSection f v)
 
 /-- A plane section of `f` has total degree at most that of `f`. -/
-lemma planeSectionPolynomial_totalDegree {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :
+lemma planeSectionPolynomial_totalDegree  :
     (planeSectionPolynomial f v).totalDegree ≤ f.totalDegree :=
   universalPlanePolynomial_specialization_totalDegree f (eval v)
 
-private lemma planeSectionPoints_card_eq {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :
+private lemma planeSectionPoints_card_eq  :
     Nat.card (PlaneSectionPoints f v) =
       Nat.card {t : Fin 2 → K // eval t (planeSectionPolynomial f v) = 0} := by
   have he (t : Fin 2 → K) : eval t (planeSectionPolynomial f v) =
@@ -75,13 +71,10 @@ lemma planeSectionPoints_card_le_degree_mul_card {K σ : Type*} [Field K] [Finty
     (hv : universalPlaneSection f v ≠ 0) :
     Nat.card (PlaneSectionPoints f v) ≤ f.totalDegree * Fintype.card K := by
   have hg : planeSectionPolynomial f v ≠ 0 := by
-    intro hz
-    apply hv
-    have h := congrArg (bivariatePolynomialEquiv K) hz
-    simpa only [planeSectionPolynomial, AlgEquiv.apply_symm_apply, map_zero] using h
+    simp_all [CCDN.planeSectionPolynomial, CCDN.bivariatePolynomialEquiv]
   rw [planeSectionPoints_card_eq]
   have h := finite_field_polynomial_zeros_card (planeSectionPolynomial f v) hg
-  simp only [Fintype.card_fin, Nat.reduceSub, pow_one] at h
+  simp only [Fintype.card_fin, Nat.reduceAdd, Nat.reduceSub, pow_one] at h
   exact h.trans (Nat.mul_le_mul_right _ (planeSectionPolynomial_totalDegree f v))
 
 /-- A plane section that is absolutely irreducible over `𝔽_p`, for `p > 27 d⁴`, has at most
@@ -93,7 +86,7 @@ lemma planeSectionPoints_card_le_add_mul_sqrt {σ : Type*}
       (universalPlaneSection f v)))
     (hsize : stepanovThreshold (f.totalDegree : ℝ) < p) :
     (Nat.card (PlaneSectionPoints f v) : ℝ) ≤
-      p + planeResidueConstant * (f.totalDegree : ℝ) ^ 2 * Real.sqrt p := by
+      p + planeResidueConstant * ↑f.totalDegree ^ 2 * Real.sqrt p := by
   classical
   let g := planeSectionPolynomial f v
   have hg : Irreducible g := by
@@ -101,7 +94,7 @@ lemma planeSectionPoints_card_le_add_mul_sqrt {σ : Type*}
     apply (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv (AlgebraicClosure (ZMod p)))).mp
     rw [← bivariatePolynomialEquiv_map]
     simpa only [g, planeSectionPolynomial, AlgEquiv.apply_symm_apply] using hir
-  have hd : g.totalDegree ≤ f.totalDegree := planeSectionPolynomial_totalDegree f v
+  have hd := planeSectionPolynomial_totalDegree f v
   have hs : stepanovThreshold (g.totalDegree : ℝ) < p := by
     apply lt_of_le_of_lt _ hsize
     gcongr
@@ -113,5 +106,4 @@ lemma planeSectionPoints_card_le_add_mul_sqrt {σ : Type*}
   gcongr
   exact planeResidueConstant_pos.le
 
-end
 end CCDN

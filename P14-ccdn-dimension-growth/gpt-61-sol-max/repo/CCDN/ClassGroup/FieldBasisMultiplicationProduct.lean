@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.MultiplicationPairingProduct
 import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
 
@@ -14,13 +16,14 @@ of the geometric construction of the basis or the length function. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 variable {F K ι : Type*} [Field F] [Field K] [Algebra F K]
 
+variable (b : Module.Basis ι F K) (p q : ι)
+
 /-- The span of the basis vectors `b i` with `i ≠ p` and `i ≠ q` is the intersection of the kernels
 of the coordinate functionals `b.coord q` and `b.coord p`. -/
-theorem fieldBasisMiddle_span (b : Module.Basis ι F K) (p q : ι) :
+theorem fieldBasisMiddle_span  :
     Submodule.span F (Set.range (fun i : {i : ι // i ≠ p ∧ i ≠ q} ↦ b i)) =
       hyperplaneComplement (b.coord q) (b.coord p) := by
   classical
@@ -40,23 +43,19 @@ theorem fieldBasisMiddle_span (b : Module.Basis ι F K) (p q : ι) :
       exact (hx (Finsupp.mem_support_iff.mpr hq)).2 rfl
     · by_contra hp
       exact (hx (Finsupp.mem_support_iff.mpr hp)).1 rfl
-  · rintro ⟨hq, hp⟩ i hi
-    have hi' := Finsupp.mem_support_iff.mp hi
-    exact ⟨fun h ↦ hi' (h ▸ hp), fun h ↦ hi' (h ▸ hq)⟩
+  · grind
 
 /-- The original basis vectors other than the unit and the distinguished
 last vector form a basis of the two coordinate kernels. -/
-def fieldBasisMiddle (b : Module.Basis ι F K) (p q : ι) :
-    Module.Basis {i : ι // i ≠ p ∧ i ≠ q} F
-      (hyperplaneComplement (b.coord q) (b.coord p)) :=
+noncomputable def fieldBasisMiddle   :=
   (Module.Basis.span
-    (b.linearIndependent.comp (fun i : {i : ι // i ≠ p ∧ i ≠ q} ↦ (i : ι))
+    (b.linearIndependent.comp ((Subtype.val))
       Subtype.val_injective)).map
     (LinearEquiv.ofEq _ _ (fieldBasisMiddle_span b p q))
 
 /-- The vectors of `fieldBasisMiddle b p q` are the original basis vectors `b i`. -/
 @[simp]
-theorem fieldBasisMiddle_apply (b : Module.Basis ι F K) (p q : ι)
+theorem fieldBasisMiddle_apply 
     (i : {i : ι // i ≠ p ∧ i ≠ q}) :
     (fieldBasisMiddle b p q i : K) = b i := by
   simp [fieldBasisMiddle]
@@ -64,17 +63,6 @@ theorem fieldBasisMiddle_apply (b : Module.Basis ι F K) (p q : ι)
 section Finite
 variable [Fintype ι] [DecidableEq ι]
 
-private theorem fieldBasisMiddle_card (p q : ι) (hpq : p ≠ q) :
-    Fintype.card {i : ι // i ≠ p ∧ i ≠ q} + 2 = Fintype.card ι := by
-  have hs (i : ι) :
-      i ∈ (Finset.univ.erase p).erase q ↔ i ≠ p ∧ i ≠ q := by
-    simp [and_comm]
-  rw [Fintype.card_of_subtype _ hs]
-  have hq : q ∈ Finset.univ.erase p := by simp [hpq.symm]
-  have h₁ := Finset.card_erase_add_one hq
-  have h₂ := Finset.card_erase_add_one (Finset.mem_univ p)
-  simpa only [Finset.card_univ] using (show
-    ((Finset.univ.erase p).erase q).card + 2 = Finset.univ.card by omega)
 
 private theorem fieldBasisMiddle_prod {R : Type*} [CommMonoid R]
     (w : ι → R) (p q : ι) (hpq : p ≠ q) :
@@ -113,7 +101,16 @@ theorem field_basis_multiplication_minimum_product
     (fun i ↦ N (b i)) (hN (b q)) (fun i j hij ↦
       (hminimum i j (by simpa only [fieldBasisMiddle_apply] using hij)).trans
         (hmul (b i) (b j)))
-  rw [fieldBasisMiddle_card p q hpq] at hpair
+  rw [(show Fintype.card { i // i ≠ p ∧ i ≠ q } + (2 : ℕ) = Fintype.card ι from (by
+        have hs (i : ι) :
+            i ∈ (Finset.univ.erase p).erase q ↔ i ≠ p ∧ i ≠ q := by
+          simp [and_comm]
+        rw [Fintype.card_of_subtype _ hs]
+        have hq : q ∈ Finset.univ.erase p := by simp [hpq.symm]
+        have h₁ := Finset.card_erase_add_one hq
+        have h₂ := Finset.card_erase_add_one (Finset.mem_univ p)
+        simpa only [Finset.card_univ] using (show
+          ((Finset.univ.erase p).erase q).card + 2 = Finset.univ.card by omega)))] at hpair
   have hprod : 0 ≤ N (b q) * ∏ i : {i : ι // i ≠ p ∧ i ≠ q}, N (b i) :=
     mul_nonneg (hN _) (Finset.prod_nonneg (fun i _ ↦ hN _))
   have hfull :
@@ -123,5 +120,4 @@ theorem field_basis_multiplication_minimum_product
   exact hpair.trans (pow_le_pow_left₀ hprod hfull 2)
 
 end Finite
-end
 end CCDN

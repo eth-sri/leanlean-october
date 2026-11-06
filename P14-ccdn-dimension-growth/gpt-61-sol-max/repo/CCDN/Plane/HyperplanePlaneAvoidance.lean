@@ -5,21 +5,22 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Plane.FiniteFieldBadPlanes
 import CCDN.Noether.ClosedFormParameterDegree
 import CCDN.Noether.UniversalPlaneSpecialization
 
-/-! A bounded geometrically good plane whose three parameter columns have
+/-! A geometrically good integer plane whose three parameter columns have
 an invertible minor in three selected ambient coordinates. This additional
-condition allows an effective containing hyperplane to be constructed. -/
+condition allows a containing rational hyperplane to be constructed. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private def planeAnchorMinor (n : ℕ) :
+private noncomputable def planeAnchorMinor (n : ℕ) :
     MvPolynomial (PlaneParameters (Option (Fin (3 + n)))) ℤ :=
   Matrix.det (Matrix.of (fun i j : Fin 3 => X (some (i.castAdd n), j)))
 
@@ -28,12 +29,6 @@ private lemma planeAnchorMinor_eval (n : ℕ)
     eval v (planeAnchorMinor n) =
       Matrix.det (Matrix.of (fun i j : Fin 3 => v (some (i.castAdd n), j))) := by
   simp [planeAnchorMinor, Matrix.det_fin_three]
-
-private lemma planeAnchorMinor_degree (n : ℕ) : (planeAnchorMinor n).totalDegree ≤ 3 := by
-  have hh := matrix_det_parameterDegree
-    (Matrix.of (fun i j : Fin 3 => (X (some (i.castAdd n), j) :
-      MvPolynomial (PlaneParameters (Option (Fin (3 + n)))) ℤ))) 1 (by intros; simp)
-  simpa only [planeAnchorMinor, Fintype.card_fin, Nat.mul_one] using hh
 
 private lemma planeAnchorMinor_ne_zero (n : ℕ) : planeAnchorMinor n ≠ 0 := by
   let v : PlaneParameters (Option (Fin (3 + n))) → ℤ :=
@@ -52,21 +47,13 @@ theorem exists_integer_good_plane_with_anchor {n : ℕ}
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree) :
     ∃ v : PlaneParameters (Option (Fin (3 + n))) → ℤ,
-      (∀ p, 0 ≤ v p ∧ v p ≤ 2 * f.totalDegree ^ 3 + 3) ∧
       Matrix.det (Matrix.of (fun i j : Fin 3 => v (some (i.castAdd n), j))) ≠ 0 ∧
-      (bivariateMap (Int.castRingHom (AlgebraicClosure ℚ))
-        (universalPlaneSection f v)).natDegree = f.totalDegree ∧
       bivariateTotalDegree (bivariateMap (Int.castRingHom (AlgebraicClosure ℚ))
         (universalPlaneSection f v)) = f.totalDegree ∧
       Irreducible (bivariateMap (Int.castRingHom (AlgebraicClosure ℚ))
         (universalPlaneSection f v)) := by
-  obtain ⟨v, hv, hminor, hgood⟩ := exists_integer_geometrically_good_plane_avoiding
+  obtain ⟨v, hminor, hgood⟩ := exists_integer_geometrically_good_plane_avoiding
     f hir hd (planeAnchorMinor n) (planeAnchorMinor_ne_zero n)
-  refine ⟨v, ?_, ?_, hgood⟩
-  · intro p
-    refine ⟨(hv p).1, (hv p).2.trans ?_⟩
-    exact_mod_cast Nat.add_le_add_left (planeAnchorMinor_degree n) (2 * f.totalDegree ^ 3)
-  · simpa only [planeAnchorMinor_eval] using hminor
+  exact ⟨v, by simpa [planeAnchorMinor_eval] using hminor, hgood⟩
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.TwoTorsion
 import CCDN.ClassGroup.BalancedGenerator
 import CCDN.ClassGroup.OddDegreeClassGroupBound
@@ -16,9 +18,8 @@ Odd degrees have no logarithm; even degrees have exactly one logarithm.
 The quadratic descent, exceptional subfields, lattice and curve counts
 used by the proof are all proved in the imported modules. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField
 universe u
 
@@ -35,7 +36,7 @@ theorem classGroup_two_torsion_bound (n : ℕ) (hn : 3 ≤ n) :
   have hCT : 2 * C ≤ T := le_max_right _ _
   refine ⟨T, (mul_pos (by norm_num) hC).trans_le hCT, ?_⟩
   intro K _ _ hdeg
-  have hlog : 1 ≤ Real.log |(discr K : ℝ)| := one_le_log_abs_discr K (by omega)
+  have hlog := one_le_log_abs_discr K (by omega)
   by_cases hodd : Odd n
   · rw [Nat.odd_iff.mp hodd, Nat.sub_self, pow_zero, mul_one]
     have hh := odd_degree_classGroup_two_torsion_bound K (by omega)
@@ -51,10 +52,8 @@ theorem classGroup_two_torsion_bound (n : ℕ) (hn : 3 ≤ n) :
     have hh' : (classGroupTwoTorsionCard K : ℝ) ≤
         (2 * C) * |(discr K : ℝ)| ^ (1 / 2 - 1 / (2 * (n : ℝ))) *
           Real.log |(discr K : ℝ)| := by
-      convert hh.trans hcost using 1
-      ring
+      linarith
     exact hh'.trans (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hCT (by positivity)) (by linarith))
 
-end
 end CCDN

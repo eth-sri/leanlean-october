@@ -5,7 +5,6 @@ Authors: Ralf Stephan
 -/
 module
 
-public import ArithmeticHeights.Absolute
 public import Mathlib.NumberTheory.NumberField.House
 public import Mathlib.NumberTheory.SiegelsLemma
 
@@ -77,13 +76,12 @@ This is Layer 5.1 of the `ArithmeticHeights` roadmap.
 
 public section
 
-open Finset Height Matrix
+open Finset Matrix
 
 /-! ### The sup norm of an integer tuple -/
 
 namespace Rat
 
-variable {ι : Type*} [Nonempty ι] {x : ι → ℤ}
 
 end Rat
 
@@ -93,7 +91,6 @@ attribute [local instance] Matrix.seminormedAddCommGroup
 
 namespace Int.Matrix
 
-variable {α β : Type*} [Fintype α] [Fintype β] (A : Matrix α β ℤ)
 
 end Int.Matrix
 
@@ -101,6 +98,5 @@ end Int.Matrix
 
 namespace NumberField
 
-variable {K : Type*} [Field K] [NumberField K] {ι : Type*} [Finite ι]
 
 end NumberField

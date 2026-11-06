@@ -5,6 +5,12 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.AuxiliaryPolynomial.RankNumerics
+
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Determinant.HypersurfaceDeterminantRank
 public import CCDN.Height.CountingHypotheses
@@ -19,13 +25,12 @@ controlled by the equation's coefficient height and congruence modulus. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- The logarithmic bad-prime charge in the affine congruence determinant estimate for a form
 of degree `d` in `m` variables with coefficient height at most `H`, where `Q` is the sum of
 the logarithms of the congruence primes. -/
-def congruenceHeightCharge (m d : ℕ) (H Q : ℝ) : ℝ :=
+noncomputable def congruenceHeightCharge (m d : ℕ) (H Q : ℝ)  :=
   Real.log (1 + 27 * (d : ℝ) ^ 4 *
     (hypersurfaceHeightConstant m * (1 + Real.log H / (d : ℝ) ^ 2)) + Q) +
       2 * mertensError + 1
@@ -33,11 +38,11 @@ def congruenceHeightCharge (m d : ℕ) (H Q : ℝ) : ℝ :=
 /-- The logarithmic height and modulus are the only equation-dependent
 errors in the affine smooth-congruence determinant estimate. -/
 theorem affine_congruence_determinant_log_lower_height {n s N M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin (n + 2)) ℤ)
+    (f : CCDN.IntegerPolynomial (n + 2))
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree) (H : ℝ) (hH : 1 ≤ H)
     (hcoeff : CoefficientHeightLE f H)
-    (G : Fin N → MvPolynomial (Fin (n + 2)) ℤ) (hG : ∀ j, (G j).totalDegree ≤ M)
+    (G : Fin N → CCDN.IntegerPolynomial (n + 2)) (hG : ∀ j, (G j).totalDegree ≤ M)
     (x : Fin s → IntPoint (n + 2)) (hx : ∀ i, eval (x i) f = 0)
     (hrows : LinearIndependent ℚ
       ((Matrix.of fun i j => eval (x i) (G j)).map ((↑) : ℤ → ℚ)).row)
@@ -50,24 +55,24 @@ theorem affine_congruence_determinant_log_lower_height {n s N M : ℕ} (hs : 0 <
   obtain ⟨bad, hbad, hbound⟩ := exists_affine_congruence_determinant_log_lower hs f hir hd
     G hG x hx hrows P a hres
   let F := scaledHomogenize f.totalDegree 1 f
-  have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
+  have hf0 := ne_zero_of_irreducible_map hir
   have hF0 : F ≠ 0 := scaledHomogenize_ne_zero _ one_ne_zero hf0
-  have hFdegree : F.totalDegree = f.totalDegree :=
+  have hFdegree :=
     (scaledHomogenize_homogeneous 1 f le_rfl).totalDegree hF0
-  have hFir : AbsolutelyIrreducible F :=
-    (unscaledHomogenize_absolute_irreducible_iff f hf0).mpr hir
+  have hFir :=
+    (unscaledHomogenize_absolute_irreducible_iff f).mpr hir
   have hheight : (integerCoefficientHeight F : ℝ) ≤ H := by
     rw [show F = scaledHomogenize f.totalDegree 1 f from rfl,
       integerCoefficientHeight_scaledHomogenize_one]
     exact integerCoefficientHeight_le f (by linarith) hcoeff
   have hc := hypersurface_and_congruence_prime_charge F hFir (hFdegree ▸ hd) H hH
     (fun e => (coefficient_abs_le_integerCoefficientHeight F e).trans hheight) bad P
-    (fun p hp => by simpa only [hFdegree] using (hbad p).mp hp) hres.prime
+    (fun p hp => by aesop) hres.prime
   change (∑ p ∈ bad ∪ P, Real.log p / p) ≤
     congruenceHeightCharge (n + 3) F.totalDegree H (∑ p ∈ P, Real.log p) at hc
   rw [hFdegree] at hc
-  have hfactor : 0 ≤ ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) / (n + 2 : ℝ) *
-      (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) := by positivity
+  have hfactor : 0 ≤ factorialRoot n / (n + 2 : ℝ) *
+      ↑s ^ (1 + 1 / (n + 1 : ℝ)) := by positivity
   apply le_trans ?_ hbound
   apply add_le_add
   · apply mul_le_mul_of_nonneg_left _ hfactor
@@ -75,5 +80,4 @@ theorem affine_congruence_determinant_log_lower_height {n s N M : ℕ} (hs : 0 <
     linarith
   · exact le_rfl
 
-end
 end CCDN

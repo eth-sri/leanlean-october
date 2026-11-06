@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.BivariateClosedForms
 
 /-! Integer coefficient matrices for the closed-form irreducibility criterion.
@@ -23,6 +25,11 @@ abbrev BivariateGrid (d : ℕ) := Fin d × Fin d
 `BivariateGrid d`; these index the columns of the closed-form coefficient matrix. -/
 abbrev ClosedFormColumns (d : ℕ) := BivariateGrid d ⊕ BivariateGrid d
 
+/-- Indexing the full-rank minor in the rectangular closed-form matrix. -/
+abbrev ClosedFormMinorIndex (d : ℕ) := Fin (2 * d ^ 2 - 1)
+/-- Indexing the full-rank minor in the Euler-constrained matrix of degree `k + 2`. -/
+abbrev EulerMinorIndex (k : ℕ) := Fin ((k + 2) ^ 2 - 1)
+
 /-- Reconstruct a polynomial with outer and inner exponents less than d. -/
 def bivariateGridPolynomial (R : Type*) [CommRing R] (d : ℕ) :
     (BivariateGrid d → R) →ₗ[R] R[X][X] where
@@ -35,15 +42,16 @@ def bivariateGridPolynomial (R : Type*) [CommRing R] (d : ℕ) :
     intro i _
     simp only [smul_monomial, smul_eq_mul]
 
+variable {R : Type*} [CommRing R]
+
 /-- The coefficient with outer exponent `i` and inner exponent `j` of the polynomial with grid
 coefficients `v` is `v (i, j)`. -/
-lemma bivariateGridPolynomial_coeff {R : Type*} [CommRing R] {d : ℕ}
+lemma bivariateGridPolynomial_coeff  {d : ℕ}
     (v : BivariateGrid d → R) (i j : Fin d) :
     ((bivariateGridPolynomial R d v).coeff i.val).coeff j.val = v (i,j) := by
-  classical
-  simp [bivariateGridPolynomial, coeff_monomial, Fintype.sum_prod_type, Fin.val_inj]
+  simp_all [coeff_monomial, Fintype.sum_prod_type, Fin.val_inj, bivariateGridPolynomial]
 
-private lemma bivariateGridPolynomial_injective {R : Type*} [CommRing R] (d : ℕ) :
+private lemma bivariateGridPolynomial_injective  (d : ℕ) :
     Function.Injective (bivariateGridPolynomial R d) := by
   intro v w h
   funext i
@@ -52,7 +60,7 @@ private lemma bivariateGridPolynomial_injective {R : Type*} [CommRing R] (d : �
 
 /-- The polynomial with coefficients `v` on the grid `BivariateGrid d` has outer degree less than
 `d`. -/
-lemma bivariateGridPolynomial_degree_lt {R : Type*} [CommRing R] {d : ℕ}
+lemma bivariateGridPolynomial_degree_lt  {d : ℕ}
     (v : BivariateGrid d → R) : (bivariateGridPolynomial R d v).degree < d := by
   classical
   rw [degree_lt_iff_coeff_zero]
@@ -69,16 +77,14 @@ def closedFormPair (R : Type*) [CommRing R] (d : ℕ) :
   toFun v := (bivariateGridPolynomial R d (fun i => v (.inl i)),
     bivariateGridPolynomial R d (fun i => v (.inr i)))
   map_add' v w := by
-    apply Prod.ext
-    · exact (bivariateGridPolynomial R d).map_add _ _
-    · exact (bivariateGridPolynomial R d).map_add _ _
+    solve_by_elim [Prod.ext, map_add]
   map_smul' a v := by
     apply Prod.ext
     · exact (bivariateGridPolynomial R d).map_smul a _
     · exact (bivariateGridPolynomial R d).map_smul a _
 
 /-- Decoding a coefficient vector into a pair of grid polynomials is injective. -/
-lemma closedFormPair_injective {R : Type*} [CommRing R] (d : ℕ) :
+lemma closedFormPair_injective  (d : ℕ) :
     Function.Injective (closedFormPair R d) := by
   intro v w h
   have hl := bivariateGridPolynomial_injective d (congrArg Prod.fst h)
@@ -89,7 +95,7 @@ lemma closedFormPair_injective {R : Type*} [CommRing R] (d : ℕ) :
   | inr i => exact congrFun hr i
 
 /-- The cleared differential equation as a linear operator on (P,Q). -/
-def closedFormOperator {R : Type*} [CommRing R] (f : R[X][X]) :
+def closedFormOperator  (f : R[X][X]) :
     (R[X][X] × R[X][X]) →ₗ[R] R[X][X] where
   toFun u := (bivariateCoefficientDerivative R) u.1 * f -
     u.1 * (bivariateCoefficientDerivative R) f - u.2.derivative * f + u.2 * f.derivative
@@ -97,11 +103,7 @@ def closedFormOperator {R : Type*} [CommRing R] (f : R[X][X]) :
     simp only [Prod.fst_add, Prod.snd_add, map_add, add_mul]
     ring
   map_smul' a u := by
-    change (bivariateCoefficientDerivative R) (a • u.1) * f -
-      (a • u.1) * (bivariateCoefficientDerivative R) f -
-      (a • u.2).derivative * f + (a • u.2) * f.derivative = a • _
-    rw [(bivariateCoefficientDerivative R).map_smul]
-    simp only [derivative_smul, smul_mul_assoc, smul_sub, smul_add]
+    simp_all [   smul_sub, smul_add]
 
 /-- All polynomial coefficients as a linear map. -/
 def bivariateCoefficients (R : Type*) [CommRing R] : R[X][X] →ₗ[R] (ℕ × ℕ → R) where
@@ -110,27 +112,28 @@ def bivariateCoefficients (R : Type*) [CommRing R] : R[X][X] →ₗ[R] (ℕ × �
   map_smul' a f := by ext; simp
 
 /-- A bivariate polynomial is determined by its coefficients. -/
-lemma bivariateCoefficients_injective {R : Type*} [CommRing R] :
+lemma bivariateCoefficients_injective  :
     Function.Injective (bivariateCoefficients R) := by
   intro f g h
   ext i j
   exact congrFun h (i,j)
 
+variable (d : ℕ) (f : R[X][X])
+
 /-- The matrix of the closed-form equation on bounded unknowns.
 In particular it is an integer matrix when R=Z. -/
-def closedFormCoefficientMatrix {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X]) :
-    Matrix (ℕ × ℕ) (ClosedFormColumns d) R :=
+def closedFormCoefficientMatrix    :=
   LinearMap.toMatrix'
     ((bivariateCoefficients R).comp ((closedFormOperator f).comp (closedFormPair R d)))
 
-private lemma closedFormCoefficientMatrix_mulVec {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
+private lemma closedFormCoefficientMatrix_mulVec  
     (v : ClosedFormColumns d → R) :
     closedFormCoefficientMatrix d f *ᵥ v =
       bivariateCoefficients R (closedFormOperator f (closedFormPair R d v)) := by
   exact congrArg (fun u => u v) (Matrix.toLin'_toMatrix' _)
 
 /-- Matrix kernel membership is precisely the polynomial closed-form equation. -/
-theorem closedFormCoefficientMatrix_kernel {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
+theorem closedFormCoefficientMatrix_kernel  
     (v : ClosedFormColumns d → R) :
     closedFormCoefficientMatrix d f *ᵥ v = 0 ↔
       closedFormOperator f (closedFormPair R d v) = 0 := by

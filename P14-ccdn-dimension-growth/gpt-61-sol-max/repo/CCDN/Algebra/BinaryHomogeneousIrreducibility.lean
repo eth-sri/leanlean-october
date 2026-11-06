@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.FieldTheory.IsAlgClosed.Basic
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import CCDN.Algebra.HomogeneousChartIrreducible
@@ -12,9 +14,8 @@ import CCDN.Algebra.HomogeneousChartIrreducible
 /-! Over an algebraically closed field, an irreducible homogeneous binary
 form has degree one. The affine chart reduces this to a univariate polynomial. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 private theorem uniqueAlgEquiv_natDegree {R σ : Type*} [CommRing R] [Unique σ]
@@ -28,14 +29,12 @@ private theorem uniqueAlgEquiv_natDegree {R σ : Type*} [CommRing R] [Unique σ]
     apply coeff_eq_zero_of_totalDegree_lt
     change f.totalDegree < (Finsupp.single (default : σ) k).degree
     rwa [Finsupp.degree_single]
-  · unfold totalDegree
-    apply Finset.sup_le
+  · apply Finset.sup_le
     intro m hm
     have hc : ((uniqueAlgEquiv R σ) f).coeff (m default) ≠ 0 := by
-      rw [coeff_uniqueAlgEquiv, ← Finsupp.unique_single m]
-      exact mem_support_iff.mp hm
+      grind [coeff_uniqueAlgEquiv, Finsupp.unique_single]
     have hle := Polynomial.le_natDegree_of_ne_zero hc
-    have he : m.degree = m default := by
+    have he := by
       calc
         _ = (Finsupp.single default (m default)).degree :=
           congrArg Finsupp.degree (Finsupp.unique_single m)
@@ -54,7 +53,7 @@ theorem binary_homogeneous_irreducible_degree_le_one
   have hX := variable_not_dvd_irreducible_homogeneous f hf hir hd 0
   have hdeg := affineChart_degree_of_not_variable_dvd f hf hX
   have hc := affineChart_irreducible_of_not_variable_dvd f hf hir hX
-  have hu : Irreducible ((uniqueAlgEquiv K (Fin 1)) (affineChart 1 f)) :=
+  have hu :=
     (MulEquiv.irreducible_iff (f := (uniqueAlgEquiv K (Fin 1)).toMulEquiv)).mpr hc
   have hh : ((uniqueAlgEquiv K (Fin 1)) (affineChart 1 f)).natDegree = 1 :=
     Polynomial.natDegree_eq_of_degree_eq_some
@@ -62,5 +61,4 @@ theorem binary_homogeneous_irreducible_degree_le_one
   rw [uniqueAlgEquiv_natDegree, hdeg] at hh
   omega
 
-end
 end CCDN

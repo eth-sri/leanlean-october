@@ -14,11 +14,10 @@ projection obligations; this module proves the quantified birational input. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The bounded integer moment-curve linear form. -/
-def momentCoordinate (K : Type*) [CommRing K] (n k : ℕ) : MvPolynomial (Fin n) K :=
+noncomputable def momentCoordinate (K : Type*) [CommRing K] (n k : ℕ)  :=
   ∑ j : Fin n, C ((k : K) ^ j.val) * X j
 
 /-- The moment coordinate has total degree at most one. -/
@@ -43,5 +42,4 @@ lemma momentCoordinate_fraction {K F : Type*} [Field K] [Field F] [Algebra K F]
   intro j _
   exact mul_comm _ _
 
-end
 end CCDN

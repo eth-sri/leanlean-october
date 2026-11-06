@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.CoefficientwiseHomogeneous
 public import CCDN.Hypersurface.GraphHyperplaneRestriction
 import CCDN.Height.ProjectiveZeroLocus
@@ -16,38 +18,39 @@ x₀=−ΣAᵢxᵢ and xᵢ=A₀xᵢ before evaluating a degree-d equation. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The universal restriction of an integer polynomial to the hyperplane
 `A none * x_none + ∑ A (some j) * x j = 0`, whose normal coefficients `A` are indeterminates,
 without denominators: it substitutes `x_none ↦ -∑ A (some j) * x j` and `x j ↦ A none * x j`. -/
-def universalHyperplaneRestriction {σ : Type*} [Fintype σ] :
+noncomputable def universalHyperplaneRestriction {σ : Type*} [Fintype σ] :
     MvPolynomial (Option σ) ℤ →ₐ[ℤ]
       MvPolynomial σ (MvPolynomial (Option σ) ℤ) :=
   aeval (fun i => Option.elim i
     (-(∑ j, C (X (some j)) * X j)) (fun j => C (X none) * X j))
 
+variable {K σ : Type*} [CommRing K] [Fintype σ]
+
+variable (A : Option σ → K)
+
 /-- The restriction of a polynomial to the hyperplane `A none * x_none + ∑ A (some j) * x j = 0`
 without denominators, obtained by substituting `x_none ↦ -∑ A (some j) * x j` and
 `x j ↦ A none * x j`. -/
-def scaledHyperplaneRestriction {K σ : Type*} [CommRing K] [Fintype σ]
-    (A : Option σ → K) : MvPolynomial (Option σ) K →ₐ[K] MvPolynomial σ K :=
+noncomputable def scaledHyperplaneRestriction 
+     : MvPolynomial (Option σ) K →ₐ[K] MvPolynomial σ K :=
   aeval (fun i => Option.elim i
     (-(∑ j, C (A (some j)) * X j)) (fun j => C (A none) * X j))
 
 /-- Specializing the coefficient indeterminates of the universal hyperplane restriction at a
 normal vector `A` gives the scaled hyperplane restriction for `A`. -/
-lemma universalHyperplaneRestriction_specialize {K σ : Type*}
-    [CommRing K] [Fintype σ] (A : Option σ → K) (f : MvPolynomial (Option σ) ℤ) :
+lemma universalHyperplaneRestriction_specialize   (f : MvPolynomial (Option σ) ℤ) :
     map (eval₂Hom (Int.castRingHom K) A) (universalHyperplaneRestriction f) =
       scaledHyperplaneRestriction A (map (Int.castRingHom K) f) := by
   have he : (map (eval₂Hom (Int.castRingHom K) A)).comp
-      (universalHyperplaneRestriction (σ := σ)).toRingHom =
+      (universalHyperplaneRestriction ).toRingHom =
       (scaledHyperplaneRestriction A).toRingHom.comp (map (Int.castRingHom K)) := by
     apply MvPolynomial.ringHom_ext
-    · intro z
-      simp [universalHyperplaneRestriction, scaledHyperplaneRestriction]
+    · simp_all
     · intro i
       cases i <;> simp [universalHyperplaneRestriction, scaledHyperplaneRestriction]
   exact RingHom.congr_fun he f
@@ -80,8 +83,7 @@ lemma universalHyperplaneRestriction_coefficientwiseHomogeneous
     CoefficientwiseHomogeneous.eval₂ hf (C.comp C) _ hc hg
 
 /-- The scaled hyperplane restriction preserves homogeneity of degree `d`. -/
-lemma scaledHyperplaneRestriction_homogeneous {K σ : Type*}
-    [CommRing K] [Fintype σ] (A : Option σ → K)
+lemma scaledHyperplaneRestriction_homogeneous  
     {d : ℕ} {f : MvPolynomial (Option σ) K} (hf : f.IsHomogeneous d) :
     (scaledHyperplaneRestriction A f).IsHomogeneous d := by
   have hg (i : Option σ) :
@@ -124,15 +126,9 @@ lemma scaledHyperplaneRestriction_eq_graph {K σ : Type*}
 
 /-- The scaled hyperplane restriction for the normal vector `(1, -a)` is the restriction to the
 graph hyperplane `x_none = ∑ a i * x i`. -/
-lemma scaledHyperplaneRestriction_normalized {K σ : Type*}
-    [CommRing K] [Fintype σ] (a : σ → K) (f : MvPolynomial (Option σ) K) :
+lemma scaledHyperplaneRestriction_normalized  (a : σ → K) (f : MvPolynomial (Option σ) K) :
     scaledHyperplaneRestriction (fun i => Option.elim i 1 (fun j => -a j)) f =
       graphHyperplaneRestriction a f := by
-  congr 1
-  apply MvPolynomial.algHom_ext
-  intro i
-  cases i <;> simp [scaledHyperplaneRestriction, graphHyperplaneRestriction,
-    ← Finset.sum_neg_distrib]
+  simp_all [ Finset.sum_neg_distrib, scaledHyperplaneRestriction, graphHyperplaneRestriction]
 
-end
 end CCDN

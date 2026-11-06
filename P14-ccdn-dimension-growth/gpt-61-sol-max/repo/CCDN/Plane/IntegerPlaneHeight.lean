@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Height.Box
 public import CCDN.Height.IntegerCoefficientHeight
 public import CCDN.Noether.ClosedFormHeight
@@ -18,7 +20,6 @@ parameters, and the resulting bound on the universal bad-prime witness. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Taking plane sections commutes with mapping coefficients along a ring homomorphism `φ`: the
@@ -38,9 +39,9 @@ lemma universalPlaneSection_map {R S σ : Type*} [CommRing R] [CommRing S]
     simp
 
 /-- Height supplied by interpolation on the plane grid. -/
-def integerPlaneHeight (m d : ℕ) (H A : ℝ) : ℝ :=
-  ((d : ℝ) + 1) ^ (2 * (d + 1)) *
-    (((d : ℝ) + 1) ^ m * H * (A * (1 + 2 * d)) ^ d)
+noncomputable def integerPlaneHeight (m d : ℕ) (H A : ℝ)  :=
+  (↑d + 1) ^ (2 * (d + 1)) *
+    ((↑d + 1) ^ m * H * (A * (1 + 2 * d)) ^ d)
 
 /-- Each coefficient of a bounded integer plane section is bounded explicitly
 in terms of the original coefficient height, degree and ambient dimension. -/
@@ -58,14 +59,13 @@ theorem integer_plane_section_coefficient_bound {σ : Type*} [Fintype σ]
     rw [he]
     exact (bivariateTotalDegree_map_le _ _).trans
       (universalPlanePolynomial_specialization_totalDegree f (eval v))
-  have hB : 1 ≤ A * (1 + 2 * (f.totalDegree : ℝ)) := by
-    nlinarith [Nat.cast_nonneg (α := ℝ) f.totalDegree]
+  have hB : 1 ≤ A * (1 + 2 * ↑f.totalDegree) := by
+    nlinarith
   have hgrid (x y : ℕ) (hx : x ≤ f.totalDegree) (hy : y ≤ f.totalDegree) :
-      |(Polynomial.map (Polynomial.evalRingHom (y : ℝ)) g).eval (x : ℝ)| ≤
-        ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ * H *
+      |(Polynomial.map (Polynomial.evalRingHom ↑y) g).eval ↑x| ≤
+        (↑f.totalDegree + 1) ^ Fintype.card σ * H *
           (A * (1 + 2 * f.totalDegree)) ^ f.totalDegree := by
-    change |bivariateEval (x : ℝ) (y : ℝ) g| ≤ _
-    dsimp only [g]
+    change |bivariateEval ↑x ↑y g| ≤ _
     rw [universalPlaneSection_eval, eval_map]
     apply polynomial_eval₂_box_bound f H _ hH hB hf
     intro i
@@ -90,5 +90,4 @@ theorem integer_plane_section_coefficient_bound {σ : Type*} [Fintype σ]
   rw [he, bivariateMap_coeff] at hh
   exact hh
 
-end
 end CCDN

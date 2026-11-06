@@ -28,15 +28,17 @@ degree at most `k` and one block of monomials of degree exactly `k`. These index
 the Euler closed-form coefficient matrix. -/
 abbrev EulerColumns (k : ℕ) := EulerLowIndex k ⊕ (EulerLowIndex k ⊕ EulerTopIndex k)
 
+variable (R : Type*) [CommRing R] (k : ℕ)
+
 /-- The usual monomial basis of the total-degree-at-most space. -/
-def eulerLowBasis (R : Type*) [CommRing R] (k : ℕ) :
+def eulerLowBasis  :
     Basis (EulerLowIndex k) R (restrictTotalDegree (Fin 2) R k) := by
   classical
   exact (basisRestrictSupport R {p : Fin 2 →₀ ℕ | p.degree ≤ k}).reindex
     (Finsupp.degreeLeEquivSym (Fin 2) k)
 
 /-- The usual monomial basis of the homogeneous space. -/
-def eulerTopBasis (R : Type*) [CommRing R] (k : ℕ) :
+def eulerTopBasis  :
     Basis (EulerTopIndex k) R (homogeneousSubmodule (Fin 2) R k) := by
   classical
   let e : restrictSupport R {p : Fin 2 →₀ ℕ | p.degree = k} ≃ₗ[R]
@@ -49,8 +51,7 @@ def eulerTopBasis (R : Type*) [CommRing R] (k : ℕ) :
 /-- The monomial basis of `EulerPairSpace R k`. Under `eulerPairCoordinates`, every basis vector
 is either a single low monomial or one radial syzygy pair (yQ,-xQ); no coefficient-dependent
 basis is chosen. -/
-def eulerPairBasis (R : Type*) [CommRing R] (k : ℕ) :
-    Basis (EulerColumns k) R (EulerPairSpace R k) :=
+def eulerPairBasis : Basis (EulerColumns k) R (EulerPairSpace R k) :=
   (eulerLowBasis R k).prod ((eulerLowBasis R k).prod (eulerTopBasis R k))
 
 /-- There are exactly `(k + 2) ^ 2 - 1` Euler columns. -/

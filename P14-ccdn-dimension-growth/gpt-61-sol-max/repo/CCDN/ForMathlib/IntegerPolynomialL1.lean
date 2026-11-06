@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.Equiv
 public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import Mathlib.Algebra.MvPolynomial.CommRing
@@ -34,7 +36,7 @@ namespace MvPolynomial
 variable {σ : Type*}
 
 /-- The sum of the absolute values of all coefficients of an integer polynomial. -/
-def l1Norm (f : MvPolynomial σ ℤ) : ℕ :=
+def l1Norm (f : MvPolynomial σ ℤ)  :=
   f.support.sum fun m => (f.coeff m).natAbs
 
 /-- The zero polynomial has `ℓ¹`-norm zero. -/
@@ -68,12 +70,11 @@ lemma natAbs_coeff_le_l1Norm (f : MvPolynomial σ ℤ) (m : σ →₀ ℕ) :
 
 /-- The `ℓ¹`-norm of the constant polynomial `C c` is the absolute value of `c`. -/
 @[simp] lemma l1Norm_C (c : ℤ) :
-    l1Norm (C c : MvPolynomial σ ℤ) = c.natAbs := by
-  exact l1Norm_monomial 0 c
+    l1Norm (C c : MvPolynomial σ ℤ) = c.natAbs := l1Norm_monomial 0 c
 
 /-- The constant polynomial `1` has `ℓ¹`-norm one. -/
 @[simp] lemma l1Norm_one : l1Norm (1 : MvPolynomial σ ℤ) = 1 := by
-  simpa using l1Norm_C (σ := σ) 1
+  solve_by_elim [l1Norm_C]
 
 /-- The `ℓ¹`-norm is subadditive. -/
 lemma l1Norm_add_le (f g : MvPolynomial σ ℤ) :
@@ -85,17 +86,11 @@ lemma l1Norm_add_le (f g : MvPolynomial σ ℤ) :
       Finset.subset_union_left,
     l1Norm_eq_sum_of_support_subset g (f.support ∪ g.support)
       Finset.subset_union_right, ← Finset.sum_add_distrib]
-  exact Finset.sum_le_sum fun m _ => by simpa using Int.natAbs_add_le (f.coeff m) (g.coeff m)
+  exact Finset.sum_le_sum fun m _ => by simp_all [Int.natAbs_add_le]
 
 /-- The `ℓ¹`-norm of a finite sum is at most the sum of the `ℓ¹`-norms of the summands. -/
 lemma l1Norm_sum_le {ι : Type*} (s : Finset ι) (f : ι → MvPolynomial σ ℤ) :
-    l1Norm (∑ i ∈ s, f i) ≤ ∑ i ∈ s, l1Norm (f i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-      simpa only [Finset.sum_insert hi] using
-        (l1Norm_add_le (f i) (∑ j ∈ s, f j)).trans (Nat.add_le_add_left ih _)
+    l1Norm (∑ i ∈ s, f i) ≤ ∑ i ∈ s, l1Norm (f i) := Finset.le_sum_of_subadditive _ (by simp) l1Norm_add_le s f
 
 /-- The `ℓ¹`-norm is submultiplicative. -/
 lemma l1Norm_mul_le (f g : MvPolynomial σ ℤ) :
@@ -105,7 +100,6 @@ lemma l1Norm_mul_le (f g : MvPolynomial σ ℤ) :
     l1Norm (f * g) = l1Norm
         (∑ m ∈ f.support, ∑ n ∈ g.support, monomial m (f.coeff m) *
           monomial n (g.coeff n)) := by
-      congr 1
       conv_lhs => rw [f.as_sum, g.as_sum]
       rw [Finset.sum_mul]
       simp only [Finset.mul_sum]
@@ -118,13 +112,7 @@ lemma l1Norm_mul_le (f g : MvPolynomial σ ℤ) :
 
 /-- The `ℓ¹`-norm of a finite product is at most the product of the `ℓ¹`-norms of the factors. -/
 lemma l1Norm_prod_le {ι : Type*} (s : Finset ι) (f : ι → MvPolynomial σ ℤ) :
-    l1Norm (∏ i ∈ s, f i) ≤ ∏ i ∈ s, l1Norm (f i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-      simpa only [Finset.prod_insert hi] using
-        (l1Norm_mul_le (f i) (∏ j ∈ s, f j)).trans (Nat.mul_le_mul_left _ ih)
+    l1Norm (∏ i ∈ s, f i) ≤ ∏ i ∈ s, l1Norm (f i) := Finset.le_prod_of_submultiplicative _ (by simp) l1Norm_mul_le s f
 
 /-- The `ℓ¹`-norm of `f ^ n` is at most the `n`-th power of the `ℓ¹`-norm of `f`. -/
 lemma l1Norm_pow_le {σ : Type*} (f : MvPolynomial σ ℤ) (n : ℕ) :
@@ -168,8 +156,10 @@ lemma l1Norm_det_le {ι : Type*} [Fintype ι] [DecidableEq ι]
       simp [Fintype.card_perm]
 
 
+variable {σ τ : Type*}
+
 /-- Renaming the variables along any map `v` does not increase the `ℓ¹`-norm. -/
-lemma l1Norm_rename_le {σ τ : Type*} (v : σ → τ) (f : MvPolynomial σ ℤ) :
+lemma l1Norm_rename_le  (v : σ → τ) (f : MvPolynomial σ ℤ) :
     l1Norm (rename v f) ≤ l1Norm f := by
   classical
   calc
@@ -181,13 +171,14 @@ lemma l1Norm_rename_le {σ τ : Type*} (v : σ → τ) (f : MvPolynomial σ ℤ)
     _ ≤ ∑ m ∈ f.support, l1Norm (monomial (m.mapDomain v) (f.coeff m)) :=
       l1Norm_sum_le _ _
     _ = l1Norm f := by
-      simp only [l1Norm_monomial]
-      rfl
+      aesop
+
+variable (f : MvPolynomial σ (MvPolynomial τ ℤ)) (m : σ →₀ ℕ)
 
 /-- The coefficient of the flattened polynomial `(sumAlgEquiv ℤ σ τ).symm f` at the exponent on
 `σ ⊕ τ` assembled from `m` and `n` is the coefficient at `n` of the coefficient of `f` at `m`. -/
-lemma coeff_sumAlgEquiv_symm {σ τ : Type*}
-    (f : MvPolynomial σ (MvPolynomial τ ℤ)) (m : σ →₀ ℕ) (n : τ →₀ ℕ) :
+lemma coeff_sumAlgEquiv_symm 
+     (n : τ →₀ ℕ) :
     ((sumAlgEquiv ℤ σ τ).symm f).coeff
       (Finsupp.sumFinsuppAddEquivProdFinsupp.symm (m,n)) = (f.coeff m).coeff n := by
   simp [sumAlgEquiv, AddMonoidAlgebra.curryAlgEquiv,
@@ -196,8 +187,8 @@ lemma coeff_sumAlgEquiv_symm {σ τ : Type*}
 
 /-- Extracting one outer coefficient never increases the total coefficient
 sum after flattening the two variable families. -/
-theorem l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm {σ τ : Type*}
-    (f : MvPolynomial σ (MvPolynomial τ ℤ)) (m : σ →₀ ℕ) :
+theorem l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm 
+     :
     l1Norm (f.coeff m) ≤ l1Norm ((sumAlgEquiv ℤ σ τ).symm f) := by
   classical
   let e : (τ →₀ ℕ) → (σ ⊕ τ →₀ ℕ) :=
@@ -221,7 +212,7 @@ theorem l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm {σ τ : Type*}
 
 /-- Flattening a polynomial whose coefficients are constants of `MvPolynomial τ ℤ` renames its
 variables into the left summand of `σ ⊕ τ`. -/
-lemma sumAlgEquiv_symm_map_C {σ τ : Type*} (p : MvPolynomial σ ℤ) :
+lemma sumAlgEquiv_symm_map_C  (p : MvPolynomial σ ℤ) :
     (sumAlgEquiv ℤ σ τ).symm (map (C : ℤ →+* MvPolynomial τ ℤ) p) =
       rename Sum.inl p := by
   rw [AlgEquiv.symm_apply_eq]
@@ -230,7 +221,7 @@ lemma sumAlgEquiv_symm_map_C {σ τ : Type*} (p : MvPolynomial σ ℤ) :
 
 /-- One original coefficient variable multiplying an integer parameter
 polynomial has no coefficient-norm cost beyond that parameter polynomial. -/
-theorem l1Norm_sumAlgEquiv_symm_C_X_mul_map_C_le {σ τ : Type*}
+theorem l1Norm_sumAlgEquiv_symm_C_X_mul_map_C_le 
     (p : MvPolynomial σ ℤ) (i : τ) :
     l1Norm ((sumAlgEquiv ℤ σ τ).symm
       (C (X i) * map (C : ℤ →+* MvPolynomial τ ℤ) p)) ≤ l1Norm p := by

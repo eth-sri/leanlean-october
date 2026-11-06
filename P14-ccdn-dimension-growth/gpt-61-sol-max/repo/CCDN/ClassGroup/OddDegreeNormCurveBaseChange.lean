@@ -13,9 +13,8 @@ import CCDN.Noether.ShearNormalization
 residue characteristic, including characteristic two. The signs ±1 remain
 nonzero in every field. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped NumberField
 open Polynomial NumberField
 
@@ -32,10 +31,13 @@ private lemma signedNormCurvePolynomial_bivariate_map (β : 𝓞 K) (ε : ℤ) :
     (X ^ 2 - C (C ε * integerNormPolynomial K β)) = _
   simp
 
+variable (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0)
+
+include hε in
 /-- If `[K : ℚ]` is odd and the sign `ε` is nonzero in the field `E`, then the signed norm-curve
 polynomial of `β` remains irreducible over `E`, in any characteristic. -/
 theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic
-    (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0) (hn : Odd (Module.finrank ℚ K)) :
+     (hn : Odd (Module.finrank ℚ K)) :
     Irreducible (MvPolynomial.map (Int.castRingHom E)
       (signedNormCurvePolynomial K β ε)) := by
   apply (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv E)).mp
@@ -45,10 +47,11 @@ theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic
     integerNormPolynomial_natDegree]
   exact hn
 
+include hε in
 /-- If `[K : ℚ] ≥ 2` and the sign `ε` is nonzero in the field `E`, then the signed norm-curve
 polynomial of `β` has total degree `[K : ℚ]` over `E`. -/
 theorem signedNormCurvePolynomial_map_totalDegree
-    (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0) (hn : 2 ≤ Module.finrank ℚ K) :
+     (hn : 2 ≤ Module.finrank ℚ K) :
     (MvPolynomial.map (Int.castRingHom E)
       (signedNormCurvePolynomial K β ε)).totalDegree = Module.finrank ℚ K := by
   have hd : (C (ε : E) * (integerNormPolynomial K β).map (Int.castRingHom E)).natDegree =
@@ -58,9 +61,7 @@ theorem signedNormCurvePolynomial_map_totalDegree
   have hh : bivariateTotalDegree (bivariatePolynomialEquiv E
       (MvPolynomial.map (Int.castRingHom E) (signedNormCurvePolynomial K β ε))) =
       Module.finrank ℚ K := by
-    rw [signedNormCurvePolynomial_bivariate_map,
-      double_cover_bivariateTotalDegree _ (by omega), hd]
+    grind [signedNormCurvePolynomial_bivariate_map, double_cover_bivariateTotalDegree]
   simpa only [bivariateTotalDegree, AlgEquiv.symm_apply_apply] using hh
 
-end
 end CCDN

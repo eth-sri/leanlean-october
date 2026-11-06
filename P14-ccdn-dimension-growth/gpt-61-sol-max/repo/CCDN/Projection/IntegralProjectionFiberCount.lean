@@ -5,15 +5,16 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Hilbert.LinearProjectionFiltration
 
 /-! Rational-point fibers of an integral polynomial projection.
 Evaluation on the quotient constructs the specialization homomorphisms. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A rational point of the fiber over `z` gives a specialization of the quotient algebra over
@@ -31,15 +32,11 @@ theorem exists_projection_fiber_specialization {K σ τ : Type*} [Field K]
   let : Algebra (MvPolynomial τ K) K := (aeval z).toRingHom.toAlgebra
   let R := MvPolynomial τ K
   let A := MvPolynomial σ K ⧸ I
-  let φ : A →ₐ[K] K := Ideal.Quotient.liftₐ I (aeval x) (fun f hf => hzero f hf)
+  let φ := Ideal.Quotient.liftₐ I (aeval x) ((hzero))
   have hφ (f : MvPolynomial σ K) :
-      φ (Ideal.Quotient.mk I f) = eval x f := by
-    exact congrArg (fun g : MvPolynomial σ K →ₐ[K] K => g f)
-      (Ideal.Quotient.liftₐ_comp I (aeval x) (fun f hf => hzero f hf))
+      φ (Ideal.Quotient.mk I f) = eval x f := rfl
   have hcomp : φ.comp (projectionCoordinateMap I l) = aeval z := by
-    ext i
-    simpa only [projectionCoordinateMap, AlgHom.comp_apply, aeval_X,
-      Ideal.Quotient.mkₐ_eq_mk] using (hφ (l i)).trans (hproj i)
+    aesop (add simp [CCDN.projectionCoordinateMap])
   let ψ : A →ₐ[R] K :=
     { φ.toRingHom with
       commutes' := fun r => by
@@ -51,5 +48,4 @@ theorem exists_projection_fiber_specialization {K σ τ : Type*} [Field K]
   change φ (Ideal.Quotient.mk I (X i)) = x i
   simpa only [eval_X] using hφ (X i)
 
-end
 end CCDN

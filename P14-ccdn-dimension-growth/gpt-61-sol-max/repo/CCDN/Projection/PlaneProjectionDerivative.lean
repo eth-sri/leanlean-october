@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.PDeriv
 public import Mathlib.RingTheory.Algebraic.Defs
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
@@ -17,9 +19,8 @@ import Mathlib.RingTheory.AlgebraicIndependent.Transcendental
 coordinate has a nonzero derivative in the second coordinate. That derivative
 is a proper section of degree at most d-1 of the source curve. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A nonzero relation cannot omit the coordinate complementary to a
@@ -33,18 +34,13 @@ private theorem plane_relation_pderiv_ne_zero {K A : Type*} [Field K] [CharZero 
   intro hz
   have hk := notMem_vars_of_pderiv_eq_zero hz fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
   have hvars : (f.vars : Set (Fin 2)) ⊆ Set.range (fun _ : Unit => j) := by
-    intro t ht
-    have htk : t ≠ k := fun h => hk (h ▸ ht)
-    have htj : t = j := by omega
-    exact ⟨(), htj.symm⟩
+    grind
   obtain ⟨g, hg⟩ := exists_rename_eq_of_vars_subset_range f (fun _ : Unit => j)
     (Function.injective_of_subsingleton _) hvars
   have he : ψ.comp (rename (fun _ : Unit => j)) = aeval (fun _ : Unit => ψ (X j)) := by
-    apply MvPolynomial.algHom_ext
-    intro t
-    simp
-  have hi : Function.Injective (aeval (R := K) (fun _ : Unit => ψ (X j))) :=
-    (algebraicIndependent_unique_type_iff (R := K) (x := fun _ : Unit => ψ (X j))).mpr hj
+    ext ; simp_all
+  have hi :=
+    (algebraicIndependent_unique_type_iff  (x := fun _ : Unit => ψ (X j))).mpr hj
   have hz : aeval (fun _ : Unit => ψ (X j)) g = 0 := by
     rw [← he]
     change ψ (rename (fun _ : Unit => j) g) = 0
@@ -64,9 +60,7 @@ theorem projection_derivative_proper {K τ : Type*} [Field K] [CharZero K] [Fint
     aeval a (pderiv k f) ∉ I ∧
       (aeval a (pderiv k f)).totalDegree ≤ f.totalDegree - 1 := by
   let ψ := projectionCoordinateMap I a
-  have hz : ψ f = 0 := by
-    change (Ideal.Quotient.mk I) (aeval a f) = 0
-    exact Ideal.Quotient.eq_zero_iff_mem.mpr ((hker f).mpr (dvd_refl f))
+  have hz := Ideal.Quotient.eq_zero_iff_mem.mpr ((hker f).mpr (dvd_refl f))
   have ht : Transcendental K (ψ (X j)) := by
     change Transcendental K ((Ideal.Quotient.mk I) (aeval a (X j)))
     rwa [aeval_X]
@@ -75,5 +69,4 @@ theorem projection_derivative_proper {K τ : Type*} [Field K] [CharZero K] [Fint
     (aeval_totalDegree_le a ha _).trans ?_⟩
   simpa only [one_mul] using pderiv_totalDegree_le f k
 
-end
 end CCDN

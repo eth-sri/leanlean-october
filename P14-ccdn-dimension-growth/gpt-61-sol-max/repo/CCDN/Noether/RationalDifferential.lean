@@ -21,7 +21,7 @@ open Polynomial
 variable {K : Type*} [Field K]
 
 /-- The quotient-rule derivative `(p' * q - p * q') / q ^ 2` of the fraction `p / q`. -/
-def rationalDerivativeFraction (p q : K[X]) : RatFunc K :=
+def rationalDerivativeFraction (p q : K[X])  :=
   (algebraMap K[X] (RatFunc K) p.derivative * algebraMap K[X] (RatFunc K) q -
     algebraMap K[X] (RatFunc K) p * algebraMap K[X] (RatFunc K) q.derivative) /
       (algebraMap K[X] (RatFunc K) q) ^ 2
@@ -35,8 +35,8 @@ lemma rationalDerivativeFraction_mul {p q a : K[X]} (hq : q ≠ 0) (ha : a ≠ 0
   ring
 
 /-- Formal rational differentiation, well-defined under changing fractions. -/
-def rationalDerivative (x : RatFunc K) : RatFunc K :=
-  x.liftOn' rationalDerivativeFraction (fun _hq _ha => rationalDerivativeFraction_mul _hq _ha)
+def rationalDerivative (x : RatFunc K)  :=
+  x.liftOn' rationalDerivativeFraction ((rationalDerivativeFraction_mul))
 
 private lemma rationalDerivative_div (p q : K[X]) :
     rationalDerivative (algebraMap K[X] (RatFunc K) p / algebraMap K[X] (RatFunc K) q) =
@@ -51,18 +51,6 @@ lemma rationalDerivative_polynomial (p : K[X]) :
       algebraMap K[X] (RatFunc K) p.derivative := by
   simpa [rationalDerivativeFraction] using rationalDerivative_div p 1
 
-/-- The formal rational derivative is additive. -/
-lemma rationalDerivative_add (x y : RatFunc K) :
-    rationalDerivative (x + y) = rationalDerivative x + rationalDerivative y := by
-  induction x using RatFunc.induction_on with | _ p q hq
-  induction y using RatFunc.induction_on with | _ r s hs
-  have hq' := RatFunc.algebraMap_ne_zero hq
-  have hs' := RatFunc.algebraMap_ne_zero hs
-  rw [div_add_div _ _ hq' hs', ← map_mul, ← map_mul, ← map_add, ← map_mul,
-    rationalDerivative_div, rationalDerivative_div, rationalDerivative_div]
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
-  field_simp
-  ring
 
 /-- The formal rational derivative satisfies the Leibniz rule. -/
 lemma rationalDerivative_mul (x y : RatFunc K) :
@@ -78,7 +66,17 @@ lemma rationalDerivative_mul (x y : RatFunc K) :
 /-- Rational formal differentiation as a derivation over the coefficient field. -/
 def rationalDerivation (K : Type*) [Field K] : Derivation K (RatFunc K) (RatFunc K) where
   toFun := rationalDerivative
-  map_add' := rationalDerivative_add
+  map_add' := (by
+                intro x y
+                induction x using RatFunc.induction_on with | _ p q hq
+                induction y using RatFunc.induction_on with | _ r s hs
+                have hq' := RatFunc.algebraMap_ne_zero hq
+                have hs' := RatFunc.algebraMap_ne_zero hs
+                rw [div_add_div _ _ hq' hs', ← map_mul, ← map_mul, ← map_add, ← map_mul,
+                  rationalDerivative_div, rationalDerivative_div, rationalDerivative_div]
+                simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
+                field_simp
+                ring)
   map_smul' c x := by
     rw [Algebra.smul_def, rationalDerivative_mul, Algebra.smul_def]
     have hc : rationalDerivative (algebraMap K (RatFunc K) c) = 0 := by

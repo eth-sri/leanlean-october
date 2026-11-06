@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Statements
 import CCDN.Hypersurface.AffineHypersurfaceCount
 
@@ -13,9 +15,8 @@ In `N = n + 3` variables the exponent is `18 + 3n = 3N + 9`: the corrected surfa
 bound `d^18` and a cost of `d^3` for each bounded good hyperplane slice
 (`affineHypersurfaceGrowth`, in `CCDN.Hypersurface.AffineHypersurfaceCount`). -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- CCDN Theorem 4 for integer equations in all affine ambient dimensions
@@ -23,23 +24,22 @@ at least three. The constant depends only on dimension, and the explicit
 degree exponent is 18 + 3n in n+3 variables. -/
 theorem affine_hypersurface_dimension_growth (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ f : MvPolynomial (Fin (n + 3)) ℤ,
+      ∀ f : CCDN.IntegerPolynomial (n + 3),
       HasAbsIrreducibleTopForm f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
-      (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
-        C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) :=
+      (count (zeroLocus (CCDN.rationalPolynomial f)) B : ℝ) ≤
+        C * ↑f.totalDegree ^ (18 + 3 * n) * B ^ (n + 1) :=
   affineHypersurfaceGrowth n
 
 /-- CCDN Theorem 4 for rational equations, with the degree exponent 18 + 3n in
 n+3 variables. -/
 theorem affine_hypersurface_dimension_growth_rat (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ f : MvPolynomial (Fin (n + 3)) ℚ,
+      ∀ f : CCDN.CoordinatePolynomial (n + 3),
       HasAbsIrreducibleTopFormRat f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (count (zeroLocus f) B : ℝ) ≤
-        C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) :=
+        C * ↑f.totalDegree ^ (18 + 3 * n) * B ^ (n + 1) :=
   (affineHypersurfaceGrowth n).rational
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.MonomialEvaluationMatrix
 
 /-!
@@ -17,7 +19,7 @@ polynomial. Nondivisibility by the defining polynomial is a separate step, prove
 global determinant lower bound in Section 3.3.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
@@ -28,7 +30,7 @@ of radius `R ≥ 0`, then every coefficient of `polynomialOfCoefficients mon v` 
 value at most `R`. -/
 theorem abs_coefficient_polynomialOfCoefficients_le {n N : ℕ}
     (mon : Fin N → (Fin n →₀ ℕ)) (hmon : Function.Injective mon)
-    (v : Fin N → ℤ) {R : ℝ} (hR : 0 ≤ R) (hv : InBox v R)
+    (v : CCDN.IntPoint N) {R : ℝ} (hR : 0 ≤ R) (hv : InBox v R)
     (e : Fin n →₀ ℕ) :
     |((polynomialOfCoefficients mon v).coeff e : ℝ)| ≤ R := by
   classical
@@ -36,8 +38,6 @@ theorem abs_coefficient_polynomialOfCoefficients_le {n N : ℕ}
   · obtain ⟨j, rfl⟩ := he
     rw [coefficient_polynomialOfCoefficients mon hmon]
     exact hv j
-  · have hz : (polynomialOfCoefficients mon v).coeff e = 0 := by
-      simp [polynomialOfCoefficients, MvPolynomial.coeff_monomial, not_exists.mp he]
-    simpa [hz] using hR
+  · simp_all [MvPolynomial.coeff_monomial, polynomialOfCoefficients]
 
 end CCDN

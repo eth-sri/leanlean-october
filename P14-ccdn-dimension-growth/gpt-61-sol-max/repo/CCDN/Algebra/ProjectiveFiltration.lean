@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 import CCDN.Algebra.CoordinatePowerGeneration
 
@@ -20,19 +22,17 @@ filtered space inside the next piece.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
+
+variable {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K))
 
 /-- Constants lie in every piece of the degree filtration of the coordinate ring. -/
-lemma filteredCoordinateSpace_algebraMap_mem {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) (c : K) :
+lemma filteredCoordinateSpace_algebraMap_mem  (n : ℕ) (c : K) :
     algebraMap K (MvPolynomial σ K ⧸ I) c ∈ filteredCoordinateSpace I n := by
-  apply Submodule.mem_map.mpr
   refine ⟨MvPolynomial.C c, ?_, by simp⟩
   simp [MvPolynomial.mem_restrictTotalDegree]
 
 /-- Homogeneous coordinate algebra of the filtered affine coordinate ring. -/
-def projectiveCoordinateAlgebra {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) : Subalgebra K (Polynomial (MvPolynomial σ K ⧸ I)) where
+noncomputable def projectiveCoordinateAlgebra  : Subalgebra K (Polynomial (MvPolynomial σ K ⧸ I)) where
   carrier := {f | ∀ n, f.coeff n ∈ filteredCoordinateSpace I n}
   mul_mem' hf hg n := by
     rw [Polynomial.coeff_mul]
@@ -46,19 +46,16 @@ def projectiveCoordinateAlgebra {K σ : Type*} [Field K]
       simpa using filteredCoordinateSpace_algebraMap_mem I 0 1
     · simp [Polynomial.coeff_one, hn]
   add_mem' hf hg n := by
-    rw [Polynomial.coeff_add]
-    exact (filteredCoordinateSpace I n).add_mem (hf n) (hg n)
+    aesop
   zero_mem' n := by simp
   algebraMap_mem' c n := by
     by_cases hn : n = 0
-    · subst n
-      simpa using filteredCoordinateSpace_algebraMap_mem I 0 c
-    · simp [Polynomial.algebraMap_apply, Polynomial.coeff_C, hn]
+    · simp_all [filteredCoordinateSpace_algebraMap_mem]
+    · aesop
 
 /-- The monomial `a * w ^ n` lies in the homogeneous coordinate algebra if and only if `a` lies
 in the degree-`n` piece of the filtered coordinate ring. -/
-lemma projective_monomial_mem {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) (a : MvPolynomial σ K ⧸ I) :
+lemma projective_monomial_mem  (n : ℕ) (a : MvPolynomial σ K ⧸ I) :
     Polynomial.monomial n a ∈ projectiveCoordinateAlgebra I ↔
       a ∈ filteredCoordinateSpace I n := by
   constructor
@@ -71,11 +68,9 @@ lemma projective_monomial_mem {K σ : Type*} [Field K]
     · simp [Polynomial.coeff_monomial, hi]
 
 /-- The homogenizing coordinate `w` in the homogeneous coordinate algebra. -/
-def projectiveInfinityCoordinate {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) : projectiveCoordinateAlgebra I :=
+noncomputable def projectiveInfinityCoordinate  : projectiveCoordinateAlgebra I :=
   ⟨Polynomial.X, by
     rw [← Polynomial.monomial_one_one_eq_X, projective_monomial_mem]
     simpa using filteredCoordinateSpace_algebraMap_mem I 1 1⟩
 
-end
 end CCDN

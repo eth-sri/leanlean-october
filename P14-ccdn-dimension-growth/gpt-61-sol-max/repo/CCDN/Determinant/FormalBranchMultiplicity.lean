@@ -18,9 +18,8 @@ import Mathlib.RingTheory.SimpleRing.Principal
 than d*m/N distinct smooth points. The proof uses local expansions
 and polynomial interpolation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Bézout with a uniform lower bound on vanishing at distinct formal branches. -/
@@ -39,10 +38,9 @@ theorem formal_plane_multiplicity_bound {K ι : Type*} [Field K]
   classical
   by_cases hN : N = 0
   · simp [hN]
-  let J : Ideal (PowerSeries K) := Ideal.span {(PowerSeries.X : PowerSeries K) ^ N}
-  let Q := PowerSeries K ⧸ J
-  let π : PowerSeries K →ₐ[K] Q := Ideal.Quotient.mkₐ K J
-  let q : MvPolynomial (Fin 2) K →ₐ[K] (ι → Q) :=
+  let J := Ideal.span {(PowerSeries.X : PowerSeries K) ^ N}
+  let π := Ideal.Quotient.mkₐ K J
+  let q :=
     AlgHom.pi (fun i => π.comp (ψ i))
   obtain ⟨s, hs⟩ := exists_point_separators z hz
   let h : ι × Fin N → MvPolynomial (Fin 2) K :=
@@ -85,9 +83,9 @@ theorem formal_plane_multiplicity_bound {K ι : Type*} [Field K]
     have hli : LinearIndependent K (fun b : Fin N => π (PowerSeries.X ^ b.val)) :=
       powerSeries_quotient_powers_independent (PowerSeries.X ^ N) N dvd_rfl
     exact Fintype.linearIndependent_iff.mp hli (fun b => a (t.1, b)) hezero t.2
-  let p : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let p := Ideal.span {f}
   have : p.IsPrime := Ideal.isPrime_span_singleton_of_prime hf.prime
-  let φ : (MvPolynomial (Fin 2) K ⧸ p) →ₐ[K] (ι → Q) :=
+  let φ :=
     Ideal.Quotient.liftₐ p q (by
       intro l hl
       obtain ⟨u, rfl⟩ := Ideal.mem_span_singleton.mp hl
@@ -96,15 +94,13 @@ theorem formal_plane_multiplicity_bound {K ι : Type*} [Field K]
       simp only [map_mul, hψ, zero_mul, map_zero])
   have hφ (l : MvPolynomial (Fin 2) K) : φ ((Ideal.Quotient.mk p) l) = q l := rfl
   have hz' : φ ((Ideal.Quotient.mk p) g) = 0 := by
-    rw [hφ]
     ext i
     exact Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (hvan i))
   have hb := section_image_rank_le p f.totalDegree
-    ⟨f.totalDegree, (f.totalDegree : ℤ) - f.totalDegree.choose 2,
+    ⟨f.totalDegree, ↑f.totalDegree - f.totalDegree.choose 2,
       fun M hM => principal_plane_hilbert_function f hf.ne_zero hM⟩
     φ h (by simpa only [hφ] using hi) g
     (by simpa only [p, Ideal.mem_span_singleton] using hnd) g.totalDegree le_rfl hz'
   simpa only [Fintype.card_prod, Fintype.card_fin] using hb
 
-end
 end CCDN

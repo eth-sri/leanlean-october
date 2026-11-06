@@ -21,7 +21,7 @@ open MvPolynomial
 /-- The exponent vector of degree `d` in the variables `σ` corresponding to a multiset `i` of size
 `d`. -/
 def homogeneousCoefficientExponent (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (d : ℕ) (i : Sym σ d) : σ →₀ ℕ :=
+    (d : ℕ) (i : Sym σ d)  :=
   ((degreeEqEquivSym σ d).symm i).val
 
 /-- The exponent vector `homogeneousCoefficientExponent σ d i` has degree `d`. -/
@@ -39,25 +39,23 @@ def universalHomogeneousForm (σ : Type*) [Fintype σ] [DecidableEq σ] (d : ℕ
     MvPolynomial σ (MvPolynomial (Sym σ d) ℤ) :=
   ∑ i, monomial (homogeneousCoefficientExponent σ d i) (X i)
 
+variable {R σ : Type*} [CommRing R] [Fintype σ] [DecidableEq σ] (d : ℕ) (f : MvPolynomial σ R)
+
 /-- The coefficient of `f` at the degree-`d` monomial indexed by `i`. -/
-def homogeneousCoefficientData {R σ : Type*} [CommRing R] [Fintype σ] [DecidableEq σ]
-    (d : ℕ) (f : MvPolynomial σ R) (i : Sym σ d) : R :=
+def homogeneousCoefficientData  (i : Sym σ d)  :=
   f.coeff (homogeneousCoefficientExponent σ d i)
 
 /-- A homogeneous polynomial `f` of degree `d` is the sum of its degree-`d` monomials weighted by
 `homogeneousCoefficientData d f`. -/
-theorem homogeneousCoefficientData_reconstruct {R σ : Type*} [CommRing R]
-    [Fintype σ] [DecidableEq σ] (d : ℕ)
-    (f : MvPolynomial σ R) (hf : f.IsHomogeneous d) :
+theorem homogeneousCoefficientData_reconstruct  (hf : f.IsHomogeneous d) :
     ∑ i : Sym σ d, monomial (homogeneousCoefficientExponent σ d i)
       (homogeneousCoefficientData d f i) = f := by
   classical
   ext m
   rw [coeff_sum]
   by_cases hm : m.degree = d
-  · let i : Sym σ d := degreeEqEquivSym σ d ⟨m, hm⟩
-    have hi : homogeneousCoefficientExponent σ d i = m := by
-      exact congrArg Subtype.val ((degreeEqEquivSym σ d).symm_apply_apply ⟨m, hm⟩)
+  · let i := degreeEqEquivSym σ d ⟨m, hm⟩
+    have hi : homogeneousCoefficientExponent σ d i = m := congrArg Subtype.val ((degreeEqEquivSym σ d).symm_apply_apply ⟨m, hm⟩)
     rw [Finset.sum_eq_single i]
     · rw [coeff_monomial, hi, ite_eq_left rfl]
       exact congrArg f.coeff hi
@@ -75,15 +73,12 @@ theorem homogeneousCoefficientData_reconstruct {R σ : Type*} [CommRing R]
 
 /-- The ring homomorphism from the integer polynomials in the coefficient variables to `R` that
 sends each coefficient variable to the corresponding coefficient of `f`. -/
-def homogeneousCoefficientSpecialization {R σ : Type*} [CommRing R] [Fintype σ] [DecidableEq σ]
-    (d : ℕ) (f : MvPolynomial σ R) : MvPolynomial (Sym σ d) ℤ →+* R :=
+def homogeneousCoefficientSpecialization   :=
   eval₂Hom (Int.castRingHom R) (homogeneousCoefficientData d f)
 
 /-- The coefficient variables specialize to the homogeneous equation,
 over every commutative coefficient ring. -/
-theorem universalHomogeneousForm_specialize {R σ : Type*} [CommRing R]
-    [Fintype σ] [DecidableEq σ] (d : ℕ)
-    (f : MvPolynomial σ R) (hf : f.IsHomogeneous d) :
+theorem universalHomogeneousForm_specialize  (hf : f.IsHomogeneous d) :
     MvPolynomial.map (homogeneousCoefficientSpecialization d f) (universalHomogeneousForm σ d) =
       f := by
   rw [universalHomogeneousForm, map_sum]
@@ -98,12 +93,11 @@ lemma universalHomogeneousForm_linear_expansion (σ : Type*) [Fintype σ] [Decid
     universalHomogeneousForm σ d =
       ∑ i : Sym σ d, (X i : MvPolynomial (Sym σ d) ℤ) •
         MvPolynomial.map (C : ℤ →+* MvPolynomial (Sym σ d) ℤ)
-          (monomial (homogeneousCoefficientExponent σ d i) (1 : ℤ)) := by
-  simp only [universalHomogeneousForm, map_monomial, map_one, smul_monomial, smul_eq_mul, mul_one]
+          (monomial (homogeneousCoefficientExponent σ d i) 1) := by
+  aesop (add simp [universalHomogeneousForm])
 
 /-- The universal plane restriction `universalPlanePolynomial` as an `R`-linear map. -/
-def universalPlanePolynomialLinear (R σ : Type*) [CommRing R] :
-    MvPolynomial σ R →ₗ[R] Polynomial (Polynomial (MvPolynomial (PlaneParameters σ) R)) :=
+def universalPlanePolynomialLinear (R σ : Type*) [CommRing R]  :=
   ((bivariatePolynomialEquiv (MvPolynomial (PlaneParameters σ) R)).toLinearMap.restrictScalars
     R).comp (universalPlaneMap R σ).toLinearMap
 

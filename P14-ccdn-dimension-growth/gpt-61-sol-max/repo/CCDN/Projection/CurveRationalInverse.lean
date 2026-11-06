@@ -17,9 +17,8 @@ This module gives no bound on the degree of that denominator;
 `ExceptionalCount` converts a denominator of degree `D` into at most `d * D`
 exceptional points. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Polynomial reconstruction gives injectivity at every source point where
@@ -44,5 +43,4 @@ theorem projection_injective_off_reconstruction {K σ τ : Type*} [Field K]
   rw [hz', hev (P i), hev Q]
   exact hw'.symm
 
-end
 end CCDN

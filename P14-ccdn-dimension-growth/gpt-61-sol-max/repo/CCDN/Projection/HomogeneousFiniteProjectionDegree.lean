@@ -17,9 +17,8 @@ import CCDN.Projection.PrimitiveCoordinateField
 Hilbert multiplicity. Both the conductor and the dimension equality
 are consequences of the algebraic hypotheses. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A homogeneous linear projection of a homogeneous prime quotient that is integral and birational
@@ -45,13 +44,13 @@ theorem homogeneous_finite_birational_projection_leadingCoeff_eq
   let J := RingHom.ker ψ
   have : J.IsPrime := RingHom.ker_isPrime ψ.toRingHom
   let R := MvPolynomial σ K ⧸ J
-  let φ : R →ₐ[K] A := Ideal.kerLiftAlg ψ
-  let η : A →ₐ[K] F := IsScalarTower.toAlgHom K A F
+  let φ := Ideal.kerLiftAlg ψ
+  let η := IsScalarTower.toAlgHom K A F
   let : Algebra R A := φ.toRingHom.toAlgebra
   let : IsScalarTower K R A := IsScalarTower.of_algHom φ
   let : Algebra R F := (η.comp φ).toRingHom.toAlgebra
   let : IsScalarTower R A F := IsScalarTower.of_algebraMap_eq (fun _ => rfl)
-  have hinj : Function.Injective (η.comp φ) :=
+  have hinj :=
     (IsFractionRing.injective A F).comp (Ideal.kerLiftAlg_injective ψ)
   let : IsFractionRing R F := isFractionRing_of_generating_tuple
     (η.comp φ) hinj (fun i => (Ideal.Quotient.mk J) (X i)) (by
@@ -85,5 +84,4 @@ theorem homogeneous_finite_birational_projection_leadingCoeff_eq
   rw [hp']
   exact hr
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.QuadraticInvariantIdeal
 import CCDN.ClassGroup.FractionalIdealConjugation
 
@@ -13,9 +15,8 @@ representative in the same ideal class. Multiplying a denominator by
 its conjugate makes the denominator clearing compatible with the
 involution. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 
 variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
@@ -26,31 +27,26 @@ variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
 theorem exists_invariant_integral_ideal_representative
     (σ : R ≃+* R) (hσ : Function.Involutive σ)
     (J : (FractionalIdeal R⁰ K)ˣ)
-    (hJ : fractionalIdealUnitAction (K := K) σ J = J) :
+    (hJ : fractionalIdealUnitAction  σ J = J) :
     ∃ I : (Ideal R)⁰,
       (I : Ideal R).map σ.toRingHom = I ∧
       ClassGroup.mk0 I = ClassGroup.mk K J := by
   let a : R := (J : FractionalIdeal R⁰ K).den
   have ha : a ≠ 0 :=
     mem_nonZeroDivisors_iff_ne_zero.mp (J : FractionalIdeal R⁰ K).den.property
-  have hσa : σ a ≠ 0 := by
-    simpa only [map_zero] using σ.injective.ne ha
   let u : Kˣ := Units.mk0 (algebraMap R K (σ a * a)) (by
-    simpa only [map_zero] using (IsFractionRing.injective R K).ne (mul_ne_zero hσa ha))
-  let I : Ideal R := Ideal.span {σ a} * (J : FractionalIdeal R⁰ K).num
-  have hI : (I : FractionalIdeal R⁰ K) = (toPrincipalIdeal R K u * J :
-      (FractionalIdeal R⁰ K)ˣ) := by
+    simp_all)
+  let I := Ideal.span {σ a} * (J : FractionalIdeal R⁰ K).num
+  have hI : (I : FractionalIdeal R⁰ K) = (toPrincipalIdeal R K u * J) := by
     simp only [I, FractionalIdeal.coeIdeal_mul, FractionalIdeal.coeIdeal_span_singleton,
-      Units.val_mul, coe_toPrincipalIdeal]
+       coe_toPrincipalIdeal]
     rw [← (J : FractionalIdeal R⁰ K).den_mul_self_eq_num']
     change FractionalIdeal.spanSingleton R⁰ (algebraMap R K (σ a)) *
         (FractionalIdeal.spanSingleton R⁰ (algebraMap R K a) * (J : FractionalIdeal R⁰ K)) =
       FractionalIdeal.spanSingleton R⁰ (algebraMap R K (σ a * a)) * (J : FractionalIdeal R⁰ K)
     rw [map_mul, map_mul, mul_assoc]
   have hI0 : I ≠ 0 := by
-    intro hh
-    exact (toPrincipalIdeal R K u * J).ne_zero
-      (hI.symm.trans (by rw [hh]; exact FractionalIdeal.coeIdeal_bot))
+    aesop
   let I₀ : (Ideal R)⁰ := ⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr hI0⟩
   have hIu : FractionalIdeal.mk0 K I₀ = toPrincipalIdeal R K u * J := Units.ext hI
   have hσu : Units.map
@@ -64,12 +60,8 @@ theorem exists_invariant_integral_ideal_representative
     rw [hIu, map_mul, fractionalIdealUnitAction_principal, hσu, hJ]
   refine ⟨I₀, ?_, ?_⟩
   · apply FractionalIdeal.coeIdeal_inj (K := K) |>.mp
-    have h := congrArg (fun U : (FractionalIdeal R⁰ K)ˣ =>
-      (U : FractionalIdeal R⁰ K)) hIfixed
-    change FractionalIdeal.ringEquivOfRingEquiv K K σ (I : FractionalIdeal R⁰ K) =
-      (I : FractionalIdeal R⁰ K) at h
-    simpa only [fractionalIdeal_conjugate_coeIdeal] using h
+    have h := congrArg ((Units.val)) hIfixed
+    exact id (fun h => Eq.mp (congrFun' (congrArg Eq (fractionalIdeal_conjugate_coeIdeal σ I)) ↑I) h) h
   · rw [← ClassGroup.mk_mk0 K I₀, hIu, map_mul, classGroup_mk_principal, one_mul]
 
-end
 end CCDN

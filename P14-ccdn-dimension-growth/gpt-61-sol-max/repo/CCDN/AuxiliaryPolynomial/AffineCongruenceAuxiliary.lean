@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.AuxiliaryPolynomial.RankNumerics
+
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.AuxiliaryPolynomial.AffineCongruenceHeight
 public import CCDN.ForMathlib.StandardExponents
 import CCDN.AuxiliaryPolynomial.StandardMonomialAuxiliary
@@ -15,7 +19,6 @@ lower bound and weighted archimedean upper bound. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 private theorem square_minorGcd_eq_abs_det {s : ℕ} (A : Matrix (Fin s) (Fin s) ℤ) :
@@ -25,7 +28,7 @@ private theorem square_minorGcd_eq_abs_det {s : ℕ} (A : Matrix (Fin s) (Fin s)
     ⟨⟨univ, by simp⟩⟩
   rw [minorGcd_eq_gcd_plucker]
   have hp : exteriorPower.plucker s A.row = fun _ => A.det :=
-    funext (fun S => exteriorPower.plucker_fin_eq_det A.row S)
+    funext ((exteriorPower.plucker_fin_eq_det A.row))
   rw [hp]
   rw [Finset.gcd_eq_gcd_image, Finset.image_const univ_nonempty]
   simp only [Finset.gcd_singleton, id_eq, ← Int.abs_eq_normalize]
@@ -34,9 +37,9 @@ private theorem square_minorGcd_eq_abs_det {s : ℕ} (A : Matrix (Fin s) (Fin s)
 at integral zeros of an absolutely irreducible affine equation of degree `d` in `n + 2`
 variables with coefficient height at most `H`, when the zeros lie in smooth residue classes
 modulo primes whose logarithms sum to `Q`. -/
-def affineCongruenceDeterminantLower (n d s : ℕ) (H Q : ℝ) : ℝ :=
-  ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) / (n + 2 : ℝ) *
-    (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) *
+noncomputable def affineCongruenceDeterminantLower (n d s : ℕ) (H Q : ℝ)  :=
+  factorialRoot n / (n + 2 : ℝ) *
+    ↑s ^ (1 + 1 / (n + 1 : ℝ)) *
       (Real.log s - (n + 1 : ℝ) * (4 * Real.log d +
         congruenceHeightCharge (n + 3) d H Q) - hypersurfaceDeterminantError n) +
     (hypersurfaceDeterminantMain n s - (n + 2 : ℝ) * s) * Q
@@ -45,7 +48,7 @@ def affineCongruenceDeterminantLower (n d s : ℕ) (H Q : ℝ) : ℝ :=
 The arithmetic divisibility and archimedean bounds come from the
 equation, its smooth residue classes, and the integer points. -/
 private theorem affine_congruence_evaluation_det_eq_zero {n s M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin (n + 2)) ℤ)
+    (f : CCDN.IntegerPolynomial (n + 2))
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree) (H : ℝ) (hH : 1 ≤ H)
     (hcoeff : CoefficientHeightLE f H)
@@ -53,12 +56,12 @@ private theorem affine_congruence_evaluation_det_eq_zero {n s M : ℕ} (hs : 0 <
     (hdegree : ∀ j, Finsupp.degree (mon j) ≤ M)
     {B : ℝ} {x : Fin s → IntPoint (n + 2)} (hxB : IsBoxZeroFamily f B x)
     (P : Finset ℕ) (a : ℕ → IntPoint (n + 2)) (hres : IsSmoothResidueFamily f P a x)
-    (hgap : Real.log (s.factorial : ℝ) +
+    (hgap : Real.log ↑s.factorial +
       (∑ j, ((Finsupp.degree (mon j) : ℕ) : ℝ)) * Real.log B <
       affineCongruenceDeterminantLower n f.totalDegree s H (∑ p ∈ P, Real.log p)) :
     (evaluationMatrix mon x).det = 0 := by
   by_contra hne
-  let G : Fin s → MvPolynomial (Fin (n + 2)) ℤ :=
+  let G : Fin s → CCDN.IntegerPolynomial (n + 2) :=
     fun j => monomial (mon j) 1
   have hG : ∀ j, (G j).totalDegree ≤ M := fun j =>
     (totalDegree_monomial_le _ _).trans (hdegree j)
@@ -85,28 +88,27 @@ private theorem affine_congruence_evaluation_det_eq_zero {n s M : ℕ} (hs : 0 <
 /-- The determinant gap yields an integer auxiliary, proper over
 the rationals, for every given finite family of points in the residue classes. -/
 theorem exists_affine_congruence_auxiliary_of_gap {n N t M : ℕ} (hN : 0 < N)
-    (f : MvPolynomial (Fin (n + 2)) ℤ)
+    (f : CCDN.IntegerPolynomial (n + 2))
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree) (H : ℝ) (hH : 1 ≤ H)
     (hcoeff : CoefficientHeightLE f H)
     (mon : Fin N → (Fin (n + 2) →₀ ℕ)) (hmon : Function.Injective mon)
     (hstd : ∀ j, mon j ∈ Ideal.standardExponents
-      (Ideal.span {map (Int.castRingHom ℚ) f}) MonomialOrder.degLex)
+      (Ideal.span {CCDN.rationalPolynomial f}) MonomialOrder.degLex)
     (hdegree : ∀ j, Finsupp.degree (mon j) ≤ M)
     {B : ℝ} {x : Fin t → IntPoint (n + 2)} (hxB : IsBoxZeroFamily f B x)
     (P : Finset ℕ) (a : ℕ → IntPoint (n + 2)) (hres : IsSmoothResidueFamily f P a x)
-    (hgap : Real.log (N.factorial : ℝ) +
+    (hgap : Real.log ↑N.factorial +
       (∑ j, ((Finsupp.degree (mon j) : ℕ) : ℝ)) * Real.log B <
       affineCongruenceDeterminantLower n f.totalDegree N H (∑ p ∈ P, Real.log p)) :
-    ∃ g : MvPolynomial (Fin (n + 2)) ℤ, g ≠ 0 ∧
-      ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g ∧
+    ∃ g : CCDN.IntegerPolynomial (n + 2), g ≠ 0 ∧
+      ¬ CCDN.rationalPolynomial f ∣ CCDN.rationalPolynomial g ∧
       g.totalDegree ≤ M ∧ ∀ i, eval (x i) g = 0 := by
   apply exists_standard_auxiliary_of_zero_determinants
-    (map (Int.castRingHom ℚ) f) mon hmon hstd hdegree x
+    (CCDN.rationalPolynomial f) mon hmon hstd hdegree x
   intro b
-  exact affine_congruence_evaluation_det_eq_zero hN f hir hd H hH hcoeff mon hdegree (x := x ∘ b)
+  exact affine_congruence_evaluation_det_eq_zero hN f hir hd H hH hcoeff mon hdegree 
     ⟨hxB.one_le_radius, fun i => hxB.eval_eq_zero (b i), fun i j => hxB.abs_le (b i) j⟩ P a
     ⟨hres.prime, hres.eval_eq_zero, hres.smooth, fun p hp i j => hres.dvd_sub p hp (b i) j⟩ hgap
 
-end
 end CCDN

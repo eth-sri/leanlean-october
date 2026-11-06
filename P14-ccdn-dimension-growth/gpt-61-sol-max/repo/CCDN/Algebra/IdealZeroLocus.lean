@@ -15,12 +15,10 @@ coordinates in an extension field. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The common zeros, with coordinates in the coefficient ring, of all polynomials in `I`. -/
-def idealZeroLocus {K σ : Type*} [CommRing K] (I : Ideal (MvPolynomial σ K)) : Set (σ → K) :=
+noncomputable def idealZeroLocus {K σ : Type*} [CommRing K] (I : Ideal (MvPolynomial σ K))  :=
   {x | ∀ f ∈ I, eval x f = 0}
 
-end
 end CCDN

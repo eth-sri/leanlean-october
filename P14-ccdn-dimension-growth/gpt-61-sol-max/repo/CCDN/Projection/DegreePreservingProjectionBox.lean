@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Height.Box
 public import CCDN.Projection.CurvePrimitivePair
 public import Mathlib.Data.Fin.VecNotation
@@ -42,30 +44,28 @@ def degreeProjection (n k₀ k₁ : ℕ) (z : IntPoint n) : IntPoint 2 :=
 /-- The box scaling factor `(n + 1) * ((n + 1) * (d + 1)) ^ (2 * n)` for the moment projection in
 `n` variables and degree `d`. -/
 def projectionBoxFactor (n d : ℕ) : ℝ :=
-  ((n : ℝ) + 1) * ((((n : ℝ) + 1) * ((d : ℝ) + 1)) ^ 2) ^ n
+  (↑n + 1) * (((↑n + 1) * (↑d + 1)) ^ 2) ^ n
 
 /-- The box scaling factor of the moment projection is at least one. -/
 lemma projectionBoxFactor_one_le (n d : ℕ) : 1 ≤ projectionBoxFactor n d := by
   unfold projectionBoxFactor
-  have hn : (1 : ℝ) ≤ n + 1 := by linarith [Nat.cast_nonneg (α := ℝ) n]
-  have hd : (1 : ℝ) ≤ d + 1 := by linarith [Nat.cast_nonneg (α := ℝ) d]
   have hmul : (1 : ℝ) ≤ (n + 1) * (d + 1) := by nlinarith
-  have hp : (1 : ℝ) ≤ ((((n : ℝ) + 1) * ((d : ℝ) + 1)) ^ 2) ^ n :=
+  have hp : 1 ≤ (((↑n + 1) * ((d : ℝ) + 1)) ^ 2) ^ n :=
     one_le_pow₀ (one_le_pow₀ hmul)
   nlinarith
 
 private lemma momentCoordinate_height_of_le {n k : ℕ} {M B : ℝ}
-    (hM : 1 ≤ M) (hk : (k : ℝ) ≤ M)
+    (hM : 1 ≤ M) (hk : ↑k ≤ M)
     (z : IntPoint n) (hz : InBox z B) :
     |(eval z (momentCoordinate ℤ n k) : ℝ)| ≤ n * M ^ n * B := by
   rw [momentCoordinate_eval, Int.cast_sum]
   simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast]
   calc
-    _ ≤ ∑ j : Fin n, |(k : ℝ) ^ j.val * (z j : ℝ)| := Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ j : Fin n, |↑k ^ j.val * (z j : ℝ)| := Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ _j : Fin n, M ^ n * B := by
       apply Finset.sum_le_sum
       intro j _
-      have hp : (k : ℝ) ^ j.val ≤ M ^ n := by
+      have hp : ↑k ^ j.val ≤ M ^ n := by
         calc
           _ ≤ M ^ j.val := by gcongr
           _ ≤ _ := pow_le_pow_right₀ hM (Nat.le_of_lt j.isLt)
@@ -79,32 +79,28 @@ lemma degreeProjection_box {n d k₀ k₁ : ℕ} (hk₀ : k₀ ≤ n ^ 2 * d)
     (hk₁ : k₁ ≤ n * d ^ 2) {B : ℝ} (hB : 0 ≤ B)
     {z : IntPoint n} (hz : z ∈ integerBox n B) :
     degreeProjection n k₀ k₁ z ∈ integerBox 2 (projectionBoxFactor n d * B) := by
-  let M : ℝ := (((n : ℝ) + 1) * ((d : ℝ) + 1)) ^ 2
+  let M : ℝ := ((↑n + 1) * (↑d + 1)) ^ 2
   have hn : (0 : ℝ) ≤ n := by positivity
   have hd : (0 : ℝ) ≤ d := by positivity
   have hM : 1 ≤ M := by
     apply one_le_pow₀
     nlinarith [mul_nonneg hn hd]
-  have hk₀M : (k₀ : ℝ) ≤ M := by
-    have hh : (k₀ : ℝ) ≤ (n : ℝ) ^ 2 * d := by exact_mod_cast hk₀
+  have hk₀M : ↑k₀ ≤ M := by
+    have hh : ↑k₀ ≤ (n : ℝ) ^ 2 * d := by exact_mod_cast hk₀
     calc
       _ ≤ (n : ℝ) ^ 2 * d := hh
-      _ ≤ ((n : ℝ) + 1) ^ 2 * ((d : ℝ) + 1) ^ 2 := by
-        gcongr
-        · linarith
-        · nlinarith [sq_nonneg (d : ℝ)]
+      _ ≤ (↑n + 1) ^ 2 * (↑d + 1) ^ 2 := by
+        nlinarith
       _ = M := by dsimp [M]; ring
-  have hk₁M : (k₁ : ℝ) ≤ M := by
-    have hh : (k₁ : ℝ) ≤ (n : ℝ) * d ^ 2 := by exact_mod_cast hk₁
+  have hk₁M : ↑k₁ ≤ M := by
+    have hh : ↑k₁ ≤ (n : ℝ) * d ^ 2 := by exact_mod_cast hk₁
     calc
       _ ≤ (n : ℝ) * d ^ 2 := hh
-      _ ≤ ((n : ℝ) + 1) ^ 2 * ((d : ℝ) + 1) ^ 2 := by
-        gcongr
-        · nlinarith [sq_nonneg (n : ℝ)]
-        · linarith
+      _ ≤ (↑n + 1) ^ 2 * (↑d + 1) ^ 2 := by
+        nlinarith
       _ = M := by dsimp [M]; ring
   have hb := mem_integerBox.mp hz
-  have hc : (n : ℝ) * M ^ n * B ≤ projectionBoxFactor n d * B := by
+  have hc : ↑n * M ^ n * B ≤ projectionBoxFactor n d * B := by
     unfold projectionBoxFactor
     gcongr
     norm_num

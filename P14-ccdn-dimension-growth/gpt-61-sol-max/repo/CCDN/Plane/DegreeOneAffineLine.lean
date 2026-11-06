@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.ForMathlib.KrullHeight
 public import CCDN.Hilbert.AffineCurveDegree
@@ -21,9 +25,8 @@ successive filtered spaces. Critical growth forces every coordinate to be affine
 in one transcendental coordinate, giving polynomial containment of an affine line.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 private lemma coordinate_mul_filtered_mem {K σ : Type*} [Field K]
@@ -38,9 +41,11 @@ private lemma coordinate_mul_filtered_mem {K σ : Type*} [Field K]
   rw [totalDegree_X]
   omega
 
+variable {K : Type*} [Field K]
+
 /-- Affine coordinate formulas in a prime quotient give polynomial containment
 of an affine line through each base-field-valued point. -/
-private theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K]
+private theorem affine_coordinates_line_polynomial_identity 
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime]
     (j : Fin 3) (c d : Fin 3 → K)
     (hj : Transcendental K ((Ideal.Quotient.mk p) (X j)))
@@ -59,9 +64,8 @@ private theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K
     simp only [AlgHom.comp_apply, φ, aeval_X, map_add, map_mul,
       Polynomial.aeval_C, Polynomial.aeval_X]
     rw [Ideal.Quotient.mkₐ_eq_mk, hcd k]
-    have hsmul : c k • (Ideal.Quotient.mk p) (X j) =
-        algebraMap K _ (c k) * (Ideal.Quotient.mk p) (X j) :=
-        Algebra.smul_def (R := K) (A := MvPolynomial (Fin 3) K ⧸ p) (c k)
+    have hsmul :=
+        Algebra.smul_def  (A := MvPolynomial (Fin 3) K ⧸ p) (c k)
           ((Ideal.Quotient.mk p) (X j))
     rw [hsmul]
     exact add_comm _ _
@@ -77,9 +81,8 @@ private theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K
       change (Ideal.Quotient.mk p) (X k) -
         (algebraMap K _ (d k) + algebraMap K _ (c k) * (Ideal.Quotient.mk p) (X j)) = 0
       rw [hcd k]
-      have hsmul : c k • (Ideal.Quotient.mk p) (X j) =
-          algebraMap K _ (c k) * (Ideal.Quotient.mk p) (X j) :=
-        Algebra.smul_def (R := K) (A := MvPolynomial (Fin 3) K ⧸ p) (c k)
+      have hsmul :=
+        Algebra.smul_def  (A := MvPolynomial (Fin 3) K ⧸ p) (c k)
           ((Ideal.Quotient.mk p) (X j))
       rw [hsmul]
       ring
@@ -100,7 +103,7 @@ private theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K
 
 /-- A degree-one prime curve containing a base-field point has affine coordinate
 formulas over that same field. In particular this holds directly over `ℚ`. -/
-private theorem degree_one_coordinates_affine_of_point {K : Type*} [Field K]
+private theorem degree_one_coordinates_affine_of_point 
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime] (hp : p.height = 2)
     (hdegree : HasFilteredCurveDegree p 1)
     (z : Fin 3 → K) (hz : z ∈ idealZeroLocus p) :
@@ -112,11 +115,8 @@ private theorem degree_one_coordinates_affine_of_point {K : Type*} [Field K]
   obtain ⟨j, hj⟩ := height_two_transcendental_coordinate_of_point p hp z hz
   have hdim : Module.finrank K (filteredCoordinateSpace p (N + 1)) =
       Module.finrank K (filteredCoordinateSpace p N) + 1 := by
-    have h0 := hN N le_rfl
-    have h1 := hN (N + 1) (by omega)
-    push_cast at h0 h1
-    omega
-  have hUone : (1 : MvPolynomial (Fin 3) K ⧸ p) ∈ filteredCoordinateSpace p N := by
+    grind
+  have hUone : 1 ∈ filteredCoordinateSpace p N := by
     apply Submodule.mem_map.mpr
     refine ⟨1, ?_, by simp⟩
     rw [mem_restrictTotalDegree, totalDegree_one]
@@ -139,61 +139,47 @@ private theorem degree_one_coordinates_affine_of_point {K : Type*} [Field K]
     exact isAlgebraic_algebraMap (d j)
   exact ⟨j, c, d, hcj, hj, hcd⟩
 
-/-- Affine coordinate identities identify the entire base-field zero set
-with the parameterized line, in both directions. -/
-private theorem zeroLocus_eq_line_of_affine_coordinates {K : Type*} [Field K]
-    (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime]
-    (j : Fin 3) (c d : Fin 3 → K)
-    (hj : Transcendental K ((Ideal.Quotient.mk p) (X j)))
-    (hcd : ∀ k, (Ideal.Quotient.mk p) (X k) =
-      c k • (Ideal.Quotient.mk p) (X j) + algebraMap K (MvPolynomial (Fin 3) K ⧸ p) (d k))
-    (z : Fin 3 → K) (hz : z ∈ idealZeroLocus p) :
-    idealZeroLocus p = {x | ∃ t : K, x = z + t • c} := by
-  have hpoint (x : Fin 3 → K) (hx : x ∈ idealZeroLocus p) (k : Fin 3) :
-      x k = c k * x j + d k := by
-    have he := congrArg (coordinatePoint p x hx) (hcd k)
-    simpa only [coordinatePoint_mk, eval_X, map_add, map_smul,
-      AlgHom.commutes, Algebra.algebraMap_self, RingHom.id_apply, smul_eq_mul] using he
-  ext x
-  constructor
-  · intro hx
-    refine ⟨x j - z j, ?_⟩
-    funext k
-    change x k = z k + (x j - z j) * c k
-    rw [hpoint x hx k, hpoint z hz k]
-    ring
-  · rintro ⟨t, rfl⟩ f hf
-    have hpoly := affine_coordinates_line_polynomial_identity p j c d hj hcd z hz f hf
-    have he : (Polynomial.aeval t).comp
-        (MvPolynomial.aeval (fun k => Polynomial.C (z k) + Polynomial.C (c k) * Polynomial.X)) =
-        MvPolynomial.aeval (z + t • c) := by
-      apply MvPolynomial.algHom_ext
-      intro k
-      simp only [AlgHom.comp_apply, aeval_X, map_add, map_mul,
-        Polynomial.aeval_C, Polynomial.aeval_X, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-        Algebra.algebraMap_self, RingHom.id_apply]
-      ring
-    have hz' := congrArg (Polynomial.aeval t) hpoly
-    change ((Polynomial.aeval t).comp
-      (MvPolynomial.aeval (fun k => Polynomial.C (z k) + Polynomial.C (c k) * Polynomial.X))) f =
-        (Polynomial.aeval t) 0 at hz'
-    rw [he, map_zero, MvPolynomial.aeval_eq_eval] at hz'
-    exact hz'
 
 /-- A degree-one prime component with a rational point is exactly a
 rational affine line. This is equality of zero sets, not just containment. -/
 theorem degree_one_zeroLocus_eq_rationalAffineLine
-    (p : Ideal (CoordinatePolynomial 3)) [p.IsPrime] (hp : p.height = 2)
+    (p : CCDN.CoordinateIdeal 3) [p.IsPrime] (hp : p.height = 2)
     (hdegree : HasAffineCurveDegree p 1)
     (z : RatPoint 3) (hz : z ∈ idealZeroLocus p) :
-    ∃ v : RatPoint 3, v ≠ 0 ∧ idealZeroLocus p = rationalAffineLine z v ∧
-      ∀ f ∈ p, MvPolynomial.aeval
-        (fun k => Polynomial.C (z k) + Polynomial.C (v k) * Polynomial.X) f = 0 := by
+    ∃ v : RatPoint 3, v ≠ 0 ∧ idealZeroLocus p = rationalAffineLine z v := by
   obtain ⟨j, c, d, hcj, hj, hcd⟩ :=
     degree_one_coordinates_affine_of_point p hp hdegree z hz
-  refine ⟨c, fun h => hcj (congrFun h j), ?_,
-    affine_coordinates_line_polynomial_identity p j c d hj hcd z hz⟩
-  exact zeroLocus_eq_line_of_affine_coordinates p j c d hj hcd z hz
+  exact ⟨c, fun h => hcj (congrFun h j),
+    (by
+      have hpoint (x : Fin 3 → ℚ) (hx : x ∈ idealZeroLocus p) (k : Fin 3) :
+          x k = c k * x j + d k := by
+        have he := congrArg (coordinatePoint p x hx) (hcd k)
+        simpa only [coordinatePoint_mk, eval_X, map_add, map_smul,
+          AlgHom.commutes, Algebra.algebraMap_self, RingHom.id_apply, smul_eq_mul] using he
+      ext x
+      constructor
+      · intro hx
+        refine ⟨x j - z j, ?_⟩
+        funext k
+        change x k = z k + (x j - z j) * c k
+        rw [hpoint x hx k, hpoint z hz k]
+        ring
+      · rintro ⟨t, rfl⟩ f hf
+        have hpoly := affine_coordinates_line_polynomial_identity p j c d hj hcd z hz f hf
+        have he : (Polynomial.aeval t).comp
+            (MvPolynomial.aeval (fun k => Polynomial.C (z k) + Polynomial.C (c k) * Polynomial.X)) =
+            MvPolynomial.aeval (z + t • c) := by
+          apply MvPolynomial.algHom_ext
+          intro k
+          simp only [AlgHom.comp_apply, aeval_X, map_add, map_mul,
+            Polynomial.aeval_C, Polynomial.aeval_X, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
+            Algebra.algebraMap_self, RingHom.id_apply]
+          ring
+        have hz' := congrArg (Polynomial.aeval t) hpoly
+        change ((Polynomial.aeval t).comp
+          (MvPolynomial.aeval (fun k => Polynomial.C (z k) + Polynomial.C (c k) * Polynomial.X))) f =
+            (Polynomial.aeval t) 0 at hz'
+        rw [he, map_zero, MvPolynomial.aeval_eq_eval] at hz'
+        exact hz')⟩
 
-end
 end CCDN

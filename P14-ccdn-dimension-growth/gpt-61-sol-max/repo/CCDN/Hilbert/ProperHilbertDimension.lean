@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import Mathlib.RingTheory.Polynomial.HilbertPoly
 import CCDN.ForMathlib.MvPolynomial
@@ -14,15 +16,15 @@ import CCDN.Hilbert.FullDimension
 full ambient Hilbert dimension. This uses the Hilbert polynomial
 of the polynomial ring, rather than an additional geometric hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
 
 /-- The filtered Hilbert polynomial of the zero ideal in `|σ|` variables is the binomial polynomial
 `preHilbertPoly ℚ |σ| 0`. -/
-theorem filteredHilbertPolynomial_bot {K σ : Type*} [Field K]
-    [Fintype σ] [LinearOrder σ] :
+theorem filteredHilbertPolynomial_bot  :
     filteredHilbertPolynomial (⊥ : Ideal (MvPolynomial σ K)) =
       Polynomial.preHilbertPoly ℚ (Fintype.card σ) 0 := by
   apply filteredHilbertPolynomial_eq_of_eventual
@@ -40,10 +42,10 @@ theorem filteredHilbertPolynomial_bot {K σ : Type*} [Field K]
 /-- A proper ideal of Hilbert degree `d > 1` has Hilbert dimension smaller than the number of
 variables. -/
 theorem hilbert_dimension_lt_ambient_of_degree_gt_one
-    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+    
     (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) (d : ℕ) (hd : 1 < d)
     (hdegree : (filteredHilbertPolynomial I).leadingCoeff =
-      (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial) :
+      ↑d / (filteredHilbertPolynomial I).natDegree.factorial) :
     (filteredHilbertPolynomial I).natDegree < Fintype.card σ := by
   obtain ⟨_, _, hle, _⟩ := filteredHilbertPolynomial_positive_multiplicity I hI
   apply lt_of_le_of_ne hle
@@ -54,10 +56,8 @@ theorem hilbert_dimension_lt_ambient_of_degree_gt_one
   have hf : (Fintype.card σ).factorial ≠ 0 := Nat.factorial_ne_zero _
   have hfq : ((Fintype.card σ).factorial : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr hf
   have heq : (1 : ℚ) = d := by
-    apply (div_left_inj' hfq).mp
-    simpa only [one_div] using hdegree
-  have heqn : d = 1 := by exact_mod_cast heq.symm
+    grind
+  have heqn := by exact_mod_cast heq.symm
   omega
 
-end
 end CCDN

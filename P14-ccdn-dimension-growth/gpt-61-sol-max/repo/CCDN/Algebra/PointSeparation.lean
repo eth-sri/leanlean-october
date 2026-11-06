@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.Eval
 public import Mathlib.LinearAlgebra.LinearIndependent.Defs
 import Mathlib.Algebra.BigOperators.Fin
@@ -18,9 +20,8 @@ Powers of any nonzero element vanishing at the selected points give
 independent classes.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Powers of a nonzero element times point separators are jointly independent
 when that element vanishes under all point evaluations. -/
@@ -32,7 +33,7 @@ theorem separator_powers_independent {K A ι : Type*} [Field K] [CommRing A]
     LinearIndependent K (fun t : ι × Fin N => h t.1 * l ^ t.2.val) := by
   classical
   induction N with
-  | zero => exact linearIndependent_empty_type
+  | zero => simp_all
   | succ N ih =>
     rw [Fintype.linearIndependent_iff]
     intro a ha t
@@ -53,10 +54,8 @@ theorem separator_powers_independent {K A ι : Type*} [Field K] [CommRing A]
         ring
       rw [← he]
       exact ha
-    have hcoeff := Fintype.linearIndependent_iff.mp ih
-      (fun t => a (t.1, t.2.succ)) htail
-    obtain ⟨i, k⟩ := t
-    refine Fin.cases (hconst i) (fun k => hcoeff (i, k)) k
+    exact have hcoeff := Fintype.linearIndependent_iff.mp ih (fun t => a (t.1, t.2.succ)) htail;
+    Prod.casesOn t fun i k => Fin.cases (hconst i) (fun k => hcoeff (i, k)) k
 
 /-- Explicit polynomial interpolation at a finite family of distinct affine points. -/
 theorem exists_point_separators {K σ ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
@@ -74,12 +73,7 @@ theorem exists_point_separators {K σ ι : Type*} [Field K] [Fintype ι] [Decida
       MvPolynomial.C ((z i (k j) - z j.val (k j))⁻¹) *
         (MvPolynomial.X (k j) - MvPolynomial.C (z j.val (k j)))
     refine ⟨∏ j, factor j, ?_, ?_⟩
-    · rw [MvPolynomial.eval_prod]
-      apply Finset.prod_eq_one
-      intro j _
-      simp only [factor, MvPolynomial.eval_mul, MvPolynomial.eval_C,
-        MvPolynomial.eval_sub, MvPolynomial.eval_X]
-      exact inv_mul_cancel₀ (sub_ne_zero.mpr (hk j))
+    · grind [MvPolynomial.eval_prod, Finset.prod_eq_one, MvPolynomial.eval_mul, MvPolynomial.eval_C, MvPolynomial.eval_sub, MvPolynomial.eval_X, inv_mul_cancel₀]
     · intro j hji
       rw [MvPolynomial.eval_prod]
       apply Finset.prod_eq_zero (Finset.mem_univ (⟨j, hji⟩ : {j : ι // j ≠ i}))
@@ -92,5 +86,4 @@ theorem exists_point_separators {K σ ι : Type*} [Field K] [Fintype ι] [Decida
     simpa using hon i
   · simpa [he] using hoff j i he
 
-end
 end CCDN

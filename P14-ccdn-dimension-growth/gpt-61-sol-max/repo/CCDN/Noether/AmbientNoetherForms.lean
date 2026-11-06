@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Noether.BivariateCoefficientMatrix
 public import CCDN.Algebra.CoefficientwiseHomogeneous
 public import CCDN.Noether.EulerUniversalForms
 public import CCDN.Noether.UniversalHomogeneousForm
@@ -22,9 +23,8 @@ open MvPolynomial
 /-- The `(row, col)` entry of the Euler closed-form coefficient matrix of the universal plane
 restriction of a polynomial in the variables `σ`, as an `R`-linear function of that polynomial. -/
 def ambientEulerEntryLinear (R σ : Type*) [CommRing R] (k : ℕ)
-    (row : ℕ × ℕ) (col : EulerColumns k) :
-    MvPolynomial σ R →ₗ[R] MvPolynomial (PlaneParameters σ) R :=
-  ((eulerCoefficientEntryLinear (R := MvPolynomial (PlaneParameters σ) R)
+    (row : ℕ × ℕ) (col : EulerColumns k)  :=
+  ((eulerCoefficientEntryLinear 
     k row col).restrictScalars R).comp (universalPlanePolynomialLinear R σ)
 
 /-- `ambientEulerEntryLinear R σ k row col f` is the `(row, col)` entry of the Euler closed-form
@@ -46,24 +46,21 @@ lemma ambientEulerEntryLinear_map {R S σ : Type*} [CommRing R] [CommRing S]
     (eulerClosedFormCoefficientMatrix_map (MvPolynomial.map φ) k (universalPlanePolynomial f))
       row) col).symm
 
+variable (σ : Type*) [Fintype σ] [DecidableEq σ] (k : ℕ) (rows : EulerMinorIndex k → ℕ × ℕ) (cols : EulerMinorIndex k → EulerColumns k)
+
 /-- The minor with rows `rows` and columns `cols` of the Euler closed-form coefficient matrix of
 the universal plane restriction of the universal homogeneous form of degree `k + 2`. It is a
 polynomial in the plane parameters with coefficients that are integer polynomials in the
 coefficients of the form. -/
-def ambientNoetherParameterMinor (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (k : ℕ) (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
-    MvPolynomial (PlaneParameters σ) (MvPolynomial (Sym σ (k + 2)) ℤ) :=
+def ambientNoetherParameterMinor   :=
   ((eulerClosedFormCoefficientMatrix k
     (universalPlanePolynomial (universalHomogeneousForm σ (k + 2)))).submatrix rows cols).det
 
 /-- The ambient Noether form indexed by a minor `(rows, cols)` and a plane-parameter monomial `m`:
 the coefficient of `m` in `ambientNoetherParameterMinor σ k rows cols`, an integer polynomial in
 the coefficients of a homogeneous form of degree `k + 2`. -/
-def ambientNoetherForm (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (k : ℕ) (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k)
-    (m : PlaneParameters σ →₀ ℕ) : MvPolynomial (Sym σ (k + 2)) ℤ :=
+def ambientNoetherForm 
+    (m : PlaneParameters σ →₀ ℕ)  :=
   (ambientNoetherParameterMinor σ k rows cols).coeff m
 
 private lemma ambientEulerEntryLinear_coefficientwiseHomogeneous
@@ -78,43 +75,32 @@ private lemma ambientEulerEntryLinear_coefficientwiseHomogeneous
   have hh := (CoefficientwiseHomogeneous.C_of_isHomogeneous (isHomogeneous_X ℤ i)).mul
     (CoefficientwiseHomogeneous.map_C
       (ambientEulerEntryLinear ℤ σ k row col
-        (monomial (homogeneousCoefficientExponent σ (k + 2) i) (1 : ℤ))))
+        (monomial (homogeneousCoefficientExponent σ (k + 2) i) 1)))
   simpa only [add_zero] using hh
 
 /-- Every extracted parameter coefficient is homogeneous of the exact
 Noether degree d²−1 in the original equation's coefficients. -/
-theorem ambientNoetherForm_homogeneous (σ : Type*) [Fintype σ] [DecidableEq σ]
-    (k : ℕ) (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k)
+theorem ambientNoetherForm_homogeneous 
     (m : PlaneParameters σ →₀ ℕ) :
-    (ambientNoetherForm σ k rows cols m).IsHomogeneous ((k + 2) ^ 2 - 1) := by
-  exact CoefficientwiseHomogeneous.det _ (fun i j =>
+    (ambientNoetherForm σ k rows cols m).IsHomogeneous ((k + 2) ^ 2 - 1) := CoefficientwiseHomogeneous.det _ (fun i j =>
     ambientEulerEntryLinear_coefficientwiseHomogeneous σ k (rows i) (cols j)) m
 
-private lemma ambientNoetherParameterMinor_specialize {R σ : Type*} [CommRing R]
-    [Fintype σ] [DecidableEq σ]
-    (k : ℕ) (f : MvPolynomial σ R) (hf : f.IsHomogeneous (k + 2))
-    (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
-    MvPolynomial.map (homogeneousCoefficientSpecialization (k + 2) f)
-      (ambientNoetherParameterMinor σ k rows cols) =
-      ((eulerClosedFormCoefficientMatrix k (universalPlanePolynomial f)).submatrix
-        rows cols).det := by
-  rw [ambientNoetherParameterMinor, eulerClosedForm_minor_map,
-    ← universalPlanePolynomial_map, universalHomogeneousForm_specialize _ f hf]
 
 /-- Evaluation of a Noether form is exactly the corresponding coefficient
 of the restricted-equation determinant. -/
 theorem ambientNoetherForm_specialize {R σ : Type*} [CommRing R]
     [Fintype σ] [DecidableEq σ]
     (k : ℕ) (f : MvPolynomial σ R) (hf : f.IsHomogeneous (k + 2))
-    (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
-    (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k)
+    (rows : EulerMinorIndex k → ℕ × ℕ)
+    (cols : EulerMinorIndex k → EulerColumns k)
     (m : PlaneParameters σ →₀ ℕ) :
     homogeneousCoefficientSpecialization (k + 2) f (ambientNoetherForm σ k rows cols m) =
       (((eulerClosedFormCoefficientMatrix k (universalPlanePolynomial f)).submatrix
         rows cols).det).coeff m := by
-  rw [← ambientNoetherParameterMinor_specialize k f hf rows cols, coeff_map]
+  rw [← (show (map (homogeneousCoefficientSpecialization (k + (2 : ℕ)) f)) (ambientNoetherParameterMinor σ k rows cols) =
+            ((eulerClosedFormCoefficientMatrix k (universalPlanePolynomial f)).submatrix rows cols).det from (by
+          rw [ambientNoetherParameterMinor, eulerClosedForm_minor_map,
+            ← universalPlanePolynomial_map, universalHomogeneousForm_specialize _ f hf])), coeff_map]
   rfl
 
 end

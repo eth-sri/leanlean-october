@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.EulerUniversalForms
 import CCDN.Noether.EulerMonomialColumns
 import CCDN.Noether.EulerPairSpecialization
@@ -18,10 +20,10 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-private def eulerLowExponent (k : ℕ) (i : EulerLowIndex k) : Fin 2 →₀ ℕ :=
+private def eulerLowExponent (k : ℕ) (i : EulerLowIndex k)  :=
   ((Finsupp.degreeLeEquivSym (Fin 2) k).symm i).val
 
-private def eulerTopExponent (k : ℕ) (i : EulerTopIndex k) : Fin 2 →₀ ℕ :=
+private def eulerTopExponent (k : ℕ) (i : EulerTopIndex k)  :=
   ((degreeEqEquivSym (Fin 2) k).symm i).val
 
 private lemma eulerLowExponent_degree (k : ℕ) (i : EulerLowIndex k) :
@@ -41,8 +43,9 @@ private lemma eulerTopExponent_degree (k : ℕ) (i : EulerTopIndex k) :
 private lemma eulerLowExponent_injective (k : ℕ) : Function.Injective (eulerLowExponent k) :=
   Subtype.val_injective.comp (Finsupp.degreeLeEquivSym (Fin 2) k).symm.injective
 
-private def eulerMonomialOutput (k : ℕ) (col : EulerColumns k)
-    (i : EulerLowIndex (k + 2)) : ℕ × ℕ :=
+variable (k : ℕ) (col : EulerColumns k) (i : EulerLowIndex (k + 2))
+
+private def eulerMonomialOutput  : ℕ × ℕ :=
   let s := eulerLowExponent (k + 2) i 0
   let t := eulerLowExponent (k + 2) i 1
   match col with
@@ -50,63 +53,46 @@ private def eulerMonomialOutput (k : ℕ) (col : EulerColumns k)
   | .inr (.inl j) => (eulerLowExponent k j 0 + s - 1, eulerLowExponent k j 1 + t)
   | .inr (.inr j) => (eulerTopExponent k j 0 + s, eulerTopExponent k j 1 + t)
 
-private def eulerMonomialWeight (k : ℕ) (col : EulerColumns k) (i : EulerLowIndex (k + 2)) : ℤ :=
+private def eulerMonomialWeight  : ℤ :=
   let s := eulerLowExponent (k + 2) i 0
   let t := eulerLowExponent (k + 2) i 1
   match col with
   | .inl j => (eulerLowExponent k j 1 : ℤ) - t
-  | .inr (.inl j) => (s : ℤ) - eulerLowExponent k j 0
-  | .inr (.inr _) => (k + 2 : ℕ) - (s : ℤ) - t
+  | .inr (.inl j) => ↑s - eulerLowExponent k j 0
+  | .inr (.inr _) => (k + 2) - ↑s - t
 
-private lemma eulerBivariatePair_basis_left {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
+variable {R : Type*} [CommRing R]
+
+private lemma eulerBivariatePair_basis_left  (k : ℕ) (i : EulerLowIndex k) :
     eulerBivariatePair R k (eulerPairBasis R k (.inl i)) =
-      (monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R)), 0) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_left, bivariatePolynomialEquiv_monomial,
-    map_zero, eulerLowExponent]
+      (monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) 1), 0) := by
+  simp_all [LinearMap.comp_apply, LinearMap.prodMap_apply, AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_left, bivariatePolynomialEquiv_monomial, map_zero, eulerBivariatePair, eulerLowExponent]
 
-private lemma eulerBivariatePair_basis_right {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_basis_right  (k : ℕ)
     (i : EulerLowIndex k) :
     eulerBivariatePair R k (eulerPairBasis R k (.inr (.inl i))) =
-      (0, monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R))) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_right, bivariatePolynomialEquiv_monomial,
-    map_zero, eulerLowExponent]
+      (0, monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) 1)) := by
+  simp_all [LinearMap.comp_apply, LinearMap.prodMap_apply, AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_right, bivariatePolynomialEquiv_monomial, map_zero, eulerBivariatePair, eulerLowExponent]
 
-private lemma eulerBivariatePair_basis_radial {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_basis_radial  (k : ℕ)
     (i : EulerTopIndex k) :
     eulerBivariatePair R k (eulerPairBasis R k (.inr (.inr i))) =
-      (monomial (eulerTopExponent k i 0) (monomial (eulerTopExponent k i 1 + 1) (1 : R)),
+      (monomial (eulerTopExponent k i 0) (monomial (eulerTopExponent k i 1 + 1) 1),
        -(monomial (eulerTopExponent k i 0 + 1) (monomial (eulerTopExponent k i 1) (1 : R)))) := by
-  simp only [eulerBivariatePair, LinearMap.comp_apply, LinearMap.prodMap_apply,
-    AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_radial, map_mul, map_neg,
-    bivariatePolynomialEquiv_monomial, bivariatePolynomialEquiv_X_zero,
-    bivariatePolynomialEquiv_X_one, C_mul_monomial, X_mul_monomial, eulerTopExponent]
+  simp_all [LinearMap.comp_apply, LinearMap.prodMap_apply, AlgEquiv.toLinearMap_apply, eulerPairCoordinates_basis_radial, map_mul, map_neg, bivariatePolynomialEquiv_monomial, bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one, C_mul_monomial, X_mul_monomial, eulerBivariatePair, eulerTopExponent]
 
-private lemma eulerCoefficientMonomial_eq {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
+private lemma eulerCoefficientMonomial_eq  (k : ℕ) (i : EulerLowIndex k) :
     eulerCoefficientMonomial R k i =
-      monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) (1 : R)) :=
+      monomial (eulerLowExponent k i 0) (monomial (eulerLowExponent k i 1) 1) :=
   bivariatePolynomialEquiv_monomial _ _
 
-private lemma eulerMonomialWeight_abs_le (k : ℕ) (col : EulerColumns k)
-    (i : EulerLowIndex (k + 2)) :
-    |eulerMonomialWeight k col i| ≤ (k + 2 : ℕ) := by
+private lemma eulerMonomialWeight_abs_le  :
+    |eulerMonomialWeight k col i| ≤ (k + 2) := by
   have hi := eulerLowExponent_degree (k + 2) i
-  rcases col with j | j | j
-  · have hj := eulerLowExponent_degree k j
-    change |(eulerLowExponent k j 1 : ℤ) - eulerLowExponent (k + 2) i 1| ≤ _
-    rw [abs_le]
-    constructor <;> omega
-  · have hj := eulerLowExponent_degree k j
-    change |(eulerLowExponent (k + 2) i 0 : ℤ) - eulerLowExponent k j 0| ≤ _
-    rw [abs_le]
-    constructor <;> omega
-  · change |((k + 2 : ℕ) : ℤ) - eulerLowExponent (k + 2) i 0 - eulerLowExponent (k + 2) i 1| ≤ _
-    rw [abs_le]
-    constructor <;> omega
+  rcases col with j | j | j <;> dsimp [eulerMonomialWeight] <;> rw [abs_le]
+  all_goals first | have hj := eulerLowExponent_degree k j; omega | omega
 
-private theorem eulerClosedForm_monomial_output (k : ℕ) (col : EulerColumns k)
-    (i : EulerLowIndex (k + 2)) :
+private theorem eulerClosedForm_monomial_output  :
     eulerClosedFormOperator k (eulerCoefficientMonomial ℤ (k + 2) i)
       (eulerPairBasis ℤ k col) =
       monomial (eulerMonomialOutput k col i).1
@@ -143,44 +129,14 @@ private theorem eulerMonomialOutput_injective_on_nonzero (k : ℕ) (col : EulerC
   have h₀ := congrArg Prod.fst he
   have h₁ := congrArg Prod.snd he
   ext t
-  rcases col with c | c | c
-  · change (eulerLowExponent k c 1 : ℤ) - eulerLowExponent (k + 2) i 1 ≠ 0 at hi
-    change (eulerLowExponent k c 1 : ℤ) - eulerLowExponent (k + 2) j 1 ≠ 0 at hj
-    change eulerLowExponent k c 0 + eulerLowExponent (k + 2) i 0 =
-      eulerLowExponent k c 0 + eulerLowExponent (k + 2) j 0 at h₀
-    change eulerLowExponent k c 1 + eulerLowExponent (k + 2) i 1 - 1 =
-      eulerLowExponent k c 1 + eulerLowExponent (k + 2) j 1 - 1 at h₁
-    fin_cases t
-    · change eulerLowExponent (k + 2) i 0 = eulerLowExponent (k + 2) j 0
-      omega
-    · change eulerLowExponent (k + 2) i 1 = eulerLowExponent (k + 2) j 1
-      omega
-  · change (eulerLowExponent (k + 2) i 0 : ℤ) - eulerLowExponent k c 0 ≠ 0 at hi
-    change (eulerLowExponent (k + 2) j 0 : ℤ) - eulerLowExponent k c 0 ≠ 0 at hj
-    change eulerLowExponent k c 0 + eulerLowExponent (k + 2) i 0 - 1 =
-      eulerLowExponent k c 0 + eulerLowExponent (k + 2) j 0 - 1 at h₀
-    change eulerLowExponent k c 1 + eulerLowExponent (k + 2) i 1 =
-      eulerLowExponent k c 1 + eulerLowExponent (k + 2) j 1 at h₁
-    fin_cases t
-    · change eulerLowExponent (k + 2) i 0 = eulerLowExponent (k + 2) j 0
-      omega
-    · change eulerLowExponent (k + 2) i 1 = eulerLowExponent (k + 2) j 1
-      omega
-  · change eulerTopExponent k c 0 + eulerLowExponent (k + 2) i 0 =
-      eulerTopExponent k c 0 + eulerLowExponent (k + 2) j 0 at h₀
-    change eulerTopExponent k c 1 + eulerLowExponent (k + 2) i 1 =
-      eulerTopExponent k c 1 + eulerLowExponent (k + 2) j 1 at h₁
-    fin_cases t
-    · change eulerLowExponent (k + 2) i 0 = eulerLowExponent (k + 2) j 0
-      omega
-    · change eulerLowExponent (k + 2) i 1 = eulerLowExponent (k + 2) j 1
-      omega
+  rcases col with c | c | c <;> fin_cases t <;>
+    dsimp [eulerMonomialWeight, eulerMonomialOutput] at * <;> omega
 
 /-- An entry is zero or a single coefficient variable with multiplier
 of absolute value at most the defining equation's degree. -/
 theorem universalEulerMatrix_sparse (k : ℕ) (row : ℕ × ℕ) (col : EulerColumns k) :
     universalEulerMatrix k row col = 0 ∨
-      ∃ (i : EulerLowIndex (k + 2)) (c : ℤ), |c| ≤ (k + 2 : ℕ) ∧
+      ∃ (i : EulerLowIndex (k + 2)) (c : ℤ), |c| ≤ (k + 2) ∧
         universalEulerMatrix k row col = MvPolynomial.C c * MvPolynomial.X i := by
   classical
   by_cases hex : ∃ i, eulerMonomialWeight k col i ≠ 0 ∧ eulerMonomialOutput k col i = row
@@ -195,24 +151,17 @@ theorem universalEulerMatrix_sparse (k : ℕ) (row : ℕ × ℕ) (col : EulerCol
       by_cases hout : eulerMonomialOutput k col j = row
       · rw [ite_eq_left hout]
         have hz : eulerMonomialWeight k col j = 0 := by
-          by_contra hj
-          exact hji (eulerMonomialOutput_injective_on_nonzero k col j i hj hi
-            (hout.trans hrow.symm))
+          grind [eulerMonomialOutput_injective_on_nonzero]
         rw [hz, map_zero, zero_mul]
-      · rw [ite_eq_right hout, map_zero, zero_mul]
+      · simp_all
     · simp
   · left
-    unfold universalEulerMatrix
     apply Finset.sum_eq_zero
     intro i _
     rw [eulerClosedForm_monomial_entry]
     by_cases hout : eulerMonomialOutput k col i = row
-    · rw [ite_eq_left hout]
-      have hz : eulerMonomialWeight k col i = 0 := by
-        by_contra hi
-        exact hex ⟨i, hi, hout⟩
-      rw [hz, map_zero, zero_mul]
-    · rw [ite_eq_right hout, map_zero, zero_mul]
+    · grind
+    · simp_all
 
 end
 end CCDN

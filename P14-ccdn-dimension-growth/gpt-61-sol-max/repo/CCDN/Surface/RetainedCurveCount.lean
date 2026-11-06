@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Surface.CurveComponents
 import CCDN.Analysis.SmallDegreeSurfaceNumerics
@@ -15,19 +19,16 @@ import CCDN.Surface.SmallDegreeSurfaceCurveCount
 nonlinear prime curves are counted together, using their common degree
 budget and the logarithmic cap on the retained degrees. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 private theorem surface_curve_number_weight {d : ℕ} (hd : 5 ≤ d) {B : ℝ} (hB : 1 ≤ B) :
-    B ^ (1 / Real.sqrt (d : ℝ)) * (Real.log B + 1) ≤
+    B ^ (1 / Real.sqrt ↑d) * (Real.log B + 1) ≤
       (20 * Real.exp (1 / 20 : ℝ)) * B := by
   calc
-    _ ≤ B ^ (1 / Real.sqrt (d : ℝ) + 1 / 2) * (Real.log B + 1) := by
-      apply mul_le_mul_of_nonneg_right
-      · exact Real.rpow_le_rpow_of_exponent_le hB (by linarith)
-      · linarith [Real.log_nonneg hB]
+    _ ≤ B ^ (1 / Real.sqrt ↑d + 1 / 2) * (Real.log B + 1) := by
+      grind [mul_le_mul_of_nonneg_right, Real.rpow_le_rpow_of_exponent_le, Real.log_nonneg]
     _ ≤ _ := by
       have hh := surface_nonlinear_polylog_weight hd 1 hB
       norm_num only [Nat.factorial, Nat.cast_one, pow_one, div_one] at hh
@@ -40,18 +41,18 @@ most `A B^(1/√d) (log B + 1)`, the union of the curves has at most
 `C (d⁶ + A (D² (D + 1) + 1)) B` integral points of height at most `B`. -/
 theorem retained_surface_curve_union_bound :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (f : MvPolynomial (Fin 3) ℤ),
+      ∀ (f : CCDN.IntegerPolynomial 3),
       HasAbsIrreducibleTopForm f →
       5 ≤ f.totalDegree →
-      ∀ (S : Finset (Ideal (CoordinatePolynomial 3)))
-        (δ : Ideal (CoordinatePolynomial 3) → ℕ) (A D B : ℝ),
+      ∀ (S : Finset (CCDN.CoordinateIdeal 3))
+        (δ : CCDN.CoordinateIdeal 3 → ℕ) (A D B : ℝ),
       0 ≤ A → 0 ≤ D → 1 ≤ B →
-      (∀ I ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) I (δ I) ∧ 0 < δ I) →
+      (∀ I ∈ S, IsSurfaceCurve (CCDN.rationalPolynomial f) I (δ I) ∧ 0 < δ I) →
       (∀ I ∈ S, (δ I : ℝ) ≤ D * (Real.log B + 1)) →
       (∑ I ∈ S, (δ I : ℝ)) ≤
-        A * B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) * (Real.log B + 1) →
+        A * B ^ (1 / Real.sqrt ↑f.totalDegree) * (Real.log B + 1) →
       (count (⋃ I ∈ S, idealZeroLocus I) B : ℝ) ≤
-        C * ((f.totalDegree : ℝ) ^ 6 + A * (D ^ 2 * (D + 1) + 1)) * B := by
+        C * (↑f.totalDegree ^ 6 + A * (D ^ 2 * (D + 1) + 1)) * B := by
   obtain ⟨Cline, hCline, hline⟩ := surface_degree_one_component_contribution
   obtain ⟨Ccurve, hCcurve, hcurve⟩ := logarithmic_degree_curve_union_bound 1
   let Ccard := 20 * Real.exp (1 / 20 : ℝ)
@@ -68,7 +69,7 @@ theorem retained_surface_curve_union_bound :
       exact ⟨(hS I hIS).1.isPrime, (hS I hIS).1.height_eq, hδ ▸ (hS I hIS).1.degree⟩)
     (fun I hI => (hS I (mem_filter.mp hI).1).1.mem)
   have hcurveBudget : (∑ I ∈ curves, (δ I : ℝ)) ≤
-      A * B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) * (Real.log B + 1) ^ 1 := by
+      A * B ^ (1 / Real.sqrt ↑f.totalDegree) * (Real.log B + 1) ^ 1 := by
     rw [pow_one]
     exact (sum_le_sum_of_subset_of_nonneg (filter_subset _ _) (by intros; positivity)).trans hbudget
   have hcurveCount := hcurve curves δ f.totalDegree hd A D B hA hD hB
@@ -76,14 +77,14 @@ theorem retained_surface_curve_union_bound :
       obtain ⟨hIS, hδ⟩ := mem_filter.mp hI
       exact ⟨(hS I hIS).1.isPrime, hδ, (hS I hIS).1.degree⟩)
     (fun I hI => hcap I (mem_filter.mp hI).1) hcurveBudget
-  have hcard : (lines.card : ℝ) ≤ ∑ I ∈ S, (δ I : ℝ) := by
+  have hcard : ↑lines.card ≤ ∑ I ∈ S, (δ I : ℝ) := by
     calc
       _ ≤ (S.card : ℝ) := by exact_mod_cast card_le_card (filter_subset (fun I => δ I = 1) S)
-      _ = ∑ _I ∈ S, (1 : ℝ) := by simp
+      _ = ∑ _I ∈ S, 1 := by simp
       _ ≤ _ := sum_le_sum (fun I hI => by exact_mod_cast (hS I hI).2)
-  have hcardBound : (lines.card : ℝ) ≤ A * Ccard * B := by
+  have hcardBound : ↑lines.card ≤ A * Ccard * B := by
     have hh := mul_le_mul_of_nonneg_left (surface_curve_number_weight hd hB) hA
-    exact (hcard.trans hbudget).trans (by simpa only [mul_assoc, Ccard] using hh)
+    exact (hcard.trans hbudget).trans (by linarith)
   have hsub : (⋃ I ∈ S, idealZeroLocus I) ⊆
       (⋃ I ∈ lines, idealZeroLocus I) ∪ ⋃ I ∈ curves, idealZeroLocus I := by
     intro x hx
@@ -105,11 +106,10 @@ theorem retained_surface_curve_union_bound :
   have hCn : Ccard ≤ C := by dsimp only [C]; linarith
   have hB0 : 0 ≤ B := by linarith
   have hl := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCl
-    (show 0 ≤ (f.totalDegree : ℝ) ^ 6 by positivity)) hB0
+    (show 0 ≤ ↑f.totalDegree ^ 6 by positivity)) hB0
   have hn := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hCn hA) hB0
   have hc := mul_le_mul_of_nonneg_right hCc
     (show 0 ≤ A * D ^ 2 * (D + 1) * B by positivity)
   nlinarith [hcount, hlineCount, hcurveCount, hcardBound, hl, hn, hc]
 
-end
 end CCDN

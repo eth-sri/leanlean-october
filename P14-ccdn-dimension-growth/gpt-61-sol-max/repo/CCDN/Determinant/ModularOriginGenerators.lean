@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Determinant.SingularTangent
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.RingTheory.MvPolynomial
@@ -15,9 +17,8 @@ import Mathlib.FieldTheory.Finite.Polynomial
 /-! Lift singular local generators from the reduction modulo p. The
 remaining error is an explicit multiple of p, with a separate high-order term. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Lift a whole homogeneous generating family without changing its size at
@@ -31,7 +32,7 @@ private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p
         Ideal.span {map (Int.castRingHom (ZMod p)) f} ⊔ idealOfVars σ (ZMod p) ^ N) :
     ∃ G : (k : ℕ) → Fin (r k) → MvPolynomial σ ℤ,
       (∀ k j, (G k j).IsHomogeneous k) ∧
-      ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ) (h v w : MvPolynomial σ ℤ),
+      ∀ N u, ∃ (c : (k : Fin N) → CCDN.IntPoint (r k.val)) (h v w : MvPolynomial σ ℤ),
         v ∈ idealOfVars σ ℤ ^ N ∧
         u - ∑ k : Fin N, ∑ j, c k j • G k.val j = f * h + v + C (p : ℤ) * w := by
   classical
@@ -42,7 +43,7 @@ private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p
   obtain ⟨c, hc⟩ := hspan N (map π u)
   obtain ⟨h', hh', v, hv, he⟩ := Submodule.mem_sup.mp hc
   obtain ⟨h, rfl⟩ := Ideal.mem_span_singleton.mp hh'
-  let cZ : (k : Fin N) → Fin (r k.val) → ℤ := fun k j => (c k j).val
+  let cZ : (k : Fin N) → CCDN.IntPoint (r k.val) := fun k j => (c k j).val
   let S := ∑ k : Fin N, ∑ j, cZ k j • modularPolynomialLift (g k.val j)
   have hS : map π S = ∑ k : Fin N, ∑ j, c k j • g k.val j := by
     simp only [S, cZ, smul_eq_C_mul, map_sum, map_mul, map_C, map_modularPolynomialLift,
@@ -64,13 +65,13 @@ private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p
 /-- Integer generators in arbitrary dimension, with the residue-layer
 Hilbert function as their weight profile. -/
 theorem exists_integer_hypersurface_generators {p n : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin (n + 1)) ℤ) :
-    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin (n + 1)) ℤ),
+    (f : CCDN.IntegerPolynomial (n + 1)) :
+    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → CCDN.IntegerPolynomial (n + 1)),
       (∀ k, r k = Module.finrank (ZMod p)
         (originLayer (map (Int.castRingHom (ZMod p)) f) k)) ∧
       (∀ k j, (g k j).IsHomogeneous k) ∧
-      ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ)
-        (h v w : MvPolynomial (Fin (n + 1)) ℤ),
+      ∀ N u, ∃ (c : (k : Fin N) → CCDN.IntPoint (r k.val))
+        (h v w : CCDN.IntegerPolynomial (n + 1)),
         v ∈ idealOfVars (Fin (n + 1)) ℤ ^ N ∧
         u - ∑ k : Fin N, ∑ j, c k j • g k.val j = f * h + v + C (p : ℤ) * w := by
   obtain ⟨r, g, hr, hg, hs⟩ :=
@@ -78,22 +79,5 @@ theorem exists_integer_hypersurface_generators {p n : ℕ} [Fact p.Prime]
   obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
   exact ⟨r, G, hr, hG, hrep⟩
 
-/-- The local generators are homogeneous integer polynomials. Their
-uniform reduction formula separates the defining equation, the origin-adic
-error, and the p-divisible error. -/
-theorem exists_integer_origin_generators {p μ : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 2) ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) f ∈ idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ (map (Int.castRingHom (ZMod p)) f) ≠ 0) :
-    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) ℤ),
-      (∀ k, r k ≤ μ) ∧ (∀ k j, (g k j).IsHomogeneous k) ∧
-      ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ) (h v w : MvPolynomial (Fin 2) ℤ),
-        v ∈ idealOfVars (Fin 2) ℤ ^ N ∧
-        u - ∑ k : Fin N, ∑ j, c k j • g k.val j = f * h + v + C (p : ℤ) * w := by
-  obtain ⟨r, g, hr, hg, hs⟩ :=
-    exists_plane_truncation_generators (map (Int.castRingHom (ZMod p)) f) hf hμ
-  obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
-  exact ⟨r, G, hr, hG, hrep⟩
 
-end
 end CCDN

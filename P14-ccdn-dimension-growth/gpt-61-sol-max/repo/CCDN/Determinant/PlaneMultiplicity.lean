@@ -5,19 +5,20 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Determinant.SingularPlaneChart
 
 /-! Positive singular multiplicity is derived from a nonzero equation
 vanishing at the origin; it is bounded by the equation's total degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The first nonzero homogeneous component realizes the order at the origin. -/
 theorem exists_origin_multiplicity {K σ : Type*} [Field K]
-    (f : MvPolynomial σ K) (hf : f ≠ 0) (hz : eval (0 : σ → K) f = 0) :
+    (f : MvPolynomial σ K) (hf : f ≠ 0) (hz : eval 0 f = 0) :
     ∃ μ : ℕ, 0 < μ ∧ μ ≤ f.totalDegree ∧
       f ∈ idealOfVars σ K ^ μ ∧ homogeneousComponent μ f ≠ 0 := by
   classical
@@ -32,16 +33,12 @@ theorem exists_origin_multiplicity {K σ : Type*} [Field K]
   have hpow : f ∈ idealOfVars σ K ^ μ := by
     rw [mem_pow_idealOfVars_iff']
     intro e he
-    have hzero : homogeneousComponent e.degree f = 0 :=
+    have hzero :=
       not_not.mp (Nat.find_min hex he)
     have hc := congrArg (fun u : MvPolynomial σ K => u.coeff e) hzero
     simpa [coeff_homogeneousComponent] using hc
   have hpos : 0 < μ := by
-    by_contra h
-    have he : μ = 0 := by omega
-    have hconst : f.coeff 0 = 0 := by simpa only [eval_zero, constantCoeff_eq] using hz
-    apply hμ
-    rw [he, homogeneousComponent_zero, hconst, map_zero]
+    aesop
   have hdeg : μ ≤ f.totalDegree := by
     by_contra h
     exact hμ (homogeneousComponent_eq_zero μ f (by omega))
@@ -59,7 +56,6 @@ theorem linear_eval₂_totalDegree_le {R S σ τ : Type*} [CommRing R] [CommRing
   rw [eval₂Hom_monomial, RingHom.comp_apply]
   apply (totalDegree_mul _ _).trans
   rw [totalDegree_C, zero_add]
-  change (∏ j ∈ e.support, g j ^ e j).totalDegree ≤ f.totalDegree
   calc _ ≤ ∑ j ∈ e.support, (g j ^ e j).totalDegree := totalDegree_finsetProd _ _
     _ ≤ ∑ j ∈ e.support, e j := by
       apply Finset.sum_le_sum
@@ -79,9 +75,8 @@ theorem exists_hypersurface_reduction_multiplicity {p : ℕ} [Fact p.Prime] {σ 
   let φ := Int.castRingHom (ZMod p)
   have hshift := originShift_map φ a f
   have hn : map φ (originShift a f) ≠ 0 := by
-    rw [hshift]
-    exact originShift_ne_zero _ hf
-  have hz : eval (0 : σ → ZMod p) (map φ (originShift a f)) = 0 := by
+    grind [originShift_ne_zero]
+  have hz : eval 0 (map φ (originShift a f)) = 0 := by
     rw [hshift, eval_zero_originShift, eval_map]
     exact ha
   have he : map φ (originShift a f) =
@@ -97,5 +92,4 @@ theorem exists_hypersurface_reduction_multiplicity {p : ℕ} [Fact p.Prime] {σ 
   obtain ⟨μ, hpos, hμdeg, hpow, hμ⟩ := exists_origin_multiplicity _ hn hz
   exact ⟨μ, hpos, hμdeg.trans hdeg, hpow, hμ⟩
 
-end
 end CCDN

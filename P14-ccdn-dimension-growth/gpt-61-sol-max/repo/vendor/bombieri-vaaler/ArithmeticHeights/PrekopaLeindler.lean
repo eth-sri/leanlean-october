@@ -7,6 +7,8 @@ Modified for Lean/Mathlib 4.35.0: rename the real-weight AM-GM lemma to avoid a 
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Analysis.MeanInequalities
 public import Mathlib.LinearAlgebra.Pi
 public import Mathlib.MeasureTheory.Integral.Prod
@@ -106,41 +108,26 @@ theorem ENNReal.geom_mean_le_arith_mean2_weighted_real_weights {w₁ w₂ : ℝ}
     (hw : w₁ + w₂ = 1) (p₁ p₂ : ENNReal) :
     p₁ ^ w₁ * p₂ ^ w₂ ≤ ENNReal.ofReal w₁ * p₁ + ENNReal.ofReal w₂ * p₂ := by
   rcases eq_or_lt_of_le hw₁ with hz | hpos₁
-  · have h₂ : w₂ = 1 := by rw [← hw, ← hz, zero_add]
-    rw [← hz, h₂]
-    simp
+  · aesop
   rcases eq_or_lt_of_le hw₂ with hz | hpos₂
-  · have h₁ : w₁ = 1 := by rw [← hw, ← hz, add_zero]
-    rw [← hz, h₁]
-    simp
-  have hc₁ : ENNReal.ofReal w₁ ≠ 0 := by simp [ENNReal.ofReal_eq_zero, not_le.mpr hpos₁]
-  have hc₂ : ENNReal.ofReal w₂ ≠ 0 := by simp [ENNReal.ofReal_eq_zero, not_le.mpr hpos₂]
+  · aesop
   rcases eq_or_ne p₁ ⊤ with hp | hp
-  · rw [hp]
-    simp [ENNReal.mul_top hc₁]
+  · simp_all
   rcases eq_or_ne p₂ ⊤ with hp' | hp'
-  · rw [hp']
-    simp [ENNReal.mul_top hc₂]
+  · simp_all
   lift p₁ to NNReal using hp
   lift p₂ to NNReal using hp'
-  have e₁ : (w₁.toNNReal : ℝ) = w₁ := Real.coe_toNNReal w₁ hw₁
-  have e₂ : (w₂.toNNReal : ℝ) = w₂ := Real.coe_toNNReal w₂ hw₂
+  have e₁ := Real.coe_toNNReal w₁ hw₁
+  have e₂ := Real.coe_toNNReal w₂ hw₂
   have hsum : w₁.toNNReal + w₂.toNNReal = 1 := by
-    apply NNReal.coe_injective
-    push_cast [e₁, e₂]
-    exact hw
+    aesop
   have hmain := NNReal.geom_mean_le_arith_mean2_weighted w₁.toNNReal w₂.toNNReal p₁ p₂ hsum
   rw [← ENNReal.coe_rpow_of_nonneg _ hw₁, ← ENNReal.coe_rpow_of_nonneg _ hw₂]
   calc ((p₁ ^ w₁ : NNReal) : ENNReal) * ((p₂ ^ w₂ : NNReal) : ENNReal)
       = ((p₁ ^ w₁ * p₂ ^ w₂ : NNReal) : ENNReal) := (ENNReal.coe_mul _ _).symm
     _ ≤ ((w₁.toNNReal * p₁ + w₂.toNNReal * p₂ : NNReal) : ENNReal) := by
-        rw [ENNReal.coe_le_coe]
-        calc p₁ ^ w₁ * p₂ ^ w₂
-            = p₁ ^ (w₁.toNNReal : ℝ) * p₂ ^ (w₂.toNNReal : ℝ) := by rw [e₁, e₂]
-          _ ≤ w₁.toNNReal * p₁ + w₂.toNNReal * p₂ := hmain
-    _ = ENNReal.ofReal w₁ * p₁ + ENNReal.ofReal w₂ * p₂ := by
-        rw [ENNReal.coe_add, ENNReal.coe_mul, ENNReal.coe_mul]
-        rfl
+        grind [ENNReal.coe_le_coe]
+    _ = ENNReal.ofReal w₁ * p₁ + ENNReal.ofReal w₂ * p₂ := rfl
 
 /-- Raising to a positive real power commutes with suprema in `ℝ≥0∞`, because it is an order
 isomorphism. -/
@@ -150,15 +137,17 @@ theorem ENNReal.iSup_rpow {ι : Sort*} (u : ι → ENNReal) {p : ℝ} (hp : 0 < 
   simp only [ENNReal.orderIsoRpow_apply] at h
   exact h
 
+variable {s t : Set ℝ}
+
 /-- The one-dimensional Brunn–Minkowski inequality for compact sets: translate `s` by `sInf t` and
 `t` by `sSup s`; the two translates lie in `s + t` and meet only at `sSup s + sInf t`. -/
-private theorem Real.volume_add_volume_le_volume_add_of_isCompact {s t : Set ℝ} (hs : IsCompact s)
+private theorem Real.volume_add_volume_le_volume_add_of_isCompact  (hs : IsCompact s)
     (ht : IsCompact t) (hsne : s.Nonempty) (htne : t.Nonempty) :
     volume s + volume t ≤ volume (s + t) := by
   set a := sSup s with hadef
   set b := sInf t with hbdef
-  have ha : a ∈ s := hs.sSup_mem hsne
-  have hb : b ∈ t := ht.sInf_mem htne
+  have ha := hs.sSup_mem hsne
+  have hb := ht.sInf_mem htne
   set A : Set ℝ := (· + b) '' s with hA
   set B : Set ℝ := (a + ·) '' t with hB
   have hBm : MeasurableSet B := (ht.image (by fun_prop)).measurableSet
@@ -166,9 +155,8 @@ private theorem Real.volume_add_volume_le_volume_add_of_isCompact {s t : Set ℝ
   have hBsub : B ⊆ s + t := by rintro _ ⟨v, hv, rfl⟩; exact Set.add_mem_add ha hv
   have hinter : A ∩ B ⊆ {a + b} := by
     rintro x ⟨⟨u, hu, rfl⟩, ⟨v, hv, hx⟩⟩
-    have hx' : a + v = u + b := hx
-    have h1 : u ≤ a := le_csSup hs.bddAbove hu
-    have h2 : b ≤ v := csInf_le ht.bddBelow hv
+    have h1 := le_csSup hs.bddAbove hu
+    have h2 := csInf_le ht.bddBelow hv
     change u + b = a + b
     linarith
   have h0 : volume (A ∩ B) = 0 := measure_mono_null hinter (measure_singleton _)
@@ -183,7 +171,7 @@ private theorem Real.volume_add_volume_le_volume_add_of_isCompact {s t : Set ℝ
 /-- **The one-dimensional Brunn–Minkowski inequality.** For nonempty measurable sets `s`, `t ⊆ ℝ`,
 `volume s + volume t ≤ volume (s + t)`. The sumset need not be measurable: `volume` is applied to
 it as an outer measure. -/
-theorem Real.volume_add_volume_le_volume_add {s t : Set ℝ} (hs : MeasurableSet s)
+theorem Real.volume_add_volume_le_volume_add  (hs : MeasurableSet s)
     (ht : MeasurableSet t) (hsne : s.Nonempty) (htne : t.Nonempty) :
     volume s + volume t ≤ volume (s + t) := by
   obtain ⟨x₀, hx₀⟩ := hsne
@@ -212,7 +200,7 @@ theorem Real.volume_add_volume_le_volume_add {s t : Set ℝ} (hs : MeasurableSet
   have hLL' : volume L ≤ volume L' := measure_mono (Set.subset_insert _ _)
   have hcomp := Real.volume_add_volume_le_volume_add_of_isCompact (hKc.insert x₀) (hLc.insert y₀)
     ⟨x₀, Set.mem_insert _ _⟩ ⟨y₀, Set.mem_insert _ _⟩
-  have hsub : K' + L' ⊆ s + t :=
+  have hsub :=
     Set.add_subset_add (Set.insert_subset hx₀ hKs) (Set.insert_subset hy₀ hLt)
   calc volume s + volume t ≤ (volume K + (ε : ENNReal) / 2) + (volume L + (ε : ENNReal) / 2) :=
         add_le_add hK.le hL.le
@@ -229,16 +217,11 @@ private theorem Real.volume_setOf_ofReal_lt (c : ENNReal) :
     volume {t : ℝ | 0 < t ∧ ENNReal.ofReal t < c} = c := by
   rcases eq_or_ne c ⊤ with hc | hc
   · subst hc
-    have h : {t : ℝ | 0 < t ∧ ENNReal.ofReal t < ⊤} = Ioi (0 : ℝ) := by
-      ext t; simp [ENNReal.ofReal_lt_top]
+    have h : {t : ℝ | 0 < t ∧ ENNReal.ofReal t < ⊤} = Ioi 0 := by
+      aesop
     rw [h, Real.volume_Ioi]
   · have h : {t : ℝ | 0 < t ∧ ENNReal.ofReal t < c} = Ioo 0 c.toReal := by
-      ext t
-      constructor
-      · rintro ⟨h1, h2⟩
-        exact ⟨h1, (ENNReal.ofReal_lt_iff_lt_toReal h1.le hc).mp h2⟩
-      · rintro ⟨h1, h2⟩
-        exact ⟨h1, (ENNReal.ofReal_lt_iff_lt_toReal h1.le hc).mpr h2⟩
+      grind [ENNReal.ofReal_lt_iff_lt_toReal]
     rw [h, Real.volume_Ioo, sub_zero, ENNReal.ofReal_toReal hc]
 
 /-- **The layer cake formula for `ℝ≥0∞`-valued functions.** Mathlib's `Layercake` file states this
@@ -246,7 +229,7 @@ for real-valued functions; the `ℝ≥0∞` form is what the Prékopa–Leindler
 level sets there may well have infinite measure. -/
 theorem MeasureTheory.lintegral_eq_lintegral_measure_ofReal_lt {α : Type*} [MeasurableSpace α]
     (μ : Measure α) [SFinite μ] {f : α → ENNReal} (hf : Measurable f) :
-    ∫⁻ x, f x ∂μ = ∫⁻ t in Ioi (0 : ℝ), μ {x | ENNReal.ofReal t < f x} := by
+    ∫⁻ x, f x ∂μ = ∫⁻ t in Ioi 0, μ {x | ENNReal.ofReal t < f x} := by
   have hS : MeasurableSet {p : α × ℝ | 0 < p.2 ∧ ENNReal.ofReal p.2 < f p.1} :=
     (measurableSet_lt measurable_const measurable_snd).inter
       (measurableSet_lt (ENNReal.measurable_ofReal.comp measurable_snd) (hf.comp measurable_fst))
@@ -255,8 +238,7 @@ theorem MeasureTheory.lintegral_eq_lintegral_measure_ofReal_lt {α : Type*} [Mea
   have hFm : Measurable (Function.uncurry F) := measurable_one.indicator hS
   have h1 : ∀ x, ∫⁻ t, F x t = f x := by
     intro x
-    have he : (fun t => F x t) = Set.indicator {t : ℝ | 0 < t ∧ ENNReal.ofReal t < f x} 1 := by
-      ext t; simp [hF, Set.indicator_apply]
+    have he : (fun t => F x t) = Set.indicator {t : ℝ | 0 < t ∧ ENNReal.ofReal t < f x} 1 := rfl
     have hm : MeasurableSet {t : ℝ | 0 < t ∧ ENNReal.ofReal t < f x} :=
       (measurableSet_lt measurable_const measurable_id).inter
         (measurableSet_lt ENNReal.measurable_ofReal measurable_const)
@@ -267,26 +249,24 @@ theorem MeasureTheory.lintegral_eq_lintegral_measure_ofReal_lt {α : Type*} [Mea
       ext x; simp [hF, Set.indicator_apply, ht]
     rw [he, lintegral_indicator_one (measurableSet_lt measurable_const hf)]
   have h3 : ∀ t : ℝ, t ≤ 0 → ∫⁻ x, F x t ∂μ = 0 := by
-    intro t ht
-    have he : (fun x => F x t) = fun _ => (0 : ENNReal) := by
-      ext x; simp [hF, Set.indicator_apply, not_lt.mpr ht]
-    rw [he, lintegral_zero]
+    simp_all
   calc ∫⁻ x, f x ∂μ = ∫⁻ x, (∫⁻ t, F x t) ∂μ := by simp_rw [h1]
     _ = ∫⁻ t, (∫⁻ x, F x t ∂μ) := lintegral_lintegral_swap hFm.aemeasurable
-    _ = ∫⁻ t in Ioi (0 : ℝ), μ {x | ENNReal.ofReal t < f x} := by
+    _ = ∫⁻ t in Ioi 0, μ {x | ENNReal.ofReal t < f x} := by
         rw [← lintegral_indicator measurableSet_Ioi]
         refine lintegral_congr fun t => ?_
         rcases lt_or_ge 0 t with ht | ht
         · rw [h2 t ht, Set.indicator_of_mem (mem_Ioi.mpr ht)]
         · rw [h3 t ht, Set.indicator_of_notMem (by simpa using ht)]
 
+variable {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b = 1) {f g h : ℝ → ENNReal} (hf : Measurable f) (hg : Measurable g) (hh : Measurable h)
+
+include ha hb hab hf hg hh in
 /-- Prékopa–Leindler on `ℝ` for functions normalized to have supremum `1`, in the stronger
 *arithmetic mean* form `a * ∫⁻ f + b * ∫⁻ g ≤ ∫⁻ h`. This is where the one-dimensional
 Brunn–Minkowski inequality and the layer cake formula are used; everything else in the file is
 bookkeeping around it. -/
-private theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
-    (hab : a + b = 1) {f g h : ℝ → ENNReal} (hf : Measurable f) (hg : Measurable g)
-    (hh : Measurable h) (hf1 : ∀ x, f x ≤ 1) (hg1 : ∀ y, g y ≤ 1)
+private theorem Real.prekopaLeindler_of_le_one  (hf1 : ∀ x, f x ≤ 1) (hg1 : ∀ y, g y ≤ 1)
     (hfne : ∀ t : ℝ, 0 < t → t < 1 → {x | ENNReal.ofReal t < f x}.Nonempty)
     (hgne : ∀ t : ℝ, 0 < t → t < 1 → {y | ENNReal.ofReal t < g y}.Nonempty)
     (key : ∀ x y, f x ^ a * g y ^ b ≤ h (a • x + b • y)) :
@@ -301,21 +281,20 @@ private theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 
       have hBm : MeasurableSet {y | ENNReal.ofReal t < g y} := measurableSet_lt measurable_const hg
       obtain ⟨x₀, hx₀⟩ := hfne t ht ht1
       obtain ⟨y₀, hy₀⟩ := hgne t ht ht1
-      have hc0 : ENNReal.ofReal t ≠ 0 := by simp [ENNReal.ofReal_eq_zero, not_le.mpr ht]
+      have hc0 : ENNReal.ofReal t ≠ 0 := by simp_all
       have hcT : ENNReal.ofReal t ≠ ⊤ := ENNReal.ofReal_ne_top
-      have hcpos : 0 < ENNReal.ofReal t := pos_iff_ne_zero.mpr hc0
+      have hcpos := pos_iff_ne_zero.mpr hc0
       have hsub : a • {x | ENNReal.ofReal t < f x} + b • {y | ENNReal.ofReal t < g y}
           ⊆ {z | ENNReal.ofReal t < h z} := by
         rintro z ⟨p, hp, q, hq, rfl⟩
         obtain ⟨u, hu, rfl⟩ := hp
         obtain ⟨v, hv, rfl⟩ := hq
-        change ENNReal.ofReal t < h (a • u + b • v)
         refine lt_of_lt_of_le ?_ (key u v)
         have hsplit : ENNReal.ofReal t = ENNReal.ofReal t ^ a * ENNReal.ofReal t ^ b := by
           rw [← ENNReal.rpow_add _ _ hc0 hcT, hab, ENNReal.rpow_one]
         rw [hsplit]
-        have h1 : ENNReal.ofReal t ^ a < f u ^ a := ENNReal.rpow_lt_rpow hu ha
-        have h2 : ENNReal.ofReal t ^ b ≤ g v ^ b := ENNReal.rpow_le_rpow hv.le hb.le
+        have h1 := ENNReal.rpow_lt_rpow hu ha
+        have h2 := ENNReal.rpow_le_rpow hv.le hb.le
         calc ENNReal.ofReal t ^ a * ENNReal.ofReal t ^ b
             = ENNReal.ofReal t ^ b * ENNReal.ofReal t ^ a := mul_comm _ _
           _ < ENNReal.ofReal t ^ b * f u ^ a :=
@@ -337,7 +316,7 @@ private theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 
             + volume (b • {y | ENNReal.ofReal t < g y}) := by rw [hvA, hvB]
         _ ≤ volume (a • {x | ENNReal.ofReal t < f x} + b • {y | ENNReal.ofReal t < g y}) := hBM
         _ ≤ volume {z | ENNReal.ofReal t < h z} := measure_mono hsub
-    · have h1t : (1 : ENNReal) ≤ ENNReal.ofReal t := ENNReal.one_le_ofReal.mpr ht1
+    · have h1t := ENNReal.one_le_ofReal.mpr ht1
       have hAe : {x | ENNReal.ofReal t < f x} = ∅ :=
         Set.eq_empty_iff_forall_notMem.mpr fun x hx =>
           absurd hx (not_lt.mpr (le_trans (hf1 x) h1t))
@@ -354,26 +333,26 @@ private theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 
   filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht
   exact hstep t ht
 
+include ha hb hab hf hg hh in
 /-- Prékopa–Leindler on `ℝ` for functions bounded by `M` and `N` whose suprema are `M` and `N`:
 normalize by `M` and `N` and appeal to `Real.prekopaLeindler_of_le_one`. -/
-private theorem Real.prekopaLeindler_of_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b = 1)
-    {f g h : ℝ → ENNReal} (hf : Measurable f) (hg : Measurable g) (hh : Measurable h)
+private theorem Real.prekopaLeindler_of_le 
     {M N : ENNReal} (hM0 : M ≠ 0) (hMT : M ≠ ⊤) (hN0 : N ≠ 0) (hNT : N ≠ ⊤)
     (hfM : ∀ x, f x ≤ M) (hgN : ∀ y, g y ≤ N)
     (hfsup : ∀ t : ℝ, 0 < t → t < 1 → ∃ x, ENNReal.ofReal t * M < f x)
     (hgsup : ∀ t : ℝ, 0 < t → t < 1 → ∃ y, ENNReal.ofReal t * N < g y)
     (key : ∀ x y, f x ^ a * g y ^ b ≤ h (a • x + b • y)) :
     (∫⁻ x, f x) ^ a * (∫⁻ y, g y) ^ b ≤ ∫⁻ z, h z := by
-  have hMi : M⁻¹ ≠ 0 := ENNReal.inv_ne_zero.mpr hMT
-  have hMiT : M⁻¹ ≠ ⊤ := ENNReal.inv_ne_top.mpr hM0
-  have hNi : N⁻¹ ≠ 0 := ENNReal.inv_ne_zero.mpr hNT
-  have hNiT : N⁻¹ ≠ ⊤ := ENNReal.inv_ne_top.mpr hN0
+  have hMi := ENNReal.inv_ne_zero.mpr hMT
+  have hMiT := ENNReal.inv_ne_top.mpr hM0
+  have hNi := ENNReal.inv_ne_zero.mpr hNT
+  have hNiT := ENNReal.inv_ne_top.mpr hN0
   have hMa0 : M ^ a ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hM0) hMT).ne'
-  have hMaT : M ^ a ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg ha.le hMT
+  have hMaT := ENNReal.rpow_ne_top_of_nonneg ha.le hMT
   have hNb0 : N ^ b ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hN0) hNT).ne'
-  have hNbT : N ^ b ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hb.le hNT
+  have hNbT := ENNReal.rpow_ne_top_of_nonneg hb.le hNT
   set c : ENNReal := (M ^ a * N ^ b)⁻¹ with hc
-  have hc0 : c ≠ 0 := ENNReal.inv_ne_zero.mpr (ENNReal.mul_ne_top hMaT hNbT)
+  have hc0 := ENNReal.inv_ne_zero.mpr (ENNReal.mul_ne_top hMaT hNbT)
   have hcT : c ≠ ⊤ := ENNReal.inv_ne_top.mpr (by simp [hMa0, hNb0])
   have hcomp : ∀ u v : ENNReal, (M⁻¹ * u) ^ a * (N⁻¹ * v) ^ b = c * (u ^ a * v ^ b) := by
     intro u v
@@ -392,20 +371,18 @@ private theorem Real.prekopaLeindler_of_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
     (fun t ht ht1 => by
       obtain ⟨x, hx⟩ := hfsup t ht ht1
       refine ⟨x, ?_⟩
-      have hlt : M⁻¹ * (ENNReal.ofReal t * M) < M⁻¹ * f x :=
+      have hlt :=
         ENNReal.mul_lt_mul_right hMi hMiT hx
       calc ENNReal.ofReal t = M⁻¹ * (ENNReal.ofReal t * M) := by
-            rw [mul_comm (ENNReal.ofReal t) M, ← mul_assoc, ENNReal.inv_mul_cancel hM0 hMT,
-              one_mul]
+            grind [mul_comm, mul_assoc, ENNReal.inv_mul_cancel]
         _ < M⁻¹ * f x := hlt)
     (fun t ht ht1 => by
       obtain ⟨y, hy⟩ := hgsup t ht ht1
       refine ⟨y, ?_⟩
-      have hlt : N⁻¹ * (ENNReal.ofReal t * N) < N⁻¹ * g y :=
+      have hlt :=
         ENNReal.mul_lt_mul_right hNi hNiT hy
       calc ENNReal.ofReal t = N⁻¹ * (ENNReal.ofReal t * N) := by
-            rw [mul_comm (ENNReal.ofReal t) N, ← mul_assoc, ENNReal.inv_mul_cancel hN0 hNT,
-              one_mul]
+            grind [mul_comm, mul_assoc, ENNReal.inv_mul_cancel]
         _ < N⁻¹ * g y := hlt)
     (fun x y => by rw [hcomp]; gcongr; exact key x y)
   rw [lintegral_const_mul' _ _ hMiT, lintegral_const_mul' _ _ hNiT,
@@ -415,9 +392,9 @@ private theorem Real.prekopaLeindler_of_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
   rw [hcomp] at hAM
   exact (ENNReal.mul_le_mul_iff_right hc0 hcT).mp (hAM.trans hunit)
 
+include ha hb hab hf hg hh in
 /-- **The Prékopa–Leindler inequality on `ℝ`.** -/
-theorem Real.prekopaLeindler {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b = 1)
-    {f g h : ℝ → ENNReal} (hf : Measurable f) (hg : Measurable g) (hh : Measurable h)
+theorem Real.prekopaLeindler 
     (key : ∀ x y, f x ^ a * g y ^ b ≤ h (a • x + b • y)) :
     (∫⁻ x, f x) ^ a * (∫⁻ y, g y) ^ b ≤ ∫⁻ z, h z := by
   rcases eq_or_ne (∫⁻ x, f x) 0 with hF0 | hF0
@@ -451,11 +428,9 @@ theorem Real.prekopaLeindler {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b 
       c < ⨆ n : ℕ, ((n : ENNReal) + 1))
     exact lt_of_lt_of_le (lt_min hc hn) (le_iSup (fun n => G n y) n)
   have hFmono : Monotone F := fun n m hnm x => by
-    simp only [hFdef]
-    exact min_le_min le_rfl (by gcongr)
+    simp_all
   have hGmono : Monotone G := fun n m hnm y => by
-    simp only [hGdef]
-    exact min_le_min le_rfl (by gcongr)
+    simp_all
   have hFmeas : ∀ n, Measurable (F n) := fun n => hf.min measurable_const
   have hGmeas : ∀ n, Measurable (G n) := fun n => hg.min measurable_const
   have hFint : (∫⁻ x, f x) = ⨆ n, ∫⁻ x, F n x := by
@@ -468,10 +443,10 @@ theorem Real.prekopaLeindler {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b 
     intro n
     set M : ENNReal := ⨆ x, F n x with hM
     set N : ENNReal := ⨆ y, G n y with hN
-    have hMT : M ≠ ⊤ := by
+    have hMT := by
       refine ne_top_of_le_ne_top (by simp) (iSup_le fun x => ?_ : M ≤ (n : ENNReal) + 1)
       exact min_le_right _ _
-    have hNT : N ≠ ⊤ := by
+    have hNT := by
       refine ne_top_of_le_ne_top (by simp) (iSup_le fun y => ?_ : N ≤ (n : ENNReal) + 1)
       exact min_le_right _ _
     have hM0 : M ≠ 0 := by
@@ -485,12 +460,12 @@ theorem Real.prekopaLeindler {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b 
     refine Real.prekopaLeindler_of_le ha hb hab (hFmeas n) (hGmeas n) hh hM0 hMT hN0 hNT
       (fun x => le_iSup (fun x => F n x) x) (fun y => le_iSup (fun y => G n y) y)
       (fun t ht ht1 => ?_) (fun t ht ht1 => ?_) (fun x y => ?_)
-    · have hlt : ENNReal.ofReal t * M < M := by
+    · have hlt := by
         calc ENNReal.ofReal t * M = M * ENNReal.ofReal t := mul_comm _ _
           _ < M * 1 := ENNReal.mul_lt_mul_right hM0 hMT (ENNReal.ofReal_lt_one.mpr ht1)
           _ = M := mul_one M
       exact lt_iSup_iff.mp hlt
-    · have hlt : ENNReal.ofReal t * N < N := by
+    · have hlt := by
         calc ENNReal.ofReal t * N = N * ENNReal.ofReal t := mul_comm _ _
           _ < N * 1 := ENNReal.mul_lt_mul_right hN0 hNT (ENNReal.ofReal_lt_one.mpr ht1)
           _ = N := mul_one N
@@ -506,7 +481,7 @@ theorem Real.prekopaLeindler {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b 
   refine le_trans ?_ (hbdd (max n m))
   gcongr
   · exact hFmono (le_max_left n m) _
-  · exact hGmono (le_max_right n m) _
+  · solve_by_elim [le_max_right]
 
 /-- `HasPrekopaLeindler μ` says that the Prékopa–Leindler inequality holds for the measure `μ` on
 the real vector space `E`: whenever `f x ^ a * g y ^ b ≤ h (a • x + b • y)` pointwise, with
@@ -520,13 +495,14 @@ the real vector space `E`: whenever `f x ^ a * g y ^ b ≤ h (a • x + b • y)
 
 /-- Prékopa–Leindler holds for Lebesgue measure on `ℝ`. -/
 theorem hasPrekopaLeindler_real : HasPrekopaLeindler (volume : Measure ℝ) :=
-  fun _ _ ha hb hab _ _ _ hf hg hh key => Real.prekopaLeindler ha hb hab hf hg hh key
+  (@Real.prekopaLeindler)
+
+variable {E F : Type*} [MeasurableSpace E] [AddCommGroup E] [Module ℝ E] [MeasurableSpace F] [AddCommGroup F] [Module ℝ F] {μ : Measure E} {ν : Measure F}
 
 /-- **Prékopa–Leindler tensorizes.** Integrating out the second factor turns the hypothesis on
 `E × F` into the hypothesis on `E` for the three marginals, and Tonelli's theorem identifies the
 marginals' integrals with the original ones. -/
-theorem HasPrekopaLeindler.prod {E F : Type*} [MeasurableSpace E] [AddCommGroup E] [Module ℝ E]
-    [MeasurableSpace F] [AddCommGroup F] [Module ℝ F] {μ : Measure E} {ν : Measure F}
+theorem HasPrekopaLeindler.prod 
     [SFinite ν] (hE : HasPrekopaLeindler μ) (hF : HasPrekopaLeindler ν) :
     HasPrekopaLeindler (μ.prod ν) := by
   intro a b ha hb hab f g h hf hg hh key
@@ -544,9 +520,7 @@ theorem HasPrekopaLeindler.prod {E F : Type*} [MeasurableSpace E] [AddCommGroup 
     ← lintegral_prod _ hh.aemeasurable] at hmain
 
 /-- Prékopa–Leindler transports along a measure-preserving linear equivalence. -/
-theorem HasPrekopaLeindler.of_measurePreserving {E F : Type*} [MeasurableSpace E]
-    [AddCommGroup E] [Module ℝ E] [MeasurableSpace F] [AddCommGroup F] [Module ℝ F]
-    {μ : Measure E} {ν : Measure F} (e : E ≃ₗ[ℝ] F)
+theorem HasPrekopaLeindler.of_measurePreserving  (e : E ≃ₗ[ℝ] F)
     (he : MeasurePreserving e μ ν) (hsymm : Measurable e.symm)
     (hF : HasPrekopaLeindler ν) : HasPrekopaLeindler μ := by
   intro a b ha hb hab f g h hf hg hh key
@@ -557,10 +531,7 @@ theorem HasPrekopaLeindler.of_measurePreserving {E F : Type*} [MeasurableSpace E
     exact lintegral_congr fun x => by simp
   have hkey : ∀ u v : F, (f ∘ e.symm) u ^ a * (g ∘ e.symm) v ^ b
       ≤ (h ∘ e.symm) (a • u + b • v) := by
-    intro u v
-    have hlin : e.symm (a • u + b • v) = a • e.symm u + b • e.symm v := by
-      simp [map_add, map_smul]
-    simpa [Function.comp_apply, hlin] using key (e.symm u) (e.symm v)
+    simp_all
   have hmain := hF a b ha hb hab (f ∘ e.symm) (g ∘ e.symm) (h ∘ e.symm) (hf.comp hsymm)
     (hg.comp hsymm) (hh.comp hsymm) hkey
   rwa [htrans f hf, htrans g hg, htrans h hh] at hmain
@@ -586,10 +557,8 @@ theorem hasPrekopaLeindler_pi : ∀ n : ℕ, HasPrekopaLeindler (volume : Measur
       exact hasPrekopaLeindler_real.prod (hasPrekopaLeindler_pi n)
     refine HasPrekopaLeindler.of_measurePreserving
       (Fin.consLinearEquiv ℝ (fun _ : Fin (n + 1) => ℝ)).symm ?_ ?_ hprod
-    · exact (volume_preserving_piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) 0 :
-        MeasurePreserving (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) 0) _ _)
-    · simp only [LinearEquiv.symm_symm]
-      refine Measurable.of_eval fun i => ?_
+    · exact (volume_preserving_piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) 0)
+    · refine Measurable.of_eval fun i => ?_
       induction i using Fin.cases with
       | zero => exact measurable_fst
       | succ j => exact (measurable_pi_apply j).comp measurable_snd

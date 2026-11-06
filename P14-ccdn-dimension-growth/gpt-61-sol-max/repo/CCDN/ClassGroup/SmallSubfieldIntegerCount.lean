@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.IntegerTranslationClassPacking
 import CCDN.ClassGroup.SubfieldBoundedIntegers
 import CCDN.ForMathlib.FieldTheory
@@ -15,29 +17,27 @@ at the balanced discriminant radius. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
 
 private lemma small_dimension_packing_bound {m n : ℕ} (hm : 4 * m ≤ n)
     {B : ℝ} (hB : 1 ≤ B) :
-    (2 * Real.sqrt (m : ℝ) * B + 1) ^ m ≤
-      (2 * Real.sqrt (n : ℝ) + 1) ^ n * B ^ ((n : ℝ) / 4) := by
+    (2 * Real.sqrt ↑m * B + 1) ^ m ≤
+      (2 * Real.sqrt ↑n + 1) ^ n * B ^ ((n : ℝ) / 4) := by
   have hmn : m ≤ n := by omega
-  have hB0 : 0 ≤ B := zero_le_one.trans hB
-  have hsq : Real.sqrt (m : ℝ) ≤ Real.sqrt (n : ℝ) :=
+  have hsq :=
     Real.sqrt_le_sqrt (Nat.cast_le.mpr hmn)
-  have hc : 1 ≤ 2 * Real.sqrt (n : ℝ) + 1 := by
-    linarith [Real.sqrt_nonneg (n : ℝ)]
-  have hbase : 2 * Real.sqrt (m : ℝ) * B + 1 ≤
-      (2 * Real.sqrt (n : ℝ) + 1) * B := by nlinarith
-  have hexp : (m : ℝ) ≤ (n : ℝ) / 4 := by
+  have hc : 1 ≤ 2 * Real.sqrt ↑n + 1 := by
+    simp_all
+  have hbase : 2 * Real.sqrt ↑m * B + 1 ≤
+      (2 * Real.sqrt ↑n + 1) * B := by nlinarith
+  have hexp : ↑m ≤ (n : ℝ) / 4 := by
     have hh : 4 * (m : ℝ) ≤ n := by exact_mod_cast hm
     linarith
   calc
-    _ ≤ ((2 * Real.sqrt (n : ℝ) + 1) * B) ^ m :=
+    _ ≤ ((2 * Real.sqrt ↑n + 1) * B) ^ m :=
       pow_le_pow_left₀ (by positivity) hbase m
-    _ = (2 * Real.sqrt (n : ℝ) + 1) ^ m * B ^ m := mul_pow _ _ _
-    _ ≤ (2 * Real.sqrt (n : ℝ) + 1) ^ n * B ^ ((n : ℝ) / 4) := by
+    _ = (2 * Real.sqrt ↑n + 1) ^ m * B ^ m := mul_pow _ _ _
+    _ ≤ (2 * Real.sqrt ↑n + 1) ^ n * B ^ ((n : ℝ) / 4) := by
       apply mul_le_mul (pow_le_pow_right₀ hc hmn) _ (by positivity) (by positivity)
       rw [← Real.rpow_natCast]
       exact Real.rpow_le_rpow_of_exponent_le hB hexp
@@ -46,7 +46,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 /-- The algebraic integers of `K` bounded by `B` at every infinite place that lie in an intermediate
 field `L` with `4 * [L : ℚ] ≤ [K : ℚ]`. -/
-def boundedSmallSubfieldIntegers (B : ℝ) : Set (𝓞 K) :=
+noncomputable def boundedSmallSubfieldIntegers (B : ℝ)  :=
   {β | β ∈ boundedArchimedeanIntegers K B ∧
     ∃ L : IntermediateField ℚ K,
       4 * Module.finrank ℚ L ≤ Module.finrank ℚ K ∧ (β : K) ∈ L}
@@ -58,8 +58,8 @@ lemma boundedSmallSubfieldIntegers_finite (B : ℝ) :
 
 /-- The constant `2 ^ n * (2 * √n + 1) ^ n` in the count of bounded integers in small subfields of
 a number field of degree `n`. -/
-def smallSubfieldIntegerCountConstant (n : ℕ) : ℝ :=
-  (2 : ℝ) ^ n * (2 * Real.sqrt (n : ℝ) + 1) ^ n
+noncomputable def smallSubfieldIntegerCountConstant (n : ℕ)  :=
+  2 ^ n * (2 * Real.sqrt ↑n + 1) ^ n
 
 /-- The constant `smallSubfieldIntegerCountConstant n` is positive. -/
 lemma smallSubfieldIntegerCountConstant_pos (n : ℕ) :
@@ -78,7 +78,6 @@ private theorem boundedSmallSubfieldIntegers_count {B : ℝ} (hB : 1 ≤ B) :
     Field.finite_intermediateField_of_exists_primitive_element ℚ K
       (Field.exists_primitive_element ℚ K)
   let : Fintype (IntermediateField ℚ K) := Fintype.ofFinite _
-  let : Fintype T := Fintype.ofFinite _
   let sf := (boundedSmallSubfieldIntegers_finite K B).toFinset
   let tf (L : T) := (boundedIntegersInSubfield_finite K L.val B).toFinset
   have hcover : sf ⊆ Finset.univ.biUnion tf := by
@@ -99,10 +98,10 @@ private theorem boundedSmallSubfieldIntegers_count {B : ℝ} (hB : 1 ≤ B) :
     have hh := (boundedIntegersInSubfield_count K L.val (zero_le_one.trans hB)).trans
       (small_dimension_packing_bound L.property hB)
     simpa only [tf, ← Set.ncard_eq_toFinset_card] using hh
-  have hcount : (sf.card : ℝ) ≤ ∑ L : T, ((tf L).card : ℝ) := by
+  have hcount : ↑sf.card ≤ ∑ L : T, ((tf L).card : ℝ) := by
     exact_mod_cast (Finset.card_le_card hcover).trans Finset.card_biUnion_le
   calc
-    _ = (sf.card : ℝ) := by
+    _ = ↑sf.card := by
       rw [Set.ncard_eq_toFinset_card _ (boundedSmallSubfieldIntegers_finite K B)]
     _ ≤ _ := hcount
     _ ≤ ∑ _L : T,
@@ -112,7 +111,7 @@ private theorem boundedSmallSubfieldIntegers_count {B : ℝ} (hB : 1 ≤ B) :
     _ = (Fintype.card T : ℝ) *
         ((2 * Real.sqrt (Module.finrank ℚ K : ℝ) + 1) ^ Module.finrank ℚ K *
           B ^ ((Module.finrank ℚ K : ℝ) / 4)) := by simp
-    _ ≤ (2 : ℝ) ^ Module.finrank ℚ K *
+    _ ≤ 2 ^ Module.finrank ℚ K *
         ((2 * Real.sqrt (Module.finrank ℚ K : ℝ) + 1) ^ Module.finrank ℚ K *
           B ^ ((Module.finrank ℚ K : ℝ) / 4)) := by
       apply mul_le_mul_of_nonneg_right _ (by positivity)
@@ -125,10 +124,10 @@ theorem boundedSmallSubfieldIntegers_balanced_count {D : ℝ} (hD : 1 ≤ D) :
     ((boundedSmallSubfieldIntegers K
         (9 * D ^ (1 / (Module.finrank ℚ K : ℝ)))).ncard : ℝ) ≤
       (smallSubfieldIntegerCountConstant (Module.finrank ℚ K) *
-        (9 : ℝ) ^ ((Module.finrank ℚ K : ℝ) / 4)) * D ^ (1 / 4 : ℝ) := by
-  have hn : (0 : ℝ) < Module.finrank ℚ K := by
-    exact_mod_cast (Module.finrank_pos (R := ℚ) (M := K))
-  have hD0 : 0 < D := zero_lt_one.trans_le hD
+        9 ^ ((Module.finrank ℚ K : ℝ) / 4)) * D ^ (1 / 4 : ℝ) := by
+  have hn : 0 < Module.finrank ℚ K := by
+    simp_all [Module.finrank_pos]
+  have hD0 := zero_lt_one.trans_le hD
   have hB : 1 ≤ 9 * D ^ (1 / (Module.finrank ℚ K : ℝ)) := by
     have hh := Real.one_le_rpow hD (by positivity : 0 ≤ 1 / (Module.finrank ℚ K : ℝ))
     linarith
@@ -141,5 +140,4 @@ theorem boundedSmallSubfieldIntegers_balanced_count {D : ℝ} (hD : 1 ≤ D) :
   convert hh using 1
   ring
 
-end
 end CCDN

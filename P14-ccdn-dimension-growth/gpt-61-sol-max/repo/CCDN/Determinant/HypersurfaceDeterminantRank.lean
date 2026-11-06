@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.AuxiliaryPolynomial.RankNumerics
+
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Analysis.PrimeCutoff
 public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimes
 public import CCDN.Determinant.HypersurfaceLocalDivisor
@@ -17,40 +21,31 @@ applies to minor gcds, determinant-family gcds and affine-chart reductions alike
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- An explicit error depending only on hypersurface dimension. -/
-def hypersurfaceDeterminantError (n : ℕ) : ℝ :=
+noncomputable def hypersurfaceDeterminantError (n : ℕ)  :=
   (n + 1 : ℝ) *
       (Real.log 27 + 2 * mertensError + 2 * hypersurfaceCountConstant n * primeBlockMass) +
-    (n + 2 : ℝ) ^ 2 / ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) * (Real.log 4 + 4)
+    (n + 2 : ℝ) ^ 2 / factorialRoot n * (Real.log 4 + 4)
 
 /-- The rank form of the lower bound in CCDN Proposition 3.2.6 for `s` points on a
 hypersurface of degree `d` with bad-prime charge `c`:
 `((n+1)!)^(1/(n+1)) / (n+2) * s^(1+1/(n+1)) * (log s - (n+1) (4 log d + c) - E_n)`. -/
-def hypersurfaceRankLowerBound (n s d : ℕ) (c : ℝ) : ℝ :=
-  factorialRoot n / (n + 2 : ℝ) * (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) *
+noncomputable def hypersurfaceRankLowerBound (n s d : ℕ) (c : ℝ)  :=
+  factorialRoot n / (n + 2 : ℝ) * ↑s ^ (1 + 1 / (n + 1 : ℝ)) *
     (Real.log s - (n + 1 : ℝ) * (4 * Real.log d + c) - hypersurfaceDeterminantError n)
 
-private lemma hypersurface_rank_prime_endpoint (n s : ℕ) (hs : 0 < s) :
-    1 ≤ (s : ℝ) ^ (1 / (n + 1 : ℝ)) := by
-  apply Real.one_le_rpow
-  · exact_mod_cast hs
-  · positivity
 
 private lemma hypersurface_determinant_rank_identity (n s d : ℕ) (hs : 0 < s) (charge : ℝ) :
     hypersurfaceDeterminantMain n s *
-        (Real.log ((s : ℝ) ^ (1 / (n + 1 : ℝ))) - 4 * Real.log d - Real.log 27 -
+        (Real.log (degreeRoot n s) - 4 * Real.log d - Real.log 27 -
           2 * mertensError - charge - 2 * hypersurfaceCountConstant n * primeBlockMass) -
-        ((n + 2 : ℝ) * s) * ((Real.log 4 + 4) * (s : ℝ) ^ (1 / (n + 1 : ℝ))) =
+        ((n + 2 : ℝ) * s) * ((Real.log 4 + 4) * degreeRoot n s) =
       hypersurfaceRankLowerBound n s d charge := by
   have hs0 : (0 : ℝ) < s := by exact_mod_cast hs
-  have hn : (n + 1 : ℝ) ≠ 0 := by positivity
-  have hn2 : (n + 2 : ℝ) ≠ 0 := by positivity
-  have hfac : ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) ≠ 0 := by positivity
-  have hp : (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) =
-      (s : ℝ) * (s : ℝ) ^ (1 / (n + 1 : ℝ)) := by
+  have hp : ↑s ^ (1 + 1 / (n + 1 : ℝ)) =
+      ↑s * degreeRoot n s := by
     rw [Real.rpow_add hs0, Real.rpow_one]
   rw [Real.log_rpow hs0]
   unfold hypersurfaceRankLowerBound hypersurfaceDeterminantMain hypersurfaceDeterminantError
@@ -58,32 +53,41 @@ private lemma hypersurface_determinant_rank_identity (n s d : ℕ) (hs : 0 < s) 
   field_simp
   ring
 
+variable {n s d : ℕ}
+
+variable (hs : 0 < s) (hd : 0 < d)
+
+include hs hd in
 /-- Prime aggregation at the rank endpoint `x = s ^ (1 / (n + 1))`. Local divisors of `D`
 with the hypersurface exponent at every good prime above `27 d ^ 4`, together with
 prescribed divisors at the primes of `P ⊆ bad`, give the rank form of
 CCDN Proposition 3.2.6. -/
-theorem hypersurface_log_lower_at_rank_of_local_divisors_congruence {n s d : ℕ}
-    (hs : 0 < s) (hd : 0 < d) (bad P : Finset ℕ) (hPbad : P ⊆ bad) (hP : ∀ p ∈ P, p.Prime)
+theorem hypersurface_log_lower_at_rank_of_local_divisors_congruence 
+     (bad P : Finset ℕ) (hPbad : P ⊆ bad) (hP : ∀ p ∈ P, p.Prime)
     (v : ℕ → ℕ) {D : ℤ} (hD : 0 < D)
-    (hlocal : ∀ p ∈ ((Ioc 0 ⌊(s : ℝ) ^ (1 / (n + 1 : ℝ))⌋₊).filter Nat.Prime) \ bad,
+    (hlocal : ∀ p ∈ ((Ioc 0 ⌊degreeRoot n s⌋₊).filter Nat.Prime) \ bad,
       stepanovThreshold (d : ℝ) < p → ∃ e : ℕ, hypersurfaceDeterminantMain n s /
-        (p + hypersurfaceCountConstant n * (d : ℝ) ^ 2 * Real.sqrt p) - (n + 2 : ℝ) * s ≤ e ∧
+        (p + hypersurfaceCountConstant n * ↑d ^ 2 * Real.sqrt p) - (n + 2 : ℝ) * s ≤ e ∧
         (p : ℤ) ^ e ∣ D)
     (hcong : ∀ p ∈ P, (p : ℤ) ^ v p ∣ D) :
     hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) +
       (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤ Real.log D := by
   have h := determinant_log_lower_of_local_divisors_degree_four
-    (hypersurface_rank_prime_endpoint n s hs) hd (hypersurfaceCountConstant_nonneg n)
+    ((by
+       apply Real.one_le_rpow
+       · exact_mod_cast hs
+       · positivity)) hd (hypersurfaceCountConstant_nonneg n)
     (hypersurfaceDeterminantMain_nonneg n s) (by positivity) bad P hPbad hP v hD hlocal hcong
   rwa [hypersurface_determinant_rank_identity n s d hs] at h
 
+include hs hd in
 /-- `hypersurface_log_lower_at_rank_of_local_divisors_congruence` without prescribed
 divisors. -/
-theorem hypersurface_log_lower_at_rank_of_local_divisors {n s d : ℕ}
-    (hs : 0 < s) (hd : 0 < d) (bad : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hlocal : ∀ p ∈ ((Ioc 0 ⌊(s : ℝ) ^ (1 / (n + 1 : ℝ))⌋₊).filter Nat.Prime) \ bad,
+theorem hypersurface_log_lower_at_rank_of_local_divisors 
+     (bad : Finset ℕ) {D : ℤ} (hD : 0 < D)
+    (hlocal : ∀ p ∈ ((Ioc 0 ⌊degreeRoot n s⌋₊).filter Nat.Prime) \ bad,
       stepanovThreshold (d : ℝ) < p → ∃ e : ℕ, hypersurfaceDeterminantMain n s /
-        (p + hypersurfaceCountConstant n * (d : ℝ) ^ 2 * Real.sqrt p) - (n + 2 : ℝ) * s ≤ e ∧
+        (p + hypersurfaceCountConstant n * ↑d ^ 2 * Real.sqrt p) - (n + 2 : ℝ) * s ≤ e ∧
         (p : ℤ) ^ e ∣ D) :
     hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) ≤ Real.log D := by
   have h := hypersurface_log_lower_at_rank_of_local_divisors_congruence hs hd bad ∅
@@ -93,15 +97,15 @@ theorem hypersurface_log_lower_at_rank_of_local_divisors {n s d : ℕ}
 /-- The higher-dimensional rank-cutoff form of Proposition 3.2.6 for
 maximal minors and common-degree homogeneous evaluation columns. -/
 theorem hypersurface_determinant_log_lower_at_rank {n s N d M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
-    (F : Fin N → MvPolynomial (Fin (n + 3)) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
+    (f : CCDN.IntegerPolynomial (n + 3)) (hf : f.IsHomogeneous d) (hd : 0 < d)
+    (F : Fin N → CCDN.IntegerPolynomial (n + 3)) (hF : ∀ j, (F j).IsHomogeneous M)
     (z : Fin s → IntPoint (n + 3)) (hprim : ∀ i, univ.gcd (z i) = 1)
     (hz : ∀ i, eval (z i) f = 0)
     (hrows : LinearIndependent ℚ
       ((Matrix.of fun i j => eval (z i) (F j)).map ((↑) : ℤ → ℚ)).row)
     (bad : Finset ℕ)
     (hred : ∀ (p : ℕ) [Fact p.Prime],
-      p ∈ ((Ioc 0 ⌊(s : ℝ) ^ (1 / (n + 1 : ℝ))⌋₊).filter Nat.Prime) \ bad →
+      p ∈ ((Ioc 0 ⌊degreeRoot n s⌋₊).filter Nat.Prime) \ bad →
       stepanovThreshold (d : ℝ) < p →
       HasGoodReduction f p) :
     hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) ≤
@@ -113,5 +117,4 @@ theorem hypersurface_determinant_log_lower_at_rank {n s N d M : ℕ} (hs : 0 < s
   simpa only [hypersurfaceDeterminantMain_div] using
     projective_hypersurface_minorGcd_dvd f hf hd hf0 hir hcut F hF z hprim hz
 
-end
 end CCDN

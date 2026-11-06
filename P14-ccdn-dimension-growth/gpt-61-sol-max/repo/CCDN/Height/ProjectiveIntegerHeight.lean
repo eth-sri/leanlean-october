@@ -5,15 +5,16 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.Algebra.ProjectiveAffineChart
 
 /-! Integral representatives need not be primitive to provide an upper
 bound on projective height. Removing their gcd can only decrease the
 maximum absolute coordinate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- If the chosen representative of `x` has nonzero first coordinate, then so does its primitive
 integer representative, and the affine chart coordinates of `x` are the ratios of the
@@ -25,7 +26,7 @@ theorem primitiveProjectiveRep_chart {n : ℕ} (x : ProjectivePoint n) (hx : x.r
   have he := (primitiveProjectiveRep_mk x).trans x.mk_rep.symm
   obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp he
   have hcoord (j : Fin (n + 1)) :
-      (c : ℚ) * x.rep j = (primitiveProjectiveRep x j : ℚ) := congrFun hc j
+      ↑c * x.rep j = (primitiveProjectiveRep x j : ℚ) := congrFun hc j
   have h0 : (primitiveProjectiveRep x 0 : ℚ) ≠ 0 := by
     rw [← hcoord 0]
     exact mul_ne_zero c.ne_zero hx
@@ -41,7 +42,7 @@ theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z �
     (Projectivization.mk ℚ (rationalPoint z) (rationalPoint_ne_zero hz)).mulHeight ≤ B := by
   classical
   obtain ⟨v, hv, hprim⟩ := Finset.extract_gcd z
-    (show (Finset.univ : Finset (Fin (n + 1))).Nonempty from Finset.univ_nonempty)
+    (Finset.univ_nonempty)
   have he (j : Fin (n + 1)) : z j = Finset.univ.gcd z * v j := hv j (Finset.mem_univ j)
   have hg0 : Finset.univ.gcd z ≠ 0 := by
     intro h
@@ -55,7 +56,7 @@ theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z �
     funext j
     simp [h] at he
     exact he j
-  have hg1 : (1 : ℝ) ≤ |((Finset.univ.gcd z : ℤ) : ℝ)| := by
+  have hg1 : 1 ≤ |((Finset.univ.gcd z : ℤ) : ℝ)| := by
     exact_mod_cast Int.one_le_abs hg0
   have hvbox : InBox v B := by
     intro j
@@ -71,12 +72,9 @@ theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z �
     rw [he j, Int.cast_mul]
   rw [hproj, projective_height_primitive v hv0 hprim]
   obtain ⟨j, hj⟩ := Finite.exists_max (fun j => |v j|)
-  have hmax : (⨆ j, |v j| : ℤ) = |v j| := by
-    apply le_antisymm
-    · exact ciSup_le hj
-    · exact le_ciSup (Finite.bddAbove_range (fun k => |v k|)) j
+  have hmax : (⨆ j, |v j|) = |v j| := by
+    exact le_antisymm (ciSup_le hj) (le_ciSup (Finite.bddAbove_range fun k => |v k|) j)
   rw [hmax, Int.cast_abs]
   exact hvbox j
 
-end
 end CCDN

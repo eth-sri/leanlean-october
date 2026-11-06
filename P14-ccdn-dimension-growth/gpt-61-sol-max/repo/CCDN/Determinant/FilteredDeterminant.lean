@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Determinant.SingularTangent
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
@@ -19,12 +23,11 @@ computed from the cumulative dimensions of the origin-adic layers. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The sum of the deficits below successive weights. For a graded profile
 this is a lower bound for the sum of the first s weights, with multiplicity. -/
-def filtrationExponent (r : ℕ → ℕ) (s : ℕ) : ℕ :=
+noncomputable def filtrationExponent (r : ℕ → ℕ) (s : ℕ)  :=
   Finset.univ.sum fun k : Fin s => s - (Finset.univ.sum fun j : Fin (k.val + 1) => r j.val)
 
 /-- Layer-cake inequality with an arbitrary cutoff `K`: counting, for each
@@ -40,10 +43,11 @@ lemma sum_weight_tail_counts_le {s : ℕ} (w : Fin s → ℕ) (K : ℕ) :
     exact min_le_right _ _
   simpa only [Finset.card_eq_sum_ones, Finset.sum_filter] using hcard
 
+variable {s N : ℕ} (r : ℕ → ℕ) (t : Fin s ↪ ((j : Fin N) × Fin (r j.val)))
+
 /-- Distinct generators of weight at most k inject into all generators in
 layers zero through k, independently of the precision used to truncate them. -/
-lemma low_weight_card_le {s N : ℕ} (r : ℕ → ℕ)
-    (t : Fin s ↪ ((j : Fin N) × Fin (r j.val))) (k : ℕ) :
+lemma low_weight_card_le  (k : ℕ) :
     (Finset.univ.filter fun i => (t i).1.val ≤ k).card ≤
       ∑ j : Fin (k + 1), r j.val := by
   classical
@@ -64,12 +68,10 @@ lemma low_weight_card_le {s N : ℕ} (r : ℕ → ℕ)
   have hc := Fintype.card_le_of_injective φ hφ
   simpa only [Fintype.card_subtype, Fintype.card_sigma, Fintype.card_fin] using hc
 
-private lemma filtrationExponent_le_weights {s N : ℕ} (r : ℕ → ℕ)
-    (t : Fin s ↪ ((j : Fin N) × Fin (r j.val))) :
+private lemma filtrationExponent_le_weights  :
     filtrationExponent r s ≤ ∑ i, (t i).1.val := by
   classical
   apply le_trans ?_ (sum_weight_tail_counts_le (fun i => (t i).1.val) s)
-  unfold filtrationExponent
   apply Finset.sum_le_sum
   intro k _
   have hlow := low_weight_card_le r t k.val
@@ -91,8 +93,7 @@ theorem pow_dvd_det_of_weighted_factorization_fintype {R ι : Type*} [CommRing R
   let U' := U.submatrix id a
   let V' := V.submatrix a id
   have hprod : U * V = U' * V' := by
-    ext i j
-    exact (Equiv.sum_comp a (fun z => U i z * V z j)).symm
+    aesop
   rw [hprod]
   apply pow_dvd_det_of_weighted_factorization U' V' p (fun z => weight (a z)) e
     (fun i j => hV (a i) j)
@@ -102,29 +103,28 @@ theorem pow_dvd_det_of_weighted_factorization_fintype {R ι : Type*} [CommRing R
 /-- A homogeneous local generating family gives a determinant divisor
 at any precision and in any dimension. -/
 theorem origin_filtration_pow_dvd_det_mod {p n s e : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (x : Fin s → Fin (n + 1) → ℤ) (hx : ∀ i j, (p : ℤ) ∣ x i j)
+    (f : CCDN.IntegerPolynomial (n + 1))
+    (x : Fin s → CCDN.IntPoint (n + 1)) (hx : ∀ i j, ↑p ∣ x i j)
     (he : e ≤ filtrationExponent
       (fun k => Module.finrank (ZMod p) (originLayer (map (Int.castRingHom (ZMod p)) f) k)) s)
     (hfx : ∀ i, (p : ℤ) ^ e ∣ eval (x i) f)
-    (F : Fin s → MvPolynomial (Fin (n + 1)) ℤ) :
+    (F : Fin s → CCDN.IntegerPolynomial (n + 1)) :
     (p : ℤ) ^ e ∣ (Matrix.of fun i j => eval (x i) (F j)).det := by
   classical
   obtain ⟨r, g, hr, hg, hrep⟩ := exists_integer_hypersurface_generators (p := p) f
-  have hr' : r = fun k => Module.finrank (ZMod p)
-      (originLayer (map (Int.castRingHom (ZMod p)) f) k) := funext hr
+  have hr' := funext hr
   rw [← hr'] at he
   let N := e
   choose c hc using fun j => integer_generators_approximate_mod f r g (hrep N) (F j)
   have hdiv (i : Fin s) (z : (k : Fin N) × Fin (r k.val)) :
       (p : ℤ) ^ z.1.val ∣ eval (x i) (g z.1.val z.2) :=
-    origin_power_eval_dvd (p : ℤ) (x i) (hx i) (homogeneous_mem_origin_power (hg _ _))
+    origin_power_eval_dvd ↑p (x i) (hx i) (homogeneous_mem_origin_power (hg _ _))
   choose U₀ hU using hdiv
   let U : Matrix (Fin s) ((k : Fin N) × Fin (r k.val)) ℤ := U₀
   let V : Matrix ((k : Fin N) × Fin (r k.val)) (Fin s) ℤ :=
-    fun z j => (p : ℤ) ^ z.1.val * c j z.1 z.2
-  have hdet : (p : ℤ) ^ N ∣ (U * V).det :=
-    pow_dvd_det_of_weighted_factorization_fintype U V (p : ℤ) (fun z => z.1.val) N
+    fun z j => ↑p ^ z.1.val * c j z.1 z.2
+  have hdet :=
+    pow_dvd_det_of_weighted_factorization_fintype U V ↑p (fun z => z.1.val) N
       (fun _ _ => dvd_mul_right _ _) (fun t => he.trans (filtrationExponent_le_weights r t))
   have hprod (i j : Fin s) : (U * V) i j =
       ∑ k : Fin N, ∑ l, c j k l * eval (x i) (g k.val l) := by
@@ -137,10 +137,9 @@ theorem origin_filtration_pow_dvd_det_mod {p n s e : ℕ} [Fact p.Prime]
     dsimp only [U, V]
     ring
   have hd := Matrix.dvd_det_sub_det_of_dvd_sub (Matrix.of fun i j => eval (x i) (F j))
-    (U * V) ((p : ℤ) ^ N) (fun i j => by
+    (U * V) (↑p ^ N) (fun i j => by
       rw [Matrix.of_apply, hprod]
       exact hc j (x i) (hfx i) (hx i))
   simpa only [sub_add_cancel] using dvd_add hd hdet
 
-end
 end CCDN

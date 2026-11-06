@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.HomogeneousChart
 public import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
 public import CCDN.Determinant.HeightDeterminant
@@ -16,13 +18,12 @@ import CCDN.Determinant.ProjectivePrimeDeterminant
 matrices. Good reduction of a full-degree affine chart implies good reduction
 of the entire projective equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 private theorem homogeneous_irreducible_reduction_of_not_hypersurfaceBadReduction
-    {d p : ℕ} [Fact p.Prime] (f : MvPolynomial (Fin 3) ℤ)
+    {d p : ℕ} [Fact p.Prime] (f : CCDN.IntegerPolynomial 3)
     (hf : f.IsHomogeneous d) (hdeg : (affineChart 2 f).totalDegree = d)
     (hgood : ¬HypersurfaceBadReduction (affineChart 2 f) p) :
     Irreducible (map (Int.castRingHom (ZMod p)) f) := by
@@ -50,12 +51,12 @@ controlled by the coefficient height `H` of the affine chart. -/
 theorem projective_determinant_log_lower_height
     {K : Type*} [Field K] [CharZero K] [IsAlgClosed K]
     {s N d M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
+    (f : CCDN.IntegerPolynomial 3) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     {H : ℝ} (hchart : IsBoundedPlaneCurve K (affineChart 2 f) d H)
-    {F : Fin N → MvPolynomial (Fin 3) ℤ} {z : Fin s → IntPoint 3}
+    {F : Fin N → CCDN.IntegerPolynomial 3} {z : Fin s → IntPoint 3}
     (hev : IsIndependentEvaluation f M F z) :
-    (s : ℝ) ^ 2 / 2 * (Real.log s - 4 * Real.log d -
-      Real.log (1 + Real.log H / (d : ℝ) ^ 2) -
+    ↑s ^ 2 / 2 * (Real.log s - 4 * Real.log d -
+      Real.log (1 + Real.log H / ↑d ^ 2) -
         heightDeterminantError projectivePlaneDeterminantConstant) ≤
         Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j))) := by
   have hdeg := hchart.totalDegree_eq
@@ -70,9 +71,7 @@ theorem projective_determinant_log_lower_height
     intro hbad
     exact (mem_sdiff.mp hp).2 ((hmem p).mpr ⟨hlo, hbad⟩)
   have hlower := projective_determinant_log_lower_at_rank hs f hf hd hev bad hred
-  have hh := mul_le_mul_of_nonneg_left hcharge (show 0 ≤ (s : ℝ) ^ 2 / 2 by positivity)
   dsimp only [heightDeterminantError]
   nlinarith
 
-end
 end CCDN

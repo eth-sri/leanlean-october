@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Analysis.PrimeCutoff
 public import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
 public import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
@@ -18,9 +22,8 @@ import Mathlib.Algebra.MvPolynomial.Nilpotent
 /-! Finite bad-prime sets for plane equations, with coefficient-height
 charge bounds and irreducible good reductions. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
 /-- A multivariate polynomial over a field whose image under a field homomorphism is irreducible
@@ -30,7 +33,7 @@ lemma mvPolynomial_irreducible_of_field_map
     (f : MvPolynomial σ F) (hf : Irreducible (MvPolynomial.map φ f)) : Irreducible f := by
   have hunit (q : MvPolynomial σ F) (hq : IsUnit (MvPolynomial.map φ q)) : IsUnit q := by
     obtain ⟨hc, hd⟩ := MvPolynomial.isUnit_iff_totalDegree_of_isReduced.mp hq
-    have he : (MvPolynomial.map φ q).totalDegree = q.totalDegree :=
+    have he :=
       MvPolynomial.totalDegree_map_of_injective φ.injective q
     apply MvPolynomial.isUnit_iff_totalDegree_of_isReduced.mpr
     refine ⟨isUnit_iff_ne_zero.mpr ?_, he ▸ hd⟩
@@ -47,11 +50,11 @@ two variables equals the total degree of `f`. -/
 lemma bivariateTotalDegree_equiv {R : Type*} [CommRing R]
     (f : MvPolynomial (Fin 2) R) :
     bivariateTotalDegree (bivariatePolynomialEquiv R f) = f.totalDegree := by
-  simp only [bivariateTotalDegree, AlgEquiv.symm_apply_apply]
+  simp_all [bivariateTotalDegree]
 
 /-- Bad reduction of the bivariate model of a plane equation is bad reduction of the
 equation itself. -/
-private lemma bivariateBadReduction_iff_hypersurfaceBadReduction (f : MvPolynomial (Fin 2) ℤ)
+private lemma bivariateBadReduction_iff_hypersurfaceBadReduction (f : CCDN.IntegerPolynomial 2)
     (p : ℕ) :
     BivariateBadReduction (bivariatePolynomialEquiv ℤ f) f.totalDegree p ↔
       HypersurfaceBadReduction f p := by
@@ -84,21 +87,20 @@ required charge bound. Good reductions outside this set are
 irreducible reductions, not an additional input. -/
 theorem exists_plane_bad_prime_set
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (f : MvPolynomial (Fin 2) ℤ) (hd : 0 < f.totalDegree)
+    (f : CCDN.IntegerPolynomial 2) (hd : 0 < f.totalDegree)
     (hir : Irreducible (MvPolynomial.map (Int.castRingHom F) f))
     (H : ℝ) (hH : 1 ≤ H) (hcoeff : CoefficientHeightLE f H) :
     ∃ B : Finset ℕ,
       (∀ p, p ∈ B ↔
-        stepanovThreshold (f.totalDegree : ℝ) < (p : ℝ) ∧ HypersurfaceBadReduction f p) ∧
+        stepanovThreshold ↑f.totalDegree < (p : ℝ) ∧ HypersurfaceBadReduction f p) ∧
       (∑ p ∈ B, Real.log p / p) ≤
-        Real.log (1 + Real.log H / (f.totalDegree : ℝ) ^ 2) +
+        Real.log (1 + Real.log H / ↑f.totalDegree ^ 2) +
           Real.log 7 + 2 * mertensError + 1 := by
   classical
   let q := bivariatePolynomialEquiv ℤ f
-  have hqdeg : bivariateTotalDegree q = f.totalDegree := bivariateTotalDegree_equiv f
+  have hqdeg := bivariateTotalDegree_equiv f
   have hqir : Irreducible (bivariateMap (Int.castRingHom F) q) := by
-    rw [bivariatePolynomialEquiv_map, MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv F)]
-    exact hir
+    grind [bivariatePolynomialEquiv_map, MulEquiv.irreducible_iff]
   have hqcoeff : BivariateCoefficientBound q H := by
     intro i j
     rw [bivariatePolynomialEquiv_coeff]
@@ -106,27 +108,28 @@ theorem exists_plane_bad_prime_set
   obtain ⟨D, hD, _, hdiv⟩ :=
     exists_plane_bad_prime_witness f.totalDegree hd q hqdeg hqir H hH hqcoeff
   let B := D.natAbs.primeFactors.filter
-    (fun p : ℕ => stepanovThreshold (f.totalDegree : ℝ) < (p : ℝ) ∧ HypersurfaceBadReduction f p)
+    (fun p : ℕ => stepanovThreshold ↑f.totalDegree < (p : ℝ) ∧ HypersurfaceBadReduction f p)
   have hd1 : (1 : ℝ) ≤ f.totalDegree := by exact_mod_cast hd
-  have hcut : (f.totalDegree : ℝ) ≤ stepanovThreshold (f.totalDegree : ℝ) := by
+  have hcut : ↑f.totalDegree ≤ stepanovThreshold (f.totalDegree : ℝ) := by
     unfold stepanovThreshold
     nlinarith [sq_nonneg ((f.totalDegree : ℝ) ^ 2 - 1)]
   have hmem (p : ℕ) : p ∈ B ↔
-      stepanovThreshold (f.totalDegree : ℝ) < (p : ℝ) ∧ HypersurfaceBadReduction f p := by
+      stepanovThreshold ↑f.totalDegree < (p : ℝ) ∧ HypersurfaceBadReduction f p := by
     constructor
-    · exact fun h => (Finset.mem_filter.mp h).2
-    · intro hp
-      apply Finset.mem_filter.mpr
-      refine ⟨?_, hp⟩
-      apply Nat.mem_primeFactors.mpr
-      refine ⟨hp.2.choose, ?_, Int.natAbs_ne_zero.mpr hD.ne'⟩
-      have hz := hdiv p (by exact_mod_cast hcut.trans_lt hp.1)
-        ((bivariateBadReduction_iff_hypersurfaceBadReduction f p).mpr hp.2)
-      simpa only [Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr hz
+    · aesop
+    exact fun hp =>
+      Finset.mem_filter.mpr
+        ⟨Nat.mem_primeFactors.mpr
+            ⟨Exists.choose hp.right,
+              ⟨have hz :=
+                  hdiv p ((by exact_mod_cast (hcut.trans_lt hp.left)))
+                    ((bivariateBadReduction_iff_hypersurfaceBadReduction f p).mpr hp.right);
+                Int.natAbs_dvd_natAbs.mpr hz,
+                Int.natAbs_ne_zero.mpr (LT.lt.ne' hD)⟩⟩,
+          hp⟩
   refine ⟨B, hmem, ?_⟩
   exact plane_geometric_bad_prime_charge f.totalDegree hd q hqdeg hqir H hH hqcoeff B
     (fun p hp => (bivariateBadReduction_iff_hypersurfaceBadReduction f p).mpr ((hmem p).mp hp).2)
     (fun p hp => ((hmem p).mp hp).1)
 
-end
 end CCDN

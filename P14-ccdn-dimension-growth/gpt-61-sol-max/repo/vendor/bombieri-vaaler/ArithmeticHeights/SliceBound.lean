@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib
+
 public import ArithmeticHeights.GaussMeasure
 public import ArithmeticHeights.LogConcave
 
@@ -101,14 +103,14 @@ theorem HasSliceBound.lintegral_le [MeasurableSpace E] [AddCommGroup E] [Module 
   calc ∫⁻ x, f x * g x ∂μ = ∫⁻ x, f x ∂(μ.withDensity g) := by
         rw [lintegral_withDensity_eq_lintegral_mul _ hg hf]
         exact lintegral_congr fun x => mul_comm _ _
-    _ = ∫⁻ t in Ioi (0 : ℝ), (μ.withDensity g) {x | ENNReal.ofReal t < f x} :=
+    _ = ∫⁻ t in Ioi 0, (μ.withDensity g) {x | ENNReal.ofReal t < f x} :=
         lintegral_eq_lintegral_measure_ofReal_lt _ hf
-    _ = ∫⁻ t in Ioi (0 : ℝ), ∫⁻ x in {x | ENNReal.ofReal t < f x}, g x ∂μ :=
+    _ = ∫⁻ t in Ioi 0, ∫⁻ x in {x | ENNReal.ofReal t < f x}, g x ∂μ :=
         lintegral_congr fun t => withDensity_apply g (hK t)
-    _ ≤ ∫⁻ t in Ioi (0 : ℝ), μ ({x | ENNReal.ofReal t < f x} ∩ Q) :=
+    _ ≤ ∫⁻ t in Ioi 0, μ ({x | ENNReal.ofReal t < f x} ∩ Q) :=
         lintegral_mono fun t => hb _ (hK t) (hflc.convex_lt _)
-          (fun x hx => by change ENNReal.ofReal t < f (-x); rw [hfe x]; exact hx)
-    _ = ∫⁻ t in Ioi (0 : ℝ), (μ.restrict Q) {x | ENNReal.ofReal t < f x} :=
+          (fun x hx => by simp_all)
+    _ = ∫⁻ t in Ioi 0, (μ.restrict Q) {x | ENNReal.ofReal t < f x} :=
         lintegral_congr fun t => (Measure.restrict_apply (hK t)).symm
     _ = ∫⁻ x, f x ∂(μ.restrict Q) := (lintegral_eq_lintegral_measure_ofReal_lt _ hf).symm
 
@@ -119,132 +121,125 @@ theorem hasSliceBound_closedBall [NormedAddCommGroup E] [NormedSpace ℝ E]
     [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] (μ : Measure E)
     [μ.IsAddHaarMeasure] {ρ : ℝ} (hρ : 0 < ρ) (hball : μ (closedBall 0 ρ) = 1)
     (hgauss : ∫⁻ x, gaussDensity x ∂μ = 1) :
-    HasSliceBound μ gaussDensity (closedBall (0 : E) ρ) := by
+    HasSliceBound μ gaussDensity (closedBall 0 ρ) := by
   rcases subsingleton_or_nontrivial E with hE | hE
   · intro A hA _ _
     have hcb : closedBall (0 : E) ρ = univ := by
-      ext x; simp [Subsingleton.elim x (0 : E), hρ.le]
+      ext x; simp [Subsingleton.elim x 0, hρ.le]
     have hg : ∀ x : E, gaussDensity x = 1 := fun x => by
-      rw [Subsingleton.elim x (0 : E), gaussDensity_zero]
+      rw [Subsingleton.elim x 0, gaussDensity_zero]
     simp [hg, hcb]
   intro A hA hAconv hAsymm
   rcases A.eq_empty_or_nonempty with rfl | ⟨a, ha⟩
   · simp
-  have h0 : (0 : E) ∈ A := by
+  have h0 := by
     have := hAconv ha (hAsymm a ha) (by norm_num : (0 : ℝ) ≤ 1 / 2)
       (by norm_num : (0 : ℝ) ≤ 1 / 2) (by norm_num)
     simpa using this
   set n := Module.finrank ℝ E with hn
   set W := Measure.volumeIoiPow (n - 1) with hW
-  set c : ℝ≥0∞ := ∫⁻ r : Ioi (0 : ℝ), ENNReal.ofReal (Real.exp (-π * (r : ℝ) ^ 2)) ∂W with hcdef
-  set d : ℝ≥0∞ := W {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} with hddef
-  have hnorm : ∀ (u : sphere (0 : E) 1) (r : Ioi (0 : ℝ)), ‖(r : ℝ) • (u : E)‖ = (r : ℝ) := by
+  set c : ℝ≥0∞ := ∫⁻ r : Ioi 0, ENNReal.ofReal (Real.exp (-π * ↑r ^ 2)) ∂W with hcdef
+  set d : ℝ≥0∞ := W {r : Ioi 0 | ↑r ≤ ρ} with hddef
+  have hnorm : ∀ (u : sphere (0 : E) 1) (r : Ioi (0 : ℝ)), ‖(r : ℝ) • (u : E)‖ = ↑r := by
     intro u r
     rw [norm_smul, mem_sphere_zero_iff_norm.mp u.2, mul_one, Real.norm_eq_abs, abs_of_pos r.2]
   have hgsmul : ∀ (u : sphere (0 : E) 1) (r : Ioi (0 : ℝ)),
-      gaussDensity ((r : ℝ) • (u : E)) = ENNReal.ofReal (Real.exp (-π * (r : ℝ) ^ 2)) := by
+      gaussDensity ((r : ℝ) • (u : E)) = ENNReal.ofReal (Real.exp (-π * ↑r ^ 2)) := by
     intro u r; rw [gaussDensity_def, hnorm]
   have hSne : μ.toSphere univ ≠ 0 := by
     simp only [ne_eq, measure_univ_eq_zero]
     exact Measure.toSphere_ne_zero μ
   have hStop : μ.toSphere univ ≠ ⊤ := measure_ne_top _ _
-  have hdmeas : MeasurableSet {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} :=
+  have hdmeas : MeasurableSet {r : Ioi (0 : ℝ) | ↑r ≤ ρ} :=
     measurable_subtype_coe measurableSet_Iic
   have claim1 : μ.toSphere univ * c = 1 := by
     rw [← hgauss, lintegral_eq_lintegral_sphere' μ (f := gaussDensity) (by fun_prop),
-      show (fun u : sphere (0 : E) 1 => ∫⁻ r : Ioi (0 : ℝ), gaussDensity ((r : ℝ) • (u : E)) ∂W)
+      show (fun u : sphere (0 : E) 1 => ∫⁻ r : Ioi 0, gaussDensity ((r : ℝ) • (u : E)) ∂W)
         = fun _ => c from funext fun u => lintegral_congr fun r => hgsmul u r,
       lintegral_const, mul_comm]
   have hcbmem : ∀ (u : sphere (0 : E) 1) (r : Ioi (0 : ℝ)),
-      ((r : ℝ) • (u : E) ∈ closedBall (0 : E) ρ) ↔ (r : ℝ) ≤ ρ := by
+      ((r : ℝ) • (u : E) ∈ closedBall 0 ρ) ↔ ↑r ≤ ρ := by
     intro u r; rw [mem_closedBall, dist_zero_right, hnorm]
-  have hd1 : ∀ u : sphere (0 : E) 1, ∫⁻ r : Ioi (0 : ℝ),
-      Set.indicator (closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) ((r : ℝ) • (u : E)) ∂W = d := by
+  have hd1 : ∀ u : sphere (0 : E) 1, ∫⁻ r : Ioi 0,
+      Set.indicator (closedBall 0 ρ) (fun _ => 1) ((r : ℝ) • (u : E)) ∂W = d := by
     intro u
-    have he : (fun r : Ioi (0 : ℝ) =>
-        Set.indicator (closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) ((r : ℝ) • (u : E)))
-        = Set.indicator {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} (fun _ => (1 : ℝ≥0∞)) := by
+    have he : (fun r : Ioi 0 =>
+        Set.indicator (closedBall 0 ρ) (fun _ => 1) ((r : ℝ) • (u : E)))
+        = Set.indicator {r : Ioi (0 : ℝ) | ↑r ≤ ρ} (fun _ => (1 : ℝ≥0∞)) := by
       funext r
-      by_cases h : (r : ℝ) ≤ ρ
-      · rw [Set.indicator_of_mem ((hcbmem u r).mpr h),
-          Set.indicator_of_mem (show r ∈ {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} from h)]
-      · rw [Set.indicator_of_notMem (fun hm => h ((hcbmem u r).mp hm)),
-          Set.indicator_of_notMem (show r ∉ {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} from h)]
+      by_cases h : ↑r ≤ ρ
+      · grind [Set.indicator_of_mem]
+      · grind [Set.indicator_of_notMem]
     rw [he, lintegral_indicator hdmeas, setLIntegral_one, hddef]
   have claim2 : μ.toSphere univ * d = 1 := by
     rw [← hball]
-    have h1 : μ (closedBall (0 : E) ρ)
-        = ∫⁻ x, Set.indicator (closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) x ∂μ := by
+    have h1 : μ (closedBall 0 ρ)
+        = ∫⁻ x, Set.indicator (closedBall 0 ρ) (fun _ => 1) x ∂μ := by
       rw [lintegral_indicator measurableSet_closedBall, setLIntegral_one]
     rw [h1, lintegral_eq_lintegral_sphere' μ
-      (f := Set.indicator (closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)))
+      (f := Set.indicator (closedBall 0 ρ) (fun _ => 1))
       (measurable_one.indicator measurableSet_closedBall),
-      show (fun u : sphere (0 : E) 1 => ∫⁻ r : Ioi (0 : ℝ),
-        Set.indicator (closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) ((r : ℝ) • (u : E)) ∂W)
-        = fun _ => d from funext hd1, lintegral_const, mul_comm]
-  have hcd : c = d := (ENNReal.mul_right_inj hSne hStop).mp (claim1.trans claim2.symm)
+      (funext hd1), lintegral_const, mul_comm]
+  have hcd := (ENNReal.mul_right_inj hSne hStop).mp (claim1.trans claim2.symm)
   have key : ∀ u : sphere (0 : E) 1,
-      ∫⁻ r : Ioi (0 : ℝ), Set.indicator A gaussDensity ((r : ℝ) • (u : E)) ∂W ≤
-      ∫⁻ r : Ioi (0 : ℝ),
-        Set.indicator (A ∩ closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) ((r : ℝ) • (u : E)) ∂W := by
+      ∫⁻ r : Ioi 0, Set.indicator A gaussDensity ((r : ℝ) • (u : E)) ∂W ≤
+      ∫⁻ r : Ioi 0,
+        Set.indicator (A ∩ closedBall 0 ρ) (fun _ => 1) ((r : ℝ) • (u : E)) ∂W := by
     intro u
     by_cases hc : (ρ • (u : E)) ∈ A
     · have hsub : ∀ t : ℝ, 0 < t → t ≤ ρ → (t • (u : E)) ∈ A := by
         intro t ht htρ
-        have h1 : (0 : ℝ) ≤ t / ρ := by positivity
-        have h2 : (0 : ℝ) ≤ 1 - t / ρ := by
+        have h1 : 0 ≤ t / ρ := by positivity
+        have h2 : 0 ≤ 1 - t / ρ := by
           have : t / ρ ≤ 1 := (div_le_one hρ).mpr htρ
           linarith
         have := hAconv hc h0 h1 h2 (by ring)
         simpa [smul_smul, div_mul_cancel₀ _ hρ.ne'] using this
-      have hle : ∫⁻ r : Ioi (0 : ℝ), Set.indicator A gaussDensity ((r : ℝ) • (u : E)) ∂W ≤ c :=
+      have hle : ∫⁻ r : Ioi 0, Set.indicator A gaussDensity ((r : ℝ) • (u : E)) ∂W ≤ c :=
         lintegral_mono fun r => (Set.indicator_le_self _ _ _).trans (hgsmul u r).le
       refine hle.trans ?_
       rw [hcd, hddef, ← setLIntegral_one, ← lintegral_indicator hdmeas]
       refine lintegral_mono fun r => ?_
-      by_cases hr : (r : ℝ) ≤ ρ
-      · rw [Set.indicator_of_mem (show r ∈ {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} from hr),
-          Set.indicator_of_mem (show ((r : ℝ) • (u : E)) ∈ A ∩ closedBall (0 : E) ρ from
-            ⟨hsub r r.2 hr, (hcbmem u r).mpr hr⟩)]
-      · rw [Set.indicator_of_notMem (show r ∉ {r : Ioi (0 : ℝ) | (r : ℝ) ≤ ρ} from hr)]
-        exact zero_le
+      by_cases hr : ↑r ≤ ρ
+      · grind [Set.indicator_of_mem]
+      · grind [Set.indicator_of_notMem]
     · refine lintegral_mono fun r => ?_
-      have hr0 : (0 : ℝ) < (r : ℝ) := r.2
+      have hr0 := r.2
       by_cases hmem : ((r : ℝ) • (u : E)) ∈ A
-      · have hr : (r : ℝ) ≤ ρ := by
+      · have hr : ↑r ≤ ρ := by
           by_contra hgt
           refine hc ?_
-          have hgt' : ρ < (r : ℝ) := not_le.mp hgt
-          have h1 : (0 : ℝ) ≤ ρ / (r : ℝ) := le_of_lt (div_pos hρ hr0)
-          have h2 : (0 : ℝ) ≤ 1 - ρ / (r : ℝ) := by
-            have : ρ / (r : ℝ) ≤ 1 := (div_le_one hr0).mpr hgt'.le
+          have hgt' := not_le.mp hgt
+          have h1 := le_of_lt (div_pos hρ hr0)
+          have h2 : 0 ≤ 1 - ρ / ↑r := by
+            have : ρ / ↑r ≤ 1 := (div_le_one hr0).mpr hgt'.le
             linarith
           have := hAconv hmem h0 h1 h2 (by ring)
           simpa [smul_smul, div_mul_cancel₀ _ hr0.ne'] using this
         rw [Set.indicator_of_mem hmem,
-          Set.indicator_of_mem (show ((r : ℝ) • (u : E)) ∈ A ∩ closedBall (0 : E) ρ from
+          Set.indicator_of_mem (show ((r : ℝ) • (u : E)) ∈ A ∩ closedBall 0 ρ from
             ⟨hmem, (hcbmem u r).mpr hr⟩)]
         exact gaussDensity_le_one _
       · rw [Set.indicator_of_notMem hmem]; exact zero_le
   calc ∫⁻ x in A, gaussDensity x ∂μ
       = ∫⁻ x, Set.indicator A gaussDensity x ∂μ := (lintegral_indicator hA _).symm
-    _ = ∫⁻ u : sphere (0 : E) 1, ∫⁻ r : Ioi (0 : ℝ),
+    _ = ∫⁻ u : sphere 0 1, ∫⁻ r : Ioi 0,
           Set.indicator A gaussDensity ((r : ℝ) • (u : E)) ∂W ∂μ.toSphere :=
         lintegral_eq_lintegral_sphere' μ (measurable_gaussDensity.indicator hA)
-    _ ≤ ∫⁻ u : sphere (0 : E) 1, ∫⁻ r : Ioi (0 : ℝ),
-          Set.indicator (A ∩ closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) ((r : ℝ) • (u : E)) ∂W
+    _ ≤ ∫⁻ u : sphere 0 1, ∫⁻ r : Ioi 0,
+          Set.indicator (A ∩ closedBall 0 ρ) (fun _ => 1) ((r : ℝ) • (u : E)) ∂W
           ∂μ.toSphere := lintegral_mono key
-    _ = ∫⁻ x, Set.indicator (A ∩ closedBall (0 : E) ρ) (fun _ => (1 : ℝ≥0∞)) x ∂μ :=
+    _ = ∫⁻ x, Set.indicator (A ∩ closedBall 0 ρ) (fun _ => 1) x ∂μ :=
         (lintegral_eq_lintegral_sphere' μ
           (measurable_one.indicator (hA.inter measurableSet_closedBall))).symm
-    _ = μ (A ∩ closedBall (0 : E) ρ) := by
+    _ = μ (A ∩ closedBall 0 ρ) := by
         rw [lintegral_indicator (hA.inter measurableSet_closedBall), setLIntegral_one]
 
 /-- **Bombieri–Gubler's Lemma C.3.7 for a single block**: the Gauss measure of a measurable convex
 symmetric set is at most its volume inside the ball of volume one. -/
 theorem hasSliceBound_unitVolumeBall [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] :
-    HasSliceBound (volume : Measure E) gaussDensity (closedBall (0 : E) (unitVolumeRadius E)) :=
+    HasSliceBound (volume : Measure E) gaussDensity (closedBall 0 (unitVolumeRadius E)) :=
   hasSliceBound_closedBall volume unitVolumeRadius_pos volume_closedBall_unitVolumeRadius
     lintegral_gaussDensity_eq_one
 
@@ -268,19 +263,17 @@ theorem HasSliceBound.prod
   have hKmeas : ∀ s, MeasurableSet (K s) := fun s => measurableSet_lt measurable_const hg
   have hKconv : ∀ s, Convex ℝ (K s) := fun s => hglc.convex_lt _
   have hKsymm : ∀ s, ∀ y ∈ K s, -y ∈ K s := fun s y hy => by
-    change ENNReal.ofReal s < g (-y); rw [hge y]; exact hy
+    simp_all
   have hAsecE : ∀ z : F, MeasurableSet {y : E | (y, z) ∈ A} := fun z => hA.preimage (by fun_prop)
   have hAsecF : ∀ y : E, MeasurableSet {z : F | (y, z) ∈ A} := fun y => hA.preimage (by fun_prop)
   have hnegE : ∀ z : F, {y : E | (y, -z) ∈ A} = -{y : E | (y, z) ∈ A} := fun z => by
     ext y
-    simp only [Set.mem_neg, Set.mem_ofPred_eq]
     exact ⟨fun hy => by simpa using hAsymm _ hy, fun hy => by simpa using hAsymm _ hy⟩
   have hnegF : ∀ y : E, {z : F | (-y, z) ∈ A} = -{z : F | (y, z) ∈ A} := fun y => by
     ext z
-    simp only [Set.mem_neg, Set.mem_ofPred_eq]
     exact ⟨fun hz => by simpa using hAsymm _ hz, fun hz => by simpa using hAsymm _ hz⟩
-  have hRneg : (-R : Set F) = R := Set.neg_eq_self_of_neg_mem hRs
-  have hKneg : ∀ s, (-(K s) : Set E) = K s := fun s => Set.neg_eq_self_of_neg_mem (hKsymm s)
+  have hRneg := Set.neg_eq_self_of_neg_mem hRs
+  have hKneg := fun s => Set.neg_eq_self_of_neg_mem (hKsymm s)
   set f : E → ℝ≥0∞ := fun y => (ν.restrict R) {z | (y, z) ∈ A} with hfdef
   set θ : ℝ → F → ℝ≥0∞ := fun s z => (μ.restrict (K s)) {y | (y, z) ∈ A} with hθdef
   have hfmeas : Measurable f := measurable_measure_prodMk_left hA
@@ -300,8 +293,8 @@ theorem HasSliceBound.prod
       congr 1
       ext y
       constructor
-      · rintro ⟨h1, h2⟩; exact ⟨h2, h1⟩
-      · rintro ⟨h1, h2⟩; exact ⟨h2, h1⟩
+      · simp_all
+      · simp_all
     rw [heq]
     exact measurable_measure_prodMk_right hS
   have hfeven : ∀ y, f (-y) = f y := fun y => by
@@ -316,39 +309,39 @@ theorem HasSliceBound.prod
     rw [hnegE z, Measure.restrict_apply' (hKmeas s), Measure.restrict_apply' (hKmeas s),
       show (-{y : E | (y, z) ∈ A} ∩ K s) = -({y : E | (y, z) ∈ A} ∩ K s) by
         rw [inter_neg, hKneg], measure_neg]
-  have hindA : LogConcave (Set.indicator A (fun _ => (1 : ℝ≥0∞))) := logConcave_indicator hAconv 1
+  have hindA := logConcave_indicator hAconv 1
   have hindAmeas : Measurable (Set.indicator A (fun _ => (1 : ℝ≥0∞))) := measurable_one.indicator hA
-  have hfeq : (fun y => ∫⁻ z in R, Set.indicator A (fun _ => (1 : ℝ≥0∞)) (y, z) ∂ν) = f := by
+  have hfeq : (fun y => ∫⁻ z in R, Set.indicator A (fun _ => 1) (y, z) ∂ν) = f := by
     funext y
-    rw [show (fun z => Set.indicator A (fun _ => (1 : ℝ≥0∞)) (y, z))
+    rw [show (fun z => Set.indicator A (fun _ => 1) (y, z))
         = Set.indicator {z | (y, z) ∈ A} (fun _ => (1 : ℝ≥0∞)) from rfl,
       lintegral_indicator (hAsecF y), setLIntegral_one, hfdef]
-  have hflc : LogConcave f :=
+  have hflc :=
     hfeq ▸ LogConcave.setLIntegral_prod_right hPLν hindAmeas hindA hR hRc
   have hAswapconv : Convex ℝ {q : F × E | (q.2, q.1) ∈ A} :=
     fun _ h1 _ h2 _ _ ha hb hab => hAconv h1 h2 ha hb hab
-  have hindA' : LogConcave (Set.indicator {q : F × E | (q.2, q.1) ∈ A} (fun _ => (1 : ℝ≥0∞))) :=
+  have hindA' :=
     logConcave_indicator hAswapconv 1
   have hindA'meas :
       Measurable (Set.indicator {q : F × E | (q.2, q.1) ∈ A} (fun _ => (1 : ℝ≥0∞))) :=
     measurable_one.indicator (hA.preimage (by fun_prop))
-  have hθlc : ∀ s, LogConcave (θ s) := fun s => by
+  have hθlc := fun s => by
     have heq : (fun z => ∫⁻ y in K s,
-        Set.indicator {q : F × E | (q.2, q.1) ∈ A} (fun _ => (1 : ℝ≥0∞)) (z, y) ∂μ) = θ s := by
+        Set.indicator {q : F × E | (q.2, q.1) ∈ A} (fun _ => 1) (z, y) ∂μ) = θ s := by
       funext z
-      rw [show (fun y => Set.indicator {q : F × E | (q.2, q.1) ∈ A} (fun _ => (1 : ℝ≥0∞)) (z, y))
+      rw [show (fun y => Set.indicator {q : F × E | (q.2, q.1) ∈ A} (fun _ => 1) (z, y))
           = Set.indicator {y | (y, z) ∈ A} (fun _ => (1 : ℝ≥0∞)) from rfl,
         lintegral_indicator (hAsecE z), setLIntegral_one, hθdef]
     exact heq ▸ LogConcave.setLIntegral_prod_right hPLμ hindA'meas hindA' (hKmeas s) (hKconv s)
   have hlayer : ∀ S : Set E, MeasurableSet S →
-      ∫⁻ y in S, g y ∂μ = ∫⁻ s in Ioi (0 : ℝ), (μ.restrict (K s)) S := by
+      ∫⁻ y in S, g y ∂μ = ∫⁻ s in Ioi 0, (μ.restrict (K s)) S := by
     intro S _
     rw [lintegral_eq_lintegral_measure_ofReal_lt (μ.restrict S) hg]
     refine lintegral_congr fun s => ?_
     rw [Measure.restrict_apply (hKmeas s), Measure.restrict_apply' (hKmeas s), Set.inter_comm]
   have hW1 : Measurable (Set.indicator A (fun p : E × F => g p.1 * h p.2)) :=
     ((hg.comp measurable_fst).mul (hh.comp measurable_snd)).indicator hA
-  have hW2 : Measurable (Set.indicator A (fun p : E × F => g p.1)) :=
+  have hW2 :=
     (hg.comp measurable_fst).indicator hA
   have hθs : ∀ z, Measurable fun s => θ s z := fun _ => hΘmeas.comp measurable_prodMk_left
   calc ∫⁻ x in A, g x.1 * h x.2 ∂(μ.prod ν)
@@ -361,15 +354,15 @@ theorem HasSliceBound.prod
         rw [show (fun y => Set.indicator A (fun p : E × F => g p.1 * h p.2) (y, z))
             = Set.indicator {y | (y, z) ∈ A} (fun y => g y * h z) from rfl,
           lintegral_indicator (hAsecE z), lintegral_mul_const _ hg]
-    _ = ∫⁻ z, (∫⁻ s in Ioi (0 : ℝ), θ s z * h z) ∂ν := by
+    _ = ∫⁻ z, (∫⁻ s in Ioi 0, θ s z * h z) ∂ν := by
         refine lintegral_congr fun z => ?_
         rw [hlayer _ (hAsecE z), ← lintegral_mul_const _ (hθs z)]
-    _ = ∫⁻ s in Ioi (0 : ℝ), ∫⁻ z, θ s z * h z ∂ν :=
+    _ = ∫⁻ s in Ioi 0, ∫⁻ z, θ s z * h z ∂ν :=
         lintegral_lintegral_swap (f := fun (z : F) (s : ℝ) => θ s z * h z)
           (hΘmeas.mul (hh.comp measurable_fst)).aemeasurable
-    _ ≤ ∫⁻ s in Ioi (0 : ℝ), ∫⁻ z in R, θ s z ∂ν :=
+    _ ≤ ∫⁻ s in Ioi 0, ∫⁻ z in R, θ s z ∂ν :=
         lintegral_mono fun s => hF.lintegral_le hh (hθmeas s) (hθeven s) (hθlc s)
-    _ = ∫⁻ z in R, (∫⁻ s in Ioi (0 : ℝ), θ s z) ∂ν :=
+    _ = ∫⁻ z in R, (∫⁻ s in Ioi 0, θ s z) ∂ν :=
         lintegral_lintegral_swap (f := fun (s : ℝ) (z : F) => θ s z)
           (hΘmeas.comp measurable_swap).aemeasurable
     _ = ∫⁻ z in R, (∫⁻ y in {y | (y, z) ∈ A}, g y ∂μ) ∂ν :=
@@ -403,21 +396,17 @@ theorem HasSliceBound.of_measurePreserving [MeasurableSpace E] [AddCommGroup E] 
     HasSliceBound μ (fun x => g (e x)) (e ⁻¹' Q) := by
   intro A hA hAconv hAsymm
   have hBA : e ⁻¹' (e.symm ⁻¹' A) = A := by ext x; simp
-  have hBmeas : MeasurableSet (e.symm ⁻¹' A) := hsymm hA
-  have hBconv : Convex ℝ (e.symm ⁻¹' A) := hAconv.linear_preimage (e.symm : F →ₗ[ℝ] E)
+  have hBmeas := hsymm hA
+  have hBconv := hAconv.linear_preimage (e.symm : F →ₗ[ℝ] E)
   have hBsymm : ∀ y ∈ e.symm ⁻¹' A, -y ∈ e.symm ⁻¹' A := by
-    intro y hy
-    have : e.symm (-y) = -(e.symm y) := map_neg _ _
-    simpa [Set.mem_preimage, this] using hAsymm _ hy
+    simp_all
   have h1 : ∫⁻ x in A, g (e x) ∂μ = ∫⁻ y in e.symm ⁻¹' A, g y ∂ν := by
     rw [← lintegral_indicator hBmeas, ← he.lintegral_comp (hg.indicator hBmeas),
       ← lintegral_indicator hA]
     refine lintegral_congr fun x => ?_
     by_cases hx : x ∈ A
-    · rw [Set.indicator_of_mem hx,
-        Set.indicator_of_mem (show e x ∈ e.symm ⁻¹' A by simpa using hx)]
-    · rw [Set.indicator_of_notMem hx,
-        Set.indicator_of_notMem (show e x ∉ e.symm ⁻¹' A by simpa using hx)]
+    · simp_all
+    · simp_all
   have h2 : μ (A ∩ e ⁻¹' Q) = ν (e.symm ⁻¹' A ∩ Q) := by
     have hpre : A ∩ e ⁻¹' Q = e ⁻¹' (e.symm ⁻¹' A ∩ Q) := by rw [Set.preimage_inter, hBA]
     rw [hpre, he.measure_preimage (hBmeas.inter hQ).nullMeasurableSet]

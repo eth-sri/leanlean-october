@@ -17,13 +17,14 @@ import CCDN.Projection.HilbertProjectionKernel
 The degree is bounded by the factorial-normalized leading coefficient of
 the original quotient's filtered Hilbert polynomial. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
+variable {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
+
 private theorem hypersurface_projection_equation_degree_le
-    {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
+    
     (I : Ideal (MvPolynomial τ K)) (hI : I ≠ ⊤)
     (a : Fin (n + 1) → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdimdeg : HasAffineDimensionDegree I n d)
@@ -45,7 +46,7 @@ private theorem hypersurface_projection_equation_degree_le
 
 /-- The equation and its degree bound are constructed from the projection. -/
 theorem exists_hypersurface_projection_equation_degree_le
-    {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
+    
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (a : Fin (n + 2) → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I n d)
@@ -57,10 +58,9 @@ theorem exists_hypersurface_projection_equation_degree_le
       RingHom.ker (projectionCoordinateMap I a) = Ideal.span {f} := by
   obtain ⟨f, hf, hker⟩ := exists_hypersurface_projection_equation I a ha
     (by rw [hdimdeg.natDegree_eq]; omega) b hb hi
-  have hfdeg : 0 < f.totalDegree :=
+  have hfdeg :=
     totalDegree_pos_of_ne_zero_of_not_isUnit hf.ne_zero hf.not_isUnit
   exact ⟨f, hf, hfdeg, hypersurface_projection_equation_degree_le I
     (Ideal.IsPrime.ne_top ‹I.IsPrime›) a ha d hdimdeg f hf.ne_zero hfdeg hker, hker⟩
 
-end
 end CCDN

@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Hilbert.FilteredPrimeDecomposition
 public import CCDN.Surface.CurveComponents
 import CCDN.ForMathlib.KrullHeight
@@ -17,55 +21,48 @@ prime curves on a surface section. A curve constructed by another
 auxiliary is counted as a component of the section whenever its ideal
 contains the section's equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private theorem height_two_prime_isMinimalPrime_section
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    (P : Ideal (CoordinatePolynomial 3)) (hP : P.IsPrime) (hheight : P.height = 2)
-    (hfP : f ∈ P) (hgP : g ∈ P) :
-    (polynomialSectionIdeal f g).IsMinimalPrime P := by
-  have : P.IsPrime := hP
-  have hle : polynomialSectionIdeal f g ≤ P := by
-    apply Ideal.span_le.mpr
-    intro x hx
-    rcases hx with rfl | hx
-    · exact hfP
-    · have hxg : x = g := Set.mem_singleton_iff.mp hx
-      subst x
-      exact hgP
-  obtain ⟨Q, hQ, hQP⟩ := Ideal.exists_minimalPrimes_le hle
-  have : Q.IsPrime := hQ.isPrime
-  have hQheight : Q.height = 2 := Ideal.height_eq_two_of_mem_minimalPrimes_span_pair hf.prime hfg hQ
-  have hQP' : Q = P := by
-    by_contra hne
-    have hh := Ideal.height_add_one_le_of_lt_of_isPrime (lt_of_le_of_ne hQP hne)
-    rw [hQheight, hheight] at hh
-    norm_num at hh
-  subst Q
-  exact hQ
+variable (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
 
+
+include hf hfg in
 /-- Distinct prime curves of height two contained in a proper surface
 section have total degree at most the product of the equation degrees. -/
 theorem surface_prime_curve_degree_sum_le
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (δ : Ideal (CoordinatePolynomial 3) → ℕ)
+    
+    (S : Finset (CCDN.CoordinateIdeal 3))
+    (δ : CCDN.CoordinateIdeal 3 → ℕ)
     (hS : ∀ P ∈ S, IsSurfaceCurve f P (δ P) ∧ g ∈ P) :
     ∑ P ∈ S, δ P ≤ f.totalDegree * g.totalDegree := by
   classical
   let T := minimalPrimeComponents (polynomialSectionIdeal f g)
   obtain ⟨d, hd, hsum⟩ := polynomialSection_minimalPrime_degrees_exist f g hf hfg
-  let e (P : Ideal (CoordinatePolynomial 3)) := if hP : P ∈ T then d ⟨P, hP⟩ else 0
+  let e (P : CCDN.CoordinateIdeal 3) := if hP : P ∈ T then d ⟨P, hP⟩ else 0
   have hST : S ⊆ T := by
     intro P hPS
     obtain ⟨⟨hP, hheight, hfP, _⟩, hgP⟩ := hS P hPS
     exact mem_minimalPrimeComponents.mpr
-      (height_two_prime_isMinimalPrime_section f g hf hfg P hP hheight hfP hgP)
+      ((by
+         have hle : polynomialSectionIdeal f g ≤ P := by
+           apply Ideal.span_le.mpr
+           intro x hx
+           rcases hx with rfl | hx
+           · exact hfP
+           · simp_all
+         obtain ⟨Q, hQ, hQP⟩ := Ideal.exists_minimalPrimes_le hle
+         have : Q.IsPrime := hQ.isPrime
+         have hQheight := Ideal.height_eq_two_of_mem_minimalPrimes_span_pair hf.prime hfg hQ
+         have hQP' : Q = P := by
+           by_contra hne
+           have hh := Ideal.height_add_one_le_of_lt_of_isPrime (lt_of_le_of_ne hQP hne)
+           rw [hQheight, hheight] at hh
+           norm_num at hh
+         subst Q
+         exact hQ))
   have he (P : T) : e P.val = d P := by
-    simp only [e, dite_eq_left P.property]
-    rfl
+    grind
   have heq (P) (hPS : P ∈ S) : δ P = e P := by
     rw [he ⟨P, hST hPS⟩]
     exact affineCurveDegree_unique (hS P hPS).1.degree (hd ⟨P, hST hPS⟩)
@@ -84,8 +81,8 @@ not dividing `g`), the integral points of height at most `B` on `h = 0` lying on
 whose ideals do not contain `h` number at most `deg f * deg g * deg h`. -/
 theorem surface_curve_crossing_count_le
     (f g h : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (δ : Ideal (CoordinatePolynomial 3) → ℕ)
+    (S : Finset (CCDN.CoordinateIdeal 3))
+    (δ : CCDN.CoordinateIdeal 3 → ℕ)
     (hS : ∀ P ∈ S, IsSurfaceCurve f P (δ P) ∧ g ∈ P) (B : ℝ) :
     count (⋃ P ∈ S.filter (fun P => h ∉ P), idealZeroLocus P ∩ zeroLocus h) B ≤
       f.totalDegree * g.totalDegree * h.totalDegree := by
@@ -96,14 +93,11 @@ theorem surface_curve_crossing_count_le
     obtain ⟨hPS, hhP⟩ := Finset.mem_filter.mp hPT
     have : P.IsPrime := (hS P hPS).1.isPrime
     exact count_curve_section_le P (hS P hPS).1.degree h hhP B
-  have hbudget := surface_prime_curve_degree_sum_le f g hf hfg T δ
-    (fun P hP => hS P (Finset.mem_filter.mp hP).1)
-  calc
-    _ ≤ ∑ P ∈ T, count (idealZeroLocus P ∩ zeroLocus h) B :=
-      count_biUnion_finset_le T _ B
-    _ ≤ ∑ P ∈ T, δ P * h.totalDegree := Finset.sum_le_sum hcurve
-    _ = (∑ P ∈ T, δ P) * h.totalDegree := (Finset.sum_mul _ _ _).symm
-    _ ≤ _ := Nat.mul_le_mul_right _ hbudget
+  exact have hbudget := surface_prime_curve_degree_sum_le f g hf hfg T δ fun P hP => hS P (Finset.mem_filter.mp hP).left;
+  Trans.trans
+    (Trans.trans
+      (Trans.trans (count_biUnion_finset_le T (fun P => idealZeroLocus P ∩ zeroLocus h) B) (Finset.sum_le_sum hcurve))
+      (Eq.symm (Finset.sum_mul T δ (MvPolynomial.totalDegree h))))
+    (Nat.mul_le_mul_right (MvPolynomial.totalDegree h) hbudget)
 
-end
 end CCDN

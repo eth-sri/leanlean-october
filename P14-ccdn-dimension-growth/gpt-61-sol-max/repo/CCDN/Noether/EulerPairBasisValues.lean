@@ -11,9 +11,8 @@ public import CCDN.Noether.EulerPairBasis
 /-! Explicit monomial values of the Euler basis and nonzero minors of the
 correct Noether order d^2-1. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Module
 
 private lemma euler_restrict_basis_val {R : Type*} [CommRing R]
@@ -21,7 +20,7 @@ private lemma euler_restrict_basis_val {R : Type*} [CommRing R]
     (basisRestrictSupport R S i).val = monomial i.val 1 := by
   classical
   change AddMonoidAlgebra.ofCoeff
-    (((Finsupp.supportedEquivFinsupp (M := R) (R := R) S).symm
+    (((Finsupp.supportedEquivFinsupp   S).symm
       (Finsupp.single i 1)).val) = _
   rw [Finsupp.supportedEquivFinsupp_symm_single]
   rfl
@@ -45,11 +44,11 @@ lemma eulerTopBasis_apply {R : Type*} [CommRing R] (k : ℕ) (i : EulerTopIndex 
   simp only [eulerTopBasis, Basis.map_apply, Basis.reindex_apply]
   exact euler_restrict_basis_val _ _
 
+variable {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] (k : ℕ) (f : Polynomial (Polynomial F)) (hf : Irreducible f) (a : F) (ha : a ≠ 0) (hl : f.leadingCoeff = Polynomial.C a) (hdeg : f.natDegree = k + 2)
+
+include hf ha hl hdeg in
 private theorem eulerClosedFormCoefficientMatrix_rank
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (k : ℕ) (f : Polynomial (Polynomial F)) (hf : Irreducible f)
-    (a : F) (ha : a ≠ 0) (hl : f.leadingCoeff = Polynomial.C a)
-    (hdeg : f.natDegree = k + 2) :
+     :
     (eulerClosedFormCoefficientMatrix k f).rank = (k + 2) ^ 2 - 1 := by
   have hi := eulerClosedFormCoefficientMatrix_columns_independent k f hf a ha hl hdeg
   have hr : (eulerClosedFormCoefficientMatrix k f).rank = Fintype.card (EulerColumns k) := by
@@ -57,15 +56,12 @@ private theorem eulerClosedFormCoefficientMatrix_rank
       Set.finrank]
   rw [hr, card_eulerColumns]
 
+include hf ha hl hdeg in
 /-- A nonzero maximal minor has precisely the universal Noether
 order d^2-1. -/
 theorem exists_eulerClosedForm_nonzero_minor
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (k : ℕ) (f : Polynomial (Polynomial F)) (hf : Irreducible f)
-    (a : F) (ha : a ≠ 0) (hl : f.leadingCoeff = Polynomial.C a)
-    (hdeg : f.natDegree = k + 2) :
+     :
     (eulerClosedFormCoefficientMatrix k f).HasNonzeroMinor ((k + 2) ^ 2 - 1) :=
   Matrix.hasNonzeroMinor_of_le_rank _ (eulerClosedFormCoefficientMatrix_rank k f hf a ha hl hdeg).ge
 
-end
 end CCDN

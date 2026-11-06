@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Analysis.PrimeCutoff
 public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimes
 public import CCDN.Plane.IntegerPlaneLogHeight
@@ -13,9 +17,8 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeHeight
 /-! Coordinate invariance of geometric bad reduction and coefficient height,
 with the exact bad-prime charge in standard Fin-indexed coordinates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Geometric bad reduction at `p` is invariant under a bijective renaming of the
@@ -23,7 +26,6 @@ variables. -/
 lemma hypersurfaceBadReduction_renameEquiv {σ τ : Type*} (e : σ ≃ τ)
     (f : MvPolynomial σ ℤ) (p : ℕ) :
     HypersurfaceBadReduction (rename e f) p ↔ HypersurfaceBadReduction f p := by
-  unfold HypersurfaceBadReduction
   apply exists_congr
   intro hp
   let : Fact p.Prime := ⟨hp⟩
@@ -48,18 +50,18 @@ lemma polynomial_coefficient_bound_renameEquiv {σ τ : Type*} (e : σ ≃ τ)
   rw [← hc]
   exact hf _
 
+variable {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n : ℕ} (f : CCDN.IntegerPolynomial (n + 1)) (hf : Irreducible (map (Int.castRingHom L) f)) (hpos : 0 < f.totalDegree)
+
+include hf hpos in
 /-- The exact geometric bad-prime set exists, and its charge is bounded. -/
 theorem exists_fin_hypersurface_bad_prime_charge
-    {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (hf : Irreducible (map (Int.castRingHom L) f))
-    (hpos : 0 < f.totalDegree) (H : ℝ) (hH : 1 ≤ H)
+     (H : ℝ) (hH : 1 ≤ H)
     (hcoeff : CoefficientHeightLE f H) :
     ∃ bad : Finset ℕ,
       (∀ p, p ∈ bad ↔ stepanovThreshold f.totalDegree < p ∧ HypersurfaceBadReduction f p) ∧
       (∑ p ∈ bad, Real.log p / p) ≤
         Real.log (hypersurfaceHeightConstant (n + 1) *
-          (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) + 2 * mertensError + 1 := by
+          (1 + Real.log H / ↑f.totalDegree ^ 2)) + 2 * mertensError + 1 := by
   classical
   let e : Fin (n + 1) ≃ Option (Fin n) := finSuccEquiv' 0
   let g := rename e f
@@ -67,23 +69,21 @@ theorem exists_fin_hypersurface_bad_prime_charge
     rw [show g = rename e f from rfl, map_rename]
     exact (MulEquiv.irreducible_iff (f := renameEquiv L e)).mpr hf
   have hd : g.totalDegree = f.totalDegree := totalDegree_renameEquiv e f
-  have hgc : CoefficientHeightLE g H := polynomial_coefficient_bound_renameEquiv e f H hcoeff
+  have hgc := polynomial_coefficient_bound_renameEquiv e f H hcoeff
   let bad := (finite_hypersurface_bad_primes g hg (hd ▸ hpos)).toFinset
   have hmem (p : ℕ) : p ∈ bad ↔ stepanovThreshold f.totalDegree < p ∧
       HypersurfaceBadReduction f p := by
-    simp only [bad, Set.Finite.mem_toFinset, Set.mem_ofPred_eq, hd, g,
-      hypersurfaceBadReduction_renameEquiv]
+    grind [Set.Finite.mem_toFinset,  hypersurfaceBadReduction_renameEquiv]
   refine ⟨bad, hmem, ?_⟩
   have hc := hypersurface_bad_prime_charge g hg (hd ▸ hpos) H hH hgc bad
     (fun p hp => ((hypersurfaceBadReduction_renameEquiv e f p).mpr ((hmem p).mp hp).2))
     (fun p hp => hd ▸ ((hmem p).mp hp).1)
   simpa only [hd, Fintype.card_option, Fintype.card_fin] using hc
 
+include hf hpos in
 /-- Finiteness is invariant under the standard Fin-to-Option reindexing. -/
 theorem finite_fin_hypersurface_bad_primes
-    {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (hf : Irreducible (map (Int.castRingHom L) f)) (hpos : 0 < f.totalDegree) :
+     :
     {p : ℕ | stepanovThreshold f.totalDegree < p ∧ HypersurfaceBadReduction f p}.Finite := by
   let e : Fin (n + 1) ≃ Option (Fin n) := finSuccEquiv' 0
   let g := rename e f
@@ -108,8 +108,7 @@ lemma homogeneous_hypersurfaceBadReduction_iff {σ : Type*} {d : ℕ}
       rw [hf.totalDegree hf0]
       exact (hf.map _).totalDegree hi.ne_zero
     · exact hnot hi
-  · intro hbad
-    exact ⟨Fact.out, Or.inr hbad⟩
+  · solve_by_elim [Fact.out, Or.inr]
 
 /-- Outside the bad-prime predicate, both full degree and geometric
 irreducibility hold for the coefficient reduction. -/
@@ -123,7 +122,7 @@ lemma hypersurface_good_reduction {σ : Type*} (f : MvPolynomial σ ℤ)
       Int.castRingHom (AlgebraicClosure (ZMod p)) := by ext; simp
   have hi : Irreducible (map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
       (map (Int.castRingHom (ZMod p)) f)) := by
-    simpa only [map_map, he] using hg
+    simp_all [map_map]
   refine ⟨?_, hi⟩
   intro hz
   exact hi.ne_zero (by rw [hz, map_zero])
@@ -132,10 +131,10 @@ lemma hypersurface_good_reduction {σ : Type*} (f : MvPolynomial σ ℤ)
 irreducible form of degree `d > 0`. -/
 theorem exists_hypersurface_bad_prime_finset
     {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n d : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
+    (f : CCDN.IntegerPolynomial (n + 1)) (hf : f.IsHomogeneous d) (hd : 0 < d)
     (hir : Irreducible (map (Int.castRingHom L) f)) :
     ∃ bad : Finset ℕ, ∀ p, p ∈ bad ↔ stepanovThreshold d < p ∧ HypersurfaceBadReduction f p := by
-  have hdeg : f.totalDegree = d := hf.totalDegree (ne_zero_of_irreducible_map hir)
+  have hdeg := hf.totalDegree (ne_zero_of_irreducible_map hir)
   refine ⟨(finite_fin_hypersurface_bad_primes f hir (hdeg ▸ hd)).toFinset, fun p => ?_⟩
   simp only [Set.Finite.mem_toFinset, Set.mem_ofPred_eq, hdeg]
 
@@ -146,5 +145,4 @@ lemma hasGoodReduction_of_not_mem {σ : Type*} {f : MvPolynomial σ ℤ} {d : �
     HasGoodReduction f p :=
   hypersurface_good_reduction f p fun hb => hp ((hbad p).mpr ⟨by exact_mod_cast hcut, hb⟩)
 
-end
 end CCDN

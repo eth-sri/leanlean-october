@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.QuadraticInvolution
 public import CCDN.ClassGroup.QuadraticObstructionFibers
 import CCDN.ClassGroup.AmbiguousIdealRelativeNorm
@@ -37,9 +39,7 @@ private theorem card_le_subgroup_mul_obstruction
     rw [← QuotientGroup.mk_div]
     exact (QuotientGroup.eq_one_iff _).mpr (ho _ _ h)
   have hc := Nat.card_le_card_of_injective _ hinj
-  calc
-    Nat.card G = Nat.card S * S.index := S.card_mul_index.symm
-    _ ≤ Nat.card S * Nat.card Q := Nat.mul_le_mul_left _ hc
+  exact Trans.trans (Eq.symm (Subgroup.card_mul_index S)) (Nat.mul_le_mul_left (Nat.card ↥S) hc)
 
 variable (F K : Type*) [Field F] [Field K] [NumberField F] [NumberField K]
   [Algebra F K]
@@ -57,13 +57,15 @@ structure AmbiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGroup (𝓞 K)) w
   /-- The fractional ideal `ideal` represents the class `c`. -/
   class_eq : ClassGroup.mk K ideal = c
   /-- The conjugate of `ideal` under `σ` is the principal ideal of `scalar` times `ideal`. -/
-  scalar_eq : fractionalIdealUnitAction (K := K)
+  scalar_eq : fractionalIdealUnitAction 
     (RingOfIntegers.mapAlgEquiv σ).toRingEquiv ideal =
       toPrincipalIdeal (𝓞 K) K scalar * ideal
   /-- The relative norm of `scalar` is the base unit `baseUnit`. -/
   norm_eq : Algebra.norm F (scalar : K) = ((baseUnit : 𝓞 F) : F)
 
-private theorem nonempty_ambiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGroup (𝓞 K))
+variable (σ : K ≃ₐ[F] K)
+
+private theorem nonempty_ambiguousClassWitness  (c : ClassGroup (𝓞 K))
     (hc : ClassGroup.mulEquiv (RingOfIntegers.mapAlgEquiv σ).toRingEquiv c = c) :
     Nonempty (AmbiguousClassWitness F K σ c) := by
   obtain ⟨I, rfl⟩ := ClassGroup.mk0_surjective c
@@ -73,26 +75,25 @@ private theorem nonempty_ambiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGr
   let b : Kˣ := Units.mk0 (y : K) (RingOfIntegers.coe_ne_zero_iff.mpr hy)
   refine ⟨⟨FractionalIdeal.mk0 K I, b / a, u,
     ClassGroup.mk_mk0 K I, ?_, ?_⟩⟩
-  · exact integral_ideal_scalar_fractional_comparison
-      (RingOfIntegers.mapAlgEquiv σ).toRingEquiv I x y hx hy hxy
-  · simp only [div_eq_mul_inv, Units.val_mul, Units.val_inv_eq_inv_val]
-    change Algebra.norm F ((y : K) * (x : K)⁻¹) = ((u : 𝓞 F) : F)
-    simpa only [div_eq_mul_inv] using hu
+  · solve_by_elim [integral_ideal_scalar_fractional_comparison]
+  · aesop
 
-private def chosenAmbiguousClassWitness (σ : K ≃ₐ[F] K)
-    (c : fixedClassGroupTwoTorsion K σ.toRingEquiv) :
-    AmbiguousClassWitness F K σ c.val.val :=
+private def chosenAmbiguousClassWitness 
+    (c : fixedClassGroupTwoTorsion K σ.toRingEquiv)  :=
   Classical.choice (nonempty_ambiguousClassWitness F K σ c.val.val
     ((mem_fixedClassGroupTwoTorsion K σ.toRingEquiv c.val).mp c.property))
 
 /-- A fixed choice of the unit-norm obstruction on fixed
 two-torsion classes. The cardinal argument only uses equality of values. -/
-private def fixedClassUnitObstruction (σ : K ≃ₐ[F] K) :
+private def fixedClassUnitObstruction  :
     fixedClassGroupTwoTorsion K σ.toRingEquiv → quadraticUnitNormQuotient F K :=
   fun c => QuotientGroup.mk (chosenAmbiguousClassWitness F K σ c).baseUnit
 
+variable (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
+
+include hd hσ in
 private theorem fixedClassUnitObstruction_eq_implies
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
+    
     (c e : fixedClassGroupTwoTorsion K σ.toRingEquiv)
     (hce : fixedClassUnitObstruction F K σ c = fixedClassUnitObstruction F K σ e) :
     c.val.val / e.val.val ∈ stronglyAmbiguousClassGroup F K σ := by
@@ -108,8 +109,9 @@ abbrev stronglyAmbiguousTwoTorsion (σ : K ≃ₐ[F] K) :=
   (powMonoidHom 2 : stronglyAmbiguousClassGroup F K σ →*
     stronglyAmbiguousClassGroup F K σ).ker
 
+include hd hσ in
 private theorem fixedClassGroupTwoTorsion_card_le
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
+     :
     Nat.card (fixedClassGroupTwoTorsion K σ.toRingEquiv) ≤
       Nat.card (stronglyAmbiguousTwoTorsion F K σ) *
         Nat.card (quadraticUnitNormQuotient F K) := by
@@ -118,7 +120,7 @@ private theorem fixedClassGroupTwoTorsion_card_le
   let S := (stronglyAmbiguousClassGroup F K σ).comap emb
   let := quadraticUnitNormQuotient_finite F K hd
   have hc := card_le_subgroup_mul_obstruction S (fixedClassUnitObstruction F K σ)
-    (fun c e h => fixedClassUnitObstruction_eq_implies F K hd σ hσ c e h)
+    ((fixedClassUnitObstruction_eq_implies F K hd σ hσ))
   let incl : S → stronglyAmbiguousTwoTorsion F K σ := fun c =>
     ⟨⟨c.val.val.val, c.property⟩, by
       apply Subtype.ext
@@ -132,24 +134,17 @@ private theorem fixedClassGroupTwoTorsion_card_le
   exact hc.trans (Nat.mul_le_mul_right _
     (Nat.card_le_card_of_injective incl hincl))
 
-/-- The unit contribution to quadratic genus theory is bounded by the
-degree of the base field, with the strongly ambiguous term left explicit. -/
-private theorem fixedClassGroupTwoTorsion_card_le_degree
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
-    Nat.card (fixedClassGroupTwoTorsion K σ.toRingEquiv) ≤
-      Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F :=
-  (fixedClassGroupTwoTorsion_card_le F K hd σ hσ).trans
-    (Nat.mul_le_mul_left _ (quadraticUnitNormQuotient_card_le_degree F K hd))
 
+include hd hσ in
 /-- The quadratic two-torsion count is reduced to the strongly
 ambiguous subgroup, with a proved degree-only unit factor. -/
 theorem classGroupTwoTorsionCard_le_stronglyAmbiguous
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
+     :
     classGroupTwoTorsionCard K ≤
-      (Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F) ^ 2 := by
-  exact (classGroupTwoTorsionCard_le_fixed_square K σ.toRingEquiv
+      (Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F) ^ 2 := (classGroupTwoTorsionCard_le_fixed_square K σ.toRingEquiv
     (quadratic_automorphism_involutive F K hd σ)).trans
-      (Nat.pow_le_pow_left (fixedClassGroupTwoTorsion_card_le_degree F K hd σ hσ) 2)
+      (Nat.pow_le_pow_left (((fixedClassGroupTwoTorsion_card_le F K hd σ hσ).trans
+                                (Nat.mul_le_mul_left _ (quadraticUnitNormQuotient_card_le_degree F K hd)))) 2)
 
 end
 end CCDN

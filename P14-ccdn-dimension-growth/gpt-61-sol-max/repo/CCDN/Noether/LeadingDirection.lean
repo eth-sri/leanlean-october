@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.BivariateTotalDegree
 
 /-! A bounded integer direction where the highest homogeneous part does not
@@ -12,50 +14,43 @@ vanish. The direction polynomial packages the top-degree coefficients. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Polynomial
+
+variable {R : Type*} [CommRing R] (f : R[X][X])
 
 /-- Highest homogeneous part, evaluated at outer coordinate one and inner
 coordinate the polynomial variable. -/
-def leadingDirectionPolynomial {R : Type*} [CommRing R] (f : R[X][X]) (d : ℕ) : R[X] :=
+noncomputable def leadingDirectionPolynomial  (d : ℕ)  :=
   ∑ j ∈ Finset.range (d + 1), monomial j ((f.coeff (d - j)).coeff j)
 
 /-- The `j`-th coefficient of the leading direction polynomial of degree `d` is the coefficient of
 `f` with outer exponent `d - j` and inner exponent `j` when `j ≤ d`, and zero otherwise. -/
-lemma leadingDirectionPolynomial_coeff {R : Type*} [CommRing R]
-    (f : R[X][X]) (d j : ℕ) :
+lemma leadingDirectionPolynomial_coeff  (d j : ℕ) :
     (leadingDirectionPolynomial f d).coeff j =
       if j ≤ d then (f.coeff (d - j)).coeff j else 0 := by
   classical
   simp [leadingDirectionPolynomial, coeff_monomial]
 
-private lemma leadingDirectionPolynomial_natDegree_le {R : Type*} [CommRing R]
-    (f : R[X][X]) (d : ℕ) : (leadingDirectionPolynomial f d).natDegree ≤ d := by
+private lemma leadingDirectionPolynomial_natDegree_le  (d : ℕ) : (leadingDirectionPolynomial f d).natDegree ≤ d := by
   apply natDegree_sum_le_of_forall_le
   intro j hj
-  exact (natDegree_monomial_le _).trans (by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hj)
+  exact (natDegree_monomial_le _).trans (by simp_all)
 
-private lemma exists_bivariate_top_coefficient {R : Type*} [CommRing R]
-    (f : R[X][X]) (hf : f ≠ 0) :
+private lemma exists_bivariate_top_coefficient  (hf : f ≠ 0) :
     ∃ i j : ℕ, i + j = bivariateTotalDegree f ∧ (f.coeff i).coeff j ≠ 0 := by
   let g := (bivariatePolynomialEquiv R).symm f
   have hg : g ≠ 0 := (map_ne_zero_iff _ (bivariatePolynomialEquiv R).symm.injective).mpr hf
   have hs : g.support.Nonempty := by
-    exact Finset.nonempty_iff_ne_empty.mpr (fun h => hg (MvPolynomial.support_eq_empty.mp h))
+    simp_all
   obtain ⟨m, hm, hmax⟩ := Finset.exists_mem_eq_sup g.support hs (fun s => s.sum (fun _ e => e))
   refine ⟨m 0, m 1, ?_, ?_⟩
   · change _ = g.support.sup (fun s => s.sum (fun _ e => e))
     rw [hmax]
     conv_rhs => rw [bivariate_exponent_eq m]
     exact (bivariate_exponent_sum _ _).symm
-  · have hc := bivariatePolynomialEquiv_coeff g (m 0) (m 1)
-    change ((bivariatePolynomialEquiv R ((bivariatePolynomialEquiv R).symm f)).coeff (m 0)).coeff
-      (m 1) = _ at hc
-    rw [AlgEquiv.apply_symm_apply, ← bivariate_exponent_eq m] at hc
-    exact hc.symm ▸ MvPolynomial.mem_support_iff.mp hm
+  · grind [bivariatePolynomialEquiv_coeff, AlgEquiv.apply_symm_apply, bivariate_exponent_eq]
 
-private lemma leadingDirectionPolynomial_ne_zero {R : Type*} [CommRing R]
-    (f : R[X][X]) (hf : f ≠ 0) :
+private lemma leadingDirectionPolynomial_ne_zero  (hf : f ≠ 0) :
     leadingDirectionPolynomial f (bivariateTotalDegree f) ≠ 0 := by
   obtain ⟨i, j, hdeg, hc⟩ := exists_bivariate_top_coefficient f hf
   intro hz
@@ -68,19 +63,16 @@ private lemma leadingDirectionPolynomial_ne_zero {R : Type*} [CommRing R]
 direction. The proof uses only the univariate root bound. -/
 theorem exists_bounded_leading_direction (f : ℤ[X][X]) (hf : f ≠ 0) :
     ∃ a : ℕ, a ≤ bivariateTotalDegree f ∧
-      (leadingDirectionPolynomial f (bivariateTotalDegree f)).eval (a : ℤ) ≠ 0 := by
+      (leadingDirectionPolynomial f (bivariateTotalDegree f)).eval ↑a ≠ 0 := by
   let d := bivariateTotalDegree f
   let q := leadingDirectionPolynomial f d
   by_contra! hn
   apply leadingDirectionPolynomial_ne_zero f hf
   apply eq_zero_of_natDegree_lt_card_of_eval_eq_zero (ι := Fin (d + 1))
-    (f := fun i => (i.val : ℤ)) q
+     q
   · intro i j h
     exact Fin.ext (Int.ofNat_inj.mp h)
-  · intro i
-    exact hn i.val (by omega)
-  · have h := leadingDirectionPolynomial_natDegree_le f d
-    simpa only [Fintype.card_fin] using Nat.lt_succ_of_le h
+  · grind
+  · aesop (add safe apply [leadingDirectionPolynomial_natDegree_le, Fintype.card_fin, Nat.lt_succ_of_le])
 
-end
 end CCDN

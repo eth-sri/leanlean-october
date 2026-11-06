@@ -21,23 +21,25 @@ the numerals are definitionally equal to statements using the names. -/
 namespace CCDN
 noncomputable section
 
+variable {R : Type*} [Semiring R]
+
 /-- The prime cutoff `27 d⁴` of the Stepanov method. For `p > 27 d⁴` the integer Stepanov
 parameters `A = ⌊√p / d⌋`, `D = ⌊(p - 1) / d⌋`, `N = d A - 4 d²` exist with `N > 0`
 (`exists_stepanov_integer_parameters`), the Hilbert-dimension inequality holds
 (`stepanov_numeric_dimension`), and `√p < 32 N` (`stepanov_real_bound`), since
 `31² · 27 > 160²`. Bad primes are only counted above this cutoff; below it the trivial
 bounds are used. The definition is polymorphic so that it reads the same over `ℕ` and `ℝ`. -/
-def stepanovThreshold {R : Type*} [Semiring R] (d : R) : R := 27 * d ^ 4
+def stepanovThreshold  (d : R)  := 27 * d ^ 4
 
 /-- The cast of the natural-number cutoff `stepanovThreshold d` is the cutoff of the cast of `d`. -/
 @[simp, norm_cast]
-lemma Nat.cast_stepanovThreshold {R : Type*} [Semiring R] (d : ℕ) :
+lemma Nat.cast_stepanovThreshold  (d : ℕ) :
     ((stepanovThreshold d : ℕ) : R) = stepanovThreshold (d : R) := by
   simp [stepanovThreshold]
 
 /-- The cutoff `stepanovThreshold` is monotone on nonnegative arguments. -/
 @[gcongr]
-lemma stepanovThreshold_le_stepanovThreshold {R : Type*} [Semiring R] [PartialOrder R]
+lemma stepanovThreshold_le_stepanovThreshold  [PartialOrder R]
     [IsOrderedRing R] {a b : R} (ha : 0 ≤ a) (hab : a ≤ b) :
     stepanovThreshold a ≤ stepanovThreshold b := by
   unfold stepanovThreshold
@@ -75,21 +77,6 @@ def hypersurfaceResidueConstant : ℝ := 164
 `2 (H + 1) p^(m-2)`, and `1 ≤ d² √p` (`projectiveHypersurfaceResidueConstant_eq_add`). -/
 def projectiveHypersurfaceResidueConstant : ℝ := 330
 
-/-- The value of `planeResidueConstant` is `161`. -/
-lemma planeResidueConstant_eq : planeResidueConstant = 161 := rfl
-
-/-- The value of `projectivePlaneResidueConstant` is `162`. -/
-lemma projectivePlaneResidueConstant_eq : projectivePlaneResidueConstant = 162 := rfl
-
-/-- The value of `projectivePlaneDeterminantConstant` is `164`. -/
-lemma projectivePlaneDeterminantConstant_eq : projectivePlaneDeterminantConstant = 164 := rfl
-
-/-- The value of `hypersurfaceResidueConstant` is `164`. -/
-lemma hypersurfaceResidueConstant_eq : hypersurfaceResidueConstant = 164 := rfl
-
-/-- The value of `projectiveHypersurfaceResidueConstant` is `330`. -/
-lemma projectiveHypersurfaceResidueConstant_eq : projectiveHypersurfaceResidueConstant = 330 :=
-  rfl
 
 /-- The plane constant `planeResidueConstant` is positive. -/
 lemma planeResidueConstant_pos : 0 < planeResidueConstant := by
@@ -99,9 +86,6 @@ lemma planeResidueConstant_pos : 0 < planeResidueConstant := by
 lemma projectivePlaneDeterminantConstant_pos : 0 < projectivePlaneDeterminantConstant := by
   norm_num [projectivePlaneDeterminantConstant]
 
-/-- The constant `projectiveHypersurfaceResidueConstant` is positive. -/
-lemma projectiveHypersurfaceResidueConstant_pos : 0 < projectiveHypersurfaceResidueConstant := by
-  norm_num [projectiveHypersurfaceResidueConstant]
 
 end
 end CCDN

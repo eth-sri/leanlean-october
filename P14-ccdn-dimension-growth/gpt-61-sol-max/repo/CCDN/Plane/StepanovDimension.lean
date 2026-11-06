@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 public import CCDN.Plane.FiniteFieldConstants
 import CCDN.Hilbert.PlaneHilbert
@@ -14,33 +16,27 @@ import Mathlib.Data.Nat.Choose.Bounds
 /-! The exact plane Hilbert function verifies the Stepanov dimension inequality
 for the constructed integer parameters. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma principal_plane_hilbert_balance {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
+variable {K : Type*} [Field K] (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0)
+
+include hf in
+private lemma principal_plane_hilbert_balance  {M : ℕ} (hM : f.totalDegree ≤ M) :
     Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) + f.totalDegree.choose 2 =
       f.totalDegree * M + f.totalDegree := by
-  have hh := principal_plane_hilbert_function f hf hM
-  have he : (Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) : ℤ) +
-      f.totalDegree.choose 2 = (f.totalDegree : ℤ) * M + f.totalDegree := by omega
-  exact_mod_cast he
+  grind [principal_plane_hilbert_function]
 
-private lemma principal_plane_hilbert_bounds {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
+include hf in
+private lemma principal_plane_hilbert_bounds  {M : ℕ} (hM : f.totalDegree ≤ M) :
     f.totalDegree * M - f.totalDegree ^ 2 ≤
       Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ∧
     Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ≤ f.totalDegree * (M + 1) := by
-  have hh := principal_plane_hilbert_balance f hf hM
-  have hc := Nat.choose_le_pow f.totalDegree 2
-  constructor
-  · omega
-  · nlinarith
+  grind [principal_plane_hilbert_balance, Nat.choose_le_pow]
 
+include hf in
 /-- The numerical inequality suffices for the exact filtered dimensions. -/
-theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (p A D N : ℕ)
+theorem stepanov_hilbert_dimension_inequality  (p A D N : ℕ)
     (hd : 0 < f.totalDegree) (hp : stepanovThreshold f.totalDegree < p)
     (hA : f.totalDegree ≤ A) (hD : f.totalDegree ≤ D)
     (hx : (f.totalDegree * A) ^ 2 ≤ p) (hy : p ≤ f.totalDegree * D + f.totalDegree)
@@ -69,5 +65,4 @@ theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
     (principal_plane_hilbert_bounds f hf hD).1
   exact hsum.trans_lt (hn.trans_le (by nlinarith only [hprod]))
 
-end
 end CCDN

@@ -5,14 +5,15 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 import CCDN.Hilbert.CoordinateIndependence
 
 /-! Full ambient Hilbert dimension forces the ideal to be zero. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A proper ideal whose filtered Hilbert polynomial has degree equal to the number of variables is
@@ -24,7 +25,7 @@ theorem ideal_eq_bot_of_full_hilbert_dimension
   classical
   obtain ⟨U, hU, hAI⟩ := exists_hilbert_dimension_independent_coordinates I hI
   have hcard : Fintype.card U = Fintype.card σ := by
-    simpa only [Nat.card_eq_fintype_card, hdim] using hU
+    grind [Nat.card_eq_fintype_card]
   have hmem : ∀ i : σ, i ∈ U := by
     intro i
     by_contra hn
@@ -34,8 +35,7 @@ theorem ideal_eq_bot_of_full_hilbert_dimension
     omega
   let j : σ → U := fun i => ⟨i, hmem i⟩
   have hj : Function.Injective j := fun _ _ h => congrArg Subtype.val h
-  have hi : AlgebraicIndependent K (fun i : σ => (Ideal.Quotient.mk I) (X i)) := by
-    exact hAI.comp j hj
+  have hi := hAI.comp j hj
   have he : aeval (fun i : σ => (Ideal.Quotient.mk I) (X i)) = Ideal.Quotient.mkₐ K I := by
     ext i
     simp
@@ -46,5 +46,4 @@ theorem ideal_eq_bot_of_full_hilbert_dimension
     (Ideal.Quotient.mkₐ K I).toRingHom).mp hinj
   simpa only [Ideal.Quotient.mkₐ_toRingHom, Ideal.mk_ker] using hk
 
-end
 end CCDN

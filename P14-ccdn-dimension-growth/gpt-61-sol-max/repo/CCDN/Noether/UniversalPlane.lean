@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.BivariateTotalDegree
 import CCDN.Determinant.PlaneMultiplicity
 import CCDN.Noether.ClosedFormScaling
@@ -36,33 +38,27 @@ def universalPlaneMap (K σ : Type*) [CommRing K] :
 
 /-- The restriction of `f` to the universal affine plane, viewed as a bivariate polynomial whose
 coefficients are polynomials in the plane parameters. -/
-def universalPlanePolynomial {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
-    Polynomial (Polynomial (MvPolynomial (PlaneParameters σ) K)) :=
+def universalPlanePolynomial {K σ : Type*} [CommRing K] (f : MvPolynomial σ K)  :=
   bivariatePolynomialEquiv _ (universalPlaneMap K σ f)
 
+variable {K A σ : Type*} [CommRing K] [CommRing A] (φ : K →+* A) (a b c : σ → A)
+
 /-- Evaluate all three blocks of affine-plane parameters. -/
-def planeParameterEval {K A σ : Type*} [CommRing K] [CommRing A]
-    (φ : K →+* A) (a b c : σ → A) : MvPolynomial (PlaneParameters σ) K →+* A :=
+def planeParameterEval  : MvPolynomial (PlaneParameters σ) K →+* A :=
   eval₂Hom φ (fun i => ![a i.1, b i.1, c i.1] i.2)
 
 /-- Universal specialization is exactly the displayed affine substitution. -/
-theorem universalPlaneMap_specialize {K A σ : Type*} [CommRing K] [CommRing A]
-    (φ : K →+* A) (a b c : σ → A) (f : MvPolynomial σ K) :
+theorem universalPlaneMap_specialize  (f : MvPolynomial σ K) :
     MvPolynomial.map (planeParameterEval φ a b c) (universalPlaneMap K σ f) =
       eval₂Hom (C.comp φ) (fun i => C (a i) + C (b i) * X 0 + C (c i) * X 1) f := by
   have he : (MvPolynomial.map (planeParameterEval φ a b c)).comp (universalPlaneMap K σ).toRingHom =
       eval₂Hom (C.comp φ) (fun i => C (a i) + C (b i) * X 0 + C (c i) * X 1) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [universalPlaneMap, planeParameterEval]
-    · intro i
-      simp [universalPlaneMap, planeParameterEval]
+    aesop (add simp [universalPlaneMap, planeParameterEval])
   exact RingHom.congr_fun he f
 
 /-- Specializing the plane parameters of the universal plane restriction of `f` to a base point
 `a` and directions `b`, `c` gives the restriction of `f` to the plane `a + x • b + y • c`. -/
-lemma universalPlanePolynomial_specialize {K A σ : Type*} [CommRing K] [CommRing A]
-    (φ : K →+* A) (a b c : σ → A) (f : MvPolynomial σ K) :
+lemma universalPlanePolynomial_specialize  (f : MvPolynomial σ K) :
     bivariateMap (planeParameterEval φ a b c) (universalPlanePolynomial f) =
       bivariatePolynomialEquiv A
         (eval₂Hom (C.comp φ) (fun i => C (a i) + C (b i) * X 0 + C (c i) * X 1) f) := by
@@ -116,7 +112,9 @@ private lemma coefficient_totalDegree_le_commAlgEquiv {K σ τ : Type*} [CommRin
   rw [← commAlgEquiv_coeff_coeff, he]
   rfl
 
-private lemma universalPlaneMap_comm {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
+variable {K σ : Type*} [CommRing K]
+
+private lemma universalPlaneMap_comm  (f : MvPolynomial σ K) :
     commAlgEquiv K (Fin 2) (PlaneParameters σ) (universalPlaneMap K σ f) =
       eval₂Hom (C.comp (C : K →+* MvPolynomial (Fin 2) K))
         (fun i => X (i,0) + X (i,1) * C (X 0) + X (i,2) * C (X 1)) f := by
@@ -124,39 +122,31 @@ private lemma universalPlaneMap_comm {K σ : Type*} [CommRing K] (f : MvPolynomi
       (universalPlaneMap K σ).toRingHom =
       eval₂Hom (C.comp (C : K →+* MvPolynomial (Fin 2) K))
         (fun i => X (i,0) + X (i,1) * C (X 0) + X (i,2) * C (X 1)) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [universalPlaneMap]
-    · intro i
-      simp [universalPlaneMap]
+    aesop (add simp [universalPlaneMap])
   exact RingHom.congr_fun he f
 
-private lemma universalPlaneMap_parameterDegree_le {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) :
-    (commAlgEquiv K (Fin 2) (PlaneParameters σ) (universalPlaneMap K σ f)).totalDegree ≤
-      f.totalDegree := by
-  rw [universalPlaneMap_comm]
-  apply linear_eval₂_totalDegree_le
-  intro i
-  have hx (j : PlaneParameters σ) :
-      (X j : MvPolynomial (PlaneParameters σ) (MvPolynomial (Fin 2) K)).totalDegree ≤ 1 := by
-    simpa [X] using totalDegree_monomial_le (Finsupp.single j 1) (1 : MvPolynomial (Fin 2) K)
-  apply (totalDegree_add _ _).trans
-  apply max_le
-  · apply (totalDegree_add _ _).trans
-    apply max_le
-    · exact hx _
-    · exact (totalDegree_mul _ _).trans (by simpa using hx (i,1))
-  · exact (totalDegree_mul _ _).trans (by simpa using hx (i,2))
 
 /-- Each coefficient of the universal plane restriction of `f` has total degree at most the
 total degree of `f` in all plane parameters together. -/
-theorem universalPlanePolynomial_coefficient_degree {K σ : Type*} [CommRing K]
+theorem universalPlanePolynomial_coefficient_degree 
     (f : MvPolynomial σ K) (i j : ℕ) :
     (((universalPlanePolynomial f).coeff i).coeff j).totalDegree ≤ f.totalDegree := by
   rw [universalPlanePolynomial, bivariatePolynomialEquiv_coeff]
   exact (coefficient_totalDegree_le_commAlgEquiv _ _).trans
-    (universalPlaneMap_parameterDegree_le f)
+    ((by
+       rw [universalPlaneMap_comm]
+       apply linear_eval₂_totalDegree_le
+       intro i
+       have hx (j : PlaneParameters σ) :
+           (X j : MvPolynomial (PlaneParameters σ) (MvPolynomial (Fin 2) K)).totalDegree ≤ 1 := by
+         simpa [X] using totalDegree_monomial_le (Finsupp.single j 1) 1
+       apply (totalDegree_add _ _).trans
+       apply max_le
+       · apply (totalDegree_add _ _).trans
+         apply max_le
+         · exact hx _
+         · exact (totalDegree_mul _ _).trans (by simpa using hx (i,1))
+       · exact (totalDegree_mul _ _).trans (by simpa using hx (i,2))))
 
 end
 end CCDN

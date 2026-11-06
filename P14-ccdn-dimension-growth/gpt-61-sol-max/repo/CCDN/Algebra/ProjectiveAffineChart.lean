@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.Algebra.HomogeneousChart
 public import CCDN.Height.ProjectiveZeroLocus
 
@@ -13,17 +15,17 @@ with injectivity and compatibility with homogeneous equations. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 variable {K : Type*} [Field K]
 
+variable {n : ℕ} (x : Projectivization K (Fin (n + 1) → K))
+
 /-- The affine coordinates `(x₁ / x₀, …, xₙ / x₀)` of a projective point `x`, computed from
 its chosen representative; meaningful on the standard chart `x₀ ≠ 0`. -/
-def projectiveAffineCoordinates {n : ℕ} (x : Projectivization K (Fin (n + 1) → K)) :
+noncomputable def projectiveAffineCoordinates  :
     Fin n → K := fun j => x.rep j.succ / x.rep 0
 
-private lemma projectiveAffineCoordinates_normalization {n : ℕ}
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep 0 ≠ 0) :
+private lemma projectiveAffineCoordinates_normalization  (hx : x.rep 0 ≠ 0) :
     Fin.cons 1 (projectiveAffineCoordinates x) = (x.rep 0)⁻¹ • x.rep := by
   funext j
   refine Fin.cases ?_ (fun k => ?_) j
@@ -37,8 +39,7 @@ lemma affineCoordinateVector_ne_zero {n : ℕ} (a : Fin n → K) :
   have hh := congrFun h 0
   simp at hh
 
-private lemma projectiveAffineCoordinates_mk {n : ℕ}
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep 0 ≠ 0) :
+private lemma projectiveAffineCoordinates_mk  (hx : x.rep 0 ≠ 0) :
     Projectivization.mk K (Fin.cons 1 (projectiveAffineCoordinates x))
       (affineCoordinateVector_ne_zero _) = x := by
   calc
@@ -66,15 +67,17 @@ theorem projectiveAffineCoordinates_zero {n d : ℕ}
     (hxf : x ∈ projectiveZeroLocus f) :
     eval (projectiveAffineCoordinates x) (affineChart n f) = 0 := by
   rw [affineChart_eval, projectiveAffineCoordinates_normalization x hx,
-    homogeneous_eval_smul hf, show eval x.rep f = 0 from hxf, mul_zero]
+    homogeneous_eval_smul hf, hxf, mul_zero]
+
+variable {K : Type*} [Field K]
 
 /-- The point `[1 : a]` of projective space on the standard chart. -/
-def affineProjectivePoint {K : Type*} [Field K] {n : ℕ} (a : Fin n → K) :
+noncomputable def affineProjectivePoint  {n : ℕ} (a : Fin n → K) :
     Projectivization K (Fin (n + 1) → K) :=
   Projectivization.mk K (Fin.cons 1 a) (affineCoordinateVector_ne_zero a)
 
 /-- The map `a ↦ [1 : a]` from affine space to projective space is injective. -/
-theorem affineProjectivePoint_injective {K : Type*} [Field K] (n : ℕ) :
+theorem affineProjectivePoint_injective  (n : ℕ) :
     Function.Injective (@affineProjectivePoint K _ n) := by
   intro a b he
   obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff K _ _ _ _).mp he
@@ -82,10 +85,6 @@ theorem affineProjectivePoint_injective {K : Type*} [Field K] (n : ℕ) :
     have h := congrFun hc 0
     change (c : K) * 1 = 1 at h
     simpa using h
-  funext j
-  have h := congrFun hc j.succ
-  change (c : K) * b j = a j at h
-  simpa [hc1] using h.symm
+  simp_all
 
-end
 end CCDN

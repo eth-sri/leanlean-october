@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.IntegerLinearForms
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import CCDN.Projection.ProjectiveClosureProjection
@@ -17,9 +21,8 @@ import CCDN.Projection.ProjectiveClosureSpecialization
 /-! A bounded elimination step whose affine projection and projective
 closure projection are both integral. The latter map fixes X₀. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- One step of bounded linear elimination: for a prime ideal `I` in `n + 1` variables of projective
@@ -28,9 +31,9 @@ coefficients of absolute value at most `d + 1` whose projection is integral, wit
 projective dimension `m` and some degree `e` with `0 < e ≤ d`, and such that the associated
 projection of the projective closure of `I` is integral as well. -/
 theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) [I.IsPrime] (d : ℕ)
+    (I : CCDN.CoordinateIdeal (n + 1)) [I.IsPrime] (d : ℕ)
     (hdimdeg : HasProjectiveDimensionDegree I m d) (hcodim : m < n) :
-    ∃ (c : Fin n → Fin (n + 1) → ℤ) (e : ℕ),
+    ∃ (c : Fin n → CCDN.IntPoint (n + 1)) (e : ℕ),
       (∀ i j, |c i j| ≤ d + 1) ∧ 0 < e ∧ e ≤ d ∧
       let a := fun i => integerLinearForm (c i)
       let ψ := projectionCoordinateMap I a
@@ -39,13 +42,13 @@ theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
       (projectionCoordinateMap (projectiveClosureIdeal I)
         (closureProjectionCoordinates a)).IsIntegral := by
   obtain ⟨f, hf, hfi, hfd⟩ := exists_mem_ideal_degree_le_multiplicity I d hdimdeg
-    (by simpa only [Fintype.card_fin] using Nat.add_lt_add_right hcodim 1)
+    (by simp_all)
   let F := renameEquiv ℚ (finSuccEquiv n) f
   have hF : F ≠ 0 := by
     intro h
     apply hf
     exact (renameEquiv ℚ (finSuccEquiv n)).injective (h.trans (map_zero _).symm)
-  have hFdeg : F.totalDegree = f.totalDegree := totalDegree_renameEquiv (finSuccEquiv n) f
+  have hFdeg := totalDegree_renameEquiv (finSuccEquiv n) f
   obtain ⟨b, hbound, hb, hdir⟩ := exists_bounded_full_degree_direction F hF
   have hbQ : (b none : ℚ) ≠ 0 := by exact_mod_cast hb
   have hdir' : eval (Fin.cons (b none : ℚ) (fun i => (b (some i) : ℚ)))
@@ -66,12 +69,11 @@ theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
     intro i
     refine ⟨(hbound i).1, ?_⟩
     rw [hFdeg] at hbound
-    exact (hbound i).2.trans (by exact_mod_cast Nat.add_le_add_right hfd 1)
+    exact (hbound i).2.trans (by simp_all)
   have hint := affine_projection_integral_of_closure_integral I
     (fun i => integerLinearForm (c i)) hcone
   obtain ⟨e, he, hed, hker⟩ := integral_linear_projection_dimension_degree I
     (fun i => integerLinearForm (c i)) (fun i => linearForm_totalDegree_le _) hint hdimdeg
   exact ⟨c, e, hc, he, hed, hint, RingHom.ker_isPrime _, hker, hcone⟩
 
-end
 end CCDN

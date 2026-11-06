@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Statements
 import CCDN.Plane.CurveCount
 import CCDN.Projection.AffineProjectionCount
@@ -15,9 +17,8 @@ reduces a curve in `𝔸ⁿ` to an irreducible plane equation of the same degree
 plane bound `PlaneCurveBound` counts; exceptional fibres contribute at most `d(d − 1)` points and
 the enlarged box costs a constant depending only on `n`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The affine curve counting bound `AffineCurveBound` of CCDN Theorem 3: the plane bound, after
@@ -34,7 +35,7 @@ theorem affine_curve_count : AffineCurveBound := by
   intro I hI d hd hdegree B hB
   have : I.IsPrime := hI
   obtain ⟨f, hf, hfd, hred⟩ := exists_plane_count_reduction I d hd hdegree
-  have hbox : 1 ≤ projectionBoxFactor n d * B :=
+  have hbox :=
     one_le_mul_of_one_le_of_one_le (projectionBoxFactor_one_le n d) hB
   have hp := hplane f hf (hfd.symm ▸ hd) _ hbox
   rw [hfd] at hp
@@ -44,19 +45,16 @@ theorem affine_curve_count : AffineCurveBound := by
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have herr : ((d * (d - 1) : ℕ) : ℝ) ≤ curveBound d B := by
     calc
-      _ ≤ (d : ℝ) ^ 2 := by
-        exact_mod_cast (show d * (d - 1) ≤ d ^ 2 by
-          simpa only [pow_two] using Nat.mul_le_mul_left d (Nat.sub_le d 1))
+      _ ≤ ↑d ^ 2 := by
+        simp_all [pow_two]
       _ ≤ (d : ℝ) ^ 4 := by nlinarith [one_le_pow₀ hd1 (n := 2), sq_nonneg ((d : ℝ) ^ 2 - 1)]
       _ ≤ _ := degree_four_le_curveBound hd hB
   calc
     _ ≤ (count (zeroLocus f) (projectionBoxFactor n d * B) : ℝ) + (d * (d - 1) : ℕ) := hredR
     _ ≤ C * curveBound d (projectionBoxFactor n d * B) + curveBound d B := add_le_add hp herr
     _ ≤ C * (K * curveBound d B) + curveBound d B := by
-      exact add_le_add (mul_le_mul_of_nonneg_left (projection_curveBound_scale n hd hB) hC.le)
-        le_rfl
+      grind [add_le_add, mul_le_mul_of_nonneg_left, projection_curveBound_scale]
     _ = _ := by ring
 
 
-end
 end CCDN

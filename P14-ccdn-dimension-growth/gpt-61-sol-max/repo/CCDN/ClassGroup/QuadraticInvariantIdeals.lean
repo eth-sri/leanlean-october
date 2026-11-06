@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Basic
 public import Mathlib.RingTheory.RamificationInertia.Inertia
 public import Mathlib.RingTheory.RamificationInertia.Ramification
@@ -16,9 +18,8 @@ import Mathlib.RingTheory.DedekindDomain.Factorization
 These are the arithmetic inputs for factoring invariant ideals into
 extended base ideals and ramified prime factors. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField Ideal
 open scoped Pointwise
 
@@ -29,16 +30,15 @@ omit [NumberField F] [NumberField K] [FiniteDimensional F K] in
 /-- The action of `σ : K ≃ₐ[F] K` on ideals of `𝓞 K` is the image under the induced automorphism of
 `𝓞 K`. -/
 lemma quadratic_integer_ideal_action (σ : K ≃ₐ[F] K) (I : Ideal (𝓞 K)) :
-    σ • I = I.map (RingOfIntegers.mapAlgEquiv σ).toRingHom := by
-  rfl
+    σ • I = I.map (RingOfIntegers.mapAlgEquiv σ).toRingHom := rfl
 
+variable (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) (Q : Ideal (𝓞 K)) [Q.IsPrime]
+
+include hd hσ in
 private theorem quadratic_prime_orbit_eq_pair
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
-    (Q : Ideal (𝓞 K)) [Q.IsPrime] :
+     :
     (Q.under (𝓞 F)).primesOver (𝓞 K) = {Q, σ • Q} := by
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
-  let : IsGaloisGroup (K ≃ₐ[F] K) (𝓞 F) (𝓞 K) :=
-    IsGaloisGroup.of_isFractionRing _ _ _ F K
   ext P
   constructor
   · intro hP
@@ -52,8 +52,7 @@ private theorem quadratic_prime_orbit_eq_pair
   · intro hP
     rcases Set.mem_insert_iff.mp hP with rfl | hP
     · exact ⟨inferInstance, inferInstance⟩
-    · have hP' : P = σ • Q := Set.mem_singleton_iff.mp hP
-      subst P
+    · subst P
       exact ⟨inferInstance, inferInstance⟩
 
 private theorem quadratic_prime_ramification_identity
@@ -61,8 +60,6 @@ private theorem quadratic_prime_ramification_identity
     ((Q.under (𝓞 F)).primesOver (𝓞 K)).ncard *
       (Q.ramificationIdx (𝓞 F) * Q.inertiaDeg (𝓞 F)) = 2 := by
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
-  let : IsGaloisGroup (K ≃ₐ[F] K) (𝓞 F) (𝓞 K) :=
-    IsGaloisGroup.of_isFractionRing _ _ _ F K
   have hh := Ideal.ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn
     (Q.under (𝓞 F)) (𝓞 K) (K ≃ₐ[F] K)
   rw [Ideal.ramificationIdxIn_eq_ramificationIdx (Q.under (𝓞 F)) Q (K ≃ₐ[F] K),
@@ -81,56 +78,52 @@ theorem quadratic_prime_ramification_one_or_two
     nlinarith only [hh]
   exact (Nat.dvd_prime Nat.prime_two).mp hdvd
 
+include hd hσ in
 /-- In a quadratic extension with nontrivial automorphism `σ`, a prime ideal of `𝓞 K` not fixed by
 `σ` is unramified over `𝓞 F`. -/
 theorem quadratic_moving_prime_unramified
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
-    (Q : Ideal (𝓞 K)) [Q.IsPrime] (hmove : σ • Q ≠ Q) :
+     (hmove : σ • Q ≠ Q) :
     Q.ramificationIdx (𝓞 F) = 1 := by
   have hh := quadratic_prime_ramification_identity F K hd Q
   rw [quadratic_prime_orbit_eq_pair F K hd σ hσ Q] at hh
   have hcard : ({Q, σ • Q} : Set (Ideal (𝓞 K))).ncard = 2 := by
     simp [hmove.symm]
   rw [hcard] at hh
-  have he := Q.ramificationIdx_pos (𝓞 F)
   have hf := Q.inertiaDeg_pos (𝓞 F)
   nlinarith
 
+include hd hσ in
 /-- In a quadratic extension with nontrivial automorphism `σ`, a nonzero prime `Q` of `𝓞 K` fixed by
 `σ` is the only prime above its contraction `P`, so `P 𝓞 K = Q ^ e` with `e` its ramification
 index. -/
 theorem quadratic_fixed_prime_extension
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
-    (Q : Ideal (𝓞 K)) [Q.IsPrime] (hQ : Q ≠ ⊥) (hfix : σ • Q = Q) :
+     (hQ : Q ≠ ⊥) (hfix : σ • Q = Q) :
     (Q.under (𝓞 F)).map (algebraMap (𝓞 F) (𝓞 K)) =
       Q ^ Q.ramificationIdx (𝓞 F) := by
-  have hp : Q.under (𝓞 F) ≠ ⊥ := Ideal.under_ne_bot (𝓞 F) hQ
+  have hp := Ideal.under_ne_bot (𝓞 F) hQ
   have : (Q.under (𝓞 F)).IsMaximal := (inferInstance : (Q.under (𝓞 F)).IsPrime).isMaximal hp
   have hset : ((Q.under (𝓞 F)).primesOver (𝓞 K)).toFinset = {Q} := by
-    ext P
-    simp [quadratic_prime_orbit_eq_pair F K hd σ hσ Q, hfix]
+    grind [quadratic_prime_orbit_eq_pair]
   rw [Ideal.map_algebraMap_eq_finsetProd_pow hp, hset]
   simp
 
+include hd hσ in
 /-- In a quadratic extension with nontrivial automorphism `σ`, a nonzero prime `Q` of `𝓞 K` not
 fixed by `σ` satisfies `P 𝓞 K = Q * σ Q`, where `P` is its contraction to `𝓞 F`. -/
 theorem quadratic_moving_prime_extension
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
-    (Q : Ideal (𝓞 K)) [Q.IsPrime] (hQ : Q ≠ ⊥) (hmove : σ • Q ≠ Q) :
+     (hQ : Q ≠ ⊥) (hmove : σ • Q ≠ Q) :
     (Q.under (𝓞 F)).map (algebraMap (𝓞 F) (𝓞 K)) = Q * (σ • Q) := by
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
   let : IsGaloisGroup (K ≃ₐ[F] K) (𝓞 F) (𝓞 K) :=
     IsGaloisGroup.of_isFractionRing _ _ _ F K
-  have hp : Q.under (𝓞 F) ≠ ⊥ := Ideal.under_ne_bot (𝓞 F) hQ
+  have hp := Ideal.under_ne_bot (𝓞 F) hQ
   have : (Q.under (𝓞 F)).IsMaximal := (inferInstance : (Q.under (𝓞 F)).IsPrime).isMaximal hp
   have he := quadratic_moving_prime_unramified F K hd σ hσ Q hmove
   have he' : (σ • Q).ramificationIdx (𝓞 F) = 1 := by
-    rw [Ideal.ramificationIdx_smul, he]
+    simp_all
   have hset : ((Q.under (𝓞 F)).primesOver (𝓞 K)).toFinset = {Q, σ • Q} := by
-    ext P
-    simp [quadratic_prime_orbit_eq_pair F K hd σ hσ Q]
+    grind [quadratic_prime_orbit_eq_pair]
   rw [Ideal.map_algebraMap_eq_finsetProd_pow hp, hset]
   simp [hmove.symm, he, he']
 
-end
 end CCDN

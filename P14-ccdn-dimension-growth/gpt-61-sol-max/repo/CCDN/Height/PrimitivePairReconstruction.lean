@@ -13,24 +13,15 @@ import Mathlib.FieldTheory.IntermediateField.Adjoin.Basic
 field. Every finite family of functions then has polynomial reconstruction
 identities with one nonzero denominator. No bound on its degree is asserted. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A generating polynomial tuple expresses any field element as a quotient
 with a nonzero evaluated denominator. -/
 lemma adjoin_top_polynomial_fraction {K F σ : Type*} [Field K] [Field F] [Algebra K F]
     (a : σ → F) (ha : IntermediateField.adjoin K (Set.range a) = ⊤) (x : F) :
-    ∃ r s : MvPolynomial σ K, aeval a s ≠ 0 ∧ x = aeval a r / aeval a s := by
-  by_cases hx : x = 0
-  · exact ⟨0, 1, by simp, by simp [hx]⟩
-  obtain ⟨r, s, he⟩ := (IntermediateField.mem_adjoin_range_iff K a x).mp
-    (by rw [ha]; trivial)
-  refine ⟨r, s, ?_, he⟩
-  intro hs
-  apply hx
-  rw [he, hs, div_zero]
+    ∃ r s : MvPolynomial σ K, x = aeval a r / aeval a s := by
+  exact (IntermediateField.mem_adjoin_range_iff K a x).mp (by rw [ha]; trivial)
 
-end
 end CCDN

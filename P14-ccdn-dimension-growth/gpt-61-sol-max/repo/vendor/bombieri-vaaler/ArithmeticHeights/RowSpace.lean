@@ -11,7 +11,6 @@ public import Mathlib.LinearAlgebra.Matrix.Rank
 
 -- Only the worked examples below mention `Matrix.mulHeight`, the height of the entries of
 -- Layer 2.5, and they mention it in order to distinguish it from the height of the row space.
-import ArithmeticHeights.Matrix
 
 /-!
 # The row space of a matrix and the height of its maximal minors
@@ -106,39 +105,22 @@ end Minors
 ### Row operations multiply the Plücker coordinates by a determinant
 -/
 
-section RowOps
 
-variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
 
-/-- The rows of the identity matrix are the standard basis. -/
-theorem row_one_eq_basisFun :
-    (1 : Matrix (Fin m) (Fin m) R).row = ⇑(Pi.basisFun R (Fin m)) := by
-  funext i j
-  simp [Matrix.one_apply, Pi.single_apply, eq_comm]
 
-end RowOps
 
-section Plucker
 
-variable {R : Type*} [CommRing R] {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
 
-end Plucker
+
 
 /-!
 ### The row space
 -/
 
-section Span
 
-variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
-variable {n : Type*} [Fintype n] [DecidableEq n]
 
-@[simp]
-theorem span_range_row_one : span R (Set.range (1 : Matrix (Fin m) (Fin m) R).row) = ⊤ := by
-  rw [row_one_eq_basisFun]
-  exact (Pi.basisFun R (Fin m)).span_eq
 
-end Span
+
 
 /-!
 ### Full row rank
@@ -161,26 +143,14 @@ end Rank
 ### The height of the row space
 -/
 
-section Height
 
-variable {K : Type*} [Field K] [Height.AdmissibleAbsValues K] {ι : Type*} [Fintype ι]
-  [LinearOrder ι] {m : ℕ} {A : Matrix (Fin m) ι K} {U : Matrix (Fin m) (Fin m) K}
 
-end Height
 
-section ArakelovHeight
 
-variable {K : Type*} [Field K] [NumberField K] {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
-  {A : Matrix (Fin m) ι K} {U : Matrix (Fin m) (Fin m) K}
 
-end ArakelovHeight
 
-section AbsoluteHeight
 
-variable {K : Type*} [Field K] [CharZero K] [Algebra.IsAlgebraic ℚ K] {ι : Type*} [Fintype ι]
-  [LinearOrder ι] {m : ℕ} {A : Matrix (Fin m) ι K} {U : Matrix (Fin m) (Fin m) K}
 
-end AbsoluteHeight
 
 end Matrix
 

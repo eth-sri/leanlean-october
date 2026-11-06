@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib.Tactic
+
 public import ArithmeticHeights.RowSpace
 public import Mathlib.LinearAlgebra.Dual.Defs
 public import Mathlib.LinearAlgebra.StdBasis
@@ -92,7 +94,6 @@ open Finset Module Set.powersetCard exteriorPower
 
 namespace Height
 
-variable {K : Type*} [Field K] [AdmissibleAbsValues K] {ι : Type*}
 
 end Height
 
@@ -126,20 +127,12 @@ theorem arakelovMulHeight_eq_of_forall_eq_or_eq_neg {x y : ι → K}
     · rw [hi, h0 i, neg_zero]
   rcases eq_or_ne x 0 with rfl | hx
   · rw [hzero.2 rfl]
-  · have hy : y ≠ 0 := fun h0 ↦ hx (hzero.1 h0)
-    rw [arakelovMulHeight_eq hx, arakelovMulHeight_eq hy]
-    congr 1
-    · exact Finset.prod_congr rfl fun v _ ↦ by
-        rw [Finset.sum_congr rfl fun i _ ↦ by rw [hinf v i]]
-    · exact finprod_congr fun v ↦ iSup_congr (hfin v)
+  · grind [arakelovMulHeight_eq, finprod_congr, iSup_congr]
 
 end Arakelov
 
-section Absolute
 
-variable [CharZero K] [Finite ι]
 
-end Absolute
 
 end NumberField
 
@@ -157,20 +150,22 @@ private lemma mul_eq_submatrix_mul_submatrix {m p r : Type*} [Fintype r]
 
 variable [LinearOrder ι]
 
+variable {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l)
+
 /-- The enumeration of `ι` that lists the elements of `s` in increasing order and then those of
 its complement. This is the index identification the complementary-minor identity runs on; the
 determinant of a matrix read through it depends on `s` only up to a sign. -/
-private noncomputable def enumEquiv {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) :
+private noncomputable def enumEquiv  :
     Fin k ⊕ Fin l ≃ ι :=
   (Equiv.sumCongr (s.orderIsoOfFin hs).toEquiv
     ((sᶜ.orderIsoOfFin hsc).toEquiv.trans
-      (Equiv.subtypeEquivRight fun _ ↦ Finset.mem_compl))).trans (Equiv.sumCompl (· ∈ s))
+      (Equiv.subtypeEquivRight fun _ ↦ Finset.mem_compl))).trans (Equiv.sumCompl (Membership.mem s))
 
-private lemma enumEquiv_inl {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) (a : Fin k) :
+private lemma enumEquiv_inl  (a : Fin k) :
     enumEquiv hs hsc (Sum.inl a) = s.orderEmbOfFin hs a :=
   Finset.coe_orderIsoOfFin_apply s hs a
 
-private lemma enumEquiv_inr {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) (b : Fin l) :
+private lemma enumEquiv_inr  (b : Fin l) :
     enumEquiv hs hsc (Sum.inr b) = sᶜ.orderEmbOfFin hsc b :=
   Finset.coe_orderIsoOfFin_apply sᶜ hsc b
 
@@ -211,10 +206,7 @@ private theorem det_submatrix_inl_eq_mul (C D : Matrix (Fin k ⊕ Fin l) ι R) (
       exact if_congr ⟨fun h ↦ (s.orderEmbOfFin hs).injective h, fun h ↦ by rw [h]⟩ rfl rfl
     · simp [hE, enumEquiv_inl]
     · have hne : sᶜ.orderEmbOfFin hsc b' ≠ s.orderEmbOfFin hs a := by
-        intro hcon
-        have h1 : sᶜ.orderEmbOfFin hsc b' ∈ sᶜ := sᶜ.orderEmbOfFin_mem hsc b'
-        rw [hcon, Finset.mem_compl] at h1
-        exact h1 (s.orderEmbOfFin_mem hs a)
+        grind [orderEmbOfFin_mem, Finset.mem_compl]
       simp [hE, enumEquiv_inr, hne]
     · simp [hE, enumEquiv_inr, Matrix.transpose_apply]
   have hdet : (C * E).det = ((C.submatrix Sum.inl id).submatrix id (s.orderEmbOfFin hs)).det := by
@@ -240,11 +232,6 @@ theorem det_submatrix_equiv_eq_or_eq_neg (X : Matrix r ι K) (e₁ e₂ : r ≃ 
   rw [h, Matrix.det_permute']
   rcases Int.units_eq_one_or (Equiv.Perm.sign (e₁.trans e₂.symm)) with hs | hs <;> rw [hs] <;> simp
 
-/-- Dual rows make the enumerated determinant a unit. -/
-theorem isUnit_det_submatrix_of_mul_transpose_eq_one {C D : Matrix r ι K}
-    (hCD : C * Dᵀ = 1) (e : r ≃ ι) : IsUnit (C.submatrix id e).det :=
-  IsUnit.of_mul_eq_one ((Dᵀ).submatrix e id).det <| by
-    rw [← Matrix.det_mul, ← mul_eq_submatrix_mul_submatrix, hCD, Matrix.det_one]
 
 omit [Fintype r] in
 /-- Rows dual to a family of rows are linearly independent. -/
@@ -330,11 +317,8 @@ theorem exists_dual_matrices (V : Submodule K (ι → K)) (hk : finrank K V = k)
   let c : Module.Basis (Fin k ⊕ Fin l) K (ι → K) :=
     (bV.prod bW).map (V.prodEquivOfIsCompl W hW)
   have hcl (a : Fin k) : c (Sum.inl a) = (bV a : ι → K) := by
-    simp only [c, Module.Basis.map_apply]
-    rw [show (bV.prod bW) (Sum.inl a) = ((bV a : V), (0 : W)) from
-      Prod.ext (bV.prod_apply_inl_fst bW a) (bV.prod_apply_inl_snd bW a)]
-    simp [V.coe_prodEquivOfIsCompl' W hW ((bV a : V), (0 : W))]
-  refine ⟨Matrix.of fun r ↦ (c r), Matrix.of fun s i ↦ c.coord s (Pi.basisFun K ι i), ?_, ?_⟩
+    aesop
+  refine ⟨Matrix.of (⇑c), Matrix.of fun s i ↦ c.coord s (Pi.basisFun K ι i), ?_, ?_⟩
   · ext r s
     rw [Matrix.mul_apply, Matrix.one_apply]
     have : ∑ i, c r i * c.coord s (Pi.basisFun K ι i) = c.coord s (c r) := by
@@ -344,7 +328,7 @@ theorem exists_dual_matrices (V : Submodule K (ι → K)) (hk : finrank K V = k)
         rw [map_smul, smul_eq_mul, Pi.basisFun_repr]
     simp only [Matrix.transpose_apply, Matrix.of_apply]
     rw [this, Module.Basis.coord_apply, Module.Basis.repr_self_apply]
-  · have hrange : Set.range ((Matrix.of fun r ↦ (c r) : Matrix (Fin k ⊕ Fin l) ι K).submatrix
+  · have hrange : Set.range ((Matrix.of fun r ↦ (c r)).submatrix
         Sum.inl id).row = V.subtype '' (Set.range bV) := by
       rw [← Set.range_comp]
       exact congrArg Set.range (funext fun a ↦ hcl a)
@@ -377,18 +361,13 @@ theorem span_range_inr_row_eq {V : Submodule K (ι → K)} {C D : Matrix (Fin k 
     · simpa only [LinearMap.mem_ker, Module.piEquiv_apply_apply, smul_eq_mul, dotProduct]
         using hker
     · obtain ⟨a, rfl⟩ := hy
-      rw [show (C.submatrix Sum.inl id).row a ⬝ᵥ (D.submatrix Sum.inr id).row b
-        = C.row (Sum.inl a) ⬝ᵥ D.row (Sum.inr b) from rfl, hdual]
-      simp
+      solve_by_elim []
   · rw [mem_comap_piEquiv_dualAnnihilator] at hx
     have hzero (a : Fin k) : C.row (Sum.inl a) ⬝ᵥ x = 0 :=
       hx _ (hV ▸ Submodule.subset_span ⟨a, rfl⟩)
     have hmem : (∑ j, (C.row j ⬝ᵥ x) • D.row j)
         ∈ span K (Set.range (D.submatrix Sum.inr id).row) := by
-      rw [Fintype.sum_sum_type]
-      simp only [hzero, zero_smul, Finset.sum_const_zero, zero_add]
-      exact Submodule.sum_mem _ fun b _ ↦
-        Submodule.smul_mem _ _ (Submodule.subset_span ⟨b, rfl⟩)
+      aesop (add safe apply [Fintype.sum_sum_type, zero_smul, Finset.sum_const_zero, zero_add, Submodule.sum_mem, Submodule.smul_mem, Submodule.subset_span, rfl])
     rwa [← Matrix.eq_sum_dotProduct_smul_row hCD hcard x] at hmem
 
 /-- **Plücker duality in coordinates** (W. M. Schmidt 1967, §1, equations (2) and (4)). A
@@ -412,15 +391,17 @@ theorem exists_plucker_eq_plucker_compl (V : Submodule K (ι → K)) (hk : finra
     simp only [Fintype.card_sum, Fintype.card_fin]
     omega
   obtain ⟨e₀⟩ := Fintype.truncEquivOfCardEq hcard
-  have hDC : D * Cᵀ = 1 := by
+  have hDC := by
     have h := congrArg Matrix.transpose hCD
     rwa [Matrix.transpose_mul, Matrix.transpose_transpose, Matrix.transpose_one] at h
   refine ⟨(C.submatrix Sum.inl id).row, (D.submatrix Sum.inr id).row, (C.submatrix id e₀).det,
-    (Matrix.isUnit_det_submatrix_of_mul_transpose_eq_one hCD e₀).ne_zero,
+    ((let inline_e := e₀;
+       IsUnit.of_mul_eq_one ((Dᵀ).submatrix inline_e id).det <| by
+         rw [← Matrix.det_mul, ← mul_eq_submatrix_mul_submatrix, hCD, Matrix.det_one])).ne_zero,
     (Matrix.linearIndependent_row_of_mul_transpose_eq_one hCD).comp _ Sum.inl_injective,
     (Matrix.linearIndependent_row_of_mul_transpose_eq_one hDC).comp _ Sum.inr_injective,
     hV, span_range_inr_row_eq hCD hlk hV, fun s ↦ ?_⟩
-  have hs : (s : Finset ι).card = k := Set.powersetCard.card_eq s
+  have hs := Set.powersetCard.card_eq s
   have hsc : ((s : Finset ι))ᶜ.card = l := by
     rw [Finset.card_compl, hs]
     omega
@@ -453,18 +434,15 @@ private lemma exists_plucker_pair (V : Submodule K (ι → K)) :
       ∀ s : Set.powersetCard ι k,
         plucker k v s = c * plucker l w (Set.powersetCard.compl hlk s) ∨
           plucker k v s = -(c * plucker l w (Set.powersetCard.compl hlk s)) := by
-  have hle : Module.finrank K V ≤ Fintype.card ι := by
-    have h := V.finrank_le (R := K)
+  have hle := by
+    have h := V.finrank_le 
     rwa [Module.finrank_pi] at h
   obtain ⟨v, w, c, hc, hv, hw, hVv, hWw, hpl⟩ :=
     exists_plucker_eq_plucker_compl V (l := Fintype.card ι - Module.finrank K V) rfl (by omega)
   exact ⟨_, _, _, v, w, c, hc, hv, hw, hVv, hWw, hpl⟩
 
-section Relative
 
-variable [Height.AdmissibleAbsValues K]
 
-end Relative
 
 section Arakelov
 
@@ -485,11 +463,8 @@ theorem arakelovMulHeight_comap_piEquiv_dualAnnihilator (V : Submodule K (ι →
 
 end Arakelov
 
-section Absolute
 
-variable [CharZero K] [Algebra.IsAlgebraic ℚ K]
 
-end Absolute
 
 end Submodule
 
@@ -521,15 +496,12 @@ theorem ker_mulVecLin_eq_comap_piEquiv_dualAnnihilator (A : Matrix m ι K) :
   refine Submodule.eq_comap_piEquiv_dualAnnihilator_of_forall_dotProduct_eq_zero fun x ↦ ?_
   simp only [LinearMap.mem_ker, Matrix.mulVecLin_apply]
   refine ⟨fun h v hv ↦ ?_, fun h ↦ funext fun i ↦ h _ (Submodule.subset_span ⟨i, rfl⟩)⟩
-  have hker := Submodule.span_le_ker_piEquiv (s := Set.range A.row) (x := x)
+  have hker := Submodule.span_le_ker_piEquiv  
     (fun y hy ↦ by obtain ⟨i, rfl⟩ := hy; exact congrFun h i) hv
   simpa only [LinearMap.mem_ker, Module.piEquiv_apply_apply, smul_eq_mul, dotProduct] using hker
 
-section Relative
 
-variable [Height.AdmissibleAbsValues K]
 
-end Relative
 
 section Arakelov
 
@@ -545,11 +517,8 @@ theorem arakelovMulHeight_ker_mulVecLin (A : Matrix m ι K) :
 
 end Arakelov
 
-section Absolute
 
-variable [CharZero K] [Algebra.IsAlgebraic ℚ K]
 
-end Absolute
 
 end Matrix
 

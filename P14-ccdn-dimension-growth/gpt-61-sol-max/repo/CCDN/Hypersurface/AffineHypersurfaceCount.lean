@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Hypersurface.HyperplaneSlicingInduction
 import CCDN.Hypersurface.IntegerGoodHyperplaneSlices
 import CCDN.Surface.AffineSurfaceDimensionGrowth
@@ -13,9 +15,8 @@ import CCDN.Surface.AffineSurfaceDimensionGrowth
 `d^18` of Proposition 4.3.4 starts the hyperplane-slicing induction, which costs `d^3` for each
 further variable, and clearing denominators passes from integer to rational equations. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Clearing denominators transfers affine dimension growth from integer equations to
@@ -26,11 +27,11 @@ theorem AffineHypersurfaceGrowth.rational {n e : ℕ} (h : AffineHypersurfaceGro
   obtain ⟨C, hC, hbound⟩ := h
   refine ⟨C, hC, fun f hir hd B hB => ?_⟩
   obtain ⟨g, hdeg, htop, hzero⟩ := exists_integer_model_absolute_top f hir
-  have hpoints : integralPoints (zeroLocus (map (Int.castRingHom ℚ) g)) B =
+  have hpoints : integralPoints (zeroLocus (CCDN.rationalPolynomial g)) B =
       integralPoints (zeroLocus f) B := by
     ext x
     simp only [mem_integralPoints, zeroLocus, Set.mem_ofPred_eq]
-    have hx : eval (rationalPoint x) (map (Int.castRingHom ℚ) g) = (eval x g : ℚ) :=
+    have hx : eval (rationalPoint x) (CCDN.rationalPolynomial g) = (eval x g : ℚ) :=
       (map_eval (Int.castRingHom ℚ) x g).symm
     rw [hx, Int.cast_eq_zero, hzero]
     rfl
@@ -40,8 +41,6 @@ theorem AffineHypersurfaceGrowth.rational {n e : ℕ} (h : AffineHypersurfaceGro
 variables of degree at least five with absolutely irreducible top-degree form. -/
 theorem affineHypersurfaceGrowth (n : ℕ) : AffineHypersurfaceGrowth n (18 + 3 * n) :=
   affineHypersurfaceGrowth_of_surface (by
-    simpa only [AffineHypersurfaceGrowth, Nat.zero_add, pow_one]
-      using affine_surface_dimension_growth) n
+    simp_all [CCDN.AffineHypersurfaceGrowth,  pow_one, affine_surface_dimension_growth]) n
 
-end
 end CCDN

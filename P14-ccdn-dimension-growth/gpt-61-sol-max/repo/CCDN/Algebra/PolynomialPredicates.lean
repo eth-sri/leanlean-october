@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
@@ -17,7 +19,7 @@ absolute irreducibility of its top-degree homogeneous part (the hypothesis of CC
 All are abbreviations, so proofs may use them as their unfolded statements.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
@@ -27,28 +29,28 @@ variable {σ K : Type*} [CommSemiring K]
 
 /-- An ideal of a polynomial ring is homogeneous when it contains every homogeneous
 component of each of its elements. -/
-abbrev IsHomogeneousIdeal (I : Ideal (MvPolynomial σ K)) : Prop :=
+abbrev IsHomogeneousIdeal (I : Ideal (MvPolynomial σ K))  :=
   ∀ f ∈ I, ∀ N, homogeneousComponent N f ∈ I
 
 /-- An integer polynomial is absolutely irreducible when it is irreducible over `ℚ̄`. -/
-abbrev AbsolutelyIrreducible (f : MvPolynomial σ ℤ) : Prop :=
+abbrev AbsolutelyIrreducible (f : MvPolynomial σ ℤ)  :=
   Irreducible (map (Int.castRingHom (AlgebraicClosure ℚ)) f)
 
 /-- A rational polynomial is absolutely irreducible when it is irreducible over `ℚ̄`. -/
-abbrev AbsolutelyIrreducibleRat (f : MvPolynomial σ ℚ) : Prop :=
+abbrev AbsolutelyIrreducibleRat (f : MvPolynomial σ ℚ)  :=
   Irreducible (map (algebraMap ℚ (AlgebraicClosure ℚ)) f)
 
 /-- An integer polynomial is absolutely irreducible exactly when its image over `ℚ` is. -/
 theorem absolutelyIrreducibleRat_map_iff (f : MvPolynomial σ ℤ) :
-    AbsolutelyIrreducibleRat (map (Int.castRingHom ℚ) f) ↔ AbsolutelyIrreducible f := by
+    AbsolutelyIrreducibleRat (CCDN.rationalPolynomial f) ↔ AbsolutelyIrreducible f := by
   rw [AbsolutelyIrreducibleRat, map_map, RingHom.ext_int ((algebraMap ℚ _).comp _)]
 
 /-- The top-degree homogeneous part of an integer polynomial is irreducible over `ℚ̄`. -/
-abbrev HasAbsIrreducibleTopForm (f : MvPolynomial σ ℤ) : Prop :=
+abbrev HasAbsIrreducibleTopForm (f : MvPolynomial σ ℤ)  :=
   AbsolutelyIrreducible (homogeneousComponent f.totalDegree f)
 
 /-- The top-degree homogeneous part of a rational polynomial is irreducible over `ℚ̄`. -/
-abbrev HasAbsIrreducibleTopFormRat (f : MvPolynomial σ ℚ) : Prop :=
+abbrev HasAbsIrreducibleTopFormRat (f : MvPolynomial σ ℚ)  :=
   AbsolutelyIrreducibleRat (homogeneousComponent f.totalDegree f)
 
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.Polynomial.Degree.Defs
 public import Mathlib.Algebra.Polynomial.Eval.Defs
 import Mathlib.Algebra.Polynomial.OfFn
@@ -14,9 +16,8 @@ import Mathlib.Algebra.Polynomial.Roots
 integer linear form on the moment curve (1,t,...,t^(n-1)). The proof avoids
 an unquantified genericity argument. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- In characteristic zero, a nonzero polynomial `P` does not vanish at some natural number
 `k ≤ P.natDegree`. -/
@@ -28,10 +29,8 @@ lemma polynomial_exists_small_nat_eval_ne_zero {K : Type*} [Field K] [CharZero K
   apply Polynomial.eq_zero_of_natDegree_lt_card_of_eval_eq_zero P
     (f := fun k : Fin (P.natDegree + 1) => (k.val : K))
     (fun i j h => Fin.ext (Nat.cast_injective h))
-  · intro i
-    exact hn i.val (by omega)
-  · simp only [Fintype.card_fin]
-    omega
+  · grind
+  · simp_all
 
 /-- Bounded integer moment-curve coefficients separate every pair of a finite
 family of distinct vectors. -/
@@ -73,12 +72,11 @@ theorem exists_bounded_moment_separation {K ι : Type*} [Field K] [CharZero K]
   let t : T := ⟨(i,j), hij⟩
   have hv : (P t).eval (k : K) ≠ 0 := by
     have hp : (∏ t : T, (P t).eval (k : K)) ≠ 0 := by
-      simpa only [Q, Polynomial.eval_prod] using hval
+      grind [Polynomial.eval_prod]
     exact (Finset.prod_ne_zero_iff.mp hp) t (Finset.mem_univ t)
   apply hv
   simp only [P, Polynomial.ofFn_eq_sum_monomial, Polynomial.eval_finsetSum,
     Polynomial.eval_monomial, t]
   simpa only [sub_mul, Finset.sum_sub_distrib, sub_eq_zero] using he
 
-end
 end CCDN

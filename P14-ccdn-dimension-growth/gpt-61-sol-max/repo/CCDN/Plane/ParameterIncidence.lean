@@ -16,14 +16,18 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [CommRing K]
+
+variable (f : MvPolynomial σ K)
+
 /-- A parameter triple and a coordinate pair mapping into the hypersurface. -/
-private def PlaneIncidence {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :=
+private def PlaneIncidence   :=
   {vt : (PlaneParameters σ → K) × (Fin 2 → K) //
     bivariateEval (vt.2 0) (vt.2 1) (universalPlaneSection f vt.1) = 0}
 
 /-- Once the image point, both directions and the two plane coordinates are
 fixed, the base point is determined uniquely. -/
-private def planeIncidenceEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
+private def planeIncidenceEquiv   :
     PlaneIncidence f ≃
       ({z : σ → K // eval z f = 0} × (σ → K) × (σ → K) × (Fin 2 → K)) where
   toFun vt :=
@@ -55,24 +59,13 @@ private def planeIncidenceEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ
       ring
     · rfl
 
-/-- Exact incidence identity: q^(2*m+2) incidences per hypersurface point. -/
-private theorem planeIncidence_card {K σ : Type*} [CommRing K] [Fintype K] [Fintype σ]
-    (f : MvPolynomial σ K) :
-    Nat.card (PlaneIncidence f) =
-      Nat.card {z : σ → K // eval z f = 0} * Fintype.card K ^ (2 * Fintype.card σ + 2) := by
-  classical
-  rw [Nat.card_congr (planeIncidenceEquiv f)]
-  simp only [Nat.card_eq_fintype_card, Fintype.card_prod, Fintype.card_fun, Fintype.card_fin]
-  rw [← pow_add, ← pow_add]
-  congr 2
-  omega
 
 /-- All plane coordinates whose image lies on the hypersurface. -/
-def PlaneSectionPoints {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :=
+def PlaneSectionPoints 
+     (v : PlaneParameters σ → K) :=
   {t : Fin 2 → K // bivariateEval (t 0) (t 1) (universalPlaneSection f v) = 0}
 
-private def planeIncidenceSigmaEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
+private def planeIncidenceSigmaEquiv   :
     PlaneIncidence f ≃ Σ v, PlaneSectionPoints f v where
   toFun vt := ⟨vt.val.1, ⟨vt.val.2, vt.property⟩⟩
   invFun vt := ⟨(vt.1, vt.2.val), vt.2.property⟩
@@ -80,12 +73,19 @@ private def planeIncidenceSigmaEquiv {K σ : Type*} [CommRing K] (f : MvPolynomi
   right_inv _ := rfl
 
 /-- The section counts sum to the exact incidence count. -/
-theorem sum_planeSectionPoints_card {K σ : Type*} [CommRing K] [Fintype K] [Fintype σ]
+theorem sum_planeSectionPoints_card  [Fintype K] [Fintype σ]
     [DecidableEq σ] (f : MvPolynomial σ K) :
     ∑ v : PlaneParameters σ → K, Nat.card (PlaneSectionPoints f v) =
       Nat.card {z : σ → K // eval z f = 0} * Fintype.card K ^ (2 * Fintype.card σ + 2) := by
   classical
-  rw [← planeIncidence_card f, Nat.card_congr (planeIncidenceSigmaEquiv f)]
+  rw [← (show Nat.card (PlaneIncidence f) =
+            Nat.card { z // (eval z) f = (0 : K) } * Fintype.card K ^ ((2 : ℕ) * Fintype.card σ + (2 : ℕ)) from (by
+          classical
+          rw [Nat.card_congr (planeIncidenceEquiv f)]
+          simp only [Nat.card_eq_fintype_card, Fintype.card_prod, Fintype.card_fun, Fintype.card_fin]
+          rw [← pow_add, ← pow_add]
+          congr 2
+          omega)), Nat.card_congr (planeIncidenceSigmaEquiv f)]
   let (v : PlaneParameters σ → K) : Fintype (PlaneSectionPoints f v) :=
     inferInstanceAs (Fintype {t : Fin 2 → K //
       bivariateEval (t 0) (t 1) (universalPlaneSection f v) = 0})

@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Height.Box
 public import Mathlib.Algebra.MvPolynomial.Degrees
 public import Mathlib.Data.Finsupp.Weight
@@ -26,16 +30,18 @@ namespace CCDN
 
 open Matrix
 
+variable {n N : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
+
 /-- The integer polynomial `∑ j, v j * X ^ mon j` with coefficient vector `v` on the list of
 monomials `mon`. -/
-noncomputable def polynomialOfCoefficients {n N : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
-    (v : Fin N → ℤ) : MvPolynomial (Fin n) ℤ :=
+noncomputable def polynomialOfCoefficients 
+    (v : CCDN.IntPoint N)  :=
   ∑ j, MvPolynomial.monomial (mon j) (v j)
 
 /-- For an injective list of monomials `mon`, the coefficient of `mon j` in
 `polynomialOfCoefficients mon v` is `v j`. -/
-theorem coefficient_polynomialOfCoefficients {n N : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
-    (hmon : Function.Injective mon) (v : Fin N → ℤ) (j : Fin N) :
+theorem coefficient_polynomialOfCoefficients 
+    (hmon : Function.Injective mon) (v : CCDN.IntPoint N) (j : Fin N) :
     (polynomialOfCoefficients mon v).coeff (mon j) = v j := by
   classical
   simp [polynomialOfCoefficients, MvPolynomial.coeff_monomial,
@@ -43,8 +49,8 @@ theorem coefficient_polynomialOfCoefficients {n N : ℕ} (mon : Fin N → (Fin n
 
 /-- For an injective list of monomials, a nonzero coefficient vector gives a nonzero
 polynomial. -/
-theorem polynomialOfCoefficients_ne_zero {n N : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
-    (hmon : Function.Injective mon) {v : Fin N → ℤ} (hv : v ≠ 0) :
+theorem polynomialOfCoefficients_ne_zero 
+    (hmon : Function.Injective mon) {v : CCDN.IntPoint N} (hv : v ≠ 0) :
     polynomialOfCoefficients mon v ≠ 0 := by
   intro h
   apply hv
@@ -56,7 +62,7 @@ theorem polynomialOfCoefficients_ne_zero {n N : ℕ} (mon : Fin N → (Fin n →
 /-- If every monomial in the list `mon` has degree at most `M`, then
 `polynomialOfCoefficients mon v` has total degree at most `M`. -/
 theorem totalDegree_polynomialOfCoefficients_le {n N M : ℕ}
-    (mon : Fin N → (Fin n →₀ ℕ)) (v : Fin N → ℤ)
+    (mon : Fin N → (Fin n →₀ ℕ)) (v : CCDN.IntPoint N)
     (hdeg : ∀ j, (mon j).degree ≤ M) :
     (polynomialOfCoefficients mon v).totalDegree ≤ M := by
   apply (MvPolynomial.totalDegree_finsetSum _ _).trans
@@ -67,13 +73,13 @@ theorem totalDegree_polynomialOfCoefficients_le {n N M : ℕ}
 /-- The monomial evaluation matrix, whose entry in row `i` and column `j` is the value of the
 monomial `mon j` at the integer point `points i`. -/
 noncomputable def evaluationMatrix {n N s : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
-    (points : Fin s → (Fin n → ℤ)) : Matrix (Fin s) (Fin N) ℤ :=
+    (points : Fin s → (CCDN.IntPoint n)) : Matrix (Fin s) (Fin N) ℤ :=
   fun i j => (mon j).prod fun k e => points i k ^ e
 
 /-- The value of `polynomialOfCoefficients mon v` at `points i` is the `i`-th entry of the
 product of the monomial evaluation matrix with `v`. -/
 theorem eval_polynomialOfCoefficients {n N s : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
-    (points : Fin s → (Fin n → ℤ)) (v : Fin N → ℤ) (i : Fin s) :
+    (points : Fin s → (CCDN.IntPoint n)) (v : CCDN.IntPoint N) (i : Fin s) :
     MvPolynomial.eval (points i) (polynomialOfCoefficients mon v) =
       (evaluationMatrix mon points *ᵥ v) i := by
   simp [polynomialOfCoefficients, evaluationMatrix, Matrix.mulVec, dotProduct,
@@ -81,21 +87,17 @@ theorem eval_polynomialOfCoefficients {n N s : ℕ} (mon : Fin N → (Fin n →�
 
 /-- If the integer point `x` lies in the box of radius `B ≥ 1` and the exponent `e` has degree
 at most `M`, then the monomial `x ^ e` has absolute value at most `B ^ M`. -/
-theorem abs_monomial_value_le {n M : ℕ} (e : Fin n →₀ ℕ) (x : Fin n → ℤ)
+theorem abs_monomial_value_le {n M : ℕ} (e : Fin n →₀ ℕ) (x : CCDN.IntPoint n)
     {B : ℝ} (hB : 1 ≤ B) (hx : InBox x B)
     (he : e.degree ≤ M) :
     |((e.prod (fun i k => x i ^ k) : ℤ) : ℝ)| ≤ B ^ M := by
-  have hsum : ∑ i, e i ≤ M := by rwa [Finsupp.degree_eq_sum] at he
+  have hsum := by rwa [Finsupp.degree_eq_sum] at he
   rw [Finsupp.prod_fintype e (fun i k => x i ^ k) (fun _ => pow_zero _)]
   push_cast
   rw [Finset.abs_prod]
   calc
     _ ≤ ∏ i : Fin n, B ^ e i := by
-      apply Finset.prod_le_prod₀
-      · intro i _; positivity
-      · intro i _
-        rw [abs_pow]
-        exact pow_le_pow_left₀ (abs_nonneg _) (hx i) _
+      simp_all [Finset.prod_le_prod₀, abs_pow, pow_le_pow_left₀, abs_nonneg]
     _ = B ^ (∑ i, e i) := Finset.prod_pow_eq_pow_sum _ _ _
     _ ≤ B ^ M := pow_le_pow_right₀ hB hsum
 

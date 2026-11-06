@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Determinant.SmoothAffineResidueClasses
 public import CCDN.Surface.CongruenceCutoff
 
@@ -19,12 +21,12 @@ open MvPolynomial Finset
 
 /-- The restriction of a family of smooth residues, indexed by the primes of `P`, to a subset
 `Q ⊆ P`. -/
-def SmoothAffineResidueFamily.restrict {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
+def SmoothAffineResidueFamily.restrict {n : ℕ} {f : CCDN.IntegerPolynomial n}
     {P Q : Finset ℕ} (r : SmoothAffineResidueFamily f P) (hQP : Q ⊆ P) :
     SmoothAffineResidueFamily f Q := fun q => r ⟨q.val, hQP q.property⟩
 
 /-- The unique family of smooth residues indexed by the empty set of primes. -/
-def emptySmoothAffineResidueFamily {n : ℕ} (f : MvPolynomial (Fin n) ℤ) :
+def emptySmoothAffineResidueFamily {n : ℕ} (f : CCDN.IntegerPolynomial n) :
     SmoothAffineResidueFamily f ∅ := fun p => False.elim (notMem_empty p.val p.property)
 
 /-- A choice, for every finite set `P` of primes and every family `r` of smooth residues of `f`
@@ -32,20 +34,18 @@ modulo the primes of `P`, of a nonzero integer polynomial that is not divisible 
 has degree at most `A (B^(1/√d) / ∏ p + 1)(1 + log B + ∑ log p)` (with `d` the degree of `f`
 and `p` ranging over `P`) and vanishes at every integer zero of `f` in the box of radius `B`
 lying in the residue classes `r`. -/
-structure SurfaceCongruenceFamily (f : MvPolynomial (Fin 3) ℤ) (B A : ℝ) where
+structure SurfaceCongruenceFamily (f : CCDN.IntegerPolynomial 3) (B A : ℝ) where
   /-- The auxiliary polynomial attached to a set `P` of primes and smooth residues modulo
   `P`. -/
   auxiliary : (P : Finset ℕ) → (∀ p ∈ P, p.Prime) →
-    SmoothAffineResidueFamily f P → MvPolynomial (Fin 3) ℤ
-  /-- Every auxiliary is nonzero. -/
-  nonzero : ∀ P hP r, auxiliary P hP r ≠ 0
+    SmoothAffineResidueFamily f P → CCDN.IntegerPolynomial 3
   /-- No auxiliary is divisible by `f` over `ℚ`. -/
-  proper : ∀ P hP r, ¬ map (Int.castRingHom ℚ) f ∣
-    map (Int.castRingHom ℚ) (auxiliary P hP r)
+  proper : ∀ P hP r, ¬ CCDN.rationalPolynomial f ∣
+    CCDN.rationalPolynomial (auxiliary P hP r)
   /-- The degree of the auxiliary attached to `P` is at most
   `A (B^(1/√d) / ∏ p + 1)(1 + log B + ∑ log p)`. -/
   degree_le : ∀ P hP r, ((auxiliary P hP r).totalDegree : ℝ) ≤
-    A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) /
+    A * (B ^ (1 / Real.sqrt ↑f.totalDegree) /
       Real.exp (∑ p ∈ P, Real.log p) + 1) * (1 + Real.log B + ∑ p ∈ P, Real.log p)
   /-- The auxiliary attached to `P` and `r` vanishes at the integer zeros of `f` in the box
   that lie in the residue classes `r`. -/
@@ -57,7 +57,7 @@ coefficient height `H` satisfies `log H ≤ K (log B + 1)`, admits a congruence 
 auxiliaries with degree constant `surfaceCongruenceDegreeConstant d K`, where `d` is the degree
 of `f`. -/
 theorem exists_surface_congruence_family
-    (f : MvPolynomial (Fin 3) ℤ)
+    (f : CCDN.IntegerPolynomial 3)
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree) {K H B : ℝ} (hK : 0 ≤ K) (hH : 1 ≤ H) (hB : 1 ≤ B)
     (hcoeff : CoefficientHeightLE f H)
@@ -73,18 +73,20 @@ theorem exists_surface_congruence_family
       (fun p hp => by
         let : NeZero p := ⟨(hP p hp).ne_zero⟩
         exact smoothResidueIntegerLift_smooth r p hp)
-  choose g hg0 hgproper hgdegree hgzero using hex
-  exact ⟨⟨g, hg0, hgproper, hgdegree, hgzero⟩⟩
+  choose g hgproper hgdegree hgzero using hex
+  exact ⟨⟨g, hgproper, hgdegree, hgzero⟩⟩
+
+variable {f : CCDN.IntegerPolynomial 3} {B A : ℝ}
 
 /-- The auxiliary polynomial of a congruence family attached to the empty set of primes: it
 vanishes at every integer zero of `f` in the box. -/
-def SurfaceCongruenceFamily.initial {f : MvPolynomial (Fin 3) ℤ} {B A : ℝ}
-    (F : SurfaceCongruenceFamily f B A) : MvPolynomial (Fin 3) ℤ :=
+def SurfaceCongruenceFamily.initial 
+    (F : SurfaceCongruenceFamily f B A)  :=
   F.auxiliary ∅ (by simp) (emptySmoothAffineResidueFamily f)
 
 /-- The auxiliary attached to the empty set of primes is `F.initial`, whatever the (unique)
 residue family and primality proof. -/
-lemma SurfaceCongruenceFamily.initial_eq {f : MvPolynomial (Fin 3) ℤ} {B A : ℝ}
+lemma SurfaceCongruenceFamily.initial_eq 
     (F : SurfaceCongruenceFamily f B A) (r : SmoothAffineResidueFamily f ∅)
     (hP : ∀ p ∈ (∅ : Finset ℕ), p.Prime) :
     F.auxiliary ∅ hP r = F.initial := by
@@ -94,20 +96,22 @@ lemma SurfaceCongruenceFamily.initial_eq {f : MvPolynomial (Fin 3) ℤ} {B A : �
   rw [he]
   rfl
 
+variable (F : SurfaceCongruenceFamily f B A) (x : IntPoint 3) (hx : InBox x B) (hxf : eval x f = 0)
+
+include hx hxf in
 /-- The initial auxiliary `F.initial` vanishes at every integer zero of `f` in the box of
 radius `B`. -/
-lemma SurfaceCongruenceFamily.initial_vanishes {f : MvPolynomial (Fin 3) ℤ} {B A : ℝ}
-    (F : SurfaceCongruenceFamily f B A) (x : IntPoint 3)
-    (hx : InBox x B) (hxf : eval x f = 0) :
+lemma SurfaceCongruenceFamily.initial_vanishes 
+     :
     eval x F.initial = 0 :=
   F.vanishes ∅ (by simp) (emptySmoothAffineResidueFamily f) x
     (mem_affineCongruencePoints.mpr ⟨hx, hxf, by simp⟩)
 
+include hx in
 /-- If an integer zero `x` of `f` in the box is a smooth point of `f` modulo every prime of `P`,
 then the auxiliary attached to `P` and to the residues of `x` vanishes at `x`. -/
-lemma SurfaceCongruenceFamily.point_vanishes {f : MvPolynomial (Fin 3) ℤ} {B A : ℝ}
-    (F : SurfaceCongruenceFamily f B A) (x : IntPoint 3)
-    (hx : InBox x B) (hxf : eval x f = 0)
+lemma SurfaceCongruenceFamily.point_vanishes 
+    
     (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime)
     (hs : ∀ p ∈ P, ∃ j, eval (fun i => (x i : ZMod p))
       (pderiv j (map (Int.castRingHom (ZMod p)) f)) ≠ 0) :

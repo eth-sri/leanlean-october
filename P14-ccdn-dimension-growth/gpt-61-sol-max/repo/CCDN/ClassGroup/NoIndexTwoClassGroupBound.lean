@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.ClassGroup.NoIndexTwoClassGroupCounting
 public import CCDN.ClassGroup.NumberFieldLatticeBox
 import CCDN.ClassGroup.BalancedGenerator
@@ -26,21 +28,7 @@ namespace CCDN
 noncomputable section
 open NumberField
 
-variable (K : Type*) [Field K] [NumberField K]
 
-/-- For a number field `K` of degree `n ≥ 2` and a radius `B ≥ max 1 (|discr K| ^ (1 / n))`, the
-number of bounded square-norm translation classes times `√|discr K|` is at most a constant
-depending only on `n` times `B ^ (n - 1)`. -/
-theorem boundedSquareNormTranslationClasses_uniform_count
-    (hn : 2 ≤ Module.finrank ℚ K) {B : ℝ} (hB1 : 1 ≤ B)
-    (hB : |(discr K : ℝ)| ^ (1 / (Module.finrank ℚ K : ℝ)) ≤ B) :
-    ((boundedSquareNormTranslationClasses K B).card : ℝ) * Real.sqrt |(discr K : ℝ)| ≤
-      (numberFieldLatticeBoxConstant (Module.finrank ℚ K) ((Module.finrank ℚ K : ℝ) ^ 3) *
-        (2 : ℝ) ^ Module.finrank ℚ K) * B ^ (Module.finrank ℚ K - 1) := by
-  obtain ⟨b, hb, hnorm⟩ := exists_numberField_short_basis K hn
-  apply boundedSquareNormTranslationClasses_count_of_relative_short_basis K b hb hB1
-    (by positivity)
-  exact fun i ↦ (hnorm i).trans (mul_le_mul_of_nonneg_left hB (by positivity))
 
 end
 end CCDN
@@ -51,11 +39,11 @@ open NumberField
 
 /-- The degree-dependent constant in the two-torsion class-group bound for number fields of degree
 `n` without an intermediate field of index two. -/
-def noIndexTwoClassGroupConstant (n : ℕ) : ℝ :=
+def noIndexTwoClassGroupConstant (n : ℕ)  :=
   (noIndexTwoCurveContributionConstant n *
-    (numberFieldLatticeBoxConstant n ((n : ℝ) ^ 3) * (2 : ℝ) ^ n) *
-      (3 * (9 : ℝ) ^ (n - 1))) * (Real.log 9 + 2) +
-    smallSubfieldIntegerCountConstant n * (9 : ℝ) ^ ((n : ℝ) / 4)
+    (numberFieldLatticeBoxConstant n (↑n ^ 3) * 2 ^ n) *
+      (3 * 9 ^ (n - 1))) * (Real.log 9 + 2) +
+    smallSubfieldIntegerCountConstant n * 9 ^ ((n : ℝ) / 4)
 
 /-- The constant `noIndexTwoClassGroupConstant n` is positive. -/
 lemma noIndexTwoClassGroupConstant_pos (n : ℕ) :
@@ -64,21 +52,9 @@ lemma noIndexTwoClassGroupConstant_pos (n : ℕ) :
   have hb := numberFieldLatticeBoxConstant_nonneg n
     (by positivity : 0 ≤ (n : ℝ) ^ 3)
   have he := smallSubfieldIntegerCountConstant_pos n
-  have hl : 0 ≤ Real.log 9 := Real.log_nonneg (by norm_num)
   unfold noIndexTwoClassGroupConstant
   positivity
 
-private lemma balanced_radius_log_le {D : ℝ} (hD : 0 < D) (hlog : 1 ≤ Real.log D)
-    {n : ℕ} (hn : 0 < n) :
-    Real.log (9 * D ^ (1 / (n : ℝ))) + 1 ≤
-      (Real.log 9 + 2) * Real.log D := by
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
-  have hn0 : (0 : ℝ) < n := zero_lt_one.trans_le hn1
-  have hinv : 1 / (n : ℝ) ≤ 1 := (div_le_one hn0).mpr hn1
-  have hl9 : 0 ≤ Real.log 9 := Real.log_nonneg (by norm_num)
-  rw [Real.log_mul (by norm_num : (9 : ℝ) ≠ 0) (Real.rpow_pos_of_pos hD _).ne',
-    Real.log_rpow hD]
-  nlinarith
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -97,29 +73,35 @@ theorem no_index_two_classGroup_two_torsion_bound
   let D := |(discr K : ℝ)|
   let B := 9 * D ^ (1 / (n : ℝ))
   let P := noIndexTwoCurveContributionConstant n
-  let A := numberFieldLatticeBoxConstant n ((n : ℝ) ^ 3) * (2 : ℝ) ^ n
-  let E := smallSubfieldIntegerCountConstant n * (9 : ℝ) ^ ((n : ℝ) / 4)
+  let A := numberFieldLatticeBoxConstant n (↑n ^ 3) * 2 ^ n
+  let E := smallSubfieldIntegerCountConstant n * 9 ^ ((n : ℝ) / 4)
   let a := 1 / 2 - 1 / (2 * (n : ℝ))
   have hnpos : 0 < n := by dsimp [n]; omega
   have hnR : (2 : ℝ) ≤ n := by exact_mod_cast hn
-  have hD3 : 3 ≤ D := three_le_abs_discr K hn
+  have hD3 := three_le_abs_discr K hn
   have hD1 : 1 ≤ D := by linarith
   have hD : 0 < D := by linarith
-  have hlog : 1 ≤ Real.log D := one_le_log_abs_discr K hn
+  have hlog := one_le_log_abs_discr K hn
   have hroot : 1 ≤ D ^ (1 / (n : ℝ)) := Real.one_le_rpow hD1 (by positivity)
   have hB : 1 ≤ B := by dsimp [B]; linarith
   have hBroot : D ^ (1 / (n : ℝ)) ≤ B := by dsimp [B]; linarith
-  have hP : 0 ≤ P := noIndexTwoCurveContributionConstant_nonneg n
+  have hP := noIndexTwoCurveContributionConstant_nonneg n
   have hA : 0 ≤ A := mul_nonneg
     (numberFieldLatticeBoxConstant_nonneg n (by positivity)) (by positivity)
   have hE : 0 ≤ E := mul_nonneg (smallSubfieldIntegerCountConstant_pos n).le (by positivity)
   have hlogB : 0 ≤ Real.log B + 1 := by linarith [Real.log_nonneg hB]
   have hS := boundedSquareNormIntegers_no_index_two_count K hnoTwo hn hB
-  have hQ := boundedSquareNormTranslationClasses_uniform_count K hn hB hBroot
+  have hQ := (show ↑(boundedSquareNormTranslationClasses K B).card * √|↑(discr K)| ≤
+                 numberFieldLatticeBoxConstant (Module.finrank ℚ K) (↑(Module.finrank ℚ K) ^ (3 : ℕ)) * (2 : ℝ) ^ Module.finrank ℚ K *
+                   B ^ (Module.finrank ℚ K - (1 : ℕ)) from (by
+               obtain ⟨b, hb, hnorm⟩ := exists_numberField_short_basis K hn
+               apply boundedSquareNormTranslationClasses_count_of_relative_short_basis K b hb hB
+                 (by positivity)
+               exact fun i ↦ (hnorm i).trans (mul_le_mul_of_nonneg_left hBroot (by positivity))))
   have hmain :
       P * (boundedSquareNormTranslationClasses K B).card * Real.sqrt B *
           (Real.log B + 1) ≤
-        (P * A * (3 * (9 : ℝ) ^ (n - 1))) * D ^ a * (Real.log B + 1) := by
+        (P * A * (3 * 9 ^ (n - 1))) * D ^ a * (Real.log B + 1) := by
     have hm := mul_le_mul_of_nonneg_left hQ
       (mul_nonneg (mul_nonneg hP (Real.sqrt_nonneg B)) hlogB)
     have hpre :
@@ -134,11 +116,18 @@ theorem no_index_two_classGroup_two_torsion_bound
   have hmain' :
       P * (boundedSquareNormTranslationClasses K B).card * Real.sqrt B *
           (Real.log B + 1) ≤
-        (P * A * (3 * (9 : ℝ) ^ (n - 1)) * (Real.log 9 + 2)) *
+        (P * A * (3 * 9 ^ (n - 1)) * (Real.log 9 + 2)) *
           D ^ a * Real.log D := by
     apply hmain.trans
-    have hh := mul_le_mul_of_nonneg_left (balanced_radius_log_le hD hlog hnpos)
-      (show 0 ≤ (P * A * (3 * (9 : ℝ) ^ (n - 1))) * D ^ a by positivity)
+    have hh := mul_le_mul_of_nonneg_left ((show Real.log ((9 : ℝ) * D ^ ((1 : ℝ) / ↑n)) + (1 : ℝ) ≤ (Real.log (9 : ℝ) + (2 : ℝ)) * Real.log D from (by
+                                            have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hnpos
+                                            have hn0 := zero_lt_one.trans_le hn1
+                                            have hinv := (div_le_one hn0).mpr hn1
+                                            have hl9 : 0 ≤ Real.log 9 := Real.log_nonneg (by norm_num)
+                                            rw [Real.log_mul (by norm_num : (9 : ℝ) ≠ 0) (Real.rpow_pos_of_pos hD _).ne',
+                                              Real.log_rpow hD]
+                                            nlinarith)))
+      (show 0 ≤ (P * A * (3 * 9 ^ (n - 1))) * D ^ a by positivity)
     convert hh using 1
     ring
   have hexc :
@@ -161,7 +150,7 @@ theorem no_index_two_classGroup_two_torsion_bound
   calc
     _ ≤ _ := hcard.trans hS
     _ ≤ E * D ^ a * Real.log D +
-        (P * A * (3 * (9 : ℝ) ^ (n - 1)) * (Real.log 9 + 2)) *
+        (P * A * (3 * 9 ^ (n - 1)) * (Real.log 9 + 2)) *
           D ^ a * Real.log D := add_le_add hexc hmain'
     _ = _ := by unfold noIndexTwoClassGroupConstant; dsimp [E, P, A, n, D, a]; ring
 

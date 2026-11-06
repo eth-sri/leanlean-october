@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.LinearAlgebra.Projectivization.Basic
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import Mathlib.NumberTheory.Height.NumberField
@@ -14,21 +16,21 @@ import Mathlib.NumberTheory.Height.Projectivization
 polynomials have one common degree, so their classes belong to a single
 graded coordinate space. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 variable {K : Type*} [Field K]
 
-private lemma exists_projective_separating_minor {n : ℕ}
-    {x y : Projectivization K (Fin (n + 1) → K)}
+variable {n : ℕ} {x y : Projectivization K (Fin (n + 1) → K)}
+
+private lemma exists_projective_separating_minor 
     (hxy : x ≠ y) :
     ∃ a b, y.rep b * x.rep a - y.rep a * x.rep b ≠ 0 := by
   by_contra! h
   obtain ⟨b, hb⟩ := Function.ne_iff.mp y.rep_nonzero
   change y.rep b ≠ 0 at hb
   apply hxy
-  have he : x.rep = (x.rep b / y.rep b) • y.rep := by
+  have he := by
     funext a
     have ha := sub_eq_zero.mp (h a b)
     change x.rep a = (x.rep b / y.rep b) * y.rep a
@@ -42,8 +44,7 @@ private lemma exists_projective_separating_minor {n : ℕ}
       exact ⟨_, he.symm⟩
     _ = y := y.mk_rep
 
-private lemma exists_projective_linear_separator {n : ℕ}
-    {x y : Projectivization K (Fin (n + 1) → K)}
+private lemma exists_projective_linear_separator 
     (hxy : x ≠ y) :
     ∃ f : MvPolynomial (Fin (n + 1)) K,
       f.IsHomogeneous 1 ∧ eval x.rep f = 1 ∧ eval y.rep f = 0 := by
@@ -51,8 +52,7 @@ private lemma exists_projective_linear_separator {n : ℕ}
   let D := y.rep b * x.rep a - y.rep a * x.rep b
   refine ⟨C D⁻¹ * (C (y.rep b) * X a - C (y.rep a) * X b), ?_, ?_, ?_⟩
   · exact ((isHomogeneous_C_mul_X _ _).sub (isHomogeneous_C_mul_X _ _)).C_mul _
-  · simp only [eval_mul, eval_C, eval_sub, eval_X]
-    exact inv_mul_cancel₀ hab
+  · aesop
   · simp only [eval_mul, eval_C, eval_sub, eval_X]
     ring
 
@@ -69,19 +69,15 @@ private theorem exists_projective_point_separators {n : ℕ} {ι : Type*}
       f.IsHomogeneous (Fintype.card ι - 1) ∧ eval (z i).rep f = 1 ∧
       ∀ j, j ≠ i → eval (z j).rep f = 0 := by
     have hp (j : {j : ι // j ≠ i}) := exists_projective_linear_separator
-      (show z i ≠ z j.val from fun he => j.property (hz he).symm)
+      ((fun he => j.property (hz he).symm))
     choose f hf hon hoff using hp
     refine ⟨∏ j, f j, ?_, ?_, ?_⟩
     · have hcard : Fintype.card {j : ι // j ≠ i} = Fintype.card ι - 1 := by
-        simp [Fintype.card_subtype_compl]
+        simp_all
       simpa only [Finset.sum_const, Finset.card_univ, smul_eq_mul, mul_one, hcard]
         using IsHomogeneous.prod (Finset.univ) f (fun _ => 1) (fun j _ => hf j)
-    · rw [eval_prod]
-      exact Finset.prod_eq_one (fun j _ => hon j)
-    · intro j hji
-      rw [eval_prod]
-      exact Finset.prod_eq_zero (Finset.mem_univ (⟨j, hji⟩ : {j : ι // j ≠ i}))
-        (hoff ⟨j, hji⟩)
+    · simp_all
+    · aesop (add safe apply [eval_prod, Finset.prod_eq_zero, Finset.mem_univ])
   choose h hhom hon hoff using hex
   refine ⟨h, hhom, ?_⟩
   intro i j
@@ -109,12 +105,6 @@ theorem exists_projective_point_separators_degree {n M : ℕ} {ι : Type*}
   · intro j
     convert (hhom j).mul ((hL j).pow (M - (Fintype.card ι - 1))) using 1
     simp only [one_mul, Nat.add_sub_of_le hM]
-  · intro i j
-    rw [eval_mul, eval_pow, heval]
-    by_cases hij : i = j
-    · subst j
-      simp [L, hk]
-    · simp [hij]
+  · aesop
 
-end
 end CCDN

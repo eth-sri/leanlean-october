@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.BivariateTotalDegree
 public import CCDN.Noether.EulerClosedForms
 public import CCDN.Noether.EulerPairSpace
@@ -16,31 +18,29 @@ irreducible bivariate equations of full outer degree in characteristic zero. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
 /-- The explicit Euler pair, in the nested polynomial ring used by the
 closed-form classification. -/
-def eulerBivariatePair (R : Type*) [CommRing R] (k : ℕ) :
-    EulerPairSpace R k →ₗ[R] R[X][X] × R[X][X] :=
+noncomputable def eulerBivariatePair (R : Type*) [CommRing R] (k : ℕ)  :=
   ((bivariatePolynomialEquiv R).toLinearMap.prodMap
     (bivariatePolynomialEquiv R).toLinearMap).comp (eulerPairCoordinates R k)
 
-private lemma eulerBivariatePair_fst_degree {R : Type*} [CommRing R] (k : ℕ)
+variable {R : Type*} [CommRing R]
+
+private lemma eulerBivariatePair_fst_degree  (k : ℕ)
     (u : EulerPairSpace R k) : bivariateTotalDegree (eulerBivariatePair R k u).1 ≤ k + 1 := by
   change ((bivariatePolynomialEquiv R).symm
     (bivariatePolynomialEquiv R (eulerPairCoordinates R k u).1)).totalDegree ≤ _
-  rw [AlgEquiv.symm_apply_apply]
-  exact eulerPairCoordinates_fst_degree k u
+  simp_all [AlgEquiv.symm_apply_apply, eulerPairCoordinates_fst_degree]
 
-private lemma eulerBivariatePair_snd_degree {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_snd_degree  (k : ℕ)
     (u : EulerPairSpace R k) : bivariateTotalDegree (eulerBivariatePair R k u).2 ≤ k + 1 := by
   change ((bivariatePolynomialEquiv R).symm
     (bivariatePolynomialEquiv R (eulerPairCoordinates R k u).2)).totalDegree ≤ _
-  rw [AlgEquiv.symm_apply_apply]
-  exact eulerPairCoordinates_snd_degree k u
+  simp_all [AlgEquiv.symm_apply_apply, eulerPairCoordinates_snd_degree]
 
-private lemma eulerBivariatePair_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
+private lemma eulerBivariatePair_contraction_degree  (k : ℕ)
     (u : EulerPairSpace R k) :
     bivariateTotalDegree (bivariateEulerContraction R (eulerBivariatePair R k u)) ≤ k + 1 := by
   simp only [bivariateEulerContraction, eulerBivariatePair, LinearMap.comp_apply,
@@ -62,14 +62,15 @@ private lemma eulerBivariatePair_injective {F : Type*} [Field F] (k : ℕ) :
     exact congrArg Prod.snd huv
 
 /-- Closed-form operator on exactly d^2-1 explicit polynomial parameters. -/
-def eulerClosedFormOperator {R : Type*} [CommRing R] (k : ℕ) (f : R[X][X]) :
-    EulerPairSpace R k →ₗ[R] R[X][X] :=
+noncomputable def eulerClosedFormOperator  (k : ℕ) (f : R[X][X])  :=
   (closedFormOperator f).comp (eulerBivariatePair R k)
 
+variable {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] (k : ℕ) (f : F[X][X]) (hf : Irreducible f)
+
+include hf in
 /-- The Euler constraint removes the only characteristic-zero closed-form
 kernel, so the restricted operator is injective. -/
-private theorem eulerClosedFormOperator_injective {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (k : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic)
+private theorem eulerClosedFormOperator_injective  (hm : f.Monic)
     (hdeg : f.natDegree = k + 2) : Function.Injective (eulerClosedFormOperator k f) := by
   have hzero : ∀ u, eulerClosedFormOperator k f u = 0 → u = 0 := by
     intro u hu
@@ -105,18 +106,18 @@ private theorem eulerClosedFormOperator_injective {F : Type*} [Field F] [CharZer
   apply hzero
   rw [map_sub, huv, sub_self]
 
+include hf in
 /-- Over an algebraically closed field of characteristic zero, the Euler closed-form operator of
 an irreducible `f` of outer degree `k + 2` whose outer leading coefficient is a nonzero constant
 is injective. Scalar normalization changes neither the domain nor injectivity. -/
 theorem eulerClosedFormOperator_injective_of_constant_leading
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (k : ℕ) (f : F[X][X]) (hf : Irreducible f) (a : F) (ha : a ≠ 0)
+     (a : F) (ha : a ≠ 0)
     (hl : f.leadingCoeff = C a) (hdeg : f.natDegree = k + 2) :
     Function.Injective (eulerClosedFormOperator k f) := by
   have hm := bivariate_monic_normalize a ha f hl
   have hi := (bivariate_irreducible_smul_iff a⁻¹ (inv_ne_zero ha) f).mpr hf
   have hd : (a⁻¹ • f).natDegree = k + 2 := by
-    rw [natDegree_smul f (inv_ne_zero ha), hdeg]
+    grind [natDegree_smul]
   intro u v huv
   apply eulerClosedFormOperator_injective k (a⁻¹ • f) hi hm hd
   change closedFormOperator (a⁻¹ • f) (eulerBivariatePair F k u) =
@@ -124,5 +125,4 @@ theorem eulerClosedFormOperator_injective_of_constant_leading
   rw [closedFormOperator_smul_equation, closedFormOperator_smul_equation]
   exact congrArg (a⁻¹ • ·) huv
 
-end
 end CCDN

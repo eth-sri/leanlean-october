@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
 /-! The coefficient of highest possible degree on an affine line depends only
@@ -12,7 +14,6 @@ on the top homogeneous component and the direction, not the base point. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 private lemma polynomial_coeff_prod_sum_of_natDegree_le
     {R ι : Type*} [CommRing R] (s : Finset ι) (q : ι → Polynomial R) (e : ι → ℕ)
@@ -23,7 +24,7 @@ private lemma polynomial_coeff_prod_sum_of_natDegree_le
   | empty => simp
   | @insert i s hi ih =>
     rw [Finset.prod_insert hi, Finset.sum_insert hi, Finset.prod_insert hi]
-    have ht : (∏ j ∈ s, q j).natDegree ≤ ∑ j ∈ s, e j :=
+    have ht :=
       (Polynomial.natDegree_prod_le _ _).trans
         (Finset.sum_le_sum fun j hj => hq j (Finset.mem_insert_of_mem hj))
     rw [Polynomial.coeff_mul_add_eq_of_natDegree_le
@@ -35,27 +36,26 @@ lemma polynomial_affine_natDegree_le {R : Type*} [CommRing R] (a b : R) :
     (Polynomial.C a + Polynomial.C b * Polynomial.X).natDegree ≤ 1 := by
   apply Polynomial.natDegree_add_le_of_degree_le
   · simp
-  · exact Polynomial.natDegree_mul_le.trans (by simpa using (Polynomial.natDegree_X_le (R := R)))
+  · exact Polynomial.natDegree_mul_le.trans (by simp_all [Polynomial.natDegree_X_le])
+
+variable {R σ : Type*} [CommRing R]
 
 /-- Restriction to the affine line a+t*b. -/
-def affineLinePolynomial {R σ : Type*} [CommRing R] (a b : σ → R) :
-    MvPolynomial σ R →+* Polynomial R :=
+noncomputable def affineLinePolynomial  (a b : σ → R)  :=
   MvPolynomial.eval₂Hom Polynomial.C
     (fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X)
 
-private lemma affineLinePolynomial_monomial_top {R σ : Type*} [CommRing R]
+private lemma affineLinePolynomial_monomial_top 
     (a b : σ → R) (m : σ →₀ ℕ) (c : R) (d : ℕ) (hd : m.degree ≤ d) :
     (affineLinePolynomial a b (MvPolynomial.monomial m c)).coeff d =
       if d = m.degree then c * m.prod (fun i e => b i ^ e) else 0 := by
   classical
-  let q : σ → Polynomial R := fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X
+  let q := fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X
   have hq (i : σ) : (q i).natDegree ≤ 1 := polynomial_affine_natDegree_le _ _
-  have hp (i : σ) : ((q i) ^ m i).natDegree ≤ m i := by
-    exact Polynomial.natDegree_pow_le.trans (by simpa using Nat.mul_le_mul_left (m i) (hq i))
+  have hp (i : σ) : ((q i) ^ m i).natDegree ≤ m i := Polynomial.natDegree_pow_le.trans (by simpa using Nat.mul_le_mul_left (m i) (hq i))
   have hprod : (m.prod (fun i e => (q i) ^ e)).natDegree ≤ m.degree :=
     (Polynomial.natDegree_prod_le _ _).trans (Finset.sum_le_sum fun i _ => hp i)
   rw [affineLinePolynomial, MvPolynomial.eval₂Hom_monomial]
-  change (Polynomial.C c * m.prod (fun i e => (q i) ^ e)).coeff d = _
   rw [Polynomial.coeff_C_mul]
   by_cases he : d = m.degree
   · rw [ite_eq_left he, he]
@@ -73,7 +73,7 @@ private lemma affineLinePolynomial_monomial_top {R σ : Type*} [CommRing R]
 
 /-- At any degree at least the total degree, the affine-line coefficient equals
 the corresponding homogeneous component evaluated on its direction. -/
-theorem affineLinePolynomial_top_coefficient {R σ : Type*} [CommRing R]
+theorem affineLinePolynomial_top_coefficient 
     (a b : σ → R) (f : MvPolynomial σ R) (d : ℕ) (hd : f.totalDegree ≤ d) :
     (affineLinePolynomial a b f).coeff d =
       MvPolynomial.eval b (MvPolynomial.homogeneousComponent d f) := by
@@ -87,5 +87,4 @@ theorem affineLinePolynomial_top_coefficient {R σ : Type*} [CommRing R]
     MvPolynomial.homogeneousComponent_of_mem (MvPolynomial.isHomogeneous_monomial _ rfl)]
   split_ifs <;> simp [MvPolynomial.eval_monomial]
 
-end
 end CCDN

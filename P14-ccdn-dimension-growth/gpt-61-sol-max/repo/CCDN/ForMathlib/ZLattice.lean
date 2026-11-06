@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.MeasureTheory.Group.GeometryOfNumbers
 
@@ -28,7 +30,7 @@ initial segments of such a tuple, and count the pairs of its indices:
 * `Fin.sum_card_Ioi`: there are `n.choose 2` pairs `i < j` in `Fin n`.
 -/
 
-@[expose] public section
+public section
 
 namespace Fin
 
@@ -37,15 +39,13 @@ variable {α : Type*} {k : ℕ}
 /-- Below `i.castSucc`, `Fin.snoc v x` takes the same values as `v` below `i`. -/
 theorem snoc_image_Iio_castSucc (v : Fin k → α) (x : α) (i : Fin k) :
     snoc v x '' Set.Iio i.castSucc = v '' Set.Iio i := by
-  rw [← image_castSucc_Iio, Set.image_image]
-  simp only [snoc_castSucc]
+  grind [image_castSucc_Iio,  snoc_castSucc]
 
 /-- Below `Fin.last k`, `Fin.snoc v x` takes exactly the values of `v`. -/
 theorem snoc_image_Iio_last (v : Fin k → α) (x : α) :
     snoc v x '' Set.Iio (last k) = Set.range v := by
   have h : Set.Iio (last k) = Set.range castSucc := by
-    ext j
-    simp [range_castSucc, lt_def]
+    aesop
   rw [h, ← Set.range_comp, snoc_comp_castSucc]
 
 end Fin
@@ -66,13 +66,12 @@ theorem exists_shortest_vector_notMem
   classical
   have hex : ∃ x : E, x ∈ L ∧ x ∉ U := by
     by_contra! h
-    have hh : Submodule.span ℝ (L : Set E) ≤ U := Submodule.span_le.mpr h
+    have hh := Submodule.span_le.mpr h
     rw [IsZLattice.span_top] at hh
     exact hU (top_le_iff.mp hh)
   obtain ⟨x₀, hx₀, hx₀U⟩ := hex
-  let S : Set E := {x | x ∈ L ∧ x ∉ U ∧ ‖x‖ ≤ ‖x₀‖}
+  let S := {x | x ∈ L ∧ x ∉ U ∧ ‖x‖ ≤ ‖x₀‖}
   have hfinite : S.Finite := by
-    have : DiscreteTopology L.toAddSubgroup := inferInstanceAs (DiscreteTopology L)
     have hf : (Metric.closedBall 0 ‖x₀‖ ∩ (L : Set E)).Finite :=
       Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
         Metric.isBounded_closedBall L.toAddSubgroup.isClosed_of_discreteTopology
@@ -82,7 +81,7 @@ theorem exists_shortest_vector_notMem
   intro x hx hxU
   by_cases hh : ‖x‖ ≤ ‖x₀‖
   · exact hmin x ⟨hx, hxU, hh⟩
-  · exact hv.2.2.trans (le_of_not_ge hh)
+  · grind
 
 open MeasureTheory in
 /-- Blichfeldt's principle: a measurable set whose distinct points never differ by a lattice vector
@@ -96,7 +95,7 @@ theorem measureReal_le_covolume [MeasurableSpace E] [BorelSpace E]
   classical
   let b := Module.Free.chooseBasis ℤ L
   let F := ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)
-  have hF : IsAddFundamentalDomain L F μ := ZLattice.isAddFundamentalDomain b μ
+  have hF := ZLattice.isAddFundamentalDomain b μ
   have hle : μ S ≤ μ F := by
     by_contra! hlt
     let : MeasurableVAdd L E := inferInstanceAs (MeasurableVAdd L.toAddSubgroup E)
@@ -108,8 +107,7 @@ theorem measureReal_le_covolume [MeasurableSpace E] [BorelSpace E]
     change (a : E) + x = z at hax
     change (b : E) + y = z at hby
     have hdiff : x - y = (b : E) - a := by
-      apply (sub_eq_sub_iff_add_eq_add).mpr
-      exact (add_comm _ _).trans (hax.trans hby.symm)
+      grind
     have hxy := hsep x hx y hy (hdiff ▸ L.sub_mem b.property a.property)
     apply hab
     apply Subtype.ext

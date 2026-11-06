@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.ProjectiveSection
 public import CCDN.Height.ProjectiveZeroLocus
 import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
@@ -15,26 +17,24 @@ import CCDN.Plane.ProjectivePlaneBezout
 irreducible projective plane equation. The principal ideal is prime and its
 projective Hilbert degree is the prescribed degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The lower-bound equation defines an integral homogeneous plane curve
 whose degree is also certified by the projective Hilbert function. -/
 theorem projective_integral_curve_lower_bound (d : ℕ) (hd : 0 < d) :
-    ∃ F : MvPolynomial (Fin 3) ℚ, ∃ B : ℕ, 1 ≤ B ∧
+    ∃ F : CCDN.CoordinatePolynomial 3, ∃ B : ℕ, 1 ≤ B ∧
       F.IsHomogeneous d ∧ F.totalDegree = d ∧
         AbsolutelyIrreducibleRat F ∧
           (Ideal.span {F}).IsPrime ∧ HasProjectiveCurveDegree (Ideal.span {F}) d ∧
-            ((d : ℝ) ^ 2 / 5) * (B : ℝ) ^ (2 / (d : ℝ)) ≤
+            (↑d ^ 2 / 5) * ↑B ^ (2 / (d : ℝ)) ≤
               (projectiveCount (projectiveIdealZeroLocus (Ideal.span {F})) B : ℝ) := by
   obtain ⟨F, B, hB, hhom, hdeg, habs, hcount⟩ := projective_plane_lower_bound d hd
-  have hir : Irreducible F :=
+  have hir :=
     mvPolynomial_irreducible_of_field_map (algebraMap ℚ (AlgebraicClosure ℚ)) F habs
   refine ⟨F, B, hB, hhom, hdeg, habs, Ideal.isPrime_span_singleton_of_prime hir.prime,
     principal_plane_hasProjectiveCurveDegree F hhom hir.ne_zero, ?_⟩
   rwa [projectiveIdealZeroLocus_span_singleton F hhom]
 
-end
 end CCDN

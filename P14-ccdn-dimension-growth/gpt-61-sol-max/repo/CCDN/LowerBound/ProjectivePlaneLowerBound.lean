@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Height.ProjectiveZeroLocus
 import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
@@ -16,18 +18,17 @@ import CCDN.Plane.ProjectivePlaneBezout
 constant 1/5: the grid construction for degree at least four, and two rational points for
 smaller degrees. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For every d>0 there is an absolutely irreducible projective plane curve
 of degree d and an integer B≥1 with N(X,B)≥d² B^(2/d)/5. -/
 theorem projective_plane_lower_bound (d : ℕ) (hd : 0 < d) :
-    ∃ F : MvPolynomial (Fin 3) ℚ, ∃ B : ℕ, 1 ≤ B ∧
+    ∃ F : CCDN.CoordinatePolynomial 3, ∃ B : ℕ, 1 ≤ B ∧
       F.IsHomogeneous d ∧ F.totalDegree = d ∧
         AbsolutelyIrreducibleRat F ∧
-          ((d : ℝ) ^ 2 / 5) * (B : ℝ) ^ (2 / (d : ℝ)) ≤
+          (↑d ^ 2 / 5) * ↑B ^ (2 / (d : ℝ)) ≤
             (projectiveCount (projectiveZeroLocus F) B : ℝ) := by
   by_cases hlarge : 4 ≤ d
   · obtain ⟨F, hhom, hdeg, hir, hcount⟩ := exists_projective_grid_lower_bound d hlarge
@@ -42,7 +43,6 @@ theorem projective_plane_lower_bound (d : ℕ) (hd : 0 < d) :
     have hdR : (d : ℝ) ≤ 3 := by exact_mod_cast (show d ≤ 3 by omega)
     have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
     simp only [Nat.cast_one, Real.one_rpow, mul_one]
-    nlinarith [mul_nonneg hd0 (show 0 ≤ 3 - (d : ℝ) by linarith)]
+    nlinarith [mul_nonneg hd0 (show 0 ≤ 3 - ↑d by linarith)]
 
-end
 end CCDN

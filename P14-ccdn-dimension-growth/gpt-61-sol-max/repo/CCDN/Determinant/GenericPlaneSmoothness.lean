@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.BivariateTotalDegree
 public import CCDN.Noether.GenericPlaneIrreducibility
 import CCDN.Noether.ShearNormalization
@@ -16,21 +18,21 @@ plane in the positioned coordinates. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The generic plane substitution as a map of multivariate polynomial rings. -/
-def genericPlaneMap (K F σ : Type*) [Field K] [Field F]
+noncomputable def genericPlaneMap (K F σ : Type*) [Field K] [Field F]
     [Algebra K F] [Algebra (MvPolynomial σ K) F] :
     MvPolynomial (Option σ) K →ₐ[K] MvPolynomial (Fin 2) F :=
   aeval (fun i => Option.elim i (X 0)
     (fun j => C (algebraMap (MvPolynomial σ K) F (X j)) * X 1))
 
+variable {K F σ : Type*} [Field K] [Field F] [Algebra K F] [Algebra (MvPolynomial σ K) F]
+
 /-- The generic plane substitution `genericPlaneMap K F σ f` corresponds, as a bivariate polynomial
 over `F`, to the generic plane equation `genericPlanePolynomial f` with its coefficients mapped into
 `F`. -/
-lemma genericPlaneMap_bivariate {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+lemma genericPlaneMap_bivariate 
     [IsScalarTower K (MvPolynomial σ K) F]
     (f : MvPolynomial (Option σ) K) :
     bivariatePolynomialEquiv F (genericPlaneMap K F σ f) =
@@ -50,24 +52,21 @@ lemma genericPlaneMap_bivariate {K F σ : Type*} [Field K] [Field F]
     all_goals simp only [hf, true_or]
 
 /-- The generic plane section of `f` takes at the origin the value `f(0)`. -/
-lemma genericPlaneMap_eval_zero {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+lemma genericPlaneMap_eval_zero 
     (f : MvPolynomial (Option σ) K) :
-    eval (0 : Fin 2 → F) (genericPlaneMap K F σ f) =
-      algebraMap K F (eval (0 : Option σ → K) f) := by
-  have he : (eval (0 : Fin 2 → F)).comp (genericPlaneMap K F σ).toRingHom =
-      (algebraMap K F).comp (eval (0 : Option σ → K)) := by
+    eval 0 (genericPlaneMap K F σ f) =
+      algebraMap K F (eval 0 f) := by
+  have he : (eval 0).comp (genericPlaneMap K F σ).toRingHom =
+      (algebraMap K F).comp (eval 0) := by
     apply MvPolynomial.ringHom_ext
-    · intro a
-      simp [genericPlaneMap]
+    · simp_all
     · intro i
       cases i <;> simp [genericPlaneMap]
   exact RingHom.congr_fun he f
 
 /-- The derivative of the generic plane section of `f` in its first variable is the generic plane
 section of the derivative of `f` in the distinguished variable `none`. -/
-lemma genericPlaneMap_pderiv {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+lemma genericPlaneMap_pderiv 
     (f : MvPolynomial (Option σ) K) :
     pderiv 0 (genericPlaneMap K F σ f) = genericPlaneMap K F σ (pderiv none f) := by
   classical
@@ -80,8 +79,7 @@ lemma genericPlaneMap_pderiv {K F σ : Type*} [Field K] [Field F]
 
 /-- Ordinary irreducibility over the rational function field in slopes. -/
 theorem genericPlaneMap_irreducible
-    {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+    
     [IsScalarTower K (MvPolynomial σ K) F] [IsFractionRing (MvPolynomial σ K) F]
     (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
     (hd : 0 < f.totalDegree) (hm : (optionEquivLeft K σ f).Monic)
@@ -91,5 +89,4 @@ theorem genericPlaneMap_irreducible
   rw [genericPlaneMap_bivariate]
   exact genericPlanePolynomial_irreducible_fraction_slopes f hf hd hm hx
 
-end
 end CCDN

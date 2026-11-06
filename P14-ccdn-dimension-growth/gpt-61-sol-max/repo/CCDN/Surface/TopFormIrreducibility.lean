@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import CCDN.Algebra.HomogeneousLinearDescent
 import CCDN.ForMathlib.MvPolynomial
@@ -15,9 +17,8 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
  the full polynomial. Coefficient reduction preserves this implication and
  the full degree whenever the reduced highest component remains irreducible. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Applying a ring homomorphism to the coefficients commutes with taking the homogeneous
@@ -30,7 +31,9 @@ lemma map_homogeneousComponent {R S σ : Type*} [CommRing R] [CommRing S]
   simp only [coeff_map, coeff_homogeneousComponent]
   split_ifs <;> simp
 
-private lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
+variable {K σ : Type*} [Field K]
+
+private lemma isUnit_of_isUnit_top_homogeneousComponent 
     (f : MvPolynomial σ K) (hu : IsUnit (homogeneousComponent f.totalDegree f)) :
     IsUnit f := by
   have hd : f.totalDegree = 0 := by
@@ -43,10 +46,10 @@ private lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
 
 /-- The product of highest components detects every proper factorization of
  the full equation, over any field. -/
-private theorem irreducible_of_top_homogeneousComponent_irreducible {K σ : Type*} [Field K]
+private theorem irreducible_of_top_homogeneousComponent_irreducible 
     (f : MvPolynomial σ K)
     (hir : Irreducible (homogeneousComponent f.totalDegree f)) : Irreducible f := by
-  have hf : f ≠ 0 := by intro hz; exact hir.ne_zero (by rw [hz, map_zero])
+  have hf : f ≠ 0 := by aesop
   refine ⟨?_, ?_⟩
   · intro hu
     have hd := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
@@ -55,8 +58,8 @@ private theorem irreducible_of_top_homogeneousComponent_irreducible {K σ : Type
     rw [hd, homogeneousComponent_zero]
     rwa [he] at hu
   · intro g h he
-    have hg : g ≠ 0 := by intro hz; exact hf (by rw [he, hz, zero_mul])
-    have hh : h ≠ 0 := by intro hz; exact hf (by rw [he, hz, mul_zero])
+    have hg : g ≠ 0 := by simp_all
+    have hh : h ≠ 0 := by simp_all
     have hprod : homogeneousComponent f.totalDegree f =
         homogeneousComponent g.totalDegree g * homogeneousComponent h.totalDegree h := by
       rw [he, totalDegree_mul_of_isDomain hg hh, top_homogeneousComponent_mul]
@@ -71,7 +74,7 @@ theorem map_degree_and_irreducible_of_top_irreducible
     (φ : R →+* K) (f : MvPolynomial σ R)
     (hir : Irreducible (map φ (homogeneousComponent f.totalDegree f))) :
     (map φ f).totalDegree = f.totalDegree ∧ Irreducible (map φ f) := by
-  have htop : Irreducible (homogeneousComponent f.totalDegree (map φ f)) := by
+  have htop := by
     rwa [map_homogeneousComponent] at hir
   have hle : (map φ f).totalDegree ≤ f.totalDegree := totalDegree_map_le _ _
   have hge : f.totalDegree ≤ (map φ f).totalDegree := by
@@ -82,5 +85,4 @@ theorem map_degree_and_irreducible_of_top_irreducible
   apply irreducible_of_top_homogeneousComponent_irreducible
   rwa [he]
 
-end
 end CCDN

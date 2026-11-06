@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.MonomialOrthants
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import Mathlib.RingTheory.AlgebraicIndependent.Defs
@@ -13,9 +15,8 @@ import CCDN.Hilbert.OrthantMultiplicity
 /-! Maximal standard-monomial orthants construct algebraically
 independent original coordinates of cardinality equal to Hilbert dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 private lemma algebraicIndependent_coordinates_of_standard
@@ -32,7 +33,7 @@ private lemma algebraicIndependent_coordinates_of_standard
     ext i
     simp
   rw [he] at hp
-  have hmem : rename j p ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp hp
+  have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hp
   have hs : rename j p ∈ restrictSupport K (Ideal.standardExponents I m) := by
     intro a ha
     change a ∈ (rename j p).support at ha
@@ -42,7 +43,9 @@ private lemma algebraicIndependent_coordinates_of_standard
   have hz := Ideal.eq_zero_of_mem_restrictSupport_standardExponents I m hs hmem
   exact (rename_injective j hj) (by simpa only [map_zero] using hz)
 
-private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype σ]
+variable {K σ : Type*} [Field K] [Fintype σ]
+
+private lemma orthant_free_monomials_standard 
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (B : ℕ)
     (hstable : ∀ a, a ∈ standardExponentVectors I m ↔
       clampExponent B a ∈ standardExponentVectors I m)
@@ -51,28 +54,23 @@ private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype 
     (t : orthantFree b →₀ ℕ) :
     t.mapDomain Subtype.val ∈ Ideal.standardExponents I m := by
   have he : orthantExpand b t ∈ standardExponentVectors I m := by
-    apply (hstable _).mpr
-    rw [clamp_orthantExpand]
-    exact hb
-  apply Ideal.isLowerSet_standardExponents I m (a := Finsupp.equivFunOnFinite.symm
-    (orthantExpand b t)) _ he
+    grind [clamp_orthantExpand]
+  apply Ideal.isLowerSet_standardExponents I m  _ he
   intro i
-  change (t.mapDomain Subtype.val) i ≤ orthantExpand b t i
   by_cases hi : (b i).val = B
   · have hh := Finsupp.mapDomain_apply_of_injective
-      (Subtype.val_injective : Function.Injective (fun i : orthantFree b => i.val))
+      (Subtype.val_injective : Function.Injective ((Subtype.val)))
       t ⟨i, hi⟩
     rw [hh]
     simp [orthantExpand, hi]
   · rw [Finsupp.mapDomain_of_notMem_range]
     · exact Nat.zero_le _
-    · rintro ⟨j, rfl⟩
-      exact hi j.property
+    · grind
 
 /-- The independent coordinates are constructed from a maximal
 standard orthant, with exactly the degree of the Hilbert polynomial. -/
 theorem exists_hilbert_dimension_independent_coordinates
-    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+     [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) :
     ∃ U : Set σ, Nat.card U = (filteredHilbertPolynomial I).natDegree ∧
       AlgebraicIndependent K (fun i : U => (Ideal.Quotient.mk I) (X i.val)) := by
@@ -98,10 +96,7 @@ theorem exists_hilbert_dimension_independent_coordinates
   refine ⟨{i | (b i).val = B}, ?_, ?_⟩
   · rw [Nat.card_eq_fintype_card, hpoly, lowerSetOrthantPolynomial_eq_sum, hdeg, he]
     exact Fintype.card_congr (Equiv.refl _)
-  · exact algebraicIndependent_coordinates_of_standard I MonomialOrder.degLex
-      Subtype.val Subtype.val_injective
-      (orthant_free_monomials_standard I MonomialOrder.degLex B hB b
-        (Finset.mem_filter.mp hb).2)
+  exact algebraicIndependent_coordinates_of_standard I MonomialOrder.degLex Subtype.val Subtype.val_injective
+    (orthant_free_monomials_standard I MonomialOrder.degLex B hB b (Finset.mem_filter.mp hb).right)
 
-end
 end CCDN

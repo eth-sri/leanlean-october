@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Determinant.SingularTangent
 
 /-! Binomial profiles for hypersurface local layers in all dimensions.
@@ -13,15 +15,16 @@ sharp determinant exponent. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The degree-k Hilbert function of a homogeneous hypersurface of degree μ
 in n+1 variables, including the degrees below μ. -/
-def hypersurfaceLayerBound (n μ k : ℕ) : ℕ :=
+noncomputable def hypersurfaceLayerBound (n μ k : ℕ)  :=
   (n + k).choose n - if μ ≤ k then (n + (k - μ)).choose n else 0
 
-private lemma originLayer_finrank_le_hypersurfaceLayerBound {K : Type*} [Field K] {n μ k : ℕ}
+variable {K : Type*} [Field K]
+
+private lemma originLayer_finrank_le_hypersurfaceLayerBound  {n μ k : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f ∈ idealOfVars (Fin (n + 1)) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) :
@@ -29,7 +32,7 @@ private lemma originLayer_finrank_le_hypersurfaceLayerBound {K : Type*} [Field K
   unfold hypersurfaceLayerBound
   split_ifs with hk
   · have h := originLayer_hilbert_bound f hf hμ hk
-    rw [Nat.choose_symm_add (a := n), Nat.choose_symm_add (a := n)]
+    rw [Nat.choose_symm_add , Nat.choose_symm_add ]
     omega
   · rw [Nat.sub_zero, Nat.choose_symm_add]
     exact originLayer_finrank_le f k
@@ -51,16 +54,13 @@ lemma hypersurfaceLayerBound_succ_succ (n μ k : ℕ) :
       (n + (k + 1)).choose n + hypersurfaceLayerBound (n + 1) μ k := by
   have hchoose : (n + 1 + (k + 1)).choose (n + 1) =
       (n + (k + 1)).choose n + (n + 1 + k).choose (n + 1) := by
-    rw [show n + 1 + (k + 1) = (n + 1 + k) + 1 by omega, Nat.choose_succ_succ']
-    rw [show n + 1 + k = n + (k + 1) by omega]
+    grind
   unfold hypersurfaceLayerBound
-  rw [hchoose]
   by_cases hk : μ ≤ k
   · rw [ite_eq_left hk, ite_eq_left (by omega : μ + 1 ≤ k + 1), Nat.add_sub_add_right]
     have hmono := Nat.choose_le_choose (n + 1) (show n + 1 + (k - μ) ≤ n + 1 + k by omega)
     omega
-  · rw [ite_eq_right hk, ite_eq_right (by omega : ¬ μ + 1 ≤ k + 1)]
-    omega
+  · grind
 
 /-- A uniform shifted bound with the exact leading coefficient. The dimension
 is n+1; unlike the sharper error in CCDN 2.1, the lower terms here may contain μ. -/
@@ -77,30 +77,23 @@ theorem hypersurfaceLayerBound_le_mul_choose (n μ k : ℕ) :
       have h := (ih k).trans (Nat.mul_le_mul_left μ hmono)
       nlinarith
 
-/-- Cumulative layer dimension through degree k is at most
-μ * binomial(n+k,n), where n is the hypersurface dimension. -/
-private theorem sum_hypersurfaceLayerBound_le (n μ k : ℕ) :
-    (∑ j : Fin (k + 1), hypersurfaceLayerBound (n + 1) μ j.val) ≤
-      μ * (n + k + 1).choose (n + 1) := by
-  calc
-    _ ≤ ∑ j : Fin (k + 1), μ * (n + j.val).choose n :=
-      Finset.sum_le_sum fun j _ => hypersurfaceLayerBound_le_mul_choose n μ j.val
-    _ = μ * (n + k + 1).choose (n + 1) := by
-      rw [← Finset.mul_sum, Fin.sum_univ_eq_sum_range (fun j => (n + j).choose n)]
-      simp_rw [Nat.add_comm n]
-      rw [Nat.sum_range_add_choose]
-      simp only [Nat.add_comm 1 n]
 
 /-- The cumulative local Hilbert function has this bound. -/
-theorem originLayer_cumulative_le {K : Type*} [Field K] {n μ : ℕ}
+theorem originLayer_cumulative_le  {n μ : ℕ}
     (f : MvPolynomial (Fin (n + 2)) K)
     (hf : f ∈ idealOfVars (Fin (n + 2)) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) (k : ℕ) :
     (∑ j : Fin (k + 1), Module.finrank K (originLayer f j.val)) ≤
-      μ * (n + k + 1).choose (n + 1) := by
-  exact (Finset.sum_le_sum (fun j _ =>
+      μ * (n + k + 1).choose (n + 1) := (Finset.sum_le_sum (fun _ _ =>
     originLayer_finrank_le_hypersurfaceLayerBound f hf hμ)).trans
-      (sum_hypersurfaceLayerBound_le n μ k)
+      ((by
+         calc
+           _ ≤ ∑ j : Fin (k + 1), μ * (n + j.val).choose n :=
+             Finset.sum_le_sum fun j _ => hypersurfaceLayerBound_le_mul_choose n μ j.val
+           _ = μ * (n + k + 1).choose (n + 1) := by
+             rw [← Finset.mul_sum, Fin.sum_univ_eq_sum_range (fun j => (n + j).choose n)]
+             simp_rw [Nat.add_comm n]
+             rw [Nat.sum_range_add_choose]
+             simp only [Nat.add_comm 1 n]))
 
-end
 end CCDN

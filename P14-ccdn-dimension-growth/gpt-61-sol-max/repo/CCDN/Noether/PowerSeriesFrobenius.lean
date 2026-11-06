@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import Mathlib.RingTheory.PowerSeries.Basic
 import Mathlib.Algebra.CharP.Algebra
 import Mathlib.Algebra.CharP.Lemmas
@@ -13,9 +15,8 @@ import Mathlib.RingTheory.PowerSeries.NoZeroDivisors
 /-! Frobenius noncancellation from injectivity of finite coefficient jets.
 These are statements about power series in prime-power characteristic. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open PowerSeries
 
 private lemma powerSeries_frobenius_constant_congruence {K : Type*} [Field K]
@@ -46,10 +47,8 @@ private lemma powerSeries_frobenius_relation_constants {K ι : Type*} [Field K]
     rw [Algebra.smul_def, PowerSeries.algebraMap_eq]
     ring
   rw [hrel, zero_sub] at hdiff
-  have hzero := hjet (fun i => (g i).constantCoeff ^ (p ^ r))
-    (PowerSeries.X_pow_dvd_iff.mp (dvd_neg.mp hdiff))
-  intro i
-  exact (eq_zero_of_pow_eq_zero (hzero i))
+  exact have hzero := hjet (fun i => constantCoeff (g i) ^ p ^ r) (X_pow_dvd_iff.mp (dvd_neg.mp hdiff));
+  fun i => eq_zero_of_pow_eq_zero (hzero i)
 
 /-- A finite family of series has a common lowest power of X; after dividing
 it out, at least one remaining series has nonzero constant coefficient. -/
@@ -61,13 +60,13 @@ private lemma powerSeries_common_order_factor {K ι : Type*} [Field K] [Fintype 
   let S := Finset.univ.filter (fun i => g i ≠ 0)
   have hS : S.Nonempty := by obtain ⟨i, hi⟩ := hg; exact ⟨i, by simp [S, hi]⟩
   obtain ⟨j, hj, hmin⟩ := S.exists_min_image (fun i => (g i).order.toNat) hS
-  have hj0 : g j ≠ 0 := (Finset.mem_filter.mp hj).2
+  have hj0 := (Finset.mem_filter.mp hj).2
   let m := (g j).order.toNat
   have hdiv (i : ι) : PowerSeries.X ^ m ∣ g i := by
     by_cases hi : g i = 0
     · simp [hi]
     · have hle := hmin i (by simp [S, hi])
-      exact (pow_dvd_pow PowerSeries.X hle).trans (PowerSeries.X_pow_order_dvd (φ := g i))
+      exact (pow_dvd_pow PowerSeries.X hle).trans (PowerSeries.X_pow_order_dvd )
   choose h hh using hdiv
   refine ⟨m, h, hh, j, ?_⟩
   have hc := PowerSeries.coeff_order hj0
@@ -98,5 +97,4 @@ theorem powerSeries_frobenius_relation_trivial {K ι : Type*} [Field K]
   have hz := (mul_eq_zero.mp hrel).resolve_left hX
   exact hj (powerSeries_frobenius_relation_constants p r f h hjet hz j)
 
-end
 end CCDN

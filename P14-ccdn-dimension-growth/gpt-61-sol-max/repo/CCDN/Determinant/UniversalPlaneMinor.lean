@@ -18,16 +18,16 @@ universal parameter polynomial is nonzero. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The second direction has zero first coordinate and generic transverse slopes. -/
-def genericTransverseDirection (K F σ : Type*) [Field K] [Field F]
+noncomputable def genericTransverseDirection (K F σ : Type*) [Field K] [Field F]
     [Algebra (MvPolynomial σ K) F] : Option σ → F :=
   fun i => Option.elim i 0 (fun j => algebraMap (MvPolynomial σ K) F (X j))
 
-private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+variable {K F σ : Type*} [Field K] [Field F] [Algebra K F] [Algebra (MvPolynomial σ K) F]
+
+private lemma genericPlaneMap_affineCoordinates 
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb f) =
       MvPolynomial.map (planeParameterEval (algebraMap K F)
@@ -53,8 +53,7 @@ private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Fiel
 
 /-- Monic normalization changes the specialized equation only by a scalar. -/
 lemma normalized_genericPlane_universal_specialization
-    {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+    
     [IsScalarTower K (MvPolynomial σ K) F]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     bivariateMap (algebraMap (MvPolynomial σ K) F)
@@ -82,10 +81,7 @@ theorem exists_universalPlane_minor
     exists_positioned_genericPlane_minor f hf hpos hchar
   let R := MvPolynomial σ K
   let F := FractionRing R
-  let φ : R →+* F := algebraMap R F
-  have hne : φ (((closedFormCoefficientMatrix f.totalDegree
-      (genericPlanePolynomial (normalizedHypersurfaceCoordinates a b hb f))).submatrix
-        rows cols).det) ≠ 0 :=
+  have hne :=
     (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr hdet
   rw [closedForm_minor_map, normalized_genericPlane_universal_specialization,
     closedForm_minor_smul, ← closedForm_minor_map] at hne
@@ -93,5 +89,4 @@ theorem exists_universalPlane_minor
   intro he
   exact hne (by rw [he, map_zero, mul_zero])
 
-end
 end CCDN

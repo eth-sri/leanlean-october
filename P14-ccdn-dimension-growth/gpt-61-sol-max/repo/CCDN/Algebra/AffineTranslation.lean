@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.HomogeneousChart
 public import CCDN.Algebra.HomogeneousTranslation
 public import CCDN.Algebra.OriginShift
@@ -14,23 +16,23 @@ preserve degree and irreducibility, over every coefficient field. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The translation `X j ↦ X j + a j` of polynomials in `Fin n` variables, as an algebra
 automorphism over `R`. -/
-def affineTranslation (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R) :
-    MvPolynomial (Fin n) R ≃ₐ[R] MvPolynomial (Fin n) R :=
+noncomputable def affineTranslation (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R)  :=
   originShiftEquiv a
 
+variable {R : Type*} [CommRing R]
+
 /-- An affine translation of variables preserves and reflects irreducibility. -/
-lemma affineTranslation_irreducible_iff {R : Type*} [CommRing R] {n : ℕ}
+lemma affineTranslation_irreducible_iff  {n : ℕ}
     (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
     Irreducible (affineTranslation R a f) ↔ Irreducible f :=
   MulEquiv.irreducible_iff (f := affineTranslation R a)
 
 /-- An affine translation of variables does not increase the total degree. -/
-lemma affineTranslation_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R] {n : ℕ}
+lemma affineTranslation_totalDegree_le  [Nontrivial R] {n : ℕ}
     (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
     (affineTranslation R a f).totalDegree ≤ f.totalDegree := by
   classical
@@ -42,9 +44,8 @@ lemma affineTranslation_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R] {
       apply (totalDegree_finsetProd _ _).trans
       apply Finset.sum_le_sum
       intro j _
-      have hh : (X j + C (a j) : MvPolynomial (Fin n) R).totalDegree ≤ 1 := by
-        exact (totalDegree_add _ _).trans (by simp)
-      exact (totalDegree_pow _ _).trans (by simpa using Nat.mul_le_mul_left (m j) hh)
+      have hh : (X j + C (a j) : MvPolynomial (Fin n) R).totalDegree ≤ 1 := (totalDegree_add _ _).trans (by simp)
+      exact (totalDegree_pow _ _).trans (by nlinarith)
     have hh := totalDegree_mul (C c) (m.prod (fun j e => (X j + C (a j)) ^ e))
     simp only [totalDegree_C, zero_add] at hh
     exact hh.trans hp
@@ -54,7 +55,7 @@ lemma affineTranslation_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R] {
   exact (hm m _).trans (le_totalDegree hm')
 
 /-- An affine translation of variables preserves the total degree over a nontrivial ring. -/
-lemma affineTranslation_totalDegree {R : Type*} [CommRing R] [Nontrivial R] {n : ℕ}
+lemma affineTranslation_totalDegree  [Nontrivial R] {n : ℕ}
     (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
     (affineTranslation R a f).totalDegree = f.totalDegree := by
   apply le_antisymm (affineTranslation_totalDegree_le a f)
@@ -73,18 +74,16 @@ lemma affineTranslation_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
 
 /-- Dehomogenizing at `X 0` intertwines the homogeneous translation
 `Xⱼ₊₁ ↦ Xⱼ₊₁ + aⱼ X₀` with the affine translation `Xⱼ ↦ Xⱼ + aⱼ`. -/
-lemma affineChart_homogeneousTranslation {R : Type*} [CommRing R] {n : ℕ}
+lemma affineChart_homogeneousTranslation  {n : ℕ}
     (a : Fin n → R) (f : MvPolynomial (Fin (n + 1)) R) :
     affineChart n (homogeneousTranslation R a f) = affineTranslation R a (affineChart n f) := by
   have he : (affineChart n).comp (homogeneousTranslation R a).toRingHom =
       (affineTranslation R a).toRingHom.comp (affineChart n) := by
     apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [affineChart, homogeneousTranslation, homogeneousTranslationHom, affineTranslation]
+    · simp_all [affineChart, homogeneousTranslation, homogeneousTranslationHom, affineTranslation]
     · intro i
       refine Fin.cases ?_ (fun j => ?_) i <;>
         simp [affineChart, homogeneousTranslation, homogeneousTranslationHom, affineTranslation]
   exact RingHom.congr_fun he f
 
-end
 end CCDN

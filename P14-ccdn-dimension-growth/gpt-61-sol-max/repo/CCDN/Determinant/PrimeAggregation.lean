@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Analysis.PrimeCutoff
 public import CCDN.Plane.FiniteFieldConstants
 import CCDN.Analysis.PrimeProduct
@@ -18,9 +20,8 @@ packages this for a local divisor oracle (for each good prime an exponent with t
 lower bound) and absorbs the square-root error above a cutoff `L ≥ d ^ 4`;
 `determinant_log_lower_of_local_divisors_degree_four` is the case `L = 27 d ^ 4`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset Real
 
 private lemma sum_log_disjoint_prime_powers_le_log (P Q : Finset ℕ)
@@ -33,22 +34,18 @@ private lemma sum_log_disjoint_prime_powers_le_log (P Q : Finset ℕ)
   classical
   let w : ℕ → ℕ := fun p => if p ∈ P then e p else v p
   have hw (p : ℕ) (hp : p ∈ P ∪ Q) : (p : ℤ) ^ w p ∣ D := by
-    by_cases h : p ∈ P
-    · simpa only [w, ite_eq_left h] using hdivP p h
-    · simpa only [w, ite_eq_right h] using hdivQ p ((mem_union.mp hp).resolve_left h)
+    aesop
   have hh := sum_log_prime_powers_le_log (P ∪ Q) w hD
     (fun p hp => (mem_union.mp hp).elim (hP p) (hQ p)) hw
   rw [sum_union hPQ] at hh
   have h₁ : (∑ p ∈ P, (w p : ℝ) * Real.log p) =
       ∑ p ∈ P, (e p : ℝ) * Real.log p := by
-    apply sum_congr rfl
-    intro p hp
-    simp only [w, ite_eq_left hp]
+    aesop
   have h₂ : (∑ p ∈ Q, (w p : ℝ) * Real.log p) =
       ∑ p ∈ Q, (v p : ℝ) * Real.log p := by
     apply sum_congr rfl
     intro p hp
-    have hn : p ∉ P := fun h => (disjoint_left.mp hPQ) h hp
+    have hn := fun h => (disjoint_left.mp hPQ) h hp
     simp only [w, ite_eq_right hn]
   rwa [h₁, h₂] at hh
 
@@ -59,12 +56,12 @@ theorem general_determinant_log_lower_cutoff_congruence {x L C A E : ℝ}
     (hx : 1 ≤ x) (hL : 1 ≤ L) (hC : 0 ≤ C) (hA : 0 ≤ A) (hE : 0 ≤ E)
     (bad P : Finset ℕ) (hPbad : P ⊆ bad) (hP : ∀ p ∈ P, p.Prime)
     (mass : ℕ → ℝ) (e v : ℕ → ℕ) {D : ℤ} (hD : 0 < D)
-    (hmass : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) → 0 < mass p)
-    (hupper : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) →
+    (hmass : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p → 0 < mass p)
+    (hupper : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p →
       mass p ≤ p + C * Real.sqrt p)
-    (he : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) →
+    (he : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p →
       A / mass p - E ≤ e p)
-    (hdiv : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) →
+    (hdiv : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p →
       (p : ℤ) ^ e p ∣ D)
     (hcong : ∀ p ∈ P, (p : ℤ) ^ v p ∣ D) :
     A * (Real.log x - Real.log L - 2 * mertensError -
@@ -72,7 +69,7 @@ theorem general_determinant_log_lower_cutoff_congruence {x L C A E : ℝ}
       E * ((Real.log 4 + 4) * x) +
       (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤ Real.log D := by
   classical
-  let S := (((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad).filter (fun p : ℕ => L < (p : ℝ))
+  let S := (((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad).filter (fun p : ℕ => L < ↑p)
   have hp (p : ℕ) (hp : p ∈ S) : p.Prime :=
     (mem_filter.mp (mem_sdiff.mp (mem_filter.mp hp).1).1).2
   have hSP : Disjoint S P := by
@@ -108,13 +105,13 @@ theorem general_determinant_log_lower_cutoff_congruence {x L C A E : ℝ}
 `bad` supplies an exponent `e` with `A / mass p - E ≤ e` and `p ^ e ∣ D`, where
 `mass p ≤ p + K d² √p` and `d ^ 4 ≤ L`; every `p ∈ P ⊆ bad` contributes `p ^ v p ∣ D`. -/
 theorem determinant_log_lower_of_local_divisors {x L K A E : ℝ} {d : ℕ}
-    (hx : 1 ≤ x) (hd : 0 < d) (hdL : (d : ℝ) ^ 4 ≤ L) (hK : 0 ≤ K) (hA : 0 ≤ A)
+    (hx : 1 ≤ x) (hd : 0 < d) (hdL : ↑d ^ 4 ≤ L) (hK : 0 ≤ K) (hA : 0 ≤ A)
     (hE : 0 ≤ E) (bad P : Finset ℕ) (hPbad : P ⊆ bad) (hP : ∀ p ∈ P, p.Prime) (v : ℕ → ℕ)
     (mass : ℕ → ℝ) {D : ℤ} (hD : 0 < D)
-    (hmass : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) → 0 < mass p)
-    (hupper : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) →
-      mass p ≤ p + K * (d : ℝ) ^ 2 * Real.sqrt p)
-    (hlocal : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < (p : ℝ) →
+    (hmass : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p → 0 < mass p)
+    (hupper : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p →
+      mass p ≤ p + K * ↑d ^ 2 * Real.sqrt p)
+    (hlocal : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, L < ↑p →
       ∃ e : ℕ, A / mass p - E ≤ e ∧ (p : ℤ) ^ e ∣ D)
     (hcong : ∀ p ∈ P, (p : ℤ) ^ v p ∣ D) :
     A * (Real.log x - Real.log L - 2 * mertensError - (∑ p ∈ bad, Real.log p / p) -
@@ -124,19 +121,16 @@ theorem determinant_log_lower_of_local_divisors {x L K A E : ℝ} {d : ℕ}
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hL : 1 ≤ L := (one_le_pow₀ hd1).trans hdL
   let G := ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad
-  let e : ℕ → ℕ := fun p => if h : p ∈ G ∧ L < (p : ℝ) then (hlocal p h.1 h.2).choose else 0
-  have hspec (p : ℕ) (hp : p ∈ G) (hcut : L < (p : ℝ)) :
+  let e : ℕ → ℕ := fun p => if h : p ∈ G ∧ L < ↑p then (hlocal p h.1 h.2).choose else 0
+  have hspec (p : ℕ) (hp : p ∈ G) (hcut : L < ↑p) :
       A / mass p - E ≤ e p ∧ (p : ℤ) ^ e p ∣ D := by
-    have h : p ∈ G ∧ L < (p : ℝ) := ⟨hp, hcut⟩
-    simp only [e, dite_eq_left h]
-    exact (hlocal p hp hcut).choose_spec
+    grind
   have hh := general_determinant_log_lower_cutoff_congruence hx hL
-    (mul_nonneg hK (sq_nonneg (d : ℝ))) hA hE bad P hPbad hP mass e v hD hmass hupper
+    (mul_nonneg hK (sq_nonneg ↑d)) hA hE bad P hPbad hP mass e v hD hmass hupper
     (fun p hp hcut => (hspec p hp hcut).1) (fun p hp hcut => (hspec p hp hcut).2) hcong
-  have hsqrt : (d : ℝ) ^ 2 ≤ Real.sqrt L :=
-    Real.le_sqrt_of_sq_le (by calc ((d : ℝ) ^ 2) ^ 2 = (d : ℝ) ^ 4 := by ring
-                                _ ≤ L := hdL)
-  have htail : K * (d : ℝ) ^ 2 * (2 * primeBlockMass / Real.sqrt L) ≤
+  have hsqrt : ↑d ^ 2 ≤ Real.sqrt L :=
+    Real.le_sqrt_of_sq_le (by linarith)
+  have htail : K * ↑d ^ 2 * (2 * primeBlockMass / Real.sqrt L) ≤
       2 * K * primeBlockMass := by
     rw [← mul_div_assoc]
     apply (div_le_iff₀ (Real.sqrt_pos.mpr (by linarith))).mpr
@@ -153,22 +147,20 @@ theorem determinant_log_lower_of_local_divisors_degree_four {x K A E : ℝ} {d :
     (bad P : Finset ℕ) (hPbad : P ⊆ bad) (hP : ∀ p ∈ P, p.Prime) (v : ℕ → ℕ)
     {D : ℤ} (hD : 0 < D)
     (hlocal : ∀ p ∈ ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad, stepanovThreshold (d : ℝ) < p →
-      ∃ e : ℕ, A / (p + K * (d : ℝ) ^ 2 * Real.sqrt p) - E ≤ e ∧ (p : ℤ) ^ e ∣ D)
+      ∃ e : ℕ, A / (p + K * ↑d ^ 2 * Real.sqrt p) - E ≤ e ∧ (p : ℤ) ^ e ∣ D)
     (hcong : ∀ p ∈ P, (p : ℤ) ^ v p ∣ D) :
     A * (Real.log x - 4 * Real.log d - Real.log 27 - 2 * mertensError -
       (∑ p ∈ bad, Real.log p / p) - 2 * K * primeBlockMass) -
       E * ((Real.log 4 + 4) * x) + (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤ Real.log D := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
   have h := determinant_log_lower_of_local_divisors hx hd
     (le_mul_of_one_le_left (by positivity) (by norm_num)) hK hA hE bad P hPbad hP v
     (fun p => p + K * (d : ℝ) ^ 2 * Real.sqrt p) hD
     (fun p hp _ => by
-      have hp0 : (0 : ℝ) < p := by exact_mod_cast (mem_filter.mp (mem_sdiff.mp hp).1).2.pos
+      have hp0 : 0 < p := by simp_all
       positivity)
     (fun _ _ _ => le_rfl) hlocal hcong
   rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow] at h
   push_cast at h
   linarith
 
-end
 end CCDN

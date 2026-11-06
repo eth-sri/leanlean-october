@@ -5,6 +5,9 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Noether.BivariateCoefficientMatrix
+import Mathlib
+
 public import CCDN.Algebra.AffineLineLeading
 public import CCDN.Algebra.CharZeroOrGT
 public import CCDN.Noether.UniversalPlane
@@ -27,42 +30,35 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma universalPlaneMap_map {K L σ : Type*} [CommRing K] [CommRing L]
-    (φ : K →+* L) (f : MvPolynomial σ K) :
+variable {K L σ : Type*} [CommRing K] [CommRing L] (φ : K →+* L) (f : MvPolynomial σ K)
+
+private lemma universalPlaneMap_map  :
     universalPlaneMap L σ (MvPolynomial.map φ f) =
       MvPolynomial.map (MvPolynomial.map φ) (universalPlaneMap K σ f) := by
   have he : (universalPlaneMap L σ).toRingHom.comp (MvPolynomial.map φ) =
       (MvPolynomial.map (MvPolynomial.map φ)).comp (universalPlaneMap K σ).toRingHom := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [universalPlaneMap]
-    · intro i
-      simp [universalPlaneMap]
+    aesop (add simp [universalPlaneMap])
   exact RingHom.congr_fun he f
 
 /-- The universal plane restriction commutes with applying a coefficient ring homomorphism. -/
-lemma universalPlanePolynomial_map {K L σ : Type*} [CommRing K] [CommRing L]
-    (φ : K →+* L) (f : MvPolynomial σ K) :
+lemma universalPlanePolynomial_map  :
     universalPlanePolynomial (MvPolynomial.map φ f) =
       bivariateMap (MvPolynomial.map φ) (universalPlanePolynomial f) := by
   rw [universalPlanePolynomial, universalPlaneMap_map, universalPlanePolynomial,
     bivariatePolynomialEquiv_map]
 
 /-- A geometrically irreducible equation yields a nonzero polynomial
-in the full affine-plane parameter ring, of degree at most (2*d^2-1)*d.
+in the full affine-plane parameter ring.
 There are no smoothness or positioning hypotheses on the input equation. -/
-theorem exists_universalPlane_minor_degree
+theorem exists_universalPlane_minor_base
     {K σ : Type*} [Field K] [Fintype σ]
     (f : MvPolynomial (Option σ) K)
     (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
     (hpos : 0 < f.totalDegree) (hchar : CharZeroOrGT K (2 * f.totalDegree ^ 2)) :
-    ∃ (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
-      (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree),
+    ∃ (rows : ClosedFormMinorIndex f.totalDegree → ℕ × ℕ)
+      (cols : ClosedFormMinorIndex f.totalDegree → ClosedFormColumns f.totalDegree),
       ((closedFormCoefficientMatrix f.totalDegree
-        (universalPlanePolynomial f)).submatrix rows cols).det ≠ 0 ∧
-      (((closedFormCoefficientMatrix f.totalDegree
-        (universalPlanePolynomial f)).submatrix rows cols).det).totalDegree ≤
-          (2 * f.totalDegree ^ 2 - 1) * f.totalDegree := by
+        (universalPlanePolynomial f)).submatrix rows cols).det ≠ 0 := by
   let L := AlgebraicClosure K
   let φ : K →+* L := algebraMap K L
   have ht : (MvPolynomial.map φ f).totalDegree = f.totalDegree :=
@@ -71,12 +67,10 @@ theorem exists_universalPlane_minor_degree
     (MvPolynomial.map φ f) hf (ht ▸ hpos) (ht ▸ hchar.map φ)
   rw [ht] at hex
   obtain ⟨rows, cols, hdet⟩ := hex
-  refine ⟨rows, cols, ?_, ?_⟩
-  · intro he
-    rw [universalPlanePolynomial_map, ← closedForm_minor_map, he, map_zero] at hdet
-    exact hdet rfl
-  · exact closedForm_minor_parameterDegree _ _ _ _
-      (universalPlanePolynomial_coefficient_degree f) rows cols
+  refine ⟨rows, cols, ?_⟩
+  intro he
+  rw [universalPlanePolynomial_map, ← closedForm_minor_map, he, map_zero] at hdet
+  exact hdet rfl
 
 end
 end CCDN
@@ -85,30 +79,30 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma universalPlanePolynomial_specialize_axis {K σ : Type*} [CommRing K]
+variable {K σ : Type*}
+
+private lemma universalPlanePolynomial_specialize_axis  [CommRing K]
     (a b c : σ → K) (f : MvPolynomial σ K) :
     Polynomial.map (Polynomial.evalRingHom 0)
       (bivariateMap (planeParameterEval (RingHom.id K) a b c) (universalPlanePolynomial f)) =
       affineLinePolynomial a b f := by
   rw [universalPlanePolynomial_specialize]
-  have he : (Polynomial.mapRingHom (Polynomial.evalRingHom (0 : K))).comp
+  have he : (Polynomial.mapRingHom (Polynomial.evalRingHom 0)).comp
       ((bivariatePolynomialEquiv K).toRingHom.comp
         (eval₂Hom (C.comp (RingHom.id K))
           (fun i => C (a i) + C (b i) * X 0 + C (c i) * X 1))) = affineLinePolynomial a b := by
     apply MvPolynomial.ringHom_ext
     · intro r
       simp [affineLinePolynomial, bivariatePolynomialEquiv_C]
-    · intro i
-      simp [affineLinePolynomial, bivariatePolynomialEquiv_C,
+    · simp [affineLinePolynomial, bivariatePolynomialEquiv_C,
         bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one]
   exact RingHom.congr_fun he f
 
 /-- The coefficient of x^d y^0, as a polynomial in all plane parameters. -/
-def universalPlaneLeading {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
-    MvPolynomial (PlaneParameters σ) K :=
+def universalPlaneLeading  [CommRing K] (f : MvPolynomial σ K)  :=
   ((universalPlanePolynomial f).coeff f.totalDegree).coeff 0
 
-private lemma universalPlaneLeading_specialize {K σ : Type*} [CommRing K]
+private lemma universalPlaneLeading_specialize  [CommRing K]
     (a b c : σ → K) (f : MvPolynomial σ K) :
     planeParameterEval (RingHom.id K) a b c (universalPlaneLeading f) =
       eval b (homogeneousComponent f.totalDegree f) := by
@@ -131,7 +125,7 @@ private lemma universalPlaneLeading_map {K L σ : Type*} [Field K] [Field L]
 /-- Over an algebraically closed field, irreducibility and the characteristic bound
 suffice for the leading polynomial to be nonzero. -/
 theorem universalPlaneLeading_ne_zero_of_irreducible
-    {K σ : Type*} [Field K] [IsAlgClosed K] [Fintype σ]
+     [Field K] [IsAlgClosed K] [Fintype σ]
     (f : MvPolynomial (Option σ) K) (hf : Irreducible f) (hpos : 0 < f.totalDegree)
     (hchar : CharZeroOrGT K f.totalDegree) :
     universalPlaneLeading f ≠ 0 := by
@@ -143,7 +137,7 @@ theorem universalPlaneLeading_ne_zero_of_irreducible
 /-- Geometric irreducibility and the characteristic bound suffice for the
 leading polynomial to be nonzero. -/
 theorem universalPlaneLeading_ne_zero
-    {K σ : Type*} [Field K] [Fintype σ]
+     [Field K] [Fintype σ]
     (f : MvPolynomial (Option σ) K)
     (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
     (hpos : 0 < f.totalDegree) (hchar : CharZeroOrGT K f.totalDegree) :

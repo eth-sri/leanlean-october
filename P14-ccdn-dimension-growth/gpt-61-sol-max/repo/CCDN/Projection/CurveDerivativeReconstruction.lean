@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 public import CCDN.Plane.LinearDeformation
 public import Mathlib.RingTheory.Algebraic.Defs
@@ -20,9 +22,8 @@ The constant and first-order equations of a polynomial family of plane
 relations, expressed as equations in the target algebra.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 private lemma plane_deformation_relation_coefficients {K A ι : Type*}
@@ -41,17 +42,14 @@ private lemma plane_deformation_relation_coefficients {K A ι : Type*}
     planeLinearDeformation_coeff_zero, planeLinearDeformation_coeff_one,
     Polynomial.coeff_zero, Finset.sum_add_distrib] at h1
   constructor
-  · simp only [map_sum, map_smul]
-    simpa only [Algebra.smul_def] using h0
+  · simp_all [map_sum,  Algebra.smul_def]
   · simp only [map_sum, Derivation.map_smul, map_smul]
     simp only [Algebra.smul_def, Finset.sum_mul]
     simpa only [mul_assoc, add_comm] using h1
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Differentiate a family of degree-d plane equations to reconstruct
@@ -78,11 +76,11 @@ theorem exists_derivative_reconstruction {K τ : Type*}
     apply V.sum_mem
     intro i _
     exact V.smul_mem _ (b i).property
-  have hd₀ : f₀.totalDegree ≤ d := (mem_restrictTotalDegree _ _ _).mp (hmem 0)
-  have hd₁ : f₁.totalDegree ≤ d := (mem_restrictTotalDegree _ _ _).mp (hmem 1)
+  have hd₀ := (mem_restrictTotalDegree _ _ _).mp (hmem 0)
+  have hd₁ := (mem_restrictTotalDegree _ _ _).mp (hmem 1)
   have hn₀ : f₀ ≠ 0 := by
     intro hz
-    have hi : LinearIndependent K r := b.linearIndependent.map' V.subtype
+    have hi := b.linearIndependent.map' V.subtype
       (LinearMap.ker_eq_bot.mpr Subtype.val_injective)
     have hh := Fintype.linearIndependent_iff.mp hi (fun i => (v i).coeff 0) hz j
     exact hj (by rwa [← Polynomial.coeff_zero_eq_eval_zero])
@@ -94,12 +92,12 @@ theorem exists_derivative_reconstruction {K τ : Type*}
     ((Ideal.Quotient.mk I) l) r v hv
   change ψ f₀ = 0 at h₀
   change ψ f₁ + ψ (pderiv 1 f₀) * (Ideal.Quotient.mk I) l = 0 at h₁
-  have hz₀ : aeval a f₀ ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp ((hψ f₀).trans h₀)
+  have hz₀ := Ideal.Quotient.eq_zero_iff_mem.mp ((hψ f₀).trans h₀)
   obtain ⟨c, hc⟩ :=
     plane_projection_relation_space I a f hf hker f₀ (by simpa only [hfd] using hd₀) hz₀
   have hcn : c ≠ 0 := by intro hz; apply hn₀; rw [hc, hz, zero_smul]
   rw [hc, Derivation.map_smul, map_smul, smul_mul_assoc] at h₁
-  have hs := congrArg (fun x : MvPolynomial τ K ⧸ I => c⁻¹ • x) h₁
+  have hs := congrArg ((HSMul.hSMul c⁻¹)) h₁
   simp only [smul_add, smul_smul, inv_mul_cancel₀ hcn, one_smul, smul_zero] at hs
   let P := -(c⁻¹ • f₁)
   refine ⟨P, ?_, ?_⟩
@@ -109,5 +107,4 @@ theorem exists_derivative_reconstruction {K τ : Type*}
     simp only [P, map_neg, map_smul, sub_neg_eq_add]
     exact (add_comm _ _).trans hs
 
-end
 end CCDN

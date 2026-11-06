@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.FieldTheory.Separable
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import Mathlib.FieldTheory.PrimitiveElement
@@ -30,7 +32,7 @@ minimal polynomial.
   an element `I` with `τ I = P a * I` and `a σ(a) = 1` has a `τ`-invariant multiple `P b * I`.
 -/
 
-@[expose] public section
+public section
 
 section
 
@@ -48,10 +50,7 @@ theorem card_monic_dvd_le_two_pow_natDegree
   let P := ((f.map ι).roots.powerset).toFinset
   let e : {g : K[X] // g.Monic ∧ g ∣ f} → ↥P := fun g =>
     ⟨(g.1.map ι).roots, by
-      apply Multiset.mem_toFinset.mpr
-      apply Multiset.mem_powerset.mpr
-      exact Polynomial.roots.le_of_dvd (Polynomial.map_ne_zero hf)
-        (Polynomial.map_dvd ι g.2.2)⟩
+      aesop (add safe apply [Polynomial.roots.le_of_dvd, Polynomial.map_ne_zero, Polynomial.map_dvd])⟩
   have he : Function.Injective e := by
     intro g h hgh
     have hr : (g.1.map ι).roots = (h.1.map ι).roots := congrArg Subtype.val hgh
@@ -96,8 +95,7 @@ theorem card_le_two_pow_finrank
     apply_fun fun p : E[X] => adjoin F (p.coeffs : Set E) at heq'
     simpa only [adjoin_minpoly_coeff_of_exists_primitive_element F hα] using heq'
   have hdeg : f.natDegree = Module.finrank F E := by
-    rw [Polynomial.natDegree_map]
-    exact (Field.primitive_element_iff_minpoly_natDegree_eq F α).mp hα
+    grind [Polynomial.natDegree_map, Field.primitive_element_iff_minpoly_natDegree_eq]
   exact (Nat.card_le_card_of_injective g hg).trans
     (hdeg ▸ Polynomial.card_monic_dvd_le_two_pow_natDegree f
       (Polynomial.map_ne_zero (minpoly.ne_zero_of_finite F α)))
@@ -110,10 +108,12 @@ namespace RingEquiv
 
 variable {K : Type*} [Field K]
 
+variable (σ : K ≃+* K) (hσ : Function.Involutive σ) (hσne : σ ≠ RingEquiv.refl K)
+
+include hσ hσne in
 /-- A norm-one scalar for a nontrivial involution is a multiplicative
 coboundary. The explicit construction also works in characteristic two. -/
-theorem hilbert90_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) {a : K} (ha : a * σ a = 1) :
+theorem hilbert90_of_involutive  {a : K} (ha : a * σ a = 1) :
     ∃ b : K, b ≠ 0 ∧ a * σ b = b := by
   by_cases h : 1 + a = 0
   · have ha' : a = -1 := by linear_combination h
@@ -129,14 +129,6 @@ theorem hilbert90_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
   · refine ⟨1 + a, h, ?_⟩
     rw [map_add, map_one, mul_add, mul_one, ha, add_comm]
 
-/-- Hilbert 90 for a nontrivial involution, in the unit group: a unit `a` with
-`a σ(a) = 1` has the form `b / σ(b)` for some unit `b`. -/
-theorem hilbert90_units_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) (a : Kˣ)
-    (ha : (a : K) * σ (a : K) = 1) :
-    ∃ b : Kˣ, a * Units.map σ.toMonoidHom b = b := by
-  obtain ⟨b, hb, hab⟩ := hilbert90_of_involutive σ hσ hσne ha
-  exact ⟨Units.mk0 b hb, Units.ext hab⟩
 
 /-- If the scalar comparison of an element with its conjugate has norm
 one, multiplication by a principal element produces an invariant
@@ -149,7 +141,9 @@ theorem exists_invariant_of_involutive
     (I : A) (a : Kˣ) (hI : τ I = P a * I)
     (ha : (a : K) * σ (a : K) = 1) :
     ∃ b : Kˣ, τ (P b * I) = P b * I := by
-  obtain ⟨b, hb⟩ := hilbert90_units_of_involutive σ hσ hσne a ha
+  obtain ⟨b, hb⟩ := (show ∃ b, a * (Units.map σ.toMonoidHom) b = b from (by
+                      obtain ⟨b, hb, hab⟩ := hilbert90_of_involutive σ hσ hσne ha
+                      exact ⟨Units.mk0 b hb, Units.ext hab⟩))
   refine ⟨b, ?_⟩
   rw [map_mul, hcompat, hI, ← mul_assoc, mul_comm (P _), ← map_mul, hb]
 

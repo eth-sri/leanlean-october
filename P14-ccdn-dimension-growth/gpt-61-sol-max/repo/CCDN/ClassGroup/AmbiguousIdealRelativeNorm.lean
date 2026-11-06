@@ -15,9 +15,8 @@ equal to a unit of the base ring. This formulation works directly with
 relative ideal norms, so it does not identify the unit obstruction with
 the trivial class. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 
 variable (R S : Type*) [CommRing R] [IsDedekindDomain R]
@@ -41,9 +40,7 @@ private theorem ambiguous_ideal_scalar_relative_unit
       Ideal.relNorm R (I : Ideal S) := Ideal.relNorm_map_algEquiv σ I
   rw [hnmap] at hn
   have hnI : Ideal.relNorm R (I : Ideal S) ≠ 0 := by
-    intro h
-    exact (mem_nonZeroDivisors_iff_ne_zero.mp I.property)
-      (Ideal.relNorm_eq_bot_iff.mp h)
+    aesop
   have hspan := mul_right_cancel₀ hnI hn
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hspan
   exact ⟨x, y, u, hx, hy, hxy, hu⟩
@@ -71,12 +68,11 @@ theorem ambiguous_numberField_ideal_norm_unit
   have hxK : (x : K) ≠ 0 := by exact_mod_cast hx
   have hn := congrArg (algebraMap (𝓞 F) F) hu
   rw [map_mul, Algebra.algebraMap_intNorm (K := F) (L := K),
-    Algebra.algebraMap_intNorm (K := F) (L := K)] at hn
+    Algebra.algebraMap_intNorm  (L := K)] at hn
   rw [div_eq_mul_inv, map_mul, Algebra.norm_inv, ← div_eq_mul_inv]
   apply (div_eq_iff (Algebra.norm_ne_zero_iff.mpr hxK)).mpr
   exact hn.symm.trans (mul_comm _ _)
 
 end NumberFields
 
-end
 end CCDN

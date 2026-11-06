@@ -18,14 +18,13 @@ signed norm curves of the imported files. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField NumberField.InfinitePlace
 
 /-- A coefficient depending only on the field degree. -/
-def oddDegreeClassGroupConstant (n : ℕ) : ℝ :=
-  (12 * affineHypersurfaceAuxiliaryConstant 0 * (n : ℝ) ^ 4) *
-    (numberFieldLatticeBoxConstant n ((n : ℝ) ^ 3) * (2 : ℝ) ^ n) *
-    (3 * (9 : ℝ) ^ (n - 1))
+noncomputable def oddDegreeClassGroupConstant (n : ℕ)  :=
+  (12 * affineHypersurfaceAuxiliaryConstant 0 * ↑n ^ 4) *
+    (numberFieldLatticeBoxConstant n (↑n ^ 3) * 2 ^ n) *
+    (3 * 9 ^ (n - 1))
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -38,7 +37,7 @@ theorem odd_degree_classGroup_two_torsion_bound
           (1 / 2 - 1 / (2 * (Module.finrank ℚ K : ℝ))) := by
   classical
   have hD1 := one_le_abs_discr K
-  have hD : 0 < |(discr K : ℝ)| := zero_lt_one.trans_le hD1
+  have hD := zero_lt_one.trans_le hD1
   let B := 9 * |(discr K : ℝ)| ^ (1 / (Module.finrank ℚ K : ℝ))
   have hroot : 1 ≤ |(discr K : ℝ)| ^ (1 / (Module.finrank ℚ K : ℝ)) :=
     Real.one_le_rpow hD1 (by positivity)
@@ -61,5 +60,4 @@ theorem odd_degree_classGroup_two_torsion_bound
     (by omega : 0 < Module.finrank ℚ K) hh
   exact ht
 
-end
 end CCDN

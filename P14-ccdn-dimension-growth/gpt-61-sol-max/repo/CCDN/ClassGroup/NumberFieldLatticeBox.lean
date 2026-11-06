@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.IntegerTranslationClassPacking
 import CCDN.ClassGroup.LatticeFinitePacking
 import CCDN.ClassGroup.NumberFieldEuclideanLattice
@@ -15,13 +17,12 @@ to generate the ring of integers over `ℤ`. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField NumberField.InfinitePlace MeasureTheory
 
 private theorem unitBall_volume_le_two_pow_finrank
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E] :
-    volume.real (Metric.ball (0 : E) 1) ≤ (2 : ℝ) ^ Module.finrank ℝ E := by
+    volume.real (Metric.ball (0 : E) 1) ≤ 2 ^ Module.finrank ℝ E := by
   let c := stdOrthonormalBasis ℝ E
   let e : E → (Fin (Module.finrank ℝ E) → ℝ) :=
     fun x ↦ (MeasurableEquiv.toLp 2 _).symm (c.repr x)
@@ -29,12 +30,12 @@ private theorem unitBall_volume_le_two_pow_finrank
     (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp _).comp
       c.measurePreserving_repr
   let U : Set (Fin (Module.finrank ℝ E) → ℝ) := Set.Icc (fun _ ↦ -1) (fun _ ↦ 1)
-  have hvol : volume (e ⁻¹' U) = (2 : ENNReal) ^ Module.finrank ℝ E := by
-    rw [hm.measure_preimage (show MeasurableSet U from measurableSet_Icc).nullMeasurableSet]
+  have hvol : volume (e ⁻¹' U) = 2 ^ Module.finrank ℝ E := by
+    rw [hm.measure_preimage (measurableSet_Icc).nullMeasurableSet]
     norm_num [U, Real.volume_Icc_pi]
-  have hsub : Metric.ball (0 : E) 1 ⊆ e ⁻¹' U := by
+  have hsub : Metric.ball 0 1 ⊆ e ⁻¹' U := by
     intro x hx
-    have hnorm : ‖x‖ < 1 := by simpa using hx
+    have hnorm := by simpa using hx
     have hcoord (i : Fin (Module.finrank ℝ E)) : |e x i| ≤ 1 := by
       have hi := PiLp.norm_apply_le (c.repr x) i
       rw [c.repr.norm_map] at hi
@@ -43,7 +44,7 @@ private theorem unitBall_volume_le_two_pow_finrank
   have hp : volume (Metric.ball (0 : E) 1) ≤ volume (e ⁻¹' U) := measure_mono hsub
   rw [hvol] at hp
   have ht := ENNReal.toReal_mono (by finiteness) hp
-  simpa only [Measure.real, ENNReal.toReal_pow, ENNReal.toReal_ofNat] using ht
+  solve_by_elim [ENNReal.toReal_pow, ENNReal.toReal_ofNat]
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -57,8 +58,8 @@ private theorem boundedArchimedeanIntegers_count_of_short_basis
     {B M : ℝ} (hB : 0 ≤ B) (hM : 0 ≤ M)
     (hnorm : ∀ i, ‖b i‖ ≤ M) :
     ((boundedArchimedeanIntegers K B).ncard : ℝ) *
-        ((2 : ℝ)⁻¹ ^ nrComplexPlaces K * Real.sqrt |(discr K : ℝ)|) ≤
-      (2 : ℝ) ^ Module.finrank ℚ K *
+        (2⁻¹ ^ nrComplexPlaces K * Real.sqrt |(discr K : ℝ)|) ≤
+      2 ^ Module.finrank ℚ K *
         (2 * Real.sqrt (Module.finrank ℚ K) * B + Module.finrank ℚ K * M) ^
           Module.finrank ℚ K := by
   let e : 𝓞 K → mixedEmbedding.euclidean.integerLattice K :=
@@ -71,10 +72,7 @@ private theorem boundedArchimedeanIntegers_count_of_short_basis
   let s := (boundedArchimedeanIntegers_finite K B).toFinset.image e
   have hs : ∀ x ∈ s, ‖(x : mixedEmbedding.euclidean.mixedSpace K)‖ ≤
       Real.sqrt (Module.finrank ℚ K) * B := by
-    intro x hx
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hx
-    exact euclideanNumberFieldEmbedding_norm_le K hB (z : K)
-      ((boundedArchimedeanIntegers_finite K B).mem_toFinset.mp hz)
+    aesop (add safe apply [rfl, euclideanNumberFieldEmbedding_norm_le, boundedArchimedeanIntegers_finite])
   have hcard : s.card = (boundedArchimedeanIntegers K B).ncard := by
     rw [Finset.card_image_of_injective _ he]
     exact Set.ncard_eq_toFinset_card _ (boundedArchimedeanIntegers_finite K B) |>.symm
@@ -86,10 +84,8 @@ private theorem boundedArchimedeanIntegers_count_of_short_basis
     rw [← Module.finrank_eq_card_basis b, mixedEmbedding.euclidean.finrank]
   rw [hdim] at hp
   have hunit : volume.real (Metric.ball (0 : mixedEmbedding.euclidean.mixedSpace K) 1) ≤
-      (2 : ℝ) ^ Module.finrank ℚ K := by
-    simpa only [mixedEmbedding.euclidean.finrank] using
-      (unitBall_volume_le_two_pow_finrank
-        (E := mixedEmbedding.euclidean.mixedSpace K))
+      2 ^ Module.finrank ℚ K := by
+    grind [mixedEmbedding.euclidean.finrank, unitBall_volume_le_two_pow_finrank]
   have hR : 0 ≤ 2 * (Real.sqrt (Module.finrank ℚ K) * B) +
       (Module.finrank ℚ K : ℝ) * M := by positivity
   calc
@@ -98,8 +94,8 @@ private theorem boundedArchimedeanIntegers_count_of_short_basis
 
 /-- A dimension-only coefficient for the box count when the independent
 integral vectors have norm at most `C` times the box radius. -/
-def numberFieldLatticeBoxConstant (n : ℕ) (C : ℝ) : ℝ :=
-  (2 : ℝ) ^ n * (2 : ℝ) ^ n * (2 * Real.sqrt n + n * C) ^ n
+noncomputable def numberFieldLatticeBoxConstant (n : ℕ) (C : ℝ)  :=
+  2 ^ n * 2 ^ n * (2 * Real.sqrt n + n * C) ^ n
 
 /-- The box-count constant `numberFieldLatticeBoxConstant n C` is nonnegative for `C ≥ 0`. -/
 lemma numberFieldLatticeBoxConstant_nonneg (n : ℕ) {C : ℝ} (hC : 0 ≤ C) :
@@ -119,18 +115,17 @@ private theorem boundedArchimedeanIntegers_count_of_relative_short_basis
   have hp := boundedArchimedeanIntegers_count_of_short_basis K b hb hB
     (mul_nonneg hC hB) hnorm
   have hr : nrComplexPlaces K ≤ Module.finrank ℚ K := by
-    have := card_add_two_mul_card_eq_rank K
-    omega
-  have hpow : (2 : ℝ)⁻¹ ^ Module.finrank ℚ K ≤ (2 : ℝ)⁻¹ ^ nrComplexPlaces K :=
+    grind [card_add_two_mul_card_eq_rank]
+  have hpow : 2⁻¹ ^ Module.finrank ℚ K ≤ (2 : ℝ)⁻¹ ^ nrComplexPlaces K :=
     pow_le_pow_of_le_one (by norm_num) (by norm_num) hr
   have hc := mul_le_mul_of_nonneg_right hpow (Real.sqrt_nonneg |(discr K : ℝ)|)
   have hs := (mul_le_mul_of_nonneg_left hc
     (Nat.cast_nonneg (boundedArchimedeanIntegers K B).ncard)).trans hp
   have he :
       ((boundedArchimedeanIntegers K B).ncard : ℝ) *
-          ((2 : ℝ)⁻¹ ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)|) =
+          (2⁻¹ ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)|) =
         (((boundedArchimedeanIntegers K B).ncard : ℝ) * Real.sqrt |(discr K : ℝ)|) /
-          (2 : ℝ) ^ Module.finrank ℚ K := by
+          2 ^ Module.finrank ℚ K := by
     rw [inv_pow, div_eq_mul_inv]
     ring
   rw [he] at hs
@@ -153,17 +148,16 @@ theorem boundedSquareNormTranslationClasses_count_of_relative_short_basis
     ((boundedSquareNormTranslationClasses K B).card : ℝ) *
         Real.sqrt |(discr K : ℝ)| ≤
       (numberFieldLatticeBoxConstant (Module.finrank ℚ K) C *
-        (2 : ℝ) ^ Module.finrank ℚ K) * B ^ (Module.finrank ℚ K - 1) := by
-  have hBpos : 0 < B := zero_lt_one.trans_le hB
+        2 ^ Module.finrank ℚ K) * B ^ (Module.finrank ℚ K - 1) := by
+  have hBpos := zero_lt_one.trans_le hB
   have hp := boundedSquareNormTranslationClasses_packing K B B
   have hpR :
       ((boundedSquareNormTranslationClasses K B).card : ℝ) *
           ((2 * ⌊B⌋ + 1).toNat : ℝ) ≤
         (boundedArchimedeanIntegers K (2 * B)).ncard := by
     exact_mod_cast (by simpa only [two_mul] using hp)
-  have hfloor : (0 : ℤ) ≤ 2 * ⌊B⌋ + 1 := by
-    have hh : (0 : ℤ) ≤ ⌊B⌋ := Int.floor_nonneg.mpr hBpos.le
-    omega
+  have hfloor : 0 ≤ 2 * ⌊B⌋ + 1 := by
+    positivity
   have htranslates : B ≤ ((2 * ⌊B⌋ + 1).toNat : ℝ) := by
     have hc : ((2 * ⌊B⌋ + 1).toNat : ℝ) = ((2 * ⌊B⌋ + 1 : ℤ) : ℝ) := by
       exact_mod_cast (Int.toNat_of_nonneg hfloor)
@@ -175,7 +169,7 @@ theorem boundedSquareNormTranslationClasses_count_of_relative_short_basis
     (Nat.cast_nonneg (boundedSquareNormTranslationClasses K B).card)).trans hpR
   have hcount := boundedArchimedeanIntegers_count_of_relative_short_basis K b hb
     (B := 2 * B) (by positivity) hC (fun i ↦ (hnorm i).trans (by
-      nlinarith [mul_nonneg hC hBpos.le]))
+      nlinarith))
   have hh := (mul_le_mul_of_nonneg_right hcard
     (Real.sqrt_nonneg |(discr K : ℝ)|)).trans hcount
   have hn : 0 < Module.finrank ℚ K := Module.finrank_pos
@@ -187,5 +181,4 @@ theorem boundedSquareNormTranslationClasses_count_of_relative_short_basis
   apply (mul_le_mul_iff_left₀ hBpos).mp
   nlinarith only [hh]
 
-end
 end CCDN

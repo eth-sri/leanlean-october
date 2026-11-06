@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.MonomialOrthants
 public import CCDN.ForMathlib.MvPolynomial
 public import Mathlib.RingTheory.Polynomial.HilbertPoly
@@ -20,8 +22,7 @@ noncomputable section
 open Classical in
 /-- The bijection between exponent vectors in `σ → ℕ` of total degree at most `N` and multisets of
 size `N` on `Option σ`. -/
-def boundedExponentVectorEquivSym (σ : Type*) [Fintype σ] (N : ℕ) :
-    {a : σ → ℕ // ∑ i, a i ≤ N} ≃ Sym (Option σ) N :=
+def boundedExponentVectorEquivSym (σ : Type*) [Fintype σ] (N : ℕ)  :=
   (Sym.equivNatSumLeOfFintype σ N).symm
 
 instance finite_boundedExponentVectors {σ : Type*} [Fintype σ] (N : ℕ) :
@@ -50,55 +51,6 @@ private lemma orthantBaseDegree_le {σ : Type*} [Fintype σ] {B : ℕ}
     _ ≤ ∑ _ : σ, B := Finset.sum_le_sum (fun i _ => Nat.le_of_lt_succ (b i).isLt)
     _ = _ := by simp
 
-open Classical in
-/-- Exact eventual counting formula for a lower set partitioned into its
-translated orthants. -/
-private theorem lowerSet_orthant_count {σ : Type*} [Fintype σ]
-    (S : Set (σ → ℕ)) (B : ℕ)
-    (hstable : ∀ a, a ∈ S ↔ clampExponent B a ∈ S)
-    (N : ℕ) (hN : Fintype.card σ * B ≤ N) :
-    Nat.card {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ N} =
-      ∑ b : σ → Fin (B + 1), if (fun i => (b i).val) ∈ S then
-        (Fintype.card (orthantFree b) + (N - orthantBaseDegree b)).choose
-          (Fintype.card (orthantFree b)) else 0 := by
-  classical
-  let A := {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ N}
-  let f : A → (σ → Fin (B + 1)) := fun a => exponentPattern B a.val
-  rw [← Nat.card_congr (Equiv.sigmaFiberEquiv f), Nat.card_sigma]
-  apply Finset.sum_congr rfl
-  intro b _
-  by_cases hb : (fun i => (b i).val) ∈ S
-  · rw [ite_eq_left hb]
-    let E : {a : A // f a = b} ≃
-        {a : σ → ℕ // clampExponent B a = (fun i => (b i).val) ∧ ∑ i, a i ≤ N} :=
-      { toFun := fun a => ⟨a.val.val, by
-          constructor
-          · funext i
-            exact congrArg Fin.val (congrFun a.property i)
-          · exact a.val.property.2⟩
-        invFun := fun a => ⟨⟨a.val, by
-          constructor
-          · apply (hstable a.val).mpr
-            rw [a.property.1]
-            exact hb
-          · exact a.property.2⟩, by
-            funext i
-            apply Fin.ext
-            exact congrFun a.property.1 i⟩
-        left_inv := fun a => by apply Subtype.ext; apply Subtype.ext; rfl
-        right_inv := fun a => by apply Subtype.ext; rfl }
-    rw [Nat.card_congr E,
-      ← Nat.card_congr (boundedOrthantEquiv b ((orthantBaseDegree_le b).trans hN)),
-      card_boundedExponentVectors]
-  · rw [ite_eq_right hb]
-    let : IsEmpty {a : A // f a = b} := ⟨fun a => by
-      apply hb
-      have hh := (hstable a.val.val).mp a.val.property.1
-      have he : clampExponent B a.val.val = (fun i => (b i).val) := by
-        funext i
-        exact congrArg Fin.val (congrFun a.property i)
-      rwa [he] at hh⟩
-    exact Nat.card_eq_zero.mpr (Or.inl inferInstance)
 
 /-- The orthant polynomial is a finite positive sum of shifted binomial
 polynomials. Its coefficients are rational, while its large integer values
@@ -115,10 +67,43 @@ lemma lowerSetOrthantPolynomial_eval {σ : Type*} [Fintype σ]
     (S : Set (σ → ℕ)) (B : ℕ)
     (hstable : ∀ a, a ∈ S ↔ clampExponent B a ∈ S)
     (N : ℕ) (hN : Fintype.card σ * B ≤ N) :
-    (lowerSetOrthantPolynomial S B).eval (N : ℚ) =
+    (lowerSetOrthantPolynomial S B).eval ↑N =
       (Nat.card {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ N} : ℚ) := by
   classical
-  rw [lowerSet_orthant_count S B hstable N hN]
+  rw [(show Nat.card { a // a ∈ S ∧ ∑ i, a i ≤ N } =
+          ∑ b,
+            if (fun i => ↑(b i)) ∈ S then
+              (Fintype.card (orthantFree b) + (N - orthantBaseDegree b)).choose (Fintype.card (orthantFree b))
+            else (0 : ℕ) from (by
+        classical
+        let A := {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ N}
+        let f : A → (σ → Fin (B + 1)) := fun a => exponentPattern B a.val
+        rw [← Nat.card_congr (Equiv.sigmaFiberEquiv f), Nat.card_sigma]
+        apply Finset.sum_congr rfl
+        intro b _
+        by_cases hb : (fun i => (b i).val) ∈ S
+        · rw [ite_eq_left hb]
+          let E : {a : A // f a = b} ≃
+              {a : σ → ℕ // clampExponent B a = (fun i => (b i).val) ∧ ∑ i, a i ≤ N} :=
+            { toFun := fun a => ⟨a.val.val, by
+                bound⟩
+              invFun := fun a => ⟨⟨a.val, by
+                grind⟩, by
+                  funext i
+                  apply Fin.ext
+                  exact congrFun a.property.1 i⟩
+              left_inv := fun a => rfl
+              right_inv := fun a => by apply Subtype.ext; rfl }
+          rw [Nat.card_congr E,
+            ← Nat.card_congr (boundedOrthantEquiv b ((orthantBaseDegree_le b).trans hN)),
+            card_boundedExponentVectors]
+        · rw [ite_eq_right hb]
+          let : IsEmpty {a : A // f a = b} := ⟨fun a => by
+            apply hb
+            have hh := (hstable a.val.val).mp a.val.property.1
+            exact have he := funext fun i => congrArg Fin.val (congrFun a.property i);
+            Eq.mp (congrArg (fun _a => _a ∈ S) he) hh⟩
+          exact Nat.card_eq_zero.mpr (Or.inl inferInstance)))]
   simp only [lowerSetOrthantPolynomial, Polynomial.eval_finsetSum, Nat.cast_sum]
   apply Finset.sum_congr rfl
   intro b _
@@ -136,11 +121,11 @@ partition. -/
 theorem lowerSet_eventually_polynomial {σ : Type*} [Fintype σ]
     (S : Set (σ → ℕ)) (hS : IsLowerSet S) :
     ∃ P : Polynomial ℚ, ∃ N : ℕ, ∀ n ≥ N,
-      P.eval (n : ℚ) =
+      P.eval ↑n =
         (Nat.card {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ n} : ℚ) := by
   obtain ⟨B, _, hB⟩ := lowerSet_clamp_stabilizes S hS
   exact ⟨lowerSetOrthantPolynomial S B, Fintype.card σ * B,
-    fun n hn => lowerSetOrthantPolynomial_eval S B hB n hn⟩
+    (lowerSetOrthantPolynomial_eval S B hB)⟩
 
 end
 end CCDN

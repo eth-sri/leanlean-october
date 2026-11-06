@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.ParameterPowerSpan
 public import Mathlib.FieldTheory.RatFunc.AsPolynomial
 public import Mathlib.RingTheory.SimpleRing.Principal
@@ -19,9 +21,8 @@ Any finite family in a finite extension of K(t) fits in a bounded power
 block after multiplication by one nonzero rational-function denominator.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 private lemma ratFunc_polynomial_eval {K F : Type*} [Field K] [Field F]
     [Algebra K F] [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F]
@@ -31,8 +32,7 @@ private lemma ratFunc_polynomial_eval {K F : Type*} [Field K] [Field F]
   let φ := (IsScalarTower.toAlgHom K (RatFunc K) F).comp
     (IsScalarTower.toAlgHom K (Polynomial K) (RatFunc K))
   have he : φ = Polynomial.aeval (algebraMap (RatFunc K) F RatFunc.X) := by
-    apply Polynomial.algHom_ext
-    simp [φ, RatFunc.algebraMap_X]
+    aesop
   exact congrArg (fun f => f p) he
 
 /-- A common parameter denominator makes every supplied vector a bounded
@@ -52,8 +52,8 @@ private theorem finite_family_parameter_power_span {K F ι : Type*} [Field K] [F
   choose p hp using hq
   let D := Finset.univ.sup (fun t : ι × Fin r => (p t).natDegree)
   let qF := algebraMap (RatFunc K) F (algebraMap (Polynomial K) (RatFunc K) q.val)
-  have hqn : q.val ≠ 0 := mem_nonZeroDivisors_iff_ne_zero.mp q.property
-  have hqF : qF ≠ 0 := (map_ne_zero_iff (algebraMap (RatFunc K) F)
+  have hqn := mem_nonZeroDivisors_iff_ne_zero.mp q.property
+  have hqF := (map_ne_zero_iff (algebraMap (RatFunc K) F)
     (algebraMap (RatFunc K) F).injective).mpr (RatFunc.algebraMap_ne_zero hqn)
   refine ⟨qF, hqF, D, ?_⟩
   intro j
@@ -62,8 +62,7 @@ private theorem finite_family_parameter_power_span {K F ι : Type*} [Field K] [F
   intro i _
   have he : qF * (b.repr (w j) i • b i) =
       Polynomial.aeval (algebraMap (RatFunc K) F RatFunc.X) (p (j,i)) * b i := by
-    have hp' : algebraMap (Polynomial K) (RatFunc K) (p (j,i)) =
-        algebraMap (Polynomial K) (RatFunc K) q.val * b.repr (w j) i :=
+    have hp' :=
       (hp (j,i)).trans (Algebra.smul_def _ _)
     rw [Algebra.smul_def, ← mul_assoc]
     change (algebraMap (RatFunc K) F _ * algebraMap (RatFunc K) F _) * _ = _
@@ -72,22 +71,16 @@ private theorem finite_family_parameter_power_span {K F ι : Type*} [Field K] [F
   exact polynomial_parameter_mul_mem _ b i (p (j,i)) D
     (Finset.le_sup (f := fun t : ι × Fin r => (p t).natDegree) (Finset.mem_univ (j,i)))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 
+variable {K A F : Type*} [Field K] [AddCommGroup A] [Module K A] [Field F] [Algebra K F] [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F] [Module.Finite (RatFunc K) F] (V : ℕ → Submodule K A) [∀ n, Module.Finite K (V n)] (L : A →ₗ[K] A) (φ : A →ₗ[K] F) (hφ : Function.Injective φ) (hL : ∀ x, φ (L x) = algebraMap (RatFunc K) F RatFunc.X * φ x) (N : ℕ) (hrec : ∀ n ≥ N, V (n + 1) = V n ⊔ (V n).map L)
+
+include hφ hL hrec in
 /-- Eventual generation by the parameter bounds filtered dimensions with
 slope equal to the rank over its rational-function field. -/
-private theorem parameter_recurrence_growth_bound {K A F : Type*} [Field K]
-    [AddCommGroup A] [Module K A] [Field F] [Algebra K F]
-    [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F]
-    [Module.Finite (RatFunc K) F]
-    (V : ℕ → Submodule K A) [∀ n, Module.Finite K (V n)]
-    (L : A →ₗ[K] A) (φ : A →ₗ[K] F) (hφ : Function.Injective φ)
-    (hL : ∀ x, φ (L x) = algebraMap (RatFunc K) F RatFunc.X * φ x)
-    (N : ℕ) (hrec : ∀ n ≥ N, V (n + 1) = V n ⊔ (V n).map L) :
+private theorem parameter_recurrence_growth_bound  :
     ∃ D : ℕ, ∀ m, Module.finrank K (V (N + m)) ≤
       Module.finrank (RatFunc K) F * (D + m + 1) := by
   classical
@@ -121,7 +114,7 @@ private theorem parameter_recurrence_growth_bound {K A F : Type*} [Field K]
       rw [map_add, hTL]
       apply (parameterPowerSpan K u v (D + (m + 1))).add_mem
       · exact parameterPowerSpan_mono u v (by omega) (ih y hy)
-      · simpa only [Nat.add_assoc] using parameterPowerSpan_mul_mem u v (D + m) (ih z hz)
+      · solve_by_elim [Nat.add_assoc, parameterPowerSpan_mul_mem]
   refine ⟨D, ?_⟩
   intro m
   let Tm : V (N + m) →ₗ[K] parameterPowerSpan K u v (D + m) :=
@@ -135,25 +128,19 @@ private theorem parameter_recurrence_growth_bound {K A F : Type*} [Field K]
   exact hd.trans (by simpa only [Fintype.card_fin, Nat.add_assoc] using
     parameterPowerSpan_finrank_le u v (D + m))
 
+include hφ hL hrec in
 /-- The Hilbert slope is at most the parameter extension degree whenever the
 coordinate filtration has the parameter-generation recurrence. -/
-theorem parameter_recurrence_slope_le {K A F : Type*} [Field K]
-    [AddCommGroup A] [Module K A] [Field F] [Algebra K F]
-    [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F]
-    [Module.Finite (RatFunc K) F]
-    (V : ℕ → Submodule K A) [∀ n, Module.Finite K (V n)]
-    (L : A →ₗ[K] A) (φ : A →ₗ[K] F) (hφ : Function.Injective φ)
-    (hL : ∀ x, φ (L x) = algebraMap (RatFunc K) F RatFunc.X * φ x)
-    (N : ℕ) (hrec : ∀ n ≥ N, V (n + 1) = V n ⊔ (V n).map L)
+theorem parameter_recurrence_slope_le 
     (d : ℕ) (hdegree : ∃ M : ℕ, ∃ c : ℤ, ∀ n ≥ M,
-      (Module.finrank K (V n) : ℤ) = (d : ℤ) * n + c) :
+      (Module.finrank K (V n) : ℤ) = ↑d * n + c) :
     d ≤ Module.finrank (RatFunc K) F := by
   obtain ⟨D, hD⟩ := parameter_recurrence_growth_bound V L φ hφ hL N hrec
   obtain ⟨M, c, hc⟩ := hdegree
   apply eventual_linear_slope_le
     (fun m => Module.finrank K (V (N + m)))
     (fun m => Module.finrank (RatFunc K) F * (D + m + 1)) d (Module.finrank (RatFunc K) F)
-  · refine ⟨M, (d : ℤ) * N + c, ?_⟩
+  · refine ⟨M, ↑d * N + c, ?_⟩
     intro m hm
     rw [hc (N + m) (by omega)]
     push_cast
@@ -164,5 +151,4 @@ theorem parameter_recurrence_slope_le {K A F : Type*} [Field K]
     ring
   · exact hD
 
-end
 end CCDN

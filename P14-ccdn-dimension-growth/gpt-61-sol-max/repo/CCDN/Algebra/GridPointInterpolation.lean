@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 import Mathlib.LinearAlgebra.Dimension.Finite
 import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
@@ -14,16 +16,16 @@ depends on the side length of the grid rather than its number of points. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private def gridPointSeparator {K σ : Type*} [Field K] [Fintype σ] [DecidableEq K]
-    (S : Finset K) (a : σ → K) : MvPolynomial σ K :=
+variable {K σ : Type*} [Field K] [Fintype σ] [DecidableEq K]
+
+private noncomputable def gridPointSeparator 
+    (S : Finset K) (a : σ → K)  :=
   ∏ j, ∏ t ∈ S.erase (a j),
     C ((a j - t)⁻¹) * (X j - C t)
 
-private lemma gridPointSeparator_eval {K σ : Type*} [Field K] [Fintype σ]
-    [DecidableEq K]
+private lemma gridPointSeparator_eval 
     (S : Finset K) (a x : σ → K) (hx : ∀ j, x j ∈ S) :
     eval x (gridPointSeparator S a) = if x = a then 1 else 0 := by
   classical
@@ -45,12 +47,10 @@ private lemma gridPointSeparator_eval {K σ : Type*} [Field K] [Fintype σ]
     apply Finset.prod_eq_zero (Finset.mem_erase.mpr ⟨hj, hx j⟩)
     simp
 
-private lemma gridPointSeparator_degree {K σ : Type*} [Field K] [Fintype σ]
-    [DecidableEq K]
+private lemma gridPointSeparator_degree 
     (S : Finset K) (a : σ → K) (ha : ∀ j, a j ∈ S) :
     (gridPointSeparator S a).totalDegree ≤ Fintype.card σ * (S.card - 1) := by
   classical
-  unfold gridPointSeparator
   calc
     _ ≤ ∑ j : σ, (∏ t ∈ S.erase (a j),
         C ((a j - t)⁻¹) * (X j - C t)).totalDegree := totalDegree_finsetProd _ _
@@ -66,7 +66,7 @@ private lemma gridPointSeparator_degree {K σ : Type*} [Field K] [Fintype σ]
           apply (totalDegree_mul _ _).trans
           rw [totalDegree_C, Nat.zero_add]
           exact (totalDegree_sub _ _).trans (by simp)
-        _ = _ := by simp [Finset.card_erase_of_mem (ha j)]
+        _ = _ := by simp_all
     _ = _ := by simp
 
 /-- Distinct points of a fixed coordinate grid give independent filtered
@@ -83,8 +83,7 @@ theorem grid_points_filtered_lower {K σ ι : Type*} [Field K]
   let q := Ideal.Quotient.mkₐ K I
   let ψ : ι → (MvPolynomial σ K ⧸ I) →ₐ[K] K := fun i =>
     Ideal.Quotient.liftₐ I (aeval (z i)) (by
-      intro f hf
-      simpa only [aeval_eq_eval] using hzI i f hf)
+      simp_all)
   have hψ (i : ι) (f : MvPolynomial σ K) : ψ i (q f) = eval (z i) f := rfl
   let v : ι → filteredCoordinateSpace I N := fun j =>
     ⟨q (gridPointSeparator S (z j)), Submodule.mem_map.mpr
@@ -102,5 +101,4 @@ theorem grid_points_filtered_lower {K σ ι : Type*} [Field K]
     simpa using he
   exact hlin.fintype_card_le_finrank
 
-end
 end CCDN

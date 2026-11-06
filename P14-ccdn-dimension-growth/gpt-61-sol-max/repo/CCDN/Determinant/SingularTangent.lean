@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.HomogeneousHilbert
 public import Mathlib.RingTheory.MvPolynomial.Ideal
 import CCDN.ForMathlib.MvPolynomial
@@ -21,8 +23,10 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*}
+
 /-- A homogeneous polynomial of degree `k` lies in the `k`-th power of the ideal of the origin. -/
-lemma homogeneous_mem_origin_power {K σ : Type*} [CommRing K]
+lemma homogeneous_mem_origin_power  [CommRing K]
     {f : MvPolynomial σ K} {k : ℕ} (hf : f.IsHomogeneous k) :
     f ∈ idealOfVars σ K ^ k := by
   rw [mem_pow_idealOfVars_iff]
@@ -31,32 +35,24 @@ lemma homogeneous_mem_origin_power {K σ : Type*} [CommRing K]
 
 /-- Taking the first permitted homogeneous part changes a polynomial only by
 one higher power of the origin ideal. -/
-lemma sub_homogeneousComponent_mem_origin_power {K σ : Type*} [CommRing K]
+lemma sub_homogeneousComponent_mem_origin_power  [CommRing K]
     {f : MvPolynomial σ K} {k : ℕ} (hf : f ∈ idealOfVars σ K ^ k) :
     f - homogeneousComponent k f ∈ idealOfVars σ K ^ (k + 1) := by
-  rw [mem_pow_idealOfVars_iff'] at hf ⊢
-  intro e he
-  rw [coeff_sub, coeff_homogeneousComponent]
-  by_cases hk : e.degree = k
-  · simp only [hk, ite_true, sub_self]
-  · rw [ite_eq_right hk, sub_zero]
-    exact hf e (by omega)
+  grind [mem_pow_idealOfVars_iff', coeff_homogeneousComponent]
 
 /-- The ideal `(f) + 𝔪₀ ^ (k + 1)`, where `𝔪₀` is the ideal of the origin; the quotient by it is the
 coordinate ring of `f = 0` truncated at the origin. -/
-def originTruncationIdeal {K σ : Type*} [Field K] (f : MvPolynomial σ K) (k : ℕ) :
-    Ideal (MvPolynomial σ K) := Ideal.span {f} ⊔ idealOfVars σ K ^ (k + 1)
+def originTruncationIdeal  [Field K] (f : MvPolynomial σ K) (k : ℕ)  := Ideal.span {f} ⊔ idealOfVars σ K ^ (k + 1)
 
 /-- The degree-`k` layer of the ideal of the origin on the hypersurface `f = 0`: the image of
 the `k`-th power of the ideal of the origin in the quotient by `(f)` and the `(k + 1)`-th power.
 This is the image of the ideal power, not a tangent-cone model. -/
-def originLayer {K σ : Type*} [Field K] (f : MvPolynomial σ K) (k : ℕ) :
-    Submodule K (MvPolynomial σ K ⧸ originTruncationIdeal f k) :=
+def originLayer  [Field K] (f : MvPolynomial σ K) (k : ℕ)  :=
   ((idealOfVars σ K ^ k).restrictScalars K).map
     (Ideal.Quotient.mkₐ K (originTruncationIdeal f k)).toLinearMap
 
 /-- Homogeneous degree-k polynomials generate the degree-k layer. -/
-theorem originLayer_eq_homogeneousCoordinateSpace {K σ : Type*} [Field K]
+theorem originLayer_eq_homogeneousCoordinateSpace  [Field K]
     (f : MvPolynomial σ K) (k : ℕ) :
     originLayer f k = homogeneousCoordinateSpace (originTruncationIdeal f k) k := by
   ext x
@@ -66,7 +62,6 @@ theorem originLayer_eq_homogeneousCoordinateSpace {K σ : Type*} [Field K]
     refine Submodule.mem_map.mpr ⟨homogeneousComponent k u,
       homogeneousComponent_isHomogeneous k u, ?_⟩
     apply (sub_eq_zero.mp ?_)
-    rw [← map_sub]
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     apply (show idealOfVars σ K ^ (k + 1) ≤ originTruncationIdeal f k from le_sup_right)
     simpa only [neg_sub] using (idealOfVars σ K ^ (k + 1)).neg_mem
@@ -75,22 +70,6 @@ theorem originLayer_eq_homogeneousCoordinateSpace {K σ : Type*} [Field K]
     obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
     exact Submodule.mem_map.mpr ⟨u, homogeneous_mem_origin_power hu, rfl⟩
 
-/-- The initial homogeneous equation vanishes in each origin-adic layer
-after multiplying by an allowed homogeneous polynomial. -/
-lemma initial_form_multiple_mem_truncation {K σ : Type*} [Field K]
-    {f : MvPolynomial σ K} {μ k : ℕ} (hf : f ∈ idealOfVars σ K ^ μ) (hk : μ ≤ k)
-    {u : MvPolynomial σ K} (hu : u.IsHomogeneous (k - μ)) :
-    homogeneousComponent μ f * u ∈ originTruncationIdeal f k := by
-  have hr := Ideal.mul_mem_mul (sub_homogeneousComponent_mem_origin_power hf)
-    (homogeneous_mem_origin_power hu)
-  rw [← pow_add, show μ + 1 + (k - μ) = k + 1 by omega] at hr
-  have hfu : f * u ∈ originTruncationIdeal f k :=
-    (show Ideal.span {f} ≤ originTruncationIdeal f k from le_sup_left)
-      (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))
-  have hru : (f - homogeneousComponent μ f) * u ∈ originTruncationIdeal f k :=
-    (show idealOfVars σ K ^ (k + 1) ≤ originTruncationIdeal f k from le_sup_right) hr
-  convert (originTruncationIdeal f k).sub_mem hfu hru using 1
-  ring
 
 /-- The first nonzero homogeneous part gives the expected binomial upper bound
 for the local layer. -/
@@ -113,7 +92,18 @@ theorem originLayer_hilbert_bound {K : Type*} [Field K] {n μ k : ℕ}
   have hker : U ≤ φ.ker := by
     intro x hx
     obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
-    exact Ideal.Quotient.eq_zero_iff_mem.mpr (initial_form_multiple_mem_truncation hf hk hu)
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr ((show (homogeneousComponent μ) f * u ∈ originTruncationIdeal f k from (by
+                                                let inline_σ := Fin (n + (1 : ℕ))
+                                                have hr := Ideal.mul_mem_mul (sub_homogeneousComponent_mem_origin_power hf)
+                                                  (homogeneous_mem_origin_power hu)
+                                                rw [← pow_add, show μ + 1 + (k - μ) = k + 1 by omega] at hr
+                                                have hfu :=
+                                                  (show Ideal.span {f} ≤ originTruncationIdeal f k from le_sup_left)
+                                                    (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))
+                                                have hru :=
+                                                  (show idealOfVars inline_σ K ^ (k + 1) ≤ originTruncationIdeal f k from le_sup_right) hr
+                                                convert (originTruncationIdeal f k).sub_mem hfu hru using 1
+                                                ring)))
   have h := finrank_map_add_kernel_subspace_le φ V U hUV hker
   rw [homogeneousMultiples_finrank _ hμ, finrank_homogeneousSubmodule_fin,
     finrank_homogeneousSubmodule_fin] at h
@@ -137,21 +127,6 @@ lemma originLayer_finrank_le {K : Type*} [Field K] {n : ℕ}
     Module.Finite.of_fg (homogeneousSubmodule_fg _ _ _)
   exact (Submodule.finrank_map_le _ _).trans_eq (finrank_homogeneousSubmodule_fin n k)
 
-/-- In the plane-curve case each origin-adic layer has dimension at most
-its multiplicity. This is the bound needed for the quadratic local exponent. -/
-theorem plane_originLayer_finrank_le_multiplicity {K : Type*} [Field K]
-    {μ k : ℕ} (f : MvPolynomial (Fin 2) K)
-    (hf : f ∈ idealOfVars (Fin 2) K ^ μ) (hμ : homogeneousComponent μ f ≠ 0) :
-    Module.finrank K (originLayer f k) ≤ μ := by
-  by_cases hk : μ ≤ k
-  · have h := originLayer_hilbert_bound (n := 1) f hf hμ hk
-    simp only [Nat.add_comm 1, Nat.choose_succ_self_right] at h
-    change Module.finrank K (originLayer f k) + (k - μ + 1) ≤ k + 1 at h
-    omega
-  · have h := originLayer_finrank_le (n := 1) f k
-    simp only [Nat.add_comm 1, Nat.choose_succ_self_right] at h
-    change Module.finrank K (originLayer f k) ≤ k + 1 at h
-    omega
 
 end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Height.Box
 public import CCDN.Hilbert.AffineCurveDegree
@@ -21,7 +23,7 @@ namespace CCDN
 /-- `I` is an integral affine curve of degree `e` on the surface `f = 0` in affine
 three-space: a height-two prime ideal containing `f` whose affine Hilbert function has
 slope `e`. -/
-structure IsSurfaceCurve (f : CoordinatePolynomial 3) (I : Ideal (CoordinatePolynomial 3))
+structure IsSurfaceCurve (f : CoordinatePolynomial 3) (I : CCDN.CoordinateIdeal 3)
     (e : ℕ) : Prop where
   /-- The ideal `I` is prime. -/
   isPrime : I.IsPrime
@@ -34,7 +36,7 @@ structure IsSurfaceCurve (f : CoordinatePolynomial 3) (I : Ideal (CoordinatePoly
 
 /-- `I` is a curve component, of positive degree `e`, of the intersection of the surfaces
 `f = 0` and `g = 0` in affine three-space. -/
-structure IsSectionCurve (f g : CoordinatePolynomial 3) (I : Ideal (CoordinatePolynomial 3))
+structure IsSectionCurve (f g : CoordinatePolynomial 3) (I : CCDN.CoordinateIdeal 3)
     (e : ℕ) : Prop extends IsSurfaceCurve f I e where
   /-- The curve lies on the second surface: `g ∈ I`. -/
   mem_right : g ∈ I

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Projection.CurvePrimitivePair
 public import CCDN.Projection.InfinityParameterReduction
 import CCDN.Algebra.BoundedLinearSeparation
@@ -14,16 +16,13 @@ import Mathlib.Algebra.Polynomial.OfFn
 /-! An explicit bounded integer moment form avoids any prescribed finite set
 of nonzero directions. No separation of pairs is needed for this step. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- The moment coordinate `∑ j, k ^ j * X j` is homogeneous of degree one. -/
 lemma momentCoordinate_homogeneous (K : Type*) [Field K] (n k : ℕ) :
     (momentCoordinate K n k).IsHomogeneous 1 := by
-  apply MvPolynomial.IsHomogeneous.sum
-  intro j _
-  exact MvPolynomial.isHomogeneous_C_mul_X _ _
+  solve_by_elim [MvPolynomial.IsHomogeneous.sum, MvPolynomial.isHomogeneous_C_mul_X]
 
 /-- A moment form with parameter at most n times the number of directions
 is nonzero on all those directions. -/
@@ -55,7 +54,7 @@ theorem exists_bounded_moment_nonvanishing {K ι : Type*} [Field K] [CharZero K]
   refine ⟨k, hk.trans hd, ?_⟩
   intro i
   have hp : (∏ i, (P i).eval (k : K)) ≠ 0 := by
-    simpa only [Q, Polynomial.eval_prod] using hval
+    grind [Polynomial.eval_prod]
   have hi := (Finset.prod_ne_zero_iff.mp hp) i (Finset.mem_univ i)
   simpa only [P, Polynomial.ofFn_eq_sum_monomial, Polynomial.eval_finsetSum,
     Polynomial.eval_monomial] using hi
@@ -73,5 +72,4 @@ theorem filtration_recurrence_of_infinity_avoidance {K L σ : Type*}
   exact ⟨Fintype.card σ * N,
     eventual_generation_of_power_reductions I l hl.totalDegree_le N hN hred⟩
 
-end
 end CCDN

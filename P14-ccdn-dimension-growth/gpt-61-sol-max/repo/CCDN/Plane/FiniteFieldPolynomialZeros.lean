@@ -13,9 +13,8 @@ import CCDN.ForMathlib.SchwartzZippel
 field-size saving retained in multiplicative form. This is the Schwartz–Zippel
 lemma `MvPolynomial.schwartz_zippel_totalDegree_card` applied to the whole finite field. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Schwartz--Zippel for an arbitrary finite coordinate type. -/
@@ -27,5 +26,4 @@ theorem finite_field_polynomial_zeros_mul_card {K τ : Type*} [Field K] [Fintype
   simpa [Nat.card_eq_fintype_card, Fintype.card_subtype] using
     schwartz_zippel_totalDegree_card hf (Finset.univ : Finset K)
 
-end
 end CCDN

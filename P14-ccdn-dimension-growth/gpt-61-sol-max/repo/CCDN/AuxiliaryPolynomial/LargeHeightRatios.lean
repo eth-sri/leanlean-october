@@ -5,15 +5,16 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import CCDN.AuxiliaryPolynomial.RatioEstimates
 
 /-! In the large-height range, the coefficient saving absorbs the radius
 and leaves a negative logarithmic-height term to control the bad-prime factor. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Abstract real-variable form of the large-height step: if `a` is the normalized rank ratio,
 `k` the kernel ratio and the comparison `a * u ≤ b - k * l` holds, with `M ≥ 8 d (r + 1)`,
@@ -46,8 +47,7 @@ lemma auxiliary_large_height_bracket_bound {r d M X a k u b l h T : ℝ}
     convert hh using 1
     ring
   have hb' : b / a ≤ (5 * (r + 1) / (4 * X)) * b := by
-    simpa only [one_div, div_eq_mul_inv, mul_comm, mul_one] using
-      mul_le_mul_of_nonneg_right hrecip' hb
+    grind [mul_comm, mul_le_mul_of_nonneg_right]
   have hl' := mul_le_mul_of_nonneg_right hquot' hl
   have hu' : u ≤ (5 * (r + 1) / (4 * X)) * b - (3 / (4 * d * X)) * l := by linarith
   have he : (5 * (r + 1) / (4 * X)) * b - (3 / (4 * d * X)) * l =
@@ -67,10 +67,9 @@ lemma log_one_add_le_linear_add_log {x c : ℝ} (hx : 0 ≤ x) (hc : 1 ≤ c) :
   have hp : 0 < (1 + x) / c := by positivity
   have hh := Real.log_le_sub_one_of_pos hp
   rw [Real.log_div (by positivity) hc0.ne'] at hh
-  have hdiv : 1 / c ≤ 1 := (div_le_one hc0).mpr hc
+  have hdiv := (div_le_one hc0).mpr hc
   have he : (1 + x) / c = 1 / c + x / c := by ring
   rw [he] at hh
   linarith
 
-end
 end CCDN

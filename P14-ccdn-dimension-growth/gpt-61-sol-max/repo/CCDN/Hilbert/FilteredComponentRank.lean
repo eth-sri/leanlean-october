@@ -5,19 +5,22 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredPrimeDecomposition
 
 /-! Separating prime components makes their filtered dimensions
 additive up to a fixed degree shift. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K σ ι : Type*} [Field K]
 
 /-- Polynomial lifts independent on separate prime components remain
 jointly independent after multiplying by the component separators. -/
-private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
+private theorem prime_separator_lifts_independent 
     [Fintype ι] [DecidableEq ι] (κ : ι → Type*) [∀ i, Fintype (κ i)]
     (I : Ideal (MvPolynomial σ K)) (P : ι → Ideal (MvPolynomial σ K))
     (hprime : ∀ i, (P i).IsPrime) (hIP : ∀ i, I ≤ P i)
@@ -32,15 +35,12 @@ private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
     Ideal.Quotient.liftₐ I (Ideal.Quotient.mkₐ K (P i))
       (fun p hp => Ideal.Quotient.eq_zero_iff_mem.mpr (hIP i hp))
   have hφ (i : ι) (p : MvPolynomial σ K) :
-      φ i ((Ideal.Quotient.mkₐ K I) p) = (Ideal.Quotient.mkₐ K (P i)) p := by
-    exact congrArg (fun ψ : MvPolynomial σ K →ₐ[K] (MvPolynomial σ K ⧸ P i) => ψ p)
-      (Ideal.Quotient.liftₐ_comp I (Ideal.Quotient.mkₐ K (P i))
-        (fun p hp => Ideal.Quotient.eq_zero_iff_mem.mpr (hIP i hp)))
+      φ i ((Ideal.Quotient.mkₐ K I) p) = (Ideal.Quotient.mkₐ K (P i)) p := rfl
   rw [Fintype.linearIndependent_iff]
   intro c hc t
   let i := t.1
   have : (P i).IsPrime := hprime i
-  have hane : (Ideal.Quotient.mkₐ K (P i)) (a i) ≠ 0 :=
+  have hane :=
     fun h => ha i (Ideal.Quotient.eq_zero_iff_mem.mp h)
   have hz (j : ι) (hji : j ≠ i) :
       (Ideal.Quotient.mkₐ K (P i)) (a j) = 0 :=
@@ -65,7 +65,7 @@ private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
 
 /-- The sum of the component filtration dimensions injects into the
 original coordinate filtration after a fixed shift independent of N. -/
-private theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
+private theorem prime_components_filtered_rank_lower 
     [Finite σ] [Fintype ι] [DecidableEq ι]
     (I : Ideal (MvPolynomial σ K)) (P : ι → Ideal (MvPolynomial σ K))
     (hprime : ∀ i, (P i).IsPrime) (hIP : ∀ i, I ≤ P i)
@@ -102,12 +102,6 @@ theorem minimalPrimeComponents_filtered_rank_lower {K σ : Type*} [Field K] [Fin
     ∃ D : ℕ, ∀ N : ℕ,
       (∑ P : minimalPrimeComponents I, Module.finrank K (filteredCoordinateSpace P.val N)) ≤
         Module.finrank K (filteredCoordinateSpace I (D + N)) := by
-  classical
-  apply prime_components_filtered_rank_lower I (fun P : minimalPrimeComponents I => P.val)
-  · exact fun P => minimalPrimeComponents_isPrime P.property
-  · exact fun P => le_minimalPrimeComponents P.property
-  · intro P Q hPQ
-    exact Subtype.ext (minimalPrimeComponents_eq_of_le P.property Q.property hPQ)
+  aesop (add safe apply [prime_components_filtered_rank_lower, minimalPrimeComponents_isPrime, le_minimalPrimeComponents, Subtype.ext, minimalPrimeComponents_eq_of_le])
 
-end
 end CCDN

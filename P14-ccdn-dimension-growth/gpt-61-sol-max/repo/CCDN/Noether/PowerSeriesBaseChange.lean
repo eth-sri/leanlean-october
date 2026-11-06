@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import Mathlib.LinearAlgebra.LinearIndependent.Defs
 public import Mathlib.RingTheory.PowerSeries.Basic
 import CCDN.ForMathlib.Matrix
@@ -12,13 +14,14 @@ import CCDN.ForMathlib.Matrix
 /-! Finite linear independence of formal power series survives arbitrary
 field extension. A finite nonzero coefficient minor witnesses independence. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Matrix
 
+variable {K L ι : Type*} [Field K] [Field L] [Algebra K L]
+
 private theorem powerSeries_linearIndependent_map
-    {K L ι : Type*} [Field K] [Field L] [Algebra K L] [Fintype ι]
+     [Fintype ι]
     (v : ι → PowerSeries K) (hv : LinearIndependent K v) :
     LinearIndependent L (fun i => PowerSeries.map (algebraMap K L) (v i)) := by
   classical
@@ -38,14 +41,14 @@ private theorem powerSeries_linearIndependent_map
     exact (linearIndependent_iff_card_eq_finrank_span.mp hcols).symm
   obtain ⟨a, c, _, _, hdet⟩ :=
     Matrix.exists_det_submatrix_ne_zero_of_le_rank A (Fintype.card ι) hrank.ge
-  let B : Matrix ℕ ι L := A.map (algebraMap K L)
+  let B := A.map (algebraMap K L)
   have hdetB : (B.submatrix a c).det ≠ 0 := by
     have hm : (B.submatrix a c).det = algebraMap K L ((A.submatrix a c).det) := by
       rw [RingHom.map_det]
       rfl
     rw [hm]
     exact (map_ne_zero (algebraMap K L)).mpr hdet
-  have hrankB : Fintype.card ι ≤ B.rank := B.le_rank_of_det_submatrix_ne_zero a c hdetB
+  have hrankB := B.le_rank_of_det_submatrix_ne_zero a c hdetB
   have hker : B.mulVecLin.ker = ⊥ := by
     apply Submodule.finrank_eq_zero.mp
     have h := B.mulVecLin.finrank_range_add_finrank_ker
@@ -67,14 +70,12 @@ private theorem powerSeries_linearIndependent_map
 /-- Independence survives coefficient extension even for an infinite family:
 each relation involves only a finite subfamily. -/
 theorem powerSeries_linearIndependent_map_of_linearIndependent
-    {K L ι : Type*} [Field K] [Field L] [Algebra K L]
+    
     (v : ι → PowerSeries K) (hv : LinearIndependent K v) :
     LinearIndependent L (fun i => PowerSeries.map (algebraMap K L) (v i)) := by
   classical
   rw [linearIndependent_iff_finset_linearIndependent]
-  intro s
-  exact powerSeries_linearIndependent_map (v ∘ (Subtype.val : s → ι))
-    (hv.comp _ Subtype.val_injective)
+  exact fun s =>
+    powerSeries_linearIndependent_map (v ∘ Subtype.val) (LinearIndependent.comp hv Subtype.val Subtype.val_injective)
 
-end
 end CCDN

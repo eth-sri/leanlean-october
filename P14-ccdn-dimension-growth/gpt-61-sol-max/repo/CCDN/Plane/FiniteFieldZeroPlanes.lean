@@ -15,7 +15,6 @@ denominator, even with degenerate parameterizations included. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The usual degree-times-q^(m-1) bound, for arbitrary nonempty finite
@@ -31,13 +30,15 @@ lemma finite_field_polynomial_zeros_card {K τ : Type*} [Field K] [Fintype K]
   rw [he, ← Nat.mul_assoc] at h
   exact Nat.le_of_mul_le_mul_right h Fintype.card_pos
 
+variable {K σ : Type*}
+
 /-- All parameter triples whose restricted polynomial is identically zero. -/
-def ZeroPlaneParameters {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :=
+noncomputable def ZeroPlaneParameters  [CommRing K] (f : MvPolynomial σ K) :=
   {v : PlaneParameters σ → K // universalPlaneSection f v = 0}
 
 /-- Sending a zero section to its three defining hypersurface points is
 injective. -/
-private theorem zero_plane_parameters_card_le_cube {K σ : Type*} [CommRing K]
+private theorem zero_plane_parameters_card_le_cube  [CommRing K]
     [Fintype K] [Fintype σ] (f : MvPolynomial σ K) :
     Nat.card (ZeroPlaneParameters f) ≤
       (Nat.card {x : σ → K // eval x f = 0}) ^ 3 := by
@@ -58,7 +59,7 @@ private theorem zero_plane_parameters_card_le_cube {K σ : Type*} [CommRing K]
 parameter triples. This is substantially smaller than the general bad-plane
 bound and controls their q^2-point contribution to incidence averaging. -/
 theorem finite_field_zero_plane_parameters_card
-    {K σ : Type*} [Field K] [Fintype K] [Fintype σ]
+     [Field K] [Fintype K] [Fintype σ]
     (f : MvPolynomial (Option σ) K) (hf : f ≠ 0) :
     Nat.card (ZeroPlaneParameters f) ≤
       f.totalDegree ^ 3 * Fintype.card K ^ (3 * Fintype.card σ) := by
@@ -66,5 +67,4 @@ theorem finite_field_zero_plane_parameters_card
     (Nat.pow_le_pow_left (finite_field_polynomial_zeros_card f hf) 3)
   simpa only [Fintype.card_option, Nat.add_sub_cancel, mul_pow, ← pow_mul, Nat.mul_comm] using h
 
-end
 end CCDN

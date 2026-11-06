@@ -5,7 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Determinant.ProjectiveHypersurfaceResidueDeterminant
+public import CCDN.Determinant.ProjectiveReduction
 import CCDN.Determinant.ResidueAggregation
 
 /-! The residue partition and local multiplicities of a homogeneous
@@ -13,29 +16,27 @@ plane curve supply a global single-prime determinant divisor. The residue
 points and their multiplicities are the case `n = 0` of the hypersurface
 construction in `ProjectiveHypersurfaceResidueDeterminant`. -/
 
-@[expose] public section
+public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
 /-- The residue points of a projective plane curve: the case `n = 0` of
 `ProjectiveHypersurfaceResidue`. -/
-abbrev ProjectivePlaneResidue (f : MvPolynomial (Fin 3) ℤ) (p : ℕ) [Fact p.Prime] :=
-  ProjectiveHypersurfaceResidue (n := 0) f p
+abbrev ProjectivePlaneResidue (f : CCDN.IntegerPolynomial 3) (p : ℕ) [Fact p.Prime] :=
+  ProjectiveHypersurfaceResidue  f p
+
+variable {p d : ℕ} [Fact p.Prime] (f : CCDN.IntegerPolynomial 3) (hf : f.IsHomogeneous d) (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0)
 
 /-- The local multiplicity at a residue point of a projective plane curve. -/
-abbrev projectivePlaneResidueMultiplicity {p d : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) (r : ProjectivePlaneResidue f p) : ℕ :=
+abbrev projectivePlaneResidueMultiplicity  (r : ProjectivePlaneResidue f p)  :=
   projectiveHypersurfaceResidueMultiplicity f hf hf0 r
 
 /-- The multiplicity of the reduction `f mod p` of a plane curve at a residue point `r` is between
 `1` and the degree `d`; in the chart of `r`, translated so that `r` is the origin, the reduced
 equation lies in that power of the ideal of the origin and has a nonzero homogeneous component of
 that degree. -/
-theorem projectivePlaneResidueMultiplicity_spec {p d : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) (r : ProjectivePlaneResidue f p) :
+theorem projectivePlaneResidueMultiplicity_spec  (r : ProjectivePlaneResidue f p) :
     0 < projectivePlaneResidueMultiplicity f hf hf0 r ∧
     projectivePlaneResidueMultiplicity f hf hf0 r ≤ d ∧
     map (Int.castRingHom (ZMod p)) (originShift (projectiveResidueChartLift r.val)
@@ -47,25 +48,17 @@ theorem projectivePlaneResidueMultiplicity_spec {p d : ℕ} [Fact p.Prime]
   projectiveHypersurfaceResidueMultiplicity_spec f hf hf0 r
 
 /-- The total residue multiplicity of a projective plane curve modulo `p`. -/
-abbrev projectivePlaneTotalMultiplicity {p d : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) : ℕ :=
+abbrev projectivePlaneTotalMultiplicity   :=
   projectiveHypersurfaceTotalMultiplicity f hf hf0
 
-private theorem projectivePlaneTotalMultiplicity_bounds {p d : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) :
-    Fintype.card (ProjectivePlaneResidue f p) ≤ projectivePlaneTotalMultiplicity f hf hf0 ∧
-    projectivePlaneTotalMultiplicity f hf hf0 ≤ Fintype.card (ProjectivePlaneResidue f p) * d :=
-  projectiveHypersurfaceTotalMultiplicity_bounds f hf hf0
 
 /-- Primitive integer zeros determine the residue partition, unit chart
 coordinates and positive local multiplicities. The divisor's leading
 quadratic constant uses their total multiplicity. -/
 theorem projective_reduction_minorGcd {s N p d M : ℕ} [Fact p.Prime] (hs : 0 < s)
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
+    (f : CCDN.IntegerPolynomial 3) (hf : f.IsHomogeneous d)
     (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0)
-    (F : Fin N → MvPolynomial (Fin 3) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
+    (F : Fin N → CCDN.IntegerPolynomial 3) (hF : ∀ j, (F j).IsHomogeneous M)
     (z : Fin s → IntPoint 3) (hprim : ∀ i, Finset.univ.gcd (z i) = 1)
     (hz : ∀ i, eval (z i) f = 0) :
     0 < projectivePlaneTotalMultiplicity f hf hf0 ∧ ∃ e : ℕ,
@@ -78,19 +71,19 @@ theorem projective_reduction_minorGcd {s N p d M : ℕ} [Fact p.Prime] (hs : 0 <
       primitiveProjectiveReduction_zero f hf (z i) (hprim i) (hz i)⟩
   let c := Fintype.card (ProjectivePlaneResidue f p)
   let E := Fintype.equivFin (ProjectivePlaneResidue f p)
-  let label : Fin s → Fin c := fun i => E (red i)
-  let k : Fin c → Fin 3 := fun i => projectiveResiduePivot (E.symm i).val
-  let a : Fin c → Fin 2 → ℤ := fun i => projectiveResidueChartLift (E.symm i).val
-  let μ : Fin c → ℕ := fun i => projectivePlaneResidueMultiplicity f hf hf0 (E.symm i)
+  let label := fun i => E (red i)
+  let k := fun i => projectiveResiduePivot (E.symm i).val
+  let a := fun i => projectiveResidueChartLift (E.symm i).val
+  let μ := fun i => projectivePlaneResidueMultiplicity f hf hf0 (E.symm i)
   let n : Fin c → ℕ := fun i => Fintype.card {j : Fin s // label j = i}
   let e := ∑ i : Fin c, multiplicityExponent (n i) (μ i)
   have hμ (i : Fin c) := projectivePlaneResidueMultiplicity_spec f hf hf0 (E.symm i)
   have hsum : ∑ i : Fin c, μ i = projectivePlaneTotalMultiplicity f hf hf0 :=
     E.symm.sum_comp (projectivePlaneResidueMultiplicity f hf hf0)
   have hsize : ∑ i : Fin c, n i = s := sum_residue_class_sizes label
-  have hc : 0 < c := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
-  have hpos : 0 < projectivePlaneTotalMultiplicity f hf hf0 :=
-    hc.trans_le (projectivePlaneTotalMultiplicity_bounds f hf hf0).1
+  have hc := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
+  have hpos :=
+    hc.trans_le ((projectiveHypersurfaceTotalMultiplicity_bounds f hf hf0)).1
   refine ⟨hpos, e, ?_, ?_, ?_⟩
   · simpa only [hsum, hsize] using aggregate_multiplicity_exponents Finset.univ n μ
       (fun i _ => (hμ i).1)

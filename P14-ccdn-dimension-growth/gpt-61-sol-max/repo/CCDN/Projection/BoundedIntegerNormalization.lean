@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.IntegerLinearForms
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import CCDN.Projection.ProjectiveClosureProjection
@@ -20,12 +24,11 @@ fixing the homogenizing coordinate is integral as well. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The coefficient bound `n! * (d + 1) ^ n` for the bounded linear Noether normalization of a
 degree-`d` variety in `n` variables. -/
-def integerNormalizationHeight (n d : ℕ) : ℕ := n.factorial * (d + 1) ^ n
+noncomputable def integerNormalizationHeight (n d : ℕ)  := n.factorial * (d + 1) ^ n
 
 /-- The normalization height is positive. -/
 lemma integerNormalizationHeight_pos (n d : ℕ) : 0 < integerNormalizationHeight n d := by
@@ -44,13 +47,14 @@ private lemma integerNormalizationHeight_step (n d : ℕ) :
   rw [Nat.factorial_succ, pow_succ]
   nlinarith [Nat.zero_le (n.factorial * (d + 1) ^ n * (d + 1))]
 
+variable (m k : ℕ) (I : CCDN.CoordinateIdeal (m + 1 + k)) [I.IsPrime] (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I m d)
+
+include hdimdeg in
 /-- Integer linear normalization of a prime quotient of positive Hilbert dimension. The
 resulting polynomial map is injective and integral, and so is the induced map of projective
 closures fixing the homogenizing coordinate. -/
-theorem exists_bounded_integer_closure_normalization (m k : ℕ)
-    (I : Ideal (MvPolynomial (Fin (m + 1 + k)) ℚ)) [I.IsPrime] (d : ℕ)
-    (hdimdeg : HasProjectiveDimensionDegree I m d) :
-    ∃ a : Fin (m + 1) → Fin (m + 1 + k) → ℤ,
+theorem exists_bounded_integer_closure_normalization  :
+    ∃ a : Fin (m + 1) → CCDN.IntPoint (m + 1 + k),
       (∀ i j, |a i j| ≤ integerNormalizationHeight (m + 1 + k) d) ∧
       (projectionCoordinateMap I (fun i => integerLinearForm (a i))).IsIntegral ∧
       Function.Injective (projectionCoordinateMap I (fun i => integerLinearForm (a i))) ∧
@@ -58,28 +62,18 @@ theorem exists_bounded_integer_closure_normalization (m k : ℕ)
         (closureProjectionCoordinates (fun i => integerLinearForm (a i)))).IsIntegral := by
   induction k generalizing d with
   | zero =>
-    let a : Fin (m + 1) → Fin (m + 1) → ℤ := fun i j => if j = i then 1 else 0
+    let a : Fin (m + 1) → CCDN.IntPoint (m + 1) := fun i j => if j = i then 1 else 0
     have heq : projectionCoordinateMap I (fun i => integerLinearForm (a i)) =
         Ideal.Quotient.mkₐ ℚ I := by
       ext i
       simp [projectionCoordinateMap, a, integerLinearForm_identity]
-    have hI0 : I = ⊥ := ideal_eq_bot_of_full_hilbert_dimension I (Ideal.IsPrime.ne_top ‹I.IsPrime›)
+    have hI0 := ideal_eq_bot_of_full_hilbert_dimension I (Ideal.IsPrime.ne_top ‹I.IsPrime›)
       (by simpa only [Fintype.card_fin] using hdimdeg.natDegree_eq)
     refine ⟨a, ?_, ?_, ?_, ?_⟩
-    · intro i j
-      have hH : (1 : ℤ) ≤ integerNormalizationHeight (m + 1) d := by
-        exact_mod_cast Nat.succ_le_of_lt (integerNormalizationHeight_pos (m + 1) d)
-      by_cases he : j = i
-      · simpa [a, he] using hH
-      · simp only [a, ite_eq_right he, abs_zero]
-        exact Nat.cast_nonneg _
+    · grind [integerNormalizationHeight_pos]
     · rw [heq]
       exact RingHom.isIntegral_of_surjective _ (Ideal.Quotient.mkₐ_surjective ℚ I)
-    · rw [heq]
-      apply (RingHom.injective_iff_ker_eq_bot _).mpr
-      change RingHom.ker ((Ideal.Quotient.mkₐ ℚ I) :
-        MvPolynomial (Fin (m + 1)) ℚ →+* MvPolynomial (Fin (m + 1)) ℚ ⧸ I) = ⊥
-      rwa [Ideal.Quotient.mkₐ_ker]
+    · simp_all [RingHom.injective_iff_ker_eq_bot]
     · have heqcone : projectionCoordinateMap (projectiveClosureIdeal I)
           (closureProjectionCoordinates (fun i => integerLinearForm (a i))) =
             Ideal.Quotient.mkₐ ℚ (projectiveClosureIdeal I) := by
@@ -91,13 +85,13 @@ theorem exists_bounded_integer_closure_normalization (m k : ℕ)
       exact RingHom.isIntegral_of_surjective _ (Ideal.Quotient.mkₐ_surjective _ _)
   | succ k ih =>
     obtain ⟨c, e, hc, he, hed, hintc, hprime, hdimdegJ, hconec⟩ :=
-      exists_fin_integer_closure_elimination_step (n := m + 1 + k) (m := m) I d hdimdeg
+      exists_fin_integer_closure_elimination_step (n := m + 1 + k)  I d hdimdeg
         (by omega)
     let ψ := projectionCoordinateMap I (fun i => integerLinearForm (c i))
     let J := RingHom.ker ψ
     have : J.IsPrime := hprime
     obtain ⟨a, ha, hinta, hinja, hconea⟩ := ih J e hdimdegJ
-    let a' : Fin (m + 1) → Fin (m + 1 + (k + 1)) → ℤ :=
+    let a' : Fin (m + 1) → CCDN.IntPoint (m + 1 + (k + 1)) :=
       fun i j => ∑ t, a i t * c t j
     let ψa := projectionCoordinateMap J (fun i => integerLinearForm (a i))
     let φ := Ideal.kerLiftAlg ψ
@@ -133,17 +127,15 @@ theorem exists_bounded_integer_closure_normalization (m k : ℕ)
         (fun i => integerLinearForm (a i)) hconec hconea
       simpa only [integerLinearForm_comp] using hcone
 
+include hdimdeg in
 /-- Integer linear normalization of a prime quotient of positive
 Hilbert dimension. The resulting polynomial map is both injective and integral. -/
-theorem exists_bounded_integer_normalization (m k : ℕ)
-    (I : Ideal (MvPolynomial (Fin (m + 1 + k)) ℚ)) [I.IsPrime] (d : ℕ)
-    (hdimdeg : HasProjectiveDimensionDegree I m d) :
-    ∃ a : Fin (m + 1) → Fin (m + 1 + k) → ℤ,
+theorem exists_bounded_integer_normalization  :
+    ∃ a : Fin (m + 1) → CCDN.IntPoint (m + 1 + k),
       (∀ i j, |a i j| ≤ integerNormalizationHeight (m + 1 + k) d) ∧
       (projectionCoordinateMap I (fun i => integerLinearForm (a i))).IsIntegral ∧
       Function.Injective (projectionCoordinateMap I (fun i => integerLinearForm (a i))) := by
   obtain ⟨a, ha, hint, hinj, -⟩ := exists_bounded_integer_closure_normalization m k I d hdimdeg
   exact ⟨a, ha, hint, hinj⟩
 
-end
 end CCDN

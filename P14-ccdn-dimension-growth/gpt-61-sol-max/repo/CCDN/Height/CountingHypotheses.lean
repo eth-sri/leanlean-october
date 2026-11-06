@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Height.Box
 public import CCDN.Height.IntegerCoefficientHeight
 public import Mathlib.Algebra.MvPolynomial.PDeriv
@@ -38,7 +40,7 @@ namespace CCDN
 open MvPolynomial
 
 /-- The points `z i` are integral zeros of `f` lying in the box of radius `B ≥ 1`. -/
-structure IsBoxZeroFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n) ℤ) (B : ℝ)
+structure IsBoxZeroFamily {n : ℕ} {ι : Type*} (f : CCDN.IntegerPolynomial n) (B : ℝ)
     (z : ι → IntPoint n) : Prop where
   /-- The box radius is at least `1`. -/
   one_le_radius : 1 ≤ B
@@ -49,14 +51,14 @@ structure IsBoxZeroFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n) ℤ) 
 
 /-- The points `z i` are primitive integral zeros of `f` lying in the box of radius `B ≥ 1`;
 for a form `f` these are the reduced representatives of rational projective zeros of `f`. -/
-structure IsPrimitiveBoxZeroFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n) ℤ) (B : ℝ)
+structure IsPrimitiveBoxZeroFamily {n : ℕ} {ι : Type*} (f : CCDN.IntegerPolynomial n) (B : ℝ)
     (z : ι → IntPoint n) : Prop extends IsBoxZeroFamily f B z where
   /-- The coordinates of every point `z i` have gcd `1`. -/
   primitive : ∀ i, Finset.univ.gcd (z i) = 1
 
 /-- The integral affine plane equation `q` has total degree `d`, is irreducible over the
 field `F`, and all its coefficients are bounded in absolute value by `H ≥ 1`. -/
-structure IsBoundedPlaneCurve (F : Type*) [Field F] (q : MvPolynomial (Fin 2) ℤ) (d : ℕ)
+structure IsBoundedPlaneCurve (F : Type*) [Field F] (q : CCDN.IntegerPolynomial 2) (d : ℕ)
     (H : ℝ) : Prop where
   /-- The polynomial `q` has total degree `d`. -/
   totalDegree_eq : q.totalDegree = d
@@ -70,8 +72,8 @@ structure IsBoundedPlaneCurve (F : Type*) [Field F] (q : MvPolynomial (Fin 2) �
 /-- The input of the determinant method: forms `F j` of degree `M`, primitive integral zeros
 `z i` of `f`, and an evaluation matrix `(F j (z i))` whose rows are linearly independent over
 `ℚ`, so that it has a nonzero maximal minor. -/
-structure IsIndependentEvaluation {n s N : ℕ} (f : MvPolynomial (Fin n) ℤ) (M : ℕ)
-    (F : Fin N → MvPolynomial (Fin n) ℤ) (z : Fin s → IntPoint n) : Prop where
+structure IsIndependentEvaluation {n s N : ℕ} (f : CCDN.IntegerPolynomial n) (M : ℕ)
+    (F : Fin N → CCDN.IntegerPolynomial n) (z : Fin s → IntPoint n) : Prop where
   /-- Every form `F j` is homogeneous of degree `M`. -/
   isHomogeneous : ∀ j, (F j).IsHomogeneous M
   /-- The coordinates of every point `z i` have gcd `1`. -/
@@ -85,7 +87,7 @@ structure IsIndependentEvaluation {n s N : ℕ} (f : MvPolynomial (Fin n) ℤ) (
 /-- The points `x i` lie in prescribed nonsingular residue classes of `f`: every `p ∈ P` is
 prime, `a p` is a zero of `f` modulo `p` at which some partial derivative of `f` does not vanish
 modulo `p`, and every `x i` is congruent to `a p` modulo `p`. -/
-structure IsSmoothResidueFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n) ℤ) (P : Finset ℕ)
+structure IsSmoothResidueFamily {n : ℕ} {ι : Type*} (f : CCDN.IntegerPolynomial n) (P : Finset ℕ)
     (a : ℕ → IntPoint n) (x : ι → IntPoint n) : Prop where
   /-- Every element of `P` is prime. -/
   prime : ∀ p ∈ P, p.Prime
@@ -95,6 +97,6 @@ structure IsSmoothResidueFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n)
   smooth : ∀ p ∈ P, ∃ j, eval (fun i => (a p i : ZMod p))
     (pderiv j (map (Int.castRingHom (ZMod p)) f)) ≠ 0
   /-- For every `p ∈ P`, every point `x i` is congruent to `a p` modulo `p`. -/
-  dvd_sub : ∀ p ∈ P, ∀ i j, (p : ℤ) ∣ x i j - a p j
+  dvd_sub : ∀ p ∈ P, ∀ i j, ↑p ∣ x i j - a p j
 
 end CCDN

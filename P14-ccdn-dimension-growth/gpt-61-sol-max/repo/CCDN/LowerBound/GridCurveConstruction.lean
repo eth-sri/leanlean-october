@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.Degrees
 public import Mathlib.Algebra.Polynomial.Degree.Defs
 public import Mathlib.Algebra.Polynomial.Eval.Defs
@@ -16,21 +18,14 @@ import CCDN.Plane.GridHeight
 /-! Absolutely irreducible plane equations through arbitrary finite square
 Cartesian grids. Translation moves the Eisenstein place away from the grid. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma grid_root_polynomial_constant_ne_zero {K : Type*} [Field K]
-    (s : Finset K) (h0 : 0 ∉ s) :
-    (∏ a ∈ s, (X - C a : K[X])).coeff 0 ≠ 0 := by
-  rw [coeff_zero_eq_eval_zero]
-  simp only [eval_prod, eval_sub, eval_X, eval_C, zero_sub]
-  apply Finset.prod_ne_zero_iff.mpr
-  intro a ha
-  exact neg_ne_zero.mpr (by intro h; subst a; exact h0 ha)
+variable {K : Type*} [Field K]
 
-private lemma grid_root_polynomial_eval_zero {K : Type*} [Field K]
+
+private lemma grid_root_polynomial_eval_zero 
     (s : Finset K) {a : K} (ha : a ∈ s) :
     (∏ b ∈ s, (X - C b : K[X])).eval a = 0 := by
   rw [eval_prod]
@@ -50,13 +45,16 @@ theorem exists_absolutely_irreducible_plane_grid
   let t := s.image (fun x => x - a)
   have ht : t.card = s.card := Finset.card_image_of_injective _ (fun _ _ h => sub_left_inj.mp h)
   have ht0 : 0 ∉ t := by
-    simp only [t, Finset.mem_image, not_exists, not_and]
-    intro x hx he
-    exact ha ((sub_eq_zero.mp he) ▸ hx)
-  let V : K[X] := ∏ x ∈ t, (X - C x)
-  have hm : V.Monic := monic_prod_X_sub_C id t
+    grind
+  let V := ∏ x ∈ t, (X - C x)
+  have hm := monic_prod_X_sub_C id t
   have hvdeg : V.natDegree = s.card := (natDegree_finsetProd_X_sub_C_eq_card t id).trans ht
-  have hv0 : V.coeff 0 ≠ 0 := grid_root_polynomial_constant_ne_zero t ht0
+  have hv0 := (show (∏ a ∈ t, (X - C a)).coeff (0 : ℕ) ≠ (0 : K) from (by
+                rw [coeff_zero_eq_eval_zero]
+                simp only [eval_prod, eval_sub, eval_X, eval_C, zero_sub]
+                apply Finset.prod_ne_zero_iff.mpr
+                intro a ha
+                exact neg_ne_zero.mpr (by intro h; subst a; exact ht0 ha)))
   let k := d - s.card
   have hk : 2 ≤ k := by dsimp [k]; omega
   have hvs : V.natDegree ≤ k + 1 := by dsimp [k]; omega
@@ -70,22 +68,17 @@ theorem exists_absolutely_irreducible_plane_grid
   have hgir : Irreducible (MvPolynomial.map φ g) := by
     apply (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv L)).mp
     rw [← bivariatePolynomialEquiv_map]
-    change Irreducible (bivariateMap φ
-      (bivariatePolynomialEquiv K ((bivariatePolynomialEquiv K).symm _)))
     rw [AlgEquiv.apply_symm_apply]
     exact gridEisensteinPolynomial_map_irreducible φ V k hm hvpos hv0 hk
   refine ⟨affineTranslation K (fun _ => -a) g, ?_, ?_, ?_⟩
   · rwa [affineTranslation_totalDegree]
-  · rw [affineTranslation_map, affineTranslation_irreducible_iff]
-    exact hgir
+  · simp_all [affineTranslation_map, affineTranslation_irreducible_iff]
   · intro z hz
     rw [affineTranslation_eval]
     have hzV (i) : V.eval (z i - a) = 0 :=
       grid_root_polynomial_eval_zero t (Finset.mem_image.mpr ⟨z i, hz i, rfl⟩)
     have hh := gridEisensteinPolynomial_eval_zero V k (z 0 - a) (z 1 - a) (hzV 0) (hzV 1)
     have he := bivariatePolynomialEquiv_eval g (z 0 - a) (z 1 - a)
-    change ((bivariatePolynomialEquiv K ((bivariatePolynomialEquiv K).symm _)).map
-      (evalRingHom (z 1 - a))).eval (z 0 - a) = _ at he
     rw [AlgEquiv.apply_symm_apply, hh] at he
     have hzvec : z + (fun _ => -a) = ![z 0 - a, z 1 - a] := by
       funext i
@@ -93,5 +86,4 @@ theorem exists_absolutely_irreducible_plane_grid
     rw [hzvec]
     exact he.symm
 
-end
 end CCDN

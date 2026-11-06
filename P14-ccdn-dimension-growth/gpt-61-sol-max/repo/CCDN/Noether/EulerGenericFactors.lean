@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.EulerFactorKernel
 public import CCDN.Noether.EulerUniversalForms
 import CCDN.Noether.EulerPairBasisValues
@@ -19,13 +21,15 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
+variable {R : Type*} [CommRing R]
+
 /-- The bivariate polynomial of total degree at most `d` with monomial coefficients `c`. -/
-def eulerPolynomialFromCoefficients {R : Type*} [CommRing R]
-    (d : ℕ) (c : EulerLowIndex d → R) : R[X][X] :=
+def eulerPolynomialFromCoefficients 
+    (d : ℕ) (c : EulerLowIndex d → R)  :=
   ∑ i, c i • eulerCoefficientMonomial R d i
 
 /-- The polynomial `eulerPolynomialFromCoefficients d c` has total degree at most `d`. -/
-lemma eulerPolynomialFromCoefficients_degree {R : Type*} [CommRing R]
+lemma eulerPolynomialFromCoefficients_degree 
     (d : ℕ) (c : EulerLowIndex d → R) :
     bivariateTotalDegree (eulerPolynomialFromCoefficients d c) ≤ d := by
   classical
@@ -39,7 +43,7 @@ lemma eulerPolynomialFromCoefficients_degree {R : Type*} [CommRing R]
   rw [AlgEquiv.symm_apply_apply]
   exact (MvPolynomial.mem_restrictTotalDegree _ _ _).mp u.property
 
-private lemma eulerPolynomialFromCoefficients_data {R : Type*} [CommRing R]
+private lemma eulerPolynomialFromCoefficients_data 
     (d : ℕ) (f : R[X][X]) (hf : bivariateTotalDegree f ≤ d) :
     eulerPolynomialFromCoefficients d (eulerCoefficientData d f) = f :=
   eulerCoefficientData_reconstruct d f hf
@@ -53,8 +57,7 @@ private lemma eulerPolynomialFromCoefficients_map {R S : Type*} [CommRing R] [Co
     (φ : R →+* S) (d : ℕ) (c : EulerLowIndex d → R) :
     bivariateMap φ (eulerPolynomialFromCoefficients d c) =
       eulerPolynomialFromCoefficients d (φ ∘ c) := by
-  simp only [eulerPolynomialFromCoefficients, map_sum, bivariateMap_smul,
-    eulerCoefficientMonomial_map, Function.comp_apply]
+  simp_all [map_sum, bivariateMap_smul, eulerCoefficientMonomial_map, Function.comp_apply, eulerPolynomialFromCoefficients]
 
 /-- Index set of the coefficient parameters of a pair of generic factors of total degrees at most
 `a` and `b`. -/
@@ -74,13 +77,13 @@ def genericEulerFactorRight (a b : ℕ) :
 
 /-- The ring homomorphism specializing the generic factors to `g` and `h`, sending each coefficient
 variable to the corresponding coefficient of `g` or `h`. -/
-def genericEulerFactorSpecialization {R : Type*} [CommRing R] (a b : ℕ)
-    (g h : R[X][X]) : MvPolynomial (EulerFactorParameters a b) ℤ →+* R :=
+def genericEulerFactorSpecialization  (a b : ℕ)
+    (g h : R[X][X])  :=
   MvPolynomial.eval₂Hom (Int.castRingHom R)
     (Sum.elim (eulerCoefficientData a g) (eulerCoefficientData b h))
 
 /-- If `g` has total degree at most `a`, then `genericEulerFactorLeft a b` specializes to `g`. -/
-lemma genericEulerFactorLeft_specialize {R : Type*} [CommRing R]
+lemma genericEulerFactorLeft_specialize 
     (a b : ℕ) (g h : R[X][X]) (hg : bivariateTotalDegree g ≤ a) :
     bivariateMap (genericEulerFactorSpecialization a b g h) (genericEulerFactorLeft a b) = g := by
   rw [genericEulerFactorLeft, eulerPolynomialFromCoefficients_map]
@@ -92,7 +95,7 @@ lemma genericEulerFactorLeft_specialize {R : Type*} [CommRing R]
   exact eulerPolynomialFromCoefficients_data a g hg
 
 /-- If `h` has total degree at most `b`, then `genericEulerFactorRight a b` specializes to `h`. -/
-lemma genericEulerFactorRight_specialize {R : Type*} [CommRing R]
+lemma genericEulerFactorRight_specialize 
     (a b : ℕ) (g h : R[X][X]) (hh : bivariateTotalDegree h ≤ b) :
     bivariateMap (genericEulerFactorSpecialization a b g h) (genericEulerFactorRight a b) = h := by
   rw [genericEulerFactorRight, eulerPolynomialFromCoefficients_map]
@@ -110,10 +113,9 @@ lemma eulerFactorPair_map {R S : Type*} [CommRing R] [CommRing S]
     (bivariateMap φ (eulerFactorPair a b g h).1,
       bivariateMap φ (eulerFactorPair a b g h).2) =
       eulerFactorPair a b (bivariateMap φ g) (bivariateMap φ h) := by
-  simp only [eulerFactorPair, map_sub, bivariateMap_smul, map_natCast, map_mul,
-    bivariateMap_derivative, bivariateMap_coefficientDerivative]
+  simp_all [map_sub, bivariateMap_smul, map_natCast, map_mul, bivariateMap_derivative, bivariateMap_coefficientDerivative, eulerFactorPair]
 
-private lemma bivariateTotalDegree_outer_X_pow {R : Type*} [CommRing R] [Nontrivial R] (a : ℕ) :
+private lemma bivariateTotalDegree_outer_X_pow  [Nontrivial R] (a : ℕ) :
     bivariateTotalDegree (X ^ a : R[X][X]) = a := by
   have he := bivariatePolynomialEquiv_X_zero (R := R)
   rw [← he, ← map_pow]
@@ -123,16 +125,7 @@ private lemma bivariateTotalDegree_outer_X_pow {R : Type*} [CommRing R] [Nontriv
 
 private lemma eulerFactorPair_outer_power_one_ne_zero (a b : ℕ) (ha : 0 < a) (hb : 0 < b) :
     eulerFactorPair a b (X ^ a : ℚ[X][X]) 1 ≠ 0 := by
-  intro hh
-  have hfst := congrArg Prod.fst hh
-  change (b : ℚ) • (1 * (X ^ a : ℚ[X][X]).derivative) -
-    (a : ℚ) • (X ^ a * (1 : ℚ[X][X]).derivative) = 0 at hfst
-  simp only [one_mul, derivative_one, mul_zero, smul_zero, sub_zero] at hfst
-  have hb0 : (b : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
-  have hd0 : (X ^ a : ℚ[X][X]).derivative ≠ 0 := by
-    apply Polynomial.derivative_ne_zero.mpr
-    simpa only [natDegree_X_pow] using (Nat.ne_of_gt ha)
-  exact (smul_ne_zero hb0 hd0) hfst
+  simp_all [CCDN.eulerFactorPair] ; omega
 
 /-- The generic logarithmic pair is nonzero over its integral coefficient
 ring, proved by a rational specialization. -/

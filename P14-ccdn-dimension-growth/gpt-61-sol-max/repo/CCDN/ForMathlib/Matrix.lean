@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.LinearAlgebra.Matrix.Rank
 
 /-!
@@ -36,10 +38,12 @@ for coefficient matrices indexed by all monomials; only the column index type is
 
 namespace Matrix
 
+variable {F ι ν : Type*} [Field F] [Fintype ν]
+
 /-- A finite independent family spans the rows even when their original index
 set is infinite. -/
 theorem exists_fin_linearIndependent_row_span_eq
-    {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F) :
+     (A : Matrix ι ν F) :
     ∃ (s : ℕ) (a : Fin s → ι), Function.Injective a ∧
       LinearIndependent F (A.submatrix a id).row ∧
       Submodule.span F (Set.range (A.submatrix a id).row) =
@@ -49,48 +53,38 @@ theorem exists_fin_linearIndependent_row_span_eq
   let : Finite κ := hi.finite
   let : Fintype κ := Fintype.ofFinite κ
   let e := (Fintype.equivFin κ).symm
-  have hli : LinearIndependent F (A.submatrix (a ∘ e) id).row := hi.comp e e.injective
+  have hli := hi.comp e e.injective
   refine ⟨Fintype.card κ, a ∘ e, ha.comp e.injective, hli, ?_⟩
   have hr : Set.range (A.submatrix (a ∘ e) id).row = Set.range (A.row ∘ a) := by
-    change Set.range ((A.row ∘ a) ∘ e) = _
-    exact e.surjective.range_comp _
+    exact id (Function.Surjective.range_comp (Equiv.surjective e) (A.row ∘ a))
   rw [hr, hs]
 
-/-- Restriction to spanning rows preserves the exact kernel. -/
-theorem ker_mulVecLin_submatrix_eq_of_span_row_eq
-    {F ι κ ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F) (a : κ → ι)
-    (hs : Submodule.span F (Set.range (A.submatrix a id).row) =
-      Submodule.span F (Set.range A.row)) :
-    (A.submatrix a id).mulVecLin.ker = A.mulVecLin.ker := by
-  ext v
-  simp only [LinearMap.mem_ker, Matrix.mulVecLin_apply]
-  constructor
-  · intro hv
-    ext i
-    have hm : A.row i ∈ Submodule.span F (Set.range (A.submatrix a id).row) := by
-      rw [hs]
-      exact Submodule.subset_span ⟨i, rfl⟩
-    change A.row i ⬝ᵥ v = 0
-    suffices hh : ∀ r ∈ Submodule.span F (Set.range (A.submatrix a id).row), r ⬝ᵥ v = 0 from hh _ hm
-    intro r hr
-    induction hr using Submodule.span_induction with
-    | mem r hr =>
-      obtain ⟨j, rfl⟩ := hr
-      exact congrFun hv j
-    | zero => simp
-    | add x y hx hy ihx ihy => simp [add_dotProduct, ihx, ihy]
-    | smul b x hx ih => simp [smul_dotProduct, ih]
-  · intro hv
-    ext i
-    exact congrFun hv (a i)
 
 /-- There are exactly rank-many independent rows. -/
 theorem exists_rank_linearIndependent_rows
-    {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F) :
+     (A : Matrix ι ν F) :
     ∃ a : Fin A.rank → ι, Function.Injective a ∧
       LinearIndependent F (A.submatrix a id).row := by
   obtain ⟨s, a, ha, hi, hs⟩ := exists_fin_linearIndependent_row_span_eq A
-  have hk := ker_mulVecLin_submatrix_eq_of_span_row_eq A a hs
+  have hk := (show (A.submatrix a id).mulVecLin.ker = A.mulVecLin.ker from (by
+               ext v
+               constructor
+               · intro hv
+                 ext i
+                 have hm : A.row i ∈ Submodule.span F (Set.range (A.submatrix a id).row) := by
+                   aesop
+                 suffices hh : ∀ r ∈ Submodule.span F (Set.range (A.submatrix a id).row), r ⬝ᵥ v = 0 from hh _ hm
+                 intro r hr
+                 induction hr using Submodule.span_induction with
+                 | mem r hr =>
+                   obtain ⟨j, rfl⟩ := hr
+                   exact congrFun hv j
+                 | zero => simp
+                 | add x y hx hy ihx ihy => simp [add_dotProduct, ihx, ihy]
+                 | smul b x hx ih => simp [smul_dotProduct, ih]
+               · intro hv
+                 ext i
+                 exact congrFun hv (a i)))
   have h₁ := (A.submatrix a id).mulVecLin.finrank_range_add_finrank_ker
   have h₂ := A.mulVecLin.finrank_range_add_finrank_ker
   change (A.submatrix a id).rank + _ = _ at h₁
@@ -110,7 +104,7 @@ theorem exists_det_submatrix_ne_zero_of_linearIndependent_row
   obtain ⟨c, hc, hli⟩ := exists_rank_linearIndependent_rows Aᵀ
   let e := finCongr hr
   refine ⟨c ∘ e.symm, hc.comp e.symm.injective, ?_⟩
-  have hcol : LinearIndependent F (A.submatrix id (c ∘ e.symm)).col :=
+  have hcol :=
     hli.comp e.symm e.symm.injective
   rw [← isUnit_iff_ne_zero, ← isUnit_iff_isUnit_det]
   exact linearIndependent_col_iff_isUnit.mp hcol
@@ -118,14 +112,14 @@ theorem exists_det_submatrix_ne_zero_of_linearIndependent_row
 /-- Every rank lower bound is witnessed by a nonzero minor with distinct rows
 and distinct columns, without any finiteness requirement on the rows. -/
 theorem exists_det_submatrix_ne_zero_of_le_rank
-    {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F)
+     (A : Matrix ι ν F)
     (r : ℕ) (hr : r ≤ A.rank) :
     ∃ (a : Fin r → ι) (c : Fin r → ν), Function.Injective a ∧
       Function.Injective c ∧ (A.submatrix a c).det ≠ 0 := by
   obtain ⟨a, ha, hi⟩ := exists_rank_linearIndependent_rows A
   let b : Fin r → Fin A.rank := Fin.castLE hr
-  have hb : Function.Injective b := Fin.castLE_injective hr
-  have hli : LinearIndependent F (A.submatrix (a ∘ b) id).row := hi.comp b hb
+  have hb := Fin.castLE_injective hr
+  have hli := hi.comp b hb
   obtain ⟨c, hc, hd⟩ := exists_det_submatrix_ne_zero_of_linearIndependent_row _ hli
   exact ⟨a ∘ b, c, ha.comp hb, hc, hd⟩
 
@@ -139,11 +133,11 @@ theorem le_rank_of_det_submatrix_ne_zero {R ι ν : Type*} [CommRing R] [IsDomai
 square submatrix has nonzero determinant. The chosen rows and columns are automatically
 distinct (`Matrix.injective_rows_of_det_submatrix_ne_zero`,
 `Matrix.injective_cols_of_det_submatrix_ne_zero`). -/
-def HasNonzeroMinor {R ι ν : Type*} [CommRing R] (A : Matrix ι ν R) (r : ℕ) : Prop :=
+def HasNonzeroMinor {R ι ν : Type*} [CommRing R] (A : Matrix ι ν R) (r : ℕ)  :=
   ∃ (a : Fin r → ι) (c : Fin r → ν), (A.submatrix a c).det ≠ 0
 
 /-- Every rank lower bound over a field is witnessed by a nonzero minor. -/
-theorem hasNonzeroMinor_of_le_rank {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F)
+theorem hasNonzeroMinor_of_le_rank  (A : Matrix ι ν F)
     {r : ℕ} (hr : r ≤ A.rank) : A.HasNonzeroMinor r :=
   let ⟨a, c, _, _, h⟩ := exists_det_submatrix_ne_zero_of_le_rank A r hr
   ⟨a, c, h⟩
@@ -171,15 +165,9 @@ theorem dvd_det_sub_det_of_dvd_sub {s : ℕ} (A B : Matrix (Fin s) (Fin s) ℤ)
   let I : Ideal ℤ := Ideal.span {m}
   let φ := Ideal.Quotient.mk I
   have he : A.map φ = B.map φ := by
-    ext i j
-    apply sub_eq_zero.mp
-    change φ (A i j) - φ (B i j) = 0
-    rw [← map_sub]
-    exact Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (h i j))
+    exact ext fun i j => sub_eq_zero.mp (id (Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (h i j))))
   apply Ideal.mem_span_singleton.mp
-  change A.det - B.det ∈ I
   apply Ideal.Quotient.eq_zero_iff_mem.mp
-  change φ (A.det - B.det) = 0
   rw [map_sub, φ.map_det, φ.map_det]
   change (A.map φ).det - (B.map φ).det = 0
   rw [he, sub_self]

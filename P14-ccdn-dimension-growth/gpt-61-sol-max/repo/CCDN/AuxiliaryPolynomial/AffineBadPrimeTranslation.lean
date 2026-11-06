@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.AffineTranslation
 public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeFactor
 public import CCDN.AuxiliaryPolynomial.Nonmultiple
@@ -13,57 +17,53 @@ import CCDN.AuxiliaryPolynomial.AffineTranslationCount
 /-! Integral translations preserve the affine bad-prime factor, including
 degree-dropping reductions and the nonabsolute zero convention. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma hypersurfaceBadReduction_affineTranslation {n : ℕ}
-    (a : Fin n → ℤ) (f : MvPolynomial (Fin n) ℤ) (p : ℕ) :
+variable {n : ℕ}
+
+private lemma hypersurfaceBadReduction_affineTranslation 
+    (a : CCDN.IntPoint n) (f : CCDN.IntegerPolynomial n) (p : ℕ) :
     HypersurfaceBadReduction (affineTranslation ℤ a f) p ↔ HypersurfaceBadReduction f p := by
-  unfold HypersurfaceBadReduction
   apply exists_congr
   intro hp
-  let : Fact p.Prime := ⟨hp⟩
   dsimp only
   rw [affineTranslation_map, affineTranslation_totalDegree, affineTranslation_totalDegree,
     affineTranslation_irreducible_iff]
 
 /-- The bad-prime factor of an integral polynomial is invariant under integral affine
 translation of the variables. -/
-theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
-    (a : Fin (n + 1) → ℤ) (f : MvPolynomial (Fin (n + 1)) ℤ) :
+theorem hypersurfaceBadPrimeFactor_affineTranslation 
+    (a : CCDN.IntPoint (n + 1)) (f : CCDN.IntegerPolynomial (n + 1)) :
     hypersurfaceBadPrimeFactor (affineTranslation ℤ a f) = hypersurfaceBadPrimeFactor f := by
   classical
   have hir : AbsolutelyIrreducible (affineTranslation ℤ a f) ↔ AbsolutelyIrreducible f := by
-    dsimp only [AbsolutelyIrreducible]
-    rw [affineTranslation_map, affineTranslation_irreducible_iff]
+    grind [affineTranslation_map, affineTranslation_irreducible_iff]
   by_cases hf : AbsolutelyIrreducible f
   · let bad := (finite_fin_hypersurface_bad_primes f hf
       (absolute_integer_polynomial_totalDegree_pos f hf)).toFinset
     have hbad (p) : p ∈ bad ↔ stepanovThreshold f.totalDegree < p ∧
         HypersurfaceBadReduction f p := by
-      simp only [bad, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
+      aesop
     rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl bad hbad]
     exact hypersurfaceBadPrimeFactor_eq_exp _ (hir.mpr hf) (affineTranslation_totalDegree a f)
-      bad (by intro p; rw [hbad, hypersurfaceBadReduction_affineTranslation])
-  · rw [hypersurfaceBadPrimeFactor_eq_zero f hf,
-      hypersurfaceBadPrimeFactor_eq_zero _ (fun h => hf (hir.mp h))]
+      bad (by simp_all [hypersurfaceBadReduction_affineTranslation])
+  · simp_all [hypersurfaceBadPrimeFactor_eq_zero]
 
 /-- Pull an auxiliary equation back through a bounded translation. -/
-theorem affine_auxiliary_translation_transport {n : ℕ}
-    (f g : MvPolynomial (Fin n) ℤ) (a : Fin n → ℤ) {B D : ℝ}
+theorem affine_auxiliary_translation_transport 
+    (f g : CCDN.IntegerPolynomial n) (a : CCDN.IntPoint n) {B D : ℝ}
     (hg : IsBoxAuxiliary (affineTranslation ℤ a f) g (B + D)) (ha : InBox a D) :
     ∃ G, IsBoxAuxiliary f G B ∧ G.totalDegree = g.totalDegree := by
   let G := (affineTranslation ℤ a).symm g
-  have hG0 : G ≠ 0 := (affineTranslation ℤ a).symm.injective.ne (by simpa using hg.ne_zero)
   have hGnd : ¬ f ∣ G := by
     intro hd
     apply hg.not_dvd
     have hh := map_dvd (affineTranslation ℤ a).toRingHom hd
     change affineTranslation ℤ a f ∣ affineTranslation ℤ a ((affineTranslation ℤ a).symm g) at hh
     simpa only [AlgEquiv.apply_symm_apply] using hh
-  refine ⟨G, ⟨hG0, hGnd, ?_⟩, affineTranslation_totalDegree (-a) g⟩
+  refine ⟨G, ⟨hGnd, ?_⟩, affineTranslation_totalDegree (-a) g⟩
   intro x hx hxf
   have hx' (j) : |((x - a) j : ℝ)| ≤ B + D := by
     change |((x j - a j : ℤ) : ℝ)| ≤ _
@@ -75,5 +75,4 @@ theorem affine_auxiliary_translation_transport {n : ℕ}
   rw [affineTranslation_eval]
   exact hg.vanishes (x - a) hx' hf'
 
-end
 end CCDN

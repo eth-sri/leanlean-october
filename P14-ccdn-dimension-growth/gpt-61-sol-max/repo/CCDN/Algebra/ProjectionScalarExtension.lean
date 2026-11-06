@@ -13,9 +13,8 @@ import CCDN.Algebra.IdealScalarDescent
 Consequently a polynomial projection of a geometrically integral source
 has a geometrically integral image. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A polynomial `f` lies in the kernel of the coordinate map `Y i ↦ a i` into
@@ -24,8 +23,6 @@ lemma mem_projectionCoordinateMap_ker
     {K : Type*} [Field K] {m n : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K))
     (a : Fin m → MvPolynomial (Fin n) K) (f : MvPolynomial (Fin m) K) :
-    f ∈ RingHom.ker (projectionCoordinateMap I a) ↔ aeval a f ∈ I := by
-  exact Ideal.Quotient.eq_zero_iff_mem
+    f ∈ RingHom.ker (projectionCoordinateMap I a) ↔ aeval a f ∈ I := Ideal.Quotient.eq_zero_iff_mem
 
-end
 end CCDN

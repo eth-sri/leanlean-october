@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 public import Mathlib.RingTheory.MvPolynomial.IrreducibleQuadratic
@@ -23,19 +25,20 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K]
+
 /-- Multiples of `f` whose multiplier has the degree allowed by cutoff `N`. -/
-def filteredMultiples {K σ : Type*} [Field K] (f : MvPolynomial σ K) (N : ℕ) :
-    Submodule K (MvPolynomial σ K) :=
+def filteredMultiples  (f : MvPolynomial σ K) (N : ℕ)  :=
   (restrictTotalDegree σ K (N - f.totalDegree)).map (LinearMap.mulLeft K f)
 
 /-- `x` is a filtered multiple of `f` at level `N` if and only if `x = f * u` with `u` of total
 degree at most `N - deg f`. -/
-lemma mem_filteredMultiples {K σ : Type*} [Field K] (f x : MvPolynomial σ K) (N : ℕ) :
+lemma mem_filteredMultiples  (f x : MvPolynomial σ K) (N : ℕ) :
     x ∈ filteredMultiples f N ↔ ∃ u, u.totalDegree ≤ N - f.totalDegree ∧ f * u = x := by
   simp [filteredMultiples, Submodule.mem_map, mem_restrictTotalDegree, LinearMap.mulLeft_apply]
 
 /-- If `deg f ≤ N`, the filtered multiples of `f` at level `N` have total degree at most `N`. -/
-lemma filteredMultiples_le_degree {K σ : Type*} [Field K] (f : MvPolynomial σ K)
+lemma filteredMultiples_le_degree  (f : MvPolynomial σ K)
     {N : ℕ} (hN : f.totalDegree ≤ N) : filteredMultiples f N ≤ restrictTotalDegree σ K N := by
   intro x hx
   obtain ⟨u, hu, rfl⟩ := (mem_filteredMultiples f x N).mp hx
@@ -49,63 +52,12 @@ instance filteredMultiples_finite {K σ : Type*} [Field K] [Finite σ]
 
 /-- For `f ≠ 0`, the space of filtered multiples of `f` at level `N` has the dimension of the space
 of polynomials of total degree at most `N - deg f`. -/
-lemma filteredMultiples_finrank {K σ : Type*} [Field K] (f : MvPolynomial σ K)
+lemma filteredMultiples_finrank  (f : MvPolynomial σ K)
     (hf : f ≠ 0) (N : ℕ) :
     Module.finrank K (filteredMultiples f N) =
-      Module.finrank K (restrictTotalDegree σ K (N - f.totalDegree)) := by
-  exact (Submodule.equivMapOfInjective (LinearMap.mulLeft K f)
-    (fun x y h => mul_left_cancel₀ hf h) _).finrank_eq.symm
+      Module.finrank K (restrictTotalDegree σ K (N - f.totalDegree)) := (Submodule.equivMapOfInjective (LinearMap.mulLeft K f)
+    (fun _ _ h => mul_left_cancel₀ hf h) _).finrank_eq.symm
 
-/-- Exact intersection of the two spaces of bounded-degree multiples. -/
-private theorem filteredMultiples_inf {K σ : Type*} [Field K]
-    {f g : MvPolynomial σ K} (hf : Prime f) (hfg : ¬ f ∣ g)
-    {N : ℕ} (hN : f.totalDegree + g.totalDegree ≤ N) :
-    filteredMultiples f N ⊓ filteredMultiples g N = filteredMultiples (f * g) N := by
-  have hg : g ≠ 0 := by intro h; exact hfg (h ▸ dvd_zero f)
-  have hprod := totalDegree_mul_of_isDomain hf.ne_zero hg
-  ext x
-  constructor
-  · rintro ⟨hxf, hxg⟩
-    obtain ⟨u, hu, hux⟩ := (mem_filteredMultiples f x N).mp hxf
-    obtain ⟨v, hv, hvx⟩ := (mem_filteredMultiples g x N).mp hxg
-    have hdvd : f ∣ g * v := ⟨u, hux.trans hvx.symm |>.symm⟩
-    obtain ⟨w, hw⟩ := (hf.dvd_or_dvd hdvd).resolve_left hfg
-    have hfu : f * u = f * (g * w) := by rw [hux, ← hvx, hw]; ring
-    have huw : u = g * w := mul_left_cancel₀ hf.ne_zero hfu
-    apply (mem_filteredMultiples (f * g) x N).mpr
-    refine ⟨w, ?_, ?_⟩
-    · rw [hprod]
-      by_cases hw0 : w = 0
-      · simp [hw0]
-      rw [hw, totalDegree_mul_of_isDomain hf.ne_zero hw0] at hv
-      omega
-    · rw [mul_assoc, ← huw, hux]
-  · intro hx
-    obtain ⟨w, hw, hwx⟩ := (mem_filteredMultiples (f * g) x N).mp hx
-    rw [hprod] at hw
-    constructor
-    · apply (mem_filteredMultiples f x N).mpr
-      refine ⟨g * w, (totalDegree_mul _ _).trans (by omega), ?_⟩
-      simpa [mul_assoc] using hwx
-    · apply (mem_filteredMultiples g x N).mpr
-      refine ⟨f * w, (totalDegree_mul _ _).trans (by omega), ?_⟩
-      simpa [mul_assoc, mul_comm, mul_left_comm] using hwx
-
-
-/-- Dimension inclusion-exclusion for the bounded-degree multiples. -/
-private theorem filteredMultiples_sup_finrank {K σ : Type*} [Field K] [Finite σ]
-    {f g : MvPolynomial σ K} (hf : Prime f) (hfg : ¬ f ∣ g)
-    {N : ℕ} (hN : f.totalDegree + g.totalDegree ≤ N) :
-    Module.finrank K ↥(filteredMultiples f N ⊔ filteredMultiples g N) +
-      Module.finrank K (restrictTotalDegree σ K (N - (f.totalDegree + g.totalDegree))) =
-      Module.finrank K (restrictTotalDegree σ K (N - f.totalDegree)) +
-      Module.finrank K (restrictTotalDegree σ K (N - g.totalDegree)) := by
-  have hg : g ≠ 0 := by intro h; exact hfg (h ▸ dvd_zero f)
-  have h := Submodule.finrank_sup_add_finrank_inf_eq (filteredMultiples f N) (filteredMultiples g N)
-  rw [filteredMultiples_inf hf hfg hN, filteredMultiples_finrank _ hf.ne_zero,
-    filteredMultiples_finrank _ hg, filteredMultiples_finrank _ (mul_ne_zero hf.ne_zero hg),
-    totalDegree_mul_of_isDomain hf.ne_zero hg] at h
-  exact h
 
 /-- A subspace known to lie in a linear map's kernel subtracts from the image dimension. -/
 lemma finrank_map_add_kernel_subspace_le {K M W : Type*} [Field K]
@@ -120,8 +72,8 @@ lemma finrank_map_add_kernel_subspace_le {K M W : Type*} [Field K]
 /-- Bounded-degree polynomials in the quotient coordinate ring: the image in `K[X] ⧸ I` of the
 polynomials of total degree at most `N`. For `K = ℚ` its dimension is
 `CCDN.affineHilbertFunction I N`. -/
-def filteredCoordinateSpace {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (N : ℕ) : Submodule K (MvPolynomial σ K ⧸ I) :=
+def filteredCoordinateSpace 
+    (I : Ideal (MvPolynomial σ K)) (N : ℕ)  :=
   (restrictTotalDegree σ K N).map (Ideal.Quotient.mkₐ K I).toLinearMap
 
 instance filteredCoordinateSpace_finite {K σ : Type*} [Field K] [Finite σ]
@@ -132,14 +84,13 @@ instance filteredCoordinateSpace_finite {K σ : Type*} [Field K] [Finite σ]
 /-- Curve degree via the filtered Hilbert function: the dimension of the bounded-degree part
 of the coordinate ring is eventually `d * M + c`. Over `ℚ` with `σ = Fin n` this is
 `CCDN.HasAffineCurveDegree`. -/
-def HasFilteredCurveDegree {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) (d : ℕ) :
-    Prop :=
+def HasFilteredCurveDegree  (I : Ideal (MvPolynomial σ K)) (d : ℕ)  :=
   ∃ N : ℕ, ∃ c : ℤ, ∀ M ≥ N,
-    (Module.finrank K (filteredCoordinateSpace I M) : ℤ) = (d : ℤ) * M + c
+    (Module.finrank K (filteredCoordinateSpace I M) : ℤ) = ↑d * M + c
 
 /-- The filtered Koszul rank bound, before evaluating the monomial-space dimensions.
 It applies to every ideal containing the two equations. -/
-theorem filteredCoordinateSpace_finrank_bound {K σ : Type*} [Field K] [Finite σ]
+theorem filteredCoordinateSpace_finrank_bound  [Finite σ]
     {f g : MvPolynomial σ K} (hf : Prime f) (hfg : ¬ f ∣ g)
     (I : Ideal (MvPolynomial σ K)) (hIf : f ∈ I) (hIg : g ∈ I)
     {N : ℕ} (hN : f.totalDegree + g.totalDegree ≤ N) :
@@ -159,12 +110,45 @@ theorem filteredCoordinateSpace_finrank_bound {K σ : Type*} [Field K] [Finite �
     (sup_le (filteredMultiples_le_degree f (by omega))
       (filteredMultiples_le_degree g (by omega)))
     (sup_le (hker f hIf) (hker g hIg))
-  have heq := filteredMultiples_sup_finrank hf hfg hN
+  have heq := (by
+                have hg : g ≠ 0 := by aesop
+                have h := Submodule.finrank_sup_add_finrank_inf_eq (filteredMultiples f N) (filteredMultiples g N)
+                rw [(show filteredMultiples f N ⊓ filteredMultiples g N = filteredMultiples (f * g) N from (by
+                      have hg : g ≠ 0 := by aesop
+                      have hprod := totalDegree_mul_of_isDomain hf.ne_zero hg
+                      ext x
+                      constructor
+                      · rintro ⟨hxf, hxg⟩
+                        obtain ⟨u, hu, hux⟩ := (mem_filteredMultiples f x N).mp hxf
+                        obtain ⟨v, hv, hvx⟩ := (mem_filteredMultiples g x N).mp hxg
+                        have hdvd : f ∣ g * v := ⟨u, hux.trans hvx.symm |>.symm⟩
+                        obtain ⟨w, hw⟩ := (hf.dvd_or_dvd hdvd).resolve_left hfg
+                        have hfu : f * u = f * (g * w) := by rw [hux, ← hvx, hw]; ring
+                        have huw := mul_left_cancel₀ hf.ne_zero hfu
+                        apply (mem_filteredMultiples (f * g) x N).mpr
+                        refine ⟨w, ?_, ?_⟩
+                        · by_cases hw0 : w = 0
+                          · simp [hw0]
+                          rw [hw, totalDegree_mul_of_isDomain hf.ne_zero hw0] at hv
+                          omega
+                        · rw [mul_assoc, ← huw, hux]
+                      · intro hx
+                        obtain ⟨w, hw, hwx⟩ := (mem_filteredMultiples (f * g) x N).mp hx
+                        constructor
+                        · apply (mem_filteredMultiples f x N).mpr
+                          refine ⟨g * w, (totalDegree_mul _ _).trans (by omega), ?_⟩
+                          simpa [mul_assoc] using hwx
+                        · apply (mem_filteredMultiples g x N).mpr
+                          refine ⟨f * w, (totalDegree_mul _ _).trans (by omega), ?_⟩
+                          simpa [mul_assoc, mul_comm, mul_left_comm] using hwx)), filteredMultiples_finrank _ hf.ne_zero,
+                  filteredMultiples_finrank _ hg, filteredMultiples_finrank _ (mul_ne_zero hf.ne_zero hg),
+                  totalDegree_mul_of_isDomain hf.ne_zero hg] at h
+                exact h)
   change Module.finrank K (filteredCoordinateSpace I N) + _ ≤ _ at hbound
   omega
 
 /-- Lift a basis of the filtered coordinate ring to bounded-degree polynomials. -/
-theorem exists_filtered_polynomial_basis {K σ : Type*} [Field K] [Finite σ]
+theorem exists_filtered_polynomial_basis  [Finite σ]
     (I : Ideal (MvPolynomial σ K)) (D : ℕ) :
     ∃ h : Fin (Module.finrank K (filteredCoordinateSpace I D)) → MvPolynomial σ K,
       (∀ i, (h i).totalDegree ≤ D) ∧
@@ -183,7 +167,7 @@ theorem exists_filtered_polynomial_basis {K σ : Type*} [Field K] [Finite σ]
 
 /-- Enlarging the ideal can only shrink the filtered pieces of the coordinate ring. -/
 lemma filteredCoordinateSpace_finrank_antitone_ideal
-    {K σ : Type*} [Field K] [Fintype σ]
+     [Fintype σ]
     (I J : Ideal (MvPolynomial σ K)) (hIJ : I ≤ J) (N : ℕ) :
     Module.finrank K (filteredCoordinateSpace J N) ≤
       Module.finrank K (filteredCoordinateSpace I N) := by
@@ -192,17 +176,11 @@ lemma filteredCoordinateSpace_finrank_antitone_ideal
       (fun f hf => Ideal.Quotient.eq_zero_iff_mem.mpr (hIJ hf))
   have hmap : (filteredCoordinateSpace I N).map φ.toLinearMap =
       filteredCoordinateSpace J N := by
-    ext x
-    constructor
-    · rintro ⟨a, ⟨f, hf, rfl⟩, rfl⟩
-      exact Submodule.mem_map.mpr ⟨f, hf, rfl⟩
-    · rintro ⟨f, hf, rfl⟩
-      exact Submodule.mem_map.mpr ⟨Ideal.Quotient.mk I f,
-        Submodule.mem_map.mpr ⟨f, hf, rfl⟩, rfl⟩
-  have hh := finrank_map_add_kernel_subspace_le φ.toLinearMap
-    (filteredCoordinateSpace I N) ⊥ bot_le bot_le
-  rw [hmap] at hh
-  simpa only [finrank_bot, add_zero] using hh
+    dsimp only [filteredCoordinateSpace]
+    rw [← Submodule.map_comp]
+    rfl
+  rw [← hmap]
+  exact Submodule.finrank_map_le _ _
 
 end
 end CCDN

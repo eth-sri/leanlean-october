@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.TwoTorsion
 public import Mathlib.RingTheory.ClassGroup.ExtendedHom
 
@@ -15,7 +17,6 @@ action of a field involution on two-torsion ideal classes. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
 open scoped NumberField
 
@@ -23,13 +24,11 @@ private theorem two_torsion_card_le_involution_fixed_square
     {G : Type*} [CommGroup G] [Finite G]
     (σ : G →* G) (hσ : Function.Involutive σ) (hG : ∀ x : G, x ^ 2 = 1) :
     Nat.card G ≤ Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := by
-  let τ : G →* G := (MonoidHom.id G) * σ
+  let τ := (MonoidHom.id G) * σ
   have hker : τ.ker ≤ σ.eqLocus (MonoidHom.id G) := by
     intro x hx
-    change x * σ x = 1 at hx
-    change σ x = x
-    apply mul_left_cancel (a := x)
-    exact hx.trans (by simpa only [pow_two] using (hG x).symm)
+    apply mul_left_cancel 
+    exact hx.trans (by simp_all [pow_two, symm])
   have hrange : τ.range ≤ σ.eqLocus (MonoidHom.id G) := by
     rintro x ⟨y, rfl⟩
     change σ (y * σ y) = y * σ y
@@ -61,8 +60,10 @@ private theorem classGroup_mulEquiv_involutive
 
 variable (K : Type*) [Field K]
 
+variable (σ : K ≃+* K)
+
 /-- The action of a field automorphism on two-torsion ideal classes. -/
-def classGroupTwoTorsionAction (σ : K ≃+* K) :
+noncomputable def classGroupTwoTorsionAction  :
     classGroupTwoTorsion K →* classGroupTwoTorsion K where
   toFun c := ⟨ClassGroup.mulEquiv (RingOfIntegers.mapRingEquiv σ) c, by
     change (ClassGroup.mulEquiv (RingOfIntegers.mapRingEquiv σ) c.val) ^ 2 = 1
@@ -70,24 +71,15 @@ def classGroupTwoTorsionAction (σ : K ≃+* K) :
   map_one' := Subtype.ext (map_one _)
   map_mul' c d := Subtype.ext (map_mul _ _ _)
 
-private theorem classGroupTwoTorsionAction_involutive (σ : K ≃+* K)
-    (hσ : Function.Involutive σ) :
-    Function.Involutive (classGroupTwoTorsionAction K σ) := by
-  have hσO : Function.Involutive (RingOfIntegers.mapRingEquiv σ) := by
-    intro x
-    exact RingOfIntegers.ext (hσ x)
-  intro c
-  apply Subtype.ext
-  exact classGroup_mulEquiv_involutive _ hσO c
 
 /-- Two-torsion classes fixed by the specified field automorphism. -/
-def fixedClassGroupTwoTorsion (σ : K ≃+* K) : Subgroup (classGroupTwoTorsion K) :=
+noncomputable def fixedClassGroupTwoTorsion   :=
   (classGroupTwoTorsionAction K σ).eqLocus (MonoidHom.id _)
 
 /-- A two-torsion class lies in the `σ`-fixed subgroup if and only if `σ` maps its underlying ideal
 class to itself. -/
 @[simp]
-theorem mem_fixedClassGroupTwoTorsion (σ : K ≃+* K) (c : classGroupTwoTorsion K) :
+theorem mem_fixedClassGroupTwoTorsion  (c : classGroupTwoTorsion K) :
     c ∈ fixedClassGroupTwoTorsion K σ ↔
       ClassGroup.mulEquiv (RingOfIntegers.mapRingEquiv σ) c.val = c.val :=
   Subtype.ext_iff
@@ -100,9 +92,11 @@ theorem classGroupTwoTorsionCard_le_fixed_square (σ : K ≃+* K)
     (hσ : Function.Involutive σ) :
     classGroupTwoTorsionCard K ≤ Nat.card (fixedClassGroupTwoTorsion K σ) ^ 2 := by
   apply two_torsion_card_le_involution_fixed_square
-    (classGroupTwoTorsionAction K σ) (classGroupTwoTorsionAction_involutive K σ hσ)
+    (classGroupTwoTorsionAction K σ) ((show Function.Involutive ⇑(classGroupTwoTorsionAction K σ) from (by
+                                        have hσO : Function.Involutive (RingOfIntegers.mapRingEquiv σ) := by
+                                          solve_by_elim [RingOfIntegers.ext]
+                                        solve_by_elim [Subtype.ext, classGroup_mulEquiv_involutive])))
   intro c
   exact Subtype.ext c.property
 
-end
 end CCDN

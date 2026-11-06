@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Hilbert.LinearProjectionFiltration
 public import Mathlib.RingTheory.IntegralClosure.IntegrallyClosed
@@ -19,9 +21,8 @@ linear combination separates a finite set of characteristic-zero points.
 Its specialized monic minimal polynomial bounds the entire fiber by the
 fraction-field rank, independently of the number of coordinates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Distinct specialization tuples are roots of one separating integral
 element's minimal polynomial. Normality bounds its degree by the field rank. -/
@@ -47,7 +48,7 @@ private theorem integral_coordinate_tuple_count_le_finrank
     obtain ⟨j, rfl⟩ := e.surjective i
     exact congrFun h j
   obtain ⟨t, _, ht⟩ := exists_bounded_moment_separation v hv
-  let b : A := ∑ j : Fin (Fintype.card ι), a (e j) * (t : A) ^ j.val
+  let b := ∑ j : Fin (Fintype.card ι), a (e j) * (t : A) ^ j.val
   let L : (ι → k) → k := fun x =>
     ∑ j : Fin (Fintype.card ι), x (e j) * (t : k) ^ j.val
   have hb : IsIntegral R b :=
@@ -65,21 +66,18 @@ private theorem integral_coordinate_tuple_count_le_finrank
     apply Polynomial.mem_roots hP.ne_zero |>.mpr
     change P.eval (L x) = 0
     rw [← hφb]
-    dsimp only [P]
     rw [Polynomial.eval_map_algebraMap, Polynomial.aeval_algHom_apply,
       minpoly.aeval, map_zero]
   have hsub : s.image L ⊆ P.roots.toFinset := by
-    intro y hy
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
-    exact Multiset.mem_toFinset.mpr (hroot x hx)
-  calc
-    s.card = (s.image L).card := (Finset.card_image_of_injOn hL).symm
-    _ ≤ P.roots.toFinset.card := Finset.card_le_card hsub
-    _ ≤ P.roots.card := Multiset.toFinset_card_le _
-    _ ≤ P.natDegree := Polynomial.card_roots' _
-    _ ≤ (minpoly R b).natDegree := Polynomial.natDegree_map_le
-    _ ≤ Module.finrank F E :=
-      integral_minpoly_natDegree_le_fraction_finrank R A F E b hb
+    grind
+  exact Trans.trans
+    (Trans.trans
+      (Trans.trans
+        (Trans.trans (Trans.trans (Eq.symm (Finset.card_image_of_injOn hL)) (Finset.card_le_card hsub))
+          (Multiset.toFinset_card_le P.roots))
+        (Polynomial.card_roots' P))
+      Polynomial.natDegree_map_le)
+    (integral_minpoly_natDegree_le_fraction_finrank R A F E b hb)
 
 open MvPolynomial
 
@@ -107,7 +105,7 @@ theorem integral_projection_fiber_card_le_finrank
   classical
   let R := MvPolynomial τ K
   let A := MvPolynomial σ K ⧸ I
-  let b : σ → A := fun i => Ideal.Quotient.mk I (X i)
+  let b := fun i => Ideal.Quotient.mk I (X i)
   let : Algebra R K := (aeval z).toRingHom.toAlgebra
   have hb (i) : IsIntegral R (b i) := by
     change (algebraMap R A).IsIntegralElem (b i)
@@ -117,5 +115,4 @@ theorem integral_projection_fiber_card_le_finrank
   intro x hx
   exact exists_projection_fiber_specialization I l hmap z x (hzero x hx) (hproj x hx)
 
-end
 end CCDN

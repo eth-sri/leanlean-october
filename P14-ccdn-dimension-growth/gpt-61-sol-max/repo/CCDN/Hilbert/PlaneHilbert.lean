@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 import CCDN.ForMathlib.LinearMap
 import CCDN.ForMathlib.MvPolynomial
@@ -13,9 +15,8 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 /-! The exact affine Hilbert function of a principal plane equation. This
 identifies polynomial total degree with the degree in the curve-counting target. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For `f ≠ 0` and `deg f ≤ N`, the affine Hilbert function of `(f)` at `N` plus the dimension of
@@ -32,13 +33,13 @@ theorem principal_filtered_finrank {K σ : Type*} [Field K] [Finite σ]
     ext x
     constructor
     · rintro ⟨hx, hz⟩
-      have hmem : x ∈ Ideal.span {f} := Ideal.Quotient.eq_zero_iff_mem.mp hz
+      have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hz
       obtain ⟨u, rfl⟩ := Ideal.mem_span_singleton.mp hmem
       apply (mem_filteredMultiples f (f * u) N).mpr
       refine ⟨u, ?_, rfl⟩
       by_cases hu : u = 0
       · simp [hu]
-      have hdeg : (f * u).totalDegree ≤ N := (mem_restrictTotalDegree _ _ _).mp hx
+      have hdeg := (mem_restrictTotalDegree _ _ _).mp hx
       rw [totalDegree_mul_of_isDomain hf hu] at hdeg
       omega
     · intro hx
@@ -49,9 +50,11 @@ theorem principal_filtered_finrank {K σ : Type*} [Field K] [Finite σ]
   rw [hk, filteredMultiples_finrank f hf] at h
   exact h
 
+variable {K : Type*} [Field K]
+
 /-- The polynomials in two variables of total degree at most `N` form a space of dimension `(N +
 2).choose 2`. -/
-theorem finrank_restrictTotalDegree_two {K : Type*} [Field K] (N : ℕ) :
+theorem finrank_restrictTotalDegree_two  (N : ℕ) :
     Module.finrank K (restrictTotalDegree (Fin 2) K N) = (N + 2).choose 2 := by
   rw [finrank_restrictTotalDegree]
   simp only [Fintype.card_fin]
@@ -66,36 +69,22 @@ lemma two_mul_choose_add_two (n : ℕ) :
 
 /-- The affine Hilbert function of a nonzero plane equation `f` of degree `d` is `d N + d -
 d(d-1)/2` for every `N ≥ d`. -/
-theorem principal_plane_hilbert_function {K : Type*} [Field K]
+theorem principal_plane_hilbert_function 
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {N : ℕ} (hN : f.totalDegree ≤ N) :
     (Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) N) : ℤ) =
-      (f.totalDegree : ℤ) * N + ((f.totalDegree : ℤ) - f.totalDegree.choose 2) := by
+      ↑f.totalDegree * N + (↑f.totalDegree - f.totalDegree.choose 2) := by
   have h := principal_filtered_finrank f hf hN
   rw [finrank_restrictTotalDegree_two, finrank_restrictTotalDegree_two] at h
   have h0 := two_mul_choose_add_two N
   have h1 := two_mul_choose_add_two (N - f.totalDegree)
   have h2 := Nat.descFactorial_eq_factorial_mul_choose f.totalDegree 2
   norm_num [Nat.descFactorial_succ] at h2
-  have hsum : (Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) N) : ℤ) +
-      ((N - f.totalDegree + 2).choose 2 : ℤ) = ((N + 2).choose 2 : ℤ) := by
-    exact_mod_cast h
-  have hc0 : (2 : ℤ) * ((N + 2).choose 2 : ℤ) = ((N : ℤ) + 2) * (N + 1) := by
-    exact_mod_cast h0
-  have hc1 : (2 : ℤ) * ((N - f.totalDegree + 2).choose 2 : ℤ) =
-      ((N : ℤ) - f.totalDegree + 2) * ((N : ℤ) - f.totalDegree + 1) := by
+  have hc1 : 2 * ((N - f.totalDegree + 2).choose 2 : ℤ) =
+      (↑N - f.totalDegree + 2) * (↑N - f.totalDegree + 1) := by
     exact_mod_cast h1
-  have hc2 : (2 : ℤ) * (f.totalDegree.choose 2 : ℤ) =
-      (f.totalDegree : ℤ) * ((f.totalDegree : ℤ) - 1) := by
-    cases hd : f.totalDegree with
-    | zero => simp
-    | succ d =>
-      rw [hd] at h2
-      simp only [Nat.add_sub_cancel] at h2
-      push_cast
-      have hcast : (d : ℤ) * (d + 1) = 2 * ((d + 1).choose 2 : ℤ) := by
-        exact_mod_cast h2
-      nlinarith
+  have hc2 : 2 * (f.totalDegree.choose 2 : ℤ) =
+      ↑f.totalDegree * (↑f.totalDegree - 1) := by
+    grind
   nlinarith
 
-end
 end CCDN

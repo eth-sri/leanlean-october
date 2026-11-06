@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.HomogeneousTranslation
 public import CCDN.Height.ProjectiveBox
 
@@ -13,31 +15,28 @@ primitivity, and preserve distinctness of their projective classes. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {R : Type*} [CommRing R] {n : ℕ} (a : Fin n → R)
 
 /-- The shear of a point `x` by `a`, keeping `x 0` and sending `x (j + 1)` to
 `x (j + 1) + a j * x 0`; on the affine chart `x 0 = 1` it is the translation by `a`. -/
-def homogeneousPointTranslation {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) (x : Fin (n + 1) → R) : Fin (n + 1) → R :=
+noncomputable def homogeneousPointTranslation  (x : Fin (n + 1) → R) : Fin (n + 1) → R :=
   Fin.cons (x 0) (fun j => x j.succ + a j * x 0)
 
 /-- The shear by `-a` undoes the shear by `a`. -/
-lemma homogeneousPointTranslation_inverse {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) (x : Fin (n + 1) → R) :
+lemma homogeneousPointTranslation_inverse  (x : Fin (n + 1) → R) :
     homogeneousPointTranslation (-a) (homogeneousPointTranslation a x) = x := by
   funext i
   refine Fin.cases ?_ (fun j => ?_) i
   · rfl
   · simp [homogeneousPointTranslation]
 
-private lemma homogeneousPointTranslation_injective {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) : Function.Injective (homogeneousPointTranslation a) :=
+private lemma homogeneousPointTranslation_injective  : Function.Injective (homogeneousPointTranslation a) :=
   Function.LeftInverse.injective (homogeneousPointTranslation_inverse a)
 
 /-- The shear of a nonzero point is nonzero. -/
-lemma homogeneousPointTranslation_ne_zero {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) {x : Fin (n + 1) → R} (hx : x ≠ 0) :
+lemma homogeneousPointTranslation_ne_zero  {x : Fin (n + 1) → R} (hx : x ≠ 0) :
     homogeneousPointTranslation a x ≠ 0 := by
   intro h
   apply hx
@@ -66,10 +65,10 @@ private lemma homogeneousPointTranslation_map {R S : Type*} [CommRing R] [CommRi
 
 /-- An integral shear preserves the greatest common divisor of the coordinates of an integer
 point; in particular it preserves primitivity. -/
-lemma homogeneousPointTranslation_gcd {n : ℕ} (a : Fin n → ℤ)
-    (x : Fin (n + 1) → ℤ) :
+lemma homogeneousPointTranslation_gcd {n : ℕ} (a : CCDN.IntPoint n)
+    (x : CCDN.IntPoint (n + 1)) :
     Finset.univ.gcd (homogeneousPointTranslation a x) = Finset.univ.gcd x := by
-  have hdiv (b : Fin n → ℤ) (y : Fin (n + 1) → ℤ) :
+  have hdiv (b : CCDN.IntPoint n) (y : CCDN.IntPoint (n + 1)) :
       Finset.univ.gcd y ∣ Finset.univ.gcd (homogeneousPointTranslation b y) := by
     apply Finset.dvd_gcd
     intro i _
@@ -85,7 +84,7 @@ lemma homogeneousPointTranslation_gcd {n : ℕ} (a : Fin n → ℤ)
 /-- An integral shear preserves distinctness of projective classes: if the nonzero integer points
 `z i` represent pairwise distinct points of projective space over `ℚ`, so do their shears. -/
 lemma homogeneousPointTranslation_projective_injective {n t : ℕ}
-    (a : Fin n → ℤ) (z : Fin t → IntPoint (n + 1)) (hz0 : ∀ i, z i ≠ 0)
+    (a : CCDN.IntPoint n) (z : Fin t → IntPoint (n + 1)) (hz0 : ∀ i, z i ≠ 0)
     (hinj : Function.Injective (fun i => Projectivization.mk ℚ (rationalPoint (z i))
       (rationalPoint_ne_zero (hz0 i)))) :
     Function.Injective (fun i => Projectivization.mk ℚ
@@ -105,10 +104,9 @@ lemma homogeneousPointTranslation_projective_injective {n t : ℕ}
 /-- If `z` lies in the box of radius `B ≥ 1` and every coordinate of `a` lies in `[0, d]`, then
 the shear of `z` by `-a` lies in the box of radius `(d + 1) * B`. -/
 lemma homogeneousPointTranslation_box {n d : ℕ} {B : ℝ} (hB : 1 ≤ B)
-    (a : Fin n → ℤ) (ha : ∀ j, 0 ≤ a j ∧ a j ≤ d)
+    (a : CCDN.IntPoint n) (ha : ∀ j, 0 ≤ a j ∧ a j ≤ d)
     (z : IntPoint (n + 1)) (hz : InBox z B) (j : Fin (n + 1)) :
-    |((homogeneousPointTranslation (-a) z j : ℤ) : ℝ)| ≤ ((d : ℝ) + 1) * B := by
-  have hd0 : (0 : ℝ) ≤ d := by positivity
+    |((homogeneousPointTranslation (-a) z j : ℤ) : ℝ)| ≤ (↑d + 1) * B := by
   refine Fin.cases ?_ (fun k => ?_) j
   · change |(z 0 : ℝ)| ≤ _
     nlinarith [hz 0]
@@ -120,7 +118,7 @@ lemma homogeneousPointTranslation_box {n d : ℕ} {B : ℝ} (hB : 1 ≤ B)
     calc
       _ ≤ |(z k.succ : ℝ)| + |-(a k : ℝ) * (z 0 : ℝ)| := abs_add_le _ _
       _ = |(z k.succ : ℝ)| + |(a k : ℝ)| * |(z 0 : ℝ)| := by rw [abs_mul, abs_neg]
-      _ ≤ B + (d : ℝ) * B := by gcongr; exact hz _; exact hz _
+      _ ≤ B + ↑d * B := by gcongr; exact hz _; exact hz _
       _ = _ := by ring
 
 /-- The homogeneous translation commutes with coefficient maps: mapping the coefficients of the
@@ -136,5 +134,4 @@ lemma homogeneousTranslation_map {R S : Type*} [CommRing R] [CommRing S] {n : �
   funext i
   refine Fin.cases ?_ (fun j => ?_) i <;> simp
 
-end
 end CCDN

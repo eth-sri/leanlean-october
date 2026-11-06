@@ -14,11 +14,10 @@ The endpoint concerns the unit group modulo squares. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
 open scoped NumberField
 
-private def integerParityIndex (e : ℤ) : Fin 2 :=
+private noncomputable def integerParityIndex (e : ℤ) : Fin 2 :=
   ⟨(e % 2).toNat, by omega⟩
 
 private theorem zpow_eq_parity_pow {G : Type*} [Group G] (x : G)
@@ -66,11 +65,6 @@ theorem numberFieldUnit_exponent_two_quotient
 /-- The unit rank of a number field plus one is at most its degree over `ℚ`. -/
 theorem numberField_unit_rank_add_one_le_degree :
     NumberField.Units.rank K + 1 ≤ Module.finrank ℚ K := by
-  have hpos := Fintype.card_pos (α := InfinitePlace K)
-  have hcard := InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces (K := K)
-  have hrank := InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
-  unfold NumberField.Units.rank
-  omega
+  grind [Fintype.card_pos, InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces, InfinitePlace.card_add_two_mul_card_eq_rank, NumberField.Units.rank]
 
-end
 end CCDN

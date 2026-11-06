@@ -12,9 +12,8 @@ number-field basis. Its real coordinates on embedded field elements are
 the corresponding rational coordinates, so missing-span conditions
 transfer without any rationality assumption on a real linear relation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Module NumberField
 open scoped NumberField
 
@@ -37,29 +36,13 @@ theorem exists_field_basis_of_euclidean_lattice_basis
     apply LinearIndependent.of_comp (euclideanNumberFieldLinearMap K)
     simpa only [Function.comp_def, euclideanNumberFieldLinearMap_apply, hv] using
       b.linearIndependent.restrict_scalars' ℚ
-  have hcard : Fintype.card ι = Module.finrank ℚ K :=
+  have hcard :=
     (Module.finrank_eq_card_basis b).symm.trans (mixedEmbedding.euclidean.finrank K)
   let q := basisOfLinearIndependentOfCardEqFinrank' (fun i => (v i : K)) hi hcard
   have hq (i) : q i = (v i : K) :=
     congrFun (coe_basisOfLinearIndependentOfCardEqFinrank' _ hi hcard) i
   exact ⟨v, q, hq, fun i => (congrArg (euclideanNumberFieldEmbedding K) (hq i)).trans (hv i)⟩
 
-private theorem euclidean_field_basis_repr
-    {ι : Type*} [Fintype ι]
-    (b : Basis ι ℝ (mixedEmbedding.euclidean.mixedSpace K)) (q : Basis ι ℚ K)
-    (hmap : ∀ i, euclideanNumberFieldEmbedding K (q i) = b i) (x : K) (i : ι) :
-    b.repr (euclideanNumberFieldEmbedding K x) i = (q.repr x i : ℝ) := by
-  classical
-  have hmaps :
-      ((b.coord i).restrictScalars ℚ).comp (euclideanNumberFieldLinearMap K) =
-        (Algebra.linearMap ℚ ℝ).comp (q.coord i) := by
-    apply q.ext
-    intro j
-    simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
-      euclideanNumberFieldLinearMap_apply, hmap, Basis.coord_apply, Basis.repr_self]
-    simp only [Finsupp.single_apply]
-    split_ifs <;> norm_num
-  exact congrArg (fun f => f x) hmaps
 
 /-- If the real basis `b` is the image of the rational basis `q` and the `i`-th `q`-coordinate of
 `x : K` is nonzero, then the embedding of `x` does not lie in the real span of `b '' S` for any
@@ -76,8 +59,19 @@ theorem euclidean_notMem_basis_span_of_coordinate_ne_zero
   apply hiS
   apply hs
   apply Finsupp.mem_support_iff.mpr
-  rw [euclidean_field_basis_repr K b q hmap]
+  rw [(show ∀ (x : K) (i : ι), (b.repr ((euclideanNumberFieldEmbedding K) x)) i = ↑((q.repr x) i) from (by
+        intro x i
+        classical
+        have hmaps :
+            ((b.coord i).restrictScalars ℚ).comp (euclideanNumberFieldLinearMap K) =
+              (Algebra.linearMap ℚ ℝ).comp (q.coord i) := by
+          apply q.ext
+          intro j
+          simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
+            euclideanNumberFieldLinearMap_apply, hmap, Basis.coord_apply, Basis.repr_self]
+          simp only [Finsupp.single_apply]
+          split_ifs <;> norm_num
+        exact congrArg (fun f => f x) hmaps))]
   exact_mod_cast hi
 
-end
 end CCDN

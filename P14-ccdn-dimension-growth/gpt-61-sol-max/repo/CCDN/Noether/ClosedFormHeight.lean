@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Noether.BivariateCoefficientMatrix
 public import Mathlib.Basic.Real.Basic
 import Mathlib.LinearAlgebra.Matrix.AbsoluteValue
@@ -13,11 +15,10 @@ import Mathlib.LinearAlgebra.Matrix.AbsoluteValue
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- Every coefficient of the integer bivariate polynomial `f` has absolute value at most `H`. -/
-def BivariateCoefficientBound (f : ℤ[X][X]) (H : ℝ) : Prop :=
+noncomputable def BivariateCoefficientBound (f : ℤ[X][X]) (H : ℝ) : Prop :=
   ∀ i j, |(((f.coeff i).coeff j : ℤ) : ℝ)| ≤ H
 
 /-- The `k`-th coefficient of `monomial n a * f` is `a * f.coeff (k - n)` if `n ≤ k` and zero
@@ -28,21 +29,22 @@ lemma coeff_monomial_mul_at {R : Type*} [CommRing R]
   rw [← C_mul_X_pow_eq_monomial, mul_assoc, coeff_C_mul, coeff_X_pow_mul']
   split_ifs <;> simp_all
 
+variable {f : ℤ[X][X]}
+
 /-- Multiplying an integer bivariate polynomial with coefficients bounded by `H ≥ 0` by a monomial
 with coefficient `a` gives coefficients bounded by `|a| * H`. -/
 lemma bivariateCoefficientBound_monomial_mul
-    {f : ℤ[X][X]} {H : ℝ} (hH : 0 ≤ H) (hf : BivariateCoefficientBound f H)
+     {H : ℝ} (hH : 0 ≤ H) (hf : BivariateCoefficientBound f H)
     (a : ℤ) (m n : ℕ) :
-    BivariateCoefficientBound (monomial m (monomial n a) * f) (|(a : ℝ)| * H) := by
+    BivariateCoefficientBound (monomial m (monomial n a) * f) (|↑a| * H) := by
   intro i j
   rw [coeff_monomial_mul_at]
   split_ifs
   · rw [coeff_monomial_mul_at]
     split_ifs
-    · simp only [Int.cast_mul, abs_mul]
-      exact mul_le_mul_of_nonneg_left (hf _ _) (abs_nonneg _)
-    · simpa using mul_nonneg (abs_nonneg (a : ℝ)) hH
-  · simpa using mul_nonneg (abs_nonneg (a : ℝ)) hH
+    · aesop (add safe apply [Int.cast_mul, abs_mul, mul_le_mul_of_nonneg_left, abs_nonneg])
+    · simp_all [mul_nonneg, abs_nonneg]
+  · simp_all [mul_nonneg, abs_nonneg]
 
 private lemma bivariateCoefficientBound_sub {f g : ℤ[X][X]} {H K : ℝ}
     (hf : BivariateCoefficientBound f H) (hg : BivariateCoefficientBound g K) :
@@ -52,12 +54,13 @@ private lemma bivariateCoefficientBound_sub {f g : ℤ[X][X]} {H K : ℝ}
   exact (abs_sub _ _).trans (add_le_add (hf i j) (hg i j))
 
 /-- A coefficient bound `H` for `f` implies every larger coefficient bound `K`. -/
-lemma bivariateCoefficientBound_mono {f : ℤ[X][X]} {H K : ℝ}
+lemma bivariateCoefficientBound_mono  {H K : ℝ}
     (hf : BivariateCoefficientBound f H) (h : H ≤ K) :
     BivariateCoefficientBound f K := fun i j => (hf i j).trans h
 
-private lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
-    (i : BivariateGrid d) (a : R) :
+variable {R : Type*} [CommRing R] (d : ℕ) (i : BivariateGrid d)
+
+private lemma bivariateGridPolynomial_single  (a : R) :
     bivariateGridPolynomial R d (Pi.single i a) =
       monomial i.1.val (monomial i.2.val a) := by
   classical
@@ -65,8 +68,7 @@ private lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
 
 /-- The standard basis vector of the first block decodes to the pair `(monomial, 0)` with the
 corresponding grid monomial. -/
-lemma closedFormPair_single_inl {R : Type*} [CommRing R] (d : ℕ)
-    (i : BivariateGrid d) :
+lemma closedFormPair_single_inl  :
     closedFormPair R d (Pi.single (.inl i) 1) =
       (monomial i.1.val (monomial i.2.val 1), 0) := by
   classical
@@ -76,21 +78,16 @@ lemma closedFormPair_single_inl {R : Type*} [CommRing R] (d : ℕ)
     congr 1
     ext j
     simp [Pi.single_apply]
-  · change bivariateGridPolynomial R d _ = 0
-    simp only [Pi.single_apply, reduceCtorEq, ite_false]
-    exact (bivariateGridPolynomial R d).map_zero
+  · solve_by_elim [Pi.single_apply, ite_false, map_zero]
 
 /-- The standard basis vector of the second block decodes to the pair `(0, monomial)` with the
 corresponding grid monomial. -/
-lemma closedFormPair_single_inr {R : Type*} [CommRing R] (d : ℕ)
-    (i : BivariateGrid d) :
+lemma closedFormPair_single_inr  :
     closedFormPair R d (Pi.single (.inr i) 1) =
       (0, monomial i.1.val (monomial i.2.val 1)) := by
   classical
   apply Prod.ext
-  · change bivariateGridPolynomial R d _ = 0
-    simp only [Pi.single_apply, reduceCtorEq, ite_false]
-    exact (bivariateGridPolynomial R d).map_zero
+  · solve_by_elim [Pi.single_apply, ite_false, map_zero]
   · change bivariateGridPolynomial R d _ = _
     convert bivariateGridPolynomial_single d i (1 : R) using 1
     congr 1
@@ -99,7 +96,7 @@ lemma closedFormPair_single_inr {R : Type*} [CommRing R] (d : ℕ)
 
 /-- Inner differentiation costs at most the inner degree. -/
 private lemma bivariateCoefficientBound_innerDerivative
-    {f : ℤ[X][X]} {H : ℝ} (d : ℕ) (hH : 0 ≤ H)
+     {H : ℝ} (d : ℕ) (hH : 0 ≤ H)
     (hf : BivariateCoefficientBound f H)
     (hd : ∀ i, (f.coeff i).natDegree ≤ d) :
     BivariateCoefficientBound ((bivariateCoefficientDerivative ℤ) f) (d * H) := by
@@ -118,13 +115,13 @@ private lemma bivariateCoefficientBound_innerDerivative
 
 /-- Outer differentiation costs at most the outer degree. -/
 private lemma bivariateCoefficientBound_outerDerivative
-    {f : ℤ[X][X]} {H : ℝ} (d : ℕ) (hH : 0 ≤ H)
+     {H : ℝ} (d : ℕ) (hH : 0 ≤ H)
     (hf : BivariateCoefficientBound f H) (hd : f.natDegree ≤ d) :
     BivariateCoefficientBound f.derivative (d * H) := by
   intro i j
   rw [coeff_derivative]
   by_cases hi : i + 1 ≤ d
-  · rw [show (i : ℤ[X]) + 1 = C ((i : ℤ) + 1) by simp, coeff_mul_C]
+  · rw [show (i : ℤ[X]) + 1 = C (↑i + 1) by simp, coeff_mul_C]
     simp only [Int.cast_mul, Int.cast_add, Int.cast_natCast, Int.cast_one, abs_mul,
       abs_of_nonneg (show (0 : ℝ) ≤ i + 1 by positivity)]
     rw [← Nat.cast_add_one]
@@ -186,7 +183,7 @@ theorem closedForm_integer_minor_bound
     (hinner : ∀ i, (f.coeff i).natDegree ≤ d)
     (a : Fin r → ℕ × ℕ) (c : Fin r → ClosedFormColumns d) :
     |((((closedFormCoefficientMatrix d f).submatrix a c).det : ℤ) : ℝ)| ≤
-      (r.factorial : ℝ) * (2 * d * H) ^ r := by
+      ↑r.factorial * (2 * d * H) ^ r := by
   have he := closedFormCoefficientMatrix_entry_bound d f H hH hf houter hinner
   have hb := Matrix.det_le (abv := AbsoluteValue.abs)
     (A := ((closedFormCoefficientMatrix d f).submatrix a c).map (Int.castRingHom ℝ))
@@ -197,5 +194,4 @@ theorem closedForm_integer_minor_bound
   rw [hd] at hb
   simpa [nsmul_eq_mul] using hb
 
-end
 end CCDN

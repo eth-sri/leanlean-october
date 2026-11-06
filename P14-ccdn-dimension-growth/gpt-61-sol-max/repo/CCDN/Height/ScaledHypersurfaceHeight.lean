@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.ScaledHomogenization
 public import CCDN.Height.IntegerCoefficientHeight
 import CCDN.ForMathlib.MvPolynomial
@@ -12,23 +14,23 @@ import CCDN.ForMathlib.MvPolynomial
 /-! The exact leading homogeneous coefficient height supplies the full
 scaling gain in every dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {n : ℕ} (f : CCDN.IntegerPolynomial n)
 
 /-- For `h ≥ 1`, the scaled homogenization of `f` in degree `d = f.totalDegree` has coefficient
 height at least `h ^ d` times the coefficient height of the top homogeneous component of `f`. -/
-theorem scaledHomogenize_leading_height_lower {n : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) {h : ℤ} (hh : 1 ≤ h) :
-    (h : ℝ) ^ f.totalDegree *
+theorem scaledHomogenize_leading_height_lower  {h : ℤ} (hh : 1 ≤ h) :
+    ↑h ^ f.totalDegree *
         (integerCoefficientHeight (homogeneousComponent f.totalDegree f) : ℝ) ≤
       (integerCoefficientHeight (scaledHomogenize f.totalDegree h f) : ℝ) := by
   have hhR : (1 : ℝ) ≤ h := by exact_mod_cast hh
-  have hpow : (0 : ℝ) < (h : ℝ) ^ f.totalDegree := by positivity
+  have hpow : 0 < (h : ℝ) ^ f.totalDegree := by positivity
   have hc : (integerCoefficientHeight (homogeneousComponent f.totalDegree f) : ℝ) ≤
       (integerCoefficientHeight (scaledHomogenize f.totalDegree h f) : ℝ) /
-        (h : ℝ) ^ f.totalDegree := by
+        ↑h ^ f.totalDegree := by
     apply integerCoefficientHeight_le _ (by positivity)
     intro m
     rw [coeff_homogeneousComponent]
@@ -46,9 +48,8 @@ theorem scaledHomogenize_leading_height_lower {n : ℕ}
 
 /-- The top homogeneous component of a nonzero integer polynomial has coefficient height at
 least `1`. -/
-lemma leading_height_one_le {n : ℕ} (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) :
+lemma leading_height_one_le  (hf : f ≠ 0) :
     (1 : ℝ) ≤ integerCoefficientHeight (homogeneousComponent f.totalDegree f) := by
   exact_mod_cast integerCoefficientHeight_pos _ (homogeneousComponent_totalDegree_ne_zero hf)
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib
+
 public import ArithmeticHeights.AdaptedBasis
 public import ArithmeticHeights.QuotientFubini
 public import ArithmeticHeights.SuccessiveMinima
@@ -114,11 +116,7 @@ omit [NormedSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpa
 /-- Transporting the defining property of a fundamental domain along an equality of lattices. -/
 private theorem existsUnique_of_eq {M N : Submodule ℤ E} (h : M = N) {F : Set E} {x : E}
     (hM : ∃! v : M, (v : E) + x ∈ F) : ∃! v : N, (v : E) + x ∈ F := by
-  obtain ⟨u, hu, huq⟩ := hM
-  refine ⟨⟨(u : E), h ▸ u.2⟩, hu, fun w hw ↦ ?_⟩
-  have hwm : (w : E) ∈ M := h ▸ w.2
-  have hwu : (⟨(w : E), hwm⟩ : M) = u := huq _ hw
-  exact Subtype.ext (congrArg (fun z : M ↦ (z : E)) hwu)
+  aesop
 
 /-- A fundamental domain for `L` in the exact form the quotient-measure estimates ask for —
 `∀ x, ∃! v, ↑v + x ∈ F`, not the almost-everywhere `MeasureTheory.IsAddFundamentalDomain` —
@@ -128,16 +126,14 @@ private theorem exists_fundamentalDomain (L : Submodule ℤ E) [DiscreteTopology
     (μ : Measure E) [μ.IsAddHaarMeasure] :
     ∃ F : Set E, MeasurableSet F ∧ (∀ x : E, ∃! v : L, (v : E) + x ∈ F) ∧ μ F ≠ ⊤ ∧
       (μ F).toReal = covolume L μ := by
-  have hfin : Module.Finite ℤ L := ZLattice.module_finite ℝ L
-  have hfree : Module.Free ℤ L := ZLattice.module_free ℝ L
   set bZ := Module.Free.chooseBasis ℤ L with hbZ
   set bR := bZ.ofZLatticeBasis ℝ L with hbR
-  have key : ∀ x : E, ∃! w : L, (w : E) + x ∈ ZSpan.fundamentalDomain bR := fun x ↦
+  have key := fun x ↦
     existsUnique_of_eq (bZ.ofZLatticeBasis_span ℝ)
       (ZSpan.exist_unique_vadd_mem_fundamentalDomain bR x)
   refine ⟨ZSpan.fundamentalDomain bR, ZSpan.fundamentalDomain_measurableSet bR, key,
     (ZSpan.fundamentalDomain_isBounded bR).measure_lt_top.ne, ?_⟩
-  rw [covolume_eq_measure_fundamentalDomain L μ (F := ZSpan.fundamentalDomain bR)
+  rw [covolume_eq_measure_fundamentalDomain L μ 
     (MeasureTheory.IsAddFundamentalDomain.mk'
       (ZSpan.fundamentalDomain_measurableSet bR).nullMeasurableSet key), measureReal_def]
 
@@ -145,15 +141,15 @@ omit [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E] in
 /-- The span of the first `j` members of a family has dimension at most `j`. This is the whole of
 what the chain needs about the flag, and it is why Cassels' Lemma 2 does not appear below. -/
 private theorem finrank_span_image_lt_le {m : ℕ} (v : Fin m → E) (j : ℕ) :
-    finrank ℝ (Submodule.span ℝ (v '' {i : Fin m | (i : ℕ) < j})) ≤ j := by
+    finrank ℝ (Submodule.span ℝ (v '' {i : Fin m | ↑i < j})) ≤ j := by
   classical
-  have himg : v '' {i : Fin m | (i : ℕ) < j}
-      = (((Finset.univ.filter (fun i : Fin m ↦ (i : ℕ) < j)).image v : Finset E) : Set E) := by
+  have himg : v '' {i : Fin m | ↑i < j}
+      = (((Finset.univ.filter (fun i : Fin m ↦ ↑i < j)).image v) : Set E) := by
     ext x
     simp [Set.mem_image]
   rw [himg]
   refine le_trans (finrank_span_finset_le_card _) (le_trans Finset.card_image_le ?_)
-  refine le_trans (Finset.card_le_card_of_injOn (fun i : Fin m ↦ (i : ℕ))
+  refine le_trans (Finset.card_le_card_of_injOn (fun i : Fin m ↦ ↑i)
     (fun i hi ↦ Finset.mem_range.2 (by simpa using hi)) Fin.val_injective.injOn) ?_
   simp
 
@@ -187,7 +183,7 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
       2 ^ finrank ℝ E * covolume L μ := by
   classical
   obtain ⟨FL, hFLm, hFLfd, hFLfin, hFLcov⟩ := exists_fundamentalDomain L μ
-  have h₀ : B ∈ 𝓝 (0 : E) := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
+  have h₀ := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
   obtain ⟨v, hvL, hvind, hvg⟩ :=
     exists_linearIndependent_gauge_eq_successiveMinimum L hB₀ hB₁ hB₂ hB₃
   set lam : ℕ → ℝ := successiveMinimum L B
@@ -197,17 +193,17 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
       rw [← Module.finrank_zero_iff (R := ℝ)]
       exact hn0
     obtain ⟨w, hw, -⟩ := hFLfd 0
-    have h0F : (0 : E) ∈ FL := by
-      rwa [show (w : E) + (0 : E) = 0 from Subsingleton.elim _ _] at hw
+    have h0F := by
+      rwa [show (w : E) + 0 = 0 from Subsingleton.elim _ _] at hw
     have hBF : B ⊆ FL := fun x _ ↦ by
-      rwa [show x = (0 : E) from Subsingleton.elim _ _]
+      rwa [show x = 0 from Subsingleton.elim _ _]
     rw [hn0]
     simp only [Finset.range_zero, Finset.prod_empty, one_mul, pow_zero]
     rw [← hFLcov]
     exact ENNReal.toReal_mono hFLfin (measure_mono hBF)
   -- the open body, its dilates, and its measure
   have hCm : MeasurableSet (interior B) := isOpen_interior.measurableSet
-  have hCc : Convex ℝ (interior B) := hB₀.interior
+  have hCc := hB₀.interior
   have hmemC : ∀ t : ℝ, 0 < t → ∀ x : E, x ∈ t • interior B ↔ gauge B x < t := by
     intro t ht x
     rw [Set.mem_smul_set_iff_inv_smul_mem₀ ht.ne', ← gauge_lt_one_iff_mem_interior hB₀ h₀,
@@ -215,7 +211,7 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
   have hvol : μ (interior B) = μ B := by
     refine le_antisymm (measure_mono interior_subset) ?_
     calc μ B ≤ μ (interior B ∪ frontier B) :=
-          measure_mono fun x hx ↦ (em (x ∈ interior B)).imp id fun h ↦ ⟨subset_closure hx, h⟩
+          measure_mono fun x hx ↦ (em (x ∈ interior B)).imp id (And.intro (subset_closure hx))
       _ ≤ μ (interior B) + μ (frontier B) := measure_union_le _ _
       _ = μ (interior B) := by rw [hB₀.addHaar_frontier μ, add_zero]
   have hAm : ∀ t : ℝ, MeasurableSet (t • interior B) := fun t ↦ hCm.const_smul₀ t
@@ -226,10 +222,10 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
     fun i j hij hj ↦ successiveMinimum_le_of_le hij hj hB₀ hB₁ hB₂
   -- the sublattices cut out by the flag of the family realizing the minima
   obtain ⟨Λ, hΛ⟩ : ∃ Λ : ℕ → Submodule ℤ E, ∀ j, Λ j =
-      L ⊓ (Submodule.span ℝ (v '' {i : Fin (finrank ℝ E) | (i : ℕ) < j})).restrictScalars ℤ :=
+      L ⊓ (Submodule.span ℝ (v '' {i : Fin (finrank ℝ E) | ↑i < j})).restrictScalars ℤ :=
     ⟨_, fun _ ↦ rfl⟩
-  have hΛle : ∀ j, Λ j ≤ L := fun j ↦ (hΛ j).le.trans inf_le_left
-  have hΛdisc : ∀ j, DiscreteTopology (Λ j) := fun j ↦ discreteTopology_of_le (hΛle j)
+  have hΛle := fun j ↦ (hΛ j).le.trans inf_le_left
+  have hΛdisc := fun j ↦ discreteTopology_of_le (hΛle j)
   have hΛrank : ∀ j, finrank ℤ (Λ j) ≤ j := by
     intro j
     rw [finrank_int_eq_finrank_real (hΛle j)]
@@ -244,52 +240,48 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
   have hsep : ∀ (j : ℕ) (t : ℝ), 0 < t → 2 * t ≤ lam j →
       ∀ x ∈ t • interior B, ∀ y ∈ t • interior B, x - y ∈ L → x - y ∈ Λ j := by
     intro j t ht hlt x hx y hy hxy
-    have hgx : gauge B x < t := (hmemC t ht x).1 hx
-    have hgy : gauge B y < t := (hmemC t ht y).1 hy
+    have hgx := (hmemC t ht x).1 hx
+    have hgy := (hmemC t ht y).1 hy
     have hadd := gauge_add_le hB₀ (absorbent_nhds_zero h₀) x (-y)
     rw [gauge_neg hB₁] at hadd
     have hg : gauge B (x - y) < lam j := by
       rw [sub_eq_add_neg]
       linarith
-    have hspan : x - y ∈ Submodule.span ℝ (v '' {i : Fin (finrank ℝ E) | (i : ℕ) < j}) :=
-      mem_span_of_gauge_lt_successiveMinimum L hB₀ hB₁ hB₂ hvL hvind hvg (j := j) hxy hg
+    have hspan :=
+      mem_span_of_gauge_lt_successiveMinimum L hB₀ hB₁ hB₂ hvL hvind hvg  hxy hg
     rw [hΛ j]
     exact Submodule.mem_inf.2 ⟨hxy, (Submodule.restrictScalars_mem ℤ _ _).2 hspan⟩
   -- the quotient measure of the dilates, one per minimum
-  have hLcount : Countable L := countable_of_discreteTopology L
   obtain ⟨M, hM⟩ : ∃ M : ℕ → ℝ≥0∞, ∀ j,
       M j = μ (FL ∩ ((lam j / 2) • interior B + (L : Set E))) := ⟨_, fun _ ↦ rfl⟩
   have hbotfd : ∀ x : E, ∃! w : (⊥ : Submodule ℤ E), (w : E) + x ∈ (univ : Set E) :=
     fun _ ↦ ⟨0, Set.mem_univ _, fun _ _ ↦ Subsingleton.elim _ _⟩
   -- the base: below the first minimum the dilate injects into the quotient
   have hbase : M 0 = ENNReal.ofReal ((lam 0 / 2) ^ finrank ℝ E) * μ (interior B) := by
-    have h0 : 0 < lam 0 := hpos 0 hnpos
+    have h0 := hpos 0 hnpos
     have hsep0 : ∀ x ∈ (lam 0 / 2) • interior B, ∀ y ∈ (lam 0 / 2) • interior B,
         x - y ∈ L → x - y ∈ (⊥ : Submodule ℤ E) := by
-      intro x hx y hy hxy
-      rw [← hΛ0]
-      exact hsep 0 (lam 0 / 2) (by positivity) (by linarith) x hx y hy hxy
+      grind
     have heq := measure_inter_add_eq_of_separated μ (bot_le : (⊥ : Submodule ℤ E) ≤ L)
       hbotfd hFLfd MeasurableSet.univ hFLm hFLfin (hAm (lam 0 / 2)) hsep0
     have hz : (lam 0 / 2) • interior B + ((⊥ : Submodule ℤ E) : Set E)
         = (lam 0 / 2) • interior B := by simp
     rw [hM, ← heq, Set.univ_inter, hz, Measure.addHaar_smul,
-      abs_of_nonneg (by positivity : (0:ℝ) ≤ (lam 0 / 2) ^ finrank ℝ E)]
+      abs_of_nonneg (by positivity : 0 ≤ (lam 0 / 2) ^ finrank ℝ E)]
   -- the inductive step: Cassels' Theorem IV applied at the `j`-th minimum
   have hstep : ∀ j, 1 ≤ j → j < finrank ℝ E →
       ENNReal.ofReal ((lam j / lam (j - 1)) ^ (finrank ℝ E - j)) * M (j - 1) ≤ M j := by
     intro j hj1 hjn
     have hjm : j - 1 < finrank ℝ E := by omega
-    have hp1 : 0 < lam (j - 1) := hpos _ hjm
-    have hpj : 0 < lam j := hpos _ hjn
+    have hp1 := hpos _ hjm
+    have hpj := hpos _ hjn
     have hle : lam (j - 1) ≤ lam j := hmono _ _ (by omega) hjn
-    have hs1 : 1 ≤ lam j / lam (j - 1) := (one_le_div hp1).2 hle
+    have hs1 := (one_le_div hp1).2 hle
     have hsA : (lam j / lam (j - 1)) • ((lam (j - 1) / 2) • interior B)
         = (lam j / 2) • interior B := by
       rw [smul_smul]
       congr 1
       field_simp
-    have hd : DiscreteTopology (Λ j) := hΛdisc j
     have hsepA : ∀ x ∈ (lam (j - 1) / 2) • interior B, ∀ y ∈ (lam (j - 1) / 2) • interior B,
         x - y ∈ L → x - y ∈ Λ j :=
       hsep j (lam (j - 1) / 2) (by positivity) (by linarith)
@@ -313,7 +305,6 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
     induction j with
     | zero =>
       intro _
-      have h0 : 0 < lam 0 := hpos 0 hnpos
       have hlhs : lam 0 * lam 0 ^ (finrank ℝ E - 1 - 0)
           = 2 ^ finrank ℝ E * (lam 0 / 2) ^ finrank ℝ E := by
         rw [Nat.sub_zero, ← pow_succ', show finrank ℝ E - 1 + 1 = finrank ℝ E from by omega,
@@ -323,9 +314,8 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
     | succ k ih =>
       intro hk
       have hkn : k < finrank ℝ E := by omega
-      have hkpos : 0 < lam k := hpos k hkn
-      have hk1pos : 0 < lam (k + 1) := hpos (k + 1) hk
-      have hprodnn : (0:ℝ) ≤ ∏ i ∈ Finset.range (k + 1), lam i :=
+      have hkpos := hpos k hkn
+      have hprodnn : 0 ≤ ∏ i ∈ Finset.range (k + 1), lam i :=
         Finset.prod_nonneg fun i hi ↦ (hpos i (by have := Finset.mem_range.1 hi; omega)).le
       have e2 : finrank ℝ E - 1 - (k + 1) + 1 = finrank ℝ E - (k + 1) := by omega
       have hL2 : (∏ i ∈ Finset.range (k + 1 + 1), lam i) *
@@ -337,12 +327,8 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
           = (∏ i ∈ Finset.range (k + 1), lam i) * lam (k + 1) ^ (finrank ℝ E - (k + 1)) := by
         rw [show finrank ℝ E - 1 - k = finrank ℝ E - (k + 1) from by omega, div_pow]
         field_simp
-      have hQ : (∏ i ∈ Finset.range (k + 1 + 1), lam i) *
-            lam (k + 1) ^ (finrank ℝ E - 1 - (k + 1))
-          = ((∏ i ∈ Finset.range (k + 1), lam i) * lam k ^ (finrank ℝ E - 1 - k)) *
-            (lam (k + 1) / lam k) ^ (finrank ℝ E - (k + 1)) := hL2.trans hR2.symm
-      have hstep' : ENNReal.ofReal ((lam (k + 1) / lam k) ^ (finrank ℝ E - (k + 1))) * M k
-          ≤ M (k + 1) := by simpa using hstep (k + 1) (by omega) hk
+      have hQ := hL2.trans hR2.symm
+      have hstep' := by simpa using hstep (k + 1) (by omega) hk
       calc ENNReal.ofReal ((∏ i ∈ Finset.range (k + 1 + 1), lam i) *
               lam (k + 1) ^ (finrank ℝ E - 1 - (k + 1))) * μ (interior B)
           = ENNReal.ofReal ((lam (k + 1) / lam k) ^ (finrank ℝ E - (k + 1))) *
@@ -361,13 +347,12 @@ theorem prod_successiveMinimum_mul_measure_le (L : Submodule ℤ E) [DiscreteTop
   have hMle : M (finrank ℝ E - 1) ≤ μ FL := by
     rw [hM]
     exact measure_mono Set.inter_subset_left
-  have hprodnn : (0:ℝ) ≤ ∏ i ∈ Finset.range (finrank ℝ E), lam i :=
+  have hprodnn :=
     Finset.prod_nonneg fun i hi ↦ (hpos i (Finset.mem_range.1 hi)).le
   have hle2 : ENNReal.ofReal (∏ i ∈ Finset.range (finrank ℝ E), lam i) * μ B
       ≤ ENNReal.ofReal (2 ^ finrank ℝ E) * μ FL := by
     rw [← hvol]
     exact le_trans hfin (mul_le_mul_right hMle _)
-  have hBfin : μ B ≠ ⊤ := hB₃.measure_lt_top.ne
   have hcalc := ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hFLfin) hle2
   rw [ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal hprodnn,
     ENNReal.toReal_ofReal (by positivity : (0:ℝ) ≤ 2 ^ finrank ℝ E), hFLcov] at hcalc
@@ -382,6 +367,3 @@ statement: for a symmetric convex body `B` and `0 < c ≤ 1`, shrinking one coor
 of `B` — in the basis realizing the minima, and shrinking the *earlier* coordinates, whose minima
 are the smaller ones — keeps it inside `B`. It fails already in the plane. -/
 
-section Examples
-
-end Examples

@@ -21,7 +21,7 @@ type of variables and clears the denominators, giving an inequality between natu
   `σ` has at most `p.totalDegree * #S ^ (card σ - 1)` zeros in `S ^ σ`, stated multiplicatively.
 -/
 
-@[expose] public section
+public section
 
 open Finset Fintype
 
@@ -35,7 +35,7 @@ cardinalities: a nonzero polynomial `p` vanishes at no more than a proportion
 theorem schwartz_zippel_totalDegree_card {p : MvPolynomial σ R} (hp : p ≠ 0) (S : Finset R) :
     #{x ∈ piFinset fun _ : σ ↦ S | eval x p = 0} * #S ≤ p.totalDegree * #S ^ card σ := by
   let e := equivFin σ
-  have hq : rename e p ≠ 0 := (map_ne_zero_iff _ (rename_injective e e.injective)).mpr hp
+  have hq := (map_ne_zero_iff _ (rename_injective e e.injective)).mpr hp
   have hfin : #{x ∈ piFinset fun _ : Fin (card σ) ↦ S | eval x (rename e p) = 0} * #S ≤
       (rename e p).totalDegree * #S ^ card σ := by
     obtain rfl | hS := S.eq_empty_or_nonempty

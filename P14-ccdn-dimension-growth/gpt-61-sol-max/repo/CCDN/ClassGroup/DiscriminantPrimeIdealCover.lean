@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.NumberTheory.NumberField.Discriminant.Defs
 public import Mathlib.RingTheory.QuasiFinite.Basic
 public import Mathlib.RingTheory.RamificationInertia.Ramification
@@ -17,29 +19,24 @@ is bounded by the field degree times their number. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
 open scoped NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
 
 /-- The finite set of prime ideals of `𝓞 K` lying over the rational prime ideal `(p)`. -/
-def rationalPrimeIdealFiber (p : ℕ) : Finset (Ideal (𝓞 K)) :=
+noncomputable def rationalPrimeIdealFiber (p : ℕ)  :=
   (Algebra.QuasiFinite.finite_primesOver
     (S := 𝓞 K) (Ideal.span {(p : ℤ)})).toFinset
 
-private theorem mem_rationalPrimeIdealFiber (p : ℕ) (Q : Ideal (𝓞 K)) :
-    Q ∈ rationalPrimeIdealFiber K p ↔
-      Q.IsPrime ∧ Q.LiesOver (Ideal.span {(p : ℤ)}) := by
-  exact Set.Finite.mem_toFinset _
 
 private theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
     (rationalPrimeIdealFiber K p).card ≤ Module.finrank ℚ K := by
-  have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
-  let P : Ideal ℤ := Ideal.span {(p : ℤ)}
+  have hpz := Nat.prime_iff_prime_int.mp hp
+  let P : Ideal ℤ := Ideal.span {↑p}
   have : P.IsPrime := (Ideal.span_singleton_prime hpz.ne_zero).mpr hpz
   let : Fintype (P.primesOver (𝓞 K)) :=
-    (Algebra.QuasiFinite.finite_primesOver (S := 𝓞 K) P).fintype
+    (Algebra.QuasiFinite.finite_primesOver  P).fintype
   have hsum := Ideal.sum_ramification_inertia_eq_finrank P (𝓞 K)
   rw [RingOfIntegers.rank] at hsum
   have hcard : (rationalPrimeIdealFiber K p).card =
@@ -51,13 +48,12 @@ private theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
     _ ≤ _ := by
       apply Finset.sum_le_sum
       intro Q _
-      have : Q.val.IsPrime := Q.property.1
       exact Nat.one_le_iff_ne_zero.mpr
         (Nat.mul_pos (Q.val.ramificationIdx_pos ℤ) (Q.val.inertiaDeg_pos ℤ)).ne'
 
 /-- The finite set of prime ideals of `𝓞 K` lying over rational primes dividing the absolute
 discriminant of `K`; it contains every nonzero prime that ramifies in some subextension. -/
-def discriminantPrimeIdealCover : Finset (Ideal (𝓞 K)) :=
+noncomputable def discriminantPrimeIdealCover  :=
   (NumberField.discr K).natAbs.primeFactors.biUnion (rationalPrimeIdealFiber K)
 
 /-- The discriminant prime-ideal cover has at most `[K : ℚ]` times the number of prime factors of
@@ -98,25 +94,24 @@ theorem mem_discriminantPrimeIdealCover_of_ramification_two
     Q ∈ discriminantPrimeIdealCover K := by
   have : Q.IsMaximal := (inferInstance : Q.IsPrime).isMaximal hQ
   obtain ⟨p, _, _, hpQ, hp, _⟩ := Ideal.exists_prime_and_absNorm_eq_pow Q
-  have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
-  have hdiv : (p : ℤ) ∣ NumberField.discr K := by
+  have hpz := Nat.prime_iff_prime_int.mp hp
+  have hdiv : ↑p ∣ NumberField.discr K := by
     by_contra h
     have : Algebra.IsUnramifiedAt ℤ Q :=
       (NumberField.not_dvd_discr_iff_forall_mem K (𝓞 K) hpz).mp h
-        Q inferInstance (by simpa only [Int.cast_natCast] using hpQ)
-    have habs : Q.ramificationIdx ℤ = 1 := Q.ramificationIdx_eq_one ℤ
-    have hdvd : Q.ramificationIdx (𝓞 F) ∣ Q.ramificationIdx ℤ :=
+        Q inferInstance (by simp_all)
+    have habs := Q.ramificationIdx_eq_one ℤ
+    have hdvd :=
       Ideal.ramificationIdx_above_dvd (R := ℤ) (Q.under (𝓞 F)) Q
     rw [he, habs] at hdvd
     norm_num at hdvd
-  have hpf : p ∈ (NumberField.discr K).natAbs.primeFactors := by
+  have hpf := by
     apply Nat.Prime.mem_primeFactors hp
     · simpa only [Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr hdiv
-    · exact Int.natAbs_ne_zero.mpr (NumberField.discr_ne_zero K)
+    · simp_all [NumberField.discr_ne_zero]
   apply Finset.mem_biUnion.mpr
-  refine ⟨p, hpf, (mem_rationalPrimeIdealFiber K p Q).mpr ⟨inferInstance, ?_⟩⟩
+  refine ⟨p, hpf, ((Set.Finite.mem_toFinset _)).mpr ⟨inferInstance, ?_⟩⟩
   apply (Ideal.liesOver_span_iff (inferInstance : Q.IsPrime).ne_top hpz).mpr
   simpa only [map_natCast] using hpQ
 
-end
 end CCDN

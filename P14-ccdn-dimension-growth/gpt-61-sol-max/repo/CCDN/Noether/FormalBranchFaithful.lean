@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.PDeriv
 public import Mathlib.RingTheory.PowerSeries.Basic
 import CCDN.Algebra.SectionImageRank
@@ -20,7 +22,6 @@ and arbitrarily many independent powers of the formal parameter. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A formal map of an irreducible plane curve, with one coordinate equal to
@@ -33,15 +34,14 @@ private theorem formal_plane_map_eq_zero_iff_dvd {K : Type*} [Field K]
   constructor
   · intro hg
     by_contra hnd
-    let p : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+    let p := Ideal.span {f}
     have : p.IsPrime := Ideal.isPrime_span_singleton_of_prime hf.prime
-    let φ : (MvPolynomial (Fin 2) K ⧸ p) →ₐ[K] PowerSeries K :=
+    let φ :=
       Ideal.Quotient.liftₐ p ψ (by
         intro l hl
         obtain ⟨q, rfl⟩ := Ideal.mem_span_singleton.mp hl
         rw [map_mul, hψ, zero_mul])
-    have hφ (l : MvPolynomial (Fin 2) K) : φ ((Ideal.Quotient.mk p) l) = ψ l := by
-      rfl
+    have hφ (l : MvPolynomial (Fin 2) K) : φ ((Ideal.Quotient.mk p) l) = ψ l := rfl
     let N := f.totalDegree * g.totalDegree + 1
     let h : Fin N → MvPolynomial (Fin 2) K := fun i => (X j - C a) ^ i.val
     have hi : LinearIndependent K (fun i => φ ((Ideal.Quotient.mk p) (h i))) := by
@@ -54,9 +54,9 @@ private theorem formal_plane_map_eq_zero_iff_dvd {K : Type*} [Field K]
       exact PowerSeries.linearIndependent_of_order_injective _ Fin.val Fin.val_injective
         (fun i => PowerSeries.order_X_pow i.val)
     have hh := section_image_rank_le p f.totalDegree
-      ⟨f.totalDegree, (f.totalDegree : ℤ) - f.totalDegree.choose 2,
+      ⟨f.totalDegree, ↑f.totalDegree - f.totalDegree.choose 2,
         fun M hM => principal_plane_hilbert_function f hf.ne_zero hM⟩
-      φ h hi g (by simpa only [p, Ideal.mem_span_singleton] using hnd) g.totalDegree le_rfl
+      φ h hi g (by grind [Ideal.mem_span_singleton]) g.totalDegree le_rfl
       (by rw [hφ]; exact hg)
     rw [Fintype.card_fin] at hh
     dsimp only [N] at hh
@@ -64,25 +64,23 @@ private theorem formal_plane_map_eq_zero_iff_dvd {K : Type*} [Field K]
   · rintro ⟨q, rfl⟩
     rw [map_mul, hψ, zero_mul]
 
+variable {K : Type*} [Field K] (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K)
+
 /-- The substitution map attached to a chosen formal branch. -/
-private def formalPlaneBranchMap {K : Type*} [Field K]
-    (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K) :
+private noncomputable def formalPlaneBranchMap  :
     MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K :=
   MvPolynomial.aeval (fun k => if k = j then g else PowerSeries.X + PowerSeries.C (z j.rev))
 
-private lemma formalPlaneBranchMap_parameter {K : Type*} [Field K]
-    (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K) :
+private lemma formalPlaneBranchMap_parameter  :
     formalPlaneBranchMap z j g (X j.rev - C (z j.rev)) = PowerSeries.X := by
   fin_cases j <;> simp [formalPlaneBranchMap, PowerSeries.algebraMap_eq]
 
-private lemma formalPlaneBranchMap_constant {K : Type*} [Field K]
-    (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K)
+private lemma formalPlaneBranchMap_constant 
     (hg : PowerSeries.constantCoeff g = z j) (f : MvPolynomial (Fin 2) K) :
     PowerSeries.constantCoeff (formalPlaneBranchMap z j g f) = eval z f := by
   have he : PowerSeries.constantCoeff.comp (formalPlaneBranchMap z j g).toRingHom = eval z := by
     apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [formalPlaneBranchMap, PowerSeries.algebraMap_eq]
+    · simp_all
     · intro k
       simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
         formalPlaneBranchMap, aeval_X]
@@ -104,9 +102,9 @@ theorem exists_faithful_formal_plane_branch {K : Type*} [Field K]
       (∀ h, PowerSeries.constantCoeff (ψ h) = eval z h) ∧
       ψ (X j.rev - C (z j.rev)) = PowerSeries.X ∧
       ∀ h, ψ h = 0 ↔ f ∣ h := by
-  obtain ⟨g, hg, _⟩ := exists_unique_formal_plane_branch f z j hz hj
+  obtain ⟨g, hg⟩ := exists_formal_plane_branch f z j hz hj
   let ψ := formalPlaneBranchMap z j g
-  have hψ : ψ f = 0 := by
+  have hψ := by
     simpa only [ψ, formalPlaneBranchMap, MvPolynomial.aeval_def, PowerSeries.algebraMap_eq] using
       hg.2
   refine ⟨ψ, formalPlaneBranchMap_constant z j g hg.1, formalPlaneBranchMap_parameter z j g, ?_⟩
@@ -114,5 +112,4 @@ theorem exists_faithful_formal_plane_branch {K : Type*} [Field K]
   exact formal_plane_map_eq_zero_iff_dvd f hf ψ hψ j.rev (z j.rev)
     (formalPlaneBranchMap_parameter z j g) h
 
-end
 end CCDN

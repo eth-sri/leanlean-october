@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.Polynomial.Eval.Defs
 public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.RingTheory.Finiteness.Defs
@@ -27,28 +29,22 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-private def coefficientLinearUnivariate {K A : Type*} [Field K] [CommRing A] [Algebra K A]
-    (φ : A →ₗ[K] K) (p : Polynomial A) : Polynomial K :=
+variable {K A : Type*} [Field K] [CommRing A] [Algebra K A] (φ : A →ₗ[K] K)
+
+private def coefficientLinearUnivariate  (p : Polynomial A)  :=
   ∑ n ∈ p.support, monomial n (φ (p.coeff n))
 
-private lemma coefficientLinearUnivariate_coeff {K A : Type*} [Field K] [CommRing A] [Algebra K A]
-    (φ : A →ₗ[K] K) (p : Polynomial A) (n : ℕ) :
+private lemma coefficientLinearUnivariate_coeff  (p : Polynomial A) (n : ℕ) :
     (coefficientLinearUnivariate φ p).coeff n = φ (p.coeff n) := by
-  classical
-  by_cases hn : n ∈ p.support
-  · simp [coefficientLinearUnivariate, coeff_monomial, hn]
-  · have hz := notMem_support_iff.mp hn
-    simp [coefficientLinearUnivariate, coeff_monomial, hn, hz]
+  simp_all [coeff_monomial, coefficientLinearUnivariate]
 
 /-- Coefficientwise application of a linear functional. -/
-private def coefficientLinearUnivariateMap {K A : Type*} [Field K] [CommRing A] [Algebra K A]
-    (φ : A →ₗ[K] K) : Polynomial A →ₗ[K] Polynomial K where
+private def coefficientLinearUnivariateMap  : Polynomial A →ₗ[K] Polynomial K where
   toFun := coefficientLinearUnivariate φ
   map_add' p q := by ext n; simp [coefficientLinearUnivariate_coeff]
   map_smul' c p := by ext n; simp [coefficientLinearUnivariate_coeff]
 
-private lemma coefficientLinearUnivariate_scalar_mul {K A : Type*} [Field K] [CommRing A]
-    [Algebra K A] (φ : A →ₗ[K] K) (p : Polynomial K) (q : Polynomial A) :
+private lemma coefficientLinearUnivariate_scalar_mul  (p : Polynomial K) (q : Polynomial A) :
     coefficientLinearUnivariate φ (p.map (algebraMap K A) * q) =
       p * coefficientLinearUnivariate φ q := by
   ext n
@@ -58,15 +54,13 @@ private lemma coefficientLinearUnivariate_scalar_mul {K A : Type*} [Field K] [Co
   rw [coeff_map, coefficientLinearUnivariate_coeff]
   simpa [Algebra.smul_def] using φ.map_smul (p.coeff t.1) (q.coeff t.2)
 
-private lemma coefficientLinearUnivariate_eval {K A : Type*} [Field K] [CommRing A] [Algebra K A]
-    (φ : A →ₗ[K] K) (p : Polynomial A) (t : K) :
+private lemma coefficientLinearUnivariate_eval  (p : Polynomial A) (t : K) :
     (coefficientLinearUnivariate φ p).eval t = φ (p.eval (algebraMap K A t)) := by
   classical
   rw [coefficientLinearUnivariate, Polynomial.eval_finsetSum]
   conv_rhs => rw [p.as_sum_support, Polynomial.eval_finsetSum, map_sum]
   apply Finset.sum_congr rfl
   intro n _
-  rw [eval_monomial, eval_monomial, ← map_pow]
   have hh := φ.map_smul (t ^ n) (p.coeff n)
   simpa [Algebra.smul_def, mul_comm] using hh.symm
 
@@ -85,13 +79,13 @@ private lemma exists_finite_detecting_functionals {K V : Type*} [Field K]
   let b := Module.finBasis K S
   refine ⟨fun i => (b.coord i).comp T, ?_⟩
   intro x hx hzero
-  have hTx : T x = (⟨x, hx⟩ : S) := congrArg (fun f : S →ₗ[K] S => f ⟨x, hx⟩) hT
+  have hTx := congrArg (fun f : S →ₗ[K] S => f ⟨x, hx⟩) hT
   have ht : T x = 0 := by
     apply b.repr.injective
     ext i
     simpa only [map_zero, Finsupp.zero_apply, LinearMap.comp_apply,
       Module.Basis.coord_apply] using hzero i
-  have hz : (⟨x, hx⟩ : S) = 0 := hTx.symm.trans ht
+  have hz := hTx.symm.trans ht
   exact congrArg Subtype.val hz
 
 /-- If the evaluations of a polynomial family are dependent over K at every
@@ -104,15 +98,13 @@ theorem polynomial_family_relation_nonzero_at_zero {K A κ : Type*}
     ∃ v : κ → Polynomial K,
       (∑ j, (v j).map (algebraMap K A) * g j) = 0 ∧ ∃ j, (v j).eval 0 ≠ 0 := by
   classical
-  let s := Finset.univ.biUnion (fun j => (g j).support.image (fun n => (g j).coeff n))
+  let s := Finset.univ.biUnion (fun j => (g j).support.image ((⇑(g j).coeff)))
   let S := Submodule.span K (s : Set A)
   let : Module.Finite K S := Module.Finite.span_of_finite K s.finite_toSet
   have hmem (j : κ) (n : ℕ) : (g j).coeff n ∈ S := by
     by_cases hn : n ∈ (g j).support
-    · apply Submodule.subset_span
-      exact Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ j, Finset.mem_image.mpr ⟨n, hn, rfl⟩⟩
-    · rw [Polynomial.notMem_support_iff.mp hn]
-      exact S.zero_mem
+    · aesop
+    · simp_all
   obtain ⟨φ, hφ⟩ := exists_finite_detecting_functionals S
   let M : Matrix (Fin (Module.finrank K S)) κ (Polynomial K) :=
     fun i j => coefficientLinearUnivariate (φ i) (g j)
@@ -150,7 +142,6 @@ theorem polynomial_family_relation_nonzero_at_zero {K A κ : Type*}
     have hh := congrFun hv i
     change ∑ j, coefficientLinearUnivariate (φ i) (g j) * v j = 0 at hh
     simpa only [mul_comm] using hh
-  change P = 0
   ext n
   apply hφ _ (hcoeff n)
   intro i

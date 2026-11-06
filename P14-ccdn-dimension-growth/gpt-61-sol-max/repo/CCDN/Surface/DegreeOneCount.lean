@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Hilbert.AffineCurveDegree
@@ -22,15 +26,14 @@ set of rational affine lines with the same rational zero-set union. Empty
 rational loci are discarded, and repeated line sets are counted only once.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- The union of the rational zero sets of finitely many degree-one affine curves in
 three-space is a union of at most as many rational affine lines, each of which is the zero set
 of one of the curves. -/
 theorem degree_one_components_line_cover
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
+    (S : Finset (CCDN.CoordinateIdeal 3))
     (hcurve : ∀ P ∈ S, P.IsPrime ∧ P.height = 2 ∧ HasAffineCurveDegree P 1) :
     ∃ lines : Finset (Set (RatPoint 3)),
       (⋃ P ∈ S, idealZeroLocus P) = (⋃ L ∈ lines, L) ∧
@@ -50,26 +53,18 @@ theorem degree_one_components_line_cover
       have hPT : P ∈ T := Finset.mem_filter.mpr ⟨hPS, ⟨x, hxP⟩⟩
       exact Set.mem_iUnion.mpr ⟨idealZeroLocus P,
         Set.mem_iUnion.mpr ⟨Finset.mem_image.mpr ⟨P, hPT, rfl⟩, hxP⟩⟩
-    · intro hx
-      obtain ⟨L, hx⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨hLs, hxL⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨P, hPT, rfl⟩ := Finset.mem_image.mp hLs
-      exact Set.mem_iUnion.mpr ⟨P,
-        Set.mem_iUnion.mpr ⟨(Finset.mem_filter.mp hPT).1, hxL⟩⟩
+    · aesop
   · intro L hL
     obtain ⟨P, hPT, rfl⟩ := Finset.mem_image.mp hL
     obtain ⟨hPS, z, hz⟩ := Finset.mem_filter.mp hPT
     obtain ⟨hp, hheight, hdegree⟩ := hcurve P hPS
-    have : P.IsPrime := hp
-    obtain ⟨v, hv, he, _⟩ :=
+    obtain ⟨v, hv, he⟩ :=
       degree_one_zeroLocus_eq_rationalAffineLine P hheight hdegree z hz
     exact ⟨⟨P, hPS, rfl⟩, z, v, hv, he⟩
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- There is an absolute constant `C` such that, for an integer surface equation `f` of degree
@@ -78,14 +73,14 @@ on a finite family `S` of degree-one curves on the surface number at most
 `C d⁶ B + #S`. -/
 theorem surface_degree_one_component_contribution :
     ∃ C : ℝ, 0 < C ∧
-      ∀ f : MvPolynomial (Fin 3) ℤ,
+      ∀ f : CCDN.IntegerPolynomial 3,
       HasAbsIrreducibleTopForm f →
       3 ≤ f.totalDegree → ∀ B : ℝ, 0 ≤ B →
-      ∀ S : Finset (Ideal (CoordinatePolynomial 3)),
+      ∀ S : Finset (CCDN.CoordinateIdeal 3),
       (∀ P ∈ S, P.IsPrime ∧ P.height = 2 ∧ HasAffineCurveDegree P 1) →
-      (∀ P ∈ S, map (Int.castRingHom ℚ) f ∈ P) →
+      (∀ P ∈ S, CCDN.rationalPolynomial f ∈ P) →
       (count (⋃ P ∈ S, idealZeroLocus P) B : ℝ) ≤
-        C * (f.totalDegree : ℝ) ^ 6 * B + S.card := by
+        C * ↑f.totalDegree ^ 6 * B + S.card := by
   obtain ⟨C, hC, hline⟩ := surface_line_contribution
   refine ⟨C, hC, ?_⟩
   intro f hir hd B hB S hcurve hSf
@@ -101,5 +96,4 @@ theorem surface_degree_one_component_contribution :
   have hcardR : (lines.card : ℝ) ≤ S.card := by exact_mod_cast hcard
   exact hh.trans (add_le_add le_rfl hcardR)
 
-end
 end CCDN

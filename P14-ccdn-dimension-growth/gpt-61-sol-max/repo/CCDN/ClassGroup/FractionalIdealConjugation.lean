@@ -5,14 +5,15 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.QuadraticInvariantIdeal
 
 /-! Compatibility of conjugation with integral representatives and with
 the scalar comparisons used in the definition of an ideal class. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 
 variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
@@ -30,11 +31,9 @@ theorem fractionalIdeal_conjugate_coeIdeal (σ : R ≃+* R) (I : Ideal R) :
     (IsFractionRing.semilinearEquivOfRingEquiv K K σ).toLinearMap
       (I : FractionalIdeal R⁰ K).val) ↔
     x ∈ (I.map σ.toRingHom : FractionalIdeal R⁰ K)
-  rw [Submodule.mem_map]
   constructor
   · rintro ⟨y, hy, rfl⟩
     obtain ⟨r, hr, rfl⟩ := (FractionalIdeal.mem_coeIdeal R⁰).mp hy
-    apply (FractionalIdeal.mem_coeIdeal R⁰).mpr
     refine ⟨σ r, Ideal.mem_map_of_mem _ hr, ?_⟩
     exact (IsFractionRing.ringEquivOfRingEquiv_algebraMap σ r).symm
   · intro hx
@@ -54,14 +53,14 @@ theorem integral_ideal_scalar_fractional_comparison
     fractionalIdealUnitAction (K := K) σ (FractionalIdeal.mk0 K I) =
       toPrincipalIdeal R K
         (Units.mk0 (algebraMap R K y) (by
-          simpa only [map_zero] using (IsFractionRing.injective R K).ne hy) /
+          simp_all) /
         Units.mk0 (algebraMap R K x) (by
-          simpa only [map_zero] using (IsFractionRing.injective R K).ne hx)) *
+          simp_all)) *
       FractionalIdeal.mk0 K I := by
-  let a : Kˣ := Units.mk0 (algebraMap R K x) (by
-    simpa only [map_zero] using (IsFractionRing.injective R K).ne hx)
-  let b : Kˣ := Units.mk0 (algebraMap R K y) (by
-    simpa only [map_zero] using (IsFractionRing.injective R K).ne hy)
+  let a := Units.mk0 (algebraMap R K x) (by
+    simp_all)
+  let b := Units.mk0 (algebraMap R K y) (by
+    simp_all)
   have h : toPrincipalIdeal R K a *
       fractionalIdealUnitAction (K := K) σ (FractionalIdeal.mk0 K I) =
       toPrincipalIdeal R K b * FractionalIdeal.mk0 K I := by
@@ -75,10 +74,8 @@ theorem integral_ideal_scalar_fractional_comparison
       FractionalIdeal.spanSingleton R⁰ (algebraMap R K y) * (I : FractionalIdeal R⁰ K)
     rw [fractionalIdeal_conjugate_coeIdeal]
     exact hh
-  change fractionalIdealUnitAction (K := K) σ (FractionalIdeal.mk0 K I) =
-    toPrincipalIdeal R K (b / a) * FractionalIdeal.mk0 K I
   rw [map_div]
-  apply mul_left_cancel (a := toPrincipalIdeal R K a)
+  apply mul_left_cancel 
   rw [h]
   symm
   calc
@@ -88,5 +85,4 @@ theorem integral_ideal_scalar_fractional_comparison
       ac_rfl
     _ = _ := by rw [mul_inv_cancel, one_mul]
 
-end
 end CCDN

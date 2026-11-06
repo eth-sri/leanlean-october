@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.RadialHomogeneousMap
 public import Mathlib.RingTheory.Nullstellensatz
 import CCDN.ForMathlib.MvPolynomial
@@ -15,25 +17,23 @@ of the map to the infinity quotient, over any algebraically closed extension. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K))
 
 /-- The map from the polynomial ring to the coordinate ring of the section at infinity of the
 projective closure of `I`: a polynomial `f` goes to the class of its radial scaling `∑ n, f_n t ^ n`
 in the homogeneous coordinate algebra modulo the infinity ideal. -/
-def infinityCoordinateMap {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
-    MvPolynomial σ K →ₐ[K] projectiveCoordinateAlgebra I ⧸ projectiveInfinityIdeal I :=
+noncomputable def infinityCoordinateMap   :=
   (Ideal.Quotient.mkₐ K (projectiveInfinityIdeal I)).comp (quotientRadialMap I)
 
 /-- The homogeneous ideal of the section at infinity of the projective closure of `I`, defined as
 the kernel of `infinityCoordinateMap I`. -/
-def leadingInfinityIdeal {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
-    Ideal (MvPolynomial σ K) := RingHom.ker (infinityCoordinateMap I)
+noncomputable def leadingInfinityIdeal   := RingHom.ker (infinityCoordinateMap I)
 
 /-- If `f` lies in the ideal at infinity of `I`, then modulo `I` each homogeneous component of `f`
 of degree `n + 1` lies in the filtration piece of degree at most `n`. -/
-lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (f : MvPolynomial σ K) (hf : f ∈ leadingInfinityIdeal I)
+lemma leadingInfinityIdeal_component_mem  (f : MvPolynomial σ K) (hf : f ∈ leadingInfinityIdeal I)
     (n : ℕ) :
     (Ideal.Quotient.mk I) (homogeneousComponent (n + 1) f) ∈ filteredCoordinateSpace I n := by
   have hm : quotientRadialMap I f ∈ projectiveInfinityIdeal I := by
@@ -44,7 +44,7 @@ lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
   obtain ⟨g, hg⟩ := hm
   have he := congrArg (fun h : projectiveCoordinateAlgebra I =>
     (h : Polynomial (MvPolynomial σ K ⧸ I)).coeff (n + 1)) hg
-  change ((quotientRadialMap I f : projectiveCoordinateAlgebra I) :
+  change ((quotientRadialMap I f) :
       Polynomial (MvPolynomial σ K ⧸ I)).coeff (n + 1) =
       (Polynomial.X * (g : Polynomial (MvPolynomial σ K ⧸ I))).coeff (n + 1) at he
   rw [quotientRadialMap_coeff, Polynomial.coeff_X_mul] at he
@@ -53,8 +53,7 @@ lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
 
 /-- A coordinate-power certificate at infinity gives a balanced reduction in
 the original affine quotient. -/
-private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (l : MvPolynomial σ K) (hl : l.IsHomogeneous 1)
+private theorem power_reduction_of_infinity_certificate  (l : MvPolynomial σ K) (hl : l.IsHomogeneous 1)
     (j : σ) (N : ℕ) (hN : 0 < N)
     (hpow : X j ^ N ∈ leadingInfinityIdeal I ⊔ Ideal.span {l}) :
     ∃ r s : MvPolynomial σ K, r.totalDegree ≤ N - 1 ∧ s.totalDegree ≤ N - 1 ∧
@@ -66,8 +65,7 @@ private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
     obtain ⟨g, hg, t, ht, he⟩ := Submodule.mem_sup.mp hpow
     obtain ⟨s, hs⟩ := Ideal.mem_span_singleton.mp ht
     have hrel : X j ^ (n + 1) - l * s ∈ leadingInfinityIdeal I := by
-      rw [← he, hs]
-      simpa only [add_sub_cancel_right] using hg
+      grind
     have hm := leadingInfinityIdeal_component_mem I _ hrel n
     rw [map_sub, homogeneousComponent_eq_self (isHomogeneous_X_pow j (n + 1)),
       show n + 1 = 1 + n by omega, homogeneousComponent_mul_of_isHomogeneous_left hl] at hm
@@ -105,9 +103,8 @@ theorem exists_power_reductions_of_infinity_avoidance {K L σ : Type*}
   refine ⟨N, hN, ?_⟩
   intro j
   apply power_reduction_of_infinity_certificate I l hl j N hN
-  have hj : m j ≤ N := (Finset.le_sup (f := m) (Finset.mem_univ j)).trans (Nat.le_succ _)
+  have hj : m j ≤ N := (Finset.le_sup  (Finset.mem_univ j)).trans (Nat.le_succ _)
   have hh := J.mul_mem_left (X j ^ (N - m j)) (hm j)
   simpa only [← pow_add, Nat.sub_add_cancel hj] using hh
 
-end
 end CCDN

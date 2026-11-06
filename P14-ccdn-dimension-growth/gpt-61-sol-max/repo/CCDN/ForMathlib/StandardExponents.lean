@@ -41,19 +41,21 @@ open MvPolynomial
 
 variable {K σ : Type*} [Field K]
 
+variable (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ)
+
 /-- Exponents not divisible by any leading exponent of a nonzero ideal element. -/
-def standardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) : Set (σ →₀ ℕ) :=
+def standardExponents   :=
   {a | ∀ f ∈ I, f ≠ 0 → ¬ m.degree f ≤ a}
 
 /-- Standard exponents form a lower set. -/
-lemma isLowerSet_standardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) :
+lemma isLowerSet_standardExponents  :
     IsLowerSet (standardExponents I m) := by
   intro a b hab hb f hf hn hfa
   exact hb f hf hn (hfa.trans hab)
 
 /-- A standard polynomial belonging to the ideal is zero. -/
 lemma eq_zero_of_mem_restrictSupport_standardExponents
-    (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ)
+    
     {f : MvPolynomial σ K} (hf : f ∈ restrictSupport K (standardExponents I m))
     (hI : f ∈ I) : f = 0 := by
   by_contra hn
@@ -67,35 +69,33 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
       r ∈ restrictSupport K (standardExponents I MonomialOrder.degLex) ∧
       r.totalDegree ≤ f.totalDegree ∧ f - r ∈ I := by
   classical
-  let B : Set (MvPolynomial σ K) := {b | b ∈ I ∧ b ≠ 0}
+  let B := {b | b ∈ I ∧ b ≠ 0}
   obtain ⟨g, r, hsum, hdeg, hstd⟩ :=
-    MonomialOrder.div_set (m := MonomialOrder.degLex)
+    MonomialOrder.div_set 
       (B := B) (fun b hb => MonomialOrder.isUnit_leadingCoeff.mpr hb.2) f
   refine ⟨r, ?_, ?_, ?_⟩
   · intro a ha b hb hn
     exact hstd a ha b ⟨hb, hn⟩
   · have hg : Finsupp.linearCombination (MvPolynomial σ K)
-        (fun b : B => b.val) g ∈ restrictTotalDegree σ K f.totalDegree := by
+        ((Subtype.val)) g ∈ restrictTotalDegree σ K f.totalDegree := by
       rw [Finsupp.linearCombination_apply, Finsupp.sum]
       apply Submodule.sum_mem
       intro b _
       rw [smul_eq_mul, mul_comm, mem_restrictTotalDegree]
       exact degLex_totalDegree_monotone (hdeg b)
     have hr : r = f - Finsupp.linearCombination (MvPolynomial σ K)
-        (fun b : B => b.val) g := by rw [hsum]; ring
+        ((Subtype.val)) g := by rw [hsum]; ring
     rw [← mem_restrictTotalDegree, hr]
     exact Submodule.sub_mem _ (by rw [mem_restrictTotalDegree]) hg
   · have hg : Finsupp.linearCombination (MvPolynomial σ K)
         (fun b : B => b.val) g ∈ I := by
-      rw [Finsupp.linearCombination_apply, Finsupp.sum]
       apply I.sum_mem
       intro b _
       exact I.mul_mem_left _ b.property.1
     simpa only [hsum, add_sub_cancel_right] using hg
 
 /-- Standard exponents of total degree at most `N`. -/
-def boundedStandardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) :
-    Set (σ →₀ ℕ) :=
+def boundedStandardExponents  (N : ℕ)  :=
   {a | a ∈ standardExponents I m ∧ a.degree ≤ N}
 
 end Ideal

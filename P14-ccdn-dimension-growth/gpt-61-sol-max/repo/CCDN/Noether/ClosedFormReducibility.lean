@@ -20,13 +20,14 @@ factor decompositions, with coprimality imposed in the univariate fraction-field
 factorization can supply it.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
+variable {F : Type*} [Field F]
+
 /-- A bounded extra solution outside the scalar gradient span forces rank drop. -/
-private theorem closedForm_rank_drop_of_extra_form {F : Type*} [Field F]
+private theorem closedForm_rank_drop_of_extra_form 
     (d : ℕ) (hd : 0 < d) (f p q : F[X][X])
     (hf : bivariateTotalDegree f ≤ d) (hf' : f.derivative ≠ 0)
     (hp : InBivariateGrid d p) (hq : InBivariateGrid d q)
@@ -46,53 +47,11 @@ private theorem closedForm_rank_drop_of_extra_form {F : Type*} [Field F]
     simpa only [Algebra.smul_def, Polynomial.algebraMap_apply,
       Algebra.algebraMap_self, RingHom.id_apply] using he.symm
 
-/-- A nontrivial coprime product gives two independent bounded closed forms,
-and hence the required matrix rank drop. -/
-private theorem closedForm_rank_drop_of_coprime_factors
-    {F : Type*} [Field F] (d : ℕ) (hd : 0 < d)
-    (hchar : CharZeroOrGT F d)
-    (g h : F[X][X]) (hg : Irreducible g) (hgm : g.Monic)
-    (hh : h ≠ 0) (hhpos : 0 < h.natDegree)
-    (hcop : IsCoprime (g.map (algebraMap F[X] (RatFunc F)))
-      (h.map (algebraMap F[X] (RatFunc F))))
-    (hdeg : (g * h).natDegree = d) (htotal : bivariateTotalDegree (g * h) ≤ d) :
-    (closedFormCoefficientMatrix d (g * h)).rank + 2 ≤ 2 * d ^ 2 := by
-  let φ := algebraMap F[X] (RatFunc F)
-  have hinj := RatFunc.algebraMap_injective F
-  have hgpos := hgm.natDegree_pos_of_not_isUnit hg.not_isUnit
-  have hsum := natDegree_mul hg.ne_zero hh
-  have hgnat : (g.map φ).natDegree = g.natDegree := natDegree_map_eq_of_injective hinj _
-  have hhnat : (h.map φ).natDegree = h.natDegree := natDegree_map_eq_of_injective hinj _
-  have hgR : Irreducible (g.map φ) := hgm.irreducible_iff_irreducible_map_fraction_map.mp hg
-  have hgg : IsCoprime (g.map φ) (g.map φ).derivative :=
-    (separable_iff_derivative_ne_zero hgR).mpr
-      (derivative_ne_zero_of_natCast_natDegree_ne_zero (by
-        rw [hgnat]
-        simpa using (map_ne_zero (algebraMap F (RatFunc F))).mpr (hchar _ hgpos (by omega))))
-  have hh' := derivative_ne_zero_of_natCast_natDegree_ne_zero (f := h.map φ) (by
-    rw [hhnat]
-    simpa using (map_ne_zero (algebraMap F (RatFunc F))).mpr (hchar _ hhpos (by omega)))
-  have hgd : 0 < bivariateTotalDegree g := hgpos.trans_le (bivariate_natDegree_le_totalDegree g)
-  obtain ⟨hpgrid, hqgrid⟩ := bivariate_factor_form_in_grid d g h hg.ne_zero hh hgd htotal
-  apply closedForm_rank_drop_of_extra_form d hd (g * h)
-    (h * g.derivative) (h * (bivariateCoefficientDerivative F) g) htotal
-    (derivative_ne_zero_of_natCast_natDegree_ne_zero (by
-      rw [hdeg]
-      simpa using (map_ne_zero (algebraMap F (F[X]))).mpr (hchar d hd le_rfl))) hpgrid hqgrid
-  · have he := bivariate_factor_closed_form g h
-    change _ - _ - _ + _ = (0 : F[X][X])
-    linear_combination he
-  · intro a he
-    apply factor_numerator_not_scalar_gradient (g.map φ) (h.map φ)
-      (natDegree_pos_iff_degree_pos.mp (hgnat ▸ hgpos)) hcop hgg hh' (algebraMap F (RatFunc F) a)
-    simpa only [Polynomial.map_mul, Polynomial.map_C, derivative_map, derivative_mul,
-      Polynomial.map_add, RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, φ] using
-      congrArg (Polynomial.map φ) he
 
 /-- Repeated irreducible factors of every multiplicity at least two likewise
 force rank drop; the whole equation need not be squarefree. -/
 private theorem closedForm_rank_drop_of_repeated_factor
-    {F : Type*} [Field F] (d k : ℕ) (hd : 0 < d)
+     (d k : ℕ) (hd : 0 < d)
     (hchar : CharZeroOrGT F d)
     (g h : F[X][X]) (hg : Irreducible g) (hgm : g.Monic) (hh : h ≠ 0)
     (hcop : IsCoprime (g.map (algebraMap F[X] (RatFunc F)))
@@ -113,7 +72,7 @@ private theorem closedForm_rank_drop_of_repeated_factor
       (derivative_ne_zero_of_natCast_natDegree_ne_zero (by
         rw [hgnat]
         simpa using (map_ne_zero (algebraMap F (RatFunc F))).mpr (hchar _ hgpos (by omega))))
-  have hgd : 0 < bivariateTotalDegree g := hgpos.trans_le (bivariate_natDegree_le_totalDegree g)
+  have hgd := hgpos.trans_le (bivariate_natDegree_le_totalDegree g)
   obtain ⟨hpgrid, hqgrid⟩ := bivariate_power_factor_form_in_grid d k g h hg.ne_zero hh hgd htotal
   apply closedForm_rank_drop_of_extra_form d hd (g ^ (k + 2) * h)
     (g ^ k * h * g.derivative) (g ^ k * h * (bivariateCoefficientDerivative F) g) htotal
@@ -131,15 +90,15 @@ private theorem closedForm_rank_drop_of_repeated_factor
     simpa only [Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_C, derivative_map,
       RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, φ] using congrArg (Polynomial.map φ) he
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma exists_monic_bivariate_irreducible_factor {F : Type*} [Field F]
-    (f : F[X][X]) (hf : f.Monic) (hu : ¬IsUnit f) :
+variable {F : Type*} [Field F] (f : F[X][X]) (hf : f.Monic) (hu : ¬IsUnit f)
+
+include hf hu in
+private lemma exists_monic_bivariate_irreducible_factor  :
     ∃ g : F[X][X], Irreducible g ∧ g.Monic ∧ g ∣ f := by
   obtain ⟨r, hr, hrf⟩ := WfDvdMonoid.exists_irreducible_factor hu hf.ne_zero
   obtain ⟨s, hs⟩ := hrf
@@ -148,17 +107,17 @@ private lemma exists_monic_bivariate_irreducible_factor {F : Type*} [Field F]
     exact hf
   have hsU : IsUnit s.leadingCoeff :=
     ⟨⟨s.leadingCoeff, r.leadingCoeff, by rw [mul_comm, hl], hl⟩, rfl⟩
-  have hC : IsUnit (C s.leadingCoeff) := hsU.map C
+  have hC := hsU.map C
   have ha := associated_mul_unit_right r (C s.leadingCoeff) hC
   refine ⟨r * C s.leadingCoeff, ha.irreducible_iff.mp hr, ?_, ?_⟩
   · change (r * C s.leadingCoeff).leadingCoeff = 1
     rw [leadingCoeff_mul, leadingCoeff_C, hl]
   · exact ha.dvd_iff_dvd_left.mp ⟨s, hs⟩
 
+include hf hu in
 /-- Extract one monic irreducible factor with its full multiplicity; the
 remaining factor is monic and coprime after passage to the fraction field. -/
-private lemma exists_monic_bivariate_primary_factor {F : Type*} [Field F]
-    (f : F[X][X]) (hf : f.Monic) (hu : ¬IsUnit f) :
+private lemma exists_monic_bivariate_primary_factor  :
     ∃ (g h : F[X][X]) (m : ℕ), Irreducible g ∧ g.Monic ∧ h.Monic ∧
       0 < m ∧ f = g ^ m * h ∧
       IsCoprime (g.map (algebraMap F[X] (RatFunc F)))
@@ -170,7 +129,7 @@ private lemma exists_monic_bivariate_primary_factor {F : Type*} [Field F]
     have hz : m = 0 := by omega
     simp only [hz, pow_zero, one_mul] at he
     exact hnd (he ▸ hgf)
-  have hhm : h.Monic := (hgm.pow m).of_mul_monic_left (he ▸ hf)
+  have hhm := (hgm.pow m).of_mul_monic_left (he ▸ hf)
   refine ⟨g, h, m, hg, hgm, hhm, hm, he, ?_⟩
   have hgR : Irreducible (g.map (algebraMap F[X] (RatFunc F))) :=
     hgm.irreducible_iff_irreducible_map_fraction_map.mp hg
@@ -187,24 +146,55 @@ theorem closedForm_rank_drop_of_not_irreducible
     (f : F[X][X]) (hf : f.Monic) (hred : ¬Irreducible f)
     (hdeg : f.natDegree = d) (htotal : bivariateTotalDegree f ≤ d) :
     (closedFormCoefficientMatrix d f).rank + 2 ≤ 2 * d ^ 2 := by
-  have hfu : ¬IsUnit f := not_isUnit_of_natDegree_pos f (hdeg ▸ hd)
+  have hfu := not_isUnit_of_natDegree_pos f (hdeg ▸ hd)
   obtain ⟨g, h, m, hg, hgm, hhm, hm, he, hcop⟩ :=
     exists_monic_bivariate_primary_factor f hf hfu
   by_cases hm1 : m = 1
-  · have he' : f = g * h := by simpa only [hm1, pow_one] using he
+  · have he' := by simpa only [hm1, pow_one] using he
     have hhu : ¬IsUnit h := by
       intro hhU
       apply hred
       rw [he']
       exact (associated_mul_unit_left g h hhU).irreducible_iff.mpr hg
     rw [he'] at hdeg htotal ⊢
-    exact closedForm_rank_drop_of_coprime_factors d hd hchar g h hg hgm hhm.ne_zero
-      (hhm.natDegree_pos_of_not_isUnit hhu) hcop hdeg htotal
+    exact (by
+            let inline_hh := Monic.ne_zero hhm
+            let inline_hhpos := Monic.natDegree_pos_of_not_isUnit hhm hhu
+            let φ := algebraMap F[X] (RatFunc F)
+            have hinj := RatFunc.algebraMap_injective F
+            have hgpos := hgm.natDegree_pos_of_not_isUnit hg.not_isUnit
+            have hsum := natDegree_mul hg.ne_zero inline_hh
+            have hgnat : (g.map φ).natDegree = g.natDegree := natDegree_map_eq_of_injective hinj _
+            have hhnat : (h.map φ).natDegree = h.natDegree := natDegree_map_eq_of_injective hinj _
+            have hgR : Irreducible (g.map φ) := hgm.irreducible_iff_irreducible_map_fraction_map.mp hg
+            have hgg : IsCoprime (g.map φ) (g.map φ).derivative :=
+              (separable_iff_derivative_ne_zero hgR).mpr
+                (derivative_ne_zero_of_natCast_natDegree_ne_zero (by
+                  rw [hgnat]
+                  simpa using (map_ne_zero (algebraMap F (RatFunc F))).mpr (hchar _ hgpos (by omega))))
+            have hh' := derivative_ne_zero_of_natCast_natDegree_ne_zero  (by
+              rw [hhnat]
+              simpa using (map_ne_zero (algebraMap F (RatFunc F))).mpr (hchar _ inline_hhpos (by omega)))
+            have hgd := hgpos.trans_le (bivariate_natDegree_le_totalDegree g)
+            obtain ⟨hpgrid, hqgrid⟩ := bivariate_factor_form_in_grid d g h hg.ne_zero inline_hh hgd htotal
+            apply closedForm_rank_drop_of_extra_form d hd (g * h)
+              (h * g.derivative) (h * (bivariateCoefficientDerivative F) g) htotal
+              (derivative_ne_zero_of_natCast_natDegree_ne_zero (by
+                rw [hdeg]
+                simpa using (map_ne_zero (algebraMap F (F[X]))).mpr (hchar d hd le_rfl))) hpgrid hqgrid
+            · have he := bivariate_factor_closed_form g h
+              change _ - _ - _ + _ = (0 : F[X][X])
+              linear_combination he
+            · intro a he
+              apply factor_numerator_not_scalar_gradient (g.map φ) (h.map φ)
+                (natDegree_pos_iff_degree_pos.mp (hgnat ▸ hgpos)) hcop hgg hh' (algebraMap F (RatFunc F) a)
+              simpa only [Polynomial.map_mul, Polynomial.map_C, derivative_map, derivative_mul,
+                Polynomial.map_add, RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, φ] using
+                congrArg (Polynomial.map φ) he)
   · have hm2 : m = (m - 2) + 2 := by omega
     rw [hm2] at he
     rw [he] at hdeg htotal ⊢
     exact closedForm_rank_drop_of_repeated_factor d (m - 2) hd hchar g h hg hgm
       hhm.ne_zero hcop hdeg htotal
 
-end
 end CCDN

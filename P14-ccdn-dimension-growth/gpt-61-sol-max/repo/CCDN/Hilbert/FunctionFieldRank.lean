@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 public import Mathlib.RingTheory.Algebraic.Defs
 import Mathlib.Algebra.Polynomial.Basis
@@ -16,9 +18,8 @@ import Mathlib.RingTheory.Algebraic.Basic
 coordinate. Independent functions over the parameter field produce independent
 blocks over the constant field, whose filtered growth bounds their number. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- In a tower `K → R → F`, the products `u k • v i` of a family `v` independent over `R` and a
 family `u` independent over `K` are independent over `K`. -/
@@ -31,7 +32,7 @@ lemma tower_smul_independent {K R F ι κ : Type*} [Field K] [Field R] [Field F]
   rw [Fintype.linearIndependent_iff]
   intro c hc t
   have he : ∑ i, (∑ k, c (i, k) • u k) • v i = 0 := by
-    simpa only [Fintype.sum_prod_type, Finset.sum_smul, smul_assoc] using hc
+    simp_all [Fintype.sum_prod_type, Finset.sum_smul, smul_assoc]
   have hz := Fintype.linearIndependent_iff.mp hv _ he t.1
   exact Fintype.linearIndependent_iff.mp hu (fun k => c (t.1, k)) hz t.2
 
@@ -69,11 +70,10 @@ theorem polynomial_parameter_rank_le {K R F σ ι : Type*} [Field K] [Field R] [
         apply Submodule.mem_map.mpr
         refine ⟨_, ?_, rfl⟩
         rw [MvPolynomial.mem_restrictTotalDegree]
-        have hh : (h t.1).totalDegree ≤ D :=
+        have hh :=
           Finset.le_sup (f := fun i => (h i).totalDegree) (Finset.mem_univ t.1)
         have hp := MvPolynomial.totalDegree_pow l t.2.val
         have hh' := MvPolynomial.totalDegree_mul (h t.1) (l ^ t.2.val)
-        have hm := Nat.mul_le_mul_left t.2.val hl
         nlinarith [t.2.isLt]⟩
     have hli : LinearIndependent K (fun t => φ (v t).val) := by
       have hprod := tower_smul_independent _ hi (fun k : Fin (N + 1) => u ^ k.val)
@@ -87,19 +87,15 @@ theorem polynomial_parameter_rank_le {K R F σ ι : Type*} [Field K] [Field R] [
     simpa only [Fintype.card_prod, Fintype.card_fin] using hv.fintype_card_le_finrank
   obtain ⟨N₀, c, hN₀⟩ := hdegree
   by_contra hbad
-  have hcard : d + 1 ≤ Fintype.card ι := by omega
   let N := d * D + c.natAbs + N₀ + 1
   have hn0 : N₀ ≤ D + N := by dsimp [N]; omega
   have heq := hN₀ (D + N) hn0
   push_cast at heq
-  have hlo : (Fintype.card ι : ℤ) * (N + 1) ≤ (d : ℤ) * (D + N) + c := by
+  have hlo : (Fintype.card ι : ℤ) * (N + 1) ≤ ↑d * (D + N) + c := by
     rw [← heq]
     exact_mod_cast hlow N
-  have hmul : ((d : ℤ) + 1) * (N + 1) ≤ (Fintype.card ι : ℤ) * (N + 1) := by
-    exact_mod_cast Nat.mul_le_mul_right (N + 1) hcard
-  have habs : c ≤ (c.natAbs : ℤ) := Int.le_natAbs
+  have habs : c ≤ ↑c.natAbs := Int.le_natAbs
   have hNeq : (N : ℤ) = d * D + c.natAbs + N₀ + 1 := by simp [N]
   nlinarith
 
-end
 end CCDN

@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Determinant.PlaneMultiplicity
 public import CCDN.Plane.FiniteFieldConstants
 import CCDN.Determinant.BlockDeterminant
@@ -19,17 +23,17 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma cast_plane_eval {p : ℕ} (f : MvPolynomial (Fin 2) ℤ) (z : Fin 2 → ℤ) :
+private lemma cast_plane_eval {p : ℕ} (f : CCDN.IntegerPolynomial 2) (z : CCDN.IntPoint 2) :
     (MvPolynomial.eval z f : ZMod p) =
       MvPolynomial.eval₂ (Int.castRingHom (ZMod p)) (fun j => (z j : ZMod p)) f := by
   simpa only [MvPolynomial.eval₂_id, RingHom.comp_id, Function.comp_def, Int.coe_castRingHom] using
     MvPolynomial.eval₂_comp_left (Int.castRingHom (ZMod p)) (RingHom.id ℤ) z f
 
 /-- All affine rational points of the reduced plane equation. -/
-def PlaneResidue (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :=
+def PlaneResidue (f : CCDN.IntegerPolynomial 2) (p : ℕ) :=
   {a : Fin 2 → ZMod p // eval₂ (Int.castRingHom (ZMod p)) a f = 0}
 
-instance (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [NeZero p] :
+instance (f : CCDN.IntegerPolynomial 2) (p : ℕ) [NeZero p] :
     Fintype (PlaneResidue f p) := by
   classical
   unfold PlaneResidue
@@ -40,39 +44,41 @@ parameter `d` and constant `C`: at every prime `p > stepanovThreshold d` where `
 irreducible reduction, `f` has at most `p + C d² √p` zeros in `𝔽_p²`. `PlaneResidueBound C`
 asserts it for every equation with `d = deg f`, and `planeResidueBound` proves it with
 `C = planeResidueConstant`. -/
-def PlaneResidueCountBound (C : ℝ) (d : ℕ) (f : MvPolynomial (Fin 2) ℤ) : Prop :=
+def PlaneResidueCountBound (C : ℝ) (d : ℕ) (f : CCDN.IntegerPolynomial 2) : Prop :=
   ∀ p : ℕ, p.Prime → stepanovThreshold (d : ℝ) < p →
     Irreducible (MvPolynomial.map (Int.castRingHom (ZMod p)) f) →
-      (Nat.card (PlaneResidue f p) : ℝ) ≤ p + C * (d : ℝ) ^ 2 * Real.sqrt p
+      (Nat.card (PlaneResidue f p) : ℝ) ≤ p + C * ↑d ^ 2 * Real.sqrt p
+
+variable {f : CCDN.IntegerPolynomial 2} {p : ℕ}
 
 /-- The integer lift, with coordinates in `[0, p)`, of an `𝔽_p`-point of the reduced affine plane
 curve. -/
-def planeResidueLift {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} (a : PlaneResidue f p) :
-    Fin 2 → ℤ := fun j => (a.val j).val
+def planeResidueLift  (a : PlaneResidue f p) :
+    CCDN.IntPoint 2 := fun j => (a.val j).val
 
 /-- The integer lift of a residue point reduces modulo `p` to the point itself. -/
-lemma cast_planeResidueLift {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} [NeZero p]
+lemma cast_planeResidueLift  [NeZero p]
     (a : PlaneResidue f p) (j : Fin 2) : (planeResidueLift a j : ZMod p) = a.val j := by
   simp [planeResidueLift]
 
 /-- The reduction of `f` modulo `p` vanishes at the reduction of the integer lift of a residue point
 of `f`. -/
-lemma planeResidueLift_zero {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} [NeZero p]
+lemma planeResidueLift_zero  [NeZero p]
     (a : PlaneResidue f p) :
     eval₂ (Int.castRingHom (ZMod p)) (fun j => (planeResidueLift a j : ZMod p)) f = 0 := by
   simpa only [cast_planeResidueLift] using a.property
 
+variable (f : CCDN.IntegerPolynomial 2) (p : ℕ) [Fact p.Prime] (hf : map (Int.castRingHom (ZMod p)) f ≠ 0)
+
 /-- Multiplicity is selected from the translated reduced equation. -/
-def planeResidueMultiplicity (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) (a : PlaneResidue f p) : ℕ :=
+def planeResidueMultiplicity  (a : PlaneResidue f p) : ℕ :=
   Classical.choose (exists_hypersurface_reduction_multiplicity f (planeResidueLift a) hf
     (planeResidueLift_zero a))
 
 /-- The multiplicity of `f mod p` at a residue point `a` is between `1` and the total degree of `f`;
 after translating `a` to the origin, the reduced equation lies in that power of the ideal of the
 origin and has a nonzero homogeneous component of that degree. -/
-theorem planeResidueMultiplicity_spec (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) (a : PlaneResidue f p) :
+theorem planeResidueMultiplicity_spec  (a : PlaneResidue f p) :
     0 < planeResidueMultiplicity f p hf a ∧
       planeResidueMultiplicity f p hf a ≤ f.totalDegree ∧
       map (Int.castRingHom (ZMod p)) (originShift (planeResidueLift a) f) ∈
@@ -84,12 +90,10 @@ theorem planeResidueMultiplicity_spec (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [
 
 /-- The finite-field total multiplicity appearing in the denominator
 of the local determinant exponent. -/
-def planeTotalMultiplicity (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) : ℕ :=
+def planeTotalMultiplicity  : ℕ :=
   ∑ a : PlaneResidue f p, planeResidueMultiplicity f p hf a
 
-private lemma planeTotalMultiplicity_bounds (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) :
+private lemma planeTotalMultiplicity_bounds  :
     Fintype.card (PlaneResidue f p) ≤ planeTotalMultiplicity f p hf ∧
       planeTotalMultiplicity f p hf ≤ Fintype.card (PlaneResidue f p) * f.totalDegree := by
   constructor
@@ -103,8 +107,8 @@ private lemma planeTotalMultiplicity_bounds (f : MvPolynomial (Fin 2) ℤ) (p : 
 sum of the local exponents has the full quadratic leading coefficient.
 Singular points are allowed. -/
 theorem singular_reduction_minorGcd {s N p : ℕ} [Fact p.Prime] (hs : 0 < s)
-    (f : MvPolynomial (Fin 2) ℤ) (g : Fin N → MvPolynomial (Fin 2) ℤ)
-    (z : Fin s → Fin 2 → ℤ)
+    (f : CCDN.IntegerPolynomial 2) (g : Fin N → CCDN.IntegerPolynomial 2)
+    (z : Fin s → CCDN.IntPoint 2)
     (hf : map (Int.castRingHom (ZMod p)) f ≠ 0)
     (hz : ∀ i, eval (z i) f = 0) :
     0 < planeTotalMultiplicity f p hf ∧ ∃ e : ℕ,
@@ -117,16 +121,15 @@ theorem singular_reduction_minorGcd {s N p : ℕ} [Fact p.Prime] (hs : 0 < s)
   let c := Fintype.card (PlaneResidue f p)
   let E := Fintype.equivFin (PlaneResidue f p)
   let label : Fin s → Fin c := fun i => E (red i)
-  let a : Fin c → Fin 2 → ℤ := fun i => planeResidueLift (E.symm i)
+  let a : Fin c → CCDN.IntPoint 2 := fun i => planeResidueLift (E.symm i)
   let μ : Fin c → ℕ := fun i => planeResidueMultiplicity f p hf (E.symm i)
   let n : Fin c → ℕ := fun i => Fintype.card {k : Fin s // label k = i}
   let e := ∑ i : Fin c, multiplicityExponent (n i) (μ i)
   have hμ (i : Fin c) := planeResidueMultiplicity_spec f p hf (E.symm i)
-  have hsum : ∑ i : Fin c, μ i = planeTotalMultiplicity f p hf := by
-    exact E.symm.sum_comp (planeResidueMultiplicity f p hf)
+  have hsum : ∑ i : Fin c, μ i = planeTotalMultiplicity f p hf := E.symm.sum_comp (planeResidueMultiplicity f p hf)
   have hsize : ∑ i : Fin c, n i = s := sum_residue_class_sizes label
-  have hc : 0 < c := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
-  have hpos : 0 < planeTotalMultiplicity f p hf :=
+  have hc := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
+  have hpos :=
     hc.trans_le (planeTotalMultiplicity_bounds f p hf).1
   refine ⟨hpos, e, ?_, ?_, ?_⟩
   · simpa only [hsize, hsum] using aggregate_multiplicity_exponents Finset.univ n μ
@@ -138,10 +141,8 @@ theorem singular_reduction_minorGcd {s N p : ℕ} [Fact p.Prime] (hs : 0 < s)
       (by rw [hsum])
     simpa only [hsize] using h
   · apply singular_plane_residue_minorGcd f g z label a μ
-    · intro i
-      exact (hμ i).2.2.1
-    · intro i
-      exact (hμ i).2.2.2
+    · grind
+    · grind
     · intro i j
       apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).mp
       rw [Int.cast_sub, cast_planeResidueLift]

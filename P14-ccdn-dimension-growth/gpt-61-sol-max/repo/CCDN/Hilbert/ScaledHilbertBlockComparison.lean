@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 import CCDN.Hilbert.PolynomialComparison
 import Mathlib.RingTheory.Polynomial.HilbertPoly
@@ -13,9 +15,8 @@ import Mathlib.Tactic.Positivity
 /-! Polynomial parameters of degree at most q have function-field degree
 at most the Hilbert multiplicity times q to the dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- If `I` has affine dimension `m` and degree `d`, and `r · (m + N).choose m` is at most the affine
 Hilbert function of `I` at `D + q N` for all `N`, then `r ≤ d · q ^ m`. -/
@@ -32,7 +33,6 @@ theorem hilbert_scaled_block_count_le_multiplicity
   let Q := (filteredHilbertPolynomial I).comp
     (Polynomial.C (q : ℚ) * Polynomial.X + Polynomial.C (D : ℚ))
   have hPdeg : P.natDegree = m := by
-    dsimp only [P]
     rw [Polynomial.natDegree_C_mul (by exact_mod_cast hr),
       Polynomial.natDegree_preHilbertPoly]
   have hlinearDegree :
@@ -40,18 +40,15 @@ theorem hilbert_scaled_block_count_le_multiplicity
     rw [Polynomial.natDegree_add_C, Polynomial.natDegree_C_mul (by positivity),
       Polynomial.natDegree_X]
   have hlinearLC :
-      (Polynomial.C (q : ℚ) * Polynomial.X + Polynomial.C (D : ℚ)).leadingCoeff = (q : ℚ) := by
+      (Polynomial.C (q : ℚ) * Polynomial.X + Polynomial.C (D : ℚ)).leadingCoeff = ↑q := by
     rw [Polynomial.leadingCoeff, hlinearDegree]
     simp
   have hQdeg : Q.natDegree = m := by
-    simp only [Q, Polynomial.natDegree_comp, hlinearDegree, mul_one, hdim]
-  have hPlc : P.leadingCoeff = (r : ℚ) / m.factorial := by
-    dsimp only [P]
-    rw [Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C,
-      Polynomial.leadingCoeff_preHilbertPoly, div_eq_mul_inv]
-  have hQlc : Q.leadingCoeff = (filteredHilbertPolynomial I).leadingCoeff * (q : ℚ) ^ m := by
-    dsimp only [Q]
-    rw [Polynomial.leadingCoeff_comp (by rw [hlinearDegree]; exact one_ne_zero), hlinearLC, hdim]
+    grind [Polynomial.natDegree_comp]
+  have hPlc : P.leadingCoeff = ↑r / m.factorial := by
+    grind [Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, Polynomial.leadingCoeff_preHilbertPoly]
+  have hQlc : Q.leadingCoeff = (filteredHilbertPolynomial I).leadingCoeff * ↑q ^ m := by
+    grind [Polynomial.leadingCoeff_comp]
   have hPpos : 0 < P.leadingCoeff := by rw [hPlc]; positivity
   have hQpos : 0 < Q.leadingCoeff := by
     rw [hQlc]
@@ -63,16 +60,15 @@ theorem hilbert_scaled_block_count_le_multiplicity
       simp only [P, Q, Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_comp,
         Polynomial.eval_add, Polynomial.eval_X]
       rw [Polynomial.preHilbertPoly_eq_choose_add_sub ℚ m (by omega : 0 ≤ N + m),
-        show (q : ℚ) * N + D = ((D + q * N : ℕ) : ℚ) by push_cast; ring,
+        show ↑q * N + D = ((D + q * N : ℕ) : ℚ) by push_cast; ring,
         hM (D + q * N) (by nlinarith)]
       simp only [Nat.sub_zero, Nat.add_comm N m]
       exact_mod_cast hlow N)
   rw [hPlc, hQlc, hdegree] at hh
-  have hqbound : (r : ℚ) ≤ (d : ℚ) * q ^ m := by
+  have hqbound : ↑r ≤ (d : ℚ) * q ^ m := by
     apply (div_le_div_iff_of_pos_right (by positivity : (0 : ℚ) < m.factorial)).mp
     convert hh using 1
     ring
   exact_mod_cast hqbound
 
-end
 end CCDN

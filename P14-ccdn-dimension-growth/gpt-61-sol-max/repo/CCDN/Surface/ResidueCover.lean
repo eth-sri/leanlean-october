@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib.Tactic
+
 public import CCDN.Surface.ResidueEdgeCount
 import CCDN.Surface.NonlinearCount
 
@@ -12,19 +16,20 @@ import CCDN.Surface.NonlinearCount
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
+
+variable {f : CCDN.IntegerPolynomial 3}
+
+variable {A B : ℝ} (F : SurfaceCongruenceFamily f B A) (S : Finset (CCDN.CoordinateIdeal 3)) (L X : ℝ) (hL : 1 ≤ L)
 
 /-- For a subset `R` of the prime window of logarithmic size `L` whose product is at most
 `c L X` (with `c` the constant `scalingPrimeRatio`), the union over the primes `p ∈ R` and the
 smooth residue families `r` modulo `R` of the crossing sets of the deletion edge
 `R.erase p ⊂ R`; the empty set for every other `R`. -/
-def surfaceResidueSubsetLocus {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
-    (F : SurfaceCongruenceFamily f B A)
-    (S : Finset (Ideal (CoordinatePolynomial 3))) (L X : ℝ) (hL : 1 ≤ L)
-    (R : Finset ℕ) : Set (RatPoint 3) :=
+noncomputable def surfaceResidueSubsetLocus  
+    (R : Finset ℕ)  :=
   if hR : R ⊆ congruencePrimeWindow L then
-    if (∏ p ∈ R, (p : ℝ)) ≤ scalingPrimeRatio * L * X then
+    if (∏ p ∈ R, ↑p) ≤ scalingPrimeRatio * L * X then
       ⋃ p ∈ R, ⋃ r : SmoothAffineResidueFamily f R,
         surfaceResidueCrossing F S R
           (fun _q hq => ((mem_congruencePrimeWindow hL).mp (hR hq)).1) p r
@@ -34,19 +39,16 @@ def surfaceResidueSubsetLocus {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
 /-- The residual locus of the surface residue cover: the union of the edge crossing sets
 `surfaceResidueSubsetLocus F S L X hL R` over all subsets `R` of the prime window of
 logarithmic size `L`. -/
-def surfaceResidueResidualLocus {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
-    (F : SurfaceCongruenceFamily f B A)
-    (S : Finset (Ideal (CoordinatePolynomial 3))) (L X : ℝ) (hL : 1 ≤ L) :
-    Set (RatPoint 3) :=
+noncomputable def surfaceResidueResidualLocus    :=
   ⋃ R ∈ (congruencePrimeWindow L).powerset, surfaceResidueSubsetLocus F S L X hL R
 
 private theorem mem_surfaceResidueResidualLocus
-    {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
+     {A B L X : ℝ}
     (F : SurfaceCongruenceFamily f B A)
-    (S : Finset (Ideal (CoordinatePolynomial 3))) (hL : 1 ≤ L)
+    (S : Finset (CCDN.CoordinateIdeal 3)) (hL : 1 ≤ L)
     (R : Finset ℕ) (hRW : R ⊆ congruencePrimeWindow L)
     (hR : ∀ p ∈ R, p.Prime) (p : ℕ) (hp : p ∈ R)
-    (hprod : (∏ q ∈ R, (q : ℝ)) ≤ scalingPrimeRatio * L * X)
+    (hprod : (∏ q ∈ R, ↑q) ≤ scalingPrimeRatio * L * X)
     (r : SmoothAffineResidueFamily f R) {x : RatPoint 3}
     (hx : x ∈ surfaceResidueCrossing F S R hR p r) :
     x ∈ surfaceResidueResidualLocus F S L X hL := by
@@ -61,14 +63,14 @@ private theorem mem_surfaceResidueResidualLocus
 logarithmic budget `surfaceResidueLogBudget B L`, `c` is `scalingPrimeRatio` and `W` is the
 prime window of logarithmic size `L`. -/
 theorem surface_residue_residual_count_le
-    {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
+     {A B L X : ℝ}
     (F : SurfaceCongruenceFamily f B A) (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L)
     (hd : 1 ≤ f.totalDegree) (hX0 : 0 ≤ X)
-    (hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X)
-    (hir : Irreducible (map (Int.castRingHom ℚ) f))
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (δ : Ideal (CoordinatePolynomial 3) → ℕ)
-    (hS : ∀ I ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) I (δ I)) :
+    (hX : B ^ (1 / Real.sqrt ↑f.totalDegree) ≤ X)
+    (hir : Irreducible (CCDN.rationalPolynomial f))
+    (S : Finset (CCDN.CoordinateIdeal 3))
+    (δ : CCDN.CoordinateIdeal 3 → ℕ)
+    (hS : ∀ I ∈ S, IsSurfaceCurve (CCDN.rationalPolynomial f) I (δ I)) :
     (count (surfaceResidueResidualLocus F S L X hL) B : ℝ) ≤
       2 * f.totalDegree * A ^ 2 * (surfaceResidueLogBudget B L) ^ 2 *
         (scalingPrimeRatio * L + 1) ^ 2 * X ^ 2 *
@@ -81,12 +83,12 @@ theorem surface_residue_residual_count_le
   have hdR : (1 : ℝ) ≤ f.totalDegree := by exact_mod_cast hd
   have hsubset (R : Finset ℕ) (hRW : R ∈ W.powerset) :
       (count (surfaceResidueSubsetLocus F S L X hL R) B : ℝ) ≤
-        C * W.card * (f.totalDegree : ℝ) ^ W.card := by
+        C * W.card * ↑f.totalDegree ^ W.card := by
     have hRW' : R ⊆ congruencePrimeWindow L := mem_powerset.mp hRW
-    have hcard : R.card ≤ W.card := card_le_card hRW'
+    have hcard := card_le_card hRW'
     have hR (p : ℕ) (hp : p ∈ R) : p.Prime :=
       ((mem_congruencePrimeWindow hL).mp (hRW' hp)).1
-    by_cases hq : (∏ p ∈ R, (p : ℝ)) ≤ scalingPrimeRatio * L * X
+    by_cases hq : (∏ p ∈ R, ↑p) ≤ scalingPrimeRatio * L * X
     · have hcount := count_biUnion_finset_le R
         (fun p => ⋃ r : SmoothAffineResidueFamily f R, surfaceResidueCrossing F S R hR p r) B
       have hcountR :
@@ -98,7 +100,7 @@ theorem surface_residue_residual_count_le
       calc
         _ ≤ ∑ p ∈ R, (count (⋃ r : SmoothAffineResidueFamily f R,
             surfaceResidueCrossing F S R hR p r) B : ℝ) := hcountR
-        _ ≤ ∑ _p ∈ R, C * (f.totalDegree : ℝ) ^ R.card := by
+        _ ≤ ∑ _p ∈ R, C * ↑f.totalDegree ^ R.card := by
           apply sum_le_sum
           intro p hp
           have hh := surface_residue_edge_count_le F hA hB hL hX0 hX hir S δ hS
@@ -107,13 +109,9 @@ theorem surface_residue_residual_count_le
           dsimp only [C]
           rw [pow_succ]
           ring
-        _ = C * R.card * (f.totalDegree : ℝ) ^ R.card := by simp; ring
-        _ ≤ C * W.card * (f.totalDegree : ℝ) ^ W.card := by
-          apply mul_le_mul
-          · exact mul_le_mul_of_nonneg_left (by exact_mod_cast hcard) hC
-          · exact pow_le_pow_right₀ hdR hcard
-          · positivity
-          · positivity
+        _ = C * R.card * ↑f.totalDegree ^ R.card := by simp; ring
+        _ ≤ C * W.card * ↑f.totalDegree ^ W.card := by
+          gcongr
     · simp only [surfaceResidueSubsetLocus, dite_eq_left hRW', ite_eq_right hq]
       have hzero : count (∅ : Set (RatPoint 3)) B = 0 := by simp [count, integralPoints]
       rw [hzero, Nat.cast_zero]
@@ -125,27 +123,25 @@ theorem surface_residue_residual_count_le
       (surfaceResidueSubsetLocus F S L X hL) B
   calc
     _ ≤ ∑ R ∈ W.powerset, (count (surfaceResidueSubsetLocus F S L X hL R) B : ℝ) := hunion
-    _ ≤ ∑ _R ∈ W.powerset, C * W.card * (f.totalDegree : ℝ) ^ W.card :=
+    _ ≤ ∑ _R ∈ W.powerset, C * W.card * ↑f.totalDegree ^ W.card :=
       sum_le_sum hsubset
-    _ = (2 : ℝ) ^ W.card * (C * W.card * (f.totalDegree : ℝ) ^ W.card) := by
+    _ = 2 ^ W.card * (C * W.card * ↑f.totalDegree ^ W.card) := by
       simp only [sum_const, card_powerset, nsmul_eq_mul, Nat.cast_pow, Nat.cast_ofNat]
     _ = _ := by
-      change _ = C * W.card * (2 * f.totalDegree : ℝ) ^ W.card
-      rw [mul_pow]
       ring
 
 /-- An integer point of the box at which the surface `f = 0` is nonsingular, lying on a curve
 `I ∈ S` that contains the initial auxiliary and has degree greater than `2 d A` times the
 logarithmic budget, belongs to the residual locus `surfaceResidueResidualLocus F S L X`. -/
 theorem large_curve_point_mem_surfaceResidueResidualLocus
-    (f : MvPolynomial (Fin 3) ℤ)
-    (hir : Irreducible (map (Int.castRingHom ℚ) f))
+    (f : CCDN.IntegerPolynomial 3)
+    (hir : Irreducible (CCDN.rationalPolynomial f))
     {A B H L X : ℝ} (hA : 0 ≤ A) (hW : IsSurfaceResidueWindow f B H L X)
     (F : SurfaceCongruenceFamily f B A)
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (I : Ideal (CoordinatePolynomial 3)) (hIS : I ∈ S) {d : ℕ}
-    (hI : IsSurfaceCurve (map (Int.castRingHom ℚ) f) I d)
-    (hinitI : map (Int.castRingHom ℚ) F.initial ∈ I)
+    (S : Finset (CCDN.CoordinateIdeal 3))
+    (I : CCDN.CoordinateIdeal 3) (hIS : I ∈ S) {d : ℕ}
+    (hI : IsSurfaceCurve (CCDN.rationalPolynomial f) I d)
+    (hinitI : CCDN.rationalPolynomial F.initial ∈ I)
     (hlarge : 2 * f.totalDegree * A * surfaceResidueLogBudget B L < d)
     (x : IntPoint 3) (hx : InBox x B) (hxf : eval x f = 0)
     (hxI : rationalPoint x ∈ idealZeroLocus I)
@@ -163,5 +159,4 @@ theorem large_curve_point_mem_surfaceResidueResidualLocus
   rw [map_eval, map_zero] at hh
   exact hh
 
-end
 end CCDN

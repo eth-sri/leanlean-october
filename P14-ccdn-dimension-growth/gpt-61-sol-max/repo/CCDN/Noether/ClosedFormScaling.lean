@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.CharZeroOrGT
 public import CCDN.Noether.BivariateTotalDegree
 import CCDN.Noether.ClosedFormGradient
@@ -21,16 +23,15 @@ D, in characteristic zero or larger than 2dD. This supplies the rank input to
 effective Bertini.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix Submodule
 
 private lemma bivariateGridPolynomial_natDegree_lt {R : Type*} [CommRing R] {d : ℕ}
     (hd : 0 < d) (v : BivariateGrid d → R) :
     (bivariateGridPolynomial R d v).natDegree < d := by
   by_cases h : bivariateGridPolynomial R d v = 0
-  · simpa only [h, natDegree_zero] using hd
+  · simp_all
   · exact (natDegree_lt_iff_degree_lt h).mpr (bivariateGridPolynomial_degree_lt v)
 
 private lemma bivariateGridPolynomial_coefficient_natDegree_le {R : Type*} [CommRing R] {d : ℕ}
@@ -42,12 +43,13 @@ private lemma bivariateGridPolynomial_coefficient_natDegree_le {R : Type*} [Comm
   intro j hj
   exact bivariateGridPolynomial_coeff_zero d v i j (Or.inr hj)
 
+variable {F : Type*} [Field F] [IsAlgClosed F] (d : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic) (hdeg : f.degree = d) (D : ℕ) (htotal : bivariateTotalDegree f ≤ D) (hchar : CharZeroOrGT F (2 * d * D))
+
+include hf hm hdeg htotal hchar in
 /-- For a normalized irreducible equation the entire coefficient kernel
 maps into the one-dimensional span of the gradient. -/
 private theorem closedForm_kernel_image_le_gradient
-    {F : Type*} [Field F] [IsAlgClosed F]
-    (d : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic) (hdeg : f.degree = d)
-    (D : ℕ) (htotal : bivariateTotalDegree f ≤ D) (hchar : CharZeroOrGT F (2 * d * D)) :
+     :
     LinearMap.range ((closedFormPair F d).domRestrict
       (closedFormCoefficientMatrix d f).mulVecLin.ker) ≤
       F ∙ (f.derivative, (bivariateCoefficientDerivative F) f) := by
@@ -55,9 +57,9 @@ private theorem closedForm_kernel_image_le_gradient
   have hv := (closedFormCoefficientMatrix_kernel d f v.val).mp (LinearMap.mem_ker.mp v.property)
   let p := (closedFormPair F d v.val).1
   let q := (closedFormPair F d v.val).2
-  have hfd : f.natDegree = d := natDegree_eq_of_degree_eq_some hdeg
-  have hd : 0 < d := hfd ▸ hm.natDegree_pos.mpr hf.ne_one
-  have hdD : d ≤ D := hfd ▸ (bivariate_natDegree_le_totalDegree f).trans htotal
+  have hfd := natDegree_eq_of_degree_eq_some hdeg
+  have hd := hfd ▸ hm.natDegree_pos.mpr hf.ne_one
+  have hdD := hfd ▸ (bivariate_natDegree_le_totalDegree f).trans htotal
   have hp : p.natDegree < f.natDegree := hfd ▸ bivariateGridPolynomial_natDegree_lt hd _
   have hq : q.natDegree < f.natDegree := hfd ▸ bivariateGridPolynomial_natDegree_lt hd _
   have hfD (i : ℕ) : (f.coeff i).natDegree ≤ D :=
@@ -77,19 +79,14 @@ private theorem closedForm_kernel_image_le_gradient
   apply Submodule.mem_span_singleton.mpr
   refine ⟨a, ?_⟩
   apply Prod.ext
-  · change a • f.derivative = p
-    simpa only [Algebra.smul_def, Polynomial.algebraMap_apply,
-      Algebra.algebraMap_self, RingHom.id_apply] using ha.symm
-  · change a • (bivariateCoefficientDerivative F) f = q
-    simpa only [Algebra.smul_def, Polynomial.algebraMap_apply,
-      Algebra.algebraMap_self, RingHom.id_apply] using hb.symm
+  · aesop
+  · aesop
 
+include hf hm hdeg htotal hchar in
 /-- No more than one independent coefficient vector solves the closed-form
 matrix for an irreducible normalized equation. -/
 private theorem closedForm_kernel_finrank_le_one
-    {F : Type*} [Field F] [IsAlgClosed F]
-    (d : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic) (hdeg : f.degree = d)
-    (D : ℕ) (htotal : bivariateTotalDegree f ≤ D) (hchar : CharZeroOrGT F (2 * d * D)) :
+     :
     Module.finrank F (closedFormCoefficientMatrix d f).mulVecLin.ker ≤ 1 := by
   let U := (closedFormCoefficientMatrix d f).mulVecLin.ker
   let ψ := (closedFormPair F d).domRestrict U
@@ -97,16 +94,15 @@ private theorem closedForm_kernel_finrank_le_one
   have he := LinearMap.finrank_range_of_inj hi
   have hl := Submodule.finrank_mono
     (closedForm_kernel_image_le_gradient d f hf hm hdeg D htotal hchar)
-  have hs : Module.finrank F (F ∙ (f.derivative, (bivariateCoefficientDerivative F) f)) ≤ 1 := by
+  have hs := by
     simpa using finrank_span_le_card (R := F)
       ({(f.derivative, (bivariateCoefficientDerivative F) f)} : Set _)
   exact he ▸ hl.trans hs
 
+include hf hm hdeg htotal hchar in
 /-- The matrix on the 2*d² unknown coefficients has rank at least 2*d²-1. -/
 theorem closedForm_coefficient_rank_lower
-    {F : Type*} [Field F] [IsAlgClosed F]
-    (d : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic) (hdeg : f.degree = d)
-    (D : ℕ) (htotal : bivariateTotalDegree f ≤ D) (hchar : CharZeroOrGT F (2 * d * D)) :
+     :
     2 * d ^ 2 ≤ (closedFormCoefficientMatrix d f).rank + 1 := by
   have he := (closedFormCoefficientMatrix d f).mulVecLin.finrank_range_add_finrank_ker
   have hk := closedForm_kernel_finrank_le_one d f hf hm hdeg D htotal hchar
@@ -116,11 +112,9 @@ theorem closedForm_coefficient_rank_lower
   change (closedFormCoefficientMatrix d f).rank + _ = _ at he
   omega
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- The closed-form operator is linear in the equation: scaling the equation by `a` scales the
@@ -143,32 +137,35 @@ lemma closedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
     (closedFormPair R d (Pi.single j 1)))) i =
     a * (bivariateCoefficients R (closedFormOperator f
       (closedFormPair R d (Pi.single j 1)))) i
-  rw [closedFormOperator_smul_equation, (bivariateCoefficients R).map_smul]
-  rfl
+  simp_all [closedFormOperator_smul_equation, map_smul]
 
-private lemma closedForm_rank_smul {F : Type*} [Field F] (a : F) (ha : a ≠ 0)
+variable {F : Type*} [Field F]
+
+private lemma closedForm_rank_smul  (a : F) (ha : a ≠ 0)
     (d : ℕ) (f : F[X][X]) :
     (closedFormCoefficientMatrix d (a • f)).rank = (closedFormCoefficientMatrix d f).rank := by
-  rw [closedFormCoefficientMatrix_smul]
-  exact Matrix.rank_smul_of_mem_nonZeroDivisors _ (mem_nonZeroDivisors_of_ne_zero ha)
+  grind [closedFormCoefficientMatrix_smul, Matrix.rank_smul_of_mem_nonZeroDivisors, mem_nonZeroDivisors_of_ne_zero]
 
+variable {R : Type*} [CommRing R] (a : R) (f : R[X][X])
+
+include R in
 /-- Scalar multiplication of a bivariate polynomial by `a` is multiplication by the constant
 polynomial `a`. -/
-lemma bivariate_smul_eq_constant_mul {R : Type*} [CommRing R] (a : R) (f : R[X][X]) :
+lemma bivariate_smul_eq_constant_mul  :
     a • f = C (C a) * f := by
-  simp only [Algebra.smul_def, Polynomial.algebraMap_apply, Algebra.algebraMap_self,
-    RingHom.id_apply]
+  aesop
 
 /-- Over a field, multiplying a bivariate polynomial by a nonzero scalar preserves
 irreducibility. -/
-lemma bivariate_irreducible_smul_iff {F : Type*} [Field F]
+lemma bivariate_irreducible_smul_iff 
     (a : F) (ha : a ≠ 0) (f : F[X][X]) : Irreducible (a • f) ↔ Irreducible f := by
   rw [bivariate_smul_eq_constant_mul]
-  have hu : IsUnit (C (C a) : F[X][X]) := ((isUnit_iff_ne_zero.mpr ha).map C).map C
+  have hu := ((isUnit_iff_ne_zero.mpr ha).map C).map C
   exact (associated_unit_mul_left f (C (C a)) hu).irreducible_iff
 
+include R in
 /-- Scalar multiplication does not increase the total degree. -/
-lemma bivariateTotalDegree_smul_le {R : Type*} [CommRing R] (a : R) (f : R[X][X]) :
+lemma bivariateTotalDegree_smul_le  :
     bivariateTotalDegree (a • f) ≤ bivariateTotalDegree f := by
   unfold bivariateTotalDegree
   rw [map_smul]
@@ -177,7 +174,7 @@ lemma bivariateTotalDegree_smul_le {R : Type*} [CommRing R] (a : R) (f : R[X][X]
 /-- If the outer leading coefficient of `f` is the nonzero constant `a`, then `a⁻¹ • f` is monic.
 Normalizing over the coefficient field means no integer denominators need to be cleared in the
 original coefficient matrix. -/
-lemma bivariate_monic_normalize {F : Type*} [Field F]
+lemma bivariate_monic_normalize 
     (a : F) (ha : a ≠ 0) (f : F[X][X]) (hl : f.leadingCoeff = C a) :
     (a⁻¹ • f).Monic := by
   rw [bivariate_smul_eq_constant_mul]
@@ -188,7 +185,7 @@ lemma bivariate_monic_normalize {F : Type*} [Field F]
 `d` whose outer leading coefficient is a nonzero constant has closed-form coefficient matrix of
 rank at least `2 * d ^ 2 - 1`; the equation need not be monic. -/
 theorem closedForm_rank_lower_of_constant_leading
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
+     [CharZero F] [IsAlgClosed F]
     (d : ℕ) (a : F) (ha : a ≠ 0) (f : F[X][X])
     (hl : f.leadingCoeff = C a) (hf : Irreducible f) (hdeg : f.natDegree = d) :
     2 * d ^ 2 ≤ (closedFormCoefficientMatrix d f).rank + 1 := by
@@ -203,13 +200,13 @@ theorem closedForm_rank_lower_of_constant_leading
 nonzero constant, has closed-form coefficient matrix of rank at most `2 * d ^ 2 - 2`, in
 characteristic zero or greater than `d`. -/
 theorem closedForm_rank_drop_of_constant_leading
-    {F : Type*} [Field F] (d : ℕ) (hd : 0 < d) (hchar : CharZeroOrGT F d)
+     (d : ℕ) (hd : 0 < d) (hchar : CharZeroOrGT F d)
     (a : F) (ha : a ≠ 0) (f : F[X][X])
     (hl : f.leadingCoeff = C a) (hred : ¬Irreducible f)
     (hdeg : f.natDegree = d) (htotal : bivariateTotalDegree f ≤ d) :
     (closedFormCoefficientMatrix d f).rank + 2 ≤ 2 * d ^ 2 := by
   have hm := bivariate_monic_normalize a ha f hl
-  have hi : ¬Irreducible (a⁻¹ • f) := fun h =>
+  have hi := fun h =>
     hred ((bivariate_irreducible_smul_iff a⁻¹ (inv_ne_zero ha) f).mp h)
   have hr := closedForm_rank_drop_of_not_irreducible d hd hchar (a⁻¹ • f) hm hi
     ((natDegree_smul f (inv_ne_zero ha)).trans hdeg)
@@ -217,5 +214,4 @@ theorem closedForm_rank_drop_of_constant_leading
   rw [closedForm_rank_smul _ (inv_ne_zero ha)] at hr
   exact hr
 
-end
 end CCDN

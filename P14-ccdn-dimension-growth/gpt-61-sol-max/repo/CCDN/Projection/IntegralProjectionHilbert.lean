@@ -15,17 +15,16 @@ import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
 /-! Integral linear projections preserve Hilbert dimension and
 do not increase its multiplicity. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ] [LinearOrder σ] [LinearOrder τ] (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
 
 /-- An integral map `ψ` from a polynomial ring to the quotient by a prime `I` preserves Hilbert
 dimension: the filtered Hilbert polynomials of `ker ψ` and of `I` have the same degree. -/
 theorem integral_projection_hilbert_dimension_eq
-    {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
-    [LinearOrder σ] [LinearOrder τ]
-    (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
+    
     (ψ : MvPolynomial σ K →ₐ[K] (MvPolynomial τ K ⧸ I))
     (hint : ψ.IsIntegral) :
     (filteredHilbertPolynomial (RingHom.ker ψ)).natDegree =
@@ -34,40 +33,38 @@ theorem integral_projection_hilbert_dimension_eq
   exact integral_embedding_hilbert_dimension_eq (RingHom.ker ψ) I
     (Ideal.kerLiftAlg ψ) (Ideal.kerLiftAlg_injective ψ) hint.kerLift
 
+variable (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1) (hint : (projectionCoordinateMap I a).IsIntegral)
+
+include ha hint in
 private theorem integral_linear_projection_multiplicity
-    {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
-    [LinearOrder σ] [LinearOrder τ]
-    (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
-    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
-    (hint : (projectionCoordinateMap I a).IsIntegral) (d : ℕ)
+    
+     (d : ℕ)
     (hdegree : (filteredHilbertPolynomial I).leadingCoeff =
-      (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial) :
+      ↑d / (filteredHilbertPolynomial I).natDegree.factorial) :
     (filteredHilbertPolynomial (RingHom.ker (projectionCoordinateMap I a))).natDegree =
         (filteredHilbertPolynomial I).natDegree ∧
       ∃ e : ℕ, 0 < e ∧ e ≤ d ∧
         (filteredHilbertPolynomial (RingHom.ker (projectionCoordinateMap I a))).leadingCoeff =
-          (e : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial := by
+          ↑e / (filteredHilbertPolynomial I).natDegree.factorial := by
   let J := RingHom.ker (projectionCoordinateMap I a)
   have hJ : J ≠ ⊤ := RingHom.ker_ne_top _
-  have hI : I ≠ ⊤ := Ideal.IsPrime.ne_top ‹I.IsPrime›
+  have hI := Ideal.IsPrime.ne_top ‹I.IsPrime›
   have hdim := integral_projection_hilbert_dimension_eq I _ hint
   obtain ⟨e, he, _, hlc⟩ := filteredHilbertPolynomial_positive_multiplicity J hJ
   have hle := filteredHilbertPolynomial_leadingCoeff_le J I hJ hI hdim
-    (fun N => linear_projection_filtered_finrank_le I a ha N)
+    ((linear_projection_filtered_finrank_le I a ha))
   rw [hdim] at hlc
   refine ⟨hdim, e, he, ?_, hlc⟩
   rw [hlc, hdegree] at hle
   exact_mod_cast (div_le_div_iff_of_pos_right
     (by positivity : (0 : ℚ) < (filteredHilbertPolynomial I).natDegree.factorial)).mp hle
 
+include ha hint in
 /-- An integral linear projection of a prime of dimension `m` and degree `d` has dimension `m`
 and a positive degree at most `d`. -/
 theorem integral_linear_projection_dimension_degree
-    {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
-    [LinearOrder σ] [LinearOrder τ]
-    (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
-    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
-    (hint : (projectionCoordinateMap I a).IsIntegral) {m d : ℕ}
+    
+     {m d : ℕ}
     (hdimdeg : HasAffineDimensionDegree I m d) :
     ∃ e : ℕ, 0 < e ∧ e ≤ d ∧
       HasAffineDimensionDegree (RingHom.ker (projectionCoordinateMap I a)) m e := by
@@ -76,5 +73,4 @@ theorem integral_linear_projection_dimension_degree
   rw [hdimdeg.natDegree_eq] at hdim hlc
   exact ⟨e, he, hed, hdim, hlc⟩
 
-end
 end CCDN

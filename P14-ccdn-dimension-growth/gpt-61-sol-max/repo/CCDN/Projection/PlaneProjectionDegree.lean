@@ -16,14 +16,15 @@ import CCDN.Projection.PlaneProjectionKernel
 /-! The irreducible image equation has degree at most the original affine
 Hilbert degree. This is an upper bound; the degree need not be preserved. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K τ : Type*} [Field K] [Fintype τ]
 
 /-- A principal image equation of a linear projection has degree at most the
 source's affine Hilbert degree. -/
-theorem plane_projection_equation_degree_le {K τ : Type*} [Field K] [Fintype τ]
+theorem plane_projection_equation_degree_le 
     (I : Ideal (MvPolynomial τ K)) (a : Fin 2 → MvPolynomial τ K)
     (ha : ∀ i, (a i).totalDegree ≤ 1) (d : ℕ)
     (hdegree : HasFilteredCurveDegree I d)
@@ -33,7 +34,7 @@ theorem plane_projection_equation_degree_le {K τ : Type*} [Field K] [Fintype τ
   apply eventual_linear_slope_le
     (fun M => Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M))
     (fun M => Module.finrank K (filteredCoordinateSpace I M)) f.totalDegree d
-    ⟨f.totalDegree, (f.totalDegree : ℤ) - f.totalDegree.choose 2,
+    ⟨f.totalDegree, ↑f.totalDegree - f.totalDegree.choose 2,
       fun M hM => principal_plane_hilbert_function f hf hM⟩ hdegree
   intro M
   rw [← hker]
@@ -41,7 +42,7 @@ theorem plane_projection_equation_degree_le {K τ : Type*} [Field K] [Fintype τ
 
 /-- A linear plane projection with a transcendental coordinate has an
 irreducible equation of positive degree at most d and no extra kernel relations. -/
-theorem exists_plane_projection_equation_degree_le {K τ : Type*} [Field K] [Fintype τ]
+theorem exists_plane_projection_equation_degree_le 
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (a : Fin 2 → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdegree : HasFilteredCurveDegree I d)
@@ -57,5 +58,4 @@ theorem exists_plane_projection_equation_degree_le {K τ : Type*} [Field K] [Fin
     exact Ideal.Quotient.eq_zero_iff_mem.symm
   rw [hh, hker, Ideal.mem_span_singleton]
 
-end
 end CCDN

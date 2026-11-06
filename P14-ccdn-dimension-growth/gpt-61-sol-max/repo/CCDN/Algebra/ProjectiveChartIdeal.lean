@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Algebra.ProjectiveAffineChart
 public import CCDN.Algebra.ProjectiveChartDegree
 
@@ -13,16 +15,15 @@ points and Hilbert degree to that ideal. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
+variable {K F : Type*} [Field K] [Field F] [Algebra K F] {n M : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (q : (MvPolynomial (Fin (n + 1)) K ⧸ I) →ₐ[K] F) (hq : Function.Injective q) (h0 : q ((Ideal.Quotient.mk I) (X 0)) ≠ 0)
+
+include hq h0 in
 /-- Let `q` embed the coordinate ring of `I` into a field with `q X₀ ≠ 0`. A homogeneous
 polynomial `f` lies in `I` if and only if its dehomogenization `affineChart n f` lies in the
 kernel of the coordinate-ratio map `projectiveChartCoordinateMap I q`. -/
-theorem affineChart_mem_coordinate_kernel_iff {K F : Type*} [Field K] [Field F]
-    [Algebra K F] {n M : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
-    (q : (MvPolynomial (Fin (n + 1)) K ⧸ I) →ₐ[K] F) (hq : Function.Injective q)
-    (h0 : q ((Ideal.Quotient.mk I) (X 0)) ≠ 0)
+theorem affineChart_mem_coordinate_kernel_iff 
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous M) :
     affineChart n f ∈ RingHom.ker (projectiveChartCoordinateMap I q) ↔ f ∈ I := by
   rw [RingHom.mem_ker, projectiveChartCoordinateMap_chart I q h0 f hf,
@@ -31,13 +32,11 @@ theorem affineChart_mem_coordinate_kernel_iff {K F : Type*} [Field K] [Field F]
     ⟨fun h => hq (by simpa using h), fun h => by rw [h, map_zero]⟩]
   exact Ideal.Quotient.eq_zero_iff_mem
 
+include hq h0 in
 /-- Let `q` embed the coordinate ring of `I` into a field with `q X₀ ≠ 0`. A polynomial `f` of
 total degree at most `M` lies in the kernel of the coordinate-ratio map
 `projectiveChartCoordinateMap I q` if and only if its degree-`M` homogenization lies in `I`. -/
-theorem coordinate_kernel_mem_iff_homogenize {K F : Type*} [Field K] [Field F]
-    [Algebra K F] {n M : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
-    (q : (MvPolynomial (Fin (n + 1)) K ⧸ I) →ₐ[K] F) (hq : Function.Injective q)
-    (h0 : q ((Ideal.Quotient.mk I) (X 0)) ≠ 0)
+theorem coordinate_kernel_mem_iff_homogenize 
     (f : MvPolynomial (Fin n) K) (hf : f.totalDegree ≤ M) :
     f ∈ RingHom.ker (projectiveChartCoordinateMap I q) ↔ scaledHomogenize M 1 f ∈ I := by
   have h := affineChart_mem_coordinate_kernel_iff I q hq h0 (scaledHomogenize M 1 f)
@@ -61,14 +60,13 @@ private theorem projective_point_chart_vanishes {K F : Type*} [Field K] [Field F
 /-- The ideal of the standard affine chart `X₀ ≠ 0` of the projective variety cut out by a
 homogeneous prime ideal `I`: the polynomials in the affine coordinates vanishing at the ratios
 `Xⱼ / X₀` in the fraction field of the coordinate ring of `I`. -/
-def projectiveChartIdeal {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime] :
-    Ideal (MvPolynomial (Fin n) K) :=
+noncomputable def projectiveChartIdeal {K : Type*} [Field K] {n : ℕ}
+    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime]  :=
   RingHom.ker (projectiveChartCoordinateMap I
     (IsScalarTower.toAlgHom K (MvPolynomial (Fin (n + 1)) K ⧸ I)
       (FractionRing (MvPolynomial (Fin (n + 1)) K ⧸ I))))
 
-instance projectiveChartIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
+noncomputable instance projectiveChartIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime] :
     (projectiveChartIdeal I).IsPrime :=
   RingHom.ker_isPrime _
@@ -76,7 +74,7 @@ instance projectiveChartIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
 /-- If a prime ideal `I` not containing `X 0` defines a projective curve of degree `d`, then its
 standard affine chart ideal defines an affine curve of degree `d`. -/
 theorem projectiveChartIdeal_degree {n d : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) [I.IsPrime] (hX : X 0 ∉ I)
+    (I : CCDN.CoordinateIdeal (n + 1)) [I.IsPrime] (hX : X 0 ∉ I)
     (hdegree : HasProjectiveCurveDegree I d) :
     HasAffineCurveDegree (projectiveChartIdeal I) d := by
   apply projective_chart_degree I _ (IsFractionRing.injective _ _) _ hdegree
@@ -87,12 +85,11 @@ theorem projectiveChartIdeal_degree {n d : ℕ}
 nonzero first coordinate, then its affine coordinates lie on the zero locus of the standard
 affine chart ideal of `I`. -/
 theorem projectiveChartIdeal_point {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) [I.IsPrime] (hX : X 0 ∉ I)
+    (I : CCDN.CoordinateIdeal (n + 1)) [I.IsPrime] (hX : X 0 ∉ I)
     (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) (hx0 : x.rep 0 ≠ 0) :
     projectiveAffineCoordinates x ∈ idealZeroLocus (projectiveChartIdeal I) := by
   apply projective_point_chart_vanishes I _ (IsFractionRing.injective _ _) _ x hx hx0
   intro h
   exact hX (Ideal.Quotient.eq_zero_iff_mem.mp (by simpa using h))
 
-end
 end CCDN

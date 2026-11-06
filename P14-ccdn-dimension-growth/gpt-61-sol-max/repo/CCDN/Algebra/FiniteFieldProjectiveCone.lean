@@ -12,22 +12,22 @@ import Mathlib.LinearAlgebra.Projectivization.Cardinality
 zero locus. The origin is counted once and each projective zero contributes
 exactly one nonzero vector for every unit in the field. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem homogeneous_affine_cone_card {K : Type*} [Field K] [Fintype K] {n d : ℕ}
+variable {K : Type*} [Field K] [Fintype K] {n d : ℕ}
+
+private theorem homogeneous_affine_cone_card 
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d) (hd : 0 < d) :
     Nat.card {v : Fin (n + 1) → K // eval v f = 0} =
       Nat.card (projectiveZeroLocus f) * (Fintype.card K - 1) + 1 := by
   classical
   let A := {v : Fin (n + 1) → K // eval v f = 0}
   let P := projectiveZeroLocus f
-  let : Fintype A := Fintype.ofFinite _
   let : Fintype P := Fintype.ofFinite _
-  have hzero : eval (0 : Fin (n + 1) → K) f = 0 := by
-    have h := homogeneous_eval_smul hf (0 : K) (0 : Fin (n + 1) → K)
+  have hzero : eval 0 f = 0 := by
+    have h := homogeneous_eval_smul hf 0 0
     simpa [zero_pow (Nat.ne_of_gt hd)] using h
   let zeroA : A := ⟨0, hzero⟩
   let g : P × Kˣ → {v : A // v ≠ zeroA} := fun ru =>
@@ -35,7 +35,7 @@ private theorem homogeneous_affine_cone_card {K : Type*} [Field K] [Fintype K] {
       (homogeneous_eval_zero_iff_smul hf ru.2.ne_zero _).mpr ru.1.property⟩,
       by
         intro h
-        have hv : (ru.2 : K) • ru.1.val.rep = 0 := congrArg Subtype.val h
+        have hv := congrArg Subtype.val h
         exact ru.1.val.rep_nonzero ((smul_eq_zero.mp hv).resolve_left ru.2.ne_zero)⟩
   have hg : Function.Bijective g := by
     constructor
@@ -72,16 +72,14 @@ private theorem homogeneous_affine_cone_card {K : Type*} [Field K] [Fintype K] {
       simp [smul_smul]
   have hc : Fintype.card {v : A // v ≠ zeroA} = Fintype.card P * (Fintype.card K - 1) := by
     rw [← Fintype.card_of_bijective hg, Fintype.card_prod, Fintype.card_units]
-  have hn : 0 < Fintype.card A := Fintype.card_pos_iff.mpr ⟨zeroA⟩
+  have hn := Fintype.card_pos_iff.mpr ⟨zeroA⟩
   have hcompl : Fintype.card {v : A // v ≠ zeroA} = Fintype.card A - 1 := by simp
-  rw [hcompl] at hc
   have hfinish : Fintype.card A = Fintype.card P * (Fintype.card K - 1) + 1 := by omega
   simpa only [Fintype.card_eq_nat_card] using hfinish
 
 /-- Passing from the affine cone to its projective zero locus preserves the
 leading coefficient one, with an explicit lower-order error. -/
-theorem homogeneous_projective_count_of_cone_bound {K : Type*} [Field K] [Fintype K]
-    {n d : ℕ} (f : MvPolynomial (Fin (n + 3)) K) (hf : f.IsHomogeneous d) (hd : 0 < d)
+theorem homogeneous_projective_count_of_cone_bound  (f : MvPolynomial (Fin (n + 3)) K) (hf : f.IsHomogeneous d) (hd : 0 < d)
     {H : ℝ} (hH : 0 ≤ H)
     (hcone : (Nat.card {v : Fin (n + 3) → K // eval v f = 0} : ℝ) ≤
       (Fintype.card K : ℝ) ^ (n + 2) + H * (Fintype.card K : ℝ) ^ (n + 1)) :
@@ -106,5 +104,4 @@ theorem homogeneous_projective_count_of_cone_bound {K : Type*} [Field K] [Fintyp
         (Fintype.card K - 1) := by linarith [hcone.trans hmajor]
   exact (mul_le_mul_iff_left₀ (by linarith : (0 : ℝ) < Fintype.card K - 1)).mp hmul
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.ClassGroup.NormPolynomial
 import CCDN.ClassGroup.NormPolynomialSubfield
@@ -15,23 +17,23 @@ import Mathlib.RingTheory.Polynomial.IsIntegral
 irreducible. Applied to the norm-polynomial factorization, this detects
 the even-index subfield exceptions. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial NumberField IntermediateField Module
 open scoped IntermediateField
 
-private lemma rootMultiplicity_pow_exact {F : Type*} [Field F] (p : F[X]) (hp : p ≠ 0)
-    (a : F) (n : ℕ) :
+variable {F : Type*} [Field F] (p : F[X]) (hp : p ≠ 0) (a : F)
+
+include hp in
+private lemma rootMultiplicity_pow_exact  (n : ℕ) :
     rootMultiplicity a (p ^ n) = n * rootMultiplicity a p := by
   induction n with
   | zero => simp
   | succ n ih =>
-    rw [pow_succ, rootMultiplicity_mul (mul_ne_zero (pow_ne_zero n hp) hp), ih]
-    ring
+    grind [rootMultiplicity_mul, pow_ne_zero]
 
-private lemma odd_rootMultiplicity_not_square_ratFunc {F : Type*} [Field F]
-    (p : F[X]) (hp : p ≠ 0) (a : F) (ha : Odd (rootMultiplicity a p))
+include hp in
+private lemma odd_rootMultiplicity_not_square_ratFunc  (ha : Odd (rootMultiplicity a p))
     (b : RatFunc F) :
     b ^ 2 ≠ algebraMap F[X] (RatFunc F) p := by
   intro he
@@ -43,9 +45,8 @@ private lemma odd_rootMultiplicity_not_square_ratFunc {F : Type*} [Field F]
     intro h
     have hh : algebraMap F[X] (RatFunc F) p = 0 := by simpa [h] using he.symm
     exact hp (hi (by simpa using hh))
-  have hnum : b.num ≠ 0 := RatFunc.num_ne_zero hb
-  have hrepr : algebraMap F[X] (RatFunc F) b.num =
-      b * algebraMap F[X] (RatFunc F) b.denom :=
+  have hnum := RatFunc.num_ne_zero hb
+  have hrepr :=
     (div_eq_iff hd).mp b.num_div_denom
   have hpoly : b.num ^ 2 = p * b.denom ^ 2 := by
     apply hi
@@ -57,14 +58,13 @@ private lemma odd_rootMultiplicity_not_square_ratFunc {F : Type*} [Field F]
   obtain ⟨k, hk⟩ := ha
   omega
 
-private lemma double_cover_irreducible_of_odd_root_multiplicity {F : Type*} [Field F]
-    (p : F[X]) (hp : p ≠ 0) (a : F) (ha : Odd (rootMultiplicity a p)) :
+include hp in
+private lemma double_cover_irreducible_of_odd_root_multiplicity  (ha : Odd (rootMultiplicity a p)) :
     Irreducible (X ^ 2 - C p : F[X][X]) := by
   apply (Polynomial.Monic.irreducible_iff_irreducible_map_fraction_map
-    (K := RatFunc F) (monic_X_pow_sub_C p (by decide : (2 : ℕ) ≠ 0))).mpr
+    (K := RatFunc F) (monic_X_pow_sub_C p (by decide : 2 ≠ 0))).mpr
   simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
-  exact X_pow_sub_C_irreducible_of_prime Nat.prime_two
-    (odd_rootMultiplicity_not_square_ratFunc p hp a ha)
+  solve_by_elim [X_pow_sub_C_irreducible_of_prime, Nat.prime_two, odd_rootMultiplicity_not_square_ratFunc]
 
 private lemma separable_odd_power_double_cover_irreducible
     {F : Type*} [Field F] [IsAlgClosed F]
@@ -72,12 +72,9 @@ private lemma separable_odd_power_double_cover_irreducible
     {c : F} (hc : c ≠ 0) {e : ℕ} (he : Odd e) :
     Irreducible (X ^ 2 - C (C c * p ^ e) : F[X][X]) := by
   have hp0 : p ≠ 0 := by intro h; simp [h] at hd
-  obtain ⟨a, ha⟩ := IsAlgClosed.exists_root p (by
-    exact ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp hd))
+  obtain ⟨a, ha⟩ := IsAlgClosed.exists_root p (ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp hd))
   have hm : rootMultiplicity a p = 1 := by
-    have hpos := (rootMultiplicity_pos hp0).mpr ha
-    have hle := rootMultiplicity_le_one_of_separable hp a
-    omega
+    grind [rootMultiplicity_pos, rootMultiplicity_le_one_of_separable]
   apply double_cover_irreducible_of_odd_root_multiplicity (C c * p ^ e)
     (mul_ne_zero (C_ne_zero.mpr hc) (pow_ne_zero _ hp0)) a
   rw [rootMultiplicity_mul (mul_ne_zero (C_ne_zero.mpr hc) (pow_ne_zero _ hp0)),
@@ -101,14 +98,11 @@ theorem signedNormCurvePolynomial_absolute_irreducible_of_odd_subfield_index
   simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C,
     coe_mapRingHom, Polynomial.map_mul]
   rw [integerNormPolynomial_map_eq_minpoly_pow_algebraicClosure]
-  have hβ : IsIntegral ℚ (β : K) := IsIntegral.of_finite ℚ (β : K)
+  have hβ := IsIntegral.of_finite ℚ (β : K)
   apply separable_odd_power_double_cover_irreducible
     ((minpoly ℚ (β : K)).map (algebraMap ℚ (AlgebraicClosure ℚ)))
     ((minpoly.irreducible hβ).separable.map) _ _ hindex
-  · rw [(minpoly.monic hβ).natDegree_map]
-    exact minpoly.natDegree_pos hβ
-  · change (ε : AlgebraicClosure ℚ) ≠ 0
-    exact_mod_cast hε
+  · simp_all [minpoly.monic,  minpoly.natDegree_pos]
+  · simp_all
 
-end
 end CCDN

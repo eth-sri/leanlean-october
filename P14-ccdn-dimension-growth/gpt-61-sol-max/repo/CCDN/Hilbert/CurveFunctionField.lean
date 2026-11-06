@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 public import Mathlib.RingTheory.Algebraic.Defs
 import CCDN.Hilbert.FunctionFieldRank
@@ -17,9 +19,8 @@ import Mathlib.RingTheory.Localization.Integer
 transcendental linear parameter, of degree at most its affine Hilbert degree.
 Common denominators transfer arbitrary field elements to polynomial classes. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Multiplying a linearly independent family in a field by a common nonzero element keeps it
 linearly independent. -/
@@ -77,7 +78,7 @@ theorem curve_functionField_finite_rank_le
   have hrank : Module.rank R F ≤ (d : Cardinal) := by
     by_contra! hbad
     have hs : ((d + 1 : ℕ) : Cardinal) ≤ Module.rank R F := by
-      simpa only [Nat.cast_add, Nat.cast_one] using Cardinal.add_one_le_of_lt hbad
+      simp_all
     obtain ⟨v, hv⟩ := exists_linearIndependent_of_le_rank hs
     have hh := fraction_parameter_rank_le I d hdegree l hl u hu he v hv
     simp only [Fintype.card_fin] at hh
@@ -89,5 +90,4 @@ theorem curve_functionField_finite_rank_le
     (Module.finBasis R F) (Module.finBasis R F).linearIndependent
   simpa only [Fintype.card_fin] using hh
 
-end
 end CCDN

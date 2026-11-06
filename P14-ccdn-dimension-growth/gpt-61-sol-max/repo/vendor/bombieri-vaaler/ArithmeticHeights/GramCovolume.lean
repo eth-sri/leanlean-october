@@ -61,7 +61,6 @@ identity of that milestone is proved by computing both sides of it against a Gra
 
 public section
 
-noncomputable section
 
 namespace ZLattice
 
@@ -71,22 +70,13 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
   [MeasurableSpace E] [BorelSpace E] (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
   {κ : Type*} [Fintype κ] [DecidableEq κ]
 
-/-- **The covolume against an orthonormal basis.** The parallelepiped of an orthonormal basis has
-volume `1`, so the covolume of a lattice is the absolute determinant of the coordinates of any of
-its `ℤ`-bases in any orthonormal basis of the ambient space. -/
-theorem covolume_eq_abs_det_orthonormalBasis (b : Basis κ ℤ L) (o : OrthonormalBasis κ ℝ E) :
-    covolume L = |(o.toBasis.toMatrix ((↑) ∘ b)).det| := by
-  have hfd : (volume : Measure E).real (ZSpan.fundamentalDomain o.toBasis) = 1 := by
-    rw [measureReal_congr (ZSpan.fundamentalDomain_ae_parallelepiped o.toBasis volume)]
-    simp [measureReal_def, o.volume_parallelepiped]
-  rw [covolume_eq_det_mul_measureReal L volume b o.toBasis, hfd, mul_one, Basis.det_apply]
 
 /-- **The squared covolume is the Gram determinant of any `ℤ`-basis.** -/
 theorem covolume_sq_eq_det_gram (b : Basis κ ℤ L) :
     covolume L ^ 2 = (Matrix.of fun i j ↦ inner ℝ (b i : E) (b j : E)).det := by
-  have hcard : Fintype.card κ = finrank ℝ E :=
+  have hcard :=
     (finrank_eq_card_basis (b.ofZLatticeBasis ℝ L)).symm
-  let o : OrthonormalBasis κ ℝ E :=
+  let o :=
     (stdOrthonormalBasis ℝ E).reindex (Fintype.equivFinOfCardEq hcard).symm
   have hG : (Matrix.of fun i j ↦ inner ℝ (b i : E) (b j : E))
       = (o.toBasis.toMatrix ((↑) ∘ b))ᵀ * o.toBasis.toMatrix ((↑) ∘ b) := by
@@ -96,21 +86,22 @@ theorem covolume_sq_eq_det_gram (b : Basis κ ℤ L) :
       OrthonormalBasis.coe_toBasis_repr_apply, OrthonormalBasis.repr_apply_apply, Matrix.of_apply]
     rw [← o.sum_inner_mul_inner (b i : E) (b j : E)]
     exact Finset.sum_congr rfl fun l _ ↦ by rw [real_inner_comm]
-  rw [hG, covolume_eq_abs_det_orthonormalBasis L b o, Matrix.det_mul, Matrix.det_transpose, ← sq,
+  rw [hG, (show covolume L volume = |(o.toBasis.toMatrix (Subtype.val ∘ ⇑b)).det| from (by
+            have hfd : (volume : Measure E).real (ZSpan.fundamentalDomain o.toBasis) = 1 := by
+              rw [measureReal_congr (ZSpan.fundamentalDomain_ae_parallelepiped o.toBasis volume)]
+              simp [measureReal_def, o.volume_parallelepiped]
+            rw [covolume_eq_det_mul_measureReal L volume b o.toBasis, hfd, mul_one, Basis.det_apply])), Matrix.det_mul, Matrix.det_transpose, ← sq,
     sq_abs]
 
 section Comp
 
 omit [MeasurableSpace E] [BorelSpace E]
 
-variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F] [FiniteDimensional ℝ F]
 
-variable [MeasurableSpace F] [BorelSpace F]
 
 end Comp
 
 end ZLattice
 
-end
 
 end

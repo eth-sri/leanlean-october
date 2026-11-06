@@ -19,14 +19,15 @@ import CCDN.Plane.FrobeniusSystem
 The polynomial bases, auxiliary coefficients, formal branches and multiplicity
 argument are explicit, given a numerical choice of degrees. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Fin 2) (ZMod p)) (hf : Irreducible f)
+
+include hf in
 /-- A strict dimension inequality gives the smooth prime-field point count. -/
-private theorem plane_stepanov_smooth_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Fin 2) (ZMod p)) (hf : Irreducible f)
+private theorem plane_stepanov_smooth_bound 
     (z : ι → Fin 2 → ZMod p) (hz : Function.Injective z)
     (hzero : ∀ i, eval (z i) f = 0) (j : Fin 2)
     (hsmooth : ∀ i, eval (z i) (pderiv j.rev f) ≠ 0)
@@ -43,10 +44,10 @@ private theorem plane_stepanov_smooth_bound {ι : Type*} [Fintype ι] [Decidable
     (by simpa only [Fintype.card_fin] using hdim)
   exact planeFrobeniusAuxiliary_point_bound p f hf z hz hzero j hsmooth h a hD hN hd ha hi hne hdiv
 
+include hf in
 /-- Include the points where the selected partial derivative vanishes.
 Their number is bounded by d(d-1) using the proper derivative section. -/
-theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Fin 2) (ZMod p)) (hf : Irreducible f)
+theorem plane_stepanov_bound 
     (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
     (z : ι → Fin 2 → ZMod p) (hz : Function.Injective z)
     (hzero : ∀ i, eval (z i) f = 0)
@@ -63,7 +64,7 @@ theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hgood := plane_stepanov_smooth_bound p f hf
     (fun i : {i // ¬ P i} => z i.val) (hz.comp Subtype.val_injective)
     (fun i => hzero i.val) k.rev
-    (by simpa only [Fin.rev_rev] using fun i : {i // ¬ P i} => i.property)
+    (by simpa only [Fin.rev_rev] using (Subtype.property))
     hD hN hdim
   have hnd : ¬ f ∣ pderiv k f := by
     rintro ⟨u, hu⟩
@@ -74,12 +75,11 @@ theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
     omega
   have hbad := (plane_common_zeros_card_le f (pderiv k f) hf hnd
     (fun i : {i // P i} => z i.val) (hz.comp Subtype.val_injective)
-    (fun i => hzero i.val) (fun i => i.property)).trans
+    (fun i => hzero i.val) ((Subtype.property))).trans
     (Nat.mul_le_mul_left _ (pderiv_totalDegree_le f k))
   have hpartition : Fintype.card {i // P i} + Fintype.card {i // ¬ P i} = Fintype.card ι := by
     rw [Fintype.card_subtype_compl]
     exact Nat.add_sub_of_le (Fintype.card_subtype_le P)
   nlinarith
 
-end
 end CCDN

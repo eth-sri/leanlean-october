@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Plane.AffineNonzeroConstant
 import CCDN.Algebra.PrimitiveNormalization
 import CCDN.Plane.AffinePlaneAssembly
@@ -14,20 +16,19 @@ The sharp finite-field estimate is stated as a proposition, not an axiom. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
 /-- The finite-field counting obligation `PlaneResidueCountBound` for every plane equation
 of positive degree, with one absolute constant. `planeResidueBound` discharges it with
 `C = planeResidueConstant`. -/
-def PlaneResidueBound (C : ℝ) : Prop :=
-  ∀ f : MvPolynomial (Fin 2) ℤ, 0 < f.totalDegree → PlaneResidueCountBound C f.totalDegree f
+noncomputable def PlaneResidueBound (C : ℝ)  :=
+  ∀ f : CCDN.IntegerPolynomial 2, 0 < f.totalDegree → PlaneResidueCountBound C f.totalDegree f
 
 /-- If an integer polynomial `g` is a nonzero rational multiple of a rational polynomial `f` that
 is irreducible over a field `F` of characteristic zero, then `g` is irreducible over `F`. -/
 lemma rational_scalar_model_irreducible_charZero {F σ : Type*} [Field F] [CharZero F]
     {f : MvPolynomial σ ℚ} {g : MvPolynomial σ ℤ} {a : ℚ} (ha : a ≠ 0)
-    (he : MvPolynomial.map (Int.castRingHom ℚ) g = C a * f)
+    (he : CCDN.rationalPolynomial g = C a * f)
     (hf : Irreducible (MvPolynomial.map (algebraMap ℚ F) f)) :
     Irreducible (MvPolynomial.map (Int.castRingHom F) g) := by
   have hh := congrArg (MvPolynomial.map (algebraMap ℚ F)) he
@@ -44,7 +45,7 @@ real B>=1. Primitive normalization and every analytic reduction are proved;
 the sharp finite-field bound is the one explicit counting hypothesis. -/
 theorem count_rational_plane_of_residue_bound
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (f : MvPolynomial (Fin 2) ℚ)
+    (f : CCDN.CoordinatePolynomial 2)
     (hir : Irreducible (MvPolynomial.map (algebraMap ℚ F) f)) (hd : 0 < f.totalDegree)
     {B C : ℝ} (hB : 1 ≤ B) (hC : 0 ≤ C) (hres : PlaneResidueBound C) :
     (count (zeroLocus f) B : ℝ) ≤
@@ -54,11 +55,10 @@ theorem count_rational_plane_of_residue_bound
   have hdeg := rational_scalar_model_degree ha hf0 he
   have hgi := rational_scalar_model_irreducible_charZero ha he hir
   have hgd : 0 < g.totalDegree := by rwa [hdeg]
-  have hzero : zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) g) = zeroLocus f := by
+  have hzero : zeroLocus (CCDN.rationalPolynomial g) = zeroLocus f := by
     ext x
     exact rational_scalar_model_zero_iff ha he x
   have h := count_plane_of_residue_bound g hg hgi hgd hB hC (hres g hgd)
   rwa [hzero, hdeg] at h
 
-end
 end CCDN

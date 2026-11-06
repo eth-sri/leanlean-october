@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib.Tactic
+
 public import CCDN.Algebra.ProjectiveChartIdeal
 public import CCDN.Projection.DegreePreservingProjectionBox
 import CCDN.Determinant.PolynomialMapDeterminant
@@ -16,7 +20,6 @@ map on the standard chart, with the same polynomial height factor. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For an integer vector `z` with `z 0 ≠ 0`, the projective point `[1 : z 1 / z 0 : …]` is the
@@ -31,20 +34,21 @@ lemma affineProjectivePoint_eq_integer {n : ℕ} (z : IntPoint (n + 1)) (hz0 : z
   funext j
   refine Fin.cases ?_ (fun k => ?_) j
   · simp [rationalPoint, h0]
-  · simp [rationalPoint, div_eq_mul_inv, mul_comm]
+  · solve_by_elim [div_eq_mul_inv, mul_comm]
 
 /-- The map from `ℙⁿ` to the projective plane on the chart `X₀ ≠ 0`, sending a point with affine
 coordinates `x` to `[1 : m₀(x) : m₁(x)]`, where `m₀`, `m₁` are the moment coordinates with
 parameters `k₀` and `k₁`. -/
-def projectivePlaneChartProjection {n : ℕ} (k₀ k₁ : ℕ) (x : ProjectivePoint n) :
-    ProjectivePoint 2 :=
+noncomputable def projectivePlaneChartProjection {n : ℕ} (k₀ k₁ : ℕ) (x : ProjectivePoint n)  :=
   affineProjectivePoint
     ![eval (projectiveAffineCoordinates x) (momentCoordinate ℚ n k₀),
       eval (projectiveAffineCoordinates x) (momentCoordinate ℚ n k₁)]
 
+variable {n d k₀ k₁ : ℕ}
+
 /-- For parameters `k₀ ≤ n ^ 2 * d` and `k₁ ≤ n * d ^ 2`, the plane chart projection of a point on
 the chart `X₀ ≠ 0` of height at most `B ≥ 1` has height at most `projectionBoxFactor n d * B`. -/
-theorem projectivePlaneChartProjection_height {n d k₀ k₁ : ℕ}
+theorem projectivePlaneChartProjection_height 
     (hk₀ : k₀ ≤ n ^ 2 * d) (hk₁ : k₁ ≤ n * d ^ 2)
     (x : ProjectivePoint n) (hx : x.rep 0 ≠ 0) {B : ℝ} (hB : 1 ≤ B)
     (hxB : x.mulHeight ≤ B) :
@@ -52,7 +56,7 @@ theorem projectivePlaneChartProjection_height {n d k₀ k₁ : ℕ}
   let z := primitiveProjectiveRep x
   obtain ⟨hz0, hchart⟩ := primitiveProjectiveRep_chart x hx
   let w : IntPoint 3 := Fin.cons (z 0) (degreeProjection n k₀ k₁ (fun j => z j.succ))
-  have hw0 : w 0 ≠ 0 := hz0
+  have hw0 := hz0
   have hcoord (k : ℕ) :
       eval (projectiveAffineCoordinates x) (momentCoordinate ℚ n k) =
         (eval (fun j => z j.succ) (momentCoordinate ℤ n k) : ℚ) / (z 0 : ℚ) := by
@@ -72,10 +76,9 @@ theorem projectivePlaneChartProjection_height {n d k₀ k₁ : ℕ}
   apply projective_integer_height_le w (fun h => hw0 (congrFun h 0))
   intro j
   refine Fin.cases ?_ (fun k => ?_) j
-  · change |(z 0 : ℝ)| ≤ _
-    exact ((primitiveProjectiveRep_bound x 0).trans hxB).trans
+  · exact ((primitiveProjectiveRep_bound x 0).trans hxB).trans
       (le_mul_of_one_le_left (by linarith) (projectionBoxFactor_one_le n d))
-  · have hzbox : (fun j => z j.succ) ∈ integerBox n B :=
+  · have hzbox :=
       mem_integerBox.mpr (fun j => (primitiveProjectiveRep_bound x j.succ).trans hxB)
     exact mem_integerBox.mp (degreeProjection_box hk₀ hk₁ (by linarith) hzbox) k
 
@@ -83,9 +86,9 @@ theorem projectivePlaneChartProjection_height {n d k₀ k₁ : ℕ}
 the prime `I` (with `X 0 ∉ I`), then the plane chart projection maps the points of the projective
 variety of `I` on the chart `X₀ ≠ 0` into the projective plane curve defined by the homogenization
 of `f`. -/
-theorem projectivePlaneChartProjection_zero {n d k₀ k₁ : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) [I.IsPrime] (hX : X 0 ∉ I)
-    (f : MvPolynomial (Fin 2) ℚ) (hfd : f.totalDegree = d)
+theorem projectivePlaneChartProjection_zero 
+    (I : CCDN.CoordinateIdeal (n + 1)) [I.IsPrime] (hX : X 0 ∉ I)
+    (f : CCDN.CoordinatePolynomial 2) (hfd : f.totalDegree = d)
     (hfI : aeval ![momentCoordinate ℚ n k₀, momentCoordinate ℚ n k₁] f ∈ projectiveChartIdeal I)
     (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) (hx0 : x.rep 0 ≠ 0) :
     projectivePlaneChartProjection k₀ k₁ x ∈
@@ -101,5 +104,4 @@ theorem projectivePlaneChartProjection_zero {n d k₀ k₁ : ℕ}
   funext j
   fin_cases j <;> rfl
 
-end
 end CCDN

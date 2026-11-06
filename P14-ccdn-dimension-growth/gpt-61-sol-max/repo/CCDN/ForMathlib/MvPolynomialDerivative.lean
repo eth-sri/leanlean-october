@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.PDeriv
 import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
@@ -27,7 +29,7 @@ Below the characteristic this means that `xᵢ` does not occur in `f`.
   characteristic has a nonzero partial derivative.
 -/
 
-@[expose] public section
+public section
 
 namespace CharP
 
@@ -48,7 +50,7 @@ theorem pderiv_algHom {K σ τ : Type*} [CommRing K] [Fintype σ]
   have hC (a : K) : φ (C a) = C a := φ.commutes a
   induction f using MvPolynomial.induction_on with
   | C a => simp [hC]
-  | add f g hf hg => simp only [map_add, hf, hg, add_mul, Finset.sum_add_distrib]
+  | add f g hf hg => simp_all [map_add, add_mul, Finset.sum_add_distrib]
   | mul_X f j hf =>
     rw [map_mul, pderiv_mul, hf]
     calc
@@ -75,37 +77,29 @@ theorem coeff_mul_natCast_eq_zero_of_pderiv_eq_zero [CommSemiring R] {f : MvPoly
   rcases Nat.eq_zero_or_pos (m i) with hmi | hmi
   · simp [hmi]
   have hu : m - Finsupp.single i 1 + Finsupp.single i 1 = m := by
-    refine tsub_add_cancel_of_le fun j ↦ ?_
-    rcases eq_or_ne j i with rfl | hji
-    · simpa using Nat.one_le_iff_ne_zero.mpr hmi.ne'
-    · simp [Finsupp.single_eq_of_ne hji]
+    aesop (add safe apply [tsub_add_cancel_of_le, eq_or_ne, rfl])
   have hc : (pderiv i f).coeff (m - Finsupp.single i 1) = 0 := by simp [h]
   rw [coeff_pderiv, hu, Finsupp.tsub_apply, Finsupp.single_eq_same,
     ← Nat.cast_add_one, Nat.sub_add_cancel hmi] at hc
   exact hc
 
+variable [CommSemiring R] [NoZeroDivisors R] {f : MvPolynomial σ R}
+
 /-- A variable with vanishing partial derivative does not occur in `f`, provided the positive
 natural numbers up to its degree are nonzero in `R`. -/
-theorem notMem_vars_of_pderiv_eq_zero [CommSemiring R] [NoZeroDivisors R]
-    {f : MvPolynomial σ R} {i : σ} (h : pderiv i f = 0)
+theorem notMem_vars_of_pderiv_eq_zero  {i : σ} (h : pderiv i f = 0)
     (hchar : ∀ n : ℕ, 0 < n → n ≤ f.degreeOf i → (n : R) ≠ 0) : i ∉ f.vars := by
-  classical
-  intro hi
-  obtain ⟨m, hm, hmi⟩ := (mem_vars_iff_mem_support i).mp hi
-  exact mul_ne_zero (mem_support_iff.mp hm)
-    (hchar _ (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hmi)) (monomial_le_degreeOf i hm))
-    (coeff_mul_natCast_eq_zero_of_pderiv_eq_zero h m)
+  grind [mem_vars_iff_mem_support, mul_ne_zero, monomial_le_degreeOf, coeff_mul_natCast_eq_zero_of_pderiv_eq_zero]
 
 /-- A polynomial of positive total degree has a nonzero partial derivative, provided the
 positive natural numbers up to its total degree are nonzero in `R`. -/
-theorem exists_pderiv_ne_zero [CommSemiring R] [NoZeroDivisors R] {f : MvPolynomial σ R}
+theorem exists_pderiv_ne_zero 
     (hpos : 0 < f.totalDegree)
     (hchar : ∀ n : ℕ, 0 < n → n ≤ f.totalDegree → (n : R) ≠ 0) :
     ∃ i, pderiv i f ≠ 0 := by
   classical
   obtain ⟨m, hm, i, hi⟩ : ∃ m ∈ f.support, ∃ i, m i ≠ 0 := by
-    by_contra! h
-    exact hpos.ne' ((totalDegree_eq_zero_iff (p := f)).mpr h)
+    grind [totalDegree_eq_zero_iff]
   refine ⟨i, fun hz ↦ notMem_vars_of_pderiv_eq_zero hz
     (fun n hn hle ↦ hchar n hn (hle.trans (degreeOf_le_totalDegree f i))) ?_⟩
   exact (mem_vars_iff_mem_support i).mpr ⟨m, hm, Finsupp.mem_support_iff.mpr hi⟩

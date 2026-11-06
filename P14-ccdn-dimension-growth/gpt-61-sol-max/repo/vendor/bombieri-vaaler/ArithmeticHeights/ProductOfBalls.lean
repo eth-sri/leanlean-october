@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib
+
 public import ArithmeticHeights.SliceBound
 
 /-!
@@ -61,7 +63,7 @@ open MeasureTheory Measure Set ENNReal
 open scoped Real
 
 /-- The Gauss density on `ι → ℝ` for the euclidean norm. -/
-@[expose] noncomputable def gaussPi {ι : Type*} [Fintype ι] (x : ι → ℝ) : ℝ≥0∞ :=
+@[expose] noncomputable def gaussPi {ι : Type*} [Fintype ι] (x : ι → ℝ)  :=
   ENNReal.ofReal (Real.exp (-π * ∑ i, (x i) ^ 2))
 
 @[fun_prop]
@@ -72,7 +74,7 @@ theorem gaussPi_le_one {ι : Type*} [Fintype ι] (x : ι → ℝ) : gaussPi x �
   rw [gaussPi, ← ENNReal.ofReal_one]
   refine ENNReal.ofReal_le_ofReal ?_
   rw [Real.exp_le_one_iff]
-  have h : (0 : ℝ) ≤ ∑ i, (x i) ^ 2 := Finset.sum_nonneg fun i _ => sq_nonneg _
+  have h : 0 ≤ ∑ i, (x i) ^ 2 := Finset.sum_nonneg fun i _ => sq_nonneg _
   nlinarith [Real.pi_pos]
 
 theorem gaussPi_neg {ι : Type*} [Fintype ι] (x : ι → ℝ) : gaussPi (-x) = gaussPi x := by
@@ -80,7 +82,7 @@ theorem gaussPi_neg {ι : Type*} [Fintype ι] (x : ι → ℝ) : gaussPi (-x) = 
   rw [gaussPi, gaussPi, h]
 
 theorem gaussPi_eq_gaussDensity {ι : Type*} [Fintype ι] (x : ι → ℝ) :
-    gaussPi x = gaussDensity (WithLp.toLp 2 x : EuclideanSpace ℝ ι) := by
+    gaussPi x = gaussDensity (WithLp.toLp 2 x) := by
   rw [gaussPi, gaussDensity_def, EuclideanSpace.norm_eq, Real.sq_sqrt (by positivity)]
   simp
 
@@ -99,17 +101,16 @@ theorem logConcave_gaussPi {ι : Type*} [Fintype ι] : LogConcave (gaussPi : (ι
   nlinarith [Real.pi_pos]
 
 /-- The radius of the ball of volume one in `n` dimensions: Bombieri–Gubler's `ρ(n)`. -/
-@[expose] noncomputable def ballRadius (n : ℕ) : ℝ := unitVolumeRadius (EuclideanSpace ℝ (Fin n))
+@[expose] noncomputable def ballRadius (n : ℕ)  := unitVolumeRadius (EuclideanSpace ℝ (Fin n))
 
 theorem volume_ball_euclideanSpace_congr {α β : Type*} [Fintype α] [Fintype β] (e : α ≃ β) :
     volume (Metric.ball (0 : EuclideanSpace ℝ α) 1)
       = volume (Metric.ball (0 : EuclideanSpace ℝ β) 1) := by
   let f : EuclideanSpace ℝ α ≃ₗᵢ[ℝ] EuclideanSpace ℝ β :=
     LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
-  have hpre : f ⁻¹' (Metric.ball (0 : EuclideanSpace ℝ β) 1)
-      = Metric.ball (0 : EuclideanSpace ℝ α) 1 := by
-    ext x
-    simp [Metric.mem_ball, dist_zero_right]
+  have hpre : f ⁻¹' (Metric.ball 0 1)
+      = Metric.ball 0 1 := by
+    simp_all
   rw [← hpre, f.measurePreserving.measure_preimage measurableSet_ball.nullMeasurableSet]
 
 theorem unitVolumeRadius_euclideanSpace (α : Type*) [Fintype α] :
@@ -130,13 +131,13 @@ theorem hasSliceBound_ballPi (α : Type*) [Fintype α] :
       gaussDensity ((WithLp.linearEquiv 2 ℝ (α → ℝ)).symm x)) = gaussPi :=
     funext fun x => (gaussPi_eq_gaussDensity x).symm
   have hset : (WithLp.linearEquiv 2 ℝ (α → ℝ)).symm ⁻¹'
-      Metric.closedBall (0 : EuclideanSpace ℝ α) (unitVolumeRadius (EuclideanSpace ℝ α))
+      Metric.closedBall 0 (unitVolumeRadius (EuclideanSpace ℝ α))
       = {y : α → ℝ | ∑ j, (y j) ^ 2 ≤ ballRadius (Fintype.card α) ^ 2} := by
     ext y
     rw [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right, EuclideanSpace.norm_eq,
       unitVolumeRadius_euclideanSpace,
       Real.sqrt_le_left (unitVolumeRadius_euclideanSpace α ▸
-        (unitVolumeRadius_pos (E := EuclideanSpace ℝ α)).le)]
+        (unitVolumeRadius_pos ).le)]
     simp
   rw [hdens, hset] at h
   exact h
@@ -145,7 +146,7 @@ theorem hasSliceBound_univ_of_le_one {E : Type*} [MeasurableSpace E] [AddCommGro
     {μ : Measure E} {g : E → ℝ≥0∞} (hg : ∀ x, g x ≤ 1) {Q : Set E} (hQ : ∀ x, x ∈ Q) :
     HasSliceBound μ g Q := by
   intro A _ _ _
-  calc ∫⁻ x in A, g x ∂μ ≤ ∫⁻ _ in A, (1 : ℝ≥0∞) ∂μ := lintegral_mono fun x => hg x
+  calc ∫⁻ x in A, g x ∂μ ≤ ∫⁻ _ in A, 1 ∂μ := lintegral_mono (hg)
     _ = μ A := setLIntegral_one A
     _ = μ (A ∩ Q) := by rw [Set.inter_eq_self_of_subset_left fun x _ => hQ x]
 
@@ -167,42 +168,40 @@ theorem measurableSet_setOf_sum_sq_le {ι S : Type*} [Fintype S] (f : S → ι) 
     MeasurableSet {x : ι → ℝ | ∑ j : S, (x (f j)) ^ 2 ≤ c} :=
   measurableSet_le (by fun_prop) measurable_const
 
-theorem neg_mem_setOf_sum_sq_le {ι S : Type*} [Fintype S] (f : S → ι) (c : ℝ)
-    {x : ι → ℝ} (hx : x ∈ {x : ι → ℝ | ∑ j : S, (x (f j)) ^ 2 ≤ c}) :
-    -x ∈ {x : ι → ℝ | ∑ j : S, (x (f j)) ^ 2 ≤ c} := by
-  have h : ∑ j : S, ((-x) (f j)) ^ 2 = ∑ j : S, (x (f j)) ^ 2 :=
-    Finset.sum_congr rfl fun j _ => by simp
-  change ∑ j : S, ((-x) (f j)) ^ 2 ≤ c
-  rw [h]; exact hx
+
+variable {ι κ : Type*} [Fintype ι] [DecidableEq κ]
+
+variable (blk : ι → κ)
 
 /-- The product over the blocks of `blk` of the euclidean ball of volume one in that block's
 coordinates: Bombieri–Gubler's `Q_N = B_{ρ(n₁)} × ⋯ × B_{ρ(n_r)}`. -/
-@[expose] def prodBallPi {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ) :
+@[expose] def prodBallPi   :
     Set (ι → ℝ) :=
   {x | ∀ k : κ, ∑ j : {j : ι // blk j = k}, (x j) ^ 2
     ≤ ballRadius (Fintype.card {j : ι // blk j = k}) ^ 2}
 
-theorem prodBallPi_eq_iInter {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ) :
+theorem prodBallPi_eq_iInter   :
     prodBallPi blk = ⋂ k : κ, {x : ι → ℝ | ∑ j : {j : ι // blk j = k}, (x (Subtype.val j)) ^ 2
       ≤ ballRadius (Fintype.card {j : ι // blk j = k}) ^ 2} := by
   ext x; simp [prodBallPi]
 
-theorem measurableSet_prodBallPi {ι κ : Type*} [Fintype ι] [DecidableEq κ] [Countable κ]
+theorem measurableSet_prodBallPi  [Countable κ]
     (blk : ι → κ) : MeasurableSet (prodBallPi blk) := by
   rw [prodBallPi_eq_iInter]
   exact MeasurableSet.iInter fun k => measurableSet_setOf_sum_sq_le _ _
 
-theorem convex_prodBallPi {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ) :
+theorem convex_prodBallPi   :
     Convex ℝ (prodBallPi blk) := by
   rw [prodBallPi_eq_iInter]
   exact convex_iInter fun k => convex_setOf_sum_sq_le _ _
 
-theorem neg_mem_prodBallPi {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ)
+theorem neg_mem_prodBallPi  
     {x : ι → ℝ} (hx : x ∈ prodBallPi blk) :
     -x ∈ prodBallPi blk := by
   rw [prodBallPi_eq_iInter] at hx ⊢
   simp only [Set.mem_iInter] at hx ⊢
-  exact fun k => neg_mem_setOf_sum_sq_le _ _ (hx k)
+  exact fun k => (by
+                   simp_all)
 
 /-- Prékopa–Leindler on `EuclideanSpace ℝ α` for an arbitrary finite index type. -/
 theorem hasPrekopaLeindler_euclideanSpace' (α : Type*) [Fintype α] :
@@ -264,10 +263,8 @@ private theorem hasSliceBound_prodBallPi_aux.{u} {κ : Type*} [DecidableEq κ] [
     have hMP : MeasurePreserving L (volume : Measure (α → ℝ))
         (volume : Measure ((({j : α // blk j = blk j₀}) → ℝ)
           × (({j : α // ¬ (blk j = blk j₀)}) → ℝ))) := by
-      rw [Measure.volume_eq_prod]
-      exact measurePreserving_piEquivPiSubtypeProd (fun _ : α => (volume : Measure ℝ))
-        (fun j : α => blk j = blk j₀)
-    have hsymm : Measurable L.symm :=
+      solve_by_elim [measurePreserving_piEquivPiSubtypeProd]
+    have hsymm :=
       (MeasurableEquiv.piEquivPiSubtypeProd (fun _ : α => ℝ)
         (fun j : α => blk j = blk j₀)).symm.measurable
     have hprod : HasSliceBound (volume : Measure ((({j : α // blk j = blk j₀}) → ℝ)
@@ -276,7 +273,6 @@ private theorem hasSliceBound_prodBallPi_aux.{u} {κ : Type*} [DecidableEq κ] [
         ({y : {j : α // blk j = blk j₀} → ℝ |
             ∑ j, (y j) ^ 2 ≤ ballRadius (Fintype.card {j : α // blk j = blk j₀}) ^ 2}
           ×ˢ prodBallPi blkt) := by
-      rw [Measure.volume_eq_prod]
       exact HasSliceBound.prod measurable_gaussPi gaussPi_neg logConcave_gaussPi
         measurable_gaussPi (measurableSet_prodBallPi blkt) (convex_prodBallPi blkt)
         (fun _ hz => neg_mem_prodBallPi blkt hz)
@@ -339,52 +335,38 @@ private theorem hasSliceBound_prodBallPi_aux.{u} {κ : Type*} [DecidableEq κ] [
     rw [hdens, hset] at hfin
     exact hfin
 
-/-- **Bombieri–Gubler, Lemma C.3.7**: the Gauss measure of a measurable convex symmetric set is at
-most its volume inside a product of euclidean balls of volume one. -/
-theorem hasSliceBound_prodBallPi {ι κ : Type*} [Fintype ι] [DecidableEq κ] [Countable κ]
-    (blk : ι → κ) :
-    HasSliceBound (volume : Measure (ι → ℝ)) gaussPi (prodBallPi blk) :=
-  hasSliceBound_prodBallPi_aux (Fintype.card ι) ι blk le_rfl
 
 /-- The product of balls of volume one, in `EuclideanSpace ℝ ι`. -/
-@[expose] def prodBall {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ) :
+@[expose] def prodBall   :
     Set (EuclideanSpace ℝ ι) :=
   {x | ∀ k : κ, ∑ j : {j : ι // blk j = k}, (x j) ^ 2
     ≤ ballRadius (Fintype.card {j : ι // blk j = k}) ^ 2}
 
-theorem prodBall_eq_preimage {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ) :
+theorem prodBall_eq_preimage   :
     prodBall blk = (WithLp.linearEquiv 2 ℝ (ι → ℝ)) ⁻¹' prodBallPi blk := rfl
 
-theorem measurableSet_prodBall {ι κ : Type*} [Fintype ι] [DecidableEq κ] [Countable κ]
+theorem measurableSet_prodBall  [Countable κ]
     (blk : ι → κ) : MeasurableSet (prodBall blk) := by
-  rw [prodBall_eq_preimage]
   exact (PiLp.volume_preserving_ofLp ι).measurable (measurableSet_prodBallPi blk)
 
-theorem convex_prodBall {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ) :
+theorem convex_prodBall   :
     Convex ℝ (prodBall blk) := by
-  rw [prodBall_eq_preimage]
-  exact (convex_prodBallPi blk).linear_preimage
-    (WithLp.linearEquiv 2 ℝ (ι → ℝ) : EuclideanSpace ℝ ι →ₗ[ℝ] (ι → ℝ))
+  solve_by_elim [convex_prodBallPi]
 
-theorem neg_mem_prodBall {ι κ : Type*} [Fintype ι] [DecidableEq κ] (blk : ι → κ)
+theorem neg_mem_prodBall  
     {x : EuclideanSpace ℝ ι} (hx : x ∈ prodBall blk) : -x ∈ prodBall blk := by
-  rw [prodBall_eq_preimage] at hx ⊢
-  have hneg : (WithLp.linearEquiv 2 ℝ (ι → ℝ)) (-x) = -((WithLp.linearEquiv 2 ℝ (ι → ℝ)) x) :=
-    map_neg _ _
-  simpa [Set.mem_preimage, hneg] using neg_mem_prodBallPi blk hx
+  simp_all [prodBall_eq_preimage, neg_mem_prodBallPi]
 
 /-- **Bombieri–Gubler, Lemma C.3.7 on `EuclideanSpace ℝ ι`.** -/
-theorem hasSliceBound_prodBall {ι κ : Type*} [Fintype ι] [DecidableEq κ] [Countable κ]
+theorem hasSliceBound_prodBall  [Countable κ]
     (blk : ι → κ) :
     HasSliceBound (volume : Measure (EuclideanSpace ℝ ι)) gaussDensity (prodBall blk) := by
   have h := HasSliceBound.of_measurePreserving (WithLp.linearEquiv 2 ℝ (ι → ℝ))
     (PiLp.volume_preserving_ofLp ι) (PiLp.volume_preserving_toLp ι).measurable
-    measurable_gaussPi (measurableSet_prodBallPi blk) (hasSliceBound_prodBallPi blk)
+    measurable_gaussPi (measurableSet_prodBallPi blk) ((hasSliceBound_prodBallPi_aux (Fintype.card ι) ι blk le_rfl))
   have hdens : (fun x : EuclideanSpace ℝ ι =>
       gaussPi ((WithLp.linearEquiv 2 ℝ (ι → ℝ)) x)) = gaussDensity := by
-    funext x
-    rw [gaussPi_eq_gaussDensity]
-    rfl
+    simp_all [gaussPi_eq_gaussDensity]
   have hset : (WithLp.linearEquiv 2 ℝ (ι → ℝ)) ⁻¹' prodBallPi blk = prodBall blk := rfl
   rw [hdens, hset] at h
   exact h

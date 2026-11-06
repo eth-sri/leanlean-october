@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.Equiv
 import CCDN.Algebra.PolynomialPrimeLocalization
 import Mathlib.Algebra.MvPolynomial.Division
@@ -40,20 +42,14 @@ def variableScaleEquiv (K σ : Type*) [Field K] (a : K) (ha : a ≠ 0) :
   AlgEquiv.ofAlgHom (aeval (fun i => C a * X i))
     (aeval (fun i => C a⁻¹ * X i))
     (by
-      apply MvPolynomial.algHom_ext
-      intro i
-      simp only [AlgHom.comp_apply, aeval_X, AlgHom.id_apply]
-      simp only [map_mul, aeval_C, aeval_X, MvPolynomial.algebraMap_eq]
-      rw [← mul_assoc, ← map_mul, inv_mul_cancel₀ ha, map_one, one_mul])
+      aesop)
     (by
-      apply MvPolynomial.algHom_ext
-      intro i
-      simp only [AlgHom.comp_apply, aeval_X, AlgHom.id_apply]
-      simp only [map_mul, aeval_C, aeval_X, MvPolynomial.algebraMap_eq]
-      rw [← mul_assoc, ← map_mul, mul_inv_cancel₀ ha, map_one, one_mul])
+      aesop)
+
+variable {K σ : Type*} [Field K]
 
 /-- The scaling automorphism by `a` sends each variable `X i` to `a * X i`. -/
-@[simp] lemma variableScaleEquiv_X {K σ : Type*} [Field K]
+@[simp] lemma variableScaleEquiv_X 
     (a : K) (ha : a ≠ 0) (i : σ) :
     variableScaleEquiv K σ a ha (X i) = C a * X i := by
   simp [variableScaleEquiv]
@@ -64,39 +60,38 @@ def genericStretchCoefficients (K σ : Type*) [Field K] :
     MvPolynomial σ K →ₐ[K] MvPolynomial σ (MvPolynomial Unit K) :=
   aeval (fun i => C (X ()) * X i)
 
+variable (f : MvPolynomial (Option σ) K)
+
 /-- The generic stretch `f(x, z) ↦ f(x, y * z)` of `f`, viewed as a polynomial in the distinguished
 outer variable `x` whose coefficients involve the transverse variables `z` and the fresh
 parameter `y`. -/
-def genericPlaneStretch {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) :
-    Polynomial (MvPolynomial σ (MvPolynomial Unit K)) :=
+def genericPlaneStretch 
+      :=
   Polynomial.map (genericStretchCoefficients K σ).toRingHom (optionEquivLeft K σ f)
 
-private lemma genericPlaneStretch_monic {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) (hf : (optionEquivLeft K σ f).Monic) :
-    (genericPlaneStretch f).Monic := hf.map _
 
 /-- The generic stretch is ordinarily irreducible before any slope parameters
 are specialized or localized. -/
-theorem genericPlaneStretch_irreducible {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
+theorem genericPlaneStretch_irreducible 
+     (hf : Irreducible f)
     (hd : 0 < f.totalDegree) (hm : (optionEquivLeft K σ f).Monic) :
     Irreducible (genericPlaneStretch f) := by
   let R := MvPolynomial Unit K
   let F := FractionRing R
-  let ι : R →+* F := algebraMap R F
-  let κ : K →+* F := ι.comp C
-  let y : F := ι (X ())
+  let ι := algebraMap R F
+  let κ := ι.comp C
+  let y := ι (X ())
   have hy : y ≠ 0 := by
-    exact (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr (X_ne_zero ())
+    aesop
   let e := Polynomial.mapAlgEquiv (variableScaleEquiv F σ y hy)
   have hbase : Irreducible (optionEquivLeft F σ (MvPolynomial.map κ f)) :=
     (MulEquiv.irreducible_iff (f := optionEquivLeft F σ)).mpr
       (irreducible_mvPolynomial_map_fraction_parameters f hf hd)
-  have hi : Irreducible (e (optionEquivLeft F σ (MvPolynomial.map κ f))) :=
+  have hi :=
     (MulEquiv.irreducible_iff (f := e)).mpr hbase
   apply Polynomial.Monic.irreducible_of_irreducible_map
-    (MvPolynomial.map ι) (genericPlaneStretch f) (genericPlaneStretch_monic f hm)
+    (MvPolynomial.map ι) (genericPlaneStretch f) ((let inline_hf := hm;
+                                                    inline_hf.map _))
   have he : (MvPolynomial.map ι).comp (genericStretchCoefficients K σ).toRingHom =
       (variableScaleEquiv F σ y hy).toRingHom.comp (MvPolynomial.map κ) := by
     apply MvPolynomial.ringHom_ext

@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib
+
 public import Mathlib.LinearAlgebra.ExteriorPower.Basis
 public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 public import Mathlib.LinearAlgebra.LinearIndependent.Lemmas
@@ -89,11 +91,8 @@ public section
 
 open Module
 
-section LinearIndependent
 
-variable {K V : Type*} [DivisionRing K] [AddCommGroup V] [Module K V]
 
-end LinearIndependent
 
 namespace exteriorPower
 
@@ -102,7 +101,6 @@ identity. -/
 private lemma ofFinEmbEquiv_symm_fin {k : ℕ} (s : Set.powersetCard (Fin k) k) :
     ⇑(Set.powersetCard.ofFinEmbEquiv.symm s) = (id : Fin k → Fin k) := by
   have hs : (s : Finset (Fin k)) = Finset.univ := Finset.eq_univ_of_card _ (by simp)
-  rw [Set.powersetCard.ofFinEmbEquiv_symm_apply]
   exact (Finset.orderEmbOfFin_unique _ (fun x ↦ hs ▸ Finset.mem_univ x) strictMono_id).symm
 
 section Field
@@ -121,34 +119,29 @@ theorem ιMulti_eq_zero_iff (v : Fin k → E) : ιMulti K k v = 0 ↔ ¬ LinearI
 
 end Field
 
-section Snoc
 
-variable {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] {k : ℕ}
 
-end Snoc
 
 section Plucker
 
 variable {R : Type*} [CommRing R] {ι : Type*} [Fintype ι] [LinearOrder ι]
 
+variable (k : ℕ) (v : Fin k → (ι → R))
+
 /-- The **Plücker coordinates** of a family `v : Fin k → (ι → R)`: the coordinate tuple of the
 wedge `v 0 ∧ ⋯ ∧ v (k-1)` in the basis of `⋀[R]^k (ι → R)` induced by the standard basis of
 `ι → R`, indexed by the `k`-element subsets of `ι`. -/
-@[expose] noncomputable def plucker (k : ℕ) (v : Fin k → (ι → R)) : Set.powersetCard ι k → R :=
+@[expose] noncomputable def plucker   :=
   ((Pi.basisFun R ι).exteriorPower k).equivFun (ιMulti R k v)
 
 /-- **The Plücker coordinates are the maximal minors.** The coordinate at a `k`-element subset `s`
 of `ι` is the determinant of the `k × k` matrix cut out of the rows `v` by the columns `s`, the
 columns taken in the order of `ι`. -/
-theorem plucker_apply (k : ℕ) (v : Fin k → (ι → R)) (s : Set.powersetCard ι k) :
+theorem plucker_apply  (s : Set.powersetCard ι k) :
     plucker k v s = (Matrix.of fun i j ↦ v i (Set.powersetCard.ofFinEmbEquiv.symm s j)).det := by
   rw [plucker, Basis.equivFun_apply, basis_repr_apply, ιMultiDual_apply_ιMulti]
   simp
 
-/-- The empty wedge: in rank `0` there is one Plücker coordinate and it is `1`. -/
-@[simp] theorem plucker_zero (v : Fin 0 → (ι → R)) : plucker 0 v = 1 := by
-  funext s
-  rw [plucker_apply, Matrix.det_fin_zero, Pi.one_apply]
 
 /-- In top rank there is one Plücker coordinate and it is the determinant. -/
 theorem plucker_fin_eq_det {n : ℕ} (v : Fin n → (Fin n → R)) (s : Set.powersetCard (Fin n) n) :
@@ -169,7 +162,7 @@ variable {K : Type*} [Field K] {k : ℕ} {v : Fin k → (ι → K)}
 dependent. -/
 theorem plucker_eq_zero_iff (k : ℕ) (v : Fin k → (ι → K)) :
     plucker k v = 0 ↔ ¬ LinearIndependent K v := by
-  rw [← ιMulti_eq_zero_iff (K := K) v, plucker,
+  rw [← ιMulti_eq_zero_iff  v, plucker,
     map_eq_zero_iff _ (LinearEquiv.injective _)]
 
 /-- Over a field, the Plücker coordinates of a linearly independent family are not all zero. -/
@@ -184,16 +177,9 @@ namespace Submodule
 
 open exteriorPower
 
-section Basis
 
-variable {R M : Type*} [Ring R] [AddCommGroup M] [Module R M] {κ : Type*}
-  {V : Submodule R M}
 
-/-- The family of vectors of `M` underlying a basis of a submodule is linearly independent. -/
-theorem linearIndependent_coe_basis (b : Basis κ R V) : LinearIndependent R fun i ↦ ((b i : M)) :=
-  b.linearIndependent.map' V.subtype V.ker_subtype
 
-end Basis
 
 variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι] {k : ℕ}
   {V : Submodule K (ι → K)}
@@ -202,7 +188,7 @@ variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι] {k : �
 scalar is the determinant of the change-of-basis matrix, and in particular a unit. -/
 private lemma exists_plucker_eq_smul (hV : finrank K V = k) (b b' : Basis (Fin k) K V) :
     ∃ c : K, plucker k (fun i ↦ ((b' i : ι → K))) = c • plucker k fun i ↦ ((b i : ι → K)) := by
-  have h1 : finrank K (⋀[K]^k V) = 1 := by rw [exteriorPower.finrank_eq, hV, Nat.choose_self]
+  have h1 : finrank K (⋀[K]^k V) = 1 := by simp_all
   obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' (ιMulti K k ⇑b)
     (ιMulti_ne_zero b.linearIndependent)).1 h1 (ιMulti K k ⇑b')
   refine ⟨c, (plucker_eq_smul_iff ..).2 ?_⟩
@@ -213,10 +199,10 @@ private lemma exists_plucker_eq_smul (hV : finrank K V = k) (b b' : Basis (Fin k
 Hindry–Silverman, Exercise A.1.11(a)–(b)): the point of projective space on the `k`-element subsets
 of `ι` given by the Plücker coordinates of any basis of `V`. It does not depend on the basis; see
 `Submodule.pluckerPoint_eq_mk`. -/
-@[expose] noncomputable def pluckerPoint (V : Submodule K (ι → K)) (hV : finrank K V = k) :
-    Projectivization K (Set.powersetCard ι k → K) :=
+@[expose] noncomputable def pluckerPoint (V : Submodule K (ι → K)) (hV : finrank K V = k)  :=
   Projectivization.mk K (plucker k fun i ↦ (((finBasisOfFinrankEq K V hV) i : ι → K)))
-    (plucker_ne_zero (linearIndependent_coe_basis _))
+    (plucker_ne_zero ((let inline_b := finBasisOfFinrankEq K (↥V) hV;
+                        inline_b.linearIndependent.map' V.subtype V.ker_subtype)))
 
 /-- **The Plücker point is computed by every basis, not only by the chosen one.** -/
 theorem pluckerPoint_eq_mk (hV : finrank K V = k) (b : Basis (Fin k) K V)
@@ -231,9 +217,9 @@ theorem pluckerPoint_span_range {v : Fin k → (ι → K)} (hv : LinearIndepende
     (hV : finrank K (Submodule.span K (Set.range v)) = k) :
     pluckerPoint (Submodule.span K (Set.range v)) hV =
       Projectivization.mk K (plucker k v) (plucker_ne_zero hv) := by
-  have hfun : (fun i ↦ ((Basis.span hv i : ι → K))) = v :=
+  have hfun :=
     funext fun i ↦ congrArg Subtype.val (Basis.span_apply hv i)
-  rw [pluckerPoint_eq_mk hV (Basis.span hv) (by rw [hfun]; exact plucker_ne_zero hv)]
+  rw [pluckerPoint_eq_mk hV (Basis.span hv) (by simp_all [plucker_ne_zero])]
   simp only [hfun]
 
 end Submodule
@@ -242,6 +228,5 @@ section Examples
 
 open Submodule exteriorPower
 
-variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι]
 
 end Examples

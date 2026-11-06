@@ -5,15 +5,16 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
 public import CCDN.Projection.ProjectiveProjectionGrowth
 import CCDN.Projection.BoundedDegreeNormalizationFiber
 
 /-! Dimension growth for homogeneous prime ideals of positive
 projective dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The general projective-variety bound, with dimension and codimension
@@ -21,16 +22,15 @@ displayed separately. The hypotheses use the Hilbert polynomial of
 the coordinate ring. -/
 theorem projective_variety_dimension_growth (m k : ℕ) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ I : Ideal (MvPolynomial (Fin (m + k + 2)) ℚ), I.IsPrime →
+      ∀ I : CCDN.CoordinateIdeal (m + k + 2), I.IsPrime →
       IsHomogeneousIdeal I →
       ∀ d : ℕ, 5 ≤ d → HasProjectiveDimensionDegree I (m + 1) d →
       ∀ B : ℝ, 1 ≤ B →
       (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-        C * (d : ℝ) ^ projectionDegreeExponent m k * B ^ (m + 1) := by
+        C * ↑d ^ projectionDegreeExponent m k * B ^ (m + 1) := by
   obtain ⟨C, hC, hcount⟩ := projective_projection_dimension_growth m k
   refine ⟨C, hC, ?_⟩
   intro I hprime hI d hd hdimdeg B hB
-  have : I.IsPrime := hprime
   obtain ⟨b, f, hb, hN, hP, hfhom, hfdeg⟩ :=
     exists_bounded_birational_hypersurface_projection_of_le (m + 1) (m + k + 2)
       (by omega) I hI d hdimdeg
@@ -42,5 +42,4 @@ theorem projective_variety_dimension_growth (m k : ℕ) :
     (fun i => z i.succ) s hzero (fun x hx i => hproj x hx i.succ)).trans
     (Nat.le_self_pow (by omega) d)
 
-end
 end CCDN

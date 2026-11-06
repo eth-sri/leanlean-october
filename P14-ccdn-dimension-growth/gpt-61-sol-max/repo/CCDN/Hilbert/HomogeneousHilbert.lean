@@ -17,7 +17,6 @@ by a homogeneous nonzero equation identifies the entire homogeneous kernel. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If `f ≠ 0` is homogeneous of degree `d` and `f * u` is homogeneous of degree `M ≥ d`, then `u`
@@ -31,27 +30,29 @@ lemma homogeneous_multiplier {K σ : Type*} [CommRing K] [IsDomain K]
   rw [mul_left_cancel₀ hf0 he]
   exact homogeneousComponent_isHomogeneous _ _
 
+variable {K σ : Type*} [Field K]
+
 /-- The degree-`M` part of the graded coordinate ring: the image of the homogeneous polynomials of
 degree `M` in `K[X] ⧸ I`. -/
-def homogeneousCoordinateSpace {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (M : ℕ) : Submodule K (MvPolynomial σ K ⧸ I) :=
+noncomputable def homogeneousCoordinateSpace 
+    (I : Ideal (MvPolynomial σ K)) (M : ℕ)  :=
   (homogeneousSubmodule σ K M).map (Ideal.Quotient.mkₐ K I).toLinearMap
 
 /-- The multiples `f * u` of `f` by homogeneous polynomials `u` of degree `M - d`. -/
-def homogeneousMultiples {K σ : Type*} [Field K]
-    (f : MvPolynomial σ K) (d M : ℕ) : Submodule K (MvPolynomial σ K) :=
+noncomputable def homogeneousMultiples 
+    (f : MvPolynomial σ K) (d M : ℕ)  :=
   (homogeneousSubmodule σ K (M - d)).map (LinearMap.mulLeft K f)
 
 /-- For `f ≠ 0`, the space of homogeneous multiples `homogeneousMultiples f d M` has the dimension
 of the space of homogeneous polynomials of degree `M - d`. -/
-theorem homogeneousMultiples_finrank {K σ : Type*} [Field K]
+theorem homogeneousMultiples_finrank 
     (f : MvPolynomial σ K) (hf : f ≠ 0) (d M : ℕ) :
     Module.finrank K (homogeneousMultiples f d M) =
       Module.finrank K (homogeneousSubmodule σ K (M - d)) :=
   (Submodule.equivMapOfInjective (LinearMap.mulLeft K f)
     (fun _ _ h => mul_left_cancel₀ hf h) _).finrank_eq.symm
 
-private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite σ]
+private theorem principal_homogeneous_finrank  [Finite σ]
     (f : MvPolynomial σ K) {d M : ℕ} (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
       Module.finrank K (homogeneousSubmodule σ K (M - d)) =
@@ -83,5 +84,4 @@ theorem principal_homogeneous_hilbert_count {K : Type*} [Field K]
       (n + (M - d)).choose (M - d) = (n + M).choose M := by
   simpa only [finrank_homogeneousSubmodule_fin] using principal_homogeneous_finrank f hf hf0 hM
 
-end
 end CCDN

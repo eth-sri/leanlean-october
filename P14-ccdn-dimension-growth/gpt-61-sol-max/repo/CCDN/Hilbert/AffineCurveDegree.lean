@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.Hilbert.FilteredIntersection
 
 /-!
@@ -21,23 +25,23 @@ eventually linear functions compares their slopes (`eventual_linear_slope_le`).
 
 namespace CCDN
 
-/-- The polynomial ring `ℚ[x₁, …, xₙ]` in which affine algebraic sets are cut out. -/
-abbrev CoordinatePolynomial (n : ℕ) := MvPolynomial (Fin n) ℚ
+
+variable {n : ℕ}
 
 /-- The affine Hilbert function: the dimension of the polynomials of total degree at
 most `M` in the coordinate ring. -/
-noncomputable def affineHilbertFunction {n : ℕ} (I : Ideal (CoordinatePolynomial n))
-    (M : ℕ) : ℕ := Module.finrank ℚ (filteredCoordinateSpace I M)
+noncomputable def affineHilbertFunction  (I : CCDN.CoordinateIdeal n)
+    (M : ℕ)  := Module.finrank ℚ (filteredCoordinateSpace I M)
 
 /-- Degree via the eventual affine Hilbert polynomial. This condition is mathematical
 data about the coordinate ring, and contains no point-counting estimate. -/
-def HasAffineCurveDegree {n : ℕ} (I : Ideal (CoordinatePolynomial n)) (d : ℕ) : Prop :=
+def HasAffineCurveDegree  (I : CCDN.CoordinateIdeal n) (d : ℕ)  :=
   ∃ N : ℕ, ∃ c : ℤ, ∀ M : ℕ, N ≤ M →
-    (affineHilbertFunction I M : ℤ) = (d : ℤ) * M + c
+    (affineHilbertFunction I M : ℤ) = ↑d * M + c
 
 /-- The affine Hilbert degree of a curve is unique: if `I` has affine curve degree `d` and `e`, then
 `d = e`. -/
-theorem affineCurveDegree_unique {n : ℕ} {I : Ideal (CoordinatePolynomial n)} {d e : ℕ}
+theorem affineCurveDegree_unique  {I : CCDN.CoordinateIdeal n} {d e : ℕ}
     (hd : HasAffineCurveDegree I d) (he : HasAffineCurveDegree I e) : d = e := by
   obtain ⟨N, c, hN⟩ := hd
   obtain ⟨P, k, hP⟩ := he
@@ -46,33 +50,27 @@ theorem affineCurveDegree_unique {n : ℕ} {I : Ideal (CoordinatePolynomial n)} 
   have hN1 := hN (max N P + 1) (by omega)
   have hP1 := hP (max N P + 1) (by omega)
   push_cast at hN0 hP0 hN1 hP1
-  have hde : (d : ℤ) = e := by nlinarith
+  have hde : ↑d = e := by nlinarith
   exact_mod_cast hde
 
 /-- Pointwise domination of eventually linear functions compares their slopes. -/
 lemma eventual_linear_slope_le (f g : ℕ → ℕ) (a b : ℕ)
-    (hf : ∃ N : ℕ, ∃ c : ℤ, ∀ n ≥ N, (f n : ℤ) = (a : ℤ) * n + c)
-    (hg : ∃ N : ℕ, ∃ c : ℤ, ∀ n ≥ N, (g n : ℤ) = (b : ℤ) * n + c)
+    (hf : ∃ N : ℕ, ∃ c : ℤ, ∀ n ≥ N, (f n : ℤ) = ↑a * n + c)
+    (hg : ∃ N : ℕ, ∃ c : ℤ, ∀ n ≥ N, (g n : ℤ) = ↑b * n + c)
     (hle : ∀ n, f n ≤ g n) : a ≤ b := by
   obtain ⟨N₀, c, hc⟩ := hf
   obtain ⟨N₁, e, he⟩ := hg
   by_contra hbad
-  have hab : b + 1 ≤ a := by omega
   let N := N₀ + N₁ + c.natAbs + e.natAbs + 1
   have hN₀ : N₀ ≤ N := by dsimp [N]; omega
   have hN₁ : N₁ ≤ N := by dsimp [N]; omega
-  have hh : (a : ℤ) * N + c ≤ (b : ℤ) * N + e := by
+  have hh : ↑a * N + c ≤ ↑b * N + e := by
     rw [← hc N hN₀, ← he N hN₁]
     exact_mod_cast hle N
-  have hmul : ((b : ℤ) + 1) * N ≤ (a : ℤ) * N := by
-    exact_mod_cast Nat.mul_le_mul_right N hab
-  have hce : -(c.natAbs : ℤ) ≤ c := by
-    have hh : -c ≤ ((-c).natAbs : ℤ) := Int.le_natAbs
-    simp only [Int.natAbs_neg] at hh
+  have hce : -↑c.natAbs ≤ c := by
     omega
-  have hee : e ≤ (e.natAbs : ℤ) := Int.le_natAbs
-  have hNeq : (N : ℤ) = N₀ + N₁ + c.natAbs + e.natAbs + 1 := by
-    simp only [N, Nat.cast_add, Nat.cast_one]
+  have hee : e ≤ ↑e.natAbs := Int.le_natAbs
+  have hNeq : (N : ℤ) = N₀ + N₁ + c.natAbs + e.natAbs + 1 := rfl
   nlinarith
 
 end CCDN

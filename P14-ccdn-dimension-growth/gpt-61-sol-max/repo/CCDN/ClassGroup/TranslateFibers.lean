@@ -5,6 +5,10 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Coordinates
+
+import Mathlib
+
 public import CCDN.ClassGroup.NormPolynomial
 public import CCDN.ClassGroup.TwoTorsion
 public import CCDN.Height.Box
@@ -30,17 +34,17 @@ variable (K : Type*) [Field K] [NumberField K]
 /-- The set of nonzero algebraic integers `β ∈ 𝓞 K` bounded by `B` at every infinite place whose
 absolute norm `|N(β)|` is a perfect square. -/
 def boundedSquareNormIntegers (B : ℝ) : Set (𝓞 K) :=
-  {β | β ≠ 0 ∧ (∀ w : InfinitePlace K, w (β : K) ≤ B) ∧
+  {β | β ≠ 0 ∧ (∀ w : InfinitePlace K, w β ≤ B) ∧
     ∃ m : ℕ, (Algebra.norm ℤ β).natAbs = m ^ 2}
 
 /-- There are finitely many bounded square-norm integers `boundedSquareNormIntegers K B`. -/
 lemma boundedSquareNormIntegers_finite (B : ℝ) :
     (boundedSquareNormIntegers K B).Finite := by
-  apply Set.Finite.of_injOn (f := fun β : 𝓞 K ↦ (β : K))
+  apply Set.Finite.of_injOn 
     (t := {x : K | IsIntegral ℤ x ∧ ∀ φ : K →+* ℂ, ‖φ x‖ ≤ B})
   · intro β hβ
     exact ⟨β.isIntegral_coe, fun φ ↦ hβ.2.1 (InfinitePlace.mk φ)⟩
-  · exact RingOfIntegers.coe_injective.injOn
+  · simp_all
   · exact Embeddings.finite_of_norm_le K ℂ B
 
 /-- The two-torsion subgroup of the class group of `K` has at most as many elements as there are
@@ -54,8 +58,8 @@ theorem classGroupTwoTorsionCard_le_boundedSquareNormIntegers :
   rw [classGroupTwoTorsionCard, ← Set.ncard_range_of_injective hinj]
   apply Set.ncard_le_ncard _ (boundedSquareNormIntegers_finite K _)
   rintro _ ⟨c, rfl⟩
-  obtain ⟨h0, hw, J, _, _, hnorm⟩ := hβ c
-  exact ⟨h0, fun w ↦ (hw w).le, Ideal.absNorm (J : Ideal (𝓞 K)), hnorm⟩
+  obtain ⟨h0, hw, m, hnorm⟩ := hβ c
+  exact ⟨h0, fun w ↦ (hw w).le, m, hnorm⟩
 
 omit [NumberField K] in
 end
@@ -77,52 +81,50 @@ private lemma bounded_infinite_places_norm_le (α : 𝓞 K) {B : ℝ}
     rw [prod_eq_abs_norm, ← Algebra.coe_norm_int]
     norm_cast
     exact (Nat.cast_natAbs (Algebra.norm ℤ α)).symm
-  rw [← he, ← sum_mult_eq (K := K), ← Finset.prod_pow_eq_pow_sum]
+  rw [← he, ← sum_mult_eq , ← Finset.prod_pow_eq_pow_sum]
   apply Finset.prod_le_prod₀
   · intro w _
     positivity
-  · intro w _
-    exact pow_le_pow_left₀ (apply_nonneg _ _) (hα w) _
+  · simp_all [pow_le_pow_left₀, apply_nonneg]
 
 private lemma integer_translate_coordinate_le (α β : 𝓞 K) {B : ℝ}
     (hα : ∀ w : InfinitePlace K, w (α : K) ≤ B)
     (hβ : ∀ w : InfinitePlace K, w (β : K) ≤ B)
     {x : ℤ} (hx : α = algebraMap ℤ (𝓞 K) x - β) :
-    |(x : ℝ)| ≤ 2 * B := by
+    |↑x| ≤ 2 * B := by
   classical
   let w : InfinitePlace K := Classical.arbitrary _
   have hxK : (x : K) = (α : K) + (β : K) := by
-    have h := congrArg (fun z : 𝓞 K ↦ (z : K)) hx
-    simp only [map_sub, RingOfIntegers.coe_eq_algebraMap, ← IsScalarTower.algebraMap_apply] at h
-    change (α : K) = (x : K) - (β : K) at h
-    exact (eq_sub_iff_add_eq.mp h).symm
+    simp_all
   calc
-    |(x : ℝ)| = w (x : K) := by
+    |↑x| = w (x : K) := by
       rw [w.map_intCast, Int.norm_eq_abs]
     _ = w ((α : K) + (β : K)) := congrArg w hxK
     _ ≤ w (α : K) + w (β : K) := w.val.add_le _ _
     _ ≤ 2 * B := by linarith [hα w, hβ w]
 
+variable (β : 𝓞 K)
+
 /-- The bounded square-norm integers of the form `x - β` with `x ∈ ℤ`, that is, those in the
 integer-translation class of `-β`. -/
-def squareNormTranslateFiber (β : 𝓞 K) (B : ℝ) : Set (𝓞 K) :=
+def squareNormTranslateFiber  (B : ℝ)  :=
   {α | α ∈ boundedSquareNormIntegers K B ∧
     ∃ x : ℤ, α = algebraMap ℤ (𝓞 K) x - β}
 
 /-- Each square-norm translate fiber `squareNormTranslateFiber K β B` is finite. -/
-lemma squareNormTranslateFiber_finite (β : 𝓞 K) (B : ℝ) :
+lemma squareNormTranslateFiber_finite  (B : ℝ) :
     (squareNormTranslateFiber K β B).Finite :=
   (boundedSquareNormIntegers_finite K B).subset (fun _ h ↦ h.1)
 
 /-- The rational plane curve `y ^ 2 = ε * N(x - β)` cut out by the signed norm-curve polynomial of
 `β` with sign `ε`. -/
-def signedNormCurveLocus (β : 𝓞 K) (ε : ℤ) : Set (RatPoint 2) :=
-  zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) (signedNormCurvePolynomial K β ε))
+def signedNormCurveLocus  (ε : ℤ)  :=
+  zeroLocus (CCDN.rationalPolynomial (signedNormCurvePolynomial K β ε))
 
 /-- If `β` is bounded by `B` at every infinite place, then the square-norm translate fiber of `β`
 has at most as many elements as there are integral points of height at most
 `max (2 * B) (√(B ^ n))` on the two signed norm curves `y ^ 2 = ±N(x - β)`, where `n = [K : ℚ]`. -/
-theorem squareNormTranslateFiber_count_le (β : 𝓞 K) {B : ℝ}
+theorem squareNormTranslateFiber_count_le  {B : ℝ}
     (hβ : ∀ w : InfinitePlace K, w (β : K) ≤ B) :
     (squareNormTranslateFiber K β B).ncard ≤
       count (signedNormCurveLocus K β 1) (max (2 * B) (Real.sqrt (B ^ Module.finrank ℚ K))) +
@@ -146,14 +148,13 @@ theorem squareNormTranslateFiber_count_le (β : 𝓞 K) {B : ℝ}
         have hh := Real.le_sqrt_of_sq_le hsq
         change |((m α : ℤ) : ℝ)| ≤ H
         simp only [Int.cast_natCast]
-        rw [abs_of_nonneg (show (0 : ℝ) ≤ (m α : ℝ) by positivity)]
+        rw [abs_of_nonneg (show 0 ≤ (m α : ℝ) by positivity)]
         exact hh.trans (le_max_right (2 * B) _)
       · exact (integer_translate_coordinate_le K α β α.property.1.2.1 hβ (hx α)).trans
           (le_max_left _ _)
     · have hnorm : (Algebra.norm ℤ
           (algebraMap ℤ (𝓞 K) (x α) - β)).natAbs = m α ^ 2 := by
-        rw [← hx α]
-        exact hm α
+        grind
       rcases square_norm_yields_signedNormCurve_point K β (x α) (m α) hnorm with h | h
       · left
         have hc := congrArg (Int.castRingHom ℚ) h
@@ -170,7 +171,7 @@ theorem squareNormTranslateFiber_count_le (β : 𝓞 K) {B : ℝ}
     change x α = x γ at h
     apply Subtype.ext
     rw [hx α, hx γ, h]
-  have hcard : S.ncard ≤ count Z H := by
+  have hcard := by
     have h := Nat.card_le_card_of_injective ι hi
     simpa only [Nat.card_coe_set_eq, Nat.card_eq_fintype_card,
       Fintype.card_coe, count, P] using h

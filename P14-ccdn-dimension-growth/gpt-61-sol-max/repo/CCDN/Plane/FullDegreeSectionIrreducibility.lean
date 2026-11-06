@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Plane.FiniteFieldBadPlanes
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Plane.SectionBounds
@@ -17,13 +19,13 @@ nonconstant ambient factor from disappearing under restriction. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma polynomial_isUnit_of_nonzero_degree_zero {K σ : Type*} [Field K]
+variable {K σ : Type*}
+
+private lemma polynomial_isUnit_of_nonzero_degree_zero  [Field K]
     (f : MvPolynomial σ K) (hf : f ≠ 0) (hd : f.totalDegree = 0) : IsUnit f := by
-  by_contra hu
-  exact (totalDegree_pos_of_ne_zero_of_not_isUnit hf hu).ne' hd
+  grind [totalDegree_pos_of_ne_zero_of_not_isUnit]
 
 /-- A degree-nonincreasing polynomial ring homomorphism reflects irreducibility
 at every equation whose full degree is retained. -/
@@ -35,10 +37,10 @@ theorem irreducible_of_full_degree_map {K σ τ : Type*} [Field K]
   refine ⟨fun hu => hir.not_isUnit (hu.map ψ), ?_⟩
   intro a b he
   have he' : ψ f = ψ a * ψ b := by rw [he, map_mul]
-  have ha : ψ a ≠ 0 := left_ne_zero_of_mul (he' ▸ hir.ne_zero)
-  have hb : ψ b ≠ 0 := right_ne_zero_of_mul (he' ▸ hir.ne_zero)
-  have ha0 : a ≠ 0 := by intro hz; exact ha (by rw [hz, map_zero])
-  have hb0 : b ≠ 0 := by intro hz; exact hb (by rw [hz, map_zero])
+  have ha := left_ne_zero_of_mul (he' ▸ hir.ne_zero)
+  have hb := right_ne_zero_of_mul (he' ▸ hir.ne_zero)
+  have ha0 : a ≠ 0 := by aesop
+  have hb0 : b ≠ 0 := by aesop
   have ht := totalDegree_mul_of_isDomain ha0 hb0
   have ht' := totalDegree_mul_of_isDomain ha hb
   rw [← he] at ht
@@ -56,15 +58,14 @@ theorem irreducible_of_full_degree_map {K σ τ : Type*} [Field K]
 /-- The ring homomorphism restricting a polynomial in the coordinates `σ` to the affine plane
 `a + s • b + t • c` whose base point and directions are given by the parameters `v`, as a
 polynomial in the plane coordinates `s` and `t`. -/
-def planeSectionPolynomialHom {K σ : Type*} [CommRing K] (v : PlaneParameters σ → K) :
-    MvPolynomial σ K →+* MvPolynomial (Fin 2) K :=
+noncomputable def planeSectionPolynomialHom  [CommRing K] (v : PlaneParameters σ → K)  :=
   (bivariatePolynomialEquiv K).symm.toRingHom.comp
     ((bivariateMap (eval v)).comp
       ((bivariatePolynomialEquiv _).toRingHom.comp (universalPlaneMap K σ).toRingHom))
 
 /-- If the plane section of `f` at parameters `v` is irreducible and keeps the total degree of `f`,
 then `f` is irreducible; the parameters `v` may be degenerate. -/
-theorem irreducible_of_full_degree_planeSection {K σ : Type*} [Field K]
+theorem irreducible_of_full_degree_planeSection  [Field K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K)
     (hir : Irreducible (universalPlaneSection f v))
     (hdeg : bivariateTotalDegree (universalPlaneSection f v) = f.totalDegree) : Irreducible f := by
@@ -72,5 +73,4 @@ theorem irreducible_of_full_degree_planeSection {K σ : Type*} [Field K]
     (fun g => planeSectionPolynomial_totalDegree g v) f _ hdeg
   exact (MulEquiv.irreducible_iff (f := (bivariatePolynomialEquiv K).symm)).mpr hir
 
-end
 end CCDN

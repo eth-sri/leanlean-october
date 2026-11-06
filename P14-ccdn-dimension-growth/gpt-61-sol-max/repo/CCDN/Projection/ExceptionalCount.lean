@@ -15,9 +15,8 @@ import CCDN.Projection.CurveRationalInverse
 point counts. The error is d times the reconstruction denominator's degree;
 a uniform O(d^2) bound requires a low-degree denominator. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The proper denominator of a linear projection vanishes at at most d*deg(Q)
@@ -48,10 +47,10 @@ theorem projection_card_le_image_add {K σ τ : Type*} [Field K] [Fintype σ] [F
     let π : (τ → K) → (σ → K) := fun z j => eval z (a j)
     S.card ≤ (S.image π).card + d * Q.totalDegree := by
   classical
-  let π : (τ → K) → (σ → K) := fun z j => eval z (a j)
+  let π := fun z j => eval z (a j)
   let T := S.filter (fun z => eval z (aeval a Q) = 0)
   let G := S.filter (fun z => eval z (aeval a Q) ≠ 0)
-  have hT : T.card ≤ d * Q.totalDegree := by
+  have hT := by
     have hh := reconstruction_exceptional_card_le I d hdegree a ha Q hQ
       (fun z : T => z.val) Subtype.val_injective
       (fun z => hS z.val (Finset.mem_filter.mp z.property).1)
@@ -70,5 +69,4 @@ theorem projection_card_le_image_add {K σ τ : Type*} [Field K] [Fintype σ] [F
   change S.card ≤ (S.image π).card + _
   omega
 
-end
 end CCDN

@@ -14,46 +14,41 @@ to integral affine projections on the chart X₀ = 1. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Dehomogenization at `X 0 = 1`, as a `K`-algebra homomorphism from polynomials in `n + 1`
 variables to polynomials in `n` variables. -/
-def affineChartAlgHom (K : Type*) [Field K] (n : ℕ) :
+noncomputable def affineChartAlgHom (K : Type*) [Field K] (n : ℕ) :
     MvPolynomial (Fin (n + 1)) K →ₐ[K] MvPolynomial (Fin n) K where
   toRingHom := affineChart n
   commutes' c := by simp [affineChart]
 
-/-- Dehomogenizing at `X 0 = 1` an element of the projective closure of `I` gives an element of `I`.
--/
-lemma projectiveClosureIdeal_affineChart_mem {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K)
-    (hf : f ∈ projectiveClosureIdeal I) : affineChart n f ∈ I := by
-  have h : affineChart n
-      (∑ M ∈ Finset.range (f.totalDegree + 1), homogeneousComponent M f) ∈ I := by
-    rw [map_sum]
-    exact I.sum_mem (fun M _ => (mem_projectiveClosureIdeal_iff I f).mp hf M)
-  rwa [sum_homogeneousComponent] at h
+variable {K : Type*} [Field K] {n : ℕ} (I : Ideal (MvPolynomial (Fin n) K))
+
+variable (f : MvPolynomial (Fin (n + 1)) K)
+
 
 /-- The specialization `X 0 = 1` from the homogeneous coordinate ring of the projective closure of
 `I` to the affine coordinate ring of `I`. -/
-def projectiveClosureSpecialization {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) :
+noncomputable def projectiveClosureSpecialization  :
     (MvPolynomial (Fin (n + 1)) K ⧸ projectiveClosureIdeal I) →ₐ[K]
       (MvPolynomial (Fin n) K ⧸ I) :=
   Ideal.Quotient.liftₐ (projectiveClosureIdeal I)
     ((Ideal.Quotient.mkₐ K I).comp (affineChartAlgHom K n))
     (fun f hf => Ideal.Quotient.eq_zero_iff_mem.mpr
-      (projectiveClosureIdeal_affineChart_mem I f hf))
+      ((show (affineChart n) f ∈ I from (by
+         have h : affineChart n
+             (∑ M ∈ Finset.range (f.totalDegree + 1), homogeneousComponent M f) ∈ I := by
+           rw [map_sum]
+           exact I.sum_mem (fun M _ => (mem_projectiveClosureIdeal_iff I f).mp hf M)
+         rwa [sum_homogeneousComponent] at h))))
 
 /-- The specialization `X 0 = 1` sends the class of `f` to the class of its dehomogenization. -/
-@[simp] lemma projectiveClosureSpecialization_mk {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K) :
+@[simp] lemma projectiveClosureSpecialization_mk   :
     projectiveClosureSpecialization I (Ideal.Quotient.mk (projectiveClosureIdeal I) f) =
       Ideal.Quotient.mk I (affineChart n f) := rfl
 
-private theorem projectiveClosureSpecialization_surjective {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) :
+private theorem projectiveClosureSpecialization_surjective  :
     Function.Surjective (projectiveClosureSpecialization I) := by
   intro x
   obtain ⟨f, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -68,7 +63,7 @@ theorem affine_projection_integral_of_closure_integral
     (hint : (projectionCoordinateMap (projectiveClosureIdeal I)
       (closureProjectionCoordinates a)).IsIntegral) :
     (projectionCoordinateMap I a).IsIntegral := by
-  have hspecial : (projectiveClosureSpecialization I).toRingHom.IsIntegral :=
+  have hspecial :=
     RingHom.isIntegral_of_surjective _ (projectiveClosureSpecialization_surjective I)
   have hcomp := RingHom.IsIntegral.trans
     (projectionCoordinateMap (projectiveClosureIdeal I)
@@ -90,5 +85,4 @@ theorem affine_projection_integral_of_closure_integral
   exact RingHom.IsIntegral.tower_top (affineChartAlgHom K m).toRingHom
     (projectionCoordinateMap I a).toRingHom hcomp
 
-end
 end CCDN

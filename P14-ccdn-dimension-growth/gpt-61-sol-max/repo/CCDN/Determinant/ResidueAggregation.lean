@@ -19,16 +19,18 @@ curve case of CCDN Proposition 2.6. The geometric local divisibility and
 finite-field multiplicity estimates are not part of this module.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
 open Finset
 
+variable {ι : Type*} (S : Finset ι) (n μ e : ι → ℕ) (he : ∀ i ∈ S, n i ^ 2 ≤ 2 * μ i * (e i + n i))
+
+include he in
 /-- Aggregate classwise quadratic estimates without losing the leading constant. -/
-private theorem aggregate_local_exponents {ι : Type*} (S : Finset ι)
-    (n μ e : ι → ℕ) (he : ∀ i ∈ S, n i ^ 2 ≤ 2 * μ i * (e i + n i)) :
+private theorem aggregate_local_exponents  :
     (∑ i ∈ S, n i) ^ 2 ≤ 2 * (∑ i ∈ S, μ i) * ((∑ i ∈ S, e i) + ∑ i ∈ S, n i) := by
   have h := Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul S
-    (r := n) (f := fun i => 2 * μ i) (g := fun i => e i + n i)
+      
     (fun _ _ => Nat.zero_le _) (fun _ _ => Nat.zero_le _) he
   simpa only [← mul_sum, sum_add_distrib, mul_assoc] using h
 
@@ -39,9 +41,9 @@ theorem aggregate_multiplicity_exponents {ι : Type*} (S : Finset ι)
       ((∑ i ∈ S, multiplicityExponent (n i) (μ i)) + ∑ i ∈ S, n i) :=
   aggregate_local_exponents S n μ _ (fun i hi => multiplicityExponent_lower_bound _ _ (hμ i hi))
 
+include he in
 /-- Real-valued form with a uniform upper bound for total residue multiplicity. -/
-theorem aggregate_exponent_lower {ι : Type*} (S : Finset ι)
-    (n μ e : ι → ℕ) (he : ∀ i ∈ S, n i ^ 2 ≤ 2 * μ i * (e i + n i))
+theorem aggregate_exponent_lower 
     {N : ℝ} (hN : 0 < N) (hμ : (∑ i ∈ S, μ i : ℕ) ≤ N) :
     (∑ i ∈ S, n i : ℕ) ^ 2 / (2 * N) - (∑ i ∈ S, n i : ℕ) ≤
       (∑ i ∈ S, e i : ℕ) := by

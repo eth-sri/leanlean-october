@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib
+
 public import Mathlib.MeasureTheory.Constructions.HaarToSphere
 public import Mathlib.MeasureTheory.Integral.Pi
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
@@ -65,26 +67,26 @@ public section
 open MeasureTheory Measure Set Metric ENNReal
 open scoped Real
 
+variable {E : Type*} [NormedAddCommGroup E]
+
 /-- The **Gauss density** `exp (-π ‖x‖ ^ 2)`, as an `ℝ≥0∞`-valued function. With `π` in the
 exponent it is a probability density for every finite-dimensional real inner product space. -/
-@[expose] noncomputable def gaussDensity {E : Type*} [NormedAddCommGroup E] (x : E) :
-    ℝ≥0∞ :=
+@[expose] noncomputable def gaussDensity  (x : E)  :=
   ENNReal.ofReal (Real.exp (-π * ‖x‖ ^ 2))
 
-theorem gaussDensity_def {E : Type*} [NormedAddCommGroup E] (x : E) :
+theorem gaussDensity_def  (x : E) :
     gaussDensity x = ENNReal.ofReal (Real.exp (-π * ‖x‖ ^ 2)) := rfl
 
 @[simp]
-theorem gaussDensity_zero {E : Type*} [NormedAddCommGroup E] : gaussDensity (0 : E) = 1 := by
-  rw [gaussDensity_def, norm_zero]
-  norm_num
+theorem gaussDensity_zero  : gaussDensity (0 : E) = 1 := by
+  simp_all [gaussDensity_def]
 
 @[fun_prop]
-theorem measurable_gaussDensity {E : Type*} [NormedAddCommGroup E] [MeasurableSpace E]
+theorem measurable_gaussDensity  [MeasurableSpace E]
     [OpensMeasurableSpace E] : Measurable (gaussDensity : E → ℝ≥0∞) := by
   unfold gaussDensity; fun_prop
 
-theorem gaussDensity_le_one {E : Type*} [NormedAddCommGroup E] (x : E) : gaussDensity x ≤ 1 := by
+theorem gaussDensity_le_one  (x : E) : gaussDensity x ≤ 1 := by
   rw [gaussDensity, ← ENNReal.ofReal_one]
   refine ENNReal.ofReal_le_ofReal ?_
   rw [Real.exp_le_one_iff]
@@ -93,28 +95,28 @@ theorem gaussDensity_le_one {E : Type*} [NormedAddCommGroup E] (x : E) : gaussDe
 /-- **Polar decomposition of an additive Haar measure.** Every `ℝ≥0∞`-valued integral against an
 additive Haar measure is an integral over `sphere 0 1 × Ioi 0`, with the radial factor `r ^ (n-1)`
 carried by `MeasureTheory.Measure.volumeIoiPow`. No measurability hypothesis is needed. -/
-theorem lintegral_eq_lintegral_sphere {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem lintegral_eq_lintegral_sphere  [NormedSpace ℝ E]
     [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] [Nontrivial E]
     (μ : Measure E) [μ.IsAddHaarMeasure] (f : E → ℝ≥0∞) :
     ∫⁻ x, f x ∂μ =
-      ∫⁻ p : sphere (0 : E) 1 × Ioi (0 : ℝ), f ((p.2 : ℝ) • (p.1 : E))
+      ∫⁻ p : sphere 0 1 × Ioi 0, f ((p.2 : ℝ) • (p.1 : E))
         ∂(μ.toSphere.prod (Measure.volumeIoiPow (Module.finrank ℝ E - 1))) := by
-  have h1 : ∫⁻ x, f x ∂μ = ∫⁻ x : ({(0 : E)}ᶜ : Set E), f x.1 ∂(μ.comap (↑)) := by
+  have h1 : ∫⁻ x, f x ∂μ = ∫⁻ x : ({0}ᶜ : Set E), f x.1 ∂(μ.comap (↑)) := by
     rw [lintegral_subtype_comap (measurableSet_singleton _).compl, restrict_compl_singleton]
   rw [h1, ← (μ.measurePreserving_homeomorphUnitSphereProd).lintegral_comp_emb
       (Homeomorph.measurableEmbedding _) (fun p => f ((p.2 : ℝ) • (p.1 : E)))]
   refine lintegral_congr fun x => ?_
   have hx : (x : E) ≠ 0 := x.2
-  have hn : (0 : ℝ) < ‖(x : E)‖ := by simpa using hx
+  have hn : 0 < ‖(x : E)‖ := by simpa using hx
   rw [homeomorphUnitSphereProd_apply_snd_coe, homeomorphUnitSphereProd_apply_fst_coe, smul_smul,
     mul_inv_cancel₀ hn.ne', one_smul]
 
 /-- **Polar decomposition**, iterated form: the inner integral is over the ray. -/
-theorem lintegral_eq_lintegral_sphere' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem lintegral_eq_lintegral_sphere'  [NormedSpace ℝ E]
     [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] [Nontrivial E]
     (μ : Measure E) [μ.IsAddHaarMeasure] {f : E → ℝ≥0∞} (hf : Measurable f) :
     ∫⁻ x, f x ∂μ =
-      ∫⁻ u : sphere (0 : E) 1, ∫⁻ r : Ioi (0 : ℝ), f ((r : ℝ) • (u : E))
+      ∫⁻ u : sphere 0 1, ∫⁻ r : Ioi 0, f ((r : ℝ) • (u : E))
         ∂(Measure.volumeIoiPow (Module.finrank ℝ E - 1)) ∂μ.toSphere := by
   rw [lintegral_eq_lintegral_sphere μ f, lintegral_prod]
   exact (hf.comp (by fun_prop)).aemeasurable
@@ -151,7 +153,7 @@ theorem lintegral_gaussDensity_euclidean (ι : Type*) [Fintype ι] :
 
 /-- **The Gauss measure is a probability measure** on a finite-dimensional real inner product
 space. -/
-theorem lintegral_gaussDensity_eq_one {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+theorem lintegral_gaussDensity_eq_one  [InnerProductSpace ℝ E]
     [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E] :
     ∫⁻ x : E, gaussDensity x = 1 := by
   have hm : Measurable (gaussDensity : EuclideanSpace ℝ (Fin (Module.finrank ℝ E)) → ℝ≥0∞) := by
@@ -164,7 +166,7 @@ theorem lintegral_gaussDensity_eq_one {E : Type*} [NormedAddCommGroup E] [InnerP
 /-- The radius `ρ` of the ball of volume `1`: Bombieri–Gubler's `ρ(n)`, defined by the
 normalization it is used for rather than by its closed form. -/
 @[expose] noncomputable def unitVolumeRadius (E : Type*) [NormedAddCommGroup E]
-    [InnerProductSpace ℝ E] [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] : ℝ :=
+    [InnerProductSpace ℝ E] [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E]  :=
   (volume (ball (0 : E) 1)).toReal ^ (-(1 / (Module.finrank ℝ E : ℝ)))
 
 section
@@ -183,18 +185,18 @@ theorem volume_closedBall_unitVolumeRadius :
     volume (closedBall (0 : E) (unitVolumeRadius E)) = 1 := by
   rcases subsingleton_or_nontrivial E with hE | hE
   · have h1 : closedBall (0 : E) (unitVolumeRadius E) = univ := by
-      ext x; simp [Subsingleton.elim x (0 : E), unitVolumeRadius_pos.le]
+      ext x; simp [Subsingleton.elim x 0, unitVolumeRadius_pos.le]
     have hg : ∀ x : E, gaussDensity x = 1 := fun x => by
-      rw [Subsingleton.elim x (0 : E), gaussDensity_zero]
+      rw [Subsingleton.elim x 0, gaussDensity_zero]
     calc volume (closedBall (0 : E) (unitVolumeRadius E)) = ∫⁻ _ : E, 1 := by
           rw [lintegral_one, h1]
       _ = ∫⁻ x : E, gaussDensity x := lintegral_congr fun x => (hg x).symm
       _ = 1 := lintegral_gaussDensity_eq_one
   have hv : 0 < (volume (ball (0 : E) 1)).toReal := volume_ball_one_pos
-  have hn : (0 : ℝ) < (Module.finrank ℝ E : ℝ) := by
-    exact_mod_cast Module.finrank_pos (R := ℝ) (M := E)
+  have hn : 0 < (Module.finrank ℝ E : ℝ) := by
+    exact_mod_cast Module.finrank_pos  
   rw [Measure.addHaar_closedBall volume 0 unitVolumeRadius_pos.le, unitVolumeRadius,
-    ← Real.rpow_natCast ((volume (ball (0 : E) 1)).toReal ^ (-(1 / (Module.finrank ℝ E : ℝ))))
+    ← Real.rpow_natCast ((volume (ball 0 1)).toReal ^ (-(1 / (Module.finrank ℝ E : ℝ))))
       (Module.finrank ℝ E),
     ← Real.rpow_mul hv.le,
     show -(1 / (Module.finrank ℝ E : ℝ)) * (Module.finrank ℝ E : ℝ) = -1 by field_simp,

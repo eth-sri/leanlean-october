@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import CCDN.Hilbert.LinearProjectionFiltration
@@ -17,13 +19,14 @@ import Mathlib.LinearAlgebra.FreeModule.PID
 Hilbert multiplicity. The conductor shifts the filtration by a fixed amount,
 which leaves the leading coefficient of the Hilbert polynomial unchanged. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
+variable {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
+
 private theorem conductor_filtered_finrank_le
-    {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
+    
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (hI : IsHomogeneousIdeal I)
     (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).IsHomogeneous 1)
@@ -87,12 +90,10 @@ private theorem filteredHilbertPolynomial_leadingCoeff_le_of_shift
   have hQdeg : Q.natDegree = (filteredHilbertPolynomial J).natDegree := by
     simp only [Q, Polynomial.natDegree_comp, Polynomial.natDegree_X_add_C, mul_one]
   have hQlc : Q.leadingCoeff = (filteredHilbertPolynomial J).leadingCoeff := by
-    dsimp only [Q]
-    rw [Polynomial.leadingCoeff_comp (by rw [Polynomial.natDegree_X_add_C]; exact one_ne_zero),
-      Polynomial.leadingCoeff_X_add_C, one_pow, mul_one]
+    grind [Polynomial.leadingCoeff_comp, Polynomial.natDegree_X_add_C, one_ne_zero, Polynomial.leadingCoeff_X_add_C, one_pow, mul_one]
   have hh := polynomial_leadingCoeff_le_of_eventual_nat_eval_le
     (filteredHilbertPolynomial I) Q (filteredHilbertPolynomial_leadingCoeff_pos I hI)
-    (by rw [hQlc]; exact filteredHilbertPolynomial_leadingCoeff_pos J hJ)
+    (by simp_all [filteredHilbertPolynomial_leadingCoeff_pos])
     (hd.trans hQdeg.symm) (by
       obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
       obtain ⟨N, hN⟩ := filteredHilbertPolynomial_spec J
@@ -100,7 +101,7 @@ private theorem filteredHilbertPolynomial_leadingCoeff_le_of_shift
       rw [hM n ((le_max_left _ _).trans hn)]
       simp only [Q, Polynomial.eval_comp, Polynomial.eval_add, Polynomial.eval_X,
         Polynomial.eval_C]
-      rw [show (n : ℚ) + D = ((D + n : ℕ) : ℚ) by push_cast; ring,
+      rw [show ↑n + D = ((D + n : ℕ) : ℚ) by push_cast; ring,
         hN (D + n) (by omega)]
       exact_mod_cast hle n)
   simpa only [hQlc] using hh
@@ -108,7 +109,7 @@ private theorem filteredHilbertPolynomial_leadingCoeff_le_of_shift
 /-- A nonzero conductor yields equality of Hilbert multiplicities
 for a homogeneous linear birational projection. -/
 theorem homogeneous_projection_leadingCoeff_eq
-    {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
+    
     [LinearOrder σ] [LinearOrder τ]
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (hI : IsHomogeneousIdeal I)
@@ -120,14 +121,12 @@ theorem homogeneous_projection_leadingCoeff_eq
       projectionCoordinateMap I a p = (Ideal.Quotient.mk I) c * x) :
     (filteredHilbertPolynomial (RingHom.ker (projectionCoordinateMap I a))).leadingCoeff =
       (filteredHilbertPolynomial I).leadingCoeff := by
-  have hIproper : I ≠ ⊤ := Ideal.IsPrime.ne_top ‹I.IsPrime›
+  have hIproper := Ideal.IsPrime.ne_top ‹I.IsPrime›
   have hJproper : RingHom.ker (projectionCoordinateMap I a) ≠ ⊤ :=
     RingHom.ker_ne_top _
   apply le_antisymm
   · exact filteredHilbertPolynomial_leadingCoeff_le _ _ hJproper hIproper hd
       (linear_projection_filtered_finrank_le I a (fun i => (ha i).totalDegree_le))
-  · exact filteredHilbertPolynomial_leadingCoeff_le_of_shift _ _ hIproper hJproper hd.symm
-      c.totalDegree (conductor_filtered_finrank_le I hI a ha c hc hconductor)
+  · aesop (add safe apply [filteredHilbertPolynomial_leadingCoeff_le_of_shift, conductor_filtered_finrank_le])
 
-end
 end CCDN

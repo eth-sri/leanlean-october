@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Hilbert.FilteredIntersection
 public import Mathlib.Algebra.MvPolynomial.PDeriv
@@ -19,15 +21,15 @@ characteristic zero loses at most d(d-1) points from any finite source set.
 The proof constructs a common derivative denominator and all reconstruction
 identities, with no normalization or exceptional-fiber hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K τ : Type*} [Field K] [CharZero K] [Fintype τ]
 
 /-- All source coordinates have the same proper reconstruction denominator,
 namely the partial derivative of the plane image equation. -/
-theorem degree_preserving_projection_reconstruction {K τ : Type*}
-    [Field K] [CharZero K] [Fintype τ]
+theorem degree_preserving_projection_reconstruction 
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (a : Fin 2 → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdegree : HasFilteredCurveDegree I d)
@@ -38,15 +40,14 @@ theorem degree_preserving_projection_reconstruction {K τ : Type*}
       ∃ P : τ → MvPolynomial (Fin 2) K, ∀ i,
         (P i).totalDegree ≤ d ∧ aeval a (pderiv 1 f) * X i - aeval a (P i) ∈ I := by
   have hp := projection_derivative_proper I a ha f hf hker 0 1 (by decide) hu
-  refine ⟨hp.1, by simpa only [hfd] using pderiv_totalDegree_le f 1, ?_⟩
+  refine ⟨hp.1, by grind [pderiv_totalDegree_le], ?_⟩
   choose P hP using fun i : τ => exists_derivative_reconstruction I a ha d hdegree hu
     f hf hfd hker (X i) (by simp)
   exact ⟨P, hP⟩
 
 /-- Uniform exceptional-fiber control for any degree-preserving linear plane
 projection, including curves that are not geometrically integral. -/
-theorem degree_preserving_projection_card_le {K τ : Type*}
-    [Field K] [CharZero K] [Fintype τ] [DecidableEq (Fin 2 → K)]
+theorem degree_preserving_projection_card_le  [DecidableEq (Fin 2 → K)]
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (a : Fin 2 → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdegree : HasFilteredCurveDegree I d)
@@ -61,5 +62,4 @@ theorem degree_preserving_projection_card_le {K τ : Type*}
     (fun i => (hP i).2) S hS).trans
       (Nat.add_le_add_left (Nat.mul_le_mul_left d hQd) _)
 
-end
 end CCDN

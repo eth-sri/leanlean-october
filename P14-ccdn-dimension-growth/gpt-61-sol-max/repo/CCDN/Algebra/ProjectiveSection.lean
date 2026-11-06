@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Hilbert.HomogeneousHilbert
@@ -25,28 +27,28 @@ variable {K : Type*} [Field K]
 
 instance homogeneousCoordinateSpace_finite {n : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (M : ℕ) :
-    Module.Finite K (homogeneousCoordinateSpace I M) := by
-  exact Module.Finite.of_fg
+    Module.Finite K (homogeneousCoordinateSpace I M) := Module.Finite.of_fg
     ((homogeneousSubmodule_fg _ _ _).map (Ideal.Quotient.mkₐ K I).toLinearMap)
+
+variable {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
 
 /-- The graded Hilbert function of `I`: the dimension of the degree-`M` part of the coordinate
 ring `MvPolynomial (Fin (n + 1)) K ⧸ I`, that is, of the image of the homogeneous polynomials
 of degree `M`. -/
-def projectiveHilbertFunction {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
-    (M : ℕ) : ℕ := Module.finrank K (homogeneousCoordinateSpace I M)
+def projectiveHilbertFunction 
+    (M : ℕ)  := Module.finrank K (homogeneousCoordinateSpace I M)
 
 /-- The ideal `I` has projective curve degree `d`: the graded Hilbert function of
 `MvPolynomial (Fin (n + 1)) K ⧸ I` eventually equals `d * M + c` for some constant `c`. For a
 homogeneous prime ideal of a projective curve, `d` is the usual degree. -/
-def HasProjectiveCurveDegree {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
-    (d : ℕ) : Prop :=
+def HasProjectiveCurveDegree 
+    (d : ℕ)  :=
   ∃ N : ℕ, ∃ c : ℤ, ∀ M : ℕ, N ≤ M →
-    (projectiveHilbertFunction I M : ℤ) = (d : ℤ) * M + c
+    (projectiveHilbertFunction I M : ℤ) = ↑d * M + c
 
 /-- A projective point belongs to the zero locus when every representative
 annihilates the ideal. For homogeneous ideals this is the usual projective zero locus. -/
-def projectiveIdealZeroLocus {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K)) :
-    Set (Projectivization K (Fin (n + 1) → K)) :=
+def projectiveIdealZeroLocus   :=
   {x | ∀ (v : Fin (n + 1) → K) (hv : v ≠ 0),
     Projectivization.mk K v hv = x → v ∈ idealZeroLocus I}
 
@@ -82,11 +84,9 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
   let q := Ideal.Quotient.mkₐ K I
   let ψ : ι → A →ₐ[K] K := fun i =>
     Ideal.Quotient.liftₐ I (aeval (z i).rep) (by
-      intro g hg
-      simpa only [aeval_eq_eval] using projectiveIdealZeroLocus_rep (hzI i) g hg)
+      solve_by_elim [aeval_eq_eval, projectiveIdealZeroLocus_rep])
   have hψ (i : ι) (g : MvPolynomial (Fin (n + 1)) K) :
-      ψ i (q g) = eval (z i).rep g := by
-    rfl
+      ψ i (q g) = eval (z i).rep g := rfl
   let φ : A →ₗ[K] (ι → K) := LinearMap.pi fun i => (ψ i).toLinearMap
   let V := homogeneousCoordinateSpace I (m + M)
   let W := homogeneousCoordinateSpace I M
@@ -98,20 +98,17 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
   have hUker : U ≤ φ.ker := by
     rintro a ha
     obtain ⟨b, hb, rfl⟩ := Submodule.mem_map.mp ha
-    apply LinearMap.mem_ker.mpr
     ext i
     change ψ i (q f * b) = 0
     rw [map_mul, hψ, hzf, zero_mul]
-  have hf0 : q f ≠ 0 := by
-    exact fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
-  have hUdim : Module.finrank K U = projectiveHilbertFunction I M :=
+  have hf0 := fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
+  have hUdim :=
     (Submodule.equivMapOfInjective (LinearMap.mulLeft K (q f))
       (fun a b h => mul_left_cancel₀ hf0 h) W).finrank_eq.symm
   obtain ⟨h, hhom, heval⟩ := exists_projective_point_separators_degree z hz hM
   have htop : V.map φ = ⊤ := by
     apply top_unique
     intro w _
-    apply Submodule.mem_map.mpr
     refine ⟨∑ j, w j • q (h j), ?_, ?_⟩
     · apply Submodule.sum_mem
       intro j _
@@ -145,7 +142,7 @@ theorem projective_section_card_le_degree {n d m : ℕ} {ι : Type*}
       projectiveHilbertFunction I (m + M) := by exact_mod_cast hlow
   rw [h0, h1] at hlowZ
   push_cast at hlowZ
-  have hcard : (Fintype.card ι : ℤ) ≤ (d : ℤ) * m := by linarith
+  have hcard : (Fintype.card ι : ℤ) ≤ ↑d * m := by linarith
   exact_mod_cast hcard
 
 end

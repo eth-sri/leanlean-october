@@ -5,33 +5,36 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.Noether.ShearNormalization
 
 /-! Explicit coefficient-height bounds for the bounded integral shear. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma bivariateShear_outerX {R : Type*} [CommRing R] (a : R) :
+variable {R : Type*} [CommRing R]
+
+private lemma bivariateShear_outerX  (a : R) :
     bivariateShear R a (X : R[X][X]) = X := by
   rw [← bivariatePolynomialEquiv_X_zero, bivariateShear_equiv]
   change bivariatePolynomialEquiv R (MvPolynomial.aeval _ (MvPolynomial.X 0)) = _
-  simp only [MvPolynomial.aeval_X, Matrix.cons_val_zero, bivariatePolynomialEquiv_X_zero]
+  simp_all
 
-private lemma bivariateShear_innerX {R : Type*} [CommRing R] (a : R) :
+private lemma bivariateShear_innerX  (a : R) :
     bivariateShear R a (C X : R[X][X]) = C X + C (C a) * X := by
   rw [← bivariatePolynomialEquiv_X_one, bivariateShear_equiv]
   change bivariatePolynomialEquiv R (MvPolynomial.aeval _ (MvPolynomial.X 1)) = _
   simp only [MvPolynomial.aeval_X, Matrix.cons_val_one, Matrix.cons_val_fin_one, map_add, map_mul,
     bivariatePolynomialEquiv_X_one, bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_C]
 
-private lemma bivariateShear_constant {R : Type*} [CommRing R] (a c : R) :
+private lemma bivariateShear_constant  (a c : R) :
     bivariateShear R a (C (C c)) = C (C c) :=
   (bivariateShear R a).commutes c
 
-private lemma bivariateShear_monomial {R : Type*} [CommRing R]
+private lemma bivariateShear_monomial 
     (a c : R) (i j : ℕ) :
     bivariateShear R a (monomial i (monomial j c)) =
       monomial i (monomial 0 c) * (C X + C (C a) * X) ^ j := by
@@ -52,11 +55,11 @@ private lemma bivariateCoefficientBound_add {f g : ℤ[X][X]} {H K : ℝ}
 
 private lemma bivariateCoefficientBound_shear_linear_mul (a : ℤ)
     {f : ℤ[X][X]} {H : ℝ} (hH : 0 ≤ H) (hf : BivariateCoefficientBound f H) :
-    BivariateCoefficientBound ((C X + C (C a) * X) * f) ((1 + |(a : ℝ)|) * H) := by
+    BivariateCoefficientBound ((C X + C (C a) * X) * f) ((1 + |↑a|) * H) := by
   have h₁ := bivariateCoefficientBound_monomial_mul hH hf 1 0 1
   have h₂ := bivariateCoefficientBound_monomial_mul hH hf a 1 0
   have hh := bivariateCoefficientBound_add h₁ h₂
-  have he : monomial 0 (monomial 1 (1 : ℤ)) * f + monomial 1 (monomial 0 a) * f =
+  have he : monomial 0 (monomial 1 1) * f + monomial 1 (monomial 0 a) * f =
       (C X + C (C a) * X) * f := by
     simp only [← C_mul_X_pow_eq_monomial, pow_zero, pow_one, map_one, one_mul, mul_one]
     ring
@@ -67,10 +70,9 @@ private lemma bivariateCoefficientBound_shear_linear_mul (a : ℤ)
 
 private lemma bivariateCoefficientBound_shear_linear_pow (a : ℤ) (n : ℕ) :
     BivariateCoefficientBound ((C X + C (C a) * X : ℤ[X][X]) ^ n)
-      ((1 + |(a : ℝ)|) ^ n) := by
+      ((1 + |↑a|) ^ n) := by
   induction n with
   | zero =>
-    simp only [pow_zero]
     intro i j
     by_cases hi : i = 0 <;> by_cases hj : j = 0 <;> simp [coeff_one, hi, hj]
   | succ n ih =>
@@ -80,7 +82,7 @@ private lemma bivariateCoefficientBound_shear_linear_pow (a : ℤ) (n : ℕ) :
 /-- A sheared monomial has coefficient height at most |c|*(1+|a|)^j. -/
 private lemma bivariateCoefficientBound_shear_monomial (a c : ℤ) (i j : ℕ) :
     BivariateCoefficientBound (bivariateShear ℤ a (monomial i (monomial j c)))
-      (|(c : ℝ)| * (1 + |(a : ℝ)|) ^ j) := by
+      (|↑c| * (1 + |↑a|) ^ j) := by
   rw [bivariateShear_monomial]
   exact bivariateCoefficientBound_monomial_mul (by positivity)
     (bivariateCoefficientBound_shear_linear_pow a j) c i 0
@@ -101,7 +103,7 @@ private theorem bivariateShear_coefficient_bound (a : ℤ) (d : ℕ) (f : ℤ[X]
     (hd : bivariateTotalDegree f ≤ d) (H : ℝ) (hH : 0 ≤ H)
     (hf : BivariateCoefficientBound f H) :
     BivariateCoefficientBound (bivariateShear ℤ a f)
-      (((d : ℝ) + 1) ^ 2 * H * (1 + |(a : ℝ)|) ^ d) := by
+      ((↑d + 1) ^ 2 * H * (1 + |↑a|) ^ d) := by
   classical
   have hg : InBivariateGrid (d + 1) f := inBivariateGrid_of_totalDegree_lt _ _ (by omega)
   have he := bivariateGridPolynomial_reconstruct (d + 1) f hg
@@ -111,7 +113,7 @@ private theorem bivariateShear_coefficient_bound (a : ℤ) (d : ℕ) (f : ℤ[X]
   have hb : ∀ k : BivariateGrid (d + 1),
       BivariateCoefficientBound
         (bivariateShear ℤ a (monomial k.1.val (monomial k.2.val ((f.coeff k.1.val).coeff k.2.val))))
-        (H * (1 + |(a : ℝ)|) ^ d) := by
+        (H * (1 + |↑a|) ^ d) := by
     intro k
     apply bivariateCoefficientBound_mono
       (bivariateCoefficientBound_shear_monomial a _ k.1.val k.2.val)
@@ -128,15 +130,14 @@ H*(d+1)^(d+2), hence its logarithm costs only O(d log d). -/
 theorem bivariateShear_bounded_coefficient_bound (a d : ℕ) (ha : a ≤ d)
     (f : ℤ[X][X]) (hd : bivariateTotalDegree f ≤ d)
     (H : ℝ) (hH : 0 ≤ H) (hf : BivariateCoefficientBound f H) :
-    BivariateCoefficientBound (bivariateShear ℤ (a : ℤ) f) (((d : ℝ) + 1) ^ (d + 2) * H) := by
-  apply bivariateCoefficientBound_mono (bivariateShear_coefficient_bound (a : ℤ) d f hd H hH hf)
+    BivariateCoefficientBound (bivariateShear ℤ ↑a f) ((↑d + 1) ^ (d + 2) * H) := by
+  apply bivariateCoefficientBound_mono (bivariateShear_coefficient_bound ↑a d f hd H hH hf)
   simp only [Int.cast_natCast, abs_of_nonneg (show (0 : ℝ) ≤ a from Nat.cast_nonneg _)]
   have haR : (a : ℝ) ≤ d := by exact_mod_cast ha
   calc
-    _ ≤ ((d : ℝ) + 1) ^ 2 * H * ((d : ℝ) + 1) ^ d :=
+    _ ≤ (↑d + 1) ^ 2 * H * (↑d + 1) ^ d :=
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (show (0 : ℝ) ≤ 1 + a by positivity)
         (show (1 : ℝ) + a ≤ d + 1 by linarith) d) (by positivity)
     _ = _ := by rw [pow_add]; ring
 
-end
 end CCDN

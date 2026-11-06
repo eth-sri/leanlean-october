@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import Mathlib.FieldTheory.IntermediateField.Adjoin.Defs
 public import Mathlib.RingTheory.AlgebraicIndependent.Defs
@@ -27,7 +29,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algebra K F]
+variable {K F σ : Type*} [Field K] [Field F]
+
+private def coordinateParameterField  [Algebra K F]
     (I : Ideal (MvPolynomial σ K)) [Algebra (MvPolynomial σ K ⧸ I) F]
     (U : Set σ) : IntermediateField K F :=
   IntermediateField.adjoin K (Set.range (fun i : U =>
@@ -36,13 +40,13 @@ private def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algeb
 /-- There is a subset of coordinate functions whose generated field
 has finite extension degree at most the Hilbert multiplicity. -/
 private theorem exists_finite_coordinate_parameter_field
-    {K F σ : Type*} [Field K] [Field F] [Fintype σ] [LinearOrder σ] [Algebra K F]
+     [Fintype σ] [LinearOrder σ] [Algebra K F]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
     [Algebra (MvPolynomial σ K ⧸ I) F] [IsScalarTower K (MvPolynomial σ K ⧸ I) F]
     [IsFractionRing (MvPolynomial σ K ⧸ I) F]
     (d : ℕ)
     (hdegree : (filteredHilbertPolynomial I).leadingCoeff =
-      (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial) :
+      ↑d / (filteredHilbertPolynomial I).natDegree.factorial) :
     ∃ U : Set σ, Nat.card U = (filteredHilbertPolynomial I).natDegree ∧
       AlgebraicIndependent K (fun i : U => (Ideal.Quotient.mk I) (X i.val)) ∧
       Module.Finite (coordinateParameterField (F := F) I U) F ∧
@@ -62,8 +66,8 @@ private theorem exists_finite_coordinate_parameter_field
     apply AlgebraicIndependent.of_comp R.val
     exact huF
   have hdim : (filteredHilbertPolynomial I).natDegree = Fintype.card U := by
-    simpa only [Nat.card_eq_fintype_card] using hU.symm
-  exact hilbert_functionField_finite_rank_le I d ⟨hdim, by simpa only [← hdim] using hdegree⟩
+    grind [Nat.card_eq_fintype_card]
+  exact hilbert_functionField_finite_rank_le I d ⟨hdim, by grind⟩
     (fun i : U => X i.val) (fun _ => by simp) u hu (fun _ => rfl)
 
 end
@@ -95,8 +99,7 @@ theorem exists_hilbert_coordinate_transcendence_basis
   have huF : AlgebraicIndependent K
       (fun i : U => φ ((Ideal.Quotient.mk I) (X i.val))) :=
     hAI.map' (IsFractionRing.injective _ _)
-  have hBF : IsTranscendenceBasis K
-      (fun i : U => φ ((Ideal.Quotient.mk I) (X i.val))) := by
+  have hBF := by
     apply huF.isTranscendenceBasis_iff_isAlgebraic.mpr
     exact IntermediateField.isAlgebraic_adjoin_iff_top.mp hfieldalg
   exact ⟨U, hU, IsTranscendenceBasis.of_comp φ (IsFractionRing.injective _ _) hBF⟩
@@ -111,7 +114,7 @@ theorem hilbert_dimension_eq_transcendence_basis_card
   classical
   obtain ⟨U, hU, hBU⟩ := exists_hilbert_coordinate_transcendence_basis I
   have hc := hBU.lift_cardinalMk_eq hx
-  have hcard : Fintype.card U = Fintype.card ι := by
+  have hcard := by
     simpa only [Cardinal.mk_fintype, Cardinal.lift_natCast, Nat.cast_inj] using hc
   rw [Nat.card_eq_fintype_card] at hU
   omega
@@ -132,7 +135,6 @@ theorem integral_embedding_hilbert_dimension_eq
   let : Algebra A B := ψ.toRingHom.toAlgebra
   let : IsScalarTower K A B := IsScalarTower.of_algHom ψ
   let : FaithfulSMul A B := (faithfulSMul_iff_algebraMap_injective A B).mpr hψ
-  let : Algebra.IsIntegral A B := ⟨hint⟩
   let : Algebra.IsAlgebraic A B :=
     ⟨fun x => (show IsIntegral A x from hint x).isAlgebraic⟩
   obtain ⟨U, hU, hBU⟩ := exists_hilbert_coordinate_transcendence_basis I

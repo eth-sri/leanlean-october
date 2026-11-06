@@ -5,6 +5,8 @@ Authors: Ralf Stephan
 -/
 module
 
+import Mathlib
+
 public import ArithmeticHeights.RowSpace
 public import Mathlib.Analysis.RCLike.Basic
 public import Mathlib.LinearAlgebra.Dual.Basis
@@ -165,7 +167,7 @@ end exteriorPower
 
 namespace Matrix
 
-open Module exteriorPower
+open _root_.Module exteriorPower
 
 /-!
 ### The identity for matrices
@@ -187,17 +189,19 @@ theorem det_mul_transpose_eq_sum_plucker (A B : Matrix (Fin m) ι R) :
     (A * Bᵀ).det = ∑ s : Set.powersetCard ι m, plucker m A.row s * plucker m B.row s :=
   (sum_plucker_mul_plucker m A.row B.row).symm
 
+variable (A : Matrix (Fin m) ι R) (B : Matrix ι (Fin m) R)
+
 /-- **The Cauchy–Binet identity**, for a product `A B` of an `m × ι` by an `ι × m` matrix: the
 determinant is the sum over the sets of `m` indices of the product of the maximal minor of `A` on
 those columns with the maximal minor of `B` on those rows. -/
-theorem det_mul_eq_sum_plucker (A : Matrix (Fin m) ι R) (B : Matrix ι (Fin m) R) :
+theorem det_mul_eq_sum_plucker  :
     (A * B).det = ∑ s : Set.powersetCard ι m, plucker m A.row s * plucker m B.col s := by
   conv_lhs => rw [← Matrix.transpose_transpose B]
   exact (sum_plucker_mul_plucker m A.row Bᵀ.row).symm
 
 /-- The Cauchy–Binet identity for `A B` in the `submatrix` spelling: the maximal minors of `A` on
 the columns of `s` against those of `B` on the rows of `s`. -/
-theorem det_mul_eq_sum_det_submatrix (A : Matrix (Fin m) ι R) (B : Matrix ι (Fin m) R) :
+theorem det_mul_eq_sum_det_submatrix  :
     (A * B).det = ∑ s : Set.powersetCard ι m,
       (A.submatrix id ((s : Finset ι).orderEmbOfFin (Set.powersetCard.card_eq s))).det *
         (B.submatrix ((s : Finset ι).orderEmbOfFin (Set.powersetCard.card_eq s)) id).det := by
@@ -221,12 +225,9 @@ of the squares of the maximal minors. This is the `√|det (A Aᵀ)|` of the Bom
 its square is the ℓ² local factor of the tuple of minors. -/
 theorem det_mul_transpose_self_eq_sum_sq (A : Matrix (Fin m) ι R) :
     (A * Aᵀ).det = ∑ s : Set.powersetCard ι m, plucker m A.row s ^ 2 := by
-  rw [det_mul_transpose_eq_sum_plucker]
-  exact Finset.sum_congr rfl fun s _ ↦ (sq _).symm
+  grind [det_mul_transpose_eq_sum_plucker]
 
-variable {S : Type*} [CommRing S] [LinearOrder S] [IsStrictOrderedRing S]
 
-variable {K : Type*} [Field K] [LinearOrder K] [IsStrictOrderedRing K]
 
 end Gram
 
@@ -234,13 +235,9 @@ end Gram
 ### The Gram determinant at a complex place
 -/
 
-section Star
 
-variable {R : Type*} [CommRing R] [StarRing R] {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
 
-variable {K : Type*} [RCLike K]
 
-end Star
 
 end Matrix
 
@@ -248,7 +245,6 @@ namespace NumberField.InfinitePlace
 
 open Matrix exteriorPower
 
-variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
 
 end NumberField.InfinitePlace
 

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.LinearAlgebra.FreeModule.PID
@@ -22,7 +24,7 @@ import Mathlib.LinearAlgebra.FreeModule.PID
   kernel is contained in the kernel of `g`.
 -/
 
-@[expose] public section
+public section
 
 namespace LinearMap
 
@@ -60,7 +62,7 @@ theorem finrank_span_range_le {K L V A : Type*} [Field K] [Field L]
   have he : Submodule.span L (Set.range g) = W := by
     apply le_antisymm
     · exact Submodule.span_le.mpr (by rintro _ ⟨v, rfl⟩; exact hg v)
-    · exact Submodule.span_mono (by rintro _ ⟨i, rfl⟩; exact ⟨b i, rfl⟩)
+    · exact Submodule.span_mono (by grind)
   rw [he]
   have h := finrank_range_le_card (R := L) (fun i => g (b i))
   change Module.finrank L W ≤ Fintype.card (Fin (Module.finrank K V)) at h
@@ -76,8 +78,7 @@ theorem finrank_span_range_le_of_ker_le {K L V W A : Type*} [Field K] [Field L]
     Module.finrank L (Submodule.span L (Set.range g)) ≤ Module.finrank K f.range := by
   let g' := f.ker.liftQ g h
   have he : Set.range g' = Set.range g := by
-    rw [← LinearMap.coe_range, ← LinearMap.coe_range]
-    exact congrArg (fun S : Submodule K A => (S : Set A)) (Submodule.range_liftQ _ _ _)
+    exact congrArg ((SetLike.coe)) (Submodule.range_liftQ _ _ _)
   rw [← he]
   exact (finrank_span_range_le g').trans_eq f.quotKerEquivRange.finrank_eq
 

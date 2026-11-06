@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.MvPolynomial.Degrees
 public import Mathlib.RingTheory.Ideal.Defs
 import Mathlib.RingTheory.MvPolynomial.IrreducibleQuadratic
@@ -13,9 +15,8 @@ import Mathlib.RingTheory.MvPolynomial.IrreducibleQuadratic
 space is one-dimensional. This supplies the specialized-kernel condition
 for first-order deformation of a degree-preserving projection. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A multiple `g` of a nonzero polynomial `f` with total degree at most that of `f` is a scalar
@@ -26,7 +27,7 @@ lemma eq_scalar_mul_of_dvd_of_totalDegree_le {K σ : Type*} [Field K]
   by_cases hg : g = 0
   · exact ⟨0, by simp [hg]⟩
   obtain ⟨q, hq⟩ := hdiv
-  have hq0 : q ≠ 0 := by intro hz; apply hg; rw [hq, hz, mul_zero]
+  have hq0 : q ≠ 0 := by simp_all
   have hd := totalDegree_mul_of_isDomain hf hq0
   rw [← hq] at hd
   have hqd : q.totalDegree = 0 := by omega
@@ -44,5 +45,4 @@ theorem plane_projection_relation_space {K τ : Type*} [Field K]
     (hzero : aeval a g ∈ I) : ∃ c : K, g = c • f :=
   eq_scalar_mul_of_dvd_of_totalDegree_le f g hf ((hker g).mp hzero) hg
 
-end
 end CCDN

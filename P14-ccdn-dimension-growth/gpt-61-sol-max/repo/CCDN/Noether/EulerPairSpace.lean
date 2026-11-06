@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.RingTheory.MvPolynomial.IrreducibleQuadratic
 import CCDN.ForMathlib.MvPolynomial
@@ -19,28 +21,27 @@ k and one homogeneous polynomial of degree k. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The parameter space of Euler-constrained pairs: triples `(A, B, Q)` with `A` and `B` bivariate
 polynomials of total degree at most `k` and `Q` homogeneous of degree `k`. -/
-abbrev EulerPairSpace (R : Type*) [CommRing R] (k : ℕ) :=
+noncomputable abbrev EulerPairSpace (R : Type*) [CommRing R] (k : ℕ) :=
   (restrictTotalDegree (Fin 2) R k) × (restrictTotalDegree (Fin 2) R k) ×
     (homogeneousSubmodule (Fin 2) R k)
 
 /-- `(A,B,Q)` gives `(A+yQ,B-xQ)`, so the two top-degree radial terms cancel. -/
-def eulerPairCoordinates (R : Type*) [CommRing R] (k : ℕ) :
+noncomputable def eulerPairCoordinates (R : Type*) [CommRing R] (k : ℕ) :
     EulerPairSpace R k →ₗ[R] MvPolynomial (Fin 2) R × MvPolynomial (Fin 2) R where
   toFun u := (u.1.val + X 1 * u.2.2.val, u.2.1.val - X 0 * u.2.2.val)
   map_add' u v := by
     apply Prod.ext <;> simp only [Prod.fst_add, Prod.snd_add, Submodule.coe_add, mul_add] <;> ring
   map_smul' a u := by
-    apply Prod.ext <;> simp only [Prod.smul_fst, Prod.smul_snd, SetLike.val_smul,
-      mul_smul_comm, smul_add, smul_sub, RingHom.id_apply]
+    simp_all [ Prod.smul_fst, Prod.smul_snd, SetLike.val_smul,  smul_add, smul_sub, RingHom.id_apply]
+
+variable {R : Type*} [CommRing R] (k : ℕ) (u : EulerPairSpace R k)
 
 /-- The first polynomial `A + y * Q` of an Euler pair has total degree at most `k + 1`. -/
-lemma eulerPairCoordinates_fst_degree {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) : (eulerPairCoordinates R k u).1.totalDegree ≤ k + 1 := by
+lemma eulerPairCoordinates_fst_degree  : (eulerPairCoordinates R k u).1.totalDegree ≤ k + 1 := by
   have hA := (mem_restrictTotalDegree _ _ _).mp u.1.property
   have hQ := u.2.2.property.totalDegree_le
   apply (totalDegree_add _ _).trans
@@ -51,8 +52,7 @@ lemma eulerPairCoordinates_fst_degree {R : Type*} [CommRing R] (k : ℕ)
       omega)
 
 /-- The second polynomial `B - x * Q` of an Euler pair has total degree at most `k + 1`. -/
-lemma eulerPairCoordinates_snd_degree {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) : (eulerPairCoordinates R k u).2.totalDegree ≤ k + 1 := by
+lemma eulerPairCoordinates_snd_degree  : (eulerPairCoordinates R k u).2.totalDegree ≤ k + 1 := by
   have hB := (mem_restrictTotalDegree _ _ _).mp u.2.1.property
   have hQ := u.2.2.property.totalDegree_le
   apply (totalDegree_sub _ _).trans
@@ -62,8 +62,7 @@ lemma eulerPairCoordinates_snd_degree {R : Type*} [CommRing R] (k : ℕ)
       have hx := (isHomogeneous_X R (0 : Fin 2)).totalDegree_le
       omega)
 
-private lemma eulerPairCoordinates_contraction {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) :
+private lemma eulerPairCoordinates_contraction  :
     X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2 =
       X 0 * u.1.val + X 1 * u.2.1.val := by
   change X 0 * (u.1.val + X 1 * u.2.2.val) + X 1 * (u.2.1.val - X 0 * u.2.2.val) = _
@@ -71,8 +70,7 @@ private lemma eulerPairCoordinates_contraction {R : Type*} [CommRing R] (k : ℕ
 
 /-- The radial contraction `x * P + y * Q` of the pair `(P, Q)` attached to an element of
 `EulerPairSpace R k` has total degree at most `k + 1`. -/
-lemma eulerPairCoordinates_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
-    (u : EulerPairSpace R k) :
+lemma eulerPairCoordinates_contraction_degree  :
     (X 0 * (eulerPairCoordinates R k u).1 + X 1 * (eulerPairCoordinates R k u).2).totalDegree ≤
       k + 1 := by
   rw [eulerPairCoordinates_contraction]
@@ -85,7 +83,9 @@ lemma eulerPairCoordinates_contraction_degree {R : Type*} [CommRing R] (k : ℕ)
     have hx := (isHomogeneous_X R (1 : Fin 2)).totalDegree_le
     exact (totalDegree_mul _ _).trans (by omega)
 
-private lemma eulerPairCoordinates_eq_zero {F : Type*} [Field F] (k : ℕ)
+variable {F : Type*} [Field F]
+
+private lemma eulerPairCoordinates_eq_zero  (k : ℕ)
     (u : EulerPairSpace F k) (hu : eulerPairCoordinates F k u = 0) : u = 0 := by
   have hp := congrArg Prod.fst hu
   have hq := congrArg Prod.snd hu
@@ -95,24 +95,24 @@ private lemma eulerPairCoordinates_eq_zero {F : Type*} [Field F] (k : ℕ)
     homogeneousComponent_eq_zero _ _ (by
       have hh := (mem_restrictTotalDegree _ _ _).mp u.1.property
       omega)
-  have hYQ : (X (1 : Fin 2) * u.2.2.val).IsHomogeneous (k + 1) := by
-    simpa only [Nat.add_comm 1 k] using (isHomogeneous_X F (1 : Fin 2)).mul u.2.2.property
+  have hYQ := by
+    simpa only [Nat.add_comm 1 k] using (isHomogeneous_X F 1).mul u.2.2.property
   have hh := congrArg (homogeneousComponent (k + 1)) hp
   rw [map_add, hA, homogeneousComponent_of_mem hYQ, ite_eq_left rfl, map_zero, zero_add] at hh
-  have hQ0 : u.2.2.val = 0 := (mul_eq_zero.mp hh).resolve_left (X_ne_zero _)
+  have hQ0 := (mul_eq_zero.mp hh).resolve_left (X_ne_zero _)
   rw [hQ0, mul_zero, add_zero] at hp
   rw [hQ0, mul_zero, sub_zero] at hq
   exact Prod.ext (Subtype.ext hp) (Prod.ext (Subtype.ext hq) (Subtype.ext hQ0))
 
 /-- Over a field, the map `(A, B, Q) ↦ (A + y * Q, B - x * Q)` is injective. -/
-theorem eulerPairCoordinates_injective {F : Type*} [Field F] (k : ℕ) :
+theorem eulerPairCoordinates_injective  (k : ℕ) :
     Function.Injective (eulerPairCoordinates F k) := by
   intro u v huv
   have hh : eulerPairCoordinates F k (u - v) = 0 := by rw [map_sub, huv, sub_self]
   exact sub_eq_zero.mp (eulerPairCoordinates_eq_zero k (u - v) hh)
 
 /-- The number of unknowns is exactly the desired Noether-form degree. -/
-theorem finrank_eulerPairSpace {F : Type*} [Field F] (k : ℕ) :
+theorem finrank_eulerPairSpace  (k : ℕ) :
     Module.finrank F (EulerPairSpace F k) = (k + 2) ^ 2 - 1 := by
   let : Module.Finite F (homogeneousSubmodule (Fin 2) F k) :=
     Module.Finite.of_fg (homogeneousSubmodule_fg _ _ _)
@@ -132,5 +132,4 @@ theorem finrank_eulerPairSpace {F : Type*} [Field F] (k : ℕ) :
     nlinarith
   omega
 
-end
 end CCDN

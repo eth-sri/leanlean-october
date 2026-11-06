@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.LinearProjectionFiltration
 public import Mathlib.FieldTheory.IntermediateField.Adjoin.Defs
 public import Mathlib.FieldTheory.Minpoly.Basic
@@ -19,33 +21,32 @@ import Mathlib.FieldTheory.PrimitiveElement
  degree. Combined with the filtered upper bound, a parameter of full field
  degree forces a linear projection to preserve the affine Hilbert degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
+
+variable {K R F : Type*} [Field K] [Field R] [Field F] [Algebra K R] [Algebra R F] [Algebra K F] [IsScalarTower K R F]
 
 /-- A plane relation bounds the algebraic degree of either coordinate over a
 field containing a transcendental linear parameter. -/
-private theorem minpoly_degree_le_plane_relation {K R F : Type*}
-    [Field K] [Field R] [Field F] [Algebra K R] [Algebra R F] [Algebra K F]
-    [IsScalarTower K R F] (ψ : MvPolynomial (Fin 2) K →ₐ[K] F)
+private theorem minpoly_degree_le_plane_relation  (ψ : MvPolynomial (Fin 2) K →ₐ[K] F)
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (hzero : ψ f = 0)
     (j k : Fin 2) (u : R) (hu : Transcendental K u)
     (he : ψ (X j) = algebraMap R F u) :
     (minpoly R (ψ (X k))).natDegree ≤ f.totalDegree := by
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have hI : ∀ g ∈ I, ψ g = 0 := by
     intro g hg
     obtain ⟨q, rfl⟩ := Ideal.mem_span_singleton.mp hg
     rw [map_mul, hzero, zero_mul]
-  let φ : (MvPolynomial (Fin 2) K ⧸ I) →ₐ[K] F := Ideal.Quotient.liftₐ I ψ hI
+  let φ := Ideal.Quotient.liftₐ I ψ hI
   have hφ (g : MvPolynomial (Fin 2) K) : φ ((Ideal.Quotient.mk I) g) = ψ g := rfl
   have hdegree : HasFilteredCurveDegree I f.totalDegree :=
-    ⟨f.totalDegree, (f.totalDegree : ℤ) - f.totalDegree.choose 2,
+    ⟨f.totalDegree, ↑f.totalDegree - f.totalDegree.choose 2,
       fun n hn => principal_plane_hilbert_function f hf hn⟩
   have hi : LinearIndependent R (fun i : Fin (minpoly R (ψ (X k))).natDegree =>
       φ ((Ideal.Quotient.mk I) ((X k) ^ i.val))) := by
-    simpa only [hφ, map_pow] using (linearIndependent_pow (K := R) (ψ (X k)))
+    simp_all [map_pow, linearIndependent_pow]
   have h := polynomial_parameter_rank_le (K := K) (R := R) (F := F)
     (ι := Fin (minpoly R (ψ (X k))).natDegree) I f.totalDegree hdegree φ (X j)
     (by simp) u hu (by rw [hφ]; exact he)
@@ -54,9 +55,7 @@ private theorem minpoly_degree_le_plane_relation {K R F : Type*}
 
 /-- The degree of a plane equation is at least the degree of a function-field
 extension when its second coordinate is primitive over the parameter field. -/
-private theorem primitive_field_degree_le_plane_relation {K R F : Type*}
-    [Field K] [Field R] [Field F] [Algebra K R] [Algebra R F] [Algebra K F]
-    [IsScalarTower K R F] [Module.Finite R F]
+private theorem primitive_field_degree_le_plane_relation  [Module.Finite R F]
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] F)
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (hzero : ψ f = 0)
     (j k : Fin 2) (u : R) (hu : Transcendental K u)
@@ -93,5 +92,4 @@ theorem plane_projection_degree_eq_of_full_parameter {K R F τ : Type*}
   exact primitive_field_degree_le_plane_relation ψ f hf (by simp [ψ, hz])
     j k u hu (by rw [hψ]; exact he) (by rw [hψ]; exact hprim)
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import CCDN.Hilbert.LinearProjectionFiltration
 public import Mathlib.RingTheory.AlgebraicIndependent.Defs
@@ -18,9 +20,8 @@ import Mathlib.RingTheory.SimpleModule.Basic
 /-! Hypersurface projection kernels in arbitrary dimension.
 The proper-intersection estimate excludes a second independent equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 private theorem proper_intersection_hilbert_dimension_le
@@ -40,7 +41,6 @@ private theorem proper_intersection_hilbert_dimension_le
   obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
   refine ⟨max M (f.totalDegree + g.totalDegree), fun N hN => ?_⟩
   rw [hM N ((le_max_left _ _).trans hN)]
-  dsimp [Q]
   rw [Polynomial.eval_mul, Polynomial.eval_C,
     Polynomial.preHilbertPoly_eq_choose_add_sub ℚ n (by omega : 0 ≤ N + n)]
   simp only [Nat.sub_zero, Nat.add_comm N n]
@@ -87,16 +87,12 @@ theorem exists_hypersurface_projection_equation
       RingHom.ker (projectionCoordinateMap I a) = Ideal.span {f} := by
   let ψ := projectionCoordinateMap I a
   have hker : RingHom.ker ψ ≠ ⊥ := by
-    intro he
-    exact linear_projection_not_injective_of_hilbert_dimension_lt I a ha
-      (by simpa only [Fintype.card_fin] using hd)
-      ((RingHom.injective_iff_ker_eq_bot ψ.toRingHom).mpr he)
-  have hprime : (RingHom.ker ψ).IsPrime := RingHom.ker_isPrime ψ.toRingHom
+    grind [linear_projection_not_injective_of_hilbert_dimension_lt, Fintype.card_fin, RingHom.injective_iff_ker_eq_bot]
+  have hprime := RingHom.ker_isPrime ψ.toRingHom
   obtain ⟨f, hfmem, hf⟩ := hprime.exists_mem_prime_of_ne_bot hker
   refine ⟨f, hf.irreducible, ?_⟩
   ext g
   exact (hypersurface_map_eq_zero_iff_dvd f hf.irreducible ψ hfmem b hb hi g).trans
     Ideal.mem_span_singleton.symm
 
-end
 end CCDN

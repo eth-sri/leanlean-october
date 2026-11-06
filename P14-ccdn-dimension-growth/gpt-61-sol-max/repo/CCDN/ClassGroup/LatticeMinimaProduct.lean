@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 import CCDN.ClassGroup.LatticeMinimaFlag
 import CCDN.ForMathlib.ZLattice
@@ -13,9 +15,8 @@ import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 /-! A uniform product-of-minima bound from Blichfeldt's principle.
 The constant n^n is sufficient for the number-field lattice application. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Module MeasureTheory
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
@@ -29,27 +30,23 @@ theorem lattice_flag_minima_product_le
     (c : OrthonormalBasis (Fin n) ℝ E) (a : Fin n → ℝ)
     (hpos : ∀ i, 0 < a i) (hmono : Monotone a)
     (hminimum : ∀ i x, x ∈ L → x ∉ Submodule.span ℝ (c '' Set.Iio i) → a i ≤ ‖x‖) :
-    ∏ i, a i ≤ (n : ℝ) ^ n * ZLattice.covolume L := by
+    ∏ i, a i ≤ ↑n ^ n * ZLattice.covolume L := by
   classical
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
-  let r : Fin n → ℝ := fun i => a i / n
+  let r := fun i => a i / n
   have hr (i) : 0 < r i := div_pos (hpos i) hnR
   let u := c.toBasis.unitsSMul (fun i => Units.mk0 (r i) (hr i).ne')
   have hrepr (x : E) (i : Fin n) :
       c.toBasis.repr x i = r i * u.repr x i := by
-    simp only [u, Basis.repr_unitsSMul, Units.smul_def, Units.val_inv_eq_inv_val,
-      Units.val_mk0, smul_eq_mul]
-    rw [← mul_assoc, mul_inv_cancel₀ (hr i).ne', one_mul]
+    grind [Basis.repr_unitsSMul, Units.smul_def, Units.val_inv_eq_inv_val, Units.val_mk0, smul_eq_mul]
   have hcoord (x : E) (hx : x ∈ ZSpan.fundamentalDomain u) (i : Fin n) :
       0 ≤ c.toBasis.repr x i ∧ c.toBasis.repr x i < r i := by
-    have hi := (ZSpan.mem_fundamentalDomain u).mp hx i
-    rw [hrepr]
-    exact ⟨mul_nonneg (hr i).le hi.1, by simpa using (mul_lt_mul_of_pos_left hi.2 (hr i))⟩
+    simp_all +arith
   have hsep : ∀ x ∈ ZSpan.fundamentalDomain u,
       ∀ y ∈ ZSpan.fundamentalDomain u, x - y ∈ L → x = y := by
     intro x hx y hy hxy
     apply sub_eq_zero.mp
-    apply lattice_flag_coordinate_box_zero hn L c a hpos hmono hminimum hxy
+    apply lattice_flag_coordinate_box_zero hn L c a hmono hminimum hxy
     intro i
     have hxi := hcoord x hx i
     have hyi := hcoord y hy i
@@ -64,10 +61,9 @@ theorem lattice_flag_minima_product_le
     change (volume (parallelepiped c)).toReal = 1
     rw [c.volume_parallelepiped, ENNReal.toReal_one]
   have hvol : volume.real (ZSpan.fundamentalDomain u) =
-      (∏ i, a i) / (n : ℝ) ^ n := by
+      (∏ i, a i) / ↑n ^ n := by
     rw [ZSpan.measureReal_fundamentalDomain u volume c.toBasis]
     rw [hunit, mul_one]
-    change |c.toBasis.det (c.toBasis.unitsSMul _)| = _
     rw [Basis.det_unitsSMul_self]
     simp only [Units.val_mk0]
     rw [abs_of_pos (Finset.prod_pos (fun i _ => hr i))]
@@ -75,5 +71,4 @@ theorem lattice_flag_minima_product_le
   rw [hvol] at hbound
   exact (div_le_iff₀ (pow_pos hnR n)).mp hbound |>.trans_eq (mul_comm _ _)
 
-end
 end CCDN

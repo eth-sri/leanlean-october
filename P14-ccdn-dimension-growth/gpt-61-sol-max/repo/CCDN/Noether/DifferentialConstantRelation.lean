@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.Algebra.CharZeroOrGT
 public import Mathlib.FieldTheory.IsAlgClosed.Basic
 public import Mathlib.RingTheory.Derivation.MapCoeffs
@@ -22,9 +24,8 @@ lemmas isolate the constant-descent step in Gao's differential criterion;
 they do not supply the resultant bounds for residues or a Bertini theorem.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Differential
 open scoped Differential
 
@@ -45,11 +46,9 @@ private lemma polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char
       exact (mul_eq_zero.mp h).resolve_right (by
         simpa only [Nat.cast_succ] using hchar.natCast_ne_zero hi (Nat.le_of_not_gt hlarge))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Differential
 open scoped Differential
 
@@ -64,7 +63,7 @@ private theorem polynomial_eq_zero_of_differential_constant_coefficients
     · have he := eq_C_of_natDegree_eq_zero (hn.trans hn0)
       rw [he, eval_C] at hroot
       rw [he, hroot, C_0]
-    · have hderroot : f.derivative.eval t = 0 := by
+    · have hderroot := by
         have h := Differential.deriv_aeval_eq t f
         simp only [aeval_def, Algebra.algebraMap_self, eval₂_id] at h
         rw [hroot, map_zero, hcoeff, eval_zero, ht, mul_one, zero_add] at h
@@ -72,30 +71,30 @@ private theorem polynomial_eq_zero_of_differential_constant_coefficients
       have hdercoeff : Differential.mapCoeffs f.derivative = 0 := by
         rw [← derivative_differential_mapCoeffs, hcoeff, derivative_zero]
       have hlt : f.derivative.natDegree < n := by
-        rw [← hn]
-        exact natDegree_derivative_lt (by omega)
+        grind [natDegree_derivative_lt]
       have hdz := ih f.derivative.natDegree hlt f.derivative
         (hchar.mono (by omega)) hdercoeff hderroot rfl
       have he := polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char f hchar hdz
       rw [he, eval_C] at hroot
       rw [he, hroot, C_0]
 
+variable {F L : Type*} [Field F]
+
 private lemma differential_aeval_eq_zero_of_constants
-    {F L : Type*} [Field F] [Field L] [Algebra F L] [Differential L]
+     [Field L] [Algebra F L] [Differential L]
     (hbase : ∀ a : F, (algebraMap F L a)′ = 0)
     (x : L) (hx : x′ = 0) (f : F[X]) :
     (aeval x f)′ = 0 := by
   induction f using Polynomial.induction_on' with
-  | add f g hf hg => simp only [map_add, hf, hg, add_zero]
+  | add f g hf hg => simp_all
   | monomial n a =>
-    rw [aeval_monomial]
-    simp [Derivation.leibniz, hbase, hx]
+    simp_all
 
 /-- A differential constant satisfying a nonzero bivariate relation of
 t-degree below the characteristic (or in characteristic zero) lies in the algebraically closed base.
 The inner variable represents the constant; the outer variable represents t. -/
 theorem differential_constant_mem_base_of_relation
-    {F L : Type*} [Field F] [IsAlgClosed F] [Field L] [Algebra F L]
+     [IsAlgClosed F] [Field L] [Algebra F L]
     [Differential L]
     (hbase : ∀ a : F, (algebraMap F L a)′ = 0)
     (t x : L) (ht : t′ = 1) (hx : x′ = 0)
@@ -103,18 +102,15 @@ theorem differential_constant_mem_base_of_relation
     (hroot : (R.map (aeval x).toRingHom).eval t = 0) :
     x ∈ (algebraMap F L).range := by
   have hmap : Differential.mapCoeffs (R.map (aeval x).toRingHom) = 0 := by
-    ext i
-    simp only [Differential.coeff_mapCoeffs, coeff_map, coeff_zero]
-    exact differential_aeval_eq_zero_of_constants hbase x hx _
+    aesop (add safe apply [Differential.coeff_mapCoeffs, coeff_map, coeff_zero, differential_aeval_eq_zero_of_constants])
   have hz := polynomial_eq_zero_of_differential_constant_coefficients t ht
     (R.map (aeval x).toRingHom) (hchar.mono natDegree_map_le) hmap hroot
   let i := R.natDegree
-  have hi : R.coeff i ≠ 0 := by simpa only [i, coeff_natDegree] using leadingCoeff_ne_zero.mpr hR
+  have hi : R.coeff i ≠ 0 := by aesop
   have hiRoot : ((R.coeff i).map (algebraMap F L)).IsRoot x := by
     have h := congrArg (fun f : L[X] => f.coeff i) hz
     simpa only [coeff_map, coeff_zero, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
       IsRoot, eval_map, aeval_def] using h
   exact (IsAlgClosed.splits (R.coeff i)).mem_range_of_isRoot hi hiRoot
 
-end
 end CCDN

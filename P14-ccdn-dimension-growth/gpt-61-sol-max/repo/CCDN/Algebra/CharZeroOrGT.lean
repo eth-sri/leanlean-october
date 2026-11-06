@@ -30,7 +30,7 @@ namespace CCDN
 
 /-- The positive natural numbers up to `n` are nonzero in `R`; for a field, the characteristic
 of `R` is zero or larger than `n`. -/
-def CharZeroOrGT (R : Type*) [AddMonoidWithOne R] (n : ℕ) : Prop :=
+def CharZeroOrGT (R : Type*) [AddMonoidWithOne R] (n : ℕ)  :=
   ∀ m : ℕ, 0 < m → m ≤ n → (m : R) ≠ 0
 
 namespace CharZeroOrGT

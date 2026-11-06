@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import CCDN.ClassGroup.TwoTorsion
 import CCDN.ClassGroup.IdealRescaling
 import Mathlib.Analysis.Complex.ExponentialBounds
@@ -13,9 +15,8 @@ import Mathlib.Analysis.Complex.ExponentialBounds
 The anisotropic Minkowski argument is applied to the inverse ideal; the
 rescaling retains the exact generator needed for bounds at every place. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped NumberField nonZeroDivisors Real
 open NumberField NumberField.InfinitePlace
 open MeasureTheory MeasureTheory.Measure
@@ -28,8 +29,7 @@ variable (K : Type*) [Field K] [NumberField K]
 /-- The absolute discriminant, as the absolute value of an integer cast to `ℕ` and to `ℝ`. -/
 lemma numberField_discriminant_natAbs_cast :
     ((discr K).natAbs : ℝ) = |(discr K : ℝ)| := by
-  simpa only [Int.cast_natCast, Int.cast_abs] using
-    congrArg (fun z : ℤ => (z : ℝ)) (Int.natCast_natAbs (discr K))
+  simp_all
 
 /-- The absolute discriminant `(discr K).natAbs` of a number field is positive. -/
 lemma numberField_discriminant_natAbs_pos : 0 < (discr K).natAbs :=
@@ -42,8 +42,7 @@ lemma one_le_abs_discr : 1 ≤ |(discr K : ℝ)| := by
 /-- A number field of degree at least `2` over `ℚ` has absolute discriminant at least `3`. -/
 lemma three_le_abs_discr (hn : 2 ≤ Module.finrank ℚ K) : 3 ≤ |(discr K : ℝ)| := by
   have hh : (3 : ℤ) ≤ |discr K| := by
-    have := abs_discr_gt_two (K := K) (by omega : 1 < Module.finrank ℚ K)
-    omega
+    solve_by_elim [abs_discr_gt_two]
   exact_mod_cast hh
 
 /-- A number field of degree at least `2` over `ℚ` has logarithmic absolute discriminant
@@ -68,8 +67,10 @@ private lemma prod_weighted_sqrt_radii {ι : Type*} [Fintype ι]
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private lemma principal_square_infinite_product (I : Ideal (𝓞 K)) {α : 𝓞 K}
-    (hIα : I ^ 2 = Ideal.span {α}) :
+variable (I : Ideal (𝓞 K)) {α : 𝓞 K} (hIα : I ^ 2 = Ideal.span {α})
+
+include hIα in
+private lemma principal_square_infinite_product  :
     (∏ w : InfinitePlace K, w (α : K) ^ mult w) = (Ideal.absNorm I : ℝ) ^ 2 := by
   rw [prod_eq_abs_norm, ← Algebra.coe_norm_int]
   norm_cast
@@ -94,8 +95,8 @@ private lemma inverse_ideal_minkowskiBound_toReal (I : (Ideal (𝓞 K))⁰) :
     Real.coe_sqrt, coe_nnnorm, Int.norm_eq_abs]
   ring
 
-private lemma square_generator_radius_product (I : Ideal (𝓞 K)) {α : 𝓞 K}
-    (hIα : I ^ 2 = Ideal.span {α}) (T : ℝ≥0) :
+include hIα in
+private lemma square_generator_radius_product  (T : ℝ≥0) :
     (∏ w : InfinitePlace K,
       (T / NNReal.sqrt (Real.toNNReal (w (α : K)))) ^ mult w) =
       T ^ Module.finrank ℚ K / (Ideal.absNorm I : ℝ≥0) := by
@@ -105,10 +106,7 @@ private lemma square_generator_radius_product (I : Ideal (𝓞 K)) {α : 𝓞 K}
   have hp : (∏ w : InfinitePlace K,
       Real.toNNReal (w (α : K)) ^ mult w) =
       (Ideal.absNorm I : ℝ≥0) ^ 2 := by
-    apply NNReal.coe_injective
-    simpa only [NNReal.coe_prod, NNReal.coe_pow,
-      Real.coe_toNNReal _ (apply_nonneg _ _), NNReal.coe_natCast]
-      using principal_square_infinite_product K I hIα
+    grind [NNReal.coe_injective, NNReal.coe_prod, NNReal.coe_pow, Real.coe_toNNReal, apply_nonneg, NNReal.coe_natCast, principal_square_infinite_product]
   rw [hp, NNReal.sqrt_sq]
 
 /-- The anisotropic Minkowski step, with the radius left explicit. -/
@@ -116,19 +114,18 @@ theorem exists_balanced_square_generator_of_radius
     (I : (Ideal (𝓞 K))⁰) {α : 𝓞 K} (hα : α ≠ 0)
     (hIα : (I : Ideal (𝓞 K)) ^ 2 = Ideal.span {α})
     (T : ℝ≥0)
-    (hT : (2 : ℝ) ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)| <
-      (T : ℝ) ^ Module.finrank ℚ K) :
+    (hT : 2 ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)| <
+      ↑T ^ Module.finrank ℚ K) :
     ∃ J : (Ideal (𝓞 K))⁰, ∃ β : 𝓞 K,
       ClassGroup.mk0 J = ClassGroup.mk0 I ∧ β ≠ 0 ∧
       (J : Ideal (𝓞 K)) ^ 2 = Ideal.span {β} ∧
-      ∀ w : InfinitePlace K, w (β : K) < (T : ℝ) ^ 2 := by
+      ∀ w : InfinitePlace K, w (β : K) < ↑T ^ 2 := by
   classical
   let f : InfinitePlace K → ℝ≥0 :=
     fun w ↦ T / NNReal.sqrt (Real.toNNReal (w (α : K)))
   have hN : 0 < (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := by
     exact_mod_cast Ideal.absNorm_pos_of_nonZeroDivisors I
-  have hprod : (∏ w : InfinitePlace K, f w ^ mult w) =
-      T ^ Module.finrank ℚ K / (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ≥0) :=
+  have hprod :=
     square_generator_radius_product K _ hIα T
   have hvol : volume (mixedEmbedding.convexBodyLT K f) =
       ((mixedEmbedding.convexBodyLTFactor K *
@@ -143,36 +140,36 @@ theorem exists_balanced_square_generator_of_radius
       NNReal.coe_mul, NNReal.coe_div, NNReal.coe_pow, NNReal.coe_natCast]
     have hc : (2⁻¹ : ℝ) ^ nrComplexPlaces K ≤ 1 :=
       pow_le_one₀ (by norm_num) (by norm_num)
-    have hf : (1 : ℝ) ≤ mixedEmbedding.convexBodyLTFactor K :=
+    have hf :=
       NNReal.coe_le_coe.mpr (mixedEmbedding.one_le_convexBodyLTFactor K)
     calc
       _ ≤ (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ)⁻¹ *
           Real.sqrt |(discr K : ℝ)| * 2 ^ Module.finrank ℚ K := by
         gcongr
         simpa using mul_le_mul_of_nonneg_left hc (inv_nonneg.mpr hN.le)
-      _ = ((2 : ℝ) ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)|) /
+      _ = (2 ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)|) /
           (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := by ring
-      _ < (T : ℝ) ^ Module.finrank ℚ K /
+      _ < ↑T ^ Module.finrank ℚ K /
           (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := div_lt_div_of_pos_right hT hN
       _ ≤ _ := le_mul_of_one_le_left (by positivity) hf
   obtain ⟨κ, hκI, hκ, hκw⟩ :=
     mixedEmbedding.exists_ne_zero_mem_ideal_lt K (FractionalIdeal.mk0 K I)⁻¹ hm
-  obtain ⟨J, β, hJ, hβ, heq, hsq, _⟩ :=
-    rescale_integral_ideal_square (K := K) I hα hIα hκ hκI
+  obtain ⟨J, β, hJ, hβ, heq, hsq⟩ :=
+    rescale_integral_ideal_square  I hα hIα hκ hκI
   refine ⟨J, β, hJ, hβ, hsq, fun w ↦ ?_⟩
   have hαK : (α : K) ≠ 0 := by
     simpa only [ne_eq, RingOfIntegers.coe_eq_zero_iff] using hα
   have hαw : 0 < w (α : K) := InfinitePlace.pos_iff.mpr hαK
-  have hk : w κ < (T : ℝ) / Real.sqrt (w (α : K)) := by
+  have hk := by
     simpa only [f, NNReal.coe_div, Real.coe_sqrt,
       Real.coe_toNNReal _ (apply_nonneg _ _)] using hκw w
   have hk2 := mul_lt_mul_of_pos_left
-    (pow_lt_pow_left₀ hk (apply_nonneg _ _) (by decide : (2 : ℕ) ≠ 0)) hαw
+    (pow_lt_pow_left₀ hk (apply_nonneg _ _) (by decide : 2 ≠ 0)) hαw
   change (β : K) = (α : K) * κ ^ 2 at heq
   rw [heq, map_mul, map_pow]
   calc
-    _ < w (α : K) * ((T : ℝ) / Real.sqrt (w (α : K))) ^ 2 := hk2
-    _ = (T : ℝ) ^ 2 := by
+    _ < w (α : K) * (↑T / Real.sqrt (w (α : K))) ^ 2 := hk2
+    _ = ↑T ^ 2 := by
       rw [div_pow, Real.sq_sqrt hαw.le]
       field_simp
 
@@ -180,18 +177,16 @@ private lemma balanced_discriminant_radius_powers {D : ℝ} (hD : 0 < D)
     {n : ℕ} (hn : 0 < n) :
     (3 * D ^ (1 / (2 * (n : ℝ)))) ^ n = 3 ^ n * Real.sqrt D ∧
     (3 * D ^ (1 / (2 * (n : ℝ)))) ^ 2 = 9 * D ^ (1 / (n : ℝ)) := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
   constructor
   · rw [mul_pow, ← Real.rpow_natCast (D ^ (1 / (2 * (n : ℝ)))) n,
       ← Real.rpow_mul hD.le]
-    have he : (1 / (2 * (n : ℝ))) * (n : ℝ) = (1 / 2 : ℝ) := by
+    have he : (1 / (2 * ↑n)) * ↑n = (1 / 2 : ℝ) := by
       field_simp
     rw [he, ← Real.sqrt_eq_rpow]
   · rw [mul_pow, ← Real.rpow_natCast (D ^ (1 / (2 * (n : ℝ)))) 2,
       ← Real.rpow_mul hD.le]
     norm_num only [Nat.cast_ofNat]
-    have he : (1 / (2 * (n : ℝ))) * (2 : ℝ) = 1 / (n : ℝ) := by ring
-    rw [he]
+    field_simp
 
 /-- Every two-torsion class admits an integral square generator bounded
 at every infinite place by nine times the discriminant root. -/
@@ -204,15 +199,15 @@ private theorem exists_balanced_two_torsion_square_generator
       ∀ w : InfinitePlace K,
         w (β : K) < 9 * |(discr K : ℝ)| ^ (1 / (Module.finrank ℚ K : ℝ)) := by
   classical
-  obtain ⟨I, α, hIc, hα, hIα, _, _⟩ :=
+  obtain ⟨I, α, hIc, hα, hIα⟩ :=
     exists_two_torsion_integral_square_representative K c
-  have hD : 0 < |(discr K : ℝ)| := zero_lt_one.trans_le (one_le_abs_discr K)
+  have hD := zero_lt_one.trans_le (one_le_abs_discr K)
   have hn : 0 < Module.finrank ℚ K := Module.finrank_pos
   let T : ℝ≥0 := ⟨3 * |(discr K : ℝ)| ^
     (1 / (2 * (Module.finrank ℚ K : ℝ))), by positivity⟩
   obtain ⟨hTn, hT2⟩ := balanced_discriminant_radius_powers hD hn
-  have hT : (2 : ℝ) ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)| <
-      (T : ℝ) ^ Module.finrank ℚ K := by
+  have hT : 2 ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)| <
+      ↑T ^ Module.finrank ℚ K := by
     change _ < (3 * |(discr K : ℝ)| ^
       (1 / (2 * (Module.finrank ℚ K : ℝ)))) ^ Module.finrank ℚ K
     rw [hTn]
@@ -232,17 +227,14 @@ theorem exists_injective_balanced_two_torsion_generators :
       ∀ c, β c ≠ 0 ∧
         (∀ w : InfinitePlace K, w (β c : K) <
           9 * |(discr K : ℝ)| ^ (1 / (Module.finrank ℚ K : ℝ))) ∧
-        ∃ J : (Ideal (𝓞 K))⁰, ClassGroup.mk0 J = c ∧
-          (J : Ideal (𝓞 K)) ^ 2 = Ideal.span {β c} ∧
-          (Algebra.norm ℤ (β c)).natAbs = Ideal.absNorm (J : Ideal (𝓞 K)) ^ 2 := by
+        ∃ m : ℕ, (Algebra.norm ℤ (β c)).natAbs = m ^ 2 := by
   classical
   choose J β hc hβ hsq hnorm hbound using
     exists_balanced_two_torsion_square_generator K
-  refine ⟨β, ?_, fun c ↦ ⟨hβ c, hbound c, J c, hc c, hsq c, hnorm c⟩⟩
+  refine ⟨β, ?_, fun c ↦ ⟨hβ c, hbound c, Ideal.absNorm (J c : Ideal (𝓞 K)), hnorm c⟩⟩
   intro c e hce
   apply Subtype.ext
   rw [← hc c, ← hc e]
-  exact ideal_class_eq_of_square_generators_eq (J c) (J e) (hsq c) (hsq e) hce
+  solve_by_elim [ideal_class_eq_of_square_generators_eq]
 
-end
 end CCDN

@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.Algebra.Polynomial.Degree.Defs
 public import Mathlib.Algebra.Polynomial.Eval.Defs
 public import Mathlib.Analysis.Complex.Norm
@@ -15,9 +17,8 @@ import Mathlib.LinearAlgebra.Lagrange
 sum of each Lagrange basis polynomial is at most a binomial coefficient;
 summing gives the factor 3^d in CCDN Lemma 3.4.1, over the complex numbers. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Finset
 
 private lemma complex_linear_mul_coefficient_bound {f : ℂ[X]} {H : ℝ}
@@ -38,40 +39,36 @@ private lemma complex_linear_mul_coefficient_bound {f : ℂ[X]} {H : ℝ}
 
 private lemma complex_nat_sub_norm (i j : ℕ) :
     ‖(i : ℂ) - j‖ = |(i : ℝ) - j| := by
-  have he : (i : ℂ) - j = (((i : ℝ) - j : ℝ) : ℂ) := by push_cast; rfl
-  rw [he, Complex.norm_real, Real.norm_eq_abs]
+  norm_cast
 
 private lemma complex_lagrange_product_bound (s : Finset ℕ) (i k : ℕ) :
-    ‖(∏ j ∈ s, Lagrange.basisDivisor (i : ℂ) (j : ℂ)).coeff k‖ ≤
-      ∏ j ∈ s, ((j : ℝ) + 1) / |(i : ℝ) - j| := by
+    ‖(∏ j ∈ s, Lagrange.basisDivisor ↑i (j : ℂ)).coeff k‖ ≤
+      ∏ j ∈ s, (↑j + 1) / |(i : ℝ) - j| := by
   classical
   induction s using Finset.induction_on generalizing k with
   | empty =>
-    by_cases hk : k = 0 <;> simp [coeff_one, hk]
+    aesop
   | @insert j s hj ih =>
     rw [Finset.prod_insert hj, Finset.prod_insert hj]
-    have he : Lagrange.basisDivisor (i : ℂ) (j : ℂ) =
+    have he : Lagrange.basisDivisor ↑i (j : ℂ) =
         C (((i : ℂ) - j)⁻¹) * X + C (-((i : ℂ) - j)⁻¹ * j) := by
       simp only [Lagrange.basisDivisor, neg_mul, map_neg, map_mul, sub_eq_add_neg]
       ring
     rw [he]
     have hh := complex_linear_mul_coefficient_bound
-      (show 0 ≤ ∏ l ∈ s, ((l : ℝ) + 1) / |(i : ℝ) - l| from
-        Finset.prod_nonneg (fun _ _ => by positivity)) ih
-      (((i : ℂ) - j)⁻¹) (-((i : ℂ) - j)⁻¹ * j) k
+      ((Finset.prod_nonneg (fun _ _ => by positivity))) ih
+      ((↑i - j)⁻¹) (-((i : ℂ) - j)⁻¹ * j) k
     convert hh using 1
     simp only [norm_inv, norm_mul, norm_neg, norm_natCast, complex_nat_sub_norm]
     ring
 
 private lemma integer_grid_lagrange_weight (d i : ℕ) (hi : i ≤ d) :
-    (∏ j ∈ (range (d + 1)).erase i, ((j : ℝ) + 1) / |(i : ℝ) - j|) =
+    (∏ j ∈ (range (d + 1)).erase i, (↑j + 1) / |(i : ℝ) - j|) =
       ((d + 1).choose (i + 1) : ℝ) := by
   classical
   induction d generalizing i with
   | zero =>
-    have : i = 0 := by omega
-    subst i
-    simp
+    simp_all
   | succ d ih =>
     by_cases hie : i = d + 1
     · subst i
@@ -85,7 +82,7 @@ private lemma integer_grid_lagrange_weight (d i : ℕ) (hi : i ≤ d) :
           _ = ∏ j ∈ range (d + 1), (((d + 1 - j : ℕ)) : ℝ) := by
             apply prod_congr rfl
             intro j hj
-            have hj' : j ≤ d + 1 := (mem_range.mp hj).le
+            have hj' := (mem_range.mp hj).le
             rw [Nat.cast_sub hj', abs_of_nonneg (sub_nonneg.mpr (by exact_mod_cast hj'))]
           _ = _ := by
             exact_mod_cast (Nat.descFactorial_eq_prod_range (d + 1) (d + 1)).symm.trans
@@ -93,22 +90,20 @@ private lemma integer_grid_lagrange_weight (d i : ℕ) (hi : i ≤ d) :
       rw [hn, hd, div_self (by positivity)]
       simp
     · have hid : i ≤ d := by omega
-      have hne : d + 1 ≠ i := Ne.symm hie
+      have hne := Ne.symm hie
       rw [range_add_one, erase_insert_of_ne hne,
         prod_insert (by simp [mem_erase])]
       rw [ih i hid]
-      have hlt : (i : ℝ) < (d : ℝ) + 1 := by exact_mod_cast (show i < d + 1 by omega)
+      have hlt : ↑i < (d : ℝ) + 1 := by exact_mod_cast (show i < d + 1 by omega)
       rw [Nat.cast_add, Nat.cast_one, abs_of_neg (by linarith)]
-      have hc : ((d + 1).choose (i + 1) : ℝ) * ((d : ℝ) + 2) =
-          ((d + 2).choose (i + 1) : ℝ) * ((d : ℝ) + 1 - i) := by
+      have hc : ((d + 1).choose (i + 1) : ℝ) * (↑d + 2) =
+          ((d + 2).choose (i + 1) : ℝ) * (↑d + 1 - i) := by
         have hh := Nat.choose_mul_succ_eq (d + 1) (i + 1)
-        have hn : d + 1 + 1 - (i + 1) = d + 1 - i := by omega
-        rw [hn] at hh
         have hhR := congrArg (fun n : ℕ => (n : ℝ)) hh
         push_cast [Nat.cast_sub (show i ≤ d + 1 by omega)] at hhR
         convert hhR using 1
         ring
-      have hden : (i : ℝ) - ((d : ℝ) + 1) ≠ 0 := by linarith
+      have hden : ↑i - ((d : ℝ) + 1) ≠ 0 := by linarith
       field_simp
       nlinarith [hc]
 
@@ -117,21 +112,17 @@ private lemma two_pow_succ_sub_one_le_three_pow (d : ℕ) :
   induction d with
   | zero => norm_num
   | succ d ih =>
-    have hp : (1 : ℝ) ≤ 3 ^ d := one_le_pow₀ (by norm_num)
-    rw [pow_succ _ (d + 1), pow_succ 3 d]
-    nlinarith
+    grind [one_le_pow₀, pow_succ]
 
 /-- CCDN Lemma 3.4.1 in coefficientwise form, with the exact factor 3^d. -/
 theorem complex_polynomial_coefficient_bound_of_integer_grid
     (f : ℂ[X]) {d : ℕ} (hd : f.natDegree ≤ d) {H : ℝ} (hH : 0 ≤ H)
-    (heval : ∀ i : ℕ, i ≤ d → ‖f.eval (i : ℂ)‖ ≤ H) (k : ℕ) :
-    ‖f.coeff k‖ ≤ (3 : ℝ) ^ d * H := by
+    (heval : ∀ i : ℕ, i ≤ d → ‖f.eval ↑i‖ ≤ H) (k : ℕ) :
+    ‖f.coeff k‖ ≤ 3 ^ d * H := by
   have hinj : Set.InjOn (fun i : ℕ => (i : ℂ)) (range (d + 1)) :=
     Nat.cast_injective.injOn
   have hdeg : f.degree < (range (d + 1)).card := by
-    rw [card_range, degree_lt_iff_coeff_zero]
-    intro n hn
-    exact coeff_eq_zero_of_natDegree_lt (by omega)
+    grind [degree_lt_iff_coeff_zero, coeff_eq_zero_of_natDegree_lt]
   have he := Lagrange.eq_interpolate hinj hdeg
   have hb (i : ℕ) (hi : i ≤ d) :
       ‖(Lagrange.basis (range (d + 1)) (fun j : ℕ => (j : ℂ)) i).coeff k‖ ≤
@@ -140,7 +131,7 @@ theorem complex_polynomial_coefficient_bound_of_integer_grid
     rw [integer_grid_lagrange_weight d i hi] at hh
     exact hh
   have hs : (∑ i ∈ range (d + 1), ((d + 1).choose (i + 1) : ℝ)) =
-      (2 : ℝ) ^ (d + 1) - 1 := by
+      2 ^ (d + 1) - 1 := by
     have h := Nat.sum_range_choose (d + 1)
     rw [Finset.sum_range_succ'] at h
     have hh := congrArg (fun n : ℕ => (n : ℝ)) h
@@ -150,18 +141,13 @@ theorem complex_polynomial_coefficient_bound_of_integer_grid
   conv_lhs => rw [he]
   rw [Lagrange.interpolate_apply, finsetSum_coeff]
   calc
-    _ ≤ ∑ i ∈ range (d + 1), ‖(C (f.eval (i : ℂ)) *
+    _ ≤ ∑ i ∈ range (d + 1), ‖(C (f.eval ↑i) *
         Lagrange.basis (range (d + 1)) (fun j : ℕ => (j : ℂ)) i).coeff k‖ :=
       norm_sum_le _ _
     _ ≤ ∑ i ∈ range (d + 1), H * ((d + 1).choose (i + 1) : ℝ) := by
-      apply sum_le_sum
-      intro i hi
-      have hi' : i ≤ d := by have := mem_range.mp hi; omega
-      rw [coeff_C_mul, norm_mul]
-      exact mul_le_mul (heval i hi') (hb i hi') (norm_nonneg _) hH
-    _ = H * ((2 : ℝ) ^ (d + 1) - 1) := by rw [← mul_sum, hs]
-    _ ≤ H * (3 : ℝ) ^ d := mul_le_mul_of_nonneg_left (two_pow_succ_sub_one_le_three_pow d) hH
+      grind [sum_le_sum, norm_mul, mul_le_mul, norm_nonneg]
+    _ = H * (2 ^ (d + 1) - 1) := by rw [← mul_sum, hs]
+    _ ≤ H * 3 ^ d := mul_le_mul_of_nonneg_left (two_pow_succ_sub_one_le_three_pow d) hH
     _ = _ := mul_comm _ _
 
-end
 end CCDN

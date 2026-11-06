@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib
+
 public import Mathlib.FieldTheory.RatFunc.Basic
 public import Mathlib.RingTheory.SimpleRing.Principal
 import CCDN.Algebra.BoundedLinearSeparation
@@ -13,14 +15,15 @@ import CCDN.Algebra.BoundedLinearSeparation
 specialization. Clearing a left inverse's denominators gives the assertion
 without selecting minors or assuming a generic-rank principle. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Matrix Polynomial
+
+variable {K ι κ : Type*} [Field K]
 
 /-- Clear all entries of a rational-function matrix with one nonzero
 polynomial denominator. -/
-lemma ratFunc_matrix_common_denominator {K ι κ : Type*} [Field K]
+lemma ratFunc_matrix_common_denominator 
     [Fintype ι] [Fintype κ] (B : Matrix ι κ (RatFunc K)) :
     ∃ q : Polynomial K, ∃ C : Matrix ι κ (Polynomial K), q ≠ 0 ∧
       ∀ i j, algebraMap (Polynomial K) (RatFunc K) (C i j) =
@@ -34,7 +37,7 @@ lemma ratFunc_matrix_common_denominator {K ι κ : Type*} [Field K]
 
 /-- An injective polynomial matrix has a polynomial left inverse up to one
 nonzero scalar polynomial. -/
-private theorem polynomial_matrix_scaled_left_inverse {K ι κ : Type*} [Field K]
+private theorem polynomial_matrix_scaled_left_inverse 
     [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
     (A : Matrix ι κ (Polynomial K))
     (hA : Function.Injective (A.map (algebraMap (Polynomial K) (RatFunc K))).mulVecLin) :
@@ -43,15 +46,15 @@ private theorem polynomial_matrix_scaled_left_inverse {K ι κ : Type*} [Field K
   let M := A.map f
   obtain ⟨T, hT⟩ := M.mulVecLin.exists_leftInverse_of_injective (LinearMap.ker_eq_bot.mpr hA)
   let B := LinearMap.toMatrix' T
-  have hBA : B * M = 1 := by
+  have hBA := by
     have hh := congrArg LinearMap.toMatrix' hT
     simpa only [LinearMap.toMatrix'_comp, ← Matrix.toLin'_apply',
       LinearMap.toMatrix'_toLin', LinearMap.toMatrix'_id] using hh
   obtain ⟨q, C, hq, hC⟩ := ratFunc_matrix_common_denominator B
   refine ⟨q, C, hq, ?_⟩
   have hCm : C.map f = f q • B := by ext i j; exact hC i j
-  have hh : (C * A).map f = f q • (1 : Matrix κ κ (RatFunc K)) := by
-    rw [Matrix.map_mul, hCm, Matrix.smul_mul, hBA]
+  have hh : (C * A).map f = f q • 1 := by
+    aesop
   apply Matrix.ext
   intro i j
   apply RatFunc.algebraMap_injective K
@@ -61,7 +64,7 @@ private theorem polynomial_matrix_scaled_left_inverse {K ι κ : Type*} [Field K
     Matrix.one_apply, apply_ite f, map_one, map_zero] using he
 
 /-- Full column rank over K(t) occurs at an integer specialization. -/
-theorem polynomial_matrix_injective_specialization {K ι κ : Type*} [Field K] [CharZero K]
+theorem polynomial_matrix_injective_specialization  [CharZero K]
     [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
     (A : Matrix ι κ (Polynomial K))
     (hA : Function.Injective (A.map (algebraMap (Polynomial K) (RatFunc K))).mulVecLin) :
@@ -70,17 +73,16 @@ theorem polynomial_matrix_injective_specialization {K ι κ : Type*} [Field K] [
   obtain ⟨k, _, hk⟩ := polynomial_exists_small_nat_eval_ne_zero q hq
   refine ⟨k, ?_⟩
   let e := Polynomial.evalRingHom (k : K)
-  have he : C.map e * A.map e = e q • (1 : Matrix κ κ K) := by
+  have he : C.map e * A.map e = e q • 1 := by
     rw [← Matrix.map_mul, hCA]
     ext i j
     simp only [Matrix.map_apply, Matrix.smul_apply, smul_eq_mul, map_mul,
       Matrix.one_apply, apply_ite e, map_one, map_zero]
   intro x y hxy
-  have hh := congrArg (fun v => (C.map e) *ᵥ v) hxy
+  have hh := congrArg (((C.map ⇑e).mulVec)) hxy
   change (C.map e) *ᵥ ((A.map e) *ᵥ x) = (C.map e) *ᵥ ((A.map e) *ᵥ y) at hh
   rw [Matrix.mulVec_mulVec, Matrix.mulVec_mulVec, he, Matrix.smul_mulVec,
     Matrix.smul_mulVec, Matrix.one_mulVec, Matrix.one_mulVec] at hh
   exact (smul_right_injective _ hk) hh
 
-end
 end CCDN

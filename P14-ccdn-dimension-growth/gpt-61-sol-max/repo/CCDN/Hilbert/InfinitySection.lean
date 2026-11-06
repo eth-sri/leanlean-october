@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+import Mathlib.Tactic
+
 public import CCDN.Algebra.ProjectiveFiltration
 import CCDN.Algebra.CoordinatePowerGeneration
 import Mathlib.LinearAlgebra.Dimension.Localization
@@ -23,9 +25,10 @@ quotient ring.
 namespace CCDN
 noncomputable section
 
+variable {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) (n : ℕ)
+
 /-- A homogeneous element with coefficient in the prescribed filtered space. -/
-def projectiveMonomialMap {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
+def projectiveMonomialMap  :
     filteredCoordinateSpace I n →ₗ[K] projectiveCoordinateAlgebra I where
   toFun a := ⟨Polynomial.monomial n (a : MvPolynomial σ K ⧸ I),
     (projective_monomial_mem I n a).mpr a.property⟩
@@ -33,14 +36,13 @@ def projectiveMonomialMap {K σ : Type*} [Field K]
   map_smul' c a := by apply Subtype.ext; simp
 
 /-- `projectiveMonomialMap I n a` is the monomial `a · Tⁿ` in the homogeneous coordinate algebra. -/
-@[simp] lemma projectiveMonomialMap_val {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) (a : filteredCoordinateSpace I n) :
+@[simp] lemma projectiveMonomialMap_val  (a : filteredCoordinateSpace I n) :
     (projectiveMonomialMap I n a : Polynomial (MvPolynomial σ K ⧸ I)) =
       Polynomial.monomial n (a : MvPolynomial σ K ⧸ I) := rfl
 
 /-- The ideal cutting out the infinity section in the homogeneous coordinate ring. -/
 def projectiveInfinityIdeal {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) : Ideal (projectiveCoordinateAlgebra I) :=
+    (I : Ideal (MvPolynomial σ K))  :=
   Ideal.span {projectiveInfinityCoordinate I}
 
 instance projectiveInfinityIdeal_twoSided {K σ : Type*} [Field K]
@@ -51,8 +53,7 @@ instance projectiveInfinityIdeal_twoSided {K σ : Type*} [Field K]
 
 /-- Divisibility by the new coordinate is exactly membership one step lower in
 the affine degree filtration. -/
-theorem projectiveMonomial_mem_infinityIdeal {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) (a : filteredCoordinateSpace I (n + 1)) :
+theorem projectiveMonomial_mem_infinityIdeal  (a : filteredCoordinateSpace I (n + 1)) :
     projectiveMonomialMap I (n + 1) a ∈ projectiveInfinityIdeal I ↔
       (a : MvPolynomial σ K ⧸ I) ∈ filteredCoordinateSpace I n := by
   rw [projectiveInfinityIdeal,
@@ -68,19 +69,14 @@ theorem projectiveMonomial_mem_infinityIdeal {K σ : Type*} [Field K]
     exact g.property n
   · intro ha
     refine ⟨projectiveMonomialMap I n ⟨a, ha⟩, ?_⟩
-    apply Subtype.ext
-    exact (Polynomial.X_mul_monomial n (a : MvPolynomial σ K ⧸ I)).symm
+    solve_by_elim [Subtype.ext, Polynomial.X_mul_monomial, symm]
 
 /-- Map a homogeneous piece to the quotient by the infinity coordinate. -/
-def projectivePieceToInfinity {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
-    filteredCoordinateSpace I (n + 1) →ₗ[K]
-      projectiveCoordinateAlgebra I ⧸ projectiveInfinityIdeal I :=
+def projectivePieceToInfinity   :=
   (Ideal.Quotient.mkₐ K (projectiveInfinityIdeal I)).toLinearMap.comp
     (projectiveMonomialMap I (n + 1))
 
-private lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
+private lemma projectivePieceToInfinity_ker  :
     (projectivePieceToInfinity I n).ker =
       (filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype := by
   ext a
@@ -90,9 +86,7 @@ private lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
   rfl
 
 /-- Degree-`n+1` elements of the infinity quotient ring. -/
-def infinityGradedSpace {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
-    Submodule K (projectiveCoordinateAlgebra I ⧸ projectiveInfinityIdeal I) :=
+def infinityGradedSpace   :=
   (projectivePieceToInfinity I n).range
 
 instance infinityGradedSpace_finite {K σ : Type*} [Field K] [Finite σ]
@@ -100,32 +94,29 @@ instance infinityGradedSpace_finite {K σ : Type*} [Field K] [Finite σ]
   unfold infinityGradedSpace
   infer_instance
 
-/-- The exact Hilbert difference for the homogeneous infinity quotient. -/
-private theorem infinityGradedSpace_finrank {K σ : Type*} [Field K] [Finite σ]
-    (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
-    Module.finrank K (infinityGradedSpace I n) +
-      Module.finrank K (filteredCoordinateSpace I n) =
-      Module.finrank K (filteredCoordinateSpace I (n + 1)) := by
-  have h := LinearMap.finrank_range_add_finrank_ker (projectivePieceToInfinity I n)
-  rw [projectivePieceToInfinity_ker] at h
-  have hk := Submodule.finrank_map_subtype_eq (filteredCoordinateSpace I (n + 1))
-    ((filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype)
-  rw [Submodule.map_comap_subtype,
-    inf_eq_right.mpr (filteredCoordinateSpace_mono I (by omega))] at hk
-  rw [← hk] at h
-  exact h
+variable {K σ : Type*} [Field K] [Finite σ]
+
 
 /-- Every certified affine Hilbert degree is the eventual graded dimension of the
 quotient by the infinity coordinate. -/
-theorem infinityGradedSpace_eventually_degree {K σ : Type*} [Field K] [Finite σ]
+theorem infinityGradedSpace_eventually_degree 
     (I : Ideal (MvPolynomial σ K)) {d N : ℕ} {b : ℤ}
     (hdegree : ∀ n ≥ N,
-      (Module.finrank K (filteredCoordinateSpace I n) : ℤ) = (d : ℤ) * n + b) :
+      (Module.finrank K (filteredCoordinateSpace I n) : ℤ) = ↑d * n + b) :
     ∀ n ≥ N, Module.finrank K (infinityGradedSpace I n) = d := by
   intro n hn
   have h0 := hdegree n hn
   have h1 := hdegree (n + 1) (by omega)
-  have hs := infinityGradedSpace_finrank I n
+  have hs := (show Module.finrank K ↥(infinityGradedSpace I n) + Module.finrank K ↥(filteredCoordinateSpace I n) =
+                 Module.finrank K ↥(filteredCoordinateSpace I (n + (1 : ℕ))) from (by
+               have h := LinearMap.finrank_range_add_finrank_ker (projectivePieceToInfinity I n)
+               rw [projectivePieceToInfinity_ker] at h
+               have hk := Submodule.finrank_map_subtype_eq (filteredCoordinateSpace I (n + 1))
+                 ((filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype)
+               rw [Submodule.map_comap_subtype,
+                 inf_eq_right.mpr (filteredCoordinateSpace_mono I (by omega))] at hk
+               rw [← hk] at h
+               exact h))
   push_cast at h1
   nlinarith
 
