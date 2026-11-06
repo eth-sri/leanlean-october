@@ -1,0 +1,33 @@
+module
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationActiveFamily
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildEnergy
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped BigOperators Classical SchwartzMap
+
+namespace SevenEighths.CenteredMomentAmplificationOriginalErrors
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
+open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
+open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
+open CenteredMomentAmplificationErrorEnergy
+open CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool
+open CenteredMomentAmplificationSourceDomain CenteredMomentOriginalChildEnergy
+open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
+open CenteredMomentSourceRow CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask
+open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
+open CenteredMomentCommonAllocationSum
+local notation "O" => ActualEisensteinCubic.O
+variable {ι : Type*} [Fintype ι]
+local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+
+end SevenEighths.CenteredMomentAmplificationOriginalErrors
+
+end
+
+end OAI

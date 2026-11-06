@@ -1,0 +1,40 @@
+module
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairBound
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalCanonicalWindow
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalWindow
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped Classical BigOperators SchwartzMap ContDiff
+open Filter MeasureTheory
+
+namespace SevenEighths.CenteredMomentSecondExceptionalCanonicalPair
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
+open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
+open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
+open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
+open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
+open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
+open CenteredMomentCommonExceptionalWindow
+open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
+open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
+open CenteredMomentSecondExceptionalPairDictionary CenteredMomentSecondExceptionalPairBound
+open CenteredMomentCommonExceptionalCanonicalWindow CenteredMomentSecondCanonical
+open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
+open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
+open ConcretePrimeRowBridge
+local notation "O" => HeckeFamily.O
+local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+universe u
+variable {ι:Type u}[Fintype ι][DecidableEq ι]
+
+end SevenEighths.CenteredMomentSecondExceptionalCanonicalPair
+
+end
+
+end OAI

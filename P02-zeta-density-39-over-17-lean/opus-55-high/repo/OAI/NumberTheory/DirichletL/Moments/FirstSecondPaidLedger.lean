@@ -1,0 +1,30 @@
+module
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityDefect
+public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalLedger
+public import OAI.NumberTheory.DirichletL.Moments.SecondCanonical
+public import OAI.NumberTheory.DirichletL.Moments.FinalStageLedger
+
+set_option linter.privateModule false
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped Classical BigOperators
+
+namespace SevenEighths.CenteredMomentFirstSecondPaidLedger
+open CenteredMomentFirstSecondCapacityLedger CenteredMomentFirstAmplificationChoice
+open CenteredMomentFirstPhysicalLedger CenteredMomentFirstScale
+open CenteredMomentSectorLocalization CenteredMomentDescentLedger
+open CenteredMomentSecondCanonical CenteredMomentSecondLedger CenteredMomentCanonicalFirst
+open CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation
+open CenteredMomentSupport CenteredMomentRankinRadical
+open CanonicalQuadraticSieve
+local notation "O"=>ActualEisensteinCubic.O
+
+end SevenEighths.CenteredMomentFirstSecondPaidLedger
+
+end
+
+end OAI
