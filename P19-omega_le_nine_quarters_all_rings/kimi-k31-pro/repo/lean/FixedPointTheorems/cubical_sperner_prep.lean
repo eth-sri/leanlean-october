@@ -28,9 +28,7 @@ namespace SpernerCube
 
 def G (SC : SpernerCube) := Fin SC.n → Fin (SC.p+1)
 
-instance Gfin (SC : SpernerCube): Fintype SC.G := by {
-  exact Pi.instFintype
-}
+instance Gfin (SC : SpernerCube) : Fintype SC.G := Pi.instFintype
 
 end SpernerCube
 
@@ -62,30 +60,17 @@ def case_C (I : Fin (n1 +1) → SC.G) :=
 def case_D (I : Fin (n1 +1) → SC.G) := ∀ j, ∀ q, ∃ k,I k j ≠ q
 
 lemma one_of_ABCD (I : Fin (n1 +1) → SC.G) :
-    case_A SC I ∨ case_B SC I ∨ case_C SC I ∨ case_D SC I := by {
-  by_cases h1 : case_D SC I
-  exact Or.inr (Or.inr (Or.inr h1))
-  unfold case_D at h1
-  push Not at h1
-  obtain ⟨j , ⟨ q, h2 ⟩⟩ := h1
-  by_cases q0 : q = 0
-  {
-    apply Or.inl
-    use j
-    rwa [← q0]
-  }
-  by_cases qp : q = Fin.last SC.p
-  {
-    apply Or.inr (Or.inl _)
-    use j
-    intro k
-    rwa [h2 k]
-  }
-  suffices h3 : case_C SC I by {
-    simp only [h3, true_or, or_true]
-  }
-  use j, q
-}
+    case_A SC I ∨ case_B SC I ∨ case_C SC I ∨ case_D SC I := by
+  by_cases hD : case_D SC I
+  · exact Or.inr (Or.inr (Or.inr hD))
+  unfold case_D at hD
+  push Not at hD
+  obtain ⟨j, q, hq⟩ := hD
+  by_cases h0 : q = 0
+  · exact Or.inl ⟨j, by simpa [h0] using hq⟩
+  by_cases hp : q = Fin.last SC.p
+  · exact Or.inr (Or.inl ⟨j, by simpa [hp] using hq⟩)
+  · exact Or.inr (Or.inr (Or.inl ⟨j, q, ⟨h0, hp⟩, hq⟩))
 
 section simplex_properties
 
@@ -143,19 +128,11 @@ lemma le_add_one_of_simplex {m: ℕ} I (hs : simplex SC m I) (i1 i2 : Fin (m+1))
 
 end simplex_properties
 
-lemma p_ne_zero_of_cube {hn1 : n1 + 1 = SC.n}: Fin.last SC.p ≠ 0 := by {
-  simp only [ne_eq, Fin.last_eq_zero_iff]
-  intro h1
-  let v : Fin SC.n → Fin (SC.p + 1) := fun _ ↦ 0
-  have h3 : NeZero SC.n := by {
-    rw [←hn1]
-    exact instNeZeroNatHAdd_1
-  }
-  have h4 : v 0 = 0 := by {rfl}
-  have h2 := (SC.rl_proper v).2 0
-  simp only [Fin.val_zero, ne_eq, h1, Fin.val_eq_zero_iff, nonpos_iff_eq_zero] at h2
-  exact h2.1 h4 (h2.2 h4)
-}
+lemma p_ne_zero_of_cube {hn1 : n1 + 1 = SC.n}: Fin.last SC.p ≠ 0 := by
+  intro h
+  have hn : NeZero SC.n := ⟨by omega⟩
+  have hp := (SC.rl_proper (fun _ => 0)).2 0
+  simp_all [Fin.last_eq_zero_iff]
 
 section simplex_child
 
@@ -177,98 +154,26 @@ def insert_index (j : Fin (SC.n+1)) (a: Fin (n1 +1 )) : Fin (SC.n+1) :=
 def delete_vertex (j: Fin (SC.n+1)) (I : Fin (SC.n+1)→ SC.G) : Fin (n1 + 1) → SC.G :=
   fun a ↦ I (@insert_index SC n1 hn1 j a)
 
-lemma insert_index_ne j a : @insert_index SC n1 hn1 j a ≠ j := by {
-  apply Fin.ne_of_val_ne
-  unfold insert_index
-  by_cases hlt : a.val < j.val
-  {
-    simp only [hlt, ↓reduceIte]
-    omega
-  }
-  {
-    simp only [hlt, ↓reduceIte, ne_eq]
-    omega
-  }
-}
+lemma insert_index_ne j a : @insert_index SC n1 hn1 j a ≠ j := by
+  grind [insert_index]
 
 lemma almost_surjective_of_insert_index (j : Fin (SC.n+1)) (a : Fin (SC.n+1)) (h : a ≠ j)
-    : ∃ k : Fin (n1 + 1) , a = @insert_index SC n1 hn1 j k := by {
-  unfold insert_index
-  by_cases hlt : a.1 < j.1
-  {
-    use (Fin.ofNat _ a.1)
-    have h2 : a.1 = (Fin.ofNat (n1 + 1) a.1) := by {
-      rw [Fin.ofNat_eq_cast, Fin.val_cast_of_lt]
-      rw [hn1]
-      apply lt_of_lt_of_le hlt
-      exact Fin.is_le j
-    }
-    simp only [← h2, hlt]
-    rfl
-  }
-  {
-    have h2 : j.1 < a.1 := by {
-      have := Fin.val_ne_of_ne (id (Ne.symm h))
-      omega
-    }
-    let a1 := a.1 - 1
-    have h3 : a1 + 1 = a.1 := by {
-      show a.1 - 1 + 1 = a.1
-      omega
-    }
-    let a1f := Fin.ofNat (n1 + 1) a1
-    use a1f
-    ext
-    have h4 : a1 < n1 +1 := by {
-      have h5 := a.2
-      show a.1 - 1 < n1 + 1
-      omega
-    }
-    have h6 : a1f.1 = a1 := by {
-      unfold a1f
-      simp only [Fin.ofNat_eq_cast, Fin.val_natCast, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-      exact h4
-    }
-    have h5 : ¬ (a1f < j.1) := by {
-      simp only [not_lt, h6]
-      show j.1 ≤ a.1 - 1
-      omega
-    }
-    simp only [h5, ↓reduceIte]
-    rw [← h3, h6]
-  }
-}
+    : ∃ k : Fin (n1 + 1), a = @insert_index SC n1 hn1 j k := by
+  by_cases hlt : a.val < j.val
+  · refine ⟨⟨a.val, by omega⟩, Fin.ext ?_⟩
+    simp [insert_index, hlt]
+  · have hne := Fin.val_ne_of_ne h
+    refine ⟨⟨a.val - 1, by omega⟩, Fin.ext ?_⟩
+    simp [insert_index, show ¬a.val - 1 < j.val by omega]
+    omega
 
-lemma insert_index_strict_mono j : StrictMono (@insert_index SC n1 hn1 j) := by {
-  intro a b h1
-  have h2 : a.1 < b.1 := by {exact h1}
-  have h21 : a.1 < b.1 + 1 := by omega
-  unfold insert_index
-  by_cases h3 : a.1 < j.1
-  {
-    by_cases h4 : b.1 < j.1
-    repeat {
-      simp only [h3, ↓reduceIte, h4, Fin.mk_lt_mk, Fin.val_fin_lt, gt_iff_lt]
-      assumption
-    }
-  }
-  {
-    by_cases h4 : b.1 < j.1
-    {
-      simp only [h3, ↓reduceIte, h4, Fin.mk_lt_mk, gt_iff_lt]
-      omega
-    }
-    {
-      simp only [h3, ↓reduceIte, h4, Fin.mk_lt_mk, gt_iff_lt]
-      omega
-    }
-  }
-}
+lemma insert_index_strict_mono j : StrictMono (@insert_index SC n1 hn1 j) := by
+  intro a b hab
+  simp only [insert_index, Fin.mk_lt_mk]
+  split_ifs <;> omega
 
-lemma insert_index_inj j : Function.Injective (@insert_index SC n1 hn1 j) := by {
-  apply StrictMono.injective
-  apply insert_index_strict_mono
-}
+lemma insert_index_inj j : Function.Injective (@insert_index SC n1 hn1 j) :=
+  (insert_index_strict_mono SC j).injective
 
 lemma delete_vertex_inj J {hs : simplex SC SC.n J} i1 i2
     (h1 : @delete_vertex SC n1 hn1 i1 J = @delete_vertex SC n1 hn1 i2 J ) : i1 = i2 := by {
@@ -322,41 +227,6 @@ lemma delete_vertex_is_face J {hs : simplex SC SC.n J} i :
   }
 }
 
-lemma is_id_of_strict_mono (m: ℕ ) (f : Fin m → Fin m) (hsm : StrictMono f)
-    : ∀ k, f k = k := by {
-  suffices h1 : ∀ (a : ℕ), ∀ k, k.1 < a → f k = k by {
-    intro k
-    exact h1 m k k.2
-  }
-  intro a
-  induction' a with a ha
-  {
-    intro k h1
-    omega
-  }
-  {
-    have h1 : Function.Injective f := by {exact StrictMono.injective hsm}
-    have h2 : Function.Surjective f := Finite.surjective_of_injective h1
-    intro k hk
-    have h3 j : j < k → f j = j := by {
-      intro hj
-      apply ha
-      omega
-    }
-    by_cases h4 : f k < k
-    apply h1 (h3 (f k) h4)
-    simp only [not_lt] at h4
-    apply le_antisymm _ h4
-    obtain ⟨l, h9⟩ := h2 k
-    suffices h8 : k ≤ l by {rwa [← hsm.le_iff_le, h9] at h8}
-    by_contra! h6
-    have h7 := h3 l h6
-    rw [h9] at h7
-    rw [h7] at h6
-    exact (lt_self_iff_false l).mp h6
-  }
-}
-
 lemma is_insert_index_of_strict_mono f (hsm : StrictMono f)
     : ∃ j, f = @insert_index SC n1 hn1 j := by {
   have h31 : Function.Injective f := by {exact hsm.injective}
@@ -386,9 +256,8 @@ lemma is_insert_index_of_strict_mono f (hsm : StrictMono f)
     rw [h5.le_iff_le]
     exact h4
   }
-  have h3 := is_id_of_strict_mono _ g h2
   ext1 k
-  rw [hg k, h3 k]
+  rw [hg k, h2.apply_eq]
 }
 
 lemma child_simplex_char (I : Fin (n1 +1) → SC.G) J {hs : simplex SC SC.n J}
@@ -442,41 +311,14 @@ end simplex_child
 section cases_ABCD
 
 lemma insert_vertex I (v : SC.G) j :
-    ∃ J, I = @delete_vertex SC n1 hn1 j J ∧ J j = v := by {
-  have h1 : ∀ j2, ∃ w, (j2 = j → w = v)
-      ∧ ∀ i, @insert_index SC n1 hn1 j i = j2 → I i = w := by {
-    intro j2
-    by_cases h1 : j2 = j
-    {
-      use v
-      simp only [implies_true, true_and]
-      intro i
-      have h3 : @insert_index SC n1 hn1 j i ≠ j := by {apply insert_index_ne}
-      simp only [h1, h3, IsEmpty.forall_iff]
-    }
-    {
-      have h3 : ∃ i, j2 = @insert_index SC n1 hn1 j i := by {
-        apply almost_surjective_of_insert_index
-        exact h1
-      }
-      obtain ⟨ i, hi⟩ := h3
-      use (I i)
-      simp only [h1, IsEmpty.forall_iff, true_and]
-      intro i2 h2
-      congr!
-      apply insert_index_inj SC j
-      rw [h2, hi]
-    }
-  }
-  obtain ⟨J, h2⟩ := axiomOfChoice h1
-  use J
-  apply And.intro
-  {
-    ext i
-    exact (h2 (@insert_index SC n1 hn1 j i)).2 i rfl
-  }
-  exact (h2 j).1 rfl
-}
+    ∃ J, I = @delete_vertex SC n1 hn1 j J ∧ J j = v := by
+  let J := Function.extend (@insert_index SC n1 hn1 j) I (fun _ => v)
+  refine ⟨J, ?_, ?_⟩
+  · funext i
+    exact ((insert_index_inj SC j).extend_apply I (fun _ => v) i).symm
+  · exact Function.extend_apply' I (fun _ => v) j (by
+      rintro ⟨i, hi⟩
+      exact insert_index_ne SC j i hi)
 
 lemma surround_index (j : Fin (SC.n + 1)) (i : Fin (n1 + 1)) (hij : i.1 + 1 = j.1 )
     (hj1 : j ≠ Fin.last SC.n): ((@insert_index SC n1 hn1 j i).1 + 1 = j.1
@@ -824,19 +666,11 @@ lemma ccc_add {m} I (hs : simplex SC m I) (i1 i2 i3) (h1 : i1 ≤ i2 ∧ i2 ≤ 
   }
 }
 
-lemma ccc_pos {m} I (hs : simplex SC m I) i1 i2 (h1 : i1 ≠ i2)
-    : 0 < coord_change_count SC (I i1) (I i2) := by {
-  unfold coord_change_count
-  by_contra! h2
-  apply h1
-  apply hs.1
-  simp only [ne_eq, nonpos_iff_eq_zero, Finset.card_eq_zero] at h2
-  apply funext
-  intro k
-  rw [Finset.filter_eq_empty_iff] at h2
-  simp only [Finset.mem_univ, Decidable.not_not, forall_const] at h2
-  apply h2
-}
+lemma ccc_pos {m} I (hs : simplex SC m I) i1 i2 (h1 : i1 ≠ i2) :
+    0 < coord_change_count SC (I i1) (I i2) := by
+  obtain ⟨k, hk⟩ := Function.ne_iff.mp (fun h => h1 (hs.1 h))
+  rw [coord_change_count, Finset.card_pos]
+  exact ⟨k, by simp [hk]⟩
 
 noncomputable def ccc_fun {m} (I : Fin (m+1)→ SC.G) (i : Fin (m+1)) : Fin (SC.n + 1 )
     := ⟨ coord_change_count SC (I 0) (I i), by {
@@ -897,10 +731,8 @@ lemma ccc_fun_case_D_iff {m} I (hs : simplex SC m I) :
 
 lemma last_eq_first_add_one J (hs : simplex SC SC.n J)
     : ∀ k, (J (Fin.last SC.n) k).1 = (J 0 k).1 + 1 := by {
-  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := by {
-    apply is_id_of_strict_mono
-    apply ccc_fun_strict_mono SC J hs
-  }
+  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := fun _ =>
+    (ccc_fun_strict_mono SC J hs).apply_eq
   have h2 := (ccc_fun_case_D_iff SC J hs).mpr (h3 _)
   unfold case_D at h2
   intro k
@@ -977,10 +809,8 @@ lemma delete_vertex_ccc_fun_match J (hs : simplex SC SC.n J) j1 j2
     simpa only [Fin.val_zero, Fin.val_pos_iff, zero_add, Fin.mk_eq_zero,
         ite_eq_left_iff, not_lt,Fin.le_zero_iff, one_ne_zero, imp_false]
   }
-  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := by {
-    apply is_id_of_strict_mono
-    apply ccc_fun_strict_mono SC J hs
-  }
+  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := fun _ =>
+    (ccc_fun_strict_mono SC J hs).apply_eq
   symm
   by_contra h5
   obtain ⟨i1, hi1⟩ := @almost_surjective_of_insert_index SC n1 hn1 _ _ h5
@@ -1573,41 +1403,29 @@ lemma case_A_parent_count {hn1 : n1 + 1 = SC.n} I (hs : simplex SC n1 I) (h2 : c
 
 end cases_ABCD
 
-lemma boundary_is_A_or_B {hn1 : n1 + 1 = SC.n} I (hbf : @is_boundary_face SC n1 I)
-    : case_A SC I ∨ case_B SC I := by {
-  have hs : simplex SC n1 I := by {
-    obtain ⟨J,hJ⟩ := hbf
+lemma boundary_is_A_or_B {hn1 : n1 + 1 = SC.n} I (hbf : @is_boundary_face SC n1 I) :
+    case_A SC I ∨ case_B SC I := by
+  have hs : simplex SC n1 I := by
+    obtain ⟨J, hJ⟩ := hbf
     exact hJ.1.1
-  }
   unfold is_boundary_face at hbf
   rw [Fintype.existsUnique_iff_card_one] at hbf
-  have h1 := one_of_ABCD SC I
-  rw [←or_assoc] at h1
-  cases' h1 with h1 h1
-  assumption
-  cases' h1 with h1 h1
-  rw [@case_C_parent_count SC n1 hn1 I hs h1] at hbf
-  simp only [OfNat.ofNat_ne_one] at hbf
-  rw [@case_D_parent_count SC n1 hn1 I hs h1] at hbf
-  simp only [OfNat.ofNat_ne_one] at hbf
-}
+  rcases one_of_ABCD SC I with h | h | h | h
+  · exact Or.inl h
+  · exact Or.inr h
+  · rw [@case_C_parent_count SC n1 hn1 I hs h] at hbf
+    simp only [OfNat.ofNat_ne_one] at hbf
+  · rw [@case_D_parent_count SC n1 hn1 I hs h] at hbf
+    simp only [OfNat.ofNat_ne_one] at hbf
 
 lemma case_B_boundary {hn1 : n1 + 1 = SC.n} I (hs : simplex SC n1 I)
     (h1 : case_B SC I) : is_boundary_face SC I :=
   (Fintype.existsUnique_iff_card_one _).mpr (@case_B_parent_count SC n1 hn1 I hs h1)
 
 lemma parent_count {hn1 : n1 + 1 = SC.n} I (hs : simplex SC n1 I) :
-    Finset.card { J : Fin (SC.n + 1) → SC.G | is_face SC I J} ∈ {c | c = 1 ∨ c = 2} := by {
-  simp only [Set.mem_ofPred_eq]
-  have h1 := one_of_ABCD SC I
-  rw [←or_assoc] at h1
-  cases' h1 with h1 h1
-  left
-  cases' h1 with h2 h2
-  exact @case_A_parent_count SC n1 hn1 I hs h2
-  exact @case_B_parent_count SC n1 hn1 I hs h2
-  right
-  cases' h1 with h2 h2
-  exact @case_C_parent_count SC n1 hn1 I hs h2
-  exact @case_D_parent_count SC n1 hn1 I hs h2
-}
+    Finset.card { J : Fin (SC.n + 1) → SC.G | is_face SC I J} ∈ {c | c = 1 ∨ c = 2} := by
+  rcases one_of_ABCD SC I with h | h | h | h
+  · exact Or.inl (@case_A_parent_count SC n1 hn1 I hs h)
+  · exact Or.inl (@case_B_parent_count SC n1 hn1 I hs h)
+  · exact Or.inr (@case_C_parent_count SC n1 hn1 I hs h)
+  · exact Or.inr (@case_D_parent_count SC n1 hn1 I hs h)

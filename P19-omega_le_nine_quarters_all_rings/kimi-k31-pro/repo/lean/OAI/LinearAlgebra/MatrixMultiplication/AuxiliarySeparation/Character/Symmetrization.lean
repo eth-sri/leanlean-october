@@ -6,7 +6,6 @@ Modified from OpenAI's matrix-multiplication sources to support arbitrary fields
 See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
 -/
 
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth.PermutationProduct
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Basic
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real

@@ -26,11 +26,12 @@ theorem admissible_bddBelow (R : Type u) [Ring R] [Nontrivial R] :
 
 theorem admissible_nonempty (R : Type u) [Ring R] :
     Set.Nonempty {τ : ℝ | Arithmetic.AdmissibleExponent R τ} :=
-  Arithmetic.admissibleExponent_nonempty (F := R)
+  ⟨(9 : ℝ) / 4, admissibleExponent_nine_quarters_all_rings R⟩
 
 theorem omega_lower (R : Type u) [Ring R] [Nontrivial R] :
     (2 : ℝ) ≤ Arithmetic.omega R :=
-  Arithmetic.omega_two_le (F := R)
+  le_csInf ⟨(9 : ℝ) / 4, admissibleExponent_nine_quarters_all_rings R⟩
+    (fun _ hτ => Arithmetic.admissibleExponent_two_le hτ)
 
 theorem epsilon_cost (R : Type u) [Ring R] (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ, 1 ≤ n →
@@ -50,14 +51,11 @@ theorem exact_coefficients (ε : ℝ) (hε : 0 < ε) :
   by
     obtain ⟨n, r, hn, hRank, hr⟩ :=
       AuxiliarySeparation.exists_rankAtMost_of_exponent_slack (K := ℤ) hε
-    have hBound : (r : ℝ) ≤ (n : ℝ) ^ ((9 : ℝ) / 4 + ε) := by
-      apply hr.trans
-      apply Real.rpow_le_rpow_of_exponent_le
-      · exact_mod_cast (show 1 ≤ n by omega)
-      · linarith [AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters]
+    have hBound : (r : ℝ) ≤ (n : ℝ) ^ ((9 : ℝ) / 4 + ε) :=
+      hr.trans (Real.rpow_le_rpow_of_exponent_le
+        (by exact_mod_cast (show 1 ≤ n by omega))
+        (by linarith [AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters]))
     obtain ⟨a, b, c, h⟩ := hRank
-    refine ⟨n, r, hn, hBound, a, b, c, ?_⟩
-    intro x y z
-    exact congrFun (congrFun (congrFun h x) y) z
+    exact ⟨n, r, hn, hBound, a, b, c, fun x y z => congrFun (congrFun (congrFun h x) y) z⟩
 
 end ComparatorChecks

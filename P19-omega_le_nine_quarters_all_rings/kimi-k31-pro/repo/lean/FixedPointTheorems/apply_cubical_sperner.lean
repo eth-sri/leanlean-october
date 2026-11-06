@@ -91,27 +91,16 @@ lemma reduced_label_props_1 (f : @unit_cube n → @unit_cube n) (x : @unit_cube 
   }
 }
 
-lemma reduced_label_props_2 (f : @unit_cube n → @unit_cube n) (x : @unit_cube n)
-    : @rl_point n f x ≤ n ∧
-    ∀ k, (x.1 k = 0 → @rl_point n f x ≠ k.1) ∧ (x.1 k = 1 → @rl_point n f x ≤ k.1):= by {
-  have h1 := reduced_label_props_1 f x
-  apply And.intro h1.1
-  intro k
-  apply And.intro
-  {
-    intro h2 h3
-    have h4 := (h1.2 k).1 h3
-    rw [h2] at h4
-    simp only [zero_ne_one, or_false] at h4
-    contrapose! h4
-    exact (f x).2.1 k
-  }
-  {
-    intro h2
-    apply (h1.2 k).2
-    exact Or.inr h2
-  }
-}
+lemma reduced_label_props_2 (f : @unit_cube n → @unit_cube n) (x : @unit_cube n) :
+    @rl_point n f x ≤ n ∧
+    ∀ k, (x.1 k = 0 → @rl_point n f x ≠ k.1) ∧ (x.1 k = 1 → @rl_point n f x ≤ k.1) := by
+  have h := reduced_label_props_1 f x
+  refine ⟨h.1, fun k => ⟨?_, fun hk => (h.2 k).2 (.inr hk)⟩⟩
+  intro hk heq
+  have hlt := (h.2 k).1 heq
+  rw [hk] at hlt
+  simp only [zero_ne_one, or_false] at hlt
+  exact (not_lt_of_ge ((f x).2.1 k)) hlt
 
 lemma reduced_label_props_3 (f : @unit_cube n → @unit_cube n) (x : @unit_cube n) (k : Fin n)
     : (@rl_point n f x = k → (f x).1 k ≤ x.1 k) ∧ (@rl_point n f x > k → (f x).1 k ≥ x.1 k) := by {

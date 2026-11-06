@@ -69,11 +69,6 @@ theorem symmetrizedProfile_le_of_character_value_bounds {t : ℝ} (ht : 0 < t)
     χ.symmetrizedProfile t T ≤ (r : ℝ) ^ (1 / t) :=
   χ.symmetrizedProfile_le_of_permuted_value_bounds ht T (fun i => h (χ.permutedCharacter i))
 
-section Field
-variable {K : Type*} [Field K] (χ : Character K)
-
-end Field
-
 end Character
 end MatrixMultiplication.AuxiliarySeparation
 

@@ -52,9 +52,6 @@ def subsemiring : Subsemiring S where
 def stabilize (x : S) : subsemiring hzero hadd hmul :=
   ⟨x + 1, Or.inr (by simpa only [zero_add] using hadd (hzero x) (le_refl 1))⟩
 
-@[simp] theorem coe_stabilize (x : S) :
-    (stabilize hzero hadd hmul x : S) = x + 1 := rfl
-
 /-- Every nonzero element of this subsemiring dominates its unit. -/
 theorem one_le_of_ne_zero (x : subsemiring hzero hadd hmul) (hx : x ≠ 0) :
     1 ≤ x := by
@@ -67,7 +64,7 @@ variable {hzero hadd hmul}
 @[simp] theorem stabilize_zero :
     stabilize hzero hadd hmul 0 = 1 := by
   apply Subtype.ext
-  simp only [coe_stabilize, zero_add, OneMemClass.coe_one]
+  simp [stabilize]
 
 theorem stabilize_one :
     stabilize hzero hadd hmul 1 = 1 + 1 := by

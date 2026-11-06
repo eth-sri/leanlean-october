@@ -108,23 +108,6 @@ theorem profile_le_affine_slope {P : ℕ → ℝ} {g : ℝ} {c h : ℕ}
     simpa only [mul_comm] using shiftedTripling_profile_lower hh htrip j
   simpa only [mul_comm] using ge_of_tendsto hprofile (Eventually.of_forall hbound)
 
-/-- The row estimate in the positive-index notation of the paper. -/
-theorem profile_row_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
-    (htrip : ∀ a : ℕ, 1 ≤ a → ∀ h : ℕ, 1 ≤ h →
-      3 * P a h ≤ P a (3 * h + a - 1))
-    (hlim : ∀ a : ℕ, 1 ≤ a →
-      Tendsto (fun h : ℕ => P a h / (h : ℝ)) atTop (𝓝 (g a)))
-    (a h : ℕ) (ha : 1 ≤ a) (hh : 1 ≤ h) :
-    P a h ≤ ((h : ℝ) + ((a : ℝ) - 1) / 2) * g a := by
-  have ht : ∀ n : ℕ, 1 ≤ n → 3 * P a n ≤ P a (3 * n + (a - 1)) := by
-    intro n hn
-    have hi : 3 * n + (a - 1) = 3 * n + a - 1 := by omega
-    rw [hi]
-    exact htrip a ha n hn
-  have hcast : ((a - 1 : ℕ) : ℝ) = (a : ℝ) - 1 := by
-    rw [Nat.cast_sub ha, Nat.cast_one]
-  simpa only [hcast] using profile_le_affine_slope hh ht (hlim a ha)
-
 /-- The diagonal is bounded above by the limiting row slope with the precise
 coefficient `(3a-1)/2`. -/
 theorem profile_diagonal_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
@@ -134,8 +117,15 @@ theorem profile_diagonal_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
       Tendsto (fun h : ℕ => P a h / (h : ℝ)) atTop (𝓝 (g a)))
     (a : ℕ) (ha : 1 ≤ a) :
     P a a ≤ ((3 * (a : ℝ) - 1) / 2) * g a := by
+  have ht : ∀ n : ℕ, 1 ≤ n → 3 * P a n ≤ P a (3 * n + (a - 1)) := by
+    intro n hn
+    have hi : 3 * n + (a - 1) = 3 * n + a - 1 := by omega
+    rw [hi]
+    exact htrip a ha n hn
+  have hcast : ((a - 1 : ℕ) : ℝ) = (a : ℝ) - 1 := by
+    rw [Nat.cast_sub ha, Nat.cast_one]
   have hc : (a : ℝ) + ((a : ℝ) - 1) / 2 = (3 * (a : ℝ) - 1) / 2 := by ring
-  simpa only [hc] using profile_row_le_slope htrip hlim a a ha ha
+  simpa only [hcast, hc] using profile_le_affine_slope ha ht (hlim a ha)
 
 /-- Symmetry identifies a diagonal step with one increment in each adjacent
 row. Only positive-index symmetry and slope bounds are used. -/

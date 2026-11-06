@@ -118,10 +118,6 @@ theorem adaptedTensor_unique (d e : ℕ)
     rw [Finset.sum_sub_distrib, hT, adaptedTensor_reconstruct, sub_self]
   exact sub_eq_zero.mp ((Fintype.linearIndependent_iff.mp h) _ hs k)
 
-@[simp] theorem adaptedTensor_kernel_to_quotient (d e : ℕ)
-    (i : Fin (d + 1)) (j : Fin e) (k : Fin (d + e + 2)) :
-    adaptedTensor (K := K) d e i (.inr j) (.inl k) = 0 := rfl
-
 /-- Polynomial diagonal maps; scaling the quotient input by `X` clears
 the negative input-kernel weight without changing the leading tensor. -/
 def inputScale (e : ℕ) : Index e → K[X]

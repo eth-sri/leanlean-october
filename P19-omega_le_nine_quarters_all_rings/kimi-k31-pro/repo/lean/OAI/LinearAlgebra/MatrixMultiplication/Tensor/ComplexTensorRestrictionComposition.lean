@@ -17,14 +17,16 @@ namespace Tensor
 
 section Algebra
 
-variable {K X Y Z X' Y' Z' X'' Y'' Z'' : Type*} [CommSemiring K]
+variable {K X Y Z X' Y' Z' X'' Y'' Z'' U V W U' V' W' : Type*} [CommSemiring K]
+variable [Fintype X] [Fintype Y] [Fintype Z]
+variable [Fintype X'] [Fintype Y'] [Fintype Z']
+variable [Fintype U] [Fintype V] [Fintype W]
 
-def composeRestrictionMatrix [Fintype X']
+def composeRestrictionMatrix
     (D : X'' → X' → K) (A : X' → X → K) : X'' → X → K :=
   fun x'' x => ∑ x', D x'' x' * A x' x
 
-private theorem sum_three_mul [Fintype X] [Fintype Y] [Fintype Z]
-    (a : X → K) (b : Y → K) (c : Z → K) (t : K) :
+private theorem sum_three_mul (a : X → K) (b : Y → K) (c : Z → K) (t : K) :
     (∑ x, a x) * (∑ y, b y) * (∑ z, c z) * t =
       ∑ x, ∑ y, ∑ z, a x * b y * c z * t := by
   rw [Finset.sum_mul_sum]
@@ -32,9 +34,7 @@ private theorem sum_three_mul [Fintype X] [Fintype Y] [Fintype Z]
   simp_rw [Finset.mul_sum]
   simp_rw [Finset.sum_mul]
 
-private theorem sum_six_comm [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype X'] [Fintype Y'] [Fintype Z']
-    (f : X' → Y' → Z' → X → Y → Z → K) :
+private theorem sum_six_comm (f : X' → Y' → Z' → X → Y → Z → K) :
     (∑ x', ∑ y', ∑ z', ∑ x, ∑ y, ∑ z, f x' y' z' x y z) =
       ∑ x, ∑ y, ∑ z, ∑ x', ∑ y', ∑ z', f x' y' z' x y z := by
   calc
@@ -45,9 +45,7 @@ private theorem sum_six_comm [Fintype X] [Fintype Y] [Fintype Z]
         f p.1 p.2.1 p.2.2 q.1 q.2.1 q.2.2 := Finset.sum_comm
     _ = _ := by simp only [Fintype.sum_prod_type]
 
-private theorem sum_interleaved_triples {U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
-    (f : X → Y → Z → U → V → W → K) :
+private theorem sum_interleaved_triples (f : X → Y → Z → U → V → W → K) :
     (∑ x, ∑ u, ∑ y, ∑ v, ∑ z, ∑ w, f x y z u v w) =
       ∑ x, ∑ y, ∑ z, ∑ u, ∑ v, ∑ w, f x y z u v w := by
   apply Finset.sum_congr rfl
@@ -66,9 +64,7 @@ private theorem sum_interleaved_triples {U V W : Type*}
           exact Finset.sum_comm
         _ = _ := Finset.sum_comm
 
-theorem restrict_restrict [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype X'] [Fintype Y'] [Fintype Z']
-    (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
+theorem restrict_restrict (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
     (D : X'' → X' → K) (E : Y'' → Y' → K) (F : Z'' → Z' → K)
     (T : Tensor K X Y Z) :
     restrict D E F (restrict A B C T) =
@@ -100,9 +96,8 @@ theorem restrict_restrict [Fintype X] [Fintype Y] [Fintype Z]
       intro z' hz'
       ring
 
-theorem restrict_product {U V W U' V' W' : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
-    (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
+omit [Fintype X'] [Fintype Y'] [Fintype Z'] in
+theorem restrict_product (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
     (D : U' → U → K) (E : V' → V → K) (F : W' → W → K)
     (T : Tensor K X Y Z) (S : Tensor K U V W) :
     restrict (fun (x : X' × U') (u : X × U) => A x.1 u.1 * D x.2 u.2)
@@ -136,8 +131,7 @@ theorem restrict_product {U V W U' V' W' : Type*}
       simp_rw [Finset.sum_mul]
       simp_rw [Finset.mul_sum]
 
-theorem restrict_identity [Fintype X] [Fintype Y] [Fintype Z]
-    [DecidableEq X] [DecidableEq Y] [DecidableEq Z]
+theorem restrict_identity [DecidableEq X] [DecidableEq Y] [DecidableEq Z]
     (T : Tensor K X Y Z) :
     restrict (fun x' x => if x = x' then 1 else 0)
       (fun y' y => if y = y' then 1 else 0)
@@ -147,59 +141,6 @@ theorem restrict_identity [Fintype X] [Fintype Y] [Fintype Z]
     _ = T := rfl
 
 end Algebra
-
-section ComplexTopology
-
-variable {X Y Z X' Y' Z' X'' Y'' Z'' : Type*}
-variable [Fintype X] [Fintype Y] [Fintype Z]
-variable [Fintype X'] [Fintype Y'] [Fintype Z']
-variable [Fintype X''] [Fintype Y''] [Fintype Z'']
-
-theorem degeneratesTo_restrict (T : Tensor ℂ X Y Z)
-    (A : X' → X → ℂ) (B : Y' → Y → ℂ) (C : Z' → Z → ℂ) :
-    DegeneratesTo T (restrict A B C T) :=
-  subset_closure ⟨A, B, C, rfl⟩
-
-theorem DegeneratesTo.refl (T : Tensor ℂ X Y Z) : DegeneratesTo T T := by
-  classical
-  have h := degeneratesTo_restrict T
-    (fun x' x => if x = x' then 1 else 0)
-    (fun y' y => if y = y' then 1 else 0)
-    (fun z' z => if z = z' then 1 else 0)
-  simpa only [restrict_identity] using h
-
-omit [Fintype X''] [Fintype Y''] [Fintype Z''] in
-theorem mem_restrictionOrbit_restrict {T : Tensor ℂ X Y Z}
-    {U : Tensor ℂ X' Y' Z'} (h : U ∈ restrictionOrbit T)
-    (D : X'' → X' → ℂ) (E : Y'' → Y' → ℂ) (F : Z'' → Z' → ℂ) :
-    restrict D E F U ∈ restrictionOrbit T := by
-  rcases h with ⟨A, B, C, rfl⟩
-  exact ⟨composeRestrictionMatrix D A, composeRestrictionMatrix E B,
-    composeRestrictionMatrix F C, restrict_restrict A B C D E F T⟩
-
-theorem DegeneratesTo.restrict {T : Tensor ℂ X Y Z} {U : Tensor ℂ X' Y' Z'}
-    (h : DegeneratesTo T U)
-    (D : X'' → X' → ℂ) (E : Y'' → Y' → ℂ) (F : Z'' → Z' → ℂ) :
-    DegeneratesTo T (Tensor.restrict D E F U) := by
-  have hclosed : IsClosed {S : Tensor ℂ X' Y' Z' |
-      DegeneratesTo T (Tensor.restrict D E F S)} :=
-    isClosed_closure.preimage (continuous_restrict D E F)
-  have hsubset : restrictionOrbit T ⊆
-      {S : Tensor ℂ X' Y' Z' | DegeneratesTo T (Tensor.restrict D E F S)} := by
-    intro S hS
-    exact subset_closure (mem_restrictionOrbit_restrict hS D E F)
-  exact closure_minimal hsubset hclosed h
-
-theorem DegeneratesTo.trans {T : Tensor ℂ X Y Z} {U : Tensor ℂ X' Y' Z'}
-    {V : Tensor ℂ X'' Y'' Z''} (hTU : DegeneratesTo T U)
-    (hUV : DegeneratesTo U V) : DegeneratesTo T V := by
-  have hsubset : restrictionOrbit U ⊆
-      {S : Tensor ℂ X'' Y'' Z'' | DegeneratesTo T S} := by
-    rintro S ⟨D, E, F, rfl⟩
-    exact hTU.restrict D E F
-  exact closure_minimal hsubset isClosed_closure hUV
-
-end ComplexTopology
 
 end Tensor
 end MatrixMultiplication.Foundation

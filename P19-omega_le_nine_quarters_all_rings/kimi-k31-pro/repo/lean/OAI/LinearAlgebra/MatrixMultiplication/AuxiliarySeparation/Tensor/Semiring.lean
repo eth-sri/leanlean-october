@@ -193,13 +193,6 @@ abbrev TensorClass (K : Type*) [CommSemiring K] [Nontrivial K] := Antisymmetriza
 /-- The class of a finite tensor presentation. -/
 def tensorClass (T : (FiniteTensor K)) : (TensorClass K) := toAntisymmetrization (· ≤ ·) T
 
-@[simp] theorem tensorClass_eq_iff (T S : (FiniteTensor K)) :
-    tensorClass T = tensorClass S ↔ T ≤ S ∧ S ≤ T :=
-  toAntisymmetrization_eq (· ≤ ·) T S
-
-@[simp] theorem tensorClass_le_iff (T S : (FiniteTensor K)) :
-    tensorClass T ≤ tensorClass S ↔ T ≤ S := Iff.rfl
-
 /-- The quotient class of a tensor on any three finite coordinate sets. -/
 def classOf {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
     (T : Tensor K X Y Z) : (TensorClass K) := tensorClass (FiniteTensor.ofTensor T)
@@ -234,7 +227,7 @@ theorem classOf_eq_of_reindex {X Y Z U V W : Type*}
   (congrArg classOf h).symm.trans (classOf_reindex S ex ey ez)
 
 @[simp] theorem classOf_coeff (T : (FiniteTensor K)) : classOf T.coeff = tensorClass T := by
-  apply (tensorClass_eq_iff _ _).mpr
+  apply (toAntisymmetrization_eq (· ≤ ·) _ _).mpr
   exact ⟨IsRestriction.pullback T.coeff _ _ _, IsRestriction.of_reindex T.coeff _ _ _⟩
 
 instance : Mul (TensorClass K) where
@@ -247,12 +240,6 @@ instance : Add (TensorClass K) where
   add := Quotient.map₂ FiniteTensor.sum (by
     intro T T' hT S S' hS
     exact ⟨FiniteTensor.sum_mono hT.1 hS.1, FiniteTensor.sum_mono hT.2 hS.2⟩)
-
-@[simp] theorem tensorClass_product (T S : (FiniteTensor K)) :
-    tensorClass T * tensorClass S = tensorClass (FiniteTensor.product T S) := rfl
-
-@[simp] theorem tensorClass_sum (T S : (FiniteTensor K)) :
-    tensorClass T + tensorClass S = tensorClass (FiniteTensor.sum T S) := rfl
 
 theorem classOf_product {X Y Z U V W : Type*}
     [Fintype X] [Fintype Y] [Fintype Z]
@@ -419,33 +406,11 @@ theorem zero_le (T : (TensorClass K)) : 0 ≤ T := by
   rw [← classOf_coeff T]
   exact (classOf_le_iff _ _).mpr (IsRestriction.zero T.coeff)
 
-instance : OrderBot (TensorClass K) where
-  bot := 0
-  bot_le := zero_le
-
-instance : IsOrderedAddMonoid (TensorClass K) where
-  add_le_add_left _ _ h _c := add_mono h le_rfl
-
-instance : IsOrderedMonoid (TensorClass K) where
-  mul_le_mul_left _ _ h _c := mul_mono h le_rfl
-
-instance : IsOrderedRing (TensorClass K) where
-  zero_le_one := zero_le 1
-  mul_le_mul_of_nonneg_left := by
-    intro a ha b c hbc
-    exact mul_mono le_rfl hbc
-  mul_le_mul_of_nonneg_right := by
-    intro a ha b c hbc
-    exact mul_mono hbc le_rfl
-
 /-- Exact rank descends to mutual-restriction classes. -/
 def rank : (TensorClass K) → ℕ := Quotient.lift (fun T : (FiniteTensor K) => exactRank T.coeff)
   (by
     intro T S h
     exact le_antisymm (IsRestriction.rank_le h.1) (IsRestriction.rank_le h.2))
-
-@[simp] theorem rank_tensorClass (T : (FiniteTensor K)) :
-    rank (tensorClass T) = exactRank T.coeff := rfl
 
 @[simp] theorem rank_classOf {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
     (T : Tensor K X Y Z) : rank (classOf T) = exactRank T :=
@@ -517,14 +482,6 @@ theorem classOf_eq_zero_iff {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
   · rintro rfl
     exact classOf_zero
 
-instance : Nontrivial (TensorClass K) := by
-  refine ⟨⟨1, 0, ?_⟩⟩
-  intro h
-  have heq : (fun (_ _ _ : PUnit.{1}) => (1 : K)) = 0 :=
-    (classOf_eq_zero_iff _).mp h
-  have := congrFun (congrFun (congrFun heq PUnit.unit) PUnit.unit) PUnit.unit
-  exact one_ne_zero this
-
 /-- Selecting a coefficient one gives a unit restriction without division. -/
 theorem one_le_classOf_of_coefficient_one {X Y Z : Type*}
     [Fintype X] [Fintype Y] [Fintype Z] {T : Tensor K X Y Z}
@@ -539,12 +496,6 @@ theorem one_le_classOf_of_coefficient_one {X Y Z : Type*}
   simp [Tensor.restrict, ite_mul, mul_ite, hxyz]
 
 end General
-
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
 
 end MatrixMultiplication.AuxiliarySeparation.TensorSemiring
 

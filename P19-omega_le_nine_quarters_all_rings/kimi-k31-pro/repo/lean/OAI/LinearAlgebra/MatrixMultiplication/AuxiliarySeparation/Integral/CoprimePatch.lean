@@ -52,11 +52,6 @@ theorem rankAtMost_patch [Fintype ι] (T : Tensor R X Y Z)
       (fun q : Σ i, Fin (r i) => b q.1 q.2)
       (fun q : Σ i, Fin (r i) => c q.1 q.2)
 
-/-- Consecutive periods are coprime over every commutative ring. -/
-theorem isCoprime_consecutive {R : Type*} [CommRing R] (d : R) :
-    IsCoprime d (d + 1) := by
-  exact ⟨-1, 1, by ring⟩
-
 /-- Powers of any finite Bezout family are again a Bezout family. The new
 coefficients may depend on k; the family of source schemes does not. -/
 theorem exists_bezout_powers {R ι : Type*} [CommRing R] [Fintype ι]

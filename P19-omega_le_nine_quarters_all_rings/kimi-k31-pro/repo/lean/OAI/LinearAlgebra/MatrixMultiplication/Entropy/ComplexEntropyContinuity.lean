@@ -19,8 +19,6 @@ open Filter
 
 namespace MatrixMultiplication.Foundation
 
-@[simp] theorem entropyTerm_one : entropyTerm 1 = 0 := by simp [entropyTerm]
-
 theorem mul_entropyTerm_inv (x : ℝ) : x * entropyTerm x⁻¹ = Real.log x := by
   by_cases hx : x = 0
   · simp [hx]
@@ -34,13 +32,6 @@ theorem finiteEntropy_uniform {A : Type*} [Fintype A] :
       Real.log (Fintype.card A) := by
   simp only [finiteEntropy, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   exact mul_entropyTerm_inv (Fintype.card A)
-
-theorem finiteEntropy_deterministic {A : Type*} [Fintype A] [DecidableEq A]
-    (a : A) : finiteEntropy (fun b => if b = a then 1 else 0) = 0 := by
-  apply Finset.sum_eq_zero
-  intro b hb
-  change entropyTerm (if b = a then 1 else 0) = 0
-  split_ifs <;> simp
 
 @[fun_prop] theorem continuous_entropyTerm : Continuous entropyTerm :=
   Real.continuous_negMulLog
@@ -69,23 +60,9 @@ def uniform (A : Type*) [Fintype A] [Nonempty A] : FiniteLaw A where
       (Nat.cast_pos.mpr (Fintype.card_pos : 0 < Fintype.card A)).ne'
     simp [Finset.sum_const, nsmul_eq_mul, hn]
 
-@[simp] theorem uniform_mass [Nonempty A] (a : A) :
-    (uniform A).mass a = (Fintype.card A : ℝ)⁻¹ := rfl
-
 @[simp] theorem uniform_entropy [Nonempty A] :
     finiteEntropy (uniform A).mass = Real.log (Fintype.card A) :=
   finiteEntropy_uniform
-
-def pure (a : A) : FiniteLaw A := by
-  classical
-  exact
-    { mass := fun b => if b = a then 1 else 0
-      nonneg := fun b => by split_ifs <;> norm_num
-      total := by simp }
-
-@[simp] theorem pure_entropy (a : A) : finiteEntropy (pure a).mass = 0 := by
-  classical
-  exact finiteEntropy_deterministic a
 
 theorem entropy_tendsto {I : Type*} {l : Filter I}
     {p : I → FiniteLaw A} {q : FiniteLaw A}

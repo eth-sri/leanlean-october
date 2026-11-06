@@ -7,7 +7,6 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
 -/
 
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Symmetrization
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Rank
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth.NormalizedProfile
 
@@ -142,11 +141,6 @@ theorem convolutionProfile_le_of_character_value_bounds {a b : ℕ}
     (h : ∀ ψ : Character K, ψ.value (convolution (K := K) a b) ≤ (a + b - 1 : ℕ)) :
     χ.convolutionProfile a b ≤ (a + b - 1 : ℕ) ^ (1 / χ.meanExponent) :=
   χ.symmetrizedProfile_le_of_character_value_bounds ht _ h
-
-section Field
-variable {K : Type*} [Field K] (χ : Character K)
-
-end Field
 
 end Character
 end MatrixMultiplication.AuxiliarySeparation

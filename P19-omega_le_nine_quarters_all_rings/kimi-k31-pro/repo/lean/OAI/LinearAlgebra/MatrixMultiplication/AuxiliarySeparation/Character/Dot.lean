@@ -151,11 +151,6 @@ theorem value_matrixMultiplication {m : ℕ} (hm : 0 < m) :
   simpa only [matrixMultiplicationTensor_eq_matrixCoefficients] using
     χ.value_matrixCoefficients_square hm
 
-section Field
-variable {K : Type*} [Field K] (χ : Character K)
-
-end Field
-
 end MatrixMultiplication.AuxiliarySeparation.Character
 
 end

@@ -45,8 +45,7 @@ constructions, with no field or algebraic-closure hypothesis. -/
 theorem exactRankExponent_int_le_nine_quarters :
     exactRankExponent ℤ ≤ (9 : ℝ) / 4 := by
   apply exactRankExponent_le_nine_quarters_of_characters
-  · intro d hd k hk
-    exact exists_detecting_character hd hk
+  · exact fun d hd k hk => exists_detecting_character hd hk
   · intro χ d hd
     rw [χ.value_matrixMultiplication (by omega)]
     apply Real.rpow_le_rpow_of_exponent_le

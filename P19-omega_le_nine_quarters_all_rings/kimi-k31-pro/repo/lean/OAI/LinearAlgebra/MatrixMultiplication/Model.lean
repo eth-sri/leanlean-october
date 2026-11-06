@@ -98,17 +98,6 @@ def AdmissibleExponent (F : Type*) [Ring F] (τ : ℝ) : Prop :=
 
 def omega (F : Type*) [Ring F] : ℝ := sInf {τ : ℝ | AdmissibleExponent F τ}
 
-/-- The inner dimension of an `n × n^k` by `n^k × n` multiplication. -/
-def innerSize (n : ℕ) (k : ℝ) : ℕ := ⌈(n : ℝ) ^ k⌉₊
-
-def RectangularAdmissibleExponent (F : Type*) [Ring F] (k τ : ℝ) : Prop :=
-  ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
-    ∀ n : ℕ, 1 ≤ n → ∃ P : MatrixAlgorithm F n (innerSize n k) n,
-      P.Correct ∧ (P.cost : ℝ) ≤ C * (n : ℝ) ^ (τ + ε)
-
-def rectangularOmega (F : Type*) [Ring F] (k : ℝ) : ℝ :=
-  sInf {τ : ℝ | RectangularAdmissibleExponent F k τ}
-
 end MatrixMultiplication.Arithmetic
 
 end

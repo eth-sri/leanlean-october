@@ -55,29 +55,6 @@ def determinant : R[X] →ₗ[R] FormPair R where
 @[simp] theorem diagonal_determinant (p : R[X]) : diagonal (determinant p) = 0 := by
   simp [diagonal, determinant]
 
-/-- A fixed linear complement to the determinant kernel on unrestricted polynomials. -/
-def split : (R[X] × R[X]) ≃ₗ[R] FormPair R where
-  toFun p := (p.1 - X * p.2, p.2)
-  invFun p := (p.1 + X * p.2, p.2)
-  left_inv p := by apply Prod.ext <;> simp
-  right_inv p := by apply Prod.ext <;> simp
-  map_add' p q := by
-    apply Prod.ext <;> simp
-    ring
-  map_smul' c p := by
-    apply Prod.ext <;> simp [smul_eq_C_mul]
-    ring
-
-@[simp] theorem split_apply (p : R[X] × R[X]) : split p = (p.1 - X * p.2, p.2) := rfl
-
-@[simp] theorem split_symm_apply (p : FormPair R) : split.symm p = (diagonal p, p.2) := rfl
-
-@[simp] theorem diagonal_split (p : R[X] × R[X]) : diagonal (split p) = p.1 := by
-  simp [split, diagonal]
-
-@[simp] theorem split_zero_left (q : R[X]) : split (0, q) = determinant q := by
-  simp [split, determinant]
-
 /-- Multiply both coefficients by a first-input polynomial. -/
 def multiply (f : R[X]) : FormPair R →ₗ[R] FormPair R where
   toFun p := (f * p.1, f * p.2)

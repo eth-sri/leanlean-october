@@ -87,7 +87,8 @@ theorem value_separationTarget_le_int (χ : Character ℤ) (hM : 0 < M)
     let SB := descentSource (ι := CyclotomicIndex (L + 1))
       (Tensor.directSum (fun _ : Fin (L + 1) => sharedFirstTensor B)) Bx By n
     have hc := χ.value_le_add_of_coprime_scaled_restrictions
-      (Tensor.power (separationTarget B) n) SA SB (isCoprime_consecutive (L : ℤ)) n
+      (Tensor.power (separationTarget B) n) SA SB
+      (show IsCoprime (L : ℤ) ((L : ℤ) + 1) from ⟨-1, 1, by ring⟩) n
       (hA n) (by simpa only [Nat.cast_add, Nat.cast_one] using hB n)
     have hv : 0 ≤ χ.value (sharedFirstTensor B) := χ.nonneg _
     have ha : χ.value SA ≤

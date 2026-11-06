@@ -10,8 +10,6 @@ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Entropy
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.CharacterBounds
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.FiniteSeparation
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.SharedPadding
 
 public section
 

@@ -78,7 +78,7 @@ theorem finite_product_concavity {ι : Type*} [Fintype ι]
 gives the factor of three in the tripling inequality. -/
 theorem finite_product_tripling {ι : Type*} [Fintype ι]
     (A B C p : ι → ℝ) {s : ℝ} (hs : 0 < s) (hsum : ∑ i, p i = s)
-    (_hA : ∀ i, 0 < A i) (hB : ∀ i, 0 < B i) (hC : ∀ i, 0 < C i)
+    (hB : ∀ i, 0 < B i) (hC : ∀ i, 0 < C i)
     (hbound : ∀ i, (3 : ℝ) ^ p i * B i ^ (2 / 3 : ℝ) * C i ^ (1 / 3 : ℝ) ≤ A i)
     (hprod_eq : ∏ i, C i = ∏ i, B i) :
     3 * (∏ i, B i) ^ (1 / s) ≤ (∏ i, A i) ^ (1 / s) := by

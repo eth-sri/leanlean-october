@@ -54,12 +54,6 @@ def convolution (a b : ℕ) : Tensor K (Fin a) (Fin b) (Fin (a + b - 1)) :=
   simp only [convolution]
   split_ifs <;> simp_all
 
-@[simp] theorem convolution_eq_zero_iff [Nontrivial K] {a b : ℕ}
-    (i : Fin a) (j : Fin b) (k : Fin (a + b - 1)) :
-    convolution (K := K) a b i j k = 0 ↔ i.val + j.val ≠ k.val := by
-  simp only [convolution]
-  split_ifs <;> simp_all
-
 /-- Every pair of input monomials has a valid output coordinate. -/
 def convolutionOutput {a b : ℕ} (i : Fin a) (j : Fin b) : Fin (a + b - 1) :=
   ⟨i.val + j.val, by have hi := i.isLt; have hj := j.isLt; omega⟩

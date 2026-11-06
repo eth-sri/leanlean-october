@@ -1,6 +1,5 @@
 module
 
-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexFiniteSeparation
 public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexDotPairing
 
 public section
@@ -38,11 +37,6 @@ def dependentDirectSum (T : ∀ s, Tensor K (X s) (Y s) (Z s)) :
 end DependentSum
 end Tensor
 
-section FiberDecomposition
-
-variable {X Y Z S U : Type*} [DecidableEq S] [DecidableEq U]
-
-end FiberDecomposition
 end MatrixMultiplication.Foundation
 
 end OAI

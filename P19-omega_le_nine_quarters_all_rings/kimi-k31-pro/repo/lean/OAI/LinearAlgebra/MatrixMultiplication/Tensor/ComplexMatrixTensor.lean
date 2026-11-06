@@ -1,7 +1,6 @@
 module
 
-public import OAI.LinearAlgebra.MatrixMultiplication.ComplexArithmetic.Complexity
-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensorBatching
+public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
 public import Mathlib.Tactic.SplitIfs
 public import Mathlib.Algebra.BigOperators.GroupWithZero.Finset
 

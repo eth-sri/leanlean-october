@@ -143,45 +143,6 @@ end Character
 
 end General
 
-namespace Character
-
-section Field
-
-variable {K : Type*} [Field K]
-variable (χ : Character K)
-variable {X Y Z : Type}
-variable [Fintype X] [Fintype Y] [Fintype Z]
-
-/-- Every nonzero tensor restricts to the scalar multiplication tensor. -/
-theorem one_le_value {T : Tensor K X Y Z} (hT : T ≠ 0) : 1 ≤ χ.value T := by
-  classical
-  obtain ⟨x, hx⟩ := Function.ne_iff.mp hT
-  obtain ⟨y, hy⟩ := Function.ne_iff.mp hx
-  obtain ⟨z, hz⟩ := Function.ne_iff.mp hy
-  change T x y z ≠ 0 at hz
-  let A : PUnit → X → K := fun _ x' => if x' = x then (T x y z)⁻¹ else 0
-  let B : PUnit → Y → K := fun _ y' => if y' = y then 1 else 0
-  let C : PUnit → Z → K := fun _ z' => if z' = z then 1 else 0
-  have heq : Tensor.restrict A B C T = (unitTensor (K := K)) := by
-    funext i j k
-    simp [Tensor.restrict, A, B, C, unitTensor, ite_mul, mul_ite, hz]
-  simpa only [heq, χ.map_one] using χ.monotone T A B C
-
-/-- Normalization and restriction monotonicity make the character faithful. -/
-@[simp] theorem value_eq_zero_iff (T : Tensor K X Y Z) : χ.value T = 0 ↔ T = 0 := by
-  constructor
-  · intro h
-    by_contra hT
-    have hle := χ.one_le_value hT
-    rw [h] at hle
-    exact (not_le_of_gt zero_lt_one) hle
-  · rintro rfl
-    exact χ.map_zero
-
-end Field
-
-end Character
-
 end MatrixMultiplication.AuxiliarySeparation
 
 end

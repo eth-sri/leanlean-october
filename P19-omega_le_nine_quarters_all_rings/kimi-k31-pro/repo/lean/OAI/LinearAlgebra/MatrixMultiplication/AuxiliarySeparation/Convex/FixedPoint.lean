@@ -148,22 +148,8 @@ theorem exists_finite_partition_weights {I : Type*} {K : Set (I → ℝ)}
     exact hw (e j) (subset_closure hj) i hi
 
 
-theorem exists_finite_partition_weights_nonempty {I : Type*} {K : Set (I → ℝ)}
-    (hK : IsCompact K) (hne : K.Nonempty) (s : Finset I) {ε : ℝ} (hε : 0 < ε) :
-    ∃ n : ℕ, 0 < n ∧ ∃ a : Fin n → K, ∃ w : Fin n → C(K, ℝ),
-      (∀ x j, 0 ≤ w j x) ∧ (∀ x, ∑ j, w j x = 1) ∧
-      (∀ x j, w j x ≠ 0 → ∀ i ∈ s, |(a j).val i - x.val i| < ε) := by
-  obtain ⟨n, a, w, hw0, hw1, hwa⟩ := exists_finite_partition_weights hK s hε
-  have hn : 0 < n := by
-    by_contra hn
-    have hn0 : n = 0 := Nat.eq_zero_of_not_pos hn
-    subst n
-    obtain ⟨x, hx⟩ := hne
-    simpa using hw1 ⟨x, hx⟩
-  exact ⟨n, hn, a, w, hw0, hw1, hwa⟩
-
 theorem compact_approx_limit {I : Type*} {K : Set (I → ℝ)}
-    (hK : IsCompact K) (_hne : K.Nonempty) (f : K → (I → ℝ)) (hf : Continuous f)
+    (hK : IsCompact K) (f : K → (I → ℝ)) (hf : Continuous f)
     (happrox : ∀ s : Finset I, ∀ ε : ℝ, 0 < ε →
       ∃ x : K, ∀ i ∈ s, |f x i - x.val i| ≤ ε) :
     ∃ x : K, f x = x.val := by
@@ -211,21 +197,20 @@ theorem compact_convex_fixedPoint {I : Type*} {K : Set (I → ℝ)}
   have happrox : ∀ s : Finset I, ∀ ε : ℝ, 0 < ε →
       ∃ x : K, ∀ i ∈ s, |(f x).val i - x.val i| ≤ ε := by
     intro s ε hε
-    obtain ⟨n, hn, a, w, hw0, hw1, hwa⟩ :=
-      exists_finite_partition_weights_nonempty hKcompact hKne s hε
+    obtain ⟨n, a, w, hw0, hw1, hwa⟩ := exists_finite_partition_weights hKcompact s hε
+    have hn : 0 < n := by
+      by_contra hn
+      have hn0 : n = 0 := Nat.eq_zero_of_not_pos hn
+      subst n
+      obtain ⟨x, hx⟩ := hKne
+      simpa using hw1 ⟨x, hx⟩
     let : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
     exact exists_approximate_fixedPoint_of_weights hKconvex f a w
       (fun j x => hw0 x j) hw1 s ε
       (fun x j hj i hi => (hwa x j hj i hi).le)
-  obtain ⟨x, hx⟩ := compact_approx_limit hKcompact hKne
+  obtain ⟨x, hx⟩ := compact_approx_limit hKcompact
     (fun x => (f x).val) (continuous_subtype_val.comp f.continuous) happrox
   exact ⟨x, Subtype.ext hx⟩
-
-/-- An unbundled form of the product-space fixed-point theorem. -/
-theorem compact_convex_fixedPoint_of_continuous {I : Type*} {K : Set (I → ℝ)}
-    (hKcompact : IsCompact K) (hKconvex : Convex ℝ K) (hKne : K.Nonempty)
-    (f : K → K) (hf : Continuous f) : ∃ x : K, f x = x :=
-  compact_convex_fixedPoint hKcompact hKconvex hKne ⟨f, hf⟩
 
 end MatrixMultiplication.AuxiliarySeparation
 

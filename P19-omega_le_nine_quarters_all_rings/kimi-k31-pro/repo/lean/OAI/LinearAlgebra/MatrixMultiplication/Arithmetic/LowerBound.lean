@@ -147,8 +147,8 @@ theorem output_size_le_cost (P : MatrixAlgorithm F a b c) (hb : 1 ≤ b)
 
 end MatrixAlgorithm
 
-theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F] {k τ : ℝ}
-    (hτ : RectangularAdmissibleExponent F k τ) : 2 ≤ τ := by
+theorem admissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F] {τ : ℝ}
+    (hτ : AdmissibleExponent F τ) : 2 ≤ τ := by
   by_contra hneg
   have hτlt : τ < 2 := lt_of_not_ge hneg
   let ε : ℝ := (2 - τ) / 2
@@ -156,7 +156,7 @@ theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F]
   obtain ⟨C, hC, hbound⟩ := hτ ε hε
   obtain ⟨n, hn⟩ := exists_nat_gt (max (C ^ ε⁻¹) 1)
   have hnreal : 1 < (n : ℝ) := lt_of_le_of_lt (le_max_right _ _) hn
-  have hnpos : 0 < (n : ℝ) := lt_trans zero_lt_one hnreal
+  have hnpos : 0 < (n : ℝ) := zero_lt_one.trans hnreal
   have hn1 : 1 ≤ n := (Nat.one_le_cast (α := ℝ)).mp hnreal.le
   have hpow : C < (n : ℝ) ^ ε :=
     (Real.rpow_inv_lt_iff_of_pos hC.le (Nat.cast_nonneg n) hε).mp
@@ -164,7 +164,7 @@ theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F]
   obtain ⟨P, hP, hcost⟩ := hbound n hn1
   have hlower : (n : ℝ) ^ (2 : ℕ) ≤ P.cost := by
     have h : n ^ 2 ≤ P.cost := by
-      simpa [pow_two] using P.output_size_le_cost (one_le_innerSize hn1 k) hP
+      simpa [pow_two] using P.output_size_le_cost hn1 hP
     exact_mod_cast h
   have hstrict : (n : ℝ) ^ (2 : ℕ) < (n : ℝ) ^ (2 : ℕ) := calc
     (n : ℝ) ^ (2 : ℕ) ≤ C * (n : ℝ) ^ (τ + ε) := hlower.trans hcost
@@ -175,36 +175,7 @@ theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F]
       have he : ε + (τ + ε) = 2 := by dsimp [ε]; ring
       rw [he]
       norm_num
-  exact (lt_irrefl _ hstrict)
-
-theorem rectangularAdmissibleExponent_bddBelow (F : Type*) [Ring F] [Nontrivial F] (k : ℝ) :
-    BddBelow {τ : ℝ | RectangularAdmissibleExponent F k τ} :=
-  ⟨2, fun _ h => rectangularAdmissibleExponent_two_le h⟩
-
-theorem rectangularOmega_le_of_admissibleExponent {F : Type*} [Ring F] [Nontrivial F] {k τ : ℝ}
-    (hτ : RectangularAdmissibleExponent F k τ) : rectangularOmega F k ≤ τ :=
-  csInf_le (rectangularAdmissibleExponent_bddBelow F k) hτ
-
-theorem admissibleExponent_iff_rectangular_one (F : Type*) [Ring F] [Nontrivial F] (τ : ℝ) :
-    AdmissibleExponent F τ ↔ RectangularAdmissibleExponent F 1 τ := by
-  constructor
-  · intro h ε hε
-    obtain ⟨C, hC, hbound⟩ := h ε hε
-    refine ⟨C, hC, ?_⟩
-    intro n hn
-    rw [innerSize_one]
-    exact hbound n hn
-  · intro h ε hε
-    obtain ⟨C, hC, hbound⟩ := h ε hε
-    refine ⟨C, hC, ?_⟩
-    intro n hn
-    have hnBound := hbound n hn
-    rw [innerSize_one] at hnBound
-    exact hnBound
-
-theorem admissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F] {τ : ℝ}
-    (hτ : AdmissibleExponent F τ) : 2 ≤ τ :=
-  rectangularAdmissibleExponent_two_le ((admissibleExponent_iff_rectangular_one F τ).mp hτ)
+  exact lt_irrefl _ hstrict
 
 theorem admissibleExponent_bddBelow (F : Type*) [Ring F] [Nontrivial F] :
     BddBelow {τ : ℝ | AdmissibleExponent F τ} :=
@@ -213,13 +184,6 @@ theorem admissibleExponent_bddBelow (F : Type*) [Ring F] [Nontrivial F] :
 theorem omega_le_of_admissibleExponent {F : Type*} [Ring F] [Nontrivial F] {τ : ℝ}
     (hτ : AdmissibleExponent F τ) : omega F ≤ τ :=
   csInf_le (admissibleExponent_bddBelow F) hτ
-
-@[simp] theorem rectangularOmega_one (F : Type*) [Ring F] [Nontrivial F] :
-    rectangularOmega F 1 = omega F := by
-  unfold rectangularOmega omega
-  congr 1
-  ext τ
-  exact (admissibleExponent_iff_rectangular_one F τ).symm
 
 end MatrixMultiplication.Arithmetic
 

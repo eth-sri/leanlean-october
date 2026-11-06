@@ -1,6 +1,6 @@
 module
 
-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ConditionalLabels
+public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexRationalTypes
 
 public section
 

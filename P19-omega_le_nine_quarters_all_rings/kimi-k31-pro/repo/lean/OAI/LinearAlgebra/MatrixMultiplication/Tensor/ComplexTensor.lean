@@ -57,19 +57,6 @@ def power (T : Tensor K X Y Z) (n : ℕ) :
     directSum T (i, x) (i, y) (i, z) = T i x y z := by
   simp [directSum]
 
-@[simp] theorem rankAtMost_zero : RankAtMost (0 : Tensor K X Y Z) 0 := by
-  refine ⟨fun i => Fin.elim0 i, fun i => Fin.elim0 i, fun i => Fin.elim0 i, ?_⟩
-  funext x y z
-  simp
-
-theorem RankAtMost.map {L : Type*} [CommSemiring L]
-    (f : K →+* L) {T : Tensor K X Y Z} {r : ℕ} (h : RankAtMost T r) :
-    RankAtMost (fun x y z => f (T x y z)) r := by
-  rcases h with ⟨a, b, c, rfl⟩
-  refine ⟨fun i x => f (a i x), fun i y => f (b i y), fun i z => f (c i z), ?_⟩
-  funext x y z
-  simp [rankOne]
-
 theorem RankAtMost.scale {T : Tensor K X Y Z} {r : ℕ}
     (h : RankAtMost T r) (u : K) :
     RankAtMost (fun x y z => u * T x y z) r := by
@@ -213,28 +200,6 @@ theorem RankAtMost.pullback {T : Tensor K X Y Z} {r : ℕ}
     fun i z => c i (fz z), rfl⟩
 
 end Pullback
-
-section ComplexTopology
-
-variable {X Y Z X' Y' Z' : Type*}
-
-def restrictionOrbit [Fintype X] [Fintype Y] [Fintype Z]
-    (T : Tensor ℂ X Y Z) : Set (Tensor ℂ X' Y' Z') :=
-  {U | ∃ (A : X' → X → ℂ) (B : Y' → Y → ℂ) (C : Z' → Z → ℂ),
-    U = restrict A B C T}
-
-def DegeneratesTo [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype X'] [Fintype Y'] [Fintype Z']
-    (T : Tensor ℂ X Y Z) (U : Tensor ℂ X' Y' Z') : Prop :=
-  U ∈ closure (restrictionOrbit T)
-
-theorem continuous_restrict [Fintype X] [Fintype Y] [Fintype Z]
-    (A : X' → X → ℂ) (B : Y' → Y → ℂ) (C : Z' → Z → ℂ) :
-    Continuous (Tensor.restrict A B C) := by
-  unfold restrict
-  fun_prop
-
-end ComplexTopology
 
 end Tensor
 end MatrixMultiplication.Foundation

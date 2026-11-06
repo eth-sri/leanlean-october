@@ -8,7 +8,7 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
 
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Basic
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Sector.Weights
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Interpolation
+public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
 
 public section
 
@@ -185,14 +185,6 @@ def restriction (a h : ℕ) :
     intro i j k
     change (polynomial (K := K) a h i j k).coeff 1 = retained (K := K) a h i j k
     simp [polynomial_coeff]
-
-@[simp] theorem restriction_basePolynomial (a h : ℕ) :
-    (restriction (K := K) a h).basePolynomial = polynomial (K := K) a h := rfl
-
-section Field
-variable {K : Type*} [Field K]
-
-end Field
 
 end MatrixMultiplication.AuxiliarySeparation.Sector
 

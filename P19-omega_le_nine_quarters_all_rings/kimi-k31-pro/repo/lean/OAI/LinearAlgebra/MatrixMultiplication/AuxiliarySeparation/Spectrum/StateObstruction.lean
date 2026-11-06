@@ -28,6 +28,11 @@ namespace MatrixMultiplication.AuxiliarySeparation
 open Set
 
 variable {S : Type*} [CommSemiring S] [Preorder S]
+variable (R : S → ℕ) (d : S) (k : ℕ)
+variable (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
+variable (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
+variable (hno : ∀ (D s : S) (m : ℕ), 0 < m →
+  ¬D + (m : S) + d * s ≤ D + (k : S) * s)
 
 /-- The homogeneous inequalities defining a normalized additive state. Both
 signs of the additive relation are included. -/
@@ -40,7 +45,7 @@ inductive StateConstraint (S : Type*) [Preorder S] where
   | detector (x : S)
 
 /-- Integer coefficient vector of a homogeneous state constraint. -/
-def stateConstraintVector (R : S → ℕ) (d : S) (k : ℕ)
+def stateConstraintVector 
     (c : StateConstraint S) : S →₀ ℤ := by
   classical
   exact match c with
@@ -71,7 +76,7 @@ theorem continuous_statePairing (v : S →₀ ℤ) :
   simp only [statePairing_apply]
   exact continuous_finsetSum _ fun x _ ↦ continuous_const.mul (continuous_apply x)
 
-theorem normalizedStates_iff_stateConstraint (R : S → ℕ) (d : S) (k : ℕ)
+theorem normalizedStates_iff_stateConstraint 
     (f : S → ℝ) :
     f ∈ normalizedStates (fun x ↦ (R x : ℝ)) d k ↔
       f 1 = 1 ∧ ∀ c : StateConstraint S, 0 ≤ statePairing f (stateConstraintVector R d k c) := by
@@ -127,9 +132,8 @@ def stateConstraintDetector (c : StateConstraint S) : S :=
   | .detector x => x
   | _ => 0
 
-theorem stateConstraintLower_le_upper (R : S → ℕ)
-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
-    (c : StateConstraint S) :
+include hzero hbound in
+theorem stateConstraintLower_le_upper (c : StateConstraint S) :
     stateConstraintLower c ≤ stateConstraintUpper R c := by
   cases c with
   | lower x => exact hzero x
@@ -141,7 +145,7 @@ theorem stateConstraintLower_le_upper (R : S → ℕ)
 
 /-- Interpreting a constraint in the group completion separates its ordinary
 order difference from its detector difference. -/
-theorem stateConstraintVector_completion (R : S → ℕ) (d : S) (k : ℕ)
+theorem stateConstraintVector_completion 
     (c : StateConstraint S) :
     Finsupp.linearCombination ℤ (Algebra.GrothendieckAddGroup.of (M := S))
         (stateConstraintVector R d k c) =
@@ -157,13 +161,13 @@ theorem stateConstraintVector_completion (R : S → ℕ) (d : S) (k : ℕ)
     simp [stateConstraintVector, stateConstraintLower, stateConstraintUpper,
       stateConstraintDetector, hcast, Nat.cast_smul_eq_nsmul, map_add] <;> abel
 
+include hzero hbound hadd hno
 /-- In the absence of a catalytic obstruction, no positive multiple of the
 negative unit is a natural combination of state-constraint vectors. -/
-theorem no_stateConstraint_certificate (R : S → ℕ) (d : S) (k : ℕ)
-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
-      ¬D + (m : S) + d * s ≤ D + (k : S) * s)
+theorem no_stateConstraint_certificate 
+    
+    
+    
     {I : Type*} [Fintype I] (cs : I → StateConstraint S) :
     ¬∃ m : ℕ, 0 < m ∧ ∃ n : I → ℕ,
       ∑ i, n i • stateConstraintVector R d k (cs i) =
@@ -182,11 +186,10 @@ theorem no_stateConstraint_certificate (R : S → ℕ) (d : S) (k : ℕ)
 
 /-- Every finite family of constraints supported on `H` has a normalized
 solution that vanishes outside `H`, provided no positive catalyst exists. -/
-theorem finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ)
-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
-      ¬D + (m : S) + d * s ≤ D + (k : S) * s)
+theorem finite_stateConstraint_solution 
+    
+    
+    
     {I : Type*} [Fintype I] (cs : I → StateConstraint S) (H : Finset S) (hOne : (1 : S) ∈ H)
     (hH : ∀ i, (stateConstraintVector R d k (cs i)).support ⊆ H) :
     ∃ f : S → ℝ, f 1 = 1 ∧
@@ -230,11 +233,10 @@ theorem finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ)
 
 /-- A finite collection of state constraints can be solved while keeping all
 coordinates in their rank intervals. -/
-theorem bounded_finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ)
-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
-      ¬D + (m : S) + d * s ≤ D + (k : S) * s)
+theorem bounded_finite_stateConstraint_solution 
+    
+    
+    
     (F : Finset (StateConstraint S)) :
     ∃ f : S → ℝ, (∀ x, 0 ≤ f x ∧ f x ≤ R x) ∧ f 1 = 1 ∧
       ∀ c ∈ F, 0 ≤ statePairing f (stateConstraintVector R d k c) := by
@@ -280,11 +282,10 @@ theorem bounded_finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ
 
 /-- Absence of positive scalar-gain catalysts guarantees the existence of a
 normalized additive monotone state satisfying the detector inequality. -/
-theorem normalizedStates_nonempty_of_no_catalyst (R : S → ℕ) (d : S) (k : ℕ)
-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
-      ¬D + (m : S) + d * s ≤ D + (k : S) * s) :
+theorem normalizedStates_nonempty_of_no_catalyst 
+    
+    
+     :
     (normalizedStates (fun x ↦ (R x : ℝ)) d k).Nonempty := by
   let B : Set (S → ℝ) := {f | ∀ x, 0 ≤ f x ∧ f x ≤ R x}
   let K : Set (S → ℝ) := B ∩ {f | f 1 = 1}

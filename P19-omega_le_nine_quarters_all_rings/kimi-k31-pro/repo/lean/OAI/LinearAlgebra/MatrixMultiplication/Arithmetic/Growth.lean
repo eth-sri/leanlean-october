@@ -135,15 +135,12 @@ theorem power_programs_of_block_step {b R K : ℕ}
   intro k
   induction k with
   | zero =>
-    exact ⟨scalarAlgorithm F, scalarAlgorithm_correct F, by simp⟩
+    exact ⟨scalarAlgorithm F, scalarAlgorithm_correct F, by rfl⟩
   | succ k ih =>
     obtain ⟨P, hP, hcost⟩ := ih
     obtain ⟨Q, hQ, hQcost⟩ := hstep (b ^ k) P hP
-    have hbound : Q.cost ≤ blockRecurrenceCost b R K (k + 1) := by
-      exact hQcost.trans (Nat.add_le_add_right (Nat.mul_le_mul_left R hcost) _)
-    have hresult : ∃ Q : SquareAlgorithm F (b * b ^ k), Q.Correct ∧
-        Q.cost ≤ blockRecurrenceCost b R K (k + 1) := ⟨Q, hQ, hbound⟩
-    exact (pow_succ' b k).symm ▸ hresult
+    exact (pow_succ' b k).symm ▸ ⟨Q, hQ,
+      hQcost.trans (Nat.add_le_add_right (Nat.mul_le_mul_left R hcost) _)⟩
 
 theorem admissibleExponent_of_block_step_of_padding
     (hpad : ∀ {n m : ℕ}, n ≤ m → ∀ P : SquareAlgorithm F m, P.Correct →
@@ -176,23 +173,7 @@ theorem admissibleExponent_of_block_step_of_padding
   exact ⟨P, hP, (by exact_mod_cast hcost : (P.cost : ℝ) ≤
     (blockRecurrenceCost b R K k : ℝ)).trans (hbound k)⟩
 
-theorem admissibleExponent_of_block_step
-    {b R K : ℕ} (hb : 2 ≤ b) {τ : ℝ} (hτ : 2 ≤ τ)
-    (hR : (R : ℝ) ≤ (b : ℝ) ^ τ)
-    (hstep : ∀ m : ℕ, ∀ P : SquareAlgorithm F m, P.Correct →
-      ∃ Q : SquareAlgorithm F (b * m), Q.Correct ∧
-        Q.cost ≤ R * P.cost + K * m ^ 2) :
-    AdmissibleExponent F τ :=
-  admissibleExponent_of_block_step_of_padding
-    (fun h P hP => MatrixAlgorithm.exists_restrict h h h P hP) hb hτ hR hstep
-
 end Ring
-
-section CommRing
-
-variable {F : Type*} [CommRing F]
-
-end CommRing
 
 section Ring
 
@@ -204,7 +185,9 @@ theorem admissibleExponent_of_int_rankAtMost {n r : ℕ} (hn : 2 ≤ n)
     (hRank : Tensor.RankAtMost (Tensor.matrixCoefficients (K := ℤ) (Fin n) (Fin n) (Fin n)) r)
     {τ : ℝ} (hτ : 2 ≤ τ) (hr : (r : ℝ) ≤ (n : ℝ) ^ τ) :
     AdmissibleExponent F τ := by
-  apply admissibleExponent_of_block_step (K := 6 * r * n ^ 2) hn hτ hr
+  apply admissibleExponent_of_block_step_of_padding
+    (fun h P hP => MatrixAlgorithm.exists_restrict h h h P hP)
+    (K := 6 * r * n ^ 2) hn hτ hr
   intro m P hP
   obtain ⟨Q, hQ, hcost⟩ := RecursiveBlock.int_rank_block_step hRank P hP
   refine ⟨Q, hQ, ?_⟩

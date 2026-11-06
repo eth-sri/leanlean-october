@@ -84,22 +84,6 @@ theorem normalizedTranslate_eq_mem_frozenConstraint {z : S} {f : S → ℝ}
   have hx : f (z * x) / f z = f x := congrFun hf x
   exact (div_eq_iff hfz).mp hx |>.trans (mul_comm _ _)
 
-theorem normalizedTranslate_eq_nonzero {z : S} {f : S → ℝ}
-    (hf1 : f 1 = 1) (hf : normalizedTranslate z f = f) : f z ≠ 0 := by
-  intro hfz
-  have hx := congrFun hf 1
-  simp [normalizedTranslate, hfz, hf1] at hx
-
-theorem normalizedTranslate_eq_mem_frozenConstraint_of_normalized {z : S} {f : S → ℝ}
-    (hf1 : f 1 = 1) (hf : normalizedTranslate z f = f) :
-    f ∈ frozenConstraint z (f z) :=
-  normalizedTranslate_eq_mem_frozenConstraint (normalizedTranslate_eq_nonzero hf1 hf) hf
-
-theorem normalizedTranslate_eq_mem_frozenSlice {C : Set (S → ℝ)} {z : S} {f : S → ℝ}
-    (hfC : f ∈ C) (hf1 : f 1 = 1) (hf : normalizedTranslate z f = f) :
-    f ∈ frozenSlice C z (f z) :=
-  ⟨hfC, normalizedTranslate_eq_mem_frozenConstraint_of_normalized hf1 hf⟩
-
 /-- Every finite collection of multiplication identities holds throughout a
 nonempty compact convex subset that remains invariant under all translates. -/
 theorem exists_finite_multiplicative_slice {K : Set (S → ℝ)}
@@ -123,8 +107,7 @@ theorem exists_finite_multiplicative_slice {K : Set (S → ℝ)}
         apply Continuous.subtype_mk
         exact normalizedTranslate_continuousOn z.val
           (fun f hf => hKnonzero f (hCK hf) z.val z.property)
-      obtain ⟨g, hg⟩ := compact_convex_fixedPoint_of_continuous
-        hCcompact hCconvex hCne P hP
+      obtain ⟨g, hg⟩ := compact_convex_fixedPoint hCcompact hCconvex hCne ⟨P, hP⟩
       have hg' : normalizedTranslate z.val g.val = g.val := congrArg Subtype.val hg
       let c : ℝ := g.val z.val
       let D := frozenSlice C z.val c
@@ -132,8 +115,10 @@ theorem exists_finite_multiplicative_slice {K : Set (S → ℝ)}
       have hDK : D ⊆ K := hDC.trans hCK
       refine ⟨D, hDK, ?_, frozenSlice_isCompact hCcompact z.val c,
         frozenSlice_convex hCconvex z.val c, ?_, ?_⟩
-      · exact ⟨g.val, normalizedTranslate_eq_mem_frozenSlice g.property
-          (hKnorm g.val (hCK g.property)) hg'⟩
+      · exact ⟨g.val, g.property, normalizedTranslate_eq_mem_frozenConstraint (by
+          intro hfz
+          have hx := congrFun hg' 1
+          simp [normalizedTranslate, hfz, hKnorm g.val (hCK g.property)] at hx) hg'⟩
       · intro w hw
         exact frozenSlice_mapsTo_normalizedTranslate (hCmap w hw)
       · intro f hf w hw x

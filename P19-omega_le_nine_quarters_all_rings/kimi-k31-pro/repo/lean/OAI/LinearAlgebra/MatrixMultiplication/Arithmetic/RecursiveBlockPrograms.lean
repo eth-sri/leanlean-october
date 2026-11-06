@@ -211,14 +211,16 @@ def rightBlock [Ring F] (b : Fin r → Fin n₂ × Fin n₃ → F)
     Matrix (Fin m₂) (Fin m₃) F :=
   fun t u => ∑ y, b q y * B (join y.1 t) (join y.2 u)
 
+variable (a : Fin r → Fin n₁ × Fin n₂ → ℤ)
+variable (b : Fin r → Fin n₂ × Fin n₃ → ℤ)
+variable (c : Fin r → Fin n₃ × Fin n₁ → ℤ)
+variable (h : Tensor.matrixCoefficients (K := ℤ) (Fin n₁) (Fin n₂) (Fin n₃) =
+  fun x y z => ∑ q, Tensor.rankOne (a q) (b q) (c q) x y z)
+
+include h in
 /-- Integer coefficients are central, so a bilinear identity preserves the
 order of the two inputs even in a noncommutative ring. -/
 theorem int_rank_bilinear_identity [Ring F]
-    (a : Fin r → Fin n₁ × Fin n₂ → ℤ)
-    (b : Fin r → Fin n₂ × Fin n₃ → ℤ)
-    (c : Fin r → Fin n₃ × Fin n₁ → ℤ)
-    (h : Tensor.matrixCoefficients (K := ℤ) (Fin n₁) (Fin n₂) (Fin n₃) =
-      fun x y z => ∑ q, Tensor.rankOne (a q) (b q) (c q) x y z)
     (left : Fin n₁ × Fin n₂ → F) (right : Fin n₂ × Fin n₃ → F)
     (i : Fin n₁) (k : Fin n₃) :
     (∑ q, (c q (k, i) : F) * (∑ x, (a q x : F) * left x) *
@@ -272,12 +274,8 @@ theorem int_rank_bilinear_identity [Ring F]
     _ = ∑ j, left (i, j) * right (j, k) := by
       simp [Tensor.matrixCoefficients, Fintype.sum_prod_type, ite_and, ite_mul]
 
+include h in
 theorem int_block_identity [Ring F]
-    (a : Fin r → Fin n₁ × Fin n₂ → ℤ)
-    (b : Fin r → Fin n₂ × Fin n₃ → ℤ)
-    (c : Fin r → Fin n₃ × Fin n₁ → ℤ)
-    (h : Tensor.matrixCoefficients (K := ℤ) (Fin n₁) (Fin n₂) (Fin n₃) =
-      fun x y z => ∑ q, Tensor.rankOne (a q) (b q) (c q) x y z)
     (A : Matrix (Fin (n₁ * m₁)) (Fin (n₂ * m₂)) F)
     (B : Matrix (Fin (n₂ * m₂)) (Fin (n₃ * m₃)) F)
     (i : Fin n₁) (k : Fin n₃) (s : Fin m₁) (u : Fin m₃) :

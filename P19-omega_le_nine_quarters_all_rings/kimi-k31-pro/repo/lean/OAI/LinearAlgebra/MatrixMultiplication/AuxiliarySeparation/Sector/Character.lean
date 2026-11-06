@@ -7,7 +7,6 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
 -/
 
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Sector.Degeneration
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Degeneration
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.CharacterTransport
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Laws
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.TagInequality
@@ -169,12 +168,6 @@ theorem convolution_tripling_tag_of_separation (χ : Character K)
     χ.value (fun i s r => (convolution (K := K)) a h i r s) ^ (1 / 3 : ℝ)) ≤
       χ.value ((convolution (K := K)) a (3 * h + a - 1)) at hresult
   simpa only [mul_assoc] using hresult
-
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
 
 end MatrixMultiplication.AuxiliarySeparation.Sector
 

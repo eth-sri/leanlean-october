@@ -1,0 +1,3977 @@
+diff --git a/lean/ComparatorAudit/Solution.lean b/lean/ComparatorAudit/Solution.lean
+index 43db71aa4..324507b52 100644
+--- a/lean/ComparatorAudit/Solution.lean
++++ b/lean/ComparatorAudit/Solution.lean
+@@ -26,11 +26,12 @@ theorem admissible_bddBelow (R : Type u) [Ring R] [Nontrivial R] :
+ 
+ theorem admissible_nonempty (R : Type u) [Ring R] :
+     Set.Nonempty {τ : ℝ | Arithmetic.AdmissibleExponent R τ} :=
+-  Arithmetic.admissibleExponent_nonempty (F := R)
++  ⟨(9 : ℝ) / 4, admissibleExponent_nine_quarters_all_rings R⟩
+ 
+ theorem omega_lower (R : Type u) [Ring R] [Nontrivial R] :
+     (2 : ℝ) ≤ Arithmetic.omega R :=
+-  Arithmetic.omega_two_le (F := R)
++  le_csInf ⟨(9 : ℝ) / 4, admissibleExponent_nine_quarters_all_rings R⟩
++    (fun _ hτ => Arithmetic.admissibleExponent_two_le hτ)
+ 
+ theorem epsilon_cost (R : Type u) [Ring R] (ε : ℝ) (hε : 0 < ε) :
+     ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ, 1 ≤ n →
+@@ -50,14 +51,11 @@ theorem exact_coefficients (ε : ℝ) (hε : 0 < ε) :
+   by
+     obtain ⟨n, r, hn, hRank, hr⟩ :=
+       AuxiliarySeparation.exists_rankAtMost_of_exponent_slack (K := ℤ) hε
+-    have hBound : (r : ℝ) ≤ (n : ℝ) ^ ((9 : ℝ) / 4 + ε) := by
+-      apply hr.trans
+-      apply Real.rpow_le_rpow_of_exponent_le
+-      · exact_mod_cast (show 1 ≤ n by omega)
+-      · linarith [AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters]
++    have hBound : (r : ℝ) ≤ (n : ℝ) ^ ((9 : ℝ) / 4 + ε) :=
++      hr.trans (Real.rpow_le_rpow_of_exponent_le
++        (by exact_mod_cast (show 1 ≤ n by omega))
++        (by linarith [AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters]))
+     obtain ⟨a, b, c, h⟩ := hRank
+-    refine ⟨n, r, hn, hBound, a, b, c, ?_⟩
+-    intro x y z
+-    exact congrFun (congrFun (congrFun h x) y) z
++    exact ⟨n, r, hn, hBound, a, b, c, fun x y z => congrFun (congrFun (congrFun h x) y) z⟩
+ 
+ end ComparatorChecks
+diff --git a/lean/FixedPointTheorems/apply_cubical_sperner.lean b/lean/FixedPointTheorems/apply_cubical_sperner.lean
+index a31f56157..3d907208f 100644
+--- a/lean/FixedPointTheorems/apply_cubical_sperner.lean
++++ b/lean/FixedPointTheorems/apply_cubical_sperner.lean
+@@ -91,27 +91,16 @@ lemma reduced_label_props_1 (f : @unit_cube n → @unit_cube n) (x : @unit_cube
+   }
+ }
+ 
+-lemma reduced_label_props_2 (f : @unit_cube n → @unit_cube n) (x : @unit_cube n)
+-    : @rl_point n f x ≤ n ∧
+-    ∀ k, (x.1 k = 0 → @rl_point n f x ≠ k.1) ∧ (x.1 k = 1 → @rl_point n f x ≤ k.1):= by {
+-  have h1 := reduced_label_props_1 f x
+-  apply And.intro h1.1
+-  intro k
+-  apply And.intro
+-  {
+-    intro h2 h3
+-    have h4 := (h1.2 k).1 h3
+-    rw [h2] at h4
+-    simp only [zero_ne_one, or_false] at h4
+-    contrapose! h4
+-    exact (f x).2.1 k
+-  }
+-  {
+-    intro h2
+-    apply (h1.2 k).2
+-    exact Or.inr h2
+-  }
+-}
++lemma reduced_label_props_2 (f : @unit_cube n → @unit_cube n) (x : @unit_cube n) :
++    @rl_point n f x ≤ n ∧
++    ∀ k, (x.1 k = 0 → @rl_point n f x ≠ k.1) ∧ (x.1 k = 1 → @rl_point n f x ≤ k.1) := by
++  have h := reduced_label_props_1 f x
++  refine ⟨h.1, fun k => ⟨?_, fun hk => (h.2 k).2 (.inr hk)⟩⟩
++  intro hk heq
++  have hlt := (h.2 k).1 heq
++  rw [hk] at hlt
++  simp only [zero_ne_one, or_false] at hlt
++  exact (not_lt_of_ge ((f x).2.1 k)) hlt
+ 
+ lemma reduced_label_props_3 (f : @unit_cube n → @unit_cube n) (x : @unit_cube n) (k : Fin n)
+     : (@rl_point n f x = k → (f x).1 k ≤ x.1 k) ∧ (@rl_point n f x > k → (f x).1 k ≥ x.1 k) := by {
+diff --git a/lean/FixedPointTheorems/cubical_sperner.lean b/lean/FixedPointTheorems/cubical_sperner.lean
+index 12313b6b6..86fca0885 100644
+--- a/lean/FixedPointTheorems/cubical_sperner.lean
++++ b/lean/FixedPointTheorems/cubical_sperner.lean
+@@ -814,13 +814,8 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
+ 
+ }
+ 
+-theorem weaker_cubical_sperner SC : ∃ I, complete_simplex SC SC.n I := by {
+-  have h1 := strong_cubical_sperner SC.n SC rfl
+-  obtain ⟨k1, hk1⟩ := h1
+-  have h2 : 0 < 2 * k1 + 1 := by omega
+-  rw [←hk1, Finset.card_pos] at h2
+-  obtain ⟨I, hI1⟩ := h2
+-  use I
+-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hI1
+-  exact hI1
+-}
++theorem weaker_cubical_sperner SC : ∃ I, complete_simplex SC SC.n I := by
++  obtain ⟨k, hk⟩ := strong_cubical_sperner SC.n SC rfl
++  have hpos : 0 < Finset.card {I | complete_simplex SC SC.n I} := by rw [hk]; omega
++  obtain ⟨I, hI⟩ := Finset.card_pos.mp hpos
++  exact ⟨I, by simpa using hI⟩
+diff --git a/lean/FixedPointTheorems/cubical_sperner_prep.lean b/lean/FixedPointTheorems/cubical_sperner_prep.lean
+index e7b9b193b..674a13e71 100644
+--- a/lean/FixedPointTheorems/cubical_sperner_prep.lean
++++ b/lean/FixedPointTheorems/cubical_sperner_prep.lean
+@@ -28,9 +28,7 @@ namespace SpernerCube
+ 
+ def G (SC : SpernerCube) := Fin SC.n → Fin (SC.p+1)
+ 
+-instance Gfin (SC : SpernerCube): Fintype SC.G := by {
+-  exact Pi.instFintype
+-}
++instance Gfin (SC : SpernerCube) : Fintype SC.G := Pi.instFintype
+ 
+ end SpernerCube
+ 
+@@ -62,30 +60,17 @@ def case_C (I : Fin (n1 +1) → SC.G) :=
+ def case_D (I : Fin (n1 +1) → SC.G) := ∀ j, ∀ q, ∃ k,I k j ≠ q
+ 
+ lemma one_of_ABCD (I : Fin (n1 +1) → SC.G) :
+-    case_A SC I ∨ case_B SC I ∨ case_C SC I ∨ case_D SC I := by {
+-  by_cases h1 : case_D SC I
+-  exact Or.inr (Or.inr (Or.inr h1))
+-  unfold case_D at h1
+-  push Not at h1
+-  obtain ⟨j , ⟨ q, h2 ⟩⟩ := h1
+-  by_cases q0 : q = 0
+-  {
+-    apply Or.inl
+-    use j
+-    rwa [← q0]
+-  }
+-  by_cases qp : q = Fin.last SC.p
+-  {
+-    apply Or.inr (Or.inl _)
+-    use j
+-    intro k
+-    rwa [h2 k]
+-  }
+-  suffices h3 : case_C SC I by {
+-    simp only [h3, true_or, or_true]
+-  }
+-  use j, q
+-}
++    case_A SC I ∨ case_B SC I ∨ case_C SC I ∨ case_D SC I := by
++  by_cases hD : case_D SC I
++  · exact Or.inr (Or.inr (Or.inr hD))
++  unfold case_D at hD
++  push Not at hD
++  obtain ⟨j, q, hq⟩ := hD
++  by_cases h0 : q = 0
++  · exact Or.inl ⟨j, by simpa [h0] using hq⟩
++  by_cases hp : q = Fin.last SC.p
++  · exact Or.inr (Or.inl ⟨j, by simpa [hp] using hq⟩)
++  · exact Or.inr (Or.inr (Or.inl ⟨j, q, ⟨h0, hp⟩, hq⟩))
+ 
+ section simplex_properties
+ 
+@@ -143,19 +128,11 @@ lemma le_add_one_of_simplex {m: ℕ} I (hs : simplex SC m I) (i1 i2 : Fin (m+1))
+ 
+ end simplex_properties
+ 
+-lemma p_ne_zero_of_cube {hn1 : n1 + 1 = SC.n}: Fin.last SC.p ≠ 0 := by {
+-  simp only [ne_eq, Fin.last_eq_zero_iff]
+-  intro h1
+-  let v : Fin SC.n → Fin (SC.p + 1) := fun _ ↦ 0
+-  have h3 : NeZero SC.n := by {
+-    rw [←hn1]
+-    exact instNeZeroNatHAdd_1
+-  }
+-  have h4 : v 0 = 0 := by {rfl}
+-  have h2 := (SC.rl_proper v).2 0
+-  simp only [Fin.val_zero, ne_eq, h1, Fin.val_eq_zero_iff, nonpos_iff_eq_zero] at h2
+-  exact h2.1 h4 (h2.2 h4)
+-}
++lemma p_ne_zero_of_cube {hn1 : n1 + 1 = SC.n}: Fin.last SC.p ≠ 0 := by
++  intro h
++  have hn : NeZero SC.n := ⟨by omega⟩
++  have hp := (SC.rl_proper (fun _ => 0)).2 0
++  simp_all [Fin.last_eq_zero_iff]
+ 
+ section simplex_child
+ 
+@@ -177,98 +154,26 @@ def insert_index (j : Fin (SC.n+1)) (a: Fin (n1 +1 )) : Fin (SC.n+1) :=
+ def delete_vertex (j: Fin (SC.n+1)) (I : Fin (SC.n+1)→ SC.G) : Fin (n1 + 1) → SC.G :=
+   fun a ↦ I (@insert_index SC n1 hn1 j a)
+ 
+-lemma insert_index_ne j a : @insert_index SC n1 hn1 j a ≠ j := by {
+-  apply Fin.ne_of_val_ne
+-  unfold insert_index
++lemma insert_index_ne j a : @insert_index SC n1 hn1 j a ≠ j := by
++  grind [insert_index]
++
++lemma almost_surjective_of_insert_index (j : Fin (SC.n+1)) (a : Fin (SC.n+1)) (h : a ≠ j)
++    : ∃ k : Fin (n1 + 1), a = @insert_index SC n1 hn1 j k := by
+   by_cases hlt : a.val < j.val
+-  {
+-    simp only [hlt, ↓reduceIte]
++  · refine ⟨⟨a.val, by omega⟩, Fin.ext ?_⟩
++    simp [insert_index, hlt]
++  · have hne := Fin.val_ne_of_ne h
++    refine ⟨⟨a.val - 1, by omega⟩, Fin.ext ?_⟩
++    simp [insert_index, show ¬a.val - 1 < j.val by omega]
+     omega
+-  }
+-  {
+-    simp only [hlt, ↓reduceIte, ne_eq]
+-    omega
+-  }
+-}
+ 
+-lemma almost_surjective_of_insert_index (j : Fin (SC.n+1)) (a : Fin (SC.n+1)) (h : a ≠ j)
+-    : ∃ k : Fin (n1 + 1) , a = @insert_index SC n1 hn1 j k := by {
+-  unfold insert_index
+-  by_cases hlt : a.1 < j.1
+-  {
+-    use (Fin.ofNat _ a.1)
+-    have h2 : a.1 = (Fin.ofNat (n1 + 1) a.1) := by {
+-      rw [Fin.ofNat_eq_cast, Fin.val_cast_of_lt]
+-      rw [hn1]
+-      apply lt_of_lt_of_le hlt
+-      exact Fin.is_le j
+-    }
+-    simp only [← h2, hlt]
+-    rfl
+-  }
+-  {
+-    have h2 : j.1 < a.1 := by {
+-      have := Fin.val_ne_of_ne (id (Ne.symm h))
+-      omega
+-    }
+-    let a1 := a.1 - 1
+-    have h3 : a1 + 1 = a.1 := by {
+-      show a.1 - 1 + 1 = a.1
+-      omega
+-    }
+-    let a1f := Fin.ofNat (n1 + 1) a1
+-    use a1f
+-    ext
+-    have h4 : a1 < n1 +1 := by {
+-      have h5 := a.2
+-      show a.1 - 1 < n1 + 1
+-      omega
+-    }
+-    have h6 : a1f.1 = a1 := by {
+-      unfold a1f
+-      simp only [Fin.ofNat_eq_cast, Fin.val_natCast, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+-      exact h4
+-    }
+-    have h5 : ¬ (a1f < j.1) := by {
+-      simp only [not_lt, h6]
+-      show j.1 ≤ a.1 - 1
+-      omega
+-    }
+-    simp only [h5, ↓reduceIte]
+-    rw [← h3, h6]
+-  }
+-}
++lemma insert_index_strict_mono j : StrictMono (@insert_index SC n1 hn1 j) := by
++  intro a b hab
++  simp only [insert_index, Fin.mk_lt_mk]
++  split_ifs <;> omega
+ 
+-lemma insert_index_strict_mono j : StrictMono (@insert_index SC n1 hn1 j) := by {
+-  intro a b h1
+-  have h2 : a.1 < b.1 := by {exact h1}
+-  have h21 : a.1 < b.1 + 1 := by omega
+-  unfold insert_index
+-  by_cases h3 : a.1 < j.1
+-  {
+-    by_cases h4 : b.1 < j.1
+-    repeat {
+-      simp only [h3, ↓reduceIte, h4, Fin.mk_lt_mk, Fin.val_fin_lt, gt_iff_lt]
+-      assumption
+-    }
+-  }
+-  {
+-    by_cases h4 : b.1 < j.1
+-    {
+-      simp only [h3, ↓reduceIte, h4, Fin.mk_lt_mk, gt_iff_lt]
+-      omega
+-    }
+-    {
+-      simp only [h3, ↓reduceIte, h4, Fin.mk_lt_mk, gt_iff_lt]
+-      omega
+-    }
+-  }
+-}
+-
+-lemma insert_index_inj j : Function.Injective (@insert_index SC n1 hn1 j) := by {
+-  apply StrictMono.injective
+-  apply insert_index_strict_mono
+-}
++lemma insert_index_inj j : Function.Injective (@insert_index SC n1 hn1 j) :=
++  (insert_index_strict_mono SC j).injective
+ 
+ lemma delete_vertex_inj J {hs : simplex SC SC.n J} i1 i2
+     (h1 : @delete_vertex SC n1 hn1 i1 J = @delete_vertex SC n1 hn1 i2 J ) : i1 = i2 := by {
+@@ -322,41 +227,6 @@ lemma delete_vertex_is_face J {hs : simplex SC SC.n J} i :
+   }
+ }
+ 
+-lemma is_id_of_strict_mono (m: ℕ ) (f : Fin m → Fin m) (hsm : StrictMono f)
+-    : ∀ k, f k = k := by {
+-  suffices h1 : ∀ (a : ℕ), ∀ k, k.1 < a → f k = k by {
+-    intro k
+-    exact h1 m k k.2
+-  }
+-  intro a
+-  induction' a with a ha
+-  {
+-    intro k h1
+-    omega
+-  }
+-  {
+-    have h1 : Function.Injective f := by {exact StrictMono.injective hsm}
+-    have h2 : Function.Surjective f := Finite.surjective_of_injective h1
+-    intro k hk
+-    have h3 j : j < k → f j = j := by {
+-      intro hj
+-      apply ha
+-      omega
+-    }
+-    by_cases h4 : f k < k
+-    apply h1 (h3 (f k) h4)
+-    simp only [not_lt] at h4
+-    apply le_antisymm _ h4
+-    obtain ⟨l, h9⟩ := h2 k
+-    suffices h8 : k ≤ l by {rwa [← hsm.le_iff_le, h9] at h8}
+-    by_contra! h6
+-    have h7 := h3 l h6
+-    rw [h9] at h7
+-    rw [h7] at h6
+-    exact (lt_self_iff_false l).mp h6
+-  }
+-}
+-
+ lemma is_insert_index_of_strict_mono f (hsm : StrictMono f)
+     : ∃ j, f = @insert_index SC n1 hn1 j := by {
+   have h31 : Function.Injective f := by {exact hsm.injective}
+@@ -386,9 +256,8 @@ lemma is_insert_index_of_strict_mono f (hsm : StrictMono f)
+     rw [h5.le_iff_le]
+     exact h4
+   }
+-  have h3 := is_id_of_strict_mono _ g h2
+   ext1 k
+-  rw [hg k, h3 k]
++  rw [hg k, h2.apply_eq]
+ }
+ 
+ lemma child_simplex_char (I : Fin (n1 +1) → SC.G) J {hs : simplex SC SC.n J}
+@@ -442,41 +311,14 @@ end simplex_child
+ section cases_ABCD
+ 
+ lemma insert_vertex I (v : SC.G) j :
+-    ∃ J, I = @delete_vertex SC n1 hn1 j J ∧ J j = v := by {
+-  have h1 : ∀ j2, ∃ w, (j2 = j → w = v)
+-      ∧ ∀ i, @insert_index SC n1 hn1 j i = j2 → I i = w := by {
+-    intro j2
+-    by_cases h1 : j2 = j
+-    {
+-      use v
+-      simp only [implies_true, true_and]
+-      intro i
+-      have h3 : @insert_index SC n1 hn1 j i ≠ j := by {apply insert_index_ne}
+-      simp only [h1, h3, IsEmpty.forall_iff]
+-    }
+-    {
+-      have h3 : ∃ i, j2 = @insert_index SC n1 hn1 j i := by {
+-        apply almost_surjective_of_insert_index
+-        exact h1
+-      }
+-      obtain ⟨ i, hi⟩ := h3
+-      use (I i)
+-      simp only [h1, IsEmpty.forall_iff, true_and]
+-      intro i2 h2
+-      congr!
+-      apply insert_index_inj SC j
+-      rw [h2, hi]
+-    }
+-  }
+-  obtain ⟨J, h2⟩ := axiomOfChoice h1
+-  use J
+-  apply And.intro
+-  {
+-    ext i
+-    exact (h2 (@insert_index SC n1 hn1 j i)).2 i rfl
+-  }
+-  exact (h2 j).1 rfl
+-}
++    ∃ J, I = @delete_vertex SC n1 hn1 j J ∧ J j = v := by
++  let J := Function.extend (@insert_index SC n1 hn1 j) I (fun _ => v)
++  refine ⟨J, ?_, ?_⟩
++  · funext i
++    exact ((insert_index_inj SC j).extend_apply I (fun _ => v) i).symm
++  · exact Function.extend_apply' I (fun _ => v) j (by
++      rintro ⟨i, hi⟩
++      exact insert_index_ne SC j i hi)
+ 
+ lemma surround_index (j : Fin (SC.n + 1)) (i : Fin (n1 + 1)) (hij : i.1 + 1 = j.1 )
+     (hj1 : j ≠ Fin.last SC.n): ((@insert_index SC n1 hn1 j i).1 + 1 = j.1
+@@ -824,19 +666,11 @@ lemma ccc_add {m} I (hs : simplex SC m I) (i1 i2 i3) (h1 : i1 ≤ i2 ∧ i2 ≤
+   }
+ }
+ 
+-lemma ccc_pos {m} I (hs : simplex SC m I) i1 i2 (h1 : i1 ≠ i2)
+-    : 0 < coord_change_count SC (I i1) (I i2) := by {
+-  unfold coord_change_count
+-  by_contra! h2
+-  apply h1
+-  apply hs.1
+-  simp only [ne_eq, nonpos_iff_eq_zero, Finset.card_eq_zero] at h2
+-  apply funext
+-  intro k
+-  rw [Finset.filter_eq_empty_iff] at h2
+-  simp only [Finset.mem_univ, Decidable.not_not, forall_const] at h2
+-  apply h2
+-}
++lemma ccc_pos {m} I (hs : simplex SC m I) i1 i2 (h1 : i1 ≠ i2) :
++    0 < coord_change_count SC (I i1) (I i2) := by
++  obtain ⟨k, hk⟩ := Function.ne_iff.mp (fun h => h1 (hs.1 h))
++  rw [coord_change_count, Finset.card_pos]
++  exact ⟨k, by simp [hk]⟩
+ 
+ noncomputable def ccc_fun {m} (I : Fin (m+1)→ SC.G) (i : Fin (m+1)) : Fin (SC.n + 1 )
+     := ⟨ coord_change_count SC (I 0) (I i), by {
+@@ -897,10 +731,8 @@ lemma ccc_fun_case_D_iff {m} I (hs : simplex SC m I) :
+ 
+ lemma last_eq_first_add_one J (hs : simplex SC SC.n J)
+     : ∀ k, (J (Fin.last SC.n) k).1 = (J 0 k).1 + 1 := by {
+-  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := by {
+-    apply is_id_of_strict_mono
+-    apply ccc_fun_strict_mono SC J hs
+-  }
++  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := fun _ =>
++    (ccc_fun_strict_mono SC J hs).apply_eq
+   have h2 := (ccc_fun_case_D_iff SC J hs).mpr (h3 _)
+   unfold case_D at h2
+   intro k
+@@ -977,10 +809,8 @@ lemma delete_vertex_ccc_fun_match J (hs : simplex SC SC.n J) j1 j2
+     simpa only [Fin.val_zero, Fin.val_pos_iff, zero_add, Fin.mk_eq_zero,
+         ite_eq_left_iff, not_lt,Fin.le_zero_iff, one_ne_zero, imp_false]
+   }
+-  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := by {
+-    apply is_id_of_strict_mono
+-    apply ccc_fun_strict_mono SC J hs
+-  }
++  have h3 : ∀ j3, ccc_fun SC J j3 = j3 := fun _ =>
++    (ccc_fun_strict_mono SC J hs).apply_eq
+   symm
+   by_contra h5
+   obtain ⟨i1, hi1⟩ := @almost_surjective_of_insert_index SC n1 hn1 _ _ h5
+@@ -1573,41 +1403,29 @@ lemma case_A_parent_count {hn1 : n1 + 1 = SC.n} I (hs : simplex SC n1 I) (h2 : c
+ 
+ end cases_ABCD
+ 
+-lemma boundary_is_A_or_B {hn1 : n1 + 1 = SC.n} I (hbf : @is_boundary_face SC n1 I)
+-    : case_A SC I ∨ case_B SC I := by {
+-  have hs : simplex SC n1 I := by {
+-    obtain ⟨J,hJ⟩ := hbf
++lemma boundary_is_A_or_B {hn1 : n1 + 1 = SC.n} I (hbf : @is_boundary_face SC n1 I) :
++    case_A SC I ∨ case_B SC I := by
++  have hs : simplex SC n1 I := by
++    obtain ⟨J, hJ⟩ := hbf
+     exact hJ.1.1
+-  }
+   unfold is_boundary_face at hbf
+   rw [Fintype.existsUnique_iff_card_one] at hbf
+-  have h1 := one_of_ABCD SC I
+-  rw [←or_assoc] at h1
+-  cases' h1 with h1 h1
+-  assumption
+-  cases' h1 with h1 h1
+-  rw [@case_C_parent_count SC n1 hn1 I hs h1] at hbf
+-  simp only [OfNat.ofNat_ne_one] at hbf
+-  rw [@case_D_parent_count SC n1 hn1 I hs h1] at hbf
+-  simp only [OfNat.ofNat_ne_one] at hbf
+-}
++  rcases one_of_ABCD SC I with h | h | h | h
++  · exact Or.inl h
++  · exact Or.inr h
++  · rw [@case_C_parent_count SC n1 hn1 I hs h] at hbf
++    simp only [OfNat.ofNat_ne_one] at hbf
++  · rw [@case_D_parent_count SC n1 hn1 I hs h] at hbf
++    simp only [OfNat.ofNat_ne_one] at hbf
+ 
+ lemma case_B_boundary {hn1 : n1 + 1 = SC.n} I (hs : simplex SC n1 I)
+     (h1 : case_B SC I) : is_boundary_face SC I :=
+   (Fintype.existsUnique_iff_card_one _).mpr (@case_B_parent_count SC n1 hn1 I hs h1)
+ 
+ lemma parent_count {hn1 : n1 + 1 = SC.n} I (hs : simplex SC n1 I) :
+-    Finset.card { J : Fin (SC.n + 1) → SC.G | is_face SC I J} ∈ {c | c = 1 ∨ c = 2} := by {
+-  simp only [Set.mem_ofPred_eq]
+-  have h1 := one_of_ABCD SC I
+-  rw [←or_assoc] at h1
+-  cases' h1 with h1 h1
+-  left
+-  cases' h1 with h2 h2
+-  exact @case_A_parent_count SC n1 hn1 I hs h2
+-  exact @case_B_parent_count SC n1 hn1 I hs h2
+-  right
+-  cases' h1 with h2 h2
+-  exact @case_C_parent_count SC n1 hn1 I hs h2
+-  exact @case_D_parent_count SC n1 hn1 I hs h2
+-}
++    Finset.card { J : Fin (SC.n + 1) → SC.G | is_face SC I J} ∈ {c | c = 1 ∨ c = 2} := by
++  rcases one_of_ABCD SC I with h | h | h | h
++  · exact Or.inl (@case_A_parent_count SC n1 hn1 I hs h)
++  · exact Or.inl (@case_B_parent_count SC n1 hn1 I hs h)
++  · exact Or.inr (@case_C_parent_count SC n1 hn1 I hs h)
++  · exact Or.inr (@case_D_parent_count SC n1 hn1 I hs h)
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AllRings.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AllRings.lean
+index 6b04249d3..0f90ba177 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AllRings.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AllRings.lean
+@@ -45,8 +45,7 @@ constructions, with no field or algebraic-closure hypothesis. -/
+ theorem exactRankExponent_int_le_nine_quarters :
+     exactRankExponent ℤ ≤ (9 : ℝ) / 4 := by
+   apply exactRankExponent_le_nine_quarters_of_characters
+-  · intro d hd k hk
+-    exact exists_detecting_character hd hk
++  · exact fun d hd k hk => exists_detecting_character hd hk
+   · intro χ d hd
+     rw [χ.value_matrixMultiplication (by omega)]
+     apply Real.rpow_le_rpow_of_exponent_le
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Complexity.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Complexity.lean
+index bfa766431..0f1562fb2 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Complexity.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Complexity.lean
+@@ -1,7 +1,6 @@
+ module
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.Model
+-public import OAI.LinearAlgebra.MatrixMultiplication.ComplexArithmetic.Complexity
+ public import Mathlib.Algebra.Order.Floor.Semiring
+ 
+ public section
+@@ -18,12 +17,6 @@ open scoped BigOperators
+ 
+ namespace MatrixMultiplication.Arithmetic
+ 
+-namespace Gate
+-
+-variable {F Input Register : Type*}
+-
+-end Gate
+-
+ namespace Program
+ 
+ variable {F Input : Type*}
+@@ -48,13 +41,9 @@ variable {F : Type*} [Ring F] {a b c : ℕ}
+ theorem correct_iff_entries (P : MatrixAlgorithm F a b c) :
+     P.Correct ↔ ∀ (A : Matrix (Fin a) (Fin b) F) (B : Matrix (Fin b) (Fin c) F)
+       (i : Fin a) (k : Fin c),
+-      P.program.eval (matrixInputs A B) (P.output i k) = ∑ j, A i j * B j k := by
+-  constructor
+-  · intro h A B i k
+-    exact congrFun (congrFun (h A B) i) k
+-  · intro h A B
+-    funext i k
+-    exact h A B i k
++      P.program.eval (matrixInputs A B) (P.output i k) = ∑ j, A i j * B j k :=
++  ⟨fun h A B i k => congrFun (congrFun (h A B) i) k,
++    fun h A B => funext fun i => funext fun k => h A B i k⟩
+ 
+ end MatrixAlgorithm
+ 
+@@ -74,29 +63,6 @@ theorem scalarAlgorithm_correct (F : Type*) [Ring F] : (scalarAlgorithm F).Corre
+   change A 0 0 * B 0 0 = (A * B) 0 0
+   simp [Matrix.mul_apply]
+ 
+-@[simp] theorem scalarAlgorithm_cost (F : Type*) [Ring F] : (scalarAlgorithm F).cost = 1 := rfl
+-
+-theorem one_le_innerSize {n : ℕ} (hn : 1 ≤ n) (k : ℝ) : 1 ≤ innerSize n k := by
+-  apply Nat.one_le_ceil_iff.mpr
+-  exact Real.rpow_pos_of_pos (by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)) k
+-
+-@[simp] theorem innerSize_zero (n : ℕ) : innerSize n 0 = 1 := by
+-  simp [innerSize]
+-
+-@[simp] theorem innerSize_one (n : ℕ) : innerSize n 1 = n := by
+-  simp [innerSize]
+-
+-theorem innerSize_mono {n : ℕ} (hn : 1 ≤ n) {k l : ℝ} (hkl : k ≤ l) :
+-    innerSize n k ≤ innerSize n l := by
+-  exact Nat.ceil_mono (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn) hkl)
+-
+-theorem innerSize_cast_le {n : ℕ} (hn : 1 ≤ n) {k : ℝ} (hk : 0 ≤ k) :
+-    (innerSize n k : ℝ) ≤ 2 * (n : ℝ) ^ k := by
+-  have hpow : 1 ≤ (n : ℝ) ^ k := Real.one_le_rpow (by exact_mod_cast hn) hk
+-  have hceil := (Nat.ceil_lt_add_one (Real.rpow_nonneg (Nat.cast_nonneg n) k)).le
+-  change (⌈(n : ℝ) ^ k⌉₊ : ℝ) ≤ _
+-  linarith
+-
+ end MatrixMultiplication.Arithmetic
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Exponent.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Exponent.lean
+deleted file mode 100644
+index 1f54adf0e..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Exponent.lean
++++ /dev/null
+@@ -1,75 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.NaiveAlgorithm
+-public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.LowerBound
+-public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.Padding
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Division-free arithmetic programs over a ring and their operation counts. -/
+-
+-noncomputable section
+-
+-namespace MatrixMultiplication.Arithmetic
+-
+-variable {F : Type*} [Ring F] [Nontrivial F]
+-
+-theorem omega_two_le : 2 ≤ omega F :=
+-  le_csInf admissibleExponent_nonempty (fun _ hτ => admissibleExponent_two_le hτ)
+-
+-theorem rectangularAdmissibleExponent_of_uniform_costs {k τ C : ℝ} (hC : 0 < C)
+-    (hbound : ∀ n : ℕ, 1 ≤ n → ∃ P : MatrixAlgorithm F n (innerSize n k) n,
+-      P.Correct ∧ (P.cost : ℝ) ≤ C * (n : ℝ) ^ τ) :
+-    RectangularAdmissibleExponent F k τ := by
+-  intro ε hε
+-  refine ⟨C, hC, ?_⟩
+-  intro n hn
+-  obtain ⟨P, hP, hcost⟩ := hbound n hn
+-  refine ⟨P, hP, hcost.trans ?_⟩
+-  apply mul_le_mul_of_nonneg_left _ hC.le
+-  exact Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn)
+-    (le_add_of_nonneg_right hε.le)
+-
+-theorem rectangularAdmissibleExponent_naive (k : ℝ) :
+-    RectangularAdmissibleExponent F k (2 + max k 0) := by
+-  apply rectangularAdmissibleExponent_of_uniform_costs (C := 4) (by norm_num)
+-  intro n hn
+-  refine ⟨naiveAlgorithm n (innerSize n k) n,
+-    naiveAlgorithm_correct n (innerSize n k) n, ?_⟩
+-  have hnpos : 0 < (n : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)
+-  have hinner : (innerSize n k : ℝ) ≤ 2 * (n : ℝ) ^ max k 0 :=
+-    (Nat.cast_le.mpr (innerSize_mono hn (le_max_left k 0))).trans
+-      (innerSize_cast_le hn (le_max_right k 0))
+-  rw [naiveAlgorithm_cost]
+-  push_cast
+-  calc
+-    2 * (n : ℝ) * innerSize n k * n = 2 * (n : ℝ) ^ 2 * innerSize n k := by ring
+-    _ ≤ 2 * (n : ℝ) ^ 2 * (2 * (n : ℝ) ^ max k 0) :=
+-      mul_le_mul_of_nonneg_left hinner (by positivity)
+-    _ = 4 * (n : ℝ) ^ (2 + max k 0) := by
+-      rw [Real.rpow_add hnpos]
+-      norm_num
+-      ring
+-
+-theorem rectangularAdmissibleExponent_nonempty (k : ℝ) :
+-    Set.Nonempty {τ : ℝ | RectangularAdmissibleExponent F k τ} :=
+-  ⟨2 + max k 0, rectangularAdmissibleExponent_naive k⟩
+-
+-theorem rectangularOmega_two_le (k : ℝ) : 2 ≤ rectangularOmega F k :=
+-  le_csInf (rectangularAdmissibleExponent_nonempty k)
+-    (fun _ hτ => rectangularAdmissibleExponent_two_le hτ)
+-
+-@[simp] theorem rectangularOmega_zero : rectangularOmega F 0 = 2 := by
+-  apply le_antisymm _ (rectangularOmega_two_le 0)
+-  apply rectangularOmega_le_of_admissibleExponent
+-  simpa using (rectangularAdmissibleExponent_naive (F := F) 0)
+-
+-end MatrixMultiplication.Arithmetic
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Growth.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Growth.lean
+index e945bcce5..c54b34b46 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Growth.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/Growth.lean
+@@ -135,15 +135,12 @@ theorem power_programs_of_block_step {b R K : ℕ}
+   intro k
+   induction k with
+   | zero =>
+-    exact ⟨scalarAlgorithm F, scalarAlgorithm_correct F, by simp⟩
++    exact ⟨scalarAlgorithm F, scalarAlgorithm_correct F, by rfl⟩
+   | succ k ih =>
+     obtain ⟨P, hP, hcost⟩ := ih
+     obtain ⟨Q, hQ, hQcost⟩ := hstep (b ^ k) P hP
+-    have hbound : Q.cost ≤ blockRecurrenceCost b R K (k + 1) := by
+-      exact hQcost.trans (Nat.add_le_add_right (Nat.mul_le_mul_left R hcost) _)
+-    have hresult : ∃ Q : SquareAlgorithm F (b * b ^ k), Q.Correct ∧
+-        Q.cost ≤ blockRecurrenceCost b R K (k + 1) := ⟨Q, hQ, hbound⟩
+-    exact (pow_succ' b k).symm ▸ hresult
++    exact (pow_succ' b k).symm ▸ ⟨Q, hQ,
++      hQcost.trans (Nat.add_le_add_right (Nat.mul_le_mul_left R hcost) _)⟩
+ 
+ theorem admissibleExponent_of_block_step_of_padding
+     (hpad : ∀ {n m : ℕ}, n ≤ m → ∀ P : SquareAlgorithm F m, P.Correct →
+@@ -176,24 +173,8 @@ theorem admissibleExponent_of_block_step_of_padding
+   exact ⟨P, hP, (by exact_mod_cast hcost : (P.cost : ℝ) ≤
+     (blockRecurrenceCost b R K k : ℝ)).trans (hbound k)⟩
+ 
+-theorem admissibleExponent_of_block_step
+-    {b R K : ℕ} (hb : 2 ≤ b) {τ : ℝ} (hτ : 2 ≤ τ)
+-    (hR : (R : ℝ) ≤ (b : ℝ) ^ τ)
+-    (hstep : ∀ m : ℕ, ∀ P : SquareAlgorithm F m, P.Correct →
+-      ∃ Q : SquareAlgorithm F (b * m), Q.Correct ∧
+-        Q.cost ≤ R * P.cost + K * m ^ 2) :
+-    AdmissibleExponent F τ :=
+-  admissibleExponent_of_block_step_of_padding
+-    (fun h P hP => MatrixAlgorithm.exists_restrict h h h P hP) hb hτ hR hstep
+-
+ end Ring
+ 
+-section CommRing
+-
+-variable {F : Type*} [CommRing F]
+-
+-end CommRing
+-
+ section Ring
+ 
+ variable {F : Type*} [Ring F]
+@@ -204,7 +185,9 @@ theorem admissibleExponent_of_int_rankAtMost {n r : ℕ} (hn : 2 ≤ n)
+     (hRank : Tensor.RankAtMost (Tensor.matrixCoefficients (K := ℤ) (Fin n) (Fin n) (Fin n)) r)
+     {τ : ℝ} (hτ : 2 ≤ τ) (hr : (r : ℝ) ≤ (n : ℝ) ^ τ) :
+     AdmissibleExponent F τ := by
+-  apply admissibleExponent_of_block_step (K := 6 * r * n ^ 2) hn hτ hr
++  apply admissibleExponent_of_block_step_of_padding
++    (fun h P hP => MatrixAlgorithm.exists_restrict h h h P hP)
++    (K := 6 * r * n ^ 2) hn hτ hr
+   intro m P hP
+   obtain ⟨Q, hQ, hcost⟩ := RecursiveBlock.int_rank_block_step hRank P hP
+   refine ⟨Q, hQ, ?_⟩
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/LowerBound.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/LowerBound.lean
+index 1b3a78116..348a4c88b 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/LowerBound.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/LowerBound.lean
+@@ -147,8 +147,8 @@ theorem output_size_le_cost (P : MatrixAlgorithm F a b c) (hb : 1 ≤ b)
+ 
+ end MatrixAlgorithm
+ 
+-theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F] {k τ : ℝ}
+-    (hτ : RectangularAdmissibleExponent F k τ) : 2 ≤ τ := by
++theorem admissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F] {τ : ℝ}
++    (hτ : AdmissibleExponent F τ) : 2 ≤ τ := by
+   by_contra hneg
+   have hτlt : τ < 2 := lt_of_not_ge hneg
+   let ε : ℝ := (2 - τ) / 2
+@@ -156,7 +156,7 @@ theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F]
+   obtain ⟨C, hC, hbound⟩ := hτ ε hε
+   obtain ⟨n, hn⟩ := exists_nat_gt (max (C ^ ε⁻¹) 1)
+   have hnreal : 1 < (n : ℝ) := lt_of_le_of_lt (le_max_right _ _) hn
+-  have hnpos : 0 < (n : ℝ) := lt_trans zero_lt_one hnreal
++  have hnpos : 0 < (n : ℝ) := zero_lt_one.trans hnreal
+   have hn1 : 1 ≤ n := (Nat.one_le_cast (α := ℝ)).mp hnreal.le
+   have hpow : C < (n : ℝ) ^ ε :=
+     (Real.rpow_inv_lt_iff_of_pos hC.le (Nat.cast_nonneg n) hε).mp
+@@ -164,7 +164,7 @@ theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F]
+   obtain ⟨P, hP, hcost⟩ := hbound n hn1
+   have hlower : (n : ℝ) ^ (2 : ℕ) ≤ P.cost := by
+     have h : n ^ 2 ≤ P.cost := by
+-      simpa [pow_two] using P.output_size_le_cost (one_le_innerSize hn1 k) hP
++      simpa [pow_two] using P.output_size_le_cost hn1 hP
+     exact_mod_cast h
+   have hstrict : (n : ℝ) ^ (2 : ℕ) < (n : ℝ) ^ (2 : ℕ) := calc
+     (n : ℝ) ^ (2 : ℕ) ≤ C * (n : ℝ) ^ (τ + ε) := hlower.trans hcost
+@@ -175,36 +175,7 @@ theorem rectangularAdmissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F]
+       have he : ε + (τ + ε) = 2 := by dsimp [ε]; ring
+       rw [he]
+       norm_num
+-  exact (lt_irrefl _ hstrict)
+-
+-theorem rectangularAdmissibleExponent_bddBelow (F : Type*) [Ring F] [Nontrivial F] (k : ℝ) :
+-    BddBelow {τ : ℝ | RectangularAdmissibleExponent F k τ} :=
+-  ⟨2, fun _ h => rectangularAdmissibleExponent_two_le h⟩
+-
+-theorem rectangularOmega_le_of_admissibleExponent {F : Type*} [Ring F] [Nontrivial F] {k τ : ℝ}
+-    (hτ : RectangularAdmissibleExponent F k τ) : rectangularOmega F k ≤ τ :=
+-  csInf_le (rectangularAdmissibleExponent_bddBelow F k) hτ
+-
+-theorem admissibleExponent_iff_rectangular_one (F : Type*) [Ring F] [Nontrivial F] (τ : ℝ) :
+-    AdmissibleExponent F τ ↔ RectangularAdmissibleExponent F 1 τ := by
+-  constructor
+-  · intro h ε hε
+-    obtain ⟨C, hC, hbound⟩ := h ε hε
+-    refine ⟨C, hC, ?_⟩
+-    intro n hn
+-    rw [innerSize_one]
+-    exact hbound n hn
+-  · intro h ε hε
+-    obtain ⟨C, hC, hbound⟩ := h ε hε
+-    refine ⟨C, hC, ?_⟩
+-    intro n hn
+-    have hnBound := hbound n hn
+-    rw [innerSize_one] at hnBound
+-    exact hnBound
+-
+-theorem admissibleExponent_two_le {F : Type*} [Ring F] [Nontrivial F] {τ : ℝ}
+-    (hτ : AdmissibleExponent F τ) : 2 ≤ τ :=
+-  rectangularAdmissibleExponent_two_le ((admissibleExponent_iff_rectangular_one F τ).mp hτ)
++  exact lt_irrefl _ hstrict
+ 
+ theorem admissibleExponent_bddBelow (F : Type*) [Ring F] [Nontrivial F] :
+     BddBelow {τ : ℝ | AdmissibleExponent F τ} :=
+@@ -214,13 +185,6 @@ theorem omega_le_of_admissibleExponent {F : Type*} [Ring F] [Nontrivial F] {τ :
+     (hτ : AdmissibleExponent F τ) : omega F ≤ τ :=
+   csInf_le (admissibleExponent_bddBelow F) hτ
+ 
+-@[simp] theorem rectangularOmega_one (F : Type*) [Ring F] [Nontrivial F] :
+-    rectangularOmega F 1 = omega F := by
+-  unfold rectangularOmega omega
+-  congr 1
+-  ext τ
+-  exact (admissibleExponent_iff_rectangular_one F τ).symm
+-
+ end MatrixMultiplication.Arithmetic
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/NaiveAlgorithm.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/NaiveAlgorithm.lean
+deleted file mode 100644
+index a36273b9c..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/NaiveAlgorithm.lean
++++ /dev/null
+@@ -1,108 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ExpressionFamily
+-public import Mathlib.Tactic.NormNum
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Division-free arithmetic programs over a ring and their operation counts. -/
+-
+-noncomputable section
+-
+-open scoped BigOperators
+-
+-namespace MatrixMultiplication.Arithmetic
+-
+-variable {F : Type*} [Ring F]
+-
+-namespace Expression
+-
+-variable {Input : Type*}
+-
+-def sumFin : {n : ℕ} → (Fin n → Expression F Input) → Expression F Input
+-  | 0, _ => .constant 0
+-  | n + 1, f => .add (f 0) (sumFin (fun i : Fin n => f i.succ))
+-
+-theorem sumFin_eval {n : ℕ} (f : Fin n → Expression F Input) (inputs : Input → F) :
+-    (sumFin f).eval inputs = ∑ i, (f i).eval inputs := by
+-  induction n with
+-  | zero => simp [sumFin, eval]
+-  | succ n ih => simp [sumFin, eval, ih, Fin.sum_univ_succ]
+-
+-theorem sumFin_cost {n : ℕ} (f : Fin n → Expression F Input) :
+-    (sumFin f).cost = (∑ i, (f i).cost) + n := by
+-  induction n with
+-  | zero => simp [sumFin, cost]
+-  | succ n ih =>
+-    simp only [sumFin, cost, ih, Fin.sum_univ_succ]
+-    omega
+-
+-end Expression
+-
+-def naiveEntry {a b c : ℕ} (i : Fin a) (k : Fin c) : Expression F (MatrixInput a b c) :=
+-  Expression.sumFin fun j : Fin b =>
+-    .mul (.input (.inl (i, j))) (.input (.inr (j, k)))
+-
+-theorem naiveEntry_eval {a b c : ℕ} (i : Fin a) (k : Fin c)
+-    (A : Matrix (Fin a) (Fin b) F) (B : Matrix (Fin b) (Fin c) F) :
+-    (naiveEntry i k).eval (matrixInputs A B) = ∑ j, A i j * B j k := by
+-  simp [naiveEntry, Expression.sumFin_eval, Expression.eval, matrixInputs]
+-
+-@[simp] theorem naiveEntry_cost {a b c : ℕ} (i : Fin a) (k : Fin c) :
+-    (naiveEntry (F := F) (b := b) i k).cost = 2 * b := by
+-  simp [naiveEntry, Expression.sumFin_cost, Expression.cost, two_mul]
+-
+-def naiveAlgorithm (a b c : ℕ) : MatrixAlgorithm F a b c :=
+-  let p := Expression.compileFamily (fun ik : Fin a × Fin c => naiveEntry (b := b) ik.1 ik.2)
+-  { registers := p.registers
+-    program := p.program
+-    output := fun i k => p.output (i, k) }
+-
+-theorem naiveAlgorithm_correct (a b c : ℕ) : (naiveAlgorithm (F := F) a b c).Correct := by
+-  apply (MatrixAlgorithm.correct_iff_entries _).2
+-  intro A B i k
+-  let p := Expression.compileFamily (fun ik : Fin a × Fin c => naiveEntry (F := F) (b := b) ik.1 ik.2)
+-  change p.program.eval (matrixInputs A B) (p.output (i, k)) = _
+-  rw [p.correct]
+-  exact naiveEntry_eval i k A B
+-
+-@[simp] theorem naiveAlgorithm_cost (a b c : ℕ) :
+-    (naiveAlgorithm (F := F) a b c).cost = 2 * a * b * c := by
+-  let p := Expression.compileFamily (fun ik : Fin a × Fin c => naiveEntry (F := F) (b := b) ik.1 ik.2)
+-  change p.program.cost = _
+-  rw [p.cost_eq]
+-  simp only [naiveEntry_cost, Finset.sum_const, Finset.card_univ,
+-    Fintype.card_prod, Fintype.card_fin, nsmul_eq_mul, Nat.cast_id]
+-  ring
+-
+-theorem admissibleExponent_three : AdmissibleExponent F 3 := by
+-  intro ε hε
+-  refine ⟨2, by norm_num, ?_⟩
+-  intro n hn
+-  refine ⟨naiveAlgorithm n n n, naiveAlgorithm_correct n n n, ?_⟩
+-  rw [naiveAlgorithm_cost]
+-  have hnR : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+-  have hpow : (n : ℝ) ^ (3 : ℝ) ≤ (n : ℝ) ^ (3 + ε) :=
+-    Real.rpow_le_rpow_of_exponent_le hnR (le_add_of_nonneg_right hε.le)
+-  calc
+-    ((2 * n * n * n : ℕ) : ℝ) = 2 * (n : ℝ) ^ (3 : ℝ) := by
+-      calc
+-        ((2 * n * n * n : ℕ) : ℝ) = 2 * (n : ℝ) ^ (3 : ℕ) := by
+-          push_cast
+-          ring
+-        _ = 2 * (n : ℝ) ^ (3 : ℝ) :=
+-          congrArg (fun t : ℝ => 2 * t) (Real.rpow_natCast (n : ℝ) 3).symm
+-    _ ≤ 2 * (n : ℝ) ^ (3 + ε) := mul_le_mul_of_nonneg_left hpow (by norm_num)
+-
+-theorem admissibleExponent_nonempty : Set.Nonempty {τ : ℝ | AdmissibleExponent F τ} :=
+-  ⟨3, admissibleExponent_three⟩
+-
+-end MatrixMultiplication.Arithmetic
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/RecursiveBlockPrograms.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/RecursiveBlockPrograms.lean
+index 0cd1c18df..15c99e153 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/RecursiveBlockPrograms.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Arithmetic/RecursiveBlockPrograms.lean
+@@ -211,14 +211,16 @@ def rightBlock [Ring F] (b : Fin r → Fin n₂ × Fin n₃ → F)
+     Matrix (Fin m₂) (Fin m₃) F :=
+   fun t u => ∑ y, b q y * B (join y.1 t) (join y.2 u)
+ 
++variable (a : Fin r → Fin n₁ × Fin n₂ → ℤ)
++variable (b : Fin r → Fin n₂ × Fin n₃ → ℤ)
++variable (c : Fin r → Fin n₃ × Fin n₁ → ℤ)
++variable (h : Tensor.matrixCoefficients (K := ℤ) (Fin n₁) (Fin n₂) (Fin n₃) =
++  fun x y z => ∑ q, Tensor.rankOne (a q) (b q) (c q) x y z)
++
++include h in
+ /-- Integer coefficients are central, so a bilinear identity preserves the
+ order of the two inputs even in a noncommutative ring. -/
+ theorem int_rank_bilinear_identity [Ring F]
+-    (a : Fin r → Fin n₁ × Fin n₂ → ℤ)
+-    (b : Fin r → Fin n₂ × Fin n₃ → ℤ)
+-    (c : Fin r → Fin n₃ × Fin n₁ → ℤ)
+-    (h : Tensor.matrixCoefficients (K := ℤ) (Fin n₁) (Fin n₂) (Fin n₃) =
+-      fun x y z => ∑ q, Tensor.rankOne (a q) (b q) (c q) x y z)
+     (left : Fin n₁ × Fin n₂ → F) (right : Fin n₂ × Fin n₃ → F)
+     (i : Fin n₁) (k : Fin n₃) :
+     (∑ q, (c q (k, i) : F) * (∑ x, (a q x : F) * left x) *
+@@ -272,12 +274,8 @@ theorem int_rank_bilinear_identity [Ring F]
+     _ = ∑ j, left (i, j) * right (j, k) := by
+       simp [Tensor.matrixCoefficients, Fintype.sum_prod_type, ite_and, ite_mul]
+ 
++include h in
+ theorem int_block_identity [Ring F]
+-    (a : Fin r → Fin n₁ × Fin n₂ → ℤ)
+-    (b : Fin r → Fin n₂ × Fin n₃ → ℤ)
+-    (c : Fin r → Fin n₃ × Fin n₁ → ℤ)
+-    (h : Tensor.matrixCoefficients (K := ℤ) (Fin n₁) (Fin n₂) (Fin n₃) =
+-      fun x y z => ∑ q, Tensor.rankOne (a q) (b q) (c q) x y z)
+     (A : Matrix (Fin (n₁ * m₁)) (Fin (n₂ * m₂)) F)
+     (B : Matrix (Fin (n₂ * m₂)) (Fin (n₃ * m₃)) F)
+     (i : Fin n₁) (k : Fin n₃) (s : Fin m₁) (u : Fin m₃) :
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Arithmetic/RankExponent.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Arithmetic/RankExponent.lean
+index 2bee13a9a..6fabb3216 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Arithmetic/RankExponent.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Arithmetic/RankExponent.lean
+@@ -33,10 +33,13 @@ open scoped BigOperators
+ namespace MatrixMultiplication.AuxiliarySeparation
+ 
+ variable {K : Type*} [CommSemiring K] [Nontrivial K]
++variable {X Y Z X' Y' Z' U V W : Type*}
++variable [Fintype X] [Fintype Y] [Fintype Z]
++variable [Fintype X'] [Fintype Y'] [Fintype Z']
++variable [Fintype U] [Fintype V] [Fintype W]
+ 
+ /-- Every finite coefficient tensor has a finite exact rank decomposition. -/
+-theorem exists_rankAtMost {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor K X Y Z) : ∃ r : ℕ, Tensor.RankAtMost T r := by
++theorem exists_rankAtMost (T : Tensor K X Y Z) : ∃ r : ℕ, Tensor.RankAtMost T r := by
+   classical
+   let a : X × Y × Z → X → K := fun p x => if x = p.1 then T p.1 p.2.1 p.2.2 else 0
+   let b : X × Y × Z → Y → K := fun p y => if y = p.2.1 then 1 else 0
+@@ -49,36 +52,27 @@ theorem exists_rankAtMost {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+   exact Tensor.rankAtMost_sum_rankOne a b c
+ 
+ /-- Exact rank of a finite tensor over the coefficient semiring. -/
+-def exactRank {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor K X Y Z) : ℕ := by
++def exactRank (T : Tensor K X Y Z) : ℕ := by
+   classical
+   exact Nat.find (exists_rankAtMost T)
+ 
+ /-- The least exact rank comes with an actual rank decomposition. -/
+-theorem exactRank_spec {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor K X Y Z) : Tensor.RankAtMost T (exactRank T) := by
++theorem exactRank_spec (T : Tensor K X Y Z) : Tensor.RankAtMost T (exactRank T) := by
+   classical
+   exact Nat.find_spec (exists_rankAtMost T)
+ 
+ /-- Every exact decomposition bounds the least rank. -/
+-theorem exactRank_le {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+-    {T : Tensor K X Y Z} {r : ℕ} (h : Tensor.RankAtMost T r) : exactRank T ≤ r := by
++theorem exactRank_le {T : Tensor K X Y Z} {r : ℕ} (h : Tensor.RankAtMost T r) : exactRank T ≤ r := by
+   classical
+   exact Nat.find_min' (exists_rankAtMost T) h
+ 
+ /-- Exact rank cannot increase under a linear restriction. -/
+-theorem exactRank_restrict_le {X Y Z X' Y' Z' : Type*}
+-    [Fintype X] [Fintype Y] [Fintype Z]
+-    [Fintype X'] [Fintype Y'] [Fintype Z']
+-    (T : Tensor K X Y Z) (A : X' → X → K) (B : Y' → Y → K)
++theorem exactRank_restrict_le (T : Tensor K X Y Z) (A : X' → X → K) (B : Y' → Y → K)
+     (C : Z' → Z → K) : exactRank (Tensor.restrict A B C T) ≤ exactRank T :=
+   exactRank_le ((exactRank_spec T).restrict A B C)
+ 
+ /-- Independent bijections of the three coordinate sets preserve exact rank. -/
+-theorem exactRank_reindex {X Y Z X' Y' Z' : Type*}
+-    [Fintype X] [Fintype Y] [Fintype Z]
+-    [Fintype X'] [Fintype Y'] [Fintype Z']
+-    (T : Tensor K X Y Z) (ex : X' ≃ X) (ey : Y' ≃ Y) (ez : Z' ≃ Z) :
++theorem exactRank_reindex (T : Tensor K X Y Z) (ex : X' ≃ X) (ey : Y' ≃ Y) (ez : Z' ≃ Z) :
+     exactRank (Tensor.pullback ex ey ez T) = exactRank T := by
+   apply le_antisymm (exactRank_le ((exactRank_spec T).pullback ex ey ez))
+   have h := exactRank_le
+@@ -89,10 +83,7 @@ theorem exactRank_reindex {X Y Z X' Y' Z' : Type*}
+   simpa only [heq] using h
+ 
+ /-- Tensor product decompositions give the usual submultiplicative rank bound. -/
+-theorem exactRank_product_le {X Y Z U V W : Type*}
+-    [Fintype X] [Fintype Y] [Fintype Z]
+-    [Fintype U] [Fintype V] [Fintype W]
+-    (T : Tensor K X Y Z) (S : Tensor K U V W) :
++theorem exactRank_product_le (T : Tensor K X Y Z) (S : Tensor K U V W) :
+     exactRank (Tensor.product T S) ≤ exactRank T * exactRank S :=
+   exactRank_le ((exactRank_spec T).product (exactRank_spec S))
+ 
+@@ -146,9 +137,6 @@ theorem exactMatrixRank_lower {n : ℕ} (hn : 0 < n) : n ^ 2 ≤ (exactMatrixRan
+ theorem exactMatrixRank_pos {n : ℕ} (hn : 0 < n) : 0 < (exactMatrixRank K) n :=
+   lt_of_lt_of_le (pow_pos hn 2) (exactMatrixRank_lower hn)
+ 
+-@[simp] theorem exactMatrixRank_zero : (exactMatrixRank K) 0 = 0 :=
+-  Nat.eq_zero_of_le_zero (by simpa using exactMatrixRank_upper 0)
+-
+ @[simp] theorem exactMatrixRank_one : (exactMatrixRank K) 1 = 1 := by
+   apply le_antisymm
+   · simpa using exactMatrixRank_upper 1
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Basic.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Basic.lean
+index 43f3b5a7e..daed57d48 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Basic.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Basic.lean
+@@ -143,45 +143,6 @@ end Character
+ 
+ end General
+ 
+-namespace Character
+-
+-section Field
+-
+-variable {K : Type*} [Field K]
+-variable (χ : Character K)
+-variable {X Y Z : Type}
+-variable [Fintype X] [Fintype Y] [Fintype Z]
+-
+-/-- Every nonzero tensor restricts to the scalar multiplication tensor. -/
+-theorem one_le_value {T : Tensor K X Y Z} (hT : T ≠ 0) : 1 ≤ χ.value T := by
+-  classical
+-  obtain ⟨x, hx⟩ := Function.ne_iff.mp hT
+-  obtain ⟨y, hy⟩ := Function.ne_iff.mp hx
+-  obtain ⟨z, hz⟩ := Function.ne_iff.mp hy
+-  change T x y z ≠ 0 at hz
+-  let A : PUnit → X → K := fun _ x' => if x' = x then (T x y z)⁻¹ else 0
+-  let B : PUnit → Y → K := fun _ y' => if y' = y then 1 else 0
+-  let C : PUnit → Z → K := fun _ z' => if z' = z then 1 else 0
+-  have heq : Tensor.restrict A B C T = (unitTensor (K := K)) := by
+-    funext i j k
+-    simp [Tensor.restrict, A, B, C, unitTensor, ite_mul, mul_ite, hz]
+-  simpa only [heq, χ.map_one] using χ.monotone T A B C
+-
+-/-- Normalization and restriction monotonicity make the character faithful. -/
+-@[simp] theorem value_eq_zero_iff (T : Tensor K X Y Z) : χ.value T = 0 ↔ T = 0 := by
+-  constructor
+-  · intro h
+-    by_contra hT
+-    have hle := χ.one_le_value hT
+-    rw [h] at hle
+-    exact (not_le_of_gt zero_lt_one) hle
+-  · rintro rfl
+-    exact χ.map_zero
+-
+-end Field
+-
+-end Character
+-
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Degeneration.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Degeneration.lean
+deleted file mode 100644
+index f7450d306..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Degeneration.lean
++++ /dev/null
+@@ -1,4 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Interpolation
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.CharacterBounds
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth.PolynomialOverhead
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Dot.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Dot.lean
+index f76647085..23d034db7 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Dot.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Dot.lean
+@@ -151,11 +151,6 @@ theorem value_matrixMultiplication {m : ℕ} (hm : 0 < m) :
+   simpa only [matrixMultiplicationTensor_eq_matrixCoefficients] using
+     χ.value_matrixCoefficients_square hm
+ 
+-section Field
+-variable {K : Type*} [Field K] (χ : Character K)
+-
+-end Field
+-
+ end MatrixMultiplication.AuxiliarySeparation.Character
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/FiniteSeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/FiniteSeparation.lean
+deleted file mode 100644
+index 7b4a22bb9..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/FiniteSeparation.lean
++++ /dev/null
+@@ -1,5 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Degeneration
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.CharacterBounds
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Symmetrization.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Symmetrization.lean
+index 876efdbdb..517f958f2 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Symmetrization.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Character/Symmetrization.lean
+@@ -6,7 +6,6 @@ Modified from OpenAI's matrix-multiplication sources to support arbitrary fields
+ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
+ -/
+ 
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth.PermutationProduct
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Basic
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Basic
+ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/FixedPoint.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/FixedPoint.lean
+index 0b7d5c297..96bab6f39 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/FixedPoint.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/FixedPoint.lean
+@@ -148,22 +148,8 @@ theorem exists_finite_partition_weights {I : Type*} {K : Set (I → ℝ)}
+     exact hw (e j) (subset_closure hj) i hi
+ 
+ 
+-theorem exists_finite_partition_weights_nonempty {I : Type*} {K : Set (I → ℝ)}
+-    (hK : IsCompact K) (hne : K.Nonempty) (s : Finset I) {ε : ℝ} (hε : 0 < ε) :
+-    ∃ n : ℕ, 0 < n ∧ ∃ a : Fin n → K, ∃ w : Fin n → C(K, ℝ),
+-      (∀ x j, 0 ≤ w j x) ∧ (∀ x, ∑ j, w j x = 1) ∧
+-      (∀ x j, w j x ≠ 0 → ∀ i ∈ s, |(a j).val i - x.val i| < ε) := by
+-  obtain ⟨n, a, w, hw0, hw1, hwa⟩ := exists_finite_partition_weights hK s hε
+-  have hn : 0 < n := by
+-    by_contra hn
+-    have hn0 : n = 0 := Nat.eq_zero_of_not_pos hn
+-    subst n
+-    obtain ⟨x, hx⟩ := hne
+-    simpa using hw1 ⟨x, hx⟩
+-  exact ⟨n, hn, a, w, hw0, hw1, hwa⟩
+-
+ theorem compact_approx_limit {I : Type*} {K : Set (I → ℝ)}
+-    (hK : IsCompact K) (_hne : K.Nonempty) (f : K → (I → ℝ)) (hf : Continuous f)
++    (hK : IsCompact K) (f : K → (I → ℝ)) (hf : Continuous f)
+     (happrox : ∀ s : Finset I, ∀ ε : ℝ, 0 < ε →
+       ∃ x : K, ∀ i ∈ s, |f x i - x.val i| ≤ ε) :
+     ∃ x : K, f x = x.val := by
+@@ -211,22 +197,21 @@ theorem compact_convex_fixedPoint {I : Type*} {K : Set (I → ℝ)}
+   have happrox : ∀ s : Finset I, ∀ ε : ℝ, 0 < ε →
+       ∃ x : K, ∀ i ∈ s, |(f x).val i - x.val i| ≤ ε := by
+     intro s ε hε
+-    obtain ⟨n, hn, a, w, hw0, hw1, hwa⟩ :=
+-      exists_finite_partition_weights_nonempty hKcompact hKne s hε
++    obtain ⟨n, a, w, hw0, hw1, hwa⟩ := exists_finite_partition_weights hKcompact s hε
++    have hn : 0 < n := by
++      by_contra hn
++      have hn0 : n = 0 := Nat.eq_zero_of_not_pos hn
++      subst n
++      obtain ⟨x, hx⟩ := hKne
++      simpa using hw1 ⟨x, hx⟩
+     let : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
+     exact exists_approximate_fixedPoint_of_weights hKconvex f a w
+       (fun j x => hw0 x j) hw1 s ε
+       (fun x j hj i hi => (hwa x j hj i hi).le)
+-  obtain ⟨x, hx⟩ := compact_approx_limit hKcompact hKne
++  obtain ⟨x, hx⟩ := compact_approx_limit hKcompact
+     (fun x => (f x).val) (continuous_subtype_val.comp f.continuous) happrox
+   exact ⟨x, Subtype.ext hx⟩
+ 
+-/-- An unbundled form of the product-space fixed-point theorem. -/
+-theorem compact_convex_fixedPoint_of_continuous {I : Type*} {K : Set (I → ℝ)}
+-    (hKcompact : IsCompact K) (hKconvex : Convex ℝ K) (hKne : K.Nonempty)
+-    (f : K → K) (hf : Continuous f) : ∃ x : K, f x = x :=
+-  compact_convex_fixedPoint hKcompact hKconvex hKne ⟨f, hf⟩
+-
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+ end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/RationalCone.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/RationalCone.lean
+index 326975461..fa081233a 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/RationalCone.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convex/RationalCone.lean
+@@ -27,10 +27,12 @@ def rationalVectorCast {J : Type*} (v : J → ℚ) : J → ℝ := fun j ↦ v j
+ @[simp] theorem rationalVectorCast_apply {J : Type*} (v : J → ℚ) (j : J) :
+     rationalVectorCast v j = (v j : ℝ) := rfl
+ 
++variable {I J : Type*} [Fintype I]
++
+ /-- In an affinely independent rational family, the coefficients of a real
+ convex representation of a rational point are rational. -/
+ theorem exists_rat_convex_weights_of_affineIndependent
+-    {I J : Type*} [Fintype I] (v : I → J → ℚ) (b : J → ℚ)
++     (v : I → J → ℚ) (b : J → ℚ)
+     (w : I → ℝ)
+     (hpos : ∀ i, 0 ≤ w i) (hsum : ∑ i, w i = 1)
+     (heq : ∑ i, w i • rationalVectorCast (v i) = rationalVectorCast b)
+@@ -95,7 +97,7 @@ theorem rationalVectorCast_mem_convexHull_descend
+ /-- A rational point in the real cone generated by a finite rational family
+ already lies in the rational cone generated by that family. -/
+ theorem mem_rationalCone_of_nonneg_real_solution
+-    {I J : Type*} [Fintype I] (A : I → J → ℚ) (b : J → ℚ)
++     (A : I → J → ℚ) (b : J → ℚ)
+     (x : I → ℝ) (hxpos : ∀ i, 0 ≤ x i)
+     (hxeq : ∀ j, ∑ i, x i * (A i j : ℝ) = (b j : ℝ)) :
+     b ∈ PointedCone.hull ℚ (Set.range A) := by
+@@ -156,53 +158,31 @@ theorem mem_rationalCone_of_nonneg_real_solution
+   rw [← hscale]
+   exact PointedCone.smul_mem _ (Nat.cast_nonneg N) hscaled
+ 
+-/-- Nonnegative solvability of a finite rational linear system descends from
+-real coefficients to rational coefficients. The equation index type may be
+-infinite. -/
+-theorem exists_nonneg_rat_solution_of_real
+-    {I J : Type*} [Fintype I] (A : I → J → ℚ) (b : J → ℚ)
+-    (h : ∃ x : I → ℝ, (∀ i, 0 ≤ x i) ∧
+-      ∀ j, ∑ i, x i * (A i j : ℝ) = (b j : ℝ)) :
+-    ∃ q : I → ℚ, (∀ i, 0 ≤ q i) ∧ ∀ j, ∑ i, q i * A i j = b j := by
+-  obtain ⟨x, hxpos, hxeq⟩ := h
+-  have hb := mem_rationalCone_of_nonneg_real_solution A b x hxpos hxeq
+-  obtain ⟨q, hq⟩ := (Submodule.mem_span_range_iff_exists_fun (Nonneg ℚ)).1 hb
+-  refine ⟨fun i ↦ (q i : ℚ), fun i ↦ (q i).property, ?_⟩
+-  intro j
+-  have hj := congrFun hq j
+-  simpa only [Finset.sum_apply, Pi.smul_apply, ← Nonneg.coe_smul, smul_eq_mul] using hj
+-
+-/-- Clearing denominators turns a nonnegative real solution of a rational
+-system into a positive integer multiple with natural coefficients. -/
+-theorem exists_nat_scaled_solution_of_nonneg_real
+-    {I J : Type*} [Fintype I] (A : I → J → ℚ) (b : J → ℚ)
+-    (h : ∃ x : I → ℝ, (∀ i, 0 ≤ x i) ∧
+-      ∀ j, ∑ i, x i * (A i j : ℝ) = (b j : ℝ)) :
+-    ∃ D : ℕ, 0 < D ∧ ∃ c : I → ℕ,
+-      ∀ j, ∑ i, (c i : ℚ) * A i j = (D : ℚ) * b j := by
+-  obtain ⟨q, hqpos, hqeq⟩ := exists_nonneg_rat_solution_of_real A b h
+-  obtain ⟨D, hDpos, c, hc⟩ := exists_nat_mul_eq_nat q hqpos
+-  refine ⟨D, hDpos, c, fun j ↦ ?_⟩
+-  calc
+-    ∑ i, (c i : ℚ) * A i j = ∑ i, ((D : ℚ) * q i) * A i j := by simp only [hc]
+-    _ = (D : ℚ) * ∑ i, q i * A i j := by rw [Finset.mul_sum]; simp only [mul_assoc]
+-    _ = (D : ℚ) * b j := by rw [hqeq]
+-
+ /-- Integer form of finite cone certificate extraction. This is the form used
+ when the selected additive relations have integral coefficients. -/
+ theorem exists_nat_scaled_int_solution_of_nonneg_real
+-    {I J : Type*} [Fintype I] (A : I → J → ℤ) (b : J → ℤ)
++     (A : I → J → ℤ) (b : J → ℤ)
+     (h : ∃ x : I → ℝ, (∀ i, 0 ≤ x i) ∧
+       ∀ j, ∑ i, x i * (A i j : ℝ) = (b j : ℝ)) :
+     ∃ D : ℕ, 0 < D ∧ ∃ c : I → ℕ,
+       ∀ j, ∑ i, (c i : ℤ) * A i j = (D : ℤ) * b j := by
+   obtain ⟨x, hxpos, hxeq⟩ := h
++  obtain ⟨q, hq⟩ := (Submodule.mem_span_range_iff_exists_fun (Nonneg ℚ)).1
++    (mem_rationalCone_of_nonneg_real_solution
++      (fun i j ↦ (A i j : ℚ)) (fun j ↦ (b j : ℚ)) x hxpos (by simpa using hxeq))
+   obtain ⟨D, hDpos, c, hc⟩ :=
+-    exists_nat_scaled_solution_of_nonneg_real
+-      (fun i j ↦ (A i j : ℚ)) (fun j ↦ (b j : ℚ))
+-      ⟨x, hxpos, by simpa using hxeq⟩
++    exists_nat_mul_eq_nat (fun i ↦ (q i : ℚ)) (fun i ↦ (q i).property)
+   refine ⟨D, hDpos, c, fun j ↦ ?_⟩
+-  exact_mod_cast hc j
++  have hj := congrFun hq j
++  simp only [Finset.sum_apply, Pi.smul_apply, ← Nonneg.coe_smul, smul_eq_mul] at hj
++  have heq : ∑ i, (c i : ℚ) * (A i j : ℚ) = (D : ℚ) * (b j : ℚ) := by
++    calc
++      ∑ i, (c i : ℚ) * (A i j : ℚ) = ∑ i, ((D : ℚ) * q i) * (A i j : ℚ) := by simp only [hc]
++      _ = (D : ℚ) * ∑ i, (q i : ℚ) * (A i j : ℚ) := by
++        rw [Finset.mul_sum]
++        simp only [mul_assoc]
++      _ = (D : ℚ) * (b j : ℚ) := by rw [hj]
++  exact_mod_cast heq
+ 
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Basic.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Basic.lean
+index 07aed6a8a..749dbcba6 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Basic.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Basic.lean
+@@ -54,12 +54,6 @@ def convolution (a b : ℕ) : Tensor K (Fin a) (Fin b) (Fin (a + b - 1)) :=
+   simp only [convolution]
+   split_ifs <;> simp_all
+ 
+-@[simp] theorem convolution_eq_zero_iff [Nontrivial K] {a b : ℕ}
+-    (i : Fin a) (j : Fin b) (k : Fin (a + b - 1)) :
+-    convolution (K := K) a b i j k = 0 ↔ i.val + j.val ≠ k.val := by
+-  simp only [convolution]
+-  split_ifs <;> simp_all
+-
+ /-- Every pair of input monomials has a valid output coordinate. -/
+ def convolutionOutput {a b : ℕ} (i : Fin a) (j : Fin b) : Fin (a + b - 1) :=
+   ⟨i.val + j.val, by have hi := i.isLt; have hj := j.isLt; omega⟩
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Rank.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Rank.lean
+deleted file mode 100644
+index 08aa6849b..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Rank.lean
++++ /dev/null
+@@ -1,4 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Basic
+-public import Mathlib.LinearAlgebra.Lagrange
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Interpolation
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Symmetry.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Symmetry.lean
+index b749f1153..0fcf324d8 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Symmetry.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Convolution/Symmetry.lean
+@@ -7,7 +7,6 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
+ -/
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Symmetrization
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Rank
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth.NormalizedProfile
+ 
+@@ -143,11 +142,6 @@ theorem convolutionProfile_le_of_character_value_bounds {a b : ℕ}
+     χ.convolutionProfile a b ≤ (a + b - 1 : ℕ) ^ (1 / χ.meanExponent) :=
+   χ.symmetrizedProfile_le_of_character_value_bounds ht _ h
+ 
+-section Field
+-variable {K : Type*} [Field K] (χ : Character K)
+-
+-end Field
+-
+ end Character
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Character.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Character.lean
+index 07aadbb28..eb373b335 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Character.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Character.lean
+@@ -7,7 +7,6 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
+ -/
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Determinant.Filtration
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Degeneration
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.CharacterTransport
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.SupportExtension
+@@ -199,12 +198,6 @@ theorem convolution_concavity_tag_of_separation
+   obtain ⟨e, rfl, he⟩ : ∃ e, b = e + 1 ∧ 0 < e := ⟨b - 1, by omega, by omega⟩
+   simpa [Nat.add_assoc] using χ.convolution_concavity_tag_dims_of_separation hsep d e he q hq₀ hq₁
+ 
+-section Field
+-
+-variable {K : Type*} [Field K] (χ : Character K)
+-
+-end Field
+-
+ end Character
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Filtration.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Filtration.lean
+index 852b38c5e..73d44642e 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Filtration.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Filtration.lean
+@@ -118,10 +118,6 @@ theorem adaptedTensor_unique (d e : ℕ)
+     rw [Finset.sum_sub_distrib, hT, adaptedTensor_reconstruct, sub_self]
+   exact sub_eq_zero.mp ((Fintype.linearIndependent_iff.mp h) _ hs k)
+ 
+-@[simp] theorem adaptedTensor_kernel_to_quotient (d e : ℕ)
+-    (i : Fin (d + 1)) (j : Fin e) (k : Fin (d + e + 2)) :
+-    adaptedTensor (K := K) d e i (.inr j) (.inl k) = 0 := rfl
+-
+ /-- Polynomial diagonal maps; scaling the quotient input by `X` clears
+ the negative input-kernel weight without changing the leading tensor. -/
+ def inputScale (e : ℕ) : Index e → K[X]
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Kernel.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Kernel.lean
+index 20e8aef5e..1b73bc538 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Kernel.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Determinant/Kernel.lean
+@@ -55,29 +55,6 @@ def determinant : R[X] →ₗ[R] FormPair R where
+ @[simp] theorem diagonal_determinant (p : R[X]) : diagonal (determinant p) = 0 := by
+   simp [diagonal, determinant]
+ 
+-/-- A fixed linear complement to the determinant kernel on unrestricted polynomials. -/
+-def split : (R[X] × R[X]) ≃ₗ[R] FormPair R where
+-  toFun p := (p.1 - X * p.2, p.2)
+-  invFun p := (p.1 + X * p.2, p.2)
+-  left_inv p := by apply Prod.ext <;> simp
+-  right_inv p := by apply Prod.ext <;> simp
+-  map_add' p q := by
+-    apply Prod.ext <;> simp
+-    ring
+-  map_smul' c p := by
+-    apply Prod.ext <;> simp [smul_eq_C_mul]
+-    ring
+-
+-@[simp] theorem split_apply (p : R[X] × R[X]) : split p = (p.1 - X * p.2, p.2) := rfl
+-
+-@[simp] theorem split_symm_apply (p : FormPair R) : split.symm p = (diagonal p, p.2) := rfl
+-
+-@[simp] theorem diagonal_split (p : R[X] × R[X]) : diagonal (split p) = p.1 := by
+-  simp [split, diagonal]
+-
+-@[simp] theorem split_zero_left (q : R[X]) : split (0, q) = determinant q := by
+-  simp [split, determinant]
+-
+ /-- Multiply both coefficients by a first-input polynomial. -/
+ def multiply (f : R[X]) : FormPair R →ₗ[R] FormPair R where
+   toFun p := (f * p.1, f * p.2)
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Entropy/Tag.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Entropy/Tag.lean
+index 19c680306..6bff06fc8 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Entropy/Tag.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Entropy/Tag.lean
+@@ -189,12 +189,6 @@ theorem tag_of_integral_type_comparison_of_value_pos (χ : Character K)
+   MatrixMultiplication.AuxiliarySeparation.tag_of_integral_bounds q
+     (fun a => χ.value (B a)) p (χ.value T) 6 hB hT (by norm_num) hfinite
+ 
+-section Field
+-
+-variable {K : Type*} [Field K]
+-
+-end Field
+-
+ end Character
+ 
+ end MatrixMultiplication.AuxiliarySeparation
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/NormalizedProfile.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/NormalizedProfile.lean
+index e90a13678..0b160ad96 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/NormalizedProfile.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/NormalizedProfile.lean
+@@ -69,11 +69,6 @@ theorem symmetrizedProfile_le_of_character_value_bounds {t : ℝ} (ht : 0 < t)
+     χ.symmetrizedProfile t T ≤ (r : ℝ) ^ (1 / t) :=
+   χ.symmetrizedProfile_le_of_permuted_value_bounds ht T (fun i => h (χ.permutedCharacter i))
+ 
+-section Field
+-variable {K : Type*} [Field K] (χ : Character K)
+-
+-end Field
+-
+ end Character
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/PermutationProduct.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/PermutationProduct.lean
+deleted file mode 100644
+index 8e5132403..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/PermutationProduct.lean
++++ /dev/null
+@@ -1,8 +0,0 @@
+-module
+-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+-public import Mathlib.Algebra.Group.Equiv.Basic
+-public import Mathlib.Data.Fintype.Perm
+-public import Mathlib.Basic.Real.Basic
+-public import Mathlib.Tactic.FinCases
+-public import Mathlib.Tactic.NormNum
+-public import Mathlib.Tactic.Ring
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/ProfileSlopes.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/ProfileSlopes.lean
+index 38dd3e3c5..ed526f580 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/ProfileSlopes.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/ProfileSlopes.lean
+@@ -108,14 +108,15 @@ theorem profile_le_affine_slope {P : ℕ → ℝ} {g : ℝ} {c h : ℕ}
+     simpa only [mul_comm] using shiftedTripling_profile_lower hh htrip j
+   simpa only [mul_comm] using ge_of_tendsto hprofile (Eventually.of_forall hbound)
+ 
+-/-- The row estimate in the positive-index notation of the paper. -/
+-theorem profile_row_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
++/-- The diagonal is bounded above by the limiting row slope with the precise
++coefficient `(3a-1)/2`. -/
++theorem profile_diagonal_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
+     (htrip : ∀ a : ℕ, 1 ≤ a → ∀ h : ℕ, 1 ≤ h →
+       3 * P a h ≤ P a (3 * h + a - 1))
+     (hlim : ∀ a : ℕ, 1 ≤ a →
+       Tendsto (fun h : ℕ => P a h / (h : ℝ)) atTop (𝓝 (g a)))
+-    (a h : ℕ) (ha : 1 ≤ a) (hh : 1 ≤ h) :
+-    P a h ≤ ((h : ℝ) + ((a : ℝ) - 1) / 2) * g a := by
++    (a : ℕ) (ha : 1 ≤ a) :
++    P a a ≤ ((3 * (a : ℝ) - 1) / 2) * g a := by
+   have ht : ∀ n : ℕ, 1 ≤ n → 3 * P a n ≤ P a (3 * n + (a - 1)) := by
+     intro n hn
+     have hi : 3 * n + (a - 1) = 3 * n + a - 1 := by omega
+@@ -123,19 +124,8 @@ theorem profile_row_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
+     exact htrip a ha n hn
+   have hcast : ((a - 1 : ℕ) : ℝ) = (a : ℝ) - 1 := by
+     rw [Nat.cast_sub ha, Nat.cast_one]
+-  simpa only [hcast] using profile_le_affine_slope hh ht (hlim a ha)
+-
+-/-- The diagonal is bounded above by the limiting row slope with the precise
+-coefficient `(3a-1)/2`. -/
+-theorem profile_diagonal_le_slope {P : ℕ → ℕ → ℝ} {g : ℕ → ℝ}
+-    (htrip : ∀ a : ℕ, 1 ≤ a → ∀ h : ℕ, 1 ≤ h →
+-      3 * P a h ≤ P a (3 * h + a - 1))
+-    (hlim : ∀ a : ℕ, 1 ≤ a →
+-      Tendsto (fun h : ℕ => P a h / (h : ℝ)) atTop (𝓝 (g a)))
+-    (a : ℕ) (ha : 1 ≤ a) :
+-    P a a ≤ ((3 * (a : ℝ) - 1) / 2) * g a := by
+   have hc : (a : ℝ) + ((a : ℝ) - 1) / 2 = (3 * (a : ℝ) - 1) / 2 := by ring
+-  simpa only [hc] using profile_row_le_slope htrip hlim a a ha ha
++  simpa only [hcast, hc] using profile_le_affine_slope ha ht (hlim a ha)
+ 
+ /-- Symmetry identifies a diagonal step with one increment in each adjacent
+ row. Only positive-index symmetry and slope bounds are used. -/
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/Recurrence.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/Recurrence.lean
+index fbac2e254..990da1b7d 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/Recurrence.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Growth/Recurrence.lean
+@@ -29,24 +29,7 @@ theorem growthRecurrence_step_real
+     (hDprev : ((3 * n - 1) / 2) * Gprev ≤ Dprev) :
+     (1 + 1 / (3 * n)) * Gprev ≤ gnext ∧
+       ((3 * (n + 1) - 1) / 2) * ((1 + 1 / (3 * n)) * Gprev) ≤ Dnext := by
+-  have hden : 0 < 3 * n := by positivity
+-  have hbound : (3 * n + 1) * Gprev ≤ (3 * n) * gnext := by
+-    nlinarith
+-  have hidentity : (1 + 1 / (3 * n)) * Gprev =
+-      ((3 * n + 1) * Gprev) / (3 * n) := by
+-    field_simp
+-  have hgnew : (1 + 1 / (3 * n)) * Gprev ≤ gnext := by
+-    rw [hidentity]
+-    exact (div_le_iff₀ hden).mpr (by simpa only [mul_comm] using hbound)
+-  refine ⟨hgnew, ?_⟩
+-  have hdiagonal : ((3 * (n + 1) - 1) / 2) *
+-      ((1 + 1 / (3 * n)) * Gprev) =
+-      ((3 * n - 1) / 2) * Gprev + Gprev +
+-        (1 + 1 / (3 * n)) * Gprev := by
+-    field_simp
+-    ring
+-  rw [hdiagonal]
+-  linarith
++  constructor <;> field_simp [ne_of_gt hn] at * <;> nlinarith
+ 
+ /-- The natural-number form of the scalar induction step, indexed by `n + 1`
+ so that no truncated subtraction occurs in the recurrence. -/
+@@ -58,13 +41,9 @@ theorem growthRecurrence_step
+     (hDprev : ((3 * (n : ℝ) - 1) / 2) * Gprev ≤ Dprev) :
+     (1 + 1 / (3 * (n : ℝ))) * Gprev ≤ gnext ∧
+       ((3 * ((n : ℝ) + 1) - 1) / 2) *
+-        ((1 + 1 / (3 * (n : ℝ))) * Gprev) ≤ Dnext := by
+-  apply growthRecurrence_step_real
+-  · exact_mod_cast (show 0 < n by omega)
+-  · exact hupper
+-  · exact hincrement
+-  · exact hgprev
+-  · exact hDprev
++        ((1 + 1 / (3 * (n : ℝ))) * Gprev) ≤ Dnext :=
++  growthRecurrence_step_real (by exact_mod_cast (show 0 < n by omega))
++    hupper hincrement hgprev hDprev
+ 
+ /-- A zero-indexed version of `growthRecurrence_induction`, convenient when the
+ initial term of the comparison sequence is stored at index zero. -/
+@@ -97,24 +76,6 @@ theorem growthRecurrence_induction_shifted
+       have hs := growthRecurrence_step hn hu (hincrement (n + 1) hn) ih.1 hp
+       simpa only [hHstep, Nat.cast_add, Nat.cast_one] using hs
+ 
+-/-- The simultaneous bounds for the explicit comparison product from Section 6. -/
+-theorem growthProduct_le_slope_and_diagonal
+-    (D g : ℕ → ℝ)
+-    (hgbase : 1 ≤ g 1)
+-    (hDbase : 1 ≤ D 1)
+-    (hupper : ∀ n : ℕ, 1 ≤ n →
+-      D n ≤ ((3 * (n : ℝ) - 1) / 2) * g n)
+-    (hincrement : ∀ n : ℕ, 1 ≤ n →
+-      D n + g n + g (n + 1) ≤ D (n + 1)) :
+-    ∀ n : ℕ, growthProduct n ≤ g (n + 1) ∧
+-      ((3 * ((n : ℝ) + 1) - 1) / 2) * growthProduct n ≤ D (n + 1) := by
+-  apply growthRecurrence_induction_shifted D g growthProduct
+-    growthProduct_zero hgbase hDbase
+-  · intro n
+-    rw [growthProduct_succ, mul_comm]
+-  · exact hupper
+-  · exact hincrement
+-
+ /-- Combining the scalar induction with the elementary product estimate gives
+ an exact fourth-power lower bound on the cube of each diagonal value. -/
+ theorem diagonal_fourth_power_lower
+@@ -127,8 +88,9 @@ theorem diagonal_fourth_power_lower
+       D n + g n + g (n + 1) ≤ D (n + 1))
+     (n : ℕ) :
+     ((n : ℝ) + 1) ^ 4 ≤ D (n + 1) ^ 3 := by
+-  have hdiag := (growthProduct_le_slope_and_diagonal D g hgbase hDbase
+-    hupper hincrement n).2
++  have hdiag := (growthRecurrence_induction_shifted D g growthProduct
++    growthProduct_zero hgbase hDbase
++    (fun n => by rw [growthProduct_succ, mul_comm]) hupper hincrement n).2
+   have hpositive := growthProduct_pos n
+   have hlinear : ((n : ℝ) + 1) * growthProduct n ≤ D (n + 1) := by
+     have hcoeff : (n : ℝ) + 1 ≤ (3 * ((n : ℝ) + 1) - 1) / 2 := by
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/Arithmetic.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/Arithmetic.lean
+index 5babb892e..0767be8bd 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/Arithmetic.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/Arithmetic.lean
+@@ -2,7 +2,7 @@ module
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Arithmetic.RankExponent
+ public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.Growth
+-public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.Exponent
++public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.LowerBound
+ 
+ public section
+ 
+@@ -30,10 +30,7 @@ theorem exactRankExponent_int_admissible (R : Type u) [Ring R] :
+     Arithmetic.AdmissibleExponent R (exactRankExponent ℤ) := by
+   apply Arithmetic.admissibleExponent_of_int_rank_bounds
+     (exactRankExponent_lower (K := ℤ))
+-  intro ε hε
+-  obtain ⟨n, r, hn, hrank, hr⟩ :=
+-    exists_rankAtMost_of_exponent_slack (K := ℤ) hε
+-  exact ⟨n, r, hn, hrank, hr⟩
++  exact fun ε hε => exists_rankAtMost_of_exponent_slack (K := ℤ) hε
+ 
+ /-- The unchanged arithmetic exponent over a nontrivial ring is bounded by
+ the exact integer coefficient rank exponent. -/
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoefficientExtraction.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoefficientExtraction.lean
+index ae59e0482..f6fbcc038 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoefficientExtraction.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoefficientExtraction.lean
+@@ -2,6 +2,8 @@ module
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
+ public import Mathlib.Algebra.Polynomial.Degree.Support
++public import Mathlib.Algebra.Polynomial.Div
++public import Mathlib.Algebra.Polynomial.BigOperators
+ public import Mathlib.Algebra.Polynomial.Degree.Operations
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.Restriction
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoprimePatch.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoprimePatch.lean
+index 4ca6e17b1..b5a5b7403 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoprimePatch.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/CoprimePatch.lean
+@@ -52,11 +52,6 @@ theorem rankAtMost_patch [Fintype ι] (T : Tensor R X Y Z)
+       (fun q : Σ i, Fin (r i) => b q.1 q.2)
+       (fun q : Σ i, Fin (r i) => c q.1 q.2)
+ 
+-/-- Consecutive periods are coprime over every commutative ring. -/
+-theorem isCoprime_consecutive {R : Type*} [CommRing R] (d : R) :
+-    IsCoprime d (d + 1) := by
+-  exact ⟨-1, 1, by ring⟩
+-
+ /-- Powers of any finite Bezout family are again a Bezout family. The new
+ coefficients may depend on k; the family of source schemes does not. -/
+ theorem exists_bezout_powers {R ι : Type*} [CommRing R] [Fintype ι]
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/FiniteSeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/FiniteSeparation.lean
+index fbbf82ca5..357498db5 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/FiniteSeparation.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/FiniteSeparation.lean
+@@ -87,7 +87,8 @@ theorem value_separationTarget_le_int (χ : Character ℤ) (hM : 0 < M)
+     let SB := descentSource (ι := CyclotomicIndex (L + 1))
+       (Tensor.directSum (fun _ : Fin (L + 1) => sharedFirstTensor B)) Bx By n
+     have hc := χ.value_le_add_of_coprime_scaled_restrictions
+-      (Tensor.power (separationTarget B) n) SA SB (isCoprime_consecutive (L : ℤ)) n
++      (Tensor.power (separationTarget B) n) SA SB
++      (show IsCoprime (L : ℤ) ((L : ℤ) + 1) from ⟨-1, 1, by ring⟩) n
+       (hA n) (by simpa only [Nat.cast_add, Nat.cast_one] using hB n)
+     have hv : 0 ≤ χ.value (sharedFirstTensor B) := χ.nonneg _
+     have ha : χ.value SA ≤
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/SeparationWeights.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/SeparationWeights.lean
+index 113400222..f1af73804 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/SeparationWeights.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Integral/SeparationWeights.lean
+@@ -2,6 +2,8 @@ module
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.UnnormalizedFourier
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
++public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.SquareWeights
++public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.NoWrap
+ public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
+ 
+ public section
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Inequalities.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Inequalities.lean
+index 3dffb4854..aadfee2ab 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Inequalities.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Inequalities.lean
+@@ -105,7 +105,6 @@ theorem convolutionProfile_tripling_of_separation
+     (fun i : Fin 6 => (χ.permutedCharacter i).value (fun x z y => (convolution (K := K)) a h x y z))
+     (fun i : Fin 6 => (χ.permutedCharacter i).pX)
+     (mul_pos (by norm_num : (0 : ℝ) < 6) ht) χ.sum_permutedCharacter_pX_mean
+-    (fun i => χ.permutedCharacter_convolution_pos ha (by omega) i)
+     (fun i => χ.permutedCharacter_convolution_pos ha hh i)
+     (fun i => zero_lt_one.trans_le
+       ((χ.permutedCharacter i).one_le_value_of_coefficient_one hsw))
+@@ -165,12 +164,6 @@ theorem exponent_sum_le_nine_quarters_of_separation_and_convolution
+   unfold meanExponent at h
+   linarith
+ 
+-section Field
+-
+-variable {K : Type*} [Field K] [IsAlgClosed K] (χ : Character K)
+-
+-end Field
+-
+ end MatrixMultiplication.AuxiliarySeparation.Character
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Interpolation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Interpolation.lean
+deleted file mode 100644
+index 792fa8074..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Interpolation.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
+-public import Mathlib.Data.Set.Finite.Basic
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Laws.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Laws.lean
+index fe60db0c4..ab2a0c7c4 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Laws.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/Laws.lean
+@@ -63,7 +63,7 @@ theorem uniformThree_entropy_factor (p : ℝ) :
+ theorem uniformThree_product (f : Fin 3 → ℝ) :
+     (∏ i, f i ^ (FiniteLaw.uniform (Fin 3)).mass i) =
+       f 0 ^ (1 / 3 : ℝ) * f 1 ^ (1 / 3 : ℝ) * f 2 ^ (1 / 3 : ℝ) := by
+-  simp [Fin.prod_univ_three, FiniteLaw.uniform_mass, mul_assoc]
++  simp [Fin.prod_univ_three, FiniteLaw.uniform, mul_assoc]
+ 
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/ProductBounds.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/ProductBounds.lean
+index 6686f20df..807161765 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/ProductBounds.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Polynomial/ProductBounds.lean
+@@ -78,7 +78,7 @@ theorem finite_product_concavity {ι : Type*} [Fintype ι]
+ gives the factor of three in the tripling inequality. -/
+ theorem finite_product_tripling {ι : Type*} [Fintype ι]
+     (A B C p : ι → ℝ) {s : ℝ} (hs : 0 < s) (hsum : ∑ i, p i = s)
+-    (_hA : ∀ i, 0 < A i) (hB : ∀ i, 0 < B i) (hC : ∀ i, 0 < C i)
++    (hB : ∀ i, 0 < B i) (hC : ∀ i, 0 < C i)
+     (hbound : ∀ i, (3 : ℝ) ^ p i * B i ^ (2 / 3 : ℝ) * C i ^ (1 / 3 : ℝ) ≤ A i)
+     (hprod_eq : ∏ i, C i = ∏ i, B i) :
+     3 * (∏ i, B i) ^ (1 / s) ≤ (∏ i, A i) ^ (1 / s) := by
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Character.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Character.lean
+index a6eeb72f5..75f77a5ec 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Character.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Character.lean
+@@ -7,7 +7,6 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
+ -/
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Sector.Degeneration
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Degeneration
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.CharacterTransport
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Laws
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.TagInequality
+@@ -170,12 +169,6 @@ theorem convolution_tripling_tag_of_separation (χ : Character K)
+       χ.value ((convolution (K := K)) a (3 * h + a - 1)) at hresult
+   simpa only [mul_assoc] using hresult
+ 
+-section Field
+-
+-variable {K : Type*} [Field K]
+-
+-end Field
+-
+ end MatrixMultiplication.AuxiliarySeparation.Sector
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Degeneration.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Degeneration.lean
+index affa9551b..ba707baec 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Degeneration.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Sector/Degeneration.lean
+@@ -8,7 +8,7 @@ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICEN
+ 
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Basic
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Sector.Weights
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Interpolation
++public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
+ 
+ public section
+ 
+@@ -186,14 +186,6 @@ def restriction (a h : ℕ) :
+     change (polynomial (K := K) a h i j k).coeff 1 = retained (K := K) a h i j k
+     simp [polynomial_coeff]
+ 
+-@[simp] theorem restriction_basePolynomial (a h : ℕ) :
+-    (restriction (K := K) a h).basePolynomial = polynomial (K := K) a h := rfl
+-
+-section Field
+-variable {K : Type*} [Field K]
+-
+-end Field
+-
+ end MatrixMultiplication.AuxiliarySeparation.Sector
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/Basic.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/Basic.lean
+index 4d3b9b443..370164f7d 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/Basic.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/Basic.lean
+@@ -6,12 +6,10 @@ Modified from OpenAI's matrix-multiplication sources to support arbitrary fields
+ See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
+ -/
+ 
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.FiniteProjection
+ public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+ public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexDotPairing
+ public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensorSymmetrization
+ public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensorRestrictionComposition
+-public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialApproximation
+ public import Mathlib.RingTheory.RootsOfUnity.Complex
+ public import Mathlib.Tactic
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/FiniteProjection.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/FiniteProjection.lean
+deleted file mode 100644
+index 002924f48..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Separation/FiniteProjection.lean
++++ /dev/null
+@@ -1,5 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Fourier
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.NoWrap
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.SquareWeights
+-public import Mathlib.Algebra.Polynomial.Degree.Lemmas
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/MultiplicativeStates.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/MultiplicativeStates.lean
+index 497cd2d4f..0e1c289a5 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/MultiplicativeStates.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/MultiplicativeStates.lean
+@@ -84,22 +84,6 @@ theorem normalizedTranslate_eq_mem_frozenConstraint {z : S} {f : S → ℝ}
+   have hx : f (z * x) / f z = f x := congrFun hf x
+   exact (div_eq_iff hfz).mp hx |>.trans (mul_comm _ _)
+ 
+-theorem normalizedTranslate_eq_nonzero {z : S} {f : S → ℝ}
+-    (hf1 : f 1 = 1) (hf : normalizedTranslate z f = f) : f z ≠ 0 := by
+-  intro hfz
+-  have hx := congrFun hf 1
+-  simp [normalizedTranslate, hfz, hf1] at hx
+-
+-theorem normalizedTranslate_eq_mem_frozenConstraint_of_normalized {z : S} {f : S → ℝ}
+-    (hf1 : f 1 = 1) (hf : normalizedTranslate z f = f) :
+-    f ∈ frozenConstraint z (f z) :=
+-  normalizedTranslate_eq_mem_frozenConstraint (normalizedTranslate_eq_nonzero hf1 hf) hf
+-
+-theorem normalizedTranslate_eq_mem_frozenSlice {C : Set (S → ℝ)} {z : S} {f : S → ℝ}
+-    (hfC : f ∈ C) (hf1 : f 1 = 1) (hf : normalizedTranslate z f = f) :
+-    f ∈ frozenSlice C z (f z) :=
+-  ⟨hfC, normalizedTranslate_eq_mem_frozenConstraint_of_normalized hf1 hf⟩
+-
+ /-- Every finite collection of multiplication identities holds throughout a
+ nonempty compact convex subset that remains invariant under all translates. -/
+ theorem exists_finite_multiplicative_slice {K : Set (S → ℝ)}
+@@ -123,8 +107,7 @@ theorem exists_finite_multiplicative_slice {K : Set (S → ℝ)}
+         apply Continuous.subtype_mk
+         exact normalizedTranslate_continuousOn z.val
+           (fun f hf => hKnonzero f (hCK hf) z.val z.property)
+-      obtain ⟨g, hg⟩ := compact_convex_fixedPoint_of_continuous
+-        hCcompact hCconvex hCne P hP
++      obtain ⟨g, hg⟩ := compact_convex_fixedPoint hCcompact hCconvex hCne ⟨P, hP⟩
+       have hg' : normalizedTranslate z.val g.val = g.val := congrArg Subtype.val hg
+       let c : ℝ := g.val z.val
+       let D := frozenSlice C z.val c
+@@ -132,8 +115,10 @@ theorem exists_finite_multiplicative_slice {K : Set (S → ℝ)}
+       have hDK : D ⊆ K := hDC.trans hCK
+       refine ⟨D, hDK, ?_, frozenSlice_isCompact hCcompact z.val c,
+         frozenSlice_convex hCconvex z.val c, ?_, ?_⟩
+-      · exact ⟨g.val, normalizedTranslate_eq_mem_frozenSlice g.property
+-          (hKnorm g.val (hCK g.property)) hg'⟩
++      · exact ⟨g.val, g.property, normalizedTranslate_eq_mem_frozenConstraint (by
++          intro hfz
++          have hx := congrFun hg' 1
++          simp [normalizedTranslate, hfz, hKnorm g.val (hCK g.property)] at hx) hg'⟩
+       · intro w hw
+         exact frozenSlice_mapsTo_normalizedTranslate (hCmap w hw)
+       · intro f hf w hw x
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/Obstruction.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/Obstruction.lean
+index 51281544e..d5a548ee6 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/Obstruction.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/Obstruction.lean
+@@ -345,12 +345,6 @@ theorem not_tensor_add_positive_nat_le_self (D : (TensorSemiring.TensorClass K))
+ 
+ end General
+ 
+-section Field
+-
+-variable {K : Type*} [Field K]
+-
+-end Field
+-
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/StateObstruction.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/StateObstruction.lean
+index 9835c1cf0..807dab59b 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/StateObstruction.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Spectrum/StateObstruction.lean
+@@ -28,6 +28,11 @@ namespace MatrixMultiplication.AuxiliarySeparation
+ open Set
+ 
+ variable {S : Type*} [CommSemiring S] [Preorder S]
++variable (R : S → ℕ) (d : S) (k : ℕ)
++variable (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
++variable (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
++variable (hno : ∀ (D s : S) (m : ℕ), 0 < m →
++  ¬D + (m : S) + d * s ≤ D + (k : S) * s)
+ 
+ /-- The homogeneous inequalities defining a normalized additive state. Both
+ signs of the additive relation are included. -/
+@@ -40,7 +45,7 @@ inductive StateConstraint (S : Type*) [Preorder S] where
+   | detector (x : S)
+ 
+ /-- Integer coefficient vector of a homogeneous state constraint. -/
+-def stateConstraintVector (R : S → ℕ) (d : S) (k : ℕ)
++def stateConstraintVector 
+     (c : StateConstraint S) : S →₀ ℤ := by
+   classical
+   exact match c with
+@@ -71,7 +76,7 @@ theorem continuous_statePairing (v : S →₀ ℤ) :
+   simp only [statePairing_apply]
+   exact continuous_finsetSum _ fun x _ ↦ continuous_const.mul (continuous_apply x)
+ 
+-theorem normalizedStates_iff_stateConstraint (R : S → ℕ) (d : S) (k : ℕ)
++theorem normalizedStates_iff_stateConstraint 
+     (f : S → ℝ) :
+     f ∈ normalizedStates (fun x ↦ (R x : ℝ)) d k ↔
+       f 1 = 1 ∧ ∀ c : StateConstraint S, 0 ≤ statePairing f (stateConstraintVector R d k c) := by
+@@ -127,9 +132,8 @@ def stateConstraintDetector (c : StateConstraint S) : S :=
+   | .detector x => x
+   | _ => 0
+ 
+-theorem stateConstraintLower_le_upper (R : S → ℕ)
+-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
+-    (c : StateConstraint S) :
++include hzero hbound in
++theorem stateConstraintLower_le_upper (c : StateConstraint S) :
+     stateConstraintLower c ≤ stateConstraintUpper R c := by
+   cases c with
+   | lower x => exact hzero x
+@@ -141,7 +145,7 @@ theorem stateConstraintLower_le_upper (R : S → ℕ)
+ 
+ /-- Interpreting a constraint in the group completion separates its ordinary
+ order difference from its detector difference. -/
+-theorem stateConstraintVector_completion (R : S → ℕ) (d : S) (k : ℕ)
++theorem stateConstraintVector_completion 
+     (c : StateConstraint S) :
+     Finsupp.linearCombination ℤ (Algebra.GrothendieckAddGroup.of (M := S))
+         (stateConstraintVector R d k c) =
+@@ -157,13 +161,13 @@ theorem stateConstraintVector_completion (R : S → ℕ) (d : S) (k : ℕ)
+     simp [stateConstraintVector, stateConstraintLower, stateConstraintUpper,
+       stateConstraintDetector, hcast, Nat.cast_smul_eq_nsmul, map_add] <;> abel
+ 
++include hzero hbound hadd hno
+ /-- In the absence of a catalytic obstruction, no positive multiple of the
+ negative unit is a natural combination of state-constraint vectors. -/
+-theorem no_stateConstraint_certificate (R : S → ℕ) (d : S) (k : ℕ)
+-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
+-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
+-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
+-      ¬D + (m : S) + d * s ≤ D + (k : S) * s)
++theorem no_stateConstraint_certificate 
++    
++    
++    
+     {I : Type*} [Fintype I] (cs : I → StateConstraint S) :
+     ¬∃ m : ℕ, 0 < m ∧ ∃ n : I → ℕ,
+       ∑ i, n i • stateConstraintVector R d k (cs i) =
+@@ -182,11 +186,10 @@ theorem no_stateConstraint_certificate (R : S → ℕ) (d : S) (k : ℕ)
+ 
+ /-- Every finite family of constraints supported on `H` has a normalized
+ solution that vanishes outside `H`, provided no positive catalyst exists. -/
+-theorem finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ)
+-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
+-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
+-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
+-      ¬D + (m : S) + d * s ≤ D + (k : S) * s)
++theorem finite_stateConstraint_solution 
++    
++    
++    
+     {I : Type*} [Fintype I] (cs : I → StateConstraint S) (H : Finset S) (hOne : (1 : S) ∈ H)
+     (hH : ∀ i, (stateConstraintVector R d k (cs i)).support ⊆ H) :
+     ∃ f : S → ℝ, f 1 = 1 ∧
+@@ -230,11 +233,10 @@ theorem finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ)
+ 
+ /-- A finite collection of state constraints can be solved while keeping all
+ coordinates in their rank intervals. -/
+-theorem bounded_finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ)
+-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
+-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
+-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
+-      ¬D + (m : S) + d * s ≤ D + (k : S) * s)
++theorem bounded_finite_stateConstraint_solution 
++    
++    
++    
+     (F : Finset (StateConstraint S)) :
+     ∃ f : S → ℝ, (∀ x, 0 ≤ f x ∧ f x ≤ R x) ∧ f 1 = 1 ∧
+       ∀ c ∈ F, 0 ≤ statePairing f (stateConstraintVector R d k c) := by
+@@ -280,11 +282,10 @@ theorem bounded_finite_stateConstraint_solution (R : S → ℕ) (d : S) (k : ℕ
+ 
+ /-- Absence of positive scalar-gain catalysts guarantees the existence of a
+ normalized additive monotone state satisfying the detector inequality. -/
+-theorem normalizedStates_nonempty_of_no_catalyst (R : S → ℕ) (d : S) (k : ℕ)
+-    (hzero : ∀ x : S, 0 ≤ x) (hbound : ∀ x : S, x ≤ (R x : S))
+-    (hadd : ∀ a b c e : S, a ≤ b → c ≤ e → a + c ≤ b + e)
+-    (hno : ∀ (D s : S) (m : ℕ), 0 < m →
+-      ¬D + (m : S) + d * s ≤ D + (k : S) * s) :
++theorem normalizedStates_nonempty_of_no_catalyst 
++    
++    
++     :
+     (normalizedStates (fun x ↦ (R x : ℝ)) d k).Nonempty := by
+   let B : Set (S → ℝ) := {f | ∀ x, 0 ≤ f x ∧ f x ≤ R x}
+   let K : Set (S → ℝ) := B ∩ {f | f 1 = 1}
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Characters.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Characters.lean
+index bd5b58f6e..6db563566 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Characters.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Characters.lean
+@@ -1,128 +1,22 @@
+ module
+ 
+-/-
+-Upstream source and modification notice
+-Modified from OpenAI's matrix-multiplication sources and the all-fields extension
+-to support the integral/ring proof. Field-only claims remain explicitly scoped.
+-See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
+--/
+-
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.Semiring
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Basic
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.BinaryCharacter
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.DirectSumClass
+ 
+ public section
+-
+ @[expose] section
+-
+-namespace OAI
+-
+-/-!
+-# Concrete tensor characters and the tensor semiring
+-
+-The coefficient-level character interface and monotone real-valued semiring
+-homomorphisms on mutual-restriction classes describe the same valuations.
+-The map `classOf` uses finite natural-number coordinate presentations, so
+-the construction applies to all finite coordinate types in the character
+-interface.
+--/
++namespace OAI.MatrixMultiplication.AuxiliarySeparation.Character
+ 
+ noncomputable section
+-
+ open MatrixMultiplication.Foundation
+ open scoped BigOperators
+-
+-namespace MatrixMultiplication.AuxiliarySeparation
+-
+-variable {K : Type*} [CommSemiring K] [Nontrivial K]
+-
+ open TensorSemiring
+ 
+-namespace Character
+-
+-/-- A character has a well-defined value on mutual-restriction classes. -/
+-def valueOnTensorClass (χ : (Character K)) : (TensorClass K) → ℝ :=
+-  Quotient.lift (fun T : (FiniteTensor K) => χ.value T.coeff) (by
+-    intro T S h
+-    apply le_antisymm
+-    · rcases h.1 with ⟨A, B, C, heq⟩
+-      rw [heq]
+-      exact χ.monotone S.coeff A B C
+-    · rcases h.2 with ⟨A, B, C, heq⟩
+-      rw [heq]
+-      exact χ.monotone T.coeff A B C)
+-
+-@[simp] theorem valueOnTensorClass_tensorClass (χ : (Character K)) (T : (FiniteTensor K)) :
+-    χ.valueOnTensorClass (tensorClass T) = χ.value T.coeff := rfl
+-
+-/-- Passing to a finite natural-coordinate presentation preserves the value. -/
+-@[simp] theorem valueOnTensorClass_classOf (χ : (Character K))
+-    {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor K X Y Z) : χ.valueOnTensorClass (classOf T) = χ.value T :=
+-  χ.value_reindex T _ _ _
+-
+-/-- Restriction monotonicity descends to the quotient order. -/
+-theorem valueOnTensorClass_monotone (χ : (Character K)) : Monotone χ.valueOnTensorClass := by
+-  intro T S h
+-  induction T using Quotient.inductionOn with | h T =>
+-  induction S using Quotient.inductionOn with | h S =>
+-  change IsRestriction T.coeff S.coeff at h
+-  rcases h with ⟨A, B, C, heq⟩
+-  change χ.value T.coeff ≤ χ.value S.coeff
+-  rw [heq]
+-  exact χ.monotone S.coeff A B C
+-
+-@[simp] theorem valueOnTensorClass_zero (χ : (Character K)) :
+-    χ.valueOnTensorClass 0 = 0 := by
+-  change χ.valueOnTensorClass (classOf (0 : Tensor K Empty Empty Empty)) = 0
+-  rw [χ.valueOnTensorClass_classOf, χ.map_zero]
+-
+-@[simp] theorem valueOnTensorClass_one (χ : (Character K)) :
+-    χ.valueOnTensorClass 1 = 1 := by
+-  change χ.valueOnTensorClass (classOf (unitTensor (K := K))) = 1
+-  rw [χ.valueOnTensorClass_classOf, χ.map_one]
+-
+-/-- Multiplicativity is unchanged on passing to tensor classes. -/
+-theorem valueOnTensorClass_mul (χ : (Character K)) (T S : (TensorClass K)) :
+-    χ.valueOnTensorClass (T * S) = χ.valueOnTensorClass T * χ.valueOnTensorClass S := by
+-  induction T using Quotient.inductionOn with | h T =>
+-  induction S using Quotient.inductionOn with | h S =>
+-  change χ.valueOnTensorClass (tensorClass T * tensorClass S) =
+-    χ.valueOnTensorClass (tensorClass T) * χ.valueOnTensorClass (tensorClass S)
+-  rw [← classOf_coeff T, ← classOf_coeff S, ← classOf_product]
+-  simp only [χ.valueOnTensorClass_classOf]
+-  exact χ.map_product T.coeff S.coeff
+-
+-/-- Additivity is unchanged on passing to tensor classes. -/
+-theorem valueOnTensorClass_add (χ : (Character K)) (T S : (TensorClass K)) :
+-    χ.valueOnTensorClass (T + S) = χ.valueOnTensorClass T + χ.valueOnTensorClass S := by
+-  induction T using Quotient.inductionOn with | h T =>
+-  induction S using Quotient.inductionOn with | h S =>
+-  change χ.valueOnTensorClass (tensorClass T + tensorClass S) =
+-    χ.valueOnTensorClass (tensorClass T) + χ.valueOnTensorClass (tensorClass S)
+-  rw [← classOf_coeff T, ← classOf_coeff S, ← classOf_sum]
+-  simp only [χ.valueOnTensorClass_classOf]
+-  exact χ.value_sumTensor T.coeff S.coeff
+-
+-/-- A coefficient-level character descends to a normalized semiring homomorphism. -/
+-def toTensorClassHom (χ : (Character K)) : (TensorClass K) →+* ℝ where
+-  toFun := χ.valueOnTensorClass
+-  map_zero' := χ.valueOnTensorClass_zero
+-  map_one' := χ.valueOnTensorClass_one
+-  map_add' := χ.valueOnTensorClass_add
+-  map_mul' := χ.valueOnTensorClass_mul
+-
+-theorem toTensorClassHom_monotone (χ : (Character K)) : Monotone χ.toTensorClassHom :=
+-  χ.valueOnTensorClass_monotone
+-
+-@[simp] theorem toTensorClassHom_classOf (χ : (Character K))
+-    {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor K X Y Z) : χ.toTensorClassHom (classOf T) = χ.value T :=
+-  χ.valueOnTensorClass_classOf T
++variable {K : Type*} [CommSemiring K] [Nontrivial K]
+ 
+-/-- A monotone semiring homomorphism on tensor classes gives a character on all
+-finite coefficient tensors. Normalization follows from preservation of `0` and `1`. -/
++/-- A monotone semiring homomorphism on tensor classes gives a character. -/
+ def ofTensorClassHom (φ : (TensorClass K) →+* ℝ) (hφ : Monotone φ) : (Character K) where
+   value := fun T => φ (classOf T)
+   nonneg := by
+@@ -132,9 +26,7 @@ def ofTensorClassHom (φ : (TensorClass K) →+* ℝ) (hφ : Monotone φ) : (Cha
+     intro X Y Z hX hY hZ
+     rw [classOf_zero]
+     exact φ.map_zero
+-  map_one := by
+-    change φ 1 = 1
+-    exact φ.map_one
++  map_one := φ.map_one
+   map_directSum := by
+     intro ι X Y Z hι dι hX hY hZ T
+     rw [classOf_directSum, map_sum]
+@@ -143,44 +35,7 @@ def ofTensorClassHom (φ : (TensorClass K) →+* ℝ) (hφ : Monotone φ) : (Cha
+     rw [classOf_product, map_mul]
+   monotone := by
+     intro X Y Z X' Y' Z' hX hY hZ hX' hY' hZ' T A B C
+-    apply hφ
+-    exact (classOf_le_iff _ _).mpr ⟨A, B, C, rfl⟩
+-
+-@[simp] theorem ofTensorClassHom_value (φ : (TensorClass K) →+* ℝ) (hφ : Monotone φ)
+-    {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor K X Y Z) : (ofTensorClassHom φ hφ).value T = φ (classOf T) := rfl
+-
+-/-- Equality of all coefficient-level values determines a character. -/
+-@[ext] theorem ext {χ ψ : (Character K)}
+-    (h : ∀ {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z]
+-      (T : Tensor K X Y Z), χ.value T = ψ.value T) : χ = ψ := by
+-  cases χ
+-  cases ψ
+-  congr
+-  funext X Y Z hX hY hZ T
+-  exact h T
+-
+-/-- Descending and then lifting recovers the original coefficient-level character. -/
+-@[simp] theorem ofTensorClassHom_toTensorClassHom (χ : (Character K)) :
+-    ofTensorClassHom χ.toTensorClassHom χ.toTensorClassHom_monotone = χ := by
+-  apply ext
+-  intro X Y Z hX hY hZ T
+-  exact χ.toTensorClassHom_classOf T
+-
+-/-- Lifting and then descending recovers the original semiring homomorphism. -/
+-@[simp] theorem toTensorClassHom_ofTensorClassHom
+-    (φ : (TensorClass K) →+* ℝ) (hφ : Monotone φ) :
+-    (ofTensorClassHom φ hφ).toTensorClassHom = φ := by
+-  apply RingHom.ext
+-  intro T
+-  induction T using Quotient.inductionOn with | h T =>
+-  change φ (classOf T.coeff) = φ (tensorClass T)
+-  rw [classOf_coeff]
+-
+-end Character
+-
+-end MatrixMultiplication.AuxiliarySeparation
++    exact hφ ((classOf_le_iff _ _).mpr ⟨A, B, C, rfl⟩)
+ 
+ end
+-
+-end OAI
++end OAI.MatrixMultiplication.AuxiliarySeparation.Character
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Primitive.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Primitive.lean
+index 4f420fb99..e7df3be9f 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Primitive.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Primitive.lean
+@@ -52,9 +52,6 @@ def subsemiring : Subsemiring S where
+ def stabilize (x : S) : subsemiring hzero hadd hmul :=
+   ⟨x + 1, Or.inr (by simpa only [zero_add] using hadd (hzero x) (le_refl 1))⟩
+ 
+-@[simp] theorem coe_stabilize (x : S) :
+-    (stabilize hzero hadd hmul x : S) = x + 1 := rfl
+-
+ /-- Every nonzero element of this subsemiring dominates its unit. -/
+ theorem one_le_of_ne_zero (x : subsemiring hzero hadd hmul) (hx : x ≠ 0) :
+     1 ≤ x := by
+@@ -67,7 +64,7 @@ variable {hzero hadd hmul}
+ @[simp] theorem stabilize_zero :
+     stabilize hzero hadd hmul 0 = 1 := by
+   apply Subtype.ext
+-  simp only [coe_stabilize, zero_add, OneMemClass.coe_one]
++  simp [stabilize]
+ 
+ theorem stabilize_one :
+     stabilize hzero hadd hmul 1 = 1 + 1 := by
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/PrimitiveClass.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/PrimitiveClass.lean
+index 25320bddb..0e8358ce5 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/PrimitiveClass.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/PrimitiveClass.lean
+@@ -47,16 +47,9 @@ def primitiveMatrixClass (n : ℕ) : PrimitiveClass K := by
+     refine ⟨(i, i), (i, i), (i, i), ?_⟩
+     simp [matrixClass, matrixMultiplicationTensor]
+ 
+-@[simp] theorem coe_primitiveMatrixClass (n : ℕ) :
+-    (primitiveMatrixClass (K := K) n : TensorClass K) = matrixClass n := rfl
+-
+ /-- Rank is unchanged on passing to the primitive subsemiring. -/
+ def primitiveRank (T : PrimitiveClass K) : ℕ := rank (T : TensorClass K)
+ 
+-@[simp] theorem primitiveRank_matrix (n : ℕ) :
+-    primitiveRank (primitiveMatrixClass (K := K) n) = exactMatrixRank K n :=
+-  rank_matrixClass n
+-
+ theorem primitive_zero_le (T : PrimitiveClass K) : 0 ≤ T :=
+   zero_le (T : TensorClass K)
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Scalar.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Scalar.lean
+index b49ac958e..0a35ea228 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Scalar.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Scalar.lean
+@@ -130,29 +130,12 @@ theorem le_rank (T : (TensorClass K)) : T ≤ (rank T : (TensorClass K)) := by
+     exact (classOf_le_nat_iff_rankAtMost T.coeff (exactRank T.coeff)).mpr
+       (exactRank_spec T.coeff)
+ 
+-/-- The tensor restriction order induces the usual order on natural numbers. -/
+-@[simp] theorem natCast_le_natCast_iff (m n : ℕ) :
+-    (m : (TensorClass K)) ≤ (n : (TensorClass K)) ↔ m ≤ n := by
+-  constructor
+-  · intro h
+-    simpa only [rank_natCast] using rank_mono h
+-  · intro h
+-    obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
+-    rw [Nat.cast_add]
+-    simpa only [add_zero] using add_mono (le_refl (m : (TensorClass K))) (zero_le (k : (TensorClass K)))
+-
+ end TensorSemiring
+ 
+ end General
+ 
+ namespace TensorSemiring
+ 
+-section Field
+-
+-variable {K : Type*} [Field K]
+-
+-end Field
+-
+ end TensorSemiring
+ end MatrixMultiplication.AuxiliarySeparation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Semiring.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Semiring.lean
+index 2c74f4d5c..d5a784b07 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Semiring.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/Semiring.lean
+@@ -193,13 +193,6 @@ abbrev TensorClass (K : Type*) [CommSemiring K] [Nontrivial K] := Antisymmetriza
+ /-- The class of a finite tensor presentation. -/
+ def tensorClass (T : (FiniteTensor K)) : (TensorClass K) := toAntisymmetrization (· ≤ ·) T
+ 
+-@[simp] theorem tensorClass_eq_iff (T S : (FiniteTensor K)) :
+-    tensorClass T = tensorClass S ↔ T ≤ S ∧ S ≤ T :=
+-  toAntisymmetrization_eq (· ≤ ·) T S
+-
+-@[simp] theorem tensorClass_le_iff (T S : (FiniteTensor K)) :
+-    tensorClass T ≤ tensorClass S ↔ T ≤ S := Iff.rfl
+-
+ /-- The quotient class of a tensor on any three finite coordinate sets. -/
+ def classOf {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+     (T : Tensor K X Y Z) : (TensorClass K) := tensorClass (FiniteTensor.ofTensor T)
+@@ -234,7 +227,7 @@ theorem classOf_eq_of_reindex {X Y Z U V W : Type*}
+   (congrArg classOf h).symm.trans (classOf_reindex S ex ey ez)
+ 
+ @[simp] theorem classOf_coeff (T : (FiniteTensor K)) : classOf T.coeff = tensorClass T := by
+-  apply (tensorClass_eq_iff _ _).mpr
++  apply (toAntisymmetrization_eq (· ≤ ·) _ _).mpr
+   exact ⟨IsRestriction.pullback T.coeff _ _ _, IsRestriction.of_reindex T.coeff _ _ _⟩
+ 
+ instance : Mul (TensorClass K) where
+@@ -248,12 +241,6 @@ instance : Add (TensorClass K) where
+     intro T T' hT S S' hS
+     exact ⟨FiniteTensor.sum_mono hT.1 hS.1, FiniteTensor.sum_mono hT.2 hS.2⟩)
+ 
+-@[simp] theorem tensorClass_product (T S : (FiniteTensor K)) :
+-    tensorClass T * tensorClass S = tensorClass (FiniteTensor.product T S) := rfl
+-
+-@[simp] theorem tensorClass_sum (T S : (FiniteTensor K)) :
+-    tensorClass T + tensorClass S = tensorClass (FiniteTensor.sum T S) := rfl
+-
+ theorem classOf_product {X Y Z U V W : Type*}
+     [Fintype X] [Fintype Y] [Fintype Z]
+     [Fintype U] [Fintype V] [Fintype W]
+@@ -419,34 +406,12 @@ theorem zero_le (T : (TensorClass K)) : 0 ≤ T := by
+   rw [← classOf_coeff T]
+   exact (classOf_le_iff _ _).mpr (IsRestriction.zero T.coeff)
+ 
+-instance : OrderBot (TensorClass K) where
+-  bot := 0
+-  bot_le := zero_le
+-
+-instance : IsOrderedAddMonoid (TensorClass K) where
+-  add_le_add_left _ _ h _c := add_mono h le_rfl
+-
+-instance : IsOrderedMonoid (TensorClass K) where
+-  mul_le_mul_left _ _ h _c := mul_mono h le_rfl
+-
+-instance : IsOrderedRing (TensorClass K) where
+-  zero_le_one := zero_le 1
+-  mul_le_mul_of_nonneg_left := by
+-    intro a ha b c hbc
+-    exact mul_mono le_rfl hbc
+-  mul_le_mul_of_nonneg_right := by
+-    intro a ha b c hbc
+-    exact mul_mono hbc le_rfl
+-
+ /-- Exact rank descends to mutual-restriction classes. -/
+ def rank : (TensorClass K) → ℕ := Quotient.lift (fun T : (FiniteTensor K) => exactRank T.coeff)
+   (by
+     intro T S h
+     exact le_antisymm (IsRestriction.rank_le h.1) (IsRestriction.rank_le h.2))
+ 
+-@[simp] theorem rank_tensorClass (T : (FiniteTensor K)) :
+-    rank (tensorClass T) = exactRank T.coeff := rfl
+-
+ @[simp] theorem rank_classOf {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+     (T : Tensor K X Y Z) : rank (classOf T) = exactRank T :=
+   exactRank_reindex T _ _ _
+@@ -517,14 +482,6 @@ theorem classOf_eq_zero_iff {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
+   · rintro rfl
+     exact classOf_zero
+ 
+-instance : Nontrivial (TensorClass K) := by
+-  refine ⟨⟨1, 0, ?_⟩⟩
+-  intro h
+-  have heq : (fun (_ _ _ : PUnit.{1}) => (1 : K)) = 0 :=
+-    (classOf_eq_zero_iff _).mp h
+-  have := congrFun (congrFun (congrFun heq PUnit.unit) PUnit.unit) PUnit.unit
+-  exact one_ne_zero this
+-
+ /-- Selecting a coefficient one gives a unit restriction without division. -/
+ theorem one_le_classOf_of_coefficient_one {X Y Z : Type*}
+     [Fintype X] [Fintype Y] [Fintype Z] {T : Tensor K X Y Z}
+@@ -540,12 +497,6 @@ theorem one_le_classOf_of_coefficient_one {X Y Z : Type*}
+ 
+ end General
+ 
+-section Field
+-
+-variable {K : Type*} [Field K]
+-
+-end Field
+-
+ end MatrixMultiplication.AuxiliarySeparation.TensorSemiring
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/SharedPadding.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/SharedPadding.lean
+deleted file mode 100644
+index 2c5ae0a22..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/SharedPadding.lean
++++ /dev/null
+@@ -1,146 +0,0 @@
+-module
+-
+-/-
+-Upstream source and modification notice
+-Modified from OpenAI's matrix-multiplication sources to support arbitrary fields.
+-See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
+--/
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.CharacterBounds
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-!
+-# Padding shared-input tensors with different branch dimensions
+-
+-The finite separation construction uses fixed ambient coordinate spaces on
+-each leg. A family with a common first leg and varying second and third legs
+-embeds into that setting without changing any character values. The extra
+-coordinates introduced by padding have zero coefficients.
+--/
+-
+-noncomputable section
+-
+-open MatrixMultiplication.Foundation
+-open scoped BigOperators Classical
+-
+-namespace MatrixMultiplication.AuxiliarySeparation
+-
+-variable {K : Type*} [CommSemiring K]
+-
+-variable {M : ℕ} {X : Type} {Y Z : Fin M → Type}
+-variable [Fintype X] [∀ i, Fintype (Y i)] [∀ i, Fintype (Z i)]
+-
+-/-- Branches sharing their first input but with independently sized other legs. -/
+-def sharedFirstDependentTensor (B : ∀ i, Tensor K X (Y i) (Z i)) :
+-    Tensor K X (Σ i, Y i) (Σ i, Z i) :=
+-  fun x y z => if h : z.1 = y.1 then B y.1 x y.2 (h ▸ z.2) else 0
+-
+-/-- A branch in the two common sigma coordinate spaces, with zero padding. -/
+-def paddedSharedBranch (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M) :
+-    Tensor K X (Σ i, Y i) (Σ i, Z i) :=
+-  Tensor.restrict (fun x' x => if x = x' then 1 else 0)
+-    (fun y b => if Sigma.mk i b = y then 1 else 0)
+-    (fun z c => if Sigma.mk i c = z then 1 else 0) (B i)
+-
+-omit [Fintype X] [∀ i, Fintype (Y i)] [∀ i, Fintype (Z i)] in
+-@[simp] theorem sharedFirstDependentTensor_matching
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M)
+-    (x : X) (y : Y i) (z : Z i) :
+-    sharedFirstDependentTensor B x ⟨i, y⟩ ⟨i, z⟩ = B i x y z := by
+-  simp [sharedFirstDependentTensor]
+-
+-@[simp] theorem paddedSharedBranch_matching
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M)
+-    (x : X) (y : Y i) (z : Z i) :
+-    paddedSharedBranch B i x ⟨i, y⟩ ⟨i, z⟩ = B i x y z := by
+-  simp [paddedSharedBranch, Tensor.restrict, ite_mul, mul_ite]
+-
+-theorem paddedSharedBranch_zero_middle
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M)
+-    (x : X) (y : Σ i, Y i) (z : Σ i, Z i) (hy : y.1 ≠ i) :
+-    paddedSharedBranch B i x y z = 0 := by
+-  have hzero : ∀ b : Y i, Sigma.mk i b ≠ y :=
+-    fun b h => hy (congrArg Sigma.fst h).symm
+-  simp [paddedSharedBranch, Tensor.restrict, hzero]
+-
+-theorem paddedSharedBranch_zero_right
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M)
+-    (x : X) (y : Σ i, Y i) (z : Σ i, Z i) (hz : z.1 ≠ i) :
+-    paddedSharedBranch B i x y z = 0 := by
+-  have hzero : ∀ c : Z i, Sigma.mk i c ≠ z :=
+-    fun c h => hz (congrArg Sigma.fst h).symm
+-  simp [paddedSharedBranch, Tensor.restrict, hzero]
+-
+-/-- Redundant branch labels zero-extend the varying-dimension shared tensor. -/
+-theorem sharedFirstTensor_paddedSharedBranch
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) :
+-    sharedFirstTensor (paddedSharedBranch B) = Tensor.restrict
+-      (fun (x' : X) x => if x = x' then 1 else 0)
+-      (fun (y' : Fin M × (Σ i, Y i)) y => if (y.1, y) = y' then 1 else 0)
+-      (fun (z' : Fin M × (Σ i, Z i)) z => if (z.1, z) = z' then 1 else 0)
+-      (sharedFirstDependentTensor B) := by
+-  funext x' y' z'
+-  rcases y' with ⟨i, ⟨iy, y⟩⟩
+-  rcases z' with ⟨j, ⟨iz, z⟩⟩
+-  have hgraph {A : Type} (f : A → Fin M) (a x : A) (i : Fin M) :
+-      (f a, a) = (i, x) ↔ a = x ∧ f x = i := by
+-    constructor
+-    · intro h
+-      have ha : a = x := congrArg Prod.snd h
+-      refine ⟨ha, ?_⟩
+-      rw [← ha]
+-      exact congrArg Prod.fst h
+-    · rintro ⟨rfl, h⟩
+-      simp [h]
+-  simp only [Tensor.restrict, hgraph, ite_and]
+-  simp only [ite_mul, zero_mul, mul_ite, mul_zero]
+-  simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
+-  by_cases hi : iy = i
+-  · subst iy
+-    by_cases hz : iz = i
+-    · subst iz
+-      by_cases hij : i = j
+-      · subst j
+-        simp [sharedFirstTensor, sharedFirstDependentTensor]
+-      · simp [sharedFirstTensor, hij]
+-    · simp [sharedFirstTensor, sharedFirstDependentTensor,
+-        paddedSharedBranch_zero_right B i x' ⟨i, y⟩ ⟨iz, z⟩ hz, hz]
+-  · simp [sharedFirstTensor,
+-      paddedSharedBranch_zero_middle B i x' ⟨iy, y⟩ ⟨iz, z⟩ hi, hi]
+-
+-namespace Character
+-
+-/-- Padding a branch changes no character value. -/
+-@[simp] theorem value_paddedSharedBranch (χ : (Character K))
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) (i : Fin M) :
+-    χ.value (paddedSharedBranch B i) = χ.value (B i) := by
+-  simpa only [paddedSharedBranch, id_eq] using
+-    χ.value_extendByZero (B i) id (Sigma.mk i) (Sigma.mk i)
+-      Function.injective_id
+-      (fun _ _ h => eq_of_heq (Sigma.mk.inj h).2)
+-      (fun _ _ h => eq_of_heq (Sigma.mk.inj h).2)
+-
+-/-- Passing to uniform ambient branch spaces adds no character cost. -/
+-@[simp] theorem value_sharedFirstTensor_padded (χ : (Character K))
+-    (B : ∀ i, Tensor K X (Y i) (Z i)) :
+-    χ.value (sharedFirstTensor (paddedSharedBranch B)) =
+-      χ.value (sharedFirstDependentTensor B) := by
+-  rw [sharedFirstTensor_paddedSharedBranch]
+-  simpa only [id_eq] using
+-    χ.value_extendByZero (sharedFirstDependentTensor B) id
+-      (fun y => (y.1, y)) (fun z => (z.1, z)) Function.injective_id
+-      (fun _ _ h => congrArg Prod.snd h) (fun _ _ h => congrArg Prod.snd h)
+-
+-end Character
+-
+-end MatrixMultiplication.AuxiliarySeparation
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/TagInequality.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/TagInequality.lean
+index 97c70d58b..a20e99f90 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/TagInequality.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/AuxiliarySeparation/Tensor/TagInequality.lean
+@@ -10,8 +10,6 @@ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Entropy
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
+ public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.CharacterBounds
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.FiniteSeparation
+-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.SharedPadding
+ 
+ public section
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/ComplexArithmetic/Complexity.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/ComplexArithmetic/Complexity.lean
+deleted file mode 100644
+index a56c2386e..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/ComplexArithmetic/Complexity.lean
++++ /dev/null
+@@ -1,137 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+-public import Mathlib.Data.Matrix.Mul
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Complex arithmetic programs and asymptotic matrix multiplication costs. -/
+-
+-noncomputable section
+-
+-open scoped BigOperators
+-
+-namespace MatrixMultiplication.Foundation
+-
+-namespace Arithmetic
+-
+-inductive Gate (Input Register : Type*) where
+-  | constant : ℂ → Gate Input Register
+-  | input : Input → Gate Input Register
+-  | add : Register → Register → Gate Input Register
+-  | sub : Register → Register → Gate Input Register
+-  | mul : Register → Register → Gate Input Register
+-
+-namespace Gate
+-
+-variable {Input Register : Type*}
+-
+-def eval (inputs : Input → ℂ) (registers : Register → ℂ) : Gate Input Register → ℂ
+-  | .constant z => z
+-  | .input i => inputs i
+-  | .add i j => registers i + registers j
+-  | .sub i j => registers i - registers j
+-  | .mul i j => registers i * registers j
+-
+-def cost : Gate Input Register → ℕ
+-  | .constant _ => 0
+-  | .input _ => 0
+-  | .add _ _ => 1
+-  | .sub _ _ => 1
+-  | .mul _ _ => 1
+-
+-end Gate
+-
+-inductive Program (Input : Type*) : ℕ → Type _ where
+-  | nil : Program Input 0
+-  | step {r : ℕ} : Program Input r → Gate Input (Fin r) → Program Input (r + 1)
+-
+-namespace Program
+-
+-variable {Input : Type*}
+-
+-def eval : {r : ℕ} → Program Input r → (Input → ℂ) → Fin r → ℂ
+-  | 0, .nil, _ => Fin.elim0
+-  | _ + 1, .step p g, inputs =>
+-    Fin.cases (g.eval inputs (p.eval inputs)) (p.eval inputs)
+-
+-def cost : {r : ℕ} → Program Input r → ℕ
+-  | 0, .nil => 0
+-  | _ + 1, .step p g => p.cost + g.cost
+-
+-@[simp] theorem eval_step_zero {r : ℕ} (p : Program Input r)
+-    (g : Gate Input (Fin r)) (inputs : Input → ℂ) :
+-    (p.step g).eval inputs 0 = g.eval inputs (p.eval inputs) := rfl
+-
+-@[simp] theorem eval_step_succ {r : ℕ} (p : Program Input r)
+-    (g : Gate Input (Fin r)) (inputs : Input → ℂ) (i : Fin r) :
+-    (p.step g).eval inputs i.succ = p.eval inputs i := rfl
+-
+-@[simp] theorem cost_step {r : ℕ} (p : Program Input r)
+-    (g : Gate Input (Fin r)) : (p.step g).cost = p.cost + g.cost := rfl
+-
+-end Program
+-
+-abbrev MatrixInput (n : ℕ) := (Fin n × Fin n) ⊕ (Fin n × Fin n)
+-
+-def matrixInputs {n : ℕ} (A B : Matrix (Fin n) (Fin n) ℂ) : MatrixInput n → ℂ
+-  | .inl (i, j) => A i j
+-  | .inr (j, k) => B j k
+-
+-structure MatrixAlgorithm (n : ℕ) where
+-  registers : ℕ
+-  program : Program (MatrixInput n) registers
+-  output : Fin n → Fin n → Fin registers
+-
+-namespace MatrixAlgorithm
+-
+-def eval {n : ℕ} (P : MatrixAlgorithm n)
+-    (A B : Matrix (Fin n) (Fin n) ℂ) : Matrix (Fin n) (Fin n) ℂ :=
+-  fun i k => P.program.eval (matrixInputs A B) (P.output i k)
+-
+-def Correct {n : ℕ} (P : MatrixAlgorithm n) : Prop :=
+-  ∀ A B : Matrix (Fin n) (Fin n) ℂ, P.eval A B = A * B
+-
+-def cost {n : ℕ} (P : MatrixAlgorithm n) : ℕ := P.program.cost
+-
+-end MatrixAlgorithm
+-
+-def scalarAlgorithm : MatrixAlgorithm 1 where
+-  registers := 3
+-  program := ((Program.nil.step (.input (.inl (0, 0)))).step
+-    (.input (.inr (0, 0)))).step (.mul 1 0)
+-  output := fun _ _ => 0
+-
+-@[simp] theorem scalarAlgorithm_cost : scalarAlgorithm.cost = 1 := rfl
+-
+-def AdmissibleExponent (τ : ℝ) : Prop :=
+-  ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
+-    ∀ n : ℕ, 1 ≤ n → ∃ P : MatrixAlgorithm n,
+-      P.Correct ∧ (P.cost : ℝ) ≤ C * (n : ℝ) ^ (τ + ε)
+-
+-noncomputable def omega : ℝ := sInf {τ : ℝ | AdmissibleExponent τ}
+-
+-end Arithmetic
+-
+-namespace Tensor
+-
+-def matrixMultiplication (a b c : ℕ) :
+-    Tensor ℂ (Fin a × Fin b) (Fin b × Fin c) (Fin c × Fin a) :=
+-  fun x y z => if x.2 = y.1 ∧ y.2 = z.1 ∧ z.2 = x.1 then 1 else 0
+-
+-@[simp] theorem matrixMultiplication_matching (a b c : ℕ)
+-    (i : Fin a) (j : Fin b) (k : Fin c) :
+-    matrixMultiplication a b c (i, j) (j, k) (k, i) = 1 := by
+-  simp [matrixMultiplication]
+-
+-end Tensor
+-end MatrixMultiplication.Foundation
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexConditionalTypeCounting.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexConditionalTypeCounting.lean
+deleted file mode 100644
+index 982ae2343..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexConditionalTypeCounting.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexTypeCounting
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexEntropyContinuity.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexEntropyContinuity.lean
+index 5df4de350..8b1c41e1b 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexEntropyContinuity.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexEntropyContinuity.lean
+@@ -19,8 +19,6 @@ open Filter
+ 
+ namespace MatrixMultiplication.Foundation
+ 
+-@[simp] theorem entropyTerm_one : entropyTerm 1 = 0 := by simp [entropyTerm]
+-
+ theorem mul_entropyTerm_inv (x : ℝ) : x * entropyTerm x⁻¹ = Real.log x := by
+   by_cases hx : x = 0
+   · simp [hx]
+@@ -35,13 +33,6 @@ theorem finiteEntropy_uniform {A : Type*} [Fintype A] :
+   simp only [finiteEntropy, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+   exact mul_entropyTerm_inv (Fintype.card A)
+ 
+-theorem finiteEntropy_deterministic {A : Type*} [Fintype A] [DecidableEq A]
+-    (a : A) : finiteEntropy (fun b => if b = a then 1 else 0) = 0 := by
+-  apply Finset.sum_eq_zero
+-  intro b hb
+-  change entropyTerm (if b = a then 1 else 0) = 0
+-  split_ifs <;> simp
+-
+ @[fun_prop] theorem continuous_entropyTerm : Continuous entropyTerm :=
+   Real.continuous_negMulLog
+ 
+@@ -69,24 +60,10 @@ def uniform (A : Type*) [Fintype A] [Nonempty A] : FiniteLaw A where
+       (Nat.cast_pos.mpr (Fintype.card_pos : 0 < Fintype.card A)).ne'
+     simp [Finset.sum_const, nsmul_eq_mul, hn]
+ 
+-@[simp] theorem uniform_mass [Nonempty A] (a : A) :
+-    (uniform A).mass a = (Fintype.card A : ℝ)⁻¹ := rfl
+-
+ @[simp] theorem uniform_entropy [Nonempty A] :
+     finiteEntropy (uniform A).mass = Real.log (Fintype.card A) :=
+   finiteEntropy_uniform
+ 
+-def pure (a : A) : FiniteLaw A := by
+-  classical
+-  exact
+-    { mass := fun b => if b = a then 1 else 0
+-      nonneg := fun b => by split_ifs <;> norm_num
+-      total := by simp }
+-
+-@[simp] theorem pure_entropy (a : A) : finiteEntropy (pure a).mass = 0 := by
+-  classical
+-  exact finiteEntropy_deterministic a
+-
+ theorem entropy_tendsto {I : Type*} {l : Filter I}
+     {p : I → FiniteLaw A} {q : FiniteLaw A}
+     (h : ∀ a, Tendsto (fun i => (p i).mass a) l (𝓝 (q.mass a))) :
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexFiniteEntropy.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexFiniteEntropy.lean
+index 7c7472505..85bb37926 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexFiniteEntropy.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexFiniteEntropy.lean
+@@ -43,45 +43,6 @@ structure FiniteLaw (A : Type*) [Fintype A] where
+   nonneg : ∀ a, 0 ≤ mass a
+   total : ∑ a, mass a = 1
+ 
+-namespace FiniteLaw
+-
+-variable {A B : Type*} [Fintype A] [Fintype B]
+-
+-def map (p : FiniteLaw A) (f : A → B) : FiniteLaw B := by
+-  classical
+-  exact
+-    { mass := fun b => ∑ a, if f a = b then p.mass a else 0
+-      nonneg := fun b => Finset.sum_nonneg fun a _ => by
+-        split_ifs
+-        · exact p.nonneg a
+-        · exact le_rfl
+-      total := by
+-        rw [Finset.sum_comm]
+-        simpa using p.total }
+-
+-@[simp] theorem map_mass [DecidableEq B] (p : FiniteLaw A) (f : A → B) (b : B) :
+-    (p.map f).mass b = ∑ a, if f a = b then p.mass a else 0 := by
+-  classical
+-  dsimp only [map]
+-  apply Finset.sum_congr rfl
+-  intro a _
+-  by_cases h : f a = b <;> simp only [h, ite_true, ite_false]
+-
+-def joint (p : FiniteLaw A) (q : A → FiniteLaw B) : FiniteLaw (A × B) where
+-  mass ab := p.mass ab.1 * (q ab.1).mass ab.2
+-  nonneg ab := mul_nonneg (p.nonneg ab.1) ((q ab.1).nonneg ab.2)
+-  total := by simp [Fintype.sum_prod_type, ← Finset.mul_sum, (q _).total, p.total]
+-
+-def conditional (p : FiniteLaw A) (f : A → B) (b : B) : FiniteLaw A := by
+-  classical
+-  exact if hzero : (p.map f).mass b = 0 then p else
+-    { mass := fun a => (if f a = b then p.mass a else 0) / (p.map f).mass b
+-      nonneg := fun a => div_nonneg
+-        (by split_ifs; exact p.nonneg a; exact le_rfl) ((p.map f).nonneg b)
+-      total := by
+-        rw [← Finset.sum_div, ← map_mass p f b, div_self hzero] }
+-
+-end FiniteLaw
+ end MatrixMultiplication.Foundation
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexHierarchyEntropy.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexHierarchyEntropy.lean
+deleted file mode 100644
+index 11af7c17f..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexHierarchyEntropy.lean
++++ /dev/null
+@@ -1,95 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexFiniteEntropy
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite entropy, rate estimates and ordered asymptotic limits. -/
+-
+-namespace MatrixMultiplication.Foundation
+-
+-open scoped BigOperators
+-
+-universe u v
+-
+-noncomputable section
+-
+-namespace FiniteLaw
+-
+-end FiniteLaw
+-
+-def LabelRecord (Label : ℕ → Type u) : ℕ → Type u
+-  | 0 => PUnit
+-  | n + 1 => LabelRecord Label n × Label n
+-
+-instance labelRecordFintype (Label : ℕ → Type u) [∀ n, Fintype (Label n)] :
+-    (n : ℕ) → Fintype (LabelRecord Label n)
+-  | 0 => by
+-      change Fintype PUnit
+-      infer_instance
+-  | n + 1 => by
+-      letI := labelRecordFintype Label n
+-      change Fintype (LabelRecord Label n × Label n)
+-      infer_instance
+-
+-structure FiniteLabelHierarchy (Label : ℕ → Type u) [∀ n, Fintype (Label n)]
+-    (depth : ℕ) where
+-  conditional : ∀ n, n < depth → LabelRecord Label n → FiniteLaw (Label n)
+-
+-namespace FiniteLabelHierarchy
+-
+-variable {Label : ℕ → Type u} [∀ n, Fintype (Label n)] {depth : ℕ}
+-
+-def prefixLaw (h : FiniteLabelHierarchy Label depth) :
+-    (n : ℕ) → n ≤ depth → FiniteLaw (LabelRecord Label n)
+-  | 0, _ =>
+-      { mass := fun _ => 1
+-        nonneg := fun _ => zero_le_one
+-        total := by
+-          classical
+-          refine Finset.sum_eq_single_of_mem (PUnit.unit : LabelRecord Label 0)
+-            (Finset.mem_univ _) ?_
+-          intro r _ hr
+-          cases r
+-          exact (hr rfl).elim }
+-  | n + 1, hn =>
+-      (h.prefixLaw n (Nat.le_of_succ_le hn)).joint
+-        (h.conditional n (Nat.lt_of_succ_le hn))
+-
+-@[simp] theorem prefixLaw_zero_mass (h : FiniteLabelHierarchy Label depth)
+-    (hn : 0 ≤ depth) (r : LabelRecord Label 0) :
+-    (h.prefixLaw 0 hn).mass r = 1 := rfl
+-
+-@[simp] theorem prefixLaw_succ (h : FiniteLabelHierarchy Label depth)
+-    (n : ℕ) (hn : n + 1 ≤ depth) :
+-    h.prefixLaw (n + 1) hn =
+-      (h.prefixLaw n (Nat.le_of_succ_le hn)).joint
+-        (h.conditional n (Nat.lt_of_succ_le hn)) := rfl
+-
+-@[simp] theorem prefixLaw_succ_mass (h : FiniteLabelHierarchy Label depth)
+-    (n : ℕ) (hn : n + 1 ≤ depth) (r : LabelRecord Label n) (s : Label n) :
+-    (h.prefixLaw (n + 1) hn).mass (r, s) =
+-      (h.prefixLaw n (Nat.le_of_succ_le hn)).mass r *
+-        (h.conditional n (Nat.lt_of_succ_le hn) r).mass s := rfl
+-
+-def refinementEntropy (h : FiniteLabelHierarchy Label depth) (n : ℕ) : ℝ :=
+-  if hn : n < depth then
+-    ∑ r, (h.prefixLaw n (Nat.le_of_lt hn)).mass r *
+-      finiteEntropy (h.conditional n hn r).mass
+-  else 0
+-
+-@[simp] theorem refinementEntropy_eq_zero_of_le
+-    (h : FiniteLabelHierarchy Label depth) {n : ℕ} (hn : depth ≤ n) :
+-    h.refinementEntropy n = 0 := by
+-  simp only [refinementEntropy, dite_eq_right (Nat.not_lt.mpr hn)]
+-
+-end FiniteLabelHierarchy
+-
+-end
+-end MatrixMultiplication.Foundation
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexHierarchySeparationRates.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexHierarchySeparationRates.lean
+deleted file mode 100644
+index da433115f..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexHierarchySeparationRates.lean
++++ /dev/null
+@@ -1,5 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexTypeEntropy
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexHierarchyTypeCounting
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexSeparationAsymptotics
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexLabelHierarchySeparation
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexSeparationAsymptotics.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexSeparationAsymptotics.lean
+deleted file mode 100644
+index 85b4e68a9..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ComplexSeparationAsymptotics.lean
++++ /dev/null
+@@ -1,46 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexSeparationCounting
+-public import Mathlib.Data.Nat.Find
+-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
+-public import Mathlib.Algebra.BigOperators.Ring.Finset
+-public import Mathlib.Topology.Algebra.Monoid
+-public import Mathlib.Topology.Order.Basic
+-public import Mathlib.Tactic.Linarith
+-public import Mathlib.Tactic.NormNum
+-public import Mathlib.Tactic.Positivity
+-public import Mathlib.Tactic.Ring
+-public import Mathlib.Tactic.GCongr
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite entropy, rate estimates and ordered asymptotic limits. -/
+-
+-noncomputable section
+-
+-namespace MatrixMultiplication.Foundation.Separation
+-
+-open Filter
+-
+-theorem scale_exists (K : ℕ) : ∃ n : ℕ, K ≤ 2 ^ (n ^ 2) := by
+-  refine ⟨K + 1, ?_⟩
+-  have hK : K < 2 ^ K := Nat.lt_pow_self (by decide : 1 < 2)
+-  exact hK.le.trans (Nat.pow_le_pow_right (by decide) (by nlinarith))
+-
+-noncomputable def gridScale (K : ℕ) : ℕ := Nat.find (scale_exists K)
+-
+-def gridWidth (K : ℕ) : ℕ := 2 ^ (gridScale K + 2)
+-
+-theorem gridWidth_ge_two (K : ℕ) : 2 ≤ gridWidth K := by
+-  simpa only [gridWidth, pow_one] using
+-    (Nat.pow_le_pow_right (by decide : 0 < 2) (by omega : 1 ≤ gridScale K + 2))
+-
+-end MatrixMultiplication.Foundation.Separation
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalContinuity.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalContinuity.lean
+index c5fe8eb31..f66335f73 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalContinuity.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalContinuity.lean
+@@ -1,6 +1,6 @@
+ module
+ 
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ConditionalLabels
++public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexRationalTypes
+ 
+ public section
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalLabels.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalLabels.lean
+deleted file mode 100644
+index 88787634e..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Entropy/ConditionalLabels.lean
++++ /dev/null
+@@ -1,66 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.AuxiliarySeparation
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexHierarchyEntropy
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite entropy, rate estimates and ordered asymptotic limits. -/
+-
+-noncomputable section
+-
+-namespace MatrixMultiplication
+-
+-open MatrixMultiplication.Foundation Filter
+-open scoped Topology BigOperators Classical
+-
+-inductive ReaderPair where
+-  | xy | xz | yz
+-  deriving DecidableEq
+-
+-protected abbrev ReaderPair.enumList : List ReaderPair := [.xy, .xz, .yz]
+-
+-protected theorem ReaderPair.enumList_getElem?_ctorIdx_eq (x : ReaderPair) :
+-    ReaderPair.enumList[ReaderPair.ctorIdx x]? = some x := by
+-  cases x <;> rfl
+-
+-protected theorem ReaderPair.enumList_nodup : ReaderPair.enumList.Nodup := by
+-  apply List.Nodup.of_map ReaderPair.ctorIdx
+-  have h : List.map ReaderPair.ctorIdx ReaderPair.enumList = List.range 3 := rfl
+-  exact h ▸ List.nodup_range
+-
+-instance : Fintype ReaderPair where
+-  elems := Finset.mk ReaderPair.enumList (Multiset.coe_nodup.mpr ReaderPair.enumList_nodup)
+-  complete := by
+-    intro x
+-    rw [Finset.mem_mk, Multiset.mem_coe, List.mem_iff_getElem?]
+-    exact ⟨ReaderPair.ctorIdx x, ReaderPair.enumList_getElem?_ctorIdx_eq x⟩
+-
+-namespace ConditionalLabels
+-
+-universe u v
+-
+-section PairAccounting
+-
+-variable {I : Type u} [Fintype I]
+-
+-end PairAccounting
+-
+-section SourceHierarchy
+-
+-variable {A : Type u} [Fintype A] {Label : ℕ → Type v}
+-  [∀ n, Fintype (Label n)]
+-
+-open StageHierarchyResources
+-
+-end SourceHierarchy
+-end ConditionalLabels
+-end MatrixMultiplication
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Model.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Model.lean
+index abc851304..ce9b948a6 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Model.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Model.lean
+@@ -98,17 +98,6 @@ def AdmissibleExponent (F : Type*) [Ring F] (τ : ℝ) : Prop :=
+ 
+ def omega (F : Type*) [Ring F] : ℝ := sInf {τ : ℝ | AdmissibleExponent F τ}
+ 
+-/-- The inner dimension of an `n × n^k` by `n^k × n` multiplication. -/
+-def innerSize (n : ℕ) (k : ℝ) : ℕ := ⌈(n : ℝ) ^ k⌉₊
+-
+-def RectangularAdmissibleExponent (F : Type*) [Ring F] (k τ : ℝ) : Prop :=
+-  ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
+-    ∀ n : ℕ, 1 ≤ n → ∃ P : MatrixAlgorithm F n (innerSize n k) n,
+-      P.Correct ∧ (P.cost : ℝ) ≤ C * (n : ℝ) ^ (τ + ε)
+-
+-def rectangularOmega (F : Type*) [Ring F] (k : ℝ) : ℝ :=
+-  sInf {τ : ℝ | RectangularAdmissibleExponent F k τ}
+-
+ end MatrixMultiplication.Arithmetic
+ 
+ end
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialApproximation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialApproximation.lean
+deleted file mode 100644
+index 2eb8efe80..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialApproximation.lean
++++ /dev/null
+@@ -1,111 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+-public import Mathlib.LinearAlgebra.Lagrange
+-public import Mathlib.Algebra.Polynomial.Div
+-public import Mathlib.Algebra.Polynomial.BigOperators
+-public import Mathlib.Topology.Algebra.Polynomial
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Polynomial tensor restrictions and exact coefficient extraction. -/
+-
+-noncomputable section
+-
+-open scoped BigOperators
+-
+-namespace MatrixMultiplication.Foundation
+-namespace Tensor
+-
+-section FieldInterpolation
+-
+-variable {F X Y Z : Type*} [Field F]
+-
+-theorem coeff_eq_sum_eval {ι : Type*} [Fintype ι] [DecidableEq ι]
+-    (nodes : ι → F) (hnodes : Function.Injective nodes)
+-    (p : Polynomial F) (d : ℕ) (hdegree : p.degree < Fintype.card ι) :
+-    p.coeff d = ∑ i, p.eval (nodes i) *
+-      (Lagrange.basis Finset.univ nodes i).coeff d := by
+-  have hinj : Set.InjOn nodes (↑(Finset.univ : Finset ι)) := hnodes.injOn
+-  have hinterp := Lagrange.eq_interpolate hinj (by simpa using hdegree)
+-    (f := p)
+-  calc
+-    p.coeff d = (Lagrange.interpolate Finset.univ nodes
+-        (fun i => p.eval (nodes i))).coeff d := congrArg (fun q => q.coeff d) hinterp
+-    _ = _ := by
+-      simp only [Lagrange.interpolate_apply, Polynomial.finsetSum_coeff,
+-        Polynomial.coeff_C_mul]
+-
+-theorem RankAtMost.coeff {ι : Type*} [Fintype ι] [DecidableEq ι]
+-    (nodes : ι → F) (hnodes : Function.Injective nodes)
+-    {P : Tensor (Polynomial F) X Y Z} {r : ℕ} (hP : RankAtMost P r)
+-    (d : ℕ) (hdegree : ∀ x y z, (P x y z).degree < Fintype.card ι) :
+-    RankAtMost (fun x y z => (P x y z).coeff d) (Fintype.card ι * r) := by
+-  rcases hP with ⟨a, b, c, rfl⟩
+-  let w : ι → F := fun i => (Lagrange.basis Finset.univ nodes i).coeff d
+-  let aa : (ι × Fin r) → X → F := fun i x => w i.1 * (a i.2 x).eval (nodes i.1)
+-  let bb : (ι × Fin r) → Y → F := fun i y => (b i.2 y).eval (nodes i.1)
+-  let cc : (ι × Fin r) → Z → F := fun i z => (c i.2 z).eval (nodes i.1)
+-  have heq : (fun x y z => (∑ j, rankOne (a j) (b j) (c j) x y z).coeff d) =
+-      fun x y z => ∑ i, rankOne (aa i) (bb i) (cc i) x y z := by
+-    funext x y z
+-    rw [coeff_eq_sum_eval nodes hnodes _ d (hdegree x y z)]
+-    simp only [Fintype.sum_prod_type, rankOne, Polynomial.eval_finsetSum,
+-      Polynomial.eval_mul, Finset.sum_mul]
+-    apply Finset.sum_congr rfl
+-    intro i hi
+-    apply Finset.sum_congr rfl
+-    intro j hj
+-    dsimp [aa, bb, cc, w]
+-    ring
+-  rw [heq]
+-  simpa only [Fintype.card_prod, Fintype.card_fin] using rankAtMost_sum_rankOne aa bb cc
+-
+-end FieldInterpolation
+-
+-variable {F X Y Z : Type*} [CommRing F]
+-
+-structure PolynomialApproximation (T : Tensor F X Y Z) (r d D : ℕ) where
+-  polynomial : Tensor (Polynomial F) X Y Z
+-  rank_bound : RankAtMost polynomial r
+-  vanishes : ∀ x y z k, k < d → (polynomial x y z).coeff k = 0
+-  leading : ∀ x y z, (polynomial x y z).coeff d = T x y z
+-  degree_bound : ∀ x y z, (polynomial x y z).degree ≤ D
+-
+-namespace PolynomialApproximation
+-
+-variable {T : Tensor F X Y Z} {r d D : ℕ}
+-
+-def normalized (A : PolynomialApproximation T r d D) :
+-    Tensor (Polynomial F) X Y Z :=
+-  fun x y z => Classical.choose (Polynomial.X_pow_dvd_iff.mpr (A.vanishes x y z))
+-
+-theorem polynomial_eq (A : PolynomialApproximation T r d D) (x : X) (y : Y) (z : Z) :
+-    A.polynomial x y z = Polynomial.X ^ d * A.normalized x y z :=
+-  Classical.choose_spec (Polynomial.X_pow_dvd_iff.mpr (A.vanishes x y z))
+-
+-theorem normalized_constant (A : PolynomialApproximation T r d D)
+-    (x : X) (y : Y) (z : Z) : (A.normalized x y z).coeff 0 = T x y z := by
+-  have h := A.leading x y z
+-  rw [A.polynomial_eq] at h
+-  simpa only [Polynomial.coeff_X_pow_mul', le_refl, ite_true, Nat.sub_self] using h
+-
+-section FieldRecovery
+-
+-variable {F : Type*} [Field F]
+-variable {T : Tensor F X Y Z}
+-
+-end FieldRecovery
+-
+-end PolynomialApproximation
+-
+-end Tensor
+-end MatrixMultiplication.Foundation
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialDegenerationComposition.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialDegenerationComposition.lean
+index 73ed79906..db54b2314 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialDegenerationComposition.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Polynomial/ComplexPolynomialDegenerationComposition.lean
+@@ -1,9 +1,7 @@
+ module
+ 
+-public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialApproximation
+ public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensorSymmetrization
+-public import Mathlib.Algebra.Polynomial.Expand
+-public import Lean.Elab.Tactic.Omega
++public import Mathlib.Algebra.Polynomial.Degree.Lemmas
+ 
+ public section
+ 
+@@ -11,67 +9,11 @@ public section
+ 
+ namespace OAI
+ 
+-/-! Polynomial tensor restrictions and exact coefficient extraction. -/
+-
+ noncomputable section
+ 
+-open scoped BigOperators
+-
+ namespace MatrixMultiplication.Foundation
+ namespace Tensor
+ 
+-section ScalarRestriction
+-
+-variable {K X Y Z X' Y' Z' : Type*} [CommSemiring K]
+-variable [Fintype X] [Fintype Y] [Fintype Z]
+-
+-theorem restrict_scalar_mul (A : X' → X → K) (B : Y' → Y → K)
+-    (C : Z' → Z → K) (P : Tensor K X Y Z) (s : K) :
+-    restrict A B C (fun x y z => s * P x y z) =
+-      fun x' y' z' => s * restrict A B C P x' y' z' := by
+-  funext x' y' z'
+-  simp only [restrict, Finset.mul_sum]
+-  apply Finset.sum_congr rfl
+-  intro x hx
+-  apply Finset.sum_congr rfl
+-  intro y hy
+-  apply Finset.sum_congr rfl
+-  intro z hz
+-  ring
+-
+-end ScalarRestriction
+-
+-section PolynomialCoefficients
+-
+-variable {F : Type*} [CommRing F]
+-
+-theorem coeff_mul_expand_eq_constant (M p : Polynomial F) (a : F)
+-    (hp : p.coeff 0 = a) (k j : ℕ) (hj : j ≤ k) :
+-    (M * Polynomial.expand F (k + 1) p).coeff j =
+-      (M * Polynomial.C a).coeff j := by
+-  have hdiv : Polynomial.X ∣ p - Polynomial.C a :=
+-    Polynomial.X_dvd_iff.mpr (by simp only [Polynomial.coeff_sub,
+-      Polynomial.coeff_C_zero, hp, sub_self])
+-  rcases hdiv with ⟨q, hq⟩
+-  have hpq : p = Polynomial.C a + Polynomial.X * q := by
+-    rw [← hq]
+-    ring
+-  have hexpand : Polynomial.expand F (k + 1) p =
+-      Polynomial.C a + Polynomial.X ^ (k + 1) *
+-        Polynomial.expand F (k + 1) q := by
+-    rw [hpq, map_add, map_mul, Polynomial.expand_C, Polynomial.expand_X]
+-  have hmul : M * Polynomial.expand F (k + 1) p =
+-      M * Polynomial.C a + Polynomial.X ^ (k + 1) *
+-        (M * Polynomial.expand F (k + 1) q) := by
+-    rw [hexpand]
+-    ring
+-  rw [hmul, Polynomial.coeff_add, Polynomial.coeff_X_pow_mul',
+-    ite_eq_right (by omega), add_zero]
+-
+-end PolynomialCoefficients
+-
+-section PolynomialLocalMaps
+-
+ variable {F X Y Z X' Y' Z' : Type*} [CommRing F]
+ variable [Fintype X] [Fintype Y] [Fintype Z]
+ 
+@@ -92,123 +34,14 @@ structure PolynomialRestrictionDegeneration
+ 
+ namespace PolynomialRestrictionDegeneration
+ 
+-variable {T : Tensor F X Y Z} {U : Tensor F X' Y' Z'}
+-variable {k Lx Ly Lz r d D : ℕ}
++variable {T : Tensor F X Y Z} {U : Tensor F X' Y' Z'} {k Lx Ly Lz : ℕ}
+ 
+ def basePolynomial (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz) :
+     Tensor (Polynomial F) X' Y' Z' :=
+   restrict L.leftMap L.middleMap L.rightMap (fun x y z => Polynomial.C (T x y z))
+ 
+-def compositionPolynomial (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) : Tensor (Polynomial F) X' Y' Z' :=
+-  restrict L.leftMap L.middleMap L.rightMap
+-    (fun x y z => Polynomial.expand F (k + 1) (W.polynomial x y z))
+-
+-def normalizedComposition (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) : Tensor (Polynomial F) X' Y' Z' :=
+-  restrict L.leftMap L.middleMap L.rightMap
+-    (fun x y z => Polynomial.expand F (k + 1) (W.normalized x y z))
+-
+-theorem compositionPolynomial_eq
+-    (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) (x' : X') (y' : Y') (z' : Z') :
+-    L.compositionPolynomial W x' y' z' =
+-      Polynomial.X ^ (d * (k + 1)) * L.normalizedComposition W x' y' z' := by
+-  have hpoint : (fun x y z => Polynomial.expand F (k + 1) (W.polynomial x y z)) =
+-      fun x y z => Polynomial.X ^ (d * (k + 1)) *
+-        Polynomial.expand F (k + 1) (W.normalized x y z) := by
+-    funext x y z
+-    rw [W.polynomial_eq, map_mul, map_pow, Polynomial.expand_X]
+-    simp only [← pow_mul, Nat.mul_comm]
+-  unfold compositionPolynomial normalizedComposition
+-  rw [hpoint, restrict_scalar_mul]
+-
+-theorem normalizedComposition_coeff
+-    (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) (j : ℕ) (hj : j ≤ k)
+-    (x' : X') (y' : Y') (z' : Z') :
+-    (L.normalizedComposition W x' y' z').coeff j =
+-      (L.basePolynomial x' y' z').coeff j := by
+-  simp only [normalizedComposition, basePolynomial, restrict, Polynomial.finsetSum_coeff]
+-  apply Finset.sum_congr rfl
+-  intro x hx
+-  apply Finset.sum_congr rfl
+-  intro y hy
+-  apply Finset.sum_congr rfl
+-  intro z hz
+-  exact coeff_mul_expand_eq_constant
+-    (L.leftMap x' x * L.middleMap y' y * L.rightMap z' z)
+-    (W.normalized x y z) (T x y z) (W.normalized_constant x y z) k j hj
+-
+-theorem compositionPolynomial_rank
+-    (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) :
+-    RankAtMost (L.compositionPolynomial W) r :=
+-  (W.rank_bound.map (Polynomial.expand F (k + 1)).toRingHom).restrict
+-    L.leftMap L.middleMap L.rightMap
+-
+-theorem compositionPolynomial_degree
+-    (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) (x' : X') (y' : Y') (z' : Z') :
+-    (L.compositionPolynomial W x' y' z').degree ≤ D * (k + 1) + Lx + Ly + Lz := by
+-  apply Polynomial.degree_le_of_natDegree_le
+-  unfold compositionPolynomial restrict
+-  apply Polynomial.natDegree_sum_le_of_forall_le
+-  intro x hx
+-  apply Polynomial.natDegree_sum_le_of_forall_le
+-  intro y hy
+-  apply Polynomial.natDegree_sum_le_of_forall_le
+-  intro z hz
+-  have hA := Polynomial.natDegree_le_of_degree_le (L.left_degree x' x)
+-  have hB := Polynomial.natDegree_le_of_degree_le (L.middle_degree y' y)
+-  have hC := Polynomial.natDegree_le_of_degree_le (L.right_degree z' z)
+-  have hP : (Polynomial.expand F (k + 1) (W.polynomial x y z)).natDegree ≤
+-      D * (k + 1) := by
+-    rw [Polynomial.natDegree_expand]
+-    exact Nat.mul_le_mul_right (k + 1)
+-      (Polynomial.natDegree_le_of_degree_le (W.degree_bound x y z))
+-  have hprod := Polynomial.natDegree_mul_le_of_le
+-    (Polynomial.natDegree_mul_le_of_le
+-      (Polynomial.natDegree_mul_le_of_le hA hB) hC) hP
+-  change (L.leftMap x' x * L.middleMap y' y * L.rightMap z' z *
+-    Polynomial.expand F (k + 1) (W.polynomial x y z)).natDegree ≤
+-      D * (k + 1) + Lx + Ly + Lz
+-  simpa only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hprod
+-
+-def compose (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) :
+-    PolynomialApproximation U r (d * (k + 1) + k) (D * (k + 1) + Lx + Ly + Lz) where
+-  polynomial := L.compositionPolynomial W
+-  rank_bound := L.compositionPolynomial_rank W
+-  vanishes := by
+-    intro x' y' z' j hj
+-    rw [L.compositionPolynomial_eq W, Polynomial.coeff_X_pow_mul']
+-    split_ifs with hdj
+-    · have hjk : j - d * (k + 1) < k := by omega
+-      rw [L.normalizedComposition_coeff W _ (Nat.le_of_lt hjk)]
+-      exact L.vanishes x' y' z' _ hjk
+-    · rfl
+-  leading := by
+-    intro x' y' z'
+-    rw [L.compositionPolynomial_eq W, Polynomial.coeff_X_pow_mul']
+-    simp only [Nat.le_add_right, ite_true, Nat.add_sub_cancel_left]
+-    rw [L.normalizedComposition_coeff W k le_rfl]
+-    exact L.leading x' y' z'
+-  degree_bound := L.compositionPolynomial_degree W
+-
+-@[simp] theorem compose_polynomial
+-    (L : PolynomialRestrictionDegeneration T U k Lx Ly Lz)
+-    (W : PolynomialApproximation T r d D) :
+-    (L.compose W).polynomial = restrict L.leftMap L.middleMap L.rightMap
+-      (fun x y z => Polynomial.expand F (k + 1) (W.polynomial x y z)) := rfl
+-
+ end PolynomialRestrictionDegeneration
+-
+-end PolynomialLocalMaps
+-
+ end Tensor
+ end MatrixMultiplication.Foundation
+-
+ end
+-
+ end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/AuxiliarySeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/AuxiliarySeparation.lean
+deleted file mode 100644
+index 328598585..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/AuxiliarySeparation.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexAuxiliarySeparation
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexStageHierarchyResources
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexAuxiliarySeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexAuxiliarySeparation.lean
+deleted file mode 100644
+index e7fdf67f1..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexAuxiliarySeparation.lean
++++ /dev/null
+@@ -1,30 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexSeparationAsymptotics
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexSeparatedTensorDecomposition
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite type counts, hierarchy separation and tensor execution bounds. -/
+-
+-namespace MatrixMultiplication.Foundation
+-
+-instance auxiliarySeparation_modulus_neZero (K : ℕ) :
+-    NeZero (4 * Separation.gridWidth K) :=
+-  ⟨Nat.mul_ne_zero (by decide)
+-    (Nat.ne_of_gt (lt_of_lt_of_le (by decide : 0 < 2)
+-      (Separation.gridWidth_ge_two K)))⟩
+-
+-section AuxiliarySeparation
+-
+-variable {X Y Z S : Type*} [Fintype S] [DecidableEq S]
+-
+-end AuxiliarySeparation
+-
+-end MatrixMultiplication.Foundation
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexFiniteSeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexFiniteSeparation.lean
+deleted file mode 100644
+index 1355292d9..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexFiniteSeparation.lean
++++ /dev/null
+@@ -1,35 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexGroupTensor
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexModularSeparation
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite type counts, hierarchy separation and tensor execution bounds. -/
+-
+-namespace MatrixMultiplication.Foundation
+-
+-section Separation
+-
+-variable {X Y Z S U G : Type*}
+-variable [AddCommGroup G] [Fintype G] [DecidableEq G]
+-variable [DecidableEq S] [DecidableEq U]
+-
+-def separatedTensor (lx : X → S) (T : Tensor ℂ X Y Z) :
+-    Tensor ℂ (X × U) (Y × U) (Z × S) :=
+-  fun x y z => if lx x.1 = z.2 ∧ x.2 = y.2 then T x.1 y.1 z.1 else 0
+-
+-end Separation
+-
+-section FiniteGrid
+-
+-variable {X Y Z S : Type*} [Fintype S] [DecidableEq S]
+-
+-end FiniteGrid
+-end MatrixMultiplication.Foundation
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexHierarchyTypeCounting.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexHierarchyTypeCounting.lean
+deleted file mode 100644
+index 29729fa5b..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexHierarchyTypeCounting.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexHierarchyEntropy
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexConditionalTypeCounting
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexLabelHierarchySeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexLabelHierarchySeparation.lean
+deleted file mode 100644
+index c4119fd1a..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexLabelHierarchySeparation.lean
++++ /dev/null
+@@ -1,98 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexFiniteSeparation
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexAuxiliarySeparation
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexFiniteControl
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexLocalMaps
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexSharedAuxiliaryBank
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite type counts, hierarchy separation and tensor execution bounds. -/
+-
+-open scoped BigOperators
+-
+-namespace MatrixMultiplication.Foundation
+-namespace LabelHierarchySeparation
+-
+-section Bank
+-
+-variable {K I : Type*} [CommSemiring K] [Fintype I]
+-variable {X Y Z : I → Type*}
+-
+-variable {Node : Type*} [Fintype Node]
+-
+-end Bank
+-
+-section PrefixSeparation
+-
+-variable {X Y Z Prefix Label Pairing G : Type*}
+-variable [AddCommGroup G] [Fintype G] [DecidableEq G]
+-variable [DecidableEq Label] [DecidableEq Pairing]
+-
+-@[simp] theorem separated_coefficient
+-    (T : Tensor ℂ X Y Z) (lx : X → Label)
+-    (x : X) (y : Y) (z : Z) (u : Pairing) :
+-    separatedTensor lx T (x, u) (y, u) (z, lx x) = T x y z := by
+-  simp [separatedTensor]
+-
+-end PrefixSeparation
+-
+-section ExactPools
+-
+-variable {X Y Z Prefix Label : Type*} [DecidableEq Label]
+-
+-def poolCode (pool : Prefix → Finset Label) {k : ℕ}
+-    (enumerate : ∀ p, ↥(pool p) ≃ Fin k)
+-    (prior : X → Prefix) (label : X → Label)
+-    (allowed : ∀ x, label x ∈ pool (prior x)) : X → Fin k :=
+-  fun x => enumerate (prior x) ⟨label x, allowed x⟩
+-
+-omit [DecidableEq Label] in
+-@[simp] theorem poolCode_decode (pool : Prefix → Finset Label) {k : ℕ}
+-    (enumerate : ∀ p, ↥(pool p) ≃ Fin k)
+-    (prior : X → Prefix) (label : X → Label)
+-    (allowed : ∀ x, label x ∈ pool (prior x)) (x : X) :
+-    ((enumerate (prior x)).symm (poolCode pool enumerate prior label allowed x)).val =
+-      label x := by
+-  simp [poolCode]
+-
+-end ExactPools
+-
+-section SharedBranches
+-
+-variable {K X Y Z A B C A' B' C' Label : Type*}
+-variable [CommSemiring K] [Fintype X] [Fintype Y] [Fintype Z]
+-variable [Fintype A] [Fintype B] [Fintype C] [Fintype Label]
+-
+-end SharedBranches
+-
+-section FiniteAssembly
+-
+-universe u
+-
+-variable {K : Type*} [CommSemiring K]
+-variable {X Y Z A B C : ℕ → Type*}
+-
+-def AuxiliaryCoordinates (A : ℕ → Type u) : ℕ → Type u
+-  | 0 => PUnit
+-  | n + 1 => AuxiliaryCoordinates A n × A n
+-
+-instance auxiliaryCoordinatesFintype [∀ n, Fintype (A n)] (n : ℕ) :
+-    Fintype (AuxiliaryCoordinates A n) := by
+-  induction n with
+-  | zero => exact inferInstanceAs (Fintype PUnit)
+-  | succ n ih =>
+-      letI : Fintype (AuxiliaryCoordinates A n) := ih
+-      exact inferInstanceAs (Fintype (AuxiliaryCoordinates A n × A n))
+-
+-end FiniteAssembly
+-
+-end LabelHierarchySeparation
+-end MatrixMultiplication.Foundation
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexModularSeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexModularSeparation.lean
+deleted file mode 100644
+index ea4149216..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexModularSeparation.lean
++++ /dev/null
+@@ -1,6 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexSeparation
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexSeparationCounting
+-public import Mathlib.Data.Fintype.EquivFin
+-public import Mathlib.Data.ZMod.Basic
+-public import Mathlib.Tactic.Choose
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexRationalTypes.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexRationalTypes.lean
+index d0f7aac15..5c9746db6 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexRationalTypes.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexRationalTypes.lean
+@@ -100,15 +100,9 @@ theorem exists_rational_approximation (p : FiniteLaw A) (ε : ℝ) (hε : 0 < ε
+       (∀ a, q.mass a = 0 ↔ p.mass a = 0) ∧
+       ∀ a, |(q.mass a : ℝ) - p.mass a| < ε := by
+   classical
+-  have hpivot : ∃ a, 0 < p.mass a := by
+-    by_contra h
+-    have hnonpos : ∀ a, p.mass a ≤ 0 :=
+-      fun a => le_of_not_gt (fun ha => h ⟨a, ha⟩)
+-    have hsum : (∑ a, p.mass a) ≤ 0 :=
+-      Finset.sum_nonpos (fun a _ => hnonpos a)
+-    rw [p.total] at hsum
+-    norm_num at hsum
+-  obtain ⟨a₀, ha₀⟩ := hpivot
++  have hsum : 0 < ∑ a, p.mass a := by rw [p.total]; norm_num
++  obtain ⟨a₀, _, ha₀⟩ :=
++    (Finset.sum_pos_iff_of_nonneg (fun a _ => p.nonneg a)).mp hsum
+   let δ : ℝ := ε / ((Fintype.card A : ℝ) + 1)
+   have hcard : 0 ≤ (Fintype.card A : ℝ) := Nat.cast_nonneg _
+   have hden : 0 < (Fintype.card A : ℝ) + 1 := by linarith
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexSeparation.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexSeparation.lean
+deleted file mode 100644
+index bc3dbf366..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexSeparation.lean
++++ /dev/null
+@@ -1,8 +0,0 @@
+-module
+-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+-public import Mathlib.Algebra.BigOperators.Ring.Finset
+-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+-public import Mathlib.Basic.Real.Basic
+-public import Mathlib.Data.Int.ModEq
+-public import Mathlib.Tactic.Linarith
+-public import Mathlib.Tactic.Ring
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexSeparationCounting.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexSeparationCounting.lean
+deleted file mode 100644
+index a9d64332c..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexSeparationCounting.lean
++++ /dev/null
+@@ -1,5 +0,0 @@
+-module
+-public import Mathlib.Combinatorics.Pigeonhole
+-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+-public import Mathlib.Data.Finset.Card
+-public import Mathlib.Data.Fintype.Card
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexStageHierarchyResources.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexStageHierarchyResources.lean
+deleted file mode 100644
+index 90244937b..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Separation/ComplexStageHierarchyResources.lean
++++ /dev/null
+@@ -1,31 +0,0 @@
+-module
+-
+-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexHierarchySeparationRates
+-
+-public section
+-
+-@[expose] section
+-
+-namespace OAI
+-
+-/-! Finite type counts, hierarchy separation and tensor execution bounds. -/
+-
+-noncomputable section
+-
+-namespace MatrixMultiplication.Foundation.StageHierarchyResources
+-
+-open Filter
+-open scoped BigOperators Topology
+-
+-universe u v
+-
+-local instance (priority := low) {B : Type*} : DecidableEq B := Classical.decEq B
+-
+-variable {A : Type u} [Fintype A] {Label : ℕ → Type v}
+-  [∀ n, Fintype (Label n)]
+-
+-end MatrixMultiplication.Foundation.StageHierarchyResources
+-
+-end
+-
+-end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexGroupTensor.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexGroupTensor.lean
+deleted file mode 100644
+index 8560d5da1..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexGroupTensor.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+-public import Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexLocalMaps.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexLocalMaps.lean
+deleted file mode 100644
+index cb5790581..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexLocalMaps.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+-public import Mathlib.Data.Fintype.BigOperators
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexMatrixTensor.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexMatrixTensor.lean
+index 9085fba57..af4d74647 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexMatrixTensor.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexMatrixTensor.lean
+@@ -1,7 +1,6 @@
+ module
+ 
+-public import OAI.LinearAlgebra.MatrixMultiplication.ComplexArithmetic.Complexity
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensorBatching
++public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+ public import Mathlib.Tactic.SplitIfs
+ public import Mathlib.Algebra.BigOperators.GroupWithZero.Finset
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSeparatedTensorDecomposition.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSeparatedTensorDecomposition.lean
+index 084e6d279..8c2e171e8 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSeparatedTensorDecomposition.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSeparatedTensorDecomposition.lean
+@@ -1,6 +1,5 @@
+ module
+ 
+-public import OAI.LinearAlgebra.MatrixMultiplication.Separation.ComplexFiniteSeparation
+ public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexDotPairing
+ 
+ public section
+@@ -38,11 +37,6 @@ def dependentDirectSum (T : ∀ s, Tensor K (X s) (Y s) (Z s)) :
+ end DependentSum
+ end Tensor
+ 
+-section FiberDecomposition
+-
+-variable {X Y Z S U : Type*} [DecidableEq S] [DecidableEq U]
+-
+-end FiberDecomposition
+ end MatrixMultiplication.Foundation
+ 
+ end OAI
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSharedAuxiliaryBank.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSharedAuxiliaryBank.lean
+deleted file mode 100644
+index 18e014894..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexSharedAuxiliaryBank.lean
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexLocalMaps
+-public import Mathlib.Logic.Equiv.Basic
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensor.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensor.lean
+index dcb348b45..4f9d076bd 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensor.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensor.lean
+@@ -57,19 +57,6 @@ def power (T : Tensor K X Y Z) (n : ℕ) :
+     directSum T (i, x) (i, y) (i, z) = T i x y z := by
+   simp [directSum]
+ 
+-@[simp] theorem rankAtMost_zero : RankAtMost (0 : Tensor K X Y Z) 0 := by
+-  refine ⟨fun i => Fin.elim0 i, fun i => Fin.elim0 i, fun i => Fin.elim0 i, ?_⟩
+-  funext x y z
+-  simp
+-
+-theorem RankAtMost.map {L : Type*} [CommSemiring L]
+-    (f : K →+* L) {T : Tensor K X Y Z} {r : ℕ} (h : RankAtMost T r) :
+-    RankAtMost (fun x y z => f (T x y z)) r := by
+-  rcases h with ⟨a, b, c, rfl⟩
+-  refine ⟨fun i x => f (a i x), fun i y => f (b i y), fun i z => f (c i z), ?_⟩
+-  funext x y z
+-  simp [rankOne]
+-
+ theorem RankAtMost.scale {T : Tensor K X Y Z} {r : ℕ}
+     (h : RankAtMost T r) (u : K) :
+     RankAtMost (fun x y z => u * T x y z) r := by
+@@ -214,28 +201,6 @@ theorem RankAtMost.pullback {T : Tensor K X Y Z} {r : ℕ}
+ 
+ end Pullback
+ 
+-section ComplexTopology
+-
+-variable {X Y Z X' Y' Z' : Type*}
+-
+-def restrictionOrbit [Fintype X] [Fintype Y] [Fintype Z]
+-    (T : Tensor ℂ X Y Z) : Set (Tensor ℂ X' Y' Z') :=
+-  {U | ∃ (A : X' → X → ℂ) (B : Y' → Y → ℂ) (C : Z' → Z → ℂ),
+-    U = restrict A B C T}
+-
+-def DegeneratesTo [Fintype X] [Fintype Y] [Fintype Z]
+-    [Fintype X'] [Fintype Y'] [Fintype Z']
+-    (T : Tensor ℂ X Y Z) (U : Tensor ℂ X' Y' Z') : Prop :=
+-  U ∈ closure (restrictionOrbit T)
+-
+-theorem continuous_restrict [Fintype X] [Fintype Y] [Fintype Z]
+-    (A : X' → X → ℂ) (B : Y' → Y → ℂ) (C : Z' → Z → ℂ) :
+-    Continuous (Tensor.restrict A B C) := by
+-  unfold restrict
+-  fun_prop
+-
+-end ComplexTopology
+-
+ end Tensor
+ end MatrixMultiplication.Foundation
+ 
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorBatching.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorBatching.lean
+deleted file mode 100644
+index 25e57aab8..000000000
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorBatching.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensor
+diff --git a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorRestrictionComposition.lean b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorRestrictionComposition.lean
+index 3be13c74a..f4b9f23de 100644
+--- a/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorRestrictionComposition.lean
++++ b/lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorRestrictionComposition.lean
+@@ -17,14 +17,16 @@ namespace Tensor
+ 
+ section Algebra
+ 
+-variable {K X Y Z X' Y' Z' X'' Y'' Z'' : Type*} [CommSemiring K]
++variable {K X Y Z X' Y' Z' X'' Y'' Z'' U V W U' V' W' : Type*} [CommSemiring K]
++variable [Fintype X] [Fintype Y] [Fintype Z]
++variable [Fintype X'] [Fintype Y'] [Fintype Z']
++variable [Fintype U] [Fintype V] [Fintype W]
+ 
+-def composeRestrictionMatrix [Fintype X']
++def composeRestrictionMatrix
+     (D : X'' → X' → K) (A : X' → X → K) : X'' → X → K :=
+   fun x'' x => ∑ x', D x'' x' * A x' x
+ 
+-private theorem sum_three_mul [Fintype X] [Fintype Y] [Fintype Z]
+-    (a : X → K) (b : Y → K) (c : Z → K) (t : K) :
++private theorem sum_three_mul (a : X → K) (b : Y → K) (c : Z → K) (t : K) :
+     (∑ x, a x) * (∑ y, b y) * (∑ z, c z) * t =
+       ∑ x, ∑ y, ∑ z, a x * b y * c z * t := by
+   rw [Finset.sum_mul_sum]
+@@ -32,9 +34,7 @@ private theorem sum_three_mul [Fintype X] [Fintype Y] [Fintype Z]
+   simp_rw [Finset.mul_sum]
+   simp_rw [Finset.sum_mul]
+ 
+-private theorem sum_six_comm [Fintype X] [Fintype Y] [Fintype Z]
+-    [Fintype X'] [Fintype Y'] [Fintype Z']
+-    (f : X' → Y' → Z' → X → Y → Z → K) :
++private theorem sum_six_comm (f : X' → Y' → Z' → X → Y → Z → K) :
+     (∑ x', ∑ y', ∑ z', ∑ x, ∑ y, ∑ z, f x' y' z' x y z) =
+       ∑ x, ∑ y, ∑ z, ∑ x', ∑ y', ∑ z', f x' y' z' x y z := by
+   calc
+@@ -45,9 +45,7 @@ private theorem sum_six_comm [Fintype X] [Fintype Y] [Fintype Z]
+         f p.1 p.2.1 p.2.2 q.1 q.2.1 q.2.2 := Finset.sum_comm
+     _ = _ := by simp only [Fintype.sum_prod_type]
+ 
+-private theorem sum_interleaved_triples {U V W : Type*}
+-    [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
+-    (f : X → Y → Z → U → V → W → K) :
++private theorem sum_interleaved_triples (f : X → Y → Z → U → V → W → K) :
+     (∑ x, ∑ u, ∑ y, ∑ v, ∑ z, ∑ w, f x y z u v w) =
+       ∑ x, ∑ y, ∑ z, ∑ u, ∑ v, ∑ w, f x y z u v w := by
+   apply Finset.sum_congr rfl
+@@ -66,9 +64,7 @@ private theorem sum_interleaved_triples {U V W : Type*}
+           exact Finset.sum_comm
+         _ = _ := Finset.sum_comm
+ 
+-theorem restrict_restrict [Fintype X] [Fintype Y] [Fintype Z]
+-    [Fintype X'] [Fintype Y'] [Fintype Z']
+-    (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
++theorem restrict_restrict (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
+     (D : X'' → X' → K) (E : Y'' → Y' → K) (F : Z'' → Z' → K)
+     (T : Tensor K X Y Z) :
+     restrict D E F (restrict A B C T) =
+@@ -100,9 +96,8 @@ theorem restrict_restrict [Fintype X] [Fintype Y] [Fintype Z]
+       intro z' hz'
+       ring
+ 
+-theorem restrict_product {U V W U' V' W' : Type*}
+-    [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
+-    (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
++omit [Fintype X'] [Fintype Y'] [Fintype Z'] in
++theorem restrict_product (A : X' → X → K) (B : Y' → Y → K) (C : Z' → Z → K)
+     (D : U' → U → K) (E : V' → V → K) (F : W' → W → K)
+     (T : Tensor K X Y Z) (S : Tensor K U V W) :
+     restrict (fun (x : X' × U') (u : X × U) => A x.1 u.1 * D x.2 u.2)
+@@ -136,8 +131,7 @@ theorem restrict_product {U V W U' V' W' : Type*}
+       simp_rw [Finset.sum_mul]
+       simp_rw [Finset.mul_sum]
+ 
+-theorem restrict_identity [Fintype X] [Fintype Y] [Fintype Z]
+-    [DecidableEq X] [DecidableEq Y] [DecidableEq Z]
++theorem restrict_identity [DecidableEq X] [DecidableEq Y] [DecidableEq Z]
+     (T : Tensor K X Y Z) :
+     restrict (fun x' x => if x = x' then 1 else 0)
+       (fun y' y => if y = y' then 1 else 0)
+@@ -148,59 +142,6 @@ theorem restrict_identity [Fintype X] [Fintype Y] [Fintype Z]
+ 
+ end Algebra
+ 
+-section ComplexTopology
+-
+-variable {X Y Z X' Y' Z' X'' Y'' Z'' : Type*}
+-variable [Fintype X] [Fintype Y] [Fintype Z]
+-variable [Fintype X'] [Fintype Y'] [Fintype Z']
+-variable [Fintype X''] [Fintype Y''] [Fintype Z'']
+-
+-theorem degeneratesTo_restrict (T : Tensor ℂ X Y Z)
+-    (A : X' → X → ℂ) (B : Y' → Y → ℂ) (C : Z' → Z → ℂ) :
+-    DegeneratesTo T (restrict A B C T) :=
+-  subset_closure ⟨A, B, C, rfl⟩
+-
+-theorem DegeneratesTo.refl (T : Tensor ℂ X Y Z) : DegeneratesTo T T := by
+-  classical
+-  have h := degeneratesTo_restrict T
+-    (fun x' x => if x = x' then 1 else 0)
+-    (fun y' y => if y = y' then 1 else 0)
+-    (fun z' z => if z = z' then 1 else 0)
+-  simpa only [restrict_identity] using h
+-
+-omit [Fintype X''] [Fintype Y''] [Fintype Z''] in
+-theorem mem_restrictionOrbit_restrict {T : Tensor ℂ X Y Z}
+-    {U : Tensor ℂ X' Y' Z'} (h : U ∈ restrictionOrbit T)
+-    (D : X'' → X' → ℂ) (E : Y'' → Y' → ℂ) (F : Z'' → Z' → ℂ) :
+-    restrict D E F U ∈ restrictionOrbit T := by
+-  rcases h with ⟨A, B, C, rfl⟩
+-  exact ⟨composeRestrictionMatrix D A, composeRestrictionMatrix E B,
+-    composeRestrictionMatrix F C, restrict_restrict A B C D E F T⟩
+-
+-theorem DegeneratesTo.restrict {T : Tensor ℂ X Y Z} {U : Tensor ℂ X' Y' Z'}
+-    (h : DegeneratesTo T U)
+-    (D : X'' → X' → ℂ) (E : Y'' → Y' → ℂ) (F : Z'' → Z' → ℂ) :
+-    DegeneratesTo T (Tensor.restrict D E F U) := by
+-  have hclosed : IsClosed {S : Tensor ℂ X' Y' Z' |
+-      DegeneratesTo T (Tensor.restrict D E F S)} :=
+-    isClosed_closure.preimage (continuous_restrict D E F)
+-  have hsubset : restrictionOrbit T ⊆
+-      {S : Tensor ℂ X' Y' Z' | DegeneratesTo T (Tensor.restrict D E F S)} := by
+-    intro S hS
+-    exact subset_closure (mem_restrictionOrbit_restrict hS D E F)
+-  exact closure_minimal hsubset hclosed h
+-
+-theorem DegeneratesTo.trans {T : Tensor ℂ X Y Z} {U : Tensor ℂ X' Y' Z'}
+-    {V : Tensor ℂ X'' Y'' Z''} (hTU : DegeneratesTo T U)
+-    (hUV : DegeneratesTo U V) : DegeneratesTo T V := by
+-  have hsubset : restrictionOrbit U ⊆
+-      {S : Tensor ℂ X'' Y'' Z'' | DegeneratesTo T S} := by
+-    rintro S ⟨D, E, F, rfl⟩
+-    exact hTU.restrict D E F
+-  exact closure_minimal hsubset isClosed_closure hUV
+-
+-end ComplexTopology
+-
+ end Tensor
+ end MatrixMultiplication.Foundation
+ 

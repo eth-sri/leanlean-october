@@ -29,24 +29,7 @@ theorem growthRecurrence_step_real
     (hDprev : ((3 * n - 1) / 2) * Gprev ≤ Dprev) :
     (1 + 1 / (3 * n)) * Gprev ≤ gnext ∧
       ((3 * (n + 1) - 1) / 2) * ((1 + 1 / (3 * n)) * Gprev) ≤ Dnext := by
-  have hden : 0 < 3 * n := by positivity
-  have hbound : (3 * n + 1) * Gprev ≤ (3 * n) * gnext := by
-    nlinarith
-  have hidentity : (1 + 1 / (3 * n)) * Gprev =
-      ((3 * n + 1) * Gprev) / (3 * n) := by
-    field_simp
-  have hgnew : (1 + 1 / (3 * n)) * Gprev ≤ gnext := by
-    rw [hidentity]
-    exact (div_le_iff₀ hden).mpr (by simpa only [mul_comm] using hbound)
-  refine ⟨hgnew, ?_⟩
-  have hdiagonal : ((3 * (n + 1) - 1) / 2) *
-      ((1 + 1 / (3 * n)) * Gprev) =
-      ((3 * n - 1) / 2) * Gprev + Gprev +
-        (1 + 1 / (3 * n)) * Gprev := by
-    field_simp
-    ring
-  rw [hdiagonal]
-  linarith
+  constructor <;> field_simp [ne_of_gt hn] at * <;> nlinarith
 
 /-- The natural-number form of the scalar induction step, indexed by `n + 1`
 so that no truncated subtraction occurs in the recurrence. -/
@@ -58,13 +41,9 @@ theorem growthRecurrence_step
     (hDprev : ((3 * (n : ℝ) - 1) / 2) * Gprev ≤ Dprev) :
     (1 + 1 / (3 * (n : ℝ))) * Gprev ≤ gnext ∧
       ((3 * ((n : ℝ) + 1) - 1) / 2) *
-        ((1 + 1 / (3 * (n : ℝ))) * Gprev) ≤ Dnext := by
-  apply growthRecurrence_step_real
-  · exact_mod_cast (show 0 < n by omega)
-  · exact hupper
-  · exact hincrement
-  · exact hgprev
-  · exact hDprev
+        ((1 + 1 / (3 * (n : ℝ))) * Gprev) ≤ Dnext :=
+  growthRecurrence_step_real (by exact_mod_cast (show 0 < n by omega))
+    hupper hincrement hgprev hDprev
 
 /-- A zero-indexed version of `growthRecurrence_induction`, convenient when the
 initial term of the comparison sequence is stored at index zero. -/
@@ -97,24 +76,6 @@ theorem growthRecurrence_induction_shifted
       have hs := growthRecurrence_step hn hu (hincrement (n + 1) hn) ih.1 hp
       simpa only [hHstep, Nat.cast_add, Nat.cast_one] using hs
 
-/-- The simultaneous bounds for the explicit comparison product from Section 6. -/
-theorem growthProduct_le_slope_and_diagonal
-    (D g : ℕ → ℝ)
-    (hgbase : 1 ≤ g 1)
-    (hDbase : 1 ≤ D 1)
-    (hupper : ∀ n : ℕ, 1 ≤ n →
-      D n ≤ ((3 * (n : ℝ) - 1) / 2) * g n)
-    (hincrement : ∀ n : ℕ, 1 ≤ n →
-      D n + g n + g (n + 1) ≤ D (n + 1)) :
-    ∀ n : ℕ, growthProduct n ≤ g (n + 1) ∧
-      ((3 * ((n : ℝ) + 1) - 1) / 2) * growthProduct n ≤ D (n + 1) := by
-  apply growthRecurrence_induction_shifted D g growthProduct
-    growthProduct_zero hgbase hDbase
-  · intro n
-    rw [growthProduct_succ, mul_comm]
-  · exact hupper
-  · exact hincrement
-
 /-- Combining the scalar induction with the elementary product estimate gives
 an exact fourth-power lower bound on the cube of each diagonal value. -/
 theorem diagonal_fourth_power_lower
@@ -127,8 +88,9 @@ theorem diagonal_fourth_power_lower
       D n + g n + g (n + 1) ≤ D (n + 1))
     (n : ℕ) :
     ((n : ℝ) + 1) ^ 4 ≤ D (n + 1) ^ 3 := by
-  have hdiag := (growthProduct_le_slope_and_diagonal D g hgbase hDbase
-    hupper hincrement n).2
+  have hdiag := (growthRecurrence_induction_shifted D g growthProduct
+    growthProduct_zero hgbase hDbase
+    (fun n => by rw [growthProduct_succ, mul_comm]) hupper hincrement n).2
   have hpositive := growthProduct_pos n
   have hlinear : ((n : ℝ) + 1) * growthProduct n ≤ D (n + 1) := by
     have hcoeff : (n : ℝ) + 1 ≤ (3 * ((n : ℝ) + 1) - 1) / 2 := by

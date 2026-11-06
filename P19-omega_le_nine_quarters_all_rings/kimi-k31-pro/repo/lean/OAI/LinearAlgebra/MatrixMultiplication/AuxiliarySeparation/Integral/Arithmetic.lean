@@ -2,7 +2,7 @@ module
 
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Arithmetic.RankExponent
 public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.Growth
-public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.Exponent
+public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.LowerBound
 
 public section
 
@@ -30,10 +30,7 @@ theorem exactRankExponent_int_admissible (R : Type u) [Ring R] :
     Arithmetic.AdmissibleExponent R (exactRankExponent ℤ) := by
   apply Arithmetic.admissibleExponent_of_int_rank_bounds
     (exactRankExponent_lower (K := ℤ))
-  intro ε hε
-  obtain ⟨n, r, hn, hrank, hr⟩ :=
-    exists_rankAtMost_of_exponent_slack (K := ℤ) hε
-  exact ⟨n, r, hn, hrank, hr⟩
+  exact fun ε hε => exists_rankAtMost_of_exponent_slack (K := ℤ) hε
 
 /-- The unchanged arithmetic exponent over a nontrivial ring is bounded by
 the exact integer coefficient rank exponent. -/

@@ -63,7 +63,7 @@ theorem uniformThree_entropy_factor (p : ℝ) :
 theorem uniformThree_product (f : Fin 3 → ℝ) :
     (∏ i, f i ^ (FiniteLaw.uniform (Fin 3)).mass i) =
       f 0 ^ (1 / 3 : ℝ) * f 1 ^ (1 / 3 : ℝ) * f 2 ^ (1 / 3 : ℝ) := by
-  simp [Fin.prod_univ_three, FiniteLaw.uniform_mass, mul_assoc]
+  simp [Fin.prod_univ_three, FiniteLaw.uniform, mul_assoc]
 
 end MatrixMultiplication.AuxiliarySeparation
 

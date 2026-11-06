@@ -105,7 +105,6 @@ theorem convolutionProfile_tripling_of_separation
     (fun i : Fin 6 => (χ.permutedCharacter i).value (fun x z y => (convolution (K := K)) a h x y z))
     (fun i : Fin 6 => (χ.permutedCharacter i).pX)
     (mul_pos (by norm_num : (0 : ℝ) < 6) ht) χ.sum_permutedCharacter_pX_mean
-    (fun i => χ.permutedCharacter_convolution_pos ha (by omega) i)
     (fun i => χ.permutedCharacter_convolution_pos ha hh i)
     (fun i => zero_lt_one.trans_le
       ((χ.permutedCharacter i).one_le_value_of_coefficient_one hsw))
@@ -164,12 +163,6 @@ theorem exponent_sum_le_nine_quarters_of_separation_and_convolution
   have h := χ.meanExponent_le_three_quarters_of_separation_and_convolution hsep hconv
   unfold meanExponent at h
   linarith
-
-section Field
-
-variable {K : Type*} [Field K] [IsAlgClosed K] (χ : Character K)
-
-end Field
 
 end MatrixMultiplication.AuxiliarySeparation.Character
 

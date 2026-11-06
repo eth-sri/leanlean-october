@@ -2,6 +2,8 @@ module
 
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.UnnormalizedFourier
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.SquareWeights
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.NoWrap
 public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
 
 public section

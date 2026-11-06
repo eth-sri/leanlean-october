@@ -2,6 +2,8 @@ module
 
 public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
 public import Mathlib.Algebra.Polynomial.Degree.Support
+public import Mathlib.Algebra.Polynomial.Div
+public import Mathlib.Algebra.Polynomial.BigOperators
 public import Mathlib.Algebra.Polynomial.Degree.Operations
 public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.Restriction
 

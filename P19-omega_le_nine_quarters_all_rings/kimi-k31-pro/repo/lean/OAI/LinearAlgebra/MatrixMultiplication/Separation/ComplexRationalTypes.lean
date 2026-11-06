@@ -100,15 +100,9 @@ theorem exists_rational_approximation (p : FiniteLaw A) (ε : ℝ) (hε : 0 < ε
       (∀ a, q.mass a = 0 ↔ p.mass a = 0) ∧
       ∀ a, |(q.mass a : ℝ) - p.mass a| < ε := by
   classical
-  have hpivot : ∃ a, 0 < p.mass a := by
-    by_contra h
-    have hnonpos : ∀ a, p.mass a ≤ 0 :=
-      fun a => le_of_not_gt (fun ha => h ⟨a, ha⟩)
-    have hsum : (∑ a, p.mass a) ≤ 0 :=
-      Finset.sum_nonpos (fun a _ => hnonpos a)
-    rw [p.total] at hsum
-    norm_num at hsum
-  obtain ⟨a₀, ha₀⟩ := hpivot
+  have hsum : 0 < ∑ a, p.mass a := by rw [p.total]; norm_num
+  obtain ⟨a₀, _, ha₀⟩ :=
+    (Finset.sum_pos_iff_of_nonneg (fun a _ => p.nonneg a)).mp hsum
   let δ : ℝ := ε / ((Fintype.card A : ℝ) + 1)
   have hcard : 0 ≤ (Fintype.card A : ℝ) := Nat.cast_nonneg _
   have hden : 0 < (Fintype.card A : ℝ) + 1 := by linarith

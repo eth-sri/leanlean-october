@@ -130,28 +130,11 @@ theorem le_rank (T : (TensorClass K)) : T ≤ (rank T : (TensorClass K)) := by
     exact (classOf_le_nat_iff_rankAtMost T.coeff (exactRank T.coeff)).mpr
       (exactRank_spec T.coeff)
 
-/-- The tensor restriction order induces the usual order on natural numbers. -/
-@[simp] theorem natCast_le_natCast_iff (m n : ℕ) :
-    (m : (TensorClass K)) ≤ (n : (TensorClass K)) ↔ m ≤ n := by
-  constructor
-  · intro h
-    simpa only [rank_natCast] using rank_mono h
-  · intro h
-    obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
-    rw [Nat.cast_add]
-    simpa only [add_zero] using add_mono (le_refl (m : (TensorClass K))) (zero_le (k : (TensorClass K)))
-
 end TensorSemiring
 
 end General
 
 namespace TensorSemiring
-
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
 
 end TensorSemiring
 end MatrixMultiplication.AuxiliarySeparation

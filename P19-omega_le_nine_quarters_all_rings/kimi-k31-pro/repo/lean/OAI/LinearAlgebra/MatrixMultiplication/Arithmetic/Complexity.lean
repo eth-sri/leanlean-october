@@ -1,7 +1,6 @@
 module
 
 public import OAI.LinearAlgebra.MatrixMultiplication.Model
-public import OAI.LinearAlgebra.MatrixMultiplication.ComplexArithmetic.Complexity
 public import Mathlib.Algebra.Order.Floor.Semiring
 
 public section
@@ -17,12 +16,6 @@ noncomputable section
 open scoped BigOperators
 
 namespace MatrixMultiplication.Arithmetic
-
-namespace Gate
-
-variable {F Input Register : Type*}
-
-end Gate
 
 namespace Program
 
@@ -48,13 +41,9 @@ variable {F : Type*} [Ring F] {a b c : ℕ}
 theorem correct_iff_entries (P : MatrixAlgorithm F a b c) :
     P.Correct ↔ ∀ (A : Matrix (Fin a) (Fin b) F) (B : Matrix (Fin b) (Fin c) F)
       (i : Fin a) (k : Fin c),
-      P.program.eval (matrixInputs A B) (P.output i k) = ∑ j, A i j * B j k := by
-  constructor
-  · intro h A B i k
-    exact congrFun (congrFun (h A B) i) k
-  · intro h A B
-    funext i k
-    exact h A B i k
+      P.program.eval (matrixInputs A B) (P.output i k) = ∑ j, A i j * B j k :=
+  ⟨fun h A B i k => congrFun (congrFun (h A B) i) k,
+    fun h A B => funext fun i => funext fun k => h A B i k⟩
 
 end MatrixAlgorithm
 
@@ -73,29 +62,6 @@ theorem scalarAlgorithm_correct (F : Type*) [Ring F] : (scalarAlgorithm F).Corre
   subst k
   change A 0 0 * B 0 0 = (A * B) 0 0
   simp [Matrix.mul_apply]
-
-@[simp] theorem scalarAlgorithm_cost (F : Type*) [Ring F] : (scalarAlgorithm F).cost = 1 := rfl
-
-theorem one_le_innerSize {n : ℕ} (hn : 1 ≤ n) (k : ℝ) : 1 ≤ innerSize n k := by
-  apply Nat.one_le_ceil_iff.mpr
-  exact Real.rpow_pos_of_pos (by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)) k
-
-@[simp] theorem innerSize_zero (n : ℕ) : innerSize n 0 = 1 := by
-  simp [innerSize]
-
-@[simp] theorem innerSize_one (n : ℕ) : innerSize n 1 = n := by
-  simp [innerSize]
-
-theorem innerSize_mono {n : ℕ} (hn : 1 ≤ n) {k l : ℝ} (hkl : k ≤ l) :
-    innerSize n k ≤ innerSize n l := by
-  exact Nat.ceil_mono (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn) hkl)
-
-theorem innerSize_cast_le {n : ℕ} (hn : 1 ≤ n) {k : ℝ} (hk : 0 ≤ k) :
-    (innerSize n k : ℝ) ≤ 2 * (n : ℝ) ^ k := by
-  have hpow : 1 ≤ (n : ℝ) ^ k := Real.one_le_rpow (by exact_mod_cast hn) hk
-  have hceil := (Nat.ceil_lt_add_one (Real.rpow_nonneg (Nat.cast_nonneg n) k)).le
-  change (⌈(n : ℝ) ^ k⌉₊ : ℝ) ≤ _
-  linarith
 
 end MatrixMultiplication.Arithmetic
 

@@ -345,12 +345,6 @@ theorem not_tensor_add_positive_nat_le_self (D : (TensorSemiring.TensorClass K))
 
 end General
 
-section Field
-
-variable {K : Type*} [Field K]
-
-end Field
-
 end MatrixMultiplication.AuxiliarySeparation
 
 end

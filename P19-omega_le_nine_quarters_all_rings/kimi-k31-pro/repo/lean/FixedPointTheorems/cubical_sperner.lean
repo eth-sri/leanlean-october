@@ -814,13 +814,8 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
 
 }
 
-theorem weaker_cubical_sperner SC : ∃ I, complete_simplex SC SC.n I := by {
-  have h1 := strong_cubical_sperner SC.n SC rfl
-  obtain ⟨k1, hk1⟩ := h1
-  have h2 : 0 < 2 * k1 + 1 := by omega
-  rw [←hk1, Finset.card_pos] at h2
-  obtain ⟨I, hI1⟩ := h2
-  use I
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hI1
-  exact hI1
-}
+theorem weaker_cubical_sperner SC : ∃ I, complete_simplex SC SC.n I := by
+  obtain ⟨k, hk⟩ := strong_cubical_sperner SC.n SC rfl
+  have hpos : 0 < Finset.card {I | complete_simplex SC SC.n I} := by rw [hk]; omega
+  obtain ⟨I, hI⟩ := Finset.card_pos.mp hpos
+  exact ⟨I, by simpa using hI⟩

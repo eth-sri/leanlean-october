@@ -47,15 +47,8 @@ def primitiveMatrixClass (n : ℕ) : PrimitiveClass K := by
     refine ⟨(i, i), (i, i), (i, i), ?_⟩
     simp [matrixClass, matrixMultiplicationTensor]
 
-@[simp] theorem coe_primitiveMatrixClass (n : ℕ) :
-    (primitiveMatrixClass (K := K) n : TensorClass K) = matrixClass n := rfl
-
 /-- Rank is unchanged on passing to the primitive subsemiring. -/
 def primitiveRank (T : PrimitiveClass K) : ℕ := rank (T : TensorClass K)
-
-@[simp] theorem primitiveRank_matrix (n : ℕ) :
-    primitiveRank (primitiveMatrixClass (K := K) n) = exactMatrixRank K n :=
-  rank_matrixClass n
 
 theorem primitive_zero_le (T : PrimitiveClass K) : 0 ≤ T :=
   zero_le (T : TensorClass K)
