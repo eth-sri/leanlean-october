@@ -1,3 +1,0 @@
-module
-public import OAI.LinearAlgebra.MatrixMultiplication.Polynomial.ComplexPolynomialDegenerationComposition
-public import Mathlib.Data.Set.Finite.Basic
