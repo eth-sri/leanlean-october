@@ -3,12 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Descriptive.ModelClassStandardBorel
-public import InfinitaryLogic.Descriptive.PerfectAntichain
-public import InfinitaryLogic.Descriptive.SatisfactionBorel
-public import Architect
+import InfinitaryLogic.Descriptive.Polish
+import InfinitaryLogic.Descriptive.SatisfactionBorel
+import Architect
+import InfinitaryLogic.Descriptive.PerfectAntichain
 
 /-!
 # The ambient isomorphism relation on coded structures
@@ -25,9 +24,6 @@ theorem about it.  The sentence-level predicates below then quantify over perfec
 statements.
 -/
 
-@[expose] public section
-
-open Cardinal Set
 
 universe u v
 
@@ -77,10 +73,6 @@ theorem isoSetoid_r_iff {φ : L.Sentenceω} {c₁ c₂ : ↥(ModelsOf φ)} :
 Stated ambiently, so that no Polish refinement of the model subtype appears in the
 definitions. -/
 
-/-- `φ` has a perfect set of pairwise non-isomorphic countable models. -/
-def Sentenceω.HasPerfectSetOfPairwiseNonisomorphicNatModels (φ : L.Sentenceω) : Prop :=
-  HasPerfectAntichainOn (structureIsoSetoid L) (ModelsOf φ)
-
 /-- `φ` is thin on its countable models: no such perfect set. -/
 @[blueprint "def:thin-nat-models"
   (title := /-- Thinness on coded $\mathbb{N}$-models -/)
@@ -89,12 +81,8 @@ def Sentenceω.HasPerfectSetOfPairwiseNonisomorphicNatModels (φ : L.Sentenceω)
     isomorphism relation on the structure space.  Stated ambiently, so no Polish refinement of
     the model subtype enters the definition. -/)
   (uses := ["def:thin-on", "def:structure-iso-setoid"])]
-def Sentenceω.IsThinOnNatModels (φ : L.Sentenceω) : Prop :=
+def Sentenceω.IsThinOnNatModels φ :=
   IsThinOn (structureIsoSetoid L) (ModelsOf φ)
-
-omit [Countable ((l : ℕ) × L.Relations l)] in
-theorem Sentenceω.isThinOnNatModels_iff {φ : L.Sentenceω} :
-    φ.IsThinOnNatModels ↔ ¬φ.HasPerfectSetOfPairwiseNonisomorphicNatModels := Iff.rfl
 
 /-! ### From a Polish refinement back to the ambient space
 
@@ -108,16 +96,3 @@ The two steps are ordered so that the delicate one never arises: coarsening is a
 ambient space.  Nothing here asserts that perfectness survives coarsening — it does not in
 general. -/
 
-/-- The ambient half of the route: a Cantor antichain on the model class in the ambient topology
-gives a perfect set of pairwise non-isomorphic models.
-
-`StructureSpace L` is metrizable but carries no chosen metric, so the `T2Space` instance that
-`HasCantorAntichainOn.hasPerfectAntichainOn` needs is produced here rather than assumed. -/
-theorem Sentenceω.hasPerfectSet_of_ambient_cantorAntichain {φ : L.Sentenceω}
-    (h : HasCantorAntichainOn (structureIsoSetoid L) (ModelsOf φ)) :
-    φ.HasPerfectSetOfPairwiseNonisomorphicNatModels := by
-  -- upgrading supplies a metric, hence `T2Space`, without changing the topology
-  let := TopologicalSpace.upgradeIsCompletelyMetrizable (StructureSpace L)
-  exact h.hasPerfectAntichainOn
-
-end FirstOrder.Language

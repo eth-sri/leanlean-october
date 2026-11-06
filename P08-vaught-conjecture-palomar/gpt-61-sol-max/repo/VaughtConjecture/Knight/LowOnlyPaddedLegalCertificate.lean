@@ -1,12 +1,13 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate
-public import VaughtConjecture.Knight.LowOnlyPaddedLegal
+import VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate
+import VaughtConjecture.Knight.LowOnlyPaddedLegal
 
 /-! # Stage-bounded exact-readback data on the legal LOW scheme
 
@@ -16,20 +17,15 @@ application must still produce the received tuple and its finite-cut receipts.
 No realization of a selected display is inferred from bottom patterns alone.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedIteration LowOnlyPaddedInstallation LowOnlyPaddedEndpoints
-noncomputable section
-variable {l m n K : ℕ} {B C : Finset (Fin l)} {R : Finset (Finset (Fin l))}
+open     LowOnly LowOnlyOrderedLadder
+open  LowOnlyPaddedInstallation LowOnlyPaddedEndpoints
+
+variable {l m n K : ℕ} {B C : FiniteScope l} {R : VaughtConjecture.AmalgamationPlan.SupportFamily (Fin l)}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
   (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-  (hA : 2 ≤ (Finset.univ : Finset (Fin l)).card)
+  (hroot : F.root.Covers I.shared.f I.shared.g)
+  (hA : 2 ≤ (Finset.univ : FiniteScope l).card)
   (hB : B ⊂ Finset.univ) (hC : C ⊂ Finset.univ)
   (hcover : ∀ S ∈ R, S ≠ Finset.univ → S ⊆ B ∨ S ⊆ C)
 
@@ -38,44 +34,43 @@ local notation "donor" => LowOnlyPaddedLegal.donor I F hroot hA hB hC hcover
 local notation "priv" => LowOnlyPaddedLegal.privateFace I F hroot hA hB hC hcover
 
 /-- A raw supported display and exact readback certificate, before imposing a stage bound. -/
-theorem exists_supported_certificate {S : State I.left I.right}
-    (hS : F.Admissible (Finset.univ : Finset (Fin l)).card S)
+theorem exists_supported_certificate {S}
+    (hS : F.Admissible (Finset.univ : FiniteScope l).card S)
     (hdonor : S.u = F.p) (hc : S.v F.gap.c = ⊤) (hr : S.v F.gap.r.1 = ⊤)
     (hactive : LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (E).scheme → ExtOrd,
+    ∃ w ,
       RespectsSemantics (E).rows w ∧
       (∀ d, w ((donor).map d) = F.p d) ∧
       (∀ d, w ((priv).map d) = S.v d) ∧
-      (∀ d, OrbitPrefixSupport.Supported (Finset.univ : Finset (Fin l)).card
+      (∀ d, OrbitPrefixSupport.Supported (Finset.univ : FiniteScope l).card
         ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∀ q : Cell (E).scheme → ExtOrd,
+      ∀ q ,
         RespectsSemantics (E).rows q →
         (∀ d, q ((priv).map d) = S.v d) →
         ∀ δ, LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < δ →
-          (∀ d, min (q d) δ = min (w d) δ) →
+          (CappedEq q w δ) →
           ∀ d, q ((donor).map d) = F.p d := by
   obtain ⟨w, hw, ho, hsupp, hread⟩ :=
     LowOnlyPaddedFiniteCertificate.certificate I hA hB hC F hroot hS hdonor hc hactive
   have hdmap (d : Cell I.left.scheme) : (donor).map d =
-      original I F hroot hA hB hC ((Finset.univ : Finset (Fin l)).card - 2) (by omega)
+      original I F hroot hA hB hC ((Finset.univ : FiniteScope l).card - 2) (by omega)
         (I.leftFace.map d) :=
     face_map I F hroot hA hB hC I.leftFace hB.not_ge _ _ d
   have hcmap (d : Cell I.right.scheme) : (priv).map d =
-      original I F hroot hA hB hC ((Finset.univ : Finset (Fin l)).card - 2) (by omega)
+      original I F hroot hA hB hC ((Finset.univ : FiniteScope l).card - 2) (by omega)
         (I.rightFace.map d) :=
     face_map I F hroot hA hB hC I.rightFace hC.not_ge _ _ d
   refine ⟨w, hw, ?_, ?_, hsupp, ?_⟩
   · intro d
     exact (congrArg w (hdmap d)).trans ((ho (I.leftFace.map d)).trans
-      ((field_donor I S d).trans (congrFun hdonor d)))
+      ((field_donor I).trans (congrFun hdonor d)))
   · intro d
     exact (congrArg w (hcmap d)).trans ((ho (I.rightFace.map d)).trans
-      (field_private I F hroot
+      (field_private hroot
         (LowOnlyRecursiveCoverage.admissible_down F (by omega) (by omega) hS) d))
   · intro q hq hp δ hδ hcap d
     exact (congrArg q (hdmap d)).trans (hread q hq
       (((congrArg q (hcmap F.gap.c)).symm.trans (hp F.gap.c)).trans hc)
       (((congrArg q (hcmap F.gap.r.1)).symm.trans (hp F.gap.r.1)).trans hr) δ hδ hcap d)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate
+

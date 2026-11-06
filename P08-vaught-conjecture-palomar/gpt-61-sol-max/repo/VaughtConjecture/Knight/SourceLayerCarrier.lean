@@ -3,9 +3,24 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GradeOneSourceCarrier
+import Mathlib.Tactic
+
+import Mathlib.Data.Finset.Sort
+import VaughtConjecture.Knight.VisibleOrderInterpolation
+import VaughtConjecture.Knight.SourceBlockLocalityTransport
+import Mathlib.Data.Fintype.Lattice
+import VaughtConjecture.Knight.FiniteProfileControllers
+import VaughtConjecture.Knight.SlotControllerFamily
+import VaughtConjecture.Knight.SeparatedGradeOneCoding
+import VaughtConjecture.Knight.MixedGradeInterpolation
+import VaughtConjecture.Knight.FreeDiagonal
+import VaughtConjecture.Knight.SourceBlockPadding
+import VaughtConjecture.Knight.SlackCutPasting
+import VaughtConjecture.Knight.SourcePrefixRows
+import VaughtConjecture.Knight.SourcePrefixLayer
+import VaughtConjecture.Knight.AmalgamatedBoundaryRows
+import VaughtConjecture.Knight.FiniteOffset
 
 /-! # Appending a full-scope layer above an actual lower inventory
 
@@ -14,13 +29,9 @@ Strictly smaller grade, not proper scope, keeps every new controller out of
 their lower domains. All inherited occurrences and their enumeration survive.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SourceLayerCarrier
 
-open AmalgamationPlan Transform Value ExtOrd
+open AmalgamationPlan   
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
 variable (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
@@ -38,29 +49,39 @@ noncomputable def scheme : CellScheme A where
       simp only [Fin.addCases_right]
       exact Plan.mem_gradedPlan.mpr ⟨D.isPlan.domain_mem, hk, hA⟩
 
-noncomputable def enumeration : (Cell D ⊕ Q) ≃ Cell (scheme D Q k hk hA) :=
+local notation "scheme₀" => scheme D Q k hk hA
+
+variable {D Q k hk hA} in
+noncomputable def enumeration : (Cell D ⊕ Q) ≃ Cell (scheme₀) :=
   (Equiv.sumCongr (Equiv.refl _) (Fintype.equivFin Q)).trans finSumFinEquiv
 
-noncomputable def toCell (d : Cell D ⊕ Q) : Cell (scheme D Q k hk hA) :=
-  enumeration D Q k hk hA d
+local notation "enumeration₀" => enumeration (D := D) (Q := Q) (k := k) (hk := hk) (hA := hA)
 
-noncomputable def toOcc (d : Cell (scheme D Q k hk hA)) : Cell D ⊕ Q :=
-  (enumeration D Q k hk hA).symm d
+noncomputable def toCell d :=
+  enumeration₀ d
 
-@[simp] theorem toOcc_toCell (d : Cell D ⊕ Q) :
-    toOcc D Q k hk hA (toCell D Q k hk hA d) = d :=
-  (enumeration D Q k hk hA).symm_apply_apply d
+noncomputable def toOcc d :=
+  (enumeration₀).symm d
 
-@[simp] theorem toCell_toOcc (d : Cell (scheme D Q k hk hA)) :
-    toCell D Q k hk hA (toOcc D Q k hk hA d) = d :=
-  (enumeration D Q k hk hA).apply_symm_apply d
+local notation "toCell₀" => toCell D Q k hk hA
 
-def index : Cell D ⊕ Q → Finset ι × ℕ
+local notation "toOcc₀" => toOcc D Q k hk hA
+
+@[simp] theorem toOcc_toCell d :
+    toOcc₀ (toCell₀ d) = d :=
+  (enumeration₀).symm_apply_apply d
+
+variable {D Q k hk hA} in
+@[simp] theorem toCell_toOcc d :
+    toCell₀ (toOcc₀ d) = d :=
+  (enumeration₀).apply_symm_apply d
+
+def index : Cell D ⊕ Q → GradedIndex ι
   | .inl d => D.cell d
   | .inr _ => (A, k)
 
-theorem cell_toCell (d : Cell D ⊕ Q) :
-    (scheme D Q k hk hA).cell (toCell D Q k hk hA d) = index D Q k d := by
+theorem cell_toCell d :
+    (scheme₀).cell (toCell₀ d) = index D Q k d := by
   cases d with
   | inl d =>
     change Fin.addCases D.cell (fun _ => (A, k)) (Fin.castAdd (Fintype.card Q) d) = D.cell d
@@ -70,26 +91,23 @@ theorem cell_toCell (d : Cell D ⊕ Q) :
       (Fin.natAdd D.card (Fintype.equivFin Q q)) = (A, k)
     exact Fin.addCases_right (Fintype.equivFin Q q)
 
-theorem cell_eq (d : Cell (scheme D Q k hk hA)) :
-    (scheme D Q k hk hA).cell d = index D Q k (toOcc D Q k hk hA d) := by
+theorem cell_eq d :
+    (scheme₀).cell d = index D Q k (toOcc₀ d) := by
   rw [← cell_toCell, toCell_toOcc]
 
-theorem old_order : StrictMono (fun d : Cell D => toCell D Q k hk hA (.inl d)) :=
+variable {Q k} in
+variable {D hk hA} in
+theorem old_order : StrictMono (fun d => toCell₀ (.inl d)) :=
   Fin.strictMono_castAdd _
 
-variable (hgrade : ∀ d : Cell D, D.grade d < k)
-
-theorem old_occurrence (d : Cell (scheme D Q k hk hA))
-    (hd : (scheme D Q k hk hA).cell d ≠ (A, k)) :
-    ∃ x : Cell D, d = toCell D Q k hk hA (.inl x) := by
-  cases he : toOcc D Q k hk hA d with
-  | inl x => exact ⟨x, by rw [← he, toCell_toOcc]⟩
+theorem old_occurrence d
+    (hd : (scheme₀).cell d ≠ (A, k)) :
+    ∃ x , d = toCell₀ (.inl x) := by
+  cases he : toOcc₀ d with
+  | inl x => grind [toCell_toOcc]
   | inr q => exact False.elim (hd (by rw [cell_eq, he]; rfl))
 
 noncomputable def controller (q : Q) :
-    SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
-  ⟨toCell D Q k hk hA (.inr q), cell_toCell D Q k hk hA (.inr q)⟩
+    SourcePrefixLayer.Controller (scheme₀) k :=
+  ⟨toCell₀ (.inr q), cell_toCell D Q k hk hA (.inr q)⟩
 
-variable (sem : Semantics D)
-
-end VaughtConjecture.Knight.SourceLayerCarrier

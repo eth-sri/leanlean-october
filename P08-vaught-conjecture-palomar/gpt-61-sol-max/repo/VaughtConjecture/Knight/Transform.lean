@@ -1,13 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Order.Monotone.Basic
-public import Mathlib.Order.MinMax
-public import VaughtConjecture.Knight.Value
+import Mathlib.Order.Monotone.Basic
+import Mathlib.Order.MinMax
+import VaughtConjecture.Knight.Value
 
 /-! # Knight's transformation calculus on labelled cells
 
@@ -53,8 +53,6 @@ of the target at a limit stage, source fixed (`TransformsTo.truncExt_target`, wi
 post-composition remains available in `RestrictedComposition.lean`; the counterexample
 does not invalidate those guarded statements. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 namespace Transform
@@ -67,8 +65,8 @@ variable {D : Type*} (grade : D → ℕ)
 
 /-- Orderliness (Knight, Def. 2.3.4): each label of `p` is self-visible at the grade of its
 cell, `p d = extVisibilityReplace (p d) (grade d) (grade d)`. -/
-def IsOrderly (p : D → ExtOrd) : Prop :=
-  ∀ d : D, p d = extVisibilityReplace (p d) (grade d) (grade d)
+def IsOrderly (p : D → ExtOrd) :=
+  ∀ d , p d = extVisibilityReplace (p d) (grade d) (grade d)
 
 /-- The transformation relation `p ⇒ q` (Knight, Def. 2.3.9, verbatim): there are a
 suppressor `g : ℕ → ExtOrd` and a shifter `σ : ExtOrd → ExtOrd` with
@@ -81,17 +79,17 @@ suppressor `g : ℕ → ExtOrd` and a shifter `σ : ExtOrd → ExtOrd` with
 
 such that `q d = min (σ (p d)) (g (grade d))` for every cell `d`.  (No inflationarity of `σ`
 and no guard on clause 5, unlike Knight-VC's relation; see the module docstring.) -/
-def TransformsTo (p q : D → ExtOrd) : Prop :=
-  ∃ (g : ℕ → ExtOrd) (σ : ExtOrd → ExtOrd),
-    (∀ n m : ℕ, n < m → g m ≤ g n) ∧
-    (∀ n : ℕ, g n = extVisibilityReplace (g n) n n) ∧
-    (σ (⊥ : ExtOrd) = ⊥) ∧
+def TransformsTo (p q : D → ExtOrd) :=
+  ∃ (g : ℕ → ExtOrd) (σ : LabelMap),
+    (∀ n m , n < m → g m ≤ g n) ∧
+    (∀ n , g n = extVisibilityReplace (g n) n n) ∧
+    (σ (⊥) = ⊥) ∧
     Monotone σ ∧
-    (∀ (α : ExtOrd) (k : ℕ),
+    (∀ α k,
         σ α ≤ g k →
-        ∀ i : ℕ, i ≤ k →
+        ∀ i , i ≤ k →
           σ (extVisibilityReplace α k i) = extVisibilityReplace (σ α) k i) ∧
-    (∀ d : D, q d = min (σ (p d)) (g (grade d)))
+    (∀ d , q d = min (σ (p d)) (g (grade d)))
 
 end
 
@@ -134,7 +132,7 @@ clause at `y` gives `σ x = evr (σ y) k m < ofOrd α` (`extVisReplace_lt_of_lt_
 contradiction.  This is exactly the case Knight-VC's guard `g k ≠ ⊤` excludes (there
 `truncExt α (g k) = ⊤` makes the clause vacuous), which is why the route needed the faithful
 relation. -/
-theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
+theorem TransformsTo.truncExt_target {α : Ordinal₀} (hα : Order.IsSuccLimit α)
     {p q : D → ExtOrd} (h : TransformsTo grade p q) :
     TransformsTo grade p (truncExt α ∘ q) := by
   obtain ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, hσ_eq⟩ := h
@@ -144,9 +142,9 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
     by rw [Function.comp_apply, hσ_bot]; rfl,
     fun x y hxy => truncExt_mono α (hσ_mono hxy),
     ?_,
-    fun d => by simp only [Function.comp_apply]; rw [hσ_eq d, truncExt_min]⟩
+    fun d => by simp  ; rw [hσ_eq d, truncExt_min]⟩
   intro x k hle i hi
-  simp only [Function.comp_apply] at hle ⊢
+  simp   at hle ⊢
   rw [← truncExt_evr_comm hα (σ x) k i]
   by_cases hxk : σ x ≤ g k
   · -- the original clause applies
@@ -156,12 +154,12 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
   have htop : truncExt α (g k) = ⊤ := by
     have heq : truncExt α (g k) = truncExt α (σ x) :=
       le_antisymm (truncExt_mono α hlt.le) hle
-    rcases truncExt_bound α (g k) with hb | hb
+    rcases truncExt_bound with hb | hb
     · exfalso
       have hgk : truncExt α (g k) = g k :=
-        truncExt_id_of_lt ((truncExt_le_self α (g k)).trans_lt hb)
+        truncExt_id_of_lt ((truncExt_le_self).trans_lt hb)
       have hσx : truncExt α (σ x) = σ x :=
-        truncExt_id_of_lt ((truncExt_le_self α (σ x)).trans_lt (heq ▸ hb))
+        truncExt_id_of_lt ((truncExt_le_self).trans_lt (heq ▸ hb))
       exact hlt.ne (by rw [← hgk, heq, hσx])
     · exact hb
   have hαg : ofOrd α ≤ g k := truncExt_eq_top_iff.mp htop
@@ -170,19 +168,19 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
   apply truncExt_eq_top_of_ge
   -- it remains to see `ofOrd α ≤ σ (evr x k i)`
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
-  · exact absurd (hσ_bot ▸ hlt) (not_lt_bot)
-  · simpa [extVisibilityReplace_top] using hασ
+  · exact absurd (hσ_bot ▸ hlt) not_lt_bot
+  · simpa  using hασ
   rw [extVisibilityReplace_ofOrd]
   unfold visibilityReplace
   split_ifs with hfp
-  · unfold ordinalReplace
+  · 
     rcases le_or_gt (finitePart ξ) i with hmi | him
     · -- `i ≥ finitePart ξ`: the replaced label dominates `x`
       have hxy : ofOrd ξ ≤ ofOrd (limitPart ξ + i) := by
         rw [ofOrd_le_ofOrd]
-        calc ξ = limitPart ξ + (finitePart ξ : Ordinal) := (decomposition ξ).symm
-          _ ≤ limitPart ξ + (i : Ordinal) :=
-              add_le_add_right (Nat.cast_le.mpr hmi : (finitePart ξ : Ordinal) ≤ i) _
+        calc ξ = limitPart ξ + (finitePart ξ) := (decomposition ξ).symm
+          _ ≤ limitPart ξ + i :=
+              add_le_add_right (Nat.cast_le.mpr hmi) _
       exact hασ.trans (hσ_mono hxy)
     · -- `i < finitePart ξ < k`: replacing back at `finitePart ξ` recovers `x`
       by_contra hcon
@@ -200,7 +198,7 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
 
 /-- Every labelling transforms to the constantly-`−∞` labelling (witnesses `σ ≡ ⊥`, `g ≡ ⊤`;
 clause 5 is `⊥ = ⊥`). -/
-theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} (p : X → ExtOrd) :
+theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} {p : X → ExtOrd} :
     TransformsTo grade p (fun _ => ⊥) :=
   ⟨fun _ => ⊤, fun _ => ⊥,
     fun _ _ _ => le_refl ⊤,
@@ -210,6 +208,4 @@ theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} (p : X → ExtOrd) :
     fun _ _ _ _ _ => (extVisibilityReplace_bot _ _).symm,
     fun _ => (min_eq_left bot_le).symm⟩
 
-end Transform
 
-end VaughtConjecture.Knight

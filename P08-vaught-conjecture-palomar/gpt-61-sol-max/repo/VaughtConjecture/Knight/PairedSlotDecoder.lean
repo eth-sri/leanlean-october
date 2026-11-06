@@ -1,13 +1,17 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.PairedSlotEncoding
-public import VaughtConjecture.Knight.FiniteOrbitEmbedding
-public import VaughtConjecture.Knight.RightFilledGap
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.PairedSlotEncoding
+import VaughtConjecture.Knight.FiniteOrbitEmbedding
+import VaughtConjecture.Knight.RightFilledGap
 
 /-! # Constructed right-filled decoder for the paired slots
 
@@ -30,41 +34,33 @@ and the coupled lawful-section producer. Thus this is not source-prefix
 extension, semantic amalgamation, or a bountifulness theorem.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotDecoder
 open Transform Value ExtOrd PairedSlotEncoding
 noncomputable section
 
-def piece (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : ExtOrd → ExtOrd := by
+def piece j S a := by
   classical
   exact if Orbit j S a then
     FiniteOrbitEmbedding.ray j (Ordinal.omega0 * block j S a) (limitPart a)
   else stepShifter (block j S a) ⊥ (ofOrd a)
 
-theorem piece_witness {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem piece_witness {j} {S} {a}
     (ha : a ∈ S) : Witness (gTop j) (piece j S a) := by
   unfold piece
   split_ifs with ho
   · exact (FiniteOrbitEmbedding.ray_step j (limitPart_idem a)).normalizedWitness
-  · exact Witness.stepLimit j _ bot_le (selfVis_bot j)
+  · exact Witness.stepLimit j _ bot_le (selfVis_bot)
       (selfVis_ofOrd_iff.mpr (by
-        by_contra hn
-        exact ho (orbit_of_invisible ha (not_le.mp hn))))
+        grind [VaughtConjecture.Knight.PairedSlotEncoding.Orbit]))
 
-theorem piece_le (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) (x : ExtOrd) :
+theorem piece_le {j : ℕ} {S : Finset Ordinal₀} {a : Ordinal₀} {x : ExtOrd} :
     piece j S a x ≤ ofOrd (ceiling j S a) := by
   unfold piece ceiling
   split_ifs with ho
-  · exact FiniteOrbitEmbedding.ray_le _ _ _ _
-  · rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
-    · exact bot_le
-    · exact le_rfl
-    · change (if _ then _ else _) ≤ _
-      split_ifs <;> simp
+  · exact?
+  · simp_all [VaughtConjecture.Knight.stepShifter] <;> aesop
 
-theorem piece_at {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem piece_at {j} {S} {a b}
     (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
     piece j S a (encode j S b) = ofOrd b := by
   have hblock := block_eq_of_key_eq ha hb hk
@@ -72,53 +68,52 @@ theorem piece_at {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
   by_cases hoa : Orbit j S a
   · have hob := ho.mp hoa
     have hl : limitPart a = limitPart b := by
-      simpa only [key, ite_eq_left hoa, ite_eq_left hob] using hk
-    simp only [piece, ite_eq_left hoa, encode, offset, ite_eq_left hob, hblock]
+      simp_all [VaughtConjecture.Knight.PairedSlotEncoding.key]
+    simp  [piece, ite_eq_left hoa, encode, offset, ite_eq_left hob, hblock]
     rw [FiniteOrbitEmbedding.ray_at j (limitPart_mul_nat _) hob.1, hl,
       limitPart_add_finitePart]
-  · have hob : ¬ Orbit j S b := fun h => hoa (ho.mpr h)
+  · 
     have hab : a = b := by
-      simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
-    simp only [piece, ite_eq_right hoa, hab]
+      grind [VaughtConjecture.Knight.PairedSlotEncoding.key]
+    simp  [piece, ite_eq_right hoa, hab]
     apply stepShifter_of_ge
     exact ofOrd_le_ofOrd.mpr le_self_add
 
-theorem piece_before {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem piece_before {j} {S} {a b}
     (ha : a ∈ S) (hk : key j S a < key j S b) :
     piece j S b (encode j S a) = ⊥ := by
   have hb := block_lt_of_key_lt ha hk
-  have hbo : (block j S a : Ordinal.{0}) < block j S b := Nat.cast_lt.mpr hb
+  have hbo : (block j S a : Ordinal₀) < block j S b := Nat.cast_lt.mpr hb
   unfold piece
   split_ifs
   · rw [encode, FiniteOrbitEmbedding.ray_ofOrd, limitPart_mul_add,
-      ite_eq_left (by simpa only [Nat.cast_zero, add_zero] using code_add_lt_mul hbo 0)]
+      ite_eq_left (by simp_all)]
   · exact stepShifter_of_lt (ofOrd_ne_bot _)
       (ofOrd_lt_ofOrd.mpr (code_add_lt_mul hbo _))
 
-def occupied (j : ℕ) (S : Finset Ordinal.{0}) (x : ExtOrd) : ExtOrd :=
+def occupied j (S : Finset Ordinal₀) x :=
   S.sup (fun a => piece j S a x)
 
-theorem occupied_witness (j : ℕ) (S : Finset Ordinal.{0}) :
+theorem occupied_witness j S :
     Witness (gTop j) (occupied j S) :=
   Witness.finset_sup (MixedGradeInterpolation.zero_witness j) S (fun _ ha => piece_witness ha)
 
-theorem occupied_encode {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem occupied_encode {j} {S} {a}
     (ha : a ∈ S) : occupied j S (encode j S a) = ofOrd a := by
   apply le_antisymm
   · apply Finset.sup_le
     intro b hb
     rcases lt_trichotomy (key j S b) (key j S a) with hk | hk | hk
-    · exact (piece_le j S b _).trans (ofOrd_le_ofOrd.mpr (ceiling_le_of_key_lt hk))
+    · exact (piece_le).trans (ofOrd_le_ofOrd.mpr (ceiling_le_of_key_lt hk))
     · exact (piece_at hb ha hk).le
-    · rw [piece_before ha hk]
-      exact bot_le
+    · simp_all [piece_before]
   · rw [← piece_at ha ha rfl]
     exact Finset.le_sup (f := fun b => piece j S b (encode j S a)) ha
 /-- The first source block not occupied by an earlier group. -/
-def gapStart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : ℕ :=
+def gapStart j (S : Finset Ordinal₀) a :=
   S.sup (fun b => if key j S b < key j S a then block j S b + 1 else 0)
 
-theorem gapStart_le (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+theorem gapStart_le j S a :
     gapStart j S a ≤ block j S a := by
   apply Finset.sup_le
   intro b hb
@@ -126,39 +121,34 @@ theorem gapStart_le (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
   · exact block_lt_of_key_lt hb hk
   · exact Nat.zero_le _
 
-theorem block_lt_gapStart {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem block_lt_gapStart {j} {S} {a b}
     (ha : a ∈ S) (hk : key j S a < key j S b) :
     block j S a < gapStart j S b := by
   change block j S a + 1 ≤ gapStart j S b
-  unfold gapStart
+  
   apply Finset.le_sup_of_le ha
-  simp only [ite_eq_left hk, le_refl]
+  simp  [ite_eq_left hk, ]
 
-def gap (j : ℕ) (S : Finset Ordinal.{0}) (G : Finset ExtOrd)
-    (a : Ordinal.{0}) : ExtOrd → ExtOrd :=
+def gap j S G
+    a :=
   stepShifter (gapStart j S a) ⊥ (RightFilledGap.floor G (ofOrd (key j S a)))
 
-theorem step_zero_le (n : ℕ) (c x : ExtOrd) : stepShifter n ⊥ c x ≤ c := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
-  · exact bot_le
-  · exact le_rfl
-  · change (if _ then _ else _) ≤ _
-    split_ifs <;> simp
+theorem step_zero_le {n : ℕ} {c x : ExtOrd} : stepShifter n ⊥ c x ≤ c := by simp_all [VaughtConjecture.Knight.stepShifter] <;> aesop
 
-theorem gap_witness {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
-    (hG : ∀ z ∈ G, SelfVis j z) (a : Ordinal.{0}) :
+theorem gap_witness {j} {S} {G}
+    (hG : VisibleOn j G) a :
     Witness (gTop j) (gap j S G a) := by
-  apply Witness.stepLimit j _ bot_le (selfVis_bot j)
+  apply Witness.stepLimit j _ bot_le (selfVis_bot)
   rcases RightFilledGap.floor_eq_bot_or_mem G (ofOrd (key j S a)) with hb | hm
-  · rw [hb]; exact selfVis_bot j
+  · rw [hb]; exact selfVis_bot
   · exact hG _ hm
 
-theorem gap_encode_le {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
-    {a b : Ordinal.{0}} (ha : a ∈ S) :
+theorem gap_encode_le {j} {S} {G}
+    {a b} (ha : a ∈ S) :
     gap j S G b (encode j S a) ≤ ofOrd a := by
   by_cases hk : key j S b ≤ key j S a
-  · exact (step_zero_le _ _ _).trans ((RightFilledGap.floor_le _ _).trans
-      (ofOrd_le_ofOrd.mpr (hk.trans (key_le j S a))))
+  · exact (step_zero_le).trans ((RightFilledGap.floor_le _ _).trans
+      (ofOrd_le_ofOrd.mpr (hk.trans (key_le))))
   · have hblock := block_lt_gapStart ha (not_le.mp hk)
     have he : gap j S G b (encode j S a) = ⊥ :=
       stepShifter_of_lt (ofOrd_ne_bot _)
@@ -166,37 +156,37 @@ theorem gap_encode_le {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
     rw [he]
     exact bot_le
 
-def tailStart (j : ℕ) (S : Finset Ordinal.{0}) : ℕ := S.sup (block j S) + 1
+def tailStart j (S : Finset Ordinal₀) := S.sup (block j S) + 1
 
 /-- Occupied pieces, right-filled gaps, and the terminal ceiling. -/
-def decode (j : ℕ) (S : Finset Ordinal.{0}) (G : Finset ExtOrd)
-    (C x : ExtOrd) : ExtOrd :=
+def decode j S G
+    C x :=
   max (occupied j S x)
     (max (S.sup (fun a => gap j S G a x)) (stepShifter (tailStart j S) ⊥ C x))
 
-theorem decode_witness {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd} {C : ExtOrd}
-    (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) :
+theorem decode_witness {j} {S} {G} {C}
+    (hG : VisibleOn j G) (hC : SelfVis j C) :
     Witness (gTop j) (decode j S G C) :=
   (occupied_witness j S).max
     ((Witness.finset_sup (MixedGradeInterpolation.zero_witness j) S
       (fun a _ => gap_witness hG a)).max
-      (Witness.stepLimit j _ bot_le (selfVis_bot j) hC))
+      (Witness.stepLimit j _ bot_le (selfVis_bot) hC))
 
-theorem decode_encode {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd} {C : ExtOrd}
-    {a : Ordinal.{0}} (ha : a ∈ S) : decode j S G C (encode j S a) = ofOrd a := by
+theorem decode_encode {j} {S} {G} {C}
+    {a} (ha : a ∈ S) : decode j S G C (encode j S a) = ofOrd a := by
   have htail : stepShifter (tailStart j S) ⊥ C (encode j S a) = ⊥ := by
     apply stepShifter_of_lt (ofOrd_ne_bot _)
     apply ofOrd_lt_ofOrd.mpr
     apply code_add_lt_mul
-    exact Nat.cast_lt.mpr (Nat.lt_succ_of_le (Finset.le_sup (f := block j S) ha))
+    exact Nat.cast_lt.mpr (Nat.lt_succ_of_le (Finset.le_sup  ha))
   rw [decode, occupied_encode ha, htail, max_eq_left bot_le]
   apply max_eq_left
   apply Finset.sup_le
   intro b _
   exact gap_encode_le ha
 
-theorem decode_gap_reaches {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
-    {C x h : ExtOrd} {a : Ordinal.{0}}
+theorem decode_gap_reaches {j} {S} {G}
+    {C x h} {a}
     (ha : a ∈ S) (hh : h ∈ G) (hfloor : h ≤ ofOrd (key j S a))
     (hx : ofOrd (Ordinal.omega0 * gapStart j S a) ≤ x) :
     h ≤ decode j S G C x := by
@@ -206,17 +196,17 @@ theorem decode_gap_reaches {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd
     _ ≤ S.sup (fun b => gap j S G b x) := Finset.le_sup (f := fun b => gap j S G b x) ha
     _ ≤ decode j S G C x := (le_max_left _ _).trans (le_max_right _ _)
 
-theorem decode_tail {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
-    {C x : ExtOrd} (hx : ofOrd (Ordinal.omega0 * tailStart j S) ≤ x) :
+theorem decode_tail {j} {S} {G}
+    {C x} (hx : ofOrd (Ordinal.omega0 * tailStart j S) ≤ x) :
     C ≤ decode j S G C x := by
-  have he := stepShifter_of_ge (c₀ := (⊥ : ExtOrd)) (c₁ := C) hx
+  have he := stepShifter_of_ge (c₀ := (⊥)) (c₁ := C) hx
   rw [decode, he]
   exact (le_max_right _ _).trans (le_max_right _ _)
 
-theorem ceiling_eq_replace {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem ceiling_eq_replace {j} {S} {a}
     (ha : a ∈ S) : ofOrd (ceiling j S a) = extVisibilityReplace (ofOrd a) j j := by
   by_cases hf : finitePart a < j
-  · simp only [ceiling, ite_eq_left (orbit_of_invisible ha hf),
+  · simp  [ceiling, ite_eq_left (orbit_of_invisible ha hf),
       extVisibilityReplace_of_finitePart_lt hf]
   · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hf)]
     unfold ceiling
@@ -225,59 +215,54 @@ theorem ceiling_eq_replace {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
       rw [← he, limitPart_add_finitePart]
     · rfl
 
-theorem decode_le {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd} {C : ExtOrd}
-    (hC : SelfVis j C) (hS : ∀ a ∈ S, ofOrd a ≤ C) (x : ExtOrd) :
+theorem decode_le {j} {S} {G} {C}
+    (hC : SelfVis j C) (hS : ∀ a ∈ S, ofOrd a ≤ C) x :
     decode j S G C x ≤ C := by
   apply max_le
   · apply Finset.sup_le
     intro a ha
-    apply (piece_le j S a x).trans
+    apply (piece_le).trans
     rw [ceiling_eq_replace ha]
     exact extVisibilityReplace_le_of_le_selfVis le_rfl hC (hS a ha)
   · apply max_le
     · apply Finset.sup_le
       intro a ha
-      exact (step_zero_le _ _ _).trans ((RightFilledGap.floor_le _ _).trans
-        ((ofOrd_le_ofOrd.mpr (key_le j S a)).trans (hS a ha)))
-    · exact step_zero_le _ _ _
+      exact (step_zero_le).trans ((RightFilledGap.floor_le _ _).trans
+        ((ofOrd_le_ofOrd.mpr (key_le)).trans (hS a ha)))
+    · exact step_zero_le
 
-section Profile
+section
 variable {X : Type*} [Fintype X]
 
 theorem decode_normalize {j : ℕ} {p : X → ExtOrd} {G : Finset ExtOrd} {C : ExtOrd}
-    (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
-    (hp : ∀ d, p d ≠ ⊤) (d : X) :
+    (hG : VisibleOn j G) (hC : SelfVis j C)
+    (hp : AvoidsValue p ⊤) {d : X} :
     decode j (values p) G C (PairedSlotEncoding.normalize j p d) = p d := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · simp only [PairedSlotEncoding.normalize, hb]
+  · simp  [PairedSlotEncoding.normalize, hb]
     exact (decode_witness hG hC).bot
   · exact (hp d ht).elim
   · rw [normalize_ofOrd ha, ha]
     exact decode_encode (mem_values.mpr ⟨d, ha⟩)
 
 omit [Fintype X] in
-private theorem supported_max {K : ℕ} {G : Set ExtOrd} {p : X → ExtOrd} {a b : ExtOrd}
+private theorem supported_max {K} {G} {p : X → ExtOrd} {a b}
     (ha : OrbitPrefixSupport.Supported K G p a)
     (hb : OrbitPrefixSupport.Supported K G p b) :
-    OrbitPrefixSupport.Supported K G p (max a b) := by
-  rcases le_total a b with h | h
-  · rwa [max_eq_right h]
-  · rwa [max_eq_left h]
+    OrbitPrefixSupport.Supported K G p (max a b) := by grind
 
 omit [Fintype X] in
-private theorem supported_sup {I : Type*} (s : Finset I) {K : ℕ} {G : Set ExtOrd}
+private def supported_sup {I : Type*} (s : Finset I) {K : ℕ} {G : Set ExtOrd}
     {p : X → ExtOrd} {f : I → ExtOrd}
-    (hf : ∀ a ∈ s, OrbitPrefixSupport.Supported K G p (f a)) :
-    OrbitPrefixSupport.Supported K G p (s.sup f) := by
+    (hf : ∀ a ∈ s, OrbitPrefixSupport.Supported K G p (f a)) := by
   classical
   apply Finset.sup_induction (p := OrbitPrefixSupport.Supported K G p)
   · exact Or.inl rfl
-  · intro a ha b hb
-    exact supported_max ha hb
+  · grind
   · exact hf
 
 omit [Fintype X] in
-private theorem supported_boundary {K : ℕ} {G : Set ExtOrd} {p : X → ExtOrd} (d : X) :
+private theorem supported_boundary {K} {G} {p : X → ExtOrd} d :
     OrbitPrefixSupport.Supported K G p (p d) := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
   · exact Or.inl hb
@@ -286,10 +271,10 @@ private theorem supported_boundary {K : ℕ} {G : Set ExtOrd} {p : X → ExtOrd}
     · exact Or.inr (Or.inr ⟨d, finitePart a, hk.le, by
         rw [ha, extVisibilityReplace_of_finitePart_lt hk, limitPart_add_finitePart]⟩)
     · exact Or.inr (Or.inr ⟨d, K, le_rfl, by
-        rw [ha, extVisibilityReplace_of_le_finitePart (not_lt.mp hk)]⟩)
+        grind [extVisibilityReplace_of_le_finitePart]⟩)
 
 theorem piece_supported {j K : ℕ} {p : X → ExtOrd} {G : Set ExtOrd}
-    (hj : j ≤ K) {a : Ordinal.{0}} (ha : a ∈ values p) (x : ExtOrd) :
+    (hj : j ≤ K) {a : Ordinal₀} (ha : a ∈ values p) (x : ExtOrd) :
     OrbitPrefixSupport.Supported K G p (piece j (values p) a x) := by
   unfold piece
   split_ifs with ho
@@ -318,13 +303,14 @@ theorem piece_supported {j K : ℕ} {p : X → ExtOrd} {G : Set ExtOrd}
 /-- Every output, not only the represented boundary values, has orbit support. -/
 theorem decode_supported {j K : ℕ} {p : X → ExtOrd} {G : Finset ExtOrd} {C : ExtOrd}
     (hj : j ≤ K) (hC : C ∈ G) (x : ExtOrd) :
-    OrbitPrefixSupport.Supported K (G : Set ExtOrd) p (decode j (values p) G C x) := by
+    OrbitPrefixSupport.Supported K (G : Set ExtOrd) p (decode j (values p) G C x) := by 
+  let core1 := OrbitPrefixSupport.Supported K (G) p
   apply supported_max
   · exact supported_sup _ (fun a ha => piece_supported hj ha x)
   · apply supported_max
     · apply supported_sup
       intro a _
-      have hs : OrbitPrefixSupport.Supported K (G : Set ExtOrd) p
+      have hs : core1
           (RightFilledGap.floor G (ofOrd (key j (values p) a))) := by
         rcases RightFilledGap.floor_eq_bot_or_mem G _ with hb | hm
         · exact Or.inl hb
@@ -332,15 +318,12 @@ theorem decode_supported {j K : ℕ} {p : X → ExtOrd} {G : Finset ExtOrd} {C :
       rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
       · exact Or.inl rfl
       · exact hs
-      · change OrbitPrefixSupport.Supported K (G : Set ExtOrd) p (if _ then _ else _)
+      · change core1 (if _ then _ else _)
         split_ifs <;> first | exact Or.inl rfl | exact hs
     · rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
       · exact Or.inl rfl
       · exact Or.inr (Or.inl hC)
-      · change OrbitPrefixSupport.Supported K (G : Set ExtOrd) p (if _ then _ else _)
+      · change core1 (if _ then _ else _)
         split_ifs <;> first | exact Or.inl rfl | exact Or.inr (Or.inl hC)
 
-end Profile
 
-end
-end VaughtConjecture.Knight.PairedSlotDecoder

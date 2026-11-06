@@ -1,14 +1,21 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.HollowGrowthExactReceiving
-public import VaughtConjecture.Knight.OnePointRootedExtension
-public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.ModelBookkeeping
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.HollowGrowthExactReceiving
+import VaughtConjecture.Knight.OnePointRootedExtension
+import VaughtConjecture.Knight.SelectedCommonCharts
+import VaughtConjecture.Knight.ModelEmpty
+import VaughtConjecture.Knight.BlockStages
+import VaughtConjecture.Knight.Rank
+import VaughtConjecture.Knight.NoTop
+import VaughtConjecture.Knight.LimitOfChain
 
 /-! # Exact rooted extension and comparison for hollow growth
 
@@ -24,12 +31,9 @@ side's chart (`commonChartStepSupply`), and the direct selected-chart consumer
 keeps the initial chart as its seed. No core invariant is carried.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowth
-open TypeTower KnightRealization Cardinal
-noncomputable section
+open TypeTower KnightRealization 
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -39,7 +43,7 @@ theorem onePointRootedExtension (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     OnePointRootedExtensionOver W core (AdmTop α) := by
   intro n t p _ hp q hq _
   obtain ⟨y, hy, he⟩ := HollowGrowthTemplate.receives_exactly hM hg hh t p hp q hq
-  exact ⟨snoc t y hy, castSuccEmb_trans_snoc t y hy, he⟩
+  exact ⟨snoc t y hy, castSuccEmb_trans_snoc hy, he⟩
 
 theorem rootedExtension (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     (hh : W.IsHollow) {c : ℕ} (core : Fin c ↪ M) :
@@ -50,10 +54,9 @@ theorem rootedExtension (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
 actual tuple is realized over that tuple. This is the one-point receiver iterated along visible
 one-point enlargements (`rootedExtensionOver_of_onePoint`), with the tuple itself as the root and
 the trivial admissibility; no core is carried. -/
-theorem receives_finite_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
+def receives_finite_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow)
     {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    {N : ℕ} (f : Fin n ↪ Fin N) (P : S α.1 N) (hP : typeMap f P = some p) :
-    ∃ u : Fin N ↪ M, f.trans u = t ∧ W.eval u = some P :=
+    {N : ℕ} (f : Fin n ↪ Fin N) (P : S α.1 N) (hP : typeMap f P = some p) :=
   rootedExtension hM hg hh t t p ⟨Function.Embedding.refl _, Function.Embedding.refl_trans _⟩
     hp f P hP trivial
 
@@ -69,16 +72,16 @@ theorem exists_common_cover {M₁ M₂ : Type w}
     ∃ (N : ℕ) (f : Fin n ↪ Fin N) (s : Fin N ↪ M₁) (u : Fin N ↪ M₂) (P : S α.1 N),
       f.trans s = t₁ ∧ f.trans u = t₂ ∧ V.eval s = some P ∧ W.eval u = some P ∧
         ∃ i, s i = x := by
-  classical
+  
   by_cases hx : x ∈ Set.range t₁
   · obtain ⟨i, hi⟩ := hx
     exact ⟨n, Function.Embedding.refl _, t₁, t₂, p, Function.Embedding.refl_trans _,
       Function.Embedding.refl_trans _, h₁, h₂, i, hi⟩
   · obtain ⟨k, s, hst, hsome⟩ := hvV (snoc t₁ x hx)
     obtain ⟨P, hP⟩ := Option.isSome_iff_exists.mp hsome
-    have hft : (Fin.castSuccEmb.trans (Fin.castAddEmb k)).trans s = t₁ := trans_snoc_cover hst
+    have hft  := trans_snoc_cover hst
     have htm : typeMap (Fin.castSuccEmb.trans (Fin.castAddEmb k)) P = some p := by
-      rw [← exactParent_typeMap hcV s P _ hP, hft]
+      rw [← exactParent_typeMap hcV _ hP, hft]
       exact h₁
     obtain ⟨u, hut, huP⟩ := receives_finite_exactly hW hgW hhW t₂ p h₂ _ P htm
     exact ⟨_, _, s, u, P, hft, hut, hP, huP, cover_mem_range hst⟩
@@ -113,7 +116,7 @@ theorem exists_iso_of_commonChart {M₁ M₂ : Type w} [Countable M₁] [Countab
     (hgV : V.HasTopGradeGrowth) (hgW : W.HasTopGradeGrowth)
     (hhV : V.IsHollow) (hhW : W.IsHollow) {c : ℕ} (core₁ : Fin c ↪ M₁) (core₂ : Fin c ↪ M₂)
     {s : S α.1 c} (hs₁ : V.eval core₁ = some s) (hs₂ : W.eval core₂ = some s) :
-    ∃ e : V.Iso W, ∀ i, e.1 (core₁ i) = core₂ i :=
+    ∃ e : V.Iso W, PointwiseEq (e.1 ∘ core₁) core₂ :=
   exists_iso_of_selectedCommonCharts hV.consistent hW.consistent (fun _ => True)
     ⟨c, core₁, core₂, s, hs₁, hs₂⟩ trivial
     (restrictedCommonChartStepSupply_true (commonChartStepSupply hV hW hgV hgW hhV hhW))
@@ -132,5 +135,4 @@ theorem nonempty_iso {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hsV hsW
   exact ⟨e⟩
 
-end
-end VaughtConjecture.Knight.HollowGrowth
+

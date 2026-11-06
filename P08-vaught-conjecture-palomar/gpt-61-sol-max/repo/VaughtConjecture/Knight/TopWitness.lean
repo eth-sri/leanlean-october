@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ProlongationNormalization
-public import VaughtConjecture.Knight.ReductModel
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ProlongationNormalization
+import VaughtConjecture.Knight.ReductModel
 
 /-! # The source `⊤`-flag and its production from certified prolongability (#47)
 
@@ -29,11 +30,9 @@ legitimately imports the rank layer they are about.  This module imports only th
 normalization layer and the reduct-of-a-model layer (the same boundary as
 `Knight/EndogenousExtension.lean`). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower Value ExtOrd
+open TypeTower Value 
 
 universe w
 
@@ -48,11 +47,11 @@ a one-point extension carrying an `∞` cell of full grade.  No compiled clause 
 ordinals `< α`, and a witness may always be proper); by the forcing certificate it cannot
 be replaced by row construction on the target side.  It is exactly the block-level form of
 the flag `step_highGradeDominance_topFlagged` consumes pointwise. -/
-def SourceTopProduction (Rs : KnightRealization A₀ M) : Prop :=
-  ∀ {k : ℕ} (e : Fin k ↪ M) (s : S A₀.1 k), Rs.eval e = some s →
+def SourceTopProduction (Rs : KnightRealization A₀ M) :=
+  ∀ {k} e s, Rs.eval e = some s →
     ∃ (z : M) (hz : z ∉ Set.range e) (s' : S A₀.1 (k + 1)),
       Rs.eval (snoc e z hz) = some s' ∧
-      ∃ Sig : Cell s'.scheme.scheme, s'.scheme.scheme.grade Sig = k + 1 ∧
+      ∃ Sig , s'.scheme.scheme.grade Sig = k + 1 ∧
         s'.label Sig = ⊤
 
 variable {Rs : KnightRealization A₀ M}
@@ -62,7 +61,7 @@ prolongs through actual models to a strictly higher limit stage `B`, then over e
 labelled source tuple the source realizes a one-point extension carrying an `∞` cell of
 full grade.  Same-carrier normalization + high-grade dominance at `γ = A₀` + the forcing
 certificate `truncExt_eq_top_of_ge`. -/
-theorem sourceTopProduction_of_prolongsToIn {B : LimitStage} (hlt : A₀ < B)
+theorem sourceTopProduction_of_prolongsToIn {B} (hlt : A₀ < B)
     (hp : Rs.ProlongsToIn IsModelClass hlt.le) : Rs.SourceTopProduction := by
   -- 1. Normalize to a literal fixed-carrier reduct: an actual model on `M` itself.
   obtain ⟨R', hR', hred⟩ := (prolongsToIn_isModelClass_iff_on Rs hlt.le).mp hp
@@ -76,9 +75,7 @@ theorem sourceTopProduction_of_prolongsToIn {B : LimitStage} (hlt : A₀ < B)
   -- 3. Reduce the witness: the proper target-high label truncates to `⊤`.
   refine ⟨y, hy, reduceType A₀.2 hlt.le q, ?_, Sig, hgrade, truncExt_eq_top_of_ge hlab.le⟩
   have : (R'.reduct hlt.le).eval (snoc e y hy) = some (reduceType A₀.2 hlt.le q) := by
-    rw [Realization.reduct_eval, hq]; rfl
+    aesop
   rwa [hred] at this
 
-end KnightRealization
 
-end VaughtConjecture.Knight

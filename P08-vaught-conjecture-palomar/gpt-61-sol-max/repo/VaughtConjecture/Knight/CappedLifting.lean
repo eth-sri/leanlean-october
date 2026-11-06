@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SemScheme
-public import VaughtConjecture.Knight.VisibilityAlgebra
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SemScheme
+import VaughtConjecture.Knight.VisibilityAlgebra
 
 /-! # The foundational original-cap lifting calculus
 
@@ -20,26 +21,22 @@ extension or simultaneous cap preservation; those require injective restriction 
 supplied separately by `CappedLiftOfExtension`.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
-open Transform Value ExtOrd
+
 open VaughtConjecture.AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D} {I U J K : Finset ι × ℕ}
+variable {sem : Semantics D} {I U J K : GradedIndex ι}
 
 /-- A single literal old graded-pair lifting clause, also allowing equal
 indices and empty source domains. No new whole-target lift is included. -/
-def CappedLift (sem : Semantics D) (h : GradedLe I U) : Prop :=
-  ∀ (p : D.below I → ExtOrd) (q : D.below U → ExtOrd) (γ : ExtOrd),
+def CappedLift (sem : Semantics D) (h : GradedLe I U) :=
+  ∀ p q γ,
     RespectsSemanticsBelow sem I p → RespectsSemanticsBelow sem U q →
     SelfVis U.2 γ →
     (∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) →
-    ∃ r : D.below U → ExtOrd, RespectsSemanticsBelow sem U r ∧
+    ∃ r , RespectsSemanticsBelow sem U r ∧
       (∀ d, min (r d) γ = min (q d) γ) ∧
       ∀ d, r (CellScheme.below.mono h d) = p d
 
@@ -60,8 +57,7 @@ theorem lift_of_bountiful (hb : sem.IsBountiful)
   by_cases he : I = U
   · subst U
     exact lift_refl
-  · intro p q γ hp hq hγ hag
-    exact hb I U hI hU h he p q γ hp hq hγ hag
+  · aesop
 
 /-- Transport a lift along literal lower-domain equivalences. The restriction square must
 commute, lawful sections must transport, and the old target grade must permit the new cap.
@@ -81,27 +77,15 @@ theorem CappedLift.of_equiv
   intro p q γ hp hq hγ hag
   obtain ⟨r, hr, hc, hf⟩ := hl (p ∘ eI) (q ∘ eU) γ (hsource p hp)
     ((htarget q).mp hq) (hγ.mono hgrade) (fun d => by
-      simpa only [Function.comp_apply, hsquare] using hag (eI d))
+      simp_all)
   refine ⟨r ∘ eU.symm, (htarget _).mpr ?_, ?_, ?_⟩
   · simpa only [Function.comp_def, Equiv.symm_apply_apply] using hr
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hc (eU.symm d)
+  · simp_all
   · intro d
     have he : eU.symm (CellScheme.below.mono h d) = CellScheme.below.mono h' (eI.symm d) := by
-      apply eU.injective
-      rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]
+      grind
     rw [Function.comp_apply, he, hf, Function.comp_apply, Equiv.apply_symm_apply]
 
-section FaceTransport
-
-open CellScheme.restrictFace
-
-variable {m n : ℕ} {D₀ : CellScheme (ι := Fin n) Finset.univ}
-variable {s : Semantics D₀} {f : Fin m ↪ Fin n}
-variable {hf : Finset.univ.image f ∈ D₀.plan}
-variable {I' U' : Finset (Fin m) × ℕ}
-
-end FaceTransport
 
 theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
     (hleft : CappedLift sem hIJ) (hright : CappedLift sem hJK) :
@@ -112,4 +96,3 @@ theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
   obtain ⟨r, hr, hcap, hread⟩ := hright u q γ hu hq hγ (fun d => (hucap d).symm)
   exact ⟨r, hr, hcap, fun d => (hread (CellScheme.below.mono hIJ d)).trans (huread d)⟩
 
-end VaughtConjecture.Knight.CoatomBoundaryExtension

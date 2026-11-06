@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.MasterChart
-public import VaughtConjecture.Knight.Domain
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.MasterChart
+import VaughtConjecture.Knight.Domain
 
 /-! # Finite master states for fixed-height construction
 
@@ -16,18 +17,16 @@ The historical partial-state fields are retained as a compatibility adapter; the
 realization is uniquely determined by the finite master.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 universe w
 
 open TypeTower
-open Value ExtOrd
+
 
 namespace FixedHeight
 
-open KnightRealization
+
 
 variable {β : LimitStage} {M : Type w}
 
@@ -53,8 +52,7 @@ structure RunState (β : LimitStage) (M : Type w) where
   hM : MasteredBy A tup
 
 /-- The historical run state is literally the face diagram of its master. -/
-theorem RunState.eq_masterChart (st : RunState β M) :
-    st.A = masterChart st.tup st.P :=
+def RunState.eq_masterChart (st : RunState β M) :=
   FixedHeight.eq_masterChart st.hA.consistent st.tup st.P st.htup st.hM
 
 /-- The data actually scheduled; all partial-state bookkeeping is derived from it. -/
@@ -99,9 +97,6 @@ noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunSta
 
 /-- The first master event: an arbitrary arity-0 stage type at the empty tuple over the
 mute seed. -/
-noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := by
-  exact RunState.ofMaster
+noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := RunState.ofMaster
     ⟨0, Function.Embedding.ofIsEmpty, Classical.choice (StageType.nonempty β.2 0)⟩
 
-end FixedHeight
-end VaughtConjecture.Knight

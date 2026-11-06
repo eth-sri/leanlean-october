@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RungOnlyLadder
-public import VaughtConjecture.Knight.ReceivingCatalogueRanks
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SupportLadderRows
+import VaughtConjecture.Knight.ReceivingCatalogueRanks
 
 /-! # Exact decoding of the complete rung table
 
@@ -20,36 +21,22 @@ the represented field values. This is the base identity used by the recursive
 renderer; it does not assert exact restriction between construction grades.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RungTableRendering
-open Transform Value ExtOrd LadderScalarRendering
-noncomputable section
-variable {X B : Type*} [Fintype X] {H : ℕ}
+open    LadderScalarRendering
+
+variable {X  : Type*} [Fintype X] 
 
 /-- A monotone finite round trip transports every occupied and unused level. -/
-theorem level_decode (p : X → ExtOrd) {f g : ExtOrd → ExtOrd}
+theorem level_decode (p : X → ExtOrd) {f g : LabelMap}
     (hf : Monotone f) (hg : Monotone g) (hfbot : f ⊥ = ⊥) (hgbot : g ⊥ = ⊥)
     (hinv : ∀ d, g (f (p d)) = p d) (C : ExtOrd) (i : ℕ) :
     g (LadderScalarRendering.level (values (fun d => f (p d))) C i) =
       LadderScalarRendering.level (values p) (g C) i := by
-  classical
+  
   have hpos (d : X) : f (p d) ≠ ⊥ ↔ p d ≠ ⊥ := by
-    constructor
-    · intro h he; exact h (he ▸ hfbot)
-    · intro h he
-      exact h ((hinv d).symm.trans ((congrArg g he).trans hgbot))
+    grind
   have himage : values (fun d => f (p d)) = (values p).image f := by
-    ext y
-    constructor
-    · intro hy
-      obtain ⟨hy, d, rfl⟩ := mem_values.mp hy
-      exact Finset.mem_image.mpr ⟨p d, mem_values.mpr ⟨(hpos d).mp hy, d, rfl⟩, rfl⟩
-    · intro hy
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
-      obtain ⟨hx, d, rfl⟩ := mem_values.mp hx
-      exact mem_values.mpr ⟨(hpos d).mpr hx, d, rfl⟩
+    simp_all only [VaughtConjecture.Knight.LadderScalarRendering.values] <;> aesop
   have hcard : (values (fun d => f (p d))).card = (values p).card := by
     rw [himage]
     apply Finset.card_image_of_injOn
@@ -89,35 +76,4 @@ theorem level_decode (p : X → ExtOrd) {f g : ExtOrd → ExtOrd}
       rw [hr d]
       exact hxi
 
-/-- The full rank table, including foreign anchors and the unused ceiling tail. -/
-def render (ranks : B → X → ℕ) (p : X → ExtOrd) (C : ExtOrd)
-    (v : RungOnlyLadder.Point H B) : ExtOrd :=
-  LadderScalarRendering.level (values p) C
-    (min (FiniteProfileControllers.cut H (fieldRank p) (ranks v.1)) (v.2.val + 1))
 
-/-- Exact whole-base decoding, with no omission of unused ranks or spare tips. -/
-theorem decode_normalized (ranks : B → X → ℕ) (j : ℕ) (p : X → ExtOrd)
-    (hp : ∀ d, p d ≠ ⊤) {G : Finset ExtOrd} {C D : ExtOrd}
-    (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
-    (hD : PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G C D = C)
-    (v : RungOnlyLadder.Point H B) :
-    PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G C
-      (render ranks (PairedSlotEncoding.normalize j p) D v) = render ranks p C v := by
-  let f := PairedSlotIncoming.encoder j (PairedSlotEncoding.values p)
-  let g := PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G C
-  have hf := PairedSlotIncoming.encoder_bounded j (PairedSlotEncoding.values p)
-  have hg : Witness (gTop j) g := PairedSlotDecoder.decode_witness hG hC
-  have hinv (d : X) : g (f (p d)) = p d := by
-    dsimp only [f, g]
-    rw [PairedSlotIncoming.encoder_profile]
-    exact PairedSlotDecoder.decode_normalize hG hC hp d
-  have hr : fieldRank (PairedSlotEncoding.normalize j p) = fieldRank p :=
-    funext (ReceivingCatalogueRanks.fieldRank_normalize j p hp)
-  unfold render
-  rw [hr]
-  have he := level_decode p hf.mono hg.mono hf.bot hg.bot hinv D
-    (min (FiniteProfileControllers.cut H (fieldRank p) (ranks v.1)) (v.2.val + 1))
-  simpa only [f, g, PairedSlotIncoming.encoder_profile, hD] using he
-
-end
-end VaughtConjecture.Knight.RungTableRendering

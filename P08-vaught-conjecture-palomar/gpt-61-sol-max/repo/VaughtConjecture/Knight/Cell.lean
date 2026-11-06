@@ -1,15 +1,17 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Data.Finset.Basic
-public import Mathlib.Data.Finset.Sort
-public import Mathlib.SetTheory.Cardinal.Arithmetic
-public import VaughtConjecture.AmalgamationPlan.Plan
-public import VaughtConjecture.Knight.Value
+import Mathlib.Tactic
+
+import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Finset.Sort
+import Mathlib.SetTheory.Cardinal.Arithmetic
+import VaughtConjecture.AmalgamationPlan.Plan
+import VaughtConjecture.Knight.Value
 
 /-! # Knight's cell schemes: cells, scopes, grades
 
@@ -54,24 +56,28 @@ restriction (`Knight.Type`: `typeMap_refl`, `typeMap_trans`) all reduce to one f
 `restrictFace.toCell_cast_eq_of_emb`: any strictly monotone enumeration of exactly the visible
 cells is `toCell` up to `Fin.cast`. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
+
+/-- A scope in a finite point domain. -/
+abbrev FiniteScope (n : ℕ) := Finset (Fin n)
 
 open VaughtConjecture.AmalgamationPlan
 open scoped Cardinal
+
+/-- A finite scope together with a grade. -/
+abbrev GradedIndex (ι : Type*) := Finset ι × ℕ
 
 variable {ι : Type*}
 
 /-- The product preorder on graded indices `(B, j)` (cf. Knight, Def. 2.5.1): `X ≤ Y` iff the
 scope of `X` is contained in that of `Y` and the grade of `X` is at most that of `Y`. -/
-def GradedLe (X Y : Finset ι × ℕ) : Prop :=
+def GradedLe (X Y : GradedIndex ι) :=
   X.1 ⊆ Y.1 ∧ X.2 ≤ Y.2
 
-theorem GradedLe.refl (X : Finset ι × ℕ) : GradedLe X X :=
+theorem GradedLe.refl (X : GradedIndex ι) : GradedLe X X :=
   ⟨Finset.Subset.refl _, le_rfl⟩
 
-theorem GradedLe.trans {X Y Z : Finset ι × ℕ} (hXY : GradedLe X Y) (hYZ : GradedLe Y Z) :
+theorem GradedLe.trans {X Y Z : GradedIndex ι} (hXY : GradedLe X Y) (hYZ : GradedLe Y Z) :
     GradedLe X Z :=
   ⟨hXY.1.trans hYZ.1, hXY.2.trans hYZ.2⟩
 
@@ -83,52 +89,61 @@ a support plan `plan` on `A` and `card` cells, the `d`-th cell having graded ind
 schemes with the same `plan`, `card` and `cell` are definitionally equal. -/
 structure CellScheme (A : Finset ι) where
   /-- The support plan of the scheme. -/
-  plan : Finset (Finset ι)
+  plan : VaughtConjecture.AmalgamationPlan.SupportFamily ι
   /-- `plan` is a support plan on `A`. -/
   isPlan : Plan.IsPlan A plan
   /-- The number of cells. -/
   card : ℕ
   /-- The graded index (scope, grade) of each cell. -/
-  cell : Fin card → (Finset ι × ℕ)
+  cell : Fin card → (GradedIndex ι)
   /-- Every cell's graded index lies in the graded plan `P̂`. -/
-  cell_mem : ∀ d : Fin card, cell d ∈ Plan.gradedPlan plan
+  cell_mem : ∀ d , cell d ∈ Plan.gradedPlan plan
 
 /-- The cells of a scheme `D`: the canonical index type `Fin D.card`. -/
-abbrev Cell {A : Finset ι} (D : CellScheme A) : Type := Fin D.card
+abbrev Cell {A : Finset ι} (D : CellScheme A) := Fin D.card
 
 namespace CellScheme
 
 variable {A : Finset ι} (D : CellScheme A)
 
 /-- The **scope** of a cell: the visible face it sees. -/
-def scope (d : Cell D) : Finset ι := (D.cell d).1
+def scope d := (D.cell d).1
 
 /-- The **grade** of a cell (Knight's "arity" of the cell): its graded index `j`. -/
-def grade (d : Cell D) : ℕ := (D.cell d).2
+def grade d := (D.cell d).2
 
-@[simp] theorem cell_eq (d : Cell D) : D.cell d = (D.scope d, D.grade d) := rfl
+@[simp] theorem cell_eq d : D.cell d = (D.scope d, D.grade d) := rfl
+
+
 
 /-- The scope of a cell is a visible face of the plan. -/
-theorem scope_mem_plan (d : Cell D) : D.scope d ∈ D.plan :=
+theorem scope_mem_plan d : D.scope d ∈ D.plan :=
   (Plan.mem_gradedPlan.mp (D.cell_mem d)).1
 
+/-- Every cell scope is contained in the domain of its scheme. -/
+theorem scope_subset d : D.scope d ⊆ A :=
+  D.isPlan.subset_of_mem (D.scope_mem_plan d)
+
 /-- The grade of a cell is positive. -/
-theorem grade_pos (d : Cell D) : 0 < D.grade d :=
+theorem grade_pos d : 0 < D.grade d :=
   (Plan.mem_gradedPlan.mp (D.cell_mem d)).2.1
 
 /-- The grade of a cell is at most the size of its scope. -/
-theorem grade_le_card_scope (d : Cell D) : D.grade d ≤ (D.scope d).card :=
+theorem grade_le_card_scope d : D.grade d ≤ (D.scope d).card :=
   (Plan.mem_gradedPlan.mp (D.cell_mem d)).2.2
 
 /-- The lower set of cells whose graded index lies below `BJ` (Knight-VC's `restrict`;
 Def. 2.5.2 style).  This is a lower set in the graded preorder `GradedLe`, not a face
 restriction of the scheme.  The semantic row of a cell `Sig` lives on `D.below (D.cell Sig)`. -/
-def below (BJ : Finset ι × ℕ) : Type :=
+def below (BJ : GradedIndex ι) :=
   { d : Cell D // GradedLe (D.cell d) BJ }
+
+/-- The lower domain carrying the semantic row of a cell. -/
+abbrev belowCell (c : Cell D) := D.below (D.cell c)
 
 /-- `D.below BJ` is finite: a subtype of the finite index type `Cell D`.  (Stated explicitly
 because `below` is not reducible.) -/
-instance finite_below (BJ : Finset ι × ℕ) : Finite (D.below BJ) := by
+instance finite_below (BJ : GradedIndex ι) : Finite (D.below BJ) := by
   unfold below
   exact Subtype.finite
 
@@ -136,9 +151,9 @@ instance finite_below (BJ : Finset ι × ℕ) : Finite (D.below BJ) := by
 data (`isPlan` and `cell_mem` are proofs), so the scheme injects into
 `Finset (Finset (Fin n)) × Σ c, (Fin c → Finset (Fin n) × ℕ)`. -/
 instance countable_fin (n : ℕ) :
-    Countable (CellScheme (ι := Fin n) (Finset.univ : Finset (Fin n))) := by
-  let f : CellScheme (ι := Fin n) (Finset.univ : Finset (Fin n)) →
-      Finset (Finset (Fin n)) × (Σ c : ℕ, Fin c → (Finset (Fin n) × ℕ)) :=
+    Countable (CellScheme (ι := Fin n) (Finset.univ : FiniteScope n)) := by
+  let f : CellScheme (ι := Fin n) (Finset.univ : FiniteScope n) →
+      VaughtConjecture.AmalgamationPlan.SupportFamily (Fin n) × (Σ c : ℕ, Fin c → (GradedIndex (Fin n))) :=
     fun d => (d.plan, ⟨d.card, d.cell⟩)
   have hinj : Function.Injective f := by
     rintro ⟨p1, ip1, c1, cl1, cm1⟩ ⟨p2, ip2, c2, cl2, cm2⟩ h
@@ -156,41 +171,38 @@ end CellScheme
 
 /-- Ordinals `≤ α` form a countable set when `α.card ≤ ℵ₀`: `Set.Iic α ⊆ Set.Iio (α + 1)` and
 `#(Set.Iio (α + 1)) = lift (α + 1).card ≤ ℵ₀` (`Cardinal.mk_Iio_ordinal`). -/
-theorem Ordinal.countable_Iic_of_card_le_aleph0 {α : Ordinal.{0}} (hα : α.card ≤ ℵ₀) :
+theorem Ordinal.countable_Iic_of_card_le_aleph0 {α : Ordinal₀} (hα : α.card ≤ ℵ₀) :
     (Set.Iic α).Countable := by
   rw [← Set.countable_coe_iff, ← Cardinal.mk_le_aleph0_iff]
   have hsucc : (Order.succ α).card ≤ ℵ₀ := by
-    rw [Order.succ_eq_add_one, Ordinal.card_add, Ordinal.card_one]
-    exact Cardinal.add_le_aleph0.mpr ⟨hα, Cardinal.one_le_aleph0⟩
+    simp_all
   calc #(Set.Iic α) ≤ #(Set.Iio (Order.succ α)) :=
         Cardinal.mk_le_mk_of_subset
           (fun β hβ => Set.mem_Iio.mpr (Order.lt_succ_iff.mpr (Set.mem_Iic.mp hβ)))
-    _ = Cardinal.lift.{1} (Order.succ α).card := Cardinal.mk_Iio_ordinal _
-    _ ≤ ℵ₀ := by rw [Cardinal.lift_le_aleph0]; exact hsucc
+    _ = Cardinal.lift (Order.succ α).card := Cardinal.mk_Iio_ordinal _
+    _ ≤ ℵ₀ := by exact?
 
 /-- The labels non-strictly bounded at a countable stage `α` (`x ≤ ofOrd α ∨ x = ⊤`) form a
 countable type: they lie in `{⊤, ⊥} ∪ ofOrd '' Set.Iic α`.  (The stage types use the strict
 bound, `ExtOrd.countable_bounded_lt` below.) -/
-theorem ExtOrd.countable_bounded {α : Ordinal.{0}} (hα : α.card ≤ ℵ₀) :
+theorem ExtOrd.countable_bounded {α : Ordinal₀} (hα : α.card ≤ ℵ₀) :
     Countable {x : ExtOrd // x ≤ ExtOrd.ofOrd α ∨ x = ⊤} := by
   have key : {x : ExtOrd | x ≤ ExtOrd.ofOrd α ∨ x = ⊤}
       ⊆ insert ⊤ (insert ⊥ (ExtOrd.ofOrd '' Set.Iic α)) := by
     rintro x (hle | htop)
     · rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-      · exact Set.mem_insert_of_mem _ (Set.mem_insert _ _)
+      · simp_all
       · exact Set.mem_insert _ _
-      · exact Set.mem_insert_of_mem _
-          (Set.mem_insert_of_mem _ ⟨β, ExtOrd.ofOrd_le_ofOrd.mp hle, rfl⟩)
-    · exact Set.mem_insert_iff.mpr (Or.inl htop)
-  have hc : (insert (⊤ : ExtOrd) (insert ⊥ (ExtOrd.ofOrd '' Set.Iic α))).Countable :=
+      · simp_all
+    · simp_all
+  have hc : (insert (⊤) (insert ⊥ (ExtOrd.ofOrd '' Set.Iic α))).Countable :=
     (((Ordinal.countable_Iic_of_card_le_aleph0 hα).image _).insert _).insert _
   exact (hc.mono key).to_subtype
 
 /-- The labels **strictly** bounded at a countable stage `α` (`x < ofOrd α ∨ x = ⊤`, the label
 bound of a stage-`α` type under the strict convention of #84) form a countable type: they
 inject into the non-strictly bounded labels of `ExtOrd.countable_bounded`. -/
-theorem ExtOrd.countable_bounded_lt {α : Ordinal.{0}} (hα : α.card ≤ ℵ₀) :
-    Countable {x : ExtOrd // x < ExtOrd.ofOrd α ∨ x = ⊤} := by
+abbrev ExtOrd.countable_bounded_lt {α : Ordinal₀} (hα : α.card ≤ ℵ₀) := by
   have := ExtOrd.countable_bounded hα
   exact Function.Injective.countable
     (f := fun x : {x : ExtOrd // x < ExtOrd.ofOrd α ∨ x = ⊤} =>
@@ -204,47 +216,43 @@ namespace CellScheme
 variable {m n : ℕ} (D : CellScheme (ι := Fin n) Finset.univ) (f : Fin m ↪ Fin n)
 
 /-- The cells of `D` **visible through** `f`: those whose scope lies in the range of `f`. -/
-def visibleCells : Finset (Cell D) :=
+def visibleCells :=
   Finset.univ.filter (fun d => D.scope d ⊆ Finset.univ.image f)
 
-theorem mem_visibleCells {d : Cell D} :
+theorem mem_visibleCells {d} :
     d ∈ D.visibleCells f ↔ D.scope d ⊆ Finset.univ.image f := by
   simp [visibleCells]
 
 /-- The graded index of a cell of `D` pulled back along `f`: the preimage of its scope under
 `f`, with the same grade. -/
-def pullCell (d : Cell D) : Finset (Fin m) × ℕ :=
+def pullCell d :=
   (Finset.univ.filter (fun i => f i ∈ D.scope d), D.grade d)
 
 /-- The pulled-back graded index depends only on the graded index of the cell. -/
-theorem pullCell_congr {a b : Cell D} (h : D.cell a = D.cell b) :
-    D.pullCell f a = D.pullCell f b := by
-  have hs : D.scope a = D.scope b := congrArg Prod.fst h
-  have hg : D.grade a = D.grade b := congrArg Prod.snd h
-  unfold pullCell
-  rw [hs, hg]
+theorem pullCell_congr {a b} (h : D.cell a = D.cell b) :
+    D.pullCell f a = D.pullCell f b := by simp_all [pullCell]
 
 /-- The pulled-back scope maps back onto the original scope when the latter is visible. -/
-theorem image_pullCell_fst {d : Cell D} (hd : D.scope d ⊆ Finset.univ.image f) :
+theorem image_pullCell_fst {d} (hd : D.scope d ⊆ Finset.univ.image f) :
     (D.pullCell f d).1.image f = D.scope d := by
   ext x
-  simp only [pullCell, Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
+  simp  [pullCell,    ]
   refine ⟨fun ⟨i, hi, hix⟩ => hix ▸ hi, fun hx => ?_⟩
   obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp (hd hx)
   exact ⟨i, hx, rfl⟩
 
-theorem card_pullCell_fst {d : Cell D} (hd : D.scope d ⊆ Finset.univ.image f) :
+theorem card_pullCell_fst {d} (hd : D.scope d ⊆ Finset.univ.image f) :
     (D.pullCell f d).1.card = (D.scope d).card := by
   rw [← Finset.card_image_of_injective _ f.injective, image_pullCell_fst D f hd]
 
 /-- The graded preorder is reflected by pulling back visible cells. -/
-theorem gradedLe_pullCell_iff {a b : Cell D} (ha : D.scope a ⊆ Finset.univ.image f) :
+theorem gradedLe_pullCell_iff {a b} (ha : D.scope a ⊆ Finset.univ.image f) :
     GradedLe (D.pullCell f a) (D.pullCell f b) ↔ GradedLe (D.cell a) (D.cell b) := by
-  simp only [GradedLe, pullCell, cell_eq]
+  simp  [ pullCell, ]
   refine and_congr_left' ⟨fun h x hx => ?_, fun h i hi => ?_⟩
   · obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp (ha hx)
     exact (Finset.mem_filter.mp (h (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hx⟩))).2
-  · exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, h (Finset.mem_filter.mp hi).2⟩
+  · aesop
 
 /-- The **face restriction** of a cell scheme along `f : Fin m ↪ Fin n` whose range is a
 visible face (Knight, Def. 3.1.5; the scheme part of Knight-VC `typeMap`): the pullback plan
@@ -252,7 +260,7 @@ visible face (Knight, Def. 3.1.5; the scheme part of Knight-VC `typeMap`): the p
 and enumerated in increasing order. -/
 noncomputable def restrictFace (hr : Finset.univ.image f ∈ D.plan) :
     CellScheme (ι := Fin m) Finset.univ where
-  plan := (Finset.univ : Finset (Fin m)).powerset.filter (fun C => C.image f ∈ D.plan)
+  plan := (Finset.univ : FiniteScope m).powerset.filter (fun C => C.image f ∈ D.plan)
   isPlan := Plan.pullback_isPlan_fin f D.isPlan hr
   card := (D.visibleCells f).card
   cell i := D.pullCell f ((D.visibleCells f).orderEmbOfFin rfl i)
@@ -265,118 +273,121 @@ noncomputable def restrictFace (hr : Finset.univ.image f ∈ D.plan) :
 
 variable (hr : Finset.univ.image f ∈ D.plan)
 
+local notation "restrictFace₀" => D.restrictFace f hr
+
 theorem restrictFace_plan :
-    (D.restrictFace f hr).plan =
-      (Finset.univ : Finset (Fin m)).powerset.filter (fun C => C.image f ∈ D.plan) := rfl
+    (restrictFace₀).plan =
+      (Finset.univ : FiniteScope m).powerset.filter (fun C => C.image f ∈ D.plan) := rfl
 
 /-- The plan of the restriction is the (defined) pullback plan. -/
 theorem pullbackPlan_eq_restrictFace_plan :
-    Plan.pullbackPlan f D.plan = some (D.restrictFace f hr).plan :=
+    Plan.pullbackPlan f D.plan = some (restrictFace₀).plan :=
   Plan.pullbackPlan_eq_some f hr
 
 /-- Membership in the restricted plan: a face of `Fin m` is visible iff its image is. -/
-theorem mem_restrictFace_plan {C : Finset (Fin m)} :
-    C ∈ (D.restrictFace f hr).plan ↔ C.image f ∈ D.plan := by
+theorem mem_restrictFace_plan {C} :
+    C ∈ (restrictFace₀).plan ↔ C.image f ∈ D.plan := by
   simp [restrictFace_plan]
 
-theorem card_restrictFace : (D.restrictFace f hr).card = (D.visibleCells f).card := rfl
+theorem card_restrictFace : (restrictFace₀).card = (D.visibleCells f).card := rfl
 
 namespace restrictFace
 
+local notation "Cell₀" => Cell (D.restrictFace f hr)
+
 /-- The cell map of a face restriction: the `i`-th cell of `D.restrictFace f hr` is the `i`-th
 visible cell of `D` in increasing order (Knight-VC: `canonEquivFin` of the visible subtype). -/
-noncomputable def toCell : Cell (D.restrictFace f hr) ↪o Cell D :=
+noncomputable def toCell : Cell₀ ↪o Cell D :=
   (D.visibleCells f).orderEmbOfFin (D.card_restrictFace f hr).symm
 
-theorem scope_toCell_subset (i : Cell (D.restrictFace f hr)) :
-    D.scope (toCell D f hr i) ⊆ Finset.univ.image f :=
+local notation "toCell₀" => toCell D f hr
+
+theorem scope_toCell_subset (i : Cell₀) :
+    D.scope (toCell₀ i) ⊆ Finset.univ.image f :=
   (D.mem_visibleCells f).mp ((D.visibleCells f).orderEmbOfFin_mem _ i)
 
-theorem toCell_strictMono : StrictMono (toCell D f hr) := (toCell D f hr).strictMono
+theorem toCell_strictMono : StrictMono (toCell₀) := (toCell₀).strictMono
 
-theorem toCell_injective : Function.Injective (toCell D f hr) := (toCell D f hr).injective
+theorem toCell_injective : Function.Injective (toCell₀) := (toCell₀).injective
 
 /-- Every visible cell of `D` is hit by the cell map. -/
 theorem exists_toCell_eq {d : Cell D} (hd : D.scope d ⊆ Finset.univ.image f) :
-    ∃ i, toCell D f hr i = d := by
-  have hmem : d ∈ Set.range (toCell D f hr) := by
+    ∃ i, toCell₀ i = d := by
+  have hmem : d ∈ Set.range (toCell₀) := by
     rw [toCell, Finset.range_orderEmbOfFin]; exact (D.mem_visibleCells f).mpr hd
   exact hmem
 
-theorem cell_eq (i : Cell (D.restrictFace f hr)) :
-    (D.restrictFace f hr).cell i = D.pullCell f (toCell D f hr i) := rfl
+theorem cell_eq i :
+    (restrictFace₀).cell i = D.pullCell f (toCell₀ i) := rfl
 
-@[simp] theorem scope_restrictFace (i : Cell (D.restrictFace f hr)) :
-    (D.restrictFace f hr).scope i =
-      Finset.univ.filter (fun j => f j ∈ D.scope (toCell D f hr i)) := rfl
+@[simp] theorem scope_restrictFace i :
+    (restrictFace₀).scope i =
+      Finset.univ.filter (fun j => f j ∈ D.scope (toCell₀ i)) := rfl
 
-@[simp] theorem grade_restrictFace (i : Cell (D.restrictFace f hr)) :
-    (D.restrictFace f hr).grade i = D.grade (toCell D f hr i) := rfl
+@[simp] theorem grade_restrictFace i :
+    (restrictFace₀).grade i = D.grade (toCell₀ i) := rfl
 
 /-- The image under `f` of a restricted scope is the original scope. -/
-theorem image_scope_restrictFace (i : Cell (D.restrictFace f hr)) :
-    ((D.restrictFace f hr).scope i).image f = D.scope (toCell D f hr i) :=
+theorem image_scope_restrictFace (i : Cell₀) :
+    ((restrictFace₀).scope i).image f = D.scope (toCell₀ i) :=
   image_pullCell_fst D f (scope_toCell_subset D f hr i)
 
 /-- The graded preorder of the restriction is the graded preorder of `D` on the visible
 cells. -/
-theorem gradedLe_restrictFace_iff {i j : Cell (D.restrictFace f hr)} :
-    GradedLe ((D.restrictFace f hr).cell i) ((D.restrictFace f hr).cell j) ↔
-      GradedLe (D.cell (toCell D f hr i)) (D.cell (toCell D f hr j)) :=
+theorem gradedLe_restrictFace_iff {i j : Cell₀} :
+    GradedLe ((restrictFace₀).cell i) ((restrictFace₀).cell j) ↔
+      GradedLe (D.cell (toCell₀ i)) (D.cell (toCell₀ j)) :=
   gradedLe_pullCell_iff D f (scope_toCell_subset D f hr i)
 
 /-- Knight-VC `gradedLe_pullback_to_orig`. -/
-theorem gradedLe_of_restrictFace {i j : Cell (D.restrictFace f hr)}
-    (h : GradedLe ((D.restrictFace f hr).cell i) ((D.restrictFace f hr).cell j)) :
-    GradedLe (D.cell (toCell D f hr i)) (D.cell (toCell D f hr j)) :=
+def gradedLe_of_restrictFace {i j : Cell₀}
+    (h : GradedLe ((restrictFace₀).cell i) ((restrictFace₀).cell j)) :=
   (gradedLe_restrictFace_iff D f hr).mp h
 
 /-- Transport of the lower set below a restricted cell `Sig` into the lower set below
 `toCell Sig` in `D` (the index map of the semantic rows). -/
-noncomputable def belowMap (Sig : Cell (D.restrictFace f hr)) :
-    (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig) →
-      D.below (D.cell (toCell D f hr Sig)) :=
-  fun d => ⟨toCell D f hr d.1, gradedLe_of_restrictFace D f hr d.2⟩
-
-@[simp] theorem belowMap_val (Sig : Cell (D.restrictFace f hr))
-    (d : (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig)) :
-    (belowMap D f hr Sig d).1 = toCell D f hr d.1 := rfl
+noncomputable def belowMap Sig :
+    (restrictFace₀).belowCell Sig →
+      D.below (D.cell (toCell₀ Sig)) :=
+  fun d => ⟨toCell₀ d.1, gradedLe_of_restrictFace D f hr d.2⟩
 
 /-! The canonical enumeration is determined by its range: any strictly monotone `e : Fin k → Cell D`
 whose range is exactly the visible cells is `toCell` up to `Fin.cast`.  This is the one fact
 behind the restriction laws. -/
 
-section Emb
+section
 
 variable {k : ℕ} {e : Fin k → Cell D}
 
 theorem visibleCells_eq_image_of_emb (hvis : ∀ c, D.scope (e c) ⊆ Finset.univ.image f)
     (hsurj : ∀ d, D.scope d ⊆ Finset.univ.image f → ∃ c, e c = d) :
-    D.visibleCells f = Finset.univ.image e := by
-  ext d
-  rw [mem_visibleCells, Finset.mem_image]
-  exact ⟨fun hd => (hsurj d hd).imp fun c hc => ⟨Finset.mem_univ _, hc⟩,
-    fun ⟨c, _, hc⟩ => hc ▸ hvis c⟩
+    D.visibleCells f = Finset.univ.image e := by aesop (add simp [mem_visibleCells])
 
 theorem card_restrictFace_of_emb (he : StrictMono e)
     (hvis : ∀ c, D.scope (e c) ⊆ Finset.univ.image f)
     (hsurj : ∀ d, D.scope d ⊆ Finset.univ.image f → ∃ c, e c = d) :
-    (D.restrictFace f hr).card = k := by
+    (restrictFace₀).card = k := by
   rw [card_restrictFace, visibleCells_eq_image_of_emb D f hvis hsurj,
     Finset.card_image_of_injective _ he.injective, Finset.card_univ, Fintype.card_fin]
 
 theorem toCell_cast_eq_of_emb (he : StrictMono e)
     (hvis : ∀ c, D.scope (e c) ⊆ Finset.univ.image f)
-    (hk : (D.restrictFace f hr).card = k) (c : Fin k) :
-    toCell D f hr (Fin.cast hk.symm c) = e c := by
+    (hk : (restrictFace₀).card = k) (c : Fin k) :
+    toCell₀ (Fin.cast hk.symm c) = e c := by
   have hk' : (D.visibleCells f).card = k := hk
   rw [Finset.orderEmbOfFin_unique hk' (fun c => (D.mem_visibleCells f).mpr (hvis c)) he, toCell,
     Finset.orderEmbOfFin_eq_orderEmbOfFin_iff, Fin.val_cast]
 
-end Emb
+end
 
 end restrictFace
 
 end CellScheme
 
-end VaughtConjecture.Knight
+/-- Label vectors on a cell scheme and on one of its lower domains. -/
+abbrev CellLabels {ι : Type*} [DecidableEq ι] {A : Finset ι} (D : CellScheme A) :=
+  Cell D → ExtOrd
+
+abbrev BelowLabels {ι : Type*} [DecidableEq ι] {A : Finset ι} (D : CellScheme A)
+    (BJ : GradedIndex ι) := D.below BJ → ExtOrd
+

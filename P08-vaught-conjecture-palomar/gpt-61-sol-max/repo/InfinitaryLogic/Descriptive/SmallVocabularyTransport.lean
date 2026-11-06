@@ -3,12 +3,51 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Descriptive.SmallVocabularyLift
-public import InfinitaryLogic.Descriptive.LopezEscobar
-public import InfinitaryLogic.Descriptive.SentenceSplits
-public import InfinitaryLogic.Descriptive.SentenceObservables
+import InfinitaryLogic.Descriptive.StructureIsoSetoid
+import InfinitaryLogic.Descriptive.Polish
+import Mathlib.Logic.Small.Basic
+import InfinitaryLogic.Descriptive.SatisfactionBorel
+import InfinitaryLogic.Lomega1omega.QuantifierRank
+import InfinitaryLogic.Lomega1omega.Operations
+import Mathlib.Data.Set.Countable
+import InfinitaryLogic.Lomega1omega.Semantics
+import Mathlib.Data.Set.Finite.Lattice
+import Mathlib.Tactic
+import Mathlib.ModelTheory.Semantics
+import Mathlib.Data.Finset.Sort
+import Mathlib.Order.Interval.Finset.Fin
+import Mathlib.ModelTheory.Encoding
+import InfinitaryLogic.Lomega1omega.Theory
+import Mathlib.SetTheory.Ordinal.Family
+import InfinitaryLogic.Scott.Formula
+import InfinitaryLogic.Lomega1omega.OpenBoundsSemantics
+import Mathlib.Order.Zorn
+import Mathlib.Data.Fintype.Quotient
+import Mathlib.Order.Filter.AtTopBot.Basic
+import Mathlib.Order.Filter.Finite
+import Mathlib.Order.Hom.Basic
+import Mathlib.Data.Fin.VecNotation
+import Mathlib.Data.Nat.Nth
+import Mathlib.Data.Set.Finite.Basic
+import Mathlib.Order.WellFounded
+import Mathlib.Data.Set.Lattice.Bounded
+import Mathlib.Data.Set.Lattice.Disjoint
+import Mathlib.Data.Set.Lattice.Image
+import Mathlib.Data.Set.Lattice.Indexed
+import Mathlib.Data.Set.Lattice.Order
+import Mathlib.SetTheory.Cardinal.Regular
+import Mathlib.SetTheory.Cardinal.Aleph
+import Mathlib.SetTheory.Cardinal.Pigeonhole
+import Mathlib.Order.InitialSeg
+import InfinitaryLogic.Descriptive.StructureSpace
+import Mathlib.ModelTheory.LanguageMap
+import Mathlib.SetTheory.Cardinal.Arithmetic
+import Mathlib.ModelTheory.Substructures
+import Mathlib.GroupTheory.Perm.Basic
+import Architect
+import Mathlib.Topology.MetricSpace.Polish
+import Mathlib.Topology.Algebra.Group.Basic
 
 /-!
 # Descriptive transport through the small-vocabulary presentation
@@ -37,13 +76,10 @@ Names coincide with the small-universe originals inside the `SmallVocabulary` na
 originals are referred to fully qualified.
 -/
 
-@[expose] public section
-
-universe u v w x y
+universe u v   
 
 namespace FirstOrder.Language.SmallVocabulary
 
-open MeasureTheory Set
 
 variable (L : Language.{u, v}) [L.IsRelational] [Countable (Σ n, L.Relations n)]
 
@@ -53,8 +89,7 @@ omit [Countable (Σ n, L.Relations n)] in
 /-- Membership in `ModelsOf` is realization of the sentence in the decoded structure (the empty
 valuation is unique).  A restatement, with `L` explicit, of the root
 `FirstOrder.Language.mem_modelsOf_iff_realize` (`Descriptive/SatisfactionBorel.lean`). -/
-theorem mem_modelsOf_iff_realize (c : StructureSpace L) (φ : L.Sentenceω) :
-    c ∈ ModelsOf φ ↔ @Sentenceω.Realize L φ ℕ c.toStructure :=
+def mem_modelsOf_iff_realize (c : StructureSpace L) (φ : L.Sentenceω) :=
   FirstOrder.Language.mem_modelsOf_iff_realize c φ
 
 /-! ### Sets of codes -/
@@ -65,4 +100,3 @@ theorem mem_modelsOf_iff_realize (c : StructureSpace L) (φ : L.Sentenceω) :
 
 /-! ### Thinness -/
 
-end FirstOrder.Language.SmallVocabulary

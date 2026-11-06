@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ClassTruth
-public import InfinitaryLogic.Descriptive.SmallVocabularyTransport
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ClassTruth
+import InfinitaryLogic.Descriptive.SmallVocabularyTransport
 
 /-! # The class quotient as a presentation of the coded models
 
@@ -25,8 +26,6 @@ structure, and no measurable section of `modelClass` is chosen.  These are the a
 satisfaction equations consumed by the sentence-split, observable-constancy and
 Scott-definability applications. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.StoppingRankFiltration
 
 open FirstOrder Language
@@ -38,7 +37,7 @@ noncomputable def modelClass (c : ModelsOf knightSentence) : Classes :=
 theorem modelClass_surjective : Function.Surjective modelClass := by
   intro q
   obtain ⟨c, hc⟩ := Quotient.mk_surjective (isoClassEquiv.symm q)
-  exact ⟨c, by rw [modelClass, hc, Equiv.apply_symm_apply]⟩
+  exact ⟨c, by simp_all [modelClass]⟩
 
 /-- Isomorphic codes have the same class. -/
 theorem modelClass_eq_of_iso {c d : ModelsOf knightSentence}
@@ -46,12 +45,9 @@ theorem modelClass_eq_of_iso {c d : ModelsOf knightSentence}
   congrArg isoClassEquiv (Quotient.sound (isoSetoid_r_iff.mpr h))
 
 /-- **Class truth is satisfaction on the code.** -/
-theorem realizes_modelClass (φ : knightLang.Sentenceω) (c : ModelsOf knightSentence) :
-    realizes φ (modelClass c) ↔ c.1 ∈ ModelsOf φ := by
-  change @Sentenceω.Realize knightLang φ ℕ (structureOf (realizationOfCode c).1) ↔ _
-  exact (@LomegaEquiv.of_equiv knightLang ℕ ℕ
+theorem realizes_modelClass φ c :
+    realizes φ (modelClass c) ↔ c.1 ∈ ModelsOf φ :=  (@LomegaEquiv.of_equiv knightLang ℕ ℕ
     (structureOf (realizationOfCode c).1) c.1.toStructure
     (isKnightModel_of_mem c).structureOfToRealizationEquiv φ).trans
     (FirstOrder.Language.SmallVocabulary.mem_modelsOf_iff_realize knightLang c.1 φ).symm
 
-end VaughtConjecture.Knight.StoppingRankFiltration

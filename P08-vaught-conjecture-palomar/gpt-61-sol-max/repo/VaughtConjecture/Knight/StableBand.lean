@@ -1,12 +1,12 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Data.ENat.Lattice
-public import VaughtConjecture.Knight.ProvisionalOffset
+import Mathlib.Data.ENat.Lattice
+import VaughtConjecture.Knight.ProvisionalOffset
 
 /-! # Stable values as suprema in the completed band
 
@@ -27,13 +27,9 @@ The supremum is taken in `ℕ∞`, never in the ordinal label space: there `⨆ 
 which is a proper label, not `⊤`.  Non-top source cells keep their literal labels
 (`stableValue_of_ne_top`) and have no offset. -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
-open TypeTower Value ExtOrd StageType Filter
+open TypeTower  ExtOrd StageType Filter
 
 universe w
 
@@ -41,14 +37,14 @@ namespace ExtOrd
 
 /-- **Decoding of the completed band above `β`**: a finite offset `k` is the label `β + k`, and
 the completion point `⊤` is the label `⊤`. -/
-noncomputable def bandValue (β : Ordinal.{0}) (r : ℕ∞) : ExtOrd :=
-  ENat.recTopCoe ⊤ (fun k : ℕ => ofOrd (β + k)) r
+noncomputable def bandValue (β : Ordinal₀) (r : ℕ∞) : ExtOrd :=
+  ENat.recTopCoe ⊤ (fun k => ofOrd (β + k)) r
 
-@[simp] theorem bandValue_natCast (β : Ordinal.{0}) (k : ℕ) :
+@[simp] theorem bandValue_natCast (β : Ordinal₀) (k : ℕ) :
     bandValue β k = ofOrd (β + k) :=
   ENat.recTopCoe_natCast _ _ k
 
-@[simp] theorem bandValue_top (β : Ordinal.{0}) : bandValue β ⊤ = ⊤ :=
+@[simp] theorem bandValue_top β : bandValue β ⊤ = ⊤ :=
   ENat.recTopCoe_top _ _
 
 end ExtOrd
@@ -67,24 +63,21 @@ include hcons hcov in
 taken in the completed band `ℕ∞`.  An eventually constant offset has its plateau as supremum;
 an escaping offset has supremum `⊤`. -/
 theorem stableValue_eq_bandValue_iSup :
-    R.stableValue x.tuple x.type Xi = bandValue α.1 (⨆ y, (offset Xi htop y : ℕ∞)) := by
+    R.stableValue x.tuple x.type Xi = bandValue α.1 (⨆ y, (offset htop y : ℕ∞)) := by
   have := isDirectedOrder hcons hcov x
   rcases stableValue_dichotomy Xi htop hcons hcov with ⟨k, hk, hval⟩ | ⟨ht, hsv⟩
   · obtain ⟨i, hi⟩ := eventually_atTop.mp hk
-    have hsup : (⨆ y, (offset Xi htop y : ℕ∞)) = k := by
+    have hsup : (⨆ y, (offset htop y : ℕ∞)) = k := by
       refine le_antisymm (iSup_le fun y => ?_) ?_
       · obtain ⟨z, hyz, hiz⟩ := exists_ge_ge y i
         exact_mod_cast (offset_mono Xi htop hyz).trans (hi z hiz).le
-      · exact (hi i le_rfl).symm ▸ le_iSup (fun y => (offset Xi htop y : ℕ∞)) i
+      · exact (hi i le_rfl).symm ▸ le_iSup (fun y => (offset htop y : ℕ∞)) i
     rw [hsup, bandValue_natCast, hval]
-  · have hsup : (⨆ y, (offset Xi htop y : ℕ∞)) = ⊤ := by
+  · have hsup : (⨆ y, (offset htop y : ℕ∞)) = ⊤ := by
       refine ENat.eq_top_iff_forall_ge.mpr fun k => ?_
       obtain ⟨y, hy⟩ := (ht.eventually (eventually_ge_atTop k)).exists
-      exact (Nat.cast_le.mpr hy).trans (le_iSup (fun y => (offset Xi htop y : ℕ∞)) y)
+      exact (Nat.cast_le.mpr hy).trans (le_iSup (fun y => (offset htop y : ℕ∞)) y)
     rw [hsup, bandValue_top, hsv]
 
-end RootedCover
 
-end KnightRealization
 
-end VaughtConjecture.Knight

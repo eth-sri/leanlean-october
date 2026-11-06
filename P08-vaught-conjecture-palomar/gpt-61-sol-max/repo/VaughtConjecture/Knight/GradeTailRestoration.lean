@@ -1,4 +1,0 @@
-module
-public import VaughtConjecture.Knight.GradeSplice
-public import VaughtConjecture.Knight.SourceBlockLocalityTransport
-public import VaughtConjecture.Knight.WitnessSplice

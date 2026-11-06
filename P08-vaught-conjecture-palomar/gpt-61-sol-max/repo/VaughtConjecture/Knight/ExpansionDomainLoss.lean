@@ -1,12 +1,12 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ExpansionDomain
-public import VaughtConjecture.Knight.ExpansionInjectivity
+import VaughtConjecture.Knight.ExpansionDomain
+import VaughtConjecture.Knight.ExpansionInjectivity
 
 /-! # Terminal models are precisely the successor losses
 
@@ -18,14 +18,12 @@ expansion. In particular terminal models can supply nonempty losses independentl
 of the theorem counting terminal classes.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.ExpansionDomain
 
-open TypeTower KnightRealization Cardinal StoppingRankFiltration
+open TypeTower KnightRealization  
 
 /-- The counted base of a terminal model reduces back to its block-zero reduct. -/
-theorem terminal_atBlockZero {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
+theorem terminal_atBlockZero {ξ} (W : TerminalModel ξ) :
     W.toNatModel.atBlockZero = W.1.reduct (blockStage_zero_le ξ) := by
   change (liftBlockZero (W.1.reduct (blockStage_zero_le ξ))).reduct
     blockStage_zero_le_omegaStage = _
@@ -34,7 +32,7 @@ theorem terminal_atBlockZero {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
 
 /-- A terminal model's counted base is lost exactly at the next block. This is
 the direction of the correspondence that uses injectivity of reduction. -/
-theorem terminalModel_mem_loss {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
+theorem terminalModel_mem_loss {ξ} (W : TerminalModel ξ) :
     Quotient.mk knightModelSetoid W.toNatModel ∈ domain ξ \ domain (ξ + 1) := by
   refine ⟨mem_domain_of_model W.2.1 (terminal_atBlockZero W).symm, ?_⟩
   intro hnext
@@ -44,4 +42,3 @@ theorem terminalModel_mem_loss {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
   refine ⟨V, hV, eq_of_reduct_eq_of_le ξ 0 zero_le _ _ (hV.reduct _) W.2.1 ?_⟩
   rw [Realization.reduct_reduct, hVr, terminal_atBlockZero W]
 
-end VaughtConjecture.Knight.ExpansionDomain

@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.PairedBoundarySections
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.PairedBoundarySections
 
 /-! # Coupling paired controller layers on their actual carriers
 
@@ -16,25 +17,21 @@ hypothesis is supplied. Both original long rows and the lower controller rows
 remain literal. This is a two-layer construction, not arbitrary-ambient lifting.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PairedCoupledSections
 
-open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
-open PairedSlotEncoding PairedSlotComparison
+open  Value   SharpWitnessComposition
 
-noncomputable section
 
-theorem short_replace {k i : ℕ} {x : ExtOrd} (hx : Short k x) (hi : i ≤ k) :
+
+
+theorem short_replace {k i} {x} (hx : Short k x) (hi : i ≤ k) :
     Short k (extVisibilityReplace x k i) := by
   rcases hx with rfl | rfl | ⟨a, rfl, ha⟩
-  · exact Or.inl (extVisibilityReplace_bot _ _)
-  · exact Or.inr (Or.inl (extVisibilityReplace_top _ _))
+  · solve_by_elim
+  · simp_all [VaughtConjecture.Knight.SharpWitnessComposition.Short]
   · by_cases hk : finitePart a < k
     · rw [extVisibilityReplace_of_finitePart_lt hk]
-      exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_limitPart_add_nat]; exact hi⟩)
+      exact Or.inr (Or.inr ⟨_, rfl, by simp_all [VaughtConjecture.Knight.Value.finitePart, VaughtConjecture.Knight.Value.limitPart]⟩)
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hk)]
       exact Or.inr (Or.inr ⟨a, rfl, ha⟩)
 
@@ -46,13 +43,9 @@ theorem supported_short {X : Type*} {k : ℕ} {G : Finset ExtOrd} {p : X → Ext
   · exact hG _ hv
   · exact short_replace (hp d) hi
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
+variable {ι : Type*} [DecidableEq ι]  
+variable (k : ℕ) (hk : 0 < k)  
 
-variable (k : ℕ) (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
+variable {G : Finset ExtOrd} 
 
-variable {G : Finset ExtOrd} {C : ExtOrd}
 
-end
-end VaughtConjecture.Knight.PairedCoupledSections

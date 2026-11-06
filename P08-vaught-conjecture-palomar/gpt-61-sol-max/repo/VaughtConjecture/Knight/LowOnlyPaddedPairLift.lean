@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowOnlyPaddedFaces
-public import VaughtConjecture.Knight.AmalgamatedBoundaryPlan
-public import VaughtConjecture.Knight.CappedLiftComposition
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.LowOnlyPaddedFaces
+import VaughtConjecture.Knight.AmalgamatedBoundaryPlan
+import VaughtConjecture.Knight.CappedLiftComposition
 
 /-! # Exhaustive lifting through target grade two on the padded LOW carrier
 
@@ -16,48 +17,48 @@ proved below for a binary two-coface plan; no mixed-prescription theorem is
 inferred from the two original-face endpoints.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPairLift
-open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension
+open     LowOnly AmalgamationPlan CoatomBoundaryExtension
 open LowOnlyPaddedSuccessor LowOnlyPaddedFaces LowOnlyPaddedCharts
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n K : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : F.root.Covers I.shared.f I.shared.g)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem donor_two : CappedLift (rows I F hroot hA hB hC)
+local notation "CappedLift₀" => CappedLift (rows I F hroot hA hB hC)
+
+local notation "donorFace₀" => donorFace I F hroot hA hB hC
+
+theorem donor_two : CappedLift₀
     (show GradedLe (B, 2) (A, 2) from ⟨hB.subset, le_rfl⟩) := by
   intro p q γ hp hq hγ hag
-  let e := fullEquiv I.left I.placeLeft I.imageLeft (donorFace I F hroot hA hB hC) 2
+  let e := fullEquiv I.left I.placeLeft I.imageLeft (donorFace₀) 2
   obtain ⟨r, hr, hread, hcap⟩ := LowOnlyPaddedOriginalLifts.donor_lift I F hroot hA hB hC
     ((full_respects_iff I.left I.placeLeft I.imageLeft
-      (donorFace I F hroot hA hB hC) 2 p).mp hp) hq hγ (fun d => hag (e d))
+      donorFace₀ 2 p).mp hp) hq hγ (fun d => hag (e d))
   refine ⟨r, hr, hcap, ?_⟩
   intro d
   obtain ⟨x, rfl⟩ := e.surjective d
   exact hread x
 
-theorem donor_one : CappedLift (rows I F hroot hA hB hC)
+local notation "lower_respects_iff₀" => lower_respects_iff
+
+theorem donor_one : CappedLift₀
     (show GradedLe (B, 1) (A, 1) from ⟨hB.subset, le_rfl⟩) := by
   intro p q γ hp hq hγ hag
   let e := lowerEquiv I F hroot hA hB hC
-  let f := fullEquiv I.left I.placeLeft I.imageLeft (donorFace I F hroot hA hB hC) 1
+  let f := fullEquiv I.left I.placeLeft I.imageLeft (donorFace₀) 1
   have hq' : RespectsSemanticsBelow (input I F hroot hA hB hC).lowerRows
       (A, 1) (q ∘ e) := by
-    apply (lower_respects_iff I F hroot hA hB hC _).mpr
+    apply (lower_respects_iff₀ _).mpr
     simpa only [e, Function.comp_def, Equiv.apply_symm_apply] using hq
   obtain ⟨r, hr, hread, hcap⟩ := LowOnlyOrderedLadder.donor_lift I F hroot (by omega) hB hC
     ((full_respects_iff I.left I.placeLeft I.imageLeft
-      (donorFace I F hroot hA hB hC) 1 p).mp hp) hq' hγ (fun d => hag (f d))
-  refine ⟨r ∘ e.symm, (lower_respects_iff I F hroot hA hB hC r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (e.symm d)
+      donorFace₀ 1 p).mp hp) hq' hγ (fun d => hag (f d))
+  refine ⟨r ∘ e.symm, (lower_respects_iff₀ r).mp hr, ?_, ?_⟩
+  · simp_all
   · intro d
     obtain ⟨x, rfl⟩ := f.surjective d
     change r (e.symm (e (Family.donorAt F I.boundary (by omega)
@@ -65,33 +66,34 @@ theorem donor_one : CappedLift (rows I F hroot hA hB hC)
     rw [Equiv.symm_apply_apply]
     exact hread x
 
-theorem private_two : CappedLift (rows I F hroot hA hB hC)
+local notation "privateFace₀" => privateFace I F hroot hA hB hC
+
+theorem private_two : CappedLift₀
     (show GradedLe (C, 2) (A, 2) from ⟨hC.subset, le_rfl⟩) := by
   intro p q γ hp hq hγ hag
-  let e := fullEquiv I.right I.placeRight I.imageRight (privateFace I F hroot hA hB hC) 2
+  let e := fullEquiv I.right I.placeRight I.imageRight (privateFace₀) 2
   obtain ⟨r, hr, hread, hcap⟩ := LowOnlyPaddedOriginalLifts.private_lift I F hroot hA hB hC
     ((full_respects_iff I.right I.placeRight I.imageRight
-      (privateFace I F hroot hA hB hC) 2 p).mp hp) hq hγ (fun d => hag (e d))
+      privateFace₀ 2 p).mp hp) hq hγ (fun d => hag (e d))
   refine ⟨r, hr, hcap, ?_⟩
   intro d
   obtain ⟨x, rfl⟩ := e.surjective d
   exact hread x
 
-theorem private_one : CappedLift (rows I F hroot hA hB hC)
+theorem private_one : CappedLift₀
     (show GradedLe (C, 1) (A, 1) from ⟨hC.subset, le_rfl⟩) := by
   intro p q γ hp hq hγ hag
   let e := lowerEquiv I F hroot hA hB hC
-  let f := fullEquiv I.right I.placeRight I.imageRight (privateFace I F hroot hA hB hC) 1
+  let f := fullEquiv I.right I.placeRight I.imageRight (privateFace₀) 1
   have hq' : RespectsSemanticsBelow (input I F hroot hA hB hC).lowerRows
       (A, 1) (q ∘ e) := by
-    apply (lower_respects_iff I F hroot hA hB hC _).mpr
+    apply (lower_respects_iff₀ _).mpr
     simpa only [e, Function.comp_def, Equiv.apply_symm_apply] using hq
   obtain ⟨r, hr, hread, hcap⟩ := LowOnlyOrderedLadder.private_lift I F hroot (by omega) hB hC
     ((full_respects_iff I.right I.placeRight I.imageRight
-      (privateFace I F hroot hA hB hC) 1 p).mp hp) hq' hγ (fun d => hag (f d))
-  refine ⟨r ∘ e.symm, (lower_respects_iff I F hroot hA hB hC r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (e.symm d)
+      privateFace₀ 1 p).mp hp) hq' hγ (fun d => hag (f d))
+  refine ⟨r ∘ e.symm, (lower_respects_iff₀ r).mp hr, ?_, ?_⟩
+  · simp_all
   · intro d
     obtain ⟨x, rfl⟩ := f.surjective d
     change r (e.symm (e (Family.privateAt F I.boundary (by omega)
@@ -101,11 +103,13 @@ theorem private_one : CappedLift (rows I F hroot hA hB hC)
 
 variable (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
+local notation "inherited_lift₀" => inherited_lift I F hroot hA hB hC
+
 include hcover in
-theorem same_grade {S T : Finset ι} {j : ℕ}
+theorem same_grade {S T} {j}
     (hS : (S, j) ∈ Plan.gradedPlan R) (hT : (T, j) ∈ Plan.gradedPlan R)
     (hj : j ≤ 2) (hST : S ⊆ T) :
-    CappedLift (rows I F hroot hA hB hC)
+    CappedLift₀
       (show GradedLe (S, j) (T, j) from ⟨hST, le_rfl⟩) := by
   by_cases ht : T = A
   · subst T
@@ -117,35 +121,31 @@ theorem same_grade {S T : Finset ι} {j : ℕ}
     · have hBj : (B, j) ∈ Plan.gradedPlan R := Plan.mem_gradedPlan.mpr
         ⟨I.leftPlan_le I.leftScheme.isPlan.domain_mem, hjpos,
           (Plan.mem_gradedPlan.mp hS).2.2.trans (Finset.card_le_card hb)⟩
-      have hl := inherited_lift I F hroot hA hB hC hS hBj
+      have hl := inherited_lift₀ hS hBj
         (show GradedLe (S, j) (B, j) from ⟨hb, le_rfl⟩) (Or.inl (Finset.Subset.refl _))
-      have hu : CappedLift (rows I F hroot hA hB hC)
+      have hu : CappedLift₀
           (show GradedLe (B, j) (A, j) from ⟨hB.subset, le_rfl⟩) := by
-        rcases hcases with rfl | rfl
-        · exact donor_one I F hroot hA hB hC
-        · exact donor_two I F hroot hA hB hC
+        aesop (add safe apply [donor_one, donor_two])
       exact hl.comp hu
     · have hCj : (C, j) ∈ Plan.gradedPlan R := Plan.mem_gradedPlan.mpr
         ⟨I.rightPlan_le I.rightScheme.isPlan.domain_mem, hjpos,
           (Plan.mem_gradedPlan.mp hS).2.2.trans (Finset.card_le_card hc)⟩
-      have hl := inherited_lift I F hroot hA hB hC hS hCj
+      have hl := inherited_lift₀ hS hCj
         (show GradedLe (S, j) (C, j) from ⟨hc, le_rfl⟩) (Or.inr (Finset.Subset.refl _))
-      have hu : CappedLift (rows I F hroot hA hB hC)
+      have hu : CappedLift₀
           (show GradedLe (C, j) (A, j) from ⟨hC.subset, le_rfl⟩) := by
-        rcases hcases with rfl | rfl
-        · exact private_one I F hroot hA hB hC
-        · exact private_two I F hroot hA hB hC
+        aesop (add safe apply [private_one, private_two])
       exact hl.comp hu
-  · exact inherited_lift I F hroot hA hB hC hS hT ⟨hST, le_rfl⟩
+  · exact inherited_lift₀ hS hT ⟨hST, le_rfl⟩
       (hcover T (Plan.mem_gradedPlan.mp hT).1 ht)
 
 include hcover in
 /-- Every permitted pair through target grade two, including equal indices
 and grade changes. No completeness at any unfilled higher index is claimed. -/
-theorem lift {U V : Finset ι × ℕ}
+theorem lift {U V}
     (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
     (h : GradedLe U V) (hgrade : V.2 ≤ 2) :
-    CappedLift (rows I F hroot hA hB hC) h := by
+    CappedLift₀ h := by
   rcases U with ⟨S, i⟩
   rcases V with ⟨T, j⟩
   have hTi : (T, i) ∈ Plan.gradedPlan R := Plan.mem_gradedPlan.mpr
@@ -165,7 +165,6 @@ theorem cover_two_cofaces (s : AmalgamatedBoundaryPlan.Step A)
   · rcases Finset.mem_union.mp hS with hl | hr
     · exact Or.inl (hleft ▸ s.left_plan.subset_of_mem hl)
     · exact Or.inr (hright ▸ s.right_plan.subset_of_mem hr)
-  · exact False.elim (hs (Finset.mem_singleton.mp hS))
+  · simp_all
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedPairLift
+

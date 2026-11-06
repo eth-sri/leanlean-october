@@ -3,11 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Scott.AtomicDiagram
-public import Architect
-public import Mathlib.SetTheory.Ordinal.Arithmetic
+import InfinitaryLogic.Scott.AtomicDiagram
+import Architect
+import Mathlib.SetTheory.Ordinal.Arithmetic
 
 /-!
 # Back-and-Forth Equivalence
@@ -97,8 +96,6 @@ equivalence relations with matching finite-class structure but different arrange
 infinite classes.
 -/
 
-@[expose] public section
-
 universe u v w w'
 
 namespace FirstOrder
@@ -109,7 +106,7 @@ variable {L : Language.{u, v}} [L.IsRelational]
 variable {M : Type w} [L.Structure M]
 variable {N : Type w'} [L.Structure N]
 
-open FirstOrder Structure Fin Ordinal
+open FirstOrder  Fin Ordinal
 
 /-- Back-and-forth equivalence at ordinal α between tuples a in M and b in N.
 
@@ -137,13 +134,13 @@ agreement fails: with one unary function symbol `f`, the empty tuples of `(ℕ, 
 noncomputable def BFEquiv (α : Ordinal) (n : ℕ) (a : Fin n → M) (b : Fin n → N) : Prop :=
   Ordinal.limitRecOn α
     -- Zero case: same atomic type
-    (fun (k : ℕ) (a' : Fin k → M) (b' : Fin k → N) =>
+    (fun k a' b' =>
       SameAtomicType (L := L) (M := M) (N := N) a' b')
     -- Successor case
     (fun _β ih (k : ℕ) (a' : Fin k → M) (b' : Fin k → N) =>
       ih k a' b' ∧
-      (∀ m : M, ∃ n' : N, ih (k + 1) (snoc a' m) (snoc b' n')) ∧
-      (∀ n' : N, ∃ m : M, ih (k + 1) (snoc a' m) (snoc b' n')))
+      (∀ m , ∃ n' , ih (k + 1) (snoc a' m) (snoc b' n')) ∧
+      (∀ n' , ∃ m , ih (k + 1) (snoc a' m) (snoc b' n')))
     -- Limit case
     (fun _β _hβ ih (k : ℕ) (a' : Fin k → M) (b' : Fin k → N) =>
       ∀ γ (hγ : γ < _β), ih γ hγ k a' b')
@@ -152,29 +149,29 @@ noncomputable def BFEquiv (α : Ordinal) (n : ℕ) (a : Fin n → M) (b : Fin n 
 variable {n : ℕ}
 
 omit [L.IsRelational] in
-theorem BFEquiv.zero (a : Fin n → M) (b : Fin n → N) :
+theorem BFEquiv.zero a b :
     BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) (M := M) (N := N) a b := by
-  simp only [BFEquiv, Ordinal.limitRecOn_zero]
+  simp  [BFEquiv, ]
 
 omit [L.IsRelational] in
-theorem BFEquiv.succ (α : Ordinal) (a : Fin n → M) (b : Fin n → N) :
+theorem BFEquiv.succ {α : Ordinal} {a : Fin n → M} {b : Fin n → N} :
     BFEquiv (L := L) (Order.succ α) n a b ↔
       BFEquiv (L := L) α n a b ∧
-      (∀ m : M, ∃ n' : N, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) ∧
-      (∀ n' : N, ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by
-  simp only [BFEquiv, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
+      (∀ m , ∃ n' , BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) ∧
+      (∀ n' , ∃ m , BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by
+  simp  [BFEquiv,  ]
 
 omit [L.IsRelational] in
-theorem BFEquiv.limit (α : Ordinal) (hα : Order.IsSuccLimit α) (a : Fin n → M) (b : Fin n → N) :
+theorem BFEquiv.limit {α : Ordinal} (hα : Order.IsSuccLimit α) {a : Fin n → M} {b : Fin n → N} :
     BFEquiv (L := L) α n a b ↔ ∀ β, β < α → BFEquiv (L := L) β n a b := by
   unfold BFEquiv
   rw [Ordinal.limitRecOn_limit _ _ _ _ hα]
 
 omit [L.IsRelational] in
 /-- BF-equivalence at level α + 1 implies BF-equivalence at level α. -/
-theorem BFEquiv.of_succ {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
-    (h : BFEquiv (L := L) (Order.succ α) n a b) : BFEquiv (L := L) α n a b :=
-  ((BFEquiv.succ α a b).mp h).1
+def BFEquiv.of_succ {α} {a : Fin n → M} {b : Fin n → N}
+    (h : BFEquiv (L := L) (Order.succ α) n a b) :=
+  ((BFEquiv.succ).mp h).1
 
 omit [L.IsRelational] in
 /-- BF-equivalence is monotone: higher ordinals imply lower ordinals. -/
@@ -183,7 +180,7 @@ theorem BFEquiv.monotone {α β : Ordinal} (hαβ : α ≤ β)
     BFEquiv (L := L) α n a b := by
   induction β using Ordinal.limitRecOn generalizing n a b with
   | zero =>
-    simp only [nonpos_iff_eq_zero] at hαβ
+    simp   at hαβ
     rwa [hαβ]
   | add_one γ ih =>
     rw [← Order.succ_eq_add_one] at hαβ h
@@ -193,22 +190,20 @@ theorem BFEquiv.monotone {α β : Ordinal} (hαβ : α ≤ β)
     · exact h
   | limit γ hγ _ih =>
     rcases hαβ.lt_or_eq with hαβ' | rfl
-    · exact (BFEquiv.limit γ hγ a b).mp h α hαβ'
+    · exact (BFEquiv.limit hγ).mp h α hαβ'
     · exact h
 
 omit [L.IsRelational] in
 /-- The "forth" property at a successor level. -/
-theorem BFEquiv.forth {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
-    (h : BFEquiv (L := L) (Order.succ α) n a b) (m : M) :
-    ∃ n' : N, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n') :=
-  ((BFEquiv.succ α a b).mp h).2.1 m
+def BFEquiv.forth {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
+    (h : BFEquiv (L := L) (Order.succ α) n a b) (m : M) :=
+  ((BFEquiv.succ).mp h).2.1 m
 
 omit [L.IsRelational] in
 /-- The "back" property at a successor level. -/
-theorem BFEquiv.back {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
-    (h : BFEquiv (L := L) (Order.succ α) n a b) (n' : N) :
-    ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n') :=
-  ((BFEquiv.succ α a b).mp h).2.2 n'
+def BFEquiv.back {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
+    (h : BFEquiv (L := L) (Order.succ α) n a b) (n' : N) :=
+  ((BFEquiv.succ).mp h).2.2 n'
 
 omit [L.IsRelational] in
 /-- BF-equivalence is reflexive at all levels. -/
@@ -220,7 +215,7 @@ theorem BFEquiv.refl (α : Ordinal) (a : Fin n → M) :
     rw [← Order.succ_eq_add_one, BFEquiv.succ]
     exact ⟨ih a, fun m => ⟨m, ih (snoc a m)⟩, fun m => ⟨m, ih (snoc a m)⟩⟩
   | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ]
+    rw [BFEquiv.limit hβ]
     exact fun γ hγ => ih γ hγ a
 
 omit [L.IsRelational] in
@@ -236,7 +231,7 @@ theorem BFEquiv.symm {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
     exact ⟨ih h.1, fun n' => let ⟨m, hm⟩ := h.2.2 n'; ⟨m, ih hm⟩,
            fun m => let ⟨n', hn'⟩ := h.2.1 m; ⟨n', ih hn'⟩⟩
   | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ] at h ⊢
+    rw [BFEquiv.limit hβ] at h ⊢
     exact fun γ hγ => ih γ hγ (h γ hγ)
 
 omit [L.IsRelational] in
@@ -257,7 +252,7 @@ theorem BFEquiv.trans {P : Type*} [L.Structure P]
     · let ⟨nb, hnb⟩ := hab.2.1 m; let ⟨p, hp⟩ := hbc.2.1 nb; exact ⟨p, ih hnb hp⟩
     · let ⟨nb, hnb⟩ := hbc.2.2 p; let ⟨m, hm⟩ := hab.2.2 nb; exact ⟨m, ih hm hnb⟩
   | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ] at hab hbc ⊢
+    rw [BFEquiv.limit hβ] at hab hbc ⊢
     exact fun γ hγ => ih γ hγ (hab γ hγ) (hbc γ hγ)
 
 /-! ### BFStrategy: Explicit Witness Strategies
@@ -280,6 +275,4 @@ Winning all finite back-and-forth games does not give an ω-round strategy. The 
 BFEquiv is defined by `Ordinal.limitRecOn`, which is universe-specific. These lemmas
 transport BFEquiv between ordinal universes via `Ordinal.lift`. -/
 
-end Language
 
-end FirstOrder

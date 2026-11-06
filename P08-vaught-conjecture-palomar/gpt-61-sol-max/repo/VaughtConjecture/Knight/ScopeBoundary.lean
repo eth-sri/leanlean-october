@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GradeCutBoundary
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GradeCutBoundary
 
 /-! # Literal restriction to a point scope without changing point names
 
@@ -14,49 +15,52 @@ This restriction keeps the actual ordered occurrences whose supports lie in
 installing a full-scope source layer on a proper mixed scope of a larger carrier.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeBoundary
-open AmalgamationPlan Transform Value ExtOrd
+open AmalgamationPlan   
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
 variable (D : CellScheme A) (B : Finset ι) (hB : B ∈ D.plan)
 
-def inventory : Finset (Cell D) := Finset.univ.filter (fun d => D.scope d ⊆ B)
+def inventory := Finset.univ.filter (fun d => D.scope d ⊆ B)
+
+local notation "inventory₀" => inventory D B
 
 def scheme : CellScheme B where
   plan := Plan.restrictPlan D.plan B
   isPlan := Plan.restrict_isPlan D.isPlan hB
-  card := (inventory D B).card
-  cell c := D.cell ((inventory D B).orderEmbOfFin rfl c)
+  card := (inventory₀).card
+  cell c := D.cell ((inventory₀).orderEmbOfFin rfl c)
   cell_mem c := by
     obtain ⟨hs, hk, hc⟩ := Plan.mem_gradedPlan.mp
-      (D.cell_mem ((inventory D B).orderEmbOfFin rfl c))
+      (D.cell_mem ((inventory₀).orderEmbOfFin rfl c))
     exact Plan.mem_gradedPlan.mpr ⟨Finset.mem_inter.mpr
       ⟨hs, Finset.mem_powerset.mpr
-        (Finset.mem_filter.mp ((inventory D B).orderEmbOfFin_mem rfl c)).2⟩, hk, hc⟩
+        (Finset.mem_filter.mp ((inventory₀).orderEmbOfFin_mem rfl c)).2⟩, hk, hc⟩
 
-def toCell : Cell (scheme D B hB) ↪o Cell D := (inventory D B).orderEmbOfFin rfl
+local notation "scheme₀" => scheme D B hB
 
-theorem cell_eq (d : Cell (scheme D B hB)) :
-    (scheme D B hB).cell d = D.cell (toCell D B hB d) := rfl
+def toCell : Cell (scheme₀) ↪o Cell D := (inventory₀).orderEmbOfFin rfl
 
-theorem scope_bound (d : Cell (scheme D B hB)) : D.scope (toCell D B hB d) ⊆ B :=
-  (Finset.mem_filter.mp ((inventory D B).orderEmbOfFin_mem rfl d)).2
+local notation "toCell₀" => toCell D B hB
 
-theorem exhaustive {d : Cell D} (hd : D.scope d ⊆ B) : ∃ c, toCell D B hB c = d := by
-  have hm : d ∈ Set.range ((inventory D B).orderEmbOfFin (k := (inventory D B).card) rfl) := by
+theorem cell_eq d :
+    (scheme₀).cell d = D.cell (toCell₀ d) := rfl
+
+theorem scope_bound d : D.scope (toCell₀ d) ⊆ B :=
+  (Finset.mem_filter.mp ((inventory₀).orderEmbOfFin_mem rfl d)).2
+
+theorem exhaustive {d} (hd : D.scope d ⊆ B) : ∃ c, toCell₀ c = d := by
+  have hm : d ∈ Set.range ((inventory₀).orderEmbOfFin  rfl) := by
     rw [Finset.range_orderEmbOfFin]
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd⟩
   exact hm
 
-def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B) :
-    (scheme D B hB).below BJ ≃ D.below BJ :=
-  Equiv.ofBijective (fun d => ⟨toCell D B hB d.1, d.2⟩) ⟨by
+def belowEquiv {BJ : GradedIndex ι} (hBJ : BJ.1 ⊆ B) :
+    (scheme₀).below BJ ≃ D.below BJ :=
+  Equiv.ofBijective (fun d => ⟨toCell₀ d.1, d.2⟩) ⟨by
     intro a b hab
-    exact Subtype.ext ((toCell D B hB).injective
-      (congrArg (fun z : D.below BJ => z.1) hab)), by
+    exact Subtype.ext ((toCell₀).injective
+      (congrArg (fun z => z.1) hab)), by
     intro d
     obtain ⟨c, hc⟩ := exhaustive D B hB (d.2.1.trans hBJ)
     refine ⟨⟨c, ?_⟩, Subtype.ext hc⟩
@@ -64,29 +68,25 @@ def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B) :
 
 variable (sem : Semantics D)
 
-def rows : Semantics (scheme D B hB) where
-  E c d := sem.E (toCell D B hB c)
-    (belowEquiv D B hB ((scheme D B hB).cell c) (scope_bound D B hB c) d)
-  orderly c _d := sem.orderly (toCell D B hB c) _
+def rows : Semantics (scheme₀) where
+  E c d := sem.E (toCell₀ c)
+    (belowEquiv D B hB (scope_bound D B hB c) d)
+  orderly c _d := sem.orderly (toCell₀ c) _
 
-theorem respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B)
-    (p : (scheme D B hB).below BJ → ExtOrd) :
-    RespectsSemanticsBelow (rows D B hB sem) BJ p ↔
-      RespectsSemanticsBelow sem BJ (p ∘ (belowEquiv D B hB BJ hBJ).symm) :=
-  respects_iff_of_equiv (belowEquiv D B hB BJ hBJ) (fun _ => rfl) (fun _ _ => Iff.rfl)
+local notation "rows₀" => rows D B hB sem
+
+theorem respects_iff (BJ : GradedIndex ι) (hBJ : BJ.1 ⊆ B)
+    p :
+    RespectsSemanticsBelow (rows₀) BJ p ↔
+      RespectsSemanticsBelow sem BJ (p ∘ (belowEquiv D B hB hBJ).symm) :=
+  respects_iff_of_equiv (belowEquiv D B hB hBJ) (fun _ => rfl) (fun _ _ => Iff.rfl)
     (fun _ _ _ => rfl) p
 
-theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.1 ⊆ B)
-    {p : D.below BJ → ExtOrd} (hp : RespectsSemanticsBelow sem BJ p) :
-    RespectsSemanticsBelow (rows D B hB sem) BJ (p ∘ belowEquiv D B hB BJ hBJ) := by
-  apply (respects_iff D B hB sem BJ hBJ _).mpr
-  simpa only [Function.comp_def, Equiv.apply_symm_apply] using hp
+theorem pullback_respects {BJ : GradedIndex ι} (hBJ : BJ.1 ⊆ B)
+    {p} (hp : RespectsSemanticsBelow sem BJ p) :
+    RespectsSemanticsBelow (rows₀) BJ (p ∘ belowEquiv D B hB hBJ) := by simp_all [respects_iff, Function.comp_def]
 
-theorem consistent (hs : sem.IsConsistent) : (rows D B hB sem).IsConsistent := by
-  intro c
-  exact pullback_respects D B hB sem (scope_bound D B hB c) (hs (toCell D B hB c))
+theorem consistent (hs : sem.IsConsistent) : (rows₀).IsConsistent := by solve_by_elim [pullback_respects]
 
-theorem coded (hs : sem.IsCoded) : (rows D B hB sem).IsCoded := fun _ _ => hs _ _
+theorem coded (hs : sem.IsCoded) : (rows₀).IsCoded := fun _ _ => hs _ _
 
-end
-end VaughtConjecture.Knight.ScopeBoundary

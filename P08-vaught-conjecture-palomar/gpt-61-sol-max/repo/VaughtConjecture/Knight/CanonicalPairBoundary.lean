@@ -1,12 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GradeCutPairRows
-public import VaughtConjecture.Knight.CanonicalSections
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GradeCutPairRows
+import VaughtConjecture.Knight.CanonicalSections
 
 /-! # Two canonical lower layers retaining higher proper owners
 
@@ -19,89 +22,95 @@ This constructs lower rows for the proper-grade-three problem; it does not
 claim arbitrary cap-preserving extension of a joint boundary/controller history.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairBoundary
-open Transform Value ExtOrd PairedSlotEncoding PairedSlotComparison SourcePrefixRows
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (j k : ℕ)
 variable (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j < k)
+variable (hp : AvoidsValue D.scope A) (hjk : j < k)
 
 abbrev boundary := GradeCutBoundary.scheme D k
 abbrev boundaryRows := GradeCutBoundary.rows D k sem
-abbrev firstProfiles := CanonicalGradeCutSections.Profiles (boundaryRows sem k) j
-abbrev secondProfiles :=
-  CanonicalFieldLayer.Profile (boundaryRows sem k) k (Cell (boundary (D := D) k)) id
-abbrev lower := CanonicalMixedGradeLayers.scheme (boundaryRows sem k) j hj hjA k hk hkA
-abbrev lowerRows := CanonicalMixedGradeLayers.rows (boundaryRows sem k) j hj hjA
-  (GradeCutBoundary.proper D k hp) k (GradeCutBoundary.grade_bound D k) hk hkA hjk
-abbrev scheme := GradeCutPairCarrier.enlarged D (firstProfiles sem j k) (secondProfiles sem k)
-  j k hj hjA hk hkA
-abbrev old := GradeCutPairCarrier.old D (firstProfiles sem j k) (secondProfiles sem k)
-  j k hj hjA hk hkA
-abbrev embed := GradeCutPairCarrier.embed D (firstProfiles sem j k) (secondProfiles sem k)
-  j k hj hjA hk hkA
-abbrev rows := GradeCutPairRows.rows D (firstProfiles sem j k) (secondProfiles sem k)
-  j k hj hjA hk hkA hp hjk.le sem (lowerRows sem j k hj hjA hk hkA hp hjk)
+local notation "boundaryRows₀" => boundaryRows sem k
 
-theorem overlap (c : Cell (boundary (D := D) k))
-    (d : (boundary (D := D) k).below ((boundary (D := D) k).cell c)) :
-    (lowerRows sem j k hj hjA hk hkA hp hjk).E
-      (GradeCutPairCarrier.old (boundary (D := D) k) (firstProfiles sem j k)
+abbrev firstProfiles := CanonicalGradeCutSections.Profiles (boundaryRows₀) j
+abbrev secondProfiles :=
+  CanonicalFieldLayer.Profile (boundaryRows₀) k (Cell (boundary  k)) id
+abbrev lower := CanonicalMixedGradeLayers.scheme (boundaryRows₀) j hj hjA k hk hkA
+abbrev lowerRows := CanonicalMixedGradeLayers.rows (boundaryRows₀) j hj hjA
+  (GradeCutBoundary.proper hp) k GradeCutBoundary.grade_bound hk hkA hjk
+local notation "firstProfiles₀" => firstProfiles sem j k
+
+abbrev scheme := GradeCutPairCarrier.enlarged D (firstProfiles₀) (secondProfiles sem k)
+  j k hj hjA hk hkA
+abbrev old := GradeCutPairCarrier.old D (firstProfiles₀) (secondProfiles sem k)
+  j k hj hjA hk hkA
+abbrev embed := GradeCutPairCarrier.embed D (firstProfiles₀) (secondProfiles sem k)
+  j k hj hjA hk hkA
+local notation "lowerRows₀" => lowerRows sem j k hj hjA hk hkA hp hjk
+
+abbrev rows := GradeCutPairRows.rows D (firstProfiles₀) (secondProfiles sem k)
+  j k hj hjA hk hkA hp hjk.le sem (lowerRows₀)
+
+local notation "boundary₀" => boundary (D := D) k
+
+variable {sem j k hj hjA hk hkA hp hjk} in
+theorem overlap (c : Cell (boundary₀))
+    (d : (boundary₀).belowCell c) :
+    (lowerRows₀).E
+      (GradeCutPairCarrier.old (boundary₀) (firstProfiles₀)
         (secondProfiles sem k) j k hj hjA hk hkA c)
-      ⟨GradeCutPairCarrier.old (boundary (D := D) k) (firstProfiles sem j k)
+      ⟨GradeCutPairCarrier.old (boundary₀) (firstProfiles₀)
         (secondProfiles sem k) j k hj hjA hk hkA d.1, by
           simpa only [GradeCutPairCarrier.old, GradeCutPairCarrier.cell_idx,
-            GradeCutPairCarrier.idx] using d.2⟩ = (boundaryRows sem k).E c d :=
-  CanonicalMixedGradeLayers.original_row (boundaryRows sem k) j hj hjA
-    (GradeCutBoundary.proper D k hp) k (GradeCutBoundary.grade_bound D k) hk hkA hjk c d
+            GradeCutPairCarrier.idx] using d.2⟩ = (boundaryRows₀).E c d :=
+  CanonicalMixedGradeLayers.original_row (boundaryRows₀) j hj hjA
+    (GradeCutBoundary.proper hp) k GradeCutBoundary.grade_bound hk hkA hjk c d
 
-theorem consistent (hs : sem.IsConsistent) : (rows sem j k hj hjA hk hkA hp hjk).IsConsistent :=
+local notation "overlap₀" => overlap
+
+local notation "rows₀" => rows sem j k hj hjA hk hkA hp hjk
+
+variable {sem j k hj hjA hk hkA hp hjk} in
+theorem consistent (hs : sem.IsConsistent) : (rows₀).IsConsistent :=
   GradeCutPairRows.consistent D _ _ j k hj hjA hk hkA hp hjk.le sem _
-    (overlap sem j k hj hjA hk hkA hp hjk) hs
-    (CanonicalMixedGradeLayers.consistent (boundaryRows sem k) j hj hjA
-      (GradeCutBoundary.proper D k hp) k (GradeCutBoundary.grade_bound D k) hk hkA hjk
+    (overlap₀) hs
+    (CanonicalMixedGradeLayers.consistent (boundaryRows₀) j hj hjA
+      (GradeCutBoundary.proper hp) k GradeCutBoundary.grade_bound hk hkA hjk
       (GradeCutBoundary.consistent D k sem hs))
 
-theorem lower_row (c : Cell (lower sem j k hj hjA hk hkA))
-    (d : (lower sem j k hj hjA hk hkA).below ((lower sem j k hj hjA hk hkA).cell c)) :
-    (rows sem j k hj hjA hk hkA hp hjk).E (embed sem j k hj hjA hk hkA c)
+local notation "lower₀" => lower sem j k hj hjA hk hkA
+
+theorem lower_row c
+    (d : (lower₀).belowCell c) :
+    (rows₀).E (embed sem j k hj hjA hk hkA c)
       ⟨embed sem j k hj hjA hk hkA d.1, by
         simpa only [embed, GradeCutPairCarrier.embed_index] using d.2⟩ =
-      (lowerRows sem j k hj hjA hk hkA hp hjk).E c d :=
-  GradeCutPairRows.embedded_row D _ _ j k hj hjA hk hkA hp hjk.le sem _
-    (overlap sem j k hj hjA hk hkA hp hjk) c d
+      (lowerRows₀).E c d :=
+  GradeCutPairRows.embedded_row
+    (overlap₀) c d
 
-variable {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
+variable {p : CellLabels D} (hpr : RespectsSemantics sem p) 
 
-variable {G : Finset ExtOrd} {C : ExtOrd}
-
-/-- Ordinary whole-boundary sections also allow literal top, independently
-of the proper-profile selected operator. There is no ambient-cap conclusion. -/
-theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
-    ∃ r : Cell (scheme sem j k hj hjA hk hkA) → ExtOrd,
-      RespectsSemantics (rows sem j k hj hjA hk hkA hp hjk) r ∧
+theorem exists_whole {p} (hpr : RespectsSemantics sem p) :
+    ∃ r ,
+      RespectsSemantics (rows₀) r ∧
       ∀ d, r (old sem j k hj hjA hk hkA d) = p d := by
-  obtain ⟨u, hu, hread⟩ := CanonicalSections.exists_whole (boundaryRows sem k) j hj hjA
-    (GradeCutBoundary.proper D k hp) k (GradeCutBoundary.grade_bound D k) hk hkA hjk
+  obtain ⟨u, hu, hread⟩ := CanonicalSections.exists_whole (boundaryRows₀) j hj hjA
+    (GradeCutBoundary.proper hp) k GradeCutBoundary.grade_bound hk hkA hjk
     (GradeCutBoundary.restrict_respects D k sem hpr)
-  let all (d : Cell (lower sem j k hj hjA hk hkA)) :
-      (lower sem j k hj hjA hk hkA).below (A, k) :=
-    ⟨d, (lower sem j k hj hjA hk hkA).isPlan.subset_of_mem
-        ((lower sem j k hj hjA hk hkA).scope_mem_plan d),
+  let all (d : Cell lower₀) :
+      (lower₀).below (A, k) :=
+    ⟨d, (lower₀).scope_subset d,
       GradeCutPairCarrier.small_grade D _ _ j k hj hjA hk hkA hjk.le d⟩
   let v := fun d => u (all d)
-  have hv : RespectsSemantics (lowerRows sem j k hj hjA hk hkA hp hjk) v :=
+  have hv : RespectsSemantics (lowerRows₀) v :=
     hu.toRespects (fun d => (all d).2)
   refine ⟨GradeCutPairRows.glue D _ _ j k hj hjA hk hkA p v,
     GradeCutPairRows.glue_respects D _ _ j k hj hjA hk hkA hp hjk.le sem _
-      (overlap sem j k hj hjA hk hkA hp hjk) hpr hv ?_,
-    GradeCutPairRows.glue_old D _ _ j k hj hjA hk hkA p v⟩
+      overlap₀ hpr hv ?_,
+    GradeCutPairRows.glue_old p v⟩
   exact hread
 
-end
-end VaughtConjecture.Knight.CanonicalPairBoundary

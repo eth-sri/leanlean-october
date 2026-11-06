@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ExpansionDomainEndpoint
+import VaughtConjecture.Knight.ExpansionDomainEndpoint
 
 /-!
 # Proof of the independent infinitary counterexample statement
@@ -18,8 +17,6 @@ and perfect-set assertions use the same sentence as the cardinality assertion.
 This module consumes the migrated proof closure. Verification of the full migrated
 package and its independent replay are prerequisites for submission.
 -/
-
-@[expose] public section
 
 namespace PalomarChallenge
 
@@ -46,12 +43,12 @@ def structureOfCode {M : Type} (c : Code R M) : (language R).Structure M where
   RelMap := fun {n} r xs => c ⟨⟨n, r⟩, xs⟩ = true
 
 /-- Ordinary satisfaction in the decoded structure. -/
-def Satisfies {M : Type} (φ : (language R).Sentenceω) (c : Code R M) : Prop :=
+def Satisfies {M : Type} (φ : (language R).Sentenceω) (c : Code R M) :=
   letI := structureOfCode R c
   FirstOrder.Language.BoundedFormulaInf.Realize (M := M) φ Empty.elim Fin.elim0
 
 /-- Isomorphism by a permutation preserving every relation truth value. -/
-def Isomorphic (c d : Code R ℕ) : Prop :=
+def Isomorphic (c d : Code R ℕ) :=
   ∃ e : ℕ ≃ ℕ, ∀ n (r : R n) (xs : Fin n → ℕ), c ⟨⟨n, r⟩, xs⟩ = d ⟨⟨n, r⟩, e ∘ xs⟩
 
 /-- The genuine equivalence relation on codes. -/
@@ -79,11 +76,11 @@ def modelSetoid (φ : (language R).Sentenceω) : Setoid (NatModel R φ) :=
 abbrev IsoClasses (φ : (language R).Sentenceω) := Quotient (modelSetoid R φ)
 
 /-- No finite coded model, including on the empty carrier. -/
-def NoFiniteModels (φ : (language R).Sentenceω) : Prop :=
+def NoFiniteModels (φ : (language R).Sentenceω) :=
   ∀ n (c : Code R (Fin n)), ¬ Satisfies R φ c
 
 /-- Thinness in the ordinary product topology on Boolean relation coordinates. -/
-def NoPerfectAntichain (φ : (language R).Sentenceω) : Prop :=
+def NoPerfectAntichain (φ : (language R).Sentenceω) :=
   ¬ ∃ P : Set (StructureSpace R), P.Nonempty ∧ Perfect P ∧
     (∀ c ∈ P, Satisfies R φ c) ∧
       ∀ c ∈ P, ∀ d ∈ P, c ≠ d → ¬ Isomorphic R c d
@@ -147,4 +144,3 @@ theorem independent_challenge :
     by_contra hne
     exact hanti c hc d hd hne ((isomorphic_iff_library c d).mpr hcd)
 
-end PalomarChallenge

@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.DirectedFiniteJump
-public import VaughtConjecture.Knight.StableBandVector
+import Mathlib.Tactic
+
+import VaughtConjecture.DirectedFiniteJump
+import VaughtConjecture.Knight.StableBandVector
 
 /-! # Stable lawfulness from one finite observation and a jump
 
@@ -21,13 +22,8 @@ and jump preservation. Only source consistency and covering are required;
 receiving and successor modelhood remain separate. Face coherence is unchanged.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
-open TypeTower Value ExtOrd StageType
 
 universe w
 
@@ -44,14 +40,14 @@ completed-band supremum. The general finite-vector lemma carries the entire
 synchronization argument; no closed-set theorem or occurrence scheduler is used. -/
 theorem stableBand_mem_lawfulBand_of_finiteJump (hc : R.IsExactParentConsistent)
     (hv : R.IsInitialSegmentCovering) : stableBand x ∈ x.type.LawfulBand := by
-  classical
+  
   have := isDirectedOrder hc hv x
   exact DirectedFiniteJump.predicate_iSup_of_jump
-    (fun d : x.type.TopCell => offset d.1 d.2) (fun d => offset_mono d.1 d.2)
+    (fun d : x.type.TopCell => offset d.2) (fun d => offset_mono d.1 d.2)
     (Finset.univ.sup fun d => x.type.scheme.scheme.grade d)
     (fun r => r ∈ x.type.LawfulBand)
     (fun K hK _ hr => x.type.jump_mem_lawfulBand α.2 K (fun d =>
-      (Finset.le_sup (f := fun d => x.type.scheme.scheme.grade d)
+      (Finset.le_sup 
         (Finset.mem_univ d)).trans hK) hr)
     provisionalBand_mem_lawfulBand
 
@@ -68,6 +64,4 @@ theorem stableLiftRespects_of_finiteJump (hc : R.IsExactParentConsistent)
   change RespectsSemantics _ _ at h
   rwa [RootedCover.bandLabel_stableBand hc hv] at h
 
-end KnightRealization
 
-end VaughtConjecture.Knight

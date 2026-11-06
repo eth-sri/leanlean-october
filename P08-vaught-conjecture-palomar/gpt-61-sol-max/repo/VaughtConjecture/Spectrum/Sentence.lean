@@ -3,12 +3,41 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.ModelTheory.MorleyCounting
-public import InfinitaryLogic.Conditional.GandyHarrington
-public import InfinitaryLogic.Conditional.MorleyPerfect
-public import VaughtConjecture.Spectrum.RankCount
+import InfinitaryLogic.ModelTheory.MorleyCounting
+import Mathlib.Topology.MetricSpace.CantorScheme
+import InfinitaryLogic.Descriptive.PerfectAntichain
+import InfinitaryLogic.Descriptive.Polish
+import InfinitaryLogic.Descriptive.SatisfactionBorel
+import Architect
+import InfinitaryLogic.OrdinalUtil
+import InfinitaryLogic.Scott.BackAndForth
+import Mathlib.SetTheory.Cardinal.Aleph
+import InfinitaryLogic.Lomega1omega.Theory
+import InfinitaryLogic.Scott.Formula
+import InfinitaryLogic.Lomega1omega.QuantifierRank
+import InfinitaryLogic.Karp.CarrierTheorem
+import InfinitaryLogic.Scott.Sentence
+import InfinitaryLogic.Scott.RefinementCount
+import Mathlib.SetTheory.Cardinal.Regular
+import InfinitaryLogic.Karp.PotentialIso
+import InfinitaryLogic.Descriptive.StructureIsoSetoid
+import Mathlib.SetTheory.Cardinal.Continuum
+import Mathlib.Topology.MetricSpace.Perfect
+import Mathlib.Topology.MetricSpace.Polish
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.Topology.GDelta.Basic
+import Mathlib.Topology.Baire.Lemmas
+import Mathlib.Topology.Baire.CompleteMetrizable
+import Mathlib.Topology.Baire.BaireMeasurable
+import Mathlib.Topology.Bases
+import Mathlib.Data.List.GetD
+import Mathlib.Topology.MetricSpace.PiNat
+import Mathlib.Topology.Baire.LocallyCompactRegular
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+import InfinitaryLogic.Descriptive.AnalyticClosure
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.SetTheory.Cardinal.Arithmetic
 
 /-! # The countable spectrum of an `L_{ω₁,ω}` sentence
 
@@ -40,13 +69,11 @@ refer to the `ℕ`-tier forms; the all-tier variants carry the prefix `AllCounta
   cardinal form.  The CH-independent (perfect-set) form needs the separate thinness statement;
   see `Spectrum.Thinness` and `docs/DESIGN.md`. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Spectrum
 
 open FirstOrder Language Cardinal
 
-universe u v w
+universe u v 
 
 variable {L : Language.{u, v}} [L.IsRelational] [Countable (Σ l, L.Relations l)]
 
@@ -57,6 +84,5 @@ noncomputable def natModelSpectrum (φ : L.Sentenceω) : Cardinal :=
 
 /-- `φ` has no finite models (every `Fin n` tier of coded models is empty). -/
 def HasNoFiniteModels (φ : L.Sentenceω) : Prop :=
-  ∀ n : ℕ, ModelsOfOn (α := Fin n) φ = ∅
+  ∀ n , ModelsOfOn (α := Fin n) φ = ∅
 
-end VaughtConjecture.Spectrum

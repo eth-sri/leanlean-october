@@ -3,11 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Descriptive.SmallVocabularyTransport
-public import InfinitaryLogic.Scott.RefinementCount
-public import InfinitaryLogic.OrdinalCountability
+import InfinitaryLogic.Descriptive.SmallVocabularyTransport
+import InfinitaryLogic.Scott.RefinementCount
+import InfinitaryLogic.OrdinalCountability
 
 /-!
 # Scott isolation and countable/cocountable definability on a presentation
@@ -60,29 +59,26 @@ For a presentation `truth : L.Sentenceω → Q → Prop` of a family of isomorph
 The strict stage bounds were offered for upstreaming by a consumer of this library.
 -/
 
-@[expose] public section
-
 universe u v w x
 
 namespace FirstOrder.Language
 
-open Set
 
 /-! ### The abstract layer -/
 
-section Abstract
+section
 
 variable {L : Language.{u, v}} {Q : Type w}
 
 /-- A presentation is **Scott-isolated**: every value is picked out by one sentence. -/
-def IsolatedPresentation (truth : L.Sentenceω → Q → Prop) : Prop :=
-  ∀ q, ∃ σ : L.Sentenceω, ∀ s, truth σ s ↔ s = q
+def IsolatedPresentation (truth : L.Sentenceω → Q → Prop) :=
+  ∀ q, ∃ σ , ∀ s, truth σ s ↔ s = q
 
-end Abstract
+end
 
 /-! ### The presentation layer -/
 
-section Presentation
+section
 
 variable {L : Language.{u, v}} [L.IsRelational] {X : Type x} {Q : Type w}
 
@@ -110,6 +106,4 @@ theorem isolatedPresentation_of_surjective (codes : X → StructureSpace L) (cla
       ← Formulaω.realize_as_sentence_iff_toSentenceω]
     exact @scottSentence_self L _ _ ℕ (codes x).toStructure _
 
-end Presentation
 
-end FirstOrder.Language

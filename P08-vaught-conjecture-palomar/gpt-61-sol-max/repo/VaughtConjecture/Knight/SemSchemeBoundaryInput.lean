@@ -1,12 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.PointImageBountiful
-public import VaughtConjecture.Knight.AmalgamatedBoundarySemantics
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.PointImageBountiful
+import VaughtConjecture.Knight.AmalgamatedBoundarySemantics
 
 /-! # Proper boundary from two compatible legal input schemes
 
@@ -17,18 +20,14 @@ an input. The resulting boundary retains all old occurrences and is complete
 at proper indices. It has no full-scope cells and is not yet an amalgam.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SemSchemeBoundaryInput
 
 open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary
-open Transform Value ExtOrd
+open  Value 
 
 noncomputable section
 
-section Face
+section
 
 variable {m n : ℕ} (D : SemScheme n) (F : SemScheme m) (f : Fin m ↪ Fin n)
   (hv : Finset.univ.image f ∈ D.scheme.plan) (hf : D.restrictFace f hv = F)
@@ -38,24 +37,26 @@ def faceMap : Cell F.scheme ↪o Cell D.scheme := by
   subst F
   exact CellScheme.restrictFace.toCell D.scheme f hv
 
-theorem faceMap_index (d : Cell F.scheme) :
-    D.scheme.cell (faceMap D F f hv hf d) =
+local notation "faceMap₀₀₀" => faceMap D F f hv hf
+
+theorem faceMap_index d :
+    D.scheme.cell (faceMap₀₀₀ d) =
       ((F.scheme.scope d).image f, F.scheme.grade d) := by
   subst F
   exact (CellScheme.restrictFace.pushGraded_cell D.scheme f hv d).symm
 
-theorem faceMap_exhaustive (d : Cell D.scheme)
+theorem faceMap_exhaustive d
     (hd : D.scheme.scope d ⊆ Finset.univ.image f) :
-    ∃ i, faceMap D F f hv hf i = d := by
+    ∃ i, faceMap₀₀₀ i = d := by
   subst F
   exact CellScheme.restrictFace.exists_toCell_eq D.scheme f hv hd
 
 /-- Equality includes every actual shared row argument, and bottom outside its lower set. -/
-theorem faceMap_total (c d : Cell F.scheme) :
-    AmalgamatedBoundaryRows.total D.rows (faceMap D F f hv hf c)
-      (faceMap D F f hv hf d) = AmalgamatedBoundaryRows.total F.rows c d := by
+theorem faceMap_total c d :
+    AmalgamatedBoundaryRows.total D.rows (faceMap₀₀₀ c)
+      (faceMap₀₀₀ d) = AmalgamatedBoundaryRows.total F.rows c d := by
   subst F
-  classical
+  
   change AmalgamatedBoundaryRows.total D.rows
       (CellScheme.restrictFace.toCell D.scheme f hv c)
       (CellScheme.restrictFace.toCell D.scheme f hv d) = _
@@ -65,11 +66,11 @@ theorem faceMap_total (c d : Cell F.scheme) :
     rw [AmalgamatedBoundaryRows.total_below _ _ ⟨_, h'⟩,
       AmalgamatedBoundaryRows.total_below _ _ ⟨_, h⟩]
     rfl
-  · rw [AmalgamatedBoundaryRows.total_outside _ _ _ h,
-      AmalgamatedBoundaryRows.total_outside _ _ _ (fun h' =>
+  · rw [AmalgamatedBoundaryRows.total_outside _ h,
+      AmalgamatedBoundaryRows.total_outside _ (fun h' =>
         h ((CellScheme.restrictFace.gradedLe_restrictFace_iff D.scheme f hv).mpr h'))]
 
-end Face
+end
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} (s : Step A)
 
@@ -101,8 +102,8 @@ variable {s} {m nL nR : ℕ} (I : Input s m nL nR)
 
 abbrev leftScheme := pointImage I.left.scheme I.placeLeft I.imageLeft
 abbrev rightScheme := pointImage I.right.scheme I.placeRight I.imageRight
-abbrev leftRows := PointImageSemantics.rows I.left.scheme I.placeLeft I.imageLeft I.left.rows
-abbrev rightRows := PointImageSemantics.rows I.right.scheme I.placeRight I.imageRight I.right.rows
+abbrev leftRows := PointImageSemantics.rows I.imageLeft I.left.rows
+abbrev rightRows := PointImageSemantics.rows I.imageRight I.right.rows
 
 private theorem common_image_right :
     (Finset.univ.image I.commonRight).image I.placeRight =
@@ -110,27 +111,31 @@ private theorem common_image_right :
   rw [Finset.image_image, ← I.intersection, Finset.image_image]
   exact congrArg (fun e : Fin m ↪ ι => Finset.univ.image e) I.commute.symm
 
-private theorem image_common (T : Finset (Fin m)) :
+private theorem image_common (T : FiniteScope m) :
     (T.image I.commonLeft).image I.placeLeft =
       (T.image I.commonRight).image I.placeRight := by
   rw [Finset.image_image, Finset.image_image]
   exact congrArg (fun e : Fin m ↪ ι => T.image e) I.commute
 
+local notation "faceMap₀" => faceMap I.right I.common I.commonRight I.visibleRight I.faceRight
+
+local notation "faceMap₀₀" => faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft
+
 /-- The overlap is derived from the actual restricted occurrence enumerations. -/
 def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
-  f := (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft).toEmbedding
-  g := (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight).toEmbedding
-  f_mono := (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft).strictMono
-  g_mono := (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight).strictMono
+  f := (faceMap₀₀).toEmbedding
+  g := (faceMap₀).toEmbedding
+  f_mono := (faceMap₀₀).strictMono
+  g_mono := (faceMap₀).strictMono
   shared d := by
     change ((I.left.scheme.cell
-        (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft d)).1.image I.placeLeft,
+        (faceMap₀₀ d)).1.image I.placeLeft,
         (I.left.scheme.cell
-          (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft d)).2) =
+          (faceMap₀₀ d)).2) =
       ((I.right.scheme.cell
-        (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight d)).1.image I.placeRight,
+        (faceMap₀ d)).1.image I.placeRight,
         (I.right.scheme.cell
-          (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight d)).2)
+          (faceMap₀ d)).2)
     rw [faceMap_index I.left I.common I.commonLeft I.visibleLeft I.faceLeft d,
       faceMap_index I.right I.common I.commonRight I.visibleRight I.faceRight d]
     exact Prod.ext (image_common I _) rfl
@@ -139,36 +144,34 @@ def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
     apply (Finset.image_subset_image_iff I.placeLeft.injective).mp
     rw [I.intersection]
     exact Finset.subset_inter
-      (by rw [← I.imageLeft]; exact Finset.image_subset_image (Finset.subset_univ _)) hd
+      (by grind) hd
   right_exhaustive d hd := by
     apply faceMap_exhaustive
     apply (Finset.image_subset_image_iff I.placeRight.injective).mp
     rw [common_image_right I]
     exact Finset.subset_inter hd
-      (by rw [← I.imageRight]; exact Finset.image_subset_image (Finset.subset_univ _))
+      (by grind)
 
 theorem compatible : AmalgamatedBoundaryRows.Compatible s I.leftScheme I.rightScheme
     I.shared I.leftRows I.rightRows := by
   intro c d
-  exact (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows
-    (I.shared.f c) (I.shared.f d)).trans
+  exact (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows).trans
     (((faceMap_total I.left I.common I.commonLeft I.visibleLeft I.faceLeft c d).trans
       (faceMap_total I.right I.common I.commonRight I.visibleRight I.faceRight c d).symm).trans
-      (PointImageSemantics.total_eq I.right.scheme I.placeRight I.imageRight I.right.rows
-        (I.shared.g c) (I.shared.g d)).symm)
+      (PointImageSemantics.total_eq I.right.scheme I.placeRight I.imageRight I.right.rows).symm)
 
 abbrev boundary := AmalgamatedBoundary.scheme s I.leftScheme I.rightScheme I.shared
   I.planLeft I.planRight
-abbrev rows := AmalgamatedBoundaryRows.rows s I.leftScheme I.rightScheme I.shared
-  I.planLeft I.planRight I.leftRows I.rightRows I.compatible
+abbrev rows := AmalgamatedBoundaryRows.rows
+  I.planLeft I.planRight I.compatible
 
 def leftFace : ExactSemanticFace I.leftRows I.rows :=
-  AmalgamatedBoundarySemantics.leftFace s I.leftScheme I.rightScheme I.shared
-    I.planLeft I.planRight I.leftRows I.rightRows I.compatible
+  AmalgamatedBoundarySemantics.leftFace
+    I.planLeft I.planRight I.compatible
 
 def rightFace : ExactSemanticFace I.rightRows I.rows :=
-  AmalgamatedBoundarySemantics.rightFace s I.leftScheme I.rightScheme I.shared
-    I.planLeft I.planRight I.leftRows I.rightRows I.compatible
+  AmalgamatedBoundarySemantics.rightFace
+    I.planLeft I.planRight I.compatible
 
 theorem consistent : I.rows.IsConsistent :=
   AmalgamatedBoundarySemantics.consistent s I.leftScheme I.rightScheme I.shared
@@ -182,30 +185,29 @@ theorem coded : I.rows.IsCoded :=
     (PointImageSemantics.coded _ _ _ _ I.left.rows_coded)
     (PointImageSemantics.coded _ _ _ _ I.right.rows_coded)
 
-theorem proper (d : Cell I.boundary) : I.boundary.scope d ≠ A :=
+theorem proper d : I.boundary.scope d ≠ A :=
   AmalgamatedBoundary.scope_proper s I.leftScheme I.rightScheme I.shared
     I.planLeft I.planRight d
 
-theorem complete_proper {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan I.boundary.plan)
+theorem complete_proper {J} (hJ : J ∈ Plan.gradedPlan I.boundary.plan)
     (hproper : J.1 ≠ A) : ∃ d, I.boundary.cell d = J :=
   AmalgamatedBoundary.complete_proper s I.leftScheme I.rightScheme I.shared
     I.planLeft I.planRight
     (pointImage_complete _ _ _ I.left.complete)
     (pointImage_complete _ _ _ I.right.complete) hJ hproper
 
-theorem grade_le (d : Cell I.boundary) : I.boundary.grade d ≤ max nL nR := by
-  rcases AmalgamatedBoundaryRows.covered s I.leftScheme I.rightScheme I.shared
-    I.planLeft I.planRight d with ⟨d, rfl⟩ | ⟨d, rfl⟩
+theorem grade_le d : I.boundary.grade d ≤ max nL nR := by
+  rcases AmalgamatedBoundaryRows.covered d with ⟨d, rfl⟩ | ⟨d, rfl⟩
   · change (I.boundary.cell _).2 ≤ _
     rw [AmalgamatedBoundary.left_index s I.leftScheme I.rightScheme I.shared
       I.planLeft I.planRight d]
-    have hd : I.left.scheme.grade d ≤ nL := by
+    have hd  := by
       simpa using (I.left.scheme.grade_le_card_scope d).trans (Finset.card_le_univ _)
     exact hd.trans (le_max_left _ _)
   · change (I.boundary.cell _).2 ≤ _
     rw [AmalgamatedBoundary.right_index s I.leftScheme I.rightScheme I.shared
       I.planLeft I.planRight d]
-    have hd : I.right.scheme.grade d ≤ nR := by
+    have hd  := by
       simpa using (I.right.scheme.grade_le_card_scope d).trans (Finset.card_le_univ _)
     exact hd.trans (le_max_right _ _)
 
@@ -229,31 +231,28 @@ theorem intersection_visible : A.erase s.a ∩ A.erase s.b ∈ I.boundary.plan :
   rw [AmalgamatedBoundaryPlan.erased_inter s]
   exact Finset.mem_union_left _ (Finset.mem_union_left _ s.common_left)
 
-theorem proper_scope_cover {C : Finset ι} (hC : C ∈ I.boundary.plan) (hne : C ≠ A) :
+theorem proper_scope_cover {C} (hC : C ∈ I.boundary.plan) (hne : C ≠ A) :
     C ⊆ A.erase s.a ∨ C ⊆ A.erase s.b := by
-  change C ∈ s.left ∪ s.right ∪ {A} at hC
+  
   rcases Finset.mem_union.mp hC with hC | hC
   · exact (Finset.mem_union.mp hC).imp s.left_plan.subset_of_mem s.right_plan.subset_of_mem
-  · exact False.elim (hne (Finset.mem_singleton.mp hC))
+  · simp_all
 
 /-- The proper-target lifting hypotheses come from the original legal inputs. -/
-theorem proper_lift {CI BJ : Finset ι × ℕ}
+theorem proper_lift {CI BJ}
     (hCI : CI ∈ Plan.gradedPlan I.boundary.plan)
     (hBJ : BJ ∈ Plan.gradedPlan I.boundary.plan) (h : GradedLe CI BJ)
     (hne : CI ≠ BJ) (hB : BJ.1 ≠ A)
-    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) (γ : ExtOrd)
+    p q γ
     (hp : RespectsSemanticsBelow I.rows CI p) (hq : RespectsSemanticsBelow I.rows BJ q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
     (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
     ∃ q', RespectsSemanticsBelow I.rows BJ q' ∧
-      (∀ d, min (q' d) γ = min (q d) γ) ∧
+      (CappedEq q' q γ) ∧
       ∀ d, q' (CellScheme.below.mono h d) = p d :=
   AmalgamatedBoundarySemantics.proper_lift s I.leftScheme I.rightScheme I.shared
     I.planLeft I.planRight I.leftRows I.rightRows I.compatible
-    (PointImageSemantics.bountiful _ _ _ _ I.left.complete I.left.bountiful)
-    (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
+    (PointImageSemantics.bountiful _ I.left.complete I.left.bountiful)
+    (PointImageSemantics.bountiful _ I.right.complete I.right.bountiful)
     hCI hBJ h hne hB p q γ hp hq hγ ha
 
-end Input
-end
-end VaughtConjecture.Knight.SemSchemeBoundaryInput

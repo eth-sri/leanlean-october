@@ -2,10 +2,14 @@ name = "VaughtConjecturePalomar"
 version = "0.1.0"
 license = "Apache-2.0"
 defaultTargets = ["Palomar.Solution"]
+# Parallelize across modules rather than within every Lean process.
+moreLeanArgs = ["-j1"]
 
 [leanOptions]
 autoImplicit = false
 relaxedAutoImplicit = false
+# Avoid oversubscribing the container while Lake builds independent modules.
+Elab.async = false
 backward.privateInPublic = false
 # Preserve upstream proof terms using still-supported deprecated aliases.
 # This suppresses naming notices only, never admission or kernel checks.

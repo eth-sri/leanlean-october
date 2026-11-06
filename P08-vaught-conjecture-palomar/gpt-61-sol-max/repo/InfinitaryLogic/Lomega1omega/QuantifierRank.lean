@@ -1,15 +1,15 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Lomega1omega.Semantics
-public import InfinitaryLogic.Lomega1omega.Operations
-public import PalomarProof.Infinitary.QuantifierRank
-public import Mathlib.SetTheory.Ordinal.Family
-public import Mathlib.SetTheory.Cardinal.Regular
+import InfinitaryLogic.Lomega1omega.Semantics
+import InfinitaryLogic.Lomega1omega.Operations
+import PalomarProof.Infinitary.QuantifierRank
+import Mathlib.SetTheory.Ordinal.Family
+import Mathlib.SetTheory.Cardinal.Regular
 
 /-!
 # Lω₁ω Quantifier Rank
@@ -41,9 +41,7 @@ relation between structures.
 - [KK04]
 -/
 
-@[expose] public section
-
-universe u v w w' u'
+universe u v   
 
 namespace FirstOrder
 
@@ -51,7 +49,6 @@ namespace Language
 
 variable {L : Language.{u, v}}
 
-open FirstOrder Structure Ordinal
 
 /-! ### Quantifier Rank -/
 
@@ -69,11 +66,11 @@ affected.
 
 The quantifier rank of an `Lω₁ω` formula is always a countable ordinal (`< ω₁`):
 `BoundedFormulaω.qrank_lt_omega1`. -/
-noncomputable abbrev BoundedFormulaω.qrank : L.BoundedFormulaω α n → Ordinal.{0} :=
+noncomputable abbrev BoundedFormulaω.qrank : L.BoundedFormulaω α n → Ordinal₀ :=
   BoundedFormulaInf.qrank
 
 /-- Quantifier rank of a sentence. -/
-noncomputable abbrev Sentenceω.qrank (φ : L.Sentenceω) : Ordinal.{0} :=
+noncomputable abbrev Sentenceω.qrank (φ : L.Sentenceω) :=
   BoundedFormulaω.qrank φ
 
 /-! ### Gate: the ω rank IS the upstream rank
@@ -86,19 +83,6 @@ rather than a parallel recursive copy that happens to agree. -/
 namespace BoundedFormulaω
 
 variable {α : Type*} {n : ℕ}
-
-@[simp]
-theorem qrank_falsum : (falsum : L.BoundedFormulaω α n).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_bot : (⊥ : L.BoundedFormulaω α n).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_equal (t₁ t₂ : L.Term (α ⊕ Fin n)) : (equal t₁ t₂).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ Fin n)) :
-    (rel R ts).qrank = 0 := rfl
 
 @[simp]
 theorem qrank_imp (φ ψ : L.BoundedFormulaω α n) :
@@ -119,39 +103,6 @@ theorem qrank_iSup (φs : ℕ → L.BoundedFormulaω α n) :
 theorem qrank_iInf (φs : ℕ → L.BoundedFormulaω α n) :
     (iInf φs).qrank = ⨆ k, (φs k).qrank := rfl
 
-/-- The top formula has rank 0. -/
-@[simp]
-theorem qrank_top : (⊤ : L.BoundedFormulaω α n).qrank = 0 := by
-  simp only [Top.top, BoundedFormulaInf.verum, BoundedFormulaInf.not, qrank_imp,
-    qrank_falsum, max_self]
-
-/-- Negation preserves quantifier rank. -/
-@[simp]
-theorem qrank_not (φ : L.BoundedFormulaω α n) : φ.not.qrank = φ.qrank := by
-  simp [BoundedFormulaInf.not]
-
-/-- Conjunction takes max of ranks. -/
-theorem qrank_and (φ ψ : L.BoundedFormulaω α n) :
-    (φ.and ψ).qrank = max φ.qrank ψ.qrank := by
-  simp only [BoundedFormulaω.and, qrank_not, qrank_imp, max_comm φ.qrank ψ.qrank]
-
-/-- Disjunction takes max of ranks. -/
-theorem qrank_or (φ ψ : L.BoundedFormulaω α n) :
-    (φ.or ψ).qrank = max φ.qrank ψ.qrank := by
-  simp only [BoundedFormulaω.or, qrank_not, qrank_imp]
-
-/-- `qrank_and` for the lattice notation `⊓`. -/
-@[simp]
-theorem qrank_inf (φ ψ : L.BoundedFormulaω α n) :
-    (φ ⊓ ψ).qrank = max φ.qrank ψ.qrank :=
-  qrank_and φ ψ
-
-/-- `qrank_or` for the lattice notation `⊔`. -/
-@[simp]
-theorem qrank_sup (φ ψ : L.BoundedFormulaω α n) :
-    (φ ⊔ ψ).qrank = max φ.qrank ψ.qrank :=
-  qrank_or φ ψ
-
 end BoundedFormulaω
 
 /-! ### The first-order image has finite rank -/
@@ -162,7 +113,7 @@ end BoundedFormulaω
 takes the maximum, a quantifier adds one, and the countable connectives take a supremum over `ℕ`,
 which stays below `ω₁` by regularity of `ℵ₁`.  No hypothesis on the language. -/
 theorem BoundedFormulaω.qrank_lt_omega1 {α : Type*} :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaω α n), φ.qrank < Ordinal.omega 1
+    ∀ {n} (φ : L.BoundedFormulaω α n), φ.qrank < Ordinal.omega 1
   | _, .falsum => Ordinal.omega_pos 1
   | _, .equal _ _ => Ordinal.omega_pos 1
   | _, .rel _ _ => Ordinal.omega_pos 1
@@ -179,22 +130,7 @@ theorem BoundedFormulaω.qrank_lt_omega1 {α : Type*} :
     rw [qrank_iInf]
     exact Ordinal.iSup_lt_omega_one fun k ↦ qrank_lt_omega1 (φs k)
 
-/-- **Every `Lω₁ω` sentence has countable quantifier rank**: `BoundedFormulaω.qrank_lt_omega1`
-for sentences. -/
-theorem Sentenceω.qrank_lt_omega1 (φ : L.Sentenceω) : φ.qrank < Ordinal.omega 1 :=
-  BoundedFormulaω.qrank_lt_omega1 φ
-
 /-! ### Equivalence up to Quantifier Rank -/
 
-namespace EquivQRω
 
-variable {L : Language.{u, v}}
-variable {M : Type w} [L.Structure M]
-variable {N : Type w} [L.Structure N]
-variable {P : Type w} [L.Structure P]
 
-end EquivQRω
-
-end Language
-
-end FirstOrder

@@ -3,9 +3,20 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RelabelWitness
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FullScopeBountiful
+import VaughtConjecture.Knight.ReferenceOrbitRow
+import VaughtConjecture.Knight.RequestFaceIdentification
+import VaughtConjecture.Knight.CoupledGradeOne
+import VaughtConjecture.Knight.MixedRows
+import VaughtConjecture.Knight.ReferenceContext
+import VaughtConjecture.Knight.CountedRecoding
+import VaughtConjecture.Knight.RowCorrectness
+import VaughtConjecture.Knight.RowReadback
+import VaughtConjecture.Knight.PositiveNormalization
+import VaughtConjecture.Knight.RestrictedComposition
 
 /-! # The orbit-block witness
 
@@ -19,19 +30,13 @@ lift.  Constants are spliced above it at limit cuts (`witness_spliceAt`).
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd
+open  Value 
 
 /-! ## Replacement orbits of a grade-one self-visible value -/
 
-theorem evr_eq_bot_iff {a : ExtOrd} (k i : ℕ) : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by
-  constructor
-  · intro h; by_contra ha; exact extVisibilityReplace_ne_bot ha k i h
-  · rintro rfl; exact extVisibilityReplace_bot _ _
+theorem evr_eq_bot_iff {a : ExtOrd} {k i : ℕ} : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by simp_all [VaughtConjecture.Knight.Value.extVisibilityReplace] <;> aesop
 
 /-! ## The orbit-block map -/
 
-end VaughtConjecture.Knight

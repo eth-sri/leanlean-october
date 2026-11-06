@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Descriptive.BFSeparation
+import Mathlib.Tactic
+
+import InfinitaryLogic.Descriptive.BFSeparation
 
 /-!
 # Thinness from countably many back-and-forth classes at every level
@@ -92,8 +94,6 @@ Thinness follows: a perfect antichain in a complete metric space yields a Cantor
 The composition was offered for upstreaming by a consumer of this library.
 -/
 
-@[expose] public section
-
 universe u v w'
 
 namespace FirstOrder.Language
@@ -107,7 +107,7 @@ variable {L : Language.{u, v}} [L.IsRelational]
 variable (L) in
 /-- **Back-and-forth equivalence at level `η`** on all codes: `CodeBFEquiv η`, an equivalence
 relation by reflexivity, symmetry and transitivity of `BFEquiv`. -/
-def codeBFEquivSetoid (η : Ordinal.{0}) : Setoid (StructureSpace L) where
+def codeBFEquivSetoid (η : Ordinal₀) : Setoid (StructureSpace L) where
   r := CodeBFEquiv η
   iseqv :=
     { refl := fun c ↦ @BFEquiv.refl L ℕ c.toStructure 0 η Fin.elim0
@@ -122,8 +122,8 @@ def codeBFEquivSetoid (η : Ordinal.{0}) : Setoid (StructureSpace L) where
 relation, not of codes; the relation is this library's `CodeBFEquiv η` (single-element
 back-and-forth steps from the empty tuples), and no comparison with other hierarchies of
 infinitary equivalence is made. -/
-def BFScattered (K : Set (StructureSpace L)) : Prop :=
-  ∀ η : Ordinal.{0}, η < Ordinal.omega 1 →
+def BFScattered (K : Set (StructureSpace L)) :=
+  ∀ η , η < Ordinal.omega 1 →
     Countable (Quotient ((codeBFEquivSetoid L η).comap (Subtype.val : K → StructureSpace L)))
 
 /-! ### Uniform separation of an analytic antichain -/
@@ -132,8 +132,7 @@ def BFScattered (K : Set (StructureSpace L)) : Prop :=
 hypothesis is the antichain clause of `HasPerfectAntichainOn`. -/
 theorem not_structureIso_of_mem_offDiag {P : Set (StructureSpace L)}
     (hP : ∀ x ∈ P, ∀ y ∈ P, (structureIsoSetoid L).r x y → x = y) :
-    ∀ p ∈ P.offDiag, ¬ (structureIsoSetoid L).r p.1 p.2 :=
-  fun _ hp hr ↦ hp.2.2 (hP _ hp.1 _ hp.2.1 hr)
+    ∀ p ∈ P.offDiag, ¬ (structureIsoSetoid L).r p.1 p.2 := by grind
 
 omit [L.IsRelational] in
 /-- The space of codes is Hausdorff for every language (a product of discrete spaces); with
@@ -147,9 +146,9 @@ attribute [local instance] t2Space_structureSpace
 pairwise non-isomorphic codes there is `η < ω₁` at which no two distinct points of `P` are
 back-and-forth equivalent.  This is `exists_uniform_bfSeparation` for the off-diagonal of `P`,
 and the level is the one it returns.  No countability of the relation symbols is assumed. -/
-theorem exists_forall_not_codeBFEquiv_of_analyticSet {P : Set (StructureSpace L)}
+theorem exists_forall_not_codeBFEquiv_of_analyticSet {P}
     (hP : AnalyticSet P) (hanti : ∀ x ∈ P, ∀ y ∈ P, (structureIsoSetoid L).r x y → x = y) :
-    ∃ η : Ordinal.{0}, η < Ordinal.omega 1 ∧
+    ∃ η , η < Ordinal.omega 1 ∧
       ∀ x ∈ P, ∀ y ∈ P, x ≠ y → ¬ CodeBFEquiv η x y := by
   obtain ⟨η, hη, hsep⟩ :=
     exists_uniform_bfSeparation hP.offDiag (not_structureIso_of_mem_offDiag hanti)
@@ -159,7 +158,7 @@ theorem exists_forall_not_codeBFEquiv_of_analyticSet {P : Set (StructureSpace L)
 
 /-- Cantor space is uncountable. -/
 private theorem not_countable_natBool : ¬ Countable (ℕ → Bool) := by
-  rw [← Cardinal.mk_le_aleph0_iff, not_le]
+  rw [← Cardinal.mk_le_aleph0_iff, ]
   simp [Cardinal.aleph0_lt_continuum]
 
 /-- **No Cantor antichain on a back-and-forth scattered set**, for every relational language:
@@ -167,22 +166,20 @@ the range of a Cantor antichain is analytic, so one level `η < ω₁` separates
 (`exists_forall_not_codeBFEquiv_of_analyticSet`), and the class map at that level injects Cantor
 space into the countable quotient of the restriction to `K`.  No countability of the relation
 symbols and no definability of `K` is assumed. -/
-theorem not_hasCantorAntichainOn_of_bfScattered {K : Set (StructureSpace L)}
+theorem not_hasCantorAntichainOn_of_bfScattered {K}
     (hK : BFScattered K) : ¬ HasCantorAntichainOn (structureIsoSetoid L) K := by
   rintro ⟨f, hcont, hmem, hineq⟩
   -- `PolishSpace (ℕ → Bool)` does not synthesize; both parents do
   have : PolishSpace (ℕ → Bool) := PolishSpace.mk
   have hanti : ∀ x ∈ range f, ∀ y ∈ range f, (structureIsoSetoid L).r x y → x = y := by
-    rintro _ ⟨a, rfl⟩ _ ⟨b, rfl⟩ h
-    by_contra hne
-    exact hineq a b (fun hab ↦ hne (congrArg f hab)) h
+    grind
   obtain ⟨η, hη, hsep⟩ :=
     exists_forall_not_codeBFEquiv_of_analyticSet (analyticSet_range_of_polishSpace hcont) hanti
   -- the class map at level `η` is injective on the Cantor copy
   have := hK η hη
   refine not_countable_natBool (Function.Injective.countable
     (f := fun x ↦ (⟦⟨f x, hmem x⟩⟧ :
-      Quotient ((codeBFEquivSetoid L η).comap (Subtype.val : K → StructureSpace L)))) ?_)
+      Quotient ((codeBFEquivSetoid L η).comap (Subtype.val)))) ?_)
   intro x y hxy
   by_contra hne
   have hfne : f x ≠ f y := fun h ↦ hineq x y hne (h ▸ (structureIsoSetoid L).refl _)
@@ -192,7 +189,7 @@ theorem not_hasCantorAntichainOn_of_bfScattered {K : Set (StructureSpace L)}
 relation symbols, a back-and-forth scattered set of codes contains no nonempty perfect set of
 pairwise non-isomorphic codes.  Countability is used only to give the space of codes a complete
 metric, in which a perfect antichain yields a Cantor antichain. -/
-theorem isThinOn_of_bfScattered [Countable (Σ l, L.Relations l)] {K : Set (StructureSpace L)}
+theorem isThinOn_of_bfScattered [Countable (Σ l, L.Relations l)] {K}
     (hK : BFScattered K) : IsThinOn (structureIsoSetoid L) K := by
   -- a complete metric compatible with the topology; the statement is unaffected
   let := TopologicalSpace.upgradeIsCompletelyMetrizable (StructureSpace L)
@@ -223,9 +220,9 @@ Hypotheses deliberately absent:
 
 The target universe `w'` is independent of the universes of the language. -/
 theorem bfScattered_of_countable_bfObservations (C : Set (StructureSpace L))
-    {Q : Ordinal.{0} → Type w'} (obs : ∀ η, C → Q η)
+    {Q : Ordinal₀ → Type w'} (obs : ∀ η, C → Q η)
     (hc : ∀ η < Ordinal.omega 1, (Set.range (obs η)).Countable)
-    (hobs : ∀ η < Ordinal.omega 1, ∀ c d : C, obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
+    (hobs : ∀ η < Ordinal.omega 1, ∀ c d , obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
     BFScattered C := fun η hη ↦
   countable_quotient_of_countable_range _ (obs η) (hc η hη) (hobs η hη)
 
@@ -234,11 +231,9 @@ theorem bfScattered_of_countable_bfObservations (C : Set (StructureSpace L))
 here, as in `isThinOn_of_bfScattered`: it makes the space of codes Polish, so that a perfect
 antichain yields a Cantor antichain.  The bridge and the Cantor-antichain conclusion need no
 countability. -/
-theorem isThinOn_of_countable_bfObservations [Countable (Σ l, L.Relations l)]
-    (C : Set (StructureSpace L)) {Q : Ordinal.{0} → Type w'} (obs : ∀ η, C → Q η)
+def isThinOn_of_countable_bfObservations [Countable (Σ l, L.Relations l)]
+    (C : Set (StructureSpace L)) {Q : Ordinal₀ → Type w'} (obs : ∀ η, C → Q η)
     (hc : ∀ η < Ordinal.omega 1, (Set.range (obs η)).Countable)
-    (hobs : ∀ η < Ordinal.omega 1, ∀ c d : C, obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
-    IsThinOn (structureIsoSetoid L) C :=
+    (hobs : ∀ η < Ordinal.omega 1, ∀ c d , obs η c = obs η d → CodeBFEquiv η c.1 d.1) :=
   isThinOn_of_bfScattered (bfScattered_of_countable_bfObservations C obs hc hobs)
 
-end FirstOrder.Language

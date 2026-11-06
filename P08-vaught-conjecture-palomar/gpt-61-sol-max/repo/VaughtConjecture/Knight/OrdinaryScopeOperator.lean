@@ -1,11 +1,14 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.WholeDonorSmallScopes
+import VaughtConjecture.Knight.WholeDonorOrdinaryLift
+import VaughtConjecture.Knight.CanonicalOneCoatom
+import VaughtConjecture.Knight.OrdinaryScopeMute
 
 /-! # A constructed ordinary scope operator at every positive height
 
@@ -15,12 +18,9 @@ The grade-one, grade-two and recursive cases use their checked, unchanged rows.
 The mute completion is separate, so no active maximal apex is introduced.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeOperator
-open AmalgamationPlan Transform Value ExtOrd SourcePrefixRows OrbitPrefixSupport
-open WholeDonorOrdinarySections WholeDonorOrdinaryLift
+open AmalgamationPlan    SourcePrefixRows OrbitPrefixSupport
+
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
@@ -32,7 +32,7 @@ structure Core (sem : Semantics D) (k : ℕ) where
   original : Cell D ↪o Cell carrier
   index : ∀ d, carrier.cell (original d) = D.cell d
   coverage : ∀ d, (∃ c, original c = d) ∨ carrier.scope d = A
-  row : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  row : ∀ c d,
     rows.E (original c) ⟨original d.1, by rw [index, index]; exact d.2⟩ = sem.E c d
   consistent : rows.IsConsistent
   coded : rows.IsCoded
@@ -41,29 +41,27 @@ structure Core (sem : Semantics D) (k : ℕ) where
   complete : ∀ J ∈ Plan.gradedPlan carrier.plan, J.2 ≤ k → ∃ d, carrier.cell d = J
   short : ∀ c, carrier.scope c = A → ∀ d,
     SharpWitnessComposition.Short (carrier.grade c) (rows.E c d)
-  render : ∀ {p : Cell D → ExtOrd}, RespectsSemantics sem p → (∀ d, p d ≠ ⊤) →
-    Finset ExtOrd → ExtOrd → Cell carrier → ExtOrd
-  readback : ∀ {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-    {G θ}, (∀ z ∈ G, SelfVis k z) → SelfVis k θ → ∀ d, render hp ht G θ (original d) = p d
-  lawful : ∀ {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-    {G θ}, (∀ z ∈ G, SelfVis k z) → SelfVis k θ → RespectsSemantics rows (render hp ht G θ)
-  bound : ∀ {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-    {G θ}, SelfVis k θ → (∀ d, p d ≤ θ) → ∀ d, render hp ht G θ d ≤ θ
-  support : ∀ {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
+  render : ∀ {p}, RespectsSemantics sem p → (AvoidsValue p ⊤) →
+    Finset ExtOrd → ExtOrd → CellLabels carrier
+  readback : ∀ {p} hp (ht : AvoidsValue p ⊤)
+    {G θ}, (VisibleOn k G) → SelfVis k θ → ∀ d, render hp ht G θ (original d) = p d
+  lawful : ∀ {p} hp (ht : AvoidsValue p ⊤)
+    {G θ}, (VisibleOn k G) → SelfVis k θ → RespectsSemantics rows (render hp ht G θ)
+  bound : ∀ {p} (hp : RespectsSemantics sem p) (ht : AvoidsValue p ⊤)
+    {G θ}, SelfVis k θ → (BoundedBy p θ) → ∀ d, render hp ht G θ d ≤ θ
+  support : ∀ {p} (hp : RespectsSemantics sem p) (ht : AvoidsValue p ⊤)
     {G : Finset ExtOrd} {θ : ExtOrd} {K : ℕ}, k ≤ K → θ ∈ G → ∀ d,
     OrbitPrefixSupport.Supported K (G : Set ExtOrd) p (render hp ht G θ d)
-  agreement : ∀ {p q} (hp : RespectsSemantics sem p) (htp : ∀ d, p d ≠ ⊤)
-    (hq : RespectsSemantics sem q) (htq : ∀ d, q d ≠ ⊤) {G θ γ},
-    (∀ z ∈ G, SelfVis k z) → SelfVis k θ → γ ∈ G → γ ≤ θ → Agree p q γ →
+  agreement : ∀ {p q} (hp : RespectsSemantics sem p) (htp : AvoidsValue p ⊤)
+    (hq : RespectsSemantics sem q) (htq : AvoidsValue q ⊤) {G θ γ},
+    (VisibleOn k G) → SelfVis k θ → γ ∈ G → γ ≤ θ → Agree p q γ →
     Agree (render hp htp G θ) (render hq htq G θ) γ
-
-variable {B C : Finset ι} {R : Finset (Finset ι)} {m nL nR : ℕ}
-variable (I : WholeDonorBoundary.Input A B C R m nL nR) (hBA : B ≠ A) (hCA : C ≠ A)
-variable (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
 namespace Core
 variable {sem : Semantics D} {k : ℕ} (S : Core sem k)
 variable (hk : 0 < k) (hcard : A.card = k + 1)
+
+local notation "old_index₀" => MaximalFullLayer.old_index (by omega)
 
 /-- Close this scope with its actual zero highest row. The selected renderer
 is extended by bottom; no original or earlier auxiliary value is recoded. -/
@@ -73,8 +71,8 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
   plan := S.plan
   original := S.original.trans (OrderEmbedding.ofStrictMono
     (OrdinaryScopeMute.old S.carrier k (k + 1) (by omega) hcard.ge)
-    (SourceLayerCarrier.old_order _ _ _ _ _))
-  index d := (MaximalFullLayer.old_index S.carrier k (k + 1) (by omega) hcard.ge
+    (SourceLayerCarrier.old_order))
+  index d := (old_index₀ hcard.ge
     (S.original d)).trans (S.index d)
   coverage d := by
     rcases OrdinaryScopeMute.covered S.carrier k (k + 1) (by omega) hcard.ge d with
@@ -82,9 +80,9 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
     · rcases S.coverage c with ⟨a, rfl⟩ | ha
       · exact Or.inl ⟨a, rfl⟩
       · exact Or.inr ((congrArg Prod.fst
-          (MaximalFullLayer.old_index S.carrier k (k + 1) (by omega) hcard.ge c)).trans ha)
+          (old_index₀ hcard.ge c)).trans ha)
     · exact Or.inr (congrArg Prod.fst
-        (MaximalFullLayer.apex_index S.carrier k (k + 1) (by omega) hcard.ge))
+        (MaximalFullLayer.apex_index S.carrier (by omega) hcard.ge))
   row c d := (OrdinaryScopeMute.inherited_row S.carrier S.rows k (k + 1) S.grade
     (by omega) hcard.ge (S.original c)
       ⟨S.original d.1, by rw [S.index, S.index]; exact d.2⟩).trans (S.row c d)
@@ -95,10 +93,10 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
     rcases OrdinaryScopeMute.covered S.carrier k (k + 1) (by omega) hcard.ge d with
       ⟨c, rfl⟩ | rfl
     · exact (congrArg Prod.snd
-        (MaximalFullLayer.old_index S.carrier k (k + 1) (by omega) hcard.ge c)).le.trans
+        (old_index₀ hcard.ge c)).le.trans
           ((S.grade c).trans (Nat.le_succ k))
     · exact (congrArg Prod.snd
-        (MaximalFullLayer.apex_index S.carrier k (k + 1) (by omega) hcard.ge)).le
+        (MaximalFullLayer.apex_index S.carrier (by omega) hcard.ge)).le
   complete J hJ _ := OrdinaryScopeMute.complete_last S.carrier k (k + 1) (by omega)
     hcard.ge hcard rfl S.complete J hJ
   short c hc d := by
@@ -108,11 +106,11 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
         (by omega) hcard.ge c
       apply S.short c
       exact (congrArg Prod.fst
-        (MaximalFullLayer.old_index S.carrier k (k + 1) (by omega) hcard.ge c)).symm.trans hc
+        (old_index₀ hcard.ge c)).symm.trans hc
     · have h := OrdinaryScopeMute.apex_short S.carrier S.rows k (k + 1) S.grade
         (by omega) hcard.ge d
       exact (congrArg (fun j => SharpWitnessComposition.Short j _)
-        (congrArg Prod.snd (MaximalFullLayer.apex_index S.carrier k (k + 1)
+        (congrArg Prod.snd (MaximalFullLayer.apex_index S.carrier
           (by omega) hcard.ge))).mpr h
   render := fun hp ht G θ => OrdinaryScopeMute.render S.carrier k (k + 1)
     (by omega) hcard.ge (S.render hp ht G θ)
@@ -143,7 +141,4 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
 theorem finish_complete : (S.finish hk hcard).carrier.IsComplete :=
   OrdinaryScopeMute.complete_last S.carrier k (k + 1) (by omega) hcard.ge hcard rfl S.complete
 
-end Core
 
-end
-end VaughtConjecture.Knight.OrdinaryScopeOperator

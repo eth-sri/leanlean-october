@@ -1,13 +1,16 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FinalGateLayer
-public import VaughtConjecture.Knight.CanonicalCodingSupport
-public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FinalGateLayer
+import VaughtConjecture.Knight.CanonicalCodingSupport
+import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 
 /-! # Coding and completeness of the actual final gate layer
 
@@ -17,33 +20,27 @@ through the final active grade only needs the predecessor's missing-index
 ledger, and does not assume that the predecessor is already complete there.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
-open Transform Value ExtOrd AmalgamationPlan
+open   ExtOrd AmalgamationPlan
 noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
 variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
 
-theorem node_row (a : Q) (marked : Bool)
-    (d : F.carrier.below (F.carrier.cell (F.added a marked))) :
+theorem node_row a marked
+    d :
     F.rows.E (F.added a marked) d = min (F.source a d.1) (F.nodeWeight (a, marked)) := by
   have hm : WeightedSourcePrefixLayer.master F.data F.weight (F.controller (a, marked)) d.1 =
       F.source a d.1 := by
-    simp only [source, WeightedSourcePrefixLayer.master, ScopedSourcePrefixLayer.Data.profile,
-      data, member_controller]
+    simp_all [WeightedSourcePrefixLayer.master, ScopedSourcePrefixLayer.Data.profile, data]
   exact (WeightedSourcePrefixLayer.row_new F.data F.weight F.weight_visible
     (F.controller (a, marked)) d).trans (by
-      rw [hm]
-      simp only [weight, member_controller])
+      simp_all [VaughtConjecture.Knight.FinalGateLayer.Input.weight])
 
-theorem grade_bound (hD : ∀ d : Cell D, D.grade d ≤ N) :
-    ∀ d : Cell F.carrier, F.carrier.grade d ≤ N := by
+theorem grade_bound (hD : BoundedBy D.grade N) :
+    ∀ d , F.carrier.grade d ≤ N := by
   intro d
-  obtain ⟨x, rfl⟩ := (SourceLayerCarrier.enumeration D (Node (Q := Q)) N
-    F.positive F.height).surjective d
+  obtain ⟨x, rfl⟩ := (SourceLayerCarrier.enumeration).surjective d
   change (F.carrier.cell (SourceLayerCarrier.toCell D (Node (Q := Q)) N
     F.positive F.height x)).2 ≤ N
   rw [SourceLayerCarrier.cell_toCell]
@@ -57,11 +54,10 @@ theorem coded (hc : F.sem.IsCoded)
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d)) :
     F.rows.IsCoded := by
-  apply CanonicalCodingSupport.layer D (Node (Q := Q)) N F.positive F.height F.separated
-    F.sem F.rows hc F.inherited_row
+  apply CanonicalCodingSupport.layer hc F.inherited_row
   rintro ⟨a, marked⟩ d
   rw [F.node_row]
-  have hs : IsCodedLabel N (F.source a d.1) := CanonicalCodingSupport.supported
+  have hs  := CanonicalCodingSupport.supported
     hgrid (hfields a) (F.source_supported hsupport a d.1 (by
       simpa only [CellScheme.grade, F.added_index] using d.2.2))
   have hw : IsCodedLabel N (F.nodeWeight (a, marked)) := by
@@ -87,17 +83,16 @@ end
 end VaughtConjecture.Knight.FinalGateLayer.Input
 
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref PairedSlotComparison
-noncomputable section
+open   ExtOrd CappedDonor  
+
 variable {I : Type*} [Fintype I] {nP N : ℕ}
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
-theorem member_coded (a : Member R) (f : Field P C) : IsCodedLabel N (a.val f) := by
+theorem member_coded (a : Member R) f : IsCodedLabel N (a.val f) := by
   rcases mem_codedAlphabet_iff.mp
-    (CanonicalPairedProfiles.inventory_coded (Field P C) N a.property.1 f)
+    (CanonicalPairedProfiles.inventory_coded a.property.1 f)
     with hb | ⟨b, i, _, hi, he⟩
   · exact Or.inl hb
   · exact Or.inr ⟨b, i, hi, he⟩
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalCatalogue
+

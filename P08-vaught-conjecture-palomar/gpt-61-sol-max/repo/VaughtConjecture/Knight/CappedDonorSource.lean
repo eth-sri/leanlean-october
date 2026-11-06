@@ -1,12 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorFields
-public import VaughtConjecture.Knight.PositiveNormalization
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorFields
+import VaughtConjecture.Knight.PositiveNormalization
 
 /-! # The synchronized source-profile family and its normalization (the source-family adapter)
 
@@ -42,11 +45,9 @@ source profile from a physical section, and no positive-continuability filtering
   and synchronization.  The selector commutes with such maps (`cut_map`, `sel_map`), so the
   numerical relation is preserved exactly; supports are preserved because `σ` reflects bottom. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd AmalgamationPlan
+open  Value  
 
 namespace CappedDonor
 
@@ -58,40 +59,40 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 /-! ## The source profile and synchronization -/
 
 /-- A present request cell as a present field. -/
-def reqCell {j : ℕ} (d : Cell P.scheme) (h : P.scheme.grade d ≤ j) : P.scheme.below (effP nP j) :=
-  ⟨d, (present_req_iff j d).mpr h⟩
+def reqCell {j} d (h : P.scheme.grade d ≤ j) : P.scheme.below (effP nP j) :=
+  ⟨d, (present_req_iff).mpr h⟩
 
 /-- A present private cell as a present field. -/
-def privCell {j : ℕ} (d : Cell C.scheme) (h : C.scheme.grade d ≤ j) : C.scheme.below (effC J j) :=
-  ⟨d, (present_priv_iff j d).mpr h⟩
+def privCell {j} d (h : C.scheme.grade d ≤ j) : C.scheme.below (effC J j) :=
+  ⟨d, (present_priv_iff).mpr h⟩
 
 /-- The single source field vector: numerical values at present fields, persistent values at
 future fields. -/
-noncomputable def State.sourceProfile {j : ℕ} (st : R.State j) (f : Field P C) : ExtOrd :=
+noncomputable def State.sourceProfile {j} (st : R.State j) (f : Field P C) :=
   if h : f.grade ≤ j then st.numeric f h else st.persistent f
 
-theorem State.sourceProfile_of_present {j : ℕ} (st : R.State j) {f : Field P C}
+theorem State.sourceProfile_of_present {j} (st : R.State j) {f : Field P C}
     (h : f.grade ≤ j) : st.sourceProfile f = st.numeric f h := by
   unfold State.sourceProfile; rw [dite_eq_left h]
 
-theorem State.sourceProfile_of_future {j : ℕ} (st : R.State j) {f : Field P C}
+theorem State.sourceProfile_of_future {j} (st : R.State j) {f : Field P C}
     (h : ¬ f.grade ≤ j) : st.sourceProfile f = st.persistent f := by
   unfold State.sourceProfile; rw [dite_eq_right h]
 
 /-- **Synchronized**: every persistent value is the `1`-visible rounding of the source vector. -/
-def Synchronized {j : ℕ} (st : R.State j) : Prop :=
-  ∀ f : Field P C, st.persistent f = extVisibilityReplace (st.sourceProfile f) 1 1
+def Synchronized {j} (st : R.State j) :=
+  ∀ f , st.persistent f = extVisibilityReplace (st.sourceProfile f) 1 1
 
-theorem Synchronized.shadowP {j : ℕ} {st : R.State j} (hs : Synchronized st)
+theorem Synchronized.shadowP {j} {st : R.State j} (hs : Synchronized st)
     (d : P.scheme.below (effP nP j)) : st.shadowP d.1 = extVisibilityReplace (st.u d) 1 1 := by
   have h := hs (.req d.1)
-  rw [st.sourceProfile_of_present (f := .req d.1) ((present_req_iff j d.1).mp d.2)] at h
+  rw [st.sourceProfile_of_present (f := .req d.1) ((present_req_iff).mp d.2)] at h
   exact h
 
-theorem Synchronized.shadowC {j : ℕ} {st : R.State j} (hs : Synchronized st)
+theorem Synchronized.shadowC {j} {st : R.State j} (hs : Synchronized st)
     (d : C.scheme.below (effC J j)) : st.shadowC d.1 = extVisibilityReplace (st.v d) 1 1 := by
   have h := hs (.priv d.1)
-  rw [st.sourceProfile_of_present (f := .priv d.1) ((present_priv_iff j d.1).mp d.2)] at h
+  rw [st.sourceProfile_of_present (f := .priv d.1) ((present_priv_iff).mp d.2)] at h
   exact h
 
 theorem Synchronized.shadowP' {j : ℕ} {st : R.State j} (hs : Synchronized st) (d : Cell P.scheme)
@@ -105,14 +106,14 @@ theorem Synchronized.shadowC' {j : ℕ} {st : R.State j} (hs : Synchronized st) 
 /-- Synchronization of an admissible state is the synchronization of its present cells. -/
 theorem synchronized_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
     Synchronized st ↔
-      (∀ d : P.scheme.below (effP nP j), st.shadowP d.1 = extVisibilityReplace (st.u d) 1 1) ∧
-      ∀ d : C.scheme.below (effC J j), st.shadowC d.1 = extVisibilityReplace (st.v d) 1 1 := by
+      (∀ d , st.shadowP d.1 = extVisibilityReplace (st.u d) 1 1) ∧
+      ∀ d , st.shadowC d.1 = extVisibilityReplace (st.v d) 1 1 := by
   refine ⟨fun hs => ⟨hs.shadowP, hs.shadowC⟩, fun ⟨hP, hC⟩ f => ?_⟩
   by_cases h : f.grade ≤ j
   · rw [st.sourceProfile_of_present h]
     cases f with
-    | req d => exact hP ⟨d, (present_req_iff j d).mpr h⟩
-    | priv d => exact hC ⟨d, (present_priv_iff j d).mpr h⟩
+    | req d => exact hP ⟨d, (present_req_iff).mpr h⟩
+    | priv d => exact hC ⟨d, (present_priv_iff).mpr h⟩
     | gate => exact hst.gate_vis.symm
   · rw [st.sourceProfile_of_future h]
     exact (hst.persistent_selfVis f).symm
@@ -120,7 +121,7 @@ theorem synchronized_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
 /-! ## Resynchronization -/
 
 /-- Recompute the present persistent fields from the numerical values; retain the future ones. -/
-noncomputable def resync {j : ℕ} (st : R.State j) : R.State j where
+noncomputable def resync {j} (st : R.State j) : R.State j where
   u := st.u
   v := st.v
   gate := st.gate
@@ -158,14 +159,14 @@ theorem resync_shadowP_ne_bot_iff {j : ℕ} {st : R.State j} (hst : R.Admissible
     (d : Cell P.scheme) : (resync st).shadowP d ≠ ⊥ ↔ st.shadowP d ≠ ⊥ := by
   by_cases h : P.scheme.grade d ≤ j
   · rw [resync_shadowP_of_present st d h]
-    exact (not_congr (evr_eq_bot_iff 1 1)).trans (hst.shadowP_iff (reqCell d h)).symm
+    exact (not_congr (evr_eq_bot_iff)).trans (hst.shadowP_iff (reqCell d h)).symm
   · rw [resync_shadowP_of_future st h]
 
 theorem resync_shadowC_ne_bot_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st)
     (d : Cell C.scheme) : (resync st).shadowC d ≠ ⊥ ↔ st.shadowC d ≠ ⊥ := by
   by_cases h : C.scheme.grade d ≤ j
   · rw [resync_shadowC_of_present st d h]
-    exact (not_congr (evr_eq_bot_iff 1 1)).trans (hst.shadowC_iff (privCell d h)).symm
+    exact (not_congr (evr_eq_bot_iff)).trans (hst.shadowC_iff (privCell d h)).symm
   · rw [resync_shadowC_of_future st h]
 
 /-- Resynchronization preserves admissibility. -/
@@ -178,19 +179,19 @@ theorem Admissible.resync {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
   shadowP_vis d := by
     by_cases h : P.scheme.grade d ≤ j
     · rw [resync_shadowP_of_present st d h]
-      exact TopSupport.selfVis_evr_self 1 _
+      exact TopSupport.selfVis_evr_self
     · rw [resync_shadowP_of_future st h]; exact hst.shadowP_vis d
   shadowC_vis d := by
     by_cases h : C.scheme.grade d ≤ j
     · rw [resync_shadowC_of_present st d h]
-      exact TopSupport.selfVis_evr_self 1 _
+      exact TopSupport.selfVis_evr_self
     · rw [resync_shadowC_of_future st h]; exact hst.shadowC_vis d
   shadowP_iff d := by
-    rw [resync_shadowP_of_present st d.1 ((present_req_iff j d.1).mp d.2)]
-    exact not_congr (evr_eq_bot_iff 1 1)
+    rw [resync_shadowP_of_present st d.1 ((present_req_iff).mp d.2)]
+    exact not_congr (evr_eq_bot_iff)
   shadowC_iff d := by
-    rw [resync_shadowC_of_present st d.1 ((present_priv_iff j d.1).mp d.2)]
-    exact not_congr (evr_eq_bot_iff 1 1)
+    rw [resync_shadowC_of_present st d.1 ((present_priv_iff).mp d.2)]
+    exact not_congr (evr_eq_bot_iff)
   support hg hc := by
     obtain ⟨href, hsupp⟩ := hst.support hg ((resync_shadowC_ne_bot_iff hst R.cap).mp hc)
     exact ⟨fun i => (resync_shadowC_ne_bot_iff hst _).mpr (href i),
@@ -198,17 +199,15 @@ theorem Admissible.resync {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
   relation := hst.relation
 
 /-- The resynchronized state of an admissible state is synchronized. -/
-theorem resync_synchronized {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
-    Synchronized (resync st) :=
+def resync_synchronized {j : ℕ} {st : R.State j} (hst : R.Admissible st) :=
   (synchronized_iff hst.resync).mpr
-    ⟨fun d => resync_shadowP_of_present st d.1 ((present_req_iff j d.1).mp d.2),
-      fun d => resync_shadowC_of_present st d.1 ((present_priv_iff j d.1).mp d.2)⟩
+    ⟨fun d => resync_shadowP_of_present st d.1 ((present_req_iff).mp d.2),
+      fun d => resync_shadowC_of_present st d.1 ((present_priv_iff).mp d.2)⟩
 
 include R in
 /-- The comparison cap of a nonempty cutoff is `1`-visible. -/
-theorem selfVis_one_of_effC {j : ℕ} (hj : 1 ≤ j) {γ : ExtOrd} (hγ : SelfVis (effC J j).2 γ) :
-    SelfVis 1 γ := by
-  have hJ : 1 ≤ J := (Nat.succ_pos _).trans_le (R.arity_lt.le.trans R.N_le)
+def selfVis_one_of_effC {j} (hj : 1 ≤ j) {γ} (hγ : SelfVis (effC J j).2 γ) := by
+  have hJ  := (Nat.succ_pos _).trans_le (R.arity_lt.le.trans R.N_le)
   exact hγ.mono (le_min hj hJ)
 
 include R in
@@ -216,8 +215,8 @@ include R in
 agree below a permissible cap with those of a synchronized state, and the persistent fields carry
 receipts, then the resynchronized new state carries receipts for every persistent field. -/
 theorem resync_capReceipts {j : ℕ} {st st₁ : R.State j} (hs : Synchronized st) {γ : ExtOrd}
-    (hγ : SelfVis (effC J j).2 γ) (hu : ∀ d, min (st₁.u d) γ = min (st.u d) γ)
-    (hv : ∀ d, min (st₁.v d) γ = min (st.v d) γ) (hrec : R.CapReceipts γ st st₁) :
+    (hγ : SelfVis (effC J j).2 γ) (hu : CappedEq st₁.u st.u γ)
+    (hv : CappedEq st₁.v st.v γ) (hrec : R.CapReceipts γ st st₁) :
     R.CapReceipts γ st (resync st₁) := by
   obtain ⟨hg, hP, hC⟩ := hrec
   refine ⟨hg, fun d => ?_, fun d => ?_⟩
@@ -226,27 +225,27 @@ theorem resync_capReceipts {j : ℕ} {st st₁ : R.State j} (hs : Synchronized s
       rw [resync_shadowP_of_present st₁ d h, hs.shadowP' d h,
         ← evr_min_of_selfVis h1 le_rfl le_rfl, ← evr_min_of_selfVis h1 le_rfl le_rfl,
         hu (reqCell d h)]
-    · rw [resync_shadowP_of_future st₁ h]; exact hP d
+    · simp_all [resync_shadowP_of_future]
   · by_cases h : C.scheme.grade d ≤ j
     · have h1 : SelfVis 1 γ := selfVis_one_of_effC (R := R) ((C.scheme.grade_pos d).trans_le h) hγ
       rw [resync_shadowC_of_present st₁ d h, hs.shadowC' d h,
         ← evr_min_of_selfVis h1 le_rfl le_rfl, ← evr_min_of_selfVis h1 le_rfl le_rfl,
         hv (privCell d h)]
-    · rw [resync_shadowC_of_future st₁ h]; exact hC d
+    · simp_all [resync_shadowC_of_future]
 
 /-! ## Both same-grade fibres on source profiles -/
 
 /-! ## Normalization preservation -/
 
 /-- Apply a scalar map to every field of a state. -/
-def mapState {j : ℕ} (σ : ExtOrd → ExtOrd) (st : R.State j) : R.State j where
+def mapState {j : ℕ} (σ : LabelMap) (st : R.State j) : R.State j where
   u d := σ (st.u d)
   v d := σ (st.v d)
   gate := σ st.gate
   shadowP d := σ (st.shadowP d)
   shadowC d := σ (st.shadowC d)
 
-theorem sourceProfile_map (σ : ExtOrd → ExtOrd) {j : ℕ} (st : R.State j) (f : Field P C) :
+theorem sourceProfile_map (σ : LabelMap) {j : ℕ} (st : R.State j) (f : Field P C) :
     (mapState σ st).sourceProfile f = σ (st.sourceProfile f) := by
   by_cases h : f.grade ≤ j
   · rw [State.sourceProfile_of_present _ h, State.sourceProfile_of_present _ h]
@@ -254,21 +253,19 @@ theorem sourceProfile_map (σ : ExtOrd → ExtOrd) {j : ℕ} (st : R.State j) (f
   · rw [State.sourceProfile_of_future _ h, State.sourceProfile_of_future _ h]
     cases f <;> rfl
 
-section Map
+section
 
-variable {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ)
+variable {K : ℕ} {σ : LabelMap} (hσ : Witness (gTop K) σ)
 
 include hσ
 
-theorem map_comm {k : ℕ} (hk : k ≤ K) (x : ExtOrd) {i : ℕ} (hi : i ≤ k) :
+theorem map_comm {k} (hk : k ≤ K) x {i} (hi : i ≤ k) :
     σ (extVisibilityReplace x k i) = extVisibilityReplace (σ x) k i :=
   hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
 
-theorem selfVis_map {k : ℕ} (hk : k ≤ K) {x : ExtOrd} (h : SelfVis k x) : SelfVis k (σ x) := by
-  change extVisibilityReplace (σ x) k k = σ x
-  rw [← map_comm hσ hk x le_rfl, h]
+theorem selfVis_map {k} (hk : k ≤ K) {x} (h : SelfVis k x) : SelfVis k (σ x) := by grind [map_comm]
 
-theorem map_ne_bot_iff (hbot : ∀ x, σ x = ⊥ → x = ⊥) (x : ExtOrd) : σ x ≠ ⊥ ↔ x ≠ ⊥ :=
+theorem map_ne_bot_iff (hbot : ∀ x, σ x = ⊥ → x = ⊥) x : σ x ≠ ⊥ ↔ x ≠ ⊥ :=
   not_congr ⟨hbot x, fun h => by rw [h, hσ.bot]⟩
 
 theorem map_sup (f : I → ExtOrd) :
@@ -284,7 +281,7 @@ theorem cut_map (hN : N ≤ K) (v : R.Low → ExtOrd) : R.cut (fun d => σ (v d)
   exact (map_comm hσ hN _ le_rfl).symm
 
 /-- The selector commutes with a normalized witness through `N`. -/
-theorem sel_map (hN : N ≤ K) (v : R.Low → ExtOrd) (d : Cell P.scheme) :
+theorem sel_map (hN : N ≤ K) v d :
     R.sel (fun d => σ (v d)) d = σ (R.sel v d) := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
   · rw [R.sel_of_proper h, R.sel_of_proper h, cut_map hσ hN, hσ.mono.map_min,
@@ -333,10 +330,6 @@ theorem Synchronized.map (hK : 1 ≤ K) {j : ℕ} {st : R.State j} (hs : Synchro
   rw [sourceProfile_map σ, ← map_comm hσ hK _ le_rfl, ← hs f]
   cases f <;> rfl
 
-end Map
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

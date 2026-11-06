@@ -1,11 +1,11 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthFiniteCapRequests
+import VaughtConjecture.Knight.GrowthFiniteCapRequests
 
 /-! # The relative datum on a calibrated actual context
 
@@ -15,13 +15,10 @@ is the stable private vector paired with the chosen donor, not the native
 encoded template. There is no physical-receiving assertion here.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open CellScheme.restrictFace
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -29,31 +26,31 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     {t : Fin n ↪ M} {p : S α.1 n} (hp : W.eval t = some p)
     {u : Fin J ↪ M} {C : S α.1 J} (hC : W.eval u = some C)
     {f : Fin n ↪ Fin J} (hfu : f.trans u = t) (hf : typeMap f C = some p)
-    (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
+    (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM hp) q)
     (c : Cell C.scheme.scheme) (hsc : C.scheme.scheme.scope c = Finset.univ)
     (hc : C.label c = ⊤) (L : ℕ) (hnL : n + 1 < L) (hLN : L < C.scheme.scheme.grade c)
-    (a : C.scheme.scheme.below (C.scheme.scheme.cell c)) {i : ℕ}
+    (a : C.scheme.scheme.belowCell c) {i : ℕ}
     (hi : i < C.scheme.scheme.grade c) (ha : W.stableValue u C a.1 = ofOrd (α.1 + i))
     (hai : ofOrd (α.1 + i) < W.stableValue u C c)
     (hcut : ofOrd (α.1 + L) < W.stableValue u C c)
-    (ref : Ordinal.{0} → C.scheme.scheme.below (C.scheme.scheme.cell c))
-    (off : Ordinal.{0} → ℕ)
+    (ref : Ordinal₀ → C.scheme.scheme.belowCell c)
+    (off : Ordinal₀ → ℕ)
     (href : ∀ μ ∈ blocks q, off μ < C.scheme.scheme.grade c ∧
       W.stableValue u C (ref μ).1 = ofOrd (μ + off μ) ∧
       ofOrd (μ + off μ) < W.stableValue u C c)
     (hfp : ∀ d β, q.label d = ofOrd β → finitePart β < L)
     (hproper : ∀ d, q.label d ≠ ⊤ → q.label d < ofOrd (α.1 + L)) :
-    ∃ (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
-      (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
-      (hvC : Finset.univ.image f ∈ C.scheme.scheme.plan)
-      (hF : C.scheme.restrictFace f hvC = p.scheme)
-      (X : RelativeData C.scheme.scheme C.scheme.rows q.scheme.scheme q.scheme.rows),
+    ∃ hvP
+      hP
+      hvC
+      hF
+      X,
       X.req = GrowthFiniteCapRequests.requests c L hLN a ref q.label ∧
       X.top = (Finset.univ, n + 1) ∧
       Nonempty (Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP f hvC hF X) ∧
       (∀ j, Growth.Admitted X j (GrowthStableSelectedInput.state
         (W := W) (u := u) (C := C) (q := q))) ∧
-      HEq X.ZA {d : C.scheme.scheme.below (C.scheme.scheme.cell c) | C.label d.1 = ⊥} := by
+      HEq X.ZA {d : C.scheme.scheme.belowCell c | C.label d.1 = ⊥} := by
   classical
   obtain ⟨hvP, hvC, hP, hF⟩ := GrowthStableSelectedInput.common_faces hM hp hf hq
   let root : Finset (Fin (n + 1)) × ℕ := (Finset.univ.image Fin.castSuccEmb, n)
@@ -73,7 +70,7 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     exact ((StageType.label_castCell hC'.symm _).trans
       ((StageType.label_castCell hP' _).trans
         (congrArg q.label (toCell_belowEquiv_symm_val _ _ _ _ d)))).symm
-  have hroot : ∀ s, RespectsSemanticsBelow C.scheme.rows (C.scheme.scheme.cell c) s →
+  have hroot : ∀ s, Semantics.RowLawful C.scheme.rows c s →
       RespectsSemanticsBelow q.scheme.rows root (fun d => s (κ d)) :=
     fun _ hs => Growth.literalKappa_lawful _ _ _ _ _ _ _ _ _ hs
   have hrmem : root ∈ Plan.gradedPlan q.scheme.scheme.plan :=
@@ -196,9 +193,9 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     (a₀ : Cell p₀.scheme.scheme) (hatop : p₀.label a₀ = ⊤) {i : ℕ}
     (ha₀ : W.stableValue s p₀ a₀ = ofOrd (α.1 + i))
     {n : ℕ} (hn : 0 < n) {t : Fin n ↪ M} {p : S α.1 n} (hp : W.eval t = some p)
-    (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
-    (γ : Ordinal.{0}) (hγ : γ < α.nextBlock.1) :
-    ∃ (J : ℕ) (u : Fin J ↪ M) (C : S α.1 J), W.eval u = some C ∧
+    (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM hp) q)
+    (γ : Ordinal₀) (hγ : γ < α.nextBlock.1) :
+    ∃ J u C, W.eval u = some C ∧
       ∃ (f : Fin n ↪ Fin J), f.trans u = t ∧ typeMap f C = some p ∧
         ∃ (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
           (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
@@ -211,7 +208,7 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
           X.ZA = {d | C.label d.1 = ⊥} ∧
           (∀ j, Growth.Admitted X j (GrowthStableSelectedInput.state
             (W := W) (u := u) (C := C) (q := q))) ∧
-          (∀ v : Cell q.scheme.scheme → ExtOrd,
+          (∀ v : CellLabels q.scheme.scheme,
             X.req.Correct (X.req.sec (W.stableValue u C)) v →
               (∀ d, q.label d ≠ ⊤ → v d = q.label d) ∧
               (∀ d, q.label d = ⊤ → ofOrd γ < v d)) := by
@@ -229,7 +226,7 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     hab, ha, hcut, hai, ref, off, href, -, -⟩ :=
     GrowthStableCalibration.exists_calibration hM hg hs a₀ hatop ha₀ t p hp (blocks q)
       (GrowthFiniteCapRequests.blocks_limit q) (GrowthFiniteCapRequests.blocks_le q) L
-  let a : C.scheme.scheme.below (C.scheme.scheme.cell c) := ⟨mapCell hg₀ a₀, hab⟩
+  let a : C.scheme.scheme.belowCell c := ⟨mapCell hg₀ a₀, hab⟩
   obtain ⟨hvP, hP, hvC, hF, X, hreq, htop, hattach, hadmit, hclass⟩ :=
     exists_input_at hM hn hp hC hfu hf q hq c hsc hc L hnL hLN a hi ha hai hcut
       ref off href hfp hproper
@@ -261,5 +258,4 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
         (W.stableValue u C) (limitPart_eq_self_of_isNonSuccessor (Or.inr α.2))
         hi ha hcut hv hd)
 
-end
-end VaughtConjecture.Knight.GrowthStableTemplate
+

@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthNormalization
-public import VaughtConjecture.Knight.SupportLadderBottomReflection
+import VaughtConjecture.Knight.GrowthNormalization
+import VaughtConjecture.Knight.SupportLadderBottomReflection
 
 /-! # Growth admission under finite complete-profile reflection
 
@@ -17,12 +16,9 @@ admission transport once a physical chart has established those receipts;
 it does not construct that chart or prove mixed-scope lawfulness.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
-open Transform Value ExtOrd AmalgamationPlan CappedDonor.Ref SharpWitnessComposition
-noncomputable section
+open  Value   CappedDonor.Ref SharpWitnessComposition
+
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -30,9 +26,9 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
 
 /-- Finite reflection on the complete source vector suffices. No global
 bottom-reflection property is asserted of the actual local chart. -/
-theorem Admitted.map_on_profile {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
-    {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
-    (hbot : ∀ f : Field DA DQ, σ (S.profile f) = ⊥ → S.profile f = ⊥) : Admitted X j (S.map σ) where
+theorem Admitted.map_on_profile {j} {S} (hS : Admitted X j S)
+    {σ} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
+    (hbot : ∀ f , σ (S.profile f) = ⊥ → S.profile f = ⊥) : Admitted X j (S.map σ) where
   private_lawful := map_respects_of_bottom_reflection hS.private_lawful
     (fun d => d.2.2) (boundedMap_of_witness hσ) (fun d => by
       constructor
@@ -78,5 +74,4 @@ theorem Admitted.map_on_profile {j : ℕ} {S : State DA DQ} (hS : Admitted X j S
         ← hσ.mono.map_min]
       exact hσ.mono (ht y hT)
 
-end
-end VaughtConjecture.Knight.Growth
+

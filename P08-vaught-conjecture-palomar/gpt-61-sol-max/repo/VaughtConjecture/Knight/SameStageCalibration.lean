@@ -1,14 +1,23 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GuardActivation
-public import VaughtConjecture.Knight.StableLiftCore
-public import VaughtConjecture.Knight.Directedness
-public import VaughtConjecture.Knight.FiniteOffset
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ReferenceContext
+import VaughtConjecture.Knight.ReductModel
+import VaughtConjecture.Knight.CountedRecoding
+import VaughtConjecture.Knight.RowReadback
+import VaughtConjecture.Knight.Semantics
+import VaughtConjecture.Knight.RowCorrectness
+import VaughtConjecture.Knight.RestrictedComposition
+import VaughtConjecture.Knight.CountedEncoding
+import VaughtConjecture.Knight.StableLiftCore
+import VaughtConjecture.Knight.Directedness
+import VaughtConjecture.Knight.FiniteOffset
 
 /-! # Same-stage calibration from an attained stable marker and top-grade growth
 
@@ -37,11 +46,9 @@ does it use a threshold-vacuous infinity anchor.  The safe rows are supplied by 
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan Transform
+open TypeTower StageType KnightRealization Value ExtOrd  
 
 universe w
 
@@ -52,17 +59,17 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 /-! ## Stable values of top-labelled cells of grade `N` -/
 
 /-- The stage is its own limit part. -/
-theorem limitPart_stage : limitPart α.1 = α.1 :=
+def limitPart_stage :=
   limitPart_eq_self_of_isNonSuccessor (Or.inr α.2)
 
 /-- A proper ordinal at least `α` (a limit) and `N`-visible is at least `α + N`. -/
-theorem stage_add_le_of_selfVis {γ : Ordinal.{0}} (hγ : α.1 ≤ γ) {N : ℕ}
+theorem stage_add_le_of_selfVis {γ} (hγ : α.1 ≤ γ) {N}
     (hN : SelfVis N (ofOrd γ)) : α.1 + N ≤ γ := by
   rw [selfVis_ofOrd_iff] at hN
-  have h1 : α.1 ≤ limitPart γ := by
+  have h1  := by
     have := limitPart_mono hγ
     rwa [limitPart_stage] at this
-  calc α.1 + (N : Ordinal.{0}) ≤ limitPart γ + (N : Ordinal.{0}) := add_le_add_left h1 _
+  calc α.1 + (N) ≤ limitPart γ + (N) := add_le_add_left h1 _
     _ ≤ limitPart γ + finitePart γ := add_le_add_right (Nat.cast_le.mpr hN) _
     _ = γ := limitPart_add_finitePart γ
 
@@ -72,14 +79,13 @@ of the stable labelling). -/
 theorem stable_ge_of_top (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q : S α.1 m}
     (hu : R.eval u = some q) {Θ : Cell q.scheme.scheme} (hΘ : q.label Θ = ⊤) :
     ofOrd (α.1 + q.scheme.scheme.grade Θ) ≤ R.stableValue u q Θ := by
-  have hα := le_stableValue_of_top (R := R) hu hΘ
+  have hα := le_stableValue_of_top  hu hΘ
   have hvis : SelfVis (q.scheme.scheme.grade Θ) (R.stableValue u q Θ) :=
     ((stableLiftRespects hM hu).orderly Θ).symm
   rcases ExtOrd.cases (R.stableValue u q Θ) with hb | ht | ⟨γ, hγ⟩
-  · rw [hb] at hα; exact absurd hα (not_ofOrd_le_bot _)
+  · simp_all
   · rw [ht]; exact le_top
-  · rw [hγ] at hα hvis ⊢
-    exact ofOrd_le_ofOrd.mpr (stage_add_le_of_selfVis (ofOrd_le_ofOrd.mp hα) hvis)
+  · aesop (add safe apply [stage_add_le_of_selfVis])
 
 /-- `α + j < α + N` for `j < N`. -/
 theorem stage_add_lt {j N : ℕ} (h : j < N) : ofOrd (α.1 + j) < ofOrd (α.1 + N) :=
@@ -88,10 +94,9 @@ theorem stage_add_lt {j N : ℕ} (h : j < N) : ofOrd (α.1 + j) < ofOrd (α.1 + 
 /-! ## The controller and the stable guard in a realized coface -/
 
 variable (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q₀ : S α.1 m} (hu : R.eval u = some q₀)
-  {N : ℕ} {cap : Cell q₀.scheme.scheme} (hcap : q₀.scheme.scheme.cell cap = (Finset.univ, N))
-  (hcapl : q₀.label cap = ⊤)
-  {y : M} {hy : y ∉ Set.range u} {Q : S α.1 (m + 1)} (hQ : R.eval (snoc u y hy) = some Q)
+  {N : ℕ}  
+  
+     
 
 /-! ## Readback in the ordinary labelling -/
 
-end VaughtConjecture.Knight

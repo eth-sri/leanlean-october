@@ -3,9 +3,22 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.TwoContextCoupled
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedCore
+import VaughtConjecture.Knight.CountedRecoding
+import VaughtConjecture.Knight.FullScopeBountiful
+import VaughtConjecture.Knight.Domain
+import VaughtConjecture.Knight.OnePointSuccessor
+import Mathlib.Tactic.DeriveFintype
+import VaughtConjecture.Knight.PartialSections
+import VaughtConjecture.Knight.PullbackSemantics
+import VaughtConjecture.Knight.RowCorrectness
+import VaughtConjecture.Knight.RowReadback
+import VaughtConjecture.Knight.WitnessSplice
+import VaughtConjecture.Knight.Type
+import VaughtConjecture.Knight.WitnessAlgebra
 
 /-! # Bountifulness of the coupled semantics, reduced by scope
 
@@ -43,37 +56,24 @@ and at the old occurrence are chosen independently.
 
 Not done: the obligation `ProperToFull₃Low` itself (the retuning at grades one to three).
 Construction-private (not root-exported). -/
-@[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
-open AmalgamationPlan Transform Value ExtOrd
+open   Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
-
-section Reduction
-
-end Reduction
 
 /-! ## The smallest scope-changing case: grade one -/
 
-section GradeOne
-
-variable {q : D₂.below (Finset.univ, 1) → ExtOrd}
-
-end GradeOne
 
 /-! ## A step witness at a limit cutoff -/
 
-section StepLimit
+section
 
 open Classical in
 /-- The two-valued shifter: `c₀` below the limit cutoff `ω·n`, `c₁` from it on. -/
-noncomputable def stepShifter (n : ℕ) (c₀ c₁ : ExtOrd) : ExtOrd → ExtOrd :=
-  fun a => if a = ⊥ then ⊥ else if a < ofOrd (Ordinal.omega0 * (n : Ordinal)) then c₀ else c₁
+noncomputable def stepShifter (n : ℕ) (c₀ c₁ : ExtOrd) :=
+  fun a => if a = ⊥ then ⊥ else if a < ofOrd (Ordinal.omega0 * (n)) then c₀ else c₁
 
 theorem stepShifter_bot (n : ℕ) (c₀ c₁ : ExtOrd) : stepShifter n c₀ c₁ ⊥ = ⊥ := by
   classical
@@ -83,77 +83,72 @@ theorem stepShifter_of_lt {n : ℕ} {c₀ c₁ a : ExtOrd} (ha : a ≠ ⊥)
   classical
   unfold stepShifter; rw [ite_eq_right ha, ite_eq_left h]
 theorem stepShifter_of_ge {n : ℕ} {c₀ c₁ a : ExtOrd}
-    (h : ofOrd (Ordinal.omega0 * (n : Ordinal)) ≤ a) : stepShifter n c₀ c₁ a = c₁ := by
-  classical
-  unfold stepShifter
-  rw [ite_eq_right (fun hb => not_ofOrd_le_bot _ (hb ▸ h)), ite_eq_right (not_lt.mpr h)]
+    (h : ofOrd (Ordinal.omega0 * (n : Ordinal)) ≤ a) : stepShifter n c₀ c₁ a = c₁ := by simp_all [stepShifter] <;> aesop
 
 theorem limitPart_omega_mul (n : ℕ) : limitPart (Ordinal.omega0 * (n : Ordinal)) =
-    Ordinal.omega0 * (n : Ordinal) := by
-  have := limitPart_mul_add n 0
-  rw [Nat.cast_zero, add_zero] at this; exact this
+    Ordinal.omega0 * (n : Ordinal) := by simp_all [VaughtConjecture.Knight.Value.limitPart]
 
 /-- Visibility replacement never crosses a limit cutoff, in either direction. -/
 theorem evr_lt_limit {n : ℕ} {a : ExtOrd} (h : a < ofOrd (Ordinal.omega0 * (n : Ordinal)))
     (k i : ℕ) :
     extVisibilityReplace a k i < ofOrd (Ordinal.omega0 * (n : Ordinal)) := by
   rcases ExtOrd.cases a with rfl | rfl | ⟨α, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact bot_lt_ofOrd _
+  · simp_all
   · exact absurd h (not_lt.mpr le_top)
   · rw [extVisibilityReplace_ofOrd, ofOrd_lt_ofOrd]
     have hα := ofOrd_lt_ofOrd.mp h
-    have hl : limitPart (visibilityReplace α k i) < limitPart (Ordinal.omega0 * (n : Ordinal)) := by
+    have hl : limitPart (visibilityReplace α k i) < limitPart (Ordinal.omega0 * n) := by
       rw [limitPart_visibilityReplace, limitPart_omega_mul]
-      exact lt_of_le_of_lt (limitPart_le α) hα
-    exact lt_of_lt_of_le (lt_limitPart_of_limitPart_lt hl) (limitPart_le _)
+      exact lt_of_le_of_lt (limitPart_le) hα
+    exact lt_of_lt_of_le (lt_limitPart_of_limitPart_lt hl) (limitPart_le)
 theorem evr_ge_limit {n : ℕ} {a : ExtOrd} (h : ofOrd (Ordinal.omega0 * (n : Ordinal)) ≤ a)
     (k i : ℕ) :
     ofOrd (Ordinal.omega0 * (n : Ordinal)) ≤ extVisibilityReplace a k i := by
   rcases ExtOrd.cases a with rfl | rfl | ⟨α, rfl⟩
-  · exact absurd h (not_ofOrd_le_bot _)
-  · rw [extVisibilityReplace_top]; exact le_top
+  · simp_all
+  · simp_all
   · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
     have hα := ofOrd_le_ofOrd.mp h
-    calc Ordinal.omega0 * (n : Ordinal) = limitPart (Ordinal.omega0 * (n : Ordinal)) :=
+    calc Ordinal.omega0 * n = limitPart (Ordinal.omega0 * n) :=
           (limitPart_omega_mul n).symm
       _ ≤ limitPart α := limitPart_mono hα
       _ = limitPart (visibilityReplace α k i) := (limitPart_visibilityReplace α k i).symm
-      _ ≤ visibilityReplace α k i := limitPart_le _
+      _ ≤ visibilityReplace α k i := limitPart_le
 
 /-- **The step witness at a limit cutoff**: unconditional in the values (the bottom fibre is
 allowed), because visibility replacement never crosses a limit. -/
 theorem Witness.stepLimit (K n : ℕ) {c₀ c₁ : ExtOrd} (h : c₀ ≤ c₁) (hc₀ : SelfVis K c₀)
     (hc₁ : SelfVis K c₁) : Witness (gTop K) (stepShifter n c₀ c₁) where
-  anti := (witness_id K).anti
-  vis := (witness_id K).vis
+  anti := (witness_id).anti
+  vis := (witness_id).vis
   bot := stepShifter_bot n c₀ c₁
   mono := by
     intro a b hab
     by_cases ha : a = ⊥
-    · rw [ha, stepShifter_bot]; exact bot_le
+    · rw [ha, ]; exact bot_le
     have hb : b ≠ ⊥ := fun hb => ha (le_bot_iff.mp (hb ▸ hab))
-    by_cases hal : a < ofOrd (Ordinal.omega0 * (n : Ordinal))
+    by_cases hal : a < ofOrd (Ordinal.omega0 * n)
     · rw [stepShifter_of_lt ha hal]
-      by_cases hbl : b < ofOrd (Ordinal.omega0 * (n : Ordinal))
+      by_cases hbl : b < ofOrd (Ordinal.omega0 * n)
       · rw [stepShifter_of_lt hb hbl]
       · rw [stepShifter_of_ge (not_lt.mp hbl)]; exact h
-    · have hbl : ¬ b < ofOrd (Ordinal.omega0 * (n : Ordinal)) :=
+    · have hbl : ¬ b < ofOrd (Ordinal.omega0 * n) :=
         fun hbl => hal (lt_of_le_of_lt hab hbl)
       rw [stepShifter_of_ge (not_lt.mp hal), stepShifter_of_ge (not_lt.mp hbl)]
   clause5 := by
     intro α k hk i hi
     by_cases hα : α = ⊥
     · rw [hα, stepShifter_bot, extVisibilityReplace_bot, stepShifter_bot]
-    have hα' : extVisibilityReplace α k i ≠ ⊥ := extVisibilityReplace_ne_bot hα k i
+    have hα' : extVisibilityReplace α k i ≠ ⊥ := extVisibilityReplace_ne_bot hα
     by_cases hkK : k ≤ K
-    · by_cases hal : α < ofOrd (Ordinal.omega0 * (n : Ordinal))
+    · by_cases hal : α < ofOrd (Ordinal.omega0 * n)
       · rw [stepShifter_of_lt hα hal, stepShifter_of_lt hα' (evr_lt_limit hal k i),
           evr_eq_self_of_selfVis (hc₀.mono hkK)]
       · rw [stepShifter_of_ge (not_lt.mp hal), stepShifter_of_ge (evr_ge_limit (not_lt.mp hal) k i),
           evr_eq_self_of_selfVis (hc₁.mono hkK)]
     · rw [gTop_of_gt (by omega)] at hk
       have hσ := le_bot_iff.mp hk
-      by_cases hal : α < ofOrd (Ordinal.omega0 * (n : Ordinal))
+      by_cases hal : α < ofOrd (Ordinal.omega0 * n)
       · rw [stepShifter_of_lt hα hal] at hσ
         rw [stepShifter_of_lt hα hal, stepShifter_of_lt hα' (evr_lt_limit hal k i), hσ,
           extVisibilityReplace_bot]
@@ -161,6 +156,4 @@ theorem Witness.stepLimit (K n : ℕ) {c₀ c₁ : ExtOrd} (h : c₀ ≤ c₁) (
         rw [stepShifter_of_ge (not_lt.mp hal), stepShifter_of_ge (evr_ge_limit (not_lt.mp hal) k i),
           hσ, extVisibilityReplace_bot]
 
-end StepLimit
 
-end VaughtConjecture.Knight

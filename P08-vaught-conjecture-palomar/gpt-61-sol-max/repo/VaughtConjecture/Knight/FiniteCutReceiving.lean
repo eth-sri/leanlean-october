@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
+import VaughtConjecture.Knight.Model
 
 /-! # Finite-cut receiving: the observation interface
 
@@ -14,10 +13,8 @@ applications. Cutoffs are observations; no claim that arbitrary capping preserve
 lawfulness is made. Exact consistency separately supplies literal root retention.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
-open TypeTower StageType KnightRealization Value ExtOrd
+open TypeTower StageType   ExtOrd
 universe w
 variable {α : LimitStage} {M : Type w}
 
@@ -32,4 +29,3 @@ def FiniteCutReceiving (R : KnightRealization α M) : Prop :=
           ∃ h : q.scheme = P.scheme,
             ∀ d, min (q.label d) δ = min (P.label (SemScheme.castCell h d)) δ
 
-end VaughtConjecture.Knight

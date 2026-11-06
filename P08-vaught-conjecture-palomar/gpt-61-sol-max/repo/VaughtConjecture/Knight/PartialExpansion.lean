@@ -1,11 +1,11 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ExpansionIsomorphism
+import VaughtConjecture.Knight.ExpansionInjectivity
 
 /-! # Expansion as a unique partial operation
 
@@ -15,14 +15,12 @@ and coherent values; transport along a specified isomorphism retains its underly
 Nothing here produces a limit expansion or lifts an arbitrary embedding.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.PartialExpansion
 
 open TypeTower KnightRealization
 
-universe w w'
-variable {M : Type w} {N : Type w'} {σ τ ρ : Ordinal.{0}}
+universe w 
+variable {M : Type w}  {σ τ ρ : Ordinal₀}
 
 /-- Realizations admitting an actual model expansion on the same carrier. -/
 abbrev Domain (h : σ ≤ ρ) (M : Type w) :=
@@ -43,8 +41,7 @@ theorem isModel (h : σ ≤ ρ) (R : Domain h M) : (value h R).IsModel :=
 /-- Independence from the particular expansion witness, not merely from its existence proof. -/
 theorem value_eq (h : σ ≤ ρ) (R : Domain h M)
     {W : KnightRealization (blockStage ρ) M} (hW : W.IsModel)
-    (hWR : W.reduct (blockStage_mono h) = R.1) : value h R = W :=
-  eq_of_reduct_eq_of_le ρ σ h _ _ (isModel h R) hW ((reduct_value h R).trans hWR.symm)
+    (hWR : W.reduct (blockStage_mono h) = R.1) : value h R = W := by grind [eq_of_reduct_eq_of_le, isModel, reduct_value]
 
 /-- Independently supplied existence proofs at two heights produce coherent values. -/
 theorem coherent (hστ : σ ≤ τ) (hτρ : τ ≤ ρ)
@@ -53,4 +50,3 @@ theorem coherent (hστ : σ ≤ τ) (hτρ : τ ≤ ρ)
   apply (value_eq hστ S ((isModel _ R).reduct _) ?_).symm
   rw [Realization.reduct_reduct, reduct_value, hRS]
 
-end VaughtConjecture.Knight.PartialExpansion

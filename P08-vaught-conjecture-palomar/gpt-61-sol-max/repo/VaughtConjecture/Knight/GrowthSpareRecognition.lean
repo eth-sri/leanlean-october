@@ -3,11 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthLeafRecognition
-public import VaughtConjecture.Knight.GradePrefixProjection
-public import VaughtConjecture.Knight.RelativeLadderAmbient
+import VaughtConjecture.Knight.GrowthLeafRecognition
+import VaughtConjecture.Knight.GradePrefixProjection
+import VaughtConjecture.Knight.RelativeLadderAmbient
 
 /-! # Grade-one recognition from the maximal spare chart, and the two-grade projection
 
@@ -43,23 +42,18 @@ grades.
 Everything stays on the actual one-scope carrier; replication, mixed extension and lifting are not
 touched. -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthSpareRecognition
 
-open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor GrowthLeafRecognition
-open SupportLadderRows LadderScalarRendering SharpWitnessComposition CappedDonor.Ref
+open    Growth GrowthHigherSources GrowthPaddedSuccessor GrowthLeafRecognition
+open SupportLadderRows   CappedDonor.Ref
 
-noncomputable section
+
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n J : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
+  (X : I.GrowthData)
+  (T : I.GrowthAttachment X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
 local notation "Fld" => Field I.right.scheme I.left.scheme
@@ -80,12 +74,7 @@ local notation "spare" => SupportLadderRows.leaf (rungs_pos I)
 
 /-! ## The base restriction of an arbitrary lawful section -/
 
-variable {p : CellScheme.below (carrier I X T hA hB hC) (A, 2) → ExtOrd}
-
-/-! ## The maximal spare chart -/
-
-/-- The ladder row of a spare at a padded point is the actual ladder row. -/
-theorem ladderRow_spare_added (a : Catalogue X 1) (v : Pt) :
+theorem ladderRow_spare_added a v :
     RelativeLadderLayer.ladderRow I.boundary (card_pos hA) (GrowthOrderedBase.field I) (fields X 1)
       (spare a) (RelativeLadderLayer.added I.boundary (card_pos hA) v) =
       SupportLadderRows.row ranks₁ (spare a) v := by
@@ -97,7 +86,7 @@ theorem ladderRow_spare_added (a : Catalogue X 1) (v : Pt) :
   rfl
 
 /-- The ladder row of a spare at an original is the rank-coded source of its field. -/
-theorem ladderRow_spare_old (a : Catalogue X 1) (d : Cell I.boundary) :
+theorem ladderRow_spare_old a d :
     RelativeLadderLayer.ladderRow I.boundary (card_pos hA) (GrowthOrderedBase.field I) (fields X 1)
       (spare a) (RelativeLadderLayer.old I.boundary (card_pos hA) d) =
       SupportLadderRows.source rungs (ranks₁ a (GrowthOrderedBase.field I d)) := by
@@ -105,42 +94,27 @@ theorem ladderRow_spare_old (a : Catalogue X 1) (d : Cell I.boundary) :
     (RelativeLadderLayer.rankIndex I.boundary (card_pos hA) (GrowthOrderedBase.field I)
       (fields X 1) (SupportLadderRows.parent (spare a))
       (RelativeLadderLayer.old I.boundary (card_pos hA) d)) = _
-  rw [RelativeLadderLayer.rankIndex_old, SupportLadderRows.ceiling_leaf]
+  rw [RelativeLadderLayer.rankIndex_old, ]
   rfl
 
 /-- The spare's row at a padded point is the rank-coded source at the point's index. -/
-theorem row_spare (a : Catalogue X 1) (v : Pt) :
+theorem row_spare a v :
     SupportLadderRows.row ranks₁ (spare a) v =
       SupportLadderRows.source rungs (SupportLadderRows.index ranks₁ a v) := by
-  rw [SupportLadderRows.row, SupportLadderRows.ceiling_leaf]
+  rw [ ]
   rfl
 
 /-! ## Uncapped recognition of the complete shadow vector -/
 
-section Chart
-
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hτ
-
-end Chart
 
 /-! ## Lawfulness and admission of the uncapped vector at grade one -/
 
-section Admission
-
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Admission
 
 /-! ## The two-grade hidden-original projection -/
 
 /-- Lawfulness below grade zero is vacuous: every cell has positive grade. -/
 theorem respectsBelow_zero {ιS : Type*} [DecidableEq ιS] {S : Finset ιS} {DS : CellScheme S}
-    (semS : Semantics DS) (r : DS.below (S, 0) → ExtOrd) :
+    (semS : Semantics DS) (r : BelowLabels DS (S, 0)) :
     RespectsSemanticsBelow semS (S, 0) r := by
   have hno (d : DS.below (S, 0)) : False := by
     have h1 := d.2.2
@@ -158,14 +132,5 @@ transports directly.  Root agreement of the grade-dependent projection follows f
 root agreement and root-grade preservation (`RootAttachment.grade`).  None of this uses the
 admission hypothesis `1 < X.req.N`. -/
 
-section Boundary
 
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
 
-include hp hτ
-
-end Boundary
-
-end
-end VaughtConjecture.Knight.GrowthSpareRecognition

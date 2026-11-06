@@ -1,11 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SlackCutPasting
+import VaughtConjecture.Knight.WitnessAlgebra
 
 /-! # Mixed-grade interpolation: orbit blocks, not just source order
 
@@ -20,35 +23,33 @@ the controller grade must come from the same source block. The latter is a neces
 every actual maximal-grade controller locality, not just the interpolation template.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd
+open  Value ExtOrd
 
 /-- A monotone map commuting with self-replacement can identify two separated source blocks
 only at a self-visible output. -/
-theorem selfVis_of_equal_images_separated_blocks {τ : ExtOrd → ExtOrd} {K : ℕ}
+theorem selfVis_of_equal_images_separated_blocks {τ} {K}
     (hm : Monotone τ)
     (hc : ∀ x, τ (extVisibilityReplace x K K) = extVisibilityReplace (τ x) K K)
-    {a b : Ordinal.{0}} (hab : limitPart a < limitPart b)
+    {a b} (hab : limitPart a < limitPart b)
     (he : τ (ofOrd a) = τ (ofOrd b)) : SelfVis K (τ (ofOrd a)) := by
   have hsrc : extVisibilityReplace (ofOrd a) K K ≤ ofOrd b := by
     by_cases ha : finitePart a < K
     · rw [extVisibilityReplace_of_finitePart_lt ha, ofOrd_le_ofOrd]
-      exact (limitPart_add_nat_le_of_lt hab K).trans (limitPart_le b)
+      exact (limitPart_add_nat_le_of_lt hab K).trans (limitPart_le)
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha), ofOrd_le_ofOrd,
         ← decomposition a]
-      exact (limitPart_add_nat_le_of_lt hab (finitePart a)).trans (limitPart_le b)
+      exact (limitPart_add_nat_le_of_lt hab (finitePart a)).trans (limitPart_le)
   exact le_antisymm (by simpa only [hc, ← he] using hm hsrc)
     (le_extVisibilityReplace_self _ _)
 
 /-- At a non-visible ordinal output, bounded replacement commutation determines the source's
 finite part exactly, not just an upper bound on it. -/
-theorem finitePart_eq_of_nonvisible_image {τ : ExtOrd → ExtOrd} {K : ℕ}
+theorem finitePart_eq_of_nonvisible_image {τ : LabelMap} {K : ℕ}
     (hc : ∀ x i, i ≤ K →
       τ (extVisibilityReplace x K i) = extVisibilityReplace (τ x) K i)
-    {a t : Ordinal.{0}} (ht : τ (ofOrd a) = ofOrd t) (hft : finitePart t < K) :
+    {a t : Ordinal₀} (ht : τ (ofOrd a) = ofOrd t) (hft : finitePart t < K) :
     finitePart a = finitePart t := by
   have hfa : finitePart a < K := by
     by_contra hfa
@@ -64,12 +65,12 @@ theorem finitePart_eq_of_nonvisible_image {τ : ExtOrd → ExtOrd} {K : ℕ}
 
 /-- Finite pointwise suprema preserve witnesses with a common suppressor, provided the empty
 supremum has a witness too. This is a construction tool, not composition of transformations. -/
-theorem Witness.finset_sup {ι : Type*} {g : ℕ → ExtOrd} {f : ι → ExtOrd → ExtOrd}
+theorem Witness.finset_sup {ι : Type*} {g : ℕ → ExtOrd} {f : ι → LabelMap}
     (hbot : Witness g (fun _ => ⊥)) (s : Finset ι) (hf : ∀ i ∈ s, Witness g (f i)) :
     Witness g (fun a => s.sup (fun i => f i a)) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sup_empty] using hbot
+  | empty => simp_all
   | @insert i s hi ih =>
     simpa only [Finset.sup_insert] using
       (hf i (Finset.mem_insert_self _ _)).max
@@ -78,14 +79,12 @@ theorem Witness.finset_sup {ι : Type*} {g : ℕ → ExtOrd} {f : ι → ExtOrd 
 namespace MixedGradeInterpolation
 
 /-- The constant-bottom shifter is a witness at every grade. -/
-theorem zero_witness (K : ℕ) : Witness (gTop K) (fun _ => ⊥) where
-  anti := (witness_id K).anti
-  vis := (witness_id K).vis
+theorem zero_witness K : Witness (gTop K) (fun _ => ⊥) where
+  anti := (witness_id).anti
+  vis := (witness_id).vis
   bot := rfl
   mono := monotone_const
   clause5 := by intros; exact (extVisibilityReplace_bot _ _).symm
 
 /-! ## A non-vacuous mixed-grade tie regression -/
 
-end MixedGradeInterpolation
-end VaughtConjecture.Knight

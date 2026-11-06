@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthContextSynchronization
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GrowthContextSynchronization
 
 /-! # A least top source supplies the hollow-growth marker inequality
 
@@ -16,14 +18,11 @@ inequality, not strict separation. The proof handles provisionally capped
 and band-valued arguments separately on their actual rows.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthMarkerCalibration
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd 
 
-private theorem evr_offset_mono (x : ExtOrd) (N : ℕ) {i j : ℕ} (h : i ≤ j) :
+
+private theorem evr_offset_mono x N {i j} (h : i ≤ j) :
     extVisibilityReplace x N i ≤ extVisibilityReplace x N j := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · simp
@@ -32,31 +31,34 @@ private theorem evr_offset_mono (x : ExtOrd) (N : ℕ) {i j : ℕ} (h : i ≤ j)
     · rw [extVisibilityReplace_of_finitePart_lt ha,
         extVisibilityReplace_of_finitePart_lt ha, ofOrd_le_ofOrd]
       exact add_le_add_right (Nat.cast_le.mpr h) _
-    · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha),
-        extVisibilityReplace_of_le_finitePart (not_lt.mp ha)]
+    · grind [extVisibilityReplace_of_le_finitePart]
 
-variable {α : Ordinal.{0}} {n : ℕ} {p : S α n} {c : Cell p.scheme.scheme}
+variable {α : Ordinal₀} {n : ℕ} {p : S α n} {c : Cell p.scheme.scheme}
+
+local notation "E₀" => p.scheme.rows.E c
+
+local notation "below₀" => p.scheme.scheme.belowCell c
 
 /-- The row inequality needed for a marker, from a least top source and a
 provisional lower bound. No physical receiver is used. -/
 theorem marker_le_of_provisional (hsc : p.scheme.scheme.scope c = Finset.univ)
     (hgr : p.scheme.scheme.grade c = p.topGrade) (hc : p.label c = ⊤)
-    (r : p.scheme.scheme.below (p.scheme.scheme.cell c))
-    (hmin : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label d.1 = ⊤ →
-      p.scheme.rows.E c r ≤ p.scheme.rows.E c d)
-    (d : p.scheme.scheme.below (p.scheme.scheme.cell c)) (hd : p.label d.1 = ⊤)
+    (r : below₀)
+    (hmin : ∀ d , p.label d.1 = ⊤ →
+      E₀ r ≤ E₀ d)
+    (d : below₀) (hd : p.label d.1 = ⊤)
     {L : ℕ} (hL : L ≤ p.topGrade) (hv : ofOrd (α + L) ≤ p.someProvisionalValue d.1) :
-    extVisibilityReplace (p.scheme.rows.E c r) p.topGrade L ≤ p.scheme.rows.E c d := by
+    extVisibilityReplace (E₀ r) p.topGrade L ≤ E₀ d := by
   by_cases hcap : p.ProvisionalCap d.1
   · obtain ⟨s, hs, hsd⟩ := hcap.transport d.2 hsc hgr hc
     exact ((evr_mono (hmin s hs) hL).trans
-      (evr_offset_mono (p.scheme.rows.E c s) p.topGrade hL)).trans hsd
-  · have hnotself : extVisibilityReplace (p.scheme.rows.E c d) p.topGrade p.topGrade ≠
-        p.scheme.rows.E c d := fun h =>
+      (evr_offset_mono (E₀ s) p.topGrade hL)).trans hsd
+  · have hnotself : extVisibilityReplace (E₀ d) p.topGrade p.topGrade ≠
+        E₀ d := fun h =>
       hcap ⟨c, d.2, d, hsc, hgr, hc, hd, h.le⟩
-    obtain ⟨a, ha, hfp⟩ : ∃ a : Ordinal.{0}, p.scheme.rows.E c d = ofOrd a ∧
+    obtain ⟨a, ha, hfp⟩ : ∃ a , E₀ d = ofOrd a ∧
         finitePart a < p.topGrade := by
-      rcases ExtOrd.cases (p.scheme.rows.E c d) with hb | ht | ⟨a, ha⟩
+      rcases ExtOrd.cases (E₀ d) with hb | ht | ⟨a, ha⟩
       · simp [hb] at hnotself
       · simp [ht] at hnotself
       · refine ⟨a, ha, ?_⟩
@@ -64,14 +66,13 @@ theorem marker_le_of_provisional (hsc : p.scheme.scheme.scope c = Finset.univ)
         exact hnotself (by rw [ha, extVisibilityReplace_of_le_finitePart (not_lt.mp hn)])
     have hband : p.ProvisionalBand d.1 (finitePart a) := by
       refine ⟨c, d.2, hsc, hgr, hc, ?_⟩
-      change p.scheme.rows.E c d =
-        extVisibilityReplace (p.scheme.rows.E c d) p.topGrade (finitePart a)
+      change E₀ d =
+        extVisibilityReplace (E₀ d) p.topGrade (finitePart a)
       rw [ha, extVisibilityReplace_of_finitePart_lt hfp, limitPart_add_finitePart]
-    have hval : p.someProvisionalValue d.1 = ofOrd (α + finitePart a) :=
+    have hval  :=
       (isProvisionalValue_iff.mp (Or.inr (Or.inr ⟨hd, hcap, finitePart a, hband, rfl⟩))).symm
     have hLf : L ≤ finitePart a := by
-      rw [hval, ofOrd_le_ofOrd] at hv
-      exact Nat.cast_le.mp (le_of_add_le_add_left hv)
+      simp_all
     apply (evr_mono (hmin d hd) hL).trans
     rw [ha, extVisibilityReplace_of_finitePart_lt hfp, ofOrd_le_ofOrd]
     exact (add_le_add_right (Nat.cast_le.mpr hLf) _).trans_eq (limitPart_add_finitePart a)
@@ -80,17 +81,17 @@ theorem marker_le_of_provisional (hsc : p.scheme.scheme.scope c = Finset.univ)
 set of arguments of the maximal top owner. -/
 theorem exists_marker (hsc : p.scheme.scheme.scope c = Finset.univ)
     (hgr : p.scheme.scheme.grade c = p.topGrade) (hc : p.label c = ⊤) :
-    ∃ r : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label r.1 = ⊤ ∧
-      ∀ (L : ℕ), L ≤ p.topGrade →
-        ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label d.1 = ⊤ →
+    ∃ r , p.label r.1 = ⊤ ∧
+      ∀ L, L ≤ p.topGrade →
+        ∀ d , p.label d.1 = ⊤ →
           ofOrd (α + L) ≤ p.someProvisionalValue d.1 →
-            extVisibilityReplace (p.scheme.rows.E c r) p.topGrade L ≤ p.scheme.rows.E c d := by
-  classical
-  let : Fintype (p.scheme.scheme.below (p.scheme.scheme.cell c)) := Fintype.ofFinite _
-  let T := Finset.univ.filter fun d : p.scheme.scheme.below (p.scheme.scheme.cell c) =>
+            extVisibilityReplace (E₀ r) p.topGrade L ≤ E₀ d := by
+  
+  let : Fintype (below₀) := Fintype.ofFinite _
+  let T := Finset.univ.filter fun d : below₀ =>
     p.label d.1 = ⊤
   have hT : T.Nonempty := ⟨⟨c, GradedLe.refl _⟩, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hc⟩⟩
-  obtain ⟨r, hr, hmin⟩ := T.exists_min_image (p.scheme.rows.E c) hT
+  obtain ⟨r, hr, hmin⟩ := T.exists_min_image (E₀) hT
   refine ⟨r, (Finset.mem_filter.mp hr).2, fun L hL d hd hv => ?_⟩
   exact marker_le_of_provisional hsc hgr hc r
     (fun s hs => hmin s (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hs⟩)) d hd hL hv
@@ -98,13 +99,13 @@ theorem exists_marker (hsc : p.scheme.scheme.scope c = Finset.univ)
 /-- An actual hollow-growth context with its marker and root source inequalities.
 The top grade exceeds both requested floors. This constructs calibration data,
 not the physical receiving scheme which would consume it. -/
-theorem exists_hollow_marker_context {M : Type*} {α : LimitStage}
+theorem exists_hollow_marker_context {M} {α}
     {W : KnightRealization α M} (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
-    (hh : W.IsHollow) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
-    (hp : W.eval t = some p) (K L : ℕ) :
+    (hh : W.IsHollow) {n} t p
+    (hp : W.eval t = some p) K L :
     ∃ (y : W.LabelledExt) (f : Fin n ↪ Fin y.arity) (_hf : f.trans y.tuple = t)
       (hpy : typeMap f y.type = some p) (c : Cell y.type.scheme.scheme)
-      (r : y.type.scheme.scheme.below (y.type.scheme.scheme.cell c)),
+      (r : y.type.scheme.scheme.belowCell c),
       max K L < y.type.topGrade ∧ y.type.scheme.scheme.scope c = Finset.univ ∧
       y.type.scheme.scheme.grade c = y.type.topGrade ∧ y.type.label c = ⊤ ∧
       y.type.label r.1 = ⊤ ∧
@@ -122,14 +123,11 @@ theorem exists_hollow_marker_context {M : Type*} {α : LimitStage}
   have hbelow : GradedLe (y.type.scheme.scheme.cell (mapCell hpy d))
       (y.type.scheme.scheme.cell c) := by
     constructor
-    · change y.type.scheme.scheme.scope (mapCell hpy d) ⊆ y.type.scheme.scheme.scope c
-      rw [hsc]
-      exact Finset.subset_univ _
+    · simp_all
     · change y.type.scheme.scheme.grade (mapCell hpy d) ≤ y.type.scheme.scheme.grade c
       rw [hgr]
       exact le_csSup y.type.topGrades_bddAbove (grade_mem_topGrades hdtop)
   exact ⟨hbelow, hm L ((le_max_right K L).trans hN.le)
     ⟨mapCell hpy d, hbelow⟩ hdtop (htop d hd).le⟩
 
-end
-end VaughtConjecture.Knight.GrowthMarkerCalibration
+

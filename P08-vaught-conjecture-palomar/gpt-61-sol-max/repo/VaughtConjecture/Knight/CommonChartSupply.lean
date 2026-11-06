@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
+import VaughtConjecture.Knight.Model
 
 /-! # Common source charts and their one-step supply
 
@@ -24,11 +23,8 @@ the chain module.
 The declarations were moved verbatim from `Knight/CommonChartChain.lean`, which re-exports this
 module; their names and signatures are unchanged. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower
 
 universe w
 
@@ -47,12 +43,14 @@ structure CommonChartNode where
   eval₁ : A₁.eval tuple₁ = some type
   eval₂ : A₂.eval tuple₂ = some type
 
+local notation "CommonChartNode₀" => CommonChartNode (A₁ := A₁) (A₂ := A₂)
+
 /-- One density witness below a common chart: extend both coordinate tuples
 and absorb whichever side's point is currently scheduled. -/
 structure CommonChartExtension
-    (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂))
+    (nd : CommonChartNode₀)
     (z : M₁ ⊕ M₂) where
-  next : CommonChartNode (A₁ := A₁) (A₂ := A₂)
+  next : CommonChartNode₀
   emb : Fin nd.arity ↪ Fin next.arity
   trans₁ : emb.trans next.tuple₁ = nd.tuple₁
   trans₂ : emb.trans next.tuple₂ = nd.tuple₂
@@ -61,16 +59,16 @@ structure CommonChartExtension
 
 /-- Forcing-lite producer interface: every finite common chart has an
 extension meeting either next carrier requirement. -/
-def CommonChartStepSupply : Prop :=
-  ∀ (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)) (z : M₁ ⊕ M₂),
+def CommonChartStepSupply :=
+  ∀ (nd : CommonChartNode₀) z,
     Nonempty (CommonChartExtension nd z)
 
 /-- A density witness which stays inside a declared construction-reached
 subclass.  This is the useful weak-amalgamation shape: no claim is made about
 arbitrary common charts outside `Good`. -/
 structure GoodCommonChartExtension
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop)
-    (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂))
+    (Good : CommonChartNode₀ → Prop)
+    (nd : CommonChartNode₀)
     (z : M₁ ⊕ M₂) where
   extension : CommonChartExtension nd z
   good_next : Good extension.next
@@ -78,10 +76,8 @@ structure GoodCommonChartExtension
 /-- Construction-relative forcing interface.  Density is required only below
 nodes satisfying the invariant which defines the selected closed subcategory. -/
 def RestrictedCommonChartStepSupply
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop) : Prop :=
-  ∀ (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)), Good nd →
-    ∀ z : M₁ ⊕ M₂, Nonempty (GoodCommonChartExtension Good nd z)
+    (Good : CommonChartNode₀ → Prop) :=
+  ∀ nd, Good nd →
+    ∀ z , Nonempty (GoodCommonChartExtension Good nd z)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

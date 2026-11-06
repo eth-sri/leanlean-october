@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
-public import InfinitaryLogic.Scott.AtomicDiagram
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.Model
+import InfinitaryLogic.Scott.AtomicDiagram
 
 /-! # Stage chart languages (#137)
 
@@ -41,8 +42,6 @@ forth/back: the semantic consumer of this encoding is `InfinitaryLogic`'s `Poten
 made that two occurrences of one chart have the same quantified extension behaviour — that is a
 producer transfer theorem, not a consequence of this encoding. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open FirstOrder Language Structure TypeTower
@@ -60,7 +59,7 @@ instance stageLang.isRelational (α : LimitStage) : (stageLang α).IsRelational 
 
 /-- The relation `P_p` holds of a tuple in a stage chart structure. -/
 abbrev StageHolds {α : LimitStage} {M : Type w} [(stageLang α).Structure M] {n : ℕ}
-    (p : S α.1 n) (xs : Fin n → M) : Prop :=
+    (p : S α.1 n) (xs : Fin n → M) :=
   RelMap (L := stageLang α) (n := n) p xs
 
 /-- The chart-language structure associated to a Knight realization: `P_p(x̄)` means that
@@ -68,13 +67,9 @@ abbrev StageHolds {α : LimitStage} {M : Type w} [(stageLang α).Structure M] {n
 @[instance_reducible] noncomputable def stageStructureOf {α : LimitStage} {M : Type w}
     (R : KnightRealization α M) : (stageLang α).Structure M where
   funMap f := isEmptyElim f
-  RelMap p xs := ∃ h : Function.Injective xs, R.eval ⟨xs, h⟩ = some p
+  RelMap p xs := ∃ h , R.eval ⟨xs, h⟩ = some p
 
-theorem stageHolds_stageStructureOf {α : LimitStage} {M : Type w}
-    (R : KnightRealization α M) {n : ℕ} (p : S α.1 n) (xs : Fin n → M) :
-    @StageHolds α M (stageStructureOf R) n p xs ↔
-      ∃ h : Function.Injective xs, R.eval ⟨xs, h⟩ = some p :=
-  Iff.rfl
+
 
 /-- The stage chart encoding reflects isomorphisms: an isomorphism of chart structures already
 transports every `Option`-valued realization label.  No modelhood or transfer hypothesis is
@@ -84,13 +79,12 @@ theorem isIsoOfStageStructureEquiv {α : LimitStage} {M : Type w} {N : Type w'}
     (e : @Language.Equiv (stageLang α) M N (stageStructureOf R) (stageStructureOf R')) :
     R.IsIso R'
       (@Language.Equiv.toEquiv (stageLang α) M N (stageStructureOf R) (stageStructureOf R') e) := by
-  let instM : (stageLang α).Structure M := stageStructureOf R
-  let instN : (stageLang α).Structure N := stageStructureOf R'
-  let e' : M ≃[stageLang α] N := e
+  let instM  := stageStructureOf R
+  let instN  := stageStructureOf R'
+  let e'  := e
   intro n t
-  let ee : M ≃ N := e'.toEquiv
-  have key : ∀ p : S α.1 n,
-      @StageHolds α N instN n p (⇑e' ∘ ⇑t) ↔ @StageHolds α M instM n p t :=
+  let ee  := e'.toEquiv
+  have key  :=
     fun p => StrongHomClass.map_rel e' p t
   change R'.eval (t.trans ee.toEmbedding) = R.eval t
   apply Option.ext
@@ -120,26 +114,26 @@ theorem stageHolds_comp_iff_of_eval {α : LimitStage} {M : Type w}
     {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n} (ht : R.eval t = some p)
     {m : ℕ} (q : S α.1 m) (f : Fin m → Fin n) :
     @StageHolds α M (stageStructureOf R) m q (t ∘ f) ↔
-      ∃ hf : Function.Injective f, typeMap ⟨f, hf⟩ p = some q := by
-  rw [stageHolds_stageStructureOf]
+      ∃ hf , typeMap ⟨f, hf⟩ p = some q := by
+  
   constructor
   · rintro ⟨htf, hq⟩
     have hf : Function.Injective f := fun i j hij => htf (by simp [hij])
     refine ⟨hf, ?_⟩
-    have hface := hR t p (⟨f, hf⟩ : Fin m ↪ Fin n) ht
-    have he : (⟨t ∘ f, htf⟩ : Fin m ↪ M) = (⟨f, hf⟩ : Fin m ↪ Fin n).trans t := by
+    have hface := hR t p (⟨f, hf⟩) ht
+    have he : (⟨t ∘ f, htf⟩) = (⟨f, hf⟩ : Fin m ↪ Fin n).trans t := by
       ext i
       rfl
-    rw [he] at hq
+    
     exact hface.symm.trans hq
   · rintro ⟨hf, hq⟩
-    have htf : Function.Injective (t ∘ f) := t.injective.comp hf
+    have htf  := t.injective.comp hf
     refine ⟨htf, ?_⟩
-    have hface := hR t p (⟨f, hf⟩ : Fin m ↪ Fin n) ht
-    have he : (⟨t ∘ f, htf⟩ : Fin m ↪ M) = (⟨f, hf⟩ : Fin m ↪ Fin n).trans t := by
+    have hface := hR t p (⟨f, hf⟩) ht
+    have he : (⟨t ∘ f, htf⟩) = (⟨f, hf⟩ : Fin m ↪ Fin n).trans t := by
       ext i
       rfl
-    rw [he]
+    
     exact hface.trans hq
 
 /-- Two labelled tuples carrying the same full chart have the same atomic chart-language type.
@@ -153,10 +147,7 @@ theorem sameAtomicType_of_eval_eq_some {α : LimitStage} {M : Type w} {N : Type 
   intro idx
   cases idx with
   | eq i j =>
-      simp only [AtomicIdx.holds]
-      constructor <;> intro hij
-      · exact congrArg b (a.injective hij)
-      · exact congrArg a (b.injective hij)
+      simp_all [AtomicIdx.holds]
   | rel q f =>
       exact (stageHolds_comp_iff_of_eval hR ha q f).trans
         (stageHolds_comp_iff_of_eval hR' hb q f).symm
@@ -166,7 +157,7 @@ an injective tuple carrying one common full chart.  The selector may repeat coor
 also covers arbitrary finite tuples rather than only embeddings. -/
 def HasCommonChart {α : LimitStage} {M : Type w} {N : Type w'}
     (R : KnightRealization α M) (R' : KnightRealization α N) {n : ℕ}
-    (a : Fin n → M) (b : Fin n → N) : Prop :=
+    (a : Fin n → M) (b : Fin n → N) :=
   ∃ (m : ℕ) (ta : Fin m ↪ M) (tb : Fin m ↪ N) (σ : Fin n → Fin m) (p : S α.1 m),
     R.eval ta = some p ∧ R'.eval tb = some p ∧ ta ∘ σ = a ∧ tb ∘ σ = b
 
@@ -176,10 +167,9 @@ theorem sameAtomicType_of_commonChart {α : LimitStage} {M : Type w} {N : Type w
     (hR : R.IsExactParentConsistent) (hR' : R'.IsExactParentConsistent)
     {n : ℕ} {a : Fin n → M} {b : Fin n → N} (h : HasCommonChart R R' a b) :
     @SameAtomicType (stageLang α) M (stageStructureOf R) n N (stageStructureOf R') a b := by
-  let instM : (stageLang α).Structure M := stageStructureOf R
-  let instN : (stageLang α).Structure N := stageStructureOf R'
+  let instM  := stageStructureOf R
+  let instN  := stageStructureOf R'
   obtain ⟨m, ta, tb, σ, p, hta, htb, ha, hb⟩ := h
   have hfull := (sameAtomicType_of_eval_eq_some hR hR' hta htb).relabel σ
   simpa only [ha, hb] using hfull
 
-end VaughtConjecture.Knight

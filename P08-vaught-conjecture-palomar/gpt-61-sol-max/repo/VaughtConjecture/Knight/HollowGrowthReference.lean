@@ -1,12 +1,12 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthMarkerCalibration
-public import VaughtConjecture.Knight.ReferenceContextMargin
+import VaughtConjecture.Knight.GrowthMarkerCalibration
+import VaughtConjecture.Knight.ReferenceContextMargin
 
 /-! # Actual references and a top marker in one hollow-growth context
 
@@ -16,12 +16,9 @@ original root cell. Its least-top marker supplies the weak root inequality.
 No receiving scheme or stable model is assumed.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthReference
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd 
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -38,17 +35,17 @@ structure Data {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
   cap_grade : context.type.scheme.scheme.grade cap = context.type.topGrade
   cap_top : context.type.label cap = ⊤
   large : max (max n R) Nmin < context.type.topGrade
-  marker : context.type.scheme.scheme.below (context.type.scheme.scheme.cell cap)
+  marker : context.type.scheme.scheme.belowCell cap
   marker_top : context.type.label marker.1 = ⊤
-  root_below : ∀ d : Cell p.scheme.scheme,
+  root_below : ∀ d ,
     GradedLe (context.type.scheme.scheme.cell (mapCell face_type d))
       (context.type.scheme.scheme.cell cap)
-  ref : Ordinal.{0} → context.type.scheme.scheme.below (context.type.scheme.scheme.cell cap)
-  off : Ordinal.{0} → ℕ
+  ref : Ordinal₀ → context.type.scheme.scheme.belowCell cap
+  off : Ordinal₀ → ℕ
   ref_label : ∀ r ∈ reqs, context.type.label (ref r.block).1 = ofOrd (r.block + off r.block)
   ref_off_lt : ∀ r ∈ reqs, off r.block < context.type.topGrade
   request_off_lt : ∀ r ∈ reqs, r.offset < context.type.topGrade
-  top_root : ∀ d : Cell p.scheme.scheme, p.label d = ⊤ →
+  top_root : ∀ d , p.label d = ⊤ →
     extVisibilityReplace (context.type.scheme.rows.E cap marker) context.type.topGrade R ≤
       context.type.scheme.rows.E cap ⟨mapCell face_type d, root_below d⟩
 
@@ -63,7 +60,7 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
     (max (max n R) Nmin)
   have hpc : typeMap C.proj C.p₀ = some p := by
     have h := hM.consistent C.ctx C.p₀ C.proj C.eval_ctx
-    rw [C.proj_ctx, hp, knightTower_pull] at h
+    rw [C.proj_ctx, hp, ] at h
     exact h.symm
   obtain ⟨y, f, hf, hcy, c, r, hN, hsc, hgr, hc, hr, -, hroot⟩ :=
     GrowthMarkerCalibration.exists_hollow_marker_context hM hg hh C.ctx C.p₀ C.eval_ctx
@@ -73,7 +70,7 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
   have hNC : C.N < y.type.topGrade :=
     (le_max_right C.m C.N).trans_lt ((le_max_left _ R).trans_lt hN)
   have hpy : typeMap (C.proj.trans f) y.type = some p := by
-    rw [← typeMap_trans C.proj f y.type C.p₀ hcy]
+    rw [← typeMap_trans hcy]
     exact hpc
   have below (d : Cell C.p₀.scheme.scheme) :
       GradedLe (y.type.scheme.scheme.cell (mapCell hcy d)) (y.type.scheme.scheme.cell c) := by
@@ -114,11 +111,10 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
   intro d hd
   obtain ⟨hbelow, hle⟩ := hroot (mapCell hpc d) (by rw [label_mapCell hpc, hd])
   have heq : (⟨mapCell hpy d, rootBelow d⟩ :
-      y.type.scheme.scheme.below (y.type.scheme.scheme.cell c)) =
+      y.type.scheme.scheme.belowCell c) =
       ⟨mapCell hcy (mapCell hpc d), hbelow⟩ :=
     Subtype.ext (mapCell_trans hcy hpc hpy d)
   rw [heq]
   exact hle
 
-end
-end VaughtConjecture.Knight.HollowGrowthReference
+

@@ -1,12 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.OrdinaryRawScope
-public import VaughtConjecture.Knight.OrderedScopeObligations
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.OrdinaryRawScope
+import VaughtConjecture.Knight.OrderedScopeObligations
 
 /-! # Coherent iteration of ordinary proper scopes
 
@@ -15,20 +18,17 @@ local producer's premises from those targets, constructs its rows, and installs
 them in the same ambient inventory. No local operator is an input to the step.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeIteration
-open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
+open AmalgamationPlan    CoatomBoundaryExtension
 open SourcePrefixRows OrbitPrefixSupport
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D₀ : CellScheme A}
-variable (sem₀ : Semantics D₀) (F₀ : Finset (Finset ι)) (N : ℕ)
+variable (sem₀ : Semantics D₀) (F₀ : VaughtConjecture.AmalgamationPlan.SupportFamily ι) (N : ℕ)
 variable (G : Finset ExtOrd) (θ : ExtOrd)
 
 /-- An actual partial carrier, its completed-target ledger, and its renderer.
 `initial`, `step`, and finite iteration below construct these records. -/
-structure State (F : Finset (Finset ι)) where
+structure State (F : VaughtConjecture.AmalgamationPlan.SupportFamily ι) where
   carrier : CellScheme A
   rows : Semantics carrier
   plan : carrier.plan = D₀.plan
@@ -36,12 +36,11 @@ structure State (F : Finset (Finset ι)) where
   coded : rows.IsCoded
   original : Cell D₀ ↪o Cell carrier
   index : ∀ d, carrier.cell (original d) = D₀.cell d
-  row : ∀ (c : Cell D₀) (d : D₀.below (D₀.cell c)),
+  row : ∀ c d,
     rows.E (original c) ⟨original d.1, by rw [index, index]; exact d.2⟩ = sem₀.E c d
   exhaustive : ∀ d, carrier.scope d ∈ F₀ → ∃ c, original c = d
   occupied : ∀ d, carrier.scope d ∈ F
   initial_le : F₀ ⊆ F
-  scopes : F ⊆ D₀.plan
   proper : A ∉ F
   closed : ∀ B ∈ F, ∀ C ∈ D₀.plan, C ⊆ B → C ∈ F
   complete : ∀ J ∈ Plan.gradedPlan D₀.plan, J.1 ∈ F → ∃ d, carrier.cell d = J
@@ -50,20 +49,20 @@ structure State (F : Finset (Finset ι)) where
   classification : OrderedScopeRelocation.OwnerClassification rows original
   mute : ∀ c, carrier.grade c = (carrier.scope c).card → carrier.scope c ∉ F₀ →
     rows.E c ⟨c, GradedLe.refl _⟩ = ⊥
-  render : ∀ {p : Cell D₀ → ExtOrd}, RespectsSemantics sem₀ p → (∀ d, p d ≤ θ) →
-    Cell carrier → ExtOrd
-  readback : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) d,
+  render : ∀ {p}, RespectsSemantics sem₀ p → (BoundedBy p θ) →
+    CellLabels carrier
+  readback : ∀ {p} hp (hb : BoundedBy p θ) d,
     render hp hb (original d) = p d
-  lawful : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ),
+  lawful : ∀ {p} hp (hb : BoundedBy p θ),
     RespectsSemantics rows (render hp hb)
-  bound : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) d, render hp hb d ≤ θ
-  support : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) d,
+  bound : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : BoundedBy p θ) d, render hp hb d ≤ θ
+  support : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : BoundedBy p θ) d,
     Supported N (G : Set ExtOrd) p (render hp hb d)
-  agreement : ∀ {p q} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ)
-    (hq : RespectsSemantics sem₀ q) (hqb : ∀ d, q d ≤ θ) {γ}, γ ∈ G → γ ≤ θ →
+  agreement : ∀ {p q} (hp : RespectsSemantics sem₀ p) (hb : BoundedBy p θ)
+    (hq : RespectsSemantics sem₀ q) (hqb : BoundedBy q θ) {γ}, γ ∈ G → γ ≤ θ →
     Agree p q γ → Agree (render hp hb) (render hq hqb) γ
 
-variable {sem₀ F₀ N G θ} {F : Finset (Finset ι)}
+variable {sem₀ F₀ N G θ} {F : VaughtConjecture.AmalgamationPlan.SupportFamily ι}
 variable (X : State sem₀ F₀ N G θ F) {B : Finset ι}
 variable (hB : B ∈ D₀.plan) (hnew : B ∉ F)
 variable (hready : ∀ C ∈ D₀.plan, C ⊂ B → C ∈ F)
@@ -102,8 +101,8 @@ theorem ready : OrdinaryRawScope.Ready (restrictedRows X hB) where
     have himem : I.1 ∈ D₀.plan := X.plan ▸ (Finset.mem_inter.mp hi.1).1
     have hb := X.lifts I J (Plan.mem_gradedPlan.mpr ⟨himem, hi.2⟩)
       (Plan.mem_gradedPlan.mpr ⟨hmem, hm.2⟩) hdone h
-    let eJ := ScopeBoundary.belowEquiv X.carrier B (X.plan.symm ▸ hB) J hsub
-    let eI := ScopeBoundary.belowEquiv X.carrier B (X.plan.symm ▸ hB) I (h.1.trans hsub)
+    let eJ := ScopeBoundary.belowEquiv X.carrier B (X.plan.symm ▸ hB) hsub
+    let eI := ScopeBoundary.belowEquiv X.carrier B (X.plan.symm ▸ hB) (h.1.trans hsub)
     intro p q γ hp hq hγ hc
     exact bountiful_of_equiv h h eJ eI (fun _ => rfl)
       (ScopeBoundary.respects_iff _ _ _ _ _ _) (ScopeBoundary.respects_iff _ _ _ _ _ _)
@@ -112,7 +111,7 @@ theorem ready : OrdinaryRawScope.Ready (restrictedRows X hB) where
 variable (k : ℕ) (hk : 0 < k) (hcard : B.card = k + 1)
 
 /-- The next operator is produced on the current carrier's literal restriction. -/
-def localOperator : OrdinaryScopeOperator.Core (restrictedRows X hB) (k + 1) :=
+def localOperator :=
   (OrdinaryRawScope.build _ (ready X hB hnew hready) k hk hcard).finish hk hcard
 
 theorem local_complete : (localOperator X hB hnew hready k hk hcard).carrier.IsComplete :=
@@ -121,19 +120,19 @@ theorem local_complete : (localOperator X hB hnew hready k hk hcard).carrier.IsC
 /-- Execute one new scope on the actual ambient carrier. All local lifting and
 selected-section premises are derived above from the completed-target ledger. -/
 def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
-    (hG : ∀ z ∈ G, SelfVis N z) (hθ : SelfVis N θ) (htθ : θ ≠ ⊤) (hθG : θ ∈ G) :
+    (hG : VisibleOn N G) (hθ : SelfVis N θ) (htθ : θ ≠ ⊤) (hθG : θ ∈ G) :
     State sem₀ F₀ N G θ (insert B F) := by
-  classical
-  let hBX : B ∈ X.carrier.plan := X.plan.symm ▸ hB
+  
+  let hBX  := X.plan.symm ▸ hB
   let L := localOperator X hB hnew hready k hk hcard
   let sep := separated X hB hnew
   let K := OrderedScopeRelocation.carrier X.rows hBX L
   let ss := OrderedScopeRelocation.rows X.rows hBX L sep
   let l := OrderedScopeRelocation.old X.rows hBX L
   let r := OrderedScopeRelocation.localCell X.rows hBX L
-  have hg : ∀ z ∈ G, SelfVis (k + 1) z := fun z hz => selfVis_mono (hG z hz) hN
-  have hθ' : SelfVis (k + 1) θ := selfVis_mono hθ hN
-  let render' {p : Cell D₀ → ExtOrd} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) :=
+  have hg : VisibleOn (k + 1) G := fun z hz => selfVis_mono (hG z hz) hN
+  have hθ'  := selfVis_mono hθ hN
+  let render' {p : CellLabels D₀} (hp : RespectsSemantics sem₀ p) (hb : BoundedBy p θ) :=
     OrderedScopeRelocation.render X.rows hBX L (X.lawful hp hb)
       (fun d => ne_top_of_le_ne_top htθ (X.bound hp hb d)) G θ
   refine {
@@ -144,17 +143,12 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
     coded := OrderedScopeRelocation.coded X.rows hBX L sep X.coded
     original := X.original.trans (OrderEmbedding.ofStrictMono l
       (OrderedScopeRelocation.old_order X.rows hBX L))
-    index := fun d => (OrderedScopeRelocation.old_index X.rows hBX L _).trans (X.index d)
+    index := fun d => (OrderedScopeRelocation.old_index L _).trans (X.index d)
     row := fun c d => (OrderedScopeRelocation.row_old X.rows hBX L sep (X.original c)
       ⟨X.original d.1, by rw [X.index, X.index]; exact d.2⟩).trans (X.row c d)
     exhaustive := ?_
     occupied := ?_
     initial_le := fun _ h => Finset.mem_insert_of_mem (X.initial_le h)
-    scopes := by
-      intro C hC
-      rcases Finset.mem_insert.mp hC with rfl | hC
-      · exact hB
-      · exact X.scopes hC
     proper := by simpa only [Finset.mem_insert, not_or] using And.intro hBA.symm X.proper
     closed := ?_
     complete := ?_
@@ -179,22 +173,19 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
   · intro z hz
     rcases OrderedScopeRelocation.classify X.rows hBX L z with ⟨d, rfl⟩ | hd
     · have hd : X.carrier.scope d ∈ F₀ := by
-        simpa only [K, CellScheme.scope, OrderedScopeRelocation.old_index X.rows hBX L] using hz
+        simpa only [K, CellScheme.scope, OrderedScopeRelocation.old_index L] using hz
       obtain ⟨e, rfl⟩ := X.exhaustive d hd
       exact ⟨e, rfl⟩
     · exact False.elim (hnew (X.initial_le (hd ▸ hz)))
   · intro z
     rcases OrderedScopeRelocation.classify X.rows hBX L z with ⟨d, rfl⟩ | hd
     · change (OrderedScopeRelocation.carrier X.rows hBX L).scope _ ∈ insert B F
-      simpa only [CellScheme.scope, OrderedScopeRelocation.old_index X.rows hBX L] using
-        (Finset.mem_insert_of_mem (X.occupied d) : X.carrier.scope d ∈ insert B F)
-    · exact hd ▸ Finset.mem_insert_self B F
+      simpa only [CellScheme.scope, OrderedScopeRelocation.old_index L] using
+        (Finset.mem_insert_of_mem (X.occupied d))
+    · grind
   · intro C hC T hT hTC
     rcases Finset.mem_insert.mp hC with hCB | hC
-    · rw [hCB] at hTC
-      by_cases he : T = B
-      · exact he ▸ Finset.mem_insert_self B F
-      · exact Finset.mem_insert_of_mem (hready T hT (Finset.ssubset_iff_subset_ne.mpr ⟨hTC, he⟩))
+    · grind
     · exact Finset.mem_insert_of_mem (X.closed C hC T hT hTC)
   · intro J hJ hJF
     rcases Finset.mem_insert.mp hJF with hJB | hJF
@@ -206,7 +197,7 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
       obtain ⟨d, hd⟩ := local_complete X hB hnew hready k hk hcard J hJL
       exact ⟨r d, (OrderedScopeRelocation.local_index X.rows hBX L d).trans hd⟩
     · obtain ⟨d, hd⟩ := X.complete J hJ hJF
-      exact ⟨l d, (OrderedScopeRelocation.old_index X.rows hBX L d).trans hd⟩
+      exact ⟨l d, (OrderedScopeRelocation.old_index L d).trans hd⟩
   · intro I J hI hJ hJF h
     rcases Finset.mem_insert.mp hJF with hJB | hJF
     · exact OrderedScopeRelocation.local_lift X.rows hBX L sep h
@@ -217,9 +208,9 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
     rcases OrderedScopeRelocation.classify X.rows hBX L z with ⟨c, rfl⟩ | hc
     · have hg : X.carrier.grade c = (X.carrier.scope c).card := by
         simpa only [K, CellScheme.scope, CellScheme.grade,
-          OrderedScopeRelocation.old_index X.rows hBX L] using hz
+          OrderedScopeRelocation.old_index L] using hz
       have hn' : X.carrier.scope c ∉ F₀ := by
-        simpa only [K, CellScheme.scope, OrderedScopeRelocation.old_index X.rows hBX L] using hn
+        simpa only [K, CellScheme.scope, OrderedScopeRelocation.old_index L] using hn
       exact (OrderedScopeRelocation.row_old X.rows hBX L sep c ⟨c, GradedLe.refl _⟩).trans
         (X.mute c hg hn')
     · obtain ⟨c, rfl⟩ := OrderedScopeRelocation.local_exhaustive X.rows hBX L z (subset_of_eq hc)
@@ -238,56 +229,54 @@ end
 
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (F₀ : Finset (Finset ι)) (N : ℕ) (G : Finset ExtOrd) (θ : ExtOrd)
+variable (sem : Semantics D) (F₀ : VaughtConjecture.AmalgamationPlan.SupportFamily ι) (N : ℕ) (G : Finset ExtOrd) (θ : ExtOrd)
 
 def initial (hs : sem.IsConsistent) (hc : sem.IsCoded)
     (hocc : ∀ d, D.scope d ∈ F₀) (hscopes : F₀ ⊆ D.plan) (hproper : A ∉ F₀)
     (hclosed : ∀ B ∈ F₀, ∀ C ∈ D.plan, C ⊆ B → C ∈ F₀)
     (hcomplete : ∀ J ∈ Plan.gradedPlan D.plan, J.1 ∈ F₀ → ∃ d, D.cell d = J)
     (hlift : ∀ I J, I ∈ Plan.gradedPlan D.plan → J ∈ Plan.gradedPlan D.plan → J.1 ∈ F₀ →
-      (h : GradedLe I J) → CappedLift sem h) : State sem F₀ N G θ F₀ where
-  carrier := D
-  rows := sem
-  plan := rfl
-  consistent := hs
-  coded := hc
-  original := (OrderIso.refl (Cell D)).toOrderEmbedding
-  index _ := rfl
-  row _ _ := rfl
-  exhaustive d _ := ⟨d, rfl⟩
-  occupied := hocc
-  initial_le := Finset.Subset.refl _
-  scopes := hscopes
-  proper := hproper
-  closed := hclosed
-  complete := hcomplete
-  lifts := hlift
-  classification := OrderedScopeRelocation.ownerClassification_initial sem
-  mute c _ hn := (hn (hocc c)).elim
-  render {p} _ _ := p
-  readback _ _ _ := rfl
-  lawful hp _ := hp
-  bound _ hb := hb
-  support _ _ := supported_field N (G : Set ExtOrd) _
-  agreement := by
-    intro p q hp hb hq hqb γ hγ hγθ he
-    exact he
+      (h : GradedLe I J) → CappedLift sem h) : State sem F₀ N G θ F₀ := ⟨D,
+sem,
+rfl,
+hs,
+hc,
+(OrderIso.refl (Cell D)).toOrderEmbedding,
+fun _ => rfl,
+fun _ _ => rfl,
+fun d _ => ⟨d, rfl⟩,
+hocc,
+Finset.Subset.refl _,
+hproper,
+hclosed,
+hcomplete,
+hlift,
+OrderedScopeRelocation.ownerClassification_initial sem,
+fun c _ hn => (hn (hocc c)).elim,
+fun {p} _ _ => p,
+fun _ _ _ => rfl,
+fun hp _ => hp,
+fun _ hb => hb,
+fun _ _ => supported_field N (G) _,
+by
+    grind⟩
 
 variable {sem F₀ N G θ}
+
+local notation "State₀" => State sem F₀ N G θ
 
 /-- Execute the finite iteration. A least-cardinality missing scope has all
 proper lower scopes completed, so the successor above supplies its own input.
 No list of local operators or separately chosen legal facets is assumed. -/
-theorem exists_completed
+def exists_completed
     (hN : ∀ B ∈ D.plan, B ≠ A → B.card ≤ N)
     (hsmall : ∀ B ∈ D.plan, B.card ≤ 1 → B ∈ F₀)
-    (hG : ∀ z ∈ G, SelfVis N z) (hθ : SelfVis N θ) (htθ : θ ≠ ⊤) (hθG : θ ∈ G)
-    {F : Finset (Finset ι)} (X : State sem F₀ N G θ F) :
-    ∃ F', Nonempty (State sem F₀ N G θ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' := by
+    (hG : VisibleOn N G) (hθ : SelfVis N θ) (htθ : θ ≠ ⊤) (hθG : θ ∈ G)
+    {F : VaughtConjecture.AmalgamationPlan.SupportFamily ι} (X : State₀ F) := by
   classical
-  suffices ∀ n, ∀ (F : Finset (Finset ι)), (D.plan \ insert A F).card = n →
-      State sem F₀ N G θ F →
-      ∃ F', Nonempty (State sem F₀ N G θ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' by
+  suffices ∀ n, ∀ (F : VaughtConjecture.AmalgamationPlan.SupportFamily ι), (D.plan \ insert A F).card = n →
+      State₀ F →
+      ∃ F', Nonempty (State₀ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' by
     exact this _ F rfl X
   intro n
   induction n using Nat.strong_induction_on with
@@ -297,7 +286,7 @@ theorem exists_completed
     · obtain ⟨B, hB, hmin⟩ := Finset.exists_min_image (D.plan \ insert A F) Finset.card hempty
       have hBp := (Finset.mem_sdiff.mp hB).1
       have hBA : B ≠ A := fun he => (Finset.mem_sdiff.mp hB).2 (he ▸ Finset.mem_insert_self A F)
-      have hnew : B ∉ F := fun hf => (Finset.mem_sdiff.mp hB).2 (Finset.mem_insert_of_mem hf)
+      have hnew  := fun hf => (Finset.mem_sdiff.mp hB).2 (Finset.mem_insert_of_mem hf)
       have hready : ∀ C ∈ D.plan, C ⊂ B → C ∈ F := by
         intro C hC hCB
         by_contra hc
@@ -309,7 +298,7 @@ theorem exists_completed
           subst C
           omega
         have hcm : C ∈ D.plan \ insert A F :=
-          Finset.mem_sdiff.mpr ⟨hC, by simp only [Finset.mem_insert, not_or]; exact ⟨hCA, hc⟩⟩
+          Finset.mem_sdiff.mpr ⟨hC, by simp_all⟩
         exact (not_le_of_gt (Finset.card_lt_card hCB)) (hmin C hcm)
       have htwo : 2 ≤ B.card := by
         by_contra hh
@@ -324,19 +313,12 @@ theorem exists_completed
         apply Finset.card_lt_card
         apply Finset.ssubset_iff_subset_ne.mpr
         refine ⟨?_, ?_⟩
-        · intro C hC
-          simp only [Finset.mem_sdiff, Finset.mem_insert, not_or] at hC ⊢
-          exact ⟨hC.1, hC.2.1, hC.2.2.2⟩
-        · intro he
-          have hm := he.symm ▸ hB
-          simp only [Finset.mem_sdiff, Finset.mem_insert, true_or, or_true, not_true_eq_false,
-            and_false] at hm
+        · grind
+        · grind
       exact ih _ hlt _ rfl Y
     · refine ⟨F, ⟨X⟩, ?_⟩
       intro B hB hBA
       by_contra hf
       exact hempty ⟨B, Finset.mem_sdiff.mpr
-        ⟨hB, by simp only [Finset.mem_insert, not_or]; exact ⟨hBA, hf⟩⟩⟩
+        ⟨hB, by simp_all⟩⟩
 
-end
-end VaughtConjecture.Knight.OrdinaryScopeIteration

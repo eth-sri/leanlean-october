@@ -1,12 +1,16 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ReductReferenceContext
-public import VaughtConjecture.Knight.EntailmentDomainCashout
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ReferenceContext
+import VaughtConjecture.Knight.ReductModel
+import VaughtConjecture.Knight.OnePointRootedExtension
+import VaughtConjecture.Knight.ActualOccurrence
 
 /-! # One requested reduced projection over the actual context: what the request forces
 
@@ -77,40 +81,27 @@ the context by the fixed coupled example, demands upstairs uniqueness, or adds a
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization AmalgamationPlan Value ExtOrd
+open  StageType    
 open CellScheme.restrictFace (toCell)
 
-universe w
 
 /-! ## Exact below `β`, at least `β` above -/
 
-section LabelSplit
-
-variable {β : Ordinal.{0}}
-
-end LabelSplit
 
 /-! ## The required domain and visible face -/
 
-section RequiredFace
+section
 
-variable {γ : Ordinal.{0}} {k m : ℕ}
+variable {γ : Ordinal₀} {k m : ℕ}
 
 /-- **The requested projection forces the domain**: a projection along `f` to `P` exists only if
 the face `univ.image f` is visible in the domain and the domain (with its rows) restricts to
 `P`'s domain there. -/
-theorem face_of_typeMap_eq_some (f : Fin k ↪ Fin m) {q : S γ m} {P : S γ k}
+theorem face_of_typeMap_eq_some f {q : S γ m} {P : S γ k}
     (h : typeMap f q = some P) :
-    ∃ hv : Finset.univ.image f ∈ q.scheme.scheme.plan, q.scheme.restrictFace f hv = P.scheme := by
-  have hv : Finset.univ.image f ∈ q.scheme.scheme.plan :=
-    (typeMap_isSome_iff f q).mp (by rw [h]; rfl)
-  refine ⟨hv, ?_⟩
-  rw [typeMap_eq_some f q hv] at h
-  exact congrArg StageType.scheme (Option.some_injective _ h)
+    ∃ hv , q.scheme.restrictFace f hv = P.scheme := by simp_all [VaughtConjecture.Knight.typeMap] <;> aesop
 
 /-- **Projected correctness, cellwise**: once the face is visible and the domains match,
 `typeMap f q = some P` says exactly that every cell of the face reads `P`'s label at the
@@ -127,35 +118,23 @@ theorem typeMap_eq_some_iff_labels (f : Fin k ↪ Fin m) (q : S γ m) (P : S γ 
     rfl
   · intro h
     obtain ⟨Ps, Pl, Pb, Pr⟩ := P
-    dsimp only at hs h
+    dsimp  at hs h
     subst hs
     exact StageType.ext rfl (heq_of_eq (funext fun i => h i))
 
-end RequiredFace
+end
 
 /-! ## The root part of every projection is the realized reduced root -/
 
-section RootPart
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-end RootPart
 
 /-! ## Geometry: the request face forces a pivot of the context's plan outside the root -/
 
-section Geometry
+section
 
 variable {m : ℕ}
 
 theorem image_castSuccEmb_univ :
-    (Finset.univ : Finset (Fin m)).image Fin.castSuccEmb =
-      (Finset.univ : Finset (Fin (m + 1))).erase (Fin.last m) := by
-  ext x
-  simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_erase, and_true,
-    Fin.castSuccEmb_apply]
-  exact Fin.exists_castSucc_eq
+    (Finset.univ : FiniteScope m).image Fin.castSuccEmb =
+      (Finset.univ : Finset (Fin (m + 1))).erase (Fin.last m) := by aesop
 
-end Geometry
 
-end VaughtConjecture.Knight

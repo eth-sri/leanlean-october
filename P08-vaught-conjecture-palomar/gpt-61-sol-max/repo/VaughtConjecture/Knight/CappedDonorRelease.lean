@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorLowRef
-public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorLowRef
+import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
 /-! # Exact release of the private frontier (audit16 §2, note §3.2)
 
@@ -42,57 +43,46 @@ This may alter private values above `γ`; it does not retain them literally.  St
 coordinates are outside the current numerical domain and are untouched when the lemma is applied
 to a source-state fibre. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd SharpWitnessComposition AmalgamationPlan
+open  Value   
 
 namespace CappedDonor
 
 namespace Ref
 
-variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C} {K : ℕ} (L : R.LowRef K)
+variable {I : Type*} [Fintype I]   
+   {K : ℕ} 
 
 namespace LowRef
 
 /-! ## The release shifter -/
 
 /-- The release shifter: the old witness capped at `γ` up to `h`, the old witness above. -/
-noncomputable def releaseShifter (τ : ExtOrd → ExtOrd) (h γ : ExtOrd) (x : ExtOrd) : ExtOrd :=
+noncomputable def releaseShifter (τ : LabelMap) (h γ x : ExtOrd) :=
   if x ≤ h then min (τ x) γ else τ x
 
-omit L in
-theorem releaseShifter_of_le {τ : ExtOrd → ExtOrd} {h γ x : ExtOrd} (hx : x ≤ h) :
+theorem releaseShifter_of_le {τ : LabelMap} {h γ x : ExtOrd} (hx : x ≤ h) :
     releaseShifter τ h γ x = min (τ x) γ := by
   unfold releaseShifter; rw [ite_eq_left hx]
 
-omit L in
-theorem releaseShifter_of_lt {τ : ExtOrd → ExtOrd} {h γ x : ExtOrd} (hx : h < x) :
+theorem releaseShifter_of_lt {τ : LabelMap} {h γ x : ExtOrd} (hx : h < x) :
     releaseShifter τ h γ x = τ x := by
   unfold releaseShifter; rw [ite_eq_right (not_le.mpr hx)]
 
-omit L in
-theorem releaseShifter_eq_bot_iff {τ : ExtOrd → ExtOrd} {h γ : ExtOrd} (hγ : γ ≠ ⊥) (x : ExtOrd) :
-    releaseShifter τ h γ x = ⊥ ↔ τ x = ⊥ := by
-  unfold releaseShifter
-  split_ifs
-  · simp only [min_eq_bot, hγ, or_false]
-  · exact Iff.rfl
+theorem releaseShifter_eq_bot_iff {τ : LabelMap} {h γ : ExtOrd} (hγ : γ ≠ ⊥) (x : ExtOrd) :
+    releaseShifter τ h γ x = ⊥ ↔ τ x = ⊥ := by simp_all [releaseShifter] <;> aesop
 
-omit L in
-theorem releaseShifter_le {τ : ExtOrd → ExtOrd} (h γ x : ExtOrd) :
+theorem releaseShifter_le {τ : LabelMap} (h γ x : ExtOrd) :
     releaseShifter τ h γ x ≤ τ x := by
   unfold releaseShifter
   split_ifs
   · exact min_le_left _ _
   · exact le_rfl
 
-omit L in
 /-- The release shifter is a normalized witness through `K` whenever the old witness is, the
 split point `h` and the cap `γ` are `K`-visible and `γ` is positive. -/
-theorem releaseShifter_witness {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop K) τ) {h γ : ExtOrd}
+theorem releaseShifter_witness {τ : LabelMap} (hτ : Witness (gTop K) τ) {h γ : ExtOrd}
     (hh : SelfVis K h) (hγ : SelfVis K γ) (hγpos : γ ≠ ⊥) :
     Witness (gTop K) (releaseShifter τ h γ) where
   anti := hτ.anti
@@ -120,17 +110,13 @@ theorem releaseShifter_witness {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop K) 
       have h1 : τ (extVisibilityReplace x kk i) = ⊥ := by
         rw [hτ.clause5 x kk (by rw [gTop_of_gt (not_le.mp hkk), hx]) i hi, hx,
           extVisibilityReplace_bot]
-      rw [hle, extVisibilityReplace_bot]
+      rw [hle, ]
       exact (releaseShifter_eq_bot_iff hγpos _).mpr h1
 
 /-! ## Geometry of the owner's lower domain at a cutoff -/
 
 /-! ## Exact frontier release -/
 
-end LowRef
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

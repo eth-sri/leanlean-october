@@ -1,12 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SharpWitnessComposition
-public import VaughtConjecture.Knight.FiniteFloorCompletion
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SharpWitnessComposition
+import VaughtConjecture.Knight.FiniteFloorCompletion
 
 /-! # Finite floor checks for composition repair
 
@@ -20,32 +22,29 @@ condition for every possible interpolating witness. Failing it is not a semantic
 impossibility certificate. No respect or existence of an extension is assumed.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
-open Transform Value ExtOrd
+open  Value ExtOrd
 
 namespace BoundedMap
 
-variable {m : ℕ} {f : ExtOrd → ExtOrd} (hf : BoundedMap m f)
+variable {m : ℕ} {f : LabelMap} (hf : BoundedMap m f)
 
 include hf
 
 /-- A killed block floor already forces every low strip slot to bottom. -/
-theorem bot_on_strip {a : Ordinal.{0}} (ha : f (ofOrd (limitPart a)) = ⊥)
-    {i : ℕ} (hi : i ≤ m) : f (ofOrd (limitPart a + i)) = ⊥ := by
+theorem bot_on_strip {a} (ha : f (ofOrd (limitPart a)) = ⊥)
+    {i} (hi : i ≤ m) : f (ofOrd (limitPart a + i)) = ⊥ := by
   by_cases hm : m = 0
-  · have hi0 : i = 0 := Nat.eq_zero_of_le_zero (hm ▸ hi)
-    simpa only [hi0, Nat.cast_zero, add_zero] using ha
+  · simp_all
   have he := hf.comm (ofOrd (limitPart a)) m i le_rfl hi
   rw [extVisibilityReplace_of_finitePart_lt (by
-    rw [finitePart_limitPart]; exact Nat.pos_of_ne_zero hm), limitPart_idem,
-    ha, extVisibilityReplace_bot] at he
+    simp_all [finitePart_limitPart, Nat.pos_of_ne_zero]), limitPart_idem,
+    ha, ] at he
   exact he
 
 /-- Only the original sources need testing: added low strip slots are automatic. -/
-theorem floor_check_on_strip (s : Finset ExtOrd)
+theorem floor_check_on_strip s
     (hfloor : ∀ x ∈ s, f (blockFloor x) = ⊥ → f x = ⊥) :
     ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥ := by
   intro x hx hb
@@ -57,11 +56,11 @@ theorem floor_check_on_strip (s : Finset ExtOrd)
     · simp at hy
     · obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hy
       rw [blockFloor_ofOrd, limitPart_limitPart_add_nat] at hb
-      exact hf.bot_on_strip hb (by have := Finset.mem_range.mp hi; omega)
+      exact hf.bot_on_strip hb (by simp_all)
 
 /-- On a finite full-strip table, the floor-support check is the missing
 higher-threshold obligation. The existing bridge builds the witness explicitly. -/
-theorem finite_witness (s : Finset ExtOrd)
+theorem finite_witness s
     (hfloor : ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥) :
     Witness (gTop m) (finiteLowerEnvelope (stripDomain m s) f) := by
   let t := stripDomain m s
@@ -85,47 +84,45 @@ theorem finite_witness (s : Finset ExtOrd)
         (fun a ha k i hk hi => stripDomain_closed ha hk hi) x hk hi hz hzx)
     · exact bridge_tail_of_floorSupport t f (gTop m) m
         (fun k hk => gTop_of_gt hk) hsupport x k (not_le.mp hk) hact i z hz hzx
-  exact ⟨(witness_id m).anti, (witness_id m).vis,
+  exact ⟨(witness_id).anti, (witness_id).vis,
     finiteLowerEnvelope_bot t f (fun y _ hy => hy ▸ hf.bot),
     finiteLowerEnvelope_mono t f,
     fun x k hact i hi => finiteLowerEnvelope_visibility_eq t f (gTop m)
       horbit hbridge x k i hi hact⟩
 
 /-- Every original table value is retained, not just its value below some cap. -/
-theorem finite_read (s : Finset ExtOrd) {x : ExtOrd} (hx : x ∈ s) :
+theorem finite_read s {x} (hx : x ∈ s) :
     finiteLowerEnvelope (stripDomain m s) f x = f x :=
   finiteLowerEnvelope_source _ _ (fun _ _ _ _ h => hf.mono h) (subset_stripDomain m s hx)
 
 end BoundedMap
 
-section Scheme
+section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
+  {sem : Semantics D} {BJ : GradedIndex ι} {r : BelowLabels D BJ}
 
 /-- Actual normalized local witnesses of an already respecting labelling. The
 source-floor values are auxiliary witness data, not new semantic occurrences. -/
-structure LocalCharts (sem : Semantics D) (BJ : Finset ι × ℕ)
-    (r : D.below BJ → ExtOrd) where
-  shift : D.below BJ → ExtOrd → ExtOrd
+structure LocalCharts (sem : Semantics D) (BJ : GradedIndex ι)
+    (r : BelowLabels D BJ) where
+  shift : D.below BJ → LabelMap
   witness : ∀ c, Witness (gTop (D.grade c.1)) (shift c)
-  read : ∀ (c : D.below BJ) (d : D.below (D.cell c.1)),
+  read : ∀ c d,
     shift c (sem.E c.1 d) = min (r (CellScheme.below.incl c d)) (r c)
 
 /-- Existence is extracted from the old localities; it is not a new producer assumption. -/
 theorem exists_localCharts (hr : RespectsSemanticsBelow sem BJ r) :
     Nonempty (LocalCharts sem BJ r) := by
   have h (c : D.below BJ) : ∃ σ, Witness (gTop (D.grade c.1)) σ ∧
-      ∀ d : D.below (D.cell c.1),
+      ∀ d ,
         σ (sem.E c.1 d) = min (r (CellScheme.below.incl c d)) (r c) := by
     obtain ⟨σ, hw, _, he⟩ := exists_bounded_exact_capped_witness
-      (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
+      (c := (⟨c.1, GradedLe.refl _⟩))
       (p := fun d => r (CellScheme.below.incl c d))
       (fun d => d.2.2) (hr.orderly c).symm (hr.locality c)
     exact ⟨σ, hw, he⟩
   choose σ hw he using h
   exact ⟨⟨σ, hw, he⟩⟩
 
-end Scheme
 
-end VaughtConjecture.Knight.SharpWitnessComposition

@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ChartLanguage
-public import InfinitaryLogic.Karp.PotentialIso
+import VaughtConjecture.Knight.ChartLanguage
+import InfinitaryLogic.Karp.PotentialIso
 
 /-! # The Karp bridge: potential isomorphism of chart structures (#137)
 
@@ -39,8 +38,6 @@ not rebuilt.
 does not construct selected descendant contexts, and equality of complete types does not
 replace its forth/back fields.  No claim about atomic models or complete types is made. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open FirstOrder Language TypeTower
@@ -49,7 +46,7 @@ universe w w'
 
 variable {α : LimitStage}
 
-section Constructor
+section
 
 variable {M : Type w} {N : Type w'}
 variable {R : KnightRealization α M} {R' : KnightRealization α N}
@@ -65,14 +62,12 @@ noncomputable def potentialIsoOfCommonCharts
     (family : Set (Σ n : ℕ, (Fin n → M) × (Fin n → N)))
     (empty_mem : (⟨0, Fin.elim0, Fin.elim0⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family)
     (commonChart : ∀ x ∈ family, HasCommonChart R R' x.2.1 x.2.2)
-    (forth : ∀ x ∈ family, ∀ m : M,
-      ∃ n' : N, (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
+    (forth : ∀ x ∈ family, ∀ m ,
+      ∃ n' , (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family)
-    (back : ∀ x ∈ family, ∀ n' : N,
-      ∃ m : M, (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
-        Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family) :
-    @PotentialIso (stageLang α) (stageLang.isRelational α) M N
-      (stageStructureOf R) (stageStructureOf R') := by
+    (back : ∀ x ∈ family, ∀ n' ,
+      ∃ m , (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
+        Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family) := by
   letI instM : (stageLang α).Structure M := stageStructureOf R
   letI instN : (stageLang α).Structure N := stageStructureOf R'
   exact PotentialIso.ofExtensionFamily
@@ -82,13 +77,5 @@ noncomputable def potentialIsoOfCommonCharts
     (fun h => forth _ h)
     (fun h => back _ h)
 
-end Constructor
 
-section Countable
 
-variable {M N : Type w}
-variable {R : KnightRealization α M} {R' : KnightRealization α N}
-
-end Countable
-
-end VaughtConjecture.Knight

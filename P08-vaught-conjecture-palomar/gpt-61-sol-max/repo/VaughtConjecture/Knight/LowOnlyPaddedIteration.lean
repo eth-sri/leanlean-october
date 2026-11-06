@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowOnlyPaddedStepRendering
+import VaughtConjecture.Knight.LowOnlyPaddedStepRendering
 
 /-! # Iterated actual padded LOW rows and incoming renderings
 
@@ -15,28 +14,25 @@ renderings through every available finite height. This is not a bountifulness
 or model-receiving theorem.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedIteration
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract
-open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
+open     LowOnly  LowOnlyPaddedContract
+
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n K : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n K : ℕ}
   {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
-  {hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i}
+  {hroot : F.root.Covers I.shared.f I.shared.g}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
 
-def successor (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card) :
-    Layer I F hroot hA hB hC (k + 1) where
+local notation "Layer₀" => Layer I F hroot hA hB hC
+
+def successor (P : Layer₀ k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card) :
+    Layer₀ (k + 1) where
   carrier := LowOnlyPaddedStepRows.carrier P hnext
   rows := LowOnlyPaddedStepRows.rows P hk hnext
   consistent := LowOnlyPaddedStepRows.consistent P hk hnext
   baseMap := LowOnlyPaddedStepRendering.baseMap P hnext
-  base_mono := (SourceLayerCarrier.old_order _ _ _ _ _).comp P.base_mono
+  base_mono := (SourceLayerCarrier.old_order).comp P.base_mono
   base_index := LowOnlyPaddedStepRendering.base_index P hnext
   base_row := LowOnlyPaddedStepRendering.base_row P hk hnext
   base_respects := LowOnlyPaddedStepRendering.base_respects P hk hnext
@@ -56,19 +52,18 @@ def successor (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤
 variable (I F hroot hA hB hC)
 
 /-- Closed finite recursion: no layer-readiness or source-lawfulness premise. -/
-def build : (t : ℕ) → t + 2 ≤ A.card → Layer I F hroot hA hB hC (t + 2)
+def build : (t : ℕ) → t + 2 ≤ A.card → Layer₀ (t + 2)
   | 0, _ => initial I F hroot hA hB hC
   | t + 1, ht => successor (build t (by omega)) (by omega) (by omega)
 
-theorem build_plan (t : ℕ) (ht : t + 2 ≤ A.card) :
-    (build I F hroot hA hB hC t ht).carrier.plan = I.boundary.plan := by
+local notation "build₀" => build I F hroot hA hB hC
+
+theorem build_plan t (ht : t + 2 ≤ A.card) :
+    (build₀ t ht).carrier.plan = I.boundary.plan := by
   induction t with
   | zero => rfl
   | succ t ih => exact ih (by omega)
 
-theorem build_consistent (t : ℕ) (ht : t + 2 ≤ A.card) :
-    (build I F hroot hA hB hC t ht).rows.IsConsistent :=
-  (build I F hroot hA hB hC t ht).consistent
+def build_consistent t (ht : t + 2 ≤ A.card) :=
+  (build₀ t ht).consistent
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedIteration

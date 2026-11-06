@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ReceivingTemplate
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ReceivingTemplate
 
 /-! # The receiving template from an actual receiving context
 
@@ -47,15 +49,13 @@ clauses; that is the model-side supply, stated in `docs/STATUS.md`.
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
+open AmalgamationPlan  Value ExtOrd SharpWitnessComposition
 
 /-! ## The ordinal under a proper value -/
 
-theorem ofOrd_ordOf {x : ExtOrd} (hb : x ≠ ⊥) (ht : x ≠ ⊤) : ofOrd (ordOf x) = x := by
+theorem ofOrd_ordOf {x} (hb : x ≠ ⊥) (ht : x ≠ ⊤) : ofOrd (ordOf x) = x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · exact absurd rfl hb
   · exact absurd rfl ht
@@ -63,13 +63,13 @@ theorem ofOrd_ordOf {x : ExtOrd} (hb : x ≠ ⊥) (ht : x ≠ ⊤) : ofOrd (ordO
 
 /-! ## Reading-witness facts -/
 
-section Reading
+section
 
-variable {N : ℕ} {τ : ExtOrd → ExtOrd} (hτ : BoundedMap N τ)
+variable {N : ℕ} {τ : LabelMap} (hτ : BoundedMap N τ)
 
 include hτ in
 /-- A source read to a proper value with offset below `N` has offset below `N`, the same. -/
-theorem read_finitePart {s t : Ordinal.{0}} (h : τ (ofOrd s) = ofOrd t)
+theorem read_finitePart {s t} (h : τ (ofOrd s) = ofOrd t)
     (ht : finitePart t < N) : finitePart s < N ∧ finitePart s = finitePart t := by
   have key : ∀ i ≤ N, τ (extVisibilityReplace (ofOrd s) N i) = ofOrd (limitPart t + i) := by
     intro i hi
@@ -93,7 +93,7 @@ theorem read_finitePart {s t : Ordinal.{0}} (h : τ (ofOrd s) = ofOrd t)
 include hτ in
 /-- Two proper readings with offsets below `N` in different blocks come from different
 strips, in the same order. -/
-theorem strip_lt_of_read {s s' t t' : Ordinal.{0}} (h : τ (ofOrd s) = ofOrd t)
+theorem strip_lt_of_read {s s' t t'} (h : τ (ofOrd s) = ofOrd t)
     (h' : τ (ofOrd s') = ofOrd t') (ht : finitePart t < N) (ht' : finitePart t' < N)
     (hlt : limitPart t < limitPart t') : limitPart s < limitPart s' := by
   have hss' : s < s' := by
@@ -121,43 +121,43 @@ include hτ in
 /-- **Strip uniqueness**: two proper readings with offsets below `N` in the *same* block come
 from the same strip.  Both sources sit on affine strips through offset `N`; if the strips
 differed, the lower strip's `N`-endpoint would map at or below the upper strip's floor. -/
-theorem strip_unique_of_read {s s' t t' : Ordinal.{0}} (h : τ (ofOrd s) = ofOrd t)
+theorem strip_unique_of_read {s s' t t'} (h : τ (ofOrd s) = ofOrd t)
     (h' : τ (ofOrd s') = ofOrd t') (ht : finitePart t < N) (ht' : finitePart t' < N)
     (heq : limitPart t = limitPart t') : limitPart s = limitPart s' := by
-  have key : ∀ (s t : Ordinal.{0}), τ (ofOrd s) = ofOrd t → finitePart t < N →
+  have key : ∀ s t, τ (ofOrd s) = ofOrd t → finitePart t < N →
       ∀ i ≤ N, τ (ofOrd (limitPart s + i)) = ofOrd (limitPart t + i) := by
     intro s t h ht i hi
     have hfs := (read_finitePart hτ h ht).1
     have k := hτ.comm (ofOrd s) N i le_rfl hi
     rwa [extVisibilityReplace_of_finitePart_lt hfs, h,
       extVisibilityReplace_of_finitePart_lt ht] at k
-  have hNpos : (0 : ℕ) < N := lt_of_le_of_lt (Nat.zero_le _) ht
+  have hNpos : (0) < N := lt_of_le_of_lt (Nat.zero_le _) ht
   -- one direction: a strictly lower strip is impossible
-  have one : ∀ (s s' t t' : Ordinal.{0}), τ (ofOrd s) = ofOrd t → τ (ofOrd s') = ofOrd t' →
+  have one : ∀ s s' t t', τ (ofOrd s) = ofOrd t → τ (ofOrd s') = ofOrd t' →
       finitePart t < N → finitePart t' < N → limitPart t = limitPart t' →
       ¬ limitPart s < limitPart s' := by
     intro s s' t t' h h' ht ht' heq hlt
     have h1 := key s t h ht N le_rfl
     have h2 := key s' t' h' ht' 0 (Nat.zero_le _)
     rw [Nat.cast_zero, add_zero, add_zero] at h2
-    have hle : limitPart s + (N : Ordinal.{0}) < limitPart s' :=
+    have hle : limitPart s + (N) < limitPart s' :=
       add_nat_lt_of_lt_limit (limitPart_idem s) (limitPart_idem s') hlt N
     have hm := hτ.mono (ofOrd_le_ofOrd.mpr hle.le)
     rw [h1, h2, ofOrd_le_ofOrd, ← heq] at hm
-    have : (N : Ordinal.{0}) ≤ 0 := le_of_add_le_add_left (by rwa [add_zero])
+    have : (N : Ordinal₀) ≤ 0 := le_of_add_le_add_left (by rwa [add_zero])
     exact absurd (Nat.cast_le.mp this) (not_le.mpr hNpos)
   rcases lt_trichotomy (limitPart s) (limitPart s') with hlt | heq' | hgt
-  · exact absurd hlt (one s s' t t' h h' ht ht' heq)
+  · grind
   · exact heq'
-  · exact absurd hgt (one s' s t' t h' h ht' ht heq.symm)
+  · grind
 
 include hτ in
 /-- Below a source read to `⊤`: its offset-`R` replacement is a proper `R`-visible value, and
 every strip of a proper reading with offset below `N`, plus `N`, lies at most there. -/
-theorem strip_add_le_of_read_top {sa : Ordinal.{0}} (ha : τ (ofOrd sa) = ⊤) (R : ℕ)
+theorem strip_add_le_of_read_top {sa} (ha : τ (ofOrd sa) = ⊤) R
     (hR : R < N) :
-    ∃ h : Ordinal.{0}, extVisibilityReplace (ofOrd sa) N R = ofOrd h ∧ R ≤ finitePart h ∧
-      ∀ s t : Ordinal.{0}, τ (ofOrd s) = ofOrd t → finitePart t < N →
+    ∃ h , extVisibilityReplace (ofOrd sa) N R = ofOrd h ∧ R ≤ finitePart h ∧
+      ∀ s t : Ordinal₀, τ (ofOrd s) = ofOrd t → finitePart t < N →
         limitPart s + N ≤ h := by
   by_cases hfa : finitePart sa < N
   · refine ⟨limitPart sa + R, extVisibilityReplace_of_finitePart_lt hfa R, ?_, ?_⟩
@@ -176,8 +176,8 @@ theorem strip_add_le_of_read_top {sa : Ordinal.{0}} (ha : τ (ofOrd sa) = ⊤) (
         have k1 := hτ.comm (ofOrd s) N 0 le_rfl (Nat.zero_le _)
         have k2 := hτ.comm (ofOrd sa) N 0 le_rfl (Nat.zero_le _)
         rw [extVisibilityReplace_of_finitePart_lt hfs, h,
-          extVisibilityReplace_of_finitePart_lt ht] at k1
-        rw [extVisibilityReplace_of_finitePart_lt hfa, ha, extVisibilityReplace_top] at k2
+          ] at k1
+        rw [extVisibilityReplace_of_finitePart_lt hfa, ha, ] at k2
         rw [heq] at k1
         rw [k1] at k2
         exact ofOrd_ne_top _ k2
@@ -189,17 +189,17 @@ theorem strip_add_le_of_read_top {sa : Ordinal.{0}} (ha : τ (ofOrd sa) = ⊤) (
       have := hτ.mono (ofOrd_le_ofOrd.mpr (not_lt.mp hle))
       rw [h, ha] at this
       exact absurd this (not_top_le_ofOrd t)
-    calc limitPart s + (N : Ordinal.{0}) ≤ limitPart sa + (N : Ordinal.{0}) :=
+    calc limitPart s + (N) ≤ limitPart sa + (N) :=
           add_le_add_left (limitPart_mono hss.le) _
-      _ ≤ limitPart sa + (finitePart sa : Ordinal.{0}) :=
+      _ ≤ limitPart sa + (finitePart sa) :=
           add_le_add_right (Nat.cast_le.mpr hfa') _
       _ = sa := limitPart_add_finitePart sa
 
-end Reading
+end
 
 /-! ## The template from an actual receiving context -/
 
-section Context
+section
 
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ] {A : Finset ιA} {Q : Finset ιQ}
   {DA : CellScheme A} {semA : Semantics DA} {DQ : CellScheme Q} {semQ : Semantics DQ}
@@ -208,19 +208,19 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ] {A : Finset ιA} 
 whole actual private bottom-pattern class. -/
 theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     (grade_C : DA.grade req.C = req.N)
-    (hrow : RespectsSemanticsBelow semA (DA.cell req.C) (semA.E req.C))
-    {u₀ : Cell DA → ExtOrd} (hu₀ : RespectsSemantics semA u₀) (hC : u₀ req.C = ⊤)
+    (hrow : Semantics.RowLawful semA req.C (semA.E req.C))
+    {u₀ : CellLabels DA} (hu₀ : RespectsSemantics semA u₀) (hC : u₀ req.C = ⊤)
     (ha_top : u₀ req.a.1 = ⊤) (ha_ne_top : semA.E req.C req.a ≠ ⊤)
-    (S : Finset Ordinal.{0}) (hS : ∀ μ ∈ S, limitPart μ = μ)
-    (ref : Ordinal.{0} → DA.below (DA.cell req.C))
+    (S : Finset Ordinal₀) (hS : ∀ μ ∈ S, limitPart μ = μ)
+    (ref : Ordinal₀ → DA.belowCell req.C)
     (href : ∀ μ ∈ S, ∃ j < req.N, u₀ (ref μ).1 = ofOrd (μ + j))
-    {P : Cell DQ → ExtOrd} (hP : RespectsSemantics semQ P) {root top : Finset ιQ × ℕ}
+    {P : CellLabels DQ} (hP : RespectsSemantics semQ P) {root top : GradedIndex ιQ}
     (root_mem : root ∈ Plan.gradedPlan DQ.plan) (top_mem : top ∈ Plan.gradedPlan DQ.plan)
     (root_le : GradedLe root top) (root_ne : root ≠ top)
     (below_top : ∀ d, GradedLe (DQ.cell d) top) (top_le_R : top.2 ≤ req.R)
-    (κ : DQ.below root → DA.below (DA.cell req.C))
-    (hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd,
-      RespectsSemanticsBelow semA (DA.cell req.C) s →
+    (κ : DQ.below root → DA.belowCell req.C)
+    (hroot : ∀ s : BelowLabels DA (DA.cell req.C),
+      Semantics.RowLawful semA req.C s →
         RespectsSemanticsBelow semQ root (fun d => s (κ d)))
     (bountiful : semQ.IsBountiful)
     (cover : ∀ d, d ∈ req.Z ∨ d ∈ req.F ∨ d ∈ req.T ∨ ∃ r : DQ.below root, r.1 = d)
@@ -232,7 +232,7 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     (htoproot : ∀ r : DQ.below root, u₀ (κ r).1 = ⊤ →
       extVisibilityReplace (semA.E req.C req.a) req.N req.R ≤ semA.E req.C (κ r)) :
     ∃ X : RelativeData DA semA DQ semQ, X.req = req ∧ X.root = root ∧ X.top = top ∧
-      HEq X.κ κ ∧ HEq X.ZA {d : DA.below (DA.cell req.C) | u₀ d.1 = ⊥} ∧
+      HEq X.κ κ ∧ HEq X.ZA {d : DA.belowCell req.C | u₀ d.1 = ⊥} ∧
       (∀ d, X.e d = if u₀ d.1 = ⊥ then ⊥ else semA.E X.req.C d) ∧
       (∀ f ∈ X.req.F,
         X.V f = extVisibilityReplace (semA.E X.req.C (X.req.ρ f)) X.req.N (X.req.off f)) ∧
@@ -240,19 +240,19 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
       ∀ z ∈ X.req.Z, X.V z = ⊥ := by
   classical
   -- the reading witness of the cap's row
-  have hvis : SelfVis (DA.grade req.C) (u₀ req.C) := (hu₀.orderly req.C).symm
+  have hvis  := (hu₀.orderly req.C).symm
   obtain ⟨τ, hbot, hmono, hread, hcomm, -⟩ := exists_exact_capped_shifter
-    (D := DA.below (DA.cell req.C)) (grade := fun d => DA.grade d.1) (p := fun d => u₀ d.1)
+    (D := DA.belowCell req.C)  
     (c := req.capCell) (fun d => d.2.2) hvis (hu₀.locality req.C)
   have hτ : BoundedMap req.N τ :=
     ⟨hbot, hmono, fun x k i hk hi =>
-      hcomm x k i (by change k ≤ DA.grade req.C; rw [grade_C]; exact hk) hi⟩
-  have hread' : ∀ d : DA.below (DA.cell req.C), τ (semA.E req.C d) = u₀ d.1 := by
+      hcomm x k i (by exact?) hi⟩
+  have hread' : ∀ d : DA.belowCell req.C, τ (semA.E req.C d) = u₀ d.1 := by
     intro d
     rw [hread d]
     change min (u₀ d.1) (u₀ req.C) = u₀ d.1
     rw [hC, min_top_right]
-  have hτtop : τ ⊤ = ⊤ := by
+  have hτtop  := by
     have h1 := hread' req.capCell
     change τ (semA.E req.C req.capCell) = u₀ req.C at h1
     rw [hC] at h1
@@ -260,19 +260,16 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     rw [h1] at h2
     exact top_le_iff.mp h2
   -- the donor
-  set e : DA.below (DA.cell req.C) → ExtOrd :=
+  set e : BelowLabels DA (DA.cell req.C) :=
     fun d => if u₀ d.1 = ⊥ then ⊥ else semA.E req.C d with hedef
-  have he : RespectsSemanticsBelow semA (DA.cell req.C) e :=
+  have he  :=
     cleaned_respects_of_bottom_agreement hrow (hu₀.toBelow _)
       (fun d => d.2.2.trans_eq grade_C) hτ (fun d => by rw [hread' d])
   have he_eq : ∀ d, u₀ d.1 ≠ ⊥ → e d = semA.E req.C d := fun d h => by
-    change (if u₀ d.1 = ⊥ then ⊥ else semA.E req.C d) = _
-    rw [ite_eq_right h]
+    simp_all
   -- the marker's source
   have ha_ne_bot : semA.E req.C req.a ≠ ⊥ := fun h0 => by
-    have := hread' req.a
-    rw [h0, hbot, ha_top] at this
-    exact bot_ne_top this
+    grind
   obtain ⟨sa, hsa⟩ : ∃ sa, semA.E req.C req.a = ofOrd sa := by
     rcases ExtOrd.cases (semA.E req.C req.a) with h | h | ⟨sa, h⟩
     · exact absurd h ha_ne_bot
@@ -286,16 +283,10 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     intro μ hμ
     obtain ⟨j, -, hj⟩ := href μ hμ
     rcases ExtOrd.cases (semA.E req.C (ref μ)) with h0 | h0 | ⟨s, h0⟩
-    · exfalso
-      have := hread' (ref μ)
-      rw [h0, hbot, hj] at this
-      exact ofOrd_ne_bot _ this.symm
-    · exfalso
-      have := hread' (ref μ)
-      rw [h0, hτtop, hj] at this
-      exact ofOrd_ne_top _ this.symm
-    · exact ⟨s, h0, by rw [← h0]; exact hread' _⟩
-  set strip : Ordinal.{0} → Ordinal.{0} := fun μ => limitPart (ordOf (semA.E req.C (ref μ)))
+    · grind
+    · grind
+    · grind
+  set strip : Ordinal₀ → Ordinal₀ := fun μ => limitPart (ordOf (semA.E req.C (ref μ)))
     with hstripdef
   have hsrc' : ∀ μ ∈ S, ∃ j < req.N, τ (ofOrd (ordOf (semA.E req.C (ref μ)))) = ofOrd (μ + j) ∧
       strip μ = limitPart (ordOf (semA.E req.C (ref μ))) := by
@@ -304,9 +295,9 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     obtain ⟨j, hjN, hj⟩ := href μ hμ
     refine ⟨j, hjN, ?_, rfl⟩
     rw [hs, ordOf_ofOrd, hτs, hj]
-  have hfpμ : ∀ μ ∈ S, ∀ j : ℕ, finitePart (μ + (j : Ordinal.{0})) = j := fun μ hμ j =>
+  have hfpμ  := fun μ hμ j =>
     finitePart_add_nat_of_limit (hS μ hμ) j
-  have hlpμ : ∀ μ ∈ S, ∀ j : ℕ, limitPart (μ + (j : Ordinal.{0})) = μ := fun μ hμ j =>
+  have hlpμ  := fun μ hμ j =>
     limitPart_add_nat_of_limit (hS μ hμ) j
   -- the block code
   have hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ := fun μ _ => limitPart_idem _
@@ -319,11 +310,10 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     obtain ⟨j, hjN, hτs, -⟩ := hsrc' μ hμ
     obtain ⟨j', hjN', hτs', -⟩ := hsrc' μ' hμ'
     exact strip_lt_of_read hτ hτs hτs' (by rw [hfpμ μ hμ]; exact hjN)
-      (by rw [hfpμ μ' hμ']; exact hjN') (by rw [hlpμ μ hμ, hlpμ μ' hμ']; exact hlt)
+      (by rw [hfpμ μ' hμ']; exact hjN') (by grind)
   set B : BlockCode := BlockCode.ofFinset req.N req.R req.R_lt_N S strip h hlim hle hstrict hRh
     with hBdef
-  have hB_N : B.N = req.N := rfl
-  have hB_R : B.R = req.R := rfl
+
   have hBtop : B.code ⊤ = ofOrd h := rfl
   have hBlisted : ∀ μ ∈ S, B.Λ μ = some (strip μ) := fun μ hμ =>
     BlockCode.ofFinset_Λ_listed req.N req.R req.R_lt_N S strip h hlim hle hstrict hRh hμ
@@ -339,7 +329,7 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
       ofOrd (strip μ + i) := by
     intro μ hμ i
     obtain ⟨s, hs, -⟩ := hsrc μ hμ
-    have hfs : finitePart s < req.N := by
+    have hfs  := by
       have := hsrcfp μ hμ
       rwa [hs, ordOf_ofOrd] at this
     rw [hs, extVisibilityReplace_of_finitePart_lt hfs]
@@ -347,14 +337,14 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     rw [hs, ordOf_ofOrd]
   -- the encoding hypotheses
   have hh' : extVisibilityReplace (e req.a) req.N req.R = ofOrd h := by
-    rw [he_eq _ (by rw [ha_top]; exact top_ne_bot), hsa]; exact hh
+    simp_all <;> omega
   have hvish : SelfVis req.R (extVisibilityReplace (e req.a) req.N req.R) := by
     rw [hh']; exact extVisibilityReplace_of_le_finitePart hRh _
   have hbotP : ∀ d, B.code (P d) = ⊥ → P d = ⊥ := by
     intro d hd
     rcases ExtOrd.cases (P d) with h0 | h0 | ⟨p, h0⟩
     · exact h0
-    · rw [h0, hBtop] at hd; exact absurd hd (ofOrd_ne_bot _)
+    · simp_all <;> aesop
     · obtain ⟨hp, hfp⟩ := hblocks d p h0
       rw [h0, hcode p hp hfp.le] at hd
       exact absurd hd (ofOrd_ne_bot _)
@@ -366,22 +356,14 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     have hu : u₀ (κ r).1 = ofOrd p := by rw [← hlit r]; exact hP0
     obtain ⟨s, hs⟩ : ∃ s, semA.E req.C (κ r) = ofOrd s := by
       rcases ExtOrd.cases (semA.E req.C (κ r)) with h0 | h0 | ⟨s, h0⟩
-      · exfalso
-        have := hread' (κ r)
-        rw [h0, hbot, hu] at this
-        exact ofOrd_ne_bot _ this.symm
-      · exfalso
-        have := hread' (κ r)
-        rw [h0, hτtop, hu] at this
-        exact ofOrd_ne_top _ this.symm
+      · grind
+      · grind
       · exact ⟨s, h0⟩
     have hτs : τ (ofOrd s) = ofOrd p := by rw [← hs, hread', hu]
     obtain ⟨j, hjN, hτref, hstripμ⟩ := hsrc' _ hp
-    have hlp : limitPart s = strip (limitPart p) := by
-      rw [hstripμ]
-      exact strip_unique_of_read hτ hτs hτref hfp (by rw [hfpμ _ hp]; exact hjN)
+    have hlp : limitPart s = strip (limitPart p) :=  strip_unique_of_read hτ hτs hτref hfp (by rw [hfpμ _ hp]; exact hjN)
         (by rw [hlpμ _ hp])
-    have hfp' : finitePart s = finitePart p := (read_finitePart hτ hτs hfp).2
+    have hfp'  := (read_finitePart hτ hτs hfp).2
     rw [hs, ← hlp, ← hfp', limitPart_add_finitePart]
   have hroot_cap : ∀ r : DQ.below root,
       min (B.code (P r.1)) (ofOrd h) = min (e (κ r)) (ofOrd h) := by
@@ -411,19 +393,18 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     obtain ⟨hp, hfp⟩ := hblocks f p hPf
     obtain ⟨j, -, hj⟩ := href _ hp
     rw [hρ, hoff, he_eq _ (by rw [hj]; exact ofOrd_ne_bot _), hevr _ hp, hh', ofOrd_lt_ofOrd]
-    calc strip (limitPart p) + (finitePart p : Ordinal.{0})
-        < strip (limitPart p) + (req.N : Ordinal.{0}) :=
+    calc strip (limitPart p) + (finitePart p)
+        < strip (limitPart p) + (req.N) :=
           (add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr hfp)
       _ ≤ h := hle _ hp
   have hT' : ∀ y ∈ req.T, B.code (P y) = extVisibilityReplace (e req.a) req.N req.R := by
-    intro y hy
-    rw [hT y hy, hBtop, hh']
+    grind
   have ha_ne : e req.a ≠ ⊥ := by
-    rw [he_eq _ (by rw [ha_top]; exact top_ne_bot), hsa]; exact ofOrd_ne_bot _
+    grind
   -- the template
   obtain ⟨V, hVr, hVroot, hVcorr, hframe, hVF, hVT, hVZ⟩ := template_of_encoding_capped req e he
     ha_ne hP root_mem top_mem root_le root_ne below_top top_le_R κ hroot bountiful
-    (B.boundedMap_code) hbotP hvish (by rw [hh']; exact hroot_cap) hZ hF' hFlt hT'
+    B.boundedMap_code hbotP hvish (by rw [hh']; exact hroot_cap) hZ hF' hFlt hT'
   have ha_ne' : u₀ req.a.1 ≠ ⊥ := by rw [ha_top]; exact top_ne_bot
   have hρ_ne : ∀ f ∈ req.F, u₀ (req.ρ f).1 ≠ ⊥ := by
     intro f hf
@@ -450,6 +431,4 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     rw [he_eq _ ha_ne'] at h1
     exact h1
 
-end Context
 
-end VaughtConjecture.Knight

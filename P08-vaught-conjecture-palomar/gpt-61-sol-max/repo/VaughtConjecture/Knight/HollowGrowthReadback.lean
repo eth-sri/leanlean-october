@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.HollowGrowthRealization
-public import VaughtConjecture.Knight.GrowthCappedReadback

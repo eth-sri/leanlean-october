@@ -1,14 +1,16 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorReceiving
-public import VaughtConjecture.Knight.CappedDonorFace
-public import VaughtConjecture.Knight.ReferenceContextMargin
-public import VaughtConjecture.Knight.ReferenceOrbitRow
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorReceiving
+import VaughtConjecture.Knight.CappedDonorFace
+import VaughtConjecture.Knight.ReferenceContextMargin
+import VaughtConjecture.Knight.ReferenceOrbitRow
 
 /-! # The receiving input from an actual model (notes32 §1, the adapter)
 
@@ -37,11 +39,9 @@ of the existing reference-context construction (Uniformity, High-Grade Dominance
 consistency; the margin is supplied by the same High-Grade Dominance step with a larger finite
 bound, so no branch is left unsupplied. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CellScheme.restrictFace
+open TypeTower StageType KnightRealization Value ExtOrd  CellScheme.restrictFace
 
 namespace CappedDonor
 
@@ -56,41 +56,37 @@ noncomputable def properRequest : ExtOrd → Option BlockRequest
   | some (some β) => some ⟨limitPart β, finitePart β⟩
   | _ => none
 
-theorem properRequest_ofOrd (β : Ordinal.{0}) :
+theorem properRequest_ofOrd β :
     properRequest (ofOrd β) = some ⟨limitPart β, finitePart β⟩ := rfl
 
-theorem properRequest_eq_some {x : ExtOrd} {r : BlockRequest} (h : properRequest x = some r) :
-    ∃ β : Ordinal.{0}, x = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
+theorem properRequest_eq_some {x} {r} (h : properRequest x = some r) :
+    ∃ β , x = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
   · exact nomatch h
   · exact nomatch h
-  · rw [properRequest_ofOrd] at h
-    exact ⟨β, rfl, (Option.some.inj h).symm⟩
+  · grind [properRequest_ofOrd]
 
 /-- The requests of a donor: the block and offset of each proper label. -/
-noncomputable def donorRequests (q : S α.1 (n + 1)) : List BlockRequest :=
+noncomputable def donorRequests (q : S α.1 (n + 1)) :=
   (List.finRange q.scheme.scheme.card).filterMap fun d => properRequest (q.label d)
 
-theorem mem_donorRequests {q : S α.1 (n + 1)} {r : BlockRequest} :
-    r ∈ donorRequests q ↔ ∃ (d : Cell q.scheme.scheme) (β : Ordinal.{0}),
+theorem mem_donorRequests {q : S α.1 (n + 1)} {r} :
+    r ∈ donorRequests q ↔ ∃ (d : Cell q.scheme.scheme) (β : Ordinal₀),
       q.label d = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
   unfold donorRequests
-  rw [List.mem_filterMap]
+  
   constructor
-  · rintro ⟨d, -, hd⟩
-    obtain ⟨β, hβ, hr⟩ := properRequest_eq_some hd
-    exact ⟨d, β, hβ, hr⟩
-  · rintro ⟨d, β, hβ, rfl⟩
-    exact ⟨d, List.mem_finRange d, by rw [hβ, properRequest_ofOrd]⟩
+  · grind [properRequest_eq_some]
+  · grind [properRequest_ofOrd]
 
 /-- The limit part of an ordinal is a non-successor (ported from the reviewer's private lemma in
 `FiniteBlockBridge`, with attribution). -/
-theorem isNonSuccessor_limitPart (δ : Ordinal.{0}) : IsNonSuccessor (limitPart δ) := by
+theorem isNonSuccessor_limitPart δ : IsNonSuccessor (limitPart δ) := by
   by_cases h0 : limitPart δ = 0
   · exact Or.inl h0
   · refine Or.inr ?_
-    rw [Order.isSuccLimit_iff]
-    refine ⟨by simpa using h0, (Ordinal.isSuccPrelimit_iff_omega0_dvd).2 ?_⟩
+    
+    refine ⟨by simpa using h0, Ordinal.isSuccPrelimit_iff_omega0_dvd.2 ?_⟩
     exact ⟨δ / Ordinal.omega0, rfl⟩
 
 /-- The requested blocks are non-successors below the stage. -/
@@ -101,25 +97,24 @@ theorem donorRequests_ok (q : S α.1 (n + 1)) :
   refine ⟨isNonSuccessor_limitPart β, ?_⟩
   rcases q.label_bound d with h | h
   · rw [hβ, ofOrd_lt_ofOrd] at h
-    exact (limitPart_le β).trans_lt h
-  · rw [hβ] at h
-    exact absurd h (ofOrd_ne_top β)
+    exact (limitPart_le).trans_lt h
+  · simp_all [VaughtConjecture.Knight.ExtOrd.ofOrd]
 
 open Classical in
 /-- The blocks of a request list. -/
-noncomputable def blocksOf (reqs : List BlockRequest) : Finset Ordinal.{0} :=
+noncomputable def blocksOf (reqs : List BlockRequest) :=
   reqs.toFinset.image BlockRequest.block
 
 open Classical in
-theorem mem_blocksOf {reqs : List BlockRequest} {μ : Ordinal.{0}} :
+theorem mem_blocksOf {reqs} {μ} :
     μ ∈ blocksOf reqs ↔ ∃ r ∈ reqs, r.block = μ := by
   unfold blocksOf
-  simp only [Finset.mem_image, List.mem_toFinset]
+  simp  
 
 /-- The requested blocks of a donor. -/
-noncomputable def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (donorRequests q)
+noncomputable def blocks (q : S α.1 (n + 1)) := blocksOf (donorRequests q)
 
-theorem mem_blocks {q : S α.1 (n + 1)} {μ : Ordinal.{0}} :
+theorem mem_blocks {q : S α.1 (n + 1)} {μ : Ordinal₀} :
     μ ∈ blocks q ↔ ∃ r ∈ donorRequests q, r.block = μ := mem_blocksOf
 
 /-! ## The reference data from the model -/
@@ -134,8 +129,8 @@ Extra requests are
 threshold is chosen.  This form exports the geometric receipts of the construction: the block map
 is the block itself (`μ = Subtype.val`), the faces, representatives and offsets are the context's,
 and the face identification is the literal common face `commonFace`. -/
-theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
-    (hp : R.eval t = some p) (q : S α.1 (n + 1)) (hq : IsCoface p q) {reqs : List BlockRequest}
+theorem ref_of_referenceContext' (hM : R.IsModel) p
+    (hp : R.eval t = some p) q (hq : IsCoface p q) {reqs}
     (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1)
     (hsub : ∀ r ∈ donorRequests q, r ∈ reqs) (C : ReferenceContext R t reqs)
     (hNmin : n + 1 < C.N) (hcap_pos : ⊥ < C.p₀.label C.capBase)
@@ -150,7 +145,7 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
         (hvC : Finset.univ.image C.proj ∈ C.p₀.scheme.scheme.plan)
         (hC : C.p₀.scheme.restrictFace C.proj hvC = p.scheme),
         HEq Rf.face (commonFace Fin.castSuccEmb hvP hP C.proj hvC hC n) := by
-  classical
+  
   obtain ⟨F⟩ := C.exists_fullController
   -- the consistency clause: the root type is the restriction of the context along the projection
   have hcons : typeMap C.proj C.p₀ = some p := by
@@ -158,21 +153,17 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
     rw [C.proj_ctx, hp, knightTower_pull] at h
     exact h.symm
   have hvC : Finset.univ.image C.proj ∈ C.p₀.scheme.scheme.plan :=
-    (typeMap_isSome_iff _ _).mp (by rw [hcons]; rfl)
+    (typeMap_isSome_iff).mp (by rw [hcons]; rfl)
   have hC' : C.p₀.restrictFace C.proj hvC = p := by
-    have h := hcons
-    rw [typeMap_eq_some _ _ hvC, Option.some.injEq] at h
-    exact h
+    exact?
   -- the coface condition: the root type is the restriction of the donor along the initial face
-  have hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan := hq.extendsDomain.visible
+  have hvP  := hq.extendsDomain.visible
   have hP' : q.restrictFace Fin.castSuccEmb hvP = p := by
-    have h : typeMap Fin.castSuccEmb q = some p := hq
-    rw [typeMap_eq_some _ _ hvP, Option.some.injEq] at h
-    exact h
+    exact?
   have hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme := congrArg StageType.scheme hP'
   have hC : C.p₀.scheme.restrictFace C.proj hvC = p.scheme := congrArg StageType.scheme hC'
   -- the controller's grade is at most the context arity
-  have hNm : C.N ≤ C.m := by
+  have hNm  := by
     have h := C.p₀.scheme.scheme.grade_le_card_scope F.cell
     rw [show C.p₀.scheme.scheme.grade F.cell = C.N from congrArg Prod.snd F.index,
       show C.p₀.scheme.scheme.scope F.cell = Finset.univ from congrArg Prod.fst F.index,
@@ -218,7 +209,7 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       rcases ExtOrd.cases (q.label d) with h | h | ⟨β, hβ⟩
       · exact absurd h hb
       · exact absurd h ht
-      have hr : (⟨limitPart β, finitePart β⟩ : BlockRequest) ∈ reqs :=
+      have hr  :=
         hsub _ (mem_donorRequests.mpr ⟨d, β, hβ, rfl⟩)
       refine ⟨⟨limitPart β, mem_blocksOf.mpr ⟨_, hr, rfl⟩⟩, finitePart β, C.offset_lt _ hr, ?_⟩
       rw [hβ]
@@ -227,12 +218,9 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
     A' := Finset.univ.image C.proj
     KA := n
     A_mem := hvP
-    A'_mem := hvC
     KA_le_card := by
       rw [Finset.card_image_of_injective _ Fin.castSuccEmb.injective, Finset.card_univ,
         Fintype.card_fin]
-    KA_le_card' := by
-      rw [Finset.card_image_of_injective _ C.proj.injective, Finset.card_univ, Fintype.card_fin]
     A'_sub := Finset.subset_univ _
     face := commonFace Fin.castSuccEmb hvP hP C.proj hvC hC n
     face_grade := commonFace_grade Fin.castSuccEmb hvP hP C.proj hvC hC n
@@ -248,6 +236,4 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       exact commonFace_val_congr Fin.castSuccEmb hvP hP C.proj hvC hC k a _ rfl }, rfl, rfl, rfl,
     rfl, rfl, rfl, rfl, rfl, rfl, rfl, hvP, hP, hvC, hC, HEq.rfl⟩
 
-end CappedDonor
 
-end VaughtConjecture.Knight

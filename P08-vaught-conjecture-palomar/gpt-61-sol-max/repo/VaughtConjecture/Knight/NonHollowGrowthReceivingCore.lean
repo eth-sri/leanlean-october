@@ -1,13 +1,15 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthStableTemplate
-public import VaughtConjecture.Knight.GrowthStableCarrierReceiving
-public import VaughtConjecture.Knight.AnchorStable
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GrowthStableTemplate
+import VaughtConjecture.Knight.GrowthStableCarrierReceiving
+import VaughtConjecture.Knight.AnchorStable
 
 /-! # Positive-root stable receiving before its modelhood applications
 
@@ -21,22 +23,19 @@ donor tops read above the requested threshold. Cap receiving and selected
 occurrence supplies are downstream applications, not imports of this producer.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
-open TypeTower StageType KnightRealization Value ExtOrd
-noncomputable section
+open TypeTower StageType KnightRealization  ExtOrd
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Stable receiving over a positive root, with no supplied calibration,
 template, admission or physical-correctness hypothesis. -/
 theorem receives_positive (hM : W.IsModel) (hh : ¬ W.IsHollow)
-    (hg : W.HasTopGradeGrowth) {n : ℕ} (hn : 0 < n)
-    (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
-    (γ : Ordinal.{0}) (hγ : γ < α.nextBlock.1) :
+    (hg : W.HasTopGradeGrowth) {n} (hn : 0 < n)
+    t p (hp : W.eval t = some p)
+    q (hq : IsCoface (stableLiftType hM hp) q)
+    γ (hγ : γ < α.nextBlock.1) :
     ∃ (y : M) (hy : y ∉ Set.range t) (s : S α.1 (n + 1)),
       W.eval (snoc t y hy) = some s ∧ ∃ he : q.scheme = s.scheme,
         (∀ d, q.label d ≠ ⊤ →
@@ -56,12 +55,11 @@ theorem receives_positive (hM : W.IsModel) (hh : ¬ W.IsHollow)
   obtain ⟨y, _, hyRoot, s, hev, he, hc⟩ :=
     GrowthStableCarrierReceiving.exists_correct_donor C q.scheme p.scheme f
       hvC hvP hF hP X T hsmall hM hC hin
-  have hy : y ∉ Set.range t := by rwa [hfu] at hyRoot
+  have hy  := by rwa [hfu] at hyRoot
   have htup : snoc (f.trans u) y hyRoot = snoc t y hy := by
     cases hfu
     rfl
   rw [htup] at hev hc
   exact ⟨y, hy, s, hev, he.symm, hread _ hc⟩
 
-end
-end VaughtConjecture.Knight.NonHollowGrowthReceiving
+

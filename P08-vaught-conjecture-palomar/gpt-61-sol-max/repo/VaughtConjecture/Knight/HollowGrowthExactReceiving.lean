@@ -3,12 +3,16 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.HollowGrowthReadback
-public import VaughtConjecture.Knight.HollowGrowthPadding
-public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.GrowthCarrierEvaluation
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GrowthAttachedCarrier
+import VaughtConjecture.Knight.HollowGrowthAdmission
+import VaughtConjecture.Knight.ActualOccurrence
+import VaughtConjecture.Knight.GrowthCappedReadback
+import VaughtConjecture.Knight.HollowGrowthPadding
+import VaughtConjecture.Knight.TopSupportReceiving
+import VaughtConjecture.Knight.GrowthCarrierEvaluation
 
 /-! # Exact receiving in hollow growth models
 
@@ -19,12 +23,9 @@ restriction give exact one-point receiving over arbitrary realized roots,
 the empty root included. No display or stage-bound premise is added.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-noncomputable section
+open TypeTower StageType KnightRealization    CappedDonor
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -43,9 +44,9 @@ theorem receives_exactly (hM : W.IsModel) :
     GrowthCarrierEvaluation.exists_correct_donor D.context.type q.scheme p.scheme D.face
       I.hvC I.hvP I.hC I.hP I.relative I.attachment I.donor_arity_lt
       W.actualLabelling hM D.context.eval_eq I.actual_inClass
-  have hlabel : ∀ d, s.label (SemScheme.castCell he.symm d) = q.label d :=
+  have hlabel  :=
     congrFun (I.exact_of_correct hc)
-  have hsq : s = q := StageType.eq_of_label he hlabel
+  have hsq  := StageType.eq_of_label he hlabel
   have hr : ∃ hyRoot : y ∉ Set.range (D.face.trans D.context.tuple),
       W.eval (snoc (D.face.trans D.context.tuple) y hyRoot) = some q :=
     ⟨hyRoot, hsq ▸ heval⟩
@@ -69,14 +70,12 @@ theorem receives_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsH
     (q : S α.1 (n + 1)) (hq : IsCoface p q) :
     ∃ (y : M) (hy : y ∉ Set.range t), W.eval (snoc t y hy) = some q := by
   by_cases hn : 0 < n
-  · exact receives_exactly_of_pos hM hg hh hn t p hp q hq
+  · exact?
   obtain ⟨z, hz, pR, _, _, Q, _, hkeep, D, ⟨I⟩⟩ :=
     acquire_padded hM hg hh t p hp q hq 0
   obtain ⟨y, _, hy, heval⟩ := I.receives_exactly hM
-  have he := exactParent_typeMap hM.consistent
-    (snoc (snoc t z hz) y hy) Q (FixedHeight.extendFace Fin.castSuccEmb) heval
+  have he := exactParent_typeMap hM.consistent (FixedHeight.extendFace Fin.castSuccEmb) heval
   rw [donor_tuple] at he
   exact ⟨y, _, he.trans hkeep⟩
 
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate
+

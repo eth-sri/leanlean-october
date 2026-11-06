@@ -1,12 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CanonicalGradeCutSections
-public import VaughtConjecture.Knight.PairedCoupledSections
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CanonicalGradeCutSections
+import VaughtConjecture.Knight.PairedCoupledSections
 
 /-! # Canonical coupled controller rows over the full field inventory
 
@@ -16,441 +19,467 @@ proper owners are retained literally; their source readings are constructed by
 the grade-cut section operator on the entire enlarged lower carrier.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CanonicalMixedGradeLayers
 
-open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
+open    SourcePrefixRows SharpWitnessComposition
 open PairedSlotEncoding PairedSlotComparison
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
+variable (hproper : AvoidsValue D.scope A)
 
 abbrev lowerScheme := CanonicalGradeCutSections.scheme sem j hj hjA
 abbrev lowerSem := CanonicalGradeCutSections.rows sem j hj hjA hproper
 abbrev lowerOld := CanonicalGradeCutSections.old sem j hj hjA
 
-variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
+variable (k : ℕ) (hg : BoundedBy D.grade k)
 variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
+local notation "lowerScheme₀" => lowerScheme sem j hj hjA
+
+local notation "toOcc₀" => SourceLayerCarrier.toOcc D (CanonicalGradeCutSections.Profiles sem j) j hj hjA
+
 include hg hjk in
-theorem lower_grade (d : Cell (lowerScheme sem j hj hjA)) :
-    (lowerScheme sem j hj hjA).grade d ≤ k := by
+theorem lower_grade d :
+    (lowerScheme₀).grade d ≤ k := by
   rw [CellScheme.grade, SourceLayerCarrier.cell_eq]
-  cases SourceLayerCarrier.toOcc D (CanonicalGradeCutSections.Profiles sem j) j hj hjA d with
+  cases toOcc₀ d with
   | inl c => exact hg c
   | inr q => exact hjk.le
 
 include hproper hjk in
-theorem lower_separated (d : Cell (lowerScheme sem j hj hjA)) :
-    ¬ GradedLe (A, k) ((lowerScheme sem j hj hjA).cell d) := by
+theorem lower_separated d :
+    ¬ GradedLe (A, k) ((lowerScheme₀).cell d) := by
   rw [SourceLayerCarrier.cell_eq]
-  cases SourceLayerCarrier.toOcc D (CanonicalGradeCutSections.Profiles sem j) j hj hjA d with
+  cases toOcc₀ d with
   | inl c =>
     intro hc
     exact hproper c (Finset.Subset.antisymm
-      (D.isPlan.subset_of_mem (D.scope_mem_plan c)) hc.1)
+      (D.scope_subset c) hc.1)
   | inr q => exact fun hc => (not_le_of_gt hjk) hc.2
 
 abbrev upperGrid := sourceGrid k (Fintype.card (Cell D))
 abbrev upperCeiling := PairedBoundarySections.ceiling (D := D) k
 
-abbrev lowerSection (q : CanonicalFieldLayer.Profile sem k (Cell D) id) :
-    Cell (lowerScheme sem j hj hjA) → ExtOrd :=
+local notation "upperCeiling₀" => upperCeiling (D := D) k
+
+local notation "upperGrid₀" => upperGrid (D := D) k
+
+local notation "Profile₀₀" => CanonicalFieldLayer.Profile sem k (Cell D) id
+
+abbrev lowerSection (q : Profile₀₀) :
+    CellLabels (lowerScheme₀) :=
   CanonicalGradeCutSections.sectionOf sem j hj hjA hproper q.property.1
     q.property.2.2
-    (upperGrid (D := D) k) (upperCeiling (D := D) k)
+    (upperGrid₀) (upperCeiling₀)
 
 include hjk in
-theorem grid_lower_visible {h : ExtOrd} (hh : h ∈ upperGrid (D := D) k) :
-    SelfVis j h := selfVis_mono (sourceGrid_visible hh) hjk.le
+def grid_lower_visible {h} (hh : h ∈ upperGrid₀) := selfVis_mono (sourceGrid_visible hh) hjk.le
+
+local notation "Profile₀" => CanonicalFieldLayer.Profile sem k (Cell D) id
+
+local notation "grid_lower_visible₀" => grid_lower_visible j k hjk (sourceGrid_endpoint le_rfl)
+
+local notation "lowerSection₀" => lowerSection sem j hj hjA hproper k
+
+local notation "lowerSem₀" => lowerSem sem j hj hjA hproper
 
 include hjk in
-theorem lowerSection_lawful (q : CanonicalFieldLayer.Profile sem k (Cell D) id) :
-    RespectsSemantics (lowerSem sem j hj hjA hproper)
-      (lowerSection sem j hj hjA hproper k q) :=
+theorem lowerSection_lawful q :
+    RespectsSemantics (lowerSem₀)
+      (lowerSection₀ q) :=
   CanonicalGradeCutSections.section_lawful sem j hj hjA hproper q.property.1 _
     (fun _ hh => grid_lower_visible j k hjk hh)
-    (grid_lower_visible j k hjk (sourceGrid_endpoint le_rfl))
+    (grid_lower_visible₀)
 
-theorem lowerSection_old (q : CanonicalFieldLayer.Profile sem k (Cell D) id) (d : Cell D) :
-    lowerSection sem j hj hjA hproper k q (lowerOld sem j hj hjA d) = q.val d :=
+local notation "lowerOld₀" => lowerOld sem j hj hjA
+
+theorem lowerSection_old q d :
+    lowerSection₀ q (lowerOld₀ d) = q.val d :=
   CanonicalGradeCutSections.section_old sem j hj hjA hproper q.property.1 _ d
 
 include hjk in
-theorem lowerSection_bound (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (lowerScheme sem j hj hjA)) :
-    lowerSection sem j hj hjA hproper k q d ≤ upperCeiling (D := D) k :=
+theorem lowerSection_bound q
+    d :
+    lowerSection₀ q d ≤ upperCeiling₀ :=
   CanonicalGradeCutSections.section_bound sem j hj hjA hproper q.property.1 _
-    (grid_lower_visible j k hjk (sourceGrid_endpoint le_rfl))
-    (CanonicalFieldLayer.profile_bound sem k (Cell D) id q) d
+    (grid_lower_visible₀)
+    (CanonicalFieldLayer.profile_bound q) d
 
 include hjk in
-theorem lowerSection_supported (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (lowerScheme sem j hj hjA)) :
-    OrbitPrefixSupport.Supported k (upperGrid (D := D) k : Set ExtOrd) q.val
-      (lowerSection sem j hj hjA hproper k q d) :=
+theorem lowerSection_supported (q : Profile₀₀)
+    d :
+    OrbitPrefixSupport.Supported k (upperGrid₀ : Set ExtOrd) q.val
+      (lowerSection₀ q d) :=
   CanonicalGradeCutSections.section_supported sem j hj hjA hproper q.property.1 _ hjk.le
     (sourceGrid_endpoint le_rfl) d
 
 include hjk in
-theorem lowerSection_short (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (lowerScheme sem j hj hjA)) :
-    Short k (lowerSection sem j hj hjA hproper k q d) :=
+def lowerSection_short q
+    d :=
   PairedCoupledSections.supported_short (fun _ hh => PairedBoundarySections.grid_short k hh)
-    (CanonicalFieldLayer.profile_short sem k (Cell D) id q)
+    (CanonicalFieldLayer.profile_short q)
     (lowerSection_supported sem j hj hjA hproper k hjk q d)
 
 include hjk in
-theorem lowerSection_agreement (p q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    {h : ExtOrd} (hh : h ∈ upperGrid (D := D) k) (hag : Agree p.val q.val h) :
-    Agree (lowerSection sem j hj hjA hproper k p)
-      (lowerSection sem j hj hjA hproper k q) h :=
+theorem lowerSection_agreement (p q : Profile₀₀)
+    {h} (hh : h ∈ upperGrid₀) (hag : Agree p.val q.val h) :
+    Agree (lowerSection₀ p)
+      (lowerSection₀ q) h :=
   CanonicalGradeCutSections.section_agreement sem j hj hjA hproper p.property.1 _ q.property.1 _
     (fun _ hz => grid_lower_visible j k hjk hz)
-    (grid_lower_visible j k hjk (sourceGrid_endpoint le_rfl)) hh
+    (grid_lower_visible₀) hh
     (PairedBoundarySections.grid_bound k hh) hag
 
-abbrev scheme := SourceLayerCarrier.scheme (lowerScheme sem j hj hjA)
-  (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
+abbrev scheme := SourceLayerCarrier.scheme (lowerScheme₀)
+  (Profile₀) k hk hkA
 
-abbrev oldCell (d : Cell (lowerScheme sem j hj hjA)) : Cell (scheme sem j hj hjA k hk hkA) :=
-  SourceLayerCarrier.toCell (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA (.inl d)
+local notation "scheme₀" => scheme sem j hj hjA k hk hkA
 
-abbrev controller (q : CanonicalFieldLayer.Profile sem k (Cell D) id) :=
-  SourceLayerCarrier.controller (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA q
+abbrev oldCell (d : Cell (lowerScheme₀)) : Cell (scheme₀) :=
+  SourceLayerCarrier.toCell (lowerScheme₀)
+    (Profile₀) k hk hkA (.inl d)
 
-def member (c : SourcePrefixLayer.Controller (scheme sem j hj hjA k hk hkA) k) :
-    CanonicalFieldLayer.Profile sem k (Cell D) id :=
-  (SeparatedSourceLayerCarrier.controllerEquiv (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk)).symm c
+abbrev controller q :=
+  SourceLayerCarrier.controller (lowerScheme₀)
+    (Profile₀) k hk hkA q
 
-theorem member_controller (q : CanonicalFieldLayer.Profile sem k (Cell D) id) :
-    member sem j hj hjA hproper k hk hkA hjk (controller sem j hj hjA k hk hkA q) = q :=
-  (SeparatedSourceLayerCarrier.controllerEquiv (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk)).symm_apply_apply q
+local notation "lower_separated₀" => lower_separated sem j hj hjA hproper k hjk
 
-abbrev ownerEquiv (c : Cell (lowerScheme sem j hj hjA)) :=
-  SeparatedSourceLayerCarrier.ownerEquiv (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk) c
+def member c :=
+  (SeparatedSourceLayerCarrier.controllerEquiv (lowerScheme₀)
+    (Profile₀) k hk hkA
+    (lower_separated₀)).symm c
 
-def lower (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (scheme sem j hj hjA k hk hkA)) : ExtOrd :=
-  match SourceLayerCarrier.toOcc (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA d with
-  | .inl x => lowerSection sem j hj hjA hproper k q x
+local notation "controller₀" => controller sem j hj hjA k hk hkA
+
+local notation "member₀" => member sem j hj hjA hproper k hk hkA hjk
+
+theorem member_controller q :
+    member₀ (controller₀ q) = q :=
+  (SeparatedSourceLayerCarrier.controllerEquiv (lowerScheme₀)
+    (Profile₀) k hk hkA
+    (lower_separated₀)).symm_apply_apply q
+
+abbrev ownerEquiv c :=
+  SeparatedSourceLayerCarrier.ownerEquiv (lowerScheme₀)
+    (Profile₀) k hk hkA
+    (lower_separated₀) c
+
+def lower q
+    d :=
+  match SourceLayerCarrier.toOcc (lowerScheme₀)
+      (Profile₀) k hk hkA d with
+  | .inl x => lowerSection₀ q x
   | .inr _ => ⊥
 
-theorem lower_old (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (lowerScheme sem j hj hjA)) :
-    lower sem j hj hjA hproper k hk hkA q (oldCell sem j hj hjA k hk hkA d) =
-      lowerSection sem j hj hjA hproper k q d := by
-  simp only [lower, oldCell, SourceLayerCarrier.toOcc_toCell]
+local notation "lower₀" => lower sem j hj hjA hproper k hk hkA
 
-def data : SourcePrefixLayer.Data (scheme sem j hj hjA k hk hkA) k (Cell D) where
-  base := SeparatedSourceLayerCarrier.base (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk) (lowerSem sem j hj hjA hproper)
+local notation "oldCell₀" => oldCell sem j hj hjA k hk hkA
+
+theorem lower_old q
+    d :
+    lower₀ q (oldCell₀ d) =
+      lowerSection₀ q d := by
+  simp  [lower,  ]
+
+def data : SourcePrefixLayer.Data (scheme₀) k (Cell D) where
+  base := SeparatedSourceLayerCarrier.base lowerScheme₀
+    (Profile₀₀) k hk hkA
+    lower_separated₀ lowerSem₀
   max_grade d := by
     rw [CellScheme.grade, SourceLayerCarrier.cell_eq]
-    cases SourceLayerCarrier.toOcc (lowerScheme sem j hj hjA)
-        (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA d with
+    cases SourceLayerCarrier.toOcc lowerScheme₀
+        (Profile₀₀) k hk hkA d with
     | inl x => exact lower_grade sem j hj hjA k hg hjk x
     | inr q => exact le_rfl
-  grid := upperGrid (D := D) k
-  bot_mem := sourceGrid_bot _ _
-  ceiling := upperCeiling (D := D) k
+  grid := upperGrid₀
+  bot_mem := sourceGrid_bot
+  ceiling := upperCeiling₀
   ceiling_mem := sourceGrid_endpoint le_rfl
   grid_bound _ hh := PairedBoundarySections.grid_bound k hh
   grid_visible _ hh := sourceGrid_visible hh
-  boundary c := (member sem j hj hjA hproper k hk hkA hjk c).val
-  lower c := lower sem j hj hjA hproper k hk hkA
-    (member sem j hj hjA hproper k hk hkA hjk c)
+  boundary c := (member₀ c).val
+  lower c := lower₀
+    (member₀ c)
   lower_bound c d hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA d hd
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence lowerScheme₀
+      (Profile₀₀) k hk hkA d hd
     rw [lower_old]
     exact lowerSection_bound sem j hj hjA hproper k hjk _ x
   lower_lawful c d hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA d hd
-    apply (SeparatedSourceLayerCarrier.base_respects_iff (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-      (lower_separated sem j hj hjA hproper k hjk) (lowerSem sem j hj hjA hproper) x _).mpr
-    change RespectsSemanticsBelow (lowerSem sem j hj hjA hproper) _ (fun d =>
-      lower sem j hj hjA hproper k hk hkA _ (oldCell sem j hj hjA k hk hkA d.1))
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence lowerScheme₀
+      (Profile₀₀) k hk hkA d hd
+    apply (SeparatedSourceLayerCarrier.base_respects_iff
+      lower_separated₀ lowerSem₀ x _).mpr
+    change RespectsSemanticsBelow lowerSem₀ _ (fun d =>
+      lower₀ _ (oldCell₀ d.1))
     simpa only [lower_old] using
       (lowerSection_lawful sem j hj hjA hproper k hjk _).toBelow _
   grid_agreement p q h hh hag d hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA d hd
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence lowerScheme₀
+      (Profile₀₀) k hk hkA d hd
     simpa only [lower_old] using
       lowerSection_agreement sem j hj hjA hproper k hjk _ _ hh hag x
 
-abbrev rows := (data sem j hj hjA hproper k hg hk hkA hjk).rows
-abbrev source (q : CanonicalFieldLayer.Profile sem k (Cell D) id) :=
-  (data sem j hj hjA hproper k hg hk hkA hjk).profile (controller sem j hj hjA k hk hkA q)
+local notation "data₀" => data sem j hj hjA hproper k hg hk hkA hjk
 
-theorem source_lower (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (lowerScheme sem j hj hjA)) :
-    source sem j hj hjA hproper k hg hk hkA hjk q (oldCell sem j hj hjA k hk hkA d) =
-      lowerSection sem j hj hjA hproper k q d := by
-  rw [source, SourcePrefixLayer.Data.profile_old _ _ (SeparatedSourceLayerCarrier.old_not_full
-    (lowerScheme sem j hj hjA) (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk) d)]
-  change lower sem j hj hjA hproper k hk hkA
-    (member sem j hj hjA hproper k hk hkA hjk (controller sem j hj hjA k hk hkA q)) _ = _
+abbrev rows := (data₀).rows
+abbrev source q :=
+  (data₀).profile (controller₀ q)
+
+local notation "source₀" => source sem j hj hjA hproper k hg hk hkA hjk
+
+theorem source_lower q
+    d :
+    source₀ q (oldCell₀ d) =
+      lowerSection₀ q d := by
+  rw [source, SourcePrefixLayer.Data.profile_old _ _ (SeparatedSourceLayerCarrier.old_not_full hk hkA
+    (lower_separated₀))]
+  change lower₀
+    (member₀ (controller₀ q)) _ = _
   rw [member_controller, lower_old]
 
-theorem source_boundary (q : CanonicalFieldLayer.Profile sem k (Cell D) id) (d : Cell D) :
-    source sem j hj hjA hproper k hg hk hkA hjk q
-      (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA d)) = q.val d := by
+theorem source_boundary q d :
+    source₀ q
+      (oldCell₀ (lowerOld₀ d)) = q.val d := by
   rw [source_lower, lowerSection_old sem j hj hjA hproper k]
 
-theorem inherited_row (c : Cell (lowerScheme sem j hj hjA))
-    (d : (lowerScheme sem j hj hjA).below ((lowerScheme sem j hj hjA).cell c)) :
-    (rows sem j hj hjA hproper k hg hk hkA hjk).E (oldCell sem j hj hjA k hk hkA c)
-      (ownerEquiv sem j hj hjA hproper k hk hkA hjk c d) =
-      (lowerSem sem j hj hjA hproper).E c d := by
-  rw [SourcePrefixLayer.Data.row_old _ (SeparatedSourceLayerCarrier.old_not_full
-    (lowerScheme sem j hj hjA) (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk) c)]
-  exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
+local notation "ownerEquiv₀" => ownerEquiv sem j hj hjA hproper k hk hkA hjk
 
-theorem inherited_order : StrictMono (oldCell sem j hj hjA k hk hkA) :=
-  SourceLayerCarrier.old_order _ _ _ _ _
+local notation "rows₀" => rows sem j hj hjA hproper k hg hk hkA hjk
 
-theorem original_row (c : Cell D) (d : D.below (D.cell c)) :
-    (rows sem j hj hjA hproper k hg hk hkA hjk).E
-      (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA c))
-      (ownerEquiv sem j hj hjA hproper k hk hkA hjk (lowerOld sem j hj hjA c)
-        (GradeCutLayerCarrier.ownerEquiv D (CanonicalGradeCutSections.Profiles sem j)
-          j hj hjA hproper c d)) = sem.E c d := by
+theorem inherited_row c
+    d :
+    (rows₀).E (oldCell₀ c)
+      (ownerEquiv₀ c d) =
+      (lowerSem₀).E c d := by
+  rw [SourcePrefixLayer.Data.row_old _ (SeparatedSourceLayerCarrier.old_not_full hk hkA
+    (lower_separated₀))]
+  exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ d
+
+theorem inherited_order : StrictMono (oldCell₀) :=
+  SourceLayerCarrier.old_order
+
+theorem original_row c d :
+    (rows₀).E
+      (oldCell₀ (lowerOld₀ c))
+      (ownerEquiv₀ (lowerOld₀ c)
+        (GradeCutLayerCarrier.ownerEquiv hj hjA hproper c d)) = sem.E c d := by
   rw [inherited_row]
   exact CanonicalGradeCutSections.old_row sem j hj hjA hproper c d
 
 theorem consistent (hs : sem.IsConsistent) :
-    (rows sem j hj hjA hproper k hg hk hkA hjk).IsConsistent := by
+    (rows₀).IsConsistent := by
   apply SourcePrefixLayer.Data.consistent
   intro c hc
-  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA c hc
-  apply (SeparatedSourceLayerCarrier.base_respects_iff (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk) (lowerSem sem j hj hjA hproper) x _).mpr
-  have he : (data sem j hj hjA hproper k hg hk hkA hjk).base.E
-      (oldCell sem j hj hjA k hk hkA x) ∘ ownerEquiv sem j hj hjA hproper k hk hkA hjk x =
-      (lowerSem sem j hj hjA hproper).E x := by
+  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme₀)
+    (Profile₀) k hk hkA c hc
+  apply (SeparatedSourceLayerCarrier.base_respects_iff
+    (lower_separated₀) (lowerSem₀) x _).mpr
+  have he : (data₀).base.E
+      (oldCell₀ x) ∘ ownerEquiv₀ x =
+      (lowerSem₀).E x := by
     funext d
-    exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ x d
+    exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ d
   rw [he]
   exact CanonicalGradeCutSections.consistent sem j hj hjA hproper hs x
 
-theorem source_agreement (p q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    {h : ExtOrd} (hh : h ∈ upperGrid (D := D) k) (hag : Agree p.val q.val h) :
-    Agree (source sem j hj hjA hproper k hg hk hkA hjk p)
-      (source sem j hj hjA hproper k hg hk hkA hjk q) h := by
-  apply (data sem j hj hjA hproper k hg hk hkA hjk).profile_prefix hh
-  change Agree (member sem j hj hjA hproper k hk hkA hjk
-      (controller sem j hj hjA k hk hkA p)).val
-    (member sem j hj hjA hproper k hk hkA hjk (controller sem j hj hjA k hk hkA q)).val h
+theorem source_agreement (p q : Profile₀₀)
+    {h} (hh : h ∈ upperGrid₀) (hag : Agree p.val q.val h) :
+    Agree (source₀ p)
+      (source₀ q) h := by
+  apply (data₀).profile_prefix hh
+  change Agree (member₀
+      (controller₀ p)).val
+    (member₀ (controller₀ q)).val h
   simpa only [member_controller] using hag
 
-theorem source_supported (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (scheme sem j hj hjA k hk hkA)) :
-    OrbitPrefixSupport.Supported k (upperGrid (D := D) k : Set ExtOrd) q.val
-      (source sem j hj hjA hproper k hg hk hkA hjk q d) := by
-  by_cases hd : (scheme sem j hj hjA k hk hkA).cell d = (A, k)
-  · have he := (data sem j hj hjA hproper k hg hk hkA hjk).profile_new
-      (controller sem j hj hjA k hk hkA q) ⟨d, hd⟩
+variable {sem j hj hjA hproper k hg hk hkA hjk} in
+theorem source_supported (q : Profile₀₀)
+    d :
+    OrbitPrefixSupport.Supported k (upperGrid₀ : Set ExtOrd) q.val
+      (source₀ q d) := by
+  by_cases hd : (scheme₀).cell d = (A, k)
+  · have he := (data₀).profile_new
+      (controller₀ q) ⟨d, hd⟩
     apply Or.inr
     apply Or.inl
-    change (data sem j hj hjA hproper k hg hk hkA hjk).profile
-      (controller sem j hj hjA k hk hkA q) d ∈ upperGrid (D := D) k
+    change (data₀).profile
+      (controller₀ q) d ∈ upperGrid₀
     rw [he]
-    exact cut_mem (sourceGrid_bot _ _) _ _
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA d hd
+    exact cut_mem (sourceGrid_bot) _ _
+  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme₀)
+      (Profile₀₀) k hk hkA d hd
     rw [source_lower]
     exact lowerSection_supported sem j hj hjA hproper k hjk q x
 
-theorem source_short (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
-    (d : Cell (scheme sem j hj hjA k hk hkA)) :
-    Short k (source sem j hj hjA hproper k hg hk hkA hjk q d) :=
+theorem source_short q
+    d :
+    Short k (source₀ q d) :=
   PairedCoupledSections.supported_short
     (fun _ hh => PairedBoundarySections.grid_short k hh)
-    (CanonicalFieldLayer.profile_short sem k (Cell D) id q)
-    (source_supported sem j hj hjA hproper k hg hk hkA hjk q d)
+    (CanonicalFieldLayer.profile_short q)
+    (source_supported q d)
 
-theorem lower_full_short (c : Cell (lowerScheme sem j hj hjA))
-    (hc : (lowerScheme sem j hj hjA).scope c = A)
-    (d : (lowerScheme sem j hj hjA).below ((lowerScheme sem j hj hjA).cell c)) :
-    Short ((lowerScheme sem j hj hjA).grade c)
-      ((lowerSem sem j hj hjA hproper).E c d) := by
-  have hjc : (lowerScheme sem j hj hjA).grade c ≤ j := by
+theorem lower_full_short c
+    (hc : (lowerScheme₀).scope c = A)
+    d :
+    Short ((lowerScheme₀).grade c)
+      ((lowerSem₀).E c d) := by
+  have hjc : (lowerScheme₀).grade c ≤ j := by
     have hs := hc
     rw [CellScheme.scope, SourceLayerCarrier.cell_eq] at hs
     rw [CellScheme.grade, SourceLayerCarrier.cell_eq]
-    cases he : SourceLayerCarrier.toOcc D (CanonicalGradeCutSections.Profiles sem j) j hj hjA c with
+    cases he : toOcc₀ c with
     | inl a =>
       rw [he] at hs
       exact (hproper a hs).elim
     | inr q => exact le_rfl
   obtain ⟨a, rfl⟩ := GradeCutLayerCarrier.exhaustive D
     (CanonicalGradeCutSections.Profiles sem j) j hj hjA c hjc
-  obtain ⟨e, rfl⟩ := (GradeCutLayerCarrier.belowEquiv D
-    (CanonicalGradeCutSections.Profiles sem j) j hj hjA _ hjc).surjective d
+  obtain ⟨e, rfl⟩ := (GradeCutLayerCarrier.belowEquiv _ hjc).surjective d
   have he := CanonicalGradeCutSections.lower_row sem j hj hjA hproper a
     ⟨e.1, by simpa only [GradeCutLayerCarrier.embed_cell] using e.2⟩
   have hv := CanonicalFieldLayer.full_source_short
-    (CanonicalGradeCutSections.boundaryRows sem j) j
-    (Cell D) (GradeCutBoundary.toCell D j) hj hjA
-    (GradeCutBoundary.proper D j hproper) (GradeCutBoundary.grade_bound D j) a
+    (GradeCutBoundary.proper hproper) GradeCutBoundary.grade_bound a
     (by simpa only [CellScheme.scope, GradeCutLayerCarrier.embed_cell] using hc)
-    ⟨e.1, by simpa only [GradeCutLayerCarrier.embed_cell] using e.2⟩
+    ⟨e.1, by grind⟩
   rw [← he] at hv
   exact (congrArg (fun i => Short i _) (congrArg Prod.snd
     (GradeCutLayerCarrier.embed_cell D (CanonicalGradeCutSections.Profiles sem j)
       j hj hjA a))).mpr hv
 
-theorem lower_proper_respects {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-    {r : Cell (lowerScheme sem j hj hjA) → ExtOrd}
-    (hread : ∀ d, r (lowerOld sem j hj hjA d) = p d)
-    (c : Cell (lowerScheme sem j hj hjA)) (hc : (lowerScheme sem j hj hjA).scope c ≠ A) :
-    RespectsSemanticsBelow (lowerSem sem j hj hjA hproper)
-      ((lowerScheme sem j hj hjA).cell c) (fun d => r d.1) := by
-  have hc' : (lowerScheme sem j hj hjA).cell c ≠ (A, j) :=
+theorem lower_proper_respects {p : CellLabels D} (hp : RespectsSemantics sem p)
+    {r : CellLabels (lowerScheme₀)}
+    (hread : ∀ d, r (lowerOld₀ d) = p d)
+    (c : Cell (lowerScheme₀)) (hc : (lowerScheme₀).scope c ≠ A) :
+    RespectsSemanticsBelow (lowerSem₀)
+      ((lowerScheme₀).cell c) (fun d => r d.1) := by
+  have hc' : (lowerScheme₀).cell c ≠ (A, j) :=
     fun he => hc (congrArg Prod.fst he)
   obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D
     (CanonicalGradeCutSections.Profiles sem j) j hj hjA c hc'
-  apply (GradeCutLayerRows.old_respects_iff D (CanonicalGradeCutSections.Profiles sem j) j hj hjA
-    hproper sem (CanonicalGradeCutSections.lowerRows sem j hj hjA hproper) x _).mpr
-  change RespectsSemanticsBelow sem (D.cell x) (fun d => r (lowerOld sem j hj hjA d.1))
+  apply (GradeCutLayerRows.old_respects_iff x _).mpr
+  change Semantics.RowLawful sem x (fun d => r (lowerOld₀ d.1))
   simpa only [hread] using hp.toBelow (D.cell x)
 
-theorem full_source_short (c : Cell (scheme sem j hj hjA k hk hkA))
-    (hc : (scheme sem j hj hjA k hk hkA).scope c = A)
-    (d : (scheme sem j hj hjA k hk hkA).below ((scheme sem j hj hjA k hk hkA).cell c)) :
-    Short ((scheme sem j hj hjA k hk hkA).grade c)
-      ((rows sem j hj hjA hproper k hg hk hkA hjk).E c d) := by
-  apply (data sem j hj hjA hproper k hg hk hkA hjk).full_source_short
+theorem full_source_short c
+    (hc : (scheme₀).scope c = A)
+    d :
+    Short ((scheme₀).grade c)
+      ((rows₀).E c d) := by
+  apply (data₀).full_source_short
     (fun _ hh => PairedBoundarySections.grid_short k hh) _ _ c hc d
   · intro q x hx
-    obtain ⟨y, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA x hx
-    change Short k (lower sem j hj hjA hproper k hk hkA _
-      (oldCell sem j hj hjA k hk hkA y))
+    obtain ⟨y, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme₀)
+      (Profile₀) k hk hkA x hx
+    change Short k (lower₀ _
+      (oldCell₀ y))
     rw [lower_old]
     exact lowerSection_short sem j hj hjA hproper k hjk _ y
   · intro x hs hx e
-    obtain ⟨y, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA x hx
-    obtain ⟨z, rfl⟩ := (ownerEquiv sem j hj hjA hproper k hk hkA hjk y).surjective e
-    have he := SeparatedSourceLayerCarrier.base_old (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-      (lower_separated sem j hj hjA hproper k hjk) (lowerSem sem j hj hjA hproper) y z
-    change (data sem j hj hjA hproper k hg hk hkA hjk).base.E _ _ = _ at he
+    obtain ⟨y, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme₀)
+      (Profile₀) k hk hkA x hx
+    obtain ⟨z, rfl⟩ := (ownerEquiv₀ y).surjective e
+    have he := SeparatedSourceLayerCarrier.base_old (lowerScheme₀)
+      (Profile₀) k hk hkA
+      (lower_separated₀) (lowerSem₀) z
+    change (data₀).base.E _ _ = _ at he
     rw [he]
-    have hi := SourceLayerCarrier.cell_toCell (lowerScheme sem j hj hjA)
-      (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA (.inl y)
-    change Short ((scheme sem j hj hjA k hk hkA).grade (oldCell sem j hj hjA k hk hkA y)) _
-    rw [show (scheme sem j hj hjA k hk hkA).grade (oldCell sem j hj hjA k hk hkA y) =
-      (lowerScheme sem j hj hjA).grade y from congrArg Prod.snd hi]
+    have hi := SourceLayerCarrier.cell_toCell (lowerScheme₀)
+      (Profile₀) k hk hkA (.inl y)
+    
+    rw [show (scheme₀).grade (oldCell₀ y) =
+      (lowerScheme₀).grade y from congrArg Prod.snd hi]
     exact lower_full_short sem j hj hjA hproper y
       ((congrArg Prod.fst hi).symm.trans hs) z
 
-abbrev normalized {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-    (ht : ∀ d, p d ≠ ⊤) : CanonicalFieldLayer.Profile sem k (Cell D) id :=
-  CanonicalFieldLayer.encode sem k (Cell D) id hg hp ht
+abbrev normalized {p} (hp : RespectsSemantics sem p)
+    (ht : AvoidsValue p ⊤) : Profile₀ :=
+  CanonicalFieldLayer.encode hg hp ht
 
 variable {G : Finset ExtOrd} {C : ExtOrd}
 
+local notation "normalized₀" => normalized sem k hg
+
 /-- The new selected section decodes the complete coupled source, including
 all retained lower controllers. Lower sections are not supplied as parameters. -/
-def sectionOf {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-    (ht : ∀ d, p d ≠ ⊤) (G : Finset ExtOrd) (C : ExtOrd)
-    (d : Cell (scheme sem j hj hjA k hk hkA)) : ExtOrd :=
+def sectionOf {p} (hp : RespectsSemantics sem p)
+    (ht : AvoidsValue p ⊤) G C
+    d :=
   PairedSlotDecoder.decode k (values p) G C
-    (source sem j hj hjA hproper k hg hk hkA hjk (normalized sem k hg hp ht) d)
+    (source₀ (normalized₀ hp ht) d)
 
-theorem section_boundary {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-    (ht : ∀ d, p d ≠ ⊤) (hG : ∀ z ∈ G, SelfVis k z) (hC : SelfVis k C) (d : Cell D) :
-    sectionOf sem j hj hjA hproper k hg hk hkA hjk hp ht G C
-      (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA d)) = p d := by
+local notation "sectionOf₀" => sectionOf sem j hj hjA hproper k hg hk hkA hjk
+
+theorem section_boundary {p} (hp : RespectsSemantics sem p)
+    (ht : AvoidsValue p ⊤) (hG : VisibleOn k G) (hC : SelfVis k C) d :
+    sectionOf₀ hp ht G C
+      (oldCell₀ (lowerOld₀ d)) = p d := by
   rw [sectionOf, source_boundary]
-  exact PairedSlotDecoder.decode_normalize hG hC ht d
+  exact PairedSlotDecoder.decode_normalize hG hC ht
 
-theorem section_lawful {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-    (ht : ∀ d, p d ≠ ⊤) (hG : ∀ z ∈ G, SelfVis k z) (hC : SelfVis k C) :
-    RespectsSemantics (rows sem j hj hjA hproper k hg hk hkA hjk)
-      (sectionOf sem j hj hjA hproper k hg hk hkA hjk hp ht G C) := by
-  apply (data sem j hj hjA hproper k hg hk hkA hjk).decoded_respects
-    (controller sem j hj hjA k hk hkA (normalized sem k hg hp ht)) le_rfl
+theorem section_lawful {p : CellLabels D} (hp : RespectsSemantics sem p)
+    (ht : AvoidsValue p ⊤) (hG : VisibleOn k G) (hC : SelfVis k C) :
+    RespectsSemantics (rows₀)
+      (sectionOf₀ hp ht G C) := by
+  apply (data₀).decoded_respects
+    (controller₀ (normalized₀ hp ht)) le_rfl
     (PairedSlotDecoder.decode_witness hG hC) _
     (full_source_short sem j hj hjA hproper k hg hk hkA hjk)
   intro c hc
-  have hc' : (scheme sem j hj hjA k hk hkA).cell c ≠ (A, k) :=
+  have hc' : (scheme₀).cell c ≠ (A, k) :=
     fun he => hc (congrArg Prod.fst he)
-  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA c hc'
-  apply (SeparatedSourceLayerCarrier.base_respects_iff (lowerScheme sem j hj hjA)
-    (CanonicalFieldLayer.Profile sem k (Cell D) id) k hk hkA
-    (lower_separated sem j hj hjA hproper k hjk) (lowerSem sem j hj hjA hproper) x _).mpr
-  change RespectsSemanticsBelow (lowerSem sem j hj hjA hproper) _ (fun d =>
+  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (lowerScheme₀)
+    (Profile₀) k hk hkA c hc'
+  apply (SeparatedSourceLayerCarrier.base_respects_iff
+    (lower_separated₀) (lowerSem₀) x _).mpr
+  change RespectsSemanticsBelow (lowerSem₀) _ (fun d =>
     PairedSlotDecoder.decode k (values p) G C
-      (lower sem j hj hjA hproper k hk hkA
-        (member sem j hj hjA hproper k hk hkA hjk
-          (controller sem j hj hjA k hk hkA (normalized sem k hg hp ht)))
-        (oldCell sem j hj hjA k hk hkA d.1)))
-  simp only [member_controller, lower_old]
+      (lower₀
+        (member₀
+          (controller₀ (normalized₀ hp ht)))
+        (oldCell₀ d.1)))
+  simp  [member_controller, lower_old]
   apply lower_proper_respects sem j hj hjA hproper hp
     (r := fun y => PairedSlotDecoder.decode k (values p) G C
-      (lowerSection sem j hj hjA hproper k (normalized sem k hg hp ht) y)) _ x
-    (by simpa only [CellScheme.scope, oldCell, SourceLayerCarrier.cell_toCell,
+      (lowerSection₀ (normalized₀ hp ht) y)) _ x
+    (by simpa only [CellScheme.scope,  SourceLayerCarrier.cell_toCell,
       SourceLayerCarrier.index] using hc)
   intro d
   rw [lowerSection_old sem j hj hjA hproper k]
-  exact PairedSlotDecoder.decode_normalize hG hC ht d
+  exact PairedSlotDecoder.decode_normalize hG hC ht
 
-theorem section_bound {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-    (ht : ∀ d, p d ≠ ⊤) (hC : SelfVis k C) (hb : ∀ d, p d ≤ C)
-    (d : Cell (scheme sem j hj hjA k hk hkA)) :
-    sectionOf sem j hj hjA hproper k hg hk hkA hjk hp ht G C d ≤ C := by
+theorem section_bound {p} (hp : RespectsSemantics sem p)
+    (ht : AvoidsValue p ⊤) (hC : SelfVis k C) (hb : BoundedBy p C)
+    d :
+    sectionOf₀ hp ht G C d ≤ C := by
   apply PairedSlotDecoder.decode_le hC
   intro a ha
   obtain ⟨x, hx⟩ := mem_values.mp ha
   simpa only [hx] using hb x
 
-theorem section_supported {K : ℕ} (hkK : k ≤ K) (hCG : C ∈ G)
-    {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-    (d : Cell (scheme sem j hj hjA k hk hkA)) :
+theorem section_supported {K} (hkK : k ≤ K) (hCG : C ∈ G)
+    {p} (hp : RespectsSemantics sem p) (ht : AvoidsValue p ⊤)
+    d :
     OrbitPrefixSupport.Supported K (G : Set ExtOrd) p
-      (sectionOf sem j hj hjA hproper k hg hk hkA hjk hp ht G C d) :=
+      (sectionOf₀ hp ht G C d) :=
   PairedSlotDecoder.decode_supported hkK hCG _
 
-theorem section_agreement {p q : Cell D → ExtOrd}
+theorem section_agreement {p q}
     (hp : RespectsSemantics sem p) (hq : RespectsSemantics sem q)
-    (htp : ∀ d, p d ≠ ⊤) (htq : ∀ d, q d ≠ ⊤)
-    {h : ExtOrd} (hG : ∀ z ∈ G, SelfVis k z)
+    (htp : AvoidsValue p ⊤) (htq : AvoidsValue q ⊤)
+    {h} (hG : VisibleOn k G)
     (hC : SelfVis k C) (hh : h ∈ G)
     (hhC : h ≤ C) (hag : Agree p q h) :
-    Agree (sectionOf sem j hj hjA hproper k hg hk hkA hjk hp htp G C)
-      (sectionOf sem j hj hjA hproper k hg hk hkA hjk hq htq G C) h := by
+    Agree (sectionOf₀ hp htp G C)
+      (sectionOf₀ hq htq G C) h := by
   obtain ⟨heG, _, heAgree, hpReach, hqReach, hcompare⟩ :=
     largestCommonCut_spec hG hC hC hh hhC hhC htp htq hag
   have hs := source_agreement sem j hj hjA hproper k hg hk hkA hjk
-    (normalized sem k hg hp htp) (normalized sem k hg hq htq) heG heAgree
+    (normalized₀ hp htp) (normalized₀ hq htq) heG heAgree
   exact hs.decode (PairedSlotDecoder.decode_witness hG hC).mono
     (PairedSlotDecoder.decode_witness hG hC).mono hpReach hqReach (fun d _ => hcompare _)
 
-end
-end VaughtConjecture.Knight.CanonicalMixedGradeLayers

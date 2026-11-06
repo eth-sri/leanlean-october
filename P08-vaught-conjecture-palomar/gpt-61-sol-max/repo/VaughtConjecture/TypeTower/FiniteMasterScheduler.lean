@@ -3,12 +3,13 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.TypeTower.FiniteMaster
-public import VaughtConjecture.TypeTower.ChainUnion
-public import Mathlib.Order.Ideal
-public import Mathlib.Data.Countable.Basic
+import Mathlib.Tactic
+
+import VaughtConjecture.TypeTower.FiniteMaster
+import VaughtConjecture.TypeTower.ChainUnion
+import Mathlib.Order.Ideal
+import Mathlib.Data.Countable.Basic
 
 /-! # Finite-master scheduling by countable dense sets
 
@@ -24,8 +25,6 @@ State invariants are carried by the arbitrary state type `S`; neither the state 
 nor the tower's types need be countable. The theorem also covers empty alphabets and
 empty carriers: `Encodable.decode` provides the idle steps automatically.
 -/
-
-@[expose] public section
 
 namespace VaughtConjecture.TypeTower
 
@@ -45,12 +44,12 @@ namespace FiniteMasterScheduler
 variable {S : Type z} (master : S → FiniteMaster T α M)
 
 /-- Supported and either permanently rejected or already served. -/
-def Resolved (r : RootedTask T α M) (s : S) : Prop :=
+def Resolved (r : RootedTask T α M) s :=
   (master s).Supported r.root ∧
     ((master s).chart.eval r.root ≠ some r.base ∨ r.Served (master s).chart)
 
 variable
-  (absorb : ∀ (s : S) (x : M), ∃ t, master s ≤ master t ∧ x ∈ Set.range (master t).tuple)
+  (absorb : ∀ s x, ∃ t, master s ≤ master t ∧ x ∈ Set.range (master t).tuple)
 
 include absorb
 
@@ -75,7 +74,7 @@ theorem resolve (s : S) (r : RootedTask T α M)
     ∃ t, master s ≤ master t ∧ Resolved master r t := by
   classical
   obtain ⟨t, hst, ht⟩ := absorb_finset master absorb s (Finset.univ.image r.root)
-  have hsupp : (master t).Supported r.root :=
+  have hsupp  :=
     ((master t).supported_iff r.root).mpr fun i => ht _ (Finset.mem_image.mpr ⟨i, by simp, rfl⟩)
   by_cases hp : (master t).chart.eval r.root = some r.base
   · obtain ⟨q, htq, hq⟩ := serve t hp
@@ -85,22 +84,21 @@ theorem resolve (s : S) (r : RootedTask T α M)
 /-- Countable dense-set scheduling. Each request is resolved once; all points are absorbed. -/
 theorem exists_chain {I : Type z'} [Countable I] [Countable M]
     (task : I → RootedTask T α M)
-    (serve : ∀ (s : S) (i : I), (master s).chart.eval (task i).root = some (task i).base →
+    (serve : ∀ s i, (master s).chart.eval (task i).root = some (task i).base →
       ∃ t, master s ≤ master t ∧ (task i).Served (master t).chart)
     (seed : S) :
-    ∃ A : ℕ → S, A 0 = seed ∧ Monotone (master ∘ A) ∧
+    ∃ A , A 0 = seed ∧ Monotone (master ∘ A) ∧
       (∀ x, ∃ k, x ∈ Set.range (master (A k)).tuple) ∧
       ∀ i, ∃ k, Resolved master (task i) (A k) := by
-  classical
-  let : Preorder S := Preorder.lift master
+  
+  let  := Preorder.lift master
   let : Encodable (I ⊕ M) := Encodable.ofCountable _
   let D : I ⊕ M → Order.Cofinal S
     | .inl i => ⟨{s | Resolved master (task i) s}, fun s => by
         obtain ⟨t, hst, ht⟩ := resolve master absorb s (task i) (fun s => serve s i)
         exact ⟨t, ht, hst⟩⟩
     | .inr x => ⟨{s | x ∈ Set.range (master s).tuple}, fun s => by
-        obtain ⟨t, hst, ht⟩ := absorb s x
-        exact ⟨t, ht, hst⟩⟩
+        exact?⟩
   refine ⟨Order.sequenceOfCofinals seed D, rfl,
     Order.sequenceOfCofinals.monotone seed D, ?_, ?_⟩
   · intro x
@@ -114,7 +112,7 @@ theorem union_eval_supported {A : ℕ → S} (hA : Monotone (master ∘ A)) (k :
     {n : ℕ} (t : Fin n ↪ M) (ht : (master (A k)).Supported t) :
     (Realization.chainUnion fun k => (master (A k)).chart).eval t =
       (master (A k)).chart.eval t := by
-  have hchain : ∀ k, (master (A k)).chart.Extends (master (A (k + 1))).chart :=
+  have hchain  :=
     fun k => ((master (A k)).extends_iff _).mp (hA (Nat.le_succ k))
   have hc := Realization.chainUnion_consistent hchain (fun k => (master (A k)).consistent)
   obtain ⟨f, rfl⟩ := ht
@@ -125,17 +123,17 @@ theorem union_eval_supported {A : ℕ → S} (hA : Monotone (master ∘ A)) (k :
 comes from one finite state, permitting any hereditary invariant to pass to the union. -/
 theorem exists_realization {I : Type z'} [Countable I] [Countable M]
     (task : I → RootedTask T α M)
-    (serve : ∀ (s : S) (i : I), (master s).chart.eval (task i).root = some (task i).base →
+    (serve : ∀ s i, (master s).chart.eval (task i).root = some (task i).base →
       ∃ t, master s ≤ master t ∧ (task i).Served (master t).chart)
     (seed : S) :
-    ∃ R : T.Realization α M, R.IsExactParentConsistent ∧ R.IsCovering ∧
+    ∃ R , R.IsExactParentConsistent ∧ R.IsCovering ∧
       (master seed).chart.Extends R ∧
       (∀ i, R.eval (task i).root = some (task i).base → (task i).Served R) ∧
-      ∀ {n} (t : Fin n ↪ M) (p : T.Ty α n), R.eval t = some p →
+      ∀ {n} t (p : T.Ty α n), R.eval t = some p →
         ∃ s, (master s).chart.eval t = some p := by
-  classical
+  
   obtain ⟨A, hzero, hA, hpoints, htasks⟩ := exists_chain master absorb task serve seed
-  have hchain : ∀ k, (master (A k)).chart.Extends (master (A (k + 1))).chart :=
+  have hchain  :=
     fun k => ((master (A k)).extends_iff _).mp (hA (Nat.le_succ k))
   refine ⟨Realization.chainUnion (fun k => (master (A k)).chart),
     Realization.chainUnion_consistent hchain (fun k => (master (A k)).consistent), ?_,
@@ -156,5 +154,3 @@ theorem exists_realization {I : Type z'} [Countable I] [Countable M]
     obtain ⟨k, hk⟩ := Realization.chainUnion_eval_some_exists hp
     exact ⟨A k, hk⟩
 
-end FiniteMasterScheduler
-end VaughtConjecture.TypeTower

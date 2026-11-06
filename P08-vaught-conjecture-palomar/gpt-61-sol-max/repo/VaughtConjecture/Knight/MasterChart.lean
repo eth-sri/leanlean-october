@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FinitePartialState
-public import VaughtConjecture.TypeTower.FiniteMaster
+import VaughtConjecture.Knight.FinitePartialState
+import VaughtConjecture.TypeTower.FiniteMaster
 
 /-! # Literal master-chart normal form
 
@@ -15,10 +14,8 @@ literally its face diagram, including undefined invisible faces. No saturation,
 modelhood or nonempty-master assumption is involved.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.FixedHeight
-open TypeTower KnightRealization
+open TypeTower 
 universe w
 variable {β : LimitStage} {M : Type w} {N : ℕ}
 
@@ -27,7 +24,5 @@ noncomputable def masterChart (w : Fin N ↪ M) (P : S β.1 N) : KnightRealizati
 
 theorem eq_masterChart {A : KnightRealization β M}
     (hcons : A.IsExactParentConsistent) (w : Fin N ↪ M) (P : S β.1 N)
-    (hw : A.eval w = some P) (hmaster : MasteredBy A w) : A = masterChart w P :=
-  FiniteMaster.eq_chart (T := knightTower) ⟨N, w, P⟩ hcons hw (fun t ht => hmaster t ht)
+    (hw : A.eval w = some P) (hmaster : MasteredBy A w) : A = masterChart w P := by solve_by_elim [FiniteMaster.eq_chart]
 
-end VaughtConjecture.Knight.FixedHeight

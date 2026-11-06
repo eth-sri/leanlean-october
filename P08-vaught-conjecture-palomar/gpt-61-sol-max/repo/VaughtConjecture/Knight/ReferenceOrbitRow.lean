@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ReferenceContext
-public import VaughtConjecture.Knight.FreeDiagonal
-public import VaughtConjecture.Knight.MixedGradeInterpolation
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ReferenceContext
+import VaughtConjecture.Knight.FreeDiagonal
+import VaughtConjecture.Knight.MixedGradeInterpolation
 
 /-! # Completing finite reference orbits with the existing witness
 
@@ -26,11 +27,9 @@ Candidate-side and mixed-scope localities, availability outside the row, bountif
 infinite-label branch are not supplied here. In particular it is not terminal comparison.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType Transform Value ExtOrd VaughtConjecture.AmalgamationPlan
+open  StageType    VaughtConjecture.AmalgamationPlan
 
 universe w
 
@@ -48,7 +47,7 @@ structure FullController where
 
 /-- Completeness and actual availability choose the controller; no new row is postulated. -/
 theorem exists_fullController : Nonempty C.FullController := by
-  have hmem : ((Finset.univ : Finset (Fin C.m)), C.N) ∈
+  have hmem : ((Finset.univ), C.N) ∈
       Plan.gradedPlan C.p₀.scheme.scheme.plan := by
     refine Plan.mem_gradedPlan.mpr
       ⟨C.p₀.scheme.scheme.isPlan.domain_mem, ?_, ?_⟩
@@ -59,18 +58,8 @@ theorem exists_fullController : Nonempty C.FullController := by
         (Finset.card_le_card (Finset.subset_univ _))
   obtain ⟨d, hd⟩ := C.p₀.scheme.complete _ hmem
   obtain ⟨c, hc, hle⟩ := C.p₀.respects.availability C.capBase d
-    (by rw [show C.p₀.scheme.scheme.scope d = Finset.univ from congrArg Prod.fst hd]
-        exact Finset.subset_univ _)
+    (by simp_all)
     (C.cap_grade.trans (congrArg Prod.snd hd).symm)
   exact ⟨⟨c, hc.trans hd, hle⟩⟩
 
-namespace FullController
 
-variable {C} (F : C.FullController)
-
-variable (hblocks : ∀ r ∈ reqs, limitPart r.block = r.block)
-
-end FullController
-end ReferenceContext
-
-end VaughtConjecture.Knight

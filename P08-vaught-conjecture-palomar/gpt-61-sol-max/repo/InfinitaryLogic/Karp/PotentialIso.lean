@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Scott.BackAndForth
-public import Architect
-public import Mathlib.SetTheory.Ordinal.Family
+import Mathlib.Tactic
+
+import InfinitaryLogic.Scott.BackAndForth
+import Architect
+import Mathlib.SetTheory.Ordinal.Family
 
 /-!
 # Potential Isomorphism
@@ -36,8 +37,6 @@ back-and-forth equivalence at all ordinal levels.
 - [KK04], Theorem 1.2.1
 -/
 
-@[expose] public section
-
 universe u v w w'
 
 namespace FirstOrder
@@ -46,7 +45,7 @@ namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
 
-open FirstOrder Structure Fin Ordinal
+open FirstOrder Structure Fin 
 
 /-- A potential isomorphism between structures M and N is a family of finite partial
 maps (given as pairs of compatible tuples) that contains the empty map and is closed
@@ -69,10 +68,10 @@ structure PotentialIso (L : Language.{u, v}) [L.IsRelational]
   /-- Each pair in the family preserves atomic type. -/
   compatible : ∀ p ∈ family, SameAtomicType (L := L) p.2.1 p.2.2
   /-- Forth: for any pair and any element of M, there's an extension in the family. -/
-  forth : ∀ p ∈ family, ∀ m : M, ∃ n' : N,
+  forth : ∀ p ∈ family, ∀ m , ∃ n' ,
     ⟨p.1 + 1, Fin.snoc p.2.1 m, Fin.snoc p.2.2 n'⟩ ∈ family
   /-- Back: for any pair and any element of N, there's an extension in the family. -/
-  back : ∀ p ∈ family, ∀ n' : N, ∃ m : M,
+  back : ∀ p ∈ family, ∀ n' , ∃ m ,
     ⟨p.1 + 1, Fin.snoc p.2.1 m, Fin.snoc p.2.2 n'⟩ ∈ family
 
 namespace PotentialIso
@@ -96,21 +95,21 @@ The family is literally `{p | R p.1 p.2.1 p.2.2}`.  Tuples are arbitrary functio
 repeated coordinates are supported and no injectivity is assumed; atomic compatibility is exactly
 `SameAtomicType`.  Carrier universes stay independent. -/
 def ofExtensionFamily
-    (R : ∀ n : ℕ, (Fin n → M) → (Fin n → N) → Prop)
+    (R : ∀ n , (Fin n → M) → (Fin n → N) → Prop)
     (empty : R 0 Fin.elim0 Fin.elim0)
     (compatible : ∀ {n a b}, R n a b → SameAtomicType (L := L) a b)
-    (forth : ∀ {n a b}, R n a b → ∀ m : M,
-      ∃ n' : N, R (n + 1) (Fin.snoc a m) (Fin.snoc b n'))
-    (back : ∀ {n a b}, R n a b → ∀ n' : N,
-      ∃ m : M, R (n + 1) (Fin.snoc a m) (Fin.snoc b n')) :
+    (forth : ∀ {n a b}, R n a b → ∀ m ,
+      ∃ n' , R (n + 1) (Fin.snoc a m) (Fin.snoc b n'))
+    (back : ∀ {n a b}, R n a b → ∀ n' ,
+      ∃ m , R (n + 1) (Fin.snoc a m) (Fin.snoc b n')) :
     PotentialIso L M N where
   family := {p | R p.1 p.2.1 p.2.2}
-  empty_mem := by simpa only [Set.mem_ofPred_eq] using empty
-  compatible := fun _ hp => compatible (by simpa only [Set.mem_ofPred_eq] using hp)
+  empty_mem := by grind
+  compatible := fun _ hp => compatible (by grind)
   forth := fun _ hp m => by
-    simpa only [Set.mem_ofPred_eq] using forth (by simpa only [Set.mem_ofPred_eq] using hp) m
+    simp_all
   back := fun _ hp n' => by
-    simpa only [Set.mem_ofPred_eq] using back (by simpa only [Set.mem_ofPred_eq] using hp) n'
+    simp_all
 
 end PotentialIso
 
@@ -140,8 +139,8 @@ private theorem PotentialIso.buildChain_coherent_fst
     (P : PotentialIso L M N) (enumM : ℕ → M) (enumN : ℕ → N) (i : ℕ) (j : Fin i) :
     (P.buildChain enumM enumN (i + 1)).val.1 (Fin.castSucc j) =
     (P.buildChain enumM enumN i).val.1 j := by
-  simp only [PotentialIso.buildChain]
-  split <;> simp [Fin.snoc_castSucc]
+  simp  [PotentialIso.buildChain]
+  split <;> simp 
 
 /-- Same coherence for the N-side. -/
 private theorem PotentialIso.buildChain_coherent_snd
@@ -149,22 +148,22 @@ private theorem PotentialIso.buildChain_coherent_snd
     (P : PotentialIso L M N) (enumM : ℕ → M) (enumN : ℕ → N) (i : ℕ) (j : Fin i) :
     (P.buildChain enumM enumN (i + 1)).val.2 (Fin.castSucc j) =
     (P.buildChain enumM enumN i).val.2 j := by
-  simp only [PotentialIso.buildChain]
-  split <;> simp [Fin.snoc_castSucc]
+  simp  [PotentialIso.buildChain]
+  split <;> simp 
 
 /-- At a forth step (even i), the last M-element is enumM(i/2). -/
 private theorem PotentialIso.buildChain_forth_last
     {M : Type w} [L.Structure M] {N : Type w'} [L.Structure N]
     (P : PotentialIso L M N) (enumM : ℕ → M) (enumN : ℕ → N) (i : ℕ) (hi : i % 2 = 0) :
     (P.buildChain enumM enumN (i + 1)).val.1 (Fin.last i) = enumM (i / 2) := by
-  simp only [PotentialIso.buildChain, hi, ↓reduceIte, Fin.snoc_last]
+  simp  [PotentialIso.buildChain, hi,  ]
 
 /-- At a back step (odd i), the last N-element is enumN(i/2). -/
 private theorem PotentialIso.buildChain_back_last
     {M : Type w} [L.Structure M] {N : Type w'} [L.Structure N]
     (P : PotentialIso L M N) (enumM : ℕ → M) (enumN : ℕ → N) (i : ℕ) (hi : ¬ i % 2 = 0) :
     (P.buildChain enumM enumN (i + 1)).val.2 (Fin.last i) = enumN (i / 2) := by
-  simp only [PotentialIso.buildChain, hi, ↓reduceIte, Fin.snoc_last]
+  simp  [PotentialIso.buildChain, hi,  ]
 
 /-- SameAtomicType holds at every chain step. -/
 private theorem PotentialIso.buildChain_sat
@@ -179,14 +178,14 @@ equals the value at position j in the chain at step j+1. -/
 private theorem PotentialIso.buildChain_coherent_fst_general
     {M : Type w} [L.Structure M] {N : Type w'} [L.Structure N]
     (P : PotentialIso L M N) (enumM : ℕ → M) (enumN : ℕ → N)
-    {k : ℕ} {j : ℕ} (hjk : j < k) :
+    {k j : ℕ} (hjk : j < k) :
     (P.buildChain enumM enumN k).val.1 ⟨j, hjk⟩ =
     (P.buildChain enumM enumN (j + 1)).val.1 (Fin.last j) := by
   induction k with
   | zero => omega
   | succ k ih =>
     by_cases hjk' : j < k
-    · rw [show (⟨j, hjk⟩ : Fin (k + 1)) = Fin.castSucc ⟨j, hjk'⟩ from rfl]
+    · rw [show (⟨j, hjk⟩) = Fin.castSucc ⟨j, hjk'⟩ from rfl]
       rw [P.buildChain_coherent_fst enumM enumN k ⟨j, hjk'⟩]
       exact ih hjk'
     · have hjeqk : j = k := by omega
@@ -197,14 +196,14 @@ private theorem PotentialIso.buildChain_coherent_fst_general
 private theorem PotentialIso.buildChain_coherent_snd_general
     {M : Type w} [L.Structure M] {N : Type w'} [L.Structure N]
     (P : PotentialIso L M N) (enumM : ℕ → M) (enumN : ℕ → N)
-    {k : ℕ} {j : ℕ} (hjk : j < k) :
+    {k j : ℕ} (hjk : j < k) :
     (P.buildChain enumM enumN k).val.2 ⟨j, hjk⟩ =
     (P.buildChain enumM enumN (j + 1)).val.2 (Fin.last j) := by
   induction k with
   | zero => omega
   | succ k ih =>
     by_cases hjk' : j < k
-    · rw [show (⟨j, hjk⟩ : Fin (k + 1)) = Fin.castSucc ⟨j, hjk'⟩ from rfl]
+    · rw [show (⟨j, hjk⟩) = Fin.castSucc ⟨j, hjk'⟩ from rfl]
       rw [P.buildChain_coherent_snd enumM enumN k ⟨j, hjk'⟩]
       exact ih hjk'
     · have hjeqk : j = k := by omega
@@ -247,9 +246,9 @@ theorem PotentialIso.countable_toEquiv_graph
   -- Build chain of compatible matchings
   let chain := P.buildChain enumM enumN
   let aSeq : ℕ → M := fun i => (chain (i + 1)).val.1 (Fin.last i)
-  let bSeq : ℕ → N := fun i => (chain (i + 1)).val.2 (Fin.last i)
+  let bSeq  := fun i => (chain (i + 1)).val.2 (Fin.last i)
   -- aSeq(2k) = enumM(k) and bSeq(2k+1) = enumN(k)
-  have haSeq : ∀ k, aSeq (2 * k) = enumM k := fun k => by
+  have haSeq  := fun k => by
     show (chain (2 * k + 1)).val.1 (Fin.last (2 * k)) = enumM k
     have h := P.buildChain_forth_last enumM enumN (2 * k) (by omega)
     rwa [show 2 * k / 2 = k by omega] at h
@@ -273,12 +272,12 @@ theorem PotentialIso.countable_toEquiv_graph
   -- Define f : M → N and g : N → M
   let idxM : M → ℕ := fun m => 2 * Nat.find (hM_surj m)
   have hidxM : ∀ m, aSeq (idxM m) = m := fun m => by
-    simp only [idxM]; rw [haSeq]; exact Nat.find_spec (hM_surj m)
-  let f : M → N := fun m => bSeq (idxM m)
-  let idxN : N → ℕ := fun n => 2 * Nat.find (hN_surj n) + 1
+    grind
+  let f  := fun m => bSeq (idxM m)
+  let idxN  := fun n => 2 * Nat.find (hN_surj n) + 1
   have hidxN : ∀ n, bSeq (idxN n) = n := fun n => by
-    simp only [idxN]; rw [hbSeq]; exact Nat.find_spec (hN_surj n)
-  let g : N → M := fun n => aSeq (idxN n)
+    grind
+  let g  := fun n => aSeq (idxN n)
   -- f and g are inverses
   have hgf : ∀ m, g (f m) = m := by
     intro m
@@ -310,26 +309,26 @@ theorem PotentialIso.countable_toEquiv_graph
   simp only [AtomicIdx.holds] at hRel
   have hM_eq : ∀ i, (chain s).val.1 ⟨idxM (x i), hi_lt i⟩ = x i :=
     fun i => (P.buildChain_coherent_fst_general enumM enumN (hi_lt i)).trans (hidxM (x i))
-  have hN_eq : ∀ i, (chain s).val.2 ⟨idxM (x i), hi_lt i⟩ = f (x i) :=
+  have hN_eq  :=
     fun i => P.buildChain_coherent_snd_general enumM enumN (hi_lt i)
   -- Goal: RelMap r (e ∘ x) ↔ RelMap r x
   constructor
   · intro hfx
     have h1 : RelMap r (fun i => (chain s).val.2 ⟨idxM (x i), hi_lt i⟩) := by
-      convert hfx using 1; exact funext fun i => hN_eq i
+      aesop
     show RelMap r x
     convert hRel.mpr h1 using 1; exact (funext fun i => hM_eq i).symm
   · intro hx
     have h1 : RelMap r (fun i => (chain s).val.1 ⟨idxM (x i), hi_lt i⟩) := by
-      convert hx using 1; exact funext fun i => hM_eq i
+      simp_all
     show RelMap r (fun i => f (x i))
     convert hRel.mp h1 using 1; exact (funext fun i => hN_eq i).symm
   -- Graph specification: `m` sits at position `idxM m` of the chain member of length
   -- `idxM m + 1`, whose right coordinate there is `f m` by construction.
   · refine ⟨⟨idxM m + 1, (chain (idxM m + 1)).val.1, (chain (idxM m + 1)).val.2⟩,
       (chain (idxM m + 1)).property, ⟨idxM m, Nat.lt_succ_self _⟩, ?_, ?_⟩
-    · exact (P.buildChain_coherent_fst_general enumM enumN (Nat.lt_succ_self _)).trans (hidxM m)
-    · exact P.buildChain_coherent_snd_general enumM enumN (Nat.lt_succ_self _)
+    · grind
+    · rfl
 
 /-- Countable structures with a potential isomorphism are isomorphic: the projection of
 `countable_toEquiv_graph` that forgets where each element is sent. -/
@@ -339,50 +338,6 @@ theorem PotentialIso.countable_toEquiv
     (P : PotentialIso L M N) : Nonempty (M ≃[L] N) :=
   let ⟨e, _⟩ := P.countable_toEquiv_graph
   ⟨e⟩
-
-/-- Given a potential isomorphism, BFEquiv holds at every ordinal level for any pair
-in the family. This is the key inductive step for the (→) direction of the
-potential isomorphism characterization.
-
-The proof proceeds by ordinal induction: the zero case uses atomic type preservation,
-the successor case uses the forth/back extension properties, and the limit case
-follows from the induction hypothesis.
-
-The structures may live in different universes, and no countability of the language is
-required: the induction consumes only the family's atomic-type compatibility and its two
-extension properties. -/
-theorem PotentialIso.family_bfEquiv
-    {M : Type w} [L.Structure M]
-    {N : Type w'} [L.Structure N]
-    (P : PotentialIso L M N) (α : Ordinal)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (hab : ⟨n, a, b⟩ ∈ P.family) : BFEquiv (L := L) α n a b := by
-  induction α using Ordinal.limitRecOn generalizing n a b with
-  | zero =>
-    exact (BFEquiv.zero a b).mpr (P.compatible _ hab)
-  | add_one β ih =>
-    rw [← Order.succ_eq_add_one, BFEquiv.succ]
-    refine ⟨ih hab, ?_, ?_⟩
-    · intro m
-      obtain ⟨n', hn'⟩ := P.forth _ hab m
-      exact ⟨n', ih hn'⟩
-    · intro n'
-      obtain ⟨m, hm⟩ := P.back _ hab n'
-      exact ⟨m, ih hm⟩
-  | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ]
-    exact fun γ hγ => ih γ hγ hab
-
-/-- Compatibility alias for `PotentialIso.family_bfEquiv`, which is stated without the
-countable-language hypothesis and for structures in different universes. -/
-@[deprecated PotentialIso.family_bfEquiv +typeChanged (since := "2026-08-14")]
-theorem potentialIso_family_BFEquiv [Countable (Σ l, L.Relations l)]
-    {M : Type w} [L.Structure M]
-    {N : Type w} [L.Structure N]
-    (P : PotentialIso L M N) (α : Ordinal)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (hab : ⟨n, a, b⟩ ∈ P.family) : BFEquiv (L := L) α n a b :=
-  P.family_bfEquiv α hab
 
 /-! ## Proof-relevant presentations
 
@@ -396,33 +351,5 @@ back-and-forth structure — its output is the existing `PotentialIso`, built th
 `ofExtensionFamily`, and the eventual isomorphism still comes only from
 `PotentialIso.countable_toEquiv`. -/
 
-/-- A back-and-forth system presented by states rather than by a predicate. -/
-structure ExtensionPresentation (L : Language.{u, v}) [L.IsRelational]
-    (M : Type w) (N : Type w') [L.Structure M] [L.Structure N] where
-  /-- The states at each tuple length. -/
-  State : ℕ → Type*
-  /-- The `M`-tuple a state presents. -/
-  left : ∀ {n}, State n → Fin n → M
-  /-- The `N`-tuple a state presents. -/
-  right : ∀ {n}, State n → Fin n → N
-  /-- A state over the empty tuple. -/
-  empty : State 0
-  /-- Every state presents an atomic-type-preserving pair. -/
-  compatible : ∀ {n} (s : State n), SameAtomicType (L := L) (left s) (right s)
-  /-- Forth, witnessed by a successor state. -/
-  forth : ∀ {n} (s : State n) (m : M), ∃ (n' : N) (s' : State (n + 1)),
-    left s' = Fin.snoc (left s) m ∧ right s' = Fin.snoc (right s) n'
-  /-- Back, witnessed by a successor state. -/
-  back : ∀ {n} (s : State n) (n' : N), ∃ (m : M) (s' : State (n + 1)),
-    left s' = Fin.snoc (left s) m ∧ right s' = Fin.snoc (right s) n'
 
-namespace ExtensionPresentation
 
-variable {M : Type w} [L.Structure M] {N : Type w'} [L.Structure N]
-variable (P : ExtensionPresentation L M N)
-
-end ExtensionPresentation
-
-end Language
-
-end FirstOrder

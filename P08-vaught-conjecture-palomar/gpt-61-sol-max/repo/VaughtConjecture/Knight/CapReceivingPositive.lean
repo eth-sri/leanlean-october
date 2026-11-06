@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CapReceivingModel
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CapReceivingModel
 
 /-! # Complete positive-root cap receiving using an actual positive chart
 
@@ -13,10 +14,8 @@ The finite singleton attachment is constructed by the ordinary finite supplier.
 No actual singleton chart, target modelhood, uniformity or dominance is assumed.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.FiniteCutReceiving
-open TypeTower StageType KnightRealization Value ExtOrd CellScheme.restrictFace
+open TypeTower StageType   ExtOrd CellScheme.restrictFace
 universe w
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
@@ -32,12 +31,12 @@ theorem of_positive_chart (hcons : R.IsExactParentConsistent)
     FiniteCutReceiving R := by
   intro n t p hp q hqp δ hδ hδα
   cases n with
-  | succ n => exact hpos (Nat.succ_pos n) t p hp q hqp δ hδ hδα
+  | succ n => grind
   | zero =>
     obtain ⟨m, u, P, hP⟩ := hchart
     obtain ⟨Q, hQP, hQq, _⟩ := exists_amalgam_point (CanonicalCoatomSupply.supply α.2)
       m (Fin.last (m + 1)) P q
-    have hcof : IsCoface P Q := by
+    have hcof  := by
       change typeMap Fin.castSuccEmb Q = some P
       rw [castSuccEmb_eq_succAboveEmb_last]
       exact hQP
@@ -48,14 +47,12 @@ theorem of_positive_chart (hcons : R.IsExactParentConsistent)
     let r : S α.1 (m + 2) := ⟨Q.scheme, rl, rb, rr⟩
     let f := pointEmb (Fin.last (m + 1))
     have hv : Finset.univ.image f ∈ Q.scheme.scheme.plan :=
-      (typeMap_isSome_iff f Q).mp (by rw [hQq]; rfl)
-    have heq : Q.restrictFace f hv = q :=
+      (typeMap_isSome_iff).mp (by rw [hQq]; rfl)
+    have heq  :=
       Option.some.inj ((typeMap_eq_some f Q hv).symm.trans hQq)
     have hlabels : ∀ {a b : S α.1 1} (h : a = b) (d : Cell a.scheme.scheme),
         a.label d = b.label (SemScheme.castCell (congrArg StageType.scheme h) d) := by
-      intro a b h d
-      cases h
-      rfl
+      exact?
     have hy0 : y ∉ Set.range t := fun ⟨i, _⟩ => i.elim0
     have htup : f.trans (snoc u y hy) = snoc t y hy0 := by
       ext i
@@ -92,4 +89,3 @@ theorem of_positive (hne : Nonempty M) (hcons : R.IsExactParentConsistent)
   rw [Nat.add_comm 1 k] at hh
   exact hh
 
-end VaughtConjecture.Knight.FiniteCutReceiving

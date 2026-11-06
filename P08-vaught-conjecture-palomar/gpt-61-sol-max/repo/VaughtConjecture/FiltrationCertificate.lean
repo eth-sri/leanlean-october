@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.DomainSeparation
+import Mathlib.Tactic
+
+import VaughtConjecture.DomainSeparation
 
 /-! # A filtration certificate for counting and homogeneous observations
 
@@ -19,8 +21,6 @@ may live in any universe. The logic/DST application, including actual-satisfacti
 is separate in `Spectrum.FiltrationCertificate`.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture
 
 open Cardinal Set
@@ -29,7 +29,7 @@ universe u
 /-- Explicit receipts for the generic filtration argument. Homogeneity only needs some
 countable threshold per observation; applications may supply its quantifier rank. -/
 structure FiltrationCertificate (Q : Type 1) (O : Type u) (truth : O → Q → Prop) where
-  domain : Ordinal.{0} → Set Q
+  domain : Ordinal₀ → Set Q
   zero : domain 0 = Set.univ
   antitone : Antitone domain
   loss_countable : ∀ ξ, ξ < (aleph 1).ord → (domain ξ \ domain (ξ + 1)).Countable
@@ -46,8 +46,7 @@ variable {Q : Type 1} {O : Type u} {truth : O → Q → Prop}
 variable (c : FiltrationCertificate Q O truth)
 
 /-- Countable losses accumulate to countable complements below `ω₁`. -/
-theorem compl_countable {β : Ordinal.{0}} (hβ : β < (aleph 1).ord) :
-    (c.domain β)ᶜ.Countable :=
+def compl_countable {β} (hβ : β < (aleph 1).ord) :=
   CountableLoss.compl_countable_of_loss c.domain c.zero c.loss_countable c.limit β hβ
 
 /-- Separation bounds the persistent core by one point, without proving it empty. -/
@@ -55,7 +54,7 @@ theorem persistent_core_countable : (⋂ ξ < (aleph 1).ord, c.domain ξ).Counta
   apply Set.Subsingleton.countable
   intro p hp q hq
   exact DomainSeparation.persistent_subsingleton_of_separation
-    (fun i : {ξ : Ordinal.{0} // ξ < (aleph 1).ord} => (· ∈ c.domain i.1))
+    (fun i : {ξ : Ordinal // ξ < (aleph 1).ord} => (· ∈ c.domain i.1))
     truth c.separates (fun s => by
       obtain ⟨ξ, hξ, h⟩ := c.homogeneous s
       exact ⟨⟨ξ, hξ⟩, h⟩)
@@ -64,9 +63,7 @@ theorem persistent_core_countable : (⋂ ξ < (aleph 1).ord, c.domain ξ).Counta
 
 include c in
 /-- Counting uses only the countable persistent core, not eventual departure. -/
-theorem cardinality : #Q = aleph 1 :=
+def cardinality :=
   DomainSeparation.mk_eq_aleph_one_of_countable_core c.domain c.antitone
     (fun _ h => c.compl_countable h) c.persistent_core_countable c.cofinal_losses
 
-end FiltrationCertificate
-end VaughtConjecture

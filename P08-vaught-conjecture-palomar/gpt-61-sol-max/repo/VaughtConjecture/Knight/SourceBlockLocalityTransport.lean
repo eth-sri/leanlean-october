@@ -1,11 +1,14 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.PrefixFaithfulInterpolation
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.PrefixFaithfulInterpolation
 
 /-! # Positive-cap agreement repairs locality composition
 
@@ -17,44 +20,41 @@ No global faithful outer shifter, bottom reflection, or extra visibility grade i
 needed. This does not construct the scalar map or the replacement base labelling.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
-open Transform Value ExtOrd
 
 /-- A normalized witness supplies bounded commutation at its own grade. -/
-theorem boundedMap_of_witness {m : ℕ} {τ : ExtOrd → ExtOrd}
+theorem boundedMap_of_witness {m} {τ}
     (hτ : Witness (gTop m) τ) : BoundedMap m τ where
   bot := hτ.bot
   mono := hτ.mono
   comm x k i hk hi := hτ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
 
 /-- The outer scalar map needs bounded commutation, not a global faithful witness. -/
-theorem BoundedMap.comp_witness {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
+theorem BoundedMap.comp_witness {m K} {σ ν}
     (hν : BoundedMap K ν) (hσ : Witness (gTop m) σ) (hmK : m ≤ K) :
     BoundedMap m (ν ∘ σ) where
-  bot := by simp only [Function.comp_apply, hσ.bot, hν.bot]
+  bot := by simp  [ hσ.bot, hν.bot]
   mono := hν.mono.comp hσ.mono
   comm x k i hk hi := by
-    simp only [Function.comp_apply]
+    simp  
     rw [(boundedMap_of_witness hσ).comm x k i hk hi, hν.comm _ k i (hk.trans hmK) hi]
 
-section Scheme
+section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ}
+  {sem : Semantics D} {BJ : GradedIndex ι}
 
 /-- One implication per actual pair of source occurrences. No auxiliary floor values occur. -/
-def RowBlockBottom (sem : Semantics D) (BJ : Finset ι × ℕ)
-    (r : D.below BJ → ExtOrd) : Prop :=
-  ∀ (c : D.below BJ) (d e : D.below (D.cell c.1)),
+def RowBlockBottom (sem : Semantics D) (BJ : GradedIndex ι)
+    (r : BelowLabels D BJ) :=
+  ∀ c d e,
     blockFloor (sem.E c.1 d) = blockFloor (sem.E c.1 e) →
     min (r (CellScheme.below.incl c d)) (r c) = ⊥ →
     min (r (CellScheme.below.incl c e)) (r c) = ⊥
 
 /-- Actual respect forces the source-block bottom law, using normalized local witnesses. -/
-theorem rowBlockBottom_of_respects {q : D.below BJ → ExtOrd}
+theorem rowBlockBottom_of_respects {q : BelowLabels D BJ}
     (hq : RespectsSemanticsBelow sem BJ q) : RowBlockBottom sem BJ q := by
   obtain ⟨C⟩ := exists_localCharts hq
   intro c d e hb hz
@@ -64,8 +64,8 @@ theorem rowBlockBottom_of_respects {q : D.below BJ → ExtOrd}
 
 /-- For a scalar image of a respecting labelling, the source-block bottom law is exact.
 The test is stated entirely in terms of semantic sources and actual capped target labels. -/
-theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) {K : ℕ} {ν : ExtOrd → ExtOrd}
+theorem map_respects_iff_rowBlockBottom {r : BelowLabels D BJ}
+    (hr : RespectsSemanticsBelow sem BJ r) {K : ℕ} {ν : LabelMap}
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : BoundedMap K ν) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) ↔
       RowBlockBottom sem BJ (fun d => ν (r d)) := by
@@ -79,7 +79,7 @@ theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
       rwa [← hr.orderly d] at h
     · intro c
       classical
-      let _ := Fintype.ofFinite (D.below (D.cell c.1))
+      let _ := Fintype.ofFinite (D.belowCell c.1)
       let s := Finset.univ.image (sem.E c.1)
       let hf := hν.comp_witness (C.witness c) (hK c)
       have hbs : BlockBottom s (ν ∘ C.shift c) := by
@@ -105,38 +105,31 @@ theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
       exact ⟨e, he, hν.mono hde⟩
 
 /-- Equal cellwise bottom flags give equal capped bottom flags at every controller. -/
-theorem rowBlockBottom_of_same_pattern {q r : D.below BJ → ExtOrd}
+theorem rowBlockBottom_of_same_pattern {q r : BelowLabels D BJ}
     (hq : RowBlockBottom sem BJ q) (hpattern : ∀ d, r d = ⊥ ↔ q d = ⊥) :
     RowBlockBottom sem BJ r := by
-  have he (c : D.below BJ) (d : D.below (D.cell c.1)) :
+  have he (c : D.below BJ) (d : D.belowCell c.1) :
       min (r (CellScheme.below.incl c d)) (r c) = ⊥ ↔
         min (q (CellScheme.below.incl c d)) (q c) = ⊥ := by
-    simp only [min_eq_bot, hpattern]
+    simp  [ hpattern]
   intro c d e hb hz
   exact (he c e).mpr (hq c d e hb ((he c d).mp hz))
 
 /-- Capped agreement at a nonbottom cap preserves the cellwise bottom flag. -/
 theorem bottom_pattern_of_cap_agreement {X : Type*} {q r : X → ExtOrd} {γ : ExtOrd}
-    (hγ : γ ≠ ⊥) (hag : ∀ d, min (r d) γ = min (q d) γ) :
-    ∀ d, r d = ⊥ ↔ q d = ⊥ := by
-  intro d
-  have h := hag d
-  have hr : min (r d) γ = ⊥ ↔ r d = ⊥ := by simp only [min_eq_bot, hγ, or_false]
-  have hq : min (q d) γ = ⊥ ↔ q d = ⊥ := by simp only [min_eq_bot, hγ, or_false]
-  rw [← hr, ← hq, h]
+    (hγ : γ ≠ ⊥) (hag : CappedEq r q γ) :
+    ∀ d, r d = ⊥ ↔ q d = ⊥ := by grind
 
 /-- Positive-cap agreement supplies all the source-block checks. The transformed labelling's
 respect is a conclusion, not an assumption. The cap need not satisfy a visibility hypothesis. -/
-theorem map_respects_of_positive_cap_agreement {q r : D.below BJ → ExtOrd}
+theorem map_respects_of_positive_cap_agreement {q r : BelowLabels D BJ}
     (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q)
-    {K : ℕ} {ν : ExtOrd → ExtOrd} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
+    {K : ℕ} {ν : LabelMap} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (hν : BoundedMap K ν) {γ : ExtOrd} (hγ : γ ≠ ⊥)
-    (hag : ∀ d, min (ν (r d)) γ = min (q d) γ) :
+    (hag : CappedEq (ν ∘ r) q γ) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) := by
   apply (map_respects_iff_rowBlockBottom hr hK hν).mpr
   exact rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects hq)
     (bottom_pattern_of_cap_agreement hγ hag)
 
-end Scheme
 
-end VaughtConjecture.Knight.SharpWitnessComposition

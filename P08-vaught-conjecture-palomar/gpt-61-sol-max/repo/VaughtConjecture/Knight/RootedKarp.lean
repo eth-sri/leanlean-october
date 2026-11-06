@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RootedPotentialIso
-public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.CommonChartChain
+import VaughtConjecture.Knight.RootedPotentialIso
+import VaughtConjecture.Knight.SelectedCommonCharts
+import VaughtConjecture.Knight.PairedTrace
+import VaughtConjecture.Knight.ChartKarp
+import VaughtConjecture.Knight.CommonChartSupply
 
 /-! # Root-preserving classification: chain adapters and compatibility signatures
 
@@ -26,11 +27,8 @@ actual chain, and the compatibility signatures `exists_iso_of_commonChartStepSup
 `exists_iso_of_restrictedCommonChartStepSupply`, which are now proved by the direct consumer and
 build no chain. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower
 
 universe w
 
@@ -39,30 +37,28 @@ namespace KnightRealization
 variable {M₁ M₂ : Type w} {α : LimitStage}
 variable {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
 
+local notation "CommonChartNode₀" => CommonChartNode (A₁ := A₁) (A₂ := A₂)
+
 /-- Root-preserving one-step-density cashout: the isomorphism extends the seed chart. This is
 the direct consumer with every chart good; the `Nonempty` instances are no longer used. -/
-theorem exists_iso_of_commonChartStepSupply
+def exists_iso_of_commonChartStepSupply
     [Countable M₁] [Countable M₂] [Nonempty M₁] [Nonempty M₂]
     (hA₁ : A₁.IsExactParentConsistent) (hA₂ : A₂.IsExactParentConsistent)
-    (seed : CommonChartNode (A₁ := A₁) (A₂ := A₂))
-    (supply : CommonChartStepSupply (A₁ := A₁) (A₂ := A₂)) :
-    ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
+    (seed : CommonChartNode₀)
+    (supply : CommonChartStepSupply (A₁ := A₁) (A₂ := A₂)) :=
   exists_iso_of_selectedCommonCharts hA₁ hA₂ (fun _ => True) seed trivial
     (restrictedCommonChartStepSupply_true supply)
 
 /-- Root-preserving restricted cashout: the isomorphism extends the good seed chart. Kept as the
 compatibility signature of `exists_iso_of_selectedCommonCharts`; the `Nonempty` instances are no
 longer used. -/
-theorem exists_iso_of_restrictedCommonChartStepSupply
+def exists_iso_of_restrictedCommonChartStepSupply
     [Countable M₁] [Countable M₂] [Nonempty M₁] [Nonempty M₂]
     (hA₁ : A₁.IsExactParentConsistent) (hA₂ : A₂.IsExactParentConsistent)
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop)
-    (seed : CommonChartNode (A₁ := A₁) (A₂ := A₂))
+    (Good : CommonChartNode₀ → Prop)
+    (seed : CommonChartNode₀)
     (seed_good : Good seed)
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
+    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :=
   exists_iso_of_selectedCommonCharts hA₁ hA₂ Good seed seed_good supply
 
-end KnightRealization
 
-end VaughtConjecture.Knight

@@ -1,13 +1,15 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SemSchemeBoundaryInput
-public import VaughtConjecture.Knight.CoatomAmalgamation
-public import VaughtConjecture.Knight.RequestAttachment
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SemSchemeBoundaryInput
+import VaughtConjecture.Knight.CoatomAmalgamation
+import VaughtConjecture.Knight.RequestAttachment
 
 /-! # Deriving the placed boundary from abstract coatom inputs
 
@@ -16,10 +18,6 @@ geometric field of `SemSchemeBoundaryInput.Input`. No plan, overlap map,
 semantic compatibility, or old-face lifting hypothesis is supplied separately.
 This constructs the proper boundary, not full-scope rows or an amalgam type.
 -/
-
-@[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryPresentation
 
@@ -31,7 +29,7 @@ variable {n : ℕ}
 
 theorem exists_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
     ∃ a, Finset.univ.image f = Finset.univ.erase a := by
-  classical
+  
   have hc : (Finset.univ \ Finset.univ.image f).card = 1 := by
     rw [Finset.card_sdiff_of_subset (Finset.subset_univ _),
       Finset.card_image_of_injective _ f.injective]
@@ -41,10 +39,10 @@ theorem exists_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
   ext x
   have hx := Finset.ext_iff.mp ha x
   simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_singleton] at hx
-  simp only [Finset.mem_erase, Finset.mem_univ, and_true]
+  simp only [Finset.mem_erase, Finset.mem_univ, ]
   tauto
 
-def missing (f : Fin (n + 1) ↪ Fin (n + 2)) : Fin (n + 2) :=
+def missing (f : Fin (n + 1) ↪ Fin (n + 2)) :=
   Classical.choose (exists_missing f)
 
 theorem image_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
@@ -62,16 +60,16 @@ theorem missing_ne : missing C.f₁ ≠ missing C.f₂ := by
 theorem common_image :
     (Finset.univ.image C.g₁).image C.f₁ =
       (Finset.univ.erase (missing C.f₁)).erase (missing C.f₂) := by
-  classical
+  
   have hcomm : (Finset.univ.image C.g₁).image C.f₁ =
       (Finset.univ.image C.g₂).image C.f₂ := by
     rw [Finset.image_image, Finset.image_image]
     exact congrArg (fun e : Fin n ↪ Fin (n + 2) => Finset.univ.image e) C.comm
   apply Finset.eq_of_subset_of_card_le
   · intro x hx
-    have hl : x ∈ Finset.univ.image C.f₁ :=
+    have hl  :=
       Finset.image_subset_image (Finset.subset_univ _) hx
-    have hr : x ∈ Finset.univ.image C.f₂ :=
+    have hr  :=
       Finset.image_subset_image (Finset.subset_univ _) (hcomm ▸ hx)
     rw [image_missing] at hl hr
     exact Finset.mem_erase.mpr ⟨(Finset.mem_erase.mp hr).1, hl⟩
@@ -79,7 +77,7 @@ theorem common_image :
       Finset.card_image_of_injective _ C.g₁.injective,
       Finset.card_erase_of_mem (Finset.mem_erase.mpr
         ⟨(missing_ne C).symm, Finset.mem_univ _⟩),
-      Finset.card_erase_of_mem (Finset.mem_univ _)]
+      ]
     simp
 
 /-- Only literal legal input schemes and their visible common restriction. -/
@@ -109,16 +107,16 @@ theorem common_plan :
         ((Finset.univ.erase (missing C.f₁)).erase (missing C.f₂)) := by
   rw [← common_image C, restrictPlan_image,
     ← image_restrictFace_plan D.left.scheme C.g₁ D.visibleLeft]
-  rw [common_image C, ← common_image_right (C := C), restrictPlan_image,
+  rw [common_image C, ← common_image_right , restrictPlan_image,
     ← image_restrictFace_plan D.right.scheme C.g₂ D.visibleRight]
-  have hl := congrArg (fun E : SemScheme n => E.scheme.plan) D.faceLeft
-  have hr := congrArg (fun E : SemScheme n => E.scheme.plan) D.faceRight
+  have hl := congrArg (fun E => E.scheme.plan) D.faceLeft
+  have hr := congrArg (fun E => E.scheme.plan) D.faceRight
   change (D.left.scheme.restrictFace C.g₁ D.visibleLeft).plan = _ at hl
   change (D.right.scheme.restrictFace C.g₂ D.visibleRight).plan = _ at hr
-  rw [hl, hr, Finset.image_image, Finset.image_image]
+  rw [ hr, Finset.image_image, Finset.image_image]
   congr 1
   funext T
-  simp only [Function.comp_apply, Finset.image_image]
+  simp  [ Finset.image_image]
   exact congrArg (fun e : Fin n ↪ Fin (n + 2) => T.image e) C.comm
 
 /-- The step plan is derived, including its common restriction equation. -/
@@ -153,8 +151,7 @@ def input : Input D.step n (n + 1) (n + 1) where
   faceRight := D.faceRight
   commute := C.comm
   intersection := by
-    rw [AmalgamatedBoundaryPlan.erased_inter]
-    exact common_image C
+    simp_all [common_image] <;> aesop
   planLeft := rfl
   planRight := rfl
 
@@ -162,9 +159,9 @@ end Data
 
 /-- Compatible stage types provide the raw input data, with their original schemes literal.
 The labels are not extended here. -/
-def of_compatible {α : Ordinal.{0}} {pa pb : S α (n + 1)}
+def of_compatible {α : Ordinal₀} {pa pb : S α (n + 1)}
     (h : C.Compatible pa pb) : Data C := by
-  classical
+  
   let r := Classical.choose h
   have hl := (Classical.choose_spec h).1
   have hr := (Classical.choose_spec h).2
@@ -174,5 +171,3 @@ def of_compatible {α : Ordinal.{0}} {pa pb : S α (n + 1)}
     Classical.choose_spec (face_of_typeMap_eq_some C.g₁ hl),
     Classical.choose_spec (face_of_typeMap_eq_some C.g₂ hr)⟩
 
-end
-end VaughtConjecture.Knight.CoatomBoundaryPresentation

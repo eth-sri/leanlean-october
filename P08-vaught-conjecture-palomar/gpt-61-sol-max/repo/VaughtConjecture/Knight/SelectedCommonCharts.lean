@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CommonChartSupply
-public import VaughtConjecture.Knight.RootedPotentialIso
+import VaughtConjecture.Knight.CommonChartSupply
+import VaughtConjecture.Knight.RootedPotentialIso
 
 /-! # Root-preserving classification from selected good charts
 
@@ -36,11 +35,8 @@ is needed. This module imports neither `Knight/CommonChartChain.lean` nor
 `Knight/RootedKarp.lean`; the latter keeps the historical chain adapters and the compatibility
 signatures. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower
 
 universe w
 
@@ -50,42 +46,44 @@ variable {M₁ M₂ : Type w}
 variable {α : LimitStage}
 variable {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
 
+local notation "CommonChartNode₀" => CommonChartNode (A₁ := A₁) (A₂ := A₂)
+
 /-- The tuple pairs read from one good containing chart along a coordinate selection. The
 selection may repeat or omit coordinates, and its image need not be a visible face. -/
-def selectedChartFamily (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop) :
+def selectedChartFamily (Good : CommonChartNode₀ → Prop) :
     Set (Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) :=
-  {x | ∃ nd, Good nd ∧ ∃ σ : Fin x.1 → Fin nd.arity,
+  {x | ∃ nd, Good nd ∧ ∃ σ ,
     nd.tuple₁ ∘ σ = x.2.1 ∧ nd.tuple₂ ∘ σ = x.2.2}
 
 /-- A good chart's own tuple pair is selected, by the identity selection. -/
-theorem node_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)} (hnd : Good nd) :
+theorem node_mem_selectedChartFamily {Good : CommonChartNode₀ → Prop}
+    {nd : CommonChartNode₀} (hnd : Good nd) :
     (⟨nd.arity, ⇑nd.tuple₁, ⇑nd.tuple₂⟩ : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈
       selectedChartFamily Good :=
   ⟨nd, hnd, id, rfl, rfl⟩
 
 /-- The empty pair is selected from any good chart, by the empty selection. -/
 theorem selectedChartFamily_empty_mem
-    {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)} (hnd : Good nd) :
+    {Good : CommonChartNode₀ → Prop}
+    {nd : CommonChartNode₀} (hnd : Good nd) :
     (⟨0, Fin.elim0, Fin.elim0⟩ : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈
       selectedChartFamily Good :=
   ⟨nd, hnd, Fin.elim0, funext fun i => i.elim0, funext fun i => i.elim0⟩
 
 /-- Every selected pair is certified by the common chart containing it. -/
 theorem selectedChartFamily_commonChart
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop) :
+    (Good : CommonChartNode₀ → Prop) :
     ∀ x ∈ selectedChartFamily Good, HasCommonChart A₁ A₂ x.2.1 x.2.2 := by
   rintro x ⟨nd, -, σ, hσ₁, hσ₂⟩
   exact ⟨nd.arity, nd.tuple₁, nd.tuple₂, σ, nd.type, nd.eval₁, nd.eval₂, hσ₁, hσ₂⟩
 
 /-- One good extension of a containing chart selects the pair enlarged by any coordinate of the
 next chart: the old selection is pushed forward along the extension embedding. -/
-theorem snoc_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    {x : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)} {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)}
-    {z : M₁ ⊕ M₂} (d : GoodCommonChartExtension Good nd z) {σ : Fin x.1 → Fin nd.arity}
+theorem snoc_mem_selectedChartFamily {Good : CommonChartNode₀ → Prop}
+    {x : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)} {nd : CommonChartNode₀}
+    {z} (d : GoodCommonChartExtension Good nd z) {σ}
     (hσ₁ : nd.tuple₁ ∘ σ = x.2.1) (hσ₂ : nd.tuple₂ ∘ σ = x.2.2)
-    (j : Fin d.extension.next.arity) :
+    j :
     (⟨x.1 + 1, Fin.snoc x.2.1 (d.extension.next.tuple₁ j),
       Fin.snoc x.2.2 (d.extension.next.tuple₂ j)⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
@@ -95,10 +93,12 @@ theorem snoc_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A�
   · rw [Fin.comp_snoc, ← hσ₂, ← d.extension.trans₂]
     rfl
 
+local notation "RestrictedCommonChartStepSupply₀" => RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂)
+
 /-- Forth: the restricted supply at the good containing chart absorbs the requested point. -/
-theorem selectedChartFamily_forth {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∀ x ∈ selectedChartFamily Good, ∀ m : M₁, ∃ n' : M₂,
+theorem selectedChartFamily_forth {Good : CommonChartNode₀ → Prop}
+    (supply : RestrictedCommonChartStepSupply₀ Good) :
+    ∀ x ∈ selectedChartFamily Good, ∀ m , ∃ n' ,
       (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
   rintro x ⟨nd, hnd, σ, hσ₁, hσ₂⟩ m
@@ -108,9 +108,9 @@ theorem selectedChartFamily_forth {Good : CommonChartNode (A₁ := A₁) (A₂ :
   exact ⟨_, snoc_mem_selectedChartFamily d hσ₁ hσ₂ j⟩
 
 /-- Back: the restricted supply at the good containing chart absorbs the requested point. -/
-theorem selectedChartFamily_back {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∀ x ∈ selectedChartFamily Good, ∀ n' : M₂, ∃ m : M₁,
+theorem selectedChartFamily_back {Good : CommonChartNode₀ → Prop}
+    (supply : RestrictedCommonChartStepSupply₀ Good) :
+    ∀ x ∈ selectedChartFamily Good, ∀ n' , ∃ m ,
       (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
   rintro x ⟨nd, hnd, σ, hσ₁, hσ₂⟩ n'
@@ -122,25 +122,22 @@ theorem selectedChartFamily_back {Good : CommonChartNode (A₁ := A₁) (A₂ :=
 /-- Unrestricted one-step supply is restricted supply for the predicate selecting every chart. -/
 theorem restrictedCommonChartStepSupply_true
     (supply : CommonChartStepSupply (A₁ := A₁) (A₂ := A₂)) :
-    RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) fun _ => True :=
+    RestrictedCommonChartStepSupply₀ fun _ => True :=
   fun nd _ z => (supply nd z).map fun d => ⟨d, trivial⟩
 
 /-- **The direct root-preserving consumer.** On countable carriers, one good seed and the
 restricted one-step supply give an isomorphism extending the seed's tuple correspondence
 literally. The selected family is already a potential isomorphism, so no fair chain of charts
 is built; `Good` need not be closed under restrictions, and the carriers may be empty. -/
-theorem exists_iso_of_selectedCommonCharts [Countable M₁] [Countable M₂]
+def exists_iso_of_selectedCommonCharts [Countable M₁] [Countable M₂]
     (hA₁ : A₁.IsExactParentConsistent) (hA₂ : A₂.IsExactParentConsistent)
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop)
-    (seed : CommonChartNode (A₁ := A₁) (A₂ := A₂))
+    (Good : CommonChartNode₀ → Prop)
+    (seed : CommonChartNode₀)
     (seed_good : Good seed)
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
+    (supply : RestrictedCommonChartStepSupply₀ Good) :=
   exists_iso_of_commonCharts_mem hA₁ hA₂ (selectedChartFamily Good)
     (selectedChartFamily_empty_mem seed_good) (selectedChartFamily_commonChart Good)
     (selectedChartFamily_forth supply) (selectedChartFamily_back supply)
     (node_mem_selectedChartFamily seed_good)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

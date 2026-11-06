@@ -1,12 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.StableAnchor
-public import VaughtConjecture.Knight.ProvisionalOffset
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.StableAnchor
+import VaughtConjecture.Knight.ProvisionalOffset
 
 /-! # Anchors at infinity are exactly the finite stable top values
 
@@ -37,22 +39,19 @@ with the converse and the resulting equivalences.
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization Value ExtOrd Transform
+open TypeTower StageType KnightRealization Value ExtOrd 
 
 /-! ## Replacement at a larger grade is larger -/
 
-theorem evr_self_le_evr_self (x : ExtOrd) {k k' : ℕ} (h : k ≤ k') :
+theorem evr_self_le_evr_self x {k k'} (h : k ≤ k') :
     extVisibilityReplace x k k ≤ extVisibilityReplace x k' k' := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot, extVisibilityReplace_bot]
-  · rw [extVisibilityReplace_top, extVisibilityReplace_top]
+  · rfl
+  · rfl
   · by_cases h' : k' ≤ finitePart a
-    · rw [extVisibilityReplace_of_le_finitePart h',
-        extVisibilityReplace_of_le_finitePart (h.trans h')]
+    · grind [extVisibilityReplace_of_le_finitePart]
     · have h'' := not_le.mp h'
       rw [extVisibilityReplace_of_finitePart_lt h'']
       by_cases hk : k ≤ finitePart a
@@ -64,15 +63,12 @@ theorem evr_self_le_evr_self (x : ExtOrd) {k k' : ℕ} (h : k ≤ k') :
 
 /-- A value strictly below its own replacement is a proper value with finite part below the
 grade. -/
-theorem exists_finitePart_lt_of_lt_evr {x : ExtOrd} {k : ℕ}
-    (h : x < extVisibilityReplace x k k) : ∃ a : Ordinal.{0}, x = ofOrd a ∧ finitePart a < k := by
+theorem exists_finitePart_lt_of_lt_evr {x} {k}
+    (h : x < extVisibilityReplace x k k) : ∃ a , x = ofOrd a ∧ finitePart a < k := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot] at h; exact absurd h (lt_irrefl _)
-  · rw [extVisibilityReplace_top] at h; exact absurd h (lt_irrefl _)
-  · refine ⟨a, rfl, ?_⟩
-    by_contra hk
-    rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hk)] at h
-    exact lt_irrefl _ h
+  · simp_all
+  · simp_all
+  · grind [extVisibilityReplace_of_le_finitePart]
 
 universe w
 
@@ -89,12 +85,11 @@ theorem someProvisionalValue_lt_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
     ∃ j < K', q.someProvisionalValue (mapCell hpq Xi) = ofOrd (α.1 + j) := by
   classical
   set Xi' := mapCell hpq Xi with hXi'def
-  have htop' : q.label Xi' = ⊤ := by rw [hXi'def, label_mapCell]; exact h.1
+  have htop' : q.label Xi' = ⊤ := by rw [ label_mapCell]; exact h.1
   obtain ⟨Θ, hsc, hgr, hΘ⟩ := exists_topCell_of_topGrade_pos q (lt_of_le_of_lt (Nat.zero_le _) hN)
   have hXiΘ : GradedLe (q.scheme.scheme.cell Xi') (q.scheme.scheme.cell Θ) := by
     refine ⟨?_, ?_⟩
-    · change q.scheme.scheme.scope Xi' ⊆ q.scheme.scheme.scope Θ
-      rw [hsc]; exact Finset.subset_univ _
+    · simp_all
     · change q.scheme.scheme.grade Xi' ≤ q.scheme.scheme.grade Θ
       rw [hgr]
       exact le_csSup (topGrades_bddAbove q) (grade_mem_topGrades htop')
@@ -119,9 +114,9 @@ theorem someProvisionalValue_lt_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
   rw [ite_eq_left htop', ite_eq_right hcap, dite_eq_left hex]
 
 /-- **The provisional value of an anchor is at most `α + K'` in every cover.** -/
-theorem someProvisionalValue_le_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
-    {Xi : Cell p.scheme.scheme} {K' : ℕ} (h : R.IsInfinityAnchor t p Xi K') {m : ℕ}
-    {s : Fin m ↪ M} {f : Fin n ↪ Fin m} {q : S α.1 m} (hfs : f.trans s = t)
+theorem someProvisionalValue_le_of_anchor {n} {t} {p : S α.1 n}
+    {Xi} {K'} (h : R.IsInfinityAnchor t p Xi K') {m}
+    {s} {f : Fin n ↪ Fin m} {q} (hfs : f.trans s = t)
     (hq : R.eval s = some q) (hpq : typeMap f q = some p) :
     q.someProvisionalValue (mapCell hpq Xi) ≤ ofOrd (α.1 + K') := by
   by_cases hN : K' < q.topGrade
@@ -142,11 +137,11 @@ stabilization; the bound `K` is inherited by the attained offset. -/
 theorem exists_stabilizesTo_of_bounded (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) (x : R.LabelledExt) {Xi : Cell x.type.scheme.scheme}
     (htop : x.type.label Xi = ⊤) (K : ℕ)
-    (hB : ∀ (y : R.LabelledExt) (f : Fin x.arity ↪ Fin y.arity), f.trans y.tuple = x.tuple →
+    (hB : ∀ (y : R.LabelledExt) f, f.trans y.tuple = x.tuple →
       ∀ hpq : typeMap f y.type = some x.type,
         y.type.someProvisionalValue (mapCell hpq Xi) ≤ ofOrd (α.1 + K)) :
     ∃ j ≤ K, R.StabilizesTo x.tuple x.type Xi (ofOrd (α.1 + j)) := by
-  have hle (y : RootedCover x) : RootedCover.offset Xi htop y ≤ K :=
+  have hle (y : RootedCover x) : RootedCover.offset htop y ≤ K :=
     RootedCover.offset_le_of_value_le Xi htop
       (hB y.1 (RootedCover.emb y) (RootedCover.emb_trans y) (RootedCover.emb_typeMap y))
   obtain ⟨i, hi⟩ := RootedCover.exists_stabilizesTo_of_bddAbove Xi htop hcons hcov
@@ -183,4 +178,3 @@ theorem hasInfinityAnchor_iff_exists_finite_stable (hM : R.IsModel) :
 
 /-! ## The sharp threshold under top-grade growth -/
 
-end VaughtConjecture.Knight

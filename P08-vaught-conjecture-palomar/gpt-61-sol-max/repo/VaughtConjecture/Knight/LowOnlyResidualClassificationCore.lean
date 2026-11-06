@@ -1,15 +1,16 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowOnlyResidualCoverCore
-public import VaughtConjecture.Knight.CharacteristicGradeBounds
-public import VaughtConjecture.Knight.ModelEmpty
-public import VaughtConjecture.Knight.RootedKarp
-public import VaughtConjecture.Knight.FiniteHull
+import VaughtConjecture.Knight.LowOnlyResidualCoverCore
+import VaughtConjecture.Knight.CharacteristicGradeBounds
+import VaughtConjecture.Knight.ModelEmpty
+import VaughtConjecture.Knight.RootedKarp
+import VaughtConjecture.Knight.FiniteHull
 
 /-! # Cap-native rooted classification of the residual
 
@@ -22,12 +23,9 @@ A constant tail here is `KnightRealization.IsCoinitial`: above every context is 
 whose every extension has the stated grade. The zero-grade converse is not part of this API.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualClassification
-open TypeTower StageType KnightRealization Value ExtOrd
-noncomputable section
+open TypeTower StageType KnightRealization  
+
 universe w
 variable {α : LimitStage} {M₁ M₂ : Type w}
   {W₁ : KnightRealization α M₁} {W₂ : KnightRealization α M₂}
@@ -36,12 +34,12 @@ variable {α : LimitStage} {M₁ M₂ : Type w}
 Only the receiving side needs to be in the residual branch. -/
 theorem exists_step_left_of_receiving
     (hcons₁ : W₁.IsExactParentConsistent) (hcov₁ : W₁.IsInitialSegmentCovering)
-    (hcons₂ : W₂.IsExactParentConsistent) (hFC₂ : FiniteCutReceiving W₂) {K : ℕ}
+    (hcons₂ : W₂.IsExactParentConsistent) (hFC₂ : FiniteCutReceiving W₂) {K}
     (hbound₁ : ∀ x : W₁.LabelledExt, x.type.topGrade ≤ K)
     (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K)
-    (hres₂ : ∀ {k : ℕ} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B)
-    (nd : CommonChartNode (A₁ := W₁) (A₂ := W₂)) (x : M₁) :
+    (hres₂ : ∀ {k} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B)
+    (nd : CommonChartNode (A₁ := W₁) (A₂ := W₂)) x :
     ∃ (next : CommonChartNode (A₁ := W₁) (A₂ := W₂)) (emb : Fin nd.arity ↪ Fin next.arity),
       emb.trans next.tuple₁ = nd.tuple₁ ∧ emb.trans next.tuple₂ = nd.tuple₂ ∧
       ∃ i, next.tuple₁ i = x := by
@@ -55,7 +53,7 @@ theorem exists_step_left_of_receiving
     hcons₁ hcov₁ (snoc nd.tuple₁ x hx)
   let f : Fin nd.arity ↪ Fin c.arity := Fin.castSuccEmb.trans g
   have hfs : f.trans c.tuple = nd.tuple₁ := by
-    change (Fin.castSuccEmb.trans g).trans c.tuple = _
+    
     rw [Function.Embedding.trans_assoc, hg, castSuccEmb_trans_snoc]
   have hfp : typeMap f c.type = some nd.type := by
     have h := hcons₁ c.tuple c.type f c.eval_eq
@@ -75,7 +73,7 @@ theorem exists_step_left_of_receiving
 theorem stepSupply_of_receiving (hcons₁ : W₁.IsExactParentConsistent)
     (hcov₁ : W₁.IsInitialSegmentCovering)
     (hFC₁ : FiniteCutReceiving W₁) (hcons₂ : W₂.IsExactParentConsistent)
-    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K : ℕ}
+    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K}
     (hcoin₁ : KnightRealization.IsCoinitial {x : W₁.LabelledExt | x.type.topGrade = K})
     (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K)
@@ -101,15 +99,15 @@ theorem exists_iso_of_commonChart_of_receiving [Countable M₁] [Countable M₂]
     [Nonempty M₁] [Nonempty M₂]
     (hcons₁ : W₁.IsExactParentConsistent) (hcov₁ : W₁.IsInitialSegmentCovering)
     (hFC₁ : FiniteCutReceiving W₁) (hcons₂ : W₂.IsExactParentConsistent)
-    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K : ℕ}
+    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K}
     (hcoin₁ : KnightRealization.IsCoinitial {x : W₁.LabelledExt | x.type.topGrade = K})
     (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K)
     (hres₁ : ∀ {k : ℕ} (B : Fin k ↪ M₁), ¬ TopSupportRigidCore.RigidCore W₁ B)
     (hres₂ : ∀ {k : ℕ} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B)
-    {k : ℕ} (t₁ : Fin k ↪ M₁) (t₂ : Fin k ↪ M₂) {p : S α.1 k}
+    {k : ℕ} t₁ t₂ {p : S α.1 k}
     (h₁ : W₁.eval t₁ = some p) (h₂ : W₂.eval t₂ = some p) :
-    ∃ e : W₁.Iso W₂, ∀ i, e.1 (t₁ i) = t₂ i :=
+    ∃ e : W₁.Iso W₂, PointwiseEq (e.1 ∘ t₁) t₂ :=
   exists_iso_of_commonChartStepSupply hcons₁ hcons₂ ⟨k, t₁, t₂, p, h₁, h₂⟩
     (stepSupply_of_receiving hcons₁ hcov₁ hFC₁ hcons₂ hcov₂ hFC₂ hcoin₁ hcoin₂ hKpos hres₁ hres₂)
 
@@ -119,7 +117,7 @@ theorem nonempty_iso_of_receiving [Countable M₁] [Countable M₂]
     [Nonempty M₁] [Nonempty M₂]
     (hcons₁ : W₁.IsExactParentConsistent) (hcov₁ : W₁.IsInitialSegmentCovering)
     (hFC₁ : FiniteCutReceiving W₁) (hcons₂ : W₂.IsExactParentConsistent)
-    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K : ℕ}
+    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K}
     (hcoin₁ : KnightRealization.IsCoinitial {x : W₁.LabelledExt | x.type.topGrade = K})
     (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K)
@@ -134,5 +132,4 @@ theorem nonempty_iso_of_receiving [Countable M₁] [Countable M₂]
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hp₁ hp₂
   exact ⟨e⟩
 
-end
-end VaughtConjecture.Knight.LowOnlyResidualClassification
+

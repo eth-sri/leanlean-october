@@ -1,13 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.OrdinalUtil
-public import InfinitaryLogic.Scott.Sentence
-public import Architect
+import InfinitaryLogic.OrdinalUtil
+import InfinitaryLogic.Scott.Sentence
+import Architect
 
 /-!
 # Proof of CountableRefinementHypothesis
@@ -34,8 +34,6 @@ The proof uses the "constant chain" argument:
 - `countableRefinementHypothesis` : `CountableRefinementHypothesis L`
 -/
 
-@[expose] public section
-
 universe u v w
 
 namespace FirstOrder
@@ -45,7 +43,6 @@ namespace Language
 variable {L : Language.{u, v}} [L.IsRelational]
 variable [Countable (Σ l, L.Relations l)]
 
-open FirstOrder Structure Ordinal BoundedFormulaω
 
 /-! ### Self-stabilization to full stabilization
 
@@ -53,6 +50,8 @@ The key insight: `SelfStabilizesCompletely M α₀` (internal BFEquiv stabilizat
 that the back-and-forth game cannot create new refinements above α₀ + ω, because any
 forth/back witness at level α₀ already works at all higher levels (the "constant chain"
 argument). This avoids the need to count external BFEquiv types directly. -/
+
+local notation "BFEquiv₀" => BFEquiv (L := L)
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- Chain-constant step: under self-stabilization at α₀, if BFEquiv ε holds at (n+1)-tuples
@@ -63,12 +62,12 @@ show the original and new M-witnesses are equivalent at all levels ≥ α₀. -/
 private theorem chain_step
     {M : Type w} [L.Structure M]
     {N : Type w} [L.Structure N] [Countable N]
-    {α₀ : Ordinal.{0}} (hstab : SelfStabilizesCompletely (L := L) M α₀)
+    {α₀ : Ordinal₀} (hstab : SelfStabilizesCompletely (L := L) M α₀)
     {n : ℕ} {a : Fin n → M} {b : Fin n → N} {m : M} {m' : N}
-    {ε : Ordinal.{0}} (hε : α₀ ≤ ε)
-    (hBF_ext : BFEquiv (L := L) ε (n + 1) (Fin.snoc a m) (Fin.snoc b m'))
-    (hBF_base : BFEquiv (L := L) (Order.succ (Order.succ ε)) n a b) :
-    BFEquiv (L := L) (Order.succ ε) (n + 1) (Fin.snoc a m) (Fin.snoc b m') := by
+    {ε : Ordinal₀} (hε : α₀ ≤ ε)
+    (hBF_ext : BFEquiv₀ ε (n + 1) (Fin.snoc a m) (Fin.snoc b m'))
+    (hBF_base : BFEquiv₀ (Order.succ (Order.succ ε)) n a b) :
+    BFEquiv₀ (Order.succ ε) (n + 1) (Fin.snoc a m) (Fin.snoc b m') := by
   obtain ⟨mw, hmw⟩ := BFEquiv.back hBF_base m'
   exact BFEquiv.trans
     (BFEquiv_upgrade_at_selfStabilization hstab
@@ -76,9 +75,9 @@ private theorem chain_step
       (Order.succ ε) (le_of_lt (Order.lt_succ_of_le hε)))
     hmw
 
-private theorem add_nat_succ (α : Ordinal.{0}) (k : ℕ) :
+private theorem add_nat_succ (α : Ordinal₀) (k : ℕ) :
     α + ↑(k + 1) = Order.succ (α + ↑k) := by
-  simp only [Order.succ_eq_add_one, Nat.cast_add, Nat.cast_one, add_assoc]
+  simp  [   add_assoc]
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- From a forth/back witness at level α₀, upgrade to BFEquiv (α₀+k) for all k.
@@ -87,11 +86,11 @@ self-stabilization forces the witness chain to be constant. -/
 private theorem witness_at_all_levels
     {M : Type w} [L.Structure M]
     {N : Type w} [L.Structure N] [Countable N]
-    {α₀ : Ordinal.{0}} (hstab : SelfStabilizesCompletely (L := L) M α₀)
+    {α₀ : Ordinal₀} (hstab : SelfStabilizesCompletely (L := L) M α₀)
     {n : ℕ} {a : Fin n → M} {b : Fin n → N} {m : M} {m' : N}
-    (hbase : ∀ k : ℕ, BFEquiv (L := L) (α₀ + ↑k) n a b)
-    (h0 : BFEquiv (L := L) α₀ (n + 1) (Fin.snoc a m) (Fin.snoc b m'))
-    (k : ℕ) : BFEquiv (L := L) (α₀ + ↑k) (n + 1) (Fin.snoc a m) (Fin.snoc b m') := by
+    (hbase : ∀ k : ℕ, BFEquiv₀ (α₀ + ↑k) n a b)
+    (h0 : BFEquiv₀ α₀ (n + 1) (Fin.snoc a m) (Fin.snoc b m'))
+    (k : ℕ) : BFEquiv₀ (α₀ + ↑k) (n + 1) (Fin.snoc a m) (Fin.snoc b m') := by
   induction k with
   | zero => simpa using h0
   | succ j ih =>
@@ -107,22 +106,22 @@ omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 private theorem BFEquiv_of_all_finite_levels
     {M : Type w} [L.Structure M]
     {N : Type w} [L.Structure N] [Countable N]
-    {α₀ : Ordinal.{0}} (hstab : SelfStabilizesCompletely (L := L) M α₀)
+    {α₀ : Ordinal₀} (hstab : SelfStabilizesCompletely (L := L) M α₀)
     {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (h : ∀ k : ℕ, BFEquiv (L := L) (α₀ + ↑k) n a b)
-    (ε : Ordinal.{0}) :
-    BFEquiv (L := L) ε n a b := by
+    (h : ∀ k : ℕ, BFEquiv₀ (α₀ + ↑k) n a b)
+    (ε : Ordinal₀) :
+    BFEquiv₀ ε n a b := by
   induction ε using Ordinal.limitRecOn generalizing n a b with
   | zero => exact BFEquiv.monotone bot_le (by simpa using h 0)
   | add_one ε ih =>
-    have hsucc_α₀ : BFEquiv (L := L) (Order.succ α₀) n a b := by
-      have := h 1; rwa [Nat.cast_one, ← Order.succ_eq_add_one] at this
+    have hsucc_α₀ : BFEquiv₀ (Order.succ α₀) n a b := by
+      have := h 1; rwa [Nat.cast_one, ] at this
     rw [← Order.succ_eq_add_one, BFEquiv.succ]; refine ⟨@ih n a b h, fun m => ?_, fun m' => ?_⟩
     · let ⟨m'₀, hm'₀⟩ := BFEquiv.forth hsucc_α₀ m
       exact ⟨m'₀, @ih _ _ _ (witness_at_all_levels hstab h hm'₀)⟩
     · let ⟨m₀, hm₀⟩ := BFEquiv.back hsucc_α₀ m'
       exact ⟨m₀, @ih _ _ _ (witness_at_all_levels hstab h hm₀)⟩
-  | limit ε hε ih => rw [BFEquiv.limit ε hε]; exact fun δ hδ => @ih δ hδ n a b h
+  | limit ε hε ih => rw [BFEquiv.limit hε]; exact fun δ hδ => @ih δ hδ n a b h
 
 /-! ### The Counting Lemma -/
 
@@ -159,14 +158,13 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
     | succ j ih =>
       rw [Nat.cast_succ, ← add_assoc]
       exact Order.IsSuccLimit.succ_lt (Cardinal.isSuccLimit_omega 1) ih
-  have hBdd : BddAbove (Set.range fun k : ℕ => α₀ + (↑k : Ordinal.{0})) :=
+  have hBdd : BddAbove (Set.range fun k : ℕ => α₀ + (↑k)) :=
     ⟨(Cardinal.aleph 1).ord, fun _ ⟨k, hk⟩ => hk ▸ le_of_lt (hα_k_lt k)⟩
-  set γ := ⨆ k : ℕ, (α₀ + (↑k : Ordinal.{0}))
-  have hγ_lt : γ < Ordinal.omega 1 := by
-    exact Ordinal.iSup_lt_omega_one fun k => by rw [← Cardinal.ord_aleph]; exact hα_k_lt k
-  apply Set.Countable.mono (s₂ := Set.Iio γ) _ (InfinitaryLogic.setCountable_Iio_of_lt_omega1 γ hγ_lt)
+  set γ := ⨆ k : ℕ, (α₀ + (↑k))
+  have hγ_lt : γ < Ordinal.omega 1 := Ordinal.iSup_lt_omega_one fun k => by rw [← Cardinal.ord_aleph]; exact hα_k_lt k
+  apply Set.Countable.mono  _ (InfinitaryLogic.setCountable_Iio_of_lt_omega1 γ hγ_lt)
   intro ε ⟨_, N, instN, instCN, b, hBF, hNot⟩
-  simp only [Set.mem_Iio]
+  simp  
   by_contra hge; push Not at hge
   exact hNot (BFEquiv_of_all_finite_levels hstab
     (fun k => BFEquiv.monotone (le_trans (le_ciSup hBdd k) hge) hBF)
@@ -176,11 +174,6 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
 
 Each theorem below is a one-liner applying `countableRefinementHypothesis` to the
 corresponding `_of` variant in Sentence.lean. -/
-
-/-- Complete stabilization below ω₁. -/
-theorem exists_complete_stabilization (M : Type w) [L.Structure M] [Countable M] :
-    ∃ α < (Ordinal.omega 1 : Ordinal.{0}), StabilizesCompletely (L := L) M α :=
-  exists_complete_stabilization_of countableRefinementHypothesis M
 
 /-- The Scott sentence of M characterizes M up to isomorphism among countable structures. -/
 @[blueprint "thm:scott-characterizes"
@@ -196,16 +189,13 @@ theorem scottSentence_characterizes (M : Type w) [L.Structure M] [Countable M]
   scottSentence_characterizes_of countableRefinementHypothesis M N
 
 /-- If N realizes the Scott sentence of M, then M ≃[L] N. -/
-theorem scottSentence_realizes_implies_equiv (M : Type w) [L.Structure M] [Countable M]
+abbrev scottSentence_realizes_implies_equiv (M : Type w) [L.Structure M] [Countable M]
     (N : Type w) [L.Structure N] [Countable N]
-    (h : (scottSentence (L := L) M).realize_as_sentence N) : Nonempty (M ≃[L] N) :=
+    (h : (scottSentence (L := L) M).realize_as_sentence N) :=
   (scottSentence_characterizes M N).mp h
 
 /-- M itself satisfies its own Scott sentence. -/
-theorem scottSentence_self (M : Type w) [L.Structure M] [Countable M] :
-    (scottSentence (L := L) M).realize_as_sentence M :=
+def scottSentence_self (M : Type w) [L.Structure M] [Countable M] :=
   (scottSentence_characterizes M M).mpr ⟨Equiv.refl L M⟩
 
-end Language
 
-end FirstOrder

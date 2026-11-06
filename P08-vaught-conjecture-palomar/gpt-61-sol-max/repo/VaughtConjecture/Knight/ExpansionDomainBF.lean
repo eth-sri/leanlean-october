@@ -1,14 +1,16 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ExpansionDomain
-public import VaughtConjecture.Knight.ProjectedChartComparison
-public import VaughtConjecture.Knight.ClassPresentation
-public import InfinitaryLogic.ModelTheory.MorleyCounting
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ExpansionDomain
+import VaughtConjecture.Knight.ProjectedChartComparison
+import VaughtConjecture.Knight.ClassPresentation
+import InfinitaryLogic.ModelTheory.MorleyCounting
 
 /-! # Back-and-forth equivalence on an expansion domain, and countable `≡_η` quotients
 
@@ -32,8 +34,6 @@ Terminal countability is an explicit hypothesis.  Nothing here uses stopping ran
 Morley or Silver dichotomy, or thinness.  The converse (that `≡_η`-equivalent models lie in
 the same domain) is not claimed. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.ExpansionDomain
 
 open TypeTower FirstOrder Language KnightRealization Cardinal StoppingRankFiltration
@@ -43,7 +43,7 @@ universe w
 private theorem bfEquiv_reduct_stage_eq {δ ε ζ : LimitStage}
     (h : δ = ε) (hδ : δ ≤ ζ) (hε : ε ≤ ζ)
     {M N : Type*} (W : KnightRealization ζ M) (V : KnightRealization ζ N)
-    {η : Ordinal.{0}} {n : ℕ} (a : Fin n → M) (b : Fin n → N) :
+    {η : Ordinal₀} {n : ℕ} (a : Fin n → M) (b : Fin n → N) :
     (@BFEquiv (stageLang δ) M (stageStructureOf (W.reduct hδ))
       N (stageStructureOf (V.reduct hδ)) η n a b) ↔
     (@BFEquiv (stageLang ε) M (stageStructureOf (W.reduct hε))
@@ -53,7 +53,7 @@ private theorem bfEquiv_reduct_stage_eq {δ ε ζ : LimitStage}
 
 /-- Transport the projected comparison from block zero to the sentence's `ω` language.
 The stage equality is eliminated explicitly; no additional comparison or rank loss occurs. -/
-theorem bfEquiv_of_commonChart_projected_omega {η : Ordinal.{0}} {M N : Type w}
+theorem bfEquiv_of_commonChart_projected_omega {η : Ordinal₀} {M N : Type w}
     (W : KnightRealization (blockStage η) M) (V : KnightRealization (blockStage η) N)
     (hW : W.IsModel) (hV : V.IsModel) {n : ℕ} {a : Fin n → M} {b : Fin n → N}
     (hc : HasCommonChart W V a b) :
@@ -77,7 +77,7 @@ theorem hasCommonChart_elim0 {α : LimitStage} {M N : Type}
 /-- **Back-and-forth equivalence on an expansion domain.**  Two counted models whose classes
 lie in `domain η` are back-and-forth equivalent at level `η` on the empty tuple, directly from
 the projected receipt comparison, transported to the sentence's language. -/
-theorem bfEquiv_of_mem_domain {η : Ordinal.{0}} {R S : KnightNatModel}
+theorem bfEquiv_of_mem_domain {η} {R S}
     (hR : Quotient.mk knightModelSetoid R ∈ domain η)
     (hS : Quotient.mk knightModelSetoid S ∈ domain η) :
     @BFEquiv knightLang ℕ (structureOf R.1) ℕ (structureOf S.1) η 0 Fin.elim0 Fin.elim0 := by
@@ -89,17 +89,17 @@ theorem bfEquiv_of_mem_domain {η : Ordinal.{0}} {R S : KnightNatModel}
 
 /-- **The library relation on a domain**: coded `ℕ`-models of `knightSentence` whose classes
 lie in `domain η` are related by `bfEquivSetoid knightSentence η`. -/
-theorem bfEquivSetoid_r_of_mem_domain {η : Ordinal.{0}} {c d : ModelsOf knightSentence}
+theorem bfEquivSetoid_r_of_mem_domain {η} {c d}
     (hc : modelClass c ∈ domain η) (hd : modelClass d ∈ domain η) :
     (bfEquivSetoid knightSentence η).r c d := by
-  have h := bfEquiv_of_mem_domain (R := realizationOfCode c) (S := realizationOfCode d) hc hd
+  have h := bfEquiv_of_mem_domain   hc hd
   have hc' := @equiv_implies_BFEquiv knightLang ℕ ℕ c.1.toStructure
     (structureOf (realizationOfCode c).1)
     (@Language.Equiv.symm knightLang ℕ ℕ (structureOf (realizationOfCode c).1)
       c.1.toStructure (isKnightModel_of_mem c).structureOfToRealizationEquiv) η 0 Fin.elim0
   have hd' := @equiv_implies_BFEquiv knightLang ℕ ℕ (structureOf (realizationOfCode d).1)
     d.1.toStructure (isKnightModel_of_mem d).structureOfToRealizationEquiv η 0 Fin.elim0
-  rw [comp_fin_elim0] at hc' hd'
+  
   have hcd := @BFEquiv.trans knightLang ℕ c.1.toStructure ℕ
     (structureOf (realizationOfCode c).1) ℕ (structureOf (realizationOfCode d).1)
     (n := 0) (α := η) (a := Fin.elim0) (b := Fin.elim0) (c := Fin.elim0) hc' h
@@ -112,21 +112,18 @@ coded `ℕ`-models of `knightSentence` by back-and-forth equivalence at level `�
 The classes outside `domain η` are countable, and the classes inside it project to at most one
 `≡_η`-class. -/
 theorem mk_bfEquivSetoid_quotient_le_aleph0 (hct : CountableTerminalFibres)
-    {η : Ordinal.{0}} (hη : η < (aleph 1).ord) :
+    {η} (hη : η < (aleph 1).ord) :
     #(Quotient (bfEquivSetoid knightSentence η)) ≤ ℵ₀ := by
-  let π : Classes → Quotient (bfEquivSetoid knightSentence η) :=
+  let π  :=
     fun q => bfProj knightSentence η (isoClassEquiv.symm q)
   have hπ (c : ModelsOf knightSentence) : π (modelClass c) = Quotient.mk _ c := by
-    change bfProj knightSentence η (isoClassEquiv.symm (isoClassEquiv _)) = _
-    rw [Equiv.symm_apply_apply, bfProj_mk]
+    simp_all [VaughtConjecture.Knight.StoppingRankFiltration.modelClass] <;> aesop
   have hcover : (Set.univ : Set (Quotient (bfEquivSetoid knightSentence η))) ⊆
       π '' (domain η)ᶜ ∪ π '' domain η := by
     rintro x -
     induction x using Quotient.inductionOn with
     | h c =>
-      by_cases hc : modelClass c ∈ domain η
-      · exact Or.inr ⟨_, hc, hπ c⟩
-      · exact Or.inl ⟨_, hc, hπ c⟩
+      grind
   have hsub : (π '' domain η).Subsingleton := by
     rintro _ ⟨q, hq, rfl⟩ _ ⟨s, hs, rfl⟩
     obtain ⟨c, rfl⟩ := modelClass_surjective q
@@ -136,4 +133,3 @@ theorem mk_bfEquivSetoid_quotient_le_aleph0 (hct : CountableTerminalFibres)
   have hcount := (((compl_countable hct hη).image π).union hsub.countable).mono hcover
   exact mk_le_aleph0_iff.mpr (Set.countable_univ_iff.mp hcount)
 
-end VaughtConjecture.Knight.ExpansionDomain

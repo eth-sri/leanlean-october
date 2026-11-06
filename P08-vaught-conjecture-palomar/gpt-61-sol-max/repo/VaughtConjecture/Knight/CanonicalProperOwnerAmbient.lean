@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.CanonicalProperOwnerLayer
-public import VaughtConjecture.Knight.SourcePrefixAmbient

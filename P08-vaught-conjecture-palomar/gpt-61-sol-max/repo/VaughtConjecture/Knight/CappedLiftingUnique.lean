@@ -3,11 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedLifting
-public import VaughtConjecture.Knight.NormalForm
-public import VaughtConjecture.CapCompatibleExtension
+import VaughtConjecture.Knight.CappedLifting
+import VaughtConjecture.Knight.NormalForm
+import VaughtConjecture.CapCompatibleExtension
 
 /-! # Capped lifting from lawful extension and injective restriction
 
@@ -29,38 +28,34 @@ when both properties hold at every graded pair (`bountiful_of_extension_injectiv
 
 Nothing here establishes extension or injectivity for any carrier; both are hypotheses. -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ExtensionInjectivity
 
-open Transform Value ExtOrd AmalgamationPlan
+open  Value  
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} (sem : Semantics D)
-  {I U : Finset ι × ℕ} (h : GradedLe I U)
+  {I U : GradedIndex ι} (h : GradedLe I U)
 
 /-- **Existence**: every lawful section below `I` extends lawfully to `U`, literally on `I`. -/
-def LawfulExtension : Prop :=
-  ∀ p : D.below I → ExtOrd, RespectsSemanticsBelow sem I p →
-    ∃ r : D.below U → ExtOrd, RespectsSemanticsBelow sem U r ∧
+def LawfulExtension :=
+  ∀ p , RespectsSemanticsBelow sem I p →
+    ∃ r , RespectsSemanticsBelow sem U r ∧
       ∀ d, r (CellScheme.below.mono h d) = p d
 
 /-- **Uniqueness**: lawful sections below `U` agreeing on `I` agree on every occurrence below
 `U`. -/
-def RestrictionInjective : Prop :=
-  ∀ r r' : D.below U → ExtOrd, RespectsSemanticsBelow sem U r → RespectsSemanticsBelow sem U r' →
+def RestrictionInjective :=
+  ∀ r r' , RespectsSemanticsBelow sem U r → RespectsSemanticsBelow sem U r' →
     (∀ d, r (CellScheme.below.mono h d) = r' (CellScheme.below.mono h d)) → ∀ d, r d = r' d
 
 variable {sem h}
 
 /-- A single lawful extension of each prescription preserves every compatible permitted cap,
 even when a different lawful ambient is supplied for each cap. -/
-def AllCapsExtension (sem : Semantics D) (h : GradedLe I U) : Prop :=
-  ∀ p : D.below I → ExtOrd, RespectsSemanticsBelow sem I p →
-    ∃ r : D.below U → ExtOrd, RespectsSemanticsBelow sem U r ∧
+def AllCapsExtension sem (h : GradedLe I U) :=
+  ∀ p , RespectsSemanticsBelow sem I p →
+    ∃ r , RespectsSemanticsBelow sem U r ∧
       (∀ d, r (CellScheme.below.mono h d) = p d) ∧
-      ∀ (γ : ExtOrd) (q : D.below U → ExtOrd), SelfVis U.2 γ →
+      ∀ γ (q : BelowLabels D U), SelfVis U.2 γ →
         RespectsSemanticsBelow sem U q →
         (∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) →
         ∀ d, min (r d) γ = min (q d) γ
@@ -69,8 +64,8 @@ def AllCapsExtension (sem : Semantics D) (h : GradedLe I U) : Prop :=
 permitted at the target grade, hence also at the source grade. -/
 theorem allCapsExtension_of_extension_injective (hext : LawfulExtension sem h)
     (hinj : RestrictionInjective sem h) : AllCapsExtension sem h := by
-  let X := {r : D.below U → ExtOrd // RespectsSemanticsBelow sem U r}
-  let Y := {p : D.below I → ExtOrd // RespectsSemanticsBelow sem I p}
+  let X := {r : BelowLabels D U // RespectsSemanticsBelow sem U r}
+  let Y := {p : BelowLabels D I // RespectsSemanticsBelow sem I p}
   let Γ := {γ : ExtOrd // SelfVis U.2 γ}
   let restrict : X → Y := fun r => ⟨fun d => r.1 (CellScheme.below.mono h d), r.2.mono h⟩
   let capX : Γ → X → X := fun γ r => ⟨fun d => min (r.1 d) γ.1, r.2.cap γ.2⟩
@@ -99,4 +94,3 @@ theorem AllCapsExtension.cappedLift (hall : AllCapsExtension sem h) :
   obtain ⟨r, hr, hres, hcaps⟩ := hall p hp
   exact ⟨r, hr, hcaps γ q hγ hq hag, hres⟩
 
-end VaughtConjecture.Knight.ExtensionInjectivity

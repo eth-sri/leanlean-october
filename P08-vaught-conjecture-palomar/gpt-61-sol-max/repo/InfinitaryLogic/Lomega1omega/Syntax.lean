@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import PalomarProof.Infinitary.Syntax
-public import Mathlib.Logic.Encodable.Basic
+import PalomarProof.Infinitary.Syntax
+import Mathlib.Logic.Encodable.Basic
 
 /-!
 # Lω₁ω Syntax — compatibility facade over the fixed-carrier syntax
@@ -40,8 +39,6 @@ redeclared. `BoundedFormulaInf.verum` plays the role of the old `top` and is def
 (`not falsum` reduces to `imp falsum falsum`).
 -/
 
-@[expose] public section
-
 universe u v u'
 
 namespace FirstOrder
@@ -59,38 +56,36 @@ The constructors live in the `BoundedFormulaInf` namespace. Dot-notation on a
 `BoundedFormulaω.falsum` need these. Each is an `abbrev`, so it unfolds by `rfl`, and each is
 `@[match_pattern]`, so it may still be used in pattern position. -/
 
-@[match_pattern] abbrev falsum : L.BoundedFormulaω α n := BoundedFormulaInf.falsum
+local notation "BoundedFormulaω₀" => L.BoundedFormulaω α n
 
-@[match_pattern] abbrev equal (t₁ t₂ : L.Term (α ⊕ Fin n)) : L.BoundedFormulaω α n :=
+@[match_pattern] abbrev falsum : BoundedFormulaω₀ := BoundedFormulaInf.falsum
+
+@[match_pattern] abbrev equal (t₁ t₂ : L.Term (α ⊕ Fin n)) : BoundedFormulaω₀ :=
   BoundedFormulaInf.equal t₁ t₂
 
 @[match_pattern] abbrev rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ Fin n)) :
-    L.BoundedFormulaω α n :=
+    BoundedFormulaω₀ :=
   BoundedFormulaInf.rel R ts
 
-@[match_pattern] abbrev imp (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
+@[match_pattern] abbrev imp (φ ψ : BoundedFormulaω₀) : BoundedFormulaω₀ :=
   BoundedFormulaInf.imp φ ψ
 
-@[match_pattern] abbrev all (φ : L.BoundedFormulaω α (n + 1)) : L.BoundedFormulaω α n :=
+@[match_pattern] abbrev all (φ : L.BoundedFormulaω α (n + 1)) : BoundedFormulaω₀ :=
   BoundedFormulaInf.all φ
 
-@[match_pattern] abbrev iSup (φs : ℕ → L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
+@[match_pattern] abbrev iSup (φs : ℕ → BoundedFormulaω₀) : BoundedFormulaω₀ :=
   BoundedFormulaInf.iSup φs
 
-@[match_pattern] abbrev iInf (φs : ℕ → L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
+@[match_pattern] abbrev iInf (φs : ℕ → BoundedFormulaω₀) : BoundedFormulaω₀ :=
   BoundedFormulaInf.iInf φs
 
 /-- Negation, as a qualified name. `BoundedFormulaInf.not` is the definition. -/
-@[match_pattern] protected abbrev not (φ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
+@[match_pattern] protected abbrev not (φ : BoundedFormulaω₀) : BoundedFormulaω₀ :=
   BoundedFormulaInf.not φ
 
 /-- Existential quantification, as a qualified name. -/
-@[match_pattern] protected abbrev ex (φ : L.BoundedFormulaω α (n + 1)) : L.BoundedFormulaω α n :=
+@[match_pattern] protected abbrev ex (φ : L.BoundedFormulaω α (n + 1)) : BoundedFormulaω₀ :=
   BoundedFormulaInf.ex φ
-
-/-- The true formula. Mathlib calls it `verum`; this is the project's historical name for it, and
-the two are definitionally equal (`not falsum` reduces to `imp falsum falsum`). -/
-protected abbrev top : L.BoundedFormulaω α n := BoundedFormulaInf.verum
 
 /-! Production's `not` and `ex` were `@[match_pattern]`; Mathlib's are not, and the attribute
 **cannot** be added downstream ("cannot add attribute to a declaration in an imported module").
@@ -103,34 +98,21 @@ the fix belongs upstream on the fork, not here. -/
 
 /-- Conjunction of two formulas, defined via De Morgan. -/
 @[match_pattern]
-protected def and (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
+protected def and (φ ψ : BoundedFormulaω₀) :=
   (φ.imp ψ.not).not
 
-instance : Min (L.BoundedFormulaω α n) := ⟨BoundedFormulaω.and⟩
-
-/-- Disjunction of two formulas. -/
-@[match_pattern]
-protected def or (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
-  φ.not.imp ψ
-
-instance : Max (L.BoundedFormulaω α n) := ⟨BoundedFormulaω.or⟩
-
-/-- Biconditional between formulas. -/
-protected def iff (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
-  (φ.imp ψ) ⊓ (ψ.imp φ)
+instance : Min (BoundedFormulaω₀) := ⟨BoundedFormulaω.and⟩
 
 /-- Indexed conjunction over any `Encodable` type. This extends `iInf` from ℕ-indexed
 to general countable indices by encoding. -/
-def einf {ι : Type*} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
-    L.BoundedFormulaω α n :=
+def einf {ι : Type*} [Encodable ι] (φs : ι → BoundedFormulaω₀) :=
   iInf fun k => match Encodable.decode (α := ι) k with
     | some i => φs i
     | none => ⊤
 
 /-- Indexed disjunction over any `Encodable` type. This extends `iSup` from ℕ-indexed
 to general countable indices by encoding. -/
-def esup {ι : Type*} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
-    L.BoundedFormulaω α n :=
+def esup {ι : Type*} [Encodable ι] (φs : ι → BoundedFormulaω₀) :=
   iSup fun k => match Encodable.decode (α := ι) k with
     | some i => φs i
     | none => ⊥
@@ -145,20 +127,12 @@ These are **thin wrappers**, deliberately: `einf`/`esup` are *not* redefined in 
 Reversing that dependency would disturb definitional reductions across many existing consumers. -/
 
 /-- `einf` along an explicitly supplied encoding. -/
-def einfWith {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    L.BoundedFormulaω α n :=
+def einfWith {ι : Type*} (e : Encodable ι) (φs : ι → BoundedFormulaω₀) :=
   @einf L α n ι e φs
 
 /-- `esup` along an explicitly supplied encoding. -/
-def esupWith {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    L.BoundedFormulaω α n :=
+def esupWith {ι : Type*} (e : Encodable ι) (φs : ι → BoundedFormulaω₀) :=
   @esup L α n ι e φs
-
-@[simp] theorem einfWith_eq {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    einfWith e φs = @einf L α n ι e φs := rfl
-
-@[simp] theorem esupWith_eq {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    esupWith e φs = @esup L α n ι e φs := rfl
 
 end BoundedFormulaω
 
@@ -179,10 +153,5 @@ These must elaborate with **no** `change`, rewrite, or explicit cast. That is pr
 certifies that the ω names remain a definitional specialization — the property Lean 4.34's
 `implicit`-transparency requirement makes load-bearing for every `rw`/`simp` in the ω tower. -/
 
-section Gates
 
-end Gates
 
-end Language
-
-end FirstOrder

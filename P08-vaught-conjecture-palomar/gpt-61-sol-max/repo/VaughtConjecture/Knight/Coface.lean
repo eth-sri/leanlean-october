@@ -1,11 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Domain
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.Domain
 
 /-! # Cofaces over a given extension domain: (a)(i)/(a)(ii) nonemptiness from bountifulness
 
@@ -77,19 +81,17 @@ What remains of §4.3 for the existence of models (#106) is therefore the **prod
 extension domains** for a given `p` on a non-mute domain (exact face recovery) and the
 witnesses for clauses (b)/(c) over them — not the (a)-families. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open VaughtConjecture.AmalgamationPlan
 
-open Value ExtOrd
+open Value 
 open CellScheme.restrictFace (toCell belowEquiv belowEquiv_symm_mk toCell_belowEquiv_symm_val
   pushGraded gradedLe_cell_pushGraded_iff)
 
 /-! ### Respect on the whole scheme versus respect on a lower set -/
 
-section Below
+section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
@@ -103,21 +105,21 @@ theorem CellScheme.isEmpty_cell_fin0 (C : CellScheme (ι := Fin 0) Finset.univ) 
     rw [Finset.card_eq_zero.mpr (Finset.eq_empty_of_isEmpty _)] at h2
     omega⟩
 
-end Below
+end
 
 /-! ### Every domain has a respecting labelling (Prop. 4.3.24, before truncation) -/
 
 /-- Every domain on `Fin (n+1)` has a labelling respecting its rows (no stage bound): the row
 of a full-grade cell `Σ ∈ D^{A,|A|}`, which respects `E⟨A,|A|⟩ = E` by consistency
 (the untruncated half of Prop. 4.3.24, `StageType.ofScheme`). -/
-theorem SemScheme.exists_respectsSemantics {n : ℕ} (D : SemScheme (n + 1)) :
-    ∃ q : Cell D.scheme → ExtOrd, RespectsSemantics D.rows q :=
+theorem SemScheme.exists_respectsSemantics {n} (D : SemScheme (n + 1)) :
+    ∃ q , RespectsSemantics D.rows q :=
   -- Existence alone needs neither a full-grade owner nor consistency.
   ⟨_, RespectsSemantics.bot _⟩
 
 namespace StageType
 
-variable {α : Ordinal.{0}} {n : ℕ}
+variable {α : Ordinal₀} {n : ℕ}
 
 /-! ### The stage type of a respecting labelling -/
 
@@ -126,19 +128,13 @@ respecting the rows of `D` (no stage bound on `q'`): labels `truncExt α ∘ q'`
 respect by `RespectsSemantics.truncate` (Lemma 3.1.3, reduction half).  `StageType.ofScheme`
 is the instance at the row of a full-grade cell. -/
 noncomputable def ofRespects (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') : S α n where
+    q' (hq' : RespectsSemantics D.rows q') : S α n where
   scheme := D
   label d := truncExt α (q' d)
-  label_bound _ := truncExt_bound α _
+  label_bound _ := truncExt_bound
   respects := hq'.truncate hα
 
-@[simp] theorem ofRespects_scheme (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') :
-    (ofRespects hα D q' hq').scheme = D := rfl
-
-@[simp] theorem ofRespects_label (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') (d : Cell D.scheme) :
-    (ofRespects hα D q' hq').label d = truncExt α (q' d) := rfl
+local notation "SemScheme₀" => SemScheme (n + 1)
 
 /-- **Truncation does not disturb the face.**  If `q'` respects the rows of an extension domain
 `D` of `dom p` and extends `p.label` along the cell map of the initial face (`hD.cellOf`),
@@ -146,12 +142,12 @@ then the reduction of `q'` to stage `α` is a coface of `p`: its restriction to 
 face has the scheme `D⟨n,n⟩ = dom p` (`hD.restrict`) and the labels `truncExt α ∘ p.label =
 p.label`, since the labels of `p` are already strictly bounded at `α` (`truncExt_id_of_bound`).
 -/
-theorem isCoface_ofRespects (hα : Order.IsSuccLimit α) {p : S α n} {D : SemScheme (n + 1)}
-    (hD : ExtendsDomain p D) {q' : Cell D.scheme → ExtOrd} (hq' : RespectsSemantics D.rows q')
-    (hext : ∀ d, q' (hD.cellOf d) = p.label d) : IsCoface p (ofRespects hα D q' hq') := by
+theorem isCoface_ofRespects (hα : Order.IsSuccLimit α) {p : S α n} {D : SemScheme₀}
+    (hD : ExtendsDomain p D) {q' : CellLabels D.scheme} (hq' : RespectsSemantics D.rows q')
+    (hext : PointwiseEq (q' ∘ hD.cellOf) p.label) : IsCoface p (ofRespects hα D q' hq') := by
   obtain ⟨Ps, pl, pb, pr⟩ := p
   obtain ⟨hvis, hres⟩ := hD
-  dsimp only at hres ⊢
+  dsimp  at hres ⊢
   subst hres
   unfold IsCoface
   rw [typeMap_eq_some _ _ hvis]
@@ -178,12 +174,12 @@ face has no cells and `q'' = q'`.
 `exists_respects_extends` (B4) is the case `γ = ⊥`, where both premises are automatic;
 `exists_respects_extends_of_truncated` (`Knight/ReductModel.lean`, #101) is the case
 `γ = n + 1`, where the conclusion is `⊥`-pattern agreement. -/
-theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
-    (hD : ExtendsDomain p D) {q' : Cell D.scheme → ExtOrd} (hq' : RespectsSemantics D.rows q')
-    {γ : ExtOrd} (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ)
-    (hcap : ∀ d, min (q' (hD.cellOf d)) γ = min (p.label d) γ) :
-    ∃ q'' : Cell D.scheme → ExtOrd, RespectsSemantics D.rows q'' ∧
-      (∀ d, min (q'' d) γ = min (q' d) γ) ∧ ∀ d, q'' (hD.cellOf d) = p.label d := by
+theorem exists_respects_extends_capped {p : S α n} {D : SemScheme₀}
+    (hD : ExtendsDomain p D) {q' : CellLabels D.scheme} (hq' : RespectsSemantics D.rows q')
+    {γ} (hγ : extVisibilityReplace γ (n + 1) (n + 1) = γ)
+    (hcap : CappedEq (q' ∘ hD.cellOf) p.label γ) :
+    ∃ q'' , RespectsSemantics D.rows q'' ∧
+      (CappedEq q'' q' γ) ∧ PointwiseEq (q'' ∘ hD.cellOf) p.label := by
   obtain ⟨Ps, pl, pb, pr⟩ := p
   obtain ⟨hvis, hres⟩ := hD
   dsimp only at hres hcap ⊢
@@ -200,21 +196,20 @@ theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
         change m + 1 ≤ (Finset.univ.image Fin.castSuccEmb).card
         rw [Finset.card_image_of_injective _ Fin.castSuccEmb.injective, Finset.card_univ,
           Fintype.card_fin]⟩
-    have hBJ : BJ ∈ Plan.gradedPlan D.scheme.plan := univ_succ_mem_gradedPlan D.scheme
+    have hBJ  := univ_succ_mem_gradedPlan D.scheme
     have hle : GradedLe CI BJ := ⟨Finset.subset_univ _, Nat.le_succ _⟩
     have hne : CI ≠ BJ := fun h => by
-      have := congrArg Prod.snd h
-      simp [hCIdef, hBJdef] at this
+      simp_all
     -- the lower set `D⟨C, m+1⟩` is the domain of `p`
     have hpush : pushGraded Fin.castSuccEmb ((Finset.univ : Finset (Fin (m + 1))), m + 1) = CI :=
       rfl
     -- `p.label` on `D⟨C, m+1⟩`, respecting `E⟨C, m+1⟩`
-    let pC : D.scheme.below CI → ExtOrd :=
+    let pC  :=
       (fun d => pl d.1) ∘ (belowEquiv D.scheme Fin.castSuccEmb hvis hpush).symm
-    have hpC : RespectsSemanticsBelow D.rows CI pC :=
+    have hpC  :=
       (pr.toBelow (Finset.univ, m + 1)).of_restrictFace hpush
     -- the capped-agreement premise, transported to `D⟨C, m+1⟩`
-    have hcapC : ∀ d : D.scheme.below CI,
+    have hcapC : ∀ d ,
         min (q' (CellScheme.below.mono hle d).1) γ = min (pC d) γ := by
       intro d
       have h := hcap ((belowEquiv D.scheme Fin.castSuccEmb hvis hpush).symm d).1
@@ -226,7 +221,7 @@ theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
     -- bountifulness at `γ`
     obtain ⟨q'', hq'', hq''γ, hq''p⟩ := D.bountiful CI BJ hCI hBJ hle hne pC (fun d => q' d.1) γ
       hpC (hq'.toBelow BJ) hγ hcapC
-    have hall : ∀ d : Cell D.scheme, GradedLe (D.scheme.cell d) BJ :=
+    have hall  :=
       gradedLe_univ_succ D.scheme
     refine ⟨fun d => q'' ⟨d, hall d⟩, hq''.toRespects hall, fun d => hq''γ ⟨d, hall d⟩,
       fun c => ?_⟩
@@ -254,12 +249,12 @@ with `p.label` on the cells of the old face: take any respecting labelling `q₀
 premise is `extVisibilityReplace_bot` and the capped-agreement premise
 `(q₀ ∧ ⊥) ↾ D⟨C,m+1⟩ = p ∧ ⊥` is automatic (both sides are `⊥`); the conclusion
 `q' ∧ ⊥ = q₀ ∧ ⊥` is vacuous and is discarded, and `q' ↾ dom p = p` is literal agreement. -/
-theorem exists_respects_extends {p : S α n} {D : SemScheme (n + 1)} (hD : ExtendsDomain p D) :
-    ∃ q' : Cell D.scheme → ExtOrd,
-      RespectsSemantics D.rows q' ∧ ∀ d, q' (hD.cellOf d) = p.label d := by
+theorem exists_respects_extends {p : S α n} {D : SemScheme₀} (hD : ExtendsDomain p D) :
+    ∃ q' : CellLabels D.scheme,
+      RespectsSemantics D.rows q' ∧ PointwiseEq (q' ∘ hD.cellOf) p.label := by
   obtain ⟨q₀, hq₀⟩ := D.exists_respectsSemantics
   obtain ⟨q', hq', -, hext⟩ := exists_respects_extends_capped hD hq₀
-    (extVisibilityReplace_bot _ _) (fun d => by rw [min_eq_right bot_le, min_eq_right bot_le])
+    (extVisibilityReplace_bot _ _) (fun d => by simp_all)
   exact ⟨q', hq', hext⟩
 
 /-! ### Cofaces over a given extension domain, and the (a)-families -/
@@ -268,8 +263,8 @@ theorem exists_respects_extends {p : S α n} {D : SemScheme (n + 1)} (hD : Exten
 bountifulness alone): at a limit stage `α`, every extension domain `D` of `dom p`
 (`ExtendsDomain p D`) carries a coface of `p`.  Built from `exists_respects_extends`
 (bountifulness at `γ = ⊥`) and `isCoface_ofRespects` (truncation to `α`). -/
-theorem exists_coface_of_extendsDomain (hα : Order.IsSuccLimit α) (p : S α n)
-    (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) :
+theorem exists_coface_of_extendsDomain (hα : Order.IsSuccLimit α) p
+    D (hD : ExtendsDomain p D) :
     ∃ q : S α (n + 1), q.scheme = D ∧ IsCoface p q := by
   obtain ⟨q', hq', hext⟩ := exists_respects_extends hD
   exact ⟨ofRespects hα D q' hq', rfl, isCoface_ofRespects hα hD hq' hext⟩
@@ -281,11 +276,9 @@ coface of `p` — the reduction of `q'` itself: `truncExt α` preserves and refl
 (`truncExt_eq_bot_iff`), so the `−∞`-pattern on `D^{≤ n}` is that of `q'`, and it fixes `p`
 on the face (`isCoface_ofRespects`). -/
 theorem bottomPatternFamily_nonempty (hα : Order.IsSuccLimit α) {p : S α n}
-    {D : SemScheme (n + 1)} (hD : ExtendsDomain p D) (q' : Cell D.scheme → ExtOrd)
-    (hq' : RespectsSemantics D.rows q') (hext : ∀ d, q' (hD.cellOf d) = p.label d) :
+    {D : SemScheme₀} (hD : ExtendsDomain p D) q'
+    (hq' : RespectsSemantics D.rows q') (hext : PointwiseEq (q' ∘ hD.cellOf) p.label) :
     ∃ q ∈ BottomPatternFamily (α := α) D q', IsCoface p q :=
   ⟨ofRespects hα D q' hq', ⟨rfl, fun _ => truncExt_eq_bot_iff⟩, isCoface_ofRespects hα hD hq' hext⟩
 
-end StageType
 
-end VaughtConjecture.Knight

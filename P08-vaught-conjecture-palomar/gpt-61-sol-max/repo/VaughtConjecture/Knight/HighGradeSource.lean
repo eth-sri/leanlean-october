@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.HighGradeLifting
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.HighGradeLifting
 
 /-! # Choosing a coded higher row for an arbitrary lawful retained labelling
 
@@ -19,22 +20,20 @@ section and unrestricted bountifulness on the resulting fixed rows. It
 does not require arbitrary later capped lifts to keep that positive demand.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.HighGradeExtension
 
-open AmalgamationPlan Transform Value ExtOrd
+open  Transform  
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : ℕ}
   (base : Semantics D) (h : Cell D) (hh : k < D.grade h) (hfull : D.scope h = A)
-  (p : D.below (A, k) → ExtOrd) (hp : RespectsSemanticsBelow base (A, k) p)
+  (p : BelowLabels D (A, k)) (hp : RespectsSemanticsBelow base (A, k) p)
   (N : ExtOrd) (hN : SelfVis (D.grade h) N)
 
 noncomputable def sourceValues : Finset Ordinal := by
   let _ : Fintype (D.below (A, k)) := Fintype.ofFinite _
   exact primRange p ∪ primRange (fun _ : Unit => N)
 
-theorem supported_old (d : D.below (A, k)) : SourceCode.Supported (sourceValues p N) (p d) := by
+theorem supported_old d : SourceCode.Supported (sourceValues p N) (p d) := by
   let _ : Fintype (D.below (A, k)) := Fintype.ofFinite _
   intro v hv
   exact Finset.mem_union_left _ (mem_primRange_of_eq hv)
@@ -42,7 +41,9 @@ theorem supported_old (d : D.below (A, k)) : SourceCode.Supported (sourceValues 
 theorem supported_new : SourceCode.Supported (sourceValues p N) N := by
   intro v hv
   apply Finset.mem_union_right
-  exact mem_primRange_of_eq (target := fun _ : Unit => N) (d := ()) hv
+  exact mem_primRange_of_eq  (d := ()) hv
+
+local notation "encode₀" => SourceCode.encode (D.grade h) (sourceValues p N)
 
 /-- The new high row is selected jointly with its selected labelling. -/
 noncomputable def adapted : Data D k where
@@ -50,108 +51,104 @@ noncomputable def adapted : Data D k where
   high := h
   above := hh
   full := hfull
-  profile d := SourceCode.encode (D.grade h) (sourceValues p N) (p d)
+  profile d := encode₀ (p d)
   lawful := SourceCode.respectsBelow (D.grade h) (sourceValues p N) hh.le hp
     (supported_old p N)
-  diagonal := SourceCode.encode (D.grade h) (sourceValues p N) N
+  diagonal := encode₀ N
   visible := SourceCode.encode_selfVis _ _ le_rfl hN
 
-def selected (d : Cell D) : ExtOrd :=
+def selected d :=
   if hd : D.grade d ≤ k then p (Data.oldCell d hd) else if d = h then N else ⊥
 
-theorem selected_old (d : Cell D) (hd : D.grade d ≤ k) :
-    selected h p N d = p (Data.oldCell d hd) := by simp only [selected, hd, ↓reduceDIte]
+local notation "selected₀" => selected h p N
+
+theorem selected_old d (hd : D.grade d ≤ k) :
+    selected₀ d = p (Data.oldCell d hd) := by simp  [selected, hd, ]
 
 include hh in
-theorem selected_high : selected h p N h = N := by
-  simp only [selected, not_le_of_gt hh, ↓reduceDIte, ↓reduceIte]
+theorem selected_high : selected₀ h = N := by
+  simp  [selected, not_le_of_gt hh,  ]
 
-theorem selected_other (d : Cell D) (hd : ¬D.grade d ≤ k) (he : d ≠ h) :
-    selected h p N d = ⊥ := by simp only [selected, hd, he, ↓reduceDIte, ↓reduceIte]
+theorem selected_other d (hd : ¬D.grade d ≤ k) (he : d ≠ h) :
+    selected₀ d = ⊥ := by simp_all [selected]
+
+local notation "selected_old₀" => selected_old h p N
 
 include hh in
-theorem selected_supported (d : Cell D) :
-    SourceCode.Supported (sourceValues p N) (selected h p N d) := by
+theorem selected_supported d :
+    SourceCode.Supported (sourceValues p N) (selected₀ d) := by
   by_cases hd : D.grade d ≤ k
-  · rw [selected_old h p N d hd]
-    exact supported_old p N _
+  · simp_all [selected_old, supported_old]
   · by_cases he : d = h
-    · subst d
-      rw [selected_high h hh p N]
-      exact supported_new p N
-    · rw [selected_other h p N d hd he]
-      exact SourceCode.supported_bot _
+    · simp_all [selected_high, supported_new]
+    · grind [selected_other, SourceCode.supported_bot]
 
 include hh hp hN in
-theorem selected_visible (d : Cell D) : SelfVis (D.grade d) (selected h p N d) := by
+theorem selected_visible d : SelfVis (D.grade d) (selected₀ d) := by
   by_cases hd : D.grade d ≤ k
-  · rw [selected_old h p N d hd]
+  · rw [selected_old₀ d hd]
     exact (hp.orderly _).symm
   · by_cases he : d = h
-    · subst d
-      rw [selected_high h hh p N]
-      exact hN
-    · rw [selected_other h p N d hd he]
-      exact selfVis_bot _
+    · simp_all [selected_high] <;> omega
+    · simp_all [selected_other] <;> aesop
 
-theorem source_read (d : D.below (D.cell h)) :
-    (adapted base h hh hfull p hp N hN).rows.E h d =
-      SourceCode.encode (D.grade h) (sourceValues p N) (selected h p N d.1) := by
+local notation "adapted₀" => adapted base h hh hfull p hp N hN
+
+theorem source_read d :
+    (adapted₀).rows.E h d =
+      encode₀ (selected₀ d.1) := by
   simp only [Data.rows, adapted, not_le_of_gt hh, ↓reduceIte]
   by_cases hd : D.grade d.1 ≤ k
-  · simp only [Data.display, selected, hd, ↓reduceDIte]
-  · by_cases he : d.1 = h
-    · simp only [Data.display, selected, he, not_le_of_gt hh, ↓reduceDIte, ↓reduceIte]
-    · simp only [Data.display, selected, hd, he, ↓reduceDIte, ↓reduceIte,
-        SourceCode.encode]
+  · simp_all [Data.display, selected]
+  · simp_all [Data.display, selected] <;> aesop
 
 /-- All retained labels, including previously active high controllers, are
 literal. The new label is any self-visible value, including bottom or top. -/
 theorem selected_respects :
-    RespectsSemantics (adapted base h hh hfull p hp N hN).rows (selected h p N) where
+    RespectsSemantics (adapted₀).rows (selected₀) where
   orderly d := (selected_visible base h hh p hp N hN d).symm
   locality c := by
-    let F := adapted base h hh hfull p hp N hN
-    change TransformsTo _ (F.rows.E c) (fun d => min (selected h p N d.1) (selected h p N c))
+    let F := adapted₀
+    
     by_cases hc : D.grade c ≤ k
     · rw [F.row_old hc]
       have ht := hp.locality (Data.oldCell c hc)
-      dsimp only [Data.oldCell, CellScheme.below.incl] at ht
+      dsimp only [Data.oldCell, ] at ht
       dsimp only [F, adapted]
       convert ht using 1
       funext d
-      rw [selected_old h p N c hc, selected_old h p N d.1 (d.2.2.trans hc)]
+      rw [selected_old₀ c hc, selected_old₀ d.1 (d.2.2.trans hc)]
       rfl
     · by_cases he : c = h
       · subst c
-        have ht := SourceCode.outgoing (fun d : D.below (D.cell h) => D.grade d.1)
-          (fun d => selected h p N d.1) (D.grade h) (sourceValues p N)
+        have ht := SourceCode.outgoing (fun d : D.belowCell h => D.grade d.1)
+          (fun d => selected₀ d.1) (D.grade h) (sourceValues p N)
           (fun d => d.2.2) (fun d => selected_supported h hh p N d.1) hN
         have hs : F.rows.E h = fun d =>
-            SourceCode.encode (D.grade h) (sourceValues p N) (selected h p N d.1) :=
+            encode₀ (selected₀ d.1) :=
           funext (source_read base h hh hfull p hp N hN)
         rw [hs, selected_high h hh p N]
         exact ht
       · simpa only [selected_other h p N c hc he, min_bot_right] using
-          (TransformsTo.to_bot (grade := fun d : D.below (D.cell c) => D.grade d.1) (F.rows.E c))
+          (TransformsTo.to_bot )
   availability d e hs hg := by
     by_cases hd : D.grade d ≤ k
     · have he : D.grade e ≤ k := hg ▸ hd
       obtain ⟨f, hf, hv⟩ := hp.availability (Data.oldCell d hd) (Data.oldCell e he) hs hg
       refine ⟨f.1, hf, ?_⟩
-      simpa only [selected_old h p N d hd, selected_old h p N f.1 f.2.2,
+      simpa only [selected_old₀ d hd, selected_old₀ f.1 f.2.2,
         show Data.oldCell f.1 f.2.2 = f from Subtype.ext rfl] using hv
     · by_cases he : d = h
       · refine ⟨d, ?_, le_rfl⟩
         rw [he]
-        exact (adapted base h hh hfull p hp N hN).high_index
+        exact (adapted₀).high_index
           (by simpa only [adapted, he] using hs) (by simpa only [adapted, he] using hg)
       · exact ⟨e, rfl, by rw [selected_other h p N d hd he]; exact bot_le⟩
 
-theorem coded (hb : base.IsCoded) : (adapted base h hh hfull p hp N hN).rows.IsCoded := by
+theorem coded (hb : base.IsCoded) : (adapted₀).rows.IsCoded := by
   intro c d
-  let F := adapted base h hh hfull p hp N hN
-  change IsCodedLabel (D.grade c) (F.rows.E c d)
+  let F := adapted₀
+  
   by_cases hc : D.grade c ≤ k
   · rw [F.row_old hc]
     exact hb c d
@@ -166,18 +163,17 @@ include hh hfull hp hN in
 section, consistency, and all unrestricted lifts are constructed. -/
 theorem exists_extension (hk : 1 ≤ k) (hc : base.IsConsistent)
     (hb : base.IsBountiful) (hcode : base.IsCoded) :
-    ∃ (rows : Semantics D) (q : Cell D → ExtOrd),
+    ∃ rows q,
       rows.IsConsistent ∧ rows.IsBountiful ∧ rows.IsCoded ∧ RespectsSemantics rows q ∧
       (∀ c, D.grade c ≤ k → rows.E c = base.E c) ∧
-      (∀ d : D.below (A, k), q d.1 = p d) ∧ q h = N := by
-  let F := adapted base h hh hfull p hp N hN
-  refine ⟨F.rows, selected h p N, F.consistent hc, F.bountiful hk hb,
+      (∀ d , q d.1 = p d) ∧ q h = N := by
+  let F := adapted₀
+  refine ⟨F.rows, selected₀, F.consistent hc, F.bountiful hk hb,
     coded base h hh hfull p hp N hN hcode, selected_respects base h hh hfull p hp N hN,
     fun c hc => F.row_old hc, ?_, selected_high h hh p N⟩
   intro d
-  rw [selected_old h p N d.1 d.2.2]
+  rw [selected_old₀ d.1 d.2.2]
   exact congrArg p (Subtype.ext rfl)
 
 variable {n : ℕ} {D : CellScheme (ι := Fin n) Finset.univ} {k : ℕ}
 
-end VaughtConjecture.Knight.HighGradeExtension

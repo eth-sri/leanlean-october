@@ -3,13 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthCarrierEvaluation
-public import VaughtConjecture.Knight.StableActualLabelling
-public import VaughtConjecture.Knight.GrowthStableSelectedInput
-public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.ActualOccurrence
+import VaughtConjecture.Knight.GrowthCarrierEvaluation
+import VaughtConjecture.Knight.StableActualLabelling
+import VaughtConjecture.Knight.GrowthStableSelectedInput
+import VaughtConjecture.Knight.TopSupportReceiving
+import VaughtConjecture.Knight.ActualOccurrence
 
 /-! # Actual growth receiving evaluated by lawful stable labels
 
@@ -23,13 +22,10 @@ The calibrated `RelativeData` and literal root attachment remain inputs.
 In particular this does not construct the shorter encoding or donor template.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCarrierReceiving
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open Growth CellScheme.restrictFace
-noncomputable section
+open TypeTower StageType KnightRealization    
+open Growth 
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   {n J : ℕ} (C : S α.1 J) (P : SemScheme (n + 1)) (Q : SemScheme n)
@@ -42,9 +38,9 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   (T : RootAttachment Q Fin.castSuccEmb hvP hP e hvC hC X)
   (hsmall : n + 1 < X.req.N)
 
-local notation "E" => GrowthAttachedCarrier.semScheme C.scheme P Q e hvC hvP hC hP X T hsmall
-local notation "F" => GrowthAttachedCarrier.privateFace C.scheme P Q e hvC hvP hC hP X T hsmall
-local notation "G" => GrowthAttachedCarrier.donorFace C.scheme P Q e hvC hvP hC hP X T hsmall
+local notation "E" => GrowthAttachedCarrier.semScheme T hsmall
+local notation "F" => GrowthAttachedCarrier.privateFace T hsmall
+local notation "G" => GrowthAttachedCarrier.donorFace T hsmall
 
 variable (hM : W.IsModel) {u : Fin J ↪ M} (hu : W.eval u = some C)
 
@@ -57,10 +53,8 @@ theorem exists_correct_donor (hclass : InClass X.ZA C.label) :
       ∃ hs : s.scheme = P,
         X.req.Correct (X.req.sec (W.stableValue u C))
           (fun d => W.stableValue (snoc (e.trans u) y hyRoot) s
-            (SemScheme.castCell hs.symm d)) := by
-  exact GrowthCarrierEvaluation.exists_correct_donor C P Q e hvC hvP hC hP X T hsmall
+            (SemScheme.castCell hs.symm d)) := GrowthCarrierEvaluation.exists_correct_donor C P Q e hvC hvP hC hP X T hsmall
     (stableActualLabelling hM.consistent hM.covering) hM hu
     (fun d => (GrowthStableSelectedInput.private_bottom hM hu d.1).trans (hclass d))
 
-end
-end VaughtConjecture.Knight.GrowthStableCarrierReceiving
+

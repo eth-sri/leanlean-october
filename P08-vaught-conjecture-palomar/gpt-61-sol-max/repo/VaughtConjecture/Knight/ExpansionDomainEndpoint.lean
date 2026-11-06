@@ -3,14 +3,34 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ExpansionDomainUniform
-public import VaughtConjecture.Knight.BFBoundednessThinness
-public import VaughtConjecture.Knight.ConstructedTerminalCountability
-public import VaughtConjecture.Knight.ConstructedTerminalLoss
-public import VaughtConjecture.Knight.ExpansionDomainCertificate
-public import VaughtConjecture.Spectrum.Thinness
+import VaughtConjecture.Knight.ExpansionDomainUniform
+import VaughtConjecture.Knight.BFBoundednessThinness
+import VaughtConjecture.Knight.ConstructedTerminalCountability
+import VaughtConjecture.Knight.ConstructedTerminalLoss
+import VaughtConjecture.Knight.ExpansionDomainCertificate
+import InfinitaryLogic.Descriptive.PerfectAntichain
+import InfinitaryLogic.OrdinalUtil
+import Architect
+import InfinitaryLogic.Descriptive.StructureIsoSetoid
+import InfinitaryLogic.Descriptive.Polish
+import InfinitaryLogic.Descriptive.SatisfactionBorelOn
+import InfinitaryLogic.Descriptive.SatisfactionBorel
+import InfinitaryLogic.Scott.BackAndForth
+import Mathlib.SetTheory.Cardinal.Aleph
+import InfinitaryLogic.Lomega1omega.Theory
+import InfinitaryLogic.Scott.Formula
+import InfinitaryLogic.Lomega1omega.QuantifierRank
+import InfinitaryLogic.Karp.CarrierTheorem
+import InfinitaryLogic.Scott.Sentence
+import InfinitaryLogic.Scott.RefinementCount
+import Mathlib.SetTheory.Cardinal.Regular
+import InfinitaryLogic.Karp.PotentialIso
+import Mathlib.SetTheory.Cardinal.Continuum
+import Mathlib.Tactic
+import InfinitaryLogic.Descriptive.StructureSpace
+import Mathlib.GroupTheory.Perm.Basic
+import VaughtConjecture.Spectrum.Sentence
 
 /-! # Spectrum and thinness without global termination
 
@@ -26,8 +46,6 @@ proofs remain separate; the old perfect-set names delegate here. The theorem
 is about the repository's infinitary sentence and defined spectrum, not a
 first-order Vaught statement; mathematical definitional review remains separate.
 -/
-
-@[expose] public section
 
 namespace VaughtConjecture.Knight.ExpansionDomainEndpoint
 
@@ -50,4 +68,3 @@ theorem natModelSpectrum_eq_aleph_one : natModelSpectrum knightSentence = aleph 
   rw [natModelSpectrum_knightSentence]
   exact certificate.cardinality
 
-end VaughtConjecture.Knight.ExpansionDomainEndpoint

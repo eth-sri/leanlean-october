@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowSeparatorRank
-public import VaughtConjecture.Knight.LowOnlyPaddedContract
-public import VaughtConjecture.Knight.LowOnlyDonorOrderedLift
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.LowSeparatorRank
+import VaughtConjecture.Knight.LowOnlyPaddedContract
+import VaughtConjecture.Knight.LowOnlyDonorOrderedLift
 
 /-! # Actual padded rank-tip readback at grade one
 
@@ -17,32 +18,29 @@ their normalized numerical values need not equal those vectors. An arbitrary
 lawful section supplies its own serving leaf and monotone rank table.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRankReadback
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
+open    CappedDonor LowOnly LowOnlyOrderedLadder
 open LadderScalarRendering LowOnlyPaddedContract LowSeparator
 noncomputable section
 
-section Partner
+section
 variable {n : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C 1)
 
 def partnerState (S : State P C) : State P C := ⟨S.u, S.v, F.maximum S⟩
 
-theorem partner_profile (S : State P C) :
+theorem partner_profile S :
     (partnerState F S).profile =
       LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile := by
-  classical
+  
   funext d
   rcases d with d | d | d
-  · exact (Function.update_of_ne (by simp) _ _).symm
-  · exact (Function.update_of_ne (by simp) _ _).symm
+  · rfl
+  · rfl
   · cases d
     exact (maximum_eq_donorMax F S).trans
       (LowSeparatorRank.rankPartner_apply_self (donorField F) cutoffField S.profile).symm
 
-theorem partner_admissible {S : State P C} (hS : F.Admissible 1 S) :
+theorem partner_admissible {S} (hS : F.Admissible 1 S) :
     F.Admissible 1 (partnerState F S) where
   lawfulP := hS.lawfulP
   lawfulC := hS.lawfulC
@@ -53,59 +51,59 @@ theorem partner_admissible {S : State P C} (hS : F.Admissible 1 S) :
     change SelfVis 1 (F.maximum S)
     rw [maximum_eq_donorMax]
     rcases donorMax_cases (donorField F) S.profile with hz | ⟨d, _, hd⟩
-    · rw [hz]; exact selfVis_bot 1
+    · rw [hz]; exact selfVis_bot
     · rw [← hd]; exact LowOnlyRecursiveCharts.profile_visible_one F le_rfl hS d
   low _ hm _ _ := (lt_irrefl (F.maximum S) hm).elim
 
 /-- The existing catalogue contains both rank anchors, literal-top selected
 fields included. No raw vector is identified with its canonical normalization. -/
-theorem exists_anchors {S : State P C} (hS : F.Admissible 1 S) :
-    ∃ a b : F.Anchor 1,
+theorem exists_anchors {S} (hS : F.Admissible 1 S) :
+    ∃ a b ,
       RelativeLadderLayer.ranks (F.fields 1) a = fieldRank S.profile ∧
       RelativeLadderLayer.ranks (F.fields 1) b =
         fieldRank (LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile) := by
   obtain ⟨a, ha⟩ := F.exists_rank_anchor le_rfl hS
   obtain ⟨b, hb⟩ := F.exists_rank_anchor le_rfl (partner_admissible F hS)
   exact ⟨a, b, funext ha, (funext hb).trans (congrArg fieldRank (partner_profile F S))⟩
-end Partner
+end
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right 1)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : F.root.Covers I.shared.f I.shared.g)
   (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
 local notation "D" => RelativeLadderLayer.carrier I.boundary hA
   (X := Field I.left I.right) (Q := F.Anchor 1)
 local notation "E" => RelativeLadderLayer.rows I.boundary I.rows hA
-  (field I) (F.fields 1) (proper I hB hC)
+  (field I) (F.fields 1) (proper hB hC)
 local notation "H" => RelativeLadderLayer.rungs (X := Field I.left I.right)
 
 def originalAt (d : I.boundary.below (A, 1)) : (D).below (A, 1) :=
   ⟨RelativeLadderLayer.old I.boundary hA d.1, by rw [RelativeLadderLayer.old_index]; exact d.2⟩
+
+local notation "originalAt₀" => originalAt I F hA
 
 include hroot in
 /-- Strict comparison of the actual spare tips activates the serving source.
 The source, chart and LOW instance are all derived from actual lawfulness. -/
 theorem donor_top_of_separator {S : State I.left I.right}
     (hlt : donorMax (donorField F) S.profile < S.b)
-    {qs qt : F.Anchor 1}
+    {qs qt}
     (hqs : RelativeLadderLayer.ranks (F.fields 1) qs = fieldRank S.profile)
     (hqt : RelativeLadderLayer.ranks (F.fields 1) qt =
       fieldRank (LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile))
-    {q : (D).below (A, 1) → ExtOrd} (hq : RespectsSemanticsBelow E (A, 1) q)
+    {q} (hq : RespectsSemanticsBelow E (A, 1) q)
     (hsep : q (RelativeLadderLayer.leafOccurrence I.boundary hA qt) <
       q (RelativeLadderLayer.leafOccurrence I.boundary hA qs))
-    (hc : q (originalAt I F hA (privateIncl I (F.gap.cC le_rfl))) = ⊤)
-    (hr : q (originalAt I F hA (privateIncl I (F.gap.rC le_rfl))) = ⊤)
+    (hc : q (originalAt₀ (privateIncl I (F.gap.cC le_rfl))) = ⊤)
+    (hr : q (originalAt₀ (privateIncl I (F.gap.rC le_rfl))) = ⊤)
     (d : I.left.scheme.below (effC n 1)) (hd : F.p d.1 = ⊤) :
-    q (originalAt I F hA (donorIncl I d)) = ⊤ := by
+    q (originalAt₀ (donorIncl I d)) = ⊤ := by 
   obtain ⟨a, τ, hτ, _, hread⟩ := RelativeLadderLayer.exists_leaf_chart I.boundary I.rows hA
-    (field I) (F.fields 1) (proper I hB hC) qs hq
-  let g : ℕ → ExtOrd := τ ∘ SupportLadderRows.source H
-  have hg : Monotone g := hτ.mono.comp (SupportLadderRows.source_mono H)
+    (field I) (F.fields 1) (proper hB hC) qs hq
+  let g  := τ ∘ SupportLadderRows.source H
+  have hg  := hτ.mono.comp (SupportLadderRows.source_mono H)
   have he (x : (D).below (A, 1)) :
       q x = g (RelativeLadderLayer.rankIndex I.boundary hA (field I) (F.fields 1) a x.1) := by
     have hx := hread x
@@ -115,17 +113,18 @@ theorem donor_top_of_separator {S : State I.left I.right}
       (RelativeLadderLayer.rankIndex I.boundary hA (field I) (F.fields 1) a x.1)) = q x at hx
     rw [SupportLadderRows.ceiling_leaf] at hx
     exact hx.symm
+  let core1 := FiniteProfileControllers.cut H (RelativeLadderLayer.ranks (F.fields 1) a)
   have htip (b : F.Anchor 1) : q (RelativeLadderLayer.leafOccurrence I.boundary hA b) =
-      g (FiniteProfileControllers.cut H (RelativeLadderLayer.ranks (F.fields 1) a)
+      g (core1
         (RelativeLadderLayer.ranks (F.fields 1) b)) :=
     (he _).trans (congrArg g
       ((RelativeLadderLayer.rankIndex_added I.boundary hA (field I) (F.fields 1) a
         (SupportLadderRows.leaf (Nat.succ_pos _) b)).trans
         (SupportLadderRows.index_leaf (profile := RelativeLadderLayer.ranks (F.fields 1))
           (Nat.succ_pos _) a b)))
-  have hcut : FiniteProfileControllers.cut H (RelativeLadderLayer.ranks (F.fields 1) a)
+  have hcut : core1
       (RelativeLadderLayer.ranks (F.fields 1) qt) <
-      FiniteProfileControllers.cut H (RelativeLadderLayer.ranks (F.fields 1) a)
+      core1
         (RelativeLadderLayer.ranks (F.fields 1) qs) := by
     apply lt_of_not_ge
     intro hh
@@ -139,29 +138,27 @@ theorem donor_top_of_separator {S : State I.left I.right}
     change donorMax (donorField F) (state F a).profile < (state F a).profile cutoffField
     simpa only [state_profile, Family.fields] using hact
   have hv (e : I.right.scheme.below (effC n 1)) :
-      q (originalAt I F hA (privateIncl I e)) =
+      q (originalAt₀ (privateIncl I e)) =
         g (fieldRank (state F a).profile (Sum.inr (Sum.inl e.1))) := by
     apply (he _).trans
     apply congrArg g
-    apply (RelativeLadderLayer.rankIndex_old I.boundary hA (field I) (F.fields 1) a _).trans
+    apply (RelativeLadderLayer.rankIndex_old a _).trans
     change fieldRank (F.fields 1 a) (field I (I.rightFace.map e.1)) = _
     rw [← state_profile]
     exact congrArg (LadderScalarRendering.rank (values (state F a).profile))
-      (field_private I F hroot (state_admissible F a) e.1)
-  have hu : q (originalAt I F hA (donorIncl I d)) =
+      (field_private hroot (state_admissible a) e.1)
+  have hu : q (originalAt₀ (donorIncl I d)) =
       g (fieldRank (state F a).profile (Sum.inl d.1)) := by
     apply (he _).trans
     apply congrArg g
-    apply (RelativeLadderLayer.rankIndex_old I.boundary hA (field I) (F.fields 1) a _).trans
+    apply (RelativeLadderLayer.rankIndex_old a _).trans
     change fieldRank (F.fields 1 a) (field I (I.leftFace.map d.1)) = _
     rw [← state_profile]
     exact congrArg (LadderScalarRendering.rank (values (state F a).profile))
-      (field_donor I (state F a) d.1)
+      (field_donor I)
   rw [hv] at hc hr
   rw [hu]
-  rcases min_le_iff.mp (LowSeparatorRank.low_min_le F (state_admissible F a) hm d.1 hd) with hh | hh
+  rcases min_le_iff.mp (LowSeparatorRank.low_min_le F (state_admissible a) hm d.1 hd) with hh | hh
   · exact top_le_iff.mp (hc ▸ hg (rank_mono (values (state F a).profile) hh))
   · exact top_le_iff.mp (hr ▸ hg (rank_mono (values (state F a).profile) hh))
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRankReadback

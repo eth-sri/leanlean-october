@@ -1,12 +1,13 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SemSchemeBoundaryInput
-public import VaughtConjecture.Knight.OrderedFaceBoundarySemantics
+import VaughtConjecture.Knight.SemSchemeBoundaryInput
+import VaughtConjecture.Knight.OrderedFaceBoundarySemantics
 
 /-! # The ordered inherited boundary from literal legal input faces
 
@@ -18,19 +19,15 @@ faces, consistency, coding and lawful pasting are outputs, not hypotheses.
 This constructs no mixed owners and does not claim bountifulness of the union.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.WholeDonorBoundary
 
-open AmalgamationPlan Transform Value ExtOrd
+open AmalgamationPlan  Value 
 open AmalgamatedBoundary (Overlap pointImage pointImage_complete)
 open SemSchemeBoundaryInput (faceMap faceMap_index faceMap_exhaustive faceMap_total)
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] (A B C : Finset ι)
-variable (R : Finset (Finset ι))
+variable (R : VaughtConjecture.AmalgamationPlan.SupportFamily ι)
 
 /-- Two legal inputs on arbitrary faces with one literal common face.
 Only point placements, plan restrictions, and input equalities are fields;
@@ -62,8 +59,8 @@ variable {A B C R} {m nL nR : ℕ} (I : Input A B C R m nL nR)
 
 abbrev leftScheme := pointImage I.left.scheme I.placeLeft I.imageLeft
 abbrev rightScheme := pointImage I.right.scheme I.placeRight I.imageRight
-abbrev leftRows := PointImageSemantics.rows I.left.scheme I.placeLeft I.imageLeft I.left.rows
-abbrev rightRows := PointImageSemantics.rows I.right.scheme I.placeRight I.imageRight I.right.rows
+abbrev leftRows := PointImageSemantics.rows I.imageLeft I.left.rows
+abbrev rightRows := PointImageSemantics.rows I.imageRight I.right.rows
 
 private theorem common_image_right :
     (Finset.univ.image I.commonRight).image I.placeRight =
@@ -71,27 +68,31 @@ private theorem common_image_right :
   rw [Finset.image_image, ← I.intersection, Finset.image_image]
   exact congrArg (fun e : Fin m ↪ ι => Finset.univ.image e) I.commute.symm
 
-private theorem image_common (T : Finset (Fin m)) :
+private theorem image_common (T : FiniteScope m) :
     (T.image I.commonLeft).image I.placeLeft =
       (T.image I.commonRight).image I.placeRight := by
   rw [Finset.image_image, Finset.image_image]
   exact congrArg (fun e : Fin m ↪ ι => T.image e) I.commute
 
+local notation "faceMap₀" => faceMap I.right I.common I.commonRight I.visibleRight I.faceRight
+
+local notation "faceMap₀₀" => faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft
+
 /-- The overlap is derived from the actual restricted occurrence enumerations. -/
 def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
-  f := (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft).toEmbedding
-  g := (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight).toEmbedding
-  f_mono := (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft).strictMono
-  g_mono := (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight).strictMono
+  f := (faceMap₀₀).toEmbedding
+  g := (faceMap₀).toEmbedding
+  f_mono := (faceMap₀₀).strictMono
+  g_mono := (faceMap₀).strictMono
   shared d := by
     change ((I.left.scheme.cell
-        (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft d)).1.image I.placeLeft,
+        (faceMap₀₀ d)).1.image I.placeLeft,
         (I.left.scheme.cell
-          (faceMap I.left I.common I.commonLeft I.visibleLeft I.faceLeft d)).2) =
+          (faceMap₀₀ d)).2) =
       ((I.right.scheme.cell
-        (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight d)).1.image I.placeRight,
+        (faceMap₀ d)).1.image I.placeRight,
         (I.right.scheme.cell
-          (faceMap I.right I.common I.commonRight I.visibleRight I.faceRight d)).2)
+          (faceMap₀ d)).2)
     rw [faceMap_index I.left I.common I.commonLeft I.visibleLeft I.faceLeft d,
       faceMap_index I.right I.common I.commonRight I.visibleRight I.faceRight d]
     exact Prod.ext (image_common I _) rfl
@@ -113,12 +114,10 @@ def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
 theorem compatible : OrderedFaceBoundaryRows.Compatible I.leftScheme I.rightScheme
     I.shared I.leftRows I.rightRows := by
   intro c d
-  exact (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows
-    (I.shared.f c) (I.shared.f d)).trans
+  exact (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows).trans
     (((faceMap_total I.left I.common I.commonLeft I.visibleLeft I.faceLeft c d).trans
       (faceMap_total I.right I.common I.commonRight I.visibleRight I.faceRight c d).symm).trans
-      (PointImageSemantics.total_eq I.right.scheme I.placeRight I.imageRight I.right.rows
-        (I.shared.g c) (I.shared.g d)).symm)
+      (PointImageSemantics.total_eq I.right.scheme I.placeRight I.imageRight I.right.rows).symm)
 
 theorem leftPlan_le : I.leftScheme.plan ⊆ R := by
   intro S hS
@@ -138,12 +137,10 @@ abbrev rows := OrderedFaceBoundaryRows.rows I.leftScheme I.rightScheme I.shared
   R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
 
 def leftFace : ExactSemanticFace I.leftRows I.rows :=
-  OrderedFaceBoundarySemantics.leftFace I.leftScheme I.rightScheme I.shared
-    R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
+  OrderedFaceBoundarySemantics.leftFace I.isPlan I.leftPlan_le I.rightPlan_le I.compatible
 
 def rightFace : ExactSemanticFace I.rightRows I.rows :=
-  OrderedFaceBoundarySemantics.rightFace I.leftScheme I.rightScheme I.shared
-    R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
+  OrderedFaceBoundarySemantics.rightFace I.isPlan I.leftPlan_le I.rightPlan_le I.compatible
 
 theorem consistent : I.rows.IsConsistent :=
   OrderedFaceBoundarySemantics.consistent I.leftScheme I.rightScheme I.shared
@@ -158,15 +155,13 @@ theorem coded : I.rows.IsCoded :=
     (PointImageSemantics.coded _ _ _ _ I.right.rows_coded)
 
 theorem left_order : StrictMono I.leftFace.map :=
-  OrderedFaceBoundary.left_order I.leftScheme I.rightScheme I.shared
-    R I.isPlan I.leftPlan_le I.rightPlan_le
+  OrderedFaceBoundary.left_order
 
 theorem right_order : StrictMono I.rightFace.map :=
-  OrderedFaceBoundary.right_order I.leftScheme I.rightScheme I.shared
-    R I.isPlan I.leftPlan_le I.rightPlan_le
+  OrderedFaceBoundary.right_order
 
 /-- A complete target vector is lawful precisely when both literal inputs are. -/
-theorem respects_iff (p : Cell I.boundary → ExtOrd) :
+theorem respects_iff p :
     RespectsSemantics I.rows p ↔
       RespectsSemantics I.left.rows (p ∘ I.leftFace.map) ∧
       RespectsSemantics I.right.rows (p ∘ I.rightFace.map) := by
@@ -175,27 +170,26 @@ theorem respects_iff (p : Cell I.boundary → ExtOrd) :
     (PointImageSemantics.respects_iff _ _ _ _ _)
     (PointImageSemantics.respects_iff _ _ _ _ _)
 
-def paste (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd) :
-    Cell I.boundary → ExtOrd :=
+def paste (p : CellLabels I.left.scheme) (q : CellLabels I.right.scheme) :
+    CellLabels I.boundary :=
   OrderedFaceBoundarySemantics.paste I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q
 
-theorem paste_left (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
-    (d : Cell I.left.scheme) : I.paste p q (I.leftFace.map d) = p d :=
+theorem paste_left p q
+    d : I.paste p q (I.leftFace.map d) = p d :=
   OrderedFaceBoundarySemantics.paste_left I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q d
 
-theorem paste_right (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
-    (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) (d : Cell I.right.scheme) :
+theorem paste_right p q
+    (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) d :
     I.paste p q (I.rightFace.map d) = q d :=
   OrderedFaceBoundarySemantics.paste_right I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q h d
 
 /-- The selected inherited display needs agreement only on the literal common face. -/
-theorem paste_respects {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+def paste_respects {p} {q}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
-    (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
-    RespectsSemantics I.rows (I.paste p q) := by
+    (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) := by
   apply (I.respects_iff _).mpr
   constructor
   · have he : I.paste p q ∘ I.leftFace.map = p := funext (I.paste_left p q)
@@ -203,7 +197,7 @@ theorem paste_respects {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.sch
   · have he : I.paste p q ∘ I.rightFace.map = q := funext (I.paste_right p q h)
     exact he.symm ▸ hq
 
-theorem left_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hB : J.1 ⊆ B) :
+theorem left_mem {J} (hJ : J ∈ Plan.gradedPlan R) (hB : J.1 ⊆ B) :
     J ∈ Plan.gradedPlan I.leftScheme.plan := by
   obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp hJ
   refine Plan.mem_gradedPlan.mpr ⟨?_, hp, hc⟩
@@ -211,7 +205,7 @@ theorem left_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hB : J.1
   rw [← I.planLeft]
   exact Finset.mem_inter.mpr ⟨hm, Finset.mem_powerset.mpr hB⟩
 
-theorem right_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hC : J.1 ⊆ C) :
+theorem right_mem {J} (hJ : J ∈ Plan.gradedPlan R) (hC : J.1 ⊆ C) :
     J ∈ Plan.gradedPlan I.rightScheme.plan := by
   obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp hJ
   refine Plan.mem_gradedPlan.mpr ⟨?_, hp, hc⟩
@@ -220,18 +214,17 @@ theorem right_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hC : J.
   exact Finset.mem_inter.mpr ⟨hm, Finset.mem_powerset.mpr hC⟩
 
 /-- Exactly the old point scopes are occupied; no mixed owner is hidden in this boundary. -/
-theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
+theorem occupied_iff {J} (hJ : J ∈ Plan.gradedPlan R) :
     (∃ d, I.boundary.cell d = J) ↔ J.1 ⊆ B ∨ J.1 ⊆ C := by
   constructor
   · rintro ⟨d, rfl⟩
-    rcases OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared
-      R I.isPlan I.leftPlan_le I.rightPlan_le d with ⟨d, rfl⟩ | ⟨d, rfl⟩
+    rcases OrderedFaceBoundaryRows.covered d with ⟨d, rfl⟩ | ⟨d, rfl⟩
     · exact Or.inl (by
         rw [OrderedFaceBoundary.left_index]
-        exact I.leftScheme.isPlan.subset_of_mem (I.leftScheme.scope_mem_plan d))
+        exact I.leftScheme.scope_subset d)
     · exact Or.inr (by
         rw [OrderedFaceBoundary.right_index]
-        exact I.rightScheme.isPlan.subset_of_mem (I.rightScheme.scope_mem_plan d))
+        exact I.rightScheme.scope_subset d)
   · intro h
     apply OrderedFaceBoundary.complete_on_input I.leftScheme I.rightScheme I.shared
       R I.isPlan I.leftPlan_le I.rightPlan_le
@@ -241,24 +234,21 @@ theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
 
 /-- Every lifting problem whose upper scope stays inside either original face
 is inherited at the original cap, for arbitrary lawful target-local ambients. -/
-theorem inherited_lift {CI BJ : Finset ι × ℕ}
+theorem inherited_lift {CI BJ}
     (hCI : CI ∈ Plan.gradedPlan R) (hBJ : BJ ∈ Plan.gradedPlan R)
     (h : GradedLe CI BJ) (hne : CI ≠ BJ) (hscope : BJ.1 ⊆ B ∨ BJ.1 ⊆ C)
-    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) (γ : ExtOrd)
+    p q γ
     (hp : RespectsSemanticsBelow I.rows CI p) (hq : RespectsSemanticsBelow I.rows BJ q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
     (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
     ∃ q', RespectsSemanticsBelow I.rows BJ q' ∧
-      (∀ d, min (q' d) γ = min (q d) γ) ∧
+      (CappedEq q' q γ) ∧
       ∀ d, q' (CellScheme.below.mono h d) = p d := by
   rcases hscope with hl | hr
   · exact I.leftFace.lift hl (I.left_mem hCI (h.1.trans hl)) (I.left_mem hBJ hl) h hne
-      (PointImageSemantics.bountiful _ _ _ _ I.left.complete I.left.bountiful)
+      (PointImageSemantics.bountiful _ I.left.complete I.left.bountiful)
       p q γ hp hq hγ ha
   · exact I.rightFace.lift hr (I.right_mem hCI (h.1.trans hr)) (I.right_mem hBJ hr) h hne
-      (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
+      (PointImageSemantics.bountiful _ I.right.complete I.right.bountiful)
       p q γ hp hq hγ ha
 
-end Input
-end
-end VaughtConjecture.Knight.WholeDonorBoundary

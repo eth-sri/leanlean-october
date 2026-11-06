@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Directedness
+import VaughtConjecture.Knight.Directedness
 
 /-! # Top-grade growth or eventual constancy
 
@@ -18,11 +17,8 @@ the next lane.
 
 Construction-private (not root-exported).  Reviewer probe (2026-09-03), graduated. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower KnightRealization
 
 universe w
 
@@ -34,7 +30,7 @@ top-grade split used in Cor. 5.3.8. -/
 theorem KnightRealization.hasTopGradeGrowth_or_coinitial_constant
     (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering) :
     R.HasTopGradeGrowth ∨
-      ∃ K : ℕ, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} := by
+      ∃ K , IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} := by
   let := KnightRealization.nonempty_labelledExt hcov
   let := labelledExt_isDirectedOrder hcons hcov
   rcases DirectedNat.eventually_constant_or_tendsto
@@ -48,9 +44,7 @@ theorem KnightRealization.hasTopGradeGrowth_or_coinitial_constant
     exact ⟨z, hy z hyz, hxz⟩
 
 /-- Model-facing compatibility wrapper. -/
-theorem KnightRealization.IsModel.hasTopGradeGrowth_or_coinitial_constant
-    (hR : R.IsModel) :
-    R.HasTopGradeGrowth ∨ ∃ K : ℕ, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} :=
+def KnightRealization.IsModel.hasTopGradeGrowth_or_coinitial_constant
+    (hR : R.IsModel) :=
   KnightRealization.hasTopGradeGrowth_or_coinitial_constant hR.consistent hR.covering
 
-end VaughtConjecture.Knight

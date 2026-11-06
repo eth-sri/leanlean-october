@@ -3,20 +3,20 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FiniteCoverReceiving
-public import VaughtConjecture.Knight.TopSupportRigidCoreCap
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FiniteCoverReceivingCore
+import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
+import VaughtConjecture.Knight.BlockCode
+import VaughtConjecture.Knight.TopSupportRigidCoreCap
 
 /-! # Classification from globally rigid top-support cores
 
 Model-level chart extension, isomorphism, and countability results for globally rigid cores.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.TopSupportRigidCore
-open TypeTower StageType KnightRealization Value ExtOrd
 universe w
 variable {α : LimitStage} {M M₁ M₂ : Type w} {R : KnightRealization α M}
   {R₁ : KnightRealization α M₁} {R₂ : KnightRealization α M₂}
@@ -35,10 +35,10 @@ theorem nonempty_iso_of_rigidCores [Countable M₁] [Countable M₂] (hM₁ : R�
 
 /-- Enlarging a globally rigid core preserves rigidity, whether or not the
 initial tuple itself has a label. -/
-theorem rigidCore_mono {k m : ℕ} {B : Fin k ↪ M} {C : Fin m ↪ M}
+theorem rigidCore_mono {k m} {B} {C}
     (hB : RigidCore R B) (f : Fin k ↪ Fin m) (hf : f.trans C = B) : RigidCore R C := by
   intro n D d hd e he H hH ht
-  apply hB D d hd (f.trans e) (by rw [Function.Embedding.trans_assoc, he, hf]) H hH
+  apply hB D d hd (f.trans e) (by aesop) H hH
   intro x hx htop
   apply ht x ?_ htop
   intro z hz
@@ -54,4 +54,3 @@ theorem exists_labelled_core (hM : R.IsModel)
   obtain ⟨c, hc⟩ := Option.isSome_iff_exists.mp hsome
   exact ⟨k + j, C, c, hc, rigidCore_mono hB (Fin.castAddEmb j) hC⟩
 
-end VaughtConjecture.Knight.TopSupportRigidCore

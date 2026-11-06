@@ -1,15 +1,15 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.OrdinalCountability
-public import Mathlib.SetTheory.Cardinal.Aleph
-public import Mathlib.SetTheory.Ordinal.Arithmetic
-public import Mathlib.SetTheory.Cardinal.Arithmetic
-public import Mathlib.SetTheory.Cardinal.Regular
+import InfinitaryLogic.OrdinalCountability
+import Mathlib.SetTheory.Cardinal.Aleph
+import Mathlib.SetTheory.Ordinal.Arithmetic
+import Mathlib.SetTheory.Cardinal.Arithmetic
+import Mathlib.SetTheory.Cardinal.Regular
 
 /-! # Countable successor losses and limit continuity give countable complements
 
@@ -28,8 +28,6 @@ countable-index complement (at most `ℵ₁ · ℵ₀` points), and a countable 
 its points before one countable index, emptying that domain.  No rank function and no
 canonical representatives are chosen.  Nothing here is construction-specific. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.CountableLoss
 
 open Cardinal Set
@@ -37,7 +35,7 @@ open Cardinal Set
 universe u
 
 /-- **Countable successor losses and limit continuity give countable complements.** -/
-theorem compl_countable_of_loss {X : Type u} (D : Ordinal.{0} → Set X) (h0 : D 0 = Set.univ)
+theorem compl_countable_of_loss {X : Type u} (D : Ordinal₀ → Set X) (h0 : D 0 = Set.univ)
     (hsucc : ∀ ξ, ξ < (aleph 1).ord → (D ξ \ D (ξ + 1)).Countable)
     (hlim : ∀ l, Order.IsSuccLimit l → l < (aleph 1).ord → (⋂ ξ < l, D ξ) ⊆ D l) :
     ∀ β, β < (aleph 1).ord → (D β)ᶜ.Countable := by
@@ -53,4 +51,3 @@ The space is taken in `Type 1`, where the counted quotients live; the ordinal in
 theorem mk_Iio_ord_aleph_one : #(Set.Iio (aleph 1).ord) = aleph 1 := by
   rw [Cardinal.mk_Iio_ordinal, Cardinal.card_ord, Cardinal.lift_aleph, Ordinal.lift_one]
 
-end VaughtConjecture.CountableLoss

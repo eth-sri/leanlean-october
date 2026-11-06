@@ -3,12 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthPaddedSuccessor
-public import VaughtConjecture.Knight.GrowthFiniteReflection
-public import VaughtConjecture.Knight.AmbientGradeCharts
-public import VaughtConjecture.Knight.SupportLadderBottomReflection
+import VaughtConjecture.Knight.GrowthPaddedSuccessor
+import VaughtConjecture.Knight.GrowthFiniteReflection
+import VaughtConjecture.Knight.AmbientGradeCharts
+import VaughtConjecture.Knight.SupportLadderBottomReflection
 
 /-! # Complete-field recognition from the maximal leaf chart on the growth successor rows
 
@@ -41,40 +40,26 @@ Grade one (the uncapped values `B_p f` themselves and the grade-one original vec
 maximal spare chart of the checked base and is not treated here.  Mixed scopes are not treated
 here. -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthLeafRecognition
 
-open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor
-open SupportLadderRows LadderScalarRendering SharpWitnessComposition
+open    Growth GrowthHigherSources GrowthPaddedSuccessor
+open SupportLadderRows  
 
 noncomputable section
 
-theorem card_pos {ι : Type*} {A : Finset ι} (h : 2 ≤ A.card) : 0 < A.card := by omega
+theorem card_pos {ι} {A : Finset ι} (h : 2 ≤ A.card) : 0 < A.card := by omega
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n J : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
+  (X : I.GrowthData)
+  (T : I.GrowthAttachment X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
 local notation "Fld" => Field I.right.scheme I.left.scheme
-local notation "Ωc" => carrier I X T hA hB hC
-local notation "Occ" => CellScheme.below (carrier I X T hA hB hC) (A, 2)
-local notation "cellΩ" => CellScheme.cell (carrier I X T hA hB hC)
-local notation "gradeΩ" => CellScheme.grade (carrier I X T hA hB hC)
-local notation "Eρ" => Semantics.E (rows I X T hA hB hC)
 local notation "Rows" => rows I X T hA hB hC
-local notation "src" => source I X T hA hB hC
-local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue X 1)
 local notation "ranks₁" => RelativeLadderLayer.ranks (fields X 1)
 local notation "rungs" => RelativeLadderLayer.rungs (X := Fld)
-local notation "ceil" => RecursiveRungRendering.ceiling Fld 2
-local notation "lowerΩ" => LadderWeightedSuccessor.Input.lower (input I X T hA hB hC)
 
 theorem rungs_pos : 0 < rungs := Nat.succ_pos _
 
@@ -92,11 +77,11 @@ theorem cap_sup {Y : Type*} [Fintype Y] (g : Y → ExtOrd) (h : ExtOrd) :
 
 /-! ## The native rows on the padded base -/
 
-theorem rank_le_rungs (a : Catalogue X 1) (f : Fld) : ranks₁ a f ≤ rungs :=
+theorem rank_le_rungs a f : ranks₁ a f ≤ rungs :=
   (RelativeLadderLayer.rank_bound (fields X 1) a f).le
 
 /-- The birth anchor's own shadow of `f` is indexed by the rank of `f`. -/
-theorem index_shadow_self (a : Catalogue X 1) (f : Fld) :
+theorem index_shadow_self a f :
     SupportLadderRows.index (H := rungs) ranks₁ a (shadow a f) = ranks₁ a f := by
   change min (FiniteProfileControllers.cut rungs (ranks₁ a) (ranks₁ a)) (ranks₁ a f) = _
   rw [FiniteProfileControllers.cut_refl]
@@ -109,18 +94,9 @@ variable {p}
 /-! ## The maximal leaf chart -/
 
 /-- The catalogue is nonempty: the zero state is admitted and canonical. -/
-def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
+def zeroMember j (hj : 1 ≤ j) :=
   Growth.zeroMember X j hj
 
 /-! ## Recognition and finite bottom reflection -/
 
-section Chart
 
-variable {a : Catalogue X 2} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop 2) σ)
-
-include hσ
-
-end Chart
-
-end
-end VaughtConjecture.Knight.GrowthLeafRecognition

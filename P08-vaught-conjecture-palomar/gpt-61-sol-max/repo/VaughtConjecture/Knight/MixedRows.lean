@@ -1,14 +1,21 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.MixedOwnValues
-public import VaughtConjecture.Knight.CrossGradeRecoding
-public import VaughtConjecture.Knight.PartialSections
-public import VaughtConjecture.Knight.MixedIndexConstraints
+import VaughtConjecture.Knight.RequestFaceIdentification
+import VaughtConjecture.Knight.CountedRecoding
+import VaughtConjecture.Knight.ReferenceContext
+import VaughtConjecture.Knight.CappedLocalityRecoding
+import Mathlib.Tactic
+import VaughtConjecture.Knight.Semantics
+import VaughtConjecture.Knight.Reduction
+import VaughtConjecture.Knight.VisibilityAlgebra
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import VaughtConjecture.Knight.PartialSections
+import VaughtConjecture.Knight.CoupledGradeOne
 
 /-! # The mixed rows over the actual context: consistency from the recodings
 
@@ -40,65 +47,3 @@ request's labels literally, decodes each recoded row (`recode_transformsTo`), an
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
-namespace VaughtConjecture.Knight
-
-open AmalgamationPlan CellScheme Transform Value ExtOrd
-open CellScheme.restrictFace (pushGraded)
-
-/-! ## The recoding at a grade, generically -/
-
-section Recode
-
-variable (l : ℕ) (S : Finset Ordinal.{0})
-
-end Recode
-
-/-! ## The inventory over the actual context -/
-
-section Inventory
-
-variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
-  {Y : CellScheme (ι := Fin (n + 1)) Finset.univ} {e : Fin n ↪ Fin m}
-  {Rp : Finset (Finset (Fin (m + 1)))} {hR : Plan.IsPlan Finset.univ Rp}
-  {hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-    X.plan.image (Finset.image Fin.castSuccEmb)}
-  {hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
-    Y.plan.image (Finset.image (onePointProj e))}
-  (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
-  (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
-  (rowsX : Semantics X) (rowsY : Semantics Y) (labX : Cell X → ExtOrd) (labY : Cell Y → ExtOrd)
-
-/-! ### The rows -/
-
-variable (hX : ∀ d, SelfVis (X.grade d) (labX d)) (hY : ∀ c, SelfVis (Y.grade c) (labY c))
-
-/-! ### Every cell is old, an identified request cell, or a remaining-index cell -/
-
-variable (hfresh : ∀ c : Cell Y, Fin.last n ∈ Y.scope c)
-
-/-! ### Consistency on a face, transported -/
-
-/-! ### Consistency at the old and the request cells -/
-
-variable (hXres : RespectsSemantics rowsX labX) (hYres : RespectsSemantics rowsY labY)
-  (hXcons : rowsX.IsConsistent) (hYcons : rowsY.IsConsistent)
-
-/-! ### Consistency at the remaining-index cells -/
-
-variable (hn : ∀ i : Cell X, ¬ X.scope i ⊆ Finset.univ.image e)
-
-/-! ### The assembled properties -/
-
-/-! ### The first bountifulness obligation: what the recoded rows force -/
-
-/-- The constantly-`⊥` labelling respects every semantics on every lower set. -/
-theorem respectsBelow_bot {ι₀ : Type*} [DecidableEq ι₀] {A₀ : Finset ι₀} {D₀ : CellScheme A₀}
-    (sem : Semantics D₀) (BJ : Finset ι₀ × ℕ) :
-    RespectsSemanticsBelow sem BJ (fun _ => (⊥ : ExtOrd)) :=
-  RespectsSemanticsBelow.bot sem BJ
-
-end Inventory
-
-end VaughtConjecture.Knight

@@ -1,12 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Order.Lattice.Nat
-public import VaughtConjecture.Knight.Model
+import Mathlib.Tactic
+
+import Mathlib.Order.Lattice.Nat
+import VaughtConjecture.Knight.Model
 
 /-! # Terminal invariants: provisional values, characteristic arity, anchors, hollowness
 
@@ -132,14 +134,12 @@ history/linked-stop layer to produce that witness; the classifier (#53/#57) will
 (Def. 5.3.9 as an *object*, Lemma 5.3.10) stays proof-internal (#51,
 `docs/CONCORDANCE.md` §5.3); this module only defines its value graph. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd VaughtConjecture.AmalgamationPlan
 open CellScheme.restrictFace (toCell)
 
-universe w w'
+universe w 
 
 /-! ### Transport of cells along a restriction
 
@@ -151,16 +151,18 @@ the encoded form of Def. 3.2.5 ("`M(Ξ)` is the value taken by `p(Ξ)` for all r
 
 namespace StageType
 
-variable {α : Ordinal.{0}} {m n : ℕ}
+variable {α : Ordinal₀} {m n : ℕ}
+
+local notation "S₀" => S α n
 
 /-- If `typeMap f q = some p`, the range of `f` is a visible face of the plan of `q`. -/
-theorem visible_of_typeMap_eq_some {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) : Finset.univ.image f ∈ q.scheme.scheme.plan :=
-  (typeMap_isSome_iff f q).mp (by rw [h]; rfl)
+def visible_of_typeMap_eq_some {q : S₀} {p : S α m} {f : Fin m ↪ Fin n}
+    (h : typeMap f q = some p) :=
+  (typeMap_isSome_iff).mp (by rw [h]; rfl)
 
 /-- If `typeMap f q = some p`, then `p` is the face restriction of `q` along `f`. -/
-theorem restrictFace_eq_of_typeMap_eq_some {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) : q.restrictFace f (visible_of_typeMap_eq_some h) = p := by
+def restrictFace_eq_of_typeMap_eq_some {q : S₀} {p : S α m} {f : Fin m ↪ Fin n}
+    (h : typeMap f q = some p) := by
   have h' := typeMap_eq_some f q (visible_of_typeMap_eq_some h)
   rw [h'] at h
   exact Option.some_injective _ h
@@ -168,24 +170,24 @@ theorem restrictFace_eq_of_typeMap_eq_some {q : S α n} {p : S α m} {f : Fin m 
 /-- The cell of `q` underlying a cell of its restriction `p` (the paper's `Ξ ∈ dom p ⊆ dom q`):
 transport along the restriction equation, then the cell map `toCell` of the face
 restriction. -/
-noncomputable def mapCell {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme) : Cell q.scheme.scheme :=
+noncomputable def mapCell {q : S₀} {p : S α m} {f : Fin m ↪ Fin n}
+    (h : typeMap f q = some p) Xi :=
   toCell q.scheme.scheme f (visible_of_typeMap_eq_some h)
     (SemScheme.castCell (congrArg StageType.scheme (restrictFace_eq_of_typeMap_eq_some h).symm)
       Xi)
 
 /-- The label of the underlying cell is the label of the restricted cell (Def. 3.2.5: the
 cells of `dom p` carry the same values in `q`). -/
-theorem label_mapCell {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme) :
+theorem label_mapCell {q : S₀} {p : S α m} {f : Fin m ↪ Fin n}
+    (h : typeMap f q = some p) Xi :
     q.label (mapCell h Xi) = p.label Xi := by
   obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
     ⟨visible_of_typeMap_eq_some h, restrictFace_eq_of_typeMap_eq_some h⟩
   rfl
 
 /-- The grade of the underlying cell is the grade of the restricted cell. -/
-theorem grade_mapCell {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme) :
+theorem grade_mapCell {q : S₀} {p : S α m} {f : Fin m ↪ Fin n}
+    (h : typeMap f q = some p) Xi :
     q.scheme.scheme.grade (mapCell h Xi) = p.scheme.scheme.grade Xi := by
   obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
     ⟨visible_of_typeMap_eq_some h, restrictFace_eq_of_typeMap_eq_some h⟩
@@ -200,11 +202,11 @@ grade; `p⁺(Ξ)` is the value in `[α, α + K^p]` that the rows force, if any. 
 /-- The grades of full-scope cells labelled `∞`: the set whose supremum is the paper's `K^p`
 (Def. 5.3.1 clause 2: "`K^p` is the greatest natural number such that for some
 `Θ ∈ D^{A,K^p}`, `p(Θ) = ∞`"). -/
-def topGrades (p : S α n) : Set ℕ :=
-  {k | ∃ Θ : Cell p.scheme.scheme, p.scheme.scheme.scope Θ = Finset.univ ∧
+def topGrades (p : S₀) :=
+  {k | ∃ Θ , p.scheme.scheme.scope Θ = Finset.univ ∧
     p.scheme.scheme.grade Θ = k ∧ p.label Θ = ⊤}
 
-theorem topGrades_bddAbove (p : S α n) : BddAbove p.topGrades := by
+theorem topGrades_bddAbove (p : S₀) : BddAbove p.topGrades := by
   refine ⟨n, fun k hk => ?_⟩
   obtain ⟨Θ, hsc, rfl, -⟩ := hk
   have h1 := p.scheme.scheme.grade_le_card_scope Θ
@@ -213,15 +215,15 @@ theorem topGrades_bddAbove (p : S α n) : BddAbove p.topGrades := by
 
 /-- The paper's `K^p` (Def. 5.3.1): the greatest grade of a full-scope `∞`-cell (`0` when
 there is none — under clause 2 the set is nonempty, `grade_mem_topGrades`). -/
-noncomputable def topGrade (p : S α n) : ℕ := sSup p.topGrades
+noncomputable def topGrade (p : S₀) := sSup p.topGrades
 
 /-- If any cell of `p` is labelled `∞`, some full-scope cell of the same grade is labelled `∞`
 (availability, Def. 2.5.4(2), against the full-scope cell of that grade provided by
 completeness, Def. 2.5.15) — so the defining set of `K^p` is nonempty whenever clause 2 of
 Def. 5.3.1 applies. -/
-theorem grade_mem_topGrades {p : S α n} {Xi : Cell p.scheme.scheme} (hXi : p.label Xi = ⊤) :
+theorem grade_mem_topGrades {p : S₀} {Xi} (hXi : p.label Xi = ⊤) :
     p.scheme.scheme.grade Xi ∈ p.topGrades := by
-  have hmem : ((Finset.univ : Finset (Fin n)), p.scheme.scheme.grade Xi) ∈
+  have hmem : ((Finset.univ : FiniteScope n), p.scheme.scheme.grade Xi) ∈
       Plan.gradedPlan p.scheme.scheme.plan := by
     refine Plan.mem_gradedPlan.mpr
       ⟨p.scheme.scheme.isPlan.domain_mem, p.scheme.scheme.grade_pos Xi, ?_⟩
@@ -230,9 +232,8 @@ theorem grade_mem_topGrades {p : S α n} {Xi : Cell p.scheme.scheme} (hXi : p.la
   obtain ⟨d, hd⟩ := p.scheme.complete _ hmem
   have hd' := Prod.ext_iff.mp hd
   have hscope : p.scheme.scheme.scope Xi ⊆ p.scheme.scheme.scope d := by
-    rw [show p.scheme.scheme.scope d = Finset.univ from hd'.1]
-    exact Finset.subset_univ _
-  have hgrade : p.scheme.scheme.grade Xi = p.scheme.scheme.grade d := hd'.2.symm
+    simp_all
+  have hgrade  := hd'.2.symm
   obtain ⟨Xi', hcell, hle⟩ := p.respects.availability Xi d hscope hgrade
   have hXi' := Prod.ext_iff.mp (hcell.trans hd)
   refine ⟨Xi', hXi'.1, hXi'.2, ?_⟩
@@ -242,10 +243,10 @@ theorem grade_mem_topGrades {p : S α n} {Xi : Cell p.scheme.scheme} (hXi : p.la
 /-- Clause 2.(a) of Def. 5.3.1: some full-scope `∞`-cell `Θ` of grade `K^p` sees, below
 itself, an `∞`-cell `Σ` with `E(Θ)(Σ) ⊔⁺_{K^p} K^p ≤ E(Θ)(Ξ)` — the evidence in `p` that
 `M⁺(Ξ)` is at least `α + K^p`.  Then `p⁺(Ξ) = α + K^p`. -/
-def ProvisionalCap (p : S α n) (Xi : Cell p.scheme.scheme) : Prop :=
-  ∃ (Θ : Cell p.scheme.scheme)
-    (hXi : GradedLe (p.scheme.scheme.cell Xi) (p.scheme.scheme.cell Θ))
-    (Sig : p.scheme.scheme.below (p.scheme.scheme.cell Θ)),
+def ProvisionalCap (p : S₀) Xi :=
+  ∃ Θ
+    hXi
+    Sig,
     p.scheme.scheme.scope Θ = Finset.univ ∧ p.scheme.scheme.grade Θ = p.topGrade ∧
     p.label Θ = ⊤ ∧ p.label Sig.1 = ⊤ ∧
     extVisibilityReplace (p.scheme.rows.E Θ Sig) p.topGrade p.topGrade ≤
@@ -256,9 +257,9 @@ def ProvisionalCap (p : S α n) (Xi : Cell p.scheme.scheme) : Prop :=
 (Independence of `i` from `Θ` is Lemma 5.3.2, a consistency theorem — not needed here:
 `someProvisionalValue` selects the least band index, and under `¬ ProvisionalCap` every witness
 forces `i < K^p`, `ProvisionalBand.lt_topGrade`.) -/
-def ProvisionalBand (p : S α n) (Xi : Cell p.scheme.scheme) (i : ℕ) : Prop :=
-  ∃ (Θ : Cell p.scheme.scheme)
-    (hXi : GradedLe (p.scheme.scheme.cell Xi) (p.scheme.scheme.cell Θ)),
+def ProvisionalBand (p : S₀) Xi i :=
+  ∃ Θ
+    hXi,
     p.scheme.scheme.scope Θ = Finset.univ ∧ p.scheme.scheme.grade Θ = p.topGrade ∧
     p.label Θ = ⊤ ∧
     p.scheme.rows.E Θ ⟨Xi, hXi⟩ =
@@ -275,7 +276,7 @@ relation `IsProvisionalValue` (Def. 5.3.1 as a graph), and this chooser only dis
 totality (`isProvisionalValue_someProvisionalValue`).  Band-index independence (Lemma 5.3.2,
 `ProvisionalBand.unique` in `Knight/ProvisionalUniqueness.lean`) makes the relation
 single-valued, so the chooser computes *the* value (`isProvisionalValue_iff`). -/
-noncomputable def someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) : ExtOrd :=
+noncomputable def someProvisionalValue (p : S₀) Xi :=
   open Classical in
   if p.label Xi = ⊤ then
     if p.ProvisionalCap Xi then ofOrd (α + p.topGrade)
@@ -283,12 +284,12 @@ noncomputable def someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) 
     else ⊤
   else p.label Xi
 
-theorem someProvisionalValue_of_ne_top {p : S α n} {Xi : Cell p.scheme.scheme}
+theorem someProvisionalValue_of_ne_top {p : S₀} {Xi}
     (h : p.label Xi ≠ ⊤) : p.someProvisionalValue Xi = p.label Xi := by
   unfold someProvisionalValue
   rw [ite_eq_right h]
 
-theorem someProvisionalValue_of_cap {p : S α n} {Xi : Cell p.scheme.scheme}
+theorem someProvisionalValue_of_cap {p : S₀} {Xi}
     (htop : p.label Xi = ⊤) (hcap : p.ProvisionalCap Xi) :
     p.someProvisionalValue Xi = ofOrd (α + p.topGrade) := by
   unfold someProvisionalValue
@@ -300,7 +301,7 @@ band witnesses clause 2.(b).  Proof: `K^p ∈ topGrades` (`grade_mem_topGrades` 
 value `E(Θ)(Ξ)` cannot be `-∞`, `∞`, or self-visible at `K^p` (each would fire clause 2.(a)
 with `Σ := Ξ`), so it is an ordinal with finite part `< K^p`, and that finite part is the
 band. -/
-theorem exists_provisionalBand {p : S α n} {Xi : Cell p.scheme.scheme}
+theorem exists_provisionalBand {p : S₀} {Xi}
     (htop : p.label Xi = ⊤) (hcap : ¬ p.ProvisionalCap Xi) :
     ∃ i, p.ProvisionalBand Xi i := by
   have hmem := grade_mem_topGrades htop
@@ -325,10 +326,10 @@ theorem exists_provisionalBand {p : S α n} {Xi : Cell p.scheme.scheme}
     exact absurd rfl hnotself
   · rw [htop'] at hnotself
     exact absurd rfl hnotself
-  · rw [hβ, extVisibilityReplace_ofOrd] at hnotself
+  · rw [hβ, ] at hnotself
     have hfp : finitePart β < p.topGrade := by
       by_contra hge
-      exact hnotself (congrArg ofOrd ((visibilityReplace_self_iff β _).mpr (not_lt.mp hge)))
+      exact hnotself (congrArg ofOrd ((visibilityReplace_self_iff).mpr (not_lt.mp hge)))
     refine ⟨finitePart β, Θ, hXimem, hsc, hgr, hΘtop, ?_⟩
     have hvr : visibilityReplace β p.topGrade (finitePart β) = β := by
       unfold visibilityReplace ordinalReplace
@@ -338,13 +339,11 @@ theorem exists_provisionalBand {p : S α n} {Xi : Cell p.scheme.scheme}
 
 /-- Under `¬` clause 2.(a), every band index is `< K^p` (it is the finite part of an ordinal
 row value that is not self-visible at `K^p`). -/
-theorem ProvisionalBand.lt_topGrade {p : S α n} {Xi : Cell p.scheme.scheme} {i : ℕ}
+theorem ProvisionalBand.lt_topGrade {p : S₀} {Xi} {i}
     (h : p.ProvisionalBand Xi i) (htop : p.label Xi = ⊤) (hcap : ¬ p.ProvisionalCap Xi) :
     i < p.topGrade := by
   obtain ⟨Θ, hXimem, hsc, hgr, hΘtop, heq⟩ := h
-  have hnotself :
-      extVisibilityReplace (p.scheme.rows.E Θ ⟨Xi, hXimem⟩) p.topGrade p.topGrade ≠
-        p.scheme.rows.E Θ ⟨Xi, hXimem⟩ := fun hself =>
+  have hnotself  := fun hself =>
     hcap ⟨Θ, hXimem, ⟨Xi, hXimem⟩, hsc, hgr, hΘtop, htop, le_of_eq hself⟩
   rcases ExtOrd.cases (p.scheme.rows.E Θ ⟨Xi, hXimem⟩) with hbot | htop' | ⟨β, hβ⟩
   · rw [hbot] at hnotself
@@ -353,20 +352,19 @@ theorem ProvisionalBand.lt_topGrade {p : S α n} {Xi : Cell p.scheme.scheme} {i 
     exact absurd rfl hnotself
   · rw [hβ, extVisibilityReplace_ofOrd] at hnotself heq
     have hfp : finitePart β < p.topGrade := by
-      by_contra hge
-      exact hnotself (congrArg ofOrd ((visibilityReplace_self_iff β _).mpr (not_lt.mp hge)))
-    have hβeq : β = limitPart β + (i : Ordinal) := by
+      grind [visibilityReplace_self_iff]
+    have hβeq  := by
       have h0 := ofOrd_inj.mp heq
       unfold visibilityReplace ordinalReplace at h0
       rwa [ite_eq_left hfp] at h0
-    have hcast : (i : Ordinal.{0}) = (finitePart β : Ordinal.{0}) :=
+    have hcast : (i) = (finitePart β : Ordinal₀) :=
       add_left_cancel (hβeq.symm.trans (decomposition β).symm)
-    have : i = finitePart β := by exact_mod_cast hcast
+    have  := by exact_mod_cast hcast
     omega
 
 /-- The band branch of `someProvisionalValue`: when `p(Ξ) = ∞` and clause 2.(a) fails, the value
 is `α + i` for a band index `i < K^p`. -/
-theorem someProvisionalValue_of_band {p : S α n} {Xi : Cell p.scheme.scheme}
+theorem someProvisionalValue_of_band {p : S₀} {Xi}
     (htop : p.label Xi = ⊤) (hcap : ¬ p.ProvisionalCap Xi) :
     ∃ i, p.ProvisionalBand Xi i ∧ i < p.topGrade ∧
       p.someProvisionalValue Xi = ofOrd (α + i) := by
@@ -385,7 +383,7 @@ consistency theorem, `ProvisionalBand.unique` in `Knight/ProvisionalUniqueness.l
 relation single-valued (`IsProvisionalValue.unique`); `someProvisionalValue` (the least band
 index) is a witness of totality (`isProvisionalValue_someProvisionalValue`) and computes the
 unique value (`isProvisionalValue_iff`), but is not part of the primary interface. -/
-def IsProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) (v : ExtOrd) : Prop :=
+def IsProvisionalValue (p : S₀) Xi v :=
   (p.label Xi ≠ ⊤ ∧ v = p.label Xi) ∨
   (p.label Xi = ⊤ ∧ p.ProvisionalCap Xi ∧ v = ofOrd (α + p.topGrade)) ∨
   (p.label Xi = ⊤ ∧ ¬ p.ProvisionalCap Xi ∧
@@ -394,7 +392,7 @@ def IsProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) (v : ExtOrd) : P
 /-- The chooser realizes the relation (totality witness; the choice — least band index — is
 canonical only in the sense of being deterministic, and is not exposed by the relational
 interface). -/
-theorem isProvisionalValue_someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) :
+theorem isProvisionalValue_someProvisionalValue (p : S₀) Xi :
     p.IsProvisionalValue Xi (p.someProvisionalValue Xi) := by
   by_cases htop : p.label Xi = ⊤
   · by_cases hcap : p.ProvisionalCap Xi
@@ -403,17 +401,9 @@ theorem isProvisionalValue_someProvisionalValue (p : S α n) (Xi : Cell p.scheme
       exact Or.inr (Or.inr ⟨htop, hcap, i, hband, hval⟩)
   · exact Or.inl ⟨htop, someProvisionalValue_of_ne_top htop⟩
 
-/-- No provisional value is `∞` — the paper's codomain `{-∞} ∪ [0, α + ω)` of Def. 5.3.1. -/
-theorem IsProvisionalValue.ne_top {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd}
-    (h : p.IsProvisionalValue Xi v) : v ≠ ⊤ := by
-  rcases h with ⟨hne, rfl⟩ | ⟨-, -, rfl⟩ | ⟨-, -, i, -, rfl⟩
-  · exact hne
-  · exact ofOrd_ne_top _
-  · exact ofOrd_ne_top _
-
 /-- Every provisional value is `≤ α + K^p` (the conservative-estimate reading after
 Def. 5.3.1). -/
-theorem IsProvisionalValue.le {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd}
+theorem IsProvisionalValue.le {p : S₀} {Xi} {v}
     (h : p.IsProvisionalValue Xi v) : v ≤ ofOrd (α + p.topGrade) := by
   rcases h with ⟨hne, rfl⟩ | ⟨-, -, rfl⟩ | ⟨htop, hcap, i, hband, rfl⟩
   · rcases p.label_bound Xi with hlt | htop'
@@ -422,19 +412,19 @@ theorem IsProvisionalValue.le {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtO
     · exact absurd htop' hne
   · exact le_rfl
   · rw [ofOrd_le_ofOrd]
-    have hcast : (i : Ordinal.{0}) < (p.topGrade : Ordinal.{0}) := by
+    have hcast : (i) < (p.topGrade : Ordinal₀) := by
       exact_mod_cast hband.lt_topGrade htop hcap
     exact add_le_add (le_refl α) hcast.le
 
 /-- `p⁺(Ξ) ≤ α + K^p` (the conservative-estimate reading after Def. 5.3.1). -/
-theorem someProvisionalValue_le (p : S α n) (Xi : Cell p.scheme.scheme) :
+theorem someProvisionalValue_le (p : S₀) Xi :
     p.someProvisionalValue Xi ≤ ofOrd (α + p.topGrade) := by
   by_cases htop : p.label Xi = ⊤
   · by_cases hcap : p.ProvisionalCap Xi
-    · rw [someProvisionalValue_of_cap htop hcap]
+    · simp_all [someProvisionalValue_of_cap]
     · obtain ⟨i, -, hlt, hval⟩ := someProvisionalValue_of_band htop hcap
       rw [hval, ofOrd_le_ofOrd]
-      have hcast : (i : Ordinal.{0}) < (p.topGrade : Ordinal.{0}) := by exact_mod_cast hlt
+      have hcast : (i) < (p.topGrade : Ordinal₀) := by exact_mod_cast hlt
       exact add_le_add (le_refl α) hcast.le
   · rw [someProvisionalValue_of_ne_top htop]
     rcases p.label_bound Xi with hlt | htop'
@@ -461,9 +451,9 @@ The paper's "dominating (equivalently
 coinitial, Cor. 5.3.8) set of finite subsets `A` of `M`" — the equivalence and the uniqueness
 of `γ` are model theorems (directedness of labelled extensions), for #51, not definitional
 here. -/
-def StabilizesTo (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
-    (Xi : Cell p.scheme.scheme) (γ : ExtOrd) : Prop :=
-  ∀ {m : ℕ} (s : Fin m ↪ M),
+def StabilizesTo (R : KnightRealization α M) {n} t (p : S α.1 n)
+    Xi γ :=
+  ∀ {m} s,
     ∃ (m' : ℕ) (u : Fin m' ↪ M) (g : Fin m ↪ Fin m') (f : Fin n ↪ Fin m')
       (q : S α.1 m') (hpq : typeMap f q = some p),
       R.eval u = some q ∧ g.trans u = s ∧ f.trans u = t ∧
@@ -472,35 +462,12 @@ def StabilizesTo (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p : S
 /-- **The value `M⁺(Ξ)` as a graph** (Def. 5.3.9): `M⁺(Ξ) = γ` iff either `γ < α + ω` and the
 provisional values stabilize to `γ`, or `γ = ∞` and no value below `α + ω` stabilizes.  Total
 by construction; functional only under the model axioms (see `StabilizesTo`). -/
-def HasStableValue (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
-    (Xi : Cell p.scheme.scheme) (γ : ExtOrd) : Prop :=
+def HasStableValue (R : KnightRealization α M) {n} t (p : S α.1 n)
+    Xi γ :=
   (γ < ofOrd (α.1 + Ordinal.omega0) ∧ R.StabilizesTo t p Xi γ) ∨
-  (γ = ⊤ ∧ ∀ δ : ExtOrd, δ < ofOrd (α.1 + Ordinal.omega0) → ¬ R.StabilizesTo t p Xi δ)
-
-/-- The stabilized values realized in `R`: all values `M⁺(Ξ)`, over all cells `Ξ` of all
-realized types (the index set of the supremum in Def. 5.4.1). -/
-def stableSpectrum (R : KnightRealization α M) : Set ExtOrd :=
-  {γ | ∃ (n : ℕ) (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p ∧
-    ∃ Xi : Cell p.scheme.scheme, R.HasStableValue t p Xi γ}
+  (γ = ⊤ ∧ ∀ δ , δ < ofOrd (α.1 + Ordinal.omega0) → ¬ R.StabilizesTo t p Xi δ)
 
 /-! ### Characteristic arity (Def. 5.4.1) -/
-
-/-- **Def. 5.4.1, fixed `K`**: `α + K` is the supremum of all stabilized values `M⁺(Ξ)`
-(`IsLUB`: no completeness of `ExtOrd` is invoked, and "is the supremum" is read as "is the
-least upper bound", not "is attained").  This is **not** Knight-VC's `charArity`
-(distinguishing arity) — banned identification 2. -/
-def IsCharacteristicArity (R : KnightRealization α M) (K : ℕ) : Prop :=
-  IsLUB R.stableSpectrum (ofOrd (α.1 + K))
-
-/-- **The characteristic arity** `K ∈ ω ∪ {∞}` of `R` (Def. 5.4.1): the finite `K` with
-`α + K` the supremum of the stabilized values, and `∞` when there is none.
-
-**† provisional** (`docs/TERMINOLOGY.md`): a faithful transcription of Def. 5.4.1, but not
-presented as settled until stabilized-value functionality (#51) and occurrence/witness-choice
-independence (#31/#47/#57) are proved. -/
-noncomputable def characteristicArity (R : KnightRealization α M) : ℕ∞ :=
-  open Classical in
-  if h : ∃ K : ℕ, R.IsCharacteristicArity K then (Nat.find h : ℕ∞) else ⊤
 
 /-! ### Anchors at infinity and hollowness (Def. 5.4.2) -/
 
@@ -513,14 +480,14 @@ extending `t`, for every `∞`-cell `Θ` of grade `≥ K'` and every `∞`-cell 
 
 (`M(Θ) = ∞` is read as the label of `Θ`, Def. 3.2.5: labels are preserved by restriction,
 `label_mapCell`.) -/
-def IsInfinityAnchor (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
-    (Xi : Cell p.scheme.scheme) (K' : ℕ) : Prop :=
+def IsInfinityAnchor (R : KnightRealization α M) {n} t (p : S α.1 n)
+    Xi K' :=
   p.label Xi = ⊤ ∧
-  ∀ {m : ℕ} (s : Fin m ↪ M) (f : Fin n ↪ Fin m) (q : S α.1 m),
+  ∀ {m} s (f : Fin n ↪ Fin m) (q : S α.1 m),
     f.trans s = t → R.eval s = some q →
     ∀ (hpq : typeMap f q = some p) (Θ : Cell q.scheme.scheme),
       K' ≤ q.scheme.scheme.grade Θ → q.label Θ = ⊤ →
-      ∀ Sig : q.scheme.scheme.below (q.scheme.scheme.cell Θ), q.label Sig.1 = ⊤ →
+      ∀ Sig : q.scheme.scheme.belowCell Θ, q.label Sig.1 = ⊤ →
       ∀ hXi : GradedLe (q.scheme.scheme.cell (mapCell hpq Xi)) (q.scheme.scheme.cell Θ),
         q.scheme.rows.E Θ ⟨mapCell hpq Xi, hXi⟩ ≤
           extVisibilityReplace (q.scheme.rows.E Θ Sig) K' K' ∧
@@ -530,7 +497,7 @@ def IsInfinityAnchor (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p
 
 /-- `R` has an **anchor at infinity** (Def. 5.4.2): some cell of some realized type is minimal
 at infinity at some threshold. -/
-def HasInfinityAnchor (R : KnightRealization α M) : Prop :=
+def HasInfinityAnchor (R : KnightRealization α M) :=
   ∃ (n : ℕ) (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p ∧
     ∃ (Xi : Cell p.scheme.scheme) (K' : ℕ), R.IsInfinityAnchor t p Xi K'
 
@@ -539,7 +506,7 @@ frames the definition for models of characteristic arity `K` with `0 < K ≤ ∞
 hypothesis belongs to the consumers (#52).  This is **not** orbit homogeneity (Knight-VC's
 `IsHollow`, renamed `IsOrbitHomogeneous` there) — banned identification 1; orbit homogeneity
 is deliberately not defined in this module. -/
-def IsHollow (R : KnightRealization α M) : Prop := ¬ R.HasInfinityAnchor
+def IsHollow (R : KnightRealization α M) := ¬ R.HasInfinityAnchor
 
 /-! ### The terminal profile: one datum, one record
 
@@ -549,29 +516,6 @@ together; isomorphism transport is proved once, for the profile.  Core data (Def
 is owned by the linked stop / terminal realization (#31); `TerminalCode` (#57) encodes the
 classified branch from this profile together with that core information. -/
 
-/-- The **terminal profile** of a realization: its characteristic arity (Def. 5.4.1) and its
-hollowness (Def. 5.4.2), derived together from the one underlying realization.  `TerminalCode`
-(#57) encodes the *classified branch*: it is built from this profile together with the core
-information owned by the linked stop / terminal realization (#31) — no promise that a chosen
-core becomes a further field here. -/
-structure TerminalProfile : Type where
-  /-- The characteristic arity `K ∈ ω ∪ {∞}` (Def. 5.4.1). -/
-  charArity : ℕ∞
-  /-- Hollowness (Def. 5.4.2): no anchor at infinity. -/
-  hollow : Prop
-
-/-- The terminal profile of `R`: the single function producing all terminal invariants of the
-one datum `R`. -/
-noncomputable def terminalProfile (R : KnightRealization α M) : TerminalProfile :=
-  { charArity := R.characteristicArity
-    hollow := R.IsHollow }
-
-@[simp] theorem terminalProfile_charArity (R : KnightRealization α M) :
-    R.terminalProfile.charArity = R.characteristicArity := rfl
-
-@[simp] theorem terminalProfile_hollow (R : KnightRealization α M) :
-    R.terminalProfile.hollow = R.IsHollow := rfl
-
 /-! ### Isomorphism transport (the acceptance test of #48)
 
 An isomorphism `e : M ≃ N` of realizations moves labelled tuples bijectively and preserves
@@ -579,12 +523,5 @@ labels *on the nose* (`Realization.IsIso`), so every invariant of this module �
 intrinsic statement over the labelled tuples of the one datum — transports.  The bundled
 transport is `IsIso.terminalProfile_eq`; the invariant-level statements are its projections. -/
 
-section Iso
 
-variable {N : Type w'} {R : KnightRealization α M} {R₂ : KnightRealization α N} {e : M ≃ N}
 
-end Iso
-
-end KnightRealization
-
-end VaughtConjecture.Knight

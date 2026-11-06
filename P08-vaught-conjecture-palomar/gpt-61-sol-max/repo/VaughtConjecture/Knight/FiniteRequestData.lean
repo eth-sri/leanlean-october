@@ -1,11 +1,11 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
+import VaughtConjecture.Knight.Model
 
 /-! # Finite request data and elementary countability
 
@@ -13,15 +13,12 @@ Pattern codes retain their original admissibility predicate. This module contain
 request enumeration, scheduler, or stopping-rank theory.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower
 
 universe w
 
-variable {α : Ordinal.{0}} {n : ℕ}
+variable {α : Ordinal₀} {n : ℕ}
 
 /-! ### The bottom-pattern quotient theorem -/
 
@@ -39,13 +36,11 @@ variable {M : Type w}
 
 /-- Injective tuples on a countable carrier are countable. -/
 instance countable_emb [Countable M] (n : ℕ) : Countable (Fin n ↪ M) :=
-  Function.Injective.countable (f := fun f : Fin n ↪ M => (f : Fin n → M))
+  Function.Injective.countable (f := fun f => (f : Fin n → M))
     DFunLike.coe_injective
 
 /-- The ordinals strictly below a countable ordinal are countable. -/
 theorem countable_lt (hβ : α.card ≤ Cardinal.aleph0) :
-    Countable {γ : Ordinal.{0} // γ < α} :=
+    Countable {γ : Ordinal₀ // γ < α} :=
   ((Ordinal.countable_Iic_of_card_le_aleph0 hβ).mono Set.Iio_subset_Iic_self).to_subtype
 
-end FixedHeight
-end VaughtConjecture.Knight

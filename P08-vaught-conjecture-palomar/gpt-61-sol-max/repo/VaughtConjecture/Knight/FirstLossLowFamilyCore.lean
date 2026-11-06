@@ -1,12 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FirstLossAcquisitionCore
-public import VaughtConjecture.Knight.LowOnlyFibres
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FirstLossAcquisitionCore
+import VaughtConjecture.Knight.LowOnlyFibres
 
 /-! # From the first-loss acquisition to the gate-free LOW family
 
@@ -37,11 +39,9 @@ low source, every strict-gap hypothesis, and the admissibility of the actual pai
 
 No physical receiver is used. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.FirstLossLowFamily
 
-open TypeTower StageType KnightRealization Value ExtOrd TopSupport CellScheme.restrictFace
+open TypeTower StageType KnightRealization Value  TopSupport CellScheme.restrictFace
   AmalgamationPlan CappedDonor
 
 universe w
@@ -50,7 +50,7 @@ universe w
 
 /-- Rows transport along an equality of schemes. -/
 theorem rows_castCell {n : ℕ} {X Y : SemScheme n} (h : X = Y) (Sig : Cell X.scheme)
-    (d : X.scheme.below (X.scheme.cell Sig))
+    (d : X.scheme.belowCell Sig)
     (hd : GradedLe (Y.scheme.cell (SemScheme.castCell h d.1))
       (Y.scheme.cell (SemScheme.castCell h Sig))) :
     Y.rows.E (SemScheme.castCell h Sig) ⟨SemScheme.castCell h d.1, hd⟩ = X.rows.E Sig d := by
@@ -73,157 +73,148 @@ theorem scope_toCell_castCell {m n : ℕ} {X : SemScheme n} {f : Fin m ↪ Fin n
 
 /-- A row entry depends only on the owner and the underlying cell of the argument. -/
 theorem E_congr {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') (d : D.below (D.cell Sig))
-    (d' : D.below (D.cell Sig')) (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
+    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') (d : D.belowCell Sig)
+    (d' : D.belowCell Sig') (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
   subst h
   congr 1
   exact Subtype.ext hd
 
 /-! ## The literal common root of two cofaces -/
 
-section CommonRoot
+section
 
-variable {α : Ordinal.{0}} {k : ℕ} {pR : S α k} {P C : S α (k + 1)} (hP : IsCoface pR P)
+variable {α : Ordinal₀} {k : ℕ} {pR : S α k} {P C : S α (k + 1)} (hP : IsCoface pR P)
   (hC : IsCoface pR C)
 
 /-- The root face on `k + 1` points. -/
-abbrev rootFace (k : ℕ) : Finset (Fin (k + 1)) := Finset.univ.image Fin.castSuccEmb
+abbrev rootFace k : Finset (Fin (k + 1)) := Finset.univ.image Fin.castSuccEmb
+
+local notation "rootFace₀" => rootFace k
 
 /-- The identification of the two copies of the root. -/
 noncomputable def faceOf :
-    P.scheme.scheme.below (rootFace k, (rootFace k).card) ≃
-      C.scheme.scheme.below (rootFace k, (rootFace k).card) :=
+    P.scheme.scheme.below (rootFace₀, (rootFace₀).card) ≃
+      C.scheme.scheme.below (rootFace₀, (rootFace₀).card) :=
   commonFace Fin.castSuccEmb hP.extendsDomain.visible hP.extendsDomain.restrict
-    Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace k).card
+    Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace₀).card
 
 /-- The root cell of a root-face cell of the donor. -/
-noncomputable def rootCell (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
-    Cell pR.scheme.scheme :=
+noncomputable def rootCell a :=
   SemScheme.castCell hP.extendsDomain.restrict
-    ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace k).card).symm a).1
+    ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace₀).card).symm a).1
 
-theorem toCell_rootCell (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
-    toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-      (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)) = a.1 :=
+local notation "toCell₀" => toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
+
+local notation "rootCell₀" => rootCell hP
+
+theorem toCell_rootCell a :
+    toCell₀
+      (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell₀ a)) = a.1 :=
   toCell_belowEquiv_symm_val P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-    (BJ' := (Finset.univ, (rootFace k).card)) (BJ := (rootFace k, (rootFace k).card)) rfl a
+     (BJ := (rootFace₀, (rootFace₀).card)) rfl a
 
-theorem faceOf_val (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
-    (faceOf hP hC a).1 = toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
-      (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a)) :=
+local notation "faceOf₀" => faceOf hP hC
+
+theorem faceOf_val a :
+    (faceOf₀ a).1 = toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
+      (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell₀ a)) :=
   commonFace_val Fin.castSuccEmb hP.extendsDomain.visible hP.extendsDomain.restrict
-    Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace k).card a
+    Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace₀).card a
 
-theorem scopeP (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
+theorem scopeP (a : P.scheme.scheme.below (rootFace₀, (rootFace₀).card)) :
     P.scheme.scheme.scope a.1 =
-      (pR.scheme.scheme.scope (rootCell hP a)).image Fin.castSuccEmb := by
-  rw [← toCell_rootCell hP a]
-  exact scope_toCell_castCell hP.extendsDomain.restrict (rootCell hP a)
+      (pR.scheme.scheme.scope (rootCell₀ a)).image Fin.castSuccEmb := by grind [toCell_rootCell, scope_toCell_castCell]
 
-theorem scopeC (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
-    C.scheme.scheme.scope (faceOf hP hC a).1 =
-      (pR.scheme.scheme.scope (rootCell hP a)).image Fin.castSuccEmb := by
-  rw [faceOf_val hP hC a]
-  exact scope_toCell_castCell hC.extendsDomain.restrict (rootCell hP a)
+theorem scopeC a :
+    C.scheme.scheme.scope (faceOf₀ a).1 =
+      (pR.scheme.scheme.scope (rootCell₀ a)).image Fin.castSuccEmb := by grind [faceOf_val, scope_toCell_castCell]
 
 /-- The rows of two cofaces agree on the root, through the identification. -/
-theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace k, (rootFace k).card))
-    (d : P.scheme.scheme.below (P.scheme.scheme.cell a.1))
-    (hd : GradedLe (C.scheme.scheme.cell (faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1)
-      (C.scheme.scheme.cell (faceOf hP hC a).1)) :
+theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace₀, (rootFace₀).card))
+    (d : P.scheme.scheme.belowCell a.1)
+    (hd : GradedLe (C.scheme.scheme.cell (faceOf₀ ⟨d.1, d.2.trans a.2⟩).1)
+      (C.scheme.scheme.cell (faceOf₀ a).1)) :
     P.scheme.rows.E a.1 d =
-      C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ := by
-  have hda : P.scheme.scheme.scope d.1 ⊆ rootFace k := d.2.1.trans a.2.1
+      C.scheme.rows.E (faceOf₀ a).1 ⟨(faceOf₀ ⟨d.1, d.2.trans a.2⟩).1, hd⟩ := by
+  have hda  := d.2.1.trans a.2.1
   obtain ⟨d'', hd''⟩ := exists_toCell_eq (D := P.scheme.scheme) (f := Fin.castSuccEmb)
     (hr := hP.extendsDomain.visible) hda
   -- the argument as a cell of the restricted donor, below the root cell
-  have hle : GradedLe (P.scheme.scheme.cell (toCell P.scheme.scheme Fin.castSuccEmb
-      hP.extendsDomain.visible d''))
-      (P.scheme.scheme.cell (toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-        (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)))) := by
-    rw [hd'', toCell_rootCell hP a]
-    exact d.2
+  have hle : GradedLe (P.scheme.scheme.cell (toCell₀ d''))
+      (P.scheme.scheme.cell (toCell₀
+        (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell₀ a)))) := by
+    grind [toCell_rootCell]
   have hle' := (gradedLe_restrictFace_iff P.scheme.scheme Fin.castSuccEmb
     hP.extendsDomain.visible).mpr hle
-  let dR : pR.scheme.scheme.below (pR.scheme.scheme.cell (rootCell hP a)) :=
+  let dR : pR.scheme.scheme.below (pR.scheme.scheme.cell (rootCell₀ a)) :=
     ⟨SemScheme.castCell hP.extendsDomain.restrict d'',
       gradedLe_castCell hP.extendsDomain.restrict hle'⟩
   -- the donor side, read through the root
-  have hL : P.scheme.rows.E a.1 d = pR.scheme.rows.E (rootCell hP a) dR := by
-    have e1 : P.scheme.rows.E a.1 d = P.scheme.rows.E (toCell P.scheme.scheme Fin.castSuccEmb
-        hP.extendsDomain.visible (SemScheme.castCell hP.extendsDomain.restrict.symm
-          (rootCell hP a)))
-        ⟨toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible d'', hle⟩ :=
+  have hL  := by
+    have e1 : P.scheme.rows.E a.1 d = P.scheme.rows.E (toCell₀ (SemScheme.castCell hP.extendsDomain.restrict.symm
+          (rootCell₀ a)))
+        ⟨toCell₀ d'', hle⟩ :=
       E_congr P.scheme.rows (toCell_rootCell hP a).symm d _ hd''.symm
-    have e2 : (P.scheme.restrictFace Fin.castSuccEmb hP.extendsDomain.visible).rows.E
-        (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)) ⟨d'', hle'⟩ =
-        pR.scheme.rows.E (rootCell hP a) dR :=
+    have e2  :=
       (rows_castCell hP.extendsDomain.restrict _ ⟨d'', hle'⟩
         (gradedLe_castCell hP.extendsDomain.restrict hle')).symm
     exact e1.trans e2
   -- the private side, read through the root
-  have hd3 : ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace k).card).symm
+  have hd3 : ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace₀).card).symm
       ⟨d.1, d.2.trans a.2⟩).1 = d'' := by
     apply toCell_injective P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
     rw [hd'']
     exact toCell_belowEquiv_symm_val P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-      (BJ' := (Finset.univ, (rootFace k).card)) (BJ := (rootFace k, (rootFace k).card)) rfl _
-  have hrc : rootCell hP ⟨d.1, d.2.trans a.2⟩ =
+        rfl _
+  have hrc : rootCell₀ ⟨d.1, d.2.trans a.2⟩ =
       SemScheme.castCell hP.extendsDomain.restrict d'' := by
     unfold rootCell
     rw [hd3]
-  have hleC : GradedLe ((C.scheme.restrictFace Fin.castSuccEmb hC.extendsDomain.visible).scheme.cell
-      (SemScheme.castCell hC.extendsDomain.restrict.symm dR.1))
-      ((C.scheme.restrictFace Fin.castSuccEmb hC.extendsDomain.visible).scheme.cell
-        (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))) :=
+  have hleC  :=
     gradedLe_castCell hC.extendsDomain.restrict.symm dR.2
-  have hR : C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
-      pR.scheme.rows.E (rootCell hP a) dR := by
-    have e1 : C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
+  have hR : C.scheme.rows.E (faceOf₀ a).1 ⟨(faceOf₀ ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
+      pR.scheme.rows.E (rootCell₀ a) dR := by
+    have e1 : C.scheme.rows.E (faceOf₀ a).1 ⟨(faceOf₀ ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
         C.scheme.rows.E (toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
-          (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a)))
+          (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell₀ a)))
           ⟨toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
             (SemScheme.castCell hC.extendsDomain.restrict.symm dR.1),
             gradedLe_of_restrictFace C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
               hleC⟩ :=
       E_congr C.scheme.rows (faceOf_val hP hC a) _ _ (by
-        rw [faceOf_val hP hC ⟨d.1, d.2.trans a.2⟩, hrc])
-    have e2 : (C.scheme.restrictFace Fin.castSuccEmb hC.extendsDomain.visible).rows.E
-        (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))
-        ⟨SemScheme.castCell hC.extendsDomain.restrict.symm dR.1, hleC⟩ =
-        pR.scheme.rows.E (rootCell hP a) dR :=
-      rows_castCell hC.extendsDomain.restrict.symm (rootCell hP a) dR hleC
+        grind [faceOf_val])
+    have e2  :=
+      rows_castCell hC.extendsDomain.restrict.symm (rootCell₀ a) dR hleC
     exact e1.trans e2
   exact hL.trans hR.symm
 
 /-- Two cofaces of one type have a literal common root along the initial face. -/
 noncomputable def commonRoot_of_cofaces : LowOnly.CommonRoot P.scheme C.scheme where
-  A := rootFace k
-  B := rootFace k
+  A := rootFace₀
+  B := rootFace₀
   A_mem := hP.extendsDomain.visible
   B_mem := hC.extendsDomain.visible
-  card := rfl
-  face := faceOf hP hC
+  face := faceOf₀
   grade a := (commonFace_grade Fin.castSuccEmb hP.extendsDomain.visible
     hP.extendsDomain.restrict Fin.castSuccEmb hC.extendsDomain.visible
-    hC.extendsDomain.restrict (rootFace k).card a).symm
-  scope a b := by rw [scopeP hP a, scopeP hP b, scopeC hP hC a, scopeC hP hC b]
+    hC.extendsDomain.restrict (rootFace₀).card a).symm
+  scope a b := by grind [scopeP, scopeC]
   row := row_of_cofaces hP hC
 
 /-- The labels of two cofaces agree on the common root. -/
 theorem shared_of_cofaces : (commonRoot_of_cofaces hP hC).Shared P.label C.label := by
   intro a
-  change P.label a.1 = C.label (faceOf hP hC a).1
+  change P.label a.1 = C.label (faceOf₀ a).1
   have hPl := (typeMap_eq_some_iff_labels Fin.castSuccEmb P pR hP.extendsDomain.visible
     hP.extendsDomain.restrict).mp hP
-    (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a))
+    (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell₀ a))
   have hCl := (typeMap_eq_some_iff_labels Fin.castSuccEmb C pR hC.extendsDomain.visible
     hC.extendsDomain.restrict).mp hC
-    (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))
+    (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell₀ a))
   rw [← toCell_rootCell hP a, faceOf_val hP hC a]
   exact hPl.trans hCl.symm
 
-end CommonRoot
+end
 
 /-! ## The family from the first-loss acquisition -/
 
@@ -237,10 +228,10 @@ cofaces of one type `pR` along `Fin.castSuccEmb`, and KVC's family `F` on their 
 donor labelling `Q'.label`, the root along the initial face, the owner and low source both `⊤`
 in the actual private labelling, and every pair `(Q'.label, CT.label, b)` admissible at every
 grade for every cutoff `b` visible at `min j K`. -/
-theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
+theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K}
     (hcoin : KnightRealization.IsCoinitial {x : R.LabelledExt | x.type.topGrade = K})
-    (hKpos : 0 < K) (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : R.eval t = some p) (q : S α.1 (n + 1))
+    (hKpos : 0 < K) (hres : ∀ {k} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
+    {n} t p (hp : R.eval t = some p) q
     (hq : IsCoface p q) (hqK : ∀ d, q.label d = ⊤ → q.scheme.scheme.grade d ≤ K) :
     ∃ (k : ℕ) (u : Fin (k + 1) ↪ M) (CT : S α.1 (k + 1)) (e : Fin n ↪ Fin k)
       (pR : S α.1 k) (Q' : S α.1 (k + 1)),
@@ -250,23 +241,23 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
         F.p = Q'.label ∧ F.root.A = rootFace k ∧ F.root.B = rootFace k ∧
         CT.label F.gap.c = ⊤ ∧ CT.label F.gap.r.1 = ⊤ ∧
         ∀ (j : ℕ) (b : ExtOrd), SelfVis (min j K) b →
-          F.Admissible j ⟨Q'.label, CT.label, b⟩ := by
+          F.Admissible j ⟨Q'.label, CT.label, b⟩ := by 
   obtain ⟨m, Cov, Q, hQ, hQK, k, g, c, hc, e, het, hvg, hvg', H, hH, hfull, x, o, hxs, hxtop, hxH,
     hoH, hocell, hxo, hgap⟩ := FirstLossAcquisition.first_loss_of_tail hcons hcoin hKpos hres t p hp
   set g₁ : Fin (k + 1) ↪ Fin m := snoc g c hc with hg₁def
-  have hg : Fin.castSuccEmb.trans g₁ = g := castSuccEmb_trans_snoc g c hc
+  have hg  := castSuccEmb_trans_snoc hc
   -- the two face types of the cover: the smaller face `pR`, the larger face `CT`
   set pR : S α.1 k := Q.restrictFace g hvg with hpRdef
   set CT : S α.1 (k + 1) := Q.restrictFace g₁ hvg' with hCTdef
-  have hpR : typeMap g Q = some pR := typeMap_eq_some g Q hvg
-  have hCT : typeMap g₁ Q = some CT := typeMap_eq_some g₁ Q hvg'
+  have hpR  := typeMap_eq_some g Q hvg
+  have hCT  := typeMap_eq_some g₁ Q hvg'
   have hcofCT : IsCoface pR CT := by
     change typeMap Fin.castSuccEmb CT = some pR
-    rw [typeMap_trans Fin.castSuccEmb g₁ Q CT hCT, hg]
+    rw [typeMap_trans hCT, hg]
     exact hpR
   -- the root type is the restriction of `pR` along `e`
   have hep : typeMap e pR = some p := by
-    rw [typeMap_trans e g Q pR hpR]
+    rw [typeMap_trans hpR]
     have h := hcons Cov Q (e.trans g) hQ
     rw [het, hp] at h
     exact h.symm
@@ -277,7 +268,7 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
     FirstLossAcquisition.exists_enlarged_donor pR e p hep hRtops q hq hqK
   -- the owner and the low source as cells of the private face
   have hos : Q.scheme.scheme.scope o = Finset.univ.image g₁ := congrArg Prod.fst hocell
-  have hog : Q.scheme.scheme.grade o = K := congrArg Prod.snd hocell
+  have hog  := congrArg Prod.snd hocell
   obtain ⟨oC, hoC⟩ := exists_toCell_eq (D := Q.scheme.scheme) (f := g₁) (hr := hvg')
     (Finset.subset_of_eq hos)
   obtain ⟨xC, hxC⟩ := exists_toCell_eq (D := Q.scheme.scheme) (f := g₁) (hr := hvg') hxs
@@ -289,18 +280,17 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
   have hb1 := gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg' hxoC
   have hb2 := gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg'
     (GradedLe.refl (CT.scheme.scheme.cell oC))
+  let core1 := extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC) ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K
   let gap : LowOnly.SourceGap CT.scheme K :=
     { c := oC
       c_grade := hoCg
       r := ⟨xC, hxoC⟩
       gap_c := by
         have h := hgap ⟨o, GradedLe.refl _⟩ hoH
-        change extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-          ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K <
+        change core1 <
           Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
             ⟨toCell Q.scheme.scheme g₁ hvg' oC, hb2⟩
-        calc extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-              ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K
+        calc core1
             = extVisibilityReplace (Q.scheme.rows.E o ⟨x, hxo⟩) K K :=
               congrArg (fun z => extVisibilityReplace z K K)
                 (E_congr Q.scheme.rows hoC _ _ hxC)
@@ -326,14 +316,14 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
     rw [← him]
     intro y hy
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hy
-    have hzB : z ∈ rootFace k := (root.face a).2.1 hz
+    have hzB  := (root.face a).2.1 hz
     obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hzB
     rw [← hg]
     exact Finset.mem_image_of_mem _ (Finset.mem_univ i)
   have hgg₁ : Finset.univ.image g ⊆ Finset.univ.image g₁ := by
     intro z hz
     obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hz
-    rw [← snoc_apply_castSucc g c hc i]
+    rw [← snoc_apply_castSucc hc i]
     exact Finset.mem_image_of_mem _ (Finset.mem_univ _)
   let F : LowOnly.Family Q'.scheme CT.scheme K :=
     { root := root
@@ -349,7 +339,7 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
           change CT.label (root.face a).1 = ⊤
           rw [← hshared a]
           exact ht
-        have hmem : toCell Q.scheme.scheme g₁ hvg' (root.face a).1 ∈ H :=
+        have hmem  :=
           hfull _ (hface_scope a) hlab
         have hbelow : GradedLe (Q.scheme.scheme.cell (toCell Q.scheme.scheme g₁ hvg'
             (root.face a).1)) (Q.scheme.scheme.cell o) := by
@@ -363,12 +353,10 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
           ⟨(root.face a).2.1.trans hroot_sub,
             (root.grade a).symm.trans_le ((hQ'K a.1 ht).trans_eq hoCg.symm)⟩
         have hb3' := gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg' hb3
-        change extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-          ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K <
+        change core1 <
           Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
             ⟨toCell Q.scheme.scheme g₁ hvg' (root.face a).1, hb3'⟩
-        calc extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-              ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K
+        calc core1
             = extVisibilityReplace (Q.scheme.rows.E o ⟨x, hxo⟩) K K :=
               congrArg (fun z => extVisibilityReplace z K K)
                 (E_congr Q.scheme.rows hoC _ _ hxC)
@@ -381,9 +369,7 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
   · have h := hcons Cov Q g₁ hQ
     rw [h]
     exact hCT
-  · rw [Function.Embedding.trans_assoc, ← Function.Embedding.trans_assoc Fin.castSuccEmb, hg,
-      ← Function.Embedding.trans_assoc]
-    exact het
+  · ext1 <;> aesop
   · change Q.label (toCell Q.scheme.scheme g₁ hvg' oC) = ⊤
     rw [hoC]
     exact mem_topSet.mp (hH.subset hoH)
@@ -401,7 +387,5 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
           from (CT.respects.orderly d).symm) (CT.scheme.scheme.grade_pos d)
         cutoff := hb
         low := fun _ _ d hd => by
-          have hd' : Q'.label d = ⊤ := hd
-          exact le_top.trans_eq hd'.symm }
+          aesop }
 
-end VaughtConjecture.Knight.FirstLossLowFamily

@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthPaddedStepDecode
-public import VaughtConjecture.Knight.GrowthPaddedCharts
+import VaughtConjecture.Knight.GrowthPaddedStepDecode
+import VaughtConjecture.Knight.GrowthPaddedCharts
 
 /-! # Actual serving charts on higher padded rows
 
@@ -16,28 +15,25 @@ lawful target-local ambient. Its chart reads every physical coordinate.
 
 /- Adapted from the corresponding LOW physical endgame; scalar admission
 and source sections here are exclusively the growth producers. -/
-@[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepCharts
-open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
-open GrowthPaddedContract GrowthPaddedStepRows GrowthOrderedBase
+open     Growth 
+open GrowthPaddedContract GrowthPaddedStepRows 
 open GrowthPaddedDecode (grid_fixed_below)
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n J : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n J : ℕ}
   {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
-  {X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows}
-  {T : Growth.RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X}
+  {X : I.GrowthData}
+  {T : I.GrowthAttachment X}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I X T hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
 /-- Locality and availability choose an actual installed native leaf. -/
 theorem exists_chart
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
+    {q}
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q) :
-    ∃ a : Catalogue X (k + 1), ∃ σ : ExtOrd → ExtOrd, ∃ M : ExtOrd,
+    ∃ a , ∃ σ , ∃ M ,
       Witness (gTop (k + 1)) σ ∧
       (∀ d, (carrier P hnext).grade d.1 = k + 1 → q d ≤ M) ∧
       ∀ d, σ (source P hk hnext a d.1) = min (q d) M := by
@@ -62,5 +58,4 @@ theorem exists_chart
     rfl
   rwa [he] at hr
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepCharts
+

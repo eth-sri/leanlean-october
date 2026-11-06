@@ -1,12 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorContext
-public import VaughtConjecture.Knight.CappedDonorReadback
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorContext
+import VaughtConjecture.Knight.CappedDonorReadback
 
 /-! # Reference acquisition above a requested cutoff
 
@@ -28,13 +30,11 @@ above a requested floor `Nmin` as well as above the donor arity (`exists_referen
 at `max (n + 1) Nmin`), so a small-cutoff restriction of a consumer never limits receiving;
 `exists_ref_above_cut'` and `exists_ref_above_cut` are the corollaries without the floor. -/
 
-@[expose] public section
-
 universe w
 
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
+open TypeTower StageType KnightRealization Value ExtOrd 
 
 namespace CappedDonor
 
@@ -44,8 +44,8 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M} {n : ℕ} {
 threshold exceeds both `Nmin` and the donor arity, with `J = N`, the block map, the faces, the
 representatives and offsets, the **literal common-face identification** (`HEq Rf.face
 (commonFace …)`), and `δ < β < H`. -/
-theorem exists_ref_above_cut_min (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t = some p)
-    (q : S α.1 (n + 1)) (hq : IsCoface p q) (ν : Ordinal.{0}) (hν : ν < α.1) (Nmin : ℕ) :
+theorem exists_ref_above_cut_min (hM : R.IsModel) p (hp : R.eval t = some p)
+    q (hq : IsCoface p q) ν (hν : ν < α.1) Nmin :
     ∃ (C : ReferenceContext R t (⟨limitPart ν, finitePart ν⟩ :: donorRequests q))
       (F : C.FullController)
       (Rf : Ref ↥(blocksOf (⟨limitPart ν, finitePart ν⟩ :: donorRequests q)) n C.N C.m
@@ -63,20 +63,17 @@ theorem exists_ref_above_cut_min (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t 
       ofOrd ν < Rf.cut Rf.vactL ∧ Rf.cut Rf.vactL < Rf.vact Rf.cap := by
   set reqs : List BlockRequest := ⟨limitPart ν, finitePart ν⟩ :: donorRequests q with hreqs_def
   have hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1 := by
-    intro r hr
-    rcases List.mem_cons.mp hr with rfl | hr
-    · exact ⟨isNonSuccessor_limitPart ν, (limitPart_le ν).trans_lt hν⟩
-    · exact donorRequests_ok q r hr
+    grind [isNonSuccessor_limitPart, limitPart_le, donorRequests_ok]
   obtain ⟨C, hmax, hcap_pos, hmargin, hm⟩ :=
     exists_referenceContext_margin' hM p hp reqs hreqs (max (n + 1) Nmin)
-  have hNmin : n + 1 < C.N := (le_max_left _ _).trans_lt hmax
+  have hNmin  := (le_max_left _ _).trans_lt hmax
   obtain ⟨F, Rf, h1, h2, h3, h4, h5, h6, hμ, h7, h8, h9, hface⟩ :=
     ref_of_referenceContext' hM p hp q hq hreqs (fun r hr => List.mem_cons_of_mem _ hr) C hNmin
       hcap_pos hmargin
   refine ⟨C, F, Rf, h1, h2, h3, h4, h5, h6, hμ, h7, h8, h9, hface, hm,
     (le_max_right _ _).trans_lt hmax, hNmin, ?_, Ref.cut_actual_lt_cap (R := Rf)⟩
   have hmem : limitPart ν ∈ blocksOf reqs := mem_blocksOf.mpr ⟨_, List.mem_cons_self, rfl⟩
-  have hoff : finitePart ν < C.N := C.offset_lt _ List.mem_cons_self
+  have hoff  := C.offset_lt _ List.mem_cons_self
   rw [Rf.cut_actual]
   refine lt_of_lt_of_le ?_ (Finset.le_sup (f := fun i : ↥(blocksOf reqs) =>
     ofOrd (Rf.μ i + C.N)) (Finset.mem_univ ⟨limitPart ν, hmem⟩))
@@ -86,6 +83,4 @@ theorem exists_ref_above_cut_min (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t 
   calc ν = limitPart ν + finitePart ν := (decomposition ν).symm
     _ < limitPart ν + C.N := (add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr hoff)
 
-end CappedDonor
 
-end VaughtConjecture.Knight

@@ -3,11 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Correspondence
-public import VaughtConjecture.Knight.Rank
-public import VaughtConjecture.Spectrum.RankCount
+import VaughtConjecture.Knight.Correspondence
+import VaughtConjecture.Knight.Rank
+import Mathlib.SetTheory.Cardinal.Regular
+import Mathlib.SetTheory.Cardinal.Arithmetic
 
 /-! # Conditional spectrum assembly for Knight's sentence (#61)
 
@@ -46,11 +46,8 @@ trace-boundary probes of that file are out of scope here.
 Construction-private: not exported from the root module (`TopProduction` precedent) —
 conditional assembly stays out of the root cone until its hypotheses are discharged. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower Spectrum Cardinal
 
 theorem blockStage_zero_le_omegaStage : blockStage 0 ≤ omegaStage := by
   rw [blockStage_zero]
@@ -69,21 +66,3 @@ theorem KnightNatModel.iso_atBlockZero {R R' : KnightNatModel}
   obtain ⟨i⟩ := hi
   exact ⟨i.reduct blockStage_zero_le_omegaStage⟩
 
-/-- **The intrinsic stopping rank on the actual quotient counted by the sentence**:
-`stopRank ∘ atBlockZero` descends to `Quotient knightModelSetoid` along
-`stopRank_eq_of_iso`. -/
-noncomputable def knightNatStopRank : Quotient knightModelSetoid → Ordinal.{0} :=
-  Quotient.lift
-    (fun R : KnightNatModel =>
-      KnightRealization.stopRank R.atBlockZero)
-    (fun R R' h => by
-      have hi : Nonempty (R.1.Iso R'.1) := knightModelSetoid_r_iff.mp h
-      have hi' : Nonempty (R.atBlockZero.Iso R'.atBlockZero) :=
-        KnightNatModel.iso_atBlockZero hi
-      exact KnightRealization.stopRank_eq_of_iso hi')
-
-@[simp] theorem knightNatStopRank_mk (R : KnightNatModel) :
-    knightNatStopRank (Quotient.mk knightModelSetoid R) =
-      KnightRealization.stopRank R.atBlockZero := rfl
-
-end VaughtConjecture.Knight

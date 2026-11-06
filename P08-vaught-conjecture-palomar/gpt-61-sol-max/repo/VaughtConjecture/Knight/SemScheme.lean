@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Semantics
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.Semantics
 
 /-! # Knight's domains with their associated semantics: bountiful, complete, coded
 
@@ -40,8 +41,6 @@ after Def. 2.6.2, Prop. 2.6.3(2)); Knight-VC's `Sem.Domain` kept cells bare and 
 
 This is PR 1 of #88; the faithful stage types over `SemScheme` are PR 2. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open VaughtConjecture.AmalgamationPlan
@@ -54,18 +53,15 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 /-- The inclusion of lower sets along the graded preorder: `D.below X ⊆ D.below Y` when
 `X ≤ Y` (the paper's `D⟨C,i⟩ ⊆ D⟨B,j⟩` for `⟨C,i⟩ ≤ ⟨B,j⟩`). -/
-def CellScheme.below.mono {X Y : Finset ι × ℕ} (h : GradedLe X Y) (d : D.below X) :
+def CellScheme.below.mono {X Y} (h : GradedLe X Y) (d : D.below X) :
     D.below Y :=
   ⟨d.1, d.2.trans h⟩
-
-@[simp] theorem CellScheme.below.mono_val {X Y : Finset ι × ℕ} (h : GradedLe X Y)
-    (d : D.below X) : (CellScheme.below.mono (D := D) h d).1 = d.1 := rfl
 
 /-- **Restriction of respect**: a labelling respecting the restricted semantics `E⟨B,j⟩` restricts
 along `D⟨C,i⟩ ⊆ D⟨B,j⟩` to one respecting `E⟨C,i⟩`.  Availability restricts because the ambient
 witness has exactly the graded index of the request, hence lies in the smaller lower set. -/
-theorem RespectsSemanticsBelow.mono {sem : Semantics D} {CI BJ : Finset ι × ℕ} (h : GradedLe CI BJ)
-    {q : D.below BJ → ExtOrd} (hq : RespectsSemanticsBelow sem BJ q) :
+theorem RespectsSemanticsBelow.mono {sem : Semantics D} {CI BJ : GradedIndex ι} (h : GradedLe CI BJ)
+    {q : BelowLabels D BJ} (hq : RespectsSemanticsBelow sem BJ q) :
     RespectsSemanticsBelow sem CI (fun d => q (CellScheme.below.mono h d)) where
   orderly d := hq.orderly (CellScheme.below.mono h d)
   locality d := hq.locality (CellScheme.below.mono h d)
@@ -84,35 +80,35 @@ labelling of `D⟨B,j⟩` respecting `E⟨B,j⟩`, `γ` a label with `γ = γ �
 `q' ∧ γ = q ∧ γ` and `q' ↾ D⟨C,i⟩ = p`.  Here `D⟨B,j⟩ = D.below BJ`, the inclusion is
 `below.mono`, respect of `E⟨B,j⟩` is `RespectsSemanticsBelow`, and `∧ γ` is the pointwise
 `min · γ`; the pairs range over the graded plan `P̂`. -/
-def Semantics.IsBountiful (sem : Semantics D) : Prop :=
-  ∀ (CI BJ : Finset ι × ℕ), CI ∈ Plan.gradedPlan D.plan → BJ ∈ Plan.gradedPlan D.plan →
+def Semantics.IsBountiful sem :=
+  ∀ CI BJ, CI ∈ Plan.gradedPlan D.plan → BJ ∈ Plan.gradedPlan D.plan →
     (h : GradedLe CI BJ) → CI ≠ BJ →
-    ∀ (p : D.below CI → ExtOrd) (q : D.below BJ → ExtOrd) (γ : ExtOrd),
+    ∀ p q γ,
       RespectsSemanticsBelow sem CI p → RespectsSemanticsBelow sem BJ q →
       extVisibilityReplace γ BJ.2 BJ.2 = γ →
-      (∀ d : D.below CI, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) →
-      ∃ q' : D.below BJ → ExtOrd, RespectsSemanticsBelow sem BJ q' ∧
-        (∀ d : D.below BJ, min (q' d) γ = min (q d) γ) ∧
+      (∀ d , min (q (CellScheme.below.mono h d)) γ = min (p d) γ) →
+      ∃ q' , RespectsSemanticsBelow sem BJ q' ∧
+        (∀ d , min (q' d) γ = min (q d) γ) ∧
         (∀ d : D.below CI, q' (CellScheme.below.mono h d) = p d)
 
 /-- A cell scheme is **complete** (Knight, Def. 2.5.15): every graded pair `⟨B,j⟩ ∈ P̂` is
 the graded index of some cell (`D^{B,j} ≠ ∅`). -/
-def CellScheme.IsComplete (D : CellScheme A) : Prop :=
+def CellScheme.IsComplete (D : CellScheme A) :=
   ∀ BJ ∈ Plan.gradedPlan D.plan, ∃ d : Cell D, D.cell d = BJ
 
 /-- A label is **coded at grade `k`** (the coding convention of Knight, Lemma 2.5.13 /
 Def. 2.6): it is `⊥` or an ordinal `ω·i + j` with `j ≤ k + 1` (no `⊤`). -/
-def ExtOrd.IsCodedLabel (k : ℕ) (x : ExtOrd) : Prop :=
+def ExtOrd.IsCodedLabel k x :=
   x = ⊥ ∨ ∃ i j : ℕ, j ≤ k + 1 ∧ x = ofOrd (Ordinal.omega0 * i + j)
 
 /-- The set of all coded labels (at any grade): `⊥` and the ordinals `ω·i + j`. -/
-def ExtOrd.codedLabels : Set ExtOrd :=
+def ExtOrd.codedLabels :=
   insert ⊥ (Set.range fun ij : ℕ × ℕ => ofOrd (Ordinal.omega0 * ij.1 + ij.2))
 
 theorem ExtOrd.codedLabels_countable : ExtOrd.codedLabels.Countable :=
   (Set.countable_range _).insert _
 
-theorem ExtOrd.IsCodedLabel.mem_codedLabels {k : ℕ} {x : ExtOrd} (h : IsCodedLabel k x) :
+theorem ExtOrd.IsCodedLabel.mem_codedLabels {k} {x} (h : IsCodedLabel k x) :
     x ∈ codedLabels := by
   rcases h with rfl | ⟨i, j, -, rfl⟩
   · exact Set.mem_insert _ _
@@ -121,8 +117,8 @@ theorem ExtOrd.IsCodedLabel.mem_codedLabels {k : ℕ} {x : ExtOrd} (h : IsCodedL
 /-- A semantics is **coded** (Knight, Lemma 2.5.13: "if `a(Σ) = k`, the range of `E(Σ)` is
 contained in `{−∞} ∪ {ωi + j : i ∈ ω, 0 ≤ j ≤ k+1}`"): every value of the row of a cell `Sig`
 is a coded label at the grade of `Sig`. -/
-def Semantics.IsCoded (sem : Semantics D) : Prop :=
-  ∀ (Sig : Cell D) (d : D.below (D.cell Sig)), ExtOrd.IsCodedLabel (D.grade Sig) (sem.E Sig d)
+def Semantics.IsCoded (sem : Semantics D) :=
+  ∀ (Sig : Cell D) (d : D.belowCell Sig), ExtOrd.IsCodedLabel (D.grade Sig) (sem.E Sig d)
 
 /-! ### Domains with their associated semantics -/
 
@@ -154,25 +150,14 @@ namespace SemScheme
 
 variable {n : ℕ}
 
-/-- Extensionality: two domains are equal when their schemes and rows agree (`rows` depends
-on `scheme`, hence `HEq`); the `Prop` fields follow by proof irrelevance. -/
-@[ext]
-theorem ext {D₁ D₂ : SemScheme n} (h_scheme : D₁.scheme = D₂.scheme)
-    (h_rows : HEq D₁.rows D₂.rows) : D₁ = D₂ := by
-  obtain ⟨s₁, r₁, _, _, _, _⟩ := D₁
-  obtain ⟨s₂, r₂, _, _, _, _⟩ := D₂
-  subst h_scheme
-  obtain rfl := eq_of_heq h_rows
-  rfl
-
 /-- There are countably many domains with associated semantics (Knight, Prop. 2.6.3(4)):
 a domain is its (countable, `CellScheme.countable_fin`) scheme together with finitely many
 row values in the countable set of coded labels (`ExtOrd.codedLabels_countable`).  No stage
 bound is involved. -/
 instance countable : Countable (SemScheme n) := by
   have := ExtOrd.codedLabels_countable.to_subtype
-  let g : SemScheme n → Σ D : CellScheme (ι := Fin n) Finset.univ,
-      (Sig : Cell D) → D.below (D.cell Sig) → ExtOrd.codedLabels :=
+  let g : SemScheme n → Σ D : CellScheme  Finset.univ,
+      (Sig : Cell D) → D.belowCell Sig → ExtOrd.codedLabels :=
     fun X => ⟨X.scheme, fun Sig d => ⟨X.rows.E Sig d, (X.rows_coded Sig d).mem_codedLabels⟩⟩
   have hinj : Function.Injective g := by
     rintro ⟨s₁, r₁, _, _, _, _⟩ ⟨s₂, r₂, _, _, _, _⟩ h
@@ -199,40 +184,42 @@ variable {m n : ℕ} (D : CellScheme (ι := Fin n) Finset.univ) (f : Fin m ↪ F
   (hr : Finset.univ.image f ∈ D.plan)
 
 /-- The push-forward of a graded pair of `Fin m` along `f`: `(B', j) ↦ (f[B'], j)`. -/
-def pushGraded (BJ' : Finset (Fin m) × ℕ) : Finset (Fin n) × ℕ := (BJ'.1.image f, BJ'.2)
+def pushGraded (BJ' : GradedIndex (Fin m)) := (BJ'.1.image f, BJ'.2)
 
 theorem pushGraded_injective : Function.Injective (pushGraded f) := by
   rintro ⟨B, j⟩ ⟨C, k⟩ h
-  simp only [pushGraded, Prod.mk.injEq] at h
+  simp  [pushGraded, ] at h
   obtain ⟨hB, rfl⟩ := h
   rw [Finset.image_injective f.injective hB]
 
-theorem gradedLe_pushGraded_iff {X Y : Finset (Fin m) × ℕ} :
+theorem gradedLe_pushGraded_iff {X Y} :
     GradedLe (pushGraded f X) (pushGraded f Y) ↔ GradedLe X Y := by
-  simp only [GradedLe, pushGraded, Finset.image_subset_image_iff f.injective]
+  simp  [GradedLe, pushGraded, Finset.image_subset_image_iff f.injective]
+
+local notation "Cell₀" => Cell (D.restrictFace f hr)
 
 /-- The graded index of a restricted cell pushes forward to that of the underlying cell. -/
-theorem pushGraded_cell (i : Cell (D.restrictFace f hr)) :
+theorem pushGraded_cell i :
     pushGraded f ((D.restrictFace f hr).cell i) = D.cell (toCell D f hr i) :=
   Prod.ext (image_scope_restrictFace D f hr i) rfl
 
 /-- Membership in the graded plan of the restriction: `BJ' ∈ P̂'` iff its push-forward is
 in `P̂`. -/
-theorem mem_gradedPlan_restrictFace {BJ' : Finset (Fin m) × ℕ} :
+theorem mem_gradedPlan_restrictFace {BJ'} :
     BJ' ∈ Plan.gradedPlan (D.restrictFace f hr).plan ↔
       pushGraded f BJ' ∈ Plan.gradedPlan D.plan := by
-  simp only [Plan.mem_gradedPlan, Plan.MemGraded, pushGraded, mem_restrictFace_plan,
+  simp  [Plan.mem_gradedPlan, Plan.MemGraded, pushGraded, mem_restrictFace_plan,
     Finset.card_image_of_injective _ f.injective]
 
 /-- A restricted cell lies below `BJ'` iff its underlying cell lies below the push-forward
 of `BJ'`. -/
-theorem gradedLe_cell_pushGraded_iff {BJ' : Finset (Fin m) × ℕ}
-    (i : Cell (D.restrictFace f hr)) :
+theorem gradedLe_cell_pushGraded_iff {BJ'}
+    i :
     GradedLe ((D.restrictFace f hr).cell i) BJ' ↔
       GradedLe (D.cell (toCell D f hr i)) (pushGraded f BJ') := by
   rw [← pushGraded_cell, gradedLe_pushGraded_iff]
 
-variable {BJ' : Finset (Fin m) × ℕ} {BJ : Finset (Fin n) × ℕ}
+variable {BJ' : GradedIndex (Fin m)} {BJ : GradedIndex (Fin n)}
 
 /-- The lower set below `BJ'` in the restriction maps into the lower set below the
 push-forward `BJ` of `BJ'` in `D`, by the cell map `toCell` (the general form of `belowMap`;
@@ -242,14 +229,12 @@ noncomputable def belowMapGraded (hBJ : pushGraded f BJ' = BJ)
     (d : (D.restrictFace f hr).below BJ') : D.below BJ :=
   ⟨toCell D f hr d.1, hBJ ▸ (gradedLe_cell_pushGraded_iff D f hr d.1).mp d.2⟩
 
-@[simp] theorem belowMapGraded_val (hBJ : pushGraded f BJ' = BJ)
-    (d : (D.restrictFace f hr).below BJ') :
-    (belowMapGraded D f hr hBJ d).1 = toCell D f hr d.1 := rfl
+
 
 theorem belowMapGraded_injective (hBJ : pushGraded f BJ' = BJ) :
     Function.Injective (belowMapGraded D f hr hBJ) := fun a b h => by
   have h' := congrArg Subtype.val h
-  simp only [belowMapGraded_val] at h'
+  
   exact Subtype.ext (toCell_injective D f hr h')
 
 /-- Every cell of `D` below `(f[B'], j)` is visible, hence comes from a restricted cell below
@@ -258,7 +243,7 @@ theorem belowMapGraded_surjective (hBJ : pushGraded f BJ' = BJ) :
     Function.Surjective (belowMapGraded D f hr hBJ) := by
   subst hBJ
   rintro ⟨e, he⟩
-  have hvis : D.scope e ⊆ Finset.univ.image f :=
+  have hvis  :=
     he.1.trans (Finset.image_subset_image (Finset.subset_univ _))
   obtain ⟨i, rfl⟩ := exists_toCell_eq D f hr hvis
   exact ⟨⟨i, (gradedLe_cell_pushGraded_iff D f hr i).mpr he⟩, rfl⟩
@@ -271,60 +256,59 @@ theorem belowMapGraded_bijective (hBJ : pushGraded f BJ' = BJ) :
 below its push-forward `(f[B'], j)` in `D` (Prop. 2.6.3(3): the restriction is isomorphic to
 the original on every `D⟨B,j⟩` with `B ⊆ range f`).  The forward map is `toCell` on
 underlying cells; at `BJ = D.cell (toCell Sig)` (`pushGraded_cell`) it is `belowMap`. -/
-noncomputable def belowEquiv (hBJ : pushGraded f BJ' = BJ) :
-    (D.restrictFace f hr).below BJ' ≃ D.below BJ :=
+noncomputable def belowEquiv (hBJ : pushGraded f BJ' = BJ) :=
   Equiv.ofBijective _ (belowMapGraded_bijective D f hr hBJ)
 
 @[simp] theorem belowEquiv_apply_val (hBJ : pushGraded f BJ' = BJ)
-    (d : (D.restrictFace f hr).below BJ') :
+    d :
     (belowEquiv D f hr hBJ d).1 = toCell D f hr d.1 := rfl
 
 /-- `belowMap` is the bijection `belowEquiv` at the index of the underlying cell. -/
-theorem belowMap_eq_belowEquiv (Sig : Cell (D.restrictFace f hr)) :
+theorem belowMap_eq_belowEquiv Sig :
     belowMap D f hr Sig = belowEquiv D f hr (pushGraded_cell D f hr Sig) := rfl
 
-theorem toCell_belowEquiv_symm_val (hBJ : pushGraded f BJ' = BJ) (e : D.below BJ) :
+theorem toCell_belowEquiv_symm_val (hBJ : pushGraded f BJ' = BJ) e :
     toCell D f hr ((belowEquiv D f hr hBJ).symm e).1 = e.1 :=
   congrArg Subtype.val ((belowEquiv D f hr hBJ).apply_symm_apply e)
 
-theorem belowEquiv_symm_mk (hBJ : pushGraded f BJ' = BJ) (c : Cell (D.restrictFace f hr))
+theorem belowEquiv_symm_mk (hBJ : pushGraded f BJ' = BJ) c
     (hc : GradedLe (D.cell (toCell D f hr c)) BJ) :
     (belowEquiv D f hr hBJ).symm ⟨toCell D f hr c, hc⟩ =
       ⟨c, (gradedLe_cell_pushGraded_iff D f hr c).mpr (hBJ ▸ hc)⟩ :=
   (belowEquiv D f hr hBJ).symm_apply_eq.mpr rfl
 
 /-- The bijections commute with the inclusions of lower sets. -/
-theorem belowEquiv_mono {X Y : Finset (Fin m) × ℕ} (h : GradedLe X Y)
-    (d : (D.restrictFace f hr).below X) :
+theorem belowEquiv_mono {X Y} (h : GradedLe X Y)
+    d :
     belowEquiv D f hr (BJ' := Y) rfl (CellScheme.below.mono h d) =
       CellScheme.below.mono ((gradedLe_pushGraded_iff f).mpr h)
         (belowEquiv D f hr (BJ' := X) rfl d) :=
   rfl
 
-theorem belowEquiv_symm_mono {X Y : Finset (Fin m) × ℕ} (h : GradedLe X Y)
-    (e : D.below (pushGraded f X)) :
+theorem belowEquiv_symm_mono {X Y} (h : GradedLe X Y)
+    e :
     (belowEquiv D f hr (BJ' := Y) rfl).symm
         (CellScheme.below.mono ((gradedLe_pushGraded_iff f).mpr h) e) =
       CellScheme.below.mono h ((belowEquiv D f hr (BJ' := X) rfl).symm e) := by
-  apply (belowEquiv D f hr (BJ' := Y) rfl).injective
+  apply (belowEquiv D f hr  rfl).injective
   rw [Equiv.apply_symm_apply, belowEquiv_mono, Equiv.apply_symm_apply]
 
 end CellScheme.restrictFace
 
-section RestrictFace
+section
 
 open CellScheme.restrictFace
 
 variable {m n : ℕ} {D : CellScheme (ι := Fin n) Finset.univ} {f : Fin m ↪ Fin n}
-  {hr : Finset.univ.image f ∈ D.plan} {BJ' : Finset (Fin m) × ℕ} {BJ : Finset (Fin n) × ℕ}
+  {hr : Finset.univ.image f ∈ D.plan} {BJ' : GradedIndex (Fin m)} {BJ : GradedIndex (Fin n)}
 
 /-- Respect of the restricted semantics `E⟨B,j⟩` transports **from `D` to the restriction**
 along `belowEquiv`: if `r` on `D.below (f[B'], j)` respects `sem` there, then `r ∘ belowEquiv`
 on `D'.below BJ'` respects `sem.restrictFace f hr` there.  Orderliness and locality are read
 off the underlying cells (`TransformsTo.reindex` along `belowMap`); the availability witness
 is pulled back through the bijection. -/
-theorem RespectsSemanticsBelow.restrictFace {sem : Semantics D} (hBJ : pushGraded f BJ' = BJ)
-    {r : D.below BJ → ExtOrd} (h : RespectsSemanticsBelow sem BJ r) :
+theorem RespectsSemanticsBelow.restrictFace {sem} (hBJ : pushGraded f BJ' = BJ)
+    {r} (h : RespectsSemanticsBelow sem BJ r) :
     RespectsSemanticsBelow (sem.restrictFace f hr) BJ' (r ∘ belowEquiv D f hr hBJ) where
   orderly d := h.orderly (belowEquiv D f hr hBJ d)
   locality Sig := (h.locality (belowEquiv D f hr hBJ Sig)).reindex (belowMap D f hr Sig.1)
@@ -335,7 +319,7 @@ theorem RespectsSemanticsBelow.restrictFace {sem : Semantics D} (hBJ : pushGrade
     obtain ⟨Xi', hcell, hle⟩ :=
       h.availability (belowEquiv D f hr hBJ Sig) (belowEquiv D f hr hBJ Xi₀) hscope' hgrade
     refine ⟨(belowEquiv D f hr hBJ).symm Xi', ?_, ?_⟩
-    · rw [cell_eq, cell_eq]
+    · rw [ cell_eq]
       apply CellScheme.pullCell_congr
       rw [toCell_belowEquiv_symm_val]
       exact hcell
@@ -347,7 +331,7 @@ along `belowEquiv`: if `r'` on `D'.below BJ'` respects `sem.restrictFace f hr` t
 `Sig = toCell c` of `D` is locality at `c` in the restriction, reindexed along the inverse
 bijection `D.below (cell (toCell c)) ≃ D'.below (cell c)`. -/
 theorem RespectsSemanticsBelow.of_restrictFace {sem : Semantics D} (hBJ : pushGraded f BJ' = BJ)
-    {r' : (D.restrictFace f hr).below BJ' → ExtOrd}
+    {r'}
     (h : RespectsSemanticsBelow (sem.restrictFace f hr) BJ' r') :
     RespectsSemanticsBelow sem BJ (r' ∘ (belowEquiv D f hr hBJ).symm) where
   orderly e := by
@@ -411,7 +395,7 @@ theorem RespectsSemanticsBelow.of_restrictFace {sem : Semantics D} (hBJ : pushGr
         toCell_belowEquiv_symm_val]
     · simpa only [Function.comp_apply, Equiv.symm_apply_apply] using hle
 
-end RestrictFace
+end
 
 /-! ### Face restriction of a domain with its associated semantics -/
 
@@ -443,12 +427,10 @@ noncomputable def restrictFace (X : SemScheme n) (f : Fin m ↪ Fin n)
       (p' ∘ (belowEquiv X.scheme f hr rfl).symm) (q' ∘ (belowEquiv X.scheme f hr rfl).symm) γ
       (hp'.of_restrictFace rfl) (hq'.of_restrictFace rfl) hγ
       (fun e => by
-        rw [Function.comp_apply, Function.comp_apply, belowEquiv_symm_mono]
-        exact hagree _)
+        simp_all [belowEquiv_symm_mono])
     refine ⟨q₀ ∘ belowEquiv X.scheme f hr rfl, hq₀.restrictFace rfl, fun d => ?_, fun d => ?_⟩
-    · rw [Function.comp_apply, hq₀γ, Function.comp_apply, Equiv.symm_apply_apply]
-    · rw [Function.comp_apply, belowEquiv_mono, hq₀p, Function.comp_apply,
-        Equiv.symm_apply_apply]
+    · grind
+    · simp_all [belowEquiv_mono]
   complete BJ' hBJ' := by
     obtain ⟨d, hd⟩ := X.complete _ ((mem_gradedPlan_restrictFace X.scheme f hr).mp hBJ')
     have hvis : X.scheme.scope d ⊆ Finset.univ.image f := by
@@ -458,14 +440,4 @@ noncomputable def restrictFace (X : SemScheme n) (f : Fin m ↪ Fin n)
     obtain ⟨i, rfl⟩ := exists_toCell_eq X.scheme f hr hvis
     exact ⟨i, pushGraded_injective f ((pushGraded_cell X.scheme f hr i).trans hd)⟩
 
-@[simp] theorem restrictFace_scheme (X : SemScheme n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ X.scheme.plan) :
-    (X.restrictFace f hr).scheme = X.scheme.restrictFace f hr := rfl
 
-@[simp] theorem restrictFace_rows (X : SemScheme n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ X.scheme.plan) :
-    (X.restrictFace f hr).rows = X.rows.restrictFace f hr := rfl
-
-end SemScheme
-
-end VaughtConjecture.Knight

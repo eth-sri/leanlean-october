@@ -3,9 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorLowHighFibres
+import VaughtConjecture.Knight.CappedDonorRetarget
+import VaughtConjecture.Knight.CappedDonorRelease
 
 /-! # The HIGH/LOW readback consumer from explicit chart receipts (newapproach2 §7 of new4)
 
@@ -55,11 +55,8 @@ section as an admissible two-threshold state (with its charts the witnesses of t
 rows above), and bottom-pattern realization keeping the gate node positive.  Nothing here asserts
 either; `readback_of_actualFace` states exactly what they must deliver. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd AmalgamationPlan
 
 namespace CappedDonor
 
@@ -73,10 +70,5 @@ theorem cut_actual_lt_cap : R.cut R.vactL < R.vact R.cap := by
   rw [R.cut_actual]
   exact (Finset.sup_lt_iff R.cap_pos).mpr fun i _ => R.margin i
 
-variable {K : ℕ} (L : R.LowRef K)
 
-end Ref
 
-end CappedDonor
-
-end VaughtConjecture.Knight

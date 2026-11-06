@@ -1,12 +1,16 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.OwnerLocalAlignment
-public import VaughtConjecture.Knight.CanonicalPairedProfiles
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.OwnerLocalAlignment
+import VaughtConjecture.Knight.CanonicalPairedProfiles
 
 /-! # Private-row factorization with frozen source receipts
 
@@ -16,32 +20,26 @@ source and actual prescribed lawfulness. It does not install a receiving
 catalogue or assume that arbitrary physical sections are source states.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PrivateRowFactorization
-open Transform Value ExtOrd SharpWitnessComposition OwnerLocalEndpoint
-noncomputable section
+open  Value ExtOrd SharpWitnessComposition OwnerLocalEndpoint
 
-theorem coded_proper {m j : ℕ} {x : ExtOrd} (hx : x ∈ ExtOrd.codedAlphabet m j) :
-    x ≠ ⊤ := by
-  rcases ExtOrd.mem_codedAlphabet_iff.mp hx with rfl | ⟨b, i, _, _, rfl⟩
-  · exact bot_ne_top
-  · exact ofOrd_ne_top _
 
-theorem code_spec {m j : ℕ} {x : ExtOrd}
+theorem coded_proper {m j} {x} (hx : x ∈ ExtOrd.codedAlphabet m j) :
+    x ≠ ⊤ := by simp_all [VaughtConjecture.Knight.ExtOrd.codedAlphabet] <;> aesop
+
+theorem code_spec {m j} {x}
     (hc : x ∈ ExtOrd.codedAlphabet m j) (hs : Short j x) :
-    x = ⊥ ∨ ∃ b i : ℕ, b ≤ m ∧ i ≤ j ∧ x = ofOrd (Ordinal.omega0 * b + i) := by
+    x = ⊥ ∨ ∃ b i , b ≤ m ∧ i ≤ j ∧ x = ofOrd (Ordinal.omega0 * b + i) := by
   rcases ExtOrd.mem_codedAlphabet_iff.mp hc with hb | ⟨b, i, hb, _, he⟩
   · exact Or.inl hb
   · refine Or.inr ⟨b, i, hb, ?_, he⟩
     rcases hs with hz | ht | ⟨u, hu, hj⟩
-    · exact (ofOrd_ne_bot _ (he.symm.trans hz)).elim
-    · exact (ofOrd_ne_top _ (he.symm.trans ht)).elim
+    · aesop
+    · aesop
     have heq := ofOrd_inj.mp (he.symm.trans hu)
     simpa only [← heq, finitePart_mul_add] using hj
 
-theorem code_bound {m j : ℕ} {x : ExtOrd}
+theorem code_bound {m j} {x}
     (hc : x ∈ ExtOrd.codedAlphabet m j) (hs : Short j x) :
     x ≤ ofOrd (Ordinal.omega0 * m + j) := by
   rcases code_spec hc hs with rfl | ⟨b, i, hb, hi, rfl⟩
@@ -51,11 +49,11 @@ theorem code_bound {m j : ℕ} {x : ExtOrd}
     · gcongr
     · exact Nat.cast_le.mpr hi
 
-theorem endpoint_grid {m j : ℕ} {x : ExtOrd}
+theorem endpoint_grid {m j} {x}
     (hc : x ∈ ExtOrd.codedAlphabet (2 * m) j) (hs : Short j x) :
     endpoint j x ∈ PairedSlotComparison.sourceGrid j m := by
   rcases code_spec hc hs with rfl | ⟨b, i, hb, hi, rfl⟩
-  · exact PairedSlotComparison.sourceGrid_bot j m
+  · exact PairedSlotComparison.sourceGrid_bot
   · have he : endpoint j (ofOrd (Ordinal.omega0 * b + i)) =
         ofOrd (Ordinal.omega0 * b + j) := by
       by_cases hij : i < j
@@ -69,32 +67,30 @@ theorem endpoint_grid {m j : ℕ} {x : ExtOrd}
     rw [he]
     exact PairedSlotComparison.sourceGrid_endpoint (hb.trans (Nat.le_succ _))
 
-theorem short_replace {j k i : ℕ} {x : ExtOrd} (hx : Short j x)
+theorem short_replace {j k i} {x} (hx : Short j x)
     (hk : k ≤ j) (hi : i ≤ k) : Short j (extVisibilityReplace x k i) := by
   rcases hx with rfl | rfl | ⟨u, rfl, hu⟩
-  · exact Or.inl (extVisibilityReplace_bot _ _)
-  · exact Or.inr (Or.inl (extVisibilityReplace_top _ _))
+  · solve_by_elim
+  · simp_all [VaughtConjecture.Knight.SharpWitnessComposition.Short]
   · by_cases hut : finitePart u < k
     · rw [extVisibilityReplace_of_finitePart_lt hut]
-      exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_limitPart_add_nat]; exact hi.trans hk⟩)
+      exact Or.inr (Or.inr ⟨_, rfl, by grind [finitePart_limitPart_add_nat]⟩)
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hut)]
       exact Or.inr (Or.inr ⟨u, rfl, hu⟩)
 
 theorem encoded_proper {X : Type*} [Fintype X] {s p : X → ExtOrd}
-    {j b : ℕ} {h δ : ExtOrd} (hs : ∀ d, s d ≠ ⊤)
+    {j b : ℕ} {h δ : ExtOrd} (hs : AvoidsValue s ⊤)
     (hroom : h < ofOrd (Ordinal.omega0 * b)) (d : X) :
     AlignedCutEncoding.encode s p j b h δ d ≠ ⊤ := by
   by_cases hd : p d ≤ δ
-  · rw [AlignedCutEncoding.encode_of_le s p j b h δ d hd]
-    intro ht
-    exact hs d (top_le_iff.mp (ht ▸ min_le_left (s d) h))
+  · simp_all [AlignedCutEncoding.encode_of_le]
   · rw [AlignedCutEncoding.encode_of_gt s p hroom d (not_le.mp hd)]
     exact coded_proper (PaddedSourceDecoder.encode_mem _ j b _)
 
 /-- Retuning and tail decoding retain the external cap on every short source,
 not only represented fields. The final owner clip allows literal-top targets. -/
-theorem outgoing_cap {j b : ℕ} {σ ρ : ExtOrd → ExtOrd} {h δ γ M : ExtOrd}
-    (S : Finset Ordinal.{0}) (hσ : Monotone σ)
+theorem outgoing_cap {j b : ℕ} {σ ρ : LabelMap} {h δ γ M : ExtOrd}
+    (S : Finset Ordinal₀) (hσ : Monotone σ)
     (hρ : Witness (gTop j) ρ) (hδ : SelfVis j δ) (hM : SelfVis j M)
     (hroom : h < ofOrd (Ordinal.omega0 * b)) (hread : ρ h = δ)
     (hγδ : γ ≤ δ) (hδM : δ ≤ M) (hreach : γ ≤ σ h)
@@ -109,7 +105,7 @@ theorem outgoing_cap {j b : ℕ} {σ ρ : ExtOrd → ExtOrd} {h δ γ M : ExtOrd
     have hν := FreeDiagonal.clip_witness (PaddedSourceDecoder.extend_witness (b := b) S hρ hδ) hM
     have hat : min (PaddedSourceDecoder.extend S j b ρ δ h) M = δ := by
       rw [PaddedSourceDecoder.extend_before S hroom, hread, min_self, min_eq_left hδM]
-    have hνx : γ ≤ min (PaddedSourceDecoder.extend S j b ρ δ x) M :=
+    have hνx  :=
       hγδ.trans (hat.ge.trans (hν.mono hhx))
     rw [min_eq_right hνx, min_eq_right (hreach.trans (hσ hhx))]
 
@@ -119,11 +115,11 @@ variable {sem : Semantics D}
 /-- Output receipts, all constructed by `at_first_cut` below. The source is
 proper but need not be normalized: it is the input to the scalar fibre and
 supported inverse, not a new row added to the frozen catalogue. -/
-structure Factorization (c : Cell D) (s p : D.below (D.cell c) → ExtOrd)
-    (σ : ExtOrd → ExtOrd) (γ δ : ExtOrd) where
-  source : D.below (D.cell c) → ExtOrd
-  outgoing : ExtOrd → ExtOrd
-  lawful : RespectsSemanticsBelow sem (D.cell c) source
+structure Factorization (c : Cell D) (s p : BelowLabels D (D.cell c))
+    (σ : LabelMap) (γ δ : ExtOrd) where
+  source : BelowLabels D (D.cell c)
+  outgoing : LabelMap
+  lawful : Semantics.RowLawful sem c source
   proper : ∀ d, source d ≠ ⊤
   witness : Witness (gTop (D.grade c)) outgoing
   bounded : ∀ x, outgoing x ≤ p ⟨c, GradedLe.refl _⟩
@@ -137,27 +133,27 @@ The fixed first grid cut is not identified with the owner-local endpoint.
 The latter may be larger; its stronger preserved prefix implies the required
 original prefix. Alignment, repaired lawfulness and the outgoing map are outputs. -/
 theorem at_first_cut (c : Cell D)
-    {s p : D.below (D.cell c) → ExtOrd} (m : ℕ)
-    (hs : RespectsSemanticsBelow sem (D.cell c) s)
-    (hp : RespectsSemanticsBelow sem (D.cell c) p)
+    {s p : BelowLabels D (D.cell c)} (m : ℕ)
+    (hs : Semantics.RowLawful sem c s)
+    (hp : Semantics.RowLawful sem c p)
     (hcoded : ∀ e, s e ∈ ExtOrd.codedAlphabet (2 * m) (D.grade c))
     (hshort : ∀ e, Short (D.grade c) (s e))
-    {σ : ExtOrd → ExtOrd} {γ δ : ExtOrd}
+    {σ : LabelMap} {γ δ : ExtOrd}
     (hσ : Witness (gTop (D.grade c)) σ) (hγ : SelfVis (D.grade c) γ)
     (hpos : ⊥ < γ) (hpc : γ < p ⟨c, GradedLe.refl _⟩)
-    (hface : ∀ e, min (σ (s e)) γ = min (p e) γ)
+    (hface : CappedEq (σ ∘ s) p γ)
     (hδ : δ ∈ PairedSlotComparison.sourceGrid (D.grade c) m) (hreach : γ ≤ σ δ)
     (hfirst : ∀ z ∈ PairedSlotComparison.sourceGrid (D.grade c) m, z < δ → σ z < γ) :
     Nonempty (Factorization (sem := sem) c s p σ γ δ) := by
   classical
-  let := Fintype.ofFinite (D.below (D.cell c))
-  let self : D.below (D.cell c) := ⟨c, GradedLe.refl _⟩
+  let := Fintype.ofFinite (D.belowCell c)
+  let self : D.belowCell c := ⟨c, GradedLe.refl _⟩
   let M := p self
   let τ := fun x => min (σ x) γ
   have hτ : Witness (gTop (D.grade c)) τ := FreeDiagonal.clip_witness hσ hγ
-  have hτbound : ∀ x, τ x ≤ γ := fun _ => min_le_right _ _
+  have hτbound : BoundedBy τ γ := fun _ => min_le_right _ _
   have htface : ∀ e, τ (s e) = min (p e) γ := hface
-  have hproper : ∀ e, s e ≠ ⊤ := fun e => coded_proper (hcoded e)
+  have hproper : AvoidsValue s ⊤ := fun e => coded_proper (hcoded e)
   have hbudget := code_bound (hcoded self) (hshort self)
   obtain ⟨η, ρ, β, f, H, _, _, _, hroom, hρ, hγβ, hβM, hβvis, hρη,
       hf, hfprefix, hfdef, hfread, _, hρcap⟩ :=
@@ -183,17 +179,16 @@ theorem at_first_cut (c : Cell D)
     apply outgoing_cap S hσ.mono hρ hβvis hMvis hroom hρη hγβ hβM hηreach
       (fun z hz => ?_) hx
     simpa only [τ, min_assoc, min_self] using hρcap z hz
-  refine ⟨{
-    source := f
-    outgoing := ν
-    lawful := hf
-    proper := ?_
-    witness := hν
-    bounded := fun _ => min_le_right _ _
-    readback := ?_
-    prefix_eq := ?_
-    reaches := ?_
-    caps := hcaps }⟩
+  refine ⟨⟨f,
+ν,
+hf,
+?_,
+hν,
+fun _ => min_le_right _ _,
+?_,
+?_,
+?_,
+hcaps⟩⟩
   · intro e
     rw [hfdef]
     exact encoded_proper hproper hroom e
@@ -212,30 +207,24 @@ theorem at_first_cut (c : Cell D)
     rw [min_eq_right hreach] at he
     exact he.ge.trans (min_le_left _ _)
 
-namespace Factorization
-variable {c : Cell D} {s p : D.below (D.cell c) → ExtOrd}
-variable {σ : ExtOrd → ExtOrd} {γ δ : ExtOrd}
-variable (F : Factorization (sem := sem) c s p σ γ δ)
-
-end Factorization
 
 /-- The reaching cut is constructed in the fixed complete-field grid.
 The input supplies the old source, actual chart, and lawful prescription;
 no replacement source, alignment, retuning or coded completion is assumed. -/
-theorem exists_factorization (c : Cell D) {s p : D.below (D.cell c) → ExtOrd} (m : ℕ)
-    (hs : RespectsSemanticsBelow sem (D.cell c) s)
-    (hp : RespectsSemanticsBelow sem (D.cell c) p)
+theorem exists_factorization {c} {s p} {m}
+    (hs : Semantics.RowLawful sem c s)
+    (hp : Semantics.RowLawful sem c p)
     (hcoded : ∀ e, s e ∈ ExtOrd.codedAlphabet (2 * m) (D.grade c))
     (hshort : ∀ e, Short (D.grade c) (s e))
-    {σ : ExtOrd → ExtOrd} {γ : ExtOrd}
+    {σ} {γ}
     (hσ : Witness (gTop (D.grade c)) σ) (hγ : SelfVis (D.grade c) γ)
     (hpos : ⊥ < γ) (hpc : γ < p ⟨c, GradedLe.refl _⟩)
-    (hface : ∀ e, min (σ (s e)) γ = min (p e) γ) :
+    (hface : CappedEq (σ ∘ s) p γ) :
     ∃ δ ∈ PairedSlotComparison.sourceGrid (D.grade c) m, ⊥ < δ ∧ γ ≤ σ δ ∧
       (∀ z ∈ PairedSlotComparison.sourceGrid (D.grade c) m, z < δ → σ z < γ) ∧
       Nonempty (Factorization (sem := sem) c s p σ γ δ) := by
   classical
-  let self : D.below (D.cell c) := ⟨c, GradedLe.refl _⟩
+  let self : D.belowCell c := ⟨c, GradedLe.refl _⟩
   let G := PairedSlotComparison.sourceGrid (D.grade c) m
   let R := G.filter (fun z => γ ≤ σ z)
   have howner : s self ∈ G := by
@@ -263,5 +252,4 @@ theorem exists_factorization (c : Cell D) {s p : D.below (D.cell c) → ExtOrd} 
   exact ⟨δ, hd.1, hδpos, hd.2, hfirst,
     at_first_cut c m hs hp hcoded hshort hσ hγ hpos hpc hface hd.1 hd.2 hfirst⟩
 
-end
-end VaughtConjecture.Knight.PrivateRowFactorization
+

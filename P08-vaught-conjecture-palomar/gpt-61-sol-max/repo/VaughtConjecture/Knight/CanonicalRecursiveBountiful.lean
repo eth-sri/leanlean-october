@@ -1,12 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CanonicalRecursiveFullLift
-public import VaughtConjecture.Knight.CanonicalCoatomBountiful
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CanonicalRecursiveFullLift
+import VaughtConjecture.Knight.CanonicalCoatomBountiful
 
 /-! # Bountifulness preservation at the recursive current grade
 
@@ -17,16 +20,13 @@ already supplies the selected-section contract. Old coatom geometry and
 old-face lifting remain explicit, separate from ordered installation.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveBountiful
-open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
+open    CoatomBoundaryExtension AmalgamationPlan
 open CanonicalRecursiveSuccessorRows CanonicalRecursiveCutPrefix CanonicalRecursiveActiveLift
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (n : ℕ) (hA : n + 4 ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A)
+variable (hp : AvoidsValue D.scope A)
 variable (hb : CanonicalRecursiveRestoration.LowerBountiful sem n hA
   (predecessorState sem n hA hp))
 variable (hold : CanonicalCoatomBountiful.OldLifts sem) {L R : Finset ι}
@@ -34,22 +34,24 @@ variable (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
 variable (hLc : n + 4 ≤ L.card) (hRc : n + 4 ≤ R.card) (hO : L ∩ R ∈ D.plan)
 variable (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
 variable (hcomplete : ∀ C ∈ D.plan, C ≠ A → n + 4 ≤ C.card →
-  ∃ d : Cell D, D.cell d = (C, n + 4))
+  ∃ d , D.cell d = (C, n + 4))
+
+local notation "outputRows₀" => outputRows sem n hA hp
 
 include hb hold hL hR hLA hRA hLc hRc hO hcover hcomplete in
-theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A)
+theorem full_left {C} (hC : C ∈ D.plan) (hCA : C ≠ A)
     (hCc : n + 4 ≤ C.card) (hCL : C ⊆ L) :
-    CappedLift (outputRows sem n hA hp)
+    CappedLift (outputRows₀)
       (show GradedLe (C, n + 4) (A, n + 4) from
-        ⟨D.isPlan.subset_of_mem hC, le_rfl⟩) := by
-  have cover (d : Cell (cut (D := D) n)) :
-      GradedLe ((cut (D := D) n).cell d) (L, n + 4) ∨
-      GradedLe ((cut (D := D) n).cell d) (R, n + 4) :=
+        ⟨D.isPlan.subset_of_mem hC, le_rfl⟩) := by 
+  let core1 := cut (D := D) n
+  have cover (d : Cell (core1)) :
+      GradedLe ((core1).cell d) (L, n + 4) ∨
+      GradedLe ((core1).cell d) (R, n + 4) :=
     (hcover _ (D.scope_mem_plan _) (hp (occurrence (D := D) n d))).imp
-      (fun h => ⟨h, GradeCutBoundary.grade_bound D _ d⟩)
-      (fun h => ⟨h, GradeCutBoundary.grade_bound D _ d⟩)
-  have left : CappedLift (cutRows sem n)
-      (show GradedLe (C, n + 4) (L, n + 4) from ⟨hCL, le_rfl⟩) :=
+      (fun h => ⟨h, GradeCutBoundary.grade_bound d⟩)
+      (fun h => ⟨h, GradeCutBoundary.grade_bound d⟩)
+  have left  :=
     (GradeCutLifting.lift_iff sem (n + 4) _ le_rfl).mpr
       (hold (C, n + 4) (L, n + 4) (Plan.mem_gradedPlan.mpr ⟨hC, by omega, hCc⟩)
         (Plan.mem_gradedPlan.mpr ⟨hL, by omega, hLc⟩) hLA ⟨hCL, le_rfl⟩)
@@ -63,12 +65,12 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A)
     · let := target_empty (D := D) (U := (L, n + 4)) (V := (R, n + 4))
         (Finset.not_nonempty_iff_eq_empty.mp hne)
       exact lift_empty target_le_right
-  have hfull : ∃ c : (cut (D := D) n).below (C, n + 4),
-      (cut (D := D) n).cell c.1 = (C, n + 4) := by
+  have hfull : ∃ c : (core1).below (C, n + 4),
+      (core1).cell c.1 = (C, n + 4) := by
     obtain ⟨d, hd⟩ := hcomplete C hC hCA hCc
     have hgd : D.grade d ≤ n + 4 := (congrArg Prod.snd hd).le
     let c := GradeCutBoundary.fromCell D (n + 4) d hgd
-    have hc : (cut (D := D) n).cell c = (C, n + 4) := by
+    have hc : (core1).cell c = (C, n + 4) := by
       change D.cell (GradeCutBoundary.toCell D (n + 4) c) = _
       rw [GradeCutBoundary.to_from, hd]
     exact ⟨⟨c, by rw [hc]; exact GradedLe.refl _⟩, hc⟩
@@ -77,9 +79,9 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A)
     (fun d hl hr => (below_target_iff d).mpr ⟨hl, hr⟩) left right hb hCc hfull le_rfl le_rfl
 
 include hb hold hL hR hLA hRA hLc hRc hO hcover hcomplete in
-theorem full_lift {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A)
+theorem full_lift {C} (hC : C ∈ D.plan) (hCA : C ≠ A)
     (hCc : n + 4 ≤ C.card) :
-    CappedLift (outputRows sem n hA hp)
+    CappedLift (outputRows₀)
       (show GradedLe (C, n + 4) (A, n + 4) from
         ⟨D.isPlan.subset_of_mem hC, le_rfl⟩) := by
   rcases hcover C hC hCA with hl | hr
@@ -93,26 +95,24 @@ include hb hold hL hR hLA hRA hLc hRc hO hcover hcomplete in
 /-- Exhaustive literal-pair ledger on the enlarged actual grade cut.
 The original permitted cap is unchanged, including bottom and literal top. -/
 theorem bountiful :
-    (GradeCutBoundary.rows (carrier sem n hA) (n + 4) (outputRows sem n hA hp)).IsBountiful := by
+    (GradeCutBoundary.rows (carrier sem n hA) (n + 4) (outputRows₀)).IsBountiful := by
   apply EffectiveGradeLifting.bountiful_of_bounded_same_grade
-    (GradeCutBoundary.grade_bound (carrier sem n hA) (n + 4)) (by omega)
+    (GradeCutBoundary.grade_bound) (by omega)
   intro C B i hC hB hi hCB
   change (C, i) ∈ Plan.gradedPlan (carrier sem n hA).plan at hC
   change (B, i) ∈ Plan.gradedPlan (carrier sem n hA).plan at hB
-  have hc : (C, i) ∈ Plan.gradedPlan D.plan := by
+  have hc  := by
     simpa only [carrier_eq_recursive, CanonicalRecursiveBoundaryTransport.plan_eq] using hC
-  have hb' : (B, i) ∈ Plan.gradedPlan D.plan := by
+  have hb'  := by
     simpa only [carrier_eq_recursive, CanonicalRecursiveBoundaryTransport.plan_eq] using hB
-  apply (GradeCutLifting.lift_iff (outputRows sem n hA hp) (n + 4) _ hi).mpr
+  apply (GradeCutLifting.lift_iff outputRows₀ (n + 4) _ hi).mpr
   by_cases hil : i ≤ n + 3
   · apply CanonicalRecursiveLifting.lower_lift sem n hA hp
       (predecessorState sem n hA hp) _ hil
     apply (GradeCutLifting.lift_iff (predecessorState sem n hA hp).rows (n + 3) _ hil).mp
     apply lift_of_bountiful hb
-    · change (C, i) ∈ Plan.gradedPlan (predecessor sem n hA).plan
-      rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hc
-    · change (B, i) ∈ Plan.gradedPlan (predecessor sem n hA).plan
-      rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hb'
+    · aesop
+    · aesop
   have hik : i = n + 4 := by omega
   subst i
   by_cases hBA : B = A
@@ -126,5 +126,4 @@ theorem bountiful :
         (D.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hb').1) h))
     exact hold _ _ hc hb' hBA ⟨hCB, le_rfl⟩
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveBountiful
+

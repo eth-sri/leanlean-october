@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
-public import VaughtConjecture.Knight.MixedRowDecoding
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.OrdinaryFinalCatalogue
+import VaughtConjecture.Knight.MixedRowDecoding
 
 /-! # A selected physical display for the ordinary final layer
 
@@ -22,13 +23,10 @@ contract, not a bountifulness assumption. This display, with both original
 vectors literal and a top marked gate, does not establish unrestricted lifting.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalDisplay
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
+open    CappedDonor CappedDonor.Ref SharpWitnessComposition
 open OrdinaryFinalCatalogue
-noncomputable section
+
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
@@ -43,20 +41,20 @@ theorem exists_actual_display
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (howners : ∀ a (c : D.below (A, N)),
-      (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (F.sem.E c.1 d)) ∨
-      (∀ d : D.below (D.cell c.1), ∃ f : Field P C, F.lower a d.1 = a.val f))
+      (∀ d , Short (D.grade c.1) (F.sem.E c.1 d)) ∨
+      (∀ d : D.belowCell c.1, ∃ f , F.lower a d.1 = a.val f))
     (req : Cell P.scheme ↪ Cell D) (priv : Cell C.scheme ↪ Cell D)
     (hreq : ∀ a d, F.lower a (req d) = a.val (.req d))
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d)) :
-    ∃ (a : OrdinaryFinalCatalogue.Member R) (δ : ExtOrd → ExtOrd),
+    ∃ a δ,
       Witness (gTop N) δ ∧
       RespectsSemanticsBelow F.rows (A, N) (fun d => δ (F.source a d.1)) ∧
-      (∀ d : Cell P.scheme, δ (F.source a (F.old (req d))) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (F.source a (F.old (priv d))) = R.vact d) ∧
+      (∀ d , δ (F.source a (F.old (req d))) = R.p d) ∧
+      (∀ d , δ (F.source a (F.old (priv d))) = R.vact d) ∧
       δ (F.source a (F.added a true)) = ⊤ ∧
       δ (F.source a (F.added a false)) = ⊤ := by
   obtain ⟨a, δ, hδ, hP, hC, hg, hreflect⟩ := exists_actual_member_reflecting R
-  have hlower : RespectsSemanticsBelow F.sem (A, N) (fun d => δ (F.lower a d.1)) := by
+  have hlower  := by
     apply map_respects_of_short_or_reflecting (F.lower_lawful a) (fun d => d.2.2) hδ
     intro c
     rcases howners a c with hs | ho
@@ -86,5 +84,4 @@ theorem exists_actual_display
     rw [hgate, hfields, hg] at hb
     exact hb
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalDisplay
+

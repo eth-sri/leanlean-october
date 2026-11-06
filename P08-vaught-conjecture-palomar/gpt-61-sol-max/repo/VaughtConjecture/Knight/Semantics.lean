@@ -1,12 +1,12 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Cell
-public import VaughtConjecture.Knight.Transform
+import VaughtConjecture.Knight.Cell
+import VaughtConjecture.Knight.Transform
 
 /-! # Knight's semantic rows, respect of semantics, and consistent semantics
 
@@ -60,8 +60,6 @@ used by `Knight.Type.typeMap`; locality by `TransformsTo.reindex`, availability 
 witness along `toCell`).  `Semantics.E_congr` is the congruence lemma for rows at
 propositionally equal indices (Knight-VC `sem_E_congr`). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open Transform
@@ -73,10 +71,10 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
 grades. -/
 structure Semantics (D : CellScheme A) where
   /-- The semantic row of each cell, a labelling of the cells below it. -/
-  E : (Sig : Cell D) → (D.below (D.cell Sig) → ExtOrd)
+  E : (Sig : Cell D) → (BelowLabels D (D.cell Sig))
   /-- Each semantic row is orderly at the grades of its cells. -/
-  orderly : ∀ Sig : Cell D,
-    IsOrderly (fun d : D.below (D.cell Sig) => D.grade d.1) (E Sig)
+  orderly : ∀ Sig ,
+    IsOrderly (fun d => D.grade d.1) (E Sig)
 
 variable {D : CellScheme A}
 
@@ -94,27 +92,27 @@ transforms (Def. 2.3.9) to the labelling `d ↦ min (p d) (p Sig)` of the cells 
 **availability** — whenever `Sig` and `Xi₀` are cells with `D.scope Sig ⊆ D.scope Xi₀` and the
 same grade (so `Xi₀` witnesses that `D^{scope Xi₀, grade Sig}` is non-empty), some cell `Xi`
 with the graded index of `Xi₀` has `p Sig ≤ p Xi`. -/
-structure RespectsSemantics (sem : Semantics D) (p : Cell D → ExtOrd) : Prop where
+structure RespectsSemantics (sem : Semantics D) (p : CellLabels D) : Prop where
   /-- `p` is orderly on the whole scheme. -/
   orderly : IsOrderly D.grade p
   /-- Locality (Def. 2.5.4(1)): each semantic row transforms to `p` below `Sig`, capped by
   `p Sig`. -/
   locality :
-    ∀ Sig : Cell D,
-      TransformsTo (fun d : D.below (D.cell Sig) => D.grade d.1)
+    ∀ Sig ,
+      TransformsTo (fun d => D.grade d.1)
         (sem.E Sig)
         (fun d => min (p d.1) (p Sig))
   /-- Availability (Def. 2.5.4(2)): a label at scope `C` and grade `i` is dominated by a label
   at every larger scope `B ⊇ C` (in the plan) at which grade `i` occurs. -/
   availability :
-    ∀ Sig Xi₀ : Cell D, D.scope Sig ⊆ D.scope Xi₀ → D.grade Sig = D.grade Xi₀ →
-      ∃ Xi : Cell D, D.cell Xi = D.cell Xi₀ ∧ p Sig ≤ p Xi
+    ∀ Sig Xi₀ , D.scope Sig ⊆ D.scope Xi₀ → D.grade Sig = D.grade Xi₀ →
+      ∃ Xi , D.cell Xi = D.cell Xi₀ ∧ p Sig ≤ p Xi
 
 /-- The identically bottom labelling respects every semantics. -/
-theorem RespectsSemantics.bot {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+theorem RespectsSemantics.bot {ι} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
     (sem : Semantics D) : RespectsSemantics sem (fun _ => ⊥) where
   orderly _ := (Value.extVisibilityReplace_bot _ _).symm
-  locality c := TransformsTo.to_bot (sem.E c)
+  locality c := TransformsTo.to_bot
   availability _ Xi₀ _ _ := ⟨Xi₀, rfl, le_rfl⟩
 
 /-! ### Restricted semantics and consistent semantics -/
@@ -122,8 +120,8 @@ theorem RespectsSemantics.bot {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
 /-- The row of `sem` at a cell `Sig` of the lower set `D.below BJ` has domain
 `D.below (D.cell Sig)`, which embeds in `D.below BJ` (`GradedLe.trans`): this is the
 restricted scheme's own "below" of `Sig`, `D⟨B,j⟩⟨Sig⟩ = D⟨Sig⟩`. -/
-def CellScheme.below.incl {BJ : Finset ι × ℕ} (Sig : D.below BJ)
-    (d : D.below (D.cell Sig.1)) : D.below BJ :=
+def CellScheme.below.incl {BJ} (Sig : D.below BJ)
+    (d : D.belowCell Sig.1) : D.below BJ :=
   ⟨d.1, d.2.trans Sig.2⟩
 
 /-- A labelling `r` of the lower set `D.below BJ` respects the **restricted semantics**
@@ -131,28 +129,33 @@ def CellScheme.below.incl {BJ : Finset ι × ℕ} (Sig : D.below BJ)
 cells are `D.below BJ` and whose rows are the rows of `sem` at those cells): `r` is orderly
 at the grades; locality — for each `Sig` below `BJ`, the row `sem.E Sig` transforms to
 `d ↦ min (r d) (r Sig)` on `D.below (D.cell Sig)`; availability within `D.below BJ`. -/
-structure RespectsSemanticsBelow (sem : Semantics D) (BJ : Finset ι × ℕ)
-    (r : D.below BJ → ExtOrd) : Prop where
+structure RespectsSemanticsBelow (sem : Semantics D) (BJ : GradedIndex ι)
+    (r : BelowLabels D BJ) : Prop where
   /-- `r` is orderly on the lower set. -/
-  orderly : IsOrderly (fun d : D.below BJ => D.grade d.1) r
+  orderly : IsOrderly (fun d => D.grade d.1) r
   /-- Locality in the restricted scheme. -/
   locality :
-    ∀ Sig : D.below BJ,
-      TransformsTo (fun d : D.below (D.cell Sig.1) => D.grade d.1)
+    ∀ Sig ,
+      TransformsTo (fun d => D.grade d.1)
         (sem.E Sig.1)
         (fun d => min (r (CellScheme.below.incl Sig d)) (r Sig))
   /-- Availability in the restricted scheme. -/
   availability :
     ∀ Sig Xi₀ : D.below BJ, D.scope Sig.1 ⊆ D.scope Xi₀.1 → D.grade Sig.1 = D.grade Xi₀.1 →
-      ∃ Xi : D.below BJ, D.cell Xi.1 = D.cell Xi₀.1 ∧ r Sig ≤ r Xi
+      ∃ Xi , D.cell Xi.1 = D.cell Xi₀.1 ∧ r Sig ≤ r Xi
+
+/-- Lawfulness of a local row at its controlling cell. -/
+abbrev Semantics.RowLawful (sem : Semantics D) (c : Cell D)
+    (p : D.belowCell c → ExtOrd) : Prop :=
+  RespectsSemanticsBelow sem (D.cell c) p
 
 /-- A labelling respecting the semantics of the whole scheme (Def. 2.5.4) respects the
 restricted semantics `E⟨B,j⟩` on every lower set (the converse of
 `RespectsSemanticsBelow.toRespects`, with no hypothesis on `BJ`): locality and orderliness
 are read off the underlying cells, and the availability witness — which has the graded index of
 `Xi₀` — lies in the lower set. -/
-theorem RespectsSemantics.toBelow {sem : Semantics D} {p : Cell D → ExtOrd}
-    (h : RespectsSemantics sem p) (BJ : Finset ι × ℕ) :
+theorem RespectsSemantics.toBelow {sem} {p : CellLabels D}
+    (h : RespectsSemantics sem p) (BJ : GradedIndex ι) :
     RespectsSemanticsBelow sem BJ (fun d => p d.1) where
   orderly d := h.orderly d.1
   locality Sig := h.locality Sig.1
@@ -163,9 +166,9 @@ theorem RespectsSemantics.toBelow {sem : Semantics D} {p : Cell D → ExtOrd}
 /-- A labelling of a lower set containing every cell respects the semantics (Def. 2.5.4) as a
 labelling of the whole scheme when it respects the restricted semantics `E⟨B,j⟩`
 (`RespectsSemanticsBelow`).  This is the case `D⟨A,|A|⟩ = D` used by Prop. 4.3.24. -/
-theorem RespectsSemanticsBelow.toRespects {sem : Semantics D} {BJ : Finset ι × ℕ}
-    {r : D.below BJ → ExtOrd} (h : RespectsSemanticsBelow sem BJ r)
-    (hall : ∀ d : Cell D, GradedLe (D.cell d) BJ) :
+theorem RespectsSemanticsBelow.toRespects {sem} {BJ}
+    {r} (h : RespectsSemanticsBelow sem BJ r)
+    (hall : ∀ d , GradedLe (D.cell d) BJ) :
     RespectsSemantics sem (fun d => r ⟨d, hall d⟩) where
   orderly d := h.orderly ⟨d, hall d⟩
   locality Sig := h.locality ⟨Sig, hall Sig⟩
@@ -174,13 +177,12 @@ theorem RespectsSemanticsBelow.toRespects {sem : Semantics D} {BJ : Finset ι ×
     exact ⟨Xi.1, hc, hle⟩
 
 /-- The all-bottom labelling is lawful on every lower set of any semantics. -/
-theorem RespectsSemanticsBelow.bot (sem : Semantics D) (BJ : Finset ι × ℕ) :
-    RespectsSemanticsBelow sem BJ (fun _ => ⊥) :=
+def RespectsSemanticsBelow.bot (sem : Semantics D) (BJ : GradedIndex ι) :=
   (RespectsSemantics.bot sem).toBelow BJ
 
 /-- A bottom diagonal forces a bottom label, regardless of the other rows. -/
-theorem RespectsSemanticsBelow.eq_bot_of_diagonal {sem : Semantics D} {BJ : Finset ι × ℕ}
-    {r : D.below BJ → ExtOrd} (h : RespectsSemanticsBelow sem BJ r) (c : D.below BJ)
+theorem RespectsSemanticsBelow.eq_bot_of_diagonal {sem} {BJ}
+    {r} (h : RespectsSemanticsBelow sem BJ r) (c : D.below BJ)
     (hc : sem.E c.1 ⟨c.1, GradedLe.refl _⟩ = ⊥) : r c = ⊥ := by
   obtain ⟨g, σ, _, _, hbot, _, _, heq⟩ := h.locality c
   have hread := heq ⟨c.1, GradedLe.refl _⟩
@@ -191,12 +193,12 @@ theorem RespectsSemanticsBelow.eq_bot_of_diagonal {sem : Semantics D} {BJ : Fins
 index `(B, j)`, the row `E Sig`, a labelling of `D⟨B,j⟩ = D.below (D.cell Sig)`, respects the
 restricted semantics `E⟨B,j⟩` (`RespectsSemanticsBelow`).  (Orderliness of the row is already
 `sem.orderly Sig`.) -/
-def Semantics.IsConsistent (sem : Semantics D) : Prop :=
-  ∀ Sig : Cell D, RespectsSemanticsBelow sem (D.cell Sig) (sem.E Sig)
+def Semantics.IsConsistent sem :=
+  ∀ Sig : Cell D, Semantics.RowLawful sem Sig (sem.E Sig)
 
 /-- Two values of a semantic row at propositionally equal indices are equal (Knight-VC
 `sem_E_congr`; the index of `E` is dependent, so this is stated with both equalities). -/
-theorem Semantics.E_congr (sem : Semantics D) {a b : Cell D} (hab : a = b) {c d : Cell D}
+theorem Semantics.E_congr (sem : Semantics D) {a b} (hab : a = b) {c d}
     {hc : GradedLe (D.cell c) (D.cell a)} {hd : GradedLe (D.cell d) (D.cell b)} (hcd : c = d) :
     sem.E a ⟨c, hc⟩ = sem.E b ⟨d, hd⟩ := by
   subst hab; subst hcd; rfl
@@ -209,13 +211,13 @@ Lemma 3.1.3, rows kept as in the paper): if `p` respects `sem` then so does `tru
 Orderliness is `truncExt_preserves_selfVis`; locality is `TransformsTo.truncExt_target`
 (the truncated labelling below `Sig` capped at the truncated `p Sig` is the truncation of the
 capped labelling, `truncExt_min`); availability is monotonicity of `truncExt α`. -/
-theorem RespectsSemantics.truncate {sem : Semantics D} {p : Cell D → ExtOrd}
-    {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (h : RespectsSemantics sem p) :
+theorem RespectsSemantics.truncate {sem : Semantics D} {p : CellLabels D}
+    {α : Ordinal₀} (hα : Order.IsSuccLimit α) (h : RespectsSemantics sem p) :
     RespectsSemantics sem (Value.truncExt α ∘ p) where
   orderly d := (Value.truncExt_preserves_selfVis α (p d) (D.grade d) (h.orderly d).symm).symm
   locality Sig := by
     have key := (h.locality Sig).truncExt_target hα
-    have heq : Value.truncExt α ∘ (fun d : D.below (D.cell Sig) => min (p d.1) (p Sig)) =
+    have heq : Value.truncExt α ∘ (fun d : D.belowCell Sig => min (p d.1) (p Sig)) =
         fun d => min ((Value.truncExt α ∘ p) d.1) ((Value.truncExt α ∘ p) Sig) := by
       funext d
       simp only [Function.comp_apply, Value.truncExt_min]
@@ -226,7 +228,7 @@ theorem RespectsSemantics.truncate {sem : Semantics D} {p : Cell D → ExtOrd}
 
 /-! ### Transport along face restriction -/
 
-section RestrictFace
+section
 
 open CellScheme.restrictFace (toCell belowMap)
 
@@ -252,7 +254,7 @@ restricted cells are the `f`-preimages of the scopes of the underlying cells, so
 restricted scopes is an inclusion of the underlying scopes, the paper's witness `Xi` has the
 graded index of the underlying cell of `Xi₀`, hence is visible, hence is `toCell` of a restricted
 cell (`exists_toCell_eq`), whose pulled-back index is that of `Xi₀` (`pullCell_congr`). -/
-theorem RespectsSemantics.restrictFace {sem : Semantics D} {p : Cell D → ExtOrd}
+theorem RespectsSemantics.restrictFace {sem : Semantics D} {p : CellLabels D}
     (h : RespectsSemantics sem p) (f : Fin m ↪ Fin n) (hr : Finset.univ.image f ∈ D.plan) :
     RespectsSemantics (sem.restrictFace f hr) (fun i => p (toCell D f hr i)) where
   orderly i := h.orderly (toCell D f hr i)
@@ -271,6 +273,4 @@ theorem RespectsSemantics.restrictFace {sem : Semantics D} {p : Cell D → ExtOr
     obtain ⟨Xi, rfl⟩ := CellScheme.restrictFace.exists_toCell_eq D f hr hvis
     exact ⟨Xi, CellScheme.pullCell_congr D f hcell, hle⟩
 
-end RestrictFace
 
-end VaughtConjecture.Knight

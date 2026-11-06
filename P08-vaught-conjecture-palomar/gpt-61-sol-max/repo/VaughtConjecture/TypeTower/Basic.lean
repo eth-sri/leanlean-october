@@ -3,12 +3,13 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Data.Fin.Embedding
-public import Mathlib.Logic.Embedding.Basic
-public import Mathlib.Logic.Equiv.Fintype
-public import Mathlib.Order.Basic
+import Mathlib.Tactic
+
+import Mathlib.Data.Fin.Embedding
+import Mathlib.Logic.Embedding.Basic
+import Mathlib.Logic.Equiv.Fintype
+import Mathlib.Order.Basic
 
 /-! # Type towers
 
@@ -60,8 +61,6 @@ isomorphic realization *is* a push-forward), reduction of isomorphisms (`Iso.red
 transport of all four predicates along isomorphisms (`IsIso.isExactParentConsistent_iff`, …)
 close the file; they are the interface consumed by `Approximation/Prolongation.lean`. -/
 
-@[expose] public section
-
 namespace VaughtConjecture
 
 universe u v w
@@ -71,7 +70,7 @@ sends the initial segment `Fin.castAdd k i` to `f i`. -/
 theorem exists_perm_castAdd_eq {n k : ℕ} (f : Fin n ↪ Fin (n + k)) :
     ∃ σ : Equiv.Perm (Fin (n + k)), ∀ i, σ (Fin.castAdd k i) = f i := by
   classical
-  let e : {x // x ∈ Set.range (Fin.castAdd (n := n) k)} ≃ {x // x ∈ Set.range f} :=
+  let e  :=
     (Equiv.ofInjective (Fin.castAdd k) (Fin.castAdd_injective n k)).symm.trans
       (Equiv.ofInjective f f.injective)
   refine ⟨e.extendSubtype, fun i => ?_⟩
@@ -83,14 +82,14 @@ structure TypeTower (Λ : Type v) [Preorder Λ] where
   /-- Stage-`α` types on `n`-tuples. -/
   Ty : Λ → ℕ → Type u
   /-- Partial horizontal restriction along an injection; `none` means the face is invisible. -/
-  pull : ∀ {α : Λ} {m n : ℕ}, (Fin m ↪ Fin n) → Ty α n → Option (Ty α m)
+  pull : ∀ {α} {m n}, (Fin m ↪ Fin n) → Ty α n → Option (Ty α m)
   /-- Total vertical reduction (truncation) from level `β` down to `α ≤ β`. -/
-  reduce : ∀ {α β : Λ}, α ≤ β → ∀ {n : ℕ}, Ty β n → Ty α n
-  pull_refl : ∀ {α : Λ} {n : ℕ} (q : Ty α n), pull (Function.Embedding.refl (Fin n)) q = some q
+  reduce : ∀ {α β}, α ≤ β → ∀ {n}, Ty β n → Ty α n
+  pull_refl : ∀ {α} {n} (q : Ty α n), pull (Function.Embedding.refl (Fin n)) q = some q
   /-- Conditional composition: if the face `f` is visible, then restricting further along `g`
   through it agrees with restricting along the composite.  Nothing is asserted when `f` is
   invisible (the composite face may still be visible). -/
-  pull_trans : ∀ {α : Λ} {k m n : ℕ} (f : Fin m ↪ Fin n) (g : Fin k ↪ Fin m)
+  pull_trans : ∀ {α} {k m n : ℕ} (f : Fin m ↪ Fin n) (g : Fin k ↪ Fin m)
     (r : Ty α n) (q : Ty α m), pull f r = some q → pull (g.trans f) r = pull g q
   reduce_refl : ∀ {α : Λ} {n : ℕ} (q : Ty α n), reduce le_rfl q = q
   reduce_trans : ∀ {α β γ : Λ} (hαβ : α ≤ β) (hβγ : β ≤ γ) {n : ℕ} (r : Ty γ n),
@@ -108,7 +107,7 @@ variable {Λ : Type v} [Preorder Λ] (T : TypeTower.{u} Λ)
 (`Knight.knightTower_permTotal`: the domain is a visible face of every plan, Lemma 2.4.3 /
 `IsPlan.domain_mem`); it is the hypothesis under which initial-segment covering and generic
 covering coincide (`Realization.IsCovering.toInitialSegment`). -/
-def PermTotal : Prop :=
+def PermTotal :=
   ∀ {α : Λ} {n : ℕ} (σ : Fin n ≃ Fin n) (q : T.Ty α n), (T.pull σ.toEmbedding q).isSome
 
 /-- A partial labelling of the injective finite tuples of `M` by stage-`α` types. -/
@@ -120,49 +119,49 @@ namespace Realization
 
 variable {T} {α β : Λ} {M : Type w}
 
+local notation "Realization₀" => T.Realization α M
+
 /-- Two realizations with the same labels are equal. -/
 @[ext]
-theorem ext {R R' : T.Realization α M}
+theorem ext {R R' : Realization₀}
     (h : ∀ {n : ℕ} (t : Fin n ↪ M), R.eval t = R'.eval t) : R = R' := by
   cases R with
   | mk eval =>
     cases R' with
     | mk eval' =>
-      simp only [Realization.mk.injEq]
-      funext n t
-      exact h t
+      aesop
 
 /-- **Visible-face consistency**: whenever a tuple has a type and a face is visible in that
 type, the face tuple carries the restricted type.  Invisible faces are unconstrained. -/
-def IsVisibleFaceConsistent (R : T.Realization α M) : Prop :=
+def IsVisibleFaceConsistent (R : Realization₀) :=
   ∀ ⦃m n : ℕ⦄ (t : Fin n ↪ M) (q : T.Ty α n) (f : Fin m ↪ Fin n) (p : T.Ty α m),
     R.eval t = some q → T.pull f q = some p → R.eval (f.trans t) = some p
 
 /-- **Exact parent consistency**: whenever a tuple has a type, every face tuple carries exactly
 the partial pullback — so an invisible face of a labelled tuple is unlabelled.  This is the
 Knight-VC notion (`PaperExactModel.IsParentConsistent`). -/
-def IsExactParentConsistent (R : T.Realization α M) : Prop :=
+def IsExactParentConsistent (R : Realization₀) :=
   ∀ ⦃m n : ℕ⦄ (t : Fin n ↪ M) (q : T.Ty α n) (f : Fin m ↪ Fin n),
     R.eval t = some q → R.eval (f.trans t) = T.pull f q
 
-theorem IsExactParentConsistent.isVisibleFaceConsistent {R : T.Realization α M}
+theorem IsExactParentConsistent.isVisibleFaceConsistent {R : Realization₀}
     (hR : R.IsExactParentConsistent) : R.IsVisibleFaceConsistent :=
   fun _ _ t q f _p hq hp => (hR t q f hq).trans hp
 
 /-- **Covering** (generic): every injective finite tuple is a face of some labelled tuple. -/
-def IsCovering (R : T.Realization α M) : Prop :=
+def IsCovering (R : Realization₀) :=
   ∀ ⦃n : ℕ⦄ (t : Fin n ↪ M),
     ∃ (m : ℕ) (s : Fin m ↪ M) (f : Fin n ↪ Fin m), f.trans s = t ∧ (R.eval s).isSome
 
 /-- **Initial-segment covering** (Knight, Def. 3.2.1(3); Knight-VC
 `PaperExactModel.IsInitialSegmentCovering`): every injective finite tuple is an *initial
 segment* of some labelled tuple. -/
-def IsInitialSegmentCovering (R : T.Realization α M) : Prop :=
+def IsInitialSegmentCovering (R : Realization₀) :=
   ∀ ⦃n : ℕ⦄ (t : Fin n ↪ M),
     ∃ (k : ℕ) (s : Fin (n + k) ↪ M), (Fin.castAddEmb k).trans s = t ∧ (R.eval s).isSome
 
 /-- Initial-segment covering is a covering. -/
-theorem IsInitialSegmentCovering.isCovering {R : T.Realization α M}
+theorem IsInitialSegmentCovering.isCovering {R : Realization₀}
     (hR : R.IsInitialSegmentCovering) : R.IsCovering := by
   intro n t
   obtain ⟨k, s, hst, hs⟩ := hR t
@@ -172,11 +171,11 @@ theorem IsInitialSegmentCovering.isCovering {R : T.Realization α M}
 initial-segment covering: re-order the covering tuple so that the given tuple becomes its
 initial segment; the re-ordered tuple is labelled by the (total) pullback along the
 permutation.  Exact parent consistency is not needed. -/
-theorem IsCovering.toInitialSegment (hT : T.PermTotal) {R : T.Realization α M}
+theorem IsCovering.toInitialSegment (hT : T.PermTotal) {R : Realization₀}
     (hR : R.IsVisibleFaceConsistent) (hc : R.IsCovering) : R.IsInitialSegmentCovering := by
   intro n t
   obtain ⟨m, s, f, hfs, hs⟩ := hc t
-  have hnm : n ≤ m := by simpa using Fintype.card_le_of_embedding f
+  have hnm  := by simpa using Fintype.card_le_of_embedding f
   obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hnm
   obtain ⟨σ, hσ⟩ := exists_perm_castAdd_eq f
   obtain ⟨q, hq⟩ := Option.isSome_iff_exists.mp hs
@@ -184,43 +183,44 @@ theorem IsCovering.toInitialSegment (hT : T.PermTotal) {R : T.Realization α M}
   refine ⟨k, σ.toEmbedding.trans s, ?_, ?_⟩
   · ext i
     simp [← hfs, hσ]
-  · rw [hR s q σ.toEmbedding p hq hp]
-    rfl
+  · exact?
+
+local notation "Realization₀₀₀" => T.Realization β M
 
 /-- The **reduct** of a realization to a lower stage: truncate every label. -/
-def reduct (h : α ≤ β) (R : T.Realization β M) : T.Realization α M where
+def reduct (h : α ≤ β) (R : Realization₀₀₀) : Realization₀ where
   eval t := (R.eval t).map (T.reduce h)
 
 @[simp]
-theorem reduct_eval (h : α ≤ β) (R : T.Realization β M) {n : ℕ} (t : Fin n ↪ M) :
+theorem reduct_eval (h : α ≤ β) (R : Realization₀₀₀) {n : ℕ} (t : Fin n ↪ M) :
     (R.reduct h).eval t = (R.eval t).map (T.reduce h) := rfl
 
-theorem reduct_refl (R : T.Realization α M) : R.reduct le_rfl = R := by
+theorem reduct_refl (R : Realization₀) : R.reduct le_rfl = R := by
   cases R with
   | mk eval =>
-    simp only [reduct, Realization.mk.injEq]
+    simp  [reduct, ]
     funext n t
     cases eval t <;> simp [T.reduce_refl]
 
-theorem reduct_reduct {γ : Λ} (hαβ : α ≤ β) (hβγ : β ≤ γ) (R : T.Realization γ M) :
+theorem reduct_reduct {γ} (hαβ : α ≤ β) (hβγ : β ≤ γ) (R : T.Realization γ M) :
     (R.reduct hβγ).reduct hαβ = R.reduct (hαβ.trans hβγ) := by
   cases R with
   | mk eval =>
-    simp only [reduct, Realization.mk.injEq]
+    simp  [reduct, ]
     funext n t
     cases eval t <;> simp [T.reduce_trans]
 
 /-- Reduction preserves exact parent consistency. -/
-theorem IsExactParentConsistent.reduct (h : α ≤ β) {R : T.Realization β M}
+theorem IsExactParentConsistent.reduct (h : α ≤ β) {R : Realization₀₀₀}
     (hR : R.IsExactParentConsistent) : (R.reduct h).IsExactParentConsistent := by
   intro m n t q f hq
-  simp only [reduct_eval, Option.map_eq_some_iff] at hq
+  simp   at hq
   obtain ⟨q', hq', rfl⟩ := hq
   rw [reduct_eval, hR t q' f hq', T.pull_reduce]
 
 /-- Reduction preserves initial-segment covering (the Knight model axiom, Def. 3.2.1(3)): the same
 initial-segment witness, since reduction preserves definedness of labels. -/
-theorem IsInitialSegmentCovering.reduct (h : α ≤ β) {R : T.Realization β M}
+theorem IsInitialSegmentCovering.reduct (h : α ≤ β) {R : Realization₀₀₀}
     (hR : R.IsInitialSegmentCovering) : (R.reduct h).IsInitialSegmentCovering := by
   intro n t
   obtain ⟨k, s, hs, hsome⟩ := hR t
@@ -232,9 +232,6 @@ The four predicates above take their leading `ℕ` binders strict-implicitly (`�
 dot-notation projections elaborate (with plain implicit binders Lean eagerly instantiates the
 metavariables and the projections fail).  One `example` per predicate, as tests only. -/
 
-section DotNotationTests
-
-end DotNotationTests
 
 /-! ### Isomorphisms of realizations
 
@@ -243,58 +240,60 @@ of every injective tuple is the label of its image.  This is the generic form of
 `PaperExactModelIso` (`PORTING.md`), and the notion of "model of `S^ω` up to isomorphism" counted
 by Prop. 3.3.5 (`Knight.Correspondence`). -/
 
-section Iso
+section
 
 universe w'
 
 variable {N : Type w'} {P : Type*}
 
+local notation "Realization₀₀" => T.Realization α N
+
 /-- `e : M ≃ N` is an **isomorphism** from `R` to `R'`: every injective tuple of `M` and its image
 under `e` carry the same label. -/
-def IsIso (R : T.Realization α M) (R' : T.Realization α N) (e : M ≃ N) : Prop :=
+def IsIso (R : Realization₀) (R' : Realization₀₀) (e : M ≃ N) :=
   ∀ {n : ℕ} (t : Fin n ↪ M), R'.eval (t.trans e.toEmbedding) = R.eval t
 
 /-- The isomorphisms from `R` to `R'` (bijections of carriers transporting labels). -/
-def Iso (R : T.Realization α M) (R' : T.Realization α N) : Type (max w w') :=
+def Iso (R : Realization₀) (R' : Realization₀₀) : Type (max w w') :=
   {e : M ≃ N // R.IsIso R' e}
 
-theorem IsIso.refl (R : T.Realization α M) : R.IsIso R (Equiv.refl M) := fun t => by
+theorem IsIso.refl (R : Realization₀) : R.IsIso R (Equiv.refl M) := fun t => by
   congr 1
 
-theorem IsIso.symm {R : T.Realization α M} {R' : T.Realization α N} {e : M ≃ N}
+theorem IsIso.symm {R : Realization₀} {R' : Realization₀₀} {e : M ≃ N}
     (h : R.IsIso R' e) : R'.IsIso R e.symm := fun t => by
   rw [← h (t.trans e.symm.toEmbedding)]
   congr 1
   ext i
   simp
 
-theorem IsIso.trans {R : T.Realization α M} {R' : T.Realization α N} {R'' : T.Realization α P}
+theorem IsIso.trans {R : Realization₀} {R' : Realization₀₀} {R'' : T.Realization α P}
     {e : M ≃ N} {e' : N ≃ P} (h : R.IsIso R' e) (h' : R'.IsIso R'' e') :
     R.IsIso R'' (e.trans e') := fun t => by
   rw [← h t, ← h' (t.trans e.toEmbedding)]
   congr 1
 
 /-- The identity isomorphism. -/
-def Iso.refl (R : T.Realization α M) : R.Iso R := ⟨Equiv.refl M, IsIso.refl R⟩
+def Iso.refl (R : Realization₀) : R.Iso R := ⟨Equiv.refl M, IsIso.refl R⟩
 
 /-- The inverse of an isomorphism. -/
-def Iso.symm {R : T.Realization α M} {R' : T.Realization α N} (i : R.Iso R') : R'.Iso R :=
+def Iso.symm {R : Realization₀} {R' : Realization₀₀} (i : R.Iso R') : R'.Iso R :=
   ⟨i.1.symm, IsIso.symm i.2⟩
 
 /-- Composition of isomorphisms. -/
-def Iso.trans {R : T.Realization α M} {R' : T.Realization α N} {R'' : T.Realization α P}
+def Iso.trans {R : Realization₀} {R' : Realization₀₀} {R'' : T.Realization α P}
     (i : R.Iso R') (i' : R'.Iso R'') : R.Iso R'' :=
   ⟨i.1.trans i'.1, IsIso.trans i.2 i'.2⟩
 
 variable (T α M) in
 /-- **Realizations up to isomorphism**: the ambient equivalence relation "`R` and `R'` are
 isomorphic" on the stage-`α` realizations on the carrier `M`. -/
-def isoSetoid : Setoid (T.Realization α M) where
+def isoSetoid : Setoid (Realization₀) where
   r R R' := Nonempty (R.Iso R')
   iseqv :=
-    { refl := fun R => ⟨Iso.refl R⟩
-      symm := fun ⟨i⟩ => ⟨i.symm⟩
-      trans := fun ⟨i⟩ ⟨i'⟩ => ⟨i.trans i'⟩ }
+    ⟨fun R => ⟨Iso.refl R⟩,
+fun ⟨i⟩ => ⟨i.symm⟩,
+fun ⟨i⟩ ⟨i'⟩ => ⟨i.trans i'⟩⟩
 
 /-! #### Transport along a carrier bijection
 
@@ -306,16 +305,16 @@ moved onto the carrier of the source (`Approximation/Prolongation.lean`). -/
 
 /-- Push a realization forward along a bijection of carriers:
 `(R.map e).eval s = R.eval (s ∘ e⁻¹)`. -/
-def map (e : M ≃ N) (R : T.Realization α M) : T.Realization α N where
+def map (e : M ≃ N) (R : Realization₀) : Realization₀₀ where
   eval s := R.eval (s.trans e.symm.toEmbedding)
 
 @[simp]
-theorem map_eval (e : M ≃ N) (R : T.Realization α M) {n : ℕ} (s : Fin n ↪ N) :
+theorem map_eval e (R : Realization₀) {n : ℕ} (s : Fin n ↪ N) :
     (R.map e).eval s = R.eval (s.trans e.symm.toEmbedding) := rfl
 
 /-- `e` is an isomorphism from `R` to its push-forward `R.map e`. -/
-theorem isIso_map (e : M ≃ N) (R : T.Realization α M) : R.IsIso (R.map e) e := fun t => by
-  simp only [map_eval]
+theorem isIso_map (e : M ≃ N) (R : Realization₀) : R.IsIso (R.map e) e := fun t => by
+  simp  
   congr 1
   ext i
   simp
@@ -323,7 +322,7 @@ theorem isIso_map (e : M ≃ N) (R : T.Realization α M) : R.IsIso (R.map e) e :
 /-- The push-forward of `R` along an isomorphism `R ≅ R'` is `R'` itself: `R.map e = R'`.  So an
 isomorphism class on a fixed carrier is an orbit of `map` under the carrier's bijections, and a
 realization isomorphic to `R` on any carrier is a push-forward of `R`. -/
-theorem IsIso.map_eq {R : T.Realization α M} {R' : T.Realization α N} {e : M ≃ N}
+theorem IsIso.map_eq {R : Realization₀} {R' : Realization₀₀} {e : M ≃ N}
     (h : R.IsIso R' e) : R.map e = R' := by
   refine Realization.ext fun s => ?_
   rw [map_eval, ← h (s.trans e.symm.toEmbedding)]
@@ -332,7 +331,7 @@ theorem IsIso.map_eq {R : T.Realization α M} {R' : T.Realization α N} {e : M �
   simp
 
 @[simp]
-theorem reduct_map (h : α ≤ β) (e : M ≃ N) (R : T.Realization β M) :
+theorem reduct_map (h : α ≤ β) (e : M ≃ N) (R : Realization₀₀₀) :
     (R.map e).reduct h = (R.reduct h).map e := rfl
 
 /-! #### Isomorphism and reduction
@@ -340,12 +339,12 @@ theorem reduct_map (h : α ≤ β) (e : M ≃ N) (R : T.Realization β M) :
 An isomorphism of stage-`β` realizations is an isomorphism of their stage-`α` reducts along the
 same bijection (Knight-VC's `PaperExactModelIso.truncTo`). -/
 
-theorem IsIso.reduct (h : α ≤ β) {R : T.Realization β M} {R' : T.Realization β N} {e : M ≃ N}
+theorem IsIso.reduct (h : α ≤ β) {R : Realization₀₀₀} {R' : T.Realization β N} {e : M ≃ N}
     (hi : R.IsIso R' e) : (R.reduct h).IsIso (R'.reduct h) e := fun t => by
-  simp only [reduct_eval, hi t]
+  simp  [ hi t]
 
 /-- Reduce an isomorphism of stage-`β` realizations to stage `α ≤ β`. -/
-def Iso.reduct (h : α ≤ β) {R : T.Realization β M} {R' : T.Realization β N} (i : R.Iso R') :
+def Iso.reduct (h : α ≤ β) {R : Realization₀₀₀} {R' : T.Realization β N} (i : R.Iso R') :
     (R.reduct h).Iso (R'.reduct h) := ⟨i.1, IsIso.reduct h i.2⟩
 
 /-! #### Transport of the consistency and covering predicates
@@ -355,12 +354,11 @@ transports `IsIso.isVisibleFaceConsistent` etc. and the `iff` forms. -/
 
 /-- Under `h : R.IsIso R' e`, a tuple of `N` pulled back along `e⁻¹` and pushed forward again is
 itself; this is the computation behind every transport below. -/
-theorem IsIso.eval_trans_symm {R : T.Realization α M} {R' : T.Realization α N} {e : M ≃ N}
-    (h : R.IsIso R' e) {n : ℕ} (s : Fin n ↪ N) :
-    R.eval (s.trans e.symm.toEmbedding) = R'.eval s :=
+def IsIso.eval_trans_symm {R : Realization₀} {R' : Realization₀₀} {e : M ≃ N}
+    (h : R.IsIso R' e) {n : ℕ} (s : Fin n ↪ N) :=
   h.symm s
 
-theorem IsIso.isExactParentConsistent {R : T.Realization α M} {R' : T.Realization α N}
+theorem IsIso.isExactParentConsistent {R : Realization₀} {R' : Realization₀₀}
     {e : M ≃ N} (h : R.IsIso R' e) (hR : R.IsExactParentConsistent) :
     R'.IsExactParentConsistent := by
   intro m n s q f hq
@@ -371,7 +369,7 @@ theorem IsIso.isExactParentConsistent {R : T.Realization α M} {R' : T.Realizati
   ext i
   simp
 
-theorem IsIso.isInitialSegmentCovering {R : T.Realization α M} {R' : T.Realization α N}
+theorem IsIso.isInitialSegmentCovering {R : Realization₀} {R' : Realization₀₀}
     {e : M ≃ N} (h : R.IsIso R' e) (hR : R.IsInitialSegmentCovering) :
     R'.IsInitialSegmentCovering := by
   intro n s
@@ -381,10 +379,6 @@ theorem IsIso.isInitialSegmentCovering {R : T.Realization α M} {R' : T.Realizat
   have := congrArg (fun v : Fin n ↪ M => e (v i)) hu
   simpa using this
 
-end Iso
 
-end Realization
 
-end TypeTower
 
-end VaughtConjecture

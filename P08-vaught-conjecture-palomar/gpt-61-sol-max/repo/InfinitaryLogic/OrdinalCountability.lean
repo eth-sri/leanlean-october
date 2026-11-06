@@ -1,14 +1,16 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.OrdinalUtil
-public import Mathlib.SetTheory.Cardinal.Regular
-public import Mathlib.SetTheory.Cardinal.Continuum
-public import Mathlib.SetTheory.Ordinal.Arithmetic
+import Mathlib.Tactic
+
+import InfinitaryLogic.OrdinalUtil
+import Mathlib.SetTheory.Cardinal.Regular
+import Mathlib.SetTheory.Cardinal.Continuum
+import Mathlib.SetTheory.Ordinal.Arithmetic
 
 /-!
 # Generic countable-ordinal and Cantor helpers
@@ -69,11 +71,8 @@ reused wherever it already has the fact; nothing here adds an instance.
   countable sets feeds the rank-tail lemmas.
 -/
 
-@[expose] public section
+universe u  
 
-universe u v w
-
-open Cardinal Ordinal Set
 
 namespace InfinitaryLogic
 
@@ -89,7 +88,7 @@ variable {X : Type u}
 
 /-- **Countable complements from countable successor losses and limit continuity.**  No
 monotonicity of `D` is assumed; the limit hypothesis is necessary. -/
-theorem compl_countable_of_loss (D : Ordinal.{0} → Set X) (h0 : D 0 = Set.univ)
+theorem compl_countable_of_loss (D : Ordinal₀ → Set X) (h0 : D 0 = Set.univ)
     (hsucc : ∀ ξ, ξ < Ordinal.omega 1 → (D ξ \ D (ξ + 1)).Countable)
     (hlim : ∀ l, Order.IsSuccLimit l → l < Ordinal.omega 1 → (⋂ ξ < l, D ξ) ⊆ D l) :
     ∀ β, β < Ordinal.omega 1 → (D β)ᶜ.Countable := by
@@ -98,11 +97,10 @@ theorem compl_countable_of_loss (D : Ordinal.{0} → Set X) (h0 : D 0 = Set.univ
   | _ β ih =>
     intro hβ
     rcases Ordinal.zero_or_succ_or_isSuccLimit β with rfl | ⟨ξ, rfl⟩ | hl
-    · rw [h0, Set.compl_univ]
-      exact Set.countable_empty
+    · simp_all
     · have hξ : ξ < Ordinal.omega 1 := lt_trans (Order.lt_succ ξ) hβ
       refine ((ih ξ (Order.lt_succ ξ) hξ).union (hsucc ξ hξ)).mono fun x hx => ?_
-      rw [Order.succ_eq_add_one] at hx
+      
       by_cases hxξ : x ∈ D ξ
       · exact Or.inr ⟨hxξ, hx⟩
       · exact Or.inl hxξ
@@ -157,52 +155,10 @@ Scott theory enters there, through the isolation hypothesis only.
 
 The separation bounds were offered for upstreaming by a consumer of this library. -/
 
-section Separation
-
-variable {F : Type v}
-
-end Separation
 
 /-! ### Rank tails -/
 
-/-- The **tails** of a rank: `rankTail r η = {x | η ≤ r x}`, the points of rank at least `η`. -/
-def rankTail (r : X → Ordinal.{0}) (η : Ordinal.{0}) : Set X := {x | η ≤ r x}
-
-/-- Membership in a rank tail: `x ∈ rankTail r η` iff `η ≤ r x`. -/
-@[simp]
-theorem mem_rankTail {r : X → Ordinal.{0}} {η : Ordinal.{0}} {x : X} :
-    x ∈ rankTail r η ↔ η ≤ r x :=
-  Iff.rfl
-
-section RankTail
-
-variable (r : X → Ordinal.{0})
-
-/-- Every point has rank at least `0`. -/
-@[simp]
-theorem rankTail_zero : rankTail r 0 = Set.univ :=
-  Set.eq_univ_of_forall fun _ ↦ mem_rankTail.2 zero_le
-
-/-- The complement of a tail is a strict initial segment of ranks. -/
-@[simp]
-theorem compl_rankTail (η : Ordinal.{0}) : (rankTail r η)ᶜ = {x | r x < η} := by
-  ext x; simp
-
-variable (hr : ∀ x, r x < Ordinal.omega 1)
-    (hfib : ∀ α < Ordinal.omega 1, Countable {x // r x = α})
-include hr hfib
-
-end RankTail
 
 /-! ### The least level of a cover -/
 
-section Cover
 
-variable (Q : Ordinal.{0} → Set X)
-
-variable (hcover : (⋃ α < Ordinal.omega 1, Q α) = Set.univ)
-include hcover
-
-end Cover
-
-end InfinitaryLogic

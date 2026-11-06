@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FiniteCompositionRepair
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FiniteCompositionRepair
 
 /-! # Source-only tests for faithful interpolation
 
@@ -15,117 +16,111 @@ bottom flag on each source block. Unforced floor readings are not constraints.
 This is a normalized-witness interpolation theorem, not unrestricted transitivity.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
-open Transform Value ExtOrd
+open  Value ExtOrd
 
 open Classical in
 /-- Original sources and their replacements at the maximal bounded threshold. -/
-noncomputable def forcedSources (m : ℕ) (s : Finset ExtOrd) : Finset ExtOrd :=
+noncomputable def forcedSources m s :=
   s ∪ (Finset.range (m + 1)).biUnion (fun i => s.image (fun x => extVisibilityReplace x m i))
 
-theorem subset_forcedSources (m : ℕ) (s : Finset ExtOrd) : s ⊆ forcedSources m s :=
+theorem subset_forcedSources {m : ℕ} {s : Finset ExtOrd} : s ⊆ forcedSources m s :=
   Finset.subset_union_left
 
-theorem replace_mem_forcedSources {m : ℕ} {s : Finset ExtOrd} {x : ExtOrd}
-    (hx : x ∈ s) {i : ℕ} (hi : i ≤ m) :
-    extVisibilityReplace x m i ∈ forcedSources m s := by
-  classical
-  exact Finset.mem_union_right _ (Finset.mem_biUnion.mpr
+theorem replace_mem_forcedSources {m} {s} {x}
+    (hx : x ∈ s) {i} (hi : i ≤ m) :
+    extVisibilityReplace x m i ∈ forcedSources m s := Finset.mem_union_right _ (Finset.mem_biUnion.mpr
     ⟨i, Finset.mem_range.mpr (by omega), Finset.mem_image.mpr ⟨x, hx, rfl⟩⟩)
 
 /-- A lower-threshold replacement of an original source is already in the table. -/
-theorem bounded_replace_mem {m : ℕ} {s : Finset ExtOrd} {x : ExtOrd}
-    (hx : x ∈ s) {k i : ℕ} (hk : k ≤ m) (hi : i ≤ k) :
+theorem bounded_replace_mem {m} {s} {x}
+    (hx : x ∈ s) {k i} (hk : k ≤ m) (hi : i ≤ k) :
     extVisibilityReplace x k i ∈ forcedSources m s := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · exact subset_forcedSources m s hx
-  · exact subset_forcedSources m s hx
+  · exact subset_forcedSources hx
+  · exact subset_forcedSources hx
   · by_cases ha : finitePart a < k
     · rw [extVisibilityReplace_of_finitePart_lt ha]
       have h := replace_mem_forcedSources hx (hi.trans hk)
       rwa [extVisibilityReplace_of_finitePart_lt (ha.trans_le hk)] at h
-    · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha)]
-      exact subset_forcedSources m s hx
+    · grind [extVisibilityReplace_of_le_finitePart, subset_forcedSources]
 
 /-- No further iterations of replacement add points. -/
-theorem forcedSources_closed (m : ℕ) (s : Finset ExtOrd) :
-    ∀ x ∈ forcedSources m s, ∀ k i : ℕ, k ≤ m → i ≤ k →
+theorem forcedSources_closed m s :
+    ∀ x ∈ forcedSources m s, ∀ k i , k ≤ m → i ≤ k →
       extVisibilityReplace x k i ∈ forcedSources m s := by
-  classical
+  
   intro x hx k i hk hi
   rcases Finset.mem_union.mp hx with hx | hx
   · exact bounded_replace_mem hx hk hi
   · obtain ⟨j, hj, hjx⟩ := Finset.mem_biUnion.mp hx
     obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hjx
     rcases ExtOrd.cases y with rfl | rfl | ⟨a, rfl⟩
-    · exact subset_forcedSources m s hy
-    · exact subset_forcedSources m s hy
+    · exact subset_forcedSources hy
+    · exact subset_forcedSources hy
     · by_cases ha : finitePart a < m
       · rw [extVisibilityReplace_of_finitePart_lt ha]
         by_cases hjk : j < k
         · rw [extVisibilityReplace_of_finitePart_lt (by
-            rw [finitePart_limitPart_add_nat]; exact hjk), limitPart_limitPart_add_nat]
+            simp_all [VaughtConjecture.Knight.Value.finitePart, VaughtConjecture.Knight.Value.limitPart]), limitPart_limitPart_add_nat]
           have h := replace_mem_forcedSources hy (hi.trans hk)
           rwa [extVisibilityReplace_of_finitePart_lt ha] at h
         · rw [extVisibilityReplace_of_le_finitePart (by
-            rw [finitePart_limitPart_add_nat]; exact not_lt.mp hjk)]
+            simp_all [VaughtConjecture.Knight.Value.finitePart, VaughtConjecture.Knight.Value.limitPart])]
           have h := replace_mem_forcedSources (m := m) (i := j) hy
-            (by have := Finset.mem_range.mp hj; omega)
+            (by simp_all)
           rwa [extVisibilityReplace_of_finitePart_lt ha] at h
-      · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha)]
-        exact bounded_replace_mem hy hk hi
+      · grind [extVisibilityReplace_of_le_finitePart]
 
 /-- A bottom reading and a positive reading may not share a represented source block. -/
-def BlockBottom (s : Finset ExtOrd) (f : ExtOrd → ExtOrd) : Prop :=
+def BlockBottom (s : Finset ExtOrd) (f : LabelMap) :=
   ∀ x ∈ s, ∀ y ∈ s, blockFloor x = blockFloor y → f x = ⊥ → f y = ⊥
 
 /-- A normalized witness has a globally block-constant bottom flag. -/
-theorem witness_blockBottom {m : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop m) τ)
+theorem witness_blockBottom {m : ℕ} {τ : LabelMap} (hτ : Witness (gTop m) τ)
     (s : Finset ExtOrd) : BlockBottom s τ := by
   intro x _ y _ hb hx
-  apply bot_of_same_block (f := τ) _ hb hx
+  apply bot_of_same_block  _ hb hx
   intro z hz k i hi
   have h := hτ.clause5 z k (by rw [hz]; exact bot_le) i hi
-  rwa [hz, extVisibilityReplace_bot] at h
+  rwa [hz, ] at h
 
 /-- The finite source reads force all the bounded replacement reads. -/
-theorem forcedSources_read {m : ℕ} {s : Finset ExtOrd} {f τ : ExtOrd → ExtOrd}
+theorem forcedSources_read {m} {s} {f τ}
     (hf : BoundedMap m f) (hτ : Witness (gTop m) τ)
     (hr : ∀ x ∈ s, τ x = f x) : ∀ x ∈ forcedSources m s, τ x = f x := by
-  classical
+  
   intro x hx
   rcases Finset.mem_union.mp hx with hx | hx
   · exact hr x hx
   · obtain ⟨i, hi, hix⟩ := Finset.mem_biUnion.mp hx
     obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hix
-    have hi' : i ≤ m := by have := Finset.mem_range.mp hi; omega
+    have hi' : i ≤ m := by simp_all
     rw [hf.comm y m i le_rfl hi', hτ.clause5 y m
-      (by rw [gTop_of_le le_rfl]; exact le_top) i hi', hr y hy]
+      (by simp_all [VaughtConjecture.Knight.gTop]) i hi', hr y hy]
 
 namespace BoundedMap
 
-variable {m : ℕ} {f : ExtOrd → ExtOrd} (hf : BoundedMap m f)
+variable {m : ℕ} {f : LabelMap} (hf : BoundedMap m f)
 
 include hf
 
 /-- Raise only unrepresented low source inputs; all represented reads stay fixed. -/
-theorem roundUp_bounded (s : Finset ExtOrd)
-    (hclosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ m → i ≤ k → extVisibilityReplace x k i ∈ s) :
+theorem roundUp_bounded s
+    (hclosed : ∀ x ∈ s, ∀ k i , k ≤ m → i ≤ k → extVisibilityReplace x k i ∈ s) :
     BoundedMap m (f ∘ roundUp s) where
-  bot := by simp only [Function.comp_apply, roundUp_bot, hf.bot]
+  bot := by simp  [ roundUp_bot, hf.bot]
   mono := hf.mono.comp (roundUp_mono s)
   comm x k i hk hi := by
-    simp only [Function.comp_apply]
+    simp  
     rw [roundUp_commutes s m hclosed x k i hk hi, hf.comm _ k i hk hi]
 
 /-- On a closed source inventory, blockwise bottom agreement repairs the unused floors. -/
 theorem interpolate_closed (s : Finset ExtOrd)
-    (hclosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ m → i ≤ k → extVisibilityReplace x k i ∈ s)
+    (hclosed : ∀ x ∈ s, ∀ k i , k ≤ m → i ≤ k → extVisibilityReplace x k i ∈ s)
     (hb : BlockBottom s f) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop m) τ ∧ ∀ x ∈ s, τ x = f x := by
+    ∃ τ , Witness (gTop m) τ ∧ ∀ x ∈ s, τ x = f x := by
   let hg := hf.roundUp_bounded s hclosed
   have hfloor : ∀ x ∈ s,
       (f ∘ roundUp s) (blockFloor x) = ⊥ → (f ∘ roundUp s) x = ⊥ := by
@@ -138,11 +133,11 @@ theorem interpolate_closed (s : Finset ExtOrd)
     hg.finite_witness s (hg.floor_check_on_strip s hfloor), ?_⟩
   intro x hx
   rw [hg.finite_read s hx]
-  simp only [Function.comp_apply, roundUp_of_mem hx]
+  simp  [ roundUp_of_mem hx]
 
 /-- Exact criterion: only original sources and the replacements they force are tested. -/
 theorem interpolate_iff (s : Finset ExtOrd) :
-    (∃ τ : ExtOrd → ExtOrd, Witness (gTop m) τ ∧ ∀ x ∈ s, τ x = f x) ↔
+    (∃ τ , Witness (gTop m) τ ∧ ∀ x ∈ s, τ x = f x) ↔
       BlockBottom (forcedSources m s) f := by
   constructor
   · rintro ⟨τ, hτ, hr⟩
@@ -153,35 +148,29 @@ theorem interpolate_iff (s : Finset ExtOrd) :
   · intro hb
     obtain ⟨τ, hτ, hr⟩ := hf.interpolate_closed (forcedSources m s)
       (forcedSources_closed m s) hb
-    exact ⟨τ, hτ, fun x hx => hr x (subset_forcedSources m s hx)⟩
+    exact ⟨τ, hτ, fun x hx => hr x (subset_forcedSources hx)⟩
 
 end BoundedMap
 
 /-- Visibility replacement does not change a bottom flag. -/
-theorem replace_eq_bot_iff (x : ExtOrd) (k i : ℕ) :
-    extVisibilityReplace x k i = ⊥ ↔ x = ⊥ := by
-  constructor
-  · intro h
-    by_contra hx
-    exact extVisibilityReplace_ne_bot hx k i h
-  · intro h
-    rw [h, extVisibilityReplace_bot]
+theorem replace_eq_bot_iff x k i :
+    extVisibilityReplace x k i = ⊥ ↔ x = ⊥ := by simp_all [VaughtConjecture.Knight.Value.extVisibilityReplace] <;> aesop
 
 namespace BoundedMap
 
-variable {m : ℕ} {f : ExtOrd → ExtOrd} (hf : BoundedMap m f)
+variable {m : ℕ} {f : LabelMap} (hf : BoundedMap m f)
 
 include hf
 
 /-- Every forced reading has the source block and bottom flag of an original reading. -/
-theorem forcedSources_origin {s : Finset ExtOrd} {z : ExtOrd} (hz : z ∈ forcedSources m s) :
+theorem forcedSources_origin {s} {z} (hz : z ∈ forcedSources m s) :
     ∃ x ∈ s, blockFloor z = blockFloor x ∧ (f z = ⊥ ↔ f x = ⊥) := by
-  classical
+  
   rcases Finset.mem_union.mp hz with hz | hz
   · exact ⟨z, hz, rfl, Iff.rfl⟩
   · obtain ⟨i, hi, hiz⟩ := Finset.mem_biUnion.mp hz
     obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hiz
-    have hi' : i ≤ m := by have := Finset.mem_range.mp hi; omega
+    have hi' : i ≤ m := by simp_all
     refine ⟨x, hx, blockFloor_evr x m i, ?_⟩
     rw [hf.comm x m i le_rfl hi']
     exact replace_eq_bot_iff (f x) m i
@@ -191,18 +180,14 @@ theorem forcedSources_blockBottom_iff (s : Finset ExtOrd) :
     BlockBottom (forcedSources m s) f ↔ BlockBottom s f := by
   constructor
   · intro h x hx y hy hb hz
-    exact h x (subset_forcedSources m s hx) y (subset_forcedSources m s hy) hb hz
+    exact h x (subset_forcedSources hx) y (subset_forcedSources hy) hb hz
   · intro h x hx y hy hb hz
     obtain ⟨u, hu, hux, huf⟩ := hf.forcedSources_origin hx
     obtain ⟨v, hv, hvy, hvf⟩ := hf.forcedSources_origin hy
     exact hvf.mpr (h u hu v hv (hux.symm.trans (hb.trans hvy)) (huf.mp hz))
 
 /-- The exact test uses only the original source reads, not even their forced replacements. -/
-theorem interpolate_iff_source_blocks (s : Finset ExtOrd) :
-    (∃ τ : ExtOrd → ExtOrd, Witness (gTop m) τ ∧ ∀ x ∈ s, τ x = f x) ↔
-      BlockBottom s f :=
+def interpolate_iff_source_blocks (s : Finset ExtOrd) :=
   (hf.interpolate_iff s).trans (hf.forcedSources_blockBottom_iff s)
 
-end BoundedMap
 
-end VaughtConjecture.Knight.SharpWitnessComposition

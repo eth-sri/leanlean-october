@@ -3,12 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Data.ENat.Lattice
-public import Mathlib.Data.Nat.Cast.Order.Basic
-public import Mathlib.Order.Filter.AtTopBot.Basic
-public import Mathlib.Order.Filter.Finite
+import Mathlib.Data.ENat.Lattice
+import Mathlib.Data.Nat.Cast.Order.Basic
+import Mathlib.Order.Filter.AtTopBot.Basic
+import Mathlib.Order.Filter.Finite
 
 /-! # The topology-free combinatorial core of finite-vector jumps
 
@@ -18,11 +17,8 @@ reconstruct a completed vector. These APIs retain their original namespace,
 statements, and proofs from `JumpClosed`.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.JumpClosed
 
-open Filter
 
 variable {I : Type*}
 
@@ -44,6 +40,5 @@ theorem jump_eq_of_approximates {K : ℕ} {u r : I → ℕ∞} (h : Approximates
   · exact (ite_eq_right (not_le.mpr (h2 hr))).trans hr.symm
   · exact (ite_eq_left ((h1 hr).symm ▸ hK i hr)).trans (h1 hr)
 
-variable [Finite I] {A : Set (I → ℕ∞)}
+variable [Finite I] 
 
-end VaughtConjecture.JumpClosed

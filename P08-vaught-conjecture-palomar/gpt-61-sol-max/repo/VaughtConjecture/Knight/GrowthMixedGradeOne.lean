@@ -1,12 +1,20 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthMixedRestriction
-public import VaughtConjecture.Knight.LiftingCalculus
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GrowthLeafRecognition
+import VaughtConjecture.Knight.GrowthReplicatedRows
+import VaughtConjecture.Knight.ScopeReplicationCharts
+import VaughtConjecture.Knight.GrowthSpareRecognition
+import VaughtConjecture.Knight.ScopeReplicationRestriction
+import VaughtConjecture.Knight.CappedLifting
+import VaughtConjecture.Knight.CappedLiftingUnique
 
 /-! # The grade-one mixed case on the replicated growth carrier
 
@@ -36,31 +44,22 @@ the literal padded base on every layer, through `P.baseMap`), for an eligible mi
 The zero section, literal top, unused rungs and long tips are covered: nothing is assumed of `p`
 beyond lawfulness, and no admission or activation hypothesis enters. -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthMixedGradeOne
 
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open SupportLadderRows LadderScalarRendering SharpWitnessComposition
+open AmalgamationPlan Transform Value  Growth GrowthHigherSources
+open SupportLadderRows  SharpWitnessComposition
 open GrowthPaddedContract ScopeReplicationCarrier
 
 noncomputable section
 
-theorem one_le_card {ι : Type*} {A B C U : Finset ι} (hA : 2 ≤ A.card)
-    (hm : U = A ∨ Mixed B C U) : 1 ≤ U.card := by
-  rcases hm with rfl | hm
-  · omega
-  · exact Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr
-      (fun h => hm.1 (h ▸ Finset.empty_subset _)))
+theorem one_le_card {ι} {A B C U : Finset ι} (hA : 2 ≤ A.card)
+    (hm : U = A ∨ Mixed B C U) : 1 ≤ U.card := by grind [VaughtConjecture.Knight.ScopeReplicationCarrier.Mixed]
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n J : ℕ}
+  {R : VaughtConjecture.AmalgamationPlan.SupportFamily ι} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
+  (X : I.GrowthData)
+  (T : I.GrowthAttachment X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
   {k : ℕ} (P : Layer I X T hA hB hC k)
 
@@ -70,7 +69,7 @@ local notation "ranks₁" => RelativeLadderLayer.ranks (fields X 1)
 local notation "rungs" => RelativeLadderLayer.rungs (X := Fld)
 local notation "spare" => SupportLadderRows.leaf (GrowthLeafRecognition.rungs_pos I)
 local notation "Base" => GrowthPaddedContract.base I X T hA hB hC
-local notation "BaseRows" => GrowthPaddedContract.baseRows I X T hA hB hC
+local notation "BaseRows" => GrowthPaddedContract.baseRows T hA hB hC
 local notation "Carrier" => GrowthReplicatedRows.carrier P
 local notation "Rows" => GrowthReplicatedRows.rows P
 local notation "eraseP" => GrowthReplicatedRows.erase P
@@ -83,35 +82,34 @@ local notation "ladderRow₁" =>
 
 /-! ## The grade-one geometry of an installed layer -/
 
-theorem base_added_cell (v : Pt) : CellScheme.cell Base (addedB v) = (A, 1) :=
+theorem base_added_cell v : CellScheme.cell Base (addedB v) = (A, 1) :=
   RelativeLadderLayer.added_index I.boundary (GrowthLeafRecognition.card_pos hA) v
 
-theorem base_old_cell (d : Cell I.boundary) : CellScheme.cell Base (oldB d) = I.boundary.cell d :=
-  RelativeLadderLayer.old_index I.boundary (GrowthLeafRecognition.card_pos hA) d
+theorem base_old_cell d : CellScheme.cell Base (oldB d) = I.boundary.cell d :=
+  RelativeLadderLayer.old_index d
 
-theorem carrier_added_cell (v : Pt) : P.carrier.cell (P.baseMap (addedB v)) = (A, 1) :=
+def carrier_added_cell v :=
   (P.base_index _).trans (base_added_cell I X T hA hB hC v)
 
-theorem carrier_old_cell (d : Cell I.boundary) :
-    P.carrier.cell (P.baseMap (oldB d)) = I.boundary.cell d :=
+def carrier_old_cell d :=
   (P.base_index _).trans (base_old_cell I X T hA hB hC d)
 
 /-- Every cell of grade at most one is a base cell. -/
-theorem eq_baseMap_of_grade_le_one (c : Cell P.carrier) (hc : P.carrier.grade c ≤ 1) :
+theorem eq_baseMap_of_grade_le_one c (hc : P.carrier.grade c ≤ 1) :
     ∃ b, c = P.baseMap b := by
   rcases P.cases c with h | ⟨_, hg, _⟩
   · exact h
   · omega
 
 /-- Every full-scope grade-one cell is the image of a padded point. -/
-theorem eq_added_of_full_one (c : Cell P.carrier) (hc : P.carrier.cell c = (A, 1)) :
-    ∃ v : Pt, c = P.baseMap (addedB v) := by
+theorem eq_added_of_full_one c (hc : P.carrier.cell c = (A, 1)) :
+    ∃ v , c = P.baseMap (addedB v) := by
   obtain ⟨b, rfl⟩ := eq_baseMap_of_grade_le_one I X T hA hB hC P c
-    (by change (P.carrier.cell _).2 ≤ 1; rw [hc])
-  rcases RelativeLadderLayer.cell_cases I.boundary (GrowthLeafRecognition.card_pos hA) b with
+    (by simp_all)
+  rcases RelativeLadderLayer.cell_cases b with
     ⟨d, rfl⟩ | ⟨v, rfl⟩
   · exfalso
-    apply GrowthOrderedBase.proper I hB hC d
+    apply GrowthOrderedBase.proper hB hC d
     exact (congrArg Prod.fst (carrier_old_cell I X T hA hB hC P d)).symm.trans
       (congrArg Prod.fst hc)
   · exact ⟨v, rfl⟩
@@ -120,16 +118,16 @@ theorem eq_added_of_full_one (c : Cell P.carrier) (hc : P.carrier.cell c = (A, 1
 
 variable (U : Finset ι) (hU : U ∈ P.carrier.plan) (hm : U = A ∨ Mixed B C U)
 
-theorem scope_added (v : Pt) : P.carrier.scope (P.baseMap (addedB v)) = A := by
+theorem scope_added v : P.carrier.scope (P.baseMap (addedB v)) = A := by
   change (P.carrier.cell _).1 = A
   rw [carrier_added_cell]
 
-theorem grade_added (v : Pt) : P.carrier.grade (P.baseMap (addedB v)) = 1 := by
+theorem grade_added v : P.carrier.grade (P.baseMap (addedB v)) = 1 := by
   change (P.carrier.cell _).2 = 1
   rw [carrier_added_cell]
 
 include hm in
-theorem grade_added_le (v : Pt) : P.carrier.grade (P.baseMap (addedB v)) ≤ U.card := by
+theorem grade_added_le v : P.carrier.grade (P.baseMap (addedB v)) ≤ U.card := by
   rw [grade_added]; exact one_le_card hA hm
 
 /-- The copy at `U` of a padded point. -/
@@ -139,35 +137,40 @@ def ladderAt (v : Pt) : CellScheme.below Carrier (U, 1) :=
     rw [atScope_index, grade_added]
     exact GradedLe.refl _⟩
 
-theorem ladder_index (v : Pt) :
-    CellScheme.cell Carrier (ladderAt I X T hA hB hC P U hU hm v).1 = (U, 1) := by
+local notation "ladderAt₀" => ladderAt I X T hA hB hC P U hU hm
+
+theorem ladder_index v :
+    CellScheme.cell Carrier (ladderAt₀ v).1 = (U, 1) := by
   unfold ladderAt
   rw [atScope_index, grade_added]
 
-theorem erase_ladder (v : Pt) :
-    eraseP (ladderAt I X T hA hB hC P U hU hm v).1 = P.baseMap (addedB v) :=
+theorem erase_ladder v :
+    eraseP (ladderAt₀ v).1 = P.baseMap (addedB v) :=
   erase_atScope P.carrier B C U hU hm (P.baseMap (addedB v)) (scope_added I X T hA hB hC P v)
     (grade_added_le I X T hA hB hC P U hm v)
 
 /-- A padded copy below a padded copy. -/
 def ladderBelow (c v : Pt) :
-    CellScheme.below Carrier (CellScheme.cell Carrier (ladderAt I X T hA hB hC P U hU hm c).1) :=
-  ⟨(ladderAt I X T hA hB hC P U hU hm v).1, by
-    rw [ladder_index, ladder_index]; exact GradedLe.refl _⟩
+    CellScheme.below Carrier (CellScheme.cell Carrier (ladderAt₀ c).1) :=
+  ⟨(ladderAt₀ v).1, by
+    grind [ladder_index]⟩
+
+local notation "erase_ladder₀" => erase_ladder I X T hA hB hC P U hU hm
+
+local notation "ladderBelow₀" => ladderBelow I X T hA hB hC P U hU hm
 
 /-- The inherited row of a padded copy at a padded copy is the actual ladder row. -/
-theorem row_ladder (c v : Pt) :
-    Semantics.E Rows (ladderAt I X T hA hB hC P U hU hm c).1
-      (ladderBelow I X T hA hB hC P U hU hm c v) = SupportLadderRows.row ranks₁ c v := by
+theorem row_ladder c v :
+    Semantics.E Rows (ladderAt₀ c).1
+      (ladderBelow₀ c v) = SupportLadderRows.row ranks₁ c v := by
   have hv : GradedLe (CellScheme.cell Base (addedB v)) (CellScheme.cell Base (addedB c)) := by
     rw [base_added_cell, base_added_cell]; exact GradedLe.refl _
-  have h1 : Semantics.E Rows (ladderAt I X T hA hB hC P U hU hm c).1
-      (ladderBelow I X T hA hB hC P U hU hm c v) =
-      P.rows.E (P.baseMap (addedB c)) ⟨P.baseMap (⟨addedB v, hv⟩ :
-        CellScheme.below Base (CellScheme.cell Base (addedB c))).1,
+  have h1 : Semantics.E Rows (ladderAt₀ c).1
+      (ladderBelow₀ c v) =
+      P.rows.E (P.baseMap (addedB c)) ⟨P.baseMap (addedB v),
         by simpa only [P.base_index] using hv⟩ :=
-    P.rows.E_congr (erase_ladder I X T hA hB hC P U hU hm c)
-      (erase_ladder I X T hA hB hC P U hU hm v)
+    P.rows.E_congr (erase_ladder₀ c)
+      (erase_ladder₀ v)
   rw [h1, P.base_row (addedB c) ⟨addedB v, hv⟩]
   have h2 : ladderRow₁ c (addedB v) = SupportLadderRows.row ranks₁ c v := by
     change SupportLadderRows.source (SupportLadderRows.ceiling ranks₁ c)
@@ -176,13 +179,13 @@ theorem row_ladder (c v : Pt) :
     rw [RelativeLadderLayer.rankIndex_added]
     rfl
   exact (RelativeLadderLayer.row_added I.boundary I.rows (GrowthLeafRecognition.card_pos hA)
-    (GrowthOrderedBase.field I) (fields X 1) (GrowthOrderedBase.proper I hB hC) c
+    (GrowthOrderedBase.field I) (fields X 1) (GrowthOrderedBase.proper hB hC) c
     ⟨addedB v, hv⟩).trans h2
 
 /-- The inherited row of a padded copy at a present original is the rank-coded source. -/
-theorem row_ladder_original (v : Pt) (z : CellScheme.below Carrier (U, 1)) (d : Cell I.boundary)
+theorem row_ladder_original v (z : CellScheme.below Carrier (U, 1)) d
     (hz : eraseP z.1 = P.baseMap (oldB d)) :
-    Semantics.E Rows (ladderAt I X T hA hB hC P U hU hm v).1
+    Semantics.E Rows (ladderAt₀ v).1
       ⟨z.1, by rw [ladder_index]; exact z.2⟩ =
       SupportLadderRows.source (SupportLadderRows.ceiling ranks₁ v)
         (ranks₁ (SupportLadderRows.parent v) (GrowthOrderedBase.field I d)) := by
@@ -196,13 +199,12 @@ theorem row_ladder_original (v : Pt) (z : CellScheme.below Carrier (U, 1)) (d : 
     omega
   have hd : GradedLe (CellScheme.cell Base (oldB d)) (CellScheme.cell Base (addedB v)) := by
     rw [base_old_cell, base_added_cell]
-    exact ⟨I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan d), hgd⟩
-  have h1 : Semantics.E Rows (ladderAt I X T hA hB hC P U hU hm v).1
+    exact ⟨I.boundary.scope_subset d, hgd⟩
+  have h1 : Semantics.E Rows (ladderAt₀ v).1
       ⟨z.1, by rw [ladder_index]; exact z.2⟩ =
-      P.rows.E (P.baseMap (addedB v)) ⟨P.baseMap (⟨oldB d, hd⟩ :
-        CellScheme.below Base (CellScheme.cell Base (addedB v))).1,
+      P.rows.E (P.baseMap (addedB v)) ⟨P.baseMap (oldB d),
         by simpa only [P.base_index] using hd⟩ :=
-    P.rows.E_congr (erase_ladder I X T hA hB hC P U hU hm v) hz
+    P.rows.E_congr (erase_ladder₀ v) hz
   rw [h1, P.base_row (addedB v) ⟨oldB d, hd⟩]
   have h2 : ladderRow₁ v (oldB d) = SupportLadderRows.source (SupportLadderRows.ceiling ranks₁ v)
       (ranks₁ (SupportLadderRows.parent v) (GrowthOrderedBase.field I d)) := by
@@ -211,98 +213,108 @@ theorem row_ladder_original (v : Pt) (z : CellScheme.below Carrier (U, 1)) (d : 
         (GrowthOrderedBase.field I) (fields X 1) (SupportLadderRows.parent v) (oldB d)) = _
     rw [RelativeLadderLayer.rankIndex_old]
   exact (RelativeLadderLayer.row_added I.boundary I.rows (GrowthLeafRecognition.card_pos hA)
-    (GrowthOrderedBase.field I) (fields X 1) (GrowthOrderedBase.proper I hB hC) v
+    (GrowthOrderedBase.field I) (fields X 1) (GrowthOrderedBase.proper hB hC) v
     ⟨oldB d, hd⟩).trans h2
 
 /-! ## Recognition at grade one -/
 
 variable {p : CellScheme.below (GrowthReplicatedRows.carrier P) (U, 1) → ExtOrd}
 
+local notation "ladder_index₀" => ladder_index I X T hA hB hC P U hU hm
+
+variable {I X T hA hB hC P U} in
 theorem ladder_lawful (hp : RespectsSemanticsBelow Rows (U, 1) p) :
-    Lawful ranks₁ (fun v => p (ladderAt I X T hA hB hC P U hU hm v)) := by
+    Lawful ranks₁ (fun v => p (ladderAt₀ v)) := by
   constructor
   · intro v
-    have hv := hp.orderly (ladderAt I X T hA hB hC P U hU hm v)
+    have hv := hp.orderly (ladderAt₀ v)
     change p _ = extVisibilityReplace (p _) (CellScheme.cell Carrier _).2
       (CellScheme.cell Carrier _).2 at hv
     rw [ladder_index] at hv
     exact hv.symm
   · intro c
-    have ht := (hp.locality (ladderAt I X T hA hB hC P U hU hm c)).reindex
-      (ladderBelow I X T hA hB hC P U hU hm c)
+    have ht := (hp.locality (ladderAt₀ c)).reindex
+      (ladderBelow₀ c)
     exact transformsTo_congr
-      (funext fun v => congrArg Prod.snd (ladder_index I X T hA hB hC P U hU hm v))
-      (funext fun v => row_ladder I X T hA hB hC P U hU hm c v) rfl ht
+      (funext fun v => congrArg Prod.snd (ladder_index₀ v))
+      (funext (row_ladder I X T hA hB hC P U hU hm c)) rfl ht
 
 variable (p)
 
 /-- The maximum of `p` over the copies at `U` of the shadows of a field. -/
-def shadowSup (f : Fld) : ExtOrd :=
+def shadowSup f :=
   (Finset.univ : Finset (Catalogue X 1)).sup fun b =>
-    p (ladderAt I X T hA hB hC P U hU hm (shadow b f))
+    p (ladderAt₀ (shadow b f))
 
+variable {I X T hA hB hC P U} in
 /-- The maximum of `p` over the copies at `U` of the spare rungs. -/
-def spareSup : ExtOrd :=
+def spareSup :=
   (Finset.univ : Finset (Catalogue X 1)).sup fun b =>
-    p (ladderAt I X T hA hB hC P U hU hm (spare b))
+    p (ladderAt₀ (spare b))
 
 variable {p}
 
-theorem ladder_le_spareSup (hp : RespectsSemanticsBelow Rows (U, 1) p) (v : Pt) :
-    p (ladderAt I X T hA hB hC P U hU hm v) ≤ spareSup I X T hA hB hC P U hU hm p :=
-  ((ladder_lawful I X T hA hB hC P U hU hm hp).le_parent
+local notation "spareSup₀" => spareSup hU hm p
+
+theorem ladder_le_spareSup (hp : RespectsSemanticsBelow Rows (U, 1) p) v :
+    p (ladderAt₀ v) ≤ spareSup₀ :=
+  ((ladder_lawful hU hm hp).le_parent
     (GrowthLeafRecognition.rank_le_rungs I X) (GrowthLeafRecognition.rungs_pos I) v).trans
-    (Finset.le_sup (f := fun b => p (ladderAt I X T hA hB hC P U hU hm (spare b)))
+    (Finset.le_sup (f := fun b => p (ladderAt₀ (spare b)))
       (Finset.mem_univ _))
+
+local notation "ladder_le_spareSup₀" => ladder_le_spareSup I X T hA hB hC P U hU hm
+
+local notation "zeroMember₀" => GrowthLeafRecognition.zeroMember I X 1 le_rfl
 
 /-- Availability bounds every grade-one value at `U` by the spare maximum. -/
 theorem grade_one_le (hp : RespectsSemanticsBelow Rows (U, 1) p)
     (z : CellScheme.below Carrier (U, 1)) (hz : CellScheme.grade Carrier z.1 = 1) :
-    p z ≤ spareSup I X T hA hB hC P U hU hm p := by
-  let a₀ := GrowthLeafRecognition.zeroMember I X 1 le_rfl
-  obtain ⟨w, hw, hzw⟩ := hp.availability z (ladderAt I X T hA hB hC P U hU hm (spare a₀))
+    p z ≤ spareSup₀ := by
+  let a₀ := zeroMember₀
+  obtain ⟨w, hw, hzw⟩ := hp.availability z (ladderAt₀ (spare a₀))
     (by change CellScheme.scope Carrier z.1 ⊆ (CellScheme.cell Carrier _).1
         rw [ladder_index]; exact z.2.1)
-    (hz.trans (congrArg Prod.snd (ladder_index I X T hA hB hC P U hU hm _)).symm)
-  have hw' := hw.trans (ladder_index I X T hA hB hC P U hU hm _)
+    (hz.trans (congrArg Prod.snd (ladder_index₀ _)).symm)
+  have hw' := hw.trans (ladder_index₀ _)
   have hei := ScopeReplicationCharts.erase_index P.carrier B C coverP hm w.1 hw'
   obtain ⟨v, hv⟩ := eq_added_of_full_one I X T hA hB hC P _ hei
-  have he : p w = p (ladderAt I X T hA hB hC P U hU hm v) :=
-    GrowthReplicatedRows.copy_eq P hp w _
+  have he  :=
+    GrowthReplicatedRows.copy_eq P hp
       (by change (CellScheme.cell Carrier w.1).1 ⊆ (CellScheme.cell Carrier _).1
           rw [hw', ladder_index])
-      (hv.trans (erase_ladder I X T hA hB hC P U hU hm v).symm)
-  exact hzw.trans (he.trans_le (ladder_le_spareSup I X T hA hB hC P U hU hm hp v))
+      (hv.trans (erase_ladder₀ v).symm)
+  exact hzw.trans (he.trans_le (ladder_le_spareSup₀ hp v))
 
 /-- **The maximal spare chart at `U`**: it reads every padded copy exactly and every present
 original as the rank-coded source of its field. -/
 theorem exists_spare_chart (hp : RespectsSemanticsBelow Rows (U, 1) p) :
-    ∃ (a : Catalogue X 1) (τ : ExtOrd → ExtOrd), Witness (gTop 1) τ ∧
-      p (ladderAt I X T hA hB hC P U hU hm (spare a)) = spareSup I X T hA hB hC P U hU hm p ∧
-      (∀ x, τ x ≤ spareSup I X T hA hB hC P U hU hm p) ∧
-      (∀ v : Pt, τ (SupportLadderRows.row ranks₁ (spare a) v) =
-        p (ladderAt I X T hA hB hC P U hU hm v)) ∧
-      ∀ (z : CellScheme.below Carrier (U, 1)) (d : Cell I.boundary),
+    ∃ a τ, Witness (gTop 1) τ ∧
+      p (ladderAt₀ (spare a)) = spareSup₀ ∧
+      (BoundedBy τ spareSup₀) ∧
+      (∀ v , τ (SupportLadderRows.row ranks₁ (spare a) v) =
+        p (ladderAt₀ v)) ∧
+      ∀ z d,
         eraseP z.1 = P.baseMap (oldB d) →
         τ (SupportLadderRows.source rungs (ranks₁ a (GrowthOrderedBase.field I d))) = p z := by
-  obtain ⟨a, -, hmax⟩ := Finset.exists_max_image (Finset.univ : Finset (Catalogue X 1))
-    (fun b => p (ladderAt I X T hA hB hC P U hU hm (spare b)))
-    ⟨GrowthLeafRecognition.zeroMember I X 1 le_rfl, Finset.mem_univ _⟩
-  let c := ladderAt I X T hA hB hC P U hU hm (spare a)
-  have hpc : p c = spareSup I X T hA hB hC P U hU hm p :=
-    le_antisymm (Finset.le_sup (f := fun b => p (ladderAt I X T hA hB hC P U hU hm (spare b)))
+  obtain ⟨a, -, hmax⟩ := Finset.exists_max_image (Finset.univ)
+    (fun b => p (ladderAt₀ (spare b)))
+    ⟨zeroMember₀, Finset.mem_univ _⟩
+  let c := ladderAt₀ (spare a)
+  have hpc : p c = spareSup₀ :=
+    le_antisymm (Finset.le_sup (f := fun b => p (ladderAt₀ (spare b)))
       (Finset.mem_univ a)) (Finset.sup_le hmax)
   let self : CellScheme.below Carrier (CellScheme.cell Carrier c.1) := ⟨c.1, GradedLe.refl _⟩
   obtain ⟨τ, hτ, hb, hr⟩ := exists_bounded_exact_capped_witness
     (c := self) (fun d => d.2.2) (hp.orderly c).symm (hp.locality c)
   have hgrade : CellScheme.grade Carrier c.1 = 1 :=
-    congrArg Prod.snd (ladder_index I X T hA hB hC P U hU hm _)
+    congrArg Prod.snd (ladder_index₀ _)
   refine ⟨a, τ, hgrade ▸ hτ, hpc, fun x => (hb x).trans_eq hpc, ?_, ?_⟩
   · intro v
-    have h := hr (ladderBelow I X T hA hB hC P U hU hm (spare a) v)
+    have h := hr (ladderBelow₀ (spare a) v)
     rw [row_ladder] at h
     exact h.trans (min_eq_left
-      ((ladder_le_spareSup I X T hA hB hC P U hU hm hp v).trans_eq hpc.symm))
+      ((ladder_le_spareSup₀ hp v).trans_eq hpc.symm))
   · intro z d hz
     have hg : CellScheme.grade Carrier z.1 = 1 := by
       have h1 : CellScheme.grade Carrier z.1 ≤ 1 := z.2.2
@@ -316,11 +328,10 @@ theorem exists_spare_chart (hp : RespectsSemanticsBelow Rows (U, 1) p) :
     exact h.trans (min_eq_left
       ((grade_one_le I X T hA hB hC P U hU hm hp z hg).trans_eq hpc.symm))
 
-section Chart
+section
 
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-  (hread : ∀ v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
-      (Q := Catalogue X 1),
+variable {a : Catalogue X 1} {τ : LabelMap} (hτ : Witness (gTop 1) τ)
+  (hread : ∀ v ,
     τ (SupportLadderRows.row (RelativeLadderLayer.ranks (fields X 1))
       (SupportLadderRows.leaf (GrowthLeafRecognition.rungs_pos I) a) v) =
         p (ladderAt I X T hA hB hC P U hU hm v))
@@ -328,57 +339,51 @@ variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ
 include hτ hread
 
 /-- **Uncapped complete-field recognition at `U`**, on every field. -/
-theorem shadowSup_eq_spare (f : Fld) :
+theorem shadowSup_eq_spare f :
     shadowSup I X T hA hB hC P U hU hm p f =
       τ (SupportLadderRows.source rungs (ranks₁ a f)) := by
-  have he := SupportLadderRows.readout_image (H := rungs)
+  have he := SupportLadderRows.readout_image 
     (GrowthLeafRecognition.rank_le_rungs I X) a (SupportLadderRows.source_mono rungs) f
-  simp only [SupportLadderRows.readout] at he
-  rw [show Fintype.ofFinite (Catalogue X 1) = (inferInstance : Fintype (Catalogue X 1)) from
-    Subsingleton.elim _ _] at he
+  simp  [SupportLadderRows.readout] at he
+  
   rw [← he, Finset.apply_sup_eq_sup_comp_of_linearOrder τ hτ.mono hτ.bot, shadowSup]
   congr 1
   funext b
-  rw [Function.comp_apply, ← hread, GrowthSpareRecognition.row_spare]
+  rw [ ← hread, ]
   rfl
 
+variable {I X T hA hB hC P U hU hm} in
 /-- **Finite bottom reflection** on every ladder value of the maximal spare, when `M₁ p ≠ ⊥`. -/
-theorem spare_bottom_reflection (hp : RespectsSemanticsBelow Rows (U, 1) p)
-    (hmax : p (ladderAt I X T hA hB hC P U hU hm (spare a)) =
-      spareSup I X T hA hB hC P U hU hm p)
-    (hne : spareSup I X T hA hB hC P U hU hm p ≠ ⊥) (v : Pt) :
-    τ (SupportLadderRows.row ranks₁ (spare a) v) = ⊥ ↔
-      SupportLadderRows.row ranks₁ (spare a) v = ⊥ := by
-  have : Nonempty (Catalogue X 1) := ⟨GrowthLeafRecognition.zeroMember I X 1 le_rfl⟩
+def spare_bottom_reflection (hp : RespectsSemanticsBelow Rows (U, 1) p)
+    (hmax : p (ladderAt₀ (spare a)) =
+      spareSup₀)
+    (hne : spareSup₀ ≠ ⊥) v := by
+  have : Nonempty (Catalogue X 1) := ⟨zeroMember₀⟩
   have hread' (w : Pt) : τ (SupportLadderRows.row ranks₁ (spare a) w) =
-      min (p (ladderAt I X T hA hB hC P U hU hm w)) (spareSup I X T hA hB hC P U hU hm p) := by
-    rw [hread, min_eq_left (ladder_le_spareSup I X T hA hB hC P U hU hm hp w)]
-  have hdiag : τ (SupportLadderRows.row ranks₁ (spare a) (spare a)) =
-      spareSup I X T hA hB hC P U hU hm p := (hread _).trans hmax
+      min (p (ladderAt₀ w)) (spareSup₀) := by
+    rw [hread, min_eq_left (ladder_le_spareSup₀ hp w)]
+  have hdiag  := (hread _).trans hmax
   exact SupportLadderRows.bottom_reflection (GrowthLeafRecognition.rank_le_rungs I X)
-    (GrowthLeafRecognition.rungs_pos I) (ladder_lawful I X T hA hB hC P U hU hm hp)
+    (GrowthLeafRecognition.rungs_pos I) (ladder_lawful hU hm hp)
     (spare a) hτ.bot hne hread' hdiag v
 
-end Chart
+end
 
 /-- **Exact readback of present originals at `U`**: uncapped. -/
 theorem original_readback_one (hp : RespectsSemanticsBelow Rows (U, 1) p)
-    (z : CellScheme.below Carrier (U, 1)) (d : Cell I.boundary)
+    (z : CellScheme.below Carrier (U, 1)) d
     (hz : eraseP z.1 = P.baseMap (oldB d)) :
-    p z = shadowSup I X T hA hB hC P U hU hm p (GrowthOrderedBase.field I d) := by
-  obtain ⟨a, τ, hτ, -, -, hread, horig⟩ := exists_spare_chart I X T hA hB hC P U hU hm hp
-  exact (horig z d hz).symm.trans
-    (shadowSup_eq_spare I X T hA hB hC P U hU hm hτ hread _).symm
+    p z = shadowSup I X T hA hB hC P U hU hm p (GrowthOrderedBase.field I d) := by grind [exists_spare_chart, shadowSup_eq_spare]
 
 /-! ## The lawful extension to the full scope -/
 
-section Extension
+section
 
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
+variable {a : Catalogue X 1} {τ : LabelMap} (hτ : Witness (gTop 1) τ)
   (hp : RespectsSemanticsBelow (GrowthReplicatedRows.rows P) (U, 1) p)
   (hmax : p (ladderAt I X T hA hB hC P U hU hm (SupportLadderRows.leaf
-    (GrowthLeafRecognition.rungs_pos I) a)) = spareSup I X T hA hB hC P U hU hm p)
-  (hb : ∀ x, τ x ≤ spareSup I X T hA hB hC P U hU hm p)
+    (GrowthLeafRecognition.rungs_pos I) a)) = spareSup hU hm p)
+  (hb : BoundedBy τ (spareSup hU hm p))
   (hread : ∀ v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
       (Q := Catalogue X 1),
     τ (SupportLadderRows.row (RelativeLadderLayer.ranks (fields X 1))
@@ -390,46 +395,46 @@ include hτ hp hmax hb hread
 /-- The chart transports the spare's whole ladder row on the padded base. -/
 theorem base_section_lawful :
     RespectsSemanticsBelow BaseRows (A, 1) (fun d => τ (ladderRow₁ (spare a) d.1)) := by
-  have hlad := RelativeLadderLayer.ladder_respects I.boundary I.rows
-    (GrowthLeafRecognition.card_pos hA) (GrowthOrderedBase.field I) (fields X 1)
-    (GrowthOrderedBase.proper I hB hC) (GrowthOrderedBase.anchor_lawful I X T) (spare a)
-  by_cases hne : spareSup I X T hA hB hC P U hU hm p = ⊥
+  have hlad := RelativeLadderLayer.ladder_respects
+    (GrowthLeafRecognition.card_pos hA)
+    (GrowthOrderedBase.proper hB hC) (GrowthOrderedBase.anchor_lawful I X T) (spare a)
+  by_cases hne : spareSup₀ = ⊥
   · have hz : ∀ x, τ x = ⊥ := fun x => le_bot_iff.mp ((hb x).trans_eq hne)
-    simp only [hz]
-    exact respectsBelow_bot _ (A, 1)
+    simp  [hz]
+    exact (RespectsSemanticsBelow.bot _ _)
   · refine map_respects_of_bottom_reflection hlad (fun d => d.2.2) (boundedMap_of_witness hτ)
       fun d => ?_
-    rcases RelativeLadderLayer.cell_cases I.boundary (GrowthLeafRecognition.card_pos hA) d.1 with
+    rcases RelativeLadderLayer.cell_cases d.1 with
       ⟨e, he⟩ | ⟨v, hv⟩
     · rw [he, GrowthSpareRecognition.ladderRow_spare_old I X hA a e,
-        ← GrowthLeafRecognition.index_shadow_self I X a, ← GrowthSpareRecognition.row_spare I X a]
-      exact spare_bottom_reflection I X T hA hB hC P U hU hm hτ hread hp hmax hne _
+        ← GrowthLeafRecognition.index_shadow_self I X a, ]
+      exact spare_bottom_reflection hτ hread hp hmax hne _
     · rw [hv, GrowthSpareRecognition.ladderRow_spare_added I X hA a v]
-      exact spare_bottom_reflection I X T hA hB hC P U hU hm hτ hread hp hmax hne v
+      exact spare_bottom_reflection hτ hread hp hmax hne v
 
-end Extension
+end
 
 /-- The extension's values on the installed layer: the chart's reading of the spare's row at
 base cells, `⊥` elsewhere (no other cell lies below grade one). -/
-def layerSection (a : Catalogue X 1) (τ : ExtOrd → ExtOrd) (c : Cell P.carrier) : ExtOrd := by
-  classical
-  exact if h : ∃ b, c = P.baseMap b then τ (ladderRow₁ (spare a) h.choose) else ⊥
+def layerSection (a : Catalogue X 1) (τ : LabelMap) (c : Cell P.carrier) :=  if h : ∃ b, c = P.baseMap b then τ (ladderRow₁ (spare a) h.choose) else ⊥
 
-theorem layerSection_baseMap (a : Catalogue X 1) (τ : ExtOrd → ExtOrd) (b : Cell Base) :
-    layerSection I X T hA hB hC P a τ (P.baseMap b) = τ (ladderRow₁ (spare a) b) := by
+local notation "layerSection₀" => layerSection I X T hA hB hC P
+
+theorem layerSection_baseMap (a : Catalogue X 1) (τ : LabelMap) (b : Cell Base) :
+    layerSection₀ a τ (P.baseMap b) = τ (ladderRow₁ (spare a) b) := by
   classical
   unfold layerSection
   split_ifs with h
   · exact congrArg (fun x => τ (ladderRow₁ (spare a) x)) (P.base_mono.injective h.choose_spec.symm)
   · exact absurd ⟨b, rfl⟩ h
 
-section Extension
+section
 
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
+variable {a : Catalogue X 1} {τ : LabelMap} (hτ : Witness (gTop 1) τ)
   (hp : RespectsSemanticsBelow (GrowthReplicatedRows.rows P) (U, 1) p)
   (hmax : p (ladderAt I X T hA hB hC P U hU hm (SupportLadderRows.leaf
-    (GrowthLeafRecognition.rungs_pos I) a)) = spareSup I X T hA hB hC P U hU hm p)
-  (hb : ∀ x, τ x ≤ spareSup I X T hA hB hC P U hU hm p)
+    (GrowthLeafRecognition.rungs_pos I) a)) = spareSup hU hm p)
+  (hb : BoundedBy τ (spareSup hU hm p))
   (hread : ∀ v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
       (Q := Catalogue X 1),
     τ (SupportLadderRows.row (RelativeLadderLayer.ranks (fields X 1))
@@ -440,59 +445,35 @@ include hτ hp hmax hb hread
 
 /-- The layer section is lawful through grade one on the installed layer. -/
 theorem layerSection_lawful :
-    RespectsSemanticsBelow P.rows (A, 1) (fun d => layerSection I X T hA hB hC P a τ d.1) := by
+    RespectsSemanticsBelow P.rows (A, 1) (fun d => layerSection₀ a τ d.1) := by
   have hbase := base_section_lawful I X T hA hB hC P U hU hm hτ hp hmax hb hread
-  have h := P.base_respects (addedB (spare a)) (layerSection I X T hA hB hC P a τ)
+  have h := P.base_respects (addedB (spare a)) (layerSection₀ a τ)
   have hrhs : RespectsSemanticsBelow BaseRows (CellScheme.cell Base (addedB (spare a)))
-      (fun d => layerSection I X T hA hB hC P a τ (P.baseMap d.1)) := by
-    have hc := GradeCutLayerRows.cast_respects Base BaseRows
+      (fun d => layerSection₀ a τ (P.baseMap d.1)) := by
+    have hc := GradeCutLayerRows.cast_respects
       (base_added_cell I X T hA hB hC (spare a)).symm hbase
     have he : (fun d : CellScheme.below Base (CellScheme.cell Base (addedB (spare a))) =>
         τ (ladderRow₁ (spare a) d.1)) =
-        fun d => layerSection I X T hA hB hC P a τ (P.baseMap d.1) :=
+        fun d => layerSection₀ a τ (P.baseMap d.1) :=
       funext fun d => (layerSection_baseMap I X T hA hB hC P a τ d.1).symm
     rw [← he]
     exact hc
   have hlhs := h.mpr hrhs
-  have hc := GradeCutLayerRows.cast_respects P.carrier P.rows
+  have hc := GradeCutLayerRows.cast_respects
     (carrier_added_cell I X T hA hB hC P (spare a)) hlhs
   exact hc
 
-end Extension
+end
 
 /-! ## The extension on the replicated carrier -/
 
-theorem A_mem_plan : A ∈ P.carrier.plan := by
+def A_mem_plan := by
   have h := P.carrier.scope_mem_plan
-    (P.baseMap (addedB (spare (GrowthLeafRecognition.zeroMember I X 1 le_rfl))))
+    (P.baseMap (addedB (spare (zeroMember₀))))
   rwa [scope_added] at h
 
-section Extension
-
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-  (hp : RespectsSemanticsBelow (GrowthReplicatedRows.rows P) (U, 1) p)
-  (hmax : p (ladderAt I X T hA hB hC P U hU hm (SupportLadderRows.leaf
-    (GrowthLeafRecognition.rungs_pos I) a)) = spareSup I X T hA hB hC P U hU hm p)
-  (hb : ∀ x, τ x ≤ spareSup I X T hA hB hC P U hU hm p)
-  (hread : ∀ v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
-      (Q := Catalogue X 1),
-    τ (SupportLadderRows.row (RelativeLadderLayer.ranks (fields X 1))
-      (SupportLadderRows.leaf (GrowthLeafRecognition.rungs_pos I) a) v) =
-        p (ladderAt I X T hA hB hC P U hU hm v))
-  (horig : ∀ (z : CellScheme.below (GrowthReplicatedRows.carrier P) (U, 1)) (d : Cell I.boundary),
-    GrowthReplicatedRows.erase P z.1 = P.baseMap (RelativeLadderLayer.old I.boundary
-      (GrowthLeafRecognition.card_pos hA) d) →
-    τ (SupportLadderRows.source (RelativeLadderLayer.rungs (X := Field I.right.scheme
-      I.left.scheme)) (RelativeLadderLayer.ranks (fields X 1) a (GrowthOrderedBase.field I d))) =
-      p z)
-
-include hτ hp hmax hb hread
-
-end Extension
 
 /-! ## Uniqueness -/
 
 /-! ## The grade-one mixed capped lift -/
 
-end
-end VaughtConjecture.Knight.GrowthMixedGradeOne

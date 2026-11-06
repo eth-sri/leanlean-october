@@ -1,14 +1,16 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthStableSelectedInput
-public import VaughtConjecture.Knight.GrowthHighCover
-public import VaughtConjecture.Knight.CappedDonorContext
-public import VaughtConjecture.Knight.RawReferenceContext
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.GrowthStableSelectedInput
+import VaughtConjecture.Knight.GrowthHighCover
+import VaughtConjecture.Knight.CappedDonorContext
+import VaughtConjecture.Knight.RawReferenceContext
 
 /-! # Actual reference acquisition for a proper stable marker
 
@@ -18,12 +20,9 @@ places them below an actual top cap of sufficiently high grade. No occurrence
 of the chosen stable donor is assumed.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCalibration
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd 
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -32,19 +31,19 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 theorem stable_cap_bound (hM : W.IsModel) {m : ℕ} {u : Fin m ↪ M} {Q : S α.1 m}
     (hQ : W.eval u = some Q) {c : Cell Q.scheme.scheme} (hc : Q.label c = ⊤) :
     ofOrd (α.1 + Q.scheme.scheme.grade c) ≤ W.stableValue u Q c := by
-  have hα := le_stableValue_of_top (R := W) hQ hc
+  have hα := le_stableValue_of_top  hQ hc
   have hvis : SelfVis (Q.scheme.scheme.grade c) (W.stableValue u Q c) :=
     ((stableLiftRespects hM hQ).orderly c).symm
   rcases ExtOrd.cases (W.stableValue u Q c) with hb | ht | ⟨γ, hγ⟩
-  · rw [hb] at hα; exact absurd hα (not_ofOrd_le_bot _)
+  · simp_all
   · rw [ht]; exact le_top
   · rw [hγ] at hα hvis ⊢
     rw [selfVis_ofOrd_iff] at hvis
     have hlim := limitPart_mono (ofOrd_le_ofOrd.mp hα)
     rw [limitPart_eq_self_of_isNonSuccessor (Or.inr α.2)] at hlim
     apply ofOrd_le_ofOrd.mpr
-    calc α.1 + (Q.scheme.scheme.grade c : Ordinal.{0})
-        ≤ limitPart γ + (Q.scheme.scheme.grade c : Ordinal.{0}) := add_le_add_left hlim _
+    calc α.1 + (Q.scheme.scheme.grade c)
+        ≤ limitPart γ + (Q.scheme.scheme.grade c) := add_le_add_left hlim _
       _ ≤ limitPart γ + finitePart γ := add_le_add_right (Nat.cast_le.mpr hvis) _
       _ = γ := limitPart_add_finitePart γ
 
@@ -57,10 +56,10 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     (a : Cell p.scheme.scheme) (hatop : p.label a = ⊤) {i : ℕ}
     (ha : W.stableValue t p a = ofOrd (α.1 + i))
     {k : ℕ} (s : Fin k ↪ M) (p₀ : S α.1 k) (hs : W.eval s = some p₀)
-    (S : Finset Ordinal.{0}) (hS : ∀ μ ∈ S, limitPart μ = μ)
+    (S : Finset Ordinal₀) (hS : ∀ μ ∈ S, limitPart μ = μ)
     (hle : ∀ μ ∈ S, μ ≤ α.1) (L : ℕ) :
     ∃ (m : ℕ) (u : Fin m ↪ M) (Q : Knight.S α.1 m), W.eval u = some Q ∧
-      ∃ (g : Fin k ↪ Fin m) (f : Fin n ↪ Fin m), g.trans u = s ∧ f.trans u = t ∧
+      ∃ g f, g.trans u = s ∧ f.trans u = t ∧
         typeMap g Q = some p₀ ∧ ∃ hf : typeMap f Q = some p,
           ∃ (c : Cell Q.scheme.scheme), Q.scheme.scheme.scope c = Finset.univ ∧
             Q.label c = ⊤ ∧ L < Q.scheme.scheme.grade c ∧ i < Q.scheme.scheme.grade c ∧
@@ -68,13 +67,13 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
               W.stableValue u Q (mapCell hf a) = ofOrd (α.1 + i) ∧
               ofOrd (α.1 + L) < W.stableValue u Q c ∧
               ofOrd (α.1 + i) < W.stableValue u Q c ∧
-              ∃ (ref : Ordinal.{0} → Q.scheme.scheme.below (Q.scheme.scheme.cell c))
-                (off : Ordinal.{0} → ℕ),
+              ∃ (ref : Ordinal₀ → Q.scheme.scheme.belowCell c)
+                (off : Ordinal₀ → ℕ),
                 (∀ μ ∈ S, off μ < Q.scheme.scheme.grade c ∧
                   W.stableValue u Q (ref μ).1 = ofOrd (μ + off μ) ∧
                   ofOrd (μ + off μ) < W.stableValue u Q c) ∧
                 ref α.1 = ⟨mapCell hf a, hab⟩ ∧ off α.1 = i := by
-  classical
+  
   let old := S.filter (fun μ => μ < α.1)
   have hold : ∀ μ ∈ old, IsNonSuccessor μ ∧ μ < α.1 := by
     intro μ hμ
@@ -93,8 +92,7 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
   have hi : i < Q.topGrade := by omega
   have hab : GradedLe (Q.scheme.scheme.cell (mapCell hf a)) (Q.scheme.scheme.cell c) := by
     constructor
-    · change Q.scheme.scheme.scope (mapCell hf a) ⊆ Q.scheme.scheme.scope c
-      rw [hsc]; exact Finset.subset_univ _
+    · aesop
     · change Q.scheme.scheme.grade (mapCell hf a) ≤ Q.scheme.scheme.grade c
       rw [grade_mapCell, hgr]
       exact (le_csSup p.topGrades_bddAbove (grade_mem_topGrades hatop)).trans
@@ -105,7 +103,7 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     exact h.symm
   have hroot : (C.proj.trans g).trans u = s := by
     rw [Function.Embedding.trans_assoc, hgu, C.proj_ctx]
-  have hrootQ : typeMap (C.proj.trans g) Q = some p₀ := by
+  have hrootQ  := by
     have h := hM.consistent u Q (C.proj.trans g) hQ
     rw [hroot, hs, knightTower_pull] at h
     exact h.symm
@@ -116,24 +114,23 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
   have hbound := stable_cap_bound hM hQ hc
   have hcut : ofOrd (α.1 + L) < W.stableValue u Q c :=
     (ofOrd_lt_ofOrd.mpr (add_lt_add_right (Nat.cast_lt.mpr hL) _)).trans_le hbound
-  have hai : ofOrd (α.1 + i) < W.stableValue u Q c :=
+  have hai  :=
     (ofOrd_lt_ofOrd.mpr (add_lt_add_right (Nat.cast_lt.mpr hi') _)).trans_le hbound
   have hmarker : W.stableValue u Q (mapCell hf a) = ofOrd (α.1 + i) := by
     rw [stableValue_mapCell' hM.consistent hQ hfu hf, ha]
   have hbelow (d : Cell C.p₀.scheme.scheme) :
       GradedLe (Q.scheme.scheme.cell (mapCell hgQ d)) (Q.scheme.scheme.cell c) := by
     constructor
-    · change Q.scheme.scheme.scope (mapCell hgQ d) ⊆ Q.scheme.scheme.scope c
-      rw [hsc]; exact Finset.subset_univ _
+    · aesop
     · change Q.scheme.scheme.grade (mapCell hgQ d) ≤ Q.scheme.scheme.grade c
       rw [grade_mapCell]
       exact (C.p₀.scheme.scheme.grade_le_card_scope d).trans
         ((Finset.card_le_univ _).trans (by simpa using hm.le))
-  let ref : Ordinal.{0} → Q.scheme.scheme.below (Q.scheme.scheme.cell c) := fun μ =>
+  let ref : Ordinal₀ → Q.scheme.scheme.belowCell c := fun μ =>
     if μ = α.1 then ⟨mapCell hf a, hab⟩ else
       if hμ : μ ∈ old then ⟨mapCell hgQ (C.repBase ⟨μ, hμ⟩), hbelow _⟩ else
         ⟨c, GradedLe.refl _⟩
-  let off : Ordinal.{0} → ℕ := fun μ => if μ = α.1 then i else
+  let off  := fun μ => if μ = α.1 then i else
     if hμ : μ ∈ old then C.repOff ⟨μ, hμ⟩ else 0
   refine ⟨m, u, Q, hQ, C.proj.trans g, f, hroot, hfu, hrootQ, hf, c, hsc, hc,
     hL, hi', hab, hmarker, hcut, hai, ref, off, ?_, ?_, by simp [off]⟩
@@ -142,7 +139,7 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     simp [ref]
   intro μ hμ
   by_cases heq : μ = α.1
-  · subst μ; simpa [ref, off] using And.intro hi' (And.intro hmarker hai)
+  · aesop
   · have hmα := lt_of_le_of_ne (hle μ hμ) heq
     have hmem : μ ∈ old := Finset.mem_filter.mpr ⟨hμ, hmα⟩
     let b : old := ⟨μ, hmem⟩
@@ -152,12 +149,11 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
         ofOrd (μ + C.repOff b) := by
       rw [stableValue_mapCell' hM.consistent hQ hgu hgQ,
         stableValue_of_ne_top hM.consistent hM.covering C.eval_ctx hnt, hlab]
-    have hlt : ofOrd (μ + C.repOff b) < W.stableValue u Q c := by
+    have hlt  := by
       have hb := (C.p₀.label_bound (C.repBase b)).resolve_right hnt
       rw [hlab] at hb
       exact hb.trans_le ((ofOrd_le_ofOrd.mpr le_self_add).trans hbound)
     simpa [ref, off, heq, hmem, b] using
       And.intro ((C.rep_off_le b).trans_lt hoff) (And.intro hstable hlt)
 
-end
-end VaughtConjecture.Knight.GrowthStableCalibration
+

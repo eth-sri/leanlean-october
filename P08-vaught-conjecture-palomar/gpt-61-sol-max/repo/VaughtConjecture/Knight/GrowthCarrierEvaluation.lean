@@ -3,12 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthCappedReadback
-public import VaughtConjecture.Knight.GrowthAttachedCarrier
-public import VaughtConjecture.Knight.ActualLabelling
-public import VaughtConjecture.Knight.TopSupportReceiving
+import VaughtConjecture.Knight.GrowthCappedReadback
+import VaughtConjecture.Knight.GrowthAttachedCarrier
+import VaughtConjecture.Knight.ActualLabelling
+import VaughtConjecture.Knight.TopSupportReceiving
 
 /-! # Realize the growth carrier once, then evaluate its actual occurrences
 
@@ -18,13 +17,10 @@ relation on the installed donor. All receipts belong to the same fresh point.
 The evaluator need not be a model, and its values need not lie below the stage.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthCarrierEvaluation
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open Growth CellScheme.restrictFace
-noncomputable section
+open TypeTower StageType KnightRealization    
+open Growth 
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   {n J : ℕ} (C : S α.1 J) (P : SemScheme (n + 1)) (Q : SemScheme n)
@@ -37,38 +33,41 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   (T : RootAttachment Q Fin.castSuccEmb hvP hP e hvC hC X)
   (hsmall : n + 1 < X.req.N)
 
-local notation "E" => GrowthAttachedCarrier.semScheme C.scheme P Q e hvC hvP hC hP X T hsmall
-local notation "F" => GrowthAttachedCarrier.privateFace C.scheme P Q e hvC hvP hC hP X T hsmall
-local notation "G" => GrowthAttachedCarrier.donorFace C.scheme P Q e hvC hvP hC hP X T hsmall
+local notation "E" => GrowthAttachedCarrier.semScheme T hsmall
+local notation "F" => GrowthAttachedCarrier.privateFace T hsmall
+local notation "G" => GrowthAttachedCarrier.donorFace T hsmall
 
 theorem extendsDomain : ExtendsDomain C E :=
-  ⟨GrowthAttachedCarrier.private_visible C.scheme P Q e hvC hvP hC hP X T hsmall,
+  ⟨GrowthAttachedCarrier.private_visible T hsmall,
     GrowthAttachedCarrier.restrict_private C.scheme P Q e hvC hvP hC hP X T hsmall⟩
 
-theorem private_cellOf (d : Cell C.scheme.scheme) :
+theorem private_cellOf d :
     (extendsDomain C P Q e hvC hvP hC hP X T hsmall).cellOf d = (F).map d :=
   GrowthAttachedCarrier.private_occurrence C.scheme P Q e hvC hvP hC hP X T hsmall d
 
 variable (L : W.ActualLabelling) {u : Fin J ↪ M}
 
 /-- Restriction compatibility retains the evaluated private face literally. -/
-theorem private_label {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
+theorem private_label {y} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
     (hr : r.scheme = E) (hco : IsCoface C r) (heval : W.eval (snoc u y hy) = some r)
-    (d : Cell C.scheme.scheme) :
+    d :
     L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((F).map d)) = L.label u C d := by
   obtain ⟨Er, v, hb, hv⟩ := r
-  dsimp only at hr
+  dsimp  at hr
   subst Er
   rw [← private_cellOf C P Q e hvC hvP hC hP X T hsmall d]
-  exact L.mapCell heval (castSuccEmb_trans_snoc u y hy) hco d
+  exact L.mapCell heval (castSuccEmb_trans_snoc hy) hco d
+
+local notation "InClass₀" => InClass X.ZA (L.label u C)
+
+local notation "Correct₀" => X.req.Correct (X.req.sec (L.label u C))
 
 /-- Physical readback applies to any lawful evaluator in the required bottom class. -/
-theorem correct_of_coface (hclass : InClass X.ZA (L.label u C))
-    {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
+theorem correct_of_coface (hclass : InClass₀)
+    {y} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
     (hr : r.scheme = E) (hco : IsCoface C r) (heval : W.eval (snoc u y hy) = some r) :
-    X.req.Correct (X.req.sec (L.label u C))
-      (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := by
-  exact GrowthCappedReadback.full_correct
+    Correct₀
+      (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := GrowthCappedReadback.full_correct
     (GrowthAttachedCarrier.boundary C.scheme P Q e hvC hvP hC hP) X T
     (GrowthAttachedCarrier.height C.scheme P X hsmall)
     (GrowthAttachedCarrier.donor_proper C.scheme P e X hsmall)
@@ -78,22 +77,19 @@ theorem correct_of_coface (hclass : InClass X.ZA (L.label u C))
 
 /-- Realization is a clause of the original model, not a law of the evaluator. -/
 theorem exists_correct_coface (hM : W.IsModel) (hu : W.eval u = some C)
-    (hclass : InClass X.ZA (L.label u C)) :
+    (hclass : InClass₀) :
     ∃ (y : M) (hy : y ∉ Set.range u) (r : S α.1 (J + 1)) (hr : r.scheme = E),
       IsCoface C r ∧ W.eval (snoc u y hy) = some r ∧
-      X.req.Correct (X.req.sec (L.label u C))
+      Correct₀
         (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := by
   obtain ⟨y, hy, r, hr, hco, hev⟩ := hM.genSat u C hu E
     (extendsDomain C P Q e hvC hvP hC hP X T hsmall)
   exact ⟨y, hy, r, hr, hco, hev,
     correct_of_coface C P Q e hvC hvP hC hP X T hsmall L hclass hr hco hev⟩
 
-theorem donor_restriction {r : S α.1 (J + 1)} (hr : r.scheme = E) :
-    ∃ s : S α.1 (n + 1), ∃ hs : typeMap (onePointProj e) r = some s,
-      ∃ he : s.scheme = P, ∀ d,
-        mapCell hs (SemScheme.castCell he.symm d) = SemScheme.castCell hr.symm ((G).map d) :=
+def donor_restriction {r : S α.1 (J + 1)} (hr : r.scheme = E) :=
   exists_restriction_with_map (onePointProj e)
-    (GrowthAttachedCarrier.donor_visible C.scheme P Q e hvC hvP hC hP X T hsmall)
+    (GrowthAttachedCarrier.donor_visible T hsmall)
     (GrowthAttachedCarrier.restrict_donor C.scheme P Q e hvC hvP hC hP X T hsmall)
     (G).map (GrowthAttachedCarrier.donor_occurrence C.scheme P Q e hvC hvP hC hP X T hsmall) hr
 
@@ -101,11 +97,11 @@ include Q hvC hvP hC hP T hsmall in
 /-- The same fresh point realizes the donor; its evaluated labels satisfy the
 request relation. This is not realization of a preselected labelling. -/
 theorem exists_correct_donor (hM : W.IsModel) (hu : W.eval u = some C)
-    (hclass : InClass X.ZA (L.label u C)) :
+    (hclass : InClass₀) :
     ∃ (y : M) (_hy : y ∉ Set.range u) (hyRoot : y ∉ Set.range (e.trans u))
       (s : S α.1 (n + 1)), W.eval (snoc (e.trans u) y hyRoot) = some s ∧
       ∃ hs : s.scheme = P,
-        X.req.Correct (X.req.sec (L.label u C))
+        Correct₀
           (fun d => L.label (snoc (e.trans u) y hyRoot) s (SemScheme.castCell hs.symm d)) := by
   obtain ⟨y, hy, r, hr, _, hev, hc⟩ :=
     exists_correct_coface C P Q e hvC hvP hC hP X T hsmall L hM hu hclass
@@ -119,5 +115,4 @@ theorem exists_correct_donor (hM : W.IsModel) (hu : W.eval u = some C)
   refine ⟨y, hy, hyRoot, s, heval, he, ?_⟩
   simpa only [hval] using hc
 
-end
-end VaughtConjecture.Knight.GrowthCarrierEvaluation
+

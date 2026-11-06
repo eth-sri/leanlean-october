@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CoupledBountifulReduction
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CoupledBountifulReduction
 
 /-! # The grade-one scope-changing case of the coupled semantics' bountifulness
 
@@ -48,43 +49,21 @@ lists as remaining — that every actual respecting labelling has the triple for
 identification of the named cells with the scheme's cells — are the theorems above.
 
 Not done: grades two and three of `ProperToFull₃Low`.  Construction-private (not root-exported). -/
-@[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
-open AmalgamationPlan Transform Value ExtOrd
-open CellScheme.restrictFace (toCell belowMap pushGraded)
-
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
 
 /-! ## Cell uniqueness at grades at most two -/
 
-section Unique
-
-end Unique
 
 /-! ## Rows and labellings at grade one -/
 
-section One
-
-end One
 
 /-! ## Self-visibility of minima and maxima -/
 
-theorem selfVis_max {K : ℕ} {a b : ExtOrd} (ha : SelfVis K a) (hb : SelfVis K b) :
-    SelfVis K (max a b) := by
-  change extVisibilityReplace (max a b) K K = max a b
-  rw [extVisibilityReplace_max a b le_rfl]
-  change extVisibilityReplace a K K = a at ha
-  change extVisibilityReplace b K K = b at hb
-  rw [ha, hb]
+theorem selfVis_max {K} {a b} (ha : SelfVis K a) (hb : SelfVis K b) :
+    SelfVis K (max a b) := by grind
 
 /-! ## The grade-one retuning -/
 
-section Retune
 
-end Retune
-
-end VaughtConjecture.Knight

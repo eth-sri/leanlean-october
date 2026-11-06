@@ -1,13 +1,16 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.Data.Fin.SuccPred
-public import VaughtConjecture.Knight.ModelAssembly
-public import VaughtConjecture.Knight.OnePointSuccessor
+import Mathlib.Tactic
+
+import Mathlib.Data.Fin.SuccPred
+import VaughtConjecture.Knight.Coface
+import VaughtConjecture.Knight.Model
+import VaughtConjecture.Knight.OnePointSuccessor
 
 /-! # Coatom amalgamation: the faithful receiver for Cor. 4.3.22
 
@@ -74,13 +77,10 @@ by the amalgamation package and none of which is assumed or derived here.  The c
 recursion from the package to `CofinalHighStageModels` is a separate tranche.
 Construction-private, not root-exported. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open StageType AmalgamationPlan.Plan
 
-variable {α : Ordinal.{0}} {n : ℕ}
+variable {α : Ordinal₀} {n : ℕ}
 
 /-! ### Coatom pairs -/
 
@@ -117,28 +117,14 @@ def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
     simp only [Function.Embedding.trans_apply, Fin.succAboveEmb_apply]
     exact (Fin.succAbove_succAbove_succAbove_predAbove a b' k).symm
   ne := by
-    intro h
-    have hb : a.succAbove b' ∈ Finset.univ.image (Fin.succAboveEmb a) :=
-      Finset.mem_image_of_mem _ (Finset.mem_univ b')
-    rw [h] at hb
-    obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hb
-    exact Fin.succAbove_ne _ k hk
+    simp_all
 
-@[simp] theorem ofPoints_f₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₁ = Fin.succAboveEmb a := rfl
-
-@[simp] theorem ofPoints_f₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₂ = Fin.succAboveEmb (a.succAbove b') := rfl
-
-@[simp] theorem ofPoints_g₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').g₁ = Fin.succAboveEmb b' := rfl
-
-@[simp] theorem ofPoints_g₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
+@[simp] theorem ofPoints_g₂ a (b' : Fin (n + 1)) :
     (ofPoints a b').g₂ = Fin.succAboveEmb (b'.predAbove a) := rfl
 
 /-- **Compatibility** on the common lower face: both inputs restrict, along their lower-face
 embeddings, to one and the same type (`(pa)_b = (pb)_a`). -/
-def Compatible (C : CoatomPair n) (pa pb : S α (n + 1)) : Prop :=
+def Compatible (C : CoatomPair n) pa pb :=
   ∃ r : S α n, typeMap C.g₁ pa = some r ∧ typeMap C.g₂ pb = some r
 
 /-- `q` is an **amalgam** of `pa` and `pb` over the coatom pair: both are literal faces of
@@ -154,25 +140,22 @@ end CoatomPair
 /-- A stage type on `n` points **has a maximal full cell** (Cor. 4.3.22's `Ξ ∈ D'^{A,|A|}`
 with `q(Ξ) = max ran q`): a cell of grade `n` — hence of full scope,
 `CellScheme.scope_eq_univ_of_grade_eq` — whose label dominates every label. -/
-def StageType.HasMaximalFullCell (q : S α n) : Prop :=
-  ∃ Ξ : Cell q.scheme.scheme, q.scheme.scheme.grade Ξ = n ∧ ∀ d, q.label d ≤ q.label Ξ
+def StageType.HasMaximalFullCell (q : S α n) :=
+  ∃ Ξ , q.scheme.scheme.grade Ξ = n ∧ ∀ d, q.label d ≤ q.label Ξ
 
 /-- **Maximal coatom amalgamation supply** (Knight, Cor. 4.3.22, verbatim on `S α`): at every
 `n`, every coatom pair and every compatible pair of `(n+1)`-types has an amalgam in `S α (n+2)`
 with a maximal full cell.  This is the receiver for the §4.3 completion; it is consumed below
 and produced nowhere in this repository. -/
-def MaximalCoatomAmalgamationSupply (α : Ordinal.{0}) : Prop :=
-  ∀ (n : ℕ) (C : CoatomPair n) (pa pb : S α (n + 1)), C.Compatible pa pb →
+def MaximalCoatomAmalgamationSupply α :=
+  ∀ n (C : CoatomPair n) (pa pb : S α (n + 1)), C.Compatible pa pb →
     ∃ q : S α (n + 2), C.IsAmalgam pa pb q ∧ q.HasMaximalFullCell
 
 /-! ### Faces of `Fin`: the pivot coatom and the one-point face -/
 
 /-- The range of `Fin.succAboveEmb p` is the coatom omitting `p`. -/
 theorem image_succAboveEmb (p : Fin (n + 1)) :
-    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by
-  apply Finset.coe_injective
-  rw [Finset.coe_image, Finset.coe_univ, Set.image_univ, Finset.coe_erase, Finset.coe_univ,
-    Fin.coe_succAboveEmb, Fin.range_succAbove, Set.compl_eq_univ_sdiff]
+    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by aesop
 
 /-- Every plan on `Fin (n+1)` has a visible coatom: for `n = 0` the empty face, otherwise a
 pivot of the step decomposition (`IsPlan.pivot_pair`). -/
@@ -188,12 +171,12 @@ theorem exists_erase_mem_plan (C : CellScheme (ι := Fin (n + 1)) Finset.univ) :
 def pointEmb (a : Fin n) : Fin 1 ↪ Fin n :=
   ⟨fun _ => a, fun i j _ => Subsingleton.elim i j⟩
 
-theorem pointEmb_fin_one (a : Fin 1) : pointEmb a = Function.Embedding.refl (Fin 1) :=
+theorem pointEmb_fin_one a : pointEmb a = Function.Embedding.refl (Fin 1) :=
   Function.Embedding.ext fun _ => Subsingleton.elim _ _
 
 /-- The one-point face at `a` factors through the second coatom of the canonical pair at
 `(a, b')` (`Fin.succAbove_succAbove_predAbove`). -/
-theorem pointEmb_eq_trans (a : Fin (n + 2)) (b' : Fin (n + 1)) :
+theorem pointEmb_eq_trans a (b' : Fin (n + 1)) :
     pointEmb a = (pointEmb (b'.predAbove a)).trans (Fin.succAboveEmb (a.succAbove b')) :=
   Function.Embedding.ext fun _ => (Fin.succAbove_succAbove_predAbove a b').symm
 
@@ -232,7 +215,7 @@ theorem exists_amalgam_point (H : MaximalCoatomAmalgamationSupply α) :
         exact congrArg some (Subsingleton.elim _ _)⟩
     have hface₂ : typeMap (Fin.succAboveEmb (a.succAbove b')) q = some r := hq.face₂
     refine ⟨q, hq.face₁, ?_, hmax⟩
-    rw [pointEmb_eq_trans a b', ← typeMap_trans _ _ q r hface₂, pointEmb_fin_one,
+    rw [pointEmb_eq_trans a b', ← typeMap_trans hface₂, pointEmb_fin_one,
       typeMap_refl]
   | succ n ih =>
     intro a p r
@@ -244,7 +227,7 @@ theorem exists_amalgam_point (H : MaximalCoatomAmalgamationSupply α) :
       ⟨p.restrictFace _ hvis, typeMap_eq_some _ p hvis, hq'₁⟩
     have hface₂ : typeMap (Fin.succAboveEmb (a.succAbove b')) q = some q' := hq.face₂
     refine ⟨q, hq.face₁, ?_, hmax⟩
-    rw [pointEmb_eq_trans a b', ← typeMap_trans _ _ q q' hface₂, hq'₂]
+    rw [pointEmb_eq_trans a b', ← typeMap_trans hface₂, hq'₂]
 
 /-! ### The uniformity and high-grade dominance candidates (Lemmas 4.4.2/4.4.3) -/
 
@@ -254,29 +237,19 @@ theorem isCoface_zero (p : S α 0) (r : S α 1) : IsCoface p r := by
   exact congrArg some (Subsingleton.elim _ _)
 
 /-- A one-point type's cells have grade `1`. -/
-theorem grade_eq_one (r : S α 1) (Sig : Cell r.scheme.scheme) :
-    r.scheme.scheme.grade Sig = 1 := by
-  have h₁ := r.scheme.scheme.grade_pos Sig
-  have h₂ := r.scheme.scheme.grade_le_card_scope Sig
-  have h₃ : (r.scheme.scheme.scope Sig).card ≤ 1 :=
-    (Finset.card_le_univ _).trans (by simp)
-  omega
+theorem grade_eq_one (r : S α 1) Sig :
+    r.scheme.scheme.grade Sig = 1 := by exact?
 
 /-- A label of the `{a}`-face of `q` is a label of `q`: the amalgam's cells include the cells
 of its one-point face, with the same labels (`restrictFace_label`). -/
 theorem exists_label_eq_of_typeMap_point {q : S α (n + 2)} {a : Fin (n + 2)} {r : S α 1}
-    (h : typeMap (pointEmb a) q = some r) (Sig : Cell r.scheme.scheme) :
-    ∃ d : Cell q.scheme.scheme, q.label d = r.label Sig := by
-  have hvis : Finset.univ.image (pointEmb a) ∈ q.scheme.scheme.plan :=
-    (typeMap_isSome_iff _ q).mp (by rw [h]; rfl)
-  rw [typeMap_eq_some _ q hvis, Option.some.injEq] at h
-  subst h
-  exact ⟨_, rfl⟩
+    (h : typeMap (pointEmb a) q = some r) Sig :
+    ∃ d : Cell q.scheme.scheme, q.label d = r.label Sig := by simp_all [VaughtConjecture.Knight.typeMap] <;> aesop
 
 /-- **Uniformity candidate** (Lemma 4.4.2's amalgamation step): from the supply and a one-point
 type with a label in `[γ, γ + ω)`, every `p : S α n` has a coface in `UniformityFamily γ`. -/
 theorem exists_uniformity_candidate (H : MaximalCoatomAmalgamationSupply α) (p : S α n)
-    {γ : Ordinal.{0}} (r : S α 1) (Sig : Cell r.scheme.scheme)
+    {γ : Ordinal₀} (r : S α 1) (Sig : Cell r.scheme.scheme)
     (hlo : ExtOrd.ofOrd γ ≤ r.label Sig) (hhi : r.label Sig < ExtOrd.ofOrd (γ + Ordinal.omega0)) :
     ∃ q ∈ UniformityFamily (α := α) γ, IsCoface p q := by
   cases n with
@@ -292,7 +265,7 @@ theorem exists_uniformity_candidate (H : MaximalCoatomAmalgamationSupply α) (p 
 one-point type with a label above `γ`, every `p : S α n` has a coface in
 `HighGradeDominanceFamily γ` — the maximal full cell of the amalgam dominates that label. -/
 theorem exists_highGradeDominance_candidate (H : MaximalCoatomAmalgamationSupply α)
-    (p : S α n) {γ : Ordinal.{0}} (r : S α 1) (Sig : Cell r.scheme.scheme)
+    (p : S α n) {γ : Ordinal₀} (r : S α 1) (Sig : Cell r.scheme.scheme)
     (hγ : ExtOrd.ofOrd γ < r.label Sig) :
     ∃ q ∈ HighGradeDominanceFamily (α := α) γ, IsCoface p q := by
   cases n with
@@ -304,4 +277,3 @@ theorem exists_highGradeDominance_candidate (H : MaximalCoatomAmalgamationSupply
     rw [IsCoface, castSuccEmb_eq_succAboveEmb_last]
     exact hq
 
-end VaughtConjecture.Knight

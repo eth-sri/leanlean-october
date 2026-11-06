@@ -1,13 +1,15 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CofinalEnumeration
-public import VaughtConjecture.Knight.LimitOfChain
-public import VaughtConjecture.Knight.PartialExpansion
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CofinalEnumeration
+import VaughtConjecture.Knight.LimitOfChain
+import VaughtConjecture.Knight.PartialExpansion
 
 /-! # Countable-limit expansion existence
 
@@ -20,8 +22,6 @@ the stop rank replaced by an arbitrary countable limit and the lower witnesses s
 hypothesis; `CanonicalStop` and the expansion-domain continuity theorem are its clients.
 No stopping rank, termination, or terminal classification is used. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.KnightRealization
 
 open TypeTower Cardinal
@@ -31,18 +31,18 @@ universe w
 variable {M : Type w}
 
 /-- **Expansion to a countable limit block** from expansions to every lower block. -/
-theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuccLimit l)
-    (hl : l < (aleph 1).ord) {R : KnightRealization (blockStage 0) M}
+theorem exists_model_at_limit_of_forall_lt {l} (hlim : Order.IsSuccLimit l)
+    (hl : l < (aleph 1).ord) {R}
     (h : ∀ ξ, ξ < l → ∃ W : KnightRealization (blockStage ξ) M,
       W.IsModel ∧ W.reduct (blockStage_zero_le ξ) = R) :
     ∃ W : KnightRealization (blockStage l) M,
-      W.IsModel ∧ W.reduct (blockStage_zero_le l) = R := by
-  have h0 : (0 : Ordinal.{0}) < l := hlim.pos
+      W.IsModel ∧ W.reduct (blockStage_zero_le l) = R := by 
+  have h0  := hlim.pos
   obtain ⟨g, hg1, hg2⟩ := exists_nat_enum_lt hl h0
-  have hcs_lt : ∀ n, cofSeq 0 g n < l := cofSeq_lt h0 hg1
-  have hmono : Monotone (cofSeq 0 g) := cofSeq_monotone 0 g
+  have hcs_lt  := cofSeq_lt h0 hg1
+  have hmono  := cofSeq_monotone 0 g
   let bases (n : ℕ) : PartialExpansion.Domain
-      (zero_le : (0 : Ordinal.{0}) ≤ cofSeq 0 g n) M :=
+      (zero_le) M :=
     ⟨R, h _ (hcs_lt n)⟩
   let W (n : ℕ) := PartialExpansion.value _ (bases n)
   have hWm (n : ℕ) : (W n).IsModel := PartialExpansion.isModel _ (bases n)
@@ -53,19 +53,19 @@ theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuc
   have hchain : IsReductChain hc W := by
     intro i j h
     exact PartialExpansion.coherent zero_le (hmono h) (bases j) (bases i) rfl
-  have hδ : ∀ i, blockStage (cofSeq 0 g i) ≤ blockStage l := fun i =>
+  have hδ  := fun i =>
     blockStage_mono (hcs_lt i).le
-  have hcof : ∀ γ : Ordinal.{0}, γ < (blockStage l).1 →
+  have hcof : ∀ γ , γ < (blockStage l).1 →
       ∃ i, γ < (blockStage (cofSeq 0 g i)).1 := fun γ hγ =>
     exists_lt_blockStage_of_cofinal hlim (fun ξ hξ => lt_cofSeq hlim hg2 hξ) hγ
-  refine ⟨limitOfChain hc W hchain (blockStage l) hδ,
+  let core1 := limitOfChain hc W hchain (blockStage l) hδ
+  refine ⟨core1,
     IsModel.limitOfChain hc hchain hWm (blockStage l) hδ hcof, ?_⟩
-  calc (limitOfChain hc W hchain (blockStage l) hδ).reduct (blockStage_zero_le l)
-      = ((limitOfChain hc W hchain (blockStage l) hδ).reduct
+  calc core1.reduct (blockStage_zero_le l)
+      = (core1.reduct
           (hδ 0)).reduct (blockStage_zero_le (cofSeq 0 g 0)) := by
         rw [Realization.reduct_reduct]
     _ = (W 0).reduct (blockStage_zero_le (cofSeq 0 g 0)) := by
-        rw [reduct_limitOfChain]
+        simp_rw [core1, reduct_limitOfChain]
     _ = R := hWr 0
 
-end VaughtConjecture.Knight.KnightRealization

@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import Mathlib.ModelTheory.Syntax
+import Mathlib.ModelTheory.Syntax
 
 /-!
 # Infinitary first-order formulas
@@ -38,9 +37,7 @@ quantifying over a fresh index type at every node. Consequences:
   carrier-generic finitary embedding `BoundedFormula.toInf`.
 -/
 
-@[expose] public section
-
-universe u v u' uι w
+universe u v u' uι 
 
 namespace FirstOrder
 
@@ -70,7 +67,7 @@ inductive BoundedFormulaInf (ι : Type uι) (α : Type u') : ℕ → Type (max u
 
 /-- A bounded formula of `L_{ω₁ω}`: the definitional `ι := ℕ` specialization of
 `BoundedFormulaInf`. Its universe is exactly that of the finitary `BoundedFormula`. -/
-abbrev BoundedFormulaω (α : Type u') (n : ℕ) := L.BoundedFormulaInf ℕ α n
+abbrev BoundedFormulaω (α : Type u') n := L.BoundedFormulaInf ℕ α n
 
 /-- An `L_{∞ω}` formula: a bounded formula with no free bound variables. -/
 abbrev FormulaInf (ι : Type uι) (α : Type u') := L.BoundedFormulaInf ι α 0
@@ -96,7 +93,7 @@ namespace BoundedFormulaInf
 
 /-- The negation of an infinitary formula. -/
 @[match_pattern]
-protected def not (φ : L.BoundedFormulaInf ι α n) : L.BoundedFormulaInf ι α n :=
+protected def not (φ : L.BoundedFormulaInf ι α n) :=
   φ.imp .falsum
 
 /-- The true formula. -/
@@ -109,12 +106,9 @@ instance : Bot (L.BoundedFormulaInf ι α n) :=
 instance : Top (L.BoundedFormulaInf ι α n) :=
   ⟨BoundedFormulaInf.verum⟩
 
-instance : Inhabited (L.BoundedFormulaInf ι α n) :=
-  ⟨⊥⟩
-
 /-- Existential quantification over the last bound variable. -/
 @[match_pattern]
-protected def ex (φ : L.BoundedFormulaInf ι α (n + 1)) : L.BoundedFormulaInf ι α n :=
+protected def ex (φ : L.BoundedFormulaInf ι α (n + 1)) :=
   φ.not.all.not
 
 /-- Places universal quantifiers on all in-scope bound variables of an infinitary bounded
@@ -123,28 +117,6 @@ def alls : ∀ {n}, L.BoundedFormulaInf ι α n → L.FormulaInf ι α
   | 0, φ => φ
   | _ + 1, φ => φ.all.alls
 
-/-- Places existential quantifiers on all in-scope bound variables of an infinitary bounded
-formula (mirrors the finitary `BoundedFormula.exs`). -/
-def exs : ∀ {n}, L.BoundedFormulaInf ι α n → L.FormulaInf ι α
-  | 0, φ => φ
-  | _ + 1, φ => φ.ex.exs
 
-end BoundedFormulaInf
 
-namespace BoundedFormula
 
-/-- The embedding of finitary bounded formulas into the infinitary syntax. Since finitary
-formulas have no infinitary nodes, the target carrier is arbitrary: there is one embedding for
-all carriers and universes, rather than an embedding into `L_{ω₁ω}` followed by a lift. -/
-def toInf : ∀ {n}, L.BoundedFormula α n → L.BoundedFormulaInf ι α n
-  | _, .falsum => .falsum
-  | _, .equal t₁ t₂ => .equal t₁ t₂
-  | _, .rel R ts => .rel R ts
-  | _, .imp φ ψ => (toInf φ).imp (toInf ψ)
-  | _, .all φ => (toInf φ).all
-
-end BoundedFormula
-
-end Language
-
-end FirstOrder

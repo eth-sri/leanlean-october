@@ -3,11 +3,13 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.OrdinaryReceivingProbe
-public import VaughtConjecture.Knight.WholeDonorAttachedPredecessor
-public import VaughtConjecture.Knight.CappedDonorFace
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.OrdinaryReceivingProbe
+import VaughtConjecture.Knight.WholeDonorAttachment
+import VaughtConjecture.Knight.OrdinaryPredecessorSupply
+import VaughtConjecture.Knight.CappedDonorFace
 
 /-! # The legal ordinary receiver from literal common-face reference data
 
@@ -18,11 +20,8 @@ model consumer. Its remaining inputs are the actual two schemes, their literal
 root restrictions and the acquired reference data. Model realization is separate.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryAttachedReceiving
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
+open     CappedDonor CappedDonor.Ref
 open CellScheme.restrictFace SemSchemeBoundaryInput
 noncomputable section
 
@@ -38,16 +37,16 @@ private theorem common_alignment {m N : ℕ} (C : SemScheme N) (P : SemScheme (m
     (hvC : Finset.univ.image e ∈ C.scheme.plan)
     (hvP : Finset.univ.image Fin.castSuccEmb ∈ P.scheme.plan)
     (hC : C.restrictFace e hvC = Q) (hP : P.restrictFace Fin.castSuccEmb hvP = Q)
-    {AP : Finset (Fin (m + 1))} {AC : Finset (Fin N)} {k : ℕ}
+    {AP : Finset (Fin (m + 1))} {AC : FiniteScope N} {k : ℕ}
     (φ : P.scheme.below (AP, k) ≃ C.scheme.below (AC, k))
     (hAP : AP = Finset.univ.image Fin.castSuccEmb) (hAC : AC = Finset.univ.image e)
     (hk : k = m) (hφ : HEq φ (commonFace Fin.castSuccEmb hvP hP e hvC hC m))
     (i : Cell Q.scheme) :
-    ∃ d : P.scheme.below (AP, k),
+    ∃ d ,
       d.1 = faceMap P Q Fin.castSuccEmb hvP hP i ∧
       (φ d).1 = faceMap C Q e hvC hC i := by
   subst AP AC k
-  have he : φ = commonFace Fin.castSuccEmb hvP hP e hvC hC m := eq_of_heq hφ
+  have he  := eq_of_heq hφ
   subst φ
   let q : Q.scheme.below (Finset.univ, m) := ⟨i, Finset.subset_univ _, gradeC_le i⟩
   let d := bP Fin.castSuccEmb hvP m (castBelow hP.symm (Finset.univ, m) q)
@@ -76,8 +75,8 @@ abbrev boundary := WholeDonorAttachment.input e C P Q hvC hvP hC hP
 
 include hA hA' hK hface in
 /-- The source-face equation is derived from the literal reference identification. -/
-theorem alignment (i : Cell Q.scheme) :
-    ∃ d : P.scheme.below (R.A, R.KA),
+theorem alignment i :
+    ∃ d ,
       d.1 = (boundary C P Q e hvC hvP hC hP).shared.g i ∧
       (R.face d).1 = (boundary C P Q e hvC hvP hC hP).shared.f i :=
   common_alignment C P Q e hvC hvP hC hP R.face hA hA' hK hface i
@@ -85,78 +84,88 @@ theorem alignment (i : Cell Q.scheme) :
 local notation "W" => boundary C P Q e hvC hvP hC hP
 local notation "hf" => alignment C P Q e hvC hvP hC hP R hA hA' hK hface
 
+local notation "union₀" => WholeDonorAttachment.union e
+
 /-- The complete legal scheme is constructed from the literal reference context. -/
-abbrev semScheme : SemScheme (n + 5) :=
-  OrdinaryReceivingAssembly.semScheme W R (WholeDonorAttachment.union e) hf
+abbrev semScheme :=
+  OrdinaryReceivingAssembly.semScheme W R (union₀) hf
 
-abbrev privateFace := OrdinaryReceivingProbe.privateFace W R (WholeDonorAttachment.union e) hf
-abbrev requestFace := OrdinaryReceivingProbe.requestFace W R (WholeDonorAttachment.union e) hf
-abbrev gate := OrdinaryReceivingProbe.gate W R (WholeDonorAttachment.union e) hf
+abbrev privateFace := OrdinaryReceivingProbe.privateFace W R (union₀) hf
+abbrev requestFace := OrdinaryReceivingProbe.requestFace W R (union₀) hf
+abbrev gate := OrdinaryReceivingProbe.gate W R (union₀) hf
 
+local notation "semScheme₀" => semScheme C P Q e hvC hvP hC hP R hA hA' hK hface
+
+variable {C P Q e hvC hvP hC hP R} in
 theorem private_visible : Finset.univ.image Fin.castSuccEmb ∈
-    (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme.plan :=
-  OrdinaryReceivingProbe.private_visible W R (WholeDonorAttachment.union e) hf
+    (semScheme₀).scheme.plan :=
+  OrdinaryReceivingProbe.private_visible W R (union₀) hf
 
+variable {C P Q e hvC hvP hC hP R} in
 theorem request_visible : Finset.univ.image (onePointProj e) ∈
-    (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme.plan :=
-  OrdinaryReceivingProbe.request_visible W R (WholeDonorAttachment.union e) hf
+    (semScheme₀).scheme.plan :=
+  OrdinaryReceivingProbe.request_visible W R (union₀) hf
 
 theorem private_restrict :
-    (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).restrictFace Fin.castSuccEmb
-      (private_visible C P Q e hvC hvP hC hP R hA hA' hK hface) = C :=
-  OrdinaryReceivingProbe.private_restrict W R (WholeDonorAttachment.union e) hf
+    (semScheme₀).restrictFace Fin.castSuccEmb
+      (private_visible hA hA' hK hface) = C :=
+  OrdinaryReceivingProbe.private_restrict W R (union₀) hf
 
 theorem request_restrict :
-    (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).restrictFace (onePointProj e)
-      (request_visible C P Q e hvC hvP hC hP R hA hA' hK hface) = P :=
-  OrdinaryReceivingProbe.request_restrict W R (WholeDonorAttachment.union e) hf
+    (semScheme₀).restrictFace (onePointProj e)
+      (request_visible hA hA' hK hface) = P :=
+  OrdinaryReceivingProbe.request_restrict W R (union₀) hf
+
+local notation "privateFace₀" => privateFace C P Q e hvC hvP hC hP R hA hA' hK hface
 
 /-- Literal restriction transports use exactly the installed private occurrences. -/
-theorem private_toCell (d : Cell C.scheme) :
-    toCell (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme Fin.castSuccEmb
-      (private_visible C P Q e hvC hvP hC hP R hA hA' hK hface)
+theorem private_toCell d :
+    toCell (semScheme₀).scheme Fin.castSuccEmb
+      (private_visible hA hA' hK hface)
       (SemScheme.castCell (private_restrict C P Q e hvC hvP hC hP R hA hA' hK hface).symm d) =
-        (privateFace C P Q e hvC hvP hC hP R hA hA' hK hface).map d :=
-  OrdinaryReceivingProbe.private_toCell W R (WholeDonorAttachment.union e) hf d
+        (privateFace₀).map d :=
+  OrdinaryReceivingProbe.private_toCell W R (union₀) hf d
+
+local notation "requestFace₀" => requestFace C P Q e hvC hvP hC hP R hA hA' hK hface
 
 /-- The donor map also agrees literally, without an initial-segment assumption. -/
-theorem request_toCell (d : Cell P.scheme) :
-    toCell (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme (onePointProj e)
-      (request_visible C P Q e hvC hvP hC hP R hA hA' hK hface)
+theorem request_toCell d :
+    toCell (semScheme₀).scheme (onePointProj e)
+      (request_visible hA hA' hK hface)
       (SemScheme.castCell (request_restrict C P Q e hvC hvP hC hP R hA hA' hK hface).symm d) =
-        (requestFace C P Q e hvC hvP hC hP R hA hA' hK hface).map d :=
-  OrdinaryReceivingProbe.request_toCell W R (WholeDonorAttachment.union e) hf d
+        (requestFace₀).map d :=
+  OrdinaryReceivingProbe.request_toCell W R (union₀) hf d
 
-theorem gate_grade (a : OrdinaryFinalCatalogue.Member R) :
-    (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme.grade
-      (gate C P Q e hvC hvP hC hP R hA hA' hK hface a) = n + 4 :=
-  OrdinaryReceivingProbe.gate_grade W R (WholeDonorAttachment.union e) hf a
+local notation "gate₀" => gate C P Q e hvC hvP hC hP R hA hA' hK hface
+
+theorem gate_grade a :
+    (semScheme₀).scheme.grade
+      (gate₀ a) = n + 4 :=
+  OrdinaryReceivingProbe.gate_grade W R (union₀) hf a
 
 /-- A raw lawful bottom-pattern witness with literal inputs and a named top gate. -/
 theorem exists_raw_display :
-    ∃ (a : OrdinaryFinalCatalogue.Member R)
-      (r : Cell (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme → ExtOrd),
-      RespectsSemantics (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).rows r ∧
-      (∀ d, r ((requestFace C P Q e hvC hvP hC hP R hA hA' hK hface).map d) = R.p d) ∧
-      (∀ d, r ((privateFace C P Q e hvC hvP hC hP R hA hA' hK hface).map d) = R.vact d) ∧
-      r (gate C P Q e hvC hvP hC hP R hA hA' hK hface a) = ⊤ := by
+    ∃ a
+      r,
+      RespectsSemantics (semScheme₀).rows r ∧
+      (∀ d, r ((requestFace₀).map d) = R.p d) ∧
+      (∀ d, r ((privateFace₀).map d) = R.vact d) ∧
+      r (gate₀ a) = ⊤ := by
   obtain ⟨a, r, hr, hp, hc, hg, -⟩ := OrdinaryReceivingProbe.exists_raw_display W R
-    (WholeDonorAttachment.union e) hf
+    (union₀) hf
   exact ⟨a, r, hr, hp, hc, hg⟩
 
 /-- The model consumer only needs actual private retention and one positive gate. -/
 theorem readback_below
-    {q : Cell (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).scheme → ExtOrd}
-    (hq : RespectsSemantics (semScheme C P Q e hvC hvP hC hP R hA hA' hK hface).rows q)
+    {q}
+    (hq : RespectsSemantics (semScheme₀).rows q)
     (hretain : ∀ d,
-      q ((privateFace C P Q e hvC hvP hC hP R hA hA' hK hface).map d) = R.vact d)
-    (a : OrdinaryFinalCatalogue.Member R)
-    (hg : q (gate C P Q e hvC hvP hC hP R hA hA' hK hface a) ≠ ⊥)
-    {δ : ExtOrd} (hδ : δ ≤ R.cut R.vactL) (d : Cell P.scheme) :
-    min (q ((requestFace C P Q e hvC hvP hC hP R hA hA' hK hface).map d)) δ =
+      q ((privateFace₀).map d) = R.vact d)
+    a
+    (hg : q (gate₀ a) ≠ ⊥)
+    {δ} (hδ : δ ≤ R.cut R.vactL) d :
+    min (q ((requestFace₀).map d)) δ =
       min (R.p d) δ :=
-  OrdinaryReceivingProbe.readback_below W R (WholeDonorAttachment.union e) hf
+  OrdinaryReceivingProbe.readback_below W R (union₀) hf
     hq hretain a hg hδ d
 
-end
-end VaughtConjecture.Knight.OrdinaryAttachedReceiving

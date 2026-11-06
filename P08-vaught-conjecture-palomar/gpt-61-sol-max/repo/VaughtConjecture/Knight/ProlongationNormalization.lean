@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Approximation.Prolongation
-public import VaughtConjecture.Knight.ModelMap
+import VaughtConjecture.Approximation.Prolongation
+import VaughtConjecture.Knight.ModelMap
 
 /-! # Same-carrier normalization of certified links (#166 follow-up)
 
@@ -22,8 +21,6 @@ construction (`Knight/EndogenousExtension.lean`) consumes normalization without 
 the intrinsic-rank lower-bound layer.  Reduct-closure of the class (`isModelClass_reduct`)
 stays in `Knight/Rank.lean` with the block machinery it serves. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open TypeTower
@@ -34,7 +31,7 @@ namespace KnightRealization
 
 /-- Knight's model axioms (Def. 3.2.1) as a **target class** for certified prolongation
 (`ProlongsToIn IsModelClass` is Knight-VC's `PaperExactModelExpandsTo`). -/
-abbrev IsModelClass : ∀ {δ : LimitStage} {N : Type w}, KnightRealization δ N → Prop :=
+abbrev IsModelClass : ∀ {δ} {N : Type w}, KnightRealization δ N → Prop :=
   fun R => R.IsModel
 
 /-- The model class is closed under push-forward along a bijection of carriers
@@ -50,12 +47,9 @@ the carrier of `R` itself** reduces **exactly** to `R`.  Immediate from `IsModel
 generic `prolongsToIn_iff_prolongsToOnIn`; this is what lets the #46 limit construction
 consume chains of literal reduct equations (`KnightRealization.IsReductChain`) with no loss
 against the up-to-isomorphism links. -/
-theorem prolongsToIn_isModelClass_iff_on {δ δ' : LimitStage} {N : Type w}
-    (R : KnightRealization δ N) (h : δ ≤ δ') :
-    R.ProlongsToIn IsModelClass h ↔ R.ProlongsToOnIn IsModelClass h :=
+def prolongsToIn_isModelClass_iff_on {δ δ' : LimitStage} {N : Type w}
+    (R : KnightRealization δ N) (h : δ ≤ δ') :=
   Realization.prolongsToIn_iff_prolongsToOnIn
     (fun e R' hR' => isModelClass_map e R' hR') R h
 
-end KnightRealization
 
-end VaughtConjecture.Knight

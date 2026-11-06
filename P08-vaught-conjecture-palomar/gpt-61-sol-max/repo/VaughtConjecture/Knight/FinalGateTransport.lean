@@ -1,14 +1,17 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FinalGateLayer
-public import VaughtConjecture.Knight.CoatomBoundaryExtension
-public import VaughtConjecture.Knight.ExactSemanticFace
-public import VaughtConjecture.Knight.SingleFaceTailRestoration
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FinalGateLayer
+import VaughtConjecture.Knight.CoatomBoundaryExtension
+import VaughtConjecture.Knight.ExactSemanticFace
+import VaughtConjecture.Knight.SingleFaceTailRestoration
 
 /-! # Exact predecessor lifting transport past the final gate layer
 
@@ -18,18 +21,17 @@ local sections and original-cap lifting, not just selected source vectors.
 This includes every proper-scope target and every target of grade below N.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
-open Transform Value ExtOrd CoatomBoundaryExtension
+open    CoatomBoundaryExtension
 noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
 variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
 
+local notation "GradedLe₀" => GradedLe (A, N)
+
 /-- All occurrences below a target that excludes the added index are old. -/
-def inheritedBelow (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, N) J) :
+def inheritedBelow J (hJ : ¬ GradedLe₀ J) :
     D.below J ≃ F.carrier.below J :=
   Equiv.ofBijective (fun d => ⟨F.old d.1, by rw [F.old_index]; exact d.2⟩) ⟨by
     intro d e he
@@ -38,11 +40,11 @@ def inheritedBelow (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, N) J) :
     have hn : F.carrier.cell d.1 ≠ (A, N) := fun he => hJ (he ▸ d.2)
     obtain ⟨e, he⟩ := SourceLayerCarrier.old_occurrence D (Node (Q := Q)) N
       F.positive F.height d.1 hn
-    have hd : GradedLe (D.cell e) J := by simpa only [he, F.old_index] using d.2
+    have hd  := by simpa only [he, F.old_index] using d.2
     exact ⟨⟨e, hd⟩, Subtype.ext he.symm⟩⟩
 
-theorem inheritedBelow_respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, N) J)
-    (p : F.carrier.below J → ExtOrd) :
+theorem inheritedBelow_respects_iff J (hJ : ¬ GradedLe₀ J)
+    p :
     RespectsSemanticsBelow F.rows J p ↔
       RespectsSemanticsBelow F.sem J (p ∘ F.inheritedBelow J hJ) := by
   have h := respects_iff_of_equiv (sem' := F.sem) (sem := F.rows)
@@ -50,8 +52,7 @@ theorem inheritedBelow_respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A,
     (fun d => (congrArg Prod.snd (F.old_index d.1)).symm)
     (fun d e => ?_) (fun c d hd => ?_) (p ∘ F.inheritedBelow J hJ)
   · have he : (p ∘ F.inheritedBelow J hJ) ∘ (F.inheritedBelow J hJ).symm = p := by
-      funext d
-      simp only [Function.comp_apply, Equiv.apply_symm_apply]
+      aesop
     rw [he] at h
     exact h.symm
   · change D.scope d.1 ⊆ D.scope e.1 ↔
@@ -62,9 +63,9 @@ theorem inheritedBelow_respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A,
 
 /-- Old lifting clauses transport on their actual target-local domains.
 No bountifulness of the extended output is assumed. -/
-theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
-    (hJ : ¬ GradedLe (A, N) J) (hlift : CappedLift F.sem h) : CappedLift F.rows h := by
-  let hI : ¬ GradedLe (A, N) I := fun he => hJ (he.trans h)
+theorem inherited_lift {I J} (h : GradedLe I J)
+    (hJ : ¬ GradedLe₀ J) (hlift : CappedLift F.sem h) : CappedLift F.rows h := by
+  let hI : ¬ GradedLe₀ I := fun he => hJ (he.trans h)
   let eI := F.inheritedBelow I hI
   let eJ := F.inheritedBelow J hJ
   have hm (d : D.below I) :
@@ -76,43 +77,42 @@ theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
   refine ⟨r ∘ eJ.symm, ?_, ?_, ?_⟩
   · apply (F.inheritedBelow_respects_iff J hJ _).mpr
     have he : (r ∘ eJ.symm) ∘ eJ = r := by
-      funext d
-      simp only [Function.comp_apply, Equiv.symm_apply_apply]
+      aesop
     exact he.symm ▸ hr
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcaps (eJ.symm d)
+  · simp_all
   · intro d
     have he : eJ.symm (CellScheme.below.mono h d) =
         CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
+      grind
     rw [Function.comp_apply, he, hread]
     exact congrArg p (eI.apply_symm_apply d)
 
 /-- The predecessor's lower-grade lift is the restoration clause on the
 installed carrier, even when old proper grade-N owners remain present. -/
-theorem lower_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 < N)
-    (hlift : CappedLift F.sem h) : CappedLift F.rows h :=
+def lower_lift {I J} (h : GradedLe I J) (hJ : J.2 < N)
+    (hlift : CappedLift F.sem h) :=
   F.inherited_lift h (fun he => not_le_of_gt hJ he.2) hlift
+
+local notation "RespectsSemanticsBelow₀" => RespectsSemanticsBelow F.rows (A, N)
 
 /-- Literal restoration above an owner cap on the installed rows. Only the
 predecessor's lower-grade lifting clause is consumed. -/
-theorem restore {S : Finset ι} (hS : S ⊆ A)
+theorem restore {S} (hS : S ⊆ A)
     (hlift : CappedLift F.sem
       (show GradedLe (S, N - 1) (A, N - 1) from ⟨hS, le_rfl⟩))
-    {p : F.carrier.below (S, N) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow F.rows (S, N) p)
-    {u : F.carrier.below (A, N) → ExtOrd}
-    (hu : RespectsSemanticsBelow F.rows (A, N) u)
-    {M : ExtOrd} (hM : SelfVis N M)
+    {u}
+    (hu : RespectsSemanticsBelow₀ u)
+    {M} (hM : SelfVis N M)
     (hread : ∀ e, u (CellScheme.below.mono
       (show GradedLe (S, N) (A, N) from ⟨hS, le_rfl⟩) e) = min (p e) M)
-    (hhigh : ∀ e : F.carrier.below (S, N), F.carrier.grade e.1 = N → p e ≤ M) :
-    ∃ r : F.carrier.below (A, N) → ExtOrd,
-      RespectsSemanticsBelow F.rows (A, N) r ∧
+    (hhigh : ∀ e , F.carrier.grade e.1 = N → p e ≤ M) :
+    ∃ r ,
+      RespectsSemanticsBelow₀ r ∧
       (∀ e, r (CellScheme.below.mono
         (show GradedLe (S, N) (A, N) from ⟨hS, le_rfl⟩) e) = p e) ∧
-      (∀ d, min (r d) M = min (u d) M) ∧
+      (CappedEq r u M) ∧
       ∀ d, N - 1 < F.carrier.grade d.1 → r d ≤ M := by
   obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt F.positive)
   exact SingleFaceTailRestoration.exists_restore F.rows hS
@@ -120,20 +120,20 @@ theorem restore {S : Finset ι} (hS : S ⊆ A)
       (Nat.lt_succ_self j) hlift) hp hu hM hread hhigh
 
 /-- The complementary inactive branch needs no catalogue repair. -/
-theorem lift_inactive {S : Finset ι} (hS : S ⊆ A)
+theorem lift_inactive {S} (hS : S ⊆ A)
     (hlift : CappedLift F.sem
       (show GradedLe (S, N - 1) (A, N - 1) from ⟨hS, le_rfl⟩))
-    {p : F.carrier.below (S, N) → ExtOrd}
+    {p}
     (hp : RespectsSemanticsBelow F.rows (S, N) p)
-    {q : F.carrier.below (A, N) → ExtOrd}
-    (hq : RespectsSemanticsBelow F.rows (A, N) q)
-    {γ : ExtOrd} (hγ : SelfVis N γ)
+    {q}
+    (hq : RespectsSemanticsBelow₀ q)
+    {γ} (hγ : SelfVis N γ)
     (hag : ∀ e, min (q (CellScheme.below.mono
       (show GradedLe (S, N) (A, N) from ⟨hS, le_rfl⟩) e)) γ = min (p e) γ)
-    (hhigh : ∀ e : F.carrier.below (S, N), F.carrier.grade e.1 = N → p e ≤ γ) :
-    ∃ r : F.carrier.below (A, N) → ExtOrd,
-      RespectsSemanticsBelow F.rows (A, N) r ∧
-      (∀ d, min (r d) γ = min (q d) γ) ∧
+    (hhigh : ∀ e , F.carrier.grade e.1 = N → p e ≤ γ) :
+    ∃ r ,
+      RespectsSemanticsBelow₀ r ∧
+      (CappedEq r q γ) ∧
       ∀ e, r (CellScheme.below.mono
         (show GradedLe (S, N) (A, N) from ⟨hS, le_rfl⟩) e) = p e := by
   obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt F.positive)
@@ -143,7 +143,7 @@ theorem lift_inactive {S : Finset ι} (hS : S ⊆ A)
 
 /-- A proper original semantic face stays occurrence-exact after the final
 installation, with its full lower domains and long rows unchanged. -/
-def inheritedFace {S : Finset ι} {D₀ : CellScheme S} {sem₀ : Semantics D₀}
+def inheritedFace {S} {D₀ : CellScheme S} {sem₀ : Semantics D₀}
     (hS : S ⊆ A) (hne : S ≠ A) (E : ExactSemanticFace sem₀ F.sem) :
     ExactSemanticFace sem₀ F.rows where
   map := ⟨F.old ∘ E.map, F.old_strictMono.injective.comp E.map.injective⟩
@@ -155,5 +155,3 @@ def inheritedFace {S : Finset ι} {D₀ : CellScheme S} {sem₀ : Semantics D₀
     exact ⟨e, (congrArg F.old he).trans hd.symm⟩
   row c d := (F.inherited_row (E.map c) (E.belowMap c d)).trans (E.row c d)
 
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

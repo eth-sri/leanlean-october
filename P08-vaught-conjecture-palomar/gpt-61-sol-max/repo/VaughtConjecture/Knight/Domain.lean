@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.Model
 
 /-! # Positive-arity domains: mute schemes and their one-point extension
 
@@ -68,8 +70,6 @@ domains on plans of **every** arity, with a one-point extension whose face equat
   `docs/CONCORDANCE.md` §4) — not built here, and not obtainable by any choice of `−∞` rows
   on the new cells (see above). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open VaughtConjecture.AmalgamationPlan
@@ -87,7 +87,7 @@ theorem CellScheme.ext_of_components {ι : Type*} [DecidableEq ι] {A : Finset �
   obtain ⟨P₂, ip₂, c₂, cl₂, cm₂⟩ := D₂
   dsimp only at h_plan h_card h_cell
   subst h_plan h_card
-  simp only [Fin.cast_eq_self] at h_cell
+  simp   at h_cell
   obtain rfl := funext h_cell
   rfl
 
@@ -100,10 +100,10 @@ theorem CellScheme.cell_cast_of_eq {ι : Type*} [DecidableEq ι] {A : Finset ι}
 /-- Two domains with associated semantics are equal when their plans, sizes, cells and rows
 agree, the components of the first read through `Fin.cast` (the analogue of
 `StageType.ext_of_components`; no `HEq`). -/
-theorem SemScheme.ext_of_components {n : ℕ} {D₁ D₂ : SemScheme n}
+theorem SemScheme.ext_of_components {n} {D₁ D₂ : SemScheme n}
     (h_plan : D₁.scheme.plan = D₂.scheme.plan) (h_card : D₁.scheme.card = D₂.scheme.card)
     (h_cell : ∀ i, D₁.scheme.cell (Fin.cast h_card.symm i) = D₂.scheme.cell i)
-    (h_row : ∀ (Sig : Cell D₂.scheme) (d : D₂.scheme.below (D₂.scheme.cell Sig)),
+    (h_row : ∀ Sig d,
       D₁.rows.E (Fin.cast h_card.symm Sig)
         ⟨Fin.cast h_card.symm d.1, by rw [h_cell d.1, h_cell Sig]; exact d.2⟩ =
       D₂.rows.E Sig d) :
@@ -129,24 +129,17 @@ variable {n : ℕ}
 new point; `Plan.isPlan_extend_one` transported to `Fin`): a plan on `Fin (n+1)` in which the
 initial segment `ι_{n,n+1}[Fin n]` is visible and the visible faces inside it are exactly the
 pushed-forward faces of `P`. -/
-theorem exists_extendOne_fin {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.univ P) :
-    ∃ Q : Finset (Finset (Fin (n + 1))), IsPlan Finset.univ Q ∧
+theorem exists_extendOne_fin {P} (hP : IsPlan Finset.univ P) :
+    ∃ Q , IsPlan Finset.univ Q ∧
       Finset.univ.image Fin.castSuccEmb ∈ Q ∧
-      ∀ C : Finset (Fin n), C.image Fin.castSuccEmb ∈ Q ↔ C ∈ P := by
+      ∀ C : VaughtConjecture.Knight.FiniteScope n, C.image Fin.castSuccEmb ∈ Q ↔ C ∈ P := by
   set A : Finset (Fin (n + 1)) := Finset.univ.image Fin.castSuccEmb with hA
   have hx : Fin.last n ∉ A := by
-    simp only [hA, Finset.mem_image, Finset.mem_univ, true_and, Fin.coe_castSuccEmb,
-      not_exists]
-    exact fun i => Fin.castSucc_ne_last i
+    simp_all
   have hP₀ : IsPlan A (P.image (Finset.image Fin.castSuccEmb)) := isPlan_image _ hP
   obtain ⟨Q, hQ, hAQ, hres⟩ := isPlan_extend_one hx hP₀
   have huniv : A ∪ {Fin.last n} = Finset.univ := by
-    ext y
-    simp only [Finset.mem_union, Finset.mem_singleton, Finset.mem_univ, iff_true, hA,
-      Finset.mem_image, Finset.mem_univ, true_and, Fin.coe_castSuccEmb]
-    rcases Fin.eq_castSucc_or_eq_last y with ⟨j, rfl⟩ | rfl
-    · exact Or.inl ⟨j, rfl⟩
-    · exact Or.inr rfl
+    simp_all
   refine ⟨Q, huniv ▸ hQ, hAQ, fun C => ?_⟩
   have hsub : C.image Fin.castSuccEmb ⊆ A :=
     Finset.image_subset_image (Finset.subset_univ _)
@@ -159,22 +152,21 @@ theorem exists_extendOne_fin {P : Finset (Finset (Fin n))} (hP : IsPlan Finset.u
     rwa [← Finset.image_injective Fin.castSuccEmb.injective hBC]
   · intro hC
     have hmem : C.image Fin.castSuccEmb ∈ restrictPlan Q A := by
-      rw [hres]; exact Finset.mem_image_of_mem _ hC
+      aesop
     exact (Finset.mem_inter.mp hmem).1
 
 /-- A chosen one-point extension of a plan on `Fin n` to `Fin (n+1)`. -/
-noncomputable def extendOnePlan (P : Finset (Finset (Fin n))) (hP : IsPlan Finset.univ P) :
-    Finset (Finset (Fin (n + 1))) :=
+noncomputable def extendOnePlan (P : VaughtConjecture.AmalgamationPlan.SupportFamily (Fin n)) (hP : IsPlan Finset.univ P) :=
   (exists_extendOne_fin hP).choose
 
-variable (P : Finset (Finset (Fin n))) (hP : IsPlan Finset.univ P)
+variable (P : VaughtConjecture.AmalgamationPlan.SupportFamily (Fin n)) (hP : IsPlan Finset.univ P)
 
 theorem extendOnePlan_isPlan : IsPlan Finset.univ (extendOnePlan P hP) :=
   (exists_extendOne_fin hP).choose_spec.1
 
 /-- The face equation on plans: a face of `Fin n` is visible in `P` iff its push-forward is
 visible in the extension. -/
-theorem image_castSucc_mem_extendOnePlan_iff (C : Finset (Fin n)) :
+theorem image_castSucc_mem_extendOnePlan_iff (C : VaughtConjecture.Knight.FiniteScope n) :
     C.image Fin.castSuccEmb ∈ extendOnePlan P hP ↔ C ∈ P :=
   (exists_extendOne_fin hP).choose_spec.2.2 C
 
@@ -196,7 +188,7 @@ variable {n : ℕ} (C : CellScheme (ι := Fin n) Finset.univ)
 
 /-- The **new graded pairs** of the one-point extension: the pairs `⟨B,j⟩ ∈ P̂'` of the
 extended plan whose scope contains the new point `n`. -/
-noncomputable def newPairs : Finset (Finset (Fin (n + 1)) × ℕ) :=
+noncomputable def newPairs :=
   (Plan.gradedPlan (Plan.extendOnePlan C.plan C.isPlan)).filter (fun BJ => Fin.last n ∈ BJ.1)
 
 /-- The **one-point extension** of a cell scheme on `Fin n` to `Fin (n+1)`: the extended plan
@@ -222,20 +214,12 @@ noncomputable def extendOne : CellScheme (ι := Fin (n + 1)) Finset.univ where
       rw [Fin.append_right]
       exact (Finset.mem_filter.mp (C.newPairs.equivFin.symm j).2).1
 
-@[simp] theorem extendOne_cell_castAdd (i : Cell C) :
+@[simp] theorem extendOne_cell_castAdd i :
     C.extendOne.cell (Fin.castAdd C.newPairs.card i) = pushGraded Fin.castSuccEmb (C.cell i) :=
   Fin.append_left (fun i => pushGraded Fin.castSuccEmb (C.cell i))
     (fun j => (C.newPairs.equivFin.symm j).1) i
 
-@[simp] theorem extendOne_scope_castAdd (i : Cell C) :
-    C.extendOne.scope (Fin.castAdd C.newPairs.card i) = (C.scope i).image Fin.castSuccEmb :=
-  congrArg Prod.fst (extendOne_cell_castAdd C i)
-
-@[simp] theorem extendOne_grade_castAdd (i : Cell C) :
-    C.extendOne.grade (Fin.castAdd C.newPairs.card i) = C.grade i :=
-  congrArg Prod.snd (extendOne_cell_castAdd C i)
-
-@[simp] theorem extendOne_cell_natAdd (j : Fin C.newPairs.card) :
+@[simp] theorem extendOne_cell_natAdd j :
     C.extendOne.cell (Fin.natAdd C.card j) = (C.newPairs.equivFin.symm j).1 :=
   Fin.append_right (fun i => pushGraded Fin.castSuccEmb (C.cell i))
     (fun j => (C.newPairs.equivFin.symm j).1) j
@@ -249,7 +233,7 @@ theorem IsComplete.extendOne (hC : C.IsComplete) : C.extendOne.IsComplete := by
   · refine ⟨Fin.natAdd C.card (C.newPairs.equivFin ⟨BJ, Finset.mem_filter.mpr ⟨hBJ, hlast⟩⟩), ?_⟩
     rw [extendOne_cell_natAdd, Equiv.symm_apply_apply]
   · -- the scope lies in the initial segment: pull it back
-    set C₀ : Finset (Fin n) := Finset.univ.filter (fun x => Fin.castSucc x ∈ BJ.1) with hC₀
+    set C₀ : VaughtConjecture.Knight.FiniteScope n := Finset.univ.filter (fun x => Fin.castSucc x ∈ BJ.1) with hC₀
     have himg : C₀.image Fin.castSuccEmb = BJ.1 := by
       ext y
       simp only [Finset.mem_image, hC₀, Finset.mem_filter, Finset.mem_univ, true_and,
@@ -275,7 +259,7 @@ end CellScheme
 
 /-! ### The mute semantics -/
 
-section Mute
+section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
@@ -286,26 +270,19 @@ def Semantics.mute (D : CellScheme A) : Semantics D where
   E _ _ := ⊥
   orderly _ _ := (extVisibilityReplace_bot _ _).symm
 
-@[simp] theorem Semantics.mute_E (Sig : Cell D) (d : D.below (D.cell Sig)) :
-    (Semantics.mute D).E Sig d = ⊥ := rfl
-
 /-- The constantly-`−∞` labelling of a lower set respects the mute semantics there. -/
-theorem RespectsSemanticsBelow.mute (BJ : Finset ι × ℕ) :
+theorem RespectsSemanticsBelow.mute BJ :
     RespectsSemanticsBelow (Semantics.mute D) BJ (fun _ => ⊥) :=
   RespectsSemanticsBelow.bot _ _
-
-/-- The constantly-`−∞` labelling respects the mute semantics. -/
-theorem RespectsSemantics.mute : RespectsSemantics (Semantics.mute D) (fun _ => ⊥) :=
-  RespectsSemantics.bot _
 
 /-- A cell whose row is `−∞` on its own diagonal is forced to the label `−∞`: locality at the
 cell itself reads `min (r Σ) (r Σ) = min (σ ⊥) (g _) = ⊥`.  So the only labelling of a lower set
 respecting the mute semantics is `−∞`. -/
-theorem RespectsSemanticsBelow.eq_bot_of_mute {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
-    (h : RespectsSemanticsBelow (Semantics.mute D) BJ r) (d : D.below BJ) : r d = ⊥ :=
+def RespectsSemanticsBelow.eq_bot_of_mute {BJ} {r}
+    (h : RespectsSemanticsBelow (Semantics.mute D) BJ r) d :=
   h.eq_bot_of_diagonal d rfl
 
-end Mute
+end
 
 /-! ### Mute domains and their one-point extension -/
 
@@ -328,16 +305,6 @@ noncomputable def mute (C : CellScheme (ι := Fin n) Finset.univ) (hC : C.IsComp
       fun d => (hp.eq_bot_of_mute d).symm⟩
   complete := hC
 
-@[simp] theorem mute_scheme (C : CellScheme (ι := Fin n) Finset.univ) (hC : C.IsComplete) :
-    (mute C hC).scheme = C := rfl
-
-/-- A domain is **mute** when all its rows are constantly `−∞`. -/
-def IsMute (D : SemScheme n) : Prop :=
-  ∀ (Sig : Cell D.scheme) (d : D.scheme.below (D.scheme.cell Sig)), D.rows.E Sig d = ⊥
-
-theorem IsMute.rows_eq {D : SemScheme n} (hD : D.IsMute) : D.rows = Semantics.mute D.scheme :=
-  Semantics.ext (funext fun Sig => funext fun d => hD Sig d)
-
 /-- **One-point extension**: the mute domain on the one-point extension of the cell scheme of
 `D` (`CellScheme.extendOne`).  It is a domain on `n+1` whose face restriction along the initial
 segment is the mute domain on `D`'s scheme — so it extends `D` itself (`ExtendsDomain`) exactly
@@ -345,12 +312,10 @@ when `D` is mute (`restrictFace_muteExtendOne`); for a non-mute `D` it discards 
 and is not an extension.  For a general `D` the rows of the new cells must accommodate every
 respecting labelling of the old ones; all-`⊥` new rows are refuted (module docstring), and Knight's
 §4.3 completion (stacks) is the paper's known — not necessarily the only — solution. -/
-noncomputable def muteExtendOne (D : SemScheme n) : SemScheme (n + 1) :=
+noncomputable def muteExtendOne (D : SemScheme n) :=
   mute D.scheme.extendOne (D.complete.extendOne)
 
 variable (D : SemScheme n)
-
-@[simp] theorem muteExtendOne_scheme : D.muteExtendOne.scheme = D.scheme.extendOne := rfl
 
 /-- The chain of mute domains `D₀ ⊂ D₁ ⊂ ⋯`: the empty domain, extended one point at a
 time. -/
@@ -358,20 +323,16 @@ noncomputable def muteChain : (n : ℕ) → SemScheme n
   | 0 => StageType.emptySemScheme
   | n + 1 => (muteChain n).muteExtendOne
 
-/-- Domains with associated semantics exist at every arity (the positive-arity obligation of
-#41; Knight: Lemma 4.2.2 at arity 1, amalgamation beyond). -/
-instance nonempty (n : ℕ) : Nonempty (SemScheme n) := ⟨muteChain n⟩
-
 end SemScheme
 
 /-! ### Stage types on every domain, and cofaces over mute domains -/
 
 namespace StageType
 
-variable {α : Ordinal.{0}} {n : ℕ}
+variable {α : Ordinal₀} {n : ℕ}
 
 /-- Every cell of a scheme on `Fin (n+1)` lies below the full-grade pair `(univ, n+1)`. -/
-theorem gradedLe_univ_succ (C : CellScheme (ι := Fin (n + 1)) Finset.univ) (d : Cell C) :
+theorem gradedLe_univ_succ (C : CellScheme (ι := Fin (n + 1)) Finset.univ) d :
     GradedLe (C.cell d) (Finset.univ, n + 1) :=
   ⟨Finset.subset_univ _, (C.grade_le_card_scope d).trans
     (by simpa using Finset.card_le_univ (C.scope d))⟩
@@ -390,33 +351,18 @@ noncomputable def ofScheme (hα : Order.IsSuccLimit α) (D : SemScheme (n + 1)) 
   let Sig := (D.complete _ (univ_succ_mem_gradedPlan D.scheme)).choose
   have hSig : D.scheme.cell Sig = (Finset.univ, n + 1) :=
     (D.complete _ (univ_succ_mem_gradedPlan D.scheme)).choose_spec
-  have hall : ∀ d : Cell D.scheme, GradedLe (D.scheme.cell d) (D.scheme.cell Sig) :=
+  have hall : ∀ d , GradedLe (D.scheme.cell d) (D.scheme.cell Sig) :=
     fun d => hSig ▸ gradedLe_univ_succ D.scheme d
   { scheme := D
     label := fun d => truncExt α (D.rows.E Sig ⟨d, hall d⟩)
-    label_bound := fun _ => truncExt_bound α _
+    label_bound := fun _ => truncExt_bound
     respects := ((D.consistent Sig).toRespects hall).truncate hα }
-
-@[simp] theorem ofScheme_scheme (hα : Order.IsSuccLimit α) (D : SemScheme (n + 1)) :
-    (ofScheme hα D).scheme = D := rfl
 
 /-- The stage types of every arity are nonempty at every limit stage: `emptyType` at arity 0,
 `ofScheme` on the mute domain `SemScheme.muteChain` beyond. -/
-theorem nonempty (hα : Order.IsSuccLimit α) (n : ℕ) : Nonempty (S α n) := by
+theorem nonempty (hα : Order.IsSuccLimit α) n : Nonempty (S α n) := by
   cases n with
   | zero => exact ⟨emptyType⟩
   | succ n => exact ⟨ofScheme hα (SemScheme.muteChain (n + 1))⟩
 
-/-- The stage type on a mute domain at any stage: all labels `−∞`. -/
-noncomputable def mute (D : SemScheme n) (hD : D.IsMute) : S α n where
-  scheme := D
-  label _ := ⊥
-  label_bound _ := Or.inl (bot_lt_ofOrd α)
-  respects := by rw [hD.rows_eq]; exact RespectsSemantics.mute
 
-@[simp] theorem mute_scheme (D : SemScheme n) (hD : D.IsMute) :
-    (mute (α := α) D hD).scheme = D := rfl
-
-end StageType
-
-end VaughtConjecture.Knight

@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.Model
 
 /-! # Modelhood transports along a bijection of carriers (#46 probe, prerequisite; #73 audit)
 
@@ -29,8 +30,6 @@ model class is closed under push-forward, so by `prolongsToIn_iff_prolongsToOnIn
 `ProlongsToIn IsModel` normalizes to Knight's literal Def. 5.1.1 shape — an actual model **on
 the carrier of the source** whose reduct **equals** the source. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open TypeTower
@@ -42,14 +41,14 @@ namespace KnightRealization
 variable {α : LimitStage} {M : Type w} {N : Type w'} {n : ℕ}
 
 /-- If `y` avoids the pulled-back tuple `t ∘ e⁻¹`, then `e y` avoids `t`. -/
-theorem not_mem_range_trans_of_not_mem {e : M ≃ N} {t : Fin n ↪ N} {y : M}
+theorem not_mem_range_trans_of_not_mem {e : M ≃ N} {t : Fin n ↪ N} {y}
     (hy : y ∉ Set.range (t.trans e.symm.toEmbedding)) : e y ∉ Set.range t := by
   rintro ⟨i, hi⟩
-  exact hy ⟨i, by simp [Function.Embedding.trans_apply, hi]⟩
+  exact hy ⟨i, by simp_all⟩
 
 /-- Concatenation commutes with pulling back along `e⁻¹`:
 `(t⌢(e y)) ∘ e⁻¹ = (t ∘ e⁻¹)⌢y`. -/
-theorem snoc_trans_symm (e : M ≃ N) (t : Fin n ↪ N) {y : M}
+theorem snoc_trans_symm (e : M ≃ N) (t : Fin n ↪ N) {y}
     (hy : y ∉ Set.range (t.trans e.symm.toEmbedding)) :
     (snoc t (e y) (not_mem_range_trans_of_not_mem hy)).trans e.symm.toEmbedding =
       snoc (t.trans e.symm.toEmbedding) y hy := by
@@ -63,7 +62,7 @@ member of `U` over the pulled-back tuple `t ∘ e⁻¹` as a coface of `p`, then
 the same member over `t`.  The stage-type data (`q ∈ U`, `IsCoface p q`) is untouched: only
 the witnesses move, through `e`. -/
 theorem RealizesSome.map {R : KnightRealization α M} (e : M ≃ N) {t : Fin n ↪ N}
-    {p : S α.1 n} {U : Set (S α.1 (n + 1))}
+    {p} {U}
     (h : R.RealizesSome (t.trans e.symm.toEmbedding) p U) :
     RealizesSome (R.map e) t p U := by
   obtain ⟨y, hy, q, hqU, hqc, hq⟩ := h
@@ -81,19 +80,9 @@ theorem IsModel.map {R : KnightRealization α M} (h : R.IsModel) (e : M ≃ N) :
     Realization.IsIso.isExactParentConsistent (Realization.isIso_map e R) h.consistent
   covering :=
     Realization.IsIso.isInitialSegmentCovering (Realization.isIso_map e R) h.covering
-  genSat t p hp D hD := by
-    rw [Realization.map_eval] at hp
-    exact (h.genSat _ p hp D hD).map e
-  bottomPattern t p hp D hD q' hq' hext := by
-    rw [Realization.map_eval] at hp
-    exact (h.bottomPattern _ p hp D hD q' hq' hext).map e
-  uniformity t p hp γ hγ hγα := by
-    rw [Realization.map_eval] at hp
-    exact (h.uniformity _ p hp γ hγ hγα).map e
-  highGradeDominance t p hp γ hγα := by
-    rw [Realization.map_eval] at hp
-    exact (h.highGradeDominance _ p hp γ hγα).map e
+  genSat t p hp D hD :=  (h.genSat _ p hp D hD).map e
+  bottomPattern t p hp D hD q' hq' hext :=  (h.bottomPattern _ p hp D hD q' hq' hext).map e
+  uniformity t p hp γ hγ hγα :=  (h.uniformity _ p hp γ hγ hγα).map e
+  highGradeDominance t p hp γ hγα :=  (h.highGradeDominance _ p hp γ hγα).map e
 
-end KnightRealization
 
-end VaughtConjecture.Knight

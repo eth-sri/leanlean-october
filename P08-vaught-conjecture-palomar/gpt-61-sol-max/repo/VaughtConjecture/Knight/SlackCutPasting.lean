@@ -1,11 +1,14 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CoupledRepairPaste
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CoupledGradeOne
 
 /-! # Pasting with one grade of slack
 
@@ -27,39 +30,28 @@ be substituted for the externally supplied cap in unrestricted bountifulness, no
 confused with the limit stage used for reduction.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd
+open Transform Value 
 
 /-- The useful part of controller capping, with the bottom-controller case included:
 an exact shifter with bounded-threshold commutation and all-threshold bottom propagation. -/
 theorem exists_exact_capped_shifter {D : Type*} {grade : D → ℕ} {E p : D → ExtOrd} {c : D}
-    (hmax : ∀ d, grade d ≤ grade c) (hvis : SelfVis (grade c) (p c))
+    (hmax : BoundedBy grade (grade c)) (hvis : SelfVis (grade c) (p c))
     (hloc : TransformsTo grade E (fun d => min (p d) (p c))) :
-    ∃ τ : ExtOrd → ExtOrd, τ ⊥ = ⊥ ∧ Monotone τ ∧
+    ∃ τ , τ ⊥ = ⊥ ∧ Monotone τ ∧
       (∀ d, τ (E d) = min (p d) (p c)) ∧
       (∀ x k i, k ≤ grade c → i ≤ k →
         τ (extVisibilityReplace x k i) = extVisibilityReplace (τ x) k i) ∧
       (∀ x, τ x = ⊥ → ∀ k i, i ≤ k → τ (extVisibilityReplace x k i) = ⊥) := by
   by_cases hb : p c = ⊥
   · refine ⟨fun _ => ⊥, rfl, monotone_const, ?_, ?_, ?_⟩
-    · intro d
-      simp only [hb, min_bot_right]
-    · intro x k i _ _
-      exact (extVisibilityReplace_bot k i).symm
+    · simp_all
+    · simp_all
     · intros
       rfl
   · obtain ⟨_, τ, _, _, hbot, hmono, _, _, _, hsrc, hcomm, hprop⟩ :=
       exists_cappedWitness grade E p c hmax hvis hb hloc
     exact ⟨τ, hbot, hmono, hsrc, hcomm, hprop⟩
 
-section Locality
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {q s : D.below BJ → ExtOrd}
-
-end Locality
-
-end VaughtConjecture.Knight

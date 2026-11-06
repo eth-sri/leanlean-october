@@ -1,14 +1,17 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CanonicalOriginalLift
-public import VaughtConjecture.Knight.CanonicalLowerAllCaps
-public import VaughtConjecture.Knight.CanonicalProperDomain
-public import VaughtConjecture.Knight.EffectiveGradeLifting
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CanonicalOriginalLift
+import VaughtConjecture.Knight.CanonicalLowerAllCaps
+import VaughtConjecture.Knight.CanonicalProperDomain
+import VaughtConjecture.Knight.EffectiveGradeLifting
 
 /-! # Bountifulness of the fixed canonical two-grade coatom carrier
 
@@ -18,28 +21,25 @@ lifting theorem for the output is supplied. Nominal higher grades are handled
 at the actual grade ceiling, retaining their original permitted caps.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalCoatomBountiful
-open Transform Value ExtOrd CanonicalMixedGradeLayers CoatomBoundaryExtension AmalgamationPlan
-noncomputable section
+open    CanonicalMixedGradeLayers CoatomBoundaryExtension AmalgamationPlan
+
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (hA : 2 ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ 2)
+variable (hproper : AvoidsValue D.scope A) (hg : BoundedBy D.grade 2)
 
 /-- The old proper-target clauses, including equality of indices. This is
 supplied by the two inherited schemes, not by prospective output bountifulness. -/
-def OldLifts : Prop :=
+def OldLifts :=
   ∀ I J, I ∈ Plan.gradedPlan D.plan → J ∈ Plan.gradedPlan D.plan → J.1 ≠ A →
     (h : GradedLe I J) → CappedLift sem h
 
 variable (hold : OldLifts sem)
 
 include hold in
-private theorem overlap_lift {L R : Finset ι} (hR : R ∈ D.plan) (hRA : R ≠ A)
-    (hO : L ∩ R ∈ D.plan) {n : ℕ} (hn : 0 < n) (hnR : n ≤ R.card) :
+private theorem overlap_lift {L R} (hR : R ∈ D.plan) (hRA : R ≠ A)
+    (hO : L ∩ R ∈ D.plan) {n} (hn : 0 < n) (hnR : n ≤ R.card) :
     CappedLift sem (target_le_right (U := (L, n)) (V := (R, n))) := by
   by_cases hne : (L ∩ R).Nonempty
   · exact hold _ _ (target_mem_gradedPlan hO hn hn hne)
@@ -51,21 +51,21 @@ private theorem overlap_lift {L R : Finset ι} (hR : R ∈ D.plan) (hRA : R ≠ 
 include hold in
 /-- Complete the full-index same-grade pair when the original face lies
 on the designated left input. All numerical inputs remain arbitrary. -/
-private theorem full_lift_left {L R C : Finset ι}
+private theorem full_lift_left {L R C}
     (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
     (hLc : 2 ≤ L.card) (hRc : 2 ≤ R.card) (hO : L ∩ R ∈ D.plan)
-    (hcover : ∀ d : Cell D, D.scope d ⊆ L ∨ D.scope d ⊆ R)
+    (hcover : ∀ d , D.scope d ⊆ L ∨ D.scope d ⊆ R)
     (hC : C ∈ D.plan) (hCA : C ≠ A) (hCL : C ⊆ L)
     (hfull₁ : C.Nonempty → ∃ c : D.below (C, 1), D.cell c.1 = (C, 1))
     (hfull₂ : 2 ≤ C.card → ∃ c : D.below (C, 2), D.cell c.1 = (C, 2))
-    {n : ℕ} (hn : 0 < n) (hn2 : n ≤ 2) (hnC : n ≤ C.card)
+    {n} (hn : 0 < n) (hn2 : n ≤ 2) (hnC : n ≤ C.card)
     (h : GradedLe (C, n) (A, n)) :
     CappedLift (rows sem 1 (by decide) (by omega) hproper 2 hg
       (by decide) hA (by decide)) h := by
   have hCn : (C, n) ∈ Plan.gradedPlan D.plan := Plan.mem_gradedPlan.mpr ⟨hC, hn, hnC⟩
   have hC1 : (C, 1) ∈ Plan.gradedPlan D.plan :=
     Plan.mem_gradedPlan.mpr ⟨hC, (by decide : 0 < 1), (Nat.one_le_of_lt hn).trans hnC⟩
-  have hCnot : ¬ A ⊆ C := fun ha => hCA (Finset.Subset.antisymm h.1 ha)
+  have hCnot  := fun ha => hCA (Finset.Subset.antisymm h.1 ha)
   have cover₂ (d : Cell D) : GradedLe (D.cell d) (L, 2) ∨ GradedLe (D.cell d) (R, 2) :=
     (hcover d).imp (fun hd => ⟨hd, hg d⟩) (fun hd => ⟨hd, hg d⟩)
   have cover₁ (d : Cell D) (hd : D.grade d ≤ 1) :
@@ -73,7 +73,7 @@ private theorem full_lift_left {L R C : Finset ι}
     (hcover d).imp (fun hs => ⟨hs, hd⟩) (fun hs => ⟨hs, hd⟩)
   have left₂ : CappedLift sem (show GradedLe (C, n) (L, 2) from ⟨hCL, hn2⟩) :=
     hold _ _ hCn (Plan.mem_gradedPlan.mpr ⟨hL, (by decide : 0 < 2), hLc⟩) hLA ⟨hCL, hn2⟩
-  have left₁ : CappedLift sem (show GradedLe (C, 1) (L, 1) from ⟨hCL, le_rfl⟩) :=
+  have left₁  :=
     hold (C, 1) (L, 1) hC1 (Plan.mem_gradedPlan.mpr
       ⟨hL, (by decide : 0 < 1), (by decide : 1 ≤ 2).trans hLc⟩)
       hLA ⟨hCL, le_rfl⟩
@@ -85,8 +85,7 @@ private theorem full_lift_left {L R C : Finset ι}
   intro p q γ hp hq hγ hag
   let e := CanonicalProperDomain.equiv sem 1 (by decide) (by omega) 2 (by decide) hA
     (C, n) hCnot
-  have hp' := CanonicalProperDomain.pullback_respects sem 1 (by decide) (by omega) hproper
-    2 hg (by decide) hA (by decide) hCnot hp
+  have hp' := CanonicalProperDomain.pullback_respects hCnot hp
   have hncase : n = 1 ∨ n = 2 := by omega
   rcases hncase with rfl | rfl
   · obtain ⟨r, hr, hread, hcap⟩ := CanonicalLowerAllCaps.exists_lift sem hA hproper hg hfull₁
@@ -111,19 +110,19 @@ include hold in
 input faces have room for grade two. Only their actual bountiful clauses,
 grade-one/two owner incidences, and two-face geometry are premises.
 This does not assert all-grade completeness, coding, or ordered installation. -/
-theorem bountiful {L R : Finset ι}
+theorem bountiful {L R}
     (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
     (hLc : 2 ≤ L.card) (hRc : 2 ≤ R.card) (hO : L ∩ R ∈ D.plan)
     (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
     (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ 2 →
-      ∃ d : Cell D, D.cell d = (C, i)) :
+      ∃ d , D.cell d = (C, i)) :
     (rows sem 1 (by decide) (by omega) hproper 2 hg (by decide) hA (by decide)).IsBountiful := by
   apply EffectiveGradeLifting.bountiful_of_bounded_same_grade
     (fun d => (data sem 1 (by decide) (by omega) hproper 2 hg
-      (by decide) hA (by decide)).max_grade d) (by decide : 0 < 2)
+      (by decide) hA (by decide)).max_grade d) (by decide)
   intro C B i hCi hBi hi hCB
-  change (C, i) ∈ Plan.gradedPlan D.plan at hCi
-  change (B, i) ∈ Plan.gradedPlan D.plan at hBi
+  
+  
   by_cases hBA : B = A
   · subst B
     by_cases hCA : C = A
@@ -150,5 +149,4 @@ theorem bountiful {L R : Finset ι}
       hA (by decide) (I := (C, i)) (J := (B, i)) ⟨hCB, le_rfl⟩ hBnot
       (hold _ _ hCi hBi hBA ⟨hCB, le_rfl⟩)
 
-end
-end VaughtConjecture.Knight.CanonicalCoatomBountiful
+

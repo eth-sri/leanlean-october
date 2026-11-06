@@ -1,14 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FiniteCoverReceivingCore
-public import VaughtConjecture.Knight.LawfulCapping
-public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.RootedKarp
+import VaughtConjecture.Knight.FiniteCoverReceivingCore
+import VaughtConjecture.Knight.LawfulCapping
+import VaughtConjecture.Knight.TopSupportReceiving
+import VaughtConjecture.Knight.RootedKarp
 
 /-! # Globally top-rigid cores: classification and the residual acquisition
 
@@ -42,11 +43,9 @@ The rigid-core reduction of newapproach17 new33 §§1–2, on the finite top-sup
 Nothing here constructs the three-shadow coupling of new34; that physical construction is out of
 scope. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.TopSupportRigidCore
 
-open TypeTower StageType KnightRealization Value ExtOrd TopSupport CellScheme.restrictFace
+open TypeTower StageType KnightRealization   TopSupport CellScheme.restrictFace
 
 universe w
 
@@ -59,17 +58,17 @@ variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 /-- **A finite globally top-rigid core**: on every actual finite cover of `B` (a realized tuple
 `C` with `B` as the coordinate face `e`), every admissible top support of the cover's type that
 contains every top cell of the face `e` is the whole top set. -/
-def RigidCore (R : KnightRealization α M) {k : ℕ} (B : Fin k ↪ M) : Prop :=
-  ∀ {m : ℕ} (C : Fin m ↪ M) (c : S α.1 m), R.eval C = some c →
+def RigidCore (R : KnightRealization α M) {k} B :=
+  ∀ {m} C c, R.eval C = some c →
     ∀ (e : Fin k ↪ Fin m), e.trans C = B →
-      ∀ H : Set (Cell c.scheme.scheme), Admissible c.scheme.rows c.label H →
-        (∀ x : Cell c.scheme.scheme, c.scheme.scheme.scope x ⊆ Finset.univ.image e →
+      ∀ H , Admissible c.scheme.rows c.label H →
+        (∀ x , c.scheme.scheme.scope x ⊆ Finset.univ.image e →
           c.label x = ⊤ → x ∈ H) →
         H = topSet c.label
 
 /-- **The residual acquisition**: a root that is not a globally rigid core has an actual finite
 cover with a proper admissible top support containing the root's tops. -/
-theorem exists_flexible_cover_of_not_rigidCore {k : ℕ} {B : Fin k ↪ M} (h : ¬ RigidCore R B) :
+theorem exists_flexible_cover_of_not_rigidCore {k} {B} (h : ¬ RigidCore R B) :
     ∃ (m : ℕ) (C : Fin m ↪ M) (c : S α.1 m), R.eval C = some c ∧
       ∃ (e : Fin k ↪ Fin m), e.trans C = B ∧
         ∃ H : Set (Cell c.scheme.scheme), Admissible c.scheme.rows c.label H ∧
@@ -83,14 +82,14 @@ theorem exists_flexible_cover_of_not_rigidCore {k : ℕ} {B : Fin k ↪ M} (h : 
 
 /-! ## Classification of models with globally rigid cores -/
 
-section Classification
+section
 
 variable {M₁ M₂ : Type w} {R₁ : KnightRealization α M₁} {R₂ : KnightRealization α M₂}
 
 /-- The chart invariant: both cores are coordinate faces of the common chart, at the same
 coordinates. -/
-def CoreChart {k : ℕ} (B₁ : Fin k ↪ M₁) (B₂ : Fin k ↪ M₂)
-    (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)) : Prop :=
+def CoreChart {k} B₁ B₂
+    (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)) :=
   ∃ e : Fin k ↪ Fin nd.arity, e.trans nd.tuple₁ = B₁ ∧ e.trans nd.tuple₂ = B₂
 
 /-- A common chart with the sides exchanged. -/
@@ -112,7 +111,7 @@ theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) 
     R₁.IsInitialSegmentCovering)
     (hcons₂ : R₂.IsExactParentConsistent) (hFC₂ : FiniteCutReceiving R₂) {k : ℕ} {B₁ : Fin k ↪ M₁}
     {B₂ : Fin k ↪ M₂} (r₁ : RigidCore R₁ B₁) (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂))
-    (hnd : CoreChart B₁ B₂ nd) (x : M₁) :
+    (hnd : CoreChart B₁ B₂ nd) x :
     ∃ (next : CommonChartNode (A₁ := R₁) (A₂ := R₂)) (emb : Fin nd.arity ↪ Fin next.arity),
       emb.trans next.tuple₁ = nd.tuple₁ ∧ emb.trans next.tuple₂ = nd.tuple₂ ∧
       (∃ i, next.tuple₁ i = x) ∧ CoreChart B₁ B₂ next := by
@@ -135,9 +134,8 @@ theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) 
   -- receive the cover's type over the second side, above every proper label
   obtain ⟨δ, hδbot, hδα, hδgt⟩ := exists_proper_cutoff P
   obtain ⟨u, Q', hfu, hu, h, hagree⟩ := FiniteCoverReceiving.finiteCoverReceiving_of_receiving
-    hcons₂ hFC₂ P f
-    nd.tuple₂ nd.type hfP nd.eval₂ δ hδbot hδα
-  let Q'' : Cell P.scheme.scheme → ExtOrd := fun d => Q'.label (SemScheme.castCell h.symm d)
+    hcons₂ hFC₂ hfP nd.eval₂ hδbot hδα
+  let Q'' : CellLabels P.scheme.scheme := fun d => Q'.label (SemScheme.castCell h.symm d)
   have hQ'' : RespectsSemantics P.scheme.rows Q'' := respects_castCell h Q'.respects
   let T' : S α.1 (nd.arity + 1 + j) := ⟨P.scheme, Q'', fun d => Q'.label_bound _, hQ''⟩
   have hT' : Q' = T' := StageType.eq_of_label h (fun _ => rfl)
@@ -145,7 +143,7 @@ theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) 
     label_eq_of_agree h hagree d (hδgt d hd)
   -- the chart is received literally: both types restrict to `nd.type` along `f`
   have hvf : Finset.univ.image f ∈ P.scheme.scheme.plan :=
-    (typeMap_isSome_iff f P).mp (by rw [hfP]; rfl)
+    (typeMap_isSome_iff).mp (by rw [hfP]; rfl)
   have hsP : P.scheme.restrictFace f hvf = nd.type.scheme :=
     congrArg StageType.scheme (Option.some.inj ((typeMap_eq_some f P hvf).symm.trans hfP))
   have hPr := (typeMap_eq_some_iff_labels f P nd.type hvf hsP).mp hfP
@@ -208,7 +206,7 @@ theorem exists_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂] 
     (hcov₂ : R₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving R₂) {k : ℕ} {B₁ : Fin k ↪ M₁}
       {B₂ : Fin k ↪ M₂} {b : S α.1 k}
     (h₁ : R₁.eval B₁ = some b) (h₂ : R₂.eval B₂ = some b) (r₁ : RigidCore R₁ B₁)
-    (r₂ : RigidCore R₂ B₂) : ∃ e : R₁.Iso R₂, ∀ i, e.1 (B₁ i) = B₂ i :=
+    (r₂ : RigidCore R₂ B₂) : ∃ e : R₁.Iso R₂, PointwiseEq (e.1 ∘ B₁) B₂ :=
   exists_iso_of_restrictedCommonChartStepSupply hcons₁ hcons₂ (CoreChart B₁ B₂)
     ⟨k, B₁, B₂, b, h₁, h₂⟩
     ⟨Function.Embedding.refl _, Function.Embedding.refl_trans _, Function.Embedding.refl_trans _⟩
@@ -227,6 +225,4 @@ theorem nonempty_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂
     r₂
   ⟨e⟩
 
-end Classification
 
-end VaughtConjecture.Knight.TopSupportRigidCore

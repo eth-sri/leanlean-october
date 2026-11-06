@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FreeDiagonal
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FreeDiagonal
 
 /-! # Arbitrary ambients represented grade by grade
 
@@ -29,25 +30,22 @@ availability. In particular their shifters are not asserted bottom-reflecting,
 and no unrestricted composition of faithful transformations is used.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.AmbientGradeCharts
 
-open Transform Value ExtOrd VaughtConjecture.AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ} {q : D.below BJ → ExtOrd}
+  {sem : Semantics D} {BJ : GradedIndex ι} {q : BelowLabels D BJ}
 
 /-- A normalized witness at a controller dominating its own grade. -/
-structure Chart (sem : Semantics D) (BJ : Finset ι × ℕ) (q : D.below BJ → ExtOrd)
+structure Chart (sem : Semantics D) (BJ : GradedIndex ι) (q : BelowLabels D BJ)
     (k : ℕ) where
   owner : D.below BJ
   index : D.cell owner.1 = (BJ.1, k)
-  dominates : ∀ d : D.below BJ, D.grade d.1 = k → q d ≤ q owner
-  shift : ExtOrd → ExtOrd
+  dominates : ∀ d , D.grade d.1 = k → q d ≤ q owner
+  shift : LabelMap
   witness : Witness (gTop k) shift
   bounded : ∀ x, shift x ≤ q owner
-  read : ∀ d : D.below (D.cell owner.1),
+  read : ∀ d ,
     shift (sem.E owner.1 d) = min (q (CellScheme.below.incl owner d)) (q owner)
 
 namespace Chart
@@ -57,7 +55,7 @@ variable {k : ℕ} (C : Chart sem BJ q k)
 theorem grade : D.grade C.owner.1 = k := congrArg Prod.snd C.index
 
 /-- Every occurrence of grade at most `k` lies below this full-scope owner. -/
-def occurrence (d : D.below BJ) (hd : D.grade d.1 ≤ k) : D.below (D.cell C.owner.1) :=
+def occurrence (d : D.below BJ) (hd : D.grade d.1 ≤ k) : D.belowCell C.owner.1 :=
   ⟨d.1, by rw [C.index]; exact ⟨d.2.1, hd⟩⟩
 
 theorem read_capped (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
@@ -71,7 +69,7 @@ theorem read_grade (d : D.below BJ) (hd : D.grade d.1 = k) :
 
 /-- If this grade's maximum reaches the external cap, its one witness recovers
 the externally capped labels at every lower grade as well. -/
-theorem read_under_cap {γ : ExtOrd} (hactive : γ ≤ q C.owner)
+theorem read_under_cap {γ} (hactive : γ ≤ q C.owner)
     (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
     min (C.shift (sem.E C.owner.1 (C.occurrence d hd))) γ = min (q d) γ := by
   rw [C.read_capped, min_assoc, min_eq_right hactive]
@@ -80,62 +78,49 @@ end Chart
 
 /-- One full-scope controller suffices to make the maximizing set nonempty.
 Availability, not a cross-grade domination assumption, supplies the final bound. -/
-theorem exists_maximizer (hq : RespectsSemanticsBelow sem BJ q) {k : ℕ}
+theorem exists_maximizer (hq : RespectsSemanticsBelow sem BJ q) {k}
     (hfull : ∃ c : D.below BJ, D.cell c.1 = (BJ.1, k)) :
-    ∃ c : D.below BJ, D.cell c.1 = (BJ.1, k) ∧
-      ∀ d : D.below BJ, D.grade d.1 = k → q d ≤ q c := by
-  classical
+    ∃ c , D.cell c.1 = (BJ.1, k) ∧
+      ∀ d , D.grade d.1 = k → q d ≤ q c := by
+  
   let _ := Fintype.ofFinite (D.below BJ)
   let s := Finset.univ.filter (fun c : D.below BJ => D.cell c.1 = (BJ.1, k))
   have hs : s.Nonempty := by
     obtain ⟨c, hc⟩ := hfull
     exact ⟨c, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hc⟩⟩
   obtain ⟨c, hc, hmax⟩ := Finset.exists_max_image s q hs
-  have hci : D.cell c.1 = (BJ.1, k) := (Finset.mem_filter.mp hc).2
+  have hci  := (Finset.mem_filter.mp hc).2
   refine ⟨c, hci, ?_⟩
   intro d hd
   have hscope : D.scope d.1 ⊆ D.scope c.1 := by
     change D.scope d.1 ⊆ (D.cell c.1).1
     rw [hci]
     exact d.2.1
-  have hgrade : D.grade d.1 = D.grade c.1 := hd.trans (congrArg Prod.snd hci).symm
+  have hgrade  := hd.trans (congrArg Prod.snd hci).symm
   obtain ⟨e, he, hde⟩ := hq.availability d c hscope hgrade
   exact hde.trans (hmax e (Finset.mem_filter.mpr ⟨Finset.mem_univ _, he.trans hci⟩))
 
 /-- Extract an actual bounded faithful witness; bottom and literal top need no exclusion. -/
-theorem exists_chart (hq : RespectsSemanticsBelow sem BJ q) {k : ℕ}
+theorem exists_chart (hq : RespectsSemanticsBelow sem BJ q) {k}
     (hfull : ∃ c : D.below BJ, D.cell c.1 = (BJ.1, k)) :
     Nonempty (Chart sem BJ q k) := by
   obtain ⟨c, hc, hmax⟩ := exists_maximizer hq hfull
-  let self : D.below (D.cell c.1) := ⟨c.1, GradedLe.refl _⟩
-  let p : D.below (D.cell c.1) → ExtOrd := fun d => q (CellScheme.below.incl c d)
-  have hm : ∀ d : D.below (D.cell c.1), D.grade d.1 ≤ D.grade self.1 := fun d => d.2.2
-  have hv : SelfVis (D.grade self.1) (p self) := (hq.orderly c).symm
+  let self : D.belowCell c.1 := ⟨c.1, GradedLe.refl _⟩
+  
+  have hm : ∀ d : D.belowCell c.1, D.grade d.1 ≤ D.grade self.1 := fun d => d.2.2
+  have hv  := (hq.orderly c).symm
   obtain ⟨τ, hτ, hb, hr⟩ := exists_bounded_exact_capped_witness hm hv (hq.locality c)
   have hg : D.grade self.1 = k := congrArg Prod.snd hc
   exact ⟨⟨c, hc, hmax, τ, hg ▸ hτ, hb, hr⟩⟩
 
 /-! ## Exact cap-preservation obligations -/
 
-/-- The literal part of a cap equation; this statement also applies at cap top. -/
-theorem eq_of_cap_below {a b γ : ExtOrd} (h : min a γ = min b γ) (hb : b < γ) : a = b := by
-  rw [min_eq_left hb.le] at h
-  have ha : a < γ := (min_lt_iff.mp (h.trans_lt hb)).resolve_right (lt_irrefl γ)
-  rwa [min_eq_left ha.le] at h
-
-theorem cap_reaches_iff {a b γ : ExtOrd} (h : min a γ = min b γ) : γ ≤ a ↔ γ ≤ b := by
-  constructor
-  · intro ha
-    apply min_eq_right_iff.mp
-    exact h.symm.trans (min_eq_right ha)
-  · intro hb
-    apply min_eq_right_iff.mp
-    exact h.trans (min_eq_right hb)
+theorem cap_reaches_iff {a b γ : ExtOrd} (h : min a γ = min b γ) : γ ≤ a ↔ γ ≤ b := by aesop
 
 /-- Source-side cap agreement transfers through a monotone shifter once the
 image of the source cap reaches the output cap. Bottom reflection is unnecessary
 for this equation; no preservation of respect is asserted. -/
-theorem map_cap_agreement {τ : ExtOrd → ExtOrd} (hτ : Monotone τ)
+theorem map_cap_agreement {τ : LabelMap} (hτ : Monotone τ)
     {a b δ γ : ExtOrd} (hab : min a δ = min b δ) (hγ : γ ≤ τ δ) :
     min (τ a) γ = min (τ b) γ := by
   calc
@@ -144,12 +129,6 @@ theorem map_cap_agreement {τ : ExtOrd → ExtOrd} (hτ : Monotone τ)
     _ = min (τ (min b δ)) γ := by rw [hab]
     _ = min (τ b) γ := by rw [hτ.map_min, min_assoc, min_eq_right hγ]
 
-variable {q' : D.below BJ → ExtOrd} {γ : ExtOrd}
+variable  {γ : ExtOrd}
 
-namespace Chart
 
-variable {k : ℕ} (C : Chart sem BJ q k)
-
-end Chart
-
-end VaughtConjecture.Knight.AmbientGradeCharts

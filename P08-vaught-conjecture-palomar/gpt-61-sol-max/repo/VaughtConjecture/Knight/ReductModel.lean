@@ -1,13 +1,17 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.Model
-public import VaughtConjecture.Knight.Coface
-public import VaughtConjecture.Knight.SuccLimitBandArithmetic
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.Model
+import VaughtConjecture.Knight.Coface
+import VaughtConjecture.Knight.SuccLimitBandArithmetic
 
 /-! # Reduction of models: Def. 3.2.1 under strict vertical reduction (#101)
 
@@ -57,8 +61,6 @@ This is the reduction half of §5.1 only; the converse (that a model of `S^α` e
 content of §5.3–5.5 and is not claimed (KVC-d23's stage-bounded `−∞`-pattern reroute is not
 needed here: the faithful clause, with unbounded `q'`, transfers as it stands). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open Value ExtOrd TypeTower
@@ -66,13 +68,11 @@ open Value ExtOrd TypeTower
 /-! ### Ordinal and label preliminaries -/
 
 /-- The finite part of a natural number is itself. -/
-theorem finitePart_natCast (k : ℕ) : finitePart (k : Ordinal.{0}) = k := by
-  have h := finitePart_limitPart_add_nat 0 k
-  rwa [limitPart, Ordinal.zero_div, mul_zero, zero_add] at h
+theorem finitePart_natCast (k : ℕ) : finitePart (k : Ordinal₀) = k := by simp_all [VaughtConjecture.Knight.Value.finitePart]
 
 /-- The label `n + 1` is self-visible at the threshold `n + 1` (`γ = γ ⊔⁺_{n+1} (n+1)`, Lemma
 2.2.4: its finite part is `n + 1`). -/
-theorem extVisibilityReplace_natCast_succ_self (n : ℕ) :
+theorem extVisibilityReplace_natCast_succ_self n :
     extVisibilityReplace (ofOrd (n + 1 : ℕ)) (n + 1) (n + 1) = ofOrd (n + 1 : ℕ) := by
   rw [extVisibilityReplace_self_iff]
   exact Or.inr (Or.inr ⟨_, rfl, (finitePart_natCast (n + 1)).symm.le⟩)
@@ -84,7 +84,7 @@ theorem min_eq_bot_iff_of_ne_bot {x γ : ExtOrd} (hγ : γ ≠ ⊥) : min x γ =
 
 namespace StageType
 
-variable {α : Ordinal.{0}} {n : ℕ}
+variable {α : Ordinal₀} {n : ℕ}
 
 /-- **The `−∞`-pattern transfers across truncation of the face.**  For `p : S β n` (any stage
 `β`), `D` an extension domain of `dom p`, a limit `α`, and `q'` respecting `D.rows` and
@@ -94,24 +94,25 @@ every cell of `D`.  This is `exists_respects_extends_capped` at the positive cut
 `γ = n + 1`: the capped-agreement premise holds since `n + 1 < ω ≤ α` (on a face cell either
 truncation is the identity, or both sides cap to `γ`), and `q'' ∧ γ = q' ∧ γ` with `γ > ⊥`
 preserves and reflects `⊥`. -/
-theorem exists_respects_extends_of_truncated {β : Ordinal.{0}} (hα : Order.IsSuccLimit α)
+theorem exists_respects_extends_of_truncated {β : Ordinal₀} (hα : Order.IsSuccLimit α)
     {p : S β n} {D : SemScheme (n + 1)} (hD : ExtendsDomain p D)
-    {q' : Cell D.scheme → ExtOrd} (hq' : RespectsSemantics D.rows q')
+    {q' : CellLabels D.scheme} (hq' : RespectsSemantics D.rows q')
     (hext : ∀ d, q' (hD.cellOf d) = truncExt α (p.label d)) :
-    ∃ q'' : Cell D.scheme → ExtOrd, RespectsSemantics D.rows q'' ∧
-      (∀ d, q'' d = ⊥ ↔ q' d = ⊥) ∧ ∀ d, q'' (hD.cellOf d) = p.label d := by
+    ∃ q'' , RespectsSemantics D.rows q'' ∧
+      (∀ d, q'' d = ⊥ ↔ q' d = ⊥) ∧ PointwiseEq (q'' ∘ hD.cellOf) p.label := by
   have hγα : ofOrd (n + 1 : ℕ) ≤ ofOrd α :=
     ofOrd_le_ofOrd.mpr
       ((Ordinal.natCast_lt_omega0 _).le.trans (Ordinal.omega0_le_of_isSuccLimit hα))
   have hne : ofOrd (n + 1 : ℕ) ≠ ⊥ := ofOrd_ne_bot _
   obtain ⟨q'', hq'', hcap, hext''⟩ := exists_respects_extends_capped hD hq'
     (extVisibilityReplace_natCast_succ_self n) (fun d => by
+      dsimp  
       rw [hext d]
       rcases le_or_gt (ofOrd α) (p.label d) with h | h
       · rw [truncExt_eq_top_of_ge h, min_eq_right le_top, min_eq_right (hγα.trans h)]
       · rw [truncExt_id_of_lt h])
   refine ⟨q'', hq'', fun d => ?_, hext''⟩
-  rw [← min_eq_bot_iff_of_ne_bot (x := q'' d) hne, hcap d, min_eq_bot_iff_of_ne_bot hne]
+  rw [← min_eq_bot_iff_of_ne_bot  hne, hcap d, min_eq_bot_iff_of_ne_bot hne]
 
 end StageType
 
@@ -126,9 +127,7 @@ variable {M : Type w} {n : ℕ} {α β : LimitStage}
 /-- A label of the reduct is the reduction of a label of the original. -/
 theorem eval_reduct_eq_some (h : α ≤ β) {R : KnightRealization β M} {t : Fin n ↪ M}
     {p' : S α.1 n} (hp' : (R.reduct h).eval t = some p') :
-    ∃ p : S β.1 n, R.eval t = some p ∧ reduceType α.2 h p = p' := by
-  have hp'' : (R.eval t).map (reduceType α.2 h) = some p' := hp'
-  exact Option.map_eq_some_iff.mp hp''
+    ∃ p , R.eval t = some p ∧ reduceType α.2 h p = p' := by simp_all [VaughtConjecture.Knight.knightTower, VaughtConjecture.TypeTower.Realization.reduct]
 
 /-- **Realized families reduce.**  If `R` realizes some member of `U` over `t` as a coface of
 `p`, and reduction sends `U` into `U'`, then the reduct realizes some member of `U'` over `t`
@@ -141,7 +140,7 @@ theorem RealizesSome.reduct (h : α ≤ β) {R : KnightRealization β M} {t : Fi
   refine ⟨y, hy, reduceType α.2 h q, hU q hqU, ?_, ?_⟩
   · exact (typeMap_reduceType_comm α.2 h Fin.castSuccEmb q).trans
       (congrArg (Option.map (reduceType α.2 h)) hqc)
-  · exact congrArg (Option.map (reduceType α.2 h)) hq
+  · aesop
 
 /-! ### Def. 3.2.1 under reduction, clause by clause -/
 
@@ -151,7 +150,7 @@ variable {R : KnightRealization β M}
 an extension domain of `reduce p` is one of `p`, and the reduction of a coface of `p` with
 domain `D` is a coface of `reduce p` with domain `D`. -/
 theorem IsModel.reduct_genSat (hR : R.IsModel) (h : α ≤ β) :
-    ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (R.reduct h).eval t = some p →
+    ∀ {n} t p, (R.reduct h).eval t = some p →
       ∀ D : SemScheme (n + 1), ExtendsDomain p D →
         RealizesSome (R.reduct h) t p (GenSatFamily D) := by
   intro n t p' hp' D hD
@@ -163,14 +162,14 @@ theorem IsModel.reduct_genSat (hR : R.IsModel) (h : α ≤ β) :
 `[γ, γ + ω)` lies below the limit `α` (`add_omega0_le_of_lt_isSuccLimit`), where `truncExt α` is
 the identity. -/
 theorem IsModel.reduct_uniformity (hR : R.IsModel) (h : α ≤ β) :
-    ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (R.reduct h).eval t = some p →
-      ∀ γ : Ordinal.{0}, IsNonSuccessor γ → γ < α.1 →
+    ∀ {n} t (p : S α.1 n), (R.reduct h).eval t = some p →
+      ∀ γ , IsNonSuccessor γ → γ < α.1 →
         RealizesSome (R.reduct h) t p (UniformityFamily γ) := by
   intro n t p' hp' γ hγ hγα
   obtain ⟨p, hp, rfl⟩ := eval_reduct_eq_some h hp'
   refine (hR.uniformity t p hp γ hγ (hγα.trans_le (show α.1 ≤ β.1 from h))).reduct h ?_
   rintro q ⟨Sig, h1, h2⟩
-  have hlt : q.label Sig < ofOrd α.1 :=
+  have hlt  :=
     h2.trans_le (ofOrd_le_ofOrd.mpr (add_omega0_le_of_lt_isSuccLimit α.2 hγα))
   exact ⟨Sig, le_of_le_of_eq h1 (truncExt_id_of_lt hlt).symm,
     lt_of_eq_of_lt (truncExt_id_of_lt hlt) h2⟩
@@ -178,14 +177,14 @@ theorem IsModel.reduct_uniformity (hR : R.IsModel) (h : α ≤ β) :
 /-- **(4)(c) high-grade dominance is preserved by reduction**: `truncExt α` is inflationary
 (`truncExt_le_self`) and grades are untouched. -/
 theorem IsModel.reduct_highGradeDominance (hR : R.IsModel) (h : α ≤ β) :
-    ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (R.reduct h).eval t = some p →
-      ∀ γ : Ordinal.{0}, γ < α.1 →
+    ∀ {n} t (p : S α.1 n), (R.reduct h).eval t = some p →
+      ∀ γ : Ordinal₀, γ < α.1 →
         RealizesSome (R.reduct h) t p (HighGradeDominanceFamily γ) := by
   intro n t p' hp' γ hγα
   obtain ⟨p, hp, rfl⟩ := eval_reduct_eq_some h hp'
   refine (hR.highGradeDominance t p hp γ (hγα.trans_le (show α.1 ≤ β.1 from h))).reduct h ?_
   rintro q ⟨Sig, hg, hl⟩
-  exact ⟨Sig, hg, hl.trans_le (truncExt_le_self _ _)⟩
+  exact ⟨Sig, hg, hl.trans_le (truncExt_le_self)⟩
 
 /-- **(4)(a)(ii) the prescribed `−∞`-pattern is preserved by reduction** (the clause flagged at
 risk in #101): the α-level pattern source `q'` extends the truncated `p`; by bountifulness at
@@ -194,8 +193,8 @@ source `q''` extending `p` with the same `⊥`-pattern, and the β-level witness
 with the pattern of `q'`, since `truncExt α` preserves and reflects `⊥`. -/
 theorem IsModel.reduct_bottomPattern (hR : R.IsModel) (h : α ≤ β) :
     ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (R.reduct h).eval t = some p →
-      ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : Cell D.scheme → ExtOrd),
-        RespectsSemantics D.rows q' → (∀ d, q' (hD.cellOf d) = p.label d) →
+      ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : CellLabels D.scheme),
+        RespectsSemantics D.rows q' → (PointwiseEq (q' ∘ hD.cellOf) p.label) →
         RealizesSome (R.reduct h) t p (BottomPatternFamily D q') := by
   intro n t p' hp' D hD q' hq' hext
   obtain ⟨p, hp, rfl⟩ := eval_reduct_eq_some h hp'
@@ -227,16 +226,16 @@ structure IsModelExceptBottomPattern : Prop where
     ∀ D : SemScheme (n + 1), ExtendsDomain p D → R.RealizesSome t p (GenSatFamily D)
   /-- Clause (4)(b), uniformity. -/
   uniformity : ∀ {n : ℕ} (t : Fin n ↪ M) (p : S β.1 n), R.eval t = some p →
-    ∀ γ : Ordinal.{0}, IsNonSuccessor γ → γ < β.1 → R.RealizesSome t p (UniformityFamily γ)
+    ∀ γ : Ordinal₀, IsNonSuccessor γ → γ < β.1 → R.RealizesSome t p (UniformityFamily γ)
   /-- Clause (4)(c), high-grade dominance. -/
   highGradeDominance : ∀ {n : ℕ} (t : Fin n ↪ M) (p : S β.1 n), R.eval t = some p →
-    ∀ γ : Ordinal.{0}, γ < β.1 → R.RealizesSome t p (HighGradeDominanceFamily γ)
+    ∀ γ : Ordinal₀, γ < β.1 → R.RealizesSome t p (HighGradeDominanceFamily γ)
 
 /-- The partial predicate together with the `−∞`-pattern clause is modelhood. -/
 theorem IsModelExceptBottomPattern.isModel (hR : R.IsModelExceptBottomPattern)
     (hb : ∀ {n : ℕ} (t : Fin n ↪ M) (p : S β.1 n), R.eval t = some p →
-      ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : Cell D.scheme → ExtOrd),
-        RespectsSemantics D.rows q' → (∀ d, q' (hD.cellOf d) = p.label d) →
+      ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : CellLabels D.scheme),
+        RespectsSemantics D.rows q' → (PointwiseEq (q' ∘ hD.cellOf) p.label) →
         R.RealizesSome t p (BottomPatternFamily D q')) : R.IsModel :=
   ⟨hR.nonempty, hR.consistent, hR.covering, hR.genSat, hb, hR.uniformity,
     hR.highGradeDominance⟩
@@ -254,6 +253,4 @@ vertical reduction. -/
 theorem IsModel.reduct (hR : R.IsModel) (h : α ≤ β) : IsModel (R.reduct h) :=
   (hR.reduct_exceptBottomPattern h).isModel (hR.reduct_bottomPattern h)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RelativeLadderRankRendering
-public import VaughtConjecture.Knight.WeightedSourcePrefixLayer
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.RelativeLadderRankRendering
+import VaughtConjecture.Knight.WeightedSourcePrefixLayer
 
 /-! # A weighted grade-two successor of the installed ladder
 
@@ -17,11 +18,8 @@ grade-one renderer, including all unused rungs and shadows. Every weighted node
 has a separately installed ceiling parent, including nodes of weight bottom.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LadderWeightedSuccessor
-open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
+open  Value ExtOrd SourcePrefixRows 
 noncomputable section
 variable {ι X Q U V : Type*} [DecidableEq ι]
   [Fintype X] [Fintype Q] [Fintype U] [Fintype V] {A : Finset ι}
@@ -30,7 +28,7 @@ variable {ι X Q U V : Type*} [DecidableEq ι]
 predecessor receipts consumed by the weighted installer is a field. -/
 structure Input (D : CellScheme A) where
   sem : Semantics D
-  proper : ∀ d : Cell D, D.scope d ≠ A
+  proper : ∀ d , D.scope d ≠ A
   height : 2 ≤ A.card
   field : Cell D → X
   fields : Q → X → ExtOrd
@@ -66,8 +64,8 @@ abbrev added (v : Node (U := U) (V := V)) : Cell I.carrier :=
   SourceLayerCarrier.toCell I.lower (Node (U := U) (V := V)) 2 (by decide) I.height (.inr v)
 
 omit [Fintype U] [Fintype V] in
-theorem separation (d : Cell I.lower) : ¬ GradedLe (A, 2) (I.lower.cell d) := by
-  rcases RelativeLadderLayer.cell_cases D I.one d with ⟨x, rfl⟩ | ⟨v, rfl⟩
+theorem separation d : ¬ GradedLe (A, 2) (I.lower.cell d) := by
+  rcases RelativeLadderLayer.cell_cases d with ⟨x, rfl⟩ | ⟨v, rfl⟩
   · rw [RelativeLadderLayer.old_index]
     exact SeparatedSourceLayerCarrier.separated_of_proper D 2 I.proper x
   · rw [RelativeLadderLayer.added_index]
@@ -80,35 +78,35 @@ abbrev member := (SeparatedSourceLayerCarrier.controllerEquiv I.lower (Node (U :
 @[simp] theorem member_controller (v : Node (U := U) (V := V)) :
     I.member (I.controller v) = v := Equiv.symm_apply_apply _ v
 
-def predecessor (u : U) : Cell I.lower → ExtOrd :=
+def predecessor (u : U) : CellLabels I.lower :=
   RelativeLadderLayer.renderWith D I.one I.field I.fields (I.anchor u) (I.upper u) I.ceiling
 
 omit [Fintype U] [Fintype V] in
-theorem predecessor_lawful (u : U) : RespectsSemanticsBelow I.lowerRows (A, 2)
+theorem predecessor_lawful u : RespectsSemanticsBelow I.lowerRows (A, 2)
     (fun d => I.predecessor u d.1) :=
   RelativeLadderLayer.renderWith_respects D I.sem I.one I.field I.fields I.proper _ _
     (I.rank_match u) (I.bounded u) (I.visible u)
     ((I.grid_visible _ I.ceiling_mem).mono (by decide)) (I.incoming u)
 
 omit [Fintype U] [Fintype V] in
-theorem predecessor_bound (u : U) (d : Cell I.lower) : I.predecessor u d ≤ I.ceiling :=
+theorem predecessor_bound u d : I.predecessor u d ≤ I.ceiling :=
   RelativeLadderLayer.renderWith_bound D I.one I.field I.fields _ _ (I.bounded u) d
 
 omit [Fintype U] [Fintype V] in
-theorem predecessor_prefix (u v : U) {h : ExtOrd} (hh : h ≤ I.ceiling)
-    (hag : Agree (I.upper u) (I.upper v) h) (d : Cell I.lower) :
+theorem predecessor_prefix u v {h} (hh : h ≤ I.ceiling)
+    (hag : Agree (I.upper u) (I.upper v) h) d :
     min (I.predecessor u d) h = min (I.predecessor v d) h :=
   RelativeLadderLayer.renderWith_agreement D I.one I.field I.fields
     (I.rank_match u) (I.rank_match v) (I.bounded u) (I.bounded v) hh hag d
 
-def lowerVector (u : U) (d : Cell I.carrier) : ExtOrd :=
+def lowerVector u d :=
   match SourceLayerCarrier.toOcc I.lower (Node (U := U) (V := V)) 2 (by decide) I.height d with
   | .inl x => I.predecessor u x
   | .inr _ => ⊥
 
-theorem lowerVector_old (u : U) (d : Cell I.lower) :
+theorem lowerVector_old u d :
     I.lowerVector u (I.old d) = I.predecessor u d := by
-  simp only [lowerVector, old, SourceLayerCarrier.toOcc_toCell]
+  simp  [lowerVector,  ]
 
 def data : ScopedSourcePrefixLayer.Data I.carrier 2 X where
   base := SeparatedSourceLayerCarrier.base I.lower (Node (U := U) (V := V)) 2
@@ -134,11 +132,10 @@ def data : ScopedSourcePrefixLayer.Data I.carrier 2 X where
   lower_lawful q c hg hc := by
     obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence I.lower (Node (U := U) (V := V))
       2 (by decide) I.height c hc
-    apply (SeparatedSourceLayerCarrier.base_respects_iff I.lower (Node (U := U) (V := V))
-      2 (by decide) I.height I.separation I.lowerRows x _).mpr
+    apply (SeparatedSourceLayerCarrier.base_respects_iff I.separation I.lowerRows x _).mpr
     change RespectsSemanticsBelow I.lowerRows _ (fun d => I.lowerVector _ (I.old d.1))
     have hx : GradedLe (I.lower.cell x) (A, 2) :=
-      ⟨I.lower.isPlan.subset_of_mem (I.lower.scope_mem_plan x), by
+      ⟨I.lower.scope_subset x, by
         simpa only [CellScheme.grade, SourceLayerCarrier.cell_toCell,
           SourceLayerCarrier.index] using hg⟩
     simpa only [lowerVector_old, CellScheme.below.mono] using (I.predecessor_lawful _).mono hx
@@ -147,94 +144,95 @@ def data : ScopedSourcePrefixLayer.Data I.carrier 2 X where
       2 (by decide) I.height d hd
     simpa only [lowerVector_old] using I.predecessor_prefix _ _ (I.grid_bound h hh) hag x
 
-def nodeWeight (v : Node (U := U) (V := V)) : ExtOrd :=
+def nodeWeight (v : Node (U := U) (V := V)) :=
   match v.2 with
   | none => I.ceiling
   | some x => I.upper v.1 (I.nodeField x)
-def weight (q : Controller I.carrier 2) : ExtOrd := I.nodeWeight (I.member q)
+def weight q := I.nodeWeight (I.member q)
 
-theorem weight_visible (q : Controller I.carrier 2) : SelfVis 2 (I.weight q) := by
+theorem weight_visible q : SelfVis 2 (I.weight q) := by
   unfold weight nodeWeight
   split
   · exact I.grid_visible _ I.ceiling_mem
   · exact I.node_visible _ _
 
-theorem parent (q : Controller I.carrier 2) :
+theorem parent q :
     ∃ p, I.data.boundary p = I.data.boundary q ∧ I.weight p = I.data.ceiling := by
   refine ⟨I.controller ((I.member q).1, none), ?_, ?_⟩
   · change I.upper (I.member (I.controller _)).1 = _
     rw [member_controller]; rfl
-  · simp only [weight, member_controller, nodeWeight]; rfl
+  · simp_all [weight] <;> aesop
 
 abbrev rows := WeightedSourcePrefixLayer.rows I.data I.weight I.weight_visible
-abbrev source (u : U) := WeightedSourcePrefixLayer.master I.data I.weight (I.controller (u, none))
+abbrev source u := WeightedSourcePrefixLayer.master I.data I.weight (I.controller (u, none))
 
-theorem source_lawful (u : U) : RespectsSemanticsBelow I.rows (A, 2)
+theorem source_lawful u : RespectsSemanticsBelow I.rows (A, 2)
     (fun d => I.source u d.1) :=
   WeightedSourcePrefixLayer.master_respects I.data I.weight I.weight_visible I.parent _
 
-theorem inherited_row (c : Cell I.lower) (d : I.lower.below (I.lower.cell c)) :
+theorem inherited_row c d :
     I.rows.E (I.old c) (SeparatedSourceLayerCarrier.ownerEquiv I.lower (Node (U := U) (V := V))
       2 (by decide) I.height I.separation c d) = I.lowerRows.E c d := by
   rw [WeightedSourcePrefixLayer.row_old _ _ _
-    (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ I.separation c)]
-  exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ I.separation _ c d
+    (SeparatedSourceLayerCarrier.old_not_full _ _ I.separation)]
+  exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ I.separation _ d
+
+local notation "old_occurrence₀" => SourceLayerCarrier.old_occurrence I.lower (Node ) 2 (by decide) I.height
 
 theorem consistent (hs : I.sem.IsConsistent) : I.rows.IsConsistent := by
   apply WeightedSourcePrefixLayer.consistent I.data I.weight I.weight_visible I.parent
   intro c hc
-  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence I.lower (Node (U := U) (V := V))
-    2 (by decide) I.height c hc
-  apply (SeparatedSourceLayerCarrier.base_respects_iff I.lower (Node (U := U) (V := V))
-    2 (by decide) I.height I.separation I.lowerRows x _).mpr
+  obtain ⟨x, rfl⟩ := old_occurrence₀ c hc
+  apply (SeparatedSourceLayerCarrier.base_respects_iff I.separation I.lowerRows x _).mpr
   simpa only [Function.comp_def, data, SeparatedSourceLayerCarrier.base_old] using
     RelativeLadderLayer.consistent D I.sem I.one I.field I.fields I.proper hs I.birth x
 
-theorem source_old (u : U) (d : Cell I.lower) : I.source u (I.old d) = I.predecessor u d := by
+theorem source_old u d : I.source u (I.old d) = I.predecessor u d := by
   rw [source, WeightedSourcePrefixLayer.master_old _ _ _
-    (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ I.separation d)]
+    (SeparatedSourceLayerCarrier.old_not_full _ _ I.separation)]
   change I.lowerVector (I.member (I.controller (u, none))).1 (I.old d) = _
   rw [member_controller, lowerVector_old]
 
-theorem source_original (u : U) (d : Cell D) :
+theorem source_original u d :
     I.source u (I.old (RelativeLadderLayer.old D I.one d)) = I.upper u (I.field d) := by
   rw [source_old]
-  exact RelativeLadderLayer.renderWith_old D I.one I.field I.fields _ _ _ (I.rank_match u) d
+  exact RelativeLadderLayer.renderWith_old I.one I.field (I.rank_match u)
 
-theorem source_prefix (u v : U) {h : ExtOrd} (hh : h ∈ I.grid)
+theorem source_prefix u v {h} (hh : h ∈ I.grid)
     (hag : Agree (I.upper u) (I.upper v) h)
     (d : I.carrier.below (A, 2)) : min (I.source u d.1) h = min (I.source v d.1) h := by
-  apply WeightedSourcePrefixLayer.master_prefix I.data I.weight hh (q := I.controller (v, none))
-    (p := I.controller (u, none)) ?_ d
+  apply WeightedSourcePrefixLayer.master_prefix I.data I.weight hh 
+     ?_ d
   change Agree (I.upper (I.member (I.controller _)).1)
     (I.upper (I.member (I.controller _)).1) h
   simpa only [member_controller] using hag
 
-theorem source_bound (u : U) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ 2) :
+theorem source_bound u d (hd : I.carrier.grade d ≤ 2) :
     I.source u d ≤ I.ceiling :=
   WeightedSourcePrefixLayer.master_bound I.data I.weight _ d hd
 
-theorem source_parent (u : U) : I.source u (I.added (u, none)) = I.ceiling := by
+theorem source_parent u : I.source u (I.added (u, none)) = I.ceiling := by
   change WeightedSourcePrefixLayer.master I.data I.weight (I.controller (u, none))
     (I.controller (u, none)).1 = _
   rw [WeightedSourcePrefixLayer.master_new]
-  change min (cut I.grid _ _) (I.weight (I.controller (u, none))) = _
+  
   simp only [data, member_controller, weight, nodeWeight]
   rw [cut_refl I.ceiling_mem I.grid_bound, min_self]
 
-theorem weight_kind (q : Controller I.carrier 2) :
+theorem weight_kind q :
     I.weight q = I.data.ceiling ∨ ∃ x, I.weight q = I.data.boundary q x := by
   unfold weight nodeWeight
   split
   · exact Or.inl rfl
   · exact Or.inr ⟨I.nodeField _, rfl⟩
 
+local notation "Supported₀" => OrbitPrefixSupport.Supported 2 (I.grid : Set ExtOrd)
+
 omit [Fintype U] [Fintype V] in
-theorem predecessor_supported (u : U) (d : Cell I.lower) :
-    OrbitPrefixSupport.Supported 2 (I.grid : Set ExtOrd) (I.upper u)
+theorem predecessor_supported u d :
+    Supported₀ (I.upper u)
       (I.predecessor u d) := by
-  rcases RelativeLadderLayer.renderWith_supported D I.one I.field I.fields
-      (I.anchor u) (I.upper u) I.ceiling d with hz | ⟨x, hx⟩ | hc
+  rcases RelativeLadderLayer.renderWith_supported D I.one I.field I.fields d with hz | ⟨x, hx⟩ | hc
   · exact Or.inl hz
   · rw [show I.predecessor u d = I.upper u x from hx]
     rcases ExtOrd.cases (I.upper u x) with hb | ht | ⟨v, hv⟩
@@ -244,52 +242,45 @@ theorem predecessor_supported (u : U) (d : Cell I.lower) :
       · exact Or.inr (Or.inr ⟨x, finitePart v, hi.le, by
           rw [hv, extVisibilityReplace_of_finitePart_lt hi, limitPart_add_finitePart]⟩)
       · exact Or.inr (Or.inr ⟨x, 2, le_rfl, by
-          rw [hv, extVisibilityReplace_of_le_finitePart (not_lt.mp hi)]⟩)
+          grind [extVisibilityReplace_of_le_finitePart]⟩)
   · apply Or.inr; apply Or.inl
     change RelativeLadderLayer.renderWith D I.one I.field I.fields _ _ _ _ ∈ I.grid
     rw [hc]; exact I.ceiling_mem
 
-theorem source_supported (u : U) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ 2) :
-    OrbitPrefixSupport.Supported 2 (I.grid : Set ExtOrd)
+theorem source_supported u d (hd : I.carrier.grade d ≤ 2) :
+    Supported₀
       (I.upper u) (I.source u d) := by
   have h := WeightedSourcePrefixLayer.master_supported I.data I.weight I.weight_visible
     I.weight_kind (fun q d _ hn => ?_) (I.controller (u, none)) d hd
-  · simpa only [source, data, member_controller] using h
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence I.lower (Node (U := U) (V := V))
-      2 (by decide) I.height d hn
-    change OrbitPrefixSupport.Supported 2 (I.grid : Set ExtOrd)
+  · simp_all [source, data]
+  · obtain ⟨x, rfl⟩ := old_occurrence₀ d hn
+    change Supported₀
       (I.upper (I.member q).1) (I.lowerVector _ (I.old x))
     rw [lowerVector_old]
     exact I.predecessor_supported (I.member q).1 x
 
-theorem source_prefix_all (u v : U) {h : ExtOrd} (hh : h ∈ I.grid)
-    (hag : Agree (I.upper u) (I.upper v) h) (d : Cell I.carrier) :
+theorem source_prefix_all u v {h} (hh : h ∈ I.grid)
+    (hag : Agree (I.upper u) (I.upper v) h) d :
     min (I.source u d) h = min (I.source v d) h := by
   by_cases hd : I.carrier.cell d = (A, 2)
   · exact I.source_prefix u v hh hag ⟨d, hd.symm ▸ GradedLe.refl _⟩
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence I.lower (Node (U := U) (V := V))
-      2 (by decide) I.height d hd
+  · obtain ⟨x, rfl⟩ := old_occurrence₀ d hd
     rw [source_old, source_old]
     exact I.predecessor_prefix u v (I.grid_bound h hh) hag x
 
-theorem source_supported_all (u : U) (d : Cell I.carrier) :
-    OrbitPrefixSupport.Supported 2 (I.grid : Set ExtOrd)
+theorem source_supported_all u d :
+    Supported₀
       (I.upper u) (I.source u d) := by
   by_cases hd : I.carrier.cell d = (A, 2)
-  · exact I.source_supported u d (by simp only [CellScheme.grade, hd, le_refl])
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence I.lower (Node (U := U) (V := V))
-      2 (by decide) I.height d hd
+  · exact I.source_supported u d (by simp_all)
+  · obtain ⟨x, rfl⟩ := old_occurrence₀ d hd
     rw [source_old]
     exact I.predecessor_supported u x
 
-theorem source_bound_all (u : U) (d : Cell I.carrier) : I.source u d ≤ I.ceiling := by
+theorem source_bound_all u d : I.source u d ≤ I.ceiling := by
   by_cases hd : I.carrier.cell d = (A, 2)
-  · exact I.source_bound u d (by simp only [CellScheme.grade, hd, le_refl])
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence I.lower (Node (U := U) (V := V))
-      2 (by decide) I.height d hd
+  · exact I.source_bound u d (by simp_all)
+  · obtain ⟨x, rfl⟩ := old_occurrence₀ d hd
     rw [source_old]
     exact I.predecessor_bound u x
 
-end Input
-end
-end VaughtConjecture.Knight.LadderWeightedSuccessor

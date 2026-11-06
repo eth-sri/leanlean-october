@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RowReadback
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.RowReadback
 
 /-! # The finite reference context (Lemma 8.1.1, finite labels) from `IsModel`
 
@@ -57,11 +59,9 @@ representatives read through the face map, the trigger `Σ♦`, the controllers 
 bountifulness (§9), and the `∞` branch (Lemma 8.1.1 clauses 1–2 and Def. 8.3.1 clauses 3–5).
 Construction-private, not root-exported. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization Value ExtOrd Cardinal
+open TypeTower StageType KnightRealization Value ExtOrd 
 
 universe w
 
@@ -72,12 +72,12 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 /-- A finite request: a block (to be a non-successor below the stage) and an offset. -/
 structure BlockRequest where
   /-- The requested limit block. -/
-  block : Ordinal.{0}
+  block : Ordinal₀
   /-- The requested finite offset. -/
   offset : ℕ
 
 /-- The requested value `μ + i`. -/
-def BlockRequest.value (r : BlockRequest) : Ordinal.{0} := r.block + r.offset
+def BlockRequest.value (r : BlockRequest) := r.block + r.offset
 
 /-- **The finite reference context** over a root tuple `t`, for the requests `reqs`. -/
 structure ReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M)
@@ -103,9 +103,9 @@ structure ReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪
   /-- The cap dominates every requested finite value. -/
   cap_dom : ∀ r ∈ reqs, ofOrd r.value < p₀.label capBase
   /-- The block representatives. -/
-  repBase : Ordinal.{0} → Cell p₀.scheme.scheme
+  repBase : Ordinal₀ → Cell p₀.scheme.scheme
   /-- Their offsets. -/
-  repOff : Ordinal.{0} → ℕ
+  repOff : Ordinal₀ → ℕ
   /-- Each representative carries its block plus a finite offset. -/
   rep_label : ∀ r ∈ reqs, p₀.label (repBase r.block) = ofOrd (r.block + repOff r.block)
   /-- The offsets are below the threshold. -/
@@ -131,29 +131,29 @@ namespace Ctx
 variable {n : ℕ} {t : Fin n ↪ M}
 
 /-- The root context. -/
-def root (p : S α.1 n) (hp : R.eval t = some p) : Ctx R t :=
+def root p (hp : R.eval t = some p) : Ctx R t :=
   ⟨n, t, Function.Embedding.refl _, by ext i; rfl, p, hp⟩
 
 /-- One coface step: adjoin a fresh point realizing a coface `q` of the current type. -/
-def step (C : Ctx R t) (y : M) (hy : y ∉ Set.range C.ctx) (q : S α.1 (C.m + 1))
+def step (C : Ctx R t) y (hy : y ∉ Set.range C.ctx) q
     (heval : R.eval (snoc C.ctx y hy) = some q) : Ctx R t :=
   ⟨C.m + 1, snoc C.ctx y hy, C.proj.trans Fin.castSuccEmb, by
     rw [Function.Embedding.trans_assoc, castSuccEmb_trans_snoc, C.proj_ctx], q, heval⟩
 
 /-- Old cells transport along a coface step, with their labels. -/
-theorem exists_cell_step (C : Ctx R t) {y : M} {hy : y ∉ Set.range C.ctx} {q : S α.1 (C.m + 1)}
+theorem exists_cell_step (C : Ctx R t) {y} {hy : y ∉ Set.range C.ctx} {q}
     (hq : IsCoface C.p₀ q) (heval : R.eval (snoc C.ctx y hy) = some q)
-    (d : Cell C.p₀.scheme.scheme) :
-    ∃ d' : Cell (C.step y hy q heval).p₀.scheme.scheme,
+    d :
+    ∃ d' ,
       (C.step y hy q heval).p₀.label d' = C.p₀.label d :=
   ⟨hq.extendsDomain.cellOf d, hq.label_cellOf d⟩
 
 /-- Every request in `rs` has an old cell labelled in its block: `μ + j` for some finite `j`. -/
-def HasCells (C : Ctx R t) (rs : List BlockRequest) : Prop :=
+def HasCells (C : Ctx R t) (rs : List BlockRequest) :=
   ∀ r ∈ rs, ∃ (c : Cell C.p₀.scheme.scheme) (j : ℕ), C.p₀.label c = ofOrd (r.block + j)
 
-theorem HasCells.step {C : Ctx R t} {rs : List BlockRequest}
-    (h : C.HasCells rs) {y : M} {hy : y ∉ Set.range C.ctx} {q : S α.1 (C.m + 1)}
+theorem HasCells.step {C : Ctx R t} {rs}
+    (h : C.HasCells rs) {y} {hy : y ∉ Set.range C.ctx} {q}
     (hq : IsCoface C.p₀ q) (heval : R.eval (snoc C.ctx y hy) = some q) :
     (C.step y hy q heval).HasCells rs := by
   intro r hr
@@ -162,11 +162,11 @@ theorem HasCells.step {C : Ctx R t} {rs : List BlockRequest}
   exact ⟨c', j, hc'.trans hc⟩
 
 /-- The same, with the offsets fixed in advance. -/
-def HasCellsWith (C : Ctx R t) (rs : List BlockRequest) (off : ∀ r, r ∈ rs → ℕ) : Prop :=
-  ∀ r (hr : r ∈ rs), ∃ c : Cell C.p₀.scheme.scheme, C.p₀.label c = ofOrd (r.block + off r hr)
+def HasCellsWith (C : Ctx R t) (rs : List BlockRequest) (off : ∀ r, r ∈ rs → ℕ) :=
+  ∀ r (hr : r ∈ rs), ∃ c , C.p₀.label c = ofOrd (r.block + off r hr)
 
-theorem HasCellsWith.step {C : Ctx R t} {rs : List BlockRequest} {off : ∀ r, r ∈ rs → ℕ}
-    (h : C.HasCellsWith rs off) {y : M} {hy : y ∉ Set.range C.ctx} {q : S α.1 (C.m + 1)}
+theorem HasCellsWith.step {C : Ctx R t} {rs} {off}
+    (h : C.HasCellsWith rs off) {y} {hy : y ∉ Set.range C.ctx} {q}
     (hq : IsCoface C.p₀ q) (heval : R.eval (snoc C.ctx y hy) = some q) :
     (C.step y hy q heval).HasCellsWith rs off := by
   intro r hr
@@ -179,9 +179,9 @@ end Ctx
 /-! ## Arithmetic helpers -/
 
 /-- A label in the band `[μ, μ + ω)` is `μ + j` for a finite `j`. -/
-theorem exists_nat_of_band {μ : Ordinal.{0}} {x : ExtOrd} (h1 : ofOrd μ ≤ x)
+theorem exists_nat_of_band {μ} {x} (h1 : ofOrd μ ≤ x)
     (h2 : x < ofOrd (μ + Ordinal.omega0)) : ∃ j : ℕ, x = ofOrd (μ + j) := by
-  obtain ⟨β, rfl⟩ : ∃ β : Ordinal.{0}, x = ofOrd β := by
+  obtain ⟨β, rfl⟩ : ∃ β : Ordinal, x = ofOrd β := by
     rcases x with _ | _ | β
     · exact absurd h1 (not_le.mpr (bot_lt_ofOrd μ))
     · exact absurd h2 (not_lt.mpr le_top)
@@ -193,9 +193,9 @@ theorem exists_nat_of_band {μ : Ordinal.{0}} {x : ExtOrd} (h1 : ofOrd μ ≤ x)
   rw [← hj, Ordinal.add_sub_cancel_of_le h1]
 
 /-- The finite maximum of a list of ordinals. -/
-noncomputable def listMax (l : List Ordinal.{0}) : Ordinal.{0} := l.foldr max 0
+noncomputable def listMax (l : List Ordinal₀) := l.foldr max 0
 
-theorem le_listMax {l : List Ordinal.{0}} {a : Ordinal.{0}} (h : a ∈ l) : a ≤ listMax l := by
+theorem le_listMax {l} {a} (h : a ∈ l) : a ≤ listMax l := by
   induction l with
   | nil => simp at h
   | cons b l ih =>
@@ -203,33 +203,33 @@ theorem le_listMax {l : List Ordinal.{0}} {a : Ordinal.{0}} (h : a ∈ l) : a �
     · exact le_max_left _ _
     · exact (ih h).trans (le_max_right _ _)
 
-theorem listMax_lt {l : List Ordinal.{0}} {γ : Ordinal.{0}} (h0 : 0 < γ)
+theorem listMax_lt {l} {γ} (h0 : 0 < γ)
     (h : ∀ a ∈ l, a < γ) : listMax l < γ := by
   induction l with
   | nil => exact h0
   | cons b l ih =>
-    exact max_lt (h b (List.mem_cons_self)) (ih fun a ha => h a (List.mem_cons_of_mem _ ha))
+    exact max_lt (h b List.mem_cons_self) (ih fun a ha => h a (List.mem_cons_of_mem _ ha))
 
 /-- Below a limit stage, a block plus a finite offset stays below the stage. -/
-theorem add_nat_lt_stage {μ : Ordinal.{0}} (hμ : μ < α.1) (j : ℕ) : μ + j < α.1 :=
+theorem add_nat_lt_stage {μ : Ordinal₀} (hμ : μ < α.1) (j : ℕ) : μ + j < α.1 :=
   lt_of_lt_of_le ((add_lt_add_iff_left μ).mpr (Ordinal.natCast_lt_omega0 j))
     (add_omega0_le_of_lt_isSuccLimit α.2 hμ)
 
-theorem stage_pos : (0 : Ordinal.{0}) < α.1 := by
+theorem stage_pos : (0 : Ordinal₀) < α.1 := by
   have := α.2.bot_lt
   simpa using this
 
 /-- **Bridge to `ReadbackInputs.block_limit`**: a non-successor block is its own limit part. -/
-theorem limitPart_eq_self_of_isNonSuccessor {μ : Ordinal.{0}} (h : Value.IsNonSuccessor μ) :
+theorem limitPart_eq_self_of_isNonSuccessor {μ} (h : Value.IsNonSuccessor μ) :
     limitPart μ = μ := by
   rcases h with rfl | h
   · simp [limitPart]
-  · exact le_antisymm (limitPart_le μ) (succLimit_le_limitPart h le_rfl)
+  · grind [le_antisymm, limitPart_le, succLimit_le_limitPart]
 
 /-- The finite maximum of a list of naturals. -/
-def natMax (l : List ℕ) : ℕ := l.foldr max 0
+def natMax (l : List ℕ) := l.foldr max 0
 
-theorem le_natMax {l : List ℕ} {a : ℕ} (h : a ∈ l) : a ≤ natMax l := by
+theorem le_natMax {l} {a} (h : a ∈ l) : a ≤ natMax l := by
   induction l with
   | nil => simp at h
   | cons b l ih =>
@@ -260,25 +260,24 @@ theorem exists_ctx_hasCells (hM : R.IsModel) (C : Ctx R t) (rs : List BlockReque
     · exact (h₁.step hcof heval) r' hr'
 
 /-- A request with a given block, when one exists. -/
-noncomputable def pick (reqs : List BlockRequest) (μ : Ordinal.{0})
-    (h : ∃ r ∈ reqs, r.block = μ) : BlockRequest := h.choose
+noncomputable def pick (reqs : List BlockRequest) (μ : Ordinal₀)
+    (h : ∃ r ∈ reqs, r.block = μ) := h.choose
 
-theorem pick_mem (reqs : List BlockRequest) (μ : Ordinal.{0}) (h : ∃ r ∈ reqs, r.block = μ) :
+theorem pick_mem {reqs : List BlockRequest} {μ : Ordinal₀} {h : ∃ r ∈ reqs, r.block = μ} :
     pick reqs μ h ∈ reqs := h.choose_spec.1
 
-theorem pick_block (reqs : List BlockRequest) (μ : Ordinal.{0}) (h : ∃ r ∈ reqs, r.block = μ) :
+theorem pick_block reqs μ (h : ∃ r ∈ reqs, r.block = μ) :
     (pick reqs μ h).block = μ := h.choose_spec.2
 
 open Classical in
 /-- Totalize a request-indexed assignment over blocks, with a default off the requested blocks. -/
 noncomputable def totalize {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r ∈ reqs → X)
-    (dflt : X) (μ : Ordinal.{0}) : X :=
-  if h : ∃ r ∈ reqs, r.block = μ then v (pick reqs μ h) (pick_mem reqs μ h) else dflt
+    (dflt : X) (μ : Ordinal₀) :=
+  if h : ∃ r ∈ reqs, r.block = μ then v (pick reqs μ h) (pick_mem) else dflt
 
 theorem totalize_of_ex {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r ∈ reqs → X)
-    (dflt : X) {μ : Ordinal.{0}} (h : ∃ r ∈ reqs, r.block = μ) :
-    totalize reqs v dflt μ = v (pick reqs μ h) (pick_mem reqs μ h) := by
+    (dflt : X) {μ : Ordinal₀} (h : ∃ r ∈ reqs, r.block = μ) :
+    totalize reqs v dflt μ = v (pick reqs μ h) (pick_mem) := by
   unfold totalize
   rw [dite_eq_left h]
 
-end VaughtConjecture.Knight

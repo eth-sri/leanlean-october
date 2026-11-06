@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.GrowthReplicatedLegal
-public import VaughtConjecture.Knight.WholeDonorAttachment
+import VaughtConjecture.Knight.GrowthReplicatedLegal
+import VaughtConjecture.Knight.WholeDonorAttachment
 
 /-! # The legal growth carrier attached to an actual private context
 
@@ -19,11 +18,8 @@ This constructs the legal scheme and literal face receipts. It does not
 assert a stage-bounded selected display or a model receiving theorem.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthAttachedCarrier
-open AmalgamationPlan Transform Value ExtOrd Growth
+open     Growth
 open CellScheme.restrictFace
 noncomputable section
 variable {n J : ℕ}
@@ -34,11 +30,13 @@ variable {n J : ℕ}
   (hC : C.restrictFace e hvC = Q)
   (hP : P.restrictFace Fin.castSuccEmb hvP = Q)
 
+local notation "plan_spec₀" => WholeDonorAttachment.plan_spec e C P Q hvC hvP hC hP
+
 /-- The same constructed attachment plan, in the growth family's orientation. -/
 def boundary : WholeDonorBoundary.Input Finset.univ
     (WholeDonorAttachment.donorScope e) WholeDonorAttachment.privateScope
     (WholeDonorAttachment.plan e C P Q hvC hvP hC hP) n (n + 1) J where
-  isPlan := (WholeDonorAttachment.plan_spec e C P Q hvC hvP hC hP).1
+  isPlan := (plan_spec₀).1
   left := P
   right := C
   common := Q
@@ -55,8 +53,8 @@ def boundary : WholeDonorBoundary.Input Finset.univ
   commute := (WholeDonorAttachment.commute e).symm
   intersection := (WholeDonorAttachment.root_right_image e).trans
     ((WholeDonorAttachment.intersection e).symm.trans (Finset.inter_comm _ _))
-  planLeft := (WholeDonorAttachment.plan_spec e C P Q hvC hvP hC hP).2.2.2.2
-  planRight := (WholeDonorAttachment.plan_spec e C P Q hvC hvP hC hP).2.2.1
+  planLeft := (plan_spec₀).2.2.2.2
+  planRight := (plan_spec₀).2.2.1
 
 variable (X : RelativeData C.scheme C.rows P.scheme P.rows)
   (T : RootAttachment Q Fin.castSuccEmb hvP hP e hvC hC X)
@@ -75,11 +73,11 @@ theorem donor_arity_lt : n + 1 < J :=
 include hsmall in
 theorem height : 2 ≤ (Finset.univ : Finset (Fin (J + 1))).card := by
   have := donor_arity_lt C P X hsmall
-  simp only [Finset.card_univ, Fintype.card_fin]
+  simp  
   omega
 
 include hsmall in
-theorem donor_proper : WholeDonorAttachment.donorScope e ⊂ Finset.univ :=
+def donor_proper :=
   Finset.ssubset_iff_subset_ne.mpr ⟨Finset.subset_univ _,
     WholeDonorAttachment.donor_proper e (donor_arity_lt C P X hsmall)⟩
 
@@ -91,40 +89,43 @@ local notation "hA" => height C P X hsmall
 local notation "hB" => donor_proper C P e X hsmall
 local notation "hD" => private_proper (J := J)
 
+variable {C P Q e hvC hvP hC hP X} in
 /-- No supplied plan, occurrence alignment, coverage or carrier lift is needed. -/
-abbrev semScheme : SemScheme (J + 1) :=
+abbrev semScheme :=
   GrowthReplicatedLegal.semScheme I X T hA hB hD hsmall
 
+variable {C P Q e hvC hvP hC hP X} in
 abbrev donorFace := GrowthReplicatedLegal.donor I X T hA hB hD hsmall
+variable {C P Q e hvC hvP hC hP X} in
 abbrev privateFace := GrowthReplicatedLegal.privateFace I X T hA hB hD hsmall
 
-local notation "E" => semScheme C P Q e hvC hvP hC hP X T hsmall
+local notation "E" => semScheme T hsmall
 
+variable {C P Q e hvC hvP hC hP X} in
 theorem donor_visible : Finset.univ.image (onePointProj e) ∈ (E).scheme.plan :=
   GrowthReplicatedLegal.donor_visible I X T hA hB hD hsmall
 
+variable {C P Q e hvC hvP hC hP X} in
 theorem private_visible : Finset.univ.image Fin.castSuccEmb ∈ (E).scheme.plan :=
   GrowthReplicatedLegal.private_visible I X T hA hB hD hsmall
 
 theorem restrict_donor :
-    (E).restrictFace (onePointProj e) (donor_visible C P Q e hvC hvP hC hP X T hsmall) = P :=
+    (E).restrictFace (onePointProj e) (donor_visible T hsmall) = P :=
   GrowthReplicatedLegal.restrict_donor I X T hA hB hD hsmall
 
 theorem restrict_private :
-    (E).restrictFace Fin.castSuccEmb (private_visible C P Q e hvC hvP hC hP X T hsmall) = C :=
+    (E).restrictFace Fin.castSuccEmb (private_visible T hsmall) = C :=
   GrowthReplicatedLegal.restrict_private I X T hA hB hD hsmall
 
-theorem donor_occurrence (d : Cell P.scheme) :
-    toCell (E).scheme (onePointProj e) (donor_visible C P Q e hvC hvP hC hP X T hsmall)
+theorem donor_occurrence d :
+    toCell (E).scheme (onePointProj e) (donor_visible T hsmall)
       (SemScheme.castCell (restrict_donor C P Q e hvC hvP hC hP X T hsmall).symm d) =
-      (donorFace C P Q e hvC hvP hC hP X T hsmall).map d :=
+      (donorFace T hsmall).map d :=
   GrowthReplicatedLegal.donor_occurrence I X T hA hB hD hsmall d
 
-theorem private_occurrence (d : Cell C.scheme) :
-    toCell (E).scheme Fin.castSuccEmb (private_visible C P Q e hvC hvP hC hP X T hsmall)
+theorem private_occurrence d :
+    toCell (E).scheme Fin.castSuccEmb (private_visible T hsmall)
       (SemScheme.castCell (restrict_private C P Q e hvC hvP hC hP X T hsmall).symm d) =
-      (privateFace C P Q e hvC hvP hC hP X T hsmall).map d :=
+      (privateFace T hsmall).map d :=
   GrowthReplicatedLegal.private_occurrence I X T hA hB hD hsmall d
 
-end
-end VaughtConjecture.Knight.GrowthAttachedCarrier

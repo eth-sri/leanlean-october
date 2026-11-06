@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorCatalogue
-public import VaughtConjecture.Knight.CanonicalFieldLayer
-public import VaughtConjecture.Knight.FinalGateDecoding
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorCatalogue
+import VaughtConjecture.Knight.CanonicalFieldLayer
+import VaughtConjecture.Knight.FinalGateDecoding
 
 /-! # The ordinary catalogue on the actual final gate layer
 
@@ -26,11 +27,8 @@ unprimed APIs preserved). The physical layer uses KVC's weighted installer
 and the reviewer's final-gate construction.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
+open   ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
 open PairedSlotComparison SharpWitnessComposition
 noncomputable section
 
@@ -41,11 +39,13 @@ abbrev Member := ↥R.Catalogue
 
 instance : Fintype (Member R) := R.catalogue_finite.fintype
 
-theorem member_short (a : Member R) (f : Field P C) : Short N (a.val f) :=
-  CanonicalPairedProfiles.inventory_short _ _ a.property.1 f
+def member_short (a : Member R) f :=
+  CanonicalPairedProfiles.inventory_short a.property.1 f
 
-theorem member_bound (a : Member R) (f : Field P C) :
-    a.val f ≤ CanonicalFieldLayer.ceiling N (Field P C) := by
+local notation "ceiling₀" => CanonicalFieldLayer.ceiling N (Field P C)
+
+theorem member_bound (a : Member R) f :
+    a.val f ≤ ceiling₀ := by
   apply (CanonicalPairedProfiles.inventory_bound _ _ a.property.1 f).trans
   exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
 
@@ -56,7 +56,7 @@ theorem member_gate_visible (a : Member R) : SelfVis N (a.val .gate) := by
   exact hg
 
 include R in
-theorem req_grade_le (d : Cell P.scheme) : P.scheme.grade d ≤ N :=
+theorem req_grade_le d : P.scheme.grade d ≤ N :=
   (Ref.gradeP_le d).trans (R.arity_lt).le
 
 include R in
@@ -67,8 +67,7 @@ theorem field_grade_le (f : Field P C) : f.grade ≤ N := by
   | gate => exact R.one_le_N
 
 /-- No future fields remain when the acquired context has arity `N`. -/
-theorem profile_present (st : R.State N) (f : Field P C) :
-    st.sourceProfile f = st.numeric f (field_grade_le R f) :=
+def profile_present {st : R.State N} {f : Field P C} :=
   st.sourceProfile_of_present (field_grade_le R f)
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
@@ -76,11 +75,11 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 /-- Install the catalogue with the common canonical grid. Only predecessor
 semantics and source-section data are supplied; all new rows are constructed. -/
 def install (sem : Semantics D) (hA : N ≤ A.card)
-    (hsep : ∀ d : Cell D, ¬ GradedLe (A, N) (D.cell d))
-    (lower : Member R → Cell D → ExtOrd)
+    (hsep : ∀ d , ¬ GradedLe (A, N) (D.cell d))
+    (lower : Member R → CellLabels D)
     (hlaw : ∀ a, RespectsSemanticsBelow sem (A, N) (fun d => lower a d.1))
     (hbound : ∀ a d, D.grade d ≤ N →
-      lower a d ≤ CanonicalFieldLayer.ceiling N (Field P C))
+      lower a d ≤ ceiling₀)
     (hprefix : ∀ a b h, h ∈ sourceGrid N (Fintype.card (Field P C)) →
       Agree a.val b.val h → ∀ d, D.grade d ≤ N →
         min (lower a d) h = min (lower b d) h) :
@@ -92,10 +91,10 @@ def install (sem : Semantics D) (hA : N ≤ A.card)
   fields a := a.val
   gate := .gate
   grid := sourceGrid N (Fintype.card (Field P C))
-  bot_mem := sourceGrid_bot _ _
-  ceiling := CanonicalFieldLayer.ceiling N (Field P C)
+  bot_mem := sourceGrid_bot
+  ceiling := ceiling₀
   ceiling_mem := sourceGrid_endpoint le_rfl
-  grid_bound _ hh := CanonicalFieldLayer.grid_bound N (Field P C) hh
+  grid_bound _ hh := CanonicalFieldLayer.grid_bound hh
   grid_visible _ hh := sourceGrid_visible hh
   lower := lower
   lower_lawful := hlaw
@@ -107,8 +106,8 @@ def install (sem : Semantics D) (hA : N ≤ A.card)
 /-- One catalogue member and one decoder recover the actual complete field
 vector. The gate is literally top after decoding, not merely positive. -/
 theorem exists_actual_member_reflecting :
-    ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
-      (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
+    ∃ (a : Member R) (δ : LabelMap), Witness (gTop N) δ ∧
+      (∀ d , δ (a.val (.req d)) = R.p d) ∧
       (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
       δ (a.val .gate) = ⊤ ∧
       ∀ f, δ (a.val f) = ⊥ ↔ a.val f = ⊥ := by
@@ -118,23 +117,19 @@ theorem exists_actual_member_reflecting :
       TopSupport.selfVis_top_ext N, rfl⟩
   obtain ⟨b, -, -, hprefix, -, hb, hcan, δ, hδ, hr⟩ := hadm.exists_terminal 0
   refine ⟨⟨PairedSlotEncoding.normalize N b, hcan, hb⟩, δ, hδ, ?_, ?_, ?_, ?_⟩
-  · intro d
-    exact (hr (.req d)).trans (profile_present R st (.req d))
-  · intro d
-    exact (hr (.priv d)).trans (profile_present R st (.priv d))
-  · exact (hr .gate).trans (profile_present R st .gate)
+  · simp_all [profile_present] <;> aesop
+  · simp_all [profile_present] <;> aesop
+  · simp_all [profile_present] <;> aesop
   · intro f
     rw [hr, PairedSlotEncoding.normalize_bot_iff]
     exact (bottom_pattern_of_cap_agreement (ofOrd_ne_bot 0) hprefix f).symm
 
 /-- The field-level exact display, without its finite reflection receipt. -/
 theorem exists_actual_member :
-    ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
+    ∃ (a : Member R) (δ : LabelMap), Witness (gTop N) δ ∧
       (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
       (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
       δ (a.val .gate) = ⊤ := by
   obtain ⟨a, δ, hw, hP, hC, hg, -⟩ := exists_actual_member_reflecting R
   exact ⟨a, δ, hw, hP, hC, hg⟩
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalCatalogue

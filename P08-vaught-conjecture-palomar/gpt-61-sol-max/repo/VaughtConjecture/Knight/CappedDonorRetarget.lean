@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorLowRef
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorLowRef
 
 /-! # Uniform top retargeting and exact old-face restoration (audit16 §2, note §3.1)
 
@@ -43,42 +44,40 @@ gluing restores them too.  No bound `KA ≤ K` on the root arity is needed; an e
 needs no extension call.  The cap `η` is used as a bountifulness cap only through `K`, never at
 a higher grade. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd AmalgamationPlan
+open  Value  
 
 /-! ## Vertical gluing -/
 
-section Glue
+section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D}
 
 open Classical in
 /-- The glued section: the lower section on the lower set, the full section above. -/
-noncomputable def glueSection {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) (d : D.below BJ) : ExtOrd :=
+noncomputable def glueSection {CI BJ : GradedIndex ι} (w : BelowLabels D CI)
+    (q : BelowLabels D BJ) (d : D.below BJ) :=
   if hd : GradedLe (D.cell d.1) CI then w ⟨d.1, hd⟩ else q d
 
-theorem glueSection_of_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : GradedLe (D.cell d.1) CI) :
+theorem glueSection_of_le {CI BJ} w
+    q {d : D.below BJ} (hd : GradedLe (D.cell d.1) CI) :
     glueSection w q d = w ⟨d.1, hd⟩ := by
   unfold glueSection; rw [dite_eq_left hd]
 
-theorem glueSection_of_not_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : ¬ GradedLe (D.cell d.1) CI) :
+theorem glueSection_of_not_le {CI BJ : GradedIndex ι} (w : BelowLabels D CI)
+    (q : BelowLabels D BJ) {d : D.below BJ} (hd : ¬ GradedLe (D.cell d.1) CI) :
     glueSection w q d = q d := by
   unfold glueSection; rw [dite_eq_right hd]
 
 /-- **Vertical gluing**: with `CI` of the same scope as `BJ` and lower grade, a lawful section
 `w` on `CI` and a lawful section `q` on `BJ` glue to a lawful section on `BJ` provided that, at
 every owner `Sig` of `BJ` above `CI`, `w` reads like `q` below `Sig` capped at `q Sig`. -/
-theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI BJ)
-    (hscope : CI.1 = BJ.1) {q : D.below BJ → ExtOrd} (hq : RespectsSemanticsBelow sem BJ q)
-    {w : D.below CI → ExtOrd} (hw : RespectsSemanticsBelow sem CI w)
-    (hcompat : ∀ Sig : D.below BJ, ¬ GradedLe (D.cell Sig.1) CI →
-      ∀ (d : D.below (D.cell Sig.1)) (hd : GradedLe (D.cell d.1) CI),
+theorem RespectsSemanticsBelow.glue {CI BJ} (h : GradedLe CI BJ)
+    (hscope : CI.1 = BJ.1) {q} (hq : RespectsSemanticsBelow sem BJ q)
+    {w} (hw : RespectsSemanticsBelow sem CI w)
+    (hcompat : ∀ Sig , ¬ GradedLe (D.cell Sig.1) CI →
+      ∀ d hd,
         min (w ⟨d.1, hd⟩) (q Sig) = min (q (CellScheme.below.incl Sig d)) (q Sig)) :
     RespectsSemanticsBelow sem BJ (glueSection w q) where
   orderly d := by
@@ -88,7 +87,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
   locality Sig := by
     by_cases hS : GradedLe (D.cell Sig.1) CI
     · have key := hw.locality ⟨Sig.1, hS⟩
-      have heq : (fun d : D.below (D.cell Sig.1) =>
+      have heq : (fun d =>
           min (glueSection w q (CellScheme.below.incl Sig d)) (glueSection w q Sig)) =
           fun d => min (w (CellScheme.below.incl ⟨Sig.1, hS⟩ d)) (w ⟨Sig.1, hS⟩) := by
         funext d
@@ -96,7 +95,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
         rfl
       rw [heq]; exact key
     · have key := hq.locality Sig
-      have heq : (fun d : D.below (D.cell Sig.1) =>
+      have heq : (fun d =>
           min (glueSection w q (CellScheme.below.incl Sig d)) (glueSection w q Sig)) =
           fun d => min (q (CellScheme.below.incl Sig d)) (q Sig) := by
         funext d
@@ -128,69 +127,53 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
       rw [glueSection_of_not_le w q hS, glueSection_of_not_le w q hX]
       exact hle
 
-end Glue
+end
 
 namespace CappedDonor
 
 namespace Ref
 
-variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C}
+variable {I : Type*} [Fintype I]   
+  
 
 /-! ## The donor's source separation at a donor-top owner -/
 
 /-! ## Uniform retargeting -/
 
-section Retarget
+section
 
-variable {K : ℕ} (L : R.LowRef K) {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
+variable {K j : ℕ} 
   {b η : ExtOrd}
 
-/-- The hypotheses of the retargeting lemma: a lawful section whose donor non-top values lie
-strictly below a positive `K`-visible `b` and whose donor-top values are at least `b`, and a
-`K`-visible target `η ≥ b`. -/
-structure RetargetData (u : P.scheme.below (effP nP j) → ExtOrd) (b η : ExtOrd) : Prop where
-  respects : RespectsSemanticsBelow P.rows (effP nP j) u
-  b_vis : SelfVis K b
-  b_pos : ⊥ < b
-  nonTop_lt : ∀ d, R.p d.1 ≠ ⊤ → u d < b
-  top_ge : ∀ d, R.p d.1 = ⊤ → b ≤ u d
-  η_vis : SelfVis K η
-  b_le_η : b ≤ η
+variable (hj : K ≤ j) 
 
-variable (hj : K ≤ j) (hu : RetargetData (R := R) (K := K) u b η)
-
-include L hj hu
+include  hj 
 
 /-- The shifter at a donor-top owner: the old witness where it is bottom or below the rounded
 non-top sources, constantly `η` above. -/
-noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η : ExtOrd) (x : ExtOrd) : ExtOrd :=
+noncomputable def retargetShifter (τ : LabelMap) (a η x : ExtOrd) :=
   if τ x = ⊥ then ⊥ else if x ≤ a then τ x else η
 
-omit L hj hu in
-theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x = ⊥) :
+omit  hj  in
+theorem retargetShifter_of_bot {τ} {a η x} (h : τ x = ⊥) :
     retargetShifter τ a η x = ⊥ := by
   unfold retargetShifter; rw [ite_eq_left h]
 
-omit L hj hu in
-theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x ≤ a) :
-    retargetShifter τ a η x = τ x := by
-  unfold retargetShifter
-  by_cases h : τ x = ⊥
-  · rw [ite_eq_left h, h]
-  · rw [ite_eq_right h, ite_eq_left hx]
+omit  hj  in
+theorem retargetShifter_of_le {τ} {a η x} (hx : x ≤ a) :
+    retargetShifter τ a η x = τ x := by simp_all [retargetShifter]
 
-omit L hj hu in
-theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x ≠ ⊥) (hx : a < x) :
+omit  hj  in
+theorem retargetShifter_of_lt {τ} {a η x} (h : τ x ≠ ⊥) (hx : a < x) :
     retargetShifter τ a η x = η := by
   unfold retargetShifter; rw [ite_eq_right h, ite_eq_right (not_le.mpr hx)]
 
-omit L hj hu in
+omit  hj  in
 /-- The retargeting shifter is a normalized witness through `k` whenever the old witness is, the
 split point is `k`-visible with the old witness at most `b ≤ η` there, and `η` is `k`-visible and
 positive. -/
-theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop k) τ)
-    {a b η : ExtOrd} (ha : SelfVis k a) (hτa : τ a ≤ b) (hbη : b ≤ η) (hη : SelfVis k η)
+theorem retargetShifter_witness {k} {τ} (hτ : Witness (gTop k) τ)
+    {a b η} (ha : SelfVis k a) (hτa : τ a ≤ b) (hbη : b ≤ η) (hη : SelfVis k η)
     (hηpos : ⊥ < η) : Witness (gTop k) (retargetShifter τ a η) where
   anti := hτ.anti
   vis := hτ.vis
@@ -224,15 +207,15 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
         · have h2 : a < extVisibilityReplace x kk i :=
             lt_evr_of_selfVis_lt (ha.mono hkk) (not_le.mp hxa)
           have h3 : τ (extVisibilityReplace x kk i) ≠ ⊥ := by
-            rw [h1]; exact extVisibilityReplace_ne_bot hx _ _
+            rw [h1]; exact extVisibilityReplace_ne_bot hx
           rw [retargetShifter_of_lt hx (not_le.mp hxa), retargetShifter_of_lt h3 h2,
-            evr_eq_self_of_selfVis (hη.mono hkk) i]
+            evr_eq_self_of_selfVis (hη.mono hkk)]
     · -- above `k` the suppressor is bottom: bottom is closed under replacement
       rw [gTop_of_gt (not_le.mp hkk), le_bot_iff] at hle
       have hx : τ x = ⊥ := by
         by_contra hx
         unfold retargetShifter at hle
-        rw [ite_eq_right hx] at hle
+        
         split_ifs at hle with hxa
         · exact hx hle
         · exact absurd hle (ne_bot_of_gt hηpos)
@@ -243,10 +226,6 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
 
 /-! ## Exact old-face restoration -/
 
-end Retarget
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

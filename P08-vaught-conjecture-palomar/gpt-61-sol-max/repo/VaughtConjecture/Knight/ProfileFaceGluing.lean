@@ -3,9 +3,8 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ProfileFaceUnion
+import VaughtConjecture.Knight.ProfileFaceUnion
 
 /-! # Original-cap completion survives face gluing and profile saturation
 
@@ -16,19 +15,13 @@ lifting theorem. These are boundary and row-family statements; no forcing
 condition or new support-plan legality is inferred.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ProfileFaceGluing
 
-open Transform Value ExtOrd NormalizedProfileFamily
 
-variable {C X Y Z : Type*}
 
-variable (f : C ↪ X) (g : C ↪ Y) (L : OrderLaw X) (R : OrderLaw Y)
-variable {K : (C → ExtOrd) → Prop}
+variable {C X Y  : Type*}
 
+variable  (g : C ↪ Y)  
 open ProfileFaceUnion
 
 noncomputable instance [Fintype X] [Fintype Y] : Fintype (Carrier (X := X) g) := by
@@ -36,4 +29,3 @@ noncomputable instance [Fintype X] [Fintype Y] : Fintype (Carrier (X := X) g) :=
   unfold Carrier
   infer_instance
 
-end VaughtConjecture.Knight.ProfileFaceGluing

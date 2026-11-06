@@ -1,11 +1,22 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ReceivingCatalogueAdmission
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.CappedDonorAdmission
+import VaughtConjecture.Knight.PrivateRowFactorization
+import VaughtConjecture.Knight.CappedDonorLowHighNormalization
+import VaughtConjecture.Knight.CanonicalPairedInverse
+import VaughtConjecture.Knight.PairedSlotComparison
+import VaughtConjecture.Knight.OrbitPrefixSupport
+import VaughtConjecture.Knight.LadderScalarRendering
+import VaughtConjecture.Knight.SourcePrefixRows
+import VaughtConjecture.Knight.AmbientGradeCharts
 
 /-! # Rank preservation for downward catalogue normalization
 
@@ -20,27 +31,20 @@ There is no converse: a newly repaired grade-one source is not thereby an
 installed grade-two controller. No carrier or row is changed here.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueRanks
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref
+
 open LadderScalarRendering
-noncomputable section
+
 
 /-- A tracked monotone encoding with a monotone inverse preserves finite ranks. -/
 theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
-    {f g : ExtOrd → ExtOrd} (hf : Monotone f) (hg : Monotone g)
+    {f g : LabelMap} (hf : Monotone f) (hg : Monotone g)
     (hfbot : f ⊥ = ⊥) (hgbot : g ⊥ = ⊥)
     (hinv : ∀ d, g (f (p d)) = p d) (d : X) :
     fieldRank (fun e => f (p e)) d = fieldRank p d := by
-  classical
+  
   have hpos (e : X) : f (p e) ≠ ⊥ ↔ p e ≠ ⊥ := by
-    constructor
-    · intro h he
-      exact h (he ▸ hfbot)
-    · intro h he
-      exact h ((hinv e).symm.trans ((congrArg g he).trans hgbot))
+    grind
   have he : (values (fun e => f (p e))).filter (· ≤ f (p d)) =
       ((values p).filter (· ≤ p d)).image f := by
     ext y
@@ -66,24 +70,22 @@ theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
   simpa only [hinv] using congrArg g hxy
 
 /-- Paired-slot normalization preserves all ranks, not just the bottom pattern. -/
-theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
-    (hp : ∀ d, p d ≠ ⊤) (d : X) :
+theorem fieldRank_normalize {X : Type*} [Fintype X] {j : ℕ} {p : X → ExtOrd}
+    (hp : AvoidsValue p ⊤) {d : X} :
     fieldRank (PairedSlotEncoding.normalize j p) d = fieldRank p d := by
   let f := PairedSlotIncoming.encoder j (PairedSlotEncoding.values p)
   let g := PairedSlotDecoder.decode j (PairedSlotEncoding.values p) ∅ ⊥
   have hf := PairedSlotIncoming.encoder_bounded j (PairedSlotEncoding.values p)
   have hg : Witness (gTop j) g :=
-    PairedSlotDecoder.decode_witness (by simp) (selfVis_bot j)
+    PairedSlotDecoder.decode_witness (by simp [VisibleOn]) (selfVis_bot)
   have hinv (e : X) : g (f (p e)) = p e := by
-    dsimp only [f, g]
+    dsimp  [f, ]
     rw [PairedSlotIncoming.encoder_profile]
-    exact PairedSlotDecoder.decode_normalize (by simp) (selfVis_bot j) hp e
+    exact PairedSlotDecoder.decode_normalize (by simp [VisibleOn]) (selfVis_bot) hp
   have h := fieldRank_of_leftInverse p hf.mono hg.mono hf.bot hg.bot hinv d
-  simpa only [f, PairedSlotIncoming.encoder_profile] using h
+  simpa only [ PairedSlotIncoming.encoder_profile] using h
 
-variable {I : Type*} [Fintype I] {nP N J K : ℕ}
-  {P : SemScheme (nP + 1)} {C : SemScheme J} {R : Ref I nP N J P C}
-  (L : R.LowRef K)
+variable {I : Type*} [Fintype I] 
+    
 
-end
-end VaughtConjecture.Knight.ReceivingCatalogueRanks
+

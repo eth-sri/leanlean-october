@@ -3,13 +3,16 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.OrdinaryAttachedReceiving
-public import VaughtConjecture.Knight.CappedDonorComparisonRequest
-public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.ExtensionSets
-public import VaughtConjecture.Knight.CapObservation
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.OrdinaryAttachedReceiving
+import VaughtConjecture.Knight.CappedDonorComparisonRequest
+import VaughtConjecture.Knight.TopSupportReceiving
+import VaughtConjecture.Knight.ReductModel
+import VaughtConjecture.Knight.Reduction
+import VaughtConjecture.Knight.ActualOccurrence
+import VaughtConjecture.Knight.CapObservation
 
 /-! # Finite-cut receiving in a model
 
@@ -46,11 +49,9 @@ proper cutoff `δ = ofOrd ν`:
 No probe-existence interface is introduced: the probe is the constructed scheme, and the model
 supplies the coface.  The conclusion is capped agreement, not literal donor tops. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.OrdinaryModelReceiving
 
-open TypeTower StageType KnightRealization Value ExtOrd CappedDonor AmalgamationPlan
+open TypeTower StageType KnightRealization  ExtOrd CappedDonor 
 
 universe w
 
@@ -59,18 +60,14 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 /-- Two stage types with equal domains and labels agreeing through `castCell` are equal
 (the statement of `ReadbackReceiver`'s `StageType.ext_of_label`, restated here to keep that
 module's imports out of this one). -/
-theorem ext_of_label {n : ℕ} {t₁ t₂ : S α.1 n} (hs : t₁.scheme = t₂.scheme)
-    (hl : ∀ i, t₁.label i = t₂.label (SemScheme.castCell hs i)) : t₁ = t₂ := by
-  obtain ⟨s₂, l₂, hb₂, hr₂⟩ := t₂
-  dsimp only at hs
-  subst hs
-  exact StageType.ext rfl (heq_of_eq (funext fun i => hl i))
+theorem ext_of_label {n} {t₁ t₂ : S α.1 n} (hs : t₁.scheme = t₂.scheme)
+    (hl : ∀ i, t₁.label i = t₂.label (SemScheme.castCell hs i)) : t₁ = t₂ := by exact?
 
 /-- Lawfulness transports along an equality of schemes. -/
-theorem respects_of_scheme_eq {n : ℕ} {X : SemScheme n} (t : S α.1 n) (h : t.scheme = X) :
+theorem respects_of_scheme_eq {n} {X} (t : S α.1 n) (h : t.scheme = X) :
     RespectsSemantics X.rows (fun c => t.label (SemScheme.castCell h.symm c)) := by
   obtain ⟨s, l, hb, hr⟩ := t
-  dsimp only at h
+  
   subst h
   exact hr
 
@@ -102,11 +99,10 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
   subst hut
   obtain ⟨hvP, hP, hvC, hC, hface⟩ := hface
   -- the legal probe and its exact faces
-  let D : SemScheme (k + 5) :=
+  let D  :=
     OrdinaryAttachedReceiving.semScheme p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf hA hA' hK
       hface
-  have hvis := OrdinaryAttachedReceiving.private_visible p₀.scheme q.scheme p.scheme e hvC hvP hC
-    hP Rf hA hA' hK hface
+  have hvis := OrdinaryAttachedReceiving.private_visible hA hA' hK hface
   have hres := OrdinaryAttachedReceiving.private_restrict p₀.scheme q.scheme p.scheme e hvC hvP hC
     hP Rf hA hA' hK hface
   have hD : ExtendsDomain p₀ D := ⟨hvis, hres⟩
@@ -115,12 +111,13 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
     p.scheme e hvC hvP hC hP Rf hA hA' hK hface
   -- the model's prescribed-bottom-pattern clause over the private tuple
   obtain ⟨y, hy, q₁, ⟨h₁, hpat⟩, hcof, hev⟩ := hM.bottomPattern u p₀ hu D hD r hr (fun d => by
+    dsimp only [Function.comp_def]
     rw [ExtendsDomain.cellOf]
     rw [OrdinaryAttachedReceiving.private_toCell p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
       hA hA' hK hface d, hrv d, hRv])
   -- the realized section on the probe
-  let qq : Cell D.scheme → ExtOrd := fun c => q₁.label (SemScheme.castCell h₁.symm c)
-  have hqq : RespectsSemantics D.rows qq := respects_of_scheme_eq q₁ h₁
+  let qq  := fun c => q₁.label (SemScheme.castCell h₁.symm c)
+  have hqq  := respects_of_scheme_eq q₁ h₁
   let t' : S α.1 (k + 5) := ⟨D, qq, fun c => q₁.label_bound _, hqq⟩
   have ht' : q₁ = t' := ext_of_label h₁ (fun i => rfl)
   rw [ht'] at hcof hev
@@ -146,8 +143,7 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
   have hread := fun d => OrdinaryAttachedReceiving.readback_below p₀.scheme q.scheme p.scheme e
     hvC hvP hC hP Rf hA hA' hK hface hqq hretain a hgate hδ d
   -- restriction to the donor face over the root tuple
-  have hvreq := OrdinaryAttachedReceiving.request_visible p₀.scheme q.scheme p.scheme e hvC hvP hC
-    hP Rf hA hA' hK hface
+  have hvreq := OrdinaryAttachedReceiving.request_visible hA hA' hK hface
   have hrreq := OrdinaryAttachedReceiving.request_restrict p₀.scheme q.scheme p.scheme e hvC hvP
     hC hP Rf hA hA' hK hface
   have hy' : y ∉ Set.range (e.trans u) := fun ⟨j, hj⟩ => hy ⟨e j, hj⟩
@@ -158,7 +154,7 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
     exact typeMap_eq_some (onePointProj e) t' hvreq
   · intro d
     have key := hread (SemScheme.castCell hrreq d)
-    rw [← OrdinaryAttachedReceiving.request_toCell p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
+    erw [← OrdinaryAttachedReceiving.request_toCell p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
       hA hA' hK hface (SemScheme.castCell hrreq d), hRp] at key
     exact key
 
@@ -166,14 +162,13 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
 cutoff and above the threshold floor `3`, then `fc_of_reference`. -/
 theorem finiteCutReceiving (hM : R.IsModel) : FiniteCutReceiving R := by
   intro n t p hp P hP δ hδbot hδα
-  obtain ⟨ν, rfl, hν⟩ : ∃ ν : Ordinal.{0}, δ = ofOrd ν ∧ ν < α.1 := by
+  obtain ⟨ν, rfl, hν⟩ : ∃ ν : Ordinal, δ = ofOrd ν ∧ ν < α.1 := by
     rcases ExtOrd.cases δ with rfl | rfl | ⟨ν, rfl⟩
     · exact absurd hδbot (lt_irrefl _)
-    · exact absurd hδα (not_lt.mpr le_top)
-    · exact ⟨ν, rfl, ofOrd_lt_ofOrd.mp hδα⟩
+    · simp_all
+    · simp_all
   obtain ⟨C, -, Rf, hRp, hRv, -, hK, hA', hA, -, -, -, -, hface, hm, hNmin, -, hlt, -⟩ :=
     exists_ref_above_cut_min hM p hp P hP ν hν 3
   exact fc_of_reference hM hp P hm (by omega) C.eval_ctx C.proj C.proj_ctx Rf hRp hRv hK hA' hA
     hface hlt.le
 
-end VaughtConjecture.Knight.OrdinaryModelReceiving

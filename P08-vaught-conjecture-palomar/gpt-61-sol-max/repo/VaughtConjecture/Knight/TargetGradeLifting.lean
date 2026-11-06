@@ -1,14 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedLiftComposition
-public import VaughtConjecture.Knight.SeparatedLayerFace
-public import VaughtConjecture.Knight.SingleFaceTailRestoration
-public import VaughtConjecture.Knight.GradeCutLifting
+import VaughtConjecture.Knight.CappedLiftComposition
+import VaughtConjecture.Knight.SeparatedLayerFace
+import VaughtConjecture.Knight.SingleFaceTailRestoration
+import VaughtConjecture.Knight.GradeCutLifting
 
 /-! # Target-grade induction for original-cap lifting
 
@@ -19,28 +20,21 @@ successor is installed. Native repair and independent bottom supply remain
 separate construction obligations.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TargetGradeLifting
-open Transform Value ExtOrd AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
+open    AmalgamationPlan CoatomBoundaryExtension
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
   (sem : Semantics D)
 
 /-- Every valid pair up to a target grade; no completeness assertion is included. -/
-def Through (r : ℕ) : Prop :=
-  ∀ {I J : Finset ι × ℕ}, I ∈ Plan.gradedPlan D.plan →
+def Through r :=
+  ∀ {I J}, I ∈ Plan.gradedPlan D.plan →
     J ∈ Plan.gradedPlan D.plan → (h : GradedLe I J) → J.2 ≤ r → CappedLift sem h
-
-theorem zero : Through sem 0 := by
-  intro I J _ hJ _ hj
-  exact False.elim ((not_lt_of_ge hj) (Plan.mem_gradedPlan.mp hJ).2.1)
 
 /-- The successor ledger requires only the genuinely new same-grade clauses.
 All lower-source grade changes are constructed using the lawful upper ambient. -/
-theorem successor {r : ℕ} (hprev : Through sem r)
-    (hnext : ∀ (C B : Finset ι), (C, r + 1) ∈ Plan.gradedPlan D.plan →
+theorem successor {r} (hprev : Through sem r)
+    (hnext : ∀ C B, (C, r + 1) ∈ Plan.gradedPlan D.plan →
       (B, r + 1) ∈ Plan.gradedPlan D.plan → (h : C ⊆ B) →
       CappedLift sem (show GradedLe (C, r + 1) (B, r + 1) from ⟨h, le_rfl⟩)) :
     Through sem (r + 1) := by
@@ -63,27 +57,27 @@ that its source producer has been supplied. -/
 theorem restore {C B : Finset ι} {j : ℕ} (hprev : Through sem j)
     (hC : (C, j) ∈ Plan.gradedPlan D.plan) (hB : (B, j) ∈ Plan.gradedPlan D.plan)
     (hCB : C ⊆ B)
-    {p : D.below (C, j + 1) → ExtOrd} {u q : D.below (B, j + 1) → ExtOrd}
+    {p : BelowLabels D (C, j + 1)} {u q : BelowLabels D (B, j + 1)}
     (hp : RespectsSemanticsBelow sem (C, j + 1) p)
     (hu : RespectsSemanticsBelow sem (B, j + 1) u)
     {M γ : ExtOrd} (hM : SelfVis (j + 1) M) (hγM : γ ≤ M)
     (hread : ∀ d, u (CellScheme.below.mono
       (show GradedLe (C, j + 1) (B, j + 1) from ⟨hCB, le_rfl⟩) d) = min (p d) M)
-    (hmax : ∀ d : D.below (C, j + 1), D.grade d.1 = j + 1 → p d ≤ M)
-    (hcap : ∀ d, min (u d) γ = min (q d) γ) :
+    (hmax : ∀ d , D.grade d.1 = j + 1 → p d ≤ M)
+    (hcap : CappedEq u q γ) :
     ∃ r, RespectsSemanticsBelow sem (B, j + 1) r ∧
-      (∀ d, min (r d) γ = min (q d) γ) ∧
+      (CappedEq r q γ) ∧
       ∀ d, r (CellScheme.below.mono
         (show GradedLe (C, j + 1) (B, j + 1) from ⟨hCB, le_rfl⟩) d) = p d := by
   obtain ⟨r, hr, hread', hcap', _⟩ := SingleFaceTailRestoration.exists_restore sem hCB
     (hprev hC hB ⟨hCB, le_rfl⟩ le_rfl) hp hu hM hread hmax
   exact ⟨r, hr, fun d => (GradeTailRestoration.cap_below (hcap' d) hγM).trans (hcap d), hread'⟩
 
-section Transport
+section
 variable (Q : Type*) [Fintype Q] (k : ℕ) (hk : 0 < k) (hA : k ≤ A.card)
-  (hs : ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d))
+  (hs : ∀ d , ¬ GradedLe (A, k) (D.cell d))
   (out : Semantics (SourceLayerCarrier.scheme D Q k hk hA))
-  (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  (hrow : ∀ c d,
     out.E (SourceLayerCarrier.toCell D Q k hk hA (.inl c))
       (SeparatedSourceLayerCarrier.ownerEquiv D Q k hk hA hs c d) = sem.E c d)
 
@@ -91,13 +85,11 @@ include hrow in
 /-- Transfer the complete lower induction invariant through literal installation.
 Retained proper owners may be above the new grade; only full-scope separation
 is used. The generic row premise must be discharged by the concrete installer. -/
-theorem through_separated {r : ℕ} (hrk : r < k) (hprev : Through sem r) :
+theorem through_separated {r} (hrk : r < k) (hprev : Through sem r) :
     Through out r := by
   intro I J hI hJ h hj
   apply SeparatedLayerFace.lift D Q k hk hA hs sem out hrow h
     (fun hn => (not_le_of_gt hrk) (hn.2.trans hj))
   exact hprev hI hJ h hj
-end Transport
 
-end
-end VaughtConjecture.Knight.TargetGradeLifting
+

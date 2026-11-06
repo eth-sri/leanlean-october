@@ -3,12 +3,13 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RootedExtension
-public import VaughtConjecture.Knight.TerminalBase
-public import VaughtConjecture.Knight.VisibleFaceOneStep
-public import VaughtConjecture.Knight.PairedTrace
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.RootedExtension
+import VaughtConjecture.Knight.TerminalBase
+import VaughtConjecture.Knight.VisibleFaceOneStep
+import VaughtConjecture.Knight.PairedTrace
 
 /-! # Literal one-point rooted transfer: interface, terminal dichotomy, iteration
 
@@ -36,8 +37,6 @@ selected root.
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open TypeTower KnightRealization
@@ -50,8 +49,8 @@ variable {α : LimitStage} {M : Type w}
 containing the root, every admissible one-point extension of the realized label is realized
 (the new point is the last coordinate). -/
 def OnePointRootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : Fin c ↪ M)
-    (Adm : RootedAdmissibility α) : Prop :=
-  ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (∃ e : Fin c ↪ Fin n, e.trans t = core) →
+    (Adm : RootedAdmissibility α) :=
+  ∀ {n} t p, (∃ e : Fin c ↪ Fin n, e.trans t = core) →
     W.eval t = some p →
     ∀ (P : S α.1 (n + 1)), typeMap Fin.castSuccEmb P = some p → Adm Fin.castSuccEmb p P →
       ∃ u : Fin (n + 1) ↪ M, Fin.castSuccEmb.trans u = t ∧ W.eval u = some P
@@ -61,27 +60,27 @@ def OnePointRootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : F
 open AmalgamationPlan
 
 /-- The trivial admissibility predicate. -/
-def AdmTop (α : LimitStage) : RootedAdmissibility α := fun _ _ _ => True
+def AdmTop α : RootedAdmissibility α := fun _ _ _ => True
 
 theorem image_snoc_univ {n N : ℕ} (e : Fin n ↪ Fin N) (x : Fin N) (hx : x ∉ Set.range e) :
     (Finset.univ : Finset (Fin (n + 1))).image (snoc e x hx) =
       insert x (Finset.univ.image e) := by
   ext y
-  simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_insert]
+  simp  
   constructor
   · rintro ⟨i, rfl⟩
     rcases eq_or_ne i (Fin.last n) with rfl | h
-    · left; exact snoc_apply_last e x hx
+    · left; exact snoc_apply_last hx
     · obtain ⟨j, rfl⟩ := Fin.exists_castSucc_eq.mpr h
-      right; exact ⟨j, (snoc_apply_castSucc e x hx j).symm⟩
+      right; exact ⟨j, (snoc_apply_castSucc hx j).symm⟩
   · rintro (hy | ⟨j, rfl⟩)
-    · exact ⟨Fin.last n, (snoc_apply_last e x hx).trans hy.symm⟩
-    · exact ⟨j.castSucc, snoc_apply_castSucc e x hx j⟩
+    · grind [snoc_apply_last]
+    · exact ⟨j.castSucc, snoc_apply_castSucc hx j⟩
 
 /-- The chain invariant at a visible face `B` of `P`: an enumeration `e` of `B` extending `f`
 through `c`, and a realization of `P ↾ e` extending `t` through `c`. -/
 structure FaceRealization (W : KnightRealization α M) {n N : ℕ} (t : Fin n ↪ M)
-    (f : Fin n ↪ Fin N) (P : S α.1 N) (B : Finset (Fin N)) : Type w where
+    (f : Fin n ↪ Fin N) (P : S α.1 N) (B : FiniteScope N) : Type w where
   k : ℕ
   e : Fin k ↪ Fin N
   image_e : Finset.univ.image e = B
@@ -93,18 +92,18 @@ structure FaceRealization (W : KnightRealization α M) {n N : ℕ} (t : Fin n �
   eval_u : W.eval u = some (P.restrictFace e hvis)
 
 /-- The chain step: a visible superface with one more coordinate. -/
-theorem FaceRealization.step {W : KnightRealization α M} {c₀ : ℕ} {core : Fin c₀ ↪ M}
+theorem FaceRealization.step {W : KnightRealization α M} {c₀} {core : Fin c₀ ↪ M}
     (hone : OnePointRootedExtensionOver W core (AdmTop α)) {n N : ℕ} {t : Fin n ↪ M}
     (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f : Fin n ↪ Fin N} {P : S α.1 N}
-    {B C : Finset (Fin N)} (R : FaceRealization W t f P B) (hC : C ∈ P.scheme.scheme.plan)
+    {B C : FiniteScope N} (R : FaceRealization W t f P B) (hC : C ∈ P.scheme.scheme.plan)
     (hBC : B ⊂ C) (hcard : C.card = B.card + 1) : Nonempty (FaceRealization W t f P C) := by
-  classical
+  
   obtain ⟨x, hxC, hxB⟩ := Finset.exists_of_ssubset hBC
   have hCeq : C = insert x B := by
     symm
     apply Finset.eq_of_subset_of_card_le
-    · exact Finset.insert_subset hxC hBC.subset
-    · rw [Finset.card_insert_of_notMem hxB, hcard]
+    · grind
+    · simp_all
   have hx : x ∉ Set.range R.e := by
     rintro ⟨i, hi⟩
     apply hxB
@@ -113,11 +112,11 @@ theorem FaceRealization.step {W : KnightRealization α M} {c₀ : ℕ} {core : F
   let e' := snoc R.e x hx
   have himg : Finset.univ.image e' = C := by
     rw [image_snoc_univ, R.image_e, hCeq]
-  have hvis' : Finset.univ.image e' ∈ P.scheme.scheme.plan := himg ▸ hC
-  have hP' : typeMap e' P = some (P.restrictFace e' hvis') := typeMap_eq_some e' P hvis'
+  have hvis'  := himg ▸ hC
+  have hP'  := typeMap_eq_some e' P hvis'
   have hstep : typeMap Fin.castSuccEmb (P.restrictFace e' hvis') =
       some (P.restrictFace R.e R.hvis) := by
-    rw [typeMap_trans Fin.castSuccEmb e' P _ hP', castSuccEmb_trans_snoc]
+    rw [typeMap_trans hP', castSuccEmb_trans_snoc]
     exact typeMap_eq_some R.e P R.hvis
   have hroot' : ∃ e₀ : Fin c₀ ↪ Fin R.k, e₀.trans R.u = core := by
     obtain ⟨e₀, he₀⟩ := hroot
@@ -132,10 +131,10 @@ theorem FaceRealization.exists_full {α : LimitStage} {M : Type*}
     {W : KnightRealization α M} {c₀ : ℕ} {core : Fin c₀ ↪ M}
     (hone : OnePointRootedExtensionOver W core (AdmTop α)) {n N : ℕ} {t : Fin n ↪ M}
     (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f : Fin n ↪ Fin N} {P : S α.1 N}
-    {B : Finset (Fin N)} (hB : B ∈ P.scheme.scheme.plan)
+    {B : FiniteScope N} (hB : B ∈ P.scheme.scheme.plan)
     (R : FaceRealization W t f P B) : Nonempty (FaceRealization W t f P Finset.univ) := by
   classical
-  let faces := Finset.univ.filter fun C : Finset (Fin N) =>
+  let faces := Finset.univ.filter fun C : FiniteScope N =>
     C ∈ P.scheme.scheme.plan ∧ Nonempty (FaceRealization W t f P C)
   have hinit : B ∈ faces := Finset.mem_filter.mpr ⟨Finset.mem_univ _, hB, ⟨R⟩⟩
   obtain ⟨C, hC, hmax⟩ := faces.exists_max_image Finset.card ⟨_, hinit⟩
@@ -157,12 +156,10 @@ theorem rootedExtensionOver_of_onePoint {W : KnightRealization α M}
     RootedExtensionOver W core (AdmTop α) := by
   intro n t p hroot ht N f P hfP _
   -- the base face
-  have hvis : Finset.univ.image f ∈ P.scheme.scheme.plan :=
-    (typeMap_isSome_iff f P).mp (by rw [hfP]; rfl)
+  have hvis  :=
+    (typeMap_isSome_iff).mp (by rw [hfP]; rfl)
   have hp : P.restrictFace f hvis = p := by
-    have := typeMap_eq_some f P hvis
-    rw [hfP] at this
-    exact (Option.some_injective _ this).symm
+    exact?
   let R₀ : FaceRealization W t f P (Finset.univ.image f) :=
     ⟨n, f, rfl, Function.Embedding.refl _, Function.Embedding.refl_trans _, t,
       Function.Embedding.refl_trans _, hvis, by rw [hp]; exact ht⟩
@@ -174,8 +171,8 @@ theorem rootedExtensionOver_of_onePoint {W : KnightRealization α M}
     have hy : y ∈ Finset.univ.image R.e := by rw [R.image_e]; exact Finset.mem_univ y
     obtain ⟨i, -, hi⟩ := Finset.mem_image.mp hy
     exact ⟨i, hi⟩
-  let eq : Fin R.k ≃ Fin N := R.e.equivOfSurjective hsurj
-  let g : Fin N ↪ Fin R.k := eq.symm.toEmbedding
+  let eq  := R.e.equivOfSurjective hsurj
+  let g  := eq.symm.toEmbedding
   have hge : g.trans R.e = Function.Embedding.refl _ :=
     Function.Embedding.ext fun y => eq.apply_symm_apply y
   have heg : R.e.trans g = Function.Embedding.refl _ :=
@@ -185,7 +182,6 @@ theorem rootedExtensionOver_of_onePoint {W : KnightRealization α M}
       congrArg (fun h : Fin n ↪ Fin N => h.trans (g.trans R.u)) R.c_e.symm
     rw [hf, Function.Embedding.trans_assoc, ← Function.Embedding.trans_assoc R.e g R.u, heg,
       Function.Embedding.refl_trans, R.c_u]
-  · rw [exactParent_typeMap hcons R.u _ g R.eval_u,
-      typeMap_trans g R.e P _ (typeMap_eq_some R.e P R.hvis), hge, typeMap_refl]
+  · rw [exactParent_typeMap hcons g R.eval_u,
+      typeMap_trans (typeMap_eq_some R.e P R.hvis), hge, typeMap_refl]
 
-end VaughtConjecture.Knight

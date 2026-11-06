@@ -3,11 +3,12 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FiniteCoverReceivingCore
-public import VaughtConjecture.Knight.CanonicalCoatomFiniteSupply
-public import VaughtConjecture.Knight.CoatomFaceLift
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FiniteCoverReceivingCore
+import VaughtConjecture.Knight.CanonicalCoatomFiniteSupply
+import VaughtConjecture.Knight.CoatomFaceLift
 
 /-! # Finite-cut receiving supplies the old model requests
 
@@ -17,22 +18,15 @@ Ordinal zero is a positive extended-ordinal observation cutoff, not bottom; we
 never assert that capping a lawful labelling at this cutoff is lawful.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
-open TypeTower StageType KnightRealization Value ExtOrd
+open TypeTower StageType KnightRealization  ExtOrd
 universe w
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
 namespace FiniteCutReceiving
 
 private theorem eq_of_cap_lt {x y δ : ExtOrd}
-    (h : min x δ = min y δ) (hy : y < δ) : x = y := by
-  rw [min_eq_left hy.le] at h
-  rcases le_or_gt x δ with hx | hx
-  · rwa [min_eq_left hx] at h
-  · rw [min_eq_right hx.le] at h
-    exact False.elim (hy.ne h.symm)
+    (h : min x δ = min y δ) (hy : y < δ) : x = y := by grind
 
 /-- The four original clauses, with structural assumptions retained explicitly.
 The bottom-pattern source still has no stage bound. -/
@@ -54,26 +48,24 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
     have hc := hcap (SemScheme.castCell (he.trans hqD).symm d.val)
     have hb : r.label (SemScheme.castCell (he.trans hqD).symm d.val) = ⊥ ↔
         q.label (SemScheme.castCell hqD.symm d.val) = ⊥ := by
-      have hh := congrArg (fun x : ExtOrd => x = ⊥) hc
+      have hh := congrArg (fun x => x = ⊥) hc
       simp only [min_eq_bot, ofOrd_ne_bot, or_false] at hh
       exact Iff.of_eq hh
     exact hb.trans (hpat d)
   · intro n t p ht γ hγ hγα
     obtain ⟨q, ⟨d, hlo, hhi⟩, hqp⟩ :=
       FixedHeight.exists_uniformity_coface (CanonicalCoatomSupply.supply α.2) p γ hγ hγα
-    obtain ⟨a, ha⟩ : ∃ a : Ordinal.{0}, q.label d = ofOrd a := by
+    obtain ⟨a, ha⟩ : ∃ a , q.label d = ofOrd a := by
       rcases ExtOrd.cases (q.label d) with hb | ht | h
-      · rw [hb] at hlo
-        exact False.elim ((not_le_of_gt (bot_lt_ofOrd γ)) hlo)
-      · rw [ht] at hhi
-        exact False.elim ((not_lt_of_ge le_top) hhi)
+      · simp_all
+      · simp_all
       · exact h
-    have haα : a < α.1 := ofOrd_lt_ofOrd.mp
+    have haα  := ofOrd_lt_ofOrd.mp
       ((q.label_bound d).resolve_right (by rw [ha]; exact ofOrd_ne_top _) |> fun h => ha ▸ h)
     obtain ⟨y, hy, r, hr, he, hcap⟩ := hFC t p ht q hqp (ofOrd (a + 1))
       (bot_lt_ofOrd _) (ofOrd_lt_ofOrd.mpr (α.2.succ_lt haα))
     have hd : r.label (SemScheme.castCell he.symm d) = q.label d :=
-      eq_of_cap_lt (hcap _) (by rw [ha, ofOrd_lt_ofOrd]; exact Order.lt_succ a)
+      eq_of_cap_lt (hcap _) (by simp_all)
     refine ⟨y, hy, r, ⟨SemScheme.castCell he.symm d, ?_, ?_⟩,
       isCoface_of_consistent hcons ht hr, hr⟩
     · rwa [hd]
@@ -87,9 +79,7 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       isCoface_of_consistent hcons ht hr, hr⟩
     · have hgcast : ∀ {X Y : SemScheme (n + 1)} (e : X = Y) (d : Cell X.scheme),
           Y.scheme.grade (SemScheme.castCell e d) = X.scheme.grade d := by
-        intro X Y e d
-        cases e
-        rfl
+        aesop
       exact (hgcast he.symm d).trans hgrade
     · have hc := hcap (SemScheme.castCell he.symm d)
       have hh : ofOrd γ < min (q.label d) (ofOrd (γ + 1)) :=
@@ -99,5 +89,3 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       rw [← hc] at hh
       exact hh.trans_le (min_le_left _ _)
 
-end FiniteCutReceiving
-end VaughtConjecture.Knight

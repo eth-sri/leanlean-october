@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.AnchorStable
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.AnchorStable
 
 /-! # Synchronization after growth, on actual finite contexts
 
@@ -20,12 +21,9 @@ value above the requested new-band cutoff. This is the context-selection part
 of the proposed hollow-growth receiver, not the receiver itself.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthContextSynchronization
-open TypeTower StageType KnightRealization Value ExtOrd
-noncomputable section
+open TypeTower StageType KnightRealization  ExtOrd
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -44,7 +42,7 @@ theorem exists_sync_growth (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
   obtain ⟨y, f, hf, hxy, hsync⟩ :=
     exists_syncCover' hM.consistent hM.covering x.eval_eq L
   have hpy : typeMap (e.trans f) y.type = some p := by
-    rw [← typeMap_trans e f y.type x.type hxy]
+    rw [← typeMap_trans hxy]
     exact hpx
   refine ⟨y, e.trans f, ?_, hpy,
     hxK.trans_le (topGrade_le_of_typeMap_eq_some hxy), fun d => ?_⟩
@@ -53,8 +51,7 @@ theorem exists_sync_growth (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     obtain ⟨hproper, htop⟩ := hsync (mapCell hpx d)
     rw [mapCell_trans hxy hpx hpy d]
     constructor
-    · intro hd
-      rw [hproper (by rwa [hsv]), hsv]
+    · simp_all
     · intro hd hs
       exact htop (by rw [label_mapCell hpx, hd]) (hsv.trans hs)
 
@@ -81,5 +78,4 @@ theorem exists_hollow_context (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
   · intro d hd
     exact (hs d).2 hd ((stableValue_eq_label_of_hollow hM hh hp d).trans hd)
 
-end
-end VaughtConjecture.Knight.GrowthContextSynchronization
+

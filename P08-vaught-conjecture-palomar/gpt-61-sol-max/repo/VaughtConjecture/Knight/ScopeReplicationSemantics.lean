@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ScopeReplicationCarrier
-public import VaughtConjecture.Knight.ExactSemanticFace
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ScopeReplicationCarrier
+import VaughtConjecture.Knight.ExactSemanticFace
 
 /-! # Actual rows and lawful duplication across mixed scopes
 
@@ -17,142 +18,141 @@ lifting or arbitrary-section extension premise. Only original proper owners
 retain an entire lower domain. Full-scope owners retain their old columns.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationSemantics
-open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
+open  Transform Value  ScopeReplicationCarrier
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
-  (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
+  (hcover : ∀ c , D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
   (sem : Semantics D)
 
-def rows : Semantics (scheme D B C) where
-  E c d := sem.E (erase D B C c) (belowErase D B C hcover c d)
+local notation "scheme₀" => scheme D B C
+
+local notation "erase₀" => erase D B C
+
+variable {D B C} in
+def rows : Semantics (scheme₀) where
+  E c d := sem.E (erase₀ c) (belowErase D B C hcover c d)
   orderly c d := by
     change sem.E _ _ = extVisibilityReplace (sem.E _ _)
-      ((scheme D B C).grade d.1) ((scheme D B C).grade d.1)
+      ((scheme₀).grade d.1) ((scheme₀).grade d.1)
     rw [← erase_grade]
     exact sem.orderly _ _
 
+local notation "rows₀" => rows hcover sem
+
 /-- Every old source column is literal, even when the owner's new lower domain
 contains additional copies. -/
-theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
-    (rows D B C hcover sem).E (old D B C c)
-      ⟨old D B C d.1, by rw [old_index, old_index]; exact d.2⟩ = sem.E c d := by
-  change sem.E _ _ = _
-  exact sem.E_congr (erase_old D B C c) (erase_old D B C d.1)
+theorem inherited_row c (d : D.belowCell c) :
+    (rows₀).E (old D B C c)
+      ⟨old D B C d.1, by rw [old_index, old_index]; exact d.2⟩ = sem.E c d :=  sem.E_congr (erase_old D B C c) (erase_old D B C d.1)
 
 /-- Lawful pullback to an actual lower domain. Its erased coordinates must lie
 in the supplied original domain; no completeness or extension is assumed. -/
-theorem duplicateBelow_respects {J K : Finset ι × ℕ}
-    (hdom : ∀ d : (scheme D B C).below J, GradedLe (D.cell (erase D B C d.1)) K)
-    {p : D.below K → ExtOrd} (hp : RespectsSemanticsBelow sem K p) :
-    RespectsSemanticsBelow (rows D B C hcover sem) J
-      (fun d => p ⟨erase D B C d.1, hdom d⟩) where
+theorem duplicateBelow_respects {J K}
+    (hdom : ∀ d , GradedLe (D.cell (erase₀ d.1)) K)
+    {p} (hp : RespectsSemanticsBelow sem K p) :
+    RespectsSemanticsBelow (rows hcover sem) J
+      (fun d => p ⟨erase₀ d.1, hdom d⟩) where
   orderly d := by
     change p _ = extVisibilityReplace (p _) ((scheme D B C).grade d.1)
       ((scheme D B C).grade d.1)
     rw [← erase_grade]
     exact hp.orderly _
   locality c := by
-    have ht := (hp.locality ⟨erase D B C c.1, hdom c⟩).reindex
+    have ht := (hp.locality ⟨erase₀ c.1, hdom c⟩).reindex
       (belowErase D B C hcover c.1)
     exact transformsTo_congr (funext fun d => erase_grade D B C d.1) rfl rfl ht
   availability c t hs hg := by
-    have he := erase_le D B C hcover (d := c.1) (c := t.1) ⟨hs, hg.le⟩
-    have heg : D.grade (erase D B C c.1) = D.grade (erase D B C t.1) := by
+    have he := erase_le D B C hcover   ⟨hs, hg.le⟩
+    have heg : D.grade (erase₀ c.1) = D.grade (erase₀ t.1) := by
       rw [erase_grade, erase_grade]; exact hg
     obtain ⟨w, hw, hle⟩ := hp.availability
-      ⟨erase D B C c.1, hdom c⟩ ⟨erase D B C t.1, hdom t⟩ he.1 heg
+      ⟨erase₀ c.1, hdom c⟩ ⟨erase₀ t.1, hdom t⟩ he.1 heg
     obtain ⟨z, hz, hez⟩ := exists_at_index D B C t.1 w.1 hw
     refine ⟨⟨z, hz ▸ t.2⟩, hz, ?_⟩
-    have hsub : (⟨erase D B C z, hdom ⟨z, hz ▸ t.2⟩⟩ : D.below K) = w :=
+    have hsub : (⟨erase₀ z, hdom ⟨z, hz ▸ t.2⟩⟩) = w :=
       Subtype.ext hez
     simpa only [hsub] using hle
 
 /-- Consistency of the installed replicated rows is constructed, independently
 of any lifting theorem. -/
-theorem consistent (hc : sem.IsConsistent) : (rows D B C hcover sem).IsConsistent := by
-  intro c
-  exact duplicateBelow_respects D B C hcover sem
-    (fun d => erase_le D B C hcover d.2) (hc (erase D B C c))
+theorem consistent (hc : sem.IsConsistent) : (rows hcover sem).IsConsistent := by solve_by_elim [duplicateBelow_respects]
 
 /-- Restriction to the retained single-copy occurrences is lawful. Availability
 witnesses at old indices cannot be newly appended copies. -/
-theorem restrict_respects {J : Finset ι × ℕ}
-    {p : (scheme D B C).below J → ExtOrd}
-    (hp : RespectsSemanticsBelow (rows D B C hcover sem) J p) :
+theorem restrict_respects {J}
+    {p}
+    (hp : RespectsSemanticsBelow (rows hcover sem) J p) :
     RespectsSemanticsBelow sem J (p ∘ oldBelow D B C J) where
   orderly d := by
     simpa only [Function.comp_apply, CellScheme.grade, oldBelow, old_index]
       using hp.orderly (oldBelow D B C J d)
   locality c := by
     have ht := (hp.locality (oldBelow D B C J c)).reindex
-      (fun d : D.below (D.cell c.1) =>
+      (fun d : D.belowCell c.1 =>
         (⟨old D B C d.1, by rw [old_index, old_index]; exact d.2⟩ :
           (scheme D B C).below ((scheme D B C).cell (old D B C c.1))))
     exact transformsTo_congr
-      (funext fun d => congrArg Prod.snd (old_index D B C d.1))
+      (funext fun d => congrArg Prod.snd (old_index d.1))
       (funext fun d => inherited_row D B C hcover sem c.1 d) rfl ht
   availability c t hs hg := by
     obtain ⟨w, hw, hle⟩ := hp.availability (oldBelow D B C J c) (oldBelow D B C J t)
       (by simpa only [CellScheme.scope, oldBelow, old_index] using hs)
       (by simpa only [CellScheme.grade, oldBelow, old_index] using hg)
     obtain ⟨z, hz⟩ := old_index_exhaustive D B C hcover t.1 w.1
-      (hw.trans (old_index D B C t.1))
-    have hzJ : GradedLe (D.cell z) J := by rw [← old_index D B C z, hz]; exact w.2
+      (hw.trans (old_index t.1))
+    have hzJ : GradedLe (D.cell z) J := by rw [← old_index z, hz]; exact w.2
     refine ⟨⟨z, hzJ⟩, ?_, ?_⟩
-    · exact (old_index D B C z).symm.trans (hz ▸ hw.trans (old_index D B C t.1))
+    · exact (old_index z).symm.trans (hz ▸ hw.trans (old_index t.1))
     · have he : oldBelow D B C J ⟨z, hzJ⟩ = w := Subtype.ext hz
       change p (oldBelow D B C J c) ≤ p (oldBelow D B C J ⟨z, hzJ⟩)
       rw [he]
       exact hle
 
+variable {D B C hcover sem} in
 /-- An arbitrary lawful section assigns the same value to nested copies of
 one prototype. This uses actual locality and availability, not a renderer or
 any synchronization/admission hypothesis. -/
-theorem copy_eq {J : Finset ι × ℕ} {p : (scheme D B C).below J → ExtOrd}
-    (hp : RespectsSemanticsBelow (rows D B C hcover sem) J p)
-    (a b : (scheme D B C).below J)
-    (hs : (scheme D B C).scope a.1 ⊆ (scheme D B C).scope b.1)
-    (he : erase D B C a.1 = erase D B C b.1) : p a = p b := by
-  have hg : (scheme D B C).grade a.1 = (scheme D B C).grade b.1 :=
+theorem copy_eq {J} {p}
+    (hp : RespectsSemanticsBelow (rows₀) J p)
+    {a b : (scheme₀).below J}
+    (hs : (scheme₀).scope a.1 ⊆ (scheme₀).scope b.1)
+    (he : erase₀ a.1 = erase₀ b.1) : p a = p b := by
+  have hg  :=
     (erase_grade D B C a.1).symm.trans
       ((congrArg D.grade he).trans (erase_grade D B C b.1))
-  have hw : ∃ w : (scheme D B C).below J,
-      (scheme D B C).cell w.1 = (scheme D B C).cell b.1 ∧ p a ≤ p w ∧ p b ≤ p w := by
+  have hw : ∃ w : (scheme₀).below J,
+      (scheme₀).cell w.1 = (scheme₀).cell b.1 ∧ p a ≤ p w ∧ p b ≤ p w := by
     rcases le_total (p a) (p b) with h | h
     · exact ⟨b, rfl, h, le_rfl⟩
     · obtain ⟨w, hi, hv⟩ := hp.availability a b hs hg
       exact ⟨w, hi, hv, h.trans hv⟩
   obtain ⟨w, hi, ha, hb⟩ := hw
-  let da : (scheme D B C).below ((scheme D B C).cell w.1) :=
-    ⟨a.1, hi ▸ (show GradedLe ((scheme D B C).cell a.1) ((scheme D B C).cell b.1)
-      from ⟨hs, hg.le⟩)⟩
-  let db : (scheme D B C).below ((scheme D B C).cell w.1) :=
+  let da : (scheme₀).belowCell w.1 :=
+    ⟨a.1, hi ▸ ((⟨hs, hg.le⟩))⟩
+  let db : (scheme₀).belowCell w.1 :=
     ⟨b.1, hi ▸ GradedLe.refl _⟩
-  have hrow : (rows D B C hcover sem).E w.1 da = (rows D B C hcover sem).E w.1 db :=
+  have hrow : (rows₀).E w.1 da = (rows₀).E w.1 db :=
     sem.E_congr rfl he
   obtain ⟨g, σ, _, _, _, _, _, hread⟩ := hp.locality w
   have hval : min (p a) (p w) = min (p b) (p w) := by
     calc
-      _ = min (σ ((rows D B C hcover sem).E w.1 da))
-          (g ((scheme D B C).grade a.1)) := hread da
-      _ = min (σ ((rows D B C hcover sem).E w.1 db))
-          (g ((scheme D B C).grade b.1)) := by rw [hrow, hg]
+      _ = min (σ ((rows₀).E w.1 da))
+          (g ((scheme₀).grade a.1)) := hread da
+      _ = min (σ ((rows₀).E w.1 db))
+          (g ((scheme₀).grade b.1)) := by rw [hrow, hg]
       _ = _ := (hread db).symm
   simpa only [min_eq_left ha, min_eq_left hb] using hval
 
 /-- Any literal original face contained in either side remains occurrence-exact. -/
-def face {T : Finset ι} {E : CellScheme T} {semE : Semantics E}
+def face {T} {E : CellScheme T} {semE : Semantics E}
     (F : ExactSemanticFace semE sem) (hT : T ⊆ B ∨ T ⊆ C) :
-    ExactSemanticFace semE (rows D B C hcover sem) where
+    ExactSemanticFace semE (rows₀) where
   map := F.map.trans ⟨old D B C, (old_order D B C).injective⟩
-  index d := (old_index D B C (F.map d)).trans (F.index d)
+  index d := (old_index (F.map d)).trans (F.index d)
   exhaustive z hz := by
-    rcases cases D B C z with ⟨d, rfl⟩ | ⟨p, rfl⟩
+    rcases ScopeReplicationCarrier.cases z with ⟨d, rfl⟩ | ⟨p, rfl⟩
     · obtain ⟨e, he⟩ := F.exhaustive d (by
         simpa only [CellScheme.scope, old_index] using hz)
       exact ⟨e, congrArg (old D B C) he⟩
@@ -163,5 +163,3 @@ def face {T : Finset ι} {E : CellScheme T} {semE : Semantics E}
   row c d := (inherited_row D B C hcover sem (F.map c)
     ⟨F.map d.1, by rw [F.index, F.index]; exact d.2⟩).trans (F.row c d)
 
-end
-end VaughtConjecture.Knight.ScopeReplicationSemantics

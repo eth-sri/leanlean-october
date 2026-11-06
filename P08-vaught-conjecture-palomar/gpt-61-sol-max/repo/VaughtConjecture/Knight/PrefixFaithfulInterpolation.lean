@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SourceOnlyCompositionRepair
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SourceOnlyCompositionRepair
 
 /-! # Finite interpolation preserving an entire faithful prefix
 
@@ -16,36 +17,34 @@ source-only interpolation gives an exact finite test for retaining an old prefix
 while satisfying new literal source reads. It constructs witnesses, not rows.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
-open Transform Value ExtOrd
+open  Value ExtOrd
 
 /-- The bottom fibre of any faithful witness is constant on source blocks. -/
-theorem witness_bot_of_same_block {g : ℕ → ExtOrd} {τ : ExtOrd → ExtOrd}
-    (hτ : Witness g τ) {x y : ExtOrd} (hb : blockFloor x = blockFloor y)
+theorem witness_bot_of_same_block {g} {τ}
+    (hτ : Witness g τ) {x y} (hb : blockFloor x = blockFloor y)
     (hx : τ x = ⊥) : τ y = ⊥ := by
-  apply bot_of_same_block (f := τ) _ hb hx
+  apply bot_of_same_block  _ hb hx
   intro z hz k i hi
   have h := hτ.clause5 z k (by rw [hz]; exact bot_le) i hi
-  rwa [hz, extVisibilityReplace_bot] at h
+  rwa [hz, ] at h
 
 /-- Bounded replacements do not bring an input above a visible cut back to the prefix. -/
-theorem replace_gt_visible_cut {m k i : ℕ} {a x : ExtOrd}
+theorem replace_gt_visible_cut {m k i} {a x}
     (ha : SelfVis m a) (hk : k ≤ m) (hx : a < x) :
     a < extVisibilityReplace x k i := by
   rcases ExtOrd.cases a with rfl | rfl | ⟨b, rfl⟩
-  · exact bot_lt_iff_ne_bot.mpr (extVisibilityReplace_ne_bot (ne_of_gt hx) k i)
-  · exact False.elim (not_lt_of_ge le_top hx)
+  · exact bot_lt_iff_ne_bot.mpr (extVisibilityReplace_ne_bot (ne_of_gt hx))
+  · simp_all
   · rcases ExtOrd.cases x with rfl | rfl | ⟨c, rfl⟩
-    · exact False.elim (not_lt_of_ge bot_le hx)
+    · simp_all
     · exact hx
     · rw [extVisibilityReplace_ofOrd, ofOrd_lt_ofOrd]
       exact visReplace_gt_of_gt (hk.trans (selfVis_ofOrd_iff.mp ha)) (ofOrd_lt_ofOrd.mp hx)
 
 /-- The entire closed prefix is invariant under bounded replacements. -/
-theorem replace_le_visible_cut_iff {m k i : ℕ} {a x : ExtOrd}
+theorem replace_le_visible_cut_iff {m k i} {a x}
     (ha : SelfVis m a) (hk : k ≤ m) (hi : i ≤ k) :
     extVisibilityReplace x k i ≤ a ↔ x ≤ a := by
   constructor
@@ -54,22 +53,6 @@ theorem replace_le_visible_cut_iff {m k i : ℕ} {a x : ExtOrd}
     exact not_lt_of_ge h (replace_gt_visible_cut ha hk (not_le.mp hx))
   · intro h
     exact (extVisibilityReplace_mono k i hi h).trans_eq
-      (evr_eq_self_of_selfVis (selfVis_mono ha hk) i)
+      (evr_eq_self_of_selfVis (selfVis_mono ha hk))
 
-open Classical in
-/-- Keep the old shifter through the cut, and the new one strictly above it. -/
-noncomputable def prefixSplice (a : ExtOrd) (σ τ : ExtOrd → ExtOrd) (x : ExtOrd) : ExtOrd :=
-  if x ≤ a then σ x else τ x
 
-theorem prefixSplice_of_le {a x : ExtOrd} {σ τ : ExtOrd → ExtOrd} (hx : x ≤ a) :
-    prefixSplice a σ τ x = σ x := ite_eq_left hx
-
-namespace BoundedMap
-
-variable {m : ℕ} {f σ : ExtOrd → ExtOrd} (hf : BoundedMap m f)
-
-include hf
-
-end BoundedMap
-
-end VaughtConjecture.Knight.SharpWitnessComposition

@@ -1,11 +1,13 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.PaddedSourceDecoder
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.PaddedSourceDecoder
 
 /-! # Encoding a prescribed face without moving its low prefix
 
@@ -21,23 +23,11 @@ normal form for arbitrary ambient witnesses. The encoder itself constructs no
 extension; the final transport lemma consumes a lawful coded lift.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.RelativePrefixEncoding
 
-open Transform Value ExtOrd SharpWitnessComposition SourceBlockPadding
+open   ExtOrd  
 
-/-- The closed low prefix is literal; only values strictly above the cap are coded. -/
-noncomputable def encode (S : Finset Ordinal.{0}) (K b : ℕ) (γ : ExtOrd) :
-    ExtOrd → ExtOrd := prefixSplice γ id (PaddedSourceDecoder.encode S K b)
-
-theorem encode_of_le {S : Finset Ordinal.{0}} {K b : ℕ} {γ y : ExtOrd}
-    (hy : y ≤ γ) : encode S K b γ y = y := prefixSplice_of_le hy
-
-@[simp] theorem encode_bot (S : Finset Ordinal.{0}) (K b : ℕ) (γ : ExtOrd) :
-    encode S K b γ ⊥ = ⊥ := encode_of_le bot_le
-
-section FiniteInventory
+section
 
 variable {X : Type*} [Fintype X]
 
@@ -48,12 +38,12 @@ noncomputable def highCells (p : X → ExtOrd) (γ : ExtOrd) : Finset X :=
 
 open Classical in
 /-- Only high proper values need tracking; zero guarantees bottom reflection. -/
-noncomputable def inventory (p : X → ExtOrd) (γ : ExtOrd) : Finset Ordinal.{0} :=
+noncomputable def inventory (p : X → ExtOrd) (γ : ExtOrd) : Finset Ordinal₀ :=
   insert 0 ((highCells p γ).image (fun d => ordOf (p d)))
 
 theorem tracked_high (p : X → ExtOrd) (γ : ExtOrd) (d : X) (hd : γ < p d) :
     p d = ⊥ ∨ p d = ⊤ ∨ ∃ α ∈ inventory p γ, p d = ofOrd α := by
-  classical
+  
   rcases ExtOrd.cases (p d) with h | h | ⟨α, h⟩
   · exact Or.inl h
   · exact Or.inr (Or.inl h)
@@ -61,6 +51,4 @@ theorem tracked_high (p : X → ExtOrd) (γ : ExtOrd) (d : X) (hd : γ < p d) :
     exact Finset.mem_image.mpr ⟨d, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd⟩,
       by rw [h, ordOf_ofOrd]⟩
 
-end FiniteInventory
 
-end VaughtConjecture.Knight.RelativePrefixEncoding

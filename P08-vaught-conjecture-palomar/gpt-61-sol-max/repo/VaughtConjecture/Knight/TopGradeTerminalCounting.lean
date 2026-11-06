@@ -1,15 +1,17 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowOnlyResidualClassificationCore
-public import VaughtConjecture.Knight.TopSupportRigidCore
-public import VaughtConjecture.Knight.TopGradeDichotomy
-public import VaughtConjecture.Knight.CountableTerminalFibres
-public import VaughtConjecture.CountableCover
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.LowOnlyResidualClassificationCore
+import VaughtConjecture.Knight.TopSupportRigidCore
+import VaughtConjecture.Knight.TopGradeDichotomy
+import VaughtConjecture.Knight.CountableTerminalFibres
+import VaughtConjecture.CountableCover
 
 /-! # Counting terminal classes directly from top-grade behaviour
 
@@ -30,19 +32,16 @@ terminal classes is used. Growth prolongation and hollow-growth comparison are c
 as hypotheses here and supplied in `ConstructedTerminalCountability`.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TopGradeTerminalCounting
-open TypeTower StageType KnightRealization Value ExtOrd TopSupport Cardinal
-noncomputable section
+open TypeTower StageType KnightRealization   TopSupport Cardinal
+
 universe w
 variable {α : LimitStage} {M : Type w} {W : KnightRealization α M}
 
 /-- Countably many conditions, each met by at most one member of a family and jointly
 covering it, make the family countable. -/
-theorem countable_of_cover {ι κ : Type*} [Countable κ] (P : κ → ι → Prop)
-    (hsub : ∀ c i j, P c i → P c j → i = j) (hcover : ∀ i, ∃ c, P c i) : Countable ι :=
+abbrev countable_of_cover {ι κ : Type*} [Countable κ] (P : κ → ι → Prop)
+    (hsub : ∀ c i j, P c i → P c j → i = j) (hcover : ∀ i, ∃ c, P c i) :=
   CountableCover.countable_of_cover P hsub hcover
 
 /-- **Eventual top grade zero gives a rigid core**: every actual top grade is then zero,
@@ -54,7 +53,7 @@ theorem rigidCore_of_isCoinitial_zero
   intro m C c hc e he H hH ht
   apply Set.Subset.antisymm hH.subset
   intro d hd
-  have hg : c.scheme.scheme.grade d ≤ 0 :=
+  have hg  :=
     (le_csSup c.topGrades_bddAbove (grade_mem_topGrades (mem_topSet.mp hd))).trans
       (topGrade_le_of_isCoinitial hcoin ⟨m, C, c, hc⟩)
   exact ((c.scheme.scheme.grade_pos d).ne' (Nat.le_zero.mp hg)).elim
@@ -62,10 +61,9 @@ theorem rigidCore_of_isCoinitial_zero
 /-- Without a globally rigid core, an eventual top grade is positive. -/
 theorem pos_of_isCoinitial {K : ℕ}
     (hcoin : KnightRealization.IsCoinitial {x : W.LabelledExt | x.type.topGrade = K})
-    (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B) : 0 < K := by
+    (hres : ∀ {k} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B) : 0 < K := by
   rcases Nat.eq_zero_or_pos K with rfl | hK
-  · exact (hres (Function.Embedding.ofIsEmpty : Fin 0 ↪ M)
-      (rigidCore_of_isCoinitial_zero hcoin _)).elim
+  · solve_by_elim [Function.Embedding.ofIsEmpty, rigidCore_of_isCoinitial_zero]
   · exact hK
 
 /-- **At most one coreless class per eventual top grade**: two countable models at the
@@ -76,7 +74,7 @@ theorem nonempty_iso_of_isCoinitial {M₁ M₂ : Type w} [Countable M₁] [Count
     (hM₁ : W₁.IsModel) (hM₂ : W₂.IsModel) {K : ℕ}
     (hcoin₁ : KnightRealization.IsCoinitial {x : W₁.LabelledExt | x.type.topGrade = K})
     (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
-    (hres₁ : ∀ {k : ℕ} (B : Fin k ↪ M₁), ¬ TopSupportRigidCore.RigidCore W₁ B)
+    (hres₁ : ∀ {k} (B : Fin k ↪ M₁), ¬ TopSupportRigidCore.RigidCore W₁ B)
     (hres₂ : ∀ {k : ℕ} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B) :
     Nonempty (W₁.Iso W₂) := by
   have := hM₁.nonempty
@@ -97,7 +95,7 @@ theorem countable {ι : Type*} (hα : α.1.card ≤ Cardinal.aleph0)
     (hcompare : ∀ i j, (W i).HasTopGradeGrowth → (W j).HasTopGradeGrowth →
       (W i).IsHollow → (W j).IsHollow → Nonempty ((W i).Iso (W j)))
     (hanti : ∀ i j, i ≠ j → IsEmpty ((W i).Iso (W j))) : Countable ι := by
-  have : ∀ n, Countable (S α.1 n) := fun n => StageType.countable_S hα n
+  have  := fun n => StageType.countable_S hα n
   have heq : ∀ i j, Nonempty ((W i).Iso (W j)) → i = j := by
     intro i j h
     by_contra hne
@@ -115,7 +113,7 @@ theorem countable {ι : Type*} (hα : α.1.card ≤ Cardinal.aleph0)
       obtain ⟨B₂, h₂, r₂⟩ := hj
       exact heq i j (TopSupportRigidCore.nonempty_iso_of_rigidCores (hW i) (hW j) h₁ h₂ r₁ r₂)
     · exact heq i j (nonempty_iso_of_isCoinitial (hW i) (hW j) hi.2 hj.2 hi.1 hj.1)
-    · exact heq i j (hcompare i j hi.1 hj.1 hi.2 hj.2)
+    · grind
   · intro i
     by_cases hcore : ∃ (k : ℕ) (B : Fin k ↪ N i), TopSupportRigidCore.RigidCore (W i) B
     · obtain ⟨k, B, b, hb, hr⟩ := TopSupportRigidCore.exists_labelled_core (hW i) hcore
@@ -127,9 +125,9 @@ theorem countable {ι : Type*} (hα : α.1.card ≤ Cardinal.aleph0)
 /-- **Terminal countability from top-grade behaviour.** At a countable block, the terminal
 classes are countable once non-hollow growth prolongs and hollow growth models compare.
 Terminality turns the prolongation into hollowness of every growth representative. -/
-theorem countable_terminalClass {ρ : Ordinal.{0}} (hρ : ρ < (aleph 1).ord)
+theorem countable_terminalClass {ρ : Ordinal₀} (hρ : ρ < (aleph 1).ord)
     (hprolong : ∀ W : TerminalModel ρ, ¬ W.1.IsHollow → W.1.HasTopGradeGrowth →
-      W.1.ProlongsToIn IsModelClass (blockStage_le_succ ρ))
+      W.1.ProlongsToIn IsModelClass (blockStage_le_succ))
     (hcompare : ∀ W V : TerminalModel ρ,
       W.1.HasTopGradeGrowth → V.1.HasTopGradeGrowth → W.1.IsHollow → V.1.IsHollow →
         Nonempty (W.1.Iso V.1)) : Countable (TerminalClass ρ) := by
@@ -139,17 +137,16 @@ theorem countable_terminalClass {ρ : Ordinal.{0}} (hρ : ρ < (aleph 1).ord)
   · intro q hg
     by_contra hn
     exact q.out.2.2 (hprolong q.out hn hg)
-  · intro q r
-    exact hcompare q.out r.out
+  · grind
   · intro q r hne
     exact ⟨fun e => hne (Quotient.out_equiv_out.mp ⟨e⟩)⟩
 
 /-- The same count in the neutral per-rank fibre contract. -/
 theorem countableTerminalFibres_of_growth_results
-    (hprolong : ∀ (ρ : Ordinal.{0}), ρ < (aleph 1).ord → ∀ W : TerminalModel ρ,
+    (hprolong : ∀ (ρ : Ordinal₀), ρ < (aleph 1).ord → ∀ W : TerminalModel ρ,
       ¬ W.1.IsHollow → W.1.HasTopGradeGrowth →
-        W.1.ProlongsToIn IsModelClass (blockStage_le_succ ρ))
-    (hcompare : ∀ (ρ : Ordinal.{0}), ρ < (aleph 1).ord →
+        W.1.ProlongsToIn IsModelClass (blockStage_le_succ))
+    (hcompare : ∀ (ρ : Ordinal₀), ρ < (aleph 1).ord →
       ∀ W V : TerminalModel ρ,
         W.1.HasTopGradeGrowth → V.1.HasTopGradeGrowth → W.1.IsHollow → V.1.IsHollow →
           Nonempty (W.1.Iso V.1)) : CountableTerminalFibres := by
@@ -157,5 +154,4 @@ theorem countableTerminalFibres_of_growth_results
   exact Cardinal.mk_le_aleph0_iff.mpr
     (countable_terminalClass hρ (hprolong ρ hρ) (hcompare ρ hρ))
 
-end
-end VaughtConjecture.Knight.TopGradeTerminalCounting
+

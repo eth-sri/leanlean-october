@@ -1,12 +1,14 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.JumpClosedCore
-public import VaughtConjecture.Knight.StableBand
+import VaughtConjecture.JumpClosedCore
+import VaughtConjecture.Knight.StableBand
 
 /-! # Finite band vectors and their decoding
 
@@ -17,31 +19,26 @@ Stable values are decoded from suprema in the completed band, not ordinal
 suprema. Proper source labels remain literal.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
-open TypeTower Value ExtOrd StageType
+open TypeTower  ExtOrd StageType
 
 universe w
 
 namespace StageType
 
-variable {β : Ordinal.{0}} {n : ℕ}
+variable {β : Ordinal₀} {n : ℕ}
 
 /-- The source-top cells of a stage type: the coordinates of its band vectors. -/
 abbrev TopCell (p : S β n) := {Xi : Cell p.scheme.scheme // p.label Xi = ⊤}
 
 /-- The labelling decoded from a band vector: a source-top cell reads `bandValue β` of its
 coordinate; every other cell keeps its literal label, bottom included. -/
-noncomputable def bandLabel (p : S β n) (r : p.TopCell → ℕ∞) (Xi : Cell p.scheme.scheme) :
-    ExtOrd :=
+noncomputable def bandLabel (p : S β n) (r : p.TopCell → ℕ∞) (Xi : Cell p.scheme.scheme) :=
   if h : p.label Xi = ⊤ then bandValue β (r ⟨Xi, h⟩) else p.label Xi
 
 /-- The lawful band vectors: those whose decoded labelling respects the rows. -/
-def LawfulBand (p : S β n) : Set (p.TopCell → ℕ∞) :=
+def LawfulBand (p : S β n) :=
   {r | RespectsSemantics p.scheme.rows (p.bandLabel r)}
 
 /-- The band jump at `K` decodes to the label jump at `β + K`. -/
@@ -57,8 +54,7 @@ theorem bandLabel_jump (p : S β n) (K : ℕ) (r : p.TopCell → ℕ∞) :
     | top => simp [ExtOrd.jump]
     | coe k =>
       by_cases hk : k ≤ K
-      · rw [ite_eq_left (Nat.cast_le.mpr hk), bandValue_natCast,
-          jump_of_le (ofOrd_le_ofOrd.mpr ((add_le_add_iff_left β).mpr (Nat.cast_le.mpr hk)))]
+      · simp_all [jump_of_le]
       · rw [ite_eq_right (fun h' => hk (Nat.cast_le.mp h')), bandValue_top, bandValue_natCast,
           jump_of_not_le fun h' =>
             hk (Nat.cast_le.mp (le_of_add_le_add_left (ofOrd_le_ofOrd.mp h')))]
@@ -69,7 +65,7 @@ theorem bandLabel_jump (p : S β n) (K : ℕ) (r : p.TopCell → ℕ∞) :
 /-- Once the threshold bounds the grades, jumping a lawful band vector remains
 lawful. This finite closure fact is shared by both stable-lawfulness proofs. -/
 theorem jump_mem_lawfulBand (p : S β n) (hβ : Order.IsSuccLimit β) (K : ℕ)
-    (hK : ∀ d : Cell p.scheme.scheme, p.scheme.scheme.grade d ≤ K)
+    (hK : BoundedBy p.scheme.scheme.grade K)
     {r : p.TopCell → ℕ∞} (hr : r ∈ p.LawfulBand) :
     JumpClosed.jump K r ∈ p.LawfulBand := by
   change RespectsSemantics p.scheme.rows (p.bandLabel (JumpClosed.jump K r))
@@ -79,7 +75,7 @@ theorem jump_mem_lawfulBand (p : S β n) (hβ : Order.IsSuccLimit β) (K : ℕ)
 end StageType
 
 /-- The provisional labelling restricted along an actual face is lawful. -/
-theorem respects_someProvisionalValue_mapCell {β : Ordinal.{0}} (hβ : Order.IsSuccLimit β)
+theorem respects_someProvisionalValue_mapCell {β : Ordinal₀} (hβ : Order.IsSuccLimit β)
     {m n : ℕ} {p : S β n} {q : S β m} {f : Fin n ↪ Fin m} (hpq : typeMap f q = some p) :
     RespectsSemantics p.scheme.rows (fun Xi => q.someProvisionalValue (mapCell hpq Xi)) := by
   obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
@@ -96,11 +92,11 @@ variable {x : R.LabelledExt}
 
 /-- The provisional band vector at a rooted cover: the offsets of the source tops. -/
 noncomputable def provisionalBand (y : RootedCover x) : x.type.TopCell → ℕ∞ :=
-  fun i => offset i.1 i.2 y
+  fun i => offset i.2 y
 
 /-- The stable band vector: the suprema of the offsets, in the completed band. -/
 noncomputable def stableBand (x : R.LabelledExt) : x.type.TopCell → ℕ∞ :=
-  fun i => ⨆ y : RootedCover x, (offset i.1 i.2 y : ℕ∞)
+  fun i => ⨆ y : RootedCover x, (offset i.2 y : ℕ∞)
 
 /-- The provisional band vector decodes to the provisional values along the rooted cover. -/
 theorem bandLabel_provisionalBand (y : RootedCover x) :
@@ -109,7 +105,7 @@ theorem bandLabel_provisionalBand (y : RootedCover x) :
   unfold StageType.bandLabel
   by_cases h : x.type.label Xi = ⊤
   · rw [dite_eq_left h, value_eq_offset Xi h y]
-    exact bandValue_natCast α.1 (offset Xi h y)
+    exact bandValue_natCast α.1 (offset h y)
   · rw [dite_eq_right h]
     change x.type.label Xi = y.1.type.someProvisionalValue (cell y Xi)
     rw [someProvisionalValue_of_ne_top (by rw [label_cell]; exact h), label_cell]
@@ -135,8 +131,5 @@ theorem bandLabel_stableBand :
     rfl
   · rw [dite_eq_right h, stableValue_of_ne_top hcons hcov x.eval_eq h]
 
-end RootedCover
 
-end KnightRealization
 
-end VaughtConjecture.Knight

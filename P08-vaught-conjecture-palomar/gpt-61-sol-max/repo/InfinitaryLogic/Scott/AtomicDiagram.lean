@@ -3,9 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Lomega1omega.Operations
+import Mathlib.Tactic
+
+import InfinitaryLogic.Lomega1omega.Operations
 
 /-!
 # Atomic Diagrams for Relational Languages
@@ -25,8 +26,6 @@ These are the building blocks for Scott formulas.
 We restrict to relational languages (`L.IsRelational`) so that the atomic diagram of a finite
 tuple is determined by equality and relation holding information.
 -/
-
-@[expose] public section
 
 universe u v w w'
 
@@ -66,7 +65,7 @@ instance [Countable (Σ l, L.Relations l)] : Countable (L.AtomicIdx n) := by
 
 omit [L.IsRelational] in
 /-- Evaluates whether an atomic formula indexed by `idx` holds for a tuple `a`. -/
-def holds (idx : L.AtomicIdx n) (a : Fin n → M) : Prop :=
+def holds (idx : L.AtomicIdx n) (a : Fin n → M) :=
   match idx with
   | eq i j => a i = a j
   | rel R f => RelMap R (a ∘ f)
@@ -74,7 +73,7 @@ def holds (idx : L.AtomicIdx n) (a : Fin n → M) : Prop :=
 omit [L.IsRelational] in
 /-- Pushforward an atomic index through a function σ : Fin m → Fin n.
 This transforms an atomic index over m variables to one over n variables by composing indices. -/
-def pushforward {m : ℕ} (idx : L.AtomicIdx m) (σ : Fin m → Fin n) : L.AtomicIdx n :=
+def pushforward {m : ℕ} (idx : L.AtomicIdx m) (σ : Fin m → Fin n) :=
   match idx with
   | eq i j => eq (σ i) (σ j)
   | rel R f => rel R (σ ∘ f)
@@ -85,8 +84,8 @@ theorem holds_comp_eq_holds_pushforward {m : ℕ} (idx : L.AtomicIdx m)
     (a : Fin n → M) (σ : Fin m → Fin n) :
     idx.holds (a ∘ σ) = (idx.pushforward σ).holds a := by
   cases idx with
-  | eq i j => simp only [holds, pushforward, Function.comp_apply]
-  | rel R f => simp only [holds, pushforward, Function.comp_assoc]
+  | eq i j => rfl
+  | rel R f => rfl
 
 end AtomicIdx
 
@@ -97,26 +96,19 @@ def atomicFormula (idx : L.AtomicIdx n) : L.BoundedFormula (Fin n) 0 :=
   | .rel R f => R.formula fun k => Term.var (f k)
 
 /-- The atomic formula as an Lω₁ω formula. -/
-def atomicFormulaω (idx : L.AtomicIdx n) : L.BoundedFormulaω (Fin n) 0 :=
+def atomicFormulaω (idx : L.AtomicIdx n) :=
   (atomicFormula idx).toLω
 
 omit [L.IsRelational] in
 @[simp]
 theorem realize_atomicFormula (idx : L.AtomicIdx n) (a : Fin n → M) :
-    (atomicFormula idx).Realize a Fin.elim0 ↔ idx.holds a := by
-  cases idx with
-  | eq i j => simp [atomicFormula, AtomicIdx.holds, Term.equal, Term.realize]
-  | rel R f =>
-    simp only [atomicFormula, AtomicIdx.holds, Relations.formula, BoundedFormula.realize_rel]
-    refine iff_of_eq (congrArg (Structure.RelMap R) ?_)
-    funext i
-    simp
+    (atomicFormula idx).Realize a Fin.elim0 ↔ idx.holds a := by simp_all [AtomicIdx.holds] <;> aesop
 
 omit [L.IsRelational] in
 @[simp]
 theorem realize_atomicFormulaω (idx : L.AtomicIdx n) (a : Fin n → M) :
     (atomicFormulaω idx).Realize a Fin.elim0 ↔ idx.holds a := by
-  simp [atomicFormulaω, BoundedFormula.realize_toLω, realize_atomicFormula]
+  simp [atomicFormulaω,  ]
 
 /-- The atomic diagram of a tuple: the conjunction over all atomic indices of either the
 atomic formula or its negation, depending on whether it holds. -/
@@ -128,7 +120,7 @@ noncomputable def atomicDiagram [Countable (Σ l, L.Relations l)] (a : Fin n →
       (fun _ _ h => by injection h)
   haveI : Countable (L.AtomicIdx n) := inferInstance
   haveI : Encodable (L.AtomicIdx n) := Encodable.ofCountable _
-  exact BoundedFormulaω.einf fun idx : L.AtomicIdx n =>
+  exact BoundedFormulaω.einf fun idx =>
     if idx.holds a then atomicFormulaω idx else (atomicFormulaω idx).not
 
 omit [L.IsRelational] in
@@ -139,37 +131,37 @@ the notion of "same atomic type" only captures the full atomic equivalence for r
 languages. With function symbols, `AtomicIdx` doesn't cover terms built from functions,
 so this would be a weaker notion than the standard "same atomic type" in model theory.
 For Scott analysis, we restrict to relational languages where this captures the full notion. -/
-def SameAtomicType {N : Type w'} [L.Structure N] (a : Fin n → M) (b : Fin n → N) : Prop :=
+def SameAtomicType {N : Type w'} [L.Structure N] (a : Fin n → M) (b : Fin n → N) :=
   ∀ idx : L.AtomicIdx n, idx.holds a ↔ idx.holds b
 
 omit [L.IsRelational] in
 /-- The correspondence between atomic diagrams and same atomic type. -/
 theorem sameAtomicType_iff_realize_atomicDiagram [Countable (Σ l, L.Relations l)]
-    {N : Type w'} [L.Structure N] (a : Fin n → M) (b : Fin n → N) :
+    {N : Type w'} [L.Structure N] a (b : Fin n → N) :
     SameAtomicType (L := L) (M := M) (N := N) a b ↔
       Formulaω.Realize (atomicDiagram (L := L) (M := M) a) b := by
   classical
   -- keep the formula-level interface intact: unfolding `Formulaω.Realize` would expose the raw
   -- ℕ-indexed `iInf` semantics and lose the `AtomicIdx` index type
-  simp only [atomicDiagram, Formulaω.realize_einf]
+  simp  [atomicDiagram, ]
   constructor
   · intro h idx
     specialize h idx
     by_cases ha : idx.holds a
-    · simp only [ha, ↓reduceIte]
-      exact (realize_atomicFormulaω (M := N) idx b).mpr (h.mp ha)
-    · simp only [ha, ↓reduceIte, Formulaω.realize_not]
-      exact fun hb => ha (h.mpr ((realize_atomicFormulaω (M := N) idx b).mp hb))
+    · simp  [ha, ]
+      exact (realize_atomicFormulaω  idx b).mpr (h.mp ha)
+    · simp  [ha,  ]
+      exact fun hb => ha (h.mpr ((realize_atomicFormulaω  idx b).mp hb))
   · intro h idx
     have hidx := h idx
     constructor
     · intro ha
-      simp only [ha, ↓reduceIte] at hidx
-      exact (realize_atomicFormulaω (M := N) idx b).mp hidx
+      simp  [ha, ] at hidx
+      exact (realize_atomicFormulaω  idx b).mp hidx
     · intro hb
       by_contra ha
-      simp only [ha, ↓reduceIte, Formulaω.realize_not] at hidx
-      exact hidx ((realize_atomicFormulaω (M := N) idx b).mpr hb)
+      simp  [ha,  ] at hidx
+      exact hidx ((realize_atomicFormulaω  idx b).mpr hb)
 
 omit [L.IsRelational] in
 /-- Same atomic type is reflexive. -/
@@ -184,16 +176,6 @@ theorem SameAtomicType.symm {N : Type w'} [L.Structure N]
     {a : Fin n → M} {b : Fin n → N} (h : SameAtomicType (L := L) (M := M) (N := N) a b) :
     SameAtomicType (L := L) (M := N) (N := M) b a :=
   fun idx => (h idx).symm
-
-omit [L.IsRelational] in
-/-- Same atomic type is transitive. -/
-@[trans]
-theorem SameAtomicType.trans {N P : Type*} [L.Structure N] [L.Structure P]
-    {a : Fin n → M} {b : Fin n → N} {c : Fin n → P}
-    (hab : SameAtomicType (L := L) (M := M) (N := N) a b)
-    (hbc : SameAtomicType (L := L) (M := N) (N := P) b c) :
-    SameAtomicType (L := L) (M := M) (N := P) a c :=
-  fun idx => (hab idx).trans (hbc idx)
 
 omit [L.IsRelational] in
 /-- Same atomic type is preserved under relabeling.
@@ -217,18 +199,16 @@ theorem SameAtomicType.map_equiv.{v₀, u₀, w₀, w₀', u_1, u_2} {L : Langua
     SameAtomicType (L := L) (⇑e ∘ a) (⇑e' ∘ b) ↔ SameAtomicType (L := L) a b := by
   constructor <;> intro h idx <;> have hidx := h idx <;> cases idx with
   | eq i j =>
-    simp only [AtomicIdx.holds, Function.comp] at hidx ⊢
+    
     first
     | exact ⟨fun hij => e'.injective (hidx.mp (congrArg e hij)),
         fun hij => e.injective (hidx.mpr (congrArg e' hij))⟩
     | exact ⟨fun hij => congrArg e' (hidx.mp (e.injective hij)),
         fun hij => congrArg e (hidx.mpr (e'.injective hij))⟩
   | rel R f =>
-    simp only [AtomicIdx.holds] at hidx ⊢
+    simp  [AtomicIdx.holds] at hidx ⊢
     first
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel] at hidx
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel]
 
-end Language
 
-end FirstOrder

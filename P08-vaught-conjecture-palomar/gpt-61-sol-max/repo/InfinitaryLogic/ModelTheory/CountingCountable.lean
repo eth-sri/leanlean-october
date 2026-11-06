@@ -1,3 +1,0 @@
-module
-public import InfinitaryLogic.ModelTheory.CountingModels
-public import InfinitaryLogic.Descriptive.FiniteCarrier

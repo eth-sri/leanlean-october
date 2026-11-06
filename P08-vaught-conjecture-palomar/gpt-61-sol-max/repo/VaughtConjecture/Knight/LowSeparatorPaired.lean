@@ -1,12 +1,14 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.LowOnlyNormalization
-public import VaughtConjecture.Knight.SourcePrefixRows
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.LowOnlyNormalization
+import VaughtConjecture.Knight.SourcePrefixRows
 
 /-! # The LOW separator on the paired-slot catalogue (grades `K ≥ 2`)
 
@@ -41,85 +43,83 @@ relation; a chart through `K` reading the private owner and low source as `⊤` 
 designated donor top as `⊤` (`donor_top_readback`).  No physical receiver is used: the actual
 chart equations `σ (κ(a, t)) < σ (κ(a, s))`, `σ (a c) = ⊤`, `σ (a r) = ⊤` are hypotheses. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight.LowSeparator
 
-open Transform Value ExtOrd PairedSlotEncoding PairedSlotComparison SharpWitnessComposition
+open  Value ExtOrd PairedSlotEncoding PairedSlotComparison 
   SourcePrefixRows
 
 noncomputable section
 
 /-! ## The non-top donor maximum and the rounded frontier -/
 
-section Scalar
+section
 
 variable {X : Type*} [Fintype X] (K : ℕ) (N : X → Prop) [DecidablePred N] (b : X)
 
 /-- The non-top donor maximum of a complete profile. -/
-def donorMax (s : X → ExtOrd) : ExtOrd := (Finset.univ.filter N).sup s
+def donorMax (s : X → ExtOrd) := (Finset.univ.filter N).sup s
 
-theorem le_donorMax (s : X → ExtOrd) {d : X} (hd : N d) : s d ≤ donorMax N s :=
+local notation "donorMax₀" => donorMax N
+
+theorem le_donorMax s {d} (hd : N d) : s d ≤ donorMax₀ s :=
   Finset.le_sup (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd⟩)
 
-theorem donorMax_le {s : X → ExtOrd} {c : ExtOrd} (h : ∀ d, N d → s d ≤ c) : donorMax N s ≤ c :=
+theorem donorMax_le {s} {c} (h : ∀ d, N d → s d ≤ c) : donorMax₀ s ≤ c :=
   Finset.sup_le fun d hd => h d (Finset.mem_filter.mp hd).2
 
-theorem donorMax_congr {s a : X → ExtOrd} (h : ∀ d, N d → a d = s d) :
-    donorMax N a = donorMax N s :=
+theorem donorMax_congr {s a} (h : ∀ d, N d → a d = s d) :
+    donorMax₀ a = donorMax₀ s :=
   Finset.sup_congr rfl fun d hd => h d (Finset.mem_filter.mp hd).2
 
-theorem donorMax_ne_top {s : X → ExtOrd} (hs : ∀ d, s d ≠ ⊤) : donorMax N s ≠ ⊤ :=
+theorem donorMax_ne_top {s} (hs : ∀ d, s d ≠ ⊤) : donorMax₀ s ≠ ⊤ :=
   ne_of_lt ((Finset.sup_lt_iff bot_lt_top).mpr fun d _ => lt_top_iff_ne_top.mpr (hs d))
 
 /-- The non-top maximum is bottom or attained. -/
-theorem donorMax_cases (s : X → ExtOrd) :
-    donorMax N s = ⊥ ∨ ∃ d, N d ∧ s d = donorMax N s := by
+theorem donorMax_cases s :
+    donorMax₀ s = ⊥ ∨ ∃ d, N d ∧ s d = donorMax₀ s := by
   by_cases hne : (Finset.univ.filter N).Nonempty
   · obtain ⟨d, hd, he⟩ := Finset.exists_mem_eq_sup _ hne s
     exact Or.inr ⟨d, (Finset.mem_filter.mp hd).2, he.symm⟩
-  · left
-    unfold donorMax
-    rw [Finset.not_nonempty_iff_eq_empty.mp hne, Finset.sup_empty]
+  · simp_all [donorMax]
 
 /-- The rounded frontier `R_K(M(s))`. -/
-def cutoffCut (s : X → ExtOrd) : ExtOrd := extVisibilityReplace (donorMax N s) K K
+def cutoffCut s := extVisibilityReplace (donorMax₀ s) K K
 
-theorem donorMax_le_cutoffCut (s : X → ExtOrd) : donorMax N s ≤ cutoffCut K N s :=
-  TopSupport.le_evr_self _ _
+local notation "cutoffCut₀₀₀" => cutoffCut K N
 
-theorem cutoffCut_selfVis (s : X → ExtOrd) : SelfVis K (cutoffCut K N s) :=
-  TopSupport.selfVis_evr_self K _
+variable {K N} in
+theorem donorMax_le_cutoffCut s : donorMax₀ s ≤ cutoffCut₀₀₀ s :=
+  TopSupport.le_evr_self
 
-theorem cutoffCut_ne_top {s : X → ExtOrd} (hs : ∀ d, s d ≠ ⊤) : cutoffCut K N s ≠ ⊤ :=
+theorem cutoffCut_selfVis s : SelfVis K (cutoffCut₀₀₀ s) :=
+  TopSupport.selfVis_evr_self
+
+theorem cutoffCut_ne_top {s} (hs : ∀ d, s d ≠ ⊤) : cutoffCut₀₀₀ s ≠ ⊤ :=
   TopSupport.evr_ne_top (donorMax_ne_top N hs) K K
 
 /-- The partner: lower only the cutoff field to the rounded frontier, then normalize. -/
-def partner [DecidableEq X] (s : X → ExtOrd) : X → ExtOrd :=
-  PairedSlotEncoding.normalize K (Function.update s b (cutoffCut K N s))
+def partner [DecidableEq X] s :=
+  PairedSlotEncoding.normalize K (Function.update s b (cutoffCut₀₀₀ s))
 
 /-! ## The frontier is a grid endpoint of the canonical code -/
 
 /-- In a canonical profile the non-top maximum is bottom or a canonical code `ω·bl + off` with
 `off ≤ K`, and its rounding is the block endpoint `ω·bl + K`. -/
-theorem cutoffCut_eq_endpoint {s : X → ExtOrd}
+theorem cutoffCut_eq_endpoint {s}
     (hs : s ∈ CanonicalPairedProfiles.inventory X K) :
-    cutoffCut K N s = ⊥ ∨
-      ∃ (m₀ : Ordinal.{0}) (d₀ : X), N d₀ ∧ s d₀ = ofOrd m₀ ∧ donorMax N s = ofOrd m₀ ∧
+    cutoffCut₀₀₀ s = ⊥ ∨
+      ∃ m₀ d₀, N d₀ ∧ s d₀ = ofOrd m₀ ∧ donorMax₀ s = ofOrd m₀ ∧
         m₀ = Ordinal.omega0 * block K (values s) m₀ + offset K (values s) m₀ ∧
-        cutoffCut K N s = ofOrd (Ordinal.omega0 * block K (values s) m₀ + K) := by
-  rcases ExtOrd.cases (donorMax N s) with hM | hM | ⟨m₀, hM⟩
-  · left
-    unfold cutoffCut
-    rw [hM]
-    rfl
-  · exact absurd hM (donorMax_ne_top N hs.2)
+        cutoffCut₀₀₀ s = ofOrd (Ordinal.omega0 * block K (values s) m₀ + K) := by
+  rcases ExtOrd.cases (donorMax₀ s) with hM | hM | ⟨m₀, hM⟩
+  · simp_all [cutoffCut]
+  · simp_all [VaughtConjecture.Knight.CanonicalPairedProfiles.inventory, donorMax_ne_top]
   · right
-    obtain ⟨d₀, hd₀, hd₀M⟩ : ∃ d, N d ∧ s d = donorMax N s := by
+    obtain ⟨d₀, hd₀, hd₀M⟩ : ∃ d, N d ∧ s d = donorMax₀ s := by
       rcases donorMax_cases N s with h | h
-      · exact absurd (h.symm.trans hM) (ofOrd_ne_bot m₀).symm
+      · simp_all [VaughtConjecture.Knight.ExtOrd.ofOrd]
       · exact h
-    have hm₀ : s d₀ = ofOrd m₀ := hd₀M.trans hM
+    have hm₀  := hd₀M.trans hM
     have hcode : encode K (values s) m₀ = ofOrd m₀ := by
       have h := congrFun hs.1 d₀
       rw [PairedSlotEncoding.normalize_ofOrd hm₀, hm₀] at h
@@ -140,31 +140,25 @@ theorem cutoffCut_eq_endpoint {s : X → ExtOrd}
 
 /-! ## The partner's cutoff is the frontier: represented-endpoint fixation -/
 
-section Partner
+section
 
 variable [DecidableEq X]
 
-theorem mem_values_update {s : X → ExtOrd} {x : ExtOrd} {c : Ordinal.{0}} :
+theorem mem_values_update {s} {x} {c} :
     c ∈ values (Function.update s b x) ↔ x = ofOrd c ∨ ∃ d, d ≠ b ∧ s d = ofOrd c := by
   rw [mem_values]
   constructor
-  · rintro ⟨d, hd⟩
-    by_cases hdb : d = b
-    · subst hdb
-      rw [Function.update_self] at hd
-      exact Or.inl hd
-    · rw [Function.update_of_ne hdb] at hd
-      exact Or.inr ⟨d, hdb, hd⟩
+  · grind
   · rintro (h | ⟨d, hdb, hd⟩)
     · exact ⟨b, by rw [Function.update_self]; exact h⟩
-    · exact ⟨d, by rw [Function.update_of_ne hdb]; exact hd⟩
+    · exact ⟨d, by simp_all⟩
 
 /-- **Represented-endpoint fixation.**  Inserting the `K`-endpoint `ω·bl + K` of the block of a
 canonical code `m₀ = ω·bl + off` (`off ≤ K`) into the inventory and removing a value above that
 endpoint leaves its paired code at block `bl`, offset `K`: the endpoint witnesses no orbit, the
 keys below its key are those below `m₀`'s key, and the removed value lies at or above
 `ω·bl + K + 1`. -/
-theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm₀ : s d₀ = ofOrd m₀)
+theorem encode_endpoint {s} {m₀} {d₀} (hm₀ : s d₀ = ofOrd m₀)
     (hdec : m₀ = Ordinal.omega0 * block K (values s) m₀ + offset K (values s) m₀)
     (hsb : ofOrd (Ordinal.omega0 * block K (values s) m₀ + K) < s b) :
     encode K (values (Function.update s b (ofOrd (Ordinal.omega0 * block K (values s) m₀ + K))))
@@ -174,11 +168,11 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
   set S := values s with hSdef
   set bl := block K S m₀ with hbl
   set off := offset K S m₀ with hoffdef
-  set h₀ : Ordinal.{0} := Ordinal.omega0 * bl + K with hh₀
+  set h₀ : Ordinal₀ := Ordinal.omega0 * bl + K with hh₀
   set T := values (Function.update s b (ofOrd h₀)) with hTdef
-  set S' : Finset Ordinal.{0} := insert h₀ S with hS'def
-  have hoff : off ≤ K := offset_le K S m₀
-  have hm₀S : m₀ ∈ S := mem_values.mpr ⟨d₀, hm₀⟩
+  set S' : Finset Ordinal₀ := insert h₀ S with hS'def
+  have hoff  := offset_le K S m₀
+  have hm₀S  := mem_values.mpr ⟨d₀, hm₀⟩
   have hh₀lim : limitPart h₀ = Ordinal.omega0 * bl := limitPart_mul_add _ _
   have hh₀fin : finitePart h₀ = K := finitePart_mul_add _ _
   have hm₀lim : limitPart m₀ = Ordinal.omega0 * bl := by rw [hdec]; exact limitPart_mul_add _ _
@@ -189,16 +183,15 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
     constructor
     · rintro ⟨hf, e, he, hej, hec⟩
       rcases Finset.mem_insert.mp he with rfl | he
-      · rw [hh₀fin] at hej
-        exact absurd hej (lt_irrefl K)
+      · omega
       · exact ⟨hf, e, he, hej, hec⟩
     · rintro ⟨hf, e, he, hej, hec⟩
       exact ⟨hf, e, Finset.mem_insert_of_mem he, hej, hec⟩
   have hkey : ∀ c, key K S' c = key K S c := by
     intro c
     by_cases ho : Orbit K S c
-    · simp only [key, ite_eq_left ho, ite_eq_left ((horb c).mpr ho)]
-    · simp only [key, ite_eq_right ho, ite_eq_right (fun h => ho ((horb c).mp h))]
+    · grind [key]
+    · grind [key]
   -- (b) the endpoint and the maximum share their orbit status and key in `S`
   have horb₀ : Orbit K S h₀ ↔ Orbit K S m₀ := by
     constructor
@@ -208,10 +201,10 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
       exact ⟨hh₀fin ▸ le_rfl, e, he, hej, hec.trans (hm₀lim.trans hh₀lim.symm)⟩
   have hkey₀ : key K S h₀ = key K S m₀ := by
     by_cases ho : Orbit K S m₀
-    · simp only [key, ite_eq_left ho, ite_eq_left (horb₀.mpr ho), hh₀lim, hm₀lim]
+    · grind [key]
     · have hoffK : off = K := by
         by_contra hne
-        exact ho (orbit_of_invisible hm₀S (by rw [hm₀fin]; exact lt_of_le_of_ne hoff hne))
+        exact ho (orbit_of_invisible hm₀S (by omega))
       have hm₀h₀ : m₀ = h₀ := by rw [hdec, hoffK]
       rw [hm₀h₀]
   -- (c) the keys below the common key are unchanged by the insertion
@@ -227,11 +220,9 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
     unfold PairedSlotEncoding.rank
     rw [hkey h₀, hkey₀, hkeys]
   -- (d) below `ω·bl + K + 1` the actual inventory of the partner is the enlarged inventory
-  set h' : Ordinal.{0} := Ordinal.omega0 * bl + ((K + 1 : ℕ) : Ordinal.{0}) with hh'
+  set h' : Ordinal₀ := Ordinal.omega0 * bl + ((K + 1 : ℕ)) with hh'
   have hh'fin : K ≤ finitePart h' := by rw [finitePart_mul_add]; exact Nat.le_succ K
-  have hh₀h' : h₀ < h' := by
-    rw [hh₀, hh']
-    exact (add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr (Nat.lt_succ_self K))
+  have hh₀h' : h₀ < h' :=  (add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr (Nat.lt_succ_self K))
   have heq : ∀ c, c < h' → (c ∈ T ↔ c ∈ S') := by
     intro c hc
     rw [hTdef, mem_values_update, hS'def, Finset.mem_insert, hSdef, mem_values]
@@ -244,94 +235,87 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
       · by_cases hdb : d = b
         · subst hdb
           exfalso
-          have h1 : h₀ < c := ofOrd_lt_ofOrd.mp (hd ▸ hsb)
+          have h1  := ofOrd_lt_ofOrd.mp (hd ▸ hsb)
           have h2 : c ≤ h₀ := by
             have hc' : c < h₀ + 1 := by
               rw [hh'] at hc
-              rw [hh₀]
+              
               rw [Nat.cast_succ, ← add_assoc] at hc
               exact hc
             exact Order.lt_add_one_iff.mp hc'
           exact absurd h1 (not_lt.mpr h2)
         · exact Or.inr ⟨d, hdb, hd⟩
-  have hrankT : PairedSlotEncoding.rank K T h₀ = PairedSlotEncoding.rank K S' h₀ :=
+  have hrankT  :=
     rank_congr_below hh'fin heq hh₀h'
-  have horbT : Orbit K T h₀ ↔ Orbit K S' h₀ :=
+  have horbT  :=
     orbit_congr_below hh'fin heq (by rw [hh₀lim]; exact hh₀h'.trans_le' (by
       rw [hh₀]; exact le_self_add))
   -- (e) the code of the endpoint in the partner inventory
   have hblock : block K T h₀ = bl := by
     change block K T h₀ = block K S m₀
     unfold block
-    rw [hrankT, hrank']
+    
     by_cases ho : Orbit K S m₀
-    · rw [ite_eq_left (((horbT.trans (horb h₀)).trans horb₀).mpr ho), ite_eq_left ho]
-    · rw [ite_eq_right (fun h => ho (((horbT.trans (horb h₀)).trans horb₀).mp h)),
-        ite_eq_right ho]
+    · grind
+    · grind
   have hoffT : offset K T h₀ = K := by
-    unfold offset
-    split_ifs
-    · exact hh₀fin
-    · rfl
+    grind [offset]
   unfold encode
   rw [hblock, hoffT]
 
-end Partner
+end
 
 /-- The paired source grid of the complete field type. -/
-abbrev grid : Finset ExtOrd := sourceGrid K (Fintype.card X)
+abbrev grid := sourceGrid K (Fintype.card X)
 
-theorem grid_bot : (⊥ : ExtOrd) ∈ grid (X := X) K := sourceGrid_bot _ _
+theorem grid_bot : (⊥ : ExtOrd) ∈ grid (X := X) K := sourceGrid_bot
 
 /-! ## The partner: canonical, cutoff `h`, prefix agreement, common cut `h` -/
 
-section PartnerProfile
+local notation "cut₀" => cut (grid (X := X) K)
+
+local notation "grid_bot₀" => grid_bot (X := X) K
+
+section
 
 variable [DecidableEq X] {s : X → ExtOrd} (hs : s ∈ CanonicalPairedProfiles.inventory X K)
-  (hb : ¬ N b) (hlt : cutoffCut K N s < s b)
+   (hlt : cutoffCut K N s < s b)
 
 include hs in
 theorem partner_mem : partner K N b s ∈ CanonicalPairedProfiles.inventory X K := by
   apply CanonicalPairedProfiles.normalize_mem_inventory
   intro d
   by_cases hdb : d = b
-  · subst hdb
-    rw [Function.update_self]
-    exact cutoffCut_ne_top K N hs.2
-  · rw [Function.update_of_ne hdb]
-    exact hs.2 d
+  · simp_all [VaughtConjecture.Knight.CanonicalPairedProfiles.inventory, cutoffCut_ne_top]
+  · simp_all [VaughtConjecture.Knight.CanonicalPairedProfiles.inventory]
 
 include hs hlt in
 /-- **The partner's cutoff is exactly the frontier.** -/
-theorem partner_cutoff : partner K N b s b = cutoffCut K N s := by
+theorem partner_cutoff : partner K N b s b = cutoffCut₀₀₀ s := by
   unfold partner
   rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, hdec, hend⟩
-  · rw [h0]
-    exact (PairedSlotEncoding.normalize_bot_iff K _ b).mpr (by rw [Function.update_self])
+  · simp_all [VaughtConjecture.Knight.PairedSlotEncoding.normalize]
   · rw [PairedSlotEncoding.normalize_ofOrd (by rw [Function.update_self, hend]), hend]
     rw [hend] at hlt
     exact encode_endpoint K b hm₀ hdec hlt
 
 include hs hlt in
 /-- **Prefix agreement** `t ∧ h = s ∧ h`, on every complete field. -/
-theorem partner_cap (d : X) :
-    min (partner K N b s d) (cutoffCut K N s) = min (s d) (cutoffCut K N s) := by
+theorem partner_cap d :
+    min (partner K N b s d) (cutoffCut₀₀₀ s) = min (s d) (cutoffCut₀₀₀ s) := by
   rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, hdec, hend⟩
-  · rw [h0, min_eq_right bot_le, min_eq_right bot_le]
-  · rw [hend]
-    unfold partner
+  · simp_all
+  · 
+    
     rw [hend]
-    refine CanonicalPairedProfiles.normalize_cap X K hs (fun e => ?_) d
+    refine CanonicalPairedProfiles.normalize_cap hs (fun e => ?_) d
     by_cases heb : e = b
-    · subst heb
-      rw [Function.update_self, min_self, min_eq_right]
-      rw [hend] at hlt
-      exact hlt.le
+    · grind
     · rw [Function.update_of_ne heb]
 
 omit [DecidableEq X] in
 include hs in
-theorem cutoffCut_mem_grid : cutoffCut K N s ∈ grid (X := X) K := by
+theorem cutoffCut_mem_grid : cutoffCut₀₀₀ s ∈ grid (X := X) K := by
   rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, -, hend⟩
   · rw [h0]; exact grid_bot K
   · rw [hend]
@@ -342,22 +326,22 @@ theorem cutoffCut_mem_grid : cutoffCut K N s ∈ grid (X := X) K := by
 
 include hs hlt in
 /-- **The common cut of `s` and its partner is the frontier**: `κ_K(s, t) = h`. -/
-theorem cut_partner : cut (grid (X := X) K) s (partner K N b s) = cutoffCut K N s := by
+theorem cut_partner : cut₀ s (partner K N b s) = cutoffCut₀₀₀ s := by
   apply le_antisymm
   · apply le_of_not_gt
     intro hgt
-    have hag := agree_cut (grid_bot (X := X) K) s (partner K N b s) b
+    have hag := agree_cut (grid_bot₀) s (partner K N b s) b
     rw [partner_cutoff K N b hs hlt, min_eq_left hgt.le] at hag
-    have : cutoffCut K N s < min (s b) (cut (grid (X := X) K) s (partner K N b s)) := lt_min hlt hgt
+    have : cutoffCut₀₀₀ s < min (s b) (cut₀ s (partner K N b s)) := lt_min hlt hgt
     rw [hag] at this
     exact lt_irrefl _ this
   · exact le_cut (cutoffCut_mem_grid K N hs) (fun x => (partner_cap K N b hs hlt x).symm)
 
-end PartnerProfile
+end
 
 /-! ## Strict comparison activates LOW -/
 
-section Activation
+section
 
 variable [DecidableEq X] {s : X → ExtOrd} (hs : s ∈ CanonicalPairedProfiles.inventory X K)
   (hlt : cutoffCut K N s < s b)
@@ -365,16 +349,16 @@ variable [DecidableEq X] {s : X → ExtOrd} (hs : s ∈ CanonicalPairedProfiles.
 include hs hlt in
 /-- The ultrametric identity: a strict comparison of the two common cuts pins the partner cut at
 the frontier and puts the other cut strictly above it. -/
-theorem cut_partner_eq_of_lt {a : X → ExtOrd}
-    (h : cut (grid (X := X) K) a (partner K N b s) < cut (grid (X := X) K) a s) :
-    cut (grid (X := X) K) a (partner K N b s) = cutoffCut K N s ∧
-      cutoffCut K N s < cut (grid (X := X) K) a s := by
+theorem cut_partner_eq_of_lt {a}
+    (h : cut₀ a (partner K N b s) < cut₀ a s) :
+    cut₀ a (partner K N b s) = cutoffCut₀₀₀ s ∧
+      cutoffCut₀₀₀ s < cut₀ a s := by
   have hst := cut_partner K N b hs hlt
-  have h1 := cut_triangle (grid_bot (X := X) K) a s (partner K N b s)
-  have h2 := cut_triangle (grid_bot (X := X) K) s a (partner K N b s)
+  have h1 := cut_triangle (grid_bot₀) a s (partner K N b s)
+  have h2 := cut_triangle (grid_bot₀) s a (partner K N b s)
   rw [hst] at h1 h2
-  rw [cut_symm (grid_bot (X := X) K) s a] at h2
-  have hcu : cutoffCut K N s < cut (grid (X := X) K) a s := by
+  rw [cut_symm (grid_bot₀) s a] at h2
+  have hcu : cutoffCut₀₀₀ s < cut₀ a s := by
     by_contra hn
     rw [min_eq_left (not_lt.mp hn)] at h1
     exact absurd (h1.trans_lt h) (lt_irrefl _)
@@ -387,34 +371,33 @@ theorem cut_partner_eq_of_lt {a : X → ExtOrd}
 include hs hlt in
 /-- **Strict comparison activates LOW**: the non-top donor maximum is unchanged and the cutoff
 of the serving profile exceeds the frontier. -/
-theorem activation_of_cut_lt {a : X → ExtOrd}
-    (h : cut (grid (X := X) K) a (partner K N b s) < cut (grid (X := X) K) a s) :
-    donorMax N a = donorMax N s ∧ cutoffCut K N s < a b := by
+theorem activation_of_cut_lt {a}
+    (h : cut₀ a (partner K N b s) < cut₀ a s) :
+    donorMax₀ a = donorMax₀ s ∧ cutoffCut₀₀₀ s < a b := by
   obtain ⟨-, hu⟩ := cut_partner_eq_of_lt K N b hs hlt h
-  have hag := agree_cut (grid_bot (X := X) K) a s
+  have hag := agree_cut (grid_bot₀) a s
   refine ⟨donorMax_congr N (fun d hd => ?_), ?_⟩
-  · have hsd : s d < cut (grid (X := X) K) a s :=
-      ((le_donorMax N s hd).trans (donorMax_le_cutoffCut K N s)).trans_lt hu
+  · have hsd : s d < cut₀ a s :=
+      ((le_donorMax N s hd).trans (donorMax_le_cutoffCut s)).trans_lt hu
     exact (eq_of_cap_eq_lt (hag d).symm hsd).symm
   · have hb' := hag b
-    have hgt : cutoffCut K N s < min (s b) (cut (grid (X := X) K) a s) := lt_min hlt hu
+    have hgt : cutoffCut₀₀₀ s < min (s b) (cut₀ a s) := lt_min hlt hu
     rw [← hb'] at hgt
     exact hgt.trans_le (min_le_left _ _)
 
 include hs hlt in
 /-- A monotone chart reading the partner cut strictly below the diagonal cut activates LOW. -/
-theorem activation_of_chart_lt {a : X → ExtOrd} {σ : ExtOrd → ExtOrd} (hσ : Monotone σ)
-    (h : σ (cut (grid (X := X) K) a (partner K N b s)) < σ (cut (grid (X := X) K) a s)) :
-    donorMax N a = donorMax N s ∧ cutoffCut K N s < a b :=
+def activation_of_chart_lt {a : X → ExtOrd} {σ : LabelMap} (hσ : Monotone σ)
+    (h : σ (cut₀ a (partner K N b s)) < σ (cut₀ a s)) :=
   activation_of_cut_lt K N b hs hlt (lt_of_not_ge fun hle => not_lt.mpr (hσ hle) h)
 
-end Activation
+end
 
-end Scalar
+end
 
 /-! ## The family instance: KVC's gate-free LOW family -/
 
-section Family
+section
 
 open LowOnly
 
@@ -431,28 +414,30 @@ noncomputable instance : DecidablePred (donorField F) := Classical.decPred _
 abbrev cutoffField : LowOnly.Field P C := Sum.inr (Sum.inr ())
 
 /-- The family's non-top maximum is the donor maximum of the complete profile. -/
-theorem maximum_eq_donorMax (S : State P C) :
+theorem maximum_eq_donorMax S :
     F.maximum S = donorMax (donorField F) S.profile := by
   apply le_antisymm
   · unfold LowOnly.Family.maximum LowOnly.nonTopMax
     apply Finset.sup_le
     intro d hd
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hd
+    simp   at hd
     exact le_donorMax (donorField F) S.profile (d := Sum.inl d) hd
-  · unfold donorMax
+  · 
     apply Finset.sup_le
     intro x hx
-    have hx' : donorField F x := (Finset.mem_filter.mp hx).2
+    have hx'  := (Finset.mem_filter.mp hx).2
     rcases x with d | d | d
     · exact LowOnly.le_nonTopMax S.u hx'
     · exact hx'.elim
     · exact hx'.elim
 
-/-- The partner state: only the cutoff is lowered to the frontier, then normalized. -/
-def partnerState (S : State P C) : State P C :=
-  (⟨S.u, S.v, cutoffCut K (donorField F) S.profile⟩ : State P C).normalize K
+local notation "cutoffCut₀₀" => cutoffCut K (donorField F)
 
-theorem partnerState_profile (S : State P C) :
+/-- The partner state: only the cutoff is lowered to the frontier, then normalized. -/
+def partnerState (S : State P C) :=
+  (⟨S.u, S.v, cutoffCut₀₀ S.profile⟩ : State P C).normalize K
+
+theorem partnerState_profile S :
     (partnerState F S).profile =
       partner K (donorField F) (cutoffField (P := P) (C := C)) S.profile := by
   funext d
@@ -465,9 +450,11 @@ theorem partnerState_profile (S : State P C) :
   · rfl
   · rfl
 
+local notation "inventory₀" => CanonicalPairedProfiles.inventory (LowOnly.Field P C) K
+
 theorem partnerState_mem {S : State P C} (hcan : S.profile ∈
-      CanonicalPairedProfiles.inventory (LowOnly.Field P C) K) :
-    (partnerState F S).profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K := by
+      inventory₀) :
+    (partnerState F S).profile ∈ inventory₀ := by
   rw [partnerState_profile]
   exact partner_mem K (donorField F) cutoffField hcan
 
@@ -475,64 +462,61 @@ theorem partnerState_mem {S : State P C} (hcan : S.profile ∈
 root; if the new LOW premise is active the old one was (the frontier bounds the maximum and lies
 below the old cutoff), and the old bound dominates the new one; normalization preserves
 admission. -/
-theorem partnerState_admissible {S : State P C} (hS : F.Admissible K S)
-    (hlt : cutoffCut K (donorField F) S.profile < S.b) (hK : 1 ≤ K) :
+theorem partnerState_admissible {S} (hS : F.Admissible K S)
+    (hlt : cutoffCut₀₀ S.profile < S.b) (hK : 1 ≤ K) :
     F.Admissible K (partnerState F S) := by
   have hm : F.maximum S < S.b := by
-    rw [maximum_eq_donorMax]
-    exact (donorMax_le_cutoffCut K (donorField F) S.profile).trans_lt hlt
-  have hS' : F.Admissible K (⟨S.u, S.v, cutoffCut K (donorField F) S.profile⟩ : State P C) :=
+    grind [maximum_eq_donorMax, donorMax_le_cutoffCut]
+  have hS' : F.Admissible K (⟨S.u, S.v, cutoffCut₀₀ S.profile⟩) :=
     { lawfulP := hS.lawfulP
       lawfulC := hS.lawfulC
       shared := hS.shared
       futureP := hS.futureP
       futureC := hS.futureC
       cutoff := by
-        rw [min_self]
-        exact cutoffCut_selfVis K (donorField F) S.profile
+        grind [cutoffCut_selfVis]
       low := fun hj _ d hd => (max_le_max hlt.le le_rfl).trans (hS.low hj hm d hd) }
   exact F.normalize_admissible hK hS'
 
 /-- **Donor-top readback at an active state**: a chart through `K` reading the private owner
 and the low source as `⊤` reads every designated donor top as `⊤`, by LOW. -/
-theorem donor_top_readback {S : State P C} (hS : F.Admissible K S) (hm : F.maximum S < S.b)
-    {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ) (hc : σ (S.v F.gap.c) = ⊤)
-    (hr : σ (S.v F.gap.r.1) = ⊤) (d : Cell P.scheme) (hd : F.p d = ⊤) : σ (S.u d) = ⊤ := by
+theorem donor_top_readback {S} (hS : F.Admissible K S) (hm : F.maximum S < S.b)
+    {σ} (hσ : Witness (gTop K) σ) (hc : σ (S.v F.gap.c) = ⊤)
+    (hr : σ (S.v F.gap.r.1) = ⊤) d (hd : F.p d = ⊤) : σ (S.u d) = ⊤ := by
   have hlow := hS.low le_rfl hm d hd
   change max S.b (min (S.v F.gap.c) (extVisibilityReplace (S.v F.gap.r.1) K K)) ≤ S.u d at hlow
   have h1 := hσ.mono ((le_max_right _ _).trans hlow)
-  rw [hσ.mono.map_min, hσ.comm_gTop _ le_rfl, hc, hr, extVisibilityReplace_top, min_self] at h1
+  rw [hσ.mono.map_min, hσ.comm_gTop _ le_rfl, hc, hr,  ] at h1
   exact top_le_iff.mp h1
+
+local notation "cut₀₀" => cut (grid (X := LowOnly.Field P C) K)
 
 /-- **Strict comparison at a serving state activates LOW there**: a monotone chart reading the
 partner cut strictly below the diagonal cut at an admitted serving profile forces the serving
 state's non-top maximum below its cutoff. -/
 theorem activation_of_serving {S A : State P C}
-    (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K)
-    (hlt : cutoffCut K (donorField F) S.profile < S.b) {σ : ExtOrd → ExtOrd} (hσ : Monotone σ)
-    (h : σ (cut (grid (X := LowOnly.Field P C) K) A.profile (partnerState F S).profile) <
-      σ (cut (grid (X := LowOnly.Field P C) K) A.profile S.profile)) :
+    (hcan : S.profile ∈ inventory₀)
+    (hlt : cutoffCut₀₀ S.profile < S.b) {σ : LabelMap} (hσ : Monotone σ)
+    (h : σ (cut₀₀ A.profile (partnerState F S).profile) <
+      σ (cut₀₀ A.profile S.profile)) :
     F.maximum A < A.b := by
   rw [partnerState_profile] at h
   obtain ⟨heq, hab⟩ := activation_of_chart_lt K (donorField F) cutoffField hcan hlt hσ h
   rw [maximum_eq_donorMax, heq]
-  exact (donorMax_le_cutoffCut K (donorField F) S.profile).trans_lt hab
+  exact (donorMax_le_cutoffCut S.profile).trans_lt hab
 
 /-- **The separator readback**: at an admitted serving state whose chart reads the partner cut
 strictly below the diagonal cut and reads the private owner and low source as `⊤`, every
 designated donor top reads `⊤`. -/
-theorem serving_readback {S A : State P C} (hA : F.Admissible K A)
-    (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K)
-    (hlt : cutoffCut K (donorField F) S.profile < S.b) {σ : ExtOrd → ExtOrd}
+def serving_readback {S A : State P C} (hA : F.Admissible K A)
+    (hcan : S.profile ∈ inventory₀)
+    (hlt : cutoffCut₀₀ S.profile < S.b) {σ}
     (hσ : Witness (gTop K) σ)
-    (h : σ (cut (grid (X := LowOnly.Field P C) K) A.profile (partnerState F S).profile) <
-      σ (cut (grid (X := LowOnly.Field P C) K) A.profile S.profile))
-    (hc : σ (A.v F.gap.c) = ⊤) (hr : σ (A.v F.gap.r.1) = ⊤) (d : Cell P.scheme)
-    (hd : F.p d = ⊤) : σ (A.u d) = ⊤ :=
+    (h : σ (cut₀₀ A.profile (partnerState F S).profile) <
+      σ (cut₀₀ A.profile S.profile))
+    (hc : σ (A.v F.gap.c) = ⊤) (hr : σ (A.v F.gap.r.1) = ⊤) d
+    (hd : F.p d = ⊤) :=
   donor_top_readback F hA (activation_of_serving F hcan hlt hσ.mono h) hσ hc hr d hd
 
-end Family
 
-end
 
-end VaughtConjecture.Knight.LowSeparator

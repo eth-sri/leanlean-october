@@ -3,10 +3,11 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.AmalgamationPlan.Plan
-public import Mathlib.Data.Finset.Lattice.Fold
+import Mathlib.Tactic
+
+import VaughtConjecture.AmalgamationPlan.Plan
+import Mathlib.Data.Finset.Lattice.Fold
 
 /-! # Closed-set geometry of finite support plans
 
@@ -15,28 +16,24 @@ intersection, so a finite set of points has a least visible superset inside the 
 This is a canonical support, not a canonical enumeration of that support.
 -/
 
-@[expose] public section
-
 namespace VaughtConjecture.AmalgamationPlan.Plan
 
 variable {α : Type*} [DecidableEq α]
 
 /-- Intersections of visible faces are visible. -/
-theorem IsPlan.inter_mem {A : Finset α} {P : Finset (Finset α)}
+theorem IsPlan.inter_mem {A : Finset α} {P : VaughtConjecture.AmalgamationPlan.SupportFamily α}
     (hP : IsPlan A P) {X Y : Finset α} (hX : X ∈ P) (hY : Y ∈ P) : X ∩ Y ∈ P := by
   induction hP generalizing X Y with
   | empty =>
-    simp only [Finset.mem_singleton] at hX hY
-    simp [hX, hY]
+    simp_all
   | singleton a =>
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hX hY ⊢
-    rcases hX with rfl | rfl <;> rcases hY with rfl | rfl <;> simp
+    aesop
   | @step A a b Q R P ha hb hab hQ hR hm he hP ihQ ihR =>
     subst P
     have cross {U V : Finset α} (hU : U ∈ Q) (hV : V ∈ R) : U ∩ V ∈ R := by
       have hcut := ihQ hU hm.1
       have hcutR : U ∩ (A.erase a).erase b ∈ R := by
-        have hc : U ∩ (A.erase a).erase b ∈ Q ∩ ((A.erase a).erase b).powerset :=
+        have hc  :=
           Finset.mem_inter.mpr ⟨hcut, Finset.mem_powerset.mpr Finset.inter_subset_right⟩
         rw [he] at hc
         exact (Finset.mem_inter.mp hc).1
@@ -55,11 +52,11 @@ theorem IsPlan.inter_mem {A : Finset α} {P : Finset (Finset α)}
     rcases hX with (hX | hX) | rfl
     · rcases hY with (hY | hY) | rfl
       · exact Or.inl (Or.inl (ihQ hX hY))
-      · exact Or.inl (Or.inr (cross hX hY))
+      · simp_all
       · rw [Finset.inter_eq_left.mpr ((hQ.subset_of_mem hX).trans (Finset.erase_subset _ _))]
         exact Or.inl (Or.inl hX)
     · rcases hY with (hY | hY) | rfl
-      · rw [Finset.inter_comm]; exact Or.inl (Or.inr (cross hY hX))
+      · grind [Finset.inter_comm]
       · exact Or.inl (Or.inr (ihR hX hY))
       · rw [Finset.inter_eq_left.mpr ((hR.subset_of_mem hX).trans (Finset.erase_subset _ _))]
         exact Or.inl (Or.inr hX)
@@ -70,4 +67,3 @@ theorem IsPlan.inter_mem {A : Finset α} {P : Finset (Finset α)}
         exact Or.inl (Or.inr hY)
       · simp
 
-end VaughtConjecture.AmalgamationPlan.Plan

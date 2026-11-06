@@ -3,11 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ExpansionDomainUniform
-public import VaughtConjecture.Knight.ClassScottDefinitions
-public import VaughtConjecture.FiltrationCertificate
+import VaughtConjecture.Knight.ExpansionDomainUniform
+import VaughtConjecture.Knight.ClassScottDefinitions
+import VaughtConjecture.FiltrationCertificate
 
 /-! # Construction receipts for the generic filtration certificate
 
@@ -16,8 +15,6 @@ terminal models supply cofinal nonempty losses (both left explicit here). Limit 
 supplies continuity, uniform finite-cover comparison supplies agreement at the sentence's own
 rank, and ordinary Scott isolation supplies separation. No older one-block producer is added.
 -/
-
-@[expose] public section
 
 namespace VaughtConjecture.Knight.ExpansionDomain
 
@@ -41,4 +38,3 @@ def filtrationCertificate (hct : CountableTerminalFibres)
     ⟨φ.qrank, qrank_lt_ord_aleph_one φ,
       fun _ hp _ hq => realizes_iff_of_mem_domain_uniform φ le_rfl hp hq⟩
 
-end VaughtConjecture.Knight.ExpansionDomain

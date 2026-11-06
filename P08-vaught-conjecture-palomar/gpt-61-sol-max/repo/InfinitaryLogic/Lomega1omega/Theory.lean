@@ -3,11 +3,10 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import InfinitaryLogic.Lomega1omega.Semantics
-public import InfinitaryLogic.Util
-public import Mathlib.Data.Set.Basic
+import InfinitaryLogic.Lomega1omega.Semantics
+import InfinitaryLogic.Util
+import Mathlib.Data.Set.Basic
 
 /-!
 # Lω₁ω Theories and Semantic Entailment
@@ -37,8 +36,6 @@ in Lω₁ω (countable infinitary logic with countable conjunctions/disjunctions
 - [KK04]
 -/
 
-@[expose] public section
-
 universe u v w w'
 
 namespace FirstOrder
@@ -47,27 +44,9 @@ namespace Language
 
 variable {L : Language.{u, v}}
 
-open FirstOrder Structure
 
 /-! ### Theories -/
 
-/-- A theory in Lω₁ω is a set of Lω₁ω sentences. -/
-abbrev Theoryω (L : Language.{u, v}) := Set L.Sentenceω
-
-namespace Theoryω
-
-variable {T T' : L.Theoryω} {φ : L.Sentenceω}
-
-/-- A structure M is a model of theory T if it satisfies all sentences in T. -/
-def Model (T : L.Theoryω) (M : Type w) [L.Structure M] : Prop :=
-  ∀ φ ∈ T, Sentenceω.Realize φ M
-
-/-- The empty theory has every structure as a model. -/
-theorem Model.empty (M : Type w) [L.Structure M] : Model (∅ : L.Theoryω) M := by
-  intro φ hφ
-  exact False.elim (Set.notMem_empty φ hφ)
-
-end Theoryω
 
 /-! ### Isomorphism Invariance of Realization -/
 
@@ -83,9 +62,6 @@ variable {M : Type w} [L.Structure M]
 variable {N : Type w'} [L.Structure N]
 variable {P : Type*} [L.Structure P]
 
-/-- Lω₁ω-equivalence is symmetric. -/
-theorem symm (h : LomegaEquiv L M N) : LomegaEquiv L N M := fun φ => (h φ).symm
-
 /-- Isomorphic structures are Lω₁ω-equivalent.
 
 The proof transports variable assignments along the isomorphism using
@@ -94,13 +70,10 @@ and `e ∘ Fin.elim0 = Fin.elim0` since both domains are empty. -/
 theorem of_equiv {M N : Type w} [L.Structure M] [L.Structure N] (e : M ≃[L] N) :
     LomegaEquiv L M N := by
   intro φ
-  have h := BoundedFormulaω.realize_equiv e φ (Empty.elim : Empty → M) (Fin.elim0 : Fin 0 → M)
+  have h := BoundedFormulaω.realize_equiv e φ (Empty.elim) (Fin.elim0)
   rwa [comp_empty_elim e, comp_fin_elim0 e] at h
 
-end LomegaEquiv
 
 /-! ### Invariance under Isomorphism -/
 
-end Language
 
-end FirstOrder

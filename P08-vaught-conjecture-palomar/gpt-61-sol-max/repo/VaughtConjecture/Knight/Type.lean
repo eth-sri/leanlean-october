@@ -1,11 +1,15 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SemScheme
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SemScheme
 
 /-! # Knight's stage types and horizontal restriction
 
@@ -58,8 +62,6 @@ consumers (band control, the one-point transfer) and are not ported here; each i
 from `typeMap_eq_some` and the definition of `StageType.restrictFace` (labels and rows are
 read off the original type). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open VaughtConjecture.AmalgamationPlan
@@ -73,24 +75,24 @@ bounded at stage `α` (`< ofOrd α` or `⊤`, the paper's `{-∞} ∪ α ∪ {�
 `truncExt`, #84), respecting the associated semantics in the faithful sense of Def. 2.5.4.
 The rows are `scheme.rows`: stage-independent, and fixed under reduction.  The paper's stages
 are limit ordinals; the tower is indexed by them (`Knight.Tower`). -/
-structure StageType (α : Ordinal.{0}) (n : ℕ) where
+structure StageType (α : Ordinal₀) (n : ℕ) where
   /-- The domain with its associated semantics (Def. 2.6.1): the cell scheme (Knight's
   "domain" of the type) owning its rows. -/
   scheme : SemScheme n
   /-- The label of each cell. -/
-  label : Cell scheme.scheme → ExtOrd
+  label : CellLabels scheme.scheme
   /-- Labels are strictly bounded at stage `α`: in `{-∞} ∪ α ∪ {∞}` (Def. 3.1.1). -/
-  label_bound : ∀ d : Cell scheme.scheme, label d < ExtOrd.ofOrd α ∨ label d = ⊤
+  label_bound : ∀ d , label d < ExtOrd.ofOrd α ∨ label d = ⊤
   /-- The labelling respects the associated semantics (Def. 2.5.4, faithful: orderliness,
   locality, availability). -/
   respects : RespectsSemantics scheme.rows label
 
 /-- `S α n`: the stage types of stage `α` on `n`-tuples, Knight's `S^α_n`; see `StageType`. -/
-abbrev S (α : Ordinal.{0}) (n : ℕ) := StageType α n
+abbrev S α n := StageType α n
 
 namespace StageType
 
-variable {α : Ordinal.{0}} {m n : ℕ}
+variable {α : Ordinal₀} {m n : ℕ}
 
 /-- Extensionality: two stage types are equal when their domains and labellings agree (`label`
 depends on `scheme`, hence `HEq`); the `Prop` fields follow by proof irrelevance. -/
@@ -111,8 +113,8 @@ theorem ext_of_components {t₁ t₂ : S α n}
     (h_card : t₁.scheme.scheme.card = t₂.scheme.scheme.card)
     (h_cell : ∀ i, t₁.scheme.scheme.cell (Fin.cast h_card.symm i) = t₂.scheme.scheme.cell i)
     (h_label : ∀ i, t₁.label (Fin.cast h_card.symm i) = t₂.label i)
-    (h_row : ∀ (Sig : Cell t₂.scheme.scheme)
-      (d : t₂.scheme.scheme.below (t₂.scheme.scheme.cell Sig)),
+    (h_row : ∀ Sig
+      d,
       t₁.scheme.rows.E (Fin.cast h_card.symm Sig)
         ⟨Fin.cast h_card.symm d.1, by rw [h_cell d.1, h_cell Sig]; exact d.2⟩ =
       t₂.scheme.rows.E Sig d) :
@@ -123,19 +125,19 @@ theorem ext_of_components {t₁ t₂ : S α n}
   subst h_plan h_card
   simp only [Fin.cast_eq_self] at h_cell h_label h_row
   obtain rfl := funext h_cell
-  obtain rfl : s₁ = s₂ := Semantics.ext (funext fun Sig => funext fun d => h_row Sig d)
+  obtain rfl : s₁ = s₂ := Semantics.ext (funext fun Sig => funext (h_row Sig))
   exact ext rfl (heq_of_eq (funext h_label))
 
 /-! ### The stage types on `0`-tuples -/
 
 /-- The graded plan over `Fin 0` is empty: there is no face of positive size. -/
-private theorem gradedPlan_fin0_eq_empty (P : Finset (Finset (Fin 0))) :
+private theorem gradedPlan_fin0_eq_empty (P : VaughtConjecture.AmalgamationPlan.SupportFamily (Fin 0)) :
     Plan.gradedPlan P = ∅ := by
   ext ⟨B, j⟩
-  simp only [Plan.mem_gradedPlan, Plan.MemGraded, Finset.notMem_empty, iff_false, not_and,
-    not_le]
+  simp  [Plan.mem_gradedPlan, Plan.MemGraded,   
+    ]
   intro _ hj
-  simpa [Finset.eq_empty_of_forall_notMem (fun x : Fin 0 => x.elim0) (s := B)] using hj
+  simpa [Finset.eq_empty_of_forall_notMem (fun x : Fin 0 => x.elim0) ] using hj
 
 /-- A scheme over `Fin 0` has no cells. -/
 private theorem card_eq_zero_of_fin0 (D : CellScheme (ι := Fin 0) Finset.univ) : D.card = 0 := by
@@ -145,13 +147,13 @@ private theorem card_eq_zero_of_fin0 (D : CellScheme (ι := Fin 0) Finset.univ) 
   exact Finset.notMem_empty _ this
 
 /-- The only plan on `Fin 0` is `{∅}`. -/
-private theorem plan_eq_of_fin0 {P : Finset (Finset (Fin 0))}
-    (h : Plan.IsPlan (Finset.univ : Finset (Fin 0)) P) : P = {∅} := by
-  have huniv : (Finset.univ : Finset (Fin 0)) = ∅ :=
+private theorem plan_eq_of_fin0 {P}
+    (h : Plan.IsPlan (Finset.univ : FiniteScope 0) P) : P = {∅} := by
+  have huniv : (Finset.univ : FiniteScope 0) = ∅ :=
     Finset.eq_empty_of_forall_notMem (fun x => x.elim0)
-  rw [huniv] at h
+  
   ext B
-  simp only [Finset.mem_singleton]
+  simp  
   exact ⟨fun hB => Finset.subset_empty.mp (h.subset_of_mem hB), fun hB => hB ▸ h.empty_mem⟩
 
 /-- There is at most one stage type on `0`-tuples at each stage: the scheme has no cells and
@@ -160,8 +162,8 @@ instance subsingleton_zero : Subsingleton (S α 0) := by
   constructor
   rintro ⟨⟨⟨P₁, ip₁, c₁, cl₁, cm₁⟩, s₁, _, _, _, _⟩, p₁, _, _⟩
     ⟨⟨⟨P₂, ip₂, c₂, cl₂, cm₂⟩, s₂, _, _, _, _⟩, p₂, _, _⟩
-  have h1 : c₁ = 0 := card_eq_zero_of_fin0 ⟨P₁, ip₁, c₁, cl₁, cm₁⟩
-  have h2 : c₂ = 0 := card_eq_zero_of_fin0 ⟨P₂, ip₂, c₂, cl₂, cm₂⟩
+  have h1  := card_eq_zero_of_fin0 ⟨P₁, ip₁, c₁, cl₁, cm₁⟩
+  have h2  := card_eq_zero_of_fin0 ⟨P₂, ip₂, c₂, cl₂, cm₂⟩
   subst h1 h2
   obtain rfl : P₁ = P₂ := (plan_eq_of_fin0 ip₁).trans (plan_eq_of_fin0 ip₂).symm
   obtain rfl : cl₁ = cl₂ := funext fun d => d.elim0
@@ -177,36 +179,34 @@ vacuous because the graded plan over `Fin 0` is empty (`j ≤ |∅| = 0 < j`).  
 complete scheme must have cells, so there is no empty `SemScheme n`. -/
 noncomputable def emptySemScheme : SemScheme 0 where
   scheme :=
-    { plan := Plan.canonicalPlan (Finset.univ : Finset (Fin 0))
-      isPlan := Plan.isPlan_canonicalPlan _
-      card := 0
-      cell := fun d => d.elim0
-      cell_mem := fun d => d.elim0 }
-  rows := { E := fun Sig => Sig.elim0, orderly := fun Sig => Sig.elim0 }
+    ⟨Plan.canonicalPlan (Finset.univ : FiniteScope 0),
+Plan.isPlan_canonicalPlan _,
+0,
+fun d => d.elim0,
+fun d => d.elim0⟩
+  rows := ⟨fun Sig => Sig.elim0,
+fun Sig => Sig.elim0⟩
   rows_coded Sig := Sig.elim0
   consistent Sig := Sig.elim0
   bountiful _ BJ _ _ _ _ _ _ _ _ _ _ _ :=
     ⟨fun d => d.1.elim0, ⟨fun d => d.1.elim0, fun d => d.1.elim0, fun d _ _ _ => d.1.elim0⟩,
       fun d => d.1.elim0, fun d => d.1.elim0⟩
   complete BJ hBJ := by
-    rw [gradedPlan_fin0_eq_empty] at hBJ
-    exact absurd hBJ (Finset.notMem_empty _)
+    simp_all [gradedPlan_fin0_eq_empty]
 
 /-- The empty stage type on `0`-tuples at any stage: the empty domain, no labels (the unique
 element of `S α 0`, `subsingleton_zero`). -/
-noncomputable def emptyType : S α 0 where
-  scheme := emptySemScheme
-  label := fun d => d.elim0
-  label_bound := fun d => d.elim0
-  respects :=
-    { orderly := fun d => d.elim0, locality := fun Sig => Sig.elim0,
-      availability := fun Sig => Sig.elim0 }
+noncomputable def emptyType : S α 0 := ⟨emptySemScheme,
+fun d => d.elim0,
+fun d => d.elim0,
+{ orderly := fun d => d.elim0, locality := fun Sig => Sig.elim0,
+      availability := fun Sig => Sig.elim0 }⟩
 
 /-- `S α n` is countable when `α` is countable (Knight, Prop. 3.1.4): a stage type is its
 domain with associated semantics — countably many (`SemScheme.countable`, Prop. 2.6.3(4), from
 countably many coded schemes) — together with finitely many labels in the countable set of
 labels strictly bounded at `α` (`ExtOrd.countable_bounded_lt`).  No row bound is involved. -/
-theorem countable_S (hα : α.card ≤ Cardinal.aleph0) (n : ℕ) : Countable (S α n) := by
+abbrev countable_S (hα : α.card ≤ Cardinal.aleph0) n := by
   have := ExtOrd.countable_bounded_lt hα
   let B := {x : ExtOrd // x < ExtOrd.ofOrd α ∨ x = ⊤}
   let g : S α n → Σ X : SemScheme n, (Cell X.scheme → B) :=
@@ -233,34 +233,16 @@ noncomputable def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
   label_bound i := t.label_bound (toCell t.scheme.scheme f hr i)
   respects := t.respects.restrictFace f hr
 
-@[simp] theorem restrictFace_scheme (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
-    (t.restrictFace f hr).scheme = t.scheme.restrictFace f hr := rfl
-
-@[simp] theorem restrictFace_label (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (i : Cell (t.scheme.scheme.restrictFace f hr)) :
-    (t.restrictFace f hr).label i = t.label (toCell t.scheme.scheme f hr i) := rfl
-
-@[simp] theorem restrictFace_rows_E (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (Sig : Cell (t.scheme.scheme.restrictFace f hr))
-    (d : (t.scheme.scheme.restrictFace f hr).below
-      ((t.scheme.scheme.restrictFace f hr).cell Sig)) :
-    (t.restrictFace f hr).scheme.rows.E Sig d =
-      t.scheme.rows.E (toCell t.scheme.scheme f hr Sig) (belowMap t.scheme.scheme f hr Sig d) :=
-  rfl
-
 end StageType
 
 open StageType
 
-variable {α : Ordinal.{0}} {k m n : ℕ}
+variable {α : Ordinal₀} {k m n : ℕ}
 
 /-- **Horizontal restriction** `S^α f` (Knight, Def. 3.1.5; Knight-VC `typeMap`): the partial
 restriction of a stage type along `f : Fin m ↪ Fin n`, defined exactly when the range of `f` is
 a visible face of its plan.  This is the `pull` of the Knight `TypeTower` instance. -/
-noncomputable def typeMap (f : Fin m ↪ Fin n) (t : S α n) : Option (S α m) :=
+noncomputable def typeMap (f : Fin m ↪ Fin n) (t : S α n) :=
   if hr : Finset.univ.image f ∈ t.scheme.scheme.plan then some (t.restrictFace f hr) else none
 
 theorem typeMap_eq_some (f : Fin m ↪ Fin n) (t : S α n)
@@ -273,15 +255,12 @@ theorem typeMap_eq_none (f : Fin m ↪ Fin n) (t : S α n)
   dite_eq_right hr
 
 /-- `typeMap f t` is defined exactly when the range of `f` is a visible face of the plan. -/
-theorem typeMap_isSome_iff (f : Fin m ↪ Fin n) (t : S α n) :
-    (typeMap f t).isSome ↔ Finset.univ.image f ∈ t.scheme.scheme.plan := by
-  by_cases hr : Finset.univ.image f ∈ t.scheme.scheme.plan
-  · simp [typeMap_eq_some f t hr, hr]
-  · simp [typeMap_eq_none f t hr, hr]
+theorem typeMap_isSome_iff {f : Fin m ↪ Fin n} {t : S α n} :
+    (typeMap f t).isSome ↔ Finset.univ.image f ∈ t.scheme.scheme.plan := by grind [typeMap_eq_some, typeMap_eq_none]
 
-theorem typeMap_isSome_of_mem (f : Fin m ↪ Fin n) (t : S α n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) : (typeMap f t).isSome :=
-  (typeMap_isSome_iff f t).mpr hr
+def typeMap_isSome_of_mem (f : Fin m ↪ Fin n) (t : S α n)
+    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :=
+  (typeMap_isSome_iff).mpr hr
 
 /-- The characterisation of restriction (Knight-VC `typeMap_eq_some_of_emb`): `q` is the
 `f`-restriction of `t` as soon as a strictly monotone `emb` enumerates exactly the `f`-visible
@@ -294,17 +273,17 @@ theorem typeMap_eq_some_of_emb (f : Fin m ↪ Fin n) (t : S α n) (q : S α m)
     (visible_emb : ∀ d, t.scheme.scheme.scope d ⊆ Finset.univ.image f → ∃ c, emb c = d)
     (hplan : (t.scheme.scheme.restrictFace f hr).plan = q.scheme.scheme.plan)
     (hcell : ∀ c, t.scheme.scheme.pullCell f (emb c) = q.scheme.scheme.cell c)
-    (hlabel : ∀ c, t.label (emb c) = q.label c)
-    (hrow : ∀ (Sig : Cell q.scheme.scheme) (d : q.scheme.scheme.below (q.scheme.scheme.cell Sig))
-      (d' : t.scheme.scheme.below (t.scheme.scheme.cell (emb Sig))),
+    (hlabel : PointwiseEq (t.label ∘ emb) q.label)
+    (hrow : ∀ Sig d
+      d',
       d'.1 = emb d.1 → t.scheme.rows.E (emb Sig) d' = q.scheme.rows.E Sig d) :
     typeMap f t = some q := by
   rw [typeMap_eq_some f t hr]
   congr 1
-  have hcard : (t.restrictFace f hr).scheme.scheme.card = q.scheme.scheme.card :=
+  have hcard  :=
     CellScheme.restrictFace.card_restrictFace_of_emb t.scheme.scheme f hr emb_mono emb_visible
       visible_emb
-  have hei : ∀ c, toCell t.scheme.scheme f hr (Fin.cast hcard.symm c) = emb c :=
+  have hei  :=
     CellScheme.restrictFace.toCell_cast_eq_of_emb t.scheme.scheme f hr emb_mono emb_visible hcard
   refine ext_of_components hplan hcard (fun c => ?_) (fun c => ?_) (fun Sig d => ?_)
   · change t.scheme.scheme.pullCell f (toCell t.scheme.scheme f hr (Fin.cast hcard.symm c)) = _
@@ -313,36 +292,33 @@ theorem typeMap_eq_some_of_emb (f : Fin m ↪ Fin n) (t : S α n) (q : S α m)
     rw [hei c]; exact hlabel c
   · have hgl : GradedLe (t.scheme.scheme.cell (emb d.1)) (t.scheme.scheme.cell (emb Sig)) :=
       (CellScheme.gradedLe_pullCell_iff t.scheme.scheme f (emb_visible d.1)).mp
-        (by rw [hcell d.1, hcell Sig]; exact d.2)
+        (by grind)
     exact (t.scheme.rows.E_congr (hei Sig) (hei d.1)).trans (hrow Sig d ⟨emb d.1, hgl⟩ rfl)
 
 /-- The identity law of restriction (Knight-VC `typeMap_id`): every face of `Fin n` visible
 through the identity is visible, and the restriction along the identity is the type itself. -/
-theorem typeMap_refl (t : S α n) : typeMap (Function.Embedding.refl (Fin n)) t = some t := by
+def typeMap_refl (t : S α n) := by
   have hrng : Finset.univ.image (Function.Embedding.refl (Fin n)) = Finset.univ := by
     simp [Function.Embedding.coe_refl]
   have hr : Finset.univ.image (Function.Embedding.refl (Fin n)) ∈ t.scheme.scheme.plan := by
     rw [hrng]; exact t.scheme.scheme.isPlan.domain_mem
   refine typeMap_eq_some_of_emb _ t t hr id strictMono_id
-    (fun c => by rw [hrng]; exact Finset.subset_univ _) (fun d _ => ⟨d, rfl⟩) ?_ ?_ (fun _ => rfl)
+    (fun c => by simp_all) (fun d _ => ⟨d, rfl⟩) ?_ ?_ (fun _ => rfl)
     (fun Sig d d' hd => congrArg _ (Subtype.ext hd))
   · exact Option.some_injective _
       ((CellScheme.pullbackPlan_eq_restrictFace_plan _ _ hr).symm.trans
         (Plan.pullbackPlan_refl t.scheme.scheme.isPlan))
-  · intro c
-    refine Prod.ext ?_ rfl
-    ext i
-    simp [CellScheme.pullCell]
+  · simp_all [VaughtConjecture.Knight.CellScheme.pullCell]
 
 /-- **Conditional composition** of restrictions (Knight-VC `typeMap_comp`; Knight, Lemma 3.1.6
 style): if restricting `t` along `g` is defined and gives `u`, then restricting `u` further
 along `f` agrees — including definedness — with restricting `t` along the composite
 `f.trans g`.  Nothing is asserted when the intermediate face is invisible; this is the
 `pull_trans` law of `TypeTower`. -/
-theorem typeMap_trans (f : Fin k ↪ Fin m) (g : Fin m ↪ Fin n) (t : S α n) (u : S α m)
+theorem typeMap_trans {f : Fin k ↪ Fin m} {g : Fin m ↪ Fin n} {t : S α n} {u : S α m}
     (hu : typeMap g t = some u) : typeMap f u = typeMap (f.trans g) t := by
-  have hg : Finset.univ.image g ∈ t.scheme.scheme.plan :=
-    (typeMap_isSome_iff g t).mp (by rw [hu]; rfl)
+  have hg  :=
+    (typeMap_isSome_iff).mp (by rw [hu]; rfl)
   rw [typeMap_eq_some g t hg, Option.some.injEq] at hu
   subst hu
   have hguard : Finset.univ.image f ∈ (t.scheme.scheme.restrictFace g hg).plan ↔
@@ -405,4 +381,3 @@ theorem typeMap_trans (f : Fin k ↪ Fin m) (g : Fin m ↪ Fin n) (t : S α n) (
 
 /-! ### Face closure -/
 
-end VaughtConjecture.Knight

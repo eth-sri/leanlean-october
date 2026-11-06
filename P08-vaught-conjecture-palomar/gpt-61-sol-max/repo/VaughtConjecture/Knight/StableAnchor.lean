@@ -1,15 +1,17 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.SameStageCalibration
-public import VaughtConjecture.Knight.ReferenceContext
-public import VaughtConjecture.Knight.SlackCutPasting
-public import VaughtConjecture.Knight.CountedEncoding
-public import VaughtConjecture.Knight.RestrictedComposition
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.SameStageCalibration
+import VaughtConjecture.Knight.ReferenceContext
+import VaughtConjecture.Knight.SlackCutPasting
+import VaughtConjecture.Knight.CountedEncoding
+import VaughtConjecture.Knight.RestrictedComposition
 
 /-! # A finite stable top value is an anchor at infinity; hollow models have stable identity
 
@@ -41,28 +43,24 @@ above a bounded characteristic arity is untouched.  Nothing here needs full-arit
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower StageType KnightRealization Value ExtOrd Transform
+open TypeTower StageType KnightRealization Value ExtOrd 
 
 /-! ## Scalar lemmas -/
 
 /-- **Source pinning.**  A bottom-preserving map commuting with replacement through `N` that
 sends `x` to `α + j` (`α` a limit, `j < N`) sees `x = ξ + j` for a block start `ξ` that it sends
 to `α`. -/
-theorem source_pinned {τ : ExtOrd → ExtOrd} (hbot : τ ⊥ = ⊥) {N j : ℕ} (hjN : j < N)
+theorem source_pinned {τ : LabelMap} (hbot : τ ⊥ = ⊥) {N j : ℕ} (hjN : j < N)
     (hcomm : ∀ x k i, k ≤ N → i ≤ k →
       τ (extVisibilityReplace x k i) = extVisibilityReplace (τ x) k i)
-    {α : Ordinal.{0}} (hα : limitPart α = α) {x : ExtOrd} (hτx : τ x = ofOrd (α + j)) :
-    ∃ ξ : Ordinal.{0}, limitPart ξ = ξ ∧ x = ofOrd (ξ + j) ∧ τ (ofOrd ξ) = ofOrd α := by
+    {α : Ordinal₀} (hα : limitPart α = α) {x : ExtOrd} (hτx : τ x = ofOrd (α + j)) :
+    ∃ ξ , limitPart ξ = ξ ∧ x = ofOrd (ξ + j) ∧ τ (ofOrd ξ) = ofOrd α := by
   have hevr : ∀ k, k ≤ N → extVisibilityReplace (ofOrd (α + j)) N k = ofOrd (α + k) := by
-    intro k _
-    rw [extVisibilityReplace_of_finitePart_lt (by
-      rw [finitePart_limitPart_add_nat' hα]; exact hjN), limitPart_add_nat_of_limitPart_eq hα]
+    exact?
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ', rfl⟩
-  · rw [hbot] at hτx; exact absurd hτx.symm (ofOrd_ne_bot _)
+  · simp_all
   · exfalso
     have h := hcomm ⊤ N N le_rfl le_rfl
     rw [extVisibilityReplace_top, hτx, hevr N le_rfl, ofOrd_inj] at h
@@ -88,29 +86,29 @@ theorem source_pinned {τ : ExtOrd → ExtOrd} (hbot : τ ⊥ = ⊥) {N j : ℕ}
 
 /-- **Replacement above a block start**: for `y` strictly above the limit `ξ`, its replacement
 at `(j+1, j+1)` is strictly above `ξ + j`. -/
-theorem evr_succ_gt_of_gt_limit {ξ : Ordinal.{0}} (hξ : limitPart ξ = ξ) {y : ExtOrd}
+theorem evr_succ_gt_of_gt_limit {ξ : Ordinal₀} (hξ : limitPart ξ = ξ) {y : ExtOrd}
     (hy : ofOrd ξ < y) (j : ℕ) :
     ofOrd (ξ + j) < extVisibilityReplace y (j + 1) (j + 1) := by
-  have hstep : ξ + (j : Ordinal.{0}) < ξ + ((j + 1 : ℕ) : Ordinal.{0}) :=
+  have hstep : ξ + (j) < ξ + ((j + 1 : ℕ)) :=
     add_lt_add_right (Nat.cast_lt.mpr (Nat.lt_succ_self j)) _
   rcases ExtOrd.cases y with rfl | rfl | ⟨η, rfl⟩
   · exact absurd hy not_lt_bot
-  · rw [extVisibilityReplace_top]; exact ofOrd_lt_top _
+  · simp_all
   · rw [ofOrd_lt_ofOrd] at hy
-    have hl : ξ ≤ limitPart η := by
+    have hl  := by
       have := limitPart_mono hy.le
       rwa [hξ] at this
     by_cases hfp : j + 1 ≤ finitePart η
     · rw [extVisibilityReplace_of_le_finitePart hfp]
       apply ofOrd_lt_ofOrd.mpr
-      calc ξ + (j : Ordinal.{0}) < ξ + ((j + 1 : ℕ) : Ordinal.{0}) := hstep
-        _ ≤ limitPart η + ((j + 1 : ℕ) : Ordinal.{0}) := add_le_add_left hl _
-        _ ≤ limitPart η + (finitePart η : Ordinal.{0}) := add_le_add_right (Nat.cast_le.mpr hfp) _
+      calc ξ + (j) < ξ + ((j + 1 : ℕ)) := hstep
+        _ ≤ limitPart η + ((j + 1 : ℕ)) := add_le_add_left hl _
+        _ ≤ limitPart η + (finitePart η) := add_le_add_right (Nat.cast_le.mpr hfp) _
         _ = η := limitPart_add_finitePart η
     · rw [extVisibilityReplace_of_finitePart_lt (not_le.mp hfp)]
       apply ofOrd_lt_ofOrd.mpr
-      calc ξ + (j : Ordinal.{0}) < ξ + ((j + 1 : ℕ) : Ordinal.{0}) := hstep
-        _ ≤ limitPart η + ((j + 1 : ℕ) : Ordinal.{0}) := add_le_add_left hl _
+      calc ξ + (j) < ξ + ((j + 1 : ℕ)) := hstep
+        _ ≤ limitPart η + ((j + 1 : ℕ)) := add_le_add_left hl _
 
 /-! ## The anchor -/
 
@@ -128,27 +126,25 @@ theorem isInfinityAnchor_of_stable (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} 
   suffices hlt : q.scheme.rows.E Θ ⟨mapCell hpq Xi, hXi'⟩ <
       extVisibilityReplace (q.scheme.rows.E Θ Sig) (j + 1) (j + 1) from ⟨hlt.le, fun _ => hlt⟩
   -- the stable labelling of the extension
-  have hσr : RespectsSemantics q.scheme.rows (fun d => R.stableValue s q d) :=
+  have hσr  :=
     stableLiftRespects hM hq
   have hσa : R.stableValue s q (mapCell hpq Xi) = ofOrd (α.1 + j) := by
     rw [stableValue_mapCell hM.consistent hM.covering hpt hq hfs hpq Xi, hs]
-  have hjN : j < q.scheme.scheme.grade Θ := hΘgr
-  have hσΘ : ofOrd (α.1 + q.scheme.scheme.grade Θ) ≤ R.stableValue s q Θ :=
+  have hjN  := hΘgr
+  have hσΘ  :=
     stable_ge_of_top hM hq hΘtop
-  have hσS : ofOrd (α.1 + q.scheme.scheme.grade Sig.1) ≤ R.stableValue s q Sig.1 :=
+  have hσS  :=
     stable_ge_of_top hM hq hSig
-  have hαjΘ : ofOrd (α.1 + j) ≤ R.stableValue s q Θ := (stage_add_lt hjN).le.trans hσΘ
+  have hαjΘ  := (stage_add_lt hjN).le.trans hσΘ
   -- the exact capped shifter of the stable locality at `Θ`
-  have hvis : SelfVis (q.scheme.scheme.grade Θ) (R.stableValue s q Θ) := (hσr.orderly Θ).symm
+  have hvis  := (hσr.orderly Θ).symm
   obtain ⟨τ, hbot, hmono, hread, hcomm, -⟩ := exists_exact_capped_shifter
-    (D := q.scheme.scheme.below (q.scheme.scheme.cell Θ))
+    (D := q.scheme.scheme.belowCell Θ)
     (grade := fun d => q.scheme.scheme.grade d.1) (p := fun d => R.stableValue s q d.1)
     (c := ⟨Θ, GradedLe.refl _⟩) (fun d => d.2.2) hvis (hσr.locality Θ)
   have hτa : τ (q.scheme.rows.E Θ ⟨mapCell hpq Xi, hXi'⟩) = ofOrd (α.1 + j) := by
-    have h := hread ⟨mapCell hpq Xi, hXi'⟩
-    change τ _ = min (R.stableValue s q (mapCell hpq Xi)) (R.stableValue s q Θ) at h
-    rwa [hσa, min_eq_left hαjΘ] at h
-  have hτS : ofOrd (α.1 + ((1 : ℕ) : Ordinal.{0})) ≤ τ (q.scheme.rows.E Θ Sig) := by
+    grind
+  have hτS : ofOrd (α.1 + ((1 : ℕ) : Ordinal₀)) ≤ τ (q.scheme.rows.E Θ Sig) := by
     have h := hread Sig
     change τ _ = min (R.stableValue s q Sig.1) (R.stableValue s q Θ) at h
     rw [h]
@@ -164,7 +160,7 @@ theorem isInfinityAnchor_of_stable (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} 
     by_contra hle
     have h := hmono (not_lt.mp hle)
     rw [hτξ] at h
-    have h1 : ofOrd (α.1 + ((1 : ℕ) : Ordinal.{0})) ≤ ofOrd α.1 := hτS.trans h
+    have h1 : ofOrd (α.1 + ((1 : ℕ) : Ordinal₀)) ≤ ofOrd α.1 := hτS.trans h
     rw [ofOrd_le_ofOrd] at h1
     exact absurd h1 (not_le.mpr (lt_add_of_pos_right _ (by norm_num)))
   rw [hEa]
@@ -181,10 +177,9 @@ theorem stableValue_eq_label_of_hollow (hM : R.IsModel) (hh : R.IsHollow) {n : �
   by_cases htop : p.label Xi = ⊤
   · rcases R.hasStableValue_stableValue t p Xi with ⟨hlt, -⟩ | ⟨heq, -⟩
     · exfalso
-      have hge := le_stableValue_of_top (R := R) hpt htop
+      have hge := le_stableValue_of_top  hpt htop
       obtain ⟨j, hj⟩ := exists_nat_of_band hge hlt
       exact hh ⟨n, t, p, hpt, Xi, j + 1, isInfinityAnchor_of_stable hM hpt htop hj⟩
     · rw [heq, htop]
   · exact stableValue_of_ne_top hM.consistent hM.covering hpt htop
 
-end VaughtConjecture.Knight

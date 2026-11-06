@@ -3,10 +3,9 @@ Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.RootedKarp
-public import VaughtConjecture.Knight.PairedTrace
+import VaughtConjecture.Knight.RootedKarp
+import VaughtConjecture.Knight.PairedTrace
 
 /-! # The core-rooted extension property and its back-and-forth consumer
 
@@ -37,28 +36,25 @@ absorbed by covering into a realized rooted extension, which is admissible, henc
 over the other side's chart by the extension property.  No universal menu intersection
 between arbitrary source models is involved. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open TypeTower KnightRealization
 
 universe w
 
 /-- An admissibility predicate on rooted extensions: root embedding, base label, extension
 label. -/
-abbrev RootedAdmissibility (α : LimitStage) : Type 1 :=
-  ∀ {n N : ℕ}, (Fin n ↪ Fin N) → S α.1 n → S α.1 N → Prop
+abbrev RootedAdmissibility (α : LimitStage) :=
+  ∀ {n N}, (Fin n ↪ Fin N) → S α.1 n → S α.1 N → Prop
 
 variable {α : LimitStage} {M : Type w}
 
 /-- **The core-rooted extension property** (Prop. 7.3.3 shape): over every evaluated tuple
 containing the core, every admissible rooted extension of the realized label is realized. -/
 def RootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : Fin c ↪ M)
-    (Adm : RootedAdmissibility α) : Prop :=
-  ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), (∃ e : Fin c ↪ Fin n, e.trans t = core) →
+    (Adm : RootedAdmissibility α) :=
+  ∀ {n} t p, (∃ e : Fin c ↪ Fin n, e.trans t = core) →
     W.eval t = some p →
-    ∀ {N : ℕ} (f : Fin n ↪ Fin N) (P : S α.1 N), typeMap f P = some p → Adm f p P →
+    ∀ {N} f P, typeMap f P = some p → Adm f p P →
       ∃ u : Fin N ↪ M, f.trans u = t ∧ W.eval u = some P
 
 /-- The rooted embedding of a chart into a covering of its one-point extension. -/
@@ -70,7 +66,7 @@ theorem trans_snoc_cover {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.r
   simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
   change s (Fin.castAdd k (Fin.castSucc i)) = t i
   rw [h]
-  exact snoc_apply_castSucc t x hx i
+  exact snoc_apply_castSucc hx i
 
 theorem cover_mem_range {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t}
     {s : Fin (n + 1 + k) ↪ M} (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
@@ -79,6 +75,5 @@ theorem cover_mem_range {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.ra
   have h := DFunLike.congr_fun hst (Fin.last n)
   simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
   rw [h]
-  exact snoc_apply_last t x hx
+  exact snoc_apply_last hx
 
-end VaughtConjecture.Knight

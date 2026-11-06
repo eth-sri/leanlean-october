@@ -1,12 +1,12 @@
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.CappedDonorSource
-public import VaughtConjecture.Knight.PairedSlotIncoming
+import VaughtConjecture.Knight.CappedDonorSource
+import VaughtConjecture.Knight.PairedSlotIncoming
 
 /-! # Canonical normalization of the receiving family on the complete field inventory
 
@@ -41,11 +41,8 @@ gate — at the current cutoff `j`.
 Nothing here extracts a source profile from a physical section; the physical decoder side
 (`PairedSlotDecoder`) is not used. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open Transform Value ExtOrd AmalgamationPlan
 
 namespace CappedDonor
 
@@ -73,22 +70,22 @@ variable {I : Type*} [Fintype I] {N : ℕ} {R : Ref I nP N J P C}
 /-! ## The inventory and the canonical incoming encoder -/
 
 /-- The receiving inventory of a state: the ordinal values of its source vector. -/
-noncomputable def State.inventory {j : ℕ} (st : R.State j) : Finset Ordinal.{0} :=
+noncomputable def State.inventory {j} (st : R.State j) :=
   PairedSlotEncoding.values st.sourceProfile
 
 /-- The canonical incoming encoder of a state at its cutoff. -/
-noncomputable def State.encoder {j : ℕ} (st : R.State j) : ExtOrd → ExtOrd :=
+noncomputable def State.encoder {j} (st : R.State j) :=
   PairedSlotIncoming.encoder j st.inventory
 
-theorem State.encoder_witness {j : ℕ} (st : R.State j) : Witness (gTop j) st.encoder :=
+theorem State.encoder_witness {j} (st : R.State j) : Witness (gTop j) st.encoder :=
   PairedSlotIncoming.encoder_witness j st.inventory
 
-theorem State.encoder_reflects_bottom {j : ℕ} (st : R.State j) (x : ExtOrd)
-    (h : st.encoder x = ⊥) : x = ⊥ :=
+def State.encoder_reflects_bottom {j} (st : R.State j) x
+    (h : st.encoder x = ⊥) :=
   PairedSlotIncoming.encoder_reflects_bottom j st.inventory x h
 
 /-- **Canonical normalization** of a state: the encoder applied to every field. -/
-noncomputable def normalizeState {j : ℕ} (st : R.State j) : R.State j := mapState st.encoder st
+noncomputable def normalizeState {j} (st : R.State j) := mapState st.encoder st
 
 /-- On the source vector, normalization is the paired-slot normalization. -/
 theorem sourceProfile_normalizeState {j : ℕ} (st : R.State j) (f : Field P C) :
@@ -99,7 +96,7 @@ theorem sourceProfile_normalizeState {j : ℕ} (st : R.State j) (f : Field P C) 
 /-! ## Preservation -/
 
 /-- Normalization preserves admissibility, at the current grade. -/
-theorem normalizeState_admissible {j : ℕ} (hj : 1 ≤ j) {st : R.State j}
+theorem normalizeState_admissible {j} (hj : 1 ≤ j) {st : R.State j}
     (hst : R.Admissible st) : R.Admissible (normalizeState st) :=
   hst.map st.encoder_witness (min_le_left j J) hj st.encoder_reflects_bottom
 
@@ -114,8 +111,5 @@ theorem normalizeState_synchronized {j : ℕ} (hj : 1 ≤ j) {st : R.State j}
 
 /-! ## Normalized repairs stay in the catalogue -/
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

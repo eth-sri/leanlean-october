@@ -1,11 +1,14 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.ChartKarp
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.ChartKarp
 
 /-! # Root-preserving isomorphisms from potential isomorphisms
 
@@ -24,17 +27,15 @@ This module carries no chart-chain vocabulary: the fair-chain adapters stay in
 `Knight/RootedKarp.lean`, and the direct selected-chart consumer
 (`Knight/SelectedCommonCharts.lean`) imports this module without the chain module. -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
-open FirstOrder Language Structure TypeTower
+open FirstOrder Language  TypeTower
 
 universe u v w w'
 
 /-! ## Rooted tail families in the original language -/
 
-section Generic
+section
 
 variable {L : Language.{u, v}} [L.IsRelational]
 variable {M : Type w} {N : Type w'} [L.Structure M] [L.Structure N]
@@ -42,13 +43,11 @@ variable {M : Type w} {N : Type w'} [L.Structure M] [L.Structure N]
 /-- The potential isomorphism rooted at a member pair `(a, b)`, in the original language:
 the tails whose concatenation with the root belongs to the family. No closure of the original
 family under restrictions or reindexing is assumed. -/
-noncomputable def rootedPotentialIso (P : PotentialIso L M N) {k : ℕ} {a : Fin k → M}
-    {b : Fin k → N} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :
-    PotentialIso L M N :=
+noncomputable def rootedPotentialIso (P : PotentialIso L M N) {k} {a}
+    {b} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :=
   PotentialIso.ofExtensionFamily
-    (fun n c d => (⟨k + n, Fin.append a c, Fin.append b d⟩ :
-      Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family)
-    (by rw [Fin.append_elim0, Fin.append_elim0]; exact hab)
+    (fun n c d => (⟨k + n, Fin.append a c, Fin.append b d⟩) ∈ P.family)
+    (by simp_all)
     (fun h => by
       simpa only [Function.comp_def, Fin.append_right] using
         (P.compatible _ h).relabel (Fin.natAdd k))
@@ -65,21 +64,20 @@ is applied to the rooted tail family, not directly to the original unrooted fami
 theorem exists_equiv_of_mem {M N : Type w} [L.Structure M] [L.Structure N]
     [Countable M] [Countable N] (P : PotentialIso L M N) {k : ℕ} {a : Fin k → M}
     {b : Fin k → N} (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family) :
-    ∃ e : M ≃[L] N, ∀ i, e (a i) = b i := by
+    ∃ e : M ≃[L] N, PointwiseEq (e ∘ a) b := by
   obtain ⟨e, he⟩ := (rootedPotentialIso P hab).countable_toEquiv_graph
   refine ⟨e, fun i => ?_⟩
   obtain ⟨p, hp, j, hj, hj'⟩ := he (a i)
-  have hmem : (⟨k + p.1, Fin.append a p.2.1, Fin.append b p.2.2⟩ :
-      Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family := hp
+  have hmem  := hp
   have heq := P.compatible _ hmem (.eq (Fin.natAdd k j) (Fin.castAdd p.1 i))
   simp only [AtomicIdx.holds, Fin.append_right, Fin.append_left] at heq
   exact hj'.symm.trans (heq.mp hj)
 
-end Generic
+end
 
 /-! ## The Knight-level consumers -/
 
-section Knight
+section
 
 variable {α : LimitStage} {M N : Type w}
 variable {R : KnightRealization α M} {R' : KnightRealization α N}
@@ -87,20 +85,19 @@ variable {R : KnightRealization α M} {R' : KnightRealization α N}
 /-- The Karp bridge, root-preserving: on countable carriers a potential isomorphism of the stage
 chart structures yields a realization isomorphism extending any member pair. -/
 theorem exists_iso_of_potentialIso_mem [Countable M] [Countable N]
-    (P : @PotentialIso (stageLang α) (stageLang.isRelational α) M N
-      (stageStructureOf R) (stageStructureOf R'))
-    {k : ℕ} {a : Fin k → M} {b : Fin k → N}
+    P
+    {k} {a} {b}
     (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈
       @PotentialIso.family (stageLang α) _ M N (stageStructureOf R) (stageStructureOf R') P) :
-    ∃ e : R.Iso R', ∀ i, e.1 (a i) = b i := by
-  let instM : (stageLang α).Structure M := stageStructureOf R
-  let instN : (stageLang α).Structure N := stageStructureOf R'
+    ∃ e : R.Iso R', PointwiseEq (e.1 ∘ a) b := by
+  let instM  := stageStructureOf R
+  let instN  := stageStructureOf R'
   obtain ⟨e, he⟩ := exists_equiv_of_mem P hab
   exact ⟨⟨e.toEquiv, isIsoOfStageStructureEquiv e⟩, he⟩
 
 /-- On countable carriers, a common-chart family with empty pair and one-point forth/back yields
 a realization isomorphism extending any member pair. -/
-theorem exists_iso_of_commonCharts_mem [Countable M] [Countable N]
+def exists_iso_of_commonCharts_mem [Countable M] [Countable N]
     (hR : R.IsExactParentConsistent) (hR' : R'.IsExactParentConsistent)
     (family : Set (Σ n : ℕ, (Fin n → M) × (Fin n → N)))
     (empty_mem : (⟨0, Fin.elim0, Fin.elim0⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family)
@@ -112,11 +109,8 @@ theorem exists_iso_of_commonCharts_mem [Countable M] [Countable N]
       ∃ m : M, (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family)
     {k : ℕ} {a : Fin k → M} {b : Fin k → N}
-    (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family) :
-    ∃ e : R.Iso R', ∀ i, e.1 (a i) = b i :=
+    (hab : (⟨k, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family) :=
   exists_iso_of_potentialIso_mem
     (potentialIsoOfCommonCharts hR hR' family empty_mem commonChart forth back) hab
 
-end Knight
 
-end VaughtConjecture.Knight

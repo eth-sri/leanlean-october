@@ -1,13 +1,17 @@
+
+import VaughtConjecture.Knight.PointwiseLabels
+import PalomarProof.Ordinal
 /-
 Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-module
 
-public import VaughtConjecture.Knight.FiniteFloorCompletion
-public import VaughtConjecture.Knight.WitnessAlgebra
-public import VaughtConjecture.Knight.RecodingTriangle
+import Mathlib.Tactic
+
+import VaughtConjecture.Knight.FiniteFloorCompletion
+import VaughtConjecture.Knight.WitnessAlgebra
+import VaughtConjecture.Knight.CountedRecoding
 
 /-! # The coded ambient locality of a controller-capped row: the chain
 
@@ -38,8 +42,6 @@ maximal grade, which attains the common cap `p c` (`RespectsSemantics.locality`)
 **Not here**: full-scope bountifulness, truncations, and the three-level scheme assembly.
 Construction-private (not root-exported). -/
 
-@[expose] public section
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -54,34 +56,27 @@ hypothesis remains: keyedness is derived from the primitive range and the bounde
 closure of the sources, the certificate is the floor completion of the capped witness, and the
 cashout is the kernel's.  The bottom-cap case is handled separately (every target is `⊥`). -/
 
-section Chain
+section
 
 variable {D : Type*} [Fintype D]
 
 /-- The primitive range of a row: its ordinal values. -/
-noncomputable def primRange (target : D → ExtOrd) : Finset Ordinal.{0} :=
+noncomputable def primRange (target : D → ExtOrd) :=
   Finset.univ.biUnion fun d =>
     match target d with
     | some (some v) => {v}
     | _ => ∅
 
-theorem mem_primRange_of_eq {target : D → ExtOrd} {d : D} {v : Ordinal.{0}}
+theorem mem_primRange_of_eq {target : D → ExtOrd} {d : D} {v : Ordinal₀}
     (h : target d = ofOrd v) : v ∈ primRange target := by
-  unfold primRange
+  
   apply Finset.mem_biUnion.mpr
   refine ⟨d, Finset.mem_univ d, ?_⟩
   rw [h]
   exact Finset.mem_singleton_self v
 
-theorem keyed_target (l : ℕ) (target : D → ExtOrd) (d : D) :
-    Keyed l (primRange target) (target d) := by
-  rcases ExtOrd.cases (target d) with h | h | ⟨v, h⟩
-  · rw [h]; exact keyed_bot _ _
-  · rw [h]; exact keyed_top _ _
-  · rw [h]; exact keyed_of_mem _ _ (mem_primRange_of_eq h)
-
 /-- The bounded replacement closure of the sources at the controller grade. -/
-noncomputable def inventory (K : ℕ) (E : D → ExtOrd) : Finset ExtOrd :=
+noncomputable def inventory (K : ℕ) (E : D → ExtOrd) :=
   Finset.univ.image E ∪
     (Finset.univ.image E).biUnion fun x =>
       (Finset.range (K + 1)).image fun i => extVisibilityReplace x K i
@@ -100,18 +95,12 @@ theorem mem_inventory_iff {K : ℕ} {E : D → ExtOrd} {y : ExtOrd} :
   constructor
   · intro h
     rcases Finset.mem_union.mp h with h | h
-    · obtain ⟨d, -, rfl⟩ := Finset.mem_image.mp h
-      exact Or.inl ⟨d, rfl⟩
-    · obtain ⟨x, hx, hm⟩ := Finset.mem_biUnion.mp h
-      obtain ⟨d, -, rfl⟩ := Finset.mem_image.mp hx
-      obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hm
-      exact Or.inr ⟨d, i, by have := Finset.mem_range.mp hi; omega, rfl⟩
-  · rintro (⟨d, rfl⟩ | ⟨d, i, hi, rfl⟩)
-    · exact source_mem_inventory K E d
-    · exact evr_source_mem_inventory K E d hi
+    · aesop
+    · aesop
+  · aesop (add safe apply [source_mem_inventory, evr_source_mem_inventory])
 
 /-- A replacement of a source at a threshold `≤ K` is a replacement at `K`, or the source. -/
-theorem evr_eq_evr_K {x : ExtOrd} {K k i : ℕ} (hk : k ≤ K) (_hi : i ≤ k) :
+theorem evr_eq_evr_K {x} {K k i} (hk : k ≤ K) (_hi : i ≤ k) :
     extVisibilityReplace x k i = extVisibilityReplace x K i ∨ extVisibilityReplace x k i = x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
   · right; rfl
@@ -120,47 +109,42 @@ theorem evr_eq_evr_K {x : ExtOrd} {K k i : ℕ} (hk : k ≤ K) (_hi : i ≤ k) :
     · left
       rw [extVisibilityReplace_of_finitePart_lt hfp,
         extVisibilityReplace_of_finitePart_lt (by omega)]
-    · right
-      exact extVisibilityReplace_of_le_finitePart (not_lt.mp hfp) i
+    · grind [extVisibilityReplace_of_le_finitePart]
 
 /-- **The inventory is closed under every replacement at thresholds `≤ K`.** -/
 theorem inventory_closed (K : ℕ) (E : D → ExtOrd) :
-    ∀ x ∈ inventory K E, ∀ k i : ℕ, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ inventory K E := by
+    ∀ x ∈ inventory K E, ∀ k i , k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ inventory K E := by
   intro x hx k i hk hi
   rcases mem_inventory_iff.mp hx with ⟨d, rfl⟩ | ⟨d, j, hj, rfl⟩
   · rcases evr_eq_evr_K hk hi with h | h
     · rw [h]; exact evr_source_mem_inventory K E d (hi.trans hk)
-    · rw [h]; exact source_mem_inventory K E d
+    · simp_all
   · rcases ExtOrd.cases (E d) with h0 | h0 | ⟨b, hb⟩
-    · rw [h0, extVisibilityReplace_bot, extVisibilityReplace_bot]
-      rw [← extVisibilityReplace_bot K j, ← h0]; exact evr_source_mem_inventory K E d hj
-    · rw [h0, extVisibilityReplace_top, extVisibilityReplace_top]
-      rw [← extVisibilityReplace_top K j, ← h0]; exact evr_source_mem_inventory K E d hj
+    · simp_all
+    · simp_all
     · rw [hb]
       by_cases hfb : finitePart b < K
       · rw [extVisibilityReplace_of_finitePart_lt hfb]
         by_cases hjk : j < k
         · rw [extVisibilityReplace_of_finitePart_lt
-              (by rw [finitePart_limitPart_add_nat]; exact hjk),
-            limitPart_limitPart_add_nat, ← extVisibilityReplace_of_finitePart_lt (k := K) hfb, ← hb]
+              (by simp_all [VaughtConjecture.Knight.Value.finitePart, VaughtConjecture.Knight.Value.limitPart]),
+            limitPart_limitPart_add_nat, ← extVisibilityReplace_of_finitePart_lt  hfb, ← hb]
           exact evr_source_mem_inventory K E d (hi.trans hk)
-        · rw [extVisibilityReplace_of_le_finitePart (by rw [finitePart_limitPart_add_nat]; omega),
-            ← extVisibilityReplace_of_finitePart_lt (k := K) hfb, ← hb]
+        · rw [extVisibilityReplace_of_le_finitePart (by grind [finitePart_limitPart_add_nat]),
+            ← extVisibilityReplace_of_finitePart_lt  hfb, ← hb]
           exact evr_source_mem_inventory K E d hj
-      · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hfb),
-          extVisibilityReplace_of_le_finitePart (by omega), ← hb]
-        exact source_mem_inventory K E d
+      · grind [extVisibilityReplace_of_le_finitePart]
 
 variable (grade : D → ℕ) (E p : D → ExtOrd) (c : D)
 
 /-- **The coded locality from an actual controller-capped ambient locality**, for a fixed key set
 `S` in which the capped targets are keyed (nonbottom cap). -/
-theorem coded_locality_of_capped_S (hmax : ∀ d, grade d ≤ grade c)
+theorem coded_locality_of_capped_S (hmax : BoundedBy grade (grade c))
     (hordp : ∀ d, SelfVis (grade d) (p d)) (hne : p c ≠ ⊥)
-    (hloc : TransformsTo grade E (fun d => min (p d) (p c))) {l : ℕ} (hl : grade c ≤ l)
-    (S : Finset Ordinal.{0}) (hS : ∀ d, Keyed l S (min (p d) (p c))) :
+    (hloc : TransformsTo grade E (fun d => min (p d) (p c))) {l} (hl : grade c ≤ l)
+    S (hS : ∀ d, Keyed l S (min (p d) (p c))) :
     TransformsTo grade E fun d => encT l S (min (p d) (p c)) := by
-  classical
+  
   obtain ⟨g', τ, -, -, hbot, hmono, -, -, hcap, hsrc, hcomm, hbotprop⟩ :=
     exists_cappedWitness grade E p c hmax (hordp c) hne hloc
   set target : D → ExtOrd := fun d => min (p d) (p c) with htarget
@@ -199,20 +183,16 @@ theorem coded_locality_of_capped_S (hmax : ∀ d, grade d ≤ grade c)
     (isOrderly_encode (fun d => (hmax d).trans hl) hord)
 
 /-- **The coded locality for a fixed key set, including the bottom cap.** -/
-theorem coded_locality_S (hmax : ∀ d, grade d ≤ grade c)
+theorem coded_locality_S (hmax : BoundedBy grade (grade c))
     (hordp : ∀ d, SelfVis (grade d) (p d))
-    (hloc : TransformsTo grade E (fun d => min (p d) (p c))) {l : ℕ} (hl : grade c ≤ l)
-    (S : Finset Ordinal.{0}) (hS : ∀ d, Keyed l S (min (p d) (p c))) :
+    (hloc : TransformsTo grade E (fun d => min (p d) (p c))) {l} (hl : grade c ≤ l)
+    S (hS : ∀ d, Keyed l S (min (p d) (p c))) :
     TransformsTo grade E fun d => encT l S (min (p d) (p c)) := by
   by_cases hne : p c = ⊥
-  · refine ⟨fun _ => ⊥, fun _ => ⊥, fun _ _ _ => le_rfl,
-      fun n => (extVisibilityReplace_bot n n).symm,
-      rfl, fun _ _ _ => le_rfl, fun _ _ _ _ _ => by rw [extVisibilityReplace_bot], fun d => ?_⟩
-    change encT l S (min (p d) (p c)) = min ⊥ ⊥
-    rw [hne, min_eq_right bot_le, encT_bot, min_self]
-  · exact coded_locality_of_capped_S grade E p c hmax hordp hne hloc hl S hS
+  · aesop
+  · exact?
 
-end Chain
+end
 
 /-! ## Part 4 — a nonconstant mixed-grade instance
 
@@ -224,18 +204,10 @@ with source `ω·3 + 2` and value `ω·5 + 2`.  The ambient shifter is `⊥` bel
 primitive range `{ω + 1, ω·5 + 2}` has keys `{ω, ω·5}`, and the encoding is **not** the identity:
 the controller's value `ω·5 + 2` is coded `ω·2 + 2` (`encT_controller_M`). -/
 
-section Instance
+section
 
 theorem omul_le_omul {t t' : ℕ} (h : t ≤ t') :
     Ordinal.omega0 * (t : Ordinal) ≤ Ordinal.omega0 * (t' : Ordinal) := by
   gcongr
 
-/-- The two cells. -/
-inductive M2 | a | c
-  deriving DecidableEq
 
-instance : Fintype M2 := ⟨{.a, .c}, by intro x; cases x <;> simp⟩
-
-end Instance
-
-end VaughtConjecture.Knight
