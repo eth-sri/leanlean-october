@@ -1,4 +1,5 @@
 module
+public import Chazelle.MacT
 
 public import Chazelle.Core.DownPhaseDrvXPos
 
@@ -31,7 +32,7 @@ variable {P : Polygon} {li : Bool} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
 set_option quotPrecheck false in
 local notation "xS" => (buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-  (Qof P)
+  zta
 set_option quotPrecheck false in
 local notation "xK" => nk (interiorModel (Qof P)) xS (reg r)
 set_option quotPrecheck false in
@@ -46,166 +47,160 @@ include Y
 
 /-- **The interior position of an end of a kept chord.** -/
 theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
-    (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t) {q : ℕ} {s : ℝ}
-    (hG : SideAttach xG (hseg ((Qof P).vtx h).2 A B) q s)
-    (hpt : sidePt xG q s = sidePt (C.sideWalk C.sideBeta) p t) :
+    (hat : SideAttach ztcs ztwu p t) {q : ℕ} {s : ℝ}
+    (hG : SideAttach xG ztwu q s)
+    (hpt : sidePt xG q s = sidePt ztcs p t) :
     (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge < (Qof P).n ∧
     ∃ τ : ℝ, 0 ≤ τ ∧ τ < 1 ∧
-      sidePt (interiorWalk (Qof P)) (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge τ =
-        sidePt (C.sideWalk C.sideBeta) p t ∧
-      ∃ a b : ℝ, (interiorModel (Qof P)).IsArc xS (reg r) a b ∧
+      sidePt ztwsc (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge τ =
+        sidePt ztcs p t ∧
+      ∃ a b : ℝ, (interiorModel zta).IsArc xS ztcz a b ∧
         ((xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge + τ = a ∨
           (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge + τ = b ∨
           sideInArc a b ((xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge + τ)) := by
-  have hm := Y.hm
-  have h3 := Y.three
-  have hm1 := C.one_le
+  zukj
+
+  zubb
   have hQ := Y.X.hQ
   have hFam := Y.X.hFam
-  have hM : WalkAx (interiorModel (Qof P)) := walkAx_interiorModel hQ
-  have hWn : (interiorWalk (Qof P)).n = (Qof P).n := walk_n _
-  have hW : (interiorModel (Qof P)).W = interiorWalk (Qof P) := rfl
+  zubwf
+  have hWn : ztkzf := walk_n _
+  have hW : (interiorModel _).W = interiorWalk zta := rfl
   obtain ⟨h6, hp, hlast, hside⟩ := Y.end_ok hAB hat hG hpt
   have hkc : tK C.m C.topIdx C.sideBeta p < xK := by
     have := tK_le C.sideBeta hm1 p (T := C.topIdx); omega
-  have hι : sig li xK i0 (tK C.m C.topIdx C.sideBeta p) < xK := sig_lt li (by omega) _ _
+  have hι : sig li xK i0 ztqn < xK := sig_lt li by_omega _ _
   have hrep := Y.hrep _ hkc
   have hedge : (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge =
       ⌊hk (interiorModel (Qof P)) xS (reg r) (sig li xK i0 (tK C.m C.topIdx C.sideBeta p))⌋₊ :=
     pEdge_rep hQ hFam Y.X.hli Y.X.hdh hι hrep
-  have hWv : C.P.vtx (tK C.m C.topIdx C.sideBeta p) =
-      (xG).vtx (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) := Y.vtx_sig hkc
-  have hv0 := walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6 hp
-  have hGn : (xG).n = xK := Y.gn
-  rw [hedge]
-  set ι := sig li xK i0 (tK C.m C.topIdx C.sideBeta p) with hιdef
-  have hGv : (xG).vtx ι = hostPt (interiorModel (Qof P)).W (hk (interiorModel (Qof P)) xS (reg r) ι) :=
+  have hWv := Y.vtx_sig hkc
+  zuhfr
+  zumbt
+  zuowj
+  set ι := sig li xK i0 ztqn with hιdef
+  have hGv :=
     hostPoly_vtx hι
-  have hb := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι)
+  zuljr
   rw [hW, hWn] at hb
-  set κ := hk (interiorModel (Qof P)) xS (reg r) ι with hκ
+  set κ := hk ztwiq xS ztcz ι with hκ
   have hq0 : ⌊κ⌋₊ < (Qof P).n := by
-    have : (⌊κ⌋₊ : ℝ) < (Qof P).n := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
-    exact_mod_cast this
-  have hf0 : 0 ≤ κ - ⌊κ⌋₊ := by have := Nat.floor_le hb.1; linarith
-  have hf1 : κ - ⌊κ⌋₊ < 1 := by have := Nat.lt_floor_add_one κ; linarith
+    zuepf
+    zufc
+  zucap
+
   refine ⟨hq0, ?_⟩
-  have ht0 := hat.2.1
-  have ht1 := hat.2.2.1
-  rcases ht0.lt_or_eq with ht0' | ht0'
+  zuiam
+
+  zucox
   · -- inside an arc piece
-    have hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = li :=
-      hside (by rintro ⟨h0, -⟩; exact ht0'.ne' h0)
-    have hp' : p < 2 * C.m + 6 := by
-      rcases lt_or_eq_of_le hp with h' | h'
-      · exact h'
-      · exact absurd (hlast h') ht0'.ne'
-    obtain ⟨hz, hsec⟩ := Y.inner_edge h6 hp' ⟨ht0', ht1⟩ hA
+    have hA : decide _ = li :=
+      hside by_grind
+    have hp' : ztjaa := by
+      grind
+    obtain ⟨hz, hsec⟩ := Y.inner_edge h6 hp' ztkls hA
     rw [← hιdef] at hz hsec
-    have hGat : SideAttach xG (hseg ((Qof P).vtx h).2 A B) ι t :=
-      ExtG.attach_of_sector hz.symm (fun x hx => (hsec x).1 hx) (by rw [hGn]; exact hι) ht0 ht1 hat
+    have hGat :=
+      ExtG.attach_of_sector hz.symm (fun x hx => (hsec x).1 hx) by_omega ht0 ht1 hat
     -- the gap after `ι` is an arc gap
-    have hAg : ArcGap (interiorModel (Qof P)) xS (reg r) ι := by
-      rcases gap_cases hM hFam.2.1 hFam.1 Y.X.hne Y.X.hR (by omega) hι with hAg | hCg
-      · exact hAg
-      · exact (Y.not_attach_flat hAB hι ⟨ht0', ht1⟩ (Y.chordGap_flat hι hCg) hGat).elim
-    have hι1 : (ι + 1) % xK < xK := Nat.mod_lt _ (by omega)
+    have hAg : ArcGap ztwiq xS ztcz ι := by
+      zuevi
+      · omega
+      · exact (Y.not_attach_flat hAB hι by_grind (Y.chordGap_flat hι hCg) hGat).elim
+    have hι1 : ztfvp % xK < xK := Nat.mod_lt _ by_omega
     have hb' := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι1)
     rw [hW, hWn] at hb'
     set κ' := hk (interiorModel (Qof P)) xS (reg r) ((ι + 1) % xK) with hκ'
     have hne : κ ≠ κ' := hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hι
     have hnoint : ∀ k : ℕ, k < (Qof P).n → ¬ sideInArc κ κ' k := fun k hk' =>
-      arcGap_noInt hQ hFam Y.X.hne Y.X.hR hι hAg k (by rw [hW, hWn]; exact hk')
+      arcGap_noInt hQ hFam Y.X.hne Y.X.hR hι hAg k (by grind)
     -- the next host point is on the same walk edge, at a larger parameter
     obtain ⟨f', hff', hf'1, hnext, hin⟩ : ∃ f' : ℝ, κ - ⌊κ⌋₊ < f' ∧ f' ≤ 1 ∧
-        hostPt (interiorWalk (Qof P)) κ' = sidePt (interiorWalk (Qof P)) ⌊κ⌋₊ f' ∧
+        hostPt ztwsc κ' = sidePt ztwsc ⌊κ⌋₊ f' ∧
         ∀ x : ℝ, κ < ⌊κ⌋₊ + x → x < f' →
           0 ≤ (⌊κ⌋₊ : ℝ) + x ∧ (⌊κ⌋₊ : ℝ) + x < (Qof P).n ∧ sideInArc κ κ' (⌊κ⌋₊ + x) := by
       rcases noInt_cases hb.1 hb.2 hb'.1 hb'.2 hne hnoint with ⟨hlt, hfl⟩ | hyv
-      · refine ⟨κ' - ⌊κ⌋₊, by linarith, ?_, ?_, fun x hx1 hx2 => ⟨by linarith [hb.1], by linarith [hb'.2], ?_⟩⟩
-        · have := Nat.lt_floor_add_one κ'; rw [hfl] at this; linarith
+      · refine ⟨κ' - ⌊κ⌋₊, by linarith, ?_, ?_, fun x hx1 hx2 => ⟨by grind, by grind, ?_⟩⟩
+        · have := Nat.lt_floor_add_one κ'; grind
         · unfold hostPt; rw [hfl]
-        · unfold sideInArc; rw [ite_eq_left hlt]; constructor <;> linarith
+        · zujv
       · have hq1 : ((⌊κ⌋₊ : ℝ) + 1) ≤ (Qof P).n := by exact_mod_cast hq0
-        refine ⟨1, by linarith, le_rfl, ?_, fun x hx1 hx2 => ⟨by linarith [hb.1], by linarith, ?_⟩⟩
+        refine ⟨1, by_linarith, le_rfl, ?_, fun x hx1 hx2 => ⟨by_grind, by_linarith, ?_⟩⟩
         · rw [hyv]; unfold hostPt
           rw [Nat.floor_natCast, sub_self, Chazelle.Chain.sidePt_zero, sidePt_one, hWn]
         · by_cases hq1' : ⌊κ⌋₊ + 1 < (Qof P).n
           · rw [hyv, Nat.mod_eq_of_lt hq1']
-            have hκ1 : κ < (⌊κ⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one κ
-            unfold sideInArc; rw [ite_eq_left (by push_cast; linarith)]
-            push_cast; constructor <;> linarith
+            have hκ1 := Nat.lt_floor_add_one κ
+            zujv
           · rw [hyv, show ⌊κ⌋₊ + 1 = (Qof P).n by omega, Nat.mod_self]
-            unfold sideInArc; rw [ite_eq_right (by push_cast; linarith [hb.1])]
-            left; linarith
+            zujv
     -- the end
-    have hτ0 : 0 < t * (f' - (κ - ⌊κ⌋₊)) := mul_pos ht0' (by linarith)
-    have hτ1 : t * (f' - (κ - ⌊κ⌋₊)) < f' - (κ - ⌊κ⌋₊) := by nlinarith
-    refine ⟨(κ - ⌊κ⌋₊) + t * (f' - (κ - ⌊κ⌋₊)), by linarith, by linarith, ?_, ?_⟩
-    · rw [hz]
-      have e1 : (xG).vtx ι = sidePt (interiorWalk (Qof P)) ⌊κ⌋₊ (κ - ⌊κ⌋₊) := by rw [hGv]; rfl
+    have hτ0 : 0 < t * ztxwo := mul_pos ht0' by_linarith
+    have hτ1 : t * ztxwo < f' - ztbkw := by_nlinarith
+    refine ⟨ztbkw + t * ztxwo, by_linarith, by_linarith, ?_, ?_⟩
+    · zudur
+      have e1 : (xG).vtx ι = sidePt ztwsc ⌊κ⌋₊ ztbkw := by_tauto
       have e2 : (xG).vtx ((ι + 1) % (xG).n) = sidePt (interiorWalk (Qof P)) ⌊κ⌋₊ f' := by
-        rw [hGn, hostPoly_vtx hι1]; exact hnext
+        rw [hGn, hostPoly_vtx hι1]; grind
       symm
       show lerp ((xG).vtx ι) ((xG).vtx ((ι + 1) % (xG).n)) t = _
-      rw [e1, e2]
-      unfold sidePt
+      zuea
+      zucky
       rw [DownHost.lerp_lerp]
     · obtain ⟨a, b, harc, hsub⟩ := hAg
-      have hx := hin ((κ - ⌊κ⌋₊) + t * (f' - (κ - ⌊κ⌋₊))) (by linarith) (by linarith)
-      exact ⟨a, b, harc, Or.inr (Or.inr (hsub _ hx.1 (by rw [hW, hWn]; exact hx.2.1) hx.2.2))⟩
+      have hx := hin (ztbkw + t * ztxwo) by_linarith by_linarith
+      exact ⟨a, b, harc, Or.inr (Or.inr (hsub _ hx.1 by_grind hx.2.2))⟩
   · -- at a host point
-    subst ht0'
-    have hz0 : sidePt (C.sideWalk C.sideBeta) p 0 = (xG).vtx ι := by
+    zultg
+    have hz0 : sidePt ztcs p 0 = (xG).vtx ι := by
       rw [Chazelle.Chain.sidePt_zero, hv0, hWv]
     refine ⟨κ - ⌊κ⌋₊, hf0, hf1, ?_, ?_⟩
     · rw [hz0, hGv]; rfl
-    · rw [show (⌊κ⌋₊ : ℝ) + (κ - ⌊κ⌋₊) = κ by ring]
+    · rw [show (⌊κ⌋₊ : ℝ) + ztbkw = κ by ring]
       rcases hk_mem hM hFam.2.1 hFam.1 hι with hex | hvx
       · have hcut := exitKeys_subset_cuts hex
-        rcases gap_cases hM hFam.2.1 hFam.1 Y.X.hne Y.X.hR (by omega) hι with hAg | hCg
+        zuevi
         · obtain ⟨b, harc⟩ := start_of_arcGap hQ hFam Y.X.hne Y.X.hR hι hAg hcut
-          exact ⟨κ, b, harc, Or.inl rfl⟩
-        · have hpv : prevIdx xK ι < xK := prevIdx_lt (by omega)
-          have hsp : (prevIdx xK ι + 1) % xK = ι := succ_prevIdx hι
-          rcases gap_cases hM hFam.2.1 hFam.1 Y.X.hne Y.X.hR (by omega) hpv with hAg' | hCg'
+          grind
+        · have hpv : prevIdx xK ι < xK := prevIdx_lt by_omega
+          have hsp := succ_prevIdx hι
+          rcases gap_cases hM hFam.2.1 hFam.1 Y.X.hne Y.X.hR by_omega hpv with hAg' | hCg'
           · obtain ⟨a', b', harc, hsub⟩ := hAg'
             rw [hsp] at hsub
             have hbp := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hpv)
             rw [hW, hWn] at hbp
             have hne' : hk (interiorModel (Qof P)) xS (reg r) (prevIdx xK ι) ≠ κ := by
-              have := hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hpv; rwa [hsp] at this
-            have hbn : b' < (Qof P).n := by have := harc.2.2.2.1; rwa [hW, hWn] at this
+              have := hk_succ_ne hM hFam.2.1 hFam.1 by_omega hpv; grind
+            have hbn : b' < (Qof P).n := by have := harc.2.2.2.1; grind
             have e := cyc_end hne' hbp.1 hbp.2 hb.1 hb.2 harc.2.2.1 hbn
-              (fun z hz0 hzn hz => hsub z hz0 (by rw [hW, hWn]; exact hzn) hz)
+              by_grind
               (fun hin => harc.2.2.2.2.2.1 _ hin hcut)
-            exact ⟨a', b', harc, Or.inr (Or.inl e)⟩
+            exact ⟨a', b', harc, by_grind⟩
           · exfalso
             have hGpos : sidePt xG q s = sidePt xG ι 0 := by
               rw [hpt, hz0, Chazelle.Chain.sidePt_zero]
             obtain ⟨hqι, hs0⟩ := FactsInterior.pos_unique Y.gSimple
-              hG.1 (by rw [hGn]; exact hι) hG.2.1 hG.2.2.1 le_rfl one_pos hGpos
+              hG.1 by_omega hG.2.1 hG.2.2.1 le_rfl one_pos hGpos
             have h1 := Y.chordGap_flat hι hCg
             have h2 := Y.chordGap_flat hpv hCg'
             rw [hsp] at h2
             rw [hqι, hs0] at hG
             exact Y.not_attach_junction hAB hι h1 h2 hG
       · obtain ⟨k, -, hkk, a, b, harc, hin⟩ := hvx
-        have hkk' : κ = k := hkk
-        exact ⟨a, b, harc, Or.inr (Or.inr (by rw [hkk']; exact hin))⟩
+        grind
 
 /-- An arc of the region gives an arc record of region `r` of `N`. -/
 theorem onArc_of {x : WPos} {a b : ℝ}
-    (harc : (interiorModel (Qof P)).IsArc xS (reg r) a b)
-    (hx : (interiorModel (Qof P)).key (Qof P) x = a ∨ (interiorModel (Qof P)).key (Qof P) x = b ∨
-      sideInArc a b ((interiorModel (Qof P)).key (Qof P) x)) :
-    ∃ j ∈ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-      OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j x := by
+    (harc : (interiorModel zta).IsArc xS ztcz a b)
+    (hx : (interiorModel zta).key zta x = a ∨ (interiorModel zta).key zta x = b ∨
+      sideInArc a b ((interiorModel zta).key zta x)) :
+    ∃ j ∈ ((buildNF ztwiq zta L E).region r).arcs,
+      OnArcKey zta ztbajc j x := by
   obtain ⟨-, -, hcomp⟩ := regArcs_facts Y.X.hQ Y.X.hL Y.X.hperm Y.X.hsort Y.X.hK Y.X.hregs Y.X.hr
   obtain ⟨t, ht, hs, he⟩ := hcomp a b harc
-  refine ⟨((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs.getD t 0, ?_, ?_⟩
-  · rw [List.getD_eq_getElem _ _ ht]; exact List.getElem_mem ht
-  · unfold OnArcKey; rw [hs, he]; exact hx
+  refine ⟨((buildNF ztwiq zta L E).region r).arcs.getD t 0, ?_, ?_⟩
+  · simp_all
+  · unfold OnArcKey; simp_all
 
 /-- **X-R2: the interior triple of a kept chord record.** -/
 theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
@@ -227,7 +222,7 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
       OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j
         (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp)) := by
   have hQ := Y.X.hQ
-  have hn3 : 3 ≤ (Qof P).n := Chazelle.Jordan.simple_three_le hQ
+  have hn3 := Chazelle.Jordan.simple_three_le hQ
   obtain ⟨A, B, hAB, hc, hh, hadm, hl, hr, hzl, hzr⟩ := Y.chord_data hi
   rw [hc] at hk hadm ⊢
   obtain ⟨⟨qL, sL, hGL, hzGL⟩, ⟨qR, sR, hGR, hzGR⟩⟩ := Y.kept_ends hAB hadm hk
@@ -241,16 +236,16 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
   set xL := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp with hxLdef
   set xR := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp with hxRdef
   -- parameters and points
-  have hparL : (interiorModel (Qof P)).param (Qof P) xL = τL :=
+  have hparL : (interiorModel _).param _ xL = τL :=
     iparam Y.X.hli Y.X.hdh (by omega) heL (by rw [hpL])
-  have hparR : (interiorModel (Qof P)).param (Qof P) xR = τR :=
+  have hparR : (interiorModel _).param _ xR = τR :=
     iparam Y.X.hli Y.X.hdh (by omega) heR (by rw [hpR])
   have hposL : (interiorModel (Qof P)).pos (Qof P) xL = ((A, y) : Point) := by
-    show sidePt (interiorWalk (Qof P)) xL.edge ((interiorModel (Qof P)).param (Qof P) xL) = _
-    rw [hparL, hpL]
+    show sidePt (interiorWalk _) xL.edge _ = _
+    simp_all
   have hposR : (interiorModel (Qof P)).pos (Qof P) xR = ((B, y) : Point) := by
-    show sidePt (interiorWalk (Qof P)) xR.edge ((interiorModel (Qof P)).param (Qof P) xR) = _
-    rw [hparR, hpR]
+    show sidePt (interiorWalk _) xR.edge _ = _
+    simp_all
   have hlpos : (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h
       (NR.chord i).lp (NR.chord i).rp)).lpos = xL := rfl
   have hrpos : (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h
@@ -261,11 +256,11 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
     rw [hlpos, hrpos, hposL, hposR]
     rfl
   -- the chord is an interior chord of `Q`, attached at its ends
-  obtain ⟨hIadm, -⟩ := Y.hext.loc (F₁ := {hseg y A B}) (by simpa using hadm) _ ⟨rfl, hk⟩
-  have hMQ : WalkAx (interiorModel (Qof P)) := walkAx_interiorModel hQ
+  obtain ⟨hIadm, -⟩ := Y.hext.loc (F₁ := {hseg y A B}) (by simp_all) _ ⟨rfl, hk⟩
+  have hMQ : WalkAx _ := walkAx_interiorModel hQ
   obtain ⟨a', b', -, hseg', hy', -, hEa, hEb⟩ := hMQ.ends _ hIadm
   have hWs := (FactsInterior.interiorWalk_spec hQ).1
-  have hWn : (interiorWalk (Qof P)).n = (Qof P).n := walk_n _
+  have hWn : (interiorWalk _).n = (Qof P).n := walk_n _
   have hattach : ∀ (z : Point) (e : ℕ) (τ : ℝ), e < (Qof P).n → 0 ≤ τ → τ < 1 →
       sidePt (interiorWalk (Qof P)) e τ = z → (z = a' ∨ z = b') →
       SideAttach (interiorWalk (Qof P)) (hseg y A B) e τ := by
@@ -275,25 +270,25 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
       rcases hz with rfl | rfl
       · exact hEa.1
       · exact hEb.1
-    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs (by rw [hWn]; exact he) hA₁.1 hτ0 hτ1
+    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs (by omega) hA₁.1 hτ0 hτ1
       hA₁.2.1 hA₁.2.2.1 (hpt.trans hp₁.symm)
-    exact hA₁
-  refine ⟨hset, ?_, hh, ⟨by rw [hparL]; exact hτL0, by rw [hparL]; exact hτL1, by
-      show (NR.chord i).h + 1 ≤ (Qof P).n; omega⟩,
-    ⟨by rw [hparR]; exact hτR0, by rw [hparR]; exact hτR1, by
-      show (NR.chord i).h + 1 ≤ (Qof P).n; omega⟩, ?_, ?_⟩
+    omega
+  refine ⟨hset, ?_, hh, ⟨by grind, by grind, by
+      tauto⟩,
+    ⟨by grind, by grind, by
+      tauto⟩, ?_, ?_⟩
   · unfold CRec.Attached
     rw [hset, hlpos, hrpos, hparL, hparR]
     exact ⟨hattach _ _ _ heL hτL0 hτL1 hpL (DownDrv.left_end_of_segment hAB hy' hseg'),
       hattach _ _ _ heR hτR0 hτR1 hpR (right_end_of_segment hAB hy' hseg')⟩
   · have hkey : (interiorModel (Qof P)).key (Qof P) xL = xL.edge + τL := by
-      show xL.edge + (interiorModel (Qof P)).param (Qof P) xL = _; rw [hparL]
+      show xL.edge + (interiorModel _).param _ xL = _; grind
     refine Y.onArc_of harcL ?_
-    rw [hkey]; exact hxL
+    grind
   · have hkey : (interiorModel (Qof P)).key (Qof P) xR = xR.edge + τR := by
-      show xR.edge + (interiorModel (Qof P)).param (Qof P) xR = _; rw [hparR]
+      show xR.edge + (interiorModel _).param _ xR = _; grind
     refine Y.onArc_of harcR ?_
-    rw [hkey]; exact hxR
+    grind
 
 end XCtx
 

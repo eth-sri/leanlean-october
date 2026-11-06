@@ -1,7 +1,8 @@
 module
+public import Chazelle.MacT
 
-public import Chazelle.Core.DownPhaseDrvXCtx
-public import Chazelle.Core.DownPhaseDrvXWalk
+public import Chazelle.Core.DownPhaseMathHR1
+public import Chazelle.Core.DownPhaseMathHR1
 
 /-!
 # Down phase, extraction (D6): chain walk positions and the host polygon
@@ -31,7 +32,7 @@ open BuildNF (buildNF)
 open DrvR (regHost)
 
 /-- The host key index of host point `k`. -/
-def sig (li : Bool) (K i0 k : ℕ) : ℕ := (i0 + rho li K k) % K
+def sig (li : Bool) (K i0 k : ℕ) : ℕ := ztfhx % K
 
 theorem sig_lt (li : Bool) {K : ℕ} (hK : 0 < K) (i0 k : ℕ) : sig li K i0 k < K := Nat.mod_lt _ hK
 
@@ -39,26 +40,21 @@ theorem sig_lt (li : Bool) {K : ℕ} (hK : 0 < K) (i0 k : ℕ) : sig li K i0 k <
 theorem sig_next {li : Bool} {K i0 k : ℕ} (hk : k < K) (hn : kNext li k < K)
     (h0 : li = false → 1 ≤ k) : sig li K i0 (kNext li k) = (sig li K i0 k + 1) % K := by
   unfold sig rho kNext
-  rw [Nat.mod_add_mod]
-  cases li
-  · have := h0 rfl
-    simp only [Bool.false_eq_true, ite_false] at hn ⊢
-    congr 1; omega
-  · simp only [ite_true]; congr 1
+  grind
 
 /-- The previous host point along the inner side is the previous host key. -/
 theorem sig_prev {li : Bool} {K i0 k : ℕ} (hk : k < K) (hp : kPrev li k < K)
     (h0 : li = true → 1 ≤ k) : sig li K i0 (kPrev li k) = (sig li K i0 k + K - 1) % K := by
   unfold sig rho kPrev
   unfold kPrev at hp
-  rw [show (i0 + (if li = true then k else K - 1 - k)) % K + K - 1 =
-    (i0 + (if li = true then k else K - 1 - k)) % K + (K - 1) by omega, Nat.mod_add_mod]
+  rw [show ztgro % K + K - 1 =
+    ztgro % K + ztfnu by omega, Nat.mod_add_mod]
   cases li
-  · simp only [Bool.false_eq_true, ite_false] at hp ⊢
-    rw [show i0 + (K - 1 - k) + (K - 1) = i0 + (K - 1 - (k + 1)) + K by omega, Nat.add_mod_right]
+  · zvnhh at hp ⊢
+    rw [show i0 + ztcgr + ztfnu = i0 + (K - 1 - zts) + K by omega, Nat.add_mod_right]
   · have := h0 rfl
     simp only [ite_true] at hp ⊢
-    rw [show i0 + k + (K - 1) = i0 + (k - 1) + K by omega, Nat.add_mod_right]
+    rw [show i0 + k + ztfnu = i0 + ztie + K by omega, Nat.add_mod_right]
 
 section
 
@@ -67,7 +63,7 @@ variable {P : Polygon} {li : Bool} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
 set_option quotPrecheck false in
 local notation "xS" => (buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-  (Qof P)
+  zta
 set_option quotPrecheck false in
 local notation "xK" => nk (interiorModel (Qof P)) xS (reg r)
 set_option quotPrecheck false in
@@ -98,19 +94,19 @@ theorem vtx_sig {k : ℕ} (hk : k < xK) : C.P.vtx k = (xG).vtx (sig li xK i0 k) 
 omit Y in
 /-- The tour edge `p` joins host points `tK p` and `kNext (tK p)` (in range). -/
 theorem kn_le (_Y : XCtx P li L E reg r C NR i0 g) {p : ℕ} :
-    kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m)) (tK C.m C.topIdx C.sideBeta p) ≤ C.m ∧
-      (decide (tU C.m C.topIdx C.sideBeta p < C.m) = false → 1 ≤ tK C.m C.topIdx C.sideBeta p) := by
-  have hm1 := C.one_le
+    kNext ztxgq ztqn ≤ C.m ∧
+      (decide ztpi = false → 1 ≤ tK C.m C.topIdx C.sideBeta p) := by
+  zubb
   have hu := tU_lt (T := C.topIdx) C.sideBeta hm1 p
   unfold kNext
   by_cases h : tU C.m C.topIdx C.sideBeta p < C.m
-  · rw [decide_eq_true h, tK_eq_of_lt h]; simp only [ite_true]
-    exact ⟨by omega, fun h' => absurd h' (by decide)⟩
-  · rw [decide_eq_false h, tK_eq_of_ge (not_lt.1 h)]
-    simp only [Bool.false_eq_true, ite_false]; omega
+  · rw [decide_eq_true h, tK_eq_of_lt h]; simp_all
+  · rw [decide_eq_false h, tK_eq_of_ge ztmmq]
+    grind
 
+variable {p : ℕ}
 /-- **Inner position inside a tour edge**: a position of `G` with the same left half-plane. -/
-theorem inner_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
+theorem inner_edge (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = li) :
     sidePt (C.sideWalk C.sideBeta) p t = sidePt xG (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) t ∧
       ∀ x, sideLeft (C.sideWalk C.sideBeta) p t x ↔
@@ -135,7 +131,7 @@ theorem inner_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
       Y.gn]
 
 /-- **Inner position at a tour vertex** (regular): a vertex position of `G`, sector inside. -/
-theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
+theorem inner_vtx (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     (hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0) (hum : tU C.m C.topIdx C.sideBeta p ≠ C.m)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = li) :
     sidePt (C.sideWalk C.sideBeta) p 0 = sidePt xG (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) 0 ∧
@@ -148,12 +144,12 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
   have hk0 : tK C.m C.topIdx C.sideBeta p ≠ 0 := fun h => hu0 ((tK_eq_zero_iff _ hm1 p).1 h)
   have hkm : tK C.m C.topIdx C.sideBeta p ≠ C.m := fun h => hum ((tK_eq_m_iff _ hm1 p).1 h)
   have hv0 := walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6 hp
-  have hsv := fun x (hx : sideLeft (C.sideWalk C.sideBeta) p 0 x) =>
+  have hsv := fun x (hx : sideLeft _ p 0 x) =>
     walk_sector_vtx Y.cpSimple Y.X.hCs Y.X.hCm h6 hp hu0 hum hx
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkc_le hk0 hkm hv0 hsv ⊢
   rw [hA] at hsv
-  have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
-  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
+  have hnx : kNext li kc ≤ C.m := by unfold kNext; grind
+  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; grind
   have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
   have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
@@ -166,14 +162,14 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     exact h
 
 /-- **Outer position inside a tour edge**: the reversed position of `G`, opposite half-plane. -/
-theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
-    (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li) :
-    sidePt (C.sideWalk C.sideBeta) p t = sidePt xG (sig li xK i0
-      (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m)) (tK C.m C.topIdx C.sideBeta p))) (1 - t) ∧
-      ∀ x, sideLeft (C.sideWalk C.sideBeta) p t x →
+theorem outer_edge (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
+    (hA : decide ztpi = !li) :
+    sidePt ztcs p t = sidePt xG (sig li xK i0
+      ztbany) (1 - t) ∧
+      ∀ x, sideLeft ztcs p t x →
         ¬ sideLeft xG (sig li xK i0
-          (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m)) (tK C.m C.topIdx C.sideBeta p)))
-          (1 - t) x := by
+          ztbany)
+          ztca x := by
   have hm := Y.hm
   have h3 := Y.three
   obtain ⟨hkn, hk1⟩ := Y.kn_le (p := p)
@@ -182,33 +178,31 @@ theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
   have hv1 := walk_next Y.X.hCs Y.X.hCm C.sideBeta h6 hp
   have hse := walk_sector_edge Y.cpSimple Y.X.hCs Y.X.hCm C.sideBeta h6 hp ht
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkn hk1 hkc_le hv0 hv1 hse ⊢
-  rw [hA] at hkn hk1 hv1 hse ⊢
+
+  zvmze at hkn hk1 hv1 hse ⊢
   -- the edge from `kc` to `kn` is the edge of `G` from `sig kn` to `sig kc`
-  have hback : kNext li (kNext (!li) kc) = kc := by
+  have hback : kNext li ztfia = kc := by
     unfold kNext
-    cases li
-    · simp only [Bool.not_false, ite_true, Bool.false_eq_true, ite_false]; omega
-    · simp only [Bool.not_true, Bool.false_eq_true, ite_false, ite_true]
-      have := hk1 rfl; omega
-  have hkn' : kNext (!li) kc < xK := by omega
+    simp_all
+  have hkn' : kNext (!li) kc < xK := by_omega
   have hsn : sig li xK i0 kc = (sig li xK i0 (kNext (!li) kc) + 1) % xK := by
     conv_lhs => rw [← hback]
-    refine sig_next hkn' (by rw [hback]; omega) (fun hl => ?_)
-    subst hl; unfold kNext; simp only [Bool.not_false, ite_true]; omega
-  rw [Y.vtx_sig (by omega)] at hv0
+    refine sig_next hkn' (by omega) (fun hl => ?_)
+    subst hl; unfold kNext; simp
+  rw [Y.vtx_sig by_omega] at hv0
   rw [Y.vtx_sig hkn'] at hv1
-  have hne : (xG).vtx (sig li xK i0 (kNext (!li) kc)) ≠
+  have hne : (xG).vtx (sig li xK i0 ztfia) ≠
       (xG).vtx ((sig li xK i0 (kNext (!li) kc) + 1) % (xG).n) :=
     Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact sig_lt li (by omega) _ _)
-  have ht' : 1 - t ∈ Ioo (0 : ℝ) 1 := ⟨by linarith [ht.2], by linarith [ht.1]⟩
+  zukgd
   refine ⟨?_, fun x hx hx' => ?_⟩
   · unfold sidePt; rw [hv0, hv1, Y.gn, ← hsn, ← Chazelle.Geometry.lerp_symm]
-  · rw [hse, Y.vtx_sig (by omega), Y.vtx_sig hkn'] at hx
+  · rw [hse, Y.vtx_sig by_omega, Y.vtx_sig hkn'] at hx
     rw [Chazelle.Chain.sideLeft_edge hne ht', Y.gn, ← hsn] at hx'
     exact det_neg_of hx hx'
 
 /-- **Outer position at a tour vertex** (regular): the sector is disjoint from that of `G`. -/
-theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
+theorem outer_vtx (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     (hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0) (hum : tU C.m C.topIdx C.sideBeta p ≠ C.m)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li) :
     sidePt (C.sideWalk C.sideBeta) p 0 = sidePt xG (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) 0 ∧
@@ -221,14 +215,14 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
   have hk0 : tK C.m C.topIdx C.sideBeta p ≠ 0 := fun h => hu0 ((tK_eq_zero_iff _ hm1 p).1 h)
   have hkm : tK C.m C.topIdx C.sideBeta p ≠ C.m := fun h => hum ((tK_eq_m_iff _ hm1 p).1 h)
   have hv0 := walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6 hp
-  have hsv := fun x (hx : sideLeft (C.sideWalk C.sideBeta) p 0 x) =>
+  have hsv := fun x (hx : sideLeft _ p 0 x) =>
     walk_sector_vtx Y.cpSimple Y.X.hCs Y.X.hCm h6 hp hu0 hum hx
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkc_le hk0 hkm hv0 hsv ⊢
   rw [hA] at hsv
-  have e1 : kPrev (!li) kc = kNext li kc := by unfold kPrev kNext; cases li <;> simp
-  have e2 : kNext (!li) kc = kPrev li kc := by unfold kPrev kNext; cases li <;> simp
-  have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
-  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
+  have e1 : kPrev (!li) kc = kNext li kc := by unfold kPrev kNext; grind
+  have e2 : kNext (!li) kc = kPrev li kc := by unfold kPrev kNext; grind
+  have hnx : kNext li kc ≤ C.m := by unfold kNext; grind
+  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; grind
   have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
   have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
@@ -240,7 +234,7 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     rw [e1, e2, Y.vtx_sig (by omega), Y.vtx_sig (by omega), Y.vtx_sig (by omega), hsn, hsp] at h
     rw [Chazelle.Chain.sideLeft_zero, Y.gn] at hx'
     have hns := FactsInterior.corner_nonSpike Y.gSimple hσ
-    have hB : (xG).vtx ((sig li xK i0 kc + 1) % (xG).n) - (xG).vtx (sig li xK i0 kc) ≠ 0 :=
+    have hB :=
       sub_ne_zero.2 (Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple hσ).symm
     unfold Chazelle.Jordan.prevIdx at hns
     rw [Y.gn] at hns hB
@@ -251,32 +245,32 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
 theorem g_bound {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 1) :
     |(sidePt xG q s).1| ≤ Chazelle.Jordan.coordBound C.P ∧
       |(sidePt xG q s).2| ≤ Chazelle.Jordan.coordBound C.P ∧ (sidePt xG q s).2 ≤ C.top.2 := by
-  have hm := Y.hm
-  have h3 := Y.three
+  zukj
+
   have hmem : sidePt xG q s ∈ C.P.boundary := by
     rw [Y.hbd]
     exact ⟨q, by rw [Y.gn]; exact hq, Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
   obtain ⟨h1, h2⟩ := Chazelle.Jordan.abs_le_coordBound_of_mem_boundary C.P hmem
-  refine ⟨h1, h2, ?_⟩
+  zulot
   obtain ⟨i, hi, hz⟩ := hmem
   obtain ⟨τ, hτ0, hτ1, hz'⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hz
   have hn := Y.hn
   have hv : ∀ k, k < C.P.n → (C.P.vtx k).2 ≤ C.top.2 := by
-    intro k hk
+    zugf
     rw [← chain_vertex_eq Y.X.hCs hk]
-    exact C.topIdx_spec.2 k (by omega)
+    exact C.topIdx_spec.2 k by_omega
   have a1 := hv i hi
-  have a2 := hv ((i + 1) % C.P.n) (Nat.mod_lt _ (by omega))
+  have a2 := hv (ztg % C.P.n) ztcv
   rw [hz', Chazelle.Geometry.lerp_snd]
   nlinarith
 
 /-- **Box and slit positions are not points of `G`.** -/
-theorem box_ne {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
-    (hp : p ≤ 5 ∨ (p = 2 * C.m + 6 ∧ 0 < t)) {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s)
-    (hs1 : s < 1) : sidePt xG q s ≠ sidePt (C.sideWalk C.sideBeta) p t := by
-  intro he
+theorem box_ne {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+    (hp : p ≤ 5 ∨ ztcap) {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s)
+    (hs1 : s < 1) : sidePt xG q s ≠ sidePt ztcs p t := by
+  zufhz
   obtain ⟨h1, h2, h3⟩ := Y.g_bound hq hs0 hs1.le
-  rw [he] at h1 h2 h3
+  zvmxm at h1 h2 h3
   rcases walk_box C.sideBeta ht0 ht1 hp with h | h | h <;> linarith
 
 end XCtx
@@ -286,21 +280,21 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     (hc : ∃ y a b : ℝ, a < b ∧ c = Chazelle.Visibility.hseg y a b) {q : ℕ} {s : ℝ}
     (hA : SideAttach xG c q s) : (c ∩ reg r).Nonempty := by
   have hG := Y.gSimple
-  have hMH : WalkAx (interiorModel xG) := walkAx_interiorModel hG
+  have hMH : ztezg := walkAx_interiorModel hG
   have hW : (interiorModel xG).W = xG :=
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
-  have hReq := DownDrv.region_eq_intHost Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
+  zuhxj
   obtain ⟨hq, hs0, hs1, hmem, rA, hrA, hsec⟩ := hA
-  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rw [hW]; exact hq) s hs0 hs1
+  obtain ⟨r', hr', hcl⟩ := hMH.clean q by_grind s hs0 hs1
   rw [hW] at hcl
-  obtain ⟨y₀, a, b, hab, rfl⟩ := hc
+  zuejm
   obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hab hmem (lt_min hrA hr')
-  have hxl := hsec x hxc hne (lt_of_lt_of_le hxd (min_le_left _ _))
+  have hxl := hsec x hxc hne by_grind
   have hxD : x ∈ (interiorModel xG).D := by
-    by_contra hxD
-    exact hcl x (show dist x _ < r' from lt_of_lt_of_le hxd (min_le_right _ _)) hxD hxl
+    zujuk
+    exact hcl x (show dist x _ < r' from by_grind) hxD hxl
   refine ⟨x, hxc, ?_⟩
-  rw [hReq]; exact hxD
+  rw [hReq]; tauto
 
 end
 
