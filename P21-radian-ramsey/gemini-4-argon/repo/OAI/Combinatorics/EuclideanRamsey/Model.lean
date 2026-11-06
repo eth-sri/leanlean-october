@@ -1,11 +1,3 @@
-/-
-From openai/math (https://github.com/openai/math), commit
-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/Model.lean;
-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
-changed; see docs/PORT-LOG.md.
--/
 module
 
 public import Mathlib
@@ -40,16 +32,6 @@ def coordinate {s d : ℕ} (a : Fin s → Space d) (i : Fin s) (j : Fin d) : Coe
 def augmented {s d : ℕ} (a : Fin s → Space d) (i : Fin s) : Option (Fin d) → Coeff a
   | none => 1
   | some j => coordinate a i j
-
-def multiply {s d : ℕ} (a : Fin s → Space d) : TensorRing a →ₐ[ℚ] Coeff a :=
-  Algebra.TensorProduct.lmul' ℚ
-
-def FieldCriterion {s d : ℕ} (a : Fin s → Space d) : Prop :=
-  ∃ P : Matrix (Option (Fin d)) (Option (Fin d)) (TensorRing a),
-    (∀ i : Fin s, ∑ α, ∑ β,
-      ((augmented a i α) ⊗ₜ[ℚ] (1 : Coeff a)) * P α β *
-      ((1 : Coeff a) ⊗ₜ[ℚ] (augmented a i β)) = 0) ∧
-    (∀ α β : Fin d, multiply a (P (some α) (some β)) = if α = β then 1 else 0)
 
 end EuclideanRamsey
 

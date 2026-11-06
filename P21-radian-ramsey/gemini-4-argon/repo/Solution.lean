@@ -18,8 +18,6 @@ import OAI.Combinatorics.EuclideanRamsey.TensorDescent
 import OAI.Combinatorics.EuclideanRamsey.TensorPresentation
 import OAI.Combinatorics.EuclideanRamsey.UltrafilterStrings
 
-public section
-
 /-!
 # Proved solution
 

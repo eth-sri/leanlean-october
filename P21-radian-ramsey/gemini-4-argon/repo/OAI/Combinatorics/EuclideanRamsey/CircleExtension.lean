@@ -8,22 +8,3 @@ changed; see docs/PORT-LOG.md.
 -/
 module
 
-public import OAI.Combinatorics.EuclideanRamsey.CircleGeometry
-public import Mathlib.Data.Set.Finite.Basic
-public import Mathlib.Data.Fintype.EquivFin
-
-@[expose] public section
-
-namespace OAI
-noncomputable section
-namespace EuclideanRamsey.CircleConsequence
-
-/-- Rational parametrization of a genuine radius-r circle. -/
-def stereographic (c : Space 2) (r t : ℝ) : Space 2 :=
-  c + r • WithLp.toLp 2 ![(1-t^2)/(1+t^2), (2*t)/(1+t^2)]
-
-end EuclideanRamsey.CircleConsequence
-
-end
-
-end OAI
